@@ -25,17 +25,16 @@ LANDING_BLOCK = """
   </section>
 
   <!--
-    사진 넣기: 각 .slide-bg 의 style 에
+    사진 넣기: 각 .slide-media 의 style 에
     background-image: url('images/인스타.jpg'), linear-gradient(...);
-    처럼 url()을 맨 앞에 두면 사진이 우선됩니다. (폴더는 예시 — 원하는 경로로 변경)
+    처럼 url()을 맨 앞에 두면 사진이 우선됩니다.
   -->
   <section class="hero-carousel" id="heroCarousel" aria-label="밥도둑 주요 링크">
     <div class="carousel-viewport" id="carouselViewport" tabindex="0" aria-roledescription="carousel">
       <div class="carousel-track" id="carouselTrack">
         <!-- 유튜브 채널 URL 로 href 를 바꾸세요 -->
         <a class="carousel-slide" href="#" data-slide="0" id="slideYoutube">
-          <div class="slide-bg" style="background-image: url('images/carousel-youtube.png'), linear-gradient(145deg, #f5f5f5 0%, #e8e8ea 50%, #ddd 100%);"></div>
-          <div class="slide-overlay"></div>
+          <div class="slide-media" style="background-image: url('images/carousel-youtube.png'), linear-gradient(145deg, #f5f5f5 0%, #e8e8ea 50%, #ddd 100%);" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">YouTube</span>
             <h2 class="slide-title" data-i18n="slide.yt.title">유튜브</h2>
@@ -44,8 +43,7 @@ LANDING_BLOCK = """
         </a>
         <!-- 카카오톡 채널 주소로 href 를 바꾸세요 (예: https://pf.kakao.com/_xxxxx) -->
         <a class="carousel-slide" href="#" data-slide="1" id="slideKakao">
-          <div class="slide-bg" style="background-image: url('images/carousel-kakao.png'), linear-gradient(145deg, #fef9c3 0%, #fde047 45%, #facc15 100%);"></div>
-          <div class="slide-overlay"></div>
+          <div class="slide-media" style="background-image: url('images/carousel-kakao.png'), linear-gradient(145deg, #fef9c3 0%, #fde047 45%, #facc15 100%);" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">KakaoTalk</span>
             <h2 class="slide-title" data-i18n="slide.kakao.title">카카오톡 문의 채널</h2>
@@ -53,8 +51,7 @@ LANDING_BLOCK = """
           </div>
         </a>
         <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="2">
-          <div class="slide-bg" style="background-image: url('images/carousel-instagram.png'), linear-gradient(145deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);"></div>
-          <div class="slide-overlay"></div>
+          <div class="slide-media" style="background-image: url('images/carousel-instagram.png'), linear-gradient(145deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">Instagram</span>
             <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
@@ -62,8 +59,7 @@ LANDING_BLOCK = """
           </div>
         </a>
         <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="3">
-          <div class="slide-bg" style="background-image: url('images/carousel-naver-map.png'), linear-gradient(145deg, #22d3ee 0%, #06b6d4 45%, #10b981 100%);"></div>
-          <div class="slide-overlay"></div>
+          <div class="slide-media" style="background-image: url('images/carousel-naver-map.png'), linear-gradient(145deg, #22d3ee 0%, #06b6d4 45%, #10b981 100%);" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">Map</span>
             <h2 class="slide-title" data-i18n="slide.map.title">밥도둑의 맛집 지도</h2>
@@ -81,36 +77,6 @@ LANDING_BLOCK = """
   </section>
 
 """
-
-SLIDE_BG_OLD = """    .slide-bg {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      transform: scale(1.02);
-      transition: transform 0.6s ease;
-    }
-
-    .carousel-slide:hover .slide-bg {
-      transform: scale(1.06);
-    }"""
-
-SLIDE_BG_NEW = """    .slide-bg {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      transform: scale(1.02);
-      transition: transform 0.6s ease, filter 0.6s ease;
-      filter: blur(0.5px);
-    }
-
-    .carousel-slide:hover .slide-bg {
-      transform: scale(1.06);
-      filter: blur(0.5px);
-    }"""
 
 
 def strip_food_script(s: str) -> str:
@@ -180,10 +146,6 @@ def ensure_nav_home_handler(s: str) -> str:
 
 def main() -> None:
     s = FOOD.read_text(encoding="utf-8")
-
-    # 슬라이드 배경 블러
-    if SLIDE_BG_OLD in s:
-        s = s.replace(SLIDE_BG_OLD, SLIDE_BG_NEW, 1)
 
     # 메인에서 가계부 카드/배너용 CSS 블록 제거
     m_start = s.find("    /* ── 먹방 가계부")

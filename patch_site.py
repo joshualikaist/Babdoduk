@@ -117,6 +117,8 @@ POPUP_JS_OLD = """      function todayKey() {
       }"""
 
 POPUP_JS_NEW = """      function shouldShowWelcome() {
+        var path = (location.pathname || '').toLowerCase();
+        if (path.indexOf('food.html') !== -1) return false;
         try {
           var until = localStorage.getItem('babdoduk-welcome-snooze-until');
           if (until && Date.now() < parseInt(until, 10)) return false;
@@ -206,6 +208,20 @@ def patch_popup(s: str) -> str:
             "          'popup.start': 'Start',\n          'popup.snooze24h': \"Don't show for 24 hours\",",
             1,
         )
+
+    _welcome_snooze_only = """      function shouldShowWelcome() {
+        try {
+          var until = localStorage.getItem('babdoduk-welcome-snooze-until');"""
+    if _welcome_snooze_only in s and "path.indexOf('food.html')" not in s:
+        s = s.replace(
+            _welcome_snooze_only,
+            """      function shouldShowWelcome() {
+        var path = (location.pathname || '').toLowerCase();
+        if (path.indexOf('food.html') !== -1) return false;
+        try {
+          var until = localStorage.getItem('babdoduk-welcome-snooze-until');""",
+            1,
+        )
     return s
 
 
@@ -231,12 +247,17 @@ def write_utf8(path: Path, text: str) -> None:
 def main() -> None:
     idx = ROOT / "index.html"
     food = ROOT / "food.html"
-    si = patch_index(idx.read_text(encoding="utf-8"))
     sf = patch_food(food.read_text(encoding="utf-8"))
-    if "밥도둑".encode("utf-8") not in si.encode("utf-8"):
-        raise SystemExit("index lost hangul")
-    write_utf8(idx, si)
+    if "밥도둑".encode("utf-8") not in sf.encode("utf-8"):
+        raise SystemExit("food lost hangul")
     write_utf8(food, sf)
+
+    si = patch_index(idx.read_text(encoding="utf-8"))
+    if "밥도둑".encode("utf-8") not in si.encode("utf-8"):
+        raise SystemExit(
+            "index lost hangul (encoding broken). Wrote food.html only; run: python rebuild_index.py"
+        )
+    write_utf8(idx, si)
     print("Patched index.html + food.html")
 
 

@@ -787,12 +787,12 @@
       line-height: 1.45;
     }
 
-    /* ── 가로 캐러셀: 한 장씩 이어지는 무한 루프 (translate) ── */
+    /* ── 가로 캐러셀: 좌측 이미지 · 우측 설명 ── */
     .hero-carousel {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       margin-left: auto;
       margin-right: auto;
       margin-bottom: 1rem;
@@ -819,82 +819,73 @@
     }
 
     .carousel-slide {
-      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
       flex: 0 0 100%;
       width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      height: min(38vh, 300px);
-      max-height: 300px;
-      border-radius: 14px;
+      min-height: 176px;
+      border-radius: 16px;
       overflow: hidden;
       text-decoration: none;
-      color: #fff;
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: inherit;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      background: #fff;
     }
 
-    .slide-bg {
-      position: absolute;
-      inset: 0;
+    .slide-media {
+      flex: 0 0 44%;
+      min-width: 0;
+      min-height: 168px;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      transform: scale(1.02);
-      transition: transform 0.6s ease;
+      transition: transform 0.45s ease;
     }
 
-    .carousel-slide:hover .slide-bg {
-      transform: scale(1.06);
-    }
-
-    .slide-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.75) 0%,
-        rgba(0, 0, 0, 0.25) 42%,
-        rgba(0, 0, 0, 0.15) 100%
-      );
-      pointer-events: none;
+    .carousel-slide:hover .slide-media {
+      transform: scale(1.04);
     }
 
     .slide-copy {
-      position: absolute;
-      inset: 0;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 1.25rem 1.25rem;
-      text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+      align-items: flex-start;
+      text-align: left;
+      padding: 1rem 1.15rem 1rem 1.35rem;
+      background: linear-gradient(145deg, #fafafa 0%, #ffffff 72%);
+      min-width: 0;
     }
 
     .slide-eyebrow {
-      font-size: 0.62rem;
-      font-weight: 600;
-      letter-spacing: 0.18em;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      opacity: 0.85;
-      margin-bottom: 0.45rem;
+      color: #86868b;
+      margin-bottom: 0.4rem;
     }
 
     .slide-title {
-      font-size: clamp(1.2rem, 3.8vw, 1.55rem);
-      font-weight: 900;
+      font-size: clamp(1.05rem, 3.2vw, 1.42rem);
+      font-weight: 800;
       letter-spacing: -0.03em;
-      line-height: 1.15;
+      line-height: 1.18;
       margin-bottom: 0.35rem;
+      color: #1d1d1f;
     }
 
     .slide-desc {
-      font-size: clamp(0.72rem, 2.2vw, 0.85rem);
+      font-size: clamp(0.68rem, 2vw, 0.82rem);
       font-weight: 500;
-      opacity: 0.9;
-      max-width: 16rem;
-      line-height: 1.45;
+      color: #6e6e73;
+      line-height: 1.5;
+      max-width: none;
     }
 
     .carousel-dots {
@@ -928,8 +919,19 @@
 
     @media (max-width: 480px) {
       .carousel-slide {
-        height: min(34vh, 260px);
-        max-height: 260px;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .slide-media {
+        flex: 0 0 auto;
+        width: 100%;
+        min-height: 132px;
+        max-height: 44vw;
+      }
+
+      .slide-copy {
+        padding: 0.85rem 1rem 1.05rem;
       }
     }
 
@@ -1459,6 +1461,8 @@
       onScroll();
 
       function shouldShowWelcome() {
+        var path = (location.pathname || '').toLowerCase();
+        if (path.indexOf('food.html') !== -1) return false;
         try {
           var until = localStorage.getItem('babdoduk-welcome-snooze-until');
           if (until && Date.now() < parseInt(until, 10)) return false;
