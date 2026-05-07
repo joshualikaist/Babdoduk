@@ -1056,16 +1056,7 @@
       <p id="popupIntro" data-i18n-html="popup.body">인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.</p>
       <div class="popup-actions">
         <button type="button" class="popup-btn primary" id="popupCloseBtn" data-i18n="popup.start">시작하기</button>
-      </div>
-      <div class="popup-dont-list">
-        <label class="popup-dont">
-          <input type="checkbox" id="popupDontToday" />
-          <span data-i18n="popup.snoozeToday">오늘 다시 보지 않기</span>
-        </label>
-        <label class="popup-dont">
-          <input type="checkbox" id="popupDontPermanent" />
-          <span data-i18n="popup.snoozeForever">다시 보지 않기</span>
-        </label>
+        <button type="button" class="popup-btn secondary" id="popupSnoozeBtn" data-i18n="popup.snooze24h">하루 동안 보지 않기</button>
       </div>
     </div>
   </div>
@@ -1078,6 +1069,7 @@
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
       <a class="site-nav-item" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
       <a class="site-nav-item" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+      <a class="site-nav-item" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
       <a href="#" class="site-nav-item" id="navKakao" data-i18n="nav.kakao">카카오톡</a>
       <a href="#" class="site-nav-item" id="navYoutube" data-i18n="nav.youtube">유튜브</a>
       <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
@@ -1221,6 +1213,7 @@
           'nav.homeAria': '맨 위로',
           'nav.instagram': '인스타그램',
           'nav.map': '맛집 지도',
+          'nav.foodlog': '먹방 가계부',
           'nav.kakao': '카카오톡',
           'nav.youtube': '유튜브',
           'nav.langBtn': '언어 (EN)',
@@ -1229,8 +1222,7 @@
           'popup.body':
             '인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.',
           'popup.start': '시작하기',
-          'popup.snoozeToday': '오늘 다시 보지 않기',
-          'popup.snoozeForever': '다시 보지 않기',
+          'popup.snooze24h': '하루 동안 보지 않기',
           'profile.imgAlt': '밥도둑 Babdoduk 프로필',
           'profile.titleHtml': '밥도둑 <span class="title-en">Babdoduk</span>',
           'profile.subtitle': '카이스트 기계과 먹방1티어 학생의 먹방일기',
@@ -1305,6 +1297,7 @@
           'nav.homeAria': 'Back to top',
           'nav.instagram': 'Instagram',
           'nav.map': 'Food map',
+          'nav.foodlog': 'Food log',
           'nav.kakao': 'KakaoTalk',
           'nav.youtube': 'YouTube',
           'nav.langBtn': '한국어',
@@ -1313,8 +1306,7 @@
           'popup.body':
             'Find recipes and daily life on Instagram and the food map. Use the links below to jump in.',
           'popup.start': 'Start',
-          'popup.snoozeToday': "Don't show again today",
-          'popup.snoozeForever': "Don't show again",
+          'popup.snooze24h': "Don't show for 24 hours",
           'profile.imgAlt': 'Babdoduk profile photo',
           'profile.titleHtml': '<span class="title-en">Babdoduk</span>',
           'profile.subtitle':
@@ -1466,37 +1458,29 @@
       window.addEventListener('resize', onScroll);
       onScroll();
 
-      function todayKey() {
-        var d = new Date();
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      }
-
       function shouldShowWelcome() {
         try {
-          if (localStorage.getItem('babdoduk-welcome-dismissed') === '1') return false;
-          if (localStorage.getItem('babdoduk-welcome-snooze') === todayKey()) return false;
+          var until = localStorage.getItem('babdoduk-welcome-snooze-until');
+          if (until && Date.now() < parseInt(until, 10)) return false;
         } catch (err) {}
         return true;
       }
 
       var popup = document.getElementById('welcomePopup');
       var closeBtn = document.getElementById('popupCloseBtn');
-      var dontToday = document.getElementById('popupDontToday');
-      var dontPermanent = document.getElementById('popupDontPermanent');
+      var snoozeBtn = document.getElementById('popupSnoozeBtn');
 
       function openPopup() {
         popup.classList.add('is-open');
         popup.setAttribute('aria-hidden', 'false');
       }
-      function closePopup() {
+      function closePopup(withSnooze24h) {
         popup.classList.remove('is-open');
         popup.setAttribute('aria-hidden', 'true');
         try {
-          if (dontPermanent && dontPermanent.checked) {
-            localStorage.setItem('babdoduk-welcome-dismissed', '1');
-            localStorage.removeItem('babdoduk-welcome-snooze');
-          } else if (dontToday && dontToday.checked) {
-            localStorage.setItem('babdoduk-welcome-snooze', todayKey());
+          if (withSnooze24h) {
+            var until = Date.now() + 24 * 60 * 60 * 1000;
+            localStorage.setItem('babdoduk-welcome-snooze-until', String(until));
           }
         } catch (err) {}
       }
@@ -1505,19 +1489,11 @@
         requestAnimationFrame(function () { openPopup(); });
       }
 
-      closeBtn.addEventListener('click', closePopup);
+      if (closeBtn) closeBtn.addEventListener('click', function () { closePopup(false); });
+      if (snoozeBtn) snoozeBtn.addEventListener('click', function () { closePopup(true); });
       popup.addEventListener('click', function (e) {
-        if (e.target === popup) closePopup();
+        if (e.target === popup) closePopup(false);
       });
-
-      if (dontPermanent && dontToday) {
-        dontPermanent.addEventListener('change', function () {
-          if (dontPermanent.checked) dontToday.checked = false;
-        });
-        dontToday.addEventListener('change', function () {
-          if (dontToday.checked) dontPermanent.checked = false;
-        });
-      }
 
       /* 가로 캐러셀: translate 무한 루프 (1→2→3→4→1…) */
       var carouselViewport = document.getElementById('carouselViewport');

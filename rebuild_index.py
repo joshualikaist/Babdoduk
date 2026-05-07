@@ -2,6 +2,8 @@
 """Rebuild index.html from food.html (UTF-8). Run: python rebuild_index.py"""
 from pathlib import Path
 
+from patch_site import insert_nav_foodlog, patch_popup
+
 ROOT = Path(__file__).resolve().parent
 FOOD = ROOT / "food.html"
 INDEX = ROOT / "index.html"
@@ -77,101 +79,6 @@ LANDING_BLOCK = """
       <button type="button" class="carousel-dot" data-index="3" data-i18n-aria-key="carousel.dot4" aria-label="슬라이드 4"></button>
     </div>
   </section>
-
-"""
-
-BANNER_CSS = """    /* ── 먹방 가계부 배너 (메인 → food.html) ── */
-    .food-banner {
-      display: block;
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 520px;
-      margin: 0 auto 1.25rem;
-      padding: 0 16px;
-      text-decoration: none;
-      color: inherit;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .food-banner-inner {
-      display: block;
-      background: linear-gradient(135deg, #fef5f8 0%, #ffffff 55%, #fdf2f8 100%);
-      border: 1px solid rgba(236, 72, 153, 0.22);
-      border-radius: 18px;
-      padding: 18px 16px 16px;
-      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.08);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .food-banner:hover .food-banner-inner {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(236, 72, 153, 0.14);
-    }
-
-    .food-banner:active .food-banner-inner {
-      transform: translateY(0);
-    }
-
-    .food-banner-title {
-      font-size: 1.05rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      color: #1d1d1f;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .food-banner-title-main {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .food-banner-ico {
-      font-size: 1.15rem;
-      line-height: 1;
-    }
-
-    .food-banner-arrow {
-      font-size: 1.35rem;
-      color: #ec4899;
-      font-weight: 300;
-      line-height: 1;
-    }
-
-    .food-banner-desc {
-      font-size: 0.75rem;
-      color: #6e6e73;
-      line-height: 1.55;
-      margin-bottom: 8px;
-    }
-
-    .food-banner-cta {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #c62d42;
-    }
-
-
-"""
-
-BANNER_HTML = """  <a class="food-banner" href="food.html" id="foodBannerLink" aria-labelledby="foodBannerTitle">
-    <span class="food-banner-inner">
-      <span class="food-banner-title" id="foodBannerTitle">
-        <span class="food-banner-title-main">
-          <span class="food-banner-ico" aria-hidden="true">🍱</span>
-          <span data-i18n="food.bannerTitle">먹방 가계부</span>
-        </span>
-        <span class="food-banner-arrow" aria-hidden="true">›</span>
-      </span>
-      <span class="food-banner-desc" data-i18n-html="food.bannerDesc">인스타에 적은 하루 총액을 여기에만 옮겨 적으면, 월·주·달력으로 합계가 정리돼요. (인스타에서 자동으로 가져오기는 어렵습니다.)</span>
-      <span class="food-banner-cta" data-i18n="food.bannerCta">가계부 열기 →</span>
-    </span>
-  </a>
 
 """
 
@@ -278,12 +185,13 @@ def main() -> None:
     if SLIDE_BG_OLD in s:
         s = s.replace(SLIDE_BG_OLD, SLIDE_BG_NEW, 1)
 
-    # 가계부 카드 CSS → 배너만
+    # 메인에서 가계부 카드/배너용 CSS 블록 제거
     m_start = s.find("    /* ── 먹방 가계부")
     m_end = s.find("    /* ── 가로 캐러셀")
     if m_start == -1 or m_end == -1:
         raise SystemExit("CSS markers not found in food.html")
-    s = s[:m_start] + BANNER_CSS + s[m_end:]
+    # 메인에서는 가계부 카드/배너 제거 → 캐러셀 CSS만 유지
+    s = s[:m_start] + s[m_end:]
 
     # 랜딩(프로필+캐러셀) 삽입
     marker = '  <div class="food-tracker-wrap">'
@@ -292,14 +200,14 @@ def main() -> None:
     if "profile profile--hero" not in s:
         s = s.replace(marker, LANDING_BLOCK.strip() + "\n\n" + marker, 1)
 
-    # 가계부 섹션 → 배너 HTML
+    # 가계부 UI 섹션 제거(진입은 food.html·내비)
     f0 = s.find('  <div class="food-tracker-wrap">')
     f1 = s.find('  <div class="container">', f0)
     if f0 == -1 or f1 == -1:
         raise SystemExit("food / container block not found")
-    s = s[:f0] + BANNER_HTML + s[f1:]
+    s = s[:f0] + s[f1:]
 
-    # 메인은 홈이 이 파일
+    s = insert_nav_foodlog(s)
     s = s.replace(
         '<a href="index.html" id="navHome"',
         '<a href="#" id="navHome"',
@@ -309,6 +217,7 @@ def main() -> None:
     s = strip_food_script(s)
     s = ensure_carousel_autoplay(s)
     s = ensure_nav_home_handler(s)
+    s = patch_popup(s)
 
     s = s.replace(
         "      navJumpToSlide(document.getElementById('navKakao'), 2);\n      navJumpToSlide(document.getElementById('navYoutube'), 3);",
