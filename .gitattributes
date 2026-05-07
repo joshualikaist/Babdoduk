@@ -1,0 +1,7 @@
+# 줄바꿈 통일(UTF-8 텍스트가 CRLF로 섞이지 않게)
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.py text eol=lf

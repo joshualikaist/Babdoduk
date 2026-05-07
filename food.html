@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -355,82 +354,438 @@
       text-align: center;
     }
 
-    /* ── 먹방 가계부 배너 (메인 → food.html) ── */
-    .food-banner {
-      display: block;
+    /* ── 먹방 가계부 (일일 Total → 월/주 집계 + 달력) ── */
+    .food-tracker-wrap {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 520px;
-      margin: 0 auto 1.25rem;
       padding: 0 16px;
-      text-decoration: none;
-      color: inherit;
-      -webkit-tap-highlight-color: transparent;
+      margin: 0 auto 1.25rem;
+      max-width: 520px;
     }
 
-    .food-banner-inner {
-      display: block;
-      background: linear-gradient(135deg, #fef5f8 0%, #ffffff 55%, #fdf2f8 100%);
-      border: 1px solid rgba(236, 72, 153, 0.22);
+    .food-tracker {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 18px;
-      padding: 18px 16px 16px;
-      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.08);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      padding: 18px 16px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
 
-    .food-banner:hover .food-banner-inner {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(236, 72, 153, 0.14);
-    }
-
-    .food-banner:active .food-banner-inner {
-      transform: translateY(0);
-    }
-
-    .food-banner-title {
+    .food-tracker-heading {
       font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: -0.03em;
       color: #1d1d1f;
+      margin-bottom: 6px;
+    }
+
+    .food-tracker-note {
+      font-size: 0.72rem;
+      color: #86868b;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .food-summary-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .food-sum-card {
+      background: #fef5f8;
+      border: 1px solid rgba(236, 72, 153, 0.15);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .food-sum-card .lbl {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .food-sum-card .val {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #1d1d1f;
+      letter-spacing: -0.02em;
+    }
+
+    .food-sum-card .sub {
+      font-size: 0.65rem;
+      color: #aeaeb2;
+      margin-top: 4px;
+    }
+
+    .food-sum-picks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 6px;
+    }
+
+    .food-sum-picks label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1 1 calc(50% - 6px);
+      min-width: 0;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #6e6e73;
+    }
+
+    .food-sum-picks select {
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 7px 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: #fff;
+      color: #1d1d1f;
+      width: 100%;
+    }
+
+    @media (max-width: 360px) {
+      .food-summary-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .food-lists {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .food-list-block h3 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #424245;
       margin-bottom: 8px;
+    }
+
+    .food-table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .food-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+    }
+
+    .food-table th,
+    .food-table td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .food-table th {
+      background: rgba(0, 0, 0, 0.03);
+      font-weight: 600;
+      color: #6e6e73;
+      white-space: nowrap;
+    }
+
+    .food-table td:last-child {
+      text-align: right;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .food-cal-nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      margin-bottom: 10px;
     }
 
-    .food-banner-title-main {
+    .food-cal-nav button {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.05);
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #1d1d1f;
+      line-height: 1;
+    }
+
+    .food-cal-nav button:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .food-cal-nav span {
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .food-cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 4px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #aeaeb2;
+      text-align: center;
+    }
+
+    .food-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .food-cal-cell {
+      aspect-ratio: 1;
+      max-height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fafafa;
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      cursor: default;
+      padding: 2px;
+    }
+
+    .food-cal-cell.empty {
+      border: none;
+      background: transparent;
+    }
+
+    .food-cal-cell.has-data {
+      background: #fff5f7;
+      border-color: rgba(236, 72, 153, 0.25);
+      cursor: pointer;
+    }
+
+    .food-cal-cell.has-data:hover {
+      border-color: rgba(236, 72, 153, 0.5);
+    }
+
+    .food-cal-cell .d {
+      font-weight: 800;
+      color: #1d1d1f;
+      font-size: 0.72rem;
+    }
+
+    .food-cal-cell .amt {
+      font-size: 0.58rem;
+      color: #ec4899;
+      font-weight: 700;
+      line-height: 1.1;
+      text-align: center;
+      word-break: keep-all;
+    }
+
+    .food-detail {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #424245;
+      line-height: 1.55;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 12px;
+      min-height: 3.2em;
+    }
+
+    .food-detail strong {
+      display: block;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .food-detail ul {
+      margin: 0;
+      padding-left: 1.1em;
+    }
+
+    .food-err {
+      font-size: 0.78rem;
+      color: #dc2626;
+    }
+
+    /* ── 가계부 직접 입력 (에브리타임 스타일) ── */
+    .food-input-panel {
+      margin-bottom: 16px;
+      padding: 14px;
+      background: #fafafa;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 14px;
+    }
+
+    .food-input-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #1d1d1f;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .food-input-toolbar {
+      margin-bottom: 10px;
+    }
+
+    .food-input-toolbar label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #424245;
+      display: inline-flex;
       align-items: center;
       gap: 8px;
     }
 
-    .food-banner-ico {
-      font-size: 1.15rem;
-      line-height: 1;
+    .food-input-toolbar input[type='date'] {
+      padding: 6px 10px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 8px;
+      font: inherit;
+      font-size: 0.8rem;
     }
 
-    .food-banner-arrow {
-      font-size: 1.35rem;
-      color: #ec4899;
-      font-weight: 300;
-      line-height: 1;
+    .food-input-table-wrap {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
     }
 
-    .food-banner-desc {
+    .food-input-table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 0.75rem;
-      color: #6e6e73;
-      line-height: 1.55;
-      margin-bottom: 8px;
     }
 
-    .food-banner-cta {
-      font-size: 0.72rem;
+    .food-input-table th {
+      text-align: left;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.03);
       font-weight: 700;
-      color: #c62d42;
+      color: #3a3a3c;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     }
 
+    .food-input-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      vertical-align: middle;
+    }
+
+    .food-input-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .food-input-table .food-in-meal,
+    .food-input-table select.food-in-meal,
+    .food-input-table .food-in-price {
+      width: 100%;
+      max-width: 100%;
+      padding: 8px 10px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font: inherit;
+      font-size: 0.78rem;
+      box-sizing: border-box;
+    }
+
+    .food-input-table .food-in-price {
+      text-align: right;
+    }
+
+    .food-input-total-row th {
+      background: rgba(198, 45, 66, 0.06);
+      color: #c62d42;
+      font-size: 0.78rem;
+    }
+
+    .food-input-total-row td {
+      background: rgba(198, 45, 66, 0.04);
+    }
+
+    .food-input-total {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid rgba(198, 45, 66, 0.35);
+      border-radius: 8px;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 800;
+      text-align: right;
+      color: #c62d42;
+      box-sizing: border-box;
+    }
+
+    .food-input-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 16px;
+      margin-top: 12px;
+    }
+
+    .food-input-add {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #c62d42;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .food-input-reset {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-size: 0.78rem;
+      color: #aeaeb2;
+      cursor: pointer;
+    }
+
+    .food-input-save {
+      margin-left: auto;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+      background: #c62d42;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(198, 45, 66, 0.35);
+    }
+
+    .food-input-save:hover {
+      filter: brightness(1.05);
+    }
+
+    .food-input-hint {
+      margin-top: 10px;
+      font-size: 0.68rem;
+      color: #86868b;
+      line-height: 1.45;
+    }
 
     /* ── 가로 캐러셀: 한 장씩 이어지는 무한 루프 (translate) ── */
     .hero-carousel {
@@ -486,13 +841,11 @@
       background-position: center;
       background-repeat: no-repeat;
       transform: scale(1.02);
-      transition: transform 0.6s ease, filter 0.6s ease;
-      filter: blur(0.5px);
+      transition: transform 0.6s ease;
     }
 
     .carousel-slide:hover .slide-bg {
       transform: scale(1.06);
-      filter: blur(0.5px);
     }
 
     .slide-overlay {
@@ -722,7 +1075,7 @@
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
-      <a href="#" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
       <a class="site-nav-item" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
       <a class="site-nav-item" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
       <a href="#" class="site-nav-item" id="navKakao" data-i18n="nav.kakao">카카오톡</a>
@@ -731,89 +1084,110 @@
     </div>
   </header>
 
-<section class="profile profile--hero">
-    <div class="badge-row">
-      <span class="chip chip--tagline">🍚 = World = 🌎</span>
-    </div>
-    <div class="avatar">
-      <div class="avatar-inner">
-        <!-- 인스타 프로필 사진 (images/profile-instagram.jpg) — 만료 시 프로필 페이지 og:image 로 갱신 가능 -->
-        <img id="profileAvatarImg" src="images/profile-instagram.jpg" alt="밥도둑 Babdoduk 프로필" width="76" height="76" loading="eager" decoding="async" />
-      </div>
-    </div>
-    <h1 class="title" id="profileTitle" data-i18n-html="profile.titleHtml">밥도둑 <span class="title-en">Babdoduk</span></h1>
-    <p class="subtitle" data-i18n="profile.subtitle">카이스트 기계과 먹방1티어 학생의 먹방일기</p>
-  </section>
+  <div class="food-tracker-wrap">
+    <section class="food-tracker" id="foodTracker" aria-labelledby="foodTrackerTitle">
+      <h2 id="foodTrackerTitle" class="food-tracker-heading" data-i18n="food.heading">먹방 가계부</h2>
+      <p class="food-tracker-note" data-i18n-html="food.note">인스타에 적은 하루 <strong>총액</strong>을 아래에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.</p>
 
-  <!--
-    사진 넣기: 각 .slide-bg 의 style 에
-    background-image: url('images/인스타.jpg'), linear-gradient(...);
-    처럼 url()을 맨 앞에 두면 사진이 우선됩니다. (폴더는 예시 — 원하는 경로로 변경)
-  -->
-  <section class="hero-carousel" id="heroCarousel" aria-label="밥도둑 주요 링크">
-    <div class="carousel-viewport" id="carouselViewport" tabindex="0" aria-roledescription="carousel">
-      <div class="carousel-track" id="carouselTrack">
-        <!-- 유튜브 채널 URL 로 href 를 바꾸세요 -->
-        <a class="carousel-slide" href="#" data-slide="0" id="slideYoutube">
-          <div class="slide-bg" style="background-image: url('images/carousel-youtube.png'), linear-gradient(145deg, #f5f5f5 0%, #e8e8ea 50%, #ddd 100%);"></div>
-          <div class="slide-overlay"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">YouTube</span>
-            <h2 class="slide-title" data-i18n="slide.yt.title">유튜브</h2>
-            <p class="slide-desc" data-i18n="slide.yt.desc">영상으로 밥도둑을 만나 보세요</p>
-          </div>
-        </a>
-        <!-- 카카오톡 채널 주소로 href 를 바꾸세요 (예: https://pf.kakao.com/_xxxxx) -->
-        <a class="carousel-slide" href="#" data-slide="1" id="slideKakao">
-          <div class="slide-bg" style="background-image: url('images/carousel-kakao.png'), linear-gradient(145deg, #fef9c3 0%, #fde047 45%, #facc15 100%);"></div>
-          <div class="slide-overlay"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">KakaoTalk</span>
-            <h2 class="slide-title" data-i18n="slide.kakao.title">카카오톡 문의 채널</h2>
-            <p class="slide-desc" data-i18n="slide.kakao.desc">채널에서 편하게 문의해 주세요</p>
-          </div>
-        </a>
-        <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="2">
-          <div class="slide-bg" style="background-image: url('images/carousel-instagram.png'), linear-gradient(145deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);"></div>
-          <div class="slide-overlay"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">Instagram</span>
-            <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
-            <p class="slide-desc" data-i18n="slide.insta.desc">@babdodukms · 일상과 레시피를 만나 보세요</p>
-          </div>
-        </a>
-        <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="3">
-          <div class="slide-bg" style="background-image: url('images/carousel-naver-map.png'), linear-gradient(145deg, #22d3ee 0%, #06b6d4 45%, #10b981 100%);"></div>
-          <div class="slide-overlay"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">Map</span>
-            <h2 class="slide-title" data-i18n="slide.map.title">밥도둑의 맛집 지도</h2>
-            <p class="slide-desc" data-i18n="slide.map.desc">네이버 지도에서 정리한 맛집 리스트</p>
-          </div>
-        </a>
+      <div class="food-input-panel" id="foodInputPanel">
+        <div class="food-input-title" data-i18n="food.input.sectionTitle">오늘 지출 입력</div>
+        <div class="food-input-toolbar">
+          <label>
+            <span data-i18n="food.input.dateLabel">날짜</span>
+            <input type="date" id="foodInputDate" required />
+          </label>
+        </div>
+        <div class="food-input-table-wrap">
+          <table class="food-input-table">
+            <thead>
+              <tr>
+                <th data-i18n="food.input.colMeal">식사 종류</th>
+                <th data-i18n="food.input.colPrice">가격 (원)</th>
+              </tr>
+            </thead>
+            <tbody id="foodInputBody"></tbody>
+            <tfoot>
+              <tr class="food-input-total-row">
+                <th data-i18n="food.input.totalLabel">총액 (원)</th>
+                <td>
+                  <input type="text" id="foodInputTotal" class="food-input-total" inputmode="numeric" autocomplete="off" />
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="food-input-actions">
+          <button type="button" class="food-input-add" id="foodInputAddRow" data-i18n="food.input.addRow">더 입력하기</button>
+          <button type="button" class="food-input-reset" id="foodInputReset" data-i18n="food.input.reset">초기화</button>
+          <button type="button" class="food-input-save" id="foodInputSave" data-i18n="food.input.save">저장하기</button>
+        </div>
+        <p class="food-input-hint" data-i18n-html="food.input.hint">저장은 이 브라우저에만 남고, 아래 표·달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.</p>
       </div>
-    </div>
-    <div class="carousel-dots" role="tablist" data-i18n-aria-key="carousel.tablist" aria-label="슬라이드 위치">
-      <button type="button" class="carousel-dot is-active" data-index="0" data-i18n-aria-key="carousel.dot1" aria-label="슬라이드 1"></button>
-      <button type="button" class="carousel-dot" data-index="1" data-i18n-aria-key="carousel.dot2" aria-label="슬라이드 2"></button>
-      <button type="button" class="carousel-dot" data-index="2" data-i18n-aria-key="carousel.dot3" aria-label="슬라이드 3"></button>
-      <button type="button" class="carousel-dot" data-index="3" data-i18n-aria-key="carousel.dot4" aria-label="슬라이드 4"></button>
-    </div>
-  </section>
 
-  <a class="food-banner" href="food.html" id="foodBannerLink" aria-labelledby="foodBannerTitle">
-    <span class="food-banner-inner">
-      <span class="food-banner-title" id="foodBannerTitle">
-        <span class="food-banner-title-main">
-          <span class="food-banner-ico" aria-hidden="true">🍱</span>
-          <span data-i18n="food.bannerTitle">먹방 가계부</span>
-        </span>
-        <span class="food-banner-arrow" aria-hidden="true">›</span>
-      </span>
-      <span class="food-banner-desc" data-i18n-html="food.bannerDesc">인스타에 적은 하루 총액을 여기에만 옮겨 적으면, 월·주·달력으로 합계가 정리돼요. (인스타에서 자동으로 가져오기는 어렵습니다.)</span>
-      <span class="food-banner-cta" data-i18n="food.bannerCta">가계부 열기 →</span>
-    </span>
-  </a>
+      <div class="food-summary-cards">
+        <div class="food-sum-card">
+          <div class="lbl" data-i18n="food.cardMonthPick">월 합계</div>
+          <div class="food-sum-picks">
+            <label>
+              <span data-i18n="food.pickYear">연도</span>
+              <select id="foodMonthPickYear" aria-describedby="foodMonthTotal"></select>
+            </label>
+            <label>
+              <span data-i18n="food.pickMonth">월</span>
+              <select id="foodMonthPickMonth" aria-describedby="foodMonthTotal"></select>
+            </label>
+          </div>
+          <div class="val" id="foodMonthTotal">—</div>
+          <div class="sub" id="foodMonthLabel">—</div>
+        </div>
+        <div class="food-sum-card">
+          <div class="lbl" data-i18n="food.cardWeekPick">주 합계 (ISO)</div>
+          <div class="food-sum-picks">
+            <label>
+              <span data-i18n="food.pickYear">연도</span>
+              <select id="foodWeekPickYear" aria-describedby="foodWeekTotal"></select>
+            </label>
+            <label>
+              <span data-i18n="food.pickWeek">주차</span>
+              <select id="foodWeekPickNum" aria-describedby="foodWeekTotal"></select>
+            </label>
+          </div>
+          <div class="val" id="foodWeekTotal">—</div>
+          <div class="sub" id="foodWeekLabel">—</div>
+        </div>
+      </div>
+      <div class="food-lists">
+        <div class="food-list-block">
+          <h3 data-i18n="food.tableMonthTitle">월별 합계</h3>
+          <div class="food-table-wrap">
+            <table class="food-table" id="foodTableMonth" aria-label="월별 지출 합계">
+              <thead><tr><th data-i18n="food.colPeriod">구간</th><th data-i18n="food.colTotal">합계</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="food-list-block">
+          <h3 data-i18n="food.tableWeekTitle">주차별 합계</h3>
+          <div class="food-table-wrap">
+            <table class="food-table" id="foodTableWeek" aria-label="주차별 지출 합계">
+              <thead><tr><th data-i18n="food.colPeriod">구간</th><th data-i18n="food.colTotal">합계</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="food-cal-nav">
+        <button type="button" id="foodCalPrev" data-i18n-aria-key="food.calPrev" aria-label="이전 달">‹</button>
+        <span id="foodCalTitle">2026년 5월</span>
+        <button type="button" id="foodCalNext" data-i18n-aria-key="food.calNext" aria-label="다음 달">›</button>
+      </div>
+      <div class="food-cal-weekdays" aria-hidden="true">
+        <span data-i18n="cal.sun">일</span><span data-i18n="cal.mon">월</span><span data-i18n="cal.tue">화</span><span data-i18n="cal.wed">수</span><span data-i18n="cal.thu">목</span><span data-i18n="cal.fri">금</span><span data-i18n="cal.sat">토</span>
+      </div>
+      <div class="food-cal-grid" id="foodCalGrid" role="grid"></div>
+      <div class="food-detail" id="foodDetailPanel" data-i18n="food.detailHint" aria-live="polite">날짜(숫자)를 누르면 그날 상세가 표시됩니다.</div>
+    </section>
+  </div>
 
   <div class="container">
     <a href="mailto:joshualiuniv@gmail.com" class="link-btn email">
@@ -1344,18 +1718,6 @@
           layout();
         });
 
-        var carouselHover = false;
-        carouselViewport.addEventListener('pointerenter', function () {
-          carouselHover = true;
-        });
-        carouselViewport.addEventListener('pointerleave', function () {
-          carouselHover = false;
-        });
-        setInterval(function () {
-          if (document.hidden || carouselHover || animLock) return;
-          goNext();
-        }, 10000);
-
         var sn = slideNodes();
         for (var si = 0; si < sn.length; si++) {
           emptyHrefCarousel(sn[si]);
@@ -1390,10 +1752,609 @@
           }
         });
       }
-      navJumpToSlide(document.getElementById('navKakao'), 1);
-      navJumpToSlide(document.getElementById('navYoutube'), 0);
+      navJumpToSlide(document.getElementById('navKakao'), 2);
+      navJumpToSlide(document.getElementById('navYoutube'), 3);
     })();
   </script>
+  <script>
+    (function () {
+      function parseISODate(iso) {
+        var p = iso.split('-');
+        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+      }
 
+      function isoWeekKey(d) {
+        var x = new Date(d.getTime());
+        x.setHours(0, 0, 0, 0);
+        x.setDate(x.getDate() + 3 - (x.getDay() + 6) % 7);
+        var weekYear = x.getFullYear();
+        var week1 = new Date(weekYear, 0, 4);
+        var w = 1 + Math.round(((x.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+        return weekYear + '-W' + String(w).padStart(2, '0');
+      }
+
+      function formatKRW(n) {
+        var loc = typeof window.babdodukGetLang === 'function' && window.babdodukGetLang() === 'en' ? 'en-US' : 'ko-KR';
+        return '₩' + Number(n).toLocaleString(loc);
+      }
+
+      function monthRowLabel(mk, lang) {
+        var mp = mk.split('-');
+        var y = parseInt(mp[0], 10);
+        var m = parseInt(mp[1], 10) - 1;
+        if (lang === 'en') {
+          return new Date(y, m).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        }
+        return mp[0] + '년 ' + (m + 1) + '월';
+      }
+
+      function calTitleString(y, m, lang) {
+        if (lang === 'en') {
+          return new Date(y, m).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        }
+        return y + '년 ' + (m + 1) + '월';
+      }
+
+      var MEAL_CODES = ['아침', '점심', '저녁', '간식', '야식', '기타'];
+      var MEAL_EN = {
+        아침: 'Breakfast',
+        점심: 'Lunch',
+        저녁: 'Dinner',
+        간식: 'Snack',
+        야식: 'Late night',
+        기타: 'Other'
+      };
+      function mealLabel(m, lang) {
+        if (lang !== 'en') return m;
+        return MEAL_EN[m] || m;
+      }
+
+      function fillMealSelectElement(sel, preferred) {
+        var v =
+          preferred ||
+          (sel.value && MEAL_CODES.indexOf(sel.value) >= 0 ? sel.value : MEAL_CODES[0]);
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        sel.innerHTML = '';
+        for (var mi = 0; mi < MEAL_CODES.length; mi++) {
+          var code = MEAL_CODES[mi];
+          var o = document.createElement('option');
+          o.value = code;
+          o.textContent = lang === 'en' ? MEAL_EN[code] || code : code;
+          sel.appendChild(o);
+        }
+        sel.value = MEAL_CODES.indexOf(v) >= 0 ? v : MEAL_CODES[0];
+      }
+
+      function monthKeyFromISO(iso) {
+        return iso.slice(0, 7);
+      }
+
+      var gridEl = document.getElementById('foodCalGrid');
+      var titleEl = document.getElementById('foodCalTitle');
+      var detailEl = document.getElementById('foodDetailPanel');
+      var monthTotalEl = document.getElementById('foodMonthTotal');
+      var monthLabelEl = document.getElementById('foodMonthLabel');
+      var weekTotalEl = document.getElementById('foodWeekTotal');
+      var weekLabelEl = document.getElementById('foodWeekLabel');
+      var tbMonth = document.querySelector('#foodTableMonth tbody');
+      var tbWeek = document.querySelector('#foodTableWeek tbody');
+      var foodInputBody = document.getElementById('foodInputBody');
+      var foodInputDate = document.getElementById('foodInputDate');
+      var foodInputTotal = document.getElementById('foodInputTotal');
+      var foodInputAddRow = document.getElementById('foodInputAddRow');
+      var foodInputReset = document.getElementById('foodInputReset');
+      var foodInputSave = document.getElementById('foodInputSave');
+      var foodMonthPickYear = document.getElementById('foodMonthPickYear');
+      var foodMonthPickMonth = document.getElementById('foodMonthPickMonth');
+      var foodWeekPickYear = document.getElementById('foodWeekPickYear');
+      var foodWeekPickNum = document.getElementById('foodWeekPickNum');
+
+      if (!gridEl || !detailEl) return;
+
+      window.__foodServerEntries = [];
+      var LOCAL_FOOD_KEY = 'babdoduk-food-local';
+
+      function loadLocalEntries() {
+        try {
+          var raw = localStorage.getItem(LOCAL_FOOD_KEY);
+          if (!raw) return [];
+          var j = JSON.parse(raw);
+          return Array.isArray(j) ? j : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveLocalEntries(list) {
+        try {
+          localStorage.setItem(LOCAL_FOOD_KEY, JSON.stringify(list));
+        } catch (e) {}
+      }
+
+      function mergeByDate(serverList, localList) {
+        var m = {};
+        var i, e;
+        for (i = 0; i < serverList.length; i++) {
+          e = serverList[i];
+          if (e && e.date) m[e.date] = e;
+        }
+        for (i = 0; i < localList.length; i++) {
+          e = localList[i];
+          if (e && e.date) m[e.date] = e;
+        }
+        return Object.keys(m)
+          .sort()
+          .map(function (k) {
+            return m[k];
+          });
+      }
+
+      var byDate = {};
+      var viewY = new Date().getFullYear();
+      var viewM = new Date().getMonth();
+      var allEntries = [];
+      var foodPicksBound = false;
+      var foodPicksReady = false;
+
+      function getYearRange() {
+        var y = {};
+        var cy = new Date().getFullYear();
+        y[cy - 1] = true;
+        y[cy] = true;
+        y[cy + 1] = true;
+        for (var ei = 0; ei < allEntries.length; ei++) {
+          var ent = allEntries[ei];
+          if (!ent || !ent.date) continue;
+          y[parseInt(ent.date.slice(0, 4), 10)] = true;
+          var iw = isoWeekKey(parseISODate(ent.date));
+          var pm = iw.match(/^(\d+)-W/);
+          if (pm) y[parseInt(pm[1], 10)] = true;
+        }
+        return Object.keys(y)
+          .map(Number)
+          .sort(function (a, b) {
+            return a - b;
+          });
+      }
+
+      function maxIsoWeekForWeekYear(isoY) {
+        var maxW = 0;
+        var start = new Date(isoY, 0, 1);
+        var end = new Date(isoY, 11, 31);
+        for (var t = start.getTime(); t <= end.getTime(); t += 86400000) {
+          var k = isoWeekKey(new Date(t));
+          var m = k.match(/^(\d+)-W(\d+)$/);
+          if (!m) continue;
+          if (parseInt(m[1], 10) === isoY) {
+            var w = parseInt(m[2], 10);
+            if (w > maxW) maxW = w;
+          }
+        }
+        return maxW || 52;
+      }
+
+      function refillWeekNumOptions(preferWeekNum) {
+        if (!foodWeekPickYear || !foodWeekPickNum) return;
+        var isoY = parseInt(foodWeekPickYear.value, 10);
+        if (isNaN(isoY)) return;
+        var maxW = maxIsoWeekForWeekYear(isoY);
+        var cur = parseInt(foodWeekPickNum.value, 10);
+        foodWeekPickNum.innerHTML = '';
+        for (var w = 1; w <= maxW; w++) {
+          var o = document.createElement('option');
+          o.value = String(w);
+          o.textContent = String(w);
+          foodWeekPickNum.appendChild(o);
+        }
+        if (preferWeekNum != null && preferWeekNum >= 1 && preferWeekNum <= maxW) {
+          foodWeekPickNum.value = String(preferWeekNum);
+        } else if (!isNaN(cur) && cur >= 1 && cur <= maxW) {
+          foodWeekPickNum.value = String(cur);
+        } else {
+          foodWeekPickNum.value = '1';
+        }
+      }
+
+      function updateSummaryCards(byMonth, byWeek) {
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        if (!foodMonthPickYear || !foodMonthPickMonth || !foodWeekPickYear || !foodWeekPickNum) return;
+        var cy = parseInt(foodMonthPickYear.value, 10);
+        var cm = parseInt(foodMonthPickMonth.value, 10);
+        var mk = cy + '-' + String(cm).padStart(2, '0');
+        monthTotalEl.textContent = byMonth[mk] != null ? formatKRW(byMonth[mk]) : '₩0';
+        monthLabelEl.textContent = monthRowLabel(mk, lang);
+
+        var wy = parseInt(foodWeekPickYear.value, 10);
+        var wn = parseInt(foodWeekPickNum.value, 10);
+        var wk = wy + '-W' + String(wn).padStart(2, '0');
+        weekTotalEl.textContent = byWeek[wk] != null ? formatKRW(byWeek[wk]) : '₩0';
+        weekLabelEl.textContent = lang === 'ko' ? wk + ' 기준' : wk + ' (ISO)';
+      }
+
+      function ensurePickControls(byMonth, byWeek) {
+        if (!foodMonthPickYear || !foodMonthPickMonth || !foodWeekPickYear || !foodWeekPickNum) {
+          return;
+        }
+        var years = getYearRange();
+        function fillYearSel(sel) {
+          var keep = sel.value;
+          sel.innerHTML = '';
+          for (var yi = 0; yi < years.length; yi++) {
+            var yr = years[yi];
+            var o = document.createElement('option');
+            o.value = String(yr);
+            o.textContent = String(yr);
+            sel.appendChild(o);
+          }
+          if (years.indexOf(parseInt(keep, 10)) >= 0) sel.value = keep;
+          else sel.value = String(years[years.length - 1]);
+        }
+        fillYearSel(foodMonthPickYear);
+        fillYearSel(foodWeekPickYear);
+        if (!foodPicksReady) {
+          foodMonthPickMonth.innerHTML = '';
+          for (var m = 1; m <= 12; m++) {
+            var om = document.createElement('option');
+            om.value = String(m);
+            om.textContent = String(m);
+            foodMonthPickMonth.appendChild(om);
+          }
+          var now = new Date();
+          foodMonthPickYear.value = String(now.getFullYear());
+          foodMonthPickMonth.value = String(now.getMonth() + 1);
+          var cwm = isoWeekKey(now).match(/^(\d+)-W(\d+)$/);
+          foodWeekPickYear.value = cwm ? cwm[1] : String(now.getFullYear());
+          refillWeekNumOptions(cwm ? parseInt(cwm[2], 10) : 1);
+          foodPicksReady = true;
+        } else {
+          refillWeekNumOptions(parseInt(foodWeekPickNum.value, 10));
+        }
+        if (!foodPicksBound) {
+          foodPicksBound = true;
+          foodMonthPickYear.addEventListener('change', function () {
+            var ag = aggregate(allEntries);
+            updateSummaryCards(ag.byMonth, ag.byWeek);
+          });
+          foodMonthPickMonth.addEventListener('change', function () {
+            var ag = aggregate(allEntries);
+            updateSummaryCards(ag.byMonth, ag.byWeek);
+          });
+          foodWeekPickYear.addEventListener('change', function () {
+            refillWeekNumOptions();
+            var ag = aggregate(allEntries);
+            updateSummaryCards(ag.byMonth, ag.byWeek);
+          });
+          foodWeekPickNum.addEventListener('change', function () {
+            var ag = aggregate(allEntries);
+            updateSummaryCards(ag.byMonth, ag.byWeek);
+          });
+        }
+        updateSummaryCards(byMonth, byWeek);
+      }
+
+      function aggregate(entries) {
+        byDate = {};
+        var byMonth = {};
+        var byWeek = {};
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          if (!e.date || typeof e.total !== 'number') continue;
+          byDate[e.date] = e;
+          var mk = monthKeyFromISO(e.date);
+          byMonth[mk] = (byMonth[mk] || 0) + e.total;
+          var wk = isoWeekKey(parseISODate(e.date));
+          byWeek[wk] = (byWeek[wk] || 0) + e.total;
+        }
+        return { byMonth: byMonth, byWeek: byWeek };
+      }
+
+      function renderTables(byMonth, byWeek) {
+        if (!tbMonth || !tbWeek) return;
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        tbMonth.innerHTML = '';
+        tbWeek.innerHTML = '';
+        var mk = Object.keys(byMonth).sort().reverse();
+        for (var i = 0; i < mk.length; i++) {
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + monthRowLabel(mk[i], lang) + '</td><td>' + formatKRW(byMonth[mk[i]]) + '</td>';
+          tbMonth.appendChild(tr);
+        }
+        var wk = Object.keys(byWeek).sort().reverse();
+        for (var j = 0; j < wk.length; j++) {
+          var tr2 = document.createElement('tr');
+          tr2.innerHTML = '<td>' + wk[j] + '</td><td>' + formatKRW(byWeek[wk[j]]) + '</td>';
+          tbWeek.appendChild(tr2);
+        }
+      }
+
+      function renderCalendar() {
+        var langFC = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        gridEl.innerHTML = '';
+        titleEl.textContent = calTitleString(viewY, viewM, langFC);
+        var first = new Date(viewY, viewM, 1);
+        var startPad = first.getDay();
+        var daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
+        var i;
+        for (i = 0; i < startPad; i++) {
+          var empty = document.createElement('div');
+          empty.className = 'food-cal-cell empty';
+          empty.setAttribute('aria-hidden', 'true');
+          gridEl.appendChild(empty);
+        }
+        for (var d = 1; d <= daysInMonth; d++) {
+          var iso = viewY + '-' + String(viewM + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+          var entry = byDate[iso];
+          var cell;
+          if (entry) {
+            cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'food-cal-cell has-data';
+            cell.setAttribute('role', 'gridcell');
+            var daySpan = document.createElement('span');
+            daySpan.className = 'd';
+            daySpan.textContent = String(d);
+            cell.appendChild(daySpan);
+            var amt = document.createElement('span');
+            amt.className = 'amt';
+            amt.textContent = formatKRW(entry.total);
+            cell.appendChild(amt);
+            cell.setAttribute('aria-label', iso + ' ' + formatKRW(entry.total));
+            (function (ent, dateStr) {
+              cell.addEventListener('click', function () {
+                showDetail(ent, dateStr);
+              });
+            })(entry, iso);
+          } else {
+            cell = document.createElement('div');
+            cell.className = 'food-cal-cell';
+            cell.setAttribute('role', 'gridcell');
+            var daySpan2 = document.createElement('span');
+            daySpan2.className = 'd';
+            daySpan2.textContent = String(d);
+            cell.appendChild(daySpan2);
+          }
+          gridEl.appendChild(cell);
+        }
+      }
+
+      function showDetail(entry, iso) {
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        var sumWord = lang === 'en' ? 'Total' : '합계';
+        var lines = '<strong>' + iso + '</strong> · ' + sumWord + ' ' + formatKRW(entry.total);
+        if (entry.note) lines += '<br /><span style="color:#86868b;font-size:0.9em">' + escapeHtml(entry.note) + '</span>';
+        if (entry.items && entry.items.length) {
+          lines += '<ul>';
+          for (var i = 0; i < entry.items.length; i++) {
+            var it = entry.items[i];
+            lines +=
+              '<li>' +
+              escapeHtml(mealLabel(it.meal || '', lang)) +
+              (it.label ? ' · ' + escapeHtml(it.label) : '') +
+              ' — ' +
+              formatKRW(it.amount != null ? it.amount : 0) +
+              '</li>';
+          }
+          lines += '</ul>';
+        }
+        detailEl.innerHTML = lines;
+      }
+
+      function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function applyMergedEntries() {
+        var server = window.__foodServerEntries || [];
+        allEntries = mergeByDate(server, loadLocalEntries());
+        allEntries.sort(function (a, b) {
+          return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+        });
+        if (allEntries.length) {
+          var last = allEntries[allEntries.length - 1].date;
+          var lp = last.split('-');
+          viewY = parseInt(lp[0], 10);
+          viewM = parseInt(lp[1], 10) - 1;
+        }
+        var ag = aggregate(allEntries);
+        renderTables(ag.byMonth, ag.byWeek);
+        ensurePickControls(ag.byMonth, ag.byWeek);
+        renderCalendar();
+      }
+
+      document.getElementById('foodCalPrev').addEventListener('click', function () {
+        viewM--;
+        if (viewM < 0) {
+          viewM = 11;
+          viewY--;
+        }
+        renderCalendar();
+      });
+      document.getElementById('foodCalNext').addEventListener('click', function () {
+        viewM++;
+        if (viewM > 11) {
+          viewM = 0;
+          viewY++;
+        }
+        renderCalendar();
+      });
+
+      if (foodInputBody && foodInputDate && foodInputTotal && foodInputAddRow && foodInputReset && foodInputSave) {
+        var totalManual = false;
+
+        function todayISO() {
+          var n = new Date();
+          return (
+            n.getFullYear() +
+            '-' +
+            String(n.getMonth() + 1).padStart(2, '0') +
+            '-' +
+            String(n.getDate()).padStart(2, '0')
+          );
+        }
+
+        function newRow() {
+          var tr = document.createElement('tr');
+          var tdM = document.createElement('td');
+          var tdP = document.createElement('td');
+          var sel = document.createElement('select');
+          sel.className = 'food-in-meal';
+          sel.required = true;
+          fillMealSelectElement(sel, MEAL_CODES[0]);
+          var inp = document.createElement('input');
+          inp.type = 'number';
+          inp.className = 'food-in-price';
+          inp.min = 0;
+          inp.step = 1;
+          inp.placeholder = '0';
+          tdM.appendChild(sel);
+          tdP.appendChild(inp);
+          tr.appendChild(tdM);
+          tr.appendChild(tdP);
+          return tr;
+        }
+
+        function sumPricesFromInputs() {
+          var sum = 0;
+          foodInputBody.querySelectorAll('.food-in-price').forEach(function (inp) {
+            var v = parseInt(String(inp.value).replace(/\D/g, ''), 10);
+            if (!isNaN(v)) sum += v;
+          });
+          return sum;
+        }
+
+        function syncTotalFromLines() {
+          if (!totalManual) foodInputTotal.value = String(sumPricesFromInputs());
+        }
+
+        function resetForm() {
+          foodInputBody.innerHTML = '';
+          var r;
+          for (r = 0; r < 5; r++) foodInputBody.appendChild(newRow());
+          foodInputDate.value = todayISO();
+          totalManual = false;
+          foodInputTotal.value = '0';
+        }
+
+        foodInputBody.addEventListener('input', function (ev) {
+          var t = ev.target;
+          if (t.classList && t.classList.contains('food-in-price')) syncTotalFromLines();
+        });
+
+        foodInputTotal.addEventListener('input', function () {
+          totalManual = true;
+        });
+        foodInputTotal.addEventListener('blur', function () {
+          if (foodInputTotal.value.trim() === '') {
+            totalManual = false;
+            syncTotalFromLines();
+          }
+        });
+
+        foodInputAddRow.addEventListener('click', function () {
+          foodInputBody.appendChild(newRow());
+        });
+
+        foodInputReset.addEventListener('click', function () {
+          resetForm();
+        });
+
+        foodInputSave.addEventListener('click', function () {
+          var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+          var T = window.BABDODUK_STR && window.BABDODUK_STR[lang];
+          var date = foodInputDate.value;
+          if (!date) {
+            detailEl.innerHTML =
+              '<span class="food-err">' +
+              (T && T['food.input.errNoDate'] ? escapeHtml(T['food.input.errNoDate']) : '') +
+              '</span>';
+            return;
+          }
+          var items = [];
+          var itemSum = 0;
+          var rows = foodInputBody.querySelectorAll('tr');
+          var ix;
+          for (ix = 0; ix < rows.length; ix++) {
+            var mealEl = rows[ix].querySelector('.food-in-meal');
+            var priceIn = rows[ix].querySelector('.food-in-price');
+            if (!mealEl || !priceIn) continue;
+            if (priceIn.value.trim() === '') continue;
+            var mealV = mealEl.value || '?';
+            var priceV = parseInt(String(priceIn.value).replace(/\D/g, ''), 10);
+            var hasPrice = !isNaN(priceV) && priceIn.value.trim() !== '';
+            if (!hasPrice) continue;
+            var amt = !isNaN(priceV) ? priceV : 0;
+            itemSum += amt;
+            items.push({ meal: mealV, label: '', amount: amt });
+          }
+          var rawTot = String(foodInputTotal.value).replace(/\D/g, '');
+          var parsedTotal = rawTot === '' ? NaN : parseInt(rawTot, 10);
+          var total;
+          if (totalManual && !isNaN(parsedTotal)) total = parsedTotal;
+          else if (items.length) total = itemSum;
+          else if (!isNaN(parsedTotal)) total = parsedTotal;
+          else total = 0;
+
+          if (items.length === 0 && (!total || total === 0)) {
+            detailEl.innerHTML =
+              '<span class="food-err">' +
+              (T && T['food.input.errEmpty'] ? escapeHtml(T['food.input.errEmpty']) : '') +
+              '</span>';
+            return;
+          }
+
+          var loc = loadLocalEntries().filter(function (e) {
+            return e.date !== date;
+          });
+          loc.push({ date: date, total: total, items: items });
+          loc.sort(function (a, b) {
+            return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+          });
+          saveLocalEntries(loc);
+          totalManual = false;
+          applyMergedEntries();
+          detailEl.textContent = (T && T['food.input.saved']) || '';
+          resetForm();
+        });
+
+        resetForm();
+      }
+
+      fetch('data/food-log.json')
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          window.__foodServerEntries = (data.entries || []).slice();
+          applyMergedEntries();
+        })
+        .catch(function () {
+          window.__foodServerEntries = [];
+          applyMergedEntries();
+          if (!allEntries.length) {
+            var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+            var T2 = window.BABDODUK_STR && window.BABDODUK_STR[lang];
+            detailEl.innerHTML =
+              '<span class="food-err">' + (T2 && T2['food.fetchErr'] ? T2['food.fetchErr'] : '') + '</span>';
+          } else if (typeof window.babdodukApplyLang === 'function') {
+            window.babdodukApplyLang(window.babdodukGetLang());
+          }
+        });
+
+      window.addEventListener('babdoduk-langchange', function () {
+        if (!gridEl || !detailEl) return;
+        document.querySelectorAll('#foodInputBody select.food-in-meal').forEach(function (sel) {
+          fillMealSelectElement(sel, sel.value);
+        });
+        var ag = aggregate(allEntries);
+        renderTables(ag.byMonth, ag.byWeek);
+        updateSummaryCards(ag.byMonth, ag.byWeek);
+        renderCalendar();
+      });
+    })();
+  </script>
 </body>
 </html>
