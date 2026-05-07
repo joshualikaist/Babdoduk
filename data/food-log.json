@@ -1,0 +1,15 @@
+{
+  "currency": "KRW",
+  "entries": [
+    {
+      "date": "2026-05-06",
+      "total": 16333,
+      "note": "Wednesday's food corner",
+      "items": [
+        { "meal": "점심", "label": "기계과 도시락+커피 후원 (감사합니다)", "amount": 0 },
+        { "meal": "저녁", "label": "더블치즈돈까스+웰치스 (내돈내산)", "amount": 9200 },
+        { "meal": "야식", "label": "페페로니 피자 (N빵)", "amount": 7133 }
+      ]
+    }
+  ]
+}

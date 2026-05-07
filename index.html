@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>밥도둑 Babdoduk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      color: #1d1d1f;
+      overflow-x: hidden;
+      padding: 64px 0 72px;
+      position: relative;
+      background: #fbfbfd;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
+    }
+
+    /* ── 스크롤 진행 바 ── */
+    .scroll-progress-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      z-index: 10002;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* ── 상단 고정 배너 (연핑크 · 애플 스타일) ── */
+    .site-nav {
+      position: fixed;
+      top: 3px;
+      left: 0;
+      right: 0;
+      z-index: 10001;
+      background: rgba(255, 245, 248, 0.88);
+      -webkit-backdrop-filter: saturate(180%) blur(16px);
+      backdrop-filter: saturate(180%) blur(16px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    }
+
+    .site-nav-inner {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      gap: 4px;
+      padding: 8px 12px;
+      min-height: 44px;
+      flex-wrap: nowrap;
+    }
+
+    /* ZIP(일러스트 템플릿)에 웹폰트 파일이 없어, Y2K 홀로 느낌은 CSS 그라데이션으로 구현 */
+    .site-nav-wordmark {
+      flex: 0 1 auto;
+      font-weight: 900;
+      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+      font-size: clamp(0.78rem, 3.2vw, 1rem);
+      letter-spacing: -0.05em;
+      line-height: 1;
+      text-decoration: none;
+      white-space: nowrap;
+      background: linear-gradient(
+        110deg,
+        #6366f1 0%,
+        #a855f7 18%,
+        #ec4899 36%,
+        #06b6d4 55%,
+        #8b5cf6 72%,
+        #db2777 100%
+      );
+      background-size: 260% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: wordmark-holo 6s ease-in-out infinite;
+    }
+
+    @keyframes wordmark-holo {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .site-nav-wordmark:hover {
+      filter: brightness(1.08);
+    }
+
+    .site-nav-item {
+      flex: 0 1 auto;
+      font-size: clamp(0.62rem, 2.4vw, 0.72rem);
+      font-weight: 600;
+      color: #1d1d1f;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      opacity: 0.88;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .site-nav-item:hover {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .site-nav-lang {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+    }
+
+    .scroll-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.35);
+      transition: width 0.08s ease-out;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .profile--hero {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 8px 16px 6px;
+    }
+
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .chip {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      color: #6e6e73;
+    }
+
+    .chip--tagline {
+      letter-spacing: 0.02em;
+      text-transform: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      max-width: 100%;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, #f472b6, #a855f7, #6366f1);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 12px 40px rgba(99, 102, 241, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #ffffff;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .avatar-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .title {
+      font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      text-align: center;
+      color: #1d1d1f;
+    }
+
+    .title .title-en {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 0.84rem;
+      font-weight: 400;
+      color: #86868b;
+      text-align: center;
+      line-height: 1.55;
+      max-width: 300px;
+    }
+
+    .link-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 17px 22px;
+      border-radius: 18px;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1d1d1f;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s ease, border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .link-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 0, 0, 0.12);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    }
+
+    .link-btn:active {
+      transform: scale(0.99);
+    }
+
+    .link-btn .icon {
+      font-size: 1.45rem;
+      flex-shrink: 0;
+      width: 38px;
+      text-align: center;
+    }
+
+    .link-btn .text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .link-btn .text .label {
+      display: block;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .link-btn .text .desc {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 400;
+      color: #86868b;
+      margin-top: 3px;
+    }
+
+    .link-btn .arrow {
+      font-size: 1.1rem;
+      color: #aeaeb2;
+    }
+
+    .link-btn.instagram { border-left: 3px solid #e11d48; }
+    .link-btn.youtube   { border-left: 3px solid #dc2626; }
+    .link-btn.blog      { border-left: 3px solid #16a34a; }
+    .link-btn.kakao     { border-left: 3px solid #ca8a04; }
+    .link-btn.email     { border-left: 3px solid #2563eb; }
+    .link-btn.map       { border-left: 3px solid #03c75a; }
+    .link-btn.default   { border-left: 3px solid #d2d2d7; }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.08), transparent);
+      margin: 6px 0;
+    }
+
+    .footer {
+      margin-top: 28px;
+      font-size: 0.72rem;
+      color: #aeaeb2;
+      text-align: center;
+    }
+
+    /* ── 먹방 가계부 (일일 Total → 월/주 집계 + 달력) ── */
+    .food-tracker-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      padding: 0 16px;
+      margin: 0 auto 1.25rem;
+      max-width: 520px;
+    }
+
+    .food-tracker {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 18px;
+      padding: 18px 16px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .food-tracker-heading {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #1d1d1f;
+      margin-bottom: 6px;
+    }
+
+    .food-tracker-note {
+      font-size: 0.72rem;
+      color: #86868b;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .food-summary-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .food-sum-card {
+      background: #fef5f8;
+      border: 1px solid rgba(236, 72, 153, 0.15);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .food-sum-card .lbl {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #86868b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .food-sum-card .val {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #1d1d1f;
+      letter-spacing: -0.02em;
+    }
+
+    .food-sum-card .sub {
+      font-size: 0.65rem;
+      color: #aeaeb2;
+      margin-top: 4px;
+    }
+
+    .food-lists {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .food-list-block h3 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #424245;
+      margin-bottom: 8px;
+    }
+
+    .food-table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .food-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+    }
+
+    .food-table th,
+    .food-table td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .food-table th {
+      background: rgba(0, 0, 0, 0.03);
+      font-weight: 600;
+      color: #6e6e73;
+      white-space: nowrap;
+    }
+
+    .food-table td:last-child {
+      text-align: right;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .food-cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .food-cal-nav button {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.05);
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: #1d1d1f;
+      line-height: 1;
+    }
+
+    .food-cal-nav button:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .food-cal-nav span {
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .food-cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 4px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #aeaeb2;
+      text-align: center;
+    }
+
+    .food-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .food-cal-cell {
+      aspect-ratio: 1;
+      max-height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      cursor: default;
+      padding: 2px;
+    }
+
+    .food-cal-cell.empty {
+      border: none;
+      background: transparent;
+    }
+
+    .food-cal-cell.has-data {
+      background: #fff5f7;
+      border-color: rgba(236, 72, 153, 0.25);
+      cursor: pointer;
+    }
+
+    .food-cal-cell.has-data:hover {
+      border-color: rgba(236, 72, 153, 0.5);
+    }
+
+    .food-cal-cell .d {
+      font-weight: 800;
+      color: #1d1d1f;
+      font-size: 0.72rem;
+    }
+
+    .food-cal-cell .amt {
+      font-size: 0.58rem;
+      color: #ec4899;
+      font-weight: 700;
+      line-height: 1.1;
+      text-align: center;
+      word-break: keep-all;
+    }
+
+    .food-detail {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #424245;
+      line-height: 1.55;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 12px;
+      min-height: 3.2em;
+    }
+
+    .food-detail strong {
+      display: block;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .food-detail ul {
+      margin: 0;
+      padding-left: 1.1em;
+    }
+
+    .food-err {
+      font-size: 0.78rem;
+      color: #dc2626;
+    }
+
+    /* ── 풀스크린 가로 캐러셀 (Apple TV 스타일) ── */
+    .hero-carousel {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    .carousel-scroller {
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      outline: none;
+    }
+
+    .carousel-scroller::-webkit-scrollbar {
+      display: none;
+    }
+
+    .carousel-track {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+      padding: 8px max(12px, calc(50vw - min(44vw, 200px))) 14px;
+    }
+
+    .carousel-slide {
+      position: relative;
+      flex: 0 0 min(88vw, 400px);
+      width: min(88vw, 400px);
+      height: min(38vh, 300px);
+      max-height: 300px;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      color: #fff;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .slide-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transform: scale(1.02);
+      transition: transform 0.6s ease;
+    }
+
+    .carousel-slide:hover .slide-bg {
+      transform: scale(1.06);
+    }
+
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.75) 0%,
+        rgba(0, 0, 0, 0.25) 42%,
+        rgba(0, 0, 0, 0.15) 100%
+      );
+      pointer-events: none;
+    }
+
+    .slide-copy {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.25rem 1.25rem;
+      text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .slide-eyebrow {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.85;
+      margin-bottom: 0.45rem;
+    }
+
+    .slide-title {
+      font-size: clamp(1.2rem, 3.8vw, 1.55rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 0.35rem;
+    }
+
+    .slide-desc {
+      font-size: clamp(0.72rem, 2.2vw, 0.85rem);
+      font-weight: 500;
+      opacity: 0.9;
+      max-width: 16rem;
+      line-height: 1.45;
+    }
+
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px 8px;
+    }
+
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: #d2d2d7;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .carousel-dot:hover {
+      transform: scale(1.15);
+      background: #aeaeb2;
+    }
+
+    .carousel-dot.is-active {
+      background: #1d1d1f;
+      transform: scale(1.2);
+    }
+
+    @media (max-width: 480px) {
+      .carousel-slide {
+        height: min(34vh, 260px);
+        max-height: 260px;
+      }
+
+      .carousel-track {
+        gap: 8px;
+      }
+    }
+
+    /* ── 팝업 ── */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10050;
+      background: rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s;
+    }
+
+    .popup-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .popup-box {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 24px;
+      padding: 28px 26px 22px;
+      background: linear-gradient(165deg, rgba(30, 30, 42, 0.95) 0%, rgba(12, 12, 20, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 32px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+
+    .popup-overlay.is-open .popup-box {
+      transform: scale(1) translateY(0);
+    }
+
+    .popup-box h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #fff, #c4b5fd);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .popup-box p {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 18px;
+    }
+
+    .popup-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .popup-btn {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .popup-btn.primary {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      color: #fff;
+      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45);
+    }
+
+    .popup-btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .popup-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .popup-dont-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .popup-dont {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 0;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .popup-dont input {
+      accent-color: #a855f7;
+      width: 16px;
+      height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+  </div>
+
+  <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
+    <div class="popup-box" role="dialog" aria-labelledby="popupTitle" aria-modal="true">
+      <h2 id="popupTitle" data-i18n="popup.title">밥도둑에 오신 걸 환영해요</h2>
+      <p id="popupIntro" data-i18n-html="popup.body">인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.</p>
+      <div class="popup-actions">
+        <button type="button" class="popup-btn primary" id="popupCloseBtn" data-i18n="popup.start">시작하기</button>
+      </div>
+      <div class="popup-dont-list">
+        <label class="popup-dont">
+          <input type="checkbox" id="popupDontToday" />
+          <span data-i18n="popup.snoozeToday">오늘 다시 보지 않기</span>
+        </label>
+        <label class="popup-dont">
+          <input type="checkbox" id="popupDontPermanent" />
+          <span data-i18n="popup.snoozeForever">다시 보지 않기</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-nav" role="banner">
+    <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
+      <a href="#" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <a class="site-nav-item" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
+      <a class="site-nav-item" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+      <a href="#" class="site-nav-item" id="navKakao" data-i18n="nav.kakao">카카오톡</a>
+      <a href="#" class="site-nav-item" id="navYoutube" data-i18n="nav.youtube">유튜브</a>
+      <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
+    </div>
+  </header>
+
+  <section class="profile profile--hero">
+    <div class="badge-row">
+      <span class="chip chip--tagline">🍚 = World = 🌎</span>
+    </div>
+    <div class="avatar">
+      <div class="avatar-inner">
+        <!-- 인스타 프로필 사진 (images/profile-instagram.jpg) — 만료 시 프로필 페이지 og:image 로 갱신 가능 -->
+        <img id="profileAvatarImg" src="images/profile-instagram.jpg" alt="밥도둑 Babdoduk 프로필" width="76" height="76" loading="eager" decoding="async" />
+      </div>
+    </div>
+    <h1 class="title" id="profileTitle" data-i18n-html="profile.titleHtml">밥도둑 <span class="title-en">Babdoduk</span></h1>
+    <p class="subtitle" data-i18n="profile.subtitle">카이스트 기계과 먹방1티어 학생의 먹방일기</p>
+  </section>
+
+  <!--
+    사진 넣기: 각 .slide-bg 의 style 에
+    background-image: url('images/인스타.jpg'), linear-gradient(...);
+    처럼 url()을 맨 앞에 두면 사진이 우선됩니다. (폴더는 예시 — 원하는 경로로 변경)
+  -->
+  <section class="hero-carousel" id="heroCarousel" aria-label="밥도둑 주요 링크">
+    <div class="carousel-scroller" id="carouselScroller" tabindex="0">
+      <div class="carousel-track">
+        <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="0">
+          <div class="slide-bg" style="background-image: linear-gradient(145deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);"></div>
+          <div class="slide-overlay"></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">Instagram</span>
+            <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
+            <p class="slide-desc" data-i18n="slide.insta.desc">@babdodukms · 일상과 레시피를 만나 보세요</p>
+          </div>
+        </a>
+        <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="1">
+          <div class="slide-bg" style="background-image: linear-gradient(145deg, #059669 0%, #0d9488 45%, #0891b2 100%);"></div>
+          <div class="slide-overlay"></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">Map</span>
+            <h2 class="slide-title" data-i18n="slide.map.title">밥도둑의 맛집 지도</h2>
+            <p class="slide-desc" data-i18n="slide.map.desc">네이버 지도에서 정리한 맛집 리스트</p>
+          </div>
+        </a>
+        <!-- 카카오톡 채널 주소로 href 를 바꾸세요 (예: https://pf.kakao.com/_xxxxx) -->
+        <a class="carousel-slide" href="#" data-slide="2" id="slideKakao">
+          <div class="slide-bg" style="background-image: linear-gradient(145deg, #f59e0b 0%, #ea580c 50%, #ca8a04 100%);"></div>
+          <div class="slide-overlay"></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">KakaoTalk</span>
+            <h2 class="slide-title" data-i18n="slide.kakao.title">카카오톡 문의 채널</h2>
+            <p class="slide-desc" data-i18n="slide.kakao.desc">채널에서 편하게 문의해 주세요</p>
+          </div>
+        </a>
+        <!-- 유튜브 채널 URL 로 href 를 바꾸세요 -->
+        <a class="carousel-slide" href="#" data-slide="3" id="slideYoutube">
+          <div class="slide-bg" style="background-image: linear-gradient(145deg, #dc2626 0%, #991b1b 40%, #7f1d1d 100%);"></div>
+          <div class="slide-overlay"></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">YouTube</span>
+            <h2 class="slide-title" data-i18n="slide.yt.title">유튜브</h2>
+            <p class="slide-desc" data-i18n="slide.yt.desc">영상으로 밥도둑을 만나 보세요</p>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="carousel-dots" role="tablist" data-i18n-aria-key="carousel.tablist" aria-label="슬라이드 위치">
+      <button type="button" class="carousel-dot is-active" data-index="0" data-i18n-aria-key="carousel.dot1" aria-label="슬라이드 1"></button>
+      <button type="button" class="carousel-dot" data-index="1" data-i18n-aria-key="carousel.dot2" aria-label="슬라이드 2"></button>
+      <button type="button" class="carousel-dot" data-index="2" data-i18n-aria-key="carousel.dot3" aria-label="슬라이드 3"></button>
+      <button type="button" class="carousel-dot" data-index="3" data-i18n-aria-key="carousel.dot4" aria-label="슬라이드 4"></button>
+    </div>
+  </section>
+
+  <div class="food-tracker-wrap">
+    <section class="food-tracker" id="foodTracker" aria-labelledby="foodTrackerTitle">
+      <h2 id="foodTrackerTitle" class="food-tracker-heading" data-i18n="food.heading">먹방 가계부</h2>
+      <p class="food-tracker-note" data-i18n-html="food.note">인스타에 적은 일일 <strong>Total</strong>을 여기 JSON에 옮기면, 월·주·달력으로 자동 집계됩니다. (인스타 API로 자동 수집은 불가에 가깝습니다.)</p>
+      <div class="food-summary-cards">
+        <div class="food-sum-card">
+          <div class="lbl" data-i18n="food.cardMonth">이번 달 합계</div>
+          <div class="val" id="foodMonthTotal">—</div>
+          <div class="sub" id="foodMonthLabel">—</div>
+        </div>
+        <div class="food-sum-card">
+          <div class="lbl" data-i18n="food.cardWeek">이번 주 합계 (ISO 주차)</div>
+          <div class="val" id="foodWeekTotal">—</div>
+          <div class="sub" id="foodWeekLabel">—</div>
+        </div>
+      </div>
+      <div class="food-lists">
+        <div class="food-list-block">
+          <h3 data-i18n="food.tableMonthTitle">월별 합계</h3>
+          <div class="food-table-wrap">
+            <table class="food-table" id="foodTableMonth" aria-label="월별 지출 합계">
+              <thead><tr><th data-i18n="food.colPeriod">구간</th><th data-i18n="food.colTotal">합계</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="food-list-block">
+          <h3 data-i18n="food.tableWeekTitle">주차별 합계</h3>
+          <div class="food-table-wrap">
+            <table class="food-table" id="foodTableWeek" aria-label="주차별 지출 합계">
+              <thead><tr><th data-i18n="food.colPeriod">구간</th><th data-i18n="food.colTotal">합계</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="food-cal-nav">
+        <button type="button" id="foodCalPrev" data-i18n-aria-key="food.calPrev" aria-label="이전 달">‹</button>
+        <span id="foodCalTitle">2026년 5월</span>
+        <button type="button" id="foodCalNext" data-i18n-aria-key="food.calNext" aria-label="다음 달">›</button>
+      </div>
+      <div class="food-cal-weekdays" aria-hidden="true">
+        <span data-i18n="cal.sun">일</span><span data-i18n="cal.mon">월</span><span data-i18n="cal.tue">화</span><span data-i18n="cal.wed">수</span><span data-i18n="cal.thu">목</span><span data-i18n="cal.fri">금</span><span data-i18n="cal.sat">토</span>
+      </div>
+      <div class="food-cal-grid" id="foodCalGrid" role="grid"></div>
+      <div class="food-detail" id="foodDetailPanel" data-i18n="food.detailHint" aria-live="polite">날짜(숫자)를 누르면 그날 상세가 표시됩니다.</div>
+    </section>
+  </div>
+
+  <div class="container">
+    <a href="mailto:joshualiuniv@gmail.com" class="link-btn email">
+      <span class="icon">✉️</span>
+      <span class="text">
+        <span class="label" data-i18n="link.mail.label">문의 메일</span>
+        <span class="desc">joshualiuniv@gmail.com</span>
+      </span>
+      <span class="arrow">›</span>
+    </a>
+
+    <a href="#" class="link-btn blog">
+      <span class="icon">📝</span>
+      <span class="text">
+        <span class="label" data-i18n="link.blog.label">블로그</span>
+        <span class="desc" data-i18n="link.blog.desc">레시피 & 맛집 정보</span>
+      </span>
+      <span class="arrow">›</span>
+    </a>
+
+    <p class="footer" data-i18n="footer.copy">© 2026 밥도둑 · Babdoduk</p>
+  </div>
+
+  <script>
+    (function () {
+      var STR = {
+        ko: {
+          docTitle: '밥도둑 Babdoduk',
+          'a11y.scrollProgress': '페이지 스크롤 진행',
+          'nav.navAria': '주요 메뉴',
+          'nav.homeAria': '맨 위로',
+          'nav.instagram': '인스타그램',
+          'nav.map': '맛집 지도',
+          'nav.kakao': '카카오톡',
+          'nav.youtube': '유튜브',
+          'nav.langBtn': '언어 (EN)',
+          'nav.langAria': '영어로 전환',
+          'popup.title': '밥도둑에 오신 걸 환영해요',
+          'popup.body':
+            '인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.',
+          'popup.start': '시작하기',
+          'popup.snoozeToday': '오늘 다시 보지 않기',
+          'popup.snoozeForever': '다시 보지 않기',
+          'profile.imgAlt': '밥도둑 Babdoduk 프로필',
+          'profile.titleHtml': '밥도둑 <span class="title-en">Babdoduk</span>',
+          'profile.subtitle': '카이스트 기계과 먹방1티어 학생의 먹방일기',
+          'carousel.section': '밥도둑 주요 링크',
+          'carousel.tablist': '슬라이드 위치',
+          'carousel.dot1': '슬라이드 1',
+          'carousel.dot2': '슬라이드 2',
+          'carousel.dot3': '슬라이드 3',
+          'carousel.dot4': '슬라이드 4',
+          'slide.insta.title': '밥도둑 인스타그램',
+          'slide.insta.desc': '@babdodukms · 일상과 레시피를 만나 보세요',
+          'slide.map.title': '밥도둑의 맛집 지도',
+          'slide.map.desc': '네이버 지도에서 정리한 맛집 리스트',
+          'slide.kakao.title': '카카오톡 문의 채널',
+          'slide.kakao.desc': '채널에서 편하게 문의해 주세요',
+          'slide.yt.title': '유튜브',
+          'slide.yt.desc': '영상으로 밥도둑을 만나 보세요',
+          'food.heading': '먹방 가계부',
+          'food.note':
+            '인스타에 적은 일일 <strong>Total</strong>을 여기 JSON에 옮기면, 월·주·달력으로 자동 집계됩니다. (인스타 API로 자동 수집은 불가에 가깝습니다.)',
+          'food.cardMonth': '이번 달 합계',
+          'food.cardWeek': '이번 주 합계 (ISO 주차)',
+          'food.tableMonthTitle': '월별 합계',
+          'food.tableWeekTitle': '주차별 합계',
+          'food.colPeriod': '구간',
+          'food.colTotal': '합계',
+          'food.calPrev': '이전 달',
+          'food.calNext': '다음 달',
+          'cal.sun': '일',
+          'cal.mon': '월',
+          'cal.tue': '화',
+          'cal.wed': '수',
+          'cal.thu': '목',
+          'cal.fri': '금',
+          'cal.sat': '토',
+          'food.detailHint': '날짜(숫자)를 누르면 그날 상세가 표시됩니다.',
+          'food.fetchErr':
+            '가계부 데이터를 불러오지 못했습니다. 로컬에서는 Live Server나 Vercel로 열어 주세요. 파일은 <code>data/food-log.json</code> 입니다.',
+          'food.tableMonthAria': '월별 지출 합계',
+          'food.tableWeekAria': '주차별 지출 합계',
+          'link.mail.label': '문의 메일',
+          'link.blog.label': '블로그',
+          'link.blog.desc': '레시피 & 맛집 정보',
+          'footer.copy': '© 2026 밥도둑 · Babdoduk'
+        },
+        en: {
+          docTitle: 'Babdoduk',
+          'a11y.scrollProgress': 'Page scroll progress',
+          'nav.navAria': 'Main menu',
+          'nav.homeAria': 'Back to top',
+          'nav.instagram': 'Instagram',
+          'nav.map': 'Food map',
+          'nav.kakao': 'KakaoTalk',
+          'nav.youtube': 'YouTube',
+          'nav.langBtn': '한국어',
+          'nav.langAria': 'Switch to Korean',
+          'popup.title': 'Welcome to Babdoduk',
+          'popup.body':
+            'Find recipes and daily life on Instagram and the food map. Use the links below to jump in.',
+          'popup.start': 'Start',
+          'popup.snoozeToday': "Don't show again today",
+          'popup.snoozeForever': "Don't show again",
+          'profile.imgAlt': 'Babdoduk profile photo',
+          'profile.titleHtml': '<span class="title-en">Babdoduk</span>',
+          'profile.subtitle':
+            'Food diary of a KAIST Mechanical Engineering student (mukbang tier 1).',
+          'carousel.section': 'Main links',
+          'carousel.tablist': 'Slide position',
+          'carousel.dot1': 'Slide 1',
+          'carousel.dot2': 'Slide 2',
+          'carousel.dot3': 'Slide 3',
+          'carousel.dot4': 'Slide 4',
+          'slide.insta.title': 'Babdoduk on Instagram',
+          'slide.insta.desc': '@babdodukms · Daily life and recipes',
+          'slide.map.title': 'Babdoduk food map',
+          'slide.map.desc': 'Restaurant list on Naver Map',
+          'slide.kakao.title': 'KakaoTalk channel',
+          'slide.kakao.desc': 'Message us on the channel',
+          'slide.yt.title': 'YouTube',
+          'slide.yt.desc': 'Watch Babdoduk on video',
+          'food.heading': 'Food expense log',
+          'food.note':
+            'Copy each day’s Instagram <strong>Total</strong> into the JSON file to see monthly, weekly, and calendar views. (Auto-import from Instagram is not realistic without a private API.)',
+          'food.cardMonth': 'This month',
+          'food.cardWeek': 'This week (ISO)',
+          'food.tableMonthTitle': 'By month',
+          'food.tableWeekTitle': 'By ISO week',
+          'food.colPeriod': 'Period',
+          'food.colTotal': 'Total',
+          'food.calPrev': 'Previous month',
+          'food.calNext': 'Next month',
+          'cal.sun': 'Su',
+          'cal.mon': 'Mo',
+          'cal.tue': 'Tu',
+          'cal.wed': 'We',
+          'cal.thu': 'Th',
+          'cal.fri': 'Fr',
+          'cal.sat': 'Sa',
+          'food.detailHint': 'Tap a date with a total to see details.',
+          'food.fetchErr':
+            'Could not load expense data. Open the site via Live Server or Vercel (not file://). File: <code>data/food-log.json</code>.',
+          'food.tableMonthAria': 'Totals by month',
+          'food.tableWeekAria': 'Totals by ISO week',
+          'link.mail.label': 'Email',
+          'link.blog.label': 'Blog',
+          'link.blog.desc': 'Recipes & food spots',
+          'footer.copy': '© 2026 Babdoduk'
+        }
+      };
+
+      window.BABDODUK_STR = STR;
+
+      function applyLang(lang) {
+        if (lang !== 'en') lang = 'ko';
+        document.documentElement.lang = lang;
+        try {
+          localStorage.setItem('babdoduk-lang', lang);
+        } catch (e) {}
+        var T = STR[lang];
+        document.title = T.docTitle;
+
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n');
+          if (T[k] !== undefined) el.textContent = T[k];
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n-html');
+          if (T[k] !== undefined) el.innerHTML = T[k];
+        });
+        document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n-aria-key');
+          if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
+        });
+
+        var navInner = document.getElementById('siteNavInner');
+        if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
+
+        var sp = document.getElementById('scrollProgressWrap');
+        if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
+
+        var hc = document.getElementById('heroCarousel');
+        if (hc && T['carousel.section']) hc.setAttribute('aria-label', T['carousel.section']);
+
+        var ftMonth = document.getElementById('foodTableMonth');
+        var ftWeek = document.getElementById('foodTableWeek');
+        if (ftMonth && T['food.tableMonthAria']) ftMonth.setAttribute('aria-label', T['food.tableMonthAria']);
+        if (ftWeek && T['food.tableWeekAria']) ftWeek.setAttribute('aria-label', T['food.tableWeekAria']);
+
+        var img = document.getElementById('profileAvatarImg');
+        if (img && T['profile.imgAlt']) img.setAttribute('alt', T['profile.imgAlt']);
+
+        window.dispatchEvent(new CustomEvent('babdoduk-langchange'));
+      }
+
+      window.babdodukApplyLang = applyLang;
+      window.babdodukGetLang = function () {
+        return document.documentElement.lang === 'en' ? 'en' : 'ko';
+      };
+
+      var saved = 'ko';
+      try {
+        saved = localStorage.getItem('babdoduk-lang') || 'ko';
+      } catch (e) {}
+      applyLang(saved === 'en' ? 'en' : 'ko');
+
+      var langBtnEl = document.getElementById('langToggle');
+      if (langBtnEl) {
+        langBtnEl.addEventListener('click', function () {
+          var next = window.babdodukGetLang() === 'ko' ? 'en' : 'ko';
+          applyLang(next);
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var bar = document.getElementById('scrollProgressBar');
+      var wrap = bar && bar.parentElement;
+      function onScroll() {
+        if (!bar) return;
+        var el = document.documentElement;
+        var total = el.scrollHeight - el.clientHeight;
+        var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
+        bar.style.width = pct + '%';
+        if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      onScroll();
+
+      function todayKey() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+
+      function shouldShowWelcome() {
+        try {
+          if (localStorage.getItem('babdoduk-welcome-dismissed') === '1') return false;
+          if (localStorage.getItem('babdoduk-welcome-snooze') === todayKey()) return false;
+        } catch (err) {}
+        return true;
+      }
+
+      var popup = document.getElementById('welcomePopup');
+      var closeBtn = document.getElementById('popupCloseBtn');
+      var dontToday = document.getElementById('popupDontToday');
+      var dontPermanent = document.getElementById('popupDontPermanent');
+
+      function openPopup() {
+        popup.classList.add('is-open');
+        popup.setAttribute('aria-hidden', 'false');
+      }
+      function closePopup() {
+        popup.classList.remove('is-open');
+        popup.setAttribute('aria-hidden', 'true');
+        try {
+          if (dontPermanent && dontPermanent.checked) {
+            localStorage.setItem('babdoduk-welcome-dismissed', '1');
+            localStorage.removeItem('babdoduk-welcome-snooze');
+          } else if (dontToday && dontToday.checked) {
+            localStorage.setItem('babdoduk-welcome-snooze', todayKey());
+          }
+        } catch (err) {}
+      }
+
+      if (shouldShowWelcome()) {
+        requestAnimationFrame(function () { openPopup(); });
+      }
+
+      closeBtn.addEventListener('click', closePopup);
+      popup.addEventListener('click', function (e) {
+        if (e.target === popup) closePopup();
+      });
+
+      if (dontPermanent && dontToday) {
+        dontPermanent.addEventListener('change', function () {
+          if (dontPermanent.checked) dontToday.checked = false;
+        });
+        dontToday.addEventListener('change', function () {
+          if (dontToday.checked) dontPermanent.checked = false;
+        });
+      }
+
+      /* 가로 캐러셀: 도트 + 스크롤 동기화 */
+      var scroller = document.getElementById('carouselScroller');
+      var slides = scroller ? scroller.querySelectorAll('.carousel-slide') : [];
+      var dots = scroller && scroller.parentElement
+        ? scroller.parentElement.querySelectorAll('.carousel-dot')
+        : [];
+
+      function setActiveDot(index) {
+        for (var i = 0; i < dots.length; i++) {
+          dots[i].classList.toggle('is-active', i === index);
+          dots[i].setAttribute('aria-selected', i === index ? 'true' : 'false');
+        }
+      }
+
+      function slideIndexFromScroll() {
+        if (!scroller || !slides.length) return 0;
+        var scRect = scroller.getBoundingClientRect();
+        var centerX = scRect.left + scRect.width / 2;
+        var best = 0;
+        var bestDist = Infinity;
+        for (var i = 0; i < slides.length; i++) {
+          var r = slides[i].getBoundingClientRect();
+          var mid = r.left + r.width / 2;
+          var dist = Math.abs(centerX - mid);
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = i;
+          }
+        }
+        return best;
+      }
+
+      if (scroller && slides.length && dots.length) {
+        var scrollRaf = null;
+        scroller.addEventListener('scroll', function () {
+          if (scrollRaf) cancelAnimationFrame(scrollRaf);
+          scrollRaf = requestAnimationFrame(function () {
+            setActiveDot(slideIndexFromScroll());
+          });
+        }, { passive: true });
+
+        for (var d = 0; d < dots.length; d++) {
+          (function (idx) {
+            dots[idx].addEventListener('click', function () {
+              slides[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            });
+          })(d);
+        }
+
+        window.addEventListener('resize', function () {
+          setActiveDot(slideIndexFromScroll());
+        });
+
+        var emptyHref = function (el) {
+          if (el && el.getAttribute('href') === '#') {
+            el.addEventListener('click', function (e) {
+              e.preventDefault();
+            });
+          }
+        };
+        emptyHref(document.getElementById('slideKakao'));
+        emptyHref(document.getElementById('slideYoutube'));
+      }
+
+      var navHome = document.getElementById('navHome');
+      if (navHome) {
+        navHome.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      function navJumpToSlide(navEl, slideId) {
+        if (!navEl) return;
+        navEl.addEventListener('click', function (e) {
+          if (navEl.getAttribute('href') !== '#') return;
+          e.preventDefault();
+          var slide = document.getElementById(slideId);
+          if (slide) {
+            slide.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          }
+        });
+      }
+      navJumpToSlide(document.getElementById('navKakao'), 'slideKakao');
+      navJumpToSlide(document.getElementById('navYoutube'), 'slideYoutube');
+    })();
+  </script>
+  <script>
+    (function () {
+      function parseISODate(iso) {
+        var p = iso.split('-');
+        return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+      }
+
+      function isoWeekKey(d) {
+        var x = new Date(d.getTime());
+        x.setHours(0, 0, 0, 0);
+        x.setDate(x.getDate() + 3 - (x.getDay() + 6) % 7);
+        var weekYear = x.getFullYear();
+        var week1 = new Date(weekYear, 0, 4);
+        var w = 1 + Math.round(((x.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+        return weekYear + '-W' + String(w).padStart(2, '0');
+      }
+
+      function formatKRW(n) {
+        var loc = typeof window.babdodukGetLang === 'function' && window.babdodukGetLang() === 'en' ? 'en-US' : 'ko-KR';
+        return '₩' + Number(n).toLocaleString(loc);
+      }
+
+      function monthRowLabel(mk, lang) {
+        var mp = mk.split('-');
+        var y = parseInt(mp[0], 10);
+        var m = parseInt(mp[1], 10) - 1;
+        if (lang === 'en') {
+          return new Date(y, m).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        }
+        return mp[0] + '년 ' + (m + 1) + '월';
+      }
+
+      function calTitleString(y, m, lang) {
+        if (lang === 'en') {
+          return new Date(y, m).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        }
+        return y + '년 ' + (m + 1) + '월';
+      }
+
+      var MEAL_EN = { 점심: 'Lunch', 저녁: 'Dinner', 야식: 'Late night' };
+      function mealLabel(m, lang) {
+        if (lang !== 'en') return m;
+        return MEAL_EN[m] || m;
+      }
+
+      function monthKeyFromISO(iso) {
+        return iso.slice(0, 7);
+      }
+
+      var gridEl = document.getElementById('foodCalGrid');
+      var titleEl = document.getElementById('foodCalTitle');
+      var detailEl = document.getElementById('foodDetailPanel');
+      var monthTotalEl = document.getElementById('foodMonthTotal');
+      var monthLabelEl = document.getElementById('foodMonthLabel');
+      var weekTotalEl = document.getElementById('foodWeekTotal');
+      var weekLabelEl = document.getElementById('foodWeekLabel');
+      var tbMonth = document.querySelector('#foodTableMonth tbody');
+      var tbWeek = document.querySelector('#foodTableWeek tbody');
+
+      if (!gridEl || !detailEl) return;
+
+      var byDate = {};
+      var viewY = new Date().getFullYear();
+      var viewM = new Date().getMonth();
+      var allEntries = [];
+
+      function aggregate(entries) {
+        byDate = {};
+        var byMonth = {};
+        var byWeek = {};
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          if (!e.date || typeof e.total !== 'number') continue;
+          byDate[e.date] = e;
+          var mk = monthKeyFromISO(e.date);
+          byMonth[mk] = (byMonth[mk] || 0) + e.total;
+          var wk = isoWeekKey(parseISODate(e.date));
+          byWeek[wk] = (byWeek[wk] || 0) + e.total;
+        }
+        return { byMonth: byMonth, byWeek: byWeek };
+      }
+
+      function renderTables(byMonth, byWeek) {
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        tbMonth.innerHTML = '';
+        tbWeek.innerHTML = '';
+        var mk = Object.keys(byMonth).sort().reverse();
+        for (var i = 0; i < mk.length; i++) {
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + monthRowLabel(mk[i], lang) + '</td><td>' + formatKRW(byMonth[mk[i]]) + '</td>';
+          tbMonth.appendChild(tr);
+        }
+        var wk = Object.keys(byWeek).sort().reverse();
+        for (var j = 0; j < wk.length; j++) {
+          var tr2 = document.createElement('tr');
+          tr2.innerHTML = '<td>' + wk[j] + '</td><td>' + formatKRW(byWeek[wk[j]]) + '</td>';
+          tbWeek.appendChild(tr2);
+        }
+      }
+
+      function highlightCurrent(byMonth, byWeek) {
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        var now = new Date();
+        var cm = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        var cw = isoWeekKey(now);
+        monthTotalEl.textContent = byMonth[cm] != null ? formatKRW(byMonth[cm]) : '₩0';
+        monthLabelEl.textContent =
+          lang === 'ko'
+            ? now.getFullYear() + '년 ' + (now.getMonth() + 1) + '월 누적'
+            : now.toLocaleString('en-US', { month: 'long', year: 'numeric' }) + ' · running total';
+        weekTotalEl.textContent = byWeek[cw] != null ? formatKRW(byWeek[cw]) : '₩0';
+        weekLabelEl.textContent = lang === 'ko' ? cw + ' 기준' : cw + ' (ISO week)';
+      }
+
+      function renderCalendar() {
+        var langFC = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        gridEl.innerHTML = '';
+        titleEl.textContent = calTitleString(viewY, viewM, langFC);
+        var first = new Date(viewY, viewM, 1);
+        var startPad = first.getDay();
+        var daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
+        var i;
+        for (i = 0; i < startPad; i++) {
+          var empty = document.createElement('div');
+          empty.className = 'food-cal-cell empty';
+          empty.setAttribute('aria-hidden', 'true');
+          gridEl.appendChild(empty);
+        }
+        for (var d = 1; d <= daysInMonth; d++) {
+          var iso = viewY + '-' + String(viewM + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+          var entry = byDate[iso];
+          var cell;
+          if (entry) {
+            cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'food-cal-cell has-data';
+            cell.setAttribute('role', 'gridcell');
+            var daySpan = document.createElement('span');
+            daySpan.className = 'd';
+            daySpan.textContent = String(d);
+            cell.appendChild(daySpan);
+            var amt = document.createElement('span');
+            amt.className = 'amt';
+            amt.textContent = formatKRW(entry.total);
+            cell.appendChild(amt);
+            cell.setAttribute('aria-label', iso + ' ' + formatKRW(entry.total));
+            (function (ent, dateStr) {
+              cell.addEventListener('click', function () {
+                showDetail(ent, dateStr);
+              });
+            })(entry, iso);
+          } else {
+            cell = document.createElement('div');
+            cell.className = 'food-cal-cell';
+            cell.setAttribute('role', 'gridcell');
+            var daySpan2 = document.createElement('span');
+            daySpan2.className = 'd';
+            daySpan2.textContent = String(d);
+            cell.appendChild(daySpan2);
+          }
+          gridEl.appendChild(cell);
+        }
+      }
+
+      function showDetail(entry, iso) {
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        var sumWord = lang === 'en' ? 'Total' : '합계';
+        var lines = '<strong>' + iso + '</strong> · ' + sumWord + ' ' + formatKRW(entry.total);
+        if (entry.note) lines += '<br /><span style="color:#86868b;font-size:0.9em">' + escapeHtml(entry.note) + '</span>';
+        if (entry.items && entry.items.length) {
+          lines += '<ul>';
+          for (var i = 0; i < entry.items.length; i++) {
+            var it = entry.items[i];
+            lines +=
+              '<li>' +
+              escapeHtml(mealLabel(it.meal || '', lang)) +
+              ' · ' +
+              escapeHtml(it.label || '') +
+              ' — ' +
+              formatKRW(it.amount != null ? it.amount : 0) +
+              '</li>';
+          }
+          lines += '</ul>';
+        }
+        detailEl.innerHTML = lines;
+      }
+
+      function escapeHtml(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      document.getElementById('foodCalPrev').addEventListener('click', function () {
+        viewM--;
+        if (viewM < 0) {
+          viewM = 11;
+          viewY--;
+        }
+        renderCalendar();
+      });
+      document.getElementById('foodCalNext').addEventListener('click', function () {
+        viewM++;
+        if (viewM > 11) {
+          viewM = 0;
+          viewY++;
+        }
+        renderCalendar();
+      });
+
+      fetch('data/food-log.json')
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          allEntries = (data.entries || []).slice();
+          allEntries.sort(function (a, b) {
+            return a.date < b.date ? -1 : 1;
+          });
+          if (allEntries.length) {
+            var last = allEntries[allEntries.length - 1].date;
+            var lp = last.split('-');
+            viewY = parseInt(lp[0], 10);
+            viewM = parseInt(lp[1], 10) - 1;
+          }
+          var ag = aggregate(allEntries);
+          renderTables(ag.byMonth, ag.byWeek);
+          highlightCurrent(ag.byMonth, ag.byWeek);
+          renderCalendar();
+        })
+        .catch(function () {
+          var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+          var T = window.BABDODUK_STR && window.BABDODUK_STR[lang];
+          detailEl.innerHTML =
+            '<span class="food-err">' + (T && T['food.fetchErr'] ? T['food.fetchErr'] : '') + '</span>';
+        });
+
+      window.addEventListener('babdoduk-langchange', function () {
+        if (!gridEl || !detailEl) return;
+        if (!allEntries.length) {
+          renderCalendar();
+          return;
+        }
+        var ag = aggregate(allEntries);
+        renderTables(ag.byMonth, ag.byWeek);
+        highlightCurrent(ag.byMonth, ag.byWeek);
+        renderCalendar();
+      });
+    })();
+  </script>
+</body>
+</html>
