@@ -353,35 +353,121 @@
       margin: 6px 0;
     }
 
-    .footer-line {
-      margin-top: 28px;
-      font-size: 0.72rem;
-      color: #aeaeb2;
+    /* ── 푸터 (Apple.co.kr 스타일 레퍼런스) ── */
+    .site-footer {
+      margin-top: 40px;
+      background: #f5f5f7;
+      color: #6e6e73;
+      padding: 18px 0 28px;
+    }
+
+    .site-footer-inner {
+      max-width: 1024px;
+      margin: 0 auto;
+      padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
+    }
+
+    .footer-apple-hr {
+      border: none;
+      border-top: 1px solid #d2d2d7;
+      margin: 0 0 16px;
+    }
+
+    .footer-apple-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 12px 16px;
+      align-items: start;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .footer-apple-col--left {
+      justify-self: start;
+      text-align: left;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0 2px;
+    }
+
+    .footer-apple-col--center {
+      justify-self: center;
       text-align: center;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 0.35rem 0.55rem;
-      line-height: 1.4;
+      gap: 0;
     }
 
-    .footer-sep {
+    .footer-apple-col--right {
+      justify-self: end;
+      text-align: right;
+      color: #424245;
+      font-weight: 500;
+    }
+
+    .footer-apple-copy {
+      color: #6e6e73;
+    }
+
+    .footer-apple-pipe {
       color: #d2d2d7;
+      margin: 0 5px;
       user-select: none;
     }
 
-    .footer-mail {
-      color: #86868b;
+    .footer-apple-a {
+      color: #424245;
       text-decoration: none;
-      font-weight: 500;
-      transition: color 0.15s;
+      white-space: nowrap;
     }
 
-    .footer-mail:hover {
-      color: #6366f1;
+    .footer-apple-a:hover {
       text-decoration: underline;
       text-underline-offset: 2px;
+    }
+
+    .footer-apple-email-plain {
+      color: #424245;
+      user-select: text;
+    }
+
+    .footer-apple-fine {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e5ea;
+      font-size: 0.64rem;
+      line-height: 1.55;
+      color: #86868b;
+    }
+
+    @media (max-width: 800px) {
+      .footer-apple-main {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+
+      .footer-apple-col--left,
+      .footer-apple-col--center,
+      .footer-apple-col--right {
+        justify-self: center;
+        text-align: center;
+        justify-content: center;
+      }
+
+      .footer-apple-col--left {
+        order: 1;
+      }
+
+      .footer-apple-col--center {
+        order: 2;
+      }
+
+      .footer-apple-col--right {
+        order: 3;
+      }
     }
 
     /* ── 먹방 가계부 (일일 Total → 월/주 집계 + 달력) ── */
@@ -1215,13 +1301,35 @@
     </section>
   </div>
 
-  <div class="container">
-    <p class="footer-line">
-      <span data-i18n="footer.copy">© 2026 밥도둑 · Babdoduk</span>
-      <span class="footer-sep" aria-hidden="true">·</span>
-      <a href="mailto:joshualiuniv@gmail.com" class="footer-mail" data-i18n="footer.mail">문의 메일</a>
-    </p>
-  </div>
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer-inner">
+      <hr class="footer-apple-hr" />
+      <div class="footer-apple-main">
+        <div class="footer-apple-col footer-apple-col--left">
+          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <span class="footer-apple-email-plain">joshualiuniv@gmail.com</span>
+        </div>
+        <nav
+          class="footer-apple-col footer-apple-col--center"
+          aria-label="하단 정책 및 안내"
+          data-i18n-aria-key="footer.navAria"
+        >
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkTerms">사이트 이용 약관</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkLegal">법적 고지</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkSitemap">사이트 맵</a>
+        </nav>
+        <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
+      </div>
+      <p class="footer-apple-fine" data-i18n="footer.fine">
+        본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.
+      </p>
+    </div>
+  </footer>
 
   <script>
     (function () {
@@ -1307,8 +1415,15 @@
           'food.input.errNoDate': '날짜를 선택하세요.',
           'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
           'link.mail.label': '문의 메일',
-          'footer.copy': '© 2026 밥도둑 · Babdoduk',
-          'footer.mail': '문의 메일'
+          'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+          'footer.linkPrivacy': '개인정보 처리방침',
+          'footer.linkTerms': '사이트 이용 약관',
+          'footer.linkLegal': '법적 고지',
+          'footer.linkSitemap': '사이트 맵',
+          'footer.country': '대한민국',
+          'footer.navAria': '푸터 정책 링크',
+          'footer.fine':
+            '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
           docTitle: 'Babdoduk',
@@ -1392,8 +1507,15 @@
           'food.input.errNoDate': 'Pick a date.',
           'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
           'link.mail.label': 'Email',
-          'footer.copy': '© 2026 Babdoduk',
-          'footer.mail': 'Contact'
+          'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+          'footer.linkPrivacy': 'Privacy Policy',
+          'footer.linkTerms': 'Terms of Use',
+          'footer.linkLegal': 'Legal',
+          'footer.linkSitemap': 'Site Map',
+          'footer.country': 'South Korea',
+          'footer.navAria': 'Footer policies',
+          'footer.fine':
+            'Independent content site. For business registration or legal matters, please reach out by email.'
         }
       };
 

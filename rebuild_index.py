@@ -162,11 +162,11 @@ def main() -> None:
     if "profile profile--hero" not in s:
         s = s.replace(marker, LANDING_BLOCK.strip() + "\n\n" + marker, 1)
 
-    # 가계부 UI 섹션 제거(진입은 food.html·내비)
+    # 가계부 UI 섹션 제거(진입은 food.html·내비) — 푸터(site-footer)부터 유지
     f0 = s.find('  <div class="food-tracker-wrap">')
-    f1 = s.find('  <div class="container">', f0)
+    f1 = s.find('  <footer class="site-footer"', f0)
     if f0 == -1 or f1 == -1:
-        raise SystemExit("food / container block not found")
+        raise SystemExit("food-tracker-wrap or site-footer not found")
     s = s[:f0] + s[f1:]
 
     s = insert_nav_foodlog(s)
