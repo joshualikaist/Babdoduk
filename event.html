@@ -176,6 +176,11 @@
       -webkit-tap-highlight-color: transparent;
     }
     .event-tab:hover { border-color: rgba(99, 102, 241, 0.32); }
+    .event-tab--link {
+      text-decoration: none;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
     .event-tab[aria-selected="true"] {
       border-color: rgba(99, 102, 241, 0.45);
       box-shadow:
@@ -404,13 +409,25 @@
 
   <main class="event-page-wrap">
     <h1 class="event-title" data-i18n="event.title">이벤트</h1>
-    <p class="event-lead" data-i18n="event.lead">예정된 이벤트입니다. 날짜와 제목이 보이는 탭을 누르면 상세 안내를 볼 수 있어요.</p>
+    <p class="event-lead" data-i18n="event.lead">첫 번째 탭을 누르면 인스타그램 이벤트 안내(영상·게시물)로 새 창에서 연결돼요. 아래에서 기간·경품을 확인할 수 있습니다.</p>
 
     <div class="event-tablist" role="tablist" aria-label="이벤트 목록" data-i18n-aria-key="event.tablistAria">
-      <button type="button" class="event-tab" role="tab" id="eventTab0" aria-selected="true" aria-controls="eventPanel0">
-        <span class="event-tab-date" data-i18n="event.e0.date">2026. 6. 15</span>
-        <span class="event-tab-title" data-i18n="event.e0.summary">여름 시즌 라이브 먹방</span>
-      </button>
+      <!-- 인스타 릴/게시물 주소가 정해지면 아래 href만 해당 URL로 바꾸면 됩니다. -->
+      <a
+        class="event-tab event-tab--link"
+        role="tab"
+        id="eventTab0"
+        aria-selected="true"
+        aria-controls="eventPanel0"
+        href="https://www.instagram.com/babdodukms/"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-i18n-aria-key="event.e0.tabAria"
+        aria-label="인스타그램 이벤트 안내 열기 (새 창)"
+      >
+        <span class="event-tab-date" data-i18n="event.e0.date">2026. 5. 9 ~ 5. 16</span>
+        <span class="event-tab-title" data-i18n="event.e0.summary">밥도둑 팔로워 100명 이벤트</span>
+      </a>
       <button type="button" class="event-tab" role="tab" id="eventTab1" aria-selected="false" aria-controls="eventPanel1" tabindex="-1">
         <span class="event-tab-date" data-i18n="event.e1.date">2026. 7. 20</span>
         <span class="event-tab-title" data-i18n="event.e1.summary">시청자 추천 맛집 투어</span>
@@ -479,12 +496,13 @@
           'popup.start': '시작하기',
           'popup.snooze24h': '하루 동안 보지 않기',
           'event.title': '이벤트',
-          'event.lead': '예정된 이벤트입니다. 날짜와 제목이 보이는 탭을 누르면 상세 안내를 볼 수 있어요.',
+          'event.lead': '첫 번째 탭을 누르면 인스타그램 이벤트 안내(영상·게시물)로 새 창에서 연결돼요. 아래에서 기간·경품을 확인할 수 있습니다.',
           'event.tablistAria': '이벤트 목록',
-          'event.e0.date': '2026. 6. 15 (일)',
-          'event.e0.summary': '여름 시즌 라이브 먹방',
+          'event.e0.tabAria': '인스타그램 이벤트 안내 열기 (새 창)',
+          'event.e0.date': '2026. 5. 9 ~ 2026. 5. 16',
+          'event.e0.summary': '밥도둑 팔로워 100명 이벤트',
           'event.e0.detail':
-            '<p><strong>진행 방식</strong> · 유튜브 라이브로 진행됩니다. 시작 시각은 인스타 스토리로 공지할 예정이에요.</p><p><strong>참여 방법</strong> · 라이브 채팅으로 질문을 남겨 주세요. 당일 메뉴·장소는 방송 중 안내합니다.</p>',
+            '<p><strong>이벤트 유형</strong> · 팔로워 100명 달성 기념 이벤트입니다.</p><p><strong>이벤트 기간</strong> · 2026년 5월 9일(토) ~ 2026년 5월 16일(토)</p><p><strong>경품</strong> · 메가커피 아메리카노 모바일 쿠폰을 <strong>5명</strong>에게 증정합니다.</p><p><strong>참여 방법</strong> · 상단 첫 탭을 눌러 인스타그램에 올라온 이벤트 안내 영상·게시물을 확인하고, 게시물에 안내된 대로 참여해 주세요. (영상·게시물 URL은 추후 이 탭 링크로 바꿀 예정입니다.)</p>',
           'event.e1.date': '2026. 7. 20 (월)',
           'event.e1.summary': '시청자 추천 맛집 투어',
           'event.e1.detail':
@@ -521,12 +539,13 @@
           'popup.start': 'Start',
           'popup.snooze24h': "Don't show for 24 hours",
           'event.title': 'Events',
-          'event.lead': 'Upcoming events. Tap a tab to see details.',
+          'event.lead': 'The first tab opens the Instagram event post or video in a new tab. Details on timing and prizes are below.',
           'event.tablistAria': 'Event list',
-          'event.e0.date': 'Sun, Jun 15, 2026',
-          'event.e0.summary': 'Summer live mukbang',
+          'event.e0.tabAria': 'Open Instagram event instructions (new tab)',
+          'event.e0.date': 'May 9–16, 2026',
+          'event.e0.summary': 'Babdoduk 100 followers event',
           'event.e0.detail':
-            '<p><strong>Format</strong> · YouTube Live. Check Instagram stories for the exact start time.</p><p><strong>How to join</strong> · Ask questions in live chat. Menu and location will be shared during the stream.</p>',
+            '<p><strong>Type</strong> · Follower milestone giveaway (100 followers).</p><p><strong>Period</strong> · Saturday, May 9 through Saturday, May 16, 2026.</p><p><strong>Prize</strong> · Mega Coffee Americano mobile coupons for <strong>5 winners</strong>.</p><p><strong>How to enter</strong> · Open the first tab to view the Instagram post or video and follow the steps there. (The tab link will be updated to the exact reel/post URL later.)</p>',
           'event.e1.date': 'Mon, Jul 20, 2026',
           'event.e1.summary': 'Viewer-picked restaurant tour',
           'event.e1.detail':
