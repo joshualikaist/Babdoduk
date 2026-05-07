@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>이벤트 · 밥도둑 Babdoduk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      color: #1d1d1f;
+      overflow-x: hidden;
+      padding: 64px 0 72px;
+      position: relative;
+      background: #fbfbfd;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
+    }
+    .scroll-progress-wrap {
+      position: relative;
+      height: 3px;
+      width: 100%;
+      flex-shrink: 0;
+      z-index: 2;
+      background: #fbfbfd;
+      overflow: hidden;
+    }
+    .site-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10001;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .site-nav-inner {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      gap: 4px;
+      padding: 8px 12px;
+      min-height: 44px;
+      flex-wrap: nowrap;
+      background: rgba(255, 245, 248, 0.94);
+      -webkit-backdrop-filter: saturate(180%) blur(16px);
+      backdrop-filter: saturate(180%) blur(16px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    }
+    .site-nav-wordmark {
+      flex: 0 1 auto;
+      font-weight: 900;
+      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+      font-size: clamp(0.78rem, 3.2vw, 1rem);
+      letter-spacing: -0.05em;
+      line-height: 1;
+      text-decoration: none;
+      white-space: nowrap;
+      background: linear-gradient(110deg, #6366f1 0%, #a855f7 18%, #ec4899 36%, #06b6d4 55%, #8b5cf6 72%, #db2777 100%);
+      background-size: 260% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: wordmark-holo 6s ease-in-out infinite;
+    }
+    @keyframes wordmark-holo {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .site-nav-wordmark:hover { filter: brightness(1.08); }
+    .site-nav-item {
+      flex: 0 1 auto;
+      font-size: clamp(0.62rem, 2.4vw, 0.72rem);
+      font-weight: 600;
+      color: #1d1d1f;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      opacity: 0.88;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .site-nav-item:hover {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .site-nav-item.is-current { opacity: 1; font-weight: 800; }
+    .site-nav-lang {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+    }
+    .site-nav-item.site-nav-lang {
+      font-size: clamp(0.52rem, 1.85vw, 0.6rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      opacity: 0.82;
+    }
+    .scroll-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+      transition: width 0.08s ease-out;
+    }
+    @keyframes shimmer {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .event-page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 8px 18px 28px;
+    }
+    .event-title {
+      font-size: clamp(1.2rem, 4vw, 1.45rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+    .event-lead {
+      font-size: 0.8rem;
+      color: #6e6e73;
+      line-height: 1.55;
+      margin-bottom: 20px;
+    }
+    .event-tablist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .event-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .event-tab:hover { border-color: rgba(99, 102, 241, 0.32); }
+    .event-tab[aria-selected="true"] {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow:
+        0 4px 18px rgba(99, 102, 241, 0.12),
+        0 0 0 2px rgba(99, 102, 241, 0.14);
+    }
+    .event-tab-date {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #9333ea;
+      letter-spacing: 0.02em;
+    }
+    .event-tab-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1d1d1f;
+      line-height: 1.3;
+    }
+    .event-panels {
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      background: #fff;
+      padding: 18px 16px 20px;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 12px 32px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.04);
+      min-height: 100px;
+    }
+    .event-panel { display: none; }
+    .event-panel.is-active { display: block; }
+    .event-panel-inner {
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: #424245;
+    }
+    .event-panel-inner p + p { margin-top: 0.7em; }
+    .event-panel-inner strong { color: #1d1d1f; }
+
+    .site-footer {
+      margin-top: 40px;
+      background: #f5f5f7;
+      color: #6e6e73;
+      padding: 18px 0 28px;
+    }
+    .site-footer-inner {
+      max-width: 1024px;
+      margin: 0 auto;
+      padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
+    }
+    .footer-apple-hr {
+      border: none;
+      border-top: 1px solid #d2d2d7;
+      margin: 0 0 16px;
+    }
+    .footer-apple-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 12px 16px;
+      align-items: start;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+    .footer-apple-col--left {
+      justify-self: start;
+      text-align: left;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0 2px;
+    }
+    .footer-apple-col--center {
+      justify-self: center;
+      text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+    }
+    .footer-apple-col--right {
+      justify-self: end;
+      text-align: right;
+      color: #424245;
+      font-weight: 500;
+    }
+    .footer-apple-copy { color: #6e6e73; }
+    .footer-apple-pipe {
+      color: #d2d2d7;
+      margin: 0 5px;
+      user-select: none;
+    }
+    .footer-apple-a {
+      color: #424245;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .footer-apple-a:hover {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .footer-apple-email-plain {
+      color: #424245;
+      user-select: text;
+    }
+    .footer-apple-fine {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e5ea;
+      font-size: 0.64rem;
+      line-height: 1.55;
+      color: #86868b;
+    }
+    @media (max-width: 800px) {
+      .footer-apple-main {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+      .footer-apple-col--left,
+      .footer-apple-col--center,
+      .footer-apple-col--right {
+        justify-self: center;
+        text-align: center;
+        justify-content: center;
+      }
+      .footer-apple-col--left { order: 1; }
+      .footer-apple-col--center { order: 2; }
+      .footer-apple-col--right { order: 3; }
+    }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10050;
+      background: rgba(0, 0, 0, 0.38);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s;
+    }
+    .popup-overlay.is-open { opacity: 1; visibility: visible; }
+    .popup-box {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 24px;
+      padding: 28px 26px 22px;
+      background: linear-gradient(165deg, rgba(30, 30, 42, 0.95) 0%, rgba(12, 12, 20, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+    .popup-overlay.is-open .popup-box { transform: scale(1) translateY(0); }
+    .popup-box h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #fff, #c4b5fd);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .popup-box p {
+      font-size: 0.9rem;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 18px;
+    }
+    .popup-actions { display: flex; flex-direction: column; gap: 10px; }
+    .popup-btn {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .popup-btn.primary {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      color: #fff;
+      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45);
+    }
+    .popup-btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .popup-btn:hover { transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
+    <div class="popup-box" role="dialog" aria-labelledby="popupTitle" aria-modal="true">
+      <h2 id="popupTitle" data-i18n="popup.title">밥도둑에 오신 걸 환영해요</h2>
+      <p id="popupIntro" data-i18n-html="popup.body">인스타그램과 맛집 지도로 레시피·일상을 만나 보세요.</p>
+      <div class="popup-actions">
+        <button type="button" class="popup-btn primary" id="popupCloseBtn" data-i18n="popup.start">시작하기</button>
+        <button type="button" class="popup-btn secondary" id="popupSnoozeBtn" data-i18n="popup.snooze24h">하루 동안 보지 않기</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-nav" role="banner">
+    <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    </div>
+    <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <a class="site-nav-item" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
+      <a class="site-nav-item" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+      <a class="site-nav-item" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
+      <a href="#" class="site-nav-item" id="navKakao" data-i18n="nav.kakao">카카오톡</a>
+      <a href="#" class="site-nav-item" id="navYoutube" data-i18n="nav.youtube">유튜브</a>
+      <a href="event.html" class="site-nav-item is-current" id="navEvent" data-i18n="nav.event">이벤트</a>
+      <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
+    </div>
+  </header>
+
+  <main class="event-page-wrap">
+    <h1 class="event-title" data-i18n="event.title">이벤트</h1>
+    <p class="event-lead" data-i18n="event.lead">예정된 이벤트입니다. 날짜와 제목이 보이는 탭을 누르면 상세 안내를 볼 수 있어요.</p>
+
+    <div class="event-tablist" role="tablist" aria-label="이벤트 목록" data-i18n-aria-key="event.tablistAria">
+      <button type="button" class="event-tab" role="tab" id="eventTab0" aria-selected="true" aria-controls="eventPanel0">
+        <span class="event-tab-date" data-i18n="event.e0.date">2026. 6. 15</span>
+        <span class="event-tab-title" data-i18n="event.e0.summary">여름 시즌 라이브 먹방</span>
+      </button>
+      <button type="button" class="event-tab" role="tab" id="eventTab1" aria-selected="false" aria-controls="eventPanel1" tabindex="-1">
+        <span class="event-tab-date" data-i18n="event.e1.date">2026. 7. 20</span>
+        <span class="event-tab-title" data-i18n="event.e1.summary">시청자 추천 맛집 투어</span>
+      </button>
+      <button type="button" class="event-tab" role="tab" id="eventTab2" aria-selected="false" aria-controls="eventPanel2" tabindex="-1">
+        <span class="event-tab-date" data-i18n="event.e2.date">2026. 8. 10</span>
+        <span class="event-tab-title" data-i18n="event.e2.summary">콜라보 쿠킹 스페셜</span>
+      </button>
+    </div>
+
+    <div class="event-panels">
+      <div class="event-panel is-active" role="tabpanel" id="eventPanel0" aria-labelledby="eventTab0">
+        <div class="event-panel-inner" data-i18n-html="event.e0.detail"></div>
+      </div>
+      <div class="event-panel" role="tabpanel" id="eventPanel1" aria-labelledby="eventTab1" hidden>
+        <div class="event-panel-inner" data-i18n-html="event.e1.detail"></div>
+      </div>
+      <div class="event-panel" role="tabpanel" id="eventPanel2" aria-labelledby="eventTab2" hidden>
+        <div class="event-panel-inner" data-i18n-html="event.e2.detail"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer-inner">
+      <hr class="footer-apple-hr" />
+      <div class="footer-apple-main">
+        <div class="footer-apple-col footer-apple-col--left">
+          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <span class="footer-apple-email-plain">joshualiuniv@gmail.com</span>
+        </div>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="하단 정책 및 안내" data-i18n-aria-key="footer.navAria">
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkTerms">사이트 이용 약관</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkLegal">법적 고지</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkSitemap">사이트 맵</a>
+        </nav>
+        <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
+      </div>
+      <p class="footer-apple-fine" data-i18n="footer.fine"></p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var STR = {
+        ko: {
+          docTitle: '이벤트 · 밥도둑 Babdoduk',
+          'a11y.scrollProgress': '페이지 스크롤 진행',
+          'nav.navAria': '주요 메뉴',
+          'nav.homeAria': '홈으로',
+          'nav.instagram': '인스타그램',
+          'nav.map': '맛집 지도',
+          'nav.foodlog': '먹방 가계부',
+          'nav.kakao': '카카오톡',
+          'nav.youtube': '유튜브',
+          'nav.event': '이벤트',
+          'nav.langBtn': '언어 (EN)',
+          'nav.langAria': '영어로 전환',
+          'popup.title': '밥도둑에 오신 걸 환영해요',
+          'popup.body': '인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.',
+          'popup.start': '시작하기',
+          'popup.snooze24h': '하루 동안 보지 않기',
+          'event.title': '이벤트',
+          'event.lead': '예정된 이벤트입니다. 날짜와 제목이 보이는 탭을 누르면 상세 안내를 볼 수 있어요.',
+          'event.tablistAria': '이벤트 목록',
+          'event.e0.date': '2026. 6. 15 (일)',
+          'event.e0.summary': '여름 시즌 라이브 먹방',
+          'event.e0.detail':
+            '<p><strong>진행 방식</strong> · 유튜브 라이브로 진행됩니다. 시작 시각은 인스타 스토리로 공지할 예정이에요.</p><p><strong>참여 방법</strong> · 라이브 채팅으로 질문을 남겨 주세요. 당일 메뉴·장소는 방송 중 안내합니다.</p>',
+          'event.e1.date': '2026. 7. 20 (월)',
+          'event.e1.summary': '시청자 추천 맛집 투어',
+          'event.e1.detail':
+            '<p><strong>내용</strong> · 시청자분들이 추천해 주신 맛집을 모아 소개하는 기획이에요.</p><p><strong>신청</strong> · 추천식당은 카카오 채널 또는 이메일로 보내 주시면 검토 후 일정에 반영해 볼게요.</p>',
+          'event.e2.date': '2026. 8. 10 (월)',
+          'event.e2.summary': '콜라보 쿠킹 스페셜',
+          'event.e2.detail':
+            '<p><strong>콜라보</strong> · 크리에이터 한 분과 함께하는 요리 스페셜 영상·짧은 라이브를 준비 중이에요.</p><p><strong>공지</strong> · 확정되는 대로 인스타 피드와 이 페이지에 업데이트할게요.</p>',
+          'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+          'footer.linkPrivacy': '개인정보 처리방침',
+          'footer.linkTerms': '사이트 이용 약관',
+          'footer.linkLegal': '법적 고지',
+          'footer.linkSitemap': '사이트 맵',
+          'footer.country': '대한민국',
+          'footer.navAria': '푸터 정책 링크',
+          'footer.fine':
+            '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
+        },
+        en: {
+          docTitle: 'Events · Babdoduk',
+          'a11y.scrollProgress': 'Page scroll progress',
+          'nav.navAria': 'Main menu',
+          'nav.homeAria': 'Home',
+          'nav.instagram': 'Instagram',
+          'nav.map': 'Food map',
+          'nav.foodlog': 'Food log',
+          'nav.kakao': 'KakaoTalk',
+          'nav.youtube': 'YouTube',
+          'nav.event': 'Event',
+          'nav.langBtn': '한국어',
+          'nav.langAria': 'Switch to Korean',
+          'popup.title': 'Welcome to Babdoduk',
+          'popup.body': 'Find recipes and daily life on Instagram and the food map.',
+          'popup.start': 'Start',
+          'popup.snooze24h': "Don't show for 24 hours",
+          'event.title': 'Events',
+          'event.lead': 'Upcoming events. Tap a tab to see details.',
+          'event.tablistAria': 'Event list',
+          'event.e0.date': 'Sun, Jun 15, 2026',
+          'event.e0.summary': 'Summer live mukbang',
+          'event.e0.detail':
+            '<p><strong>Format</strong> · YouTube Live. Check Instagram stories for the exact start time.</p><p><strong>How to join</strong> · Ask questions in live chat. Menu and location will be shared during the stream.</p>',
+          'event.e1.date': 'Mon, Jul 20, 2026',
+          'event.e1.summary': 'Viewer-picked restaurant tour',
+          'event.e1.detail':
+            '<p><strong>About</strong> · Visiting and featuring restaurants recommended by viewers.</p><p><strong>Submit</strong> · Send picks via Kakao channel or email; we will try to work them into the schedule.</p>',
+          'event.e2.date': 'Mon, Aug 10, 2026',
+          'event.e2.summary': 'Collab cooking special',
+          'event.e2.detail':
+            '<p><strong>Collab</strong> · A cooking special with another creator (video + short live). More info soon.</p><p><strong>Updates</strong> · We will post on Instagram and refresh this page when details are fixed.</p>',
+          'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+          'footer.linkPrivacy': 'Privacy Policy',
+          'footer.linkTerms': 'Terms of Use',
+          'footer.linkLegal': 'Legal',
+          'footer.linkSitemap': 'Site Map',
+          'footer.country': 'South Korea',
+          'footer.navAria': 'Footer policies',
+          'footer.fine':
+            'Independent content site. For business registration or legal matters, please reach out by email.'
+        }
+      };
+      window.BABDODUK_STR = STR;
+      function applyLang(lang) {
+        if (lang !== 'en') lang = 'ko';
+        document.documentElement.lang = lang;
+        try { localStorage.setItem('babdoduk-lang', lang); } catch (e) {}
+        var T = STR[lang];
+        document.title = T.docTitle;
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n');
+          if (T[k] !== undefined) el.textContent = T[k];
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n-html');
+          if (T[k] !== undefined) el.innerHTML = T[k];
+        });
+        document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n-aria-key');
+          if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
+        });
+        var navInner = document.getElementById('siteNavInner');
+        if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
+        var sp = document.getElementById('scrollProgressWrap');
+        if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
+      }
+      window.babdodukApplyLang = applyLang;
+      window.babdodukGetLang = function () {
+        return document.documentElement.lang === 'en' ? 'en' : 'ko';
+      };
+      var saved = 'ko';
+      try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
+      applyLang(saved === 'en' ? 'en' : 'ko');
+      var langBtnEl = document.getElementById('langToggle');
+      if (langBtnEl) {
+        langBtnEl.addEventListener('click', function () {
+          applyLang(window.babdodukGetLang() === 'ko' ? 'en' : 'ko');
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var bar = document.getElementById('scrollProgressBar');
+      var wrap = bar && bar.parentElement;
+      function onScroll() {
+        if (!bar) return;
+        var el = document.documentElement;
+        var total = el.scrollHeight - el.clientHeight;
+        var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
+        bar.style.width = pct + '%';
+        if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      onScroll();
+
+      function shouldShowWelcome() {
+        var path = (location.pathname || '').toLowerCase();
+        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1) return false;
+        try {
+          var until = localStorage.getItem('babdoduk-welcome-snooze-until');
+          if (until && Date.now() < parseInt(until, 10)) return false;
+        } catch (err) {}
+        return true;
+      }
+      var popup = document.getElementById('welcomePopup');
+      var closeBtn = document.getElementById('popupCloseBtn');
+      var snoozeBtn = document.getElementById('popupSnoozeBtn');
+      function openPopup() {
+        popup.classList.add('is-open');
+        popup.setAttribute('aria-hidden', 'false');
+      }
+      function closePopup(withSnooze24h) {
+        popup.classList.remove('is-open');
+        popup.setAttribute('aria-hidden', 'true');
+        try {
+          if (withSnooze24h) {
+            var until = Date.now() + 24 * 60 * 60 * 1000;
+            localStorage.setItem('babdoduk-welcome-snooze-until', String(until));
+          }
+        } catch (err) {}
+      }
+      if (shouldShowWelcome()) requestAnimationFrame(function () { openPopup(); });
+      if (closeBtn) closeBtn.addEventListener('click', function () { closePopup(false); });
+      if (snoozeBtn) snoozeBtn.addEventListener('click', function () { closePopup(true); });
+      popup.addEventListener('click', function (e) {
+        if (e.target === popup) closePopup(false);
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var tabs = [].slice.call(document.querySelectorAll('.event-tab'));
+      var panels = [].slice.call(document.querySelectorAll('.event-panel'));
+      function select(i) {
+        tabs.forEach(function (tab, j) {
+          var on = j === i;
+          tab.setAttribute('aria-selected', on ? 'true' : 'false');
+          tab.tabIndex = on ? 0 : -1;
+          panels[j].classList.toggle('is-active', on);
+          if (on) panels[j].removeAttribute('hidden');
+          else panels[j].setAttribute('hidden', '');
+        });
+      }
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener('click', function () { select(i); });
+      });
+    })();
+  </script>
+</body>
+</html>

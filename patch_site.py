@@ -118,7 +118,7 @@ POPUP_JS_OLD = """      function todayKey() {
 
 POPUP_JS_NEW = """      function shouldShowWelcome() {
         var path = (location.pathname || '').toLowerCase();
-        if (path.indexOf('food.html') !== -1) return false;
+        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1) return false;
         try {
           var until = localStorage.getItem('babdoduk-welcome-snooze-until');
           if (until && Date.now() < parseInt(until, 10)) return false;
@@ -217,9 +217,19 @@ def patch_popup(s: str) -> str:
             _welcome_snooze_only,
             """      function shouldShowWelcome() {
         var path = (location.pathname || '').toLowerCase();
-        if (path.indexOf('food.html') !== -1) return false;
+        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1) return false;
         try {
           var until = localStorage.getItem('babdoduk-welcome-snooze-until');""",
+            1,
+        )
+
+    _welcome_food_only = (
+        "        if (path.indexOf('food.html') !== -1) return false;"
+    )
+    if _welcome_food_only in s and "path.indexOf('event.html')" not in s:
+        s = s.replace(
+            _welcome_food_only,
+            "        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1) return false;",
             1,
         )
     return s

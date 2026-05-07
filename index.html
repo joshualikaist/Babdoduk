@@ -479,7 +479,7 @@
       max-width: 520px;
       margin-left: auto;
       margin-right: auto;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.5rem;
     }
 
     .carousel-viewport {
@@ -511,13 +511,18 @@
       max-width: 100%;
       box-sizing: border-box;
       min-height: 176px;
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
       text-decoration: none;
       color: inherit;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(0, 0, 0, 0.07);
-      background: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      background: linear-gradient(165deg, #ffffff 0%, #f3f3f5 100%);
+      box-shadow:
+        0 1px 1px rgba(255, 255, 255, 0.95) inset,
+        0 2px 0 rgba(255, 255, 255, 0.45) inset,
+        0 14px 36px rgba(0, 0, 0, 0.11),
+        0 6px 14px rgba(0, 0, 0, 0.06),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
     }
 
     .slide-media {
@@ -577,8 +582,8 @@
       justify-content: center;
       align-items: center;
       gap: 8px;
-      padding: 6px 20px 0;
-      margin: 0;
+      padding: 22px 20px 10px;
+      margin: 8px 0 0;
     }
 
     .carousel-dot {
@@ -759,7 +764,7 @@
       <a class="site-nav-item" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
       <a href="#" class="site-nav-item" id="navKakao" data-i18n="nav.kakao">카카오톡</a>
       <a href="#" class="site-nav-item" id="navYoutube" data-i18n="nav.youtube">유튜브</a>
-      <a href="#" class="site-nav-item" id="navEvent" data-i18n="nav.event">이벤트</a>
+      <a href="event.html" class="site-nav-item" id="navEvent" data-i18n="nav.event">이벤트</a>
       <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
     </div>
   </header>
@@ -837,7 +842,7 @@
         <div class="footer-apple-col footer-apple-col--left">
           <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
+          <span class="footer-apple-email-plain">joshualiuniv@gmail.com</span>
         </div>
         <nav
           class="footer-apple-col footer-apple-col--center"
@@ -1131,7 +1136,7 @@
 
       function shouldShowWelcome() {
         var path = (location.pathname || '').toLowerCase();
-        if (path.indexOf('food.html') !== -1) return false;
+        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1) return false;
         try {
           var until = localStorage.getItem('babdoduk-welcome-snooze-until');
           if (until && Date.now() < parseInt(until, 10)) return false;
@@ -1416,12 +1421,6 @@
       navJumpToSlide(document.getElementById('navKakao'), 1);
       navJumpToSlide(document.getElementById('navYoutube'), 0);
 
-      var navEvent = document.getElementById('navEvent');
-      if (navEvent && navEvent.getAttribute('href') === '#') {
-        navEvent.addEventListener('click', function (e) {
-          e.preventDefault();
-        });
-      }
     })();
   </script>
 
