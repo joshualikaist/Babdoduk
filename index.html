@@ -146,6 +146,13 @@
       font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
     }
 
+    .site-nav-item.site-nav-lang {
+      font-size: clamp(0.52rem, 1.85vw, 0.6rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      opacity: 0.82;
+    }
+
     .scroll-progress-bar {
       height: 100%;
       width: 0%;
@@ -335,7 +342,6 @@
 
     .link-btn.instagram { border-left: 3px solid #e11d48; }
     .link-btn.youtube   { border-left: 3px solid #dc2626; }
-    .link-btn.blog      { border-left: 3px solid #16a34a; }
     .link-btn.kakao     { border-left: 3px solid #ca8a04; }
     .link-btn.email     { border-left: 3px solid #2563eb; }
     .link-btn.map       { border-left: 3px solid #03c75a; }
@@ -348,11 +354,35 @@
       margin: 6px 0;
     }
 
-    .footer {
+    .footer-line {
       margin-top: 28px;
       font-size: 0.72rem;
       color: #aeaeb2;
       text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.35rem 0.55rem;
+      line-height: 1.4;
+    }
+
+    .footer-sep {
+      color: #d2d2d7;
+      user-select: none;
+    }
+
+    .footer-mail {
+      color: #86868b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .footer-mail:hover {
+      color: #6366f1;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
     /* ── 가로 캐러셀: 좌측 이미지 · 우측 설명 ── */
@@ -363,7 +393,7 @@
       max-width: 520px;
       margin-left: auto;
       margin-right: auto;
-      margin-bottom: 1rem;
+      margin-bottom: 0.35rem;
     }
 
     .carousel-viewport {
@@ -379,7 +409,7 @@
       align-items: stretch;
       will-change: transform;
       transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-      padding: 8px 0 10px;
+      padding: 0;
     }
 
     .carousel-track.is-instant {
@@ -461,7 +491,8 @@
       justify-content: center;
       align-items: center;
       gap: 8px;
-      padding: 0 20px 8px;
+      padding: 6px 20px 0;
+      margin: 0;
     }
 
     .carousel-dot {
@@ -642,6 +673,7 @@
       <a class="site-nav-item" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
       <a href="#" class="site-nav-item" id="navKakao" data-i18n="nav.kakao">카카오톡</a>
       <a href="#" class="site-nav-item" id="navYoutube" data-i18n="nav.youtube">유튜브</a>
+      <a href="#" class="site-nav-item" id="navEvent" data-i18n="nav.event">이벤트</a>
       <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
     </div>
   </header>
@@ -713,25 +745,11 @@
   </section>
 
   <div class="container">
-    <a href="mailto:joshualiuniv@gmail.com" class="link-btn email">
-      <span class="icon">✉️</span>
-      <span class="text">
-        <span class="label" data-i18n="link.mail.label">문의 메일</span>
-        <span class="desc">joshualiuniv@gmail.com</span>
-      </span>
-      <span class="arrow">›</span>
-    </a>
-
-    <a href="#" class="link-btn blog">
-      <span class="icon">📝</span>
-      <span class="text">
-        <span class="label" data-i18n="link.blog.label">블로그</span>
-        <span class="desc" data-i18n="link.blog.desc">레시피 & 맛집 정보</span>
-      </span>
-      <span class="arrow">›</span>
-    </a>
-
-    <p class="footer" data-i18n="footer.copy">© 2026 밥도둑 · Babdoduk</p>
+    <p class="footer-line">
+      <span data-i18n="footer.copy">© 2026 밥도둑 · Babdoduk</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <a href="mailto:joshualiuniv@gmail.com" class="footer-mail" data-i18n="footer.mail">문의 메일</a>
+    </p>
   </div>
 
   <script>
@@ -747,6 +765,7 @@
           'nav.foodlog': '먹방 가계부',
           'nav.kakao': '카카오톡',
           'nav.youtube': '유튜브',
+          'nav.event': '이벤트',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'popup.title': '밥도둑에 오신 걸 환영해요',
@@ -817,9 +836,8 @@
           'food.input.errNoDate': '날짜를 선택하세요.',
           'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
           'link.mail.label': '문의 메일',
-          'link.blog.label': '블로그',
-          'link.blog.desc': '레시피 & 맛집 정보',
-          'footer.copy': '© 2026 밥도둑 · Babdoduk'
+          'footer.copy': '© 2026 밥도둑 · Babdoduk',
+          'footer.mail': '문의 메일'
         },
         en: {
           docTitle: 'Babdoduk',
@@ -831,6 +849,7 @@
           'nav.foodlog': 'Food log',
           'nav.kakao': 'KakaoTalk',
           'nav.youtube': 'YouTube',
+          'nav.event': 'Event',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'popup.title': 'Welcome to Babdoduk',
@@ -902,9 +921,8 @@
           'food.input.errNoDate': 'Pick a date.',
           'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
           'link.mail.label': 'Email',
-          'link.blog.label': 'Blog',
-          'link.blog.desc': 'Recipes & food spots',
-          'footer.copy': '© 2026 Babdoduk'
+          'footer.copy': '© 2026 Babdoduk',
+          'footer.mail': 'Contact'
         }
       };
 
@@ -1275,6 +1293,13 @@
       }
       navJumpToSlide(document.getElementById('navKakao'), 1);
       navJumpToSlide(document.getElementById('navYoutube'), 0);
+
+      var navEvent = document.getElementById('navEvent');
+      if (navEvent && navEvent.getAttribute('href') === '#') {
+        navEvent.addEventListener('click', function (e) {
+          e.preventDefault();
+        });
+      }
     })();
   </script>
 
