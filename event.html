@@ -13,6 +13,9 @@
     body {
       font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
       color: #1d1d1f;
       overflow-x: hidden;
       padding: 64px 0 72px;
@@ -256,6 +259,7 @@
     .event-page-wrap {
       position: relative;
       z-index: 1;
+      flex: 1 0 auto;
       max-width: 560px;
       margin: 0 auto;
       padding: 8px 18px 28px;
@@ -388,6 +392,7 @@
     }
 
     .site-footer {
+      flex-shrink: 0;
       margin-top: 40px;
       background: #f5f5f7;
       color: #6e6e73;
@@ -568,7 +573,7 @@
         <div class="nav-mega" data-mega>
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
           <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" href="index.html" class="nav-mega-link" data-i18n="nav.introHome">홈</a>
+            <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -718,7 +723,7 @@
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
           'nav.intro': '소개',
-          'nav.introHome': '홈',
+          'nav.history': '역사',
           'nav.sns': 'SNS',
           'nav.instagram': '인스타그램',
           'nav.map': '맛집 지도',
@@ -791,7 +796,7 @@
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
           'nav.intro': 'About',
-          'nav.introHome': 'Home',
+          'nav.history': 'History',
           'nav.sns': 'SNS',
           'nav.instagram': 'Instagram',
           'nav.map': 'Food map',

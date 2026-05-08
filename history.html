@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>꽁밥 안내 · 밥도둑 Babdoduk</title>
+  <title>역사 · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -30,7 +30,8 @@
       pointer-events: none;
       background:
         radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.06) 0%, transparent 55%),
-        radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
+        radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(239, 246, 255, 0.35) 0%, transparent 22%, transparent 78%, rgba(239, 246, 255, 0.2) 100%);
     }
     .scroll-progress-wrap {
       position: relative;
@@ -227,32 +228,96 @@
       0% { background-position: 0% 50%; }
       100% { background-position: 200% 50%; }
     }
-    .event-page-wrap {
+
+    .history-wrap {
       position: relative;
       z-index: 1;
       flex: 1 0 auto;
-      max-width: 560px;
+      max-width: 520px;
       margin: 0 auto;
-      padding: 8px 18px 28px;
+      padding: 12px 22px 32px;
     }
-    .event-title {
-      font-size: clamp(1.15rem, 3.8vw, 1.35rem);
+    .history-head {
+      padding-bottom: 18px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .history-title-main {
+      font-size: clamp(1.45rem, 4.8vw, 1.95rem);
+      font-weight: 900;
+      color: #000;
+      letter-spacing: -0.04em;
+      line-height: 1.2;
+    }
+    .history-kicker {
+      margin-top: 8px;
+      font-size: 0.68rem;
       font-weight: 600;
-      letter-spacing: -0.03em;
-      margin-bottom: 6px;
-      color: #1d1d1f;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #86868b;
     }
-    .event-lead {
-      font-size: 0.8rem;
-      color: #6e6e73;
-      line-height: 1.55;
-      margin-bottom: 16px;
+
+    .timeline {
+      list-style: none;
+      position: relative;
+      padding: 0 0 0 32px;
     }
-    .ggongbab-body {
-      font-size: 0.84rem;
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: #9ca3af;
+      border-radius: 1px;
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 40px;
+      --accent: #3b82f6;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-marker {
+      position: absolute;
+      left: -26px;
+      top: 6px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: #fff;
+      box-sizing: border-box;
+      box-shadow: 0 0 0 2px #fbfbfd;
+    }
+    .timeline-year {
+      display: block;
+      font-size: clamp(1.2rem, 3.8vw, 1.5rem);
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .timeline-rule {
+      border: none;
+      border-top: 1px dashed rgba(0, 0, 0, 0.2);
+      margin: 10px 0 12px;
+    }
+    .timeline-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .timeline-desc {
+      font-size: 0.86rem;
       line-height: 1.65;
       color: #424245;
     }
+
     .site-footer {
       flex-shrink: 0;
       margin-top: 40px;
@@ -355,7 +420,7 @@
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
       <div class="nav-mega-row" role="menubar">
         <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
+          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
           </div>
@@ -381,7 +446,7 @@
           </div>
         </div>
         <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-haspopup="true" data-i18n="nav.ggongbab">꽁밥 안내</button>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.ggongbab">꽁밥 안내</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab.open">꽁밥 안내 보기</a>
           </div>
@@ -397,10 +462,35 @@
     </div>
   </header>
 
-  <main class="event-page-wrap">
-    <h1 class="event-title" data-i18n="ggongbab.title">꽁밥 안내</h1>
-    <p class="event-lead" data-i18n="ggongbab.lead">교내 식당 꽁밥(무료 급식) 관련 안내는 정리되는 대로 이 페이지에 올릴 예정입니다.</p>
-    <div class="ggongbab-body" data-i18n-html="ggongbab.detail"></div>
+  <main class="history-wrap">
+    <header class="history-head">
+      <h1 class="history-title-main" data-i18n="history.heroTitle">밥도둑의 역사</h1>
+      <p class="history-kicker" data-i18n="history.heroKicker">Timeline</p>
+    </header>
+
+    <ol class="timeline" aria-label="타임라인">
+      <li class="timeline-item" style="--accent: #3b82f6;">
+        <span class="timeline-marker" aria-hidden="true"></span>
+        <time class="timeline-year" data-i18n="history.t1.year">2024</time>
+        <hr class="timeline-rule" />
+        <h2 class="timeline-label" data-i18n="history.t1.label">첫 걸음</h2>
+        <p class="timeline-desc" data-i18n="history.t1.desc">인스타그램에서 일상과 맛집 기록을 올리며 밥도둑 채널의 이야기를 시작했습니다.</p>
+      </li>
+      <li class="timeline-item" style="--accent: #f97316;">
+        <span class="timeline-marker" aria-hidden="true"></span>
+        <time class="timeline-year" data-i18n="history.t2.year">2025</time>
+        <hr class="timeline-rule" />
+        <h2 class="timeline-label" data-i18n="history.t2.label">넓혀 가기</h2>
+        <p class="timeline-desc" data-i18n="history.t2.desc">네이버 맛집 지도를 정리하고, 숏폼·먹방 톤을 다듬으며 콘텐츠 영역을 넓혀 갔습니다.</p>
+      </li>
+      <li class="timeline-item" style="--accent: #a855f7;">
+        <span class="timeline-marker" aria-hidden="true"></span>
+        <time class="timeline-year" data-i18n="history.t3.year">2026</time>
+        <hr class="timeline-rule" />
+        <h2 class="timeline-label" data-i18n="history.t3.label">오늘</h2>
+        <p class="timeline-desc" data-i18n="history.t3.desc">먹방 가계부·이벤트·이 역사 페이지처럼 사이트에도 발을 들여 놓았습니다. 카이스트 기계과 학생으로서의 먹방 기록과 소소한 이벤트를 이어 가며, 앞으로의 이야기도 이 타임라인에 차곡차곡 쌓일 예정입니다.</p>
+      </li>
+    </ol>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -431,7 +521,7 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '꽁밥 안내 · 밥도둑 Babdoduk',
+          docTitle: '역사 · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
@@ -451,9 +541,17 @@
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'ggongbab.title': '꽁밥 안내',
-          'ggongbab.lead': '교내 식당 꽁밥(무료 급식) 관련 안내는 정리되는 대로 이 페이지에 올릴 예정입니다.',
-          'ggongbab.detail': '<p>식단·운영 시간·장소 등 구체적인 내용은 확정되면 업데이트할 예정이에요. 인스타그램 공지도 함께 확인해 주세요.</p>',
+          'history.heroTitle': '밥도둑의 역사',
+          'history.heroKicker': 'Timeline',
+          'history.t1.year': '2024',
+          'history.t1.label': '첫 걸음',
+          'history.t1.desc': '인스타그램에서 일상과 맛집 기록을 올리며 밥도둑 채널의 이야기를 시작했습니다.',
+          'history.t2.year': '2025',
+          'history.t2.label': '넓혀 가기',
+          'history.t2.desc': '네이버 맛집 지도를 정리하고, 숏폼·먹방 톤을 다듬으며 콘텐츠 영역을 넓혀 갔습니다.',
+          'history.t3.year': '2026',
+          'history.t3.label': '오늘',
+          'history.t3.desc': '먹방 가계부·이벤트·이 역사 페이지처럼 사이트에도 발을 들여 놓았습니다. 카이스트 기계과 학생으로서의 먹방 기록과 소소한 이벤트를 이어 가며, 앞으로의 이야기도 이 타임라인에 차곡차곡 쌓일 예정입니다.',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -465,7 +563,7 @@
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'Free meal info · Babdoduk',
+          docTitle: 'History · Babdoduk',
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
@@ -485,10 +583,17 @@
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'ggongbab.title': 'Free meal (Ggongbab) info',
-          'ggongbab.lead': 'Details about on-campus free meals will be posted here once they are organized.',
-          'ggongbab.detail':
-            '<p>Menus, hours, and locations will be added when confirmed. Check Instagram announcements as well.</p>',
+          'history.heroTitle': 'History of Babdoduk',
+          'history.heroKicker': 'Timeline',
+          'history.t1.year': '2024',
+          'history.t1.label': 'First steps',
+          'history.t1.desc': 'The Babdoduk story began on Instagram with everyday life and restaurant picks.',
+          'history.t2.year': '2025',
+          'history.t2.label': 'Growth',
+          'history.t2.desc': 'Naver food maps, short-form edits, and a clearer mukbang voice helped the channel grow.',
+          'history.t3.year': '2026',
+          'history.t3.label': 'Today',
+          'history.t3.desc': 'Food logs, events, and pages like this history section now live on the site. Still documenting meals and small happenings as a KAIST Mechanical Engineering student—more milestones will land on this timeline over time.',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
@@ -522,6 +627,9 @@
         if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
+        var tl = document.querySelector('.timeline');
+        if (tl && lang === 'en') tl.setAttribute('aria-label', 'Timeline');
+        else if (tl) tl.setAttribute('aria-label', '타임라인');
       }
       window.babdodukApplyLang = applyLang;
       window.babdodukGetLang = function () {
