@@ -69,13 +69,13 @@
       width: 100%;
       max-width: 100%;
       margin: 0 auto;
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       align-items: center;
-      justify-content: space-evenly;
-      gap: 4px;
-      padding: 8px 12px;
+      column-gap: 10px;
+      row-gap: 6px;
+      padding: 8px max(12px, env(safe-area-inset-left)) 8px max(12px, env(safe-area-inset-right));
       min-height: 44px;
-      flex-wrap: nowrap;
       background: rgba(255, 245, 248, 0.94);
       -webkit-backdrop-filter: saturate(180%) blur(16px);
       backdrop-filter: saturate(180%) blur(16px);
@@ -85,12 +85,14 @@
 
     /* ZIP(일러스트 템플릿)에 웹폰트 파일이 없어, Y2K 홀로 느낌은 CSS 그라데이션으로 구현 */
     .site-nav-wordmark {
-      flex: 0 1 auto;
+      justify-self: start;
+      align-self: center;
+      padding: 6px 10px;
       font-weight: 900;
       font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-      font-size: clamp(0.78rem, 3.2vw, 1rem);
-      letter-spacing: -0.05em;
-      line-height: 1;
+      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
       text-decoration: none;
       white-space: nowrap;
       background: linear-gradient(
@@ -147,10 +149,121 @@
     }
 
     .site-nav-item.site-nav-lang {
-      font-size: clamp(0.52rem, 1.85vw, 0.6rem);
+      justify-self: end;
+      align-self: center;
+      padding: 6px 10px;
+      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
       font-weight: 600;
-      letter-spacing: -0.03em;
-      opacity: 0.82;
+      letter-spacing: -0.02em;
+      opacity: 0.92;
+    }
+
+    .nav-mega-row {
+      justify-self: center;
+      align-self: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      column-gap: 10px;
+      row-gap: 4px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .nav-mega {
+      position: relative;
+    }
+    .nav-mega-trigger {
+      display: inline-flex;
+      align-items: center;
+      background: none;
+      border: none;
+      padding: 6px 10px;
+      margin: 0;
+      font-family: inherit;
+      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #1d1d1f;
+      cursor: pointer;
+      opacity: 0.88;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-mega-trigger:hover,
+    .nav-mega.is-open .nav-mega-trigger {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .nav-mega-trigger.is-current {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .nav-mega-trigger::after {
+      content: '';
+      display: inline-block;
+      width: 0;
+      height: 0;
+      margin-left: 3px;
+      border: solid transparent;
+      border-width: 3px 3px 0 3px;
+      border-top-color: #6e6e73;
+      vertical-align: 2px;
+      opacity: 0.75;
+    }
+    .nav-mega-panel {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 11.5rem;
+      max-width: min(18rem, calc(100vw - 24px));
+      padding: 6px 0;
+      background: rgba(255, 252, 253, 0.97);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      backdrop-filter: saturate(180%) blur(14px);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+      z-index: 10002;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s ease, visibility 0.18s, transform 0.18s ease;
+    }
+    .nav-mega.is-open .nav-mega-panel {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .nav-mega-link {
+      display: block;
+      padding: 8px 14px;
+      font-size: clamp(0.68rem, 2.2vw, 0.78rem);
+      font-weight: 500;
+      color: #1d1d1f;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      line-height: 1.35;
+      transition: background 0.12s;
+    }
+    .nav-mega-link:hover,
+    .nav-mega-link:focus-visible {
+      background: rgba(99, 102, 241, 0.08);
+      outline: none;
+    }
+    @media (max-width: 520px) {
+      .nav-mega-panel {
+        left: 50%;
+        transform: translate(-50%, -4px);
+      }
+      .nav-mega.is-open .nav-mega-panel {
+        transform: translate(-50%, 0);
+      }
     }
 
     .scroll-progress-bar {
@@ -759,12 +872,46 @@
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
       <a href="#" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
-      <a class="site-nav-item" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-      <a class="site-nav-item" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
-      <a class="site-nav-item" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
-      <a href="#" class="site-nav-item" id="navKakao" data-i18n="nav.kakao">카카오톡</a>
-      <a href="#" class="site-nav-item" id="navYoutube" data-i18n="nav.youtube">유튜브</a>
-      <a href="event.html" class="site-nav-item" id="navEvent" data-i18n="nav.event">이벤트</a>
+      <div class="nav-mega-row" role="menubar">
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" href="#" class="nav-mega-link nav-mega-home" data-i18n="nav.introHome">홈</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#" data-i18n="nav.youtube">유튜브</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#" data-i18n="nav.kakaoChannel">카카오톡 채널</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.map">맛집 지도</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map.open">네이버 맛집 지도</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.foodlog">먹방 가계부</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog.open">먹방 가계부 열기</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.ggongbab">꽁밥 안내</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab.open">꽁밥 안내 보기</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.event">이벤트</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="event.html" data-i18n="nav.event.open">이벤트 페이지</a>
+          </div>
+        </div>
+      </div>
       <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
     </div>
   </header>
@@ -873,12 +1020,21 @@
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '맨 위로',
+          'nav.intro': '소개',
+          'nav.introHome': '홈',
+          'nav.sns': 'SNS',
           'nav.instagram': '인스타그램',
           'nav.map': '맛집 지도',
+          'nav.map.open': '네이버 맛집 지도',
           'nav.foodlog': '먹방 가계부',
+          'nav.foodlog.open': '먹방 가계부 열기',
           'nav.kakao': '카카오톡',
+          'nav.kakaoChannel': '카카오톡 채널',
           'nav.youtube': '유튜브',
+          'nav.ggongbab': '꽁밥 안내',
+          'nav.ggongbab.open': '꽁밥 안내 보기',
           'nav.event': '이벤트',
+          'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'popup.title': '밥도둑에 오신 걸 환영해요',
@@ -964,12 +1120,21 @@
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Back to top',
+          'nav.intro': 'About',
+          'nav.introHome': 'Home',
+          'nav.sns': 'SNS',
           'nav.instagram': 'Instagram',
           'nav.map': 'Food map',
+          'nav.map.open': 'Naver food map',
           'nav.foodlog': 'Food log',
+          'nav.foodlog.open': 'Open food log',
           'nav.kakao': 'KakaoTalk',
+          'nav.kakaoChannel': 'KakaoTalk channel',
           'nav.youtube': 'YouTube',
+          'nav.ggongbab': 'Free meal info',
+          'nav.ggongbab.open': 'View free meal info',
           'nav.event': 'Event',
+          'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'popup.title': 'Welcome to Babdoduk',
@@ -1418,9 +1583,61 @@
           }
         });
       }
-      navJumpToSlide(document.getElementById('navKakao'), 1);
-      navJumpToSlide(document.getElementById('navYoutube'), 0);
+      navJumpToSlide(document.getElementById('navMegaKakao'), 1);
+      navJumpToSlide(document.getElementById('navMegaYoutube'), 0);
 
+      document.querySelectorAll('.nav-mega-home').forEach(function (el) {
+        if (el.getAttribute('href') !== '#') return;
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
+            m.classList.remove('is-open');
+            var t = m.querySelector('.nav-mega-trigger');
+            if (t) t.setAttribute('aria-expanded', 'false');
+          });
+        });
+      });
+
+      document.querySelectorAll('[data-mega]').forEach(function (mega) {
+        mega.addEventListener('click', function (e) {
+          e.stopPropagation();
+        });
+        var trigger = mega.querySelector('.nav-mega-trigger');
+        var panel = mega.querySelector('.nav-mega-panel');
+        if (!trigger || !panel) return;
+        trigger.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = !mega.classList.contains('is-open');
+          document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
+            m.classList.remove('is-open');
+            var t = m.querySelector('.nav-mega-trigger');
+            if (t) t.setAttribute('aria-expanded', 'false');
+          });
+          if (willOpen) {
+            mega.classList.add('is-open');
+            trigger.setAttribute('aria-expanded', 'true');
+          }
+        });
+      });
+      document.addEventListener('click', function () {
+        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
+          m.classList.remove('is-open');
+          var t = m.querySelector('.nav-mega-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
+          m.classList.remove('is-open');
+          var t = m.querySelector('.nav-mega-trigger');
+          if (t) {
+            t.setAttribute('aria-expanded', 'false');
+            t.focus();
+          }
+        });
+      });
     })();
   </script>
 
