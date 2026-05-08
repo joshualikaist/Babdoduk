@@ -107,6 +107,14 @@ vercel --prod
 vercel
 ```
 
+### Git 브랜치와 공개 버전 (main / beta)
+
+저장소를 Vercel·GitHub 등에 연결해 **푸시로 배포**한다면, 방문자에게 보이는 **공식 주소**는 보통 **Production 브랜치**(대부분 **`main`**)만 따라갑니다. merge가 fast-forward든 아니든 **그것과 무관**합니다.  
+베타에서만 커밋하고 `main`에 합치지 않으면 공식 사이트에는 반영되지 않습니다. **베타용 HTML 폴더를 따로 둘 필요는 없고**, 브랜치만 나누면 됩니다.
+
+- Vercel: **Settings → Git → Production Branch = `main`** 인지 확인  
+- 자세한 설명: **`docs/DEPLOYMENT_AND_BRANCHES.md`**
+
 ---
 
 ## 로컬에서만 미리 보기
