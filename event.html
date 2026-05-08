@@ -409,7 +409,7 @@
 
   <main class="event-page-wrap">
     <h1 class="event-title" data-i18n="event.title">이벤트</h1>
-    <p class="event-lead" data-i18n="event.lead">첫 번째 탭을 누르면 인스타그램 이벤트 안내(영상·게시물)로 새 창에서 연결돼요. 아래에서 기간·경품을 확인할 수 있습니다.</p>
+    <p class="event-lead" data-i18n="event.lead">첫 번째 탭은 인스타그램 이벤트 안내로 새 창에서 연결돼요. 두·세 번째는 태울석림제 부스 이벤트이며, 네 번째는 추후 공개 예정입니다.</p>
 
     <div class="event-tablist" role="tablist" aria-label="이벤트 목록" data-i18n-aria-key="event.tablistAria">
       <!-- 인스타 릴/게시물 주소가 정해지면 아래 href만 해당 URL로 바꾸면 됩니다. -->
@@ -429,12 +429,16 @@
         <span class="event-tab-title" data-i18n="event.e0.summary">밥도둑 팔로워 100명 이벤트</span>
       </a>
       <button type="button" class="event-tab" role="tab" id="eventTab1" aria-selected="false" aria-controls="eventPanel1" tabindex="-1">
-        <span class="event-tab-date" data-i18n="event.e1.date">2026. 7. 20</span>
-        <span class="event-tab-title" data-i18n="event.e1.summary">시청자 추천 맛집 투어</span>
+        <span class="event-tab-date" data-i18n="event.e1.date">2026. 5. 19 ~ 5. 21</span>
+        <span class="event-tab-title" data-i18n="event.e1.summary">태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑</span>
       </button>
       <button type="button" class="event-tab" role="tab" id="eventTab2" aria-selected="false" aria-controls="eventPanel2" tabindex="-1">
-        <span class="event-tab-date" data-i18n="event.e2.date">2026. 8. 10</span>
-        <span class="event-tab-title" data-i18n="event.e2.summary">콜라보 쿠킹 스페셜</span>
+        <span class="event-tab-date" data-i18n="event.e2.date">2026. 5. 19 ~ 5. 20</span>
+        <span class="event-tab-title" data-i18n="event.e2.summary">태울석림제 부스 〈카빙〉 KAKI X 밥도둑</span>
+      </button>
+      <button type="button" class="event-tab" role="tab" id="eventTab3" aria-selected="false" aria-controls="eventPanel3" tabindex="-1">
+        <span class="event-tab-date" data-i18n="event.e3.date">—</span>
+        <span class="event-tab-title" data-i18n="event.e3.summary">미정! 추후 공개 예정!</span>
       </button>
     </div>
 
@@ -447,6 +451,9 @@
       </div>
       <div class="event-panel" role="tabpanel" id="eventPanel2" aria-labelledby="eventTab2" hidden>
         <div class="event-panel-inner" data-i18n-html="event.e2.detail"></div>
+      </div>
+      <div class="event-panel" role="tabpanel" id="eventPanel3" aria-labelledby="eventTab3" hidden>
+        <div class="event-panel-inner" data-i18n-html="event.e3.detail"></div>
       </div>
     </div>
   </main>
@@ -496,21 +503,25 @@
           'popup.start': '시작하기',
           'popup.snooze24h': '하루 동안 보지 않기',
           'event.title': '이벤트',
-          'event.lead': '첫 번째 탭을 누르면 인스타그램 이벤트 안내(영상·게시물)로 새 창에서 연결돼요. 아래에서 기간·경품을 확인할 수 있습니다.',
+          'event.lead': '첫 번째 탭은 인스타그램 이벤트 안내로 새 창에서 연결돼요. 두·세 번째는 태울석림제 부스 이벤트이며, 네 번째는 추후 공개 예정입니다.',
           'event.tablistAria': '이벤트 목록',
           'event.e0.tabAria': '인스타그램 이벤트 안내 열기 (새 창)',
           'event.e0.date': '2026. 5. 9 ~ 2026. 5. 16',
           'event.e0.summary': '밥도둑 팔로워 100명 이벤트',
           'event.e0.detail':
             '<p><strong>이벤트 유형</strong> · 팔로워 100명 달성 기념 이벤트입니다.</p><p><strong>이벤트 기간</strong> · 2026년 5월 9일(토) ~ 2026년 5월 16일(토)</p><p><strong>경품</strong> · 메가커피 아메리카노 모바일 쿠폰을 <strong>5명</strong>에게 증정합니다.</p><p><strong>참여 방법</strong> · 상단 첫 탭을 눌러 인스타그램에 올라온 이벤트 안내 영상·게시물을 확인하고, 게시물에 안내된 대로 참여해 주세요. (영상·게시물 URL은 추후 이 탭 링크로 바꿀 예정입니다.)</p>',
-          'event.e1.date': '2026. 7. 20 (월)',
-          'event.e1.summary': '시청자 추천 맛집 투어',
+          'event.e1.date': '2026. 5. 19 ~ 2026. 5. 21',
+          'event.e1.summary': '태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑',
           'event.e1.detail':
-            '<p><strong>내용</strong> · 시청자분들이 추천해 주신 맛집을 모아 소개하는 기획이에요.</p><p><strong>신청</strong> · 추천식당은 카카오 채널 또는 이메일로 보내 주시면 검토 후 일정에 반영해 볼게요.</p>',
-          'event.e2.date': '2026. 8. 10 (월)',
-          'event.e2.summary': '콜라보 쿠킹 스페셜',
+            '<p><strong>행사</strong> · 태울석림제 부스 — 〈언빌리버블 버블티〉 STROKE × 밥도둑 콜라보입니다.</p><p><strong>진행 기간</strong> · 2026년 5월 19일 ~ 2026년 5월 21일</p><p><strong>참여</strong> · <strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>STROKE</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요.</p>',
+          'event.e2.date': '2026. 5. 19 ~ 2026. 5. 20',
+          'event.e2.summary': '태울석림제 부스 〈카빙〉 KAKI X 밥도둑',
           'event.e2.detail':
-            '<p><strong>콜라보</strong> · 크리에이터 한 분과 함께하는 요리 스페셜 영상·짧은 라이브를 준비 중이에요.</p><p><strong>공지</strong> · 확정되는 대로 인스타 피드와 이 페이지에 업데이트할게요.</p>',
+            '<p><strong>행사</strong> · 태울석림제 부스 — 〈카빙〉 KAKI × 밥도둑 콜라보입니다.</p><p><strong>진행 기간</strong> · 2026년 5월 19일 ~ 2026년 5월 20일</p><p><strong>참여</strong> · <strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>KAKI</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요.</p>',
+          'event.e3.date': '일정 미정',
+          'event.e3.summary': '미정! 추후 공개 예정!',
+          'event.e3.detail':
+            '<p>일정·내용은 확정되는 대로 이 페이지와 인스타그램에 공지할 예정입니다.</p>',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -539,21 +550,25 @@
           'popup.start': 'Start',
           'popup.snooze24h': "Don't show for 24 hours",
           'event.title': 'Events',
-          'event.lead': 'The first tab opens the Instagram event post or video in a new tab. Details on timing and prizes are below.',
+          'event.lead': 'The first tab opens the Instagram event in a new tab. The second and third are Taeul Seoklim Festival booth events; the fourth will be announced later.',
           'event.tablistAria': 'Event list',
           'event.e0.tabAria': 'Open Instagram event instructions (new tab)',
           'event.e0.date': 'May 9–16, 2026',
           'event.e0.summary': 'Babdoduk 100 followers event',
           'event.e0.detail':
             '<p><strong>Type</strong> · Follower milestone giveaway (100 followers).</p><p><strong>Period</strong> · Saturday, May 9 through Saturday, May 16, 2026.</p><p><strong>Prize</strong> · Mega Coffee Americano mobile coupons for <strong>5 winners</strong>.</p><p><strong>How to enter</strong> · Open the first tab to view the Instagram post or video and follow the steps there. (The tab link will be updated to the exact reel/post URL later.)</p>',
-          'event.e1.date': 'Mon, Jul 20, 2026',
-          'event.e1.summary': 'Viewer-picked restaurant tour',
+          'event.e1.date': 'May 19–21, 2026',
+          'event.e1.summary': 'Taeul Seoklim Festival booth: Unbelievable Bubble Tea — STROKE × Babdoduk',
           'event.e1.detail':
-            '<p><strong>About</strong> · Visiting and featuring restaurants recommended by viewers.</p><p><strong>Submit</strong> · Send picks via Kakao channel or email; we will try to work them into the schedule.</p>',
-          'event.e2.date': 'Mon, Aug 10, 2026',
-          'event.e2.summary': 'Collab cooking special',
+            '<p><strong>Event</strong> · Festival booth — Unbelievable Bubble Tea (STROKE) × Babdoduk collaboration.</p><p><strong>Dates</strong> · May 19–21, 2026.</p><p><strong>How to join</strong> · <strong>Story share event</strong>. When you share on Instagram Stories, tag both <strong>STROKE</strong> and <strong>Babdoduk</strong>.</p>',
+          'event.e2.date': 'May 19–20, 2026',
+          'event.e2.summary': 'Taeul Seoklim Festival booth: Carving — KAKI × Babdoduk',
           'event.e2.detail':
-            '<p><strong>Collab</strong> · A cooking special with another creator (video + short live). More info soon.</p><p><strong>Updates</strong> · We will post on Instagram and refresh this page when details are fixed.</p>',
+            '<p><strong>Event</strong> · Festival booth — Carving (KAKI) × Babdoduk collaboration.</p><p><strong>Dates</strong> · May 19–20, 2026.</p><p><strong>How to join</strong> · <strong>Story share event</strong>. When you share on Instagram Stories, tag both <strong>KAKI</strong> and <strong>Babdoduk</strong>.</p>',
+          'event.e3.date': 'To be announced',
+          'event.e3.summary': 'TBA — details coming soon!',
+          'event.e3.detail':
+            '<p>Schedule and details will be posted here and on Instagram once they are confirmed.</p>',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
