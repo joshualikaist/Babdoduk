@@ -227,11 +227,12 @@
       0% { background-position: 0% 50%; }
       100% { background-position: 200% 50%; }
     }
-    .event-page-wrap {
+    .ggongbab-page-wrap {
       position: relative;
       z-index: 1;
       flex: 1 0 auto;
-      max-width: 560px;
+      width: 100%;
+      max-width: 960px;
       margin: 0 auto;
       padding: 8px 18px 28px;
     }
@@ -248,10 +249,140 @@
       line-height: 1.55;
       margin-bottom: 16px;
     }
-    .ggongbab-body {
-      font-size: 0.84rem;
-      line-height: 1.65;
+    .ggongbab-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+      margin-top: 8px;
+    }
+    .ggongbab-map-col { min-width: 0; }
+    .ggongbab-map-wrap {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #e8e8ed;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+    .ggongbab-map-wrap iframe {
+      display: block;
+      width: 100%;
+      height: min(48vh, 400px);
+      border: 0;
+    }
+    .ggongbab-map-caption {
+      font-size: 0.72rem;
+      color: #6e6e73;
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+    .ggongbab-schedule-col { min-width: 0; }
+    .event-tablist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .event-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .event-tab:hover { border-color: rgba(99, 102, 241, 0.32); }
+    .event-tab[aria-selected="true"] {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow:
+        0 4px 18px rgba(99, 102, 241, 0.12),
+        0 0 0 2px rgba(99, 102, 241, 0.14);
+    }
+    .event-tab-date {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #9333ea;
+      letter-spacing: 0.02em;
+    }
+    .event-tab-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1d1d1f;
+      line-height: 1.3;
+    }
+    .event-panels {
+      border-radius: 0;
+      border: none;
+      background: transparent;
+      padding: 2px 0 0;
+      min-height: 80px;
+    }
+    .event-panel { display: none; }
+    .event-panel.is-active { display: block; }
+    .event-panel-inner {
+      font-size: 0.82rem;
+      line-height: 1.55;
       color: #424245;
+    }
+    .event-detail-sheet {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .event-detail-row {
+      display: grid;
+      grid-template-columns: 8.75rem minmax(0, 1fr);
+      gap: 0.35rem 0.75rem;
+      align-items: start;
+      padding: 0.4rem 0;
+    }
+    html[lang="en"] .event-detail-row:not(.event-detail-row--solo) {
+      grid-template-columns: 9.75rem minmax(0, 1fr);
+    }
+    .event-detail-row--solo {
+      grid-template-columns: 1fr;
+    }
+    .event-detail-row--solo .event-detail-value {
+      grid-column: 1 / -1;
+    }
+    .event-detail-label {
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: #1d1d1f;
+      letter-spacing: -0.02em;
+      line-height: 1.5;
+    }
+    .event-detail-value {
+      font-weight: 400;
+      font-size: 0.82rem;
+      color: #424245;
+      line-height: 1.55;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+    @media (max-width: 760px) {
+      .ggongbab-split {
+        grid-template-columns: 1fr;
+      }
+      .ggongbab-map-wrap iframe {
+        height: min(42vh, 320px);
+      }
+    }
+    @media (max-width: 360px) {
+      .event-detail-row:not(.event-detail-row--solo) {
+        grid-template-columns: 1fr;
+        gap: 0.2rem 0;
+        padding: 0.35rem 0;
+      }
     }
     .site-footer {
       flex-shrink: 0;
@@ -397,10 +528,51 @@
     </div>
   </header>
 
-  <main class="event-page-wrap">
+  <main class="ggongbab-page-wrap">
     <h1 class="event-title" data-i18n="ggongbab.title">꽁밥 안내</h1>
-    <p class="event-lead" data-i18n="ggongbab.lead">교내 식당 꽁밥(무료 급식) 관련 안내는 정리되는 대로 이 페이지에 올릴 예정입니다.</p>
-    <div class="ggongbab-body" data-i18n-html="ggongbab.detail"></div>
+    <p class="event-lead" data-i18n="ggongbab.lead">왼쪽은 KAIST 캠퍼스 위치 안내, 오른쪽은 꽁밥·행사 일정 탭입니다. 세부 식단은 학교 공지를 함께 확인해 주세요.</p>
+
+    <div class="ggongbab-split">
+      <div class="ggongbab-map-col">
+        <div class="ggongbab-map-wrap">
+          <iframe
+            id="ggongbabMapFrame"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=Korea+Advanced+Institute+of+Science+and+Technology+Daejeon&z=15&hl=ko&output=embed"
+            title="KAIST 캠퍼스 지도"
+          ></iframe>
+        </div>
+        <p class="ggongbab-map-caption" data-i18n="ggongbab.mapCaption">위 지도는 KAIST 대전 캠퍼스 대략 위치입니다. 식당·건물 위치는 학교 공식 안내를 확인해 주세요.</p>
+      </div>
+      <div class="ggongbab-schedule-col">
+        <div class="event-tablist" role="tablist" data-i18n-aria-key="gb.tablistAria" aria-label="꽁밥·행사 일정">
+          <button type="button" class="event-tab" role="tab" id="gbTab0" aria-selected="true" aria-controls="gbPanel0" data-i18n-aria-key="gb.e0.tabAria" aria-label="평일 일정">
+            <span class="event-tab-date" data-i18n="gb.e0.date">평일</span>
+            <span class="event-tab-title" data-i18n="gb.e0.summary">기본 운영 안내</span>
+          </button>
+          <button type="button" class="event-tab" role="tab" id="gbTab1" aria-selected="false" aria-controls="gbPanel1" data-i18n-aria-key="gb.e1.tabAria" aria-label="행사 일정" tabindex="-1">
+            <span class="event-tab-date" data-i18n="gb.e1.date">행사</span>
+            <span class="event-tab-title" data-i18n="gb.e1.summary">석림제·특별 운영</span>
+          </button>
+          <button type="button" class="event-tab" role="tab" id="gbTab2" aria-selected="false" aria-controls="gbPanel2" data-i18n-aria-key="gb.e2.tabAria" aria-label="참고·문의" tabindex="-1">
+            <span class="event-tab-date" data-i18n="gb.e2.date">참고</span>
+            <span class="event-tab-title" data-i18n="gb.e2.summary">공지·문의</span>
+          </button>
+        </div>
+        <div class="event-panels">
+          <div class="event-panel is-active" role="tabpanel" id="gbPanel0" aria-labelledby="gbTab0">
+            <div class="event-panel-inner" data-i18n-html="gb.e0.detail"></div>
+          </div>
+          <div class="event-panel" role="tabpanel" id="gbPanel1" aria-labelledby="gbTab1" hidden>
+            <div class="event-panel-inner" data-i18n-html="gb.e1.detail"></div>
+          </div>
+          <div class="event-panel" role="tabpanel" id="gbPanel2" aria-labelledby="gbTab2" hidden>
+            <div class="event-panel-inner" data-i18n-html="gb.e2.detail"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -452,8 +624,33 @@
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'ggongbab.title': '꽁밥 안내',
-          'ggongbab.lead': '교내 식당 꽁밥(무료 급식) 관련 안내는 정리되는 대로 이 페이지에 올릴 예정입니다.',
-          'ggongbab.detail': '<p>식단·운영 시간·장소 등 구체적인 내용은 확정되면 업데이트할 예정이에요. 인스타그램 공지도 함께 확인해 주세요.</p>',
+          'ggongbab.lead': '왼쪽은 KAIST 캠퍼스 위치 안내, 오른쪽은 꽁밥·행사 일정 탭입니다. 세부 식단은 학교 공지를 함께 확인해 주세요.',
+          'ggongbab.mapCaption': '위 지도는 KAIST 대전 캠퍼스 대략 위치입니다. 식당·건물 위치는 학교 공식 안내를 확인해 주세요.',
+          'ggongbab.mapFrameTitle': 'KAIST 대전 캠퍼스 지도',
+          'gb.tablistAria': '꽁밥·행사 일정',
+          'gb.e0.tabAria': '평일 기본 운영',
+          'gb.e0.date': '평일',
+          'gb.e0.summary': '기본 운영 안내',
+          'gb.e0.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">안내</div><div class="event-detail-value">평일 꽁밥(무료 급식) 운영 시간·장소·식단은 <strong>학교 공식 공지</strong>를 기준으로 합니다. 이 탭은 요약용이며, 학교 안내와 다를 경우 공지가 우선입니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">업데이트</div><div class="event-detail-value">시행 날짜·메뉴가 확정되면 이 페이지와 인스타그램에 반영할 예정입니다.</div></div>' +
+            '</div>',
+          'gb.e1.tabAria': '행사·특별 운영',
+          'gb.e1.date': '행사',
+          'gb.e1.summary': '석림제·특별 운영',
+          'gb.e1.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">석림제 등</div><div class="event-detail-value">태울석림제 등 교내 행사 기간에는 꽁밥 운영이 달라질 수 있습니다. <strong>행사 일정·식당 운영</strong>은 학교 및 학생회 공지를 확인해 주세요.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">이 페이지</div><div class="event-detail-value">행사별 요약은 정리되는 대로 이 탭에 올릴 예정입니다.</div></div>' +
+            '</div>',
+          'gb.e2.tabAria': '공지·문의',
+          'gb.e2.date': '참고',
+          'gb.e2.summary': '공지·문의',
+          'gb.e2.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row event-detail-row--solo"><div class="event-detail-value">가장 빠른 공지는 <strong>인스타그램</strong>과 학교·단체 공식 채널을 확인해 주세요. 사이트 하단 이메일로 문의할 수 있습니다.</div></div>' +
+            '</div>',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -486,9 +683,33 @@
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'ggongbab.title': 'Free meal (Ggongbab) info',
-          'ggongbab.lead': 'Details about on-campus free meals will be posted here once they are organized.',
-          'ggongbab.detail':
-            '<p>Menus, hours, and locations will be added when confirmed. Check Instagram announcements as well.</p>',
+          'ggongbab.lead': 'Campus map on the left; free-meal and event notes on the right. Always double-check official school notices for menus.',
+          'ggongbab.mapCaption': 'Approximate location of KAIST’s Daejeon campus. For buildings and dining halls, follow official school info.',
+          'ggongbab.mapFrameTitle': 'KAIST Daejeon campus map',
+          'gb.tablistAria': 'Schedule and events',
+          'gb.e0.tabAria': 'Weekday operations',
+          'gb.e0.date': 'Weekdays',
+          'gb.e0.summary': 'Default operations',
+          'gb.e0.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">Note</div><div class="event-detail-value">Weekday free-meal hours, venues, and menus follow <strong>official school notices</strong>. This tab is a summary only—if anything differs, the school notice wins.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Updates</div><div class="event-detail-value">Once dates and menus are confirmed, they’ll be reflected here and on Instagram.</div></div>' +
+            '</div>',
+          'gb.e1.tabAria': 'Festivals & special hours',
+          'gb.e1.date': 'Events',
+          'gb.e1.summary': 'Festival & special service',
+          'gb.e1.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">Festivals</div><div class="event-detail-value">During events such as the Taeul Seoklim Festival, free-meal service may change. Check <strong>official school and student announcements</strong> for schedules and cafeteria hours.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">This page</div><div class="event-detail-value">Event-specific notes will be added here when organized.</div></div>' +
+            '</div>',
+          'gb.e2.tabAria': 'References',
+          'gb.e2.date': 'Info',
+          'gb.e2.summary': 'Notices & contact',
+          'gb.e2.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row event-detail-row--solo"><div class="event-detail-value">For the latest updates, check <strong>Instagram</strong> and official school channels. You can also use the email address in the site footer.</div></div>' +
+            '</div>',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
@@ -522,6 +743,8 @@
         if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
+        var mapF = document.getElementById('ggongbabMapFrame');
+        if (mapF && T['ggongbab.mapFrameTitle']) mapF.setAttribute('title', T['ggongbab.mapFrameTitle']);
       }
       window.babdodukApplyLang = applyLang;
       window.babdodukGetLang = function () {
@@ -554,6 +777,28 @@
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll);
       onScroll();
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var root = document.querySelector('.ggongbab-schedule-col');
+      if (!root) return;
+      var tabs = [].slice.call(root.querySelectorAll('.event-tab'));
+      var panels = [].slice.call(root.querySelectorAll('.event-panel'));
+      function select(i) {
+        tabs.forEach(function (tab, j) {
+          var on = j === i;
+          tab.setAttribute('aria-selected', on ? 'true' : 'false');
+          tab.tabIndex = on ? 0 : -1;
+          panels[j].classList.toggle('is-active', on);
+          if (on) panels[j].removeAttribute('hidden');
+          else panels[j].setAttribute('hidden', '');
+        });
+      }
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener('click', function () { select(i); });
+      });
     })();
   </script>
 
