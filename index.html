@@ -636,28 +636,29 @@
       overflow: hidden;
       text-decoration: none;
       color: inherit;
-      border: 1px solid rgba(255, 255, 255, 0.75);
-      background: linear-gradient(165deg, #ffffff 0%, #f3f3f5 100%);
-      box-shadow:
-        0 1px 1px rgba(255, 255, 255, 0.95) inset,
-        0 2px 0 rgba(255, 255, 255, 0.45) inset,
-        0 14px 36px rgba(0, 0, 0, 0.11),
-        0 6px 14px rgba(0, 0, 0, 0.06),
-        0 0 0 1px rgba(0, 0, 0, 0.05);
+      background: #fff;
+      border: 1px solid #0a0a0a;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
     }
 
     .slide-media {
       flex: 0 0 44%;
       min-width: 0;
       min-height: 168px;
+      background-color: #f5f5f7;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       transition: transform 0.45s ease;
     }
 
-    .carousel-slide:hover .slide-media {
-      transform: scale(1.04);
+    .slide-media.slide-media--insta {
+      background-color: #fff;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
     }
 
     .slide-copy {
@@ -668,7 +669,7 @@
       align-items: flex-start;
       text-align: left;
       padding: 1rem 1.15rem 1rem 1.35rem;
-      background: linear-gradient(145deg, #fafafa 0%, #ffffff 72%);
+      background: #fff;
       min-width: 0;
     }
 
@@ -912,8 +913,8 @@
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#" data-i18n="nav.youtube">유튜브</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#" data-i18n="nav.kakaoChannel">카카오톡 채널</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -968,8 +969,29 @@
   <section class="hero-carousel" id="heroCarousel" aria-label="밥도둑 주요 링크">
     <div class="carousel-viewport" id="carouselViewport" tabindex="0" aria-roledescription="carousel">
       <div class="carousel-track" id="carouselTrack">
+        <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="0">
+          <div
+            class="slide-media slide-media--insta"
+            style="background-image: url('images/carousel-instagram.png');"
+            role="img"
+            aria-hidden="true"
+          ></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">Instagram</span>
+            <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
+            <p class="slide-desc" data-i18n="slide.insta.desc">@babdodukms · 일상과 레시피를 만나 보세요</p>
+          </div>
+        </a>
+        <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="1">
+          <div class="slide-media" style="background-image: url('images/carousel-naver-map.png'), linear-gradient(145deg, #22d3ee 0%, #06b6d4 45%, #10b981 100%);" role="img" aria-hidden="true"></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">Map</span>
+            <h2 class="slide-title" data-i18n="slide.map.title">밥도둑의 맛집 지도</h2>
+            <p class="slide-desc" data-i18n="slide.map.desc">네이버 지도에서 정리한 맛집 리스트</p>
+          </div>
+        </a>
         <!-- 유튜브 채널 URL 로 href 를 바꾸세요 -->
-        <a class="carousel-slide" href="#" data-slide="0" id="slideYoutube">
+        <a class="carousel-slide" href="#" data-slide="2" id="slideYoutube">
           <div class="slide-media" style="background-image: url('images/carousel-youtube.png'), linear-gradient(145deg, #f5f5f5 0%, #e8e8ea 50%, #ddd 100%);" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">YouTube</span>
@@ -978,28 +1000,12 @@
           </div>
         </a>
         <!-- 카카오톡 채널 주소로 href 를 바꾸세요 (예: https://pf.kakao.com/_xxxxx) -->
-        <a class="carousel-slide" href="#" data-slide="1" id="slideKakao">
+        <a class="carousel-slide" href="#" data-slide="3" id="slideKakao">
           <div class="slide-media" style="background-image: url('images/carousel-kakao.png'), linear-gradient(145deg, #fef9c3 0%, #fde047 45%, #facc15 100%);" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">KakaoTalk</span>
             <h2 class="slide-title" data-i18n="slide.kakao.title">카카오톡 문의 채널</h2>
             <p class="slide-desc" data-i18n="slide.kakao.desc">채널에서 편하게 문의해 주세요</p>
-          </div>
-        </a>
-        <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="2">
-          <div class="slide-media" style="background-image: url('images/carousel-instagram.png'), linear-gradient(145deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);" role="img" aria-hidden="true"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">Instagram</span>
-            <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
-            <p class="slide-desc" data-i18n="slide.insta.desc">@babdodukms · 일상과 레시피를 만나 보세요</p>
-          </div>
-        </a>
-        <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="3">
-          <div class="slide-media" style="background-image: url('images/carousel-naver-map.png'), linear-gradient(145deg, #22d3ee 0%, #06b6d4 45%, #10b981 100%);" role="img" aria-hidden="true"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">Map</span>
-            <h2 class="slide-title" data-i18n="slide.map.title">밥도둑의 맛집 지도</h2>
-            <p class="slide-desc" data-i18n="slide.map.desc">네이버 지도에서 정리한 맛집 리스트</p>
           </div>
         </a>
       </div>
@@ -1021,7 +1027,7 @@
         <div class="footer-apple-col footer-apple-col--left">
           <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain"> 문의 : joshualiuniv@gmail.com</span>
+          <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
         <nav
           class="footer-apple-col footer-apple-col--center"
@@ -1061,8 +1067,8 @@
           'nav.foodlog': '먹방 가계부',
           'nav.foodlog.open': '먹방 가계부 열기',
           'nav.kakao': '카카오톡',
-          'nav.kakaoChannel': '카카오톡 채널',
-          'nav.youtube': '유튜브',
+          'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
+          'nav.youtube': '유튜브 (개설 예정)',
           'nav.ggongbab': '꽁밥 안내',
           'nav.ggongbab.open': '꽁밥 안내 보기',
           'nav.event': '이벤트',
@@ -1105,10 +1111,6 @@
           'food.pickYear': '연도',
           'food.pickMonth': '월',
           'food.pickWeek': '주차',
-          'food.tableMonthTitle': '월별 합계',
-          'food.tableWeekTitle': '주차별 합계',
-          'food.colPeriod': '구간',
-          'food.colTotal': '합계',
           'food.calPrev': '이전 달',
           'food.calNext': '다음 달',
           'cal.sun': '일',
@@ -1121,8 +1123,6 @@
           'food.detailHint': '날짜(숫자)를 누르면 그날 상세가 표시됩니다.',
           'food.fetchErr':
             '가계부 데이터를 불러오지 못했습니다. 로컬 미리보기 대신 Live Server나 배포 주소로 열어 주세요. 저장된 금액 목록은 사이트의 data 폴더를 참고하면 됩니다.',
-          'food.tableMonthAria': '월별 지출 합계',
-          'food.tableWeekAria': '주차별 지출 합계',
           'food.input.sectionTitle': '오늘 지출 입력',
           'food.input.dateLabel': '날짜',
           'food.input.colMeal': '식사 종류',
@@ -1132,7 +1132,7 @@
           'food.input.reset': '초기화',
           'food.input.save': '저장하기',
           'food.input.hint':
-            '저장은 이 브라우저에만 남고, 아래 표·달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.',
+            '저장은 이 브라우저에만 남고, 월·주 요약과 달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.',
           'food.input.saved': '저장했습니다. 아래 집계와 달력을 확인하세요.',
           'food.input.errNoDate': '날짜를 선택하세요.',
           'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
@@ -1161,8 +1161,8 @@
           'nav.foodlog': 'Food log',
           'nav.foodlog.open': 'Open food log',
           'nav.kakao': 'KakaoTalk',
-          'nav.kakaoChannel': 'KakaoTalk channel',
-          'nav.youtube': 'YouTube',
+          'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
+          'nav.youtube': 'YouTube (coming soon)',
           'nav.ggongbab': 'Free meal info',
           'nav.ggongbab.open': 'View free meal info',
           'nav.event': 'Event',
@@ -1206,10 +1206,6 @@
           'food.pickYear': 'Year',
           'food.pickMonth': 'Month',
           'food.pickWeek': 'Week',
-          'food.tableMonthTitle': 'By month',
-          'food.tableWeekTitle': 'By ISO week',
-          'food.colPeriod': 'Period',
-          'food.colTotal': 'Total',
           'food.calPrev': 'Previous month',
           'food.calNext': 'Next month',
           'cal.sun': 'Su',
@@ -1222,8 +1218,6 @@
           'food.detailHint': 'Tap a date with a total to see details.',
           'food.fetchErr':
             'Could not load expense data. Open the site through a local server or your deployed URL, not as a raw file. The bundled expense list lives in the site’s data folder.',
-          'food.tableMonthAria': 'Totals by month',
-          'food.tableWeekAria': 'Totals by ISO week',
           'food.input.sectionTitle': 'Add spending',
           'food.input.dateLabel': 'Date',
           'food.input.colMeal': 'Meal',
@@ -1233,7 +1227,7 @@
           'food.input.reset': 'Reset',
           'food.input.save': 'Save',
           'food.input.hint':
-            'Saves only in this browser and updates the tables and calendar below. Saving the same date overwrites that day. For backup, keep a copy aligned with the expense list file in the site’s data folder.',
+            'Saves only in this browser and updates the month/week summaries and calendar. Saving the same date overwrites that day. For backup, keep a copy aligned with the expense list file in the site’s data folder.',
           'food.input.saved': 'Saved. Check the summaries and calendar below.',
           'food.input.errNoDate': 'Pick a date.',
           'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
@@ -1282,11 +1276,6 @@
 
         var hc = document.getElementById('heroCarousel');
         if (hc && T['carousel.section']) hc.setAttribute('aria-label', T['carousel.section']);
-
-        var ftMonth = document.getElementById('foodTableMonth');
-        var ftWeek = document.getElementById('foodTableWeek');
-        if (ftMonth && T['food.tableMonthAria']) ftMonth.setAttribute('aria-label', T['food.tableMonthAria']);
-        if (ftWeek && T['food.tableWeekAria']) ftWeek.setAttribute('aria-label', T['food.tableWeekAria']);
 
         var img = document.getElementById('profileAvatarImg');
         if (img && T['profile.imgAlt']) img.setAttribute('alt', T['profile.imgAlt']);

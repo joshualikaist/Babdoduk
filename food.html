@@ -595,7 +595,7 @@
       width: 100%;
       padding: 0 16px;
       margin: 0 auto 1.25rem;
-      max-width: 520px;
+      max-width: 980px;
     }
 
     .food-tracker {
@@ -619,6 +619,27 @@
       color: #86868b;
       line-height: 1.45;
       margin-bottom: 14px;
+    }
+
+    .food-tracker-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px 22px;
+      align-items: start;
+    }
+
+    .food-tracker-col {
+      min-width: 0;
+    }
+
+    .food-tracker-col--input .food-input-panel {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 900px) {
+      .food-tracker-columns {
+        grid-template-columns: 1fr;
+      }
     }
 
     .food-summary-cards {
@@ -691,51 +712,6 @@
       .food-summary-cards {
         grid-template-columns: 1fr;
       }
-    }
-
-    .food-lists {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .food-list-block h3 {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #424245;
-      margin-bottom: 8px;
-    }
-
-    .food-table-wrap {
-      overflow-x: auto;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 0, 0, 0.06);
-    }
-
-    .food-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.72rem;
-    }
-
-    .food-table th,
-    .food-table td {
-      padding: 8px 10px;
-      text-align: left;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .food-table th {
-      background: rgba(0, 0, 0, 0.03);
-      font-weight: 600;
-      color: #6e6e73;
-      white-space: nowrap;
-    }
-
-    .food-table td:last-child {
-      text-align: right;
-      font-weight: 700;
-      white-space: nowrap;
     }
 
     .food-cal-nav {
@@ -1065,20 +1041,18 @@
       overflow: hidden;
       text-decoration: none;
       color: inherit;
-      border: 1px solid rgba(255, 255, 255, 0.75);
-      background: linear-gradient(165deg, #ffffff 0%, #f3f3f5 100%);
-      box-shadow:
-        0 1px 1px rgba(255, 255, 255, 0.95) inset,
-        0 2px 0 rgba(255, 255, 255, 0.45) inset,
-        0 14px 36px rgba(0, 0, 0, 0.11),
-        0 6px 14px rgba(0, 0, 0, 0.06),
-        0 0 0 1px rgba(0, 0, 0, 0.05);
+      background: #fff;
+      border: 1px solid #0a0a0a;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
     }
 
     .slide-media {
       flex: 0 0 44%;
       min-width: 0;
       min-height: 168px;
+      background-color: #f5f5f7;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -1097,7 +1071,7 @@
       align-items: flex-start;
       text-align: left;
       padding: 1rem 1.15rem 1rem 1.35rem;
-      background: linear-gradient(145deg, #fafafa 0%, #ffffff 72%);
+      background: #fff;
       min-width: 0;
     }
 
@@ -1332,8 +1306,8 @@
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#" data-i18n="nav.youtube">유튜브</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#" data-i18n="nav.kakaoChannel">카카오톡 채널</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -1368,8 +1342,10 @@
   <div class="food-tracker-wrap">
     <section class="food-tracker" id="foodTracker" aria-labelledby="foodTrackerTitle">
       <h2 id="foodTrackerTitle" class="food-tracker-heading" data-i18n="food.heading">먹방 가계부</h2>
-      <p class="food-tracker-note" data-i18n-html="food.note">인스타에 적은 하루 <strong>총액</strong>을 아래에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.</p>
+      <p class="food-tracker-note" data-i18n-html="food.note">인스타에 적은 하루 <strong>총액</strong>을 오늘 지출 입력란에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.</p>
 
+      <div class="food-tracker-columns">
+        <div class="food-tracker-col food-tracker-col--input">
       <div class="food-input-panel" id="foodInputPanel">
         <div class="food-input-title" data-i18n="food.input.sectionTitle">오늘 지출 입력</div>
         <div class="food-input-toolbar">
@@ -1402,9 +1378,10 @@
           <button type="button" class="food-input-reset" id="foodInputReset" data-i18n="food.input.reset">초기화</button>
           <button type="button" class="food-input-save" id="foodInputSave" data-i18n="food.input.save">저장하기</button>
         </div>
-        <p class="food-input-hint" data-i18n-html="food.input.hint">저장은 이 브라우저에만 남고, 아래 표·달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.</p>
+        <p class="food-input-hint" data-i18n-html="food.input.hint">저장은 이 브라우저에만 남고, 월·주 요약과 달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.</p>
       </div>
-
+        </div>
+        <div class="food-tracker-col food-tracker-col--dashboard">
       <div class="food-summary-cards">
         <div class="food-sum-card">
           <div class="lbl" data-i18n="food.cardMonthPick">월 합계</div>
@@ -1437,26 +1414,6 @@
           <div class="sub" id="foodWeekLabel">—</div>
         </div>
       </div>
-      <div class="food-lists">
-        <div class="food-list-block">
-          <h3 data-i18n="food.tableMonthTitle">월별 합계</h3>
-          <div class="food-table-wrap">
-            <table class="food-table" id="foodTableMonth" aria-label="월별 지출 합계">
-              <thead><tr><th data-i18n="food.colPeriod">구간</th><th data-i18n="food.colTotal">합계</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="food-list-block">
-          <h3 data-i18n="food.tableWeekTitle">주차별 합계</h3>
-          <div class="food-table-wrap">
-            <table class="food-table" id="foodTableWeek" aria-label="주차별 지출 합계">
-              <thead><tr><th data-i18n="food.colPeriod">구간</th><th data-i18n="food.colTotal">합계</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
       <div class="food-cal-nav">
         <button type="button" id="foodCalPrev" data-i18n-aria-key="food.calPrev" aria-label="이전 달">‹</button>
         <span id="foodCalTitle">2026년 5월</span>
@@ -1467,6 +1424,8 @@
       </div>
       <div class="food-cal-grid" id="foodCalGrid" role="grid"></div>
       <div class="food-detail" id="foodDetailPanel" data-i18n="food.detailHint" aria-live="polite">날짜(숫자)를 누르면 그날 상세가 표시됩니다.</div>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -1477,7 +1436,7 @@
         <div class="footer-apple-col footer-apple-col--left">
           <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain">joshualiuniv@gmail.com</span>
+          <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
         <nav
           class="footer-apple-col footer-apple-col--center"
@@ -1517,8 +1476,8 @@
           'nav.foodlog': '먹방 가계부',
           'nav.foodlog.open': '먹방 가계부 열기',
           'nav.kakao': '카카오톡',
-          'nav.kakaoChannel': '카카오톡 채널',
-          'nav.youtube': '유튜브',
+          'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
+          'nav.youtube': '유튜브 (개설 예정)',
           'nav.ggongbab': '꽁밥 안내',
           'nav.ggongbab.open': '꽁밥 안내 보기',
           'nav.event': '이벤트',
@@ -1553,7 +1512,7 @@
             '인스타에 적은 하루 총액을 여기에만 옮겨 적으면, 월·주·달력으로 합계가 정리돼요. (인스타에서 자동으로 가져오기는 어렵습니다.)',
           'food.bannerCta': '가계부 열기 →',
           'food.note':
-            '인스타에 적은 하루 <strong>총액</strong>을 아래에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.',
+            '인스타에 적은 하루 <strong>총액</strong>을 오늘 지출 입력란에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.',
           'food.cardMonth': '이번 달 합계',
           'food.cardWeek': '이번 주 합계 (ISO 주차)',
           'food.cardMonthPick': '월 합계',
@@ -1561,10 +1520,6 @@
           'food.pickYear': '연도',
           'food.pickMonth': '월',
           'food.pickWeek': '주차',
-          'food.tableMonthTitle': '월별 합계',
-          'food.tableWeekTitle': '주차별 합계',
-          'food.colPeriod': '구간',
-          'food.colTotal': '합계',
           'food.calPrev': '이전 달',
           'food.calNext': '다음 달',
           'cal.sun': '일',
@@ -1577,8 +1532,6 @@
           'food.detailHint': '날짜(숫자)를 누르면 그날 상세가 표시됩니다.',
           'food.fetchErr':
             '가계부 데이터를 불러오지 못했습니다. 로컬 미리보기 대신 Live Server나 배포 주소로 열어 주세요. 저장된 금액 목록은 사이트의 data 폴더를 참고하면 됩니다.',
-          'food.tableMonthAria': '월별 지출 합계',
-          'food.tableWeekAria': '주차별 지출 합계',
           'food.input.sectionTitle': '오늘 지출 입력',
           'food.input.dateLabel': '날짜',
           'food.input.colMeal': '식사 종류',
@@ -1588,8 +1541,8 @@
           'food.input.reset': '초기화',
           'food.input.save': '저장하기',
           'food.input.hint':
-            '저장은 이 브라우저에만 남고, 아래 표·달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.',
-          'food.input.saved': '저장했습니다. 아래 집계와 달력을 확인하세요.',
+            '저장은 이 브라우저에만 남고, 월·주 요약과 달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.',
+          'food.input.saved': '저장했습니다. 집계와 달력을 확인하세요.',
           'food.input.errNoDate': '날짜를 선택하세요.',
           'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
           'link.mail.label': '문의 메일',
@@ -1617,8 +1570,8 @@
           'nav.foodlog': 'Food log',
           'nav.foodlog.open': 'Open food log',
           'nav.kakao': 'KakaoTalk',
-          'nav.kakaoChannel': 'KakaoTalk channel',
-          'nav.youtube': 'YouTube',
+          'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
+          'nav.youtube': 'YouTube (coming soon)',
           'nav.ggongbab': 'Free meal info',
           'nav.ggongbab.open': 'View free meal info',
           'nav.event': 'Event',
@@ -1654,7 +1607,7 @@
             'Copy your daily total from Instagram into this page and you’ll see month, week, and calendar summaries. (Pulling data automatically from Instagram isn’t practical.)',
           'food.bannerCta': 'Open the log →',
           'food.note':
-            'Enter each day’s Instagram <strong>total</strong> below (or add it to the bundled expense file) to see month, week, and calendar summaries. Automatic import from Instagram isn’t practical.',
+            'Enter each day’s Instagram <strong>total</strong> in the spending form (or add it to the bundled expense file) to see month, week, and calendar summaries. Automatic import from Instagram isn’t practical.',
           'food.cardMonth': 'This month',
           'food.cardWeek': 'This week (ISO)',
           'food.cardMonthPick': 'Month total',
@@ -1662,10 +1615,6 @@
           'food.pickYear': 'Year',
           'food.pickMonth': 'Month',
           'food.pickWeek': 'Week',
-          'food.tableMonthTitle': 'By month',
-          'food.tableWeekTitle': 'By ISO week',
-          'food.colPeriod': 'Period',
-          'food.colTotal': 'Total',
           'food.calPrev': 'Previous month',
           'food.calNext': 'Next month',
           'cal.sun': 'Su',
@@ -1678,8 +1627,6 @@
           'food.detailHint': 'Tap a date with a total to see details.',
           'food.fetchErr':
             'Could not load expense data. Open the site through a local server or your deployed URL, not as a raw file. The bundled expense list lives in the site’s data folder.',
-          'food.tableMonthAria': 'Totals by month',
-          'food.tableWeekAria': 'Totals by ISO week',
           'food.input.sectionTitle': 'Add spending',
           'food.input.dateLabel': 'Date',
           'food.input.colMeal': 'Meal',
@@ -1689,8 +1636,8 @@
           'food.input.reset': 'Reset',
           'food.input.save': 'Save',
           'food.input.hint':
-            'Saves only in this browser and updates the tables and calendar below. Saving the same date overwrites that day. For backup, keep a copy aligned with the expense list file in the site’s data folder.',
-          'food.input.saved': 'Saved. Check the summaries and calendar below.',
+            'Saves only in this browser and updates the month/week summaries and calendar. Saving the same date overwrites that day. For backup, keep a copy aligned with the expense list file in the site’s data folder.',
+          'food.input.saved': 'Saved. Check the summaries and calendar.',
           'food.input.errNoDate': 'Pick a date.',
           'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
           'link.mail.label': 'Email',
@@ -1738,11 +1685,6 @@
 
         var hc = document.getElementById('heroCarousel');
         if (hc && T['carousel.section']) hc.setAttribute('aria-label', T['carousel.section']);
-
-        var ftMonth = document.getElementById('foodTableMonth');
-        var ftWeek = document.getElementById('foodTableWeek');
-        if (ftMonth && T['food.tableMonthAria']) ftMonth.setAttribute('aria-label', T['food.tableMonthAria']);
-        if (ftWeek && T['food.tableWeekAria']) ftWeek.setAttribute('aria-label', T['food.tableWeekAria']);
 
         var img = document.getElementById('profileAvatarImg');
         if (img && T['profile.imgAlt']) img.setAttribute('alt', T['profile.imgAlt']);
@@ -2184,8 +2126,6 @@
       var monthLabelEl = document.getElementById('foodMonthLabel');
       var weekTotalEl = document.getElementById('foodWeekTotal');
       var weekLabelEl = document.getElementById('foodWeekLabel');
-      var tbMonth = document.querySelector('#foodTableMonth tbody');
-      var tbWeek = document.querySelector('#foodTableWeek tbody');
       var foodInputBody = document.getElementById('foodInputBody');
       var foodInputDate = document.getElementById('foodInputDate');
       var foodInputTotal = document.getElementById('foodInputTotal');
@@ -2396,26 +2336,6 @@
         return { byMonth: byMonth, byWeek: byWeek };
       }
 
-      function renderTables(byMonth, byWeek) {
-        if (!tbMonth || !tbWeek) return;
-        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
-        tbMonth.innerHTML = '';
-        tbWeek.innerHTML = '';
-        var mk = Object.keys(byMonth).sort().reverse();
-        for (var i = 0; i < mk.length; i++) {
-          var tr = document.createElement('tr');
-          tr.innerHTML =
-            '<td>' + monthRowLabel(mk[i], lang) + '</td><td>' + formatKRW(byMonth[mk[i]]) + '</td>';
-          tbMonth.appendChild(tr);
-        }
-        var wk = Object.keys(byWeek).sort().reverse();
-        for (var j = 0; j < wk.length; j++) {
-          var tr2 = document.createElement('tr');
-          tr2.innerHTML = '<td>' + wk[j] + '</td><td>' + formatKRW(byWeek[wk[j]]) + '</td>';
-          tbWeek.appendChild(tr2);
-        }
-      }
-
       function renderCalendar() {
         var langFC = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
         gridEl.innerHTML = '';
@@ -2507,7 +2427,6 @@
           viewM = parseInt(lp[1], 10) - 1;
         }
         var ag = aggregate(allEntries);
-        renderTables(ag.byMonth, ag.byWeek);
         ensurePickControls(ag.byMonth, ag.byWeek);
         renderCalendar();
       }
@@ -2698,7 +2617,6 @@
           fillMealSelectElement(sel, sel.value);
         });
         var ag = aggregate(allEntries);
-        renderTables(ag.byMonth, ag.byWeek);
         updateSummaryCards(ag.byMonth, ag.byWeek);
         renderCalendar();
       });

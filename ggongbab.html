@@ -232,7 +232,7 @@
       z-index: 1;
       flex: 1 0 auto;
       width: 100%;
-      max-width: 960px;
+      max-width: 1120px;
       margin: 0 auto;
       padding: 8px 18px 28px;
     }
@@ -251,12 +251,26 @@
     }
     .ggongbab-split {
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-      gap: 20px;
+      grid-template-columns: minmax(0, 1.12fr) minmax(200px, 260px) minmax(0, 1.28fr);
+      gap: 18px 20px;
       align-items: start;
       margin-top: 8px;
     }
     .ggongbab-map-col { min-width: 0; }
+    .ggongbab-tabs-col {
+      min-width: 0;
+      align-self: start;
+      position: sticky;
+      top: 68px;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+      padding-right: 6px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-gutter: stable;
+    }
+    .ggongbab-detail-col {
+      min-width: 0;
+    }
     .ggongbab-map-wrap {
       border-radius: 14px;
       overflow: hidden;
@@ -276,12 +290,11 @@
       margin-top: 8px;
       line-height: 1.45;
     }
-    .ggongbab-schedule-col { min-width: 0; }
     .event-tablist {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 0;
     }
     .event-tab {
       display: flex;
@@ -349,13 +362,13 @@
     }
     .event-detail-row {
       display: grid;
-      grid-template-columns: 8.75rem minmax(0, 1fr);
-      gap: 0.35rem 0.75rem;
+      grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+      gap: 0.35rem 0.65rem;
       align-items: start;
       padding: 0.4rem 0;
     }
     html[lang="en"] .event-detail-row:not(.event-detail-row--solo) {
-      grid-template-columns: 9.75rem minmax(0, 1fr);
+      grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
     }
     .event-detail-row--solo {
       grid-template-columns: 1fr;
@@ -378,9 +391,18 @@
       word-break: keep-all;
       overflow-wrap: anywhere;
     }
-    @media (max-width: 760px) {
+    @media (max-width: 900px) {
       .ggongbab-split {
         grid-template-columns: 1fr;
+      }
+      .ggongbab-tabs-col {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+      }
+      .event-tablist {
+        margin-bottom: 4px;
       }
       .ggongbab-map-wrap iframe {
         height: min(42vh, 320px);
@@ -504,8 +526,8 @@
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.youtube">유튜브</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.kakaoChannel">카카오톡 채널</a>
+            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
+            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -539,7 +561,7 @@
 
   <main class="ggongbab-page-wrap">
     <h1 class="event-title" data-i18n="ggongbab.title">꽁밥 안내</h1>
-    <p class="event-lead" data-i18n="ggongbab.lead">왼쪽은 Google Maps 행사 장소, 오른쪽 탭에서 일정·위치·내용·신청 링크를 확인할 수 있습니다. 행사가 늘어나면 탭을 같은 형식으로 추가하면 됩니다.</p>
+    <p class="event-lead" data-i18n="ggongbab.lead">지도, 행사 탭, 상세 안내를 볼 수 있습니다. 행사 탭을 누르면 상세 안내가 바뀝니다.</p>
 
     <div class="ggongbab-split">
       <div class="ggongbab-map-col">
@@ -554,7 +576,7 @@
         </div>
         <p class="ggongbab-map-caption" data-i18n="ggongbab.mapCaption">지도는 행사 기준 지점(KAIST 본원)입니다. 정확한 회장·부스 위치는 학교 공지를 확인해 주세요.</p>
       </div>
-      <div class="ggongbab-schedule-col">
+      <div class="ggongbab-tabs-col">
         <div class="event-tablist" role="tablist" data-i18n-aria-key="gb.tablistAria" aria-label="꽁밥 행사">
           <button
             type="button"
@@ -569,6 +591,8 @@
             <span class="event-tab-title" data-i18n="gb.e0.summary">꽁밥·행사 안내</span>
           </button>
         </div>
+      </div>
+      <div class="ggongbab-detail-col">
         <div class="event-panels">
           <div class="event-panel is-active" role="tabpanel" id="gbPanel0" aria-labelledby="gbTab0">
             <div class="event-panel-inner">
@@ -604,7 +628,7 @@
         <div class="footer-apple-col footer-apple-col--left">
           <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain">joshualiuniv@gmail.com</span>
+          <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
         <nav class="footer-apple-col footer-apple-col--center" aria-label="하단 정책 및 안내" data-i18n-aria-key="footer.navAria">
           <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
@@ -637,8 +661,8 @@
           'nav.map.open': '네이버 맛집 지도',
           'nav.foodlog': '먹방 가계부',
           'nav.foodlog.open': '먹방 가계부 열기',
-          'nav.kakaoChannel': '카카오톡 채널',
-          'nav.youtube': '유튜브',
+          'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
+          'nav.youtube': '유튜브 (개설 예정)',
           'nav.ggongbab': '꽁밥 안내',
           'nav.ggongbab.open': '꽁밥 안내 보기',
           'nav.event': '이벤트',
@@ -646,7 +670,7 @@
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'ggongbab.title': '꽁밥 안내',
-          'ggongbab.lead': '왼쪽은 Google Maps 행사 장소, 오른쪽 탭에서 일정·위치·내용·신청 링크를 확인할 수 있습니다. 행사가 늘어나면 탭을 같은 형식으로 추가하면 됩니다.',
+          'ggongbab.lead': '지도, 행사 탭, 상세 안내를 볼 수 있습니다. 행사 탭을 누르면 상세 안내가 바뀝니다.',
           'ggongbab.mapCaption': '지도는 행사 기준 지점(KAIST 본원)입니다. 정확한 회장·부스 위치는 학교 공지를 확인해 주세요.',
           'ggongbab.mapFrameTitle': '행사 장소 지도',
           'gb.tablistAria': '꽁밥 행사',
@@ -685,8 +709,8 @@
           'nav.map.open': 'Naver food map',
           'nav.foodlog': 'Food log',
           'nav.foodlog.open': 'Open food log',
-          'nav.kakaoChannel': 'KakaoTalk channel',
-          'nav.youtube': 'YouTube',
+          'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
+          'nav.youtube': 'YouTube (coming soon)',
           'nav.ggongbab': 'Free meal info',
           'nav.ggongbab.open': 'View free meal info',
           'nav.event': 'Event',
@@ -694,7 +718,7 @@
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'ggongbab.title': 'Free meal (Ggongbab) info',
-          'ggongbab.lead': 'Google Maps on the left shows the venue; the tab on the right has the schedule, location, details, and signup link. Add more tabs in the same pattern when you have more events.',
+          'ggongbab.lead': 'The map, event tabs, and details are shown together. Tap an event tab to switch the details shown on the right.',
           'ggongbab.mapCaption': 'Map pin: KAIST’s main Daejeon campus. Follow official notices for the exact venue or booth.',
           'ggongbab.mapFrameTitle': 'Event location map',
           'gb.tablistAria': 'Ggongbab events',
@@ -789,10 +813,10 @@
 
   <script>
     (function () {
-      var root = document.querySelector('.ggongbab-schedule-col');
-      if (!root) return;
-      var tabs = [].slice.call(root.querySelectorAll('.event-tab'));
-      var panels = [].slice.call(root.querySelectorAll('.event-panel'));
+      var split = document.querySelector('.ggongbab-split');
+      if (!split) return;
+      var tabs = [].slice.call(split.querySelectorAll('.event-tab'));
+      var panels = [].slice.call(split.querySelectorAll('.event-panel'));
       if (tabs.length === 0 || panels.length === 0) return;
       function select(i) {
         tabs.forEach(function (tab, j) {

@@ -233,7 +233,7 @@
       position: relative;
       z-index: 1;
       flex: 1 0 auto;
-      max-width: 520px;
+      max-width: 720px;
       margin: 0 auto;
       padding: 12px 22px 32px;
     }
@@ -261,14 +261,18 @@
     .timeline {
       list-style: none;
       position: relative;
-      padding: 0 0 0 32px;
+      padding: 0;
+      margin: 0;
+      --tl-thumb: 7.5rem;
+      --tl-rail: 26px;
+      --tl-gap: 14px;
     }
     .timeline::before {
       content: '';
       position: absolute;
-      left: 11px;
-      top: 6px;
-      bottom: 6px;
+      left: calc(var(--tl-thumb) + var(--tl-gap) + var(--tl-rail) * 0.5 - 1px);
+      top: 10px;
+      bottom: 10px;
       width: 2px;
       background: #9ca3af;
       border-radius: 1px;
@@ -279,10 +283,46 @@
       --accent: #3b82f6;
     }
     .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-item-grid {
+      display: grid;
+      grid-template-columns: var(--tl-thumb) var(--tl-rail) minmax(0, 1fr);
+      column-gap: var(--tl-gap);
+      align-items: start;
+    }
+    .timeline-item-photo-cell {
+      width: var(--tl-thumb);
+      padding-top: 2px;
+    }
+    .timeline-item-media {
+      width: var(--tl-thumb);
+      height: var(--tl-thumb);
+      margin: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: #e8e8ed;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+      box-sizing: border-box;
+    }
+    .timeline-item-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .timeline-item-rail {
+      display: flex;
+      justify-content: center;
+      padding-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .timeline-item-body {
+      min-width: 0;
+      padding-top: 2px;
+    }
     .timeline-marker {
-      position: absolute;
-      left: -26px;
-      top: 6px;
+      flex-shrink: 0;
       width: 14px;
       height: 14px;
       border-radius: 50%;
@@ -290,6 +330,13 @@
       background: #fff;
       box-sizing: border-box;
       box-shadow: 0 0 0 2px #fbfbfd;
+    }
+    @media (max-width: 520px) {
+      .timeline {
+        --tl-thumb: 5.75rem;
+        --tl-rail: 22px;
+        --tl-gap: 10px;
+      }
     }
     .timeline-year {
       display: block;
@@ -429,8 +476,8 @@
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.youtube">유튜브</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.kakaoChannel">카카오톡 채널</a>
+            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
+            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -470,27 +517,75 @@
 
     <ol class="timeline" aria-label="타임라인">
       <li class="timeline-item" style="--accent: #3b82f6;">
-        <span class="timeline-marker" aria-hidden="true"></span>
-        <time class="timeline-year" data-i18n="history.t1.year">2025.4.1</time>
-        <hr class="timeline-rule" />
-        <h2 class="timeline-label" data-i18n="history.t1.label">밥도둑 인스타 개설</h2>
-        <p class="timeline-desc" data-i18n="history.t1.desc">밥도둑 인스타그램 계정을 열고 활동을 시작했습니다.</p>
+        <div class="timeline-item-grid">
+          <div class="timeline-item-photo-cell">
+            <figure class="timeline-item-media">
+              <img
+                class="timeline-item-img"
+                src="images/history-t1.jpg"
+                width="120"
+                height="120"
+                loading="lazy"
+                decoding="async"
+                alt=""
+                data-i18n-alt="history.t1.photoAlt"
+              />
+            </figure>
+          </div>
+          <div class="timeline-item-rail">
+            <span class="timeline-marker" aria-hidden="true"></span>
+          </div>
+          <div class="timeline-item-body">
+            <time class="timeline-year" data-i18n="history.t1.year">2025.4.1</time>
+            <hr class="timeline-rule" />
+            <h2 class="timeline-label" data-i18n="history.t1.label">공식 인스타그램 채널 개설</h2>
+            <p class="timeline-desc" data-i18n="history.t1.desc">밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.</p>
+          </div>
+        </div>
       </li>
       <li class="timeline-item" style="--accent: #f97316;">
-        <span class="timeline-marker" aria-hidden="true"></span>
-        <time class="timeline-year" data-i18n="history.t2.year">2025.5.7</time>
-        <hr class="timeline-rule" />
-        <h2 class="timeline-label" data-i18n="history.t2.label">밥도둑 사이트 개설</h2>
-        <p class="timeline-desc" data-i18n="history.t2.desc">이 웹사이트를 열어 주요 링크·먹방 가계부·이벤트 등을 한곳에 모았습니다.</p>
+        <div class="timeline-item-grid">
+          <div class="timeline-item-photo-cell">
+            <figure class="timeline-item-media">
+              <img
+                class="timeline-item-img"
+                src="images/history-t2.jpg"
+                width="120"
+                height="120"
+                loading="lazy"
+                decoding="async"
+                alt=""
+                data-i18n-alt="history.t2.photoAlt"
+              />
+            </figure>
+          </div>
+          <div class="timeline-item-rail">
+            <span class="timeline-marker" aria-hidden="true"></span>
+          </div>
+          <div class="timeline-item-body">
+            <time class="timeline-year" data-i18n="history.t2.year">2025.5.7</time>
+            <hr class="timeline-rule" />
+            <h2 class="timeline-label" data-i18n="history.t2.label">통합 웹 허브 오픈</h2>
+            <p class="timeline-desc" data-i18n="history.t2.desc">주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.</p>
+          </div>
+        </div>
       </li>
-      <li class="timeline-item" style="--accent: #a855f7;">
-        <span class="timeline-marker" aria-hidden="true"></span>
-        <time class="timeline-year" data-i18n="history.t3.year">—</time>
-        <hr class="timeline-rule" />
-        <h2 class="timeline-label" data-i18n="history.t3.label">To be continued</h2>
-        <p class="timeline-desc" data-i18n="history.t3.desc">앞으로의 이야기를 이 타임라인에 차곡차곡 이어 갈 예정입니다.</p>
+      <li class="timeline-item timeline-item--no-photo" style="--accent: #a855f7;">
+        <div class="timeline-item-grid">
+          <div class="timeline-item-photo-cell" aria-hidden="true"></div>
+          <div class="timeline-item-rail">
+            <span class="timeline-marker" aria-hidden="true"></span>
+          </div>
+          <div class="timeline-item-body">
+            <time class="timeline-year" data-i18n="history.t3.year">—</time>
+            <hr class="timeline-rule" />
+            <h2 class="timeline-label" data-i18n="history.t3.label">로드맵</h2>
+            <p class="timeline-desc" data-i18n="history.t3.desc">브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.</p>
+          </div>
+        </div>
       </li>
     </ol>
+
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -500,7 +595,7 @@
         <div class="footer-apple-col footer-apple-col--left">
           <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain">joshualiuniv@gmail.com</span>
+          <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
         <nav class="footer-apple-col footer-apple-col--center" aria-label="하단 정책 및 안내" data-i18n-aria-key="footer.navAria">
           <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
@@ -533,8 +628,8 @@
           'nav.map.open': '네이버 맛집 지도',
           'nav.foodlog': '먹방 가계부',
           'nav.foodlog.open': '먹방 가계부 열기',
-          'nav.kakaoChannel': '카카오톡 채널',
-          'nav.youtube': '유튜브',
+          'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
+          'nav.youtube': '유튜브 (개설 예정)',
           'nav.ggongbab': '꽁밥 안내',
           'nav.ggongbab.open': '꽁밥 안내 보기',
           'nav.event': '이벤트',
@@ -543,15 +638,17 @@
           'nav.langAria': '영어로 전환',
           'history.heroTitle': '밥도둑의 역사',
           'history.heroKicker': 'Timeline',
+          'history.t1.photoAlt': '인스타그램 채널 개설 시점 이미지',
           'history.t1.year': '2025.4.1',
-          'history.t1.label': '밥도둑 인스타 개설',
-          'history.t1.desc': '밥도둑 인스타그램 계정을 열고 활동을 시작했습니다.',
+          'history.t1.label': '공식 인스타그램 채널 개설',
+          'history.t1.desc': '밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.',
+          'history.t2.photoAlt': '웹사이트 런치 시점 이미지',
           'history.t2.year': '2025.5.7',
-          'history.t2.label': '밥도둑 사이트 개설',
-          'history.t2.desc': '이 웹사이트를 열어 주요 링크·먹방 가계부·이벤트 등을 한곳에 모았습니다.',
+          'history.t2.label': '통합 웹 허브 오픈',
+          'history.t2.desc': '주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.',
           'history.t3.year': '—',
-          'history.t3.label': 'To be continued',
-          'history.t3.desc': '앞으로의 이야기를 이 타임라인에 차곡차곡 이어 갈 예정입니다.',
+          'history.t3.label': '로드맵',
+          'history.t3.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -575,8 +672,8 @@
           'nav.map.open': 'Naver food map',
           'nav.foodlog': 'Food log',
           'nav.foodlog.open': 'Open food log',
-          'nav.kakaoChannel': 'KakaoTalk channel',
-          'nav.youtube': 'YouTube',
+          'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
+          'nav.youtube': 'YouTube (coming soon)',
           'nav.ggongbab': 'Free meal info',
           'nav.ggongbab.open': 'View free meal info',
           'nav.event': 'Event',
@@ -585,15 +682,17 @@
           'nav.langAria': 'Switch to Korean',
           'history.heroTitle': 'History of Babdoduk',
           'history.heroKicker': 'Timeline',
+          'history.t1.photoAlt': 'Image for the Instagram channel launch',
           'history.t1.year': 'Apr 1, 2025',
-          'history.t1.label': 'Babdoduk on Instagram',
-          'history.t1.desc': 'Opened the Babdoduk Instagram account and started posting.',
+          'history.t1.label': 'Official Instagram launch',
+          'history.t1.desc': 'Launched the official Babdoduk Instagram channel and began publishing recipe- and lifestyle-oriented content.',
+          'history.t2.photoAlt': 'Image for the website launch',
           'history.t2.year': 'May 7, 2025',
-          'history.t2.label': 'Babdoduk site launch',
-          'history.t2.desc': 'Launched this site to gather main links, the food log, events, and more in one place.',
+          'history.t2.label': 'Integrated web hub',
+          'history.t2.desc': 'Shipped a public web hub that centralizes key SNS links, the food-expense log, event information, and related tools.',
           'history.t3.year': '—',
-          'history.t3.label': 'To be continued',
-          'history.t3.desc': 'More milestones will be added to this timeline over time.',
+          'history.t3.label': 'Roadmap',
+          'history.t3.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
@@ -622,6 +721,10 @@
         document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
           var k = el.getAttribute('data-i18n-aria-key');
           if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
+        });
+        document.querySelectorAll('[data-i18n-alt]').forEach(function (el) {
+          var ka = el.getAttribute('data-i18n-alt');
+          if (T[ka] !== undefined) el.setAttribute('alt', T[ka]);
         });
         var navInner = document.getElementById('siteNavInner');
         if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
