@@ -333,6 +333,15 @@
       line-height: 1.55;
       color: #424245;
     }
+    .event-detail-value a.gb-apply-link {
+      color: #6366f1;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .event-detail-value a.gb-apply-link:hover {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
     .event-detail-sheet {
       display: flex;
       flex-direction: column;
@@ -530,7 +539,7 @@
 
   <main class="ggongbab-page-wrap">
     <h1 class="event-title" data-i18n="ggongbab.title">꽁밥 안내</h1>
-    <p class="event-lead" data-i18n="ggongbab.lead">왼쪽은 KAIST 캠퍼스 위치 안내, 오른쪽은 꽁밥·행사 일정 탭입니다. 세부 식단은 학교 공지를 함께 확인해 주세요.</p>
+    <p class="event-lead" data-i18n="ggongbab.lead">왼쪽은 Google Maps 행사 장소, 오른쪽 탭에서 일정·위치·내용·신청 링크를 확인할 수 있습니다. 행사가 늘어나면 탭을 같은 형식으로 추가하면 됩니다.</p>
 
     <div class="ggongbab-split">
       <div class="ggongbab-map-col">
@@ -539,36 +548,49 @@
             id="ggongbabMapFrame"
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-            src="https://maps.google.com/maps?q=Korea+Advanced+Institute+of+Science+and+Technology+Daejeon&z=15&hl=ko&output=embed"
-            title="KAIST 캠퍼스 지도"
+            src="https://maps.google.com/maps?q=KAIST+Daejeon+South+Korea&z=16&hl=ko&output=embed"
+            title="행사 장소 지도"
           ></iframe>
         </div>
-        <p class="ggongbab-map-caption" data-i18n="ggongbab.mapCaption">위 지도는 KAIST 대전 캠퍼스 대략 위치입니다. 식당·건물 위치는 학교 공식 안내를 확인해 주세요.</p>
+        <p class="ggongbab-map-caption" data-i18n="ggongbab.mapCaption">지도는 행사 기준 지점(KAIST 본원)입니다. 정확한 회장·부스 위치는 학교 공지를 확인해 주세요.</p>
       </div>
       <div class="ggongbab-schedule-col">
-        <div class="event-tablist" role="tablist" data-i18n-aria-key="gb.tablistAria" aria-label="꽁밥·행사 일정">
-          <button type="button" class="event-tab" role="tab" id="gbTab0" aria-selected="true" aria-controls="gbPanel0" data-i18n-aria-key="gb.e0.tabAria" aria-label="평일 일정">
-            <span class="event-tab-date" data-i18n="gb.e0.date">평일</span>
-            <span class="event-tab-title" data-i18n="gb.e0.summary">기본 운영 안내</span>
-          </button>
-          <button type="button" class="event-tab" role="tab" id="gbTab1" aria-selected="false" aria-controls="gbPanel1" data-i18n-aria-key="gb.e1.tabAria" aria-label="행사 일정" tabindex="-1">
-            <span class="event-tab-date" data-i18n="gb.e1.date">행사</span>
-            <span class="event-tab-title" data-i18n="gb.e1.summary">석림제·특별 운영</span>
-          </button>
-          <button type="button" class="event-tab" role="tab" id="gbTab2" aria-selected="false" aria-controls="gbPanel2" data-i18n-aria-key="gb.e2.tabAria" aria-label="참고·문의" tabindex="-1">
-            <span class="event-tab-date" data-i18n="gb.e2.date">참고</span>
-            <span class="event-tab-title" data-i18n="gb.e2.summary">공지·문의</span>
+        <div class="event-tablist" role="tablist" data-i18n-aria-key="gb.tablistAria" aria-label="꽁밥 행사">
+          <button
+            type="button"
+            class="event-tab"
+            role="tab"
+            id="gbTab0"
+            aria-selected="true"
+            aria-controls="gbPanel0"
+            data-i18n-aria-key="gb.e0.tabAria"
+          >
+            <span class="event-tab-date" data-i18n="gb.e0.date">행사</span>
+            <span class="event-tab-title" data-i18n="gb.e0.summary">꽁밥·행사 안내</span>
           </button>
         </div>
         <div class="event-panels">
           <div class="event-panel is-active" role="tabpanel" id="gbPanel0" aria-labelledby="gbTab0">
-            <div class="event-panel-inner" data-i18n-html="gb.e0.detail"></div>
-          </div>
-          <div class="event-panel" role="tabpanel" id="gbPanel1" aria-labelledby="gbTab1" hidden>
-            <div class="event-panel-inner" data-i18n-html="gb.e1.detail"></div>
-          </div>
-          <div class="event-panel" role="tabpanel" id="gbPanel2" aria-labelledby="gbTab2" hidden>
-            <div class="event-panel-inner" data-i18n-html="gb.e2.detail"></div>
+            <div class="event-panel-inner">
+              <div class="event-detail-sheet">
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.schedule">행사 일정</div>
+                  <div class="event-detail-value" data-i18n="gb.value.schedule">일정이 확정되면 이곳에 표시됩니다.</div>
+                </div>
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.location">행사 위치</div>
+                  <div class="event-detail-value" data-i18n="gb.value.location">대전광역시 유성구 카이스트로 291 (KAIST) 일대 — 세부 장소는 공지를 확인해 주세요.</div>
+                </div>
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.content">행사 내용</div>
+                  <div class="event-detail-value" data-i18n="gb.value.content">교내 행사·꽁밥 연계 안내는 확정되는 대로 업데이트합니다.</div>
+                </div>
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.apply">신청 링크</div>
+                  <div class="event-detail-value" data-i18n-html="gb.value.applyHtml"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -624,33 +646,22 @@
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'ggongbab.title': '꽁밥 안내',
-          'ggongbab.lead': '왼쪽은 KAIST 캠퍼스 위치 안내, 오른쪽은 꽁밥·행사 일정 탭입니다. 세부 식단은 학교 공지를 함께 확인해 주세요.',
-          'ggongbab.mapCaption': '위 지도는 KAIST 대전 캠퍼스 대략 위치입니다. 식당·건물 위치는 학교 공식 안내를 확인해 주세요.',
-          'ggongbab.mapFrameTitle': 'KAIST 대전 캠퍼스 지도',
-          'gb.tablistAria': '꽁밥·행사 일정',
-          'gb.e0.tabAria': '평일 기본 운영',
-          'gb.e0.date': '평일',
-          'gb.e0.summary': '기본 운영 안내',
-          'gb.e0.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">안내</div><div class="event-detail-value">평일 꽁밥(무료 급식) 운영 시간·장소·식단은 <strong>학교 공식 공지</strong>를 기준으로 합니다. 이 탭은 요약용이며, 학교 안내와 다를 경우 공지가 우선입니다.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">업데이트</div><div class="event-detail-value">시행 날짜·메뉴가 확정되면 이 페이지와 인스타그램에 반영할 예정입니다.</div></div>' +
-            '</div>',
-          'gb.e1.tabAria': '행사·특별 운영',
-          'gb.e1.date': '행사',
-          'gb.e1.summary': '석림제·특별 운영',
-          'gb.e1.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">석림제 등</div><div class="event-detail-value">태울석림제 등 교내 행사 기간에는 꽁밥 운영이 달라질 수 있습니다. <strong>행사 일정·식당 운영</strong>은 학교 및 학생회 공지를 확인해 주세요.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">이 페이지</div><div class="event-detail-value">행사별 요약은 정리되는 대로 이 탭에 올릴 예정입니다.</div></div>' +
-            '</div>',
-          'gb.e2.tabAria': '공지·문의',
-          'gb.e2.date': '참고',
-          'gb.e2.summary': '공지·문의',
-          'gb.e2.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row event-detail-row--solo"><div class="event-detail-value">가장 빠른 공지는 <strong>인스타그램</strong>과 학교·단체 공식 채널을 확인해 주세요. 사이트 하단 이메일로 문의할 수 있습니다.</div></div>' +
-            '</div>',
+          'ggongbab.lead': '왼쪽은 Google Maps 행사 장소, 오른쪽 탭에서 일정·위치·내용·신청 링크를 확인할 수 있습니다. 행사가 늘어나면 탭을 같은 형식으로 추가하면 됩니다.',
+          'ggongbab.mapCaption': '지도는 행사 기준 지점(KAIST 본원)입니다. 정확한 회장·부스 위치는 학교 공지를 확인해 주세요.',
+          'ggongbab.mapFrameTitle': '행사 장소 지도',
+          'gb.tablistAria': '꽁밥 행사',
+          'gb.e0.tabAria': '꽁밥·행사 안내 탭',
+          'gb.e0.date': '행사',
+          'gb.e0.summary': '꽁밥·행사 안내',
+          'gb.field.schedule': '행사 일정',
+          'gb.field.location': '행사 위치',
+          'gb.field.content': '행사 내용',
+          'gb.field.apply': '신청 링크',
+          'gb.value.schedule': '일정이 확정되면 이곳에 표시됩니다.',
+          'gb.value.location': '대전광역시 유성구 카이스트로 291 (KAIST) 일대 — 세부 장소는 공지를 확인해 주세요.',
+          'gb.value.content': '교내 행사·꽁밥 연계 안내는 확정되는 대로 업데이트합니다.',
+          'gb.value.applyHtml':
+            '공지 후 신청 링크가 열리면 이곳에 연결할 수 있습니다. 안내는 <a class="gb-apply-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener">인스타그램</a>도 확인해 주세요.',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -683,33 +694,22 @@
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'ggongbab.title': 'Free meal (Ggongbab) info',
-          'ggongbab.lead': 'Campus map on the left; free-meal and event notes on the right. Always double-check official school notices for menus.',
-          'ggongbab.mapCaption': 'Approximate location of KAIST’s Daejeon campus. For buildings and dining halls, follow official school info.',
-          'ggongbab.mapFrameTitle': 'KAIST Daejeon campus map',
-          'gb.tablistAria': 'Schedule and events',
-          'gb.e0.tabAria': 'Weekday operations',
-          'gb.e0.date': 'Weekdays',
-          'gb.e0.summary': 'Default operations',
-          'gb.e0.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">Note</div><div class="event-detail-value">Weekday free-meal hours, venues, and menus follow <strong>official school notices</strong>. This tab is a summary only—if anything differs, the school notice wins.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">Updates</div><div class="event-detail-value">Once dates and menus are confirmed, they’ll be reflected here and on Instagram.</div></div>' +
-            '</div>',
-          'gb.e1.tabAria': 'Festivals & special hours',
-          'gb.e1.date': 'Events',
-          'gb.e1.summary': 'Festival & special service',
-          'gb.e1.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">Festivals</div><div class="event-detail-value">During events such as the Taeul Seoklim Festival, free-meal service may change. Check <strong>official school and student announcements</strong> for schedules and cafeteria hours.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">This page</div><div class="event-detail-value">Event-specific notes will be added here when organized.</div></div>' +
-            '</div>',
-          'gb.e2.tabAria': 'References',
-          'gb.e2.date': 'Info',
-          'gb.e2.summary': 'Notices & contact',
-          'gb.e2.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row event-detail-row--solo"><div class="event-detail-value">For the latest updates, check <strong>Instagram</strong> and official school channels. You can also use the email address in the site footer.</div></div>' +
-            '</div>',
+          'ggongbab.lead': 'Google Maps on the left shows the venue; the tab on the right has the schedule, location, details, and signup link. Add more tabs in the same pattern when you have more events.',
+          'ggongbab.mapCaption': 'Map pin: KAIST’s main Daejeon campus. Follow official notices for the exact venue or booth.',
+          'ggongbab.mapFrameTitle': 'Event location map',
+          'gb.tablistAria': 'Ggongbab events',
+          'gb.e0.tabAria': 'Free meal & event tab',
+          'gb.e0.date': 'Event',
+          'gb.e0.summary': 'Free meal & event info',
+          'gb.field.schedule': 'Schedule',
+          'gb.field.location': 'Location',
+          'gb.field.content': 'Details',
+          'gb.field.apply': 'Signup link',
+          'gb.value.schedule': 'The schedule will appear here once confirmed.',
+          'gb.value.location': 'KAIST (291 Daehak-ro, Yuseong-gu, Daejeon) — check notices for the exact spot.',
+          'gb.value.content': 'Notes for campus events and linked free-meal service will be updated when confirmed.',
+          'gb.value.applyHtml':
+            'A signup URL can be linked here once it is announced. Updates are also posted on <a class="gb-apply-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener">Instagram</a>.',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
@@ -744,7 +744,14 @@
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
         var mapF = document.getElementById('ggongbabMapFrame');
-        if (mapF && T['ggongbab.mapFrameTitle']) mapF.setAttribute('title', T['ggongbab.mapFrameTitle']);
+        if (mapF) {
+          var mapQ =
+            lang === 'en'
+              ? encodeURIComponent('KAIST, 291 Daehak-ro, Yuseong-gu, Daejeon, South Korea')
+              : encodeURIComponent('KAIST 대전 유성구 카이스트로 291');
+          mapF.src = 'https://maps.google.com/maps?q=' + mapQ + '&z=16&hl=' + lang + '&output=embed';
+          if (T['ggongbab.mapFrameTitle']) mapF.setAttribute('title', T['ggongbab.mapFrameTitle']);
+        }
       }
       window.babdodukApplyLang = applyLang;
       window.babdodukGetLang = function () {
@@ -786,14 +793,17 @@
       if (!root) return;
       var tabs = [].slice.call(root.querySelectorAll('.event-tab'));
       var panels = [].slice.call(root.querySelectorAll('.event-panel'));
+      if (tabs.length === 0 || panels.length === 0) return;
       function select(i) {
         tabs.forEach(function (tab, j) {
           var on = j === i;
           tab.setAttribute('aria-selected', on ? 'true' : 'false');
           tab.tabIndex = on ? 0 : -1;
-          panels[j].classList.toggle('is-active', on);
-          if (on) panels[j].removeAttribute('hidden');
-          else panels[j].setAttribute('hidden', '');
+          if (panels[j]) {
+            panels[j].classList.toggle('is-active', on);
+            if (on) panels[j].removeAttribute('hidden');
+            else panels[j].setAttribute('hidden', '');
+          }
         });
       }
       tabs.forEach(function (tab, i) {
