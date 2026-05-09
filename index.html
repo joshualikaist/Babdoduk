@@ -32,6 +32,10 @@
       background: #fbfbfd;
     }
 
+    body.welcome-popup-open {
+      overflow: hidden;
+    }
+
     body::before {
       content: '';
       position: fixed;
@@ -743,17 +747,18 @@
     }
 
     /* ── 팝업 ── */
-    /* 플렉스 레이아웃에서 푸터를 하단에 붙일 때 고정 팝업이 세로 공간을 잡지 않도록 */
+    /* 플렉스 body 안에 있어도 전체 화면 오버레이가 되도록 (0×0 크기 금지) */
     #welcomePopup.popup-overlay {
       flex: none;
-      align-self: flex-start;
-      width: 0;
-      height: 0;
-      min-height: 0;
-      min-width: 0;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      min-height: 100dvh;
       margin: 0;
-      padding: 0;
-      overflow: visible;
+      pointer-events: none;
+    }
+    #welcomePopup.popup-overlay.is-open {
+      pointer-events: auto;
     }
 
     .page-fill {
@@ -1328,8 +1333,16 @@
 
       function shouldShowWelcome() {
         var path = (location.pathname || '').toLowerCase();
-        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1) return false;
+        if (
+          path.indexOf('food.html') !== -1 ||
+          path.indexOf('event.html') !== -1 ||
+          path.indexOf('history.html') !== -1 ||
+          path.indexOf('ggongbab.html') !== -1
+        ) {
+          return false;
+        }
         try {
+          if (sessionStorage.getItem('babdoduk-welcome-seen') === '1') return false;
           var until = localStorage.getItem('babdoduk-welcome-snooze-until');
           if (until && Date.now() < parseInt(until, 10)) return false;
         } catch (err) {}
@@ -1343,20 +1356,26 @@
       function openPopup() {
         popup.classList.add('is-open');
         popup.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('welcome-popup-open');
       }
       function closePopup(withSnooze24h) {
         popup.classList.remove('is-open');
         popup.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('welcome-popup-open');
         try {
           if (withSnooze24h) {
             var until = Date.now() + 24 * 60 * 60 * 1000;
             localStorage.setItem('babdoduk-welcome-snooze-until', String(until));
+          } else {
+            sessionStorage.setItem('babdoduk-welcome-seen', '1');
           }
         } catch (err) {}
       }
 
       if (shouldShowWelcome()) {
-        requestAnimationFrame(function () { openPopup(); });
+        window.setTimeout(function () {
+          openPopup();
+        }, 400);
       }
 
       if (closeBtn) closeBtn.addEventListener('click', function () { closePopup(false); });
