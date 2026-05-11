@@ -267,6 +267,8 @@
       padding-right: 6px;
       -webkit-overflow-scrolling: touch;
       scrollbar-gutter: stable;
+      scroll-behavior: smooth;
+      scroll-snap-type: y proximity;
     }
     .ggongbab-detail-col {
       min-width: 0;
@@ -312,6 +314,7 @@
       transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       -webkit-tap-highlight-color: transparent;
+      scroll-snap-align: start;
     }
     .event-tab:hover { border-color: rgba(99, 102, 241, 0.32); }
     .event-tab[aria-selected="true"] {
@@ -561,7 +564,7 @@
 
   <main class="ggongbab-page-wrap">
     <h1 class="event-title" data-i18n="ggongbab.title">꽁밥 안내</h1>
-    <p class="event-lead" data-i18n="ggongbab.lead">지도, 행사 탭, 상세 안내를 볼 수 있습니다. 행사 탭을 누르면 상세 안내가 바뀝니다.</p>
+    <p class="event-lead" data-i18n="ggongbab.lead">지도, 행사 탭, 상세 안내를 볼 수 있습니다. 가운데 행사 탭은 세로로 스크롤할 수 있고, 탭을 누르면 오른쪽 상세가 바뀝니다.</p>
 
     <div class="ggongbab-split">
       <div class="ggongbab-map-col">
@@ -590,6 +593,19 @@
             <span class="event-tab-date" data-i18n="gb.e0.date">행사</span>
             <span class="event-tab-title" data-i18n="gb.e0.summary">꽁밥·행사 안내</span>
           </button>
+          <button
+            type="button"
+            class="event-tab"
+            role="tab"
+            id="gbTab1"
+            aria-selected="false"
+            aria-controls="gbPanel1"
+            tabindex="-1"
+            data-i18n-aria-key="gb.e1.tabAria"
+          >
+            <span class="event-tab-date" data-i18n="gb.e1.date">예정</span>
+            <span class="event-tab-title" data-i18n="gb.e1.summary">학기 중 행사·부스</span>
+          </button>
         </div>
       </div>
       <div class="ggongbab-detail-col">
@@ -612,6 +628,28 @@
                 <div class="event-detail-row">
                   <div class="event-detail-label" data-i18n="gb.field.apply">신청 링크</div>
                   <div class="event-detail-value" data-i18n-html="gb.value.applyHtml"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="event-panel" role="tabpanel" id="gbPanel1" aria-labelledby="gbTab1" hidden>
+            <div class="event-panel-inner">
+              <div class="event-detail-sheet">
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.schedule">행사 일정</div>
+                  <div class="event-detail-value" data-i18n="gb.e1.schedule">학기 일정에 맞춰 공지 예정입니다.</div>
+                </div>
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.location">행사 위치</div>
+                  <div class="event-detail-value" data-i18n="gb.e1.location">캠퍼스 내 장소는 행사마다 다를 수 있어 공지를 확인해 주세요.</div>
+                </div>
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.content">행사 내용</div>
+                  <div class="event-detail-value" data-i18n="gb.e1.content">학생회·동아리 부스나 추가 꽁밥 연계 행사가 있으면 이곳에서 안내합니다.</div>
+                </div>
+                <div class="event-detail-row">
+                  <div class="event-detail-label" data-i18n="gb.field.apply">신청 링크</div>
+                  <div class="event-detail-value" data-i18n-html="gb.e1.applyHtml"></div>
                 </div>
               </div>
             </div>
@@ -670,13 +708,22 @@
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'ggongbab.title': '꽁밥 안내',
-          'ggongbab.lead': '지도, 행사 탭, 상세 안내를 볼 수 있습니다. 행사 탭을 누르면 상세 안내가 바뀝니다.',
+          'ggongbab.lead':
+            '지도, 행사 탭, 상세 안내를 볼 수 있습니다. 가운데 행사 탭은 세로로 스크롤할 수 있고, 탭을 누르면 오른쪽 상세가 바뀝니다.',
           'ggongbab.mapCaption': '지도는 행사 기준 지점(KAIST 본원)입니다. 정확한 회장·부스 위치는 학교 공지를 확인해 주세요.',
           'ggongbab.mapFrameTitle': '행사 장소 지도',
           'gb.tablistAria': '꽁밥 행사',
           'gb.e0.tabAria': '꽁밥·행사 안내 탭',
           'gb.e0.date': '행사',
           'gb.e0.summary': '꽁밥·행사 안내',
+          'gb.e1.tabAria': '학기 중 행사·부스 탭',
+          'gb.e1.date': '예정',
+          'gb.e1.summary': '학기 중 행사·부스',
+          'gb.e1.schedule': '학기 일정에 맞춰 공지 예정입니다.',
+          'gb.e1.location': '캠퍼스 내 장소는 행사마다 다를 수 있어 공지를 확인해 주세요.',
+          'gb.e1.content': '학생회·동아리 부스나 추가 꽁밥 연계 행사가 있으면 이곳에서 안내합니다.',
+          'gb.e1.applyHtml':
+            '별도 신청은 행사 공지에 안내됩니다. 소식은 <a class="gb-apply-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener">인스타그램</a>도 참고해 주세요.',
           'gb.field.schedule': '행사 일정',
           'gb.field.location': '행사 위치',
           'gb.field.content': '행사 내용',
@@ -718,13 +765,22 @@
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'ggongbab.title': 'Free meal (Ggongbab) info',
-          'ggongbab.lead': 'The map, event tabs, and details are shown together. Tap an event tab to switch the details shown on the right.',
+          'ggongbab.lead':
+            'The map, event tabs, and details are shown together. The middle column scrolls vertically through tabs; tap a tab to change the details on the right.',
           'ggongbab.mapCaption': 'Map pin: KAIST’s main Daejeon campus. Follow official notices for the exact venue or booth.',
           'ggongbab.mapFrameTitle': 'Event location map',
           'gb.tablistAria': 'Ggongbab events',
           'gb.e0.tabAria': 'Free meal & event tab',
           'gb.e0.date': 'Event',
           'gb.e0.summary': 'Free meal & event info',
+          'gb.e1.tabAria': 'Semester events & booths tab',
+          'gb.e1.date': 'TBA',
+          'gb.e1.summary': 'Semester events & booths',
+          'gb.e1.schedule': 'Dates will be posted with the semester calendar.',
+          'gb.e1.location': 'On-campus venues vary by event—follow official notices.',
+          'gb.e1.content': 'Student council or club booths and extra free-meal tie-ins will be summarized here when available.',
+          'gb.e1.applyHtml':
+            'Signup details will be in each event’s notice. Updates also appear on <a class="gb-apply-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener">Instagram</a>.',
           'gb.field.schedule': 'Schedule',
           'gb.field.location': 'Location',
           'gb.field.content': 'Details',
@@ -815,9 +871,14 @@
     (function () {
       var split = document.querySelector('.ggongbab-split');
       if (!split) return;
+      var tablist = split.querySelector('.event-tablist');
       var tabs = [].slice.call(split.querySelectorAll('.event-tab'));
       var panels = [].slice.call(split.querySelectorAll('.event-panel'));
       if (tabs.length === 0 || panels.length === 0) return;
+      function tabIntoView(tab) {
+        if (!tab) return;
+        tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
       function select(i) {
         tabs.forEach(function (tab, j) {
           var on = j === i;
@@ -829,10 +890,36 @@
             else panels[j].setAttribute('hidden', '');
           }
         });
+        tabIntoView(tabs[i]);
       }
       tabs.forEach(function (tab, i) {
-        tab.addEventListener('click', function () { select(i); });
+        tab.addEventListener('click', function () {
+          select(i);
+        });
       });
+      if (tablist) {
+        tablist.addEventListener('keydown', function (e) {
+          var t = e.target;
+          if (!t || t.getAttribute('role') !== 'tab') return;
+          var i = tabs.indexOf(t);
+          if (i < 0) return;
+          var next = i;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            next = Math.min(i + 1, tabs.length - 1);
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            next = Math.max(i - 1, 0);
+          } else if (e.key === 'Home') {
+            next = 0;
+          } else if (e.key === 'End') {
+            next = tabs.length - 1;
+          } else {
+            return;
+          }
+          e.preventDefault();
+          select(next);
+          if (tabs[next]) tabs[next].focus();
+        });
+      }
     })();
   </script>
 
