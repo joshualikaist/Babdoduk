@@ -260,7 +260,8 @@
       position: relative;
       z-index: 1;
       flex: 1 0 auto;
-      max-width: 560px;
+      width: 100%;
+      max-width: 760px;
       margin: 0 auto;
       padding: 8px 18px 28px;
     }
@@ -321,11 +322,11 @@
     .event-tab-outlink {
       flex-shrink: 0;
       align-self: center;
-      margin: 8px 12px 8px 4px;
+      margin: 8px 10px 8px 2px;
       display: inline-flex;
       align-items: center;
-      padding: 7px 14px;
-      font-size: 0.72rem;
+      padding: 6px 12px;
+      font-size: 0.68rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       border-radius: 999px;
@@ -383,10 +384,18 @@
       letter-spacing: 0.02em;
     }
     .event-tab-title {
-      font-size: 0.88rem;
+      font-size: clamp(0.7rem, 2.35vw, 0.88rem);
       font-weight: 700;
       color: #1d1d1f;
       line-height: 1.3;
+    }
+    .event-tab-row .event-tab-title {
+      white-space: nowrap;
+    }
+    @media (max-width: 380px) {
+      .event-tab-row .event-tab-title {
+        white-space: normal;
+      }
     }
     .event-panels {
       border-radius: 0;
@@ -682,33 +691,33 @@
     <p class="event-lead" data-i18n="event.lead">왼쪽 카드 영역을 누르면 상세가 바뀌고, 오른쪽 작은 버튼으로 안내 페이지(인스타 등)로 이동할 수 있어요.</p>
 
     <div class="event-tablist" role="tablist" aria-label="이벤트 목록" data-i18n-aria-key="event.tablistAria">
-      <!-- 인스타·릴 URL은 각 행 오른쪽 「페이지로 이동」의 href만 바꾸면 됩니다. -->
-      <div class="event-tab-row is-selected">
+      <!-- 인스타·릴 URL은 각 행 오른쪽 「페이지로 이동」의 href만 바꾸면 됩니다. 탭 순서는 항상 시작일 빠른 순(동일 시작일이면 종료일 빠른 순). -->
+      <div class="event-tab-row is-selected event-tab-row--no-link">
         <button type="button" class="event-tab" role="tab" id="eventTab0" aria-selected="true" aria-controls="eventPanel0" data-i18n-aria-key="event.e0.tabAria" aria-label="첫 번째 이벤트">
-          <span class="event-tab-date" data-i18n="event.e0.date">2026. 5. 9 ~ 5. 16</span>
-          <span class="event-tab-title" data-i18n="event.e0.summary">밥도둑 팔로워 100명 이벤트</span>
+          <span class="event-tab-date" data-i18n="event.e0.date">2026. 5. 15(금)</span>
+          <span class="event-tab-title" data-i18n="event.e0.summary">밥도둑 팔로워 이벤트</span>
         </button>
-        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer" data-i18n="event.openPageBtn">페이지로 이동</a>
       </div>
       <div class="event-tab-row">
         <button type="button" class="event-tab" role="tab" id="eventTab1" aria-selected="false" aria-controls="eventPanel1" data-i18n-aria-key="event.e1.tabAria" aria-label="두 번째 이벤트" tabindex="-1">
-          <span class="event-tab-date" data-i18n="event.e1.date">2026. 5. 19 ~ 5. 21</span>
-          <span class="event-tab-title" data-i18n="event.e1.summary">태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑</span>
+          <span class="event-tab-date" data-i18n="event.e1.date">2026. 5. 19 ~ 5. 20</span>
+          <span class="event-tab-title" data-i18n="event.e1.summary">태울석림제 부스 〈카빙〉 KAKI X 밥도둑 (예정)</span>
         </button>
         <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer" data-i18n="event.openPageBtn">페이지로 이동</a>
       </div>
       <div class="event-tab-row">
         <button type="button" class="event-tab" role="tab" id="eventTab2" aria-selected="false" aria-controls="eventPanel2" data-i18n-aria-key="event.e2.tabAria" aria-label="세 번째 이벤트" tabindex="-1">
-          <span class="event-tab-date" data-i18n="event.e2.date">2026. 5. 19 ~ 5. 20</span>
-          <span class="event-tab-title" data-i18n="event.e2.summary">태울석림제 부스 〈카빙〉 KAKI X 밥도둑</span>
+          <span class="event-tab-date" data-i18n="event.e2.date">2026. 5. 19 ~ 5. 21</span>
+          <span class="event-tab-title" data-i18n="event.e2.summary">태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑 (예정)</span>
         </button>
         <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer" data-i18n="event.openPageBtn">페이지로 이동</a>
       </div>
-      <div class="event-tab-row event-tab-row--no-link">
-        <button type="button" class="event-tab" role="tab" id="eventTab3" aria-selected="false" aria-controls="eventPanel3" tabindex="-1" data-i18n-aria-key="event.e3.tabAria" aria-label="네 번째 이벤트">
-          <span class="event-tab-date" data-i18n="event.e3.date">—</span>
-          <span class="event-tab-title" data-i18n="event.e3.summary">미정! 추후 공개 예정!</span>
+      <div class="event-tab-row">
+        <button type="button" class="event-tab" role="tab" id="eventTab3" aria-selected="false" aria-controls="eventPanel3" data-i18n-aria-key="event.e3.tabAria" aria-label="네 번째 이벤트" tabindex="-1">
+          <span class="event-tab-date" data-i18n="event.e3.date">2026. 5. 21 ~ 5. 28</span>
+          <span class="event-tab-title" data-i18n="event.e3.summary">밥도둑 팔로워 100명 이벤트</span>
         </button>
+        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer" data-i18n="event.openPageBtn">페이지로 이동</a>
       </div>
     </div>
 
@@ -791,37 +800,42 @@
           'event.e1.tabAria': '두 번째 이벤트',
           'event.e2.tabAria': '세 번째 이벤트',
           'event.e3.tabAria': '네 번째 이벤트',
-          'event.e0.date': '2026. 5. 9 ~ 2026. 5. 16',
-          'event.e0.summary': '밥도둑 팔로워 100명 이벤트',
+          'event.e0.date': '2026. 5. 15(금)',
+          'event.e0.summary': '밥도둑 팔로워 이벤트',
           'event.e0.detail':
             '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">팔로워 100명 달성 기념 이벤트입니다.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 9일(토) ~ 2026년 5월 16일(토)</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">메가커피 아메리카노 모바일 쿠폰을 <strong>5명</strong>에게 증정합니다.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">아래를 확인한 뒤, 목록에서 해당 카드 <strong>오른쪽</strong>의 <strong>페이지로 이동</strong>을 눌러 인스타그램 안내를 열고, 게시물에 안내된 대로 참여해 주세요. (정확한 URL은 HTML에서 그 버튼의 <code>href</code>만 바꾸면 됩니다.)</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value"><strong>밥도둑 팔로워</strong> 이벤트입니다. 일정·내용이 확정되는 대로 인스타그램과 이 페이지에 안내할 예정입니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 15일(금) — 세부 일정은 추후 공지합니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">추후 공지 예정입니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">확정되는 대로 안내드리겠습니다.</div></div>' +
             '</div>',
-          'event.e1.date': '2026. 5. 19 ~ 2026. 5. 21',
-          'event.e1.summary': '태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑',
+          'event.e1.date': '2026. 5. 19 ~ 2026. 5. 20',
+          'event.e1.summary': '태울석림제 부스 〈카빙〉 KAKI X 밥도둑 (예정)',
           'event.e1.detail':
             '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈언빌리버블 버블티〉 STROKE × 밥도둑 콜라보입니다.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 19일 ~ 2026년 5월 21일</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">현장·인스타 공지에 따라 안내됩니다. (추후 구체화 예정)</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>STROKE</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다. (URL은 HTML에서 해당 링크의 <code>href</code>를 교체하세요.)</div></div>' +
-            '</div>',
-          'event.e2.date': '2026. 5. 19 ~ 2026. 5. 20',
-          'event.e2.summary': '태울석림제 부스 〈카빙〉 KAKI X 밥도둑',
-          'event.e2.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈카빙〉 KAKI × 밥도둑 콜라보입니다.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 19일 ~ 2026년 5월 20일</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈카빙〉 KAKI × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 19일 ~ 2026년 5월 20일 <strong>(예정)</strong></div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">현장·인스타 공지에 따라 안내됩니다. (추후 구체화 예정)</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>KAKI</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다. (URL은 HTML에서 해당 링크의 <code>href</code>를 교체하세요.)</div></div>' +
             '</div>',
-          'event.e3.date': '일정 미정',
-          'event.e3.summary': '미정! 추후 공개 예정!',
+          'event.e2.date': '2026. 5. 19 ~ 2026. 5. 21',
+          'event.e2.summary': '태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑 (예정)',
+          'event.e2.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈언빌리버블 버블티〉 STROKE × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 19일 ~ 2026년 5월 21일 <strong>(예정)</strong></div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">현장·인스타 공지에 따라 안내됩니다. (추후 구체화 예정)</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>STROKE</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다. (URL은 HTML에서 해당 링크의 <code>href</code>를 교체하세요.)</div></div>' +
+            '</div>',
+          'event.e3.date': '2026. 5. 21 ~ 2026. 5. 28',
+          'event.e3.summary': '밥도둑 팔로워 100명 이벤트',
           'event.e3.detail':
-            '<div class="event-detail-sheet"><div class="event-detail-row event-detail-row--solo"><div class="event-detail-value">일정·내용은 확정되는 대로 이 페이지와 인스타그램에 공지할 예정입니다.</div></div></div>',
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">팔로워 100명 달성 기념 이벤트입니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 21일(목) ~ 2026년 5월 28일(목)</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">메가커피 아메리카노 모바일 쿠폰을 <strong>5명</strong>에게 증정합니다.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">아래를 확인한 뒤, 목록에서 해당 카드 <strong>오른쪽</strong>의 <strong>페이지로 이동</strong>을 눌러 인스타그램 안내를 열고, 게시물에 안내된 대로 참여해 주세요. (정확한 URL은 HTML에서 그 버튼의 <code>href</code>만 바꾸면 됩니다.)</div></div>' +
+            '</div>',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -868,37 +882,42 @@
           'event.e1.tabAria': 'Second event',
           'event.e2.tabAria': 'Third event',
           'event.e3.tabAria': 'Fourth event',
-          'event.e0.date': 'May 9–16, 2026',
-          'event.e0.summary': 'Babdoduk 100 followers event',
+          'event.e0.date': 'Fri, May 15, 2026',
+          'event.e0.summary': 'Babdoduk follower event',
           'event.e0.detail':
             '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Giveaway celebrating 100 followers.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">Saturday, May 9 through Saturday, May 16, 2026.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Mega Coffee Americano mobile coupons for <strong>5 winners</strong>.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value">Read below, then tap <strong>Open page</strong> on the <strong>right</strong> of this card to open Instagram in a new tab. Follow the post. (Replace that link’s <code>href</code> in the HTML.)</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value"><strong>Babdoduk follower</strong> event. Schedule and details will go on Instagram and this page once confirmed.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">Friday, May 15, 2026 — timings to be announced.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">To be announced.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value">Instructions will be shared when the event is finalized.</div></div>' +
             '</div>',
-          'event.e1.date': 'May 19–21, 2026',
-          'event.e1.summary': 'Taeul Seoklim Festival booth: Unbelievable Bubble Tea — STROKE × Babdoduk',
+          'event.e1.date': 'May 19–20, 2026',
+          'event.e1.summary': 'Taeul Seoklim Festival booth: Carving — KAKI × Babdoduk (TBA)',
           'event.e1.detail':
             '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Unbelievable Bubble Tea (STROKE) × Babdoduk collaboration.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">May 19–21, 2026.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Per on-site / Instagram notices. (Details to be added.)</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>STROKE</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card. (Swap that link’s <code>href</code> later.)</div></div>' +
-            '</div>',
-          'event.e2.date': 'May 19–20, 2026',
-          'event.e2.summary': 'Taeul Seoklim Festival booth: Carving — KAKI × Babdoduk',
-          'event.e2.detail':
-            '<div class="event-detail-sheet">' +
-            '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Carving (KAKI) × Babdoduk collaboration.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">May 19–20, 2026.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Carving (KAKI) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">May 19–20, 2026 <strong>(tentative)</strong></div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Per on-site / Instagram notices. (Details to be added.)</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card. (Swap that link’s <code>href</code> later.)</div></div>' +
             '</div>',
-          'event.e3.date': 'To be announced',
-          'event.e3.summary': 'TBA — details coming soon!',
+          'event.e2.date': 'May 19–21, 2026',
+          'event.e2.summary': 'Taeul Seoklim Festival booth: Unbelievable Bubble Tea — STROKE × Babdoduk (TBA)',
+          'event.e2.detail':
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Unbelievable Bubble Tea (STROKE) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">May 19–21, 2026 <strong>(tentative)</strong></div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Per on-site / Instagram notices. (Details to be added.)</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>STROKE</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card. (Swap that link’s <code>href</code> later.)</div></div>' +
+            '</div>',
+          'event.e3.date': 'May 21–28, 2026',
+          'event.e3.summary': 'Babdoduk 100 followers event',
           'event.e3.detail':
-            '<div class="event-detail-sheet"><div class="event-detail-row event-detail-row--solo"><div class="event-detail-value">Schedule and details will be posted here and on Instagram once they are confirmed.</div></div></div>',
+            '<div class="event-detail-sheet">' +
+            '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Giveaway celebrating 100 followers.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">Thursday, May 21 through Thursday, May 28, 2026.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Mega Coffee Americano mobile coupons for <strong>5 winners</strong>.</div></div>' +
+            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value">Read below, then tap <strong>Open page</strong> on the <strong>right</strong> of this card to open Instagram in a new tab. Follow the post. (Replace that link’s <code>href</code> in the HTML.)</div></div>' +
+            '</div>',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
