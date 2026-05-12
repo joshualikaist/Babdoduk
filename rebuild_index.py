@@ -51,7 +51,7 @@ LANDING_BLOCK = """
           </div>
         </a>
         <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="2">
-          <div class="slide-media" style="background-image: url('images/carousel-instagram.png'), linear-gradient(145deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);" role="img" aria-hidden="true"></div>
+          <div class="slide-media" style="background-image: url('images/history-t1.png'), linear-gradient(145deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">Instagram</span>
             <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
