@@ -310,6 +310,14 @@
       object-fit: cover;
       display: block;
     }
+    .timeline-item-media--contain {
+      background: #fff;
+    }
+    .timeline-item-media--contain .timeline-item-img {
+      object-fit: contain;
+      padding: 6%;
+      box-sizing: border-box;
+    }
     .timeline-item-rail {
       display: flex;
       justify-content: center;
@@ -519,12 +527,12 @@
       <li class="timeline-item" style="--accent: #3b82f6;">
         <div class="timeline-item-grid">
           <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media">
+            <figure class="timeline-item-media timeline-item-media--contain">
               <img
                 class="timeline-item-img"
-                src="images/history-t1.jpg"
-                width="120"
-                height="120"
+                src="images/history-t1.png"
+                width="512"
+                height="512"
                 loading="lazy"
                 decoding="async"
                 alt=""
@@ -546,12 +554,12 @@
       <li class="timeline-item" style="--accent: #f97316;">
         <div class="timeline-item-grid">
           <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media">
+            <figure class="timeline-item-media timeline-item-media--contain">
               <img
                 class="timeline-item-img"
-                src="images/history-t2.jpg"
-                width="120"
-                height="120"
+                src="images/history-t2.png"
+                width="800"
+                height="256"
                 loading="lazy"
                 decoding="async"
                 alt=""
@@ -640,11 +648,11 @@
           'nav.langAria': '영어로 전환',
           'history.heroTitle': '밥도둑의 역사',
           'history.heroKicker': 'Timeline',
-          'history.t1.photoAlt': '인스타그램 채널 개설 시점 이미지',
+          'history.t1.photoAlt': '인스타그램 공식 로고',
           'history.t1.year': '2025.4.1',
           'history.t1.label': '공식 인스타그램 채널 개설',
           'history.t1.desc': '밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.',
-          'history.t2.photoAlt': '웹사이트 런치 시점 이미지',
+          'history.t2.photoAlt': '통합 웹 허브 오픈 — 밥도둑 로고',
           'history.t2.year': '2025.5.7',
           'history.t2.label': '통합 웹 허브 오픈',
           'history.t2.desc': '주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.',
@@ -686,11 +694,11 @@
           'nav.langAria': 'Switch to Korean',
           'history.heroTitle': 'History of Babdoduk',
           'history.heroKicker': 'Timeline',
-          'history.t1.photoAlt': 'Image for the Instagram channel launch',
+          'history.t1.photoAlt': 'Official Instagram logo',
           'history.t1.year': 'Apr 1, 2025',
           'history.t1.label': 'Official Instagram launch',
           'history.t1.desc': 'Launched the official Babdoduk Instagram channel and began publishing recipe- and lifestyle-oriented content.',
-          'history.t2.photoAlt': 'Image for the website launch',
+          'history.t2.photoAlt': 'Unified web hub launch — Babdoduk wordmark',
           'history.t2.year': 'May 7, 2025',
           'history.t2.label': 'Integrated web hub',
           'history.t2.desc': 'Shipped a public web hub that centralizes key SNS links, the food-expense log, event information, and related tools.',
