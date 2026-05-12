@@ -10,6 +10,10 @@
 
 탭을 바꾸면 **오른쪽 상세**와 함께 **왼쪽 지도 임베드·캡션**도 선택한 행사에 맞게 바뀝니다. (`syncGgongbabMapFromTab`, `gb.mapQ0` / `gb.mapQ1`, `gb.mapCaption0` / `gb.mapCaption1`)
 
+## 상단 리드 문구 (`ggongbab.lead`)
+
+페이지 맨 위 **`event-lead`** 한 줄은 **사용법 안내**만 씁니다. (어떤 탭이 있는지 **행사 이름으로 나열**하지 않습니다.) 문구는 `STR.ko` / `STR.en`의 **`ggongbab.lead`** 키만 수정합니다.
+
 ## 행사 일정 위 히어로 이미지 (선택)
 
 오른쪽 상세에서 **`event-detail-sheet`(행사 일정 첫 줄) 바로 위**에 탭별 이미지를 둘 수 있습니다.
@@ -17,7 +21,7 @@
 | 탭 | 기본 파일 경로 (저장소 기준) | 대체 문자열(`alt`) i18n 키 |
 |----|------------------------------|---------------------------|
 | 첫 번째 (`gbPanel0`) | `images/ggongbab-tab0.png` (또는 `.jpg` 등, `<img src>` 와 맞춤) | `gb.e0.imageAlt` |
-| 두 번째 (`gbPanel1`) | (선택) 히어로 없으면 `<figure>` 생략 가능. 쓸 경우 예: `images/ggongbab-tab1.jpg` | `gb.e1.imageAlt` |
+| 두 번째 (`gbPanel1`) | 예: `images/ggongbab-samsung-sdi-lunch.png` (또는 다른 포스터 파일; `<img src>` 와 맞춤) | `gb.e1.imageAlt` |
 
 - **파일 넣기**: 포스터·스크린샷 등을 위 경로 이름으로 `images/` 폴더에 추가합니다. (`jpg` 대신 `png`/`webp`를 쓰면 `ggongbab.html` 안 `<img src="...">`만 그 확장자에 맞게 수정하면 됩니다.)
 - **문구**: 한·영 `alt` 는 `STR.ko` / `STR.en` 의 `gb.e0.imageAlt`, `gb.e1.imageAlt` 에서 수정합니다. (`data-i18n-alt` 로 연결됨.)
@@ -77,8 +81,10 @@
 
 ## 현재 저장소 예시
 
+**탭은 두 개만** 둡니다. (예: 과거에 있던 「학기 중 부스」 같은 세 번째 탭은 사용하지 않습니다.)
+
 - **탭0 · KAIST OverEdge:** 히어로 `images/ggongbab-tab0.png`, 참고용 `images/ggongbab-overedge-flyer.png`, 본문 키 `gb.value.*`, 지도 `gb.mapQ0` / `gb.mapCaption0`.
-- **탭1 · 삼성SDI KSBP 런치 설명회:** 히어로 `images/ggongbab-samsung-sdi-lunch.png`, 본문 키 `gb.e1.*`, 지도 `gb.mapQ1` / `gb.mapCaption1`.
+- **탭1 · 삼성SDI KSBP 런치 설명회:** 히어로 `images/ggongbab-samsung-sdi-lunch.png`, 본문 키 `gb.e1.*`, 지도 **`gb.mapQ1`** = Google 임베드 검색어 **`카이스트 응용공학동`** (`STR.ko` / `STR.en` 모두 동일 문자열로 두는 것을 권장), 캡션 `gb.mapCaption1`.
 
 위를 바꿀 때에도 **탭 라벨(`gb.eN.*`)·4행 키(`gb.value.*` / `gb.eN.*`)·지도 `gb.mapQN` / `gb.mapCaptionN`** 를 같은 규칙으로 갱신하면 됩니다.
 
@@ -89,7 +95,7 @@
 
 ## 지도·캡션 (탭별)
 
-- 행사마다 장소가 다르므로 **`gb.mapQ0` / `gb.mapQ1`** (한·영 각 `STR`에 두어 Google 검색어로 임베드)와 **`gb.mapCaption0` / `gb.mapCaption1`** (지도 아래 설명 문구)를 씁니다.
+- 행사마다 장소가 다르므로 **`gb.mapQ0` / `gb.mapQ1`** (한·영 각 `STR`에 두어 Google 검색어로 임베드)와 **`gb.mapCaption0` / `gb.mapCaption1`** (지도 아래 설명 문구)를 씁니다. 삼성SDI 안내 탭은 장소 검색어를 **`카이스트 응용공학동`** 으로 맞춥니다.
 - iframe `title`: `ggongbab.mapFrameTitle` (공통이어도 됨).
 - 언어 전환·탭 전환 후에 `syncGgongbabMapFromTab()`이 임베드 `src`와 캡션을 맞춥니다.  
 - HTML에 있는 iframe 초기 `src`는 첫 탭(또는 대표 행사) 기준으로 두어도 되며, 로드 직후 스크립트가 갱신합니다.
