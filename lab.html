@@ -350,6 +350,150 @@
       background: rgba(99, 102, 241, 0.06);
     }
 
+    .lab-lead--tight {
+      margin-top: 0;
+      font-size: 0.82rem;
+    }
+    .lab-ics-hint {
+      margin-top: 8px;
+      font-size: 0.72rem;
+      line-height: 1.55;
+      color: #6e6e73;
+    }
+    .lab-ics-toolbar {
+      margin-top: 14px;
+    }
+    .lab-ics-status {
+      margin-top: 12px;
+      min-height: 1.25em;
+      font-size: 0.78rem;
+      color: #424245;
+    }
+    .lab-ics-status.is-error {
+      color: #b91c1c;
+    }
+    .lab-ics-subtitle {
+      margin-top: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6366f1;
+    }
+    .lab-ics-list {
+      list-style: none;
+      margin: 10px 0 0;
+      padding: 0;
+    }
+    .lab-ics-item {
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #fafafa;
+    }
+    .lab-ics-item time {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #9333ea;
+      letter-spacing: 0.02em;
+    }
+    .lab-ics-item .lab-ics-title {
+      margin-top: 6px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: #1d1d1f;
+      word-break: break-word;
+    }
+    .lab-ics-details {
+      margin-top: 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px dashed rgba(99, 102, 241, 0.35);
+      background: rgba(99, 102, 241, 0.03);
+    }
+    .lab-ics-details summary {
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #4338ca;
+    }
+
+    .lab-panel--gb-draft .event-detail-sheet {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .lab-panel--gb-draft .event-detail-row {
+      display: grid;
+      grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+      gap: 0.35rem 0.65rem;
+      align-items: start;
+      padding: 0.4rem 0;
+    }
+    html[lang='en'] .lab-panel--gb-draft .event-detail-row {
+      grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
+    }
+    .lab-panel--gb-draft .event-detail-label {
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: #1d1d1f;
+      letter-spacing: -0.02em;
+      line-height: 1.5;
+    }
+    .lab-panel--gb-draft .event-detail-value {
+      font-weight: 400;
+      font-size: 0.82rem;
+      color: #424245;
+      line-height: 1.55;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+    .lab-gb-draft-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .lab-gb-draft-card {
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+    .lab-gb-draft-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+      line-height: 1.35;
+      color: #1d1d1f;
+    }
+    .lab-gb-draft-foot {
+      margin: 10px 0 0;
+      font-size: 0.72rem;
+      line-height: 1.5;
+      color: #86868b;
+    }
+    .lab-gb-draft-placeholder {
+      margin: 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px dashed rgba(99, 102, 241, 0.28);
+      font-size: 0.8rem;
+      color: #4338ca;
+    }
+    @media (max-width: 400px) {
+      .lab-panel--gb-draft .event-detail-row {
+        grid-template-columns: 1fr;
+        gap: 0.2rem 0;
+      }
+    }
+
     .site-footer {
       flex-shrink: 0;
       margin-top: 40px;
@@ -502,12 +646,14 @@
     <p class="lab-lead" data-i18n="lab.lead">
       로그인·서버 저장·가계부 동기화처럼 부담 큰 기능은 여기서만 먼저 시험합니다. 배포 URL은 같아도 이 페이지는 검색에 잘 노출되지 않게 막아 두었습니다.
     </p>
+    <p class="lab-note" data-i18n-html="lab.indexClarify"></p>
     <section class="lab-panel" aria-labelledby="lab-how-heading">
       <h2 id="lab-how-heading" data-i18n="lab.panelUseTitle">이 페이지 쓰는 법</h2>
       <ul class="lab-list">
         <li data-i18n-html="lab.bullet1"></li>
         <li data-i18n-html="lab.bullet2"></li>
         <li data-i18n-html="lab.bullet3"></li>
+        <li data-i18n-html="lab.bullet4"></li>
       </ul>
       <p class="lab-note" data-i18n-html="lab.pathNote"></p>
     </section>
@@ -518,6 +664,32 @@
         <li data-i18n="lab.next2"></li>
         <li data-i18n="lab.next3"></li>
       </ul>
+    </section>
+    <section class="lab-panel lab-panel--ics" aria-labelledby="lab-ics-heading">
+      <h2 id="lab-ics-heading" data-i18n="lab.icsTitle">포털 캘린더 (.ics) 실험</h2>
+      <p class="lab-lead lab-lead--tight" data-i18n="lab.icsLead">
+        프로젝트 루트의 calendar.ics를 불러와 제목 키워드로 걸러 봅니다.
+      </p>
+      <p class="lab-ics-hint" data-i18n="lab.icsKeywordsHint"></p>
+      <div class="lab-ics-toolbar">
+        <button type="button" class="lab-btn" id="labIcsLoadBtn">
+          <span data-i18n="lab.icsBtn">calendar.ics 불러오기</span>
+        </button>
+      </div>
+      <p class="lab-ics-status" id="labIcsStatus" role="status" aria-live="polite"></p>
+      <h3 class="lab-ics-subtitle" data-i18n="lab.icsMatchTitle">키워드 매칭</h3>
+      <ul class="lab-ics-list" id="labIcsMatch"></ul>
+      <details class="lab-ics-details">
+        <summary data-i18n="lab.icsUpcomingSummary">앞으로 30건 (필터 없음)</summary>
+        <ul class="lab-ics-list" id="labIcsUpcoming"></ul>
+      </details>
+    </section>
+    <section class="lab-panel lab-panel--gb-draft" aria-labelledby="lab-gb-draft-h">
+      <h2 id="lab-gb-draft-h" data-i18n="lab.gbDraftTitle">꽁밥 안내 스타일 초안</h2>
+      <p class="lab-lead lab-lead--tight" data-i18n="lab.gbDraftLead">
+        포털 일정을 ggongbab.html과 같은 4행 시트로 미리 봅니다.
+      </p>
+      <div id="labGbDraftList" class="lab-gb-draft-list"></div>
     </section>
     <div class="lab-actions">
       <a href="food.html" class="lab-btn" data-i18n="lab.btnFoodlog">먹방 가계부 (본편)</a>
@@ -581,13 +753,17 @@
           'lab.kicker': 'Beta / draft',
           'lab.lead':
             '로그인·서버 저장·가계부 동기화처럼 부담 큰 기능은 여기서만 먼저 시험합니다. 배포 URL은 같아도 이 페이지는 검색에 잘 노출되지 않게 막아 두었습니다.',
+          'lab.indexClarify':
+            '<strong>홈(메인 방문 페이지)</strong>은 계속 <code>index.html</code>입니다. <code>lab.html</code>은 실험 전용이며, 여기서 검증한 뒤 본편 HTML로 옮기는 워크플로를 씁니다. “항상 index보다 앞선 버전”이 자동으로 생기는 것은 아니고, <strong>베타 브랜치</strong>에만 실험 커밋을 두거나 <code>main</code>에 합쳐 공개 여부를 나눕니다.',
           'lab.panelUseTitle': '이 페이지 쓰는 법',
           'lab.bullet1':
             '<strong>같은 사이트</strong> 안에서만 먼저 됩니다. 배포 주소 끝에 <code>/lab.html</code>만 붙여 직접 열면 됩니다.',
           'lab.bullet2':
             'Git을 쓰면 실험 커밋은 <strong>베타 브랜치</strong>에만 두었다가, 검증 후에만 <code>main</code>에 합치면 공식 방문 페이지와 분리할 수 있습니다.',
           'lab.bullet3':
-            '여기서 동작이 안정되면 본편(<code>food.html</code> 등)으로 옮기면 됩니다.',
+            '여기서 동작이 안정되면 본편(<code>ggongbab.html</code>·<code>food.html</code> 등)으로 옮깁니다.',
+          'lab.bullet4':
+            '배포가 <code>main</code> 기준이면 방문자가 보는 홈은 본편 그대로입니다. 실험을 “앞서” 두려면 브랜치·머지 타이밍으로 조절합니다.',
           'lab.pathNote':
             '예: <code>https://…vercel.app/lab.html</code> · 홈 캐러셀에는 링크를 안 걸어도 됩니다(북마크·직접 입력).',
           'lab.panelNextTitle': '다음에 붙일 수 있는 것',
@@ -596,6 +772,34 @@
           'lab.next3': '내보내기·가져오기(JSON)로 백업 — 서버 없을 때도 유용',
           'lab.btnFoodlog': '먹방 가계부 (본편)',
           'lab.btnHome': '홈으로',
+          'lab.icsTitle': '포털 캘린더 (.ics) 실험',
+          'lab.icsLead':
+            '저장소 루트의 calendar.ics를 브라우저에서 불러와, 제목에 food/꽁밥 관련 키워드가 들어간 일정만 골라 봅니다. (본편 ggongbab 연동 전 단계)',
+          'lab.icsKeywordsHint':
+            '기본 키워드: 꽁밥, 런치, 점심, 싸이버거, 식사, 버거, 다과, 간식, 삼성SDI, KSBP, OverEdge, cyber, meal, lunch, burger, pizza, brunch 등. 목록은 lab.html 하단 스크립트의 PORTAL_ICS_KEYWORDS 배열에서 바꿀 수 있습니다.',
+          'lab.icsBtn': 'calendar.ics 불러오기',
+          'lab.icsLoading': '불러오는 중…',
+          'lab.icsStatusTpl': '파싱 {total}건 · 키워드 일치 {match}건 · 오늘·이후 {future}건',
+          'lab.icsErrFetch':
+            '불러오기 실패. 같은 호스트의 /calendar.ics인지 확인하세요. 로컬은 file://이 아니라 npx serve 등으로 열어야 합니다.',
+          'lab.icsErrParse': 'ICS 형식을 해석하지 못했습니다.',
+          'lab.icsEmpty': '키워드에 맞는 일정이 없습니다. 키워드를 넓히거나 포털에서 새 calendar.ics로 갈아 끼워 보세요.',
+          'lab.icsMatchTitle': '키워드 매칭',
+          'lab.icsUpcomingSummary': '앞으로 예정 30건 (필터 없음 · 디버그)',
+          'lab.gbDraftTitle': '꽁밥 안내 스타일 초안 (포털 캘린더)',
+          'lab.gbDraftLead':
+            '위에서 불러온 <code>calendar.ics</code> 중 키워드 일치 일정을 <code>ggongbab.html</code>과 같은 <strong>4행 시트</strong>(일정·위치·내용·신청) 형태로 미리 봅니다. 장소·링크는 .ics에 없으므로 본편에는 반드시 수동으로 채워 넣어야 합니다.',
+          'lab.gbDraftFoot':
+            '실험용 초안입니다. 확정 내용은 ggongbab.html의 탭·STR·지도 키로 옮겨 주세요.',
+          'lab.gbDraftEmpty': '먼저 위에서 calendar.ics 불러오기를 실행해 주세요.',
+          'lab.gbDraftNoMatch': '키워드에 맞는 일정이 없어 초안 카드를 만들 수 없습니다.',
+          'lab.gbFieldSchedule': '행사 일정',
+          'lab.gbFieldLocation': '행사 위치',
+          'lab.gbFieldContent': '행사 내용',
+          'lab.gbFieldApply': '신청 링크',
+          'lab.gbLocPlaceholder': '(포털 .ics에는 없음 — ggongbab에서 주소·장소 수동 입력)',
+          'lab.gbContentNote': '제목만 반영됨. 상세·혜택은 포털 본문·현장 안내를 확인하세요.',
+          'lab.gbApplyEmpty': '(일정 파일에 없음 — 공지 URL을 ggongbab에 수동 입력)',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -635,13 +839,17 @@
           'lab.kicker': 'Beta / draft',
           'lab.lead':
             'Try heavier features here first — auth, server-backed storage, food-log sync, and so on. This URL is tagged noindex so casual search traffic should stay on the main site.',
+          'lab.indexClarify':
+            '<strong>Home for visitors</strong> stays <code>index.html</code>. <code>lab.html</code> is a sandbox; you copy stable work into real pages afterward. Nothing automatically moves “ahead” of index—use branches and merges to control what production shows.',
           'lab.panelUseTitle': 'How to use this page',
           'lab.bullet1':
             '<strong>Same deployment</strong>: append <code>/lab.html</code> to your site URL and bookmark it.',
           'lab.bullet2':
             'With Git, keep experiments on a <strong>beta branch</strong> and merge to <code>main</code> only when ready for visitors.',
           'lab.bullet3':
-            'When a feature is stable, port the markup or scripts into the real pages (e.g. <code>food.html</code>).',
+            'When a feature is stable, port it into production pages (e.g. <code>ggongbab.html</code>, <code>food.html</code>).',
+          'lab.bullet4':
+            'If Vercel production tracks <code>main</code>, visitors still see the main site; keep experiments off <code>main</code> until you are ready.',
           'lab.pathNote':
             'Example: <code>https://….vercel.app/lab.html</code> · You don’t have to link it from the home carousel.',
           'lab.panelNextTitle': 'What you can add next',
@@ -650,6 +858,34 @@
           'lab.next3': 'Export / import JSON backups — useful even without a server',
           'lab.btnFoodlog': 'Food log (production)',
           'lab.btnHome': 'Home',
+          'lab.icsTitle': 'Portal calendar (.ics) experiment',
+          'lab.icsLead':
+            'Fetches /calendar.ics from this site and lists events whose titles match food / free-meal style keywords (prototype before wiring ggongbab).',
+          'lab.icsKeywordsHint':
+            'Default keywords: 꽁밥, 런치, lunch, meal, burger, pizza, brunch, 삼성SDI, KSBP, OverEdge, 싸이버거, etc. Edit the PORTAL_ICS_KEYWORDS array in the script at the bottom of this file.',
+          'lab.icsBtn': 'Load calendar.ics',
+          'lab.icsLoading': 'Loading…',
+          'lab.icsStatusTpl': 'Parsed {total} · keyword matches {match} · from today onward {future}',
+          'lab.icsErrFetch':
+            'Could not fetch the file. Use http(s) (e.g. npx serve), not file://, and keep calendar.ics next to lab.html.',
+          'lab.icsErrParse': 'Could not parse ICS data.',
+          'lab.icsEmpty': 'No events matched. Widen keywords or replace calendar.ics with a fresh export.',
+          'lab.icsMatchTitle': 'Keyword matches',
+          'lab.icsUpcomingSummary': 'Next 30 events (unfiltered · debug)',
+          'lab.gbDraftTitle': 'Ggongbab-style draft (portal calendar)',
+          'lab.gbDraftLead':
+            'Matched events from <code>calendar.ics</code> are shown in the same <strong>four-row sheet</strong> shape as <code>ggongbab.html</code> (schedule, location, details, signup). ICS exports usually lack venue and URLs—fill those manually on the real page.',
+          'lab.gbDraftFoot':
+            'Draft only. Move finalized copy into ggongbab tabs, STR keys, and map fields.',
+          'lab.gbDraftEmpty': 'Load <code>calendar.ics</code> with the button above first.',
+          'lab.gbDraftNoMatch': 'No keyword matches, so no draft cards were generated.',
+          'lab.gbFieldSchedule': 'Schedule',
+          'lab.gbFieldLocation': 'Location',
+          'lab.gbFieldContent': 'Details',
+          'lab.gbFieldApply': 'Sign-up link',
+          'lab.gbLocPlaceholder': '(Not in portal .ics — add in ggongbab manually)',
+          'lab.gbContentNote': 'Only the title is auto-filled. Check the portal post for full details.',
+          'lab.gbApplyEmpty': '(Not in calendar file — paste notice URL in ggongbab)',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
@@ -661,7 +897,7 @@
             'Independent content site. For business registration or legal matters, please reach out by email.'
         }
       };
-      function applyLang(lang) {
+      window.BABDODUK_STR = STR;
         if (lang !== 'en') lang = 'ko';
         document.documentElement.lang = lang;
         try { localStorage.setItem('babdoduk-lang', lang); } catch (e) {}
@@ -699,6 +935,11 @@
       if (langBtnEl) {
         langBtnEl.addEventListener('click', function () {
           applyLang(window.babdodukGetLang() === 'ko' ? 'en' : 'ko');
+          setTimeout(function () {
+            if (typeof window.babdodukLabIcsRerender === 'function') {
+              window.babdodukLabIcsRerender();
+            }
+          }, 0);
         });
       }
     })();
@@ -763,6 +1004,352 @@
           }
         });
       });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var PORTAL_ICS_KEYWORDS = [
+        '꽁밥',
+        '런치',
+        '점심',
+        '식사',
+        '식대',
+        '다과',
+        '간식',
+        '브런치',
+        '버거',
+        '치킨',
+        '피자',
+        '싸이버거',
+        '커피',
+        'OverEdge',
+        'overedge',
+        '오버엣지',
+        'KSBP',
+        'ksbp',
+        '삼성SDI',
+        '배터리인재',
+        'lunch',
+        'meal',
+        'burger',
+        'pizza',
+        'brunch',
+        'snack',
+        'coffee',
+        'cyber',
+        'Cyber',
+        '도시락'
+      ];
+
+      function T() {
+        var lang = document.documentElement.lang === 'en' ? 'en' : 'ko';
+        return window.BABDODUK_STR ? window.BABDODUK_STR[lang] : {};
+      }
+
+      function icsUnfold(text) {
+        var lines = text.replace(/\r\n/g, '\n').split('\n');
+        var out = [];
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line === '') continue;
+          var c0 = line.charAt(0);
+          if ((c0 === ' ' || c0 === '\t') && out.length) {
+            out[out.length - 1] += line.slice(1);
+          } else {
+            out.push(line);
+          }
+        }
+        return out;
+      }
+
+      function icsUnescape(s) {
+        if (!s) return '';
+        return String(s)
+          .replace(/\\n/g, '\n')
+          .replace(/\\N/g, '\n')
+          .replace(/\\,/g, ',')
+          .replace(/\\;/g, ';')
+          .replace(/\\\\/g, '\\');
+      }
+
+      function parseIcsDateValue(value) {
+        if (!value) return null;
+        var v = value;
+        if (v.length === 8 && /^\d{8}$/.test(v)) {
+          var y = +v.slice(0, 4);
+          var m = +v.slice(4, 6) - 1;
+          var d = +v.slice(6, 8);
+          return new Date(y, m, d, 0, 0, 0, 0);
+        }
+        if (v.length >= 15) {
+          var y2 = +v.slice(0, 4);
+          var mo2 = +v.slice(4, 6) - 1;
+          var d2 = +v.slice(6, 8);
+          var h = +v.slice(9, 11);
+          var mi = +v.slice(11, 13);
+          var sec = +v.slice(13, 15);
+          return new Date(y2, mo2, d2, h, mi, sec, 0);
+        }
+        return null;
+      }
+
+      function parseVevents(text) {
+        var lines = icsUnfold(text);
+        var events = [];
+        var cur = null;
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (line === 'BEGIN:VEVENT') {
+            cur = { summary: '', dtstart: null, dtend: null };
+          } else if (line === 'END:VEVENT' && cur) {
+            events.push(cur);
+            cur = null;
+          } else if (cur) {
+            var colon = line.indexOf(':');
+            if (colon === -1) continue;
+            var prop = line.slice(0, colon);
+            var val = line.slice(colon + 1);
+            var name = prop.split(';')[0];
+            if (name === 'SUMMARY') {
+              cur.summary = icsUnescape(val);
+            } else if (name === 'DTSTART') {
+              cur.dtstart = parseIcsDateValue(val);
+            } else if (name === 'DTEND') {
+              cur.dtend = parseIcsDateValue(val);
+            }
+          }
+        }
+        return events;
+      }
+
+      function titleMatchesKeywords(title, kws) {
+        if (!title) return false;
+        var lo = title.toLowerCase();
+        for (var i = 0; i < kws.length; i++) {
+          var k = kws[i];
+          if (!k) continue;
+          if (title.indexOf(k) !== -1) return true;
+          if (lo.indexOf(k.toLowerCase()) !== -1) return true;
+        }
+        return false;
+      }
+
+      function fmtRange(start, end) {
+        var loc = document.documentElement.lang === 'en' ? 'en-US' : 'ko-KR';
+        if (!start || isNaN(start.getTime())) return '—';
+        var o1 = { dateStyle: 'medium', timeStyle: 'short' };
+        var s1 = start.toLocaleString(loc, o1);
+        if (end && !isNaN(end.getTime())) {
+          var sameDay =
+            start.getFullYear() === end.getFullYear() &&
+            start.getMonth() === end.getMonth() &&
+            start.getDate() === end.getDate();
+          if (sameDay) {
+            return s1 + ' – ' + end.toLocaleTimeString(loc, { timeStyle: 'short' });
+          }
+          return s1 + ' – ' + end.toLocaleString(loc, o1);
+        }
+        return s1;
+      }
+
+      var labIcsMatch = document.getElementById('labIcsMatch');
+      var labIcsUpcoming = document.getElementById('labIcsUpcoming');
+      var labIcsStatus = document.getElementById('labIcsStatus');
+      var labIcsLoadBtn = document.getElementById('labIcsLoadBtn');
+      var labGbDraftList = document.getElementById('labGbDraftList');
+      var __labParsed = null;
+
+      function renderGbDraftFromState() {
+        if (!labGbDraftList) return;
+        var tt = T();
+        if (!__labParsed) {
+          labGbDraftList.innerHTML = '';
+          var ph0 = document.createElement('p');
+          ph0.className = 'lab-gb-draft-placeholder';
+          ph0.textContent = tt['lab.gbDraftEmpty'] || '';
+          labGbDraftList.appendChild(ph0);
+          return;
+        }
+        var parsed = __labParsed;
+        var withStart = parsed.filter(function (e) {
+          return e.dtstart && !isNaN(e.dtstart.getTime());
+        });
+        var matched = withStart.filter(function (e) {
+          return titleMatchesKeywords(e.summary, PORTAL_ICS_KEYWORDS);
+        });
+        matched.sort(function (a, b) {
+          return a.dtstart - b.dtstart;
+        });
+        var limited = matched.slice(0, 12);
+        labGbDraftList.innerHTML = '';
+        if (!limited.length) {
+          var ph1 = document.createElement('p');
+          ph1.className = 'lab-gb-draft-placeholder';
+          ph1.textContent = tt['lab.gbDraftNoMatch'] || '';
+          labGbDraftList.appendChild(ph1);
+          return;
+        }
+        limited.forEach(function (e) {
+          var art = document.createElement('article');
+          art.className = 'lab-gb-draft-card';
+          var h3 = document.createElement('h3');
+          h3.className = 'lab-gb-draft-title';
+          h3.textContent = e.summary || '—';
+          art.appendChild(h3);
+          var sheet = document.createElement('div');
+          sheet.className = 'event-detail-sheet';
+          function addRow(labelKey, valueText) {
+            var row = document.createElement('div');
+            row.className = 'event-detail-row';
+            var lab = document.createElement('div');
+            lab.className = 'event-detail-label';
+            lab.textContent = tt[labelKey] || '';
+            var val = document.createElement('div');
+            val.className = 'event-detail-value';
+            val.textContent = valueText;
+            row.appendChild(lab);
+            row.appendChild(val);
+            sheet.appendChild(row);
+          }
+          addRow('lab.gbFieldSchedule', fmtRange(e.dtstart, e.dtend));
+          addRow('lab.gbFieldLocation', tt['lab.gbLocPlaceholder'] || '');
+          addRow('lab.gbFieldContent', tt['lab.gbContentNote'] || '');
+          addRow('lab.gbFieldApply', tt['lab.gbApplyEmpty'] || '');
+          art.appendChild(sheet);
+          var foot = document.createElement('p');
+          foot.className = 'lab-gb-draft-foot';
+          foot.textContent = tt['lab.gbDraftFoot'] || '';
+          art.appendChild(foot);
+          labGbDraftList.appendChild(art);
+        });
+      }
+
+      function renderLists(parsed) {
+        __labParsed = parsed;
+        var tt = T();
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        var withStart = parsed.filter(function (e) {
+          return e.dtstart && !isNaN(e.dtstart.getTime());
+        });
+        withStart.sort(function (a, b) {
+          return a.dtstart - b.dtstart;
+        });
+
+        var future = withStart.filter(function (e) {
+          var endLike = e.dtend && !isNaN(e.dtend.getTime()) ? e.dtend : e.dtstart;
+          return endLike >= today;
+        });
+
+        var matched = withStart.filter(function (e) {
+          return titleMatchesKeywords(e.summary, PORTAL_ICS_KEYWORDS);
+        });
+
+        var matchedFuture = matched.filter(function (e) {
+          var endLike = e.dtend && !isNaN(e.dtend.getTime()) ? e.dtend : e.dtstart;
+          return endLike >= today;
+        });
+
+        if (labIcsMatch) {
+          labIcsMatch.innerHTML = '';
+          if (!matched.length) {
+            var li0 = document.createElement('li');
+            li0.className = 'lab-ics-item';
+            li0.textContent = tt['lab.icsEmpty'] || '';
+            labIcsMatch.appendChild(li0);
+          } else {
+            matched.forEach(function (e) {
+              var li = document.createElement('li');
+              li.className = 'lab-ics-item';
+              var tm = document.createElement('time');
+              tm.dateTime = e.dtstart.toISOString();
+              tm.textContent = fmtRange(e.dtstart, e.dtend);
+              var tit = document.createElement('div');
+              tit.className = 'lab-ics-title';
+              tit.textContent = e.summary || '—';
+              li.appendChild(tm);
+              li.appendChild(tit);
+              labIcsMatch.appendChild(li);
+            });
+          }
+        }
+
+        if (labIcsUpcoming) {
+          labIcsUpcoming.innerHTML = '';
+          future.slice(0, 30).forEach(function (e) {
+            var li = document.createElement('li');
+            li.className = 'lab-ics-item';
+            var tm = document.createElement('time');
+            tm.dateTime = e.dtstart.toISOString();
+            tm.textContent = fmtRange(e.dtstart, e.dtend);
+            var tit = document.createElement('div');
+            tit.className = 'lab-ics-title';
+            tit.textContent = e.summary || '—';
+            li.appendChild(tm);
+            li.appendChild(tit);
+            labIcsUpcoming.appendChild(li);
+          });
+        }
+
+        if (labIcsStatus) {
+          labIcsStatus.classList.remove('is-error');
+          var tpl = tt['lab.icsStatusTpl'] || '';
+          labIcsStatus.textContent = tpl
+            .replace(/\{total\}/g, String(parsed.length))
+            .replace(/\{match\}/g, String(matched.length))
+            .replace(/\{future\}/g, String(matchedFuture.length));
+        }
+        renderGbDraftFromState();
+      }
+
+      window.babdodukLabIcsRerender = function () {
+        if (__labParsed) renderLists(__labParsed);
+        else renderGbDraftFromState();
+      };
+
+      if (labIcsLoadBtn) {
+        labIcsLoadBtn.addEventListener('click', function () {
+          var tt = T();
+          if (labIcsStatus) {
+            labIcsStatus.classList.remove('is-error');
+            labIcsStatus.textContent = tt['lab.icsLoading'] || '…';
+          }
+          fetch('calendar.ics', { cache: 'no-store' })
+            .then(function (r) {
+              if (!r.ok) throw new Error('fetch');
+              return r.text();
+            })
+            .then(function (text) {
+              try {
+                var evs = parseVevents(text);
+                renderLists(evs);
+              } catch (err) {
+                __labParsed = null;
+                if (labIcsMatch) labIcsMatch.innerHTML = '';
+                if (labIcsUpcoming) labIcsUpcoming.innerHTML = '';
+                if (labIcsStatus) {
+                  labIcsStatus.classList.add('is-error');
+                  labIcsStatus.textContent = T()['lab.icsErrParse'] || '';
+                }
+                renderGbDraftFromState();
+              }
+            })
+            .catch(function () {
+              __labParsed = null;
+              if (labIcsMatch) labIcsMatch.innerHTML = '';
+              if (labIcsUpcoming) labIcsUpcoming.innerHTML = '';
+              if (labIcsStatus) {
+                labIcsStatus.classList.add('is-error');
+                labIcsStatus.textContent = T()['lab.icsErrFetch'] || '';
+              }
+              renderGbDraftFromState();
+            });
+        });
+      }
+
+      renderGbDraftFromState();
     })();
   </script>
 </body>
