@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>역사 · 밥도둑 Babdoduk</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <title>실험실 · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -229,148 +230,124 @@
       100% { background-position: 200% 50%; }
     }
 
-    .history-wrap {
+    .lab-wrap {
       position: relative;
       z-index: 1;
       flex: 1 0 auto;
-      max-width: 720px;
+      max-width: 640px;
       margin: 0 auto;
-      padding: 12px 22px 32px;
+      padding: 12px 22px 40px;
     }
-    .history-head {
-      padding-bottom: 18px;
-      margin-bottom: 28px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    .lab-ribbon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      margin-bottom: 14px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #92400e;
+      background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+      border: 1px solid rgba(180, 83, 9, 0.35);
     }
-    .history-title-main {
+    .lab-title {
       font-size: clamp(1.45rem, 4.8vw, 1.95rem);
       font-weight: 900;
       color: #000;
       letter-spacing: -0.04em;
       line-height: 1.2;
     }
-    .history-kicker {
+    .lab-kicker {
       margin-top: 8px;
       font-size: 0.68rem;
       font-weight: 600;
-      letter-spacing: 0.22em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: #86868b;
     }
-
-    .timeline {
-      list-style: none;
-      position: relative;
-      padding: 0;
-      margin: 0;
-      --tl-thumb: 7.5rem;
-      --tl-rail: 26px;
-      --tl-gap: 14px;
-    }
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: calc(var(--tl-thumb) + var(--tl-gap) + var(--tl-rail) * 0.5 - 1px);
-      top: 10px;
-      bottom: 10px;
-      width: 2px;
-      background: #9ca3af;
-      border-radius: 1px;
-    }
-    .timeline-item {
-      position: relative;
-      padding-bottom: 40px;
-      --accent: #3b82f6;
-    }
-    .timeline-item:last-child { padding-bottom: 0; }
-    .timeline-item-grid {
-      display: grid;
-      grid-template-columns: var(--tl-thumb) var(--tl-rail) minmax(0, 1fr);
-      column-gap: var(--tl-gap);
-      align-items: start;
-    }
-    .timeline-item-photo-cell {
-      width: var(--tl-thumb);
-      padding-top: 2px;
-    }
-    .timeline-item-media {
-      width: var(--tl-thumb);
-      height: var(--tl-thumb);
-      margin: 0;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      background: #e8e8ed;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-      box-sizing: border-box;
-    }
-    .timeline-item-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .timeline-item-media--contain {
-      background: #fff;
-    }
-    .timeline-item-media--contain .timeline-item-img {
-      object-fit: contain;
-      padding: 6%;
-      box-sizing: border-box;
-    }
-    .timeline-item-rail {
-      display: flex;
-      justify-content: center;
-      padding-top: 10px;
-      position: relative;
-      z-index: 1;
-    }
-    .timeline-item-body {
-      min-width: 0;
-      padding-top: 2px;
-    }
-    .timeline-marker {
-      flex-shrink: 0;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 2px solid var(--accent);
-      background: #fff;
-      box-sizing: border-box;
-      box-shadow: 0 0 0 2px #fbfbfd;
-    }
-    @media (max-width: 520px) {
-      .timeline {
-        --tl-thumb: 5.75rem;
-        --tl-rail: 22px;
-        --tl-gap: 10px;
-      }
-    }
-    .timeline-year {
-      display: block;
-      font-size: clamp(1.2rem, 3.8vw, 1.5rem);
-      font-weight: 800;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-    }
-    .timeline-rule {
-      border: none;
-      border-top: 1px dashed rgba(0, 0, 0, 0.2);
-      margin: 10px 0 12px;
-    }
-    .timeline-label {
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 8px;
-    }
-    .timeline-desc {
-      font-size: 0.86rem;
+    .lab-lead {
+      margin-top: 18px;
+      font-size: 0.88rem;
       line-height: 1.65;
       color: #424245;
+    }
+    .lab-panel {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+    .lab-panel h2 {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 10px;
+    }
+    .lab-list {
+      margin: 0;
+      padding-left: 1.15rem;
+      font-size: 0.84rem;
+      line-height: 1.65;
+      color: #424245;
+    }
+    .lab-list li { margin-bottom: 8px; }
+    .lab-list li:last-child { margin-bottom: 0; }
+    .lab-note {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.06);
+      border: 1px solid rgba(99, 102, 241, 0.18);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #4338ca;
+    }
+    .lab-note code {
+      font-size: 0.78em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(99, 102, 241, 0.22);
+    }
+    .lab-actions {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .lab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: 1px solid rgba(79, 70, 229, 0.35);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+      transition: filter 0.15s, transform 0.12s;
+    }
+    .lab-btn:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+    .lab-btn--ghost {
+      color: #4338ca;
+      background: #fff;
+      box-shadow: none;
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+    .lab-btn--ghost:hover {
+      background: rgba(99, 102, 241, 0.06);
     }
 
     .site-footer {
@@ -478,7 +455,7 @@
           <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
-            <a role="menuitem" href="lab.html" class="nav-mega-link" data-i18n="nav.lab">실험실</a>
+            <a role="menuitem" href="lab.html" class="nav-mega-link" aria-current="page" data-i18n="nav.lab">실험실</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -518,83 +495,34 @@
     </div>
   </header>
 
-  <main class="history-wrap">
-    <header class="history-head">
-      <h1 class="history-title-main" data-i18n="history.heroTitle">밥도둑의 역사</h1>
-      <p class="history-kicker" data-i18n="history.heroKicker">Timeline</p>
-    </header>
-
-    <ol class="timeline" aria-label="타임라인">
-      <li class="timeline-item" style="--accent: #3b82f6;">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media timeline-item-media--contain">
-              <img
-                class="timeline-item-img"
-                src="images/history-t1.png"
-                width="512"
-                height="512"
-                loading="lazy"
-                decoding="async"
-                alt=""
-                data-i18n-alt="history.t1.photoAlt"
-              />
-            </figure>
-          </div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" data-i18n="history.t1.year">2025.4.1</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t1.label">공식 인스타그램 채널 개설</h2>
-            <p class="timeline-desc" data-i18n="history.t1.desc">밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.</p>
-          </div>
-        </div>
-      </li>
-      <li class="timeline-item" style="--accent: #f97316;">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media timeline-item-media--contain">
-              <img
-                class="timeline-item-img"
-                src="images/history-t2.png"
-                width="800"
-                height="256"
-                loading="lazy"
-                decoding="async"
-                alt=""
-                data-i18n-alt="history.t2.photoAlt"
-              />
-            </figure>
-          </div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" data-i18n="history.t2.year">2025.5.7</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t2.label">통합 웹 허브 오픈</h2>
-            <p class="timeline-desc" data-i18n="history.t2.desc">주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.</p>
-          </div>
-        </div>
-      </li>
-      <li class="timeline-item timeline-item--no-photo" style="--accent: #a855f7;">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell" aria-hidden="true"></div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" data-i18n="history.t3.year">—</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t3.label">로드맵</h2>
-            <p class="timeline-desc" data-i18n="history.t3.desc">브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.</p>
-          </div>
-        </div>
-      </li>
-    </ol>
-
+  <main class="lab-wrap">
+    <div class="lab-ribbon" data-i18n="lab.ribbon">실험 구역 — 공식 메인과 별도</div>
+    <h1 class="lab-title" data-i18n="lab.title">실험실</h1>
+    <p class="lab-kicker" data-i18n="lab.kicker">Beta / draft</p>
+    <p class="lab-lead" data-i18n="lab.lead">
+      로그인·서버 저장·가계부 동기화처럼 부담 큰 기능은 여기서만 먼저 시험합니다. 배포 URL은 같아도 이 페이지는 검색에 잘 노출되지 않게 막아 두었습니다.
+    </p>
+    <section class="lab-panel" aria-labelledby="lab-how-heading">
+      <h2 id="lab-how-heading" data-i18n="lab.panelUseTitle">이 페이지 쓰는 법</h2>
+      <ul class="lab-list">
+        <li data-i18n-html="lab.bullet1"></li>
+        <li data-i18n-html="lab.bullet2"></li>
+        <li data-i18n-html="lab.bullet3"></li>
+      </ul>
+      <p class="lab-note" data-i18n-html="lab.pathNote"></p>
+    </section>
+    <section class="lab-panel" aria-labelledby="lab-next-heading">
+      <h2 id="lab-next-heading" data-i18n="lab.panelNextTitle">다음에 붙일 수 있는 것</h2>
+      <ul class="lab-list">
+        <li data-i18n="lab.next1"></li>
+        <li data-i18n="lab.next2"></li>
+        <li data-i18n="lab.next3"></li>
+      </ul>
+    </section>
+    <div class="lab-actions">
+      <a href="food.html" class="lab-btn" data-i18n="lab.btnFoodlog">먹방 가계부 (본편)</a>
+      <a href="index.html" class="lab-btn lab-btn--ghost" data-i18n="lab.btnHome">홈으로</a>
+    </div>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -625,7 +553,7 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '역사 · 밥도둑 Babdoduk',
+          docTitle: '실험실 · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
@@ -648,19 +576,26 @@
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'history.heroTitle': '밥도둑의 역사',
-          'history.heroKicker': 'Timeline',
-          'history.t1.photoAlt': '인스타그램 공식 로고',
-          'history.t1.year': '2025.4.1',
-          'history.t1.label': '공식 인스타그램 채널 개설',
-          'history.t1.desc': '밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.',
-          'history.t2.photoAlt': '통합 웹 허브 오픈 — 밥도둑 로고',
-          'history.t2.year': '2025.5.7',
-          'history.t2.label': '통합 웹 허브 오픈',
-          'history.t2.desc': '주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.',
-          'history.t3.year': '—',
-          'history.t3.label': '로드맵',
-          'history.t3.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
+          'lab.ribbon': '실험 구역 — 공식 메인과 별도',
+          'lab.title': '실험실',
+          'lab.kicker': 'Beta / draft',
+          'lab.lead':
+            '로그인·서버 저장·가계부 동기화처럼 부담 큰 기능은 여기서만 먼저 시험합니다. 배포 URL은 같아도 이 페이지는 검색에 잘 노출되지 않게 막아 두었습니다.',
+          'lab.panelUseTitle': '이 페이지 쓰는 법',
+          'lab.bullet1':
+            '<strong>같은 사이트</strong> 안에서만 먼저 됩니다. 배포 주소 끝에 <code>/lab.html</code>만 붙여 직접 열면 됩니다.',
+          'lab.bullet2':
+            'Git을 쓰면 실험 커밋은 <strong>베타 브랜치</strong>에만 두었다가, 검증 후에만 <code>main</code>에 합치면 공식 방문 페이지와 분리할 수 있습니다.',
+          'lab.bullet3':
+            '여기서 동작이 안정되면 본편(<code>food.html</code> 등)으로 옮기면 됩니다.',
+          'lab.pathNote':
+            '예: <code>https://…vercel.app/lab.html</code> · 홈 캐러셀에는 링크를 안 걸어도 됩니다(북마크·직접 입력).',
+          'lab.panelNextTitle': '다음에 붙일 수 있는 것',
+          'lab.next1': 'Supabase / Firebase 등 로그인 + 사용자별 가계부 데이터 저장',
+          'lab.next2': '필요하면 Vercel Serverless로 API 레이어 추가',
+          'lab.next3': '내보내기·가져오기(JSON)로 백업 — 서버 없을 때도 유용',
+          'lab.btnFoodlog': '먹방 가계부 (본편)',
+          'lab.btnHome': '홈으로',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -672,7 +607,7 @@
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'History · Babdoduk',
+          docTitle: 'Lab · Babdoduk',
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
@@ -695,19 +630,26 @@
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'history.heroTitle': 'History of Babdoduk',
-          'history.heroKicker': 'Timeline',
-          'history.t1.photoAlt': 'Official Instagram logo',
-          'history.t1.year': 'Apr 1, 2025',
-          'history.t1.label': 'Official Instagram launch',
-          'history.t1.desc': 'Launched the official Babdoduk Instagram channel and began publishing recipe- and lifestyle-oriented content.',
-          'history.t2.photoAlt': 'Unified web hub launch — Babdoduk wordmark',
-          'history.t2.year': 'May 7, 2025',
-          'history.t2.label': 'Integrated web hub',
-          'history.t2.desc': 'Shipped a public web hub that centralizes key SNS links, the food-expense log, event information, and related tools.',
-          'history.t3.year': '—',
-          'history.t3.label': 'Roadmap',
-          'history.t3.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
+          'lab.ribbon': 'Experimental — not the public main',
+          'lab.title': 'Lab',
+          'lab.kicker': 'Beta / draft',
+          'lab.lead':
+            'Try heavier features here first — auth, server-backed storage, food-log sync, and so on. This URL is tagged noindex so casual search traffic should stay on the main site.',
+          'lab.panelUseTitle': 'How to use this page',
+          'lab.bullet1':
+            '<strong>Same deployment</strong>: append <code>/lab.html</code> to your site URL and bookmark it.',
+          'lab.bullet2':
+            'With Git, keep experiments on a <strong>beta branch</strong> and merge to <code>main</code> only when ready for visitors.',
+          'lab.bullet3':
+            'When a feature is stable, port the markup or scripts into the real pages (e.g. <code>food.html</code>).',
+          'lab.pathNote':
+            'Example: <code>https://….vercel.app/lab.html</code> · You don’t have to link it from the home carousel.',
+          'lab.panelNextTitle': 'What you can add next',
+          'lab.next1': 'Supabase / Firebase auth + per-user food log storage',
+          'lab.next2': 'A thin API via Vercel serverless routes if you need secrets',
+          'lab.next3': 'Export / import JSON backups — useful even without a server',
+          'lab.btnFoodlog': 'Food log (production)',
+          'lab.btnHome': 'Home',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
@@ -745,9 +687,6 @@
         if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-        var tl = document.querySelector('.timeline');
-        if (tl && lang === 'en') tl.setAttribute('aria-label', 'Timeline');
-        else if (tl) tl.setAttribute('aria-label', '타임라인');
       }
       window.babdodukApplyLang = applyLang;
       window.babdodukGetLang = function () {

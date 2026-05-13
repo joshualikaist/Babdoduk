@@ -78,7 +78,7 @@ git diff main...HEAD
 ## 6. 이 프로젝트에서 특히 신경 쓸 곳
 
 - HTML이 **페이지마다 비슷한 블록**(헤더, 메가메뉴, 푸터, `STR` 객체)을 **각자 들고 있음** → 한 파일만 고치면 다른 페이지와 **어긋날 수 있음**  
-- 로컬 점검 시 내비에서 **`index.html`**, **`food.html`**, **`event.html`**, **`ggongbab.html`**, **`history.html`** 정도는 번갈아 한 번씩 열어 보기  
+- 로컬 점검 시 내비에서 **`index.html`**, **`food.html`**, **`event.html`**, **`ggongbab.html`**, **`history.html`**, **`lab.html`** 정도는 번갈아 한 번씩 열어 보기  
 - 이미지·데이터 경로는 **대소문자·상대 경로**가 배포 환경과 맞는지  
 
 **배포 시 방문자에게 어떤 브랜치가 보이는지**(main / beta)는 `DEPLOYMENT_AND_BRANCHES.md` 를 참고하세요.
