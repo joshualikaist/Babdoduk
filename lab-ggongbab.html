@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>꽁밥 안내 · 밥도둑 Babdoduk</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <title>실험 · 꽁밥 안내 · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -18,7 +19,7 @@
       flex-direction: column;
       color: #1d1d1f;
       overflow-x: hidden;
-      padding: 64px 0 72px;
+      padding: 92px 0 72px;
       position: relative;
       background: #fbfbfd;
     }
@@ -31,6 +32,25 @@
       background:
         radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.06) 0%, transparent 55%),
         radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
+    }
+    .lab-fork-ribbon {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 6px max(12px, env(safe-area-inset-left)) 6px max(12px, env(safe-area-inset-right));
+      font-size: 0.66rem;
+      font-weight: 700;
+      line-height: 1.4;
+      text-align: center;
+      color: #78350f;
+      background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+      border-bottom: 1px solid rgba(180, 83, 9, 0.28);
+      z-index: 3;
+    }
+    .lab-fork-ribbon a {
+      color: #92400e;
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
     .scroll-progress-wrap {
       position: relative;
@@ -530,6 +550,9 @@
 </head>
 <body>
   <header class="site-nav" role="banner">
+    <div class="lab-fork-ribbon">
+      실험용 꽁밥 안내 — <a href="lab.html">실험실</a> / 본편 <a href="ggongbab.html">꽁밥 안내</a>
+    </div>
     <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
@@ -540,6 +563,7 @@
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
+            <a role="menuitem" href="lab.html" class="nav-mega-link" data-i18n="nav.lab">실험실</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -565,7 +589,7 @@
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
             <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
-            <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab">꽁밥 안내</a>
+            <a role="menuitem" class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.ggongbab">꽁밥 안내</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -726,12 +750,13 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '꽁밥 안내 · 밥도둑 Babdoduk',
+          docTitle: '실험 · 꽁밥 안내 · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
           'nav.intro': '소개',
           'nav.history': '역사',
+          'nav.lab': '실험실',
           'nav.sns': 'SNS',
           'nav.instagram': '인스타그램',
           'nav.features': '주요 기능',
@@ -795,12 +820,13 @@
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'Free meal info · Babdoduk',
+          docTitle: 'Lab · Free meal info · Babdoduk',
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
           'nav.intro': 'About',
           'nav.history': 'History',
+          'nav.lab': 'Lab',
           'nav.sns': 'SNS',
           'nav.instagram': 'Instagram',
           'nav.features': 'Features',

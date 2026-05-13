@@ -625,7 +625,7 @@
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
             <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
-            <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab">꽁밥 안내</a>
+            <a role="menuitem" class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.ggongbab">꽁밥 안내</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -654,6 +654,7 @@
         <li data-i18n-html="lab.bullet2"></li>
         <li data-i18n-html="lab.bullet3"></li>
         <li data-i18n-html="lab.bullet4"></li>
+        <li data-i18n-html="lab.bullet5"></li>
       </ul>
       <p class="lab-note" data-i18n-html="lab.pathNote"></p>
     </section>
@@ -764,6 +765,8 @@
             '여기서 동작이 안정되면 본편(<code>ggongbab.html</code>·<code>food.html</code> 등)으로 옮깁니다.',
           'lab.bullet4':
             '배포가 <code>main</code> 기준이면 방문자가 보는 홈은 본편 그대로입니다. 실험을 “앞서” 두려면 브랜치·머지 타이밍으로 조절합니다.',
+          'lab.bullet5':
+            '이 페이지 내비의 <strong>꽁밥 안내</strong>는 실험용 <code>lab-ggongbab.html</code>로만 연결됩니다. 방문자용 본편은 <code>ggongbab.html</code>이며, 실험 내용을 확정한 뒤 수동으로 본편에 옮기면 됩니다.',
           'lab.pathNote':
             '예: <code>https://…vercel.app/lab.html</code> · 홈 캐러셀에는 링크를 안 걸어도 됩니다(북마크·직접 입력).',
           'lab.panelNextTitle': '다음에 붙일 수 있는 것',
@@ -850,6 +853,8 @@
             'When a feature is stable, port it into production pages (e.g. <code>ggongbab.html</code>, <code>food.html</code>).',
           'lab.bullet4':
             'If Vercel production tracks <code>main</code>, visitors still see the main site; keep experiments off <code>main</code> until you are ready.',
+          'lab.bullet5':
+            'From this page, <strong>Free meal info</strong> in the nav opens <code>lab-ggongbab.html</code> (sandbox). Public visitors still use <code>ggongbab.html</code>; copy edits over when stable.',
           'lab.pathNote':
             'Example: <code>https://….vercel.app/lab.html</code> · You don’t have to link it from the home carousel.',
           'lab.panelNextTitle': 'What you can add next',

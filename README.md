@@ -13,6 +13,7 @@ KAIST 밥도둑 링크·콘텐츠용 정적 사이트입니다. **HTML만**으�
 | **`event.html`** | **이벤트** — 탭형 목록(날짜 순)·상세 패널, **페이지로 이동**으로 인스타 등 링크 열기 |
 | **`ggongbab.html`** | **꽁밥 안내** — 왼쪽 지도(탭별 검색어·캡션 연동), 가운데·오른쪽 행사 탭·상세 |
 | **`history.html`** | **밥도둑의 역사** — 연도별 타임라인. 예: `images/history-t1.png`(인스타 로고), `history-t2.png`(워드마크); 그림이 로고처럼 작을 때는 `timeline-item-media--contain` 로 전체가 보이게 맞춤. 문구는 `STR`의 `history.tN.*` 키 |
+| **`lab-ggongbab.html`** | **실험용 꽁밥 안내** — `lab.html` 내비의 꽁밥 안내 링크 전용. 본편은 `ggongbab.html`. 상단 띠에서 실험실·본편 왕복. `noindex` |
 | **`lab.html`** | **실험실** — 서버·로그인·`calendar.ics` 파싱(꽁밥 후보 일정) 등 본편과 분리해 시험. 메타 `noindex`. 접속은 `…/lab.html` 직접 입력·북마크(홈에는 링크 없음) |
 
 상단 내비: **소개**(역사 페이지 링크 등) · **SNS**(인스타·유튜브·카카오톡 등) · **주요 기능** 메가 메뉴(맛집 지도 · 먹방 가계부 · 꽁밥 안내) · **이벤트** · 언어(EN/한국어). 꽁밥 페이지 운영 규칙은 **`docs/GGONGBAB_PAGE.md`** 를 참고합니다.  
@@ -110,13 +111,25 @@ vercel --prod
 vercel
 ```
 
-### Git 브랜치와 공개 버전 (main / beta)
+### Git: 저장소 하나 — `main`(공개) + `lab`(실험)
 
-저장소를 Vercel·GitHub 등에 연결해 **푸시로 배포**한다면, 방문자에게 보이는 **공식 주소**는 보통 **Production 브랜치**(대부분 **`main`**)만 따라갑니다. merge가 fast-forward든 아니든 **그것과 무관**합니다.  
-베타에서만 커밋하고 `main`에 합치지 않으면 공식 사이트에는 반영되지 않습니다. **베타용 HTML 폴더를 따로 둘 필요는 없고**, 브랜치만 나누면 됩니다.
+**폴더를 두 개 복사해 프로젝트를 나누지 않습니다.** 같은 저장소에서 브랜치만 나눕니다.
 
-- Vercel: **Settings → Git → Production Branch = `main`** 인지 확인  
-- 자세한 설명: **`docs/DEPLOYMENT_AND_BRANCHES.md`**
+| 브랜치 | 용도 |
+|--------|------|
+| **`main`** | 방문자용 본편. `index.html`, `ggongbab.html`, `food.html` 등. Vercel Production이 보통 이 브랜치. |
+| **`lab`** | 실험용. `lab.html`, `lab-ggongbab.html`, `calendar.ics` 연동 등을 **먼저** 여기서 커밋. |
+
+**매번 할 일:**
+
+1. 실험할 때: `git checkout lab` → 수정 → `git push origin lab` (공식 사이트는 `main`이면 그대로이고, 보통 Preview만 갱신)
+2. 본편에 반영할 때: `main`에 **`lab`을 merge**(또는 PR) → `git push origin main` → 공개 배포 갱신  
+3. `lab-ggongbab.html` 내용을 `ggongbab.html`로 옮기는 것처럼 **파일별 수동 정리**가 필요하면 merge 후 diff로 처리
+
+이미 실험 브랜치 이름이 `Babdoduk_beta_version` 등이면, 그 브랜치를 **`lab`과 같은 역할**로 쓰면 됩니다.
+
+- 자세한 명령·주의사항: **`docs/DEPLOYMENT_AND_BRANCHES.md`**  
+- merge 전 체크: **`docs/BRANCH_MERGE_CHECKLIST.md`**
 
 ---
 

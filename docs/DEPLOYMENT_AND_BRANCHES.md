@@ -1,80 +1,101 @@
-# 배포 브랜치: main(공개) vs beta(실험)
+# 배포·브랜치: 저장소 하나 — `main`(공개) + `lab`(실험)
 
-이 문서는 **“베타에서 실험하고, 완성되면 main에만 반영해서 일반 방문자에게는 완성본만 보이게”** 하려는 경우를 정리합니다.
+이 프로젝트는 **저장소(폴더)는 하나**만 두고, **브랜치 두 개**로 공개용과 실험용을 나눕니다.  
+별도 폴더를 복사해 “프로젝트 두 개”를 만들지 않아도 됩니다.
 
----
+상세 절차·체크리스트는 다음도 함께 봅니다.
 
-## 1. 먼저 알아두면 좋은 것 (fast-forward와 무관)
-
-**방문자가 어떤 코드를 보는지**는 Git의 merge 방식(fast-forward인지 아닌지)이 아니라, **배포 서비스가 “프로덕션”으로 정한 브랜치**가 무엇인지로 결정됩니다.
-
-| 상황 | 공식 사이트(프로덕션 URL)에 반영되나 |
-|------|----------------------------------------|
-| `Babdoduk_beta_version`에만 커밋·푸시 | **프로덕션이 `main`이면 반영 안 됨** (Vercel이면 보통 프리뷰 URL만 갱신) |
-| `main`에 merge 후 푸시 | 프로덕션에 반영됨 |
-| 로컬에서만 beta로 checkout | 원격에 올리지 않으면 **배포와 무관** |
-
-그래서 **beta 전용 HTML 파일을 따로 만들 필요는 없습니다.** 같은 `index.html` 등을 두 브랜치에서 **다른 시점의 스냅샷**으로 가져가면 됩니다.
+- **`BRANCH_MERGE_CHECKLIST.md`** … merge 전후 확인
+- **README.md** … “Git: main vs lab” 요약
 
 ---
 
-## 2. 브랜치 역할 (권장)
+## 1. 브랜치 역할 (고정)
 
-| 브랜치 | 역할 |
-|--------|------|
-| **`main`** | 완성·공개용. 프로덕션 배포가 이 브랜치를 가리키게 설정. |
-| **`Babdoduk_beta_version`** (또는 `beta` 등) | 실험·작업 중. 완성되면 `main`으로 merge. |
+| 브랜치 | 역할 | 방문자(프로덕션) |
+|--------|------|------------------|
+| **`main`** | 완성·공개용. `index.html`, `ggongbab.html`, `food.html` 등 **본편** | Vercel Production이 이 브랜치를 가리키면 **공식 URL**이 여기를 따름 |
+| **`lab`** | 실험용. `lab.html`, `lab-ggongbab.html`, `calendar.ics` 실험 등 **먼저 시험하는 변경** | Production이 `main`이면 **`lab`만 푸시해도 공식 사이트는 안 바뀜**. 보통 **Preview URL**만 갱신 |
 
-로컬에서만 쓸 때:
+**브랜치 이름:** 실험 브랜치는 이 저장소에서는 **`lab`** 을 기준으로 문서화했습니다. 이미 **`Babdoduk_beta_version`** 등 다른 이름을 쓰고 있다면, 그 브랜치를 **`lab`과 같은 역할(실험 전용)** 으로 취급하면 됩니다.
+
+---
+
+## 2. 매번 이렇게 한다 (기본 워크플로)
+
+### 실험만 할 때
+
+1. **`lab`으로 체카웃** (최초 1회: `main`에서 `lab` 브랜치 생성 후 푸시)
+2. `lab.html`, `lab-ggongbab.html`, `calendar.ics` 등 **실험 관련 파일만** 수정해도 되고, 나중에 본편에 반영할 내용이면 같이 커밋 가능
+3. **`lab`에 커밋·푸시** → Git 연동 Vercel이면 **프리뷰 배포**로 확인 (공식 도메인은 그대로 `main` 기준)
+
+### 방문자 사이트에 반영할 때 (“명령할 때” / 릴리스)
+
+1. 실험 결과가 안정적일 때 **`main`에 합친다**  
+   - Pull Request로 리뷰 후 merge 하거나  
+   - 로컬에서 `git checkout main` → `git pull` → `git merge lab` (또는 `lab`에서 온 PR merge)
+2. **`main` 푸시** → Production 배포가 따라가면 **공식 사이트 갱신**
+3. **본편 HTML 반영:** `lab-ggongbab.html`의 내용을 **`ggongbab.html`** 로 옮기는 등, 필요한 파일은 **merge만으로 자동 동기화되지 않을 수 있음** — diff를 보면서 수동 편집·정리
+
+**“lab 프로젝트 파일을 전부 index 쪽으로 옮긴다”**는 말은 Git 기준으로는 **`lab` 브랜치를 `main`에 merge**하는 것과 같습니다. 다만 **어느 파일을 본편에 쓸지**는 매번 정해야 하며, `lab.html`은 `main`에도 두되 홈에서는 링크하지 않을 수 있습니다.
+
+---
+
+## 3. 로컬에서 브랜치 전환 (PowerShell 예시)
+
+**실험 브랜치 최초 생성 (`main` 기준):**
 
 ```powershell
-git checkout Babdoduk_beta_version   # 실험
-# … 수정 후 커밋 …
 git checkout main
-git merge Babdoduk_beta_version      # 준비됐을 때만
-git push origin main                 # 원격·배포에 반영할 때
+git pull
+git checkout -b lab
+git push -u origin lab
+```
+
+**실험 작업할 때:**
+
+```powershell
+git checkout lab
+git pull
+# … 수정 …
+git add .
+git commit -m "실험: lab ICS 연동 등"
+git push origin lab
+```
+
+**실험을 공개에 반영:**
+
+```powershell
+git checkout main
+git pull
+git merge lab
+# 충돌 나면 해결 후 커밋
+git push origin main
 ```
 
 ---
 
-## 3. Vercel을 쓰는 경우 (README에도 나옴)
+## 4. Vercel
 
-### Git 저장소와 연결해서 자동 배포하는 경우
-
-1. Vercel 대시보드 → 해당 프로젝트  
-2. **Settings → Git**  
-3. **Production Branch**를 **`main`** 으로 설정 (다른 브랜치면 공식 URL이 그쪽을 따라감)  
-
-이렇게 해 두면:
-
-- **`main`에 푸시** → 프로덕션(공식 도메인)이 갱신됨  
-- **`Babdoduk_beta_version`에 푸시** → 보통 **Preview 배포**만 생기고, 공식 주소는 그대로 `main` 기준  
+- **Settings → Git → Production Branch = `main`** 인지 확인합니다.
+- **`lab`에 푸시** → 보통 **Preview**만 생성됩니다.
+- **`main`에 푸시(또는 merge 결과 푸시)** → **Production(공식 URL)** 갱신
 
 ### CLI로만 `vercel --prod` 하는 경우
 
-로컬에서 돌리는 **그때 체크아웃된 브랜치** 내용이 올라갑니다.  
-실수로 beta를 배포하지 않으려면:
-
-- **`main`으로 checkout 한 뒤** `vercel --prod` 하거나  
-- 가능하면 **Git 연동 배포**으로 바꾸고 Production을 `main`으로 고정하는 편이 안전합니다.
+- 로컬 **체크아웃이 `main`인지** 확인한 뒤 실행합니다.  
+- 실수로 `lab`에서 `--prod` 하면 실험이 공개될 수 있으니 주의합니다.
 
 ---
 
-## 4. 다른 호스팅 (참고)
+## 5. 다른 호스팅 (참고)
 
-- **GitHub Pages**  
-  - 저장소 설정에서 **어느 브랜치/폴더**를 게시할지 고릅니다. 보통 **`main` + `/ (root)`**.  
-  - beta만 공개하고 싶지 않다면 **게시 원천을 `main`만** 쓰면 됩니다.
-
-- **Netlify**  
-  - Production branch를 **`main`** 등으로 지정하는 방식과 유사합니다.
+- **GitHub Pages / Netlify** … 게시 브랜치를 **`main`** 으로 두고, 실험은 다른 브랜치 + 프리뷰로 검증하는 패턴이 동일합니다.
 
 ---
 
-## 5. 정리
+## 6. 정리
 
-- **별도의 “beta용 index.html” 디렉터리를 만들 필수는 없음** — 브랜치가 버전을 나눕니다.  
-- **공개 여부는 “프로덕션 브랜치 = main” 설정**으로 맞추는 것이 핵심입니다.  
-- 베타는 **프리뷰 URL**이나 로컬에서만 검증하고, 괜찮아진 뒤에만 **main merge + push** 하면 됩니다.
-
-더 보편적인 merge 전 절차는 `BRANCH_MERGE_CHECKLIST.md` 를 참고하세요.
+- **한 저장소**, **`main` + `lab`(또는 기존 실험 브랜치)** 로 나눈다.
+- **매번:** 실험은 `lab`에서, 공개 반영은 `main`에 merge 후 푸시.
+- **파일 단위 복사 폴더 두 개**는 필수 아님 — Git 브랜치와 merge로 동일 목적을 달성한다.
