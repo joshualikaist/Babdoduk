@@ -28,7 +28,7 @@
 ### 레이아웃 메모
 
 - 본문 영역 **`.event-page-wrap`** 은 `max-width: 760px` 로 중앙 정렬합니다.
-- 탭 카드 제목(`.event-tab-title`)은 기본 **한 줄**(`white-space: nowrap`), **380px 이하** 좁은 화면에서는 줄바꿈을 허용합니다.
+- 탭 카드 제목(`.event-tab-title`)은 **여러 줄 줄바꿈**을 허용합니다(긴 제목이 오른쪽 **페이지로 이동** pill과 겹치지 않도록).
 
 ## 한국어 (왼쪽 열 · `event-detail-label`)
 

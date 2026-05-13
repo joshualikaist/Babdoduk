@@ -387,15 +387,15 @@
       font-size: clamp(0.7rem, 2.35vw, 0.88rem);
       font-weight: 700;
       color: #1d1d1f;
-      line-height: 1.3;
+      line-height: 1.35;
     }
+    /* 카드+오른쪽 pill: nowrap면 제목이 버튼 위로 비침 → 항상 카드 안에서 줄바꿈 */
     .event-tab-row .event-tab-title {
-      white-space: nowrap;
-    }
-    @media (max-width: 380px) {
-      .event-tab-row .event-tab-title {
-        white-space: normal;
-      }
+      display: block;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
     .event-panels {
       border-radius: 0;
