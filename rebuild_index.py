@@ -8,9 +8,10 @@ ROOT = Path(__file__).resolve().parent
 FOOD = ROOT / "food.html"
 INDEX = ROOT / "index.html"
 
-# 프로필 + 캐러셀(유튜브→카카오→인스타→네이버지도, 로고 PNG)
+# 프로필 + 캐러셀 (인스타 → 지도 → 유튜브 → 카카오)
 LANDING_BLOCK = """
   <section class="profile profile--hero">
+    <p class="hero-eyebrow" data-i18n="hero.eyebrow">KAIST FOOD &amp; COMMUNITY</p>
     <div class="badge-row">
       <span class="chip chip--tagline">🍚 = World = 🌎</span>
     </div>
@@ -22,6 +23,10 @@ LANDING_BLOCK = """
     </div>
     <h1 class="title" id="profileTitle" data-i18n-html="profile.titleHtml">밥도둑 <span class="title-en">Babdoduk</span></h1>
     <p class="subtitle" data-i18n="profile.subtitle">카이스트 기계과 먹방1티어 학생의 먹방일기</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#heroCarousel" data-i18n="hero.ctaExplore">둘러보기</a>
+      <a class="btn btn-secondary" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="hero.ctaInsta">Instagram</a>
+    </div>
   </section>
 
   <!--
@@ -32,38 +37,36 @@ LANDING_BLOCK = """
   <section class="hero-carousel" id="heroCarousel" aria-label="밥도둑 주요 링크">
     <div class="carousel-viewport" id="carouselViewport" tabindex="0" aria-roledescription="carousel">
       <div class="carousel-track" id="carouselTrack">
-        <!-- 유튜브 채널 URL 로 href 를 바꾸세요 -->
-        <a class="carousel-slide" href="#" data-slide="0" id="slideYoutube">
-          <div class="slide-media" style="background-image: url('images/carousel-youtube.png'), linear-gradient(145deg, #f5f5f5 0%, #e8e8ea 50%, #ddd 100%);" role="img" aria-hidden="true"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">YouTube</span>
-            <h2 class="slide-title" data-i18n="slide.yt.title">유튜브</h2>
-            <p class="slide-desc" data-i18n="slide.yt.desc">영상으로 밥도둑을 만나 보세요</p>
-          </div>
-        </a>
-        <!-- 카카오톡 채널 주소로 href 를 바꾸세요 (예: https://pf.kakao.com/_xxxxx) -->
-        <a class="carousel-slide" href="#" data-slide="1" id="slideKakao">
-          <div class="slide-media" style="background-image: url('images/carousel-kakao.png'), linear-gradient(145deg, #fef9c3 0%, #fde047 45%, #facc15 100%);" role="img" aria-hidden="true"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">KakaoTalk</span>
-            <h2 class="slide-title" data-i18n="slide.kakao.title">카카오톡 문의 채널</h2>
-            <p class="slide-desc" data-i18n="slide.kakao.desc">채널에서 편하게 문의해 주세요</p>
-          </div>
-        </a>
-        <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="2">
-          <div class="slide-media" style="background-image: url('images/history-t1.png'), linear-gradient(145deg, #f472b6 0%, #a855f7 50%, #6366f1 100%);" role="img" aria-hidden="true"></div>
+        <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="0">
+          <div class="slide-media slide-media--insta" style="background-image: url('images/history-t1.png');" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">Instagram</span>
             <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
             <p class="slide-desc" data-i18n="slide.insta.desc">@babdodukms · 일상과 레시피를 만나 보세요</p>
           </div>
         </a>
-        <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="3">
-          <div class="slide-media" style="background-image: url('images/carousel-naver-map.png'), linear-gradient(145deg, #22d3ee 0%, #06b6d4 45%, #10b981 100%);" role="img" aria-hidden="true"></div>
+        <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="1">
+          <div class="slide-media" style="background-image: url('images/carousel-naver-map.png');" role="img" aria-hidden="true"></div>
           <div class="slide-copy">
             <span class="slide-eyebrow">Map</span>
             <h2 class="slide-title" data-i18n="slide.map.title">밥도둑의 맛집 지도</h2>
             <p class="slide-desc" data-i18n="slide.map.desc">네이버 지도에서 정리한 맛집 리스트</p>
+          </div>
+        </a>
+        <a class="carousel-slide" href="#" data-slide="2" id="slideYoutube">
+          <div class="slide-media" style="background-image: url('images/carousel-youtube.png');" role="img" aria-hidden="true"></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">YouTube</span>
+            <h2 class="slide-title" data-i18n="slide.yt.title">유튜브</h2>
+            <p class="slide-desc" data-i18n="slide.yt.desc">영상으로 밥도둑을 만나 보세요</p>
+          </div>
+        </a>
+        <a class="carousel-slide" href="#" data-slide="3" id="slideKakao">
+          <div class="slide-media" style="background-image: url('images/carousel-kakao.png');" role="img" aria-hidden="true"></div>
+          <div class="slide-copy">
+            <span class="slide-eyebrow">KakaoTalk</span>
+            <h2 class="slide-title" data-i18n="slide.kakao.title">카카오톡 문의 채널</h2>
+            <p class="slide-desc" data-i18n="slide.kakao.desc">채널에서 편하게 문의해 주세요</p>
           </div>
         </a>
       </div>
@@ -144,6 +147,31 @@ def ensure_nav_home_handler(s: str) -> str:
     return s
 
 
+def ensure_design_css(s: str) -> str:
+    """Keep the post-redesign stylesheets even if food.html inline CSS is copied."""
+    if 'href="css/site.css"' not in s:
+        s = s.replace(
+            "</head>",
+            '  <link rel="stylesheet" href="css/site.css" />\n'
+            '  <link rel="stylesheet" href="css/app.css" />\n</head>',
+            1,
+        )
+    if 'href="css/index.css"' not in s:
+        if 'href="css/app.css" />' in s:
+            s = s.replace(
+                'href="css/app.css" />',
+                'href="css/app.css" />\n  <link rel="stylesheet" href="css/index.css" />',
+                1,
+            )
+        else:
+            s = s.replace(
+                "</head>",
+                '  <link rel="stylesheet" href="css/index.css" />\n</head>',
+                1,
+            )
+    return s
+
+
 def main() -> None:
     s = FOOD.read_text(encoding="utf-8")
 
@@ -180,10 +208,11 @@ def main() -> None:
     s = ensure_carousel_autoplay(s)
     s = ensure_nav_home_handler(s)
     s = patch_popup(s)
+    s = ensure_design_css(s)
 
     s = s.replace(
-        "      navJumpToSlide(document.getElementById('navKakao'), 2);\n      navJumpToSlide(document.getElementById('navYoutube'), 3);",
-        "      navJumpToSlide(document.getElementById('navKakao'), 1);\n      navJumpToSlide(document.getElementById('navYoutube'), 0);",
+        "      navJumpToSlide(document.getElementById('navMegaKakao'), 1);\n      navJumpToSlide(document.getElementById('navMegaYoutube'), 0);",
+        "      navJumpToSlide(document.getElementById('navMegaKakao'), 3);\n      navJumpToSlide(document.getElementById('navMegaYoutube'), 2);",
         1,
     )
 

@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>밥도둑 매거진 · 밥도둑 Babdoduk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/site.css" />
+  <link rel="stylesheet" href="css/magazine.css" />
+</head>
+<body class="mg-body">
+  <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
+    <div class="popup-box" role="dialog" aria-labelledby="popupTitle" aria-modal="true">
+      <h2 id="popupTitle" data-i18n="popup.title">밥도둑에 오신 걸 환영해요</h2>
+      <p id="popupIntro" data-i18n-html="popup.body">인스타그램과 맛집 지도로 레시피·일상을 만나 보세요.</p>
+      <div class="popup-actions">
+        <button type="button" class="popup-btn primary" id="popupCloseBtn" data-i18n="popup.start">시작하기</button>
+        <button type="button" class="popup-btn secondary" id="popupSnoozeBtn" data-i18n="popup.snooze24h">하루 동안 보지 않기</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-nav" role="banner">
+    <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    </div>
+    <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <div class="nav-mega-row" role="menubar">
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
+            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
+            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button
+            type="button"
+            class="nav-mega-trigger is-current"
+            aria-expanded="false"
+            aria-haspopup="true"
+            data-i18n="nav.features"
+            data-i18n-aria-key="nav.featuresAria"
+            aria-label="주요 기능"
+          >
+            주요 기능
+          </button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+            <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
+            <a role="menuitem" class="nav-mega-link is-current" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
+            <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab">꽁밥 안내</a>
+          </div>
+        </div>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.event">이벤트</button>
+          <div class="nav-mega-panel" role="menu">
+            <a role="menuitem" class="nav-mega-link" href="event.html" data-i18n="nav.event.open">이벤트 페이지</a>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
+    </div>
+  </header>
+
+  <main class="mg-page">
+    <div class="mg-mobile-edition">
+      <button type="button" id="mgDatePrev" aria-label="이전 호">‹</button>
+      <button type="button" id="mgDateOpen" data-i18n="mg.cal.open">날짜 보기</button>
+      <strong id="mgMobileDate">2026.09.12</strong>
+      <button type="button" id="mgDateNext" aria-label="다음 호">›</button>
+    </div>
+    <div class="mg-mobile-cal" id="mgMobileCal">
+      <div class="mg-cal" data-cal-root>
+        <div class="mg-cal-head">
+          <button type="button" data-cal-prev aria-label="이전 달">‹</button>
+          <strong data-cal-label>Sep 2026</strong>
+          <button type="button" data-cal-next aria-label="다음 달">›</button>
+        </div>
+        <div class="mg-cal-week" data-cal-week></div>
+        <div class="mg-cal-grid" data-cal-grid></div>
+      </div>
+    </div>
+
+    <div class="mg-mobile-cats" aria-label="카테고리">
+      <a href="#lane-tips" data-i18n="mg.cat.tips">요리 비법</a>
+      <a href="#lane-trend" data-i18n="mg.cat.trend">요즘 먹방 유행</a>
+      <a href="#lane-health" data-i18n="mg.cat.health">건강한 한 끼</a>
+      <a href="#lane-habit" data-i18n="mg.cat.habit">식습관</a>
+    </div>
+
+    <div class="mg-shell">
+      <aside class="mg-index" aria-label="매거진 목차">
+        <div class="mg-index-kicker">BAMDODUK MAGAZINE</div>
+        <p class="mg-index-title" data-i18n="mg.index.title">오늘 뭐 먹지?</p>
+        <nav class="mg-index-nav">
+          <a href="#lane-tips"><span class="mg-index-num">01</span><span data-i18n="mg.cat.tips">요리 비법</span></a>
+          <a href="#lane-trend"><span class="mg-index-num">02</span><span data-i18n="mg.cat.trendShort">먹방 유행</span></a>
+          <a href="#lane-health"><span class="mg-index-num">03</span><span data-i18n="mg.cat.health">건강한 한 끼</span></a>
+          <a href="#lane-habit"><span class="mg-index-num">04</span><span data-i18n="mg.cat.habit">식습관</span></a>
+        </nav>
+        <div class="mg-index-meta">LATEST</div>
+        <div class="mg-index-date" id="mgIndexDate">2026.09.12</div>
+        <div class="mg-index-schedule" id="mgSchedule">Daily 10:00 KST</div>
+        <div class="mg-cal" data-cal-root>
+          <div class="mg-cal-head">
+            <button type="button" data-cal-prev aria-label="이전 달">‹</button>
+            <strong data-cal-label>Sep 2026</strong>
+            <button type="button" data-cal-next aria-label="다음 달">›</button>
+          </div>
+          <div class="mg-cal-week" data-cal-week></div>
+          <div class="mg-cal-grid" data-cal-grid></div>
+        </div>
+      </aside>
+
+      <div class="mg-main">
+        <header class="mg-masthead">
+          <div class="mg-masthead-brand">BAMDODUK MAGAZINE</div>
+          <div class="mg-masthead-issue" data-i18n="mg.issue">ISSUE 01 · SEP 2026</div>
+          <div class="mg-lede">
+            <h1 data-i18n-html="mg.lede.title">먹는 것도<br>하나의 취향이니까.</h1>
+            <p data-i18n-html="mg.lede.dek">요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.</p>
+          </div>
+        </header>
+
+        <article class="mg-hero" id="featured">
+          <div class="mg-hero-copy">
+            <span class="mg-hero-label" data-i18n="mg.hero.label">밥도둑 PICK</span>
+            <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
+              <h2 id="mgHeroTitle" data-i18n-html="mg.hero.title">계란후라이 하나도<br>맛이 달라지는 이유.</h2>
+            </a>
+            <p class="mg-hero-desc" id="mgHeroDesc" data-i18n="mg.hero.desc">불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.</p>
+            <p class="mg-hero-meta" id="mgHeroMeta" data-i18n="mg.hero.meta">요리 비법 · 4 min read</p>
+            <span class="mg-story-src mg-hero-src" id="mgHeroSrc"></span>
+            <p class="mg-hero-tags" id="mgHeroTags"></p>
+          </div>
+          <figure class="mg-hero-visual is-type" id="mgHeroVisual">
+            <a id="mgHeroMediaLink" href="#featured">
+              <img id="mgHeroImg" alt="" />
+              <span class="mg-hero-type" id="mgHeroType">BAMDODUK</span>
+            </a>
+          </figure>
+        </article>
+
+        <section class="mg-board" id="today" aria-labelledby="mgBoardTitle">
+          <div class="mg-board-head">
+            <h2 id="mgBoardTitle" data-i18n="mg.board.title">오늘의 밥 이야기</h2>
+            <span id="mgBoardWeek" data-i18n="mg.board.week">이번 주 밥도둑 · SEP WEEK 2</span>
+          </div>
+
+          <div class="mg-lanes">
+            <section class="mg-lane mg-lane--tips" id="lane-tips">
+              <div class="mg-lane-kicker"><span data-i18n="mg.cat.tips">요리 비법</span></div>
+              <h3 class="mg-lane-lead" data-i18n="mg.tips.lead">밥이 더 맛있어지는 작은 조리 팁</h3>
+              <div class="mg-lane-items" data-lane-items="tips">
+              <article class="mg-story">
+                <h4 data-i18n="mg.tips.a1.title">김치볶음밥은 왜 찬밥으로 해야 맛있을까?</h4>
+                <p data-i18n="mg.tips.a1.sum">밥알을 살리고 양념은 제대로 배게 만드는 김치볶음밥의 기본 원리를 알아본다.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.tips.a2.title">라면 물 50ml가 맛을 바꾸는 이유</h4>
+                <p data-i18n="mg.tips.a2.sum">국물과 면의 농도는 레시피보다 물 한 국자에 더 크게 흔들린다.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.tips.a3.title">계란찜이 식당처럼 부풀어 오르는 법</h4>
+                <p data-i18n="mg.tips.a3.sum">거품, 중탕, 뚜껑. 세 가지만 맞춰도 집에서도 폭신해진다.</p>
+              </article>
+              </div>
+            </section>
+
+            <section class="mg-lane mg-lane--trend" id="lane-trend">
+              <div class="mg-lane-kicker"><span data-i18n="mg.cat.trend">요즘 먹방 유행</span></div>
+              <h3 class="mg-lane-lead" data-i18n="mg.trend.lead">요즘 사람들이 뭘 먹고 있는지</h3>
+              <div class="mg-lane-items" data-lane-items="trend">
+              <article class="mg-story">
+                <h4 data-i18n="mg.trend.a1.title">요즘 편의점에서 가장 많이 보이는 조합</h4>
+                <p data-i18n="mg.trend.a1.sum">삼각김밥만으로는 끝나지 않는, 야식 코너의 최근 공식들.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.trend.a2.title">한동안 안 보이던 '맵부심'이 다시 돌아왔다</h4>
+                <p data-i18n="mg.trend.a2.sum">매운맛은 유행이 아니라 주기처럼 돌아온다. 이번엔 어디서 터졌을까.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.trend.a3.title">SNS에서 유행하는 한 그릇 레시피</h4>
+                <p data-i18n="mg.trend.a3.sum">설거지가 적은 한 그릇이, 지금 가장 잘 팔리는 형식이다.</p>
+              </article>
+              </div>
+            </section>
+
+            <section class="mg-lane mg-lane--health" id="lane-health">
+              <div class="mg-lane-kicker"><span data-i18n="mg.cat.health">건강한 한 끼</span></div>
+              <h3 class="mg-lane-lead" data-i18n="mg.health.lead">맛도 포기하지 않는 건강식</h3>
+              <div class="mg-lane-items" data-lane-items="health">
+              <article class="mg-story">
+                <h4 data-i18n="mg.health.a1.title">닭가슴살 없이도 단백질 챙기는 한 끼</h4>
+                <p data-i18n="mg.health.a1.sum">두부, 계란, 콩. 이미 냉장고에 있는 것들로도 충분할 때가 많다.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.health.a2.title">늦은 밤 먹어도 부담이 덜한 음식</h4>
+                <p data-i18n="mg.health.a2.sum">참는 대신, 속이 덜 무거운 쪽으로 바꾸는 현실적인 선택.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.health.a3.title">샐러드가 지겨울 때 먹는 건강식</h4>
+                <p data-i18n="mg.health.a3.sum">잎채소만 고집하지 않아도, 가볍게 먹는 방법은 남아 있다.</p>
+              </article>
+              </div>
+            </section>
+
+            <section class="mg-lane mg-lane--habit" id="lane-habit">
+              <div class="mg-lane-kicker"><span data-i18n="mg.cat.habit">식습관</span></div>
+              <h3 class="mg-lane-lead" data-i18n="mg.habit.lead">잘 먹는 법에 대한 작은 이야기</h3>
+              <div class="mg-lane-items" data-lane-items="habit">
+              <article class="mg-story">
+                <h4 data-i18n="mg.habit.a1.title">천천히 먹으면 정말 덜 먹게 될까?</h4>
+                <p data-i18n="mg.habit.a1.sum">속도만 바꿔도 포만감이 다르게 온다. 실험이 아니라 관찰에 가깝다.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.habit.a2.title">아침을 꼭 먹어야 할까?</h4>
+                <p data-i18n="mg.habit.a2.sum">정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.</p>
+              </article>
+              <article class="mg-story">
+                <h4 data-i18n="mg.habit.a3.title">야식을 끊기보다 시간을 바꿔보는 방법</h4>
+                <p data-i18n="mg.habit.a3.sum">금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.</p>
+              </article>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="mg-desks" id="sources" aria-labelledby="mgDesksTitle">
+          <h2 id="mgDesksTitle" data-i18n="mg.desks.title">어디서 봤나</h2>
+          <p class="mg-desks-sub" data-i18n="mg.desks.sub">블로그와 유튜브는 매일 아침 10시에 공개 피드를 다시 읽고, 인스타는 글을 긁지 않고 탐색 창구만 열어 둔다.</p>
+          <div class="mg-desk-grid">
+            <div class="mg-desk mg-desk--blog">
+              <div class="mg-desk-kicker"><span data-i18n="mg.desks.blog">블로그</span></div>
+              <div data-desk-items="blog"></div>
+            </div>
+            <div class="mg-desk mg-desk--youtube">
+              <div class="mg-desk-kicker"><span data-i18n="mg.desks.youtube">유튜브</span></div>
+              <div data-desk-items="youtube"></div>
+            </div>
+            <div class="mg-desk mg-desk--instagram">
+              <div class="mg-desk-kicker"><span data-i18n="mg.desks.instagram">인스타 탐색</span></div>
+              <div data-desk-items="instagram"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mg-today" id="what" aria-labelledby="mgTodayTitle">
+          <h2 id="mgTodayTitle" data-i18n="mg.today.title">오늘 뭐 먹지?</h2>
+          <p class="mg-today-sub" data-i18n="mg.today.sub">결국 가장 어려운 질문은 이것.</p>
+          <div class="mg-choices" role="group" aria-label="오늘 뭐 먹지 고르기">
+            <button type="button" class="mg-choice" data-i18n="mg.today.spicy">매콤한 거</button>
+            <button type="button" class="mg-choice" data-i18n="mg.today.hearty">든든한 거</button>
+            <button type="button" class="mg-choice" data-i18n="mg.today.light">가벼운 거</button>
+            <button type="button" class="mg-choice" data-i18n="mg.today.new">새로운 거</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer-inner">
+      <hr class="footer-apple-hr" />
+      <div class="footer-apple-main">
+        <div class="footer-apple-col footer-apple-col--left">
+          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
+        </div>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="하단 정책 및 안내" data-i18n-aria-key="footer.navAria">
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkTerms">사이트 이용 약관</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkLegal">법적 고지</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="#" class="footer-apple-a" data-i18n="footer.linkSitemap">사이트 맵</a>
+        </nav>
+        <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
+      </div>
+      <p class="footer-apple-fine" data-i18n="footer.fine"></p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var STR = {
+        ko: {
+          docTitle: '밥도둑 매거진 · 밥도둑 Babdoduk',
+          'a11y.scrollProgress': '페이지 스크롤 진행',
+          'nav.navAria': '주요 메뉴',
+          'nav.homeAria': '홈으로',
+          'nav.intro': '소개',
+          'nav.history': '역사',
+          'nav.sns': 'SNS',
+          'nav.instagram': '인스타그램',
+          'nav.features': '주요 기능',
+          'nav.featuresAria': '주요 기능 하위 메뉴',
+          'nav.map': '맛집 지도',
+          'nav.map.open': '네이버 맛집 지도',
+          'nav.foodlog': '먹방 가계부',
+          'nav.foodlog.open': '먹방 가계부 열기',
+          'nav.magazine': '밥도둑 매거진',
+          'nav.kakao': '카카오톡',
+          'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
+          'nav.youtube': '유튜브 (개설 예정)',
+          'nav.ggongbab': '꽁밥 안내',
+          'nav.ggongbab.open': '꽁밥 안내 보기',
+          'nav.event': '이벤트',
+          'nav.event.open': '이벤트 페이지',
+          'nav.langBtn': '언어 (EN)',
+          'nav.langAria': '영어로 전환',
+          'popup.title': '밥도둑에 오신 걸 환영해요',
+          'popup.body': '인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.',
+          'popup.start': '시작하기',
+          'popup.snooze24h': '하루 동안 보지 않기',
+          'mg.issue': 'ISSUE 01 · SEP 2026',
+          'mg.lede.title': '먹는 것도<br>하나의 취향이니까.',
+          'mg.lede.dek': '요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.',
+          'mg.hero.label': '밥도둑 PICK',
+          'mg.hero.title': '계란후라이 하나도<br>맛이 달라지는 이유.',
+          'mg.hero.desc': '불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.',
+          'mg.hero.meta': '요리 비법 · 4 min read',
+          'mg.board.title': '오늘의 밥 이야기',
+          'mg.board.week': '이번 주 밥도둑 · SEP WEEK 2',
+          'mg.index.title': '오늘 뭐 먹지?',
+          'mg.cat.tips': '요리 비법',
+          'mg.cat.trend': '요즘 먹방 유행',
+          'mg.cat.trendShort': '먹방 유행',
+          'mg.cat.health': '건강한 한 끼',
+          'mg.cat.habit': '식습관',
+          'mg.tips.lead': '밥이 더 맛있어지는 작은 조리 팁',
+          'mg.tips.a1.title': '김치볶음밥은 왜 찬밥으로 해야 맛있을까?',
+          'mg.tips.a1.sum': '밥알을 살리고 양념은 제대로 배게 만드는 김치볶음밥의 기본 원리를 알아본다.',
+          'mg.tips.a2.title': '라면 물 50ml가 맛을 바꾸는 이유',
+          'mg.tips.a2.sum': '국물과 면의 농도는 레시피보다 물 한 국자에 더 크게 흔들린다.',
+          'mg.tips.a3.title': '계란찜이 식당처럼 부풀어 오르는 법',
+          'mg.tips.a3.sum': '거품, 중탕, 뚜껑. 세 가지만 맞춰도 집에서도 폭신해진다.',
+          'mg.trend.lead': '요즘 사람들이 뭘 먹고 있는지',
+          'mg.trend.a1.title': '요즘 편의점에서 가장 많이 보이는 조합',
+          'mg.trend.a1.sum': '삼각김밥만으로는 끝나지 않는, 야식 코너의 최근 공식들.',
+          'mg.trend.a2.title': "한동안 안 보이던 '맵부심'이 다시 돌아왔다",
+          'mg.trend.a2.sum': '매운맛은 유행이 아니라 주기처럼 돌아온다. 이번엔 어디서 터졌을까.',
+          'mg.trend.a3.title': 'SNS에서 유행하는 한 그릇 레시피',
+          'mg.trend.a3.sum': '설거지가 적은 한 그릇이, 지금 가장 잘 팔리는 형식이다.',
+          'mg.health.lead': '맛도 포기하지 않는 건강식',
+          'mg.health.a1.title': '닭가슴살 없이도 단백질 챙기는 한 끼',
+          'mg.health.a1.sum': '두부, 계란, 콩. 이미 냉장고에 있는 것들로도 충분할 때가 많다.',
+          'mg.health.a2.title': '늦은 밤 먹어도 부담이 덜한 음식',
+          'mg.health.a2.sum': '참는 대신, 속이 덜 무거운 쪽으로 바꾸는 현실적인 선택.',
+          'mg.health.a3.title': '샐러드가 지겨울 때 먹는 건강식',
+          'mg.health.a3.sum': '잎채소만 고집하지 않아도, 가볍게 먹는 방법은 남아 있다.',
+          'mg.habit.lead': '잘 먹는 법에 대한 작은 이야기',
+          'mg.habit.a1.title': '천천히 먹으면 정말 덜 먹게 될까?',
+          'mg.habit.a1.sum': '속도만 바꿔도 포만감이 다르게 온다. 실험이 아니라 관찰에 가깝다.',
+          'mg.habit.a2.title': '아침을 꼭 먹어야 할까?',
+          'mg.habit.a2.sum': '정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.',
+          'mg.habit.a3.title': '야식을 끊기보다 시간을 바꿔보는 방법',
+          'mg.habit.a3.sum': '금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.',
+          'mg.today.title': '오늘 뭐 먹지?',
+          'mg.today.sub': '결국 가장 어려운 질문은 이것.',
+          'mg.today.spicy': '매콤한 거',
+          'mg.today.hearty': '든든한 거',
+          'mg.today.light': '가벼운 거',
+          'mg.today.new': '새로운 거',
+          'mg.desks.title': '어디서 봤나',
+          'mg.desks.sub': '블로그와 유튜브는 매일 아침 10시에 공개 피드를 다시 읽고, 인스타는 글을 긁지 않고 탐색 창구만 열어 둔다.',
+          'mg.desks.blog': '블로그',
+          'mg.desks.youtube': '유튜브',
+          'mg.desks.instagram': '인스타 탐색',
+          'mg.cal.open': '날짜 보기',
+          'mg.medium.blog': '블로그',
+          'mg.medium.news': '블로그',
+          'mg.medium.youtube': '유튜브',
+          'mg.medium.instagram': '인스타',
+          'mg.medium.desk': '데스크',
+          'mg.hero.from': '출처',
+          'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+          'footer.linkPrivacy': '개인정보 처리방침',
+          'footer.linkTerms': '사이트 이용 약관',
+          'footer.linkLegal': '법적 고지',
+          'footer.linkSitemap': '사이트 맵',
+          'footer.country': '대한민국',
+          'footer.navAria': '푸터 정책 링크',
+          'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
+        },
+        en: {
+          docTitle: 'Babdoduk Magazine · Babdoduk',
+          'a11y.scrollProgress': 'Page scroll progress',
+          'nav.navAria': 'Main menu',
+          'nav.homeAria': 'Home',
+          'nav.intro': 'About',
+          'nav.history': 'History',
+          'nav.sns': 'SNS',
+          'nav.instagram': 'Instagram',
+          'nav.features': 'Features',
+          'nav.featuresAria': 'Features submenu',
+          'nav.map': 'Food map',
+          'nav.map.open': 'Naver food map',
+          'nav.foodlog': 'Food log',
+          'nav.foodlog.open': 'Open food log',
+          'nav.magazine': 'Magazine',
+          'nav.kakao': 'KakaoTalk',
+          'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
+          'nav.youtube': 'YouTube (coming soon)',
+          'nav.ggongbab': 'Free meal info',
+          'nav.ggongbab.open': 'View free meal info',
+          'nav.event': 'Event',
+          'nav.event.open': 'Events page',
+          'nav.langBtn': '한국어',
+          'nav.langAria': 'Switch to Korean',
+          'popup.title': 'Welcome to Babdoduk',
+          'popup.body': 'Find recipes and daily life on Instagram and the food map.',
+          'popup.start': 'Start',
+          'popup.snooze24h': "Don't show for 24 hours",
+          'mg.issue': 'ISSUE 01 · SEP 2026',
+          'mg.lede.title': 'Eating is<br>a kind of taste, too.',
+          'mg.lede.dek': 'From kitchen tips to what people are eating now,<br>plus one lighter plate and the habits around it.',
+          'mg.hero.label': 'BABDODUK PICK',
+          'mg.hero.title': 'Why even a fried egg<br>can taste different.',
+          'mg.hero.desc': 'Heat, timing, salt. Small moves that quietly raise a home-cooked meal.',
+          'mg.hero.meta': 'Kitchen notes · 4 min read',
+          'mg.board.title': "Today's rice stories",
+          'mg.board.week': 'This week at Babdoduk · SEP WEEK 2',
+          'mg.index.title': "What's for today?",
+          'mg.cat.tips': 'Kitchen notes',
+          'mg.cat.trend': "What's in",
+          'mg.cat.trendShort': "What's in",
+          'mg.cat.health': 'A lighter plate',
+          'mg.cat.habit': 'How we eat',
+          'mg.tips.lead': 'Small cooking moves that make rice taste better',
+          'mg.tips.a1.title': 'Why kimchi fried rice wants leftover rice',
+          'mg.tips.a1.sum': 'Keep the grains separate, let the seasoning cling. The basic physics of a good wok toss.',
+          'mg.tips.a2.title': 'How 50ml of ramen water changes the bowl',
+          'mg.tips.a2.sum': 'Broth and noodles shift more with one ladle of water than with a new recipe.',
+          'mg.tips.a3.title': 'Steamed eggs that puff like the restaurant ones',
+          'mg.tips.a3.sum': 'Foam, a gentle bath, a lid. Three checks and it rises at home too.',
+          'mg.trend.lead': 'What people are eating right now',
+          'mg.trend.a1.title': 'The convenience-store combos showing up everywhere',
+          'mg.trend.a1.sum': 'Triangle kimbap is only the start. Late-night aisles have new formulas.',
+          'mg.trend.a2.title': 'Spicy-flex is back after a quiet stretch',
+          'mg.trend.a2.sum': 'Heat comes in cycles, not trends. This round started somewhere familiar.',
+          'mg.trend.a3.title': 'One-bowl recipes circulating on SNS',
+          'mg.trend.a3.sum': 'Fewer dishes to wash is the format selling best right now.',
+          'mg.health.lead': 'Lighter food that still tastes like dinner',
+          'mg.health.a1.title': 'A protein plate without chicken breast',
+          'mg.health.a1.sum': 'Tofu, eggs, beans. Often already in the fridge.',
+          'mg.health.a2.title': 'Late-night food that sits a little lighter',
+          'mg.health.a2.sum': 'Not willpower. Just a less heavy swap when the day runs long.',
+          'mg.health.a3.title': 'When you are tired of salad',
+          'mg.health.a3.sum': 'You can eat light without another bowl of leaves.',
+          'mg.habit.lead': 'Small notes on eating well',
+          'mg.habit.a1.title': 'Does eating slowly actually mean eating less?',
+          'mg.habit.a1.sum': 'Change the pace and fullness arrives differently. More observation than experiment.',
+          'mg.habit.a2.title': 'Do you really have to eat breakfast?',
+          'mg.habit.a2.sum': 'Rhythm over rules. Slide breakfast around class and lab hours.',
+          'mg.habit.a3.title': 'Move the late snack instead of banning it',
+          'mg.habit.a3.sum': 'Same bite, different hour. Timing often changes tomorrow more than restriction does.',
+          'mg.today.title': "What's for today?",
+          'mg.today.sub': 'The hardest question, still.',
+          'mg.today.spicy': 'Something spicy',
+          'mg.today.hearty': 'Something filling',
+          'mg.today.light': 'Something light',
+          'mg.today.new': 'Something new',
+          'mg.desks.title': 'Where it came from',
+          'mg.desks.sub': 'Blogs and YouTube refresh from public feeds at 10:00 KST. Instagram is not scraped; we only keep search doors open.',
+          'mg.desks.blog': 'Blogs',
+          'mg.desks.youtube': 'YouTube',
+          'mg.desks.instagram': 'Instagram doors',
+          'mg.cal.open': 'Pick a date',
+          'mg.medium.blog': 'Blog',
+          'mg.medium.news': 'Blog',
+          'mg.medium.youtube': 'YouTube',
+          'mg.medium.instagram': 'Instagram',
+          'mg.medium.desk': 'Desk',
+          'mg.hero.from': 'Source',
+          'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+          'footer.linkPrivacy': 'Privacy Policy',
+          'footer.linkTerms': 'Terms of Use',
+          'footer.linkLegal': 'Legal',
+          'footer.linkSitemap': 'Site Map',
+          'footer.country': 'South Korea',
+          'footer.navAria': 'Footer policies',
+          'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.'
+        }
+      };
+      window.BABDODUK_STR = STR;
+      function applyLang(lang) {
+        if (lang !== 'en') lang = 'ko';
+        document.documentElement.lang = lang;
+        try { localStorage.setItem('babdoduk-lang', lang); } catch (e) {}
+        var T = STR[lang];
+        document.title = T.docTitle;
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n');
+          if (T[k] !== undefined) el.textContent = T[k];
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n-html');
+          if (T[k] !== undefined) el.innerHTML = T[k];
+        });
+        document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n-aria-key');
+          if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
+        });
+        var navInner = document.getElementById('siteNavInner');
+        if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
+        var sp = document.getElementById('scrollProgressWrap');
+        if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
+      }
+      window.babdodukApplyLang = applyLang;
+      window.babdodukGetLang = function () {
+        return document.documentElement.lang === 'en' ? 'en' : 'ko';
+      };
+      var saved = 'ko';
+      try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
+      applyLang(saved === 'en' ? 'en' : 'ko');
+      var langBtnEl = document.getElementById('langToggle');
+      if (langBtnEl) {
+        langBtnEl.addEventListener('click', function () {
+          applyLang(window.babdodukGetLang() === 'ko' ? 'en' : 'ko');
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var bar = document.getElementById('scrollProgressBar');
+      var wrap = bar && bar.parentElement;
+      function onScroll() {
+        if (!bar) return;
+        var el = document.documentElement;
+        var total = el.scrollHeight - el.clientHeight;
+        var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
+        bar.style.width = pct + '%';
+        if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      onScroll();
+
+      function shouldShowWelcome() {
+        return false;
+      }
+      var popup = document.getElementById('welcomePopup');
+      var closeBtn = document.getElementById('popupCloseBtn');
+      var snoozeBtn = document.getElementById('popupSnoozeBtn');
+      function openPopup() {
+        popup.classList.add('is-open');
+        popup.setAttribute('aria-hidden', 'false');
+      }
+      function closePopup(withSnooze24h) {
+        popup.classList.remove('is-open');
+        popup.setAttribute('aria-hidden', 'true');
+        try {
+          if (withSnooze24h) {
+            var until = Date.now() + 24 * 60 * 60 * 1000;
+            localStorage.setItem('babdoduk-welcome-snooze-until', String(until));
+          }
+        } catch (err) {}
+      }
+      if (shouldShowWelcome()) requestAnimationFrame(function () { openPopup(); });
+      if (closeBtn) closeBtn.addEventListener('click', function () { closePopup(false); });
+      if (snoozeBtn) snoozeBtn.addEventListener('click', function () { closePopup(true); });
+      if (popup) {
+        popup.addEventListener('click', function (e) {
+          if (e.target === popup) closePopup(false);
+        });
+      }
+
+      var choices = [].slice.call(document.querySelectorAll('.mg-choice'));
+      choices.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var on = !btn.classList.contains('is-picked');
+          choices.forEach(function (b) {
+            b.classList.remove('is-picked');
+            b.setAttribute('aria-pressed', 'false');
+          });
+          if (on) {
+            btn.classList.add('is-picked');
+            btn.setAttribute('aria-pressed', 'true');
+          }
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var index = { latest: '2026-09-12', dates: ['2026-09-12'] };
+      var dateSet = {};
+      var currentDate = index.latest;
+      var viewYear = 2026;
+      var viewMonth = 8;
+      var lastEdition = null;
+      var LANE_META = {
+        tips: 'mg.cat.tips',
+        trend: 'mg.cat.trend',
+        health: 'mg.cat.health',
+        habit: 'mg.cat.habit'
+      };
+
+      function t(key, fallback) {
+        var lang = window.babdodukGetLang ? window.babdodukGetLang() : 'ko';
+        var pack = window.BABDODUK_STR && window.BABDODUK_STR[lang];
+        if (pack && pack[key]) return pack[key];
+        return fallback || key;
+      }
+
+      function mediumLabel(medium) {
+        return t('mg.medium.' + (medium || 'blog'), medium || 'blog');
+      }
+
+      function fmtDot(iso) {
+        return iso.replace(/-/g, '.');
+      }
+
+      function sourceLine(item) {
+        var media = mediumLabel(item.medium);
+        var src = item.source || '';
+        return src ? media + ' · ' + src : media;
+      }
+
+      function formatLines(text) {
+        return escapeHtml(text || '').replace(/\n/g, '<br>');
+      }
+
+      function tagsHtml(item, className) {
+        var tags = item.tags || [];
+        if (!tags.length) return '';
+        return '<p class="' + className + '">' + tags.map(function (tag) {
+          return '#' + escapeHtml(tag);
+        }).join(' ') + '</p>';
+      }
+
+      function storyHtml(item) {
+        var href = item.url || '';
+        var tag = href ? 'a' : 'article';
+        var extra = href ? ' href="' + href.replace(/"/g, '') + '" target="_blank" rel="noopener"' : '';
+        var sum = item.summary ? '<p class="mg-story-sum">' + formatLines(item.summary) + '</p>' : '';
+        return '<' + tag + ' class="mg-story"' + extra + '>' +
+          '<h4>' + escapeHtml(item.title) + '</h4>' +
+          sum +
+          '<span class="mg-story-src"><b>' + escapeHtml(sourceLine(item)) + '</b></span>' +
+          tagsHtml(item, 'mg-story-tags') +
+          '</' + tag + '>';
+      }
+
+      function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, function (ch) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+        });
+      }
+
+      function weekdayLabels() {
+        var lang = window.babdodukGetLang ? window.babdodukGetLang() : 'ko';
+        return lang === 'en'
+          ? ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+          : ['월', '화', '수', '목', '금', '토', '일'];
+      }
+
+      function monthLabel(year, monthIndex) {
+        var lang = window.babdodukGetLang ? window.babdodukGetLang() : 'ko';
+        if (lang === 'en') {
+          return ['January','February','March','April','May','June','July','August','September','October','November','December'][monthIndex] + ' ' + year;
+        }
+        return year + '.' + String(monthIndex + 1).padStart(2, '0');
+      }
+
+      function renderCalendars() {
+        var weeks = weekdayLabels();
+        document.querySelectorAll('[data-cal-root]').forEach(function (root) {
+          var weekEl = root.querySelector('[data-cal-week]');
+          var grid = root.querySelector('[data-cal-grid]');
+          var label = root.querySelector('[data-cal-label]');
+          if (label) label.textContent = monthLabel(viewYear, viewMonth);
+          if (weekEl) weekEl.innerHTML = weeks.map(function (d) { return '<span>' + d + '</span>'; }).join('');
+          if (!grid) return;
+          var first = new Date(viewYear, viewMonth, 1);
+          var start = (first.getDay() + 6) % 7;
+          var days = new Date(viewYear, viewMonth + 1, 0).getDate();
+          var html = '';
+          var i;
+          for (i = 0; i < start; i += 1) html += '<span class="mg-cal-day is-muted"></span>';
+          for (i = 1; i <= days; i += 1) {
+            var iso = viewYear + '-' + String(viewMonth + 1).padStart(2, '0') + '-' + String(i).padStart(2, '0');
+            var live = !!dateSet[iso];
+            var selected = iso === currentDate;
+            html += '<button type="button" class="mg-cal-day' + (live ? ' is-live' : '') + (selected ? ' is-selected' : '') + '" data-iso="' + iso + '"' + (live ? '' : ' disabled') + '>' + i + '</button>';
+          }
+          grid.innerHTML = html;
+        });
+      }
+
+      function youtubeId(url) {
+        var match = String(url || '').match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([A-Za-z0-9_-]{11})/);
+        return match ? match[1] : '';
+      }
+
+      function applyHeroImage(featured) {
+        var visual = document.getElementById('mgHeroVisual');
+        var img = document.getElementById('mgHeroImg');
+        var mediaLink = document.getElementById('mgHeroMediaLink');
+        var typeEl = document.getElementById('mgHeroType');
+        if (!visual || !img) return;
+        var href = featured.url || '#featured';
+        if (mediaLink) {
+          mediaLink.setAttribute('href', href);
+          if (featured.url) {
+            mediaLink.setAttribute('target', '_blank');
+            mediaLink.setAttribute('rel', 'noopener');
+          } else {
+            mediaLink.removeAttribute('target');
+            mediaLink.removeAttribute('rel');
+          }
+        }
+        var vid = youtubeId(featured.url || '');
+        var src = featured.image || '';
+        var fallback = vid ? 'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg' : '';
+        if (!src && vid) src = 'https://i.ytimg.com/vi/' + vid + '/maxresdefault.jpg';
+        visual.classList.remove('has-photo');
+        visual.classList.add('is-type');
+        img.removeAttribute('src');
+        img.alt = featured.title || '';
+        if (typeEl) typeEl.textContent = 'BAMDODUK';
+        if (!src) return;
+        img.onload = function () {
+          visual.classList.add('has-photo');
+          visual.classList.remove('is-type');
+        };
+        img.onerror = function () {
+          if (fallback && img.getAttribute('src') !== fallback) {
+            img.src = fallback;
+            return;
+          }
+          visual.classList.add('is-type');
+          visual.classList.remove('has-photo');
+          img.removeAttribute('src');
+        };
+        img.src = src;
+      }
+
+      function applyEdition(ed) {
+        lastEdition = ed;
+        currentDate = ed.date;
+        var parts = ed.date.split('-');
+        viewYear = parseInt(parts[0], 10);
+        viewMonth = parseInt(parts[1], 10) - 1;
+        var featured = ed.featured || {};
+        var titleEl = document.getElementById('mgHeroTitle');
+        var descEl = document.getElementById('mgHeroDesc');
+        var metaEl = document.getElementById('mgHeroMeta');
+        var srcEl = document.getElementById('mgHeroSrc');
+        var linkEl = document.getElementById('mgHeroLink');
+        if (titleEl) titleEl.textContent = featured.title || '';
+        if (descEl) descEl.innerHTML = formatLines(featured.summary || '');
+        if (metaEl) metaEl.textContent = t(LANE_META[featured.category] || 'mg.cat.tips') + ' · ' + mediumLabel(featured.medium);
+        if (srcEl) srcEl.innerHTML = featured.source ? '<b>' + escapeHtml(sourceLine(featured)) + '</b>' : '';
+        var tagsEl = document.getElementById('mgHeroTags');
+        if (tagsEl) tagsEl.innerHTML = (featured.tags || []).map(function (tag) { return '#' + escapeHtml(tag); }).join(' ');
+        applyHeroImage(featured);
+        if (linkEl) {
+          if (featured.url) {
+            linkEl.setAttribute('href', featured.url);
+            linkEl.setAttribute('target', '_blank');
+            linkEl.setAttribute('rel', 'noopener');
+          } else {
+            linkEl.setAttribute('href', '#featured');
+            linkEl.removeAttribute('target');
+          }
+        }
+        var dateLabel = fmtDot(ed.date);
+        var indexDate = document.getElementById('mgIndexDate');
+        var mobileDate = document.getElementById('mgMobileDate');
+        var schedule = document.getElementById('mgSchedule');
+        var week = document.getElementById('mgBoardWeek');
+        var issue = document.querySelector('.mg-masthead-issue');
+        if (indexDate) indexDate.textContent = dateLabel;
+        if (mobileDate) mobileDate.textContent = dateLabel;
+        if (schedule) schedule.textContent = ed.schedule || 'Daily 10:00 KST';
+        if (week) week.textContent = dateLabel + ' · ' + (ed.schedule || 'Daily 10:00 KST');
+        if (issue) issue.textContent = dateLabel + ' · 10:00 KST';
+        Object.keys(ed.lanes || {}).forEach(function (lane) {
+          var box = document.querySelector('[data-lane-items="' + lane + '"]');
+          var lead = document.querySelector('#lane-' + lane + ' .mg-lane-lead');
+          if (lead && ed.lanes[lane].lead) lead.textContent = ed.lanes[lane].lead;
+          if (box) box.innerHTML = (ed.lanes[lane].items || []).map(storyHtml).join('');
+        });
+        var desks = ed.desks || {};
+        ['blog', 'youtube', 'instagram'].forEach(function (desk) {
+          var box = document.querySelector('[data-desk-items="' + desk + '"]');
+          if (box) box.innerHTML = (desks[desk] || []).map(storyHtml).join('');
+        });
+        renderCalendars();
+      }
+
+      function loadEdition(iso) {
+        return fetch('data/magazine/' + iso + '.json', { cache: 'no-store' })
+          .then(function (res) {
+            if (!res.ok) throw new Error('missing edition');
+            return res.json();
+          })
+          .then(function (ed) {
+            applyEdition(ed);
+            try {
+              var url = new URL(window.location.href);
+              url.searchParams.set('d', iso);
+              history.replaceState({}, '', url);
+            } catch (err) {}
+          });
+      }
+
+      function shiftLiveDate(delta) {
+        var dates = index.dates.slice().sort();
+        var at = dates.indexOf(currentDate);
+        if (at === -1) at = dates.length - 1;
+        var next = dates[at + delta];
+        if (next) loadEdition(next);
+      }
+
+      document.querySelectorAll('[data-cal-root]').forEach(function (root) {
+        var prev = root.querySelector('[data-cal-prev]');
+        var next = root.querySelector('[data-cal-next]');
+        if (prev) prev.addEventListener('click', function () {
+          viewMonth -= 1;
+          if (viewMonth < 0) { viewMonth = 11; viewYear -= 1; }
+          renderCalendars();
+        });
+        if (next) next.addEventListener('click', function () {
+          viewMonth += 1;
+          if (viewMonth > 11) { viewMonth = 0; viewYear += 1; }
+          renderCalendars();
+        });
+        root.addEventListener('click', function (e) {
+          var btn = e.target.closest('.mg-cal-day.is-live');
+          if (!btn) return;
+          loadEdition(btn.getAttribute('data-iso'));
+        });
+      });
+
+      var openBtn = document.getElementById('mgDateOpen');
+      var mobileCal = document.getElementById('mgMobileCal');
+      if (openBtn && mobileCal) {
+        openBtn.addEventListener('click', function () {
+          mobileCal.classList.toggle('is-open');
+        });
+      }
+      var prevBtn = document.getElementById('mgDatePrev');
+      var nextBtn = document.getElementById('mgDateNext');
+      if (prevBtn) prevBtn.addEventListener('click', function () { shiftLiveDate(-1); });
+      if (nextBtn) nextBtn.addEventListener('click', function () { shiftLiveDate(1); });
+
+      var langBtn = document.getElementById('langToggle');
+      if (langBtn) {
+        langBtn.addEventListener('click', function () {
+          window.setTimeout(function () {
+            if (window.babdodukReloadMagazine) window.babdodukReloadMagazine();
+          }, 0);
+        });
+      }
+
+      window.babdodukReloadMagazine = function () {
+        if (lastEdition) applyEdition(lastEdition);
+      };
+      if (window.babdodukApplyLang) {
+        var prevApply = window.babdodukApplyLang;
+        window.babdodukApplyLang = function (lang) {
+          prevApply(lang);
+          window.babdodukReloadMagazine();
+        };
+      }
+
+      fetch('data/magazine/index.json', { cache: 'no-store' })
+        .then(function (res) { return res.json(); })
+        .then(function (payload) {
+          index = payload;
+          dateSet = {};
+          (index.dates || []).forEach(function (d) { dateSet[d] = true; });
+          var wanted = index.latest;
+          try {
+            var q = new URL(window.location.href).searchParams.get('d');
+            if (q && dateSet[q]) wanted = q;
+          } catch (err) {}
+          return loadEdition(wanted);
+        })
+        .catch(function () {});
+    })();
+  </script>
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-mega]').forEach(function (mega) {
+        mega.addEventListener('click', function (e) {
+          e.stopPropagation();
+        });
+        var trigger = mega.querySelector('.nav-mega-trigger');
+        var panel = mega.querySelector('.nav-mega-panel');
+        if (!trigger || !panel) return;
+        trigger.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var willOpen = !mega.classList.contains('is-open');
+          document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
+            m.classList.remove('is-open');
+            var t = m.querySelector('.nav-mega-trigger');
+            if (t) t.setAttribute('aria-expanded', 'false');
+          });
+          if (willOpen) {
+            mega.classList.add('is-open');
+            trigger.setAttribute('aria-expanded', 'true');
+          }
+        });
+      });
+      document.addEventListener('click', function () {
+        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
+          m.classList.remove('is-open');
+          var t = m.querySelector('.nav-mega-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
+          m.classList.remove('is-open');
+          var t = m.querySelector('.nav-mega-trigger');
+          if (t) {
+            t.setAttribute('aria-expanded', 'false');
+            t.focus();
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

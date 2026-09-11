@@ -1037,30 +1037,37 @@
       max-width: 100%;
       box-sizing: border-box;
       min-height: 176px;
-      border-radius: 18px;
-      overflow: hidden;
+      padding: 10px 12px 10px 10px;
+      gap: 4px;
+      border-radius: 20px;
+      overflow: visible;
+      isolation: isolate;
       text-decoration: none;
       color: inherit;
-      background: #fff;
-      border: 1px solid #0a0a0a;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.28) 100%);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      backdrop-filter: blur(22px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.72),
+        0 10px 30px rgba(20, 25, 30, 0.07);
     }
 
     .slide-media {
-      flex: 0 0 44%;
+      flex: 0 0 42%;
       min-width: 0;
-      min-height: 168px;
-      background-color: #f5f5f7;
-      background-size: cover;
+      min-height: 152px;
+      border-radius: 14px;
+      background-color: transparent;
+      background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
-      transition: transform 0.45s ease;
+      mix-blend-mode: multiply;
+      transition: none;
     }
 
     .carousel-slide:hover .slide-media {
-      transform: scale(1.04);
+      transform: none;
     }
 
     .slide-copy {
@@ -1070,8 +1077,8 @@
       justify-content: center;
       align-items: flex-start;
       text-align: left;
-      padding: 1rem 1.15rem 1rem 1.35rem;
-      background: #fff;
+      padding: 0.85rem 0.7rem 0.85rem 0.85rem;
+      background: transparent;
       min-width: 0;
     }
 
@@ -1276,6 +1283,8 @@
       height: 16px;
     }
   </style>
+  <link rel="stylesheet" href="css/site.css" />
+  <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
   <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
@@ -1325,6 +1334,7 @@
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
             <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
+            <a role="menuitem" class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
             <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab">꽁밥 안내</a>
           </div>
         </div>
@@ -1477,6 +1487,7 @@
           'nav.map.open': '네이버 맛집 지도',
           'nav.foodlog': '먹방 가계부',
           'nav.foodlog.open': '먹방 가계부 열기',
+          'nav.magazine': '밥도둑 매거진',
           'nav.kakao': '카카오톡',
           'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
           'nav.youtube': '유튜브 (개설 예정)',
@@ -1494,6 +1505,9 @@
           'profile.imgAlt': '밥도둑 Babdoduk 프로필',
           'profile.titleHtml': '밥도둑 <span class="title-en">Babdoduk</span>',
           'profile.subtitle': '카이스트 기계과 먹방1티어 학생의 먹방일기',
+          'hero.eyebrow': 'KAIST FOOD & COMMUNITY',
+          'hero.ctaExplore': '둘러보기',
+          'hero.ctaInsta': 'Instagram',
           'carousel.section': '밥도둑 주요 링크',
           'carousel.tablist': '슬라이드 위치',
           'carousel.dot1': '슬라이드 1',
@@ -1573,6 +1587,7 @@
           'nav.map.open': 'Naver food map',
           'nav.foodlog': 'Food log',
           'nav.foodlog.open': 'Open food log',
+          'nav.magazine': 'Magazine',
           'nav.kakao': 'KakaoTalk',
           'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
           'nav.youtube': 'YouTube (coming soon)',
@@ -1591,6 +1606,9 @@
           'profile.titleHtml': '<span class="title-en">Babdoduk</span>',
           'profile.subtitle':
             'Food diary of a KAIST Mechanical Engineering student (mukbang tier 1).',
+          'hero.eyebrow': 'KAIST FOOD & COMMUNITY',
+          'hero.ctaExplore': 'Explore',
+          'hero.ctaInsta': 'Instagram',
           'carousel.section': 'Main links',
           'carousel.tablist': 'Slide position',
           'carousel.dot1': 'Slide 1',
@@ -1735,7 +1753,7 @@
 
       function shouldShowWelcome() {
         var path = (location.pathname || '').toLowerCase();
-        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1) return false;
+        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1 || path.indexOf('mukbang.html') !== -1) return false;
         try {
           var until = localStorage.getItem('babdoduk-welcome-snooze-until');
           if (until && Date.now() < parseInt(until, 10)) return false;
@@ -2005,8 +2023,8 @@
           }
         });
       }
-      navJumpToSlide(document.getElementById('navMegaKakao'), 1);
-      navJumpToSlide(document.getElementById('navMegaYoutube'), 0);
+      navJumpToSlide(document.getElementById('navMegaKakao'), 3);
+      navJumpToSlide(document.getElementById('navMegaYoutube'), 2);
 
       document.querySelectorAll('[data-mega]').forEach(function (mega) {
         mega.addEventListener('click', function (e) {

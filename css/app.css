@@ -1,0 +1,203 @@
+/* Page surfaces: food / event / ggongbab / history / lab */
+
+.food-tracker-wrap,
+.event-page-wrap,
+.ggongbab-page-wrap,
+.history-wrap,
+.lab-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.food-tracker {
+  background: rgba(255, 255, 255, 0.55) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 10px 30px rgba(20, 25, 30, 0.06) !important;
+}
+
+.food-sum-card {
+  background: rgba(255, 255, 255, 0.5) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  backdrop-filter: blur(14px) saturate(115%);
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+}
+
+.food-sum-card .lbl {
+  color: var(--text-tertiary) !important;
+}
+
+.food-sum-card .val {
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+}
+
+.food-cal-cell.has-data {
+  background: #fff8f6 !important;
+  border-color: rgba(255, 103, 93, 0.28) !important;
+}
+
+.food-cal-cell.has-data:hover {
+  border-color: var(--accent) !important;
+}
+
+.food-cal-cell .amt {
+  color: var(--accent) !important;
+}
+
+.food-input-total-row th,
+.food-input-total,
+.food-input-add,
+.food-input-save {
+  color: var(--accent);
+}
+
+.food-input-save {
+  background: #1b1b1a !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.food-input-total-row th {
+  background: var(--accent-soft) !important;
+  color: var(--text) !important;
+}
+
+.food-input-total-row td {
+  background: rgba(255, 103, 93, 0.04) !important;
+}
+
+.food-input-total {
+  border-color: rgba(255, 103, 93, 0.28) !important;
+  color: var(--text) !important;
+}
+
+.event-tab-row {
+  border-radius: var(--radius-md) !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 8px 24px rgba(20, 25, 30, 0.05) !important;
+}
+
+.event-tab-row:hover,
+.event-tab:hover {
+  border-color: var(--border-strong) !important;
+}
+
+.event-tab-row.is-selected,
+.event-tab[aria-selected="true"] {
+  border-color: rgba(255, 255, 255, 0.85) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 8px 24px rgba(20, 25, 30, 0.06) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+.event-tab-row.is-selected {
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+.event-tab-date {
+  color: var(--accent) !important;
+  font-weight: 600 !important;
+}
+
+.event-tab-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.event-tab-outlink {
+  margin: 8px 10px 8px 2px;
+  padding: 8px 12px !important;
+  min-height: 40px;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: 11px !important;
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-strong) !important;
+}
+
+.event-tab-outlink:hover {
+  background: rgba(20, 20, 20, 0.04) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.event-tab-outlink:focus-visible {
+  outline: 2px solid rgba(255, 103, 93, 0.45);
+  outline-offset: 2px;
+}
+
+.ggongbab-map-wrap {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.ggongbab-tabs-col {
+  top: calc(var(--nav-top) + env(safe-area-inset-top) + var(--nav-h) + 12px) !important;
+}
+
+.lab-panel h2,
+.lab-note {
+  color: var(--text) !important;
+}
+
+.lab-panel h2 {
+  color: var(--accent) !important;
+}
+
+.lab-note {
+  background: var(--accent-soft) !important;
+  border: 1px solid rgba(255, 103, 93, 0.18) !important;
+}
+
+.timeline-marker {
+  box-shadow: 0 0 0 2px var(--bg) !important;
+}
+
+.event-title,
+.lab-title,
+.history-title {
+  letter-spacing: -0.035em;
+}
+
+.lab-btn {
+  border-radius: 12px !important;
+  background: #1b1b1a !important;
+  border: 1px solid #1b1b1a !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+.lab-btn--ghost {
+  color: var(--text) !important;
+  background: transparent !important;
+  border: 1px solid var(--border-strong) !important;
+}
+
+.lab-btn--ghost:hover {
+  background: rgba(20, 20, 20, 0.04) !important;
+}
+
+.event-detail-value a.gb-apply-link {
+  color: var(--accent) !important;
+}
+  .event-tab-outlink {
+    margin: 6px 8px 6px 0;
+    padding: 8px 10px !important;
+  }
+}

@@ -240,12 +240,33 @@ def patch_index(s: str) -> str:
     s = strip_banner_html(s)
     s = insert_nav_foodlog(s)
     s = patch_popup(s)
+    if 'href="css/site.css"' not in s:
+        s = s.replace(
+            "</head>",
+            '  <link rel="stylesheet" href="css/site.css" />\n'
+            '  <link rel="stylesheet" href="css/app.css" />\n'
+            '  <link rel="stylesheet" href="css/index.css" />\n</head>',
+            1,
+        )
+    elif 'href="css/index.css"' not in s:
+        s = s.replace(
+            'href="css/app.css" />',
+            'href="css/app.css" />\n  <link rel="stylesheet" href="css/index.css" />',
+            1,
+        )
     return s
 
 
 def patch_food(s: str) -> str:
     s = insert_nav_foodlog(s)
     s = patch_popup(s)
+    if 'href="css/site.css"' not in s:
+        s = s.replace(
+            "</head>",
+            '  <link rel="stylesheet" href="css/site.css" />\n'
+            '  <link rel="stylesheet" href="css/app.css" />\n</head>',
+            1,
+        )
     return s
 
 
