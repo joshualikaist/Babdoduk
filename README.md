@@ -87,15 +87,24 @@ vercel
 
 **주의:** `Users\joshu\...` 같은 경로를 여기에 넣지 마세요. 이미 `C:\Users\joshu\Babdoduk` 에 있다면 반드시 **`.`** 만 입력하세요.
 
-### 5. 프로덕션(본 주소)에 반영
+### 5. 실험 / 공개 URL (프로젝트 두 개)
 
-미리보기 주소만 나왔다면, 같은 폴더에서:
+| 용도 | Vercel 프로젝트 | URL |
+|------|-----------------|-----|
+| **실험** | `babdoduk-lab` | https://babdoduk-lab.vercel.app |
+| **공개** | `babdoduk` | https://babdoduk.vercel.app |
 
 ```powershell
+# 실험 (lab 브랜치)
+vercel link --project babdoduk-lab --yes
+vercel --prod
+
+# 공개 (main 반영 후)
+vercel link --project babdoduk --yes
 vercel --prod
 ```
 
-배포가 끝나면 `https://babdoduk.vercel.app` 형태의 주소가 표시됩니다. (프로젝트 이름이 다르면 URL도 그에 맞게 바뀝니다.)
+자세한 주의사항: **`docs/DEPLOYMENT_AND_BRANCHES.md`**
 
 ### 6. 코드 수정 후 다시 올리기
 
@@ -125,8 +134,6 @@ vercel
 1. 실험할 때: `git checkout lab` → 수정 → `git push origin lab` (공식 사이트는 `main`이면 그대로이고, 보통 Preview만 갱신)
 2. 본편에 반영할 때: `main`에 **`lab`을 merge**(또는 PR) → `git push origin main` → 공개 배포 갱신  
 3. `lab-ggongbab.html` 내용을 `ggongbab.html`로 옮기는 것처럼 **파일별 수동 정리**가 필요하면 merge 후 diff로 처리
-
-이미 실험 브랜치 이름이 `Babdoduk_beta_version` 등이면, 그 브랜치를 **`lab`과 같은 역할**로 쓰면 됩니다.
 
 - 자세한 명령·주의사항: **`docs/DEPLOYMENT_AND_BRANCHES.md`**  
 - merge 전 체크: **`docs/BRANCH_MERGE_CHECKLIST.md`**

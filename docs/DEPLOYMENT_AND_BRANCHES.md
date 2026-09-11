@@ -17,7 +17,7 @@
 | **`main`** | 완성·공개용. `index.html`, `ggongbab.html`, `food.html` 등 **본편** | Vercel Production이 이 브랜치를 가리키면 **공식 URL**이 여기를 따름 |
 | **`lab`** | 실험용. `lab.html`, `lab-ggongbab.html`, `calendar.ics` 실험 등 **먼저 시험하는 변경** | Production이 `main`이면 **`lab`만 푸시해도 공식 사이트는 안 바뀜**. 보통 **Preview URL**만 갱신 |
 
-**브랜치 이름:** 실험 브랜치는 이 저장소에서는 **`lab`** 을 기준으로 문서화했습니다. 이미 **`Babdoduk_beta_version`** 등 다른 이름을 쓰고 있다면, 그 브랜치를 **`lab`과 같은 역할(실험 전용)** 으로 취급하면 됩니다.
+**브랜치 이름:** 실험 브랜치는 이 저장소에서는 **`lab`** 을 씁니다.
 
 ---
 
@@ -75,16 +75,40 @@ git push origin main
 
 ---
 
-## 4. Vercel
+## 4. Vercel (프로젝트 두 개로 비교)
 
-- **Settings → Git → Production Branch = `main`** 인지 확인합니다.
-- **`lab`에 푸시** → 보통 **Preview**만 생성됩니다.
-- **`main`에 푸시(또는 merge 결과 푸시)** → **Production(공식 URL)** 갱신
+이 저장소는 **Vercel 프로젝트를 둘** 둡니다. 브랜치 `main`/`lab`과 짝을 맞춥니다.
 
-### CLI로만 `vercel --prod` 하는 경우
+| Vercel 프로젝트 | URL | 용도 |
+|-----------------|-----|------|
+| **`babdoduk`** | https://babdoduk.vercel.app | **공개(배포)** — `main` 내용 |
+| **`babdoduk-lab`** | https://babdoduk-lab.vercel.app | **실험** — `lab`에서 먼저 확인 |
 
-- 로컬 **체크아웃이 `main`인지** 확인한 뒤 실행합니다.  
-- 실수로 `lab`에서 `--prod` 하면 실험이 공개될 수 있으니 주의합니다.
+### CLI로 올릴 때 (매번)
+
+실험 확인:
+
+```powershell
+git checkout lab
+vercel link --project babdoduk-lab --yes
+vercel --prod
+```
+
+공개 반영 (`main`에 merge한 뒤):
+
+```powershell
+git checkout main
+vercel link --project babdoduk --yes
+vercel --prod
+```
+
+- **`lab`에서 `babdoduk`에 `--prod` 하면 안 됩니다** — 실험이 공개 URL로 갑니다.
+- 로컬 `.vercel` 링크가 어느 프로젝트인지 헷갈리면 `Get-Content .vercel\project.json` 으로 `projectName`을 확인합니다.
+
+### Git 연동을 쓰는 경우 (선택)
+
+- **`babdoduk`**: Production Branch = **`main`**
+- **`babdoduk-lab`**: Production Branch = **`lab`** (또는 `lab` 푸시 시 이 프로젝트만 배포)
 
 ---
 

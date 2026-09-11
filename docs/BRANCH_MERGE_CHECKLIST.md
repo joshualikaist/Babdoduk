@@ -1,7 +1,12 @@
 # 브랜치 작업 · main 반영 체크리스트
 
 이 저장소는 **저장소 하나**에 **`main`(공개)** 과 **`lab`(실험)** 을 두는 흐름을 기본으로 합니다.  
-실험·베타는 **`main`이 아닌 브랜치**(권장 이름: **`lab`**, 기존에 `Babdoduk_beta_version` 등을 쓰면 동일 역할)에서 하고, 괜찮아지면 **`main`에 merge**합니다.
+실험·베타는 **`main`이 아닌 브랜치**(이 저장소에서는 **`lab`**)에서 하고, 괜찮아지면 **`main`에 merge**합니다.
+
+비교용 URL:
+
+- 실험: https://babdoduk-lab.vercel.app (`babdoduk-lab` 프로젝트)
+- 공개: https://babdoduk.vercel.app (`babdoduk` 프로젝트)
 
 전체 배포 정책: **`DEPLOYMENT_AND_BRANCHES.md`**
 
