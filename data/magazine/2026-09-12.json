@@ -3,18 +3,17 @@
   "generatedAt": "2026-09-12T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
   "featured": {
-    "title": "꾸덕한 브라우니와 부드러운 바나나 푸딩의 만남! 바나나 푸딩 브라우니 만들기 | Fudgy Brownies Meet Creamy Banana Pudding Recipe",
-    "summary": "바나나 푸딩 브라우니. 꾸덕한 한 조각.\n메인 · 브라우니, 초콜릿, 바나나, 달걀\n밥 말고, 집에서 굽는 간식.",
+    "title": "동그랑땡 레시피 초보자도 쉽게! 초간단 업그레이된 밀가루없이 육즙 가득 촉촉 부드러운 동그랑땡 만들기",
+    "summary": "동그랑땡. 처음 해도 손이 덜 간다.\n메인 · 다진고기, 돼지고기, 소고기, 달걀\n명절 음식이지만 평소에도 자주 올린다.",
     "tags": [
-      "브라우니",
-      "초콜릿",
-      "바나나",
-      "디저트"
+      "동그랑땡",
+      "다진고기",
+      "돼지고기",
+      "집밥"
     ],
-    "source": "쿠킹트리 Cooking tree",
-    "url": "https://www.youtube.com/watch?v=IX1FmQVnCmE",
-    "medium": "youtube",
-    "image": "https://i.ytimg.com/vi/IX1FmQVnCmE/maxresdefault.jpg",
+    "source": "엄마표 집밥",
+    "url": "https://irisblossomlife.tistory.com/163",
+    "medium": "blog",
     "category": "tips"
   },
   "lanes": {
@@ -35,20 +34,6 @@
           "medium": "blog"
         },
         {
-          "title": "꾸덕한 브라우니와 부드러운 바나나 푸딩의 만남! 바나나 푸딩 브라우니 만들기 | Fudgy Brownies Meet Creamy Banana Pudding Recipe",
-          "summary": "바나나 푸딩 브라우니. 꾸덕한 한 조각.\n메인 · 브라우니, 초콜릿, 바나나, 달걀\n밥 말고, 집에서 굽는 간식.",
-          "tags": [
-            "브라우니",
-            "초콜릿",
-            "바나나",
-            "디저트"
-          ],
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=IX1FmQVnCmE",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/IX1FmQVnCmE/maxresdefault.jpg"
-        },
-        {
           "title": "Jatjuk (Pine Nut Porridge)",
           "summary": "잣죽. 오늘 밥상에 올리기 좋다.\n메인 · 잣, 쌀\n잣이 주인공인 집밥.",
           "tags": [
@@ -58,20 +43,6 @@
           "source": "Korean Bapsang",
           "url": "https://www.koreanbapsang.com/jatjuk-pine-nut-porridge/",
           "medium": "blog"
-        },
-        {
-          "title": "라면에 이걸 넣으면 사먹는 것보다 훨씬 맛있습니다.",
-          "summary": "등촌칼국수. 오늘 밥상에 올리기 좋다.\n메인 · 사리곰탕, 멸치칼국수, 미나리, 샤브용 고기\n설거지가 적고, 한 그릇으로 끝낸다.",
-          "tags": [
-            "등촌칼국수",
-            "사리곰탕",
-            "멸치칼국수",
-            "자취요리"
-          ],
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=WGrrve2TcOA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/WGrrve2TcOA/maxresdefault.jpg"
         },
         {
           "title": "돼지불고기 레시피 15분 완성! 고기를 재워놓아서 야들야들 부드럽고 촉촉한 돼지불고기 - 신김치 요리 10 탄",
@@ -92,45 +63,37 @@
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "시골 평상에서 묵은지 닭볶음탕",
-          "summary": "닭볶음탕. 오늘 밥상에 올리기 좋다.\n메인 · 묵은지, 닭\n지금 타임라인에서 자주 보이는 먹방.",
+          "title": "요즘 편의점에서 가장 많이 보이는 조합",
+          "summary": "요즘. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+          "source": "밥도둑 데스크",
+          "url": "",
+          "medium": "desk",
           "tags": [
-            "닭볶음탕",
-            "묵은지",
-            "먹방"
-          ],
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/URkjXxZ6coM",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/URkjXxZ6coM/maxresdefault.jpg"
+            "요즘",
+            "집밥"
+          ]
         },
         {
-          "title": "여름 대비 능이오리백숙 몸보신",
-          "summary": "능이오리백숙. 오늘 밥상에 올리기 좋다.\n메인 · 오리, 능이\n지금 타임라인에서 자주 보이는 먹방.",
+          "title": "한동안 안 보이던 맵부심이 다시 돌아왔다",
+          "summary": "한동안. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+          "source": "밥도둑 데스크",
+          "url": "",
+          "medium": "desk",
           "tags": [
-            "능이오리백숙",
-            "오리",
-            "능이",
-            "먹방"
-          ],
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/3Wb7d33nSUg",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/3Wb7d33nSUg/maxresdefault.jpg"
+            "한동안",
+            "집밥"
+          ]
         },
         {
-          "title": "집에서 만든 초간단 부대찌개",
-          "summary": "부대찌개. 손이 적은 한 끼.\n메인 · 스팸, 소시지, 김치\n지금 타임라인에서 자주 보이는 먹방.",
+          "title": "SNS에서 유행하는 한 그릇 레시피",
+          "summary": "SNS에서 유행하는 한 그릇. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+          "source": "밥도둑 데스크",
+          "url": "",
+          "medium": "desk",
           "tags": [
-            "부대찌개",
-            "스팸",
-            "소시지",
-            "먹방"
-          ],
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/CCz4kgJ4osY",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/CCz4kgJ4osY/maxresdefault.jpg"
+            "그릇",
+            "집밥"
+          ]
         }
       ]
     },
@@ -149,20 +112,6 @@
           "medium": "blog"
         },
         {
-          "title": "꾸덕한 브라우니와 부드러운 바나나 푸딩의 만남! 바나나 푸딩 브라우니 만들기 | Fudgy Brownies Meet Creamy Banana Pudding Recipe",
-          "summary": "바나나 푸딩 브라우니. 꾸덕한 한 조각.\n메인 · 브라우니, 초콜릿, 바나나, 달걀\n밥 말고, 집에서 굽는 간식.",
-          "tags": [
-            "브라우니",
-            "초콜릿",
-            "바나나",
-            "디저트"
-          ],
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=IX1FmQVnCmE",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/IX1FmQVnCmE/maxresdefault.jpg"
-        },
-        {
           "title": "Makgeolli (Korean Rice Wine)",
           "summary": "막걸리. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
           "tags": [
@@ -172,18 +121,6 @@
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/makgeolli/",
           "medium": "blog"
-        },
-        {
-          "title": "뜨개질하고 남이해준 밥만먹는 브이로그",
-          "summary": "밥 브이로그. 그날 먹은 밥을 그대로.\n메인 · 밥상에 올리는 그 음식.\n레시피보다 밥 분위기를 먼저 본다.",
-          "tags": [
-            "밥브이로그",
-            "집밥"
-          ],
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=Y8mOF5IuyQc",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/Y8mOF5IuyQc/maxresdefault.jpg"
         },
         {
           "title": "Kkakdugi (Cubed Radish Kimchi)",
@@ -216,20 +153,6 @@
           "medium": "blog"
         },
         {
-          "title": "라면에 이걸 넣으면 사먹는 것보다 훨씬 맛있습니다.",
-          "summary": "등촌칼국수. 오늘 밥상에 올리기 좋다.\n메인 · 사리곰탕, 멸치칼국수, 미나리, 샤브용 고기\n설거지가 적고, 한 그릇으로 끝낸다.",
-          "tags": [
-            "등촌칼국수",
-            "사리곰탕",
-            "멸치칼국수",
-            "자취요리"
-          ],
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=WGrrve2TcOA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/WGrrve2TcOA/maxresdefault.jpg"
-        },
-        {
           "title": "Makgeolli (Korean Rice Wine)",
           "summary": "막걸리. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
           "tags": [
@@ -239,18 +162,6 @@
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/makgeolli/",
           "medium": "blog"
-        },
-        {
-          "title": "뜨개질하고 남이해준 밥만먹는 브이로그",
-          "summary": "밥 브이로그. 그날 먹은 밥을 그대로.\n메인 · 밥상에 올리는 그 음식.\n레시피보다 밥 분위기를 먼저 본다.",
-          "tags": [
-            "밥브이로그",
-            "집밥"
-          ],
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=Y8mOF5IuyQc",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/Y8mOF5IuyQc/maxresdefault.jpg"
         },
         {
           "title": "돼지불고기 레시피 15분 완성! 고기를 재워놓아서 야들야들 부드럽고 촉촉한 돼지불고기 - 신김치 요리 10 탄",
@@ -331,75 +242,7 @@
         "medium": "blog"
       }
     ],
-    "youtube": [
-      {
-        "title": "꾸덕한 브라우니와 부드러운 바나나 푸딩의 만남! 바나나 푸딩 브라우니 만들기 | Fudgy Brownies Meet Creamy Banana Pudding Recipe",
-        "summary": "바나나 푸딩 브라우니. 꾸덕한 한 조각.\n메인 · 브라우니, 초콜릿, 바나나, 달걀\n밥 말고, 집에서 굽는 간식.",
-        "tags": [
-          "브라우니",
-          "초콜릿",
-          "바나나",
-          "디저트"
-        ],
-        "source": "쿠킹트리 Cooking tree",
-        "url": "https://www.youtube.com/watch?v=IX1FmQVnCmE",
-        "medium": "youtube",
-        "image": "https://i.ytimg.com/vi/IX1FmQVnCmE/maxresdefault.jpg"
-      },
-      {
-        "title": "라면에 이걸 넣으면 사먹는 것보다 훨씬 맛있습니다.",
-        "summary": "등촌칼국수. 오늘 밥상에 올리기 좋다.\n메인 · 사리곰탕, 멸치칼국수, 미나리, 샤브용 고기\n설거지가 적고, 한 그릇으로 끝낸다.",
-        "tags": [
-          "등촌칼국수",
-          "사리곰탕",
-          "멸치칼국수",
-          "자취요리"
-        ],
-        "source": "자취요리신",
-        "url": "https://www.youtube.com/watch?v=WGrrve2TcOA",
-        "medium": "youtube",
-        "image": "https://i.ytimg.com/vi/WGrrve2TcOA/maxresdefault.jpg"
-      },
-      {
-        "title": "뜨개질하고 남이해준 밥만먹는 브이로그",
-        "summary": "밥 브이로그. 그날 먹은 밥을 그대로.\n메인 · 밥상에 올리는 그 음식.\n레시피보다 밥 분위기를 먼저 본다.",
-        "tags": [
-          "밥브이로그",
-          "집밥"
-        ],
-        "source": "하루한끼",
-        "url": "https://www.youtube.com/watch?v=Y8mOF5IuyQc",
-        "medium": "youtube",
-        "image": "https://i.ytimg.com/vi/Y8mOF5IuyQc/maxresdefault.jpg"
-      },
-      {
-        "title": "시골 평상에서 묵은지 닭볶음탕",
-        "summary": "닭볶음탕. 오늘 밥상에 올리기 좋다.\n메인 · 묵은지, 닭\n지금 타임라인에서 자주 보이는 먹방.",
-        "tags": [
-          "닭볶음탕",
-          "묵은지",
-          "먹방"
-        ],
-        "source": "햄지 Hamzy",
-        "url": "https://www.youtube.com/shorts/URkjXxZ6coM",
-        "medium": "youtube",
-        "image": "https://i.ytimg.com/vi/URkjXxZ6coM/maxresdefault.jpg"
-      },
-      {
-        "title": "밀가루 없이 만든 저당 마틸다 초콜릿 케이크 | 진하고 꾸덕한 초코 케이크 | Lower-Sugar Matilda Chocolate Cake Recipe | Flourless",
-        "summary": "릿 케이크를 찾으셨다면 맛있게. 꾸덕한 한 조각.\n메인 · 아몬드가루, 알룰로스, 초콜릿, 달걀\n밥 말고, 집에서 굽는 간식.",
-        "tags": [
-          "맛있게",
-          "아몬드가루",
-          "알룰로스",
-          "디저트"
-        ],
-        "source": "쿠킹트리 Cooking tree",
-        "url": "https://www.youtube.com/watch?v=Ck2e1EeGaPY",
-        "medium": "youtube",
-        "image": "https://i.ytimg.com/vi/Ck2e1EeGaPY/maxresdefault.jpg"
-      }
-    ],
+    "youtube": [],
     "instagram": [
       {
         "title": "밥도둑 인스타",
