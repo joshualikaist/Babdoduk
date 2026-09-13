@@ -1,11 +1,9 @@
 (function () {
   var app = document.getElementById('eatApp');
   var panel = document.getElementById('eatPanel');
-  if (!app || !panel || !window.BabdodukFoods) return;
+  if (!app || !panel || !window.BabdodukFoods || !window.BabdodukRoulette) return;
 
-  var ROW = 60;
-  var FACES = 10;
-  var SPIN_MS = 1680;
+  var POCKETS = window.BabdodukRoulette.EURO.length;
 
   var state = {
     view: 'home',
@@ -13,11 +11,11 @@
     answers: {},
     seenIds: [],
     result: null,
-    idlePool: [],
     spinning: false,
-    spinTimer: null,
-    spinRaf: null,
-    ready: false
+    ready: false,
+    wheel: null,
+    pockets: [],
+    closed: false
   };
 
   var HUNGERS = [
@@ -73,12 +71,9 @@
     return arr;
   }
 
-  function idleFoods() {
-    if (state.idlePool.length >= 12) return state.idlePool;
-    var all = window.BabdodukFoods.all() || [];
-    state.idlePool = shuffle(all).slice(0, 12);
-    if (!state.idlePool.length) state.idlePool = all.slice(0, 12);
-    return state.idlePool;
+  function destroyWheel() {
+    if (state.wheel && state.wheel.destroy) state.wheel.destroy();
+    state.wheel = null;
   }
 
   function setView(view) {
@@ -108,218 +103,147 @@
     return html;
   }
 
-  function faceStep(n) {
-    return 360 / Math.max(n, 1);
-  }
-
-  function faceRadius(n) {
-    return ROW / (2 * Math.tan(Math.PI / Math.max(n, 3)));
-  }
-
-  function fillFaces(pool, faces) {
+  function hungerPool() {
+    var answers = answersFromHunger(state.hunger);
+    state.answers = answers;
+    var pick = window.BabdodukFoods.quickPick({ answers: answers, excludeIds: state.seenIds });
+    var rolling = (pick && pick.rolling) ? pick.rolling.slice() : [];
+    var all = window.BabdodukFoods.all() || [];
+    var skip = {};
+    state.seenIds.forEach(function (id) { skip[id] = true; });
+    var extra = shuffle(all.filter(function (food) {
+      if (!food || skip[food.id]) return false;
+      if (answers.hunger === 'heavy' && (food.satiety || 0) < 3) return false;
+      if (answers.hunger === 'light' && (food.satiety || 0) > 3) return false;
+      return true;
+    }));
+    var seen = {};
     var out = [];
-    if (!pool.length) return out;
-    while (out.length < faces) {
-      pool.forEach(function (food) {
-        if (out.length < faces) out.push(food);
+    rolling.concat(extra).forEach(function (food) {
+      if (!food || seen[food.id]) return;
+      seen[food.id] = true;
+      out.push(food);
+    });
+    if (out.length < POCKETS) {
+      shuffle(all).forEach(function (food) {
+        if (out.length >= POCKETS) return;
+        if (!food || seen[food.id]) return;
+        seen[food.id] = true;
+        out.push(food);
       });
     }
-    return out;
+    while (out.length < POCKETS && out.length) out.push(out[out.length % Math.max(out.length, 1)]);
+    return out.slice(0, POCKETS);
   }
 
-  function faceHtml(food, i, step, radius, on) {
-    return '<div class="eat-reel-item' + (on ? ' is-on' : '') + '" data-face="' + i + '" style="transform:rotateX(' + (i * step).toFixed(3) + 'deg) translateZ(' + radius.toFixed(2) + 'px)">' + escapeHtml(foodName(food)) + '</div>';
-  }
-
-  function reelMarkup(foods, onFace) {
-    var n = foods.length;
-    var step = faceStep(n || FACES);
-    var radius = faceRadius(n || FACES);
-    var html = '<div class="eat-reel" aria-hidden="true">';
-    html += '<div class="eat-reel-shell">';
-    html += '<span class="eat-reel-lip eat-reel-lip--t"></span>';
-    html += '<span class="eat-reel-rail eat-reel-rail--l"></span>';
-    html += '<span class="eat-reel-rail eat-reel-rail--r"></span>';
-    html += '<div class="eat-reel-window">';
-    html += '<div class="eat-reel-aim"></div>';
-    html += '<div class="eat-reel-scene">';
-    html += '<div class="eat-reel-drum" id="eatReelBand">';
-    foods.forEach(function (food, i) {
-      html += faceHtml(food, i, step, radius, i === onFace);
+  function buildPockets() {
+    var foods = hungerPool();
+    return window.BabdodukRoulette.EURO.map(function (num, idx) {
+      return {
+        number: num,
+        color: window.BabdodukRoulette.colorOf(num),
+        index: idx,
+        food: foods[idx] || foods[0]
+      };
     });
-    html += '</div></div>';
-    html += '<div class="eat-reel-glass"></div>';
-    html += '</div>';
-    html += '<span class="eat-reel-lip eat-reel-lip--b"></span>';
-    html += '</div></div>';
-    return html;
   }
 
-  function indexOfFood(list, food) {
-    var i;
-    for (i = 0; i < list.length; i += 1) {
-      if (list[i] && food && list[i].id === food.id) return i;
-    }
-    return -1;
+  function setHint(kind) {
+    var el = document.getElementById('eatWheelHint');
+    if (!el) return;
+    if (kind === 'charge') el.textContent = t('eat.hint.charge', '손을 떼면 그 힘으로 공이 나갑니다.');
+    else if (kind === 'spin') el.textContent = t('eat.hint.spin', '공이 트랙에서 떨어지는 중. 세게 밀수록 오래 돕니다.');
+    else if (kind === 'land') el.textContent = t('eat.hint.land', '공이 칸에 멈췄어요.');
+    else el.textContent = t('eat.hint', '휠을 밀거나 연타하세요. 세게, 오래 누를수록 공이 오래 돕니다.');
   }
 
-  function setDrumRot(drum, deg, ms) {
-    if (!drum) return;
-    if (!ms) drum.style.transition = 'none';
-    else drum.style.transition = 'transform ' + (ms / 1000) + 's cubic-bezier(0.13, 0.7, 0.08, 1)';
-    drum.style.transform = 'rotateX(' + deg + 'deg)';
-  }
-
-  function markFace(drum, face) {
-    if (!drum) return;
-    var nodes = drum.children;
-    var i;
-    for (i = 0; i < nodes.length; i += 1) {
-      if (i === face) nodes[i].classList.add('is-on');
-      else nodes[i].classList.remove('is-on');
-    }
-  }
-
-  function faceFromRot(rot, n) {
-    if (!n) return 0;
-    var turns = ((-rot / 360) * n) % n;
-    if (turns < 0) turns += n;
-    return Math.round(turns) % n;
+  function mountWheel() {
+    destroyWheel();
+    var host = document.getElementById('eatWheel');
+    if (!host || !state.ready) return;
+    state.pockets = buildPockets();
+    state.closed = false;
+    state.wheel = window.BabdodukRoulette.create({
+      host: host,
+      pockets: state.pockets,
+      reducedMotion: reduceMotion(),
+      aria: t('eat.wheelAria', '카지노 룰렛. 밀어 돌리면 공이 칸에 떨어집니다.'),
+      onStatus: function (kind) {
+        if (kind === 'spin') {
+          state.spinning = true;
+          app.classList.add('eat--spin');
+          Array.prototype.forEach.call(panel.querySelectorAll('.eat-hchip'), function (el) {
+            el.disabled = true;
+          });
+          var btn = panel.querySelector('[data-eat="spin"]');
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = t('eat.spinning', '공이 도는 중');
+          }
+        }
+        setHint(kind);
+      },
+      onSettle: function (pocket) {
+        if (state.closed) return;
+        state.closed = true;
+        finishSpin(pocket && pocket.food, pocket);
+      }
+    });
   }
 
   function renderHome() {
+    destroyWheel();
     setView('home');
-    var items = fillFaces(idleFoods(), FACES);
+    state.spinning = false;
+    state.closed = false;
     var html = '<div class="eat-home">';
     html += hungerRow();
-    html += reelMarkup(items, items.length ? 0 : -1);
-    html += '<button type="button" class="eat-spinbtn" data-eat="spin"' + (state.spinning ? ' disabled' : '') + '>';
-    html += escapeHtml(state.spinning ? t('eat.spinning', '고르는 중') : t('eat.spin', '돌려보기'));
+    html += '<div class="eat-wheel" id="eatWheel"></div>';
+    html += '<p class="eat-wheel-hint" id="eatWheelHint">' + escapeHtml(t('eat.hint', '휠을 밀거나 연타하세요. 세게, 오래 누를수록 공이 오래 돕니다.')) + '</p>';
+    html += '<button type="button" class="eat-spinbtn" data-eat="spin">';
+    html += escapeHtml(t('eat.spin', '한 번 밀어보기'));
     html += '</button>';
     html += '</div>';
     panel.innerHTML = html;
-    setDrumRot(document.getElementById('eatReelBand'), 0, 0);
+    mountWheel();
   }
 
-  function startSpin() {
-    if (state.spinning || !state.ready) return;
-    var answers = answersFromHunger(state.hunger);
-    var pick = window.BabdodukFoods.quickPick({ answers: answers, excludeIds: state.seenIds });
-    if (!pick || !pick.food) {
-      panel.innerHTML = '<p class="eat-empty">' + escapeHtml(t('eat.empty', '지금은 맞는 메뉴가 없어요. 배고픔만 바꿔 다시 돌려볼까요.')) + '</p>';
-      return;
-    }
-    state.answers = pick.answers || answers;
-    state.spinning = true;
-    if (state.view !== 'home') renderHome();
-    else {
-      var btn = panel.querySelector('[data-eat="spin"]');
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = t('eat.spinning', '고르는 중');
-      }
-      Array.prototype.forEach.call(panel.querySelectorAll('.eat-hchip'), function (el) {
-        el.disabled = true;
-      });
-    }
-    app.classList.add('eat--spin');
-
-    var pool = (pick.rolling && pick.rolling.length ? pick.rolling.slice() : []).concat(idleFoods());
-    var seen = {};
-    var unique = [];
-    pool.forEach(function (food) {
-      if (!food || seen[food.id]) return;
-      seen[food.id] = true;
-      unique.push(food);
-    });
-    unique = shuffle(unique).slice(0, FACES);
-    if (indexOfFood(unique, pick.food) === -1) unique[Math.floor(unique.length / 2)] = pick.food;
-    var items = fillFaces(unique, FACES);
-    var n = items.length;
-    var step = faceStep(n);
-    var radius = faceRadius(n);
-    var winnerFace = -1;
-    var i;
-    for (i = n - 1; i >= 0; i -= 1) {
-      if (items[i] && pick.food && items[i].id === pick.food.id) {
-        winnerFace = i;
-        break;
-      }
-    }
-    if (winnerFace < 0) winnerFace = 0;
-    var endRot = -(5 * 360 + winnerFace * step);
-
-    var band = document.getElementById('eatReelBand');
-    if (!band) {
-      finishSpin(pick.food);
-      return;
-    }
-    band.innerHTML = items.map(function (food, idx) {
-      return faceHtml(food, idx, step, radius, false);
-    }).join('');
-    setDrumRot(band, 0, 0);
-    markFace(band, 0);
-
+  function nudgeSpin() {
+    if (!state.wheel || state.closed) return;
     if (reduceMotion()) {
-      setDrumRot(band, endRot, 0);
-      markFace(band, winnerFace);
-      finishSpin(pick.food);
+      state.wheel.impulse(8);
       return;
     }
-
-    var done = false;
-    var startAt = 0;
-    function settle() {
-      if (done) return;
-      done = true;
-      if (state.spinTimer) {
-        clearTimeout(state.spinTimer);
-        state.spinTimer = null;
-      }
-      if (state.spinRaf) {
-        cancelAnimationFrame(state.spinRaf);
-        state.spinRaf = null;
-      }
-      band.removeEventListener('transitionend', onEnd);
-      markFace(band, winnerFace);
-      setDrumRot(band, endRot, 0);
-      state.spinTimer = setTimeout(function () {
-        finishSpin(pick.food);
-      }, 280);
-    }
-    function onEnd(e) {
-      if (e && e.propertyName && e.propertyName !== 'transform') return;
-      settle();
-    }
-    function tick(now) {
-      if (done) return;
-      if (!startAt) startAt = now;
-      var t = Math.min(1, (now - startAt) / SPIN_MS);
-      var eased = 1 - Math.pow(1 - t, 3);
-      markFace(band, faceFromRot(endRot * eased, n));
-      if (t < 1) state.spinRaf = requestAnimationFrame(tick);
-    }
-
-    band.offsetHeight;
-    band.addEventListener('transitionend', onEnd);
-    setDrumRot(band, endRot, SPIN_MS);
-    state.spinRaf = requestAnimationFrame(tick);
-    if (state.spinTimer) clearTimeout(state.spinTimer);
-    state.spinTimer = setTimeout(settle, SPIN_MS + 220);
+    var strength = 7 + Math.random() * 5;
+    state.wheel.impulse(strength);
   }
 
-  function finishSpin(food) {
+  function finishSpin(food, pocket) {
     state.spinning = false;
     app.classList.remove('eat--spin');
+    if (!food) {
+      renderHome();
+      return;
+    }
     var rec = window.BabdodukFoods.recommend(state.answers, { limit: 3, excludeIds: state.seenIds });
     var ranked = rec.ranked.filter(function (row) { return row.food.id === food.id; });
     if (ranked[0]) {
       rec.picks = [ranked[0]].concat(rec.picks.filter(function (row) { return row.food.id !== food.id; })).slice(0, 3);
-    } else if (food) {
-      rec.picks = [{ food: food, score: 80, parts: {}, chips: [] }].concat(rec.picks).slice(0, 3);
+    } else {
+      rec.picks = [{ food: food, score: 80, parts: {}, chips: [], pocket: pocket }].concat(rec.picks).slice(0, 3);
     }
+    rec.picks[0].pocket = pocket;
     state.result = rec;
+    destroyWheel();
     renderResult();
+  }
+
+  function pocketLine(row) {
+    var pocket = row && row.pocket;
+    if (!pocket || pocket.number == null) return t('eat.result.blurb', '지금 시간과 한 끼의 크기에 맞춰 골랐어요.');
+    var colorKey = 'eat.color.' + (pocket.color || 'black');
+    var color = t(colorKey, pocket.color);
+    return t('eat.result.pocket', '공이 {n} {c}에 멈췄어요.').replace('{n}', String(pocket.number)).replace('{c}', color);
   }
 
   function renderResult() {
@@ -337,7 +261,7 @@
     html += '<article class="eat-hero">';
     html += '<span class="eat-num">01</span>';
     html += '<h3>' + escapeHtml(foodName(top.food)) + '</h3>';
-    html += '<p class="eat-whyline">' + escapeHtml(t('eat.result.blurb', '지금 시간과 한 끼의 크기에 맞춰 골랐어요.')) + '</p>';
+    html += '<p class="eat-whyline">' + escapeHtml(pocketLine(top)) + '</p>';
     html += '<p class="eat-match"><b>' + match + '%</b> MATCH</p>';
     html += '<p class="eat-chips">';
     (top.chips || []).forEach(function (chip) {
@@ -367,28 +291,36 @@
   }
 
   function explainText(row) {
+    var base = t('eat.why.body', '미는 힘과 공의 감속이 칸을 정했어요.');
     var labels = (row.chips || []).map(chipLabel);
-    if (!labels.length) return t('eat.why.body', '지금 시간과 배고픔에 잘 맞아요.');
-    return labels.join(' + ') + '\n' + t('eat.why.tail', '그 조건으로 골랐어요.');
+    if (!labels.length) return base;
+    return labels.join(' + ') + '\n' + t('eat.why.tail', '그 조건의 메뉴가 37칸에 올라가 있었어요.');
   }
 
-  function goHome(keepHunger) {
-    if (state.spinTimer) clearTimeout(state.spinTimer);
-    if (state.spinRaf) cancelAnimationFrame(state.spinRaf);
-    var hunger = keepHunger ? state.hunger : 'any';
+  function goHome(opts) {
+    opts = opts || {};
+    destroyWheel();
+    var hunger = opts.keepHunger ? state.hunger : 'any';
+    var seen = opts.keepSeen ? state.seenIds.slice() : [];
     state = {
       view: 'home',
       hunger: hunger,
       answers: {},
-      seenIds: [],
+      seenIds: seen,
       result: null,
-      idlePool: keepHunger ? state.idlePool : [],
       spinning: false,
-      spinTimer: null,
-      spinRaf: null,
-      ready: state.ready
+      ready: state.ready,
+      wheel: null,
+      pockets: [],
+      closed: false
     };
     renderHome();
+  }
+
+  function markSeen() {
+    (state.result && state.result.picks || []).forEach(function (row) {
+      if (row.food && state.seenIds.indexOf(row.food.id) === -1) state.seenIds.push(row.food.id);
+    });
   }
 
   function promote(id) {
@@ -421,13 +353,12 @@
       renderHome();
       return;
     }
-    if (act === 'spin') startSpin();
-    if (act === 'back' || act === 'reset') goHome(act === 'back');
+    if (act === 'spin') nudgeSpin();
+    if (act === 'back') goHome({ keepHunger: true });
+    if (act === 'reset') goHome({});
     if (act === 'more') {
-      (state.result && state.result.picks || []).forEach(function (row) {
-        if (state.seenIds.indexOf(row.food.id) === -1) state.seenIds.push(row.food.id);
-      });
-      startSpin();
+      markSeen();
+      goHome({ keepHunger: true, keepSeen: true });
     }
     if (act === 'take') {
       window.BabdodukFoods.prefs.feedback(btn.getAttribute('data-id'), 'eaten');
@@ -453,7 +384,7 @@
       if (kind === 'dislike') {
         var hideId = btn.getAttribute('data-id');
         if (state.seenIds.indexOf(hideId) === -1) state.seenIds.push(hideId);
-        startSpin();
+        goHome({ keepHunger: true, keepSeen: true });
       }
     }
     if (act === 'alt') promote(btn.getAttribute('data-id'));
