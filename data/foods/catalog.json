@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "count": 1001,
+  "scoreWeights": {
+    "taste": 35,
+    "craving": 20,
+    "context": 15,
+    "satietyHealth": 10,
+    "budgetDining": 10,
+    "popularityNovelty": 10
+  },
+  "packs": [
+    {
+      "id": "chinese",
+      "src": "data/foods/packs/chinese.json",
+      "count": 84
+    },
+    {
+      "id": "fusion-snack-dessert",
+      "src": "data/foods/packs/fusion-snack-dessert.json",
+      "count": 148
+    },
+    {
+      "id": "indian-middle-eastern",
+      "src": "data/foods/packs/indian-middle-eastern.json",
+      "count": 39
+    },
+    {
+      "id": "japanese",
+      "src": "data/foods/packs/japanese.json",
+      "count": 94
+    },
+    {
+      "id": "korean",
+      "src": "data/foods/packs/korean.json",
+      "count": 423
+    },
+    {
+      "id": "southeast-asian",
+      "src": "data/foods/packs/southeast-asian.json",
+      "count": 43
+    },
+    {
+      "id": "western",
+      "src": "data/foods/packs/western.json",
+      "count": 170
+    }
+  ]
+}

@@ -237,33 +237,15 @@
           </div>
         </section>
 
-        <section class="mg-desks" id="sources" aria-labelledby="mgDesksTitle">
-          <h2 id="mgDesksTitle" data-i18n="mg.desks.title">어디서 봤나</h2>
-          <p class="mg-desks-sub" data-i18n="mg.desks.sub">블로그와 유튜브는 매일 아침 10시에 공개 피드를 다시 읽고, 인스타는 글을 긁지 않고 탐색 창구만 열어 둔다.</p>
-          <div class="mg-desk-grid">
-            <div class="mg-desk mg-desk--blog">
-              <div class="mg-desk-kicker"><span data-i18n="mg.desks.blog">블로그</span></div>
-              <div data-desk-items="blog"></div>
-            </div>
-            <div class="mg-desk mg-desk--youtube">
-              <div class="mg-desk-kicker"><span data-i18n="mg.desks.youtube">유튜브</span></div>
-              <div data-desk-items="youtube"></div>
-            </div>
-            <div class="mg-desk mg-desk--instagram">
-              <div class="mg-desk-kicker"><span data-i18n="mg.desks.instagram">인스타 탐색</span></div>
-              <div data-desk-items="instagram"></div>
-            </div>
-          </div>
-        </section>
-
         <section class="mg-today" id="what" aria-labelledby="mgTodayTitle">
-          <h2 id="mgTodayTitle" data-i18n="mg.today.title">오늘 뭐 먹지?</h2>
-          <p class="mg-today-sub" data-i18n="mg.today.sub">결국 가장 어려운 질문은 이것.</p>
-          <div class="mg-choices" role="group" aria-label="오늘 뭐 먹지 고르기">
-            <button type="button" class="mg-choice" data-i18n="mg.today.spicy">매콤한 거</button>
-            <button type="button" class="mg-choice" data-i18n="mg.today.hearty">든든한 거</button>
-            <button type="button" class="mg-choice" data-i18n="mg.today.light">가벼운 거</button>
-            <button type="button" class="mg-choice" data-i18n="mg.today.new">새로운 거</button>
+          <div class="eat" id="eatApp">
+            <div class="eat-copy">
+              <p class="eat-kicker">TODAY</p>
+              <h2 id="mgTodayTitle" data-i18n="eat.title">오늘 뭐 먹지?</h2>
+              <p class="eat-lead" data-i18n-html="eat.lead">고민은 우리가 할게.<br>배고픈지만 말하고, 돌려보면 돼.</p>
+              <p class="eat-meta" id="eatMeta" data-i18n="eat.meta">1,000+ 메뉴에서 오늘의 한 끼를 찾아드려요.</p>
+            </div>
+            <div class="eat-panel" id="eatPanel"></div>
           </div>
         </section>
       </div>
@@ -369,17 +351,37 @@
           'mg.habit.a2.sum': '정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.',
           'mg.habit.a3.title': '야식을 끊기보다 시간을 바꿔보는 방법',
           'mg.habit.a3.sum': '금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.',
-          'mg.today.title': '오늘 뭐 먹지?',
-          'mg.today.sub': '결국 가장 어려운 질문은 이것.',
-          'mg.today.spicy': '매콤한 거',
-          'mg.today.hearty': '든든한 거',
-          'mg.today.light': '가벼운 거',
-          'mg.today.new': '새로운 거',
-          'mg.desks.title': '어디서 봤나',
-          'mg.desks.sub': '블로그와 유튜브는 매일 아침 10시에 공개 피드를 다시 읽고, 인스타는 글을 긁지 않고 탐색 창구만 열어 둔다.',
-          'mg.desks.blog': '블로그',
-          'mg.desks.youtube': '유튜브',
-          'mg.desks.instagram': '인스타 탐색',
+          'eat.title': '오늘 뭐 먹지?',
+          'eat.lead': '고민은 우리가 할게.<br>배고픈지만 말하고, 돌려보면 돼.',
+          'eat.meta': '1,000+ 메뉴에서 오늘의 한 끼를 찾아드려요.',
+          'eat.hungerAria': '배고픈 정도',
+          'eat.hunger.hungry': '배고파',
+          'eat.hunger.light': '가볍게',
+          'eat.hunger.any': '상관없어',
+          'eat.spin': '돌려보기',
+          'eat.spinning': '고르는 중',
+          'eat.back': '뒤로',
+          'eat.reset': '처음부터',
+          'eat.result.kicker': '오늘의 밥도둑 PICK',
+          'eat.result.blurb': '지금 시간과 한 끼의 크기에 맞춰 골랐어요.',
+          'eat.take': '이거 먹을래',
+          'eat.taken': '좋아, 그걸로.',
+          'eat.more': '다시 돌리기',
+          'eat.why': '왜 이거야?',
+          'eat.why.body': '지금 시간과 배고픔에 잘 맞아요.',
+          'eat.why.tail': '그 조건으로 골랐어요.',
+          'eat.alts': '다른 추천',
+          'eat.empty': '지금은 맞는 메뉴가 없어요. 배고픔만 바꿔 다시 돌려볼까요.',
+          'eat.loadFail': '메뉴 데이터를 아직 못 읽었어요.',
+          'eat.fb.aria': '이 추천은 어땠나요',
+          'eat.fb.like': '좋아요',
+          'eat.fb.dislike': '별로예요',
+          'eat.fb.eaten': '먹었어요',
+          'eat.chip.now': '지금 시간',
+          'eat.chip.hearty': '든든',
+          'eat.chip.light': '가벼운',
+          'eat.chip.soup': '국물',
+          'eat.chip.filling': '든든',
           'mg.cal.open': '날짜 보기',
           'mg.medium.blog': '블로그',
           'mg.medium.news': '블로그',
@@ -468,17 +470,37 @@
           'mg.habit.a2.sum': 'Rhythm over rules. Slide breakfast around class and lab hours.',
           'mg.habit.a3.title': 'Move the late snack instead of banning it',
           'mg.habit.a3.sum': 'Same bite, different hour. Timing often changes tomorrow more than restriction does.',
-          'mg.today.title': "What's for today?",
-          'mg.today.sub': 'The hardest question, still.',
-          'mg.today.spicy': 'Something spicy',
-          'mg.today.hearty': 'Something filling',
-          'mg.today.light': 'Something light',
-          'mg.today.new': 'Something new',
-          'mg.desks.title': 'Where it came from',
-          'mg.desks.sub': 'Blogs and YouTube refresh from public feeds at 10:00 KST. Instagram is not scraped; we only keep search doors open.',
-          'mg.desks.blog': 'Blogs',
-          'mg.desks.youtube': 'YouTube',
-          'mg.desks.instagram': 'Instagram doors',
+          'eat.title': "What's for today?",
+          'eat.lead': "We'll do the thinking.<br>Say how hungry you are, then spin.",
+          'eat.meta': 'Find today’s plate from 1,000+ dishes.',
+          'eat.hungerAria': 'How hungry',
+          'eat.hunger.hungry': 'Hungry',
+          'eat.hunger.light': 'Keep it light',
+          'eat.hunger.any': 'No preference',
+          'eat.spin': 'Spin',
+          'eat.spinning': 'Picking',
+          'eat.back': 'Back',
+          'eat.reset': 'Start over',
+          'eat.result.kicker': "Today's Babdoduk PICK",
+          'eat.result.blurb': 'Picked for this hour and the size of the meal.',
+          'eat.take': "I'll have this",
+          'eat.taken': 'Good. That one.',
+          'eat.more': 'Spin again',
+          'eat.why': 'Why this?',
+          'eat.why.body': 'It fits the hour and how hungry you are.',
+          'eat.why.tail': 'That’s what we used.',
+          'eat.alts': 'Other picks',
+          'eat.empty': 'Nothing fit. Change hunger and spin again.',
+          'eat.loadFail': "Couldn't load the menu list yet.",
+          'eat.fb.aria': 'How was this pick',
+          'eat.fb.like': 'Like',
+          'eat.fb.dislike': 'Not for me',
+          'eat.fb.eaten': 'Ate it',
+          'eat.chip.now': 'Right now',
+          'eat.chip.hearty': 'Filling',
+          'eat.chip.light': 'Light',
+          'eat.chip.soup': 'Broth',
+          'eat.chip.filling': 'Filling',
           'mg.cal.open': 'Pick a date',
           'mg.medium.blog': 'Blog',
           'mg.medium.news': 'Blog',
@@ -519,6 +541,9 @@
         if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
+        try {
+          document.dispatchEvent(new CustomEvent('babdoduk-lang', { detail: lang }));
+        } catch (err) {}
       }
       window.babdodukApplyLang = applyLang;
       window.babdodukGetLang = function () {
@@ -580,21 +605,6 @@
           if (e.target === popup) closePopup(false);
         });
       }
-
-      var choices = [].slice.call(document.querySelectorAll('.mg-choice'));
-      choices.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var on = !btn.classList.contains('is-picked');
-          choices.forEach(function (b) {
-            b.classList.remove('is-picked');
-            b.setAttribute('aria-pressed', 'false');
-          });
-          if (on) {
-            btn.classList.add('is-picked');
-            btn.setAttribute('aria-pressed', 'true');
-          }
-        });
-      });
     })();
   </script>
 
@@ -799,11 +809,6 @@
           if (lead && ed.lanes[lane].lead) lead.textContent = ed.lanes[lane].lead;
           if (box) box.innerHTML = (ed.lanes[lane].items || []).map(storyHtml).join('');
         });
-        var desks = ed.desks || {};
-        ['blog', 'youtube', 'instagram'].forEach(function (desk) {
-          var box = document.querySelector('[data-desk-items="' + desk + '"]');
-          if (box) box.innerHTML = (desks[desk] || []).map(storyHtml).join('');
-        });
         renderCalendars();
       }
 
@@ -943,5 +948,7 @@
       });
     })();
   </script>
+  <script src="js/food-engine.js"></script>
+  <script src="js/food-picker.js"></script>
 </body>
 </html>
