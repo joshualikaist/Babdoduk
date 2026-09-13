@@ -3,10 +3,9 @@
   var panel = document.getElementById('eatPanel');
   if (!app || !panel || !window.BabdodukFoods) return;
 
-  var ROW = 56;
-  var VISIBLE = 5;
-  var CENTER = 2;
-  var COPIES = 5;
+  var ROW = 60;
+  var FACES = 10;
+  var SPIN_MS = 1680;
 
   var state = {
     view: 'home',
@@ -17,6 +16,7 @@
     idlePool: [],
     spinning: false,
     spinTimer: null,
+    spinRaf: null,
     ready: false
   };
 
@@ -108,25 +108,51 @@
     return html;
   }
 
-  function reelMarkup(foods, activeIndex) {
-    var html = '<div class="eat-reel" aria-hidden="true">';
-    html += '<div class="eat-reel-window">';
-    html += '<div class="eat-reel-aim"></div>';
-    html += '<div class="eat-reel-band" id="eatReelBand">';
-    foods.forEach(function (food, idx) {
-      html += '<div class="eat-reel-item' + (idx === activeIndex ? ' is-on' : '') + '">' + escapeHtml(foodName(food)) + '</div>';
-    });
-    html += '</div></div></div>';
-    return html;
+  function faceStep(n) {
+    return 360 / Math.max(n, 1);
   }
 
-  function repeatFoods(pool, copies) {
-    var items = [];
-    var c;
-    for (c = 0; c < copies; c += 1) {
-      pool.forEach(function (food) { items.push(food); });
+  function faceRadius(n) {
+    return ROW / (2 * Math.tan(Math.PI / Math.max(n, 3)));
+  }
+
+  function fillFaces(pool, faces) {
+    var out = [];
+    if (!pool.length) return out;
+    while (out.length < faces) {
+      pool.forEach(function (food) {
+        if (out.length < faces) out.push(food);
+      });
     }
-    return items;
+    return out;
+  }
+
+  function faceHtml(food, i, step, radius, on) {
+    return '<div class="eat-reel-item' + (on ? ' is-on' : '') + '" data-face="' + i + '" style="transform:rotateX(' + (i * step).toFixed(3) + 'deg) translateZ(' + radius.toFixed(2) + 'px)">' + escapeHtml(foodName(food)) + '</div>';
+  }
+
+  function reelMarkup(foods, onFace) {
+    var n = foods.length;
+    var step = faceStep(n || FACES);
+    var radius = faceRadius(n || FACES);
+    var html = '<div class="eat-reel" aria-hidden="true">';
+    html += '<div class="eat-reel-shell">';
+    html += '<span class="eat-reel-lip eat-reel-lip--t"></span>';
+    html += '<span class="eat-reel-rail eat-reel-rail--l"></span>';
+    html += '<span class="eat-reel-rail eat-reel-rail--r"></span>';
+    html += '<div class="eat-reel-window">';
+    html += '<div class="eat-reel-aim"></div>';
+    html += '<div class="eat-reel-scene">';
+    html += '<div class="eat-reel-drum" id="eatReelBand">';
+    foods.forEach(function (food, i) {
+      html += faceHtml(food, i, step, radius, i === onFace);
+    });
+    html += '</div></div>';
+    html += '<div class="eat-reel-glass"></div>';
+    html += '</div>';
+    html += '<span class="eat-reel-lip eat-reel-lip--b"></span>';
+    html += '</div></div>';
+    return html;
   }
 
   function indexOfFood(list, food) {
@@ -137,37 +163,42 @@
     return -1;
   }
 
+  function setDrumRot(drum, deg, ms) {
+    if (!drum) return;
+    if (!ms) drum.style.transition = 'none';
+    else drum.style.transition = 'transform ' + (ms / 1000) + 's cubic-bezier(0.13, 0.7, 0.08, 1)';
+    drum.style.transform = 'rotateX(' + deg + 'deg)';
+  }
+
+  function markFace(drum, face) {
+    if (!drum) return;
+    var nodes = drum.children;
+    var i;
+    for (i = 0; i < nodes.length; i += 1) {
+      if (i === face) nodes[i].classList.add('is-on');
+      else nodes[i].classList.remove('is-on');
+    }
+  }
+
+  function faceFromRot(rot, n) {
+    if (!n) return 0;
+    var turns = ((-rot / 360) * n) % n;
+    if (turns < 0) turns += n;
+    return Math.round(turns) % n;
+  }
+
   function renderHome() {
     setView('home');
-    var pool = idleFoods();
-    var items = state.spinning ? [] : repeatFoods(pool, 2);
-    var active = CENTER;
+    var items = fillFaces(idleFoods(), FACES);
     var html = '<div class="eat-home">';
     html += hungerRow();
-    html += reelMarkup(items, items.length ? active : -1);
+    html += reelMarkup(items, items.length ? 0 : -1);
     html += '<button type="button" class="eat-spinbtn" data-eat="spin"' + (state.spinning ? ' disabled' : '') + '>';
     html += escapeHtml(state.spinning ? t('eat.spinning', '고르는 중') : t('eat.spin', '돌려보기'));
     html += '</button>';
     html += '</div>';
     panel.innerHTML = html;
-    var band = document.getElementById('eatReelBand');
-    if (band) {
-      band.style.transition = 'none';
-      band.style.transform = 'translateY(0px)';
-    }
-    markCenter(items, 0);
-  }
-
-  function markCenter(items, offsetY) {
-    var band = document.getElementById('eatReelBand');
-    if (!band) return;
-    var idx = Math.round((-offsetY) / ROW) + CENTER;
-    var nodes = band.children;
-    var i;
-    for (i = 0; i < nodes.length; i += 1) {
-      if (i === idx) nodes[i].classList.add('is-on');
-      else nodes[i].classList.remove('is-on');
-    }
+    setDrumRot(document.getElementById('eatReelBand'), 0, 0);
   }
 
   function startSpin() {
@@ -201,35 +232,43 @@
       seen[food.id] = true;
       unique.push(food);
     });
-    unique = shuffle(unique).slice(0, 12);
+    unique = shuffle(unique).slice(0, FACES);
     if (indexOfFood(unique, pick.food) === -1) unique[Math.floor(unique.length / 2)] = pick.food;
-    var cycle = unique.length;
-    var items = repeatFoods(unique, COPIES);
-    var winnerInPool = indexOfFood(unique, pick.food);
-    var target = (COPIES - 1) * cycle + winnerInPool;
-    var endY = -((target - CENTER) * ROW);
-    var startY = 0;
+    var items = fillFaces(unique, FACES);
+    var n = items.length;
+    var step = faceStep(n);
+    var radius = faceRadius(n);
+    var winnerFace = -1;
+    var i;
+    for (i = n - 1; i >= 0; i -= 1) {
+      if (items[i] && pick.food && items[i].id === pick.food.id) {
+        winnerFace = i;
+        break;
+      }
+    }
+    if (winnerFace < 0) winnerFace = 0;
+    var endRot = -(5 * 360 + winnerFace * step);
 
     var band = document.getElementById('eatReelBand');
     if (!band) {
       finishSpin(pick.food);
       return;
     }
-    band.innerHTML = items.map(function (food) {
-      return '<div class="eat-reel-item">' + escapeHtml(foodName(food)) + '</div>';
+    band.innerHTML = items.map(function (food, idx) {
+      return faceHtml(food, idx, step, radius, false);
     }).join('');
-    band.style.transition = 'none';
-    band.style.transform = 'translateY(' + startY + 'px)';
-    markCenter(items, startY);
+    setDrumRot(band, 0, 0);
+    markFace(band, 0);
 
     if (reduceMotion()) {
-      band.style.transform = 'translateY(' + endY + 'px)';
-      markCenter(items, endY);
+      setDrumRot(band, endRot, 0);
+      markFace(band, winnerFace);
       finishSpin(pick.food);
       return;
     }
 
     var done = false;
+    var startAt = 0;
     function settle() {
       if (done) return;
       done = true;
@@ -237,8 +276,13 @@
         clearTimeout(state.spinTimer);
         state.spinTimer = null;
       }
+      if (state.spinRaf) {
+        cancelAnimationFrame(state.spinRaf);
+        state.spinRaf = null;
+      }
       band.removeEventListener('transitionend', onEnd);
-      markCenter(items, endY);
+      markFace(band, winnerFace);
+      setDrumRot(band, endRot, 0);
       state.spinTimer = setTimeout(function () {
         finishSpin(pick.food);
       }, 280);
@@ -247,13 +291,21 @@
       if (e && e.propertyName && e.propertyName !== 'transform') return;
       settle();
     }
+    function tick(now) {
+      if (done) return;
+      if (!startAt) startAt = now;
+      var t = Math.min(1, (now - startAt) / SPIN_MS);
+      var eased = 1 - Math.pow(1 - t, 3);
+      markFace(band, faceFromRot(endRot * eased, n));
+      if (t < 1) state.spinRaf = requestAnimationFrame(tick);
+    }
 
     band.offsetHeight;
     band.addEventListener('transitionend', onEnd);
-    band.style.transition = 'transform 1.42s cubic-bezier(0.12, 0.82, 0.08, 1)';
-    band.style.transform = 'translateY(' + endY + 'px)';
+    setDrumRot(band, endRot, SPIN_MS);
+    state.spinRaf = requestAnimationFrame(tick);
     if (state.spinTimer) clearTimeout(state.spinTimer);
-    state.spinTimer = setTimeout(settle, 1700);
+    state.spinTimer = setTimeout(settle, SPIN_MS + 220);
   }
 
   function finishSpin(food) {
@@ -322,6 +374,7 @@
 
   function goHome(keepHunger) {
     if (state.spinTimer) clearTimeout(state.spinTimer);
+    if (state.spinRaf) cancelAnimationFrame(state.spinRaf);
     var hunger = keepHunger ? state.hunger : 'any';
     state = {
       view: 'home',
@@ -332,6 +385,7 @@
       idlePool: keepHunger ? state.idlePool : [],
       spinning: false,
       spinTimer: null,
+      spinRaf: null,
       ready: state.ready
     };
     renderHome();

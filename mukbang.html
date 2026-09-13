@@ -237,25 +237,6 @@
           </div>
         </section>
 
-        <section class="mg-desks" id="sources" aria-labelledby="mgDesksTitle">
-          <h2 id="mgDesksTitle" data-i18n="mg.desks.title">어디서 봤나</h2>
-          <p class="mg-desks-sub" data-i18n="mg.desks.sub">블로그와 유튜브는 매일 아침 10시에 공개 피드를 다시 읽고, 인스타는 글을 긁지 않고 탐색 창구만 열어 둔다.</p>
-          <div class="mg-desk-grid">
-            <div class="mg-desk mg-desk--blog">
-              <div class="mg-desk-kicker"><span data-i18n="mg.desks.blog">블로그</span></div>
-              <div data-desk-items="blog"></div>
-            </div>
-            <div class="mg-desk mg-desk--youtube">
-              <div class="mg-desk-kicker"><span data-i18n="mg.desks.youtube">유튜브</span></div>
-              <div data-desk-items="youtube"></div>
-            </div>
-            <div class="mg-desk mg-desk--instagram">
-              <div class="mg-desk-kicker"><span data-i18n="mg.desks.instagram">인스타 탐색</span></div>
-              <div data-desk-items="instagram"></div>
-            </div>
-          </div>
-        </section>
-
         <section class="mg-today" id="what" aria-labelledby="mgTodayTitle">
           <div class="eat" id="eatApp">
             <div class="eat-copy">
@@ -401,11 +382,6 @@
           'eat.chip.light': '가벼운',
           'eat.chip.soup': '국물',
           'eat.chip.filling': '든든',
-          'mg.desks.title': '어디서 봤나',
-          'mg.desks.sub': '블로그와 유튜브는 매일 아침 10시에 공개 피드를 다시 읽고, 인스타는 글을 긁지 않고 탐색 창구만 열어 둔다.',
-          'mg.desks.blog': '블로그',
-          'mg.desks.youtube': '유튜브',
-          'mg.desks.instagram': '인스타 탐색',
           'mg.cal.open': '날짜 보기',
           'mg.medium.blog': '블로그',
           'mg.medium.news': '블로그',
@@ -525,11 +501,6 @@
           'eat.chip.light': 'Light',
           'eat.chip.soup': 'Broth',
           'eat.chip.filling': 'Filling',
-          'mg.desks.title': 'Where it came from',
-          'mg.desks.sub': 'Blogs and YouTube refresh from public feeds at 10:00 KST. Instagram is not scraped; we only keep search doors open.',
-          'mg.desks.blog': 'Blogs',
-          'mg.desks.youtube': 'YouTube',
-          'mg.desks.instagram': 'Instagram doors',
           'mg.cal.open': 'Pick a date',
           'mg.medium.blog': 'Blog',
           'mg.medium.news': 'Blog',
@@ -837,11 +808,6 @@
           var lead = document.querySelector('#lane-' + lane + ' .mg-lane-lead');
           if (lead && ed.lanes[lane].lead) lead.textContent = ed.lanes[lane].lead;
           if (box) box.innerHTML = (ed.lanes[lane].items || []).map(storyHtml).join('');
-        });
-        var desks = ed.desks || {};
-        ['blog', 'youtube', 'instagram'].forEach(function (desk) {
-          var box = document.querySelector('[data-desk-items="' + desk + '"]');
-          if (box) box.innerHTML = (desks[desk] || []).map(storyHtml).join('');
         });
         renderCalendars();
       }
