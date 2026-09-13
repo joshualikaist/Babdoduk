@@ -645,7 +645,7 @@ body.mg-body .site-footer {
 }
 
 .eat-wheel {
-  width: min(100%, 400px);
+  width: min(100%, 420px);
   margin: 4px auto 0;
   touch-action: none;
   user-select: none;
@@ -656,7 +656,6 @@ body.mg-body .site-footer {
   width: 100%;
   height: auto;
   cursor: grab;
-  border-radius: 50%;
 }
 
 .eat-wheel.is-drag .eat-wheel-canvas {

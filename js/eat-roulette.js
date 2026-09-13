@@ -6,9 +6,17 @@
   };
   var N = EURO.length;
   var STEP = (Math.PI * 2) / N;
-  var FILL = { red: '#c41e3a', black: '#141312', green: '#0f6b3c' };
+  var FILL = { red: '#c41e3a', black: '#161412', green: '#0f6b3c' };
+  var FILL_SIDE = { red: '#8a1528', black: '#0a0908', green: '#0a4a2a' };
   var MAX_BALL = 26;
   var MAX_WHEEL = 9;
+  var CAM_Y = 2.24;
+  var CAM_Z = -2.72;
+  var LOOK_Y = 0.08;
+  var FOV = 1.42;
+  var CAM_TH = Math.atan2(LOOK_Y - CAM_Y, -CAM_Z);
+  var CCOS = Math.cos(CAM_TH);
+  var CSIN = Math.sin(CAM_TH);
 
   function colorOf(n) {
     if (n === 0) return 'green';
@@ -59,12 +67,9 @@
     host.appendChild(canvas);
     var ctx = canvas.getContext('2d');
 
-    var dpr = 1;
-    var size = 0;
     var cx = 0;
     var cy = 0;
-    var R = 0;
-
+    var SCALE = 0;
     var wheelA = 0;
     var wheelV = 0;
     var ballA = pocketCenter(0, 0);
@@ -89,18 +94,43 @@
     function pocketR() { return 0.705; }
     function fallW() { return 4.2; }
 
+    function project(x, y, z) {
+      var dy = y - CAM_Y;
+      var dz = z - CAM_Z;
+      var y2 = dy * CCOS - dz * CSIN;
+      var z2 = dy * CSIN + dz * CCOS;
+      var s = FOV / Math.max(0.35, z2);
+      return {
+        x: cx + x * s * SCALE,
+        y: cy - y2 * s * SCALE,
+        z: z2,
+        s: s
+      };
+    }
+
+    function polar(ang, r, h) {
+      return project(r * Math.cos(ang), h, r * Math.sin(ang));
+    }
+
+    function avgZ(pts) {
+      var i;
+      var z = 0;
+      for (i = 0; i < pts.length; i += 1) z += pts[i].z;
+      return z / pts.length;
+    }
+
     function resize() {
       var box = host.getBoundingClientRect();
-      var css = Math.max(240, Math.min(box.width || 360, 400));
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      size = Math.round(css * dpr);
-      canvas.width = size;
-      canvas.height = size;
-      canvas.style.width = css + 'px';
-      canvas.style.height = css + 'px';
-      cx = size / 2;
-      cy = size / 2;
-      R = size * 0.46;
+      var cssW = Math.max(260, Math.min(box.width || 360, 420));
+      var cssH = Math.round(cssW * 1.02);
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      cx = canvas.width / 2;
+      cy = canvas.height * 0.5;
+      SCALE = canvas.width * 1.06;
       draw();
     }
 
@@ -108,21 +138,11 @@
       var rect = canvas.getBoundingClientRect();
       var x = e.clientX - rect.left - rect.width / 2;
       var y = e.clientY - rect.top - rect.height / 2;
-      return Math.atan2(y, x);
+      return Math.atan2(-(y / 0.55), x);
     }
 
     function applyImpulse(ballKick, wheelKick) {
-      if (phase === 'pocket' && Math.abs(wheelV) < 0.2 && Math.abs(ballV) < 0.2) {
-        phase = 'track';
-        ballR = trackR();
-        settled = false;
-      }
-      if (phase === 'idle') {
-        phase = 'track';
-        ballR = trackR();
-        settled = false;
-      }
-      if (phase === 'pocket') {
+      if (phase === 'idle' || phase === 'pocket') {
         phase = 'track';
         ballR = trackR();
         settled = false;
@@ -198,7 +218,7 @@
       draw();
     }
 
-    function onUp(e) {
+    function onUp() {
       if (!dragging) return;
       dragging = false;
       host.classList.remove('is-drag');
@@ -213,8 +233,7 @@
         applyImpulse(kickBall, kickWheel);
         onStatus('spin');
       } else if (charge > 1.2) {
-        var dir = -1;
-        applyImpulse(dir * charge, -dir * charge * 0.32);
+        applyImpulse(-charge, charge * 0.32);
         onStatus('spin');
       } else if (moved < 0.05) {
         var tap = 6.4 + Math.min(Math.abs(wheelV) * 0.35, 3);
@@ -261,9 +280,7 @@
 
       if (phase === 'track') {
         ballR += (trackR() - ballR) * Math.min(1, dt * 8);
-        if (Math.abs(ballV) < fallW()) {
-          phase = 'fall';
-        }
+        if (Math.abs(ballV) < fallW()) phase = 'fall';
       } else if (phase === 'fall') {
         ballR += (pocketR() - ballR) * Math.min(1, dt * 2.4);
         var i;
@@ -309,148 +326,182 @@
       else raf = 0;
     }
 
+    function poly(pts, fill, stroke, width) {
+      if (!pts.length) return;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      var p;
+      for (p = 1; p < pts.length; p += 1) ctx.lineTo(pts[p].x, pts[p].y);
+      ctx.closePath();
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = width || 1;
+        ctx.stroke();
+      }
+    }
+
+    function ringPts(r, h, steps) {
+      var pts = [];
+      var i;
+      for (i = 0; i <= steps; i += 1) pts.push(polar((i / steps) * Math.PI * 2, r, h));
+      return pts;
+    }
+
+    function evenOdd(outer, inner, fill) {
+      ctx.beginPath();
+      ctx.moveTo(outer[0].x, outer[0].y);
+      var i;
+      for (i = 1; i < outer.length; i += 1) ctx.lineTo(outer[i].x, outer[i].y);
+      ctx.closePath();
+      ctx.moveTo(inner[0].x, inner[0].y);
+      for (i = 1; i < inner.length; i += 1) ctx.lineTo(inner[i].x, inner[i].y);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill('evenodd');
+    }
+
+    function strokeLoop(pts, stroke, width) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      var i;
+      for (i = 1; i < pts.length; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.closePath();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = width;
+      ctx.stroke();
+    }
+
+    function ballHeight() {
+      if (phase === 'track') return 0.16;
+      if (phase === 'fall') return 0.06 + Math.max(0, ballR - pocketR()) * 0.45;
+      return 0.045;
+    }
+
     function draw() {
       if (!ctx) return;
-      ctx.clearRect(0, 0, size, size);
-      ctx.save();
-      ctx.translate(cx, cy);
-
-      var bowl = ctx.createRadialGradient(0, 0, R * 0.2, 0, 0, R * 1.08);
-      bowl.addColorStop(0, '#5a3d24');
-      bowl.addColorStop(0.55, '#3a2616');
-      bowl.addColorStop(1, '#1c140c');
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 1.08, 0, Math.PI * 2);
-      ctx.fillStyle = bowl;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 1.02, 0, Math.PI * 2);
-      ctx.strokeStyle = '#c6a24a';
-      ctx.lineWidth = R * 0.035;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 1.055, 0, Math.PI * 2);
-      ctx.strokeStyle = '#8a6a2a';
-      ctx.lineWidth = R * 0.012;
-      ctx.stroke();
-
-      ctx.save();
-      ctx.rotate(wheelA);
       var i;
-      for (i = 0; i < N; i += 1) {
-        var n = EURO[i];
-        var a0 = -Math.PI / 2 + i * STEP;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      poly(ringPts(1.48, -0.1, 96), '#2f6a4a', null, 0);
+      evenOdd(ringPts(1.16, 0.22, 64), ringPts(1.16, -0.06, 64), '#4a3018');
+      for (i = 0; i < 18; i += 1) {
+        var stave = (i / 18) * Math.PI * 2 - Math.PI / 2;
+        if (Math.sin(stave) > 0.55) continue;
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, R * 0.86, a0, a0 + STEP);
-        ctx.closePath();
-        ctx.fillStyle = FILL[colorOf(n)];
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+        var p0 = polar(stave, 1.16, -0.05);
+        var p1 = polar(stave, 1.16, 0.21);
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.strokeStyle = 'rgba(30, 18, 8, 0.35)';
         ctx.lineWidth = 1;
         ctx.stroke();
-
-        var mid = a0 + STEP / 2;
-        ctx.save();
-        ctx.rotate(mid + Math.PI / 2);
-        ctx.fillStyle = '#f7f1e4';
-        ctx.font = '700 ' + Math.max(9, R * 0.055) + 'px "Noto Sans KR", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(n), 0, -R * 0.755);
-        ctx.restore();
       }
+      evenOdd(ringPts(1.16, 0.22, 64), ringPts(1.03, 0.2, 64), '#c6a24a');
+      evenOdd(ringPts(1.03, 0.2, 64), ringPts(0.97, 0.08, 64), '#1a120a');
+      strokeLoop(ringPts(1.16, 0.22, 64), '#ead27a', Math.max(1.5, SCALE * 0.006));
+      strokeLoop(ringPts(1.03, 0.2, 64), '#8a6a2a', 1);
 
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 0.58, 0, Math.PI * 2);
-      ctx.fillStyle = '#2a1c10';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 0.58, 0, Math.PI * 2);
-      ctx.strokeStyle = '#c6a24a';
-      ctx.lineWidth = R * 0.018;
-      ctx.stroke();
-
-      var hub = ctx.createRadialGradient(-R * 0.06, -R * 0.06, R * 0.02, 0, 0, R * 0.28);
-      hub.addColorStop(0, '#f0d789');
-      hub.addColorStop(0.45, '#c6a24a');
-      hub.addColorStop(1, '#6e531c');
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 0.26, 0, Math.PI * 2);
-      ctx.fillStyle = hub;
-      ctx.fill();
-      ctx.strokeStyle = '#f3e2a8';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      ctx.save();
-      ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = '#f7f4ee';
-      var d;
-      for (d = 0; d < 4; d += 1) {
-        ctx.rotate(Math.PI / 2);
-        ctx.beginPath();
-        ctx.moveTo(0, -R * 0.2);
-        ctx.lineTo(R * 0.035, -R * 0.08);
-        ctx.lineTo(-R * 0.035, -R * 0.08);
-        ctx.closePath();
-        ctx.fill();
+      var layers = [];
+      for (i = 0; i < N; i += 1) {
+        var pa = wheelA - Math.PI / 2 + i * STEP;
+        var pb = pa + STEP;
+        var top = [polar(pa, 0.96, 0.035), polar(pb, 0.96, 0.035), polar(pb, 0.58, 0.05), polar(pa, 0.58, 0.05)];
+        var side = [polar(pa, 0.96, -0.02), polar(pb, 0.96, -0.02), polar(pb, 0.96, 0.035), polar(pa, 0.96, 0.035)];
+        var col = colorOf(EURO[i]);
+        layers.push({ z: avgZ(side) - 0.01, pts: side, fill: FILL_SIDE[col], stroke: null, w: 0 });
+        layers.push({
+          z: avgZ(top),
+          pts: top,
+          fill: FILL[col],
+          stroke: 'rgba(212, 175, 55, 0.35)',
+          w: 1,
+          label: { ang: pa + STEP / 2, n: EURO[i] }
+        });
       }
-      ctx.restore();
-      ctx.restore();
-
-      ctx.beginPath();
-      ctx.arc(0, 0, R * 0.93, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(20, 16, 10, 0.55)';
-      ctx.lineWidth = R * 0.045;
-      ctx.stroke();
 
       for (i = 0; i < 8; i += 1) {
-        var ang = i * Math.PI / 4 + Math.PI / 8;
-        ctx.save();
-        ctx.rotate(ang);
-        ctx.translate(0, -R * 0.84);
-        ctx.fillStyle = '#d7c389';
-        ctx.beginPath();
-        ctx.moveTo(0, -R * 0.04);
-        ctx.lineTo(R * 0.028, 0);
-        ctx.lineTo(0, R * 0.04);
-        ctx.lineTo(-R * 0.028, 0);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
+        var dang = i * Math.PI / 4 + Math.PI / 8;
+        var fret = [
+          polar(dang - 0.045, 0.93, 0.07),
+          polar(dang, 0.99, 0.16),
+          polar(dang + 0.045, 0.93, 0.07),
+          polar(dang, 0.9, 0.05)
+        ];
+        layers.push({ z: avgZ(fret), pts: fret, fill: '#d7c389', stroke: '#8a6a2a', w: 1 });
+      }
+
+      for (i = 0; i < 12; i += 1) {
+        var ha0 = wheelA + (i / 12) * Math.PI * 2;
+        var ha1 = wheelA + ((i + 1) / 12) * Math.PI * 2;
+        var inner = [polar(ha0, 0.58, 0.05), polar(ha1, 0.58, 0.05), polar(ha1, 0.22, 0.06), polar(ha0, 0.22, 0.06)];
+        layers.push({ z: avgZ(inner), pts: inner, fill: i % 2 ? '#d4b45a' : '#b8953c', stroke: null, w: 0 });
+        var cone = [project(0, 0.46, 0), polar(ha0, 0.22, 0.06), polar(ha1, 0.22, 0.06)];
+        layers.push({ z: avgZ(cone), pts: cone, fill: i % 2 ? '#f4eee4' : '#d9cbb3', stroke: null, w: 0 });
+      }
+      var cap = [];
+      for (i = 0; i <= 16; i += 1) cap.push(polar(wheelA + (i / 16) * Math.PI * 2, 0.07, 0.5));
+      layers.push({ z: avgZ(cap), pts: cap, fill: '#e8d27a', stroke: '#f7e7a8', w: 1 });
+
+      var ballP = polar(ballA, ballR, ballHeight());
+      layers.push({ z: ballP.z, ball: ballP });
+
+      layers.sort(function (a, b) { return b.z - a.z; });
+
+      for (i = 0; i < layers.length; i += 1) {
+        var layer = layers[i];
+        if (layer.ball) {
+          var p = layer.ball;
+          var rad = Math.max(5, 18 * p.s * SCALE / 280);
+          ctx.beginPath();
+          ctx.ellipse(p.x + rad * 0.15, p.y + rad * 0.55, rad * 1.05, rad * 0.42, 0, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
+          ctx.fill();
+          var shine = ctx.createRadialGradient(p.x - rad * 0.28, p.y - rad * 0.38, rad * 0.08, p.x, p.y, rad);
+          shine.addColorStop(0, '#fffdf8');
+          shine.addColorStop(0.42, '#e6e0d2');
+          shine.addColorStop(1, '#7a756c');
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
+          ctx.fillStyle = shine;
+          ctx.fill();
+          continue;
+        }
+        poly(layer.pts, layer.fill, layer.stroke, layer.w);
+        if (layer.label) {
+          var label = polar(layer.label.ang, 0.8, 0.055);
+          ctx.save();
+          ctx.translate(label.x, label.y);
+          ctx.scale(Math.max(0.55, label.s * 1.15), Math.max(0.42, label.s * 0.82));
+          ctx.fillStyle = '#f7f1e4';
+          ctx.font = '700 12px "Noto Sans KR", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(String(layer.label.n), 0, 0);
+          ctx.restore();
+        }
       }
 
       if (charge > 0.4) {
+        var cpts = [];
+        var span = (charge / MAX_BALL) * Math.PI * 2;
+        var c;
+        for (c = 0; c <= 24; c += 1) cpts.push(polar(-Math.PI / 2 + (c / 24) * span, 1.1, 0.23));
         ctx.beginPath();
-        ctx.arc(0, 0, R * 1.02, -Math.PI / 2, -Math.PI / 2 + (charge / MAX_BALL) * Math.PI * 2);
+        ctx.moveTo(cpts[0].x, cpts[0].y);
+        for (c = 1; c < cpts.length; c += 1) ctx.lineTo(cpts[c].x, cpts[c].y);
         ctx.strokeStyle = '#f45e45';
-        ctx.lineWidth = R * 0.028;
+        ctx.lineWidth = Math.max(3, SCALE * 0.012);
+        ctx.lineCap = 'round';
         ctx.stroke();
       }
-
-      var br = ballR * R;
-      var bx = Math.cos(ballA) * br;
-      var by = Math.sin(ballA) * br;
-      ctx.beginPath();
-      ctx.arc(bx + R * 0.012, by + R * 0.016, R * 0.038, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
-      ctx.fill();
-      var shine = ctx.createRadialGradient(bx - R * 0.012, by - R * 0.014, R * 0.004, bx, by, R * 0.04);
-      shine.addColorStop(0, '#fffdf8');
-      shine.addColorStop(0.45, '#e8e2d4');
-      shine.addColorStop(1, '#9a9488');
-      ctx.beginPath();
-      ctx.arc(bx, by, R * 0.036, 0, Math.PI * 2);
-      ctx.fillStyle = shine;
-      ctx.fill();
-
-      ctx.restore();
     }
 
     function onLost() {
-      if (dragging) onUp({});
+      if (dragging) onUp();
     }
 
     canvas.addEventListener('pointerdown', onDown);
@@ -463,7 +514,7 @@
 
     return {
       impulse: function (strength) {
-        var s = clamp(strength == null ? 8 : strength, 3, MAX_BALL);
+        var st = clamp(strength == null ? 8 : strength, 3, MAX_BALL);
         if (reduced) {
           var idx = Math.floor(Math.random() * N);
           ballA = pocketCenter(wheelA, idx);
@@ -476,7 +527,7 @@
           onSettle(pockets[idx] || { number: EURO[idx], index: idx });
           return;
         }
-        applyImpulse(-s, s * 0.34);
+        applyImpulse(-st, st * 0.34);
         onStatus('spin');
       },
       destroy: function () {
