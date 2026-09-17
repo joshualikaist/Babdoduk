@@ -148,13 +148,25 @@
     });
   }
 
+  function idleHintHtml() {
+    return '<span class="eat-wheel-hint-main">' + escapeHtml(t('eat.hint.main', '휠을 밀거나 연타해보세요')) + '</span>' +
+      '<span class="eat-wheel-hint-sub">' + escapeHtml(t('eat.hint.sub', '세게, 오래 누를수록 더 오래 돌아가요.')) + '</span>';
+  }
+
+  function spinBtnInner(label) {
+    return '<svg class="eat-spinbtn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.8 12a7.2 7.2 0 0 1 12.2-5.2M19.2 12a7.2 7.2 0 0 1-12.2 5.2"/>' +
+      '<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M16.2 4.8v3.4h-3.4M7.8 19.2v-3.4h3.4"/>' +
+      '</svg><span class="eat-spinbtn-label">' + escapeHtml(label) + '</span>';
+  }
+
   function setHint(kind) {
     var el = document.getElementById('eatWheelHint');
     if (!el) return;
     if (kind === 'charge') el.textContent = t('eat.hint.charge', '손을 떼면 그 힘으로 공이 나갑니다.');
     else if (kind === 'spin') el.textContent = t('eat.hint.spin', '공이 트랙에서 떨어지는 중. 세게 밀수록 오래 돕니다.');
     else if (kind === 'land') el.textContent = t('eat.hint.land', '공이 칸에 멈췄어요.');
-    else el.textContent = t('eat.hint', '휠을 밀거나 연타하세요. 세게, 오래 누를수록 공이 오래 돕니다.');
+    else el.innerHTML = idleHintHtml();
   }
 
   function mountWheel() {
@@ -167,7 +179,7 @@
       host: host,
       pockets: state.pockets,
       reducedMotion: reduceMotion(),
-      aria: t('eat.wheelAria', '카지노 룰렛. 밀어 돌리면 공이 칸에 떨어집니다.'),
+      aria: t('eat.wheelAria', '오늘 뭐 먹지 다이얼. 밀어 돌리면 공이 칸에 떨어집니다.'),
       onStatus: function (kind) {
         if (kind === 'spin') {
           state.spinning = true;
@@ -178,7 +190,9 @@
           var btn = panel.querySelector('[data-eat="spin"]');
           if (btn) {
             btn.disabled = true;
-            btn.textContent = t('eat.spinning', '공이 도는 중');
+            var label = btn.querySelector('.eat-spinbtn-label');
+            if (label) label.textContent = t('eat.spinning', '공이 도는 중');
+            else btn.textContent = t('eat.spinning', '공이 도는 중');
           }
         }
         setHint(kind);
@@ -199,9 +213,9 @@
     var html = '<div class="eat-home">';
     html += hungerRow();
     html += '<div class="eat-wheel" id="eatWheel"></div>';
-    html += '<p class="eat-wheel-hint" id="eatWheelHint">' + escapeHtml(t('eat.hint', '휠을 밀거나 연타하세요. 세게, 오래 누를수록 공이 오래 돕니다.')) + '</p>';
+    html += '<p class="eat-wheel-hint" id="eatWheelHint">' + idleHintHtml() + '</p>';
     html += '<button type="button" class="eat-spinbtn" data-eat="spin">';
-    html += escapeHtml(t('eat.spin', '한 번 밀어보기'));
+    html += spinBtnInner(t('eat.spin', '한 번 돌려보기'));
     html += '</button>';
     html += '</div>';
     panel.innerHTML = html;
