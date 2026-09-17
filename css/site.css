@@ -603,7 +603,7 @@ body::after {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .carousel-slide,
+  .explore-card,
   .btn,
   .popup-overlay,
   .popup-box,

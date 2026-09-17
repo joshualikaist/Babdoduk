@@ -735,7 +735,7 @@
   <link rel="stylesheet" href="css/app.css" />
   <link rel="stylesheet" href="css/index.css" />
 </head>
-<body>
+<body class="page-home">
   <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
     <div class="popup-box" role="dialog" aria-labelledby="popupTitle" aria-modal="true">
       <h2 id="popupTitle" data-i18n="popup.title">밥도둑에 오신 걸 환영해요</h2>
@@ -764,8 +764,8 @@
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
           <div class="nav-mega-panel" role="menu">
             <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#exploreYt" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
+            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#exploreKakao" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -813,65 +813,94 @@
     <h1 class="title" id="profileTitle" data-i18n-html="profile.titleHtml">밥도둑 <span class="title-en">Babdoduk</span></h1>
     <p class="subtitle" data-i18n="profile.subtitle">카이스트 기계과 먹방1티어 학생의 먹방일기</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="#heroCarousel" data-i18n="hero.ctaExplore">둘러보기</a>
+      <a class="btn btn-primary" href="#exploreDesk" data-i18n="hero.ctaExplore">둘러보기</a>
       <a class="btn btn-secondary" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="hero.ctaInsta">Instagram</a>
     </div>
   </section>
 
-  <!--
-    사진 넣기: 각 .slide-media 의 style 에
-    background-image: url('images/인스타.jpg'), linear-gradient(...);
-    처럼 url()을 맨 앞에 두면 사진이 우선됩니다.
-  -->
-  <section class="hero-carousel" id="heroCarousel" aria-label="밥도둑 주요 링크">
-    <div class="carousel-viewport" id="carouselViewport" tabindex="0" aria-roledescription="carousel">
-      <div class="carousel-track" id="carouselTrack">
-        <a class="carousel-slide" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-slide="0">
-          <div
-            class="slide-media slide-media--insta"
-            style="background-image: url('images/history-t1.png');"
-            role="img"
-            aria-hidden="true"
-          ></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">Instagram</span>
-            <h2 class="slide-title" data-i18n="slide.insta.title">밥도둑 인스타그램</h2>
-            <p class="slide-desc" data-i18n="slide.insta.desc">@babdodukms · 일상과 레시피를 만나 보세요</p>
-          </div>
-        </a>
-        <a class="carousel-slide" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-slide="1">
-          <div class="slide-media" style="background-image: url('images/carousel-naver-map.png');" role="img" aria-hidden="true"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">Map</span>
-            <h2 class="slide-title" data-i18n="slide.map.title">밥도둑의 맛집 지도</h2>
-            <p class="slide-desc" data-i18n="slide.map.desc">네이버 지도에서 정리한 맛집 리스트</p>
-          </div>
-        </a>
-        <!-- 유튜브 채널 URL 로 href 를 바꾸세요 -->
-        <a class="carousel-slide" href="#" data-slide="2" id="slideYoutube">
-          <div class="slide-media" style="background-image: url('images/carousel-youtube.png');" role="img" aria-hidden="true"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">YouTube</span>
-            <h2 class="slide-title" data-i18n="slide.yt.title">유튜브</h2>
-            <p class="slide-desc" data-i18n="slide.yt.desc">영상으로 밥도둑을 만나 보세요</p>
-          </div>
-        </a>
-        <!-- 카카오톡 채널 주소로 href 를 바꾸세요 (예: https://pf.kakao.com/_xxxxx) -->
-        <a class="carousel-slide" href="#" data-slide="3" id="slideKakao">
-          <div class="slide-media" style="background-image: url('images/carousel-kakao.png');" role="img" aria-hidden="true"></div>
-          <div class="slide-copy">
-            <span class="slide-eyebrow">KakaoTalk</span>
-            <h2 class="slide-title" data-i18n="slide.kakao.title">카카오톡 문의 채널</h2>
-            <p class="slide-desc" data-i18n="slide.kakao.desc">채널에서 편하게 문의해 주세요</p>
-          </div>
-        </a>
-      </div>
-    </div>
-    <div class="carousel-dots" role="tablist" data-i18n-aria-key="carousel.tablist" aria-label="슬라이드 위치">
-      <button type="button" class="carousel-dot is-active" data-index="0" data-i18n-aria-key="carousel.dot1" aria-label="슬라이드 1"></button>
-      <button type="button" class="carousel-dot" data-index="1" data-i18n-aria-key="carousel.dot2" aria-label="슬라이드 2"></button>
-      <button type="button" class="carousel-dot" data-index="2" data-i18n-aria-key="carousel.dot3" aria-label="슬라이드 3"></button>
-      <button type="button" class="carousel-dot" data-index="3" data-i18n-aria-key="carousel.dot4" aria-label="슬라이드 4"></button>
+  <section class="explore" id="exploreDesk" aria-labelledby="exploreHeading">
+    <header class="explore-head">
+      <h2 id="exploreHeading" data-i18n="explore.heading">오늘 밥, 네 갈래로.</h2>
+      <p data-i18n="explore.lead">사진, 지도, 영상, 대화. 밥도둑이 모아 둔 길이다.</p>
+    </header>
+    <div class="explore-bento">
+      <a class="explore-card explore-card--insta" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener">
+        <span class="explore-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#191714" stroke-width="1.7"/><circle cx="12" cy="12" r="4" stroke="#191714" stroke-width="1.7"/><circle cx="17.2" cy="6.8" r="1" fill="#d9472b"/></svg>
+        </span>
+        <div class="explore-media explore-collage" aria-hidden="true">
+          <img src="images/explore-food-jjigae.jpg" alt="" width="640" height="800" loading="lazy" decoding="async" />
+          <img src="images/explore-food-egg.jpg" alt="" width="480" height="480" loading="lazy" decoding="async" />
+          <img src="images/explore-food-ramen.jpg" alt="" width="640" height="480" loading="lazy" decoding="async" />
+          <img src="images/explore-food-gimbap.jpg" alt="" width="480" height="480" loading="lazy" decoding="async" />
+        </div>
+        <div class="explore-copy">
+          <h3 data-i18n="explore.insta.title">점심이 남긴 자국</h3>
+          <p data-i18n="explore.insta.desc">한 끼를 사진으로 남긴 기록.</p>
+          <span class="explore-cta"><span data-i18n="explore.insta.cta">더 보기</span> <span class="arr" aria-hidden="true">↗</span></span>
+        </div>
+      </a>
+
+      <a class="explore-card explore-card--yt" id="exploreYt" href="#" aria-disabled="true">
+        <span class="explore-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3" fill="#d9472b"/><path d="M11 10.2v3.6l3.2-1.8-3.2-1.8Z" fill="#fcfaf5"/></svg>
+        </span>
+        <div class="explore-media explore-thumb">
+          <img src="images/explore-yt-thumb.jpg" alt="" width="1280" height="720" loading="lazy" decoding="async" />
+          <span class="explore-play" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 6.8v10.4L18 12 8 6.8Z"/></svg>
+          </span>
+        </div>
+        <div class="explore-copy">
+          <h3 data-i18n="explore.yt.title">불 앞에서 찍은 한 끼</h3>
+          <p data-i18n="explore.yt.desc">영상은 준비 중. 곧 여기서 틀 수 있게.</p>
+          <span class="explore-cta"><span data-i18n="explore.yt.cta">영상 보기</span> <span class="arr" aria-hidden="true">↗</span></span>
+        </div>
+      </a>
+
+      <a class="explore-card explore-card--map" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener">
+        <span class="explore-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.2 7-11.2A7 7 0 0 0 5 9.8C5 14.8 12 21 12 21Z" stroke="#67745d" stroke-width="1.7"/><circle cx="12" cy="9.8" r="2.2" fill="#d9472b"/></svg>
+        </span>
+        <div class="explore-media explore-map" aria-hidden="true">
+          <svg viewBox="0 0 280 170" preserveAspectRatio="xMidYMid slice">
+            <rect width="280" height="170" fill="#e8d7b1"/>
+            <path d="M0 96h280" stroke="#cbb892" stroke-width="10"/>
+            <path d="M0 54h280" stroke="#d8c49a" stroke-width="6"/>
+            <path d="M72 0v170" stroke="#cbb892" stroke-width="8"/>
+            <path d="M168 0v170" stroke="#d8c49a" stroke-width="5"/>
+            <path d="M228 0v170" stroke="#cbb892" stroke-width="4"/>
+            <rect x="18" y="18" width="42" height="28" rx="4" fill="#67745d" opacity=".28"/>
+            <rect x="86" y="64" width="62" height="24" rx="4" fill="#684934" opacity=".18"/>
+            <rect x="186" y="108" width="54" height="32" rx="4" fill="#67745d" opacity=".22"/>
+            <circle cx="118" cy="78" r="7" fill="#d9472b"/>
+            <circle cx="118" cy="78" r="3" fill="#fcfaf5"/>
+            <circle cx="204" cy="118" r="6" fill="#d9472b"/>
+            <circle cx="204" cy="118" r="2.5" fill="#fcfaf5"/>
+            <circle cx="44" cy="32" r="5" fill="#684934"/>
+          </svg>
+        </div>
+        <div class="explore-copy">
+          <h3 data-i18n="explore.map.title">발로 찍은 맛집</h3>
+          <p data-i18n="explore.map.desc">카이스트 근처, 밥도둑이 찍어 둔 곳.</p>
+          <span class="explore-cta"><span data-i18n="explore.map.cta">지도 열기</span> <span class="arr" aria-hidden="true">↗</span></span>
+        </div>
+      </a>
+
+      <a class="explore-card explore-card--kakao" id="exploreKakao" href="#" aria-disabled="true">
+        <span class="explore-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 5c-4.6 0-8.2 2.7-8.2 6 0 2.1 1.5 4 3.8 5.1-.1.6-.6 2.2-.7 2.5 0 0-.1.4.2.2.3-.1 3.2-2.1 3.7-2.5.4 0 .8.1 1.2.1 4.6 0 8.2-2.7 8.2-6S16.6 5 12 5Z" fill="#191714"/></svg>
+        </span>
+        <div class="explore-chat" aria-hidden="true">
+          <span class="explore-bubble explore-bubble--in" data-i18n="explore.kakao.bubbleIn">오늘 뭐 먹지?</span>
+          <span class="explore-bubble explore-bubble--out" data-i18n="explore.kakao.bubbleOut">채널로 물어보세요</span>
+        </div>
+        <div class="explore-copy">
+          <h3 data-i18n="explore.kakao.title">밥 생각 나면</h3>
+          <p data-i18n="explore.kakao.desc">편하게 한 줄 남겨 주세요.</p>
+          <span class="explore-cta"><span data-i18n="explore.kakao.cta">문의하기</span> <span class="arr" aria-hidden="true">→</span></span>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -945,21 +974,24 @@
           'profile.subtitle': '카이스트 기계과 먹방1티어 학생의 먹방일기',
           'hero.eyebrow': 'KAIST FOOD & COMMUNITY',
           'hero.ctaExplore': '둘러보기',
-          'hero.ctaInsta': 'Instagram',
-          'carousel.section': '밥도둑 주요 링크',
-          'carousel.tablist': '슬라이드 위치',
-          'carousel.dot1': '슬라이드 1',
-          'carousel.dot2': '슬라이드 2',
-          'carousel.dot3': '슬라이드 3',
-          'carousel.dot4': '슬라이드 4',
-          'slide.insta.title': '밥도둑 인스타그램',
-          'slide.insta.desc': '@babdodukms · 일상과 레시피를 만나 보세요',
-          'slide.map.title': '밥도둑의 맛집 지도',
-          'slide.map.desc': '네이버 지도에서 정리한 맛집 리스트',
-          'slide.kakao.title': '카카오톡 문의 채널',
-          'slide.kakao.desc': '채널에서 편하게 문의해 주세요',
-          'slide.yt.title': '유튜브',
-          'slide.yt.desc': '영상으로 밥도둑을 만나 보세요',
+          'hero.ctaInsta': '인스타그램',
+          'explore.section': '밥도둑을 네 갈래로 탐색',
+          'explore.heading': '오늘 밥, 네 갈래로.',
+          'explore.lead': '사진, 지도, 영상, 대화. 밥도둑이 모아 둔 길이다.',
+          'explore.insta.title': '점심이 남긴 자국',
+          'explore.insta.desc': '한 끼를 사진으로 남긴 기록.',
+          'explore.insta.cta': '더 보기',
+          'explore.map.title': '발로 찍은 맛집',
+          'explore.map.desc': '카이스트 근처, 밥도둑이 찍어 둔 곳.',
+          'explore.map.cta': '지도 열기',
+          'explore.yt.title': '불 앞에서 찍은 한 끼',
+          'explore.yt.desc': '영상은 준비 중. 곧 여기서 틀 수 있게.',
+          'explore.yt.cta': '영상 보기',
+          'explore.kakao.title': '밥 생각 나면',
+          'explore.kakao.desc': '편하게 한 줄 남겨 주세요.',
+          'explore.kakao.cta': '문의하기',
+          'explore.kakao.bubbleIn': '오늘 뭐 먹지?',
+          'explore.kakao.bubbleOut': '채널로 물어보세요',
           'food.heading': '먹방 가계부',
           'food.bannerTitle': '먹방 가계부',
           'food.bannerDesc':
@@ -1047,20 +1079,23 @@
           'hero.eyebrow': 'KAIST FOOD & COMMUNITY',
           'hero.ctaExplore': 'Explore',
           'hero.ctaInsta': 'Instagram',
-          'carousel.section': 'Main links',
-          'carousel.tablist': 'Slide position',
-          'carousel.dot1': 'Slide 1',
-          'carousel.dot2': 'Slide 2',
-          'carousel.dot3': 'Slide 3',
-          'carousel.dot4': 'Slide 4',
-          'slide.insta.title': 'Babdoduk on Instagram',
-          'slide.insta.desc': '@babdodukms · Daily life and recipes',
-          'slide.map.title': 'Babdoduk food map',
-          'slide.map.desc': 'Restaurant list on Naver Map',
-          'slide.kakao.title': 'KakaoTalk channel',
-          'slide.kakao.desc': 'Message us on the channel',
-          'slide.yt.title': 'YouTube',
-          'slide.yt.desc': 'Watch Babdoduk on video',
+          'explore.section': 'Four ways into Babdoduk',
+          'explore.heading': 'Four ways into a meal.',
+          'explore.lead': 'Photos, a map, video, a chat. Paths we already keep.',
+          'explore.insta.title': 'Traces of lunch',
+          'explore.insta.desc': 'Meals kept as photographs.',
+          'explore.insta.cta': 'See more',
+          'explore.map.title': 'Places we walked',
+          'explore.map.desc': 'Near KAIST, pinned by Babdoduk.',
+          'explore.map.cta': 'Open map',
+          'explore.yt.title': 'A meal at the stove',
+          'explore.yt.desc': 'Video is on the way. Soon it plays here.',
+          'explore.yt.cta': 'Watch',
+          'explore.kakao.title': 'When hunger hits',
+          'explore.kakao.desc': 'Leave a line. We will read it.',
+          'explore.kakao.cta': 'Message us',
+          'explore.kakao.bubbleIn': 'What should we eat?',
+          'explore.kakao.bubbleOut': 'Ask on the channel',
           'food.heading': 'Food expense log',
           'food.bannerTitle': 'Food expense log',
           'food.bannerDesc':
@@ -1143,8 +1178,8 @@
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
 
-        var hc = document.getElementById('heroCarousel');
-        if (hc && T['carousel.section']) hc.setAttribute('aria-label', T['carousel.section']);
+        var desk = document.getElementById('exploreDesk');
+        if (desk && T['explore.section']) desk.setAttribute('aria-label', T['explore.section']);
 
         var img = document.getElementById('profileAvatarImg');
         if (img && T['profile.imgAlt']) img.setAttribute('alt', T['profile.imgAlt']);
@@ -1243,230 +1278,25 @@
         if (e.target === popup) closePopup(false);
       });
 
-      /* 가로 캐러셀: translate 무한 루프 (1→2→3→4→1…) */
-      var carouselViewport = document.getElementById('carouselViewport');
-      var carouselTrack = document.getElementById('carouselTrack');
-      var dots = carouselViewport && carouselViewport.parentElement
-        ? carouselViewport.parentElement.querySelectorAll('.carousel-dot')
-        : [];
-
-      function setActiveDot(logicalIndex) {
-        for (var i = 0; i < dots.length; i++) {
-          dots[i].classList.toggle('is-active', i === logicalIndex);
-          dots[i].setAttribute('aria-selected', i === logicalIndex ? 'true' : 'false');
-        }
-      }
-
-      function emptyHrefCarousel(el) {
-        if (el && el.getAttribute('href') === '#') {
-          el.addEventListener('click', function (e) {
-            e.preventDefault();
-          });
-        }
-      }
-
-      if (carouselViewport && carouselTrack && dots.length === 4) {
-        var originals = Array.prototype.slice.call(carouselTrack.querySelectorAll('.carousel-slide'));
-        if (originals.length === 4) {
-          var cloneHead = originals[3].cloneNode(true);
-          var cloneTail = originals[0].cloneNode(true);
-          cloneHead.classList.add('carousel-slide--clone');
-          cloneTail.classList.add('carousel-slide--clone');
-          cloneHead.removeAttribute('id');
-          cloneTail.removeAttribute('id');
-          cloneHead.setAttribute('aria-hidden', 'true');
-          cloneTail.setAttribute('aria-hidden', 'true');
-          carouselTrack.insertBefore(cloneHead, originals[0]);
-          carouselTrack.appendChild(cloneTail);
-        }
-
-        var slideNodes = function () {
-          return carouselTrack.querySelectorAll('.carousel-slide');
-        };
-
-        var pos = 1;
-        var w = 1;
-        var animLock = false;
-
-        function measure() {
-          w = carouselViewport.clientWidth || 1;
-        }
-
-        function applySlideWidths() {
-          var nodes = slideNodes();
-          var i;
-          for (i = 0; i < nodes.length; i++) {
-            nodes[i].style.flexShrink = '0';
-            nodes[i].style.flexGrow = '0';
-            nodes[i].style.flexBasis = w + 'px';
-            nodes[i].style.width = w + 'px';
-          }
-        }
-
-        function setTranslate() {
-          carouselTrack.style.transform = 'translate3d(' + -pos * w + 'px,0,0)';
-        }
-
-        function updateDotsFromPos() {
-          var logical;
-          if (pos >= 1 && pos <= 4) logical = pos - 1;
-          else if (pos === 5) logical = 0;
-          else logical = 3;
-          setActiveDot(logical);
-        }
-
-        function instant(fn) {
-          carouselTrack.classList.add('is-instant');
-          fn();
-          requestAnimationFrame(function () {
-            carouselTrack.classList.remove('is-instant');
-          });
-        }
-
-        function onTrackTransitionEnd(e) {
-          if (e.target !== carouselTrack || e.propertyName !== 'transform') return;
-          if (pos === 5) {
-            instant(function () {
-              pos = 1;
-              setTranslate();
-            });
-          } else if (pos === 0) {
-            instant(function () {
-              pos = 4;
-              setTranslate();
-            });
-          }
-          animLock = false;
-          updateDotsFromPos();
-        }
-
-        carouselTrack.addEventListener('transitionend', onTrackTransitionEnd);
-
-        function layout() {
-          measure();
-          applySlideWidths();
-          carouselTrack.classList.add('is-instant');
-          setTranslate();
-          carouselTrack.classList.remove('is-instant');
-        }
-
-        function goNext() {
-          if (animLock) return;
-          animLock = true;
-          pos++;
-          updateDotsFromPos();
-          setTranslate();
-        }
-
-        function goPrev() {
-          if (animLock) return;
-          animLock = true;
-          pos--;
-          updateDotsFromPos();
-          setTranslate();
-        }
-
-        function goToLogical(logical) {
-          var target = logical + 1;
-          if (target === pos || animLock) return;
-          animLock = true;
-          pos = target;
-          updateDotsFromPos();
-          setTranslate();
-        }
-
-        layout();
-        setActiveDot(0);
-
-        var touchStartX = null;
-        carouselViewport.addEventListener(
-          'touchstart',
-          function (e) {
-            touchStartX = e.changedTouches[0].clientX;
-          },
-          { passive: true }
-        );
-        carouselViewport.addEventListener(
-          'touchend',
-          function (e) {
-            if (touchStartX == null) return;
-            var dx = e.changedTouches[0].clientX - touchStartX;
-            touchStartX = null;
-            if (Math.abs(dx) < 42) return;
-            if (dx < 0) goNext();
-            else goPrev();
-          },
-          { passive: true }
-        );
-
-        var wheelIdle = null;
-        carouselViewport.addEventListener(
-          'wheel',
-          function (e) {
-            if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-            if (wheelIdle) return;
-            if (e.deltaX > 18) {
-              goNext();
-              wheelIdle = setTimeout(function () {
-                wheelIdle = null;
-              }, 320);
-            } else if (e.deltaX < -18) {
-              goPrev();
-              wheelIdle = setTimeout(function () {
-                wheelIdle = null;
-              }, 320);
-            }
-          },
-          { passive: true }
-        );
-
-        carouselViewport.addEventListener('keydown', function (e) {
-          if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            goNext();
-          } else if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            goPrev();
-          }
+      document.querySelectorAll('a.explore-card[href="#"]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
         });
+      });
 
-        for (var d = 0; d < dots.length; d++) {
-          (function (logical) {
-            dots[logical].addEventListener('click', function () {
-              goToLogical(logical);
-            });
-          })(d);
-        }
-
-        window.addEventListener('resize', function () {
-          layout();
+      function navJumpToCard(navEl, targetId) {
+        if (!navEl) return;
+        navEl.addEventListener('click', function (e) {
+          var href = navEl.getAttribute('href') || '';
+          if (href.charAt(0) !== '#') return;
+          var card = document.getElementById(targetId);
+          if (!card) return;
+          e.preventDefault();
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
-
-        var carouselHover = false;
-        carouselViewport.addEventListener('pointerenter', function () {
-          carouselHover = true;
-        });
-        carouselViewport.addEventListener('pointerleave', function () {
-          carouselHover = false;
-        });
-        setInterval(function () {
-          if (document.hidden || carouselHover || animLock) return;
-          goNext();
-        }, 10000);
-
-        var sn = slideNodes();
-        for (var si = 0; si < sn.length; si++) {
-          emptyHrefCarousel(sn[si]);
-        }
-
-        window.babdodukCarouselGoToLogical = function (logical) {
-          goToLogical(logical);
-        };
       }
-
-      if (!window.babdodukCarouselGoToLogical) {
-        window.babdodukCarouselGoToLogical = function () {};
-      }
+      navJumpToCard(document.getElementById('navMegaKakao'), 'exploreKakao');
+      navJumpToCard(document.getElementById('navMegaYoutube'), 'exploreYt');
 
       var navHome = document.getElementById('navHome');
       if (navHome) {
@@ -1477,19 +1307,6 @@
           }
         });
       }
-
-      function navJumpToSlide(navEl, logicalIndex) {
-        if (!navEl) return;
-        navEl.addEventListener('click', function (e) {
-          if (navEl.getAttribute('href') !== '#') return;
-          e.preventDefault();
-          if (typeof window.babdodukCarouselGoToLogical === 'function') {
-            window.babdodukCarouselGoToLogical(logicalIndex);
-          }
-        });
-      }
-      navJumpToSlide(document.getElementById('navMegaKakao'), 3);
-      navJumpToSlide(document.getElementById('navMegaYoutube'), 2);
 
       document.querySelectorAll('[data-mega]').forEach(function (mega) {
         mega.addEventListener('click', function (e) {
