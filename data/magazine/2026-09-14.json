@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-17",
-  "generatedAt": "2026-09-17T10:00:00+09:00",
+  "date": "2026-09-14",
+  "generatedAt": "2026-09-14T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
   "featured": {
     "title": "동그랑땡 레시피 초보자도 쉽게! 초간단 업그레이된 밀가루없이 육즙 가득 촉촉 부드러운 동그랑땡 만들기",
@@ -256,26 +256,6 @@
         "medium": "instagram"
       },
       {
-        "title": "탐색 · #집밥",
-        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
-        "tags": [
-          "집밥"
-        ],
-        "source": "Instagram",
-        "url": "https://www.instagram.com/explore/tags/%EC%A7%91%EB%B0%A5/",
-        "medium": "instagram"
-      },
-      {
-        "title": "탐색 · #먹방",
-        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
-        "tags": [
-          "먹방"
-        ],
-        "source": "Instagram",
-        "url": "https://www.instagram.com/explore/tags/%EB%A8%B9%EB%B0%A9/",
-        "medium": "instagram"
-      },
-      {
         "title": "탐색 · #편의점조합",
         "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
         "tags": [
@@ -283,6 +263,27 @@
         ],
         "source": "Instagram",
         "url": "https://www.instagram.com/explore/tags/%ED%8E%B8%EC%9D%98%EC%A0%90%EC%A1%B0%ED%95%A9/",
+        "medium": "instagram"
+      },
+      {
+        "title": "탐색 · #자취요리",
+        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
+        "tags": [
+          "자취요리"
+        ],
+        "source": "Instagram",
+        "url": "https://www.instagram.com/explore/tags/%EC%9E%90%EC%B7%A8%EC%9A%94%EB%A6%AC/",
+        "medium": "instagram"
+      },
+      {
+        "title": "쿠킹트리",
+        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
+        "tags": [
+          "집밥",
+          "인스타"
+        ],
+        "source": "Instagram",
+        "url": "https://www.instagram.com/cooking_tree/",
         "medium": "instagram"
       }
     ]
