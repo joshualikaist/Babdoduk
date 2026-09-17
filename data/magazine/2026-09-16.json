@@ -3,125 +3,22 @@
   "generatedAt": "2026-09-16T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
   "featured": {
-    "title": "동그랑땡 레시피 초보자도 쉽게! 초간단 업그레이된 밀가루없이 육즙 가득 촉촉 부드러운 동그랑땡 만들기",
-    "summary": "동그랑땡. 처음 해도 손이 덜 간다.\n메인 · 다진고기, 돼지고기, 소고기, 달걀\n명절 음식이지만 평소에도 자주 올린다.",
+    "title": "너무 맛있어서 소름 쫙 돋았습니다.",
+    "summary": "너무. 오늘 밥상에 올리기 좋다.\n메인 · 무\n설거지가 적고, 한 그릇으로 끝낸다.",
     "tags": [
-      "동그랑땡",
-      "다진고기",
-      "돼지고기",
-      "집밥"
+      "너무",
+      "자취요리"
     ],
-    "source": "엄마표 집밥",
-    "url": "https://irisblossomlife.tistory.com/163",
-    "medium": "blog",
-    "category": "tips"
+    "source": "자취요리신",
+    "url": "https://www.youtube.com/shorts/aNkaE03Nyo4",
+    "medium": "youtube",
+    "image": "https://i.ytimg.com/vi/aNkaE03Nyo4/maxresdefault.jpg",
+    "category": "habit"
   },
   "lanes": {
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
-        {
-          "title": "동그랑땡 레시피 초보자도 쉽게! 초간단 업그레이된 밀가루없이 육즙 가득 촉촉 부드러운 동그랑땡 만들기",
-          "summary": "동그랑땡. 처음 해도 손이 덜 간다.\n메인 · 다진고기, 돼지고기, 소고기, 달걀\n명절 음식이지만 평소에도 자주 올린다.",
-          "tags": [
-            "동그랑땡",
-            "다진고기",
-            "돼지고기",
-            "집밥"
-          ],
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/163",
-          "medium": "blog"
-        },
-        {
-          "title": "Jatjuk (Pine Nut Porridge)",
-          "summary": "잣죽. 오늘 밥상에 올리기 좋다.\n메인 · 잣, 쌀\n잣이 주인공인 집밥.",
-          "tags": [
-            "잣죽",
-            "한식"
-          ],
-          "source": "Korean Bapsang",
-          "url": "https://www.koreanbapsang.com/jatjuk-pine-nut-porridge/",
-          "medium": "blog"
-        },
-        {
-          "title": "돼지불고기 레시피 15분 완성! 고기를 재워놓아서 야들야들 부드럽고 촉촉한 돼지불고기 - 신김치 요리 10 탄",
-          "summary": "돼지불고기. 15분이면 된다.\n메인 · 돼지고기, 신김치, 두부, 양파\n돼지고기가 주인공인 집밥.",
-          "tags": [
-            "돼지불고기",
-            "돼지고기",
-            "신김치",
-            "집밥"
-          ],
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/182",
-          "medium": "blog"
-        }
-      ]
-    },
-    "trend": {
-      "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "요즘 편의점에서 가장 많이 보이는 조합",
-          "summary": "요즘. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "요즘",
-            "집밥"
-          ]
-        },
-        {
-          "title": "한동안 안 보이던 맵부심이 다시 돌아왔다",
-          "summary": "한동안. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "한동안",
-            "집밥"
-          ]
-        },
-        {
-          "title": "SNS에서 유행하는 한 그릇 레시피",
-          "summary": "SNS에서 유행하는 한 그릇. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "그릇",
-            "집밥"
-          ]
-        }
-      ]
-    },
-    "health": {
-      "lead": "맛도 포기하지 않는 건강식",
-      "items": [
-        {
-          "title": "Jatjuk (Pine Nut Porridge)",
-          "summary": "잣죽. 오늘 밥상에 올리기 좋다.\n메인 · 잣, 쌀\n잣이 주인공인 집밥.",
-          "tags": [
-            "잣죽",
-            "한식"
-          ],
-          "source": "Korean Bapsang",
-          "url": "https://www.koreanbapsang.com/jatjuk-pine-nut-porridge/",
-          "medium": "blog"
-        },
-        {
-          "title": "Makgeolli (Korean Rice Wine)",
-          "summary": "막걸리. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
-          "tags": [
-            "막걸리",
-            "한식"
-          ],
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/makgeolli/",
-          "medium": "blog"
-        },
         {
           "title": "Kkakdugi (Cubed Radish Kimchi)",
           "summary": "깍두기. 오늘 밥상에 올리기 좋다.\n메인 · 무, 김치\n무가 주인공인 집밥.",
@@ -133,24 +30,165 @@
           "source": "Korean Bapsang",
           "url": "https://www.koreanbapsang.com/kkakdugi-cubed-radish-kimchi/",
           "medium": "blog"
-        }
-      ]
-    },
-    "habit": {
-      "lead": "잘 먹는 법에 대한 작은 이야기",
-      "items": [
+        },
         {
-          "title": "동그랑땡 레시피 초보자도 쉽게! 초간단 업그레이된 밀가루없이 육즙 가득 촉촉 부드러운 동그랑땡 만들기",
-          "summary": "동그랑땡. 처음 해도 손이 덜 간다.\n메인 · 다진고기, 돼지고기, 소고기, 달걀\n명절 음식이지만 평소에도 자주 올린다.",
+          "title": "너무 맛있어서 소름 쫙 돋았습니다.",
+          "summary": "너무. 오늘 밥상에 올리기 좋다.\n메인 · 무\n설거지가 적고, 한 그릇으로 끝낸다.",
           "tags": [
-            "동그랑땡",
-            "다진고기",
-            "돼지고기",
+            "너무",
+            "자취요리"
+          ],
+          "source": "자취요리신",
+          "url": "https://www.youtube.com/shorts/aNkaE03Nyo4",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/aNkaE03Nyo4/maxresdefault.jpg"
+        },
+        {
+          "title": "계란찜 만들기 포근포근 부드럽게 넘어가는 초간단 계란찜 달걀찜",
+          "summary": "계란찜. 손이 적은 한 끼.\n메인 · 달걀, 계란, 대파\n달걀이 주인공인 집밥.",
+          "tags": [
+            "계란찜",
+            "달걀",
+            "계란",
             "집밥"
           ],
           "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/163",
+          "url": "https://irisblossomlife.tistory.com/199",
           "medium": "blog"
+        },
+        {
+          "title": "바삭한 허니버터 쿠키에 진한 우유크림! 샌드쿠키 만들기 | Crispy Honey Butter Sandwich Cookies with Milk Filling Recipe",
+          "summary": "샌드쿠키. 집에서 굽는 디저트.\n메인 · 아몬드가루, 달걀, 무\n밥 말고, 집에서 굽는 간식.",
+          "tags": [
+            "샌드쿠키",
+            "아몬드가루",
+            "달걀",
+            "디저트"
+          ],
+          "source": "쿠킹트리 Cooking tree",
+          "url": "https://www.youtube.com/watch?v=YaRSaCVmM_M",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/YaRSaCVmM_M/maxresdefault.jpg"
+        },
+        {
+          "title": "LA Galbi (Korean BBQ Short Ribs)",
+          "summary": "LA Galbi (Korea…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+          "tags": [
+            "Korea",
+            "한식"
+          ],
+          "source": "Korean Bapsang",
+          "url": "https://www.koreanbapsang.com/la-galbi-gui-grilled-la-style-short-ribs/",
+          "medium": "blog"
+        }
+      ]
+    },
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "아으 침고여...",
+          "summary": "아으. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "아으",
+            "먹방"
+          ],
+          "source": "햄지 Hamzy",
+          "url": "https://www.youtube.com/shorts/iolyI1OJogY",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/iolyI1OJogY/maxresdefault.jpg"
+        },
+        {
+          "title": "야식은 엽떡",
+          "summary": "야식은. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "야식은",
+            "먹방"
+          ],
+          "source": "햄지 Hamzy",
+          "url": "https://www.youtube.com/shorts/3_6RI_drv08",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/3_6RI_drv08/maxresdefault.jpg"
+        },
+        {
+          "title": "해장",
+          "summary": "해장. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "해장",
+            "먹방"
+          ],
+          "source": "햄지 Hamzy",
+          "url": "https://www.youtube.com/shorts/G4o4FV4ClQQ",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/G4o4FV4ClQQ/maxresdefault.jpg"
+        },
+        {
+          "title": "집에서 만든 초간단 부대찌개",
+          "summary": "부대찌개. 손이 적은 한 끼.\n메인 · 스팸, 소시지, 김치\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "부대찌개",
+            "스팸",
+            "소시지",
+            "먹방"
+          ],
+          "source": "햄지 Hamzy",
+          "url": "https://www.youtube.com/shorts/CCz4kgJ4osY",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/CCz4kgJ4osY/maxresdefault.jpg"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "Butter Tteok (Butter Rice Cake) – Golden Crust, Chewy Center",
+          "summary": "Butter Tteok (B…. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
+          "tags": [
+            "한식"
+          ],
+          "source": "My Korean Kitchen",
+          "url": "https://mykoreankitchen.com/butter-tteok/",
+          "medium": "blog"
+        },
+        {
+          "title": "밥도둑 고추다대기",
+          "summary": "밥도둑. 오늘 밥상에 올리기 좋다.\n메인 · 고추장, 들기름, 마늘\n고추장이 주인공인 집밥.",
+          "tags": [
+            "밥도둑",
+            "고추장",
+            "들기름",
+            "집밥"
+          ],
+          "source": "하루한끼",
+          "url": "https://www.youtube.com/watch?v=cWHRwOneYqg",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/cWHRwOneYqg/maxresdefault.jpg"
+        },
+        {
+          "title": "LA Galbi (Korean BBQ Short Ribs)",
+          "summary": "LA Galbi (Korea…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+          "tags": [
+            "Korea",
+            "한식"
+          ],
+          "source": "Korean Bapsang",
+          "url": "https://www.koreanbapsang.com/la-galbi-gui-grilled-la-style-short-ribs/",
+          "medium": "blog"
+        },
+        {
+          "title": "쿠킹트리의 베이킹 촬영하는 날의 하루 A Baking Filming Day at Cooking Tree",
+          "summary": "쿠킹트리의. 집에서 굽는 디저트.\n메인 · 밥상에 올리는 그 음식.\n밥 말고, 집에서 굽는 간식.",
+          "tags": [
+            "쿠킹트리의",
+            "디저트",
+            "BakingVlog",
+            "Baking"
+          ],
+          "source": "쿠킹트리 Cooking tree",
+          "url": "https://www.youtube.com/shorts/NRQg-w5Vk1g",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/NRQg-w5Vk1g/maxresdefault.jpg"
         },
         {
           "title": "Makgeolli (Korean Rice Wine)",
@@ -162,18 +200,72 @@
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/makgeolli/",
           "medium": "blog"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "Dakjuk (Korean Chicken Porridge)",
+          "summary": "Dakjuk (Korean…. 오늘 밥상에 올리기 좋다.\n메인 · 닭\n닭이 주인공인 집밥.",
+          "tags": [
+            "Korean",
+            "한식"
+          ],
+          "source": "My Korean Kitchen",
+          "url": "https://mykoreankitchen.com/dakjuk-korean-chicken-porridge/",
+          "medium": "blog"
         },
         {
-          "title": "돼지불고기 레시피 15분 완성! 고기를 재워놓아서 야들야들 부드럽고 촉촉한 돼지불고기 - 신김치 요리 10 탄",
-          "summary": "돼지불고기. 15분이면 된다.\n메인 · 돼지고기, 신김치, 두부, 양파\n돼지고기가 주인공인 집밥.",
+          "title": "너무 맛있어서 소름 쫙 돋았습니다.",
+          "summary": "너무. 오늘 밥상에 올리기 좋다.\n메인 · 무\n설거지가 적고, 한 그릇으로 끝낸다.",
           "tags": [
-            "돼지불고기",
+            "너무",
+            "자취요리"
+          ],
+          "source": "자취요리신",
+          "url": "https://www.youtube.com/shorts/aNkaE03Nyo4",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/aNkaE03Nyo4/maxresdefault.jpg"
+        },
+        {
+          "title": "참치김치찌개 끓이는 법 초간단 10분 만에 찌개 완성! 육수가 필요 없는 맛있는 참치김치찌개",
+          "summary": "참치통조림 있으면 꼭. 10분이면 된다.\n메인 · 돼지고기, 신김치, 양파, 고춧가루\n돼지고기가 주인공인 집밥.",
+          "tags": [
             "돼지고기",
             "신김치",
-            "집밥"
+            "집밥",
+            "참치김치찌개"
           ],
           "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/182",
+          "url": "https://irisblossomlife.tistory.com/178",
+          "medium": "blog"
+        },
+        {
+          "title": "초간단 땅콩버터 우동",
+          "summary": "소스를. 손이 적은 한 끼.\n메인 · 고춧가루, 마늘\n고춧가루가 주인공인 집밥.",
+          "tags": [
+            "소스를",
+            "고춧가루",
+            "마늘",
+            "집밥"
+          ],
+          "source": "하루한끼",
+          "url": "https://www.youtube.com/watch?v=qWngkPXKwFM",
+          "medium": "youtube",
+          "image": "https://i.ytimg.com/vi/qWngkPXKwFM/maxresdefault.jpg"
+        },
+        {
+          "title": "Bok Choy Kimchi (Quick & Easy)",
+          "summary": "Bok Choy Kimchi…. 오늘 밥상에 올리기 좋다.\n메인 · 김치\n김치가 주인공인 집밥.",
+          "tags": [
+            "Kimchi",
+            "김치",
+            "한식"
+          ],
+          "source": "My Korean Kitchen",
+          "url": "https://mykoreankitchen.com/bok-choy-kimchi/",
           "medium": "blog"
         }
       ]
@@ -182,16 +274,27 @@
   "desks": {
     "blog": [
       {
-        "title": "동그랑땡 레시피 초보자도 쉽게! 초간단 업그레이된 밀가루없이 육즙 가득 촉촉 부드러운 동그랑땡 만들기",
-        "summary": "동그랑땡. 처음 해도 손이 덜 간다.\n메인 · 다진고기, 돼지고기, 소고기, 달걀\n명절 음식이지만 평소에도 자주 올린다.",
+        "title": "꼬막비빔밥 만들기 10분 완성 탱글쫄깃 꼬막과 새콤달콤한 양념장에 밥 비벼먹기 좋은 꼬막비빔밥",
+        "summary": "꼬막비빔밥. 10분이면 된다.\n메인 · 미나리, 부추, 무, 고춧가루\n미나리가 주인공인 집밥.",
         "tags": [
-          "동그랑땡",
-          "다진고기",
-          "돼지고기",
+          "꼬막비빔밥",
+          "미나리",
+          "부추",
           "집밥"
         ],
         "source": "엄마표 집밥",
-        "url": "https://irisblossomlife.tistory.com/163",
+        "url": "https://irisblossomlife.tistory.com/168",
+        "medium": "blog"
+      },
+      {
+        "title": "Baechujeon (Korean Cabbage Pancakes)",
+        "summary": "Baechujeon (Kor…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+        "tags": [
+          "Kor",
+          "한식"
+        ],
+        "source": "My Korean Kitchen",
+        "url": "https://mykoreankitchen.com/baechujeon/",
         "medium": "blog"
       },
       {
@@ -206,6 +309,19 @@
         "medium": "blog"
       },
       {
+        "title": "김치제육볶음 레시피 신김치 버리지 마세요! 다른 반찬 필요 없는 신김치제윢볶음 - 신김치 요리 6 탄",
+        "summary": "김치제육볶음. 처음 해도 손이 덜 간다.\n메인 · 돼지고기, 신김치, 묵은지, 달걀\n돼지고기가 주인공인 집밥.",
+        "tags": [
+          "김치제육볶음",
+          "돼지고기",
+          "신김치",
+          "집밥"
+        ],
+        "source": "엄마표 집밥",
+        "url": "https://irisblossomlife.tistory.com/157",
+        "medium": "blog"
+      },
+      {
         "title": "Makgeolli (Korean Rice Wine)",
         "summary": "막걸리. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
         "tags": [
@@ -215,34 +331,78 @@
         "source": "My Korean Kitchen",
         "url": "https://mykoreankitchen.com/makgeolli/",
         "medium": "blog"
-      },
-      {
-        "title": "돼지불고기 레시피 15분 완성! 고기를 재워놓아서 야들야들 부드럽고 촉촉한 돼지불고기 - 신김치 요리 10 탄",
-        "summary": "돼지불고기. 15분이면 된다.\n메인 · 돼지고기, 신김치, 두부, 양파\n돼지고기가 주인공인 집밥.",
-        "tags": [
-          "돼지불고기",
-          "돼지고기",
-          "신김치",
-          "집밥"
-        ],
-        "source": "엄마표 집밥",
-        "url": "https://irisblossomlife.tistory.com/182",
-        "medium": "blog"
-      },
-      {
-        "title": "Kkakdugi (Cubed Radish Kimchi)",
-        "summary": "깍두기. 오늘 밥상에 올리기 좋다.\n메인 · 무, 김치\n무가 주인공인 집밥.",
-        "tags": [
-          "깍두기",
-          "김치",
-          "한식"
-        ],
-        "source": "Korean Bapsang",
-        "url": "https://www.koreanbapsang.com/kkakdugi-cubed-radish-kimchi/",
-        "medium": "blog"
       }
     ],
-    "youtube": [],
+    "youtube": [
+      {
+        "title": "설탕은 줄이고 초콜릿은 진하게! 노밀가루 저당 마틸다 케이크 Rich & Fudgy Matilda Chocolate Cake! Lower Sugar,Flourless #Shorts",
+        "summary": "설탕은. 집에서 굽는 디저트.\n메인 · 초콜릿, 밀가루\n밥 말고, 집에서 굽는 간식.",
+        "tags": [
+          "설탕은",
+          "초콜릿",
+          "밀가루",
+          "디저트"
+        ],
+        "source": "쿠킹트리 Cooking tree",
+        "url": "https://www.youtube.com/shorts/CatFsQSZLls",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/CatFsQSZLls/maxresdefault.jpg"
+      },
+      {
+        "title": "라면으로 만들어도 진짜 맛있습니다.",
+        "summary": "라면으로. 오늘 밥상에 올리기 좋다.\n메인 · 라면\n설거지가 적고, 한 그릇으로 끝낸다.",
+        "tags": [
+          "라면으로",
+          "라면",
+          "자취요리"
+        ],
+        "source": "자취요리신",
+        "url": "https://www.youtube.com/shorts/BUWNpy7w2-4",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/BUWNpy7w2-4/maxresdefault.jpg"
+      },
+      {
+        "title": "시골 평상에서 묵은지 닭볶음탕",
+        "summary": "닭볶음탕. 오늘 밥상에 올리기 좋다.\n메인 · 묵은지, 닭\n지금 타임라인에서 자주 보이는 먹방.",
+        "tags": [
+          "닭볶음탕",
+          "묵은지",
+          "먹방"
+        ],
+        "source": "햄지 Hamzy",
+        "url": "https://www.youtube.com/shorts/URkjXxZ6coM",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/URkjXxZ6coM/maxresdefault.jpg"
+      },
+      {
+        "title": "초간단 땅콩버터 우동",
+        "summary": "소스를. 손이 적은 한 끼.\n메인 · 고춧가루, 마늘\n고춧가루가 주인공인 집밥.",
+        "tags": [
+          "소스를",
+          "고춧가루",
+          "마늘",
+          "집밥"
+        ],
+        "source": "하루한끼",
+        "url": "https://www.youtube.com/watch?v=qWngkPXKwFM",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/qWngkPXKwFM/maxresdefault.jpg"
+      },
+      {
+        "title": "바삭한 허니버터 쿠키에 진한 우유크림! 샌드쿠키 만들기 | Crispy Honey Butter Sandwich Cookies with Milk Filling Recipe",
+        "summary": "샌드쿠키. 집에서 굽는 디저트.\n메인 · 아몬드가루, 달걀, 무\n밥 말고, 집에서 굽는 간식.",
+        "tags": [
+          "샌드쿠키",
+          "아몬드가루",
+          "달걀",
+          "디저트"
+        ],
+        "source": "쿠킹트리 Cooking tree",
+        "url": "https://www.youtube.com/watch?v=YaRSaCVmM_M",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/YaRSaCVmM_M/maxresdefault.jpg"
+      }
+    ],
     "instagram": [
       {
         "title": "밥도둑 인스타",

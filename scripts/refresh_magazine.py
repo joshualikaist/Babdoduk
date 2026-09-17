@@ -11,6 +11,7 @@ import html
 import json
 import re
 import ssl
+import sys
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -88,21 +89,29 @@ FALLBACK = {
         {"title": "김치볶음밥은 왜 찬밥으로 해야 맛있을까?", "summary": "밥알을 살리고 양념은 제대로 배게 만드는 기본 원리.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "라면 물 50ml가 맛을 바꾸는 이유", "summary": "국물과 면의 농도는 물 한 국자에 더 크게 흔들린다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "계란찜이 식당처럼 부풀어 오르는 법", "summary": "거품, 중탕, 뚜껑. 세 가지만 맞춰도 폭신해진다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "팬이 예열되기 전에 고기를 올리지 않는 이유", "summary": "겉은 잡고 속은 남기는 건 온도에서 갈린다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "밥물에 참기름 한 방울이 하는 일", "summary": "윤기만 아니라 밥알이 달라붙는 속도도 바뀐다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
     "trend": [
         {"title": "요즘 편의점에서 가장 많이 보이는 조합", "summary": "삼각김밥만으로는 끝나지 않는 야식 코너의 최근 공식들.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "한동안 안 보이던 맵부심이 다시 돌아왔다", "summary": "매운맛은 유행이 아니라 주기처럼 돌아온다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "SNS에서 유행하는 한 그릇 레시피", "summary": "설거지가 적은 한 그릇이 지금 잘 팔리는 형식이다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "컵라면이 다시 메인 메뉴가 되는 밤", "summary": "토핑 하나만 더해도 야식이 저녁처럼 보인다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "김밥이 도시락을 밀어내는 계절", "summary": "한 줄로 끝나는 점심이 다시 잘 팔린다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
     "health": [
         {"title": "닭가슴살 없이도 단백질 챙기는 한 끼", "summary": "두부, 계란, 콩. 이미 냉장고에 있는 것들로도 충분할 때가 많다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "늦은 밤 먹어도 부담이 덜한 음식", "summary": "참는 대신 속이 덜 무거운 쪽으로 바꾸는 선택.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "샐러드가 지겨울 때 먹는 건강식", "summary": "잎채소만 고집하지 않아도 가볍게 먹는 방법은 남아 있다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "국물이 있는 쪽이 더 가볍게 느껴질 때", "summary": "기름을 줄이고 국물로 부피를 채우는 한 끼.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "밥을 조금 줄일 때 먼저 손대는 반찬", "summary": "단백질을 남기고 탄수를 줄이는 쪽이 배가 덜 허하다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
     "habit": [
         {"title": "천천히 먹으면 정말 덜 먹게 될까?", "summary": "속도만 바꿔도 포만감이 다르게 온다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "아침을 꼭 먹어야 할까?", "summary": "정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "야식을 끊기보다 시간을 바꿔보는 방법", "summary": "같은 간식이라도 언제 먹느냐가 다음 날을 가른다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "물 한 컵을 밥 전에 두는 습관", "summary": "허기인지 갈증인지 먼저 가른 다음 수저를 든다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "같은 메뉴를 사흘 연속 먹지 않는 이유", "summary": "질리면 배달 앱만 늘고, 집밥이 더 멀어진다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
 }
 
@@ -643,8 +652,43 @@ def clean_pool(items: list[dict]) -> list[dict]:
     return out
 
 
-def unique(items: list[dict], limit: int) -> list[dict]:
+def day_seed(date_s: str) -> int:
+    return int(hashlib.md5(date_s.encode("utf-8")).hexdigest(), 16)
+
+
+def rotate(items: list, seed: int) -> list:
+    if not items:
+        return items
+    k = seed % len(items)
+    return items[k:] + items[:k]
+
+
+def previous_keys(before_date: str) -> set[str]:
+    keys: set[str] = set()
+    for path in sorted(OUT.glob("20*.json")):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.stem) or path.stem >= before_date:
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        featured = data.get("featured") or {}
+        if featured.get("title"):
+            keys.add(fingerprint(featured["title"]))
+        for spec in (data.get("lanes") or {}).values():
+            for item in spec.get("items") or []:
+                title = item.get("title") or ""
+                if title:
+                    keys.add(fingerprint(title))
+    return keys
+
+
+def unique(items: list[dict], limit: int, seed: int = 0, banned: set[str] | None = None) -> list[dict]:
     cleaned = clean_pool(items)
+    banned = banned or set()
+    fresh = [item for item in cleaned if fingerprint(item["title"]) not in banned]
+    reused = [item for item in cleaned if fingerprint(item["title"]) in banned]
+    cleaned = rotate(fresh, seed) + rotate(reused, seed // 11 + 3)
     by_source: dict[str, list[dict]] = {}
     order: list[str] = []
     for item in cleaned:
@@ -668,9 +712,19 @@ def unique(items: list[dict], limit: int) -> list[dict]:
     return out[:limit]
 
 
-def fill_lane(fetched: list[dict], lane: str) -> list[dict]:
-    blogs = unique([item for item in fetched if medium_from_url(item.get("url") or "", item.get("source") or "") == "blog"], 3)
-    videos = unique([item for item in fetched if medium_from_url(item.get("url") or "", item.get("source") or "") == "youtube"], 3)
+def fill_lane(fetched: list[dict], lane: str, seed: int, banned: set[str]) -> list[dict]:
+    blogs = unique(
+        [item for item in fetched if medium_from_url(item.get("url") or "", item.get("source") or "") == "blog"],
+        8,
+        seed,
+        banned,
+    )
+    videos = unique(
+        [item for item in fetched if medium_from_url(item.get("url") or "", item.get("source") or "") == "youtube"],
+        8,
+        seed * 5 + 2,
+        banned,
+    )
     mixed: list[dict] = []
     seen: set[str] = set()
     while blogs or videos:
@@ -684,11 +738,19 @@ def fill_lane(fetched: list[dict], lane: str) -> list[dict]:
             seen.add(key)
             mixed.append(item)
     if len(mixed) < 3:
-        for fb in FALLBACK[lane]:
-            mixed.append(tidy_item(dict(fb)))
+        for fb in rotate([tidy_item(dict(row)) for row in FALLBACK[lane]], seed):
+            key = fingerprint(fb["title"])
+            if key in seen:
+                continue
+            seen.add(key)
+            mixed.append(fb)
             if len(mixed) >= 3:
                 break
-    return mixed[:5]
+    start = seed % max(1, len(mixed) - 2) if len(mixed) > 3 else 0
+    picked = mixed[start : start + 5]
+    if len(picked) < 3:
+        picked = mixed[:5]
+    return picked[:5]
 
 
 def featured_score(item: dict, lane: str) -> int:
@@ -736,22 +798,12 @@ def collect_sources() -> dict[str, list[dict]]:
 
     return {
         "buckets": buckets,
-        "blog": unique(blog_pool, 5),
-        "youtube": unique(youtube_pool, 5),
+        "blog": blog_pool,
+        "youtube": youtube_pool,
     }
 
 
-def build_edition(day: datetime) -> dict:
-    date_s = day.strftime("%Y-%m-%d")
-    collected = collect_sources()
-    lanes = {}
-    for lane, lead in LANE_LEADS.items():
-        lanes[lane] = {
-            "lead": lead,
-            "items": fill_lane(collected["buckets"][lane], lane),
-        }
-
-    featured = None
+def pick_featured(lanes: dict, seed: int, banned: set[str]) -> dict:
     ranked = []
     for lane, spec in lanes.items():
         for item in spec["items"]:
@@ -759,16 +811,34 @@ def build_edition(day: datetime) -> dict:
                 continue
             ranked.append((featured_score(item, lane), lane, item))
     ranked.sort(key=lambda row: -row[0])
-    if ranked:
-        _score, lane, item = ranked[0]
+    fresh = [row for row in ranked if fingerprint(row[2]["title"]) not in banned]
+    pool = fresh or ranked
+    if pool:
+        _score, lane, item = pool[seed % min(5, len(pool))]
         featured = dict(item)
         featured["category"] = lane
-    if featured is None:
-        featured = dict(FALLBACK["tips"][0])
-        featured["category"] = "tips"
+        return featured
+    featured = dict(FALLBACK["tips"][seed % len(FALLBACK["tips"])])
+    featured["category"] = "tips"
+    return featured
+
+
+def build_edition(day: datetime, collected: dict | None = None) -> dict:
+    date_s = day.strftime("%Y-%m-%d")
+    seed = day_seed(date_s)
+    banned = previous_keys(date_s)
+    if collected is None:
+        collected = collect_sources()
+    lanes = {}
+    for lane, lead in LANE_LEADS.items():
+        lanes[lane] = {
+            "lead": lead,
+            "items": fill_lane(collected["buckets"][lane], lane, seed + {"tips": 1, "trend": 17, "health": 31, "habit": 47}[lane], banned),
+        }
+
+    featured = pick_featured(lanes, seed, banned)
 
     instagram = []
-    seed = int(hashlib.md5(date_s.encode("utf-8")).hexdigest(), 16)
     ideas = [INSTAGRAM_IDEAS[0]] + INSTAGRAM_IDEAS[1:]
     rotated = ideas[1:]
     rot = seed % len(rotated)
@@ -793,8 +863,8 @@ def build_edition(day: datetime) -> dict:
         "featured": featured,
         "lanes": lanes,
         "desks": {
-            "blog": collected["blog"],
-            "youtube": collected["youtube"],
+            "blog": unique(collected["blog"], 5, seed, banned),
+            "youtube": unique(collected["youtube"], 5, seed * 3 + 1, banned),
             "instagram": instagram,
         },
     }
@@ -813,14 +883,37 @@ def write_index(latest: str) -> None:
     )
 
 
+def write_edition(day: datetime, collected: dict) -> dict:
+    edition = build_edition(day, collected)
+    path = OUT / f"{edition['date']}.json"
+    path.write_text(json.dumps(edition, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {path}")
+    return edition
+
+
+def latest_date(now: datetime) -> str:
+    if now.hour < 10:
+        return (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    return now.strftime("%Y-%m-%d")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     day = now_kst()
-    edition = build_edition(day)
-    path = OUT / f"{edition['date']}.json"
-    path.write_text(json.dumps(edition, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    write_index(edition["date"])
-    print(f"wrote {path}")
+    collected = collect_sources()
+    backfill = "--backfill" in sys.argv
+    if backfill:
+        existing = sorted(p.stem for p in OUT.glob("20*.json") if re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.stem))
+        dates = [datetime.strptime(stamp, "%Y-%m-%d").replace(tzinfo=KST) for stamp in existing]
+        if not dates:
+            dates = [day]
+        for when in dates:
+            write_edition(when, collected)
+    else:
+        target = day if day.hour >= 10 else day - timedelta(days=1)
+        write_edition(target, collected)
+    write_index(latest_date(day))
+    print(f"latest {latest_date(day)}")
 
 
 if __name__ == "__main__":
