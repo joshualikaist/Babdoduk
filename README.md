@@ -13,7 +13,7 @@ KAIST 밥도둑 링크·콘텐츠용 정적 사이트입니다. **HTML만**으�
 | **`event.html`** | **이벤트** — 탭형 목록(날짜 순)·상세 패널, **페이지로 이동**으로 인스타 등 링크 열기 |
 | **`ggongbab.html`** | **꽁밥 안내** — 왼쪽 지도(탭별 검색어·캡션 연동), 가운데·오른쪽 행사 탭·상세 |
 | **`history.html`** | **밥도둑의 역사** — 연도별 타임라인. 예: `images/history-t1.png`(인스타 로고), `history-t2.png`(워드마크); 그림이 로고처럼 작을 때는 `timeline-item-media--contain` 로 전체가 보이게 맞춤. 문구는 `STR`의 `history.tN.*` 키 |
-| **`lab-ggongbab.html`** | **실험용 꽁밥 안내** — `lab.html` 내비의 꽁밥 안내 링크 전용. 본편은 `ggongbab.html`. 상단 띠에서 실험실·본편 왕복. `noindex` |
+| **`lab-ggongbab.html`** | **실험용 꽁밥 피드** — Dooray·KAIST 공지에서 자동 수집한 무료 식사 행사를 `data/ggongbab/latest.json`으로 받아 세로 피드로 보여 준다(`css/ggongbab.css`, `js/ggongbab.js`). 파이프라인: `docs/GGONGBAB_PAGE.md`. 본편은 `ggongbab.html`. `noindex` |
 | **`lab.html`** | **실험실** — 서버·로그인·`calendar.ics` 파싱(꽁밥 후보 일정) 등 본편과 분리해 시험. 메타 `noindex`. 접속은 `…/lab.html` 직접 입력·북마크(홈에는 링크 없음) |
 
 상단 내비: **소개**(역사 페이지 링크 등) · **SNS**(인스타·유튜브·카카오톡 등) · **주요 기능** 메가 메뉴(맛집 지도 · 먹방 가계부 · 꽁밥 안내) · **이벤트** · 언어(EN/한국어). 꽁밥 페이지 운영 규칙은 **`docs/GGONGBAB_PAGE.md`** 를 참고합니다.  
@@ -134,7 +134,7 @@ vercel
 1. 실험할 때: `git checkout lab` → 수정 → `git push origin lab` (공식 사이트는 `main`이면 그대로이고, 보통 Preview만 갱신)
 2. 본편에 반영할 때: `main`에 **`lab`을 merge**(또는 PR) → `git push origin main` → 공개 배포 갱신  
 3. `lab-ggongbab.html` 내용을 `ggongbab.html`로 옮기는 것처럼 **파일별 수동 정리**가 필요하면 merge 후 diff로 처리
-4. **매일 생성 JSON** (`data/magazine/`, `data/kaist-menu/`) 은 GitHub Action이 lab과 main에 같은 파일만 푸시한다. 기능 브랜치를 매일 merge하지 않는다. 로컬 재생성: `python scripts/refresh_magazine.py`, `python scripts/refresh_kaist_menu.py`
+4. **생성 JSON** (`data/magazine/`, `data/kaist-menu/`, `data/ggongbab/latest.json`) 은 GitHub Action이 lab과 main에 같은 파일만 푸시한다. 기능 브랜치를 매일 merge하지 않는다. 로컬 재생성: `python scripts/refresh_magazine.py`, `python scripts/refresh_kaist_menu.py`
 
 - 자세한 명령·주의사항: **`docs/DEPLOYMENT_AND_BRANCHES.md`**  
 - merge 전 체크: **`docs/BRANCH_MERGE_CHECKLIST.md`**

@@ -1,0 +1,107 @@
+# -*- coding: utf-8 -*-
+"""Environment-driven configuration for the ggongbab pipeline.
+
+Secrets are read from the environment only. Nothing here is hard-coded.
+A local .env file (gitignored) is loaded if present, without overriding
+values that are already exported.
+"""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass, field
+from datetime import timedelta, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = ROOT / "data" / "ggongbab"
+KST = timezone(timedelta(hours=9), name="Asia/Seoul")
+PROMPT_VERSION = "ggongbab-extract-v1"
+
+
+def _load_dotenv(path: Path) -> None:
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_dotenv(ROOT / ".env")
+
+
+def _bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None or raw == "":
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, "") or default)
+    except ValueError:
+        return default
+
+
+def _int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, "") or default)
+    except ValueError:
+        return default
+
+
+@dataclass
+class Settings:
+    # Dooray
+    dooray_token: str = field(default_factory=lambda: os.environ.get("DOORAY_API_TOKEN", ""))
+    dooray_project_id: str = field(default_factory=lambda: os.environ.get("DOORAY_PROJECT_ID", "4424523215847914253"))
+    dooray_base: str = field(default_factory=lambda: os.environ.get("DOORAY_API_BASE", "https://api.gov-dooray.com"))
+    dooray_page_size: int = field(default_factory=lambda: _int("DOORAY_PAGE_SIZE", 100))
+    dooray_max_pages: int = field(default_factory=lambda: _int("DOORAY_MAX_PAGES", 5))
+
+    # Supabase
+    supabase_url: str = field(default_factory=lambda: os.environ.get("SUPABASE_URL", "").rstrip("/"))
+    supabase_service_key: str = field(default_factory=lambda: os.environ.get("SUPABASE_SERVICE_ROLE_KEY", ""))
+
+    # OpenAI
+    openai_api_key: str = field(default_factory=lambda: os.environ.get("OPENAI_API_KEY", ""))
+    ai_model: str = field(default_factory=lambda: os.environ.get("GGONGBAB_AI_MODEL", "gpt-5.6-luna"))
+    ai_fallback_model: str = field(default_factory=lambda: os.environ.get("GGONGBAB_AI_FALLBACK_MODEL", "gpt-5.6-terra"))
+    ai_confidence_threshold: float = field(default_factory=lambda: _float("GGONGBAB_AI_CONFIDENCE_THRESHOLD", 0.75))
+    ai_max_images: int = field(default_factory=lambda: _int("GGONGBAB_AI_MAX_IMAGES", 2))
+    ai_max_image_bytes: int = field(default_factory=lambda: _int("GGONGBAB_AI_MAX_IMAGE_BYTES", 6 * 1024 * 1024))
+
+    # Export
+    publish_confidence_threshold: float = field(default_factory=lambda: _float("GGONGBAB_PUBLISH_CONFIDENCE", 0.7))
+    expired_grace_hours: int = field(default_factory=lambda: _int("GGONGBAB_EXPIRED_GRACE_HOURS", 3))
+    export_horizon_days: int = field(default_factory=lambda: _int("GGONGBAB_EXPORT_HORIZON_DAYS", 60))
+
+    # Collectors
+    kaist_public_enabled: bool = field(default_factory=lambda: _bool("GGONGBAB_KAIST_PUBLIC_ENABLED", True))
+    kaist_public_max_items: int = field(default_factory=lambda: _int("GGONGBAB_KAIST_PUBLIC_MAX_ITEMS", 40))
+    manual_path: Path = field(default_factory=lambda: Path(os.environ.get("GGONGBAB_MANUAL_PATH", str(DATA_DIR / "manual.json"))))
+
+    # Dedup
+    dedup_threshold: float = field(default_factory=lambda: _float("GGONGBAB_DEDUP_THRESHOLD", 0.72))
+
+    @property
+    def has_dooray(self) -> bool:
+        return bool(self.dooray_token and self.dooray_project_id)
+
+    @property
+    def has_supabase(self) -> bool:
+        return bool(self.supabase_url and self.supabase_service_key)
+
+    @property
+    def has_openai(self) -> bool:
+        return bool(self.openai_api_key)
+
+
+def load_settings() -> Settings:
+    return Settings()

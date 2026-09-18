@@ -247,214 +247,6 @@
       0% { background-position: 0% 50%; }
       100% { background-position: 200% 50%; }
     }
-    .ggongbab-page-wrap {
-      position: relative;
-      z-index: 1;
-      flex: 1 0 auto;
-      width: 100%;
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 8px 18px 28px;
-    }
-    .event-title {
-      font-size: clamp(1.15rem, 3.8vw, 1.35rem);
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      margin-bottom: 6px;
-      color: #1d1d1f;
-    }
-    .event-lead {
-      font-size: 0.8rem;
-      color: #6e6e73;
-      line-height: 1.55;
-      margin-bottom: 16px;
-    }
-    .ggongbab-split {
-      display: grid;
-      grid-template-columns: minmax(0, 1.12fr) minmax(200px, 260px) minmax(0, 1.28fr);
-      gap: 18px 20px;
-      align-items: start;
-      margin-top: 8px;
-    }
-    .ggongbab-map-col { min-width: 0; }
-    .ggongbab-tabs-col {
-      min-width: 0;
-      align-self: start;
-      position: sticky;
-      top: 68px;
-      max-height: calc(100vh - 80px);
-      overflow-y: auto;
-      padding-right: 6px;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-gutter: stable;
-      scroll-behavior: smooth;
-      scroll-snap-type: y proximity;
-    }
-    .ggongbab-detail-col {
-      min-width: 0;
-    }
-    .ggongbab-map-wrap {
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      background: #e8e8ed;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-    }
-    .ggongbab-map-wrap iframe {
-      display: block;
-      width: 100%;
-      height: min(48vh, 400px);
-      border: 0;
-    }
-    .ggongbab-map-caption {
-      font-size: 0.72rem;
-      color: #6e6e73;
-      margin-top: 8px;
-      line-height: 1.45;
-    }
-    .event-tablist {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 0;
-    }
-    .event-tab {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-      width: 100%;
-      text-align: left;
-      padding: 14px 16px;
-      border-radius: 14px;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      background: #fff;
-      cursor: pointer;
-      font-family: inherit;
-      transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      -webkit-tap-highlight-color: transparent;
-      scroll-snap-align: start;
-    }
-    .event-tab:hover { border-color: rgba(99, 102, 241, 0.32); }
-    .event-tab[aria-selected="true"] {
-      border-color: rgba(99, 102, 241, 0.45);
-      box-shadow:
-        0 4px 18px rgba(99, 102, 241, 0.12),
-        0 0 0 2px rgba(99, 102, 241, 0.14);
-    }
-    .event-tab-date {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #9333ea;
-      letter-spacing: 0.02em;
-    }
-    .event-tab-title {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: #1d1d1f;
-      line-height: 1.3;
-    }
-    .event-panels {
-      border-radius: 0;
-      border: none;
-      background: transparent;
-      padding: 2px 0 0;
-      min-height: 80px;
-    }
-    .event-panel { display: none; }
-    .event-panel.is-active { display: block; }
-    .event-panel-inner {
-      font-size: 0.82rem;
-      line-height: 1.55;
-      color: #424245;
-    }
-    .gb-detail-hero {
-      margin: 0 0 14px;
-      padding: 0;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      background: rgba(0, 0, 0, 0.03);
-      line-height: 0;
-    }
-    .gb-detail-hero img {
-      display: block;
-      width: 100%;
-      height: auto;
-      max-height: min(52vh, 420px);
-      object-fit: contain;
-      object-position: center top;
-    }
-    .event-detail-value a.gb-apply-link {
-      color: #6366f1;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .event-detail-value a.gb-apply-link:hover {
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-    .event-detail-sheet {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .event-detail-row {
-      display: grid;
-      grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
-      gap: 0.35rem 0.65rem;
-      align-items: start;
-      padding: 0.4rem 0;
-    }
-    html[lang="en"] .event-detail-row:not(.event-detail-row--solo) {
-      grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
-    }
-    .event-detail-row--solo {
-      grid-template-columns: 1fr;
-    }
-    .event-detail-row--solo .event-detail-value {
-      grid-column: 1 / -1;
-    }
-    .event-detail-label {
-      font-weight: 600;
-      font-size: 0.82rem;
-      color: #1d1d1f;
-      letter-spacing: -0.02em;
-      line-height: 1.5;
-    }
-    .event-detail-value {
-      font-weight: 400;
-      font-size: 0.82rem;
-      color: #424245;
-      line-height: 1.55;
-      word-break: keep-all;
-      overflow-wrap: anywhere;
-    }
-    @media (max-width: 900px) {
-      .ggongbab-split {
-        grid-template-columns: 1fr;
-      }
-      .ggongbab-tabs-col {
-        position: static;
-        max-height: none;
-        overflow: visible;
-        padding-right: 0;
-      }
-      .event-tablist {
-        margin-bottom: 4px;
-      }
-      .ggongbab-map-wrap iframe {
-        height: min(42vh, 320px);
-      }
-    }
-    @media (max-width: 360px) {
-      .event-detail-row:not(.event-detail-row--solo) {
-        grid-template-columns: 1fr;
-        gap: 0.2rem 0;
-        padding: 0.35rem 0;
-      }
-    }
     .site-footer {
       flex-shrink: 0;
       margin-top: 40px;
@@ -549,6 +341,7 @@
   </style>
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/ggongbab.css" />
 </head>
 <body>
   <header class="site-nav" role="banner">
@@ -607,122 +400,18 @@
   </header>
 
   <main class="ggongbab-page-wrap">
-    <h1 class="event-title" data-i18n="ggongbab.title">꽁밥 안내</h1>
-    <p class="event-lead" data-i18n="ggongbab.lead">이곳에서는 캠퍼스 꽁밥·런치 행사를 탭으로 안내해요. 가운데에서 행사를 골라 보세요—오른쪽 상세와 지도 캡션이 함께 바뀝니다.</p>
-
-    <div class="ggongbab-split">
-      <div class="ggongbab-map-col">
-        <div class="ggongbab-map-wrap">
-          <iframe
-            id="ggongbabMapFrame"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            src="https://maps.google.com/maps?q=KAIST+KI+Building+Fusion+Hall+Daejeon&z=17&hl=ko&output=embed"
-            title="행사 장소 지도"
-          ></iframe>
-        </div>
-        <p class="ggongbab-map-caption" id="ggongbabMapCaption">설명회 장소: KAIST KI빌딩 1층 Fusion Hall 일대입니다. 출입·동선은 현장 안내를 확인해 주세요.</p>
-      </div>
-      <div class="ggongbab-tabs-col">
-        <div class="event-tablist" role="tablist" data-i18n-aria-key="gb.tablistAria" aria-label="꽁밥 행사">
-          <button
-            type="button"
-            class="event-tab"
-            role="tab"
-            id="gbTab0"
-            aria-selected="true"
-            aria-controls="gbPanel0"
-            data-i18n-aria-key="gb.e0.tabAria"
-          >
-            <span class="event-tab-date" data-i18n="gb.e0.date">5/18</span>
-            <span class="event-tab-title" data-i18n="gb.e0.summary">OverEdge 설명회</span>
-          </button>
-          <button
-            type="button"
-            class="event-tab"
-            role="tab"
-            id="gbTab1"
-            aria-selected="false"
-            aria-controls="gbPanel1"
-            tabindex="-1"
-            data-i18n-aria-key="gb.e1.tabAria"
-          >
-            <span class="event-tab-date" data-i18n="gb.e1.date">5/21</span>
-            <span class="event-tab-title" data-i18n="gb.e1.summary">삼성SDI KSBP 런치 설명회</span>
-          </button>
-        </div>
-      </div>
-      <div class="ggongbab-detail-col">
-        <div class="event-panels">
-          <div class="event-panel is-active" role="tabpanel" id="gbPanel0" aria-labelledby="gbTab0">
-            <div class="event-panel-inner">
-              <figure class="gb-detail-hero">
-                <img
-                  src="images/ggongbab-tab0.png"
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  width="800"
-                  height="450"
-                  data-i18n-alt="gb.e0.imageAlt"
-                />
-              </figure>
-              <div class="event-detail-sheet">
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.schedule">행사 일정</div>
-                  <div class="event-detail-value" data-i18n="gb.value.schedule">2026.05.18(월) 11:30~12:30 (온·오프라인). 접수 마감 ~5/15(금) 14:00 (당일 현장 접수 가능).</div>
-                </div>
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.location">행사 위치</div>
-                  <div class="event-detail-value" data-i18n="gb.value.location">KAIST KI빌딩 1층 Fusion Hall</div>
-                </div>
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.content">행사 내용</div>
-                  <div class="event-detail-value" data-i18n-html="gb.value.contentHtml"></div>
-                </div>
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.apply">신청 링크</div>
-                  <div class="event-detail-value" data-i18n-html="gb.value.applyHtml"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="event-panel" role="tabpanel" id="gbPanel1" aria-labelledby="gbTab1" hidden>
-            <div class="event-panel-inner">
-              <figure class="gb-detail-hero">
-                <img
-                  src="images/ggongbab-samsung-sdi-lunch.png"
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  width="800"
-                  height="450"
-                  data-i18n-alt="gb.e1.imageAlt"
-                />
-              </figure>
-              <div class="event-detail-sheet">
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.schedule">행사 일정</div>
-                  <div class="event-detail-value" data-i18n="gb.e1.schedule">2026. 5. 21(목) 12:00–13:00</div>
-                </div>
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.location">행사 위치</div>
-                  <div class="event-detail-value" data-i18n="gb.e1.location">응용공학동(W1-3) 1층 영상강의실</div>
-                </div>
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.content">행사 내용</div>
-                  <div class="event-detail-value" data-i18n-html="gb.e1.contentHtml"></div>
-                </div>
-                <div class="event-detail-row">
-                  <div class="event-detail-label" data-i18n="gb.field.apply">신청 링크</div>
-                  <div class="event-detail-value" data-i18n-html="gb.e1.applyHtml"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div id="ggongbabFeed" aria-live="polite">
+      <header class="gg-hero">
+        <h1 data-i18n="ggongbab.title">꽁밥</h1>
+        <p class="gg-tagline" data-i18n="gg.tagline">설명회 가고 밥도 먹자.</p>
+      </header>
+      <div class="gg-feed">
+        <div class="gg-skeleton"></div><div class="gg-skeleton"></div><div class="gg-skeleton"></div>
       </div>
     </div>
+    <noscript>
+      <p class="gg-state" data-i18n="gg.noscript">행사 목록을 보려면 JavaScript를 켜 주세요.</p>
+    </noscript>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -777,42 +466,43 @@
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'ggongbab.title': '꽁밥 안내',
-          'ggongbab.lead':
-            '이곳에서는 캠퍼스 꽁밥·런치 행사를 탭으로 안내해요. 가운데에서 행사를 골라 보세요—오른쪽 상세와 지도 캡션이 함께 바뀝니다.',
-          'ggongbab.mapFrameTitle': '행사 장소 지도',
-          'gb.mapCaption0':
-            '설명회 장소: KAIST KI빌딩 1층 Fusion Hall 일대입니다. 출입·동선은 현장 안내를 확인해 주세요.',
-          'gb.mapCaption1':
-            '설명회 장소: 응용공학동(W1-3) 1층 영상강의실 일대입니다. 출입·동선은 행사 안내를 확인해 주세요.',
-          'gb.mapQ0': 'KAIST KI빌딩 Fusion Hall 대전',
-          'gb.mapQ1': '카이스트 응용공학동',
-          'gb.tablistAria': '꽁밥 행사',
-          'gb.e0.tabAria': 'KAIST OverEdge 설명회 탭',
-          'gb.e0.date': '5/18',
-          'gb.e0.summary': 'OverEdge 설명회',
-          'gb.e0.imageAlt': 'KAIST OverEdge 사업설명회 포스터',
-          'gb.e1.tabAria': '삼성SDI KSBP 런치 설명회 탭',
-          'gb.e1.date': '5/21',
-          'gb.e1.summary': '삼성SDI KSBP 런치 설명회',
-          'gb.e1.imageAlt': 'KAIST X 삼성SDI 배터리 인재양성 트랙 런치 설명회 포스터',
-          'gb.e1.schedule': '2026. 5. 21(목) 12:00–13:00',
-          'gb.e1.location': '응용공학동(W1-3) 1층 영상강의실',
-          'gb.e1.contentHtml':
-            'KAIST와 삼성SDI가 함께하는 <strong>배터리 인재양성 트랙(KSBP)</strong> 석·박사 과정 <strong>런치 설명회</strong>입니다. 프로그램 소개와 더불어 <strong>장학금</strong> 및 <strong>삼성SDI 취업</strong> 연계 기회가 안내됩니다.<br><br><strong>꽁밥</strong>: 참석자 전원에게 <strong>맘스터치 싸이버거 세트</strong>가 제공됩니다.',
-          'gb.e1.applyHtml':
-            '<strong>사전 신청</strong> · <a class="gb-apply-link" href="https://naver.me/xEXA8Chd" target="_blank" rel="noopener">naver.me/xEXA8Chd</a>',
-          'gb.field.schedule': '행사 일정',
-          'gb.field.location': '행사 위치',
-          'gb.field.content': '행사 내용',
-          'gb.field.apply': '신청 링크',
-          'gb.value.schedule':
-            '2026.05.18(월) 11:30~12:30 (온·오프라인). 접수 마감 ~5/15(금) 14:00 (당일 현장 접수 가능).',
-          'gb.value.location': 'KAIST KI빌딩 1층 Fusion Hall',
-          'gb.value.contentHtml':
-            '「1인 창업의 꿈을 현실로 만드는 가장 확실한 방법」— AI Agent 1인 창업 지원 사업 <strong>KAIST OverEdge(오엣)</strong> 공식 설명회. 지금 신청하고 2026년, 새로운 기회를 잡아 보세요.<br><br><strong>왜 참여해야 하나요?</strong> (안내) 단 한 번의 기회로 끝나는 사업 상세 안내 · (Q&amp;A) 실시간 질의응답 · (이벤트) 현장 경품 추첨(애플워치 5대).',
-          'gb.value.applyHtml':
-            '<strong>설명회 신청</strong> · <a class="gb-apply-link" href="https://kaist-overedge.com/" target="_blank" rel="noopener">kaist-overedge.com</a><br><strong>문의</strong> · KAIST OverEdge 운영진 · <a class="gb-apply-link" href="mailto:overedge@kaist.ac.kr">overedge@kaist.ac.kr</a> · 042-350-4738, 6453',
+          'ggongbab.title': '꽁밥',
+          'ggongbab.lead': '설명회 가고 밥도 먹자.',
+          'gg.tagline': '설명회 가고 밥도 먹자.',
+          'gg.today': '오늘',
+          'gg.tomorrow': '내일',
+          'gg.thisWeek': '이번 주',
+          'gg.upcoming': '전체 예정',
+          'gg.filter.all': '전체',
+          'gg.filter.meal': '식사',
+          'gg.filter.snack': '간식',
+          'gg.filter.refreshment': '다과',
+          'gg.filtersAria': '기간과 음식 종류 필터',
+          'gg.food.meal': '식사',
+          'gg.food.lunchbox': '도시락',
+          'gg.food.snack': '간식',
+          'gg.food.refreshment': '다과',
+          'gg.food.beverage': '음료',
+          'gg.food.coupon': '식권',
+          'gg.food.other': '기타',
+          'gg.food.unknown': '',
+          'gg.foodProvided': '식사 제공',
+          'gg.regRequired': '사전 신청',
+          'gg.deadline': '마감',
+          'gg.deadlineToday': '마감 오늘',
+          'gg.deadlinePassed': '신청 마감됨',
+          'gg.eligibility': '대상',
+          'gg.register': '신청하기',
+          'gg.source': '원문 보기',
+          'gg.via': '출처',
+          'gg.map': '지도',
+          'gg.updated': '업데이트',
+          'gg.errorTitle': '행사 목록을 불러오지 못했어요.',
+          'gg.errorBody': '잠시 후 다시 시도해 주세요.',
+          'gg.retry': '다시 시도',
+          'gg.emptyTitle': '이 조건에 맞는 꽁밥 행사가 아직 없어요.',
+          'gg.emptyBody': '기간이나 음식 종류 필터를 바꿔 보세요. 새 행사는 30분마다 자동으로 모여요.',
+          'gg.noscript': '행사 목록을 보려면 JavaScript를 켜 주세요.',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.linkPrivacy': '개인정보 처리방침',
           'footer.linkTerms': '사이트 이용 약관',
@@ -848,42 +538,43 @@
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'ggongbab.title': 'Free meal (Ggongbab) info',
-          'ggongbab.lead':
-            'Free-meal and lunch events on campus are grouped as tabs in the middle. Choose one—the details on the right and the map caption update together.',
-          'ggongbab.mapFrameTitle': 'Event location map',
-          'gb.mapCaption0':
-            'Venue area: Fusion Hall (1F KAIST KI Building). Follow on-site guidance for access.',
-          'gb.mapCaption1':
-            'Venue area: 1F video lecture room, Applied Engineering Building (W1-3). Follow the briefing notice for access.',
-          'gb.mapQ0': 'KAIST KI Building, Fusion Hall, Daejeon, South Korea',
-          'gb.mapQ1': '카이스트 응용공학동',
-          'gb.tablistAria': 'Ggongbab events',
-          'gb.e0.tabAria': 'KAIST OverEdge briefing tab',
-          'gb.e0.date': 'May 18',
-          'gb.e0.summary': 'OverEdge briefing',
-          'gb.e0.imageAlt': 'KAIST OverEdge briefing poster',
-          'gb.e1.tabAria': 'Samsung SDI KSBP lunch briefing tab',
-          'gb.e1.date': 'May 21',
-          'gb.e1.summary': 'Samsung SDI KSBP lunch',
-          'gb.e1.imageAlt': 'KAIST x Samsung SDI battery talent track lunch briefing poster',
-          'gb.e1.schedule': 'Thu, May 21, 2026 · 12:00–13:00',
-          'gb.e1.location': 'Applied Engineering Building (W1-3), 1F video lecture room',
-          'gb.e1.contentHtml':
-            '<strong>Lunch briefing</strong> for the KAIST × Samsung SDI <strong>Battery Talent Cultivation Track (KSBP)</strong> master’s/PhD program. Program overview plus <strong>scholarship</strong> and <strong>Samsung SDI employment</strong> pathways.<br><br><strong>Free meal</strong>: a <strong>Mom’s Touch “Thigh Burger” set</strong> for all attendees.',
-          'gb.e1.applyHtml':
-            '<strong>Register</strong> · <a class="gb-apply-link" href="https://naver.me/xEXA8Chd" target="_blank" rel="noopener">naver.me/xEXA8Chd</a>',
-          'gb.field.schedule': 'Schedule',
-          'gb.field.location': 'Location',
-          'gb.field.content': 'Details',
-          'gb.field.apply': 'Signup link',
-          'gb.value.schedule':
-            'Mon, May 18, 2026 · 11:30–12:30 (online & on-site). Signup closes Fri, May 15, 2:00 PM (same-day on-site signup available).',
-          'gb.value.location': 'Fusion Hall, 1F KAIST KI Building',
-          'gb.value.contentHtml':
-            '“The surest way to turn your solo-founder dream into reality”—official briefing for <strong>KAIST OverEdge</strong>, the AI agent solo-startup program. Apply now for a chance to shape your 2026.<br><br><strong>Why come?</strong> (Info) Full program details in one session · (Q&amp;A) Live Q&amp;A · (Event) On-site raffle (five Apple Watches).',
-          'gb.value.applyHtml':
-            '<strong>Briefing signup</strong> · <a class="gb-apply-link" href="https://kaist-overedge.com/" target="_blank" rel="noopener">kaist-overedge.com</a><br><strong>Contact</strong> · KAIST OverEdge team · <a class="gb-apply-link" href="mailto:overedge@kaist.ac.kr">overedge@kaist.ac.kr</a> · +82-42-350-4738, 6453',
+          'ggongbab.title': 'Free meals',
+          'ggongbab.lead': 'Go to the info session, get fed.',
+          'gg.tagline': 'Go to the info session, get fed.',
+          'gg.today': 'Today',
+          'gg.tomorrow': 'Tomorrow',
+          'gg.thisWeek': 'This week',
+          'gg.upcoming': 'All upcoming',
+          'gg.filter.all': 'All',
+          'gg.filter.meal': 'Meals',
+          'gg.filter.snack': 'Snacks',
+          'gg.filter.refreshment': 'Refreshments',
+          'gg.filtersAria': 'Filter by period and food type',
+          'gg.food.meal': 'Meal',
+          'gg.food.lunchbox': 'Lunch box',
+          'gg.food.snack': 'Snack',
+          'gg.food.refreshment': 'Refreshments',
+          'gg.food.beverage': 'Drinks',
+          'gg.food.coupon': 'Meal coupon',
+          'gg.food.other': 'Other',
+          'gg.food.unknown': '',
+          'gg.foodProvided': 'Food provided',
+          'gg.regRequired': 'Registration required',
+          'gg.deadline': 'Deadline',
+          'gg.deadlineToday': 'Deadline today',
+          'gg.deadlinePassed': 'Registration closed',
+          'gg.eligibility': 'Eligibility',
+          'gg.register': 'Register',
+          'gg.source': 'Source',
+          'gg.via': 'Via',
+          'gg.map': 'Map',
+          'gg.updated': 'Updated',
+          'gg.errorTitle': 'Could not load the event list.',
+          'gg.errorBody': 'Please try again in a moment.',
+          'gg.retry': 'Retry',
+          'gg.emptyTitle': 'No free-food events match this filter yet.',
+          'gg.emptyBody': 'Try another period or food type. New events are collected every 30 minutes.',
+          'gg.noscript': 'Enable JavaScript to see the event list.',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.linkPrivacy': 'Privacy Policy',
           'footer.linkTerms': 'Terms of Use',
@@ -895,33 +586,7 @@
             'Independent content site. For business registration or legal matters, please reach out by email.'
         }
       };
-      function syncGgongbabMapFromTab() {
-        var cap = document.getElementById('ggongbabMapCaption');
-        var mapF = document.getElementById('ggongbabMapFrame');
-        var lang = document.documentElement.lang === 'en' ? 'en' : 'ko';
-        var T = STR[lang];
-        var split = document.querySelector('.ggongbab-split');
-        var idx = 0;
-        if (split) {
-          var panels = [].slice.call(split.querySelectorAll('.event-panel'));
-          panels.forEach(function (p, j) {
-            if (p.classList.contains('is-active')) idx = j;
-          });
-        }
-        var qKey = idx === 0 ? 'gb.mapQ0' : 'gb.mapQ1';
-        var cKey = idx === 0 ? 'gb.mapCaption0' : 'gb.mapCaption1';
-        if (mapF && T[qKey]) {
-          mapF.src =
-            'https://maps.google.com/maps?q=' +
-            encodeURIComponent(T[qKey]) +
-            '&z=17&hl=' +
-            lang +
-            '&output=embed';
-          if (T['ggongbab.mapFrameTitle']) mapF.setAttribute('title', T['ggongbab.mapFrameTitle']);
-        }
-        if (cap && T[cKey]) cap.textContent = T[cKey];
-      }
-      window.babdodukSyncGgongbabMap = syncGgongbabMapFromTab;
+      window.BABDODUK_STR = STR;
       function applyLang(lang) {
         if (lang !== 'en') lang = 'ko';
         document.documentElement.lang = lang;
@@ -948,7 +613,9 @@
         if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-        syncGgongbabMapFromTab();
+        try {
+          document.dispatchEvent(new CustomEvent('babdoduk-lang', { detail: lang }));
+        } catch (e) {}
       }
       window.babdodukApplyLang = applyLang;
       window.babdodukGetLang = function () {
@@ -984,62 +651,6 @@
     })();
   </script>
 
-  <script>
-    (function () {
-      var split = document.querySelector('.ggongbab-split');
-      if (!split) return;
-      var tablist = split.querySelector('.event-tablist');
-      var tabs = [].slice.call(split.querySelectorAll('.event-tab'));
-      var panels = [].slice.call(split.querySelectorAll('.event-panel'));
-      if (tabs.length === 0 || panels.length === 0) return;
-      function tabIntoView(tab) {
-        if (!tab) return;
-        tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-      }
-      function select(i) {
-        tabs.forEach(function (tab, j) {
-          var on = j === i;
-          tab.setAttribute('aria-selected', on ? 'true' : 'false');
-          tab.tabIndex = on ? 0 : -1;
-          if (panels[j]) {
-            panels[j].classList.toggle('is-active', on);
-            if (on) panels[j].removeAttribute('hidden');
-            else panels[j].setAttribute('hidden', '');
-          }
-        });
-        tabIntoView(tabs[i]);
-        if (window.babdodukSyncGgongbabMap) window.babdodukSyncGgongbabMap();
-      }
-      tabs.forEach(function (tab, i) {
-        tab.addEventListener('click', function () {
-          select(i);
-        });
-      });
-      if (tablist) {
-        tablist.addEventListener('keydown', function (e) {
-          var t = e.target;
-          if (!t || t.getAttribute('role') !== 'tab') return;
-          var i = tabs.indexOf(t);
-          if (i < 0) return;
-          var next = i;
-          if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-            next = Math.min(i + 1, tabs.length - 1);
-          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-            next = Math.max(i - 1, 0);
-          } else if (e.key === 'Home') {
-            next = 0;
-          } else if (e.key === 'End') {
-            next = tabs.length - 1;
-          } else {
-            return;
-          }
-          e.preventDefault();
-          select(next);
-          if (tabs[next]) tabs[next].focus();
-        });
-      }
-    })();
-  </script>
 
   <script>
     (function () {
@@ -1084,5 +695,6 @@
       });
     })();
   </script>
+  <script src="js/ggongbab.js"></script>
 </body>
 </html>

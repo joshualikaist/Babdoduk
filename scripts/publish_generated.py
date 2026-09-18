@@ -13,7 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {
     "data/magazine": ROOT / "data" / "magazine",
     "data/kaist-menu": ROOT / "data" / "kaist-menu",
+    "data/ggongbab": ROOT / "data" / "ggongbab",
 }
+# Files inside an allowed path that are hand-edited inputs, never generated output.
+SKIP_NAMES = {"manual.json", ".staging"}
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
@@ -28,14 +31,32 @@ def must(cmd: list[str], cwd: Path | None = None) -> None:
 
 
 def copy_allowed(src_root: Path, dest_root: Path, paths: list[str]) -> None:
+    """Mirror generated files; hand-edited inputs (SKIP_NAMES) on the target are left untouched."""
     for rel in paths:
         src = src_root / rel
         dest = dest_root / rel
         if not src.exists():
             continue
-        if dest.exists():
-            shutil.rmtree(dest)
-        shutil.copytree(src, dest)
+        dest.mkdir(parents=True, exist_ok=True)
+        wanted = set()
+        for file in src.rglob("*"):
+            if any(part in SKIP_NAMES for part in file.relative_to(src).parts):
+                continue
+            target = dest / file.relative_to(src)
+            wanted.add(target)
+            if file.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(file, target)
+        for file in sorted(dest.rglob("*"), reverse=True):
+            if file in wanted or any(part in SKIP_NAMES for part in file.relative_to(dest).parts):
+                continue
+            if file.is_dir():
+                if not any(file.iterdir()):
+                    file.rmdir()
+            else:
+                file.unlink()
 
 
 def update_branch(branch: str, artifact: Path, paths: list[str], message: str) -> None:
