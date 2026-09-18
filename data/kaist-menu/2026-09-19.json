@@ -1,7 +1,7 @@
 {
   "date": "2026-09-19",
   "dateLabel": "9월 19일",
-  "fetchedAt": "2026-09-19T00:16:54+09:00",
+  "fetchedAt": "2026-09-19T00:20:39+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "restaurants": [
     {
@@ -125,7 +125,7 @@
           "음료"
         ],
         "price": "",
-        "kcal": "003 kcal"
+        "kcal": ""
       },
       "dinner": {
         "hours": "",
@@ -139,35 +139,6 @@
         ],
         "price": "",
         "kcal": "960 kcal"
-      }
-    },
-    {
-      "id": "east2",
-      "name": "동맛골 교직원식당 E5",
-      "building": "E5",
-      "breakfast": {
-        "hours": "",
-        "items": [
-          "운영없음"
-        ],
-        "price": "",
-        "kcal": ""
-      },
-      "lunch": {
-        "hours": "",
-        "items": [
-          "운영없음"
-        ],
-        "price": "",
-        "kcal": ""
-      },
-      "dinner": {
-        "hours": "",
-        "items": [
-          "운영없음"
-        ],
-        "price": "",
-        "kcal": ""
       }
     },
     {
