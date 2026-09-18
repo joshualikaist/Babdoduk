@@ -73,14 +73,16 @@ def parse_cell(raw: str) -> dict:
             price = price_m.group(1).replace(" ", "")
         kcal_m = KCAL.search(line)
         if kcal_m:
-            kcal = kcal_m.group(1) + " kcal"
+            n = int(kcal_m.group(1))
+            if n >= 50:
+                kcal = f"{n} kcal"
             continue
         if re.fullmatch(r"조식|중식|석식", line.split("(")[0].strip()):
             continue
         if re.search(r"\d+:\d+", line) and not items:
             hours = line
             continue
-        if line in {"조식", "중식", "석식"} or line.endswith("미운영"):
+        if line.endswith("미운영") or "운영없음" in line.replace(" ", ""):
             continue
         if price_m and PRICE.sub("", line).strip() in {"", "원"}:
             continue
