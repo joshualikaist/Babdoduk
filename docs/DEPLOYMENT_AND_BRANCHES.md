@@ -123,3 +123,21 @@ vercel --prod
 - **한 저장소**, **`main` + `lab`(또는 기존 실험 브랜치)** 로 나눈다.
 - **매번:** 실험은 `lab`에서, 공개 반영은 `main`에 merge 후 푸시.
 - **파일 단위 복사 폴더 두 개**는 필수 아님 — Git 브랜치와 merge로 동일 목적을 달성한다.
+
+---
+
+## 7. 매일 생성되는 콘텐츠 (매거진 · 학식)
+
+기능 코드와 생성된 JSON은 따로 움직인다.
+
+| 경로 | 시각 (KST) | 브랜치 |
+|------|------------|--------|
+| `data/magazine/` | 매일 10:00 | lab **과** main에 같은 JSON만 푸시 |
+| `data/kaist-menu/` | 06:00, 10:30, 16:30 | 동일 |
+
+- 워크플로: `.github/workflows/magazine-daily.yml` (concurrency `babdoduk-content-refresh`)
+- 생성: `python scripts/refresh_magazine.py`, `python scripts/refresh_kaist_menu.py`
+- 검증: `python scripts/validate_content.py` — 실패하면 프로덕션 데이터는 그대로 둔다
+- 배포: `python scripts/publish_generated.py` 가 워크트리로 `origin/lab`, `origin/main`에 **허용 경로만** 복사한다. `git merge lab` 을 쓰지 않는다
+- YouTube 검색 레일은 저장소 secret `YOUTUBE_API_KEY`가 있을 때만 넓어진다. 없어도 RSS만으로 판은 나간다
+- 이 액션은 기능 HTML/JS를 main에 실어 보내지 않는다. 슬롯·학식 UI 같은 코드는 기존처럼 lab에서 시험한 뒤 공개 반영할 때만 `main`에 merge한다
