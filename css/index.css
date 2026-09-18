@@ -111,26 +111,7 @@
   text-align: center;
   line-height: 1.65;
   max-width: 34rem;
-  margin-bottom: 22px;
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
   margin-bottom: 8px;
-}
-
-.page-home .hero-actions .btn-primary {
-  background: #191714;
-  border-color: #191714;
-}
-
-.page-home .hero-actions .btn-secondary {
-  background: #fcfaf5;
-  border-color: rgba(25, 23, 20, 0.12);
-  color: #191714;
 }
 
 .explore {
