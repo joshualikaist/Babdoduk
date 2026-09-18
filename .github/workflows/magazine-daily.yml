@@ -1,12 +1,28 @@
-name: magazine-daily
+name: content-refresh
 
-# Cron runs only from the default branch (main). Keep this file on main.
-# The job always writes today's edition to lab and makes it index.json latest.
+# Cron only runs from the default branch (main). Keep this file on main.
+# Generated JSON is copied onto lab and main. Feature code is never merged by this job.
 
 on:
   schedule:
-    - cron: '0 1 * * *' # 10:00 KST
+    - cron: '0 21 * * *'  # 06:00 KST
+    - cron: '0 1 * * *'   # 10:00 KST
+    - cron: '30 1 * * *'  # 10:30 KST
+    - cron: '30 7 * * *'  # 16:30 KST
   workflow_dispatch:
+    inputs:
+      target:
+        description: magazine, kaist, or both
+        default: both
+        type: choice
+        options:
+          - both
+          - magazine
+          - kaist
+
+concurrency:
+  group: babdoduk-content-refresh
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -17,22 +33,64 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: lab
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fetch public feeds
-        run: python scripts/refresh_magazine.py
-      - name: Commit edition as latest
+      - name: Choose jobs
+        id: pick
+        env:
+          TARGET: ${{ github.event.inputs.target }}
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
-          git config user.name "babdoduk-magazine-bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/magazine
-          if git diff --staged --quiet; then
-            echo "No magazine changes"
+          mag=0
+          kaist=0
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            case "${TARGET:-both}" in
+              magazine) mag=1 ;;
+              kaist) kaist=1 ;;
+              *) mag=1; kaist=1 ;;
+            esac
+          else
+            case "${SCHEDULE}" in
+              '0 1 * * *') mag=1 ;;
+              '0 21 * * *'|'30 1 * * *'|'30 7 * * *') kaist=1 ;;
+              *) mag=1; kaist=1 ;;
+            esac
+          fi
+          echo "magazine=${mag}" >> "$GITHUB_OUTPUT"
+          echo "kaist=${kaist}" >> "$GITHUB_OUTPUT"
+      - name: Refresh magazine
+        if: steps.pick.outputs.magazine == '1'
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python scripts/refresh_magazine.py
+      - name: Refresh KAIST menu
+        if: steps.pick.outputs.kaist == '1'
+        run: |
+          set +e
+          python scripts/refresh_kaist_menu.py
+          code=$?
+          if [ "$code" -eq 2 ]; then
+            echo "KAIST produced no restaurants; keeping previous files"
             exit 0
           fi
-          git commit -m "magazine: 10:00 KST edition refresh"
-          git pull --rebase origin lab
-          git push origin lab
+          exit "$code"
+      - name: Validate generated JSON
+        run: python scripts/validate_content.py
+      - name: Publish generated data to lab and main
+        env:
+          GIT_TERMINAL_PROMPT: 0
+        run: |
+          paths=()
+          if [ "${{ steps.pick.outputs.magazine }}" = "1" ]; then
+            paths+=(data/magazine)
+          fi
+          if [ "${{ steps.pick.outputs.kaist }}" = "1" ]; then
+            paths+=(data/kaist-menu)
+          fi
+          if [ "${#paths[@]}" -eq 0 ]; then
+            echo "nothing to publish"
+            exit 0
+          fi
+          python scripts/publish_generated.py --paths "${paths[@]}" --message "content: generated data refresh"

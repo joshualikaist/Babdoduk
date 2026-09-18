@@ -17,6 +17,7 @@
 - [ ] **실험 커밋**은 **`lab`(또는 전용 실험 브랜치)** 에서 할 것 — `main`에서 바로 크게 실험하지 않기(작은 수정는 팀 규칙에 따름)
 - [ ] **`lab`만 푸시**했을 때 — Vercel Production이 **`main`** 이면 **공식 사이트는 안 바뀜** (보통 Preview만)
 - [ ] **공개 반영**은 **`main`에 merge + push** 한 뒤에만 “방문자에게 릴리스”로 간주할 것
+- [ ] **예외:** `data/magazine/**`, `data/kaist-menu/**` 는 매일 액션이 lab/main에 직접 푸시한다. 이 JSON만 바뀐 커밋을 기능 merge와 섞지 말 것
 - [ ] **`lab-ggongbab.html` → `ggongbab.html`** 처럼, merge 후에도 **본편 파일로 내용을 옮겨야 하는 작업**이 있는지 목록으로 확인할 것 (자동 동기화 아님)
 - [ ] **`lab.html` / `lab-ggongbab.html`** 은 `main`에 둘 수 있으나, 홈 **`index.html` 내비에는 실험 링크를 걸지 않는 정책을 유지할 것**
 

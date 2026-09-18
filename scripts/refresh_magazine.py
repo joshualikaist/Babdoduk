@@ -9,9 +9,11 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import os
 import re
 import ssl
 import sys
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -45,11 +47,21 @@ BLOGS = [
 
 # Public Atom feeds only. Do not scrape watch pages.
 YOUTUBE_CHANNELS = [
-    {"id": "UCC9pQY_uaBSa0WOpMNJHbEQ", "name": "자취요리신", "lanes": ["tips", "habit"]},
-    {"id": "UCtby6rJtBGgUm-2oD_E7bzw", "name": "쿠킹트리 Cooking tree", "lanes": ["health", "tips"]},
-    {"id": "UCPWFxcwPliEBMwJjmeFIDIg", "name": "하루한끼", "lanes": ["health", "habit"]},
+    {"id": "UCC9pQY_uaBSa0WOpMNJHbEQ", "name": "자취요리신", "lanes": ["tips"]},
+    {"id": "UCtby6rJtBGgUm-2oD_E7bzw", "name": "쿠킹트리 Cooking tree", "lanes": ["tips"]},
+    {"id": "UCPWFxcwPliEBMwJjmeFIDIg", "name": "하루한끼", "lanes": ["health"]},
     {"id": "UCPKNKldggioffXPkSmjs5lQ", "name": "햄지 Hamzy", "lanes": ["trend"]},
 ]
+
+YT_QUERIES = ["먹방", "요즘 음식", "신상 음식", "편의점 신상", "야식 먹방", "혼밥", "한국 길거리 음식", "신메뉴", "간편식 신상"]
+
+LANE_SIZE = 8
+
+TIPS_WORDS = ("레시피", "만드는", "만들기", "볶음", "끓이", "양념", "손질", "불 조절", "식감", "조리", "how to", "recipe", "자취요리")
+TREND_WORDS = ("먹방", "신상", "편의점", "유행", "신메뉴", "핫한", "요즘", "길거리", "혼밥", "야식", "asmr")
+HEALTH_WORDS = ("건강", "단백질", "샐러드", "저염", "저당", "채소", "영양", "두부", "균형", "vegan", "fiber")
+HABIT_WORDS = ("아침", "야식", "습관", "천천히", "포만", "식사", "루틴", "물 한", "시간")
+DESSERT_WORDS = ("케이크", "쿠키", "디저트", "티라미수", "빵", "마카롱", "cake", "cookie")
 
 BLOCK_SOURCES = {"vietnam.vn", "google news"}
 BLOCK_TITLE = (
@@ -91,6 +103,9 @@ FALLBACK = {
         {"title": "계란찜이 식당처럼 부풀어 오르는 법", "summary": "거품, 중탕, 뚜껑. 세 가지만 맞춰도 폭신해진다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "팬이 예열되기 전에 고기를 올리지 않는 이유", "summary": "겉은 잡고 속은 남기는 건 온도에서 갈린다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "밥물에 참기름 한 방울이 하는 일", "summary": "윤기만 아니라 밥알이 달라붙는 속도도 바뀐다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "냉동 만두를 바삭하게 굽는 물 한 숟갈", "summary": "뚜껑을 덮는 타이밍이 껍질의 물을 가른다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "계란프라이 가장자리가 레이스처럼 되는 불", "summary": "기름 온도와 내리는 속도만 맞춰도 식당 느낌이 난다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "된장찌개에 멸치를 먼저 넣는 이유", "summary": "국물 바탕이 잡히면 나물은 나중에 넣어도 늦지 않다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
     "trend": [
         {"title": "요즘 편의점에서 가장 많이 보이는 조합", "summary": "삼각김밥만으로는 끝나지 않는 야식 코너의 최근 공식들.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
@@ -98,6 +113,9 @@ FALLBACK = {
         {"title": "SNS에서 유행하는 한 그릇 레시피", "summary": "설거지가 적은 한 그릇이 지금 잘 팔리는 형식이다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "컵라면이 다시 메인 메뉴가 되는 밤", "summary": "토핑 하나만 더해도 야식이 저녁처럼 보인다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "김밥이 도시락을 밀어내는 계절", "summary": "한 줄로 끝나는 점심이 다시 잘 팔린다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "마라가 한 철 지나고 남은 것", "summary": "맵기보다 향신료 국물이 메뉴판에 남는 방식.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "김밥보다 짧은 한입 메뉴가 뜨는 이유", "summary": "수업 사이에 끝나는 간편이 다시 잘 팔린다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "편의점 냉면이 여름만의 메뉴가 아닌 밤", "summary": "계절 메뉴가 야식 코너에 남는 속도를 본다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
     "health": [
         {"title": "닭가슴살 없이도 단백질 챙기는 한 끼", "summary": "두부, 계란, 콩. 이미 냉장고에 있는 것들로도 충분할 때가 많다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
@@ -105,6 +123,9 @@ FALLBACK = {
         {"title": "샐러드가 지겨울 때 먹는 건강식", "summary": "잎채소만 고집하지 않아도 가볍게 먹는 방법은 남아 있다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "국물이 있는 쪽이 더 가볍게 느껴질 때", "summary": "기름을 줄이고 국물로 부피를 채우는 한 끼.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "밥을 조금 줄일 때 먼저 손대는 반찬", "summary": "단백질을 남기고 탄수를 줄이는 쪽이 배가 덜 허하다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "나트륨을 줄이려면 국물부터 덜어 보기", "summary": "반찬을 바꾸기 전에 국 한 국자가 더 크다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "달걀 두 개가 한 끼를 버티는 방식", "summary": "조리만 바꿔도 간이식이 식사가 된다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "단맛을 줄일 때 과일을 먼저 두는 이유", "summary": "디저트를 금지하기보다 순서를 바꾼다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
     "habit": [
         {"title": "천천히 먹으면 정말 덜 먹게 될까?", "summary": "속도만 바꿔도 포만감이 다르게 온다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
@@ -112,6 +133,9 @@ FALLBACK = {
         {"title": "야식을 끊기보다 시간을 바꿔보는 방법", "summary": "같은 간식이라도 언제 먹느냐가 다음 날을 가른다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "물 한 컵을 밥 전에 두는 습관", "summary": "허기인지 갈증인지 먼저 가른 다음 수저를 든다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
         {"title": "같은 메뉴를 사흘 연속 먹지 않는 이유", "summary": "질리면 배달 앱만 늘고, 집밥이 더 멀어진다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "수저를 놓기 전 물 한 모금의 효과", "summary": "한 끼의 끝을 입으로 확인하면 간식이 덜 당긴다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "점심을 거른 날의 저녁이 커지는 이유", "summary": "빈 속이 다음 끼를 과하게 부른다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+        {"title": "주말만 배달을 쓰는 규칙", "summary": "평일을 지키면 주말이 보상이 된다.", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
     ],
 }
 
@@ -604,8 +628,227 @@ def parse_rss_items(payload: bytes, default_source: str) -> list[dict]:
 
 
 def fingerprint(title: str) -> str:
-    compact = re.sub(r"[^0-9a-z가-힣]+", "", title.lower())
-    return compact[:18]
+    compact = re.sub(r"[^0-9a-z가-힣]+", "", (title or "").lower())
+    return compact[:24]
+
+
+def normalize_title(title: str) -> str:
+    text = re.sub(r"[\U0001F300-\U0001FAFF]", "", title or "")
+    text = re.sub(r"[^0-9a-z가-힣\s]+", " ", text.lower())
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def trigrams(text: str) -> set[str]:
+    padded = f"  {text} "
+    return {padded[i : i + 3] for i in range(max(0, len(padded) - 2))}
+
+
+def similar(a: str, b: str) -> float:
+    ta, tb = trigrams(normalize_title(a)), trigrams(normalize_title(b))
+    if not ta or not tb:
+        return 0.0
+    return len(ta & tb) / len(ta | tb)
+
+
+def canonical_url(url: str) -> str:
+    raw = (url or "").split("#")[0].split("?")[0].rstrip("/").lower()
+    return raw
+
+
+def classify_lane(item: dict, preferred: str | None = None) -> str | None:
+    blob = f"{item.get('title') or ''} {item.get('summary') or ''} {item.get('source') or ''}".lower()
+    scores = {"tips": 0, "trend": 0, "health": 0, "habit": 0}
+    for word in TIPS_WORDS:
+        if word.lower() in blob:
+            scores["tips"] += 2
+    for word in TREND_WORDS:
+        if word.lower() in blob:
+            scores["trend"] += 2
+    for word in HEALTH_WORDS:
+        if word.lower() in blob:
+            scores["health"] += 2
+    for word in HABIT_WORDS:
+        if word.lower() in blob:
+            scores["habit"] += 2
+    if any(word.lower() in blob for word in DESSERT_WORDS):
+        scores["health"] -= 4
+        scores["tips"] += 1
+    if item.get("medium") == "youtube" and "먹방" in blob:
+        scores["trend"] += 3
+    if preferred in scores:
+        scores[preferred] += 3
+    source = (item.get("source") or "").lower()
+    if "hamzy" in source or "햄지" in source:
+        scores["trend"] += 8
+    if "먹방" in blob or "asmr" in blob:
+        scores["trend"] += 4
+    best = max(scores, key=scores.get)
+    if scores[best] <= 0:
+        return preferred or "tips"
+    return best
+
+
+def fetch_json(url: str, timeout: int = 20) -> dict:
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+    with urllib.request.urlopen(req, timeout=timeout, context=ctx()) as res:
+        return json.loads(res.read().decode("utf-8"))
+
+
+def youtube_discovery() -> list[dict]:
+    key = os.environ.get("YOUTUBE_API_KEY", "").strip()
+    if not key:
+        return []
+    after = (now_kst() - timedelta(days=10)).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    found: list[dict] = []
+    for query in YT_QUERIES:
+        params = urllib.parse.urlencode(
+            {
+                "part": "snippet",
+                "type": "video",
+                "regionCode": "KR",
+                "relevanceLanguage": "ko",
+                "publishedAfter": after,
+                "q": query,
+                "maxResults": 8,
+                "order": "date",
+                "key": key,
+            }
+        )
+        try:
+            payload = fetch_json("https://www.googleapis.com/youtube/v3/search?" + params)
+        except Exception as exc:
+            print(f"[warn] youtube search {query}: {exc}")
+            continue
+        for row in payload.get("items") or []:
+            vid = ((row.get("id") or {}).get("videoId")) or ""
+            snip = row.get("snippet") or {}
+            if not vid:
+                continue
+            found.append(
+                {
+                    "title": snip.get("title") or "",
+                    "summary": snip.get("description") or "",
+                    "source": snip.get("channelTitle") or "YouTube",
+                    "url": f"https://www.youtube.com/watch?v={vid}",
+                    "image": f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg",
+                    "medium": "youtube",
+                    "publishedAt": snip.get("publishedAt") or "",
+                    "channelId": snip.get("channelId") or "",
+                    "videoId": vid,
+                    "query": query,
+                }
+            )
+    ids = [item["videoId"] for item in found if item.get("videoId")]
+    stats: dict[str, dict] = {}
+    for i in range(0, len(ids), 40):
+        chunk = ids[i : i + 40]
+        params = urllib.parse.urlencode({"part": "statistics,snippet", "id": ",".join(chunk), "key": key})
+        try:
+            payload = fetch_json("https://www.googleapis.com/youtube/v3/videos?" + params)
+        except Exception as exc:
+            print(f"[warn] youtube videos: {exc}")
+            continue
+        for row in payload.get("items") or []:
+            stats[row.get("id") or ""] = row
+    out = []
+    now = datetime.now(timezone.utc)
+    for item in found:
+        meta = stats.get(item["videoId"]) or {}
+        st = (meta.get("statistics") or {})
+        views = int(st.get("viewCount") or 0)
+        published = item.get("publishedAt") or ""
+        hours = 12.0
+        try:
+            pub = datetime.fromisoformat(published.replace("Z", "+00:00"))
+            hours = max(1.0, (now - pub).total_seconds() / 3600)
+        except ValueError:
+            pass
+        item["views"] = views
+        item["trendScore"] = views / hours
+        packed = pack_item(item["title"], item.get("summary") or "", item["source"], item["url"], item.get("image") or "")
+        if packed:
+            packed.update({k: item[k] for k in ("videoId", "channelId", "trendScore", "views") if k in item})
+            packed["laneHint"] = "trend"
+            out.append(packed)
+    out.sort(key=lambda row: -float(row.get("trendScore") or 0))
+    return out
+
+
+def is_near_dup(title: str, seen_titles: list[str]) -> bool:
+    for other in seen_titles:
+        if similar(title, other) > 0.72:
+            return True
+    return False
+
+
+def unique(items: list[dict], limit: int, seed: int = 0, banned: set[str] | None = None) -> list[dict]:
+    return take_diverse(items, limit, seed, DedupState(banned or set()))
+
+
+class DedupState:
+    def __init__(self, banned: set[str]):
+        self.urls: set[str] = set()
+        self.videos: set[str] = set()
+        self.prints: set[str] = set(banned)
+        self.titles: list[str] = []
+        self.channels: set[str] = set()
+        self.domains: dict[str, int] = {}
+        self.foods: dict[str, int] = {}
+
+
+def host_of(url: str) -> str:
+    try:
+        return urllib.parse.urlparse(url).netloc.replace("www.", "")
+    except Exception:
+        return ""
+
+
+def take_diverse(items: list[dict], limit: int, seed: int, state: DedupState, lane: str = "") -> list[dict]:
+    cleaned = rotate(clean_pool(items), seed)
+    out: list[dict] = []
+    lane_channels: set[str] = set()
+    lane_foods: set[str] = set()
+    for item in cleaned:
+        title = item.get("title") or ""
+        url = canonical_url(item.get("url") or "")
+        vid = item.get("videoId") or youtube_id(item.get("url") or "")
+        fp = fingerprint(title)
+        source = item.get("source") or ""
+        domain = host_of(item.get("url") or "")
+        dish = (item.get("tags") or [""])[-1]
+        if fp in state.prints or (url and url in state.urls) or (vid and vid in state.videos):
+            continue
+        if is_near_dup(title, state.titles):
+            continue
+        if source and source in lane_channels and item.get("medium") != "desk":
+            continue
+        if source and source in state.channels and item.get("medium") == "youtube":
+            continue
+        if domain and state.domains.get(domain, 0) >= 2:
+            continue
+        if dish and dish in lane_foods and item.get("medium") != "desk":
+            continue
+        out.append(item)
+        state.prints.add(fp)
+        if url:
+            state.urls.add(url)
+        if vid:
+            state.videos.add(vid)
+        state.titles.append(title)
+        if source:
+            state.channels.add(source)
+            lane_channels.add(source)
+        if domain:
+            state.domains[domain] = state.domains.get(domain, 0) + 1
+        if dish:
+            lane_foods.add(dish)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def fill_lane(fetched: list[dict], lane: str, seed: int, banned: set[str]) -> list[dict]:
+    return take_diverse(fetched, LANE_SIZE, seed, DedupState(banned), lane)
 
 
 def is_blocked(item: dict) -> bool:
@@ -665,9 +908,12 @@ def rotate(items: list, seed: int) -> list:
 
 def previous_keys(before_date: str) -> set[str]:
     keys: set[str] = set()
-    for path in sorted(OUT.glob("20*.json")):
-        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.stem) or path.stem >= before_date:
-            continue
+    dated = [
+        path
+        for path in sorted(OUT.glob("20*.json"))
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.stem) and path.stem < before_date
+    ]
+    for path in dated[-7:]:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
@@ -675,82 +921,20 @@ def previous_keys(before_date: str) -> set[str]:
         featured = data.get("featured") or {}
         if featured.get("title"):
             keys.add(fingerprint(featured["title"]))
-        for spec in (data.get("lanes") or {}).values():
-            for item in spec.get("items") or []:
-                title = item.get("title") or ""
-                if title:
-                    keys.add(fingerprint(title))
     return keys
 
 
 def unique(items: list[dict], limit: int, seed: int = 0, banned: set[str] | None = None) -> list[dict]:
-    cleaned = clean_pool(items)
-    banned = banned or set()
-    fresh = [item for item in cleaned if fingerprint(item["title"]) not in banned]
-    reused = [item for item in cleaned if fingerprint(item["title"]) in banned]
-    cleaned = rotate(fresh, seed) + rotate(reused, seed // 11 + 3)
-    by_source: dict[str, list[dict]] = {}
-    order: list[str] = []
-    for item in cleaned:
-        source = item.get("source") or "desk"
-        if source not in by_source:
-            by_source[source] = []
-            order.append(source)
-        by_source[source].append(item)
-    out: list[dict] = []
-    while order and len(out) < limit:
-        next_order: list[str] = []
-        for source in order:
-            bucket = by_source.get(source) or []
-            if bucket:
-                out.append(bucket.pop(0))
-                if bucket and len(out) < limit:
-                    next_order.append(source)
-            if len(out) >= limit:
-                break
-        order = next_order
-    return out[:limit]
+    return take_diverse(items, limit, seed, DedupState(banned or set()))
 
 
 def fill_lane(fetched: list[dict], lane: str, seed: int, banned: set[str]) -> list[dict]:
-    blogs = unique(
-        [item for item in fetched if medium_from_url(item.get("url") or "", item.get("source") or "") == "blog"],
-        8,
-        seed,
-        banned,
-    )
-    videos = unique(
-        [item for item in fetched if medium_from_url(item.get("url") or "", item.get("source") or "") == "youtube"],
-        8,
-        seed * 5 + 2,
-        banned,
-    )
-    mixed: list[dict] = []
-    seen: set[str] = set()
-    while blogs or videos:
-        for pool in (blogs, videos):
-            if not pool:
-                continue
-            item = pool.pop(0)
-            key = fingerprint(item["title"])
-            if key in seen:
-                continue
-            seen.add(key)
-            mixed.append(item)
-    if len(mixed) < 3:
-        for fb in rotate([tidy_item(dict(row)) for row in FALLBACK[lane]], seed):
-            key = fingerprint(fb["title"])
-            if key in seen:
-                continue
-            seen.add(key)
-            mixed.append(fb)
-            if len(mixed) >= 3:
-                break
-    start = seed % max(1, len(mixed) - 2) if len(mixed) > 3 else 0
-    picked = mixed[start : start + 5]
-    if len(picked) < 3:
-        picked = mixed[:5]
-    return picked[:5]
+    state = DedupState(banned)
+    picked = take_diverse(fetched, LANE_SIZE, seed, state, lane)
+    if len(picked) < 6:
+        extras = [tidy_item(dict(row)) for row in rotate(FALLBACK[lane], seed)]
+        picked = picked + take_diverse(extras, LANE_SIZE - len(picked), seed, state, lane)
+    return picked[:LANE_SIZE]
 
 
 def featured_score(item: dict, lane: str) -> int:
@@ -774,6 +958,7 @@ def collect_sources() -> dict[str, list[dict]]:
     buckets = {lane: [] for lane in LANE_LEADS}
     blog_pool: list[dict] = []
     youtube_pool: list[dict] = []
+    flat: list[dict] = []
 
     for blog in BLOGS:
         try:
@@ -782,8 +967,12 @@ def collect_sources() -> dict[str, list[dict]]:
             print(f"[warn] blog {blog['name']}: {exc}")
             continue
         blog_pool.extend(items)
-        for lane in blog["lanes"]:
-            buckets[lane].extend(items)
+        for item in items:
+            item["laneHint"] = blog["lanes"][0]
+            lane = classify_lane(item, item["laneHint"])
+            item["lane"] = lane
+            buckets[lane].append(item)
+            flat.append(item)
 
     for ch in YOUTUBE_CHANNELS:
         url = f"https://www.youtube.com/feeds/videos.xml?channel_id={ch['id']}"
@@ -793,14 +982,23 @@ def collect_sources() -> dict[str, list[dict]]:
             print(f"[warn] youtube {ch['name']}: {exc}")
             continue
         youtube_pool.extend(items)
-        for lane in ch["lanes"]:
-            buckets[lane].extend(items)
+        for item in items:
+            item["laneHint"] = ch["lanes"][0]
+            item["channelId"] = ch["id"]
+            item["videoId"] = youtube_id(item.get("url") or "")
+            lane = classify_lane(item, item["laneHint"])
+            item["lane"] = lane
+            buckets[lane].append(item)
+            flat.append(item)
 
-    return {
-        "buckets": buckets,
-        "blog": blog_pool,
-        "youtube": youtube_pool,
-    }
+    for item in youtube_discovery():
+        lane = classify_lane(item, "trend")
+        item["lane"] = lane
+        buckets[lane].append(item)
+        youtube_pool.append(item)
+        flat.append(item)
+
+    return {"buckets": buckets, "blog": blog_pool, "youtube": youtube_pool, "flat": flat}
 
 
 def pick_featured(lanes: dict, seed: int, banned: set[str]) -> dict:
@@ -823,20 +1021,55 @@ def pick_featured(lanes: dict, seed: int, banned: set[str]) -> dict:
     return featured
 
 
+def drop_item(items: list[dict], featured: dict) -> list[dict]:
+    url = canonical_url(featured.get("url") or "")
+    fp = fingerprint(featured.get("title") or "")
+    vid = featured.get("videoId") or youtube_id(featured.get("url") or "")
+    out = []
+    for item in items:
+        if fingerprint(item.get("title") or "") == fp:
+            continue
+        if url and canonical_url(item.get("url") or "") == url:
+            continue
+        if vid and (item.get("videoId") or youtube_id(item.get("url") or "")) == vid:
+            continue
+        out.append(item)
+    return out
+
+
+def pad_lane(items: list[dict], lane: str, seed: int, state: DedupState) -> list[dict]:
+    if len(items) >= 6:
+        return items[:LANE_SIZE]
+    extras = [tidy_item(dict(row)) for row in rotate(FALLBACK[lane], seed)]
+    return items + take_diverse(extras, LANE_SIZE - len(items), seed, state, lane)
+
+
 def build_edition(day: datetime, collected: dict | None = None) -> dict:
     date_s = day.strftime("%Y-%m-%d")
     seed = day_seed(date_s)
     banned = previous_keys(date_s)
     if collected is None:
         collected = collect_sources()
+    state = DedupState(banned)
     lanes = {}
-    for lane, lead in LANE_LEADS.items():
-        lanes[lane] = {
-            "lead": lead,
-            "items": fill_lane(collected["buckets"][lane], lane, seed + {"tips": 1, "trend": 17, "health": 31, "habit": 47}[lane], banned),
-        }
+    offsets = {"trend": 17, "tips": 1, "health": 31, "habit": 47}
+    for lane in ("trend", "tips", "health", "habit"):
+        lead = LANE_LEADS[lane]
+        picked = take_diverse(collected["buckets"].get(lane) or [], LANE_SIZE, seed + offsets[lane], state, lane)
+        if len(picked) < 6:
+            leftovers = [
+                item
+                for item in collected.get("flat") or []
+                if canonical_url(item.get("url") or "") not in state.urls
+                and classify_lane(item, lane) == lane
+            ]
+            picked = picked + take_diverse(leftovers, LANE_SIZE - len(picked), seed + offsets[lane] + 9, state, lane)
+        lanes[lane] = {"lead": lead, "items": picked}
 
     featured = pick_featured(lanes, seed, banned)
+    for lane, spec in lanes.items():
+        spec["items"] = drop_item(spec["items"], featured)
+        spec["items"] = pad_lane(spec["items"], lane, seed + offsets[lane], state)
 
     instagram = []
     ideas = [INSTAGRAM_IDEAS[0]] + INSTAGRAM_IDEAS[1:]

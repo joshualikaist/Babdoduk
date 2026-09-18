@@ -237,12 +237,14 @@
           </div>
         </section>
 
+        <section class="kaist-today" id="kaistToday" aria-labelledby="kaistTitle"></section>
+
         <section class="mg-today" id="what" aria-labelledby="mgTodayTitle">
           <div class="eat" id="eatApp">
             <div class="eat-copy">
               <p class="eat-kicker">TODAY</p>
               <h2 id="mgTodayTitle" data-i18n="eat.title">오늘 뭐 먹지?</h2>
-              <p class="eat-lead" data-i18n-html="eat.lead">고민은 우리가 할게.<br>배고픈지만 말하고, 돌려보면 돼.</p>
+              <p class="eat-lead" data-i18n-html="eat.lead">고민은 우리가 할게.<br>배고픈지만 말하고, 뽑으면 돼.</p>
               <p class="eat-meta" id="eatMeta" data-i18n="eat.meta">1,000+ 메뉴에서 오늘의 한 끼를 찾아드려요.</p>
             </div>
             <div class="eat-panel" id="eatPanel"></div>
@@ -352,21 +354,30 @@
           'mg.habit.a3.title': '야식을 끊기보다 시간을 바꿔보는 방법',
           'mg.habit.a3.sum': '금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.',
           'eat.title': '오늘 뭐 먹지?',
-          'eat.lead': '고민은 우리가 할게.<br>배고픈지만 말하고, 돌려보면 돼.',
+          'eat.lead': '고민은 우리가 할게.<br>배고픈지만 말하고, 뽑으면 돼.',
           'eat.meta': '1,000+ 메뉴에서 오늘의 한 끼를 찾아드려요.',
           'eat.hungerAria': '배고픈 정도',
           'eat.hunger.hungry': '배고파',
           'eat.hunger.light': '가볍게',
           'eat.hunger.any': '상관없어',
-          'eat.spin': '한 번 돌려보기',
-          'eat.spinning': '공이 도는 중',
-          'eat.hint': '휠을 밀거나 연타해보세요. 세게, 오래 누를수록 더 오래 돌아가요.',
-          'eat.hint.main': '휠을 밀거나 연타해보세요',
-          'eat.hint.sub': '세게, 오래 누를수록 더 오래 돌아가요.',
-          'eat.hint.charge': '손을 떼면 그 힘으로 공이 나갑니다.',
-          'eat.hint.spin': '공이 트랙에서 떨어지는 중. 세게 밀수록 오래 돕니다.',
-          'eat.hint.land': '공이 칸에 멈췄어요.',
-          'eat.wheelAria': '오늘 뭐 먹지 다이얼. 밀어 돌리면 공이 칸에 떨어집니다.',
+          'eat.spin': '오늘 메뉴 뽑기',
+          'eat.spinning': '고르는 중…',
+          'eat.hint': '버튼을 누르면 오늘의 메뉴가 뽑혀요.',
+          'eat.hint.main': '버튼을 누르면 오늘의 메뉴가 뽑혀요',
+          'eat.hint.sub': '카테고리, 음식, 느낌이 한 줄로 맞춰집니다.',
+          'eat.hint.spin': '세 칸이 차례로 멈출 때까지 기다려 주세요.',
+          'eat.hint.land': '오늘의 한 끼가 정해졌어요.',
+          'eat.wheelAria': '오늘 메뉴를 뽑는 슬롯. 버튼을 누르면 세 칸이 돌아 한 끼가 정해집니다.',
+          'eat.result.slot': '{a} · {b} · {c}',
+          'eat.why.body': '배고픔과 지금 시간에 맞춰 엔진이 한 끼를 골랐어요.',
+          'eat.why.tail': '그 조건이 슬롯 세 칸에 올라갔어요.',
+          'kaist.title': '오늘 KAIST에서 뭐 먹지?',
+          'kaist.breakfast': '아침',
+          'kaist.lunch': '점심',
+          'kaist.dinner': '저녁',
+          'kaist.empty': '오늘 학식 정보를 아직 못 읽었어요.',
+          'kaist.nomenu': '이 시간대 메뉴가 없어요.',
+          'kaist.toSlot': '오늘 학식이 당기지 않는다면',
           'eat.color.red': '빨강',
           'eat.color.black': '검정',
           'eat.color.green': '초록',
@@ -379,8 +390,6 @@
           'eat.taken': '좋아, 그걸로.',
           'eat.more': '다시 돌리기',
           'eat.why': '왜 이거야?',
-          'eat.why.body': '미는 힘과 공의 감속이 칸을 정했어요.',
-          'eat.why.tail': '그 조건의 메뉴가 37칸에 올라가 있었어요.',
           'eat.alts': '다른 추천',
           'eat.empty': '지금은 맞는 메뉴가 없어요. 배고픔만 바꿔 다시 돌려볼까요.',
           'eat.loadFail': '메뉴 데이터를 아직 못 읽었어요.',
@@ -482,21 +491,30 @@
           'mg.habit.a3.title': 'Move the late snack instead of banning it',
           'mg.habit.a3.sum': 'Same bite, different hour. Timing often changes tomorrow more than restriction does.',
           'eat.title': "What's for today?",
-          'eat.lead': "We'll do the thinking.<br>Say how hungry you are, then spin.",
+          'eat.lead': "We'll do the thinking.<br>Say how hungry you are, then pick.",
           'eat.meta': 'Find today’s plate from 1,000+ dishes.',
           'eat.hungerAria': 'How hungry',
           'eat.hunger.hungry': 'Hungry',
           'eat.hunger.light': 'Keep it light',
           'eat.hunger.any': 'No preference',
-          'eat.spin': 'Give it a spin',
-          'eat.spinning': 'Ball in play',
-          'eat.hint': 'Push or tap the wheel. A harder, longer press keeps it turning.',
-          'eat.hint.main': 'Push or tap the wheel',
-          'eat.hint.sub': 'A harder, longer press keeps it turning.',
-          'eat.hint.charge': 'Release and the ball leaves with that force.',
-          'eat.hint.spin': 'The ball is dropping off the track. A harder push lasts longer.',
-          'eat.hint.land': 'The ball settled in a pocket.',
-          'eat.wheelAria': 'Food dial. Push to spin; the ball settles in a pocket.',
+          'eat.spin': 'Pick today’s meal',
+          'eat.spinning': 'Choosing…',
+          'eat.hint': 'Press the button and today’s dish lands on the payline.',
+          'eat.hint.main': 'Press to pick today’s meal',
+          'eat.hint.sub': 'Category, dish, and mood line up in one row.',
+          'eat.hint.spin': 'Wait until the three reels stop, one after another.',
+          'eat.hint.land': 'Today’s plate is set.',
+          'eat.wheelAria': 'A three-reel slot that lands on one dish.',
+          'eat.result.slot': '{a} · {b} · {c}',
+          'eat.why.body': 'The engine picked one dish for this hour and hunger.',
+          'eat.why.tail': 'Those traits were written on the three reels.',
+          'kaist.title': 'What’s on the KAIST menu today?',
+          'kaist.breakfast': 'Breakfast',
+          'kaist.lunch': 'Lunch',
+          'kaist.dinner': 'Dinner',
+          'kaist.empty': 'Today’s cafeteria list is not in yet.',
+          'kaist.nomenu': 'No menu for this sitting.',
+          'kaist.toSlot': 'If the cafeteria is not calling',
           'eat.color.red': 'red',
           'eat.color.black': 'black',
           'eat.color.green': 'green',
@@ -509,8 +527,6 @@
           'eat.taken': 'Good. That one.',
           'eat.more': 'Spin again',
           'eat.why': 'Why this?',
-          'eat.why.body': 'How hard you pushed, and how the ball slowed, chose the pocket.',
-          'eat.why.tail': 'Those dishes were on the 37 pockets.',
           'eat.alts': 'Other picks',
           'eat.empty': 'Nothing fit. Change hunger and spin again.',
           'eat.loadFail': "Couldn't load the menu list yet.",
@@ -832,6 +848,7 @@
           if (box) box.innerHTML = (ed.lanes[lane].items || []).map(storyHtml).join('');
         });
         renderCalendars();
+        if (window.BabdodukMagazineRails) window.BabdodukMagazineRails.bind();
       }
 
       function loadEdition(iso) {
@@ -971,7 +988,9 @@
     })();
   </script>
   <script src="js/food-engine.js"></script>
-  <script src="js/eat-roulette.js"></script>
+  <script src="js/eat-slot.js"></script>
   <script src="js/food-picker.js"></script>
+  <script src="js/kaist-menu.js"></script>
+  <script src="js/magazine-rails.js"></script>
 </body>
 </html>

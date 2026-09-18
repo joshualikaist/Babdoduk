@@ -6,7 +6,9 @@ alwaysApply: true
 # Lab 승인 · 매일 10시 최신 판
 
 - 작업 브랜치는 `lab`. 사용자가 공개/`main`/본편을 말하지 않으면 **지금 lab 내용이 승인된 상태**다. 커밋·푸시 여부를 다시 묻지 않는다.
-- lab에 올릴 변경이 있으면 `git fetch origin` 후 `origin/lab`을 먼저 맞춘다. 매일 10:00 KST GitHub Action이 `data/magazine/`에 커밋하므로, 안 당기고 배포하면 **오늘 판이 아닌 어제 판으로 덮인다**.
+- lab에 올릴 변경이 있으면 `git fetch origin` 후 `origin/lab`을 먼저 맞춘다. 매일 10:00 KST GitHub Action이 `data/magazine/`을 **lab과 main 모두**에 generated-data만 커밋하므로, 안 당기고 기능 커밋을 올리면 **오늘 판이 아닌 어제 판으로 덮일 수 있다**.
 - 맞춘 뒤 lab에 커밋하고 `git push origin lab` 한다. 로컬 `.vercel`이 `babdoduk-lab`이면 `npx vercel --prod --yes`로 lab 사이트도 같은 내용이 되게 한다.
 - 매거진 홈은 `data/magazine/index.json`의 `latest`가 오늘 10시 판이어야 한다. 오늘 파일이 없으면 `python scripts/refresh_magazine.py`를 돌리고 lab에 커밋·푸시한다. `?d=`로 옛 날짜를 연 것은 달력이니 지우지 않는다.
-- 공개 `main` / `babdoduk` 프로덕션에는 사용자가 공개 반영을 말할 때만 올린다. lab에서 공개 프로젝트에 `--prod` 하지 않는다.
+- 학식은 06:00 / 10:30 / 16:30 KST에 `data/kaist-menu/`를 같은 방식으로 양쪽에 올린다. `python scripts/refresh_kaist_menu.py`로 로컬 확인 가능.
+- 공개 `main` **기능 코드**는 사용자가 공개 반영을 말할 때만 올린다. lab에서 공개 프로젝트에 `--prod` 하지 않는다.
+- **예외:** `data/magazine/**`, `data/kaist-menu/**` JSON은 액션이 `git merge lab` 없이 매일 양쪽 브랜치에 직접 푸시한다. 기능 파일은 이 경로에 넣지 않는다.
