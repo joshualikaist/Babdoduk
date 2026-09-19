@@ -42,15 +42,18 @@ KAIST Portal (stub, disabled)                            ─┘
 | `scripts/refresh_ggongbab.py` | CLI 진입점 (`--dry-run`, `--export-only`, `--review-report`, `--check`, `--only`) |
 | `scripts/ggongbab/config.py` | env 로딩 (`.env` 자동 로드, 값은 절대 하드코딩 안 함) |
 | `scripts/ggongbab/models.py` | `RawItem`, `EventExtraction`(AI 스키마), `RuleFacts`, `EventCandidate` |
-| `scripts/ggongbab/collectors/` | `dooray.py`, `kaist_public.py`, `manual.py`, `portal.py`(stub) |
+| `scripts/ggongbab/collectors/` | `dooray.py`, `mail_archive.py`(메일함 backfill), `kaist_public.py`, `manual.py`, `portal.py`(stub) |
 | `scripts/ggongbab/parsers/` | `dooray_mail.py`, `html_text.py`, `sanitizer.py`, `rule_parser.py`, `ai_parser.py`, `validator.py` |
 | `scripts/ggongbab/db/` | `supabase_client.py`(PostgREST, stdlib), `repository.py`(Supabase + in-memory) |
+| `scripts/ggongbab/prefilter.py` | AI에 보낼 후보만 고르는 로컬 규칙 필터 |
+| `scripts/ggongbab/backfill.py` | 메일함 backfill 드라이버 (필터 → 안전 한도 → 기존 파이프라인) |
 | `scripts/ggongbab/dedup.py` | 소스 간 동일 행사 판정과 병합 |
 | `scripts/ggongbab/exporter.py` | 공개 JSON 생성 |
 | `scripts/ggongbab/pipeline.py` | 전체 흐름 · 멱등성 · 통계 |
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
+| `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (118개) |
+| `tests/ggongbab/` | pytest (151개) |
 
 ---
 
@@ -382,3 +385,82 @@ PowerShell 은 `Get-Content data\ggongbab\latest.json -Encoding utf8`, 파이썬
 
 KAIST 공개 collector 가 읽는 게시판(2026-09-19 마크업 기준): 학사공지 `kr/html/footer/0802.html`, 문화행사 `kr/html/campus/053501.html`.
 마크업이 바뀌면 `collectors/kaist_public.py` 의 정규식과 `tests/ggongbab/test_pipeline_export.py::test_kaist_public_parsers_and_filter` 를 같이 고친다.
+
+---
+
+## 16. 메일함 backfill (과거 메일 일괄 수집)
+
+### Dooray Mail REST API 는 존재하지 않는다
+
+2026-09-19 에 read-only 로 probe 한 결과다. GET 만 사용했고 메일 상태는 건드리지 않았다.
+
+| 경로 | 인증 있음 | 인증 없음 | 판정 |
+|------|-----------|-----------|------|
+| `/common/v1/members/me` | 200 | 401 | 존재 |
+| `/project/v1/projects/{id}/posts` | 200 | 401 | 존재 |
+| `/messenger/v1/channels` · `/calendar/v1/calendars` · `/drive/v1/drives` · `/wiki/v1/wikis` | 200 | - | 존재 |
+| `/mail/v1/mails` (외 `mailbox`, `webmail`, `email`, `/mail/v2`, `/api/mail/v1` 등 19가지) | **404** | **404** | **없음** |
+| `/nonexistent/v1/thing` (음성 대조군) | 404 | - | 없음 |
+
+핵심 판별: **존재하는 경로는 토큰이 없어도 401** 을 준다. `/mail/v1/mails` 는 gov 호스트와 상용 `api.dooray.com` 양쪽에서 **404** 다.
+즉 권한/스코프 문제가 아니라 **공개 API 에 메일 서비스가 없다.** 없는 endpoint 를 만들어 쓰지 않는다.
+
+### 그래서 쓰는 방법: 메일 아카이브 collector
+
+메일 클라이언트에서 내보낸 파일을 읽는다. 메일함에 접속하지 않으므로 읽음 상태가 바뀔 수 없다.
+
+지원 입력: `.eml` · `.mbox` · `.zip` · 폴더(재귀).
+
+```cmd
+python scriptsefresh_ggongbab.py ^
+  --backfill-mail-archive "C:\mail-export" ^
+  --mail-from 2026-09-01 --mail-to 2026-09-19 ^
+  --event-until 2026-09-30 --dry-run
+```
+
+| 옵션 | 뜻 |
+|------|-----|
+| `--mail-from` / `--mail-to` | 메일 **수신일** 범위 |
+| `--event-until` | 보고서에서 "기간 내 행사"로 셀 **행사일** 상한 |
+| `--read-state all\|read\|unread` | 기본 `all`. 읽은 메일이 목적이므로 기본은 전부 포함 |
+| `--max-mails` | 스캔 상한 (기본 500). 초과하면 중단 |
+| `--max-ai-candidates` | AI 호출 상한 (기본 50). 초과하면 **호출 전에** 중단 |
+| `--force` | 위 상한을 넘겨 진행 |
+| `--no-ai` | 후보 수만 세고 모델을 부르지 않음 |
+| `--dry-run` | DB·`latest.json` 변경 없음. AI 는 실제로 호출해 판정을 보여 줌 |
+
+### 2단계 후보 선별
+
+메일함 전체를 모델에 보내지 않는다. `prefilter.classify()` 가 먼저 로컬에서 고른다.
+
+* 거부: 영수증·결제·비밀번호·인증번호·배송·뉴스레터·반송 메일 등 (denylist)
+* 필수: 행사 표현(설명회/세미나/채용/info session …) **그리고** 날짜 표현
+* 추가: 음식 표현 **또는** 식사 시간 신호(점심시간/12시/lunch) 중 하나
+
+**후보 선별은 음식 제공 여부를 판단하지 않는다.** “12시 세미나”는 후보일 뿐이고, `food_provided` 는 8절대로
+AI 와 결정적 validator 가 명시 근거로만 정한다. 후보로 뽑힌 메일은 기존 v2 프롬프트 · sanitizer · validator · dedup 을 그대로 탄다.
+별도 AI 경로를 만들지 않았다.
+
+### 개인정보
+
+메일함은 업무 task 보다 범위가 넓으므로 보수적으로 다룬다.
+
+* **후보가 아닌 메일은 DB 에 저장조차 하지 않는다.** 로컬 필터에서 걸러지고 끝난다.
+* 모델에는 sanitize 된 제목·본문(+행사 포스터)만 간다. 주소록·수신자 목록·전화번호·서명은 `sanitizer` 가 지운다.
+* 원문은 후보에 한해 `raw_items` 에만 남고 공개 JSON 에는 나가지 않는다(11절 검증).
+
+### 중복
+
+메일 `Message-ID` 를 `external_id` 로 쓴다(없으면 원문 sha256). 같은 메일을 다시 내보내도 raw item 은 하나다.
+같은 행사가 메일함 backfill 과 자동분류 task 양쪽에서 들어와도 event 는 하나이고 `event_sources` 가 두 개 붙는다(16절 테스트).
+
+### 지난 행사
+
+메일 수신일과 행사일은 다르다. 이미 지난 행사도 DB 에는 남기되(재실행 시 AI 재호출을 막기 위해)
+공개 `latest.json` 에는 11절의 만료 규칙대로 나가지 않는다.
+
+### 수작업이 더 적은 대안
+
+메일을 내보내기 어렵다면, Dooray 웹에서 과거 메일을 여러 건 선택해 **수집함 프로젝트로 전달/업무 등록**해도 된다.
+그러면 기존 `dooray` collector 가 그대로 집어 가므로 **새 코드가 필요 없다.**
+어느 쪽이든 KAIST 비밀번호나 세션 쿠키는 저장하지 않는다.

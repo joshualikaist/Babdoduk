@@ -7,6 +7,12 @@
     python scripts/refresh_ggongbab.py --dry-run       # in-memory DB, no AI, no file write
     python scripts/refresh_ggongbab.py --check         # verify configured services respond
 
+One-off mailbox backfill from an exported mail archive (.eml / .mbox / .zip / folder).
+Gov-Dooray has no mail REST API, so the archive is what the mail client exports:
+
+    python scripts/refresh_ggongbab.py --backfill-mail-archive "C:\\mail-export" \\
+        --mail-from 2026-09-01 --mail-to 2026-09-19 --event-until 2026-09-30 --dry-run
+
 Exit codes: 0 ok · 1 hard failure · 2 nothing safe to publish (previous JSON kept).
 Nothing private (mail text, addresses, tokens) is printed.
 """
@@ -15,7 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -139,6 +145,60 @@ def check(settings: Settings) -> int:
     return 0 if ok else 1
 
 
+def _day(value: str) -> date:
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected YYYY-MM-DD, got {value!r}") from None
+
+
+def backfill_mail_archive(settings: Settings, repo, args) -> int:
+    """Read an exported mail archive and run the normal pipeline over the candidates."""
+    from ggongbab.backfill import run_backfill
+    from ggongbab.collectors.base import CollectorError
+    from ggongbab.collectors.mail_archive import MailArchiveCollector
+
+    path = Path(args.backfill_mail_archive).expanduser()
+    if not path.exists():
+        print(f"[error] mail archive not found: {path}")
+        print("        Export the mails from the Dooray web client first (see docs/GGONGBAB_PAGE.md).")
+        return 1
+    collector = MailArchiveCollector(settings, path, mail_from=args.mail_from, mail_to=args.mail_to,
+                                     read_state=args.read_state, max_mails=args.max_mails)
+    try:
+        items = collector.collect()
+    except CollectorError as exc:
+        print(f"[error] {exc}")
+        return 1
+    # A dry run still parses for real, so the report shows the decisions the
+    # ingest would make. Its safety comes from the in-memory repository and from
+    # not touching latest.json. Only --no-ai suppresses the model.
+    extractor = None if args.no_ai else build_extractor(settings, False)
+    if extractor is None and not args.no_ai:
+        print("[error] OPENAI_API_KEY is required for a backfill; use --no-ai to only count candidates")
+        return 1
+    if not args.dry_run:
+        try:
+            repo.source_id("dooray_mailbox")
+        except SupabaseError as exc:
+            print(f"[error] cannot register the dooray_mailbox source: {exc}")
+            print("        Apply supabase/migrations/002_ggongbab_mailbox_source.sql in the Supabase SQL editor first.")
+            return 1
+    report = run_backfill(settings, repo, extractor, items, event_until=args.event_until,
+                          max_ai_candidates=args.max_ai_candidates, force=args.force,
+                          use_ai=not args.no_ai)
+    print(report.render(args.event_until, dry_run=args.dry_run))
+    stats = collector.stats
+    print(f"\narchive: {stats.messages} message(s) read · out of date range: {stats.out_of_range} · "
+          f"read-state filtered: {stats.filtered_read_state} · unparsable: {stats.skipped_unparsable}")
+    if report.stopped_reason:
+        return 1
+    if args.dry_run:
+        print("\nNo database write and no latest.json change. Re-run without --dry-run to ingest.")
+        return 0
+    return export(settings, repo, False)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--dry-run", action="store_true", help="in-memory repository, no AI, no file write")
@@ -146,6 +206,20 @@ def main() -> int:
     parser.add_argument("--review-report", action="store_true", help="print events with needs_review=true")
     parser.add_argument("--check", action="store_true", help="verify configured services respond")
     parser.add_argument("--only", choices=["all", "dooray", "kaist", "manual", "portal"], default="all")
+
+    mail = parser.add_argument_group("mailbox backfill (one-off, read-only)")
+    mail.add_argument("--backfill-mail-archive", metavar="PATH",
+                      help="exported mail archive: .eml / .mbox / .zip file, or a folder of them")
+    mail.add_argument("--mail-from", type=_day, metavar="YYYY-MM-DD", help="earliest mail received date")
+    mail.add_argument("--mail-to", type=_day, metavar="YYYY-MM-DD", help="latest mail received date")
+    mail.add_argument("--event-until", type=_day, metavar="YYYY-MM-DD", help="upper bound for the event date in the report")
+    mail.add_argument("--read-state", choices=["all", "read", "unread"], default="all",
+                      help="default all; mails whose export carries no read flag are always included")
+    mail.add_argument("--max-mails", type=int, default=500, help="safety limit on messages scanned (default 500)")
+    mail.add_argument("--max-ai-candidates", type=int, default=50,
+                      help="stop before calling the model more than this many times (default 50)")
+    mail.add_argument("--force", action="store_true", help="proceed past --max-ai-candidates")
+    mail.add_argument("--no-ai", action="store_true", help="count candidates only; never call the model")
     args = parser.parse_args()
 
     settings = load_settings()
@@ -159,6 +233,8 @@ def main() -> int:
     if args.review_report:
         review_report(repo)
         return 0
+    if args.backfill_mail_archive:
+        return backfill_mail_archive(settings, repo, args)
 
     started = datetime.now(KST)
     if not args.export_only:

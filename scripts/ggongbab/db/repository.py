@@ -14,8 +14,9 @@ from ..config import KST, PROMPT_VERSION
 from ..models import RawAttachment, RawItem
 from .supabase_client import SupabaseClient
 
-SOURCE_NAMES = {"dooray": "Dooray", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal"}
-SOURCE_PRIORITY = {"manual": 5, "dooray": 10, "kaist_public": 20, "portal": 30}
+SOURCE_NAMES = {"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지",
+                "manual": "Manual", "portal": "KAIST Portal"}
+SOURCE_PRIORITY = {"manual": 5, "dooray": 10, "dooray_mailbox": 15, "kaist_public": 20, "portal": 30}
 
 
 def _now() -> str:

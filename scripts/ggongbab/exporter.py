@@ -15,7 +15,8 @@ from typing import Any, Optional
 from .config import DATA_DIR, KST, Settings
 from .parsers.validator import parse_iso
 
-PUBLIC_SOURCE_NAMES = {"dooray": "Dooray", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal"}
+PUBLIC_SOURCE_NAMES = {"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지",
+                       "manual": "Manual", "portal": "KAIST Portal"}
 TRI = ("true", "false", "unknown")
 
 

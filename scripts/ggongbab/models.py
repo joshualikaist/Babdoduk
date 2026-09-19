@@ -10,7 +10,7 @@ from typing import Any, Callable, Literal, Optional
 
 from pydantic import BaseModel, Field
 
-SourceType = Literal["dooray", "kaist_public", "manual", "portal"]
+SourceType = Literal["dooray", "dooray_mailbox", "kaist_public", "manual", "portal"]
 Tri = Literal["true", "false", "unknown"]
 FoodType = Literal["meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"]
 

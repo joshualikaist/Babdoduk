@@ -103,7 +103,7 @@ GG_PRIVATE_KEYS = {
     "metadata", "review_reason",
 }
 GG_FOOD_TYPES = {"meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"}
-GG_SOURCE_TYPES = {"dooray", "kaist_public", "manual", "portal"}
+GG_SOURCE_TYPES = {"dooray", "dooray_mailbox", "kaist_public", "manual", "portal"}
 GG_TRI = {"true", "false", "unknown"}
 KST_OFFSET = timedelta(hours=9)
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
