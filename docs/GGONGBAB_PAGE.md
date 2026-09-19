@@ -55,7 +55,7 @@ KAIST Portal (stub, disabled)                            ─┘
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (257개) |
+| `tests/ggongbab/` | pytest (268개) |
 
 ---
 
@@ -542,7 +542,8 @@ python scripts\dooray_web_agent.py --setup
 메일 목록이 보이면 이 터미널에서 Enter를 누르세요.
 ```
 
-3. 브라우저에서 **받은메일함으로 이동**한 뒤 터미널에서 **Enter** 를 누른다.
+3. 브라우저에서 **받은메일함으로 이동**한다. **Enter 는 누르지 않는다.**
+   받은메일함이 감지되면 자동으로 다음 단계로 넘어간다.
 4. **열려 있는 모든 페이지와 프레임을 다시 훑어** 받은메일함을 고르고, 그 URL 을 `mail_url` 로 기록한다.
    같은 실행 안에서 discovery 까지 끝난다. **`--setup` 을 두 번 실행할 필요가 없다.**
 
@@ -568,10 +569,14 @@ reloading inbox...
 
 세션은 `.local/dooray-browser-profile/` 에 남는다 (gitignore).
 
-> **왜 Enter 가 필요한가.** 로그인 직후 Dooray 는 홈·프로젝트·메신저 중 아무 데나 랜딩할 수 있다.
-> "세션이 생겼다"와 "받은메일함에 도착했다"는 다른 사실이므로 분리했다. 이전 판은 로그인 직후 URL 을
-> 그대로 `mail_url` 로 저장했고, 그러면 discovery 가 메일 API 대신 홈 API 를 관찰하게 된다.
-> **이 Enter 는 최초 설정에서 딱 한 번뿐이고, 이후 자동 실행에는 어떤 입력도 요구하지 않는다.**
+> **왜 Enter 가 사라졌는가.** setup 에 필요한 성공 조건은 "로그인했다"가 아니라 **"받은메일함이 떴다"** 이다.
+> 같은 호스트의 `/mail/` 페이지나 프레임이 실제로 그려졌다면 SSO 성공은 이미 성립한다.
+> 예전에는 범용 인증 감지기가 먼저 통과해야 메일함 탐지까지 갈 수 있었는데, 그 감지기가 실제 환경과
+> 계속 어긋나 진행을 막았다. 이제 `select_mail_page()` 하나만 폴링한다.
+>
+> **프레임 순서 주의.** 이 테넌트에서는 최상위가 `/idp/multi` 인 채로 메일함이 자식 프레임의
+> `/mail/systems/inbox` 에 그려지는 구조가 실제로 나온다. 그래서 프레임 검사를 **로그인 URL 판정보다 먼저**
+> 한다. 순서가 반대면, 사용자가 보고 있는 메일함을 두고 "identity provider" 라고 보고하게 된다.
 
 ### mail_url 저장 전 안전 검증
 

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """Unattended Dooray mailbox agent: scan -> filter -> register as project task.
 
-One manual SSO login plus one Enter to confirm the inbox, then no human input:
+One manual SSO login, then no human input at all:
 
     python scripts/dooray_web_agent.py --setup        # opens https://kaist.gov-dooray.com/
-    python scripts/dooray_web_agent.py --discover
+    python scripts/dooray_web_agent.py --calibrate
     python scripts/dooray_web_agent.py --run --run-pipeline
 
 The agent does no event analysis. It moves candidate mails into the collection
@@ -32,7 +32,7 @@ from ggongbab.prefilter import classify  # noqa: E402
 from ggongbab.web import browser as browser_mod  # noqa: E402
 from ggongbab.web import exit_codes  # noqa: E402
 from ggongbab.web.browser import (DEFAULT_DOORAY_URL, SETUP_TIMEOUT_SECONDS,  # noqa: E402
-                                  browser_session, wait_for_login)
+                                  browser_session)
 from ggongbab.web.calibrate import calibrate  # noqa: E402
 from ggongbab.web.exit_codes import (NAMES, SUCCESS, AgentError, AuthRequired,  # noqa: E402
                                      PipelineFailed, UiContractError)
@@ -93,17 +93,58 @@ def _report_findings(report: dict) -> None:
         log("  -> no read-state flag was seen, so no --preserve-unread option is offered.")
 
 
-def _confirm(prompt: str) -> bool:
-    """Wait for Enter. False when there is no one to ask.
+def wait_for_mailbox(session, origin_host: str, timeout_seconds: int, log=print,
+                     poll_seconds: float = 1.0, stable_polls: int = 3):
+    """Poll until the mailbox itself is on screen. No Enter, no separate auth gate.
 
-    isatty() is not a reliable guard on Windows, where NUL is a character device
-    and reports as a terminal, so the real check is that reading gives EOF.
+    Setup used to run two detectors: a generic "are we logged in" check and then
+    `select_mail_page`. The first kept disagreeing with reality and blocked the
+    second from ever running. The condition setup actually needs is the second one:
+    if a mailbox is rendering on this tenant's host, the SSO login already
+    succeeded, so that is the only gate now.
     """
-    try:
-        input(prompt)
-        return True
-    except (EOFError, KeyboardInterrupt):
-        return False
+    import time
+
+    from ggongbab.web.browser import observe_pages
+
+    deadline = time.time() + timeout_seconds
+    last_report = ""
+    streak_key = ""
+    streak = 0
+    while time.time() < deadline:
+        observations = observe_pages(session.context, session.contract, origin_host)
+        report = ["[setup] observed:"]
+        for obs in observations[:3]:
+            report.extend(obs.lines())
+        if not observations:
+            report.append("  (no open page yet)")
+        text = "\n".join(report)
+        if text != last_report:          # only when the picture changes
+            log(text)
+            last_report = text
+
+        target = select_mail_page(session.context, origin_host)
+        if target is not None:
+            key = f"{id(target.page)}|{target.url}"
+            if key == streak_key:
+                streak += 1
+            else:
+                streak_key, streak = key, 1
+            if streak >= stable_polls:
+                return target
+        else:
+            streak_key, streak = "", 0
+        time.sleep(poll_seconds)
+
+    final = observe_pages(session.context, session.contract, origin_host)
+    log("")
+    log(f"open pages: {len(final)}")
+    for obs in final:
+        for line in obs.lines():
+            log(line)
+    raise AuthRequired(
+        f"no Dooray mailbox appeared within {timeout_seconds // 60} minutes",
+        hint="finish the SSO login and open [메일] -> [받은메일함] in the browser window")
 
 
 def cmd_setup(args) -> int:
@@ -113,49 +154,27 @@ def cmd_setup(args) -> int:
     log(f"Opening {start}")
     log("A browser window will open. Log in with KAIST SSO there.")
     log("Nothing is typed for you, and no password is read or stored.")
-    log(f"Waiting up to {SETUP_TIMEOUT_SECONDS // 60} minutes for the SSO login...")
+    log("")
+    log("로그인한 뒤 Dooray에서 [메일] -> [받은메일함] 으로 이동하세요.")
+    log("받은메일함이 감지되면 자동으로 계속됩니다. Enter를 누를 필요 없습니다.")
+    log(f"Waiting up to {SETUP_TIMEOUT_SECONDS // 60} minutes for the inbox...")
     with browser_session(PROFILE_DIR, contract, headless=False, start_url=start) as session:
-        landing = wait_for_login(session, log=log, host=origin_host)
-        log("")
-        log("로그인되었습니다.")
-        log(f"  landing page: {landing.split('?')[0]}")
-        log("")
-        log("Dooray에서 [메일] -> [받은메일함] 으로 이동하세요.")
-        log("받은메일함 목록이 보이면 이 터미널에서 Enter를 누르세요.")
-        log("(이 Enter는 최초 설정에서 한 번뿐입니다. 이후 자동 실행에는 입력이 없습니다.)")
-
-        # Attached to the CONTEXT, not to the launch page: Dooray may put the
-        # mailbox in another tab, and a page listener would miss all of its calls.
+        # Attached to the CONTEXT from the start, so a mailbox opened in another
+        # tab or frame still has its traffic observed.
         observer = NetworkObserver(session.context)
         observer.start()
         try:
-            if not _confirm("\nEnter를 누르면 현재 받은메일함을 기록합니다... "):
-                log("")
-                log("[error] --setup needs an interactive terminal: it waits for you to")
-                log("        reach 받은메일함 and press Enter. Run it from a normal")
-                log("        Command Prompt or PowerShell window, not from a scheduled task.")
-                return 1
+            target = wait_for_mailbox(session, origin_host, SETUP_TIMEOUT_SECONDS, log=log)
+            session.page = target.page
             observer.on_mail_screen = True
-
-            # Never trust the page we launched: look at every page and frame.
-            targets = collect_targets(session.context, origin_host)
             log("")
-            for line in describe(targets):
-                log(line)
-            target = select_mail_page(session.context, origin_host)
-            if target is None:
-                log("")
-                log("[refused] none of the open pages looks like a mailbox.")
-                log("          No page is under the /mail/ area and none shows mail-row-like")
-                log("          repetition. mail_url was NOT saved.")
-                log("          Re-run --setup and press Enter while 받은메일함 is on screen.")
-                return exit_codes.UI_CHANGED
-            if session.contract.looks_like_login(target.url):
-                raise AuthRequired("the browser is back on a login screen",
-                                   hint="run --setup again and finish the SSO login")
-
+            log("[setup] mailbox detected")
+            log(f"  top  : {urlparse(target.page.url or '').path or '/'}")
+            if not target.is_main:
+                log(f"  frame: {urlparse(target.url).path or '/'}")
             log("")
-            log(f"selected mail page:\n  {target.location}")
+            log("selected mail page:")
+            log(f"  {target.location}")
             log("")
             log("observing inbox...")
             observe(session, observer, seconds=6, target=target)
@@ -165,40 +184,23 @@ def cmd_setup(args) -> int:
             mail_url = target.frame.url or target.url
             row_evidence = mail_row_evidence(target.frame)
             report = write_discovery_report(observer, row_evidence, DISCOVERY_FILE,
-                                            page_url=mail_url, confirmed_by_user=True)
+                                            page_url=mail_url, confirmed_by_user=False)
         finally:
             observer.stop()
 
-    evidence = report.get("evidence") or {}
-    # B alone is never enough. Repetition alone is never enough either: a home page
-    # has plenty of repeated elements. It takes a real mail-list call, or DOM rows
-    # that carry dates and ids the way mail rows do.
-    corroborated = bool(evidence.get("A_mailListCallObserved")) or bool(evidence.get("C_strong"))
-    if not corroborated:
-        log("")
-        log("[refused] that page did not produce mail evidence.")
-        log("          No mail-list JSON call, and its repeated containers do not look")
-        log("          like mail rows (no per-row dates/ids). mail_url was NOT saved.")
-        _report_findings(report)
-        return exit_codes.UI_CHANGED
-
     contract.mail_url = mail_url      # overwrites an earlier wrong value
-    contract.verified = False         # a human still confirms the endpoint shape
+    contract.verified = False         # --calibrate still has to prove the endpoint
     contract.save(CONTRACT_FILE)
     log("")
-    log(f"mail_url recorded:\n  {mail_url.split('?')[0]}")
+    log("mail_url recorded:")
+    log(f"  {mail_url.split('?')[0]}")
     log(f"session stored in  {PROFILE_DIR}")
     _report_findings(report)
     log("")
     log(f"report: {DISCOVERY_FILE}")
     log("setup complete.")
     log("")
-    if report.get("recommendedListApi"):
-        log("Next: confirm the recommended list_api above really is the inbox, copy it")
-        log(f"      into {CONTRACT_FILE} as \"list_api\", then set \"verified\": true.")
-    else:
-        log("Next: pick a list_api from the candidates above, put it in")
-        log(f"      {CONTRACT_FILE}, then set \"verified\": true by hand.")
+    log(r"Next:  python scripts\dooray_web_agent.py --calibrate")
     return SUCCESS
 
 

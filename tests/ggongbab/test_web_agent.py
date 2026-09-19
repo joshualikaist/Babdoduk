@@ -540,10 +540,19 @@ class FakeFrame:
 
 
 class FakeCtxPage:
-    def __init__(self, *frames, closed=False):
+    def __init__(self, *frames, closed=False, ready_state="interactive", text=0):
         self.frames = list(frames)
         self._closed = closed
+        self._ready_state = ready_state
+        self._text = text
         self.reloads = 0
+
+    @property
+    def url(self):
+        return self.frames[0].url if self.frames else ""
+
+    def evaluate(self, _js):
+        return {"ready": self._ready_state, "body": True, "text": self._text}
 
     def is_closed(self):
         return self._closed
@@ -1402,3 +1411,152 @@ def test_mail_frame_on_another_host_is_ignored():
     page = FakeLoginPage(ROOT_URL, ready_state="interactive", text=0,
                          frame_urls=["https://evil.example/mail/systems/inbox"])
     assert _observe(page).classification == "not-ready"
+
+
+# --- the mailbox lives in a frame under an /idp/ shell -------------------------
+# Real report: the user was reading the inbox while the terminal insisted on
+# "identity-provider". observe_page returned on the login URL before it ever
+# looked at the frames.
+def test_A_idp_shell_with_a_mail_frame_is_authenticated():
+    page = FakeLoginPage(IDP_URL, ready_state="interactive", text=0, frame_urls=[MAIL_URL])
+    obs = _observe(page)
+    assert obs.classification == "authenticated-mail-frame"
+    assert obs.frame_url == MAIL_URL and obs.authenticated
+
+
+def test_B_idp_shell_without_a_mail_frame_is_still_the_identity_provider():
+    page = FakeLoginPage(IDP_URL)
+    assert _observe(page).classification == "identity-provider"
+
+
+def test_C_root_shell_with_a_mail_frame_is_authenticated():
+    page = FakeLoginPage(ROOT_URL, ready_state="interactive", text=0, frame_urls=[MAIL_URL])
+    assert _observe(page).classification == "authenticated-mail-frame"
+
+
+def test_frames_are_checked_before_the_login_url():
+    """Guards the ordering itself, which is what the bug was."""
+    import inspect
+
+    from ggongbab.web import browser
+
+    source = inspect.getsource(browser.observe_page)
+    assert source.index("_mail_frame_url") < source.index("looks_like_login"), \
+        "frame inspection must come first"
+
+
+def test_streak_key_includes_the_frame_and_classification():
+    import inspect
+
+    from ggongbab.web import browser
+
+    source = inspect.getsource(browser.wait_for_login)
+    assert "best.frame_url" in source and "best.classification" in source
+
+
+# --- setup gates on the mailbox, not on a generic auth check -------------------
+AGENT_PATH = Path(__file__).resolve().parents[2] / "scripts" / "dooray_web_agent.py"
+
+
+def test_D_setup_does_not_call_wait_for_login():
+    source = AGENT_PATH.read_text(encoding="utf-8")
+    start = source.index("def cmd_setup(")
+    end = source.index("def cmd_discover(")
+    assert "wait_for_login" not in source[start:end]
+
+
+def test_F_setup_does_not_wait_for_enter():
+    source = AGENT_PATH.read_text(encoding="utf-8")
+    start = source.index("def cmd_setup(")
+    end = source.index("def cmd_discover(")
+    body = source[start:end]
+    assert "input(" not in body and "_confirm" not in body
+
+
+def test_E_setup_polls_select_mail_page_until_the_mailbox_appears():
+    """The mailbox only shows up on the third poll; setup must keep looking."""
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session
+
+    shell_no_frame = FakeLoginPage(IDP_URL)
+    calls = {"n": 0}
+
+    class LateContext:
+        """Frames appear only after a few polls, like a user clicking [메일]."""
+
+        def __init__(self):
+            self.shell = FakeCtxPage(FakeFrame(IDP_URL, generic_groups()))
+
+        @property
+        def pages(self):
+            calls["n"] += 1
+            if calls["n"] >= 3 and len(self.shell.frames) == 1:
+                self.shell.frames.append(FakeFrame(MAIL_URL, mail_row_groups()))
+            return [self.shell]
+
+    context = LateContext()
+    session = Session(page=context.pages[0], context=context, contract=UiContract())
+    target = agent.wait_for_mailbox(session, HOST, timeout_seconds=5, log=lambda *_a: None,
+                                    poll_seconds=0, stable_polls=2)
+    assert target is not None and target.url == MAIL_URL
+    assert calls["n"] >= 3
+
+
+def test_G_mailbox_must_hold_still_before_setup_accepts_it():
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session
+
+    shell = FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()), FakeFrame(MAIL_URL, mail_row_groups()))
+    context = FakeContext(shell)
+    session = Session(page=shell, context=context, contract=UiContract())
+    polls = {"n": 0}
+
+    def counting_log(*_a):
+        polls["n"] += 1
+
+    target = agent.wait_for_mailbox(session, HOST, timeout_seconds=5, log=counting_log,
+                                    poll_seconds=0, stable_polls=3)
+    assert target.url == MAIL_URL
+
+
+def test_setup_timeout_lists_what_was_seen():
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session
+
+    context = FakeContext(FakeCtxPage(FakeFrame(IDP_URL, generic_groups())))
+    session = Session(page=context.pages[0], context=context, contract=UiContract())
+    lines = []
+    with pytest.raises(AuthRequired) as exc:
+        agent.wait_for_mailbox(session, HOST, timeout_seconds=1, log=lines.append,
+                               poll_seconds=0, stable_polls=2)
+    joined = "\n".join(lines)
+    assert "open pages:" in joined and "/idp/multi" in joined
+    assert "받은메일함" in (exc.value.hint or "")
+
+
+def test_H_setup_logs_carry_no_query_or_content():
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session
+
+    secret_url = MAIL_URL + "?token=secret123&u=someone@kaist.ac.kr"
+    shell = FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()), FakeFrame(secret_url, mail_row_groups()))
+    context = FakeContext(shell)
+    session = Session(page=shell, context=context, contract=UiContract())
+    lines = []
+    agent.wait_for_mailbox(session, HOST, timeout_seconds=5, log=lines.append,
+                           poll_seconds=0, stable_polls=2)
+    joined = "\n".join(lines)
+    assert "secret123" not in joined and "someone@kaist.ac.kr" not in joined
+    assert "?" not in joined

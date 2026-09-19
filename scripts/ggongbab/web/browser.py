@@ -266,9 +266,13 @@ def observe_page(page, contract: UiContract, host: str = "") -> Optional[PageObs
     if host and urlparse(url).netloc.lower() != host.lower():
         obs.classification = "other-host"
         return obs
-    if contract.looks_like_login(url):
-        obs.classification = "identity-provider"
-        return obs
+
+    # Frames are inspected BEFORE the login check, and that ordering is the whole
+    # point. On this tenant the shell often sits at /idp/multi while the mailbox
+    # renders in a child frame at /mail/systems/inbox. Returning "identity
+    # provider" on the top URL first meant the frame was never looked at, so a
+    # mailbox the user was reading on screen was reported as a login page.
+    obs.frame_url = _mail_frame_url(page, host)
 
     state: dict = {}
     try:
@@ -280,14 +284,17 @@ def observe_page(page, contract: UiContract, host: str = "") -> Optional[PageObs
     obs.text_len = int(state.get("text") or 0)
     reachable = bool(obs.ready) and obs.ready != "error"
 
-    obs.frame_url = _mail_frame_url(page, host)
     if MAIL_PATH.match(path):
         # Being inside the mail application is itself the signal. A rendered
         # mailbox can still report `interactive`, so readiness is not demanded.
         obs.classification = "authenticated-mail" if reachable or obs.has_body else "not-ready"
         return obs
     if obs.frame_url:
-        obs.classification = "authenticated-mail-frame" if reachable or obs.has_body else "not-ready"
+        # A mail frame on the same host proves the session, whatever the shell says.
+        obs.classification = "authenticated-mail-frame"
+        return obs
+    if contract.looks_like_login(url):
+        obs.classification = "identity-provider"
         return obs
     if path not in ("", "/"):
         obs.classification = ("authenticated-app"
@@ -360,7 +367,9 @@ def wait_for_login(session: Session, timeout_seconds: int = SETUP_TIMEOUT_SECOND
         say("\n".join(report))
 
         if best is not None:
-            key = f"{id(best.page)}|{best.url}"
+            # The frame URL and the classification are part of the identity: a
+            # mail frame must be present on consecutive polls, not just once.
+            key = f"{id(best.page)}|{best.url}|{best.frame_url}|{best.classification}"
             if key == streak_url:
                 streak += 1
             else:
