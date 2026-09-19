@@ -84,7 +84,7 @@ def validate_export(path: Path) -> list[str]:
 
 def export(settings: Settings, repo, dry_run: bool) -> int:
     rows = repo.publishable_events()
-    payload = build_payload(rows, settings)
+    payload = build_payload(rows, settings, food_only=True)
     if dry_run:
         print(json.dumps(payload, ensure_ascii=False, indent=2)[:4000])
         return 0

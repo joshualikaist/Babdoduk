@@ -138,11 +138,16 @@ def _norm_title(title: str) -> str:
 
 
 def validate_ggongbab(path: Path, now: datetime | None = None) -> list[str]:
-    errors: list[str] = []
     try:
         data = load(path)
     except (OSError, json.JSONDecodeError) as exc:
         return [f"ggongbab JSON invalid: {exc}"]
+    return validate_ggongbab_payload(data, now)
+
+
+def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[str]:
+    """Validate in memory too, so local preview rejects PII before writing JSON."""
+    errors: list[str] = []
     now = now or datetime.now(KST)
     generated = _iso(data.get("generatedAt"))
     if generated is None:
@@ -156,7 +161,7 @@ def validate_ggongbab(path: Path, now: datetime | None = None) -> list[str]:
         return errors + ["ggongbab events must be a list"]
     if data.get("count") is not None and data.get("count") != len(events):
         errors.append("ggongbab count does not match events length")
-    raw_text = path.read_text(encoding="utf-8")
+    raw_text = json.dumps(data, ensure_ascii=False)
     if EMAIL_RE.search(raw_text):
         errors.append("ggongbab export contains an e-mail address")
     if PHONE_RE.search(raw_text):

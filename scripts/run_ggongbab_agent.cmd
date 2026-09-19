@@ -13,7 +13,7 @@ echo. >> ".local\agent.log"
 echo ===== %DATE% %TIME% ===== >> ".local\agent.log"
 
 REM --cdp attaches to the resident Chrome; the login only survives there.
-python scripts\dooray_web_agent.py --run --since-last-run --run-pipeline --cdp >> ".local\agent.log" 2>&1
+python scripts\dooray_web_agent.py --run --since-last-run --read-state read --run-pipeline --cdp >> ".local\agent.log" 2>&1
 set RESULT=%ERRORLEVEL%
 
 if %RESULT% EQU 10 (

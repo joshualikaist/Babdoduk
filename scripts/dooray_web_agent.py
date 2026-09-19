@@ -452,6 +452,35 @@ def _run_pipeline() -> int:
     return SUCCESS
 
 
+def cmd_preview_feed(args) -> int:
+    from ggongbab.preview import collect_candidates, generate_preview
+
+    if args.read_state != "read":
+        raise UiContractError("preview-feed requires --read-state read")
+    if args.run_pipeline or args.since_last_run:
+        raise UiContractError("preview-feed uses explicit dates and cannot run the ingest pipeline")
+    if args.max_ai_candidates < 1 or args.max_mails < 1:
+        raise UiContractError("preview limits must be positive")
+    contract = load_contract(CONTRACT_FILE)
+    contract.require_ready()
+    if not contract.list_api or not contract.read_state_key:
+        raise UiContractError("preview-feed requires a calibrated mailbox API and read-state field")
+    start = args.date_from or (datetime.now(KST).date() - timedelta(days=args.days - 1))
+    end = args.date_to or datetime.now(KST).date()
+    if start > end:
+        raise UiContractError("--from must not be later than --to")
+    with open_session(contract, headless=not args.headed, start_url=contract.mail_url,
+                      cdp=args.cdp, port=args.debug_port) as session:
+        session.assert_authenticated()
+        target = select_mail_page(session.context, urlparse(contract.mail_url).netloc)
+        items, counts = collect_candidates(
+            session, start, end, limit=args.max_mails, target=target,
+            read_state=args.read_state, fetch_body=args.open_body and not args.subject_only, log=log)
+    generate_preview(items, counts, load_settings(), max_ai_candidates=args.max_ai_candidates,
+                     force=args.force, log=log)
+    return SUCCESS
+
+
 def cmd_calibrate(args) -> int:
     """Open the saved inbox, watch it load, verify the endpoint, write the contract."""
     contract = load_contract(CONTRACT_FILE)
@@ -541,6 +570,7 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--setup", action="store_true", help="open a browser once for the manual SSO login")
     mode.add_argument("--discover", action="store_true", help="record how the mail page loads")
     mode.add_argument("--run", action="store_true", help="unattended scan and register")
+    mode.add_argument("--preview-feed", action="store_true", help="local feed using real AI and memory storage only")
     mode.add_argument("--calibrate", action="store_true",
                       help="fill .local/dooray-ui.json from the live inbox (no hand editing)")
     mode.add_argument("--selftest", action="store_true", help="create one harmless task to verify write access")
@@ -560,6 +590,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--since-last-run", action="store_true", help="scan from the previous run (with a day of overlap)")
     parser.add_argument("--days", type=int, default=3, help="default window when no dates are given (default 3)")
     parser.add_argument("--max-mails", type=int, default=200, help="safety limit on rows read (default 200)")
+    parser.add_argument("--max-ai-candidates", type=int, default=50, help="preview AI candidate limit")
+    parser.add_argument("--force", action="store_true", help="explicitly exceed the preview AI candidate limit")
     parser.add_argument("--read-state", choices=["all", "read", "unread"], default="all",
                         help="which mails to process; 'read' never opens an unread mail")
     parser.add_argument("--project-name", default=DEFAULT_PROJECT_NAME,
@@ -588,6 +620,8 @@ def main() -> int:
             return cmd_calibrate(args)
         if args.selftest:
             return cmd_selftest(args)
+        if args.preview_feed:
+            return cmd_preview_feed(args)
         return cmd_run(args)
     except AgentError as exc:
         name = NAMES.get(exc.code, "ERROR")

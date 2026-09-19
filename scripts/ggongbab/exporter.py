@@ -93,11 +93,16 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[datetime] = None) -> dict[str, Any]:
+def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[datetime] = None,
+                  *, food_only: bool = False) -> dict[str, Any]:
     now = now or datetime.now(KST)
     horizon = now + timedelta(days=settings.export_horizon_days)
     events = []
     for row in rows:
+        # Keep the generic tri-state serializer reusable; the ggongbab feed
+        # opts into its explicit-food publication policy at the export boundary.
+        if food_only and tri_state(row.get("food_provided")) != "true":
+            continue
         if row.get("status") != "published" or row.get("needs_review"):
             continue
         if float(row.get("confidence") or 0) < settings.publish_confidence_threshold:
