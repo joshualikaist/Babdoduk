@@ -1857,6 +1857,8 @@ def test_heartbeat_breaks_the_silence_while_nothing_changes(monkeypatch):
     real_time = agent_time = __import__("time")
     monkeypatch.setattr(real_time, "time", lambda: clock["t"])
     monkeypatch.setattr(real_time, "sleep", lambda _s: clock.__setitem__("t", clock["t"] + 5))
+    monkeypatch.setattr(session.page, "wait_for_timeout",
+                        lambda _ms: clock.__setitem__("t", clock["t"] + 5))
 
     lines = []
     with pytest.raises(AuthRequired):
@@ -2008,3 +2010,104 @@ def test_timeout_recommends_the_resident_mode():
                                tracer=LifecycleTracer(context, log=lambda *_a: None))
     joined = "\n".join(lines)
     assert "--setup --cdp" in joined
+
+
+class CdpTestContext(TraceContext):
+    def __init__(self, *pages):
+        super().__init__(*pages)
+        self.timeouts = []
+
+    def set_default_timeout(self, ms):
+        self.timeouts.append(ms)
+
+    def new_page(self):
+        raise AssertionError("An existing inbox must be reused without opening a tab")
+
+
+def test_setup_follows_new_cdp_context_and_pumps_sso_events():
+    from types import SimpleNamespace
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session, DETECT_TIMEOUT_MS, NAV_TIMEOUT_MS
+    from ggongbab.web.resident import BrowserScope
+
+    sso = FakeCtxPage(FakeFrame(LOGIN_URL))
+    inbox = FakeCtxPage(FakeFrame(INBOX_URL, mail_row_groups()))
+    first, second = CdpTestContext(sso), CdpTestContext(inbox)
+    browser = SimpleNamespace(contexts=[first])
+    scope = BrowserScope(browser, 9222)
+    session = Session(sso, scope, UiContract())
+    # Model Playwright: context creation becomes visible only when events run.
+    sso.wait_for_timeout = lambda _ms: browser.contexts.append(second) if second not in browser.contexts else None
+    seen_pages, seen_responses = [], []
+    scope.on("page", seen_pages.append)
+    scope.on("response", seen_responses.append)
+    target = agent.wait_for_mailbox(session, HOST, 5, log=lambda *_: None,
+                                    poll_seconds=0, stable_polls=2)
+    assert target.page is inbox
+    assert seen_pages == [inbox]
+    assert second.timeouts[0] == DETECT_TIMEOUT_MS
+    assert first.timeouts[-1] == second.timeouts[-1] == NAV_TIMEOUT_MS
+    second.fire("response", "inbox request")
+    assert seen_responses == ["inbox request"]
+    scope.remove_listener("response", seen_responses.append)
+    second.fire("response", "detached")
+    assert seen_responses == ["inbox request"]
+
+
+def test_cdp_scope_drops_closed_contexts_and_filters_other_hosts():
+    from types import SimpleNamespace
+    from ggongbab.web.resident import BrowserScope
+    from ggongbab.web.page_select import select_mail_page
+
+    wrong = FakeCtxPage(FakeFrame("https://other.example/mail/systems/inbox"))
+    inbox = FakeCtxPage(FakeFrame(INBOX_URL))
+    first, second = CdpTestContext(wrong), CdpTestContext(inbox)
+    browser = SimpleNamespace(contexts=[first, second])
+    scope = BrowserScope(browser, 9222)
+    assert select_mail_page(scope, HOST).page is inbox
+    browser.contexts.remove(second)
+    assert scope.pages == [wrong]
+    assert select_mail_page(scope, HOST) is None
+
+
+def test_resident_reuses_inbox_in_second_context_without_navigation(monkeypatch, tmp_path):
+    from contextlib import contextmanager
+    from types import SimpleNamespace
+    from ggongbab.web import resident
+
+    sso = FakeCtxPage(FakeFrame(LOGIN_URL))
+    inbox = FakeCtxPage(FakeFrame(INBOX_URL))
+    closed = []
+    browser = SimpleNamespace(contexts=[CdpTestContext(sso), CdpTestContext(inbox)],
+                              close=lambda: closed.append(True))
+
+    @contextmanager
+    def playwright():
+        yield SimpleNamespace(chromium=SimpleNamespace(connect_over_cdp=lambda *_a, **_kw: browser))
+
+    monkeypatch.setattr(resident, "_playwright", lambda: playwright)
+    monkeypatch.setattr(resident, "is_running", lambda _port: {"Browser": "Chrome"})
+    with resident.resident_session(tmp_path, UiContract(), start_url=ROOT_URL,
+                                    log=lambda *_: None) as session:
+        assert session.page is inbox
+        assert session.context.pages == [sso, inbox]
+        assert inbox.frames[0].gotos == sso.frames[0].gotos == 0
+    assert closed == [True]
+
+
+@pytest.mark.parametrize("mail_seen", [False, True])
+def test_cdp_diagnostics_distinguish_targets_and_redact_secrets(monkeypatch, mail_seen):
+    import io
+    import json
+    from types import SimpleNamespace
+    from ggongbab.web import resident
+
+    url = (INBOX_URL if mail_seen else LOGIN_URL) + "?token=secret#private"
+    payload = json.dumps([{"type": "page", "url": url, "title": "private title"}]).encode()
+    monkeypatch.setattr(resident.urllib.request, "urlopen", lambda *_a, **_kw: io.BytesIO(payload))
+    lines = []
+    resident.BrowserScope(SimpleNamespace(contexts=[]), 9333).diagnose(HOST, lines.append)
+    report = "\n".join(lines)
+    assert "127.0.0.1:9333" in report
+    assert "secret" not in report and "private" not in report
+    assert ("CDP sees a mail tab" if mail_seen else "another Chrome/profile") in report

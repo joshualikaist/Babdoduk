@@ -154,7 +154,18 @@ def wait_for_mailbox(session, origin_host: str, timeout_seconds: int, log=print,
                     return target
             else:
                 streak_key, streak = "", 0
-            time.sleep(poll_seconds)
+            # time.sleep starves Playwright's sync event loop. On an SSO host
+            # both detectors can skip all protocol calls, leaving cached URLs
+            # and context.pages frozen even after the browser has navigated.
+            pages = list(session.context.pages)
+            pump = next((p for p in pages if not p.is_closed()), None)
+            if pump is not None and callable(getattr(pump, "wait_for_timeout", None)):
+                try:
+                    pump.wait_for_timeout(poll_seconds * 1000)
+                except Exception:  # the page can close during the wait
+                    pass
+            else:
+                time.sleep(poll_seconds)
     finally:
         try:
             session.context.set_default_timeout(NAV_TIMEOUT_MS)
@@ -167,15 +178,18 @@ def wait_for_mailbox(session, origin_host: str, timeout_seconds: int, log=print,
     for obs in final:
         for line in obs.lines():
             log(line)
+    diagnose = getattr(session.context, "diagnose", None)
+    if callable(diagnose):
+        diagnose(origin_host, log)
     if tracer is not None:
         log("")
         for line in tracer.summary():
             log(f"  {line}")
-        if not tracer.saw_path("/mail"):
+        if not tracer.saw_path("/mail") and not callable(diagnose):
             log("")
             log("  No /mail/... navigation ever reached this browser context.")
-            log("  If the mailbox was visible on screen, it was rendered by a browser")
-            log("  this agent is not driving, and the login handed off elsewhere.")
+            log("  If the mailbox was visible on screen, it may be in another browser")
+            log("  or context. This trace alone cannot prove where login completed.")
             log("")
             log("  Try the resident-Chrome mode, which attaches to a real Chrome and")
             log("  therefore sees every window that browser opens:")
@@ -314,10 +328,14 @@ def _window(args, state: AgentState) -> tuple[date, date]:
 
 
 def cmd_run(args) -> int:
-    settings = load_settings()
-    state = AgentState.load(STATE_FILE)
     contract = load_contract(CONTRACT_FILE)
     contract.require_ready()
+    if args.read_state != "all" and contract.list_api and not contract.read_state_key:
+        raise UiContractError(
+            "read-state was requested, but the calibrated mailbox API exposes no verified read-state field.",
+            hint="Use --subject-only --dry-run for a read-only diagnostic.")
+    settings = load_settings()
+    state = AgentState.load(STATE_FILE)
 
     start, end = _window(args, state)
     log(f"{stamp()}")
@@ -339,6 +357,10 @@ def cmd_run(args) -> int:
             raise UiContractError("could not find the mailbox page",
                                   hint="run --calibrate again")
         headers = list_mails(session, limit=args.max_mails, target=target, since=start)
+        if args.read_state != "all" and any(h.unread is None for h in headers):
+            raise UiContractError(
+                "read-state is missing or invalid in mailbox rows; no mail bodies were opened.",
+                hint="re-run --calibrate; use --subject-only --dry-run for diagnostics")
         log(f"loaded rows: {len(headers)}")
         for header in headers:
             if header.received and not (start <= header.received <= end):
@@ -365,7 +387,7 @@ def cmd_run(args) -> int:
                     open_body(session, header, target=target)
                     opened += 1
                     decision = classify(header.subject, header.text_for_filter)
-            elif decision.candidate and args.open_body:
+            elif decision.candidate and args.open_body and not args.subject_only:
                 open_body(session, header, target=target)
                 opened += 1
             if not decision.candidate:
@@ -458,7 +480,7 @@ def cmd_calibrate(args) -> int:
                                             confirmed_by_user=False)
             log("")
             log("calibrating...")
-            summary = calibrate(target.page, observer, contract, log=log)
+            summary = calibrate(target.page, observer, contract, log=log, dom_frame=target.frame)
         finally:
             observer.stop()
 
@@ -482,10 +504,20 @@ def cmd_calibrate(args) -> int:
     log("")
     log("No task was created, no mail body was opened, nothing was written to the mailbox.")
     log("")
-    log("Next (dry run, writes nothing):")
-    log(r"  python scripts\dooray_web_agent.py --run --from 2026-09-01 --to 2026-09-19 ^")
-    log("      --read-state read --dry-run")
+    log_calibration_next(contract, cdp=args.cdp)
     return SUCCESS
+
+
+def log_calibration_next(contract, *, cdp=False, log=log):
+    today = datetime.now(KST).date()
+    log("Next (dry run):")
+    log(r"  python scripts\dooray_web_agent.py --run ^")
+    log(f"      --from {today.replace(day=1).isoformat()} ^")
+    log(f"      --to {today.isoformat()} ^")
+    log("      --read-state read ^" if contract.read_state_key else "      --subject-only ^")
+    log("      --dry-run" + (" ^" if cdp else ""))
+    if cdp:
+        log("      --cdp")
 
 
 def cmd_selftest(args) -> int:

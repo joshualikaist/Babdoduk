@@ -413,7 +413,8 @@ def _pick(row: dict[str, Any], *names: str) -> Any:
     return None
 
 
-def _from_json_rows(rows: list[dict[str, Any]]) -> list[MailHeader]:
+def _from_json_rows(rows: list[dict[str, Any]], read_state_key: Optional[str] = None) -> list[MailHeader]:
+    from .read_state import path_value, unread_value
     out: list[MailHeader] = []
     for row in rows:
         if not isinstance(row, dict):
@@ -423,10 +424,15 @@ def _from_json_rows(rows: list[dict[str, Any]]) -> list[MailHeader]:
         if mail_id is None or subject is None:
             continue
         received = parse_day(_pick(row, "receivedAt", "sentAt", "createdAt", "date", "receivedDate"))
-        unread = _pick(row, "unread", "isUnread", "unreadFlag")
-        if unread is None:
-            read_flag = _pick(row, "read", "isRead")
-            unread = (not read_flag) if read_flag is not None else None
+        unread = None
+        if read_state_key is not None:
+            unread = unread_value(path_value(row, read_state_key), read_state_key)
+        else:
+            # Legacy callers may parse top-level fields, using strict types.
+            states = [unread_value(row[key], key) for key in row
+                      if key.lower() in {"read", "isread", "unread", "isunread", "unreadflag", "seen"}]
+            if len(states) == 1:
+                unread = states[0]
         out.append(MailHeader(
             mail_id=str(mail_id),
             subject=str(subject),
@@ -474,7 +480,7 @@ def list_mails_via_api(session: Session, url: str, limit: int) -> list[MailHeade
     except Exception as exc:  # noqa: BLE001
         raise UiContractError("mail list endpoint did not return JSON",
                               hint="re-run --discover") from exc
-    headers = _from_json_rows(_find_rows(payload))
+    headers = _from_json_rows(_find_rows(payload), session.contract.read_state_key)
     if not headers:
         raise UiContractError("mail list endpoint returned no recognisable mail rows",
                               hint="re-run --discover and update list_api in .local/dooray-ui.json")
@@ -556,8 +562,7 @@ def list_mails_paged(session: Session, limit: int, target=None,  # noqa: ANN001
     for page_no in range(max_pages):
         url = set_query(contract.list_api, **{page_param: page_no}) if page_param else contract.list_api
         rows, page_headers = fetch_rows(page_obj, url)
-        if contract.read_state_key:
-            _apply_read_state(rows, page_headers, contract.read_state_key)
+        page_headers = _from_json_rows(rows, contract.read_state_key)
         fresh = [h for h in page_headers if h.mail_id and h.mail_id not in seen]
         if not fresh:
             stagnant += 1
@@ -580,12 +585,9 @@ def list_mails_paged(session: Session, limit: int, target=None,  # noqa: ANN001
 
 def _apply_read_state(rows: list[dict[str, Any]], headers: list[MailHeader], key: str) -> None:
     """Set unread from the field calibration actually found in the data."""
-    unread_field = str(key).lower().startswith(("unread", "isunread"))
-    for row, header in zip(rows, headers):
-        if key not in row:
-            continue
-        value = bool(row.get(key))
-        header.unread = value if unread_field else not value
+    parsed = {h.mail_id: h.unread for h in _from_json_rows(rows, key)}
+    for header in headers:
+        header.unread = parsed.get(header.mail_id)
 
 
 def open_body(session: Session, header: MailHeader, target=None) -> str:  # noqa: ANN001

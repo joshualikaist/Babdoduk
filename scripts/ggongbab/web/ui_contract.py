@@ -47,7 +47,7 @@ class UiContract:
     # Filled by --calibrate from the live endpoint, never guessed.
     list_page_param: str = ""     # query parameter used to page (e.g. "page")
     list_size_param: str = ""     # query parameter used for page size
-    read_state_key: str = ""      # row field holding read/unread, "" when none exists
+    read_state_key: str = ""      # validated dict path, e.g. annotations.read; no array indices
     notes: str = ""
 
     REQUIRED_DOM = ("mail_url", "logged_in_marker", "row", "row_subject")

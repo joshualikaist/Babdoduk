@@ -22,6 +22,7 @@ from typing import Any, Optional
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from .exit_codes import AuthRequired, UiContractError
+from .read_state import crosscheck_dom, inspect_read_schema, path_value, unread_value, safe_path
 from .mail_reader import (DATE_KEYS, ID_KEYS, READ_KEYS, SUBJECT_KEYS, MailHeader,
                           _find_rows, _from_json_rows, _lower, redact)
 
@@ -94,15 +95,8 @@ def choose_list_endpoint(calls: list[dict[str, Any]]) -> Optional[dict[str, Any]
 
 
 def detect_read_key(rows: list[dict[str, Any]]) -> str:
-    """The read/unread field name, only if it really exists and really varies."""
-    if not rows:
-        return ""
-    present = [k for k in rows[0] if str(k).lower() in READ_KEYS]
-    for key in present:
-        values = {bool(row.get(key)) for row in rows if key in row}
-        if values:
-            return key
-    return ""
+    """One explicit, consistently typed semantic field; never arbitrary truthiness."""
+    return inspect_read_schema(rows)[2]
 
 
 @dataclass
@@ -117,6 +111,9 @@ class SmokeResult:
     read_key: str = ""
     row_keys: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    nested_schema: dict[str, list[str]] = field(default_factory=dict)
+    read_candidates: list[dict] = field(default_factory=list)
+    dom_check: dict = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -135,7 +132,7 @@ class SmokeResult:
             out.append(f"read-state detected: {self.read_count} read / {self.unread_count} unread"
                        f"  (field: {self.read_key})")
         else:
-            out.append("read-state detected: none (no read/unread field in the rows)")
+            out.append("read-state detected: none (no unambiguous validated read-state field)")
         for err in self.errors:
             out.append(f"problem: {err}")
         return out
@@ -165,7 +162,7 @@ def fetch_rows(page, url: str) -> tuple[list[dict[str, Any]], list[MailHeader]]:
     return rows, _from_json_rows(rows)
 
 
-def smoke_test(page, url: str, limit: int = 10) -> SmokeResult:  # noqa: ANN001
+def smoke_test(page, url: str, limit: int = 10, dom_frame=None) -> SmokeResult:  # noqa: ANN001
     """Read a handful of headers. No body is opened and nothing is written."""
     result = SmokeResult()
     rows, headers = fetch_rows(page, url)
@@ -174,7 +171,12 @@ def smoke_test(page, url: str, limit: int = 10) -> SmokeResult:  # noqa: ANN001
         result.errors.append("endpoint returned no rows")
         return result
     result.row_keys = sorted(rows[0].keys())[:30]
-    result.read_key = detect_read_key(rows)
+    result.nested_schema, result.read_candidates, result.read_key = inspect_read_schema(rows)
+    if result.read_key and dom_frame is not None:
+        result.dom_check = crosscheck_dom(dom_frame, rows, result.read_key)
+        if result.dom_check["matched"] > result.dom_check["agreement"]:
+            # An explicit contradiction invalidates the field, not the list API.
+            result.read_key = ""
     headers = headers[:limit]
     result.headers_parsed = len(headers)
     ids = [h.mail_id for h in headers if h.mail_id]
@@ -183,8 +185,7 @@ def smoke_test(page, url: str, limit: int = 10) -> SmokeResult:  # noqa: ANN001
     result.dates_parsed = sum(1 for h in headers if h.received is not None)
     if result.read_key:
         for row in rows[:limit]:
-            value = bool(row.get(result.read_key))
-            unread = value if str(result.read_key).lower().startswith(("unread", "isunread")) else not value
+            unread = unread_value(path_value(row, result.read_key), result.read_key)
             if unread:
                 result.unread_count += 1
             else:
@@ -198,8 +199,10 @@ def smoke_test(page, url: str, limit: int = 10) -> SmokeResult:  # noqa: ANN001
     return result
 
 
-def calibrate(page, observer, contract, log=print) -> dict[str, Any]:  # noqa: ANN001
+def calibrate(page, observer, contract, log=print, dom_frame=None) -> dict[str, Any]:  # noqa: ANN001
     """Choose the endpoint, verify it, and fill the contract. Returns a summary."""
+    contract.verified = False
+    contract.read_state_key = ""
     candidates = [c for c in observer.calls.values() if (c.get("shape") or {}).get("kind") == "rows"]
     chosen = choose_list_endpoint(candidates)
     summary: dict[str, Any] = {"strategy": None, "listApi": None, "smoke": None}
@@ -210,9 +213,27 @@ def calibrate(page, observer, contract, log=print) -> dict[str, Any]:  # noqa: A
 
     raw_url = chosen.get("rawUrl") or ""
     log(f"list endpoint: {redact(raw_url)}")
-    log(f"  row keys: {', '.join((chosen.get('shape') or {}).get('rowKeys') or [])}")
+    log(f"  row keys: {', '.join(safe_path(k) for k in (chosen.get('shape') or {}).get('rowKeys') or [])}")
 
-    result = smoke_test(page, raw_url)
+    result = smoke_test(page, raw_url, dom_frame=dom_frame)
+    log("nested schema (key paths and primitive types only):")
+    for path, types in result.nested_schema.items():
+        if "." in path:
+            log(f"  {path}: {', '.join(types)}")
+    for candidate in result.read_candidates:
+        log(f"  read-state candidate: {candidate['path']} "
+            f"valid rows: {candidate['validRows']}/{candidate['rows']}")
+    if not result.read_candidates:
+        log("  read-state candidates: none")
+    if result.dom_check.get("verified"):
+        log("verified read-state candidate (DOM cross-check):")
+    elif result.dom_check.get("matched", 0) > result.dom_check.get("agreement", 0):
+        log("DOM read-state verification: disagreement; candidate rejected")
+    else:
+        log("DOM read-state verification: unavailable or insufficient; no UI agreement claimed")
+    if result.dom_check:
+        log(f"  matched rows: {result.dom_check['matched']}")
+        log(f"  agreement: {result.dom_check['agreement']}/{result.dom_check['matched']}")
     for line in result.lines():
         log(f"  {line}")
     summary["strategy"] = "api"

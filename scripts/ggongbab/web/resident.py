@@ -7,9 +7,10 @@ installed Chrome channel, the lifecycle trace showed:
     [trace] navigation  page #1  main  https://sso.kaist.ac.kr  /auth/kaist/user/login/view
     [setup] still waiting (92s) - other-host
 
-Page #1 sat on the KAIST SSO form for the whole run while the user finished
-logging in and reached the mailbox on screen. The login therefore completed in a
-browser this agent was not driving: a context escape, not a detection bug.
+Page #1 appeared to stay on the KAIST SSO form while the user reached the mailbox
+on screen. That alone cannot distinguish a different browser, an unobserved
+context, or a stale Playwright event loop. Setup must monitor all CDP contexts
+and keep processing browser events before diagnosing a hand-off.
 
 So instead of asking Playwright to own the browser, we start a normal Chrome
 ourselves with a dedicated profile and a debugging port, and attach to it. Every
@@ -31,10 +32,12 @@ import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator, Optional
+from urllib.parse import urlparse
 
 from .browser import NAV_TIMEOUT_MS, Session, ensure_session_restore, _playwright
 from .exit_codes import AgentError
 from .ui_contract import UiContract
+from .page_select import collect_targets
 
 DEBUG_HOST = "127.0.0.1"          # loopback only, never 0.0.0.0
 DEFAULT_DEBUG_PORT = 9222
@@ -48,6 +51,83 @@ WINDOWS_CHROME_PATHS = (
 
 class ResidentError(AgentError):
     code = 1
+
+
+class BrowserScope:
+    """Page discovery and observation across a CDP browser's live contexts.
+
+    Refresh on each poll: SSO may create a context after we attach. Existing
+    observers and the detection timeout must also follow those new contexts.
+    """
+
+    def __init__(self, browser, port):
+        self.browser = browser
+        self.port = port
+        self._contexts = []
+        self._listeners = []
+        self._timeout = NAV_TIMEOUT_MS
+
+    def refresh(self):
+        contexts = list(self.browser.contexts)
+        for context in contexts:
+            if context in self._contexts:
+                continue
+            self._contexts.append(context)
+            context.set_default_timeout(self._timeout)
+            for event, handler in list(self._listeners):
+                context.on(event, handler)
+                if event == "page":
+                    for page in list(context.pages):
+                        handler(page)
+        return contexts
+
+    @property
+    def pages(self):
+        return [page for context in self.refresh() for page in list(context.pages)]
+
+    def set_default_timeout(self, timeout):
+        self._timeout = timeout
+        for context in self.refresh():
+            context.set_default_timeout(timeout)
+
+    def on(self, event, handler):
+        for context in self.refresh():
+            context.on(event, handler)
+        self._listeners.append((event, handler))
+
+    def remove_listener(self, event, handler):
+        registered = [h for e, h in self._listeners if e == event and h == handler]
+        self._listeners = [(e, h) for e, h in self._listeners
+                           if not (e == event and h == handler)]
+        for context in self._contexts:
+            for callback in registered:
+                try:
+                    context.remove_listener(event, callback)
+                except Exception:  # a context may have closed during SSO
+                    pass
+
+    def diagnose(self, host, log):
+        """Compare protocol targets with Playwright, without titles or secrets."""
+        log(f"[setup] CDP endpoint: {endpoint(self.port)}")
+        log(f"[setup] Playwright contexts: {len(self.browser.contexts)}")
+        try:
+            with urllib.request.urlopen(f"{endpoint(self.port)}/json/list", timeout=2) as res:
+                targets = json.loads(res.read().decode("utf-8"))
+            mail_seen = False
+            for target in targets:
+                if target.get("type") != "page":
+                    continue
+                parsed = urlparse(target.get("url", ""))
+                log(f"  CDP page: {parsed.hostname or ''}{parsed.path}")
+                mail_seen |= (parsed.netloc.lower() == host.lower()
+                              and (parsed.path == "/mail" or parsed.path.startswith("/mail/")))
+            if mail_seen:
+                log("[setup] CDP sees a mail tab; Playwright did not select a stable mailbox.")
+            else:
+                log("[setup] No mail tab is visible at this CDP endpoint.")
+                log("[setup] If the inbox is visible, check whether it is in another Chrome/profile.")
+        except (urllib.error.URLError, OSError, ValueError):
+            log("[setup] Could not read CDP targets; check the resident Chrome connection.")
 
 
 def endpoint(port: int = DEFAULT_DEBUG_PORT) -> str:
@@ -138,13 +218,16 @@ def resident_session(profile_dir: Path, contract: UiContract, *, start_url: str 
             raise ResidentError(f"could not attach to Chrome ({exc.__class__.__name__})",
                                 hint=f"check that Chrome is listening on {DEBUG_HOST}:{port}") from exc
         contexts = list(browser.contexts) or [browser.new_context()]
-        context = contexts[0]
-        try:
-            context.set_default_timeout(NAV_TIMEOUT_MS)
-        except Exception:  # noqa: BLE001
-            pass
-        page = context.pages[0] if context.pages else context.new_page()
-        if start_url and existing:
+        context = BrowserScope(browser, port)
+        # URL-only lookup avoids evaluating unrelated tabs while attaching.
+        host = urlparse(start_url or contract.mail_url).netloc
+        targets = collect_targets(context, host, with_evidence=False) if host else []
+        mailbox = next((target for target in targets if target.mail_path), None)
+        pages = context.pages
+        page = mailbox.page if mailbox else (pages[0] if pages else contexts[0].new_page())
+        if start_url and existing and mailbox is None:
+            # Keep existing SSO/MFA tabs intact when attaching again.
+            page = contexts[0].new_page()
             try:
                 page.goto(start_url, wait_until="domcontentloaded")
             except Exception:  # noqa: BLE001
