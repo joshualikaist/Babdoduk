@@ -29,6 +29,9 @@ PROFILE_DIRNAME = "dooray-browser-profile"
 # Short enough that a bug shows up fast; login normally finishes in seconds.
 SETUP_TIMEOUT_SECONDS = 180
 NAV_TIMEOUT_MS = 45_000
+# Detection polls every page and frame; `evaluate` on a page that is mid-redirect
+# blocks until the context timeout, so the detection loop uses a short one.
+DETECT_TIMEOUT_MS = 4_000
 # The real KAIST tenant. Used when --setup is run without --url.
 DEFAULT_DOORAY_URL = "https://kaist.gov-dooray.com/"
 

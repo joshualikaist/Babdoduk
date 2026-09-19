@@ -1787,3 +1787,82 @@ def test_setup_passes_the_tracer_and_prefers_chrome():
     body = source[start:end]
     assert "LifecycleTracer" in body and "tracer=tracer" in body
     assert "log=log" in body, "the engine banner must reach the terminal"
+
+
+# --- the detection loop must not be starved by page.evaluate ------------------
+# Real report: after the SSO hop to sso.kaist.ac.kr the terminal went quiet. The
+# context default timeout was 45s and detection calls evaluate on every page and
+# frame each poll, so a page mid-redirect could stall the loop for most of the
+# budget while the "only log on change" rule kept the screen silent.
+class TimeoutRecordingContext(FakeContext):
+    def __init__(self, *pages):
+        super().__init__(*pages)
+        self.timeouts = []
+
+    def set_default_timeout(self, ms):
+        self.timeouts.append(ms)
+
+
+def test_detection_uses_a_short_timeout_and_restores_it():
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import DETECT_TIMEOUT_MS, NAV_TIMEOUT_MS, Session
+
+    shell = FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()), FakeFrame(MAIL_URL, mail_row_groups()))
+    context = TimeoutRecordingContext(shell)
+    session = Session(page=shell, context=context, contract=UiContract())
+    agent.wait_for_mailbox(session, HOST, timeout_seconds=5, log=lambda *_a: None,
+                           poll_seconds=0, stable_polls=2)
+    assert context.timeouts[0] == DETECT_TIMEOUT_MS
+    assert context.timeouts[-1] == NAV_TIMEOUT_MS, "the navigation timeout must be restored"
+
+
+def test_detection_timeout_is_restored_even_on_timeout():
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import NAV_TIMEOUT_MS, Session
+
+    context = TimeoutRecordingContext(FakeCtxPage(FakeFrame(IDP_URL, generic_groups())))
+    session = Session(page=context.pages[0], context=context, contract=UiContract())
+    with pytest.raises(AuthRequired):
+        agent.wait_for_mailbox(session, HOST, timeout_seconds=1, log=lambda *_a: None,
+                               poll_seconds=0, stable_polls=2)
+    assert context.timeouts[-1] == NAV_TIMEOUT_MS
+
+
+def test_detect_timeout_is_far_below_the_setup_budget():
+    from ggongbab.web.browser import DETECT_TIMEOUT_MS, NAV_TIMEOUT_MS, SETUP_TIMEOUT_SECONDS
+
+    assert DETECT_TIMEOUT_MS < NAV_TIMEOUT_MS
+    # One stalled page must not be able to eat a meaningful slice of the budget.
+    assert DETECT_TIMEOUT_MS / 1000 <= SETUP_TIMEOUT_SECONDS / 20
+
+
+def test_heartbeat_breaks_the_silence_while_nothing_changes(monkeypatch):
+    """A stuck SSO page must still produce output, with elapsed seconds."""
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session
+
+    context = FakeContext(FakeCtxPage(FakeFrame(IDP_URL, generic_groups())))
+    session = Session(page=context.pages[0], context=context, contract=UiContract())
+
+    clock = {"t": 0.0}
+    real_time = agent_time = __import__("time")
+    monkeypatch.setattr(real_time, "time", lambda: clock["t"])
+    monkeypatch.setattr(real_time, "sleep", lambda _s: clock.__setitem__("t", clock["t"] + 5))
+
+    lines = []
+    with pytest.raises(AuthRequired):
+        agent.wait_for_mailbox(session, HOST, timeout_seconds=60, log=lines.append,
+                               poll_seconds=1, stable_polls=2)
+    beats = [ln for ln in lines if "still waiting" in ln]
+    assert beats, "the loop must say something while it waits"
+    assert any("identity-provider" in ln for ln in beats)
+    assert all("?" not in ln for ln in beats)

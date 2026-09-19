@@ -106,36 +106,59 @@ def wait_for_mailbox(session, origin_host: str, timeout_seconds: int, log=print,
     """
     import time
 
-    from ggongbab.web.browser import observe_pages
+    from ggongbab.web.browser import DETECT_TIMEOUT_MS, NAV_TIMEOUT_MS, observe_pages
 
-    deadline = time.time() + timeout_seconds
+    # Detection touches every page and every frame on every poll, and `evaluate`
+    # on a page that is mid-redirect blocks until the context timeout. With the
+    # navigation default of 45s, two or three SSO hops could eat the whole budget
+    # while the loop printed nothing. Detection gets its own short timeout.
+    try:
+        session.context.set_default_timeout(DETECT_TIMEOUT_MS)
+    except Exception:  # noqa: BLE001
+        pass
+
+    started = time.time()
+    deadline = started + timeout_seconds
     last_report = ""
+    last_beat = 0.0
     streak_key = ""
     streak = 0
-    while time.time() < deadline:
-        observations = observe_pages(session.context, session.contract, origin_host)
-        report = ["[setup] observed:"]
-        for obs in observations[:3]:
-            report.extend(obs.lines())
-        if not observations:
-            report.append("  (no open page yet)")
-        text = "\n".join(report)
-        if text != last_report:          # only when the picture changes
-            log(text)
-            last_report = text
+    try:
+        while time.time() < deadline:
+            observations = observe_pages(session.context, session.contract, origin_host)
+            report = ["[setup] observed:"]
+            for obs in observations[:3]:
+                report.extend(obs.lines())
+            if not observations:
+                report.append("  (no open page yet)")
+            text = "\n".join(report)
+            elapsed = time.time() - started
+            if text != last_report:          # whenever the picture changes
+                log(text)
+                last_report = text
+                last_beat = elapsed
+            elif elapsed - last_beat >= 15:  # and a heartbeat, so silence is impossible
+                log(f"[setup] still waiting ({int(elapsed)}s) - "
+                    f"{observations[0].classification if observations else 'no page'}")
+                last_beat = elapsed
 
-        target = select_mail_page(session.context, origin_host)
-        if target is not None:
-            key = f"{id(target.page)}|{target.url}"
-            if key == streak_key:
-                streak += 1
+            target = select_mail_page(session.context, origin_host)
+            if target is not None:
+                key = f"{id(target.page)}|{target.url}"
+                if key == streak_key:
+                    streak += 1
+                else:
+                    streak_key, streak = key, 1
+                if streak >= stable_polls:
+                    return target
             else:
-                streak_key, streak = key, 1
-            if streak >= stable_polls:
-                return target
-        else:
-            streak_key, streak = "", 0
-        time.sleep(poll_seconds)
+                streak_key, streak = "", 0
+            time.sleep(poll_seconds)
+    finally:
+        try:
+            session.context.set_default_timeout(NAV_TIMEOUT_MS)
+        except Exception:  # noqa: BLE001
+            pass
 
     final = observe_pages(session.context, session.contract, origin_host)
     log("")
