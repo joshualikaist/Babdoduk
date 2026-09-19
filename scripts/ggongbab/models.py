@@ -203,3 +203,6 @@ class ParseOutcome:
     skipped_cached: bool = False
     error: Optional[str] = None
     error_category: str = ""      # safe-to-log category; see parsers/ai_errors.py
+    # True when the item was never sent because the run had already stopped on an
+    # account-level failure. Not an extraction error: nothing was attempted.
+    halted: bool = False

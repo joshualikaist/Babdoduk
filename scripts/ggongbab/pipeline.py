@@ -17,6 +17,7 @@ from .config import KST, PROMPT_VERSION, Settings
 from .db.repository import SOURCE_PRIORITY, Repository
 from .dedup import find_match, merge_into
 from .models import EventCandidate, EventExtraction, ParseOutcome, RawItem
+from .parsers.ai_errors import is_fatal
 from .parsers.ai_parser import AIResult, Extractor, build_user_text
 from .parsers.rule_parser import analyze
 from .parsers.sanitizer import sanitize_for_ai
@@ -28,7 +29,9 @@ class RunStats:
     items_seen: int = 0
     items_new: int = 0
     ai_calls: int = 0
-    ai_skipped: int = 0
+    ai_attempted: int = 0        # items whose extraction was actually started
+    ai_skipped: int = 0          # cached; no call needed
+    ai_skipped_quota: int = 0    # never attempted because the run stopped early
     ai_fallback: int = 0
     ai_errors: int = 0
     events_created: int = 0
@@ -38,12 +41,46 @@ class RunStats:
     collector_errors: dict[str, str] = field(default_factory=dict)
     # Safe-to-log counts only; the raw error text never leaves ai_parse_runs.
     ai_error_categories: dict[str, int] = field(default_factory=dict)
+    # {model: {"calls": n, "input_tokens": n, "output_tokens": n}}. Numeric usage
+    # metadata only - never anything derived from the mail itself.
+    model_usage: dict[str, dict[str, int]] = field(default_factory=dict)
+    # Set when an account-level failure stopped the run (see ai_errors.FATAL).
+    fatal_category: str = ""
+    # Only meaningful when a fallback model is configured, which production does
+    # not do. Kept so that turning it on later produces evidence for or against
+    # it, instead of another round of opinion.
+    fallback_attempted: int = 0
+    fallback_improved: int = 0   # the fallback candidate was the one kept
+    fallback_same: int = 0       # primary kept, fallback no better
+    fallback_worse: int = 0      # primary kept because the fallback was worse
+
+    def record_usage(self, model: str, input_tokens: int, output_tokens: int) -> None:
+        bucket = self.model_usage.setdefault(
+            model, {"calls": 0, "input_tokens": 0, "output_tokens": 0})
+        bucket["calls"] += 1
+        bucket["input_tokens"] += int(input_tokens or 0)
+        bucket["output_tokens"] += int(output_tokens or 0)
 
     def summary(self) -> str:
-        return (f"items: {self.items_seen} (new/changed {self.items_new}) | AI parsed: {self.ai_calls} | "
-                f"AI skipped cached: {self.ai_skipped} | fallback calls: {self.ai_fallback} | AI errors: {self.ai_errors} | "
-                f"events created: {self.events_created} | updated: {self.events_updated} | review: {self.events_review} | "
-                f"not events: {self.not_events}")
+        parts = [f"items: {self.items_seen} (new/changed {self.items_new})",
+                 f"AI parsed: {self.ai_calls}",
+                 f"AI skipped cached: {self.ai_skipped}",
+                 f"fallback calls: {self.ai_fallback}",
+                 f"AI errors: {self.ai_errors}"]
+        if self.ai_skipped_quota:
+            parts.append(f"AI skipped ({self.fatal_category or 'halted'}): {self.ai_skipped_quota}")
+        parts += [f"events created: {self.events_created}", f"updated: {self.events_updated}",
+                  f"review: {self.events_review}", f"not events: {self.not_events}"]
+        return " | ".join(parts)
+
+    def stop_lines(self) -> list[str]:
+        """Why the run stopped early, in counts only. Empty when it did not."""
+        if not self.fatal_category:
+            return []
+        return ["AI processing stopped early:",
+                f"  reason: {self.fatal_category}",
+                f"  processed: {self.ai_attempted}",
+                f"  remaining: {self.ai_skipped_quota}"]
 
 
 class Pipeline:
@@ -60,6 +97,8 @@ class Pipeline:
         for collector in self.collectors:
             if not collector.enabled():
                 continue
+            if self.stats.fatal_category:
+                break
             run_id = self.repo.start_ingest_run(collector.source_type)
             before = _snapshot(self.stats)
             try:
@@ -69,7 +108,12 @@ class Pipeline:
                 self.repo.finish_ingest_run(run_id, status="failed", error_message=str(exc)[:500])
                 print(f"[error] collector {collector.source_type}: {exc}")
                 continue
-            for item in items:
+            for index, item in enumerate(items):
+                if self.stats.fatal_category:
+                    # Count what was never tried rather than reporting it as a
+                    # pile of identical extraction errors.
+                    self.stats.ai_skipped_quota += len(items) - index
+                    break
                 try:
                     self.process_item(item)
                 except Exception as exc:  # noqa: BLE001 - one bad item must not stop the run
@@ -138,6 +182,13 @@ class Pipeline:
         if self.extractor is None:
             return ParseOutcome(candidate=None, error="no extractor configured")
 
+        # An earlier item already proved the account cannot serve this run. Every
+        # further request would be rejected identically, so none is sent.
+        if self.stats.fatal_category:
+            self.stats.ai_skipped_quota += 1
+            return ParseOutcome(candidate=None, error="ai halted before this item",
+                                error_category=self.stats.fatal_category, halted=True)
+
         # Only now, past every cache check, is it worth paying for attachment downloads.
         item.load_attachments()
         images = _event_images(item, self.settings)
@@ -146,11 +197,16 @@ class Pipeline:
             subject=sanitize_for_ai(item.subject), body=clean_text,
             sent_at=reference.isoformat(timespec="minutes"), source_label=item.source_type, attachments_note=note)
 
+        self.stats.ai_attempted += 1
         primary = self._call(self.extractor, user_text, images, self.settings.ai_model, raw_item_id, content_hash, "primary")
         if primary.extraction is None:
             self.stats.ai_errors += 1
             category = primary.category or "unknown"
             self.stats.ai_error_categories[category] = self.stats.ai_error_categories.get(category, 0) + 1
+            if is_fatal(category):
+                # Spent quota or a bad key: the next candidate would fail the
+                # same way. Record it once and let the caller stop the run.
+                self.stats.fatal_category = category
             return ParseOutcome(candidate=None, ai_calls=1, error=primary.error,
                                 error_category=category)
         cand = validate(primary.extraction, facts, clean_text, source_type=item.source_type,
@@ -163,10 +219,21 @@ class Pipeline:
             calls += 1
             used_fallback = True
             self.stats.ai_fallback += 1
+            self.stats.fallback_attempted += 1
             if fb.extraction is not None:
                 fb_cand = validate(fb.extraction, facts, clean_text, source_type=item.source_type,
                                    source_priority=source_priority, reference=reference)
+                # Captured before pick_better, which may append a reason to the
+                # primary candidate when the fallback disagrees about is_event.
+                primary_reasons = len(cand.review_reasons)
+                primary_was_event = cand.is_event
                 cand = pick_better(cand, fb_cand)
+                if cand is fb_cand:
+                    self.stats.fallback_improved += 1
+                elif len(fb_cand.review_reasons) > primary_reasons or (primary_was_event and not fb_cand.is_event):
+                    self.stats.fallback_worse += 1
+                else:
+                    self.stats.fallback_same += 1
                 if cand.is_event and cand.needs_review and "fallback 결과와 비교됨" not in cand.review_reasons:
                     cand.review_reasons.append(f"fallback 사유: {', '.join(reasons)}")
         return ParseOutcome(candidate=cand, ai_calls=calls, fallback_used=used_fallback)
@@ -175,6 +242,10 @@ class Pipeline:
               raw_item_id: str, content_hash: str, role: str) -> AIResult:
         self.stats.ai_calls += 1
         result = extractor.extract(text, images, model)
+        # A retry is a real billed call, so usage is recorded per attempt, not
+        # per item, and a failed attempt that still burned input tokens counts.
+        self.stats.record_usage(result.model or model,
+                                result.usage.input_tokens, result.usage.output_tokens)
         self.repo.insert_ai_run({
             "raw_item_id": raw_item_id,
             "content_hash": content_hash,

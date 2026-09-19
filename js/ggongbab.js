@@ -16,8 +16,12 @@
   var debugLayout = isLab && isLocal && query.get('debug-layout') === '1';
   var savedFilter = false;
   var diagnosticOpen = false;
+  /* Allowlist: only these keys render, and only when the value is a finite
+     number. An unexpected field in a local payload can never reach the page.
+     Token counts and cost stay in the terminal summary. */
   var diagnosticKeys = ['loadedRows','dateMatched','readEligible','prefilterCandidates','previewsAvailable',
-    'bodyAttempted','bodyFetched','aiCalls','fallbackCalls','aiErrors','likelyEvents','explicitFood','needsReview','notEvent','publicCount'];
+    'bodyAttempted','bodyFetched','aiAttempted','aiCalls','fallbackCalls','aiErrors','aiSkippedDueToQuota',
+    'likelyEvents','explicitFood','needsReview','notEvent','publicCount'];
   var KST_OFFSET = 9 * 60; // minutes
   var state = { data: null, status: 'loading', error: '', when: 'week', food: 'all' };
 

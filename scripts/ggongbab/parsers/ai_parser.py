@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """OpenAI structured extraction (Responses API + Structured Outputs).
 
-Primary model (Luna) parses every new item. The fallback model (Terra) is
-called only when the validator finds the primary result ambiguous.
+The primary model parses every new item. A fallback model is called only when
+one is explicitly configured AND the validator finds the primary result
+ambiguous; production leaves it unset, so an ambiguous source becomes
+needs_review instead of a second, pricier guess.
 
 The input the model sees is already sanitized (see sanitizer.py) and trimmed
 to the fields needed for event analysis. Raw mail is never sent.
@@ -120,6 +122,11 @@ class OpenAIExtractor:
                 instructions=SYSTEM_PROMPT,
                 input=[{"role": "user", "content": content}],
                 text_format=EventExtraction,
+                # This is literal extraction into a fixed schema - dates, venue,
+                # food wording, registration - and the deterministic validator
+                # is what decides truth afterwards. Chain-of-thought buys nothing
+                # here and is billed as output tokens.
+                reasoning={"effort": "none"},
                 metadata={"prompt_version": PROMPT_VERSION, "app": "babdoduk-ggongbab"},
             )
         except Exception as exc:  # noqa: BLE001 - recorded in ai_parse_runs, retried next run

@@ -34,7 +34,9 @@ from ggongbab.config import DATA_DIR, KST, Settings, load_settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa: E402
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
 from ggongbab.exporter import build_payload, write_payload  # noqa: E402
+from ggongbab.parsers import ai_errors  # noqa: E402
 from ggongbab.pipeline import Pipeline  # noqa: E402
+from ggongbab.pricing import usage_lines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -242,6 +244,12 @@ def main() -> int:
         pipeline = Pipeline(settings, repo, extractor, build_collectors(settings, repo, args.only))
         stats = pipeline.run()
         print(stats.summary())
+        for line in stats.stop_lines():
+            print(line)
+        for line in ai_errors.summary_lines(stats.ai_error_categories):
+            print(line)
+        for line in usage_lines(stats.model_usage):
+            print(line)
         if stats.collector_errors:
             print("collector errors: " + ", ".join(f"{k}: {v[:80]}" for k, v in stats.collector_errors.items()))
         if stats.collector_errors and len(stats.collector_errors) == len([c for c in pipeline.collectors if c.enabled()]):

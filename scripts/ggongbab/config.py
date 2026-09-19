@@ -89,7 +89,11 @@ class Settings:
     # OpenAI
     openai_api_key: str = field(default_factory=lambda: os.environ.get("OPENAI_API_KEY", ""))
     ai_model: str = field(default_factory=lambda: os.environ.get("GGONGBAB_AI_MODEL", "gpt-5.6-luna"))
-    ai_fallback_model: str = field(default_factory=lambda: os.environ.get("GGONGBAB_AI_FALLBACK_MODEL", "gpt-5.6-terra"))
+    # Empty by default: production runs on the primary model alone. The fallback
+    # is an operator-controlled comparison tool, not part of normal extraction.
+    # An ambiguous source should end up in needs_review, not be guessed at by a
+    # model that costs about ten times as much per token.
+    ai_fallback_model: str = field(default_factory=lambda: os.environ.get("GGONGBAB_AI_FALLBACK_MODEL", "").strip())
     ai_confidence_threshold: float = field(default_factory=lambda: _float("GGONGBAB_AI_CONFIDENCE_THRESHOLD", 0.75))
     ai_max_images: int = field(default_factory=lambda: _int("GGONGBAB_AI_MAX_IMAGES", 2))
     ai_max_image_bytes: int = field(default_factory=lambda: _int("GGONGBAB_AI_MAX_IMAGE_BYTES", 6 * 1024 * 1024))

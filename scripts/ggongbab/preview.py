@@ -6,8 +6,8 @@ Only the final public-shaped payload and numeric diagnostics leave memory.
 from __future__ import annotations
 
 import json
-import time
-from datetime import datetime, time
+import time as time_module
+from datetime import datetime, time as dt_time
 from pathlib import Path
 
 from .config import KST
@@ -16,6 +16,7 @@ from .exporter import build_payload
 from .models import RawItem
 from .parsers.ai_parser import OpenAIExtractor
 from .parsers.ai_errors import UNKNOWN, classify_message, is_retryable, summary_lines
+from .pricing import usage_lines
 from .pipeline import Pipeline
 from .prefilter import classify
 from .web.exit_codes import PipelineFailed, UiContractError
@@ -23,8 +24,10 @@ from .web.mail_reader import list_mails, open_body
 
 PREVIEW_FILE = Path(__file__).resolve().parents[2] / ".local" / "ggongbab-preview.json"
 COUNTERS = ("loadedRows", "dateMatched", "readEligible", "prefilterCandidates",
-            "previewsAvailable", "bodyAttempted", "bodyFetched", "aiCalls",
-            "fallbackCalls", "aiErrorAttempts", "aiRecovered", "aiErrors",
+            "previewsAvailable", "bodyAttempted", "bodyFetched",
+            "aiAttempted", "aiCalls", "fallbackCalls", "aiErrorAttempts",
+            "aiRecovered", "aiErrors", "aiSkippedDueToQuota",
+            "inputTokens", "outputTokens",
             "likelyEvents", "explicitFood",
             "needsReview", "notEvent", "publicCount")
 
@@ -63,7 +66,7 @@ def collect_candidates(session, start, end, *, limit, target=None, read_state="r
             items.append(RawItem(
                 source_type="dooray", external_id=header.mail_id, subject=header.subject,
                 raw_text=header.body or header.preview,
-                source_created_at=datetime.combine(header.received, time.min, tzinfo=KST),
+                source_created_at=datetime.combine(header.received, dt_time.min, tzinfo=KST),
                 metadata={"preview_mode": True, "read_state": "read"}))
         if (index + 1) % 25 == 0:
             log(f"mail rows scanned: {index + 1}; body fetched: {counts['bodyFetched']}")
@@ -93,6 +96,11 @@ def _run_pass(pipeline, items, metrics, log, label):
     """
     failed = []
     for index, item in enumerate(items):
+        if pipeline.stats.fatal_category:
+            # The account, not this item, is the problem. Every remaining
+            # request would be rejected identically, so none is sent.
+            pipeline.stats.ai_skipped_quota += len(items) - index
+            break
         try:
             result = pipeline.process_item(item)
         except Exception as exc:  # noqa: BLE001 - one item must not end the pass
@@ -138,6 +146,8 @@ def generate_preview(items, counts, settings, *, max_ai_candidates=50, force=Fal
     attempts = len(failed)
     recovered = 0
     for attempt in range(error_retries):
+        if pipeline.stats.fatal_category:
+            break
         retryable = [item for item, category in failed if is_retryable(category)]
         if not retryable:
             if failed:
@@ -151,19 +161,30 @@ def generate_preview(items, counts, settings, *, max_ai_candidates=50, force=Fal
         log(f"retrying {len(retryable)} failed extraction(s) after {pause}s, "
             f"pass {attempt + 1}/{error_retries}")
         if pause:
-            time.sleep(pause)
+            time_module.sleep(pause)
         before = len(failed)
         # A failed parse is not a cached success, so the same RawItem re-enters
         # the production pipeline; items that already succeeded are never re-sent.
         failed = stuck + _run_pass(pipeline, retryable, metrics, log, "retry")
         recovered += before - len(failed)
-    metrics["aiCalls"] = pipeline.stats.ai_calls
-    metrics["fallbackCalls"] = pipeline.stats.ai_fallback
+    stats = pipeline.stats
+    metrics["aiAttempted"] = stats.ai_attempted
+    metrics["aiCalls"] = stats.ai_calls
+    metrics["fallbackCalls"] = stats.ai_fallback
     metrics["aiErrorAttempts"] = attempts
     metrics["aiRecovered"] = recovered
     # What remains unresolved after every attempt - not the running total.
     metrics["aiErrors"] = len(failed)
-    for line in summary_lines(pipeline.stats.ai_error_categories):
+    # Never attempted. Reporting these as errors would inflate one account-level
+    # failure into dozens of extraction failures that never happened.
+    metrics["aiSkippedDueToQuota"] = stats.ai_skipped_quota
+    metrics["inputTokens"] = sum(u["input_tokens"] for u in stats.model_usage.values())
+    metrics["outputTokens"] = sum(u["output_tokens"] for u in stats.model_usage.values())
+    for line in stats.stop_lines():
+        log(line)
+    for line in summary_lines(stats.ai_error_categories):
+        log(line)
+    for line in usage_lines(stats.model_usage):
         log(line)
     payload = build_payload(repo.publishable_events(), settings, food_only=True)
     metrics["publicCount"] = payload["count"]

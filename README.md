@@ -65,6 +65,7 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 | `prefilter.py` | 규칙 기반 1차 선별. 여기서 걸러진 메일은 모델에 보내지 않는다 |
 | `parsers/ai_parser.py` | OpenAI Responses API + Structured Outputs |
 | `parsers/ai_errors.py` | 실패를 **로그에 안전한 범주**로 분류 (§6) |
+| `pricing.py` | token 사용량 → 예상 비용. 단가가 모여 있는 유일한 곳 |
 | `pipeline.py` | 한 항목의 전체 처리와 통계 |
 | `dedup.py` | 같은 행사의 중복 등록 제거 |
 | `db/` | Supabase(PostgREST) 저장소와 인메모리 저장소 |
@@ -83,11 +84,46 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 - 점심·저녁 같은 **시간대 단어는 음식 제공의 근거가 아닙니다.** "중식 제공", "다과 준비"
   처럼 제공을 말하는 표현이 있어야 합니다.
 
+### AI 모델 정책
+
+```
+mail (sanitized)
+      ↓
+gpt-5.6-luna          ← 유일한 기본 모델
+      ↓
+deterministic validator   ← 진실을 정하는 곳
+      ├─ publishable  → 공개 피드
+      └─ needs_review → 비공개
+```
+
+**production 기본은 `gpt-5.6-luna` 하나입니다.** 자동 fallback은 꺼져 있습니다.
+
+이 시스템에서 모델이 하는 일은 추론이나 창작이 아니라 **문자 그대로의 구조화 추출**입니다.
+날짜·장소·음식 근거·신청 정보를 본문에 적힌 대로 꺼내 오는 것이고, `food`·`date`·`location`·
+`registration` 의 최종 판정은 결정적 validator가 합니다. 그래서:
+
+- 애매한 원문은 **더 강한 모델로 추측시키지 않고 `needs_review` 로 남깁니다.** review 항목은
+  공개 피드에서 제외되므로 안전성은 그대로입니다. **애매함은 오류가 아닙니다.**
+- 호출에 `reasoning={"effort": "none"}` 을 명시합니다. chain-of-thought는 여기서 얻는 것이
+  없으면서 output token으로 과금됩니다.
+
+`gpt-5.6-terra` 는 삭제하지 않고 **운영자가 명시적으로 켜는 선택적 fallback**으로 남겨 두었습니다.
+필수가 아닙니다. 켜려면 환경변수나 GitHub variable에 모델 이름을 직접 넣어야 하고,
+비어 있으면 fallback API 호출은 **0** 입니다.
+
+```powershell
+# 비교 실행이 필요할 때만
+$env:GGONGBAB_AI_FALLBACK_MODEL = "gpt-5.6-terra"
+```
+
+fallback을 켜면 `fallbackAttempted` / `fallbackImproved` / `fallbackSame` / `fallbackWorse`
+카운터가 쌓입니다. Terra를 상시 켤지는 이 숫자가 모인 뒤에 정합니다. 지금은 Terra가 실제
+공개 정확도를 얼마나 개선하는지에 대한 정량 근거가 없습니다. 재평가 조건은 §6 끝에 있습니다.
+
 ### 현재 상태
 
-`data/ggongbab/latest.json` 은 지금 **빈 피드**(`count: 0`)입니다. 실제 9월 수집이
-OpenAI 사용량 한도로 막혀 있어서(§6), 시험용 행사를 공개로 내보내지 않으려고 비워 두었습니다.
-한도가 회복되면 §5의 실수집을 돌려 채웁니다.
+`data/ggongbab/latest.json` 은 지금 **빈 피드**(`count: 0`)입니다. 시험용 행사를 공개로
+내보내지 않으려고 비워 두었습니다. OpenAI 한도가 회복되면 §5의 실수집을 돌려 채웁니다.
 
 ---
 
@@ -171,7 +207,7 @@ SSO가 에이전트가 제어하지 않는 창에서 끝나 버리는 문제 때
 
 ---
 
-## 6. AI 실패 처리
+## 6. AI 실패 처리와 비용
 
 `scripts/ggongbab/parsers/ai_errors.py` 는 모델 호출 실패를 정해진 범주로 바꿉니다.
 **SDK 원본 메시지는 로그에 남기지 않습니다.** 오류 본문이 요청을 그대로 인용할 수 있고,
@@ -182,10 +218,14 @@ AI error summary:
   quota_exhausted: 39
 ```
 
-재시도할 가치가 있는 범주만 다시 보냅니다(`timeout`, `rate_limit`, `connection`,
-`server_error`, `no_parsed_output`). 거절·스키마 위반·잘못된 요청은 다시 보내도 같은 답이
-오므로 재시도하지 않습니다. `needs_review`·확신도 미달·행사 아님은 **실패가 아니라 답**이라
-재시도 대상이 아닙니다.
+### 재시도 대상
+
+| 재시도함 | 재시도 안 함 |
+|---|---|
+| `timeout` · `rate_limit`(짧은 창) · `connection` · `server_error` · `no_parsed_output` | `quota_exhausted` · `auth` · `bad_request` · `refusal` · 스키마 위반 |
+
+`needs_review`·확신도 미달·행사 아님은 **실패가 아니라 답**이라 재시도 대상이 아닙니다.
+재시도 횟수는 `--ai-error-retries` 로 0–2 이고, 재시도 전에 창이 리셋될 만큼 기다립니다.
 
 ### 한도 소진과 일시적 혼잡 구분
 
@@ -194,8 +234,71 @@ OpenAI는 둘 다 `429 rate_limit_exceeded` 로 돌려줍니다. 구분은 응�
 기다려서 될 일이 아니므로 `quota_exhausted` 로 분류하고 재시도하지 않습니다.
 이 구분이 없으면 39건 실패가 78건 호출로 불어납니다.
 
-**현재 이 저장소의 키는 한도가 소진된 상태입니다**(요청 0/50 잔여, 리셋 약 24시간;
-토큰 664/100,000 잔여, 리셋 약 30일). 그래서 실제 9월 수집과 본편 배포가 막혀 있습니다.
+### 계정 단위 실패는 즉시 중단
+
+`quota_exhausted` 와 `auth` 는 **한 건이 아니라 계정이 실패한 것**입니다. 남은 후보를 계속
+보내도 똑같이 거절당하므로 첫 거절에서 run을 멈춥니다.
+
+```
+AI processing stopped early:
+  reason: quota_exhausted
+  processed: 1
+  remaining: 38
+```
+
+보내지 않은 38건은 **오류가 아니라 미시도**로 셉니다(`aiSkippedDueToQuota`).
+한 번의 계정 실패를 39건의 추출 실패로 부풀리지 않습니다.
+
+### 실제 사용량과 예상 비용
+
+run이 끝나면 모델별 실제 token 사용량과 **예상** 비용을 출력합니다.
+숫자 metadata만 쓰며, 비용 계산을 위해 메일 내용을 저장하지 않습니다.
+
+```
+AI usage:
+  gpt-5.6-luna
+    calls: 39
+    input tokens: 118234
+    output tokens: 28741
+    estimated cost: $0.0581
+
+Total estimated API cost:
+  $0.0581
+  (estimate only, prices as of 2026-09-20; see the OpenAI billing dashboard)
+```
+
+단가는 `scripts/ggongbab/pricing.py` 한 곳에 모여 있습니다. 가격은 바뀔 수 있으므로 항상
+**estimated** 로 표시하고 기준 날짜를 함께 적습니다. 실제 청구액은 OpenAI billing 대시보드가
+기준입니다.
+
+### 월 $5 예산으로 운영하기
+
+**코드에는 $5 hard cap이 없습니다.** 실제 과금과 한도는 OpenAI 쪽에서 정해지는 것이라,
+코드가 막는 것처럼 보이게 만드는 것은 거짓 안전장치입니다. 대신 비용이 낮게 유지되는 이유는
+이렇습니다.
+
+- **선불 credit과 project/rate limit은 별개입니다.** credit을 충전해도 요청·토큰 한도는
+  따로 적용되므로, 한도는 OpenAI 대시보드에서 직접 확인해야 합니다.
+- Luna는 추출 작업 기준으로 단가가 낮습니다. 위 예시처럼 39건 수집이 약 $0.06 수준입니다.
+- **content hash 캐시** 덕분에 내용이 그대로인 항목은 AI를 다시 부르지 않습니다.
+  30분마다 도는 cron이 매번 전체를 재추출하지 않습니다.
+- **규칙 전처리**가 먼저 걸러서, 메일함 전체가 아니라 후보만 모델로 갑니다.
+- Terra 자동 fallback이 꺼져 있습니다. Terra는 token당 약 10배라, 후보의 1/5만 fallback을
+  타도 Luna 본 run 전체보다 비싸집니다.
+
+고정 월 비용을 약속할 수는 없습니다. 실제 run 비용은 위 terminal summary로 확인하세요.
+
+### Terra를 다시 켤지 판단하는 기준
+
+지금은 자동으로 쓰지 않습니다. 다음을 **모두** 만족할 때만 재평가합니다.
+
+1. 실제 review case가 10~20건 이상 쌓였고
+2. 사람이 ground truth를 확인했고
+3. Luna가 반복적으로 잘못 추출하고
+4. 같은 case에서 Terra가 validator issue를 의미 있게 줄이며
+5. 그 개선이 단순 confidence 변화가 아니라 실제 date/food/location **정확도** 개선일 것
+
+이 데이터가 없으면 Terra 자동 fallback을 켜지 않습니다.
 
 ---
 
@@ -281,6 +384,10 @@ cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main�
 
 필요한 secret: `DOORAY_API_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `OPENAI_API_KEY`.
 `SUPABASE_SERVICE_ROLE_KEY` 는 `SUPABASE_SECRET_KEY` 가 비었을 때만 읽는 legacy 이름입니다.
+
+변수(secret 아님): `GGONGBAB_AI_MODEL`(기본 `gpt-5.6-luna`), `GGONGBAB_AI_FALLBACK_MODEL`.
+후자는 **기본이 비어 있어** cron은 Luna 단독으로 돕니다. 운영자가 GitHub variable을 직접
+설정했을 때만 fallback이 켜집니다 (§3).
 
 ---
 

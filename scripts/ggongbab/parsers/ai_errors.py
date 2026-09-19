@@ -41,6 +41,11 @@ CATEGORIES = (TIMEOUT, RATE_LIMIT, QUOTA, CONNECTION, SERVER_ERROR, BAD_REQUEST,
 # request or a refusal will fail again the same way, so retrying wastes calls.
 RETRYABLE = frozenset({TIMEOUT, RATE_LIMIT, CONNECTION, SERVER_ERROR, NO_PARSED_OUTPUT})
 
+# These do not fail one item, they fail the account. Sending the remaining
+# candidates would produce the same rejection every time, so the run stops at
+# the first one instead of turning a spent quota into 39 identical errors.
+FATAL = frozenset({QUOTA, AUTH})
+
 # Matched against the EXCEPTION CLASS NAME only, never the message.
 _BY_CLASS = (
     ("APITimeoutError", TIMEOUT),
@@ -164,6 +169,11 @@ def classify_message(message: str) -> str:
 
 def is_retryable(category: str) -> bool:
     return category in RETRYABLE
+
+
+def is_fatal(category: str) -> bool:
+    """True when the whole run should stop rather than try the next candidate."""
+    return category in FATAL
 
 
 def summary_lines(counts: dict[str, int]) -> list[str]:

@@ -53,7 +53,10 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GGONGBAB_AI_MODEL: ${{ vars.GGONGBAB_AI_MODEL || 'gpt-5.6-luna' }}
-          GGONGBAB_AI_FALLBACK_MODEL: ${{ vars.GGONGBAB_AI_FALLBACK_MODEL || 'gpt-5.6-terra' }}
+          # Empty unless an operator sets the variable: the cron runs on the
+          # primary model alone. An ambiguous mail becomes needs_review rather
+          # than a guess from a model that costs ~10x per token.
+          GGONGBAB_AI_FALLBACK_MODEL: ${{ vars.GGONGBAB_AI_FALLBACK_MODEL }}
           MODE: ${{ github.event.inputs.mode || 'full' }}
         run: |
           set +e

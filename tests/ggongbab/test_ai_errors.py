@@ -305,7 +305,7 @@ def test_retry_waits_before_re_firing():
     from ggongbab import preview
 
     source = inspect.getsource(preview.generate_preview)
-    assert "time.sleep(pause)" in source
+    assert "time_module.sleep(pause)" in source
     assert preview.RETRY_BACKOFF_SECONDS >= 60
 
 
@@ -360,5 +360,6 @@ def test_non_retryable_failures_are_never_resent(settings, tmp_path, monkeypatch
         generate_preview([_item(), _item(ext_id="b-2")], _counts(), _settings_with_key(settings),
                          error_retries=2, backoff_seconds=0,
                          extractor_factory=lambda _key: extractor, log=lambda *_a: None)
-    # Two items, one pass each. No retry pass, despite error_retries=2.
-    assert extractor.calls == 2
+    # A spent quota fails the account, not the item: the first rejection stops
+    # the run, so the second item is never sent and no retry pass happens.
+    assert extractor.calls == 1
