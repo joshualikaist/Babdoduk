@@ -36,9 +36,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def build_repo(settings: Settings, dry_run: bool):
     if dry_run or not settings.has_supabase:
         if not dry_run:
-            print("[warn] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing; using in-memory repository (nothing persists)")
+            print("[warn] SUPABASE_URL / SUPABASE_SECRET_KEY missing; using in-memory repository (nothing persists)")
         return MemoryRepository()
-    client = SupabaseClient(settings.supabase_url, settings.supabase_service_key)
+    if settings.supabase_key_is_legacy:
+        print("[warn] using legacy SUPABASE_SERVICE_ROLE_KEY; rename the secret to SUPABASE_SECRET_KEY")
+    client = SupabaseClient(settings.supabase_url, settings.supabase_secret_key)
     client.ping()
     return SupabaseRepository(client)
 
@@ -124,10 +126,11 @@ def check(settings: Settings) -> int:
         except Exception as exc:  # noqa: BLE001
             ok = False
             print(f"          FAILED: {exc}")
-    print(f"Supabase: {'configured' if settings.has_supabase else 'missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY'}")
+    print(f"Supabase: {'configured' if settings.has_supabase else 'missing SUPABASE_URL / SUPABASE_SECRET_KEY'}")
     if settings.has_supabase:
+        print(f"          key from {settings.supabase_key_env}" + (" (legacy name)" if settings.supabase_key_is_legacy else ""))
         try:
-            SupabaseClient(settings.supabase_url, settings.supabase_service_key).ping()
+            SupabaseClient(settings.supabase_url, settings.supabase_secret_key).ping()
             print("          rest/v1/sources ok")
         except SupabaseError as exc:
             ok = False

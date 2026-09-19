@@ -99,7 +99,8 @@ KST = timezone(timedelta(hours=9))
 GG_PRIVATE_KEYS = {
     "sender_email", "sender_name", "recipient", "to", "cc", "raw_html", "raw_text", "rawHtml", "rawText",
     "dooray_post_id", "dooray", "external_id", "externalId", "raw_item_id", "prompt", "system_prompt",
-    "api_key", "apiKey", "service_role", "attachment_url", "file_id", "metadata", "review_reason",
+    "api_key", "apiKey", "service_role", "secret_key", "secretKey", "attachment_url", "file_id",
+    "metadata", "review_reason",
 }
 GG_FOOD_TYPES = {"meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"}
 GG_SOURCE_TYPES = {"dooray", "kaist_public", "manual", "portal"}

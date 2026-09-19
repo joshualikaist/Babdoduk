@@ -74,7 +74,8 @@ def settings(tmp_path) -> Settings:
     s = Settings()
     s.dooray_token = ""
     s.supabase_url = ""
-    s.supabase_service_key = ""
+    s.supabase_secret_key = ""
+    s.supabase_key_env = ""
     s.openai_api_key = ""
     s.ai_model = "gpt-5.6-luna"
     s.ai_fallback_model = "gpt-5.6-terra"

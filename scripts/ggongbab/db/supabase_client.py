@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Minimal PostgREST client for Supabase using only the standard library.
 
-The service-role key is used exclusively here, in backend jobs. It is never
-written to logs, JSON exports or the frontend.
+The Supabase secret key (SUPABASE_SECRET_KEY, formerly the service-role key) is
+used exclusively here, in backend jobs. It is never written to logs, JSON exports
+or the frontend.
 """
 from __future__ import annotations
 
@@ -21,11 +22,11 @@ class SupabaseError(Exception):
 
 
 class SupabaseClient:
-    def __init__(self, url: str, service_key: str, timeout: int = 30):
-        if not url or not service_key:
-            raise SupabaseError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+    def __init__(self, url: str, secret_key: str, timeout: int = 30):
+        if not url or not secret_key:
+            raise SupabaseError("SUPABASE_URL and SUPABASE_SECRET_KEY are required")
         self.rest = url.rstrip("/") + "/rest/v1"
-        self.key = service_key
+        self.key = secret_key
         self.timeout = timeout
         self._ctx = ssl.create_default_context()
 

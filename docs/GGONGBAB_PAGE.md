@@ -88,9 +88,11 @@ GET /project/v1/projects/{PROJECT_ID}/posts/{POST_ID}
 ## 3. Supabase setup
 
 1. 프로젝트를 만들고 `supabase/migrations/001_ggongbab_schema.sql` 을 SQL Editor 또는 `supabase db push` 로 적용한다.
-2. Settings → API 에서 **Project URL** 과 **service_role** key 를 복사해 GitHub Secrets 에 넣는다.
-3. 모든 테이블은 RLS 가 켜져 있고 정책이 없다. 즉 `anon`/`authenticated` 는 아무것도 읽지 못하고 service role 만 접근한다.
-4. service role key 는 GitHub Actions / 로컬 `.env` 에만 존재한다. HTML/JS 에 넣지 않는다.
+2. Settings → API Keys 에서 **Project URL** 과 **secret key**(`sb_secret_…`) 를 복사해 GitHub Secrets 에 `SUPABASE_URL`, `SUPABASE_SECRET_KEY` 로 넣는다.
+3. 모든 테이블은 RLS 가 켜져 있고 정책이 없다. 즉 `anon`/`authenticated` 는 아무것도 읽지 못하고 secret(service role) 키만 접근한다.
+4. secret key 는 GitHub Actions / 로컬 `.env` 에만 존재한다. HTML/JS 에 넣지 않는다.
+5. **키 이름:** `SUPABASE_SECRET_KEY` 가 우선이고, 비어 있을 때만 예전 이름 `SUPABASE_SERVICE_ROLE_KEY` 를 읽는다(`config.SUPABASE_KEY_ENV`).
+   legacy 이름으로 동작하면 실행 로그에 `using legacy SUPABASE_SERVICE_ROLE_KEY` 경고가 한 줄 찍힌다. 새 이름으로 옮긴 뒤 옛 secret 은 지운다.
 
 DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다. 별도 SDK 없음.
 
@@ -122,7 +124,7 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 |------|------|------|
 | `DOORAY_API_TOKEN` | Secret | Dooray API |
 | `SUPABASE_URL` | Secret | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Secret | backend 전용 |
+| `SUPABASE_SECRET_KEY` | Secret | backend 전용. 옛 이름 `SUPABASE_SERVICE_ROLE_KEY` 는 이 값이 비었을 때만 fallback 으로 읽는다 |
 | `OPENAI_API_KEY` | Secret | OpenAI |
 | `DOORAY_PROJECT_ID` | Variable | 기본 `4424523215847914253` |
 | `GGONGBAB_AI_MODEL` / `GGONGBAB_AI_FALLBACK_MODEL` | Variable | 모델 override |

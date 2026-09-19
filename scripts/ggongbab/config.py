@@ -17,6 +17,10 @@ DATA_DIR = ROOT / "data" / "ggongbab"
 KST = timezone(timedelta(hours=9), name="Asia/Seoul")
 PROMPT_VERSION = "ggongbab-extract-v1"
 
+# Supabase backend key, in priority order. SUPABASE_SECRET_KEY is the current name;
+# SUPABASE_SERVICE_ROLE_KEY is the legacy name and is read only as a fallback.
+SUPABASE_KEY_ENV = ("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY")
+
 
 def _load_dotenv(path: Path) -> None:
     if not path.exists():
@@ -33,6 +37,15 @@ def _load_dotenv(path: Path) -> None:
 
 
 _load_dotenv(ROOT / ".env")
+
+
+def _first_env(*names: str) -> tuple[str, str]:
+    """Return (variable_name, value) of the first non-empty variable, or ("", "")."""
+    for name in names:
+        value = (os.environ.get(name) or "").strip()
+        if value:
+            return name, value
+    return "", ""
 
 
 def _bool(name: str, default: bool) -> bool:
@@ -65,9 +78,10 @@ class Settings:
     dooray_page_size: int = field(default_factory=lambda: _int("DOORAY_PAGE_SIZE", 100))
     dooray_max_pages: int = field(default_factory=lambda: _int("DOORAY_MAX_PAGES", 5))
 
-    # Supabase
+    # Supabase (backend only; never exposed to the browser)
     supabase_url: str = field(default_factory=lambda: os.environ.get("SUPABASE_URL", "").rstrip("/"))
-    supabase_service_key: str = field(default_factory=lambda: os.environ.get("SUPABASE_SERVICE_ROLE_KEY", ""))
+    supabase_secret_key: str = field(default_factory=lambda: _first_env(*SUPABASE_KEY_ENV)[1])
+    supabase_key_env: str = field(default_factory=lambda: _first_env(*SUPABASE_KEY_ENV)[0])
 
     # OpenAI
     openai_api_key: str = field(default_factory=lambda: os.environ.get("OPENAI_API_KEY", ""))
@@ -96,7 +110,11 @@ class Settings:
 
     @property
     def has_supabase(self) -> bool:
-        return bool(self.supabase_url and self.supabase_service_key)
+        return bool(self.supabase_url and self.supabase_secret_key)
+
+    @property
+    def supabase_key_is_legacy(self) -> bool:
+        return self.supabase_key_env == "SUPABASE_SERVICE_ROLE_KEY"
 
     @property
     def has_openai(self) -> bool:
