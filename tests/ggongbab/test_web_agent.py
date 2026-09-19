@@ -386,12 +386,6 @@ def test_home_page_calls_are_not_mail_list_candidates():
     observer = _observer_with(page, FakeResponse("https://kaist.gov-dooray.com/v1/projects?page=1", HOME_ROWS))
     assert observer.list_candidates() == []
 
-    from ggongbab.web.mail_reader import mail_screen_evidence
-
-    evidence = mail_screen_evidence(observer, page)
-    assert evidence["mailListCallObserved"] is False
-    assert evidence["repeatedRowContainers"] == 0
-
 
 def test_inbox_call_is_recognised_with_reasons():
     page = FakePage()
@@ -434,7 +428,9 @@ def test_discovery_report_holds_no_values(tmp_path):
     observer = _observer_with(page, FakeResponse(
         "https://kaist.gov-dooray.com/v1/mails?page=1&token=abc123", MAIL_ROWS))
     out = tmp_path / "discovery.json"
-    report = write_discovery_report(observer, page, out,
+    row_evidence = {"repeatedContainers": 30, "mailRowGroups": [{"selector": "DIV.mail-row", "rowCount": 30}],
+                    "strong": True, "groups": []}
+    report = write_discovery_report(observer, row_evidence, out,
                                     page_url="https://kaist.gov-dooray.com/mail/inbox?u=someone@kaist.ac.kr",
                                     confirmed_by_user=True)
     blob = out.read_text(encoding="utf-8")
@@ -445,7 +441,7 @@ def test_discovery_report_holds_no_values(tmp_path):
     assert "u=<v>" in blob
     assert report["evidence"]["A_mailListCallObserved"] is True
     assert report["evidence"]["B_confirmedByUser"] is True
-    assert report["evidence"]["C_repeatedRowContainers"] == 1
+    assert report["evidence"]["C_mailRowGroups"] == 1
     assert report["observedReadStateKeys"] == ["unread"]
 
 
@@ -498,3 +494,242 @@ def test_wait_for_login_only_proves_a_session_not_a_mailbox():
     source = inspect.getsource(browser.wait_for_login)
     assert "mail_url" not in source
     assert "save" not in source
+
+
+# --- the reported production bug ----------------------------------------------
+# Real report: the user reached https://kaist.gov-dooray.com/mail/systems/inbox and
+# pressed Enter, but setup kept reading the launch page and saved the root URL,
+# corroborated only by 25 generic repeated containers.
+ROOT_URL = "https://kaist.gov-dooray.com/"
+INBOX_URL = "https://kaist.gov-dooray.com/mail/systems/inbox"
+LOGIN_URL = "https://sso.kaist.ac.kr/login"
+HOST = "kaist.gov-dooray.com"
+
+
+def generic_groups(count=25):
+    """A home page: lots of repetition, no per-row dates or ids."""
+    return {"groups": [{"selector": "DIV.card", "rowCount": count, "rowsWithText": count,
+                        "rowsWithDate": 0, "rowsWithId": 0, "distinctIds": 0}], "title": "Dooray"}
+
+
+def mail_row_groups(count=25):
+    """An inbox: each row has readable text, a date/time and its own id."""
+    return {"groups": [{"selector": "LI.row", "rowCount": count, "rowsWithText": count,
+                        "rowsWithDate": count, "rowsWithId": count, "distinctIds": count}],
+            "title": "받은메일함"}
+
+
+class FakeFrame:
+    def __init__(self, url, groups=None):
+        self.url = url
+        self._groups = groups or {"groups": [], "title": ""}
+        self.gotos = 0
+
+    def evaluate(self, _js):
+        return self._groups
+
+    def goto(self, url, **_kw):
+        self.gotos += 1
+        self.url = url
+
+
+class FakeCtxPage:
+    def __init__(self, *frames, closed=False):
+        self.frames = list(frames)
+        self._closed = closed
+        self.reloads = 0
+
+    def is_closed(self):
+        return self._closed
+
+    def reload(self, **_kw):
+        self.reloads += 1
+
+    def wait_for_timeout(self, _ms):
+        return None
+
+    @property
+    def mouse(self):
+        return type("M", (), {"wheel": lambda *_a, **_k: None})()
+
+
+class FakeContext:
+    def __init__(self, *pages):
+        self.pages = list(pages)
+        self.handlers = []
+
+    def on(self, _event, handler):
+        self.handlers.append(handler)
+
+    def remove_listener(self, _event, handler):
+        self.handlers = [h for h in self.handlers if h is not handler]
+
+    def emit(self, response):
+        for handler in list(self.handlers):
+            handler(response)
+
+
+def test_inbox_page_is_selected_over_root():
+    from ggongbab.web.page_select import select_mail_page
+
+    context = FakeContext(FakeCtxPage(FakeFrame(ROOT_URL, generic_groups())),
+                          FakeCtxPage(FakeFrame(INBOX_URL, mail_row_groups())))
+    target = select_mail_page(context, HOST)
+    assert target is not None and target.url == INBOX_URL
+    assert target.location == INBOX_URL
+
+
+def test_login_and_root_and_inbox_selects_inbox():
+    from ggongbab.web.page_select import select_mail_page
+
+    context = FakeContext(FakeCtxPage(FakeFrame(LOGIN_URL)),
+                          FakeCtxPage(FakeFrame(ROOT_URL, generic_groups())),
+                          FakeCtxPage(FakeFrame(INBOX_URL, mail_row_groups())))
+    target = select_mail_page(context, HOST)
+    assert target.url == INBOX_URL       # the other-host login page is filtered out entirely
+
+
+def test_inbox_inside_a_frame_is_selected():
+    """Dooray may host the mailbox in a frame of the shell page."""
+    from ggongbab.web.page_select import select_mail_page
+
+    shell = FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()), FakeFrame(INBOX_URL, mail_row_groups()))
+    target = select_mail_page(FakeContext(shell), HOST)
+    assert target.url == INBOX_URL and target.is_main is False
+
+
+def test_closed_pages_are_ignored():
+    from ggongbab.web.page_select import select_mail_page
+
+    context = FakeContext(FakeCtxPage(FakeFrame(INBOX_URL, mail_row_groups()), closed=True),
+                          FakeCtxPage(FakeFrame(ROOT_URL, generic_groups())))
+    assert select_mail_page(context, HOST) is None
+
+
+def test_generic_repetition_is_not_mail_evidence():
+    """25 elements sharing a class is not a mailbox. This is the C false positive."""
+    from ggongbab.web.page_select import is_mail_row_group, summarise_rows
+
+    summary = summarise_rows(generic_groups(25))
+    assert summary["repeatedContainers"] == 25
+    assert summary["strong"] is False
+    assert summary["mailRowGroups"] == []
+    assert not is_mail_row_group(generic_groups(25)["groups"][0])
+
+
+def test_mail_row_structure_is_evidence():
+    from ggongbab.web.page_select import is_mail_row_group, summarise_rows
+
+    summary = summarise_rows(mail_row_groups(25))
+    assert summary["strong"] is True and len(summary["mailRowGroups"]) == 1
+    assert is_mail_row_group(mail_row_groups(8)["groups"][0])
+
+
+@pytest.mark.parametrize("group,expected", [
+    ({"rowCount": 4, "rowsWithText": 4, "rowsWithDate": 4, "rowsWithId": 4, "distinctIds": 4}, False),
+    ({"rowCount": 20, "rowsWithText": 20, "rowsWithDate": 2, "rowsWithId": 20, "distinctIds": 20}, False),
+    ({"rowCount": 20, "rowsWithText": 5, "rowsWithDate": 20, "rowsWithId": 20, "distinctIds": 20}, False),
+    ({"rowCount": 20, "rowsWithText": 20, "rowsWithDate": 18, "rowsWithId": 0, "distinctIds": 0}, True),
+    ({"rowCount": 20, "rowsWithText": 20, "rowsWithDate": 12, "rowsWithId": 20, "distinctIds": 20}, True),
+])
+def test_mail_row_thresholds(group, expected):
+    from ggongbab.web.page_select import is_mail_row_group
+
+    assert is_mail_row_group(group) is expected
+
+
+def test_root_page_with_generic_repetition_is_refused(tmp_path):
+    """home/root + 25 generic divs + user confirmed  ->  REFUSE, save nothing."""
+    from ggongbab.web.mail_reader import NetworkObserver, write_discovery_report
+    from ggongbab.web.page_select import select_mail_page, summarise_rows
+
+    context = FakeContext(FakeCtxPage(FakeFrame(ROOT_URL, generic_groups(25))))
+    assert select_mail_page(context, HOST) is None      # nothing qualifies
+
+    observer = NetworkObserver(context)
+    observer.start()
+    context.emit(FakeResponse("https://kaist.gov-dooray.com/v1/projects?page=1", HOME_ROWS))
+    report = write_discovery_report(observer, summarise_rows(generic_groups(25)),
+                                    tmp_path / "report.json",
+                                    page_url=ROOT_URL, confirmed_by_user=True)
+    assert report["evidence"]["B_confirmedByUser"] is True
+    assert report["evidence"]["A_mailListCallObserved"] is False
+    assert report["evidence"]["C_strong"] is False
+    # B alone must never be enough.
+    corroborated = report["evidence"]["A_mailListCallObserved"] or report["evidence"]["C_strong"]
+    assert corroborated is False
+
+
+def test_observer_attaches_to_the_context_not_the_launch_page():
+    """A mailbox opened in a second tab must still be observed."""
+    from ggongbab.web.mail_reader import NetworkObserver
+
+    context = FakeContext(FakeCtxPage(FakeFrame(ROOT_URL)))
+    observer = NetworkObserver(context)
+    observer.start()
+    assert len(context.handlers) == 1
+    context.emit(FakeResponse("https://kaist.gov-dooray.com/v1/mails?page=1", MAIL_ROWS))
+    assert len(observer.list_candidates()) == 1
+    observer.stop()
+    assert context.handlers == []
+
+
+def test_reload_targets_the_selected_page_not_the_launch_page():
+    from ggongbab.web.browser import Session
+    from ggongbab.web.mail_reader import NetworkObserver, observe
+    from ggongbab.web.page_select import select_mail_page
+    from ggongbab.web.ui_contract import UiContract
+
+    launch = FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()))
+    inbox = FakeCtxPage(FakeFrame(INBOX_URL, mail_row_groups()))
+    context = FakeContext(launch, inbox)
+    target = select_mail_page(context, HOST)
+    session = Session(page=launch, context=context, contract=UiContract())
+    observe(session, NetworkObserver(context), seconds=1, reload=True, target=target)
+    assert inbox.reloads == 1 and launch.reloads == 0
+
+
+def test_frame_reload_uses_goto():
+    from ggongbab.web.page_select import select_mail_page
+
+    frame = FakeFrame(INBOX_URL, mail_row_groups())
+    shell = FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()), frame)
+    target = select_mail_page(FakeContext(shell), HOST)
+    target.reload()
+    assert frame.gotos == 1 and shell.reloads == 0
+
+
+def test_describe_shows_origin_and_path_only():
+    from ggongbab.web.page_select import collect_targets, describe
+
+    context = FakeContext(FakeCtxPage(FakeFrame(ROOT_URL, generic_groups())),
+                          FakeCtxPage(FakeFrame(INBOX_URL + "?token=secret123", mail_row_groups())))
+    lines = "\n".join(describe(collect_targets(context, HOST)))
+    assert "secret123" not in lines and "?" not in lines
+    assert "pages observed: 2" in lines
+    assert "mailCandidate=yes" in lines and "mailCandidate=no" in lines
+
+
+def test_recommended_list_api_when_exactly_one_clear_candidate():
+    from ggongbab.web.mail_reader import recommend_list_api
+
+    good = {"contentType": "application/json", "afterReload": True, "onMailScreen": True,
+            "url": "https://kaist.gov-dooray.com/v1/mails?page=<v>",
+            "shape": {"kind": "rows", "rowCount": 50, "rowKeys": ["id", "subject", "receivedAt"]}}
+    assert recommend_list_api([good]) == "https://kaist.gov-dooray.com/v1/mails?page=<v>"
+    assert recommend_list_api([good, dict(good, url="other")]) is None, "ambiguous -> report only"
+    assert recommend_list_api([]) is None
+    assert recommend_list_api([dict(good, afterReload=False)]) is None
+    assert recommend_list_api([dict(good, shape={"kind": "rows", "rowCount": 50,
+                                                 "rowKeys": ["id", "name"]})]) is None
+
+
+def test_setup_overwrites_an_earlier_wrong_mail_url(tmp_path):
+    """The stale root URL in .local must be replaced without hand editing."""
+    path = tmp_path / "dooray-ui.json"
+    path.write_text(json.dumps({"verified": False, "mail_url": ROOT_URL}), encoding="utf-8")
+    contract = load_contract(path)
+    assert contract.mail_url == ROOT_URL
+    contract.mail_url = INBOX_URL
+    contract.save(path)
+    assert load_contract(path).mail_url == INBOX_URL

@@ -23,6 +23,7 @@ import subprocess
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -35,6 +36,8 @@ from ggongbab.web.exit_codes import (NAMES, SUCCESS, AgentError, AuthRequired,  
                                      PipelineFailed, UiContractError)
 from ggongbab.web.mail_reader import (NetworkObserver, list_mails, observe,  # noqa: E402
                                       open_body, write_discovery_report)
+from ggongbab.web.page_select import (collect_targets, describe,  # noqa: E402
+                                      mail_row_evidence, select_mail_page)
 from ggongbab.web.state import AgentState  # noqa: E402
 from ggongbab.web.task_writer import DEFAULT_PROJECT_NAME, MailPayload, TaskWriter  # noqa: E402
 from ggongbab.web.ui_contract import load_contract  # noqa: E402
@@ -62,7 +65,12 @@ def _report_findings(report: dict) -> None:
     log("evidence that this page is the mail list:")
     log(f"  A  mail-list JSON call observed : {'yes' if evidence.get('A_mailListCallObserved') else 'NO'}")
     log(f"  B  confirmed by you             : {'yes' if evidence.get('B_confirmedByUser') else 'no'}")
-    log(f"  C  repeated row containers      : {evidence.get('C_repeatedRowContainers', 0)}")
+    log(f"  C  mail-row groups in the DOM   : {evidence.get('C_mailRowGroups', 0)}"
+        f"  (repeated containers: {evidence.get('repeatedContainers', 0)})")
+    recommended = report.get("recommendedListApi")
+    if recommended:
+        log("")
+        log(f"recommended list_api: {recommended}")
 
     for label, key in (("mail-list candidates", "mailListCandidates"),
                        ("mail-detail candidates", "mailDetailCandidates")):
@@ -99,6 +107,7 @@ def _confirm(prompt: str) -> bool:
 def cmd_setup(args) -> int:
     contract = load_contract(CONTRACT_FILE)
     start = args.url or DEFAULT_DOORAY_URL
+    origin_host = urlparse(start).netloc
     log(f"Opening {start}")
     log("A browser window will open. Log in with KAIST SSO there.")
     log("Nothing is typed for you, and no password is read or stored.")
@@ -108,57 +117,85 @@ def cmd_setup(args) -> int:
         log("로그인되었습니다.")
         log(f"  landing page: {landing.split('?')[0]}")
         log("")
-        log("이 화면이 받은메일함이 아닐 수 있습니다. 브라우저에서")
-        log("  [메일] -> [받은메일함] 으로 이동하세요.")
-        log("메일 목록이 보이면 이 터미널에서 Enter를 누르세요.")
+        log("Dooray에서 [메일] -> [받은메일함] 으로 이동하세요.")
+        log("받은메일함 목록이 보이면 이 터미널에서 Enter를 누르세요.")
         log("(이 Enter는 최초 설정에서 한 번뿐입니다. 이후 자동 실행에는 입력이 없습니다.)")
 
-        # Watch from here, so the list call the inbox makes is captured while the
-        # user navigates to it.
-        observer = NetworkObserver(session.page)
+        # Attached to the CONTEXT, not to the launch page: Dooray may put the
+        # mailbox in another tab, and a page listener would miss all of its calls.
+        observer = NetworkObserver(session.context)
         observer.start()
         try:
-            if not _confirm("\nEnter를 누르면 현재 페이지를 받은메일함으로 기록합니다... "):
+            if not _confirm("\nEnter를 누르면 현재 받은메일함을 기록합니다... "):
                 log("")
                 log("[error] --setup needs an interactive terminal: it waits for you to")
                 log("        reach 받은메일함 and press Enter. Run it from a normal")
                 log("        Command Prompt or PowerShell window, not from a scheduled task.")
                 return 1
             observer.on_mail_screen = True
-            mail_url = session.page.url or ""
-            if not mail_url or session.contract.looks_like_login(mail_url):
+
+            # Never trust the page we launched: look at every page and frame.
+            targets = collect_targets(session.context, origin_host)
+            log("")
+            for line in describe(targets):
+                log(line)
+            target = select_mail_page(session.context, origin_host)
+            if target is None:
+                log("")
+                log("[refused] none of the open pages looks like a mailbox.")
+                log("          No page is under the /mail/ area and none shows mail-row-like")
+                log("          repetition. mail_url was NOT saved.")
+                log("          Re-run --setup and press Enter while 받은메일함 is on screen.")
+                return exit_codes.UI_CHANGED
+            if session.contract.looks_like_login(target.url):
                 raise AuthRequired("the browser is back on a login screen",
                                    hint="run --setup again and finish the SSO login")
-            log("recording what this page loads...")
-            observe(session, observer, seconds=6, reload=True)
-            report = write_discovery_report(observer, session.page, DISCOVERY_FILE,
+
+            log("")
+            log(f"selected mail page:\n  {target.location}")
+            log("")
+            log("observing inbox...")
+            observe(session, observer, seconds=6, target=target)
+            log("reloading inbox...")
+            observe(session, observer, seconds=8, reload=True, target=target)
+
+            mail_url = target.frame.url or target.url
+            row_evidence = mail_row_evidence(target.frame)
+            report = write_discovery_report(observer, row_evidence, DISCOVERY_FILE,
                                             page_url=mail_url, confirmed_by_user=True)
         finally:
             observer.stop()
 
     evidence = report.get("evidence") or {}
-    corroborated = evidence.get("A_mailListCallObserved") or evidence.get("C_repeatedRowContainers", 0) >= 1
+    # B alone is never enough. Repetition alone is never enough either: a home page
+    # has plenty of repeated elements. It takes a real mail-list call, or DOM rows
+    # that carry dates and ids the way mail rows do.
+    corroborated = bool(evidence.get("A_mailListCallObserved")) or bool(evidence.get("C_strong"))
     if not corroborated:
         log("")
-        log("[refused] nothing on that page looked like a mail list.")
-        log("          No mail-list JSON call and no repeated row containers were seen.")
-        log("          mail_url was NOT saved. Re-run --setup and confirm while the")
-        log("          받은메일함 list is actually on screen.")
+        log("[refused] that page did not produce mail evidence.")
+        log("          No mail-list JSON call, and its repeated containers do not look")
+        log("          like mail rows (no per-row dates/ids). mail_url was NOT saved.")
         _report_findings(report)
         return exit_codes.UI_CHANGED
 
-    contract.mail_url = mail_url
-    contract.verified = False       # a human still confirms the endpoint shape
+    contract.mail_url = mail_url      # overwrites an earlier wrong value
+    contract.verified = False         # a human still confirms the endpoint shape
     contract.save(CONTRACT_FILE)
     log("")
-    log(f"mail_url recorded: {mail_url.split('?')[0]}")
+    log(f"mail_url recorded:\n  {mail_url.split('?')[0]}")
     log(f"session stored in  {PROFILE_DIR}")
     _report_findings(report)
     log("")
     log(f"report: {DISCOVERY_FILE}")
-    log("Next: pick the list_api from the candidates above, put it in")
-    log(f"      {CONTRACT_FILE}, then set \"verified\": true by hand.")
-    log("      Re-run --discover any time to refresh the candidates.")
+    log("setup complete.")
+    log("")
+    if report.get("recommendedListApi"):
+        log("Next: confirm the recommended list_api above really is the inbox, copy it")
+        log(f"      into {CONTRACT_FILE} as \"list_api\", then set \"verified\": true.")
+    else:
+        log("Next: pick a list_api from the candidates above, put it in")
+        log(f"      {CONTRACT_FILE}, then set \"verified\": true by hand.")
     return SUCCESS
 
 
@@ -167,22 +204,34 @@ def cmd_discover(args) -> int:
     if not contract.mail_url:
         raise UiContractError("no mailbox URL recorded yet", hint="run --setup first")
     log(f"opening {contract.mail_url.split('?')[0]}")
+    origin_host = urlparse(contract.mail_url).netloc
     with browser_session(PROFILE_DIR, contract, headless=False) as session:
         session.assert_authenticated()
-        observer = NetworkObserver(session.page)
+        observer = NetworkObserver(session.context)
         observer.on_mail_screen = True
         observer.start()
         try:
-            observe(session, observer, seconds=args.observe_seconds)
+            target = select_mail_page(session.context, origin_host)
+            if target is None:
+                for line in describe(collect_targets(session.context, origin_host)):
+                    log(line)
+                raise UiContractError(
+                    "the recorded mail_url does not open a mailbox",
+                    hint="run --setup again and press Enter while 받은메일함 is on screen")
+            log(f"mail page: {target.location}")
+            observe(session, observer, seconds=args.observe_seconds, target=target)
             # Reload so the inbox list request fires again while we are watching.
-            observe(session, observer, seconds=max(6, args.observe_seconds // 2), reload=True)
-            report = write_discovery_report(observer, session.page, DISCOVERY_FILE,
-                                            page_url=session.url, confirmed_by_user=False)
+            observe(session, observer, seconds=max(6, args.observe_seconds // 2),
+                    reload=True, target=target)
+            row_evidence = mail_row_evidence(target.frame)
+            report = write_discovery_report(observer, row_evidence, DISCOVERY_FILE,
+                                            page_url=target.frame.url or target.url,
+                                            confirmed_by_user=False)
         finally:
             observer.stop()
 
     evidence = report.get("evidence") or {}
-    if not (evidence.get("A_mailListCallObserved") or evidence.get("C_repeatedRowContainers", 0) >= 1):
+    if not (evidence.get("A_mailListCallObserved") or evidence.get("C_strong")):
         _report_findings(report)
         raise UiContractError(
             "the recorded mail_url does not look like a mail list",

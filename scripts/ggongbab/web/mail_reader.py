@@ -196,7 +196,12 @@ def classify_call(call: dict[str, Any]) -> tuple[str, list[str]]:
 
 
 class NetworkObserver:
-    """Collects XHR/fetch shapes from a page. Nothing is persisted here."""
+    """Collects XHR/fetch shapes. Nothing is persisted here.
+
+    `target` is a page OR a browser context. Attaching to the context is what
+    setup uses: Dooray may move the mailbox to another tab, and a page-level
+    listener would then see none of its traffic.
+    """
 
     def __init__(self, page):  # noqa: ANN001
         self.page = page
@@ -204,6 +209,9 @@ class NetworkObserver:
         self._attached = False
         self.after_reload = False
         self.on_mail_screen = False
+        # Bound once: `self._on_response` builds a new object on every access, so
+        # registering and removing would otherwise use two different callables.
+        self._handler = self._on_response
 
     def _on_response(self, response) -> None:  # noqa: ANN001
         try:
@@ -241,13 +249,13 @@ class NetworkObserver:
 
     def start(self) -> None:
         if not self._attached:
-            self.page.on("response", self._on_response)
+            self.page.on("response", self._handler)
             self._attached = True
 
     def stop(self) -> None:
         if self._attached:
             try:
-                self.page.remove_listener("response", self._on_response)
+                self.page.remove_listener("response", self._handler)
             except Exception:  # noqa: BLE001
                 pass
             self._attached = False
@@ -278,30 +286,32 @@ class NetworkObserver:
         return found
 
 
-def dom_row_candidates(page) -> dict[str, Any]:  # noqa: ANN001
-    try:
-        return page.evaluate(_LANDMARK_JS)
-    except Exception as exc:  # noqa: BLE001
-        return {"error": exc.__class__.__name__}
+def recommend_list_api(candidates: list[dict[str, Any]]) -> Optional[str]:
+    """Suggest an endpoint only when exactly one candidate is unambiguous.
+
+    All of: JSON, rows carrying subject/id/date-like keys, seen again after the
+    inbox was reloaded, and observed while the mail view was open. With two or
+    more candidates nothing is recommended - reporting beats guessing.
+    """
+    if len(candidates) != 1:
+        return None
+    call = candidates[0]
+    shape = call.get("shape") or {}
+    keys = _lower(shape.get("rowKeys"))
+    if not (keys & SUBJECT_KEYS and keys & ID_KEYS and keys & DATE_KEYS):
+        return None
+    if not (call.get("afterReload") and call.get("onMailScreen")):
+        return None
+    if "json" not in (call.get("contentType") or ""):
+        return None
+    return call.get("url")
 
 
-def mail_screen_evidence(observer: "NetworkObserver", page) -> dict[str, Any]:  # noqa: ANN001
-    """Objective signals that the current page is a mail list, not Home."""
-    landmarks = dom_row_candidates(page)
-    repeated = [r for r in (landmarks.get("repeated") or []) if r.get("count", 0) >= 10]
-    lists = observer.list_candidates()
-    return {
-        "mailListCallObserved": bool(lists),            # signal A
-        "repeatedRowContainers": len(repeated),         # signal C
-        "landmarks": landmarks,
-        "listCandidateCount": len(lists),
-    }
-
-
-def write_discovery_report(observer: NetworkObserver, page, out_path: Path, *,  # noqa: ANN001
+def write_discovery_report(observer: NetworkObserver, row_evidence: dict[str, Any], out_path: Path, *,
                            page_url: str, confirmed_by_user: bool) -> dict[str, Any]:
+    """`row_evidence` comes from page_select.mail_row_evidence on the SELECTED frame."""
     buckets = observer.classified()
-    evidence = mail_screen_evidence(observer, page)
+    lists = buckets["mail-list"]
     report = {
         "recordedAt": datetime.now(KST).isoformat(timespec="seconds"),
         "pageUrl": redact(page_url),
@@ -309,17 +319,21 @@ def write_discovery_report(observer: NetworkObserver, page, out_path: Path, *,  
                  "SHAPE ONLY - key names and row counts - never values. No bodies, headers, cookies, "
                  "addresses or mail text are stored."),
         "evidence": {
-            "A_mailListCallObserved": evidence["mailListCallObserved"],
+            "A_mailListCallObserved": bool(lists),
             "B_confirmedByUser": confirmed_by_user,
-            "C_repeatedRowContainers": evidence["repeatedRowContainers"],
+            # C counts groups that look like MAIL ROWS, not merely repeated elements.
+            "C_mailRowGroups": len(row_evidence.get("mailRowGroups") or []),
+            "C_strong": bool(row_evidence.get("strong")),
+            "repeatedContainers": row_evidence.get("repeatedContainers", 0),
         },
-        "mailListCandidates": buckets["mail-list"],
+        "mailListCandidates": lists,
         "mailDetailCandidates": buckets["mail-detail"],
+        "recommendedListApi": recommend_list_api(lists),
         "otherJsonCalls": [c for c in buckets["other"] if "json" in (c.get("contentType") or "")][:40],
         "nonJsonCalls": [{"method": c["method"], "url": c["url"], "status": c["status"]}
                          for c in buckets["other"] if "json" not in (c.get("contentType") or "")][:30],
         "observedReadStateKeys": observer.observed_read_state_keys(),
-        "domLandmarks": evidence["landmarks"],
+        "domRowGroups": row_evidence,
         "nextStep": ("Copy the chosen list_api (and detail_api) into .local/dooray-ui.json, confirm the "
                      "response shape is really the inbox, then set \"verified\": true by hand."),
     }
@@ -328,15 +342,23 @@ def write_discovery_report(observer: NetworkObserver, page, out_path: Path, *,  
     return report
 
 
-def observe(session: Session, observer: NetworkObserver, seconds: int, *, reload: bool = False) -> None:
-    """Watch the page for a while, optionally reloading to force the list call."""
-    page = session.page
+def observe(session: Session, observer: NetworkObserver, seconds: int, *,
+            reload: bool = False, target=None) -> None:  # noqa: ANN001
+    """Watch for a while, optionally reloading to force the list call.
+
+    `target` is a page_select.MailTarget. Reloading the target (a tab or a frame)
+    rather than the launch page is what makes the inbox re-issue its list request.
+    """
+    page = getattr(target, "page", None) or session.page
     if reload:
         observer.after_reload = True
-        try:
-            page.reload(wait_until="domcontentloaded")
-        except Exception:  # noqa: BLE001
-            pass
+        if target is not None:
+            target.reload()
+        else:
+            try:
+                page.reload(wait_until="domcontentloaded")
+            except Exception:  # noqa: BLE001
+                pass
     page.wait_for_timeout(max(1, seconds) * 1000)
     try:
         page.mouse.wheel(0, 1500)

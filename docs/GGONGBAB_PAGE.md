@@ -48,14 +48,14 @@ KAIST Portal (stub, disabled)                            ─┘
 | `scripts/ggongbab/prefilter.py` | AI에 보낼 후보만 고르는 로컬 규칙 필터 |
 | `scripts/ggongbab/backfill.py` | 메일함 backfill 드라이버 (필터 → 안전 한도 → 기존 파이프라인) |
 | `scripts/dooray_web_agent.py` | 무인 메일함 에이전트 (SSO 1회 → 스캔 → 업무 등록) |
-| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `ui_contract.py`, `mail_reader.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
+| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `page_select.py`, `ui_contract.py`, `mail_reader.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
 | `scripts/ggongbab/dedup.py` | 소스 간 동일 행사 판정과 병합 |
 | `scripts/ggongbab/exporter.py` | 공개 JSON 생성 |
 | `scripts/ggongbab/pipeline.py` | 전체 흐름 · 멱등성 · 통계 |
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (191개) |
+| `tests/ggongbab/` | pytest (209개) |
 
 ---
 
@@ -516,7 +516,28 @@ python scripts\dooray_web_agent.py --setup
 ```
 
 3. 브라우저에서 **받은메일함으로 이동**한 뒤 터미널에서 **Enter** 를 누른다.
-4. 그 시점의 URL 이 `mail_url` 로 기록되고, 같은 자리에서 discovery 까지 바로 수행된다.
+4. **열려 있는 모든 페이지와 프레임을 다시 훑어** 받은메일함을 고르고, 그 URL 을 `mail_url` 로 기록한다.
+   같은 실행 안에서 discovery 까지 끝난다. **`--setup` 을 두 번 실행할 필요가 없다.**
+
+```
+pages observed: 2
+  [0] https://kaist.gov-dooray.com/
+        mailCandidate=no  mailPath=no  mailRows=no  repeated=25
+  [1] https://kaist.gov-dooray.com/mail/systems/inbox
+        mailCandidate=yes  mailPath=yes  mailRows=yes  repeated=50
+
+selected mail page:
+  https://kaist.gov-dooray.com/mail/systems/inbox
+
+observing inbox...
+reloading inbox...
+```
+
+> **왜 다시 훑는가.** 실제 사용자 테스트에서 이 부분이 깨졌다. 실행 시점의 page 객체를 계속 붙들고
+> 있었기 때문에, 사용자가 `/mail/systems/inbox` 를 보고 있는데도 `page.url` 은 루트를 가리켰고
+> 루트가 `mail_url` 로 저장됐다. Dooray 는 메일을 **다른 탭이나 프레임**에 띄울 수 있으므로
+> 시작 페이지를 신뢰하지 않는다. 판별은 `/mail/` 앱 영역 + 메일 행 구조로 한다.
+> 특정 inbox URL 하나를 하드코딩하지 않는다.
 
 세션은 `.local/dooray-browser-profile/` 에 남는다 (gitignore).
 
@@ -533,10 +554,18 @@ Enter 를 눌렀다고 무조건 저장하지 않는다. 아래 중 하나 이�
 |------|-----|
 | **A** | 메일 목록으로 보이는 JSON 호출이 실제로 관찰됨 (행에 제목 계열 키 + 날짜/ID 계열 키, 2행 이상) |
 | **B** | 사용자가 "받은메일함에 도착했다"고 Enter 로 명시 확인 |
-| **C** | 반복되는 행 컨테이너가 DOM 에서 관찰됨 |
+| **C** | **메일 행처럼 생긴** 반복 구조가 DOM 에서 관찰됨 |
 
-B 만 있고 A·C 가 모두 없으면 **저장을 거부하고 exit 20** 으로 끝난다.
-홈 화면에서 Enter 를 눌러도 `mail_url` 이 홈으로 굳지 않는다.
+저장 조건은 **B + (A 또는 강한 C)** 다. B 만으로는 절대 저장하지 않는다.
+
+**C 는 단순 반복이 아니다.** 같은 class 를 가진 element 가 25개 있다는 것은 어떤 홈 화면에나 있는 일이고,
+실제로 그 때문에 루트 URL 이 저장되는 버그가 났다. 지금 C 는 형제 element 묶음마다
+
+* 60% 이상이 읽을 만한 길이의 텍스트를 갖고,
+* 절반 이상(최소 3개)이 **날짜/시각** 을 갖고,
+* 절반 이상이 **행마다 다른 id/data 속성** 을 갖거나 80% 이상이 날짜를 가질 때
+
+만 메일 행 묶음으로 인정한다. class 이름은 추측하지 않고 내용의 형태만 본다.
 
 **KAIST ID/비밀번호는 저장하지 않는다.** 코드에 비밀번호를 다루는 경로 자체가 없고,
 `test_no_password_handling_anywhere_in_the_agent` 가 AST 로 이를 고정한다.
@@ -550,6 +579,8 @@ python scripts\dooray_web_agent.py --discover
 Dooray 메일 화면의 DOM 은 여기서 한 번도 본 적이 없다. **그래서 selector 를 추측해 넣지 않았다.**
 `scripts/ggongbab/web/dooray_ui.json` 은 `verified: false` 에 전부 빈 값으로 나간다.
 
+`--setup` 이 이미 discovery 까지 끝내므로 보통은 다시 실행할 필요가 없다. UI 가 바뀌었을 때만 쓴다.
+
 `--discover` 는 저장된 `mail_url` 을 열고, 로그인 상태와 **메일 화면인지**를 먼저 확인한 뒤
 12초쯤 XHR/fetch 를 관찰하고 **받은메일함을 reload 해서 목록 호출이 실제로 한 번 더 발생하게** 한다.
 (`--observe-seconds` 로 조절) 메일 화면이 아니면 exit 20 으로 멈추고 `--setup` 을 다시 하라고 알린다.
@@ -561,6 +592,8 @@ Dooray 메일 화면의 DOM 은 여기서 한 번도 본 적이 없다. **그래
   키 이름은 내용이 아니라 스키마라서, 이것 덕분에 contract 를 두 번 추측하지 않고 채울 수 있다.
 * 응답 본문·헤더·쿠키·메일 텍스트는 저장하지 않는다.
 
+관찰기는 **페이지가 아니라 브라우저 컨텍스트에 붙는다.** 메일함이 다른 탭으로 열려도 그 트래픽을 놓치지 않는다.
+
 호출은 세 갈래로 분류되고 **선정 이유**가 함께 남는다.
 
 | 분류 | 판정 근거 예 |
@@ -568,6 +601,9 @@ Dooray 메일 화면의 DOM 은 여기서 한 번도 본 적이 없다. **그래
 | `mailListCandidates` | content-type json · 행에 제목 계열 키 · 날짜 계열 키 · N행 · 2회 이상 호출 · reload 후 재발생 · 메일 화면에서 관찰됨 |
 | `mailDetailCandidates` | 단일 객체 + 본문 계열 키에 200자 넘는 텍스트 |
 | `otherJsonCalls` / `nonJsonCalls` | 나머지 |
+
+mail-list 후보가 **정확히 하나**이고 JSON · 제목/ID/날짜 계열 키 · reload 후 재발생 · 메일 화면에서 발생을
+모두 만족하면 `recommendedListApi` 로 추천한다. 후보가 여럿이면 추천하지 않고 보고만 한다.
 
 그 보고서를 보고 `.local/dooray-ui.json` 을 채운 뒤 `"verified": true` 로 **직접** 바꾼다.
 **`--setup` 도 `--discover` 도 `verified` 를 자동으로 true 로 만들지 않는다.** 응답 shape 를 사람이 확인한 뒤에 확정한다.
