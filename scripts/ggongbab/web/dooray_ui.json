@@ -14,5 +14,8 @@
   "body_container": "",
   "next_page": "",
   "list_api": "",
-  "detail_api": ""
+  "detail_api": "",
+  "list_page_param": "",
+  "list_size_param": "",
+  "read_state_key": ""
 }

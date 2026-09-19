@@ -44,6 +44,10 @@ class UiContract:
     # Preferred over DOM scraping: stabler, and a list call does not open a mail.
     list_api: str = ""
     detail_api: str = ""
+    # Filled by --calibrate from the live endpoint, never guessed.
+    list_page_param: str = ""     # query parameter used to page (e.g. "page")
+    list_size_param: str = ""     # query parameter used for page size
+    read_state_key: str = ""      # row field holding read/unread, "" when none exists
     notes: str = ""
 
     REQUIRED_DOM = ("mail_url", "logged_in_marker", "row", "row_subject")

@@ -32,6 +32,7 @@ from ggongbab.prefilter import classify  # noqa: E402
 from ggongbab.web import browser as browser_mod  # noqa: E402
 from ggongbab.web import exit_codes  # noqa: E402
 from ggongbab.web.browser import DEFAULT_DOORAY_URL, browser_session, wait_for_login  # noqa: E402
+from ggongbab.web.calibrate import calibrate  # noqa: E402
 from ggongbab.web.exit_codes import (NAMES, SUCCESS, AgentError, AuthRequired,  # noqa: E402
                                      PipelineFailed, UiContractError)
 from ggongbab.web.mail_reader import (NetworkObserver, list_mails, observe,  # noqa: E402
@@ -269,28 +270,44 @@ def cmd_run(args) -> int:
     log(f"project: verified ({args.project_name})")
 
     scanned = already = candidates = registered = 0
-    opened = 0
+    opened = unread_skipped = read_skipped = date_skipped = 0
     with browser_session(PROFILE_DIR, contract, headless=not args.headed) as session:
         session.assert_authenticated()
         log("session: ok")
-        headers = list_mails(session, limit=args.max_mails)
+        # The mailbox may live in another tab or a frame; never assume the launch page.
+        target = select_mail_page(session.context, urlparse(contract.mail_url).netloc)
+        if target is None and not contract.list_api:
+            raise UiContractError("could not find the mailbox page",
+                                  hint="run --calibrate again")
+        headers = list_mails(session, limit=args.max_mails, target=target, since=start)
+        log(f"loaded rows: {len(headers)}")
         for header in headers:
             if header.received and not (start <= header.received <= end):
+                date_skipped += 1
                 continue
             scanned += 1
             if state.seen(header.mail_id):
                 already += 1
                 continue
+            # Read-state is decided from the row, BEFORE any body is opened, so a
+            # --read-state read pass can never flip an unread mail to read.
+            if args.read_state != "all" and header.unread is not None:
+                if args.read_state == "read" and header.unread:
+                    unread_skipped += 1
+                    continue
+                if args.read_state == "unread" and not header.unread:
+                    read_skipped += 1
+                    continue
             decision = classify(header.subject, header.preview)
             if not decision.candidate and args.open_body and not args.subject_only:
                 # The preview is short; a mail that looks plausible from its
                 # subject gets its body read before being dismissed.
                 if decision.has_event_word or decision.has_meal_time:
-                    open_body(session, header)
+                    open_body(session, header, target=target)
                     opened += 1
                     decision = classify(header.subject, header.text_for_filter)
             elif decision.candidate and args.open_body:
-                open_body(session, header)
+                open_body(session, header, target=target)
                 opened += 1
             if not decision.candidate:
                 state.record(header.mail_id, header.subject, header.received,
@@ -317,9 +334,12 @@ def cmd_run(args) -> int:
     if not args.dry_run:
         state.save()
 
-    log(f"mail scanned: {scanned}")
+    log(f"date matched: {scanned}  (outside the window: {date_skipped})")
     log(f"already processed: {already}")
     log(f"new: {scanned - already}")
+    if args.read_state != "all":
+        log(f"skipped by --read-state {args.read_state}: "
+            f"{unread_skipped} unread / {read_skipped} read")
     log(f"bodies opened: {opened}")
     log(f"candidates: {candidates}")
     log(f"registered: {registered}{' (dry run)' if args.dry_run else ''}")
@@ -346,6 +366,68 @@ def _run_pipeline() -> int:
     return SUCCESS
 
 
+def cmd_calibrate(args) -> int:
+    """Open the saved inbox, watch it load, verify the endpoint, write the contract."""
+    contract = load_contract(CONTRACT_FILE)
+    if not contract.mail_url:
+        raise UiContractError("no mailbox URL recorded yet", hint="run --setup first")
+    origin_host = urlparse(contract.mail_url).netloc
+    log(f"opening {contract.mail_url.split('?')[0]}")
+    with browser_session(PROFILE_DIR, contract, headless=not args.headed) as session:
+        session.assert_authenticated()
+        observer = NetworkObserver(session.context)
+        observer.on_mail_screen = True
+        observer.start()
+        try:
+            target = select_mail_page(session.context, origin_host)
+            if target is None:
+                for line in describe(collect_targets(session.context, origin_host)):
+                    log(line)
+                raise UiContractError("the saved mail_url did not open a mailbox",
+                                      hint="run --setup again while 받은메일함 is on screen")
+            log(f"mail target: {target.location}"
+                f"  ({'frame' if not target.is_main else 'top-level page'})")
+            observe(session, observer, seconds=args.observe_seconds, target=target)
+            log("reloading inbox...")
+            observe(session, observer, seconds=max(6, args.observe_seconds // 2),
+                    reload=True, target=target)
+
+            row_evidence = mail_row_evidence(target.frame)
+            report = write_discovery_report(observer, row_evidence, DISCOVERY_FILE,
+                                            page_url=target.frame.url or target.url,
+                                            confirmed_by_user=False)
+            log("")
+            log("calibrating...")
+            summary = calibrate(target.page, observer, contract, log=log)
+        finally:
+            observer.stop()
+
+    log("")
+    if summary.get("strategy") != "api" or not contract.verified:
+        log("[not verified] no endpoint passed the read-only smoke test.")
+        log(f"               report: {DISCOVERY_FILE}")
+        log("               DOM fallback needs a stable per-row id; the live inbox")
+        log("               uses generated class names and a shared row attribute,")
+        log("               so it cannot supply one. Re-run --calibrate after the UI settles.")
+        _report_findings(report)
+        return exit_codes.UI_CHANGED
+
+    contract.save(CONTRACT_FILE)
+    log(f"contract written: {CONTRACT_FILE}")
+    log(f"  strategy      : JSON list endpoint (no DOM selectors needed)")
+    log(f"  page param    : {contract.list_page_param or '(none)'}")
+    log(f"  size param    : {contract.list_size_param or '(none)'}")
+    log(f"  read-state key: {contract.read_state_key or '(none observed)'}")
+    log(f"  verified      : {contract.verified}")
+    log("")
+    log("No task was created, no mail body was opened, nothing was written to the mailbox.")
+    log("")
+    log("Next (dry run, writes nothing):")
+    log(r"  python scripts\dooray_web_agent.py --run --from 2026-09-01 --to 2026-09-19 ^")
+    log("      --read-state read --dry-run")
+    return SUCCESS
+
+
 def cmd_selftest(args) -> int:
     settings = load_settings()
     writer = TaskWriter(settings, project_name=args.project_name)
@@ -362,6 +444,8 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--setup", action="store_true", help="open a browser once for the manual SSO login")
     mode.add_argument("--discover", action="store_true", help="record how the mail page loads")
     mode.add_argument("--run", action="store_true", help="unattended scan and register")
+    mode.add_argument("--calibrate", action="store_true",
+                      help="fill .local/dooray-ui.json from the live inbox (no hand editing)")
     mode.add_argument("--selftest", action="store_true", help="create one harmless task to verify write access")
 
     parser.add_argument("--url", help=f"Dooray address for --setup (default {DEFAULT_DOORAY_URL})")
@@ -374,6 +458,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--since-last-run", action="store_true", help="scan from the previous run (with a day of overlap)")
     parser.add_argument("--days", type=int, default=3, help="default window when no dates are given (default 3)")
     parser.add_argument("--max-mails", type=int, default=200, help="safety limit on rows read (default 200)")
+    parser.add_argument("--read-state", choices=["all", "read", "unread"], default="all",
+                        help="which mails to process; 'read' never opens an unread mail")
     parser.add_argument("--project-name", default=DEFAULT_PROJECT_NAME,
                         help="exact project name that must match, or nothing is written")
     parser.add_argument("--run-pipeline", action="store_true", help="run refresh_ggongbab.py --only dooray afterwards")
@@ -396,6 +482,8 @@ def main() -> int:
             return cmd_setup(args)
         if args.discover:
             return cmd_discover(args)
+        if args.calibrate:
+            return cmd_calibrate(args)
         if args.selftest:
             return cmd_selftest(args)
         return cmd_run(args)

@@ -83,6 +83,8 @@ ID_KEYS = {"id", "mailid", "messageid", "seq", "uid", "mailseq"}
 BODY_KEYS = {"body", "content", "html", "text", "mailbody", "contents"}
 READ_KEYS = {"read", "isread", "unread", "isunread", "readflag", "unreadflag", "readyn", "seen"}
 MAX_INSPECT_BYTES = 2_000_000
+# Content types that can never be a JSON payload; everything else gets sniffed.
+STATIC_CONTENT_TYPES = ("javascript", "css", "image/", "font", "video/", "audio/", "text/html")
 
 
 def parse_day(value: Any) -> Optional[date]:
@@ -163,9 +165,9 @@ def classify_call(call: dict[str, Any]) -> tuple[str, list[str]]:
     """(category, reasons). Categories: mail-list / mail-detail / other."""
     reasons: list[str] = []
     shape = call.get("shape") or {}
-    content_type = call.get("contentType") or ""
-    if "json" in content_type:
-        reasons.append("content-type json")
+    is_json = bool(call.get("isJson")) or "json" in (call.get("contentType") or "")
+    if is_json:
+        reasons.append("JSON body" if not call.get("contentType", "").count("json") else "content-type json")
     if call.get("hitCount", 1) > 1:
         reasons.append(f"called {call['hitCount']}x")
     if call.get("afterReload"):
@@ -225,8 +227,12 @@ class NetworkObserver:
                 entry = {
                     "method": request.method,
                     "url": redact(response.url),
+                    # Kept in memory only, and written solely to the gitignored
+                    # local contract. The shared report never carries it.
+                    "rawUrl": response.url,
                     "status": response.status,
                     "contentType": content_type,
+                    "isJson": False,
                     "hitCount": 0,
                     "afterReload": False,
                     "onMailScreen": False,
@@ -236,16 +242,37 @@ class NetworkObserver:
             entry["hitCount"] += 1
             entry["afterReload"] = entry["afterReload"] or self.after_reload
             entry["onMailScreen"] = entry["onMailScreen"] or self.on_mail_screen
-            if entry["shape"] is None and "json" in content_type and response.status < 400:
-                length = response.header_value("content-length")
-                if length and length.isdigit() and int(length) > MAX_INSPECT_BYTES:
-                    return
-                try:
-                    entry["shape"] = shape_of(response.json())
-                except Exception:  # noqa: BLE001 - body may be gone or not JSON
-                    pass
+            if entry["shape"] is None and response.status < 400:
+                entry["shape"] = self._sniff(response, content_type, entry)
         except Exception:  # noqa: BLE001 - observation must never break the page
             pass
+
+    @staticmethod
+    def _sniff(response, content_type: str, entry: dict[str, Any]) -> Optional[dict[str, Any]]:  # noqa: ANN001
+        """Decide by the BODY, not by the header.
+
+        Dooray serves its mail list without `json` in the content-type, so the
+        first version filed the real endpoint under "non-JSON" and never looked
+        at it. Anything that is not obviously a static asset now gets sniffed.
+        """
+        if any(token in content_type for token in STATIC_CONTENT_TYPES):
+            return None
+        length = response.header_value("content-length")
+        if length and length.isdigit() and int(length) > MAX_INSPECT_BYTES:
+            return None
+        try:
+            text = response.text()
+        except Exception:  # noqa: BLE001 - body already consumed or binary
+            return None
+        head = text.lstrip()[:1]
+        if head not in ("{", "["):
+            return None
+        try:
+            payload = json.loads(text)
+        except (ValueError, TypeError):
+            return None
+        entry["isJson"] = True
+        return shape_of(payload)
 
     def start(self) -> None:
         if not self._attached:
@@ -302,9 +329,18 @@ def recommend_list_api(candidates: list[dict[str, Any]]) -> Optional[str]:
         return None
     if not (call.get("afterReload") and call.get("onMailScreen")):
         return None
-    if "json" not in (call.get("contentType") or ""):
+    if not (call.get("isJson") or "json" in (call.get("contentType") or "")):
         return None
     return call.get("url")
+
+
+def _is_json(call: dict[str, Any]) -> bool:
+    return bool(call.get("isJson")) or "json" in (call.get("contentType") or "")
+
+
+def _public(call: dict[str, Any]) -> dict[str, Any]:
+    """Report copy: the redacted URL only, never the one with real query values."""
+    return {k: v for k, v in call.items() if k != "rawUrl"}
 
 
 def write_discovery_report(observer: NetworkObserver, row_evidence: dict[str, Any], out_path: Path, *,
@@ -326,12 +362,12 @@ def write_discovery_report(observer: NetworkObserver, row_evidence: dict[str, An
             "C_strong": bool(row_evidence.get("strong")),
             "repeatedContainers": row_evidence.get("repeatedContainers", 0),
         },
-        "mailListCandidates": lists,
-        "mailDetailCandidates": buckets["mail-detail"],
+        "mailListCandidates": [_public(c) for c in lists],
+        "mailDetailCandidates": [_public(c) for c in buckets["mail-detail"]],
         "recommendedListApi": recommend_list_api(lists),
-        "otherJsonCalls": [c for c in buckets["other"] if "json" in (c.get("contentType") or "")][:40],
+        "otherJsonCalls": [_public(c) for c in buckets["other"] if _is_json(c)][:40],
         "nonJsonCalls": [{"method": c["method"], "url": c["url"], "status": c["status"]}
-                         for c in buckets["other"] if "json" not in (c.get("contentType") or "")][:30],
+                         for c in buckets["other"] if not _is_json(c)][:30],
         "observedReadStateKeys": observer.observed_read_state_keys(),
         "domRowGroups": row_evidence,
         "nextStep": ("Copy the chosen list_api (and detail_api) into .local/dooray-ui.json, confirm the "
@@ -445,9 +481,10 @@ def list_mails_via_api(session: Session, url: str, limit: int) -> list[MailHeade
     return headers[:limit]
 
 
-def list_mails_via_dom(session: Session, limit: int) -> list[MailHeader]:
+def list_mails_via_dom(session: Session, limit: int, target=None) -> list[MailHeader]:  # noqa: ANN001
+    """Read rows from the mailbox FRAME, which may not be the top-level page."""
     contract = session.contract
-    page = session.page
+    page = getattr(target, "frame", None) or session.page
     try:
         page.wait_for_selector(contract.row, timeout=20_000)
     except Exception as exc:  # noqa: BLE001
@@ -490,21 +527,74 @@ def list_mails_via_dom(session: Session, limit: int) -> list[MailHeader]:
     return out
 
 
-def list_mails(session: Session, limit: int = 100) -> list[MailHeader]:
+def list_mails(session: Session, limit: int = 100, target=None,  # noqa: ANN001
+               since: Optional[date] = None, max_pages: int = 25) -> list[MailHeader]:
     contract = session.contract
     contract.require_ready()
     if contract.list_api:
-        return list_mails_via_api(session, contract.list_api, limit)
-    return list_mails_via_dom(session, limit)
+        return list_mails_paged(session, limit, target, since, max_pages)
+    return list_mails_via_dom(session, limit, target)
 
 
-def open_body(session: Session, header: MailHeader) -> str:
+def list_mails_paged(session: Session, limit: int, target=None,  # noqa: ANN001
+                     since: Optional[date] = None, max_pages: int = 25) -> list[MailHeader]:
+    """Walk the list endpoint's pages until the window is covered.
+
+    The live endpoint exposes page and size parameters, so reaching September is
+    paging rather than scrolling a virtualised list. Three stop conditions, so a
+    mailbox can never spin forever: the oldest row falls before `since`, the row
+    limit is reached, or a page brings no mail id we have not already seen.
+    """
+    from .calibrate import fetch_rows, set_query
+
+    contract = session.contract
+    page_obj = getattr(target, "page", None) or session.page
+    page_param = contract.list_page_param
+    headers: list[MailHeader] = []
+    seen: set[str] = set()
+    stagnant = 0
+    for page_no in range(max_pages):
+        url = set_query(contract.list_api, **{page_param: page_no}) if page_param else contract.list_api
+        rows, page_headers = fetch_rows(page_obj, url)
+        if contract.read_state_key:
+            _apply_read_state(rows, page_headers, contract.read_state_key)
+        fresh = [h for h in page_headers if h.mail_id and h.mail_id not in seen]
+        if not fresh:
+            stagnant += 1
+            if stagnant >= 2 or not page_param:
+                break
+            continue
+        stagnant = 0
+        for header in fresh:
+            seen.add(header.mail_id)
+            headers.append(header)
+        if len(headers) >= limit:
+            break
+        oldest = min((h.received for h in page_headers if h.received), default=None)
+        if since and oldest and oldest < since:
+            break
+        if not page_param:
+            break
+    return headers[:limit]
+
+
+def _apply_read_state(rows: list[dict[str, Any]], headers: list[MailHeader], key: str) -> None:
+    """Set unread from the field calibration actually found in the data."""
+    unread_field = str(key).lower().startswith(("unread", "isunread"))
+    for row, header in zip(rows, headers):
+        if key not in row:
+            continue
+        value = bool(row.get(key))
+        header.unread = value if unread_field else not value
+
+
+def open_body(session: Session, header: MailHeader, target=None) -> str:  # noqa: ANN001
     """Load one mail's body. This marks the mail read in the mailbox."""
     contract = session.contract
     if contract.detail_api:
         url = contract.detail_api.replace("{id}", header.mail_id)
         try:
-            response = session.page.request.get(url, timeout=30_000)
+            response = (getattr(target, "page", None) or session.page).request.get(url, timeout=30_000)
             if response.status < 400:
                 payload = response.json()
                 body = _extract_body(payload)
@@ -516,10 +606,11 @@ def open_body(session: Session, header: MailHeader) -> str:
             pass
     if not contract.body_container:
         return ""
+    frame = getattr(target, "frame", None) or session.page
     try:
-        session.page.click(f"{contract.row}[{contract.row_id_attr}='{header.mail_id}']")
-        session.page.wait_for_selector(contract.body_container, timeout=20_000)
-        text = session.page.inner_text(contract.body_container) or ""
+        frame.click(f"{contract.row}[{contract.row_id_attr}='{header.mail_id}']")
+        frame.wait_for_selector(contract.body_container, timeout=20_000)
+        text = frame.inner_text(contract.body_container) or ""
     except Exception:  # noqa: BLE001
         return ""
     header.body = text[:_MAX_BODY_CHARS]

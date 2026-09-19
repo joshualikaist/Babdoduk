@@ -325,6 +325,11 @@ class FakeResponse:
     def header_value(self, name):
         return self._headers.get(name.lower())
 
+    def text(self):
+        if self._payload is None:
+            raise ValueError("no body")
+        return json.dumps(self._payload, ensure_ascii=False)
+
     def json(self):
         if self._payload is None:
             raise ValueError("no json")
@@ -397,8 +402,9 @@ def test_inbox_call_is_recognised_with_reasons():
     call = candidates[0]
     assert call["url"] == "https://kaist.gov-dooray.com/v1/mails?page=<v>&size=<v>"
     why = " ".join(call["why"])
-    assert "subject-like key" in why and "date-like key" in why and "content-type json" in why
+    assert "subject-like key" in why and "date-like key" in why
     assert "called 2x" in why
+    assert call["isJson"] is True
 
 
 def test_detail_call_is_classified_separately():
@@ -733,3 +739,362 @@ def test_setup_overwrites_an_earlier_wrong_mail_url(tmp_path):
     contract.mail_url = INBOX_URL
     contract.save(path)
     assert load_contract(path).mail_url == INBOX_URL
+
+
+# --- calibration from the live discovery -------------------------------------
+# Measured on the real inbox: Dooray serves its mail list WITHOUT "json" in the
+# content-type, which is why the first classifier filed it under nonJsonCalls.
+def _mail_page(rows, page_no=0):
+    return {"totalCount": 137, "contents": rows}
+
+
+def _rows(start, count, day=3, read_flags=None):
+    out = []
+    for i in range(count):
+        out.append({"id": str(start + i), "subject": f"mail {start + i}",
+                    "receivedAt": f"2026-09-{day:02d}T10:00:00+09:00",
+                    "read": (read_flags[i] if read_flags else True)})
+    return out
+
+
+def test_non_json_content_type_is_still_sniffed():
+    """The exact miss: content-type without 'json' must not hide a mail list."""
+    from ggongbab.web.mail_reader import NetworkObserver
+
+    page = FakePage()
+    observer = NetworkObserver(page)
+    observer.start()
+    page.emit(FakeResponse("https://kaist.gov-dooray.com/v2/wapi/mails?folderName=1&page=0",
+                           _mail_page(_rows(100, 3)), content_type="application/octet-stream"))
+    call = next(iter(observer.calls.values()))
+    assert call["isJson"] is True
+    assert call["shape"]["kind"] == "rows" and call["shape"]["rowCount"] == 3
+    assert len(observer.list_candidates()) == 1
+
+
+def test_static_assets_are_never_sniffed():
+    from ggongbab.web.mail_reader import NetworkObserver
+
+    page = FakePage()
+    observer = NetworkObserver(page)
+    observer.start()
+    page.emit(FakeResponse("https://x/app.js", {"a": 1}, content_type="application/javascript"))
+    assert next(iter(observer.calls.values()))["shape"] is None
+
+
+def test_endpoint_choice_prefers_real_mail_rows():
+    from ggongbab.web.calibrate import choose_list_endpoint
+
+    mails = {"rawUrl": "https://x/v2/wapi/mails?folderName=1&page=0&size=50", "isJson": True,
+             "afterReload": True, "onMailScreen": True,
+             "shape": {"kind": "rows", "rowCount": 50,
+                       "rowKeys": ["id", "subject", "receivedAt", "read"]}}
+    services = {"rawUrl": "https://x/v2/wapi/members/me/services", "isJson": True,
+                "shape": {"kind": "rows", "rowCount": 118, "rowKeys": ["name", "use", "ipAcl"]}}
+    folders = {"rawUrl": "https://x/v2/wapi/mail-folders?type=a", "isJson": True,
+               "shape": {"kind": "rows", "rowCount": 8, "rowKeys": ["id", "name"]}}
+    chosen = choose_list_endpoint([services, folders, mails])
+    assert chosen is mails
+
+
+def test_endpoint_choice_fails_closed_on_a_tie():
+    from ggongbab.web.calibrate import choose_list_endpoint
+
+    one = {"rawUrl": "https://x/a", "isJson": True,
+           "shape": {"kind": "rows", "rowCount": 50, "rowKeys": ["id", "subject", "receivedAt"]}}
+    two = dict(one, rawUrl="https://x/b")
+    assert choose_list_endpoint([one, two]) is None
+
+
+def test_endpoint_without_id_or_subject_is_rejected():
+    from ggongbab.web.calibrate import choose_list_endpoint
+
+    no_id = {"rawUrl": "https://x/a", "isJson": True,
+             "shape": {"kind": "rows", "rowCount": 50, "rowKeys": ["subject", "receivedAt"]}}
+    assert choose_list_endpoint([no_id]) is None
+
+
+def test_query_helpers_find_real_param_names():
+    from ggongbab.web.calibrate import query_param_named, set_query
+
+    url = "https://x/v2/wapi/mails?folderName=1&preview=true&size=50&page=0&order=-receivedAt"
+    assert query_param_named(url, ("page", "offset")) == "page"
+    assert query_param_named(url, ("size", "limit")) == "size"
+    assert query_param_named(url, ("cursor",)) == ""
+    assert "page=3" in set_query(url, page=3) and "folderName=1" in set_query(url, page=3)
+
+
+class FakeRequest:
+    def __init__(self, pages):
+        self.pages = pages
+        self.urls = []
+
+    def get(self, url, timeout=None):
+        self.urls.append(url)
+        from urllib.parse import parse_qsl, urlparse
+        page = int(dict(parse_qsl(urlparse(url).query)).get("page", 0))
+        payload = self.pages[page] if page < len(self.pages) else {"contents": []}
+        return FakeResponse(url, payload, content_type="application/octet-stream")
+
+
+class FakeApiPage:
+    def __init__(self, pages):
+        self.request = FakeRequest(pages)
+
+
+def test_smoke_test_reports_without_pii(capsys):
+    from ggongbab.web.calibrate import smoke_test
+
+    page = FakeApiPage([_mail_page(_rows(100, 10, read_flags=[True] * 8 + [False] * 2))])
+    result = smoke_test(page, "https://x/v2/wapi/mails?page=0")
+    assert result.ok
+    assert result.headers_parsed == 10 and result.unique_ids == 10 and result.dates_parsed == 10
+    assert result.read_key == "read" and result.read_count == 8 and result.unread_count == 2
+    text = "\n".join(result.lines())
+    assert "mail 100" not in text and "subject" not in text.lower()
+    assert "stable ids: 10/10" in text
+
+
+def test_smoke_test_fails_closed_on_duplicate_ids():
+    from ggongbab.web.calibrate import smoke_test
+
+    dup = [{"id": "1", "subject": "a", "receivedAt": "2026-09-03T10:00:00+09:00"} for _ in range(10)]
+    result = smoke_test(FakeApiPage([_mail_page(dup)]), "https://x/mails?page=0")
+    assert not result.ok and any("unique" in e for e in result.errors)
+
+
+def test_smoke_test_fails_closed_on_too_few_rows():
+    from ggongbab.web.calibrate import smoke_test
+
+    result = smoke_test(FakeApiPage([_mail_page(_rows(1, 2))]), "https://x/mails?page=0")
+    assert not result.ok
+
+
+def test_calibrate_sets_verified_only_after_a_clean_smoke_test():
+    from ggongbab.web.calibrate import calibrate
+    from ggongbab.web.mail_reader import NetworkObserver
+
+    contract = UiContract(mail_url=INBOX_URL)
+    observer = NetworkObserver(FakePage())
+    observer.calls["k"] = {
+        "rawUrl": "https://kaist.gov-dooray.com/v2/wapi/mails?folderName=1&page=0&size=50",
+        "url": "https://kaist.gov-dooray.com/v2/wapi/mails?folderName=<v>&page=<v>&size=<v>",
+        "isJson": True, "afterReload": True, "onMailScreen": True, "hitCount": 2,
+        "shape": {"kind": "rows", "rowCount": 50, "rowKeys": ["id", "subject", "receivedAt", "read"]},
+    }
+    page = FakeApiPage([_mail_page(_rows(100, 10))])
+    summary = calibrate(page, observer, contract, log=lambda *_a: None)
+    assert summary["strategy"] == "api"
+    assert contract.verified is True
+    assert contract.list_page_param == "page" and contract.list_size_param == "size"
+    assert contract.read_state_key == "read"
+    assert "folderName=1" in contract.list_api, "the real query values are kept locally"
+
+
+def test_calibrate_leaves_unverified_when_smoke_fails():
+    from ggongbab.web.calibrate import calibrate
+    from ggongbab.web.mail_reader import NetworkObserver
+
+    contract = UiContract(mail_url=INBOX_URL)
+    observer = NetworkObserver(FakePage())
+    observer.calls["k"] = {
+        "rawUrl": "https://x/v2/wapi/mails?page=0", "url": "https://x/v2/wapi/mails?page=<v>",
+        "isJson": True, "afterReload": True, "onMailScreen": True, "hitCount": 2,
+        "shape": {"kind": "rows", "rowCount": 50, "rowKeys": ["id", "subject", "receivedAt"]},
+    }
+    page = FakeApiPage([_mail_page(_rows(1, 2))])       # only 2 rows: below the floor
+    calibrate(page, observer, contract, log=lambda *_a: None)
+    assert contract.verified is False and contract.list_api == ""
+
+
+def test_calibrate_reports_nothing_when_no_endpoint_seen():
+    from ggongbab.web.calibrate import calibrate
+    from ggongbab.web.mail_reader import NetworkObserver
+
+    contract = UiContract(mail_url=INBOX_URL)
+    summary = calibrate(FakeApiPage([]), NetworkObserver(FakePage()), contract, log=lambda *_a: None)
+    assert summary["strategy"] == "none" and contract.verified is False
+
+
+# --- paging -------------------------------------------------------------------
+def _paged_session(pages, contract):
+    from ggongbab.web.browser import Session
+
+    page = FakeApiPage(pages)
+    return Session(page=page, context=None, contract=contract), page
+
+
+def test_paging_accumulates_unique_ids_across_pages():
+    from ggongbab.web.mail_reader import list_mails
+
+    contract = UiContract(verified=True, list_api="https://x/mails?page=0&size=50",
+                          list_page_param="page")
+    pages = [_mail_page(_rows(100, 50)), _mail_page(_rows(150, 50)), _mail_page(_rows(200, 50))]
+    session, page = _paged_session(pages, contract)
+    headers = list_mails(session, limit=120, max_pages=10)
+    assert len(headers) == 120
+    assert len({h.mail_id for h in headers}) == 120
+    assert len(page.request.urls) >= 3
+
+
+def test_paging_stops_at_the_date_cutoff():
+    from ggongbab.web.mail_reader import list_mails
+
+    contract = UiContract(verified=True, list_api="https://x/mails?page=0", list_page_param="page")
+    pages = [_mail_page(_rows(100, 20, day=18)), _mail_page(_rows(200, 20, day=2))]
+    session, page = _paged_session(pages, contract)
+    headers = list_mails(session, limit=500, since=date(2026, 9, 10), max_pages=10)
+    assert len(headers) == 40                 # the page that crossed the cutoff is still kept
+    assert len(page.request.urls) == 2        # and then it stops
+
+
+def test_paging_stops_when_no_new_ids_appear():
+    from ggongbab.web.mail_reader import list_mails
+
+    contract = UiContract(verified=True, list_api="https://x/mails?page=0", list_page_param="page")
+    same = _mail_page(_rows(100, 10))
+    session, page = _paged_session([same, same, same, same, same], contract)
+    headers = list_mails(session, limit=500, max_pages=20)
+    assert len(headers) == 10
+    assert len(page.request.urls) <= 3, "must not spin on a repeating page"
+
+
+def test_paging_without_a_page_param_reads_one_page():
+    from ggongbab.web.mail_reader import list_mails
+
+    contract = UiContract(verified=True, list_api="https://x/mails")
+    session, page = _paged_session([_mail_page(_rows(100, 10))], contract)
+    assert len(list_mails(session, limit=500)) == 10
+    assert len(page.request.urls) == 1
+
+
+def test_read_state_comes_from_the_calibrated_field():
+    from ggongbab.web.mail_reader import list_mails
+
+    contract = UiContract(verified=True, list_api="https://x/mails?page=0",
+                          list_page_param="page", read_state_key="read")
+    rows = _rows(100, 4, read_flags=[True, False, True, False])
+    session, _page = _paged_session([_mail_page(rows)], contract)
+    headers = list_mails(session, limit=10)
+    assert [h.unread for h in headers] == [False, True, False, True]
+
+
+# --- frame-aware DOM fallback --------------------------------------------------
+class FakeDomFrame:
+    """A frame holding mail rows; the top page holds none."""
+
+    def __init__(self, url, rows):
+        self.url = url
+        self._rows = rows
+        self.clicks = []
+
+    def evaluate(self, _js):
+        return mail_row_groups(len(self._rows))
+
+    def wait_for_selector(self, _sel, **_kw):
+        return True
+
+    def query_selector_all(self, _sel):
+        return self._rows
+
+    def goto(self, url, **_kw):
+        self.url = url
+
+
+class FakeRow:
+    def __init__(self, mail_id, subject, when):
+        self._attrs = {"data-mail-id": mail_id}
+        self._subject = subject
+        self._when = when
+
+    def get_attribute(self, name):
+        return self._attrs.get(name)
+
+    def query_selector(self, sel):
+        text = {".s": self._subject, ".d": self._when}.get(sel)
+        return type("El", (), {"inner_text": lambda _self, t=text: t})() if text else None
+
+    def inner_text(self):
+        return f"{self._subject} {self._when}"
+
+
+def test_dom_rows_are_read_from_the_frame_not_the_top_page():
+    """top page = /, mail frame = /mail/systems/inbox."""
+    from ggongbab.web.browser import Session
+    from ggongbab.web.mail_reader import list_mails
+    from ggongbab.web.page_select import select_mail_page
+
+    rows = [FakeRow(f"m{i}", f"설명회 {i}", "2026-09-03") for i in range(6)]
+    frame = FakeDomFrame(INBOX_URL, rows)
+    shell = FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()), frame)
+    context = FakeContext(shell)
+    target = select_mail_page(context, HOST)
+    assert target is not None and target.is_main is False
+
+    contract = UiContract(verified=True, mail_url=INBOX_URL, logged_in_marker=".app",
+                          row="li.row", row_subject=".s", row_date=".d", row_id_attr="data-mail-id")
+    session = Session(page=shell, context=context, contract=contract)
+    headers = list_mails(session, limit=10, target=target)
+    assert [h.mail_id for h in headers] == [f"m{i}" for i in range(6)]
+    assert headers[0].received == date(2026, 9, 3)
+
+
+def test_dom_rows_without_a_stable_id_fail_closed():
+    from ggongbab.web.browser import Session
+    from ggongbab.web.mail_reader import list_mails
+    from ggongbab.web.page_select import select_mail_page
+
+    rows = [FakeRow(None, f"설명회 {i}", "2026-09-03") for i in range(6)]
+    frame = FakeDomFrame(INBOX_URL, rows)
+    context = FakeContext(FakeCtxPage(FakeFrame(ROOT_URL, generic_groups()), frame))
+    target = select_mail_page(context, HOST)
+    contract = UiContract(verified=True, mail_url=INBOX_URL, logged_in_marker=".app",
+                          row="li.row", row_subject=".s", row_id_attr="data-mail-id")
+    session = Session(page=context.pages[0], context=context, contract=contract)
+    with pytest.raises(UiContractError, match="stable id"):
+        list_mails(session, limit=10, target=target)
+
+
+# --- session persistence -------------------------------------------------------
+def test_session_restore_preference_is_written(tmp_path):
+    """Measured: Dooray's auth cookie is a session cookie, so the profile must keep it."""
+    from ggongbab.web.browser import ensure_session_restore
+
+    profile = tmp_path / "profile"
+    ensure_session_restore(profile)
+    prefs = json.loads((profile / "Default" / "Preferences").read_text(encoding="utf-8"))
+    assert prefs["session"]["restore_on_startup"] == 1
+    assert prefs["profile"]["exit_type"] == "Normal"
+
+
+def test_session_restore_keeps_other_preferences(tmp_path):
+    from ggongbab.web.browser import ensure_session_restore
+
+    profile = tmp_path / "profile"
+    (profile / "Default").mkdir(parents=True)
+    (profile / "Default" / "Preferences").write_text(
+        json.dumps({"profile": {"name": "keep me"}, "other": 1}), encoding="utf-8")
+    ensure_session_restore(profile)
+    prefs = json.loads((profile / "Default" / "Preferences").read_text(encoding="utf-8"))
+    assert prefs["other"] == 1 and prefs["profile"]["name"] == "keep me"
+    assert prefs["session"]["restore_on_startup"] == 1
+
+
+def test_cookie_summary_reports_names_only(tmp_path):
+    import sqlite3
+
+    from ggongbab.web.browser import dooray_cookie_summary
+
+    db = tmp_path / "Default" / "Network" / "Cookies"
+    db.parent.mkdir(parents=True)
+    con = sqlite3.connect(db)
+    con.execute("create table cookies (host_key text, name text, value text, is_persistent int)")
+    con.execute("insert into cookies values ('.kaist.gov-dooray.com','SESSION','secret-value',0)")
+    con.execute("insert into cookies values ('.kaist.gov-dooray.com','SCOUTER','x',1)")
+    con.execute("insert into cookies values ('.other.com','A','y',1)")
+    con.commit()
+    con.close()
+    summary = dooray_cookie_summary(tmp_path)
+    assert summary["host"] == 2 and summary["persistent"] == 1
+    assert summary["names"] == ["SCOUTER", "SESSION"]
+    assert "secret-value" not in json.dumps(summary)

@@ -1,0 +1,231 @@
+# -*- coding: utf-8 -*-
+"""Fill the UI contract from a live, authenticated inbox - no hand editing.
+
+The first live discovery showed why this is needed and how it must work:
+
+  * Dooray's mail list endpoint was there all along, but its content-type does
+    not say `json`, so the header-based filter filed it under "non-JSON" and its
+    shape was never inspected. Sniffing the body fixed that.
+  * The inbox DOM uses generated class names (`css-15hz540`) that change on every
+    deployment, and every row carried the *same* attribute value, so the DOM gives
+    no stable per-row id. The JSON endpoint does.
+
+So calibration prefers the endpoint the web app itself calls, verifies it by
+reading real rows, and only then marks the contract verified. Nothing is written
+to the mailbox at any point.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from datetime import date
+from typing import Any, Optional
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+
+from .exit_codes import AuthRequired, UiContractError
+from .mail_reader import (DATE_KEYS, ID_KEYS, READ_KEYS, SUBJECT_KEYS, MailHeader,
+                          _find_rows, _from_json_rows, _lower, redact)
+
+MIN_SMOKE_ROWS = 5
+PAGE_PARAMS = ("page", "pageno", "pagenumber", "offset")
+SIZE_PARAMS = ("size", "limit", "count", "pagesize")
+
+
+def set_query(url: str, **params: Any) -> str:
+    """Replace query parameters, keeping everything else identical."""
+    parsed = urlparse(url)
+    pairs = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    for key, value in params.items():
+        if value is None:
+            pairs.pop(key, None)
+        else:
+            pairs[key] = str(value)
+    return urlunparse(parsed._replace(query=urlencode(pairs)))
+
+
+def query_param_named(url: str, names: tuple[str, ...]) -> str:
+    """The actual parameter name this endpoint uses, or '' when it has none."""
+    keys = [k for k, _v in parse_qsl(urlparse(url).query, keep_blank_values=True)]
+    lowered = {k.lower(): k for k in keys}
+    for candidate in names:
+        if candidate in lowered:
+            return lowered[candidate]
+    return ""
+
+
+def endpoint_score(call: dict[str, Any]) -> int:
+    """Rank mail-list candidates by evidence, never by their URL wording."""
+    shape = call.get("shape") or {}
+    if shape.get("kind") != "rows":
+        return -1
+    keys = _lower(shape.get("rowKeys"))
+    score = 0
+    if keys & SUBJECT_KEYS:
+        score += 5
+    if keys & DATE_KEYS:
+        score += 3
+    if keys & ID_KEYS:
+        score += 3
+    if keys & READ_KEYS:
+        score += 1
+    rows = int(shape.get("rowCount") or 0)
+    score += min(rows, 50) // 10
+    if call.get("afterReload"):
+        score += 2
+    if call.get("onMailScreen"):
+        score += 1
+    if query_param_named(call.get("rawUrl") or "", PAGE_PARAMS):
+        score += 2          # a pageable endpoint can reach September
+    return score
+
+
+def choose_list_endpoint(calls: list[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    ranked = sorted(((endpoint_score(c), c) for c in calls), key=lambda pair: pair[0], reverse=True)
+    if not ranked or ranked[0][0] <= 0:
+        return None
+    best_score, best = ranked[0]
+    # Require the essentials: without a subject and a stable id there is nothing
+    # to filter on and nothing to deduplicate by.
+    keys = _lower((best.get("shape") or {}).get("rowKeys"))
+    if not (keys & SUBJECT_KEYS and keys & ID_KEYS):
+        return None
+    if len(ranked) > 1 and ranked[1][0] == best_score:
+        return None         # ambiguous: fail closed rather than pick a coin toss
+    return best
+
+
+def detect_read_key(rows: list[dict[str, Any]]) -> str:
+    """The read/unread field name, only if it really exists and really varies."""
+    if not rows:
+        return ""
+    present = [k for k in rows[0] if str(k).lower() in READ_KEYS]
+    for key in present:
+        values = {bool(row.get(key)) for row in rows if key in row}
+        if values:
+            return key
+    return ""
+
+
+@dataclass
+class SmokeResult:
+    rows_seen: int = 0
+    headers_parsed: int = 0
+    stable_ids: int = 0
+    unique_ids: int = 0
+    dates_parsed: int = 0
+    read_count: int = 0
+    unread_count: int = 0
+    read_key: str = ""
+    row_keys: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+
+    @property
+    def ok(self) -> bool:
+        return (self.headers_parsed >= MIN_SMOKE_ROWS
+                and self.unique_ids == self.headers_parsed
+                and self.dates_parsed == self.headers_parsed
+                and not self.errors)
+
+    def lines(self) -> list[str]:
+        out = [
+            f"mail headers parsed: {self.headers_parsed}",
+            f"stable ids: {self.unique_ids}/{self.headers_parsed}",
+            f"dates parsed: {self.dates_parsed}/{self.headers_parsed}",
+        ]
+        if self.read_key:
+            out.append(f"read-state detected: {self.read_count} read / {self.unread_count} unread"
+                       f"  (field: {self.read_key})")
+        else:
+            out.append("read-state detected: none (no read/unread field in the rows)")
+        for err in self.errors:
+            out.append(f"problem: {err}")
+        return out
+
+
+def fetch_rows(page, url: str) -> tuple[list[dict[str, Any]], list[MailHeader]]:  # noqa: ANN001
+    """GET through the browser context, so the session cookie is reused untouched."""
+    try:
+        response = page.request.get(url, timeout=30_000)
+    except Exception as exc:  # noqa: BLE001
+        raise UiContractError(f"list endpoint failed: {exc.__class__.__name__}") from exc
+    if response.status in (401, 403):
+        raise AuthRequired("the mail list endpoint rejected the session",
+                           hint="run --setup to log in again")
+    if response.status >= 400:
+        raise UiContractError(f"list endpoint returned HTTP {response.status}")
+    try:
+        payload = response.json()
+    except Exception:  # noqa: BLE001
+        import json as _json
+
+        try:
+            payload = _json.loads(response.text())
+        except Exception as exc:  # noqa: BLE001
+            raise UiContractError("list endpoint did not return JSON") from exc
+    rows = _find_rows(payload)
+    return rows, _from_json_rows(rows)
+
+
+def smoke_test(page, url: str, limit: int = 10) -> SmokeResult:  # noqa: ANN001
+    """Read a handful of headers. No body is opened and nothing is written."""
+    result = SmokeResult()
+    rows, headers = fetch_rows(page, url)
+    result.rows_seen = len(rows)
+    if not rows:
+        result.errors.append("endpoint returned no rows")
+        return result
+    result.row_keys = sorted(rows[0].keys())[:30]
+    result.read_key = detect_read_key(rows)
+    headers = headers[:limit]
+    result.headers_parsed = len(headers)
+    ids = [h.mail_id for h in headers if h.mail_id]
+    result.stable_ids = len(ids)
+    result.unique_ids = len(set(ids))
+    result.dates_parsed = sum(1 for h in headers if h.received is not None)
+    if result.read_key:
+        for row in rows[:limit]:
+            value = bool(row.get(result.read_key))
+            unread = value if str(result.read_key).lower().startswith(("unread", "isunread")) else not value
+            if unread:
+                result.unread_count += 1
+            else:
+                result.read_count += 1
+    if result.headers_parsed < MIN_SMOKE_ROWS:
+        result.errors.append(f"only {result.headers_parsed} headers parsed (need {MIN_SMOKE_ROWS})")
+    if result.unique_ids != result.headers_parsed:
+        result.errors.append("mail ids are not unique per row")
+    if result.dates_parsed != result.headers_parsed:
+        result.errors.append("some rows have no parsable received date")
+    return result
+
+
+def calibrate(page, observer, contract, log=print) -> dict[str, Any]:  # noqa: ANN001
+    """Choose the endpoint, verify it, and fill the contract. Returns a summary."""
+    candidates = [c for c in observer.calls.values() if (c.get("shape") or {}).get("kind") == "rows"]
+    chosen = choose_list_endpoint(candidates)
+    summary: dict[str, Any] = {"strategy": None, "listApi": None, "smoke": None}
+    if chosen is None:
+        summary["strategy"] = "none"
+        log("no unambiguous mail-list endpoint was observed.")
+        return summary
+
+    raw_url = chosen.get("rawUrl") or ""
+    log(f"list endpoint: {redact(raw_url)}")
+    log(f"  row keys: {', '.join((chosen.get('shape') or {}).get('rowKeys') or [])}")
+
+    result = smoke_test(page, raw_url)
+    for line in result.lines():
+        log(f"  {line}")
+    summary["strategy"] = "api"
+    summary["listApi"] = redact(raw_url)
+    summary["smoke"] = result
+
+    if not result.ok:
+        log("  -> smoke test failed; contract left unverified.")
+        return summary
+
+    contract.list_api = raw_url
+    contract.list_page_param = query_param_named(raw_url, PAGE_PARAMS)
+    contract.list_size_param = query_param_named(raw_url, SIZE_PARAMS)
+    contract.read_state_key = result.read_key
+    contract.verified = True
+    return summary
