@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>실험 · 꽁밥 안내 · 밥도둑 Babdoduk</title>
+  <title>실험 · 오늘 뭐 먹지? · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -346,7 +346,7 @@
 <body data-gg-lab>
   <header class="site-nav" role="banner">
     <div class="lab-fork-ribbon">
-      실험용 꽁밥 안내 — <a href="lab.html">실험실</a> / 본편 <a href="ggongbab.html">꽁밥 안내</a>
+      실험용 오늘 뭐 먹지? — <a href="lab.html">실험실</a> / 본편 <a href="ggongbab.html">오늘 뭐 먹지?</a>
     </div>
     <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
@@ -385,7 +385,7 @@
             <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
             <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
             <a role="menuitem" class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
-            <a role="menuitem" class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.ggongbab">꽁밥 안내</a>
+            <a role="menuitem" class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.ggongbab">오늘 뭐 먹지?</a>
           </div>
         </div>
         <div class="nav-mega" data-mega>
@@ -402,8 +402,8 @@
   <main class="ggongbab-page-wrap">
     <div id="ggongbabFeed" aria-live="polite">
       <header class="gg-hero">
-        <h1 data-i18n="ggongbab.title">꽁밥</h1>
-        <p class="gg-tagline" data-i18n="gg.tagline">설명회 가고 밥도 먹자.</p>
+        <h1 data-i18n="ggongbab.title">오늘 뭐 먹지?</h1>
+        <p class="gg-tagline" data-i18n="gg.tagline">KAIST에서 오늘 먹을 수 있는 걸 한곳에.</p>
       </header>
       <div class="gg-feed">
         <div class="gg-skeleton"></div><div class="gg-skeleton"></div><div class="gg-skeleton"></div>
@@ -442,7 +442,7 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '실험 · 꽁밥 안내 · 밥도둑 Babdoduk',
+          docTitle: '실험 · 오늘 뭐 먹지? · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
@@ -460,15 +460,46 @@
           'nav.magazine': '밥도둑 매거진',
           'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
           'nav.youtube': '유튜브 (개설 예정)',
-          'nav.ggongbab': '꽁밥 안내',
-          'nav.ggongbab.open': '꽁밥 안내 보기',
+          'nav.ggongbab': '오늘 뭐 먹지?',
+          'nav.ggongbab.open': '오늘 뭐 먹지? 보기',
           'nav.event': '이벤트',
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'ggongbab.title': '꽁밥',
-          'ggongbab.lead': '설명회 가고 밥도 먹자.',
-          'gg.tagline': '설명회 가고 밥도 먹자.',
+          'ggongbab.title': '오늘 뭐 먹지?',
+          'ggongbab.lead': 'KAIST에서 오늘 먹을 수 있는 걸 한곳에.',
+          'gg.tagline': 'KAIST에서 오늘 먹을 수 있는 걸 한곳에.',
+          'gg.tab.free': '꽁밥',
+          'gg.tab.menu': '오늘의 학식',
+          'gg.tabsAria': '꽁밥과 학식',
+          'gg.next': '다음 꽁밥',
+          'gg.radar.label': '오늘의 꽁밥 레이더',
+          'gg.radar.zero': '🌵 오늘은 꽁밥 가뭄',
+          'gg.radar.some': '🍙 한 끼는 건질 수 있어요',
+          'gg.radar.many': '🔥 오늘 꽁밥 풍년',
+          'gg.radar.count': '오늘 {n}개',
+          'gg.radar.next': '가장 빠른 꽁밥',
+          'gg.radar.cta': '자세히 보기 →',
+          'gg.emptyTodayTitle': '🌵 오늘은 꽁밥 가뭄이에요',
+          'gg.emptyTodayBody': '아직 확인된 꽁밥 행사가 없어요. 대신 오늘 학식 {n}곳의 메뉴가 있어요.',
+          'gg.toMenu': '오늘 학식 보러가기 →',
+          'gg.source.mail': 'KAIST 메일',
+          'gg.source.portal': 'KAIST 포탈',
+          'gg.source.public': 'KAIST 공식 공지',
+          'gg.source.manual': '밥도둑 등록',
+          'gg.metric.free': '오늘 꽁밥 {n}개',
+          'gg.metric.menu': '학식 {n}곳',
+          'gg.metric.menuStale': '학식 업데이트 중',
+          'km.title': '오늘의 학식',
+          'km.breakfast': '아침',
+          'km.lunch': '점심',
+          'km.dinner': '저녁',
+          'km.fav': '즐겨찾기',
+          'km.unfav': '즐겨찾기 해제',
+          'km.errorTitle': '오늘 메뉴를 불러오지 못했어요.',
+          'km.toFree': '꽁밥 보러가기 →',
+          'km.staleTitle': '오늘 메뉴 업데이트 중이에요.',
+          'km.showStale': '최근 메뉴 보기',
           'gg.today': '오늘',
           'gg.tomorrow': '내일',
           'gg.thisWeek': '이번 주',
@@ -517,7 +548,7 @@
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'Lab · Free meal info · Babdoduk',
+          docTitle: 'Lab · What to Eat Today? · Babdoduk',
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
@@ -535,15 +566,46 @@
           'nav.magazine': 'Magazine',
           'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
           'nav.youtube': 'YouTube (coming soon)',
-          'nav.ggongbab': 'Free meal info',
-          'nav.ggongbab.open': 'View free meal info',
+          'nav.ggongbab': 'What to Eat Today?',
+          'nav.ggongbab.open': 'See what to eat today',
           'nav.event': 'Event',
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'ggongbab.title': 'Free meals',
-          'ggongbab.lead': 'Go to the info session, get fed.',
-          'gg.tagline': 'Go to the info session, get fed.',
+          'ggongbab.title': 'What to Eat Today?',
+          'ggongbab.lead': 'Everything you can eat on campus today, in one place.',
+          'gg.tagline': 'Everything you can eat on campus today, in one place.',
+          'gg.tab.free': 'Free food',
+          'gg.tab.menu': 'Cafeteria',
+          'gg.tabsAria': 'Free food and cafeteria',
+          'gg.next': 'Next free meal',
+          'gg.radar.label': "Today's free-food radar",
+          'gg.radar.zero': '🌵 No free food today',
+          'gg.radar.some': '🍙 You can still grab a meal',
+          'gg.radar.many': '🔥 Free-food jackpot today',
+          'gg.radar.count': '{n} today',
+          'gg.radar.next': 'Soonest free meal',
+          'gg.radar.cta': 'See details →',
+          'gg.emptyTodayTitle': '🌵 No free food today',
+          'gg.emptyTodayBody': 'No confirmed free-food events yet. {n} cafeterias still have menus.',
+          'gg.toMenu': 'See today’s cafeteria →',
+          'gg.source.mail': 'KAIST mail',
+          'gg.source.portal': 'KAIST portal',
+          'gg.source.public': 'KAIST notice',
+          'gg.source.manual': 'Added by Babdoduk',
+          'gg.metric.free': '{n} free meals today',
+          'gg.metric.menu': '{n} cafeterias',
+          'gg.metric.menuStale': 'Cafeteria updating',
+          'km.title': "Today's cafeteria",
+          'km.breakfast': 'Breakfast',
+          'km.lunch': 'Lunch',
+          'km.dinner': 'Dinner',
+          'km.fav': 'Favorite',
+          'km.unfav': 'Remove favorite',
+          'km.errorTitle': 'Could not load today’s menu.',
+          'km.toFree': 'See free food →',
+          'km.staleTitle': 'Today’s menu is still updating.',
+          'km.showStale': 'Show latest saved menu',
           'gg.today': 'Today',
           'gg.tomorrow': 'Tomorrow',
           'gg.thisWeek': 'This week',
@@ -701,6 +763,7 @@
       });
     })();
   </script>
+  <script src="js/kaist-menu.js"></script>
   <script src="js/ggongbab.js"></script>
 </body>
 </html>

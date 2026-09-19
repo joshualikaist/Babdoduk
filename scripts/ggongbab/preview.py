@@ -29,7 +29,8 @@ COUNTERS = ("loadedRows", "dateMatched", "readEligible", "prefilterCandidates",
             "aiRecovered", "aiErrors", "aiSkippedDueToQuota",
             "inputTokens", "outputTokens",
             "likelyEvents", "explicitFood",
-            "needsReview", "notEvent", "publicCount")
+            "needsReview", "notEvent", "publicCount",
+            "sourceDoorayCandidates", "sourcePortalCandidates", "sourcePublicCandidates")
 
 
 def collect_candidates(session, start, end, *, limit, target=None, read_state="read",
@@ -141,6 +142,10 @@ def generate_preview(items, counts, settings, *, max_ai_candidates=50, force=Fal
     extractor = extractor_factory(settings.openai_api_key) if items else None
     pipeline = Pipeline(settings, repo, extractor, [])
     metrics = {key: int(counts.get(key, 0)) for key in COUNTERS}
+    metrics["sourceDoorayCandidates"] = sum(
+        1 for item in items if item.source_type in ("dooray", "dooray_mailbox"))
+    metrics["sourcePortalCandidates"] = sum(1 for item in items if item.source_type == "portal")
+    metrics["sourcePublicCandidates"] = sum(1 for item in items if item.source_type == "kaist_public")
 
     failed = _run_pass(pipeline, items, metrics, log, "AI candidates processed")
     attempts = len(failed)

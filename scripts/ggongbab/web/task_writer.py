@@ -24,6 +24,7 @@ from datetime import date
 from typing import Any, Optional
 
 from ..config import Settings
+from ..ingest_marker import render_portal_marker
 from .exit_codes import ProjectNotFound
 
 UA = "BabdodukGgongbabAgent/1.0 (+https://github.com/joshualikaist/Babdoduk)"
@@ -40,6 +41,17 @@ class MailPayload:
     body: str
     received: Optional[date] = None
     preview_only: bool = False
+
+
+@dataclass
+class PortalPayload:
+    """Portal notice queued into the same collection project. No raw portal ids."""
+
+    external_key: str
+    title: str
+    body: str
+    source_created_at: str = ""
+    private_source: bool = True
 
 
 class TaskWriter:
@@ -114,6 +126,23 @@ class TaskWriter:
             "body": {"mimeType": "text/x-markdown", "content": content},
         }
 
+    def build_portal_task(self, notice: PortalPayload) -> dict[str, Any]:
+        marker = render_portal_marker(
+            external_key=notice.external_key,
+            source_created_at=notice.source_created_at,
+            private_source=notice.private_source,
+        )
+        content = (
+            f"{marker}\n\n"
+            f"Original Notice\n"
+            f"Subject: {notice.title}\n\n"
+            f"{notice.body}\n"
+        )
+        return {
+            "subject": notice.title or "(제목 없음)",
+            "body": {"mimeType": "text/x-markdown", "content": content},
+        }
+
     def create_task(self, mail: MailPayload, dry_run: bool = False) -> Optional[str]:
         """Returns the new post id, or None on a dry run."""
         if not self._verified:
@@ -124,6 +153,21 @@ class TaskWriter:
             return None
         payload = self._request("POST", f"/project/v1/projects/{self.settings.dooray_project_id}/posts",
                                 self.build_task(mail))
+        result = payload.get("result") or {}
+        post_id = str(result.get("id") or "")
+        if not post_id:
+            raise ProjectNotFound("task creation returned no post id")
+        return post_id
+
+    def create_portal_task(self, notice: PortalPayload, dry_run: bool = False) -> Optional[str]:
+        if not self._verified:
+            raise ProjectNotFound("verify_project() must succeed before any write")
+        if not notice.external_key:
+            raise ProjectNotFound("portal notice has no stable external key; refusing to register it")
+        if dry_run:
+            return None
+        payload = self._request("POST", f"/project/v1/projects/{self.settings.dooray_project_id}/posts",
+                                self.build_portal_task(notice))
         result = payload.get("result") or {}
         post_id = str(result.get("id") or "")
         if not post_id:

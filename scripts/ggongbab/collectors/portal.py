@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
-"""KAIST portal collector - disabled stub.
+"""KAIST portal collector — cloud/GitHub Action path stays disabled.
 
-The portal requires SSO login. Credentials must never live in this repository
-or in GitHub secrets for this project, so this collector only defines the
-interface. When a sanctioned integration exists (e.g. an official feed or an
-approved service account), implement `collect()` here and flip `enabled()`.
+Portal requires interactive SSO. Credentials must never live in this repository
+or in GitHub secrets. Production ingest is:
+
+    Portal resident Chrome → scripts/portal_web_agent.py → Dooray collection
+    Project (ingest marker source=portal) → DoorayCollector.normalize_post
+    → RawItem(source_type="portal")
+
+`enabled()` remains False so Actions never attempt a Portal login.
 """
 from __future__ import annotations
 

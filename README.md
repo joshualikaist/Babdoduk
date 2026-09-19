@@ -14,12 +14,12 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 | **`food.html`** | 먹방 가계부 — 일별 지출 입력·월/주 표·달력 (`data/food-log.json`) |
 | **`event.html`** | 이벤트 — 탭형 목록(날짜 순)·상세 패널. 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
 | **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/` 레일 |
-| **`ggongbab.html`** | **꽁밥 안내** — 자동 수집한 무료 식사·간식 행사 세로 피드 (`css/ggongbab.css`, `js/ggongbab.js`) |
+| **`ggongbab.html`** | **오늘 뭐 먹지?** — 꽁밥 피드 + KAIST 학식 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
 | **`lab-ggongbab.html`** | 꽁밥 페이지의 실험용 fork. fixture·preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 
-상단 내비: 소개 · SNS · 주요 기능(맛집 지도 · 먹방 가계부 · 꽁밥 안내) · 이벤트 · 언어(EN/한국어).
+상단 내비: 소개 · SNS · 주요 기능(맛집 지도 · 먹방 가계부 · 오늘 뭐 먹지?) · 이벤트 · 언어(EN/한국어).
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
 환영 팝업은 **홈에서만** 뜨고, 「하루 동안 보지 않기」는 `babdoduk-welcome-snooze-until`로 약 24시간 숨깁니다.
 
@@ -48,20 +48,33 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 
 ---
 
-## 3. 꽁밥 파이프라인
+## 3. 오늘 뭐 먹지? 파이프라인
 
-무료 식사·간식·다과가 제공되는 교내 행사를 모아 `ggongbab.html` 피드로 내보냅니다.
+KAIST에서 오늘 먹을 수 있는 것을 한 페이지(`ggongbab.html`)에 모읍니다.
+
+- **꽁밥** — 무료 식사·간식·다과가 명시된 교내 행사
+- **KAIST 학식** — 공식 학식 JSON (`data/kaist-menu/latest.json`). AI를 쓰지 않습니다.
 
 ```
-수집 → PII 제거 → 규칙 전처리 → OpenAI 구조화 추출 → 결정적 검증 →
-중복 제거 → Supabase 저장 → data/ggongbab/latest.json → 웹 UI
+Dooray mailbox  ─┐
+KAIST Portal (로컬 resident Chrome + SSO) ─┼─▶ Dooray 수집 프로젝트 ─▶ Collectors
+KAIST 공개 공지 (학사공지 · 문화행사)     ─┤
+manual.json                            ─┘
+        │
+        ▼
+PII 제거 → 규칙 전처리 → gpt-5.6-luna → 결정적 검증 → 중복 제거
+        │
+        ▼
+Supabase → data/ggongbab/latest.json → 꽁밥 탭
+
+학식: scripts/refresh_kaist_menu.py → data/kaist-menu/latest.json → 학식 탭
 ```
 
 단계별 구현은 `scripts/ggongbab/` 안에 있습니다.
 
 | 모듈 | 역할 |
 |------|------|
-| `collectors/` | Dooray 업무 프로젝트, KAIST 공개 공지, `manual.json` |
+| `collectors/` | Dooray 업무 프로젝트(메일·Portal marker), KAIST 공개 공지, `manual.json`. PortalCollector는 클라우드에서 비활성 |
 | `prefilter.py` | 규칙 기반 1차 선별. 여기서 걸러진 메일은 모델에 보내지 않는다 |
 | `parsers/ai_parser.py` | OpenAI Responses API + Structured Outputs |
 | `parsers/ai_errors.py` | 실패를 **로그에 안전한 범주**로 분류 (§6) |
@@ -181,6 +194,38 @@ python scripts\dooray_web_agent.py --run --since-last-run --run-pipeline --cdp
 `--cdp` 는 별도 프로필의 상주 Chrome에 `127.0.0.1:9222` 로 붙습니다. Playwright 번들
 Chromium이 아니라 설치된 Chrome을 쓰되, **사용자의 기존 Chrome 프로필은 쓰지 않습니다.**
 SSO가 에이전트가 제어하지 않는 창에서 끝나 버리는 문제 때문에 이 방식이 필요합니다.
+
+### KAIST Portal 로컬 에이전트
+
+Portal은 GitHub Action에서 SSO 할 수 없으므로 클라우드 collector는 비활성입니다.
+로컬 resident Chrome + 수동 SSO 후, 웹앱이 실제로 호출한 XHR만 관찰합니다.
+비밀번호·OTP는 채우지 않고, 엔드포인트를 추측하지 않습니다.
+
+```powershell
+python scripts\portal_web_agent.py --setup --cdp
+python scripts\portal_web_agent.py --discover --cdp
+python scripts\portal_web_agent.py --calibrate --cdp
+python scripts\portal_web_agent.py --dry-run --cdp
+python scripts\portal_web_agent.py --run --cdp
+```
+
+프로필·계약·상태는 모두 gitignore된 `.local/portal-*` 에만 있습니다.
+후보 공지는 Dooray 수집 프로젝트에 `[BABDODUK_INGEST_V1] source=portal` marker로 등록되고,
+기존 Dooray collector가 `RawItem(source_type="portal")` 로 읽습니다.
+private Portal URL은 공개 JSON에 나가지 않습니다.
+
+관찰된 list/detail이 없으면 `PORTAL CALIBRATION FAILED` 로 끝납니다.
+
+### KAIST 학식
+
+AI를 쓰지 않습니다. 공식 학식 페이지를 파싱합니다.
+
+```powershell
+python scripts\refresh_kaist_menu.py
+```
+
+생성 실패 시 기존 `data/kaist-menu/latest.json` 을 보존합니다. 페이지는 payload `date`가
+오늘 KST와 다를 때 “오늘의 학식”으로 표시하지 않습니다.
 
 ### 종료 코드
 
@@ -352,7 +397,7 @@ python scripts\check_ggongbab_ui.py --preview  # preview 데이터까지 포함
 
 **승격 절차** — `lab-ggongbab.html` 을 손으로 베끼지 않습니다. lab 파일에서
 `noindex`, 실험 리본(마크업과 CSS), `data-gg-lab`, 실험실 내비 항목을 제거하고 제목을
-`꽁밥 안내 · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
+`오늘 뭐 먹지? · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
 위 검사를 다시 돌립니다.
 
 ---
@@ -446,6 +491,7 @@ vercel --prod
 | 파일 | 설명 |
 |------|------|
 | `scripts/dooray_web_agent.py` | 메일 수집 에이전트 (§5) |
+| `scripts/portal_web_agent.py` | Portal 로컬 에이전트 (SSO · 관찰 · 수집 큐) |
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |

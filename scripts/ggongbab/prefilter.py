@@ -105,3 +105,34 @@ def classify(subject: str, body: str) -> Decision:
 
 def is_candidate(subject: str, body: str) -> bool:
     return classify(subject, body).candidate
+
+
+def portal_list_warrants_detail(title: str, meta: str = "") -> bool:
+    """Fetch a Portal notice body only when the list row already looks event/food-like.
+
+    Title event wording is enough: food evidence may live only in the body
+    ("도시락 제공") and must not be dropped before the detail fetch.
+    """
+    text = f"{title or ''}\n{meta or ''}"
+    if not text.strip():
+        return False
+    if DENY.search(title or "") or DENY.search(text[:800]):
+        return False
+    return bool(EVENT_WORDS.search(text) or FOOD_WORDS.search(text) or MEAL_TIME.search(text))
+
+
+def portal_detail_is_candidate(title: str, body: str, *, has_list_date: bool = False) -> Decision:
+    """Same event+food rule as mail, with the list date allowed to satisfy DATE_HINT."""
+    decision = classify(title, body)
+    if decision.candidate:
+        return decision
+    if has_list_date and decision.has_event_word and (decision.has_food_word or decision.has_meal_time):
+        return Decision(
+            True,
+            "event + list date + " + ("food wording" if decision.has_food_word else "meal-time"),
+            decision.has_event_word,
+            decision.has_food_word,
+            decision.has_meal_time,
+            True,
+        )
+    return decision

@@ -11,10 +11,11 @@
 ## 1. Architecture
 
 ```
-Dooray Mail ──(Dooray 자동 분류)──▶ Dooray Project Task  ─┐
-KAIST 공개 공지 (학사공지 · 문화행사)                     ├─▶ Collectors ─▶ RawItem
-data/ggongbab/manual.json                                 │
-KAIST Portal (stub, disabled)                            ─┘
+Dooray Mail ──(에이전트 / 자동 분류)──▶ Dooray Project Task  ─┐
+KAIST Portal (로컬 agent → ingest marker)                    ├─▶ Collectors ─▶ RawItem
+KAIST 공개 공지 (학사공지 · 문화행사)                          │
+data/ggongbab/manual.json                                    ─┘
+KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/latest.json
                                                               │
                              raw_items / attachments (Supabase, private)
                                                               │

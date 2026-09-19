@@ -24,6 +24,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from ..config import KST, Settings
+from ..ingest_marker import parse_ingest_marker, strip_ingest_marker
 from ..models import RawAttachment, RawItem
 from ..parsers.dooray_mail import parse_original_message
 from ..parsers.html_text import html_to_text, inline_file_ids
@@ -245,6 +246,7 @@ class DoorayCollector(Collector):
         raw_html = content if "html" in mime else ""
         text = html_to_text(content) if "html" in mime else content
         original = parse_original_message(text)
+        marker = parse_ingest_marker(text)
         subject = original.subject or post.get("subject") or ""
         subject = re.sub(r"^\s*(?:\[?(?:FW|FWD|RE|전달|회신)\]?\s*[:：]\s*)+", "", subject, flags=re.I).strip()
         created = _parse_ts(post.get("createdAt"))
@@ -264,6 +266,28 @@ class DoorayCollector(Collector):
             if fid not in seen:
                 seen.add(fid)
                 attachments.append(RawAttachment(external_file_id=fid, inline=True))
+
+        if marker and marker.is_portal:
+            body_text = strip_ingest_marker(text)
+            return RawItem(
+                source_type="portal",
+                external_id=marker.external_key,
+                subject=subject,
+                sender_name="",
+                sender_email="",
+                raw_text=body_text,
+                raw_html="",
+                source_url="",
+                source_created_at=sent,
+                source_updated_at=updated,
+                metadata={
+                    "dooray_post_number": post.get("number"),
+                    "ingest_source": "portal",
+                    "private_source": marker.private_source,
+                    "original_header_found": original.found,
+                },
+                attachments=attachments,
+            )
 
         return RawItem(
             source_type="dooray",
