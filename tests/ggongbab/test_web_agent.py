@@ -1098,3 +1098,170 @@ def test_cookie_summary_reports_names_only(tmp_path):
     assert summary["host"] == 2 and summary["persistent"] == 1
     assert summary["names"] == ["SCOUTER", "SESSION"]
     assert "secret-value" not in json.dumps(summary)
+
+
+# --- login detection across tabs ----------------------------------------------
+# Real report: --setup printed its banner and then sat there. wait_for_login held
+# the launch page, which stayed parked on the identity provider while the signed-in
+# app lived in another tab, so it waited out the whole timeout.
+IDP_URL = "https://kaist.gov-dooray.com/idp/multi"
+APP_URL = "https://kaist.gov-dooray.com/home"
+
+
+class FakeLoginPage:
+    """A page whose URL can change between polls, like a real redirect chain."""
+
+    def __init__(self, *urls, ready=True, closed=False):
+        self._urls = list(urls)
+        self._ready = ready
+        self._closed = closed
+        self.url = self._urls[0]
+        self.evaluations = 0
+
+    def advance(self):
+        if len(self._urls) > 1:
+            self._urls.pop(0)
+            self.url = self._urls[0]
+
+    def is_closed(self):
+        return self._closed
+
+    def evaluate(self, _js):
+        self.evaluations += 1
+        return self._ready
+
+
+class SteppingContext:
+    """Advances every page one step per poll."""
+
+    def __init__(self, *pages):
+        self._pages = list(pages)
+
+    @property
+    def pages(self):
+        for page in self._pages:
+            page.advance()
+        return list(self._pages)
+
+
+def _session(context, page=None):
+    from ggongbab.web.browser import Session
+
+    return Session(page=page or (context.pages[0] if context.pages else None),
+                   context=context, contract=UiContract())
+
+
+def _wait(session, **kw):
+    from ggongbab.web.browser import wait_for_login
+
+    kw.setdefault("poll_seconds", 0)
+    kw.setdefault("stable_polls", 2)
+    kw.setdefault("timeout_seconds", 5)
+    kw.setdefault("log", lambda *_a: None)
+    kw.setdefault("host", HOST)
+    return wait_for_login(session, **kw)
+
+
+def test_case1_same_tab_redirect_chain():
+    """root -> idp -> signed-in app, all in one tab."""
+    page = FakeLoginPage(ROOT_URL, IDP_URL, IDP_URL, APP_URL, APP_URL, APP_URL)
+    context = SteppingContext(page)
+    session = _session(context, page)
+    assert _wait(session) == APP_URL
+    assert session.page is page
+
+
+def test_case2_app_opens_in_a_second_tab():
+    """The launch page stays on the identity provider; the app is elsewhere."""
+    stuck = FakeLoginPage(IDP_URL)
+    app = FakeLoginPage(APP_URL)
+    context = SteppingContext(stuck, app)
+    session = _session(context, stuck)
+    assert _wait(session) == APP_URL
+    assert session.page is app, "session.page must be repointed at the signed-in tab"
+
+
+def test_case3_root_flash_is_not_mistaken_for_login():
+    """The tenant root shows briefly before the redirect to the identity provider."""
+    page = FakeLoginPage(ROOT_URL, IDP_URL, IDP_URL, IDP_URL)
+    context = SteppingContext(page)
+    session = _session(context, page)
+    with pytest.raises(AuthRequired):
+        _wait(session, stable_polls=3, timeout_seconds=1)
+
+
+def test_root_alone_needs_to_hold_still():
+    """A root URL that does persist is accepted, but only after several polls."""
+    page = FakeLoginPage(ROOT_URL)
+    context = SteppingContext(page)
+    session = _session(context, page)
+    assert _wait(session, stable_polls=3) == ROOT_URL
+
+
+def test_closed_popup_is_ignored():
+    closed = FakeLoginPage(APP_URL, closed=True)
+    stuck = FakeLoginPage(IDP_URL)
+    session = _session(SteppingContext(closed, stuck), stuck)
+    with pytest.raises(AuthRequired):
+        _wait(session, timeout_seconds=1)
+
+
+def test_unrendered_page_is_ignored():
+    """A document that has not painted anything is not proof of a session."""
+    blank = FakeLoginPage(APP_URL, ready=False)
+    session = _session(SteppingContext(blank), blank)
+    with pytest.raises(AuthRequired):
+        _wait(session, timeout_seconds=1)
+
+
+def test_other_host_is_ignored():
+    other = FakeLoginPage("https://accounts.google.com/o/oauth2")
+    session = _session(SteppingContext(other), other)
+    with pytest.raises(AuthRequired):
+        _wait(session, timeout_seconds=1)
+
+
+def test_deeper_path_wins_over_bare_root():
+    root = FakeLoginPage(ROOT_URL)
+    app = FakeLoginPage(APP_URL)
+    session = _session(SteppingContext(root, app), root)
+    assert _wait(session) == APP_URL
+
+
+def test_progress_is_logged_only_when_the_state_changes():
+    stuck = FakeLoginPage(IDP_URL)
+    app = FakeLoginPage(APP_URL)
+    lines = []
+    session = _session(SteppingContext(stuck, app), stuck)
+    _wait(session, log=lines.append)
+    joined = "\n".join(lines)
+    assert "[setup] waiting for SSO login..." in joined
+    assert "authenticated Dooray page detected" in joined
+    # the same message must not repeat on every poll
+    assert len(lines) == len(set(lines)), lines
+
+
+def test_login_logs_never_carry_query_values():
+    app = FakeLoginPage(APP_URL + "?token=secret123&u=someone@kaist.ac.kr")
+    lines = []
+    session = _session(SteppingContext(app), app)
+    _wait(session, log=lines.append)
+    joined = "\n".join(lines)
+    assert "secret123" not in joined and "someone@kaist.ac.kr" not in joined
+
+
+def test_setup_timeout_is_short_enough_to_surface_bugs():
+    from ggongbab.web.browser import SETUP_TIMEOUT_SECONDS
+
+    assert SETUP_TIMEOUT_SECONDS <= 300
+
+
+def test_wait_for_login_rereads_the_context_every_poll():
+    """Guards against the regression: no fixed page reference."""
+    import inspect
+
+    from ggongbab.web import browser
+
+    source = inspect.getsource(browser.wait_for_login)
+    assert "session.context" in source
+    assert "page = session.page" not in source

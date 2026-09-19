@@ -19,12 +19,14 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, Optional
+from urllib.parse import urlparse
 
 from .exit_codes import AgentError, AuthRequired
 from .ui_contract import UiContract
 
 PROFILE_DIRNAME = "dooray-browser-profile"
-SETUP_TIMEOUT_SECONDS = 600
+# Short enough that a bug shows up fast; login normally finishes in seconds.
+SETUP_TIMEOUT_SECONDS = 180
 NAV_TIMEOUT_MS = 45_000
 # The real KAIST tenant. Used when --setup is run without --url.
 DEFAULT_DOORAY_URL = "https://kaist.gov-dooray.com/"
@@ -160,21 +162,108 @@ def browser_session(profile_dir: Path, contract: UiContract, *, headless: bool,
                 pass
 
 
-def wait_for_login(session: Session, timeout_seconds: int = SETUP_TIMEOUT_SECONDS, log=print) -> str:
-    """Block until the browser is off the SSO screen. Returns the landing URL.
+def location_of(url: str) -> str:
+    """origin + path. Query values never reach a log."""
+    parsed = urlparse(url or "")
+    return f"{parsed.scheme}://{parsed.netloc}{parsed.path}" if parsed.netloc else (url or "")
 
-    This proves a session exists. It does NOT prove the browser is looking at the
-    mailbox: Dooray can land on Home, Project or Messenger. Deciding where the
-    mail list lives is a separate step on purpose.
+
+# Generic application readiness. No selector is guessed: this only asks whether a
+# document finished loading and painted some text.
+_READY_JS = """
+() => {
+  try {
+    return document.readyState === 'complete'
+        && !!document.body
+        && (document.body.innerText || '').trim().length > 0;
+  } catch (e) { return false; }
+}
+"""
+
+
+def authenticated_pages(context, contract: UiContract, host: str = "") -> list:  # noqa: ANN001
+    """Open pages that look like the signed-in application, best first.
+
+    Excluded: closed pages, other hosts, identity-provider/login URLs, and
+    documents that have not actually rendered anything yet.
+    """
+    found = []
+    for page in list(getattr(context, "pages", []) or []):
+        try:
+            if page.is_closed():
+                continue
+            url = page.url or ""
+        except Exception:  # noqa: BLE001
+            continue
+        if not url or url.startswith("about:"):
+            continue
+        if host and urlparse(url).netloc.lower() != host.lower():
+            continue
+        if contract.looks_like_login(url):
+            continue
+        try:
+            if not page.evaluate(_READY_JS):
+                continue
+        except Exception:  # noqa: BLE001 - mid-navigation or cross-origin
+            continue
+        path = urlparse(url).path or "/"
+        # A deeper path means the app routed somewhere; "/" is often just the
+        # moment before the redirect to the identity provider starts.
+        found.append((0 if path in ("", "/") else 1, page, url))
+    found.sort(key=lambda item: item[0], reverse=True)
+    return [(page, url) for _rank, page, url in found]
+
+
+def wait_for_login(session: Session, timeout_seconds: int = SETUP_TIMEOUT_SECONDS, log=print,
+                   host: str = "", poll_seconds: float = 1.0, stable_polls: int = 3) -> str:
+    """Block until a signed-in Dooray page exists anywhere in the context.
+
+    Every cycle re-reads `context.pages`. The launch page is never trusted: KAIST
+    SSO can leave it parked on the identity provider while the authenticated app
+    opens in another tab, and a version that polled one fixed page waited out the
+    whole timeout without noticing.
+
+    A candidate must also hold still. Opening the tenant root shows that URL for a
+    moment before the redirect to the identity provider begins, so the same page
+    has to look signed-in on several consecutive polls before it counts.
+
+    On success `session.page` is repointed at the page that won, and its URL is
+    returned. That URL proves a session exists; it does not claim to be the mailbox.
     """
     deadline = time.time() + timeout_seconds
-    page = session.page
+    last_message = ""
+    streak_url = ""
+    streak = 0
+
+    def say(message: str) -> None:
+        nonlocal last_message
+        if message != last_message:       # only when the state actually changes
+            log(message)
+            last_message = message
+
+    say("[setup] waiting for SSO login...")
     while time.time() < deadline:
-        url = page.url or ""
-        if url and not session.contract.looks_like_login(url):
-            time.sleep(3)   # let a redirect chain finish before believing it
-            if not session.contract.looks_like_login(page.url or ""):
-                return page.url or url
-        time.sleep(2)
-    raise AuthRequired("login was not completed in time",
-                       hint="run --setup again and finish the SSO login in the window")
+        try:
+            pages = list(getattr(session.context, "pages", []) or [])
+        except Exception:  # noqa: BLE001
+            pages = []
+        candidates = authenticated_pages(session.context, session.contract, host)
+        if candidates:
+            page, url = candidates[0]
+            if url == streak_url:
+                streak += 1
+            else:
+                streak_url, streak = url, 1
+                say(f"[setup] candidate page: {location_of(url)}")
+            if streak >= stable_polls:
+                session.page = page
+                say("[setup] authenticated Dooray page detected")
+                log("[setup] continuing...")
+                return url
+        else:
+            streak_url, streak = "", 0
+            say(f"[setup] pages observed: {len(pages)} · still on the identity provider...")
+        time.sleep(poll_seconds)
+    raise AuthRequired(
+        f"no signed-in Dooray page appeared within {timeout_seconds // 60} minutes",
+        hint="run --setup again and finish the SSO login in the browser window")

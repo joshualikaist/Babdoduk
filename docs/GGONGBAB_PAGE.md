@@ -55,7 +55,7 @@ KAIST Portal (stub, disabled)                            ─┘
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (209개) |
+| `tests/ggongbab/` | pytest (243개) |
 
 ---
 
@@ -504,6 +504,19 @@ python scripts\dooray_web_agent.py --setup
 기본 주소는 **`https://kaist.gov-dooray.com/`** 이다. 다른 테넌트면 `--url` 로 준다.
 
 1. 브라우저 창이 열리면 **사용자가 직접** KAIST SSO 로그인을 한다.
+   터미널에는 상태가 **바뀔 때만** 한 줄씩 찍힌다. 조용히 멈춰 있는 것처럼 보이지 않는다.
+
+```
+[setup] waiting for SSO login...
+[setup] pages observed: 1 · still on the identity provider...
+[setup] authenticated Dooray page detected
+[setup] continuing...
+```
+
+   로그인 감지는 **열려 있는 모든 탭을 매번 다시 읽는다.** KAIST SSO 는 인증된 앱을 새 탭으로 열 수 있고,
+   그때 시작 탭은 `/idp/multi` 에 남는다. 시작 탭 하나만 보던 판은 그래서 타임아웃까지 기다렸다.
+   또 테넌트 루트는 리다이렉트 직전에 잠깐 보이므로, 같은 후보가 **연속 폴링에서 유지**되고
+   문서가 실제로 렌더된 뒤에만 로그인으로 인정한다. 대기 한도는 3분이다.
 2. 로그인이 감지되면 터미널에 안내가 뜬다.
 
 ```

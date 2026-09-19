@@ -31,7 +31,8 @@ from ggongbab.config import KST, load_settings  # noqa: E402
 from ggongbab.prefilter import classify  # noqa: E402
 from ggongbab.web import browser as browser_mod  # noqa: E402
 from ggongbab.web import exit_codes  # noqa: E402
-from ggongbab.web.browser import DEFAULT_DOORAY_URL, browser_session, wait_for_login  # noqa: E402
+from ggongbab.web.browser import (DEFAULT_DOORAY_URL, SETUP_TIMEOUT_SECONDS,  # noqa: E402
+                                  browser_session, wait_for_login)
 from ggongbab.web.calibrate import calibrate  # noqa: E402
 from ggongbab.web.exit_codes import (NAMES, SUCCESS, AgentError, AuthRequired,  # noqa: E402
                                      PipelineFailed, UiContractError)
@@ -112,8 +113,9 @@ def cmd_setup(args) -> int:
     log(f"Opening {start}")
     log("A browser window will open. Log in with KAIST SSO there.")
     log("Nothing is typed for you, and no password is read or stored.")
+    log(f"Waiting up to {SETUP_TIMEOUT_SECONDS // 60} minutes for the SSO login...")
     with browser_session(PROFILE_DIR, contract, headless=False, start_url=start) as session:
-        landing = wait_for_login(session, log=log)
+        landing = wait_for_login(session, log=log, host=origin_host)
         log("")
         log("로그인되었습니다.")
         log(f"  landing page: {landing.split('?')[0]}")
