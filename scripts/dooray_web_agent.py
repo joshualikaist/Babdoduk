@@ -41,6 +41,7 @@ from ggongbab.web.mail_reader import (NetworkObserver, list_mails, observe,  # n
 from ggongbab.web.page_select import (collect_targets, describe,  # noqa: E402
                                       mail_row_evidence, select_mail_page)
 from ggongbab.web.state import AgentState  # noqa: E402
+from ggongbab.web.trace import LifecycleTracer  # noqa: E402
 from ggongbab.web.task_writer import DEFAULT_PROJECT_NAME, MailPayload, TaskWriter  # noqa: E402
 from ggongbab.web.ui_contract import load_contract  # noqa: E402
 
@@ -94,7 +95,7 @@ def _report_findings(report: dict) -> None:
 
 
 def wait_for_mailbox(session, origin_host: str, timeout_seconds: int, log=print,
-                     poll_seconds: float = 1.0, stable_polls: int = 3):
+                     poll_seconds: float = 1.0, stable_polls: int = 3, tracer=None):
     """Poll until the mailbox itself is on screen. No Enter, no separate auth gate.
 
     Setup used to run two detectors: a generic "are we logged in" check and then
@@ -142,6 +143,15 @@ def wait_for_mailbox(session, origin_host: str, timeout_seconds: int, log=print,
     for obs in final:
         for line in obs.lines():
             log(line)
+    if tracer is not None:
+        log("")
+        for line in tracer.summary():
+            log(f"  {line}")
+        if not tracer.saw_path("/mail"):
+            log("")
+            log("  No /mail/... navigation ever reached this browser context.")
+            log("  If the mailbox was visible on screen, it was rendered by a browser")
+            log("  this agent is not driving, and the login handed off elsewhere.")
     raise AuthRequired(
         f"no Dooray mailbox appeared within {timeout_seconds // 60} minutes",
         hint="finish the SSO login and open [메일] -> [받은메일함] in the browser window")
@@ -158,13 +168,18 @@ def cmd_setup(args) -> int:
     log("로그인한 뒤 Dooray에서 [메일] -> [받은메일함] 으로 이동하세요.")
     log("받은메일함이 감지되면 자동으로 계속됩니다. Enter를 누를 필요 없습니다.")
     log(f"Waiting up to {SETUP_TIMEOUT_SECONDS // 60} minutes for the inbox...")
-    with browser_session(PROFILE_DIR, contract, headless=False, start_url=start) as session:
+    with browser_session(PROFILE_DIR, contract, headless=False, start_url=start, log=log) as session:
         # Attached to the CONTEXT from the start, so a mailbox opened in another
         # tab or frame still has its traffic observed.
         observer = NetworkObserver(session.context)
         observer.start()
+        # Records where pages and navigations actually go, so "the mailbox never
+        # came back to this context" is evidence rather than a guess.
+        tracer = LifecycleTracer(session.context, log=log)
+        tracer.start()
         try:
-            target = wait_for_mailbox(session, origin_host, SETUP_TIMEOUT_SECONDS, log=log)
+            target = wait_for_mailbox(session, origin_host, SETUP_TIMEOUT_SECONDS, log=log,
+                                      tracer=tracer)
             session.page = target.page
             observer.on_mail_screen = True
             log("")
@@ -186,6 +201,7 @@ def cmd_setup(args) -> int:
             report = write_discovery_report(observer, row_evidence, DISCOVERY_FILE,
                                             page_url=mail_url, confirmed_by_user=False)
         finally:
+            tracer.stop()
             observer.stop()
 
     contract.mail_url = mail_url      # overwrites an earlier wrong value

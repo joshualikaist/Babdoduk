@@ -105,6 +105,7 @@ class Session:
     page: Any
     context: Any
     contract: UiContract
+    engine: str = ""
 
     @property
     def url(self) -> str:
@@ -133,29 +134,67 @@ class Session:
                     hint="the session may have expired; run --setup again") from exc
 
 
+ENGINE_LABELS = {"chrome": "Google Chrome", "": "Playwright Chromium"}
+
+
+def _launch(pw, profile_dir: Path, headless: bool, channel: str):  # noqa: ANN001
+    kwargs = dict(
+        user_data_dir=str(profile_dir),
+        headless=headless,
+        viewport={"width": 1440, "height": 960},
+        locale="ko-KR",
+        timezone_id="Asia/Seoul",
+        args=["--disable-blink-features=AutomationControlled"],
+    )
+    if channel:
+        kwargs["channel"] = channel
+    return pw.chromium.launch_persistent_context(**kwargs)
+
+
+def launch_context(pw, profile_dir: Path, headless: bool, prefer_channel: str = "chrome",
+                   log=None) -> tuple[Any, str]:  # noqa: ANN001
+    """Prefer the installed Google Chrome, fall back to the bundled Chromium.
+
+    Why the preference: KAIST SSO is a multi-host flow, and the bundled Chromium
+    build behaves differently enough that the session can end up outside this
+    automation context. Using the browser the machine already has removes that
+    variable. The user's own Chrome profile is never touched - only the dedicated
+    profile under `.local/` is used, whichever engine runs it.
+    """
+    for channel in ([prefer_channel, ""] if prefer_channel else [""]):
+        try:
+            context = _launch(pw, profile_dir, headless, channel)
+        except Exception as exc:  # noqa: BLE001 - that channel is not installed
+            if log and channel:
+                log(f"Browser engine : {ENGINE_LABELS.get(channel, channel)} unavailable "
+                    f"({exc.__class__.__name__}); falling back")
+            continue
+        if log:
+            log(f"Browser engine : {ENGINE_LABELS.get(channel, channel or 'Playwright Chromium')}")
+        return context, channel
+    raise AgentError("no usable Chromium build could be launched",
+                     hint="install Google Chrome, or run: python -m playwright install chromium")
+
+
 @contextmanager
 def browser_session(profile_dir: Path, contract: UiContract, *, headless: bool,
-                    start_url: str = "") -> Iterator[Session]:
-    """Open the persistent profile. The profile directory holds the SSO cookies."""
+                    start_url: str = "", prefer_channel: str = "chrome",
+                    log=None) -> Iterator[Session]:
+    """Open the dedicated profile. The profile directory holds the SSO cookies."""
     sync_playwright = _playwright()
     profile_dir.mkdir(parents=True, exist_ok=True)
     ensure_session_restore(profile_dir)
     with sync_playwright() as pw:
-        context = pw.chromium.launch_persistent_context(
-            user_data_dir=str(profile_dir),
-            headless=headless,
-            viewport={"width": 1440, "height": 960},
-            locale="ko-KR",
-            timezone_id="Asia/Seoul",
-            args=["--disable-blink-features=AutomationControlled"],
-        )
+        context, channel = launch_context(pw, profile_dir, headless, prefer_channel, log=log)
         context.set_default_timeout(NAV_TIMEOUT_MS)
         page = context.pages[0] if context.pages else context.new_page()
         try:
             target = start_url or contract.mail_url
             if target:
                 page.goto(target, wait_until="domcontentloaded")
-            yield Session(page=page, context=context, contract=contract)
+            session = Session(page=page, context=context, contract=contract)
+            session.engine = ENGINE_LABELS.get(channel, "Playwright Chromium")
+            yield session
         finally:
             try:
                 context.close()

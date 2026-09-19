@@ -48,14 +48,14 @@ KAIST Portal (stub, disabled)                            ─┘
 | `scripts/ggongbab/prefilter.py` | AI에 보낼 후보만 고르는 로컬 규칙 필터 |
 | `scripts/ggongbab/backfill.py` | 메일함 backfill 드라이버 (필터 → 안전 한도 → 기존 파이프라인) |
 | `scripts/dooray_web_agent.py` | 무인 메일함 에이전트 (SSO 1회 → 스캔 → 업무 등록) |
-| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `page_select.py`, `ui_contract.py`, `mail_reader.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
+| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `page_select.py`, `trace.py`, `ui_contract.py`, `mail_reader.py`, `calibrate.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
 | `scripts/ggongbab/dedup.py` | 소스 간 동일 행사 판정과 병합 |
 | `scripts/ggongbab/exporter.py` | 공개 JSON 생성 |
 | `scripts/ggongbab/pipeline.py` | 전체 흐름 · 멱등성 · 통계 |
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (268개) |
+| `tests/ggongbab/` | pytest (282개) |
 
 ---
 
@@ -502,6 +502,29 @@ python scripts\dooray_web_agent.py --setup
 ```
 
 기본 주소는 **`https://kaist.gov-dooray.com/`** 이다. 다른 테넌트면 `--url` 로 준다.
+
+**브라우저 엔진.** 설치된 **Google Chrome** 을 먼저 쓰고, 없으면 Playwright 번들 Chromium 으로 내려간다.
+어느 쪽이든 프로필은 항상 전용 `.local/dooray-browser-profile/` 이다. **사용자의 평소 Chrome 프로필은 건드리지 않는다.**
+시작할 때 어떤 엔진인지 한 줄 찍는다.
+
+```
+Browser engine : Google Chrome
+```
+
+**lifecycle 추적.** setup 동안 페이지 생성·프레임 이동·팝업·닫힘을 기록한다. origin 과 path 만 남기고
+쿼리 값·쿠키·주소·메일 내용은 찍지 않는다.
+
+```
+[trace] navigation
+  page #1
+  frame: main
+  origin: https://kaist.gov-dooray.com
+  path: /idp/multi
+```
+
+타임아웃 시 `/mail/...` 이동이 한 번도 관찰되지 않았다면 그 사실을 명시한다. 화면에는 메일함이 보이는데
+trace 에 `/mail/` 이 없다면 로그인이 **이 에이전트가 몰지 않는 브라우저로 넘어갔다**는 뜻이고,
+그때는 CDP 상주 방식으로 전환할 근거가 된다.
 
 1. 브라우저 창이 열리면 **사용자가 직접** KAIST SSO 로그인을 한다.
    터미널에는 상태가 **바뀔 때만** 한 줄씩 찍힌다. 조용히 멈춰 있는 것처럼 보이지 않는다.

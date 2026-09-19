@@ -1560,3 +1560,230 @@ def test_H_setup_logs_carry_no_query_or_content():
     joined = "\n".join(lines)
     assert "secret123" not in joined and "someone@kaist.ac.kr" not in joined
     assert "?" not in joined
+
+
+# --- browser engine choice and lifecycle tracing ------------------------------
+# The live setup stopped at /idp/multi and then an other-host login page, and no
+# /mail/... navigation ever reached the context. Tracing makes that visible, and
+# the installed Chrome is preferred so the SSO flow runs in the browser the
+# machine already uses.
+class FakeChromium:
+    def __init__(self, failing_channels=()):
+        self.failing = set(failing_channels)
+        self.calls = []
+
+    def launch_persistent_context(self, **kwargs):
+        channel = kwargs.get("channel", "")
+        self.calls.append(kwargs)
+        if channel in self.failing:
+            raise RuntimeError(f"{channel} not installed")
+        return type("Ctx", (), {"pages": [], "kwargs": kwargs})()
+
+
+class FakePw:
+    def __init__(self, failing_channels=()):
+        self.chromium = FakeChromium(failing_channels)
+
+
+def test_installed_chrome_is_preferred(tmp_path):
+    from ggongbab.web.browser import launch_context
+
+    pw = FakePw()
+    lines = []
+    _ctx, channel = launch_context(pw, tmp_path, headless=True, prefer_channel="chrome",
+                                   log=lines.append)
+    assert channel == "chrome"
+    assert pw.chromium.calls[0]["channel"] == "chrome"
+    assert "Browser engine : Google Chrome" in "\n".join(lines)
+
+
+def test_chromium_fallback_when_chrome_is_missing(tmp_path):
+    from ggongbab.web.browser import launch_context
+
+    pw = FakePw(failing_channels={"chrome"})
+    lines = []
+    _ctx, channel = launch_context(pw, tmp_path, headless=True, prefer_channel="chrome",
+                                   log=lines.append)
+    assert channel == ""
+    assert "channel" not in pw.chromium.calls[-1]
+    joined = "\n".join(lines)
+    assert "unavailable" in joined and "Playwright Chromium" in joined
+
+
+def test_no_usable_engine_fails_closed(tmp_path):
+    from ggongbab.web.browser import launch_context
+    from ggongbab.web.exit_codes import AgentError
+
+    pw = FakePw(failing_channels={"chrome", ""})
+    with pytest.raises(AgentError, match="no usable"):
+        launch_context(pw, tmp_path, headless=True, prefer_channel="chrome", log=lambda *_a: None)
+
+
+def test_launch_always_uses_the_dedicated_profile(tmp_path):
+    """The agent must never drive the user's own Chrome profile."""
+    from ggongbab.web.browser import launch_context
+
+    pw = FakePw()
+    profile = tmp_path / "dooray-browser-profile"
+    launch_context(pw, profile, headless=True, prefer_channel="chrome", log=lambda *_a: None)
+    used = pw.chromium.calls[0]["user_data_dir"]
+    assert used == str(profile)
+    assert "dooray-browser-profile" in used
+    for bad in ("Google\\Chrome\\User Data", "Local\\Google"):
+        assert bad not in used
+
+
+def test_agent_never_points_at_the_default_chrome_profile():
+    import re as _re
+
+    from ggongbab.web import browser
+
+    source = Path(browser.__file__).read_text(encoding="utf-8")
+    assert not _re.search(r"Google[\\/]Chrome[\\/]User Data", source)
+    assert "PROFILE_DIRNAME = \"dooray-browser-profile\"" in source
+
+
+# --- tracer -------------------------------------------------------------------
+class TracePage:
+    def __init__(self, url="https://kaist.gov-dooray.com/"):
+        self.url = url
+        self.handlers = {}
+        self.main_frame = type("F", (), {"url": url})()
+
+    def on(self, event, handler):
+        self.handlers.setdefault(event, []).append(handler)
+
+    def fire(self, event, *args):
+        for handler in list(self.handlers.get(event, [])):
+            handler(*args)
+
+
+class TraceContext:
+    def __init__(self, *pages):
+        self.pages = list(pages)
+        self.handlers = {}
+
+    def on(self, event, handler):
+        self.handlers.setdefault(event, []).append(handler)
+
+    def remove_listener(self, event, handler):
+        self.handlers[event] = [h for h in self.handlers.get(event, []) if h is not handler]
+
+    def fire(self, event, *args):
+        for handler in list(self.handlers.get(event, [])):
+            handler(*args)
+
+
+def _tracer(context, lines):
+    from ggongbab.web.trace import LifecycleTracer
+
+    tracer = LifecycleTracer(context, log=lines.append)
+    tracer.start()
+    return tracer
+
+
+def test_new_page_event_is_traced():
+    lines = []
+    context = TraceContext(TracePage())
+    tracer = _tracer(context, lines)
+    context.fire("page", TracePage("https://kaist.gov-dooray.com/mail/systems/inbox"))
+    joined = "\n".join(lines)
+    assert "[trace] new page" in joined
+    assert "path: /mail/systems/inbox" in joined
+    assert tracer.pages_created == 1
+
+
+def test_frame_navigation_is_traced():
+    lines = []
+    page = TracePage()
+    context = TraceContext(page)
+    _tracer(context, lines)
+    child = type("F", (), {"url": "https://kaist.gov-dooray.com/mail/systems/inbox"})()
+    page.fire("framenavigated", child)
+    joined = "\n".join(lines)
+    assert "[trace] navigation" in joined
+    assert "frame: child" in joined and "path: /mail/systems/inbox" in joined
+
+
+def test_main_frame_navigation_is_labelled_main():
+    lines = []
+    page = TracePage()
+    context = TraceContext(page)
+    _tracer(context, lines)
+    page.fire("framenavigated", page.main_frame)
+    assert "frame: main" in "\n".join(lines)
+
+
+def test_trace_never_prints_query_values_or_addresses():
+    lines = []
+    page = TracePage()
+    context = TraceContext(page)
+    _tracer(context, lines)
+    secret = type("F", (), {"url": "https://kaist.gov-dooray.com/mail/x?token=secret123&u=a@kaist.ac.kr"})()
+    page.fire("framenavigated", secret)
+    joined = "\n".join(lines)
+    assert "secret123" not in joined and "a@kaist.ac.kr" not in joined
+    assert "?" not in joined
+
+
+def test_trace_says_each_event_once():
+    lines = []
+    page = TracePage()
+    context = TraceContext(page)
+    _tracer(context, lines)
+    child = type("F", (), {"url": "https://kaist.gov-dooray.com/idp/multi"})()
+    for _ in range(4):
+        page.fire("framenavigated", child)
+    assert len([ln for ln in lines if ln.startswith("[trace] navigation")]) == 1
+
+
+def test_trace_summary_reports_whether_mail_was_ever_seen():
+    lines = []
+    page = TracePage()
+    context = TraceContext(page)
+    tracer = _tracer(context, lines)
+    page.fire("framenavigated", type("F", (), {"url": "https://kaist.gov-dooray.com/idp/multi"})())
+    assert tracer.saw_path("/mail") is False
+    page.fire("framenavigated", type("F", (), {"url": "https://kaist.gov-dooray.com/mail/systems/inbox"})())
+    assert tracer.saw_path("/mail") is True
+    summary = "\n".join(tracer.summary())
+    assert "/idp/multi" in summary and "/mail/systems/inbox" in summary
+
+
+def test_tracer_detaches_cleanly():
+    lines = []
+    context = TraceContext(TracePage())
+    tracer = _tracer(context, lines)
+    assert len(context.handlers.get("page", [])) == 1
+    tracer.stop()
+    assert context.handlers.get("page", []) == []
+
+
+def test_timeout_reports_context_escape():
+    """When no /mail/ ever arrives, say so plainly instead of blaming the login."""
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session
+    from ggongbab.web.trace import LifecycleTracer
+
+    context = FakeContext(FakeCtxPage(FakeFrame(IDP_URL, generic_groups())))
+    session = Session(page=context.pages[0], context=context, contract=UiContract())
+    tracer = LifecycleTracer(context, log=lambda *_a: None)
+    lines = []
+    with pytest.raises(AuthRequired):
+        agent.wait_for_mailbox(session, HOST, timeout_seconds=1, log=lines.append,
+                               poll_seconds=0, stable_polls=2, tracer=tracer)
+    joined = "\n".join(lines)
+    assert "No /mail/... navigation ever reached this browser context" in joined
+    assert "pages tracked:" in joined
+
+
+def test_setup_passes_the_tracer_and_prefers_chrome():
+    source = AGENT_PATH.read_text(encoding="utf-8")
+    start = source.index("def cmd_setup(")
+    end = source.index("def cmd_discover(")
+    body = source[start:end]
+    assert "LifecycleTracer" in body and "tracer=tracer" in body
+    assert "log=log" in body, "the engine banner must reach the terminal"
