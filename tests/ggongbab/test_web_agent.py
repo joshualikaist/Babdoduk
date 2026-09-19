@@ -2111,3 +2111,184 @@ def test_cdp_diagnostics_distinguish_targets_and_redact_secrets(monkeypatch, mai
     assert "127.0.0.1:9333" in report
     assert "secret" not in report and "private" not in report
     assert ("CDP sees a mail tab" if mail_seen else "another Chrome/profile") in report
+
+
+# --- preview, detail body and the read-state gate -----------------------------
+# Live shapes, measured on the tenant:
+#   list row  : mailSummary.previewText  -> str(~194 chars), 295/300 non-empty
+#   detail    : GET /v2/wapi/mails/{id}?render=... -> result.content.body.content
+#   read flag : mailSummary.flags.read   -> bool, 300/300 present, all true
+LIVE_ROW = {
+    "id": "4424595166006584821",
+    "subject": "삼성전자 Tech Lunch Talk",
+    "createdAt": "2026-09-03T10:00:00+09:00",
+    "annotations": {"favorited": False},
+    "mailSummary": {
+        "previewText": "9월 25일 12시 N1 101호에서 진행합니다. 참석자에게 점심 도시락을 제공합니다.",
+        "flags": {"read": True, "opened": True, "replied": False},
+    },
+}
+LIVE_DETAIL = {"header": {"isSuccessful": True},
+               "result": {"references": {},
+                          "content": {"subject": "삼성전자 Tech Lunch Talk",
+                                      "body": {"content": "<p>9월 25일 12시 N1 101호</p>"
+                                                          "<p>참석자에게 점심 도시락을 제공합니다.</p>"}}}}
+
+
+def test_preview_comes_from_the_nested_path():
+    from ggongbab.web.mail_reader import _row_preview
+
+    assert _row_preview(LIVE_ROW, "mailSummary.previewText").startswith("9월 25일")
+    # mailSummary itself is an object, so a flat lookup must not produce junk.
+    assert _row_preview(LIVE_ROW, "") == ""
+
+
+def test_headers_carry_the_preview():
+    from ggongbab.web.mail_reader import _from_json_rows
+
+    headers = _from_json_rows([LIVE_ROW], "mailSummary.flags.read", "mailSummary.previewText")
+    assert len(headers) == 1
+    assert "점심 도시락" in headers[0].preview
+    assert headers[0].unread is False
+
+
+def test_preview_key_detection_needs_most_rows():
+    from ggongbab.web.calibrate import detect_preview_key
+
+    rows = [LIVE_ROW for _ in range(10)]
+    assert detect_preview_key(rows) == "mailSummary.previewText"
+    empty = [{"id": str(i), "subject": "s", "mailSummary": {"previewText": ""}} for i in range(10)]
+    assert detect_preview_key(empty) == ""
+    assert detect_preview_key([]) == ""
+
+
+def test_preview_feeds_the_candidate_filter():
+    """Subject alone said nothing about food; the preview does."""
+    from ggongbab.prefilter import classify
+
+    subject_only = classify(LIVE_ROW["subject"], "")
+    with_preview = classify(LIVE_ROW["subject"], LIVE_ROW["mailSummary"]["previewText"])
+    assert with_preview.candidate and with_preview.strong
+    assert not subject_only.strong
+
+
+# --- detail body --------------------------------------------------------------
+def test_detail_body_uses_the_verified_path():
+    from ggongbab.web.mail_reader import detail_body
+
+    text = detail_body(LIVE_DETAIL, "result.content.body.content")
+    assert "점심 도시락을 제공합니다" in text
+    assert "<p>" not in text, "HTML must be rendered to text"
+
+
+def test_detail_body_falls_back_when_no_path_is_recorded():
+    from ggongbab.web.mail_reader import detail_body
+
+    assert "점심 도시락" in detail_body(LIVE_DETAIL)
+
+
+def test_longest_string_paths_finds_the_body():
+    from ggongbab.web.mail_reader import longest_string_paths
+
+    paths = dict(longest_string_paths(LIVE_DETAIL))
+    assert "result.content.body.content" in paths
+    top = longest_string_paths(LIVE_DETAIL)[0][0]
+    assert top == "result.content.body.content"
+
+
+def test_detail_template_replaces_only_the_mail_id():
+    from ggongbab.web.calibrate import detail_template
+
+    url = "https://kaist.gov-dooray.com/v2/wapi/mails/4424595166006584821?render=html"
+    assert detail_template(url, "4424595166006584821") == \
+        "https://kaist.gov-dooray.com/v2/wapi/mails/{id}?render=html"
+    assert detail_template(url, "999") == ""
+    assert detail_template("", "1") == ""
+
+
+class DetailPage:
+    def __init__(self, payloads):
+        self.payloads = payloads
+        self.request = self
+
+    def get(self, url, timeout=None):
+        for mail_id, payload in self.payloads.items():
+            if mail_id in url:
+                return FakeResponse(url, payload)
+        return FakeResponse(url, None, status=404)
+
+
+def test_detail_discovery_verifies_on_two_mails():
+    from ggongbab.web.calibrate import discover_detail_api
+
+    rows = [dict(LIVE_ROW, id="111111111"), dict(LIVE_ROW, id="222222222")]
+
+    class Obs:
+        calls = {"k": {"rawUrl": "https://x/v2/wapi/mails/111111111?render=html",
+                       "shape": {"kind": "object"}}}
+
+    page = DetailPage({"111111111": LIVE_DETAIL, "222222222": LIVE_DETAIL})
+    api, path = discover_detail_api(page, rows, Obs(), log=lambda *_a: None)
+    assert api == "https://x/v2/wapi/mails/{id}?render=html"
+    assert path == "result.content.body.content"
+
+
+def test_detail_discovery_fails_closed_without_an_observed_call():
+    from ggongbab.web.calibrate import discover_detail_api
+
+    rows = [dict(LIVE_ROW, id="1"), dict(LIVE_ROW, id="2")]
+
+    class Obs:
+        calls = {}
+
+    assert discover_detail_api(DetailPage({}), rows, Obs(), log=lambda *_a: None) == ("", "")
+
+
+def test_detail_discovery_fails_closed_when_the_second_mail_has_no_body():
+    from ggongbab.web.calibrate import discover_detail_api
+
+    rows = [dict(LIVE_ROW, id="111111111"), dict(LIVE_ROW, id="222222222")]
+
+    class Obs:
+        calls = {"k": {"rawUrl": "https://x/v2/wapi/mails/111111111?render=html",
+                       "shape": {"kind": "object"}}}
+
+    empty = {"result": {"content": {"body": {"content": ""}}}}
+    page = DetailPage({"111111111": LIVE_DETAIL, "222222222": empty})
+    assert discover_detail_api(page, rows, Obs(), log=lambda *_a: None) == ("", "")
+
+
+# --- read-state gate ----------------------------------------------------------
+AGENT_SRC = AGENT_PATH.read_text(encoding="utf-8")
+
+
+def test_run_refuses_read_state_without_a_verified_field():
+    """No verified field means unread mails cannot be told apart, so do not guess."""
+    start = AGENT_SRC.index("def cmd_run(")
+    body = AGENT_SRC[start:AGENT_SRC.index("def _run_pipeline(")]
+    gate = 'if args.read_state != "all" and contract.list_api and not contract.read_state_key'
+    assert gate in body
+    assert body.index(gate) < body.index("open_body("), "the gate must precede any body open"
+    assert body.index(gate) < body.index("create_task("), "the gate must precede any write"
+
+
+def test_subject_only_dry_run_stays_allowed():
+    start = AGENT_SRC.index("def cmd_run(")
+    body = AGENT_SRC[start:AGENT_SRC.index("def _run_pipeline(")]
+    # The gate is scoped to --read-state, so subject-only runs are untouched by it.
+    assert 'args.read_state != "all"' in body
+
+
+def test_calibrate_recommends_a_safe_next_command():
+    source = Path(__import__("ggongbab.web.calibrate", fromlist=["x"]).__file__).read_text(encoding="utf-8")
+    assert "read_state_key" in AGENT_SRC
+    start = AGENT_SRC.index("def cmd_calibrate(")
+    body = AGENT_SRC[start:AGENT_SRC.index("def cmd_selftest(")]
+    assert "--read-state read" in body and "--subject-only" in body
+    assert "contract.read_state_key else" in body.replace("\n", " ") or "if contract.read_state_key" in body
+
+
+def test_scheduled_runner_uses_cdp():
+    cmd = (Path(__file__).resolve().parents[2] / "scripts" / "run_ggongbab_agent.cmd").read_text(encoding="utf-8")
+    assert "--cdp" in cmd
+    assert "--setup --cdp" in cmd, "the auth hint must point at the resident mode"

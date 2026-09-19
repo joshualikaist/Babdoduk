@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from ..config import KST
+from ..parsers.html_text import html_to_text
 from .browser import Session
 from .exit_codes import UiContractError
 
@@ -413,7 +414,36 @@ def _pick(row: dict[str, Any], *names: str) -> Any:
     return None
 
 
-def _from_json_rows(rows: list[dict[str, Any]], read_state_key: Optional[str] = None) -> list[MailHeader]:
+def path_value_safe(row: Any, path: str) -> Any:
+    """Dotted lookup that never raises, for discovery over unknown payloads."""
+    from .read_state import path_value
+
+    try:
+        return path_value(row, path)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _row_preview(row: dict[str, Any], preview_key: str = "") -> str:
+    """Preview text for a list row.
+
+    The live list serves it at `mailSummary.previewText` - a nested string, while
+    `mailSummary` itself is an object - so a flat key lookup found nothing and
+    every header arrived with an empty preview. Calibration records the verified
+    dotted path; the flat names stay as a fallback for other tenants.
+    """
+    from .read_state import path_value
+
+    if preview_key:
+        value = path_value(row, preview_key)
+        if isinstance(value, str) and value.strip():
+            return " ".join(value.split())[:1000]
+    flat = _pick(row, "summary", "preview", "snippet", "bodyPreview", "previewText")
+    return " ".join(str(flat).split())[:1000] if isinstance(flat, str) else ""
+
+
+def _from_json_rows(rows: list[dict[str, Any]], read_state_key: Optional[str] = None,
+                    preview_key: str = "") -> list[MailHeader]:
     from .read_state import path_value, unread_value
     out: list[MailHeader] = []
     for row in rows:
@@ -436,7 +466,7 @@ def _from_json_rows(rows: list[dict[str, Any]], read_state_key: Optional[str] = 
         out.append(MailHeader(
             mail_id=str(mail_id),
             subject=str(subject),
-            preview=str(_pick(row, "summary", "preview", "snippet", "bodyPreview") or ""),
+            preview=_row_preview(row, preview_key),
             received=received,
             unread=bool(unread) if unread is not None else None,
         ))
@@ -561,8 +591,9 @@ def list_mails_paged(session: Session, limit: int, target=None,  # noqa: ANN001
     stagnant = 0
     for page_no in range(max_pages):
         url = set_query(contract.list_api, **{page_param: page_no}) if page_param else contract.list_api
-        rows, page_headers = fetch_rows(page_obj, url)
-        page_headers = _from_json_rows(rows, contract.read_state_key)
+        # One parse, with both verified paths. Re-parsing here without the
+        # preview path is what left every header's preview empty.
+        rows, page_headers = fetch_rows(page_obj, url, contract.read_state_key, contract.preview_key)
         fresh = [h for h in page_headers if h.mail_id and h.mail_id not in seen]
         if not fresh:
             stagnant += 1
@@ -599,7 +630,7 @@ def open_body(session: Session, header: MailHeader, target=None) -> str:  # noqa
             response = (getattr(target, "page", None) or session.page).request.get(url, timeout=30_000)
             if response.status < 400:
                 payload = response.json()
-                body = _extract_body(payload)
+                body = detail_body(payload, contract.detail_body_path)
                 if body:
                     header.body = body[:_MAX_BODY_CHARS]
                     header.body_opened = True
@@ -618,6 +649,50 @@ def open_body(session: Session, header: MailHeader, target=None) -> str:  # noqa
     header.body = text[:_MAX_BODY_CHARS]
     header.body_opened = bool(header.body)
     return header.body
+
+
+def detail_body(payload: Any, body_path: str = "") -> str:
+    """Body text from a detail response.
+
+    The verified path on this tenant is `result.content.body.content`; nothing
+    shallower works, because the top level only holds the envelope and short
+    fields like the subject. When no path is recorded, fall back to searching for
+    a body-like field so other tenants still work.
+    """
+    from .read_state import path_value
+
+    if body_path:
+        value = path_value(payload, body_path)
+        if isinstance(value, str) and value.strip():
+            return _as_text(value)
+    return _as_text(_extract_body(payload))
+
+
+def _as_text(value: str) -> str:
+    """Mail bodies arrive as HTML or text; the pipeline wants readable text."""
+    text = value or ""
+    if "<" in text and ">" in text:
+        text = html_to_text(text)
+    return text.strip()
+
+
+def longest_string_paths(payload: Any, limit: int = 8) -> list[tuple[str, int]]:
+    """(path, length) of the longest strings, for discovering where a body lives."""
+    found: list[tuple[str, int]] = []
+
+    def walk(value: Any, path: str = "") -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                walk(item, f"{path}.{key}" if path else str(key))
+        elif isinstance(value, list):
+            for index, item in enumerate(value[:3]):
+                walk(item, f"{path}[{index}]")
+        elif isinstance(value, str):
+            found.append((path, len(value)))
+
+    walk(payload)
+    found.sort(key=lambda pair: pair[1], reverse=True)
+    return found[:limit]
 
 
 def _extract_body(payload: Any) -> str:

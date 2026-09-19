@@ -17,5 +17,7 @@
   "detail_api": "",
   "list_page_param": "",
   "list_size_param": "",
-  "read_state_key": ""
+  "read_state_key": "",
+  "preview_key": "",
+  "detail_body_path": ""
 }

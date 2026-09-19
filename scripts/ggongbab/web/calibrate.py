@@ -94,6 +94,31 @@ def choose_list_endpoint(calls: list[dict[str, Any]]) -> Optional[dict[str, Any]
     return best
 
 
+PREVIEW_PATHS = ("mailSummary.previewText", "previewText", "summary", "preview",
+                 "snippet", "bodyPreview")
+MIN_PREVIEW_CHARS = 20
+
+
+def detect_preview_key(rows: list[dict[str, Any]]) -> str:
+    """The path that actually carries preview text, verified across rows.
+
+    On this tenant it is `mailSummary.previewText`: a nested string, while
+    `mailSummary` itself is an object. A flat key lookup found nothing, which is
+    why every header used to arrive with an empty preview.
+    """
+    from .mail_reader import path_value_safe
+
+    sample = rows[:30]
+    if not sample:
+        return ""
+    for path in PREVIEW_PATHS:
+        values = [path_value_safe(row, path) for row in sample]
+        texts = [v for v in values if isinstance(v, str) and len(v.strip()) >= MIN_PREVIEW_CHARS]
+        if len(texts) >= max(3, len(sample) * 0.6):
+            return path
+    return ""
+
+
 def detect_read_key(rows: list[dict[str, Any]]) -> str:
     """One explicit, consistently typed semantic field; never arbitrary truthiness."""
     return inspect_read_schema(rows)[2]
@@ -109,6 +134,7 @@ class SmokeResult:
     read_count: int = 0
     unread_count: int = 0
     read_key: str = ""
+    preview_key: str = ""
     row_keys: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     nested_schema: dict[str, list[str]] = field(default_factory=dict)
@@ -128,6 +154,8 @@ class SmokeResult:
             f"stable ids: {self.unique_ids}/{self.headers_parsed}",
             f"dates parsed: {self.dates_parsed}/{self.headers_parsed}",
         ]
+        out.append(f"preview field: {self.preview_key}" if self.preview_key
+                   else "preview field: none found (rows carry no preview text)")
         if self.read_key:
             out.append(f"read-state detected: {self.read_count} read / {self.unread_count} unread"
                        f"  (field: {self.read_key})")
@@ -138,7 +166,8 @@ class SmokeResult:
         return out
 
 
-def fetch_rows(page, url: str) -> tuple[list[dict[str, Any]], list[MailHeader]]:  # noqa: ANN001
+def fetch_rows(page, url: str, read_state_key: Optional[str] = None,  # noqa: ANN001
+               preview_key: str = "") -> tuple[list[dict[str, Any]], list[MailHeader]]:
     """GET through the browser context, so the session cookie is reused untouched."""
     try:
         response = page.request.get(url, timeout=30_000)
@@ -146,7 +175,7 @@ def fetch_rows(page, url: str) -> tuple[list[dict[str, Any]], list[MailHeader]]:
         raise UiContractError(f"list endpoint failed: {exc.__class__.__name__}") from exc
     if response.status in (401, 403):
         raise AuthRequired("the mail list endpoint rejected the session",
-                           hint="run --setup to log in again")
+                           hint="run: python scripts/dooray_web_agent.py --setup --cdp")
     if response.status >= 400:
         raise UiContractError(f"list endpoint returned HTTP {response.status}")
     try:
@@ -159,7 +188,7 @@ def fetch_rows(page, url: str) -> tuple[list[dict[str, Any]], list[MailHeader]]:
         except Exception as exc:  # noqa: BLE001
             raise UiContractError("list endpoint did not return JSON") from exc
     rows = _find_rows(payload)
-    return rows, _from_json_rows(rows)
+    return rows, _from_json_rows(rows, read_state_key, preview_key)
 
 
 def smoke_test(page, url: str, limit: int = 10, dom_frame=None) -> SmokeResult:  # noqa: ANN001
@@ -172,6 +201,7 @@ def smoke_test(page, url: str, limit: int = 10, dom_frame=None) -> SmokeResult: 
         return result
     result.row_keys = sorted(rows[0].keys())[:30]
     result.nested_schema, result.read_candidates, result.read_key = inspect_read_schema(rows)
+    result.preview_key = detect_preview_key(rows)
     if result.read_key and dom_frame is not None:
         result.dom_check = crosscheck_dom(dom_frame, rows, result.read_key)
         if result.dom_check["matched"] > result.dom_check["agreement"]:
@@ -197,6 +227,72 @@ def smoke_test(page, url: str, limit: int = 10, dom_frame=None) -> SmokeResult: 
     if result.dates_parsed != result.headers_parsed:
         result.errors.append("some rows have no parsable received date")
     return result
+
+
+ID_IN_PATH = __import__("re").compile(r"/(\d{6,})(?=[/?]|$)")
+
+
+def detail_template(url: str, mail_id: str) -> str:
+    """Turn an observed detail URL into a `{id}` template.
+
+    Only the exact mail id is replaced, so a numeric folder or tenant id in the
+    same path is left alone.
+    """
+    if not url or not mail_id or mail_id not in url:
+        return ""
+    return url.replace(mail_id, "{id}", 1)
+
+
+def discover_detail_api(page, rows: list[dict], observer=None, log=print) -> tuple[str, str]:  # noqa: ANN001
+    """Find the detail endpoint and the path to the body inside its response.
+
+    Driven by what the browser actually requested when a mail was opened. Both
+    the URL template and the body path are then re-verified against a *second*
+    mail, so a one-off coincidence cannot become the contract.
+
+    Only mails already marked read are touched, so no unread mail is opened.
+    """
+    from .mail_reader import detail_body, longest_string_paths
+
+    read_rows = [r for r in rows if str(r.get("id") or "")]
+    if len(read_rows) < 2:
+        return "", ""
+
+    template = ""
+    if observer is not None:
+        ids = {str(r.get("id")) for r in read_rows}
+        for call in observer.calls.values():
+            raw = call.get("rawUrl") or ""
+            hit = next((i for i in ids if i and i in raw), "")
+            if hit and (call.get("shape") or {}).get("kind") == "object":
+                template = detail_template(raw, hit)
+                break
+    if not template:
+        return "", ""
+
+    body_path = ""
+    verified = 0
+    for row in read_rows[:2]:
+        mail_id = str(row["id"])
+        try:
+            response = page.request.get(template.replace("{id}", mail_id), timeout=30_000)
+            if response.status >= 400:
+                return "", ""
+            payload = response.json()
+        except Exception:  # noqa: BLE001
+            return "", ""
+        if not body_path:
+            candidates = [p for p, n in longest_string_paths(payload) if n >= 40]
+            body_path = next((p for p in candidates if p.rsplit(".", 1)[-1].lower() in
+                              ("content", "body", "text", "html")), candidates[0] if candidates else "")
+        if body_path and detail_body(payload, body_path):
+            verified += 1
+    if verified < 2:
+        log("  detail endpoint found, but the body path did not verify on two mails")
+        return "", ""
+    log(f"detail endpoint: {redact(template)}")
+    log(f"  body path: {body_path}  (verified on {verified} already-read mails)")
+    return template, body_path
 
 
 def calibrate(page, observer, contract, log=print, dom_frame=None) -> dict[str, Any]:  # noqa: ANN001
@@ -248,5 +344,17 @@ def calibrate(page, observer, contract, log=print, dom_frame=None) -> dict[str, 
     contract.list_page_param = query_param_named(raw_url, PAGE_PARAMS)
     contract.list_size_param = query_param_named(raw_url, SIZE_PARAMS)
     contract.read_state_key = result.read_key
+    contract.preview_key = result.preview_key
     contract.verified = True
+
+    # Subjects alone cannot decide whether food is provided, so the body matters.
+    # Discovery runs last, only against mails already marked read.
+    rows, _headers = fetch_rows(page, raw_url)
+    detail_api, body_path = discover_detail_api(page, rows, observer, log=log)
+    if detail_api:
+        contract.detail_api = detail_api
+        contract.detail_body_path = body_path
+    else:
+        log("  no verified detail endpoint; bodies stay unavailable and runs are subject/preview only")
+    summary["detailApi"] = redact(detail_api) if detail_api else None
     return summary

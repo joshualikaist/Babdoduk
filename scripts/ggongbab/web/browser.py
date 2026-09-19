@@ -126,7 +126,7 @@ class Session:
             raise AuthRequired(
                 f"Dooray redirected to an identity page ({self.url.split('?')[0]})",
                 hint="the stored profile has no Dooray auth cookie; run: "
-                     "python scripts/dooray_web_agent.py --setup")
+                     "python scripts/dooray_web_agent.py --setup --cdp")
         marker = self.contract.logged_in_marker
         if marker:
             try:

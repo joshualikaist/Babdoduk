@@ -347,6 +347,7 @@ def cmd_run(args) -> int:
 
     scanned = already = candidates = registered = 0
     opened = unread_skipped = read_skipped = date_skipped = 0
+    previews = body_ok = 0
     with open_session(contract, headless=not args.headed, start_url=contract.mail_url,
                       cdp=args.cdp, port=args.debug_port) as session:
         session.assert_authenticated()
@@ -367,6 +368,8 @@ def cmd_run(args) -> int:
                 date_skipped += 1
                 continue
             scanned += 1
+            if header.preview:
+                previews += 1
             if state.seen(header.mail_id):
                 already += 1
                 continue
@@ -386,6 +389,7 @@ def cmd_run(args) -> int:
                 if decision.has_event_word or decision.has_meal_time:
                     open_body(session, header, target=target)
                     opened += 1
+                    body_ok += 1 if header.body_opened else 0
                     decision = classify(header.subject, header.text_for_filter)
             elif decision.candidate and args.open_body and not args.subject_only:
                 open_body(session, header, target=target)
@@ -421,7 +425,8 @@ def cmd_run(args) -> int:
     if args.read_state != "all":
         log(f"skipped by --read-state {args.read_state}: "
             f"{unread_skipped} unread / {read_skipped} read")
-    log(f"bodies opened: {opened}")
+    log(f"previews available: {previews}")
+    log(f"bodies opened: {opened}  (fetched ok: {body_ok})")
     log(f"candidates: {candidates}")
     log(f"registered: {registered}{' (dry run)' if args.dry_run else ''}")
 

@@ -48,6 +48,8 @@ class UiContract:
     list_page_param: str = ""     # query parameter used to page (e.g. "page")
     list_size_param: str = ""     # query parameter used for page size
     read_state_key: str = ""      # validated dict path, e.g. annotations.read; no array indices
+    preview_key: str = ""         # dotted path to the list row's preview text
+    detail_body_path: str = ""    # dotted path to the body inside the detail response
     notes: str = ""
 
     REQUIRED_DOM = ("mail_url", "logged_in_marker", "row", "row_subject")

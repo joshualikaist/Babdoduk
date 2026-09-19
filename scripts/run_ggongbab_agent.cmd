@@ -12,11 +12,12 @@ if not exist ".local" mkdir ".local"
 echo. >> ".local\agent.log"
 echo ===== %DATE% %TIME% ===== >> ".local\agent.log"
 
-python scripts\dooray_web_agent.py --run --since-last-run --run-pipeline >> ".local\agent.log" 2>&1
+REM --cdp attaches to the resident Chrome; the login only survives there.
+python scripts\dooray_web_agent.py --run --since-last-run --run-pipeline --cdp >> ".local\agent.log" 2>&1
 set RESULT=%ERRORLEVEL%
 
 if %RESULT% EQU 10 (
-  echo AUTH_REQUIRED: run "python scripts\dooray_web_agent.py --setup" to log in again >> ".local\agent.log"
+  echo AUTH_REQUIRED: run "python scripts\dooray_web_agent.py --setup --cdp" to log in again >> ".local\agent.log"
 )
 if %RESULT% EQU 20 (
   echo UI_CHANGED: run "python scripts\dooray_web_agent.py --discover" >> ".local\agent.log"
