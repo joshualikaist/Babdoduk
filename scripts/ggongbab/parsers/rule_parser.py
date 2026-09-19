@@ -64,7 +64,42 @@ _FOOD_TYPE_RULES: list[tuple[re.Pattern[str], FoodType]] = [
     (re.compile(r"커피|음료|coffee|drink|beverage", re.I), "beverage"),
 ]
 
-# --- registration ----------------------------------------------------------
+# --- eligibility -------------------------------------------------------------
+# A real audience restriction names who may attend. Words that merely refer to the
+# people who show up ("참석자에게 점심 제공") are NOT eligibility.
+_ELIGIBILITY_MARKERS = re.compile(
+    r"대상|한정|이상|이하|재학생|학부생|대학원생|석사|박사|석·?박사|신입생|졸업|전공|학과|학부|과정생|"
+    r"외국인|유학생|교직원|교수|연구원|직원|회원|선착순|자격|제한|만\s*\d+\s*세|\d\s*학년|"
+    r"undergraduate|graduate|freshman|sophomore|junior|senior|faculty|staff|students?\s+(?:only|in|of)|"
+    r"open\s+to|limited\s+to|eligible|eligibility|members?\s+only|first\s+\d+",
+    re.I,
+)
+# Phrases that are only a way of saying "the people attending".
+_ATTENDEE_ONLY = re.compile(
+    r"^(?:행사\s*)?(?:참석자|참가자|참여자|방문자|참석\s*자|신청자|선착순)\s*(?:전원|모두|분들|여러분)?\s*"
+    r"(?:에게|에겐|께|분들께|들에게|은|는|이|가|을|를)?\s*$|^(?:all\s+)?(?:attendees?|participants?|visitors?|everyone|all)\s*$",
+    re.I,
+)
+
+# --- registration ------------------------------------------------------------
+# Evidence that registration IS needed.
+_REGISTRATION_YES = re.compile(
+    r"사전\s*(?:신청|등록|접수|참가\s*신청)|"
+    r"신청\s*(?:이|을|를)?\s*(?:필수|필요|바랍니다|해\s*주|하시기|링크|폼|서|기간|마감|방법)|"
+    r"등록\s*(?:이|을|를)?\s*(?:필수|필요|바랍니다|해\s*주|하시기|링크|기간|마감)|접수\s*(?:기간|마감|방법|처)|참가\s*신청|"
+    r"선착순|RSVP|registration\s*(?:required|link|form|closes|deadline)|register\s+(?:at|here|by|via)|"
+    r"sign[\s-]?up|apply\s+(?:at|here|by|via)|신청서|구글\s*폼|google\s*form",
+    re.I,
+)
+# Evidence that registration is NOT needed. Only these make "false" defensible.
+_REGISTRATION_NO = re.compile(
+    r"신청\s*(?:없이|불필요|필요\s*없|하지\s*않아도)|별도\s*(?:의\s*)?(?:신청|등록|접수)\s*(?:없|불필요|하지)|"
+    r"사전\s*(?:신청|등록)\s*(?:없이|불필요|필요\s*없)|등록\s*(?:없이|불필요|필요\s*없)|"
+    r"현장\s*(?:참여|참석|등록|접수)\s*(?:가능|하시면|만)|자유\s*(?:롭게\s*)?참(?:여|석)|누구나\s*(?:참여|참석|오)|"
+    r"no\s+registration|without\s+registration|registration\s+(?:is\s+)?not\s+(?:required|needed)|"
+    r"walk[\s-]?ins?\s+welcome|drop[\s-]?in|open\s+to\s+all\s+without",
+    re.I,
+)
 _URL = re.compile(r"https?://[^\s<>\"'()\]]+")
 _DEADLINE_CTX = re.compile(r"(마감|기한|까지|접수\s*기간|신청\s*기간|deadline|by\s+|until|RSVP)", re.I)
 _EVENT_WORDS = re.compile(
@@ -210,6 +245,27 @@ def food_type_hint(text: str) -> FoodType:
     return "unknown"
 
 
+def is_real_eligibility(value: str) -> bool:
+    """True only when the phrase actually restricts who may attend."""
+    text = re.sub(r"\s+", " ", value or "").strip()
+    if len(text) < 2:
+        return False
+    if _ATTENDEE_ONLY.match(text):
+        return False
+    return bool(_ELIGIBILITY_MARKERS.search(text))
+
+
+def registration_evidence(text: str) -> str:
+    """Return 'true' / 'false' / 'unknown' from explicit wording only."""
+    if not text:
+        return "unknown"
+    if _REGISTRATION_NO.search(text):
+        return "false"
+    if _REGISTRATION_YES.search(text):
+        return "true"
+    return "unknown"
+
+
 def extract_deadline_dates(text: str, reference: date) -> list[str]:
     found: list[str] = []
     for line in re.split(r"[\n.。]", text):
@@ -235,6 +291,7 @@ def analyze(text: str, reference: Optional[datetime] = None) -> RuleFacts:
         urls=[u.rstrip(".,;)") for u in _URL.findall(text)],
         deadline_dates=extract_deadline_dates(text, ref),
         looks_like_event=bool(_EVENT_WORDS.search(text)),
+        registration_state=registration_evidence(text),
     )
     return facts
 

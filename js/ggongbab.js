@@ -60,10 +60,18 @@
     return addDays(today, 7 - (dow === 0 ? 7 : dow));
   }
 
+  // --- tri-state ("true" | "false" | "unknown"). Older payloads used booleans. ---
+  function tri(value) {
+    if (value === true) return 'true';
+    if (value === false) return 'false';
+    var s = String(value == null ? 'unknown' : value).toLowerCase();
+    return (s === 'true' || s === 'false') ? s : 'unknown';
+  }
+
   // --- filtering ---
   function foodBucket(ev) {
     var f = ev.food || {};
-    if (!f.provided) return 'none';
+    if (tri(f.provided) !== 'true') return 'none';
     var type = f.type || 'unknown';
     if (type === 'meal' || type === 'lunchbox' || type === 'coupon') return 'meal';
     if (type === 'snack') return 'snack';
@@ -138,12 +146,23 @@
       html += '</p>';
     }
     html += '<div class="gg-tags">';
-    if (food.provided) {
+    var foodState = tri(food.provided);
+    if (foodState === 'true') {
       html += '<span class="gg-tag gg-tag--food">' + esc(food.description || t('gg.foodProvided', '식사 제공')) + '</span>';
       var typeLabel = foodTypeLabel(food.type);
       if (typeLabel) html += '<span class="gg-tag gg-tag--type">' + esc(typeLabel) + '</span>';
+    } else if (foodState === 'false') {
+      html += '<span class="gg-tag gg-tag--none">' + esc(t('gg.foodNone', '식사 없음')) + '</span>';
+    } else {
+      html += '<span class="gg-tag gg-tag--unknown">' + esc(t('gg.foodUnknown', '식사 여부 미확인')) + '</span>';
     }
-    if (reg.required) html += '<span class="gg-tag gg-tag--reg">' + esc(t('gg.regRequired', '사전 신청')) + '</span>';
+    // "unknown" is never drawn as "no". An unstated fact says so, or shows nothing.
+    var regState = tri(reg.required);
+    if (regState === 'true') {
+      html += '<span class="gg-tag gg-tag--reg">' + esc(t('gg.regRequired', '사전 신청')) + '</span>';
+    } else if (regState === 'false') {
+      html += '<span class="gg-tag gg-tag--free">' + esc(t('gg.regNotNeeded', '신청 없이 참여')) + '</span>';
+    }
     if (ev.organizer) html += '<span class="gg-tag gg-tag--org">' + esc(ev.organizer) + '</span>';
     html += '</div>';
     html += deadlineHtml(ev, now);

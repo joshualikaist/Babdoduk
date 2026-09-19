@@ -16,6 +16,27 @@ from .config import DATA_DIR, KST, Settings
 from .parsers.validator import parse_iso
 
 PUBLIC_SOURCE_NAMES = {"dooray": "Dooray", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal"}
+TRI = ("true", "false", "unknown")
+
+
+def kst_iso(value: Any) -> Optional[str]:
+    """Render a timestamp in Asia/Seoul (+09:00).
+
+    Postgres returns timestamptz in UTC. The feed is campus-local, so every public
+    timestamp is converted before export; the database keeps its own representation.
+    """
+    if value is None or value == "":
+        return None
+    dt = value if isinstance(value, datetime) else parse_iso(str(value))
+    if dt is None:
+        return None
+    return dt.astimezone(KST).isoformat(timespec="seconds")
+
+
+def tri_state(value: Any) -> str:
+    """Keep true/false/unknown intact. 'not stated' must never collapse into 'no'."""
+    text = str(value or "unknown").strip().lower()
+    return text if text in TRI else "unknown"
 
 
 def is_expired(row: dict[str, Any], now: datetime, grace_hours: int) -> bool:
@@ -45,8 +66,8 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
         "id": row["id"],
         "title": row.get("title") or "",
         "summary": row.get("summary") or "",
-        "startAt": row.get("event_start"),
-        "endAt": row.get("event_end"),
+        "startAt": kst_iso(row.get("event_start")),
+        "endAt": kst_iso(row.get("event_end")),
         "dateText": row.get("date_text") or "",
         "timeText": row.get("time_text") or "",
         "location": {
@@ -55,15 +76,15 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
             "room": row.get("room") or "",
         },
         "food": {
-            "provided": row.get("food_provided") == "true",
+            "provided": tri_state(row.get("food_provided")),
             "type": row.get("food_type") or "unknown",
             "description": row.get("food_description") or "",
         },
         "organizer": row.get("organizer") or "",
         "eligibility": row.get("eligibility") or "",
         "registration": {
-            "required": row.get("registration_required") == "true",
-            "deadline": row.get("registration_deadline"),
+            "required": tri_state(row.get("registration_required")),
+            "deadline": kst_iso(row.get("registration_deadline")),
             "url": row.get("registration_url") or "",
         },
         "confidence": round(float(row.get("confidence") or 0), 3),
@@ -88,7 +109,7 @@ def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[
         events.append(public_event(row))
     events.sort(key=lambda e: (e["startAt"] or "9999", e["title"]))
     return {
-        "generatedAt": now.isoformat(timespec="seconds"),
+        "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),
         "timezone": "Asia/Seoul",
         "count": len(events),
         "events": events,

@@ -104,6 +104,8 @@ GG_PRIVATE_KEYS = {
 }
 GG_FOOD_TYPES = {"meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"}
 GG_SOURCE_TYPES = {"dooray", "kaist_public", "manual", "portal"}
+GG_TRI = {"true", "false", "unknown"}
+KST_OFFSET = timedelta(hours=9)
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 PHONE_RE = re.compile(r"(?<!\d)(?:\+?82[-\s.]?)?0?1[016789][-\s.]?\d{3,4}[-\s.]?\d{4}(?!\d)")
 SECRET_RE = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}|dooray-api\s+\S+)")
@@ -145,6 +147,8 @@ def validate_ggongbab(path: Path, now: datetime | None = None) -> list[str]:
     generated = _iso(data.get("generatedAt"))
     if generated is None:
         errors.append("ggongbab generatedAt missing or not ISO with offset")
+    elif generated.utcoffset() != KST_OFFSET:
+        errors.append("ggongbab generatedAt is not +09:00 (Asia/Seoul)")
     if data.get("timezone") != "Asia/Seoul":
         errors.append("ggongbab timezone must be Asia/Seoul")
     events = data.get("events")
@@ -189,22 +193,33 @@ def validate_ggongbab(path: Path, now: datetime | None = None) -> list[str]:
         last = end or start
         if last and last + timedelta(hours=6) < now:
             errors.append(f"{tag} expired ({last.isoformat()})")
+        for label, value in (("startAt", start), ("endAt", end)):
+            if value is not None and value.utcoffset() != KST_OFFSET:
+                errors.append(f"{tag} {label} is not +09:00 (Asia/Seoul)")
         conf = ev.get("confidence")
         if not isinstance(conf, (int, float)) or not 0 <= float(conf) <= 1:
             errors.append(f"{tag} confidence out of range")
         food = ev.get("food") or {}
-        if not isinstance(food.get("provided"), bool):
-            errors.append(f"{tag} food.provided must be boolean")
+        # tri-state, never boolean: "unknown" must not be collapsed into false.
+        if food.get("provided") not in GG_TRI:
+            errors.append(f"{tag} food.provided must be true/false/unknown")
         if food.get("type") not in GG_FOOD_TYPES:
             errors.append(f"{tag} food.type invalid")
+        if food.get("provided") != "true" and food.get("type") not in (None, "", "unknown"):
+            errors.append(f"{tag} food.type set while food.provided is not true")
         reg = ev.get("registration") or {}
+        if reg.get("required") not in GG_TRI:
+            errors.append(f"{tag} registration.required must be true/false/unknown")
         url = reg.get("url") or ""
         if url:
             parsed = urlparse(url)
             if parsed.scheme not in {"http", "https"} or not parsed.netloc:
                 errors.append(f"{tag} registration.url invalid")
-        if reg.get("deadline") and _iso(reg.get("deadline")) is None:
+        deadline = _iso(reg.get("deadline")) if reg.get("deadline") else None
+        if reg.get("deadline") and deadline is None:
             errors.append(f"{tag} registration.deadline not ISO")
+        elif deadline is not None and deadline.utcoffset() != KST_OFFSET:
+            errors.append(f"{tag} registration.deadline is not +09:00 (Asia/Seoul)")
         sources = ev.get("sources") or []
         if not sources:
             errors.append(f"{tag} has no sources")

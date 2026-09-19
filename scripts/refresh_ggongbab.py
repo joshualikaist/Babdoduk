@@ -56,10 +56,10 @@ def build_extractor(settings: Settings, dry_run: bool):
 
 
 def build_collectors(settings: Settings, repo, only: str) -> list:
-    known = {}
     collectors = []
     if only in ("all", "dooray"):
-        collectors.append(DoorayCollector(settings, known_hashes=known))
+        # Attachments are fetched lazily by the pipeline, after its cache check.
+        collectors.append(DoorayCollector(settings))
     if only in ("all", "kaist"):
         collectors.append(KaistPublicCollector(settings))
     if only in ("all", "manual"):

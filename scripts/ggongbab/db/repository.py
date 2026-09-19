@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Optional, Protocol
 
-from ..config import KST
+from ..config import KST, PROMPT_VERSION
 from ..models import RawAttachment, RawItem
 from .supabase_client import SupabaseClient
 
@@ -28,9 +28,10 @@ class Repository(Protocol):
     def upsert_raw_item(self, item: RawItem) -> dict[str, Any]: ...
     def touch_raw_item(self, raw_item_id: str) -> None: ...
     def upsert_attachments(self, raw_item_id: str, attachments: list[RawAttachment]) -> None: ...
-    def cached_parse(self, raw_item_id: str, content_hash: str) -> Optional[dict[str, Any]]: ...
+    def cached_parse(self, raw_item_id: str, content_hash: str, prompt_version: str = ...) -> Optional[dict[str, Any]]: ...
     def insert_ai_run(self, row: dict[str, Any]) -> None: ...
     def events_linked_to(self, raw_item_id: str) -> list[str]: ...
+    def event_source_count(self, event_id: str) -> int: ...
     def candidate_events(self, around: Optional[datetime]) -> list[dict[str, Any]]: ...
     def insert_event(self, row: dict[str, Any]) -> str: ...
     def update_event(self, event_id: str, row: dict[str, Any]) -> None: ...
@@ -102,10 +103,12 @@ class SupabaseRepository:
         } for a in attachments]
         self.client.upsert("attachments", rows, on_conflict="raw_item_id,external_file_id")
 
-    def cached_parse(self, raw_item_id: str, content_hash: str) -> Optional[dict[str, Any]]:
+    def cached_parse(self, raw_item_id: str, content_hash: str,
+                     prompt_version: str = PROMPT_VERSION) -> Optional[dict[str, Any]]:
         rows = self.client.select("ai_parse_runs", {
             "raw_item_id": f"eq.{raw_item_id}",
             "content_hash": f"eq.{content_hash}",
+            "prompt_version": f"eq.{prompt_version}",
             "status": "eq.ok",
             "role": "eq.primary",
             "select": "parsed_json,model,confidence,created_at",
@@ -113,6 +116,9 @@ class SupabaseRepository:
             "limit": 1,
         })
         return rows[0] if rows and rows[0].get("parsed_json") else None
+
+    def event_source_count(self, event_id: str) -> int:
+        return len(self.client.select("event_sources", {"event_id": f"eq.{event_id}", "select": "raw_item_id"}))
 
     def insert_ai_run(self, row: dict[str, Any]) -> None:
         self.client.insert("ai_parse_runs", row, returning=False)
@@ -237,12 +243,17 @@ class MemoryRepository:
                 "mime_type": a.mime_type, "size": a.size, "sha256": a.sha256, "parse_status": a.parse_status,
             }
 
-    def cached_parse(self, raw_item_id: str, content_hash: str) -> Optional[dict[str, Any]]:
+    def cached_parse(self, raw_item_id: str, content_hash: str,
+                     prompt_version: str = PROMPT_VERSION) -> Optional[dict[str, Any]]:
         for run in reversed(self.ai_runs):
             if run["raw_item_id"] == raw_item_id and run.get("content_hash") == content_hash \
+                    and run.get("prompt_version") == prompt_version \
                     and run["status"] == "ok" and run.get("role", "primary") == "primary" and run.get("parsed_json"):
                 return run
         return None
+
+    def event_source_count(self, event_id: str) -> int:
+        return sum(1 for (e, _r) in self.event_sources if e == event_id)
 
     def insert_ai_run(self, row: dict[str, Any]) -> None:
         self.ai_runs.append({"created_at": _now(), **row})

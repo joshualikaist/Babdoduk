@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 from ..config import KST
 from ..models import EventCandidate, EventExtraction, RuleFacts
-from .rule_parser import explicit_food_evidence, food_type_hint
+from .rule_parser import explicit_food_evidence, food_type_hint, is_real_eligibility, registration_evidence
 
 FALLBACK_REASONS = {
     "low_confidence",
@@ -205,14 +205,31 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
             reasons.append("신청 마감 근거 없음")
             deadline = None
     cand.registration_deadline = deadline
-    cand.registration_required = ai.registration_required
-    if cand.registration_required == "unknown" and url:
-        cand.registration_required = "true"
+    # "not stated" is not "not required": only explicit wording (or a registration
+    # link / deadline in the source) may decide either way.
+    required = ai.registration_required
+    rule_state = facts.registration_state or registration_evidence(source_text)
+    quote_state = registration_evidence(ai.evidence.registration or "")
+    if required == "true" and rule_state != "true" and quote_state != "true" and not url and not deadline:
+        reasons.append("신청 필요 근거 없음")
+        required = "unknown"
+    elif required == "false" and rule_state != "false" and quote_state != "false":
+        reasons.append("신청 불필요 근거 없음 (본문에 명시 없음)")
+        required = "unknown"
+    if required == "unknown" and (rule_state != "unknown" or url or deadline):
+        required = rule_state if rule_state != "unknown" else "true"
+    cand.registration_required = required
 
     # --- misc -----------------------------------------------------------
     cand.summary = (ai.summary or "").strip() or None
     cand.organizer = (ai.organizer or "").strip() or None
-    cand.eligibility = (ai.eligibility or "").strip() or None
+    # "참석자에게 점심 제공" describes recipients, not an admission restriction.
+    eligibility = (ai.eligibility or "").strip() or None
+    if eligibility and not is_real_eligibility(eligibility):
+        eligibility = None
+    if eligibility and not _evidence_supported(eligibility, source_text):
+        eligibility = None
+    cand.eligibility = eligibility
     if ai.needs_review:
         reasons.append(f"AI 검토 요청: {ai.review_reason or '사유 없음'}")
 

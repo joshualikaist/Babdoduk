@@ -172,6 +172,14 @@
 .gg-tag--type { background: rgba(245, 158, 11, 0.14); color: #92400e; }
 .gg-tag--reg { background: rgba(99, 102, 241, 0.12); color: #3730a3; }
 .gg-tag--org { background: rgba(16, 185, 129, 0.12); color: #065f46; }
+.gg-tag--free { background: rgba(16, 185, 129, 0.12); color: #065f46; }
+.gg-tag--none { background: #f2f2f7; color: #6e6e73; }
+/* "not stated" reads as uncertainty, never as a denial. */
+.gg-tag--unknown {
+  background: transparent;
+  color: #86868b;
+  border: 1px dashed rgba(0, 0, 0, 0.18);
+}
 .gg-deadline {
   margin-top: 8px;
   font-size: 0.78rem;

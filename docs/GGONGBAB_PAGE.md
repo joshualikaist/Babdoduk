@@ -50,7 +50,7 @@ KAIST Portal (stub, disabled)                            ─┘
 | `scripts/ggongbab/pipeline.py` | 전체 흐름 · 멱등성 · 통계 |
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (34개) |
+| `tests/ggongbab/` | pytest (118개) |
 
 ---
 
@@ -78,9 +78,19 @@ GET /project/v1/projects/{PROJECT_ID}/posts/{POST_ID}
   `body.content` 안의 `-----Original Message-----` 블록에서 `parsers/dooray_mail.py` 가 파싱한다.
 * `body.mimeType` 이 HTML 이면 `parsers/html_text.py` 로 줄 구조를 살려 텍스트화한다.
 * 첨부: `files[]` 와 본문의 `<img src="/files/{id}">` 둘 다 수집한다. `GET …/posts/{id}/files` 는 inline 첨부에서 비어 있을 수 있다.
-* 다운로드 helper 는 307 리다이렉트를 수동으로 따라가며, 호스트가 `*.dooray.com` 이 아닌 서명 URL 로 바뀌면 토큰을 보내지 않는다.
-  시도 순서: `/project/v1/projects/{p}/posts/{post}/files/{file}` → `/files/{file}`. **이 두 경로는 아직 실제 토큰으로 검증되지 않았다.**
-  실패해도 첨부는 optional enrichment 이므로 `parse_status=failed` 로만 남고 파이프라인은 계속된다.
+* **첨부 다운로드 경로 (2026-09-19 실제 토큰으로 검증):**
+
+| 경로 | 결과 |
+|------|------|
+| `…/posts/{post}/files/{file}?media=raw` | **307 → `file-api.gov-dooray.com` → 200 `image/png`** ✅ |
+| `…/posts/{post}/files/{file}` (media 없음) | 404 `{"resultMessage":"null"}` |
+| `/files/{file}` (본문 `<img>` 경로) | 404 |
+
+  따라서 `?media=raw` **하나만** 사용한다. 본문의 `/files/{id}` 는 **file id 를 찾는 용도**일 뿐 다운로드 endpoint 가 아니다.
+* 307 리다이렉트는 수동으로 따라간다. 토큰을 다시 보내는 기준은 `DOORAY_API_BASE` 에서 유도한 등록 도메인이다.
+  `api.gov-dooray.com` → `gov-dooray.com` 이므로 `file-api.gov-dooray.com` 은 신뢰하고, `evil-dooray.com.attacker.net` 같은 유사 호스트나 외부 서명 호스트에는 보내지 않는다.
+* 실패해도 첨부는 optional enrichment 이므로 `parse_status=failed` 로만 남고 파이프라인은 계속된다.
+  경고에는 서명 URL 이나 토큰 없이 `stage=` / `http=` / `redirected=` 만 찍는다. 예: `stage=request http=404 redirected=no`.
 * 첨부가 이미지(8KB 이상, `GGONGBAB_AI_MAX_IMAGE_BYTES` 이하)면 최대 `GGONGBAB_AI_MAX_IMAGES`(기본 2)장을 포스터로 AI 에 함께 보낸다.
 
 ---
@@ -112,9 +122,10 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 * Fallback(Terra) 은 **모든 메일에 호출하지 않는다.** `validator.fallback_reasons()` 가 다음 중 하나를 감지할 때만 한 번 더 호출한다.
   `low_confidence`(threshold `GGONGBAB_AI_CONFIDENCE_THRESHOLD`, 기본 0.75) · `date_conflict` · `food_ambiguous` · `rule_conflict` ·
   `missing_essential` · `ai_flagged` · `poster_conflict`. 두 결과 중 검증 문제가 적은 쪽을 택한다(`pick_better`).
-* Prompt version: `ggongbab-extract-v1` (`config.PROMPT_VERSION`). 프롬프트를 바꾸면 이 값을 올린다. `ai_parse_runs.prompt_version` 에 저장된다.
+* Prompt version: `ggongbab-extract-v2` (`config.PROMPT_VERSION`). `ai_parse_runs.prompt_version` 에 저장되고 **캐시 키의 일부**다.
+  프롬프트 의미를 바꾸면 이 값을 올린다. 그러면 저장된 항목이 옛 추출 결과에 고정되지 않고 다음 실행에서 다시 파싱된다.
 * System prompt 핵심: 본문/포스터에 **쓰여 있지 않은** 날짜 · 장소 · 음식 · 마감 · URL 을 만들지 말 것, `null`/`unknown` 을 적극 사용할 것,
-  `food_provided="true"` 면 `evidence.food` 에 제공 문장을 그대로 인용할 것.
+  `food_provided="true"` 면 `evidence.food` 에 제공 문장을 그대로 인용할 것, `registration_required` 와 `eligibility` 도 명시 근거가 있을 때만 채울 것(8절).
 
 ---
 
@@ -190,6 +201,26 @@ validator 가 하는 일:
 * 마감일도 본문 날짜와 맞아야 한다.
 * 문제가 하나라도 있으면 confidence 를 0.6 이하로 깎는다.
 
+### 신청 여부 (`registration_required`)
+
+“본문에 없음”은 “신청 불필요”가 아니다. 세 값을 모두 유지한다.
+
+| 값 | 필요한 근거 |
+|----|-------------|
+| `true` | 사전 신청 · 신청 필수/필요 · 등록 필요 · 접수 기간 · 선착순 · RSVP · 신청 링크/폼 · 마감일 |
+| `false` | 신청 없이 · 별도 신청 불필요 · 현장 참여 가능 · no registration required · walk-ins welcome |
+| `unknown` | 위 어느 쪽도 본문에 없을 때 (기본값) |
+
+AI 가 `false` 라고 해도 명시 근거가 없으면 validator 가 `unknown` 으로 되돌리고 review 사유를 남긴다.
+
+### 참가 자격 (`eligibility`)
+
+**실제 대상 제한**만 기록한다. 예: `KAIST 학부생 대상`, `기계공학과 학생`, `석·박사 과정 학생`, `신입생만`, `외국인 학생 대상`, `선착순 50명`.
+
+`참석자에게`, `참가자`, `방문자`, `attendees`, `everyone` 처럼 **오는 사람을 가리키는 말**은 자격 제한이 아니다 → `null`.
+(첫 실제 실행에서 “참석자에게 점심 도시락을 제공합니다”가 `eligibility="참석자"` 로 저장된 회귀. `rule_parser.is_real_eligibility()` 가 막는다.)
+본문에 없는 자격 문구도 버린다.
+
 회귀 fixture (`tests/ggongbab/conftest.py`):
 “9월 25일 12시 N1에서 기업 설명회를 진행합니다. 참석자에게 점심 도시락을 제공합니다.” → 9/25 12:00, N1, `true`, `lunchbox`.
 “9월 25일 12시 점심시간에 기업 설명회를 진행합니다.” → `food_provided != true`.
@@ -248,18 +279,25 @@ GitHub Actions 에서 `workflow_dispatch` → mode `review-report` 로도 볼 �
     "startAt": "2026-09-25T12:00:00+09:00", "endAt": null,
     "dateText": "9월 25일(목)", "timeText": "12:00",
     "location": {"name": "…", "building": "N1", "room": "101호"},
-    "food": {"provided": true, "type": "lunchbox", "description": "점심 도시락 제공"},
+    "food": {"provided": "true", "type": "lunchbox", "description": "점심 도시락 제공"},
     "organizer": "…", "eligibility": "…",
-    "registration": {"required": true, "deadline": "…", "url": "https://…"},
+    "registration": {"required": "unknown", "deadline": null, "url": ""},
     "confidence": 0.97,
     "sources": [{"type": "dooray", "name": "Dooray"}]
   }]
 }
 ```
 
+**tri-state:** `food.provided` 와 `registration.required` 는 **`"true"` / `"false"` / `"unknown"` 문자열**이다. boolean 이 아니다.
+“본문에 없음”(`unknown`)을 `false` 로 접으면 “신청 불필요”라는 없는 사실을 만들어 내기 때문이다. `food.type` 은 `provided="true"` 일 때만 채워진다.
+
+**시각:** `startAt` · `endAt` · `registration.deadline` · `generatedAt` 은 모두 **Asia/Seoul(`+09:00`)** 로 내보낸다.
+DB 의 `timestamptz` 는 UTC 로 조회되지만(`2026-09-25T03:00:00+00:00`), 공개 피드는 캠퍼스 현지 시각이므로 export 직전에 `exporter.kst_iso()` 가 변환한다(`2026-09-25T12:00:00+09:00`). DB 표현은 그대로 둔다.
+
 절대 포함하지 않는 것: 발신/수신 이메일, raw HTML/text, Dooray ID · task 링크, `/files/…` 첨부 링크, prompt, review_reason, API key.
-`validate_content.validate_ggongbab()` 가 이를 정규식 · 키 이름으로 검사하고 실패하면 publish 를 막는다. 검증 항목: JSON · generatedAt · 고유 ID · ISO 날짜(offset 필수) ·
-confidence 0~1 · 만료 없음 · URL 형식 · private 필드 없음 · 이메일/전화/토큰 패턴 없음 · 같은 날 유사 제목 중복.
+`validate_content.validate_ggongbab()` 가 이를 정규식 · 키 이름으로 검사하고 실패하면 publish 를 막는다. 검증 항목: JSON · generatedAt · 고유 ID ·
+ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음 · URL 형식 · **tri-state 문자열**(boolean 이면 실패) ·
+`food.type` 과 `food.provided` 정합성 · private 필드 없음 · 이메일/전화/토큰 패턴 없음 · 같은 날 유사 제목 중복.
 `sources[].url` 은 `kaist_public` / `manual` 의 공개 웹 링크만 내보낸다.
 
 ---
@@ -280,6 +318,8 @@ confidence 0~1 · 만료 없음 · URL 형식 · private 필드 없음 · 이메
 * nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
 * `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
 * 세로 피드: 날짜 헤더(오늘/내일 배지) → 카드(시각 · 제목 · 건물/호실 · 지도 링크 · 음식 태그 · 사전 신청 · 마감 · 요약 · 신청/원문 버튼).
+* **tri-state 표시:** `true` 만 「식사 제공」/「사전 신청」으로, `false` 는 「식사 없음」/「신청 없이 참여」로, `unknown` 은 점선 테두리의 「식사 여부 미확인」으로 그린다.
+  `unknown` 을 `false` 처럼 보여 주지 않는다. 옛 boolean payload 도 `tri()` 가 받아 준다.
 * 필터: 기간(오늘/내일/이번 주/전체 예정) × 음식(전체/식사/간식/다과). 선택은 `babdoduk-ggongbab-filter` 에 저장.
 * 모든 시각은 KST 로 계산한다(뷰어 시간대 무관). 지도는 카드 안 Google Maps 검색 링크로만 제공(보조 기능).
 * 가로 캐러셀 없음. 페이지 전체가 세로 스크롤.
@@ -307,8 +347,38 @@ confidence 0~1 · 만료 없음 · URL 형식 · private 필드 없음 · 이메
 | AI 비용 | Supabase `ai_parse_runs` 의 `usage_input_tokens`, `usage_output_tokens`, `model`, `role` |
 | 같은 메일이 계속 AI 를 태움 | `raw_items.content_hash` 가 매번 바뀌는지, `event_sources` 연결이 있는지 |
 | 행사가 안 보임 | `events.status`, `needs_review`, `confidence`, 만료 여부 → 11절 조건 |
+| 한글이 깨져 보임 | **파일이 아니라 콘솔 문제다.** 아래 UTF-8 항목 참고 |
+| 두 번째 실행인데 AI 가 다시 돌았다 | `PROMPT_VERSION` 을 올렸거나 `content_hash` 가 바뀐 것이다. `ai_parse_runs.prompt_version` 비교 |
+| 첨부가 계속 실패 | 경고의 `stage=` / `http=` / `redirected=` 확인. 2절의 검증된 경로표와 대조 |
 | 테스트 | `python -m pytest tests/ggongbab -q` |
 | 공개 JSON 검증만 | `python scripts/validate_content.py` |
+
+### UTF-8: 파일은 멀쩡하고 콘솔이 문제다
+
+`type data\ggongbab\latest.json` 으로 보면 한글이 `湲곗뾽 ?ㅻ챸??` 처럼 보일 수 있다.
+이는 Windows 콘솔 코드 페이지(기본 949)가 UTF-8 바이트를 cp949 로 읽어서 생기는 **표시** 문제다. 파일은 정상이다.
+
+확인 (2026-09-19 실측):
+
+```python
+from pathlib import Path
+import json
+raw = Path("data/ggongbab/latest.json").read_bytes()
+data = json.loads(raw.decode("utf-8"))            # UTF-8 로 디코드됨, BOM 없음
+t = data["events"][0]["title"]
+print(t.encode("unicode_escape"))                  # b'\uae30\uc5c5 \uc124\uba85\ud68c' = 기업 설명회
+```
+
+코드 쪽은 이미 `json.dumps(..., ensure_ascii=False)` + `write_text(..., encoding="utf-8")` 이므로
+**인코딩 변환을 추가하지 마라.** 이중 인코딩만 생긴다. 콘솔에서 제대로 보려면:
+
+```cmd
+chcp 65001
+type data\ggongbab\latest.json
+```
+
+PowerShell 은 `Get-Content data\ggongbab\latest.json -Encoding utf8`, 파이썬 출력은 `set PYTHONIOENCODING=utf-8`.
+회귀 테스트: `tests/ggongbab/test_export_contract.py::test_utf8_json_roundtrip_is_real_korean`.
 
 KAIST 공개 collector 가 읽는 게시판(2026-09-19 마크업 기준): 학사공지 `kr/html/footer/0802.html`, 문화행사 `kr/html/campus/053501.html`.
 마크업이 바뀌면 `collectors/kaist_public.py` 의 정규식과 `tests/ggongbab/test_pipeline_export.py::test_kaist_public_parsers_and_filter` 를 같이 고친다.

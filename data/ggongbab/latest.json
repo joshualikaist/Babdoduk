@@ -1,6 +1,40 @@
 {
-  "generatedAt": "2026-09-19T03:17:35+09:00",
+  "generatedAt": "2026-09-19T10:24:32+09:00",
   "timezone": "Asia/Seoul",
-  "count": 0,
-  "events": []
+  "count": 1,
+  "events": [
+    {
+      "id": "525d9bb3-dbd8-420b-a025-55b3df62f254",
+      "title": "기업 설명회",
+      "summary": "9월 25일 12시에 N1에서 기업 설명회를 진행합니다. 참석자에게 점심 도시락을 제공합니다.",
+      "startAt": "2026-09-25T12:00:00+09:00",
+      "endAt": null,
+      "dateText": "9월 25일",
+      "timeText": "12시",
+      "location": {
+        "name": "N1",
+        "building": "N1",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "점심 도시락"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    }
+  ]
 }

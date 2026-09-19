@@ -84,9 +84,11 @@ class Pipeline:
         existing = self.repo.find_raw_item(item.source_type, item.external_id)
         content_hash = item.content_hash
         if existing and existing.get("content_hash") == content_hash:
-            linked = self.repo.events_linked_to(existing["id"])
+            # cached_parse is scoped to the current PROMPT_VERSION, so a reworded
+            # prompt re-parses stored items instead of freezing an old extraction.
             cached = self.repo.cached_parse(existing["id"], content_hash)
-            if linked or (cached and not _is_event(cached)):
+            linked = self.repo.events_linked_to(existing["id"])
+            if cached is not None and (linked or not _is_event(cached)):
                 self.repo.touch_raw_item(existing["id"])
                 self.stats.ai_skipped += 1
                 return ParseOutcome(candidate=None, skipped_cached=True)
@@ -94,9 +96,11 @@ class Pipeline:
         raw_item_id = row["id"]
         if not existing or existing.get("content_hash") != content_hash:
             self.stats.items_new += 1
-        self.repo.upsert_attachments(raw_item_id, item.attachments)
 
         outcome = self.parse_item(item, raw_item_id, content_hash)
+        # Attachment rows are written after parse_item, because that is where the
+        # bytes (and therefore mime type / sha256 / parse_status) are resolved.
+        self.repo.upsert_attachments(raw_item_id, item.attachments)
         if outcome.error or outcome.candidate is None:
             return outcome
         cand = outcome.candidate
@@ -128,6 +132,8 @@ class Pipeline:
         if self.extractor is None:
             return ParseOutcome(candidate=None, error="no extractor configured")
 
+        # Only now, past every cache check, is it worth paying for attachment downloads.
+        item.load_attachments()
         images = _event_images(item, self.settings)
         note = f"POSTER_IMAGES_ATTACHED: {len(images)}" if images else ""
         user_text = build_user_text(
@@ -182,13 +188,21 @@ class Pipeline:
         existing = self.repo.candidate_events(cand.event_start)
         match = find_match(cand, existing, self.settings.dedup_threshold)
         if match:
-            updated, _reasons = merge_into(match.event, cand)
-            self.repo.update_event(match.event["id"], updated)
-            self.repo.link_event_source(match.event["id"], raw_item_id, match.score)
+            event_id = match.event["id"]
+            own = event_id in self.repo.events_linked_to(raw_item_id)
+            if own and self.repo.event_source_count(event_id) <= 1:
+                # Re-parsing the only source behind this event: the new extraction
+                # replaces the old one, so corrections (a dropped eligibility, a
+                # downgraded registration flag) actually take effect.
+                updated = cand.to_db_row()
+            else:
+                updated, _reasons = merge_into(match.event, cand)
+            self.repo.update_event(event_id, updated)
+            self.repo.link_event_source(event_id, raw_item_id, match.score)
             self.stats.events_updated += 1
             if updated.get("needs_review"):
                 self.stats.events_review += 1
-            return match.event["id"]
+            return event_id
         row = cand.to_db_row()
         event_id = self.repo.insert_event(row)
         self.repo.link_event_source(event_id, raw_item_id, 1.0)

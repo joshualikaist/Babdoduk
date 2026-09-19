@@ -38,6 +38,23 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+class AttachmentError(Exception):
+    """Attachment download failure. Carries enough detail to debug without leaking the signed URL."""
+
+    def __init__(self, stage: str, status: Optional[int] = None, redirected: bool = False, detail: str = ""):
+        self.stage = stage
+        self.status = status
+        self.redirected = redirected
+        self.detail = detail
+        parts = [f"stage={stage}"]
+        if status is not None:
+            parts.append(f"http={status}")
+        parts.append(f"redirected={'yes' if redirected else 'no'}")
+        if detail:
+            parts.append(detail)
+        super().__init__(" ".join(parts))
+
+
 class DoorayClient:
     """Thin urllib client. Token only ever goes into the Authorization header."""
 
@@ -46,6 +63,16 @@ class DoorayClient:
         self.token = token
         self.timeout = timeout
         self._ctx = ssl.create_default_context()
+        # Trust anchor for redirects, derived from the configured base rather than
+        # hard-coded: api.gov-dooray.com -> gov-dooray.com, so file-api.gov-dooray.com
+        # is trusted while evil-dooray.com.attacker.net is not.
+        labels = urllib.parse.urlparse(self.base).netloc.split(":")[0].split(".")
+        self._trusted_domain = ".".join(labels[-2:]) if len(labels) >= 2 else ""
+
+    def _trusted(self, host: str) -> bool:
+        host = (host or "").split(":")[0].lower()
+        domain = self._trusted_domain.lower()
+        return bool(domain) and (host == domain or host.endswith("." + domain))
 
     # -- low level --------------------------------------------------------
     def _headers(self, accept: str = "application/json") -> dict[str, str]:
@@ -73,36 +100,46 @@ class DoorayClient:
         return payload
 
     def download(self, url_or_path: str, max_bytes: int, max_hops: int = 4) -> tuple[bytes, str]:
-        """Download a file following up to `max_hops` redirects manually.
+        """Download a file, following up to `max_hops` redirects manually.
 
-        Dooray answers file requests with 307 to a file-api host. The auth header
-        is re-sent only while the hop stays on a *.dooray.com host; a signed
-        redirect URL on another host is fetched without it.
+        Verified behaviour (2026-09-19, live project): the raw-media endpoint answers
+        307 with a Location on `file-api.gov-dooray.com`. The auth header is re-sent
+        only while the hop stays on a `*.dooray.com` host; a signed URL on any other
+        host is fetched without it.
         """
         url = url_or_path if url_or_path.startswith("http") else self.base + url_or_path
         opener = urllib.request.build_opener(_NoRedirect, urllib.request.HTTPSHandler(context=self._ctx))
+        redirected = False
         for _ in range(max_hops + 1):
             host = urllib.parse.urlparse(url).netloc
+            stage = "redirect" if redirected else "request"
             headers = {"User-Agent": UA, "Accept": "*/*"}
-            if host.endswith("dooray.com"):
+            if self._trusted(host):
                 headers["Authorization"] = f"dooray-api {self.token}"
             req = urllib.request.Request(url, headers=headers)
             try:
                 res = opener.open(req, timeout=self.timeout)
             except urllib.error.HTTPError as exc:
-                if exc.code in (301, 302, 303, 307, 308) and exc.headers.get("Location"):
-                    url = urllib.parse.urljoin(url, exc.headers["Location"])
+                location = exc.headers.get("Location")
+                if exc.code in (301, 302, 303, 307, 308) and location:
+                    url = urllib.parse.urljoin(url, location)
+                    redirected = True
                     continue
-                raise
+                raise AttachmentError(stage, status=exc.code, redirected=redirected) from exc
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                raise AttachmentError(stage, redirected=redirected, detail=exc.__class__.__name__) from exc
             with res:
                 length = res.headers.get("Content-Length")
-                if length and int(length) > max_bytes:
-                    raise ValueError(f"attachment too large ({length} bytes)")
+                if length and length.isdigit() and int(length) > max_bytes:
+                    raise AttachmentError("size", status=res.status, redirected=redirected,
+                                          detail=f"{length} bytes > limit")
                 data = res.read(max_bytes + 1)
                 if len(data) > max_bytes:
-                    raise ValueError("attachment too large")
+                    raise AttachmentError("size", status=res.status, redirected=redirected, detail="over limit")
+                if not data:
+                    raise AttachmentError("empty", status=res.status, redirected=redirected)
                 return data, res.headers.get("Content-Type", "") or ""
-        raise ValueError("too many redirects")
+        raise AttachmentError("redirect", redirected=True, detail=f"more than {max_hops} hops")
 
     # -- verified endpoints ---------------------------------------------
     def me(self) -> dict[str, Any]:
@@ -125,18 +162,20 @@ class DoorayClient:
         result = payload.get("result")
         return result if isinstance(result, list) else []
 
+    def file_path(self, project_id: str, post_id: str, file_id: str) -> str:
+        """The only download path confirmed against the live API.
+
+        Verified 2026-09-19 against the collection project:
+          * `…/posts/{post}/files/{file}?media=raw` -> 307 -> file host -> 200 image/png
+          * `…/posts/{post}/files/{file}` (no media param) -> 404 {"resultMessage":"null"}
+          * `/files/{file}` (the path used by inline <img> in the body) -> 404
+        The body's `/files/{id}` reference is therefore only a source of file *ids*,
+        never a download endpoint.
+        """
+        return f"/project/v1/projects/{project_id}/posts/{post_id}/files/{file_id}?media=raw"
+
     def download_post_file(self, project_id: str, post_id: str, file_id: str, max_bytes: int) -> tuple[bytes, str]:
-        """Try the post-scoped file endpoint first, then the bare /files/{id} path seen in body HTML."""
-        last: Optional[Exception] = None
-        for path in (
-            f"/project/v1/projects/{project_id}/posts/{post_id}/files/{file_id}",
-            f"/files/{file_id}",
-        ):
-            try:
-                return self.download(path, max_bytes)
-            except Exception as exc:  # noqa: BLE001 - optional enrichment
-                last = exc
-        raise ValueError(f"download failed: {last}")
+        return self.download(self.file_path(project_id, post_id, file_id), max_bytes)
 
 
 def _parse_ts(value: Any) -> Optional[datetime]:
@@ -156,10 +195,9 @@ class DoorayCollector(Collector):
     name = "Dooray"
 
     def __init__(self, settings: Settings, client: Optional[DoorayClient] = None,
-                 known_hashes: Optional[dict[str, str]] = None, fetch_attachments: bool = True):
+                 fetch_attachments: bool = True):
         self.settings = settings
         self.client = client or DoorayClient(settings.dooray_base, settings.dooray_token)
-        self.known_hashes = known_hashes or {}   # external_id -> content_hash already stored
         self.fetch_attachments = fetch_attachments
 
     def enabled(self) -> bool:
@@ -187,8 +225,10 @@ class DoorayCollector(Collector):
                 item = self.normalize_post(detail or summary)
                 if item is None:
                     continue
-                if self.fetch_attachments and self.known_hashes.get(item.external_id) != item.content_hash:
-                    self._download_attachments(post_id, item)
+                if self.fetch_attachments and item.attachments:
+                    # Deferred: the pipeline calls load_attachments() only when it is
+                    # actually going to parse the item, so cached posts cost no traffic.
+                    item.attachment_loader = _loader(self, post_id, item)
                 items.append(item)
             if len(posts) < self.settings.dooray_page_size:
                 break
@@ -248,7 +288,8 @@ class DoorayCollector(Collector):
             attachments=attachments,
         )
 
-    def _download_attachments(self, post_id: str, item: RawItem) -> None:
+    def download_attachments(self, post_id: str, item: RawItem) -> None:
+        """Fetch attachment bytes. Any failure is recorded on the attachment only."""
         project_id = self.settings.dooray_project_id
         listed = {str(f.get("id")): f for f in self.client.list_post_files(project_id, post_id)}
         for att in item.attachments:
@@ -262,16 +303,24 @@ class DoorayCollector(Collector):
             try:
                 data, ctype = self.client.download_post_file(project_id, post_id, att.external_file_id,
                                                              self.settings.ai_max_image_bytes)
-            except Exception as exc:  # noqa: BLE001
+            except AttachmentError as exc:
                 att.parse_status = "failed"
                 att.mime_type = att.mime_type or ""
-                print(f"[warn] dooray attachment {att.external_file_id[:8]}…: {exc.__class__.__name__}")
+                print(f"[warn] dooray attachment {att.external_file_id[:8]}…: {exc}")
+                continue
+            except Exception as exc:  # noqa: BLE001 - optional enrichment, never fatal
+                att.parse_status = "failed"
+                print(f"[warn] dooray attachment {att.external_file_id[:8]}…: stage=unknown {exc.__class__.__name__}")
                 continue
             att.data = data
             att.size = att.size or len(data)
             att.mime_type = _guess_mime(ctype, att.filename, data)
             att.compute_sha()
             att.parse_status = "downloaded" if att.mime_type.startswith("image/") else "skipped"
+
+
+def _loader(collector: "DoorayCollector", post_id: str, item: RawItem):
+    return lambda: collector.download_attachments(post_id, item)
 
 
 def _guess_mime(content_type: str, filename: str, data: bytes) -> str:

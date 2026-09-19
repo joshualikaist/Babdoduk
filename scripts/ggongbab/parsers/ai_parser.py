@@ -36,6 +36,15 @@ You are an EXTRACTION engine, not a reasoning engine. Follow these rules strictl
    copy the original wording. `evidence.event_time` quotes the sentence with the date/time.
 5. building: KAIST building codes such as N1, W1-3, E5, KI빌딩, 창의학습관 only if written.
 6. registration_url: must appear verbatim in the input. Never construct or shorten URLs.
+6a. registration_required = "true" only with explicit wording (사전 신청, 신청 필수, 등록 필요,
+   선착순, RSVP, a registration link/form/deadline). "false" ONLY when the source explicitly
+   says none is needed (신청 없이, 별도 신청 불필요, 현장 참여 가능, no registration needed,
+   walk-ins welcome). If the source says nothing about registration, answer "unknown".
+   Quote the deciding sentence in `evidence.registration`.
+6b. eligibility: ONLY an actual restriction on who may attend, e.g. "KAIST 학부생 대상",
+   "기계공학과 학생", "석·박사 과정 학생", "신입생만", "외국인 학생 대상", "선착순 50명".
+   Words that merely refer to whoever shows up - "참석자에게", "참가자", "방문자", "attendees",
+   "everyone" - are NOT eligibility; use null. If no restriction is stated, eligibility = null.
 7. is_event = false for newsletters, surveys, job postings without a session, or general
    notices. A cafeteria menu is not an event.
 8. confidence reflects how completely and unambiguously the essential fields (title,

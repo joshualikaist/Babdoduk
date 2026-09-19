@@ -6,7 +6,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Callable, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -51,6 +51,19 @@ class RawItem:
     source_updated_at: Optional[datetime] = None
     metadata: dict[str, Any] = field(default_factory=dict)
     attachments: list[RawAttachment] = field(default_factory=list)
+    # Set by the collector. Downloads attachment bytes on demand so that a cached
+    # item (unchanged content_hash) never re-fetches files. Never part of the hash:
+    # attachment ids are already known from the listing without downloading.
+    attachment_loader: Optional[Callable[[], None]] = field(default=None, repr=False, compare=False)
+    _attachments_loaded: bool = field(default=False, repr=False, compare=False)
+
+    def load_attachments(self) -> None:
+        """Idempotent: runs the collector's download step at most once per item."""
+        if self._attachments_loaded:
+            return
+        self._attachments_loaded = True
+        if self.attachment_loader is not None:
+            self.attachment_loader()
 
     @property
     def content_hash(self) -> str:
@@ -114,6 +127,7 @@ class RuleFacts:
     urls: list[str] = field(default_factory=list)
     deadline_dates: list[str] = field(default_factory=list)
     looks_like_event: bool = False
+    registration_state: Tri = "unknown"      # from explicit wording only
 
     @property
     def explicit_food(self) -> bool:

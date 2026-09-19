@@ -215,7 +215,7 @@ def test_export_privacy_and_validation(settings, tmp_path):
     payload = build_payload(rows, settings)
     assert payload["count"] == 1
     ev = payload["events"][0]
-    assert ev["food"] == {"provided": True, "type": "lunchbox", "description": "점심 도시락 제공"}
+    assert ev["food"] == {"provided": "true", "type": "lunchbox", "description": "점심 도시락 제공"}
     assert ev["sources"] == [{"type": "dooray", "name": "Dooray"}]
     assert "review_reason" not in ev and "sender_email" not in json.dumps(payload)
     path = write_payload(payload, tmp_path)
@@ -234,7 +234,8 @@ def test_export_validator_catches_private_fields(tmp_path):
     errors = validate_ggongbab(path)
     joined = "\n".join(errors)
     for needle in ("e-mail address", "private field", "duplicate id", "expired", "confidence out of range",
-                   "food.provided must be boolean", "food.type invalid", "registration.url invalid", "has no sources"):
+                   "food.provided must be true/false/unknown", "food.type invalid",
+                   "registration.url invalid", "has no sources"):
         assert needle in joined, needle
 
 
