@@ -24,6 +24,8 @@ from .ui_contract import UiContract
 PROFILE_DIRNAME = "dooray-browser-profile"
 SETUP_TIMEOUT_SECONDS = 600
 NAV_TIMEOUT_MS = 45_000
+# The real KAIST tenant. Used when --setup is run without --url.
+DEFAULT_DOORAY_URL = "https://kaist.gov-dooray.com/"
 
 
 class PlaywrightMissing(AgentError):
@@ -102,45 +104,21 @@ def browser_session(profile_dir: Path, contract: UiContract, *, headless: bool,
                 pass
 
 
-def run_setup(profile_dir: Path, contract: UiContract, start_url: str,
-              contract_out: Path, log=print) -> str:
-    """Open a visible browser, wait for the human to log in, remember the session.
+def wait_for_login(session: Session, timeout_seconds: int = SETUP_TIMEOUT_SECONDS, log=print) -> str:
+    """Block until the browser is off the SSO screen. Returns the landing URL.
 
-    Returns the URL the browser settled on, which becomes `mail_url`.
+    This proves a session exists. It does NOT prove the browser is looking at the
+    mailbox: Dooray can land on Home, Project or Messenger. Deciding where the
+    mail list lives is a separate step on purpose.
     """
-    if not start_url:
-        raise AgentError("no Dooray URL to open",
-                         hint="pass --url https://<your-dooray-host>/ on the first setup")
-    log("A browser window will open. Log in with KAIST SSO there.")
-    log("Nothing is typed for you, and no password is read or stored.")
-    log(f"Waiting up to {SETUP_TIMEOUT_SECONDS // 60} minutes for the login to finish...")
-    sync_playwright = _playwright()
-    profile_dir.mkdir(parents=True, exist_ok=True)
-    with sync_playwright() as pw:
-        context = pw.chromium.launch_persistent_context(
-            user_data_dir=str(profile_dir), headless=False,
-            viewport={"width": 1440, "height": 960}, locale="ko-KR", timezone_id="Asia/Seoul",
-        )
-        context.set_default_timeout(NAV_TIMEOUT_MS)
-        page = context.pages[0] if context.pages else context.new_page()
-        page.goto(start_url, wait_until="domcontentloaded")
-        deadline = time.time() + SETUP_TIMEOUT_SECONDS
-        settled = ""
-        while time.time() < deadline:
-            url = page.url or ""
-            if url and not contract.looks_like_login(url):
-                # Give the app a moment, then confirm it stays off the login screen.
-                time.sleep(3)
-                if not contract.looks_like_login(page.url or ""):
-                    settled = page.url
-                    break
-            time.sleep(2)
-        if not settled:
-            context.close()
-            raise AuthRequired("login was not completed in time",
-                               hint="run --setup again and finish the SSO login in the window")
-        log(f"Login detected. Session stored in {profile_dir}")
-        contract.mail_url = contract.mail_url or settled
-        contract.save(contract_out)
-        context.close()
-        return settled
+    deadline = time.time() + timeout_seconds
+    page = session.page
+    while time.time() < deadline:
+        url = page.url or ""
+        if url and not session.contract.looks_like_login(url):
+            time.sleep(3)   # let a redirect chain finish before believing it
+            if not session.contract.looks_like_login(page.url or ""):
+                return page.url or url
+        time.sleep(2)
+    raise AuthRequired("login was not completed in time",
+                       hint="run --setup again and finish the SSO login in the window")

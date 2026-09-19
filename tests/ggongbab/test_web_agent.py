@@ -308,3 +308,193 @@ def test_auth_required_is_raised_not_worked_around():
     with pytest.raises(AuthRequired) as exc:
         session.assert_authenticated()
     assert exc.value.code == 10 and "--setup" in (exc.value.hint or "")
+
+
+# --- setup must not mistake Home for the inbox --------------------------------
+class FakeResponse:
+    """Minimal stand-in for a Playwright Response."""
+
+    def __init__(self, url, payload=None, content_type="application/json",
+                 status=200, resource_type="xhr", method="GET"):
+        self.url = url
+        self.status = status
+        self._payload = payload
+        self._headers = {"content-type": content_type}
+        self.request = type("Req", (), {"method": method, "resource_type": resource_type})()
+
+    def header_value(self, name):
+        return self._headers.get(name.lower())
+
+    def json(self):
+        if self._payload is None:
+            raise ValueError("no json")
+        return self._payload
+
+
+class FakePage:
+    def __init__(self, landmarks=None):
+        self._handlers = []
+        self._landmarks = landmarks or {"repeated": [], "idAttrs": [], "title": ""}
+        self.url = "https://kaist.gov-dooray.com/"
+        self.reloads = 0
+
+    def on(self, event, handler):
+        self._handlers.append(handler)
+
+    def remove_listener(self, event, handler):
+        self._handlers = [h for h in self._handlers if h is not handler]
+
+    def emit(self, response):
+        for handler in list(self._handlers):
+            handler(response)
+
+    def evaluate(self, _js):
+        return self._landmarks
+
+    def wait_for_timeout(self, _ms):
+        return None
+
+    def reload(self, **_kw):
+        self.reloads += 1
+
+    @property
+    def mouse(self):
+        return type("M", (), {"wheel": lambda *_a, **_k: None})()
+
+
+MAIL_ROWS = {"result": [
+    {"id": 101, "subject": "삼성전자 Tech Lunch Talk", "receivedAt": "2026-09-03T10:00:00+09:00", "unread": True},
+    {"id": 102, "subject": "연구 세미나", "receivedAt": "2026-09-04T09:00:00+09:00", "unread": False},
+]}
+HOME_ROWS = {"result": [{"id": 1, "name": "프로젝트", "type": "public"},
+                        {"id": 2, "name": "다른 프로젝트", "type": "public"}]}
+
+
+def _observer_with(page, *responses):
+    from ggongbab.web.mail_reader import NetworkObserver
+
+    observer = NetworkObserver(page)
+    observer.start()
+    for response in responses:
+        page.emit(response)
+    return observer
+
+
+def test_home_page_calls_are_not_mail_list_candidates():
+    """The exact bug: landing on Home must not look like the inbox."""
+    page = FakePage()
+    observer = _observer_with(page, FakeResponse("https://kaist.gov-dooray.com/v1/projects?page=1", HOME_ROWS))
+    assert observer.list_candidates() == []
+
+    from ggongbab.web.mail_reader import mail_screen_evidence
+
+    evidence = mail_screen_evidence(observer, page)
+    assert evidence["mailListCallObserved"] is False
+    assert evidence["repeatedRowContainers"] == 0
+
+
+def test_inbox_call_is_recognised_with_reasons():
+    page = FakePage()
+    observer = _observer_with(page, FakeResponse("https://kaist.gov-dooray.com/v1/mails?page=1&size=50", MAIL_ROWS))
+    observer.on_mail_screen = True
+    page.emit(FakeResponse("https://kaist.gov-dooray.com/v1/mails?page=1&size=50", MAIL_ROWS))
+    candidates = observer.list_candidates()
+    assert len(candidates) == 1
+    call = candidates[0]
+    assert call["url"] == "https://kaist.gov-dooray.com/v1/mails?page=<v>&size=<v>"
+    why = " ".join(call["why"])
+    assert "subject-like key" in why and "date-like key" in why and "content-type json" in why
+    assert "called 2x" in why
+
+
+def test_detail_call_is_classified_separately():
+    from ggongbab.web.mail_reader import classify_call
+
+    call = {"contentType": "application/json", "hitCount": 1,
+            "shape": {"kind": "object", "objectKeys": ["id", "subject", "body"], "longestTextLength": 4000}}
+    category, why = classify_call(call)
+    assert category == "mail-detail"
+    assert any("body-like" in r for r in why)
+
+
+def test_shape_records_key_names_but_never_values():
+    from ggongbab.web.mail_reader import shape_of
+
+    shape = shape_of(MAIL_ROWS)
+    assert shape["kind"] == "rows" and shape["rowCount"] == 2
+    assert "subject" in shape["rowKeys"] and "receivedAt" in shape["rowKeys"]
+    blob = json.dumps(shape, ensure_ascii=False)
+    assert "삼성전자" not in blob and "Tech Lunch Talk" not in blob
+
+
+def test_discovery_report_holds_no_values(tmp_path):
+    from ggongbab.web.mail_reader import write_discovery_report
+
+    page = FakePage(landmarks={"repeated": [{"selector": ".mail-row", "count": 30}], "idAttrs": [], "title": "메일"})
+    observer = _observer_with(page, FakeResponse(
+        "https://kaist.gov-dooray.com/v1/mails?page=1&token=abc123", MAIL_ROWS))
+    out = tmp_path / "discovery.json"
+    report = write_discovery_report(observer, page, out,
+                                    page_url="https://kaist.gov-dooray.com/mail/inbox?u=someone@kaist.ac.kr",
+                                    confirmed_by_user=True)
+    blob = out.read_text(encoding="utf-8")
+    for leak in ("삼성전자", "Tech Lunch Talk", "abc123", "someone@kaist.ac.kr"):
+        assert leak not in blob, leak
+    # A query value is redacted to <v>, which also swallows an address that sat there.
+    assert "token=<v>" in blob and "page=<v>" in blob
+    assert "u=<v>" in blob
+    assert report["evidence"]["A_mailListCallObserved"] is True
+    assert report["evidence"]["B_confirmedByUser"] is True
+    assert report["evidence"]["C_repeatedRowContainers"] == 1
+    assert report["observedReadStateKeys"] == ["unread"]
+
+
+def test_read_state_keys_are_reported_only_when_present():
+    page = FakePage()
+    no_flag = {"result": [{"id": 1, "subject": "a", "receivedAt": "2026-09-03"},
+                          {"id": 2, "subject": "b", "receivedAt": "2026-09-04"}]}
+    observer = _observer_with(page, FakeResponse("https://x/v1/mails", no_flag))
+    assert observer.observed_read_state_keys() == []
+    assert observer.list_candidates(), "still a list candidate, just without a read flag"
+
+
+def test_observer_ignores_non_xhr_and_unreadable_bodies():
+    page = FakePage()
+    observer = _observer_with(
+        page,
+        FakeResponse("https://x/app.js", None, content_type="application/javascript", resource_type="script"),
+        FakeResponse("https://x/v1/thing", None, content_type="application/json"),
+    )
+    assert len(observer.calls) == 1               # the script was ignored
+    only = next(iter(observer.calls.values()))
+    assert only["shape"] is None                  # unreadable body left as unknown
+
+
+def test_observe_reloads_to_trigger_the_list_call():
+    from ggongbab.web.browser import Session
+    from ggongbab.web.mail_reader import NetworkObserver, observe
+    from ggongbab.web.ui_contract import UiContract
+
+    page = FakePage()
+    session = Session(page=page, context=None, contract=UiContract())
+    observer = NetworkObserver(page)
+    observe(session, observer, seconds=1, reload=True)
+    assert page.reloads == 1 and observer.after_reload is True
+
+
+def test_default_setup_url_is_the_real_tenant():
+    from ggongbab.web.browser import DEFAULT_DOORAY_URL
+
+    assert DEFAULT_DOORAY_URL == "https://kaist.gov-dooray.com/"
+    assert not UiContract().looks_like_login(DEFAULT_DOORAY_URL)
+
+
+def test_wait_for_login_only_proves_a_session_not_a_mailbox():
+    """wait_for_login must not record any URL; that is a separate decision."""
+    import inspect
+
+    from ggongbab.web import browser
+
+    source = inspect.getsource(browser.wait_for_login)
+    assert "mail_url" not in source
+    assert "save" not in source

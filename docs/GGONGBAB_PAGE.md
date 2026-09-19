@@ -55,7 +55,7 @@ KAIST Portal (stub, disabled)                            ─┘
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (181개) |
+| `tests/ggongbab/` | pytest (191개) |
 
 ---
 
@@ -498,11 +498,45 @@ Dooray 메일함 (브라우저 세션)
 pip install -r requirements-ggongbab.txt
 python -m playwright install chromium
 
-python scripts\dooray_web_agent.py --setup --url https://<사내-dooray-주소>/
+python scripts\dooray_web_agent.py --setup
 ```
 
-브라우저 창이 열리면 **사용자가 직접** KAIST SSO 로그인을 한다.
-로그인이 끝난 것을 감지하면 세션이 `.local/dooray-browser-profile/` 에 남는다 (gitignore).
+기본 주소는 **`https://kaist.gov-dooray.com/`** 이다. 다른 테넌트면 `--url` 로 준다.
+
+1. 브라우저 창이 열리면 **사용자가 직접** KAIST SSO 로그인을 한다.
+2. 로그인이 감지되면 터미널에 안내가 뜬다.
+
+```
+로그인되었습니다.
+  landing page: https://kaist.gov-dooray.com/...
+
+이 화면이 받은메일함이 아닐 수 있습니다. 브라우저에서
+  [메일] -> [받은메일함] 으로 이동하세요.
+메일 목록이 보이면 이 터미널에서 Enter를 누르세요.
+```
+
+3. 브라우저에서 **받은메일함으로 이동**한 뒤 터미널에서 **Enter** 를 누른다.
+4. 그 시점의 URL 이 `mail_url` 로 기록되고, 같은 자리에서 discovery 까지 바로 수행된다.
+
+세션은 `.local/dooray-browser-profile/` 에 남는다 (gitignore).
+
+> **왜 Enter 가 필요한가.** 로그인 직후 Dooray 는 홈·프로젝트·메신저 중 아무 데나 랜딩할 수 있다.
+> "세션이 생겼다"와 "받은메일함에 도착했다"는 다른 사실이므로 분리했다. 이전 판은 로그인 직후 URL 을
+> 그대로 `mail_url` 로 저장했고, 그러면 discovery 가 메일 API 대신 홈 API 를 관찰하게 된다.
+> **이 Enter 는 최초 설정에서 딱 한 번뿐이고, 이후 자동 실행에는 어떤 입력도 요구하지 않는다.**
+
+### mail_url 저장 전 안전 검증
+
+Enter 를 눌렀다고 무조건 저장하지 않는다. 아래 중 하나 이상이 관찰되어야 한다.
+
+| 근거 | 뜻 |
+|------|-----|
+| **A** | 메일 목록으로 보이는 JSON 호출이 실제로 관찰됨 (행에 제목 계열 키 + 날짜/ID 계열 키, 2행 이상) |
+| **B** | 사용자가 "받은메일함에 도착했다"고 Enter 로 명시 확인 |
+| **C** | 반복되는 행 컨테이너가 DOM 에서 관찰됨 |
+
+B 만 있고 A·C 가 모두 없으면 **저장을 거부하고 exit 20** 으로 끝난다.
+홈 화면에서 Enter 를 눌러도 `mail_url` 이 홈으로 굳지 않는다.
 
 **KAIST ID/비밀번호는 저장하지 않는다.** 코드에 비밀번호를 다루는 경로 자체가 없고,
 `test_no_password_handling_anywhere_in_the_agent` 가 AST 로 이를 고정한다.
@@ -516,11 +550,27 @@ python scripts\dooray_web_agent.py --discover
 Dooray 메일 화면의 DOM 은 여기서 한 번도 본 적이 없다. **그래서 selector 를 추측해 넣지 않았다.**
 `scripts/ggongbab/web/dooray_ui.json` 은 `verified: false` 에 전부 빈 값으로 나간다.
 
-`--discover` 는 실제 세션에서 메일 화면이 **무엇을 호출하는지**를 기록한다.
-결과는 `.local/dooray-discovery.json` 에 **가림 처리**되어 저장된다. URL 은 쿼리 값을 `<v>` 로 지우고,
-응답 본문·헤더·쿠키·메일 텍스트는 아예 담지 않는다.
+`--discover` 는 저장된 `mail_url` 을 열고, 로그인 상태와 **메일 화면인지**를 먼저 확인한 뒤
+12초쯤 XHR/fetch 를 관찰하고 **받은메일함을 reload 해서 목록 호출이 실제로 한 번 더 발생하게** 한다.
+(`--observe-seconds` 로 조절) 메일 화면이 아니면 exit 20 으로 멈추고 `--setup` 을 다시 하라고 알린다.
 
-그 보고서를 보고 `.local/dooray-ui.json` 을 채운 뒤 `"verified": true` 로 바꾼다.
+결과는 `.local/dooray-discovery.json` 에 **가림 처리**되어 저장된다.
+
+* URL 쿼리 **값**은 `<v>` 로 치환 (`token=<v>`). 경로에 섞인 주소는 `[email]` 로.
+* JSON 응답은 **형태만** 기록한다. **키 이름과 행 수**이고 **값은 절대 담지 않는다.**
+  키 이름은 내용이 아니라 스키마라서, 이것 덕분에 contract 를 두 번 추측하지 않고 채울 수 있다.
+* 응답 본문·헤더·쿠키·메일 텍스트는 저장하지 않는다.
+
+호출은 세 갈래로 분류되고 **선정 이유**가 함께 남는다.
+
+| 분류 | 판정 근거 예 |
+|------|--------------|
+| `mailListCandidates` | content-type json · 행에 제목 계열 키 · 날짜 계열 키 · N행 · 2회 이상 호출 · reload 후 재발생 · 메일 화면에서 관찰됨 |
+| `mailDetailCandidates` | 단일 객체 + 본문 계열 키에 200자 넘는 텍스트 |
+| `otherJsonCalls` / `nonJsonCalls` | 나머지 |
+
+그 보고서를 보고 `.local/dooray-ui.json` 을 채운 뒤 `"verified": true` 로 **직접** 바꾼다.
+**`--setup` 도 `--discover` 도 `verified` 를 자동으로 true 로 만들지 않는다.** 응답 shape 를 사람이 확인한 뒤에 확정한다.
 우선순위는 **`list_api`**(웹앱이 쓰는 내부 JSON endpoint)다. DOM 보다 안정적이고,
 목록 조회만으로는 메일이 열리지 않는다. 없으면 DOM selector 로 대체한다.
 
@@ -544,11 +594,16 @@ python scripts\dooray_web_agent.py --run --since-last-run --run-pipeline
 | `--dry-run` | 후보만 보고, 업무 등록·상태 저장 안 함 |
 | `--subject-only` | **메일 본문을 열지 않는다.** 읽음 상태가 바뀌지 않음 |
 | `--headed` | 디버깅용으로 브라우저를 보이게 |
+| `--observe-seconds` | `--discover` 관찰 시간 (기본 12) |
 | `--selftest` | 무해한 업무 1건을 만들어 쓰기 권한만 확인 |
 
-> **읽음 상태 주의.** 본문을 열면 메일함에서 그 메일이 **읽음으로 바뀐다.**
-> 업무에 본문을 담으려면 열어야 하므로 기본값은 여는 쪽이다. 읽음 상태를 건드리고 싶지 않으면
-> `--subject-only` 를 쓴다. 이 경우 업무에는 제목과 목록 미리보기만 들어간다.
+> **읽음 상태 정책.** 본문을 열면 메일함에서 그 메일이 **읽음으로 바뀐다.**
+> 이번 목적 중 하나가 "이미 읽은 9월 메일 backfill" 이므로 과거 backfill 에서 본문을 여는 것은 문제가 없다.
+> 읽지 않은 메일까지 건드리고 싶지 않으면 `--subject-only` 를 쓴다 (업무에 제목 + 목록 미리보기만 들어감).
+>
+> `--preserve-unread` 같은 세밀한 옵션은 **아직 만들지 않았다.** 읽음 여부를 실제로 읽을 수 있어야
+> 구현할 수 있는데, 그런 필드가 존재하는지는 discovery 전에는 알 수 없다. 추측 필드는 만들지 않는다.
+> `--discover` 보고서의 `observedReadStateKeys` 에 실제 키가 잡히면 그때 구현한다.
 
 ### 세션 만료
 

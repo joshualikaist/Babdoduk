@@ -74,6 +74,17 @@ class MailHeader:
         return f"{self.body or self.preview}"
 
 
+# Key-name heuristics used only to CLASSIFY observed responses and to explain the
+# classification in the report. They are never used to guess a URL or a selector,
+# and a classification never sets `verified` by itself.
+SUBJECT_KEYS = {"subject", "title", "mailsubject", "mailtitle"}
+DATE_KEYS = {"receivedat", "sentat", "createdat", "date", "receiveddate", "senddate", "receivedtime"}
+ID_KEYS = {"id", "mailid", "messageid", "seq", "uid", "mailseq"}
+BODY_KEYS = {"body", "content", "html", "text", "mailbody", "contents"}
+READ_KEYS = {"read", "isread", "unread", "isunread", "readflag", "unreadflag", "readyn", "seen"}
+MAX_INSPECT_BYTES = 2_000_000
+
+
 def parse_day(value: Any) -> Optional[date]:
     if value is None:
         return None
@@ -114,68 +125,224 @@ def redact(url: str) -> str:
     return base + "?" + "&".join(f"{k}=<v>" for k in keys)
 
 
-def discover(session: Session, out_path: Path, settle_seconds: int = 12) -> dict[str, Any]:
-    """Record what the mail page actually does. No content is captured.
+def shape_of(payload: Any) -> dict[str, Any]:
+    """Describe a JSON response by SHAPE only: key names and counts, never values.
 
-    The report holds request shapes and DOM landmark counts only: no response
-    bodies, no headers, no cookies, no mail text, no addresses.
+    Key names are schema, not content, so they are safe to write down and they are
+    what makes filling the contract possible without a second guessing round.
     """
-    calls: list[dict[str, Any]] = []
-    page = session.page
+    rows = _find_rows(payload)
+    if rows:
+        keys: list[str] = []
+        for row in rows[:5]:
+            for key in row:
+                if key not in keys:
+                    keys.append(key)
+        return {"kind": "rows", "rowCount": len(rows), "rowKeys": keys[:30]}
+    if isinstance(payload, dict):
+        target = payload.get("result") if isinstance(payload.get("result"), dict) else payload
+        keys = list(target.keys())[:30] if isinstance(target, dict) else []
+        longest = 0
+        if isinstance(target, dict):
+            for value in target.values():
+                if isinstance(value, str):
+                    longest = max(longest, len(value))
+                elif isinstance(value, dict):
+                    for nested in value.values():
+                        if isinstance(nested, str):
+                            longest = max(longest, len(nested))
+        return {"kind": "object", "objectKeys": keys, "longestTextLength": longest}
+    return {"kind": type(payload).__name__}
 
-    def on_response(response) -> None:  # noqa: ANN001
+
+def _lower(names: Any) -> set[str]:
+    return {str(n).lower() for n in (names or [])}
+
+
+def classify_call(call: dict[str, Any]) -> tuple[str, list[str]]:
+    """(category, reasons). Categories: mail-list / mail-detail / other."""
+    reasons: list[str] = []
+    shape = call.get("shape") or {}
+    content_type = call.get("contentType") or ""
+    if "json" in content_type:
+        reasons.append("content-type json")
+    if call.get("hitCount", 1) > 1:
+        reasons.append(f"called {call['hitCount']}x")
+    if call.get("afterReload"):
+        reasons.append("fired again after reloading the inbox")
+    if call.get("onMailScreen"):
+        reasons.append("observed while the mail screen was open")
+
+    if shape.get("kind") == "rows":
+        keys = _lower(shape.get("rowKeys"))
+        has_subject = bool(keys & SUBJECT_KEYS)
+        has_when = bool(keys & DATE_KEYS)
+        has_id = bool(keys & ID_KEYS)
+        if has_subject:
+            reasons.append("rows carry a subject-like key")
+        if has_when:
+            reasons.append("rows carry a date-like key")
+        if has_id:
+            reasons.append("rows carry an id-like key")
+        reasons.append(f"{shape.get('rowCount')} rows")
+        if has_subject and (has_when or has_id) and shape.get("rowCount", 0) >= 2:
+            return "mail-list", reasons
+    if shape.get("kind") == "object":
+        keys = _lower(shape.get("objectKeys"))
+        if keys & BODY_KEYS and shape.get("longestTextLength", 0) > 200:
+            reasons.append("single object with a long body-like field")
+            return "mail-detail", reasons
+    return "other", reasons
+
+
+class NetworkObserver:
+    """Collects XHR/fetch shapes from a page. Nothing is persisted here."""
+
+    def __init__(self, page):  # noqa: ANN001
+        self.page = page
+        self.calls: dict[str, dict[str, Any]] = {}
+        self._attached = False
+        self.after_reload = False
+        self.on_mail_screen = False
+
+    def _on_response(self, response) -> None:  # noqa: ANN001
         try:
             request = response.request
             if request.resource_type not in ("xhr", "fetch"):
                 return
-            calls.append({
-                "method": request.method,
-                "url": redact(response.url),
-                "status": response.status,
-                "contentType": (response.header_value("content-type") or "").split(";")[0],
-            })
-        except Exception:  # noqa: BLE001 - discovery must never break the page
+            content_type = (response.header_value("content-type") or "").split(";")[0]
+            key = f"{request.method} {redact(response.url)}"
+            entry = self.calls.get(key)
+            if entry is None:
+                entry = {
+                    "method": request.method,
+                    "url": redact(response.url),
+                    "status": response.status,
+                    "contentType": content_type,
+                    "hitCount": 0,
+                    "afterReload": False,
+                    "onMailScreen": False,
+                    "shape": None,
+                }
+                self.calls[key] = entry
+            entry["hitCount"] += 1
+            entry["afterReload"] = entry["afterReload"] or self.after_reload
+            entry["onMailScreen"] = entry["onMailScreen"] or self.on_mail_screen
+            if entry["shape"] is None and "json" in content_type and response.status < 400:
+                length = response.header_value("content-length")
+                if length and length.isdigit() and int(length) > MAX_INSPECT_BYTES:
+                    return
+                try:
+                    entry["shape"] = shape_of(response.json())
+                except Exception:  # noqa: BLE001 - body may be gone or not JSON
+                    pass
+        except Exception:  # noqa: BLE001 - observation must never break the page
             pass
 
-    page.on("response", on_response)
-    try:
-        page.wait_for_timeout(settle_seconds * 1000)
-        try:
-            page.mouse.wheel(0, 2000)
-            page.wait_for_timeout(2500)
-        except Exception:  # noqa: BLE001
-            pass
-    finally:
-        try:
-            page.remove_listener("response", on_response)
-        except Exception:  # noqa: BLE001
-            pass
+    def start(self) -> None:
+        if not self._attached:
+            self.page.on("response", self._on_response)
+            self._attached = True
 
+    def stop(self) -> None:
+        if self._attached:
+            try:
+                self.page.remove_listener("response", self._on_response)
+            except Exception:  # noqa: BLE001
+                pass
+            self._attached = False
+
+    # -- findings ------------------------------------------------------
+    def classified(self) -> dict[str, list[dict[str, Any]]]:
+        buckets: dict[str, list[dict[str, Any]]] = {"mail-list": [], "mail-detail": [], "other": []}
+        for call in self.calls.values():
+            category, reasons = classify_call(call)
+            row = dict(call)
+            row["why"] = reasons
+            buckets[category].append(row)
+        for rows in buckets.values():
+            rows.sort(key=lambda r: (-(r.get("hitCount") or 0), r["url"]))
+        return buckets
+
+    def list_candidates(self) -> list[dict[str, Any]]:
+        return self.classified()["mail-list"]
+
+    def observed_read_state_keys(self) -> list[str]:
+        """Which read/unread key names actually exist. Empty means: do not invent one."""
+        found: list[str] = []
+        for call in self.calls.values():
+            shape = call.get("shape") or {}
+            for key in shape.get("rowKeys") or []:
+                if str(key).lower() in READ_KEYS and key not in found:
+                    found.append(str(key))
+        return found
+
+
+def dom_row_candidates(page) -> dict[str, Any]:  # noqa: ANN001
     try:
-        landmarks = page.evaluate(_LANDMARK_JS)
+        return page.evaluate(_LANDMARK_JS)
     except Exception as exc:  # noqa: BLE001
-        landmarks = {"error": exc.__class__.__name__}
+        return {"error": exc.__class__.__name__}
 
-    seen: set[str] = set()
-    unique_calls = []
-    for call in calls:
-        key = f"{call['method']} {call['url']}"
-        if key in seen:
-            continue
-        seen.add(key)
-        unique_calls.append(call)
 
+def mail_screen_evidence(observer: "NetworkObserver", page) -> dict[str, Any]:  # noqa: ANN001
+    """Objective signals that the current page is a mail list, not Home."""
+    landmarks = dom_row_candidates(page)
+    repeated = [r for r in (landmarks.get("repeated") or []) if r.get("count", 0) >= 10]
+    lists = observer.list_candidates()
+    return {
+        "mailListCallObserved": bool(lists),            # signal A
+        "repeatedRowContainers": len(repeated),         # signal C
+        "landmarks": landmarks,
+        "listCandidateCount": len(lists),
+    }
+
+
+def write_discovery_report(observer: NetworkObserver, page, out_path: Path, *,  # noqa: ANN001
+                           page_url: str, confirmed_by_user: bool) -> dict[str, Any]:
+    buckets = observer.classified()
+    evidence = mail_screen_evidence(observer, page)
     report = {
         "recordedAt": datetime.now(KST).isoformat(timespec="seconds"),
-        "pageUrl": redact(session.url),
-        "note": "Redacted: URL shapes and DOM landmark counts only. No bodies, cookies or mail text.",
-        "jsonCalls": [c for c in unique_calls if "json" in (c["contentType"] or "")],
-        "otherCalls": [c for c in unique_calls if "json" not in (c["contentType"] or "")][:40],
-        "domLandmarks": landmarks,
+        "pageUrl": redact(page_url),
+        "note": ("Redacted. URL query values are replaced with <v>. JSON responses are summarised by "
+                 "SHAPE ONLY - key names and row counts - never values. No bodies, headers, cookies, "
+                 "addresses or mail text are stored."),
+        "evidence": {
+            "A_mailListCallObserved": evidence["mailListCallObserved"],
+            "B_confirmedByUser": confirmed_by_user,
+            "C_repeatedRowContainers": evidence["repeatedRowContainers"],
+        },
+        "mailListCandidates": buckets["mail-list"],
+        "mailDetailCandidates": buckets["mail-detail"],
+        "otherJsonCalls": [c for c in buckets["other"] if "json" in (c.get("contentType") or "")][:40],
+        "nonJsonCalls": [{"method": c["method"], "url": c["url"], "status": c["status"]}
+                         for c in buckets["other"] if "json" not in (c.get("contentType") or "")][:30],
+        "observedReadStateKeys": observer.observed_read_state_keys(),
+        "domLandmarks": evidence["landmarks"],
+        "nextStep": ("Copy the chosen list_api (and detail_api) into .local/dooray-ui.json, confirm the "
+                     "response shape is really the inbox, then set \"verified\": true by hand."),
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return report
+
+
+def observe(session: Session, observer: NetworkObserver, seconds: int, *, reload: bool = False) -> None:
+    """Watch the page for a while, optionally reloading to force the list call."""
+    page = session.page
+    if reload:
+        observer.after_reload = True
+        try:
+            page.reload(wait_until="domcontentloaded")
+        except Exception:  # noqa: BLE001
+            pass
+    page.wait_for_timeout(max(1, seconds) * 1000)
+    try:
+        page.mouse.wheel(0, 1500)
+        page.wait_for_timeout(2000)
+    except Exception:  # noqa: BLE001
+        pass
 
 
 # ---------------------------------------------------------------------------

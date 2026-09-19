@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Unattended Dooray mailbox agent: scan -> filter -> register as project task.
 
-One manual SSO login, then no human input:
+One manual SSO login plus one Enter to confirm the inbox, then no human input:
 
-    python scripts/dooray_web_agent.py --setup --url https://<your-dooray-host>/
+    python scripts/dooray_web_agent.py --setup        # opens https://kaist.gov-dooray.com/
     python scripts/dooray_web_agent.py --discover
     python scripts/dooray_web_agent.py --run --run-pipeline
 
@@ -29,10 +29,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ggongbab.config import KST, load_settings  # noqa: E402
 from ggongbab.prefilter import classify  # noqa: E402
 from ggongbab.web import browser as browser_mod  # noqa: E402
-from ggongbab.web.browser import browser_session, run_setup  # noqa: E402
+from ggongbab.web import exit_codes  # noqa: E402
+from ggongbab.web.browser import DEFAULT_DOORAY_URL, browser_session, wait_for_login  # noqa: E402
 from ggongbab.web.exit_codes import (NAMES, SUCCESS, AgentError, AuthRequired,  # noqa: E402
                                      PipelineFailed, UiContractError)
-from ggongbab.web.mail_reader import discover, list_mails, open_body  # noqa: E402
+from ggongbab.web.mail_reader import (NetworkObserver, list_mails, observe,  # noqa: E402
+                                      open_body, write_discovery_report)
 from ggongbab.web.state import AgentState  # noqa: E402
 from ggongbab.web.task_writer import DEFAULT_PROJECT_NAME, MailPayload, TaskWriter  # noqa: E402
 from ggongbab.web.ui_contract import load_contract  # noqa: E402
@@ -54,18 +56,109 @@ def log(message: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+def _report_findings(report: dict) -> None:
+    evidence = report.get("evidence") or {}
+    log("")
+    log("evidence that this page is the mail list:")
+    log(f"  A  mail-list JSON call observed : {'yes' if evidence.get('A_mailListCallObserved') else 'NO'}")
+    log(f"  B  confirmed by you             : {'yes' if evidence.get('B_confirmedByUser') else 'no'}")
+    log(f"  C  repeated row containers      : {evidence.get('C_repeatedRowContainers', 0)}")
+
+    for label, key in (("mail-list candidates", "mailListCandidates"),
+                       ("mail-detail candidates", "mailDetailCandidates")):
+        rows = report.get(key) or []
+        log("")
+        log(f"{label}: {len(rows)}")
+        for call in rows[:6]:
+            log(f"  {call['method']:4} {call['status']}  {call['url']}")
+            log(f"       why: {', '.join(call.get('why') or [])}")
+    others = report.get("otherJsonCalls") or []
+    if others:
+        log("")
+        log(f"other JSON calls: {len(others)} (see the report file)")
+    read_keys = report.get("observedReadStateKeys") or []
+    log("")
+    log(f"read/unread keys actually present in the data: {read_keys or 'none observed'}")
+    if not read_keys:
+        log("  -> no read-state flag was seen, so no --preserve-unread option is offered.")
+
+
+def _confirm(prompt: str) -> bool:
+    """Wait for Enter. False when there is no one to ask.
+
+    isatty() is not a reliable guard on Windows, where NUL is a character device
+    and reports as a terminal, so the real check is that reading gives EOF.
+    """
+    try:
+        input(prompt)
+        return True
+    except (EOFError, KeyboardInterrupt):
+        return False
+
+
 def cmd_setup(args) -> int:
     contract = load_contract(CONTRACT_FILE)
-    start = args.url or contract.mail_url
-    if not start:
-        log("[error] first setup needs the Dooray address")
-        log("        python scripts/dooray_web_agent.py --setup --url https://<your-dooray-host>/")
-        return 1
-    settled = run_setup(PROFILE_DIR, contract, start, CONTRACT_FILE, log=log)
-    log(f"mail_url recorded: {settled.split('?')[0]}")
+    start = args.url or DEFAULT_DOORAY_URL
+    log(f"Opening {start}")
+    log("A browser window will open. Log in with KAIST SSO there.")
+    log("Nothing is typed for you, and no password is read or stored.")
+    with browser_session(PROFILE_DIR, contract, headless=False, start_url=start) as session:
+        landing = wait_for_login(session, log=log)
+        log("")
+        log("로그인되었습니다.")
+        log(f"  landing page: {landing.split('?')[0]}")
+        log("")
+        log("이 화면이 받은메일함이 아닐 수 있습니다. 브라우저에서")
+        log("  [메일] -> [받은메일함] 으로 이동하세요.")
+        log("메일 목록이 보이면 이 터미널에서 Enter를 누르세요.")
+        log("(이 Enter는 최초 설정에서 한 번뿐입니다. 이후 자동 실행에는 입력이 없습니다.)")
+
+        # Watch from here, so the list call the inbox makes is captured while the
+        # user navigates to it.
+        observer = NetworkObserver(session.page)
+        observer.start()
+        try:
+            if not _confirm("\nEnter를 누르면 현재 페이지를 받은메일함으로 기록합니다... "):
+                log("")
+                log("[error] --setup needs an interactive terminal: it waits for you to")
+                log("        reach 받은메일함 and press Enter. Run it from a normal")
+                log("        Command Prompt or PowerShell window, not from a scheduled task.")
+                return 1
+            observer.on_mail_screen = True
+            mail_url = session.page.url or ""
+            if not mail_url or session.contract.looks_like_login(mail_url):
+                raise AuthRequired("the browser is back on a login screen",
+                                   hint="run --setup again and finish the SSO login")
+            log("recording what this page loads...")
+            observe(session, observer, seconds=6, reload=True)
+            report = write_discovery_report(observer, session.page, DISCOVERY_FILE,
+                                            page_url=mail_url, confirmed_by_user=True)
+        finally:
+            observer.stop()
+
+    evidence = report.get("evidence") or {}
+    corroborated = evidence.get("A_mailListCallObserved") or evidence.get("C_repeatedRowContainers", 0) >= 1
+    if not corroborated:
+        log("")
+        log("[refused] nothing on that page looked like a mail list.")
+        log("          No mail-list JSON call and no repeated row containers were seen.")
+        log("          mail_url was NOT saved. Re-run --setup and confirm while the")
+        log("          받은메일함 list is actually on screen.")
+        _report_findings(report)
+        return exit_codes.UI_CHANGED
+
+    contract.mail_url = mail_url
+    contract.verified = False       # a human still confirms the endpoint shape
+    contract.save(CONTRACT_FILE)
     log("")
-    log("Next: python scripts/dooray_web_agent.py --discover")
-    log("      That records how the mail page loads, so --run never has to guess.")
+    log(f"mail_url recorded: {mail_url.split('?')[0]}")
+    log(f"session stored in  {PROFILE_DIR}")
+    _report_findings(report)
+    log("")
+    log(f"report: {DISCOVERY_FILE}")
+    log("Next: pick the list_api from the candidates above, put it in")
+    log(f"      {CONTRACT_FILE}, then set \"verified\": true by hand.")
+    log("      Re-run --discover any time to refresh the candidates.")
     return SUCCESS
 
 
@@ -73,20 +166,31 @@ def cmd_discover(args) -> int:
     contract = load_contract(CONTRACT_FILE)
     if not contract.mail_url:
         raise UiContractError("no mailbox URL recorded yet", hint="run --setup first")
+    log(f"opening {contract.mail_url.split('?')[0]}")
     with browser_session(PROFILE_DIR, contract, headless=False) as session:
         session.assert_authenticated()
-        report = discover(session, DISCOVERY_FILE)
-    json_calls = report.get("jsonCalls") or []
-    log(f"recorded {len(json_calls)} JSON call shape(s) -> {DISCOVERY_FILE}")
-    for call in json_calls[:15]:
-        log(f"  {call['method']:4} {call['status']}  {call['url']}")
-    landmarks = (report.get("domLandmarks") or {}).get("repeated") or []
-    if landmarks:
-        log("repeated DOM containers (mail rows are usually among these):")
-        for row in landmarks[:10]:
-            log(f"  {row['count']:>4}x  {row['selector']}")
+        observer = NetworkObserver(session.page)
+        observer.on_mail_screen = True
+        observer.start()
+        try:
+            observe(session, observer, seconds=args.observe_seconds)
+            # Reload so the inbox list request fires again while we are watching.
+            observe(session, observer, seconds=max(6, args.observe_seconds // 2), reload=True)
+            report = write_discovery_report(observer, session.page, DISCOVERY_FILE,
+                                            page_url=session.url, confirmed_by_user=False)
+        finally:
+            observer.stop()
+
+    evidence = report.get("evidence") or {}
+    if not (evidence.get("A_mailListCallObserved") or evidence.get("C_repeatedRowContainers", 0) >= 1):
+        _report_findings(report)
+        raise UiContractError(
+            "the recorded mail_url does not look like a mail list",
+            hint="run --setup again and confirm while 받은메일함 is on screen")
+    _report_findings(report)
     log("")
-    log(f"Fill {CONTRACT_FILE.name} using this report, then set \"verified\": true.")
+    log(f"report: {DISCOVERY_FILE}")
+    log(f"Fill {CONTRACT_FILE.name} from the candidates above, then set \"verified\": true.")
     log("Until it is verified, --run exits 20 without touching anything.")
     return SUCCESS
 
@@ -211,7 +315,9 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--run", action="store_true", help="unattended scan and register")
     mode.add_argument("--selftest", action="store_true", help="create one harmless task to verify write access")
 
-    parser.add_argument("--url", help="Dooray address, needed on the first --setup")
+    parser.add_argument("--url", help=f"Dooray address for --setup (default {DEFAULT_DOORAY_URL})")
+    parser.add_argument("--observe-seconds", type=int, default=12,
+                        help="how long --discover watches the inbox (default 12)")
     parser.add_argument("--from", dest="date_from", type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
                         metavar="YYYY-MM-DD", help="earliest received date to scan")
     parser.add_argument("--to", dest="date_to", type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
