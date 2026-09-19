@@ -13,6 +13,7 @@ file, by design:
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 import time
 from contextlib import contextmanager
@@ -168,50 +169,152 @@ def location_of(url: str) -> str:
     return f"{parsed.scheme}://{parsed.netloc}{parsed.path}" if parsed.netloc else (url or "")
 
 
-# Generic application readiness. No selector is guessed: this only asks whether a
-# document finished loading and painted some text.
-_READY_JS = """
+# Reports the document's state instead of passing judgement in the page. Asking
+# for `readyState === 'complete'` was too strict: a Dooray SPA that the user is
+# already using can sit at `interactive`, and the mail view renders into a frame,
+# leaving the top document's text nearly empty.
+_STATE_JS = """
 () => {
   try {
-    return document.readyState === 'complete'
-        && !!document.body
-        && (document.body.innerText || '').trim().length > 0;
-  } catch (e) { return false; }
+    return {
+      ready: document.readyState || '',
+      body: !!document.body,
+      text: ((document.body && document.body.innerText) || '').trim().length
+    };
+  } catch (e) { return { ready: 'error', body: false, text: 0 }; }
 }
 """
 
+# The mail application area, confirmed against the live tenant
+# (https://kaist.gov-dooray.com/mail/systems/inbox).
+MAIL_PATH = re.compile(r"^/mail(/|$)", re.I)
 
-def authenticated_pages(context, contract: UiContract, host: str = "") -> list:  # noqa: ANN001
-    """Open pages that look like the signed-in application, best first.
+# classification -> how good a login signal it is
+RANKS = {
+    "authenticated-mail": 4,
+    "authenticated-mail-frame": 3,
+    "authenticated-app": 2,
+    "app-root": 1,
+    "identity-provider": 0,
+    "other-host": 0,
+    "not-ready": 0,
+    "unreadable": 0,
+}
 
-    Excluded: closed pages, other hosts, identity-provider/login URLs, and
-    documents that have not actually rendered anything yet.
-    """
-    found = []
-    for page in list(getattr(context, "pages", []) or []):
+
+@dataclass
+class PageObservation:
+    page: Any
+    url: str
+    path: str = "/"
+    frame_url: str = ""
+    ready: str = ""
+    has_body: bool = False
+    text_len: int = 0
+    classification: str = "unreadable"
+
+    @property
+    def rank(self) -> int:
+        return RANKS.get(self.classification, 0)
+
+    @property
+    def authenticated(self) -> bool:
+        return self.rank > 0
+
+    def lines(self) -> list[str]:
+        out = [f"  page: {urlparse(self.url).path or '/'}"]
+        if self.frame_url:
+            out.append(f"  frame: {urlparse(self.frame_url).path or '/'}")
+        if self.ready:
+            out.append(f"  readyState: {self.ready}")
+        out.append(f"  classification: {self.classification}")
+        return out
+
+
+def _mail_frame_url(page, host: str) -> str:  # noqa: ANN001
+    """A frame under the mail area, if the shell hosts the mailbox in one."""
+    try:
+        frames = list(page.frames)
+    except Exception:  # noqa: BLE001
+        return ""
+    for frame in frames:
         try:
-            if page.is_closed():
-                continue
-            url = page.url or ""
+            url = frame.url or ""
         except Exception:  # noqa: BLE001
             continue
         if not url or url.startswith("about:"):
             continue
         if host and urlparse(url).netloc.lower() != host.lower():
             continue
-        if contract.looks_like_login(url):
-            continue
-        try:
-            if not page.evaluate(_READY_JS):
-                continue
-        except Exception:  # noqa: BLE001 - mid-navigation or cross-origin
-            continue
-        path = urlparse(url).path or "/"
-        # A deeper path means the app routed somewhere; "/" is often just the
-        # moment before the redirect to the identity provider starts.
-        found.append((0 if path in ("", "/") else 1, page, url))
-    found.sort(key=lambda item: item[0], reverse=True)
-    return [(page, url) for _rank, page, url in found]
+        if MAIL_PATH.match(urlparse(url).path or "/"):
+            return url
+    return ""
+
+
+def observe_page(page, contract: UiContract, host: str = "") -> Optional[PageObservation]:  # noqa: ANN001
+    """What this page actually is, with a reason - never a bare yes/no."""
+    try:
+        if page.is_closed():
+            return None
+        url = page.url or ""
+    except Exception:  # noqa: BLE001
+        return None
+    if not url or url.startswith("about:"):
+        return None
+    path = urlparse(url).path or "/"
+    obs = PageObservation(page=page, url=url, path=path)
+    if host and urlparse(url).netloc.lower() != host.lower():
+        obs.classification = "other-host"
+        return obs
+    if contract.looks_like_login(url):
+        obs.classification = "identity-provider"
+        return obs
+
+    state: dict = {}
+    try:
+        state = page.evaluate(_STATE_JS) or {}
+    except Exception:  # noqa: BLE001 - mid-navigation
+        state = {}
+    obs.ready = str(state.get("ready") or "")
+    obs.has_body = bool(state.get("body"))
+    obs.text_len = int(state.get("text") or 0)
+    reachable = bool(obs.ready) and obs.ready != "error"
+
+    obs.frame_url = _mail_frame_url(page, host)
+    if MAIL_PATH.match(path):
+        # Being inside the mail application is itself the signal. A rendered
+        # mailbox can still report `interactive`, so readiness is not demanded.
+        obs.classification = "authenticated-mail" if reachable or obs.has_body else "not-ready"
+        return obs
+    if obs.frame_url:
+        obs.classification = "authenticated-mail-frame" if reachable or obs.has_body else "not-ready"
+        return obs
+    if path not in ("", "/"):
+        obs.classification = ("authenticated-app"
+                              if obs.has_body and obs.ready in ("interactive", "complete")
+                              else "not-ready")
+        return obs
+    # The bare root is the weakest signal: it is also what shows for a moment
+    # before the redirect to the identity provider starts.
+    obs.classification = ("app-root"
+                          if obs.has_body and obs.ready == "complete" and obs.text_len > 0
+                          else "not-ready")
+    return obs
+
+
+def observe_pages(context, contract: UiContract, host: str = "") -> list[PageObservation]:  # noqa: ANN001
+    out: list[PageObservation] = []
+    for page in list(getattr(context, "pages", []) or []):
+        obs = observe_page(page, contract, host)
+        if obs is not None:
+            out.append(obs)
+    out.sort(key=lambda o: o.rank, reverse=True)
+    return out
+
+
+def authenticated_pages(context, contract: UiContract, host: str = "") -> list:  # noqa: ANN001
+    """Signed-in pages, best first, as (page, url)."""
+    return [(o.page, o.url) for o in observe_pages(context, contract, host) if o.authenticated]
 
 
 def wait_for_login(session: Session, timeout_seconds: int = SETUP_TIMEOUT_SECONDS, log=print,
@@ -243,27 +346,35 @@ def wait_for_login(session: Session, timeout_seconds: int = SETUP_TIMEOUT_SECOND
 
     say("[setup] waiting for SSO login...")
     while time.time() < deadline:
-        try:
-            pages = list(getattr(session.context, "pages", []) or [])
-        except Exception:  # noqa: BLE001
-            pages = []
-        candidates = authenticated_pages(session.context, session.contract, host)
-        if candidates:
-            page, url = candidates[0]
-            if url == streak_url:
+        observations = observe_pages(session.context, session.contract, host)
+        best = observations[0] if observations and observations[0].authenticated else None
+
+        # Report what was actually seen. The old message claimed "identity
+        # provider" whenever no candidate was found, which was often untrue: the
+        # page could simply have failed a readiness check.
+        report = ["[setup] observed:"]
+        for obs in observations[:3]:
+            report.extend(obs.lines())
+        if not observations:
+            report.append("  (no open page yet)")
+        say("\n".join(report))
+
+        if best is not None:
+            key = f"{id(best.page)}|{best.url}"
+            if key == streak_url:
                 streak += 1
             else:
-                streak_url, streak = url, 1
-                say(f"[setup] candidate page: {location_of(url)}")
+                streak_url, streak = key, 1
             if streak >= stable_polls:
-                session.page = page
-                say("[setup] authenticated Dooray page detected")
+                session.page = best.page
+                log("[setup] authenticated Dooray page detected")
                 log("[setup] continuing...")
-                return url
+                return best.url
         else:
             streak_url, streak = "", 0
-            say(f"[setup] pages observed: {len(pages)} · still on the identity provider...")
         time.sleep(poll_seconds)
+    final = observe_pages(session.context, session.contract, host)
+    seen = ", ".join(f"{urlparse(o.url).path or '/'} ({o.classification})" for o in final[:3]) or "nothing"
     raise AuthRequired(
-        f"no signed-in Dooray page appeared within {timeout_seconds // 60} minutes",
+        f"no signed-in Dooray page appeared within {timeout_seconds // 60} minutes; last seen: {seen}",
         hint="run --setup again and finish the SSO login in the browser window")

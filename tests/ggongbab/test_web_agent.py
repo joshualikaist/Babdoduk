@@ -1111,12 +1111,20 @@ APP_URL = "https://kaist.gov-dooray.com/home"
 class FakeLoginPage:
     """A page whose URL can change between polls, like a real redirect chain."""
 
-    def __init__(self, *urls, ready=True, closed=False):
+    def __init__(self, *urls, ready=True, closed=False, ready_state=None,
+                 text=50, frame_urls=()):
         self._urls = list(urls)
         self._ready = ready
         self._closed = closed
+        self._ready_state = ready_state or ("complete" if ready else "loading")
+        self._text = text if ready else 0
+        self._frame_urls = list(frame_urls)
         self.url = self._urls[0]
         self.evaluations = 0
+
+    @property
+    def frames(self):
+        return [type("F", (), {"url": u})() for u in [self.url] + self._frame_urls]
 
     def advance(self):
         if len(self._urls) > 1:
@@ -1128,7 +1136,7 @@ class FakeLoginPage:
 
     def evaluate(self, _js):
         self.evaluations += 1
-        return self._ready
+        return {"ready": self._ready_state, "body": bool(self._ready), "text": self._text}
 
 
 class SteppingContext:
@@ -1265,3 +1273,132 @@ def test_wait_for_login_rereads_the_context_every_poll():
     source = inspect.getsource(browser.wait_for_login)
     assert "session.context" in source
     assert "page = session.page" not in source
+
+
+# --- the mail screen must not be called an identity provider ------------------
+# Real report: the user was logged in and looking at /mail/systems/inbox, and the
+# terminal still said "still on the identity provider".
+MAIL_URL = "https://kaist.gov-dooray.com/mail/systems/inbox"
+
+
+def _observe(page, host=HOST):
+    from ggongbab.web.browser import observe_page
+
+    return observe_page(page, UiContract(), host)
+
+
+def test_A_mail_page_with_interactive_ready_state_is_authenticated():
+    page = FakeLoginPage(MAIL_URL, ready_state="interactive")
+    obs = _observe(page)
+    assert obs.classification == "authenticated-mail"
+    assert obs.authenticated and obs.ready == "interactive"
+
+
+def test_B_mail_page_passes_even_when_the_old_strict_check_would_fail():
+    """Empty body text and a non-complete readyState: the old rule rejected this."""
+    page = FakeLoginPage(MAIL_URL, ready_state="interactive", text=0)
+    obs = _observe(page)
+    assert obs.classification == "authenticated-mail"
+    session = _session(SteppingContext(page), page)
+    assert _wait(session) == MAIL_URL
+
+
+def test_C_mail_in_a_child_frame_selects_the_parent_page():
+    page = FakeLoginPage(ROOT_URL, ready_state="interactive", text=0, frame_urls=[MAIL_URL])
+    obs = _observe(page)
+    assert obs.classification == "authenticated-mail-frame"
+    assert obs.frame_url == MAIL_URL
+    session = _session(SteppingContext(page), page)
+    assert _wait(session) == ROOT_URL
+    assert session.page is page
+
+
+def test_D_identity_provider_still_blocks():
+    page = FakeLoginPage(IDP_URL)
+    assert _observe(page).classification == "identity-provider"
+    session = _session(SteppingContext(page), page)
+    with pytest.raises(AuthRequired):
+        _wait(session, timeout_seconds=1)
+
+
+def test_E_root_flash_then_idp_is_not_a_login():
+    page = FakeLoginPage(ROOT_URL, IDP_URL, IDP_URL, IDP_URL)
+    session = _session(SteppingContext(page), page)
+    with pytest.raises(AuthRequired):
+        _wait(session, stable_polls=3, timeout_seconds=1)
+
+
+def test_F_log_never_claims_identity_provider_when_mail_is_visible():
+    page = FakeLoginPage(MAIL_URL, ready_state="interactive")
+    lines = []
+    session = _session(SteppingContext(page), page)
+    _wait(session, log=lines.append)
+    joined = "\n".join(lines)
+    assert "identity provider" not in joined.lower()
+    assert "/mail/systems/inbox" in joined
+    assert "classification: authenticated-mail" in joined
+
+
+def test_log_shows_the_observed_path_and_ready_state():
+    page = FakeLoginPage(MAIL_URL, ready_state="interactive")
+    lines = []
+    _wait(_session(SteppingContext(page), page), log=lines.append)
+    joined = "\n".join(lines)
+    assert "[setup] observed:" in joined
+    assert "page: /mail/systems/inbox" in joined
+    assert "readyState: interactive" in joined
+
+
+def test_log_reports_the_identity_provider_only_from_a_real_url():
+    page = FakeLoginPage(IDP_URL)
+    lines = []
+    with pytest.raises(AuthRequired):
+        _wait(_session(SteppingContext(page), page), log=lines.append, timeout_seconds=1)
+    joined = "\n".join(lines)
+    assert "classification: identity-provider" in joined
+    assert "page: /idp/multi" in joined
+
+
+def test_timeout_message_says_what_was_last_seen():
+    page = FakeLoginPage(IDP_URL)
+    with pytest.raises(AuthRequired) as exc:
+        _wait(_session(SteppingContext(page), page), timeout_seconds=1)
+    assert "/idp/multi" in str(exc.value) and "identity-provider" in str(exc.value)
+
+
+def test_priority_order_mail_beats_frame_beats_app_beats_root():
+    from ggongbab.web.browser import observe_pages
+
+    root = FakeLoginPage(ROOT_URL)
+    app = FakeLoginPage("https://kaist.gov-dooray.com/project/1")
+    framed = FakeLoginPage("https://kaist.gov-dooray.com/home", frame_urls=[MAIL_URL])
+    mail = FakeLoginPage(MAIL_URL)
+    ranked = observe_pages(SteppingContext(root, app, framed, mail), UiContract(), HOST)
+    assert [o.classification for o in ranked] == [
+        "authenticated-mail", "authenticated-mail-frame", "authenticated-app", "app-root"]
+
+
+def test_unreachable_mail_page_is_not_ready():
+    class Dead(FakeLoginPage):
+        def evaluate(self, _js):
+            raise RuntimeError("execution context destroyed")
+
+    obs = _observe(Dead(MAIL_URL))
+    assert obs.classification == "not-ready" and not obs.authenticated
+
+
+def test_root_still_needs_complete_and_text():
+    assert _observe(FakeLoginPage(ROOT_URL, ready_state="interactive")).classification == "not-ready"
+    assert _observe(FakeLoginPage(ROOT_URL, ready_state="complete", text=0)).classification == "not-ready"
+    assert _observe(FakeLoginPage(ROOT_URL, ready_state="complete", text=20)).classification == "app-root"
+
+
+def test_deep_app_page_accepts_interactive():
+    page = FakeLoginPage("https://kaist.gov-dooray.com/project/123", ready_state="interactive")
+    assert _observe(page).classification == "authenticated-app"
+
+
+def test_mail_frame_on_another_host_is_ignored():
+    page = FakeLoginPage(ROOT_URL, ready_state="interactive", text=0,
+                         frame_urls=["https://evil.example/mail/systems/inbox"])
+    assert _observe(page).classification == "not-ready"

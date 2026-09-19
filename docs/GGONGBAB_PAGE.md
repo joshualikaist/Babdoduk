@@ -55,7 +55,7 @@ KAIST Portal (stub, disabled)                            ─┘
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (243개) |
+| `tests/ggongbab/` | pytest (257개) |
 
 ---
 
@@ -508,10 +508,24 @@ python scripts\dooray_web_agent.py --setup
 
 ```
 [setup] waiting for SSO login...
-[setup] pages observed: 1 · still on the identity provider...
+[setup] observed:
+  page: /idp/multi
+  classification: identity-provider
+[setup] observed:
+  page: /mail/systems/inbox
+  readyState: interactive
+  classification: authenticated-mail
 [setup] authenticated Dooray page detected
 [setup] continuing...
 ```
+
+   로그는 **실제로 관찰한 것만** 말한다. 후보를 못 찾았다는 이유로 "identity provider" 라고 하지 않는다.
+   그 문구는 관찰된 URL 이 실제로 `/idp/`·login·sso 계열일 때만 나온다.
+
+   판정 우선순위는 `/mail/...` 최상위 페이지 → `/mail/...` 프레임을 가진 부모 페이지 →
+   같은 호스트의 다른 깊은 경로 → 안정된 루트 순이다. **`/mail/` 영역에 있다는 것 자체가 강한 신호**이므로
+   `readyState === 'complete'` 를 요구하지 않는다. SPA 는 사용 중에도 `interactive` 에 머무를 수 있고,
+   메일 화면이 프레임에 그려지면 최상위 문서의 텍스트는 거의 비어 있다. 루트 `/` 만 여전히 엄격하게 본다.
 
    로그인 감지는 **열려 있는 모든 탭을 매번 다시 읽는다.** KAIST SSO 는 인증된 앱을 새 탭으로 열 수 있고,
    그때 시작 탭은 `/idp/multi` 에 남는다. 시작 탭 하나만 보던 판은 그래서 타임아웃까지 기다렸다.
