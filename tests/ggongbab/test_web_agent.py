@@ -1866,3 +1866,145 @@ def test_heartbeat_breaks_the_silence_while_nothing_changes(monkeypatch):
     assert beats, "the loop must say something while it waits"
     assert any("identity-provider" in ln for ln in beats)
     assert all("?" not in ln for ln in beats)
+
+
+# --- resident Chrome over CDP -------------------------------------------------
+# Reached after the live trace proved a context escape: page #1 stayed on the
+# KAIST SSO form for 92s while the user finished logging in elsewhere.
+def test_debug_port_is_loopback_only():
+    from ggongbab.web import resident
+
+    assert resident.DEBUG_HOST == "127.0.0.1"
+    assert resident.endpoint(9222) == "http://127.0.0.1:9222"
+    # Comments may mention it; no executable line may use it.
+    lines = Path(resident.__file__).read_text(encoding="utf-8").splitlines()
+    code = " ".join(line.split("#", 1)[0] for line in lines)
+    assert "0.0.0.0" not in code, "the debug port must never bind to a public address"
+
+
+def test_chrome_executable_prefers_the_installed_build(monkeypatch, tmp_path):
+    """Playwright's bundled Chromium is also chrome.exe, so a name check is useless."""
+    from ggongbab.web import resident
+
+    installed = tmp_path / "Program Files" / "Google" / "Chrome" / "Application" / "chrome.exe"
+    installed.parent.mkdir(parents=True)
+    installed.write_text("", encoding="utf-8")
+    monkeypatch.setattr(resident, "WINDOWS_CHROME_PATHS", (str(installed),))
+    assert resident.chrome_executable() == str(installed)
+
+
+def test_chrome_executable_fails_closed_when_absent(monkeypatch, tmp_path):
+    from ggongbab.web import resident
+    from ggongbab.web.resident import ResidentError
+
+    monkeypatch.setattr(resident, "WINDOWS_CHROME_PATHS", (str(tmp_path / "nope.exe"),))
+    monkeypatch.setattr(resident.Path, "home", staticmethod(lambda: tmp_path))
+    with pytest.raises(ResidentError, match="not found"):
+        resident.chrome_executable()
+
+
+def test_launch_arguments_use_the_dedicated_profile_and_loopback(monkeypatch, tmp_path):
+    from ggongbab.web import resident
+
+    captured = {}
+
+    class FakeProc:
+        def poll(self):
+            return None
+
+    def fake_popen(args, **_kw):
+        captured["args"] = args
+        return FakeProc()
+
+    exe = tmp_path / "chrome.exe"
+    exe.write_text("", encoding="utf-8")
+    monkeypatch.setattr(resident, "WINDOWS_CHROME_PATHS", (str(exe),))
+    monkeypatch.setattr(resident.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(resident, "is_running", lambda *_a, **_k: {"Browser": "Chrome/1"})
+
+    profile = tmp_path / "dooray-browser-profile"
+    resident.start_chrome(profile, port=9333, start_url="https://kaist.gov-dooray.com/",
+                          log=lambda *_a: None)
+    args = captured["args"]
+    assert "--remote-debugging-address=127.0.0.1" in args
+    assert "--remote-debugging-port=9333" in args
+    profile_arg = [a for a in args if a.startswith("--user-data-dir=")][0]
+    assert profile_arg.endswith("dooray-browser-profile")
+    # Absolute, because stop_chrome matches the command line.
+    assert str(profile.resolve()) in profile_arg
+    for forbidden in ("Google\\Chrome\\User Data", "--remote-debugging-address=0.0.0.0"):
+        assert not any(forbidden in a for a in args)
+
+
+def test_start_chrome_fails_closed_when_the_port_never_opens(monkeypatch, tmp_path):
+    from ggongbab.web import resident
+    from ggongbab.web.resident import ResidentError
+
+    exe = tmp_path / "chrome.exe"
+    exe.write_text("", encoding="utf-8")
+    monkeypatch.setattr(resident, "WINDOWS_CHROME_PATHS", (str(exe),))
+    monkeypatch.setattr(resident, "START_TIMEOUT_SECONDS", 0)
+    monkeypatch.setattr(resident, "is_running", lambda *_a, **_k: None)
+    monkeypatch.setattr(resident.subprocess, "Popen",
+                        lambda *_a, **_k: type("P", (), {"poll": lambda _s: None})())
+    with pytest.raises(ResidentError, match="debug port"):
+        resident.start_chrome(tmp_path / "p", log=lambda *_a: None)
+
+
+def test_stop_chrome_matches_only_our_profile():
+    from ggongbab.web import resident
+
+    source = Path(resident.__file__).read_text(encoding="utf-8")
+    start = source.index("def stop_chrome(")
+    body = source[start:]
+    assert "CommandLine -like" in body and "marker" in body
+    assert "Stop-Process" in body
+
+
+def test_cdp_flag_is_available_on_the_agent():
+    source = AGENT_PATH.read_text(encoding="utf-8")
+    assert '"--cdp"' in source and '"--debug-port"' in source
+    assert "resident_session" in source
+
+
+def test_open_session_routes_to_the_resident_browser(monkeypatch):
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+
+    calls = {}
+
+    def fake_resident(profile, contract, **kw):
+        calls["resident"] = kw
+        return "resident-session"
+
+    def fake_browser(profile, contract, **kw):
+        calls["playwright"] = kw
+        return "playwright-session"
+
+    monkeypatch.setattr(agent, "resident_session", fake_resident)
+    monkeypatch.setattr(agent, "browser_session", fake_browser)
+    assert agent.open_session(UiContract(), headless=True, cdp=True, port=9333) == "resident-session"
+    assert calls["resident"]["port"] == 9333
+    assert agent.open_session(UiContract(), headless=True, cdp=False) == "playwright-session"
+    assert calls["playwright"]["headless"] is True
+
+
+def test_timeout_recommends_the_resident_mode():
+    import sys
+
+    sys.path.insert(0, str(AGENT_PATH.parent))
+    import dooray_web_agent as agent
+    from ggongbab.web.browser import Session
+    from ggongbab.web.trace import LifecycleTracer
+
+    context = FakeContext(FakeCtxPage(FakeFrame(IDP_URL, generic_groups())))
+    session = Session(page=context.pages[0], context=context, contract=UiContract())
+    lines = []
+    with pytest.raises(AuthRequired):
+        agent.wait_for_mailbox(session, HOST, timeout_seconds=1, log=lines.append,
+                               poll_seconds=0, stable_polls=2,
+                               tracer=LifecycleTracer(context, log=lambda *_a: None))
+    joined = "\n".join(lines)
+    assert "--setup --cdp" in joined

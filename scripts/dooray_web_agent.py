@@ -41,6 +41,7 @@ from ggongbab.web.mail_reader import (NetworkObserver, list_mails, observe,  # n
 from ggongbab.web.page_select import (collect_targets, describe,  # noqa: E402
                                       mail_row_evidence, select_mail_page)
 from ggongbab.web.state import AgentState  # noqa: E402
+from ggongbab.web.resident import DEFAULT_DEBUG_PORT, resident_session  # noqa: E402
 from ggongbab.web.trace import LifecycleTracer  # noqa: E402
 from ggongbab.web.task_writer import DEFAULT_PROJECT_NAME, MailPayload, TaskWriter  # noqa: E402
 from ggongbab.web.ui_contract import load_contract  # noqa: E402
@@ -175,9 +176,22 @@ def wait_for_mailbox(session, origin_host: str, timeout_seconds: int, log=print,
             log("  No /mail/... navigation ever reached this browser context.")
             log("  If the mailbox was visible on screen, it was rendered by a browser")
             log("  this agent is not driving, and the login handed off elsewhere.")
+            log("")
+            log("  Try the resident-Chrome mode, which attaches to a real Chrome and")
+            log("  therefore sees every window that browser opens:")
+            log("")
+            log(r"    python scripts\dooray_web_agent.py --setup --cdp")
     raise AuthRequired(
         f"no Dooray mailbox appeared within {timeout_seconds // 60} minutes",
         hint="finish the SSO login and open [메일] -> [받은메일함] in the browser window")
+
+
+def open_session(contract, *, headless: bool, start_url: str = "", cdp: bool = False,
+                 port: int = DEFAULT_DEBUG_PORT):
+    """Playwright-owned browser, or a resident Chrome we attach to over CDP."""
+    if cdp:
+        return resident_session(PROFILE_DIR, contract, start_url=start_url, port=port, log=log)
+    return browser_session(PROFILE_DIR, contract, headless=headless, start_url=start_url, log=log)
 
 
 def cmd_setup(args) -> int:
@@ -191,7 +205,8 @@ def cmd_setup(args) -> int:
     log("로그인한 뒤 Dooray에서 [메일] -> [받은메일함] 으로 이동하세요.")
     log("받은메일함이 감지되면 자동으로 계속됩니다. Enter를 누를 필요 없습니다.")
     log(f"Waiting up to {SETUP_TIMEOUT_SECONDS // 60} minutes for the inbox...")
-    with browser_session(PROFILE_DIR, contract, headless=False, start_url=start, log=log) as session:
+    with open_session(contract, headless=False, start_url=start, cdp=args.cdp,
+                      port=args.debug_port) as session:
         # Attached to the CONTEXT from the start, so a mailbox opened in another
         # tab or frame still has its traffic observed.
         observer = NetworkObserver(session.context)
@@ -314,7 +329,8 @@ def cmd_run(args) -> int:
 
     scanned = already = candidates = registered = 0
     opened = unread_skipped = read_skipped = date_skipped = 0
-    with browser_session(PROFILE_DIR, contract, headless=not args.headed) as session:
+    with open_session(contract, headless=not args.headed, start_url=contract.mail_url,
+                      cdp=args.cdp, port=args.debug_port) as session:
         session.assert_authenticated()
         log("session: ok")
         # The mailbox may live in another tab or a frame; never assume the launch page.
@@ -416,7 +432,8 @@ def cmd_calibrate(args) -> int:
         raise UiContractError("no mailbox URL recorded yet", hint="run --setup first")
     origin_host = urlparse(contract.mail_url).netloc
     log(f"opening {contract.mail_url.split('?')[0]}")
-    with browser_session(PROFILE_DIR, contract, headless=not args.headed) as session:
+    with open_session(contract, headless=not args.headed, start_url=contract.mail_url,
+                      cdp=args.cdp, port=args.debug_port) as session:
         session.assert_authenticated()
         observer = NetworkObserver(session.context)
         observer.on_mail_screen = True
@@ -494,6 +511,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--url", help=f"Dooray address for --setup (default {DEFAULT_DOORAY_URL})")
     parser.add_argument("--observe-seconds", type=int, default=12,
                         help="how long --discover watches the inbox (default 12)")
+    parser.add_argument("--cdp", action="store_true",
+                        help="drive a resident Chrome over a loopback debug port instead of "
+                             "letting Playwright own the browser (use when SSO escapes)")
+    parser.add_argument("--debug-port", type=int, default=DEFAULT_DEBUG_PORT,
+                        help=f"loopback debug port for --cdp (default {DEFAULT_DEBUG_PORT})")
     parser.add_argument("--from", dest="date_from", type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
                         metavar="YYYY-MM-DD", help="earliest received date to scan")
     parser.add_argument("--to", dest="date_to", type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),

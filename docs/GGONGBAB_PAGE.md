@@ -48,14 +48,14 @@ KAIST Portal (stub, disabled)                            ─┘
 | `scripts/ggongbab/prefilter.py` | AI에 보낼 후보만 고르는 로컬 규칙 필터 |
 | `scripts/ggongbab/backfill.py` | 메일함 backfill 드라이버 (필터 → 안전 한도 → 기존 파이프라인) |
 | `scripts/dooray_web_agent.py` | 무인 메일함 에이전트 (SSO 1회 → 스캔 → 업무 등록) |
-| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `page_select.py`, `trace.py`, `ui_contract.py`, `mail_reader.py`, `calibrate.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
+| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `resident.py`(CDP), `page_select.py`, `trace.py`, `ui_contract.py`, `mail_reader.py`, `calibrate.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
 | `scripts/ggongbab/dedup.py` | 소스 간 동일 행사 판정과 병합 |
 | `scripts/ggongbab/exporter.py` | 공개 JSON 생성 |
 | `scripts/ggongbab/pipeline.py` | 전체 흐름 · 멱등성 · 통계 |
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (282개) |
+| `tests/ggongbab/` | pytest (295개) |
 
 ---
 
@@ -502,6 +502,26 @@ python scripts\dooray_web_agent.py --setup
 ```
 
 기본 주소는 **`https://kaist.gov-dooray.com/`** 이다. 다른 테넌트면 `--url` 로 준다.
+
+### SSO 가 자동화 밖으로 빠질 때: `--cdp`
+
+실측에서 다음이 확인됐다. page #1 이 `sso.kaist.ac.kr/auth/kaist/user/login/view` 로 이동한 뒤
+**92초 동안 그대로 머물렀고**, 그 사이 사용자는 로그인을 마치고 받은메일함을 보고 있었다.
+즉 로그인이 **이 에이전트가 몰지 않는 브라우저에서** 끝났다. 감지 버그가 아니라 context escape 다.
+
+그래서 Playwright 가 브라우저를 소유하는 대신, **일반 Chrome 을 우리가 띄우고 붙는** 방식을 넣었다.
+
+```cmd
+python scripts\dooray_web_agent.py --setup --cdp
+```
+
+* 전용 프로필 + `--remote-debugging-port=9222`, 주소는 **`127.0.0.1` 고정**. 외부 바인딩 없음.
+* `connect_over_cdp` 로 붙으므로 그 Chrome 이 여는 **모든 창**이 보인다.
+* 명령이 끝나도 **브라우저를 닫지 않는다.** 살아 있는 동안 세션 쿠키가 유지되므로,
+  앞서 막혔던 "다음 실행에서 세션이 사라진다" 문제도 같이 풀린다.
+* `--calibrate`, `--run` 에도 `--cdp` 를 쓸 수 있다. 이미 떠 있으면 그 브라우저에 재사용으로 붙는다.
+* 사용자의 평소 Chrome 프로필은 열지 않는다. Playwright 번들 Chromium 의 실행 파일명도 `chrome.exe` 라
+  이름으로 구분되지 않으므로, 설치 경로에서 **설치된 Chrome** 을 직접 찾는다.
 
 **브라우저 엔진.** 설치된 **Google Chrome** 을 먼저 쓰고, 없으면 Playwright 번들 Chromium 으로 내려간다.
 어느 쪽이든 프로필은 항상 전용 `.local/dooray-browser-profile/` 이다. **사용자의 평소 Chrome 프로필은 건드리지 않는다.**
