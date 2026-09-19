@@ -1,0 +1,310 @@
+# -*- coding: utf-8 -*-
+"""Unattended agent: state, fail-closed contracts, task payload, exit codes.
+
+Everything here runs without a browser. The parts that need a real authenticated
+Dooray session (selectors, internal endpoints) are exactly the parts the agent
+refuses to guess, and that refusal is what these tests pin down.
+"""
+from __future__ import annotations
+
+import json
+from datetime import date, datetime, timedelta
+from pathlib import Path
+
+import pytest
+
+from ggongbab.config import KST
+from ggongbab.web import exit_codes
+from ggongbab.web.exit_codes import AuthRequired, ProjectNotFound, UiContractError
+from ggongbab.web.mail_reader import MailHeader, _find_rows, _from_json_rows, parse_day, redact
+from ggongbab.web.state import AgentState, digest
+from ggongbab.web.task_writer import TASK_MARKER, MailPayload, TaskWriter
+from ggongbab.web.ui_contract import DEFAULT_CONTRACT_FILE, UiContract, load_contract
+
+
+# --- exit-code contract -------------------------------------------------------
+def test_exit_codes_match_the_watchdog_contract():
+    assert (exit_codes.SUCCESS, exit_codes.AUTH_REQUIRED, exit_codes.UI_CHANGED,
+            exit_codes.PROJECT_NOT_FOUND, exit_codes.PIPELINE_FAILED) == (0, 10, 20, 30, 40)
+    assert AuthRequired("x").code == 10
+    assert UiContractError("x").code == 20
+    assert ProjectNotFound("x").code == 30
+
+
+# --- state file ---------------------------------------------------------------
+def test_state_roundtrip_and_skip(tmp_path):
+    state = AgentState.load(tmp_path / "s.json")
+    assert not state.seen("mail-1")
+    state.record("mail-1", "삼성전자 Tech Lunch Talk", date(2026, 9, 3), registered=True, outcome="candidate")
+    state.mark_run(date(2026, 9, 19))
+    state.save()
+
+    again = AgentState.load(tmp_path / "s.json")
+    assert again.seen("mail-1")
+    assert not again.seen("mail-2")
+    assert again.last_scanned_to == "2026-09-19"
+    record = again.mails[digest("mail-1")]
+    assert record.registered is True and record.received == "2026-09-03"
+
+
+def test_state_holds_no_personal_information(tmp_path):
+    state = AgentState.load(tmp_path / "s.json")
+    state.record("<abc@kaist.ac.kr>", "삼성전자 Tech Lunch Talk", date(2026, 9, 3),
+                 registered=True, outcome="candidate")
+    state.save()
+    blob = (tmp_path / "s.json").read_text(encoding="utf-8")
+    for leak in ("kaist.ac.kr", "삼성전자", "Tech Lunch Talk", "abc@"):
+        assert leak not in blob, leak
+    data = json.loads(blob)
+    assert set(data["mails"][0]) == {"id_hash", "subject_hash", "received", "processed_at",
+                                     "registered", "outcome"}
+    assert len(data["mails"][0]["id_hash"]) == 32
+
+
+def test_corrupt_state_file_does_not_stop_the_agent(tmp_path):
+    path = tmp_path / "s.json"
+    path.write_text("{not json", encoding="utf-8")
+    state = AgentState.load(path)
+    assert state.mails == {} and state.last_run_at is None
+
+
+def test_since_last_run_overlaps_by_a_day(tmp_path):
+    state = AgentState.load(tmp_path / "s.json")
+    state.last_run_at = datetime(2026, 9, 18, 12, 0, tzinfo=KST).isoformat()
+    assert state.since_last_run() == date(2026, 9, 17)
+    fresh = AgentState.load(tmp_path / "none.json")
+    assert fresh.since_last_run(3) == (datetime.now(KST) - timedelta(days=3)).date()
+
+
+def test_prune_drops_ancient_records(tmp_path):
+    state = AgentState.load(tmp_path / "s.json")
+    state.record("old", "s", date(2020, 1, 1), registered=False, outcome="filtered")
+    state.record("new", "s", datetime.now(KST).date(), registered=False, outcome="filtered")
+    assert state.prune(keep_days=30) == 1
+    assert len(state.mails) == 1
+
+
+# --- fail closed on an unrecorded UI ------------------------------------------
+def test_shipped_contract_is_unverified_and_empty():
+    """The repo must not ship guessed selectors."""
+    data = json.loads(DEFAULT_CONTRACT_FILE.read_text(encoding="utf-8"))
+    assert data["verified"] is False
+    for key in ("mail_url", "row", "row_subject", "list_api", "logged_in_marker"):
+        assert data[key] == "", key
+
+
+def test_run_refuses_until_the_contract_is_recorded():
+    with pytest.raises(UiContractError) as exc:
+        load_contract().require_ready()
+    assert "--setup" in (exc.value.hint or "")
+    assert exc.value.code == 20
+
+
+def test_incomplete_contract_is_rejected():
+    contract = UiContract(verified=True, mail_url="https://x/mail", logged_in_marker=".app")
+    with pytest.raises(UiContractError, match="incomplete"):
+        contract.require_ready()
+
+
+def test_json_endpoint_needs_no_selectors():
+    contract = UiContract(verified=True, list_api="https://x/api/mails?page=1")
+    contract.require_ready()          # must not raise
+
+
+def test_local_override_wins(tmp_path):
+    override = tmp_path / "dooray-ui.json"
+    override.write_text(json.dumps({"verified": True, "list_api": "https://x/api"}), encoding="utf-8")
+    contract = load_contract(override)
+    assert contract.verified and contract.list_api == "https://x/api"
+
+
+def test_login_url_detection():
+    contract = UiContract()
+    assert contract.looks_like_login("https://sso.kaist.ac.kr/login?next=/")
+    assert contract.looks_like_login("https://idp.example/auth")
+    assert not contract.looks_like_login("https://gov-dooray.com/mail/inbox")
+
+
+# --- task writer: fail closed on the project ---------------------------------
+class FakeWriter(TaskWriter):
+    def __init__(self, settings, result=None, project_name="밥도둑-꽁밥-행사-수집함"):
+        super().__init__(settings, project_name=project_name)
+        self._result = result if result is not None else {"code": project_name, "state": "active"}
+        self.posts: list[dict] = []
+
+    def _request(self, method, path, body=None):
+        if method == "GET":
+            return {"result": self._result}
+        self.posts.append({"path": path, "body": body})
+        return {"result": {"id": "9001"}}
+
+
+@pytest.fixture
+def dooray_settings(settings):
+    settings.dooray_token = "t"
+    settings.dooray_project_id = "4424523215847914253"
+    return settings
+
+
+def test_project_verified_by_exact_name(dooray_settings):
+    writer = FakeWriter(dooray_settings)
+    assert writer.verify_project()["code"] == "밥도둑-꽁밥-행사-수집함"
+
+
+@pytest.mark.parametrize("result", [
+    {"code": "다른-프로젝트", "state": "active"},
+    {"code": "밥도둑-꽁밥-행사-수집함 ", "state": "active"},   # trailing space is not a match
+    {"code": "밥도둑-꽁밥-행사-수집함", "state": "archived"},
+    {},
+])
+def test_wrong_project_is_refused(dooray_settings, result):
+    writer = FakeWriter(dooray_settings, result=result)
+    with pytest.raises(ProjectNotFound) as exc:
+        writer.verify_project()
+    assert exc.value.code == 30
+
+
+def test_no_write_before_verification(dooray_settings):
+    writer = FakeWriter(dooray_settings)
+    with pytest.raises(ProjectNotFound, match="verify_project"):
+        writer.create_task(MailPayload(mail_id="1", subject="s", body="b"))
+    assert writer.posts == []
+
+
+def test_mail_without_id_is_refused(dooray_settings):
+    writer = FakeWriter(dooray_settings)
+    writer.verify_project()
+    with pytest.raises(ProjectNotFound, match="stable id"):
+        writer.create_task(MailPayload(mail_id="", subject="s", body="b"))
+    assert writer.posts == []
+
+
+def test_task_body_is_readable_by_the_ingest_parser(dooray_settings):
+    """The pipeline parses the Original Message block, so the agent must write one."""
+    from ggongbab.parsers.dooray_mail import parse_original_message
+
+    writer = FakeWriter(dooray_settings)
+    writer.verify_project()
+    mail = MailPayload(mail_id="m1", subject="삼성전자 Tech Lunch Talk",
+                       body="9월 25일 12시 N1에서 진행합니다.\n점심 도시락을 제공합니다.",
+                       received=date(2026, 9, 3))
+    post_id = writer.create_task(mail)
+    assert post_id == "9001" and len(writer.posts) == 1
+    body = writer.posts[0]["body"]
+    assert body["subject"] == "삼성전자 Tech Lunch Talk"
+    parsed = parse_original_message(body["body"]["content"])
+    assert parsed.found
+    assert parsed.subject == "삼성전자 Tech Lunch Talk"
+    assert "점심 도시락을 제공합니다" in parsed.body
+    assert TASK_MARKER in body["body"]["content"]
+
+
+def test_task_payload_carries_no_addresses(dooray_settings):
+    writer = FakeWriter(dooray_settings)
+    writer.verify_project()
+    writer.create_task(MailPayload(mail_id="m1", subject="설명회", body="본문", received=date(2026, 9, 3)))
+    blob = json.dumps(writer.posts[0], ensure_ascii=False)
+    assert "From:" not in blob and "To:" not in blob and "Cc:" not in blob
+
+
+def test_dry_run_creates_nothing(dooray_settings):
+    writer = FakeWriter(dooray_settings)
+    writer.verify_project()
+    assert writer.create_task(MailPayload(mail_id="m1", subject="s", body="b"), dry_run=True) is None
+    assert writer.posts == []
+
+
+def test_selftest_subject_is_not_an_event(dooray_settings):
+    """The write check must not turn into a fake ggongbab event."""
+    from ggongbab.prefilter import classify
+
+    writer = FakeWriter(dooray_settings)
+    post_id = writer.selftest()
+    assert post_id == "9001"
+    subject = writer.posts[0]["body"]["subject"]
+    assert not classify(subject, "Automated write check. Safe to delete.").candidate
+
+
+# --- mail reader helpers ------------------------------------------------------
+def test_discovery_urls_are_redacted():
+    assert redact("https://x/api/mails?page=2&token=abc") == "https://x/api/mails?page=<v>&token=<v>"
+    assert redact("https://x/u/someone@kaist.ac.kr/mail") == "https://x/u/[email]/mail"
+    assert redact("https://x/api/mails") == "https://x/api/mails"
+
+
+def test_json_rows_are_found_in_unknown_envelopes():
+    rows = [{"id": 1, "subject": "a"}, {"id": 2, "subject": "b"}]
+    for payload in (rows, {"result": rows}, {"data": {"items": rows}}, {"result": {"contents": rows}}):
+        assert _find_rows(payload) == rows
+    assert _find_rows({"result": {}}) == []
+
+
+def test_mail_headers_from_varied_json_shapes():
+    headers = _from_json_rows([
+        {"id": 7, "subject": "설명회", "receivedAt": "2026-09-03T10:00:00+09:00", "unread": True},
+        {"mailId": "x9", "title": "세미나", "sentAt": "2026-09-04", "isRead": True, "snippet": "요약"},
+        {"subject": "no id"},
+    ])
+    assert [h.mail_id for h in headers] == ["7", "x9"]
+    assert headers[0].received == date(2026, 9, 3) and headers[0].unread is True
+    assert headers[1].unread is False and headers[1].preview == "요약"
+
+
+def test_parse_day_formats():
+    assert parse_day("2026-09-03T10:00:00+09:00") == date(2026, 9, 3)
+    assert parse_day("2026.09.03") == date(2026, 9, 3)
+    assert parse_day(1757208000) is not None
+    assert parse_day("") is None and parse_day(None) is None
+
+
+def test_header_filter_prefers_body_over_preview():
+    header = MailHeader(mail_id="1", subject="s", preview="짧은 요약", body="전체 본문")
+    assert header.text_for_filter == "전체 본문"
+
+
+# --- the agent never handles credentials --------------------------------------
+def _code_symbols(path: Path) -> tuple[set[str], set[str]]:
+    """(identifiers, called attribute names) from real code, ignoring prose."""
+    import ast
+
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    called: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name):
+            names.add(node.id.lower())
+        elif isinstance(node, ast.Attribute):
+            names.add(node.attr.lower())
+        elif isinstance(node, ast.arg):
+            names.add(node.arg.lower())
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            called.add(node.func.attr.lower())
+    return names, called
+
+
+def test_no_password_handling_anywhere_in_the_agent():
+    """No code path may type, read or store a credential. Prose about it is fine."""
+    from ggongbab.web import browser
+
+    paths = [Path(browser.__file__),
+             Path(__file__).resolve().parents[2] / "scripts" / "dooray_web_agent.py"]
+    for path in paths:
+        names, called = _code_symbols(path)
+        for forbidden in ("password", "passwd", "credential", "keyring", "secret"):
+            assert not any(forbidden in name for name in names), f"{path.name}: {forbidden}"
+        # Playwright's text-entry calls: the agent must never fill a login form.
+        for forbidden in ("fill", "press_sequentially", "set_input_files"):
+            assert forbidden not in called, f"{path.name}: {forbidden}()"
+
+
+def test_auth_required_is_raised_not_worked_around():
+    from ggongbab.web.browser import Session
+
+    class FakePage:
+        url = "https://sso.kaist.ac.kr/login"
+
+    session = Session(page=FakePage(), context=None, contract=UiContract(verified=True, list_api="x"))
+    assert session.at_login_screen()
+    with pytest.raises(AuthRequired) as exc:
+        session.assert_authenticated()
+    assert exc.value.code == 10 and "--setup" in (exc.value.hint or "")

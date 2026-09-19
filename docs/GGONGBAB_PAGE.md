@@ -47,13 +47,15 @@ KAIST Portal (stub, disabled)                            ─┘
 | `scripts/ggongbab/db/` | `supabase_client.py`(PostgREST, stdlib), `repository.py`(Supabase + in-memory) |
 | `scripts/ggongbab/prefilter.py` | AI에 보낼 후보만 고르는 로컬 규칙 필터 |
 | `scripts/ggongbab/backfill.py` | 메일함 backfill 드라이버 (필터 → 안전 한도 → 기존 파이프라인) |
+| `scripts/dooray_web_agent.py` | 무인 메일함 에이전트 (SSO 1회 → 스캔 → 업무 등록) |
+| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `ui_contract.py`, `mail_reader.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
 | `scripts/ggongbab/dedup.py` | 소스 간 동일 행사 판정과 병합 |
 | `scripts/ggongbab/exporter.py` | 공개 JSON 생성 |
 | `scripts/ggongbab/pipeline.py` | 전체 흐름 · 멱등성 · 통계 |
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (151개) |
+| `tests/ggongbab/` | pytest (181개) |
 
 ---
 
@@ -412,7 +414,8 @@ KAIST 공개 collector 가 읽는 게시판(2026-09-19 마크업 기준): 학사
 지원 입력: `.eml` · `.mbox` · `.zip` · 폴더(재귀).
 
 ```cmd
-python scriptsefresh_ggongbab.py ^
+python scripts
+efresh_ggongbab.py ^
   --backfill-mail-archive "C:\mail-export" ^
   --mail-from 2026-09-01 --mail-to 2026-09-19 ^
   --event-until 2026-09-30 --dry-run
@@ -464,3 +467,166 @@ AI 와 결정적 validator 가 명시 근거로만 정한다. 후보로 뽑힌 �
 메일을 내보내기 어렵다면, Dooray 웹에서 과거 메일을 여러 건 선택해 **수집함 프로젝트로 전달/업무 등록**해도 된다.
 그러면 기존 `dooray` collector 가 그대로 집어 가므로 **새 코드가 필요 없다.**
 어느 쪽이든 KAIST 비밀번호나 세션 쿠키는 저장하지 않는다.
+
+---
+
+## 17. 무인 메일함 에이전트 (`dooray_web_agent.py`)
+
+16절의 아카이브 backfill 은 사람이 메일을 내보내야 한다. 이 에이전트는 그 수작업을 없앤다.
+**최초 SSO 로그인 1회** 뒤에는 Windows 작업 스케줄러가 알아서 돌린다.
+
+### 역할 분담
+
+에이전트는 **AI 분석을 하지 않는다.** 하는 일은 딱 여기까지다.
+
+```
+Dooray 메일함 (브라우저 세션)
+  → 로컬 후보 필터 (prefilter.py, 16절과 동일)
+  → 수집함 프로젝트 업무 등록 (Project REST API)
+  → 상태 저장
+[--run-pipeline 이면 이어서]
+  → refresh_ggongbab.py --only dooray → OpenAI → Supabase → latest.json
+```
+
+**업무 등록은 DOM 클릭이 아니라 Project REST API 로 한다.** 프로젝트를 **id 로 지정하고 이름까지 정확히 대조**하므로
+다른 프로젝트에 잘못 등록하는 일이 구조적으로 불가능하다. 이름이 한 글자라도 다르거나 프로젝트가 active 가 아니면
+브라우저를 열기도 전에 exit 30 으로 멈춘다.
+
+### 최초 1회
+
+```cmd
+pip install -r requirements-ggongbab.txt
+python -m playwright install chromium
+
+python scripts\dooray_web_agent.py --setup --url https://<사내-dooray-주소>/
+```
+
+브라우저 창이 열리면 **사용자가 직접** KAIST SSO 로그인을 한다.
+로그인이 끝난 것을 감지하면 세션이 `.local/dooray-browser-profile/` 에 남는다 (gitignore).
+
+**KAIST ID/비밀번호는 저장하지 않는다.** 코드에 비밀번호를 다루는 경로 자체가 없고,
+`test_no_password_handling_anywhere_in_the_agent` 가 AST 로 이를 고정한다.
+
+### 두 번째: UI 계약 기록
+
+```cmd
+python scripts\dooray_web_agent.py --discover
+```
+
+Dooray 메일 화면의 DOM 은 여기서 한 번도 본 적이 없다. **그래서 selector 를 추측해 넣지 않았다.**
+`scripts/ggongbab/web/dooray_ui.json` 은 `verified: false` 에 전부 빈 값으로 나간다.
+
+`--discover` 는 실제 세션에서 메일 화면이 **무엇을 호출하는지**를 기록한다.
+결과는 `.local/dooray-discovery.json` 에 **가림 처리**되어 저장된다. URL 은 쿼리 값을 `<v>` 로 지우고,
+응답 본문·헤더·쿠키·메일 텍스트는 아예 담지 않는다.
+
+그 보고서를 보고 `.local/dooray-ui.json` 을 채운 뒤 `"verified": true` 로 바꾼다.
+우선순위는 **`list_api`**(웹앱이 쓰는 내부 JSON endpoint)다. DOM 보다 안정적이고,
+목록 조회만으로는 메일이 열리지 않는다. 없으면 DOM selector 로 대체한다.
+
+**채우기 전까지 `--run` 은 아무것도 건드리지 않고 exit 20 으로 끝난다.**
+
+### 평소: 무인 실행
+
+```cmd
+python scripts\dooray_web_agent.py --run --since-last-run --run-pipeline
+```
+
+메일별 승인도, Enter 입력도 없다. 이미 처리한 메일은 다시 열지 않는다.
+
+| 옵션 | 뜻 |
+|------|-----|
+| `--since-last-run` | 지난 실행 이후 (하루 겹쳐서) |
+| `--from` / `--to` | 수신일 범위 직접 지정 |
+| `--days N` | 날짜를 안 주면 최근 N일 (기본 3) |
+| `--max-mails` | 읽을 행 상한 (기본 200) |
+| `--run-pipeline` | 등록이 있었으면 이어서 ingest 실행 |
+| `--dry-run` | 후보만 보고, 업무 등록·상태 저장 안 함 |
+| `--subject-only` | **메일 본문을 열지 않는다.** 읽음 상태가 바뀌지 않음 |
+| `--headed` | 디버깅용으로 브라우저를 보이게 |
+| `--selftest` | 무해한 업무 1건을 만들어 쓰기 권한만 확인 |
+
+> **읽음 상태 주의.** 본문을 열면 메일함에서 그 메일이 **읽음으로 바뀐다.**
+> 업무에 본문을 담으려면 열어야 하므로 기본값은 여는 쪽이다. 읽음 상태를 건드리고 싶지 않으면
+> `--subject-only` 를 쓴다. 이 경우 업무에는 제목과 목록 미리보기만 들어간다.
+
+### 세션 만료
+
+SSO 가 만료되어 로그인 화면으로 넘어가면 에이전트는 **거기서 멈춘다.**
+비밀번호를 입력하지 않고, 로그인 우회도 하지 않고, 메일 작업도 하지 않는다.
+
+```
+[AUTH_REQUIRED] the Dooray session has expired
+          run: python scripts/dooray_web_agent.py --setup
+```
+
+즉 평소에는 무인이고, **세션이 끊겼을 때만** 사람이 한 번 다시 로그인한다.
+
+### 상태 파일
+
+`.local/ggongbab-mail-state.json` (gitignore). 개인정보 없이 해시만 담는다.
+
+| 필드 | 내용 |
+|------|------|
+| `id_hash` | 메일 id 의 sha256 앞 32자 |
+| `subject_hash` | 제목 해시 (제목 원문 아님) |
+| `received` | 수신 **날짜**만 (시각 없음) |
+| `processed_at` · `registered` · `outcome` | 처리 시각, 등록 여부, `candidate`/`filtered` |
+
+본문·메일주소·발신자명·쿠키·토큰은 저장하지 않는다. 회귀 테스트 `test_state_holds_no_personal_information` 가 고정한다.
+
+### 종료 코드 (watchdog)
+
+| 코드 | 뜻 | 할 일 |
+|------|-----|-------|
+| 0 | `SUCCESS` | — |
+| 10 | `AUTH_REQUIRED` | `--setup` 재실행 |
+| 20 | `UI_CHANGED` | `--discover` 재실행 |
+| 30 | `PROJECT_NOT_FOUND` | 프로젝트 이름/ID 확인. **아무것도 등록되지 않음** |
+| 40 | `PIPELINE_FAILED` | 메일 등록은 됐고 ingest 가 실패. `refresh_ggongbab.py` 로그 확인 |
+
+### Windows 작업 스케줄러
+
+`scripts\run_ggongbab_agent.cmd` 가 로그를 `.local\agent.log` 에 붙인다.
+
+1. **작업 스케줄러** → 작업 만들기
+2. 이름: `Babdoduk ggongbab agent`
+3. 트리거: 매일 반복, **1시간** 또는 3시간 간격
+4. 동작: 프로그램 시작 → `C:\Users\joshu\Babdoduk\scripts\run_ggongbab_agent.cmd`
+5. 시작 위치: `C:\Users\joshu\Babdoduk`
+6. **"사용자가 로그온한 경우에만 실행"** 으로 둔다. 브라우저 프로필이 사용자 계정에 묶여 있다.
+7. 결과는 **마지막 실행 결과** 열에서 위 종료 코드로 확인한다.
+
+명령줄로 등록하려면:
+
+```cmd
+schtasks /Create /TN "Babdoduk ggongbab agent" /TR "C:\Users\joshu\Babdoduk\scripts\run_ggongbab_agent.cmd" /SC HOURLY /MO 1
+```
+
+### 로그
+
+개인정보는 찍지 않는다. 제목 전문도 기본 출력하지 않는다.
+
+```
+[12:00]
+window: 2026-09-17 .. 2026-09-19
+project: verified (밥도둑-꽁밥-행사-수집함)
+session: ok
+mail scanned: 18
+already processed: 14
+new: 4
+bodies opened: 2
+candidates: 1
+registered: 1
+pipeline: success
+```
+
+### 최초 9월 backfill
+
+`--discover` 로 계약을 채운 뒤 한 번만:
+
+```cmd
+python scripts\dooray_web_agent.py --run --from 2026-09-01 --to 2026-09-19 --run-pipeline
+```
+
+그 뒤로는 스케줄러가 `--since-last-run` 으로 돈다.

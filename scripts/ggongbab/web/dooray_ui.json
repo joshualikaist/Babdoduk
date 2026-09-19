@@ -1,0 +1,18 @@
+{
+  "verified": false,
+  "discovered_at": null,
+  "notes": "Empty on purpose. Dooray's mail DOM has never been observed from here, and guessing selectors would be the same mistake as inventing an API endpoint. Run --setup (one SSO login) and then --discover; that writes .local/dooray-ui.json from the real page and flips verified to true. Until then --run exits 20 (UI_CHANGED) without touching anything.",
+  "mail_url": "",
+  "logged_in_marker": "",
+  "list_container": "",
+  "row": "",
+  "row_id_attr": "",
+  "row_subject": "",
+  "row_preview": "",
+  "row_date": "",
+  "row_unread_marker": "",
+  "body_container": "",
+  "next_page": "",
+  "list_api": "",
+  "detail_api": ""
+}

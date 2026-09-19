@@ -6,3 +6,6 @@ __pycache__/
 data/ggongbab/.staging/
 tmp-qa/
 tmp-*.html
+.local/
+*.eml
+*.mbox
