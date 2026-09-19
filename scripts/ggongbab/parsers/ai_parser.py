@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Protocol
 
 from ..config import PROMPT_VERSION
+from .ai_errors import classify_exception, classify_message
 from ..models import EventExtraction
 
 SYSTEM_PROMPT = """You extract KAIST campus event information for a "free food events" feed.
@@ -69,7 +70,16 @@ class AIResult:
     usage: AIUsage = field(default_factory=AIUsage)
     input_kind: str = "text"
     error: Optional[str] = None
+    # Safe-to-log category. The `error` string may quote the request, so only
+    # this field is ever printed or aggregated.
+    error_category: str = ""
     prompt_version: str = PROMPT_VERSION
+
+    @property
+    def category(self) -> str:
+        if self.error_category:
+            return self.error_category
+        return classify_message(self.error) if self.error else ""
 
 
 class Extractor(Protocol):
@@ -113,7 +123,9 @@ class OpenAIExtractor:
                 metadata={"prompt_version": PROMPT_VERSION, "app": "babdoduk-ggongbab"},
             )
         except Exception as exc:  # noqa: BLE001 - recorded in ai_parse_runs, retried next run
-            return AIResult(extraction=None, model=model, input_kind=input_kind, error=f"{exc.__class__.__name__}: {str(exc)[:200]}")
+            return AIResult(extraction=None, model=model, input_kind=input_kind,
+                            error=f"{exc.__class__.__name__}: {str(exc)[:200]}",
+                            error_category=classify_exception(exc))
         usage = AIUsage()
         raw_usage = getattr(response, "usage", None)
         if raw_usage is not None:
@@ -122,8 +134,9 @@ class OpenAIExtractor:
         parsed = getattr(response, "output_parsed", None)
         if parsed is None:
             refusal = _find_refusal(response)
+            message = refusal or "no parsed output"
             return AIResult(extraction=None, model=model, usage=usage, input_kind=input_kind,
-                            error=refusal or "no parsed output")
+                            error=message, error_category=classify_message(message))
         return AIResult(extraction=parsed, model=model, usage=usage, input_kind=input_kind)
 
 

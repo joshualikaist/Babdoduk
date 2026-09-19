@@ -63,7 +63,7 @@ def near(actual, expected):
 
 def run_checks(preview=False):
     OUT.mkdir(parents=True, exist_ok=True)
-    report = {"fixture": {}, "preview": {}, "checks": 0}
+    report = {"fixture": {}, "preview": {}, "production": {}, "checks": 0}
     with local_server() as base, sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=True)
         context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
@@ -184,6 +184,37 @@ def run_checks(preview=False):
         page.goto(base + "/lab-ggongbab.html?preview=1")
         page.get_by_text("Preview 데이터가 아직 없습니다.").wait_for()
         assert "--preview-feed" in page.locator('.gg-state code').inner_text()
+        report["checks"] += 1
+        # Production page. It carries no lab affordances, so fixture and preview
+        # are not merely hidden - they are unreachable, and the page can only
+        # ever read the public feed.
+        page.unroute("**/.local/ggongbab-preview.json")
+        local_hits = []
+        page.route("**/.local/**", lambda route: (local_hits.append(route.request.url),
+                                                  route.fulfill(status=404, body="")))
+        for width, height in SIZES:
+            page.set_viewport_size({"width": width, "height": height})
+            for query in ("", "?fixture=1", "?preview=1", "?fixture=1&debug-layout=1"):
+                requests.clear()
+                page.goto(base + "/ggongbab.html" + query)
+                page.locator(".gg-card").first.wait_for()
+                page.locator('[data-group="when"][data-value="all"]').click()
+                # Only the explicit-food, not-under-review event is public. The
+                # false, unknown and needs_review rows must never render.
+                assert page.locator(".gg-card").count() == 1, query
+                assert page.locator(".gg-card").first.get_attribute("data-id") == "true"
+                assert "/data/ggongbab/latest.json" in requests
+                assert not local_hits, local_hits
+                assert not page.locator(".gg-diagnostic-toggle").count()
+                assert not page.locator(".lab-fork-ribbon").count()
+                assert not page.evaluate("document.body.hasAttribute('data-gg-lab')")
+                assert not page.locator('meta[name="robots"]').count()
+                assert page.title() == "꽁밥 안내 · 밥도둑 Babdoduk"
+                assert page.evaluate("document.documentElement.scrollWidth") <= width
+                report["checks"] += 10
+            report["production"][f"{width}x{height}"] = rectangles(page)
+            page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
+        assert not errors, errors
         report["checks"] += 1
         browser.close()
     (OUT / "layout-report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

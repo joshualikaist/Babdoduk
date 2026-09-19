@@ -6,6 +6,7 @@ Only the final public-shaped payload and numeric diagnostics leave memory.
 from __future__ import annotations
 
 import json
+import time
 from datetime import datetime, time
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from .db.repository import MemoryRepository
 from .exporter import build_payload
 from .models import RawItem
 from .parsers.ai_parser import OpenAIExtractor
+from .parsers.ai_errors import UNKNOWN, classify_message, is_retryable, summary_lines
 from .pipeline import Pipeline
 from .prefilter import classify
 from .web.exit_codes import PipelineFailed, UiContractError
@@ -22,7 +24,8 @@ from .web.mail_reader import list_mails, open_body
 PREVIEW_FILE = Path(__file__).resolve().parents[2] / ".local" / "ggongbab-preview.json"
 COUNTERS = ("loadedRows", "dateMatched", "readEligible", "prefilterCandidates",
             "previewsAvailable", "bodyAttempted", "bodyFetched", "aiCalls",
-            "fallbackCalls", "aiErrors", "likelyEvents", "explicitFood",
+            "fallbackCalls", "aiErrorAttempts", "aiRecovered", "aiErrors",
+            "likelyEvents", "explicitFood",
             "needsReview", "notEvent", "publicCount")
 
 
@@ -68,11 +71,56 @@ def collect_candidates(session, start, end, *, limit, target=None, read_state="r
     return items, counts
 
 
+MAX_ERROR_RETRIES = 2
+# Long enough for a per-minute rate-limit window to reset.
+RETRY_BACKOFF_SECONDS = 70
+
+
+def _tally(metrics, candidate) -> None:
+    metrics["likelyEvents"] += int(candidate.is_event)
+    metrics["explicitFood"] += int(candidate.is_event and candidate.food_provided == "true")
+    metrics["needsReview"] += int(candidate.is_event and candidate.needs_review)
+    metrics["notEvent"] += int(not candidate.is_event)
+
+
+def _run_pass(pipeline, items, metrics, log, label):
+    """Process items once. Returns (item, category) for each outright failure.
+
+    Only an extraction failure comes back. A result that is merely uncertain -
+    needs_review, food unknown, low confidence, not an event - is a real answer,
+    so retrying it would just buy the same answer again. The category travels
+    with the item so the caller can tell a waitable failure from a spent quota.
+    """
+    failed = []
+    for index, item in enumerate(items):
+        try:
+            result = pipeline.process_item(item)
+        except Exception as exc:  # noqa: BLE001 - one item must not end the pass
+            pipeline.stats.ai_errors += 1
+            category = classify_message(exc.__class__.__name__)
+            pipeline.stats.ai_error_categories[category] = \
+                pipeline.stats.ai_error_categories.get(category, 0) + 1
+            failed.append((item, category))
+            continue
+        candidate = result.candidate if result else None
+        if candidate is not None:
+            _tally(metrics, candidate)
+        elif result is not None and result.error:
+            failed.append((item, result.error_category or UNKNOWN))
+        log(f"{label}: {index + 1}/{len(items)}")
+    return failed
+
+
 def generate_preview(items, counts, settings, *, max_ai_candidates=50, force=False,
+                     error_retries=1, backoff_seconds=None,
                      extractor_factory=OpenAIExtractor, log=print):
     """Check the whole candidate set BEFORE constructing/calling the extractor."""
     if max_ai_candidates < 1:
         raise UiContractError("--max-ai-candidates must be positive")
+    if not 0 <= error_retries <= MAX_ERROR_RETRIES:
+        raise UiContractError(
+            f"--ai-error-retries must be 0..{MAX_ERROR_RETRIES}; a larger value would let one "
+            f"bad run multiply into hundreds of API calls")
     log(f"{len(items)} rule candidates")
     log(f"AI safety limit: {max_ai_candidates}")
     if len(items) > max_ai_candidates and not force:
@@ -85,22 +133,38 @@ def generate_preview(items, counts, settings, *, max_ai_candidates=50, force=Fal
     extractor = extractor_factory(settings.openai_api_key) if items else None
     pipeline = Pipeline(settings, repo, extractor, [])
     metrics = {key: int(counts.get(key, 0)) for key in COUNTERS}
-    for index, item in enumerate(items):
-        try:
-            result = pipeline.process_item(item)
-        except Exception:
-            pipeline.stats.ai_errors += 1
-            result = None
-        candidate = result.candidate if result else None
-        if candidate:
-            metrics["likelyEvents"] += int(candidate.is_event)
-            metrics["explicitFood"] += int(candidate.is_event and candidate.food_provided == "true")
-            metrics["needsReview"] += int(candidate.is_event and candidate.needs_review)
-            metrics["notEvent"] += int(not candidate.is_event)
-        log(f"AI candidates processed: {index + 1}/{len(items)}")
+
+    failed = _run_pass(pipeline, items, metrics, log, "AI candidates processed")
+    attempts = len(failed)
+    recovered = 0
+    for attempt in range(error_retries):
+        retryable = [item for item, category in failed if is_retryable(category)]
+        if not retryable:
+            if failed:
+                log(f"{len(failed)} failure(s) are not retryable; not re-sending")
+            break
+        stuck = [pair for pair in failed if not is_retryable(pair[1])]
+        # Throttling is the common transient failure, and re-firing immediately
+        # is what turns 39 calls into 78 rejected ones. Wait out the window first.
+        base = RETRY_BACKOFF_SECONDS if backoff_seconds is None else backoff_seconds
+        pause = base * (attempt + 1)
+        log(f"retrying {len(retryable)} failed extraction(s) after {pause}s, "
+            f"pass {attempt + 1}/{error_retries}")
+        if pause:
+            time.sleep(pause)
+        before = len(failed)
+        # A failed parse is not a cached success, so the same RawItem re-enters
+        # the production pipeline; items that already succeeded are never re-sent.
+        failed = stuck + _run_pass(pipeline, retryable, metrics, log, "retry")
+        recovered += before - len(failed)
     metrics["aiCalls"] = pipeline.stats.ai_calls
     metrics["fallbackCalls"] = pipeline.stats.ai_fallback
-    metrics["aiErrors"] = pipeline.stats.ai_errors
+    metrics["aiErrorAttempts"] = attempts
+    metrics["aiRecovered"] = recovered
+    # What remains unresolved after every attempt - not the running total.
+    metrics["aiErrors"] = len(failed)
+    for line in summary_lines(pipeline.stats.ai_error_categories):
+        log(line)
     payload = build_payload(repo.publishable_events(), settings, food_only=True)
     metrics["publicCount"] = payload["count"]
     payload["_preview"] = metrics

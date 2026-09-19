@@ -314,7 +314,12 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
   `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
 * `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 만 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
 * 종료 코드 2 = “안전하게 내보낼 것이 없음”(Supabase 불통, 모든 collector 실패, export 검증 실패). 이때 이전 `latest.json` 을 유지하고 publish 단계를 건너뛴다.
-* `ggongbab.html`(본편)은 아직 옛 3열 UI 다. lab 검증 뒤 `lab-ggongbab.html` 내용을 옮길 때 `<meta name="robots">`, 상단 lab 리본, `nav.lab` 링크만 빼면 된다.
+* `ggongbab.html`(본편)은 옛 3열 UI 를 버리고 lab 과 같은 피드 UI 로 교체됐다.
+  승격은 손으로 베끼는 것이 아니라 `lab-ggongbab.html` 에서 `<meta name="robots">`,
+  lab 리본(마크업과 CSS), `data-gg-lab`, `nav.lab` 항목을 빼고 제목을 바꾸는 기계적 변환이다.
+  `data-gg-lab` 이 없으면 `js/ggongbab.js` 의 모드가 `normal` 로 고정되어 fixture · preview ·
+  debug-layout 이 **도달 불가능**해진다. 바꾼 뒤에는 `scripts/check_ggongbab_ui.py` 가
+  세 뷰포트에서 본편을 직접 검사한다(쿼리스트링 무시, `.local/` 요청 0 건, 비공개 행사 미노출).
 
 ---
 
@@ -392,7 +397,7 @@ KAIST 공개 collector 가 읽는 게시판(2026-09-19 마크업 기준): 학사
 
 ## 16. 메일함 backfill (과거 메일 일괄 수집)
 
-### Dooray Mail REST API 는 존재하지 않는다
+### 공개 Dooray Mail REST API 는 존재하지 않는다
 
 2026-09-19 에 read-only 로 probe 한 결과다. GET 만 사용했고 메일 상태는 건드리지 않았다.
 
@@ -407,6 +412,21 @@ KAIST 공개 collector 가 읽는 게시판(2026-09-19 마크업 기준): 학사
 핵심 판별: **존재하는 경로는 토큰이 없어도 401** 을 준다. `/mail/v1/mails` 는 gov 호스트와 상용 `api.dooray.com` 양쪽에서 **404** 다.
 즉 권한/스코프 문제가 아니라 **공개 API 에 메일 서비스가 없다.** 없는 endpoint 를 만들어 쓰지 않는다.
 
+### 지금 쓰는 방법: 로그인된 웹앱의 내부 WAPI 관찰
+
+공개 API 가 없다고 해서 endpoint 를 지어내지 않는다. 대신 이미 로그인된 Dooray 웹앱을
+브라우저로 띄우고, **그 화면이 스스로 호출하는 내부 WAPI 응답을 관찰**한다.
+`scripts/dooray_web_agent.py --discover` 가 실제로 오간 요청을 기록해
+`.local/dooray-ui.json` 에 계약으로 저장하고, 이후 실행은 그 계약만 따른다.
+계약과 화면이 어긋나면 추측하지 않고 `UI_CHANGED`(20) 로 멈춘다.
+
+이것은 공개 Mail REST API 가 아니며 그렇게 문서화하지도 않는다. 사람이 이미 볼 수 있는
+화면을, 사람이 한 번 로그인한 세션으로 읽을 뿐이다. 읽음 상태는 바꾸지 않고,
+읽음 여부 필드를 못 읽으면 본문을 가져오기 전에 중단한다(fail closed).
+절차와 종료 코드는 `README.md` 5절에 있다.
+
+아래 메일 아카이브 collector 는 메일함에 접속조차 하지 않는 대안으로 남아 있다.
+
 ### 그래서 쓰는 방법: 메일 아카이브 collector
 
 메일 클라이언트에서 내보낸 파일을 읽는다. 메일함에 접속하지 않으므로 읽음 상태가 바뀔 수 없다.
@@ -414,8 +434,7 @@ KAIST 공개 collector 가 읽는 게시판(2026-09-19 마크업 기준): 학사
 지원 입력: `.eml` · `.mbox` · `.zip` · 폴더(재귀).
 
 ```cmd
-python scripts
-efresh_ggongbab.py ^
+python scripts\refresh_ggongbab.py ^
   --backfill-mail-archive "C:\mail-export" ^
   --mail-from 2026-09-01 --mail-to 2026-09-19 ^
   --event-until 2026-09-30 --dry-run

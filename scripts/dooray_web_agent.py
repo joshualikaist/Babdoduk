@@ -477,6 +477,7 @@ def cmd_preview_feed(args) -> int:
             session, start, end, limit=args.max_mails, target=target,
             read_state=args.read_state, fetch_body=args.open_body and not args.subject_only, log=log)
     generate_preview(items, counts, load_settings(), max_ai_candidates=args.max_ai_candidates,
+                     error_retries=args.ai_error_retries,
                      force=args.force, log=log)
     return SUCCESS
 
@@ -592,6 +593,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-mails", type=int, default=200, help="safety limit on rows read (default 200)")
     parser.add_argument("--max-ai-candidates", type=int, default=50, help="preview AI candidate limit")
     parser.add_argument("--force", action="store_true", help="explicitly exceed the preview AI candidate limit")
+    parser.add_argument("--ai-error-retries", type=int, default=1, metavar="N",
+                        help="extra passes over items whose extraction failed (0..2, default 1)")
     parser.add_argument("--read-state", choices=["all", "read", "unread"], default="all",
                         help="which mails to process; 'read' never opens an unread mail")
     parser.add_argument("--project-name", default=DEFAULT_PROJECT_NAME,

@@ -202,3 +202,4 @@ class ParseOutcome:
     fallback_used: bool = False
     skipped_cached: bool = False
     error: Optional[str] = None
+    error_category: str = ""      # safe-to-log category; see parsers/ai_errors.py

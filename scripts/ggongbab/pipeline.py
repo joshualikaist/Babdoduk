@@ -36,6 +36,8 @@ class RunStats:
     events_review: int = 0
     not_events: int = 0
     collector_errors: dict[str, str] = field(default_factory=dict)
+    # Safe-to-log counts only; the raw error text never leaves ai_parse_runs.
+    ai_error_categories: dict[str, int] = field(default_factory=dict)
 
     def summary(self) -> str:
         return (f"items: {self.items_seen} (new/changed {self.items_new}) | AI parsed: {self.ai_calls} | "
@@ -72,7 +74,11 @@ class Pipeline:
                     self.process_item(item)
                 except Exception as exc:  # noqa: BLE001 - one bad item must not stop the run
                     self.stats.ai_errors += 1
-                    print(f"[warn] item {item.source_type}:{item.external_id[:12]} failed: {exc.__class__.__name__}")
+                    # No identifier, not even a prefix: these logs reach GitHub
+                    # Actions, where a Dooray post id would be a durable trace
+                    # back to one person's mail.
+                    print(f"[warn] {collector.source_type} item processing failed: "
+                          f"{exc.__class__.__name__}")
             delta = _delta(before, self.stats)
             status = "partial" if delta["ai_errors"] else "ok"
             self.repo.finish_ingest_run(run_id, status=status, **{k: v for k, v in delta.items() if k != "ai_errors"})
@@ -143,7 +149,10 @@ class Pipeline:
         primary = self._call(self.extractor, user_text, images, self.settings.ai_model, raw_item_id, content_hash, "primary")
         if primary.extraction is None:
             self.stats.ai_errors += 1
-            return ParseOutcome(candidate=None, ai_calls=1, error=primary.error)
+            category = primary.category or "unknown"
+            self.stats.ai_error_categories[category] = self.stats.ai_error_categories.get(category, 0) + 1
+            return ParseOutcome(candidate=None, ai_calls=1, error=primary.error,
+                                error_category=category)
         cand = validate(primary.extraction, facts, clean_text, source_type=item.source_type,
                         source_priority=source_priority, reference=reference)
         calls = 1
