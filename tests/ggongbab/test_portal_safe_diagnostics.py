@@ -19,7 +19,7 @@ from ggongbab.portal_discovery import (body_path_in_id_subtree, build_discovery,
                                        path_template, request_shape, structural_value_ok)
 
 from .test_portal_agent import BASE, BODY, HOST, TITLE, listing, notice
-from .test_portal_diagnostics import collect, response
+from .test_portal_diagnostics import collect, opened, response
 
 SECRETS = (TITLE, BODY, "PRIVATE-BOARD", "PRIVATE-TOKEN", "PRIVATE-ID-A", "PRIVATE-ID-B",
            "PRIVATE-CURSOR", "PRIVATE-SESSION")
@@ -110,9 +110,15 @@ def test_unsafe_path_is_withheld_entirely():
 # 6-8: pagination and static structural candidates
 # ---------------------------------------------------------------------------
 def _two_list_calls(first_url, second_url):
+    """Two pages of the same list, plus the two notices that were opened.
+
+    The details are not decoration: pagination is only inferred once
+    correlation has proved which endpoint is the notice list.
+    """
     return collect([response(url=BASE + first_url),
                     response(url=BASE + second_url,
-                             payload=listing([notice("PRIVATE-ID-C"), notice("PRIVATE-ID-D")]))])
+                             payload=listing([notice("PRIVATE-ID-C"), notice("PRIVATE-ID-D")]))]
+                   + opened())
 
 
 def test_static_structural_key_constant_across_calls_is_detectable():
@@ -184,15 +190,22 @@ def ambiguous_detail(identifier="PRIVATE-ID-A"):
     return {"result": {"id": identifier, "body": BODY, "content": BODY}}
 
 
+def _ambiguous_flow():
+    """Two opened notices whose payloads each offer two body fields."""
+    return collect([response()] + [
+        response(url=f"{BASE}/api/notices/{i}", payload=ambiguous_detail(i))
+        for i in ("PRIVATE-ID-A", "PRIVATE-ID-B")])
+
+
 def test_body_candidate_paths_are_recorded_without_values():
-    report, d = collect([response(), response(payload=ambiguous_detail())])
+    report, d = _ambiguous_flow()
     paths = report["diagnostics"]["safe"]["detailBodyCandidatePaths"]
     assert sorted(paths) == ["result.body", "result.content"]
     assert BODY not in blob(report, d.export())
 
 
 def test_body_value_is_never_persisted():
-    report, d = collect([response(), response(payload=ambiguous_detail())])
+    report, d = _ambiguous_flow()
     assert BODY not in blob(report)
     assert "PRIVATE-BODY" not in blob(report, d.export())
 
@@ -228,26 +241,27 @@ def test_subtree_widens_outward_only_until_it_finds_one():
 
 def test_ambiguous_body_is_resolved_end_to_end_by_the_verified_id():
     """A payload the old code dropped now yields a detail candidate."""
-    resolvable = {"result": {"id": "PRIVATE-ID-A", "content": BODY},
-                  "sidebar": {"content": "unrelated promo text"}}
-    report, d = collect([response(),
-                         response(url=BASE + "/api/notices/PRIVATE-ID-A", payload=resolvable)])
+    def resolvable(identifier):
+        return {"result": {"id": identifier, "content": BODY},
+                "sidebar": {"content": "unrelated promo text"}}
+
+    report, d = collect([response()] + [
+        response(url=f"{BASE}/api/notices/{i}", payload=resolvable(i))
+        for i in ("PRIVATE-ID-A", "PRIVATE-ID-B")])
     safe = report["diagnostics"]["safe"]
     assert safe["bodyDisambiguatedByIdSubtree"] is True
     assert report["contract"]["detail_body_path"] == "result.content"
     # Observed as ambiguous, but resolved, so it is not reported as a blocker.
-    assert d.rejected["body path ambiguous"] == 1
+    assert d.rejected["body path ambiguous"] == 2
     assert d.body_ambiguity_unresolved == 0
     assert "DETAIL_BODY_PATH_AMBIGUOUS" not in report["reasons"]
     assert BODY not in blob(report)
 
 
 def test_unresolvable_ambiguity_still_blocks():
-    report, d = collect([response(),
-                         response(url=BASE + "/api/notices/PRIVATE-ID-A",
-                                  payload=ambiguous_detail())])
+    report, d = _ambiguous_flow()
     assert report["diagnostics"]["safe"]["bodyDisambiguatedByIdSubtree"] is False
-    assert d.body_ambiguity_unresolved == 1
+    assert d.body_ambiguity_unresolved == 2
     assert "DETAIL_BODY_PATH_AMBIGUOUS" in report["reasons"]
     assert not report["detailReplayable"]
 
@@ -285,11 +299,13 @@ def test_staged_output_names_each_stage(monkeypatch, capsys, tmp_path):
     report, _ = collect([response(url=BASE + "/api/notices?boardId=PRIVATE-BOARD")])
     agent.log_discovery(report)
     output = capsys.readouterr().out
-    for line in ("List discovery:", "  schema candidate: yes", "  request shape: rejected",
-                 "  unsafe query keys: [boardId]", "Detail discovery:",
-                 "  candidate body paths: []"):
+    for line in ("Interaction correlation:", "  correlated distinct ids: 0",
+                 "Selected notice list:", "  correlated: no",
+                 "  unsafe query keys: [boardId]", "Selected notice detail:",
+                 "Pagination:"):
         assert line in output, line
-    assert "pagination candidate key: none" in output
+    # Nothing correlated, so pagination was never even considered.
+    assert "evaluated only after notice list correlation: not reached" in output
 
 
 def test_diagnostics_do_not_authorize_unknown_structural_params():

@@ -35,6 +35,9 @@ COUNTS = (
     "replayable list candidates", "replayable detail candidates",
     "observed notice-like POST candidate", "pagination parameter observed",
     "pagination progression observed",
+    # Interaction correlation: what the person actually opened.
+    "list-like JSON candidates", "detail-like JSON candidates",
+    "correlated list/detail pairs", "correlated distinct ids",
 )
 REJECTED = (
     "host mismatch", "method unsupported", "json parse failed", "schema ambiguous",
@@ -43,6 +46,8 @@ REJECTED = (
     "detail host mismatch", "body path ambiguous", "id path ambiguous", "id path missing",
     "same id repeated", "multiple detail shapes", "resource unsupported", "status unsupported",
     "observer errors", "list schema ambiguous",
+    "list detail not correlated", "multiple correlated shapes",
+    "title field unknown", "date field unknown",
 )
 
 
@@ -96,6 +101,9 @@ class Diagnostics:
         # An ambiguous body response is only a blocker while it stays
         # unresolved; the verified notice id can still single one path out.
         self.body_ambiguity_resolved = 0
+        self.selected_list = {}
+        self.selected_detail = {}
+        self.row_keys = []
 
     @property
     def body_ambiguity_unresolved(self):
@@ -138,6 +146,40 @@ class Diagnostics:
     def note_static_structural_key(self, name):
         _add(self.static_structural_keys, safe_key_name(name), MAX_KEYS)
 
+    def note_row_keys(self, names):
+        """Column names of the correlated list, so unknown schemas are readable.
+
+        Portal field names are not guessable (nttSj, bbsNttSj, ...). Printing
+        the names lets a human add support for them; printing the values would
+        publish the notices.
+        """
+        self.row_keys = []
+        for name in names or ():
+            _add(self.row_keys, safe_key_name(name), MAX_KEYS)
+
+    def note_selected_list(self, *, correlated, path="", array_path="", row_keys=(),
+                           id_key="", title_key="", date_key=""):
+        self.selected_list = {
+            "correlated": bool(correlated),
+            "candidatePath": path if isinstance(path, str) else "",
+            "arrayPath": safe_json_path(array_path),
+            "rowKeys": [safe_key_name(k) for k in list(row_keys)[:MAX_KEYS]],
+            "idKey": safe_key_name(id_key) if id_key else "unknown",
+            "titleKey": safe_key_name(title_key) if title_key else "unknown",
+            "dateKey": safe_key_name(date_key) if date_key else "unknown",
+        }
+
+    def note_selected_detail(self, *, correlated, path="", id_path="",
+                             body_candidates=(), body_path=""):
+        self.selected_detail = {
+            "correlated": bool(correlated),
+            "candidatePath": path if isinstance(path, str) else "",
+            "idPath": safe_json_path(id_path),
+            "bodyCandidatePaths": list(dict.fromkeys(
+                p for p in (safe_json_path(b) for b in body_candidates) if p))[:MAX_PATHS],
+            "bodyPathSelected": safe_json_path(body_path) or "ambiguous",
+        }
+
     # -- export ------------------------------------------------------------
     def export(self):
         # Allowlist prevents accidentally serializing payload-derived keys/values.
@@ -155,6 +197,9 @@ class Diagnostics:
                          "method": self.list_candidate.get("method", ""),
                          "resourceType": self.list_candidate.get("resourceType", "")}
         return {
+            "selectedList": dict(self.selected_list),
+            "selectedDetail": dict(self.selected_detail),
+            "rowKeys": list(self.row_keys),
             "unsafeQueryKeys": list(self.unsafe_query_keys),
             "listCandidate": candidate,
             "paginationCandidates": [dict(c) for c in self.pagination_candidates],

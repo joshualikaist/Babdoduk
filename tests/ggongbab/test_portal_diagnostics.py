@@ -22,6 +22,17 @@ def response(*, url=BASE + "/api/notices", method="GET", resource="xhr", mime="a
     return r
 
 
+def opened(host=BASE, resource="xhr", mime="application/json",
+           ids=("PRIVATE-ID-A", "PRIVATE-ID-B")):
+    """The two notice details a person opened, matching the default listing.
+
+    Correlation is now what selects an endpoint, so a list observation on its
+    own can no longer produce a contract - the interaction has to be there.
+    """
+    return [response(url=f"{host}/api/notices/{i}", payload=detail(i),
+                     resource=resource, mime=mime) for i in ids]
+
+
 def collect(responses):
     d = Diagnostics()
     rows = [row for r in responses if (row := capture_response(r, HOST, d))]
@@ -40,8 +51,8 @@ def test_setup_list_like_evidence_does_not_imply_replay_success():
 
 def test_text_plain_json_is_parsed_only_in_discovery():
     r = response(mime="text/plain")
-    report, d = collect([r])
-    assert d.counts["json-parsed responses"] == 1 and report["listReplayable"]
+    report, d = collect([r] + opened(mime="text/plain"))
+    assert d.counts["json-parsed responses"] == 3 and report["listReplayable"]
     request = Mock()
     request.get.return_value = r
     with pytest.raises(AuthRequired):
@@ -66,10 +77,10 @@ def test_post_observed_but_not_authorized_or_body_inspected():
 def test_host_observation_scope_does_not_expand_replay(host, same, kaist, observed):
     r = response(url="https://" + host + "/api/notices")
     r.json = Mock(wraps=r.json)
-    report, d = collect([r])
-    assert d.counts["same-host responses"] == same
-    assert d.counts["kaist-host responses"] == kaist
-    assert d.rejected["host mismatch"] == 1 - same
+    report, d = collect([r] + opened(host="https://" + host))
+    assert d.counts["same-host responses"] == same * 3
+    assert d.counts["kaist-host responses"] == kaist * 3
+    assert d.rejected["host mismatch"] == (1 - same) * 3
     assert report["listEndpointObserved"] == observed
     if not same:
         assert report["contract"] is None
@@ -81,8 +92,8 @@ def test_host_observation_scope_does_not_expand_replay(host, same, kaist, observ
 
 @pytest.mark.parametrize("resource,bucket", [("fetch", "xhr/fetch"), ("document", "document"), ("other", "other")])
 def test_resource_types_counted_and_non_xhr_is_diagnostic_only(resource, bucket):
-    report, d = collect([response(resource=resource)])
-    assert d.counts[bucket + " responses"] == 1
+    report, d = collect([response(resource=resource)] + opened(resource=resource))
+    assert d.counts[bucket + " responses"] == 3
     assert report["listEndpointObserved"]
     assert report["listReplayable"] == (resource == "fetch")
 
@@ -112,21 +123,26 @@ def test_path_rejection_count():
 
 
 def test_ambiguous_list_reason():
+    """Two equally plausible arrays are no longer ranked by field names.
+
+    Nothing was opened, so nothing correlates and neither array is chosen.
+    """
     payload = {"first": [notice("one"), notice("two")], "second": [notice("three"), notice("four")]}
     report, d = collect([response(payload=payload)])
     assert d.rejected["schema ambiguous"] == 1
-    assert "LIST_SCHEMA_AMBIGUOUS" in report["reasons"]
+    assert "LIST_DETAIL_ID_NOT_CORRELATED" in report["reasons"]
+    assert report["contract"] is None
     assert report["listEndpointObserved"] and report["contract"] is None
 
 
 def test_multiple_list_identity_reason():
     report, d = collect([response(), response(url=BASE + "/other/notices")])
-    assert "MULTIPLE_LIST_IDENTITIES" in report["reasons"]
-    assert d.rejected["multiple list identities"] == 2
+    assert "LIST_DETAIL_ID_NOT_CORRELATED" in report["reasons"]
+    assert d.rejected["list detail not correlated"] == 1
 
 
 def test_page_parameter_and_progression_are_separate():
-    report, d = collect([response(url=BASE + "/api/notices?page=0")])
+    report, d = collect([response(url=BASE + "/api/notices?page=0")] + opened())
     assert report["paginationParameterObserved"] and not report["paginationVerified"]
     assert d.counts["pagination parameter observed"] == 1
     assert d.counts["pagination progression observed"] == 0
@@ -135,10 +151,13 @@ def test_page_parameter_and_progression_are_separate():
 
 
 def test_no_pagination_is_allowed_and_no_detail_is_reported():
-    report, d = collect([response()])
+    report, d = collect([response()] + opened())
     assert report["listReplayable"] and not report["paginationParameterObserved"]
     assert report["contract"]["pagination"] == "none"
-    assert "NO_DETAIL_CANDIDATE" in report["reasons"]
+    # A list nobody clicked through has no contract at all any more.
+    alone, _ = collect([response()])
+    assert "NO_DETAIL_CANDIDATE" in alone["reasons"]
+    assert alone["contract"] is None
 
 
 def test_cursor_parameter_on_second_request_is_reported():
@@ -173,9 +192,12 @@ def test_detail_rejections_are_distinguishable(failure, reason):
 
 
 def test_ambiguous_body_reason_and_count():
-    report, d = collect([response(), response(payload={"id": "PRIVATE-ID-A", "body": BODY, "content": BODY})])
+    ambiguous = [response(url=f"{BASE}/api/notices/{i}",
+                          payload={"result": {"id": i, "body": BODY, "content": BODY}})
+                 for i in ("PRIVATE-ID-A", "PRIVATE-ID-B")]
+    report, d = collect([response()] + ambiguous)
     assert "DETAIL_BODY_PATH_AMBIGUOUS" in report["reasons"]
-    assert d.rejected["body path ambiguous"] == 1
+    assert d.rejected["body path ambiguous"] == 2
 
 
 def test_debug_file_and_terminal_export_only_fixed_counts_and_reasons(monkeypatch, tmp_path, capsys):
@@ -202,7 +224,8 @@ def test_debug_file_and_terminal_export_only_fixed_counts_and_reasons(monkeypatc
     safe = debug["diagnostics"]["safe"]
     assert set(safe) == {"unsafeQueryKeys", "listCandidate", "paginationCandidates",
                          "staticStructuralKeys", "detailBodyCandidatePaths",
-                         "bodyDisambiguatedByIdSubtree"}
+                         "bodyDisambiguatedByIdSubtree", "selectedList", "selectedDetail",
+                         "rowKeys"}
     assert "token" not in json.dumps(safe)
 
 
@@ -229,14 +252,15 @@ def test_discover_command_reports_candidate_and_rejection_separately(monkeypatch
     monkeypatch.setattr(agent, "LOG_FILE", tmp_path / "log")
     monkeypatch.setattr(agent, "open_session", lambda *_: nullcontext(object()))
     def observe(_session, seconds, diagnostics):
-        return [capture_response(response(url=BASE + "/api/notices?page=0"), HOST, diagnostics)]
+        seen = [response(url=BASE + "/api/notices?page=0")] + opened()
+        return [capture_response(r, HOST, diagnostics) for r in seen]
     monkeypatch.setattr(agent, "observe_network", observe)
     assert agent.cmd_discover(SimpleNamespace()) == 20
     output = capsys.readouterr().out
     assert "list endpoint: candidate found" in output
     assert "list replay contract: rejected" in output
     assert "PAGINATION_NOT_VERIFIED" in output
-    assert "total responses: 1" in output
+    assert "total responses: 3" in output
 
 
 def test_setup_message_does_not_claim_replay_verification(monkeypatch, tmp_path, capsys):

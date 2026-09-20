@@ -283,8 +283,11 @@ def test_incompatible_or_empty_details_do_not_verify(change):
     elif change == "id":
         rows[-1]["_payload"]["result"]["id"] = "wrong"
     else:
-        assert classify_observed("GET", BASE + "/api/notices/private-id-b", 200, detail("private-id-b", "")) is None
-        rows.pop()
+        # An empty body is admitted as a correlation candidate - correlation is
+        # about identity, not text - but it yields no body path, so it can never
+        # authorize a detail contract.
+        rows[-1] = observation("/api/notices/private-id-b", detail("private-id-b", ""))
+        assert rows[-1]["_bodies"] == []
     c = contract_from_discovery(build_discovery(rows, BASE + "/"))
     assert not c.detail_ready()
 

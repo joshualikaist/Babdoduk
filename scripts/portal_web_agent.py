@@ -183,35 +183,60 @@ def log_stages(report):
     counts = diagnostics.get("counts", {})
     rejected = diagnostics.get("rejected", {})
     candidate = safe.get("listCandidate") or {}
+    chosen_list = safe.get("selectedList") or {}
+    chosen_detail = safe.get("selectedDetail") or {}
     pagination = safe.get("paginationCandidates") or []
-    # A key that merely changes is a candidate, not a verified mechanism; say so
-    # rather than printing a name that reads like a decision.
-    verified = report.get("paginationVerified")
-    log("List discovery:")
-    log("  schema candidate: " + ("yes" if counts.get("list-schema candidates") else "no"))
-    log("  request shape: " + ("accepted" if report.get("listReplayable") else "rejected"))
-    if candidate.get("host"):
-        log("  candidate host: " + candidate["host"])
-        log("  candidate path: " + (candidate.get("templatedPath") or "<unsafe path, withheld>"))
-        log("  candidate method: " + f"{candidate.get('method', '')} ({candidate.get('resourceType', '')})")
-        log("  query keys: " + _names(candidate.get("queryKeys") or []))
+
+    log("Interaction correlation:")
+    log(f"  list-like JSON candidates: {counts.get('list-like JSON candidates', 0)}")
+    log(f"  detail-like JSON candidates: {counts.get('detail-like JSON candidates', 0)}")
+    log(f"  correlated list/detail pairs: {counts.get('correlated list/detail pairs', 0)}")
+    log(f"  correlated distinct ids: {counts.get('correlated distinct ids', 0)}")
+
+    log("Selected notice list:")
+    log("  correlated: " + _yes(chosen_list.get("correlated")))
+    if chosen_list.get("correlated"):
+        log("  candidate path: " + (chosen_list.get("candidatePath") or "<unsafe path, withheld>"))
+        log("  array path: " + (chosen_list.get("arrayPath") or "unknown"))
+        log("  row keys: " + _names(chosen_list.get("rowKeys") or safe.get("rowKeys") or []))
+        log("  id key: " + (chosen_list.get("idKey") or "unknown"))
+        log("  title key: " + (chosen_list.get("titleKey") or "unknown"))
+        log("  date key: " + (chosen_list.get("dateKey") or "unknown"))
+    elif candidate.get("host"):
+        # Nothing was chosen, but say what was seen so the next run is targeted.
+        log("  observed host: " + candidate["host"])
+        log("  observed path: " + (candidate.get("templatedPath") or "<unsafe path, withheld>"))
+        log("  observed query keys: " + _names(candidate.get("queryKeys") or []))
     log("  unsafe query keys: " + _names(safe.get("unsafeQueryKeys") or []))
     log("  static structural keys: " + _names(safe.get("staticStructuralKeys") or []))
-    if pagination:
-        for entry in pagination:
-            log(f"  pagination candidate key: {entry['key']} "
-                f"(numericMonotonic={str(entry['numericMonotonic']).lower()}, "
-                f"opaqueChanging={str(entry['opaqueChanging']).lower()})")
-    else:
-        log("  pagination candidate key: none")
-    log("  pagination verified: " + ("yes" if verified else "no (candidate is not authorization)"))
-    log("Detail discovery:")
-    log(f"  candidates observed: {counts.get('detail-schema candidates', 0)}")
+
+    log("Selected notice detail:")
+    log("  correlated: " + _yes(chosen_detail.get("correlated")))
     log(f"  ambiguous body responses: {rejected.get('body path ambiguous', 0)}")
-    log("  candidate body paths: " + _names(safe.get("detailBodyCandidatePaths") or []))
-    log("  body disambiguated by id subtree: "
-        + ("yes" if safe.get("bodyDisambiguatedByIdSubtree") else "no"))
+    if chosen_detail.get("correlated"):
+        log("  candidate path: " + (chosen_detail.get("candidatePath") or "<unsafe path, withheld>"))
+        log("  id path: " + (chosen_detail.get("idPath") or "unknown"))
+        log("  body candidate paths: " + _names(chosen_detail.get("bodyCandidatePaths") or []))
+        log("  body path selected: " + (chosen_detail.get("bodyPathSelected") or "ambiguous"))
+        log("  body disambiguated by id subtree: " + _yes(safe.get("bodyDisambiguatedByIdSubtree")))
     log(f"  distinct replayable details: {counts.get('replayable detail candidates', 0)}")
+
+    log("Pagination:")
+    if not chosen_list.get("correlated"):
+        log("  evaluated only after notice list correlation: not reached")
+        return
+    for entry in pagination:
+        log(f"  candidate key: {entry['key']} "
+            f"(numericMonotonic={str(entry['numericMonotonic']).lower()}, "
+            f"opaqueChanging={str(entry['opaqueChanging']).lower()})")
+    if not pagination:
+        log("  candidate key: none")
+    log("  mechanism: " + (report.get("contract", {}) or {}).get("pagination", "none"
+        if report.get("listReplayable") else "unverified"))
+
+
+def _yes(value):
+    return "yes" if value else "no"
 
 
 def cmd_calibrate(args):
