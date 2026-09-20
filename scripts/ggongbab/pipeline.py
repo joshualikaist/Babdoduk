@@ -132,6 +132,18 @@ class Pipeline:
     def process_item(self, item: RawItem) -> Optional[ParseOutcome]:
         self.stats.items_seen += 1
         existing = self.repo.find_raw_item(item.source_type, item.external_id)
+        # Portal changes append Dooray tasks with the same external key. An older
+        # task can arrive after its replacement (including in a later collection).
+        # Do not let that replay roll the stored notice/event back.
+        if item.source_type == "portal" and existing and item.source_updated_at:
+            try:
+                previous = datetime.fromisoformat(str(existing.get("source_updated_at") or "").replace("Z", "+00:00"))
+                if previous.tzinfo and item.source_updated_at.tzinfo and previous > item.source_updated_at:
+                    self.repo.touch_raw_item(existing["id"])
+                    self.stats.ai_skipped += 1
+                    return ParseOutcome(candidate=None, skipped_cached=True)
+            except (ValueError, TypeError):
+                pass
         content_hash = item.content_hash
         if existing and existing.get("content_hash") == content_hash:
             # cached_parse is scoped to the current PROMPT_VERSION, so a reworded

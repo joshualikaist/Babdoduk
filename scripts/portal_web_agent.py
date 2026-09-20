@@ -1,18 +1,7 @@
-# -*- coding: utf-8 -*-
-"""Resident Chrome agent for KAIST Portal notices.
+"""Local Portal agent: passive discovery, verified contracts, active bounded GETs.
 
-Passwords, OTP and cookies are never read, stored or typed. Endpoints are taken
-only from observed XHR/fetch traffic after the user completes SSO in the
-dedicated Portal profile.
-
-    python scripts\\portal_web_agent.py --setup --cdp
-    python scripts\\portal_web_agent.py --discover --cdp
-    python scripts\\portal_web_agent.py --calibrate --cdp
-    python scripts\\portal_web_agent.py --dry-run --cdp
-    python scripts\\portal_web_agent.py --run --cdp
-
-Cloud GitHub Actions cannot log into Portal. This agent writes collection-project
-tasks locally; the existing Dooray collector then emits source_type=portal.
+SSO is manual. No credentials, notice values or raw IDs are logged or persisted
+in discovery/queue files. Dry runs never instantiate a Dooray writer or save a queue.
 """
 from __future__ import annotations
 
@@ -20,23 +9,23 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Optional
-from urllib.parse import parse_qsl, urlparse
+from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ggongbab.config import KST, load_settings  # noqa: E402
-from ggongbab.portal_contract import (PortalContract, contract_from_discovery)  # noqa: E402
-from ggongbab.portal_observe import path_template, summarize_json  # noqa: E402
-from ggongbab.portal_queue import PortalQueue  # noqa: E402
-from ggongbab.prefilter import portal_detail_is_candidate, portal_list_warrants_detail  # noqa: E402
-from ggongbab.web.exit_codes import (AUTH_REQUIRED, SUCCESS, UI_CHANGED, AgentError,  # noqa: E402
+from ggongbab.config import KST, load_settings
+from ggongbab.portal_contract import PortalContract, contract_from_discovery
+from ggongbab.portal_discovery import build_discovery, classify_observed, notice_date, stable_id
+from ggongbab.portal_fetch import fetch_detail, iter_notices, request_context
+from ggongbab.portal_queue import PortalQueue
+from ggongbab.prefilter import portal_detail_is_candidate, portal_list_warrants_detail
+from ggongbab.web.exit_codes import (AUTH_REQUIRED, SUCCESS, UI_CHANGED,
                                      AuthRequired, ProjectNotFound, UiContractError)
-from ggongbab.web.resident import resident_session  # noqa: E402
-from ggongbab.web.task_writer import PortalPayload, TaskWriter  # noqa: E402
-from ggongbab.web.ui_contract import UiContract  # noqa: E402
+from ggongbab.web.resident import resident_session
+from ggongbab.web.task_writer import PortalPayload, TaskWriter
+from ggongbab.web.ui_contract import UiContract
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCAL_DIR = ROOT / ".local"
@@ -48,14 +37,9 @@ LOG_FILE = LOCAL_DIR / "portal-agent.log"
 DEFAULT_START = "https://portal.kaist.ac.kr/"
 DEFAULT_PORT = 9223
 LOGIN_HINTS = ("login", "signin", "sign-in", "sso", "auth", "idp", "nid", "account")
-TITLE_KEYS = {"title", "subject", "noticetitle", "bbsstit", "ntttitle"}
-ID_KEYS = {"id", "noticeid", "bbsid", "nttid", "seq", "uid", "articleid"}
-DATE_KEYS = {"createdat", "createddate", "regdate", "regdt", "date", "writedate", "updatedat"}
-BODY_KEYS = {"body", "content", "contents", "html", "text", "nttcont"}
-PAGE_PARAMS = {"page", "pageNo", "pageIndex", "offset", "start"}
 
 
-def log(message: str) -> None:
+def log(message):
     line = f"{datetime.now(KST).strftime('[%H:%M:%S]')} {message}"
     print(line, flush=True)
     try:
@@ -66,369 +50,224 @@ def log(message: str) -> None:
         pass
 
 
-def start_url() -> str:
+def start_url():
     import os
-    return os.environ.get("PORTAL_START_URL") or DEFAULT_START
+    url = os.environ.get("PORTAL_START_URL") or DEFAULT_START
+    p = urlparse(url)
+    if p.scheme != "https" or not p.netloc or p.query or p.fragment or p.username or p.password:
+        raise UiContractError("Portal start URL must be an HTTPS page without credentials or query values")
+    return url
 
 
-def dummy_contract(url: str) -> UiContract:
+def dummy_contract(url):
     return UiContract(mail_url=url, verified=False)
 
 
-def _is_login_url(url: str) -> bool:
-    parsed = urlparse(url or "")
-    hay = f"{parsed.netloc}{parsed.path}".lower()
-    return any(hint in hay for hint in LOGIN_HINTS)
-
-
-def page_authenticated(page, expected_host: str) -> bool:
+def page_authenticated(page, expected_host, *, notice_api_observed=False):
+    """A public landing page is never positive evidence by itself."""
     try:
-        url = page.url or ""
-    except Exception:  # noqa: BLE001
+        parsed = urlparse(page.url)
+        if parsed.scheme != "https" or parsed.netloc != expected_host:
+            return False
+        if any(h in parsed.path.lower() for h in LOGIN_HINTS):
+            return False
+        return bool(notice_api_observed and page.locator("input[type='password']").count() == 0)
+    except Exception:
         return False
-    host = urlparse(url).netloc.lower()
-    if expected_host and expected_host not in host:
-        return False
-    if _is_login_url(url):
-        return False
-    try:
-        has_password = page.locator("input[type='password']").count() > 0
-    except Exception:  # noqa: BLE001
-        has_password = False
-    return not has_password
 
 
-def wait_for_portal(session, timeout_seconds: int = 600) -> None:
-    expected = urlparse(start_url()).netloc.lower()
-    deadline = time.time() + timeout_seconds
-    stable = 0
-    log("waiting for Portal authenticated UI (complete SSO in the browser; no Enter here)")
-    while time.time() < deadline:
-        pages = []
-        try:
-            pages = list(session.context.pages)
-        except Exception:  # noqa: BLE001
-            pages = [session.page]
-        if any(page_authenticated(page, expected) for page in pages):
-            stable += 1
-            if stable >= 3:
-                log("Portal authenticated page detected")
-                return
-        else:
-            stable = 0
-        time.sleep(1.0)
-    raise AuthRequired("Portal SSO was not completed",
-                       hint="python scripts\\portal_web_agent.py --setup --cdp")
-
-
-def _json_payload(response) -> Optional[Any]:
-    ctype = (response.headers or {}).get("content-type", "")
-    if "json" not in ctype.lower() and "javascript" not in ctype.lower():
-        return None
-    try:
-        return response.json()
-    except Exception:  # noqa: BLE001
-        return None
-
-
-def _page_param(url: str) -> str:
-    for name, _value in parse_qsl(urlparse(url).query, keep_blank_values=True):
-        if name in PAGE_PARAMS:
-            return name
-    return ""
-
-
-def _best_array(summary: dict[str, Any]) -> Optional[dict[str, Any]]:
-    arrays = summary.get("arrays") or []
-    ranked = [row for row in arrays if (row.get("length") or 0) >= 2 and row.get("rowKeys")]
-    ranked.sort(key=lambda row: row.get("length") or 0, reverse=True)
-    return ranked[0] if ranked else None
-
-
-def classify_observed(method: str, url: str, status: int, payload: Any) -> Optional[dict[str, Any]]:
-    if status < 200 or status >= 300 or payload is None:
-        return None
-    parsed = urlparse(url)
-    summary = summarize_json(payload)
-    array = _best_array(summary)
-    row_keys = [k.lower() for k in (array.get("rowKeys") if array else [])]
-    top = [k.lower() for k in (summary.get("topKeys") or [])]
-    info = {
-        "method": method,
-        "host": parsed.netloc,
-        "path": path_template(parsed.path),
-        "status": status,
-        "queryKeys": [name for name, _ in parse_qsl(parsed.query)],
-        "topKeys": summary.get("topKeys") or [],
-        "rowKeys": (array or {}).get("rowKeys") or [],
-        "length": (array or {}).get("length") or 0,
-        "pageParam": _page_param(url),
-        "fieldTypes": (array or {}).get("fieldTypes") or {},
-    }
-    has_title = any(k in TITLE_KEYS for k in row_keys)
-    has_id = any(k in ID_KEYS for k in row_keys)
-    has_body = any(k in BODY_KEYS for k in top + row_keys)
-    if array and has_title and has_id:
-        info["kind"] = "list"
-        return info
-    if has_body and (has_id or has_title or "result" in top):
-        info["kind"] = "detail"
-        info["bodyKey"] = next((k for k in (summary.get("topKeys") or []) if k.lower() in BODY_KEYS), "")
-        return info
-    return None
-
-
-def observe_network(page, seconds: int = 20) -> list[dict[str, Any]]:
-    found: list[dict[str, Any]] = []
+def observe_network(session, seconds=20, *, stop_on_auth=False):
+    found = []
+    positive_pages = set()
+    host = urlparse(start_url()).netloc
 
     def on_response(response):
-        request = response.request
-        if request.resource_type not in ("xhr", "fetch"):
-            return
-        payload = _json_payload(response)
-        row = classify_observed(request.method, response.url, response.status, payload)
-        if row:
-            row["_payload"] = payload
-            row["_url"] = response.url
-            found.append(row)
-
-    page.on("response", on_response)
-    try:
-        page.wait_for_timeout(seconds * 1000)
-    finally:
         try:
-            page.remove_listener("response", on_response)
-        except Exception:  # noqa: BLE001
+            req = response.request
+            if req.resource_type not in ("xhr", "fetch") or urlparse(response.url).netloc != host:
+                return
+            if "json" not in response.headers.get("content-type", "").lower():
+                return
+            row = classify_observed(req.method, response.url, response.status, response.json())
+            if row:
+                found.append(row)
+                if row["kind"] == "list":
+                    positive_pages.add(req.frame.page)
+        except Exception:
             pass
+
+    # BrowserScope attaches to every live context, including newly opened SSO tabs.
+    session.context.on("response", on_response)
+    deadline = time.monotonic() + seconds
+    try:
+        while time.monotonic() < deadline:
+            pages = session.context.pages
+            if stop_on_auth and any(page_authenticated(p, host, notice_api_observed=p in positive_pages)
+                                    for p in pages):
+                return found
+            # Pump Playwright events, rather than starving callbacks with time.sleep.
+            if not pages:
+                raise AuthRequired("Portal browser has no open pages")
+            pages[-1].wait_for_timeout(min(250, max(1, (deadline - time.monotonic()) * 1000)))
+    finally:
+        session.context.remove_listener("response", on_response)
+    if stop_on_auth:
+        raise AuthRequired("Portal notice API not observed; complete SSO and open the notice list")
     return found
 
 
-def _public_row(row: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in row.items() if not str(k).startswith("_")}
+def wait_for_portal(session, timeout_seconds=600):
+    log("complete manual SSO and open the notice list; waiting for a successful notice API response")
+    observe_network(session, timeout_seconds, stop_on_auth=True)
 
 
-def write_discovery(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    lists = [_public_row(row) for row in rows if row.get("kind") == "list"]
-    details = [_public_row(row) for row in rows if row.get("kind") == "detail"]
-    report = {
-        "observedAt": datetime.now(KST).isoformat(timespec="seconds"),
-        "listCandidates": lists[:12],
-        "detailCandidates": details[:12],
-        "listEndpointObserved": bool(lists),
-        "detailEndpointObserved": bool(details),
-        "paginationVerified": any(row.get("pageParam") for row in lists),
-    }
+def write_discovery(rows):
+    report = build_discovery(rows, start_url())
     LOCAL_DIR.mkdir(parents=True, exist_ok=True)
     DISCOVERY_FILE.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return report
 
 
-def cmd_setup(args) -> int:
-    url = start_url()
-    log(f"opening Portal start URL host={urlparse(url).netloc} (SSO is manual)")
-    with resident_session(PROFILE_DIR, dummy_contract(url), start_url=url,
-                          port=args.port, log=log, reuse=True) as session:
-        try:
-            session.page.goto(url, wait_until="domcontentloaded")
-        except Exception:  # noqa: BLE001
-            pass
+def open_session(args, url):
+    # resident startup diagnostics are not Portal count-only logs.
+    return resident_session(PROFILE_DIR, dummy_contract(url), start_url=url,
+                            port=args.port, log=lambda _: None, reuse=True)
+
+
+def cmd_setup(args):
+    log("opening dedicated Portal browser; SSO is manual")
+    with open_session(args, start_url()) as session:
         wait_for_portal(session)
-    log("setup complete; dedicated profile stays open on 127.0.0.1")
+    log("setup complete: successful notice API observed")
     return SUCCESS
 
 
-def cmd_discover(args) -> int:
-    url = start_url()
-    with resident_session(PROFILE_DIR, dummy_contract(url), start_url=url,
-                          port=args.port, log=log, reuse=True) as session:
-        wait_for_portal(session, timeout_seconds=30)
-        log("observing XHR/fetch for 20s — browse notices in the Portal tab")
-        rows = observe_network(session.page, seconds=20)
+def cmd_discover(args):
+    with open_session(args, start_url()) as session:
+        log("observing for 60s: open the notice list, next page, and two distinct notice details")
+        rows = observe_network(session, seconds=60)
     report = write_discovery(rows)
-    log(f"list endpoint observed: {'yes' if report['listEndpointObserved'] else 'no'}")
-    log(f"detail endpoint observed: {'yes' if report['detailEndpointObserved'] else 'no'}")
-    log(f"pagination verified: {'yes' if report['paginationVerified'] else 'no'}")
-    for kind, key in (("list", "listCandidates"), ("detail", "detailCandidates")):
-        for row in report.get(key) or []:
-            log(f"  candidate: {row.get('method')} {row.get('path')} keys={len(row.get('rowKeys') or row.get('topKeys') or [])}")
-    if not report["listEndpointObserved"]:
-        log("PORTAL CALIBRATION FAILED: no list endpoint observed")
-        return UI_CHANGED
-    return SUCCESS
+    log(f"list endpoint observed: {report['listEndpointObserved']}")
+    log(f"detail endpoint observed: {report['detailEndpointObserved']}")
+    log(f"pagination verified: {report['paginationVerified']}")
+    return SUCCESS if report["listEndpointObserved"] else UI_CHANGED
 
 
-def cmd_calibrate(args) -> int:
-    if not DISCOVERY_FILE.exists():
-        log("PORTAL CALIBRATION FAILED: run --discover first")
-        return UI_CHANGED
+def cmd_calibrate(args):
+    # Invalidate earlier authorization if this calibration fails.
+    if CONTRACT_FILE.exists():
+        old = PortalContract.load(CONTRACT_FILE)
+        old.verified = False
+        old.save(CONTRACT_FILE)
     try:
         discovery = json.loads(DISCOVERY_FILE.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        log("PORTAL CALIBRATION FAILED: discovery file unreadable")
-        return UI_CHANGED
-    contract = contract_from_discovery(discovery)
+        contract = contract_from_discovery(discovery)
+    except (OSError, ValueError, TypeError):
+        contract = None
     if contract is None or not contract.list_ready():
-        log("PORTAL CALIBRATION FAILED: list endpoint missing stable id/title keys")
+        log("PORTAL CALIBRATION FAILED: need an observed replayable list contract")
         return UI_CHANGED
-    if not contract.detail_path:
-        log("PORTAL CALIBRATION FAILED: detail endpoint not observed")
+    if contract.detail_verified_count < 2 or len(set(contract.detail_id_hashes)) < 2:
+        log("PORTAL CALIBRATION FAILED: need two distinct notice details")
         return UI_CHANGED
-    if contract.detail_verified_count < 2:
-        # Discover records candidates; two detail-shaped calls count as verification.
-        details = discovery.get("detailCandidates") or []
-        contract.detail_verified_count = min(len(details), 2) if details else 0
-        if contract.detail_verified_count < 2:
-            log("PORTAL CALIBRATION FAILED: need detail template on >=2 notices")
-            return UI_CHANGED
+    if not contract.detail_ready():
+        log("PORTAL CALIBRATION FAILED: detail path or read-state semantics require review")
+        return UI_CHANGED
     contract.verified = True
     contract.save(CONTRACT_FILE)
-    log("list endpoint observed: yes")
-    log(f"pagination verified: {'yes' if contract.list_page_param else 'no'}")
-    log("stable ids: observed")
-    log("dates parsed: " + ("yes" if contract.list_date_key else "no"))
     log(f"detail verified count: {contract.detail_verified_count}")
+    log(f"pagination verified: {contract.pagination != 'none'}")
+    log(f"dates parsed: {bool(contract.list_date_key)}")
+    log("calibration complete; run --dry-run --cdp before --run")
     return SUCCESS
 
 
-def find_row_dicts(payload: Any) -> list[dict[str, Any]]:
-    if isinstance(payload, list) and payload and isinstance(payload[0], dict):
-        return payload
-    if isinstance(payload, dict):
-        for value in payload.values():
-            found = find_row_dicts(value)
-            if found:
-                return found
-    return []
-
-
-def extract_body(payload: Any, key: str) -> str:
-    if isinstance(payload, dict):
-        if key and isinstance(payload.get(key), str) and payload.get(key):
-            return str(payload.get(key))
-        for name, value in payload.items():
-            if name.lower() in BODY_KEYS and isinstance(value, str) and value.strip():
-                return value
-            nested = extract_body(value, key)
-            if nested:
-                return nested
-    elif isinstance(payload, list):
-        for item in payload:
-            nested = extract_body(item, key)
-            if nested:
-                return nested
-    return ""
-
-
-def _require_contract() -> PortalContract:
+def _require_contract():
     contract = PortalContract.load(CONTRACT_FILE)
-    if not contract.verified or not contract.list_ready():
-        raise UiContractError("PORTAL CALIBRATION FAILED",
-                              hint="python scripts\\portal_web_agent.py --discover --cdp")
+    if not contract.verified or not contract.list_ready() or not contract.detail_ready():
+        raise UiContractError("PORTAL CALIBRATION FAILED: run discovery and calibration first")
+    if contract.list_host != urlparse(start_url()).netloc or contract.detail_host != contract.list_host:
+        raise UiContractError("Portal contract host does not match the dedicated Portal origin")
     return contract
 
 
-def _row_value(row: dict, key: str) -> str:
-    if not key:
-        return ""
-    value = row.get(key)
-    return "" if value is None else str(value)
-
-
-def _detail_for_id(detail_calls: list[dict[str, Any]], stable_id: str, body_key: str) -> str:
-    if not stable_id:
-        return ""
-    for call in detail_calls:
-        url = call.get("_url") or ""
-        if stable_id and stable_id in url:
-            return extract_body(call.get("_payload"), body_key)
-    if len(detail_calls) == 1:
-        return extract_body(detail_calls[0].get("_payload"), body_key)
-    return ""
-
-
-def cmd_run(args) -> int:
+def cmd_run(args):
     contract = _require_contract()
+    since, until = args.date_from, args.date_to
+    if (since or until) and not contract.list_date_key:
+        raise UiContractError("Portal date window requires a verified date field")
     queue = PortalQueue(STATE_FILE)
-    settings = load_settings()
-    writer = TaskWriter(settings)
+    writer = None
     if not args.dry_run:
+        writer = TaskWriter(load_settings())
         writer.verify_project()
-    url = start_url()
-    registered = 0
-    skipped = 0
-    updated = 0
-    candidates = 0
-    with resident_session(PROFILE_DIR, dummy_contract(url), start_url=url,
-                          port=args.port, log=log, reuse=True) as session:
-        wait_for_portal(session, timeout_seconds=30)
-        log("observing live list/detail traffic (values stay in memory)")
-        rows = observe_network(session.page, seconds=12)
-    list_calls = [row for row in rows if row.get("kind") == "list"]
-    detail_calls = [row for row in rows if row.get("kind") == "detail"]
-    if not list_calls:
-        log("no list traffic in this run; open the notice list then retry")
-        return UI_CHANGED
-    notices = find_row_dicts(list_calls[-1].get("_payload"))
-    log(f"list endpoint observed: yes  detail observed this run: "
-        f"{'yes' if detail_calls else 'no'}")
-    log(f"stable ids: {len(notices)}/{len(notices)}" if notices else "stable ids: 0/0")
-    dated = 0
-    detail_used = 0
-    for notice in notices:
-        if not isinstance(notice, dict):
-            continue
-        stable_id = _row_value(notice, contract.list_id_key)
-        title = _row_value(notice, contract.list_title_key)
-        date_val = _row_value(notice, contract.list_date_key)
-        if date_val:
-            dated += 1
-        if not stable_id or not portal_list_warrants_detail(title):
-            continue
-        body = _detail_for_id(detail_calls, stable_id, contract.detail_body_key)
-        if body:
-            detail_used += 1
-        decision_pre = portal_detail_is_candidate(title, body, has_list_date=bool(date_val))
-        if not decision_pre.candidate:
-            continue
-        candidates += 1
-        decision = queue.decide(stable_id, title, body)
-        if decision.outcome == "skip":
-            skipped += 1
-            continue
-        payload = PortalPayload(
-            external_key=decision.external_key,
-            title=title,
-            body=body or title,
-            source_created_at=date_val,
-            private_source=True,
-        )
-        writer.create_portal_task(payload, dry_run=args.dry_run)
-        queue.record(decision)
-        if decision.outcome == "update":
-            updated += 1
-        else:
-            registered += 1
-    queue.save()
-    log(f"dates parsed: {dated}/{len(notices)}")
-    log(f"detail verified count: {detail_used}")
-    if args.dry_run:
-        log("dry-run: no Dooray tasks created")
-    log(f"candidates={candidates} registered={registered} updated={updated} skipped={skipped}")
+    counts = dict(loaded_rows=0, date_matched=0, detail_fetched=0, candidates=0,
+                  new=0, updated=0, already_queued=0, registered=0)
+    with open_session(args, start_url()) as session:
+        request, initial_payload = request_context(session, contract)
+        for row in iter_notices(request, contract, max_pages=args.max_pages,
+                                max_items=args.max_items, date_from=since, initial_payload=initial_payload):
+            counts["loaded_rows"] += 1
+            parsed_date = notice_date(row.get(contract.list_date_key))
+            if since or until:
+                # Undated notices do not silently become current notices.
+                if parsed_date is None or (since and parsed_date < since) or (until and parsed_date > until):
+                    continue
+            if parsed_date is not None:
+                counts["date_matched"] += 1
+            title = row[contract.list_title_key]
+            if not portal_list_warrants_detail(title):
+                continue
+            identifier = stable_id(row[contract.list_id_key])
+            body = fetch_detail(request, contract, identifier)
+            counts["detail_fetched"] += 1
+            if not portal_detail_is_candidate(title, body, has_list_date=parsed_date is not None).candidate:
+                continue
+            counts["candidates"] += 1
+            decision = queue.decide(identifier, title, body)
+            counts[{"new": "new", "update": "updated", "skip": "already_queued"}[decision.outcome]] += 1
+            if args.dry_run or decision.outcome == "skip":
+                continue
+            payload = PortalPayload(external_key=decision.external_key, title=title, body=body,
+                                    source_created_at=str(row.get(contract.list_date_key) or ""))
+            try:
+                task_id = writer.create_portal_task(payload, dry_run=False)
+            except Exception:
+                raise ProjectNotFound("Portal task creation failed; queue not advanced for this notice") from None
+            if not task_id:
+                raise ProjectNotFound("Portal task creation unconfirmed; queue not advanced")
+            queue.record(decision)
+            queue.save()
+            counts["registered"] += 1
+    for key, value in counts.items():
+        suffix = " (dry run)" if key == "registered" and args.dry_run else ""
+        log(f"{key.replace('_', ' ')}: {value}{suffix}")
     return SUCCESS
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def positive_int(value):
+    value = int(value)
+    if value <= 0:
+        raise argparse.ArgumentTypeError("must be positive")
+    return value
+
+
+def main(argv=None):
     parser = argparse.ArgumentParser(description="KAIST Portal resident agent")
-    parser.add_argument("--setup", action="store_true")
-    parser.add_argument("--discover", action="store_true")
-    parser.add_argument("--calibrate", action="store_true")
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--run", action="store_true")
-    parser.add_argument("--cdp", action="store_true", help="resident Chrome on 127.0.0.1")
+    modes = parser.add_mutually_exclusive_group(required=True)
+    for mode in ("setup", "discover", "calibrate", "run", "dry-run"):
+        modes.add_argument("--" + mode, action="store_true")
+    parser.add_argument("--cdp", action="store_true")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
+    parser.add_argument("--from", dest="date_from", type=date.fromisoformat)
+    parser.add_argument("--to", dest="date_to", type=date.fromisoformat)
+    parser.add_argument("--max-items", type=positive_int, default=500)
+    parser.add_argument("--max-pages", type=positive_int, default=20)
     args = parser.parse_args(argv)
+    if args.date_from and args.date_to and args.date_from > args.date_to:
+        parser.error("--from must not be after --to")
     if not args.cdp:
-        log("this agent only attaches to resident Chrome; pass --cdp")
+        log("pass --cdp to attach to the dedicated Portal browser")
         return AUTH_REQUIRED
     try:
         if args.setup:
@@ -437,24 +276,19 @@ def main(argv: Optional[list[str]] = None) -> int:
             return cmd_discover(args)
         if args.calibrate:
             return cmd_calibrate(args)
-        if args.run or args.dry_run:
-            return cmd_run(args)
-        parser.print_help()
-        return 1
-    except AuthRequired as exc:
-        log(f"AUTH_REQUIRED: {exc}")
-        if exc.hint:
-            log(exc.hint)
+        return cmd_run(args)
+    except AuthRequired:
+        log("AUTH_REQUIRED: complete manual Portal setup and open the notice list")
         return AUTH_REQUIRED
     except UiContractError as exc:
-        log(str(exc) or "PORTAL CALIBRATION FAILED")
+        log(str(exc))  # Only fixed, value-free messages from Portal helpers.
         return UI_CHANGED
-    except ProjectNotFound as exc:
-        log(f"project verification failed: {exc}")
+    except ProjectNotFound:
+        log("Portal task/project operation failed; unsuccessful notice was not recorded")
         return 30
-    except AgentError as exc:
-        log(str(exc))
-        return getattr(exc, "code", 1)
+    except Exception:
+        log("Portal operation failed; diagnostic values suppressed")
+        return 1
 
 
 if __name__ == "__main__":

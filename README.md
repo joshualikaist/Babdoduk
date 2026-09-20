@@ -198,7 +198,8 @@ SSO가 에이전트가 제어하지 않는 창에서 끝나 버리는 문제 때
 ### KAIST Portal 로컬 에이전트
 
 Portal은 GitHub Action에서 SSO 할 수 없으므로 클라우드 collector는 비활성입니다.
-로컬 resident Chrome + 수동 SSO 후, 웹앱이 실제로 호출한 XHR만 관찰합니다.
+로컬 resident Chrome + 수동 SSO 후, `--discover`에서 웹앱이 실제로 호출한 XHR/fetch를 관찰합니다.
+`--dry-run`/`--run`은 검증된 contract로 현재 브라우저 세션의 API를 직접 조회합니다.
 비밀번호·OTP는 채우지 않고, 엔드포인트를 추측하지 않습니다.
 
 ```powershell
@@ -206,6 +207,7 @@ python scripts\portal_web_agent.py --setup --cdp
 python scripts\portal_web_agent.py --discover --cdp
 python scripts\portal_web_agent.py --calibrate --cdp
 python scripts\portal_web_agent.py --dry-run --cdp
+python scripts\portal_web_agent.py --dry-run --cdp --from 2026-09-01 --to 2026-09-20 --max-items 200 --max-pages 10
 python scripts\portal_web_agent.py --run --cdp
 ```
 
@@ -215,6 +217,29 @@ python scripts\portal_web_agent.py --run --cdp
 private Portal URL은 공개 JSON에 나가지 않습니다.
 
 관찰된 list/detail이 없으면 `PORTAL CALIBRATION FAILED` 로 끝납니다.
+setup은 비밀번호 입력창이 없는 화면만으로 성공하지 않으며, 공지 목록 API의 정상 응답을 기다립니다.
+discovery의 60초 동안 목록 첫 페이지와 다음 페이지, 서로 다른 공지 상세 2건을 열어야 합니다.
+calibration은 같은 상세 요청 템플릿/본문 경로와 서로 다른 ID의 해시 2개를 확인합니다.
+기존 v1 contract는 재사용하지 않으므로 다시 discovery/calibration해야 합니다.
+
+목록 배열과 nested 본문은 관찰된 정확한 JSON 경로만 읽습니다. 관찰로 입증된
+page/offset 증가 또는 응답 cursor와 다음 요청의 연결만 pagination에 사용합니다.
+빈 페이지·중복만 있는 페이지·검증된 날짜 내림차순 cutoff·최대 페이지/건수에서 멈춥니다.
+기간을 지정하면 날짜가 없거나 파싱되지 않는 공지는 제외하며, 날짜 필드가 검증되지 않았으면 중단합니다.
+기본 상한은 20페이지/500건입니다. 첫 관찰이 중간 페이지면 그 지점부터 시작하므로 backfill은 첫 페이지부터 관찰하세요.
+
+dry-run은 Dooray writer를 생성하지 않고 queue 파일을 만들거나 변경하지 않습니다.
+실제 run에서 task ID가 반환된 공지만 즉시 queue에 기록합니다. queue에는 해시만 저장하며,
+변경 공지는 같은 external key의 새 task로 등록하고, 수집 시 최신 내용으로 upsert합니다.
+등록 성공 직후 로컬 저장 전에 프로세스가 종료되면 다음 실행에 task가 중복될 수 있지만,
+동일 external key로 DB에서 합쳐집니다.
+
+현재 자동 calibration은 GET/동일 Portal host/명확한 ID와 JSON 본문을 가진 응답만 지원합니다.
+알 수 없는 query 값, 재현할 수 없는 요청, 여러 모호한 목록은 추측하지 않고 중단합니다.
+비어 있지 않은 cursor·인증 정보·본문·제목·raw ID는 contract에 저장하지 않습니다.
+read/unread/readCount/viewCount 등이 관찰되면 상세 조회를 승인하지 않고 semantics 검토를 요구합니다.
+`no-read-state-observed`는 관찰 응답에 해당 필드가 없다는 뜻이며 서버의 모든 부작용을 입증한 것은 아닙니다.
+실제 Portal endpoint/path와 동작은 다음 SSO/discovery 단계에서 확인해야 합니다.
 
 ### KAIST 학식
 

@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-"""Observed Portal HTTP contract. Empty until --discover/--calibrate succeed."""
+"""Replayable, observation-only Portal contract; no credentials or notice values."""
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Optional
 
 TITLE_KEYS = {"title", "subject", "noticetitle", "bbsstit", "ntttitle"}
 ID_KEYS = {"id", "noticeid", "bbsid", "nttid", "seq", "uid", "articleid"}
@@ -13,81 +11,76 @@ DATE_KEYS = {"createdat", "createddate", "regdate", "regdt", "date", "writedate"
 BODY_KEYS = {"body", "content", "contents", "html", "text", "nttcont"}
 
 
+def pick_key(keys, candidates):
+    matches = [k for k in keys if k.lower() in candidates]
+    return matches[0] if len(matches) == 1 else ""
+
+
 @dataclass
 class PortalContract:
+    version: int = 2
     verified: bool = False
     start_url: str = "https://portal.kaist.ac.kr/"
     list_method: str = ""
     list_host: str = ""
     list_path: str = ""
+    list_query: dict = field(default_factory=dict)
+    list_array_path: str = ""
     list_id_key: str = ""
     list_title_key: str = ""
     list_date_key: str = ""
+    list_date_descending: bool = False
     list_page_param: str = ""
+    pagination: str = "none"
+    page_step: int = 0
+    cursor_path: str = ""
     detail_method: str = ""
     detail_host: str = ""
     detail_path: str = ""
-    detail_body_key: str = ""
+    detail_query: dict = field(default_factory=dict)
+    detail_body_path: str = ""
+    detail_id_path: str = ""
     detail_verified_count: int = 0
-    notes: str = ""
+    detail_id_hashes: list[str] = field(default_factory=list)
+    detail_state: str = ""
 
-    def list_ready(self) -> bool:
-        return bool(self.list_path and self.list_id_key and self.list_title_key)
+    def list_ready(self):
+        page_ok = self.pagination == "none" or (
+            self.pagination in ("page", "offset") and self.list_page_param in self.list_query
+            and isinstance(self.page_step, int) and self.page_step > 0
+            and str(self.list_query[self.list_page_param]).isdigit()
+        ) or (self.pagination == "cursor" and bool(self.list_page_param and self.cursor_path))
+        return bool(self.version == 2 and self.list_method == "GET" and self.list_host
+                    and self.list_path and self.list_array_path and self.list_id_key
+                    and self.list_title_key and page_ok)
 
-    def detail_ready(self) -> bool:
-        return bool(self.detail_path and self.detail_body_key and self.detail_verified_count >= 2)
+    def detail_ready(self):
+        return bool(self.detail_method == "GET" and self.detail_host and self.detail_body_path
+                    and self.detail_id_path and self.detail_verified_count >= 2
+                    and len(set(self.detail_id_hashes)) >= 2
+                    and self.detail_state == "no-read-state-observed"
+                    and ("{id}" in self.detail_path or "{id}" in self.detail_query.values()))
 
     @classmethod
-    def load(cls, path: Path) -> "PortalContract":
-        if not path.exists():
-            return cls()
+    def load(cls, path: Path):
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            if not isinstance(data, dict) or data.get("version") != 2:
+                return cls()
+            return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
+        except (OSError, ValueError, TypeError):
             return cls()
-        if not isinstance(data, dict):
-            return cls()
-        known = {k: v for k, v in data.items() if k in cls.__dataclass_fields__}
-        return cls(**known)
 
-    def save(self, path: Path) -> None:
+    def save(self, path: Path):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(asdict(self), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def pick_key(keys: list[str], candidates: set[str]) -> str:
-    lower = {k.lower(): k for k in keys}
-    for name in candidates:
-        if name in lower:
-            return lower[name]
-    return ""
-
-
-def contract_from_discovery(discovery: dict[str, Any]) -> Optional[PortalContract]:
-    """Fill a contract only from observed discovery rows. Never invents a path."""
-    lists = discovery.get("listCandidates") or []
-    details = discovery.get("detailCandidates") or []
-    if not lists:
+def contract_from_discovery(discovery):
+    # A schema summary or two arbitrary detail calls cannot authorize replay.
+    data = discovery.get("contract")
+    if discovery.get("version") != 2 or not isinstance(data, dict):
         return None
-    best = lists[0]
-    row_keys = [str(k) for k in (best.get("rowKeys") or [])]
-    contract = PortalContract(
-        verified=False,
-        list_method=str(best.get("method") or "GET"),
-        list_host=str(best.get("host") or ""),
-        list_path=str(best.get("path") or ""),
-        list_id_key=pick_key(row_keys, ID_KEYS),
-        list_title_key=pick_key(row_keys, TITLE_KEYS),
-        list_date_key=pick_key(row_keys, DATE_KEYS),
-        list_page_param=str(best.get("pageParam") or ""),
-    )
-    if details:
-        detail = details[0]
-        contract.detail_method = str(detail.get("method") or "GET")
-        contract.detail_host = str(detail.get("host") or "")
-        contract.detail_path = str(detail.get("path") or "")
-        contract.detail_body_key = str(detail.get("bodyKey") or pick_key(detail.get("topKeys") or [], BODY_KEYS))
-        contract.detail_verified_count = int(detail.get("verifiedCount") or 0)
-    if not contract.list_ready():
-        return None
-    return contract
+    contract = PortalContract(**{k: v for k, v in data.items() if k in PortalContract.__dataclass_fields__})
+    contract.verified = False
+    return contract if contract.list_ready() else None

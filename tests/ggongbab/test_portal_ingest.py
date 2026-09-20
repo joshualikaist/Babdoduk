@@ -120,6 +120,41 @@ def test_portal_private_url_not_exported(settings):
     assert "url" not in ev["sources"][0]
 
 
+def test_append_tasks_upsert_latest_portal_content_even_when_old_task_replays(settings):
+    settings.dooray_token = "x"
+    settings.dooray_project_id = "4424523215847914253"
+    writer = FakeWriter(settings)
+    writer.verify_project()
+    key = portal_external_key(PORTAL_ID)
+    collector = DoorayCollector(settings, client=object(), fetch_attachments=False)
+    repo = MemoryRepository()
+    pipe = Pipeline(settings, repo, FakeExtractor(future_extraction), [])
+    items = []
+    for number, extra in ((1, "이전 장소"), (2, "변경된 최신 장소")):
+        writer.create_portal_task(PortalPayload(external_key=key, title=TITLE,
+                                                body=FUTURE_TEXT + "\n" + extra,
+                                                source_created_at="2026-09-18T12:00:00+09:00"))
+        post = {
+            **writer.posts[-1]["body"],
+            "id": f"different-task-{number}", "subject": TITLE,
+            "createdAt": f"2026-09-{18 + number}T05:03:00+00:00",
+            "updatedAt": f"2026-09-{18 + number}T05:03:00+00:00",
+            "files": [],
+        }
+        item = collector.normalize_post(post)
+        items.append(item)
+        pipe.process_item(item)
+    latest = repo.find_raw_item("portal", key)
+    assert len(repo.raw_items) == 1
+    assert "변경된 최신 장소" in latest["raw_text"]
+    assert latest["content_hash"] == items[1].content_hash
+    pipe.process_item(items[0])
+    replayed = repo.find_raw_item("portal", key)
+    assert replayed["id"] == latest["id"]
+    assert replayed["raw_text"] == latest["raw_text"]
+    assert replayed["content_hash"] == latest["content_hash"]
+
+
 def test_unchanged_portal_notice_skips_queue(tmp_path):
     queue = PortalQueue(tmp_path / "state.json")
     first = queue.decide(PORTAL_ID, TITLE, BODY)
