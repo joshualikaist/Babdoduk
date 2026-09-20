@@ -6,13 +6,13 @@ from dataclasses import asdict
 from datetime import date, datetime
 from urllib.parse import parse_qsl, unquote, urlparse
 
-from .portal_diagnostics import Diagnostics
+from .portal_diagnostics import KEY, SENSITIVE, Diagnostics, safe_key_name
 from .config import KST
 from .ingest_marker import portal_external_key
 from .portal_contract import PortalContract, ID_KEYS, TITLE_KEYS, DATE_KEYS, BODY_KEYS, pick_key
 
-KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,63}$")
-SENSITIVE = re.compile(r"token|auth|session|cookie|password|secret|jwt", re.I)
+# KEY / SENSITIVE now live in portal_diagnostics so that the same rule governs
+# what may be walked and what may be named in a log. Re-exported for callers.
 PAGE = {"page", "pageNo", "pageIndex", "offset", "start"}
 CURSOR = {"cursor", "nextCursor", "pageToken"}
 NUMERIC = PAGE | {"size", "pageSize", "limit", "count"}
@@ -21,6 +21,20 @@ ENUMS = {"order": {"asc", "desc", "ASC", "DESC"},
          "sort": DATE_KEYS | TITLE_KEYS | ID_KEYS}
 READ_KEYS = {"read", "unread", "isread", "isunread", "seen", "isseen", "readat",
              "readcount", "viewcount", "hitcount", "readyn", "readstatus"}
+# A structural query value the local contract may keep: short, primitive, and
+# plainly a URL identifier rather than a credential. Shape alone is not enough
+# to authorize one - see allow_structural in request_shape().
+STRUCTURAL_VALUE = re.compile(r"^[A-Za-z0-9_-]{1,32}$")
+
+
+def structural_value_ok(name, value):
+    """Whether a query value is safe to persist, given its key was approved.
+
+    Deliberately narrow. Anything long, punctuated or credential-shaped is
+    refused, because a wrong yes here writes a secret into a contract file.
+    """
+    return bool(isinstance(value, str) and STRUCTURAL_VALUE.fullmatch(value)
+                and not SENSITIVE.search(name) and not SENSITIVE.search(value))
 
 
 def at_path(payload, path):
@@ -116,41 +130,96 @@ def classify_observed(method, url, status, payload, *, diagnostics=None, diagnos
         if not schema and len(bodies) > 1:
             diagnostics.rejected["body path ambiguous"] += 1
             diagnostics.rejected["schema ambiguous"] += 1
-    if not schema and len(bodies) != 1:
+            # Which paths competed, so the ambiguity is diagnosable without
+            # anyone opening a payload. Paths only - never the body text.
+            for candidate in bodies:
+                diagnostics.note_body_candidate_path(candidate)
+    if not schema and not bodies:
         return None
-    # These observations are never serialized directly.
+    # Several body candidates are kept rather than dropped: the verified list id
+    # can still single one out structurally later (body_path_in_id_subtree).
     return {"kind": "list" if schema else "detail", "_method": method, "_url": url, "_payload": payload,
-            "_schema": schema, "_body": bodies[0] if len(bodies) == 1 else ""}
+            "_schema": schema, "_body": bodies[0] if len(bodies) == 1 else "",
+            "_bodies": [] if schema else list(bodies)}
 
 
-def request_shape(url, identifier="", cursor_param="", diagnostics=None):
+PATH_PART = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,31}(?:\.(?:json|do|php))?")
+
+
+def path_template(url, identifier=""):
+    """(template, unsafe_component_count) for a URL path.
+
+    Split out of request_shape so that diagnostics can name a safe path even
+    when the QUERY is what blocked the contract. Returns ("", n) when any
+    component is opaque, so an unsafe path is never printed at all.
+    """
+    parsed = urlparse(url)
+    parts = [unquote(p) for p in parsed.path.split("/")]
+    if identifier:
+        parts = ["{id}" if p == identifier else p for p in parts]
+    unsafe = 0
+    for part in parts:
+        if part in ("", "{id}"):
+            continue
+        if not PATH_PART.fullmatch(part) or SENSITIVE.search(part):
+            unsafe += 1
+    return ("" if unsafe else "/".join(parts)), unsafe
+
+
+def body_path_in_id_subtree(id_path, body_paths):
+    """The body field sharing the closest object subtree with the verified id.
+
+    Walking outward from the object that holds the matched notice id, the first
+    level containing exactly one body candidate is structural evidence that the
+    field belongs to this notice. Two candidates at that level stay ambiguous:
+    choosing by key name or by string length would be a guess, and a wrong guess
+    publishes the wrong text.
+    """
+    if not id_path or not body_paths:
+        return ""
+    segments = id_path.split(".")
+    # Nearest ancestor first (the object holding the id), then widen.
+    for depth in range(len(segments) - 1, -1, -1):
+        prefix = segments[:depth]
+        scope = [p for p in body_paths if p.split(".")[:depth] == prefix]
+        if len(scope) == 1:
+            return scope[0]
+        if len(scope) > 1:
+            return ""
+    return ""
+
+
+def request_shape(url, identifier="", cursor_param="", diagnostics=None, allow_structural=()):
+    """Generalize a URL into a replay template, or refuse.
+
+    `allow_structural` is an explicit, operator-supplied set of query key names.
+    Nothing is added to it by observation: seeing a key repeatedly proves the
+    page uses it, not that we understand what it selects.
+    """
     def reject(counter=None, count=1):
         if diagnostics:
             diagnostics.rejected["unsafe request shape"] += 1
             if counter:
                 diagnostics.rejected[counter] += count
         return None
+
+    def unsafe_key(name):
+        if diagnostics:
+            diagnostics.note_unsafe_query_key(name)
+
     parsed = urlparse(url)
     if parsed.scheme != "https" or parsed.username or parsed.password or parsed.fragment:
         return reject()
-    parts = [unquote(p) for p in parsed.path.split("/")]
-    if identifier:
-        parts = ["{id}" if p == identifier else p for p in parts]
-    # Refuse opaque path values rather than persisting them or inventing replacements.
-    unsafe_parts = 0
-    for part in parts:
-        if part in ("", "{id}"):
-            continue
-        if (not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,31}(?:\.(?:json|do|php))?", part)
-                or SENSITIVE.search(part)):
-            unsafe_parts += 1
+    template, unsafe_parts = path_template(url, identifier)
     if unsafe_parts:
         return reject("unsafe path component count", unsafe_parts)
+    parts = template.split("/")
     query = {}
     unsafe_keys = 0
     for name, value in parse_qsl(parsed.query, keep_blank_values=True):
         if name in query:
             unsafe_keys += 1
+            unsafe_key(name)
             continue
         if identifier and value == identifier and name.lower() in ID_KEYS:
             query[name] = "{id}"
@@ -158,14 +227,20 @@ def request_shape(url, identifier="", cursor_param="", diagnostics=None):
             # Initial cursor must be empty/absent. Never save a response cursor value.
             if value:
                 unsafe_keys += 1
+                unsafe_key(name)
                 continue
             query[name] = ""
         elif name in NUMERIC and value.isdigit() and len(value) <= 6:
             query[name] = value
         elif name in ENUMS and value in ENUMS[name]:
             query[name] = value
+        elif name in allow_structural and structural_value_ok(name, value):
+            # Approved by an operator who read the diagnostic key name, and the
+            # value still has to look like a plain identifier.
+            query[name] = value
         else:
             unsafe_keys += 1
+            unsafe_key(name)
     if unsafe_keys:
         return reject("unsafe query key count", unsafe_keys)
     return parsed.netloc, "/".join(parts), query
@@ -204,11 +279,42 @@ def _pagination(c, calls):
         return
 
 
-def build_discovery(rows, start_url, diagnostics=None):
+def _query_of(row):
+    return dict(parse_qsl(urlparse(row["_url"]).query, keep_blank_values=True))
+
+
+def analyse_list_queries(lists, diagnostics):
+    """Name which query keys vary and which stay put, never what they hold.
+
+    A key that changes between two calls of the SAME endpoint is a pagination
+    *candidate*; a key that never changes is a structural *candidate*. Both are
+    reported for a human to read. Neither is authorized here: observing that a
+    page increments something does not tell us what it selects.
+    """
+    if not diagnostics or len(lists) < 2:
+        return
+    queries = [_query_of(row) for row in lists]
+    names = {name for query in queries for name in query}
+    for name in sorted(names):
+        seen = [query.get(name) for query in queries]
+        present = [v for v in seen if v is not None]
+        changes = len(set(seen)) > 1
+        if not changes:
+            diagnostics.note_static_structural_key(name)
+            continue
+        digits = [v for v in present if v.isdigit()]
+        numeric_monotonic = (len(digits) == len(present) and len(digits) > 1
+                             and all(int(a) < int(b) for a, b in zip(digits, digits[1:])))
+        diagnostics.note_pagination_candidate(
+            name, changes=True, numeric_monotonic=numeric_monotonic,
+            opaque_changing=not numeric_monotonic)
+
+
+def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
     d = diagnostics or Diagnostics()
     reasons = []
     def finish(reason=None):
-        if d.rejected["body path ambiguous"] and "DETAIL_BODY_PATH_AMBIGUOUS" not in reasons:
+        if d.body_ambiguity_unresolved and "DETAIL_BODY_PATH_AMBIGUOUS" not in reasons:
             reasons.append("DETAIL_BODY_PATH_AMBIGUOUS")
         if reason and reason not in reasons:
             reasons.append(reason)
@@ -249,7 +355,16 @@ def build_discovery(rows, start_url, diagnostics=None):
     schema = first["_schema"]
     cursor_names = [k for k, _ in parse_qsl(urlparse(first["_url"]).query, keep_blank_values=True)
                     if k in CURSOR]
-    shape = request_shape(first["_url"], cursor_param=cursor_names[0] if len(cursor_names) == 1 else "", diagnostics=d)
+    # Describe the endpoint first, so a rejected shape still leaves something
+    # diagnosable behind instead of only a counter.
+    analyse_list_queries(lists, d)
+    d.note_list_candidate(host=urlparse(first["_url"]).netloc,
+                          path=path_template(first["_url"])[0],
+                          query_keys=list(_query_of(first)),
+                          method=first.get("_method", "GET"),
+                          resource=first.get("_resource", "xhr"))
+    shape = request_shape(first["_url"], cursor_param=cursor_names[0] if len(cursor_names) == 1 else "",
+                          diagnostics=d, allow_structural=allow_structural)
     if not shape:
         return finish("UNSAFE_REQUEST_SHAPE")
     host, path, query = shape
@@ -286,13 +401,25 @@ def build_discovery(rows, start_url, diagnostics=None):
             reasons.append("DETAIL_ID_PATH_AMBIGUOUS" if matches else "DETAIL_ID_NOT_MATCHED")
             continue
         id_path, identifier = matches[0]
-        shape = request_shape(detail["_url"], identifier, diagnostics=d)
+        body_path = detail["_body"]
+        if not body_path:
+            # Several body fields in this payload. The one sharing the id's
+            # object subtree is the notice's own; anything else stays ambiguous.
+            body_path = body_path_in_id_subtree(id_path, detail.get("_bodies") or [])
+            if not body_path:
+                d.rejected["detail shape rejected"] += 1
+                reasons.append("DETAIL_BODY_PATH_AMBIGUOUS")
+                continue
+            d.body_disambiguated_by_id = True
+            d.body_ambiguity_resolved += 1
+        shape = request_shape(detail["_url"], identifier, diagnostics=d,
+                              allow_structural=allow_structural)
         if not shape or shape[0] != host or not ("{id}" in shape[1] or "{id}" in shape[2].values()):
             d.rejected["detail shape rejected"] += 1
             reasons.append("DETAIL_REQUEST_SHAPE_REJECTED")
             continue
         d.counts["replayable detail candidates"] += 1
-        group = (shape[0], shape[1], tuple(sorted(shape[2].items())), detail["_body"], id_path)
+        group = (shape[0], shape[1], tuple(sorted(shape[2].items())), body_path, id_path)
         groups.setdefault(group, {"hashes": set(), "state": False})
         hashed = portal_external_key(identifier)
         if hashed in groups[group]["hashes"]:
@@ -307,7 +434,7 @@ def build_discovery(rows, start_url, diagnostics=None):
         reasons.append("MULTIPLE_DETAIL_SHAPES")
     if not verified:
         reasons.append("NOT_ENOUGH_DISTINCT_DETAILS")
-    if d.rejected["body path ambiguous"]:
+    if d.body_ambiguity_unresolved:
         reasons.append("DETAIL_BODY_PATH_AMBIGUOUS")
     if len(selected) == 1:
         (host, path, query, body_path, id_path), evidence = selected[0]

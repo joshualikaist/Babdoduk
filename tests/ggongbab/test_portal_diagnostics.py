@@ -194,7 +194,16 @@ def test_debug_file_and_terminal_export_only_fixed_counts_and_reasons(monkeypatc
         assert value not in blob
     debug = json.loads(agent.DEBUG_FILE.read_text())
     assert set(debug) == {"diagnostics", "reasons"}
-    assert all(type(v) is int for counts in debug["diagnostics"].values() for v in counts.values())
+    assert set(debug["diagnostics"]) == {"counts", "rejected", "safe"}
+    for section in ("counts", "rejected"):
+        assert all(type(v) is int for v in debug["diagnostics"][section].values())
+    # The structural section carries names and paths, never values. This URL
+    # had ?token=PRIVATE-TOKEN, so the key name itself must be redacted too.
+    safe = debug["diagnostics"]["safe"]
+    assert set(safe) == {"unsafeQueryKeys", "listCandidate", "paginationCandidates",
+                         "staticStructuralKeys", "detailBodyCandidatePaths",
+                         "bodyDisambiguatedByIdSubtree"}
+    assert "token" not in json.dumps(safe)
 
 
 def test_observer_callback_uses_relaxed_mime_and_detaches(monkeypatch):

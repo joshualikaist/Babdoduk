@@ -163,12 +163,55 @@ def log_discovery(report):
     log("Rejected:")
     for key, count in report["diagnostics"]["rejected"].items():
         log(f"  {key}: {count}")
+    log_stages(report)
     log("Discovery result:")
     log("  list endpoint: " + ("candidate found" if report["listEndpointObserved"] else "not observed"))
     log("  list replay contract: " + ("accepted" if report["listReplayable"] else "rejected"))
     log("  detail replay contract: " + ("accepted" if report["detailReplayable"] else "rejected"))
     for reason in report["reasons"]:
         log("  reason: " + reason)
+
+
+def _names(values):
+    return "[" + ", ".join(values) + "]" if values else "[]"
+
+
+def log_stages(report):
+    """Stage-by-stage view. Key names, JSON paths and counts only - no values."""
+    diagnostics = report.get("diagnostics", {})
+    safe = diagnostics.get("safe", {})
+    counts = diagnostics.get("counts", {})
+    rejected = diagnostics.get("rejected", {})
+    candidate = safe.get("listCandidate") or {}
+    pagination = safe.get("paginationCandidates") or []
+    # A key that merely changes is a candidate, not a verified mechanism; say so
+    # rather than printing a name that reads like a decision.
+    verified = report.get("paginationVerified")
+    log("List discovery:")
+    log("  schema candidate: " + ("yes" if counts.get("list-schema candidates") else "no"))
+    log("  request shape: " + ("accepted" if report.get("listReplayable") else "rejected"))
+    if candidate.get("host"):
+        log("  candidate host: " + candidate["host"])
+        log("  candidate path: " + (candidate.get("templatedPath") or "<unsafe path, withheld>"))
+        log("  candidate method: " + f"{candidate.get('method', '')} ({candidate.get('resourceType', '')})")
+        log("  query keys: " + _names(candidate.get("queryKeys") or []))
+    log("  unsafe query keys: " + _names(safe.get("unsafeQueryKeys") or []))
+    log("  static structural keys: " + _names(safe.get("staticStructuralKeys") or []))
+    if pagination:
+        for entry in pagination:
+            log(f"  pagination candidate key: {entry['key']} "
+                f"(numericMonotonic={str(entry['numericMonotonic']).lower()}, "
+                f"opaqueChanging={str(entry['opaqueChanging']).lower()})")
+    else:
+        log("  pagination candidate key: none")
+    log("  pagination verified: " + ("yes" if verified else "no (candidate is not authorization)"))
+    log("Detail discovery:")
+    log(f"  candidates observed: {counts.get('detail-schema candidates', 0)}")
+    log(f"  ambiguous body responses: {rejected.get('body path ambiguous', 0)}")
+    log("  candidate body paths: " + _names(safe.get("detailBodyCandidatePaths") or []))
+    log("  body disambiguated by id subtree: "
+        + ("yes" if safe.get("bodyDisambiguatedByIdSubtree") else "no"))
+    log(f"  distinct replayable details: {counts.get('replayable detail candidates', 0)}")
 
 
 def cmd_calibrate(args):

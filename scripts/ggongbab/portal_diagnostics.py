@@ -1,6 +1,32 @@
-"""Value-free Portal diagnostics. Only fixed counter/reason names are exported."""
+"""Value-free Portal diagnostics. Only fixed counter/reason names are exported.
+
+Beyond counters this module carries a small amount of *structural* metadata:
+query key names, JSON paths, host and method. None of it is derived from a
+notice. A key name says which knob the page turned; a key value could be a
+notice id, a board a person reads, or a credential, so values never enter.
+"""
 from collections import Counter
+import re
 from urllib.parse import urlparse
+
+# A query/JSON key we are willing to name in a log or debug file. Anything with
+# punctuation, spacing or unusual length is reported as a placeholder instead:
+# a key name we cannot vouch for is not worth printing.
+KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,63}$")
+# Keys whose NAME alone suggests a credential. These are redacted even though
+# only the name would be shown, because a name like "sso_session_token" already
+# describes the account's authentication scheme.
+SENSITIVE = re.compile(
+    r"token|auth|session|cookie|password|passwd|pwd|secret|jwt|credential"
+    r"|apikey|bearer|signature|nonce|otp", re.I)
+
+REDACTED = "<sensitive>"
+UNNAMEABLE = "<unnameable>"
+# Bounds so that a hostile or merely odd page cannot turn diagnostics into a
+# dump. Twenty names is far more than a real endpoint uses.
+MAX_KEYS = 20
+MAX_PATHS = 20
+MAX_PATH_SEGMENTS = 12
 
 COUNTS = (
     "total responses", "xhr/fetch responses", "document responses", "other responses",
@@ -20,15 +46,122 @@ REJECTED = (
 )
 
 
+def safe_key_name(name):
+    """A query/JSON key name that is safe to print, or a placeholder.
+
+    Never returns anything derived from a value.
+    """
+    if not isinstance(name, str) or not KEY.fullmatch(name):
+        return UNNAMEABLE
+    if SENSITIVE.search(name):
+        return REDACTED
+    return name
+
+
+def safe_json_path(path):
+    """A dotted JSON path, or "" when any segment is not a plain static key.
+
+    walk() already refuses dynamic keys, but a path reaching a debug file is
+    checked again here rather than trusted.
+    """
+    if not isinstance(path, str) or not path:
+        return ""
+    segments = path.split(".")
+    if len(segments) > MAX_PATH_SEGMENTS:
+        return ""
+    for segment in segments:
+        if segment == "$":
+            continue
+        if not KEY.fullmatch(segment) or SENSITIVE.search(segment):
+            return ""
+    return path
+
+
+def _add(target, value, limit):
+    if value and value not in target and len(target) < limit:
+        target.append(value)
+
+
 class Diagnostics:
     def __init__(self):
         self.counts = Counter({key: 0 for key in COUNTS})
         self.rejected = Counter({key: 0 for key in REJECTED})
+        # Names and shapes only; see the module docstring.
+        self.unsafe_query_keys = []
+        self.list_candidate = {}
+        self.pagination_candidates = []
+        self.static_structural_keys = []
+        self.detail_body_candidate_paths = []
+        self.body_disambiguated_by_id = False
+        # An ambiguous body response is only a blocker while it stays
+        # unresolved; the verified notice id can still single one path out.
+        self.body_ambiguity_resolved = 0
 
+    @property
+    def body_ambiguity_unresolved(self):
+        return max(0, int(self.rejected["body path ambiguous"]) - self.body_ambiguity_resolved)
+
+    # -- recorders ---------------------------------------------------------
+    def note_unsafe_query_key(self, name):
+        """Record WHICH query key blocked the replay contract, never its value."""
+        _add(self.unsafe_query_keys, safe_key_name(name), MAX_KEYS)
+
+    def note_body_candidate_path(self, path):
+        _add(self.detail_body_candidate_paths, safe_json_path(path), MAX_PATHS)
+
+    def note_list_candidate(self, *, host, path, query_keys, method, resource):
+        """Describe the observed list endpoint without any query value."""
+        candidate = {"host": host if isinstance(host, str) else "",
+                     "method": method if method in ("GET", "POST") else "",
+                     "resourceType": resource if isinstance(resource, str) else "",
+                     "queryKeys": []}
+        # An unsafe path is omitted entirely rather than half-redacted: a
+        # partially masked path still leaks its shape.
+        candidate["templatedPath"] = path if isinstance(path, str) and path else ""
+        for name in query_keys or ():
+            _add(candidate["queryKeys"], safe_key_name(name), MAX_KEYS)
+        self.list_candidate = candidate
+
+    def note_pagination_candidate(self, name, *, changes, numeric_monotonic, opaque_changing):
+        safe = safe_key_name(name)
+        if not safe or len(self.pagination_candidates) >= MAX_KEYS:
+            return
+        if any(c["key"] == safe for c in self.pagination_candidates):
+            return
+        self.pagination_candidates.append({
+            "key": safe,
+            "changesBetweenListCalls": bool(changes),
+            "numericMonotonic": bool(numeric_monotonic),
+            "opaqueChanging": bool(opaque_changing),
+        })
+
+    def note_static_structural_key(self, name):
+        _add(self.static_structural_keys, safe_key_name(name), MAX_KEYS)
+
+    # -- export ------------------------------------------------------------
     def export(self):
         # Allowlist prevents accidentally serializing payload-derived keys/values.
         return {"counts": {k: int(self.counts[k]) for k in COUNTS},
-                "rejected": {k: int(self.rejected[k]) for k in REJECTED}}
+                "rejected": {k: int(self.rejected[k]) for k in REJECTED},
+                "safe": self.export_safe()}
+
+    def export_safe(self):
+        """Structural metadata. Every string here is a name, a path or a host."""
+        candidate = {}
+        if self.list_candidate:
+            candidate = {"host": self.list_candidate.get("host", ""),
+                         "templatedPath": self.list_candidate.get("templatedPath", ""),
+                         "queryKeys": list(self.list_candidate.get("queryKeys", [])),
+                         "method": self.list_candidate.get("method", ""),
+                         "resourceType": self.list_candidate.get("resourceType", "")}
+        return {
+            "unsafeQueryKeys": list(self.unsafe_query_keys),
+            "listCandidate": candidate,
+            "paginationCandidates": [dict(c) for c in self.pagination_candidates],
+            "staticStructuralKeys": list(self.static_structural_keys),
+            "detailBodyCandidatePaths": list(self.detail_body_candidate_paths),
+            "bodyDisambiguatedByIdSubtree": bool(self.body_disambiguated_by_id),
+        }
 
 
 def capture_response(response, expected_host, diagnostics):
