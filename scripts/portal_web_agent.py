@@ -17,7 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from ggongbab.config import KST, load_settings
 from ggongbab.portal_contract import PortalContract, contract_from_discovery
-from ggongbab.portal_discovery import build_discovery, classify_observed, notice_date, stable_id
+from ggongbab.portal_discovery import build_discovery, notice_date, stable_id
+from ggongbab.portal_diagnostics import Diagnostics, capture_response
 from ggongbab.portal_fetch import fetch_detail, iter_notices, request_context
 from ggongbab.portal_queue import PortalQueue
 from ggongbab.prefilter import portal_detail_is_candidate, portal_list_warrants_detail
@@ -32,6 +33,7 @@ LOCAL_DIR = ROOT / ".local"
 PROFILE_DIR = LOCAL_DIR / "portal-browser-profile"
 CONTRACT_FILE = LOCAL_DIR / "portal-ui.json"
 DISCOVERY_FILE = LOCAL_DIR / "portal-discovery.json"
+DEBUG_FILE = LOCAL_DIR / "portal-discovery-debug.json"
 STATE_FILE = LOCAL_DIR / "portal-agent-state.json"
 LOG_FILE = LOCAL_DIR / "portal-agent.log"
 DEFAULT_START = "https://portal.kaist.ac.kr/"
@@ -76,25 +78,23 @@ def page_authenticated(page, expected_host, *, notice_api_observed=False):
         return False
 
 
-def observe_network(session, seconds=20, *, stop_on_auth=False):
+def observe_network(session, seconds=20, *, stop_on_auth=False, diagnostics=None):
     found = []
+    diagnostics = diagnostics or Diagnostics()
     positive_pages = set()
     host = urlparse(start_url()).netloc
 
     def on_response(response):
         try:
-            req = response.request
-            if req.resource_type not in ("xhr", "fetch") or urlparse(response.url).netloc != host:
-                return
-            if "json" not in response.headers.get("content-type", "").lower():
-                return
-            row = classify_observed(req.method, response.url, response.status, response.json())
+            row = capture_response(response, host, diagnostics)
             if row:
                 found.append(row)
-                if row["kind"] == "list":
-                    positive_pages.add(req.frame.page)
+                if (row["kind"] == "list" and row["_method"] == "GET"
+                        and row["_resource"] in ("xhr", "fetch")
+                        and urlparse(response.url).netloc == host):
+                    positive_pages.add(response.request.frame.page)
         except Exception:
-            pass
+            diagnostics.rejected["observer errors"] += 1
 
     # BrowserScope attaches to every live context, including newly opened SSO tabs.
     session.context.on("response", on_response)
@@ -121,10 +121,13 @@ def wait_for_portal(session, timeout_seconds=600):
     observe_network(session, timeout_seconds, stop_on_auth=True)
 
 
-def write_discovery(rows):
-    report = build_discovery(rows, start_url())
+def write_discovery(rows, diagnostics=None):
+    report = build_discovery(rows, start_url(), diagnostics)
     LOCAL_DIR.mkdir(parents=True, exist_ok=True)
     DISCOVERY_FILE.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    # Never copy observations or contracts here: debug output is counts/reasons only.
+    debug = {"diagnostics": report["diagnostics"], "reasons": report["reasons"]}
+    DEBUG_FILE.write_text(json.dumps(debug, indent=2) + "\n", encoding="utf-8")
     return report
 
 
@@ -138,19 +141,34 @@ def cmd_setup(args):
     log("opening dedicated Portal browser; SSO is manual")
     with open_session(args, start_url()) as session:
         wait_for_portal(session)
-    log("setup complete: successful notice API observed")
+    log("setup complete: authenticated list-like Portal response observed")
+    log("setup success does not mean replay contract verified")
     return SUCCESS
 
 
 def cmd_discover(args):
+    diagnostics = Diagnostics()
     with open_session(args, start_url()) as session:
         log("observing for 60s: open the notice list, next page, and two distinct notice details")
-        rows = observe_network(session, seconds=60)
-    report = write_discovery(rows)
-    log(f"list endpoint observed: {report['listEndpointObserved']}")
-    log(f"detail endpoint observed: {report['detailEndpointObserved']}")
-    log(f"pagination verified: {report['paginationVerified']}")
-    return SUCCESS if report["listEndpointObserved"] else UI_CHANGED
+        rows = observe_network(session, seconds=60, diagnostics=diagnostics)
+    report = write_discovery(rows, diagnostics)
+    log_discovery(report)
+    return SUCCESS if report["listReplayable"] else UI_CHANGED
+
+
+def log_discovery(report):
+    log("Portal discovery diagnostics:")
+    for key, count in report["diagnostics"]["counts"].items():
+        log(f"  {key}: {count}")
+    log("Rejected:")
+    for key, count in report["diagnostics"]["rejected"].items():
+        log(f"  {key}: {count}")
+    log("Discovery result:")
+    log("  list endpoint: " + ("candidate found" if report["listEndpointObserved"] else "not observed"))
+    log("  list replay contract: " + ("accepted" if report["listReplayable"] else "rejected"))
+    log("  detail replay contract: " + ("accepted" if report["detailReplayable"] else "rejected"))
+    for reason in report["reasons"]:
+        log("  reason: " + reason)
 
 
 def cmd_calibrate(args):

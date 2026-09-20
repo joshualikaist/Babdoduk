@@ -218,6 +218,7 @@ private Portal URL은 공개 JSON에 나가지 않습니다.
 
 관찰된 list/detail이 없으면 `PORTAL CALIBRATION FAILED` 로 끝납니다.
 setup은 비밀번호 입력창이 없는 화면만으로 성공하지 않으며, 공지 목록 API의 정상 응답을 기다립니다.
+setup 성공은 **list-like 응답을 관찰했다는 뜻이며, replay contract 검증 성공이 아닙니다**.
 discovery의 60초 동안 목록 첫 페이지와 다음 페이지, 서로 다른 공지 상세 2건을 열어야 합니다.
 calibration은 같은 상세 요청 템플릿/본문 경로와 서로 다른 ID의 해시 2개를 확인합니다.
 기존 v1 contract는 재사용하지 않으므로 다시 discovery/calibration해야 합니다.
@@ -240,6 +241,30 @@ dry-run은 Dooray writer를 생성하지 않고 queue 파일을 만들거나 변
 read/unread/readCount/viewCount 등이 관찰되면 상세 조회를 승인하지 않고 semantics 검토를 요구합니다.
 `no-read-state-observed`는 관찰 응답에 해당 필드가 없다는 뜻이며 서버의 모든 부작용을 입증한 것은 아닙니다.
 실제 Portal endpoint/path와 동작은 다음 SSO/discovery 단계에서 확인해야 합니다.
+
+discovery는 `Content-Type`과 관계없이 Portal/KAIST 호스트 응답의 JSON 파싱을 시도합니다.
+전체 응답, xhr/fetch·document·other, exact host·KAIST host, JSON 파싱, GET·POST,
+목록/상세 schema 후보와 재호출 가능한 후보 수를 별도로 출력합니다. 전체 GET/POST 및 resource
+카운트는 외부 호스트도 포함하지만 외부 응답 본문은 파싱하지 않습니다. same-host와 KAIST-host
+카운트는 겹칠 수 있습니다. production 실행의 strict JSON 검증은 유지합니다.
+
+`*.kaist.ac.kr` 교차 도메인, POST, document/other의 JSON은 **진단 관찰만** 합니다.
+현재 GET·동일 exact Portal host·xhr/fetch 재호출 정책은 그대로이며, query whitelist도 임의로
+확장하지 않습니다. POST request body와 인증 헤더는 읽지 않습니다.
+`replayable detail candidates`는 요청 형식이 맞는 관찰 수이고, 최종 상세 승인에는 여전히
+서로 다른 ID 2건과 동일 템플릿/본문 경로 검증이 필요합니다.
+
+`candidate found`와 `replay contract: rejected`를 구분하고, `NO_LIST_CANDIDATE`,
+`LIST_SCHEMA_AMBIGUOUS`, `MULTIPLE_LIST_IDENTITIES`, `UNSAFE_REQUEST_SHAPE`,
+`CROSS_ORIGIN_LIST`, `PAGINATION_NOT_VERIFIED`, `NO_DETAIL_CANDIDATE`,
+`MULTIPLE_DETAIL_SHAPES`, `NOT_ENOUGH_DISTINCT_DETAILS` 등의 고정 사유를 출력합니다.
+상세의 host/ID path/body path 문제도 별도 카운트와 사유로 구분됩니다.
+pagination parameter와 progression 관찰 여부는 각각 0/1로 출력하며,
+pagination parameter가 아예 없는 목록은 `pagination: none`으로 허용합니다.
+
+`.local/portal-discovery-debug.json`은 고정된 카운터와 사유만 저장합니다.
+제목·본문·raw ID·query 값·POST body·쿠키·토큰은 이 파일이나 터미널에 출력하지 않습니다.
+일반 `.local/portal-discovery.json`의 검증용 contract와 진단 파일은 둘 다 gitignored입니다.
 
 ### KAIST 학식
 
