@@ -43,23 +43,61 @@ class PortalContract:
     detail_verified_count: int = 0
     detail_id_hashes: list[str] = field(default_factory=list)
     detail_state: str = ""
+    list_body_type: str = ""
+    list_body: dict = field(default_factory=dict)
+    list_post_evidence: list[str] = field(default_factory=list)
+    detail_body_type: str = ""
+    detail_body: dict = field(default_factory=dict)
+    detail_post_evidence: list[str] = field(default_factory=list)
+    detail_request_id_path: str = ""
+    detail_request_id_type: str = "string"
+    pagination_location: str = "query"
+
+    def post_ready(self, endpoint):
+        from .portal_post import leaves
+        try:
+            body_type = getattr(self, endpoint + "_body_type")
+            evidence = getattr(self, endpoint + "_post_evidence")
+            body = getattr(self, endpoint + "_body")
+            fields = dict(leaves(body))
+            if body_type not in ("json", "form") or len(set(evidence)) < 2:
+                return False
+            if body_type == "form" and any("." in p for p in fields):
+                return False
+            placeholders = [p for p, v in fields.items() if v == "{id}"]
+            if endpoint == "detail":
+                return (placeholders == ([self.detail_request_id_path] if self.detail_request_id_path else [])
+                        and self.detail_request_id_type in ("int", "string"))
+            return not placeholders
+        except (ValueError, TypeError, AttributeError):
+            return False
 
     def list_ready(self):
+        from .portal_post import leaves
+        try:
+            params = dict(leaves(self.list_body)) if self.pagination_location == "body" else self.list_query
+        except (ValueError, TypeError):
+            return False
         page_ok = self.pagination == "none" or (
-            self.pagination in ("page", "offset") and self.list_page_param in self.list_query
+            self.pagination in ("page", "offset") and self.list_page_param in params
             and isinstance(self.page_step, int) and self.page_step > 0
-            and str(self.list_query[self.list_page_param]).isdigit()
+            and str(params[self.list_page_param]).isdigit()
         ) or (self.pagination == "cursor" and bool(self.list_page_param and self.cursor_path))
-        return bool(self.version == 2 and self.list_method == "GET" and self.list_host
+        method_ok = self.list_method == "GET" or (self.list_method == "POST" and self.post_ready("list"))
+        return bool(self.version == 2 and method_ok and self.list_host
+                    and self.pagination_location in ("query", "body")
+                    and (self.pagination_location != "body" or self.list_method == "POST")
                     and self.list_path and self.list_array_path and self.list_id_key
                     and self.list_title_key and page_ok)
 
     def detail_ready(self):
-        return bool(self.detail_method == "GET" and self.detail_host and self.detail_body_path
+        method_ok = self.detail_method == "GET" or (self.detail_method == "POST" and self.post_ready("detail"))
+        return bool(method_ok and self.detail_host and self.detail_body_path
                     and self.detail_id_path and self.detail_verified_count >= 2
                     and len(set(self.detail_id_hashes)) >= 2
                     and self.detail_state == "no-read-state-observed"
-                    and ("{id}" in self.detail_path or "{id}" in self.detail_query.values()))
+                    and ("{id}" in self.detail_path or "{id}" in self.detail_query.values()
+                         or (self.detail_method == "POST" and self.detail_request_id_path)))
 
     @classmethod
     def load(cls, path: Path):

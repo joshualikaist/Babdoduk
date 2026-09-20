@@ -38,6 +38,7 @@ COUNTS = (
     # Interaction correlation: what the person actually opened.
     "list-like JSON candidates", "detail-like JSON candidates",
     "correlated list/detail pairs", "correlated distinct ids",
+    "correlated via URL", "correlated via POST body", "correlated POST endpoints",
 )
 REJECTED = (
     "host mismatch", "method unsupported", "json parse failed", "schema ambiguous",
@@ -48,6 +49,7 @@ REJECTED = (
     "observer errors", "list schema ambiguous",
     "list detail not correlated", "multiple correlated shapes",
     "title field unknown", "date field unknown",
+    "POST body unsupported",
 )
 
 
@@ -104,6 +106,36 @@ class Diagnostics:
         self.selected_list = {}
         self.selected_detail = {}
         self.row_keys = []
+        self.post_scalar_paths = []
+        self.post_keys = []
+        self.post_pagination = []
+        self.post_filters = []
+
+    def note_post_schema(self, body, prefix="", depth=0):
+        if depth > MAX_PATH_SEGMENTS or not isinstance(body, dict):
+            return
+        for key, value in list(body.items())[:MAX_KEYS]:
+            name = safe_key_name(key)
+            if name == UNNAMEABLE:
+                continue
+            _add(self.post_keys, name, MAX_KEYS)
+            if name == REDACTED:
+                _add(self.post_scalar_paths, REDACTED, MAX_PATHS)
+                continue
+            path = prefix + "." + name if prefix else name
+            if isinstance(value, dict):
+                self.note_post_schema(value, path, depth + 1)
+            elif value is None or type(value) in (str, int, float, bool):
+                _add(self.post_scalar_paths, safe_json_path(path), MAX_PATHS)
+
+    def note_post_pagination(self, path, monotonic):
+        if safe_json_path(path) and len(self.post_pagination) < MAX_PATHS:
+            row = {"path": path, "numericMonotonic": bool(monotonic)}
+            if row not in self.post_pagination:
+                self.post_pagination.append(row)
+
+    def note_post_filter(self, path):
+        _add(self.post_filters, safe_json_path(path), MAX_PATHS)
 
     @property
     def body_ambiguity_unresolved(self):
@@ -196,7 +228,7 @@ class Diagnostics:
                          "queryKeys": list(self.list_candidate.get("queryKeys", [])),
                          "method": self.list_candidate.get("method", ""),
                          "resourceType": self.list_candidate.get("resourceType", "")}
-        return {
+        result = {
             "selectedList": dict(self.selected_list),
             "selectedDetail": dict(self.selected_detail),
             "rowKeys": list(self.row_keys),
@@ -207,10 +239,14 @@ class Diagnostics:
             "detailBodyCandidatePaths": list(self.detail_body_candidate_paths),
             "bodyDisambiguatedByIdSubtree": bool(self.body_disambiguated_by_id),
         }
+        if self.post_keys or self.post_scalar_paths or self.post_pagination or self.post_filters:
+            result.update(postRequestKeys=list(self.post_keys), postRequestScalarPaths=list(self.post_scalar_paths),
+                          postPaginationCandidates=list(self.post_pagination), postFilterPaths=list(self.post_filters))
+        return result
 
 
 def capture_response(response, expected_host, diagnostics):
-    """Observe all resource types on Portal/KAIST hosts, never request bodies/headers."""
+    """Observe Portal/KAIST responses and memory-only JSON/form POST evidence."""
     from .portal_discovery import classify_observed
     d = diagnostics
     d.counts["total responses"] += 1
@@ -221,7 +257,7 @@ def capture_response(response, expected_host, diagnostics):
     method = req.method
     if method in ("GET", "POST"):
         d.counts[method + " responses"] += 1
-    if method != "GET":
+    if method not in ("GET", "POST"):
         d.rejected["method unsupported"] += 1
     parsed = urlparse(response.url)
     same = parsed.netloc == expected_host
@@ -245,6 +281,10 @@ def capture_response(response, expected_host, diagnostics):
         row["_resource"] = resource
         if method == "POST":
             d.counts["observed notice-like POST candidate"] += 1
+            from .portal_post import read_body
+            row["_body_type"], row["_request_body"] = read_body(req, d)
+            if not row["_body_type"]:
+                d.rejected["method unsupported"] += 1
         if resource not in ("xhr", "fetch"):
             d.rejected["resource unsupported"] += 1
     return row

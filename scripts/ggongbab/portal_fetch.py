@@ -1,17 +1,25 @@
-"""Active GETs through the browser's current authenticated request context."""
+"""Observed GET/POST replay through the browser's authenticated request context."""
 from urllib.parse import quote, urlencode, urlparse
+from copy import deepcopy
 
 from .portal_discovery import at_path, has_read_state, notice_date, stable_id
 from .web.exit_codes import AuthRequired, UiContractError
+from .portal_post import set_path
 
 
-def request_json(request, host, path, query):
+def request_json(request, host, path, query, *, method="GET", body_type="", body=None):
     url = "https://" + host + path
     if query:
         url += "?" + urlencode(query)
     try:
         # Never follow an API redirect into an SSO form (or another host).
-        response = request.get(url, timeout=30000, max_redirects=0)
+        if method == "GET":
+            response = request.get(url, timeout=30000, max_redirects=0)
+        elif method == "POST" and body_type in ("json", "form") and isinstance(body, dict):
+            response = request.post(url, timeout=30000, max_redirects=0,
+                                    **{"data" if body_type == "json" else "form": body})
+        else:
+            raise UiContractError("Portal request method/body contract invalid")
         try:
             if response.status in (301, 302, 303, 307, 308, 401, 403):
                 raise AuthRequired("Portal authenticated API access required")
@@ -55,7 +63,7 @@ def request_context(session, c):
                 continue
             tried.add(id(context))
             request = context.request
-            payload = request_json(request, c.list_host, c.list_path, dict(c.list_query))
+            payload = fetch_list(request, c, dict(c.list_query), deepcopy(c.list_body))
             exact_rows(payload, c)
             return request, payload
         except UiContractError:
@@ -71,11 +79,12 @@ def request_context(session, c):
 
 def iter_notices(request, c, *, max_pages=20, max_items=500, date_from=None, initial_payload=None):
     query = dict(c.list_query)
+    request_body = deepcopy(c.list_body)
     seen, cursors = set(), set()
     previous_date = None
     for page_number in range(max_pages):
         payload = (initial_payload if page_number == 0 and initial_payload is not None
-                   else request_json(request, c.list_host, c.list_path, query))
+                   else fetch_list(request, c, query, request_body))
         rows = exact_rows(payload, c)
         fresh = [r for r in rows if stable_id(r[c.list_id_key]) not in seen]
         if not fresh:
@@ -100,7 +109,12 @@ def iter_notices(request, c, *, max_pages=20, max_items=500, date_from=None, ini
             return
         previous_date = dates[-1] if ordered else None
         if c.pagination in ("page", "offset"):
-            query[c.list_page_param] = str(int(query[c.list_page_param]) + c.page_step)
+            if c.pagination_location == "body":
+                value = at_path(request_body, c.list_page_param)
+                updated = int(value) + c.page_step
+                set_path(request_body, c.list_page_param, updated if type(value) is int else str(updated))
+            else:
+                query[c.list_page_param] = str(int(query[c.list_page_param]) + c.page_step)
         elif c.pagination == "cursor":
             cursor = at_path(payload, c.cursor_path)
             if cursor is None or cursor == "":
@@ -111,18 +125,38 @@ def iter_notices(request, c, *, max_pages=20, max_items=500, date_from=None, ini
             if cursor in cursors:
                 return
             cursors.add(cursor)
-            query[c.list_page_param] = cursor
+            if c.pagination_location == "body":
+                set_path(request_body, c.list_page_param, cursor)
+            else:
+                query[c.list_page_param] = cursor
         else:
             return
 
 
+def fetch_list(request, c, query, body):
+    if not c.list_ready():
+        raise UiContractError("Portal list contract not replayable")
+    return request_json(request, c.list_host, c.list_path, query, method=c.list_method,
+                        body_type=c.list_body_type, body=body)
+
+
 def fetch_detail(request, c, identifier):
+    if not c.detail_ready():
+        raise UiContractError("Portal detail contract not replayable")
     # IDs in query parameters are escaped by urlencode; path IDs by quote.
     if identifier in (".", ".."):
         raise UiContractError("Portal stable id cannot be used in a request path")
     path = c.detail_path.replace("{id}", quote(identifier, safe=""))
     query = {k: identifier if v == "{id}" else v for k, v in c.detail_query.items()}
-    payload = request_json(request, c.detail_host, path, query)
+    request_body = deepcopy(c.detail_body)
+    if c.detail_method == "POST" and c.detail_request_id_path:
+        try:
+            value = int(identifier) if c.detail_request_id_type == "int" else identifier
+            set_path(request_body, c.detail_request_id_path, value)
+        except (ValueError, KeyError, TypeError):
+            raise UiContractError("Portal request identifier contract changed") from None
+    payload = request_json(request, c.detail_host, path, query, method=c.detail_method,
+                           body_type=c.detail_body_type, body=request_body)
     if has_read_state(payload):
         raise UiContractError("Portal detail read-state semantics require review")
     if stable_id(at_path(payload, c.detail_id_path)) != identifier:

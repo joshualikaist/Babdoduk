@@ -235,7 +235,7 @@ dry-run은 Dooray writer를 생성하지 않고 queue 파일을 만들거나 변
 등록 성공 직후 로컬 저장 전에 프로세스가 종료되면 다음 실행에 task가 중복될 수 있지만,
 동일 external key로 DB에서 합쳐집니다.
 
-현재 자동 calibration은 GET/동일 Portal host/명확한 ID와 JSON 본문을 가진 응답만 지원합니다.
+현재 자동 calibration은 동일 Portal host의 관찰된 GET 또는 검증된 JSON/form POST를 지원합니다.
 알 수 없는 query 값, 재현할 수 없는 요청, 여러 모호한 목록은 추측하지 않고 중단합니다.
 비어 있지 않은 cursor·인증 정보·본문·제목·raw ID는 contract에 저장하지 않습니다.
 read/unread/readCount/viewCount 등이 관찰되면 상세 조회를 승인하지 않고 semantics 검토를 요구합니다.
@@ -248,9 +248,10 @@ discovery는 `Content-Type`과 관계없이 Portal/KAIST 호스트 응답의 JSO
 카운트는 외부 호스트도 포함하지만 외부 응답 본문은 파싱하지 않습니다. same-host와 KAIST-host
 카운트는 겹칠 수 있습니다. production 실행의 strict JSON 검증은 유지합니다.
 
-`*.kaist.ac.kr` 교차 도메인, POST, document/other의 JSON은 **진단 관찰만** 합니다.
-현재 GET·동일 exact Portal host·xhr/fetch 재호출 정책은 그대로이며, query whitelist도 임의로
-확장하지 않습니다. POST request body와 인증 헤더는 읽지 않습니다.
+`*.kaist.ac.kr` 교차 도메인과 document/other의 JSON은 **진단 관찰만** 합니다.
+동일 exact Portal host·xhr/fetch 정책을 유지하며 query whitelist를 임의로 확장하지 않습니다.
+POST는 JSON/form request body의 scalar를 메모리에서만 검사합니다. multipart/upload는 제외하고,
+인증 헤더는 읽지 않습니다. request body 인코딩을 구분하기 위한 Content-Type만 확인합니다.
 `replayable detail candidates`는 요청 형식이 맞는 관찰 수이고, 최종 상세 승인에는 여전히
 서로 다른 ID 2건과 동일 템플릿/본문 경로 검증이 필요합니다.
 
@@ -262,9 +263,34 @@ discovery는 `Content-Type`과 관계없이 Portal/KAIST 호스트 응답의 JSO
 pagination parameter와 progression 관찰 여부는 각각 0/1로 출력하며,
 pagination parameter가 아예 없는 목록은 `pagination: none`으로 허용합니다.
 
-`.local/portal-discovery-debug.json`은 고정된 카운터와 사유만 저장합니다.
+`.local/portal-discovery-debug.json`은 카운터·사유와 안전한 key/path 이름만 저장합니다.
 제목·본문·raw ID·query 값·POST body·쿠키·토큰은 이 파일이나 터미널에 출력하지 않습니다.
 일반 `.local/portal-discovery.json`의 검증용 contract와 진단 파일은 둘 다 gitignored입니다.
+
+POST correlation은 요청 URL 또는 body scalar와 상세 응답의 정확히 한 path,
+목록의 유일한 ID column/row가 같은 값을 가진 경우만 인정합니다. 서로 다른 ID 2개에서
+endpoint·request ID path·response ID path·list ID column이 일치해야 POST replay가 가능합니다.
+목록과 상세의 GET/POST는 각각 관찰된 method를 사용하며, nested JSON ID는 검증된 한 path에만
+주입합니다. `correlated via URL`/`correlated via POST body` 카운트와 선택된 method/path를 출력합니다.
+ID와 무관한 localization 응답이나 codes 목록은 correlation 근거로 선택하지 않습니다.
+
+ID 이외의 고정 POST body field는 기본적으로 저장·재호출하지 않습니다. 운영자가 진단에서
+field 이름을 확인하고 승인하려면 discovery에 `--approve-post-field detail:boardId` 또는
+`--approve-post-field list:filter.boardId`처럼 대상과 정확한 path를 지정합니다(여러 번 지정 가능).
+이 예시는 문법 예시이며 실제 Portal field를 가정하지 않습니다. 승인된 key라도 같은 endpoint의
+여러 실제 요청에서 값과 타입이 불변이고 짧은 structural primitive여야 합니다.
+credential 형태·sensitive key·중복 key·지원하지 않는 container는 거부합니다.
+
+POST 목록 body의 page/offset/cursor는 선택된 공지 목록의 두 요청에서 확인된 progression만
+사용합니다. `bgngDt`/`endDt` 등 날짜 범위 변화는 filter evidence로 분리하고 pagination으로
+해석하지 않습니다. 입증된 pagination 시작 값 이외의 고정 field는 위의 승인이 필요합니다.
+
+POST contract의 검증된 body template/default는 `.local/portal-ui.json`에만 저장합니다.
+discovery/debug JSON에는 scalar 값을 복사하지 않습니다. discovery가 만든 초안은
+`verified=false`이고 `--calibrate --cdp`에서 검증한 뒤에만 실행할 수 있습니다.
+승인되지 않았거나 값 검증에 실패한 고정 field는 `POST_STATIC_FIELDS_REQUIRE_APPROVAL_OR_VALIDATION`으로
+표시됩니다. 원본 body와 ID 값은 저장하지 않으며 ID 위치에는 `{id}`만 남깁니다.
+dry-run의 Portal POST는 검증된 공지 조회에 한정되며 Dooray writer와 queue mutation은 계속 0입니다.
 
 ### KAIST 학식
 

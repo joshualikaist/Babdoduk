@@ -188,7 +188,7 @@ def scalar_paths(payload, value):
 
 def list_identity(row):
     parsed = urlparse(row["_url"])
-    return parsed.netloc, parsed.path
+    return parsed.netloc, parsed.path, row.get("_method", "GET")
 
 
 def correlate_interactions(lists, details):
@@ -206,13 +206,23 @@ def correlate_interactions(lists, details):
     groups = {}
     for detail in details:
         payload = detail["_payload"]
-        for value in url_identifiers(detail["_url"]):
+        sources = [(v, "", "url", "string") for v in url_identifiers(detail["_url"])]
+        if detail.get("_method") == "POST" and detail.get("_body_type"):
+            from .portal_post import correlation_fields
+            try:
+                fields = list(correlation_fields(detail["_request_body"]))
+                sources += [(stable_scalar(v), p, "post-body", "int" if type(v) is int else "string")
+                            for p, v in fields if stable_scalar(v)
+                            and sum(stable_scalar(x) == stable_scalar(v) for _, x in fields) == 1]
+            except ValueError:
+                pass
+        for value, request_id_path, via, id_type in sources:
             paths = scalar_paths(payload, value)
             if len(paths) != 1:
                 continue
             id_path = paths[0]
             shape = request_shape(detail["_url"], value)
-            if not shape or not ("{id}" in shape[1] or "{id}" in shape[2].values()):
+            if not shape or (not request_id_path and not ("{id}" in shape[1] or "{id}" in shape[2].values())):
                 continue
             for listing_row in lists:
                 for array in list_like_arrays(listing_row["_payload"]):
@@ -221,10 +231,12 @@ def correlate_interactions(lists, details):
                         if values.count(value) != 1:
                             continue
                         group = (list_identity(listing_row), array["array"], key,
-                                 shape[0], shape[1], tuple(sorted(shape[2].items())), id_path)
+                                 shape[0], shape[1], tuple(sorted(shape[2].items())), id_path,
+                                 detail.get("_method", "GET"), detail.get("_body_type", ""), request_id_path, id_type)
                         entry = groups.setdefault(
-                            group, {"hashes": set(), "details": [], "pairs": 0})
+                            group, {"hashes": set(), "details": [], "pairs": 0, "url": 0, "post-body": 0})
                         entry["pairs"] += 1
+                        entry[via] += 1
                         entry["hashes"].add(portal_external_key(value))
                         if all(seen is not detail for seen in entry["details"]):
                             entry["details"].append(detail)
@@ -429,7 +441,7 @@ def analyse_list_queries(lists, diagnostics):
             opaque_changing=not numeric_monotonic)
 
 
-def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
+def build_discovery(rows, start_url, diagnostics=None, allow_structural=(), approve_post=()):
     """Select the notice list/detail by what a person actually opened.
 
     Field names are not evidence. A calendar widget has rows with an id, a title
@@ -458,7 +470,8 @@ def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
               "listReplayable": False, "detailReplayable": False, "contract": None}
 
     def eligible(row):
-        return row.get("_method", "GET") == "GET" and row.get("_resource", "xhr") in ("xhr", "fetch")
+        return (row.get("_method", "GET") == "GET" or
+                (row.get("_method") == "POST" and bool(row.get("_body_type")))) and row.get("_resource", "xhr") in ("xhr", "fetch")
 
     observed_lists = [r for r in rows if r["kind"] == "list"]
     observed_details = [r for r in rows if r["kind"] == "detail"]
@@ -481,6 +494,11 @@ def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
 
     # ---- interaction correlation, before any field-name inference -----------
     groups = correlate_interactions(lists, details)
+    d.counts["correlated via URL"] = sum(e["url"] for e in groups.values())
+    d.counts["correlated via POST body"] = sum(e["post-body"] for e in groups.values())
+    d.counts["correlated POST endpoints"] = len(
+        {(g[3], g[4]) for g in groups if g[7] == "POST"}
+        | {(g[0][0], g[0][1]) for g in groups if g[0][2] == "POST"})
     d.counts["correlated list/detail pairs"] = sum(e["pairs"] for e in groups.values())
     d.counts["correlated distinct ids"] = max((len(e["hashes"]) for e in groups.values()), default=0)
     list_host = urlparse(lists[0]["_url"]).netloc
@@ -542,6 +560,8 @@ def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
                          array_path=array_path, row_keys=row_keys, id_key=id_key,
                          title_key=title_key, date_key=date_key)
 
+    d.selected_list["method"] = first.get("_method", "GET")
+
     # ---- detail: two distinct ids, one request template ---------------------
     verified = {key: entry for key, entry in groups.items() if len(entry["hashes"]) >= 2}
     if len(groups) > 1:
@@ -575,6 +595,8 @@ def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
         body_path = body_paths.pop() if len(body_paths) == 1 else ""
         d.note_selected_detail(correlated=True, path=detail_group[4], id_path=id_path,
                                body_candidates=candidates, body_path=body_path)
+        d.selected_detail["method"] = detail_group[7]
+        d.selected_detail["requestIdPath"] = detail_group[9]
         if not body_path:
             d.rejected["detail shape rejected"] += 1
             if len(set(candidates)) > 1:
@@ -611,10 +633,33 @@ def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
     if not date_key:
         d.rejected["date field unknown"] += 1
 
-    c = PortalContract(start_url=start_url, list_method="GET", list_host=host, list_path=path,
+    c = PortalContract(start_url=start_url, list_method=first.get("_method", "GET"), list_host=host, list_path=path,
                        list_query=query, list_array_path=array_path, list_id_key=id_key,
                        list_title_key=title_key, list_date_key=date_key)
     _pagination(c, selected_lists)
+    from .portal_post import body_template, body_pagination, leaves
+    if c.list_method == "POST":
+        if len({h for e in groups.values() for h in e["hashes"]}) < 2 or not verified:
+            return finish("POST_REQUIRES_TWO_DISTINCT_DETAILS")
+        c.list_body_type = first["_body_type"]
+        try:
+            body_page_keys = [p for r in selected_lists for p, _ in leaves(r["_request_body"])
+                              if p.split(".")[-1] in PAGE | CURSOR]
+            body_page = body_pagination(c, selected_lists, d)
+        except (ValueError, TypeError):
+            return finish("POST_BODY_TEMPLATE_UNSAFE")
+        report["paginationParameterObserved"] |= bool(body_page_keys)
+        d.counts["pagination parameter observed"] = int(report["paginationParameterObserved"])
+        if body_page_keys and not body_page:
+            return finish("PAGINATION_NOT_VERIFIED")
+        if body_page and any(k in PAGE | CURSOR for k in query):
+            return finish("MULTIPLE_PAGINATION_MECHANISMS")
+        template = body_template(selected_lists, approved=[p[5:] for p in approve_post if p.startswith("list:")],
+                                 dynamic_path=body_page)
+        if template is None:
+            return finish("POST_STATIC_FIELDS_REQUIRE_APPROVAL_OR_VALIDATION")
+        c.list_body = template
+        c.list_post_evidence = sorted(next(iter(verified.values()))["hashes"])
     if any(k in PAGE | CURSOR for k in query) and c.pagination == "none":
         d.rejected["pagination unverified"] += 1
         return finish("PAGINATION_NOT_VERIFIED")
@@ -624,8 +669,18 @@ def build_discovery(rows, start_url, diagnostics=None, allow_structural=()):
     d.counts["pagination progression observed"] += int(c.pagination != "none")
 
     if detail_group and body_path and detail_group[3] == host:
-        c.detail_method, c.detail_host, c.detail_path = "GET", detail_group[3], detail_group[4]
+        c.detail_method, c.detail_host, c.detail_path = detail_group[7], detail_group[3], detail_group[4]
         c.detail_query = dict(detail_group[5])
+        if c.detail_method == "POST":
+            c.detail_body_type, c.detail_request_id_path = detail_group[8], detail_group[9]
+            c.detail_request_id_type = detail_group[10]
+            template = body_template(evidence["details"], id_path=c.detail_request_id_path,
+                                     approved=[p[7:] for p in approve_post if p.startswith("detail:")])
+            if template is None:
+                reasons.append("POST_STATIC_FIELDS_REQUIRE_APPROVAL_OR_VALIDATION")
+            else:
+                c.detail_body = template
+                c.detail_post_evidence = sorted(evidence["hashes"])
         c.detail_body_path, c.detail_id_path = body_path, id_path
         c.detail_id_hashes = sorted(evidence["hashes"])
         c.detail_verified_count = len(c.detail_id_hashes)

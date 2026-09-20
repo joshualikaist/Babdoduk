@@ -1,4 +1,4 @@
-"""Local Portal agent: passive discovery, verified contracts, active bounded GETs.
+"""Local Portal agent: passive discovery, verified contracts, bounded API replay.
 
 SSO is manual. No credentials, notice values or raw IDs are logged or persisted
 in discovery/queue files. Dry runs never instantiate a Dooray writer or save a queue.
@@ -121,10 +121,18 @@ def wait_for_portal(session, timeout_seconds=600):
     observe_network(session, timeout_seconds, stop_on_auth=True)
 
 
-def write_discovery(rows, diagnostics=None):
-    report = build_discovery(rows, start_url(), diagnostics)
+def write_discovery(rows, diagnostics=None, approve_post=()):
+    report = build_discovery(rows, start_url(), diagnostics, approve_post=approve_post)
     LOCAL_DIR.mkdir(parents=True, exist_ok=True)
-    DISCOVERY_FILE.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    persisted = dict(report)
+    contract = report.get("contract")
+    if contract and "POST" in (contract.get("list_method"), contract.get("detail_method")):
+        # Approved scalar defaults belong ONLY in the local contract, never the
+        # discovery/debug report. Calibration explicitly promotes this draft.
+        PortalContract(**contract).save(CONTRACT_FILE)
+        persisted["contract"] = None
+        persisted["postContractDraft"] = True
+    DISCOVERY_FILE.write_text(json.dumps(persisted, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     # Never copy observations or contracts here: debug output is counts/reasons only.
     debug = {"diagnostics": report["diagnostics"], "reasons": report["reasons"]}
     DEBUG_FILE.write_text(json.dumps(debug, indent=2) + "\n", encoding="utf-8")
@@ -151,7 +159,7 @@ def cmd_discover(args):
     with open_session(args, start_url()) as session:
         log("observing for 60s: open the notice list, next page, and two distinct notice details")
         rows = observe_network(session, seconds=60, diagnostics=diagnostics)
-    report = write_discovery(rows, diagnostics)
+    report = write_discovery(rows, diagnostics, getattr(args, "approve_post_field", ()))
     log_discovery(report)
     return SUCCESS if report["listReplayable"] else UI_CHANGED
 
@@ -192,10 +200,23 @@ def log_stages(report):
     log(f"  detail-like JSON candidates: {counts.get('detail-like JSON candidates', 0)}")
     log(f"  correlated list/detail pairs: {counts.get('correlated list/detail pairs', 0)}")
     log(f"  correlated distinct ids: {counts.get('correlated distinct ids', 0)}")
+    log(f"  correlated via URL: {counts.get('correlated via URL', 0)}")
+    log(f"  correlated via POST body: {counts.get('correlated via POST body', 0)}")
+    log("POST observation:")
+    log(f"  notice-like POST candidates: {counts.get('observed notice-like POST candidate', 0)}")
+    log(f"  correlated POST endpoints: {counts.get('correlated POST endpoints', 0)}")
+    log("  selected method: " + (chosen_detail.get("method") or "none"))
+    log("  keys: " + _names(safe.get("postRequestKeys") or []))
+    log("  request scalar paths: " + _names(safe.get("postRequestScalarPaths") or []))
+    log("  request id path: " + (chosen_detail.get("requestIdPath") or "unknown"))
+    for entry in safe.get("postPaginationCandidates") or []:
+        log(f"  pagination body candidate: {entry['path']} numericMonotonic={entry['numericMonotonic']}")
+    log("  filter paths: " + _names(safe.get("postFilterPaths") or []))
 
     log("Selected notice list:")
     log("  correlated: " + _yes(chosen_list.get("correlated")))
     if chosen_list.get("correlated"):
+        log("  method: " + chosen_list.get("method", "GET"))
         log("  candidate path: " + (chosen_list.get("candidatePath") or "<unsafe path, withheld>"))
         log("  array path: " + (chosen_list.get("arrayPath") or "unknown"))
         log("  row keys: " + _names(chosen_list.get("rowKeys") or safe.get("rowKeys") or []))
@@ -214,6 +235,8 @@ def log_stages(report):
     log("  correlated: " + _yes(chosen_detail.get("correlated")))
     log(f"  ambiguous body responses: {rejected.get('body path ambiguous', 0)}")
     if chosen_detail.get("correlated"):
+        log("  method: " + chosen_detail.get("method", "GET"))
+        log("  request id path: " + (chosen_detail.get("requestIdPath") or "unknown"))
         log("  candidate path: " + (chosen_detail.get("candidatePath") or "<unsafe path, withheld>"))
         log("  id path: " + (chosen_detail.get("idPath") or "unknown"))
         log("  body candidate paths: " + _names(chosen_detail.get("bodyCandidatePaths") or []))
@@ -247,7 +270,8 @@ def cmd_calibrate(args):
         old.save(CONTRACT_FILE)
     try:
         discovery = json.loads(DISCOVERY_FILE.read_text(encoding="utf-8"))
-        contract = contract_from_discovery(discovery)
+        contract = (PortalContract.load(CONTRACT_FILE) if discovery.get("postContractDraft")
+                    else contract_from_discovery(discovery))
     except (OSError, ValueError, TypeError):
         contract = None
     if contract is None or not contract.list_ready():
@@ -349,6 +373,8 @@ def main(argv=None):
     parser.add_argument("--to", dest="date_to", type=date.fromisoformat)
     parser.add_argument("--max-items", type=positive_int, default=500)
     parser.add_argument("--max-pages", type=positive_int, default=20)
+    parser.add_argument("--approve-post-field", action="append", default=[], metavar="list:PATH|detail:PATH",
+                        help="Explicitly approve a POST structural field name; values must still be invariant and safe")
     args = parser.parse_args(argv)
     if args.date_from and args.date_to and args.date_from > args.date_to:
         parser.error("--from must not be after --to")
