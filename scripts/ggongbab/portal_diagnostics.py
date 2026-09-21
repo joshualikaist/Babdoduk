@@ -18,7 +18,7 @@ KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,63}$")
 # describes the account's authentication scheme.
 SENSITIVE = re.compile(
     r"token|auth|session|cookie|password|passwd|pwd|secret|jwt|credential"
-    r"|apikey|bearer|signature|nonce|otp", re.I)
+    r"|apikey|bearer|signature|nonce|otp|loginid|logindeptid", re.I)
 
 REDACTED = "<sensitive>"
 UNNAMEABLE = "<unnameable>"

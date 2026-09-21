@@ -198,24 +198,50 @@ SSO가 에이전트가 제어하지 않는 창에서 끝나 버리는 문제 때
 ### KAIST Portal 로컬 에이전트
 
 Portal은 GitHub Action에서 SSO 할 수 없으므로 클라우드 collector는 비활성입니다.
-로컬 resident Chrome + 수동 SSO 후, `--discover`에서 웹앱이 실제로 호출한 XHR/fetch를 관찰합니다.
-`--dry-run`/`--run`은 검증된 contract로 현재 브라우저 세션의 API를 직접 조회합니다.
+KAIST 운영 경로는 DevTools에서 수동 확인한 schema를 쓰는 `--calibrate-known`입니다.
+`--discover`와 generic `--calibrate`는 진단/fallback으로 유지합니다.
+`--dry-run`/`--run`은 schema와 부작용 검토를 모두 통과한 contract만 사용합니다.
 비밀번호·OTP는 채우지 않고, 엔드포인트를 추측하지 않습니다.
 
 ```powershell
 python scripts\portal_web_agent.py --setup --cdp
-python scripts\portal_web_agent.py --discover --cdp
-python scripts\portal_web_agent.py --calibrate --cdp
-python scripts\portal_web_agent.py --dry-run --cdp
-python scripts\portal_web_agent.py --dry-run --cdp --from 2026-09-01 --to 2026-09-20 --max-items 200 --max-pages 10
-python scripts\portal_web_agent.py --run --cdp
+python scripts\portal_web_agent.py --calibrate-known --cdp
 ```
+
+known calibration은 정확히 `GET /wz/api/board/recents`의 `pageIndex=1,2`만 능동 조회합니다.
+`recordCountPerPage=10`과 관찰된 structural query 기본값을 그대로 유지하며 dotted query 이름은
+문자 그대로 처리합니다. 계정 식별 query는 전송·저장하지 않습니다. 이를 생략한 상태로 HTTP/JSON/
+목록 schema 검증이 실패하면 `LOGIN_ID_RUNTIME_REQUIRED`로 종료하고 값을 추측하거나 요구하지 않습니다.
+그 다음 120초 동안 사용자가 검증된 두 목록 페이지에서 서로 다른 공개 공지 두 개를 여는 응답만
+수동 관찰합니다. calibration에서 상세 API를 능동 호출하지 않습니다.
+
+목록은 `data`, ID는 `pstNo`, 제목은 `pstTtl`, 날짜는 `regDt`로 고정합니다.
+상세는 `GET /wz/api/board/recents/{pstNo}`와 root `pstCn`을 사용합니다.
+상세 query의 `boardNo`는 반드시 해당 row의 `boardNo`이고, `boardNos=""`, `menuNo="21"`은 고정입니다.
+`publicYn == "Y"`인 목록 항목만 날짜/제목 prefilter 후 상세 후보가 됩니다.
+상세에도 공개 여부가 있으면 재검사하며 ID·board 값 불일치는 중단합니다.
+원본 row/detail 전체나 작성자·계정 정보는 queue/task payload에 전달하지 않습니다.
+
+`2026.09.20 13:07:30`과 `2026.09.20` 날짜를 KST로 파싱하며 기존 ISO도 지원합니다.
+두 페이지의 실제 timestamp가 페이지 내부와 페이지 경계 모두 내림차순일 때만 date cutoff를 활성화합니다.
+실행 시 응답의 `page.pageIndex`도 요청과 비교합니다. 기존 최대 20페이지/500건 기본 상한과
+`--max-pages`, `--max-items`, `--from`, `--to`는 그대로 유지합니다.
+
+**조회수 부작용은 미해결 상태입니다.** 사용자가 `inqCnt`를 관찰했다고 보고했지만,
+이 구현에서 상세 GET이 실제로 조회수를 증가시키는지 시험하거나 증명하지 않았습니다.
+calibration은 counter field 존재 여부만 보고하고, 관찰되지 않더라도 부작용이 없다고 추론하지 않습니다.
+현재 known draft는 `potential_view_side_effect=true`, `verified=false`로 저장하고
+`CALIBRATION BLOCKED: potential detail view-count side effect requires review`로 종료합니다(exit 20).
+`known_schema_verified=true`는 두 상세까지 schema 검증을 통과했다는 뜻일 뿐 replay 승인이 아닙니다.
+별도 검토가 끝나기 전에는 run과 dry-run 모두 자동 상세 GET을 막으며, 이번 버전에 우회 CLI는 없습니다.
+generic discovery/calibration은 known draft/contract를 덮어쓰거나 대신 승인할 수 없습니다.
 
 프로필·계약·상태는 모두 gitignore된 `.local/portal-*` 에만 있습니다.
 후보 공지는 Dooray 수집 프로젝트에 `[BABDODUK_INGEST_V1] source=portal` marker로 등록되고,
 기존 Dooray collector가 `RawItem(source_type="portal")` 로 읽습니다.
 private Portal URL은 공개 JSON에 나가지 않습니다.
 
+아래는 남겨 둔 generic 진단/fallback의 동작입니다. known schema 운영 경로를 대체하지 않습니다.
 관찰된 list/detail이 없으면 `PORTAL CALIBRATION FAILED` 로 끝납니다.
 setup은 비밀번호 입력창이 없는 화면만으로 성공하지 않으며, 공지 목록 API의 정상 응답을 기다립니다.
 setup 성공은 **list-like 응답을 관찰했다는 뜻이며, replay contract 검증 성공이 아닙니다**.

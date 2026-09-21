@@ -129,9 +129,13 @@ def write_discovery(rows, diagnostics=None, approve_post=()):
     if contract and "POST" in (contract.get("list_method"), contract.get("detail_method")):
         # Approved scalar defaults belong ONLY in the local contract, never the
         # discovery/debug report. Calibration explicitly promotes this draft.
-        PortalContract(**contract).save(CONTRACT_FILE)
+        if PortalContract.load(CONTRACT_FILE).schema_kind != "generic":
+            persisted["contract"] = None
+            persisted["knownContractPreserved"] = True
+        else:
+            PortalContract(**contract).save(CONTRACT_FILE)
+            persisted["postContractDraft"] = True
         persisted["contract"] = None
-        persisted["postContractDraft"] = True
     DISCOVERY_FILE.write_text(json.dumps(persisted, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     # Never copy observations or contracts here: debug output is counts/reasons only.
     debug = {"diagnostics": report["diagnostics"], "reasons": report["reasons"]}
@@ -263,6 +267,9 @@ def _yes(value):
 
 
 def cmd_calibrate(args):
+    if PortalContract.load(CONTRACT_FILE).schema_kind != "generic":
+        log("Known Portal contract preserved; use --calibrate-known --cdp")
+        return UI_CHANGED
     # Invalidate earlier authorization if this calibration fails.
     if CONTRACT_FILE.exists():
         old = PortalContract.load(CONTRACT_FILE)
@@ -294,6 +301,9 @@ def cmd_calibrate(args):
 
 def _require_contract():
     contract = PortalContract.load(CONTRACT_FILE)
+    if contract.schema_kind != "generic" and (contract.potential_view_side_effect or not contract.detail_side_effect_reviewed):
+        from ggongbab.portal_known_schema import VIEW_BLOCKED
+        raise UiContractError(VIEW_BLOCKED)
     if not contract.verified or not contract.list_ready() or not contract.detail_ready():
         raise UiContractError("PORTAL CALIBRATION FAILED: run discovery and calibration first")
     if contract.list_host != urlparse(start_url()).netloc or contract.detail_host != contract.list_host:
@@ -318,6 +328,10 @@ def cmd_run(args):
         for row in iter_notices(request, contract, max_pages=args.max_pages,
                                 max_items=args.max_items, date_from=since, initial_payload=initial_payload):
             counts["loaded_rows"] += 1
+            if contract.schema_kind != "generic":
+                from ggongbab.portal_known_schema import public_row
+                if not public_row(row):
+                    continue
             parsed_date = notice_date(row.get(contract.list_date_key))
             if since or until:
                 # Undated notices do not silently become current notices.
@@ -329,7 +343,7 @@ def cmd_run(args):
             if not portal_list_warrants_detail(title):
                 continue
             identifier = stable_id(row[contract.list_id_key])
-            body = fetch_detail(request, contract, identifier)
+            body = fetch_detail(request, contract, identifier, row)
             counts["detail_fetched"] += 1
             if not portal_detail_is_candidate(title, body, has_list_date=parsed_date is not None).candidate:
                 continue
@@ -338,8 +352,12 @@ def cmd_run(args):
             counts[{"new": "new", "update": "updated", "skip": "already_queued"}[decision.outcome]] += 1
             if args.dry_run or decision.outcome == "skip":
                 continue
+            source_created_at = str(row.get(contract.list_date_key) or "")
+            if contract.schema_kind != "generic":
+                from ggongbab.portal_discovery import notice_timestamp
+                source_created_at = notice_timestamp(source_created_at).isoformat()
             payload = PortalPayload(external_key=decision.external_key, title=title, body=body,
-                                    source_created_at=str(row.get(contract.list_date_key) or ""))
+                                    source_created_at=source_created_at)
             try:
                 task_id = writer.create_portal_task(payload, dry_run=False)
             except Exception:
@@ -362,10 +380,41 @@ def positive_int(value):
     return value
 
 
+def cmd_calibrate_known(args):
+    from ggongbab.portal_known_schema import known_contract, calibrate, VIEW_BLOCKED, KNOWN_HOST
+    c = known_contract()
+    # A failed re-calibration must not leave an older authorization runnable.
+    c.save(CONTRACT_FILE)
+    try:
+        if urlparse(start_url()).netloc != KNOWN_HOST:
+            raise UiContractError("KNOWN_PORTAL_HOST_REQUIRED")
+        with open_session(args, c.start_url) as session:
+            calibrate(session, c, log)
+    finally:
+        c.save(CONTRACT_FILE)
+    log("Known Portal calibration:")
+    for message in ("host verified: yes", "list endpoint verified: yes", "list schema verified: yes",
+                    "page 1 verified: yes", "page 2 verified: yes", "pagination: pageIndex +1",
+                    "date field: regDt", "date format verified: yes", "detail endpoint verified: yes",
+                    f"distinct details verified: {c.detail_verified_count}", "detail id path: pstNo",
+                    "detail body path: pstCn", "row-bound detail query: boardNo", "public gate: publicYn == Y"):
+        log("  " + message)
+    # Do not name an account field in persisted logs; only state the privacy result.
+    log("  account-identifying query persisted: no")
+    log("  potential view counter field observed: " + _yes(c.view_counter_observed))
+    log("  potential view side effect: " + ("review-required" if c.potential_view_side_effect else "no"))
+    log("  date descending verified: " + _yes(c.list_date_descending))
+    if not c.verified:
+        log(VIEW_BLOCKED)
+        return UI_CHANGED
+    log("calibration complete")
+    return SUCCESS
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="KAIST Portal resident agent")
     modes = parser.add_mutually_exclusive_group(required=True)
-    for mode in ("setup", "discover", "calibrate", "run", "dry-run"):
+    for mode in ("setup", "discover", "calibrate", "calibrate-known", "run", "dry-run"):
         modes.add_argument("--" + mode, action="store_true")
     parser.add_argument("--cdp", action="store_true")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -388,6 +437,8 @@ def main(argv=None):
             return cmd_discover(args)
         if args.calibrate:
             return cmd_calibrate(args)
+        if args.calibrate_known:
+            return cmd_calibrate_known(args)
         return cmd_run(args)
     except AuthRequired:
         log("AUTH_REQUIRED: complete manual Portal setup and open the notice list")

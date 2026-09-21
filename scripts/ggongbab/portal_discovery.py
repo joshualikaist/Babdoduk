@@ -49,17 +49,24 @@ def at_path(payload, path):
     return payload
 
 
-def notice_date(value):
+def notice_timestamp(value):
     if not isinstance(value, str) or not value.strip():
         return None
     try:
         stamp = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
-        return stamp.astimezone(KST).date() if stamp.tzinfo else stamp.date()
+        return stamp.astimezone(KST) if stamp.tzinfo else stamp.replace(tzinfo=KST)
     except ValueError:
-        try:
-            return date.fromisoformat(value.strip())
-        except ValueError:
-            return None
+        for pattern in ("%Y.%m.%d %H:%M:%S", "%Y.%m.%d"):
+            try:
+                return datetime.strptime(value.strip(), pattern).replace(tzinfo=KST)
+            except ValueError:
+                pass
+        return None
+
+
+def notice_date(value):
+    stamp = notice_timestamp(value)
+    return stamp.date() if stamp else None
 
 
 def stable_id(value):

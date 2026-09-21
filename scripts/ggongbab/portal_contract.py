@@ -5,10 +5,10 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-TITLE_KEYS = {"title", "subject", "noticetitle", "bbsstit", "ntttitle"}
-ID_KEYS = {"id", "noticeid", "bbsid", "nttid", "seq", "uid", "articleid"}
+TITLE_KEYS = {"title", "subject", "noticetitle", "bbsstit", "ntttitle", "pstttl"}
+ID_KEYS = {"id", "noticeid", "bbsid", "nttid", "seq", "uid", "articleid", "pstno"}
 DATE_KEYS = {"createdat", "createddate", "regdate", "regdt", "date", "writedate", "updatedat"}
-BODY_KEYS = {"body", "content", "contents", "html", "text", "nttcont"}
+BODY_KEYS = {"body", "content", "contents", "html", "text", "nttcont", "pstcn"}
 
 
 def pick_key(keys, candidates):
@@ -52,6 +52,13 @@ class PortalContract:
     detail_request_id_path: str = ""
     detail_request_id_type: str = "string"
     pagination_location: str = "query"
+    schema_kind: str = "generic"
+    detail_query_from_row: dict = field(default_factory=dict)
+    list_public_key: str = ""
+    known_schema_verified: bool = False
+    potential_view_side_effect: bool = False
+    view_counter_observed: bool = False
+    detail_side_effect_reviewed: bool = False
 
     def post_ready(self, endpoint):
         from .portal_post import leaves
@@ -73,6 +80,9 @@ class PortalContract:
             return False
 
     def list_ready(self):
+        if self.schema_kind != "generic":
+            from .portal_known_schema import pinned_shape_valid
+            return pinned_shape_valid(self)
         from .portal_post import leaves
         try:
             params = dict(leaves(self.list_body)) if self.pagination_location == "body" else self.list_query
@@ -91,6 +101,11 @@ class PortalContract:
                     and self.list_title_key and page_ok)
 
     def detail_ready(self):
+        if self.schema_kind != "generic":
+            from .portal_known_schema import pinned_shape_valid
+            return bool(pinned_shape_valid(self) and self.known_schema_verified
+                        and self.detail_verified_count >= 2 and len(set(self.detail_id_hashes)) >= 2
+                        and self.detail_side_effect_reviewed and not self.potential_view_side_effect)
         method_ok = self.detail_method == "GET" or (self.detail_method == "POST" and self.post_ready("detail"))
         return bool(method_ok and self.detail_host and self.detail_body_path
                     and self.detail_id_path and self.detail_verified_count >= 2

@@ -38,6 +38,9 @@ def request_json(request, host, path, query, *, method="GET", body_type="", body
 
 
 def exact_rows(payload, c):
+    if c.schema_kind != "generic":
+        from .portal_known_schema import validate_list
+        return validate_list(payload, (payload.get("page") or {}).get("pageIndex"))
     rows = at_path(payload, c.list_array_path)
     if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
         raise UiContractError("Portal list array contract changed")
@@ -85,7 +88,11 @@ def iter_notices(request, c, *, max_pages=20, max_items=500, date_from=None, ini
     for page_number in range(max_pages):
         payload = (initial_payload if page_number == 0 and initial_payload is not None
                    else fetch_list(request, c, query, request_body))
-        rows = exact_rows(payload, c)
+        if c.schema_kind != "generic":
+            from .portal_known_schema import validate_list
+            rows = validate_list(payload, int(query["pageIndex"]))
+        else:
+            rows = exact_rows(payload, c)
         fresh = [r for r in rows if stable_id(r[c.list_id_key]) not in seen]
         if not fresh:
             return
@@ -136,11 +143,25 @@ def iter_notices(request, c, *, max_pages=20, max_items=500, date_from=None, ini
 def fetch_list(request, c, query, body):
     if not c.list_ready():
         raise UiContractError("Portal list contract not replayable")
+    if c.schema_kind != "generic":
+        from .portal_known_schema import LIST_QUERY, validate_list
+        try:
+            index = int(query["pageIndex"])
+        except (ValueError, TypeError, KeyError):
+            raise UiContractError("KNOWN_PAGE_QUERY_CHANGED") from None
+        if index < 1 or query != {**LIST_QUERY, "pageIndex": str(index)}:
+            raise UiContractError("KNOWN_LIST_QUERY_CHANGED")
+        payload = request_json(request, c.list_host, c.list_path, query)
+        validate_list(payload, index)
+        return payload
     return request_json(request, c.list_host, c.list_path, query, method=c.list_method,
                         body_type=c.list_body_type, body=body)
 
 
-def fetch_detail(request, c, identifier):
+def fetch_detail(request, c, identifier, row=None):
+    if c.schema_kind != "generic" and (c.potential_view_side_effect or not c.detail_side_effect_reviewed):
+        from .portal_known_schema import VIEW_BLOCKED
+        raise UiContractError(VIEW_BLOCKED)
     if not c.detail_ready():
         raise UiContractError("Portal detail contract not replayable")
     # IDs in query parameters are escaped by urlencode; path IDs by quote.
@@ -148,6 +169,11 @@ def fetch_detail(request, c, identifier):
         raise UiContractError("Portal stable id cannot be used in a request path")
     path = c.detail_path.replace("{id}", quote(identifier, safe=""))
     query = {k: identifier if v == "{id}" else v for k, v in c.detail_query.items()}
+    if c.schema_kind != "generic":
+        from .portal_known_schema import bound_query
+        query = bound_query(c, identifier, row)
+    elif c.detail_query_from_row:
+        raise UiContractError("Row-bound query requires the pinned known contract")
     request_body = deepcopy(c.detail_body)
     if c.detail_method == "POST" and c.detail_request_id_path:
         try:
@@ -157,6 +183,9 @@ def fetch_detail(request, c, identifier):
             raise UiContractError("Portal request identifier contract changed") from None
     payload = request_json(request, c.detail_host, path, query, method=c.detail_method,
                            body_type=c.detail_body_type, body=request_body)
+    if c.schema_kind != "generic":
+        from .portal_known_schema import validate_detail
+        return validate_detail(payload, identifier, query["boardNo"])
     if has_read_state(payload):
         raise UiContractError("Portal detail read-state semantics require review")
     if stable_id(at_path(payload, c.detail_id_path)) != identifier:
