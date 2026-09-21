@@ -211,11 +211,87 @@ def test_same_detail_twice_not_sufficient(monkeypatch):
     assert c.detail_verified_count == 1 and not c.known_schema_verified
 
 
-def test_observed_board_query_mismatch_fails():
+def observe_mismatch(old_text, new_text):
+    """Run the passive observer over one detail click and return the failure."""
+    r = row()
+    response = detail_response(r)
+    assert old_text in response.url
+    response.url = response.url.replace(old_text, new_text)
+    with pytest.raises(known.DetailQueryMismatch) as caught:
+        known.observe_detail(response, {r["pstNo"]: r}, known.known_contract())
+    return caught.value
+
+
+def test_board_number_mismatch_names_the_field():
+    """The live calibration stopped here; "the query differs" was not actionable."""
+    failure = observe_mismatch("boardNo=test-board-a", "boardNo=other-board")
+    assert str(failure) == "KNOWN_DETAIL_BOARDNO_MISMATCH"
+    assert failure.checks["boardNo matches row"] is False
+    assert failure.checks["boardNos empty"] is True
+    assert failure.checks["menuNo expected"] is True
+
+
+def test_board_numbers_mismatch_names_the_field():
+    failure = observe_mismatch("boardNos=", "boardNos=99")
+    assert str(failure) == "KNOWN_DETAIL_BOARDNOS_MISMATCH"
+    assert failure.checks["boardNos empty"] is False
+    # Checked before the row is consulted, so this one is honestly unknown.
+    assert failure.checks["boardNo matches row"] is None
+
+
+def test_menu_number_mismatch_names_the_field():
+    failure = observe_mismatch("menuNo=21", "menuNo=22")
+    assert str(failure) == "KNOWN_DETAIL_MENUNO_MISMATCH"
+    assert failure.checks["menuNo expected"] is False
+    assert failure.checks["boardNos empty"] is True
+
+
+def test_mismatch_report_is_booleans_only():
+    failure = observe_mismatch("boardNo=test-board-a", "boardNo=other-board")
+    lines = known.detail_query_lines(failure.checks)
+    assert lines == ["detail query check:",
+                     "  boardNo matches row: no",
+                     "  boardNos empty: yes",
+                     "  menuNo expected: yes"]
+    blob = chr(10).join(lines)
+    for secret in ("test-board-a", "other-board", "test-notice-a", "21", TITLE, BODY):
+        assert secret not in blob, secret
+
+
+def test_unknown_check_renders_as_unknown():
+    failure = observe_mismatch("boardNos=", "boardNos=99")
+    assert "  boardNo matches row: unknown" in known.detail_query_lines(failure.checks)
+
+
+def test_calibration_logs_the_failing_field_without_values(monkeypatch):
     r = row()
     response = detail_response(r)
     response.url = response.url.replace("test-board-a", "other-board")
-    with pytest.raises(UiContractError, match="BOARD_QUERY"):
+    browser, _, _ = session(monkeypatch, responses=[response])
+    written = []
+    with pytest.raises(UiContractError, match="KNOWN_DETAIL_BOARDNO_MISMATCH"):
+        known.calibrate(browser, known.known_contract(), written.append, seconds=4)
+    output = chr(10).join(written)
+    assert "detail query check:" in output
+    assert "boardNo matches row: no" in output
+    for secret in ("test-board-a", "other-board", "test-notice-a", TITLE, BODY):
+        assert secret not in output, secret
+
+
+def test_a_matching_query_still_verifies():
+    """The expectations themselves are unchanged; only the reporting is finer."""
+    r = row()
+    c = known.known_contract()
+    assert known.observe_detail(detail_response(r), {r["pstNo"]: r}, c)
+    assert c.detail_verified_count == 1
+
+
+@pytest.mark.parametrize("query", ["", "boardNo=x", "boardNo=x&boardNos=&menuNo=21&extra=1"])
+def test_structural_query_change_is_still_reported_separately(query):
+    r = row()
+    response = detail_response(r)
+    response.url = response.url.split("?")[0] + ("?" + query if query else "")
+    with pytest.raises(UiContractError, match="KNOWN_DETAIL_QUERY_CHANGED"):
         known.observe_detail(response, {r["pstNo"]: r}, known.known_contract())
 
 

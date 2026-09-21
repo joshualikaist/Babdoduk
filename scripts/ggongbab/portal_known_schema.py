@@ -30,6 +30,29 @@ DETAIL_QUERY = {"boardNos": "", "menuNo": "21"}
 ROW_QUERY = {"boardNo": "boardNo"}
 VIEW_KEYS = {"inqcnt", "viewcount", "readcount", "hitcount", "viewcnt", "hitcnt"}
 VIEW_BLOCKED = "CALIBRATION BLOCKED: potential detail view-count side effect requires review"
+# Reported in this order, so the answer names one field rather than "the query".
+DETAIL_QUERY_CHECKS = ("boardNo matches row", "boardNos empty", "menuNo expected")
+
+
+class DetailQueryMismatch(UiContractError):
+    """One named field of the detail query differed from what the row implies.
+
+    Carries booleans only. A boardNo or pstNo value identifies a board someone
+    reads and a notice they opened, so the values stay in memory.
+    """
+
+    def __init__(self, reason, checks):
+        super().__init__(reason)
+        self.checks = dict(checks)
+
+
+def detail_query_lines(checks):
+    """The privacy-safe mismatch report: field names and yes/no, never values."""
+    lines = ["detail query check:"]
+    for name in DETAIL_QUERY_CHECKS:
+        state = checks.get(name)
+        lines.append(f"  {name}: " + ("unknown" if state is None else "yes" if state else "no"))
+    return lines
 
 
 def known_contract():
@@ -127,14 +150,25 @@ def observe_detail(response, row_index, c):
     identifier = unquote(parsed.path[len(prefix):])
     pairs = parse_qsl(parsed.query, keep_blank_values=True)
     query = dict(pairs)
-    if (len(pairs) != 3 or set(query) != {"boardNo", "boardNos", "menuNo"}
-            or query["boardNos"] != "" or query["menuNo"] != "21"):
+    if len(pairs) != 3 or set(query) != {"boardNo", "boardNos", "menuNo"}:
         raise UiContractError("KNOWN_DETAIL_QUERY_CHANGED")
+    # Each field is compared on its own. Comparing the whole query at once said
+    # only that something differed, which is not enough to act on. The
+    # expectations below are unchanged; only the reporting is finer.
+    checks = {"boardNo matches row": None,
+              "boardNos empty": query["boardNos"] == "",
+              "menuNo expected": query["menuNo"] == DETAIL_QUERY["menuNo"]}
+    if not checks["boardNos empty"]:
+        raise DetailQueryMismatch("KNOWN_DETAIL_BOARDNOS_MISMATCH", checks)
+    if not checks["menuNo expected"]:
+        raise DetailQueryMismatch("KNOWN_DETAIL_MENUNO_MISMATCH", checks)
     row = row_index.get(identifier)
     if row is None:
         return False  # Open a public notice from the two verified list pages.
-    if bound_query(c, identifier, row) != query:
-        raise UiContractError("KNOWN_DETAIL_BOARD_QUERY_MISMATCH")
+    expected = bound_query(c, identifier, row)
+    checks["boardNo matches row"] = query["boardNo"] == expected["boardNo"]
+    if not checks["boardNo matches row"]:
+        raise DetailQueryMismatch("KNOWN_DETAIL_BOARDNO_MISMATCH", checks)
     if not 200 <= response.status < 300 or "json" not in response.headers.get("content-type", "").lower():
         raise UiContractError("KNOWN_DETAIL_RESPONSE_CHANGED")
     try:
@@ -185,10 +219,13 @@ def calibrate(session, c, log, seconds=120):
             raise UiContractError("KNOWN_LIST_BOARD_CHANGED")
         row_index[identifier] = row
     log("Known list pages 1 and 2 verified; open two distinct public notices from those pages (manual clicks only)")
-    errors = []
+    errors, query_checks = [], []
     def on_response(response):
         try:
             observe_detail(response, row_index, c)
+        except DetailQueryMismatch as exc:
+            errors.append(str(exc))
+            query_checks.append(exc.checks)
         except UiContractError as exc:
             errors.append(str(exc))
         except Exception:
@@ -208,6 +245,8 @@ def calibrate(session, c, log, seconds=120):
     finally:
         session.context.remove_listener("response", on_response)
     if errors:
+        for line in query_checks[:1] and detail_query_lines(query_checks[0]) or []:
+            log(line)
         raise UiContractError(errors[0])
     if c.detail_verified_count < 2:
         raise UiContractError("KNOWN_CALIBRATION_NEEDS_TWO_DISTINCT_DETAILS")
