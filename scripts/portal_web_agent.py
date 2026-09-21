@@ -24,7 +24,7 @@ from ggongbab.portal_queue import PortalQueue
 from ggongbab.prefilter import portal_detail_is_candidate, portal_list_warrants_detail
 from ggongbab.web.exit_codes import (AUTH_REQUIRED, SUCCESS, UI_CHANGED,
                                      AuthRequired, ProjectNotFound, UiContractError)
-from ggongbab.web.resident import resident_session
+from ggongbab.web.resident import is_running, resident_session
 from ggongbab.web.task_writer import PortalPayload, TaskWriter
 from ggongbab.web.ui_contract import UiContract
 
@@ -112,12 +112,16 @@ def observe_network(session, seconds=20, *, stop_on_auth=False, diagnostics=None
     finally:
         session.context.remove_listener("response", on_response)
     if stop_on_auth:
-        raise AuthRequired("Portal notice API not observed; complete SSO and open the notice list")
+        raise AuthRequired(
+            "Authenticated Portal notice traffic not observed; "
+            "complete SSO if prompted and keep a Portal page open"
+        )
     return found
 
 
 def wait_for_portal(session, timeout_seconds=600):
-    log("complete manual SSO and open the notice list; waiting for a successful notice API response")
+    log("complete manual SSO only if prompted; an existing session may be reused")
+    log("waiting for authenticated Portal notice traffic")
     observe_network(session, timeout_seconds, stop_on_auth=True)
 
 
@@ -150,11 +154,14 @@ def open_session(args, url):
 
 
 def cmd_setup(args):
-    log("opening dedicated Portal browser; SSO is manual")
+    if is_running(args.port):
+        log("attaching to existing dedicated Portal browser; SSO session may already be active")
+    else:
+        log("opening dedicated Portal browser; complete SSO manually if prompted")
     with open_session(args, start_url()) as session:
         wait_for_portal(session)
-    log("setup complete: authenticated list-like Portal response observed")
-    log("setup success does not mean replay contract verified")
+    log("setup complete: authenticated Portal session confirmed from notice traffic")
+    log("setup does not force a fresh SSO login and does not verify the replay contract")
     return SUCCESS
 
 
@@ -455,7 +462,8 @@ def main(argv=None):
             return cmd_calibrate_known(args)
         return cmd_run(args)
     except AuthRequired:
-        log("AUTH_REQUIRED: complete manual Portal setup and open the notice list")
+        log("AUTH_REQUIRED: Authenticated Portal notice traffic not observed; "
+            "complete SSO if prompted and keep a Portal page open")
         return AUTH_REQUIRED
     except UiContractError as exc:
         log(str(exc))  # Only fixed, value-free messages from Portal helpers.

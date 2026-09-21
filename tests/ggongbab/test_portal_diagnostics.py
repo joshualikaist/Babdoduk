@@ -245,6 +245,31 @@ def test_observer_callback_uses_relaxed_mime_and_detaches(monkeypatch):
     assert d.counts["json-parsed responses"] == 1
 
 
+def test_wait_for_portal_describes_optional_sso_and_notice_traffic(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(agent, "LOG_FILE", tmp_path / "log")
+    observe = Mock()
+    monkeypatch.setattr(agent, "observe_network", observe)
+    session = object()
+    agent.wait_for_portal(session)
+    output = capsys.readouterr().out
+    assert "complete manual SSO only if prompted; an existing session may be reused" in output
+    assert "waiting for authenticated Portal notice traffic" in output
+    observe.assert_called_once_with(session, 600, stop_on_auth=True)
+
+
+def test_setup_auth_required_message_keeps_a_portal_page_open():
+    context = SimpleNamespace(
+        on=lambda *_: None,
+        remove_listener=lambda *_: None,
+    )
+    with pytest.raises(AuthRequired) as exc:
+        agent.observe_network(SimpleNamespace(context=context), seconds=0, stop_on_auth=True)
+    assert str(exc.value) == (
+        "Authenticated Portal notice traffic not observed; "
+        "complete SSO if prompted and keep a Portal page open"
+    )
+
+
 def test_discover_command_reports_candidate_and_rejection_separately(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(agent, "LOCAL_DIR", tmp_path)
     monkeypatch.setattr(agent, "DISCOVERY_FILE", tmp_path / "discovery.json")
@@ -263,14 +288,30 @@ def test_discover_command_reports_candidate_and_rejection_separately(monkeypatch
     assert "total responses: 3" in output
 
 
-def test_setup_message_does_not_claim_replay_verification(monkeypatch, tmp_path, capsys):
+@pytest.mark.parametrize("resident_running, expected", [
+    (True, "attaching to existing dedicated Portal browser; SSO session may already be active"),
+    (False, "opening dedicated Portal browser; complete SSO manually if prompted"),
+])
+def test_setup_reports_whether_it_attaches_or_opens(
+        monkeypatch, tmp_path, capsys, resident_running, expected):
     monkeypatch.setattr(agent, "LOG_FILE", tmp_path / "log")
+    monkeypatch.setattr(agent, "is_running", lambda _port: resident_running)
     monkeypatch.setattr(agent, "open_session", lambda *_: nullcontext(object()))
     monkeypatch.setattr(agent, "wait_for_portal", Mock())
-    assert agent.cmd_setup(SimpleNamespace()) == 0
+    assert agent.cmd_setup(SimpleNamespace(port=9223)) == 0
     output = capsys.readouterr().out
-    assert "authenticated list-like Portal response observed" in output
-    assert "setup success does not mean replay contract verified" in output
+    assert expected in output
+
+
+def test_setup_success_confirms_session_but_not_replay_contract(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(agent, "LOG_FILE", tmp_path / "log")
+    monkeypatch.setattr(agent, "is_running", lambda _port: True)
+    monkeypatch.setattr(agent, "open_session", lambda *_: nullcontext(object()))
+    monkeypatch.setattr(agent, "wait_for_portal", Mock())
+    assert agent.cmd_setup(SimpleNamespace(port=9223)) == 0
+    output = capsys.readouterr().out
+    assert "setup complete: authenticated Portal session confirmed from notice traffic" in output
+    assert "setup does not force a fresh SSO login and does not verify the replay contract" in output
 
 
 def test_successful_debug_report_has_no_contract_values(monkeypatch, tmp_path):
