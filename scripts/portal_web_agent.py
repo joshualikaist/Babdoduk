@@ -168,6 +168,18 @@ def cmd_discover(args):
     return SUCCESS if report["listReplayable"] else UI_CHANGED
 
 
+def cmd_discover_detail_alternatives(args):
+    from ggongbab.portal_detail_alternatives import observe, report_lines
+    # Attach only: unlike setup/discovery, this mode must not open or reload a URL.
+    with resident_session(PROFILE_DIR, dummy_contract(DEFAULT_START), start_url="",
+                          port=args.port, log=lambda _: None, reuse=True, attach_only=True) as session:
+        report = observe(session, log)
+    for line in report_lines(report):
+        log(line)
+    # These are observation results, never a replay contract or authorization.
+    return SUCCESS if any(not c["view-counter field present"] for c in report["candidates"]) else UI_CHANGED
+
+
 def log_discovery(report):
     log("Portal discovery diagnostics:")
     for key, count in report["diagnostics"]["counts"].items():
@@ -414,7 +426,7 @@ def cmd_calibrate_known(args):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="KAIST Portal resident agent")
     modes = parser.add_mutually_exclusive_group(required=True)
-    for mode in ("setup", "discover", "calibrate", "calibrate-known", "run", "dry-run"):
+    for mode in ("setup", "discover", "discover-detail-alternatives", "calibrate", "calibrate-known", "run", "dry-run"):
         modes.add_argument("--" + mode, action="store_true")
     parser.add_argument("--cdp", action="store_true")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -435,6 +447,8 @@ def main(argv=None):
             return cmd_setup(args)
         if args.discover:
             return cmd_discover(args)
+        if args.discover_detail_alternatives:
+            return cmd_discover_detail_alternatives(args)
         if args.calibrate:
             return cmd_calibrate(args)
         if args.calibrate_known:

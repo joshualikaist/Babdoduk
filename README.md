@@ -198,6 +198,31 @@ SSO가 에이전트가 제어하지 않는 창에서 끝나 버리는 문제 때
 ### KAIST Portal 로컬 에이전트
 
 Portal은 GitHub Action에서 SSO 할 수 없으므로 클라우드 collector는 비활성입니다.
+동일 공지를 수동으로 다시 열었을 때 `inqCnt`가 달라지는 것이 사용자 관찰로 확인되었습니다.
+현재 `/wz/api/board/recents/{pstNo}`의 자동 상세 replay는 계속 금지하며,
+`detail_side_effect_reviewed`/`potential_view_side_effect` gate는 유지합니다.
+
+대체 본문 source를 **수동 클릭의 Network 응답으로만** 관찰하려면:
+
+```powershell
+python scripts\portal_web_agent.py --discover-detail-alternatives --cdp
+```
+
+이미 로그인한 Portal Chrome에 attach만 합니다. Chrome/탭을 새로 열거나 이동·reload하지 않고,
+Portal HTTP 요청·DOM click·endpoint probing도 하지 않습니다. 안내 후 60초 동안 공개 공지 하나를
+수동으로 여세요. 기존 known detail의 공개 응답은 클릭 ID 대조 기준으로만 사용하고 후보에서 제외합니다.
+같은 탭에서 이 응답 전 15초/후 30초에 관찰된 same-host GET 2xx JSON/HTML만 검토합니다.
+JSON의 공지 ID와 본문 필드, HTML의 명시적인 공지 본문 container/JSON script data를 검사합니다.
+thumb/image·codes·collegePlan·localization/UI bundle·analytics·조회수/읽음 mutation·POST는 제외합니다.
+
+출력은 카운트, method, path template, resource/response type, body/ID path, ID 일치 여부,
+counter field 존재 여부뿐입니다. URL query 값·ID·제목·본문·계정 값은 출력하거나 파일에 저장하지 않습니다.
+알 수 없는 path segment/key는 `{segment}`/`{key}`로 가려 값이 이름처럼 섞여 나오는 것을 막습니다.
+contract·queue·discovery 파일은 바꾸지 않으며 별도 후보 원문 파일도 만들지 않습니다.
+후보가 없으면 `no safe alternative observed`(exit 20)로 끝납니다. counter가 있는 후보만 보인 경우에도
+같은 문구를 표시합니다. 후보 관찰은 side-effect-free 증명이나 replay 승인이 아니며,
+자동 run/dry-run 상세 조회 차단은 그대로 유지됩니다.
+
 KAIST 운영 경로는 DevTools에서 수동 확인한 schema를 쓰는 `--calibrate-known`입니다.
 `--discover`와 generic `--calibrate`는 진단/fallback으로 유지합니다.
 `--dry-run`/`--run`은 schema와 부작용 검토를 모두 통과한 contract만 사용합니다.
@@ -227,8 +252,8 @@ known calibration은 정확히 `GET /wz/api/board/recents`의 `pageIndex=1,2`만
 실행 시 응답의 `page.pageIndex`도 요청과 비교합니다. 기존 최대 20페이지/500건 기본 상한과
 `--max-pages`, `--max-items`, `--from`, `--to`는 그대로 유지합니다.
 
-**조회수 부작용은 미해결 상태입니다.** 사용자가 `inqCnt`를 관찰했다고 보고했지만,
-이 구현에서 상세 GET이 실제로 조회수를 증가시키는지 시험하거나 증명하지 않았습니다.
+**자동 상세 replay는 차단 상태입니다.** 사용자는 같은 공지를 다시 열었을 때 `inqCnt`가 달라짐을
+확인했습니다. 이 구현은 이를 자동 상세 GET으로 재시험하지 않으며, 금지된 endpoint 대신 대체 source만 관찰합니다.
 calibration은 counter field 존재 여부만 보고하고, 관찰되지 않더라도 부작용이 없다고 추론하지 않습니다.
 현재 known draft는 `potential_view_side_effect=true`, `verified=false`로 저장하고
 `CALIBRATION BLOCKED: potential detail view-count side effect requires review`로 종료합니다(exit 20).

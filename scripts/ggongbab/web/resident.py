@@ -35,7 +35,7 @@ from typing import Any, Iterator, Optional
 from urllib.parse import urlparse
 
 from .browser import NAV_TIMEOUT_MS, Session, ensure_session_restore, _playwright
-from .exit_codes import AgentError
+from .exit_codes import AgentError, AuthRequired
 from .ui_contract import UiContract
 from .page_select import collect_targets
 
@@ -197,15 +197,19 @@ def start_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, start_url: s
 @contextmanager
 def resident_session(profile_dir: Path, contract: UiContract, *, start_url: str = "",
                      port: int = DEFAULT_DEBUG_PORT, log=print,
-                     reuse: bool = True) -> Iterator[Session]:
+                     reuse: bool = True, attach_only: bool = False) -> Iterator[Session]:
     """Attach to a resident Chrome, starting one when none is listening.
 
     The browser is left running on purpose when we started it for setup: that is
     what keeps the SSO session alive for the next command.
     """
-    sync_playwright = _playwright()
     process: Optional[subprocess.Popen] = None
     existing = is_running(port) if reuse else None
+    if attach_only:
+        if not existing:
+            raise AuthRequired("An existing resident Portal browser is required")
+        start_url = ""  # Observation must not navigate, reload, or start Chrome.
+    sync_playwright = _playwright()
     if existing:
         log(f"Browser engine : Google Chrome (resident, already listening on {DEBUG_HOST}:{port})")
     else:
@@ -217,7 +221,11 @@ def resident_session(profile_dir: Path, contract: UiContract, *, start_url: str 
         except Exception as exc:  # noqa: BLE001
             raise ResidentError(f"could not attach to Chrome ({exc.__class__.__name__})",
                                 hint=f"check that Chrome is listening on {DEBUG_HOST}:{port}") from exc
-        contexts = list(browser.contexts) or [browser.new_context()]
+        contexts = list(browser.contexts)
+        if attach_only and not any(c.pages for c in contexts):
+            browser.close()
+            raise AuthRequired("An existing Portal page is required")
+        contexts = contexts or [browser.new_context()]
         context = BrowserScope(browser, port)
         # URL-only lookup avoids evaluating unrelated tabs while attaching.
         host = urlparse(start_url or contract.mail_url).netloc
