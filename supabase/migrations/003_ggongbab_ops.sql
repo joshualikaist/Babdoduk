@@ -108,3 +108,11 @@ create trigger agent_heartbeats_touch_updated_at
   before update on public.agent_heartbeats
   for each row execute function public.ggongbab_touch_updated_at();
 
+-- Do not rely on Supabase default privileges. anon and authenticated stay revoked.
+-- service_role is the backend role that calls the heartbeat RPC and writes conflicts.
+grant select, insert, update on table public.agent_heartbeats to service_role;
+grant select, insert on table public.event_conflicts to service_role;
+grant execute on function public.ggongbab_record_heartbeat(
+  text, timestamptz, timestamptz, timestamptz, text, text, boolean, boolean, text
+) to service_role;
+

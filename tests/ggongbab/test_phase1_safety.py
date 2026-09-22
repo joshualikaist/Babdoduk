@@ -293,6 +293,15 @@ def test_heartbeat_migration_preserves_times_and_touches_updated_at():
     table = sql.split("create table if not exists public.agent_heartbeats", 1)[1].split(");", 1)[0]
     for banned in ("subject", "sender", "cookie", "preview", "token"):
         assert banned not in table
+    assert "grant select, insert, update on table public.agent_heartbeats to service_role;" in sql
+    assert "grant select, insert on table public.event_conflicts to service_role;" in sql
+    assert "grant execute on function public.ggongbab_record_heartbeat(" in sql
+    assert ") to service_role;" in sql
+    assert "revoke all on public.agent_heartbeats, public.event_conflicts from anon, authenticated;" in sql
+    assert "revoke all on function public.ggongbab_record_heartbeat(" in sql
+    assert "from public, anon, authenticated;" in sql
+    lowered = sql.lower()
+    assert "to anon" not in lowered and "to authenticated" not in lowered
 
 
 def _capture_heartbeat(monkeypatch):
