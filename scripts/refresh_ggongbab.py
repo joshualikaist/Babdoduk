@@ -303,7 +303,12 @@ def main() -> int:
     if not args.export_only:
         extractor = build_extractor(settings, args.dry_run)
         pipeline = Pipeline(settings, repo, extractor, build_collectors(settings, repo, args.only))
-        stats = pipeline.run()
+        try:
+            stats = pipeline.run()
+        except SupabaseError:
+            print("[error] supabase failed during ingest")
+            publish_job_summary(["exit_class: supabase"])
+            return classify_refresh_exit(supabase_error=True)
         print(stats.summary())
         for line in stats.stop_lines():
             print(line)

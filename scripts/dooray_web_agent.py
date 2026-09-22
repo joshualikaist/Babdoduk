@@ -398,7 +398,6 @@ def cmd_run(args) -> int:
         raise UiContractError(
             "unread mail bodies stay closed unless --allow-unread-body is set",
             hint="the scheduled run uses --read-state read and does not need that flag")
-    args.report_heartbeat = True
     settings = load_settings()
     state = AgentState.load(STATE_FILE)
 
@@ -688,6 +687,10 @@ def main() -> int:
     if args.subject_only:
         args.open_body = False
     published = False
+    # Arm the resident heartbeat before cmd_run validates the contract, or an
+    # early UI_CHANGED would skip the operational report entirely.
+    if args.run:
+        args.report_heartbeat = True
     try:
         if args.setup:
             code = cmd_setup(args)

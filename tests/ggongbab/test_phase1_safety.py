@@ -11,13 +11,15 @@ import dooray_web_agent as agent
 import refresh_ggongbab as refresh
 from ggongbab.config import KST
 from ggongbab.db.repository import MemoryRepository
+from ggongbab.db.supabase_client import SupabaseError
 from ggongbab.exporter import build_payload
-from ggongbab.heartbeat import HeartbeatWriter, build_heartbeat, heartbeat_alert
-from ggongbab.models import EventCandidate
+from ggongbab.heartbeat import FIELDS, HeartbeatWriter, build_heartbeat, heartbeat_alert, merge_heartbeat
+from ggongbab.models import EventCandidate, RawItem
 from ggongbab.pipeline import Pipeline
-from ggongbab.web.exit_codes import AUTH_REQUIRED, PROJECT_NOT_FOUND, ProjectNotFound
+from ggongbab.web.exit_codes import AUTH_REQUIRED, ProjectNotFound
 from ggongbab.web.state import AgentState
 from ggongbab.web.task_writer import MailPayload, mail_identity
+from ggongbab.web.ui_contract import UiContract
 
 from .test_web_agent import FakeWriter
 
@@ -195,15 +197,16 @@ def test_heartbeat_is_operational_metadata_only():
 
     class Client:
         def __init__(self):
-            self.rows = []
+            self.row = None
 
-        def upsert(self, table, payload, on_conflict):
-            assert table == "agent_heartbeats" and on_conflict == "agent_id"
-            self.rows.append(payload)
+        def rpc(self, fn, payload):
+            assert fn == "ggongbab_record_heartbeat"
+            incoming = {name: payload["p_" + name] for name in FIELDS}
+            self.row = merge_heartbeat(self.row, incoming)
 
     client = Client()
     HeartbeatWriter(client).write(row)
-    assert client.rows == [row]
+    assert client.row == row
     dirty = dict(row)
     dirty["body"] = "nope"
     with pytest.raises(ValueError):
@@ -235,3 +238,155 @@ def test_default_run_does_not_open_unread_bodies():
     source = Path(agent.__file__).read_text(encoding="utf-8")
     body = source[source.index("def cmd_run("):source.index("def _run_pipeline(")]
     assert body.index("unread_body_permitted") < body.index("open_body(")
+
+
+def _iso(moment):
+    return moment.astimezone(KST).isoformat(timespec="seconds")
+
+
+class _HeartbeatStore:
+    def __init__(self):
+        self.row = None
+
+    def rpc(self, fn, payload):
+        assert fn == "ggongbab_record_heartbeat"
+        incoming = {name: payload["p_" + name] for name in FIELDS}
+        self.row = merge_heartbeat(self.row, incoming)
+
+
+def test_heartbeat_keeps_success_and_publish_times_and_rejects_stale_scans():
+    t0 = datetime(2026, 9, 22, 10, 0, tzinfo=KST)
+    t1 = datetime(2026, 9, 22, 11, 0, tzinfo=KST)
+    t2 = datetime(2026, 9, 22, 12, 0, tzinfo=KST)
+    store = _HeartbeatStore()
+    writer = HeartbeatWriter(store)
+    writer.write(build_heartbeat(status="healthy", exit_class="0", last_scan_at=t0,
+                                 last_success_at=t0, last_publish_at=t0))
+    writer.write(build_heartbeat(status="auth_required", exit_class="10", auth_required=True,
+                                 last_scan_at=t1))
+    assert store.row["last_scan_at"] == _iso(t1)
+    assert store.row["last_success_at"] == _iso(t0)
+    assert store.row["last_publish_at"] == _iso(t0)
+    assert store.row["status"] == "auth_required" and store.row["auth_required"] is True
+    writer.write(build_heartbeat(status="healthy", exit_class="0", last_scan_at=t2, last_success_at=t2))
+    assert store.row["last_scan_at"] == _iso(t2)
+    assert store.row["last_success_at"] == _iso(t2)
+    assert store.row["last_publish_at"] == _iso(t0)
+    assert store.row["status"] == "healthy"
+    writer.write(build_heartbeat(status="auth_required", exit_class="10", auth_required=True,
+                                 last_scan_at=t1, last_success_at=t1))
+    assert store.row["last_scan_at"] == _iso(t2)
+    assert store.row["last_success_at"] == _iso(t2)
+    assert store.row["last_publish_at"] == _iso(t0)
+    assert store.row["status"] == "healthy" and store.row["auth_required"] is False
+
+
+def test_heartbeat_migration_preserves_times_and_touches_updated_at():
+    sql = (ROOT / "supabase" / "migrations" / "003_ggongbab_ops.sql").read_text(encoding="utf-8")
+    assert "create or replace function public.ggongbab_record_heartbeat" in sql
+    assert "greatest(h.last_scan_at, excluded.last_scan_at)" in sql
+    assert "when excluded.last_success_at is null then h.last_success_at" in sql
+    assert "when excluded.last_publish_at is null then h.last_publish_at" in sql
+    assert "when excluded.last_scan_at < h.last_scan_at then h.status" in sql
+    assert "drop trigger if exists agent_heartbeats_touch_updated_at" in sql
+    assert "execute function public.ggongbab_touch_updated_at()" in sql
+    table = sql.split("create table if not exists public.agent_heartbeats", 1)[1].split(");", 1)[0]
+    for banned in ("subject", "sender", "cookie", "preview", "token"):
+        assert banned not in table
+
+
+def _capture_heartbeat(monkeypatch):
+    calls = []
+
+    def fake_write(settings, code, *, published, now=None):
+        calls.append(agent.heartbeat_from_exit(code, published=published))
+        return True
+
+    monkeypatch.setattr(agent, "load_settings", lambda: type("S", (), {"has_supabase": True})())
+    monkeypatch.setattr("ggongbab.heartbeat.write_resident_heartbeat", fake_write)
+    return calls
+
+
+def test_run_contract_failure_emits_ui_changed_heartbeat(monkeypatch):
+    calls = _capture_heartbeat(monkeypatch)
+    monkeypatch.setattr(agent, "load_contract", lambda _path: UiContract(verified=False))
+    monkeypatch.setattr(agent, "open_session", lambda *a, **k: (_ for _ in ()).throw(AssertionError("browser")))
+    monkeypatch.setattr("sys.argv", ["agent", "--run"])
+    assert agent.main() == 20
+    assert calls and calls[0]["status"] == "ui_changed" and calls[0]["ui_contract_changed"] is True
+
+
+def test_run_auth_failure_emits_auth_required_heartbeat(monkeypatch):
+    calls = _capture_heartbeat(monkeypatch)
+
+    def boom(_args):
+        raise agent.AuthRequired("session expired")
+
+    monkeypatch.setattr(agent, "cmd_run", boom)
+    monkeypatch.setattr("sys.argv", ["agent", "--run"])
+    assert agent.main() == AUTH_REQUIRED
+    assert calls[0]["status"] == "auth_required" and calls[0]["auth_required"] is True
+    assert calls[0]["last_success_at"] is None and calls[0]["last_publish_at"] is None
+
+
+def test_successful_run_emits_healthy_heartbeat(monkeypatch):
+    calls = _capture_heartbeat(monkeypatch)
+
+    def ok(args):
+        args.published_snapshot = True
+        return 0
+
+    monkeypatch.setattr(agent, "cmd_run", ok)
+    monkeypatch.setattr("sys.argv", ["agent", "--run"])
+    assert agent.main() == 0
+    assert calls[0]["status"] == "healthy"
+    assert calls[0]["last_success_at"] and calls[0]["last_publish_at"]
+
+
+def test_discover_and_calibrate_do_not_emit_resident_heartbeat(monkeypatch):
+    calls = _capture_heartbeat(monkeypatch)
+    monkeypatch.setattr(agent, "cmd_discover", lambda _args: 0)
+    monkeypatch.setattr(agent, "cmd_calibrate", lambda _args: 0)
+    monkeypatch.setattr("sys.argv", ["agent", "--discover"])
+    assert agent.main() == 0 and calls == []
+    monkeypatch.setattr("sys.argv", ["agent", "--calibrate"])
+    assert agent.main() == 0 and calls == []
+
+
+def test_conflict_log_failure_keeps_the_public_event_and_fails_the_run(settings):
+    class Boom(MemoryRepository):
+        def record_conflict(self, event_id, raw_item_id, reasons):
+            raise SupabaseError("conflict log")
+
+    repo = Boom()
+    pipe = Pipeline(settings, repo, None, [])
+    start = datetime(2026, 9, 25, 12, 0, tzinfo=KST)
+    event_id = pipe.store_candidate(_candidate("기업 설명회", start, building="N1"), "raw-a")
+    with pytest.raises(SupabaseError):
+        pipe.store_candidate(_candidate("기업 설명회", start, building="E5", food_provided="false"), "raw-b")
+    row = repo.get_event(event_id)
+    assert row["status"] == "published" and row["needs_review"] is False
+    assert row["building"] == "N1" and row["food_provided"] == "true"
+    assert pipe.stats.events_updated == 0
+    payload = build_payload(repo.publishable_events(), settings, now=datetime(2026, 9, 20, tzinfo=KST),
+                            food_only=True)
+    assert payload["count"] == 1 and payload["events"][0]["id"] == event_id
+
+    class Exploding(Pipeline):
+        def process_item(self, item):
+            raise SupabaseError("conflict log")
+
+    class OneItem:
+        source_type = "manual"
+
+        def enabled(self):
+            return True
+
+        def collect(self):
+            return [RawItem(source_type="manual", external_id="1", subject="s", raw_text="body")]
+
+    run_repo = MemoryRepository()
+    with pytest.raises(SupabaseError):
+        Exploding(settings, run_repo, None, [OneItem()]).run()
+    recorded = next(iter(run_repo.ingest_runs.values()))
+    assert recorded["status"] == "failed" and recorded["error_message"] == "supabase"

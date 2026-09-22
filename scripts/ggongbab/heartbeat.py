@@ -84,6 +84,49 @@ def heartbeat_alert(row: dict[str, Any], now: datetime, max_age: timedelta) -> O
     return None
 
 
+def _parse_moment(value: Optional[str]) -> Optional[datetime]:
+    if not value:
+        return None
+    moment = datetime.fromisoformat(str(value))
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=KST)
+    return moment.astimezone(KST)
+
+
+def _later(old: Optional[str], new: Optional[str]) -> Optional[str]:
+    """Keep the newer timestamp. A missing incoming value does not erase history."""
+    old_at, new_at = _parse_moment(old), _parse_moment(new)
+    if new_at is None:
+        return old
+    if old_at is None or new_at >= old_at:
+        return new
+    return old
+
+
+def merge_heartbeat(existing: Optional[dict[str, Any]], incoming: dict[str, Any]) -> dict[str, Any]:
+    """Apply one scan without moving timestamps backwards.
+
+    A scan older than the stored last_scan_at still cannot erase a newer
+    success or publish time, and it does not replace the newer status.
+    """
+    if set(incoming) != set(FIELDS):
+        raise ValueError("heartbeat row left the allowlist")
+    if existing is None:
+        return dict(incoming)
+    if set(existing) != set(FIELDS):
+        raise ValueError("stored heartbeat left the allowlist")
+    merged = dict(existing)
+    merged["last_scan_at"] = _later(existing.get("last_scan_at"), incoming.get("last_scan_at"))
+    merged["last_success_at"] = _later(existing.get("last_success_at"), incoming.get("last_success_at"))
+    merged["last_publish_at"] = _later(existing.get("last_publish_at"), incoming.get("last_publish_at"))
+    old_scan, new_scan = _parse_moment(existing.get("last_scan_at")), _parse_moment(incoming.get("last_scan_at"))
+    stale = old_scan is not None and new_scan is not None and new_scan < old_scan
+    if not stale:
+        for key in ("status", "exit_class", "auth_required", "ui_contract_changed", "version"):
+            merged[key] = incoming[key]
+    return merged
+
+
 def write_resident_heartbeat(settings, code: int, *, published: bool, now: Optional[datetime] = None) -> bool:
     """Write one allowlisted row. Returns False when Supabase is not configured."""
     if settings is None or not getattr(settings, "has_supabase", False):
@@ -117,7 +160,7 @@ def write_resident_heartbeat(settings, code: int, *, published: bool, now: Optio
 
 
 class HeartbeatWriter:
-    """Upsert one row. The client is injected so tests never open a socket."""
+    """One atomic record call. The database keeps older success and publish times."""
 
     def __init__(self, client: Any):
         self.client = client
@@ -125,4 +168,14 @@ class HeartbeatWriter:
     def write(self, row: dict[str, Any]) -> None:
         if set(row) != set(FIELDS):
             raise ValueError("refusing to store a heartbeat outside the allowlist")
-        self.client.upsert("agent_heartbeats", row, on_conflict="agent_id")
+        self.client.rpc("ggongbab_record_heartbeat", {
+            "p_agent_id": row["agent_id"],
+            "p_last_scan_at": row["last_scan_at"],
+            "p_last_success_at": row["last_success_at"],
+            "p_last_publish_at": row["last_publish_at"],
+            "p_status": row["status"],
+            "p_exit_class": row["exit_class"],
+            "p_auth_required": row["auth_required"],
+            "p_ui_contract_changed": row["ui_contract_changed"],
+            "p_version": row["version"],
+        })

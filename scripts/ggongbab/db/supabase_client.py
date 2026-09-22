@@ -85,6 +85,9 @@ class SupabaseClient:
         result = self._request("PATCH", table, params, values, prefer="return=representation")
         return result if isinstance(result, list) else []
 
+    def rpc(self, fn: str, body: dict[str, Any]) -> Any:
+        return self._request("POST", f"rpc/{fn}", body=body, prefer="return=minimal")
+
     def ping(self) -> bool:
         self._request("GET", "sources", {"select": "id", "limit": 1})
         return True

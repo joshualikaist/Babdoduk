@@ -18,12 +18,15 @@ def rows(values):
 @pytest.mark.parametrize("state", ["read", "unread"])
 def test_missing_contract_read_state_exits20_before_any_side_effect(monkeypatch, state):
     monkeypatch.setattr(agent, "load_contract", lambda _: UiContract(verified=True, list_api="https://x/mails"))
+    beats = []
+    monkeypatch.setattr(agent, "emit_heartbeat", lambda code, *, published: beats.append((code, published)))
     def forbidden(*a, **kw):
-        pytest.fail("must stop before configuration, browser, body, or writer")
-    for name in ("load_settings", "open_session", "TaskWriter", "open_body"):
+        pytest.fail("must stop before browser, body, or writer")
+    for name in ("open_session", "TaskWriter", "open_body"):
         monkeypatch.setattr(agent, name, forbidden)
     monkeypatch.setattr("sys.argv", ["agent", "--run", "--read-state", state])
     assert agent.main() == 20
+    assert beats == [(20, False)]
 
 
 def setup_run(monkeypatch, headers, key=""):
