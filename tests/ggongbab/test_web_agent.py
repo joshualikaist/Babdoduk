@@ -2228,7 +2228,8 @@ def test_detail_discovery_verifies_on_two_mails():
                        "shape": {"kind": "object"}}}
 
     page = DetailPage({"111111111": LIVE_DETAIL, "222222222": LIVE_DETAIL})
-    api, path = discover_detail_api(page, rows, Obs(), log=lambda *_a: None)
+    api, path = discover_detail_api(page, rows, Obs(), log=lambda *_a: None,
+                                  read_state_key="mailSummary.flags.read")
     assert api == "https://x/v2/wapi/mails/{id}?render=html"
     assert path == "result.content.body.content"
 
@@ -2241,7 +2242,8 @@ def test_detail_discovery_fails_closed_without_an_observed_call():
     class Obs:
         calls = {}
 
-    assert discover_detail_api(DetailPage({}), rows, Obs(), log=lambda *_a: None) == ("", "")
+    assert discover_detail_api(DetailPage({}), rows, Obs(), log=lambda *_a: None,
+                               read_state_key="mailSummary.flags.read") == ("", "")
 
 
 def test_detail_discovery_fails_closed_when_the_second_mail_has_no_body():
@@ -2255,7 +2257,8 @@ def test_detail_discovery_fails_closed_when_the_second_mail_has_no_body():
 
     empty = {"result": {"content": {"body": {"content": ""}}}}
     page = DetailPage({"111111111": LIVE_DETAIL, "222222222": empty})
-    assert discover_detail_api(page, rows, Obs(), log=lambda *_a: None) == ("", "")
+    assert discover_detail_api(page, rows, Obs(), log=lambda *_a: None,
+                               read_state_key="mailSummary.flags.read") == ("", "")
 
 
 # --- read-state gate ----------------------------------------------------------

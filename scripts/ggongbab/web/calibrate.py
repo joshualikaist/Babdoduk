@@ -243,19 +243,27 @@ def detail_template(url: str, mail_id: str) -> str:
     return url.replace(mail_id, "{id}", 1)
 
 
-def discover_detail_api(page, rows: list[dict], observer=None, log=print) -> tuple[str, str]:  # noqa: ANN001
+def discover_detail_api(page, rows: list[dict], observer=None, log=print,
+                        *, read_state_key: str) -> tuple[str, str]:  # noqa: ANN001
     """Find the detail endpoint and the path to the body inside its response.
 
     Driven by what the browser actually requested when a mail was opened. Both
     the URL template and the body path are then re-verified against a *second*
     mail, so a one-off coincidence cannot become the contract.
 
-    Only mails already marked read are touched, so no unread mail is opened.
+    The caller must supply the read-state field verified by the list smoke test.
+    Only explicitly already-read rows are eligible; unknown state fails closed.
     """
     from .mail_reader import detail_body, longest_string_paths
 
-    read_rows = [r for r in rows if str(r.get("id") or "")]
+    if not read_state_key:
+        log("detail calibration skipped: no verified read-state field")
+        return "", ""
+
+    read_rows = [r for r in rows if str(r.get("id") or "")
+                 and unread_value(path_value(r, read_state_key), read_state_key) is False]
     if len(read_rows) < 2:
+        log("detail calibration skipped: fewer than two explicitly read mails")
         return "", ""
 
     template = ""
@@ -290,8 +298,7 @@ def discover_detail_api(page, rows: list[dict], observer=None, log=print) -> tup
     if verified < 2:
         log("  detail endpoint found, but the body path did not verify on two mails")
         return "", ""
-    log(f"detail endpoint: {redact(template)}")
-    log(f"  body path: {body_path}  (verified on {verified} already-read mails)")
+    log("detail endpoint and body path verified on two already-read mails")
     return template, body_path
 
 
@@ -299,6 +306,8 @@ def calibrate(page, observer, contract, log=print, dom_frame=None) -> dict[str, 
     """Choose the endpoint, verify it, and fill the contract. Returns a summary."""
     contract.verified = False
     contract.read_state_key = ""
+    contract.detail_api = ""
+    contract.detail_body_path = ""
     candidates = [c for c in observer.calls.values() if (c.get("shape") or {}).get("kind") == "rows"]
     chosen = choose_list_endpoint(candidates)
     summary: dict[str, Any] = {"strategy": None, "listApi": None, "smoke": None}
@@ -350,7 +359,8 @@ def calibrate(page, observer, contract, log=print, dom_frame=None) -> dict[str, 
     # Subjects alone cannot decide whether food is provided, so the body matters.
     # Discovery runs last, only against mails already marked read.
     rows, _headers = fetch_rows(page, raw_url)
-    detail_api, body_path = discover_detail_api(page, rows, observer, log=log)
+    detail_api, body_path = discover_detail_api(page, rows, observer, log=log,
+                                              read_state_key=result.read_key)
     if detail_api:
         contract.detail_api = detail_api
         contract.detail_body_path = body_path
