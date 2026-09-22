@@ -27,7 +27,7 @@
     activeSection: 'free',
     free: { status: 'loading', data: null, error: '' },
     menu: { status: 'loading', data: null, error: '', meal: 'lunch' },
-    when: 'week',
+    when: 'all',
     food: 'all'
   };
   var menuCtl = null;
@@ -141,7 +141,7 @@
     return upcoming[0] || null;
   }
   function visibleEvents(today) {
-    return publicList().filter(function (ev) { return inWhen(ev, today) && inFood(ev); }).sort(function (a, b) {
+    return publicList().filter(function (ev) { return inWhen(ev, today) && isUpcoming(ev, today) && inFood(ev); }).sort(function (a, b) {
       return String(a.startAt || '').localeCompare(String(b.startAt || ''));
     });
   }

@@ -183,6 +183,11 @@ def run_checks(preview=False):
             page.goto(base + "/lab-ggongbab.html?fixture=1&debug-layout=1")
             page.locator(".gg-card").first.wait_for()
             page.locator(".gg-radar").wait_for()
+            assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "true"
+            assert page.locator(".gg-card").count() == 10
+            assert page.locator('[data-group="when"]').evaluate_all(
+                "els => els.map(el => el.dataset.value)") == ["today", "tomorrow", "week", "all"]
+            report["checks"] += 3
             assert_fixture_clock(page)
             page.evaluate("document.fonts.ready")
             page.wait_for_timeout(150)
@@ -385,6 +390,35 @@ def run_checks(preview=False):
                 report["checks"] += 11
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
+        # All upcoming includes later weeks, sorts dates, and excludes even a
+        # just-ended event from today. Normal mode keeps the real browser clock.
+        now_kst = datetime.now(timezone(timedelta(hours=9)))
+        def event_row(event_id, start, end):
+            return {"id": event_id, "title": event_id, "startAt": start.isoformat(),
+                    "endAt": end.isoformat(), "food": {"provided": True}}
+        future_early = event_row("future-early", now_kst + timedelta(days=8), now_kst + timedelta(days=9))
+        future_late = event_row("future-late", now_kst + timedelta(days=15), now_kst + timedelta(days=16))
+        ended = event_row("ended-today", now_kst.replace(hour=0, minute=0, second=0), now_kst)
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": [
+            future_late, ended, future_early,
+            {**future_early, "id": "review-snake", "needs_review": True},
+            {**future_early, "id": "review-camel", "needsReview": True},
+            {**future_early, "id": "no-food", "food": {"provided": False}},
+            {**future_early, "id": "unknown-food", "food": {"provided": "unknown"}},
+        ]}))
+        reset_storage(page)
+        page.goto(base + "/lab-ggongbab.html")
+        page.locator(".gg-card").first.wait_for()
+        assert_native_clock(page)
+        assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "true"
+        assert page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)") == [
+            "future-early", "future-late"]
+        page.locator('[data-group="when"][data-value="week"]').click()
+        page.reload()
+        page.locator("#foodHubFree .gg-state").first.wait_for()
+        assert page.locator('[data-group="when"][data-value="week"]').get_attribute("aria-pressed") == "true"
+        assert page.locator(".gg-card").count() == 0
+        report["checks"] += 5
         assert not errors, errors
         report["checks"] += 1
         browser.close()
