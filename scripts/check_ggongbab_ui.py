@@ -20,6 +20,26 @@ SELECTORS = {"nav": ".site-nav", "page": ".ggongbab-page-wrap", "hero": ".gg-her
              "filter": ".gg-filters", "day": ".gg-day", "card": ".gg-card",
              "top": ".gg-card-top", "title": ".gg-title", "actions": ".gg-actions",
              "menuCard": ".km-card"}
+FIXTURE_NOW = "2026-09-20T09:00:00+09:00"
+FIXTURE_CLOCK_SCRIPT = f"""(() => {{
+  const query = new URLSearchParams(location.search);
+  if (!location.pathname.endsWith('/lab-ggongbab.html') || query.get('fixture') !== '1') return;
+  // Preview takes precedence over fixture in the application's mode selection.
+  if (query.get('preview') === '1') return;
+
+  const NativeDate = Date;
+  const fixedNow = NativeDate.parse('{FIXTURE_NOW}');
+  function FixtureDate(...args) {{
+    if (!new.target) return new NativeDate(fixedNow).toString();
+    return Reflect.construct(NativeDate, args.length ? args : [fixedNow], new.target);
+  }}
+  Object.setPrototypeOf(FixtureDate, NativeDate);
+  FixtureDate.prototype = NativeDate.prototype;
+  FixtureDate.now = () => fixedNow;
+  FixtureDate.parse = NativeDate.parse;
+  FixtureDate.UTC = NativeDate.UTC;
+  globalThis.Date = FixtureDate;
+}})();"""
 
 
 class LocalHandler(SimpleHTTPRequestHandler):
@@ -70,6 +90,26 @@ def reset_storage(page):
       localStorage.removeItem('babdoduk-menu-meal');
       localStorage.removeItem('babdoduk-menu-favorites');
     }""")
+
+
+def assert_fixture_clock(page):
+    assert page.evaluate("""() => ({
+      name: Date.name,
+      now: new Date().toISOString(),
+      explicit: new Date('1970-01-01T00:00:01Z').getTime(),
+      parsed: Date.parse('1970-01-01T00:00:01Z'),
+      utc: Date.UTC(1970, 0, 1, 0, 0, 1)
+    })""") == {
+        "name": "FixtureDate",
+        "now": "2026-09-20T00:00:00.000Z",
+        "explicit": 1000,
+        "parsed": 1000,
+        "utc": 1000,
+    }
+
+
+def assert_native_clock(page):
+    assert page.evaluate("Date.name") == "Date"
 
 
 def hub_layout(page, width, report):
@@ -133,6 +173,7 @@ def run_checks(preview=False):
         browser = pw.chromium.launch(channel="chrome", headless=True)
         context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
         page = context.new_page()
+        page.add_init_script(FIXTURE_CLOCK_SCRIPT)
         errors = []
         page.on("pageerror", lambda error: errors.append(type(error).__name__))
         for width, height in SIZES:
@@ -142,9 +183,11 @@ def run_checks(preview=False):
             page.goto(base + "/lab-ggongbab.html?fixture=1&debug-layout=1")
             page.locator(".gg-card").first.wait_for()
             page.locator(".gg-radar").wait_for()
+            assert_fixture_clock(page)
             page.evaluate("document.fonts.ready")
             page.wait_for_timeout(150)
             hub_layout(page, width, report)
+            report["checks"] += 5
             r = rectangles(page)
             if width < 720:
                 near(r["page"]["w"], width)
@@ -227,6 +270,7 @@ def run_checks(preview=False):
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": events}))
         page.goto(base + "/lab-ggongbab.html")
         page.locator(".gg-card").first.wait_for()
+        assert_native_clock(page)
         assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "true"
         page.locator('[data-group="when"][data-value="all"]').click()
         assert page.locator(".gg-card").count() == 1
@@ -235,7 +279,7 @@ def run_checks(preview=False):
         assert not page.locator('.gg-btn--primary').count()
         assert "N1 · 101호 · N1" not in page.locator('.gg-place').inner_text()
         assert not errors, errors
-        report["checks"] += 7
+        report["checks"] += 8
         page.evaluate("localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({when:'today',food:'all'}))")
         page.reload()
         page.locator('#foodHubFree .gg-state').first.wait_for()
@@ -248,10 +292,11 @@ def run_checks(preview=False):
             "events": [events[0]], "_preview": {"publicCount": 1, "subject": "PRIVATE_TEST", "aiCalls": "PRIVATE_TEST"}}))
         page.goto(base + "/lab-ggongbab.html?preview=1")
         page.locator('.gg-card').first.wait_for()
+        assert_native_clock(page)
         page.locator('.gg-diagnostic-toggle').click()
         assert "PRIVATE_TEST" not in page.locator('.gg-diagnostic-panel').inner_text()
         assert page.locator('.gg-diagnostic-panel dd').all_text_contents() == ["1"]
-        report["checks"] += 2
+        report["checks"] += 3
         page.unroute("**/.local/ggongbab-preview.json")
         page.route("**/.local/ggongbab-preview.json", lambda route: route.fulfill(status=404, body=""))
         page.goto(base + "/lab-ggongbab.html?preview=1")
@@ -323,6 +368,7 @@ def run_checks(preview=False):
                 requests.clear()
                 page.goto(base + "/ggongbab.html" + query)
                 page.locator(".gg-card").first.wait_for()
+                assert_native_clock(page)
                 page.locator('[data-group="when"][data-value="all"]').click()
                 # Only the explicit-food, not-under-review event is public. The
                 # false, unknown and needs_review rows must never render.
@@ -336,7 +382,7 @@ def run_checks(preview=False):
                 assert not page.locator('meta[name="robots"]').count()
                 assert page.title() == "오늘 뭐 먹지? · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
-                report["checks"] += 10
+                report["checks"] += 11
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
         assert not errors, errors
