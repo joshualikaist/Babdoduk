@@ -24,7 +24,7 @@ from ggongbab.portal_queue import PortalQueue
 from ggongbab.prefilter import portal_detail_is_candidate, portal_list_warrants_detail
 from ggongbab.web.exit_codes import (AUTH_REQUIRED, SUCCESS, UI_CHANGED,
                                      AuthRequired, ProjectNotFound, UiContractError)
-from ggongbab.web.resident import is_running, resident_session
+from ggongbab.web.resident import ResidentAttachTimeout, is_running, resident_session
 from ggongbab.web.task_writer import PortalPayload, TaskWriter
 from ggongbab.web.ui_contract import UiContract
 
@@ -503,6 +503,9 @@ def main(argv=None):
         if args.calibrate_known:
             return cmd_calibrate_known(args)
         return cmd_run(args)
+    except ResidentAttachTimeout:
+        log("PORTAL_CDP_ATTACH_TIMEOUT")
+        return AUTH_REQUIRED
     except AuthRequired:
         log("AUTH_REQUIRED: Authenticated Portal notice traffic not observed; "
             "complete SSO if prompted and keep a Portal page open")

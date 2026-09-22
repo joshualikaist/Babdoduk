@@ -53,6 +53,10 @@ class ResidentError(AgentError):
     code = 1
 
 
+class ResidentAttachTimeout(ResidentError):
+    """Fixed diagnostic for a responsive CDP port with an attach timeout."""
+
+
 class BrowserScope:
     """Page discovery and observation across a CDP browser's live contexts.
 
@@ -219,6 +223,9 @@ def resident_session(profile_dir: Path, contract: UiContract, *, start_url: str 
         try:
             browser = pw.chromium.connect_over_cdp(endpoint(port), timeout=30_000)
         except Exception as exc:  # noqa: BLE001
+            from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+            if isinstance(exc, (TimeoutError, PlaywrightTimeoutError)):
+                raise ResidentAttachTimeout("PORTAL_CDP_ATTACH_TIMEOUT") from None
             raise ResidentError(f"could not attach to Chrome ({exc.__class__.__name__})",
                                 hint=f"check that Chrome is listening on {DEBUG_HOST}:{port}") from exc
         contexts = list(browser.contexts)

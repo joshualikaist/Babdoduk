@@ -8,12 +8,14 @@ text/HTML, Dooray ids, prompts or private attachment links.
 from __future__ import annotations
 
 import json
+import math
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
 from .config import DATA_DIR, KST, Settings
 from .parsers.validator import parse_iso
+from .public_sanitizer import public_text, public_url
 
 PUBLIC_SOURCE_NAMES = {"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지",
                        "manual": "Manual", "portal": "KAIST Portal"}
@@ -55,47 +57,47 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
     seen: set[str] = set()
     for src in row.get("_sources") or []:
         stype = src.get("type") or "unknown"
-        if stype in seen:
+        if stype not in PUBLIC_SOURCE_NAMES or stype in seen:
             continue
         seen.add(stype)
-        entry = {"type": stype, "name": PUBLIC_SOURCE_NAMES.get(stype, src.get("name") or stype)}
-        url = src.get("url") or ""
-        if stype in {"kaist_public", "manual"} and url.startswith("http"):
+        entry = {"type": stype, "name": PUBLIC_SOURCE_NAMES[stype]}
+        url = public_url(src.get("url"))
+        if stype in {"kaist_public", "manual"} and url:
             entry["url"] = url  # only public web links; Dooray/task links are never exported
         sources.append(entry)
     return {
         "id": row["id"],
-        "title": row.get("title") or "",
-        "summary": row.get("summary") or "",
+        "title": public_text(row.get("title")),
+        "summary": public_text(row.get("summary")),
         "startAt": kst_iso(row.get("event_start")),
         "endAt": kst_iso(row.get("event_end")),
-        "dateText": row.get("date_text") or "",
-        "timeText": row.get("time_text") or "",
+        "dateText": public_text(row.get("date_text")),
+        "timeText": public_text(row.get("time_text")),
         "location": {
-            "name": row.get("location_name") or "",
-            "building": row.get("building") or "",
-            "room": row.get("room") or "",
+            "name": public_text(row.get("location_name")),
+            "building": public_text(row.get("building")),
+            "room": public_text(row.get("room")),
         },
         "food": {
             "provided": tri_state(row.get("food_provided")),
-            "type": row.get("food_type") or "unknown",
-            "description": row.get("food_description") or "",
+            "type": public_text(row.get("food_type")) or "unknown",
+            "description": public_text(row.get("food_description")),
         },
-        "organizer": row.get("organizer") or "",
-        "eligibility": row.get("eligibility") or "",
+        "organizer": public_text(row.get("organizer")),
+        "eligibility": public_text(row.get("eligibility")),
         "registration": {
             "required": tri_state(row.get("registration_required")),
             "deadline": kst_iso(row.get("registration_deadline")),
-            "url": row.get("registration_url") or "",
+            "url": public_url(row.get("registration_url")),
         },
         "confidence": round(float(row.get("confidence") or 0), 3),
         "sources": sources,
     }
 
 
-def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[datetime] = None,
-                  *, food_only: bool = False) -> dict[str, Any]:
-    now = now or datetime.now(KST)
+def select_public_events(rows: list[dict[str, Any]], settings: Settings, now: datetime,
+                         *, food_only: bool = False) -> list[dict[str, Any]]:
+    """The single selection policy for snapshot and database projection."""
     horizon = now + timedelta(days=settings.export_horizon_days)
     events = []
     for row in rows:
@@ -103,17 +105,30 @@ def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[
         # opts into its explicit-food publication policy at the export boundary.
         if food_only and tri_state(row.get("food_provided")) != "true":
             continue
-        if row.get("status") != "published" or row.get("needs_review"):
+        if row.get("status") != "published" or row.get("needs_review") is not False:
             continue
-        if float(row.get("confidence") or 0) < settings.publish_confidence_threshold:
+        confidence = float(row.get("confidence") or 0)
+        if not math.isfinite(confidence) or not settings.publish_confidence_threshold <= confidence <= 1:
+            continue
+        start = parse_iso(row.get("event_start")) if isinstance(row.get("event_start"), str) else row.get("event_start")
+        end = parse_iso(row.get("event_end")) if isinstance(row.get("event_end"), str) else row.get("event_end")
+        if not isinstance(start, datetime) or start.tzinfo is None:
+            continue
+        if row.get("event_end") and (not isinstance(end, datetime) or end.tzinfo is None or end < start):
             continue
         if is_expired(row, now, settings.expired_grace_hours):
             continue
-        start = parse_iso(row.get("event_start")) if isinstance(row.get("event_start"), str) else row.get("event_start")
         if start and start > horizon:
             continue
         events.append(public_event(row))
     events.sort(key=lambda e: (e["startAt"] or "9999", e["title"]))
+    return events
+
+
+def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[datetime] = None,
+                  *, food_only: bool = False) -> dict[str, Any]:
+    now = now or datetime.now(KST)
+    events = select_public_events(rows, settings, now, food_only=food_only)
     return {
         "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),
         "timezone": "Asia/Seoul",

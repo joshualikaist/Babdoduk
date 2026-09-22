@@ -23,6 +23,19 @@ from .portal_list_contract import (LIST_URL, MAX_RESPONSE_BYTES, list_query,
 from .portal_known_schema import KNOWN_HOST
 from .web.exit_codes import AuthRequired, UiContractError
 
+SAFE_REASON_CODES = frozenset({
+    "PORTAL_CDP_ATTACH_TIMEOUT", "PORTAL_RESIDENT_OWNER_UNVERIFIED",
+    "PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS", "PORTAL_SESSION_COOKIE_MISSING_OR_AMBIGUOUS",
+    "PORTAL_SESSION_COOKIE_UNUSABLE", "PORTAL_SESSION_HANDOFF_FAILED",
+    "PORTAL_LIST_SESSION_UNAVAILABLE", "PORTAL_LIST_AUTH_REQUIRED",
+    "PORTAL_LIST_REDIRECT_REQUIRES_MANUAL_REVIEW",
+})
+
+
+def safe_reason_code(error):
+    value = str(error)
+    return value if value in SAFE_REASON_CODES else "PORTAL_SESSION_HANDOFF_FAILED"
+
 
 class ListTransportError(Exception):
     def __init__(self, retry_after=0):
@@ -222,7 +235,10 @@ class PortalSessionProvider:
             if client:
                 client.close()
             raise
-        except Exception:
+        except Exception as exc:
             if client:
                 client.close()
+            from .web.resident import ResidentAttachTimeout
+            if isinstance(exc, ResidentAttachTimeout):
+                raise AuthRequired("PORTAL_CDP_ATTACH_TIMEOUT") from None
             raise AuthRequired("PORTAL_SESSION_HANDOFF_FAILED") from None

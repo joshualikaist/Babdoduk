@@ -138,7 +138,9 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
                 part = min(remaining, 30)
                 sleep(part)
                 remaining -= part
-    except AuthRequired:
+    except AuthRequired as exc:
+        from .portal_session import safe_reason_code
+        log(safe_reason_code(exc))
         try:
             beat("auth_required", "10")
         except ListStateError:

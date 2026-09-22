@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Collect KAIST free-food events into Supabase and export data/ggongbab/latest.json.
+"""Collect events, export latest.json and synchronize the sanitized public DB feed.
+
+Public feed synchronization requires manually applied migration 004. Canonical
+events remain committed if publication fails; no migration is applied here.
 
     python scripts/refresh_ggongbab.py                 # full run (needs secrets)
     python scripts/refresh_ggongbab.py --export-only   # DB -> latest.json without collecting
@@ -13,9 +16,10 @@ Gov-Dooray has no mail REST API, so the archive is what the mail client exports:
     python scripts/refresh_ggongbab.py --backfill-mail-archive "C:\\mail-export" \\
         --mail-from 2026-09-01 --mail-to 2026-09-19 --event-until 2026-09-30 --dry-run
 
-Exit codes: 0 ok · 2 nothing safe to publish (previous JSON kept, workflow stays green)
+Exit codes: 0 ok · 2 legacy keep-snapshot status (not emitted by combined publication)
 · 20 every collector failed · 21 Supabase unreachable · 22 AI auth/quota fatal
-· 23 publication write failed. 20–23 fail the GitHub Actions job.
+· 23 snapshot validation/write or public-feed synchronization failed.
+20–23 fail the GitHub Actions job.
 Nothing private (mail text, addresses, tokens) is printed.
 """
 from __future__ import annotations
@@ -37,6 +41,7 @@ from ggongbab.config import DATA_DIR, KST, Settings, load_settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa: E402
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
 from ggongbab.exporter import build_payload, write_payload  # noqa: E402
+from ggongbab.public_feed import PublicFeedError, prepare_public_feed, commit_public_feed  # noqa: E402
 from ggongbab.parsers import ai_errors  # noqa: E402
 from ggongbab.parsers.ai_errors import is_fatal  # noqa: E402
 from ggongbab.pipeline import Pipeline  # noqa: E402
@@ -102,10 +107,10 @@ def publish_job_summary(lines: list[str]) -> None:
 
 
 def build_repo(settings: Settings, dry_run: bool):
-    if dry_run or not settings.has_supabase:
-        if not dry_run:
-            print("[warn] SUPABASE_URL / SUPABASE_SECRET_KEY missing; using in-memory repository (nothing persists)")
+    if dry_run:
         return MemoryRepository()
+    if not settings.has_supabase:
+        raise SupabaseError("SUPABASE_CONFIGURATION_REQUIRED")
     if settings.supabase_key_is_legacy:
         print("[warn] using legacy SUPABASE_SERVICE_ROLE_KEY; rename the secret to SUPABASE_SECRET_KEY")
     client = SupabaseClient(settings.supabase_url, settings.supabase_secret_key)
@@ -145,21 +150,23 @@ def validate_export(path: Path) -> list[str]:
 
 
 def export(settings: Settings, repo, dry_run: bool) -> int:
-    rows = repo.publishable_events()
-    payload = build_payload(rows, settings, food_only=True)
     if dry_run:
+        payload = build_payload(repo.publishable_events(), settings, food_only=True)
         print(json.dumps(payload, ensure_ascii=False, indent=2)[:4000])
         return 0
+    # Snapshot and public DB use the very same selection, time and sanitizer.
+    # Preparation failure must never be converted to the green keep-snapshot exit.
+    prepared = prepare_public_feed(repo, settings)
+    payload = prepared.payload
     tmp_dir = DATA_DIR / ".staging"
     tmp_dir.mkdir(parents=True, exist_ok=True)
     staged = write_payload(payload, tmp_dir)
     errors = validate_export(staged)
     if errors:
         print("[error] export validation failed; keeping previous latest.json")
-        for err in errors:
-            print("  -", err)
         staged.unlink(missing_ok=True)
-        return 2
+        return EXIT_PUBLISH
+    # Preserve the usable static fallback even if projection synchronization fails.
     final = write_payload(payload, DATA_DIR)
     staged.unlink(missing_ok=True)
     try:
@@ -167,6 +174,8 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
     except OSError:
         pass
     print(f"wrote {final.relative_to(ROOT)} events={payload['count']}")
+    commit_public_feed(repo, prepared)
+    print(f"public feed synchronized events={payload['count']}")
     return 0
 
 
@@ -296,7 +305,11 @@ def main() -> int:
         review_report(repo)
         return 0
     if args.backfill_mail_archive:
-        return backfill_mail_archive(settings, repo, args)
+        try:
+            return backfill_mail_archive(settings, repo, args)
+        except PublicFeedError:
+            print("[error] public feed synchronization failed; canonical events retained")
+            return EXIT_PUBLISH
 
     started = datetime.now(KST)
     stats = None
@@ -324,6 +337,10 @@ def main() -> int:
             return classify_refresh_exit(collectors_all_failed=True)
     try:
         code = export(settings, repo, args.dry_run)
+    except PublicFeedError:
+        print("[error] public feed synchronization failed; canonical events retained")
+        publish_job_summary(["exit_class: public_feed_sync"])
+        return classify_refresh_exit(publish_error=True)
     except SupabaseError:
         print("[error] supabase failed during export")
         publish_job_summary(run_notice(stats))

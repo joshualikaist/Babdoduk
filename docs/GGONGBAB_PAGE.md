@@ -824,3 +824,10 @@ python scripts\dooray_web_agent.py --run --from 2026-09-01 --to 2026-09-19 --run
 상세 GET, 인증 endpoint replay, 원문 수집, 공개 행사 생성은 하지 않는다.
 기존 상세 calibration을 완료할 필요가 없다. 실행·복구·heartbeat와 한계는
 [PORTAL_LIST_POLLER.md](PORTAL_LIST_POLLER.md)를 따른다.
+
+## Sanitized public feed (Phase 2A, lab)
+
+공개 전용 Supabase 테이블과 동기화 코드는
+[GGONGBAB_PUBLIC_FEED.md](GGONGBAB_PUBLIC_FEED.md)에 정의되어 있다.
+`004_ggongbab_public_feed.sql`은 운영자가 검토 후 수동 적용해야 한다.
+기존 `latest.json`과 프런트엔드는 유지되며, Portal Stage A pending은 공개하지 않는다.

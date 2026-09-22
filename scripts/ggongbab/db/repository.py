@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import uuid
+from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any, Optional, Protocol
 
@@ -40,6 +41,8 @@ class Repository(Protocol):
     def get_event(self, event_id: str) -> Optional[dict[str, Any]]: ...
     def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None: ...
     def publishable_events(self) -> list[dict[str, Any]]: ...
+    def public_feed_generation(self) -> int: ...
+    def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int: ...
     def review_events(self) -> list[dict[str, Any]]: ...
     def start_ingest_run(self, source_type: str) -> str: ...
     def finish_ingest_run(self, run_id: str, **fields: Any) -> None: ...
@@ -173,10 +176,12 @@ class SupabaseRepository:
         if not events:
             return events
         ids = ",".join(e["id"] for e in events)
-        links = self.client.select("event_sources", {"event_id": f"in.({ids})", "select": "event_id,raw_item_id"})
+        links = self.client.select_all("event_sources", {"event_id": f"in.({ids})", "select": "event_id,raw_item_id",
+                                                        "order": "event_id.asc,raw_item_id.asc"})
         raw_ids = ",".join(sorted({l["raw_item_id"] for l in links})) if links else ""
-        raw_rows = self.client.select("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url"}) if raw_ids else []
-        sources = {s["id"]: s for s in self.client.select("sources", {"select": "id,type,name"})}
+        raw_rows = self.client.select_all("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url",
+                                                       "order": "id.asc"}) if raw_ids else []
+        sources = {s["id"]: s for s in self.client.select_all("sources", {"select": "id,type,name", "order": "id.asc"})}
         raw_map = {r["id"]: r for r in raw_rows}
         by_event: dict[str, list[dict[str, Any]]] = {}
         for link in links:
@@ -192,12 +197,24 @@ class SupabaseRepository:
         return events
 
     def publishable_events(self) -> list[dict[str, Any]]:
-        since = (datetime.now(KST) - timedelta(days=2)).isoformat()
-        rows = self.client.select("events", {
+        rows = self.client.select_all("events", {
             "status": "eq.published", "needs_review": "eq.false",
-            "event_start": f"gte.{since}", "order": "event_start.asc", "limit": 500,
+            "order": "id.asc",
         })
-        return self._with_sources(rows)
+        # Bound relationship URL sizes; selection (including long-running events)
+        # belongs to exporter policy, not a separate fixed two-day/500-row cutoff.
+        return [row for i in range(0, len(rows), 100) for row in self._with_sources(rows[i:i + 100])]
+
+    def public_feed_generation(self) -> int:
+        rows = self.client.select_all("ggongbab_public_feed_state", {"select": "generation", "order": "singleton.asc"})
+        if len(rows) != 1 or type(rows[0].get("generation")) is not int or rows[0]["generation"] < 0:
+            from .supabase_client import SupabaseError
+            raise SupabaseError("PUBLIC_FEED_GENERATION_INVALID")
+        return rows[0]["generation"]
+
+    def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int:
+        return self.client.rpc("ggongbab_replace_public_feed", {"p_generation": generation, "p_rows": rows},
+                               returning=True)
 
     def review_events(self) -> list[dict[str, Any]]:
         rows = self.client.select("events", {"needs_review": "eq.true", "order": "event_start.asc.nullslast", "limit": 200})
@@ -224,6 +241,25 @@ class MemoryRepository:
         self.event_sources: dict[tuple[str, str], float] = {}
         self.conflicts: list[dict[str, Any]] = []
         self.ingest_runs: dict[str, dict[str, Any]] = {}
+        self.public_events: dict[str, dict[str, Any]] = {}
+        self._public_generation = 0
+
+    def public_feed_generation(self) -> int:
+        return self._public_generation
+
+    def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int:
+        if generation != self._public_generation:
+            raise ValueError("PUBLIC_FEED_CONCURRENT_SYNC")
+        desired = {}
+        for row in rows:
+            previous = self.public_events.get(row["id"])
+            if previous and previous["content_revision"] == row["content_revision"]:
+                desired[row["id"]] = deepcopy(previous)
+            else:
+                desired[row["id"]] = {**deepcopy(row), "updated_at": _now()}
+        self.public_events = desired
+        self._public_generation += 1
+        return self._public_generation
 
     def source_id(self, source_type: str) -> str:
         return self.sources.setdefault(source_type, str(uuid.uuid4()))

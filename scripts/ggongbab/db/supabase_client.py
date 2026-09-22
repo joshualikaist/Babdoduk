@@ -67,6 +67,23 @@ class SupabaseClient:
         result = self._request("GET", table, params)
         return result if isinstance(result, list) else []
 
+    def select_all(self, table: str, params: Optional[dict[str, Any]] = None) -> list[dict[str, Any]]:
+        """Strict full publication read. Caller supplies a deterministic unique order.
+
+        Read until empty even when a server caps pages below the requested limit.
+        An invalid response or safety bound is a failure, never an empty feed.
+        """
+        rows = []
+        for _ in range(10000):
+            page = self._request("GET", table, {"select": "*", **(params or {}),
+                                               "limit": 100, "offset": len(rows)})
+            if not isinstance(page, list) or not all(isinstance(r, dict) for r in page):
+                raise SupabaseError("PUBLICATION_READ_INVALID")
+            if not page:
+                return rows
+            rows.extend(page)
+        raise SupabaseError("PUBLICATION_READ_INCOMPLETE")
+
     def insert(self, table: str, rows: list[dict[str, Any]] | dict[str, Any], returning: bool = True) -> list[dict[str, Any]]:
         body = rows if isinstance(rows, list) else [rows]
         result = self._request("POST", table, body=body, prefer="return=representation" if returning else "return=minimal")
@@ -85,8 +102,9 @@ class SupabaseClient:
         result = self._request("PATCH", table, params, values, prefer="return=representation")
         return result if isinstance(result, list) else []
 
-    def rpc(self, fn: str, body: dict[str, Any]) -> Any:
-        return self._request("POST", f"rpc/{fn}", body=body, prefer="return=minimal")
+    def rpc(self, fn: str, body: dict[str, Any], *, returning: bool = False) -> Any:
+        return self._request("POST", f"rpc/{fn}", body=body,
+                             prefer="return=representation" if returning else "return=minimal")
 
     def ping(self) -> bool:
         self._request("GET", "sources", {"select": "id", "limit": 1})

@@ -191,7 +191,15 @@ def generate_preview(items, counts, settings, *, max_ai_candidates=50, force=Fal
         log(line)
     for line in usage_lines(stats.model_usage):
         log(line)
-    payload = build_payload(repo.publishable_events(), settings, food_only=True)
+    rows = repo.publishable_events()
+    # Preview diagnoses extraction quality: retain its original fail-closed PII
+    # check before the shared publication sanitizer can mask an AI regression.
+    from .parsers.sanitizer import contains_pii
+    text_fields = ("title", "summary", "date_text", "time_text", "location_name", "building",
+                   "room", "food_description", "organizer", "eligibility", "registration_url")
+    if any(contains_pii(row.get(key) or "") for row in rows for key in text_fields):
+        raise PipelineFailed("preview export validation failed; no payload written")
+    payload = build_payload(rows, settings, food_only=True)
     metrics["publicCount"] = payload["count"]
     payload["_preview"] = metrics
     from validate_content import validate_ggongbab_payload
