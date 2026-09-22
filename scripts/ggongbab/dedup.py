@@ -100,6 +100,26 @@ def _same(a: Any, b: Any) -> bool:
     return _norm(str(a)) == _norm(str(b))
 
 
+def keep_published_version(existing: dict[str, Any], updated: dict[str, Any],
+                           reasons: list[str]) -> tuple[dict[str, Any], list[str]]:
+    """Keep a safe public event when a second source disagrees.
+
+    Disputed required fields stay as they were. The conflict reasons are
+    returned for a separate operator record; they do not unpublish the row.
+    """
+    was_public = existing.get("status") == "published" and not existing.get("needs_review")
+    if not was_public:
+        return updated, reasons
+    disputed = bool(reasons) or bool(updated.get("needs_review")) or updated.get("status") != "published"
+    if not disputed:
+        return updated, reasons
+    kept = dict(updated)
+    kept["status"] = "published"
+    kept["needs_review"] = False
+    kept["review_reason"] = existing.get("review_reason")
+    return kept, reasons
+
+
 def merge_into(existing: dict[str, Any], cand: EventCandidate) -> tuple[dict[str, Any], list[str]]:
     """Return (updated_row, review_reasons). Conflicting facts are flagged, never overwritten."""
     new = cand.to_db_row()

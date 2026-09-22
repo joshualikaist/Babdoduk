@@ -99,7 +99,23 @@ class AgentState:
 
     # -- queries -------------------------------------------------------
     def seen(self, mail_id: str) -> bool:
-        return digest(mail_id) in self.mails
+        """True only after a confirmed filter or a confirmed task write.
+
+        A failed write stays absent, or is stored as write-failed, and both are
+        retried. An unconfirmed candidate (no post id) is not terminal either.
+        """
+        record = self.mails.get(digest(mail_id))
+        if record is None:
+            return False
+        if record.outcome == "write-failed":
+            return False
+        if record.outcome == "candidate" and not record.registered:
+            return False
+        return True
+
+    def forget(self, mail_id: str) -> None:
+        """Drop a non-terminal row so the next run can try the write again."""
+        self.mails.pop(digest(mail_id), None)
 
     def record(self, mail_id: str, subject: str, received: Optional[date], *,
                registered: bool, outcome: str) -> MailRecord:

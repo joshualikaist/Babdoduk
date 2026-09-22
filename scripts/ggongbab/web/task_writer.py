@@ -14,6 +14,7 @@ If verification fails, nothing is written.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import ssl
 import urllib.error
@@ -30,6 +31,11 @@ from .exit_codes import ProjectNotFound
 UA = "BabdodukGgongbabAgent/1.0 (+https://github.com/joshualikaist/Babdoduk)"
 DEFAULT_PROJECT_NAME = "밥도둑-꽁밥-행사-수집함"
 TASK_MARKER = "ggongbab-agent"
+
+
+def mail_identity(mail_id: str) -> str:
+    """One-way identity for a mailbox row. The raw mail id is not recoverable."""
+    return hashlib.sha256(f"dooray-mail:{mail_id}".encode("utf-8")).hexdigest()
 
 
 @dataclass
@@ -61,6 +67,7 @@ class TaskWriter:
         self.timeout = timeout
         self._ctx = ssl.create_default_context()
         self._verified = False
+        self._mail_index: Optional[dict[str, str]] = None
 
     # -- transport -----------------------------------------------------
     def _request(self, method: str, path: str, body: Optional[dict[str, Any]] = None) -> dict[str, Any]:
@@ -119,7 +126,8 @@ class TaskWriter:
             f"Sent: {received}\n"
             f"Subject: {mail.subject}\n\n"
             f"{mail.body}\n\n"
-            f"[{TASK_MARKER}] collected from the Dooray mailbox{note}"
+            f"[{TASK_MARKER}] collected from the Dooray mailbox{note}\n"
+            f"mail_key={mail_identity(mail.mail_id)}"
         )
         return {
             "subject": mail.subject or "(제목 없음)",
@@ -151,13 +159,67 @@ class TaskWriter:
             raise ProjectNotFound("mail has no stable id; refusing to register it")
         if dry_run:
             return None
+        # A previous attempt may have created the task and then lost the response.
+        # Reuse that post instead of appending a second one.
+        existing = self.find_existing_mail_task(mail.mail_id)
+        if existing:
+            return existing
         payload = self._request("POST", f"/project/v1/projects/{self.settings.dooray_project_id}/posts",
                                 self.build_task(mail))
         result = payload.get("result") or {}
         post_id = str(result.get("id") or "")
         if not post_id:
             raise ProjectNotFound("task creation returned no post id")
+        if self._mail_index is not None:
+            self._mail_index[f"mail_key={mail_identity(mail.mail_id)}"] = post_id
         return post_id
+
+    def find_existing_mail_task(self, mail_id: str) -> Optional[str]:
+        """Return a collection-project post that already carries this mail hash."""
+        if not mail_id:
+            return None
+        token = f"mail_key={mail_identity(mail_id)}"
+        return self._mail_task_index().get(token)
+
+    def _mail_task_index(self) -> dict[str, str]:
+        if self._mail_index is not None:
+            return self._mail_index
+        found: dict[str, str] = {}
+        project = self.settings.dooray_project_id
+        size = max(1, self.settings.dooray_page_size)
+        for page in range(max(1, self.settings.dooray_max_pages)):
+            payload = self._request(
+                "GET", f"/project/v1/projects/{project}/posts?page={page}&size={size}")
+            posts = self._post_list(payload)
+            if not posts:
+                break
+            for post in posts:
+                post_id = str(post.get("id") or "")
+                if not post_id:
+                    continue
+                blob = json.dumps(post, ensure_ascii=False)
+                if "mail_key=" not in blob:
+                    detail = self._request("GET", f"/project/v1/projects/{project}/posts/{post_id}")
+                    blob = json.dumps(detail, ensure_ascii=False)
+                for part in blob.split("mail_key=")[1:]:
+                    key = part[:64]
+                    if len(key) == 64 and all(ch in "0123456789abcdef" for ch in key):
+                        found[f"mail_key={key}"] = post_id
+            if len(posts) < size:
+                break
+        self._mail_index = found
+        return found
+
+    @staticmethod
+    def _post_list(payload: dict[str, Any]) -> list[dict[str, Any]]:
+        posts = payload.get("result")
+        if posts is None:
+            raise ProjectNotFound("task lookup returned no result")
+        if isinstance(posts, dict):
+            posts = posts.get("contents") or posts.get("data") or []
+        if not isinstance(posts, list):
+            raise ProjectNotFound("task lookup returned an unexpected shape")
+        return [post for post in posts if isinstance(post, dict)]
 
     def create_portal_task(self, notice: PortalPayload, dry_run: bool = False) -> Optional[str]:
         if not self._verified:

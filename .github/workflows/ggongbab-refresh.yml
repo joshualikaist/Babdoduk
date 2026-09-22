@@ -72,6 +72,7 @@ jobs:
             exit 0
           fi
           if [ "$code" -ne 0 ]; then
+            echo "infrastructure or publication failure (exit $code)"
             echo "publish=0" >> "$GITHUB_OUTPUT"
             exit "$code"
           fi

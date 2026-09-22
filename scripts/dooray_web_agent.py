@@ -23,18 +23,21 @@ import subprocess
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import Optional
 from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from ggongbab.config import KST, load_settings  # noqa: E402
+from ggongbab.heartbeat import build_heartbeat  # noqa: E402
 from ggongbab.prefilter import classify  # noqa: E402
 from ggongbab.web import browser as browser_mod  # noqa: E402
 from ggongbab.web import exit_codes  # noqa: E402
 from ggongbab.web.browser import (DEFAULT_DOORAY_URL, SETUP_TIMEOUT_SECONDS,  # noqa: E402
                                   browser_session)
 from ggongbab.web.calibrate import calibrate  # noqa: E402
-from ggongbab.web.exit_codes import (NAMES, SUCCESS, AgentError, AuthRequired,  # noqa: E402
+from ggongbab.web.exit_codes import (NAMES, PIPELINE_FAILED, PROJECT_NOT_FOUND, SUCCESS,  # noqa: E402
+                                     UI_CHANGED, AgentError, AuthRequired, AUTH_REQUIRED,
                                      PipelineFailed, UiContractError)
 from ggongbab.web.mail_reader import (NetworkObserver, list_mails, observe,  # noqa: E402
                                       open_body, write_discovery_report)
@@ -318,6 +321,62 @@ def cmd_discover(args) -> int:
 
 
 # ---------------------------------------------------------------------------
+def unread_body_permitted(read_state: str, allow_unread_body: bool) -> bool:
+    """Unread bodies open only when the operator passes --allow-unread-body."""
+    return read_state in {"all", "unread"} and bool(allow_unread_body)
+
+
+def finalize_mail(state, mail_id: str, subject: str, received, *, failed: bool, post_id: Optional[str]) -> None:
+    """A confirmed post id is the only write that becomes permanently seen."""
+    if failed or not post_id:
+        state.forget(mail_id)
+        return
+    state.record(mail_id, subject, received, registered=True, outcome="candidate")
+
+
+def heartbeat_from_exit(code: int, *, published: bool):
+    now = datetime.now(KST)
+    if code == AUTH_REQUIRED:
+        status, auth, ui = "auth_required", True, False
+    elif code == UI_CHANGED:
+        status, auth, ui = "ui_changed", False, True
+    elif code == PIPELINE_FAILED:
+        status, auth, ui = "pipeline_error", False, False
+    elif code == PROJECT_NOT_FOUND:
+        status, auth, ui = "collector_error", False, False
+    elif code == SUCCESS:
+        status, auth, ui = "healthy", False, False
+    else:
+        status, auth, ui = "collector_error", False, False
+    return build_heartbeat(
+        status=status,
+        exit_class=str(code),
+        auth_required=auth,
+        ui_contract_changed=ui,
+        last_scan_at=now,
+        last_success_at=now if code == SUCCESS else None,
+        last_publish_at=now if code == SUCCESS and published else None,
+    )
+
+
+def emit_heartbeat(code: int, *, published: bool) -> None:
+    """Best-effort. A heartbeat failure must not hide AUTH_REQUIRED or UI_CHANGED."""
+    try:
+        settings = load_settings()
+    except Exception:  # noqa: BLE001
+        log("heartbeat: unavailable")
+        return
+    try:
+        from ggongbab.heartbeat import write_resident_heartbeat
+
+        if not write_resident_heartbeat(settings, code, published=published):
+            log("heartbeat: supabase not configured")
+            return
+        log(f"heartbeat: {code}")
+    except Exception as exc:  # noqa: BLE001
+        log(f"heartbeat: write failed {exc.__class__.__name__}")
+
+
 def _window(args, state: AgentState) -> tuple[date, date]:
     today = datetime.now(KST).date()
     if args.since_last_run:
@@ -331,9 +390,15 @@ def cmd_run(args) -> int:
     contract = load_contract(CONTRACT_FILE)
     contract.require_ready()
     if args.read_state != "all" and contract.list_api and not contract.read_state_key:
+        if args.open_body and not args.subject_only:
+            raise UiContractError(
+                "read-state was requested, but the calibrated mailbox API exposes no verified read-state field.",
+                hint="Use --subject-only --dry-run for a read-only diagnostic.")
+    if args.read_state == "unread" and not args.allow_unread_body:
         raise UiContractError(
-            "read-state was requested, but the calibrated mailbox API exposes no verified read-state field.",
-            hint="Use --subject-only --dry-run for a read-only diagnostic.")
+            "unread mail bodies stay closed unless --allow-unread-body is set",
+            hint="the scheduled run uses --read-state read and does not need that flag")
+    args.report_heartbeat = True
     settings = load_settings()
     state = AgentState.load(STATE_FILE)
 
@@ -358,7 +423,7 @@ def cmd_run(args) -> int:
             raise UiContractError("could not find the mailbox page",
                                   hint="run --calibrate again")
         headers = list_mails(session, limit=args.max_mails, target=target, since=start)
-        if args.read_state != "all" and any(h.unread is None for h in headers):
+        if args.open_body and args.read_state != "all" and any(h.unread is None for h in headers):
             raise UiContractError(
                 "read-state is missing or invalid in mailbox rows; no mail bodies were opened.",
                 hint="re-run --calibrate; use --subject-only --dry-run for diagnostics")
@@ -382,6 +447,9 @@ def cmd_run(args) -> int:
                 if args.read_state == "unread" and not header.unread:
                     read_skipped += 1
                     continue
+            if header.unread and not unread_body_permitted(args.read_state, args.allow_unread_body):
+                unread_skipped += 1
+                continue
             decision = classify(header.subject, header.preview)
             if not decision.candidate and args.open_body and not args.subject_only:
                 # The preview is short; a mail that looks plausible from its
@@ -405,14 +473,15 @@ def cmd_run(args) -> int:
             try:
                 post_id = writer.create_task(payload, dry_run=args.dry_run)
             except AgentError:
-                state.record(header.mail_id, header.subject, header.received,
-                             registered=False, outcome="write-failed")
+                finalize_mail(state, header.mail_id, header.subject, header.received,
+                              failed=True, post_id=None)
                 state.save()
                 raise
-            if not args.dry_run:
-                registered += 1
-            state.record(header.mail_id, header.subject, header.received,
-                         registered=bool(post_id), outcome="candidate")
+            if args.dry_run:
+                continue
+            registered += 1
+            finalize_mail(state, header.mail_id, header.subject, header.received,
+                          failed=False, post_id=post_id)
 
     state.mark_run(end)
     state.prune()
@@ -431,7 +500,9 @@ def cmd_run(args) -> int:
     log(f"registered: {registered}{' (dry run)' if args.dry_run else ''}")
 
     if args.run_pipeline and registered:
-        return _run_pipeline()
+        code = _run_pipeline()
+        args.published_snapshot = True
+        return code
     if args.run_pipeline:
         log("pipeline: skipped (nothing new registered)")
     return SUCCESS
@@ -595,8 +666,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--force", action="store_true", help="explicitly exceed the preview AI candidate limit")
     parser.add_argument("--ai-error-retries", type=int, default=1, metavar="N",
                         help="extra passes over items whose extraction failed (0..2, default 1)")
-    parser.add_argument("--read-state", choices=["all", "read", "unread"], default="all",
-                        help="which mails to process; 'read' never opens an unread mail")
+    parser.add_argument("--read-state", choices=["all", "read", "unread"], default="read",
+                        help="which mails to process; default read never opens an unread mail")
+    parser.add_argument("--allow-unread-body", action="store_true",
+                        help="opt in to opening unread mail bodies; required with --read-state unread or all")
     parser.add_argument("--project-name", default=DEFAULT_PROJECT_NAME,
                         help="exact project name that must match, or nothing is written")
     parser.add_argument("--run-pipeline", action="store_true", help="run refresh_ggongbab.py --only dooray afterwards")
@@ -614,27 +687,34 @@ def main() -> int:
     args = build_parser().parse_args()
     if args.subject_only:
         args.open_body = False
+    published = False
     try:
         if args.setup:
-            return cmd_setup(args)
-        if args.discover:
-            return cmd_discover(args)
-        if args.calibrate:
-            return cmd_calibrate(args)
-        if args.selftest:
-            return cmd_selftest(args)
-        if args.preview_feed:
-            return cmd_preview_feed(args)
-        return cmd_run(args)
+            code = cmd_setup(args)
+        elif args.discover:
+            code = cmd_discover(args)
+        elif args.calibrate:
+            code = cmd_calibrate(args)
+        elif args.selftest:
+            code = cmd_selftest(args)
+        elif args.preview_feed:
+            code = cmd_preview_feed(args)
+        else:
+            code = cmd_run(args)
+        published = bool(getattr(args, "published_snapshot", False))
     except AgentError as exc:
         name = NAMES.get(exc.code, "ERROR")
         log(f"[{name}] {exc}")
         if exc.hint:
             log(f"          {exc.hint}")
-        return exc.code
+        code = exc.code
+        published = False
     except KeyboardInterrupt:
         log("[interrupted]")
         return 1
+    if getattr(args, "report_heartbeat", False):
+        emit_heartbeat(code, published=published)
+    return code
 
 
 if __name__ == "__main__":

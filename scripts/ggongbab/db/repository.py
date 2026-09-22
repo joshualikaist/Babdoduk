@@ -37,6 +37,8 @@ class Repository(Protocol):
     def insert_event(self, row: dict[str, Any]) -> str: ...
     def update_event(self, event_id: str, row: dict[str, Any]) -> None: ...
     def link_event_source(self, event_id: str, raw_item_id: str, score: float) -> None: ...
+    def get_event(self, event_id: str) -> Optional[dict[str, Any]]: ...
+    def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None: ...
     def publishable_events(self) -> list[dict[str, Any]]: ...
     def review_events(self) -> list[dict[str, Any]]: ...
     def start_ingest_run(self, source_type: str) -> str: ...
@@ -153,6 +155,20 @@ class SupabaseRepository:
         self.client.upsert("event_sources", {"event_id": event_id, "raw_item_id": raw_item_id, "match_score": score},
                            on_conflict="event_id,raw_item_id", ignore_duplicates=True)
 
+    def get_event(self, event_id: str) -> Optional[dict[str, Any]]:
+        rows = self.client.select("events", {"id": f"eq.{event_id}", "limit": 1})
+        return rows[0] if rows else None
+
+    def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None:
+        summary = "; ".join(reason for reason in reasons if reason)[:500]
+        if not summary:
+            return
+        self.client.insert("event_conflicts", {
+            "event_id": event_id,
+            "raw_item_id": raw_item_id,
+            "summary": summary,
+        })
+
     def _with_sources(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if not events:
             return events
@@ -206,6 +222,7 @@ class MemoryRepository:
         self.ai_runs: list[dict[str, Any]] = []
         self.events: dict[str, dict[str, Any]] = {}
         self.event_sources: dict[tuple[str, str], float] = {}
+        self.conflicts: list[dict[str, Any]] = []
         self.ingest_runs: dict[str, dict[str, Any]] = {}
 
     def source_id(self, source_type: str) -> str:
@@ -293,6 +310,19 @@ class MemoryRepository:
 
     def link_event_source(self, event_id: str, raw_item_id: str, score: float) -> None:
         self.event_sources.setdefault((event_id, raw_item_id), score)
+
+    def get_event(self, event_id: str) -> Optional[dict[str, Any]]:
+        row = self.events.get(event_id)
+        return dict(row) if row else None
+
+    def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None:
+        summary = "; ".join(reason for reason in reasons if reason)[:500]
+        if summary:
+            self.conflicts.append({
+                "event_id": event_id,
+                "raw_item_id": raw_item_id,
+                "summary": summary,
+            })
 
     def _with_sources(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         type_by_source = {v: k for k, v in self.sources.items()}

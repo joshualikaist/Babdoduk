@@ -13,13 +13,16 @@ Gov-Dooray has no mail REST API, so the archive is what the mail client exports:
     python scripts/refresh_ggongbab.py --backfill-mail-archive "C:\\mail-export" \\
         --mail-from 2026-09-01 --mail-to 2026-09-19 --event-until 2026-09-30 --dry-run
 
-Exit codes: 0 ok · 1 hard failure · 2 nothing safe to publish (previous JSON kept).
+Exit codes: 0 ok · 2 nothing safe to publish (previous JSON kept, workflow stays green)
+· 20 every collector failed · 21 Supabase unreachable · 22 AI auth/quota fatal
+· 23 publication write failed. 20–23 fail the GitHub Actions job.
 Nothing private (mail text, addresses, tokens) is printed.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import date, datetime
 from pathlib import Path
@@ -35,10 +38,67 @@ from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa:
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
 from ggongbab.exporter import build_payload, write_payload  # noqa: E402
 from ggongbab.parsers import ai_errors  # noqa: E402
+from ggongbab.parsers.ai_errors import is_fatal  # noqa: E402
 from ggongbab.pipeline import Pipeline  # noqa: E402
 from ggongbab.pricing import usage_lines  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
+
+EXIT_OK = 0
+EXIT_KEEP_SNAPSHOT = 2
+EXIT_COLLECTOR = 20
+EXIT_SUPABASE = 21
+EXIT_AI_FATAL = 22
+EXIT_PUBLISH = 23
+
+
+def classify_refresh_exit(*, supabase_error: bool = False, collectors_all_failed: bool = False,
+                          publish_error: bool = False, export_code: int = 0, fatal: str = "") -> int:
+    """Map a refresh outcome to a process exit.
+
+    Exit 2 is the only non-zero code the workflow turns into a green job:
+    validation rejected the new snapshot, so the previous file stays.
+    Database, collector, quota/auth, and publication failures stay non-zero.
+    """
+    if supabase_error:
+        return EXIT_SUPABASE
+    if collectors_all_failed:
+        return EXIT_COLLECTOR
+    if publish_error:
+        return EXIT_PUBLISH
+    if fatal and is_fatal(fatal):
+        return EXIT_AI_FATAL
+    if export_code == EXIT_KEEP_SNAPSHOT:
+        return EXIT_KEEP_SNAPSHOT
+    return export_code or EXIT_OK
+
+
+def workflow_stays_green(code: int) -> bool:
+    """True only for success and the intentional keep-previous-snapshot exit."""
+    return code in (EXIT_OK, EXIT_KEEP_SNAPSHOT)
+
+
+def run_notice(stats) -> list[str]:
+    """Counts only. Safe to copy into a GitHub job summary."""
+    if stats is None:
+        return []
+    lines: list[str] = []
+    if stats.fatal_category:
+        lines.append("exit_class: ai_fatal")
+        lines.append(f"reason: {stats.fatal_category}")
+    elif stats.ai_errors:
+        lines.append(f"partial: ai_errors={stats.ai_errors}")
+    if stats.collector_errors:
+        lines.append(f"partial: collectors_failed={len(stats.collector_errors)}")
+    return lines
+
+
+def publish_job_summary(lines: list[str]) -> None:
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path or not lines:
+        return
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
 
 
 def build_repo(settings: Settings, dry_run: bool):
@@ -229,9 +289,9 @@ def main() -> int:
         return check(settings)
     try:
         repo = build_repo(settings, args.dry_run)
-    except SupabaseError as exc:
-        print(f"[error] supabase unreachable: {exc}")
-        return 2
+    except SupabaseError:
+        print("[error] supabase unreachable")
+        return classify_refresh_exit(supabase_error=True)
     if args.review_report:
         review_report(repo)
         return 0
@@ -239,6 +299,7 @@ def main() -> int:
         return backfill_mail_archive(settings, repo, args)
 
     started = datetime.now(KST)
+    stats = None
     if not args.export_only:
         extractor = build_extractor(settings, args.dry_run)
         pipeline = Pipeline(settings, repo, extractor, build_collectors(settings, repo, args.only))
@@ -254,10 +315,25 @@ def main() -> int:
             print("collector errors: " + ", ".join(f"{k}: {v[:80]}" for k, v in stats.collector_errors.items()))
         if stats.collector_errors and len(stats.collector_errors) == len([c for c in pipeline.collectors if c.enabled()]):
             print("[error] every collector failed; not exporting")
-            return 2
-    code = export(settings, repo, args.dry_run)
+            publish_job_summary(run_notice(stats))
+            return classify_refresh_exit(collectors_all_failed=True)
+    try:
+        code = export(settings, repo, args.dry_run)
+    except SupabaseError:
+        print("[error] supabase failed during export")
+        publish_job_summary(run_notice(stats))
+        return classify_refresh_exit(supabase_error=True)
+    except OSError:
+        print("[error] could not write the public snapshot")
+        publish_job_summary(run_notice(stats))
+        return classify_refresh_exit(publish_error=True)
+    notice = run_notice(stats)
+    for line in notice:
+        print(line)
+    publish_job_summary(notice)
     print(f"done in {(datetime.now(KST) - started).total_seconds():.1f}s")
-    return code
+    fatal = stats.fatal_category if stats is not None else ""
+    return classify_refresh_exit(export_code=code, fatal=fatal)
 
 
 if __name__ == "__main__":
