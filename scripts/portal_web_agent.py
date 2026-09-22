@@ -448,9 +448,9 @@ def cmd_poll_list(args):
             state = PortalListState(LOCAL_DIR / "portal-list-state.json")
         except ListStateError:
             emit(build_heartbeat(agent_id="portal-list-poller", version="portal-list-v1",
-                                 status="collector_error", exit_class="state_unavailable",
+                                 status="collector_error", exit_class="PORTAL_LIST_STATE_UNAVAILABLE",
                                  last_scan_at=datetime.now(KST)))
-            log("Portal list state unavailable; polling stopped")
+            log("PORTAL_LIST_STATE_UNAVAILABLE")
             return 1
         provider = PortalSessionProvider(PROFILE_DIR, args.port)
         log("Portal LIST-only polling; detail requests blocked; first scan establishes a baseline")

@@ -16,8 +16,10 @@ from .prefilter import portal_list_warrants_detail
 
 
 class ListStateError(Exception):
-    def __init__(self):
-        super().__init__("PORTAL_LIST_STATE_UNAVAILABLE")
+    def __init__(self, reason="PORTAL_LIST_STATE_UNAVAILABLE"):
+        if reason not in {"PORTAL_LIST_STATE_UNAVAILABLE", "PORTAL_HEARTBEAT_WRITE_FAILED"}:
+            reason = "PORTAL_LIST_STATE_UNAVAILABLE"
+        super().__init__(reason)
 
 
 def metadata(row):

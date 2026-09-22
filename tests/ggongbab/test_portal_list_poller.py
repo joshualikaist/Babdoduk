@@ -187,6 +187,45 @@ def test_timeout_and_rate_limit_are_not_auth_expiry(wire):
     assert sessions.retry_after_seconds("Tue, 22 Sep 2026 00:02:00 GMT", NOW.timestamp()) == 120
 
 
+@pytest.mark.parametrize("failure,reason", [
+    (requests.exceptions.ConnectTimeout("https://portal.kaist.ac.kr/wz/api/board/recents?JSESSIONID=" + SECRET),
+     "PORTAL_LIST_CONNECT_TIMEOUT"),
+    (requests.exceptions.ReadTimeout(LIST_URL + "?pstNo=" + PRIVATE), "PORTAL_LIST_READ_TIMEOUT"),
+    (requests.exceptions.ConnectionError(SECRET), "PORTAL_LIST_CONNECTION_ERROR"),
+    (requests.exceptions.SSLError(SECRET), "PORTAL_LIST_TLS_ERROR"),
+    (requests.exceptions.ChunkedEncodingError("chunk " + SECRET), "PORTAL_LIST_CHUNK_READ_ERROR"),
+    (requests.exceptions.RequestException("body " + SECRET + " " + LIST_URL),
+     "PORTAL_LIST_TRANSPORT_UNAVAILABLE"),
+])
+def test_transport_failures_map_to_fixed_reasons_without_leaking(wire, failure, reason):
+    wire.replies.append(failure)
+    client = PortalListClient(cookie())
+    with pytest.raises(ListTransportError) as error:
+        client.fetch_list_page(1)
+    text = str(error.value)
+    assert text == reason and error.value.reason == reason
+    for leaked in (SECRET, PRIVATE, "JSESSIONID", "portal.kaist.ac.kr", "pstNo", "chunk", "body"):
+        assert leaked not in text
+    client.close()
+
+
+def test_poller_logs_only_the_transport_reason(tmp_path):
+    class Failing:
+        def fetch_list_page(self, _index):
+            raise requests.exceptions.ConnectTimeout(
+                "https://portal.kaist.ac.kr/?JSESSIONID=" + SECRET + "&title=" + PRIVATE)
+        def close(self):
+            self.closed = True
+    client = Failing()
+    logs = []
+    assert run_poller(SimpleNamespace(acquire=lambda: client), PortalListState(tmp_path / "state"),
+                      emit_heartbeat=lambda _row: None, log=logs.append, once=True) == 1
+    assert logs == ["PORTAL_LIST_CONNECT_TIMEOUT"]
+    assert client.closed
+    blob = "".join(logs)
+    assert SECRET not in blob and PRIVATE not in blob and "JSESSIONID" not in blob
+
+
 def test_response_wall_budget_is_bounded(wire):
     wire.reply()
     ticks = iter([0, 21])
@@ -421,7 +460,9 @@ def test_heartbeat_failure_stops_and_does_not_publish(tmp_path):
     logs = []
     assert run_poller(SimpleNamespace(acquire=lambda: client), PortalListState(tmp_path / "state"),
                       emit_heartbeat=Mock(side_effect=RuntimeError(SECRET)), log=logs.append) == 1
-    assert client.closed and len(client.calls) == 1 and SECRET not in "".join(logs)
+    assert client.closed and len(client.calls) == 1
+    assert "PORTAL_HEARTBEAT_WRITE_FAILED" in "".join(logs)
+    assert SECRET not in "".join(logs)
 
 
 def test_cli_list_mode_never_enters_legacy_detail_or_writer(monkeypatch, tmp_path):

@@ -29,6 +29,11 @@ SAFE_REASON_CODES = frozenset({
     "PORTAL_SESSION_COOKIE_UNUSABLE", "PORTAL_SESSION_HANDOFF_FAILED",
     "PORTAL_LIST_SESSION_UNAVAILABLE", "PORTAL_LIST_AUTH_REQUIRED",
     "PORTAL_LIST_REDIRECT_REQUIRES_MANUAL_REVIEW",
+    "PORTAL_LIST_CONNECT_TIMEOUT", "PORTAL_LIST_READ_TIMEOUT",
+    "PORTAL_LIST_CONNECTION_ERROR", "PORTAL_LIST_TLS_ERROR",
+    "PORTAL_LIST_CHUNK_READ_ERROR", "PORTAL_LIST_TRANSPORT_UNAVAILABLE",
+    "PORTAL_LIST_STATE_UNAVAILABLE", "PORTAL_HEARTBEAT_WRITE_FAILED",
+    "PORTAL_LIST_SCAN_INCOMPLETE",
 })
 
 
@@ -37,10 +42,29 @@ def safe_reason_code(error):
     return value if value in SAFE_REASON_CODES else "PORTAL_SESSION_HANDOFF_FAILED"
 
 
+def transport_reason(exc):
+    """Map a transport failure by exception type only. Never read its message."""
+    errors = requests.exceptions
+    if isinstance(exc, errors.ConnectTimeout):
+        return "PORTAL_LIST_CONNECT_TIMEOUT"
+    if isinstance(exc, errors.ReadTimeout):
+        return "PORTAL_LIST_READ_TIMEOUT"
+    if isinstance(exc, errors.SSLError):
+        return "PORTAL_LIST_TLS_ERROR"
+    if isinstance(exc, errors.ChunkedEncodingError):
+        return "PORTAL_LIST_CHUNK_READ_ERROR"
+    if isinstance(exc, errors.ConnectionError):
+        return "PORTAL_LIST_CONNECTION_ERROR"
+    return "PORTAL_LIST_TRANSPORT_UNAVAILABLE"
+
+
 class ListTransportError(Exception):
-    def __init__(self, retry_after=0):
-        super().__init__("PORTAL_LIST_TRANSPORT_UNAVAILABLE")
+    def __init__(self, retry_after=0, reason="PORTAL_LIST_TRANSPORT_UNAVAILABLE"):
+        if reason not in SAFE_REASON_CODES:
+            reason = "PORTAL_LIST_TRANSPORT_UNAVAILABLE"
+        super().__init__(reason)
         self.retry_after = retry_after
+        self.reason = reason
 
 
 def retry_after_seconds(value, now):
@@ -129,8 +153,8 @@ class PortalListClient:
             raise
         except ListTransportError:
             raise
-        except Exception:
-            raise ListTransportError() from None
+        except Exception as exc:
+            raise ListTransportError(reason=transport_reason(exc)) from None
 
     def close(self):
         if not self._closed:

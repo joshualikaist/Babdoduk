@@ -10,14 +10,13 @@ from .heartbeat import build_heartbeat
 from .portal_discovery import notice_timestamp
 from .portal_list_contract import validate_page
 from .portal_list_state import ListStateError, metadata
-from .portal_session import ListTransportError
+from .portal_session import ListTransportError, safe_reason_code, transport_reason
 from .web.exit_codes import AuthRequired, UiContractError
 
 
 class ScanIncomplete(ListTransportError):
     def __init__(self):
-        super().__init__()
-        self.args = ("PORTAL_LIST_SCAN_INCOMPLETE",)
+        super().__init__(reason="PORTAL_LIST_SCAN_INCOMPLETE")
 
 
 class PortalListPoller:
@@ -102,8 +101,8 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
         try:
             emit_heartbeat(row)
         except Exception:
-            log("Portal heartbeat write failed; values suppressed")
-            raise ListStateError() from None
+            log("PORTAL_HEARTBEAT_WRITE_FAILED")
+            raise ListStateError("PORTAL_HEARTBEAT_WRITE_FAILED") from None
 
     try:
         scanned = now()
@@ -124,9 +123,9 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
             except ListTransportError as exc:
                 failures += 1
                 delay = max(min(interval * 2 ** min(failures, 5), 900), exc.retry_after)
-                beat("collector_error", "scan_incomplete" if isinstance(exc, ScanIncomplete) else "transport")
-                log("Portal list scan incomplete" if isinstance(exc, ScanIncomplete)
-                    else "Portal list transport unavailable; retry scheduled")
+                reason = safe_reason_code(exc)
+                beat("collector_error", reason)
+                log(reason)
                 code = 1
             cycles += 1
             if once or (max_cycles is not None and cycles >= max_cycles):
@@ -139,7 +138,6 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
                 sleep(part)
                 remaining -= part
     except AuthRequired as exc:
-        from .portal_session import safe_reason_code
         log(safe_reason_code(exc))
         try:
             beat("auth_required", "10")
@@ -154,22 +152,24 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
             return 1
         log("Portal list contract changed; polling stopped; values suppressed")
         return 20
-    except (ListTransportError, ListStateError):
+    except (ListTransportError, ListStateError) as exc:
+        reason = safe_reason_code(exc)
         try:
-            beat("collector_error", "local_or_transport")
+            beat("collector_error", reason)
         except ListStateError:
             pass
-        log("Portal list operation stopped; values suppressed")
+        log(reason)
         return 1
     except KeyboardInterrupt:
         log("Portal list polling stopped")
         return 0
-    except Exception:
+    except Exception as exc:
+        reason = transport_reason(exc)
         try:
-            beat("collector_error", "unexpected")
+            beat("collector_error", reason)
         except ListStateError:
             pass
-        log("Portal list operation stopped; values suppressed")
+        log(reason)
         return 1
     finally:
         if client is not None:
