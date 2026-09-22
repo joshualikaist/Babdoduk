@@ -1,0 +1,4 @@
+{
+  "_comment": "Hand-written fallback entries. Each item goes through the same AI parser, validator, dedup and exporter as mail. Change `text` to re-parse; keep `id` stable.",
+  "items": []
+}

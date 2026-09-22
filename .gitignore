@@ -1,1 +1,11 @@
 .vercel
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+data/ggongbab/.staging/
+tmp-qa/
+tmp-*.html
+.local/
+*.eml
+*.mbox

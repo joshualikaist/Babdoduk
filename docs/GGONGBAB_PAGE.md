@@ -1,106 +1,818 @@
-# 꽁밥 안내 페이지 (`ggongbab.html`) 운영 가이드
+# 꽁밥 (KAIST 무료 식사 행사) 자동 수집 시스템
 
-에이전트·편집자가 이 페이지를 고칠 때 **구조와 i18n 규칙**을 그대로 유지합니다. (대화 기록이 없어도 이 문서만 보면 동일한 방식으로 운영할 수 있게 정리했습니다.)
+`lab-ggongbab.html` 은 더 이상 손으로 쓰는 안내 페이지가 아니다. Dooray 메일함 · KAIST 공개 공지 · 수동 입력을
+30분마다 모아 OpenAI로 구조화하고, 규칙 검증 · 중복 제거를 거쳐 Supabase에 쌓은 뒤, 공개 조건을 만족하는
+행사만 `data/ggongbab/latest.json` 으로 내보내 세로 피드로 보여 준다.
 
-## 레이아웃 (3열)
+이 문서 하나로 운영 · 디버깅 · 확장이 가능해야 한다.
 
-1. **왼쪽 — 지도** (`ggongbab-map-col`): Google Maps 임베드. `applyLang`에서 한·영 검색어로 `src`를 갱신합니다.
-2. **가운데 — 행사 탭** (`ggongbab-tabs-col`): 탭 목록만 세로로 쌓입니다. 데스크톱에서는 `position: sticky` + `overflow-y: auto`로 **탭 열 안에서 세로 스크롤**됩니다. 탭 버튼은 `scroll-snap-align: start`로 스냅됩니다.
-3. **오른쪽 — 상세** (`ggongbab-detail-col`): 현재 선택된 탭에 대응하는 **하나의** `event-panel`만 보입니다.
+---
 
-탭을 바꾸면 **오른쪽 상세**와 함께 **왼쪽 지도 임베드·캡션**도 선택한 행사에 맞게 바뀝니다. (`syncGgongbabMapFromTab`, `gb.mapQ0` / `gb.mapQ1`, `gb.mapCaption0` / `gb.mapCaption1`)
+## 1. Architecture
 
-## 상단 리드 문구 (`ggongbab.lead`)
+```
+Dooray Mail ──(에이전트 / 자동 분류)──▶ Dooray Project Task  ─┐
+KAIST Portal (로컬 agent → ingest marker)                    ├─▶ Collectors ─▶ RawItem
+KAIST 공개 공지 (학사공지 · 문화행사)                          │
+data/ggongbab/manual.json                                    ─┘
+KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/latest.json
+                                                              │
+                             raw_items / attachments (Supabase, private)
+                                                              │
+                                   PII sanitizer ─▶ Rule pre-processor
+                                                              │
+                          OpenAI Structured Outputs (Luna ─▶ 필요 시 Terra)
+                                                              │
+                                   Deterministic validator ─▶ needs_review
+                                                              │
+                                        Dedup / merge (events + event_sources)
+                                                              │
+                                Public exporter ─▶ data/ggongbab/latest.json
+                                                              │
+                                           validate_content.py ─▶ publish_generated.py
+                                                              │
+                                     lab-ggongbab.html + js/ggongbab.js (fetch only)
+```
 
-페이지 맨 위 **`event-lead`** 한 줄은 **사용법 안내**만 씁니다. (어떤 탭이 있는지 **행사 이름으로 나열**하지 않습니다.) 문구는 `STR.ko` / `STR.en`의 **`ggongbab.lead`** 키만 수정합니다.
+* **Supabase PostgreSQL 이 canonical DB** 다. Git 에 있는 JSON 은 공개 캐시(정적 export)일 뿐이다.
+* 브라우저는 DB 에 접속하지 않는다. `latest.json` 만 읽는다.
+* 코드 위치
 
-## 행사 일정 위 히어로 이미지 (선택)
+| 경로 | 역할 |
+|------|------|
+| `scripts/refresh_ggongbab.py` | CLI 진입점 (`--dry-run`, `--export-only`, `--review-report`, `--check`, `--only`) |
+| `scripts/ggongbab/config.py` | env 로딩 (`.env` 자동 로드, 값은 절대 하드코딩 안 함) |
+| `scripts/ggongbab/models.py` | `RawItem`, `EventExtraction`(AI 스키마), `RuleFacts`, `EventCandidate` |
+| `scripts/ggongbab/collectors/` | `dooray.py`, `mail_archive.py`(메일함 backfill), `kaist_public.py`, `manual.py`, `portal.py`(stub) |
+| `scripts/ggongbab/parsers/` | `dooray_mail.py`, `html_text.py`, `sanitizer.py`, `rule_parser.py`, `ai_parser.py`, `validator.py` |
+| `scripts/ggongbab/db/` | `supabase_client.py`(PostgREST, stdlib), `repository.py`(Supabase + in-memory) |
+| `scripts/ggongbab/prefilter.py` | AI에 보낼 후보만 고르는 로컬 규칙 필터 |
+| `scripts/ggongbab/backfill.py` | 메일함 backfill 드라이버 (필터 → 안전 한도 → 기존 파이프라인) |
+| `scripts/dooray_web_agent.py` | 무인 메일함 에이전트 (SSO 1회 → 스캔 → 업무 등록) |
+| `scripts/ggongbab/web/` | 에이전트 내부: `browser.py`, `resident.py`(CDP), `page_select.py`, `trace.py`, `ui_contract.py`, `mail_reader.py`, `calibrate.py`, `task_writer.py`, `state.py`, `exit_codes.py` |
+| `scripts/ggongbab/dedup.py` | 소스 간 동일 행사 판정과 병합 |
+| `scripts/ggongbab/exporter.py` | 공개 JSON 생성 |
+| `scripts/ggongbab/pipeline.py` | 전체 흐름 · 멱등성 · 통계 |
+| `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
+| `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
+| `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
+| `tests/ggongbab/` | pytest (295개) |
 
-오른쪽 상세에서 **`event-detail-sheet`(행사 일정 첫 줄) 바로 위**에 탭별 이미지를 둘 수 있습니다.
+---
 
-| 탭 | 기본 파일 경로 (저장소 기준) | 대체 문자열(`alt`) i18n 키 |
-|----|------------------------------|---------------------------|
-| 첫 번째 (`gbPanel0`) | `images/ggongbab-tab0.png` (또는 `.jpg` 등, `<img src>` 와 맞춤) | `gb.e0.imageAlt` |
-| 두 번째 (`gbPanel1`) | 예: `images/ggongbab-samsung-sdi-lunch.png` (또는 다른 포스터 파일; `<img src>` 와 맞춤) | `gb.e1.imageAlt` |
+## 2. Dooray setup
 
-- **파일 넣기**: 포스터·스크린샷 등을 위 경로 이름으로 `images/` 폴더에 추가합니다. (`jpg` 대신 `png`/`webp`를 쓰면 `ggongbab.html` 안 `<img src="...">`만 그 확장자에 맞게 수정하면 됩니다.)
-- **문구**: 한·영 `alt` 는 `STR.ko` / `STR.en` 의 `gb.e0.imageAlt`, `gb.e1.imageAlt` 에서 수정합니다. (`data-i18n-alt` 로 연결됨.)
-- **이미지가 없을 때**: 해당 탭을 쓰지 않거나, `<figure class="gb-detail-hero">` 블록 전체를 잠시 제거해도 됩니다. (파일 없이 두면 브라우저에 깨진 그림만 보일 수 있습니다.)
+Dooray Mail API 는 쓰지 않는다. Dooray **자동 분류 규칙**이 꽁밥 후보 메일을 아래 프로젝트의 업무(Task)로 만든다.
 
-## 복합 스크린샷 업로드 (상단 텍스트 + 하단 포스터 한 장)
+| 항목 | 값 |
+|------|-----|
+| 프로젝트 | 밥도둑-꽁밥-행사-수집함 |
+| `DOORAY_PROJECT_ID` | `4424523215847914253` |
+| Base | `https://api.gov-dooray.com` |
+| 인증 | `Authorization: dooray-api ${DOORAY_API_TOKEN}` |
 
-편집자가 **한 장의 이미지**로 안내를 줄 때가 많습니다. (예: 메일·메신저 캡처 — **위**는 일정·장소·링크가 **글자**로, **아래**는 **포스터·전단** 그래픽.)
+사용하는 endpoint (검증됨):
 
-**가능합니다.** 별도 파일을 달라고 하기 전에, 에이전트는 보통 아래처럼 **역할을 나누어** 반영합니다.
+```
+GET /common/v1/members/me
+GET /project/v1/projects?member=me&state=active&size=100
+GET /project/v1/projects/{PROJECT_ID}/posts?page=N&size=100
+GET /project/v1/projects/{PROJECT_ID}/posts/{POST_ID}
+```
 
-### 에이전트가 나누는 기준 (논리적 분리)
+* Task 의 `users.from` 은 분류 봇이지 원 발신자가 아니다. 원 발신자 · 수신자 · 보낸 시각 · 제목은
+  `body.content` 안의 `-----Original Message-----` 블록에서 `parsers/dooray_mail.py` 가 파싱한다.
+* `body.mimeType` 이 HTML 이면 `parsers/html_text.py` 로 줄 구조를 살려 텍스트화한다.
+* 첨부: `files[]` 와 본문의 `<img src="/files/{id}">` 둘 다 수집한다. `GET …/posts/{id}/files` 는 inline 첨부에서 비어 있을 수 있다.
+* **첨부 다운로드 경로 (2026-09-19 실제 토큰으로 검증):**
 
-| 구분 | 웹 페이지에서의 처리 |
-|------|---------------------|
-| **텍스트 요약** (화면 위쪽 문단 등) | `STR.ko` / `STR.en`의 해당 탭 키와 **4행 시트**(`gb.value.*` 또는 `gb.eN.*`)에 반영. 꽁밥·장학·취업 등 **혜택 문구**는 행사 내용·일정 줄에 자연스럽게 녹임. |
-| **포스터·전단** (화면 아래 그래픽) | 채팅에서 받은 파일을 `images/ggongbab-〈의미있는-슬러그〉.png` (등)으로 저장소에 **복사**하고, 해당 탭 패널의 `<figure class="gb-detail-hero">` → `<img src="...">`에 연결. `gb.eN.imageAlt`로 접근성 텍스트 유지. |
+| 경로 | 결과 |
+|------|------|
+| `…/posts/{post}/files/{file}?media=raw` | **307 → `file-api.gov-dooray.com` → 200 `image/png`** ✅ |
+| `…/posts/{post}/files/{file}` (media 없음) | 404 `{"resultMessage":"null"}` |
+| `/files/{file}` (본문 `<img>` 경로) | 404 |
 
-- **한 파일에 글자+포스터가 같이 있어도** 됩니다. 페이지 본문은 구조화된 텍스트로 정리하고, 이미지는 **히어로 한 장**으로 쓰는 패턴이 일반적입니다. (같은 캡처를 통째로 써도 되고, 나중에 포스터만 잘린 파일로 바꿔도 됩니다.)
-- **픽셀 단위로 포스터만 자동 자르기**는 도구·이미지 형태에 따라 항상 되는 것은 아닙니다. 포스터 영역만 깔끔히 쓰고 싶다면 **포스터 원본만** 추가로 올리거나, 잘라낸 파일을 `images/`에 넣어 달라고 하면 그 경로로 바꿉니다.
+  따라서 `?media=raw` **하나만** 사용한다. 본문의 `/files/{id}` 는 **file id 를 찾는 용도**일 뿐 다운로드 endpoint 가 아니다.
+* 307 리다이렉트는 수동으로 따라간다. 토큰을 다시 보내는 기준은 `DOORAY_API_BASE` 에서 유도한 등록 도메인이다.
+  `api.gov-dooray.com` → `gov-dooray.com` 이므로 `file-api.gov-dooray.com` 은 신뢰하고, `evil-dooray.com.attacker.net` 같은 유사 호스트나 외부 서명 호스트에는 보내지 않는다.
+* 실패해도 첨부는 optional enrichment 이므로 `parse_status=failed` 로만 남고 파이프라인은 계속된다.
+  경고에는 서명 URL 이나 토큰 없이 `stage=` / `http=` / `redirected=` 만 찍는다. 예: `stage=request http=404 redirected=no`.
+* 첨부가 이미지(8KB 이상, `GGONGBAB_AI_MAX_IMAGE_BYTES` 이하)면 최대 `GGONGBAB_AI_MAX_IMAGES`(기본 2)장을 포스터로 AI 에 함께 보낸다.
 
-### 정확도를 올리려면 (선택)
+---
 
-- 원본 **포스터 파일**(PNG/PDF) 또는 **본문 텍스트 복사**를 함께 주면 링크·날짜 오타가 줄어듭니다.
-- 링크는 반드시 **완전한 URL**인지 확인합니다. (`naver.me/...` 등)
+## 3. Supabase setup
 
-## 탭·패널 연결 규칙
+1. 프로젝트를 만들고 `supabase/migrations/001_ggongbab_schema.sql` 을 SQL Editor 또는 `supabase db push` 로 적용한다.
+2. Settings → API Keys 에서 **Project URL** 과 **secret key**(`sb_secret_…`) 를 복사해 GitHub Secrets 에 `SUPABASE_URL`, `SUPABASE_SECRET_KEY` 로 넣는다.
+3. 모든 테이블은 RLS 가 켜져 있고 정책이 없다. 즉 `anon`/`authenticated` 는 아무것도 읽지 못하고 secret(service role) 키만 접근한다.
+4. secret key 는 GitHub Actions / 로컬 `.env` 에만 존재한다. HTML/JS 에 넣지 않는다.
+5. **키 이름:** `SUPABASE_SECRET_KEY` 가 우선이고, 비어 있을 때만 예전 이름 `SUPABASE_SERVICE_ROLE_KEY` 를 읽는다(`config.SUPABASE_KEY_ENV`).
+   legacy 이름으로 동작하면 실행 로그에 `using legacy SUPABASE_SERVICE_ROLE_KEY` 경고가 한 줄 찍힌다. 새 이름으로 옮긴 뒤 옛 secret 은 지운다.
 
-- 탭 버튼: `id="gbTab0"`, `id="gbTab1"`, …  
-  - `role="tab"`, `aria-controls="gbPanelN"`, `aria-selected`, `tabindex`는 스크립트가 맞춥니다.
-- 패널: `id="gbPanel0"`, …, `role="tabpanel"`, `aria-labelledby="gbTabN"`.  
-  - 비활성 패널에는 `hidden` 속성.
-- 스크립트는 `.ggongbab-split` 안의 `.event-tab`과 `.event-panel`을 **같은 순서**로 짝지어 동작합니다. 탭을 추가/삭제할 때는 **반드시 탭과 패널을 쌍으로** 넣습니다.
+DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다. 별도 SDK 없음.
 
-## 상세 본문 마크업 (고정 필드 4행)
+---
 
-오른쪽 상세는 `event-detail-sheet` 안에 **항상 네 줄**을 맞춥니다.
+## 4. OpenAI setup
 
-| 왼쪽 라벨 (`data-i18n="gb.field.*"`) | 의미 |
-|-------------------------------------|------|
-| `gb.field.schedule` | 행사 일정 |
-| `gb.field.location` | 행사 위치 |
-| `gb.field.content` | 행사 내용 |
-| `gb.field.apply` | 신청 링크 |
+* 공식 Python SDK, **Responses API + Structured Outputs** (`client.responses.parse(..., text_format=EventExtraction)`).
+  JSON mode 는 쓰지 않는다. Pydantic 모델의 모든 필드가 required 이고 `None` 을 명시적으로 허용해 strict schema 로 변환된다.
+* 모델
 
-- **첫 번째 탭** 의 값 문자열은 `gb.value.schedule`, `gb.value.location`, **`gb.value.contentHtml`** (행사 내용에 줄 바꿈·강조가 필요하면 HTML), **`gb.value.applyHtml`** (HTML 허용).  
-  - 행사 내용을 단순 텍스트만 쓸 경우에 한해 `data-i18n="gb.value.content"` 단일 키만 써도 되나, 안내 전단처럼 구조가 길면 **`contentHtml` + `data-i18n-html`** 패턴을 씁니다.
-- **두 번째 탭 이후** 는 같은 라벨을 재사용하고, 값만 `gb.e1.schedule`, `gb.e1.location`, **`gb.e1.contentHtml`** (또는 단문이면 `gb.e1.content`), **`gb.e1.applyHtml`** 처럼 **`gb.eN.*`** 로 구분합니다 (`N` = 탭 인덱스).
-- 신청/외부 링크 줄은 `<a class="gb-apply-link" href="..." target="_blank" rel="noopener">` 를 쓰면 기존 스타일이 적용됩니다.
+| 역할 | env | 기본값 |
+|------|-----|--------|
+| Primary | `GGONGBAB_AI_MODEL` | `gpt-5.6-luna` |
+| Fallback | `GGONGBAB_AI_FALLBACK_MODEL` | `gpt-5.6-terra` |
 
-네 줄이 맞지 않는 특수 케이스만 `event-detail-row--solo` 같은 변형을 검토합니다 (현재 기본은 4행 고정).
+* Fallback(Terra) 은 **모든 메일에 호출하지 않는다.** `validator.fallback_reasons()` 가 다음 중 하나를 감지할 때만 한 번 더 호출한다.
+  `low_confidence`(threshold `GGONGBAB_AI_CONFIDENCE_THRESHOLD`, 기본 0.75) · `date_conflict` · `food_ambiguous` · `rule_conflict` ·
+  `missing_essential` · `ai_flagged` · `poster_conflict`. 두 결과 중 검증 문제가 적은 쪽을 택한다(`pick_better`).
+* Prompt version: `ggongbab-extract-v2` (`config.PROMPT_VERSION`). `ai_parse_runs.prompt_version` 에 저장되고 **캐시 키의 일부**다.
+  프롬프트 의미를 바꾸면 이 값을 올린다. 그러면 저장된 항목이 옛 추출 결과에 고정되지 않고 다음 실행에서 다시 파싱된다.
+* System prompt 핵심: 본문/포스터에 **쓰여 있지 않은** 날짜 · 장소 · 음식 · 마감 · URL 을 만들지 말 것, `null`/`unknown` 을 적극 사용할 것,
+  `food_provided="true"` 면 `evidence.food` 에 제공 문장을 그대로 인용할 것, `registration_required` 와 `eligibility` 도 명시 근거가 있을 때만 채울 것(8절).
 
-## 탭 라벨·접근성용 i18n
+---
 
-- 전체 탭리스트: `gb.tablistAria`
-- 탭 *i*: `gb.e{i}.tabAria`, `gb.e{i}.date` (작은 줄), `gb.e{i}.summary` (제목 줄)
+## 5. Secrets · 환경 변수
 
-## 현재 저장소 예시
+| 이름 | 종류 | 용도 |
+|------|------|------|
+| `DOORAY_API_TOKEN` | Secret | Dooray API |
+| `SUPABASE_URL` | Secret | Supabase project URL |
+| `SUPABASE_SECRET_KEY` | Secret | backend 전용. 옛 이름 `SUPABASE_SERVICE_ROLE_KEY` 는 이 값이 비었을 때만 fallback 으로 읽는다 |
+| `OPENAI_API_KEY` | Secret | OpenAI |
+| `DOORAY_PROJECT_ID` | Variable | 기본 `4424523215847914253` |
+| `GGONGBAB_AI_MODEL` / `GGONGBAB_AI_FALLBACK_MODEL` | Variable | 모델 override |
 
-**탭은 두 개만** 둡니다. (예: 과거에 있던 「학기 중 부스」 같은 세 번째 탭은 사용하지 않습니다.)
+로컬은 `.env.example` 을 `.env` 로 복사해 채운다. `.env` 는 gitignore 되어 있다.
+의존성: `pip install -r requirements-ggongbab.txt` (openai, pydantic, pytest).
 
-- **탭0 · KAIST OverEdge:** 히어로 `images/ggongbab-tab0.png`, 참고용 `images/ggongbab-overedge-flyer.png`, 본문 키 `gb.value.*`, 지도 `gb.mapQ0` / `gb.mapCaption0`.
-- **탭1 · 삼성SDI KSBP 런치 설명회:** 히어로 `images/ggongbab-samsung-sdi-lunch.png`, 본문 키 `gb.e1.*`, 지도 **`gb.mapQ1`** = Google 임베드 검색어 **`카이스트 응용공학동`** (`STR.ko` / `STR.en` 모두 동일 문자열로 두는 것을 권장), 캡션 `gb.mapCaption1`.
+---
 
-위를 바꿀 때에도 **탭 라벨(`gb.eN.*`)·4행 키(`gb.value.*` / `gb.eN.*`)·지도 `gb.mapQN` / `gb.mapCaptionN`** 를 같은 규칙으로 갱신하면 됩니다.
+## 6. Database schema
 
-## `event.html` 과의 구분
+| 테이블 | 공개 여부 | 내용 |
+|--------|-----------|------|
+| `sources` | private | dooray / kaist_public / manual / portal, priority |
+| `raw_items` | private | 수집 원본. `UNIQUE(source_id, external_id)`, `content_hash` index. 발신자 · 원문 · HTML 포함 |
+| `attachments` | private | 첨부 메타(`sha256`, `parse_status`). 파일 본체는 저장하지 않음 |
+| `ai_parse_runs` | private | 호출마다 model · prompt_version · role(primary/fallback) · parsed_json · 토큰 사용량 · status |
+| `events` | export 대상 | 병합된 행사. `status`(draft/published/review/rejected/archived), `needs_review`, `review_reason` |
+| `event_sources` | private | `UNIQUE(event_id, raw_item_id)`. 한 행사에 여러 원본 연결 |
+| `ingest_runs` | private | 실행마다 seen/new/created/updated/review/ai 카운트 |
 
-- **`event.html`** 상세 필드(이벤트 내용 / 진행 기간 / …) 규칙은 [`EVENT_DETAIL_FIELDS.md`](./EVENT_DETAIL_FIELDS.md) 를 따릅니다.
-- **`ggongbab.html`** 은 위 표의 **행사 일정·위치·내용·신청 링크** 네 가지만 사용합니다. 이름을 섞어 쓰지 않습니다.
+`events.food_provided` / `registration_required` 는 `'true' | 'false' | 'unknown'` 텍스트 enum 이다(unknown 을 살리기 위해).
 
-## 지도·캡션 (탭별)
+---
 
-- 행사마다 장소가 다르므로 **`gb.mapQ0` / `gb.mapQ1`** (한·영 각 `STR`에 두어 Google 검색어로 임베드)와 **`gb.mapCaption0` / `gb.mapCaption1`** (지도 아래 설명 문구)를 씁니다. 삼성SDI 안내 탭은 장소 검색어를 **`카이스트 응용공학동`** 으로 맞춥니다.
-- iframe `title`: `ggongbab.mapFrameTitle` (공통이어도 됨).
-- 언어 전환·탭 전환 후에 `syncGgongbabMapFromTab()`이 임베드 `src`와 캡션을 맞춥니다.  
-- HTML에 있는 iframe 초기 `src`는 첫 탭(또는 대표 행사) 기준으로 두어도 되며, 로드 직후 스크립트가 갱신합니다.
+## 7. Refresh flow (`pipeline.py`)
 
-## 요약
+1. **collect** — enabled 된 collector 마다 `ingest_runs` 행을 열고 `RawItem` 목록을 받는다. 소스 장애(`CollectorError`)는 기록만 하고 다음 소스로 넘어간다.
+2. **idempotency** — `raw_items(source_id, external_id)` 를 찾아 `content_hash` 가 같고 이미 event 에 연결돼 있으면 **AI 를 호출하지 않는다**(`ai_skipped`).
+   같은 hash 의 성공한 `ai_parse_runs` 가 있으면 `parsed_json` 을 재사용한다. AI 가 실패한 항목은 raw 만 남아 다음 실행에 다시 시도된다.
+3. **sanitize** — `sanitizer.sanitize_for_ai()` 가 이메일 · 전화 · 내선 · 학번 · Dooray member/mention · To/Cc 헤더 · 서명 · 인용 체인을 제거한다.
+4. **rules** — `rule_parser.analyze()` 가 날짜(연도 추론 포함) · 시각 · 건물 코드 · **명시적 음식 제공 문구** · URL · 마감 · 행사 여부를 결정적으로 뽑는다.
+5. **AI** — Luna 호출 → `validator.fallback_reasons()` → 필요 시 Terra.
+6. **validate** — `validator.validate()` 가 AI 결과를 규칙과 대조한다(아래 8절).
+7. **dedup / merge** — `dedup.find_match()` 로 기존 event 와 대조. 매치되면 `merge_into()` 로 빈 값만 채우고 충돌은 `needs_review`. `event_sources` 에 연결.
+8. **export** — `exporter.build_payload()` → staging 파일 → `validate_content.validate_ggongbab()` 통과 시에만 `latest.json` 교체.
 
-- **탭 = 행사 종류**, **오른쪽 = (선택) 히어로 이미지 + 항상 4행 시트**, **문자열 = `STR` 객체의 `gb.*` 키**로만 넣는다.
-- 한·영 동시 유지: `STR.ko` / `STR.en` 에 동일 키를 추가·수정한다.
+로그에는 카운트만 찍는다. 메일 본문 · 주소 · 토큰은 출력하지 않는다.
+
+```
+items: 12 (new/changed 2) | AI parsed: 2 | AI skipped cached: 10 | fallback calls: 1 | AI errors: 0 | events created: 1 | updated: 1 | review: 1 | not events: 0
+```
+
+---
+
+## 8. 꽁밥 판정 규칙 (AI + validator 양쪽)
+
+| 문장 | 판정 |
+|------|------|
+| “참석자에게 점심을 제공합니다” | `food_provided=true` |
+| “12시 점심시간에 설명회를 합니다” | 시간 표현일 뿐. `unknown` |
+
+명시적 근거 예: 점심/식사/중식/도시락/간식/다과/커피/피자/샌드위치 **제공**, 식권 **지급**, 케이터링 제공, refreshments/lunch/meal **provided**, 무료 점심.
+시간 표현(점심시간, 12시, lunch session)만으로는 근거가 아니다.
+
+validator 가 하는 일:
+
+* AI 가 `true` 인데 `evidence.food` 가 비었거나 제공 문구가 아니면 → `unknown` + `needs_review`.
+* 규칙은 제공 문구를 찾았는데 AI 가 `true` 가 아니면 → `needs_review` (+ fallback).
+* AI `event_start` 날짜가 본문에서 뽑은 날짜와 다르면 → 시작 시각 폐기 + `needs_review`.
+* 건물이 본문 건물 목록과 다르면 폐기. 본문에 건물이 하나뿐이면 규칙 값으로 채움.
+* `registration_url` 은 본문에 그대로 있어야 한다. 없으면 폐기 + review.
+* 마감일도 본문 날짜와 맞아야 한다.
+* 문제가 하나라도 있으면 confidence 를 0.6 이하로 깎는다.
+
+### 신청 여부 (`registration_required`)
+
+“본문에 없음”은 “신청 불필요”가 아니다. 세 값을 모두 유지한다.
+
+| 값 | 필요한 근거 |
+|----|-------------|
+| `true` | 사전 신청 · 신청 필수/필요 · 등록 필요 · 접수 기간 · 선착순 · RSVP · 신청 링크/폼 · 마감일 |
+| `false` | 신청 없이 · 별도 신청 불필요 · 현장 참여 가능 · no registration required · walk-ins welcome |
+| `unknown` | 위 어느 쪽도 본문에 없을 때 (기본값) |
+
+AI 가 `false` 라고 해도 명시 근거가 없으면 validator 가 `unknown` 으로 되돌리고 review 사유를 남긴다.
+
+### 참가 자격 (`eligibility`)
+
+**실제 대상 제한**만 기록한다. 예: `KAIST 학부생 대상`, `기계공학과 학생`, `석·박사 과정 학생`, `신입생만`, `외국인 학생 대상`, `선착순 50명`.
+
+`참석자에게`, `참가자`, `방문자`, `attendees`, `everyone` 처럼 **오는 사람을 가리키는 말**은 자격 제한이 아니다 → `null`.
+(첫 실제 실행에서 “참석자에게 점심 도시락을 제공합니다”가 `eligibility="참석자"` 로 저장된 회귀. `rule_parser.is_real_eligibility()` 가 막는다.)
+본문에 없는 자격 문구도 버린다.
+
+회귀 fixture (`tests/ggongbab/conftest.py`):
+“9월 25일 12시 N1에서 기업 설명회를 진행합니다. 참석자에게 점심 도시락을 제공합니다.” → 9/25 12:00, N1, `true`, `lunchbox`.
+“9월 25일 12시 점심시간에 기업 설명회를 진행합니다.” → `food_provided != true`.
+
+---
+
+## 9. Dedup
+
+`dedup.score_pair()`:
+
+| 요소 | 점수 |
+|------|------|
+| 정규화 제목 유사도 (SequenceMatcher ∨ 토큰 Jaccard) | × 0.55 |
+| 같은 날짜 / 다른 날짜 | +0.30 / −0.35 |
+| 주최 유사 | +0.10 |
+| 같은 건물 / 다른 건물 | +0.10 / −0.10 |
+
+임계값 `GGONGBAB_DEDUP_THRESHOLD`(기본 0.72). 후보는 시작 시각 ±3일 안의 event 만 본다.
+병합 시 비어 있던 필드만 채우고, `event_start` · `building` · `food_provided` · `registration_url` · `registration_deadline` 이 서로 다르면
+기존 값을 유지한 채 `needs_review` 로 올린다. confidence 는 둘 중 큰 값.
+
+---
+
+## 10. Review flow
+
+```
+python scripts/refresh_ggongbab.py --review-report
+```
+
+```
+2 event(s) need review
+
+- [review] 2026-09-26T15:00:00+09:00 · ○○ 채용설명회
+    id=… conf=0.6 food=unknown sources=dooray
+    reason: 식사 제공 근거 없음 (시간 표현만 있을 수 있음); fallback 사유: food_ambiguous
+```
+
+처리는 Supabase 대시보드에서 `events` 행을 고치고 `needs_review=false`, `status='published'` 로 바꾸면 다음 export 에 반영된다.
+잘못 잡힌 행사는 `status='rejected'`. 관리자 UI 는 아직 없고 스키마만 준비돼 있다.
+GitHub Actions 에서 `workflow_dispatch` → mode `review-report` 로도 볼 수 있다.
+
+---
+
+## 11. Public export (`data/ggongbab/latest.json`)
+
+공개 조건: `status='published'` **and** `needs_review=false` **and** `confidence ≥ GGONGBAB_PUBLISH_CONFIDENCE`(0.7) **and** 만료 아님
+(`event_end`(없으면 `event_start`) + `GGONGBAB_EXPIRED_GRACE_HOURS`) **and** 시작이 60일 이내.
+
+```json
+{
+  "generatedAt": "2026-09-19T12:00:00+09:00",
+  "timezone": "Asia/Seoul",
+  "count": 1,
+  "events": [{
+    "id": "uuid", "title": "…", "summary": "…",
+    "startAt": "2026-09-25T12:00:00+09:00", "endAt": null,
+    "dateText": "9월 25일(목)", "timeText": "12:00",
+    "location": {"name": "…", "building": "N1", "room": "101호"},
+    "food": {"provided": "true", "type": "lunchbox", "description": "점심 도시락 제공"},
+    "organizer": "…", "eligibility": "…",
+    "registration": {"required": "unknown", "deadline": null, "url": ""},
+    "confidence": 0.97,
+    "sources": [{"type": "dooray", "name": "Dooray"}]
+  }]
+}
+```
+
+**tri-state:** `food.provided` 와 `registration.required` 는 **`"true"` / `"false"` / `"unknown"` 문자열**이다. boolean 이 아니다.
+“본문에 없음”(`unknown`)을 `false` 로 접으면 “신청 불필요”라는 없는 사실을 만들어 내기 때문이다. `food.type` 은 `provided="true"` 일 때만 채워진다.
+
+**시각:** `startAt` · `endAt` · `registration.deadline` · `generatedAt` 은 모두 **Asia/Seoul(`+09:00`)** 로 내보낸다.
+DB 의 `timestamptz` 는 UTC 로 조회되지만(`2026-09-25T03:00:00+00:00`), 공개 피드는 캠퍼스 현지 시각이므로 export 직전에 `exporter.kst_iso()` 가 변환한다(`2026-09-25T12:00:00+09:00`). DB 표현은 그대로 둔다.
+
+절대 포함하지 않는 것: 발신/수신 이메일, raw HTML/text, Dooray ID · task 링크, `/files/…` 첨부 링크, prompt, review_reason, API key.
+`validate_content.validate_ggongbab()` 가 이를 정규식 · 키 이름으로 검사하고 실패하면 publish 를 막는다. 검증 항목: JSON · generatedAt · 고유 ID ·
+ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음 · URL 형식 · **tri-state 문자열**(boolean 이면 실패) ·
+`food.type` 과 `food.provided` 정합성 · private 필드 없음 · 이메일/전화/토큰 패턴 없음 · 같은 날 유사 제목 중복.
+`sources[].url` 은 `kaist_public` / `manual` 의 공개 웹 링크만 내보낸다.
+
+---
+
+## 12. Deployment · branches
+
+* 기능 코드(`lab-ggongbab.html`, `css/ggongbab.css`, `js/ggongbab.js`, `scripts/**`)는 **lab 에서만** 개발하고, 공개 반영은 사람이 `main` 에 merge 한다.
+* `.github/workflows/ggongbab-refresh.yml` 이 `*/30 * * * *` 로 돈다(정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
+  `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
+* `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 만 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
+* 종료 코드 2 = “안전하게 내보낼 것이 없음”(Supabase 불통, 모든 collector 실패, export 검증 실패). 이때 이전 `latest.json` 을 유지하고 publish 단계를 건너뛴다.
+* `ggongbab.html`(본편)은 옛 3열 UI 를 버리고 lab 과 같은 피드 UI 로 교체됐다.
+  승격은 손으로 베끼는 것이 아니라 `lab-ggongbab.html` 에서 `<meta name="robots">`,
+  lab 리본(마크업과 CSS), `data-gg-lab`, `nav.lab` 항목을 빼고 제목을 바꾸는 기계적 변환이다.
+  `data-gg-lab` 이 없으면 `js/ggongbab.js` 의 모드가 `normal` 로 고정되어 fixture · preview ·
+  debug-layout 이 **도달 불가능**해진다. 바꾼 뒤에는 `scripts/check_ggongbab_ui.py` 가
+  세 뷰포트에서 본편을 직접 검사한다(쿼리스트링 무시, `.local/` 요청 0 건, 비공개 행사 미노출).
+
+---
+
+## 13. Frontend (`lab-ggongbab.html`)
+
+* nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
+* `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
+* 세로 피드: 날짜 헤더(오늘/내일 배지) → 카드(시각 · 제목 · 건물/호실 · 지도 링크 · 음식 태그 · 사전 신청 · 마감 · 요약 · 신청/원문 버튼).
+* **tri-state 표시:** `true` 만 「식사 제공」/「사전 신청」으로, `false` 는 「식사 없음」/「신청 없이 참여」로, `unknown` 은 점선 테두리의 「식사 여부 미확인」으로 그린다.
+  `unknown` 을 `false` 처럼 보여 주지 않는다. 옛 boolean payload 도 `tri()` 가 받아 준다.
+* 필터: 기간(오늘/내일/이번 주/전체 예정) × 음식(전체/식사/간식/다과). 선택은 `babdoduk-ggongbab-filter` 에 저장.
+* 모든 시각은 KST 로 계산한다(뷰어 시간대 무관). 지도는 카드 안 Google Maps 검색 링크로만 제공(보조 기능).
+* 가로 캐러셀 없음. 페이지 전체가 세로 스크롤.
+
+---
+
+## 14. Privacy
+
+* 원문 메일은 `raw_items` 에만 있고 service role 로만 읽을 수 있다.
+* AI 에는 sanitize 된 제목 · 본문 · 메일 날짜 · 포스터 이미지만 간다. 수신자 목록 · 발신 주소 · Dooray ID 는 가지 않는다.
+* 공개 JSON 은 11절의 검증을 통과해야만 나간다.
+* GitHub Actions 로그에는 카운트와 에러 클래스명만 찍힌다.
+
+---
+
+## 15. Debugging
+
+| 증상 | 확인 |
+|------|------|
+| 서비스 연결 확인 | `python scripts/refresh_ggongbab.py --check` |
+| 수집만 확인(외부 서비스 없이) | `python scripts/refresh_ggongbab.py --dry-run --only kaist` |
+| 특정 소스만 | `--only dooray` / `--only manual` |
+| DB 만 내보내기 | `--export-only` |
+| 리뷰 대기 | `--review-report` |
+| AI 비용 | Supabase `ai_parse_runs` 의 `usage_input_tokens`, `usage_output_tokens`, `model`, `role` |
+| 같은 메일이 계속 AI 를 태움 | `raw_items.content_hash` 가 매번 바뀌는지, `event_sources` 연결이 있는지 |
+| 행사가 안 보임 | `events.status`, `needs_review`, `confidence`, 만료 여부 → 11절 조건 |
+| 한글이 깨져 보임 | **파일이 아니라 콘솔 문제다.** 아래 UTF-8 항목 참고 |
+| 두 번째 실행인데 AI 가 다시 돌았다 | `PROMPT_VERSION` 을 올렸거나 `content_hash` 가 바뀐 것이다. `ai_parse_runs.prompt_version` 비교 |
+| 첨부가 계속 실패 | 경고의 `stage=` / `http=` / `redirected=` 확인. 2절의 검증된 경로표와 대조 |
+| 테스트 | `python -m pytest tests/ggongbab -q` |
+| 공개 JSON 검증만 | `python scripts/validate_content.py` |
+
+### UTF-8: 파일은 멀쩡하고 콘솔이 문제다
+
+`type data\ggongbab\latest.json` 으로 보면 한글이 `湲곗뾽 ?ㅻ챸??` 처럼 보일 수 있다.
+이는 Windows 콘솔 코드 페이지(기본 949)가 UTF-8 바이트를 cp949 로 읽어서 생기는 **표시** 문제다. 파일은 정상이다.
+
+확인 (2026-09-19 실측):
+
+```python
+from pathlib import Path
+import json
+raw = Path("data/ggongbab/latest.json").read_bytes()
+data = json.loads(raw.decode("utf-8"))            # UTF-8 로 디코드됨, BOM 없음
+t = data["events"][0]["title"]
+print(t.encode("unicode_escape"))                  # b'\uae30\uc5c5 \uc124\uba85\ud68c' = 기업 설명회
+```
+
+코드 쪽은 이미 `json.dumps(..., ensure_ascii=False)` + `write_text(..., encoding="utf-8")` 이므로
+**인코딩 변환을 추가하지 마라.** 이중 인코딩만 생긴다. 콘솔에서 제대로 보려면:
+
+```cmd
+chcp 65001
+type data\ggongbab\latest.json
+```
+
+PowerShell 은 `Get-Content data\ggongbab\latest.json -Encoding utf8`, 파이썬 출력은 `set PYTHONIOENCODING=utf-8`.
+회귀 테스트: `tests/ggongbab/test_export_contract.py::test_utf8_json_roundtrip_is_real_korean`.
+
+KAIST 공개 collector 가 읽는 게시판(2026-09-19 마크업 기준): 학사공지 `kr/html/footer/0802.html`, 문화행사 `kr/html/campus/053501.html`.
+마크업이 바뀌면 `collectors/kaist_public.py` 의 정규식과 `tests/ggongbab/test_pipeline_export.py::test_kaist_public_parsers_and_filter` 를 같이 고친다.
+
+---
+
+## 16. 메일함 backfill (과거 메일 일괄 수집)
+
+### 공개 Dooray Mail REST API 는 존재하지 않는다
+
+2026-09-19 에 read-only 로 probe 한 결과다. GET 만 사용했고 메일 상태는 건드리지 않았다.
+
+| 경로 | 인증 있음 | 인증 없음 | 판정 |
+|------|-----------|-----------|------|
+| `/common/v1/members/me` | 200 | 401 | 존재 |
+| `/project/v1/projects/{id}/posts` | 200 | 401 | 존재 |
+| `/messenger/v1/channels` · `/calendar/v1/calendars` · `/drive/v1/drives` · `/wiki/v1/wikis` | 200 | - | 존재 |
+| `/mail/v1/mails` (외 `mailbox`, `webmail`, `email`, `/mail/v2`, `/api/mail/v1` 등 19가지) | **404** | **404** | **없음** |
+| `/nonexistent/v1/thing` (음성 대조군) | 404 | - | 없음 |
+
+핵심 판별: **존재하는 경로는 토큰이 없어도 401** 을 준다. `/mail/v1/mails` 는 gov 호스트와 상용 `api.dooray.com` 양쪽에서 **404** 다.
+즉 권한/스코프 문제가 아니라 **공개 API 에 메일 서비스가 없다.** 없는 endpoint 를 만들어 쓰지 않는다.
+
+### 지금 쓰는 방법: 로그인된 웹앱의 내부 WAPI 관찰
+
+공개 API 가 없다고 해서 endpoint 를 지어내지 않는다. 대신 이미 로그인된 Dooray 웹앱을
+브라우저로 띄우고, **그 화면이 스스로 호출하는 내부 WAPI 응답을 관찰**한다.
+`scripts/dooray_web_agent.py --discover` 가 실제로 오간 요청을 기록해
+`.local/dooray-ui.json` 에 계약으로 저장하고, 이후 실행은 그 계약만 따른다.
+계약과 화면이 어긋나면 추측하지 않고 `UI_CHANGED`(20) 로 멈춘다.
+
+이것은 공개 Mail REST API 가 아니며 그렇게 문서화하지도 않는다. 사람이 이미 볼 수 있는
+화면을, 사람이 한 번 로그인한 세션으로 읽을 뿐이다. 읽음 상태는 바꾸지 않고,
+읽음 여부 필드를 못 읽으면 본문을 가져오기 전에 중단한다(fail closed).
+절차와 종료 코드는 `README.md` 5절에 있다.
+
+아래 메일 아카이브 collector 는 메일함에 접속조차 하지 않는 대안으로 남아 있다.
+
+### 그래서 쓰는 방법: 메일 아카이브 collector
+
+메일 클라이언트에서 내보낸 파일을 읽는다. 메일함에 접속하지 않으므로 읽음 상태가 바뀔 수 없다.
+
+지원 입력: `.eml` · `.mbox` · `.zip` · 폴더(재귀).
+
+```cmd
+python scripts\refresh_ggongbab.py ^
+  --backfill-mail-archive "C:\mail-export" ^
+  --mail-from 2026-09-01 --mail-to 2026-09-19 ^
+  --event-until 2026-09-30 --dry-run
+```
+
+| 옵션 | 뜻 |
+|------|-----|
+| `--mail-from` / `--mail-to` | 메일 **수신일** 범위 |
+| `--event-until` | 보고서에서 "기간 내 행사"로 셀 **행사일** 상한 |
+| `--read-state all\|read\|unread` | 기본 `all`. 읽은 메일이 목적이므로 기본은 전부 포함 |
+| `--max-mails` | 스캔 상한 (기본 500). 초과하면 중단 |
+| `--max-ai-candidates` | AI 호출 상한 (기본 50). 초과하면 **호출 전에** 중단 |
+| `--force` | 위 상한을 넘겨 진행 |
+| `--no-ai` | 후보 수만 세고 모델을 부르지 않음 |
+| `--dry-run` | DB·`latest.json` 변경 없음. AI 는 실제로 호출해 판정을 보여 줌 |
+
+### 2단계 후보 선별
+
+메일함 전체를 모델에 보내지 않는다. `prefilter.classify()` 가 먼저 로컬에서 고른다.
+
+* 거부: 영수증·결제·비밀번호·인증번호·배송·뉴스레터·반송 메일 등 (denylist)
+* 필수: 행사 표현(설명회/세미나/채용/info session …) **그리고** 날짜 표현
+* 추가: 음식 표현 **또는** 식사 시간 신호(점심시간/12시/lunch) 중 하나
+
+**후보 선별은 음식 제공 여부를 판단하지 않는다.** “12시 세미나”는 후보일 뿐이고, `food_provided` 는 8절대로
+AI 와 결정적 validator 가 명시 근거로만 정한다. 후보로 뽑힌 메일은 기존 v2 프롬프트 · sanitizer · validator · dedup 을 그대로 탄다.
+별도 AI 경로를 만들지 않았다.
+
+### 개인정보
+
+메일함은 업무 task 보다 범위가 넓으므로 보수적으로 다룬다.
+
+* **후보가 아닌 메일은 DB 에 저장조차 하지 않는다.** 로컬 필터에서 걸러지고 끝난다.
+* 모델에는 sanitize 된 제목·본문(+행사 포스터)만 간다. 주소록·수신자 목록·전화번호·서명은 `sanitizer` 가 지운다.
+* 원문은 후보에 한해 `raw_items` 에만 남고 공개 JSON 에는 나가지 않는다(11절 검증).
+
+### 중복
+
+메일 `Message-ID` 를 `external_id` 로 쓴다(없으면 원문 sha256). 같은 메일을 다시 내보내도 raw item 은 하나다.
+같은 행사가 메일함 backfill 과 자동분류 task 양쪽에서 들어와도 event 는 하나이고 `event_sources` 가 두 개 붙는다(16절 테스트).
+
+### 지난 행사
+
+메일 수신일과 행사일은 다르다. 이미 지난 행사도 DB 에는 남기되(재실행 시 AI 재호출을 막기 위해)
+공개 `latest.json` 에는 11절의 만료 규칙대로 나가지 않는다.
+
+### 수작업이 더 적은 대안
+
+메일을 내보내기 어렵다면, Dooray 웹에서 과거 메일을 여러 건 선택해 **수집함 프로젝트로 전달/업무 등록**해도 된다.
+그러면 기존 `dooray` collector 가 그대로 집어 가므로 **새 코드가 필요 없다.**
+어느 쪽이든 KAIST 비밀번호나 세션 쿠키는 저장하지 않는다.
+
+---
+
+## 17. 무인 메일함 에이전트 (`dooray_web_agent.py`)
+
+16절의 아카이브 backfill 은 사람이 메일을 내보내야 한다. 이 에이전트는 그 수작업을 없앤다.
+**최초 SSO 로그인 1회** 뒤에는 Windows 작업 스케줄러가 알아서 돌린다.
+
+### 역할 분담
+
+에이전트는 **AI 분석을 하지 않는다.** 하는 일은 딱 여기까지다.
+
+```
+Dooray 메일함 (브라우저 세션)
+  → 로컬 후보 필터 (prefilter.py, 16절과 동일)
+  → 수집함 프로젝트 업무 등록 (Project REST API)
+  → 상태 저장
+[--run-pipeline 이면 이어서]
+  → refresh_ggongbab.py --only dooray → OpenAI → Supabase → latest.json
+```
+
+**업무 등록은 DOM 클릭이 아니라 Project REST API 로 한다.** 프로젝트를 **id 로 지정하고 이름까지 정확히 대조**하므로
+다른 프로젝트에 잘못 등록하는 일이 구조적으로 불가능하다. 이름이 한 글자라도 다르거나 프로젝트가 active 가 아니면
+브라우저를 열기도 전에 exit 30 으로 멈춘다.
+
+### 최초 1회
+
+```cmd
+pip install -r requirements-ggongbab.txt
+python -m playwright install chromium
+
+python scripts\dooray_web_agent.py --setup
+```
+
+기본 주소는 **`https://kaist.gov-dooray.com/`** 이다. 다른 테넌트면 `--url` 로 준다.
+
+### SSO 가 자동화 밖으로 빠질 때: `--cdp`
+
+실측에서 다음이 확인됐다. page #1 이 `sso.kaist.ac.kr/auth/kaist/user/login/view` 로 이동한 뒤
+**92초 동안 그대로 머물렀고**, 그 사이 사용자는 로그인을 마치고 받은메일함을 보고 있었다.
+즉 로그인이 **이 에이전트가 몰지 않는 브라우저에서** 끝났다. 감지 버그가 아니라 context escape 다.
+
+그래서 Playwright 가 브라우저를 소유하는 대신, **일반 Chrome 을 우리가 띄우고 붙는** 방식을 넣었다.
+
+```cmd
+python scripts\dooray_web_agent.py --setup --cdp
+```
+
+* 전용 프로필 + `--remote-debugging-port=9222`, 주소는 **`127.0.0.1` 고정**. 외부 바인딩 없음.
+* `connect_over_cdp` 로 붙으므로 그 Chrome 이 여는 **모든 창**이 보인다.
+* 명령이 끝나도 **브라우저를 닫지 않는다.** 살아 있는 동안 세션 쿠키가 유지되므로,
+  앞서 막혔던 "다음 실행에서 세션이 사라진다" 문제도 같이 풀린다.
+* `--calibrate`, `--run` 에도 `--cdp` 를 쓸 수 있다. 이미 떠 있으면 그 브라우저에 재사용으로 붙는다.
+* 사용자의 평소 Chrome 프로필은 열지 않는다. Playwright 번들 Chromium 의 실행 파일명도 `chrome.exe` 라
+  이름으로 구분되지 않으므로, 설치 경로에서 **설치된 Chrome** 을 직접 찾는다.
+
+**브라우저 엔진.** 설치된 **Google Chrome** 을 먼저 쓰고, 없으면 Playwright 번들 Chromium 으로 내려간다.
+어느 쪽이든 프로필은 항상 전용 `.local/dooray-browser-profile/` 이다. **사용자의 평소 Chrome 프로필은 건드리지 않는다.**
+시작할 때 어떤 엔진인지 한 줄 찍는다.
+
+```
+Browser engine : Google Chrome
+```
+
+**lifecycle 추적.** setup 동안 페이지 생성·프레임 이동·팝업·닫힘을 기록한다. origin 과 path 만 남기고
+쿼리 값·쿠키·주소·메일 내용은 찍지 않는다.
+
+```
+[trace] navigation
+  page #1
+  frame: main
+  origin: https://kaist.gov-dooray.com
+  path: /idp/multi
+```
+
+타임아웃 시 `/mail/...` 이동이 한 번도 관찰되지 않았다면 그 사실을 명시한다. 화면에는 메일함이 보이는데
+trace 에 `/mail/` 이 없다면 로그인이 **이 에이전트가 몰지 않는 브라우저로 넘어갔다**는 뜻이고,
+그때는 CDP 상주 방식으로 전환할 근거가 된다.
+
+1. 브라우저 창이 열리면 **사용자가 직접** KAIST SSO 로그인을 한다.
+   터미널에는 상태가 **바뀔 때만** 한 줄씩 찍힌다. 조용히 멈춰 있는 것처럼 보이지 않는다.
+
+```
+[setup] waiting for SSO login...
+[setup] observed:
+  page: /idp/multi
+  classification: identity-provider
+[setup] observed:
+  page: /mail/systems/inbox
+  readyState: interactive
+  classification: authenticated-mail
+[setup] authenticated Dooray page detected
+[setup] continuing...
+```
+
+   로그는 **실제로 관찰한 것만** 말한다. 후보를 못 찾았다는 이유로 "identity provider" 라고 하지 않는다.
+   그 문구는 관찰된 URL 이 실제로 `/idp/`·login·sso 계열일 때만 나온다.
+
+   판정 우선순위는 `/mail/...` 최상위 페이지 → `/mail/...` 프레임을 가진 부모 페이지 →
+   같은 호스트의 다른 깊은 경로 → 안정된 루트 순이다. **`/mail/` 영역에 있다는 것 자체가 강한 신호**이므로
+   `readyState === 'complete'` 를 요구하지 않는다. SPA 는 사용 중에도 `interactive` 에 머무를 수 있고,
+   메일 화면이 프레임에 그려지면 최상위 문서의 텍스트는 거의 비어 있다. 루트 `/` 만 여전히 엄격하게 본다.
+
+   로그인 감지는 **열려 있는 모든 탭을 매번 다시 읽는다.** KAIST SSO 는 인증된 앱을 새 탭으로 열 수 있고,
+   그때 시작 탭은 `/idp/multi` 에 남는다. 시작 탭 하나만 보던 판은 그래서 타임아웃까지 기다렸다.
+   또 테넌트 루트는 리다이렉트 직전에 잠깐 보이므로, 같은 후보가 **연속 폴링에서 유지**되고
+   문서가 실제로 렌더된 뒤에만 로그인으로 인정한다. 대기 한도는 3분이다.
+2. 로그인이 감지되면 터미널에 안내가 뜬다.
+
+```
+로그인되었습니다.
+  landing page: https://kaist.gov-dooray.com/...
+
+이 화면이 받은메일함이 아닐 수 있습니다. 브라우저에서
+  [메일] -> [받은메일함] 으로 이동하세요.
+메일 목록이 보이면 이 터미널에서 Enter를 누르세요.
+```
+
+3. 브라우저에서 **받은메일함으로 이동**한다. **Enter 는 누르지 않는다.**
+   받은메일함이 감지되면 자동으로 다음 단계로 넘어간다.
+4. **열려 있는 모든 페이지와 프레임을 다시 훑어** 받은메일함을 고르고, 그 URL 을 `mail_url` 로 기록한다.
+   같은 실행 안에서 discovery 까지 끝난다. **`--setup` 을 두 번 실행할 필요가 없다.**
+
+```
+pages observed: 2
+  [0] https://kaist.gov-dooray.com/
+        mailCandidate=no  mailPath=no  mailRows=no  repeated=25
+  [1] https://kaist.gov-dooray.com/mail/systems/inbox
+        mailCandidate=yes  mailPath=yes  mailRows=yes  repeated=50
+
+selected mail page:
+  https://kaist.gov-dooray.com/mail/systems/inbox
+
+observing inbox...
+reloading inbox...
+```
+
+> **왜 다시 훑는가.** 실제 사용자 테스트에서 이 부분이 깨졌다. 실행 시점의 page 객체를 계속 붙들고
+> 있었기 때문에, 사용자가 `/mail/systems/inbox` 를 보고 있는데도 `page.url` 은 루트를 가리켰고
+> 루트가 `mail_url` 로 저장됐다. Dooray 는 메일을 **다른 탭이나 프레임**에 띄울 수 있으므로
+> 시작 페이지를 신뢰하지 않는다. 판별은 `/mail/` 앱 영역 + 메일 행 구조로 한다.
+> 특정 inbox URL 하나를 하드코딩하지 않는다.
+
+세션은 `.local/dooray-browser-profile/` 에 남는다 (gitignore).
+
+> **왜 Enter 가 사라졌는가.** setup 에 필요한 성공 조건은 "로그인했다"가 아니라 **"받은메일함이 떴다"** 이다.
+> 같은 호스트의 `/mail/` 페이지나 프레임이 실제로 그려졌다면 SSO 성공은 이미 성립한다.
+> 예전에는 범용 인증 감지기가 먼저 통과해야 메일함 탐지까지 갈 수 있었는데, 그 감지기가 실제 환경과
+> 계속 어긋나 진행을 막았다. 이제 `select_mail_page()` 하나만 폴링한다.
+>
+> **프레임 순서 주의.** 이 테넌트에서는 최상위가 `/idp/multi` 인 채로 메일함이 자식 프레임의
+> `/mail/systems/inbox` 에 그려지는 구조가 실제로 나온다. 그래서 프레임 검사를 **로그인 URL 판정보다 먼저**
+> 한다. 순서가 반대면, 사용자가 보고 있는 메일함을 두고 "identity provider" 라고 보고하게 된다.
+
+### mail_url 저장 전 안전 검증
+
+Enter 를 눌렀다고 무조건 저장하지 않는다. 아래 중 하나 이상이 관찰되어야 한다.
+
+| 근거 | 뜻 |
+|------|-----|
+| **A** | 메일 목록으로 보이는 JSON 호출이 실제로 관찰됨 (행에 제목 계열 키 + 날짜/ID 계열 키, 2행 이상) |
+| **B** | 사용자가 "받은메일함에 도착했다"고 Enter 로 명시 확인 |
+| **C** | **메일 행처럼 생긴** 반복 구조가 DOM 에서 관찰됨 |
+
+저장 조건은 **B + (A 또는 강한 C)** 다. B 만으로는 절대 저장하지 않는다.
+
+**C 는 단순 반복이 아니다.** 같은 class 를 가진 element 가 25개 있다는 것은 어떤 홈 화면에나 있는 일이고,
+실제로 그 때문에 루트 URL 이 저장되는 버그가 났다. 지금 C 는 형제 element 묶음마다
+
+* 60% 이상이 읽을 만한 길이의 텍스트를 갖고,
+* 절반 이상(최소 3개)이 **날짜/시각** 을 갖고,
+* 절반 이상이 **행마다 다른 id/data 속성** 을 갖거나 80% 이상이 날짜를 가질 때
+
+만 메일 행 묶음으로 인정한다. class 이름은 추측하지 않고 내용의 형태만 본다.
+
+**KAIST ID/비밀번호는 저장하지 않는다.** 코드에 비밀번호를 다루는 경로 자체가 없고,
+`test_no_password_handling_anywhere_in_the_agent` 가 AST 로 이를 고정한다.
+
+### 두 번째: UI 계약 기록
+
+```cmd
+python scripts\dooray_web_agent.py --discover
+```
+
+Dooray 메일 화면의 DOM 은 여기서 한 번도 본 적이 없다. **그래서 selector 를 추측해 넣지 않았다.**
+`scripts/ggongbab/web/dooray_ui.json` 은 `verified: false` 에 전부 빈 값으로 나간다.
+
+`--setup` 이 이미 discovery 까지 끝내므로 보통은 다시 실행할 필요가 없다. UI 가 바뀌었을 때만 쓴다.
+
+`--discover` 는 저장된 `mail_url` 을 열고, 로그인 상태와 **메일 화면인지**를 먼저 확인한 뒤
+12초쯤 XHR/fetch 를 관찰하고 **받은메일함을 reload 해서 목록 호출이 실제로 한 번 더 발생하게** 한다.
+(`--observe-seconds` 로 조절) 메일 화면이 아니면 exit 20 으로 멈추고 `--setup` 을 다시 하라고 알린다.
+
+결과는 `.local/dooray-discovery.json` 에 **가림 처리**되어 저장된다.
+
+* URL 쿼리 **값**은 `<v>` 로 치환 (`token=<v>`). 경로에 섞인 주소는 `[email]` 로.
+* JSON 응답은 **형태만** 기록한다. **키 이름과 행 수**이고 **값은 절대 담지 않는다.**
+  키 이름은 내용이 아니라 스키마라서, 이것 덕분에 contract 를 두 번 추측하지 않고 채울 수 있다.
+* 응답 본문·헤더·쿠키·메일 텍스트는 저장하지 않는다.
+
+관찰기는 **페이지가 아니라 브라우저 컨텍스트에 붙는다.** 메일함이 다른 탭으로 열려도 그 트래픽을 놓치지 않는다.
+
+호출은 세 갈래로 분류되고 **선정 이유**가 함께 남는다.
+
+| 분류 | 판정 근거 예 |
+|------|--------------|
+| `mailListCandidates` | content-type json · 행에 제목 계열 키 · 날짜 계열 키 · N행 · 2회 이상 호출 · reload 후 재발생 · 메일 화면에서 관찰됨 |
+| `mailDetailCandidates` | 단일 객체 + 본문 계열 키에 200자 넘는 텍스트 |
+| `otherJsonCalls` / `nonJsonCalls` | 나머지 |
+
+mail-list 후보가 **정확히 하나**이고 JSON · 제목/ID/날짜 계열 키 · reload 후 재발생 · 메일 화면에서 발생을
+모두 만족하면 `recommendedListApi` 로 추천한다. 후보가 여럿이면 추천하지 않고 보고만 한다.
+
+그 보고서를 보고 `.local/dooray-ui.json` 을 채운 뒤 `"verified": true` 로 **직접** 바꾼다.
+**`--setup` 도 `--discover` 도 `verified` 를 자동으로 true 로 만들지 않는다.** 응답 shape 를 사람이 확인한 뒤에 확정한다.
+우선순위는 **`list_api`**(웹앱이 쓰는 내부 JSON endpoint)다. DOM 보다 안정적이고,
+목록 조회만으로는 메일이 열리지 않는다. 없으면 DOM selector 로 대체한다.
+
+**채우기 전까지 `--run` 은 아무것도 건드리지 않고 exit 20 으로 끝난다.**
+
+### 평소: 무인 실행
+
+```cmd
+python scripts\dooray_web_agent.py --run --since-last-run --run-pipeline
+```
+
+메일별 승인도, Enter 입력도 없다. 이미 처리한 메일은 다시 열지 않는다.
+
+| 옵션 | 뜻 |
+|------|-----|
+| `--since-last-run` | 지난 실행 이후 (하루 겹쳐서) |
+| `--from` / `--to` | 수신일 범위 직접 지정 |
+| `--days N` | 날짜를 안 주면 최근 N일 (기본 3) |
+| `--max-mails` | 읽을 행 상한 (기본 200) |
+| `--run-pipeline` | 등록이 있었으면 이어서 ingest 실행 |
+| `--dry-run` | 후보만 보고, 업무 등록·상태 저장 안 함 |
+| `--subject-only` | **메일 본문을 열지 않는다.** 읽음 상태가 바뀌지 않음 |
+| `--headed` | 디버깅용으로 브라우저를 보이게 |
+| `--observe-seconds` | `--discover` 관찰 시간 (기본 12) |
+| `--selftest` | 무해한 업무 1건을 만들어 쓰기 권한만 확인 |
+
+> **읽음 상태 정책.** 본문을 열면 메일함에서 그 메일이 **읽음으로 바뀐다.**
+> 이번 목적 중 하나가 "이미 읽은 9월 메일 backfill" 이므로 과거 backfill 에서 본문을 여는 것은 문제가 없다.
+> 읽지 않은 메일까지 건드리고 싶지 않으면 `--subject-only` 를 쓴다 (업무에 제목 + 목록 미리보기만 들어감).
+>
+> `--preserve-unread` 같은 세밀한 옵션은 **아직 만들지 않았다.** 읽음 여부를 실제로 읽을 수 있어야
+> 구현할 수 있는데, 그런 필드가 존재하는지는 discovery 전에는 알 수 없다. 추측 필드는 만들지 않는다.
+> `--discover` 보고서의 `observedReadStateKeys` 에 실제 키가 잡히면 그때 구현한다.
+
+### 세션 만료
+
+SSO 가 만료되어 로그인 화면으로 넘어가면 에이전트는 **거기서 멈춘다.**
+비밀번호를 입력하지 않고, 로그인 우회도 하지 않고, 메일 작업도 하지 않는다.
+
+```
+[AUTH_REQUIRED] the Dooray session has expired
+          run: python scripts/dooray_web_agent.py --setup
+```
+
+즉 평소에는 무인이고, **세션이 끊겼을 때만** 사람이 한 번 다시 로그인한다.
+
+### 상태 파일
+
+`.local/ggongbab-mail-state.json` (gitignore). 개인정보 없이 해시만 담는다.
+
+| 필드 | 내용 |
+|------|------|
+| `id_hash` | 메일 id 의 sha256 앞 32자 |
+| `subject_hash` | 제목 해시 (제목 원문 아님) |
+| `received` | 수신 **날짜**만 (시각 없음) |
+| `processed_at` · `registered` · `outcome` | 처리 시각, 등록 여부, `candidate`/`filtered` |
+
+본문·메일주소·발신자명·쿠키·토큰은 저장하지 않는다. 회귀 테스트 `test_state_holds_no_personal_information` 가 고정한다.
+
+### 종료 코드 (watchdog)
+
+| 코드 | 뜻 | 할 일 |
+|------|-----|-------|
+| 0 | `SUCCESS` | — |
+| 10 | `AUTH_REQUIRED` | `--setup` 재실행 |
+| 20 | `UI_CHANGED` | `--discover` 재실행 |
+| 30 | `PROJECT_NOT_FOUND` | 프로젝트 이름/ID 확인. **아무것도 등록되지 않음** |
+| 40 | `PIPELINE_FAILED` | 메일 등록은 됐고 ingest 가 실패. `refresh_ggongbab.py` 로그 확인 |
+
+### Windows 작업 스케줄러
+
+`scripts\run_ggongbab_agent.cmd` 가 로그를 `.local\agent.log` 에 붙인다.
+
+1. **작업 스케줄러** → 작업 만들기
+2. 이름: `Babdoduk ggongbab agent`
+3. 트리거: 매일 반복, **1시간** 또는 3시간 간격
+4. 동작: 프로그램 시작 → `C:\Users\joshu\Babdoduk\scripts\run_ggongbab_agent.cmd`
+5. 시작 위치: `C:\Users\joshu\Babdoduk`
+6. **"사용자가 로그온한 경우에만 실행"** 으로 둔다. 브라우저 프로필이 사용자 계정에 묶여 있다.
+7. 결과는 **마지막 실행 결과** 열에서 위 종료 코드로 확인한다.
+
+명령줄로 등록하려면:
+
+```cmd
+schtasks /Create /TN "Babdoduk ggongbab agent" /TR "C:\Users\joshu\Babdoduk\scripts\run_ggongbab_agent.cmd" /SC HOURLY /MO 1
+```
+
+### 로그
+
+개인정보는 찍지 않는다. 제목 전문도 기본 출력하지 않는다.
+
+```
+[12:00]
+window: 2026-09-17 .. 2026-09-19
+project: verified (밥도둑-꽁밥-행사-수집함)
+session: ok
+mail scanned: 18
+already processed: 14
+new: 4
+bodies opened: 2
+candidates: 1
+registered: 1
+pipeline: success
+```
+
+### 최초 9월 backfill
+
+`--discover` 로 계약을 채운 뒤 한 번만:
+
+```cmd
+python scripts\dooray_web_agent.py --run --from 2026-09-01 --to 2026-09-19 --run-pipeline
+```
+
+그 뒤로는 스케줄러가 `--since-last-run` 으로 돈다.

@@ -1,0 +1,139 @@
+{
+  "generatedAt": "2026-09-22T09:52:04+09:00",
+  "timezone": "Asia/Seoul",
+  "count": 4,
+  "events": [
+    {
+      "id": "525d9bb3-dbd8-420b-a025-55b3df62f254",
+      "title": "기업 설명회",
+      "summary": "9월 25일 12시에 N1에서 기업 설명회를 진행합니다. 참석자에게 점심 도시락을 제공합니다.",
+      "startAt": "2026-09-25T12:00:00+09:00",
+      "endAt": null,
+      "dateText": "9월 25일",
+      "timeText": "12시",
+      "location": {
+        "name": "N1",
+        "building": "N1",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "점심 도시락"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "04ed127d-1eef-4c52-a711-90dd48effdcf",
+      "title": "Is the Existential Risk of AI Real?",
+      "summary": "AI의 실존적 위험이 얼마나 현실적인 문제인지와 대응 방안을 논의하는 런치 세미나입니다. 두 연사의 자유대담과 청중 토론으로 진행되며 참석자에게 샌드위치가 제공됩니다.",
+      "startAt": "2026-09-29T12:00:00+09:00",
+      "endAt": "2026-09-29T13:00:00+09:00",
+      "dateText": "2026년 9월 29일(화)",
+      "timeText": "12:00–13:00",
+      "location": {
+        "name": "KAIST 대전 본원 학술문화관(E9) 2층 양승택오디토리움",
+        "building": "E9",
+        "room": "2층 양승택오디토리움"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "샌드위치"
+      },
+      "organizer": "KAIST AI철학 연구센터",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSdUscftsT2EInRIbds9-2uubAoIHijRaDKLJg9qBKmjolP_iQ/viewform"
+      },
+      "confidence": 1.0,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "6b4d7b25-954b-45e6-910b-749116cc9611",
+      "title": "학사과정생 간담회",
+      "summary": "교무처가 수업 및 학사제도에 대한 학사과정생의 의견을 듣는 간담회입니다. 사전 등록 참석자에게 간단한 점심식사가 제공되며, 회차별 참석 정원은 최대 90명입니다.",
+      "startAt": "2026-09-30T12:00:00+09:00",
+      "endAt": "2026-09-30T13:00:00+09:00",
+      "dateText": "2026.09.30.(수)",
+      "timeText": "오후 12시~1시",
+      "location": {
+        "name": "창의학습관(E11), 1층 102호",
+        "building": "창의학습관",
+        "room": "102호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "간단한 점심식사"
+      },
+      "organizer": "교무처",
+      "eligibility": "KAIST에 재학중인 학사과정생",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/yqo6XZSs5wQLDzug9"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "f19cc4d3-cc7e-41fc-a8c3-975585f0b7b6",
+      "title": "ME Co-op 프로그램 학부생 설명회",
+      "summary": "기계공학과 ME Co-op 프로그램의 내용과 참여기업을 안내하는 학부생 설명회입니다. 사전신청 참석자에게 샌드위치와 음료를 제공합니다.",
+      "startAt": "2026-10-07T12:00:00+09:00",
+      "endAt": "2026-10-07T13:00:00+09:00",
+      "dateText": "10월 7일(수)",
+      "timeText": "12:00~13:00",
+      "location": {
+        "name": "기계공학동 1층 공동강의실(1501호)",
+        "building": "기계공학동",
+        "room": "1501호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "샌드위치/음료"
+      },
+      "organizer": "기계공학과",
+      "eligibility": "기계공학과 3,4학년 학생",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-09-30T18:00:00+09:00",
+        "url": "https://naver.me/5HyBJgFN"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    }
+  ]
+}

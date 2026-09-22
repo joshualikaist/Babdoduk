@@ -33,7 +33,10 @@ RESTAURANTS = [
 NOTE = re.compile(r"^(\*|안녕하세요|운영시간|금액|알레르기|인스타|주말)")
 ALLERGEN = re.compile(r"^\(?\d+(?:\s*,\s*\d+)*\)?$")
 PRICE = re.compile(r"(\d{1,3}(?:,\d{3})*\s*원)")
-KCAL = re.compile(r"(\d+)\s*[kK]cal", re.I)
+# An explicit calorie line, not a suffix match inside a thousands-separated
+# number, allergen list, price, or promotional sentence.
+KCAL = re.compile(r"^(?:(?:총\s*칼로리|총\s*열량|칼로리|열량)\s*[:：]?\s*)?"
+                  r"(\d{1,3}(?:,\d{3})+|\d+)\s*kcal\s*$", re.I)
 BR = re.compile(r"<br\s*/?>", re.I)
 TAG = re.compile(r"<[^>]+>")
 
@@ -71,11 +74,9 @@ def parse_cell(raw: str) -> dict:
         price_m = PRICE.search(line)
         if price_m and not price:
             price = price_m.group(1).replace(" ", "")
-        kcal_m = KCAL.search(line)
+        kcal_m = KCAL.fullmatch(line)
         if kcal_m:
-            n = int(kcal_m.group(1))
-            if n >= 50:
-                kcal = f"{n} kcal"
+            kcal = f"{int(kcal_m.group(1).replace(',', ''))} kcal"
             continue
         if re.fullmatch(r"조식|중식|석식", line.split("(")[0].strip()):
             continue
