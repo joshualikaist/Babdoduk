@@ -430,10 +430,40 @@ def cmd_calibrate_known(args):
     return SUCCESS
 
 
+def cmd_poll_list(args):
+    from ggongbab.db.supabase_client import SupabaseClient
+    from ggongbab.heartbeat import HeartbeatWriter, build_heartbeat
+    from ggongbab.portal_list_poller import run_poller
+    from ggongbab.portal_list_state import PortalListState, ListStateError, poller_lock
+    from ggongbab.portal_session import PortalSessionProvider
+
+    settings = load_settings()
+    if not args.local_only and not settings.has_supabase:
+        log("Portal list heartbeat requires Supabase configuration; use --local-only for local diagnostics")
+        return 1
+    emit = (lambda _: None) if args.local_only else HeartbeatWriter(
+        SupabaseClient(settings.supabase_url, settings.supabase_secret_key)).write
+    with poller_lock(LOCAL_DIR / "portal-list.lock"):
+        try:
+            state = PortalListState(LOCAL_DIR / "portal-list-state.json")
+        except ListStateError:
+            emit(build_heartbeat(agent_id="portal-list-poller", version="portal-list-v1",
+                                 status="collector_error", exit_class="state_unavailable",
+                                 last_scan_at=datetime.now(KST)))
+            log("Portal list state unavailable; polling stopped")
+            return 1
+        provider = PortalSessionProvider(PROFILE_DIR, args.port)
+        log("Portal LIST-only polling; detail requests blocked; first scan establishes a baseline")
+        if args.local_only:
+            log("Local-only mode: remote heartbeat disabled")
+        return run_poller(provider, state, emit_heartbeat=emit, log=log,
+                          interval=args.interval, max_pages=args.max_pages, once=args.once)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="KAIST Portal resident agent")
     modes = parser.add_mutually_exclusive_group(required=True)
-    for mode in ("setup", "discover", "discover-detail-alternatives", "calibrate", "calibrate-known", "run", "dry-run"):
+    for mode in ("setup", "discover", "discover-detail-alternatives", "calibrate", "calibrate-known", "run", "dry-run", "poll-list"):
         modes.add_argument("--" + mode, action="store_true")
     parser.add_argument("--cdp", action="store_true")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -441,15 +471,27 @@ def main(argv=None):
     parser.add_argument("--to", dest="date_to", type=date.fromisoformat)
     parser.add_argument("--max-items", type=positive_int, default=500)
     parser.add_argument("--max-pages", type=positive_int, default=20)
+    parser.add_argument("--interval", type=int, choices=(30, 60), default=60,
+                        help="LIST polling interval in seconds (default: 60)")
+    parser.add_argument("--once", action="store_true", help="Run one LIST scan after session handoff")
+    parser.add_argument("--local-only", action="store_true", help="LIST diagnostics without remote heartbeat")
     parser.add_argument("--approve-post-field", action="append", default=[], metavar="list:PATH|detail:PATH",
                         help="Explicitly approve a POST structural field name; values must still be invariant and safe")
     args = parser.parse_args(argv)
+    if args.poll_list and not 2 <= args.max_pages <= 100:
+        parser.error("--poll-list requires --max-pages between 2 and 100")
+    if args.poll_list and (args.date_from or args.date_to or args.approve_post_field):
+        parser.error("--poll-list uses only the pinned LIST contract and its own checkpoint")
+    if not args.poll_list and (args.once or args.local_only or args.interval != 60):
+        parser.error("--once/--local-only/--interval require --poll-list")
     if args.date_from and args.date_to and args.date_from > args.date_to:
         parser.error("--from must not be after --to")
     if not args.cdp:
         log("pass --cdp to attach to the dedicated Portal browser")
         return AUTH_REQUIRED
     try:
+        if args.poll_list:
+            return cmd_poll_list(args)
         if args.setup:
             return cmd_setup(args)
         if args.discover:

@@ -816,3 +816,11 @@ python scripts\dooray_web_agent.py --run --from 2026-09-01 --to 2026-09-19 --run
 ```
 
 그 뒤로는 스케줄러가 `--since-last-run` 으로 돈다.
+
+## Portal LIST-only polling (lab)
+
+사람이 인증한 전용 Portal Chrome의 세션을 로컬 HTTP poller에 메모리로 전달하는
+`portal_web_agent.py --poll-list --cdp` 모드가 있다. 정확한 recent-post LIST만 조회하며
+상세 GET, 인증 endpoint replay, 원문 수집, 공개 행사 생성은 하지 않는다.
+기존 상세 calibration을 완료할 필요가 없다. 실행·복구·heartbeat와 한계는
+[PORTAL_LIST_POLLER.md](PORTAL_LIST_POLLER.md)를 따른다.
