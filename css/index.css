@@ -19,16 +19,28 @@
   padding-bottom: 32px;
 }
 
-/* ── Hero: service definition, two actions, dated status ── */
+/* ── Hero: one editorial anchor. The two food tasks, an atmosphere collage
+   (labelled: not today's menu) and the dated status strip. ── */
 .home-hero {
+  --hero-paper: #eee3cf;
+  --hero-ink-soft: #5a534a;
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: var(--space-8) var(--space-12);
-  align-items: center;
-  padding: var(--space-12) 0 var(--space-8);
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+  grid-template-areas:
+    "copy collage"
+    "today today";
+  gap: var(--space-6) var(--space-12);
+  margin-top: var(--space-4);
+  padding: var(--space-8) 40px 20px;
+  border-radius: var(--radius-xl);
+  background: var(--hero-paper);
+  border: 1px solid rgba(30, 29, 26, 0.08);
 }
 
 .home-hero-copy {
+  grid-area: copy;
+  align-self: center;
   min-width: 0;
 }
 
@@ -36,9 +48,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-ink-muted);
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--hero-ink-soft);
 }
 
 .home-kicker img {
@@ -51,19 +65,26 @@
 }
 
 .home-title {
-  margin-top: var(--space-4);
-  font-size: clamp(2.25rem, 5.4vw, 3.75rem);
+  margin: var(--space-4) 0 0;
+  font-size: clamp(2.4rem, 4.5vw, 4rem);
   font-weight: 900;
-  line-height: 1.12;
-  letter-spacing: -0.05em;
+  line-height: 1.1;
+  letter-spacing: -0.055em;
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
 
+/* A marker stroke under the question, not a gradient on the letters. */
+.home-title-mark {
+  background: linear-gradient(transparent 66%, rgba(217, 71, 43, 0.28) 66%, rgba(217, 71, 43, 0.28) 90%, transparent 90%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 .home-lead {
-  margin-top: var(--space-4);
-  max-width: 34rem;
-  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  margin: var(--space-4) 0 0;
+  max-width: 30rem;
+  font-size: clamp(1rem, 1.4vw, 1.0625rem);
   line-height: 1.65;
   color: #4a453e;
   word-break: keep-all;
@@ -90,49 +111,169 @@
   border-color: rgba(30, 29, 26, 0.24);
 }
 
-.home-today {
+/* Atmosphere collage: three framed crops with controlled asymmetry. */
+.home-collage {
+  grid-area: collage;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(10, minmax(0, 1fr)) auto;
+  height: 336px;
   min-width: 0;
-  padding: var(--space-6);
+}
+
+.home-photo {
+  position: relative;
+  container-type: inline-size;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px;
   border-radius: 20px;
   background: var(--color-surface);
-  border: 1px solid var(--color-divider);
+  border: 1px solid rgba(30, 29, 26, 0.1);
+}
+
+.home-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.home-photo--main {
+  grid-column: 3 / 11;
+  grid-row: 1 / 11;
+}
+
+.home-photo--side,
+.home-photo--low {
+  z-index: 2;
+  box-shadow: 0 10px 24px rgba(30, 29, 26, 0.14);
+}
+
+.home-photo--side {
+  grid-column: 10 / 13;
+  grid-row: 2 / 5;
+  transform: rotate(2.5deg);
+}
+
+.home-photo--low {
+  grid-column: 1 / 7;
+  grid-row: 7 / 11;
+  transform: rotate(-2deg);
+}
+
+.home-photo-tag {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  gap: 6px;
+  max-width: calc(100% - 28px);
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A crop too narrow for its dish name keeps only the number. */
+@container (max-width: 110px) {
+  .home-photo-tag > span {
+    display: none;
+  }
+}
+
+/* The main crop's lower corner sits under the ramen photo; tag it at the top. */
+.home-photo--main .home-photo-tag {
+  top: 14px;
+  bottom: auto;
+}
+
+.home-photo-tag b {
+  color: var(--color-accent);
+  font-weight: 900;
+}
+
+.home-collage-note {
+  grid-column: 1 / -1;
+  grid-row: 11;
+  margin: 10px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--hero-ink-soft);
+  text-align: right;
+}
+
+/* Today strip: the dated status the hub and home both read. */
+.home-today {
+  grid-area: today;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "head menu free"
+    "note note note";
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid rgba(30, 29, 26, 0.1);
 }
 
 .home-today-head {
+  grid-area: head;
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 4px 12px;
-  padding-bottom: var(--space-3);
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px 20px;
 }
 
 .home-today-head h2 {
-  font-size: 16px;
+  margin: 0;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .home-stamp {
+  margin: 0;
   font-size: 12px;
   font-weight: 600;
   color: var(--color-ink-muted);
 }
 
+#homeMenuStatus {
+  grid-area: menu;
+}
+
+#homeFreeStatus {
+  grid-area: free;
+}
+
 .home-status {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: flex-start;
-  padding: var(--space-4) 0;
-  border-top: 1px solid var(--color-divider);
+  min-width: 0;
+  padding: 14px 20px;
+  border-left: 1px solid var(--color-divider);
+  border-radius: 0;
   color: inherit;
   text-decoration: none;
 }
 
 .home-status-label {
-  flex: 0 0 44px;
-  width: 44px;
-  height: 44px;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   border-radius: 12px;
@@ -156,7 +297,7 @@
 }
 
 .home-status strong {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: -0.02em;
@@ -168,6 +309,7 @@
   font-size: 13px;
   line-height: 1.5;
   color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
 }
 
 .home-status-meta:empty {
@@ -191,12 +333,299 @@
 }
 
 .home-today-note {
-  padding-top: var(--space-3);
+  grid-area: note;
+  margin: 0;
+  padding: 8px 20px;
   border-top: 1px solid var(--color-divider);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: #fbf7ef;
   font-size: 12px;
   line-height: 1.6;
   color: var(--color-ink-muted);
   word-break: keep-all;
+}
+
+/* ── Banner shelf: native horizontal scroll, never automatic. Level 2 (today,
+   pick) is wider and heavier than level 3 (magazine, events, map). ── */
+.home-shelf {
+  margin-top: var(--space-6);
+}
+
+.home-shelf-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.home-shelf-head h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+}
+
+.home-shelf-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.home-shelf-nav[hidden] {
+  display: none;
+}
+
+.home-shelf-btn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(30, 29, 26, 0.18);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+}
+
+.home-shelf-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.home-shelf-btn:hover {
+  border-color: rgba(30, 29, 26, 0.4);
+}
+
+.home-shelf-btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.home-shelf-track {
+  --banner-primary: 400px;
+  --banner-secondary: 280px;
+  display: flex;
+  gap: var(--space-4);
+  margin: 0 -6px;
+  padding: 6px 6px 14px;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.home-banner {
+  flex: 0 0 var(--banner-secondary);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.home-banner--primary {
+  flex-basis: var(--banner-primary);
+}
+
+.home-banner-link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 236px;
+  padding: 20px 22px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid rgba(30, 29, 26, 0.1);
+  color: var(--color-ink);
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform var(--ease), border-color var(--ease);
+}
+
+.home-banner-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(30, 29, 26, 0.24);
+}
+
+.home-banner-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.home-banner-label {
+  position: relative;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-muted);
+}
+
+.home-banner-label b {
+  margin-right: 4px;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+.home-banner-title {
+  position: relative;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-banner--primary .home-banner-title {
+  font-size: clamp(1.375rem, 2.1vw, 1.625rem);
+  line-height: 1.24;
+}
+
+.home-banner--magazine .home-banner-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.home-banner-copy {
+  position: relative;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #4a453e;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-banner-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-accent);
+}
+
+.home-banner-media {
+  position: absolute;
+  overflow: hidden;
+}
+
+.home-banner-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-banner-link:hover .home-banner-media img {
+  transform: scale(1.02);
+}
+
+/* 01 Today: the ink card, stamped with today's KST date. */
+.home-banner--today .home-banner-link {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-surface);
+}
+
+.home-banner--today .home-banner-label,
+.home-banner--today .home-banner-copy {
+  color: rgba(255, 253, 248, 0.78);
+}
+
+.home-banner--today .home-banner-label b {
+  color: #f3a58f;
+}
+
+.home-banner--today .home-banner-cta {
+  color: #f7c9b8;
+}
+
+.home-banner-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+  text-align: right;
+}
+
+.home-banner-date:empty {
+  display: none;
+}
+
+.home-banner-date-day {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.home-banner-date-week {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 253, 248, 0.72);
+}
+
+/* 02 Pick: warm wash with a food crop on the right. */
+.home-banner--pick .home-banner-link {
+  padding-right: 46%;
+  background: var(--color-accent-wash);
+  border-color: rgba(180, 61, 39, 0.18);
+}
+
+.home-banner--pick .home-banner-media {
+  top: 10px;
+  right: 10px;
+  bottom: 10px;
+  width: calc(44% - 10px);
+  border-radius: 14px;
+}
+
+/* 05 Map: an illustrated map strip across the top. */
+.home-banner--map .home-banner-link {
+  padding-top: 92px;
+}
+
+.home-banner--map .home-banner-media {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 76px;
+}
+
+.home-banner-media--map svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.home-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── Sections ── */
@@ -386,7 +815,8 @@
 }
 
 .home-actions .btn:focus-visible,
-.home-status:focus-visible,
+.home-banner-link:focus-visible,
+.home-shelf-btn:focus-visible,
 .home-more:focus-visible,
 .home-feature:focus-visible,
 .home-desks a:focus-visible,
@@ -394,6 +824,12 @@
 .explore-card:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 3px;
+}
+
+.home-status:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -4px;
+  border-radius: 14px;
 }
 
 /* ── Photo and map cards (existing editorial treatment) ── */
@@ -548,15 +984,77 @@
 }
 
 /* ── Responsive: one task-first column on phones ── */
+@media (max-width: 1100px) {
+  .home-hero {
+    gap: var(--space-6) var(--space-8);
+    padding: 28px 28px 18px;
+  }
+
+  .home-collage {
+    height: 320px;
+  }
+}
+
 @media (max-width: 960px) {
   .home-hero {
-    grid-template-columns: minmax(0, 1fr);
-    padding-top: var(--space-6);
+    padding: 28px 24px 20px;
+  }
+
+  .home-collage {
+    height: 300px;
+  }
+
+  .home-today {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "head head"
+      "menu free"
+      "note note";
+  }
+
+  .home-today-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+    padding-bottom: 4px;
+  }
+
+  #homeMenuStatus {
+    border-left: 0;
+  }
+
+  .home-shelf-track {
+    --banner-primary: 44%;
+    --banner-secondary: 34%;
   }
 
   .home-mag-grid,
   .home-about {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* One task-first column once the copy and the collage no longer fit side by side. */
+@media (max-width: 720px) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "copy"
+      "collage"
+      "today";
+  }
+
+  .home-collage {
+    height: 250px;
+  }
+}
+
+/* Touch widths swipe the shelf; the buttons are a desktop convenience. */
+@media (max-width: 767px) {
+  .home-shelf-nav {
+    display: none;
   }
 }
 
@@ -567,15 +1065,107 @@
 
   .home-hero {
     gap: var(--space-6);
-    padding-bottom: var(--space-4);
+    margin-top: var(--space-4);
+    padding: 24px 18px 18px;
+    border-radius: var(--radius-lg);
   }
 
+  .home-title {
+    font-size: clamp(2.1rem, 10.4vw, 2.6rem);
+  }
+
+  /* Side by side when both labels fit (390px), stacked on narrower phones. */
   .home-actions .btn {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    padding: 12px 14px;
+  }
+
+  .home-collage {
+    height: 196px;
+  }
+
+  .home-photo {
+    padding: 4px;
+    border-radius: 16px;
+  }
+
+  .home-photo img {
+    border-radius: 12px;
+  }
+
+  .home-photo--main {
+    grid-column: 1 / 8;
+    grid-row: 1 / 11;
+  }
+
+  .home-photo--side {
+    grid-column: 8 / 13;
+    grid-row: 1 / 6;
+    transform: rotate(2deg);
+  }
+
+  .home-photo--low {
+    grid-column: 7 / 13;
+    grid-row: 6 / 11;
+    transform: rotate(-1.5deg);
+  }
+
+  .home-photo-tag {
+    left: 10px;
+    bottom: 10px;
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  .home-collage-note {
+    text-align: left;
   }
 
   .home-today {
-    padding: var(--space-4);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "head"
+      "menu"
+      "free"
+      "note";
+  }
+
+  .home-today-head {
+    padding: 14px 16px 2px;
+  }
+
+  .home-status {
+    padding: 14px 16px;
+    border-left: 0;
+    border-top: 1px solid var(--color-divider);
+  }
+
+  .home-today-note {
+    padding: 10px 16px;
+  }
+
+  .home-shelf {
+    margin-top: var(--space-6);
+  }
+
+  /* Edge-to-edge shelf so the next card visibly peeks past the screen edge. */
+  .home-shelf-track {
+    --banner-primary: 84%;
+    --banner-secondary: 70%;
+    gap: var(--space-3);
+    margin: 0 -16px;
+    padding: 6px 16px 14px;
+    scroll-padding-inline: 16px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .home-banner-link {
+    min-height: 224px;
+    padding: 18px 18px 16px;
+  }
+
+  .home-banner--pick .home-banner-link {
+    padding-right: 44%;
   }
 
   .home-section {
@@ -593,8 +1183,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .explore-card,
-  .explore-cta .arr {
+  .explore-cta .arr,
+  .home-banner-link,
+  .home-banner-media img,
+  .home-shelf-btn {
     transition: none;
+  }
+
+  .home-banner-link:hover,
+  .home-banner-link:hover .home-banner-media img {
+    transform: none;
   }
 
   .explore-card:hover,

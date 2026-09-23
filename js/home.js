@@ -1,3 +1,36 @@
+/* Banner shelf. Native horizontal scrolling does the work (swipe, trackpad,
+   wheel, keyboard focus); the buttons only scroll by about one view, and
+   nothing ever moves on its own. */
+(function () {
+  var track = document.getElementById('homeShelf');
+  var nav = document.querySelector('[data-shelf-nav]');
+  if (!track || !nav) return;
+  var buttons = Array.prototype.slice.call(nav.querySelectorAll('[data-shelf-dir]'));
+  function still() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  // aria-disabled rather than disabled, so a keyboard user's focus stays put at either end.
+  function update() {
+    var max = track.scrollWidth - track.clientWidth;
+    nav.hidden = max <= 1;
+    buttons.forEach(function (btn) {
+      var back = btn.getAttribute('data-shelf-dir') === '-1';
+      btn.setAttribute('aria-disabled', String(back ? track.scrollLeft <= 1 : track.scrollLeft >= max - 1));
+    });
+  }
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (btn.getAttribute('aria-disabled') === 'true') return;
+      var step = Math.max(240, Math.round(track.clientWidth * 0.7));
+      track.scrollBy({ left: Number(btn.getAttribute('data-shelf-dir')) * step, behavior: still() ? 'auto' : 'smooth' });
+    });
+  });
+  track.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  window.addEventListener('load', update);
+  update();
+})();
+
 /* Home summary. Reads the same generated public data as the food hub and the
    magazine, with their freshness and eligibility rules, and links to them for
    detail. It never states more than the payload supports. */
@@ -8,6 +41,9 @@
   var freeEl = document.getElementById('homeFreeStatus');
   var featureEl = document.getElementById('homeFeature');
   var stampEl = document.getElementById('homeStamp');
+  var todayDateEl = document.querySelector('[data-home-banner-date]');
+  var magTitleEl = document.querySelector('[data-home-banner-mag-title]');
+  var magMetaEl = document.querySelector('[data-home-banner-mag-meta]');
   if (!M || !F || !menuEl || !freeEl) return;
 
   var state = {
@@ -95,11 +131,41 @@
     featureEl.hidden = false;
   }
 
+  // The Today banner is stamped with the KST date only; it makes no claim about data.
+  function renderTodayBanner() {
+    if (!todayDateEl) return;
+    var now = F.nowKst();
+    var day = document.createElement('span');
+    day.className = 'home-banner-date-day';
+    day.textContent = String(now.getMonth() + 1).padStart(2, '0') + '.' + String(now.getDate()).padStart(2, '0');
+    var week = document.createElement('span');
+    week.className = 'home-banner-date-week';
+    week.textContent = lang() === 'en'
+      ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()]
+      : ['일', '월', '화', '수', '목', '금', '토'][now.getDay()] + '요일';
+    todayDateEl.replaceChildren(day, week);
+  }
+
+  // The magazine banner names the featured story and its edition date when the
+  // edition loads; otherwise it keeps its authored fallback copy.
+  function renderMagBanner() {
+    var ed = state.magazine;
+    var featured = ed && ed.featured;
+    if (!magTitleEl || !magMetaEl || !featured || !featured.title) return;
+    magTitleEl.removeAttribute('data-i18n');
+    magTitleEl.textContent = featured.title;
+    magMetaEl.removeAttribute('data-i18n');
+    magMetaEl.textContent = [t('home.mag.edition', '{date}자').replace('{date}', isoDateLabel(ed.date)),
+      t(DESK[featured.category] || DESK[featured.lane] || '', '')].filter(Boolean).join(' · ');
+  }
+
   function render() {
     if (stampEl) stampEl.textContent = t('home.stamp', '{date} 기준').replace('{date}', dateLabel(F.nowKst()));
     renderMenu();
     renderFree();
     renderFeature();
+    renderTodayBanner();
+    renderMagBanner();
   }
 
   function getJson(url) {

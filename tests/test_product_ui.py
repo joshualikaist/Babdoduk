@@ -109,3 +109,37 @@ def test_past_events_are_not_reported_as_held_and_picker_stays_integrated():
     assert "'event.state.held.past'" in html  # only an explicit "held" state may say it took place
     for name in ("index.html", "ggongbab.html", "mukbang.html"):
         assert 'href="mukbang.html#what"' in (ROOT / name).read_text(encoding="utf-8")
+
+
+SHELF_ORDER = ["today", "pick", "magazine", "event", "map"]
+SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "mukbang.html", "event.html", "https://naver.me/5NeqUPzI"]
+
+
+def test_home_top_is_one_hero_and_a_manual_banner_shelf():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    top = html.split('<section class="home-section home-magazine"')[0]
+    assert top.count("<h1") == 1
+    assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "mukbang.html#what"]
+    banners = re.findall(r'data-banner="(\w+)">\s*<a class="home-banner-link" href="([^"]+)"([^>]*)>', top)
+    assert [name for name, _, _ in banners] == SHELF_ORDER
+    assert [href for _, href, _ in banners] == SHELF_HREFS
+    assert 'target="_blank" rel="noopener"' in banners[-1][2]
+    assert '<ul class="home-shelf-track" id="homeShelf" role="list">' in top
+    collage = top.split('<div class="home-collage" aria-hidden="true">')[1].split("</div>\n\n")[0]
+    photos = re.findall(r"<img [^>]+>", collage)
+    assert len(photos) == 3 and all('alt=""' in img and "width=" in img and "height=" in img for img in photos)
+    assert 'loading="lazy"' not in photos[0] and 'fetchpriority="high"' in photos[0]
+    assert "오늘 학식 메뉴가 아니에요" in collage  # atmosphere photos never pose as today's menu
+    for src in set(re.findall(r'src="(images/home/[^"]+)"', html)):
+        assert (ROOT / src).stat().st_size < 200_000, src
+    home_js = (ROOT / "js/home.js").read_text(encoding="utf-8")
+    assert "setInterval" not in home_js and "setTimeout" not in home_js and "autoplay" not in home_js.lower()
+
+
+def test_home_strings_exist_in_both_languages():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    blocks = dict(re.findall(r"(ko|en): \{(.*?)\n        \}", html, re.S))
+    keys = {lang: set(re.findall(r"^\s*'?([\w.]+)'?\s*:", body, re.M)) for lang, body in blocks.items()}
+    assert keys["ko"] == keys["en"]
+    used = set(re.findall(r'data-i18n(?:-html|-aria-key)?="([\w.]+)"', html))
+    assert used <= keys["ko"], sorted(used - keys["ko"])

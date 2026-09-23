@@ -42,14 +42,31 @@
       <div class="home-hero-copy">
         <p class="home-kicker">
           <img src="images/profile-instagram.jpg" alt="" width="32" height="32" decoding="async" />
-          <span data-i18n="home.kicker">밥도둑 · KAIST 한 끼</span>
+          <span data-i18n="home.kicker">BABDODUK · KAIST FOOD</span>
         </p>
-        <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br />오늘 뭐 먹지?</h1>
+        <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span></h1>
         <p class="home-lead" data-i18n="home.lead">학식 메뉴와 공개된 꽁밥 일정을 확인하고, 아직 못 정했다면 메뉴 아이디어를 골라 드려요.</p>
         <div class="home-actions">
           <a class="btn btn-primary" href="ggongbab.html" data-i18n="home.ctaToday">오늘의 한 끼 보기</a>
           <a class="btn btn-secondary" href="mukbang.html#what" data-i18n="home.ctaChoose">메뉴 고르기</a>
         </div>
+      </div>
+
+      <!-- Atmosphere only: these photos are not today's menu, and they say so. -->
+      <div class="home-collage" aria-hidden="true">
+        <div class="home-photo home-photo--main">
+          <img src="images/home/food-jjigae-720.jpg" alt="" width="720" height="960" decoding="async" fetchpriority="high" />
+          <span class="home-photo-tag"><b>01</b> <span data-i18n="home.photo.jjigae">김치찌개</span></span>
+        </div>
+        <div class="home-photo home-photo--side">
+          <img src="images/home/food-egg-560.jpg" alt="" width="560" height="560" decoding="async" />
+          <span class="home-photo-tag"><b>02</b> <span data-i18n="home.photo.egg">계란밥</span></span>
+        </div>
+        <div class="home-photo home-photo--low">
+          <img src="images/home/food-ramen-640.jpg" alt="" width="640" height="480" decoding="async" />
+          <span class="home-photo-tag"><b>03</b> <span data-i18n="home.photo.ramen">라면</span></span>
+        </div>
+        <p class="home-collage-note" data-i18n="home.photo.note">분위기 사진 · 오늘 학식 메뉴가 아니에요</p>
       </div>
 
       <section class="home-today" aria-labelledby="homeTodayTitle">
@@ -75,6 +92,84 @@
         </a>
         <p class="home-today-note" data-i18n="home.today.note">KAIST 공식 식단과 공개 조건을 통과한 일정만 셉니다. 참여 조건과 신청 여부는 각 일정에서 확인해 주세요.</p>
       </section>
+    </section>
+
+    <section class="home-shelf" aria-labelledby="homeShelfTitle">
+      <div class="home-shelf-head">
+        <h2 id="homeShelfTitle" data-i18n="home.shelf.title">어디부터 볼까요?</h2>
+        <div class="home-shelf-nav" data-shelf-nav hidden>
+          <button type="button" class="home-shelf-btn" data-shelf-dir="-1" aria-controls="homeShelf" aria-label="이전 배너" data-i18n-aria-key="home.shelf.prev">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="home-shelf-btn" data-shelf-dir="1" aria-controls="homeShelf" aria-label="다음 배너" data-i18n-aria-key="home.shelf.next">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Native horizontal scroll: swipe, trackpad, wheel or the buttons. Nothing moves on its own. -->
+      <ul class="home-shelf-track" id="homeShelf" role="list">
+        <li class="home-banner home-banner--today home-banner--primary" data-banner="today">
+          <a class="home-banner-link" href="ggongbab.html">
+            <span class="home-banner-top">
+              <span class="home-banner-label"><b>01</b> TODAY</span>
+              <span class="home-banner-date" data-home-banner-date></span>
+            </span>
+            <h3 class="home-banner-title" data-i18n="home.banner.today.title">오늘의 한 끼</h3>
+            <p class="home-banner-copy" data-i18n="home.banner.today.copy">학식 메뉴와 공개된 꽁밥 일정을 날짜와 함께 확인해요.</p>
+            <span class="home-banner-cta"><span data-i18n="home.banner.today.cta">확인하러 가기</span> <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="home-banner home-banner--pick home-banner--primary" data-banner="pick">
+          <a class="home-banner-link" href="mukbang.html#what">
+            <span class="home-banner-media" aria-hidden="true">
+              <img src="images/home/food-gimbap-640.jpg" alt="" width="640" height="640" loading="lazy" decoding="async" />
+            </span>
+            <span class="home-banner-label"><b>02</b> PICK</span>
+            <h3 class="home-banner-title" data-i18n="home.banner.pick.title">못 정했다면, 한 번 돌려 봐요</h3>
+            <p class="home-banner-copy" data-i18n="home.banner.pick.copy">배고픈 정도를 고르면 메뉴 아이디어와 고른 이유를 보여 드려요.</p>
+            <span class="home-banner-cta"><span data-i18n="home.banner.pick.cta">메뉴 고르기</span> <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="home-banner home-banner--magazine" data-banner="magazine">
+          <a class="home-banner-link" href="mukbang.html">
+            <span class="home-banner-label"><b>03</b> MAGAZINE</span>
+            <h3 class="home-banner-title" data-home-banner-mag-title data-i18n="home.banner.mag.title">밥도둑 매거진</h3>
+            <p class="home-banner-copy" data-home-banner-mag-meta data-i18n="home.banner.mag.copy">요리 비법부터 식습관까지, 네 개의 데스크.</p>
+            <span class="home-banner-cta"><span data-i18n="home.banner.mag.cta">매거진 읽기</span> <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="home-banner home-banner--event" data-banner="event">
+          <a class="home-banner-link" href="event.html">
+            <span class="home-banner-label"><b>04</b> EVENT</span>
+            <h3 class="home-banner-title" data-i18n="home.banner.event.title">지난 활동과 이벤트 기록</h3>
+            <p class="home-banner-copy" data-i18n="home.banner.event.copy">행사 날짜와 확인된 진행 여부를 함께 적어 두었어요.</p>
+            <span class="home-banner-cta"><span data-i18n="home.banner.event.cta">이벤트 보기</span> <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+        <li class="home-banner home-banner--map" data-banner="map">
+          <a class="home-banner-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener">
+            <span class="home-banner-media home-banner-media--map" aria-hidden="true">
+              <svg viewBox="0 0 280 120" preserveAspectRatio="xMidYMid slice" focusable="false">
+                <rect width="280" height="120" fill="#e8d7b1"/>
+                <path d="M0 70h280" stroke="#cbb892" stroke-width="9"/>
+                <path d="M0 34h280" stroke="#d8c49a" stroke-width="5"/>
+                <path d="M70 0v120" stroke="#cbb892" stroke-width="7"/>
+                <path d="M170 0v120" stroke="#d8c49a" stroke-width="5"/>
+                <rect x="16" y="10" width="40" height="18" rx="4" fill="#67745d" opacity=".28"/>
+                <rect x="190" y="82" width="56" height="26" rx="4" fill="#67745d" opacity=".22"/>
+                <circle cx="120" cy="52" r="7" fill="#d9472b"/>
+                <circle cx="120" cy="52" r="3" fill="#fcfaf5"/>
+                <circle cx="214" cy="92" r="6" fill="#d9472b"/>
+                <circle cx="214" cy="92" r="2.5" fill="#fcfaf5"/>
+              </svg>
+            </span>
+            <span class="home-banner-label"><b>05</b> MAP <span aria-hidden="true">↗</span></span>
+            <h3 class="home-banner-title" data-i18n="home.banner.map.title">발로 찍은 맛집 지도</h3>
+            <p class="home-banner-copy" data-i18n="home.banner.map.copy">카이스트 근처, 밥도둑이 저장해 둔 곳을 네이버 지도에서 열어요.</p>
+            <span class="home-banner-cta"><span data-i18n="home.banner.map.cta">네이버 지도 열기</span> <span aria-hidden="true">↗</span><span class="home-sr-only" data-i18n="home.banner.newTab">(새 창에서 열림)</span></span>
+          </a>
+        </li>
+      </ul>
     </section>
 
     <section class="home-section home-magazine" aria-labelledby="homeMagTitle">
@@ -118,10 +213,10 @@
             <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#191714" stroke-width="1.7"/><circle cx="12" cy="12" r="4" stroke="#191714" stroke-width="1.7"/><circle cx="17.2" cy="6.8" r="1" fill="#d9472b"/></svg>
           </span>
           <div class="explore-media explore-collage" aria-hidden="true">
-            <img src="images/explore-food-jjigae.jpg" alt="" width="640" height="800" loading="lazy" decoding="async" />
-            <img src="images/explore-food-egg.jpg" alt="" width="480" height="480" loading="lazy" decoding="async" />
-            <img src="images/explore-food-ramen.jpg" alt="" width="640" height="480" loading="lazy" decoding="async" />
-            <img src="images/explore-food-gimbap.jpg" alt="" width="480" height="480" loading="lazy" decoding="async" />
+            <img src="images/home/food-jjigae-720.jpg" alt="" width="720" height="960" loading="lazy" decoding="async" />
+            <img src="images/home/food-egg-560.jpg" alt="" width="560" height="560" loading="lazy" decoding="async" />
+            <img src="images/home/food-ramen-640.jpg" alt="" width="640" height="480" loading="lazy" decoding="async" />
+            <img src="images/home/food-gimbap-640.jpg" alt="" width="640" height="640" loading="lazy" decoding="async" />
           </div>
           <div class="explore-copy">
             <h3 data-i18n="explore.insta.title">점심이 남긴 자국</h3>
@@ -211,12 +306,35 @@
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'home.kicker': '밥도둑 · KAIST 한 끼',
-          'home.title': 'KAIST에서<br />오늘 뭐 먹지?',
+          'home.kicker': 'BABDODUK · KAIST FOOD',
+          'home.title': 'KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span>',
           'home.lead': '학식 메뉴와 공개된 꽁밥 일정을 확인하고, 아직 못 정했다면 메뉴 아이디어를 골라 드려요.',
           'home.ctaToday': '오늘의 한 끼 보기',
           'home.ctaChoose': '메뉴 고르기',
           'home.today.title': '지금 확인된 정보',
+          'home.photo.note': '분위기 사진 · 오늘 학식 메뉴가 아니에요',
+          'home.photo.jjigae': '김치찌개',
+          'home.photo.egg': '계란밥',
+          'home.photo.ramen': '라면',
+          'home.shelf.title': '어디부터 볼까요?',
+          'home.shelf.prev': '이전 배너',
+          'home.shelf.next': '다음 배너',
+          'home.banner.today.title': '오늘의 한 끼',
+          'home.banner.today.copy': '학식 메뉴와 공개된 꽁밥 일정을 날짜와 함께 확인해요.',
+          'home.banner.today.cta': '확인하러 가기',
+          'home.banner.pick.title': '못 정했다면, 한 번 돌려 봐요',
+          'home.banner.pick.copy': '배고픈 정도를 고르면 메뉴 아이디어와 고른 이유를 보여 드려요.',
+          'home.banner.pick.cta': '메뉴 고르기',
+          'home.banner.mag.title': '밥도둑 매거진',
+          'home.banner.mag.copy': '요리 비법부터 식습관까지, 네 개의 데스크.',
+          'home.banner.mag.cta': '매거진 읽기',
+          'home.banner.event.title': '지난 활동과 이벤트 기록',
+          'home.banner.event.copy': '행사 날짜와 확인된 진행 여부를 함께 적어 두었어요.',
+          'home.banner.event.cta': '이벤트 보기',
+          'home.banner.map.title': '발로 찍은 맛집 지도',
+          'home.banner.map.copy': '카이스트 근처, 밥도둑이 저장해 둔 곳을 네이버 지도에서 열어요.',
+          'home.banner.map.cta': '네이버 지도 열기',
+          'home.banner.newTab': '(새 창에서 열림)',
           'home.today.note': 'KAIST 공식 식단과 공개 조건을 통과한 일정만 셉니다. 참여 조건과 신청 여부는 각 일정에서 확인해 주세요.',
           'home.stamp': '{date} 기준',
           'home.menu.label': '학식',
@@ -282,12 +400,35 @@
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'home.kicker': 'Babdoduk · a KAIST meal',
-          'home.title': 'What should we eat<br />at KAIST today?',
+          'home.kicker': 'BABDODUK · KAIST FOOD',
+          'home.title': 'What should we eat<br /><span class="home-title-mark">at KAIST today?</span>',
           'home.lead': 'Check cafeteria menus and public free-food events, and get a dish idea if you are still deciding.',
           'home.ctaToday': "See today's food",
           'home.ctaChoose': 'Choose a dish',
           'home.today.title': 'Confirmed right now',
+          'home.photo.note': 'Mood photos · not today’s cafeteria menu',
+          'home.photo.jjigae': 'Kimchi stew',
+          'home.photo.egg': 'Egg rice',
+          'home.photo.ramen': 'Ramyeon',
+          'home.shelf.title': 'Where to start?',
+          'home.shelf.prev': 'Previous cards',
+          'home.shelf.next': 'Next cards',
+          'home.banner.today.title': "Today's food",
+          'home.banner.today.copy': 'Cafeteria menus and public free-food events, each with its date.',
+          'home.banner.today.cta': 'Check now',
+          'home.banner.pick.title': "Can't decide? Give it a spin",
+          'home.banner.pick.copy': 'Pick how hungry you are and get a dish idea with the reasons.',
+          'home.banner.pick.cta': 'Choose a dish',
+          'home.banner.mag.title': 'Babdoduk Magazine',
+          'home.banner.mag.copy': 'Four desks, from kitchen notes to how we eat.',
+          'home.banner.mag.cta': 'Read the magazine',
+          'home.banner.event.title': 'Past activities and events',
+          'home.banner.event.copy': 'Each event is listed with its dates and whether it was confirmed.',
+          'home.banner.event.cta': 'See events',
+          'home.banner.map.title': 'Our food map',
+          'home.banner.map.copy': 'Places near KAIST saved by Babdoduk, on Naver Map.',
+          'home.banner.map.cta': 'Open Naver Map',
+          'home.banner.newTab': '(opens in a new tab)',
           'home.today.note': 'Counts only the official KAIST menu and events that passed publication checks. Check eligibility and registration on each event.',
           'home.stamp': 'As of {date}',
           'home.menu.label': 'Menu',

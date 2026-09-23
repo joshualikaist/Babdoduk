@@ -308,6 +308,145 @@ def home_summary(page):
     return count
 
 
+SHELF = ["today", "pick", "magazine", "event", "map"]
+SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "mukbang.html", "event.html", "https://naver.me/5NeqUPzI"]
+HOME_TOP = """() => {
+  const q = s => document.querySelector(s);
+  const box = el => { const r = el.getBoundingClientRect(); return {x:r.x, y:r.y, w:r.width, h:r.height, right:r.right, bottom:r.bottom}; };
+  const track = q('#homeShelf'), nav = q('[data-shelf-nav]'), style = getComputedStyle(track);
+  return {
+    root: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    body: document.body.scrollWidth - document.body.clientWidth,
+    hero: box(q('.home-hero')), title: q('.home-hero h1').textContent,
+    cta: {href: q('.home-actions .btn-primary').getAttribute('href'), box: box(q('.home-actions .btn-primary'))},
+    banners: [...track.querySelectorAll(':scope > li[data-banner]')].map(li => { const a = li.querySelector('a');
+      return {name: li.dataset.banner, href: a.getAttribute('href'), target: a.getAttribute('target'),
+              rel: a.getAttribute('rel') || '', box: box(li), title: li.querySelector('h3').textContent}; }),
+    track: {box: box(track), overflow: style.overflowX, snap: style.scrollSnapType, client: track.clientWidth,
+            scroll: track.scrollWidth, left: track.scrollLeft},
+    navShown: !nav.hidden && getComputedStyle(nav).display !== 'none', shelf: box(q('.home-shelf')),
+    collageHidden: q('.home-collage').getAttribute('aria-hidden'),
+    photos: [...document.querySelectorAll('.home-collage img')].map(img => ({alt: img.getAttribute('alt'),
+      loading: img.getAttribute('loading'), width: img.getAttribute('width'), height: img.getAttribute('height'),
+      priority: img.getAttribute('fetchpriority')})),
+    headings: [...document.querySelectorAll('main h1, main h2, main h3')].filter(h => !h.closest('[hidden]'))
+      .map(h => Number(h.tagName[1])),
+    states: [q('#homeMenuStatus').dataset.state, q('#homeFreeStatus').dataset.state]
+  };
+}"""
+
+
+def home_hero_shelf(page):
+    """One editorial hero with the dated strip, then a five-banner shelf that only moves when asked."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"index.html hero/shelf: {detail}"
+        count += 1
+
+    def shelf_left():
+        return page.evaluate("document.getElementById('homeShelf').scrollLeft")
+
+    for width, height in SIZES:
+        page.set_viewport_size({"width": width, "height": height})
+        page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
+        top = page.evaluate(HOME_TOP)
+        where = f"{width}x{height}"
+        check(top["root"] <= 0 and top["body"] <= 0, (where, "no body/root horizontal overflow", top["root"], top["body"]))
+        check(top["hero"]["h"] > 0 and top["title"].startswith("KAIST에서"), (where, "hero and headline render"))
+        check(top["cta"]["href"] == "ggongbab.html" and top["cta"]["box"]["bottom"] <= height,
+              (where, "primary CTA inside the first screen", top["cta"]))
+        names = [b["name"] for b in top["banners"]]
+        check(names == SHELF and [b["href"] for b in top["banners"]] == SHELF_HREFS, (where, "banner set and order", names))
+        check(all((ROOT / b["href"].split("#")[0]).is_file() for b in top["banners"] if not b["href"].startswith("https:")),
+              (where, "internal banner links resolve"))
+        mapped = top["banners"][4]
+        check(mapped["target"] == "_blank" and "noopener" in mapped["rel"].split(), (where, "map opens safely", mapped))
+        widths = {b["name"]: b["box"]["w"] for b in top["banners"]}
+        check(min(widths["today"], widths["pick"]) > max(widths["magazine"], widths["event"], widths["map"]),
+              (where, "today and pick outrank the discovery banners", widths))
+        check(top["collageHidden"] == "true" and top["photos"] and all(
+            ph["alt"] == "" and ph["width"] and ph["height"] for ph in top["photos"]), (where, "decorative collage", top["photos"]))
+        check(top["photos"][0]["loading"] is None and top["photos"][0]["priority"] == "high",
+              (where, "above-the-fold hero photo is not lazy"))
+        levels = top["headings"]
+        check(levels[0] == 1 and all(b <= a + 1 for a, b in zip(levels, levels[1:])), (where, "heading order", levels))
+        track = top["track"]
+        check(track["overflow"] in ("auto", "scroll") and track["snap"].startswith("x"), (where, "native scroll snap", track))
+        check(track["scroll"] > track["client"], (where, "the shelf continues beyond the view", track))
+        peek = next(b["box"] for b in top["banners"] if b["box"]["right"] > track["box"]["right"] + 1)
+        check(peek["x"] < track["box"]["right"] - 24, (where, "the next banner visibly peeks", peek, track["box"]))
+        if width >= 1024:
+            check(top["banners"][0]["box"]["y"] < height, (where, "shelf starts inside the first screen", top["shelf"]))
+        if width >= 768:
+            check(top["navShown"], (where, "desktop shelf buttons are shown"))
+            prev, nxt = page.locator('[data-shelf-dir="-1"]'), page.locator('[data-shelf-dir="1"]')
+            check(prev.get_attribute("aria-disabled") == "true" and nxt.get_attribute("aria-disabled") == "false",
+                  (where, "bounds at the start"))
+            nxt.focus()
+            page.keyboard.press("Enter")
+            page.wait_for_function("document.querySelector('[data-shelf-dir=\"-1\"]').getAttribute('aria-disabled') === 'false'")
+            check(shelf_left() > 0, (where, "Enter on next scrolls the shelf"))
+            for _ in range(8):
+                if nxt.get_attribute("aria-disabled") == "true":
+                    break
+                page.keyboard.press("Enter")
+                page.wait_for_timeout(60)
+            check(nxt.get_attribute("aria-disabled") == "true" and page.evaluate("document.activeElement.dataset.shelfDir") == "1",
+                  (where, "next is marked at the end and keeps focus"))
+            prev.focus()
+            for _ in range(8):
+                if prev.get_attribute("aria-disabled") == "true":
+                    break
+                page.keyboard.press("Enter")
+                page.wait_for_timeout(60)
+            check(shelf_left() <= 1, (where, "previous returns to the start"))
+        else:
+            check(not top["navShown"], (where, "touch widths swipe instead of buttons"))
+            shelf = page.locator("#homeShelf")
+            shelf.scroll_into_view_if_needed()
+            box = shelf.bounding_box()
+            page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+            page.mouse.wheel(320, 0)
+            page.wait_for_function("document.getElementById('homeShelf').scrollLeft > 0", timeout=3000)
+            check(shelf_left() > 0, (where, "native horizontal scroll moves the shelf"))
+            page.evaluate("document.getElementById('homeShelf').scrollLeft = 0")
+        page.wait_for_timeout(1200)
+        check(shelf_left() <= 1 and page.evaluate(
+            "document.getAnimations().filter(a => a.effect && document.getElementById('homeShelf').contains(a.effect.target)).length") == 0,
+            (where, "nothing moves on its own"))
+        page.locator("#langToggle").click()
+        english = page.evaluate(HOME_TOP)
+        check(english["title"].startswith("What should") and english["banners"][0]["title"] == "Today's food"
+              and english["root"] <= 0 and english["body"] <= 0, (where, "English fits", english["root"], english["body"]))
+        page.locator("#langToggle").click()
+
+    # Reduced motion (this context) removes the hover lift.
+    page.set_viewport_size({"width": 1440, "height": 900})
+    page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
+    link = page.locator(".home-banner-link").first
+    link.hover()
+    motion = link.evaluate("el => [getComputedStyle(el).transform, getComputedStyle(el).transitionDuration]")
+    check(motion == ["none", "0s"], ("reduced motion keeps banners still", motion))
+
+    # Menu published today and no free food: the strip says so; the hero keeps its shape.
+    today = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
+    page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json={
+        "date": today, "restaurants": [{"id": "r1", "name": "r1", "lunch": {"items": ["밥"]}}]}))
+    page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={
+        "generatedAt": datetime.now(timezone(timedelta(hours=9))).isoformat(), "events": []}))
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
+    top = page.evaluate(HOME_TOP)
+    check(top["states"] == ["ready", "empty"] and "오늘 1곳" in page.locator("#homeMenuStatus").inner_text()
+          and "예정된 꽁밥이 아직 없어요" in page.locator("#homeFreeStatus").inner_text(), ("menu ready, free empty", top["states"]))
+    check(top["hero"]["h"] > 0 and len(top["banners"]) == 5 and top["root"] <= 0, "hero and shelf keep their shape")
+    page.unroute("**/data/kaist-menu/latest.json")
+    page.unroute("**/data/ggongbab/latest.json")
+    return count
+
+
 def event_bands(page):
     """Dates decide now / coming up / past; confirmation is reported separately."""
     count = 0
@@ -442,6 +581,12 @@ def structure_and_failures(page):
     page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
     check(page.locator("#homeMenuStatus").get_attribute("data-state") == "error"
           and page.locator("#homeFreeStatus").get_attribute("data-state") == "error", "home names unavailable data")
+    check(page.locator(".home-hero h1").is_visible() and page.locator(".home-actions .btn-primary").is_visible()
+          and page.locator("#homeShelf > li[data-banner]").count() == 5, "hero and shelf survive missing data")
+    mag = page.locator("[data-home-banner-mag-title]")
+    check(mag.inner_text() == "밥도둑 매거진" and mag.get_attribute("data-i18n") == "home.banner.mag.title"
+          and page.locator("[data-home-banner-mag-meta]").get_attribute("data-i18n") == "home.banner.mag.copy",
+          "magazine banner keeps authored copy, no invented edition")
     page.goto("https://site-ui.invalid/ggongbab.html", wait_until="networkidle")
     page.locator("#foodHubFree .gg-state").first.wait_for()
     counts = page.locator(".gg-counts").inner_text()
@@ -478,6 +623,7 @@ def run_checks(screenshots=False):
                 report["checks"] += result["checks"]
         report["checks"] += magazine_tools(page)
         report["checks"] += home_summary(page)
+        report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)
