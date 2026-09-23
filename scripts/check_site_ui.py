@@ -37,8 +37,6 @@ def offline_route(route):
     path = unquote(url.path).lstrip("/")
     if url.hostname != "site-ui.invalid":
         route.abort()  # no external fonts, SDKs, DBs, APIs, or image hosts
-    elif path == "js/ggongbab-public-config.js":
-        route.fulfill(content_type="application/javascript", body="window.BABDODUK_PUBLIC_FEED_CONFIG = {};")
     elif path == "data/ggongbab/latest.json":
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
         route.fulfill(json={"events": [{"id": "ui-synthetic", "title": LONG_TITLE, "summary": LONG_TITLE,
@@ -294,6 +292,16 @@ def home_summary(page):
     free = page.locator("#homeFreeStatus")
     check(free.get_attribute("data-state") == "ready" and "오늘 1개" in free.inner_text(),
           ("only public rows are counted", free.inner_text()))
+    meta = free.locator("[data-home-meta]").inner_text()
+    check(meta.startswith("마지막 발행") and "전체 목록은 꽁밥 탭에서" in meta
+          and not any(word in meta for word in ("최신", "최근", "실시간")),
+          ("snapshot is labelled by its last publication, not as fresher elsewhere", meta))
+    page.locator("#langToggle").click()
+    meta_en = free.locator("[data-home-meta]").inner_text()
+    check(meta_en.startswith("Last published") and "full list" in meta_en
+          and not any(word in meta_en.lower() for word in ("latest", "live", "real-time", "realtime")),
+          ("English publication label", meta_en))
+    page.locator("#langToggle").click()
     check(page.locator("#homeFeature").is_hidden(), "missing magazine edition leaves no empty card")
     for pattern in ("**/data/kaist-menu/latest.json", "**/data/ggongbab/latest.json", "**/data/magazine/index.json"):
         page.unroute(pattern)
@@ -363,6 +371,7 @@ def food_provenance(page):
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/food.html", wait_until="networkidle")
     page.evaluate("list => localStorage.setItem('babdoduk-food-local', JSON.stringify(list))", local)
+    saved = page.evaluate("localStorage.getItem('babdoduk-food-local')")
     page.reload(wait_until="networkidle")
     check(page.locator("main h1").count() == 1, "main landmark with one page heading")
     cells = page.locator(".food-cal-cell.has-data").evaluate_all(
@@ -373,6 +382,8 @@ def food_provenance(page):
           and "이 브라우저 2일" in page.locator("#foodSourceLegend").inner_text(), "legend counts each source")
     check(page.evaluate("localStorage.getItem('babdoduk-food-local')").find("_source") < 0,
           "provenance tags are not written to storage")
+    check(page.evaluate("localStorage.getItem('babdoduk-food-local')") == saved,
+          "existing browser records are byte-for-byte unchanged")
     labels = page.locator("#foodInputBody select, #foodInputBody input").evaluate_all(
         "els => els.map(el => el.getAttribute('aria-label'))")
     check(labels and all(labels), ("every input row control is named", labels))
@@ -452,8 +463,14 @@ def run_checks(screenshots=False):
             args=["--disable-features=OverlayScrollbar,FluentOverlayScrollbar"])
         context = browser.new_context(timezone_id="Asia/Seoul", reduced_motion="reduce", service_workers="block")
         context.route("**/*", offline_route)
+        api_attempts = []
+        context.on("request", lambda req: api_attempts.append(req.url)
+                   if req.resource_type in ("fetch", "xhr", "eventsource")
+                   and urlparse(req.url).hostname != "site-ui.invalid" else None)
         context.add_init_script("sessionStorage.setItem('babdoduk-welcome-seen','1');")
         page = context.new_page()
+        # WebSockets bypass routing and emit no request event; record every attempt.
+        page.on("websocket", lambda ws: api_attempts.append(ws.url))
         for size in SIZES:
             for name in report["pages"]:
                 result = inspect_page(page, name, size, ROOT / ".local/site-ui-shots" if screenshots else None)
@@ -471,6 +488,8 @@ def run_checks(screenshots=False):
         assert check["scrollbarColor"] == "auto"
         assert check["width"] == "auto"
         report["checks"] += 2
+        assert not api_attempts, ("static pages attempted a live API request", api_attempts[:5])
+        report["checks"] += 1
         browser.close()
     return report
 

@@ -79,7 +79,7 @@
         : t('home.free.none', '예정된 꽁밥이 아직 없어요');
     }
     var published = F.toKst(s.data.generatedAt);
-    var meta = published ? t('home.free.asOf', '{time} 발행 기준').replace('{time}', dateLabel(published) + ' ' + hm(published)) : '';
+    var meta = published ? t('home.free.asOf', '마지막 발행 {time}').replace('{time}', dateLabel(published) + ' ' + hm(published)) : '';
     setStatus(freeEl, today.length ? 'ready' : 'empty', headline, meta);
   }
 
@@ -116,8 +116,8 @@
   }).catch(function () {
     state.menu = { status: 'error', data: null };
   }).then(render);
-  // The validated static snapshot. The hub may be newer through Realtime, so the
-  // summary names its publication time and sends people there for the list.
+  // The validated static snapshot, which the Today's food page reads as well.
+  // Name its publication time: loading a page does not make the data current.
   getJson('data/ggongbab/latest.json').then(function (data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad');
     state.free = { status: 'ready', data: data };

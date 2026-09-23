@@ -27,7 +27,7 @@ KAIST 중심의 식사 정보·메뉴 선택·음식 콘텐츠 사이트입니�
 실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
 홈은 첫 방문 환영 팝업을 띄우지 않습니다(핵심 과업을 가리지 않기 위해). 기존 `babdoduk-welcome-snooze-until` 값은 남아 있어도 무해합니다.
-홈 요약은 `js/kaist-menu.js`의 날짜 판정과 `js/ggongbab-select.js`의 공개 조건을 재사용하며, 꽁밥은 검증된 정적 스냅숏의 발행 시각을 함께 표시합니다(Realtime 목록은 `ggongbab.html`).
+홈 요약은 `js/kaist-menu.js`의 날짜 판정과 `js/ggongbab-select.js`의 공개 조건을 재사용하며, 꽁밥은 검증된 정적 스냅숏의 마지막 발행 시각을 함께 표시합니다. 홈과 `ggongbab.html` 은 같은 정적 스냅숏(`data/ggongbab/latest.json`)을 읽습니다.
 
 ### `ggongbab.html` 와 `lab-ggongbab.html`
 
@@ -143,8 +143,9 @@ fallback을 켜면 `fallbackAttempted` / `fallbackImproved` / `fallbackSame` / `
 ### 현재 상태
 
 공개 건수는 수집·승인·만료에 따라 바뀝니다. 이 README에 고정된 현재 건수를 두지 않습니다.
-2026-09-23의 운영자 확인 기록은 `docs/GGONGBAB_PUBLIC_FEED.md`에 있으며, 그 수치도
-새로운 실시간 검증 결과는 아닙니다. 현재 화면 상태는 발행 산출물과 실제 배포 환경에서 확인합니다.
+main의 공개 화면은 정적 `data/ggongbab/latest.json` 만 읽습니다. 공개 DB projection과
+브라우저 Realtime은 **Lab-only / main 미반영**이며, 그 운영 기록(2026-09-23)은 lab 브랜치의
+`docs/GGONGBAB_PUBLIC_FEED.md` 에 있습니다. 현재 화면 상태는 발행 산출물과 실제 배포 환경에서 확인합니다.
 
 ---
 
@@ -210,11 +211,11 @@ Portal은 GitHub Action에서 SSO 할 수 없으므로 클라우드 collector는
 현재 `/wz/api/board/recents/{pstNo}`의 자동 상세 replay는 계속 금지하며,
 `detail_side_effect_reviewed`/`potential_view_side_effect` gate는 유지합니다.
 
-**현재 별도 LIST 전용 경로:** 사람의 SSO/MFA로 인증된 전용 Chrome에서 세션을 메모리로만
-전달받아 정확한 `/wz/api/board/recents` 목록 GET만 조회할 수 있습니다. 이 poller는
-로컬 Stage A 후보와 운영 heartbeat만 만들고, 상세 GET·Dooray 업무·AI·공개 행사 발행을 하지
-않습니다. 세션 만료 시 자동 로그인하지 않고 중단합니다. 실행·복구·한계는
-[`docs/PORTAL_LIST_POLLER.md`](docs/PORTAL_LIST_POLLER.md)에 있습니다.
+**Lab-only / main 미반영 — LIST 전용 경로:** lab 브랜치에는 사람의 SSO/MFA로 인증된 전용
+Chrome에서 세션을 메모리로만 전달받아 정확한 `/wz/api/board/recents` 목록 GET만 조회하는
+poller가 있습니다. 로컬 Stage A 후보와 운영 heartbeat만 만들고, 상세 GET·Dooray 업무·AI·공개
+행사 발행을 하지 않으며, 세션 만료 시 자동 로그인하지 않고 중단합니다. 실행·복구·한계 문서
+(`docs/PORTAL_LIST_POLLER.md`)는 lab 브랜치에만 있습니다.
 
 아래의 상세 관찰·generic calibration 설명은 기존 진단 경로에 대한 기록이며 LIST poller의
 실행 절차가 아닙니다. setup 성공은 공지 traffic을 통한 세션 준비 확인이지 replay 계약 검증이
@@ -282,7 +283,7 @@ generic discovery/calibration은 known draft/contract를 덮어쓰거나 대신 
 프로필·계약·상태는 모두 gitignore된 `.local/portal-*` 에만 있습니다.
 기존 body 기반 수집 설계에서는 승인된 후보를 Dooray 수집 프로젝트에
 `[BABDODUK_INGEST_V1] source=portal` marker로 등록하고 기존 Dooray collector가
-`RawItem(source_type="portal")` 로 읽도록 되어 있습니다. 현재 LIST poller의 Stage A 후보는
+`RawItem(source_type="portal")` 로 읽도록 되어 있습니다. lab 전용 LIST poller의 Stage A 후보도
 이 경로에 자동 연결되지 않습니다.
 private Portal URL은 공개 JSON에 나가지 않습니다.
 
@@ -583,6 +584,10 @@ python scripts/check_ggongbab_ui.py
 | `.github/workflows/ggongbab-refresh.yml` | 30분 | 수집·파싱·저장 후 `data/ggongbab/` 를 lab·main에 푸시 |
 | `.github/workflows/magazine-daily.yml` | 매일 | 매거진·학식 데이터 갱신 |
 
+2026-09-23 확인: GitHub는 `ggongbab-refresh.yml` 을 invalid workflow file(YAML 문법 오류)로 표시하며,
+이 워크플로는 예약·수동 실행된 적이 없습니다. 그래서 `data/ggongbab/latest.json` 은 Actions 밖에서
+만든 커밋으로만 바뀝니다. 복구하면 Supabase 쓰기·OpenAI 호출·자동 푸시가 시작되므로 별도 승인 작업입니다.
+
 cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main에 있어야 합니다.
 두 워크플로는 `babdoduk-content-refresh` concurrency group을 공유해서 동시에 푸시하지 않습니다.
 
@@ -607,7 +612,10 @@ cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main�
 | `main` | 방문자용 본편 | `babdoduk` → https://babdoduk.vercel.app |
 | `lab` | 실험 | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
 
-기능 개발은 `lab` 에서 합니다. 본편 반영은 별도 승인과 diff 검토 후 진행하며,
+`lab` 은 통합 브랜치입니다. 각 에이전트는 `origin/lab` 에서 만든 `agent/<tool>/<task>` 브랜치와
+자기 worktree에서 작업하고, 본편 후보는 `origin/main` 에서 만든 `release/<name>` 브랜치에
+승인된 변경만 옮깁니다(`AGENTS.md` 의 Git / Multi-Agent Session Protocol). `main` 에 push·merge하면
+Vercel이 production에 배포합니다. 본편 반영은 별도 승인과 diff 검토 후 진행하며,
 `lab` 전체에 운영 코드·migration·Realtime 변경이 섞여 있을 수 있으므로 시각 변경만을
 위해 전체 브랜치를 자동으로 합치지 않습니다. 아래 명령은 **전체 lab 승격이 승인되고 검토된
 경우에만** 적용하는 예시입니다.
@@ -674,10 +682,12 @@ vercel --prod
 |------|------|
 | `docs/GGONGBAB_PAGE.md` | 꽁밥 페이지 운영 규칙 |
 | `docs/GGONGBAB_PREVIEW.md` | 미리보기·fixture 모드 |
-| `docs/GGONGBAB_PUBLIC_FEED.md` | 공개 projection과 발행 계약 |
-| `docs/GGONGBAB_REALTIME.md` | 공개 Realtime·snapshot fallback |
-| `docs/PORTAL_LIST_POLLER.md` | Portal LIST 전용 로컬 poller |
-| `docs/GGONGBAB_RESIDENT_OPS.md` | Windows 상주 worker·복구 |
+| `AGENTS.md` | 작업 규칙·Git / Multi-Agent Session Protocol |
+| `PRD.md` · `DESIGN_SYSTEM.md` · `ARCHITECTURE.md` | 제품 요구·디자인 계약·구현 경계 |
 | `docs/DEPLOYMENT_AND_BRANCHES.md` | 배포·브랜치 |
 | `docs/BRANCH_MERGE_CHECKLIST.md` | merge 전 점검 |
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
+
+lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
+`GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
+`GGONGBAB_RESIDENT_OPS.md`(Windows 상주 worker). 해당 기능이 main에 승격될 때 함께 옮깁니다.

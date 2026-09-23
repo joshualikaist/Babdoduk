@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>밥도둑 Babdoduk</title>
+  <title>먹방 가계부 · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -812,12 +812,6 @@
 
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-
-        var hc = document.getElementById('heroCarousel');
-        if (hc && T['carousel.section']) hc.setAttribute('aria-label', T['carousel.section']);
-
-        var img = document.getElementById('profileAvatarImg');
-        if (img && T['profile.imgAlt']) img.setAttribute('alt', T['profile.imgAlt']);
 
         window.dispatchEvent(new CustomEvent('babdoduk-langchange'));
       }

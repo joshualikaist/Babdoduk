@@ -7,6 +7,12 @@
 확인합니다. 아래 전체 브랜치 merge 예시는 **lab 전체 차이에 대한 검토와 공개 승인이 끝난
 경우**에만 사용합니다. 생성 JSON만 양 브랜치에 보내는 자동화와 기능 승격은 별도 작업입니다.
 
+**현재 작업 모델 (2026-09-24):** `main` = production, `lab` = 통합/스테이징입니다. 에이전트는
+`origin/lab` 에서 만든 `agent/<tool>/<task>` 브랜치와 자기 worktree에서 작업하고, production 후보는
+`origin/main` 에서 만든 `release/<name>` 브랜치에 승인된 변경만 옮겨(예: `git cherry-pick -x`) PR로
+검토합니다. 규칙 전문은 `AGENTS.md` 의 Git / Multi-Agent Session Protocol입니다. 아래 2·3절의
+`lab` 직접 작업·`git merge lab` 예시는 이 모델 이전의 방식이며, 전체 lab 승격이 따로 승인된 경우에만 씁니다.
+
 상세 절차·체크리스트는 다음도 함께 봅니다.
 
 - **`BRANCH_MERGE_CHECKLIST.md`** … merge 전후 확인
@@ -114,6 +120,9 @@ vercel --prod
 
 - **`babdoduk`**: Production Branch = **`main`**
 - **`babdoduk-lab`**: Production Branch = **`lab`** (또는 `lab` 푸시 시 이 프로젝트만 배포)
+- 2026-09-23 GitHub 배포 기록 기준으로 Git 연동이 켜져 있습니다. `main` push는 `babdoduk` Production 배포,
+  `lab` push는 `babdoduk-lab` Production 배포를 만들었고, 두 프로젝트가 서로의 브랜치를 Preview로 빌드했습니다.
+  따라서 `main` 에 merge하는 것 자체가 production 배포입니다. `vercel --prod` 를 작업 폴더에서 실행하지 않습니다.
 
 ---
 
@@ -139,7 +148,7 @@ vercel --prod
 |------|------------|--------|
 | `data/magazine/` | 매일 10:00 | lab **과** main에 같은 JSON만 푸시 |
 | `data/kaist-menu/` | 06:00, 10:30, 16:30 | 동일 |
-| `data/ggongbab/latest.json` | 30분마다 | 동일 (`.github/workflows/ggongbab-refresh.yml`, `python scripts/refresh_ggongbab.py`). `manual.json` 은 손으로 쓰는 입력이라 복사 대상이 아니다 |
+| `data/ggongbab/latest.json` | 30분마다(설계) | 동일 (`.github/workflows/ggongbab-refresh.yml`, `python scripts/refresh_ggongbab.py`). `manual.json` 은 손으로 쓰는 입력이라 복사 대상이 아니다. 2026-09-23 기준 이 워크플로는 YAML 오류로 실행되지 않는다(복구는 별도 승인 작업) |
 
 - 워크플로: `.github/workflows/magazine-daily.yml` (concurrency `babdoduk-content-refresh`)
 - 생성: `python scripts/refresh_magazine.py`, `python scripts/refresh_kaist_menu.py`

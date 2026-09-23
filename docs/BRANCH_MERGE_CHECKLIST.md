@@ -4,6 +4,9 @@
 실험·베타는 **`main`이 아닌 브랜치**(이 저장소에서는 **`lab`**)에서 합니다.
 공개 반영은 소유자가 승인한 diff가 `lab` 전체와 같은지 확인한 뒤 방식과 범위를 정합니다.
 현재 lab에는 UI 외에 Realtime·운영 코드·migration도 있으므로 UI 작업만으로 전체 merge하지 않습니다.
+production 후보는 `origin/main` 에서 만든 `release/<name>` 브랜치에 승인된 커밋만 옮기고(`git cherry-pick -x`),
+PR과 Preview로 검토한 뒤 소유자 승인으로 merge합니다. 작업 브랜치·worktree 규칙은 `AGENTS.md` 의
+Git / Multi-Agent Session Protocol을 따릅니다. `main` merge는 Vercel production 배포를 일으킵니다.
 
 비교용 URL:
 
