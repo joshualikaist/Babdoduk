@@ -11,17 +11,6 @@
   <link rel="stylesheet" href="css/magazine.css" />
 </head>
 <body class="mg-body">
-  <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
-    <div class="popup-box" role="dialog" aria-labelledby="popupTitle" aria-modal="true">
-      <h2 id="popupTitle" data-i18n="popup.title">밥도둑에 오신 걸 환영해요</h2>
-      <p id="popupIntro" data-i18n-html="popup.body">인스타그램과 맛집 지도로 레시피·일상을 만나 보세요.</p>
-      <div class="popup-actions">
-        <button type="button" class="popup-btn primary" id="popupCloseBtn" data-i18n="popup.start">시작하기</button>
-        <button type="button" class="popup-btn secondary" id="popupSnoozeBtn" data-i18n="popup.snooze24h">하루 동안 보지 않기</button>
-      </div>
-    </div>
-  </div>
-
   <header class="site-nav" role="banner">
     <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
@@ -66,17 +55,17 @@
       </div>
     </div>
 
-    <div class="mg-mobile-cats" aria-label="카테고리">
+    <nav class="mg-mobile-cats" aria-label="카테고리" data-i18n-aria-key="mg.catsAria">
       <a href="#lane-tips" data-i18n="mg.cat.tips">요리 비법</a>
       <a href="#lane-trend" data-i18n="mg.cat.trend">요즘 먹방 유행</a>
       <a href="#lane-health" data-i18n="mg.cat.health">건강한 한 끼</a>
       <a href="#lane-habit" data-i18n="mg.cat.habit">식습관</a>
-    </div>
+    </nav>
 
     <div class="mg-shell">
       <aside class="mg-index" aria-label="매거진 목차">
-        <div class="mg-index-kicker">BAMDODUK MAGAZINE</div>
-        <p class="mg-index-title" data-i18n="mg.index.title">오늘 뭐 먹지?</p>
+        <div class="mg-index-kicker">BABDODUK MAGAZINE</div>
+        <p class="mg-index-title" data-i18n="mg.index.title">네 갈래 밥 이야기</p>
         <nav class="mg-index-nav">
           <a href="#lane-tips"><span class="mg-index-num">01</span><span data-i18n="mg.cat.tips">요리 비법</span></a>
           <a href="#lane-trend"><span class="mg-index-num">02</span><span data-i18n="mg.cat.trendShort">먹방 유행</span></a>
@@ -99,17 +88,18 @@
 
       <div class="mg-main">
         <header class="mg-masthead">
-          <div class="mg-masthead-brand">BAMDODUK MAGAZINE</div>
+          <div class="mg-masthead-brand">BABDODUK MAGAZINE</div>
           <div class="mg-masthead-issue" data-i18n="mg.issue">ISSUE 01 · SEP 2026</div>
           <div class="mg-lede">
             <h1 data-i18n-html="mg.lede.title">먹는 것도<br>하나의 취향이니까.</h1>
             <p data-i18n-html="mg.lede.dek">요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.</p>
+            <p class="mg-method" data-i18n="mg.method">매일 오전 10시(KST) 공개된 블로그·유튜브 글을 모아 네 갈래로 나눠요. 제목과 링크는 원문의 것이고, 한 줄 소개는 밥도둑이 붙인 메모예요. ‘밥도둑 데스크’ 글은 원문 링크가 없는 자체 메모예요.</p>
           </div>
         </header>
 
         <article class="mg-hero" id="featured">
           <div class="mg-hero-copy">
-            <span class="mg-hero-label" data-i18n="mg.hero.label">밥도둑 PICK</span>
+            <span class="mg-hero-label" data-i18n="mg.hero.label">오늘의 대표 이야기</span>
             <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
               <h2 id="mgHeroTitle" data-i18n-html="mg.hero.title">계란후라이 하나도<br>맛이 달라지는 이유.</h2>
             </a>
@@ -121,7 +111,7 @@
           <figure class="mg-hero-visual is-type" id="mgHeroVisual">
             <a id="mgHeroMediaLink" href="#featured">
               <img id="mgHeroImg" alt="" />
-              <span class="mg-hero-type" id="mgHeroType">BAMDODUK</span>
+              <span class="mg-hero-type" id="mgHeroType">BABDODUK</span>
             </a>
           </figure>
         </article>
@@ -137,17 +127,20 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.tips">요리 비법</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.tips.lead">밥이 더 맛있어지는 작은 조리 팁</h3>
               <div class="mg-lane-items" data-lane-items="tips">
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.tips.a1.title">김치볶음밥은 왜 찬밥으로 해야 맛있을까?</h4>
                 <p data-i18n="mg.tips.a1.sum">밥알을 살리고 양념은 제대로 배게 만드는 김치볶음밥의 기본 원리를 알아본다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.tips.a2.title">라면 물 50ml가 맛을 바꾸는 이유</h4>
                 <p data-i18n="mg.tips.a2.sum">국물과 면의 농도는 레시피보다 물 한 국자에 더 크게 흔들린다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.tips.a3.title">계란찜이 식당처럼 부풀어 오르는 법</h4>
                 <p data-i18n="mg.tips.a3.sum">거품, 중탕, 뚜껑. 세 가지만 맞춰도 집에서도 폭신해진다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
               </div>
             </section>
@@ -156,17 +149,20 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.trend">요즘 먹방 유행</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.trend.lead">요즘 사람들이 뭘 먹고 있는지</h3>
               <div class="mg-lane-items" data-lane-items="trend">
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.trend.a1.title">요즘 편의점에서 가장 많이 보이는 조합</h4>
                 <p data-i18n="mg.trend.a1.sum">삼각김밥만으로는 끝나지 않는, 야식 코너의 최근 공식들.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.trend.a2.title">한동안 안 보이던 '맵부심'이 다시 돌아왔다</h4>
                 <p data-i18n="mg.trend.a2.sum">매운맛은 유행이 아니라 주기처럼 돌아온다. 이번엔 어디서 터졌을까.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.trend.a3.title">SNS에서 유행하는 한 그릇 레시피</h4>
                 <p data-i18n="mg.trend.a3.sum">설거지가 적은 한 그릇이, 지금 가장 잘 팔리는 형식이다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
               </div>
             </section>
@@ -175,17 +171,20 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.health">건강한 한 끼</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.health.lead">맛도 포기하지 않는 건강식</h3>
               <div class="mg-lane-items" data-lane-items="health">
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.health.a1.title">닭가슴살 없이도 단백질 챙기는 한 끼</h4>
                 <p data-i18n="mg.health.a1.sum">두부, 계란, 콩. 이미 냉장고에 있는 것들로도 충분할 때가 많다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.health.a2.title">늦은 밤 먹어도 부담이 덜한 음식</h4>
                 <p data-i18n="mg.health.a2.sum">참는 대신, 속이 덜 무거운 쪽으로 바꾸는 현실적인 선택.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.health.a3.title">샐러드가 지겨울 때 먹는 건강식</h4>
                 <p data-i18n="mg.health.a3.sum">잎채소만 고집하지 않아도, 가볍게 먹는 방법은 남아 있다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
               </div>
             </section>
@@ -194,17 +193,20 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.habit">식습관</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.habit.lead">잘 먹는 법에 대한 작은 이야기</h3>
               <div class="mg-lane-items" data-lane-items="habit">
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.habit.a1.title">천천히 먹으면 정말 덜 먹게 될까?</h4>
                 <p data-i18n="mg.habit.a1.sum">속도만 바꿔도 포만감이 다르게 온다. 실험이 아니라 관찰에 가깝다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.habit.a2.title">아침을 꼭 먹어야 할까?</h4>
                 <p data-i18n="mg.habit.a2.sum">정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
-              <article class="mg-story">
+              <article class="mg-story mg-story--desk">
                 <h4 data-i18n="mg.habit.a3.title">야식을 끊기보다 시간을 바꿔보는 방법</h4>
                 <p data-i18n="mg.habit.a3.sum">금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.</p>
+                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
               </article>
               </div>
             </section>
@@ -287,20 +289,16 @@
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'popup.title': '밥도둑에 오신 걸 환영해요',
-          'popup.body': '인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.',
-          'popup.start': '시작하기',
-          'popup.snooze24h': '하루 동안 보지 않기',
           'mg.issue': 'ISSUE 01 · SEP 2026',
           'mg.lede.title': '먹는 것도<br>하나의 취향이니까.',
           'mg.lede.dek': '요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.',
-          'mg.hero.label': '밥도둑 PICK',
+          'mg.hero.label': '오늘의 대표 이야기',
           'mg.hero.title': '계란후라이 하나도<br>맛이 달라지는 이유.',
           'mg.hero.desc': '불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.',
           'mg.hero.meta': '요리 비법 · 4 min read',
           'mg.board.title': '오늘의 밥 이야기',
           'mg.board.week': '이번 주 밥도둑 · SEP WEEK 2',
-          'mg.index.title': '오늘 뭐 먹지?',
+          'mg.index.title': '네 갈래 밥 이야기',
           'mg.cat.tips': '요리 비법',
           'mg.cat.trend': '요즘 먹방 유행',
           'mg.cat.trendShort': '먹방 유행',
@@ -404,6 +402,12 @@
           'mg.medium.instagram': '인스타',
           'mg.medium.desk': '데스크',
           'mg.hero.from': '출처',
+          'mg.method': '매일 오전 10시(KST) 공개된 블로그·유튜브 글을 모아 네 갈래로 나눠요. 제목과 링크는 원문의 것이고, 한 줄 소개는 밥도둑이 붙인 메모예요. ‘밥도둑 데스크’ 글은 원문 링크가 없는 자체 메모예요.',
+          'mg.deskNote': '밥도둑 데스크 · 자체 메모',
+          'mg.newTab': '(새 창)',
+          'mg.issue.today': '오늘 호',
+          'mg.issue.past': '지난 호',
+          'mg.catsAria': '카테고리',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.country': '대한민국',
           'footer.navAria': '사이트 바로가기',
@@ -437,20 +441,16 @@
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'popup.title': 'Welcome to Babdoduk',
-          'popup.body': 'Find recipes and daily life on Instagram and the food map.',
-          'popup.start': 'Start',
-          'popup.snooze24h': "Don't show for 24 hours",
           'mg.issue': 'ISSUE 01 · SEP 2026',
           'mg.lede.title': 'Eating is<br>a kind of taste, too.',
           'mg.lede.dek': 'From kitchen tips to what people are eating now,<br>plus one lighter plate and the habits around it.',
-          'mg.hero.label': 'BABDODUK PICK',
+          'mg.hero.label': 'Featured today',
           'mg.hero.title': 'Why even a fried egg<br>can taste different.',
           'mg.hero.desc': 'Heat, timing, salt. Small moves that quietly raise a home-cooked meal.',
           'mg.hero.meta': 'Kitchen notes · 4 min read',
           'mg.board.title': "Today's rice stories",
           'mg.board.week': 'This week at Babdoduk · SEP WEEK 2',
-          'mg.index.title': "What's for today?",
+          'mg.index.title': 'Four food desks',
           'mg.cat.tips': 'Kitchen notes',
           'mg.cat.trend': "What's in",
           'mg.cat.trendShort': "What's in",
@@ -554,6 +554,12 @@
           'mg.medium.instagram': 'Instagram',
           'mg.medium.desk': 'Desk',
           'mg.hero.from': 'Source',
+          'mg.method': 'Every day at 10:00 KST we gather public blog and YouTube posts into four desks. Titles and links belong to the original source; the one-line note is Babdoduk’s. “Babdoduk desk” items are our own notes without an original link.',
+          'mg.deskNote': 'Babdoduk desk · our note',
+          'mg.newTab': '(opens in a new tab)',
+          'mg.issue.today': "Today's edition",
+          'mg.issue.past': 'Past edition',
+          'mg.catsAria': 'Categories',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.country': 'South Korea',
           'footer.navAria': 'Site links',
@@ -618,35 +624,6 @@
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll);
       onScroll();
-
-      function shouldShowWelcome() {
-        return false;
-      }
-      var popup = document.getElementById('welcomePopup');
-      var closeBtn = document.getElementById('popupCloseBtn');
-      var snoozeBtn = document.getElementById('popupSnoozeBtn');
-      function openPopup() {
-        popup.classList.add('is-open');
-        popup.setAttribute('aria-hidden', 'false');
-      }
-      function closePopup(withSnooze24h) {
-        popup.classList.remove('is-open');
-        popup.setAttribute('aria-hidden', 'true');
-        try {
-          if (withSnooze24h) {
-            var until = Date.now() + 24 * 60 * 60 * 1000;
-            localStorage.setItem('babdoduk-welcome-snooze-until', String(until));
-          }
-        } catch (err) {}
-      }
-      if (shouldShowWelcome()) requestAnimationFrame(function () { openPopup(); });
-      if (closeBtn) closeBtn.addEventListener('click', function () { closePopup(false); });
-      if (snoozeBtn) snoozeBtn.addEventListener('click', function () { closePopup(true); });
-      if (popup) {
-        popup.addEventListener('click', function (e) {
-          if (e.target === popup) closePopup(false);
-        });
-      }
     })();
   </script>
 
@@ -698,15 +675,27 @@
         }).join(' ') + '</p>';
       }
 
+      function safeUrl(url) {
+        try {
+          var u = new URL(url, location.href);
+          return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : '';
+        } catch (err) { return ''; }
+      }
+
       function storyHtml(item) {
-        var href = item.url || '';
+        var href = item.url ? safeUrl(item.url) : '';
+        var desk = item.medium === 'desk' || !href;
         var tag = href ? 'a' : 'article';
-        var extra = href ? ' href="' + href.replace(/"/g, '') + '" target="_blank" rel="noopener"' : '';
+        var extra = href ? ' href="' + escapeHtml(href) + '" target="_blank" rel="noopener"' : '';
         var sum = item.summary ? '<p class="mg-story-sum">' + formatLines(item.summary) + '</p>' : '';
-        return '<' + tag + ' class="mg-story"' + extra + '>' +
+        var src = desk ? t('mg.deskNote', '밥도둑 데스크 · 자체 메모')
+          : sourceLine(item);
+        return '<' + tag + ' class="mg-story' + (desk ? ' mg-story--desk' : '') + '"' + extra + '>' +
           '<h4>' + escapeHtml(item.title) + '</h4>' +
           sum +
-          '<span class="mg-story-src"><b>' + escapeHtml(sourceLine(item)) + '</b></span>' +
+          '<span class="mg-story-src"><b>' + escapeHtml(src) + '</b>' +
+          (href ? '<span class="mg-story-out" aria-hidden="true"> ↗</span><span class="mg-sr">' + escapeHtml(t('mg.newTab', '(새 창)')) + '</span>' : '') +
+          '</span>' +
           tagsHtml(item, 'mg-story-tags') +
           '</' + tag + '>';
       }
@@ -787,7 +776,7 @@
         visual.classList.add('is-type');
         img.removeAttribute('src');
         img.alt = featured.title || '';
-        if (typeEl) typeEl.textContent = 'BAMDODUK';
+        if (typeEl) typeEl.textContent = 'BABDODUK';
         if (!src) return;
         img.onload = function () {
           visual.classList.add('has-photo');
@@ -844,7 +833,9 @@
         if (mobileDate) mobileDate.textContent = dateLabel;
         if (schedule) schedule.textContent = ed.schedule || 'Daily 10:00 KST';
         if (week) week.textContent = dateLabel + ' · ' + (ed.schedule || 'Daily 10:00 KST');
-        if (issue) issue.textContent = dateLabel + ' · 10:00 KST';
+        var kst = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);
+        var todayIso = kst.getFullYear() + '-' + String(kst.getMonth() + 1).padStart(2, '0') + '-' + String(kst.getDate()).padStart(2, '0');
+        if (issue) issue.textContent = dateLabel + ' · ' + (ed.date === todayIso ? t('mg.issue.today', '오늘 호') : t('mg.issue.past', '지난 호'));
         Object.keys(ed.lanes || {}).forEach(function (lane) {
           var box = document.querySelector('[data-lane-items="' + lane + '"]');
           var lead = document.querySelector('#lane-' + lane + ' .mg-lane-lead');
