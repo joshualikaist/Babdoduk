@@ -234,6 +234,48 @@ def magazine_tools(page):
     return count
 
 
+def home_summary(page):
+    """Home leads with the two food tasks and states only what the payloads support."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"index.html summary: {detail}"
+        count += 1
+
+    kst = timezone(timedelta(hours=9))
+    now = datetime.now(kst).replace(microsecond=0)
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    later = (now + timedelta(hours=2)).isoformat()
+    events = [{"id": "ok", "title": "ok", "startAt": now.isoformat(), "endAt": later, "food": {"provided": "true"}},
+              {"id": "review", "title": "r", "startAt": now.isoformat(), "endAt": later,
+               "food": {"provided": "true"}, "needs_review": True},
+              {"id": "unknown", "title": "u", "startAt": now.isoformat(), "endAt": later, "food": {"provided": "unknown"}}]
+    page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json={
+        "date": yesterday, "restaurants": [{"id": "r1", "name": "r1", "lunch": {"items": ["밥"]}}]}))
+    page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={
+        "generatedAt": now.isoformat(), "events": events}))
+    page.route("**/data/magazine/index.json", lambda route: route.fulfill(status=404, body=""))
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
+    actions = page.locator(".home-actions a").evaluate_all("els => els.map(el => el.getAttribute('href'))")
+    check(actions == ["ggongbab.html", "mukbang.html#what"], ("primary actions", actions))
+    check(page.locator(".home-actions a").first.bounding_box()["y"] < 844, "primary action in first mobile screen")
+    check(page.locator('a[href="#"]').count() == 1 and page.locator("#navHome").get_attribute("href") == "#",
+          "no placeholder links except back-to-top")
+    check(not page.locator("#welcomePopup").count(), "no blocking welcome dialog")
+    menu = page.locator("#homeMenuStatus")
+    check(menu.get_attribute("data-state") == "stale" and "오늘 1곳" not in menu.inner_text(),
+          ("stale cafeteria is not counted as today", menu.inner_text()))
+    free = page.locator("#homeFreeStatus")
+    check(free.get_attribute("data-state") == "ready" and "오늘 1개" in free.inner_text(),
+          ("only public rows are counted", free.inner_text()))
+    check(page.locator("#homeFeature").is_hidden(), "missing magazine edition leaves no empty card")
+    for pattern in ("**/data/kaist-menu/latest.json", "**/data/ggongbab/latest.json", "**/data/magazine/index.json"):
+        page.unroute(pattern)
+    return count
+
+
 def run_checks(screenshots=False):
     report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
     with sync_playwright() as pw:
@@ -250,6 +292,7 @@ def run_checks(screenshots=False):
                 report["results"][f"{name}:{size[0]}x{size[1]}"] = result
                 report["checks"] += result["checks"]
         report["checks"] += magazine_tools(page)
+        report["checks"] += home_summary(page)
         # High contrast must defer to the system; custom colors/widths must not
         # leak from either the standards or WebKit rule sets.
         page.emulate_media(forced_colors="active")

@@ -14,7 +14,7 @@ KAIST 중심의 식사 정보·메뉴 선택·음식 콘텐츠 사이트입니�
 
 | 파일 | 역할 |
 |------|------|
-| **`index.html`** | 현재 홈 — 프로필과 SNS·외부 링크를 중심에 둔 편집형 카드, 푸터 |
+| **`index.html`** | 홈 — 서비스 한 문장과 두 핵심 행동(오늘의 한 끼·메뉴 고르기), 공개 데이터의 날짜가 붙은 요약, 매거진 대표 기사, 밥도둑 소개·사진·지도 (`css/index.css`, `js/home.js`) |
 | **`food.html`** | 먹방 가계부 — 일별 지출 입력·월/주 표·달력 (`data/food-log.json`) |
 | **`event.html`** | 이벤트 — 탭형 목록(날짜 순)·상세 패널. 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
 | **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리, 학식 요약, 음식 추천기 |
@@ -26,7 +26,8 @@ KAIST 중심의 식사 정보·메뉴 선택·음식 콘텐츠 사이트입니�
 상단 내비: 오늘의 한 끼(꽁밥·학식) · 메뉴 고르기(현재 매거진의 추천기) · 더보기(매거진·이벤트·가계부·역사·지도·SNS) · 언어(EN/한국어).
 실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
-환영 팝업은 **홈에서만** 뜨고, 「하루 동안 보지 않기」는 `babdoduk-welcome-snooze-until`로 약 24시간 숨깁니다.
+홈은 첫 방문 환영 팝업을 띄우지 않습니다(핵심 과업을 가리지 않기 위해). 기존 `babdoduk-welcome-snooze-until` 값은 남아 있어도 무해합니다.
+홈 요약은 `js/kaist-menu.js`의 날짜 판정과 `js/ggongbab-select.js`의 공개 조건을 재사용하며, 꽁밥은 검증된 정적 스냅숏의 발행 시각을 함께 표시합니다(Realtime 목록은 `ggongbab.html`).
 
 ### `ggongbab.html` 와 `lab-ggongbab.html`
 

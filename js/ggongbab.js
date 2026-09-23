@@ -1,7 +1,8 @@
 /* One event renderer for normal, fixture and localhost preview data. */
 (function () {
   var root = document.getElementById('ggongbabFeed');
-  if (!root) return;
+  if (!root || !window.BabdodukFreeFood) return;
+  var F = window.BabdodukFreeFood;
 
   var isLab = document.body.hasAttribute('data-gg-lab');
   var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -21,7 +22,6 @@
     'bodyAttempted','bodyFetched','aiAttempted','aiCalls','fallbackCalls','aiErrors','aiSkippedDueToQuota',
     'likelyEvents','explicitFood','needsReview','notEvent','publicCount',
     'sourceDoorayCandidates','sourcePortalCandidates','sourcePublicCandidates'];
-  var KST_OFFSET = 9 * 60;
   var TAB_KEY = 'babdoduk-foodhub-tab';
   var state = {
     activeSection: 'free',
@@ -55,16 +55,7 @@
       return u.href;
     } catch (e) { return ''; }
   }
-  function toKst(iso) {
-    if (!iso) return null;
-    var d = new Date(iso);
-    if (isNaN(d.getTime())) return null;
-    return new Date(d.getTime() + (d.getTimezoneOffset() + KST_OFFSET) * 60000);
-  }
-  function nowKst() { return toKst(new Date().toISOString()); }
-  function ymd(d) {
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
+  var toKst = F.toKst, nowKst = F.nowKst, ymd = F.ymd, tri = F.tri, isPublic = F.isPublic, isUpcoming = F.isUpcoming;
   function hm(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
   function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
   function dayLabel(d) {
@@ -84,12 +75,6 @@
   function endOfWeek(today) {
     var dow = today.getDay();
     return addDays(today, 7 - (dow === 0 ? 7 : dow));
-  }
-  function tri(value) {
-    if (value === true) return 'true';
-    if (value === false) return 'false';
-    var s = String(value == null ? 'unknown' : value).toLowerCase();
-    return (s === 'true' || s === 'false') ? s : 'unknown';
   }
   function foodBucket(ev) {
     var f = ev.food || {};
@@ -118,24 +103,11 @@
     if (state.food === 'all') return true;
     return foodBucket(ev) === state.food;
   }
-  function isPublic(ev) { return tri((ev.food || {}).provided) === 'true' && !ev.needs_review && !ev.needsReview; }
-  function eventEnd(ev) {
-    return toKst(ev.endAt) || toKst(ev.startAt);
-  }
-  function isUpcoming(ev, now) {
-    var end = eventEnd(ev);
-    return !end || end >= now;
-  }
   function publicList() {
     return ((state.free.data && state.free.data.events) || []).filter(isPublic);
   }
   function todayUpcoming(now) {
-    return publicList().filter(function (ev) {
-      var s = toKst(ev.startAt);
-      return s && ymd(s) === ymd(now) && isUpcoming(ev, now);
-    }).sort(function (a, b) {
-      return String(a.startAt || '').localeCompare(String(b.startAt || ''));
-    });
+    return F.todayUpcoming(publicList(), now);
   }
   function earliestToday(now) {
     var upcoming = todayUpcoming(now).filter(function (ev) {
@@ -150,10 +122,7 @@
     });
   }
   function futurePublic(now) {
-    return publicList().filter(function (ev) {
-      var s = toKst(ev.startAt);
-      return s && ymd(s) >= ymd(now) && isUpcoming(ev, now);
-    });
+    return F.futurePublic(publicList(), now);
   }
   function foodTypeLabel(type) {
     return t('gg.food.' + type, {
