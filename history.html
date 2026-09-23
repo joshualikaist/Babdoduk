@@ -178,6 +178,25 @@
       color: #424245;
     }
 
+    .history-next {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--color-divider, #ded6c9);
+    }
+    .history-next a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-ink, #1e1d1a);
+      text-decoration: none;
+    }
+    .history-next a:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .history-next a:focus-visible { outline: 2px solid var(--color-ink, #1e1d1a); outline-offset: 2px; }
   </style>
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/app.css" />
@@ -235,7 +254,7 @@
             <span class="timeline-marker" aria-hidden="true"></span>
           </div>
           <div class="timeline-item-body">
-            <time class="timeline-year" data-i18n="history.t1.year">2025.4.1</time>
+            <time class="timeline-year" datetime="2025-04-01" data-i18n="history.t1.year">2025.4.1</time>
             <hr class="timeline-rule" />
             <h2 class="timeline-label" data-i18n="history.t1.label">공식 인스타그램 채널 개설</h2>
             <p class="timeline-desc" data-i18n="history.t1.desc">밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.</p>
@@ -262,7 +281,7 @@
             <span class="timeline-marker" aria-hidden="true"></span>
           </div>
           <div class="timeline-item-body">
-            <time class="timeline-year" data-i18n="history.t2.year">2025.5.7</time>
+            <time class="timeline-year" datetime="2025-05-07" data-i18n="history.t2.year">2025.5.7</time>
             <hr class="timeline-rule" />
             <h2 class="timeline-label" data-i18n="history.t2.label">통합 웹 허브 오픈</h2>
             <p class="timeline-desc" data-i18n="history.t2.desc">주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.</p>
@@ -276,7 +295,7 @@
             <span class="timeline-marker" aria-hidden="true"></span>
           </div>
           <div class="timeline-item-body">
-            <time class="timeline-year" data-i18n="history.t3.year">—</time>
+            <span class="timeline-year" data-i18n="history.t3.year">—</span>
             <hr class="timeline-rule" />
             <h2 class="timeline-label" data-i18n="history.t3.label">로드맵</h2>
             <p class="timeline-desc" data-i18n="history.t3.desc">브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.</p>
@@ -285,6 +304,11 @@
       </li>
     </ol>
 
+    <nav class="history-next" aria-label="더 둘러보기" data-i18n-aria-key="history.nextAria">
+      <a href="event.html" data-i18n="history.next.events">지난 이벤트 기록 →</a>
+      <a href="mukbang.html" data-i18n="history.next.magazine">밥도둑 매거진 →</a>
+      <a href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="history.next.insta">인스타그램 ↗</a>
+    </nav>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -359,6 +383,10 @@
           'history.t3.year': '—',
           'history.t3.label': '로드맵',
           'history.t3.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
+          'history.nextAria': '더 둘러보기',
+          'history.next.events': '지난 이벤트 기록 →',
+          'history.next.magazine': '밥도둑 매거진 →',
+          'history.next.insta': '인스타그램 ↗',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.country': '대한민국',
           'footer.navAria': '사이트 바로가기',
@@ -406,6 +434,10 @@
           'history.t3.year': '—',
           'history.t3.label': 'Roadmap',
           'history.t3.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
+          'history.nextAria': 'Explore more',
+          'history.next.events': 'Past events →',
+          'history.next.magazine': 'Babdoduk Magazine →',
+          'history.next.insta': 'Instagram ↗',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.country': 'South Korea',
           'footer.navAria': 'Site links',

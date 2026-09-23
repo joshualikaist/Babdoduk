@@ -454,26 +454,26 @@
           'lab.title': '실험실',
           'lab.kicker': 'Beta / draft',
           'lab.lead':
-            '로그인·서버 저장·가계부 동기화처럼 부담 큰 기능은 여기서만 먼저 시험합니다. 배포 URL은 같아도 이 페이지는 검색에 잘 노출되지 않게 막아 두었습니다.',
+            '정식 서비스와 분리해 시험하는 곳이에요. 여기 있는 기능과 데이터는 공개 서비스로 자동 승격되지 않아요. 이 페이지의 noindex는 검색 제외 신호일 뿐 접근 제한은 아니에요.',
           'lab.indexClarify':
-            '<strong>홈(메인 방문 페이지)</strong>은 계속 <code>index.html</code>입니다. <code>lab.html</code>은 실험 전용이며, 여기서 검증한 뒤 본편 HTML로 옮기는 워크플로를 씁니다. “항상 index보다 앞선 버전”이 자동으로 생기는 것은 아니고, <strong>베타 브랜치</strong>에만 실험 커밋을 두거나 <code>main</code>에 합쳐 공개 여부를 나눕니다.',
+            '<strong>홈</strong>은 <code>index.html</code>입니다. 실험은 <code>lab</code> 브랜치에서 진행하고, <code>main</code>(공개 기준)에는 소유자가 명시적으로 승인한 변경만 따로 반영합니다. 자세한 규칙은 <code>docs/DEPLOYMENT_AND_BRANCHES.md</code>에 있어요.',
           'lab.panelUseTitle': '이 페이지 쓰는 법',
           'lab.bullet1':
             '<strong>같은 사이트</strong> 안에서만 먼저 됩니다. 배포 주소 끝에 <code>/lab.html</code>만 붙여 직접 열면 됩니다.',
           'lab.bullet2':
-            'Git을 쓰면 실험 커밋은 <strong>베타 브랜치</strong>에만 두었다가, 검증 후에만 <code>main</code>에 합치면 공식 방문 페이지와 분리할 수 있습니다.',
+            '실험 커밋은 <code>lab</code> 브랜치에 둡니다. <code>lab</code> 전체를 <code>main</code>에 합치는 것이 기본값이 아니며, 반영할 변경을 골라 따로 승인받습니다.',
           'lab.bullet3':
-            '여기서 동작이 안정되면 본편(<code>ggongbab.html</code>·<code>food.html</code> 등)으로 옮깁니다.',
+            '여기서 동작이 안정되면 본편(<code>ggongbab.html</code>·<code>food.html</code> 등)으로 옮기되, 공개 데이터 계약과 검사를 함께 지킵니다.',
           'lab.bullet4':
-            '배포가 <code>main</code> 기준이면 방문자가 보는 홈은 본편 그대로입니다. 실험을 “앞서” 두려면 브랜치·머지 타이밍으로 조절합니다.',
+            '코드가 <code>lab</code>에 있다는 것과 <code>main</code>에 반영됐다는 것, 실제 배포에서 동작한다는 것은 서로 다른 사실입니다.',
           'lab.bullet5':
-            '이 페이지 내비의 <strong>꽁밥 안내</strong>는 실험용 <code>lab-ggongbab.html</code>로만 연결됩니다. 방문자용 본편은 <code>ggongbab.html</code>이며, 실험 내용을 확정한 뒤 수동으로 본편에 옮기면 됩니다.',
+            '<code>lab-ggongbab.html</code>은 <code>ggongbab.html</code>과 같은 렌더러로 fixture·localhost preview를 확인하는 곳이에요. 방문자용 본편은 <code>ggongbab.html</code>입니다.',
           'lab.pathNote':
-            '예: <code>https://…vercel.app/lab.html</code> · 홈 캐러셀에는 링크를 안 걸어도 됩니다(북마크·직접 입력).',
+            '예: <code>https://…vercel.app/lab.html</code> · 홈이나 기본 내비에는 링크하지 않아요(북마크·직접 입력).',
           'lab.panelNextTitle': '다음에 붙일 수 있는 것',
-          'lab.next1': 'Supabase / Firebase 등 로그인 + 사용자별 가계부 데이터 저장',
-          'lab.next2': '필요하면 Vercel Serverless로 API 레이어 추가',
-          'lab.next3': '내보내기·가져오기(JSON)로 백업 — 서버 없을 때도 유용',
+          'lab.next1': '먹방 가계부 기록 내보내기·가져오기(JSON) — 서버 없이 브라우저 기록을 백업',
+          'lab.next2': '로그인·서버 저장·사용자 프로필은 PRD의 비범위예요. 필요하면 소유자 승인과 개인정보 검토 후 따로 설계합니다.',
+          'lab.next3': '아래 .ics 실험은 꽁밥 수집 파이프라인과 별개예요. 유지할지 정리할지는 쓰임새를 정한 뒤 결정합니다.',
           'lab.btnFoodlog': '먹방 가계부 (본편)',
           'lab.btnHome': '홈으로',
           'lab.icsTitle': '포털 캘린더 (.ics) 실험',
@@ -494,7 +494,7 @@
           'lab.gbDraftLead':
             '위에서 불러온 <code>calendar.ics</code> 중 키워드 일치 일정을 <code>ggongbab.html</code>과 같은 <strong>4행 시트</strong>(일정·위치·내용·신청) 형태로 미리 봅니다. 장소·링크는 .ics에 없으므로 본편에는 반드시 수동으로 채워 넣어야 합니다.',
           'lab.gbDraftFoot':
-            '실험용 초안입니다. 확정 내용은 ggongbab.html의 탭·STR·지도 키로 옮겨 주세요.',
+            '실험용 미리보기예요. 공개 꽁밥은 검증된 공개 피드로만 발행되며, 이 초안을 본편에 직접 옮기지 않아요.',
           'lab.gbDraftEmpty': '먼저 위에서 calendar.ics 불러오기를 실행해 주세요.',
           'lab.gbDraftNoMatch': '키워드에 맞는 일정이 없어 초안 카드를 만들 수 없습니다.',
           'lab.gbFieldSchedule': '행사 일정',
@@ -543,26 +543,26 @@
           'lab.title': 'Lab',
           'lab.kicker': 'Beta / draft',
           'lab.lead':
-            'Try heavier features here first — auth, server-backed storage, food-log sync, and so on. This URL is tagged noindex so casual search traffic should stay on the main site.',
+            'A place to try things apart from the public service. Nothing here is promoted automatically. This page’s noindex tag only discourages search indexing; it is not access control.',
           'lab.indexClarify':
-            '<strong>Home for visitors</strong> stays <code>index.html</code>. <code>lab.html</code> is a sandbox; you copy stable work into real pages afterward. Nothing automatically moves “ahead” of index—use branches and merges to control what production shows.',
+            'The <strong>home page</strong> is <code>index.html</code>. Experiments happen on the <code>lab</code> branch; only changes the owner explicitly approves are promoted to <code>main</code> (the public reference). See <code>docs/DEPLOYMENT_AND_BRANCHES.md</code>.',
           'lab.panelUseTitle': 'How to use this page',
           'lab.bullet1':
             '<strong>Same deployment</strong>: append <code>/lab.html</code> to your site URL and bookmark it.',
           'lab.bullet2':
-            'With Git, keep experiments on a <strong>beta branch</strong> and merge to <code>main</code> only when ready for visitors.',
+            'Keep experimental commits on <code>lab</code>. Merging all of <code>lab</code> into <code>main</code> is not the default; pick and approve the changes to promote.',
           'lab.bullet3':
-            'When a feature is stable, port it into production pages (e.g. <code>ggongbab.html</code>, <code>food.html</code>).',
+            'When a feature is stable, move it into production pages (e.g. <code>ggongbab.html</code>, <code>food.html</code>) while keeping the public data contract and checks.',
           'lab.bullet4':
-            'If Vercel production tracks <code>main</code>, visitors still see the main site; keep experiments off <code>main</code> until you are ready.',
+            'Code existing on <code>lab</code>, being merged to <code>main</code>, and working in production are three different facts.',
           'lab.bullet5':
-            'From this page, <strong>Free meal info</strong> in the nav opens <code>lab-ggongbab.html</code> (sandbox). Public visitors still use <code>ggongbab.html</code>; copy edits over when stable.',
+            '<code>lab-ggongbab.html</code> uses the same renderer as <code>ggongbab.html</code> to check fixture and localhost preview modes. Visitors use <code>ggongbab.html</code>.',
           'lab.pathNote':
-            'Example: <code>https://….vercel.app/lab.html</code> · You don’t have to link it from the home carousel.',
+            'Example: <code>https://….vercel.app/lab.html</code> · Not linked from the home page or main navigation (bookmark or type it).',
           'lab.panelNextTitle': 'What you can add next',
-          'lab.next1': 'Supabase / Firebase auth + per-user food log storage',
-          'lab.next2': 'A thin API via Vercel serverless routes if you need secrets',
-          'lab.next3': 'Export / import JSON backups — useful even without a server',
+          'lab.next1': 'Food-log export/import (JSON) to back up browser entries without a server',
+          'lab.next2': 'Login, server storage and user profiles are out of scope in the PRD; they need owner approval and a privacy review first.',
+          'lab.next3': 'The .ics experiment below is separate from the free-food pipeline; keep or retire it once its purpose is decided.',
           'lab.btnFoodlog': 'Food log (production)',
           'lab.btnHome': 'Home',
           'lab.icsTitle': 'Portal calendar (.ics) experiment',
@@ -583,7 +583,7 @@
           'lab.gbDraftLead':
             'Matched events from <code>calendar.ics</code> are shown in the same <strong>four-row sheet</strong> shape as <code>ggongbab.html</code> (schedule, location, details, signup). ICS exports usually lack venue and URLs—fill those manually on the real page.',
           'lab.gbDraftFoot':
-            'Draft only. Move finalized copy into ggongbab tabs, STR keys, and map fields.',
+            'A lab preview only. Public free-food events are published only through the validated public feed; do not copy these drafts into production pages.',
           'lab.gbDraftEmpty': 'Load <code>calendar.ics</code> with the button above first.',
           'lab.gbDraftNoMatch': 'No keyword matches, so no draft cards were generated.',
           'lab.gbFieldSchedule': 'Schedule',

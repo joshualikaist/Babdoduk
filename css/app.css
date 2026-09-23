@@ -9,21 +9,19 @@
 }
 
 .food-tracker {
-  background: rgba(255, 255, 255, 0.55) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  background: var(--color-surface) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--color-divider) !important;
   border-radius: var(--radius-lg) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 10px 30px rgba(20, 25, 30, 0.06) !important;
+  box-shadow: none !important;
 }
 
 .food-sum-card {
-  background: rgba(255, 255, 255, 0.5) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(115%);
-  backdrop-filter: blur(14px) saturate(115%);
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  background: var(--color-surface-muted) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--color-divider) !important;
   border-radius: var(--radius-md) !important;
   box-shadow: none !important;
 }
@@ -39,8 +37,8 @@
 }
 
 .food-cal-cell.has-data {
-  background: #fff8f6 !important;
-  border-color: rgba(255, 103, 93, 0.28) !important;
+  background: var(--color-accent-wash) !important;
+  border-color: #efd3c6 !important;
 }
 
 /* Seven days must fit even with a visible Windows scrollbar at 360px. */
@@ -53,38 +51,43 @@
 .food-cal-cell .amt { max-width: 100%; overflow-wrap: anywhere; }
 
 .food-cal-cell.has-data:hover {
-  border-color: var(--accent) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.food-cal-cell.has-data:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .food-cal-cell .amt {
-  color: var(--accent) !important;
+  color: var(--color-accent) !important;
 }
 
 .food-input-total-row th,
 .food-input-total,
 .food-input-add,
 .food-input-save {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 
 .food-input-save {
-  background: #1b1b1a !important;
-  color: #fff !important;
+  background: var(--color-ink) !important;
+  color: var(--color-surface) !important;
   border-radius: 12px !important;
   box-shadow: none !important;
 }
 
 .food-input-total-row th {
-  background: var(--accent-soft) !important;
-  color: var(--text) !important;
+  background: var(--color-accent-wash) !important;
+  color: var(--color-ink) !important;
 }
 
 .food-input-total-row td {
-  background: rgba(255, 103, 93, 0.04) !important;
+  background: #fdf7f3 !important;
 }
 
 .food-input-total {
-  border-color: rgba(255, 103, 93, 0.28) !important;
+  border-color: #efd3c6 !important;
   color: var(--text) !important;
 }
 
