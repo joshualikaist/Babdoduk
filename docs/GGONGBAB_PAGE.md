@@ -1,5 +1,10 @@
 # 꽁밥 (KAIST 무료 식사 행사) 자동 수집 시스템
 
+이 문서의 일부 운영 설명은 초기 정적 JSON 경로를 기준으로 한다. 현재 공개 projection과
+브라우저 Realtime·정적 fallback 계약은 `GGONGBAB_PUBLIC_FEED.md`, `GGONGBAB_REALTIME.md`를
+우선 참고한다. Portal LIST 전용 Stage A poller는 `PORTAL_LIST_POLLER.md`의 독립 경로이며
+본문 수집이나 공개 행사 발행을 수행하지 않는다.
+
 `lab-ggongbab.html` 은 더 이상 손으로 쓰는 안내 페이지가 아니다. Dooray 메일함 · KAIST 공개 공지 · 수동 입력을
 30분마다 모아 OpenAI로 구조화하고, 규칙 검증 · 중복 제거를 거쳐 Supabase에 쌓은 뒤, 공개 조건을 만족하는
 행사만 `data/ggongbab/latest.json` 으로 내보내 세로 피드로 보여 준다.
@@ -35,7 +40,8 @@ KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/late
 ```
 
 * **Supabase PostgreSQL 이 canonical DB** 다. Git 에 있는 JSON 은 공개 캐시(정적 export)일 뿐이다.
-* 브라우저는 DB 에 접속하지 않는다. `latest.json` 만 읽는다.
+* 공개 페이지의 normal 모드는 승인된 공개 projection만 SELECT/Realtime으로 읽고,
+  연결 실패 시 `latest.json`을 fallback으로 사용할 수 있다. private/canonical DB에는 접근하지 않는다.
 * 코드 위치
 
 | 경로 | 역할 |
