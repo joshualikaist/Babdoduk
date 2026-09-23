@@ -37,7 +37,7 @@ Windows resident workers and heartbeat → operator recovery, outside browser UI
 
 Eight public HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-ggongbab.html`, `mukbang.html`, `food.html`, `event.html`, `history.html`, `lab.html`. CSS and JavaScript are loaded without a build step. Vercel serves the static files according to the branch/project setup documented in `docs/DEPLOYMENT_AND_BRANCHES.md`; that document is policy, not a live deployment check.
 
-`js/ggongbab.js` renders normal, fixture and localhost preview modes; public routes cannot read the private preview. `js/kaist-menu.js` also has a separate magazine renderer. `js/food-engine.js` ranks built catalog dishes; `js/food-picker.js` runs the decision UI; `js/eat-slot.js` animates a previously selected result. Filter, preference, language and food-log state use localStorage. Repeated inline page translation/nav/footer code remains a maintenance concern.
+`js/ggongbab.js` renders normal, fixture and localhost preview modes; public routes cannot read the private preview. `js/ggongbab-select.js` holds the client-side eligibility repeat (explicit food, not under review, not ended) shared by the hub and the home summary. `js/kaist-menu.js` exports the KST date and stale rules used by the hub, the magazine summary and `js/home.js`; the home summary reads the static snapshots only and names their publication time. `js/food-engine.js` ranks built catalog dishes; `js/food-picker.js` runs the decision UI; `js/eat-slot.js` animates a previously selected result. Filter, preference, language and food-log state use localStorage. Repeated inline page translation/nav/footer code remains a maintenance concern.
 
 ## Generated and authored data
 
