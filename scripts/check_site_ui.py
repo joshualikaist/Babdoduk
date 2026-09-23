@@ -110,10 +110,21 @@ def inspect_page(page, name, size, screenshot_dir=None):
           "availability and choice have separate destinations")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
-    nav_items = page.locator("#navHome, .site-nav-direct, #langToggle").evaluate_all(
-        "els => els.map(el => { const r = el.getBoundingClientRect(); return {left:r.left,right:r.right}; }).sort((a,b) => a.left-b.left)")
+    nav_items = page.locator("#navHome, .site-nav-direct, .nav-mega-trigger, #langToggle").evaluate_all(
+        """els => els.map(el => { const r = el.getBoundingClientRect(); return {left:r.left,right:r.right,
+          height:r.height,font:parseFloat(getComputedStyle(el).fontSize)}; }).sort((a,b) => a.left-b.left)""")
     check(all(nav_items[i]["right"] <= nav_items[i + 1]["left"] + 1
               for i in range(len(nav_items) - 1)), "navigation controls do not overlap")
+    check(all(item["font"] >= 12 and item["height"] >= 44 for item in nav_items),
+          ("navigation text >= 12px with 44px targets", nav_items))
+    footer_layer = page.locator(".site-footer").evaluate(
+        "el => [getComputedStyle(el).position, parseInt(getComputedStyle(el).zIndex, 10)]")
+    check(footer_layer[0] != "static" and footer_layer[1] >= 1,
+          ("footer paints above the fixed body::before canvas", footer_layer))
+    footer_links = page.locator(".site-footer a").evaluate_all("els => els.map(el => el.getAttribute('href'))")
+    check(footer_links and all(href and href != "#" and (ROOT / href.split("#")[0]).is_file()
+                               for href in footer_links if not href.startswith(("mailto:", "https:"))),
+          ("footer links resolve to real pages", footer_links))
     check(direct.nth(0).inner_text() == "오늘의 한 끼"
           and direct.nth(1).inner_text() == "메뉴 고르기", "Korean primary labels")
     page.locator("#langToggle").click()

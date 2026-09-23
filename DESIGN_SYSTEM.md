@@ -21,13 +21,13 @@ Five repeated devices make the product recognizable beyond its logo:
 | Canvas | `--color-canvas: #f7f4ee` candidate; page overrides require a named reason | `site.css` default `#f7f7f5`, home `#f5f1e8`, magazine `#f7f4ee` |
 | Paper surface | `--color-surface: #fffdf8` candidate, with a muted surface token for grouped controls | Current `--surface` and magazine paper |
 | Ink | `--color-ink: #1e1d1a` candidate; muted ink remains distinct and contrast-tested | Current `--text`, magazine ink |
-| Food accent | `--color-accent: #d9472b` candidate, used for action and editorial emphasis | Home accent; shared CSS currently uses `#ff675d` |
+| Food accent | `--color-accent: #b43d27` for shared navigation and readable links; home still has editorial `#d9472b` | Older shared `--accent: #ff675d` remains during migration |
 | States | Semantic `info`, `success`, `warning`, `error`, `unknown`; never color-only or inferred from “food” | Existing loading/error/review states |
 | Borders | One subdued separator role plus strong focus/control boundary | Current `--border`, `--border-strong` |
 | Shadows | Small elevation only for overlap/floating controls; ordinary cards use surface and border | Existing `--shadow-*` |
 | Scrollbar | Keep warm track, distinguishable thumb, hover and corner; preserve forced-color native behavior | `site.css` scrollbar contract |
 
-These color values are starting proposals, not an instruction to replace all existing page values at once. Test text and control contrast in rendered states before promotion. Do not make source/confidence/eligibility status depend on hue alone.
+The navigation and footer now use the semantic tokens in `css/site.css`, which is their only stylesheet owner: page `<style>` blocks must not copy `.site-nav*`, `.nav-mega*`, `.site-footer*` or `.footer-apple*` rules (`tests/test_site_ui.py` enforces this). The footer is positioned above the fixed `body::before` canvas and links only to real routes; policy/legal links stay absent until those documents exist. Shared `.btn` variants use tokens with visible focus and a disabled state. Other page surfaces and the legacy `--accent` still differ. Treat further adoption as a scoped page change. Test text and control contrast in rendered states before promotion. Do not make source/confidence/eligibility status depend on hue alone.
 
 Typography: retain Noto Sans KR with the current system fallback. Candidate scale is 12/14/16/20/28/36 px for meta, supporting text, body, lead, section and page title. Normal Korean body text should be approximately 1.6 line-height; compact headings 1.2–1.35. Avoid tiny uppercase English labels as the sole explanation of a control. Long Korean and unbroken English titles must wrap without expanding the page.
 

@@ -7,7 +7,13 @@ def test_public_page_inventory_and_shared_styles():
     assert set(pages) == {"index.html", "history.html", "food.html", "mukbang.html",
                           "ggongbab.html", "lab-ggongbab.html", "event.html", "lab.html"}
     for name in pages:
-        assert 'href="css/site.css"' in (ROOT / name).read_text(encoding="utf-8")
+        html = (ROOT / name).read_text(encoding="utf-8")
+        assert 'href="css/site.css"' in html
+        # Shared chrome is owned by css/site.css; page copies drift silently.
+        inline = "".join(part.split("</style>")[0] for part in html.split("<style>")[1:])
+        for selector in (".site-nav-inner {", ".nav-mega-panel {", ".site-footer {", "@keyframes wordmark-holo"):
+            assert selector not in inline, (name, selector)
+        assert 'href="#" class="footer-apple-a"' not in html
 
 
 def test_scrollbar_css_contract_and_no_trend_carousel():
