@@ -40,7 +40,7 @@
     <div class="mg-mobile-edition">
       <button type="button" id="mgDatePrev" aria-label="이전 호">‹</button>
       <button type="button" id="mgDateOpen" data-i18n="mg.cal.open">날짜 보기</button>
-      <strong id="mgMobileDate">2026.09.12</strong>
+      <strong id="mgMobileDate">—</strong>
       <button type="button" id="mgDateNext" aria-label="다음 호">›</button>
     </div>
     <div class="mg-mobile-cal" id="mgMobileCal">
@@ -73,7 +73,7 @@
           <a href="#lane-habit"><span class="mg-index-num">04</span><span data-i18n="mg.cat.habit">식습관</span></a>
         </nav>
         <div class="mg-index-meta">LATEST</div>
-        <div class="mg-index-date" id="mgIndexDate">2026.09.12</div>
+        <div class="mg-index-date" id="mgIndexDate">—</div>
         <div class="mg-index-schedule" id="mgSchedule">Daily 10:00 KST</div>
         <div class="mg-cal" data-cal-root>
           <div class="mg-cal-head">
@@ -89,10 +89,11 @@
       <div class="mg-main">
         <header class="mg-masthead">
           <div class="mg-masthead-brand">BABDODUK MAGAZINE</div>
-          <div class="mg-masthead-issue" data-i18n="mg.issue">ISSUE 01 · SEP 2026</div>
+          <div class="mg-masthead-issue" data-i18n="mg.issue">밥도둑 데스크 기본 글</div>
           <div class="mg-lede">
             <h1 data-i18n-html="mg.lede.title">먹는 것도<br>하나의 취향이니까.</h1>
             <p data-i18n-html="mg.lede.dek">요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.</p>
+            <p class="mg-edition-status" id="mgEditionStatus" role="status" hidden></p>
             <p class="mg-method" data-i18n="mg.method">매일 오전 10시(KST) 공개된 블로그·유튜브 글을 모아 네 갈래로 나눠요. 제목과 링크는 원문의 것이고, 한 줄 소개는 밥도둑이 붙인 메모예요. ‘밥도둑 데스크’ 글은 원문 링크가 없는 자체 메모예요.</p>
           </div>
         </header>
@@ -104,7 +105,7 @@
               <h2 id="mgHeroTitle" data-i18n-html="mg.hero.title">계란후라이 하나도<br>맛이 달라지는 이유.</h2>
             </a>
             <p class="mg-hero-desc" id="mgHeroDesc" data-i18n="mg.hero.desc">불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.</p>
-            <p class="mg-hero-meta" id="mgHeroMeta" data-i18n="mg.hero.meta">요리 비법 · 4 min read</p>
+            <p class="mg-hero-meta" id="mgHeroMeta" data-i18n="mg.hero.meta">요리 비법 · 밥도둑 데스크</p>
             <span class="mg-story-src mg-hero-src" id="mgHeroSrc"></span>
             <p class="mg-hero-tags" id="mgHeroTags"></p>
           </div>
@@ -119,7 +120,7 @@
         <section class="mg-board" id="today" aria-labelledby="mgBoardTitle">
           <div class="mg-board-head">
             <h2 id="mgBoardTitle" data-i18n="mg.board.title">오늘의 밥 이야기</h2>
-            <span id="mgBoardWeek" data-i18n="mg.board.week">이번 주 밥도둑 · SEP WEEK 2</span>
+            <span id="mgBoardWeek" data-i18n="mg.board.week">밥도둑 데스크 기본 글</span>
           </div>
 
           <div class="mg-lanes">
@@ -289,15 +290,15 @@
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'mg.issue': 'ISSUE 01 · SEP 2026',
+          'mg.issue': '밥도둑 데스크 기본 글',
           'mg.lede.title': '먹는 것도<br>하나의 취향이니까.',
           'mg.lede.dek': '요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.',
           'mg.hero.label': '오늘의 대표 이야기',
           'mg.hero.title': '계란후라이 하나도<br>맛이 달라지는 이유.',
           'mg.hero.desc': '불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.',
-          'mg.hero.meta': '요리 비법 · 4 min read',
+          'mg.hero.meta': '요리 비법 · 밥도둑 데스크',
           'mg.board.title': '오늘의 밥 이야기',
-          'mg.board.week': '이번 주 밥도둑 · SEP WEEK 2',
+          'mg.board.week': '밥도둑 데스크 기본 글',
           'mg.index.title': '네 갈래 밥 이야기',
           'mg.cat.tips': '요리 비법',
           'mg.cat.trend': '요즘 먹방 유행',
@@ -404,6 +405,7 @@
           'mg.hero.from': '출처',
           'mg.method': '매일 오전 10시(KST) 공개된 블로그·유튜브 글을 모아 네 갈래로 나눠요. 제목과 링크는 원문의 것이고, 한 줄 소개는 밥도둑이 붙인 메모예요. ‘밥도둑 데스크’ 글은 원문 링크가 없는 자체 메모예요.',
           'mg.deskNote': '밥도둑 데스크 · 자체 메모',
+          'mg.editionFail': '오늘 호를 불러오지 못했어요. 아래는 밥도둑 데스크의 기본 글이에요.',
           'mg.newTab': '(새 창)',
           'mg.issue.today': '오늘 호',
           'mg.issue.past': '지난 호',
@@ -441,15 +443,15 @@
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'mg.issue': 'ISSUE 01 · SEP 2026',
+          'mg.issue': 'Babdoduk desk notes',
           'mg.lede.title': 'Eating is<br>a kind of taste, too.',
           'mg.lede.dek': 'From kitchen tips to what people are eating now,<br>plus one lighter plate and the habits around it.',
           'mg.hero.label': 'Featured today',
           'mg.hero.title': 'Why even a fried egg<br>can taste different.',
           'mg.hero.desc': 'Heat, timing, salt. Small moves that quietly raise a home-cooked meal.',
-          'mg.hero.meta': 'Kitchen notes · 4 min read',
+          'mg.hero.meta': 'Kitchen notes · Babdoduk desk',
           'mg.board.title': "Today's rice stories",
-          'mg.board.week': 'This week at Babdoduk · SEP WEEK 2',
+          'mg.board.week': 'Babdoduk desk notes',
           'mg.index.title': 'Four food desks',
           'mg.cat.tips': 'Kitchen notes',
           'mg.cat.trend': "What's in",
@@ -556,6 +558,7 @@
           'mg.hero.from': 'Source',
           'mg.method': 'Every day at 10:00 KST we gather public blog and YouTube posts into four desks. Titles and links belong to the original source; the one-line note is Babdoduk’s. “Babdoduk desk” items are our own notes without an original link.',
           'mg.deskNote': 'Babdoduk desk · our note',
+          'mg.editionFail': 'Could not load today’s edition. Below are Babdoduk desk notes.',
           'mg.newTab': '(opens in a new tab)',
           'mg.issue.today': "Today's edition",
           'mg.issue.past': 'Past edition',
@@ -934,7 +937,18 @@
           } catch (err) {}
           return loadEdition(wanted);
         })
-        .catch(function () {});
+        .catch(function () {
+          // No edition: keep the desk notes, say so, and show no edition date.
+          var status = document.getElementById('mgEditionStatus');
+          if (status) {
+            status.textContent = t('mg.editionFail', '오늘 호를 불러오지 못했어요.');
+            status.hidden = false;
+          }
+          var now = new Date();
+          viewYear = now.getFullYear();
+          viewMonth = now.getMonth();
+          renderCalendars();
+        });
     })();
   </script>
 

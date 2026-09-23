@@ -129,8 +129,8 @@ body.mg-body .site-footer {
 }
 
 .mg-cal-head button {
-  width: 22px;
-  height: 22px;
+  width: 36px;
+  height: 36px;
   border: 0;
   background: transparent;
   color: #1e1d1a;
@@ -218,6 +218,20 @@ body.mg-body .site-footer {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+.mg-lede .mg-edition-status {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-left: 3px solid #b45309;
+  background: #fff7ed;
+  color: #7c2d12;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.mg-lede .mg-edition-status[hidden] {
+  display: none;
 }
 
 .mg-lede .mg-method {

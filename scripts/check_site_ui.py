@@ -381,6 +381,69 @@ def food_provenance(page):
     return count
 
 
+STRUCTURE = r"""() => {
+  const issues = [];
+  const visible = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0
+    && getComputedStyle(el).visibility !== 'hidden' && !el.closest('[hidden]'); };
+  const named = el => {
+    const by = (el.getAttribute('aria-labelledby') || '').split(' ').map(id => (document.getElementById(id) || {}).textContent || '').join(' ');
+    const label = el.labels && el.labels[0] ? el.labels[0].textContent : '';
+    return (el.getAttribute('aria-label') || by || label || el.textContent || el.getAttribute('title') || '').trim();
+  };
+  if (document.querySelectorAll('h1').length !== 1) issues.push('h1 count');
+  if (document.querySelectorAll('main').length !== 1) issues.push('main count');
+  document.querySelectorAll('img:not([alt])').forEach(img => issues.push('img alt ' + img.getAttribute('src')));
+  document.querySelectorAll('button, a[href], select, input, textarea, [role=tab]').forEach(el => {
+    if (!visible(el)) return;
+    if (!named(el)) issues.push('unnamed ' + el.tagName + '#' + el.id + '.' + el.className);
+    const r = el.getBoundingClientRect();
+    if (el.matches('button, [role=tab], select, input') && (r.width < 24 || r.height < 24))
+      issues.push('target ' + el.tagName + '.' + el.className);
+  });
+  const ids = {};
+  document.querySelectorAll('[id]').forEach(el => { ids[el.id] = (ids[el.id] || 0) + 1; });
+  Object.keys(ids).forEach(id => { if (ids[id] > 1) issues.push('duplicate id ' + id); });
+  document.querySelectorAll('a[target=_blank]').forEach(a => { if (!/noopener/.test(a.rel)) issues.push('noopener ' + a.href); });
+  return issues;
+}"""
+
+
+def structure_and_failures(page):
+    """Landmarks, names and target sizes in both languages; honest states when data is unavailable."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, detail
+        count += 1
+
+    page.set_viewport_size({"width": 1440, "height": 900})
+    for name in public_pages():
+        for lang in ("ko", "en"):
+            page.goto("https://site-ui.invalid/" + name, wait_until="networkidle")
+            page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
+            page.reload(wait_until="networkidle")
+            issues = page.evaluate(STRUCTURE)
+            check(not issues, (name, lang, issues))
+    page.evaluate("localStorage.setItem('babdoduk-lang', 'ko')")
+
+    page.route("**/data/**", lambda route: route.fulfill(status=503, body=""))
+    page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
+    check(page.locator("#homeMenuStatus").get_attribute("data-state") == "error"
+          and page.locator("#homeFreeStatus").get_attribute("data-state") == "error", "home names unavailable data")
+    page.goto("https://site-ui.invalid/ggongbab.html", wait_until="networkidle")
+    page.locator("#foodHubFree .gg-state").first.wait_for()
+    counts = page.locator(".gg-counts").inner_text()
+    check("확인 중" not in counts and "실패" in counts, ("hub counts report failure, not loading", counts))
+    page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
+    check(page.locator("#mgEditionStatus").is_visible(), "magazine says the edition did not load")
+    text = page.locator("main").inner_text()
+    check("min read" not in text and "ISSUE 01" not in text and "2026.09.12" not in text,
+          "fallback desk notes carry no invented edition metadata")
+    page.unroute("**/data/**")
+    return count
+
+
 def run_checks(screenshots=False):
     report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
     with sync_playwright() as pw:
@@ -400,6 +463,7 @@ def run_checks(screenshots=False):
         report["checks"] += home_summary(page)
         report["checks"] += event_bands(page)
         report["checks"] += food_provenance(page)
+        report["checks"] += structure_and_failures(page)
         # High contrast must defer to the system; custom colors/widths must not
         # leak from either the standards or WebKit rule sets.
         page.emulate_media(forced_colors="active")

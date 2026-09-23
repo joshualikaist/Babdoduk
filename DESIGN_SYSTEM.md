@@ -65,7 +65,7 @@ Feedback transitions may use roughly 120–200 ms as a starting point. The slot 
 
 Check 360×800 and 390×844 mobile, 768×1024 tablet, 1440×900 and 1920×1080 desktop, including Windows classic scrollbars. Body and footer must not gain unintended horizontal overflow. Long Korean/English titles, 200% text enlargement, keyboard-only travel, visible focus, language switching and high contrast need manual and automated checks. Touch targets should generally be about 44×44 px or larger where feasible. Validate contrast, labels, control status and focus with real rendered pages; a color token table alone is insufficient.
 
-Existing scrollbar styling and vertical magazine trend flow are accepted baseline behavior. Keep `scripts/check_site_ui.py` and `scripts/check_ggongbab_ui.py` as regression gates; extend them for new behavior without weakening their current assertions.
+Existing scrollbar styling and vertical magazine trend flow are accepted baseline behavior. Keep `scripts/check_site_ui.py` and `scripts/check_ggongbab_ui.py` as regression gates; extend them for new behavior without weakening their current assertions. `check_site_ui.py` also audits every page in Korean and English for one `main` and `h1`, named controls, 24 px minimum control size, unique ids and `noopener` on new-tab links, and checks the unavailable-data states of home, hub and magazine.
 
 ## Current inconsistencies to migrate deliberately
 
