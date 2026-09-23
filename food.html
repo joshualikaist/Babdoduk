@@ -342,7 +342,14 @@
     .food-input-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       font-size: 0.75rem;
+    }
+
+    /* Keep the meal choice readable on phones instead of shrinking to one glyph. */
+    .food-input-table th:first-child,
+    .food-input-table td:first-child {
+      width: 44%;
     }
 
     .food-input-table th {
@@ -413,9 +420,12 @@
     }
 
     .food-input-add {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
       background: none;
       border: none;
-      padding: 0;
+      padding: 0 4px;
       font: inherit;
       font-size: 0.78rem;
       font-weight: 600;
@@ -426,12 +436,15 @@
     }
 
     .food-input-reset {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
       background: none;
       border: none;
-      padding: 0;
+      padding: 0 4px;
       font: inherit;
       font-size: 0.78rem;
-      color: #aeaeb2;
+      color: #6d665e;
       cursor: pointer;
     }
 
@@ -540,9 +553,9 @@
             <tbody id="foodInputBody"></tbody>
             <tfoot>
               <tr class="food-input-total-row">
-                <th data-i18n="food.input.totalLabel">총액 (원)</th>
+                <th id="foodInputTotalLabel" data-i18n="food.input.totalLabel">총액 (원)</th>
                 <td>
-                  <input type="text" id="foodInputTotal" class="food-input-total" inputmode="numeric" autocomplete="off" />
+                  <input type="text" id="foodInputTotal" class="food-input-total" inputmode="numeric" autocomplete="off" aria-labelledby="foodInputTotalLabel" />
                 </td>
               </tr>
             </tfoot>

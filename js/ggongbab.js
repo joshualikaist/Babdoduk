@@ -237,11 +237,13 @@
     menuSnap = menuSnap || (menuCtl && menuCtl.snapshot ? menuCtl.snapshot() : { status: state.menu.status, stale: true, restaurantCount: 0 });
     var menuPart;
     if (menuSnap.status === 'loading' || state.menu.status === 'loading') menuPart = t('gg.metric.menuLoading', '학식 확인 중');
-    else if (menuSnap.status === 'error' || state.menu.status === 'error' || menuSnap.stale) menuPart = t('gg.metric.menuStale', '학식 업데이트 중');
+    else if (menuSnap.status === 'error' || state.menu.status === 'error') menuPart = t('gg.metric.menuError', '학식 불러오기 실패');
+    else if (menuSnap.stale) menuPart = t('gg.metric.menuStale', '학식 업데이트 중');
     else menuPart = t('gg.metric.menu', '학식 {n}곳').replace('{n}', String(menuSnap.restaurantCount || 0));
     var freePart = state.free.status === 'ready'
       ? t('gg.metric.free', '오늘 꽁밥 {n}개').replace('{n}', String(freeN))
-      : t('gg.metric.freeLoading', '오늘 꽁밥 확인 중');
+      : state.free.status === 'loading' ? t('gg.metric.freeLoading', '오늘 꽁밥 확인 중')
+      : t('gg.metric.freeError', '꽁밥 불러오기 실패');
     return '<p class="gg-counts">' + esc(freePart + ' · ' + menuPart) + '</p>';
   }
   function tabsHtml() {

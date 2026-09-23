@@ -560,6 +560,20 @@ python -m pytest tests\ggongbab
 로그 privacy 검사도 테스트에 있습니다. `scripts/ggongbab/` 의 모든 `print` 를 AST로 훑어
 메일 식별자가 출력되지 않는지 확인합니다.
 
+프런트엔드 게이트(네트워크 없이 합성 데이터로 실행):
+
+```powershell
+python -m pytest tests -q            # 위 테스트 + tests/test_site_ui.py
+python scripts/validate_content.py
+python scripts/check_site_ui.py      # --screenshots 로 .local/site-ui-shots/ 에 캡처
+python scripts/check_ggongbab_ui.py
+```
+
+`check_site_ui.py` 는 8개 페이지 × 5개 폭(1920·1440·768·390·360)의 가로 넘침, Windows 스크롤바,
+공통 내비·푸터 계약과 함께 다음을 확인합니다: 홈 요약의 날짜·공개 조건, 매거진 학식 요약의 stale 표시와
+이스케이프, 메뉴 고르기의 이유·범위 안내·"먹었어요"와 선택의 분리, 매거진 원문/데스크 구분과 지난 호,
+이벤트 날짜 구간과 확인 상태, 가계부 출처 표시, 한·영 양쪽의 랜드마크·이름·터치 크기, 데이터가 모두 실패할 때의 안내.
+
 ---
 
 ## 10. 자동화 (GitHub Actions)
