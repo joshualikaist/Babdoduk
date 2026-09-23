@@ -185,6 +185,55 @@ def inspect_page(page, name, size, screenshot_dir=None):
             "track": metrics["track"], "thumb": metrics["thumb"], "gutter": metrics["viewportGutter"]}
 
 
+def magazine_tools(page):
+    """Picker and magazine cafeteria contracts on synthetic data, at phone width."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"mukbang.html tools: {detail}"
+        count += 1
+
+    yesterday = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=1)).strftime("%Y-%m-%d")
+    menu = {"date": yesterday, "restaurants": [{"id": "r1", "name": "<b>식당</b>",
+            "breakfast": {"items": []}, "lunch": {"items": ["<img src=x onerror=alert(1)>"], "price": "5,000원"},
+            "dinner": {"items": ["저녁"]}}]}
+    page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
+    page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
+    page.reload(wait_until="networkidle")
+    tools = page.locator("#kaistToday")
+    title = page.locator("#kaistTitle").inner_text()
+    check("오늘" not in title and tools.locator(".kaist-date.is-stale").count() == 1,
+          ("stale cafeteria data is labelled, not titled today", title))
+    check(tools.locator("img").count() == 0 and tools.locator("b").count() == 0, "generated menu text is escaped")
+    check(tools.locator("[role=tablist]").count() == 0 and tools.locator(".kaist-meal[aria-pressed]").count() == 3,
+          "meal and restaurant controls are pressed toggles, not partial tabs")
+    check(tools.locator(".kaist-to-hub").get_attribute("href") == "ggongbab.html#menu", "summary links to the hub")
+    tools.locator('.kaist-meal[data-kaist-meal="dinner"]').focus()
+    page.keyboard.press("Enter")
+    check(page.evaluate("document.activeElement.dataset.kaistMeal") == "dinner", "focus survives re-render")
+
+    page.locator(".eat-spinbtn").wait_for()
+    check(page.locator('.eat-hunger[role="group"] [aria-pressed]').count() == 3, "hunger options are pressed toggles")
+    page.locator(".eat-spinbtn").click()
+    page.locator(".eat-hero h3").wait_for()
+    check("MATCH" not in page.locator("#eatPanel").inner_text() and not page.locator(".eat-match").count(),
+          "internal score is not shown as a probability")
+    check(page.locator(".eat-reasons li").count() >= 1 and page.locator(".eat-scope").is_visible(),
+          "reason and suggestion scope are visible")
+    check(page.evaluate("document.activeElement.matches('.eat-hero h3')"), "focus moves to the result")
+    check(page.locator("#eatStatus").inner_text().strip() != "", "result is announced")
+    dish = page.locator('[data-eat="take"]').get_attribute("data-id")
+    page.locator('[data-eat="take"]').click()
+    prefs = page.evaluate("JSON.parse(localStorage.getItem('babdoduk-food-preferences'))")
+    check(dish in prefs["likes"] and dish not in prefs["eaten"], "choosing a dish is not recorded as eaten")
+    page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
+    page.unroute("**/data/kaist-menu/latest.json")
+    return count
+
+
 def run_checks(screenshots=False):
     report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
     with sync_playwright() as pw:
@@ -200,6 +249,7 @@ def run_checks(screenshots=False):
                 result = inspect_page(page, name, size, ROOT / ".local/site-ui-shots" if screenshots else None)
                 report["results"][f"{name}:{size[0]}x{size[1]}"] = result
                 report["checks"] += result["checks"]
+        report["checks"] += magazine_tools(page)
         # High contrast must defer to the system; custom colors/widths must not
         # leak from either the standards or WebKit rule sets.
         page.emulate_media(forced_colors="active")
