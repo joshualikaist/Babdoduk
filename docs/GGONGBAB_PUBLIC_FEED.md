@@ -1,12 +1,20 @@
 # Phase 2A: sanitized public event projection
 
-Implementation only; migration 004 has **not** been applied to a live project.
-The static frontend still reads `data/ggongbab/latest.json`. There is no browser
-Supabase integration, push/service worker, production deployment or new collector.
+Operator-confirmed activation on **2026-09-23**: migration 004 was manually
+applied, then `python scripts/refresh_ggongbab.py --export-only` completed.
+The operator independently verified **4** rows in the public projection and
+**4** events in `data/ggongbab/latest.json`; initial live reconciliation is complete.
+These are dated operator observations, not a claim of a new live test by this change.
+Do not re-apply the migration for Phase 2B.
 
-## Manual activation
+The lab frontend now supports the public projection with Realtime and mandatory
+static JSON fallback. See [Phase 2B configuration and acceptance](GGONGBAB_REALTIME.md).
+No production deployment, push/service worker or new collector is included.
 
-Review and manually apply the **entire** SQL file, including BEGIN/COMMIT:
+## Manual activation reference (already completed on the current project)
+
+For a separately authorized **new** project, review and manually apply the
+**entire** SQL file, including BEGIN/COMMIT:
 
 `supabase/migrations/004_ggongbab_public_feed.sql`
 
@@ -174,5 +182,7 @@ attach timeout. It does not retry credentials, relax owner checks or expose valu
 sanitization, revision/idempotency, stale removal, failures/concurrency, repository
 paging, snapshot/card compatibility and SQL privileges/publication structure.
 Existing Portal safety tests also run. All tests use mocks/fakes/static SQL;
-no migration execution, live SQL privilege test or realtime delivery test has been
-performed. Those require the operator's later manual migration/acceptance stage.
+no migration execution, live SQL privilege test or realtime delivery test is
+performed by those automated tests. Migration activation and the four-row initial
+reconciliation were subsequently confirmed by the operator as recorded above.
+Browser/RLS/Realtime acceptance remains the separate manual Phase 2B procedure.

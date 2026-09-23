@@ -31,6 +31,10 @@
     food: 'all'
   };
   var menuCtl = null;
+  var feedCtl = null;
+  // Query isolation also applies to the public page, where lab fixtures remain
+  // unreachable: those URLs use the public JSON, never a database connection.
+  var allowLiveFeed = mode === 'normal' && query.get('preview') !== '1' && query.get('fixture') !== '1';
 
   function t(key, fallback) {
     var lang = window.babdodukGetLang ? window.babdodukGetLang() : 'ko';
@@ -406,9 +410,10 @@
   }
   function acceptFree(data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad payload');
+    var firstLoad = !state.free.data;
     state.free.data = data;
     state.free.status = 'ready';
-    if (!savedFilter && !visibleEvents(nowKst()).length && data.events.some(function (ev) {
+    if (firstLoad && !savedFilter && !visibleEvents(nowKst()).length && data.events.some(function (ev) {
       var s = toKst(ev.startAt); return isPublic(ev) && s && ymd(s) >= ymd(nowKst());
     })) state.when = 'all';
     render();
@@ -418,6 +423,20 @@
     state.free.status = 'loading';
     render();
     if (mode === 'fixture') { acceptFree(fixtureData()); return; }
+    if (allowLiveFeed && window.BabdodukPublicFeed) {
+      if (!feedCtl) feedCtl = window.BabdodukPublicFeed.create({
+        config: window.BABDODUK_PUBLIC_FEED_CONFIG,
+        loadSnapshot: function (signal) {
+          return fetch(DATA_URL, { cache: 'no-store', signal: signal }).then(function (res) {
+            if (!res.ok) throw new Error('unavailable'); return res.json();
+          });
+        },
+        onData: acceptFree,
+        onError: function () { state.free.status = 'error'; render(); }
+      });
+      feedCtl.retry();
+      return;
+    }
     fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
       if (!res.ok) throw new Error('unavailable'); return res.json();
     }).then(acceptFree).catch(function () { state.free.status = 'error'; render(); });
@@ -497,6 +516,24 @@
     if (e.target.closest('[data-gg-retry]')) loadFree();
   });
   document.addEventListener('babdoduk-lang', render);
+  // Expiry remains client-side even if the backend has not deleted a row yet.
+  var expiryTimer;
+  function resumeFeed() {
+    if (document.hidden) return;
+    if (feedCtl) feedCtl.start();
+    clearInterval(expiryTimer);
+    expiryTimer = setInterval(function () { if (state.free.status === 'ready') render(); }, 60000);
+    if (state.free.status === 'ready') render();
+  }
+  function pauseFeed() {
+    clearInterval(expiryTimer);
+    if (feedCtl) feedCtl.stop();
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseFeed(); else resumeFeed();
+  });
+  window.addEventListener('pagehide', pauseFeed);
+  window.addEventListener('pageshow', resumeFeed);
 
   try {
     var saved = JSON.parse(localStorage.getItem('babdoduk-ggongbab-filter') || 'null');
@@ -508,4 +545,5 @@
     if (tabSaved === 'menu' || tabSaved === 'free') state.activeSection = tabSaved;
   } catch (err) {}
   loadFree();
+  if (document.hidden) pauseFeed(); else resumeFeed();
 })();
