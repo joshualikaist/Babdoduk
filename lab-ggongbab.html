@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>실험 · 오늘 뭐 먹지? · 밥도둑 Babdoduk</title>
+  <title>실험 · 오늘의 한 끼 · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -21,17 +21,6 @@
       overflow-x: hidden;
       padding: 92px 0 72px;
       position: relative;
-      background: #fbfbfd;
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.06) 0%, transparent 55%),
-        radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
     }
     .lab-fork-ribbon {
       flex-shrink: 0;
@@ -61,7 +50,7 @@
 <body data-gg-lab>
   <header class="site-nav" role="banner">
     <div class="lab-fork-ribbon">
-      실험용 오늘 뭐 먹지? — <a href="lab.html">실험실</a> / 본편 <a href="ggongbab.html">오늘 뭐 먹지?</a>
+      실험용 오늘의 한 끼 — <a href="lab.html">실험실</a> / 본편 <a href="ggongbab.html">오늘의 한 끼</a>
     </div>
     <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
@@ -92,8 +81,8 @@
   <main class="ggongbab-page-wrap">
     <div id="ggongbabFeed" aria-live="polite">
       <header class="gg-hero">
-        <h1 data-i18n="ggongbab.title">오늘 뭐 먹지?</h1>
-        <p class="gg-tagline" data-i18n="gg.tagline">KAIST에서 오늘 먹을 수 있는 걸 한곳에.</p>
+        <h1 data-i18n="ggongbab.title">오늘의 한 끼</h1>
+        <p class="gg-tagline" data-i18n="gg.tagline">KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.</p>
       </header>
       <div class="gg-feed">
         <div class="gg-skeleton"></div><div class="gg-skeleton"></div><div class="gg-skeleton"></div>
@@ -136,7 +125,7 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '실험 · 오늘 뭐 먹지? · 밥도둑 Babdoduk',
+          docTitle: '실험 · 오늘의 한 끼 · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
@@ -164,9 +153,9 @@
           'nav.event.open': '이벤트 페이지',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'ggongbab.title': '오늘 뭐 먹지?',
-          'ggongbab.lead': 'KAIST에서 오늘 먹을 수 있는 걸 한곳에.',
-          'gg.tagline': 'KAIST에서 오늘 먹을 수 있는 걸 한곳에.',
+          'ggongbab.title': '오늘의 한 끼',
+          'ggongbab.lead': 'KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.',
+          'gg.tagline': 'KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.',
           'gg.tab.free': '꽁밥',
           'gg.tab.menu': '오늘의 학식',
           'gg.tabsAria': '꽁밥과 학식',
@@ -235,6 +224,30 @@
           'gg.emptyTitle': '이번 조건에 맞는 꽁밥이 아직 없어요.',
           'gg.emptyBody': '다른 날짜를 보거나 필터를 바꿔 보세요.',
           'gg.noscript': '행사 목록을 보려면 JavaScript를 켜 주세요.',
+          'gg.choose.title': '뭘 먹을지 아직 못 정했다면',
+          'gg.choose.body': '학식·꽁밥과 별개로 음식 아이디어를 골라 드려요. 실제 판매 여부는 가게에서 확인해 주세요.',
+          'gg.choose.cta': '메뉴 고르기 →',
+          'gg.timeTbd': '시간 미정',
+          'gg.placeTbd': '장소 미정',
+          'gg.organizer': '주최',
+          'gg.officialNotice': '공식 공지',
+          'gg.deadlineClosed': '신청 마감',
+          'gg.deadlineTodayAt': '오늘 마감 · {time}',
+          'gg.deadlineAt': '마감 · {date}',
+          'gg.foodFallback': '음식 제공',
+          'gg.metric.menuLoading': '학식 확인 중',
+          'gg.metric.freeLoading': '오늘 꽁밥 확인 중',
+          'gg.menu.freeHint': '꽁밥은 {n}개 있어요.',
+          'km.expand': '전체 메뉴 {n}개 보기 ↓',
+          'km.collapse': '메뉴 접기 ↑',
+          'km.count': '{meal} 메뉴 {n}곳',
+          'km.mealsAria': '식사 시간',
+          'km.mealLink': '{meal} 메뉴 보기 →',
+          'km.emptyTitle': '오늘 이 시간대에 공개된 메뉴가 없어요.',
+          'km.staleEmpty': '최근 메뉴를 보려면 아래를 눌러 주세요.',
+          'km.staleSaved': '최근 저장된 메뉴:',
+          'km.hideStale': '최근 메뉴 숨기기',
+          'km.recentTitle': '최근 학식 메뉴',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.country': '대한민국',
           'footer.navAria': '사이트 바로가기',
@@ -242,7 +255,7 @@
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'Lab · What to Eat Today? · Babdoduk',
+          docTitle: "Lab · Today's food · Babdoduk",
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
@@ -270,9 +283,9 @@
           'nav.event.open': 'Events page',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'ggongbab.title': 'What to Eat Today?',
-          'ggongbab.lead': 'Everything you can eat on campus today, in one place.',
-          'gg.tagline': 'Everything you can eat on campus today, in one place.',
+          'ggongbab.title': "Today's food",
+          'ggongbab.lead': 'KAIST cafeteria menus and public free-food events in one place.',
+          'gg.tagline': 'KAIST cafeteria menus and public free-food events in one place.',
           'gg.tab.free': 'Free food',
           'gg.tab.menu': 'Cafeteria',
           'gg.tabsAria': 'Free food and cafeteria',
@@ -341,6 +354,30 @@
           'gg.emptyTitle': 'No free-food events match this filter yet.',
           'gg.emptyBody': 'Try another date or food filter.',
           'gg.noscript': 'Enable JavaScript to see the event list.',
+          'gg.choose.title': 'Still deciding what to eat?',
+          'gg.choose.body': 'Separate from the cafeteria and free food, we suggest dish ideas. Check with the venue whether it is actually served.',
+          'gg.choose.cta': 'Choose a dish →',
+          'gg.timeTbd': 'Time TBA',
+          'gg.placeTbd': 'Place TBA',
+          'gg.organizer': 'Host',
+          'gg.officialNotice': 'Official notice',
+          'gg.deadlineClosed': 'Registration closed',
+          'gg.deadlineTodayAt': 'Closes today · {time}',
+          'gg.deadlineAt': 'Closes · {date}',
+          'gg.foodFallback': 'Food provided',
+          'gg.metric.menuLoading': 'Checking cafeteria',
+          'gg.metric.freeLoading': 'Checking free food',
+          'gg.menu.freeHint': '{n} free-food events today.',
+          'km.expand': 'Show all {n} items ↓',
+          'km.collapse': 'Show less ↑',
+          'km.count': '{meal}: {n} cafeterias',
+          'km.mealsAria': 'Meal time',
+          'km.mealLink': 'See {meal} menus →',
+          'km.emptyTitle': 'No menu published for this meal today.',
+          'km.staleEmpty': 'Open the latest saved menu below.',
+          'km.staleSaved': 'Latest saved menu:',
+          'km.hideStale': 'Hide latest menu',
+          'km.recentTitle': 'Latest cafeteria menu',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.country': 'South Korea',
           'footer.navAria': 'Site links',

@@ -216,7 +216,9 @@ def run_checks(preview=False):
                 report["checks"] += 1
             page.screenshot(path=str(OUT / f"ggongbab-{width}x{height}.png"))
             report["fixture"][f"{width}x{height}"] = r
-            page.evaluate("window.scrollTo(0, 450)")
+            # Scroll past the filter's own resting place so the check does not
+            # depend on the exact height of the hero and radar above it.
+            page.evaluate("window.scrollTo(0, document.querySelector('.gg-filters').getBoundingClientRect().top + scrollY + 120)")
             page.wait_for_timeout(100)
             sticky = rectangles(page)
             near(sticky["filter"]["y"], sticky["nav"]["h"])
@@ -391,11 +393,38 @@ def run_checks(preview=False):
                 assert not page.locator(".lab-fork-ribbon").count()
                 assert not page.evaluate("document.body.hasAttribute('data-gg-lab')")
                 assert not page.locator('meta[name="robots"]').count()
-                assert page.title() == "오늘 뭐 먹지? · 밥도둑 Babdoduk"
+                assert page.title() == "오늘의 한 끼 · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
                 report["checks"] += 11
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
+        # Keyboard users keep their place through re-renders; tabs follow the
+        # ARIA arrow-key pattern; the picker is a separate, labelled next step.
+        page.set_viewport_size({"width": 390, "height": 844})
+        reset_storage(page)
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-card").first.wait_for()
+        assert page.locator(".gg-choose-link").get_attribute("href") == "mukbang.html#what"
+        page.locator('[data-group="when"][data-value="today"]').focus()
+        page.keyboard.press("Enter")
+        assert page.evaluate("document.activeElement.dataset.value") == "today"
+        page.keyboard.press("Tab")
+        page.keyboard.press("Shift+Tab")
+        page.locator('[data-group="when"][data-value="all"]').focus()
+        page.keyboard.press("Enter")
+        page.locator("#foodHubTabFree").focus()
+        page.keyboard.press("ArrowRight")
+        assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
+        assert page.evaluate("document.activeElement.id") == "foodHubTabMenu"
+        assert page.locator("#foodHubTabFree").get_attribute("tabindex") == "-1"
+        page.keyboard.press("Home")
+        assert page.locator("#foodHubTabFree").get_attribute("aria-selected") == "true"
+        reset_storage(page)
+        page.goto(base + "/ggongbab.html#menu")
+        page.locator(".food-hub-tabs").wait_for()
+        assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
+        reset_storage(page)
+        report["checks"] += 8
         # All upcoming includes later weeks, sorts dates, and excludes even a
         # just-ended event from today. Normal mode keeps the real browser clock.
         now_kst = datetime.now(timezone(timedelta(hours=9)))

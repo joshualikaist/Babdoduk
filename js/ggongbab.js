@@ -179,7 +179,9 @@
     if (!d) return '';
     var past = d < now;
     var urgent = !past && d - now <= 86400000;
-    var label = past ? '신청 마감' : (ymd(d) === ymd(now) ? '오늘 마감 · ' + hm(d) : '마감 · ' + dayLabel(d) + ' ' + hm(d));
+    var label = past ? t('gg.deadlineClosed', '신청 마감')
+      : ymd(d) === ymd(now) ? t('gg.deadlineTodayAt', '오늘 마감 · {time}').replace('{time}', hm(d))
+      : t('gg.deadlineAt', '마감 · {date}').replace('{date}', dayLabel(d) + ' ' + hm(d));
     return '<p class="gg-deadline' + (past ? ' is-soft' : urgent ? ' is-urgent' : '') + '">' + esc(label) + '</p>';
   }
   function cardHtml(ev, now, featured) {
@@ -191,21 +193,21 @@
     var compactPlace = pieces.join('').replace(/[\s·]/g, '');
     if (loc.name && loc.name.replace(/[\s·]/g, '') !== compactPlace && pieces.indexOf(loc.name) < 0) pieces.push(loc.name);
     var place = pieces.join(' · '), map = mapLink(ev);
-    var foodLabel = food.description && food.description.length <= 22 ? food.description : foodTypeLabel(food.type) || '음식 제공';
+    var foodLabel = food.description && food.description.length <= 22 ? food.description : foodTypeLabel(food.type) || t('gg.foodFallback', '음식 제공');
     var bucket = foodBucket(ev);
     var deadline = toKst(reg.deadline), closed = deadline && deadline < now;
     var html = '<article class="gg-card' + (featured ? ' is-featured' : '') + '" data-id="' + esc(ev.id) + '"' + (featured ? ' data-featured="1"' : '') + '>';
     if (featured) html += '<p class="gg-featured-label">' + esc(t('gg.next', '다음 꽁밥')) + '</p>';
-    html += '<div class="gg-card-top"><time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : '시간 미정') + '</time>';
+    html += '<div class="gg-card-top"><time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
     html += '<div class="gg-card-badges"><span class="gg-food-primary is-' + esc(bucket) + '"><span>' + esc(foodLabel) + '</span></span>';
     if (tri(reg.required) === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
     if (tri(reg.required) === 'false') html += '<span class="gg-reg-badge is-free">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</span>';
     html += '</div></div><h3 class="gg-title">' + esc(ev.title) + '</h3>';
-    html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || '장소 미정');
+    html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || t('gg.placeTbd', '장소 미정'));
     if (map) html += ' · <a href="' + esc(map) + '" target="_blank" rel="noopener">' + esc(t('gg.map','지도')) + '</a>';
     html += '</p>';
     if (ev.eligibility) html += '<p class="gg-eligibility">' + esc(t('gg.eligibility','대상')) + ' · ' + esc(ev.eligibility) + '</p>';
-    if (ev.organizer) html += '<p class="gg-organizer">주최 · ' + esc(ev.organizer) + '</p>';
+    if (ev.organizer) html += '<p class="gg-organizer">' + esc(t('gg.organizer', '주최')) + ' · ' + esc(ev.organizer) + '</p>';
     html += deadlineHtml(ev, now);
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
     var regUrl = closed ? '' : safeHref(reg.url);
@@ -213,7 +215,7 @@
     if (regUrl || source) {
       html += '<div class="gg-actions">';
       if (regUrl) html += '<a class="gg-btn gg-btn--primary" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' + esc(t('gg.register','신청하기')) + '</a>';
-      if (source) html += '<a class="gg-btn" href="' + esc(source) + '" target="_blank" rel="noopener">공식 공지</a>';
+      if (source) html += '<a class="gg-btn" href="' + esc(source) + '" target="_blank" rel="noopener">' + esc(t('gg.officialNotice', '공식 공지')) + '</a>';
       html += '</div>';
     }
     var via = sourceLabel(ev);
@@ -256,7 +258,7 @@
       var loc = next.location || {};
       var place = loc.building || loc.name || '';
       html += '<p class="gg-radar-next"><strong>' + esc(t('gg.radar.next', '가장 빠른 꽁밥')) + '</strong>' +
-        esc((s ? hm(s) : '시간 미정') + ' · ' + food + (place ? ' · ' + place : '')) + '</p>';
+        esc((s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' · ' + food + (place ? ' · ' + place : '')) + '</p>';
       html += '<button type="button" class="gg-radar-cta" data-gg-scroll="' + esc(next.id) + '">' + esc(t('gg.radar.cta', '자세히 보기 →')) + '</button>';
     }
     return html + '</section>';
@@ -276,8 +278,9 @@
   function tabsHtml() {
     var todayN = todayUpcoming(nowKst()).length;
     var html = '<div class="food-hub-tabs" role="tablist" aria-label="' + esc(t('gg.tabsAria', '꽁밥과 학식')) + '">';
-    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + (state.activeSection === 'free') + '">🎁 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
-    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + (state.activeSection === 'menu') + '">🍚 ' + esc(t('gg.tab.menu', '오늘의 학식')) + '</button>';
+    var free = state.activeSection === 'free';
+    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + free + '" tabindex="' + (free ? 0 : -1) + '">🎁 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
+    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + !free + '" tabindex="' + (free ? -1 : 0) + '">🍚 ' + esc(t('gg.tab.menu', '오늘의 학식')) + '</button>';
     return html + '</div>';
   }
   function emptyFreeHtml(now) {
@@ -340,7 +343,8 @@
   }
   function render() {
     var now = nowKst();
-    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘 뭐 먹지?')) + '</h1><p class="gg-tagline">' + esc(t('gg.tagline', 'KAIST에서 오늘 먹을 수 있는 걸 한곳에.')) + '</p>';
+    var focus = focusSelector();
+    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 한 끼')) + '</h1><p class="gg-tagline">' + esc(t('gg.tagline', 'KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.')) + '</p>';
     html += metricHtml(now);
     html += '</header>';
     html += tabsHtml();
@@ -348,10 +352,28 @@
     html += freePaneHtml(now);
     html += '</div>';
     html += '<div id="foodHubMenu" class="food-hub-menu" role="tabpanel" aria-labelledby="foodHubTabMenu"' + (state.activeSection === 'menu' ? '' : ' hidden') + '></div>';
+    html += '<aside class="gg-choose" aria-labelledby="ggChooseTitle"><p class="gg-choose-title" id="ggChooseTitle">' + esc(t('gg.choose.title', '뭘 먹을지 아직 못 정했다면')) + '</p>';
+    html += '<p class="gg-choose-body">' + esc(t('gg.choose.body', '학식·꽁밥과 별개로 음식 아이디어를 골라 드려요. 실제 판매 여부는 가게에서 확인해 주세요.')) + '</p>';
+    html += '<a class="gg-choose-link" href="mukbang.html#what">' + esc(t('gg.choose.cta', '메뉴 고르기 →')) + '</a></aside>';
     root.innerHTML = html;
+    if (focus) {
+      var again = root.querySelector(focus);
+      if (again) again.focus({ preventScroll: true });
+    }
     bindMenu(now);
     renderDiagnostics();
     if (debugLayout) requestAnimationFrame(reportLayout);
+  }
+  // render() replaces the feed markup; keep a keyboard user's place on the same control.
+  function focusSelector() {
+    var el = document.activeElement;
+    if (!el || el === root || !root.contains(el)) return '';
+    if (el.id) return '#' + el.id;
+    var parts = [];
+    Array.prototype.forEach.call(el.attributes, function (attr) {
+      if (attr.name.indexOf('data-') === 0) parts.push('[' + attr.name + '="' + String(attr.value).replace(/["\\]/g, '') + '"]');
+    });
+    return parts.length ? el.tagName.toLowerCase() + parts.join('') : '';
   }
   function bindMenu(now) {
     var host = document.getElementById('foodHubMenu');
@@ -448,7 +470,9 @@
     var freePane = document.getElementById('foodHubFree');
     var menuPane = document.getElementById('foodHubMenu');
     document.querySelectorAll('.food-hub-tab').forEach(function (btn) {
-      btn.setAttribute('aria-selected', String(btn.getAttribute('data-hub-tab') === tab));
+      var on = btn.getAttribute('data-hub-tab') === tab;
+      btn.setAttribute('aria-selected', String(on));
+      btn.setAttribute('tabindex', on ? '0' : '-1');
     });
     if (freePane) freePane.hidden = tab !== 'free';
     if (menuPane) menuPane.hidden = tab !== 'menu';
@@ -510,10 +534,29 @@
     var scrollBtn = e.target.closest('[data-gg-scroll]');
     if (scrollBtn) {
       var target = document.querySelector('[data-id="' + scrollBtn.getAttribute('data-gg-scroll') + '"]');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (target) {
+        var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
       return;
     }
     if (e.target.closest('[data-gg-retry]')) loadFree();
+  });
+  root.addEventListener('keydown', function (e) {
+    var tab = e.target.closest && e.target.closest('.food-hub-tab');
+    if (!tab) return;
+    var tabs = Array.prototype.slice.call(root.querySelectorAll('.food-hub-tab'));
+    var at = tabs.indexOf(tab), next = -1;
+    if (e.key === 'ArrowRight') next = (at + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') next = (at - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = tabs.length - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    setTab(tabs[next].getAttribute('data-hub-tab'));
+    tabs[next].focus();
   });
   document.addEventListener('babdoduk-lang', render);
   // Expiry remains client-side even if the backend has not deleted a row yet.
@@ -544,6 +587,10 @@
     var tabSaved = localStorage.getItem(TAB_KEY);
     if (tabSaved === 'menu' || tabSaved === 'free') state.activeSection = tabSaved;
   } catch (err) {}
+  if (location.hash === '#menu' || location.hash === '#free') state.activeSection = location.hash.slice(1);
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#menu' || location.hash === '#free') setTab(location.hash.slice(1));
+  });
   loadFree();
   if (document.hidden) pauseFeed(); else resumeFeed();
 })();
