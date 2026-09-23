@@ -1224,21 +1224,6 @@ body.mg-body .nav-mega-link.is-current {
   }
 }
 
-.mg-lane--trend .mg-lane-items {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  padding-bottom: 8px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.mg-lane--trend .mg-story {
-  flex: 0 0 min(280px, 82%);
-  scroll-snap-align: start;
-}
-
 .kaist-today {
   margin-top: 48px;
   padding-top: 28px;

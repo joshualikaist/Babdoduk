@@ -1,5 +1,8 @@
 :root {
   --bg: #f7f7f5;
+  --scrollbar-track: var(--bg);
+  --scrollbar-thumb: #8f8475;
+  --scrollbar-thumb-hover: #7d7264;
   --bg-warm: rgba(255, 180, 150, 0.1);
   --surface: #ffffff;
   --surface-muted: #fafaf8;
@@ -32,6 +35,52 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Viewport colors belong on the root; body variables do not inherit upward.
+   Magazine keeps its existing paper surface, including nested scroll areas. */
+html:has(body.page-home),
+body.page-home {
+  --scrollbar-track: #f5f1e8;
+}
+
+html:has(body.mg-body),
+body.mg-body {
+  --bg: #f7f4ee;
+  --scrollbar-track: var(--bg);
+}
+
+/* Retain native width and system high-contrast scrollbars in Firefox. */
+@media (forced-colors: none) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  /* Modern Chromium also supports scrollbar-color, which otherwise overrides
+     these parts. Use parts here for the matching corner and subtle hover. */
+  @supports selector(::-webkit-scrollbar) {
+    * { scrollbar-color: auto; }
+    ::-webkit-scrollbar {
+      width: 16px;
+      height: 16px;
+      background: var(--scrollbar-track);
+    }
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+      background: var(--scrollbar-track);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border: 3px solid var(--scrollbar-track);
+      border-radius: 16px;
+      min-height: 32px;
+      min-width: 32px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-thumb-hover);
+    }
+  }
 }
 
 body {

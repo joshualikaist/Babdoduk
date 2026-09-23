@@ -172,6 +172,9 @@ def run_checks(preview=False):
     with local_server() as base, sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=True)
         context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+        # UI checks must not use an operator's local public DB configuration.
+        context.route("**/js/ggongbab-public-config.js", lambda route: route.fulfill(
+            content_type="application/javascript", body="window.BABDODUK_PUBLIC_FEED_CONFIG = {};"))
         page = context.new_page()
         page.add_init_script(FIXTURE_CLOCK_SCRIPT)
         errors = []
@@ -250,6 +253,9 @@ def run_checks(preview=False):
         requests = []
         page.on("request", lambda req: requests.append(urlparse(req.url).path))
         def public_route(route):
+            if urlparse(route.request.url).path == "/js/ggongbab-public-config.js":
+                route.fulfill(content_type="application/javascript", body="window.BABDODUK_PUBLIC_FEED_CONFIG = {};")
+                return
             path = ROOT / urlparse(route.request.url).path.lstrip("/")
             if path.is_file() and ROOT in path.resolve().parents:
                 route.fulfill(path=str(path))
