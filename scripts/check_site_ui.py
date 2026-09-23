@@ -300,6 +300,53 @@ def home_summary(page):
     return count
 
 
+def event_bands(page):
+    """Dates decide now / coming up / past; confirmation is reported separately."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"event.html: {detail}"
+        count += 1
+
+    today = datetime.now(timezone(timedelta(hours=9))).date()
+    labels = {"now": "진행 중", "upcoming": "예정", "past": "지난 일정"}
+
+    def expected(start, end):
+        return "upcoming" if today.isoformat() < start else "past" if today.isoformat() > end else "now"
+
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+    rows = page.locator(".event-tab-row").evaluate_all("""rows => rows.map(r => ({start:r.dataset.start,
+      end:r.dataset.end, band:r.dataset.band, conf:r.dataset.confirmation,
+      chip:r.querySelector('[data-event-state]').textContent, title:r.querySelector('.event-tab-title').textContent}))""")
+    for row in rows:
+        check(row["band"] == expected(row["start"], row["end"]), ("band from dates", row))
+        check(row["chip"].startswith(labels[row["band"]]), ("band label", row))
+        check("(예정)" not in row["title"], ("tentative state is a status, not a title suffix", row))
+        if row["band"] == "past" and row["conf"] in ("announced", "tentative"):
+            check("기록 없음" in row["chip"] or "미확인" in row["chip"], ("past date is not reported as held", row))
+    live = sum(row["band"] != "past" for row in rows)
+    check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty notice only when nothing is current")
+    page.locator("#eventTab0").focus()
+    page.keyboard.press("ArrowDown")
+    check(page.evaluate("document.activeElement.id") == "eventTab1"
+          and page.locator("#eventPanel1").is_visible(), "arrow keys move between events")
+
+    # A synthetic upcoming, unconfirmed row: shown as coming up, opened first.
+    start, end = (today + timedelta(days=3)).isoformat(), (today + timedelta(days=4)).isoformat()
+    source = (ROOT / "event.html").read_text(encoding="utf-8").replace(
+        'data-start="2026-05-19" data-end="2026-05-20"', f'data-start="{start}" data-end="{end}"', 1)
+    page.route("**/event.html", lambda route: route.fulfill(content_type="text/html", body=source))
+    page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+    chip = page.locator("#eventTab1 [data-event-state]").inner_text()
+    check(chip.startswith("예정") and "미확정" in chip, ("upcoming tentative row", chip))
+    check(page.locator("#eventEmpty").is_hidden(), "empty notice hidden when something is scheduled")
+    check(page.locator("#eventTab1").get_attribute("aria-selected") == "true", "first scheduled event opens")
+    page.unroute("**/event.html")
+    return count
+
+
 def run_checks(screenshots=False):
     report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
     with sync_playwright() as pw:
@@ -317,6 +364,7 @@ def run_checks(screenshots=False):
                 report["checks"] += result["checks"]
         report["checks"] += magazine_tools(page)
         report["checks"] += home_summary(page)
+        report["checks"] += event_bands(page)
         # High contrast must defer to the system; custom colors/widths must not
         # leak from either the standards or WebKit rule sets.
         page.emulate_media(forced_colors="active")
