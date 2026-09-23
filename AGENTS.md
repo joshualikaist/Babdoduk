@@ -4,10 +4,12 @@ This is the repository operating manual for human and AI changes. The current pr
 
 This copy describes the `main` (production) baseline. Systems marked **Lab-only / not promoted to production in the current main baseline** exist only on the `lab` branch; their documents live there, not here.
 
+The rules here are authoritative. The step-by-step procedures that carry them out live in `.claude/skills/<name>/SKILL.md`: `session-start`, `handoff`, `verify-babdoduk`, `release-babdoduk` and `ui-review`. They are plain Markdown, so any agent can follow them.
+
 ## Before starting
 
-1. Read `PRD.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, `README.md`, and the `docs/` file governing the feature. Inspect the implementation and tests before planning a replacement.
-2. Follow the session-start steps of the Git / Multi-Agent Session Protocol below. Preserve unrelated or user-owned changes. Do not assume a local `main` or cached remote ref describes the deployed site.
+1. Read the documents the task needs: `PRD.md` for product scope, `DESIGN_SYSTEM.md` for visual work, `ARCHITECTURE.md` for system boundaries, `README.md` and the `docs/` file governing the feature. Inspect the implementation and tests before planning a replacement.
+2. Follow the session-start procedure. Preserve unrelated or user-owned changes. Do not assume a local `main` or cached remote ref describes the deployed site.
 3. State the intended file scope. Separate frontend presentation from generated data, canonical DB, local agents and deployment operations.
 4. Work on your own task branch in your own worktree. Never change `main`, merge to it, deploy production or force push without explicit owner authorization. Do not reset or rebase over pushed or generated-data commits.
 
@@ -18,35 +20,26 @@ This copy describes the `main` (production) baseline. Systems marked **Lab-only 
 - `main` is production. A push or merge to `main` deploys https://babdoduk.vercel.app through Vercel's Git integration. Agents never modify `main` without explicit owner authorization, and a full `lab` → `main` merge is never the default.
 - `lab` is the integration/staging branch (https://babdoduk-lab.vercel.app). It is not a general scratch branch; agents do not normally develop directly on it. Integrating a task branch into `lab` is a separate, authorized step.
 - Task branches are `agent/claude/<task>`, `agent/codex/<task>`, `agent/cursor/<task>` (or `agent/<tool>/<task>`). Each starts from the latest `origin/lab` unless the task explicitly targets production or a hotfix.
-- Release branches are `release/<name>`, started from a recorded `origin/main` SHA. They carry only owner-approved changes into a production candidate (for example by `git cherry-pick -x`), are reviewed through a pull request and Preview deployment, and are merged only with explicit owner approval.
+- Release branches are `release/<name>`, started from a recorded `origin/main` SHA. They carry only owner-approved changes into a production candidate (for example by `git cherry-pick -x`), are reviewed through a pull request and Preview deployment, and are merged only with explicit owner approval. The canonical procedure is `release-babdoduk`.
 
 ### Worktrees
 
 - ONE WORKTREE = ONE ACTIVE CODING AGENT. Claude, Codex, Cursor and the owner must not edit the same working tree at the same time: it shares one filesystem and one Git index, so one agent can stage, commit or test another's changes.
-- Prefer one separate worktree per active agent/task, for example `git worktree add -b agent/<tool>/<task> ../Babdoduk-wt/<tool>-<task> origin/lab`.
+- Prefer one separate worktree per active agent/task under `../Babdoduk-wt/` (commands in `session-start`).
 - Do not link an agent or release worktree to a Vercel project and never run `vercel --prod`. Never deploy with the Vercel CLI from a working tree that has uncommitted changes.
 - If another agent appears to be using the tree (unexpected edits, lock files, an operation in progress), stop and report before editing. Never delete or remove an unknown worktree, lock file or stash.
 
-### Session start
+### Changes, commits and pushes
 
-1. Read `AGENTS.md`, `PRD.md`, `DESIGN_SYSTEM.md` and `ARCHITECTURE.md`.
-2. Run `git status`, `git branch -vv`, `git worktree list`, `git stash list` and `git fetch origin --prune`.
-3. Record the branch, starting HEAD, `origin/lab`, `origin/main` and every pre-existing modification.
-4. Anything that existed before the session is not owned by the agent: never stage, restore, stash, commit or delete it.
-
-### Session end
-
-1. Run `git status`, `git diff` and `git diff --staged`.
-2. Classify every change as session-owned, owner/pre-existing, generated data or unrelated.
-3. Stage only explicit session-owned paths: `git add -- <path...>`. Never use blind `git add -A`, `git add .` or `git commit -a` when unrelated changes exist.
-4. Run the relevant tests and record the exact results.
-5. Commit coherent, completed work with a meaningful message and an `Agent: <tool>` trailer (for example `Agent: Claude`, `Agent: Codex`, `Agent: Cursor`). All tools share the `joshualikaist` Git identity, so this trailer is the only attribution; do not infer authorship of historical commits from style. Do not present incomplete work as finished; a WIP commit needs owner permission and a `WIP:` subject.
-6. Run `git fetch origin` again and report whether remote branches moved during the session, plus starting SHA, ending SHA, `origin/lab`, `origin/main`, commits created, files changed, tests run, `git status` and ahead/behind counts (`git rev-list --left-right --count HEAD...origin/lab`).
-7. Push only your own task branch, only when the task authorizes it, and never with force. A task branch is not permission to push to `lab` or `main`.
+- Anything that existed before your session (modified or untracked files, stashes, branches, worktrees) is not yours: never stage, restore, stash, commit or delete it.
+- Record the starting state before editing (`session-start`), and report the ending state, remote movement and exact test results when you finish (`handoff`).
+- Stage explicit session-owned paths only (`git add -- <path...>`). Never use `git add -A`, `git add .` or `git commit -a` when unrelated changes exist.
+- Commit coherent, completed work with an `Agent: <tool>` trailer (`Agent: Claude`, `Agent: Codex`, `Agent: Cursor`). All tools share the `joshualikaist` Git identity, so the trailer is the only attribution; do not infer authorship of historical commits from style. Do not present incomplete work as finished; a WIP commit needs owner permission and a `WIP:` subject.
+- Push only your own task branch, only when the task authorizes it, and never with force. A task branch is not permission to push to `lab` or `main`.
 
 ### Forbidden without the owner authorizing the exact operation
 
-`git push --force`, `git push --force-with-lease`, `git reset --hard`, `git clean -fd`, `git checkout -- .`, `git restore .`, automatic resolution of a diverged branch, deleting unknown stashes and deleting unknown worktrees. A non-fast-forward push rejection is a safety signal: fetch, report the new commits and integrate deliberately through the task branch or release process. Never bypass it.
+`git push --force`, `git push --force-with-lease`, `git reset --hard`, `git clean -fd`, `git checkout -- .`, `git restore .`, automatic resolution of a diverged branch, deleting unknown stashes and deleting unknown worktrees. A non-fast-forward push rejection is a safety signal: fetch, report the new commits and integrate deliberately through the task branch or release process. Never bypass it. In Claude Code, `.claude/hooks/git_guard.py` also blocks the destructive forms of these commands and `vercel --prod`.
 
 ### Generated-data bot
 
@@ -85,8 +78,8 @@ Run focused tests first, then the relevant full gate before completion. Do not u
 | Pipeline or contract, explicitly authorized | Contract-specific synthetic tests plus full suite and content validator; review private/public field boundaries and failure exits |
 | Generated-data workflow, explicitly authorized | Validate only selected generated paths and publication branch behavior; never merge feature code through `publish_generated.py` |
 
-Checks must not depend on the wall clock: a scenario that needs "today" fixes the page clock and derives its synthetic data from the same reference time. Tests are evidence for the code under test, not proof that external services, production deployment or data freshness are healthy. State what was not tested.
+Checks must not depend on the wall clock: a scenario that needs "today" fixes the page clock and derives its synthetic data from the same reference time. Report every gate's first result, including failures, and never weaken an assertion to pass (procedure: `verify-babdoduk`). Tests are evidence for the code under test, not proof that external services, production deployment or data freshness are healthy. State what was not tested.
 
 ## Handoff
 
-Report changed files, the user-visible result, tests and counts, remaining risks, branch and exact commit/push state, and the session-end items above. If the task is interrupted, leave a concise continuation prompt with current SHA, worktree changes, completed phase, next phase, open owner decisions and commands needed to resume. Never leave a half-finished unreviewed mutation disguised as complete.
+Report changed files, the user-visible result, tests and counts, remaining risks, remote movement, and the branch with its exact commit and push state (procedure: `handoff`). If the task is interrupted, leave a concise continuation prompt with current SHA, worktree changes, completed phase, next phase, open owner decisions and commands needed to resume. Never leave a half-finished unreviewed mutation disguised as complete.
