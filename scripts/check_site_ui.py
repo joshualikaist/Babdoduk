@@ -347,6 +347,40 @@ def event_bands(page):
     return count
 
 
+def food_provenance(page):
+    """Published and browser-saved food log entries are labelled; storage keeps its shape."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"food.html: {detail}"
+        count += 1
+
+    shared = {"currency": "KRW", "entries": [{"date": "2026-05-10", "total": 1000, "items": []},
+                                             {"date": "2026-05-11", "total": 2000, "items": []}]}
+    local = [{"date": "2026-05-11", "total": 3000, "items": []}, {"date": "2026-05-12", "total": 4000, "items": []}]
+    page.route("**/data/food-log.json", lambda route: route.fulfill(json=shared))
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/food.html", wait_until="networkidle")
+    page.evaluate("list => localStorage.setItem('babdoduk-food-local', JSON.stringify(list))", local)
+    page.reload(wait_until="networkidle")
+    check(page.locator("main h1").count() == 1, "main landmark with one page heading")
+    cells = page.locator(".food-cal-cell.has-data").evaluate_all(
+        "els => els.map(el => ({local: el.classList.contains('is-local'), label: el.getAttribute('aria-label')}))")
+    check([c["local"] for c in cells] == [False, True, True], ("browser entries are marked", cells))
+    check("공개 기록" in cells[0]["label"] and "대신" in cells[1]["label"], ("source named in labels", cells))
+    check("공개 기록 1일" in page.locator("#foodSourceLegend").inner_text()
+          and "이 브라우저 2일" in page.locator("#foodSourceLegend").inner_text(), "legend counts each source")
+    check(page.evaluate("localStorage.getItem('babdoduk-food-local')").find("_source") < 0,
+          "provenance tags are not written to storage")
+    labels = page.locator("#foodInputBody select, #foodInputBody input").evaluate_all(
+        "els => els.map(el => el.getAttribute('aria-label'))")
+    check(labels and all(labels), ("every input row control is named", labels))
+    page.evaluate("localStorage.removeItem('babdoduk-food-local')")
+    page.unroute("**/data/food-log.json")
+    return count
+
+
 def run_checks(screenshots=False):
     report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
     with sync_playwright() as pw:
@@ -365,6 +399,7 @@ def run_checks(screenshots=False):
         report["checks"] += magazine_tools(page)
         report["checks"] += home_summary(page)
         report["checks"] += event_bands(page)
+        report["checks"] += food_provenance(page)
         # High contrast must defer to the system; custom colors/widths must not
         # leak from either the standards or WebKit rule sets.
         page.emulate_media(forced_colors="active")
