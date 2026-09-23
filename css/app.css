@@ -44,6 +44,15 @@
   border-color: rgba(255, 103, 93, 0.28) !important;
 }
 
+/* Seven days must fit even with a visible Windows scrollbar at 360px. */
+.food-cal-weekdays,
+.food-cal-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.food-cal-cell { min-width: 0; }
+.food-cal-cell .amt { max-width: 100%; overflow-wrap: anywhere; }
+
 .food-cal-cell.has-data:hover {
   border-color: var(--accent) !important;
 }
