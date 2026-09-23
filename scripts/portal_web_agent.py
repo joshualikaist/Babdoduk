@@ -46,9 +46,14 @@ def log(message):
     print(line, flush=True)
     try:
         LOCAL_DIR.mkdir(parents=True, exist_ok=True)
-        with LOG_FILE.open("a", encoding="utf-8") as fh:
-            fh.write(line + "\n")
-    except OSError:
+        from ggongbab.ops_storage import OpsError, SafeLog
+        from ggongbab.ops_policy import REASONS
+        sink = SafeLog(LOG_FILE)
+        try:
+            sink(message if message in REASONS else "PORTAL_OPERATION_STATUS")
+        finally:
+            sink.close()
+    except (OSError, OpsError):
         pass
 
 

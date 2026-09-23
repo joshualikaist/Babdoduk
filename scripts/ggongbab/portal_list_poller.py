@@ -84,7 +84,8 @@ class PortalListPoller:
 
 def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
                max_pages=20, once=False, max_cycles=None, sleep=time.sleep,
-               monotonic=time.monotonic, now=lambda: datetime.now(KST)):
+               monotonic=time.monotonic, now=lambda: datetime.now(KST),
+               stop_requested=None, max_failures=None, on_retry=None):
     """One handoff; auth/schema failures stop until an operator restarts after recovery."""
     if interval not in (30, 60):
         raise ValueError("interval must be 30 or 60 seconds")
@@ -105,11 +106,15 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
             raise ListStateError("PORTAL_HEARTBEAT_WRITE_FAILED") from None
 
     try:
+        if stop_requested and stop_requested():
+            return 0
         scanned = now()
         client = provider.acquire()
         poller = PortalListPoller(client, state, max_pages=max_pages)
         failures = cycles = 0
         while True:
+            if stop_requested and stop_requested():
+                return 0
             started = monotonic()
             scanned = now()
             delay = interval
@@ -123,24 +128,34 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
             except ListTransportError as exc:
                 failures += 1
                 delay = max(min(interval * 2 ** min(failures, 5), 900), exc.retry_after)
+                if on_retry:
+                    on_retry(delay)
                 reason = safe_reason_code(exc)
                 beat("collector_error", reason)
                 log(reason)
                 code = 1
             cycles += 1
+            if max_failures is not None and failures >= max_failures:
+                return 1
             if once or (max_cycles is not None and cycles >= max_cycles):
                 return code
             # Monotonic cadence; no overlapping scans or tight retry loops.
             # Retry-After starts at the failure response, not at request start.
             remaining = delay if code else max(1, delay - (monotonic() - started))
             while remaining > 0:
-                part = min(remaining, 30)
+                if stop_requested and stop_requested():
+                    return 0
+                part = min(remaining, 5 if stop_requested else 30)
                 sleep(part)
                 remaining -= part
     except AuthRequired as exc:
-        log(safe_reason_code(exc))
+        reason = safe_reason_code(exc)
+        log(reason)
         try:
-            beat("auth_required", "10")
+            if reason in {"PORTAL_RESIDENT_OWNER_UNVERIFIED", "PORTAL_CDP_ATTACH_TIMEOUT"}:
+                beat("collector_error", reason)
+            else:
+                beat("auth_required", "10")
         except ListStateError:
             return 1
         log("Portal list authentication unavailable; complete manual setup and restart --poll-list")

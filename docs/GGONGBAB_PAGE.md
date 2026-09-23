@@ -831,3 +831,9 @@ python scripts\dooray_web_agent.py --run --from 2026-09-01 --to 2026-09-19 --run
 [GGONGBAB_PUBLIC_FEED.md](GGONGBAB_PUBLIC_FEED.md)에 정의되어 있다.
 `004_ggongbab_public_feed.sql`은 운영자가 검토 후 수동 적용해야 한다.
 기존 `latest.json`과 프런트엔드는 유지되며, Portal Stage A pending은 공개하지 않는다.
+
+## Windows resident operations (Phase 2C-OPS, lab)
+
+로그인 시 Portal LIST worker를 실행하는 Task Scheduler 설치 스크립트와
+watchdog·상태·안전 복구 명령은 [GGONGBAB_RESIDENT_OPS.md](GGONGBAB_RESIDENT_OPS.md)를 따른다.
+설치 스크립트는 아직 실행하지 않았으며, Portal 수동 인증과 기존 baseline/pending을 유지한다.
