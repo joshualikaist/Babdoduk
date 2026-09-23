@@ -103,9 +103,30 @@ def inspect_page(page, name, size, screenshot_dir=None):
     if page.evaluate("document.documentElement.scrollHeight > innerHeight"):
         check(metrics["viewportGutter"] == 16, ("visible Windows scrollbar gutter", metrics))
 
+    direct = page.locator(".nav-mega-row > .site-nav-direct")
+    check(direct.count() == 2, "two direct food tasks in navigation")
+    check(direct.nth(0).get_attribute("href") == "ggongbab.html"
+          and direct.nth(1).get_attribute("href") == "mukbang.html#what",
+          "availability and choice have separate destinations")
+    check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
+          "secondary destinations share one More menu")
+    nav_items = page.locator("#navHome, .site-nav-direct, #langToggle").evaluate_all(
+        "els => els.map(el => { const r = el.getBoundingClientRect(); return {left:r.left,right:r.right}; }).sort((a,b) => a.left-b.left)")
+    check(all(nav_items[i]["right"] <= nav_items[i + 1]["left"] + 1
+              for i in range(len(nav_items) - 1)), "navigation controls do not overlap")
+    check(direct.nth(0).inner_text() == "오늘의 한 끼"
+          and direct.nth(1).inner_text() == "메뉴 고르기", "Korean primary labels")
+    page.locator("#langToggle").click()
+    english = [direct.nth(i).inner_text() for i in range(2)]
+    check(english == ["Today's food", "Choose a dish"], ("English primary labels", english,
+          page.evaluate("document.documentElement.lang")))
+    page.locator("#langToggle").click()
     nav = page.locator(".nav-mega-trigger").first
     nav.click()
     check(nav.get_attribute("aria-expanded") == "true", "navigation opens")
+    panel = page.locator("#navMorePanel").bounding_box()
+    check(panel is not None and panel["x"] >= -1 and panel["x"] + panel["width"] <= metrics["rootWidth"] + 1,
+          "More menu remains inside viewport")
     page.keyboard.press("Escape")
     check(nav.get_attribute("aria-expanded") == "false", "navigation Escape closes")
 

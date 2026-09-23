@@ -21,6 +21,10 @@ body.mg-body .site-footer {
   min-width: 0;
 }
 
+#what {
+  scroll-margin-top: calc(var(--nav-h) + 24px);
+}
+
 .mg-shell {
   display: grid;
   grid-template-columns: 228px minmax(0, 1fr);
