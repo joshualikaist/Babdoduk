@@ -231,6 +231,30 @@ def magazine_tools(page):
     check(dish in prefs["likes"] and dish not in prefs["eaten"], "choosing a dish is not recorded as eaten")
     page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
     page.unroute("**/data/kaist-menu/latest.json")
+
+    # Edition provenance: collected stories link out safely, desk memos say so,
+    # and an older edition is not presented as today's.
+    edition = {"date": "2026-01-02", "schedule": "Daily 10:00 KST",
+               "featured": {"title": "F", "summary": "s", "source": "Src", "url": "https://example.org/f",
+                            "medium": "blog", "category": "tips"},
+               "lanes": {lane: {"lead": lane, "items": [
+                   {"title": "link", "summary": "s", "source": "Src", "url": "https://example.org/a", "medium": "blog"},
+                   {"title": "desk", "summary": "s", "source": "밥도둑 데스크", "url": "", "medium": "desk"},
+                   {"title": "bad", "summary": "s", "source": "Src", "url": "javascript:alert(1)", "medium": "blog"}]}
+                   for lane in ("tips", "trend", "health", "habit")}}
+    page.route("**/data/magazine/index.json", lambda route: route.fulfill(
+        json={"latest": "2026-01-02", "dates": ["2026-01-02"]}))
+    page.route("**/data/magazine/2026-01-02.json", lambda route: route.fulfill(json=edition))
+    page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
+    lane = page.locator('[data-lane-items="tips"]')
+    check(lane.locator("a.mg-story").count() == 1
+          and lane.locator("a.mg-story").get_attribute("rel") == "noopener", "one safe outbound story")
+    check(not page.locator('a[href^="javascript"]').count(), "non-http story URLs are not linked")
+    check(lane.locator(".mg-story--desk").count() == 2 and "자체 메모" in lane.locator(".mg-story--desk").first.inner_text(),
+          "stories without a source link are labelled as desk notes")
+    check("지난 호" in page.locator(".mg-masthead-issue").inner_text(), "past edition is labelled")
+    page.unroute("**/data/magazine/index.json")
+    page.unroute("**/data/magazine/2026-01-02.json")
     return count
 
 
