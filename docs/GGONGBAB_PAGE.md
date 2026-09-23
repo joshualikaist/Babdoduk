@@ -1,8 +1,11 @@
 # 꽁밥 (KAIST 무료 식사 행사) 자동 수집 시스템
 
-`lab-ggongbab.html` 은 더 이상 손으로 쓰는 안내 페이지가 아니다. Dooray 메일함 · KAIST 공개 공지 · 수동 입력을
-30분마다 모아 OpenAI로 구조화하고, 규칙 검증 · 중복 제거를 거쳐 Supabase에 쌓은 뒤, 공개 조건을 만족하는
-행사만 `data/ggongbab/latest.json` 으로 내보내 세로 피드로 보여 준다.
+`ggongbab.html`과 `lab-ggongbab.html`은 공개 정적 snapshot을 읽어 세로 피드를 보여 준다.
+기존 파이프라인은 수집 → 구조화 → 검증·중복 제거 → canonical DB → 공개 JSON export 구조다.
+30분은 워크플로의 선언 주기일 뿐 실제 성공을 보장하지 않는다. 소유자가 현재
+`ggongbab-refresh.yml`의 장애를 확인했으며 Phase 10B에서는 복구/활성화하지 않는다.
+Realtime·public-feed backend·새 Portal poller·Windows worker도 이번 승격에 포함하지 않는다.
+릴리스 경계는 `PHASE_10B_RELEASE.md`를 따른다.
 
 이 문서 하나로 운영 · 디버깅 · 확장이 가능해야 한다.
 
@@ -56,7 +59,7 @@ KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/late
 | `supabase/migrations/001_ggongbab_schema.sql` | 스키마 · RLS · seed |
 | `supabase/migrations/002_ggongbab_mailbox_source.sql` | `dooray_mailbox` 소스 타입 추가 |
 | `css/ggongbab.css`, `js/ggongbab.js` | 피드 UI |
-| `tests/ggongbab/` | pytest (295개) |
+| `tests/ggongbab/` | synthetic pytest — 실제 결과/개수는 릴리스 검증 기록 참고 |
 
 ---
 

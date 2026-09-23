@@ -6,26 +6,34 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 
 ---
 
+## Phase 10B 범위
+
+현재 브랜치는 로컬 릴리스 후보입니다. main/lab 반영·push·배포는 별도 승인이 필요합니다. 승인된 UI와 문서·테스트만 선별하며 수집기, Supabase, Realtime, Windows worker, 생성 데이터, workflow는 변경하지 않습니다. 정확한 경계와 결과는 `docs/PHASE_10B_RELEASE.md`를 봅니다.
+
 ## 1. 페이지 구성
 
 | 파일 | 역할 |
 |------|------|
-| **`index.html`** | 홈 — 프로필, 가로 캐러셀(주요 링크), 푸터 |
+| **`index.html`** | 홈 — 오늘의 한 끼·메뉴 고르기, 발행 시각을 표시하는 정적 요약, 매거진·활동 |
 | **`food.html`** | 먹방 가계부 — 일별 지출 입력·월/주 표·달력 (`data/food-log.json`) |
 | **`event.html`** | 이벤트 — 탭형 목록(날짜 순)·상세 패널. 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
-| **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/` 레일 |
-| **`ggongbab.html`** | **오늘 뭐 먹지?** — 꽁밥 피드 + KAIST 학식 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
+| **`mukbang.html`** | 밥도둑 매거진 — 4개 세로 카테고리, 출처·지난 호, 통합 메뉴 고르기(`#what`) |
+| **`ggongbab.html`** | **오늘의 한 끼** — 꽁밥 피드 + KAIST 학식 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
 | **`lab-ggongbab.html`** | 꽁밥 페이지의 실험용 fork. fixture·preview 모드가 여기에만 있다. `noindex` |
-| **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
+| **`lab.html`** | 기존 공개 실험실·`calendar.ics` 연동. 이미 main에 존재하며 `noindex`는 접근 제어가 아님 |
 
-상단 내비: 소개 · SNS · 주요 기능(맛집 지도 · 먹방 가계부 · 오늘 뭐 먹지?) · 이벤트 · 언어(EN/한국어).
+상단 내비: **오늘의 한 끼 · 메뉴 고르기 · 더보기 · 언어(EN/한국어)**. 메뉴 고르기는 기존 `mukbang.html#what`에 통합되어 있습니다.
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
-환영 팝업은 **홈에서만** 뜨고, 「하루 동안 보지 않기」는 `babdoduk-welcome-snooze-until`로 약 24시간 숨깁니다.
+홈 환영 팝업은 제거했습니다. 기존 저장 키를 마이그레이션하거나 삭제하지 않습니다.
+
+먹방 가계부는 **밥도둑 공개 기록**과 **이 브라우저 기록**을 출처로 구분합니다. 저장 구조는 그대로이며 같은 날짜에는 브라우저 기록이 우선하고 합산 화면에도 그 기록이 한 번 반영됩니다. 독립적인 두 회계 모드는 아닙니다. 기존 localStorage를 분리·재작성·삭제하지 않습니다.
+
+5월 이벤트의 실제 결과는 모두 **진행 여부 미확인**으로 유지합니다. `lab.html`/`calendar.ics` 공개 범위 감사, 법률 문서, 매거진 생성 문장 품질 개선은 별도 작업입니다.
 
 ### `ggongbab.html` 와 `lab-ggongbab.html`
 
-두 파일은 같은 렌더러(`js/ggongbab.js`)를 쓰고, 차이는 `<body data-gg-lab>` 한 개뿐입니다.
+두 파일은 같은 렌더러(`js/ggongbab.js`)와 선택 규칙(`js/ggongbab-select.js`)을 씁니다. `<body data-gg-lab>`가 실험 모드를 허용하며 lab 파일에는 별도 리본·noindex·실험 링크가 있습니다.
 
 - 이 속성이 **있으면**(lab) `?fixture=1`, `?preview=1`, `?debug-layout=1` 를 쓸 수 있습니다.
 - 이 속성이 **없으면**(본편) 모드는 항상 `normal` 로 고정됩니다. 쿼리스트링을 붙여도
@@ -48,7 +56,7 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 
 ---
 
-## 3. 오늘 뭐 먹지? 파이프라인
+## 3. 오늘의 한 끼 파이프라인
 
 KAIST에서 오늘 먹을 수 있는 것을 한 페이지(`ggongbab.html`)에 모읍니다.
 
@@ -135,8 +143,9 @@ fallback을 켜면 `fallbackAttempted` / `fallbackImproved` / `fallbackSame` / `
 
 ### 현재 상태
 
-`data/ggongbab/latest.json` 은 지금 **빈 피드**(`count: 0`)입니다. 시험용 행사를 공개로
-내보내지 않으려고 비워 두었습니다. OpenAI 한도가 회복되면 §5의 실수집을 돌려 채웁니다.
+공개 UI는 커밋된 정적 JSON을 읽습니다. 현재 건수·수집 상태는 고정 문구로 보장하지 않으며 payload의 발행/행사 날짜를 확인해야 합니다. 홈과 상세 화면 모두 이 릴리스에서는 정적 snapshot을 사용하고 Realtime/브라우저 DB 연결은 포함하지 않습니다.
+
+소유자는 `ggongbab-refresh.yml`의 현재 장애를 확인했습니다. Phase 10B는 이를 복구하거나 활성화하지 않으며, 아래 운영 설명은 이번 UI 작업에서 live 수집을 실행하라는 지시가 아닙니다.
 
 ---
 
@@ -524,7 +533,7 @@ python scripts\check_ggongbab_ui.py --preview  # preview 데이터까지 포함
 
 **승격 절차** — `lab-ggongbab.html` 을 손으로 베끼지 않습니다. lab 파일에서
 `noindex`, 실험 리본(마크업과 CSS), `data-gg-lab`, 실험실 내비 항목을 제거하고 제목을
-`오늘 뭐 먹지? · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
+`오늘의 한 끼 · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
 위 검사를 다시 돌립니다.
 
 ---
@@ -532,7 +541,10 @@ python scripts\check_ggongbab_ui.py --preview  # preview 데이터까지 포함
 ## 9. 테스트
 
 ```powershell
-python -m pytest tests\ggongbab
+python -m pytest tests -q
+python scripts/validate_content.py
+python scripts/check_site_ui.py
+python scripts/check_ggongbab_ui.py
 ```
 
 파이프라인·검증기·중복 제거·에이전트 계약·AI 실패 처리까지 포함합니다.
@@ -542,6 +554,8 @@ python -m pytest tests\ggongbab
 ---
 
 ## 10. 자동화 (GitHub Actions)
+
+아래는 저장소에 선언된 주기입니다. 성공·최신성을 뜻하지 않습니다. `ggongbab-refresh.yml`은 현재 장애 상태로 보고되어 있으며 별도 운영 복구 대상입니다. 이번 릴리스에서는 워크플로를 수정/활성화하지 않습니다.
 
 | 워크플로 | 주기 | 하는 일 |
 |----------|------|---------|
@@ -565,40 +579,20 @@ cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main�
 
 ## 11. 브랜치와 배포
 
-저장소는 하나이고 브랜치로 나눕니다. **폴더를 복사해 프로젝트를 나누지 않습니다.**
+| 브랜치 | 역할 |
+| --- | --- |
+| main | production |
+| lab | integration/staging — 공용 scratch 금지 |
+| agent/<tool>/<task> | 별도 worktree에서 독립 구현 |
+| release/<name> | 승인된 범위만 담은 production candidate |
 
-| 브랜치 | 용도 | Vercel 프로젝트 |
-|--------|------|-----------------|
-| `main` | 방문자용 본편 | `babdoduk` → https://babdoduk.vercel.app |
-| `lab` | 실험 | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
+한 worktree에는 활성 코딩 에이전트 한 명만 둡니다. 시작/종료 시 fetch 후 SHA·ahead/behind·사용자 변경을 기록합니다. 원격이 움직이면 자동 통합을 멈추고 검토하며 force push/reset/rebase로 덮어쓰지 않습니다.
 
-기능 개발은 `lab` 에서 하고, 본편 반영은 `lab` → `main` merge로 합니다.
+기능 개발은 최신 origin/lab에서 격리한 task branch에서, 이번 릴리스 준비는 기록된 origin/main에서 생성한 release branch에서 합니다. lab 전체를 main에 자동 merge하지 않습니다. 생성 데이터 봇은 독립적으로 두 원격을 갱신할 수 있습니다.
 
-```powershell
-# 실험
-git checkout lab
-git push origin lab
+문서상 Vercel 연결은 main → babdoduk, lab → babdoduk-lab입니다. live 배포 상태는 별도 확인해야 합니다. main/lab push·통합·production 배포는 이 준비 작업에 포함되지 않습니다.
 
-# 본편 반영
-git checkout main
-git merge --no-ff lab
-git push origin main
-```
-
-`git push --force`, `git reset --hard` 후 main 덮어쓰기, main ref 직접 갱신은 하지 않습니다.
-`lab` 브랜치에서 `vercel --prod` 를 공개 프로젝트에 대고 실행하지 않습니다.
-
-Vercel CLI가 처음이면:
-
-```powershell
-npm install -g vercel
-vercel link --project babdoduk-lab --yes    # 또는 --project babdoduk
-vercel --prod
-```
-
-`In which directory is your code located?` 에는 경로가 아니라 **`.`** 만 입력합니다.
-
-자세한 내용: `docs/DEPLOYMENT_AND_BRANCHES.md`, merge 전 점검: `docs/BRANCH_MERGE_CHECKLIST.md`.
+자세한 내용: `AGENTS.md`, `docs/DEPLOYMENT_AND_BRANCHES.md`, `docs/BRANCH_MERGE_CHECKLIST.md`.
 
 ---
 
@@ -633,7 +627,10 @@ vercel --prod
 
 | 문서 | 내용 |
 |------|------|
-| `docs/GGONGBAB_PAGE.md` | 꽁밥 페이지 운영 규칙 |
+| `PRD.md` · `DESIGN_SYSTEM.md` · `ARCHITECTURE.md` | 제품·UI·production 범위 기준 |
+| `AGENTS.md` | 격리 worktree와 Git 세션 규칙 |
+| `docs/PHASE_10B_RELEASE.md` | 선별 릴리스 범위·검증·승인 대기 |
+| `docs/GGONGBAB_PAGE.md` | 기존 꽁밥 파이프라인 운영 규칙 |
 | `docs/GGONGBAB_PREVIEW.md` | 미리보기·fixture 모드 |
 | `docs/DEPLOYMENT_AND_BRANCHES.md` | 배포·브랜치 |
 | `docs/BRANCH_MERGE_CHECKLIST.md` | merge 전 점검 |

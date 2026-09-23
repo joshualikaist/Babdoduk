@@ -5,6 +5,7 @@ import argparse
 import json
 import threading
 from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -40,6 +41,20 @@ FIXTURE_CLOCK_SCRIPT = f"""(() => {{
   FixtureDate.UTC = NativeDate.UTC;
   globalThis.Date = FixtureDate;
 }})();"""
+
+
+def one_today_payload(now=None):
+    """An ongoing synthetic event today, even when checks run late at night.
+
+    Normal routes retain the native clock. Create dates at request time rather
+    than putting the start two hours ahead (which can become tomorrow).
+    """
+    now = now or datetime.now(timezone(timedelta(hours=9)))
+    start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    return {"events": [{"id": "one", "title": "one", "startAt": start.isoformat(),
+                        "endAt": (start + timedelta(days=1)).isoformat(),
+                        "food": {"provided": "true", "type": "meal", "description": "점심"},
+                        "sources": [{"type": "dooray"}]}]}
 
 
 class LocalHandler(SimpleHTTPRequestHandler):
@@ -172,6 +187,10 @@ def run_checks(preview=False):
     with local_server() as base, sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=True)
         context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+        # Only the loopback server may reach the network; public-host scenarios
+        # below are fulfilled locally by page routes, never a live deployment.
+        context.route("**/*", lambda route: route.continue_()
+                      if urlparse(route.request.url).hostname == "127.0.0.1" else route.abort())
         page = context.new_page()
         page.add_init_script(FIXTURE_CLOCK_SCRIPT)
         errors = []
@@ -213,7 +232,9 @@ def run_checks(preview=False):
                 report["checks"] += 1
             page.screenshot(path=str(OUT / f"ggongbab-{width}x{height}.png"))
             report["fixture"][f"{width}x{height}"] = r
-            page.evaluate("window.scrollTo(0, 450)")
+            # Scroll past the filter's own resting place so the check does not
+            # depend on the exact height of the hero and radar above it.
+            page.evaluate("window.scrollTo(0, document.querySelector('.gg-filters').getBoundingClientRect().top + scrollY + 120)")
             page.wait_for_timeout(100)
             sticky = rectangles(page)
             near(sticky["filter"]["y"], sticky["nav"]["h"])
@@ -262,7 +283,6 @@ def run_checks(preview=False):
         report["checks"] += 1
         # Normal mode still fetches the public feed; unsafe food states never
         # become public cards or inflate hero counts.
-        from datetime import datetime, timedelta, timezone
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
         events = [{"id": state, "title": state, "startAt": future,
                    "food": {"provided": state}, "registration": {}} for state in ("true", "false", "unknown")]
@@ -329,14 +349,7 @@ def run_checks(preview=False):
         page.locator(".km-card").first.wait_for()
         assert "최근 학식" in page.locator("#foodHubMenu h2").inner_text()
         report["checks"] += 3
-        from datetime import datetime, timedelta, timezone
-        now_kst = datetime.now(timezone(timedelta(hours=9)))
-        soon = (now_kst + timedelta(hours=2)).replace(microsecond=0).isoformat()
-        later = (now_kst + timedelta(hours=4)).replace(microsecond=0).isoformat()
         drought = {"events": []}
-        one = {"events": [{"id": "one", "title": "one", "startAt": soon, "endAt": later,
-                           "food": {"provided": "true", "type": "meal", "description": "점심"},
-                           "sources": [{"type": "dooray"}]}]}
         page.unroute("**/data/ggongbab/latest.json")
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=drought))
         reset_storage(page)
@@ -347,7 +360,7 @@ def run_checks(preview=False):
         assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
         page.locator("#foodHubTabFree").click()
         report["checks"] += 3
-        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=one))
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=one_today_payload()))
         page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
         page.goto(base + "/lab-ggongbab.html")
         page.locator(".gg-card").first.wait_for()
@@ -385,11 +398,38 @@ def run_checks(preview=False):
                 assert not page.locator(".lab-fork-ribbon").count()
                 assert not page.evaluate("document.body.hasAttribute('data-gg-lab')")
                 assert not page.locator('meta[name="robots"]').count()
-                assert page.title() == "오늘 뭐 먹지? · 밥도둑 Babdoduk"
+                assert page.title() == "오늘의 한 끼 · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
                 report["checks"] += 11
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
+        # Keyboard users keep their place through re-renders; tabs follow the
+        # ARIA arrow-key pattern; the picker is a separate, labelled next step.
+        page.set_viewport_size({"width": 390, "height": 844})
+        reset_storage(page)
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-card").first.wait_for()
+        assert page.locator(".gg-choose-link").get_attribute("href") == "mukbang.html#what"
+        page.locator('[data-group="when"][data-value="today"]').focus()
+        page.keyboard.press("Enter")
+        assert page.evaluate("document.activeElement.dataset.value") == "today"
+        page.keyboard.press("Tab")
+        page.keyboard.press("Shift+Tab")
+        page.locator('[data-group="when"][data-value="all"]').focus()
+        page.keyboard.press("Enter")
+        page.locator("#foodHubTabFree").focus()
+        page.keyboard.press("ArrowRight")
+        assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
+        assert page.evaluate("document.activeElement.id") == "foodHubTabMenu"
+        assert page.locator("#foodHubTabFree").get_attribute("tabindex") == "-1"
+        page.keyboard.press("Home")
+        assert page.locator("#foodHubTabFree").get_attribute("aria-selected") == "true"
+        reset_storage(page)
+        page.goto(base + "/ggongbab.html#menu")
+        page.locator(".food-hub-tabs").wait_for()
+        assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
+        reset_storage(page)
+        report["checks"] += 8
         # All upcoming includes later weeks, sorts dates, and excludes even a
         # just-ended event from today. Normal mode keeps the real browser clock.
         now_kst = datetime.now(timezone(timedelta(hours=9)))

@@ -42,6 +42,19 @@
     });
   }
 
+  // One persistent polite region: panel markup is replaced on every step.
+  var status = document.getElementById('eatStatus');
+  if (!status) {
+    status = document.createElement('p');
+    status.id = 'eatStatus';
+    status.className = 'eat-sr';
+    status.setAttribute('role', 'status');
+    app.appendChild(status);
+  }
+  function announce(text) {
+    status.textContent = text || '';
+  }
+
   function reduceMotion() {
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
@@ -50,10 +63,6 @@
     if (hunger === 'hungry') return { craving: 'hearty', kind: 'any', hunger: 'heavy', dining: 'any', budget: 'any' };
     if (hunger === 'light') return { craving: 'light', kind: 'any', hunger: 'light', dining: 'any', budget: 'any' };
     return { craving: 'any', kind: 'any', hunger: 'any', dining: 'any', budget: 'any' };
-  }
-
-  function chipLabel(id) {
-    return t('eat.chip.' + id, id);
   }
 
   function destroySlot() {
@@ -76,10 +85,10 @@
   }
 
   function hungerRow() {
-    var html = '<div class="eat-hunger" role="radiogroup" aria-label="' + escapeHtml(t('eat.hungerAria', '배고픈 정도')) + '">';
+    var html = '<div class="eat-hunger" role="group" aria-label="' + escapeHtml(t('eat.hungerAria', '배고픈 정도')) + '">';
     HUNGERS.forEach(function (opt) {
       var on = state.hunger === opt.id;
-      html += '<button type="button" class="eat-hchip' + (on ? ' is-on' : '') + '" data-eat="hunger" data-id="' + opt.id + '" role="radio" aria-checked="' + (on ? 'true' : 'false') + '"' + (state.spinning ? ' disabled' : '') + '>';
+      html += '<button type="button" class="eat-hchip' + (on ? ' is-on' : '') + '" data-eat="hunger" data-id="' + opt.id + '" aria-pressed="' + (on ? 'true' : 'false') + '"' + (state.spinning ? ' disabled' : '') + '>';
       html += escapeHtml(t(opt.label, opt.id));
       html += '</button>';
     });
@@ -142,6 +151,7 @@
           var btn = panel.querySelector('[data-eat="spin"]');
           if (btn) btn.disabled = true;
           setSpinLabel(t('eat.spinning', '고르는 중…'));
+          announce(t('eat.spinning', '고르는 중…'));
         }
         setHint(kind);
       },
@@ -153,7 +163,7 @@
     });
   }
 
-  function renderHome() {
+  function renderHome(focusSpin) {
     destroySlot();
     setView('home');
     state.spinning = false;
@@ -168,6 +178,10 @@
     panel.innerHTML = html;
     setHint('idle');
     mountSlot();
+    if (focusSpin) {
+      var spinBtn = panel.querySelector('[data-eat="spin"]');
+      if (spinBtn) spinBtn.focus();
+    }
   }
 
   function startSpin() {
@@ -201,19 +215,27 @@
     rec.picks[0].labels = labels || window.BabdodukSlot.labelsOf(food);
     state.result = rec;
     destroySlot();
-    renderResult();
+    renderResult(true);
   }
 
   function resultLine(row) {
     var labels = row && row.labels;
-    if (!labels || !labels.length) return t('eat.result.blurb', '지금 시간과 한 끼의 크기에 맞춰 골랐어요.');
+    // Slot labels are Korean-only reel text; English shows the reasons alone.
+    if (!labels || !labels.length || lang() === 'en') return '';
     return t('eat.result.slot', '{a} · {b} · {c}')
       .replace('{a}', labels[0] || '')
       .replace('{b}', labels[1] || '')
       .replace('{c}', labels[2] || '');
   }
 
-  function renderResult() {
+  function reasons(row) {
+    var list = (row.chips || []).map(function (chip) {
+      return t('eat.reason.' + chip, '');
+    }).filter(Boolean);
+    return list.length ? list : [t('eat.reason.default', '배고픈 정도와 지금 시간을 기준으로 골랐어요')];
+  }
+
+  function renderResult(focusResult) {
     setView('result');
     var rec = state.result;
     if (!rec || !rec.picks.length) {
@@ -222,29 +244,27 @@
     }
     var top = rec.picks[0];
     var rest = rec.picks.slice(1);
-    var match = Math.round(Math.min(99, Math.max(62, top.score)));
+    var line = resultLine(top);
     var html = navRow();
     html += '<p class="eat-kicker">' + escapeHtml(t('eat.result.kicker', '오늘의 밥도둑 PICK')) + '</p>';
     html += '<article class="eat-hero eat-hero--slot">';
     html += '<span class="eat-num">01</span>';
-    html += '<h3>' + escapeHtml(foodName(top.food)) + '</h3>';
-    html += '<p class="eat-whyline">' + escapeHtml(resultLine(top)) + '</p>';
-    html += '<p class="eat-match"><b>' + match + '%</b> MATCH</p>';
-    html += '<p class="eat-chips">';
-    (top.chips || []).forEach(function (chip) {
-      html += '<span>' + escapeHtml(chipLabel(chip)) + '</span>';
+    html += '<h3 tabindex="-1">' + escapeHtml(foodName(top.food)) + '</h3>';
+    if (line) html += '<p class="eat-whyline">' + escapeHtml(line) + '</p>';
+    html += '<p class="eat-reasons-label">' + escapeHtml(t('eat.reasons', '추천 이유')) + '</p><ul class="eat-reasons">';
+    reasons(top).forEach(function (text) {
+      html += '<li>' + escapeHtml(text) + '</li>';
     });
-    html += '</p>';
+    html += '</ul>';
+    html += '<p class="eat-scope">' + escapeHtml(t('eat.scope', '음식 아이디어 추천이에요. 판매 여부·가격·알레르기는 가게에서 확인해 주세요.')) + '</p>';
     html += '<div class="eat-cta">';
-    html += '<button type="button" class="eat-btn eat-btn--main" data-eat="take" data-id="' + top.food.id + '">' + escapeHtml(t('eat.take', '이거 먹을래')) + '</button>';
+    html += '<button type="button" class="eat-btn eat-btn--main" data-eat="take" data-id="' + top.food.id + '">' + escapeHtml(t('eat.take', '이걸로 할래')) + '</button>';
     html += '<button type="button" class="eat-btn" data-eat="more">' + escapeHtml(t('eat.more', '다시 돌리기')) + '</button>';
     html += '</div>';
-    html += '<button type="button" class="eat-textbtn eat-why-toggle" data-eat="why" aria-expanded="false">' + escapeHtml(t('eat.why', '왜 이거야?')) + '</button>';
-    html += '<div class="eat-explain" hidden><p>' + escapeHtml(explainText(top)) + '</p></div>';
     html += '<div class="eat-feedback" role="group" aria-label="' + escapeHtml(t('eat.fb.aria', '이 추천은 어땠나요')) + '">';
-    html += '<button type="button" class="eat-fb" data-eat="fb" data-kind="like" data-id="' + top.food.id + '">' + escapeHtml(t('eat.fb.like', '좋아요')) + '</button>';
-    html += '<button type="button" class="eat-fb" data-eat="fb" data-kind="dislike" data-id="' + top.food.id + '">' + escapeHtml(t('eat.fb.dislike', '별로예요')) + '</button>';
-    html += '<button type="button" class="eat-fb" data-eat="fb" data-kind="eaten" data-id="' + top.food.id + '">' + escapeHtml(t('eat.fb.eaten', '먹었어요')) + '</button>';
+    html += '<button type="button" class="eat-fb" data-eat="fb" data-kind="like" data-id="' + top.food.id + '" aria-pressed="false">' + escapeHtml(t('eat.fb.like', '좋아요')) + '</button>';
+    html += '<button type="button" class="eat-fb" data-eat="fb" data-kind="dislike" data-id="' + top.food.id + '" aria-pressed="false">' + escapeHtml(t('eat.fb.dislike', '별로예요')) + '</button>';
+    html += '<button type="button" class="eat-fb" data-eat="fb" data-kind="eaten" data-id="' + top.food.id + '" aria-pressed="false">' + escapeHtml(t('eat.fb.eaten', '먹었어요')) + '</button>';
     html += '</div></article>';
     if (rest.length) {
       html += '<p class="eat-alts-label">' + escapeHtml(t('eat.alts', '다른 추천')) + '</p>';
@@ -255,17 +275,16 @@
       html += '</ul>';
     }
     panel.innerHTML = html;
-  }
-
-  function explainText(row) {
-    var base = t('eat.why.body', '배고픔과 지금 시간에 맞춰 엔진이 한 끼를 골랐어요.');
-    var labels = (row.chips || []).map(chipLabel);
-    if (!labels.length) return base;
-    return labels.join(' + ') + '\n' + t('eat.why.tail', '그 조건이 슬롯 세 칸에 올라갔어요.');
+    announce(t('eat.announce', '추천 메뉴: {dish}').replace('{dish}', foodName(top.food)));
+    if (focusResult) {
+      var heading = panel.querySelector('.eat-hero h3');
+      if (heading) heading.focus();
+    }
   }
 
   function goHome(opts) {
     opts = opts || {};
+    announce('');
     destroySlot();
     var hunger = opts.keepHunger ? state.hunger : 'any';
     var seen = opts.keepSeen ? state.seenIds.slice() : [];
@@ -282,7 +301,7 @@
       pendingRec: null,
       pendingFood: null
     };
-    renderHome();
+    renderHome(true);
   }
 
   function markSeen() {
@@ -300,7 +319,7 @@
     if (!row) return;
     var others = state.result.picks.filter(function (item) { return item.food.id !== id; });
     state.result.picks = [row].concat(others).slice(0, 3);
-    renderResult();
+    renderResult(true);
   }
 
   function onClick(e) {
@@ -319,6 +338,8 @@
       if (state.spinning) return;
       state.hunger = btn.getAttribute('data-id');
       renderHome();
+      var chosen = panel.querySelector('[data-eat="hunger"][data-id="' + state.hunger + '"]');
+      if (chosen) chosen.focus();
       return;
     }
     if (act === 'spin') startSpin();
@@ -329,25 +350,22 @@
       goHome({ keepHunger: true, keepSeen: true });
     }
     if (act === 'take') {
-      window.BabdodukFoods.prefs.feedback(btn.getAttribute('data-id'), 'eaten');
-      btn.textContent = t('eat.taken', '좋아, 그걸로.');
-      btn.disabled = true;
-    }
-    if (act === 'why') {
-      var box = panel.querySelector('.eat-explain');
-      var open = box && box.hasAttribute('hidden');
-      if (box) {
-        if (open) box.removeAttribute('hidden');
-        else box.setAttribute('hidden', '');
-      }
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      window.BabdodukFoods.prefs.feedback(btn.getAttribute('data-id'), 'like');
+      btn.textContent = t('eat.taken', '좋아요, 이걸로 골랐어요.');
+      btn.setAttribute('aria-disabled', 'true');
+      btn.removeAttribute('data-eat');
+      announce(t('eat.taken', '좋아요, 이걸로 골랐어요.'));
     }
     if (act === 'fb') {
       var kind = btn.getAttribute('data-kind');
       window.BabdodukFoods.prefs.feedback(btn.getAttribute('data-id'), kind);
       btn.classList.add('is-on');
+      btn.setAttribute('aria-pressed', 'true');
       Array.prototype.forEach.call(panel.querySelectorAll('.eat-fb'), function (el) {
-        if (el !== btn) el.classList.remove('is-on');
+        if (el !== btn) {
+          el.classList.remove('is-on');
+          el.setAttribute('aria-pressed', 'false');
+        }
       });
       if (kind === 'dislike') {
         var hideId = btn.getAttribute('data-id');
