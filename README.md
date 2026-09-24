@@ -591,8 +591,11 @@ python scripts/check_ggongbab_ui.py
 cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main에 있어야 합니다.
 두 워크플로는 `babdoduk-content-refresh` concurrency group을 공유해서 동시에 푸시하지 않습니다.
 
-`workflow_dispatch` 로 `full` / `export-only` / `review-report` 를 골라 수동 실행할 수 있습니다.
-내보낼 것이 없으면(종료 코드 2) 이전 `latest.json` 을 그대로 두고 성공으로 끝냅니다.
+`workflow_dispatch` 의 mode 는 다섯 가지입니다. `check`(기본값, 서비스 연결 확인), `dry-run`(수집만 하고
+DB·AI·파일 쓰기 없음), `review-report`(리뷰 대기 건수만 로그에 표시)는 발행하지 않고, `export-only` 와 `full` 만
+`data/ggongbab/` 을 lab·main 에 푸시할 수 있습니다. 실행 전에 mode 가 쓰는 secret 이 있는지(값이 아니라 있음/없음만)
+확인하고, 없으면 실패합니다. `export-only`/`full` 에서 내보낼 것이 없으면(종료 코드 2) 이전 `latest.json` 을
+그대로 두고 경고를 남긴 채 성공으로 끝냅니다.
 
 필요한 secret: `DOORAY_API_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `OPENAI_API_KEY`.
 `SUPABASE_SERVICE_ROLE_KEY` 는 `SUPABASE_SECRET_KEY` 가 비었을 때만 읽는 legacy 이름입니다.

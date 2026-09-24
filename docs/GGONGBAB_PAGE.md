@@ -277,7 +277,8 @@ python scripts/refresh_ggongbab.py --review-report
 
 처리는 Supabase 대시보드에서 `events` 행을 고치고 `needs_review=false`, `status='published'` 로 바꾸면 다음 export 에 반영된다.
 잘못 잡힌 행사는 `status='rejected'`. 관리자 UI 는 아직 없고 스키마만 준비돼 있다.
-GitHub Actions 에서 `workflow_dispatch` → mode `review-report` 로도 볼 수 있다.
+GitHub Actions 의 `workflow_dispatch` → mode `review-report` 는 건수만 보여 준다. 이 저장소의 Actions 로그는
+공개라서 제목과 사유는 로그에 남기지 않는다. 목록은 위 명령으로 로컬에서 본다.
 
 ---
 
