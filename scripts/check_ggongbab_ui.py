@@ -416,7 +416,7 @@ def run_checks(preview=False):
                 assert not page.locator(".lab-fork-ribbon").count()
                 assert not page.evaluate("document.body.hasAttribute('data-gg-lab')")
                 assert not page.locator('meta[name="robots"]').count()
-                assert page.title() == "오늘의 한 끼 · 밥도둑 Babdoduk"
+                assert page.title() == "오늘의 꽁밥 · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
                 report["checks"] += 11
             report["production"][f"{width}x{height}"] = rectangles(page)

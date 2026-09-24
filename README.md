@@ -14,16 +14,16 @@ KAIST 중심의 식사 정보·메뉴 선택·음식 콘텐츠 사이트입니�
 
 | 파일 | 역할 |
 |------|------|
-| **`index.html`** | 홈 — 서비스 한 문장과 두 핵심 행동(오늘의 한 끼·메뉴 고르기), 공개 데이터의 날짜가 붙은 요약, 매거진 대표 기사, 밥도둑 소개·사진·지도 (`css/index.css`, `js/home.js`) |
+| **`index.html`** | 홈 — 에디토리얼 히어로(두 핵심 행동 오늘의 꽁밥·메뉴 고르기, 분위기 사진, 날짜가 붙은 오늘 요약) 아래에 01 바로가기(가로 선반: 오늘의 꽁밥·메뉴 고르기·맛집 지도·먹방 가계부), 02 읽어보기(매거진 추천 글·데스크·사진 기록), 03 밥도둑 소식(공지·예정 활동, 지난 활동 기록, 이야기) (`css/index.css`, `js/home.js`) |
 | **`food.html`** | 먹방 가계부 — 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 날짜마다 출처를 표시하며, 같은 날짜는 브라우저 기록이 우선. 기록 주체는 소유자 결정 대기 |
-| **`event.html`** | 이벤트 — 날짜로 계산한 진행 중·예정·지난 일정과 별도의 확인 상태, 탭형 목록(시작일 순)·상세 패널 (`css/event.css`). 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
+| **`event.html`** | 밥도둑 소식 — 맨 위 공지·안내(작성된 공지만, 없으면 빈 상태)와 예정된 활동, 아래 지난 활동 기록. 날짜로 계산한 진행 중·예정·지난 일정과 별도의 확인 상태, 탭형 목록(시작일 순)·상세 패널 (`css/event.css`). 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
 | **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리(원문 링크 글과 ‘밥도둑 데스크’ 자체 메모를 구분 표시, 지난 호 표시), 날짜가 붙은 학식 요약, 메뉴 고르기(`#what`) |
-| **`ggongbab.html`** | **오늘의 한 끼** — 공개된 꽁밥 피드 + KAIST 학식. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
+| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 꽁밥 피드 + KAIST 학식. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 
-상단 내비: 오늘의 한 끼(꽁밥·학식) · 메뉴 고르기(현재 매거진의 추천기) · 더보기(매거진·이벤트·가계부·역사·지도·SNS) · 언어(EN/한국어).
+상단 내비: 오늘의 꽁밥(꽁밥·학식) · 메뉴 고르기(현재 매거진의 추천기) · 더보기(매거진·소식·이벤트·가계부·역사·지도·SNS) · 언어(EN/한국어). 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
 실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
 홈은 첫 방문 환영 팝업을 띄우지 않습니다(핵심 과업을 가리지 않기 위해). 기존 `babdoduk-welcome-snooze-until` 값은 남아 있어도 무해합니다.
@@ -55,7 +55,7 @@ KAIST 중심의 식사 정보·메뉴 선택·음식 콘텐츠 사이트입니�
 
 ---
 
-## 3. 오늘의 한 끼(꽁밥) 파이프라인
+## 3. 오늘의 꽁밥 파이프라인
 
 KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(메뉴 고르기)은 이 페이지의 가용 정보와 섞지 않고 `mukbang.html#what`으로 연결만 합니다.
 
@@ -546,7 +546,7 @@ python scripts\check_site_ui.py                # 8개 HTML의 scrollbar·overflo
 
 **승격 절차** — `lab-ggongbab.html` 을 손으로 베끼지 않습니다. lab 파일에서
 `noindex`, 실험 리본(마크업과 CSS), `data-gg-lab`, 실험실 내비 항목을 제거하고 제목을
-`오늘의 한 끼 · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
+`오늘의 꽁밥 · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
 위 검사를 다시 돌립니다.
 
 ---

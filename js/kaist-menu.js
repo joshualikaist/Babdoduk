@@ -417,7 +417,7 @@
         html += '</div>';
       }
     }
-    html += '<p class="kaist-links"><a class="kaist-to-hub" href="ggongbab.html#menu">' + esc(t('kaist.toHub', '오늘의 한 끼에서 모든 식당 보기 →')) + '</a>';
+    html += '<p class="kaist-links"><a class="kaist-to-hub" href="ggongbab.html#menu">' + esc(t('kaist.toHub', '오늘의 꽁밥에서 모든 식당 보기 →')) + '</a>';
     html += '<a class="kaist-to-slot" href="#what">' + esc(t('kaist.toSlot', '학식이 당기지 않는다면 메뉴 고르기 →')) + '</a></p>';
     mukbang.innerHTML = html;
     restoreFocus(mukbang, focus);

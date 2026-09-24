@@ -115,6 +115,10 @@ def inspect_page(page, name, size, screenshot_dir=None):
               for i in range(len(nav_items) - 1)), "navigation controls do not overlap")
     check(all(item["font"] >= 12 and item["height"] >= 44 for item in nav_items),
           ("navigation text >= 12px with 44px targets", nav_items))
+    brand = page.locator("#navHome").evaluate("""el => { const s = getComputedStyle(el);
+      return [s.backgroundImage, s.webkitTextFillColor, s.animationName]; }""")
+    check("linear-gradient" in brand[0] and "99, 102, 241" in brand[0] and brand[1] == "rgba(0, 0, 0, 0)"
+          and brand[2] == "none", ("original gradient wordmark; reduced motion stops its animation", brand))
     footer_layer = page.locator(".site-footer").evaluate(
         "el => [getComputedStyle(el).position, parseInt(getComputedStyle(el).zIndex, 10)]")
     check(footer_layer[0] != "static" and footer_layer[1] >= 1,
@@ -123,11 +127,11 @@ def inspect_page(page, name, size, screenshot_dir=None):
     check(footer_links and all(href and href != "#" and (ROOT / href.split("#")[0]).is_file()
                                for href in footer_links if not href.startswith(("mailto:", "https:"))),
           ("footer links resolve to real pages", footer_links))
-    check(direct.nth(0).inner_text() == "오늘의 한 끼"
+    check(direct.nth(0).inner_text() == "오늘의 꽁밥"
           and direct.nth(1).inner_text() == "메뉴 고르기", "Korean primary labels")
     page.locator("#langToggle").click()
     english = [direct.nth(i).inner_text() for i in range(2)]
-    check(english == ["Today's food", "Choose a dish"], ("English primary labels", english,
+    check(english == ["Today's free food", "Choose a dish"], ("English primary labels", english,
           page.evaluate("document.documentElement.lang")))
     page.locator("#langToggle").click()
     nav = page.locator(".nav-mega-trigger").first
@@ -308,8 +312,10 @@ def home_summary(page):
     return count
 
 
-SHELF = ["today", "pick", "magazine", "event", "map"]
-SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "mukbang.html", "event.html", "https://naver.me/5NeqUPzI"]
+SHELF = ["today", "pick", "map", "log"]
+SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI", "food.html"]
+GROUPS = ["바로가기", "읽어보기", "밥도둑 소식"]
+NEWS_HREFS = ["event.html#notice", "event.html#archive", "history.html"]
 HOME_TOP = """() => {
   const q = s => document.querySelector(s);
   const box = el => { const r = el.getBoundingClientRect(); return {x:r.x, y:r.y, w:r.width, h:r.height, right:r.right, bottom:r.bottom}; };
@@ -331,7 +337,11 @@ HOME_TOP = """() => {
       priority: img.getAttribute('fetchpriority')})),
     headings: [...document.querySelectorAll('main h1, main h2, main h3')].filter(h => !h.closest('[hidden]'))
       .map(h => Number(h.tagName[1])),
-    states: [q('#homeMenuStatus').dataset.state, q('#homeFreeStatus').dataset.state]
+    states: [q('#homeMenuStatus').dataset.state, q('#homeFreeStatus').dataset.state],
+    groups: [...document.querySelectorAll('main > .home-group')].map(g => ({
+      title: g.querySelector('h2 [data-i18n]').textContent, purpose: (g.querySelector('.home-group-purpose') || {}).textContent || ''})),
+    news: [...document.querySelectorAll('.home-news-row')].map(a => a.getAttribute('href')),
+    mainText: q('main').innerText
   };
 }"""
 
@@ -361,11 +371,17 @@ def home_hero_shelf(page):
         check(names == SHELF and [b["href"] for b in top["banners"]] == SHELF_HREFS, (where, "banner set and order", names))
         check(all((ROOT / b["href"].split("#")[0]).is_file() for b in top["banners"] if not b["href"].startswith("https:")),
               (where, "internal banner links resolve"))
-        mapped = top["banners"][4]
+        mapped = next(b for b in top["banners"] if b["name"] == "map")
         check(mapped["target"] == "_blank" and "noopener" in mapped["rel"].split(), (where, "map opens safely", mapped))
         widths = {b["name"]: b["box"]["w"] for b in top["banners"]}
-        check(min(widths["today"], widths["pick"]) > max(widths["magazine"], widths["event"], widths["map"]),
+        check(min(widths["today"], widths["pick"]) > max(widths["map"], widths["log"]),
               (where, "today and pick outrank the discovery banners", widths))
+        check([g["title"] for g in top["groups"]] == GROUPS and all(g["purpose"] for g in top["groups"]),
+              (where, "utility, reading and news groups, each with a stated purpose", top["groups"]))
+        check(top["news"] == NEWS_HREFS and all((ROOT / h.split("#")[0]).is_file() for h in top["news"]),
+              (where, "news leads with notices; past activity is one link", top["news"]))
+        check("지난 이벤트" not in top["mainText"] and "오늘의 한 끼" not in top["mainText"]
+              and top["mainText"].count("오늘의 꽁밥") >= 2, (where, "no archive-first or stale hub labels"))
         check(top["collageHidden"] == "true" and top["photos"] and all(
             ph["alt"] == "" and ph["width"] and ph["height"] for ph in top["photos"]), (where, "decorative collage", top["photos"]))
         check(top["photos"][0]["loading"] is None and top["photos"][0]["priority"] == "high",
@@ -418,7 +434,8 @@ def home_hero_shelf(page):
             (where, "nothing moves on its own"))
         page.locator("#langToggle").click()
         english = page.evaluate(HOME_TOP)
-        check(english["title"].startswith("What should") and english["banners"][0]["title"] == "Today's food"
+        check(english["title"].startswith("What should") and english["banners"][0]["title"] == "Today's free food"
+              and [g["title"] for g in english["groups"]] == ["Shortcuts", "Read", "Babdoduk news"]
               and english["root"] <= 0 and english["body"] <= 0, (where, "English fits", english["root"], english["body"]))
         page.locator("#langToggle").click()
 
@@ -441,7 +458,8 @@ def home_hero_shelf(page):
     top = page.evaluate(HOME_TOP)
     check(top["states"] == ["ready", "empty"] and "오늘 1곳" in page.locator("#homeMenuStatus").inner_text()
           and "예정된 꽁밥이 아직 없어요" in page.locator("#homeFreeStatus").inner_text(), ("menu ready, free empty", top["states"]))
-    check(top["hero"]["h"] > 0 and len(top["banners"]) == 5 and top["root"] <= 0, "hero and shelf keep their shape")
+    check(top["hero"]["h"] > 0 and [b["name"] for b in top["banners"]] == SHELF and top["root"] <= 0,
+          "hero and shelf keep their shape")
     page.unroute("**/data/kaist-menu/latest.json")
     page.unroute("**/data/ggongbab/latest.json")
     return count
@@ -475,6 +493,13 @@ def event_bands(page):
             check("기록 없음" in row["chip"] or "미확인" in row["chip"], ("past date is not reported as held", row))
     live = sum(row["band"] != "past" for row in rows)
     check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty notice only when nothing is current")
+    order = page.evaluate("""() => [...document.querySelectorAll('main h1, main h2')].map(h => h.id || h.tagName)""")
+    check(order == ["H1", "eventNoticeTitle", "eventUpcomingTitle", "eventListTitle"], ("notices, upcoming, then record", order))
+    check(page.locator("#eventNoticeEmpty").is_visible() and page.locator("#eventNotices li").count() == 0,
+          "no invented notices: the empty notice state is shown")
+    check(page.locator("#eventUpcoming li").count() == live
+          and page.locator("#eventListTitle").inner_text() == ("활동 기록" if live else "지난 활동 기록"),
+          "upcoming summary and record heading follow the dates")
     page.locator("#eventTab0").focus()
     page.keyboard.press("ArrowDown")
     check(page.evaluate("document.activeElement.id") == "eventTab1"
@@ -490,6 +515,14 @@ def event_bands(page):
     check(chip.startswith("예정") and "미확정" in chip, ("upcoming tentative row", chip))
     check(page.locator("#eventEmpty").is_hidden(), "empty notice hidden when something is scheduled")
     check(page.locator("#eventTab1").get_attribute("aria-selected") == "true", "first scheduled event opens")
+    upcoming = page.locator("#eventUpcoming .event-upcoming-item")
+    check(upcoming.count() == 1 and "카빙" in upcoming.inner_text() and page.locator("#eventListTitle").inner_text() == "활동 기록",
+          ("the scheduled row is summarised at the top", upcoming.count()))
+    page.locator("#eventTab0").click()
+    upcoming.focus()
+    page.keyboard.press("Enter")
+    check(page.evaluate("document.activeElement.id") == "eventTab1"
+          and page.locator("#eventPanel1").is_visible(), "the summary opens its record")
     page.unroute("**/event.html")
     return count
 
@@ -558,6 +591,35 @@ STRUCTURE = r"""() => {
 }"""
 
 
+def history_archive(page):
+    """Every timeline entry sits on the same plate, in one accent, with honest image sizes."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"history.html: {detail}"
+        count += 1
+
+    for width, height in ((1440, 900), (390, 844)):
+        page.set_viewport_size({"width": width, "height": height})
+        page.goto("https://site-ui.invalid/history.html", wait_until="networkidle")
+        plates = page.locator(".timeline-item").evaluate_all("""items => items.map(item => {
+          const plate = item.querySelector('.timeline-item-media'), s = plate && getComputedStyle(plate), r = plate && plate.getBoundingClientRect();
+          const img = item.querySelector('img');
+          return plate ? {w: Math.round(r.width), h: Math.round(r.height), radius: s.borderRadius, inline: item.getAttribute('style'),
+            accent: getComputedStyle(item.querySelector('.timeline-year')).color, shadow: s.boxShadow,
+            img: img ? [img.naturalWidth, img.naturalHeight, +img.getAttribute('width'), +img.getAttribute('height'), img.complete] : null} : null;
+        })""")
+        check(plates and all(plates), ("every entry has a plate", plates))
+        check(len({(p["w"], p["h"], p["radius"]) for p in plates}) == 1 and plates[0]["w"] == plates[0]["h"],
+              ("one square plate size and radius", plates))
+        check(len({p["accent"] for p in plates}) == 1 and not any(p["inline"] for p in plates)
+              and all(p["shadow"] == "none" for p in plates), ("one accent, no per-entry colour or shadow", plates))
+        check(all(p["img"] is None or (p["img"][4] and p["img"][:2] == p["img"][2:4]) for p in plates),
+              ("images load and declare their real size", [p["img"] for p in plates]))
+    return count
+
+
 def structure_and_failures(page):
     """Landmarks, names and target sizes in both languages; honest states when data is unavailable."""
     count = 0
@@ -582,11 +644,10 @@ def structure_and_failures(page):
     check(page.locator("#homeMenuStatus").get_attribute("data-state") == "error"
           and page.locator("#homeFreeStatus").get_attribute("data-state") == "error", "home names unavailable data")
     check(page.locator(".home-hero h1").is_visible() and page.locator(".home-actions .btn-primary").is_visible()
-          and page.locator("#homeShelf > li[data-banner]").count() == 5, "hero and shelf survive missing data")
-    mag = page.locator("[data-home-banner-mag-title]")
-    check(mag.inner_text() == "밥도둑 매거진" and mag.get_attribute("data-i18n") == "home.banner.mag.title"
-          and page.locator("[data-home-banner-mag-meta]").get_attribute("data-i18n") == "home.banner.mag.copy",
-          "magazine banner keeps authored copy, no invented edition")
+          and page.locator("#homeShelf > li[data-banner]").count() == 4, "hero and shelf survive missing data")
+    check(page.locator("#homeFeature").is_hidden() and page.locator(".home-desks a").count() == 4
+          and page.locator(".home-read .explore-card").is_visible() and page.locator(".home-news-row").count() == 3,
+          "reading and news groups keep their links, with no invented edition")
     page.goto("https://site-ui.invalid/ggongbab.html", wait_until="networkidle")
     page.locator("#foodHubFree .gg-state").first.wait_for()
     counts = page.locator(".gg-counts").inner_text()
@@ -625,6 +686,7 @@ def run_checks(screenshots=False):
         report["checks"] += home_summary(page)
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
+        report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)
         # High contrast must defer to the system; custom colors/widths must not

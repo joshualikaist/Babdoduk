@@ -111,19 +111,19 @@ def test_past_events_are_not_reported_as_held_and_picker_stays_integrated():
         assert 'href="mukbang.html#what"' in (ROOT / name).read_text(encoding="utf-8")
 
 
-SHELF_ORDER = ["today", "pick", "magazine", "event", "map"]
-SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "mukbang.html", "event.html", "https://naver.me/5NeqUPzI"]
+SHELF_ORDER = ["today", "pick", "map", "log"]
+SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI", "food.html"]
 
 
 def test_home_top_is_one_hero_and_a_manual_banner_shelf():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    top = html.split('<section class="home-section home-magazine"')[0]
+    top = html.split('<section class="home-group home-read"')[0]
     assert top.count("<h1") == 1
     assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "mukbang.html#what"]
     banners = re.findall(r'data-banner="(\w+)">\s*<a class="home-banner-link" href="([^"]+)"([^>]*)>', top)
     assert [name for name, _, _ in banners] == SHELF_ORDER
     assert [href for _, href, _ in banners] == SHELF_HREFS
-    assert 'target="_blank" rel="noopener"' in banners[-1][2]
+    assert 'target="_blank" rel="noopener"' in banners[SHELF_ORDER.index("map")][2]
     assert '<ul class="home-shelf-track" id="homeShelf" role="list">' in top
     collage = top.split('<div class="home-collage" aria-hidden="true">')[1].split("</div>\n\n")[0]
     photos = re.findall(r"<img [^>]+>", collage)
@@ -143,3 +143,21 @@ def test_home_strings_exist_in_both_languages():
     assert keys["ko"] == keys["en"]
     used = set(re.findall(r'data-i18n(?:-html|-aria-key)?="([\w.]+)"', html))
     assert used <= keys["ko"], sorted(used - keys["ko"])
+
+
+def test_home_groups_brand_and_hub_name():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    groups = re.findall(r'<section class="home-group [^"]+" aria-labelledby="(\w+)">', html)
+    assert groups == ["homeShelfTitle", "homeReadTitle", "homeNewsTitle"]
+    assert re.findall(r'class="home-news-row" href="([^"]+)"', html) == ["event.html#notice", "event.html#archive", "history.html"]
+    event = (ROOT / "event.html").read_text(encoding="utf-8")
+    assert event.index('id="notice"') < event.index('id="upcoming"') < event.index('id="archive"')
+    assert '<ul class="event-notices" id="eventNotices" role="list"></ul>' in event  # no invented notices
+    for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html", "lab.html"):
+        page = (ROOT / name).read_text(encoding="utf-8")
+        assert 'data-i18n="nav.today">오늘의 꽁밥</a>' in page and "'nav.today': '오늘의 꽁밥'" in page, name
+    site = (ROOT / "css/site.css").read_text(encoding="utf-8")
+    wordmark = site[site.index(".site-nav-wordmark {"):site.index(".site-nav-wordmark::before")]
+    assert "#6366f1 0%" in wordmark and "#db2777 100%" in wordmark and "wordmark-holo" in wordmark
+    assert "var(--color-accent)" not in wordmark
+    assert re.search(r"@media \(prefers-reduced-motion: reduce\) \{[^@]*?\.site-nav-wordmark,\s*\.scroll-progress-bar \{ animation: none; \}", site)

@@ -100,7 +100,7 @@ No tracked Web Push/service worker implementation exists. Do not add browser not
 | Requested change | Expected files | Protected unless separately authorized |
 | --- | --- | --- |
 | Home/magazine appearance | `index.html`, `mukbang.html`, scoped CSS and UI checks | Collectors, Supabase, generated JSON, Portal/Dooray, workflow schedules |
-| Today's food presentation | `ggongbab.html`, `lab-ggongbab.html`, scoped JS/CSS and UI checks | Selection rules, source authentication, publication schema and backend writes |
+| 오늘의 꽁밥 (free-food hub) presentation | `ggongbab.html`, `lab-ggongbab.html`, scoped JS/CSS and UI checks | Selection rules, source authentication, publication schema and backend writes |
 | Picker presentation | Existing picker/slot entry and styles | Dish data meaning, hard safety claims, DB/profile introduction |
 | Event/history/food-log content | Authored HTML and explicitly owned input | Claiming unverified activity occurred, discarding local entries |
 | Data or security contract | Targeted backend area and synthetic tests after explicit scope | Unrelated UI and production deployment |

@@ -42,8 +42,6 @@
   var featureEl = document.getElementById('homeFeature');
   var stampEl = document.getElementById('homeStamp');
   var todayDateEl = document.querySelector('[data-home-banner-date]');
-  var magTitleEl = document.querySelector('[data-home-banner-mag-title]');
-  var magMetaEl = document.querySelector('[data-home-banner-mag-meta]');
   if (!M || !F || !menuEl || !freeEl) return;
 
   var state = {
@@ -146,26 +144,12 @@
     todayDateEl.replaceChildren(day, week);
   }
 
-  // The magazine banner names the featured story and its edition date when the
-  // edition loads; otherwise it keeps its authored fallback copy.
-  function renderMagBanner() {
-    var ed = state.magazine;
-    var featured = ed && ed.featured;
-    if (!magTitleEl || !magMetaEl || !featured || !featured.title) return;
-    magTitleEl.removeAttribute('data-i18n');
-    magTitleEl.textContent = featured.title;
-    magMetaEl.removeAttribute('data-i18n');
-    magMetaEl.textContent = [t('home.mag.edition', '{date}자').replace('{date}', isoDateLabel(ed.date)),
-      t(DESK[featured.category] || DESK[featured.lane] || '', '')].filter(Boolean).join(' · ');
-  }
-
   function render() {
     if (stampEl) stampEl.textContent = t('home.stamp', '{date} 기준').replace('{date}', dateLabel(F.nowKst()));
     renderMenu();
     renderFree();
     renderFeature();
     renderTodayBanner();
-    renderMagBanner();
   }
 
   function getJson(url) {
@@ -182,7 +166,7 @@
   }).catch(function () {
     state.menu = { status: 'error', data: null };
   }).then(render);
-  // The validated static snapshot, which the Today's food page reads as well.
+  // The validated static snapshot, which the 오늘의 꽁밥 page reads as well.
   // Name its publication time: loading a page does not make the data current.
   getJson('data/ggongbab/latest.json').then(function (data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad');

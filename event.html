@@ -18,13 +18,13 @@
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
       <div class="nav-mega-row">
-        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 한 끼</a>
+        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
         <a class="site-nav-direct" href="mukbang.html#what" data-i18n="nav.choose">메뉴 고르기</a>
         <div class="nav-mega" data-mega>
           <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
           <div class="nav-mega-panel" id="navMorePanel">
             <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
-            <a class="nav-mega-link is-current" href="event.html" aria-current="page" data-i18n="nav.event.open">이벤트</a>
+            <a class="nav-mega-link is-current" href="event.html" aria-current="page" data-i18n="nav.event.open">소식·이벤트</a>
             <a class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
             <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
             <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
@@ -37,12 +37,30 @@
   </header>
 
   <main class="event-page-wrap">
-    <h1 class="event-title" data-i18n="event.title">이벤트</h1>
-    <p class="event-lead" data-i18n="event.lead">밥도둑이 안내한 이벤트와 협업을 모았어요. 날짜로 진행 중·예정·지난 일정을 나누고, 실제로 확인된 내용은 따로 적어요.</p>
-    <p class="event-counts" id="eventCounts"></p>
-    <p class="event-empty" id="eventEmpty" hidden><span data-i18n="event.empty">지금 진행 중이거나 예정된 이벤트는 없어요.</span> <a href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="event.emptyLink">새 소식은 인스타그램에서 →</a></p>
+    <h1 class="event-title" data-i18n="event.title">밥도둑 소식</h1>
+    <p class="event-lead" data-i18n="event.lead">공지와 예정된 활동을 먼저 알려 드려요. 지난 활동은 아래 기록에 남겨 둬요.</p>
 
-    <h2 class="event-list-title" id="eventListTitle" data-i18n="event.listTitle">이벤트 기록</h2>
+    <!-- Current relevance first: notices, then anything running or coming up. -->
+    <div class="event-now">
+      <section class="event-now-cell" id="notice" aria-labelledby="eventNoticeTitle">
+        <h2 id="eventNoticeTitle" data-i18n="event.notice.title">공지 · 안내</h2>
+        <!-- Authored notices, newest first:
+             <li class="event-notice"><time datetime="YYYY-MM-DD">YYYY. M. D</time><strong>제목</strong><p>내용</p></li>
+             Add only what the owner has actually announced; the empty state below is shown otherwise. -->
+        <ul class="event-notices" id="eventNotices" role="list"></ul>
+        <p class="event-now-empty" id="eventNoticeEmpty"><span data-i18n="event.notice.empty">지금 올라온 공지는 없어요.</span> <a href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="event.emptyLink">새 소식은 인스타그램에서 →</a></p>
+      </section>
+      <section class="event-now-cell" id="upcoming" aria-labelledby="eventUpcomingTitle">
+        <h2 id="eventUpcomingTitle" data-i18n="event.upcoming.title">예정된 활동</h2>
+        <ul class="event-upcoming" id="eventUpcoming" role="list" hidden></ul>
+        <p class="event-now-empty" id="eventEmpty" hidden><span data-i18n="event.empty">지금 진행 중이거나 예정된 활동은 없어요.</span></p>
+      </section>
+    </div>
+
+    <section class="event-archive" id="archive" aria-labelledby="eventListTitle">
+    <h2 class="event-list-title" id="eventListTitle" data-i18n="event.listTitle">지난 활동 기록</h2>
+    <p class="event-archive-note" data-i18n="event.archive.note">지난 활동은 당시 안내를 그대로 남긴 기록이에요. 날짜로 진행 중·예정·지난 일정을 나누고, 실제로 확인된 내용은 따로 적어요.</p>
+    <p class="event-counts" id="eventCounts"></p>
     <!-- Rows stay in start-date order (docs/EVENT_DETAIL_FIELDS.md). data-start/data-end are KST
          dates; data-confirmation is what was announced or verified: announced | tentative | held | cancelled.
          The band (now / upcoming / past) is computed from the dates in the page script. -->
@@ -84,6 +102,7 @@
         <div class="event-panel-inner" data-i18n-html="event.e2.detail"></div>
       </div>
     </div>
+    </section>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -96,13 +115,13 @@
           <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
         <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
-          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 한 끼</a>
+          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="mukbang.html#what" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">이벤트</a>
+          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="food.html" class="footer-apple-a" data-i18n="nav.foodlog">먹방 가계부</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
@@ -118,7 +137,7 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '이벤트 · 밥도둑 Babdoduk',
+          docTitle: '소식·이벤트 · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
@@ -126,7 +145,7 @@
           'nav.history': '역사',
           'nav.sns': 'SNS',
           'nav.instagram': '인스타그램',
-          'nav.today': '오늘의 한 끼',
+          'nav.today': '오늘의 꽁밥',
           'nav.choose': '메뉴 고르기',
           'nav.more': '더보기',
           'nav.features': '주요 기능',
@@ -139,16 +158,21 @@
           'nav.kakao': '카카오톡',
           'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
           'nav.youtube': '유튜브 (개설 예정)',
-          'nav.event': '이벤트',
-          'nav.event.open': '이벤트 페이지',
+          'nav.event': '소식·이벤트',
+          'nav.event.open': '소식·이벤트',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'event.title': '이벤트',
-          'event.lead': '밥도둑이 안내한 이벤트와 협업을 모았어요. 날짜로 진행 중·예정·지난 일정을 나누고, 실제로 확인된 내용은 따로 적어요.',
-          'event.listTitle': '이벤트 기록',
+          'event.title': '밥도둑 소식',
+          'event.lead': '공지와 예정된 활동을 먼저 알려 드려요. 지난 활동은 아래 기록에 남겨 둬요.',
+          'event.notice.title': '공지 · 안내',
+          'event.notice.empty': '지금 올라온 공지는 없어요.',
+          'event.upcoming.title': '예정된 활동',
+          'event.listTitle': '지난 활동 기록',
+          'event.listTitle.all': '활동 기록',
+          'event.archive.note': '지난 활동은 당시 안내를 그대로 남긴 기록이에요. 날짜로 진행 중·예정·지난 일정을 나누고, 실제로 확인된 내용은 따로 적어요.',
           'event.newTab': '(새 창)',
           'event.counts': '진행 중 {now} · 예정 {upcoming} · 지난 일정 {past}',
-          'event.empty': '지금 진행 중이거나 예정된 이벤트는 없어요.',
+          'event.empty': '지금 진행 중이거나 예정된 활동은 없어요.',
           'event.emptyLink': '새 소식은 인스타그램에서 →',
           'event.band.now': '진행 중',
           'event.band.upcoming': '예정',
@@ -204,7 +228,7 @@
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'Events · Babdoduk',
+          docTitle: 'News & events · Babdoduk',
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
@@ -212,7 +236,7 @@
           'nav.history': 'History',
           'nav.sns': 'SNS',
           'nav.instagram': 'Instagram',
-          'nav.today': "Today's food",
+          'nav.today': "Today's free food",
           'nav.choose': 'Choose a dish',
           'nav.more': 'More',
           'nav.features': 'Features',
@@ -225,13 +249,18 @@
           'nav.kakao': 'KakaoTalk',
           'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
           'nav.youtube': 'YouTube (coming soon)',
-          'nav.event': 'Event',
-          'nav.event.open': 'Events page',
+          'nav.event': 'News & events',
+          'nav.event.open': 'News & events',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'event.title': 'Events',
-          'event.lead': 'Events and collaborations Babdoduk has announced. Dates sort them into now, coming up and past; what was actually confirmed is noted separately.',
-          'event.listTitle': 'Event record',
+          'event.title': 'Babdoduk news',
+          'event.lead': 'Notices and upcoming activities come first; past activities are kept in the record below.',
+          'event.notice.title': 'Notices',
+          'event.notice.empty': 'No notices right now.',
+          'event.upcoming.title': 'Upcoming',
+          'event.listTitle': 'Past activity record',
+          'event.listTitle.all': 'Activity record',
+          'event.archive.note': 'Past activities keep their announcement as it was. Dates sort them into now, coming up and past; what was actually confirmed is noted separately.',
           'event.newTab': '(opens in a new tab)',
           'event.counts': 'Now {now} · Coming up {upcoming} · Past {past}',
           'event.empty': 'Nothing is running or scheduled right now.',
@@ -397,8 +426,49 @@
             return text.replace('{' + band + '}', String(counts[band]));
           }, t('event.counts', ''));
         }
+        var live = counts.now + counts.upcoming;
         var empty = document.getElementById('eventEmpty');
-        if (empty) empty.hidden = counts.now + counts.upcoming > 0;
+        if (empty) empty.hidden = live > 0;
+        var listTitle = document.getElementById('eventListTitle');
+        if (listTitle) listTitle.textContent = t(live ? 'event.listTitle.all' : 'event.listTitle', listTitle.textContent);
+        renderUpcoming();
+        var notices = document.getElementById('eventNotices');
+        var noticeEmpty = document.getElementById('eventNoticeEmpty');
+        if (notices && noticeEmpty) {
+          notices.hidden = !notices.children.length;
+          noticeEmpty.hidden = notices.children.length > 0;
+        }
+      }
+      // Running and upcoming rows, summarised at the top; each opens its record.
+      function renderUpcoming() {
+        var list = document.getElementById('eventUpcoming');
+        if (!list) return;
+        list.replaceChildren();
+        rows.forEach(function (row, i) {
+          var band = row.getAttribute('data-band');
+          if (band === 'past') return;
+          var item = document.createElement('li');
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'event-upcoming-item';
+          [['event-upcoming-date', row.querySelector('.event-tab-date').textContent],
+           ['event-upcoming-title', row.querySelector('.event-tab-title').textContent],
+           ['event-state', row.querySelector('[data-event-state]').textContent]].forEach(function (part) {
+            var span = document.createElement('span');
+            span.className = part[0];
+            span.textContent = part[1];
+            if (part[0] === 'event-state') span.setAttribute('data-band', band);
+            button.appendChild(span);
+          });
+          button.addEventListener('click', function () {
+            select(i, true);
+            var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            rows[i].scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' });
+          });
+          item.appendChild(button);
+          list.appendChild(item);
+        });
+        list.hidden = !list.children.length;
       }
       function select(i, focus) {
         tabs.forEach(function (tab, j) {

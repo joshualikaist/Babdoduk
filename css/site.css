@@ -153,11 +153,19 @@ body::after {
   overflow: hidden;
 }
 
+/* Brand accent (original): the holographic gradient shared with the wordmark. */
 .scroll-progress-bar {
   height: 100%;
   width: 0%;
-  background: var(--color-accent);
+  background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
   transition: width 0.08s ease-out;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
 .site-nav {
@@ -210,12 +218,23 @@ body::after {
   line-height: 1.15;
   text-decoration: none;
   white-space: nowrap;
-  background: none;
-  -webkit-background-clip: initial;
-  background-clip: initial;
-  color: var(--color-accent);
-  -webkit-text-fill-color: currentColor;
-  animation: none;
+  /* The Babdoduk brand mark keeps its original holographic gradient
+     (owner decision); only its size and 44px target are new. */
+  background: linear-gradient(
+    110deg,
+    #6366f1 0%,
+    #a855f7 18%,
+    #ec4899 36%,
+    #06b6d4 55%,
+    #8b5cf6 72%,
+    #db2777 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: wordmark-holo 6s ease-in-out infinite;
   filter: none;
 }
 
@@ -224,11 +243,14 @@ body::after {
   display: none;
 }
 
+@keyframes wordmark-holo {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .site-nav-wordmark:hover {
-  filter: none;
-  color: var(--color-accent);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  filter: brightness(1.08);
+  color: transparent;
 }
 
 .site-nav-item {
@@ -526,6 +548,7 @@ body::after {
 
 .footer-apple-copy {
   color: var(--color-ink-muted);
+  word-break: keep-all;
 }
 
 .footer-apple-email-plain,
@@ -752,6 +775,8 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .btn:hover { transform: none; }
+  .site-nav-wordmark,
+  .scroll-progress-bar { animation: none; }
   .explore-card,
   .btn,
   .popup-overlay,

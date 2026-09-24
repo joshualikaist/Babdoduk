@@ -311,7 +311,7 @@
   function render() {
     var now = nowKst();
     var focus = focusSelector();
-    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 한 끼')) + '</h1><p class="gg-tagline">' + esc(t('gg.tagline', 'KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.')) + '</p>';
+    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1><p class="gg-tagline">' + esc(t('gg.tagline', 'KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.')) + '</p>';
     html += metricHtml(now);
     html += '</header>';
     html += tabsHtml();

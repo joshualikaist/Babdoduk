@@ -64,7 +64,7 @@ The home page should show the service definition, primary check action, secondar
 | `history.html` | Explain Babdoduk's story and provenance | Relevant content and activities | Duplicate the live food dashboard |
 | `lab.html`, `lab-ggongbab.html` | Isolated experiments and tests | Development documentation | Public core navigation or private preview exposure |
 
-Suggested navigation labels are **오늘의 한 끼** for the availability hub and **메뉴 고르기** for the recommendation tool. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs should continue to resolve during a later navigation change. A separate picker destination is a proposed future phase, not a current route.
+Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **메뉴 고르기** for the recommendation tool. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs should continue to resolve during a later navigation change. A separate picker destination is a proposed future phase, not a current route.
 
 ## Functional requirements
 

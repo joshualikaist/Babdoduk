@@ -345,27 +345,60 @@
   word-break: keep-all;
 }
 
-/* ── Banner shelf: native horizontal scroll, never automatic. Level 2 (today,
-   pick) is wider and heavier than level 3 (magazine, events, map). ── */
-.home-shelf {
-  margin-top: var(--space-6);
+/* ── Below the hero: three groups, each with one job. 01 바로가기 (act),
+   02 읽어보기 (read), 03 밥도둑 소식 (catch up). Utility is heaviest. ── */
+.home-group {
+  margin-top: var(--space-12);
+  padding-top: var(--space-8);
+  border-top: 1px solid rgba(30, 29, 26, 0.12);
 }
 
-.home-shelf-head {
+.home-group.home-shelf {
+  margin-top: var(--space-6);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.home-group-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
-.home-shelf-head h2 {
+.home-group-copy {
+  min-width: 0;
+}
+
+.home-group-head h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   margin: 0;
-  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
   font-weight: 800;
-  line-height: 1.3;
+  line-height: 1.25;
   letter-spacing: -0.035em;
 }
+
+.home-group-num {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+
+.home-group-purpose {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+}
+
+/* Shelf: native horizontal scroll, never automatic. Level 2 (오늘의 꽁밥,
+   메뉴 고르기) is wider and heavier than level 3 (map, food log). */
 
 .home-shelf-nav {
   display: flex;
@@ -538,7 +571,7 @@
   transform: scale(1.02);
 }
 
-/* 01 Today: the ink card, stamped with today's KST date. */
+/* 오늘의 꽁밥: the ink card, stamped with today's KST date. */
 .home-banner--today .home-banner-link {
   background: var(--color-ink);
   border-color: var(--color-ink);
@@ -583,7 +616,7 @@
   color: rgba(255, 253, 248, 0.72);
 }
 
-/* 02 Pick: warm wash with a food crop on the right. */
+/* 메뉴 고르기: warm wash with a food crop on the right. */
 .home-banner--pick .home-banner-link {
   padding-right: 46%;
   background: var(--color-accent-wash);
@@ -598,19 +631,22 @@
   border-radius: 14px;
 }
 
-/* 05 Map: an illustrated map strip across the top. */
-.home-banner--map .home-banner-link {
+/* Map and food log: an illustrated strip across the top. */
+.home-banner--map .home-banner-link,
+.home-banner--log .home-banner-link {
   padding-top: 92px;
 }
 
-.home-banner--map .home-banner-media {
+.home-banner--map .home-banner-media,
+.home-banner--log .home-banner-media {
   top: 0;
   left: 0;
   right: 0;
   height: 76px;
 }
 
-.home-banner-media--map svg {
+.home-banner-media--map svg,
+.home-banner-media--log svg {
   width: 100%;
   height: 100%;
   display: block;
@@ -628,40 +664,11 @@
   border: 0;
 }
 
-/* ── Sections ── */
-.home-section {
-  margin-top: var(--space-12);
-  padding-top: var(--space-8);
-  border-top: 1px solid rgba(30, 29, 26, 0.12);
-}
-
-.home-section-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
-.home-section-kicker {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--color-accent);
-}
-
-.home-section h2 {
-  margin-top: 4px;
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.04em;
-}
-
+/* ── 02 읽어보기: featured story, the four desks, the photo record ── */
 .home-more {
   display: inline-flex;
   align-items: center;
+  flex: 0 0 auto;
   min-height: 44px;
   font-size: 14px;
   font-weight: 700;
@@ -674,11 +681,41 @@
   text-underline-offset: 4px;
 }
 
-.home-mag-grid {
+/* Story and desks on the left, the photo record beside them. */
+.home-read-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: var(--space-4);
-  align-items: stretch;
+  grid-template-areas:
+    "feature photo"
+    "desks photo";
+  grid-template-rows: auto 1fr;
+  gap: var(--space-4) var(--space-6);
+  align-items: start;
+}
+
+.home-read-grid .home-feature {
+  grid-area: feature;
+}
+
+.home-read-grid .home-desks-block {
+  grid-area: desks;
+}
+
+.home-read-grid .explore-card {
+  grid-area: photo;
+  align-self: stretch;
+  min-height: 340px;
+}
+
+/* The card takes the column's height; its photos fill it instead of setting it. */
+.home-read-grid .explore-media {
+  position: absolute;
+  inset: 0;
+}
+
+.home-read-grid .explore-collage {
+  min-height: 0;
+  height: 100%;
 }
 
 .home-feature {
@@ -687,7 +724,7 @@
   gap: var(--space-2);
   min-width: 0;
   padding: var(--space-6);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
   border: 1px solid var(--color-divider);
   color: inherit;
@@ -698,6 +735,13 @@
   display: none;
 }
 
+.home-feature-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
 .home-feature-meta {
   font-size: 12px;
   font-weight: 700;
@@ -705,7 +749,7 @@
 }
 
 .home-feature-title {
-  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
   font-weight: 800;
   line-height: 1.3;
   letter-spacing: -0.035em;
@@ -724,15 +768,26 @@
   text-underline-offset: 5px;
 }
 
+.home-desks-block {
+  min-width: 0;
+}
+
+.home-read-sub {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-muted);
+}
+
 .home-desks {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--space-6);
   list-style: none;
   margin: 0;
   padding: 0;
   border-top: 1px solid var(--color-divider);
-}
-
-.home-feature[hidden] + .home-desks {
-  grid-column: 1 / -1;
 }
 
 .home-desks a {
@@ -761,28 +816,37 @@
   text-underline-offset: 4px;
 }
 
-.home-about {
+/* ── 03 밥도둑 소식: who we are, then a quiet notice-style list ── */
+.home-news-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: var(--space-8);
   align-items: start;
 }
 
-.home-about .title-en {
+.home-news-name {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+}
+
+.home-news-name .title-en {
   font-size: 0.6em;
   font-weight: 600;
   color: var(--color-ink-muted);
 }
 
-.home-about-sub {
-  margin-top: var(--space-2);
+.home-news-sub {
+  margin: var(--space-2) 0 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--color-ink-muted);
 }
 
-.home-about-body {
-  margin-top: var(--space-3);
+.home-news-body {
+  margin: var(--space-3) 0 0;
   max-width: 30rem;
   font-size: 15px;
   line-height: 1.65;
@@ -790,28 +854,52 @@
   word-break: keep-all;
 }
 
-.home-about-links {
+.home-news-list {
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-6);
-  margin: var(--space-3) 0 0;
+  margin: 0;
   padding: 0;
+  border-top: 1px solid var(--color-divider);
 }
 
-.home-about-links a {
-  display: inline-flex;
+.home-news-row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 44px;
-  font-size: 14px;
-  font-weight: 700;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--color-divider);
   color: var(--color-ink);
   text-decoration: none;
 }
 
-.home-about-links a:hover {
+.home-news-tag {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+}
+
+.home-news-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-news-arrow {
+  color: var(--color-ink-muted);
+  transition: transform var(--ease);
+}
+
+.home-news-row:hover .home-news-text {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.home-news-row:hover .home-news-arrow {
+  transform: translateX(3px);
 }
 
 .home-actions .btn:focus-visible,
@@ -820,7 +908,7 @@
 .home-more:focus-visible,
 .home-feature:focus-visible,
 .home-desks a:focus-visible,
-.home-about-links a:focus-visible,
+.home-news-row:focus-visible,
 .explore-card:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 3px;
@@ -832,14 +920,7 @@
   border-radius: 14px;
 }
 
-/* ── Photo and map cards (existing editorial treatment) ── */
-.home-explore {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  gap: 14px;
-  min-width: 0;
-}
-
+/* ── Photo record card (existing editorial treatment) ── */
 .explore-card {
   position: relative;
   display: flex;
@@ -868,11 +949,6 @@
   display: block;
 }
 
-.explore-card--map .explore-media {
-  position: absolute;
-  inset: 0;
-}
-
 .explore-media {
   flex: 1 1 auto;
   min-height: 0;
@@ -888,18 +964,6 @@
   height: 100%;
   min-height: 280px;
   background: #191714;
-}
-
-.explore-map {
-  height: 100%;
-  min-height: 120px;
-  background: #e8d7b1;
-}
-
-.explore-map svg {
-  width: 100%;
-  height: 100%;
-  display: block;
 }
 
 .explore-badge {
@@ -934,11 +998,6 @@
   color: #fcfaf5;
 }
 
-.explore-card--map .explore-copy {
-  background: rgba(252, 250, 245, 0.95);
-  color: #191714;
-}
-
 .explore-copy h3 {
   font-size: clamp(1.05rem, 2vw, 1.3rem);
   font-weight: 700;
@@ -954,10 +1013,6 @@
   max-width: 34ch;
 }
 
-.explore-card--map .explore-copy p {
-  color: #5c564c;
-}
-
 .explore-cta {
   display: inline-flex;
   align-items: center;
@@ -967,10 +1022,6 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #e8d7b1;
-}
-
-.explore-card--map .explore-cta {
-  color: #b43d27;
 }
 
 .explore-cta .arr {
@@ -1030,9 +1081,18 @@
     --banner-secondary: 34%;
   }
 
-  .home-mag-grid,
-  .home-about {
+  .home-read-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "feature"
+      "desks"
+      "photo";
+    grid-template-rows: auto;
+  }
+
+  .home-news-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
   }
 }
 
@@ -1144,10 +1204,6 @@
     padding: 10px 16px;
   }
 
-  .home-shelf {
-    margin-top: var(--space-6);
-  }
-
   /* Edge-to-edge shelf so the next card visibly peeks past the screen edge. */
   .home-shelf-track {
     --banner-primary: 84%;
@@ -1168,16 +1224,42 @@
     padding-right: 44%;
   }
 
-  .home-section {
+  .home-group {
     margin-top: var(--space-8);
+    padding-top: var(--space-6);
   }
 
-  .home-explore {
+  .home-group-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .home-desks {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .explore-card {
+  .home-read-grid .explore-card {
     min-height: 280px;
+  }
+
+  .home-news-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "tag arrow"
+      "text arrow";
+    gap: 2px var(--space-3);
+  }
+
+  .home-news-tag {
+    grid-area: tag;
+  }
+
+  .home-news-text {
+    grid-area: text;
+  }
+
+  .home-news-arrow {
+    grid-area: arrow;
   }
 }
 
@@ -1186,12 +1268,14 @@
   .explore-cta .arr,
   .home-banner-link,
   .home-banner-media img,
-  .home-shelf-btn {
+  .home-shelf-btn,
+  .home-news-arrow {
     transition: none;
   }
 
   .home-banner-link:hover,
-  .home-banner-link:hover .home-banner-media img {
+  .home-banner-link:hover .home-banner-media img,
+  .home-news-row:hover .home-news-arrow {
     transform: none;
   }
 
