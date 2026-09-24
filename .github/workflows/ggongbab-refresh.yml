@@ -4,20 +4,26 @@ name: ggongbab-refresh
 # Collects KAIST free-food events (Dooray tasks + KAIST public notices + manual.json),
 # parses them with OpenAI, stores them in Supabase and exports data/ggongbab/latest.json.
 # Only the generated JSON is copied onto lab and main. Feature code is never merged by this job.
+#
+# Recovery: the schedule is off until the check, dry-run and review-report modes
+# have passed on main. The intended schedule is '*/30 * * * *' (a scheduled run
+# is always a full refresh).
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'   # every 30 minutes (GitHub may delay or skip individual runs)
   workflow_dispatch:
     inputs:
       mode:
-        description: full, export-only, or review-report
-        default: full
+        description: >-
+          check, dry-run and review-report never publish.
+          export-only and full can commit data/ggongbab to lab and main.
+        default: check
         type: choice
         options:
-          - full
-          - export-only
+          - check
+          - dry-run
           - review-report
+          - export-only
+          - full
 
 # Shares the group with content-refresh so two jobs never push generated data at the same time.
 concurrency:
@@ -31,7 +37,42 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # A scheduled run has no inputs, so it is a full refresh.
+      MODE: ${{ github.event.inputs.mode || 'full' }}
     steps:
+      - name: Check required configuration
+        env:
+          # Booleans only: this step never receives a secret value.
+          HAS_DOORAY_API_TOKEN: ${{ secrets.DOORAY_API_TOKEN != '' }}
+          HAS_SUPABASE_URL: ${{ secrets.SUPABASE_URL != '' }}
+          HAS_SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY != '' || secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
+          HAS_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
+        run: |
+          # The runner falls back to an in-memory repository, or skips AI, when a
+          # secret is missing and still exits 0, so a missing secret fails here.
+          case "$MODE" in
+            check|full)                need="DOORAY SUPABASE OPENAI" ;;
+            dry-run)                   need="DOORAY" ;;
+            review-report|export-only) need="SUPABASE" ;;
+            *) echo "::error::unknown mode: $MODE"; exit 1 ;;
+          esac
+          missing=0
+          report() {  # group, name, present
+            if [ "$3" = "true" ]; then
+              echo "$2: present"
+            elif [[ " $need " == *" $1 "* ]]; then
+              echo "::error::$2: missing (required by mode $MODE)"
+              missing=1
+            else
+              echo "$2: missing (not used by mode $MODE)"
+            fi
+          }
+          report DOORAY DOORAY_API_TOKEN "$HAS_DOORAY_API_TOKEN"
+          report SUPABASE SUPABASE_URL "$HAS_SUPABASE_URL"
+          report SUPABASE "SUPABASE_SECRET_KEY or legacy SUPABASE_SERVICE_ROLE_KEY" "$HAS_SUPABASE_KEY"
+          report OPENAI OPENAI_API_KEY "$HAS_OPENAI_API_KEY"
+          exit "$missing"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -57,17 +98,30 @@ jobs:
           # primary model alone. An ambiguous mail becomes needs_review rather
           # than a guess from a model that costs ~10x per token.
           GGONGBAB_AI_FALLBACK_MODEL: ${{ vars.GGONGBAB_AI_FALLBACK_MODEL }}
-          MODE: ${{ github.event.inputs.mode || 'full' }}
         run: |
           set +e
           case "$MODE" in
+            check)         python scripts/refresh_ggongbab.py --check ;;
+            dry-run)       python scripts/refresh_ggongbab.py --dry-run ;;
+            review-report)
+              # Titles and review reasons can come from private sources, and this
+              # repository's Actions logs are public: print the count and warnings only.
+              python scripts/refresh_ggongbab.py --review-report > "$RUNNER_TEMP/review.txt"
+              code=$?
+              grep -E '^(review queue empty|[0-9]+ event\(s\) need review|\[(warn|error)\])' "$RUNNER_TEMP/review.txt"
+              (exit "$code") ;;
             export-only)   python scripts/refresh_ggongbab.py --export-only ;;
-            review-report) python scripts/refresh_ggongbab.py --review-report; code=$?; echo "publish=0" >> "$GITHUB_OUTPUT"; exit "$code" ;;
-            *)             python scripts/refresh_ggongbab.py ;;
+            full)          python scripts/refresh_ggongbab.py ;;
+            *)             echo "::error::unknown mode: $MODE"; false ;;
           esac
           code=$?
+          # Only export-only and full may publish; any other mode ends with its own exit code.
+          if [ "$MODE" != "export-only" ] && [ "$MODE" != "full" ]; then
+            echo "publish=0" >> "$GITHUB_OUTPUT"
+            exit "$code"
+          fi
           if [ "$code" -eq 2 ]; then
-            echo "nothing safe to publish; keeping previous latest.json"
+            echo "::warning::nothing safe to publish (exit 2, reason above); keeping the previous latest.json"
             echo "publish=0" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -76,11 +130,16 @@ jobs:
             exit "$code"
           fi
           echo "publish=1" >> "$GITHUB_OUTPUT"
+      # Both steps check the mode as well as the output, so a diagnostic run
+      # cannot reach the publisher even if the refresh script were wrong.
       - name: Validate generated JSON
-        if: steps.refresh.outputs.publish == '1'
+        if: steps.refresh.outputs.publish == '1' && (env.MODE == 'export-only' || env.MODE == 'full')
         run: python scripts/validate_content.py
       - name: Publish generated data to lab and main
-        if: steps.refresh.outputs.publish == '1'
+        if: steps.refresh.outputs.publish == '1' && (env.MODE == 'export-only' || env.MODE == 'full')
         env:
           GIT_TERMINAL_PROMPT: 0
-        run: python scripts/publish_generated.py --paths data/ggongbab --message "ggongbab: event feed refresh"
+        # A block scalar: as a plain scalar, the ": " inside the message is a YAML
+        # mapping indicator and GitHub rejects the whole file.
+        run: |
+          python scripts/publish_generated.py --paths data/ggongbab --message "ggongbab: event feed refresh"
