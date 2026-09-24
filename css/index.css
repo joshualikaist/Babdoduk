@@ -1,160 +1,932 @@
+/* Home: the two core food tasks first, then editorial and Babdoduk's own story.
+   Colors come from the semantic tokens in site.css; the warm canvas is the
+   home page's named exception (see DESIGN_SYSTEM.md). */
 .page-home {
   background: #f5f1e8;
-  color: #191714;
+  color: var(--color-ink);
+  padding-bottom: 0;
 }
 
 .page-home::before {
   background:
-    radial-gradient(ellipse 70% 50% at 8% -10%, rgba(217, 71, 43, 0.09), transparent 52%),
-    radial-gradient(ellipse 55% 40% at 96% 8%, rgba(232, 215, 177, 0.55), transparent 58%),
-    radial-gradient(ellipse 40% 30% at 70% 90%, rgba(103, 116, 93, 0.08), transparent 50%);
+    radial-gradient(ellipse 70% 50% at 8% -10%, rgba(217, 71, 43, 0.08), transparent 52%),
+    radial-gradient(ellipse 55% 40% at 96% 8%, rgba(232, 215, 177, 0.5), transparent 58%);
 }
 
-.profile--hero {
+.home {
+  width: min(var(--container-editorial), calc(100% - 32px));
+  margin: 0 auto;
+  padding-bottom: 32px;
+}
+
+/* ── Hero: one editorial anchor. The two food tasks, an atmosphere collage
+   (labelled: not today's menu) and the dated status strip. ── */
+.home-hero {
+  --hero-paper: #eee3cf;
+  --hero-ink-soft: #5a534a;
   position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 560px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 12px 20px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+  grid-template-areas:
+    "copy collage"
+    "today today";
+  gap: var(--space-6) var(--space-12);
+  margin-top: var(--space-4);
+  padding: var(--space-8) 40px 20px;
+  border-radius: var(--radius-xl);
+  background: var(--hero-paper);
+  border: 1px solid rgba(30, 29, 26, 0.08);
 }
 
-.hero-eyebrow {
+.home-hero-copy {
+  grid-area: copy;
+  align-self: center;
+  min-width: 0;
+}
+
+.home-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #746e65;
-  margin-bottom: 18px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--hero-ink-soft);
 }
 
-.badge-row {
+.home-kicker img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-divider);
+  object-fit: cover;
+  background: var(--color-surface);
+}
+
+.home-title {
+  margin: var(--space-4) 0 0;
+  font-size: clamp(2.4rem, 4.5vw, 4rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.055em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* A marker stroke under the question, not a gradient on the letters. */
+.home-title-mark {
+  background: linear-gradient(transparent 66%, rgba(217, 71, 43, 0.28) 66%, rgba(217, 71, 43, 0.28) 90%, transparent 90%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.home-lead {
+  margin: var(--space-4) 0 0;
+  max-width: 30rem;
+  font-size: clamp(1rem, 1.4vw, 1.0625rem);
+  line-height: 1.65;
+  color: #4a453e;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-actions {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-top: var(--space-6);
 }
 
-.chip {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: #fcfaf5;
-  border: 1px solid rgba(25, 23, 20, 0.08);
-  color: #746e65;
+.home-actions .btn {
+  height: auto;
+  min-height: 52px;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
-.chip--tagline {
-  letter-spacing: 0.01em;
-  line-height: 1.35;
+.home-actions .btn-secondary {
+  background: var(--color-surface);
+  border-color: rgba(30, 29, 26, 0.24);
 }
 
-.avatar {
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  padding: 2px;
-  background: #fcfaf5;
-  border: 1px solid rgba(25, 23, 20, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 18px;
+/* Atmosphere collage: three framed crops with controlled asymmetry. */
+.home-collage {
+  grid-area: collage;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(10, minmax(0, 1fr)) auto;
+  height: 336px;
+  min-width: 0;
 }
 
-.avatar-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #fcfaf5;
-  overflow: hidden;
+.home-photo {
+  position: relative;
+  container-type: inline-size;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px;
+  border-radius: 20px;
+  background: var(--color-surface);
+  border: 1px solid rgba(30, 29, 26, 0.1);
 }
 
-.avatar-inner img {
+.home-photo img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 14px;
+}
+
+.home-photo--main {
+  grid-column: 3 / 11;
+  grid-row: 1 / 11;
+}
+
+.home-photo--side,
+.home-photo--low {
+  z-index: 2;
+  box-shadow: 0 10px 24px rgba(30, 29, 26, 0.14);
+}
+
+.home-photo--side {
+  grid-column: 10 / 13;
+  grid-row: 2 / 5;
+  transform: rotate(2.5deg);
+}
+
+.home-photo--low {
+  grid-column: 1 / 7;
+  grid-row: 7 / 11;
+  transform: rotate(-2deg);
+}
+
+.home-photo-tag {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  gap: 6px;
+  max-width: calc(100% - 28px);
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A crop too narrow for its dish name keeps only the number. */
+@container (max-width: 110px) {
+  .home-photo-tag > span {
+    display: none;
+  }
+}
+
+/* The main crop's lower corner sits under the ramen photo; tag it at the top. */
+.home-photo--main .home-photo-tag {
+  top: 14px;
+  bottom: auto;
+}
+
+.home-photo-tag b {
+  color: var(--color-accent);
+  font-weight: 900;
+}
+
+.home-collage-note {
+  grid-column: 1 / -1;
+  grid-row: 11;
+  margin: 10px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--hero-ink-soft);
+  text-align: right;
+}
+
+/* Today strip: the dated status the hub and home both read. */
+.home-today {
+  grid-area: today;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "head menu free"
+    "note note note";
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid rgba(30, 29, 26, 0.1);
+}
+
+.home-today-head {
+  grid-area: head;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 14px 20px;
+}
+
+.home-today-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.home-stamp {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+#homeMenuStatus {
+  grid-area: menu;
+}
+
+#homeFreeStatus {
+  grid-area: free;
+}
+
+.home-status {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 14px 20px;
+  border-left: 1px solid var(--color-divider);
+  border-radius: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-status-label {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.home-status[data-state="stale"] .home-status-label,
+.home-status[data-state="error"] .home-status-label {
+  background: #fff1e6;
+  color: #9a3412;
+}
+
+.home-status-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.home-status strong {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-status-meta {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.home-status-meta:empty {
+  display: none;
+}
+
+.home-status-cta {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.home-status:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.home-status[data-state="loading"] strong {
+  color: var(--color-ink-muted);
+}
+
+.home-today-note {
+  grid-area: note;
+  margin: 0;
+  padding: 8px 20px;
+  border-top: 1px solid var(--color-divider);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: #fbf7ef;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+}
+
+/* ── Below the hero: three groups, each with one job. 01 바로가기 (act),
+   02 읽어보기 (read), 03 밥도둑 소식 (catch up). Utility is heaviest. ── */
+.home-group {
+  margin-top: var(--space-12);
+  padding-top: var(--space-8);
+  border-top: 1px solid rgba(30, 29, 26, 0.12);
+}
+
+.home-group.home-shelf {
+  margin-top: var(--space-6);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.home-group-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.home-group-copy {
+  min-width: 0;
+}
+
+.home-group-head h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+
+.home-group-num {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+
+.home-group-purpose {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+}
+
+/* Shelf: native horizontal scroll, never automatic. Level 2 (오늘의 꽁밥,
+   메뉴 고르기) is wider and heavier than level 3 (map, food log). */
+
+.home-shelf-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.home-shelf-nav[hidden] {
+  display: none;
+}
+
+.home-shelf-btn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(30, 29, 26, 0.18);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: border-color var(--ease), background var(--ease);
+}
+
+.home-shelf-btn svg {
+  width: 20px;
+  height: 20px;
   display: block;
 }
 
-.title {
-  font-size: clamp(2.15rem, 7vw, 3.15rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  text-align: center;
-  color: #191714;
-  line-height: 1.08;
-  margin-bottom: 12px;
+.home-shelf-btn:hover {
+  border-color: rgba(30, 29, 26, 0.4);
 }
 
-.title .title-en {
-  font-size: 0.48em;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: #746e65;
+.home-shelf-btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: default;
 }
 
-.subtitle {
-  font-size: 15px;
-  font-weight: 400;
-  color: #746e65;
-  text-align: center;
-  line-height: 1.65;
-  max-width: 34rem;
-  margin-bottom: 8px;
+.home-shelf-track {
+  --banner-primary: 400px;
+  --banner-secondary: 280px;
+  display: flex;
+  gap: var(--space-4);
+  margin: 0 -6px;
+  padding: 6px 6px 14px;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 6px;
+  -webkit-overflow-scrolling: touch;
 }
 
-.explore {
+.home-banner {
+  flex: 0 0 var(--banner-secondary);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.home-banner--primary {
+  flex-basis: var(--banner-primary);
+}
+
+.home-banner-link {
   position: relative;
-  z-index: 1;
-  width: min(1080px, calc(100% - 32px));
-  margin: 32px auto 12px;
-  color: #191714;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 236px;
+  padding: 20px 22px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid rgba(30, 29, 26, 0.1);
+  color: var(--color-ink);
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform var(--ease), border-color var(--ease);
 }
 
-.explore-head {
-  max-width: 34rem;
-  margin: 0 0 20px;
+.home-banner-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(30, 29, 26, 0.24);
 }
 
-.explore-head h2 {
-  font-size: clamp(1.5rem, 3.2vw, 2rem);
+.home-banner-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.home-banner-label {
+  position: relative;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1.2;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-muted);
 }
 
-.explore-head p {
-  margin-top: 8px;
+.home-banner-label b {
+  margin-right: 4px;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+.home-banner-title {
+  position: relative;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-banner--primary .home-banner-title {
+  font-size: clamp(1.375rem, 2.1vw, 1.625rem);
+  line-height: 1.24;
+}
+
+.home-banner--magazine .home-banner-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.home-banner-copy {
+  position: relative;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #4a453e;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-banner-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-accent);
+}
+
+.home-banner-media {
+  position: absolute;
+  overflow: hidden;
+}
+
+.home-banner-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-banner-link:hover .home-banner-media img {
+  transform: scale(1.02);
+}
+
+/* 오늘의 꽁밥: the ink card, stamped with today's KST date. */
+.home-banner--today .home-banner-link {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-surface);
+}
+
+.home-banner--today .home-banner-label,
+.home-banner--today .home-banner-copy {
+  color: rgba(255, 253, 248, 0.78);
+}
+
+.home-banner--today .home-banner-label b {
+  color: #f3a58f;
+}
+
+.home-banner--today .home-banner-cta {
+  color: #f7c9b8;
+}
+
+.home-banner-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+  text-align: right;
+}
+
+.home-banner-date:empty {
+  display: none;
+}
+
+.home-banner-date-day {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.home-banner-date-week {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 253, 248, 0.72);
+}
+
+/* 메뉴 고르기: warm wash with a food crop on the right. */
+.home-banner--pick .home-banner-link {
+  padding-right: 46%;
+  background: var(--color-accent-wash);
+  border-color: rgba(180, 61, 39, 0.18);
+}
+
+.home-banner--pick .home-banner-media {
+  top: 10px;
+  right: 10px;
+  bottom: 10px;
+  width: calc(44% - 10px);
+  border-radius: 14px;
+}
+
+/* Map and food log: an illustrated strip across the top. */
+.home-banner--map .home-banner-link,
+.home-banner--log .home-banner-link {
+  padding-top: 92px;
+}
+
+.home-banner--map .home-banner-media,
+.home-banner--log .home-banner-media {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 76px;
+}
+
+.home-banner-media--map svg,
+.home-banner-media--log svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.home-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── 02 읽어보기: featured story, the four desks, the photo record ── */
+.home-more {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.home-more:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Story and desks on the left, the photo record beside them. */
+.home-read-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-areas:
+    "feature photo"
+    "desks photo";
+  grid-template-rows: auto 1fr;
+  gap: var(--space-4) var(--space-6);
+  align-items: start;
+}
+
+.home-read-grid .home-feature {
+  grid-area: feature;
+}
+
+.home-read-grid .home-desks-block {
+  grid-area: desks;
+}
+
+.home-read-grid .explore-card {
+  grid-area: photo;
+  align-self: stretch;
+  min-height: 340px;
+}
+
+/* The card takes the column's height; its photos fill it instead of setting it. */
+.home-read-grid .explore-media {
+  position: absolute;
+  inset: 0;
+}
+
+.home-read-grid .explore-collage {
+  min-height: 0;
+  height: 100%;
+}
+
+.home-feature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-feature[hidden] {
+  display: none;
+}
+
+.home-feature-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+.home-feature-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.home-feature-title {
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.home-feature-summary {
   font-size: 15px;
   line-height: 1.6;
-  color: #746e65;
+  color: #4a453e;
+  overflow-wrap: anywhere;
 }
 
-.explore-bento {
+.home-feature:hover .home-feature-title {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
+.home-desks-block {
+  min-width: 0;
+}
+
+.home-read-sub {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-muted);
+}
+
+.home-desks {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-rows: minmax(168px, auto);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-divider);
 }
 
+.home-desks a {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-height: 52px;
+  padding: 14px 2px;
+  border-bottom: 1px solid var(--color-divider);
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.home-desk-num {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-ink-muted);
+}
+
+.home-desks a:hover span:last-child {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ── 03 밥도둑 소식: who we are, then a quiet notice-style list ── */
+.home-news-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.home-news-name {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+}
+
+.home-news-name .title-en {
+  font-size: 0.6em;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.home-news-sub {
+  margin: var(--space-2) 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.home-news-body {
+  margin: var(--space-3) 0 0;
+  max-width: 30rem;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #4a453e;
+  word-break: keep-all;
+}
+
+.home-news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-divider);
+}
+
+.home-news-row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--color-divider);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.home-news-tag {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+}
+
+.home-news-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-news-arrow {
+  color: var(--color-ink-muted);
+  transition: transform var(--ease);
+}
+
+.home-news-row:hover .home-news-text {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.home-news-row:hover .home-news-arrow {
+  transform: translateX(3px);
+}
+
+.home-actions .btn:focus-visible,
+.home-banner-link:focus-visible,
+.home-shelf-btn:focus-visible,
+.home-more:focus-visible,
+.home-feature:focus-visible,
+.home-desks a:focus-visible,
+.home-news-row:focus-visible,
+.explore-card:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.home-status:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -4px;
+  border-radius: 14px;
+}
+
+/* ── Photo record card (existing editorial treatment) ── */
 .explore-card {
-  scroll-margin-top: 72px;
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 0;
+  min-height: 320px;
   border-radius: 24px;
   background: #fcfaf5;
   border: 1px solid rgba(25, 23, 20, 0.09);
@@ -168,7 +940,6 @@
 .explore-card:focus-visible {
   transform: translateY(-3px);
   border-color: rgba(25, 23, 20, 0.16);
-  outline: none;
 }
 
 .explore-card img {
@@ -176,42 +947,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.explore-card:hover img,
-.explore-card:focus-visible img {
-  transform: scale(1.015);
-}
-
-.explore-card--insta {
-  grid-column: 1 / 8;
-  grid-row: 1 / 3;
-  min-height: 420px;
-}
-
-.explore-card--yt {
-  grid-column: 8 / 13;
-  grid-row: 1;
-  min-height: 248px;
-}
-
-.explore-card--map {
-  grid-column: 8 / 11;
-  grid-row: 2;
-  min-height: 220px;
-}
-
-.explore-card--map .explore-media {
-  position: absolute;
-  inset: 0;
-}
-
-.explore-card--kakao {
-  grid-column: 11 / 13;
-  grid-row: 2;
-  min-height: 220px;
-  background: #fcfaf5;
 }
 
 .explore-media {
@@ -231,97 +966,6 @@
   background: #191714;
 }
 
-.explore-collage img:nth-child(1) { grid-column: 1; grid-row: 1; }
-.explore-collage img:nth-child(2) { grid-column: 2; grid-row: 1; }
-.explore-collage img:nth-child(3) { grid-column: 1; grid-row: 2; }
-.explore-collage img:nth-child(4) { grid-column: 2; grid-row: 2; }
-
-.explore-thumb {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 220px;
-  background: #2a2118;
-}
-
-.explore-thumb img {
-  position: relative;
-  z-index: 0;
-  width: 100%;
-  height: 220px;
-  min-height: 220px;
-  object-fit: cover;
-  display: block;
-}
-
-.explore-play {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  z-index: 1;
-  width: 48px;
-  height: 48px;
-  margin: -24px 0 0 -24px;
-  border-radius: 50%;
-  background: rgba(25, 23, 20, 0.62);
-  border: 1px solid rgba(252, 250, 245, 0.28);
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-
-.explore-play svg {
-  width: 16px;
-  height: 16px;
-  margin-left: 2px;
-  fill: #fcfaf5;
-}
-
-.explore-map {
-  height: 100%;
-  min-height: 120px;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(103, 116, 93, 0.16), transparent 42%),
-    #e8d7b1;
-}
-
-.explore-map svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.explore-chat {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 42px 14px 0;
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-.explore-bubble {
-  max-width: 92%;
-  padding: 8px 11px;
-  border-radius: 14px;
-  font-size: 12px;
-  line-height: 1.45;
-  font-weight: 500;
-}
-
-.explore-bubble--in {
-  align-self: flex-start;
-  background: #efe8d8;
-  color: #191714;
-  border-bottom-left-radius: 4px;
-}
-
-.explore-bubble--out {
-  align-self: flex-end;
-  background: #d9472b;
-  color: #fcfaf5;
-  border-bottom-right-radius: 4px;
-}
-
 .explore-badge {
   position: absolute;
   top: 12px;
@@ -332,10 +976,8 @@
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: rgba(252, 250, 245, 0.78);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(252, 250, 245, 0.5);
+  background: #fcfaf5;
+  border: 1px solid rgba(25, 23, 20, 0.08);
 }
 
 .explore-badge svg {
@@ -344,20 +986,7 @@
   display: block;
 }
 
-.explore-card--kakao .explore-badge {
-  background: #fcfaf5;
-  border-color: rgba(25, 23, 20, 0.08);
-}
-
 .explore-copy {
-  position: relative;
-  z-index: 3;
-  padding: 14px 16px 16px;
-}
-
-.explore-card--insta .explore-copy,
-.explore-card--yt .explore-copy,
-.explore-card--map .explore-copy {
   position: absolute;
   left: 12px;
   right: 12px;
@@ -365,41 +994,12 @@
   z-index: 5;
   padding: 12px 14px 13px;
   border-radius: 16px;
-  background: rgba(25, 23, 20, 0.82);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: rgba(25, 23, 20, 0.86);
   color: #fcfaf5;
 }
 
-.explore-card--map .explore-copy {
-  background: rgba(252, 250, 245, 0.92);
-  color: #191714;
-}
-
-.explore-card--insta .explore-copy p,
-.explore-card--yt .explore-copy p {
-  color: rgba(252, 250, 245, 0.82);
-}
-
-.explore-card--map .explore-copy p {
-  color: #746e65;
-}
-
-.explore-card--insta .explore-cta,
-.explore-card--yt .explore-cta {
-  color: #e8d7b1;
-}
-
-.explore-card--map .explore-cta {
-  color: #d9472b;
-}
-
-.explore-card--kakao .explore-copy {
-  margin-top: auto;
-}
-
 .explore-copy h3 {
-  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.25;
@@ -409,13 +1009,8 @@
 .explore-copy p {
   font-size: 13px;
   line-height: 1.5;
-  color: #746e65;
+  color: rgba(252, 250, 245, 0.84);
   max-width: 34ch;
-}
-
-.explore-card--insta .explore-copy p,
-.explore-card--yt .explore-copy p {
-  color: rgba(252, 250, 245, 0.82);
 }
 
 .explore-cta {
@@ -426,11 +1021,6 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #d9472b;
-}
-
-.explore-card--insta .explore-cta,
-.explore-card--yt .explore-cta {
   color: #e8d7b1;
 }
 
@@ -444,76 +1034,253 @@
   transform: translateX(4px);
 }
 
-@media (max-width: 900px) {
-  .explore-bento {
-    grid-template-columns: 1fr 1fr;
-    grid-auto-rows: auto;
+/* ── Responsive: one task-first column on phones ── */
+@media (max-width: 1100px) {
+  .home-hero {
+    gap: var(--space-6) var(--space-8);
+    padding: 28px 28px 18px;
   }
 
-  .explore-card--insta,
-  .explore-card--yt,
-  .explore-card--map,
-  .explore-card--kakao {
-    grid-column: auto;
-    grid-row: auto;
-  }
-
-  .explore-card--insta {
-    grid-column: 1 / -1;
-    min-height: 360px;
-  }
-
-  .explore-card--yt {
-    grid-column: 1 / -1;
-    min-height: 220px;
+  .home-collage {
+    height: 320px;
   }
 }
 
-@media (max-width: 560px) {
-  .explore {
-    width: calc(100% - 24px);
+@media (max-width: 960px) {
+  .home-hero {
+    padding: 28px 24px 20px;
   }
 
-  .explore-bento {
-    gap: 12px;
+  .home-collage {
+    height: 300px;
   }
 
-  .explore-card--insta {
-    min-height: 320px;
-    border-radius: 22px;
+  .home-today {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "head head"
+      "menu free"
+      "note note";
   }
 
-  .explore-card--yt {
-    min-height: 200px;
+  .home-today-head {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 12px;
+    padding-bottom: 4px;
   }
 
-  .explore-card--map,
-  .explore-card--kakao {
-    min-height: 200px;
+  #homeMenuStatus {
+    border-left: 0;
   }
 
-  .explore-copy h3 {
-    font-size: 1.08rem;
+  .home-shelf-track {
+    --banner-primary: 44%;
+    --banner-secondary: 34%;
+  }
+
+  .home-read-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "feature"
+      "desks"
+      "photo";
+    grid-template-rows: auto;
+  }
+
+  .home-news-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+/* One task-first column once the copy and the collage no longer fit side by side. */
+@media (max-width: 720px) {
+  .home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "copy"
+      "collage"
+      "today";
+  }
+
+  .home-collage {
+    height: 250px;
+  }
+}
+
+/* Touch widths swipe the shelf; the buttons are a desktop convenience. */
+@media (max-width: 767px) {
+  .home-shelf-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .home {
+    width: calc(100% - 32px);
+  }
+
+  .home-hero {
+    gap: var(--space-6);
+    margin-top: var(--space-4);
+    padding: 24px 18px 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .home-title {
+    font-size: clamp(2.1rem, 10.4vw, 2.6rem);
+  }
+
+  /* Side by side when both labels fit (390px), stacked on narrower phones. */
+  .home-actions .btn {
+    flex: 1 1 auto;
+    padding: 12px 14px;
+  }
+
+  .home-collage {
+    height: 196px;
+  }
+
+  .home-photo {
+    padding: 4px;
+    border-radius: 16px;
+  }
+
+  .home-photo img {
+    border-radius: 12px;
+  }
+
+  .home-photo--main {
+    grid-column: 1 / 8;
+    grid-row: 1 / 11;
+  }
+
+  .home-photo--side {
+    grid-column: 8 / 13;
+    grid-row: 1 / 6;
+    transform: rotate(2deg);
+  }
+
+  .home-photo--low {
+    grid-column: 7 / 13;
+    grid-row: 6 / 11;
+    transform: rotate(-1.5deg);
+  }
+
+  .home-photo-tag {
+    left: 10px;
+    bottom: 10px;
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  .home-collage-note {
+    text-align: left;
+  }
+
+  .home-today {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "head"
+      "menu"
+      "free"
+      "note";
+  }
+
+  .home-today-head {
+    padding: 14px 16px 2px;
+  }
+
+  .home-status {
+    padding: 14px 16px;
+    border-left: 0;
+    border-top: 1px solid var(--color-divider);
+  }
+
+  .home-today-note {
+    padding: 10px 16px;
+  }
+
+  /* Edge-to-edge shelf so the next card visibly peeks past the screen edge. */
+  .home-shelf-track {
+    --banner-primary: 84%;
+    --banner-secondary: 70%;
+    gap: var(--space-3);
+    margin: 0 -16px;
+    padding: 6px 16px 14px;
+    scroll-padding-inline: 16px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .home-banner-link {
+    min-height: 224px;
+    padding: 18px 18px 16px;
+  }
+
+  .home-banner--pick .home-banner-link {
+    padding-right: 44%;
+  }
+
+  .home-group {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+  }
+
+  .home-group-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .home-desks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-read-grid .explore-card {
+    min-height: 280px;
+  }
+
+  .home-news-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "tag arrow"
+      "text arrow";
+    gap: 2px var(--space-3);
+  }
+
+  .home-news-tag {
+    grid-area: tag;
+  }
+
+  .home-news-text {
+    grid-area: text;
+  }
+
+  .home-news-arrow {
+    grid-area: arrow;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .explore-card,
-  .explore-card img,
-  .explore-cta .arr {
+  .explore-cta .arr,
+  .home-banner-link,
+  .home-banner-media img,
+  .home-shelf-btn,
+  .home-news-arrow {
     transition: none;
   }
 
+  .home-banner-link:hover,
+  .home-banner-link:hover .home-banner-media img,
+  .home-news-row:hover .home-news-arrow {
+    transform: none;
+  }
+
   .explore-card:hover,
-  .explore-card:focus-visible {
-    transform: none;
-  }
-
-  .explore-card:hover img,
-  .explore-card:focus-visible img {
-    transform: none;
-  }
-
+  .explore-card:focus-visible,
   .explore-card:hover .explore-cta .arr,
   .explore-card:focus-visible .explore-cta .arr {
     transform: none;

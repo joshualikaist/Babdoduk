@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>밥도둑 Babdoduk</title>
+  <title>먹방 가계부 · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -43,549 +43,12 @@
     }
 
     /* ── 스크롤 진행 바: 내비 첫 줄 (틈·비침 최소화) ── */
-    .scroll-progress-wrap {
-      position: relative;
-      height: 3px;
-      width: 100%;
-      flex-shrink: 0;
-      z-index: 2;
-      background: #fbfbfd;
-      overflow: hidden;
-    }
 
     /* ── 상단 고정 내비 (진행 바 + 핑크 글래스 한 덩어리) ── */
-    .site-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 10001;
-      display: flex;
-      flex-direction: column;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
-
-    .site-nav-inner {
-      width: 100%;
-      max-width: 100%;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      align-items: center;
-      column-gap: 10px;
-      row-gap: 6px;
-      padding: 8px max(12px, env(safe-area-inset-left)) 8px max(12px, env(safe-area-inset-right));
-      min-height: 44px;
-      background: rgba(255, 245, 248, 0.94);
-      -webkit-backdrop-filter: saturate(180%) blur(16px);
-      backdrop-filter: saturate(180%) blur(16px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
-    }
 
     /* ZIP(일러스트 템플릿)에 웹폰트 파일이 없어, Y2K 홀로 느낌은 CSS 그라데이션으로 구현 */
-    .site-nav-wordmark {
-      justify-self: start;
-      align-self: center;
-      padding: 6px 10px;
-      font-weight: 900;
-      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      text-decoration: none;
-      white-space: nowrap;
-      background: linear-gradient(
-        110deg,
-        #6366f1 0%,
-        #a855f7 18%,
-        #ec4899 36%,
-        #06b6d4 55%,
-        #8b5cf6 72%,
-        #db2777 100%
-      );
-      background-size: 260% 100%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: wordmark-holo 6s ease-in-out infinite;
-    }
-
-    @keyframes wordmark-holo {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
-
-    .site-nav-wordmark:hover {
-      filter: brightness(1.08);
-    }
-
-    .site-nav-item {
-      flex: 0 1 auto;
-      font-size: clamp(0.62rem, 2.4vw, 0.72rem);
-      font-weight: 600;
-      color: #1d1d1f;
-      text-decoration: none;
-      letter-spacing: -0.02em;
-      opacity: 0.88;
-      transition: opacity 0.15s;
-      white-space: nowrap;
-      text-align: center;
-    }
-
-    .site-nav-item:hover {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-
-    .site-nav-lang {
-      background: none;
-      border: none;
-      padding: 0;
-      font: inherit;
-      cursor: pointer;
-      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-    }
-
-    .site-nav-item.site-nav-lang {
-      justify-self: end;
-      align-self: center;
-      padding: 6px 10px;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      opacity: 0.92;
-    }
-
-    .nav-mega-row {
-      justify-self: center;
-      align-self: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      column-gap: 10px;
-      row-gap: 4px;
-      min-width: 0;
-      max-width: 100%;
-    }
-    .nav-mega {
-      position: relative;
-    }
-    .nav-mega-trigger {
-      display: inline-flex;
-      align-items: center;
-      background: none;
-      border: none;
-      padding: 6px 10px;
-      margin: 0;
-      font-family: inherit;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: #1d1d1f;
-      cursor: pointer;
-      opacity: 0.88;
-      transition: opacity 0.15s;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .nav-mega-trigger:hover,
-    .nav-mega.is-open .nav-mega-trigger {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .nav-mega-trigger.is-current {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .nav-mega-trigger::after {
-      content: '';
-      display: inline-block;
-      width: 0;
-      height: 0;
-      margin-left: 3px;
-      border: solid transparent;
-      border-width: 3px 3px 0 3px;
-      border-top-color: #6e6e73;
-      vertical-align: 2px;
-      opacity: 0.75;
-    }
-    .nav-mega-panel {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      min-width: 11.5rem;
-      max-width: min(18rem, calc(100vw - 24px));
-      padding: 6px 0;
-      background: rgba(255, 252, 253, 0.97);
-      -webkit-backdrop-filter: saturate(180%) blur(14px);
-      backdrop-filter: saturate(180%) blur(14px);
-      border-radius: 12px;
-      border: 1px solid rgba(0, 0, 0, 0.07);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
-      z-index: 10002;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transform: translateY(-4px);
-      transition: opacity 0.18s ease, visibility 0.18s, transform 0.18s ease;
-    }
-    .nav-mega.is-open .nav-mega-panel {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateY(0);
-    }
-    .nav-mega-link {
-      display: block;
-      padding: 8px 14px;
-      font-size: clamp(0.68rem, 2.2vw, 0.78rem);
-      font-weight: 500;
-      color: #1d1d1f;
-      text-decoration: none;
-      letter-spacing: -0.02em;
-      line-height: 1.35;
-      transition: background 0.12s;
-    }
-    .nav-mega-link:hover,
-    .nav-mega-link:focus-visible {
-      background: rgba(99, 102, 241, 0.08);
-      outline: none;
-    }
-    @media (max-width: 520px) {
-      .nav-mega-panel {
-        left: 50%;
-        transform: translate(-50%, -4px);
-      }
-      .nav-mega.is-open .nav-mega-panel {
-        transform: translate(-50%, 0);
-      }
-    }
-
-    .scroll-progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
-      background-size: 200% 100%;
-      animation: shimmer 3s linear infinite;
-      transition: width 0.08s ease-out;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
-
-    .container {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .profile--hero {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 8px 16px 6px;
-    }
-
-    .profile {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-
-    .badge-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .chip {
-      font-size: 0.68rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.04);
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      color: #6e6e73;
-    }
-
-    .chip--tagline {
-      letter-spacing: 0.02em;
-      text-transform: none;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 7px 14px;
-      max-width: 100%;
-      text-align: center;
-      line-height: 1.35;
-    }
-
-    .avatar {
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      padding: 3px;
-      background: linear-gradient(135deg, #f472b6, #a855f7, #6366f1);
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.06),
-        0 12px 40px rgba(99, 102, 241, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .avatar-inner {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: #ffffff;
-      overflow: hidden;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-    }
-
-    .avatar-inner img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .title {
-      font-size: clamp(1.35rem, 4.5vw, 1.85rem);
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      text-align: center;
-      color: #1d1d1f;
-    }
-
-    .title .title-en {
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .subtitle {
-      font-size: 0.84rem;
-      font-weight: 400;
-      color: #86868b;
-      text-align: center;
-      line-height: 1.55;
-      max-width: 300px;
-    }
-
-    .link-btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 17px 22px;
-      border-radius: 18px;
-      text-decoration: none;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #1d1d1f;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-      transition: transform 0.2s ease, border-color 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .link-btn:hover {
-      transform: translateY(-2px);
-      border-color: rgba(0, 0, 0, 0.12);
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
-    }
-
-    .link-btn:active {
-      transform: scale(0.99);
-    }
-
-    .link-btn .icon {
-      font-size: 1.45rem;
-      flex-shrink: 0;
-      width: 38px;
-      text-align: center;
-    }
-
-    .link-btn .text {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .link-btn .text .label {
-      display: block;
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .link-btn .text .desc {
-      display: block;
-      font-size: 0.76rem;
-      font-weight: 400;
-      color: #86868b;
-      margin-top: 3px;
-    }
-
-    .link-btn .arrow {
-      font-size: 1.1rem;
-      color: #aeaeb2;
-    }
-
-    .link-btn.instagram { border-left: 3px solid #e11d48; }
-    .link-btn.youtube   { border-left: 3px solid #dc2626; }
-    .link-btn.kakao     { border-left: 3px solid #ca8a04; }
-    .link-btn.email     { border-left: 3px solid #2563eb; }
-    .link-btn.map       { border-left: 3px solid #03c75a; }
-    .link-btn.default   { border-left: 3px solid #d2d2d7; }
-
-    .divider {
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.08), transparent);
-      margin: 6px 0;
-    }
 
     /* ── 푸터 (Apple.co.kr 스타일 레퍼런스) ── */
-    .site-footer {
-      flex-shrink: 0;
-      margin-top: 40px;
-      background: #f5f5f7;
-      color: #6e6e73;
-      padding: 18px 0 28px;
-    }
-
-    .site-footer-inner {
-      max-width: 1024px;
-      margin: 0 auto;
-      padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
-    }
-
-    .footer-apple-hr {
-      border: none;
-      border-top: 1px solid #d2d2d7;
-      margin: 0 0 16px;
-    }
-
-    .footer-apple-main {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      gap: 12px 16px;
-      align-items: start;
-      font-size: 0.75rem;
-      line-height: 1.5;
-    }
-
-    .footer-apple-col--left {
-      justify-self: start;
-      text-align: left;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0 2px;
-    }
-
-    .footer-apple-col--center {
-      justify-self: center;
-      text-align: center;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 0;
-    }
-
-    .footer-apple-col--right {
-      justify-self: end;
-      text-align: right;
-      color: #424245;
-      font-weight: 500;
-    }
-
-    .footer-apple-copy {
-      color: #6e6e73;
-    }
-
-    .footer-apple-pipe {
-      color: #d2d2d7;
-      margin: 0 5px;
-      user-select: none;
-    }
-
-    .footer-apple-a {
-      color: #424245;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-
-    .footer-apple-a:hover {
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    .footer-apple-email-plain {
-      color: #424245;
-      user-select: text;
-    }
-
-    .footer-apple-fine {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid #e5e5ea;
-      font-size: 0.64rem;
-      line-height: 1.55;
-      color: #86868b;
-    }
-
-    @media (max-width: 800px) {
-      .footer-apple-main {
-        grid-template-columns: 1fr;
-        justify-items: center;
-      }
-
-      .footer-apple-col--left,
-      .footer-apple-col--center,
-      .footer-apple-col--right {
-        justify-self: center;
-        text-align: center;
-        justify-content: center;
-      }
-
-      .footer-apple-col--left {
-        order: 1;
-      }
-
-      .footer-apple-col--center {
-        order: 2;
-      }
-
-      .footer-apple-col--right {
-        order: 3;
-      }
-    }
 
     /* ── 먹방 가계부 (일일 Total → 월/주 집계 + 달력) ── */
     .food-tracker-wrap {
@@ -879,7 +342,14 @@
     .food-input-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       font-size: 0.75rem;
+    }
+
+    /* Keep the meal choice readable on phones instead of shrinking to one glyph. */
+    .food-input-table th:first-child,
+    .food-input-table td:first-child {
+      width: 44%;
     }
 
     .food-input-table th {
@@ -950,9 +420,12 @@
     }
 
     .food-input-add {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
       background: none;
       border: none;
-      padding: 0;
+      padding: 0 4px;
       font: inherit;
       font-size: 0.78rem;
       font-weight: 600;
@@ -963,12 +436,15 @@
     }
 
     .food-input-reset {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
       background: none;
       border: none;
-      padding: 0;
+      padding: 0 4px;
       font: inherit;
       font-size: 0.78rem;
-      color: #aeaeb2;
+      color: #6d665e;
       cursor: pointer;
     }
 
@@ -998,350 +474,52 @@
     }
 
     /* ── 가로 캐러셀: 좌측 이미지 · 우측 설명 ── */
-    .hero-carousel {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
-      margin-bottom: 0.5rem;
-    }
-
-    .carousel-viewport {
-      overflow: hidden;
-      outline: none;
-      width: 100%;
-      touch-action: pan-y;
-    }
-
-    .carousel-track {
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
-      will-change: transform;
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-      padding: 0;
-    }
-
-    .carousel-track.is-instant {
-      transition: none;
-    }
-
-    .carousel-slide {
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
-      flex: 0 0 100%;
-      width: 100%;
-      max-width: 100%;
-      box-sizing: border-box;
-      min-height: 176px;
-      padding: 10px 12px 10px 10px;
-      gap: 4px;
-      border-radius: 20px;
-      overflow: visible;
-      isolation: isolate;
-      text-decoration: none;
-      color: inherit;
-      background: linear-gradient(165deg, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.28) 100%);
-      -webkit-backdrop-filter: blur(22px) saturate(140%);
-      backdrop-filter: blur(22px) saturate(140%);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.72),
-        0 10px 30px rgba(20, 25, 30, 0.07);
-    }
-
-    .slide-media {
-      flex: 0 0 42%;
-      min-width: 0;
-      min-height: 152px;
-      border-radius: 14px;
-      background-color: transparent;
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
-      mix-blend-mode: multiply;
-      transition: none;
-    }
-
-    .carousel-slide:hover .slide-media {
-      transform: none;
-    }
-
-    .slide-copy {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      text-align: left;
-      padding: 0.85rem 0.7rem 0.85rem 0.85rem;
-      background: transparent;
-      min-width: 0;
-    }
-
-    .slide-eyebrow {
-      font-size: 0.58rem;
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #86868b;
-      margin-bottom: 0.4rem;
-    }
-
-    .slide-title {
-      font-size: clamp(1.05rem, 3.2vw, 1.42rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.18;
-      margin-bottom: 0.35rem;
-      color: #1d1d1f;
-    }
-
-    .slide-desc {
-      font-size: clamp(0.68rem, 2vw, 0.82rem);
-      font-weight: 500;
-      color: #6e6e73;
-      line-height: 1.5;
-      max-width: none;
-    }
-
-    .carousel-dots {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      padding: 22px 20px 10px;
-      margin: 8px 0 0;
-    }
-
-    .carousel-dot {
-      width: 8px;
-      height: 8px;
-      padding: 0;
-      border: none;
-      border-radius: 50%;
-      background: #d2d2d7;
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
-    }
-
-    .carousel-dot:hover {
-      transform: scale(1.15);
-      background: #aeaeb2;
-    }
-
-    .carousel-dot.is-active {
-      background: #1d1d1f;
-      transform: scale(1.2);
-    }
-
-    @media (max-width: 480px) {
-      .carousel-slide {
-        flex-direction: column;
-        min-height: 0;
-      }
-
-      .slide-media {
-        flex: 0 0 auto;
-        width: 100%;
-        min-height: 132px;
-        max-height: 44vw;
-      }
-
-      .slide-copy {
-        padding: 0.85rem 1rem 1.05rem;
-      }
-    }
 
     /* ── 팝업 ── */
-    #welcomePopup.popup-overlay {
-      flex: none;
-      align-self: flex-start;
-      width: 0;
-      height: 0;
-      min-height: 0;
-      min-width: 0;
-      margin: 0;
-      padding: 0;
-      overflow: visible;
-    }
 
-    .popup-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10050;
-      background: rgba(0, 0, 0, 0.38);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease, visibility 0.3s;
+    .food-cal-cell { position: relative; }
+    .food-cal-cell .src {
+      position: absolute;
+      top: 3px;
+      right: 4px;
+      font-size: 8px;
+      line-height: 1;
+      color: #b43d27;
     }
-
-    .popup-overlay.is-open {
-      opacity: 1;
-      visibility: visible;
+    .food-source-legend {
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #6d665e;
     }
-
-    .popup-box {
-      width: 100%;
-      max-width: 400px;
-      border-radius: 24px;
-      padding: 28px 26px 22px;
-      background: linear-gradient(165deg, rgba(30, 30, 42, 0.95) 0%, rgba(12, 12, 20, 0.98) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow:
-        0 32px 80px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-      transform: scale(0.92) translateY(12px);
-      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1);
-    }
-
-    .popup-overlay.is-open .popup-box {
-      transform: scale(1) translateY(0);
-    }
-
-    .popup-box h2 {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin-bottom: 10px;
-      background: linear-gradient(90deg, #fff, #c4b5fd);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .popup-box p {
-      font-size: 0.9rem;
-      line-height: 1.65;
-      color: rgba(255, 255, 255, 0.6);
-      margin-bottom: 18px;
-    }
-
-    .popup-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .popup-btn {
-      width: 100%;
-      padding: 14px 18px;
-      border-radius: 14px;
-      border: none;
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.15s, opacity 0.15s;
-    }
-
-    .popup-btn.primary {
-      background: linear-gradient(135deg, #a855f7, #6366f1);
-      color: #fff;
-      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45);
-    }
-
-    .popup-btn.secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    .popup-btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .popup-dont-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .popup-dont {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 0;
-      font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.45);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .popup-dont input {
-      accent-color: #a855f7;
-      width: 16px;
-      height: 16px;
+    .food-source-legend::first-letter { color: #b43d27; }
+    .food-src {
+      font-size: 0.9em;
+      color: #6d665e;
     }
   </style>
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-  <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
-    <div class="popup-box" role="dialog" aria-labelledby="popupTitle" aria-modal="true">
-      <h2 id="popupTitle" data-i18n="popup.title">밥도둑에 오신 걸 환영해요</h2>
-      <p id="popupIntro" data-i18n-html="popup.body">인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.</p>
-      <div class="popup-actions">
-        <button type="button" class="popup-btn primary" id="popupCloseBtn" data-i18n="popup.start">시작하기</button>
-        <button type="button" class="popup-btn secondary" id="popupSnoozeBtn" data-i18n="popup.snooze24h">하루 동안 보지 않기</button>
-      </div>
-    </div>
-  </div>
-
   <header class="site-nav" role="banner">
     <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
-      <div class="nav-mega-row" role="menubar">
+      <div class="nav-mega-row">
+        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
+        <a class="site-nav-direct" href="mukbang.html#what" data-i18n="nav.choose">메뉴 고르기</a>
         <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaYoutube" href="#" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
-            <a role="menuitem" class="nav-mega-link" id="navMegaKakao" href="#" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button
-            type="button"
-            class="nav-mega-trigger is-current"
-            aria-expanded="false"
-            aria-haspopup="true"
-            data-i18n="nav.features"
-            data-i18n-aria-key="nav.featuresAria"
-            aria-label="주요 기능"
-          >
-            주요 기능
-          </button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
-            <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
-            <a role="menuitem" class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
-            <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab">오늘 뭐 먹지?</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.event">이벤트</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="event.html" data-i18n="nav.event.open">이벤트 페이지</a>
+          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
+          <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
+            <a class="nav-mega-link" href="event.html" data-i18n="nav.event.open">소식·이벤트</a>
+            <a class="nav-mega-link is-current" href="food.html" aria-current="page" data-i18n="nav.foodlog">먹방 가계부</a>
+            <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
+            <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+            <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
           </div>
         </div>
       </div>
@@ -1349,15 +527,15 @@
     </div>
   </header>
 
-  <div class="food-tracker-wrap">
+  <main class="food-tracker-wrap">
     <section class="food-tracker" id="foodTracker" aria-labelledby="foodTrackerTitle">
-      <h2 id="foodTrackerTitle" class="food-tracker-heading" data-i18n="food.heading">먹방 가계부</h2>
-      <p class="food-tracker-note" data-i18n-html="food.note">인스타에 적은 하루 <strong>총액</strong>을 오늘 지출 입력란에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.</p>
+      <h1 id="foodTrackerTitle" class="food-tracker-heading" data-i18n="food.heading">먹방 가계부</h1>
+      <p class="food-tracker-note" data-i18n="food.note">인스타에 적은 하루 <strong>총액</strong>을 오늘 지출 입력란에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.</p>
 
       <div class="food-tracker-columns">
         <div class="food-tracker-col food-tracker-col--input">
       <div class="food-input-panel" id="foodInputPanel">
-        <div class="food-input-title" data-i18n="food.input.sectionTitle">오늘 지출 입력</div>
+        <h2 class="food-input-title" data-i18n="food.input.sectionTitle">오늘 지출 입력</h2>
         <div class="food-input-toolbar">
           <label>
             <span data-i18n="food.input.dateLabel">날짜</span>
@@ -1375,9 +553,9 @@
             <tbody id="foodInputBody"></tbody>
             <tfoot>
               <tr class="food-input-total-row">
-                <th data-i18n="food.input.totalLabel">총액 (원)</th>
+                <th id="foodInputTotalLabel" data-i18n="food.input.totalLabel">총액 (원)</th>
                 <td>
-                  <input type="text" id="foodInputTotal" class="food-input-total" inputmode="numeric" autocomplete="off" />
+                  <input type="text" id="foodInputTotal" class="food-input-total" inputmode="numeric" autocomplete="off" aria-labelledby="foodInputTotalLabel" />
                 </td>
               </tr>
             </tfoot>
@@ -1433,11 +611,12 @@
         <span data-i18n="cal.sun">일</span><span data-i18n="cal.mon">월</span><span data-i18n="cal.tue">화</span><span data-i18n="cal.wed">수</span><span data-i18n="cal.thu">목</span><span data-i18n="cal.fri">금</span><span data-i18n="cal.sat">토</span>
       </div>
       <div class="food-cal-grid" id="foodCalGrid" role="grid"></div>
+      <p class="food-source-legend" id="foodSourceLegend"></p>
       <div class="food-detail" id="foodDetailPanel" data-i18n="food.detailHint" aria-live="polite">날짜(숫자)를 누르면 그날 상세가 표시됩니다.</div>
         </div>
       </div>
     </section>
-  </div>
+  </main>
 
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer-inner">
@@ -1448,18 +627,18 @@
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
-        <nav
-          class="footer-apple-col footer-apple-col--center"
-          aria-label="하단 정책 및 안내"
-          data-i18n-aria-key="footer.navAria"
-        >
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkTerms">사이트 이용 약관</a>
+          <a href="mukbang.html#what" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkLegal">법적 고지</a>
+          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkSitemap">사이트 맵</a>
+          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="food.html" class="footer-apple-a" data-i18n="nav.foodlog">먹방 가계부</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
         </nav>
         <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
       </div>
@@ -1473,62 +652,26 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '밥도둑 Babdoduk',
+          docTitle: '먹방 가계부 · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '맨 위로',
-          'nav.intro': '소개',
           'nav.history': '역사',
-          'nav.sns': 'SNS',
           'nav.instagram': '인스타그램',
-          'nav.features': '주요 기능',
-          'nav.featuresAria': '주요 기능 하위 메뉴',
+          'nav.today': '오늘의 꽁밥',
+          'nav.choose': '메뉴 고르기',
+          'nav.more': '더보기',
           'nav.map': '맛집 지도',
-          'nav.map.open': '네이버 맛집 지도',
           'nav.foodlog': '먹방 가계부',
-          'nav.foodlog.open': '먹방 가계부 열기',
           'nav.magazine': '밥도둑 매거진',
-          'nav.kakao': '카카오톡',
-          'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
-          'nav.youtube': '유튜브 (개설 예정)',
-          'nav.ggongbab': '오늘 뭐 먹지?',
-          'nav.ggongbab.open': '오늘 뭐 먹지? 보기',
-          'nav.event': '이벤트',
-          'nav.event.open': '이벤트 페이지',
+          'nav.event': '소식·이벤트',
+          'nav.event.open': '소식·이벤트',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'popup.title': '밥도둑에 오신 걸 환영해요',
-          'popup.body':
-            '인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.',
-          'popup.start': '시작하기',
-          'popup.snooze24h': '하루 동안 보지 않기',
           'profile.imgAlt': '밥도둑 Babdoduk 프로필',
-          'profile.titleHtml': '밥도둑 <span class="title-en">Babdoduk</span>',
-          'profile.subtitle': '카이스트 기계과 먹방1티어 학생의 먹방일기',
-          'hero.eyebrow': 'KAIST FOOD & COMMUNITY',
-          'hero.ctaExplore': '둘러보기',
-          'hero.ctaInsta': 'Instagram',
-          'carousel.section': '밥도둑 주요 링크',
-          'carousel.tablist': '슬라이드 위치',
-          'carousel.dot1': '슬라이드 1',
-          'carousel.dot2': '슬라이드 2',
-          'carousel.dot3': '슬라이드 3',
-          'carousel.dot4': '슬라이드 4',
-          'slide.insta.title': '밥도둑 인스타그램',
-          'slide.insta.desc': '@babdodukms · 일상과 레시피를 만나 보세요',
-          'slide.map.title': '밥도둑의 맛집 지도',
-          'slide.map.desc': '네이버 지도에서 정리한 맛집 리스트',
-          'slide.kakao.title': '카카오톡 문의 채널',
-          'slide.kakao.desc': '채널에서 편하게 문의해 주세요',
-          'slide.yt.title': '유튜브',
-          'slide.yt.desc': '영상으로 밥도둑을 만나 보세요',
           'food.heading': '먹방 가계부',
-          'food.bannerTitle': '먹방 가계부',
-          'food.bannerDesc':
-            '인스타에 적은 하루 총액을 여기에만 옮겨 적으면, 월·주·달력으로 합계가 정리돼요. (인스타에서 자동으로 가져오기는 어렵습니다.)',
-          'food.bannerCta': '가계부 열기 →',
           'food.note':
-            '인스타에 적은 하루 <strong>총액</strong>을 오늘 지출 입력란에 옮겨 적거나, 사이트에 포함된 금액 목록 파일에 추가하면 월·주·달력으로 합계가 정리돼요. 인스타에서 자동으로 가져오기는 어렵습니다.',
+            '밥도둑이 공개한 식비 기록(사이트의 금액 목록 파일)과 이 브라우저에 저장한 기록을 함께 모아 월·주·달력 합계로 보여 줘요. 여기서 입력한 내용은 이 브라우저에만 남고 서버로 보내지지 않아요.',
           'food.cardMonth': '이번 달 합계',
           'food.cardWeek': '이번 주 합계 (ISO 주차)',
           'food.cardMonthPick': '월 합계',
@@ -1557,79 +700,43 @@
           'food.input.reset': '초기화',
           'food.input.save': '저장하기',
           'food.input.hint':
-            '저장은 이 브라우저에만 남고, 월·주 요약과 달력에 바로 반영돼요. 같은 날짜를 다시 저장하면 그날 값이 바뀝니다. 백업이 필요하면 사이트에 넣어 둔 금액 목록 파일과 맞춰 두면 됩니다.',
+            '저장한 내용은 이 브라우저에만 남아 다른 기기나 다른 사람에게는 보이지 않아요. 같은 날짜를 다시 저장하면 그날 값이 바뀌고, 같은 날짜의 공개 기록 대신 이 기록이 보여요. 브라우저 데이터를 지우면 함께 지워져요.',
           'food.input.saved': '저장했습니다. 집계와 달력을 확인하세요.',
           'food.input.errNoDate': '날짜를 선택하세요.',
           'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
-          'link.mail.label': '문의 메일',
+          'food.src.shared': '밥도둑 공개 기록',
+          'food.src.browser': '이 브라우저에 저장한 기록',
+          'food.src.replaces': '같은 날짜의 공개 기록 대신 보여요',
+          'food.legend': '● 표시는 이 브라우저에 저장한 날이에요 · 공개 기록 {shared}일 · 이 브라우저 {browser}일',
+          'food.input.rowMeal': '{n}번째 식사 종류',
+          'food.input.rowPrice': '{n}번째 가격 (원)',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
-          'footer.linkPrivacy': '개인정보 처리방침',
-          'footer.linkTerms': '사이트 이용 약관',
-          'footer.linkLegal': '법적 고지',
-          'footer.linkSitemap': '사이트 맵',
           'footer.country': '대한민국',
-          'footer.navAria': '푸터 정책 링크',
+          'footer.navAria': '사이트 바로가기',
           'footer.fine':
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'Babdoduk',
+          docTitle: 'Food log · Babdoduk',
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Back to top',
-          'nav.intro': 'About',
           'nav.history': 'History',
-          'nav.sns': 'SNS',
           'nav.instagram': 'Instagram',
-          'nav.features': 'Features',
-          'nav.featuresAria': 'Features submenu',
+          'nav.today': "Today's free food",
+          'nav.choose': 'Choose a dish',
+          'nav.more': 'More',
           'nav.map': 'Food map',
-          'nav.map.open': 'Naver food map',
           'nav.foodlog': 'Food log',
-          'nav.foodlog.open': 'Open food log',
           'nav.magazine': 'Magazine',
-          'nav.kakao': 'KakaoTalk',
-          'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
-          'nav.youtube': 'YouTube (coming soon)',
-          'nav.ggongbab': 'What to Eat Today?',
-          'nav.ggongbab.open': 'See what to eat today',
-          'nav.event': 'Event',
-          'nav.event.open': 'Events page',
+          'nav.event': 'News & events',
+          'nav.event.open': 'News & events',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'popup.title': 'Welcome to Babdoduk',
-          'popup.body':
-            'Find recipes and daily life on Instagram and the food map. Use the links below to jump in.',
-          'popup.start': 'Start',
-          'popup.snooze24h': "Don't show for 24 hours",
           'profile.imgAlt': 'Babdoduk profile photo',
-          'profile.titleHtml': '<span class="title-en">Babdoduk</span>',
-          'profile.subtitle':
-            'Food diary of a KAIST Mechanical Engineering student (mukbang tier 1).',
-          'hero.eyebrow': 'KAIST FOOD & COMMUNITY',
-          'hero.ctaExplore': 'Explore',
-          'hero.ctaInsta': 'Instagram',
-          'carousel.section': 'Main links',
-          'carousel.tablist': 'Slide position',
-          'carousel.dot1': 'Slide 1',
-          'carousel.dot2': 'Slide 2',
-          'carousel.dot3': 'Slide 3',
-          'carousel.dot4': 'Slide 4',
-          'slide.insta.title': 'Babdoduk on Instagram',
-          'slide.insta.desc': '@babdodukms · Daily life and recipes',
-          'slide.map.title': 'Babdoduk food map',
-          'slide.map.desc': 'Restaurant list on Naver Map',
-          'slide.kakao.title': 'KakaoTalk channel',
-          'slide.kakao.desc': 'Message us on the channel',
-          'slide.yt.title': 'YouTube',
-          'slide.yt.desc': 'Watch Babdoduk on video',
           'food.heading': 'Food expense log',
-          'food.bannerTitle': 'Food expense log',
-          'food.bannerDesc':
-            'Copy your daily total from Instagram into this page and you’ll see month, week, and calendar summaries. (Pulling data automatically from Instagram isn’t practical.)',
-          'food.bannerCta': 'Open the log →',
           'food.note':
-            'Enter each day’s Instagram <strong>total</strong> in the spending form (or add it to the bundled expense file) to see month, week, and calendar summaries. Automatic import from Instagram isn’t practical.',
+            'Shows Babdoduk’s published expense log (the site’s data file) together with entries saved in this browser, as month, week and calendar totals. What you enter here stays in this browser and is not sent to a server.',
           'food.cardMonth': 'This month',
           'food.cardWeek': 'This week (ISO)',
           'food.cardMonthPick': 'Month total',
@@ -1658,18 +765,19 @@
           'food.input.reset': 'Reset',
           'food.input.save': 'Save',
           'food.input.hint':
-            'Saves only in this browser and updates the month/week summaries and calendar. Saving the same date overwrites that day. For backup, keep a copy aligned with the expense list file in the site’s data folder.',
+            'Saved entries stay in this browser only; other devices and people cannot see them. Saving the same date again replaces that day, and your entry is shown instead of a published one for that date. Clearing browser data removes them.',
           'food.input.saved': 'Saved. Check the summaries and calendar.',
           'food.input.errNoDate': 'Pick a date.',
           'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
-          'link.mail.label': 'Email',
+          'food.src.shared': 'Babdoduk’s published log',
+          'food.src.browser': 'Saved in this browser',
+          'food.src.replaces': 'shown instead of the published entry for this date',
+          'food.legend': '● marks days saved in this browser · published {shared} days · this browser {browser} days',
+          'food.input.rowMeal': 'Meal, row {n}',
+          'food.input.rowPrice': 'Amount (₩), row {n}',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
-          'footer.linkPrivacy': 'Privacy Policy',
-          'footer.linkTerms': 'Terms of Use',
-          'footer.linkLegal': 'Legal',
-          'footer.linkSitemap': 'Site Map',
           'footer.country': 'South Korea',
-          'footer.navAria': 'Footer policies',
+          'footer.navAria': 'Site links',
           'footer.fine':
             'Independent content site. For business registration or legal matters, please reach out by email.'
         }
@@ -1704,12 +812,6 @@
 
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-
-        var hc = document.getElementById('heroCarousel');
-        if (hc && T['carousel.section']) hc.setAttribute('aria-label', T['carousel.section']);
-
-        var img = document.getElementById('profileAvatarImg');
-        if (img && T['profile.imgAlt']) img.setAttribute('alt', T['profile.imgAlt']);
 
         window.dispatchEvent(new CustomEvent('babdoduk-langchange'));
       }
@@ -1750,281 +852,6 @@
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll);
       onScroll();
-
-      function shouldShowWelcome() {
-        var path = (location.pathname || '').toLowerCase();
-        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1 || path.indexOf('mukbang.html') !== -1) return false;
-        try {
-          var until = localStorage.getItem('babdoduk-welcome-snooze-until');
-          if (until && Date.now() < parseInt(until, 10)) return false;
-        } catch (err) {}
-        return true;
-      }
-
-      var popup = document.getElementById('welcomePopup');
-      var closeBtn = document.getElementById('popupCloseBtn');
-      var snoozeBtn = document.getElementById('popupSnoozeBtn');
-
-      function openPopup() {
-        popup.classList.add('is-open');
-        popup.setAttribute('aria-hidden', 'false');
-      }
-      function closePopup(withSnooze24h) {
-        popup.classList.remove('is-open');
-        popup.setAttribute('aria-hidden', 'true');
-        try {
-          if (withSnooze24h) {
-            var until = Date.now() + 24 * 60 * 60 * 1000;
-            localStorage.setItem('babdoduk-welcome-snooze-until', String(until));
-          }
-        } catch (err) {}
-      }
-
-      if (shouldShowWelcome()) {
-        requestAnimationFrame(function () { openPopup(); });
-      }
-
-      if (closeBtn) closeBtn.addEventListener('click', function () { closePopup(false); });
-      if (snoozeBtn) snoozeBtn.addEventListener('click', function () { closePopup(true); });
-      popup.addEventListener('click', function (e) {
-        if (e.target === popup) closePopup(false);
-      });
-
-      /* 가로 캐러셀: translate 무한 루프 (1→2→3→4→1…) */
-      var carouselViewport = document.getElementById('carouselViewport');
-      var carouselTrack = document.getElementById('carouselTrack');
-      var dots = carouselViewport && carouselViewport.parentElement
-        ? carouselViewport.parentElement.querySelectorAll('.carousel-dot')
-        : [];
-
-      function setActiveDot(logicalIndex) {
-        for (var i = 0; i < dots.length; i++) {
-          dots[i].classList.toggle('is-active', i === logicalIndex);
-          dots[i].setAttribute('aria-selected', i === logicalIndex ? 'true' : 'false');
-        }
-      }
-
-      function emptyHrefCarousel(el) {
-        if (el && el.getAttribute('href') === '#') {
-          el.addEventListener('click', function (e) {
-            e.preventDefault();
-          });
-        }
-      }
-
-      if (carouselViewport && carouselTrack && dots.length === 4) {
-        var originals = Array.prototype.slice.call(carouselTrack.querySelectorAll('.carousel-slide'));
-        if (originals.length === 4) {
-          var cloneHead = originals[3].cloneNode(true);
-          var cloneTail = originals[0].cloneNode(true);
-          cloneHead.classList.add('carousel-slide--clone');
-          cloneTail.classList.add('carousel-slide--clone');
-          cloneHead.removeAttribute('id');
-          cloneTail.removeAttribute('id');
-          cloneHead.setAttribute('aria-hidden', 'true');
-          cloneTail.setAttribute('aria-hidden', 'true');
-          carouselTrack.insertBefore(cloneHead, originals[0]);
-          carouselTrack.appendChild(cloneTail);
-        }
-
-        var slideNodes = function () {
-          return carouselTrack.querySelectorAll('.carousel-slide');
-        };
-
-        var pos = 1;
-        var w = 1;
-        var animLock = false;
-
-        function measure() {
-          w = carouselViewport.clientWidth || 1;
-        }
-
-        function applySlideWidths() {
-          var nodes = slideNodes();
-          var i;
-          for (i = 0; i < nodes.length; i++) {
-            nodes[i].style.flexShrink = '0';
-            nodes[i].style.flexGrow = '0';
-            nodes[i].style.flexBasis = w + 'px';
-            nodes[i].style.width = w + 'px';
-          }
-        }
-
-        function setTranslate() {
-          carouselTrack.style.transform = 'translate3d(' + -pos * w + 'px,0,0)';
-        }
-
-        function updateDotsFromPos() {
-          var logical;
-          if (pos >= 1 && pos <= 4) logical = pos - 1;
-          else if (pos === 5) logical = 0;
-          else logical = 3;
-          setActiveDot(logical);
-        }
-
-        function instant(fn) {
-          carouselTrack.classList.add('is-instant');
-          fn();
-          requestAnimationFrame(function () {
-            carouselTrack.classList.remove('is-instant');
-          });
-        }
-
-        function onTrackTransitionEnd(e) {
-          if (e.target !== carouselTrack || e.propertyName !== 'transform') return;
-          if (pos === 5) {
-            instant(function () {
-              pos = 1;
-              setTranslate();
-            });
-          } else if (pos === 0) {
-            instant(function () {
-              pos = 4;
-              setTranslate();
-            });
-          }
-          animLock = false;
-          updateDotsFromPos();
-        }
-
-        carouselTrack.addEventListener('transitionend', onTrackTransitionEnd);
-
-        function layout() {
-          measure();
-          applySlideWidths();
-          carouselTrack.classList.add('is-instant');
-          setTranslate();
-          carouselTrack.classList.remove('is-instant');
-        }
-
-        function goNext() {
-          if (animLock) return;
-          animLock = true;
-          pos++;
-          updateDotsFromPos();
-          setTranslate();
-        }
-
-        function goPrev() {
-          if (animLock) return;
-          animLock = true;
-          pos--;
-          updateDotsFromPos();
-          setTranslate();
-        }
-
-        function goToLogical(logical) {
-          var target = logical + 1;
-          if (target === pos || animLock) return;
-          animLock = true;
-          pos = target;
-          updateDotsFromPos();
-          setTranslate();
-        }
-
-        layout();
-        setActiveDot(0);
-
-        var touchStartX = null;
-        carouselViewport.addEventListener(
-          'touchstart',
-          function (e) {
-            touchStartX = e.changedTouches[0].clientX;
-          },
-          { passive: true }
-        );
-        carouselViewport.addEventListener(
-          'touchend',
-          function (e) {
-            if (touchStartX == null) return;
-            var dx = e.changedTouches[0].clientX - touchStartX;
-            touchStartX = null;
-            if (Math.abs(dx) < 42) return;
-            if (dx < 0) goNext();
-            else goPrev();
-          },
-          { passive: true }
-        );
-
-        var wheelIdle = null;
-        carouselViewport.addEventListener(
-          'wheel',
-          function (e) {
-            if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-            if (wheelIdle) return;
-            if (e.deltaX > 18) {
-              goNext();
-              wheelIdle = setTimeout(function () {
-                wheelIdle = null;
-              }, 320);
-            } else if (e.deltaX < -18) {
-              goPrev();
-              wheelIdle = setTimeout(function () {
-                wheelIdle = null;
-              }, 320);
-            }
-          },
-          { passive: true }
-        );
-
-        carouselViewport.addEventListener('keydown', function (e) {
-          if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            goNext();
-          } else if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            goPrev();
-          }
-        });
-
-        for (var d = 0; d < dots.length; d++) {
-          (function (logical) {
-            dots[logical].addEventListener('click', function () {
-              goToLogical(logical);
-            });
-          })(d);
-        }
-
-        window.addEventListener('resize', function () {
-          layout();
-        });
-
-        var sn = slideNodes();
-        for (var si = 0; si < sn.length; si++) {
-          emptyHrefCarousel(sn[si]);
-        }
-
-        window.babdodukCarouselGoToLogical = function (logical) {
-          goToLogical(logical);
-        };
-      }
-
-      if (!window.babdodukCarouselGoToLogical) {
-        window.babdodukCarouselGoToLogical = function () {};
-      }
-
-      var navHome = document.getElementById('navHome');
-      if (navHome) {
-        navHome.addEventListener('click', function (e) {
-          if (navHome.getAttribute('href') === '#') {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        });
-      }
-
-      function navJumpToSlide(navEl, logicalIndex) {
-        if (!navEl) return;
-        navEl.addEventListener('click', function (e) {
-          if (navEl.getAttribute('href') !== '#') return;
-          e.preventDefault();
-          if (typeof window.babdodukCarouselGoToLogical === 'function') {
-            window.babdodukCarouselGoToLogical(logicalIndex);
-          }
-        });
-      }
-      navJumpToSlide(document.getElementById('navMegaKakao'), 3);
-      navJumpToSlide(document.getElementById('navMegaYoutube'), 2);
 
       document.querySelectorAll('[data-mega]').forEach(function (mega) {
         mega.addEventListener('click', function (e) {
@@ -2186,11 +1013,16 @@
         var i, e;
         for (i = 0; i < serverList.length; i++) {
           e = serverList[i];
-          if (e && e.date) m[e.date] = e;
+          if (e && e.date) m[e.date] = Object.assign({}, e, { _source: 'shared' });
         }
         for (i = 0; i < localList.length; i++) {
           e = localList[i];
-          if (e && e.date) m[e.date] = e;
+          if (e && e.date) {
+            m[e.date] = Object.assign({}, e, {
+              _source: 'browser',
+              _replacesShared: !!(m[e.date] && m[e.date]._source === 'shared')
+            });
+          }
         }
         return Object.keys(m)
           .sort()
@@ -2379,7 +1211,7 @@
           if (entry) {
             cell = document.createElement('button');
             cell.type = 'button';
-            cell.className = 'food-cal-cell has-data';
+            cell.className = 'food-cal-cell has-data' + (entry._source === 'browser' ? ' is-local' : '');
             cell.setAttribute('role', 'gridcell');
             var daySpan = document.createElement('span');
             daySpan.className = 'd';
@@ -2389,7 +1221,14 @@
             amt.className = 'amt';
             amt.textContent = formatKRW(entry.total);
             cell.appendChild(amt);
-            cell.setAttribute('aria-label', iso + ' ' + formatKRW(entry.total));
+            if (entry._source === 'browser') {
+              var mark = document.createElement('span');
+              mark.className = 'src';
+              mark.setAttribute('aria-hidden', 'true');
+              mark.textContent = '●';
+              cell.appendChild(mark);
+            }
+            cell.setAttribute('aria-label', iso + ' ' + formatKRW(entry.total) + ' · ' + sourceText(entry));
             (function (ent, dateStr) {
               cell.addEventListener('click', function () {
                 showDetail(ent, dateStr);
@@ -2411,7 +1250,8 @@
       function showDetail(entry, iso) {
         var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
         var sumWord = lang === 'en' ? 'Total' : '합계';
-        var lines = '<strong>' + iso + '</strong> · ' + sumWord + ' ' + formatKRW(entry.total);
+        var lines = '<strong>' + iso + '</strong> · ' + sumWord + ' ' + formatKRW(entry.total) +
+          '<br /><span class="food-src">' + escapeHtml(sourceText(entry)) + '</span>';
         if (entry.note) lines += '<br /><span style="color:#86868b;font-size:0.9em">' + escapeHtml(entry.note) + '</span>';
         if (entry.items && entry.items.length) {
           lines += '<ul>';
@@ -2436,6 +1276,43 @@
         return d.innerHTML;
       }
 
+      function tr(key, fallback) {
+        var lang = typeof window.babdodukGetLang === 'function' ? window.babdodukGetLang() : 'ko';
+        var T = window.BABDODUK_STR && window.BABDODUK_STR[lang];
+        return T && T[key] != null ? T[key] : fallback;
+      }
+
+      function sourceText(entry) {
+        var text = entry._source === 'browser' ? tr('food.src.browser', '이 브라우저에 저장한 기록') : tr('food.src.shared', '밥도둑 공개 기록');
+        if (entry._replacesShared) text += ' · ' + tr('food.src.replaces', '같은 날짜의 공개 기록 대신 보여요');
+        return text;
+      }
+
+      function updateLegend() {
+        var legend = document.getElementById('foodSourceLegend');
+        if (!legend) return;
+        var shared = 0;
+        var browser = 0;
+        allEntries.forEach(function (e) {
+          if (e._source === 'browser') browser++;
+          else shared++;
+        });
+        legend.textContent = tr('food.legend', '')
+          .replace('{shared}', String(shared))
+          .replace('{browser}', String(browser));
+      }
+
+      function labelInputRows() {
+        if (!foodInputBody) return;
+        foodInputBody.querySelectorAll('tr').forEach(function (row, i) {
+          var n = String(i + 1);
+          var sel = row.querySelector('.food-in-meal');
+          var inp = row.querySelector('.food-in-price');
+          if (sel) sel.setAttribute('aria-label', tr('food.input.rowMeal', '{n}번째 식사 종류').replace('{n}', n));
+          if (inp) inp.setAttribute('aria-label', tr('food.input.rowPrice', '{n}번째 가격 (원)').replace('{n}', n));
+        });
+      }
+
       function applyMergedEntries() {
         var server = window.__foodServerEntries || [];
         allEntries = mergeByDate(server, loadLocalEntries());
@@ -2451,6 +1328,7 @@
         var ag = aggregate(allEntries);
         ensurePickControls(ag.byMonth, ag.byWeek);
         renderCalendar();
+        updateLegend();
       }
 
       document.getElementById('foodCalPrev').addEventListener('click', function () {
@@ -2522,6 +1400,7 @@
           foodInputBody.innerHTML = '';
           var r;
           for (r = 0; r < 5; r++) foodInputBody.appendChild(newRow());
+          labelInputRows();
           foodInputDate.value = todayISO();
           totalManual = false;
           foodInputTotal.value = '0';
@@ -2544,6 +1423,7 @@
 
         foodInputAddRow.addEventListener('click', function () {
           foodInputBody.appendChild(newRow());
+          labelInputRows();
         });
 
         foodInputReset.addEventListener('click', function () {
@@ -2641,6 +1521,8 @@
         var ag = aggregate(allEntries);
         updateSummaryCards(ag.byMonth, ag.byWeek);
         renderCalendar();
+        updateLegend();
+        labelInputRows();
       });
     })();
   </script>

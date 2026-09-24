@@ -7,681 +7,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      color: #1d1d1f;
-      overflow-x: hidden;
-      padding: 64px 0 72px;
-      position: relative;
-      background: #fbfbfd;
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.06) 0%, transparent 55%),
-        radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
-    }
-    .scroll-progress-wrap {
-      position: relative;
-      height: 3px;
-      width: 100%;
-      flex-shrink: 0;
-      z-index: 2;
-      background: #fbfbfd;
-      overflow: hidden;
-    }
-    .site-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 10001;
-      display: flex;
-      flex-direction: column;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
-    .site-nav-inner {
-      width: 100%;
-      max-width: 100%;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      align-items: center;
-      column-gap: 10px;
-      row-gap: 6px;
-      padding: 8px max(12px, env(safe-area-inset-left)) 8px max(12px, env(safe-area-inset-right));
-      min-height: 44px;
-      background: rgba(255, 245, 248, 0.94);
-      -webkit-backdrop-filter: saturate(180%) blur(16px);
-      backdrop-filter: saturate(180%) blur(16px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
-    }
-    .site-nav-wordmark {
-      justify-self: start;
-      align-self: center;
-      padding: 6px 10px;
-      font-weight: 900;
-      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      text-decoration: none;
-      white-space: nowrap;
-      background: linear-gradient(110deg, #6366f1 0%, #a855f7 18%, #ec4899 36%, #06b6d4 55%, #8b5cf6 72%, #db2777 100%);
-      background-size: 260% 100%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: wordmark-holo 6s ease-in-out infinite;
-    }
-    @keyframes wordmark-holo {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
-    .site-nav-wordmark:hover { filter: brightness(1.08); }
-    .site-nav-item {
-      flex: 0 1 auto;
-      font-size: clamp(0.62rem, 2.4vw, 0.72rem);
-      font-weight: 600;
-      color: #1d1d1f;
-      text-decoration: none;
-      letter-spacing: -0.02em;
-      opacity: 0.88;
-      transition: opacity 0.15s;
-      white-space: nowrap;
-      text-align: center;
-    }
-    .site-nav-item:hover {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .site-nav-item.is-current {
-      opacity: 1;
-      font-weight: 600;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      text-decoration-thickness: 1px;
-    }
-    .site-nav-lang {
-      background: none;
-      border: none;
-      padding: 0;
-      font: inherit;
-      cursor: pointer;
-      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-    }
-    .site-nav-item.site-nav-lang {
-      justify-self: end;
-      align-self: center;
-      padding: 6px 10px;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      opacity: 0.92;
-    }
-
-    .nav-mega-row {
-      justify-self: center;
-      align-self: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      column-gap: 10px;
-      row-gap: 4px;
-      min-width: 0;
-      max-width: 100%;
-    }
-    .nav-mega {
-      position: relative;
-    }
-    .nav-mega-trigger {
-      display: inline-flex;
-      align-items: center;
-      background: none;
-      border: none;
-      padding: 6px 10px;
-      margin: 0;
-      font-family: inherit;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: #1d1d1f;
-      cursor: pointer;
-      opacity: 0.88;
-      transition: opacity 0.15s;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .nav-mega-trigger:hover,
-    .nav-mega.is-open .nav-mega-trigger {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .nav-mega-trigger.is-current {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .nav-mega-trigger::after {
-      content: '';
-      display: inline-block;
-      width: 0;
-      height: 0;
-      margin-left: 3px;
-      border: solid transparent;
-      border-width: 3px 3px 0 3px;
-      border-top-color: #6e6e73;
-      vertical-align: 2px;
-      opacity: 0.75;
-    }
-    .nav-mega-panel {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      min-width: 11.5rem;
-      max-width: min(18rem, calc(100vw - 24px));
-      padding: 6px 0;
-      background: rgba(255, 252, 253, 0.97);
-      -webkit-backdrop-filter: saturate(180%) blur(14px);
-      backdrop-filter: saturate(180%) blur(14px);
-      border-radius: 12px;
-      border: 1px solid rgba(0, 0, 0, 0.07);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
-      z-index: 10002;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transform: translateY(-4px);
-      transition: opacity 0.18s ease, visibility 0.18s, transform 0.18s ease;
-    }
-    .nav-mega.is-open .nav-mega-panel {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateY(0);
-    }
-    .nav-mega-link {
-      display: block;
-      padding: 8px 14px;
-      font-size: clamp(0.68rem, 2.2vw, 0.78rem);
-      font-weight: 500;
-      color: #1d1d1f;
-      text-decoration: none;
-      letter-spacing: -0.02em;
-      line-height: 1.35;
-      transition: background 0.12s;
-    }
-    .nav-mega-link:hover,
-    .nav-mega-link:focus-visible {
-      background: rgba(99, 102, 241, 0.08);
-      outline: none;
-    }
-    @media (max-width: 520px) {
-      .nav-mega-panel {
-        left: 50%;
-        transform: translate(-50%, -4px);
-      }
-      .nav-mega.is-open .nav-mega-panel {
-        transform: translate(-50%, 0);
-      }
-    }
-
-    .scroll-progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
-      background-size: 200% 100%;
-      animation: shimmer 3s linear infinite;
-      transition: width 0.08s ease-out;
-    }
-    @keyframes shimmer {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
-
-    .event-page-wrap {
-      position: relative;
-      z-index: 1;
-      flex: 1 0 auto;
-      width: 100%;
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 8px 18px 28px;
-    }
-    .event-title {
-      font-size: clamp(1.15rem, 3.8vw, 1.35rem);
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      margin-bottom: 6px;
-      color: #1d1d1f;
-    }
-    .event-lead {
-      font-size: 0.8rem;
-      color: #6e6e73;
-      line-height: 1.55;
-      margin-bottom: 20px;
-    }
-    .event-tablist {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .event-tab-row {
-      display: flex;
-      align-items: stretch;
-      gap: 0;
-      border-radius: 14px;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      overflow: hidden;
-      transition: box-shadow 0.2s, border-color 0.2s;
-    }
-    .event-tab-row:hover {
-      border-color: rgba(99, 102, 241, 0.32);
-    }
-    .event-tab-row.is-selected {
-      border-color: rgba(99, 102, 241, 0.45);
-      box-shadow:
-        0 4px 18px rgba(99, 102, 241, 0.12),
-        0 0 0 2px rgba(99, 102, 241, 0.14);
-    }
-    .event-tab-row .event-tab {
-      flex: 1;
-      min-width: 0;
-      width: auto;
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
-      background: transparent;
-    }
-    .event-tab-row .event-tab:hover {
-      border-color: transparent;
-    }
-    .event-tab-row--no-link .event-tab {
-      width: 100%;
-    }
-    .event-tab-outlink {
-      flex-shrink: 0;
-      align-self: center;
-      margin: 8px 10px 8px 2px;
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 12px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      border-radius: 999px;
-      background: rgba(99, 102, 241, 0.11);
-      color: #4338ca;
-      text-decoration: none;
-      border: 1px solid rgba(99, 102, 241, 0.28);
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .event-tab-outlink:hover {
-      background: rgba(99, 102, 241, 0.18);
-      border-color: rgba(99, 102, 241, 0.4);
-    }
-    .event-tab-outlink:focus-visible {
-      outline: 2px solid rgba(99, 102, 241, 0.5);
-      outline-offset: 2px;
-    }
-    .event-tab {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-      width: 100%;
-      text-align: left;
-      padding: 14px 16px;
-      border-radius: 14px;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      background: #fff;
-      cursor: pointer;
-      font-family: inherit;
-      transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      -webkit-tap-highlight-color: transparent;
-    }
-    .event-tab:hover {
-      border-color: rgba(99, 102, 241, 0.32);
-    }
-    .event-tab-row .event-tab:hover {
-      border-color: transparent;
-    }
-    .event-tab[aria-selected="true"] {
-      border-color: rgba(99, 102, 241, 0.45);
-      box-shadow:
-        0 4px 18px rgba(99, 102, 241, 0.12),
-        0 0 0 2px rgba(99, 102, 241, 0.14);
-    }
-    .event-tab-row .event-tab[aria-selected="true"] {
-      border-color: transparent;
-      box-shadow: none;
-    }
-    .event-tab-date {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #9333ea;
-      letter-spacing: 0.02em;
-    }
-    .event-tab-title {
-      font-size: clamp(0.7rem, 2.35vw, 0.88rem);
-      font-weight: 700;
-      color: #1d1d1f;
-      line-height: 1.35;
-    }
-    /* 카드+오른쪽 pill: nowrap면 제목이 버튼 위로 비침 → 항상 카드 안에서 줄바꿈 */
-    .event-tab-row .event-tab-title {
-      display: block;
-      max-width: 100%;
-      white-space: normal;
-      overflow-wrap: break-word;
-      word-break: break-word;
-    }
-    .event-panels {
-      border-radius: 0;
-      border: none;
-      background: transparent;
-      padding: 4px 0 0;
-      box-shadow: none;
-      min-height: 100px;
-    }
-    .event-panel { display: none; }
-    .event-panel.is-active { display: block; }
-    .event-panel-inner {
-      font-size: 0.82rem;
-      line-height: 1.55;
-      color: #424245;
-    }
-    .event-detail-sheet {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .event-detail-row {
-      display: grid;
-      grid-template-columns: 9.25rem minmax(0, 1fr);
-      gap: 0.35rem 0.75rem;
-      align-items: start;
-      padding: 0.4rem 0;
-    }
-    html[lang="en"] .event-detail-row:not(.event-detail-row--solo) {
-      grid-template-columns: 10.5rem minmax(0, 1fr);
-    }
-    .event-detail-row--solo {
-      grid-template-columns: 1fr;
-    }
-    .event-detail-row--solo .event-detail-value {
-      grid-column: 1 / -1;
-    }
-    .event-detail-label {
-      font-weight: 600;
-      font-size: 0.82rem;
-      color: #1d1d1f;
-      letter-spacing: -0.02em;
-      line-height: 1.5;
-    }
-    .event-detail-value {
-      font-weight: 400;
-      font-size: 0.82rem;
-      color: #424245;
-      line-height: 1.55;
-      word-break: keep-all;
-      overflow-wrap: anywhere;
-    }
-    .event-detail-value strong { color: #1d1d1f; font-weight: 700; }
-    .event-detail-value code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 0.85em;
-      background: rgba(0, 0, 0, 0.05);
-      padding: 0.08em 0.28em;
-      border-radius: 4px;
-    }
-    @media (max-width: 360px) {
-      .event-detail-row:not(.event-detail-row--solo) {
-        grid-template-columns: 1fr;
-        gap: 0.2rem 0;
-        padding: 0.35rem 0;
-      }
-    }
-
-    .site-footer {
-      flex-shrink: 0;
-      margin-top: 40px;
-      background: #f5f5f7;
-      color: #6e6e73;
-      padding: 18px 0 28px;
-    }
-    .site-footer-inner {
-      max-width: 1024px;
-      margin: 0 auto;
-      padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
-    }
-    .footer-apple-hr {
-      border: none;
-      border-top: 1px solid #d2d2d7;
-      margin: 0 0 16px;
-    }
-    .footer-apple-main {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      gap: 12px 16px;
-      align-items: start;
-      font-size: 0.75rem;
-      line-height: 1.5;
-    }
-    .footer-apple-col--left {
-      justify-self: start;
-      text-align: left;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0 2px;
-    }
-    .footer-apple-col--center {
-      justify-self: center;
-      text-align: center;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 0;
-    }
-    .footer-apple-col--right {
-      justify-self: end;
-      text-align: right;
-      color: #424245;
-      font-weight: 500;
-    }
-    .footer-apple-copy { color: #6e6e73; }
-    .footer-apple-pipe {
-      color: #d2d2d7;
-      margin: 0 5px;
-      user-select: none;
-    }
-    .footer-apple-a {
-      color: #424245;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .footer-apple-a:hover {
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-    .footer-apple-email-plain {
-      color: #424245;
-      user-select: text;
-    }
-    .footer-apple-fine {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid #e5e5ea;
-      font-size: 0.64rem;
-      line-height: 1.55;
-      color: #86868b;
-    }
-    @media (max-width: 800px) {
-      .footer-apple-main {
-        grid-template-columns: 1fr;
-        justify-items: center;
-      }
-      .footer-apple-col--left,
-      .footer-apple-col--center,
-      .footer-apple-col--right {
-        justify-self: center;
-        text-align: center;
-        justify-content: center;
-      }
-      .footer-apple-col--left { order: 1; }
-      .footer-apple-col--center { order: 2; }
-      .footer-apple-col--right { order: 3; }
-    }
-
-    .popup-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10050;
-      background: rgba(0, 0, 0, 0.38);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease, visibility 0.3s;
-    }
-    .popup-overlay.is-open { opacity: 1; visibility: visible; }
-    .popup-box {
-      width: 100%;
-      max-width: 400px;
-      border-radius: 24px;
-      padding: 28px 26px 22px;
-      background: linear-gradient(165deg, rgba(30, 30, 42, 0.95) 0%, rgba(12, 12, 20, 0.98) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-      transform: scale(0.92) translateY(12px);
-      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1);
-    }
-    .popup-overlay.is-open .popup-box { transform: scale(1) translateY(0); }
-    .popup-box h2 {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin-bottom: 10px;
-      background: linear-gradient(90deg, #fff, #c4b5fd);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .popup-box p {
-      font-size: 0.9rem;
-      line-height: 1.65;
-      color: rgba(255, 255, 255, 0.6);
-      margin-bottom: 18px;
-    }
-    .popup-actions { display: flex; flex-direction: column; gap: 10px; }
-    .popup-btn {
-      width: 100%;
-      padding: 14px 18px;
-      border-radius: 14px;
-      border: none;
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.15s, opacity 0.15s;
-    }
-    .popup-btn.primary {
-      background: linear-gradient(135deg, #a855f7, #6366f1);
-      color: #fff;
-      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45);
-    }
-    .popup-btn.secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-    .popup-btn:hover { transform: translateY(-1px); }
-  </style>
   <link rel="stylesheet" href="css/site.css" />
-  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/event.css" />
 </head>
 <body>
-  <div class="popup-overlay" id="welcomePopup" aria-hidden="true">
-    <div class="popup-box" role="dialog" aria-labelledby="popupTitle" aria-modal="true">
-      <h2 id="popupTitle" data-i18n="popup.title">밥도둑에 오신 걸 환영해요</h2>
-      <p id="popupIntro" data-i18n-html="popup.body">인스타그램과 맛집 지도로 레시피·일상을 만나 보세요.</p>
-      <div class="popup-actions">
-        <button type="button" class="popup-btn primary" id="popupCloseBtn" data-i18n="popup.start">시작하기</button>
-        <button type="button" class="popup-btn secondary" id="popupSnoozeBtn" data-i18n="popup.snooze24h">하루 동안 보지 않기</button>
-      </div>
-    </div>
-  </div>
-
   <header class="site-nav" role="banner">
     <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
-      <div class="nav-mega-row" role="menubar">
+      <div class="nav-mega-row">
+        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
+        <a class="site-nav-direct" href="mukbang.html#what" data-i18n="nav.choose">메뉴 고르기</a>
         <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button
-            type="button"
-            class="nav-mega-trigger"
-            aria-expanded="false"
-            aria-haspopup="true"
-            data-i18n="nav.features"
-            data-i18n-aria-key="nav.featuresAria"
-            aria-label="주요 기능"
-          >
-            주요 기능
-          </button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
-            <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
-            <a role="menuitem" class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
-            <a role="menuitem" class="nav-mega-link" href="ggongbab.html" data-i18n="nav.ggongbab">오늘 뭐 먹지?</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-haspopup="true" data-i18n="nav.event">이벤트</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="event.html" data-i18n="nav.event.open">이벤트 페이지</a>
+          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
+          <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
+            <a class="nav-mega-link is-current" href="event.html" aria-current="page" data-i18n="nav.event.open">소식·이벤트</a>
+            <a class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
+            <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
+            <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+            <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
           </div>
         </div>
       </div>
@@ -690,45 +37,72 @@
   </header>
 
   <main class="event-page-wrap">
-    <h1 class="event-title" data-i18n="event.title">이벤트</h1>
-    <p class="event-lead" data-i18n="event.lead">왼쪽 카드 영역을 누르면 상세가 바뀌고, 오른쪽 작은 버튼으로 안내 페이지(인스타 등)로 이동할 수 있어요.</p>
+    <h1 class="event-title" data-i18n="event.title">밥도둑 소식</h1>
+    <p class="event-lead" data-i18n="event.lead">공지와 예정된 활동을 먼저 알려 드려요. 지난 활동은 아래 기록에 남겨 둬요.</p>
 
-    <div class="event-tablist" role="tablist" aria-label="이벤트 목록" data-i18n-aria-key="event.tablistAria">
-      <!-- 인스타·릴 URL은 각 행 오른쪽 「페이지로 이동」의 href만 바꾸면 됩니다. 탭 순서는 항상 시작일 빠른 순(동일 시작일이면 종료일 빠른 순). -->
-      <div class="event-tab-row is-selected">
-        <button type="button" class="event-tab" role="tab" id="eventTab0" aria-selected="true" aria-controls="eventPanel0" data-i18n-aria-key="event.e0.tabAria" aria-label="첫 번째 이벤트">
-          <span class="event-tab-date" data-i18n="event.e0.date">2026. 5. 13 ~ 5. 20</span>
+    <!-- Current relevance first: notices, then anything running or coming up. -->
+    <div class="event-now">
+      <section class="event-now-cell" id="notice" aria-labelledby="eventNoticeTitle">
+        <h2 id="eventNoticeTitle" data-i18n="event.notice.title">공지 · 안내</h2>
+        <!-- Authored notices, newest first:
+             <li class="event-notice"><time datetime="YYYY-MM-DD">YYYY. M. D</time><strong>제목</strong><p>내용</p></li>
+             Add only what the owner has actually announced; the empty state below is shown otherwise. -->
+        <ul class="event-notices" id="eventNotices" role="list"></ul>
+        <p class="event-now-empty" id="eventNoticeEmpty"><span data-i18n="event.notice.empty">지금 올라온 공지는 없어요.</span> <a href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="event.emptyLink">새 소식은 인스타그램에서 →</a></p>
+      </section>
+      <section class="event-now-cell" id="upcoming" aria-labelledby="eventUpcomingTitle">
+        <h2 id="eventUpcomingTitle" data-i18n="event.upcoming.title">예정된 활동</h2>
+        <ul class="event-upcoming" id="eventUpcoming" role="list" hidden></ul>
+        <p class="event-now-empty" id="eventEmpty" hidden><span data-i18n="event.empty">지금 진행 중이거나 예정된 활동은 없어요.</span></p>
+      </section>
+    </div>
+
+    <section class="event-archive" id="archive" aria-labelledby="eventListTitle">
+    <h2 class="event-list-title" id="eventListTitle" data-i18n="event.listTitle">지난 활동 기록</h2>
+    <p class="event-archive-note" data-i18n="event.archive.note">지난 활동은 당시 안내를 그대로 남긴 기록이에요. 날짜로 진행 중·예정·지난 일정을 나누고, 실제로 확인된 내용은 따로 적어요.</p>
+    <p class="event-counts" id="eventCounts"></p>
+    <!-- Rows stay in start-date order (docs/EVENT_DETAIL_FIELDS.md). data-start/data-end are KST
+         dates; data-confirmation is what was announced or verified: announced | tentative | held | cancelled.
+         The band (now / upcoming / past) is computed from the dates in the page script. -->
+    <div class="event-tablist" role="tablist" aria-labelledby="eventListTitle" aria-orientation="vertical">
+      <div class="event-tab-row is-selected" data-start="2026-05-13" data-end="2026-05-20" data-confirmation="announced">
+        <button type="button" class="event-tab" role="tab" id="eventTab0" aria-selected="true" aria-controls="eventPanel0">
+          <span class="event-tab-meta"><span class="event-tab-date" data-i18n="event.e0.date">2026. 5. 13 ~ 2026. 5. 20</span><span class="event-state" data-event-state></span></span>
           <span class="event-tab-title" data-i18n="event.e0.summary">밥도둑 팔로워 100명 이벤트</span>
         </button>
-        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer" data-i18n="event.openPageBtn">페이지로 이동</a>
+        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-i18n="event.openPageBtn">페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
       </div>
-      <div class="event-tab-row">
-        <button type="button" class="event-tab" role="tab" id="eventTab1" aria-selected="false" aria-controls="eventPanel1" data-i18n-aria-key="event.e1.tabAria" aria-label="두 번째 이벤트" tabindex="-1">
-          <span class="event-tab-date" data-i18n="event.e1.date">2026. 5. 19 ~ 5. 20</span>
-          <span class="event-tab-title" data-i18n="event.e1.summary">태울석림제 부스 〈카빙〉 KAKI X 밥도둑 (예정)</span>
+      <div class="event-tab-row" data-start="2026-05-19" data-end="2026-05-20" data-confirmation="tentative">
+        <button type="button" class="event-tab" role="tab" id="eventTab1" aria-selected="false" aria-controls="eventPanel1" tabindex="-1">
+          <span class="event-tab-meta"><span class="event-tab-date" data-i18n="event.e1.date">2026. 5. 19 ~ 2026. 5. 20</span><span class="event-state" data-event-state></span></span>
+          <span class="event-tab-title" data-i18n="event.e1.summary">태울석림제 부스 〈카빙〉 KAKI X 밥도둑</span>
         </button>
-        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer" data-i18n="event.openPageBtn">페이지로 이동</a>
+        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-i18n="event.openPageBtn">페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
       </div>
-      <div class="event-tab-row">
-        <button type="button" class="event-tab" role="tab" id="eventTab2" aria-selected="false" aria-controls="eventPanel2" data-i18n-aria-key="event.e2.tabAria" aria-label="세 번째 이벤트" tabindex="-1">
-          <span class="event-tab-date" data-i18n="event.e2.date">2026. 5. 19 ~ 5. 21</span>
-          <span class="event-tab-title" data-i18n="event.e2.summary">태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑 (예정)</span>
+      <div class="event-tab-row" data-start="2026-05-19" data-end="2026-05-21" data-confirmation="tentative">
+        <button type="button" class="event-tab" role="tab" id="eventTab2" aria-selected="false" aria-controls="eventPanel2" tabindex="-1">
+          <span class="event-tab-meta"><span class="event-tab-date" data-i18n="event.e2.date">2026. 5. 19 ~ 2026. 5. 21</span><span class="event-state" data-event-state></span></span>
+          <span class="event-tab-title" data-i18n="event.e2.summary">태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑</span>
         </button>
-        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer" data-i18n="event.openPageBtn">페이지로 이동</a>
+        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-i18n="event.openPageBtn">페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
       </div>
     </div>
 
     <div class="event-panels">
-      <div class="event-panel is-active" role="tabpanel" id="eventPanel0" aria-labelledby="eventTab0">
+      <div class="event-panel is-active" role="tabpanel" id="eventPanel0" aria-labelledby="eventTab0" tabindex="0">
+        <p class="event-panel-note" data-event-note></p>
         <div class="event-panel-inner" data-i18n-html="event.e0.detail"></div>
       </div>
-      <div class="event-panel" role="tabpanel" id="eventPanel1" aria-labelledby="eventTab1" hidden>
+      <div class="event-panel" role="tabpanel" id="eventPanel1" aria-labelledby="eventTab1" tabindex="0" hidden>
+        <p class="event-panel-note" data-event-note></p>
         <div class="event-panel-inner" data-i18n-html="event.e1.detail"></div>
       </div>
-      <div class="event-panel" role="tabpanel" id="eventPanel2" aria-labelledby="eventTab2" hidden>
+      <div class="event-panel" role="tabpanel" id="eventPanel2" aria-labelledby="eventTab2" tabindex="0" hidden>
+        <p class="event-panel-note" data-event-note></p>
         <div class="event-panel-inner" data-i18n-html="event.e2.detail"></div>
       </div>
     </div>
+    </section>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -740,14 +114,18 @@
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
-        <nav class="footer-apple-col footer-apple-col--center" aria-label="하단 정책 및 안내" data-i18n-aria-key="footer.navAria">
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkTerms">사이트 이용 약관</a>
+          <a href="mukbang.html#what" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkLegal">법적 고지</a>
+          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkSitemap">사이트 맵</a>
+          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="food.html" class="footer-apple-a" data-i18n="nav.foodlog">먹방 가계부</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
         </nav>
         <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
       </div>
@@ -759,7 +137,7 @@
     (function () {
       var STR = {
         ko: {
-          docTitle: '이벤트 · 밥도둑 Babdoduk',
+          docTitle: '소식·이벤트 · 밥도둑 Babdoduk',
           'a11y.scrollProgress': '페이지 스크롤 진행',
           'nav.navAria': '주요 메뉴',
           'nav.homeAria': '홈으로',
@@ -767,6 +145,9 @@
           'nav.history': '역사',
           'nav.sns': 'SNS',
           'nav.instagram': '인스타그램',
+          'nav.today': '오늘의 꽁밥',
+          'nav.choose': '메뉴 고르기',
+          'nav.more': '더보기',
           'nav.features': '주요 기능',
           'nav.featuresAria': '주요 기능 하위 메뉴',
           'nav.map': '맛집 지도',
@@ -777,23 +158,42 @@
           'nav.kakao': '카카오톡',
           'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
           'nav.youtube': '유튜브 (개설 예정)',
-          'nav.ggongbab': '오늘 뭐 먹지?',
-          'nav.ggongbab.open': '오늘 뭐 먹지? 보기',
-          'nav.event': '이벤트',
-          'nav.event.open': '이벤트 페이지',
+          'nav.event': '소식·이벤트',
+          'nav.event.open': '소식·이벤트',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'popup.title': '밥도둑에 오신 걸 환영해요',
-          'popup.body': '인스타그램과 맛집 지도로 레시피·일상을 만나 보세요. 아래 링크에서 바로 이동할 수 있어요.',
-          'popup.start': '시작하기',
-          'popup.snooze24h': '하루 동안 보지 않기',
-          'event.title': '이벤트',
-          'event.lead': '왼쪽 카드 영역을 누르면 상세가 바뀌고, 오른쪽 작은 버튼으로 안내 페이지(인스타 등)로 이동할 수 있어요.',
-          'event.tablistAria': '이벤트 목록',
+          'event.title': '밥도둑 소식',
+          'event.lead': '공지와 예정된 활동을 먼저 알려 드려요. 지난 활동은 아래 기록에 남겨 둬요.',
+          'event.notice.title': '공지 · 안내',
+          'event.notice.empty': '지금 올라온 공지는 없어요.',
+          'event.upcoming.title': '예정된 활동',
+          'event.listTitle': '지난 활동 기록',
+          'event.listTitle.all': '활동 기록',
+          'event.archive.note': '지난 활동은 당시 안내를 그대로 남긴 기록이에요. 날짜로 진행 중·예정·지난 일정을 나누고, 실제로 확인된 내용은 따로 적어요.',
+          'event.newTab': '(새 창)',
+          'event.counts': '진행 중 {now} · 예정 {upcoming} · 지난 일정 {past}',
+          'event.empty': '지금 진행 중이거나 예정된 활동은 없어요.',
+          'event.emptyLink': '새 소식은 인스타그램에서 →',
+          'event.band.now': '진행 중',
+          'event.band.upcoming': '예정',
+          'event.band.past': '지난 일정',
+          'event.state.tentative.now': '일정 미확정',
+          'event.state.tentative.upcoming': '일정 미확정',
+          'event.state.tentative.past': '당시 예정 안내 · 진행 여부 미확인',
+          'event.state.announced.past': '결과 기록 없음',
+          'event.state.held.past': '진행됨',
+          'event.state.cancelled.now': '취소됨',
+          'event.state.cancelled.upcoming': '취소됨',
+          'event.state.cancelled.past': '취소됨',
+          'event.note.announced.past': '지난 이벤트예요. 아래는 당시 안내를 그대로 남긴 기록이라, 참여 방법은 지금 적용되지 않아요.',
+          'event.note.tentative.past': '당시 ‘예정’으로 안내한 협업이에요. 실제 진행 여부는 이 페이지에 기록되지 않았어요. 아래는 당시 안내 그대로예요.',
+          'event.note.tentative.now': '아직 확정되지 않은 일정이에요. 확정되면 이 페이지와 인스타그램에서 안내해요.',
+          'event.note.tentative.upcoming': '아직 확정되지 않은 일정이에요. 확정되면 이 페이지와 인스타그램에서 안내해요.',
+          'event.note.held.past': '진행된 이벤트의 기록이에요.',
+          'event.note.cancelled.now': '취소된 이벤트예요.',
+          'event.note.cancelled.upcoming': '취소된 이벤트예요.',
+          'event.note.cancelled.past': '취소된 이벤트예요.',
           'event.openPageBtn': '페이지로 이동',
-          'event.e0.tabAria': '첫 번째 이벤트',
-          'event.e1.tabAria': '두 번째 이벤트',
-          'event.e2.tabAria': '세 번째 이벤트',
           'event.e0.date': '2026. 5. 13 ~ 2026. 5. 20',
           'event.e0.summary': '밥도둑 팔로워 100명 이벤트',
           'event.e0.detail':
@@ -804,7 +204,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">아래를 확인한 뒤, 목록에서 해당 카드 <strong>오른쪽</strong>의 <strong>페이지로 이동</strong>을 눌러 인스타그램 안내를 열고, 게시물에 안내된 대로 참여해 주세요.</div></div>' +
             '</div>',
           'event.e1.date': '2026. 5. 19 ~ 2026. 5. 20',
-          'event.e1.summary': '태울석림제 부스 〈카빙〉 KAKI X 밥도둑 (예정)',
+          'event.e1.summary': '태울석림제 부스 〈카빙〉 KAKI X 밥도둑',
           'event.e1.detail':
             '<div class="event-detail-sheet">' +
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈카빙〉 KAKI × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.</div></div>' +
@@ -813,7 +213,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>KAKI</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다.</div></div>' +
             '</div>',
           'event.e2.date': '2026. 5. 19 ~ 2026. 5. 21',
-          'event.e2.summary': '태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑 (예정)',
+          'event.e2.summary': '태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑',
           'event.e2.detail':
             '<div class="event-detail-sheet">' +
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈언빌리버블 버블티〉 STROKE × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.</div></div>' +
@@ -822,17 +222,13 @@
             '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>STROKE</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다.</div></div>' +
             '</div>',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
-          'footer.linkPrivacy': '개인정보 처리방침',
-          'footer.linkTerms': '사이트 이용 약관',
-          'footer.linkLegal': '법적 고지',
-          'footer.linkSitemap': '사이트 맵',
           'footer.country': '대한민국',
-          'footer.navAria': '푸터 정책 링크',
+          'footer.navAria': '사이트 바로가기',
           'footer.fine':
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
         en: {
-          docTitle: 'Events · Babdoduk',
+          docTitle: 'News & events · Babdoduk',
           'a11y.scrollProgress': 'Page scroll progress',
           'nav.navAria': 'Main menu',
           'nav.homeAria': 'Home',
@@ -840,6 +236,9 @@
           'nav.history': 'History',
           'nav.sns': 'SNS',
           'nav.instagram': 'Instagram',
+          'nav.today': "Today's free food",
+          'nav.choose': 'Choose a dish',
+          'nav.more': 'More',
           'nav.features': 'Features',
           'nav.featuresAria': 'Features submenu',
           'nav.map': 'Food map',
@@ -850,23 +249,42 @@
           'nav.kakao': 'KakaoTalk',
           'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
           'nav.youtube': 'YouTube (coming soon)',
-          'nav.ggongbab': 'What to Eat Today?',
-          'nav.ggongbab.open': 'See what to eat today',
-          'nav.event': 'Event',
-          'nav.event.open': 'Events page',
+          'nav.event': 'News & events',
+          'nav.event.open': 'News & events',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'popup.title': 'Welcome to Babdoduk',
-          'popup.body': 'Find recipes and daily life on Instagram and the food map.',
-          'popup.start': 'Start',
-          'popup.snooze24h': "Don't show for 24 hours",
-          'event.title': 'Events',
-          'event.lead': 'Click the left part of a card to switch details; use the small button on the right to open the notice (e.g. Instagram).',
-          'event.tablistAria': 'Event list',
+          'event.title': 'Babdoduk news',
+          'event.lead': 'Notices and upcoming activities come first; past activities are kept in the record below.',
+          'event.notice.title': 'Notices',
+          'event.notice.empty': 'No notices right now.',
+          'event.upcoming.title': 'Upcoming',
+          'event.listTitle': 'Past activity record',
+          'event.listTitle.all': 'Activity record',
+          'event.archive.note': 'Past activities keep their announcement as it was. Dates sort them into now, coming up and past; what was actually confirmed is noted separately.',
+          'event.newTab': '(opens in a new tab)',
+          'event.counts': 'Now {now} · Coming up {upcoming} · Past {past}',
+          'event.empty': 'Nothing is running or scheduled right now.',
+          'event.emptyLink': 'Check Instagram for news →',
+          'event.band.now': 'Now',
+          'event.band.upcoming': 'Coming up',
+          'event.band.past': 'Past',
+          'event.state.tentative.now': 'Not confirmed',
+          'event.state.tentative.upcoming': 'Not confirmed',
+          'event.state.tentative.past': 'Announced as tentative · outcome not recorded',
+          'event.state.announced.past': 'Outcome not recorded',
+          'event.state.held.past': 'Held',
+          'event.state.cancelled.now': 'Cancelled',
+          'event.state.cancelled.upcoming': 'Cancelled',
+          'event.state.cancelled.past': 'Cancelled',
+          'event.note.announced.past': 'This event has ended. Below is the original announcement, kept as a record; its instructions no longer apply.',
+          'event.note.tentative.past': 'This collaboration was announced as tentative. Whether it took place is not recorded here. Below is the original announcement.',
+          'event.note.tentative.now': 'Not confirmed yet. Confirmation will appear here and on Instagram.',
+          'event.note.tentative.upcoming': 'Not confirmed yet. Confirmation will appear here and on Instagram.',
+          'event.note.held.past': 'A record of an event that took place.',
+          'event.note.cancelled.now': 'This event was cancelled.',
+          'event.note.cancelled.upcoming': 'This event was cancelled.',
+          'event.note.cancelled.past': 'This event was cancelled.',
           'event.openPageBtn': 'Open page',
-          'event.e0.tabAria': 'First event',
-          'event.e1.tabAria': 'Second event',
-          'event.e2.tabAria': 'Third event',
           'event.e0.date': 'May 13–20, 2026',
           'event.e0.summary': 'Babdoduk 100 followers event',
           'event.e0.detail':
@@ -877,7 +295,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value">Read below, then tap <strong>Open page</strong> on the <strong>right</strong> of this card to open Instagram in a new tab. Follow the post.</div></div>' +
             '</div>',
           'event.e1.date': 'May 19–20, 2026',
-          'event.e1.summary': 'Taeul Seoklim Festival booth: Carving — KAKI × Babdoduk (TBA)',
+          'event.e1.summary': 'Taeul Seoklim Festival booth: Carving — KAKI × Babdoduk',
           'event.e1.detail':
             '<div class="event-detail-sheet">' +
             '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Carving (KAKI) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page.</div></div>' +
@@ -886,7 +304,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card.</div></div>' +
             '</div>',
           'event.e2.date': 'May 19–21, 2026',
-          'event.e2.summary': 'Taeul Seoklim Festival booth: Unbelievable Bubble Tea — STROKE × Babdoduk (TBA)',
+          'event.e2.summary': 'Taeul Seoklim Festival booth: Unbelievable Bubble Tea — STROKE × Babdoduk',
           'event.e2.detail':
             '<div class="event-detail-sheet">' +
             '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Unbelievable Bubble Tea (STROKE) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page.</div></div>' +
@@ -895,12 +313,8 @@
             '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>STROKE</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card.</div></div>' +
             '</div>',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
-          'footer.linkPrivacy': 'Privacy Policy',
-          'footer.linkTerms': 'Terms of Use',
-          'footer.linkLegal': 'Legal',
-          'footer.linkSitemap': 'Site Map',
           'footer.country': 'South Korea',
-          'footer.navAria': 'Footer policies',
+          'footer.navAria': 'Site links',
           'footer.fine':
             'Independent content site. For business registration or legal matters, please reach out by email.'
         }
@@ -928,6 +342,9 @@
         if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
         var sp = document.getElementById('scrollProgressWrap');
         if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
+        try {
+          document.dispatchEvent(new CustomEvent('babdoduk-lang', { detail: lang }));
+        } catch (e) {}
       }
       window.babdodukApplyLang = applyLang;
       window.babdodukGetLang = function () {
@@ -960,61 +377,129 @@
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll);
       onScroll();
-
-      function shouldShowWelcome() {
-        var path = (location.pathname || '').toLowerCase();
-        if (path.indexOf('food.html') !== -1 || path.indexOf('event.html') !== -1 || path.indexOf('ggongbab.html') !== -1 || path.indexOf('mukbang.html') !== -1) return false;
-        try {
-          var until = localStorage.getItem('babdoduk-welcome-snooze-until');
-          if (until && Date.now() < parseInt(until, 10)) return false;
-        } catch (err) {}
-        return true;
-      }
-      var popup = document.getElementById('welcomePopup');
-      var closeBtn = document.getElementById('popupCloseBtn');
-      var snoozeBtn = document.getElementById('popupSnoozeBtn');
-      function openPopup() {
-        popup.classList.add('is-open');
-        popup.setAttribute('aria-hidden', 'false');
-      }
-      function closePopup(withSnooze24h) {
-        popup.classList.remove('is-open');
-        popup.setAttribute('aria-hidden', 'true');
-        try {
-          if (withSnooze24h) {
-            var until = Date.now() + 24 * 60 * 60 * 1000;
-            localStorage.setItem('babdoduk-welcome-snooze-until', String(until));
-          }
-        } catch (err) {}
-      }
-      if (shouldShowWelcome()) requestAnimationFrame(function () { openPopup(); });
-      if (closeBtn) closeBtn.addEventListener('click', function () { closePopup(false); });
-      if (snoozeBtn) snoozeBtn.addEventListener('click', function () { closePopup(true); });
-      popup.addEventListener('click', function (e) {
-        if (e.target === popup) closePopup(false);
-      });
     })();
   </script>
 
   <script>
     (function () {
-      var tabs = [].slice.call(document.querySelectorAll('.event-tab'));
-      var panels = [].slice.call(document.querySelectorAll('.event-panel'));
       var rows = [].slice.call(document.querySelectorAll('.event-tab-row'));
-      function select(i) {
+      var tabs = rows.map(function (row) { return row.querySelector('.event-tab'); });
+      var panels = tabs.map(function (tab) { return document.getElementById(tab.getAttribute('aria-controls')); });
+      var BANDS = ['now', 'upcoming', 'past'];
+
+      function t(key, fallback) {
+        var lang = window.babdodukGetLang ? window.babdodukGetLang() : 'ko';
+        var pack = window.BABDODUK_STR && window.BABDODUK_STR[lang];
+        if (pack && pack[key] != null) return pack[key];
+        return fallback == null ? key : fallback;
+      }
+      function todayKst() {
+        var d = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+      // Dates decide the band; they never prove that a past event took place.
+      function bandOf(row, today) {
+        var start = row.getAttribute('data-start');
+        var end = row.getAttribute('data-end') || start;
+        if (today < start) return 'upcoming';
+        if (today > end) return 'past';
+        return 'now';
+      }
+      function render() {
+        var today = todayKst();
+        var counts = { now: 0, upcoming: 0, past: 0 };
+        rows.forEach(function (row, i) {
+          var band = bandOf(row, today);
+          var confirmation = row.getAttribute('data-confirmation') || 'announced';
+          counts[band] += 1;
+          row.setAttribute('data-band', band);
+          var chip = row.querySelector('[data-event-state]');
+          var detail = t('event.state.' + confirmation + '.' + band, '');
+          chip.setAttribute('data-band', band);
+          chip.textContent = t('event.band.' + band) + (detail ? ' · ' + detail : '');
+          var note = panels[i].querySelector('[data-event-note]');
+          if (note) note.textContent = t('event.note.' + confirmation + '.' + band, '');
+        });
+        var countsEl = document.getElementById('eventCounts');
+        if (countsEl) {
+          countsEl.textContent = BANDS.reduce(function (text, band) {
+            return text.replace('{' + band + '}', String(counts[band]));
+          }, t('event.counts', ''));
+        }
+        var live = counts.now + counts.upcoming;
+        var empty = document.getElementById('eventEmpty');
+        if (empty) empty.hidden = live > 0;
+        var listTitle = document.getElementById('eventListTitle');
+        if (listTitle) listTitle.textContent = t(live ? 'event.listTitle.all' : 'event.listTitle', listTitle.textContent);
+        renderUpcoming();
+        var notices = document.getElementById('eventNotices');
+        var noticeEmpty = document.getElementById('eventNoticeEmpty');
+        if (notices && noticeEmpty) {
+          notices.hidden = !notices.children.length;
+          noticeEmpty.hidden = notices.children.length > 0;
+        }
+      }
+      // Running and upcoming rows, summarised at the top; each opens its record.
+      function renderUpcoming() {
+        var list = document.getElementById('eventUpcoming');
+        if (!list) return;
+        list.replaceChildren();
+        rows.forEach(function (row, i) {
+          var band = row.getAttribute('data-band');
+          if (band === 'past') return;
+          var item = document.createElement('li');
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'event-upcoming-item';
+          [['event-upcoming-date', row.querySelector('.event-tab-date').textContent],
+           ['event-upcoming-title', row.querySelector('.event-tab-title').textContent],
+           ['event-state', row.querySelector('[data-event-state]').textContent]].forEach(function (part) {
+            var span = document.createElement('span');
+            span.className = part[0];
+            span.textContent = part[1];
+            if (part[0] === 'event-state') span.setAttribute('data-band', band);
+            button.appendChild(span);
+          });
+          button.addEventListener('click', function () {
+            select(i, true);
+            var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            rows[i].scrollIntoView({ block: 'nearest', behavior: still ? 'auto' : 'smooth' });
+          });
+          item.appendChild(button);
+          list.appendChild(item);
+        });
+        list.hidden = !list.children.length;
+      }
+      function select(i, focus) {
         tabs.forEach(function (tab, j) {
           var on = j === i;
           tab.setAttribute('aria-selected', on ? 'true' : 'false');
           tab.tabIndex = on ? 0 : -1;
           panels[j].classList.toggle('is-active', on);
-          if (on) panels[j].removeAttribute('hidden');
-          else panels[j].setAttribute('hidden', '');
-          if (rows[j]) rows[j].classList.toggle('is-selected', on);
+          panels[j].hidden = !on;
+          rows[j].classList.toggle('is-selected', on);
         });
+        if (focus) tabs[i].focus();
       }
       tabs.forEach(function (tab, i) {
         tab.addEventListener('click', function () { select(i); });
+        tab.addEventListener('keydown', function (e) {
+          var next = -1;
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+          else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') next = 0;
+          else if (e.key === 'End') next = tabs.length - 1;
+          if (next < 0) return;
+          e.preventDefault();
+          select(next, true);
+        });
       });
+      render();
+      // Open the first current or upcoming event when there is one.
+      var live = rows.map(function (row) { return row.getAttribute('data-band'); }).indexOf('now');
+      if (live < 0) live = rows.map(function (row) { return row.getAttribute('data-band'); }).indexOf('upcoming');
+      if (live > 0) select(live);
+      document.addEventListener('babdoduk-lang', render);
     })();
   </script>
 

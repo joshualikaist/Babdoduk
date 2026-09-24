@@ -1,8 +1,12 @@
 # Babdoduk (밥도둑)
 
-KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면은 정적 HTML·CSS·JS이고,
+KAIST 중심의 식사 정보·메뉴 선택·음식 콘텐츠 사이트입니다. 방문자가 보는 화면은 정적 HTML·CSS·JS이고,
 빌드 단계가 없습니다. 그 위에 **생성 데이터 파이프라인**(파이썬 + GitHub Actions)이 붙어
 `data/` 아래 JSON을 주기적으로 갱신합니다. 배포는 Vercel 정적 호스팅입니다.
+
+제품 역할과 작업 경계의 기준은 [`PRD.md`](PRD.md), [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md),
+[`ARCHITECTURE.md`](ARCHITECTURE.md), [`AGENTS.md`](AGENTS.md)입니다. 아래 운영 기록 중
+날짜가 있는 상태 설명은 현재 상태 보장이 아니며, 실행 전 코드·데이터·배포 브랜치를 확인합니다.
 
 ---
 
@@ -10,22 +14,25 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 
 | 파일 | 역할 |
 |------|------|
-| **`index.html`** | 홈 — 프로필, 가로 캐러셀(주요 링크), 푸터 |
-| **`food.html`** | 먹방 가계부 — 일별 지출 입력·월/주 표·달력 (`data/food-log.json`) |
-| **`event.html`** | 이벤트 — 탭형 목록(날짜 순)·상세 패널. 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
-| **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/` 레일 |
-| **`ggongbab.html`** | **오늘 뭐 먹지?** — 꽁밥 피드 + KAIST 학식 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
+| **`index.html`** | 홈 — 에디토리얼 히어로(두 핵심 행동 오늘의 꽁밥·메뉴 고르기, 분위기 사진, 날짜가 붙은 오늘 요약) 아래에 01 바로가기(가로 선반: 오늘의 꽁밥·메뉴 고르기·맛집 지도·먹방 가계부), 02 읽어보기(매거진 추천 글·데스크·사진 기록), 03 밥도둑 소식(공지·예정 활동, 지난 활동 기록, 이야기) (`css/index.css`, `js/home.js`) |
+| **`food.html`** | 먹방 가계부 — 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 날짜마다 출처를 표시하며, 같은 날짜는 브라우저 기록이 우선. 기록 주체는 소유자 결정 대기 |
+| **`event.html`** | 밥도둑 소식 — 맨 위 공지·안내(작성된 공지만, 없으면 빈 상태)와 예정된 활동, 아래 지난 활동 기록. 날짜로 계산한 진행 중·예정·지난 일정과 별도의 확인 상태, 탭형 목록(시작일 순)·상세 패널 (`css/event.css`). 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
+| **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리(원문 링크 글과 ‘밥도둑 데스크’ 자체 메모를 구분 표시, 지난 호 표시), 날짜가 붙은 학식 요약, 메뉴 고르기(`#what`) |
+| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 꽁밥 피드 + KAIST 학식. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
-| **`lab-ggongbab.html`** | 꽁밥 페이지의 실험용 fork. fixture·preview 모드가 여기에만 있다. `noindex` |
+| **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 
-상단 내비: 소개 · SNS · 주요 기능(맛집 지도 · 먹방 가계부 · 오늘 뭐 먹지?) · 이벤트 · 언어(EN/한국어).
+상단 내비: 오늘의 꽁밥(꽁밥·학식) · 메뉴 고르기(현재 매거진의 추천기) · 더보기(매거진·소식·이벤트·가계부·역사·지도·SNS) · 언어(EN/한국어). 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
+실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
-환영 팝업은 **홈에서만** 뜨고, 「하루 동안 보지 않기」는 `babdoduk-welcome-snooze-until`로 약 24시간 숨깁니다.
+홈은 첫 방문 환영 팝업을 띄우지 않습니다(핵심 과업을 가리지 않기 위해). 기존 `babdoduk-welcome-snooze-until` 값은 남아 있어도 무해합니다.
+홈 요약은 `js/kaist-menu.js`의 날짜 판정과 `js/ggongbab-select.js`의 공개 조건을 재사용하며, 꽁밥은 검증된 정적 스냅숏의 마지막 발행 시각을 함께 표시합니다. 홈과 `ggongbab.html` 은 같은 정적 스냅숏(`data/ggongbab/latest.json`)을 읽습니다.
 
 ### `ggongbab.html` 와 `lab-ggongbab.html`
 
-두 파일은 같은 렌더러(`js/ggongbab.js`)를 쓰고, 차이는 `<body data-gg-lab>` 한 개뿐입니다.
+두 파일은 같은 렌더러(`js/ggongbab.js`)를 씁니다. 모드를 결정하는 핵심 차이는
+`<body data-gg-lab>`이며, HTML에는 `noindex`, 실험 리본, 제목 등의 차이도 있습니다.
 
 - 이 속성이 **있으면**(lab) `?fixture=1`, `?preview=1`, `?debug-layout=1` 를 쓸 수 있습니다.
 - 이 속성이 **없으면**(본편) 모드는 항상 `normal` 로 고정됩니다. 쿼리스트링을 붙여도
@@ -48,9 +55,9 @@ KAIST 밥도둑 링크·콘텐츠 사이트입니다. 방문자가 보는 화면
 
 ---
 
-## 3. 오늘 뭐 먹지? 파이프라인
+## 3. 오늘의 꽁밥 파이프라인
 
-KAIST에서 오늘 먹을 수 있는 것을 한 페이지(`ggongbab.html`)에 모읍니다.
+KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(메뉴 고르기)은 이 페이지의 가용 정보와 섞지 않고 `mukbang.html#what`으로 연결만 합니다.
 
 - **꽁밥** — 무료 식사·간식·다과가 명시된 교내 행사
 - **KAIST 학식** — 공식 학식 JSON (`data/kaist-menu/latest.json`). AI를 쓰지 않습니다.
@@ -135,8 +142,10 @@ fallback을 켜면 `fallbackAttempted` / `fallbackImproved` / `fallbackSame` / `
 
 ### 현재 상태
 
-`data/ggongbab/latest.json` 은 지금 **빈 피드**(`count: 0`)입니다. 시험용 행사를 공개로
-내보내지 않으려고 비워 두었습니다. OpenAI 한도가 회복되면 §5의 실수집을 돌려 채웁니다.
+공개 건수는 수집·승인·만료에 따라 바뀝니다. 이 README에 고정된 현재 건수를 두지 않습니다.
+main의 공개 화면은 정적 `data/ggongbab/latest.json` 만 읽습니다. 공개 DB projection과
+브라우저 Realtime은 **Lab-only / main 미반영**이며, 그 운영 기록(2026-09-23)은 lab 브랜치의
+`docs/GGONGBAB_PUBLIC_FEED.md` 에 있습니다. 현재 화면 상태는 발행 산출물과 실제 배포 환경에서 확인합니다.
 
 ---
 
@@ -202,6 +211,16 @@ Portal은 GitHub Action에서 SSO 할 수 없으므로 클라우드 collector는
 현재 `/wz/api/board/recents/{pstNo}`의 자동 상세 replay는 계속 금지하며,
 `detail_side_effect_reviewed`/`potential_view_side_effect` gate는 유지합니다.
 
+**Lab-only / main 미반영 — LIST 전용 경로:** lab 브랜치에는 사람의 SSO/MFA로 인증된 전용
+Chrome에서 세션을 메모리로만 전달받아 정확한 `/wz/api/board/recents` 목록 GET만 조회하는
+poller가 있습니다. 로컬 Stage A 후보와 운영 heartbeat만 만들고, 상세 GET·Dooray 업무·AI·공개
+행사 발행을 하지 않으며, 세션 만료 시 자동 로그인하지 않고 중단합니다. 실행·복구·한계 문서
+(`docs/PORTAL_LIST_POLLER.md`)는 lab 브랜치에만 있습니다.
+
+아래의 상세 관찰·generic calibration 설명은 기존 진단 경로에 대한 기록이며 LIST poller의
+실행 절차가 아닙니다. setup 성공은 공지 traffic을 통한 세션 준비 확인이지 replay 계약 검증이
+아닙니다.
+
 대체 본문 source를 **수동 클릭의 Network 응답으로만** 관찰하려면:
 
 ```powershell
@@ -262,8 +281,10 @@ calibration은 counter field 존재 여부만 보고하고, 관찰되지 않더�
 generic discovery/calibration은 known draft/contract를 덮어쓰거나 대신 승인할 수 없습니다.
 
 프로필·계약·상태는 모두 gitignore된 `.local/portal-*` 에만 있습니다.
-후보 공지는 Dooray 수집 프로젝트에 `[BABDODUK_INGEST_V1] source=portal` marker로 등록되고,
-기존 Dooray collector가 `RawItem(source_type="portal")` 로 읽습니다.
+기존 body 기반 수집 설계에서는 승인된 후보를 Dooray 수집 프로젝트에
+`[BABDODUK_INGEST_V1] source=portal` marker로 등록하고 기존 Dooray collector가
+`RawItem(source_type="portal")` 로 읽도록 되어 있습니다. lab 전용 LIST poller의 Stage A 후보도
+이 경로에 자동 연결되지 않습니다.
 private Portal URL은 공개 JSON에 나가지 않습니다.
 
 아래는 남겨 둔 generic 진단/fallback의 동작입니다. known schema 운영 경로를 대체하지 않습니다.
@@ -510,6 +531,7 @@ python scripts\check_ggongbab_ui.py --serve     # 127.0.0.1 로만 연다
 ```powershell
 python scripts\check_ggongbab_ui.py            # fixture + 본편 검사
 python scripts\check_ggongbab_ui.py --preview  # preview 데이터까지 포함
+python scripts\check_site_ui.py                # 8개 HTML의 scrollbar·overflow·nav 검사
 ```
 
 390 / 430 / 1440 세 뷰포트에서 좌표·가로 스크롤·말줄임·sticky 필터를 확인하고,
@@ -524,7 +546,7 @@ python scripts\check_ggongbab_ui.py --preview  # preview 데이터까지 포함
 
 **승격 절차** — `lab-ggongbab.html` 을 손으로 베끼지 않습니다. lab 파일에서
 `noindex`, 실험 리본(마크업과 CSS), `data-gg-lab`, 실험실 내비 항목을 제거하고 제목을
-`오늘 뭐 먹지? · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
+`오늘의 꽁밥 · 밥도둑 Babdoduk` 로 바꾼 것이 `ggongbab.html` 입니다. 바꾼 뒤에는 반드시
 위 검사를 다시 돌립니다.
 
 ---
@@ -539,6 +561,20 @@ python -m pytest tests\ggongbab
 로그 privacy 검사도 테스트에 있습니다. `scripts/ggongbab/` 의 모든 `print` 를 AST로 훑어
 메일 식별자가 출력되지 않는지 확인합니다.
 
+프런트엔드 게이트(네트워크 없이 합성 데이터로 실행):
+
+```powershell
+python -m pytest tests -q            # 위 테스트 + tests/test_site_ui.py
+python scripts/validate_content.py
+python scripts/check_site_ui.py      # --screenshots 로 .local/site-ui-shots/ 에 캡처
+python scripts/check_ggongbab_ui.py
+```
+
+`check_site_ui.py` 는 8개 페이지 × 5개 폭(1920·1440·768·390·360)의 가로 넘침, Windows 스크롤바,
+공통 내비·푸터 계약과 함께 다음을 확인합니다: 홈 요약의 날짜·공개 조건, 매거진 학식 요약의 stale 표시와
+이스케이프, 메뉴 고르기의 이유·범위 안내·"먹었어요"와 선택의 분리, 매거진 원문/데스크 구분과 지난 호,
+이벤트 날짜 구간과 확인 상태, 가계부 출처 표시, 한·영 양쪽의 랜드마크·이름·터치 크기, 데이터가 모두 실패할 때의 안내.
+
 ---
 
 ## 10. 자동화 (GitHub Actions)
@@ -547,6 +583,10 @@ python -m pytest tests\ggongbab
 |----------|------|---------|
 | `.github/workflows/ggongbab-refresh.yml` | 30분 | 수집·파싱·저장 후 `data/ggongbab/` 를 lab·main에 푸시 |
 | `.github/workflows/magazine-daily.yml` | 매일 | 매거진·학식 데이터 갱신 |
+
+2026-09-23 확인: GitHub는 `ggongbab-refresh.yml` 을 invalid workflow file(YAML 문법 오류)로 표시하며,
+이 워크플로는 예약·수동 실행된 적이 없습니다. 그래서 `data/ggongbab/latest.json` 은 Actions 밖에서
+만든 커밋으로만 바뀝니다. 복구하면 Supabase 쓰기·OpenAI 호출·자동 푸시가 시작되므로 별도 승인 작업입니다.
 
 cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main에 있어야 합니다.
 두 워크플로는 `babdoduk-content-refresh` concurrency group을 공유해서 동시에 푸시하지 않습니다.
@@ -572,7 +612,13 @@ cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main�
 | `main` | 방문자용 본편 | `babdoduk` → https://babdoduk.vercel.app |
 | `lab` | 실험 | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
 
-기능 개발은 `lab` 에서 하고, 본편 반영은 `lab` → `main` merge로 합니다.
+`lab` 은 통합 브랜치입니다. 각 에이전트는 `origin/lab` 에서 만든 `agent/<tool>/<task>` 브랜치와
+자기 worktree에서 작업하고, 본편 후보는 `origin/main` 에서 만든 `release/<name>` 브랜치에
+승인된 변경만 옮깁니다(`AGENTS.md` 의 Git / Multi-Agent Session Protocol). `main` 에 push·merge하면
+Vercel이 production에 배포합니다. 본편 반영은 별도 승인과 diff 검토 후 진행하며,
+`lab` 전체에 운영 코드·migration·Realtime 변경이 섞여 있을 수 있으므로 시각 변경만을
+위해 전체 브랜치를 자동으로 합치지 않습니다. 아래 명령은 **전체 lab 승격이 승인되고 검토된
+경우에만** 적용하는 예시입니다.
 
 ```powershell
 # 실험
@@ -621,6 +667,7 @@ vercel --prod
 | `scripts/portal_web_agent.py` | Portal 로컬 에이전트 (SSO · 관찰 · 수집 큐) |
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
+| `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사 |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |
 | `scripts/refresh_magazine.py` · `refresh_kaist_menu.py` | 매거진·학식 데이터 |
@@ -635,6 +682,12 @@ vercel --prod
 |------|------|
 | `docs/GGONGBAB_PAGE.md` | 꽁밥 페이지 운영 규칙 |
 | `docs/GGONGBAB_PREVIEW.md` | 미리보기·fixture 모드 |
+| `AGENTS.md` | 작업 규칙·Git / Multi-Agent Session Protocol |
+| `PRD.md` · `DESIGN_SYSTEM.md` · `ARCHITECTURE.md` | 제품 요구·디자인 계약·구현 경계 |
 | `docs/DEPLOYMENT_AND_BRANCHES.md` | 배포·브랜치 |
 | `docs/BRANCH_MERGE_CHECKLIST.md` | merge 전 점검 |
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
+
+lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
+`GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
+`GGONGBAB_RESIDENT_OPS.md`(Windows 상주 worker). 해당 기능이 main에 승격될 때 함께 옮깁니다.

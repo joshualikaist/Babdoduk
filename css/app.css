@@ -1,7 +1,6 @@
-/* Page surfaces: food / event / ggongbab / history / lab */
+/* Page surfaces: food / ggongbab / history / lab. Events use css/event.css. */
 
 .food-tracker-wrap,
-.event-page-wrap,
 .ggongbab-page-wrap,
 .history-wrap,
 .lab-wrap {
@@ -10,21 +9,19 @@
 }
 
 .food-tracker {
-  background: rgba(255, 255, 255, 0.55) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  background: var(--color-surface) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--color-divider) !important;
   border-radius: var(--radius-lg) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 10px 30px rgba(20, 25, 30, 0.06) !important;
+  box-shadow: none !important;
 }
 
 .food-sum-card {
-  background: rgba(255, 255, 255, 0.5) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(115%);
-  backdrop-filter: blur(14px) saturate(115%);
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  background: var(--color-surface-muted) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid var(--color-divider) !important;
   border-radius: var(--radius-md) !important;
   box-shadow: none !important;
 }
@@ -40,105 +37,58 @@
 }
 
 .food-cal-cell.has-data {
-  background: #fff8f6 !important;
-  border-color: rgba(255, 103, 93, 0.28) !important;
+  background: var(--color-accent-wash) !important;
+  border-color: #efd3c6 !important;
 }
 
+/* Seven days must fit even with a visible Windows scrollbar at 360px. */
+.food-cal-weekdays,
+.food-cal-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.food-cal-cell { min-width: 0; }
+.food-cal-cell .amt { max-width: 100%; overflow-wrap: anywhere; }
+
 .food-cal-cell.has-data:hover {
-  border-color: var(--accent) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.food-cal-cell.has-data:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .food-cal-cell .amt {
-  color: var(--accent) !important;
+  color: var(--color-accent) !important;
 }
 
 .food-input-total-row th,
 .food-input-total,
 .food-input-add,
 .food-input-save {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 
 .food-input-save {
-  background: #1b1b1a !important;
-  color: #fff !important;
+  background: var(--color-ink) !important;
+  color: var(--color-surface) !important;
   border-radius: 12px !important;
   box-shadow: none !important;
 }
 
 .food-input-total-row th {
-  background: var(--accent-soft) !important;
-  color: var(--text) !important;
+  background: var(--color-accent-wash) !important;
+  color: var(--color-ink) !important;
 }
 
 .food-input-total-row td {
-  background: rgba(255, 103, 93, 0.04) !important;
+  background: #fdf7f3 !important;
 }
 
 .food-input-total {
-  border-color: rgba(255, 103, 93, 0.28) !important;
+  border-color: #efd3c6 !important;
   color: var(--text) !important;
-}
-
-.event-tab-row {
-  border-radius: var(--radius-md) !important;
-  background: rgba(255, 255, 255, 0.55) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 8px 24px rgba(20, 25, 30, 0.05) !important;
-}
-
-.event-tab-row:hover,
-.event-tab:hover {
-  border-color: var(--border-strong) !important;
-}
-
-.event-tab-row.is-selected,
-.event-tab[aria-selected="true"] {
-  border-color: rgba(255, 255, 255, 0.85) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 8px 24px rgba(20, 25, 30, 0.06) !important;
-  background: rgba(255, 255, 255, 0.72) !important;
-}
-
-.event-tab-row.is-selected {
-  background: rgba(255, 255, 255, 0.72) !important;
-}
-
-.event-tab-date {
-  color: var(--accent) !important;
-  font-weight: 600 !important;
-}
-
-.event-tab-title {
-  font-size: 16px !important;
-  font-weight: 700 !important;
-}
-
-.event-tab-outlink {
-  margin: 8px 10px 8px 2px;
-  padding: 8px 12px !important;
-  min-height: 40px;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  border-radius: 11px !important;
-  background: transparent !important;
-  color: var(--text) !important;
-  border: 1px solid var(--border-strong) !important;
-}
-
-.event-tab-outlink:hover {
-  background: rgba(20, 20, 20, 0.04) !important;
-  border-color: var(--border-strong) !important;
-}
-
-.event-tab-outlink:focus-visible {
-  outline: 2px solid rgba(255, 103, 93, 0.45);
-  outline-offset: 2px;
 }
 
 .ggongbab-map-wrap {
@@ -169,7 +119,6 @@
   box-shadow: 0 0 0 2px var(--bg) !important;
 }
 
-.event-title,
 .lab-title,
 .history-title {
   letter-spacing: -0.035em;
@@ -191,13 +140,4 @@
 
 .lab-btn--ghost:hover {
   background: rgba(20, 20, 20, 0.04) !important;
-}
-
-.event-detail-value a.gb-apply-link {
-  color: var(--accent) !important;
-}
-  .event-tab-outlink {
-    margin: 6px 8px 6px 0;
-    padding: 8px 10px !important;
-  }
 }

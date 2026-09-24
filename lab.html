@@ -34,201 +34,6 @@
         radial-gradient(ellipse 80% 50% at 100% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%),
         linear-gradient(180deg, rgba(239, 246, 255, 0.35) 0%, transparent 22%, transparent 78%, rgba(239, 246, 255, 0.2) 100%);
     }
-    .scroll-progress-wrap {
-      position: relative;
-      height: 3px;
-      width: 100%;
-      flex-shrink: 0;
-      z-index: 2;
-      background: #fbfbfd;
-      overflow: hidden;
-    }
-    .site-nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 10001;
-      display: flex;
-      flex-direction: column;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
-    .site-nav-inner {
-      width: 100%;
-      max-width: 100%;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      align-items: center;
-      column-gap: 10px;
-      row-gap: 6px;
-      padding: 8px max(12px, env(safe-area-inset-left)) 8px max(12px, env(safe-area-inset-right));
-      min-height: 44px;
-      background: rgba(255, 245, 248, 0.94);
-      -webkit-backdrop-filter: saturate(180%) blur(16px);
-      backdrop-filter: saturate(180%) blur(16px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
-    }
-    .site-nav-wordmark {
-      justify-self: start;
-      align-self: center;
-      padding: 6px 10px;
-      font-weight: 900;
-      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      text-decoration: none;
-      white-space: nowrap;
-      background: linear-gradient(110deg, #6366f1 0%, #a855f7 18%, #ec4899 36%, #06b6d4 55%, #8b5cf6 72%, #db2777 100%);
-      background-size: 260% 100%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: wordmark-holo 6s ease-in-out infinite;
-    }
-    @keyframes wordmark-holo {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
-    .site-nav-wordmark:hover { filter: brightness(1.08); }
-    .site-nav-lang {
-      background: none;
-      border: none;
-      padding: 0;
-      font: inherit;
-      cursor: pointer;
-      font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
-    }
-    .site-nav-item.site-nav-lang {
-      justify-self: end;
-      align-self: center;
-      padding: 6px 10px;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      opacity: 0.92;
-    }
-    .nav-mega-row {
-      justify-self: center;
-      align-self: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      column-gap: 10px;
-      row-gap: 4px;
-      min-width: 0;
-      max-width: 100%;
-    }
-    .nav-mega { position: relative; }
-    .nav-mega-trigger {
-      display: inline-flex;
-      align-items: center;
-      background: none;
-      border: none;
-      padding: 6px 10px;
-      margin: 0;
-      font-family: inherit;
-      font-size: clamp(0.64rem, 2.25vw, 0.76rem);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: #1d1d1f;
-      cursor: pointer;
-      opacity: 0.88;
-      transition: opacity 0.15s;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .nav-mega-trigger:hover,
-    .nav-mega.is-open .nav-mega-trigger {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .nav-mega-trigger.is-current {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .nav-mega-trigger::after {
-      content: '';
-      display: inline-block;
-      width: 0;
-      height: 0;
-      margin-left: 3px;
-      border: solid transparent;
-      border-width: 3px 3px 0 3px;
-      border-top-color: #6e6e73;
-      vertical-align: 2px;
-      opacity: 0.75;
-    }
-    .nav-mega-panel {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      min-width: 11.5rem;
-      max-width: min(18rem, calc(100vw - 24px));
-      padding: 6px 0;
-      background: rgba(255, 252, 253, 0.97);
-      -webkit-backdrop-filter: saturate(180%) blur(14px);
-      backdrop-filter: saturate(180%) blur(14px);
-      border-radius: 12px;
-      border: 1px solid rgba(0, 0, 0, 0.07);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
-      z-index: 10002;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transform: translateY(-4px);
-      transition: opacity 0.18s ease, visibility 0.18s, transform 0.18s ease;
-    }
-    .nav-mega.is-open .nav-mega-panel {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateY(0);
-    }
-    .nav-mega-link {
-      display: block;
-      padding: 8px 14px;
-      font-size: clamp(0.68rem, 2.2vw, 0.78rem);
-      font-weight: 500;
-      color: #1d1d1f;
-      text-decoration: none;
-      letter-spacing: -0.02em;
-      line-height: 1.35;
-      transition: background 0.12s;
-    }
-    .nav-mega-link:hover,
-    .nav-mega-link:focus-visible {
-      background: rgba(99, 102, 241, 0.08);
-      outline: none;
-    }
-    @media (max-width: 520px) {
-      .nav-mega-panel {
-        left: 50%;
-        transform: translate(-50%, -4px);
-      }
-      .nav-mega.is-open .nav-mega-panel {
-        transform: translate(-50%, 0);
-      }
-    }
-    .scroll-progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
-      background-size: 200% 100%;
-      animation: shimmer 3s linear infinite;
-      transition: width 0.08s ease-out;
-    }
-    @keyframes shimmer {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
 
     .lab-wrap {
       position: relative;
@@ -494,97 +299,6 @@
       }
     }
 
-    .site-footer {
-      flex-shrink: 0;
-      margin-top: 40px;
-      background: #f5f5f7;
-      color: #6e6e73;
-      padding: 18px 0 28px;
-    }
-    .site-footer-inner {
-      max-width: 1024px;
-      margin: 0 auto;
-      padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
-    }
-    .footer-apple-hr {
-      border: none;
-      border-top: 1px solid #d2d2d7;
-      margin: 0 0 16px;
-    }
-    .footer-apple-main {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      gap: 12px 16px;
-      align-items: start;
-      font-size: 0.75rem;
-      line-height: 1.5;
-    }
-    .footer-apple-col--left {
-      justify-self: start;
-      text-align: left;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0 2px;
-    }
-    .footer-apple-col--center {
-      justify-self: center;
-      text-align: center;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 0;
-    }
-    .footer-apple-col--right {
-      justify-self: end;
-      text-align: right;
-      color: #424245;
-      font-weight: 500;
-    }
-    .footer-apple-copy { color: #6e6e73; }
-    .footer-apple-pipe {
-      color: #d2d2d7;
-      margin: 0 5px;
-      user-select: none;
-    }
-    .footer-apple-a {
-      color: #424245;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .footer-apple-a:hover {
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-    .footer-apple-email-plain {
-      color: #424245;
-      user-select: text;
-    }
-    .footer-apple-fine {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid #e5e5ea;
-      font-size: 0.64rem;
-      line-height: 1.55;
-      color: #86868b;
-    }
-    @media (max-width: 800px) {
-      .footer-apple-main {
-        grid-template-columns: 1fr;
-        justify-items: center;
-      }
-      .footer-apple-col--left,
-      .footer-apple-col--center,
-      .footer-apple-col--right {
-        justify-self: center;
-        text-align: center;
-        justify-content: center;
-      }
-      .footer-apple-col--left { order: 1; }
-      .footer-apple-col--center { order: 2; }
-      .footer-apple-col--right { order: 3; }
-    }
   </style>
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/app.css" />
@@ -596,45 +310,20 @@
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
-      <div class="nav-mega-row" role="menubar">
+      <div class="nav-mega-row">
+        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
+        <a class="site-nav-direct" href="mukbang.html#what" data-i18n="nav.choose">메뉴 고르기</a>
         <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-haspopup="true" data-i18n="nav.intro">소개</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" href="history.html" class="nav-mega-link" data-i18n="nav.history">역사</a>
-            <a role="menuitem" href="lab.html" class="nav-mega-link" aria-current="page" data-i18n="nav.lab">실험실</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.sns">SNS</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.youtube">유튜브 (개설 예정)</a>
-            <a role="menuitem" class="nav-mega-link" href="index.html" data-i18n="nav.kakaoChannel">카카오톡 채널 (개설 예정)</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button
-            type="button"
-            class="nav-mega-trigger"
-            aria-expanded="false"
-            aria-haspopup="true"
-            data-i18n="nav.features"
-            data-i18n-aria-key="nav.featuresAria"
-            aria-label="주요 기능"
-          >
-            주요 기능
-          </button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
-            <a role="menuitem" class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
-            <a role="menuitem" class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
-            <a role="menuitem" class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.ggongbab">오늘 뭐 먹지?</a>
-          </div>
-        </div>
-        <div class="nav-mega" data-mega>
-          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-haspopup="true" data-i18n="nav.event">이벤트</button>
-          <div class="nav-mega-panel" role="menu">
-            <a role="menuitem" class="nav-mega-link" href="event.html" data-i18n="nav.event.open">이벤트 페이지</a>
+          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
+          <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
+            <a class="nav-mega-link" href="event.html" data-i18n="nav.event.open">소식·이벤트</a>
+            <a class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
+            <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
+            <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+            <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
+            <a class="nav-mega-link is-current" href="lab.html" aria-current="page" data-i18n="nav.lab">실험실</a>
+            <a class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.labFeed">꽁밥 실험</a>
           </div>
         </div>
       </div>
@@ -710,14 +399,18 @@
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
         </div>
-        <nav class="footer-apple-col footer-apple-col--center" aria-label="하단 정책 및 안내" data-i18n-aria-key="footer.navAria">
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkPrivacy">개인정보 처리방침</a>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkTerms">사이트 이용 약관</a>
+          <a href="mukbang.html#what" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkLegal">법적 고지</a>
+          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="#" class="footer-apple-a" data-i18n="footer.linkSitemap">사이트 맵</a>
+          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="food.html" class="footer-apple-a" data-i18n="nav.foodlog">먹방 가계부</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
         </nav>
         <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
       </div>
@@ -736,8 +429,12 @@
           'nav.intro': '소개',
           'nav.history': '역사',
           'nav.lab': '실험실',
+          'nav.labFeed': '꽁밥 실험',
           'nav.sns': 'SNS',
           'nav.instagram': '인스타그램',
+          'nav.today': '오늘의 꽁밥',
+          'nav.choose': '메뉴 고르기',
+          'nav.more': '더보기',
           'nav.features': '주요 기능',
           'nav.featuresAria': '주요 기능 하위 메뉴',
           'nav.map': '맛집 지도',
@@ -747,36 +444,34 @@
           'nav.magazine': '밥도둑 매거진',
           'nav.kakaoChannel': '카카오톡 채널 (개설 예정)',
           'nav.youtube': '유튜브 (개설 예정)',
-          'nav.ggongbab': '오늘 뭐 먹지?',
-          'nav.ggongbab.open': '오늘 뭐 먹지? 보기',
-          'nav.event': '이벤트',
-          'nav.event.open': '이벤트 페이지',
+          'nav.event': '소식·이벤트',
+          'nav.event.open': '소식·이벤트',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'lab.ribbon': '실험 구역 — 공식 메인과 별도',
           'lab.title': '실험실',
           'lab.kicker': 'Beta / draft',
           'lab.lead':
-            '로그인·서버 저장·가계부 동기화처럼 부담 큰 기능은 여기서만 먼저 시험합니다. 배포 URL은 같아도 이 페이지는 검색에 잘 노출되지 않게 막아 두었습니다.',
+            '정식 서비스와 분리해 시험하는 곳이에요. 여기 있는 기능과 데이터는 공개 서비스로 자동 승격되지 않아요. 이 페이지의 noindex는 검색 제외 신호일 뿐 접근 제한은 아니에요.',
           'lab.indexClarify':
-            '<strong>홈(메인 방문 페이지)</strong>은 계속 <code>index.html</code>입니다. <code>lab.html</code>은 실험 전용이며, 여기서 검증한 뒤 본편 HTML로 옮기는 워크플로를 씁니다. “항상 index보다 앞선 버전”이 자동으로 생기는 것은 아니고, <strong>베타 브랜치</strong>에만 실험 커밋을 두거나 <code>main</code>에 합쳐 공개 여부를 나눕니다.',
+            '<strong>홈</strong>은 <code>index.html</code>입니다. 실험은 <code>lab</code> 브랜치에서 진행하고, <code>main</code>(공개 기준)에는 소유자가 명시적으로 승인한 변경만 따로 반영합니다. 자세한 규칙은 <code>docs/DEPLOYMENT_AND_BRANCHES.md</code>에 있어요.',
           'lab.panelUseTitle': '이 페이지 쓰는 법',
           'lab.bullet1':
             '<strong>같은 사이트</strong> 안에서만 먼저 됩니다. 배포 주소 끝에 <code>/lab.html</code>만 붙여 직접 열면 됩니다.',
           'lab.bullet2':
-            'Git을 쓰면 실험 커밋은 <strong>베타 브랜치</strong>에만 두었다가, 검증 후에만 <code>main</code>에 합치면 공식 방문 페이지와 분리할 수 있습니다.',
+            '실험 커밋은 <code>lab</code> 브랜치에 둡니다. <code>lab</code> 전체를 <code>main</code>에 합치는 것이 기본값이 아니며, 반영할 변경을 골라 따로 승인받습니다.',
           'lab.bullet3':
-            '여기서 동작이 안정되면 본편(<code>ggongbab.html</code>·<code>food.html</code> 등)으로 옮깁니다.',
+            '여기서 동작이 안정되면 본편(<code>ggongbab.html</code>·<code>food.html</code> 등)으로 옮기되, 공개 데이터 계약과 검사를 함께 지킵니다.',
           'lab.bullet4':
-            '배포가 <code>main</code> 기준이면 방문자가 보는 홈은 본편 그대로입니다. 실험을 “앞서” 두려면 브랜치·머지 타이밍으로 조절합니다.',
+            '코드가 <code>lab</code>에 있다는 것과 <code>main</code>에 반영됐다는 것, 실제 배포에서 동작한다는 것은 서로 다른 사실입니다.',
           'lab.bullet5':
-            '이 페이지 내비의 <strong>꽁밥 안내</strong>는 실험용 <code>lab-ggongbab.html</code>로만 연결됩니다. 방문자용 본편은 <code>ggongbab.html</code>이며, 실험 내용을 확정한 뒤 수동으로 본편에 옮기면 됩니다.',
+            '<code>lab-ggongbab.html</code>은 <code>ggongbab.html</code>과 같은 렌더러로 fixture·localhost preview를 확인하는 곳이에요. 방문자용 본편은 <code>ggongbab.html</code>입니다.',
           'lab.pathNote':
-            '예: <code>https://…vercel.app/lab.html</code> · 홈 캐러셀에는 링크를 안 걸어도 됩니다(북마크·직접 입력).',
+            '예: <code>https://…vercel.app/lab.html</code> · 홈이나 기본 내비에는 링크하지 않아요(북마크·직접 입력).',
           'lab.panelNextTitle': '다음에 붙일 수 있는 것',
-          'lab.next1': 'Supabase / Firebase 등 로그인 + 사용자별 가계부 데이터 저장',
-          'lab.next2': '필요하면 Vercel Serverless로 API 레이어 추가',
-          'lab.next3': '내보내기·가져오기(JSON)로 백업 — 서버 없을 때도 유용',
+          'lab.next1': '먹방 가계부 기록 내보내기·가져오기(JSON) — 서버 없이 브라우저 기록을 백업',
+          'lab.next2': '로그인·서버 저장·사용자 프로필은 PRD의 비범위예요. 필요하면 소유자 승인과 개인정보 검토 후 따로 설계합니다.',
+          'lab.next3': '아래 .ics 실험은 꽁밥 수집 파이프라인과 별개예요. 유지할지 정리할지는 쓰임새를 정한 뒤 결정합니다.',
           'lab.btnFoodlog': '먹방 가계부 (본편)',
           'lab.btnHome': '홈으로',
           'lab.icsTitle': '포털 캘린더 (.ics) 실험',
@@ -797,7 +492,7 @@
           'lab.gbDraftLead':
             '위에서 불러온 <code>calendar.ics</code> 중 키워드 일치 일정을 <code>ggongbab.html</code>과 같은 <strong>4행 시트</strong>(일정·위치·내용·신청) 형태로 미리 봅니다. 장소·링크는 .ics에 없으므로 본편에는 반드시 수동으로 채워 넣어야 합니다.',
           'lab.gbDraftFoot':
-            '실험용 초안입니다. 확정 내용은 ggongbab.html의 탭·STR·지도 키로 옮겨 주세요.',
+            '실험용 미리보기예요. 공개 꽁밥은 검증된 공개 피드로만 발행되며, 이 초안을 본편에 직접 옮기지 않아요.',
           'lab.gbDraftEmpty': '먼저 위에서 calendar.ics 불러오기를 실행해 주세요.',
           'lab.gbDraftNoMatch': '키워드에 맞는 일정이 없어 초안 카드를 만들 수 없습니다.',
           'lab.gbFieldSchedule': '행사 일정',
@@ -808,12 +503,8 @@
           'lab.gbContentNote': '제목만 반영됨. 상세·혜택은 포털 본문·현장 안내를 확인하세요.',
           'lab.gbApplyEmpty': '(일정 파일에 없음 — 공지 URL을 ggongbab에 수동 입력)',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
-          'footer.linkPrivacy': '개인정보 처리방침',
-          'footer.linkTerms': '사이트 이용 약관',
-          'footer.linkLegal': '법적 고지',
-          'footer.linkSitemap': '사이트 맵',
           'footer.country': '대한민국',
-          'footer.navAria': '푸터 정책 링크',
+          'footer.navAria': '사이트 바로가기',
           'footer.fine':
             '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
         },
@@ -825,8 +516,12 @@
           'nav.intro': 'About',
           'nav.history': 'History',
           'nav.lab': 'Lab',
+          'nav.labFeed': 'Ggongbab lab',
           'nav.sns': 'SNS',
           'nav.instagram': 'Instagram',
+          'nav.today': "Today's free food",
+          'nav.choose': 'Choose a dish',
+          'nav.more': 'More',
           'nav.features': 'Features',
           'nav.featuresAria': 'Features submenu',
           'nav.map': 'Food map',
@@ -836,36 +531,34 @@
           'nav.magazine': 'Magazine',
           'nav.kakaoChannel': 'KakaoTalk channel (coming soon)',
           'nav.youtube': 'YouTube (coming soon)',
-          'nav.ggongbab': 'What to Eat Today?',
-          'nav.ggongbab.open': 'See what to eat today',
-          'nav.event': 'Event',
-          'nav.event.open': 'Events page',
+          'nav.event': 'News & events',
+          'nav.event.open': 'News & events',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'lab.ribbon': 'Experimental — not the public main',
           'lab.title': 'Lab',
           'lab.kicker': 'Beta / draft',
           'lab.lead':
-            'Try heavier features here first — auth, server-backed storage, food-log sync, and so on. This URL is tagged noindex so casual search traffic should stay on the main site.',
+            'A place to try things apart from the public service. Nothing here is promoted automatically. This page’s noindex tag only discourages search indexing; it is not access control.',
           'lab.indexClarify':
-            '<strong>Home for visitors</strong> stays <code>index.html</code>. <code>lab.html</code> is a sandbox; you copy stable work into real pages afterward. Nothing automatically moves “ahead” of index—use branches and merges to control what production shows.',
+            'The <strong>home page</strong> is <code>index.html</code>. Experiments happen on the <code>lab</code> branch; only changes the owner explicitly approves are promoted to <code>main</code> (the public reference). See <code>docs/DEPLOYMENT_AND_BRANCHES.md</code>.',
           'lab.panelUseTitle': 'How to use this page',
           'lab.bullet1':
             '<strong>Same deployment</strong>: append <code>/lab.html</code> to your site URL and bookmark it.',
           'lab.bullet2':
-            'With Git, keep experiments on a <strong>beta branch</strong> and merge to <code>main</code> only when ready for visitors.',
+            'Keep experimental commits on <code>lab</code>. Merging all of <code>lab</code> into <code>main</code> is not the default; pick and approve the changes to promote.',
           'lab.bullet3':
-            'When a feature is stable, port it into production pages (e.g. <code>ggongbab.html</code>, <code>food.html</code>).',
+            'When a feature is stable, move it into production pages (e.g. <code>ggongbab.html</code>, <code>food.html</code>) while keeping the public data contract and checks.',
           'lab.bullet4':
-            'If Vercel production tracks <code>main</code>, visitors still see the main site; keep experiments off <code>main</code> until you are ready.',
+            'Code existing on <code>lab</code>, being merged to <code>main</code>, and working in production are three different facts.',
           'lab.bullet5':
-            'From this page, <strong>Free meal info</strong> in the nav opens <code>lab-ggongbab.html</code> (sandbox). Public visitors still use <code>ggongbab.html</code>; copy edits over when stable.',
+            '<code>lab-ggongbab.html</code> uses the same renderer as <code>ggongbab.html</code> to check fixture and localhost preview modes. Visitors use <code>ggongbab.html</code>.',
           'lab.pathNote':
-            'Example: <code>https://….vercel.app/lab.html</code> · You don’t have to link it from the home carousel.',
+            'Example: <code>https://….vercel.app/lab.html</code> · Not linked from the home page or main navigation (bookmark or type it).',
           'lab.panelNextTitle': 'What you can add next',
-          'lab.next1': 'Supabase / Firebase auth + per-user food log storage',
-          'lab.next2': 'A thin API via Vercel serverless routes if you need secrets',
-          'lab.next3': 'Export / import JSON backups — useful even without a server',
+          'lab.next1': 'Food-log export/import (JSON) to back up browser entries without a server',
+          'lab.next2': 'Login, server storage and user profiles are out of scope in the PRD; they need owner approval and a privacy review first.',
+          'lab.next3': 'The .ics experiment below is separate from the free-food pipeline; keep or retire it once its purpose is decided.',
           'lab.btnFoodlog': 'Food log (production)',
           'lab.btnHome': 'Home',
           'lab.icsTitle': 'Portal calendar (.ics) experiment',
@@ -886,7 +579,7 @@
           'lab.gbDraftLead':
             'Matched events from <code>calendar.ics</code> are shown in the same <strong>four-row sheet</strong> shape as <code>ggongbab.html</code> (schedule, location, details, signup). ICS exports usually lack venue and URLs—fill those manually on the real page.',
           'lab.gbDraftFoot':
-            'Draft only. Move finalized copy into ggongbab tabs, STR keys, and map fields.',
+            'A lab preview only. Public free-food events are published only through the validated public feed; do not copy these drafts into production pages.',
           'lab.gbDraftEmpty': 'Load <code>calendar.ics</code> with the button above first.',
           'lab.gbDraftNoMatch': 'No keyword matches, so no draft cards were generated.',
           'lab.gbFieldSchedule': 'Schedule',
@@ -897,17 +590,14 @@
           'lab.gbContentNote': 'Only the title is auto-filled. Check the portal post for full details.',
           'lab.gbApplyEmpty': '(Not in calendar file — paste notice URL in ggongbab)',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
-          'footer.linkPrivacy': 'Privacy Policy',
-          'footer.linkTerms': 'Terms of Use',
-          'footer.linkLegal': 'Legal',
-          'footer.linkSitemap': 'Site Map',
           'footer.country': 'South Korea',
-          'footer.navAria': 'Footer policies',
+          'footer.navAria': 'Site links',
           'footer.fine':
             'Independent content site. For business registration or legal matters, please reach out by email.'
         }
       };
       window.BABDODUK_STR = STR;
+      function applyLang(lang) {
         if (lang !== 'en') lang = 'ko';
         document.documentElement.lang = lang;
         try { localStorage.setItem('babdoduk-lang', lang); } catch (e) {}
