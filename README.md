@@ -584,9 +584,10 @@ python scripts/check_ggongbab_ui.py
 | `.github/workflows/ggongbab-refresh.yml` | 30분 | 수집·파싱·저장 후 `data/ggongbab/` 를 lab·main에 푸시 |
 | `.github/workflows/magazine-daily.yml` | 매일 | 매거진·학식 데이터 갱신 |
 
-2026-09-23 확인: GitHub는 `ggongbab-refresh.yml` 을 invalid workflow file(YAML 문법 오류)로 표시하며,
-이 워크플로는 예약·수동 실행된 적이 없습니다. 그래서 `data/ggongbab/latest.json` 은 Actions 밖에서
-만든 커밋으로만 바뀝니다. 복구하면 Supabase 쓰기·OpenAI 호출·자동 푸시가 시작되므로 별도 승인 작업입니다.
+`ggongbab-refresh.yml` 은 YAML 문법 오류로 GitHub에서 실행되지 않다가 2026-09-25 에 고쳐졌고, 수동 `check`·`dry-run`·
+`review-report` 실행이 main 에서 통과한 뒤 2026-09-26 에 예약(`*/30 * * * *`, UTC, 항상 `full`)을 다시 켰습니다.
+`full` 은 Supabase 쓰기·OpenAI 호출·lab/main 푸시를 합니다. 행사 내용이 같고 `generatedAt` 만 바뀌면 커밋하지 않으므로
+새 소식이 없는 실행은 배포를 만들지 않습니다.
 
 cron은 기본 브랜치(main)에서만 돌기 때문에 이 파일들은 main에 있어야 합니다.
 두 워크플로는 `babdoduk-content-refresh` concurrency group을 공유해서 동시에 푸시하지 않습니다.

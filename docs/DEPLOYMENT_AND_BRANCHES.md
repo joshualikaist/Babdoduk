@@ -148,7 +148,7 @@ vercel --prod
 |------|------------|--------|
 | `data/magazine/` | 매일 10:00 | lab **과** main에 같은 JSON만 푸시 |
 | `data/kaist-menu/` | 06:00, 10:30, 16:30 | 동일 |
-| `data/ggongbab/latest.json` | 30분마다(설계) | 동일 (`.github/workflows/ggongbab-refresh.yml`, `python scripts/refresh_ggongbab.py`). `manual.json` 은 손으로 쓰는 입력이라 복사 대상이 아니다. 2026-09-23 기준 이 워크플로는 YAML 오류로 실행되지 않는다(복구는 별도 승인 작업) |
+| `data/ggongbab/latest.json` | 30분마다 | 동일 (`.github/workflows/ggongbab-refresh.yml`, `python scripts/refresh_ggongbab.py`). `manual.json` 은 손으로 쓰는 입력이라 복사 대상이 아니다. 행사 내용이 같고 `generatedAt` 만 바뀌면 커밋하지 않는다. 2026-09-25 YAML 오류 복구, 2026-09-26 예약 재활성화 |
 
 - 워크플로: `.github/workflows/magazine-daily.yml` (concurrency `babdoduk-content-refresh`)
 - 생성: `python scripts/refresh_magazine.py`, `python scripts/refresh_kaist_menu.py`
