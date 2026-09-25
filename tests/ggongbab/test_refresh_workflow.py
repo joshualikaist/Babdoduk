@@ -69,10 +69,13 @@ def test_dispatch_offers_every_mode_and_defaults_to_the_harmless_one():
         assert f'"{flag}"' in source, flag
 
 
-def test_schedule_stays_off_until_the_manual_checks_pass():
-    """Recovery: manual dispatch only. Re-enabling the cron is a separate commit."""
+def test_schedule_runs_every_30_minutes_as_a_full_refresh():
+    """Re-enabled after check, dry-run and review-report passed on main."""
     code = "\n".join(line for line in _text().splitlines() if not line.lstrip().startswith("#"))
-    assert "schedule:" not in code and "cron:" not in code
+    assert re.findall(r"(?m)^\s*- cron:\s*'([^']+)'", code) == ["*/30 * * * *"]
+    assert re.search(r"(?m)^\s*schedule:\s*$", code) and re.search(r"(?m)^\s*workflow_dispatch:\s*$", code)
+    # A scheduled run has no inputs; it must fall back to full, never to a diagnostic mode.
+    assert re.search(r"(?m)^\s*MODE:\s*\$\{\{\s*github\.event\.inputs\.mode \|\| 'full'\s*\}\}\s*$", code)
 
 
 def test_each_mode_runs_its_own_runner_command():

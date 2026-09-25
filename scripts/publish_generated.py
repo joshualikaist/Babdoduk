@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Callable, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOWED = {
@@ -17,6 +19,9 @@ ALLOWED = {
 }
 # Files inside an allowed path that are hand-edited inputs, never generated output.
 SKIP_NAMES = {"manual.json", ".staging"}
+# Top-level keys rewritten on every run without changing what the page shows. A file
+# whose only difference is in these keys is not worth a commit (and two deployments).
+VOLATILE_KEYS = {"data/ggongbab/latest.json": {"generatedAt"}}
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
@@ -59,6 +64,40 @@ def copy_allowed(src_root: Path, dest_root: Path, paths: list[str]) -> None:
                 file.unlink()
 
 
+def _semantic(text: str, volatile: set[str]):
+    data = json.loads(text)
+    if isinstance(data, dict):
+        data = {key: value for key, value in data.items() if key not in volatile}
+    return data
+
+
+def meaningful_changes(changed: list[str], before: Callable[[str], Optional[str]],
+                       after: Callable[[str], Optional[str]]) -> list[str]:
+    """The changed paths whose content differs beyond their VOLATILE_KEYS."""
+    meaningful = []
+    for path in changed:
+        volatile = VOLATILE_KEYS.get(path)
+        old, new = before(path), after(path)
+        if volatile and old is not None and new is not None:
+            try:
+                if _semantic(old, volatile) == _semantic(new, volatile):
+                    continue
+            except ValueError:
+                pass
+        meaningful.append(path)
+    return meaningful
+
+
+def _committed(work: Path, path: str) -> Optional[str]:
+    res = subprocess.run(["git", "show", f"HEAD:{path}"], cwd=work, capture_output=True, check=False)
+    return res.stdout.decode("utf-8") if res.returncode == 0 else None
+
+
+def _on_disk(work: Path, path: str) -> Optional[str]:
+    file = work / path
+    return file.read_text(encoding="utf-8") if file.is_file() else None
+
+
 def update_branch(branch: str, artifact: Path, paths: list[str], message: str) -> None:
     work = Path(tempfile.mkdtemp(prefix=f"bbd-{branch}-"))
     try:
@@ -70,6 +109,11 @@ def update_branch(branch: str, artifact: Path, paths: list[str], message: str) -
         status = run(["git", "status", "--porcelain"], work)
         if not status.stdout.strip():
             print(f"{branch}: no generated-data changes")
+            return
+        staged = run(["git", "diff", "--cached", "--name-only", "-z"], work).stdout.split("\0")
+        if not meaningful_changes([p for p in staged if p], lambda p: _committed(work, p),
+                                  lambda p: _on_disk(work, p)):
+            print(f"{branch}: no meaningful feed change (only generatedAt differs); nothing committed")
             return
         must(["git", "config", "user.name", "babdoduk-content-bot"], work)
         must(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], work)

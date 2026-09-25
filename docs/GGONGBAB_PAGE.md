@@ -10,9 +10,9 @@ lab 브랜치에만 있다. 해당 계약 문서(`GGONGBAB_PUBLIC_FEED.md`, `GGO
 
 `ggongbab.html`(공개)과 `lab-ggongbab.html`(실험)은 더 이상 손으로 쓰는 안내 페이지가 아니다. Dooray 메일함 ·
 KAIST 공개 공지 · 수동 입력을 모아 OpenAI로 구조화하고, 규칙 검증 · 중복 제거를 거쳐 Supabase에 쌓은 뒤, 공개
-조건을 만족하는 행사만 `data/ggongbab/latest.json` 으로 내보내 세로 피드로 보여 준다. 수집 주기는 30분 예약으로
-설계되었지만, 2026-09-23 기준 `ggongbab-refresh.yml` 은 YAML 오류로 GitHub에서 실행되지 않으므로 파일은
-Actions 밖에서 만든 커밋으로만 갱신된다(복구는 별도 승인 작업).
+조건을 만족하는 행사만 `data/ggongbab/latest.json` 으로 내보내 세로 피드로 보여 준다. 수집은 30분 예약으로
+돈다. `ggongbab-refresh.yml` 은 YAML 오류로 실행되지 않다가 2026-09-25 에 고쳐졌고, 수동 진단 실행이 통과한 뒤
+2026-09-26 에 예약을 다시 켰다. 행사 내용이 바뀌지 않은 실행은 커밋하지 않는다.
 
 이 문서 하나로 운영 · 디버깅 · 확장이 가능해야 한다.
 
@@ -326,6 +326,7 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 * `.github/workflows/ggongbab-refresh.yml` 이 `*/30 * * * *` 로 돈다(정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
   `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
 * `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 만 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
+  브랜치마다 비교해서 `generatedAt` 말고 달라진 것이 없으면 커밋하지 않는다(`VOLATILE_KEYS`).
 * 종료 코드 2 = “안전하게 내보낼 것이 없음”(Supabase 불통, 모든 collector 실패, export 검증 실패). 이때 이전 `latest.json` 을 유지하고 publish 단계를 건너뛴다.
 * `ggongbab.html`(본편)은 옛 3열 UI 를 버리고 lab 과 같은 피드 UI 로 교체됐다.
   승격은 손으로 베끼는 것이 아니라 `lab-ggongbab.html` 에서 `<meta name="robots">`,

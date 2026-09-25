@@ -4,12 +4,12 @@ name: ggongbab-refresh
 # Collects KAIST free-food events (Dooray tasks + KAIST public notices + manual.json),
 # parses them with OpenAI, stores them in Supabase and exports data/ggongbab/latest.json.
 # Only the generated JSON is copied onto lab and main. Feature code is never merged by this job.
-#
-# Recovery: the schedule is off until the check, dry-run and review-report modes
-# have passed on main. The intended schedule is '*/30 * * * *' (a scheduled run
-# is always a full refresh).
+# The publisher skips a commit when only generatedAt changed, so a run that finds
+# nothing new does not push to lab and main.
 
 on:
+  schedule:
+    - cron: '*/30 * * * *'   # every 30 minutes, UTC (GitHub may delay or skip individual runs); always full
   workflow_dispatch:
     inputs:
       mode:
