@@ -27,8 +27,9 @@
 - **밥도둑 소식 (`event.html`)** — 밥도둑이 직접 연 이벤트·협업·활동입니다. 지난 활동도 기록으로 계속 남습니다.
   날짜가 지났다고 “진행됨”으로 바꾸지 않으며, 지난 일정의 링크는 “당시 게시물 보기”, 참여 방법은 “당시 안내”로 표시됩니다.
 - **오늘의 꽁밥 (`ggongbab.html`)** — KAIST 무료 음식 기회를 알려 주는 도구입니다. 현재·예정 일정만 보여 주고,
-  끝난 일정은 목록에서 자동으로 빠집니다. 지난 꽁밥의 공개 아카이브는 아직 없습니다
-  (향후 원칙: `docs/GGONGBAB_PAGE.md` 11절 “지난 꽁밥 공개 아카이브”).
+  끝난 일정은 목록에서 자동으로 빠지고, 그 아래 따로 떨어진 흐린 **지난 꽁밥 기록**에 30일 동안 남습니다. 기록은
+  “공개 목록에 실렸다가 끝난 안내”라는 뜻일 뿐, 행사가 열렸다는 뜻이 아니며 신청 링크도 없습니다
+  (`data/ggongbab/archive/index.json`, `docs/GGONGBAB_PAGE.md` 11절).
 
 ### 구조
 
@@ -62,7 +63,8 @@ python scripts\check_ggongbab_ui.py --serve   # http://127.0.0.1:8000 — 루프
 python -m pytest tests -q                       # 단위·계약·UI 테스트 (사이트 UI 전체 검사 포함)
 python scripts\validate_content.py              # 생성 JSON 검증
 python scripts\check_site_ui.py                 # 공개 페이지 × 5개 폭, 한·영 구조와 실패 상태
-python scripts\check_ggongbab_ui.py             # 오늘의 꽁밥 fixture·본편 검사
+python scripts\check_ggongbab_ui.py             # 오늘의 꽁밥 fixture·본편·지난 기록 검사
+python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 가로 넘침 확인 (네트워크 필요, PASS/FAIL/SKIP)
 ```
 
 `python -m http.server` 는 쓰지 않습니다(§7). 작업 규칙은 [`AGENTS.md`](AGENTS.md), 제품·디자인·구현 경계의 기준은
@@ -92,7 +94,7 @@ python scripts\check_ggongbab_ui.py             # 오늘의 꽁밥 fixture·본�
 | **`food.html`** | 먹방 가계부 — 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 날짜마다 출처를 표시하며, 같은 날짜는 브라우저 기록이 우선. 기록 주체는 소유자 결정 대기 |
 | **`event.html`** | 밥도둑 소식 — 맨 위 공지·안내(작성된 공지만, 없으면 빈 상태)와 예정된 활동, 아래 지난 활동 기록. 날짜로 계산한 진행 중·예정·지난 일정과 별도의 확인 상태, 탭형 목록(시작일 순)·상세 패널 (`css/event.css`). 지난 일정은 흐린 카드에 “당시 게시물 보기” 링크, 참여 방법은 “당시 안내 · 지금은 참여할 수 없어요”로 표시. 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
 | **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리(원문 링크 글과 ‘밥도둑 데스크’ 자체 메모를 구분 표시, 지난 호 표시), 날짜가 붙은 학식 요약, 메뉴 고르기(`#what`) |
-| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 그 안내와 마지막 발행 시각을 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
+| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 그 안내와 마지막 발행 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
@@ -123,7 +125,8 @@ python scripts\check_ggongbab_ui.py             # 오늘의 꽁밥 fixture·본�
 | `data/food-log.json` | 사람이 직접 작성 | 인스타 게시 후 Total 금액을 날짜별로 기입 |
 | `data/magazine/` | `scripts/refresh_magazine.py` | GitHub Action |
 | `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` | GitHub Action |
-| `data/ggongbab/latest.json` | 꽁밥 파이프라인 | 공개 피드. 아래 §3 참고 |
+| `data/ggongbab/latest.json` | 꽁밥 파이프라인 | 공개 피드(현재·예정). 아래 §3 참고 |
+| `data/ggongbab/archive/index.json` | 꽁밥 파이프라인 | 지난 꽁밥 기록: 공개됐다가 끝난 행사, 최근 30일. 첫 export 뒤에 생김 |
 
 생성 JSON은 Action이 lab·main에 **같은 파일만** 푸시합니다. 기능 브랜치를 매일 merge하지 않습니다.
 
@@ -219,6 +222,8 @@ fallback을 켜면 `fallbackAttempted` / `fallbackImproved` / `fallbackSame` / `
 공개 건수는 수집·승인·만료에 따라 바뀝니다. 이 README에 고정된 현재 건수를 두지 않습니다.
 끝난 행사는 브라우저에서 종료 시각에 바로 숨고, 다음 export 에서 빠지며(종료 후 3시간 유예), `validate_content.py` 는
 종료 후 6시간이 넘은 행을 거부합니다. 지난 행사를 `latest.json` 에 다시 넣지 않습니다(`docs/GGONGBAB_PAGE.md` 11절).
+끝난 행사는 같은 export 가 `data/ggongbab/archive/index.json` 에 따로 씁니다. 같은 공개 자격·같은 종료 규칙·같은 시각을 쓰고,
+직전에 공개 파일에 실렸던 행만, 최근 30일만 넣으며, 신청 정보는 뺍니다. Supabase 스키마는 그대로입니다.
 main의 공개 화면은 정적 `data/ggongbab/latest.json` 만 읽습니다. 공개 DB projection과
 브라우저 Realtime은 **Lab-only / main 미반영**이며, 그 운영 기록(2026-09-23)은 lab 브랜치의
 `docs/GGONGBAB_PUBLIC_FEED.md` 에 있습니다. 현재 화면 상태는 발행 산출물과 실제 배포 환경에서 확인합니다.
@@ -652,8 +657,15 @@ python scripts/check_ggongbab_ui.py
 홈 소식의 현재 정보/지난 기록 구분, 이벤트 날짜 구간과 확인 상태·지난 일정 링크와 참여 방법 표시, 가계부 출처 표시,
 한·영 양쪽의 랜드마크·이름·터치 크기, 데이터가 모두 실패할 때의 안내.
 
-이 검사는 오프라인이라 웹 폰트를 막습니다. 실제 폰트에서 긴 영어 라벨이 넘치는지는 `--serve` 로 띄운 페이지를
-폰트와 함께 캡처해 확인합니다(`.claude/skills/ui-review`).
+이 검사들은 결과가 매번 같도록 오프라인이며 웹 폰트를 막습니다. 그래서 실제 폰트에서만 생기는 가로 넘침
+(예: 2026-09 영어 필터 칩, 390·360px)은 따로 확인합니다.
+
+```powershell
+python scripts/check_real_fonts.py   # 6개 공개 페이지 × 한·영 × 390·360·1440, Google Fonts 만 허용
+```
+
+폰트가 실제로 로드된 캡처만 인정합니다. 넘침이나 페이지 오류가 있으면 FAIL(종료 코드 1), 폰트를 못 받았으면 결과를
+믿을 수 없으므로 PASS 가 아니라 SKIP(종료 코드 3)입니다. 네트워크가 필요하므로 `pytest` 에는 넣지 않았습니다.
 
 ---
 
@@ -742,6 +754,7 @@ git -C ..\Babdoduk-wt\integration push origin HEAD:main
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
 | `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사 |
+| `scripts/check_real_fonts.py` | 실제 웹 폰트로 공개 페이지 가로 넘침 확인 (네트워크, PASS/FAIL/SKIP) |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |
 | `scripts/refresh_magazine.py` · `refresh_kaist_menu.py` | 매거진·학식 데이터 |

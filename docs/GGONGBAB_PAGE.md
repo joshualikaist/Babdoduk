@@ -332,18 +332,49 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 **마지막 발행** 시각(`generatedAt`, KST)을 목록 맨 위에 함께 보여 준다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
 끝난 행사를 `latest.json` 에 다시 넣거나 위 검증 규칙을 느슨하게 하지 않는다.
 
-### 지난 꽁밥 공개 아카이브 (향후 과제 · 아직 구현하지 않음)
+### 지난 꽁밥 기록 (`data/ggongbab/archive/index.json`, V1)
 
-지난 행사 기록은 별도 기능으로 다룬다. 2026-09 사이트 정리 릴리스는 이것을 만들지 않았고, Supabase 스키마와
-exporter 도 바꾸지 않았다. 나중에 만든다면 다음 원칙을 따른다.
+live 피드는 “지금·앞으로 참여할 수 있는 꽁밥”, 아카이브는 “최근에 공개됐다가 끝난 꽁밥 안내”다. 둘은 다른 파일,
+다른 화면 영역이다. 아카이브 한 줄의 뜻은 **“공개 꽁밥 목록에 실렸고, 끝났다”** 뿐이며, 행사가 실제로 열렸다거나
+누가 참여했다는 뜻이 아니다. “진행됨”·“완료” 같은 결과를 붙이지 않는다.
 
-* 형태: `data/ggongbab/archive/YYYY-MM.json` 같은 **정적·정제된** 월별 파일(또는 같은 성격의 스냅숏).
-  live 피드(`latest.json`)와 **따로** 읽고, live 피드의 schema·검증은 그대로 둔다.
-* 대상: 당시 **이미 공개 피드 조건을 통과했던 행사만**(11절 공개 조건). review 대기·비공개·반려 행은 넣지 않는다.
-* 내용: `public_event` 와 같은 공개 필드만. Dooray·메일 원문, 발신자, task 링크, review 사유 등 비공개 데이터는 절대 넣지 않는다.
-* 표시: 모든 행을 **종료됨**으로 분명히 표시하고, 신청 링크(`registration.url`)·마감 같은 지난 신청 CTA 는 내보내지도 그리지도 않는다.
-* 범위: 처음 공개할 때는 **최근 30일**만.
-* 구현하려면 exporter·validator·`publish_generated.py` 허용 경로·UI 를 함께 바꾸는 별도 승인 작업이 필요하다(AGENTS.md 보호 경계).
+**출처 (새 테이블 없음, Supabase 스키마 변경 없음).** canonical `events` 테이블은 끝난 행도 지우지 않는다(16절 “지난 행사”).
+`refresh_ggongbab.export()` 가 live 피드와 **같은 시각(`now`)** 으로 두 파일을 만든다.
+
+| 조건 | 규칙 | 위치 |
+|------|------|------|
+| 공개 자격 | live 피드와 같은 함수: 음식 명시(`food.provided == "true"`), `status='published'`, `needs_review=false`, confidence ≥ 기준 | `exporter.publication_eligible` |
+| 끝남 | live 피드가 버리는 바로 그 규칙: 종료(없으면 시작) + 유예 3시간 < `now` | `exporter.is_expired` |
+| 공개된 적 있음 | 이 export 직전의 `latest.json` 또는 `archive/index.json` 에 실렸던 id 만 | `exporter.previously_listed_ids` |
+| 공개 기간 | 종료(없으면 시작)가 `now` 기준 30일 안 | `ARCHIVE_WINDOW_DAYS` |
+| 조회 | 최근 60일 안에 시작한 published 행을 읽기만 함(여러 날 행사 포함) | `repository.recent_published_events` |
+
+“공개된 적 있음” 조건 때문에, 메일함 backfill 처럼 **이미 끝난 뒤에 수집된 행사**는 공개 자격이 있어도 아카이브에 들어가지
+않는다(한 번도 목록에 실린 적이 없으므로). 그래서 아카이브는 배포 이후 끝나는 행사부터 쌓이며, 과거 기록을 원문에서 다시
+만들지 않는다. 같은 규칙·같은 시각을 쓰므로 한 행이 live 와 아카이브에 동시에 있거나 둘 다에서 빠지는 일이 없다
+(단, live 의 60일 horizon 밖 미래 행사는 원래 어디에도 없다).
+
+**공개 계약.** 기록은 `public_event` 의 공개 필드에서 `registration`·`confidence` 를 뺀 것이다: `id`, `title`, `summary`,
+`startAt`, `endAt`, `dateText`, `timeText`, `location`, `food`, `organizer`, `eligibility`, `sources`. 출처는 live 와 같이
+공개 라벨만 두고, URL 은 `kaist_public`·`manual` 의 http(s) 공개 공지만 남긴다. Dooray id·task 링크·메일 원문·발신자·
+review 사유·AI 입력/출력은 절대 들어가지 않는다. 파일 머리: `generatedAt`(KST), `timezone`, `windowDays`(30), `count`.
+정렬은 최근에 끝난 것부터, 같으면 id 순.
+
+**검증 (`validate_content.validate_ggongbab_archive`).** 모든 행이 `generatedAt` 전에 끝났고 30일 창 안에 있을 것, 음식 명시,
+`registration`·`confidence` 없음, id 중복 없음, 정렬 규칙, 비공개 키·이메일·전화·토큰·Dooray 링크 없음, 내부 출처 URL 없음.
+시간 조건은 벽시계가 아니라 파일의 `generatedAt` 기준이다. 다시 생성되지 않은 스냅숏이 시간이 지나 “틀려져서” 매거진·학식
+발행까지 막는 일이 없게 하기 위해서다(화면은 30일 창과 종료 여부를 매번 다시 적용한다). live 와의 중복 검사는 두 파일을
+함께 staging 하는 export 에서 한다. live 피드의 “만료 행 금지” 규칙은 그대로다.
+
+**실패 처리.** live 검증이 실패하면 둘 다 이전 파일을 유지한다(종료 코드 2). 아카이브 조회나 검증만 실패하면
+`latest.json` 은 쓰고 이전 `archive/index.json` 을 유지하며 경고를 남긴다(조회 오류는 예외 종류 이름만 출력한다.
+Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다.
+
+**발행.** `publish_generated.py --paths data/ggongbab` 가 하위 폴더까지 복사하므로 워크플로 변경은 없다. `VOLATILE_KEYS` 에
+아카이브의 `generatedAt` 도 들어 있어, 시각만 바뀐 실행은 커밋하지 않는다. 행이 새로 들어오거나 30일 창을 벗어나면 커밋한다.
+배포 뒤 첫 export 는 파일이 새로 생기므로 한 번 커밋한다.
+
+**화면.** 12·13절 참고: 꽁밥 탭의 live 목록 아래, 흐린 “지난 꽁밥 기록” 영역.
 
 ---
 
@@ -352,8 +383,8 @@ exporter 도 바꾸지 않았다. 나중에 만든다면 다음 원칙을 따른
 * 기능 코드(`lab-ggongbab.html`, `css/ggongbab.css`, `js/ggongbab.js`, `scripts/**`)는 **lab 에서만** 개발하고, 공개 반영은 사람이 `main` 에 merge 한다.
 * `.github/workflows/ggongbab-refresh.yml` 이 `*/30 * * * *` 로 돈다(정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
   `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
-* `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 만 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
-  브랜치마다 비교해서 `generatedAt` 말고 달라진 것이 없으면 커밋하지 않는다(`VOLATILE_KEYS`).
+* `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
+  브랜치마다 비교해서 `generatedAt` 말고 달라진 것이 없으면 커밋하지 않는다(`VOLATILE_KEYS`, 두 파일 모두).
 * 종료 코드 2 = “안전하게 내보낼 것이 없음”(Supabase 불통, 모든 collector 실패, export 검증 실패). 이때 이전 `latest.json` 을 유지하고 publish 단계를 건너뛴다.
 * `ggongbab.html`(본편)은 옛 3열 UI 를 버리고 lab 과 같은 피드 UI 로 교체됐다.
   승격은 손으로 베끼는 것이 아니라 `lab-ggongbab.html` 에서 `<meta name="robots">`,
@@ -369,6 +400,17 @@ exporter 도 바꾸지 않았다. 나중에 만든다면 다음 원칙을 따른
 * nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
 * `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
 * 꽁밥 탭 목록 맨 위에 목록의 범위(현재·예정만, 끝난 일정은 자동으로 내려감)와 마지막 발행 시각을 함께 보여 준다(`gg.lifecycle`, `gg.updated`). 11절 “끝난 행사” 참고.
+* **지난 꽁밥 기록**은 live 목록 아래 별도 영역(`section.gg-archive`)이다. `data/ggongbab/archive/index.json` 을 live 와 **따로**
+  fetch 하고, live 피드에 있지만 이미 끝난 행(유예 3시간 안이라 아직 파일에 남은 행)도 여기에 보여 준다. 두 목록 모두
+  `ggongbab-select.js` 의 같은 규칙(`isPublic`, `isUpcoming`)으로 나누므로 한 행이 양쪽에 동시에 나오지 않는다.
+  - 기록 카드: 「종료」 배지 · 날짜/시각 · 제목 · 장소 · 음식 · “당시 공개된 꽁밥 안내 기록 · 출처 라벨”. 흐린 바탕, 그림자·강조색·
+    음식 색 배지 없음. 신청하기·마감·사전 신청 배지는 데이터에 남아 있어도 그리지 않는다.
+  - 링크는 공개 공지 URL(`kaist_public`/`manual`, http(s))이 있을 때만 “당시 공지 보기 ↗”. 내부 출처는 링크가 없다.
+  - 최근에 끝난 것부터 5개, 나머지는 “지난 기록 N개 더 보기” 버튼(`aria-expanded`). 화면에서도 30일 창을 다시 적용한다.
+  - 파일이 없으면(404, 첫 export 전) 빈 상태 “지난 30일 동안 공개된 지난 꽁밥 기록이 없어요.”, 읽기 실패면 아카이브 영역에만
+    “지난 꽁밥 기록을 불러오지 못했어요.”를 보이고 live 목록·개수·레이더는 그대로다. live 가 실패해도 아카이브는 읽힌다.
+  - live 필터(sticky)는 live 목록과 한 상자(`.gg-live`)에 있어 아카이브 영역에서는 따라오지 않는다. 필터는 아카이브에 적용되지 않는다.
+  - preview·blocked 모드에서는 아카이브를 읽지 않는다. fixture 모드는 합성 기록(`fixtureArchive`)을 쓴다.
 * 세로 피드: 날짜 헤더(오늘/내일 배지) → 카드(시각 · 제목 · 건물/호실 · 지도 링크 · 음식 태그 · 사전 신청 · 마감 · 요약 · 신청/원문 버튼).
 * **tri-state 표시:** `true` 만 「식사 제공」/「사전 신청」으로, `false` 는 「식사 없음」/「신청 없이 참여」로, `unknown` 은 점선 테두리의 「식사 여부 미확인」으로 그린다.
   `unknown` 을 `false` 처럼 보여 주지 않는다. 옛 boolean payload 도 `tri()` 가 받아 준다.

@@ -97,6 +97,24 @@
 .gg-diagnostic-panel dl { display:grid; grid-template-columns:1fr auto; gap:6px; }
 .gg-diagnostic-panel dt { color:#6e6e73; }
 .gg-diagnostic-panel dd { font-variant-numeric:tabular-nums; font-weight:700; }
+/* Past listings: below the live list, muted and flat. No card shadow, accent, food colour or
+   primary button, so an ended listing never reads as something to sign up for. */
+.gg-archive { margin-top:36px; padding-top:20px; border-top:1px dashed rgba(30,29,26,.22); }
+.gg-archive-title { font-size:17px; font-weight:800; line-height:24px; letter-spacing:-.02em; color:#3d3935; }
+.gg-archive-lead { margin-top:4px; font-size:13px; line-height:20px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
+.gg-archive-state { margin-top:12px; font-size:13px; line-height:20px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
+.gg-past-list { list-style:none; margin:12px 0 0; padding:0; }
+.gg-past { min-width:0; padding:12px 14px 10px; border-radius:14px; background:var(--color-surface-muted); border:1px solid var(--color-divider); }
+.gg-past + .gg-past { margin-top:8px; }
+.gg-past-top { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12px; line-height:18px; color:var(--color-ink-muted); }
+.gg-past-badge { display:inline-flex; align-items:center; height:20px; padding:0 7px; border-radius:6px; border:1px dashed rgba(30,29,26,.35); font-weight:800; color:var(--color-ink-muted); }
+.gg-past-when { font-weight:700; font-variant-numeric:tabular-nums; }
+.gg-past-title { margin-top:4px; font-size:15px; font-weight:700; line-height:22px; letter-spacing:-.02em; color:#3d3935; word-break:keep-all; overflow-wrap:anywhere; }
+.gg-past-meta,.gg-past-note { margin-top:2px; font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
+.gg-past-link { display:inline-flex; align-items:center; gap:4px; min-height:44px; font-size:13px; font-weight:700; color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; }
+.gg-archive-more { margin-top:10px; min-height:44px; padding:0 14px; border-radius:10px; border:1px dashed rgba(30,29,26,.3); background:transparent; font-family:inherit; font-size:13px; font-weight:700; line-height:16px; color:var(--color-ink); cursor:pointer; }
+.gg-past-link:focus-visible,.gg-archive-more:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
+.gg-sr { position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 .gg-choose { margin-top:32px; padding:18px 18px 16px; border-top:1px solid var(--color-divider); }
 .gg-choose-title { font-size:16px; font-weight:800; line-height:22px; letter-spacing:-.02em; color:var(--color-ink); }
 .gg-choose-body { margin-top:4px; font-size:13px; line-height:20px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
