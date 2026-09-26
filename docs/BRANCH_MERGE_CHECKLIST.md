@@ -1,7 +1,12 @@
 # 브랜치 작업 · main 반영 체크리스트
 
 이 저장소는 **저장소 하나**에 **`main`(공개)** 과 **`lab`(실험)** 을 두는 흐름을 기본으로 합니다.  
-실험·베타는 **`main`이 아닌 브랜치**(이 저장소에서는 **`lab`**)에서 하고, 괜찮아지면 **`main`에 merge**합니다.
+실험·베타는 **`main`이 아닌 브랜치**(이 저장소에서는 **`lab`**)에서 합니다.
+공개 반영은 소유자가 승인한 diff가 `lab` 전체와 같은지 확인한 뒤 방식과 범위를 정합니다.
+현재 lab에는 UI 외에 Realtime·운영 코드·migration도 있으므로 UI 작업만으로 전체 merge하지 않습니다.
+production 후보는 `origin/main` 에서 만든 `release/<name>` 브랜치에 승인된 커밋만 옮기고(`git cherry-pick -x`),
+PR과 Preview로 검토한 뒤 소유자 승인으로 merge합니다. 작업 브랜치·worktree 규칙은 `AGENTS.md` 의
+Git / Multi-Agent Session Protocol을 따릅니다. `main` merge는 Vercel production 배포를 일으킵니다.
 
 비교용 URL:
 
@@ -16,7 +21,7 @@
 
 - [ ] **실험 커밋**은 **`lab`(또는 전용 실험 브랜치)** 에서 할 것 — `main`에서 바로 크게 실험하지 않기(작은 수정는 팀 규칙에 따름)
 - [ ] **`lab`만 푸시**했을 때 — Vercel Production이 **`main`** 이면 **공식 사이트는 안 바뀜** (보통 Preview만)
-- [ ] **공개 반영**은 **`main`에 merge + push** 한 뒤에만 “방문자에게 릴리스”로 간주할 것
+- [ ] **공개 반영**은 승인된 `main` 변경을 푸시하고 실제 배포를 확인한 뒤에만 “방문자에게 릴리스”로 간주할 것
 - [ ] **예외:** `data/magazine/**`, `data/kaist-menu/**`, `data/ggongbab/latest.json` 은 액션이 lab/main에 직접 푸시한다. 이 JSON만 바뀐 커밋을 기능 merge와 섞지 말 것
 - [ ] **`lab-ggongbab.html` → `ggongbab.html`** 처럼, merge 후에도 **본편 파일로 내용을 옮겨야 하는 작업**이 있는지 목록으로 확인할 것 (자동 동기화 아님)
 - [ ] **`lab.html` / `lab-ggongbab.html`** 은 `main`에 둘 수 있으나, 홈 **`index.html` 내비에는 실험 링크를 걸지 않는 정책을 유지할 것**
@@ -26,7 +31,7 @@
 ## 1. 작업 시작 전
 
 - [ ] **현재 브랜치 확인** — 실험은 `main`이 아닌 곳에서만 할 것  
-- [ ] **`main`이 최신인지** — 작업 전에 `main`을 당겨 둔 뒤 브랜치를 새로 만들거나, 기존 실험 브랜치에 `main`을 merge해 **충돌을 미리** 해소할 것  
+- [ ] **원격 상태 확인** — 작업 대상 브랜치를 fetch하고 관계를 확인할 것. `main`/`lab` 사이의 자동 merge는 하지 말고 이번 작업의 승인 범위에 맞춰 결정할 것
 - [ ] **브랜치 이름** — 뭘 하는지 알 수 있게 (예: `lab` 고정, 또는 `feature/역사-타임라인`)  
 
 ---
@@ -44,7 +49,7 @@
 ### Git 상태
 
 - [ ] `git status` — 의도하지 않은 파일(대용량 zip, `__pycache__`, 로컬만 쓰는 파일)이 **커밋에 포함되지 않았는지**  
-- [ ] `git diff main...HEAD` (또는 GitHub PR Files changed) — **변경 범위가 이번 작업과 맞는지**  
+- [ ] `git diff origin/main...HEAD` (또는 GitHub PR Files changed) — **UI 이외 보호 변경까지 포함되는지** 확인하고 승인 범위와 대조할 것
 - [ ] **`calendar.ics`** 를 repo에 둘지, `.gitignore`로 빼 둘지 — 민감·용량 정책 확인  
 
 ### 사이트 동작 (로컬에서)
@@ -78,7 +83,7 @@ git checkout -b lab
 git push -u origin lab
 ```
 
-**실험 작업 후 `main`에 합치기 (로컬에서 직접 merge할 때):**
+**lab 전체의 공개 승인이 난 뒤 `main`에 합치기 (로컬에서 직접 merge할 때):**
 
 ```bash
 git checkout main

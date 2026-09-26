@@ -1,7 +1,8 @@
 /* One event renderer for normal, fixture and localhost preview data. */
 (function () {
   var root = document.getElementById('ggongbabFeed');
-  if (!root) return;
+  if (!root || !window.BabdodukFreeFood) return;
+  var F = window.BabdodukFreeFood;
 
   var isLab = document.body.hasAttribute('data-gg-lab');
   var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -21,12 +22,16 @@
     'bodyAttempted','bodyFetched','aiAttempted','aiCalls','fallbackCalls','aiErrors','aiSkippedDueToQuota',
     'likelyEvents','explicitFood','needsReview','notEvent','publicCount',
     'sourceDoorayCandidates','sourcePortalCandidates','sourcePublicCandidates'];
-  var KST_OFFSET = 9 * 60;
   var TAB_KEY = 'babdoduk-foodhub-tab';
+  // Past listings: a separate static file, loaded on its own so a failure never touches the live feed.
+  var ARCHIVE_URL = 'data/ggongbab/archive/index.json';
+  var ARCHIVE_WINDOW_DAYS = 30;
+  var ARCHIVE_PREVIEW = 5;
   var state = {
     activeSection: 'free',
     free: { status: 'loading', data: null, error: '' },
     menu: { status: 'loading', data: null, error: '', meal: 'lunch' },
+    archive: { status: 'loading', data: null, expanded: false },
     when: 'all',
     food: 'all'
   };
@@ -55,16 +60,7 @@
       return u.href;
     } catch (e) { return ''; }
   }
-  function toKst(iso) {
-    if (!iso) return null;
-    var d = new Date(iso);
-    if (isNaN(d.getTime())) return null;
-    return new Date(d.getTime() + (d.getTimezoneOffset() + KST_OFFSET) * 60000);
-  }
-  function nowKst() { return toKst(new Date().toISOString()); }
-  function ymd(d) {
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
+  var toKst = F.toKst, nowKst = F.nowKst, ymd = F.ymd, tri = F.tri, isPublic = F.isPublic, isUpcoming = F.isUpcoming;
   function hm(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
   function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
   function dayLabel(d) {
@@ -84,12 +80,6 @@
   function endOfWeek(today) {
     var dow = today.getDay();
     return addDays(today, 7 - (dow === 0 ? 7 : dow));
-  }
-  function tri(value) {
-    if (value === true) return 'true';
-    if (value === false) return 'false';
-    var s = String(value == null ? 'unknown' : value).toLowerCase();
-    return (s === 'true' || s === 'false') ? s : 'unknown';
   }
   function foodBucket(ev) {
     var f = ev.food || {};
@@ -118,24 +108,11 @@
     if (state.food === 'all') return true;
     return foodBucket(ev) === state.food;
   }
-  function isPublic(ev) { return tri((ev.food || {}).provided) === 'true' && !ev.needs_review && !ev.needsReview; }
-  function eventEnd(ev) {
-    return toKst(ev.endAt) || toKst(ev.startAt);
-  }
-  function isUpcoming(ev, now) {
-    var end = eventEnd(ev);
-    return !end || end >= now;
-  }
   function publicList() {
     return ((state.free.data && state.free.data.events) || []).filter(isPublic);
   }
   function todayUpcoming(now) {
-    return publicList().filter(function (ev) {
-      var s = toKst(ev.startAt);
-      return s && ymd(s) === ymd(now) && isUpcoming(ev, now);
-    }).sort(function (a, b) {
-      return String(a.startAt || '').localeCompare(String(b.startAt || ''));
-    });
+    return F.todayUpcoming(publicList(), now);
   }
   function earliestToday(now) {
     var upcoming = todayUpcoming(now).filter(function (ev) {
@@ -150,10 +127,7 @@
     });
   }
   function futurePublic(now) {
-    return publicList().filter(function (ev) {
-      var s = toKst(ev.startAt);
-      return s && ymd(s) >= ymd(now) && isUpcoming(ev, now);
-    });
+    return F.futurePublic(publicList(), now);
   }
   function foodTypeLabel(type) {
     return t('gg.food.' + type, {
@@ -179,41 +153,56 @@
     if (!d) return '';
     var past = d < now;
     var urgent = !past && d - now <= 86400000;
-    var label = past ? '신청 마감' : (ymd(d) === ymd(now) ? '오늘 마감 · ' + hm(d) : '마감 · ' + dayLabel(d) + ' ' + hm(d));
+    var label = past ? t('gg.deadlineClosed', '신청 마감')
+      : ymd(d) === ymd(now) ? t('gg.deadlineTodayAt', '오늘 마감 · {time}').replace('{time}', hm(d))
+      : t('gg.deadlineAt', '마감 · {date}').replace('{date}', dayLabel(d) + ' ' + hm(d));
     return '<p class="gg-deadline' + (past ? ' is-soft' : urgent ? ' is-urgent' : '') + '">' + esc(label) + '</p>';
   }
-  function cardHtml(ev, now, featured) {
-    var s = toKst(ev.startAt), e = toKst(ev.endAt);
-    var loc = ev.location || {}, food = ev.food || {}, reg = ev.registration || {};
+  function placeLabel(ev) {
+    var loc = ev.location || {};
     var pieces = [loc.building, loc.room].filter(function (value, index, values) {
       return value && values.indexOf(value) === index;
     });
     var compactPlace = pieces.join('').replace(/[\s·]/g, '');
     if (loc.name && loc.name.replace(/[\s·]/g, '') !== compactPlace && pieces.indexOf(loc.name) < 0) pieces.push(loc.name);
-    var place = pieces.join(' · '), map = mapLink(ev);
-    var foodLabel = food.description && food.description.length <= 22 ? food.description : foodTypeLabel(food.type) || '음식 제공';
+    return pieces.join(' · ');
+  }
+  function foodLabelOf(ev) {
+    var food = ev.food || {};
+    return food.description && food.description.length <= 22 ? food.description : foodTypeLabel(food.type) || t('gg.foodFallback', '음식 제공');
+  }
+  // Only public web notices (KAIST notices, Babdoduk's own entries) have a link; internal sources never do.
+  function publicSourceUrl(ev) {
+    return (ev.sources || []).filter(function (src) { return src.type === 'kaist_public' || src.type === 'manual'; })
+      .map(function (src) { return safeHref(src.url); }).filter(Boolean)[0] || '';
+  }
+  function cardHtml(ev, now, featured) {
+    var s = toKst(ev.startAt), e = toKst(ev.endAt);
+    var reg = ev.registration || {};
+    var place = placeLabel(ev), map = mapLink(ev);
+    var foodLabel = foodLabelOf(ev);
     var bucket = foodBucket(ev);
     var deadline = toKst(reg.deadline), closed = deadline && deadline < now;
     var html = '<article class="gg-card' + (featured ? ' is-featured' : '') + '" data-id="' + esc(ev.id) + '"' + (featured ? ' data-featured="1"' : '') + '>';
     if (featured) html += '<p class="gg-featured-label">' + esc(t('gg.next', '다음 꽁밥')) + '</p>';
-    html += '<div class="gg-card-top"><time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : '시간 미정') + '</time>';
+    html += '<div class="gg-card-top"><time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
     html += '<div class="gg-card-badges"><span class="gg-food-primary is-' + esc(bucket) + '"><span>' + esc(foodLabel) + '</span></span>';
     if (tri(reg.required) === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
     if (tri(reg.required) === 'false') html += '<span class="gg-reg-badge is-free">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</span>';
     html += '</div></div><h3 class="gg-title">' + esc(ev.title) + '</h3>';
-    html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || '장소 미정');
+    html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || t('gg.placeTbd', '장소 미정'));
     if (map) html += ' · <a href="' + esc(map) + '" target="_blank" rel="noopener">' + esc(t('gg.map','지도')) + '</a>';
     html += '</p>';
     if (ev.eligibility) html += '<p class="gg-eligibility">' + esc(t('gg.eligibility','대상')) + ' · ' + esc(ev.eligibility) + '</p>';
-    if (ev.organizer) html += '<p class="gg-organizer">주최 · ' + esc(ev.organizer) + '</p>';
+    if (ev.organizer) html += '<p class="gg-organizer">' + esc(t('gg.organizer', '주최')) + ' · ' + esc(ev.organizer) + '</p>';
     html += deadlineHtml(ev, now);
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
     var regUrl = closed ? '' : safeHref(reg.url);
-    var source = (ev.sources || []).filter(function (src) { return src.type === 'kaist_public' || src.type === 'manual'; }).map(function (src) { return safeHref(src.url); }).filter(Boolean)[0];
+    var source = publicSourceUrl(ev);
     if (regUrl || source) {
       html += '<div class="gg-actions">';
       if (regUrl) html += '<a class="gg-btn gg-btn--primary" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' + esc(t('gg.register','신청하기')) + '</a>';
-      if (source) html += '<a class="gg-btn" href="' + esc(source) + '" target="_blank" rel="noopener">공식 공지</a>';
+      if (source) html += '<a class="gg-btn" href="' + esc(source) + '" target="_blank" rel="noopener">' + esc(t('gg.officialNotice', '공식 공지')) + '</a>';
       html += '</div>';
     }
     var via = sourceLabel(ev);
@@ -256,7 +245,7 @@
       var loc = next.location || {};
       var place = loc.building || loc.name || '';
       html += '<p class="gg-radar-next"><strong>' + esc(t('gg.radar.next', '가장 빠른 꽁밥')) + '</strong>' +
-        esc((s ? hm(s) : '시간 미정') + ' · ' + food + (place ? ' · ' + place : '')) + '</p>';
+        esc((s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' · ' + food + (place ? ' · ' + place : '')) + '</p>';
       html += '<button type="button" class="gg-radar-cta" data-gg-scroll="' + esc(next.id) + '">' + esc(t('gg.radar.cta', '자세히 보기 →')) + '</button>';
     }
     return html + '</section>';
@@ -266,18 +255,21 @@
     menuSnap = menuSnap || (menuCtl && menuCtl.snapshot ? menuCtl.snapshot() : { status: state.menu.status, stale: true, restaurantCount: 0 });
     var menuPart;
     if (menuSnap.status === 'loading' || state.menu.status === 'loading') menuPart = t('gg.metric.menuLoading', '학식 확인 중');
-    else if (menuSnap.status === 'error' || state.menu.status === 'error' || menuSnap.stale) menuPart = t('gg.metric.menuStale', '학식 업데이트 중');
+    else if (menuSnap.status === 'error' || state.menu.status === 'error') menuPart = t('gg.metric.menuError', '학식 불러오기 실패');
+    else if (menuSnap.stale) menuPart = t('gg.metric.menuStale', '학식 업데이트 중');
     else menuPart = t('gg.metric.menu', '학식 {n}곳').replace('{n}', String(menuSnap.restaurantCount || 0));
     var freePart = state.free.status === 'ready'
       ? t('gg.metric.free', '오늘 꽁밥 {n}개').replace('{n}', String(freeN))
-      : t('gg.metric.freeLoading', '오늘 꽁밥 확인 중');
+      : state.free.status === 'loading' ? t('gg.metric.freeLoading', '오늘 꽁밥 확인 중')
+      : t('gg.metric.freeError', '꽁밥 불러오기 실패');
     return '<p class="gg-counts">' + esc(freePart + ' · ' + menuPart) + '</p>';
   }
   function tabsHtml() {
     var todayN = todayUpcoming(nowKst()).length;
     var html = '<div class="food-hub-tabs" role="tablist" aria-label="' + esc(t('gg.tabsAria', '꽁밥과 학식')) + '">';
-    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + (state.activeSection === 'free') + '">🎁 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
-    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + (state.activeSection === 'menu') + '">🍚 ' + esc(t('gg.tab.menu', '오늘의 학식')) + '</button>';
+    var free = state.activeSection === 'free';
+    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + free + '" tabindex="' + (free ? 0 : -1) + '">🎁 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
+    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + !free + '" tabindex="' + (free ? -1 : 0) + '">🍚 ' + esc(t('gg.tab.menu', '오늘의 학식')) + '</button>';
     return html + '</div>';
   }
   function emptyFreeHtml(now) {
@@ -304,15 +296,90 @@
     }
     return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + esc(t('gg.emptyBody', '다른 날짜를 보거나 필터를 바꿔 보세요.')) + '</div>';
   }
+  // What this list is (the public current and upcoming rows only; ended rows
+  // leave it) and when the snapshot was published. It makes no freshness claim
+  // beyond that time.
+  function feedNoteHtml() {
+    var html = '<div class="gg-feed-note"><p class="gg-lifecycle">' +
+      esc(t('gg.lifecycle', '공개된 현재·예정 꽁밥만 보여 드려요. 끝난 일정은 목록에서 자동으로 내려가요.')) + '</p>';
+    var g = state.free.data && toKst(state.free.data.generatedAt);
+    if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '마지막 발행')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
+    return html + '</div>';
+  }
+  // Past listings: public rows that have ended, from the archive file plus any live-feed row
+  // whose end has already passed (it leaves the live list at once; the next export archives it).
+  // The same client rules decide both lists, so a row is shown live or past, never both.
+  function pastListings(now) {
+    var cutoff = now.getTime() - ARCHIVE_WINDOW_DAYS * 86400000;
+    var seen = {};
+    var list = [];
+    function add(ev) {
+      if (!ev || typeof ev.id !== 'string' || seen[ev.id] || !isPublic(ev) || isUpcoming(ev, now)) return;
+      var last = F.eventEnd(ev);
+      if (!last || last.getTime() < cutoff) return;
+      seen[ev.id] = true;
+      list.push(ev);
+    }
+    ((state.archive.data && state.archive.data.events) || []).forEach(add);
+    ((state.free.status === 'ready' && state.free.data && state.free.data.events) || []).forEach(add);
+    return list.sort(function (a, b) {
+      return String(b.endAt || b.startAt || '').localeCompare(String(a.endAt || a.startAt || '')) ||
+        String(a.id).localeCompare(String(b.id));
+    });
+  }
+  // A record, not an invitation: no registration, deadline or primary button, whatever the data holds.
+  function pastHtml(ev) {
+    var s = toKst(ev.startAt);
+    var meta = [placeLabel(ev), foodLabelOf(ev)].filter(Boolean).join(' · ');
+    var via = sourceLabel(ev);
+    var source = publicSourceUrl(ev);
+    var html = '<li class="gg-past" data-past-id="' + esc(ev.id) + '">';
+    html += '<p class="gg-past-top"><span class="gg-past-badge">' + esc(t('gg.archive.ended', '종료')) + '</span>' +
+      '<span class="gg-past-when">' + esc(s ? dayLabel(s) + ' ' + hm(s) : t('gg.timeTbd', '시간 미정')) + '</span></p>';
+    html += '<h3 class="gg-past-title">' + esc(ev.title) + '</h3>';
+    if (meta) html += '<p class="gg-past-meta">' + esc(meta) + '</p>';
+    html += '<p class="gg-past-note">' + esc(t('gg.archive.record', '당시 공개된 꽁밥 안내 기록') + (via ? ' · ' + via : '')) + '</p>';
+    if (source) {
+      html += '<a class="gg-past-link" href="' + esc(source) + '" target="_blank" rel="noopener">' +
+        esc(t('gg.archive.source', '당시 공지 보기')) + ' <span aria-hidden="true">↗</span>' +
+        '<span class="gg-sr">' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
+    }
+    return html + '</li>';
+  }
+  function archiveHtml(now) {
+    var status = state.archive.status;
+    if (status === 'off') return '';
+    var html = '<section class="gg-archive" aria-labelledby="ggArchiveTitle">';
+    html += '<h2 class="gg-archive-title" id="ggArchiveTitle">' + esc(t('gg.archive.title', '지난 꽁밥 기록')) + '</h2>';
+    html += '<p class="gg-archive-lead">' + esc(t('gg.archive.lead', '최근 30일 동안 공개되었던 꽁밥 일정을 확인할 수 있어요. 종료된 일정이라 지금은 참여할 수 없어요.')) + '</p>';
+    var list = status === 'loading' ? [] : pastListings(now);
+    if (status === 'loading') html += '<p class="gg-archive-state">' + esc(t('gg.archive.loading', '지난 꽁밥 기록을 확인하고 있어요.')) + '</p>';
+    else if (status === 'error') html += '<p class="gg-archive-state" data-archive-state="error">' + esc(t('gg.archive.error', '지난 꽁밥 기록을 불러오지 못했어요. 현재·예정 꽁밥은 위에서 그대로 볼 수 있어요.')) + '</p>';
+    else if (!list.length) html += '<p class="gg-archive-state" data-archive-state="empty">' + esc(t('gg.archive.empty', '지난 30일 동안 공개된 지난 꽁밥 기록이 없어요.')) + '</p>';
+    if (list.length) {
+      var expanded = state.archive.expanded;
+      html += '<ol class="gg-past-list" id="ggPastList">';
+      (expanded ? list : list.slice(0, ARCHIVE_PREVIEW)).forEach(function (ev) { html += pastHtml(ev); });
+      html += '</ol>';
+      if (list.length > ARCHIVE_PREVIEW) {
+        html += '<button type="button" class="gg-archive-more" data-gg-archive-more aria-controls="ggPastList" aria-expanded="' + expanded + '">' +
+          esc(expanded ? t('gg.archive.less', '지난 기록 접기') : t('gg.archive.more', '지난 기록 {n}개 더 보기').replace('{n}', String(list.length - ARCHIVE_PREVIEW))) + '</button>';
+      }
+    }
+    return html + '</section>';
+  }
   function freePaneHtml(now) {
     var html = '';
     if (state.free.status === 'ready') html += radarHtml(now);
     else if (state.free.status === 'loading') html += '<div class="gg-skeleton" style="height:160px"></div>';
+    // The live list and its sticky filters share one box, so the filters stop at the archive.
+    html += '<div class="gg-live">';
     html += filtersHtml();
     html += '<div class="gg-feed">';
     if (state.free.status === 'loading') html += stateHtml('loading');
     else if (state.free.status === 'error' || state.free.status === 'blocked') html += stateHtml(state.free.status);
     else {
+      html += feedNoteHtml();
       var events = visibleEvents(now);
       var featuredId = (earliestToday(now) || {}).id;
       if (!events.length) {
@@ -331,16 +398,13 @@
           html += cardHtml(ev, now, ev.id === featuredId);
         });
       }
-      if (state.free.data && state.free.data.generatedAt) {
-        var g = toKst(state.free.data.generatedAt);
-        if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '업데이트')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
-      }
     }
-    return html + '</div>';
+    return html + '</div></div>' + archiveHtml(now);
   }
   function render() {
     var now = nowKst();
-    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘 뭐 먹지?')) + '</h1><p class="gg-tagline">' + esc(t('gg.tagline', 'KAIST에서 오늘 먹을 수 있는 걸 한곳에.')) + '</p>';
+    var focus = focusSelector();
+    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1><p class="gg-tagline">' + esc(t('gg.tagline', 'KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.')) + '</p>';
     html += metricHtml(now);
     html += '</header>';
     html += tabsHtml();
@@ -348,10 +412,28 @@
     html += freePaneHtml(now);
     html += '</div>';
     html += '<div id="foodHubMenu" class="food-hub-menu" role="tabpanel" aria-labelledby="foodHubTabMenu"' + (state.activeSection === 'menu' ? '' : ' hidden') + '></div>';
+    html += '<aside class="gg-choose" aria-labelledby="ggChooseTitle"><p class="gg-choose-title" id="ggChooseTitle">' + esc(t('gg.choose.title', '뭘 먹을지 아직 못 정했다면')) + '</p>';
+    html += '<p class="gg-choose-body">' + esc(t('gg.choose.body', '학식·꽁밥과 별개로 음식 아이디어를 골라 드려요. 실제 판매 여부는 가게에서 확인해 주세요.')) + '</p>';
+    html += '<a class="gg-choose-link" href="mukbang.html#what">' + esc(t('gg.choose.cta', '메뉴 고르기 →')) + '</a></aside>';
     root.innerHTML = html;
+    if (focus) {
+      var again = root.querySelector(focus);
+      if (again) again.focus({ preventScroll: true });
+    }
     bindMenu(now);
     renderDiagnostics();
     if (debugLayout) requestAnimationFrame(reportLayout);
+  }
+  // render() replaces the feed markup; keep a keyboard user's place on the same control.
+  function focusSelector() {
+    var el = document.activeElement;
+    if (!el || el === root || !root.contains(el)) return '';
+    if (el.id) return '#' + el.id;
+    var parts = [];
+    Array.prototype.forEach.call(el.attributes, function (attr) {
+      if (attr.name.indexOf('data-') === 0) parts.push('[' + attr.name + '="' + String(attr.value).replace(/["\\]/g, '') + '"]');
+    });
+    return parts.length ? el.tagName.toLowerCase() + parts.join('') : '';
   }
   function bindMenu(now) {
     var host = document.getElementById('foodHubMenu');
@@ -441,6 +523,51 @@
       if (!res.ok) throw new Error('unavailable'); return res.json();
     }).then(acceptFree).catch(function () { state.free.status = 'error'; render(); });
   }
+  // Fixture past listings, relative to the fixture clock: what an archive may hold, plus rows
+  // the page must still refuse (under review, unknown food, older than the window, not ended).
+  function fixtureArchive() {
+    var today = nowKst();
+    function at(days, hour) { return ymd(addDays(today, days)) + 'T' + hour + ':00:00+09:00'; }
+    var titles = ['지난주 진로 특강과 점심 도시락', '연구실 오픈데이 다과', '아주 긴 제목으로 확인하는 지난 캠퍼스 교류회와 함께 나눈 저녁 식사에 관한 기록 '.repeat(2),
+      '대학원 설명회 샌드위치', '동아리 박람회 간식', '학과 간담회 피자', '국제 교류 커피 모임'];
+    var events = titles.map(function (title, i) {
+      return {
+        id: 'past-' + i, title: title, summary: '지난 안내입니다.',
+        startAt: at(-1 - i * 3, '12'), endAt: at(-1 - i * 3, '13'),
+        location: { building: 'N1', room: '101호', name: 'KI빌딩' },
+        food: { provided: 'true', type: i % 2 ? 'snack' : 'lunchbox', description: i % 2 ? '다과' : '점심 도시락' },
+        organizer: '', eligibility: '',
+        sources: i === 0 ? [{ type: 'kaist_public', name: 'KAIST 공지', url: 'https://example.org/notice' }]
+          : i === 1 ? [{ type: 'manual', name: 'Manual', url: 'javascript:alert(1)' }] : [{ type: 'dooray', name: 'Dooray' }]
+      };
+    });
+    // Old data may still carry sign-up fields; the page must never render them.
+    events[0].registration = { required: 'true', url: 'https://example.org/register', deadline: at(-3, '18') };
+    events.push({ id: 'past-review', title: '검토 중', startAt: at(-2, '12'), food: { provided: 'true' }, needs_review: true, sources: [] });
+    events.push({ id: 'past-unknown', title: '음식 미확인', startAt: at(-2, '12'), food: { provided: 'unknown' }, sources: [] });
+    events.push({ id: 'past-old', title: '오래된 기록', startAt: at(-45, '12'), endAt: at(-45, '13'), food: { provided: 'true' }, sources: [] });
+    events.push({ id: 'past-future', title: '아직 안 끝남', startAt: at(2, '12'), food: { provided: 'true' }, sources: [] });
+    return { generatedAt: new Date().toISOString(), windowDays: ARCHIVE_WINDOW_DAYS, count: events.length, events: events };
+  }
+  function acceptArchive(data) {
+    if (!data || !Array.isArray(data.events)) throw new Error('bad archive');
+    state.archive.data = data;
+    state.archive.status = 'ready';
+    render();
+  }
+  function loadArchive() {
+    if (mode === 'preview' || mode === 'blocked') { state.archive.status = 'off'; return; }
+    if (mode === 'fixture') { acceptArchive(fixtureArchive()); return; }
+    fetch(ARCHIVE_URL, { cache: 'no-store' }).then(function (res) {
+      if (res.status === 404) return { events: [] }; // not generated yet: nothing has been archived
+      if (!res.ok) throw new Error('unavailable');
+      return res.json();
+    }).then(acceptArchive).catch(function () {
+      // Non-fatal: the live feed above keeps its own state.
+      state.archive.status = 'error';
+      render();
+    });
+  }
   function setTab(tab) {
     if (tab !== 'menu') tab = 'free';
     state.activeSection = tab;
@@ -448,7 +575,9 @@
     var freePane = document.getElementById('foodHubFree');
     var menuPane = document.getElementById('foodHubMenu');
     document.querySelectorAll('.food-hub-tab').forEach(function (btn) {
-      btn.setAttribute('aria-selected', String(btn.getAttribute('data-hub-tab') === tab));
+      var on = btn.getAttribute('data-hub-tab') === tab;
+      btn.setAttribute('aria-selected', String(on));
+      btn.setAttribute('tabindex', on ? '0' : '-1');
     });
     if (freePane) freePane.hidden = tab !== 'free';
     if (menuPane) menuPane.hidden = tab !== 'menu';
@@ -507,13 +636,37 @@
       render();
       return;
     }
+    if (e.target.closest('[data-gg-archive-more]')) {
+      state.archive.expanded = !state.archive.expanded;
+      render();
+      return;
+    }
     var scrollBtn = e.target.closest('[data-gg-scroll]');
     if (scrollBtn) {
       var target = document.querySelector('[data-id="' + scrollBtn.getAttribute('data-gg-scroll') + '"]');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (target) {
+        var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
       return;
     }
     if (e.target.closest('[data-gg-retry]')) loadFree();
+  });
+  root.addEventListener('keydown', function (e) {
+    var tab = e.target.closest && e.target.closest('.food-hub-tab');
+    if (!tab) return;
+    var tabs = Array.prototype.slice.call(root.querySelectorAll('.food-hub-tab'));
+    var at = tabs.indexOf(tab), next = -1;
+    if (e.key === 'ArrowRight') next = (at + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') next = (at - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = tabs.length - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    setTab(tabs[next].getAttribute('data-hub-tab'));
+    tabs[next].focus();
   });
   document.addEventListener('babdoduk-lang', render);
   // Expiry remains client-side even if the backend has not deleted a row yet.
@@ -544,6 +697,11 @@
     var tabSaved = localStorage.getItem(TAB_KEY);
     if (tabSaved === 'menu' || tabSaved === 'free') state.activeSection = tabSaved;
   } catch (err) {}
+  if (location.hash === '#menu' || location.hash === '#free') state.activeSection = location.hash.slice(1);
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#menu' || location.hash === '#free') setTab(location.hash.slice(1));
+  });
   loadFree();
+  loadArchive();
   if (document.hidden) pauseFeed(); else resumeFeed();
 })();

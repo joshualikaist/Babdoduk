@@ -5,6 +5,7 @@ import argparse
 import json
 import threading
 from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -40,6 +41,191 @@ FIXTURE_CLOCK_SCRIPT = f"""(() => {{
   FixtureDate.UTC = NativeDate.UTC;
   globalThis.Date = FixtureDate;
 }})();"""
+# One synthetic reference time for the normal-route radar scenario: the page
+# clock and the synthetic event both derive from it, so the host clock never
+# decides which calendar day the event falls on.
+RADAR_NOW = datetime.fromisoformat(FIXTURE_NOW)
+# UI checks must not use an operator's local public DB configuration (lab's read-only Realtime
+# experiment reads js/ggongbab-public-config.js). Every browser context gets the empty config,
+# so the checks always exercise the static snapshot. Where no page loads the file, it never matches.
+EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG = {};"
+
+
+def neutralize_public_config(context):
+    context.route("**/js/ggongbab-public-config.js", lambda route: route.fulfill(
+        content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG))
+
+
+def one_today_payload(now=RADAR_NOW):
+    """One published event starting two hours after `now`, on the same KST day.
+
+    Refuses a reference so late that the event would cross midnight, instead of
+    silently turning "today" into "tomorrow".
+    """
+    start, end = now + timedelta(hours=2), now + timedelta(hours=4)
+    if not start.date() == end.date() == now.date():
+        raise ValueError(f"reference {now.isoformat()} leaves no same-day window for the radar event")
+    return {"events": [{"id": "one", "title": "one", "startAt": start.isoformat(), "endAt": end.isoformat(),
+                        "food": {"provided": "true", "type": "meal", "description": "점심"},
+                        "sources": [{"type": "dooray"}]}]}
+
+
+def radar_one_today(browser, base, report):
+    """Normal route with one event later today, under a fixed page clock.
+
+    Runs in its own context so the fixed clock cannot leak into the checks that
+    assert the native clock on normal and preview routes.
+    """
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    neutralize_public_config(context)
+    try:
+        context.clock.set_fixed_time(RADAR_NOW)
+        page = context.new_page()
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=one_today_payload(RADAR_NOW)))
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
+        page.goto(base + "/lab-ggongbab.html")
+        page.locator(".gg-card").first.wait_for()
+        page_now = datetime.fromisoformat(page.evaluate("new Date().toISOString()").replace("Z", "+00:00"))
+        assert page_now == RADAR_NOW, (page_now, RADAR_NOW)
+        assert "한 끼" in page.locator(".gg-radar-title").inner_text()
+        page.locator("#foodHubTabMenu").click()
+        page.get_by_text("오늘 메뉴를 불러오지 못했어요.").wait_for()
+        page.locator("#foodHubTabFree").click()
+        assert page.locator(".gg-card").count() >= 1
+        report["checks"] += 4
+    finally:
+        context.close()
+
+
+def past_listings(browser, base, report):
+    """Past listings on the public page: a separate, quiet record with no sign-up actions,
+    loaded on its own so that its failure never touches the live feed. Synthetic data only."""
+    kst = timezone(timedelta(hours=9))
+    now = datetime.now(kst).replace(microsecond=0)
+
+    def event(event_id, start, end, **extra):
+        return {"id": event_id, "title": event_id, "startAt": start.isoformat(), "endAt": end.isoformat() if end else None,
+                "location": {"building": "N1", "room": "101호", "name": ""},
+                "food": {"provided": "true", "type": "meal", "description": "점심"},
+                "sources": [{"type": "dooray", "name": "Dooray"}], **extra}
+
+    register = {"required": "true", "url": "https://example.org/register", "deadline": (now - timedelta(days=3)).isoformat()}
+    live = {"generatedAt": now.isoformat(), "events": [
+        event("live-upcoming", now + timedelta(days=2), now + timedelta(days=2, hours=1), registration=register),
+        # Ended an hour ago: inside the export grace, so still in latest.json, but no longer live on the page.
+        event("live-just-ended", now - timedelta(hours=2), now - timedelta(hours=1), registration=register)]}
+    notice = [{"type": "kaist_public", "name": "KAIST 공지", "url": "https://example.org/notice"}]
+    past = {"generatedAt": now.isoformat(), "windowDays": 30, "events": [
+        event("past-notice", now - timedelta(days=2, hours=1), now - timedelta(days=2), sources=notice, registration=register),
+        event("past-mail", now - timedelta(days=5, hours=1), now - timedelta(days=5)),
+        event("past-script", now - timedelta(days=6, hours=1), now - timedelta(days=6),
+              sources=[{"type": "manual", "name": "Manual", "url": "javascript:alert(1)"}]),
+        event("past-review", now - timedelta(days=3), None, needs_review=True),
+        event("past-unknown", now - timedelta(days=3), None, food={"provided": "unknown"}),
+        event("past-old", now - timedelta(days=45), now - timedelta(days=45)),
+        event("past-not-ended", now + timedelta(days=1), None)]}
+    visible_past = ["live-just-ended", "past-notice", "past-mail", "past-script"]
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    neutralize_public_config(context)
+    try:
+        page = context.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(type(error).__name__))
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=live))
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=past))
+
+        def ids(selector, key):
+            return page.locator(selector).evaluate_all(f"els => els.map(el => el.dataset.{key})")
+
+        for width, height in ((390, 844), (1440, 900)):
+            page.set_viewport_size({"width": width, "height": height})
+            page.goto(base + "/ggongbab.html")
+            page.locator(".gg-past").first.wait_for()
+            assert ids(".gg-card", "id") == ["live-upcoming"]
+            assert ids(".gg-past", "pastId") == visible_past
+            archive = page.locator(".gg-archive")
+            assert archive.locator(".gg-btn, .gg-deadline, .gg-reg-badge, [href*='register']").count() == 0
+            assert "신청" not in archive.inner_text()
+            assert archive.locator(".gg-past-badge").all_inner_texts() == ["종료"] * len(visible_past)
+            links = archive.locator("a").evaluate_all(
+                "els => els.map(a => [a.closest('.gg-past').dataset.pastId, a.getAttribute('href'), a.target, a.rel, a.textContent])")
+            assert links == [["past-notice", "https://example.org/notice", "_blank", "noopener", "당시 공지 보기 ↗(새 창)"]], links
+            assert all("당시 공개된 꽁밥 안내 기록" in text for text in archive.locator(".gg-past-note").all_inner_texts())
+            # Secondary: below the live list, flat, and out of reach of the sticky live filters.
+            archive.scroll_into_view_if_needed()
+            box, filters = archive.bounding_box(), page.locator(".gg-filters").bounding_box()
+            assert box["y"] > page.locator(".gg-card").last.bounding_box()["y"]
+            assert filters["y"] + filters["height"] <= box["y"] + 1, ("sticky filters stop at the archive", filters, box)
+            assert page.evaluate("getComputedStyle(document.querySelector('.gg-past')).boxShadow") == "none"
+            assert page.evaluate("document.documentElement.scrollWidth") <= width
+            report["checks"] += 12
+        page.locator("#langToggle").click()
+        assert page.locator("#ggArchiveTitle").inner_text() == "Past free-food listings"
+        assert page.locator(".gg-past-link").inner_text().startswith("View original notice")
+        assert page.locator(".gg-past-badge").first.inner_text() == "Ended"
+        assert "Previously published free-food listing" in page.locator(".gg-past-note").first.inner_text()
+        page.locator("#langToggle").click()
+        report["checks"] += 4
+
+        # More than five: the rest stay behind a labelled toggle that keeps keyboard focus.
+        many = dict(past, events=[event(f"past-{i}", now - timedelta(days=i + 1, hours=1), now - timedelta(days=i + 1))
+                                  for i in range(7)])
+        page.unroute("**/data/ggongbab/archive/index.json")
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=many))
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-past").first.wait_for()
+        more = page.locator("[data-gg-archive-more]")
+        assert page.locator(".gg-past").count() == 5 and more.get_attribute("aria-expanded") == "false"
+        more.focus()
+        page.keyboard.press("Enter")
+        assert page.locator(".gg-past").count() == 8 and more.get_attribute("aria-expanded") == "true"
+        assert page.evaluate("document.activeElement.hasAttribute('data-gg-archive-more')")
+        report["checks"] += 3
+
+        # Empty, missing, failing and malformed archives: the live feed is untouched every time,
+        # and the live row that just ended still shows as past, whatever the archive file did.
+        empty = "지난 30일 동안 공개된 지난 꽁밥 기록이 없어요."
+        failed = "지난 꽁밥 기록을 불러오지 못했어요."
+        for label, handler, expected in (
+                ("empty", lambda route: route.fulfill(json={"events": []}), empty),
+                ("missing", lambda route: route.fulfill(status=404, body=""), empty),
+                ("failing", lambda route: route.fulfill(status=503, body=""), failed),
+                ("malformed", lambda route: route.fulfill(content_type="application/json", body="{not json"), failed)):
+            page.unroute("**/data/ggongbab/archive/index.json")
+            page.route("**/data/ggongbab/archive/index.json", handler)
+            page.goto(base + "/ggongbab.html")
+            page.locator(".gg-past").first.wait_for()
+            assert ids(".gg-card", "id") == ["live-upcoming"], label
+            assert ids(".gg-past", "pastId") == ["live-just-ended"], label
+            state = page.locator(".gg-archive-state")
+            assert (state.count() == 0) == (label in ("empty", "missing")), (label, "one past row is not an empty archive")
+            if label in ("failing", "malformed"):
+                assert state.inner_text().startswith(expected), (label, state.inner_text())
+            report["checks"] += 3
+        # With nothing live that has ended, an empty archive says so in words.
+        page.unroute("**/data/ggongbab/latest.json")
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=dict(live, events=live["events"][:1])))
+        page.unroute("**/data/ggongbab/archive/index.json")
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json={"events": []}))
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-archive-state").wait_for()
+        assert page.locator(".gg-archive-state").inner_text() == empty and page.locator(".gg-card").count() == 1
+        report["checks"] += 1
+
+        # And the reverse: a failed live feed leaves the archive readable.
+        page.unroute("**/data/ggongbab/latest.json")
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(status=503, body=""))
+        page.unroute("**/data/ggongbab/archive/index.json")
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=past))
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-past").first.wait_for()
+        assert page.locator("[data-gg-retry]").count() == 1
+        assert ids(".gg-past", "pastId") == ["past-notice", "past-mail", "past-script"]
+        assert not errors, errors
+        report["checks"] += 3
+    finally:
+        context.close()
 
 
 class LocalHandler(SimpleHTTPRequestHandler):
@@ -172,9 +358,7 @@ def run_checks(preview=False):
     with local_server() as base, sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=True)
         context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
-        # UI checks must not use an operator's local public DB configuration.
-        context.route("**/js/ggongbab-public-config.js", lambda route: route.fulfill(
-            content_type="application/javascript", body="window.BABDODUK_PUBLIC_FEED_CONFIG = {};"))
+        neutralize_public_config(context)
         page = context.new_page()
         page.add_init_script(FIXTURE_CLOCK_SCRIPT)
         errors = []
@@ -191,6 +375,11 @@ def run_checks(preview=False):
             assert page.locator('[data-group="when"]').evaluate_all(
                 "els => els.map(el => el.dataset.value)") == ["today", "tomorrow", "week", "all"]
             report["checks"] += 3
+            # The list says what it holds and names its publication time, without a freshness claim.
+            note = page.locator(".gg-feed-note").inner_text()
+            assert "끝난 일정은 목록에서 자동으로 내려가요" in note and "마지막 발행" in note, note
+            assert not any(word in note for word in ("실시간", "최신", "업데이트")), note
+            report["checks"] += 2
             assert_fixture_clock(page)
             page.evaluate("document.fonts.ready")
             page.wait_for_timeout(150)
@@ -216,7 +405,9 @@ def run_checks(preview=False):
                 report["checks"] += 1
             page.screenshot(path=str(OUT / f"ggongbab-{width}x{height}.png"))
             report["fixture"][f"{width}x{height}"] = r
-            page.evaluate("window.scrollTo(0, 450)")
+            # Scroll past the filter's own resting place so the check does not
+            # depend on the exact height of the hero and radar above it.
+            page.evaluate("window.scrollTo(0, document.querySelector('.gg-filters').getBoundingClientRect().top + scrollY + 120)")
             page.wait_for_timeout(100)
             sticky = rectangles(page)
             near(sticky["filter"]["y"], sticky["nav"]["h"])
@@ -254,7 +445,7 @@ def run_checks(preview=False):
         page.on("request", lambda req: requests.append(urlparse(req.url).path))
         def public_route(route):
             if urlparse(route.request.url).path == "/js/ggongbab-public-config.js":
-                route.fulfill(content_type="application/javascript", body="window.BABDODUK_PUBLIC_FEED_CONFIG = {};")
+                route.fulfill(content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG)
                 return
             path = ROOT / urlparse(route.request.url).path.lstrip("/")
             if path.is_file() and ROOT in path.resolve().parents:
@@ -268,7 +459,6 @@ def run_checks(preview=False):
         report["checks"] += 1
         # Normal mode still fetches the public feed; unsafe food states never
         # become public cards or inflate hero counts.
-        from datetime import datetime, timedelta, timezone
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
         events = [{"id": state, "title": state, "startAt": future,
                    "food": {"provided": state}, "registration": {}} for state in ("true", "false", "unknown")]
@@ -335,14 +525,7 @@ def run_checks(preview=False):
         page.locator(".km-card").first.wait_for()
         assert "최근 학식" in page.locator("#foodHubMenu h2").inner_text()
         report["checks"] += 3
-        from datetime import datetime, timedelta, timezone
-        now_kst = datetime.now(timezone(timedelta(hours=9)))
-        soon = (now_kst + timedelta(hours=2)).replace(microsecond=0).isoformat()
-        later = (now_kst + timedelta(hours=4)).replace(microsecond=0).isoformat()
         drought = {"events": []}
-        one = {"events": [{"id": "one", "title": "one", "startAt": soon, "endAt": later,
-                           "food": {"provided": "true", "type": "meal", "description": "점심"},
-                           "sources": [{"type": "dooray"}]}]}
         page.unroute("**/data/ggongbab/latest.json")
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=drought))
         reset_storage(page)
@@ -353,17 +536,10 @@ def run_checks(preview=False):
         assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
         page.locator("#foodHubTabFree").click()
         report["checks"] += 3
-        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=one))
-        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
-        page.goto(base + "/lab-ggongbab.html")
-        page.locator(".gg-card").first.wait_for()
-        assert "한 끼" in page.locator(".gg-radar-title").inner_text()
-        page.locator("#foodHubTabMenu").click()
-        page.get_by_text("오늘 메뉴를 불러오지 못했어요.").wait_for()
-        page.locator("#foodHubTabFree").click()
-        assert page.locator(".gg-card").count() >= 1
-        report["checks"] += 3
-        page.unroute("**/data/kaist-menu/latest.json")
+        # A same-day upcoming event makes the radar report one meal. The page
+        # clock is fixed for this scenario only (see radar_one_today).
+        radar_one_today(browser, base, report)
+        past_listings(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": events}))
         # Production page. It carries no lab affordances, so fixture and preview
@@ -391,11 +567,40 @@ def run_checks(preview=False):
                 assert not page.locator(".lab-fork-ribbon").count()
                 assert not page.evaluate("document.body.hasAttribute('data-gg-lab')")
                 assert not page.locator('meta[name="robots"]').count()
-                assert page.title() == "오늘 뭐 먹지? · 밥도둑 Babdoduk"
+                assert page.title() == "오늘의 꽁밥 · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
-                report["checks"] += 11
+                assert page.locator(".gg-lifecycle").is_visible()
+                assert page.locator(".gg-archive").count() == 1
+                report["checks"] += 13
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
+        # Keyboard users keep their place through re-renders; tabs follow the
+        # ARIA arrow-key pattern; the picker is a separate, labelled next step.
+        page.set_viewport_size({"width": 390, "height": 844})
+        reset_storage(page)
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-card").first.wait_for()
+        assert page.locator(".gg-choose-link").get_attribute("href") == "mukbang.html#what"
+        page.locator('[data-group="when"][data-value="today"]').focus()
+        page.keyboard.press("Enter")
+        assert page.evaluate("document.activeElement.dataset.value") == "today"
+        page.keyboard.press("Tab")
+        page.keyboard.press("Shift+Tab")
+        page.locator('[data-group="when"][data-value="all"]').focus()
+        page.keyboard.press("Enter")
+        page.locator("#foodHubTabFree").focus()
+        page.keyboard.press("ArrowRight")
+        assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
+        assert page.evaluate("document.activeElement.id") == "foodHubTabMenu"
+        assert page.locator("#foodHubTabFree").get_attribute("tabindex") == "-1"
+        page.keyboard.press("Home")
+        assert page.locator("#foodHubTabFree").get_attribute("aria-selected") == "true"
+        reset_storage(page)
+        page.goto(base + "/ggongbab.html#menu")
+        page.locator(".food-hub-tabs").wait_for()
+        assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
+        reset_storage(page)
+        report["checks"] += 8
         # All upcoming includes later weeks, sorts dates, and excludes even a
         # just-ended event from today. Normal mode keeps the real browser clock.
         now_kst = datetime.now(timezone(timedelta(hours=9)))

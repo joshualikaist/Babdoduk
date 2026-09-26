@@ -81,6 +81,22 @@
   function writeMeal(meal) {
     try { localStorage.setItem(MEAL_KEY, meal); } catch (err) {}
   }
+  // Re-rendering replaces the markup; keep keyboard users on the same control.
+  function focusSelector(host) {
+    var el = document.activeElement;
+    if (!el || el === host || !host.contains(el)) return '';
+    if (el.id) return '#' + el.id;
+    var parts = [];
+    Array.prototype.forEach.call(el.attributes, function (attr) {
+      if (attr.name.indexOf('data-') === 0) parts.push('[' + attr.name + '="' + String(attr.value).replace(/["\\]/g, '') + '"]');
+    });
+    return parts.length ? el.tagName.toLowerCase() + parts.join('') : '';
+  }
+  function restoreFocus(host, selector) {
+    if (!selector) return;
+    var el = host.querySelector(selector);
+    if (el && el.focus) el.focus({ preventScroll: true });
+  }
   function sortRestaurants(list, favorites) {
     var fav = [];
     var rest = [];
@@ -176,7 +192,7 @@
       html += '</ul>';
       if (items.length > 5) {
         html += '<button type="button" class="km-expand" data-km-expand="' + esc(resto.id) + '" aria-expanded="' + expanded + '">' +
-          esc(expanded ? t('km.collapse', '메뉴 접기 ↑') : t('km.expand', '전체 메뉴 ' + items.length + '개 보기 ↓').replace('{n}', String(items.length))) + '</button>';
+          esc(expanded ? t('km.collapse', '메뉴 접기 ↑') : t('km.expand', '전체 메뉴 {n}개 보기 ↓').replace('{n}', String(items.length))) + '</button>';
       }
       if (meal.price || meal.kcal) {
         html += '<div class="km-meta">';
@@ -191,13 +207,14 @@
       MEALS.forEach(function (meal) {
         if (meal === state.meal) return;
         var n = ((state.data && state.data.restaurants) || []).filter(function (row) { return mealItems(row, meal).length; }).length;
-        if (n) html += '<button type="button" class="km-cta is-ghost" data-km-meal="' + meal + '">' + esc(mealLabel(meal) + ' 메뉴 보기 →') + '</button>';
+        if (n) html += '<button type="button" class="km-cta is-ghost" data-km-meal="' + meal + '">' + esc(t('km.mealLink', '{meal} 메뉴 보기 →').replace('{meal}', mealLabel(meal))) + '</button>';
       });
       html += '<button type="button" class="km-cta is-ghost" data-hub-tab="free">' + esc(t('km.toFree', '꽁밥 보러가기 →')) + '</button>';
       return html + '</div>';
     }
     function render() {
       if (!state.host) return;
+      var focus = focusSelector(state.host);
       var today = toKst();
       var html = '';
       if (state.status === 'loading') {
@@ -219,7 +236,7 @@
           var rows = visibleRestaurants();
           html += '<div class="km-head"><h2>' + esc(stale ? t('km.recentTitle', '최근 학식 메뉴') : t('km.title', '오늘의 학식')) + '</h2>';
           html += '<p class="km-date">' + esc(dateHeading(state.data && state.data.date) || (state.data && state.data.dateLabel) || '') + '</p>';
-          html += '<p class="km-count">' + esc(mealLabel(state.meal) + ' 메뉴 ' + rows.length + '곳') + '</p></div>';
+          html += '<p class="km-count">' + esc(t('km.count', '{meal} 메뉴 {n}곳').replace('{meal}', mealLabel(state.meal)).replace('{n}', String(rows.length))) + '</p></div>';
           html += '<div class="km-meals" role="group" aria-label="' + esc(t('km.mealsAria', '식사 시간')) + '">';
           MEALS.forEach(function (meal) {
             html += '<button type="button" class="km-meal" data-km-meal="' + meal + '" aria-pressed="' + (state.meal === meal) + '">' + esc(mealLabel(meal)) + '</button>';
@@ -241,6 +258,7 @@
         }
       }
       state.host.innerHTML = html;
+      restoreFocus(state.host, focus);
     }
     function load() {
       state.status = 'loading';
@@ -349,80 +367,81 @@
 
   var mukbang = document.getElementById('kaistToday');
   if (!mukbang) return;
-  var mukState = { data: null, resto: '', meal: 'lunch' };
-  function mukMealNow() {
-    var h = new Date().getHours();
-    if (h < 10) return 'breakfast';
-    if (h < 16) return 'lunch';
-    return 'dinner';
-  }
-  function findResto() {
-    var list = (mukState.data && mukState.data.restaurants) || [];
-    return list.filter(function (row) { return row.id === mukState.resto; })[0] || list[0];
+  // Magazine summary: same KST clock, freshness rule and escaping as the hub.
+  var mukState = { status: 'loading', data: null, resto: '', meal: defaultMeal(toKst()) };
+  function mukGroup(label, attr, rows, current) {
+    var html = '<div class="kaist-' + attr + 's" role="group" aria-label="' + esc(label) + '">';
+    rows.forEach(function (row) {
+      html += '<button type="button" class="kaist-' + attr + (row.id === current ? ' is-on' : '') + '" data-kaist-' + attr + '="' + esc(row.id) +
+        '" aria-pressed="' + (row.id === current) + '">' + esc(row.label) + '</button>';
+    });
+    return html + '</div>';
   }
   function mukRender() {
-    if (!mukState.data) {
-      mukbang.innerHTML = '<p class="kaist-empty">' + t('kaist.empty', '오늘 학식 정보를 아직 못 읽었어요.') + '</p>';
+    var focus = focusSelector(mukbang);
+    var restos = restaurantsWithMenus(mukState.data);
+    var stale = isStale(mukState.data, toKst());
+    var title = stale && restos.length ? t('kaist.recentTitle', '최근에 올라온 KAIST 학식') : t('kaist.title', '오늘 KAIST 학식');
+    var html = '<header class="kaist-head"><h2 id="kaistTitle">' + esc(title) + '</h2>';
+    if (mukState.status === 'loading') {
+      mukbang.innerHTML = html + '</header><p class="kaist-empty" role="status">' + esc(t('kaist.loading', '학식 메뉴를 불러오는 중이에요.')) + '</p>';
       return;
     }
-    var restos = mukState.data.restaurants || [];
     if (!restos.length) {
-      mukbang.innerHTML = '<p class="kaist-empty">' + t('kaist.empty', '오늘 학식 정보를 아직 못 읽었어요.') + '</p>';
-      return;
-    }
-    if (!mukState.resto) mukState.resto = restos[0].id;
-    var resto = findResto();
-    var meal = (resto && resto[mukState.meal]) || {};
-    var html = '<header class="kaist-head"><h2 id="kaistTitle">' + t('kaist.title', '오늘 KAIST에서 뭐 먹지?') + '</h2>';
-    html += '<p class="kaist-date">' + (mukState.data.dateLabel || mukState.data.date || '') + '</p></header>';
-    html += '<div class="kaist-restos" role="tablist">';
-    restos.forEach(function (row) {
-      html += '<button type="button" class="kaist-resto' + (row.id === mukState.resto ? ' is-on' : '') + '" data-kaist-resto="' + row.id + '">' + (row.name || row.id) + '</button>';
-    });
-    html += '</div><div class="kaist-meals">';
-    MEALS.forEach(function (key) {
-      html += '<button type="button" class="kaist-meal' + (mukState.meal === key ? ' is-on' : '') + '" data-kaist-meal="' + key + '">' + t('kaist.' + key, key) + '</button>';
-    });
-    html += '</div>';
-    var items = meal.items || [];
-    if (!items.length) {
-      html += '<p class="kaist-empty">' + t('kaist.nomenu', '이 시간대 메뉴가 없어요.') + '</p>';
+      var failed = mukState.status === 'error';
+      html += '</header><p class="kaist-empty">' + esc(failed ? t('kaist.error', '학식 메뉴를 불러오지 못했어요.')
+        : t('kaist.empty', '아직 올라온 학식 메뉴가 없어요.')) + '</p>';
     } else {
-      html += '<div class="kaist-card"><ul>';
-      items.slice(0, 10).forEach(function (item) {
-        html += '<li>' + String(item).replace(/[&<>]/g, function (ch) {
-          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[ch];
-        }) + '</li>';
-      });
-      html += '</ul><p class="kaist-meta">';
-      if (meal.price) html += meal.price + ' · ';
-      if (meal.kcal) html += meal.kcal;
-      html += '</p></div>';
+      var dateText = dateHeading(mukState.data.date) || mukState.data.dateLabel || '';
+      html += '<p class="kaist-date' + (stale ? ' is-stale' : '') + '">' + esc(stale
+        ? t('kaist.staleNote', '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.').replace('{date}', dateText)
+        : dateText) + '</p></header>';
+      if (!restos.some(function (row) { return row.id === mukState.resto; })) mukState.resto = restos[0].id;
+      var resto = restos.filter(function (row) { return row.id === mukState.resto; })[0];
+      html += mukGroup(t('kaist.restosAria', '식당'), 'resto', restos.map(function (row) {
+        return { id: row.id, label: row.name || row.id };
+      }), mukState.resto);
+      html += mukGroup(t('km.mealsAria', '식사 시간'), 'meal', MEALS.map(function (key) {
+        return { id: key, label: mealLabel(key) };
+      }), mukState.meal);
+      var meal = resto[mukState.meal] || {};
+      var items = mealItems(resto, mukState.meal);
+      if (!items.length) {
+        html += '<p class="kaist-empty">' + esc(t('kaist.nomenu', '이 시간대 메뉴가 없어요.')) + '</p>';
+      } else {
+        html += '<div class="kaist-card"><ul>';
+        items.slice(0, 10).forEach(function (item) { html += '<li>' + esc(item) + '</li>'; });
+        html += '</ul>';
+        var meta = [meal.price, meal.kcal].filter(Boolean).join(' · ');
+        if (meta) html += '<p class="kaist-meta">' + esc(meta) + '</p>';
+        html += '</div>';
+      }
     }
-    html += '<a class="kaist-to-slot" href="#what">' + t('kaist.toSlot', '오늘 학식이 당기지 않는다면') + '</a>';
+    html += '<p class="kaist-links"><a class="kaist-to-hub" href="ggongbab.html#menu">' + esc(t('kaist.toHub', '오늘의 꽁밥에서 모든 식당 보기 →')) + '</a>';
+    html += '<a class="kaist-to-slot" href="#what">' + esc(t('kaist.toSlot', '학식이 당기지 않는다면 메뉴 고르기 →')) + '</a></p>';
     mukbang.innerHTML = html;
+    restoreFocus(mukbang, focus);
   }
   mukbang.addEventListener('click', function (e) {
     var resto = e.target.closest && e.target.closest('[data-kaist-resto]');
     var meal = e.target.closest && e.target.closest('[data-kaist-meal]');
-    if (resto) {
-      mukState.resto = resto.getAttribute('data-kaist-resto');
-      mukRender();
-    }
-    if (meal) {
-      mukState.meal = meal.getAttribute('data-kaist-meal');
-      mukRender();
-    }
+    if (resto) mukState.resto = resto.getAttribute('data-kaist-resto');
+    if (meal && MEALS.indexOf(meal.getAttribute('data-kaist-meal')) >= 0) mukState.meal = meal.getAttribute('data-kaist-meal');
+    if (resto || meal) mukRender();
   });
-  mukState.meal = mukMealNow();
+  document.addEventListener('babdoduk-lang', mukRender);
+  mukRender();
   fetch('data/kaist-menu/latest.json', { cache: 'no-store' }).then(function (res) {
     if (!res.ok) throw new Error('missing');
     return res.json();
   }).then(function (data) {
+    if (!data || !Array.isArray(data.restaurants)) throw new Error('bad');
     mukState.data = data;
+    mukState.status = 'ready';
     mukRender();
   }).catch(function () {
     mukState.data = null;
+    mukState.status = 'error';
     mukRender();
   });
 })(window);

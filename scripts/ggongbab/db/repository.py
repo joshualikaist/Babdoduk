@@ -41,6 +41,7 @@ class Repository(Protocol):
     def get_event(self, event_id: str) -> Optional[dict[str, Any]]: ...
     def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None: ...
     def publishable_events(self) -> list[dict[str, Any]]: ...
+    def recent_published_events(self, days: int) -> list[dict[str, Any]]: ...
     def public_feed_generation(self) -> int: ...
     def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int: ...
     def review_events(self) -> list[dict[str, Any]]: ...
@@ -216,6 +217,19 @@ class SupabaseRepository:
         return self.client.rpc("ggongbab_replace_public_feed", {"p_generation": generation, "p_rows": rows},
                                returning=True)
 
+    def recent_published_events(self, days: int) -> list[dict[str, Any]]:
+        """Published rows that started in the last `days` days (read-only; for the past-listings archive)."""
+        now = datetime.now(KST)
+        # Lab reads publication rows in full pages with a unique order (select_all) and
+        # bounds relationship URL sizes, as publishable_events does; build_archive sorts.
+        rows = self.client.select_all("events", {
+            "status": "eq.published", "needs_review": "eq.false",
+            "event_start": f"gte.{(now - timedelta(days=days)).isoformat()}",
+            "and": f"(event_start.lte.{now.isoformat()})",
+            "order": "id.asc",
+        })
+        return [row for i in range(0, len(rows), 100) for row in self._with_sources(rows[i:i + 100])]
+
     def review_events(self) -> list[dict[str, Any]]:
         rows = self.client.select("events", {"needs_review": "eq.true", "order": "event_start.asc.nullslast", "limit": 200})
         return self._with_sources(rows)
@@ -376,6 +390,15 @@ class MemoryRepository:
     def publishable_events(self) -> list[dict[str, Any]]:
         rows = [dict(r) for r in self.events.values() if r.get("status") == "published" and not r.get("needs_review")]
         rows.sort(key=lambda r: r.get("event_start") or "9999")
+        return self._with_sources(rows)
+
+    def recent_published_events(self, days: int) -> list[dict[str, Any]]:
+        now = datetime.now(KST)
+        since = now - timedelta(days=days)
+        rows = [dict(r) for r in self.events.values()
+                if r.get("status") == "published" and not r.get("needs_review") and r.get("event_start")
+                and since <= datetime.fromisoformat(r["event_start"]) <= now]
+        rows.sort(key=lambda r: r["event_start"], reverse=True)
         return self._with_sources(rows)
 
     def review_events(self) -> list[dict[str, Any]]:
