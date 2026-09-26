@@ -63,6 +63,7 @@ python -m pytest tests -q                       # 단위·계약·UI 테스트 (
 python scripts\validate_content.py              # 생성 JSON 검증
 python scripts\check_site_ui.py                 # 공개 페이지 × 5개 폭, 한·영 구조와 실패 상태
 python scripts\check_ggongbab_ui.py             # 오늘의 꽁밥 fixture·본편 검사
+python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 가로 넘침 확인 (네트워크 필요, PASS/FAIL/SKIP)
 ```
 
 `python -m http.server` 는 쓰지 않습니다(§7). 작업 규칙은 [`AGENTS.md`](AGENTS.md), 제품·디자인·구현 경계의 기준은
@@ -652,8 +653,15 @@ python scripts/check_ggongbab_ui.py
 홈 소식의 현재 정보/지난 기록 구분, 이벤트 날짜 구간과 확인 상태·지난 일정 링크와 참여 방법 표시, 가계부 출처 표시,
 한·영 양쪽의 랜드마크·이름·터치 크기, 데이터가 모두 실패할 때의 안내.
 
-이 검사는 오프라인이라 웹 폰트를 막습니다. 실제 폰트에서 긴 영어 라벨이 넘치는지는 `--serve` 로 띄운 페이지를
-폰트와 함께 캡처해 확인합니다(`.claude/skills/ui-review`).
+이 검사들은 결과가 매번 같도록 오프라인이며 웹 폰트를 막습니다. 그래서 실제 폰트에서만 생기는 가로 넘침
+(예: 2026-09 영어 필터 칩, 390·360px)은 따로 확인합니다.
+
+```powershell
+python scripts/check_real_fonts.py   # 6개 공개 페이지 × 한·영 × 390·360·1440, Google Fonts 만 허용
+```
+
+폰트가 실제로 로드된 캡처만 인정합니다. 넘침이나 페이지 오류가 있으면 FAIL(종료 코드 1), 폰트를 못 받았으면 결과를
+믿을 수 없으므로 PASS 가 아니라 SKIP(종료 코드 3)입니다. 네트워크가 필요하므로 `pytest` 에는 넣지 않았습니다.
 
 ---
 
@@ -742,6 +750,7 @@ git -C ..\Babdoduk-wt\integration push origin HEAD:main
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
 | `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사 |
+| `scripts/check_real_fonts.py` | 실제 웹 폰트로 공개 페이지 가로 넘침 확인 (네트워크, PASS/FAIL/SKIP) |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |
 | `scripts/refresh_magazine.py` · `refresh_kaist_menu.py` | 매거진·학식 데이터 |
