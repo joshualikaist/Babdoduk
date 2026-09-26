@@ -816,7 +816,9 @@
   text-underline-offset: 4px;
 }
 
-/* ── 03 밥도둑 소식: who we are, then a quiet notice-style list ── */
+/* ── 03 밥도둑 소식: who we are, then current information above a quiet record.
+   Only the current block is a card with the accent; past activity is muted text
+   with one link, so the record never competes with what is open now. ── */
 .home-news-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -854,43 +856,119 @@
   word-break: keep-all;
 }
 
-.home-news-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--color-divider);
-}
-
-.home-news-row {
-  display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr) auto;
+.home-news-story {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  min-height: 56px;
-  padding: 12px 4px;
-  border-bottom: 1px solid var(--color-divider);
+  gap: 6px;
+  min-height: 44px;
+  margin-top: var(--space-2);
+  font-size: 14px;
+  font-weight: 700;
   color: var(--color-ink);
   text-decoration: none;
 }
 
-.home-news-tag {
+.home-news-story:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.home-news-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.home-news-block {
+  min-width: 0;
+}
+
+.home-news-kicker {
+  margin: 0;
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  word-break: keep-all;
+}
+
+.home-news-block--current {
+  padding: 16px 20px 10px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  box-shadow: inset 4px 0 0 var(--color-accent);
+}
+
+.home-news-block--current .home-news-kicker {
   color: var(--color-accent);
 }
 
-.home-news-text {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.home-news-block--record {
+  padding: var(--space-4) 4px 0;
+  border-top: 1px dashed rgba(30, 29, 26, 0.22);
+}
+
+.home-news-block--record .home-news-kicker {
+  color: var(--color-ink-muted);
+}
+
+.home-news-block-note {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
 
+.home-news-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.home-news-row--current {
+  justify-content: space-between;
+  min-height: 52px;
+}
+
+.home-news-row--record {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.home-news-text {
+  min-width: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-news-row--current .home-news-text {
+  font-size: clamp(1.0625rem, 1.8vw, 1.25rem);
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.home-news-row--record .home-news-text {
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .home-news-arrow {
+  flex: 0 0 auto;
   color: var(--color-ink-muted);
   transition: transform var(--ease);
+}
+
+.home-news-row--current .home-news-arrow {
+  color: var(--color-accent);
+  font-size: 18px;
 }
 
 .home-news-row:hover .home-news-text {
@@ -909,6 +987,7 @@
 .home-feature:focus-visible,
 .home-desks a:focus-visible,
 .home-news-row:focus-visible,
+.home-news-story:focus-visible,
 .explore-card:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 3px;
@@ -1242,24 +1321,8 @@
     min-height: 280px;
   }
 
-  .home-news-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "tag arrow"
-      "text arrow";
-    gap: 2px var(--space-3);
-  }
-
-  .home-news-tag {
-    grid-area: tag;
-  }
-
-  .home-news-text {
-    grid-area: text;
-  }
-
-  .home-news-arrow {
-    grid-area: arrow;
+  .home-news-block--current {
+    padding: 14px 16px 8px;
   }
 }
 

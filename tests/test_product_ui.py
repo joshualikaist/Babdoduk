@@ -71,6 +71,18 @@ def test_home_snapshot_copy_names_last_publication_without_freshness_claims():
     assert not any(word in en.lower() for word in ("latest", "live", "real-time", "realtime"))
 
 
+@pytest.mark.parametrize("name", ["ggongbab.html", "lab-ggongbab.html"])
+def test_hub_lifecycle_copy_is_bilingual_and_claims_no_live_data(name):
+    """The hub lists current and upcoming public rows only and says so; ended rows are not archived here."""
+    html = (ROOT / name).read_text(encoding="utf-8")
+    ko, en = re.findall(r"'gg\.lifecycle': '([^']*)'", html)
+    assert "현재·예정" in ko and "끝난 일정" in ko and "upcoming" in en and "once they end" in en
+    assert re.findall(r"'gg\.updated': '([^']*)'", html) == ["마지막 발행", "Last published"]
+    for text in (ko, en):
+        assert not any(word in text.lower() for word in ("실시간", "최신", "latest", "live", "real-time", "realtime"))
+    assert "feedNoteHtml" in (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")
+
+
 def test_shared_selector_keeps_publication_review_expiry_and_sort_semantics():
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=True)
@@ -107,6 +119,13 @@ def test_past_events_are_not_reported_as_held_and_picker_stays_integrated():
     assert all(confirmation in ("announced", "tentative") for *_, confirmation in rows)
     assert "'event.state.tentative.past': '당시 예정 안내 · 진행 여부 미확인'" in html
     assert "'event.state.held.past'" in html  # only an explicit "held" state may say it took place
+    # Each row's link is labelled by the page script from its date band; a past row links to
+    # the original post as a record, and each authored instruction block can be marked historical.
+    assert html.count("<span data-event-cta>") == 3 and "event.openPageBtn" not in html
+    assert "'event.cta.live': '페이지로 이동'" in html and "'event.cta.past': '당시 게시물 보기'" in html
+    assert "'event.cta.live': 'Open page'" in html and "'event.cta.past': 'View the original post'" in html
+    assert html.count('<div class="event-detail-row" data-detail="participation">') == 6  # three events, ko and en
+    assert 'href="ggongbab.html" data-i18n="event.boundaryLink"' in html
     for name in ("index.html", "ggongbab.html", "mukbang.html"):
         assert 'href="mukbang.html#what"' in (ROOT / name).read_text(encoding="utf-8")
 
@@ -149,7 +168,11 @@ def test_home_groups_brand_and_hub_name():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     groups = re.findall(r'<section class="home-group [^"]+" aria-labelledby="(\w+)">', html)
     assert groups == ["homeShelfTitle", "homeReadTitle", "homeNewsTitle"]
-    assert re.findall(r'class="home-news-row" href="([^"]+)"', html) == ["event.html#notice", "event.html#archive", "history.html"]
+    assert re.findall(r'class="home-news-row[^"]*" href="([^"]+)"', html) == ["event.html#notice", "event.html#archive"]
+    assert re.findall(r'data-news="(\w+)"', html) == ["current", "record"]
+    record = html.split('data-news="record"')[1].split("</div>")[0]
+    assert re.findall(r'href="([^"]+)"', record) == ["event.html#archive"]  # the past is one link
+    assert 'class="home-news-story" href="history.html"' in html
     event = (ROOT / "event.html").read_text(encoding="utf-8")
     assert event.index('id="notice"') < event.index('id="upcoming"') < event.index('id="archive"')
     assert '<ul class="event-notices" id="eventNotices" role="list"></ul>' in event  # no invented notices

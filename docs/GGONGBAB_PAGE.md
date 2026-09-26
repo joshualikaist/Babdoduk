@@ -318,6 +318,33 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 `food.type` 과 `food.provided` 정합성 · private 필드 없음 · 이메일/전화/토큰 패턴 없음 · 같은 날 유사 제목 중복.
 `sources[].url` 은 `kaist_public` / `manual` 의 공개 웹 링크만 내보낸다.
 
+### 끝난 행사 (현재 동작)
+
+`ggongbab.html` 은 “지금·앞으로 참여할 수 있는 꽁밥”을 답하는 화면이다. 끝난 행사는 세 단계로 목록에서 빠진다.
+
+| 단계 | 규칙 | 위치 |
+|------|------|------|
+| 브라우저 | 종료 시각(없으면 시작 시각)이 지나면 카드·개수·레이더에서 바로 숨김 | `js/ggongbab-select.js` `isUpcoming` |
+| export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외 | `exporter.is_expired` |
+| 검증 | 종료 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
+
+화면에는 “공개된 현재·예정 꽁밥만 보여 드려요. 끝난 일정은 목록에서 자동으로 내려가요.”라는 안내와 스냅숏의
+**마지막 발행** 시각(`generatedAt`, KST)을 목록 맨 위에 함께 보여 준다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
+끝난 행사를 `latest.json` 에 다시 넣거나 위 검증 규칙을 느슨하게 하지 않는다.
+
+### 지난 꽁밥 공개 아카이브 (향후 과제 · 아직 구현하지 않음)
+
+지난 행사 기록은 별도 기능으로 다룬다. 2026-09 사이트 정리 릴리스는 이것을 만들지 않았고, Supabase 스키마와
+exporter 도 바꾸지 않았다. 나중에 만든다면 다음 원칙을 따른다.
+
+* 형태: `data/ggongbab/archive/YYYY-MM.json` 같은 **정적·정제된** 월별 파일(또는 같은 성격의 스냅숏).
+  live 피드(`latest.json`)와 **따로** 읽고, live 피드의 schema·검증은 그대로 둔다.
+* 대상: 당시 **이미 공개 피드 조건을 통과했던 행사만**(11절 공개 조건). review 대기·비공개·반려 행은 넣지 않는다.
+* 내용: `public_event` 와 같은 공개 필드만. Dooray·메일 원문, 발신자, task 링크, review 사유 등 비공개 데이터는 절대 넣지 않는다.
+* 표시: 모든 행을 **종료됨**으로 분명히 표시하고, 신청 링크(`registration.url`)·마감 같은 지난 신청 CTA 는 내보내지도 그리지도 않는다.
+* 범위: 처음 공개할 때는 **최근 30일**만.
+* 구현하려면 exporter·validator·`publish_generated.py` 허용 경로·UI 를 함께 바꾸는 별도 승인 작업이 필요하다(AGENTS.md 보호 경계).
+
 ---
 
 ## 12. Deployment · branches
@@ -341,6 +368,7 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 
 * nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
 * `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
+* 꽁밥 탭 목록 맨 위에 목록의 범위(현재·예정만, 끝난 일정은 자동으로 내려감)와 마지막 발행 시각을 함께 보여 준다(`gg.lifecycle`, `gg.updated`). 11절 “끝난 행사” 참고.
 * 세로 피드: 날짜 헤더(오늘/내일 배지) → 카드(시각 · 제목 · 건물/호실 · 지도 링크 · 음식 태그 · 사전 신청 · 마감 · 요약 · 신청/원문 버튼).
 * **tri-state 표시:** `true` 만 「식사 제공」/「사전 신청」으로, `false` 는 「식사 없음」/「신청 없이 참여」로, `unknown` 은 점선 테두리의 「식사 여부 미확인」으로 그린다.
   `unknown` 을 `false` 처럼 보여 주지 않는다. 옛 boolean payload 도 `tri()` 가 받아 준다.

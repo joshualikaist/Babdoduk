@@ -233,6 +233,11 @@ def run_checks(preview=False):
             assert page.locator('[data-group="when"]').evaluate_all(
                 "els => els.map(el => el.dataset.value)") == ["today", "tomorrow", "week", "all"]
             report["checks"] += 3
+            # The list says what it holds and names its publication time, without a freshness claim.
+            note = page.locator(".gg-feed-note").inner_text()
+            assert "끝난 일정은 목록에서 자동으로 내려가요" in note and "마지막 발행" in note, note
+            assert not any(word in note for word in ("실시간", "최신", "업데이트")), note
+            report["checks"] += 2
             assert_fixture_clock(page)
             page.evaluate("document.fonts.ready")
             page.wait_for_timeout(150)
@@ -418,7 +423,8 @@ def run_checks(preview=False):
                 assert not page.locator('meta[name="robots"]').count()
                 assert page.title() == "오늘의 꽁밥 · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
-                report["checks"] += 11
+                assert page.locator(".gg-lifecycle").is_visible()
+                report["checks"] += 12
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
         # Keyboard users keep their place through re-renders; tabs follow the

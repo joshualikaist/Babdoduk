@@ -315,7 +315,7 @@ def home_summary(page):
 SHELF = ["today", "pick", "map", "log"]
 SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI", "food.html"]
 GROUPS = ["바로가기", "읽어보기", "밥도둑 소식"]
-NEWS_HREFS = ["event.html#notice", "event.html#archive", "history.html"]
+NEWS_HREFS = ["event.html#notice", "event.html#archive"]
 HOME_TOP = """() => {
   const q = s => document.querySelector(s);
   const box = el => { const r = el.getBoundingClientRect(); return {x:r.x, y:r.y, w:r.width, h:r.height, right:r.right, bottom:r.bottom}; };
@@ -341,6 +341,10 @@ HOME_TOP = """() => {
     groups: [...document.querySelectorAll('main > .home-group')].map(g => ({
       title: g.querySelector('h2 [data-i18n]').textContent, purpose: (g.querySelector('.home-group-purpose') || {}).textContent || ''})),
     news: [...document.querySelectorAll('.home-news-row')].map(a => a.getAttribute('href')),
+    newsBlocks: [...document.querySelectorAll('.home-news-block')].map(b => { const s = getComputedStyle(b); return {
+      kind: b.dataset.news, y: b.getBoundingClientRect().y, bg: s.backgroundColor, shadow: s.boxShadow,
+      links: [...b.querySelectorAll('a')].map(a => ({href: a.getAttribute('href'), text: a.textContent.trim()}))}; }),
+    story: document.querySelector('.home-news-story') ? document.querySelector('.home-news-story').getAttribute('href') : null,
     mainText: q('main').innerText
   };
 }"""
@@ -380,6 +384,16 @@ def home_hero_shelf(page):
               (where, "utility, reading and news groups, each with a stated purpose", top["groups"]))
         check(top["news"] == NEWS_HREFS and all((ROOT / h.split("#")[0]).is_file() for h in top["news"]),
               (where, "news leads with notices; past activity is one link", top["news"]))
+        blocks = top["newsBlocks"]
+        check([b["kind"] for b in blocks] == ["current", "record"] and blocks[0]["y"] < blocks[1]["y"],
+              (where, "current information sits above the past record", blocks))
+        check([[link["href"] for link in b["links"]] for b in blocks] == [["event.html#notice"], ["event.html#archive"]]
+              and blocks[1]["links"][0]["text"].startswith("활동 기록 보기"),
+              (where, "the past record has exactly one CTA, to the activity record", blocks))
+        check(blocks[0]["bg"] != "rgba(0, 0, 0, 0)" and "inset" in blocks[0]["shadow"]
+              and blocks[1]["bg"] == "rgba(0, 0, 0, 0)" and blocks[1]["shadow"] == "none",
+              (where, "only current information is carded with the accent; the record stays quiet", blocks))
+        check(top["story"] == "history.html", (where, "the story link stays in the news group"))
         check("지난 이벤트" not in top["mainText"] and "오늘의 한 끼" not in top["mainText"]
               and top["mainText"].count("오늘의 꽁밥") >= 2, (where, "no archive-first or stale hub labels"))
         check(top["collageHidden"] == "true" and top["photos"] and all(
@@ -437,6 +451,8 @@ def home_hero_shelf(page):
         check(english["title"].startswith("What should") and english["banners"][0]["title"] == "Today's free food"
               and [g["title"] for g in english["groups"]] == ["Shortcuts", "Read", "Babdoduk news"]
               and english["root"] <= 0 and english["body"] <= 0, (where, "English fits", english["root"], english["body"]))
+        check(english["newsBlocks"][1]["links"][0]["text"].startswith("See the activity record"),
+              (where, "English record CTA", english["newsBlocks"]))
         page.locator("#langToggle").click()
 
     # Reduced motion (this context) removes the hover lift.
@@ -484,13 +500,40 @@ def event_bands(page):
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-tab-row").evaluate_all("""rows => rows.map(r => ({start:r.dataset.start,
       end:r.dataset.end, band:r.dataset.band, conf:r.dataset.confirmation,
-      chip:r.querySelector('[data-event-state]').textContent, title:r.querySelector('.event-tab-title').textContent}))""")
+      chip:r.querySelector('[data-event-state]').textContent, title:r.querySelector('.event-tab-title').textContent,
+      cta:r.querySelector('[data-event-cta]').textContent, linkBand:r.querySelector('.event-tab-outlink').dataset.band}))""")
     for row in rows:
         check(row["band"] == expected(row["start"], row["end"]), ("band from dates", row))
         check(row["chip"].startswith(labels[row["band"]]), ("band label", row))
         check("(예정)" not in row["title"], ("tentative state is a status, not a title suffix", row))
         if row["band"] == "past" and row["conf"] in ("announced", "tentative"):
             check("기록 없음" in row["chip"] or "미확인" in row["chip"], ("past date is not reported as held", row))
+        check(row["linkBand"] == row["band"] and row["cta"] == ("당시 게시물 보기" if row["band"] == "past" else "페이지로 이동"),
+              ("a past link opens the original post as a record; a live link is an action", row))
+
+    def participation(lang_tag):
+        panels = page.locator(".event-panel").evaluate_all("""ps => ps.map(p => {
+          const fields = p.querySelectorAll('[data-detail="participation"]');
+          return {band: p.dataset.band, fields: fields.length,
+                  historical: fields.length === 1 && fields[0].classList.contains('is-historical'),
+                  tags: [...p.querySelectorAll('.event-detail-historical')].map(t => t.textContent)}; })""")
+        for panel, row in zip(panels, rows):
+            past = row["band"] == "past"
+            check(panel["band"] == row["band"] and panel["fields"] == 1 and panel["historical"] == past
+                  and panel["tags"] == ([lang_tag] if past else []),
+                  ("past participation instructions are marked historical, once", panel))
+        return panels
+
+    participation("당시 안내 · 지금은 참여할 수 없어요")
+    check(page.locator(".event-boundary a").get_attribute("href") == "ggongbab.html",
+          "free-food opportunities are pointed to the hub, not mixed into the record")
+    page.locator("#langToggle").click()
+    english = page.locator("[data-event-cta]").all_text_contents()
+    check(english == ["View the original post" if row["band"] == "past" else "Open page" for row in rows],
+          ("English CTA follows the band", english))
+    participation("Original instructions · no longer open")
+    page.locator("#langToggle").click()
+    participation("당시 안내 · 지금은 참여할 수 없어요")
     live = sum(row["band"] != "past" for row in rows)
     check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty notice only when nothing is current")
     order = page.evaluate("""() => [...document.querySelectorAll('main h1, main h2')].map(h => h.id || h.tagName)""")
@@ -513,6 +556,11 @@ def event_bands(page):
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     chip = page.locator("#eventTab1 [data-event-state]").inner_text()
     check(chip.startswith("예정") and "미확정" in chip, ("upcoming tentative row", chip))
+    check(page.locator(".event-tab-row").nth(1).locator("[data-event-cta]").inner_text() == "페이지로 이동"
+          and page.locator(".event-tab-row").nth(1).locator(".event-tab-outlink").get_attribute("data-band") == "upcoming"
+          and page.locator("#eventPanel1 .event-detail-historical").count() == 0
+          and "is-historical" not in (page.locator('#eventPanel1 [data-detail="participation"]').get_attribute("class") or ""),
+          "an upcoming row keeps an actionable link and unmarked instructions")
     check(page.locator("#eventEmpty").is_hidden(), "empty notice hidden when something is scheduled")
     check(page.locator("#eventTab1").get_attribute("aria-selected") == "true", "first scheduled event opens")
     upcoming = page.locator("#eventUpcoming .event-upcoming-item")
@@ -646,7 +694,8 @@ def structure_and_failures(page):
     check(page.locator(".home-hero h1").is_visible() and page.locator(".home-actions .btn-primary").is_visible()
           and page.locator("#homeShelf > li[data-banner]").count() == 4, "hero and shelf survive missing data")
     check(page.locator("#homeFeature").is_hidden() and page.locator(".home-desks a").count() == 4
-          and page.locator(".home-read .explore-card").is_visible() and page.locator(".home-news-row").count() == 3,
+          and page.locator(".home-read .explore-card").is_visible() and page.locator(".home-news-row").count() == 2
+          and page.locator(".home-news-story").is_visible(),
           "reading and news groups keep their links, with no invented edition")
     page.goto("https://site-ui.invalid/ggongbab.html", wait_until="networkidle")
     page.locator("#foodHubFree .gg-state").first.wait_for()

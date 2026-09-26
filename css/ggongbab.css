@@ -44,7 +44,8 @@
 .km-cta.is-ghost { background:#fff; color:#1d1d1f; border:1px solid #d2d2d7; }
 .gg-card { scroll-margin-top:calc(var(--gg-nav-offset, 0px) + 16px); }
 .gg-filters { position:sticky; top:var(--gg-nav-offset, 0px); z-index:4; margin:0 -16px; padding:10px 16px 12px; background:var(--bg); border-bottom:1px solid var(--color-divider); }
-.gg-filter-row { display:flex; gap:6px; }
+/* Wraps rather than overflowing when longer (English) labels meet a phone width. */
+.gg-filter-row { display:flex; flex-wrap:wrap; gap:6px; }
 .gg-filter-row + .gg-filter-row { margin-top:8px; }
 .gg-chip { appearance:none; height:34px; padding:0 12px; border-radius:999px; border:1px solid #e5e5ea; background:#fff; color:#3a3a3c; font-family:inherit; font-size:13px; font-weight:600; line-height:16px; cursor:pointer; white-space:nowrap; }
 .gg-chip[aria-pressed="true"] { background:#1d1d1f; color:#fff; border-color:#1d1d1f; }
@@ -87,7 +88,9 @@
 .gg-state code { display:block; margin-top:12px; font-size:11px; text-align:left; }
 .gg-skeleton { height:128px; border-radius:18px; margin-bottom:12px; background:linear-gradient(90deg,#f2f2f7,#fafafa,#f2f2f7); background-size:200% 100%; animation:gg-shimmer 1.4s ease infinite; }
 @keyframes gg-shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
-.gg-updated { margin-top:26px; font-size:12px; color:var(--color-ink-muted); text-align:center; }
+/* What the list holds and when it was published: quiet source metadata, not a status badge. */
+.gg-feed-note { margin:6px 0 2px; padding:10px 12px; border-radius:12px; background:var(--color-surface-muted); border:1px solid var(--color-divider); font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
+.gg-updated { margin-top:2px; font-weight:700; font-variant-numeric:tabular-nums; }
 .gg-diagnostic-toggle { position:fixed; right:12px; bottom:12px; z-index:20000; font:700 11px/16px 'Noto Sans KR',sans-serif; padding:6px 9px; border:0; border-radius:999px; background:#111827; color:#fff; cursor:pointer; }
 .gg-diagnostic-toggle.is-fixture { background:#7c3aed; }
 .gg-diagnostic-panel { position:fixed; right:12px; bottom:48px; z-index:20000; width:calc(100vw - 24px); max-width:320px; max-height:65vh; overflow:auto; padding:16px; border:1px solid #e5e5ea; border-radius:14px; background:#fff; box-shadow:0 8px 30px #0002; font-size:12px; }
