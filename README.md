@@ -46,7 +46,8 @@
 
 - 화면은 정적 HTML·CSS·JS 이고 빌드 단계가 없습니다. 공통 내비·푸터·토큰은 `css/site.css` 가 맡습니다.
 - 브라우저는 같은 사이트의 정적 파일만 읽습니다. DB 접속·API 키·백엔드 호출이 없습니다.
-- `main` 에 push(merge)하면 Vercel Git 연동이 production 을 배포합니다. `lab` 은 통합·실험 브랜치입니다(§11).
+- `main` 에 push(merge)하면 Vercel Git 연동이 production 을 배포합니다. `lab` 은 본편 기준선에 lab 전용 실험을 더한
+  스테이징이며, **제품 변경은 반드시 lab 을 거쳐 본편에 갑니다**(§11).
 
 ### 데이터는 스냅숏입니다
 
@@ -700,37 +701,41 @@ DB·AI·파일 쓰기 없음), `review-report`(리뷰 대기 건수만 로그에
 
 ---
 
-## 11. 브랜치와 배포
+## 11. 브랜치와 배포 — lab 먼저 (필수)
 
 저장소는 하나이고 브랜치로 나눕니다. **폴더를 복사해 프로젝트를 나누지 않습니다.**
 
 | 브랜치 | 용도 | Vercel 프로젝트 |
 |--------|------|-----------------|
-| `main` | 방문자용 본편 | `babdoduk` → https://babdoduk.vercel.app |
-| `lab` | 실험 | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
+| `main` | 방문자용 본편 (production) | `babdoduk` → https://babdoduk.vercel.app |
+| `lab` | 스테이징: 본편 기준선 + 의도된 lab 전용 실험 | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
 
-`lab` 은 통합 브랜치입니다. 각 에이전트는 자기 `agent/<tool>/<task>` 브랜치와 worktree에서 작업하고
-(`AGENTS.md`), 본편 후보는 최신 `origin/main` 에서 만든 브랜치에 승인된 변경만 담습니다. `lab` 전체에는 운영 코드·
-migration·Realtime 변경이 섞여 있을 수 있으므로 시각 변경만을 위해 전체 브랜치를 합치지 않습니다.
+**제품·UI·프런트엔드·문구·내비·반응형 변경은 반드시 lab 을 거쳐 본편에 갑니다**(`AGENTS.md` “Lab-first lifecycle”).
 
-**배포는 Vercel Git 연동만 씁니다.** `main` 에 push(merge)하는 것이 곧 `babdoduk` production 배포이고,
-`lab` push 는 `babdoduk-lab` 을 배포합니다. production 반영에 Vercel CLI(`vercel --prod`)를 쓰지 않습니다.
-본편 반영은 소유자 승인 뒤 다음 순서로 합니다(자세한 절차: `.claude/skills/release-babdoduk`).
+1. 최신 `origin/lab` 에서 작업 브랜치와 worktree 를 만든다.
+2. 작업 브랜치를 `lab` 에 통합한다.
+3. 그 lab 커밋의 `Vercel – babdoduk-lab` 배포가 성공할 때까지 기다린다.
+4. https://babdoduk-lab.vercel.app 에서 한·영, 데스크톱·모바일로 확인한다.
+5. 소유자가 lab 에 배포된 결과를 승인한다(로컬 테스트 통과는 승인이 아님).
+6. 최신 `origin/main` 에서 release 브랜치를 만들고 **승인된 커밋만** `git cherry-pick -x` 로 옮긴다. lab 전체를 main 에 merge 하지 않는다.
+7. 게이트를 다시 돌리고 `main` 에 일반 push → production 확인.
+8. **back-sync:** 본편에 들어간 커밋을 곧바로 `lab` 에 다시 합치고 babdoduk-lab 배포를 확인한다. lab 이 본편보다 뒤처진 채로 두지 않는다.
+
+본편이 목적지라는 것만으로 `main` 에서 시작하지 않습니다. “사이트 업데이트”, “production 반영”, “릴리스 준비”, “고쳐서 배포” 는 모두
+일반 릴리스입니다. `main` 에서 바로 시작하는 것은 소유자가 명시적으로 lab 우회를 허락한 긴급 hotfix·`main` 에서만 가능한 인프라 복구·저장소
+긴급 수정, 그리고 생성 데이터 bot 뿐이며, 그때도 같은 작업 안에서 lab 으로 back-sync 합니다.
+
+lab 이 본편을 따라잡았는지 확인(출력이 없어야 함):
 
 ```powershell
 git fetch origin --prune
-# 최신 origin/main 에서 통합 worktree 를 만들고 승인된 브랜치를 --no-ff 로 합친다
-git worktree add --detach ..\Babdoduk-wt\integration origin/main
-git -C ..\Babdoduk-wt\integration merge --no-ff origin/<approved-branch>
-# 그 병합 결과에서 네 게이트를 다시 돌린 뒤, 일반 push 만 한다
-git -C ..\Babdoduk-wt\integration push origin HEAD:main
+git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch 'babdoduk-content-bot'
 ```
 
-그 사이 `main` 에 생성 데이터 bot 커밋만 늘었다면 최신 `main` 으로 다시 합치고 게이트를 다시 돌립니다.
-사람이 만든 소스 변경이 들어왔다면 멈추고 확인합니다.
+**배포는 Vercel Git 연동만 씁니다.** push 가 곧 배포이며, production 반영에 Vercel CLI(`vercel --prod`)를 쓰지 않습니다.
 `git push --force`, `git reset --hard` 후 main 덮어쓰기, main ref 직접 갱신은 하지 않습니다.
 
-자세한 내용: `docs/DEPLOYMENT_AND_BRANCHES.md`, merge 전 점검: `docs/BRANCH_MERGE_CHECKLIST.md`.
+명령과 절차: `docs/DEPLOYMENT_AND_BRANCHES.md`, `.claude/skills/release-babdoduk`. 점검표: `docs/BRANCH_MERGE_CHECKLIST.md`.
 
 ---
 

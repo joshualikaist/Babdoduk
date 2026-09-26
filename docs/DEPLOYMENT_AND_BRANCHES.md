@@ -1,95 +1,88 @@
-# 배포·브랜치: 저장소 하나 — `main`(공개) + `lab`(실험)
+# 배포·브랜치: 저장소 하나 — `main`(공개) + `lab`(스테이징)
 
-이 프로젝트는 **저장소(폴더)는 하나**만 두고, **브랜치 두 개**로 공개용과 실험용을 나눕니다.  
-별도 폴더를 복사해 “프로젝트 두 개”를 만들지 않아도 됩니다.
-
-제품·UI·운영 변경의 범위는 저장소 루트의 `AGENTS.md`와 `ARCHITECTURE.md`를 먼저
-확인합니다. 아래 전체 브랜치 merge 예시는 **lab 전체 차이에 대한 검토와 공개 승인이 끝난
-경우**에만 사용합니다. 생성 JSON만 양 브랜치에 보내는 자동화와 기능 승격은 별도 작업입니다.
-
-**현재 작업 모델:** `main` = production, `lab` = 통합/스테이징입니다. 에이전트는 자기
-`agent/<tool>/<task>` 브랜치와 worktree에서 작업하고, 본편 후보는 최신 `origin/main` 에서 만든
-통합 worktree에 승인된 브랜치를 `--no-ff` 로 합친 뒤, 그 병합 결과에서 게이트를 다시 돌리고 **일반 push**로
-`main` 에 올립니다. 배포는 그 push를 받은 Vercel Git 연동이 합니다(4절). 규칙 전문은 `AGENTS.md`,
-절차는 `.claude/skills/release-babdoduk` 입니다. 아래 2·3절의 `lab` 직접 작업·`git merge lab` 예시는
-이 모델 이전의 방식이며, 전체 lab 승격이 따로 승인된 경우에만 씁니다.
-
-상세 절차·체크리스트는 다음도 함께 봅니다.
-
-- **`BRANCH_MERGE_CHECKLIST.md`** … merge 전후 확인
-- **README.md** … “Git: main vs lab” 요약
+이 프로젝트는 **저장소(폴더)는 하나**만 두고, **브랜치 두 개**로 공개용과 스테이징을 나눕니다.
+별도 폴더를 복사해 “프로젝트 두 개”를 만들지 않습니다. 규칙 전문은 `AGENTS.md`(“Lab-first lifecycle”),
+절차는 `.claude/skills/release-babdoduk`, merge 전후 점검은 **`BRANCH_MERGE_CHECKLIST.md`** 입니다.
 
 ---
 
 ## 1. 브랜치 역할 (고정)
 
-| 브랜치 | 역할 | 방문자(프로덕션) |
-|--------|------|------------------|
-| **`main`** | 완성·공개용. `index.html`, `ggongbab.html`, `food.html` 등 **본편** | Vercel Production이 이 브랜치를 가리키면 **공식 URL**이 여기를 따름 |
-| **`lab`** | 실험용. `lab.html`, `lab-ggongbab.html`, `calendar.ics` 실험 등 **먼저 시험하는 변경** | Production이 `main`이면 **`lab`만 푸시해도 공식 사이트는 안 바뀜**. 보통 **Preview URL**만 갱신 |
+| 브랜치 | 역할 | Vercel |
+|--------|------|--------|
+| **`main`** | production. 방문자가 보는 본편 | `babdoduk` → https://babdoduk.vercel.app |
+| **`lab`** | 스테이징 = **본편 기준선 + 의도된 lab 전용 실험**(Realtime·공개 projection·Portal LIST poller·Windows worker 등) | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
 
-**브랜치 이름:** 실험 브랜치는 이 저장소에서는 **`lab`** 을 씁니다.
-
----
-
-## 2. 매번 이렇게 한다 (기본 워크플로)
-
-### 실험만 할 때
-
-1. **`lab`으로 체카웃** (최초 1회: `main`에서 `lab` 브랜치 생성 후 푸시)
-2. `lab.html`, `lab-ggongbab.html`, `calendar.ics` 등 **실험 관련 파일만** 수정해도 되고, 나중에 본편에 반영할 내용이면 같이 커밋 가능
-3. **`lab`에 커밋·푸시** → Git 연동 Vercel이면 **프리뷰 배포**로 확인 (공식 도메인은 그대로 `main` 기준)
-
-### 방문자 사이트에 반영할 때 (“명령할 때” / 릴리스)
-
-1. 실험 결과가 안정적이고 **승인된 변경 범위가 lab 전체 차이와 일치할 때** `main`에 합친다
-   - Pull Request로 리뷰 후 merge 하거나  
-   - 로컬에서 `git checkout main` → `git pull` → `git merge lab` (또는 `lab`에서 온 PR merge)
-2. `main` 변경은 별도 승인과 보호 영역 검토 후 푸시한다. 실제 Production 배포 결과는 따로 확인한다.
-3. **본편 HTML 반영:** `lab-ggongbab.html`의 내용을 **`ggongbab.html`** 로 옮기는 등, 필요한 파일은 **merge만으로 자동 동기화되지 않을 수 있음** — diff를 보면서 수동 편집·정리
-
-**“lab 프로젝트 파일을 전부 index 쪽으로 옮긴다”**는 말은 Git 기준으로는 **`lab` 브랜치를 `main`에 merge**하는 것과 같습니다. 다만 **어느 파일을 본편에 쓸지**는 매번 정해야 하며, `lab.html`은 `main`에도 두되 홈에서는 링크하지 않을 수 있습니다.
+`lab` 은 본편의 미리보기입니다. 그래서 **lab 은 본편보다 뒤처지면 안 됩니다.** 본편에 있는 소스 커밋이 lab 에 없으면
+babdoduk-lab 은 더 이상 production 을 미리 보여 주지 못합니다(2026-09 에 실제로 일어난 실패: 본편만 갱신되고
+lab 의 `mukbang.html` 이 옛 화면에 머물렀음).
 
 ---
 
-## 3. 로컬에서 브랜치 전환 (PowerShell 예시)
+## 2. 제품 변경의 순서 (lab 먼저 — 필수)
 
-**실험 브랜치 최초 생성 (`main` 기준):**
+제품·UI·프런트엔드·문구·내비·페이지 디자인·반응형 수정과, 제품 동작에 딸린 문서는 **반드시** 이 순서를 따릅니다.
 
-```powershell
-git checkout main
-git pull
-git checkout -b lab
-git push -u origin lab
-```
+1. **작업:** 최신 `origin/lab` 에서 `agent/<tool>/<task>` 브랜치와 전용 worktree 를 만든다.
+2. **lab 통합:** 작업 브랜치를 `lab` 에 합친다(그 자체로 승인이 필요한 단계).
+3. **lab 배포:** 그 `lab` 커밋의 `Vercel – babdoduk-lab` 상태가 성공할 때까지 기다린다.
+4. **lab 확인:** https://babdoduk-lab.vercel.app 에서 한·영, 1440·390·360 등으로 화면과 동작을 확인한다.
+5. **소유자 승인:** lab 에 배포된 결과를 소유자가 승인한다. 로컬 테스트 통과는 승인이 아니다.
+6. **release 후보:** 최신 `origin/main` 에서 release 브랜치를 만들고, 승인된 **정확한 커밋만** `git cherry-pick -x` 로 옮긴다.
+   lab 전체를 main 에 merge 하지 않는다. lab 에는 본편에 갈 준비가 안 된 실험도 있다.
+7. **본편:** 그 후보에서 게이트를 다시 돌리고, `main` 에 일반 push(강제 push 금지) → production 확인.
+8. **back-sync:** 방금 본편에 들어간 커밋을 `lab` 에 다시 합친다(최신 `origin/main` 을 `lab` 에 일반 merge,
+   lab 전용 실험은 유지). babdoduk-lab 배포까지 확인해야 릴리스가 끝난 것이다.
 
-**실험 작업할 때:**
+**본편이 목적지라는 것만으로 `main` 에서 시작하지 않습니다.** “사이트 업데이트”, “production 반영”, “릴리스 준비”,
+“고쳐서 배포” 는 모두 일반 릴리스이며 lab 을 거칩니다. `main` 에서 바로 시작해도 되는 것은 다음뿐이고,
+그때도 같은 작업 안에서 `lab` 으로 back-sync 합니다.
 
-```powershell
-git checkout lab
-git pull
-# … 수정 …
-git status --short
-git add -- <이번 작업에서 검토한 파일 경로>
-git commit -m "실험: lab ICS 연동 등"
-git push origin lab
-```
+- 소유자가 lab 우회를 **명시적으로** 허락한 긴급 production hotfix
+- 생성 데이터 bot 발행(`babdoduk-content-bot`, 7절)
+- 소유자가 **명시적으로** 허락한 production 인프라 복구(예: `main` 에서만 도는 workflow)
+- 소유자가 lab 을 우회하라고 **명시적으로** 말한 저장소 긴급 수정
 
-**본편 반영 (현재 절차, 소유자 승인 뒤):**
+---
+
+## 3. 명령 (PowerShell 예시)
+
+**작업 시작 — 항상 최신 `origin/lab` 에서:**
 
 ```powershell
 git fetch origin --prune
-# 최신 origin/main 에서 임시 통합 worktree 를 만들고 승인된 브랜치를 합친다
-git worktree add --detach ..\Babdoduk-wt\integration origin/main
-git -C ..\Babdoduk-wt\integration merge --no-ff origin/<approved-branch>
-# 그 병합 결과에서 네 게이트를 다시 돌린다. push 직전에 한 번 더 fetch 한다:
-#   main 에 생성 데이터 bot 커밋만 늘었다면 최신 main 으로 다시 합치고 게이트를 다시 돌리고,
-#   사람이 만든 소스 변경이 들어왔다면 멈추고 확인한다.
-git -C ..\Babdoduk-wt\integration push origin HEAD:main   # 일반 push. --force 는 쓰지 않는다
+git worktree add --no-track -b agent/claude/<task> ..\Babdoduk-wt\<task> origin/lab
 ```
 
-`git checkout main` → `git merge lab` → `git push origin main` 처럼 lab 전체를 합치는 방식은
-lab 전체 차이를 검토하고 공개를 따로 승인한 경우에만 씁니다.
+**lab 이 본편을 따라잡았는지(드리프트) 확인 — 출력이 없어야 한다:**
+
+```powershell
+git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch 'babdoduk-content-bot'
+```
+
+**lab 통합(승인된 단계):** 최신 `origin/lab` 에서 만든 임시 worktree 에 작업 브랜치를 일반 merge 하고, 게이트를 돌린 뒤
+`git push origin HEAD:lab`(일반 push). 그 커밋의 babdoduk-lab 배포가 성공할 때까지 기다린다.
+
+**본편 반영(lab 에서 승인된 뒤):**
+
+```powershell
+git fetch origin --prune
+git worktree add --no-track -b release/<name> ..\Babdoduk-wt\release-<name> origin/main
+git -C ..\Babdoduk-wt\release-<name> cherry-pick -x <승인된 커밋...>   # lab 에 있고 승인된 것만
+# 게이트 → release 브랜치 push → 최신 main 위 통합 후보에서 게이트 재실행 → 일반 push → production 확인
+```
+
+**back-sync(본편 반영 직후, 필수):**
+
+```powershell
+git fetch origin --prune
+git worktree add --no-track -b agent/claude/back-sync-<name> ..\Babdoduk-wt\back-sync-<name> origin/lab
+git -C ..\Babdoduk-wt\back-sync-<name> merge --no-ff origin/main   # 충돌은 파일별로, lab 전용 실험 유지
+# 게이트 → git push origin HEAD:lab (일반 push) → babdoduk-lab 배포 확인 → 드리프트 확인이 비어 있을 것
+```
+
+`git merge lab` 을 main 에서 실행하는 “lab 전체 승격”은 기본 절차가 아닙니다. lab 전체 차이를 검토하고 소유자가
+그 승격을 따로 승인한 경우에만 고려합니다. `git push --force`, `git reset --hard`, main ref 직접 갱신은 하지 않습니다.
 
 ---
 

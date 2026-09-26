@@ -1,6 +1,6 @@
 ---
 name: ui-review
-description: Visual, responsive and accessibility review of Babdoduk pages (home hero and banner shelf, food hub, magazine, events, food log) at 1920, 1440, 768, 390 and 360 px, using real screenshots plus state and failure checks.
+description: Visual, responsive and accessibility review of Babdoduk pages (home hero and banner shelf, food hub, magazine, events, food log) at 1920, 1440, 768, 390 and 360 px, locally and on the deployed babdoduk-lab candidate, using real screenshots plus state and failure checks.
 ---
 
 # UI review
@@ -15,6 +15,11 @@ Review rendered pages, not only CSS or DOM numbers. Take the screenshots and loo
   - wait for `document.fonts.ready` first.
 - For pages that read data, repeat with failing data (route `**/data/**` to 503) and with stale or empty payloads.
 - `python scripts/check_site_ui.py --screenshots` saves the offline gate's views to `.local/site-ui-shots/`. Fonts are blocked in that run by design.
+
+## On babdoduk-lab (before any production release)
+- Review the deployed lab commit, not only a local server: https://babdoduk-lab.vercel.app after its `Vercel – babdoduk-lab` status for that exact `lab` SHA succeeded. Record the SHA and the URLs checked; this is the `LAB_URL_TESTED` evidence for `/release-babdoduk`.
+- For shared pages, compare lab with production (https://babdoduk.vercel.app, same path and query). Lab must show at least the production baseline; every difference must be an intentional lab-only experiment or the change under review. An unexplained regression on lab fails the review.
+- Check Korean and English, at 1440, 390 and 360 at least, with no horizontal overflow and no JS errors.
 
 ## Every size
 - No horizontal overflow of `html` or `body`, and the nav and footer stay inside the viewport.
