@@ -34,8 +34,8 @@ from ggongbab.collectors.portal import PortalCollector  # noqa: E402
 from ggongbab.config import DATA_DIR, KST, Settings, load_settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa: E402
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
-from ggongbab.exporter import (ARCHIVE_LOOKBACK_DAYS, build_archive, build_payload,  # noqa: E402
-                               previously_listed_ids, write_archive, write_payload)
+from ggongbab.exporter import (ARCHIVE_DIR, ARCHIVE_LOOKBACK_DAYS, build_archive,  # noqa: E402
+                               build_payload, previously_listed_ids, write_archive, write_payload)
 from ggongbab.parsers import ai_errors  # noqa: E402
 from ggongbab.pipeline import Pipeline  # noqa: E402
 from ggongbab.pricing import usage_lines  # noqa: E402
@@ -97,12 +97,19 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
     # One clock for both files: a row is live or archived, never both and never neither.
     now = datetime.now(KST)
     payload = build_payload(repo.publishable_events(), settings, now, food_only=True)
-    # Evidence of past publication is read before latest.json is replaced.
-    archive = build_archive(repo.recent_published_events(ARCHIVE_LOOKBACK_DAYS), settings,
-                            previously_listed_ids(DATA_DIR), now)
+    # Evidence of past publication is read before latest.json is replaced. The record
+    # must never cost the live feed a refresh, so a failed read only skips the archive
+    # (the type name alone is printed: Actions logs are public).
+    try:
+        archive = build_archive(repo.recent_published_events(ARCHIVE_LOOKBACK_DAYS), settings,
+                                previously_listed_ids(DATA_DIR), now)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[warn] archive not built ({type(exc).__name__}); keeping previous archive/index.json")
+        archive = None
     if dry_run:
         print(json.dumps(payload, ensure_ascii=False, indent=2)[:4000])
-        print(f"archive: {archive['count']} ended listing(s) in the last {archive['windowDays']} days")
+        if archive is not None:
+            print(f"archive: {archive['count']} ended listing(s) in the last {archive['windowDays']} days")
         return 0
     tmp_dir = DATA_DIR / ".staging"
     tmp_dir.mkdir(parents=True, exist_ok=True)
@@ -114,8 +121,11 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
             print("  -", err)
         staged.unlink(missing_ok=True)
         return 2
-    staged_archive = write_archive(archive, tmp_dir)
-    archive_errors = validate_archive_export(staged_archive, payload)
+    archive_errors: list[str] = []
+    staged_archive = None
+    if archive is not None:
+        staged_archive = write_archive(archive, tmp_dir)
+        archive_errors = validate_archive_export(staged_archive, payload)
     final = write_payload(payload, DATA_DIR)
     # The live feed matters more than the record: a bad archive keeps the previous
     # one (or none) and is reported, but does not hold back latest.json.
@@ -123,17 +133,19 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
         print("[warn] archive validation failed; keeping previous archive/index.json")
         for err in archive_errors:
             print("  -", err)
-    else:
+    elif archive is not None:
         write_archive(archive, DATA_DIR)
     staged.unlink(missing_ok=True)
-    staged_archive.unlink(missing_ok=True)
-    for folder in (staged_archive.parent, tmp_dir):
+    if staged_archive is not None:
+        staged_archive.unlink(missing_ok=True)
+    for folder in (tmp_dir / ARCHIVE_DIR, tmp_dir):
         try:
             folder.rmdir()
         except OSError:
             pass
+    kept = archive is None or archive_errors
     print(f"wrote {final.relative_to(ROOT)} events={payload['count']} "
-          f"archive={'kept' if archive_errors else archive['count']}")
+          f"archive={'kept' if kept else archive['count']}")
     return 0
 
 

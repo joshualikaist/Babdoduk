@@ -263,6 +263,21 @@ def test_an_invalid_archive_keeps_the_previous_one_without_holding_back_the_live
     assert "keeping previous archive" in capsys.readouterr().out
 
 
+def test_a_failing_archive_query_never_costs_the_live_feed_a_refresh(settings, data_dir, capsys):
+    class Flaky(StubRepo):
+        def recent_published_events(self, days):
+            raise ConnectionError("https://private.example/rest/v1/events?apikey=SECRET")
+
+    write_archive({"generatedAt": "previous", "events": []}, data_dir)
+    assert refresh_ggongbab.export(settings, Flaky([_fresh_row("upcoming", ended_hours_ago=-48)]), dry_run=False) == 0
+    assert ids(_read(data_dir / "latest.json")) == ["upcoming"]
+    assert _read(data_dir / "archive" / "index.json")["generatedAt"] == "previous"
+    out = capsys.readouterr().out
+    assert "archive not built (ConnectionError)" in out and "archive=kept" in out
+    assert "SECRET" not in out and "private.example" not in out  # Actions logs are public
+    assert not (data_dir / ".staging").exists()
+
+
 def test_dry_run_writes_neither_file(settings, data_dir, capsys):
     assert refresh_ggongbab.export(settings, StubRepo([_fresh_row("x")]), dry_run=True) == 0
     assert not (data_dir / "latest.json").exists() and not (data_dir / "archive").exists()
