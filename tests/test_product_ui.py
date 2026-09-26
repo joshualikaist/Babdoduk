@@ -73,7 +73,8 @@ def test_home_snapshot_copy_names_last_publication_without_freshness_claims():
 
 @pytest.mark.parametrize("name", ["ggongbab.html", "lab-ggongbab.html"])
 def test_hub_lifecycle_copy_is_bilingual_and_claims_no_live_data(name):
-    """The hub lists current and upcoming public rows only and says so; ended rows are not archived here."""
+    """The live list holds current and upcoming public rows only and says so; ended rows leave it
+    for the separate past listings below."""
     html = (ROOT / name).read_text(encoding="utf-8")
     ko, en = re.findall(r"'gg\.lifecycle': '([^']*)'", html)
     assert "현재·예정" in ko and "끝난 일정" in ko and "upcoming" in en and "once they end" in en
@@ -81,6 +82,38 @@ def test_hub_lifecycle_copy_is_bilingual_and_claims_no_live_data(name):
     for text in (ko, en):
         assert not any(word in text.lower() for word in ("실시간", "최신", "latest", "live", "real-time", "realtime"))
     assert "feedNoteHtml" in (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")
+
+
+PAST_KEYS = ("gg.archive.title", "gg.archive.lead", "gg.archive.ended", "gg.archive.record", "gg.archive.source",
+             "gg.archive.empty", "gg.archive.error", "gg.archive.loading", "gg.archive.more", "gg.archive.less", "gg.newTab")
+PAST_KO = {"gg.archive.title": "지난 꽁밥 기록", "gg.archive.ended": "종료", "gg.archive.record": "당시 공개된 꽁밥 안내 기록",
+           "gg.archive.source": "당시 공지 보기", "gg.archive.empty": "지난 30일 동안 공개된 지난 꽁밥 기록이 없어요."}
+PAST_EN = {"gg.archive.title": "Past free-food listings", "gg.archive.ended": "Ended",
+           "gg.archive.record": "Previously published free-food listing", "gg.archive.source": "View original notice"}
+
+
+@pytest.mark.parametrize("name", ["ggongbab.html", "lab-ggongbab.html"])
+def test_past_listing_copy_is_bilingual_and_never_claims_an_outcome(name):
+    """An archived row was a public listing that has ended; it does not say the event took place."""
+    html = (ROOT / name).read_text(encoding="utf-8")
+    strings = {key: re.findall(r"'%s': '([^']*)'" % re.escape(key), html) for key in PAST_KEYS}
+    assert all(len(values) == 2 and all(values) for values in strings.values()), strings
+    assert {key: strings[key][0] for key in PAST_KO} == PAST_KO
+    assert {key: strings[key][1] for key in PAST_EN} == PAST_EN
+    assert "참여할 수 없어요" in strings["gg.archive.lead"][0] and "can no longer be joined" in strings["gg.archive.lead"][1]
+    text = " ".join(value for values in strings.values() for value in values).lower()
+    for claim in ("진행됨", "진행된", "완료", "성공", "held", "completed", "successful", "took place", "happened"):
+        assert claim not in text, claim
+
+
+def test_past_listing_renderer_has_no_sign_up_path_and_loads_on_its_own():
+    js = (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")
+    renderer = js[js.index("function pastHtml"):js.index("function archiveHtml")]
+    for sign_up in ("registration", "gg-btn", "gg.register", "deadline"):
+        assert sign_up not in renderer, sign_up
+    loader = js[js.index("function loadArchive"):js.index("function setTab")]
+    assert "'data/ggongbab/archive/index.json'" in js and ".catch(" in loader and "state.free" not in loader
+    assert js.index("loadFree();") < js.index("loadArchive();")
 
 
 def test_shared_selector_keeps_publication_review_expiry_and_sort_semantics():

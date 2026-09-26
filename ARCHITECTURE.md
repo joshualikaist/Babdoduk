@@ -17,9 +17,12 @@ Python collectors → private raw item and attachments → PII sanitizer → rul
                                                 │
                   exporter.build_payload (explicit food, published, not under review,
                   confidence, expiry, horizon) → validate → data/ggongbab/latest.json
+                  exporter.build_archive (same eligibility, expired at the same clock,
+                  previously listed, last 30 days, no sign-up fields) → validate
+                                                   → data/ggongbab/archive/index.json
                                                 │
-                              static fetch only ├─> ggongbab.html (hub)
-                                                └─> index.html (home summary)
+                              static fetch only ├─> ggongbab.html (hub: live list, then past listings)
+                                                └─> index.html (home summary, live only)
 
 LOCAL FRONTEND STATE
 data/foods/catalog.json + 7 packs → food engine → picker (mukbang.html#what) → optional slot animation
@@ -64,6 +67,7 @@ Eight public HTML files are the route entry points: `index.html`, `ggongbab.html
 | `data/magazine/index.json`, dated and latest editions | `scripts/refresh_magazine.py` using RSS/YouTube and authored fallback | Magazine and home read edition data; fallback is not evidence of a fetched story |
 | `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` parsing the official KAIST page without AI | Hub, magazine and home; zero usable restaurants keeps prior files, so clients must check the date |
 | `data/ggongbab/latest.json` | Approved export in `scripts/refresh_ggongbab.py` | Hub and home; validation precedes the final write and a failure keeps the previous file |
+| `data/ggongbab/archive/index.json` | Same export, same clock (past listings, 30 days) | Hub only, fetched separately; a failed archive keeps the previous file without blocking `latest.json`, and a failed fetch leaves the live feed untouched |
 | `data/foods/catalog.json`, 7 packs | `scripts/build_foods.py` and `scripts/food_expand.py` | Browser-only dish suggestion catalog, not restaurant inventory |
 | `data/food-log.json` | Human-authored | `food.html` combines it with browser-local entries by date and labels each day's source |
 | `data/ggongbab/manual.json` | Human-authored collector input | Private pipeline input, excluded from generated-data mirroring |
@@ -75,6 +79,8 @@ Eight public HTML files are the route entry points: `index.html`, `ggongbab.html
 `scripts/ggongbab/pipeline.py` collects from Dooray, public KAIST notices, manual input and mail-archive backfill; the Portal collector is disabled (`enabled()` returns false). Private raw items go through PII sanitization, rule processing, optional AI structured extraction, deterministic validation, review flags and deduplication before canonical storage in Supabase. The AI result is a candidate; validators and publication policy decide what can be shown.
 
 `scripts/ggongbab/exporter.py` `build_payload(..., food_only=True)` publishes only rows that are `published`, not under review, at or above the confidence threshold, not expired and within the export horizon, with food explicitly provided. `public_event` copies only public fields and keeps source URLs only for public web sources (KAIST notices, manual entries); Dooray/task links, raw content and sender details are never exported. `scripts/refresh_ggongbab.py` validates the staged file before replacing `data/ggongbab/latest.json`. The browser never queries the canonical database.
+
+Past listings reuse that policy rather than restating it: `build_archive` takes rows that `publication_eligible` accepts and `is_expired` drops at the same `now`, ended within 30 days, and only if their id was in the previously published `latest.json` or archive, so a backfilled event that ended before any export is never presented as a past listing. Records are `public_event` without `registration` and `confidence`. An archived row means "was a public listing and has ended", not that the event took place. No Supabase schema change; the read is a filtered `events` SELECT (`recent_published_events`). Contract and validation: `docs/GGONGBAB_PAGE.md` §11.
 
 ## Local agents and external services
 

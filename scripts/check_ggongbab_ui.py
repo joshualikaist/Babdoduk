@@ -87,6 +87,136 @@ def radar_one_today(browser, base, report):
         context.close()
 
 
+def past_listings(browser, base, report):
+    """Past listings on the public page: a separate, quiet record with no sign-up actions,
+    loaded on its own so that its failure never touches the live feed. Synthetic data only."""
+    kst = timezone(timedelta(hours=9))
+    now = datetime.now(kst).replace(microsecond=0)
+
+    def event(event_id, start, end, **extra):
+        return {"id": event_id, "title": event_id, "startAt": start.isoformat(), "endAt": end.isoformat() if end else None,
+                "location": {"building": "N1", "room": "101호", "name": ""},
+                "food": {"provided": "true", "type": "meal", "description": "점심"},
+                "sources": [{"type": "dooray", "name": "Dooray"}], **extra}
+
+    register = {"required": "true", "url": "https://example.org/register", "deadline": (now - timedelta(days=3)).isoformat()}
+    live = {"generatedAt": now.isoformat(), "events": [
+        event("live-upcoming", now + timedelta(days=2), now + timedelta(days=2, hours=1), registration=register),
+        # Ended an hour ago: inside the export grace, so still in latest.json, but no longer live on the page.
+        event("live-just-ended", now - timedelta(hours=2), now - timedelta(hours=1), registration=register)]}
+    notice = [{"type": "kaist_public", "name": "KAIST 공지", "url": "https://example.org/notice"}]
+    past = {"generatedAt": now.isoformat(), "windowDays": 30, "events": [
+        event("past-notice", now - timedelta(days=2, hours=1), now - timedelta(days=2), sources=notice, registration=register),
+        event("past-mail", now - timedelta(days=5, hours=1), now - timedelta(days=5)),
+        event("past-script", now - timedelta(days=6, hours=1), now - timedelta(days=6),
+              sources=[{"type": "manual", "name": "Manual", "url": "javascript:alert(1)"}]),
+        event("past-review", now - timedelta(days=3), None, needs_review=True),
+        event("past-unknown", now - timedelta(days=3), None, food={"provided": "unknown"}),
+        event("past-old", now - timedelta(days=45), now - timedelta(days=45)),
+        event("past-not-ended", now + timedelta(days=1), None)]}
+    visible_past = ["live-just-ended", "past-notice", "past-mail", "past-script"]
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    try:
+        page = context.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(type(error).__name__))
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=live))
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=past))
+
+        def ids(selector, key):
+            return page.locator(selector).evaluate_all(f"els => els.map(el => el.dataset.{key})")
+
+        for width, height in ((390, 844), (1440, 900)):
+            page.set_viewport_size({"width": width, "height": height})
+            page.goto(base + "/ggongbab.html")
+            page.locator(".gg-past").first.wait_for()
+            assert ids(".gg-card", "id") == ["live-upcoming"]
+            assert ids(".gg-past", "pastId") == visible_past
+            archive = page.locator(".gg-archive")
+            assert archive.locator(".gg-btn, .gg-deadline, .gg-reg-badge, [href*='register']").count() == 0
+            assert "신청" not in archive.inner_text()
+            assert archive.locator(".gg-past-badge").all_inner_texts() == ["종료"] * len(visible_past)
+            links = archive.locator("a").evaluate_all(
+                "els => els.map(a => [a.closest('.gg-past').dataset.pastId, a.getAttribute('href'), a.target, a.rel, a.textContent])")
+            assert links == [["past-notice", "https://example.org/notice", "_blank", "noopener", "당시 공지 보기 ↗(새 창)"]], links
+            assert all("당시 공개된 꽁밥 안내 기록" in text for text in archive.locator(".gg-past-note").all_inner_texts())
+            # Secondary: below the live list, flat, and out of reach of the sticky live filters.
+            archive.scroll_into_view_if_needed()
+            box, filters = archive.bounding_box(), page.locator(".gg-filters").bounding_box()
+            assert box["y"] > page.locator(".gg-card").last.bounding_box()["y"]
+            assert filters["y"] + filters["height"] <= box["y"] + 1, ("sticky filters stop at the archive", filters, box)
+            assert page.evaluate("getComputedStyle(document.querySelector('.gg-past')).boxShadow") == "none"
+            assert page.evaluate("document.documentElement.scrollWidth") <= width
+            report["checks"] += 12
+        page.locator("#langToggle").click()
+        assert page.locator("#ggArchiveTitle").inner_text() == "Past free-food listings"
+        assert page.locator(".gg-past-link").inner_text().startswith("View original notice")
+        assert page.locator(".gg-past-badge").first.inner_text() == "Ended"
+        assert "Previously published free-food listing" in page.locator(".gg-past-note").first.inner_text()
+        page.locator("#langToggle").click()
+        report["checks"] += 4
+
+        # More than five: the rest stay behind a labelled toggle that keeps keyboard focus.
+        many = dict(past, events=[event(f"past-{i}", now - timedelta(days=i + 1, hours=1), now - timedelta(days=i + 1))
+                                  for i in range(7)])
+        page.unroute("**/data/ggongbab/archive/index.json")
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=many))
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-past").first.wait_for()
+        more = page.locator("[data-gg-archive-more]")
+        assert page.locator(".gg-past").count() == 5 and more.get_attribute("aria-expanded") == "false"
+        more.focus()
+        page.keyboard.press("Enter")
+        assert page.locator(".gg-past").count() == 8 and more.get_attribute("aria-expanded") == "true"
+        assert page.evaluate("document.activeElement.hasAttribute('data-gg-archive-more')")
+        report["checks"] += 3
+
+        # Empty, missing, failing and malformed archives: the live feed is untouched every time,
+        # and the live row that just ended still shows as past, whatever the archive file did.
+        empty = "지난 30일 동안 공개된 지난 꽁밥 기록이 없어요."
+        failed = "지난 꽁밥 기록을 불러오지 못했어요."
+        for label, handler, expected in (
+                ("empty", lambda route: route.fulfill(json={"events": []}), empty),
+                ("missing", lambda route: route.fulfill(status=404, body=""), empty),
+                ("failing", lambda route: route.fulfill(status=503, body=""), failed),
+                ("malformed", lambda route: route.fulfill(content_type="application/json", body="{not json"), failed)):
+            page.unroute("**/data/ggongbab/archive/index.json")
+            page.route("**/data/ggongbab/archive/index.json", handler)
+            page.goto(base + "/ggongbab.html")
+            page.locator(".gg-past").first.wait_for()
+            assert ids(".gg-card", "id") == ["live-upcoming"], label
+            assert ids(".gg-past", "pastId") == ["live-just-ended"], label
+            state = page.locator(".gg-archive-state")
+            assert (state.count() == 0) == (label in ("empty", "missing")), (label, "one past row is not an empty archive")
+            if label in ("failing", "malformed"):
+                assert state.inner_text().startswith(expected), (label, state.inner_text())
+            report["checks"] += 3
+        # With nothing live that has ended, an empty archive says so in words.
+        page.unroute("**/data/ggongbab/latest.json")
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=dict(live, events=live["events"][:1])))
+        page.unroute("**/data/ggongbab/archive/index.json")
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json={"events": []}))
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-archive-state").wait_for()
+        assert page.locator(".gg-archive-state").inner_text() == empty and page.locator(".gg-card").count() == 1
+        report["checks"] += 1
+
+        # And the reverse: a failed live feed leaves the archive readable.
+        page.unroute("**/data/ggongbab/latest.json")
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(status=503, body=""))
+        page.unroute("**/data/ggongbab/archive/index.json")
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=past))
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-past").first.wait_for()
+        assert page.locator("[data-gg-retry]").count() == 1
+        assert ids(".gg-past", "pastId") == ["past-notice", "past-mail", "past-script"]
+        assert not errors, errors
+        report["checks"] += 3
+    finally:
+        context.close()
+
+
 class LocalHandler(SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass
@@ -394,6 +524,7 @@ def run_checks(preview=False):
         # A same-day upcoming event makes the radar report one meal. The page
         # clock is fixed for this scenario only (see radar_one_today).
         radar_one_today(browser, base, report)
+        past_listings(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": events}))
         # Production page. It carries no lab affordances, so fixture and preview
@@ -424,7 +555,8 @@ def run_checks(preview=False):
                 assert page.title() == "오늘의 꽁밥 · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
                 assert page.locator(".gg-lifecycle").is_visible()
-                report["checks"] += 12
+                assert page.locator(".gg-archive").count() == 1
+                report["checks"] += 13
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
         # Keyboard users keep their place through re-renders; tabs follow the

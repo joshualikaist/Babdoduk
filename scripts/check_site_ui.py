@@ -701,6 +701,9 @@ def structure_and_failures(page):
     page.locator("#foodHubFree .gg-state").first.wait_for()
     counts = page.locator(".gg-counts").inner_text()
     check("확인 중" not in counts and "실패" in counts, ("hub counts report failure, not loading", counts))
+    page.locator('.gg-archive-state[data-archive-state="error"]').wait_for()
+    check(page.locator("[data-gg-retry]").count() == 1 and page.locator(".gg-past").count() == 0,
+          "past listings fail on their own: the live retry stays, and no record is invented")
     page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
     check(page.locator("#mgEditionStatus").is_visible(), "magazine says the edition did not load")
     text = page.locator("main").inner_text()

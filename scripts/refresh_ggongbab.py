@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Collect KAIST free-food events into Supabase and export data/ggongbab/latest.json.
+"""Collect KAIST free-food events into Supabase and export data/ggongbab/latest.json
+(live listings) and data/ggongbab/archive/index.json (listings that ended in the last 30 days).
 
     python scripts/refresh_ggongbab.py                 # full run (needs secrets)
     python scripts/refresh_ggongbab.py --export-only   # DB -> latest.json without collecting
@@ -33,7 +34,8 @@ from ggongbab.collectors.portal import PortalCollector  # noqa: E402
 from ggongbab.config import DATA_DIR, KST, Settings, load_settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa: E402
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
-from ggongbab.exporter import build_payload, write_payload  # noqa: E402
+from ggongbab.exporter import (ARCHIVE_LOOKBACK_DAYS, build_archive, build_payload,  # noqa: E402
+                               previously_listed_ids, write_archive, write_payload)
 from ggongbab.parsers import ai_errors  # noqa: E402
 from ggongbab.pipeline import Pipeline  # noqa: E402
 from ggongbab.pricing import usage_lines  # noqa: E402
@@ -84,29 +86,54 @@ def validate_export(path: Path) -> list[str]:
     return validate_ggongbab(path)
 
 
+def validate_archive_export(path: Path, live_payload: dict) -> list[str]:
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from validate_content import validate_ggongbab_archive  # type: ignore
+
+    return validate_ggongbab_archive(path, {ev["id"] for ev in live_payload.get("events") or []})
+
+
 def export(settings: Settings, repo, dry_run: bool) -> int:
-    rows = repo.publishable_events()
-    payload = build_payload(rows, settings, food_only=True)
+    # One clock for both files: a row is live or archived, never both and never neither.
+    now = datetime.now(KST)
+    payload = build_payload(repo.publishable_events(), settings, now, food_only=True)
+    # Evidence of past publication is read before latest.json is replaced.
+    archive = build_archive(repo.recent_published_events(ARCHIVE_LOOKBACK_DAYS), settings,
+                            previously_listed_ids(DATA_DIR), now)
     if dry_run:
         print(json.dumps(payload, ensure_ascii=False, indent=2)[:4000])
+        print(f"archive: {archive['count']} ended listing(s) in the last {archive['windowDays']} days")
         return 0
     tmp_dir = DATA_DIR / ".staging"
     tmp_dir.mkdir(parents=True, exist_ok=True)
     staged = write_payload(payload, tmp_dir)
     errors = validate_export(staged)
     if errors:
-        print("[error] export validation failed; keeping previous latest.json")
+        print("[error] export validation failed; keeping previous latest.json and archive")
         for err in errors:
             print("  -", err)
         staged.unlink(missing_ok=True)
         return 2
+    staged_archive = write_archive(archive, tmp_dir)
+    archive_errors = validate_archive_export(staged_archive, payload)
     final = write_payload(payload, DATA_DIR)
+    # The live feed matters more than the record: a bad archive keeps the previous
+    # one (or none) and is reported, but does not hold back latest.json.
+    if archive_errors:
+        print("[warn] archive validation failed; keeping previous archive/index.json")
+        for err in archive_errors:
+            print("  -", err)
+    else:
+        write_archive(archive, DATA_DIR)
     staged.unlink(missing_ok=True)
-    try:
-        tmp_dir.rmdir()
-    except OSError:
-        pass
-    print(f"wrote {final.relative_to(ROOT)} events={payload['count']}")
+    staged_archive.unlink(missing_ok=True)
+    for folder in (staged_archive.parent, tmp_dir):
+        try:
+            folder.rmdir()
+        except OSError:
+            pass
+    print(f"wrote {final.relative_to(ROOT)} events={payload['count']} "
+          f"archive={'kept' if archive_errors else archive['count']}")
     return 0
 
 

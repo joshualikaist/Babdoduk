@@ -21,7 +21,11 @@ ALLOWED = {
 SKIP_NAMES = {"manual.json", ".staging"}
 # Top-level keys rewritten on every run without changing what the page shows. A file
 # whose only difference is in these keys is not worth a commit (and two deployments).
-VOLATILE_KEYS = {"data/ggongbab/latest.json": {"generatedAt"}}
+VOLATILE_KEYS = {
+    "data/ggongbab/latest.json": {"generatedAt"},
+    # Past listings are stamped on every export too; an added or aged-out listing still commits.
+    "data/ggongbab/archive/index.json": {"generatedAt"},
+}
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
