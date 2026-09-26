@@ -7,11 +7,12 @@
 확인합니다. 아래 전체 브랜치 merge 예시는 **lab 전체 차이에 대한 검토와 공개 승인이 끝난
 경우**에만 사용합니다. 생성 JSON만 양 브랜치에 보내는 자동화와 기능 승격은 별도 작업입니다.
 
-**현재 작업 모델 (2026-09-24):** `main` = production, `lab` = 통합/스테이징입니다. 에이전트는
-`origin/lab` 에서 만든 `agent/<tool>/<task>` 브랜치와 자기 worktree에서 작업하고, production 후보는
-`origin/main` 에서 만든 `release/<name>` 브랜치에 승인된 변경만 옮겨(예: `git cherry-pick -x`) PR로
-검토합니다. 규칙 전문은 `AGENTS.md` 의 Git / Multi-Agent Session Protocol입니다. 아래 2·3절의
-`lab` 직접 작업·`git merge lab` 예시는 이 모델 이전의 방식이며, 전체 lab 승격이 따로 승인된 경우에만 씁니다.
+**현재 작업 모델:** `main` = production, `lab` = 통합/스테이징입니다. 에이전트는 자기
+`agent/<tool>/<task>` 브랜치와 worktree에서 작업하고, 본편 후보는 최신 `origin/main` 에서 만든
+통합 worktree에 승인된 브랜치를 `--no-ff` 로 합친 뒤, 그 병합 결과에서 게이트를 다시 돌리고 **일반 push**로
+`main` 에 올립니다. 배포는 그 push를 받은 Vercel Git 연동이 합니다(4절). 규칙 전문은 `AGENTS.md`,
+절차는 `.claude/skills/release-babdoduk` 입니다. 아래 2·3절의 `lab` 직접 작업·`git merge lab` 예시는
+이 모델 이전의 방식이며, 전체 lab 승격이 따로 승인된 경우에만 씁니다.
 
 상세 절차·체크리스트는 다음도 함께 봅니다.
 
@@ -74,15 +75,21 @@ git commit -m "실험: lab ICS 연동 등"
 git push origin lab
 ```
 
-**실험을 공개에 반영:**
+**본편 반영 (현재 절차, 소유자 승인 뒤):**
 
 ```powershell
-git checkout main
-git pull
-git merge lab
-# 충돌 나면 해결 후 커밋
-git push origin main
+git fetch origin --prune
+# 최신 origin/main 에서 임시 통합 worktree 를 만들고 승인된 브랜치를 합친다
+git worktree add --detach ..\Babdoduk-wt\integration origin/main
+git -C ..\Babdoduk-wt\integration merge --no-ff origin/<approved-branch>
+# 그 병합 결과에서 네 게이트를 다시 돌린다. push 직전에 한 번 더 fetch 한다:
+#   main 에 생성 데이터 bot 커밋만 늘었다면 최신 main 으로 다시 합치고 게이트를 다시 돌리고,
+#   사람이 만든 소스 변경이 들어왔다면 멈추고 확인한다.
+git -C ..\Babdoduk-wt\integration push origin HEAD:main   # 일반 push. --force 는 쓰지 않는다
 ```
+
+`git checkout main` → `git merge lab` → `git push origin main` 처럼 lab 전체를 합치는 방식은
+lab 전체 차이를 검토하고 공개를 따로 승인한 경우에만 씁니다.
 
 ---
 
@@ -95,34 +102,23 @@ git push origin main
 | **`babdoduk`** | https://babdoduk.vercel.app | **공개(배포)** — `main` 내용 |
 | **`babdoduk-lab`** | https://babdoduk-lab.vercel.app | **실험** — `lab`에서 먼저 확인 |
 
-### CLI로 올릴 때 (매번)
-
-실험 확인:
-
-```powershell
-git checkout lab
-vercel link --project babdoduk-lab --yes
-vercel --prod
-```
-
-공개 반영 (`main`에 merge한 뒤):
-
-```powershell
-git checkout main
-vercel link --project babdoduk --yes
-vercel --prod
-```
-
-- **`lab`에서 `babdoduk`에 `--prod` 하면 안 됩니다** — 실험이 공개 URL로 갑니다.
-- 로컬 `.vercel` 링크가 어느 프로젝트인지 헷갈리면 `Get-Content .vercel\project.json` 으로 `projectName`을 확인합니다.
-
-### Git 연동을 쓰는 경우 (선택)
+### 배포는 Git 연동으로만 합니다
 
 - **`babdoduk`**: Production Branch = **`main`**
-- **`babdoduk-lab`**: Production Branch = **`lab`** (또는 `lab` 푸시 시 이 프로젝트만 배포)
-- 2026-09-23 GitHub 배포 기록 기준으로 Git 연동이 켜져 있습니다. `main` push는 `babdoduk` Production 배포,
-  `lab` push는 `babdoduk-lab` Production 배포를 만들었고, 두 프로젝트가 서로의 브랜치를 Preview로 빌드했습니다.
-  따라서 `main` 에 merge하는 것 자체가 production 배포입니다. `vercel --prod` 를 작업 폴더에서 실행하지 않습니다.
+- **`babdoduk-lab`**: Production Branch = **`lab`**
+- GitHub 배포 기록 기준(2026-09-23 확인, 2026-09 릴리스에서도 같은 동작)으로 `main` push는 `babdoduk` Production
+  배포를, `lab` push는 `babdoduk-lab` Production 배포를 만들고, 두 프로젝트가 서로의 브랜치를 Preview로 빌드합니다.
+- 그래서 **검증을 마친 정확한 병합 결과를 `main` 에 일반 push 하는 것이 곧 production 배포**입니다(2절 절차).
+  배포 결과는 그 커밋의 `Vercel – babdoduk` 상태로 확인합니다.
+
+```powershell
+gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.context, .state, .description] | @tsv'
+```
+
+**Vercel CLI로 배포하지 않습니다.** `vercel --prod`(또는 `vercel deploy --prod`)는 검증되지 않은 작업 폴더를
+그대로 공개 URL에 올릴 수 있고, Git 기록에 없는 배포를 만듭니다. 이전 판의 “CLI로 올릴 때” 절차는 폐기했습니다.
+`.claude/settings.json` 과 `.claude/hooks/git_guard.py` 도 이 명령을 막습니다. Vercel 프로젝트 설정 자체는
+이 문서가 바꾸지 않으며, 설정 변경은 소유자가 Vercel 대시보드에서 합니다.
 
 ---
 
