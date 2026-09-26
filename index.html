@@ -229,12 +229,12 @@
       </div>
     </section>
 
-    <!-- News, not an archive: notices and upcoming activities first; past activities are one link. -->
+    <!-- News, not an archive: current information leads; the past is a quiet record with one link. -->
     <section class="home-group home-news" aria-labelledby="homeNewsTitle">
       <div class="home-group-head">
         <div class="home-group-copy">
           <h2 id="homeNewsTitle"><span class="home-group-num" aria-hidden="true">03</span> <span data-i18n="home.news.title">밥도둑 소식</span></h2>
-          <p class="home-group-purpose" data-i18n="home.news.purpose">공지와 활동 안내, 지난 활동 기록을 모았어요.</p>
+          <p class="home-group-purpose" data-i18n="home.news.purpose">지금 알아 둘 공지와 예정된 활동을 먼저, 지난 활동은 기록으로 따로 모았어요.</p>
         </div>
       </div>
       <div class="home-news-grid">
@@ -242,12 +242,27 @@
           <h3 class="home-news-name" data-i18n-html="profile.titleHtml">밥도둑 <span class="title-en">Babdoduk</span></h3>
           <p class="home-news-sub" data-i18n="profile.subtitle">카이스트 기계과 먹방1티어 학생의 먹방일기</p>
           <p class="home-news-body" data-i18n="home.about.body">KAIST에서 먹고 기록한 한 끼를 사진과 지도로 남겨 두었어요. 밥도둑이 걸어온 길과 지난 활동도 여기서 볼 수 있어요.</p>
+          <a class="home-news-story" href="history.html"><span data-i18n="home.news.story.title">밥도둑이 걸어온 길</span> <span aria-hidden="true">→</span></a>
         </div>
-        <ul class="home-news-list" role="list">
-          <li><a class="home-news-row" href="event.html#notice"><span class="home-news-tag" data-i18n="home.news.notice.tag">공지 · 예정</span><span class="home-news-text" data-i18n="home.news.notice.title">밥도둑 공지와 예정된 활동 보기</span><span class="home-news-arrow" aria-hidden="true">→</span></a></li>
-          <li><a class="home-news-row" href="event.html#archive"><span class="home-news-tag" data-i18n="home.news.archive.tag">활동 기록</span><span class="home-news-text" data-i18n="home.news.archive.title">지난 활동 기록 보기</span><span class="home-news-arrow" aria-hidden="true">→</span></a></li>
-          <li><a class="home-news-row" href="history.html"><span class="home-news-tag" data-i18n="home.news.story.tag">이야기</span><span class="home-news-text" data-i18n="home.news.story.title">밥도둑이 걸어온 길</span><span class="home-news-arrow" aria-hidden="true">→</span></a></li>
-        </ul>
+        <div class="home-news-feed">
+          <!-- Current: notices and upcoming activities. -->
+          <div class="home-news-block home-news-block--current" data-news="current">
+            <h3 class="home-news-kicker" data-i18n="home.news.current.title">공지 · 예정된 활동</h3>
+            <a class="home-news-row home-news-row--current" href="event.html#notice">
+              <span class="home-news-text" data-i18n="home.news.notice.title">밥도둑 공지와 예정된 활동 보기</span>
+              <span class="home-news-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+          <!-- Record: Babdoduk's past activities, kept as announced. One link, never the lead. -->
+          <div class="home-news-block home-news-block--record" data-news="record">
+            <h3 class="home-news-kicker" data-i18n="home.news.record.title">지난 활동</h3>
+            <p class="home-news-block-note" data-i18n="home.news.record.note">당시 안내를 그대로 남긴 기록이에요. 지금 참여할 수 있는 일정은 아니에요.</p>
+            <a class="home-news-row home-news-row--record" href="event.html#archive">
+              <span class="home-news-text" data-i18n="home.news.record.cta">활동 기록 보기</span>
+              <span class="home-news-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -333,12 +348,12 @@
           'home.read.featured': '매거진 추천 글',
           'home.read.desks': '매거진 데스크',
           'home.news.title': '밥도둑 소식',
-          'home.news.purpose': '공지와 활동 안내, 지난 활동 기록을 모았어요.',
-          'home.news.notice.tag': '공지 · 예정',
+          'home.news.purpose': '지금 알아 둘 공지와 예정된 활동을 먼저, 지난 활동은 기록으로 따로 모았어요.',
+          'home.news.current.title': '공지 · 예정된 활동',
           'home.news.notice.title': '밥도둑 공지와 예정된 활동 보기',
-          'home.news.archive.tag': '활동 기록',
-          'home.news.archive.title': '지난 활동 기록 보기',
-          'home.news.story.tag': '이야기',
+          'home.news.record.title': '지난 활동',
+          'home.news.record.note': '당시 안내를 그대로 남긴 기록이에요. 지금 참여할 수 있는 일정은 아니에요.',
+          'home.news.record.cta': '활동 기록 보기',
           'home.news.story.title': '밥도둑이 걸어온 길',
           'home.banner.newTab': '(새 창에서 열림)',
           'home.today.note': 'KAIST 공식 식단과 공개 조건을 통과한 일정만 셉니다. 참여 조건과 신청 여부는 각 일정에서 확인해 주세요.',
@@ -428,12 +443,12 @@
           'home.read.featured': 'Featured story',
           'home.read.desks': 'Magazine desks',
           'home.news.title': 'Babdoduk news',
-          'home.news.purpose': 'Notices, activity updates and the record of past activities.',
-          'home.news.notice.tag': 'Notices',
+          'home.news.purpose': 'Current notices and upcoming activities come first; past activities are kept separately as a record.',
+          'home.news.current.title': 'Notices & upcoming',
           'home.news.notice.title': 'Notices and upcoming activities',
-          'home.news.archive.tag': 'Record',
-          'home.news.archive.title': 'Past activity record',
-          'home.news.story.tag': 'Story',
+          'home.news.record.title': 'Past activities',
+          'home.news.record.note': 'Kept as they were announced. They are not open to join now.',
+          'home.news.record.cta': 'See the activity record',
           'home.news.story.title': 'How Babdoduk got here',
           'home.banner.newTab': '(opens in a new tab)',
           'home.today.note': 'Counts only the official KAIST menu and events that passed publication checks. Check eligibility and registration on each event.',

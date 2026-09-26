@@ -274,6 +274,16 @@
     }
     return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + esc(t('gg.emptyBody', '다른 날짜를 보거나 필터를 바꿔 보세요.')) + '</div>';
   }
+  // What this list is (the public current and upcoming rows only; ended rows
+  // leave it) and when the snapshot was published. It makes no freshness claim
+  // beyond that time.
+  function feedNoteHtml() {
+    var html = '<div class="gg-feed-note"><p class="gg-lifecycle">' +
+      esc(t('gg.lifecycle', '공개된 현재·예정 꽁밥만 보여 드려요. 끝난 일정은 목록에서 자동으로 내려가요.')) + '</p>';
+    var g = state.free.data && toKst(state.free.data.generatedAt);
+    if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '마지막 발행')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
+    return html + '</div>';
+  }
   function freePaneHtml(now) {
     var html = '';
     if (state.free.status === 'ready') html += radarHtml(now);
@@ -283,6 +293,7 @@
     if (state.free.status === 'loading') html += stateHtml('loading');
     else if (state.free.status === 'error' || state.free.status === 'blocked') html += stateHtml(state.free.status);
     else {
+      html += feedNoteHtml();
       var events = visibleEvents(now);
       var featuredId = (earliestToday(now) || {}).id;
       if (!events.length) {
@@ -300,10 +311,6 @@
           }
           html += cardHtml(ev, now, ev.id === featuredId);
         });
-      }
-      if (state.free.data && state.free.data.generatedAt) {
-        var g = toKst(state.free.data.generatedAt);
-        if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '업데이트')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
       }
     }
     return html + '</div>';

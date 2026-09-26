@@ -73,10 +73,10 @@ jobs:
           report SUPABASE "SUPABASE_SECRET_KEY or legacy SUPABASE_SERVICE_ROLE_KEY" "$HAS_SUPABASE_KEY"
           report OPENAI OPENAI_API_KEY "$HAS_OPENAI_API_KEY"
           exit "$missing"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip

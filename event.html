@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>이벤트 · 밥도둑 Babdoduk</title>
+  <title>소식·이벤트 · 밥도둑 Babdoduk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -39,6 +39,8 @@
   <main class="event-page-wrap">
     <h1 class="event-title" data-i18n="event.title">밥도둑 소식</h1>
     <p class="event-lead" data-i18n="event.lead">공지와 예정된 활동을 먼저 알려 드려요. 지난 활동은 아래 기록에 남겨 둬요.</p>
+    <!-- Babdoduk's own activities only. KAIST free-food opportunities live in 오늘의 꽁밥 and are never mixed in here. -->
+    <p class="event-boundary"><span data-i18n="event.boundary">밥도둑이 직접 연 활동만 모아요. KAIST 무료 음식 일정은</span> <a href="ggongbab.html" data-i18n="event.boundaryLink">오늘의 꽁밥에서 보기 →</a></p>
 
     <!-- Current relevance first: notices, then anything running or coming up. -->
     <div class="event-now">
@@ -63,28 +65,29 @@
     <p class="event-counts" id="eventCounts"></p>
     <!-- Rows stay in start-date order (docs/EVENT_DETAIL_FIELDS.md). data-start/data-end are KST
          dates; data-confirmation is what was announced or verified: announced | tentative | held | cancelled.
-         The band (now / upcoming / past) is computed from the dates in the page script. -->
+         The band (now / upcoming / past) is computed from the dates in the page script, which also labels
+         each row's link ([data-event-cta]) and marks a past row's participation instructions as historical. -->
     <div class="event-tablist" role="tablist" aria-labelledby="eventListTitle" aria-orientation="vertical">
       <div class="event-tab-row is-selected" data-start="2026-05-13" data-end="2026-05-20" data-confirmation="announced">
         <button type="button" class="event-tab" role="tab" id="eventTab0" aria-selected="true" aria-controls="eventPanel0">
           <span class="event-tab-meta"><span class="event-tab-date" data-i18n="event.e0.date">2026. 5. 13 ~ 2026. 5. 20</span><span class="event-state" data-event-state></span></span>
           <span class="event-tab-title" data-i18n="event.e0.summary">밥도둑 팔로워 100명 이벤트</span>
         </button>
-        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-i18n="event.openPageBtn">페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
+        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-event-cta>페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
       </div>
       <div class="event-tab-row" data-start="2026-05-19" data-end="2026-05-20" data-confirmation="tentative">
         <button type="button" class="event-tab" role="tab" id="eventTab1" aria-selected="false" aria-controls="eventPanel1" tabindex="-1">
           <span class="event-tab-meta"><span class="event-tab-date" data-i18n="event.e1.date">2026. 5. 19 ~ 2026. 5. 20</span><span class="event-state" data-event-state></span></span>
           <span class="event-tab-title" data-i18n="event.e1.summary">태울석림제 부스 〈카빙〉 KAKI X 밥도둑</span>
         </button>
-        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-i18n="event.openPageBtn">페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
+        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-event-cta>페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
       </div>
       <div class="event-tab-row" data-start="2026-05-19" data-end="2026-05-21" data-confirmation="tentative">
         <button type="button" class="event-tab" role="tab" id="eventTab2" aria-selected="false" aria-controls="eventPanel2" tabindex="-1">
           <span class="event-tab-meta"><span class="event-tab-date" data-i18n="event.e2.date">2026. 5. 19 ~ 2026. 5. 21</span><span class="event-state" data-event-state></span></span>
           <span class="event-tab-title" data-i18n="event.e2.summary">태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑</span>
         </button>
-        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-i18n="event.openPageBtn">페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
+        <a class="event-tab-outlink" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener noreferrer"><span data-event-cta>페이지로 이동</span><span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
       </div>
     </div>
 
@@ -164,12 +167,14 @@
           'nav.langAria': '영어로 전환',
           'event.title': '밥도둑 소식',
           'event.lead': '공지와 예정된 활동을 먼저 알려 드려요. 지난 활동은 아래 기록에 남겨 둬요.',
+          'event.boundary': '밥도둑이 직접 연 활동만 모아요. KAIST 무료 음식 일정은',
+          'event.boundaryLink': '오늘의 꽁밥에서 보기 →',
           'event.notice.title': '공지 · 안내',
           'event.notice.empty': '지금 올라온 공지는 없어요.',
           'event.upcoming.title': '예정된 활동',
           'event.listTitle': '지난 활동 기록',
           'event.listTitle.all': '활동 기록',
-          'event.archive.note': '지난 활동은 당시 안내를 그대로 남긴 기록이에요. 날짜로 진행 중·예정·지난 일정을 나누고, 실제로 확인된 내용은 따로 적어요.',
+          'event.archive.note': '지난 활동은 당시 안내를 그대로 남긴 기록이에요. 날짜가 지났다고 진행된 것으로 보지 않아요. 진행·취소가 확인된 활동만 따로 표시하고, 나머지는 결과가 기록되지 않은 채로 남겨요.',
           'event.newTab': '(새 창)',
           'event.counts': '진행 중 {now} · 예정 {upcoming} · 지난 일정 {past}',
           'event.empty': '지금 진행 중이거나 예정된 활동은 없어요.',
@@ -185,7 +190,7 @@
           'event.state.cancelled.now': '취소됨',
           'event.state.cancelled.upcoming': '취소됨',
           'event.state.cancelled.past': '취소됨',
-          'event.note.announced.past': '지난 이벤트예요. 아래는 당시 안내를 그대로 남긴 기록이라, 참여 방법은 지금 적용되지 않아요.',
+          'event.note.announced.past': '끝난 이벤트예요. 결과는 이 페이지에 기록되지 않았어요. 아래는 당시 안내를 그대로 남긴 기록이라, 참여 방법은 지금 적용되지 않아요.',
           'event.note.tentative.past': '당시 ‘예정’으로 안내한 협업이에요. 실제 진행 여부는 이 페이지에 기록되지 않았어요. 아래는 당시 안내 그대로예요.',
           'event.note.tentative.now': '아직 확정되지 않은 일정이에요. 확정되면 이 페이지와 인스타그램에서 안내해요.',
           'event.note.tentative.upcoming': '아직 확정되지 않은 일정이에요. 확정되면 이 페이지와 인스타그램에서 안내해요.',
@@ -193,7 +198,9 @@
           'event.note.cancelled.now': '취소된 이벤트예요.',
           'event.note.cancelled.upcoming': '취소된 이벤트예요.',
           'event.note.cancelled.past': '취소된 이벤트예요.',
-          'event.openPageBtn': '페이지로 이동',
+          'event.cta.live': '페이지로 이동',
+          'event.cta.past': '당시 게시물 보기',
+          'event.historical': '당시 안내 · 지금은 참여할 수 없어요',
           'event.e0.date': '2026. 5. 13 ~ 2026. 5. 20',
           'event.e0.summary': '밥도둑 팔로워 100명 이벤트',
           'event.e0.detail':
@@ -201,7 +208,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">팔로워 100명 달성 기념 이벤트입니다.</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 13일(수) ~ 2026년 5월 20일(수)</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">메가커피 아메리카노 모바일 쿠폰을 <strong>5명</strong>에게 증정합니다.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">아래를 확인한 뒤, 목록에서 해당 카드 <strong>오른쪽</strong>의 <strong>페이지로 이동</strong>을 눌러 인스타그램 안내를 열고, 게시물에 안내된 대로 참여해 주세요.</div></div>' +
+            '<div class="event-detail-row" data-detail="participation"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">아래를 확인한 뒤, 목록에서 해당 카드 <strong>오른쪽</strong>의 <strong>페이지로 이동</strong>을 눌러 인스타그램 안내를 열고, 게시물에 안내된 대로 참여해 주세요.</div></div>' +
             '</div>',
           'event.e1.date': '2026. 5. 19 ~ 2026. 5. 20',
           'event.e1.summary': '태울석림제 부스 〈카빙〉 KAKI X 밥도둑',
@@ -210,7 +217,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈카빙〉 KAKI × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 19일 ~ 2026년 5월 20일 <strong>(예정)</strong></div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">현장·인스타 공지에 따라 안내됩니다. (추후 구체화 예정)</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>KAKI</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다.</div></div>' +
+            '<div class="event-detail-row" data-detail="participation"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>KAKI</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다.</div></div>' +
             '</div>',
           'event.e2.date': '2026. 5. 19 ~ 2026. 5. 21',
           'event.e2.summary': '태울석림제 부스 〈언빌리버블 버블티〉 STROKE X 밥도둑',
@@ -219,7 +226,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈언빌리버블 버블티〉 STROKE × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 19일 ~ 2026년 5월 21일 <strong>(예정)</strong></div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">현장·인스타 공지에 따라 안내됩니다. (추후 구체화 예정)</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>STROKE</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다.</div></div>' +
+            '<div class="event-detail-row" data-detail="participation"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>STROKE</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 카드 오른쪽 <strong>페이지로 이동</strong>으로 열 수 있습니다.</div></div>' +
             '</div>',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.country': '대한민국',
@@ -255,12 +262,14 @@
           'nav.langAria': 'Switch to Korean',
           'event.title': 'Babdoduk news',
           'event.lead': 'Notices and upcoming activities come first; past activities are kept in the record below.',
+          'event.boundary': "Only Babdoduk's own activities are listed here. For KAIST free-food events,",
+          'event.boundaryLink': "see Today's free food →",
           'event.notice.title': 'Notices',
           'event.notice.empty': 'No notices right now.',
           'event.upcoming.title': 'Upcoming',
           'event.listTitle': 'Past activity record',
           'event.listTitle.all': 'Activity record',
-          'event.archive.note': 'Past activities keep their announcement as it was. Dates sort them into now, coming up and past; what was actually confirmed is noted separately.',
+          'event.archive.note': 'Past activities keep their announcement as it was. A date passing does not mean an event took place: only a confirmed outcome (held or cancelled) is marked, and the rest stay without a recorded outcome.',
           'event.newTab': '(opens in a new tab)',
           'event.counts': 'Now {now} · Coming up {upcoming} · Past {past}',
           'event.empty': 'Nothing is running or scheduled right now.',
@@ -276,7 +285,7 @@
           'event.state.cancelled.now': 'Cancelled',
           'event.state.cancelled.upcoming': 'Cancelled',
           'event.state.cancelled.past': 'Cancelled',
-          'event.note.announced.past': 'This event has ended. Below is the original announcement, kept as a record; its instructions no longer apply.',
+          'event.note.announced.past': 'This event has ended. Its outcome is not recorded on this page. Below is the original announcement, kept as a record; its instructions no longer apply.',
           'event.note.tentative.past': 'This collaboration was announced as tentative. Whether it took place is not recorded here. Below is the original announcement.',
           'event.note.tentative.now': 'Not confirmed yet. Confirmation will appear here and on Instagram.',
           'event.note.tentative.upcoming': 'Not confirmed yet. Confirmation will appear here and on Instagram.',
@@ -284,7 +293,9 @@
           'event.note.cancelled.now': 'This event was cancelled.',
           'event.note.cancelled.upcoming': 'This event was cancelled.',
           'event.note.cancelled.past': 'This event was cancelled.',
-          'event.openPageBtn': 'Open page',
+          'event.cta.live': 'Open page',
+          'event.cta.past': 'View the original post',
+          'event.historical': 'Original instructions · no longer open',
           'event.e0.date': 'May 13–20, 2026',
           'event.e0.summary': 'Babdoduk 100 followers event',
           'event.e0.detail':
@@ -292,7 +303,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Giveaway celebrating 100 followers.</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">Wednesday, May 13 through Wednesday, May 20, 2026.</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Mega Coffee Americano mobile coupons for <strong>5 winners</strong>.</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value">Read below, then tap <strong>Open page</strong> on the <strong>right</strong> of this card to open Instagram in a new tab. Follow the post.</div></div>' +
+            '<div class="event-detail-row" data-detail="participation"><div class="event-detail-label">How to participate</div><div class="event-detail-value">Read below, then tap <strong>Open page</strong> on the <strong>right</strong> of this card to open Instagram in a new tab. Follow the post.</div></div>' +
             '</div>',
           'event.e1.date': 'May 19–20, 2026',
           'event.e1.summary': 'Taeul Seoklim Festival booth: Carving — KAKI × Babdoduk',
@@ -301,7 +312,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Carving (KAKI) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page.</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">May 19–20, 2026 <strong>(tentative)</strong></div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Per on-site / Instagram notices. (Details to be added.)</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card.</div></div>' +
+            '<div class="event-detail-row" data-detail="participation"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card.</div></div>' +
             '</div>',
           'event.e2.date': 'May 19–21, 2026',
           'event.e2.summary': 'Taeul Seoklim Festival booth: Unbelievable Bubble Tea — STROKE × Babdoduk',
@@ -310,7 +321,7 @@
             '<div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Unbelievable Bubble Tea (STROKE) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page.</div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">May 19–21, 2026 <strong>(tentative)</strong></div></div>' +
             '<div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Per on-site / Instagram notices. (Details to be added.)</div></div>' +
-            '<div class="event-detail-row"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>STROKE</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card.</div></div>' +
+            '<div class="event-detail-row" data-detail="participation"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>STROKE</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions: use <strong>Open page</strong> on the right of this card.</div></div>' +
             '</div>',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.country': 'South Korea',
@@ -419,6 +430,12 @@
           chip.textContent = t('event.band.' + band) + (detail ? ' · ' + detail : '');
           var note = panels[i].querySelector('[data-event-note]');
           if (note) note.textContent = t('event.note.' + confirmation + '.' + band, '');
+          // A past row links to the original post as a record, not as a way to take part.
+          var link = row.querySelector('.event-tab-outlink');
+          var cta = row.querySelector('[data-event-cta]');
+          if (link) link.setAttribute('data-band', band);
+          if (cta) cta.textContent = t(band === 'past' ? 'event.cta.past' : 'event.cta.live', cta.textContent);
+          markParticipation(panels[i], band);
         });
         var countsEl = document.getElementById('eventCounts');
         if (countsEl) {
@@ -438,6 +455,22 @@
           notices.hidden = !notices.children.length;
           noticeEmpty.hidden = notices.children.length > 0;
         }
+      }
+      // The authored instructions stay as they were announced; a past panel labels them as historical.
+      // Runs after every language switch, because that rewrites the panel's authored HTML.
+      function markParticipation(panel, band) {
+        panel.setAttribute('data-band', band);
+        var field = panel.querySelector('[data-detail="participation"]');
+        if (!field) return;
+        var old = field.querySelector('.event-detail-historical');
+        if (old) old.remove();
+        field.classList.toggle('is-historical', band === 'past');
+        if (band !== 'past') return;
+        var value = field.querySelector('.event-detail-value') || field;
+        var tag = document.createElement('span');
+        tag.className = 'event-detail-historical';
+        tag.textContent = t('event.historical', '당시 안내 · 지금은 참여할 수 없어요');
+        value.insertBefore(tag, value.firstChild);
       }
       // Running and upcoming rows, summarised at the top; each opens its record.
       function renderUpcoming() {
