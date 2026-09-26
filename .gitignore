@@ -9,3 +9,4 @@ tmp-*.html
 .local/
 *.eml
 *.mbox
+.claude/settings.local.json
