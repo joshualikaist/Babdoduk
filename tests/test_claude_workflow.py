@@ -181,3 +181,98 @@ def test_statusline_formats_sample_session_json():
     line = result.stdout.strip()
     assert result.returncode == 0, result.stderr
     assert re.fullmatch(r"Opus 5\.5 \| \S.* \| " + re.escape(ROOT.name) + r" \| ctx 42% \| dirty \d+", line), line
+
+
+# ---------------------------------------------------------------------------
+# Lab-first release discipline (AGENTS.md "Lab-first lifecycle"). In 2026-09 ordinary releases
+# started from main, production moved on and babdoduk-lab kept serving stale shared UI. These
+# assertions keep the written contract from drifting back.
+# ---------------------------------------------------------------------------
+PROCESS_DOCS = ["AGENTS.md", "CLAUDE.md", "README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md"]
+SKILL_DOCS = [f".claude/skills/{name}/SKILL.md" for name in ("session-start", "release-babdoduk", "handoff", "ui-review")]
+DRIFT_CHECK = "git log --format='%h %an %s' origin/lab..origin/main"
+
+
+def read(rel):
+    return (ROOT / rel).read_text(encoding="utf-8")
+
+
+def lifecycle():
+    agents = read("AGENTS.md")
+    return agents[agents.index("## Lab-first lifecycle"):agents.index("## Before starting")]
+
+
+def test_product_tasks_start_from_lab_and_a_production_destination_is_not_an_exception():
+    agents = read("AGENTS.md")
+    assert "unless the task explicitly targets production" not in agents  # the old escape hatch
+    assert agents.index("## Lab-first lifecycle (non-negotiable)") < agents.index("## Before starting")  # prominent
+    rules = lifecycle()
+    assert "Product/UI/frontend tasks always start from the latest `origin/lab`" in rules
+    assert "A production destination does not by itself authorize a main-based task" in rules
+    for ordinary in ("Update the site", "refresh production", "prepare a release", "fix the page and deploy it"):
+        assert ordinary in rules, ordinary
+    bypass = rules[rules.index("allowed only for:"):rules.index("Record the owner's bypass")]
+    assert bypass.count("explicitly") == 3 and "generated-data bot publication" in bypass
+    start = read(".claude/skills/session-start/SKILL.md")
+    assert "git worktree add --no-track -b agent/<tool>/<task> ../Babdoduk-wt/<task> origin/lab" in start
+    assert not re.search(r"git worktree add [^\n`]*agent/[^\n`]* origin/main", start)
+    assert "Product/UI work starts from the latest `origin/lab`" in read("CLAUDE.md")
+
+
+def test_lab_deployment_and_approval_precede_main_promotion():
+    rules = lifecycle()
+    steps = ["**Task:**", "**Lab integration:**", "**Lab deployment:**", "**Lab verification:**",
+             "**Owner approval**", "**Release candidate:**", "**Production:**", "**Back-sync:**"]
+    assert [rules.index(step) for step in steps] == sorted(rules.index(step) for step in steps)
+    release = read(".claude/skills/release-babdoduk/SKILL.md")
+    for field in ("LAB_TASK_SHA", "LAB_INTEGRATION_SHA", "LAB_VERCEL_DEPLOYMENT_STATUS", "LAB_URL_TESTED", "OWNER_APPROVAL"):
+        assert release.count(field) >= 2, field  # recorded in the gate and in the report
+    assert "git merge-base --is-ancestor <LAB_TASK_SHA> origin/lab" in release
+    assert "Local tests passing is not a substitute" in release
+    sections = ["## 0. Lab acceptance", "## 1. Start from production", "## 2. Promote only the approved commits",
+                "## 6. Production merge", "## 7. Verify production", "## 8. Back-sync lab"]
+    assert [release.index(s) for s in sections] == sorted(release.index(s) for s in sections)
+    assert "LAB_URL_TESTED" in read(".claude/skills/ui-review/SKILL.md")
+
+
+def test_release_starts_from_latest_main_and_promotes_selectively():
+    release = read(".claude/skills/release-babdoduk/SKILL.md")
+    assert "git worktree add --no-track -b release/<name> ../Babdoduk-wt/release-<name> origin/main" in release
+    assert "git cherry-pick -x <LAB_TASK_SHA>" in release
+    assert "Never `git merge lab` or `git merge origin/lab` into a release" in release
+    assert "goes back through lab first" in release  # behavior-changing conflict resolution
+    # No document offers a whole-lab merge into main as a way to release.
+    for rel in PROCESS_DOCS + SKILL_DOCS:
+        for line in read(rel).splitlines():
+            if re.search(r"git merge (origin/)?lab\b", line):
+                assert re.search(r"[Nn]ever|not|않|아닙니다|금지", line), (rel, line)
+
+
+def test_back_sync_is_required_and_drift_is_checked():
+    rules = lifecycle()
+    assert "**Lab never trails production.**" in rules and "not operationally complete" in rules
+    release = read(".claude/skills/release-babdoduk/SKILL.md")
+    back_sync = release[release.index("## 8. Back-sync lab"):release.index("## 9.")]
+    assert "the release is not complete without it" in release and DRIFT_CHECK in back_sync
+    assert "BACK_SYNC_LAB_SHA" in back_sync and "babdoduk-lab" in back_sync
+    for rel in (".claude/skills/session-start/SKILL.md", ".claude/skills/handoff/SKILL.md"):
+        assert DRIFT_CHECK in read(rel), rel
+    assert "LAB BEHIND PRODUCTION" in read(".claude/skills/session-start/SKILL.md")
+    for rel in ("README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md"):
+        text = read(rel)
+        assert "back-sync" in text and "origin/lab..origin/main" in text, rel
+
+
+def test_generated_data_bot_remains_an_exception():
+    agents = read("AGENTS.md")
+    assert "### Generated-data bot" in agents and "generated-data bot publication" in lifecycle()
+    release = read(".claude/skills/release-babdoduk/SKILL.md")
+    assert "`babdoduk-content-bot` with data-only paths: integrate from the newest `origin/main`" in release
+
+
+def test_no_document_instructs_a_cli_production_deploy():
+    docs = PROCESS_DOCS + SKILL_DOCS + [str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / "docs").glob("*.md")]
+    for rel in sorted(set(docs)):
+        for line in read(rel).splitlines():
+            if re.search(r"vercel (deploy )?--prod", line):
+                assert re.search(r"[Nn]ever|not|않|금지|block", line), (rel, line)

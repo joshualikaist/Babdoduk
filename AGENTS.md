@@ -2,25 +2,50 @@
 
 This is the repository operating manual for human and AI changes. The current product direction is in `PRD.md`, UI contracts in `DESIGN_SYSTEM.md`, and implementation boundaries in `ARCHITECTURE.md`. Follow a direct user instruction when it explicitly changes the task scope; otherwise treat unresolved owner decisions as unresolved.
 
-This copy describes the `main` (production) baseline. Systems marked **Lab-only / not promoted to production in the current main baseline** exist only on the `lab` branch; their documents live there, not here.
+Systems marked **Lab-only / not promoted to production in the current main baseline** exist only on the `lab` branch, together with their documents; `main` never carries them.
 
 The rules here are authoritative. The step-by-step procedures that carry them out live in `.claude/skills/<name>/SKILL.md`: `session-start`, `handoff`, `verify-babdoduk`, `release-babdoduk` and `ui-review`. They are plain Markdown, so any agent can follow them.
+
+## Lab-first lifecycle (non-negotiable)
+
+Product, UI, frontend, copy, navigation, page-design and responsive changes, and documentation tied to product behavior, always reach production through `lab`:
+
+1. **Task:** start a task branch from the latest `origin/lab`, in your own worktree.
+2. **Lab integration:** integrate the task branch into `lab` (an authorized step of its own).
+3. **Lab deployment:** wait for the `Vercel – babdoduk-lab` deployment of that exact `lab` commit to succeed.
+4. **Lab verification:** check the change visually and functionally on https://babdoduk-lab.vercel.app, in Korean and English.
+5. **Owner approval** of what is deployed on lab.
+6. **Release candidate:** from the latest `origin/main`, promote only the exact approved task commits. Never merge `lab` as a whole into `main`: lab also carries experiments that are not production-ready.
+7. **Production:** run the gates again on the exact candidate, push `main` normally (never force), and verify production.
+8. **Back-sync:** bring the released production commits back into `lab`, so staging is again the production baseline plus intentional lab-only experiments.
+
+Product/UI/frontend tasks always start from the latest `origin/lab`. **A production destination does not by itself authorize a main-based task.** "Update the site", "refresh production", "prepare a release" and "fix the page and deploy it" are ordinary releases: they go through lab. Local tests passing is not lab approval.
+
+Starting from `main` (bypassing lab) is allowed only for:
+- an emergency production hotfix that the owner explicitly authorizes to bypass lab;
+- generated-data bot publication (`babdoduk-content-bot`, see below);
+- production infrastructure recovery that the owner explicitly authorizes, where lab cannot represent the target (for example a workflow that only runs from `main`);
+- a repository-only emergency fix that the owner explicitly says must bypass lab.
+
+Record the owner's bypass authorization in the task report. A bypass change is back-synced into `lab` in the same task.
+
+**Lab never trails production.** If `origin/main` has a source commit that `origin/lab` lacks (generated-data bot commits aside), staging no longer previews production: back-sync it before starting product work. A release is not operationally complete until that back-sync is pushed and deployed to babdoduk-lab. The procedures are `session-start` (the drift check), `release-babdoduk` (the lab acceptance gate, selective promotion and back-sync) and `handoff`.
 
 ## Before starting
 
 1. Read the documents the task needs: `PRD.md` for product scope, `DESIGN_SYSTEM.md` for visual work, `ARCHITECTURE.md` for system boundaries, `README.md` and the `docs/` file governing the feature. Inspect the implementation and tests before planning a replacement.
 2. Follow the session-start procedure. Preserve unrelated or user-owned changes. Do not assume a local `main` or cached remote ref describes the deployed site.
 3. State the intended file scope. Separate frontend presentation from generated data, canonical DB, local agents and deployment operations.
-4. Work on your own task branch in your own worktree. Never change `main`, merge to it, deploy production or force push without explicit owner authorization. Do not reset or rebase over pushed or generated-data commits.
+4. Work on your own task branch, created from the latest `origin/lab`, in your own worktree (see Lab-first lifecycle for the only exceptions). Never change `main`, merge to it, deploy production or force push without explicit owner authorization. Do not reset or rebase over pushed or generated-data commits.
 
 ## Git / Multi-Agent Session Protocol
 
 ### Branches
 
 - `main` is production. A push or merge to `main` deploys https://babdoduk.vercel.app through Vercel's Git integration. Agents never modify `main` without explicit owner authorization, and a full `lab` → `main` merge is never the default.
-- `lab` is the integration/staging branch (https://babdoduk-lab.vercel.app). It is not a general scratch branch; agents do not normally develop directly on it. Integrating a task branch into `lab` is a separate, authorized step.
-- Task branches are `agent/claude/<task>`, `agent/codex/<task>`, `agent/cursor/<task>` (or `agent/<tool>/<task>`). Each starts from the latest `origin/lab` unless the task explicitly targets production or a hotfix.
-- Release branches are `release/<name>`, started from a recorded `origin/main` SHA. They carry only owner-approved changes into a production candidate (for example by `git cherry-pick -x`), are reviewed through a pull request and Preview deployment, and are merged only with explicit owner approval. The canonical procedure is `release-babdoduk`.
+- `lab` is the integration/staging branch (https://babdoduk-lab.vercel.app): the production baseline plus intentional lab-only experiments. It is not a general scratch branch; agents do not normally develop directly on it. Integrating a task branch into `lab` is a separate, authorized step.
+- Task branches are `agent/claude/<task>`, `agent/codex/<task>`, `agent/cursor/<task>` (or `agent/<tool>/<task>`). Each starts from the latest `origin/lab`. A task that will end in production still starts there; only an owner-authorized bypass listed under Lab-first lifecycle starts from `origin/main`.
+- Release branches are `release/<name>`, started from the latest `origin/main`. They carry only commits already deployed and owner-approved on lab (by `git cherry-pick -x`), never `lab` as a whole, and are merged only with explicit owner approval. The canonical procedure is `release-babdoduk`.
 
 ### Worktrees
 
