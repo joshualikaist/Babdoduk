@@ -56,6 +56,7 @@
 - [ ] `Vercel – babdoduk` 상태가 성공이고, https://babdoduk.vercel.app 에서 바뀐 기능이 lab 에서처럼 동작한다
 - [ ] **back-sync:** 최신 `origin/main` 을 `lab` 에 일반 merge 해 push 했고, 그 커밋의 babdoduk-lab 배포가 성공했다
 - [ ] 드리프트 확인이 다시 비어 있다. 이것까지 끝나야 릴리스 완료다
+- [ ] 끝난 작업·release 브랜치와 worktree 를 `REPOSITORY_HYGIENE.md` 대로 분류해 보고했다. 삭제는 소유자 승인 뒤에만 한다
 
 ---
 
