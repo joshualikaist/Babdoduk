@@ -6,10 +6,15 @@ name: ggongbab-refresh
 # Only the generated JSON is copied onto lab and main. Feature code is never merged by this job.
 # The publisher skips a commit when only generatedAt changed, so a run that finds
 # nothing new does not push to lab and main.
+#
+# Primary scheduler: cron-job.org calls this workflow's workflow_dispatch API at
+# :07 and :37 (Asia/Seoul) with mode=full, source=external-cron. The native
+# schedule below is a backup, because GitHub delayed '*/30' runs by hours.
+# Setup: docs/GGONGBAB_PAGE.md, "External scheduler".
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # every 30 minutes, UTC (GitHub may delay or skip individual runs); always full
+    - cron: '19 */3 * * *'   # backup: :19 every 3 hours, UTC (GitHub may delay or skip runs); always full
   workflow_dispatch:
     inputs:
       mode:
@@ -24,6 +29,16 @@ on:
           - review-report
           - export-only
           - full
+      source:
+        # For the logs only; not authentication. The GitHub token that made the
+        # dispatch call is what authorizes it, so this value proves nothing.
+        description: Invocation source for observability
+        required: false
+        default: manual
+        type: choice
+        options:
+          - manual
+          - external-cron
 
 # Shares the group with content-refresh so two jobs never push generated data at the same time.
 concurrency:
@@ -40,7 +55,18 @@ jobs:
     env:
       # A scheduled run has no inputs, so it is a full refresh.
       MODE: ${{ github.event.inputs.mode || 'full' }}
+      TRIGGER_SOURCE: ${{ github.event_name == 'schedule' && 'github-schedule' || (github.event.inputs.source == 'external-cron' && 'external-cron' || 'manual') }}
     steps:
+      - name: Identify trigger
+        run: |
+          echo "trigger source: $TRIGGER_SOURCE"
+          echo "mode: $MODE"
+          # The external scheduler exists to refresh; a diagnostic or export-only
+          # run from it means a misconfigured job, so refuse it.
+          if [ "$TRIGGER_SOURCE" != "manual" ] && [ "$MODE" != "full" ]; then
+            echo "::error::$TRIGGER_SOURCE may only run mode=full (got $MODE)"
+            exit 1
+          fi
       - name: Check required configuration
         env:
           # Booleans only: this step never receives a secret value.

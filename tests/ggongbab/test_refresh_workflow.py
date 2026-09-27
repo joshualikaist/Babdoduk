@@ -10,6 +10,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
+
 import publish_generated
 import refresh_ggongbab
 
@@ -69,13 +71,65 @@ def test_dispatch_offers_every_mode_and_defaults_to_the_harmless_one():
         assert f'"{flag}"' in source, flag
 
 
-def test_schedule_runs_every_30_minutes_as_a_full_refresh():
-    """Re-enabled after check, dry-run and review-report passed on main."""
-    code = "\n".join(line for line in _text().splitlines() if not line.lstrip().startswith("#"))
-    assert re.findall(r"(?m)^\s*- cron:\s*'([^']+)'", code) == ["*/30 * * * *"]
+def _code() -> str:
+    return "
+".join(line for line in _text().splitlines() if not line.lstrip().startswith("#"))
+
+
+def test_native_schedule_is_the_three_hourly_backup():
+    """cron-job.org is primary; GitHub delayed '*/30' runs by hours, so it only backs up."""
+    code = _code()
+    assert re.findall(r"(?m)^\s*- cron:\s*'([^']+)'", code) == ["19 */3 * * *"]
+    assert "*/30" not in code
     assert re.search(r"(?m)^\s*schedule:\s*$", code) and re.search(r"(?m)^\s*workflow_dispatch:\s*$", code)
-    # A scheduled run has no inputs; it must fall back to full, never to a diagnostic mode.
+
+
+def test_scheduled_run_is_full_and_labelled_github_schedule():
+    code = _code()
     assert re.search(r"(?m)^\s*MODE:\s*\$\{\{\s*github\.event\.inputs\.mode \|\| 'full'\s*\}\}\s*$", code)
+    source = re.search(r"(?m)^\s*TRIGGER_SOURCE:\s*\$\{\{(.+)\}\}\s*$", code).group(1)
+    assert re.search(r"github\.event_name == 'schedule' && 'github-schedule'", source)
+    assert re.search(r"github\.event\.inputs\.source == 'external-cron' && 'external-cron' \|\| 'manual'", source)
+
+
+def test_source_input_is_an_observability_choice():
+    inputs = re.search(r"(?ms)^\s*source:\s*
+(.*?)(?=^\S|^\s*
+)", _text()).group(1)
+    assert re.search(r"(?m)^\s*type:\s*choice\s*$", inputs)
+    assert re.search(r"(?m)^\s*required:\s*false\s*$", inputs)
+    assert re.search(r"(?m)^\s*default:\s*manual\s*$", inputs)
+    options = re.search(r"(?m)^\s*options:\s*
+((?:\s*- .+
+)+)", inputs).group(1)
+    assert [o.strip()[2:].strip() for o in options.splitlines()] == ["manual", "external-cron"]
+
+
+def _guard_allows(trigger: str, mode: str) -> bool:
+    """The Identify trigger step's rule, read from the workflow and applied to one case."""
+    block = _steps(_text())["Identify trigger"]
+    assert 'if [ "$TRIGGER_SOURCE" != "manual" ] && [ "$MODE" != "full" ]; then' in block
+    assert re.search(r'(?s)!= "full" \]; then\s*echo "::error::.*?"\s*exit 1\s*fi', block)
+    return trigger == "manual" or mode == "full"
+
+
+@pytest.mark.parametrize("mode", sorted(MODES))
+def test_external_cron_may_only_run_full(mode):
+    assert _guard_allows("external-cron", mode) is (mode == "full")
+    assert _guard_allows("github-schedule", mode) is (mode == "full")
+
+
+@pytest.mark.parametrize("mode", sorted(MODES))
+def test_manual_dispatch_keeps_every_mode(mode):
+    assert _guard_allows("manual", mode)
+
+
+def test_trigger_is_identified_first_and_logged_without_secrets():
+    steps = _steps(_text())
+    assert list(steps)[0] == "Identify trigger"
+    block = steps["Identify trigger"]
+    assert 'echo "trigger source: $TRIGGER_SOURCE"' in block
+    assert "secrets." not in block
 
 
 def test_each_mode_runs_its_own_runner_command():
