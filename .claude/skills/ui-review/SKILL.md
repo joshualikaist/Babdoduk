@@ -33,11 +33,11 @@ Review rendered pages, not only CSS or DOM numbers. Take the screenshots and loo
 ## Home
 - One editorial hero, with its primary and secondary actions in the first mobile screen:
   - primary: `오늘의 꽁밥 보기` → `ggongbab.html`;
-  - secondary: `메뉴 고르기` → `mukbang.html#what`.
+  - secondary: `메뉴 고르기` → `choose.html`.
 - The collage is labelled as atmosphere, not today's menu.
 - The today strip keeps the `#homeMenuStatus` and `#homeFreeStatus` states and the "마지막 발행 {time}" wording. It makes no "latest", "real-time" or "live" claims.
 - Banner shelf:
-  - `01 바로가기`: 오늘의 꽁밥 and 메뉴 고르기 (wider, level 2), then map and food log (level 3);
+  - `01 오늘 먹기`: 오늘의 꽁밥 and 메뉴 고르기 (wider, level 2), then map and food log (level 3);
   - native swipe and wheel scrolling, with a visible peek of the next card;
   - desktop buttons that use `aria-disabled` at the ends;
   - no autoplay, and the map link opens with `rel="noopener"`.

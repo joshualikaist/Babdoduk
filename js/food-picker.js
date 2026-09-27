@@ -108,8 +108,8 @@
     if (!el) return;
     if (kind === 'spin') el.textContent = t('eat.hint.spin', '세 칸이 차례로 멈출 때까지 기다려 주세요.');
     else if (kind === 'land') el.textContent = t('eat.hint.land', '오늘의 한 끼가 정해졌어요.');
-    else el.innerHTML = '<span class="eat-wheel-hint-main">' + escapeHtml(t('eat.hint.main', '버튼을 누르면 오늘의 메뉴가 뽑혀요')) + '</span>' +
-      '<span class="eat-wheel-hint-sub">' + escapeHtml(t('eat.hint.sub', '카테고리, 음식, 느낌이 한 줄로 맞춰집니다.')) + '</span>';
+    // Idle: the spin button says what it does; the hint speaks only while spinning and on landing.
+    else el.textContent = '';
   }
 
   function setSpinLabel(text) {

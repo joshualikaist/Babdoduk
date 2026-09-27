@@ -1,0 +1,25 @@
+{
+  "approval": "PENDING owner visual approval: agent/claude/ui-minimal-copy lab review 2026-09-28 (not yet approved)",
+  "images": 84,
+  "fixed_now": "2026-09-28T10:00:00+09:00",
+  "sizes": [
+    [
+      1440,
+      900
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "pages": [
+    "index.html",
+    "ggongbab.html",
+    "choose.html",
+    "mukbang.html",
+    "event.html",
+    "food.html",
+    "history.html"
+  ],
+  "context_above_px": 180
+}

@@ -24,6 +24,6 @@ def test_a_missing_web_font_is_a_skip_never_a_pass():
 
 def test_exit_codes_and_coverage():
     assert EXIT == {"PASS": 0, "FAIL": 1, "SKIP": 3}
-    assert PAGES == ["index.html", "ggongbab.html", "event.html", "mukbang.html", "history.html", "food.html"]
+    assert PAGES == ["index.html", "ggongbab.html", "choose.html", "event.html", "mukbang.html", "history.html", "food.html"]
     assert {(390, 844), (360, 800), (1440, 900)} <= set(SIZES)
     assert check_real_fonts.FONT_HOSTS == {"fonts.googleapis.com", "fonts.gstatic.com"}
