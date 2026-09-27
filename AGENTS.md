@@ -73,7 +73,7 @@ GitHub Actions (`babdoduk-content-bot`, via `scripts/publish_generated.py`) push
 ## Implementation discipline
 
 - Reuse existing patterns before adding a new one. The static HTML/CSS/JS architecture needs a demonstrated problem before a build system or framework migration is proposed.
-- Shared navigation and footer styles belong to `css/site.css` only; page translations and some component styles are still duplicated per page. Inspect every consumer and edit scoped locations; never run a blind global rewrite.
+- Shared navigation and footer markup comes from `shared/nav.html` and `shared/footer.html`: edit those and run `python scripts/sync_site_chrome.py`; never hand-edit a page's copy. Their styles belong to `css/site.css` only. Page translations and some component styles are still duplicated per page. Inspect every consumer and edit scoped locations; never run a blind global rewrite.
 - Do not manually edit generated `data/magazine/`, `data/kaist-menu/`, `data/ggongbab/latest.json` or `data/foods/` to make UI tests pass. Preserve their schemas, validators, provenance and branch publication rules. `data/food-log.json` and `data/ggongbab/manual.json` are authored inputs, not generated output.
 - Keep fixture and localhost preview behavior separate from normal routes. `lab-ggongbab.html` is `noindex` but that is not access control. Never let preview, raw mail, credentials or private DB content enter public HTML or JSON.
 - Preserve keyboard access, visible focus, status announcements, Korean/English copy, long-text wrapping, reduced-motion behavior and the existing scrollbar design. A visual task must not relax an assertion, publication rule or security gate.
@@ -98,7 +98,7 @@ Run focused tests first, then the relevant full gate before completion. Do not u
 | Change | Required checks |
 | --- | --- |
 | Documentation only | Check links and facts against current code/docs on the same branch; review diff and status |
-| General frontend | `python -m pytest tests -q`, `python scripts/validate_content.py`, `python scripts/check_site_ui.py`; inspect mobile/tablet/desktop and keyboard behavior |
+| General frontend | `python -m pytest tests -q`, `python scripts/validate_content.py`, `python scripts/sync_site_chrome.py --check`, `python scripts/check_site_ui.py` (site guardian and chrome visual baselines; baselines change only with owner approval, `docs/VISUAL_BASELINES.md`); inspect mobile/tablet/desktop and keyboard behavior |
 | Ggongbab or menu frontend | General frontend checks plus `python scripts/check_ggongbab_ui.py`; preserve the fixture clock only in fixture mode and fixed-clock scenarios, the initial all-upcoming filter, saved filters, public eligibility, Radar and featured |
 | Pipeline or contract, explicitly authorized | Contract-specific synthetic tests plus full suite and content validator; review private/public field boundaries and failure exits |
 | Generated-data workflow, explicitly authorized | Validate only selected generated paths and publication branch behavior; never merge feature code through `publish_generated.py` |
