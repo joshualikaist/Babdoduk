@@ -14,7 +14,7 @@ from ggongbab.models import RawItem
 from ggongbab.web.exit_codes import UiContractError
 from ggongbab.web.mail_reader import MailHeader
 from ggongbab.web.ui_contract import UiContract
-from .conftest import FakeExtractor, REFERENCE
+from .conftest import TEST_NOW, FakeExtractor, REFERENCE
 from .test_pipeline_export import FUTURE_TEXT, future_extraction
 from .test_export_contract import row
 
@@ -24,7 +24,7 @@ def forbidden(*args, **kwargs):
 
 
 @pytest.fixture
-def isolated(monkeypatch, tmp_path, settings):
+def isolated(monkeypatch, tmp_path, settings, pin_preview_clock):
     monkeypatch.setattr(preview, "PREVIEW_FILE", tmp_path / ".local" / "ggongbab-preview.json")
     monkeypatch.setattr(repository.SupabaseRepository, "__init__", forbidden)
     monkeypatch.setattr(agent.TaskWriter, "__init__", forbidden)
@@ -83,7 +83,7 @@ def test_force_is_explicit_and_reuses_pipeline(isolated, settings):
                                                    ("unknown", False, 0), ("true", True, 0)])
 def test_public_food_policy_keeps_db_records(settings, food, review, expected):
     source = row(food_provided=food, needs_review=review)
-    payload = build_payload([source], settings, food_only=True)
+    payload = build_payload([source], settings, TEST_NOW, food_only=True)
     assert payload["count"] == expected
     assert source["food_provided"] == food
 
@@ -158,5 +158,5 @@ def test_preview_export_matches_existing_frontend_schema(isolated, settings):
     from validate_content import validate_ggongbab
     payload = preview.generate_preview([item()], {}, settings,
                                       extractor_factory=lambda _: FakeExtractor(future_extraction), log=lambda *_: None)
-    assert validate_ggongbab(isolated) == []
+    assert validate_ggongbab(isolated, TEST_NOW) == []
     assert {"title", "startAt", "location", "food", "registration", "sources"} <= payload["events"][0].keys()
