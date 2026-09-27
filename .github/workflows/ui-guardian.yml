@@ -64,8 +64,8 @@ jobs:
       BABDODUK_BROWSER: chromium
     steps:
       - uses: actions/checkout@v7
-      - name: Install the image comparison libraries
-        run: python3 -m pip install --no-cache-dir --break-system-packages pillow==12.0.0 numpy==2.2.6
+      - name: Install Playwright (matching the image's browsers) and the image comparison libraries
+        run: python3 -m pip install --no-cache-dir --break-system-packages playwright==1.63.0 pillow==12.0.0 numpy==2.2.6
       - name: Site guardian and visual chrome comparison
         run: python3 scripts/check_site_ui.py --chrome-only
       - name: Upload actual renders and diffs
