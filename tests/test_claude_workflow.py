@@ -298,7 +298,10 @@ def test_cursor_rules_defer_to_the_lab_first_contract():
 def test_cleanup_is_classified_first_and_never_forced():
     hygiene = read("docs/REPOSITORY_HYGIENE.md")
     for required in ("git cherry origin/lab <branch>", "git diff-tree --cc", "git worktree remove <path>",
-                     "git worktree prune", "git branch -d <branch>", "status --short --ignored", "release-YYYY-MM-DD-<slug>"):
+                     "git worktree prune", "git branch -d <branch>", "status --short --ignored", "release-YYYY-MM-DD-<slug>",
+                     # Unmerged work is preserved as a verified remote tag before anything local is cleaned up.
+                     "archive-YYYY-MM[-DD]-<slug>", 'git ls-remote origin "refs/tags/', "자동으로 지우지 않는 것",
+                     "거부되면 그 브랜치는 멈추고 소유자에게 보고합니다"):
         assert required in hygiene, required
     for label in ("ACTIVE", "SAFE_TO_DELETE", "KEEP_FOR_RELEASE_HISTORY", "OWNER_REVIEW_REQUIRED"):
         assert f"`{label}`" in hygiene, label

@@ -18,25 +18,31 @@
 그 밖의 브랜치는 모두 임시입니다. `babdoduk-content-bot` 은 생성 데이터를 `main`·`lab` 에 직접 커밋하므로
 따로 남는 브랜치가 없습니다.
 
+기록은 브랜치가 아니라 **annotated 태그**로 남깁니다(8절). `release-*` 는 본편에 들어간 릴리스, `archive-*` 는
+합치지 않았지만 보존해야 하는 작업입니다. 태그는 정리 대상이 아니며 옮기거나 다시 만들지 않습니다.
+
 ---
 
-## 2. 임시 브랜치의 수명
+## 2. 임시 브랜치와 worktree 의 수명
 
 | 종류 | 이름 | 시작점 | 끝나는 때 |
 |------|------|--------|-----------|
 | 작업 | `agent/<tool>/<task>` | 최신 `origin/lab` | lab 통합·배포, (본편 대상이면) main 반영, back-sync 까지 끝났을 때 |
 | release | `release/<name>` | 최신 `origin/main` | main 반영·production 확인·back-sync 뒤. 태그로 대체한다(8절) |
 | 통합·back-sync | `integration/<name>`, `agent/<tool>/back-sync-<name>`, detached worktree | 그때그때 | 만든 커밋이 `main`/`lab` 에 들어갔을 때 |
-| 백업·스냅숏 | `*-backup`, `*-snapshot` | 사람이 판단 | 소유자만 결정한다 |
+| 작업 worktree | `../Babdoduk-wt/<task>` | 그 브랜치와 함께 | 브랜치가 끝나고 `status --short` 가 비었을 때(5절) |
+| 백업·스냅숏·실험 | `*-backup`, `*-snapshot`, 미완성 실험 | 사람이 판단 | 소유자가 결정한다. 보존할 것은 `archive-*` 태그로 남긴 뒤 정리한다(8절) |
 
-브랜치 하나는 다음을 **모두** 만족할 때만 `SAFE_TO_DELETE` 입니다.
+브랜치나 worktree 하나는 다음을 **모두** 만족할 때만 `SAFE_TO_DELETE` 입니다.
 
 1. 작업이 끝났다.
 2. 그 내용을 담은 `lab` 커밋의 `Vercel – babdoduk-lab` 배포가 성공했다.
 3. 본편 대상이면 main 반영과 production 확인이 끝났다.
 4. main → lab back-sync 가 끝났고 드리프트 확인이 비어 있다.
-5. 고유 패치가 남아 있지 않다(4절).
-6. 그 브랜치에 기대는 진행 중 작업이 없다(열린 PR, 승인 대기, 다른 worktree 의 기준점).
+5. 고유 패치가 남아 있지 않다. upstream 에 같은 커밋이나 같은 패치가 있다(4절).
+6. worktree 라면 `status --short` 가 비어 있고, 무시된 파일도 다시 만들 수 있는 산출물뿐이다(5절).
+7. 그 브랜치에 기대는 진행 중 작업이 없다(열린 PR, 승인 대기, 다른 worktree 의 기준점).
+8. 소유자·다른 에이전트의 작업 보호(7절)를 지킨다.
 
 분류는 넷 중 하나로 적습니다.
 
@@ -104,30 +110,36 @@ git cherry origin/main <branch>                    # 본편 대상이면 main �
 
 ## 6. 브랜치 삭제
 
-- 로컬: `git branch -d <branch>`. merge 되지 않은 브랜치는 git 이 거부하며, 거부되면 멈추고 다시 분류합니다.
-  강제 삭제(`-D`)는 쓰지 않습니다(git_guard 가 막습니다).
+- 로컬: `git branch -d <branch>`. merge 되지 않은 브랜치는 git 이 거부하며, 거부되면 그 브랜치는 멈추고 소유자에게 보고합니다.
+  강제 삭제(`-D`)는 쓰지 않습니다(git_guard 가 막습니다). upstream 설정을 바꿔 거부를 피하지도 않습니다.
+  cherry-pick 으로만 들어간 브랜치는 내용이 같아도 `-d` 가 거부할 수 있습니다. 그때도 결정은 소유자 몫입니다.
+- 고유 커밋이 로컬에만 있으면, 소유자 승인 뒤 먼저 `archive-*` 태그로 원격에 보존하고 태그가 그 커밋을 가리키는지 확인합니다(8절).
+  그다음에야 브랜치를 정리합니다.
 - 원격: 원격 ref 를 지우는 push(`git push origin --delete <branch>`)는 git_guard 가 에이전트에게 막습니다.
   승인된 목록을 받아 **소유자가 직접** 실행하거나 GitHub 에서 지웁니다. 에이전트는 다른 방법(`gh api` 등)으로 우회하지 않습니다.
 - 지운 뒤 `git fetch origin --prune` 으로 원격 추적 ref 를 맞춥니다. 열린 PR 이 있는 브랜치는 지우지 않습니다.
 
 ---
 
-## 7. 보호 대상
+## 7. 보호 대상 — 자동으로 지우지 않는 것
 
-정리 작업은 다음을 건드리지 않습니다.
+정리 작업은 다음을 자동으로 지우지 않습니다. 소유자가 항목별로 결정합니다.
 
+- 커밋 안 된 변경이 있는 worktree
 - 소유자의 원래 체크아웃과 그 안의 커밋 안 된 변경
 - stash 전부(`git stash drop`·`clear` 는 쓰지 않습니다. git_guard 가 막습니다)
-- 고유 커밋이 있는 브랜치, 백업·스냅숏 브랜치
+- 정체를 모르는 작업(누가 왜 만들었는지 모르는 브랜치·worktree·파일)
+- 로컬에만 있는 고유 커밋(원격 `archive-*` 태그로 보존·확인하기 전), 백업·스냅숏 브랜치
 - 다른 도구(Codex 등)의 worktree·브랜치, 정체를 모르는 worktree
 - lab 전용 실험(`lab` 브랜치의 Realtime·공개 projection·Portal LIST poller·Windows worker 코드)
 - 생성 데이터(`data/magazine/**`, `data/kaist-menu/**`, `data/ggongbab/latest.json`, `data/ggongbab/archive/**`, `data/foods/**`). 보관 기간은 제품 결정입니다
 
 ---
 
-## 8. release 태그
+## 8. release · archive 태그
 
 release 브랜치를 영원히 두지 않고, 본편에 들어간 merge 커밋에 annotated 태그를 남깁니다.
+합치지 않았지만 보존해야 하는 작업(미완성 실험, 채택되지 않은 스냅숏)은 `archive-*` 태그로 남깁니다.
 
 - 이름: `release-YYYY-MM-DD-<slug>`. 브랜치 `release/<name>` 과 헷갈리지 않게 슬래시를 쓰지 않습니다.
 - 메시지에 release 브랜치 이름과 옮긴 lab 커밋(cherry-pick 원본)을 적습니다.
@@ -137,8 +149,19 @@ git tag -a release-YYYY-MM-DD-<slug> <main-merge-sha> -m "<요약> (release/<nam
 git push origin release-YYYY-MM-DD-<slug>
 ```
 
+- archive 태그 이름은 `archive-YYYY-MM[-DD]-<slug>` 입니다. 메시지에 상태(미완성, 채택 안 됨, lab·main 에 merge 금지)와
+  원래 브랜치·worktree 를 적습니다. 커밋 안 된 작업이면 먼저 그 작업의 브랜치에 WIP 커밋으로 남깁니다(lab·main 에는 합치지 않음).
+
+```powershell
+git tag -a archive-YYYY-MM-DD-<slug> <commit> -m "<무엇이었는지, 상태, merge 금지>"
+git push origin archive-YYYY-MM-DD-<slug>
+git ls-remote origin "refs/tags/archive-YYYY-MM-DD-<slug>^{}"   # <commit> 과 같아야 정리를 시작한다
+```
+
 - 태그를 만들거나 지우기 전에 목록을 보고하고 소유자 승인을 받습니다. 원격 태그 삭제도 git_guard 가 막으므로 소유자 몫입니다.
 - 태그가 생긴 release 브랜치는 `SAFE_TO_DELETE` 후보가 됩니다.
+- 이 정리에서 쓰지 않는 것: `git branch -D`, `git worktree remove --force`, `git reset --hard`, `git clean`, 강제 push,
+  Vercel CLI 배포(`vercel --prod`). 모두 쓰지 않습니다.
 
 ---
 
