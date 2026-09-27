@@ -188,8 +188,11 @@ def test_statusline_formats_sample_session_json():
 # started from main, production moved on and babdoduk-lab kept serving stale shared UI. These
 # assertions keep the written contract from drifting back.
 # ---------------------------------------------------------------------------
-PROCESS_DOCS = ["AGENTS.md", "CLAUDE.md", "README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md"]
+PROCESS_DOCS = ["AGENTS.md", "CLAUDE.md", "README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md",
+                "docs/REPOSITORY_HYGIENE.md"]
 SKILL_DOCS = [f".claude/skills/{name}/SKILL.md" for name in ("session-start", "release-babdoduk", "handoff", "ui-review")]
+# Other agents read their own always-on rules; they get the same contract as the process docs.
+CURSOR_RULES = sorted(str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / ".cursor/rules").glob("*.mdc"))
 DRIFT_CHECK = "git log --format='%h %an %s' origin/lab..origin/main"
 
 
@@ -242,7 +245,7 @@ def test_release_starts_from_latest_main_and_promotes_selectively():
     assert "Never `git merge lab` or `git merge origin/lab` into a release" in release
     assert "goes back through lab first" in release  # behavior-changing conflict resolution
     # No document offers a whole-lab merge into main as a way to release.
-    for rel in PROCESS_DOCS + SKILL_DOCS:
+    for rel in PROCESS_DOCS + SKILL_DOCS + CURSOR_RULES:
         for line in read(rel).splitlines():
             if re.search(r"git merge (origin/)?lab\b", line):
                 assert re.search(r"[Nn]ever|not|않|아닙니다|금지", line), (rel, line)
@@ -271,8 +274,42 @@ def test_generated_data_bot_remains_an_exception():
 
 
 def test_no_document_instructs_a_cli_production_deploy():
-    docs = PROCESS_DOCS + SKILL_DOCS + [str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / "docs").glob("*.md")]
+    docs = PROCESS_DOCS + SKILL_DOCS + CURSOR_RULES
+    docs += [str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / "docs").glob("*.md")]
     for rel in sorted(set(docs)):
         for line in read(rel).splitlines():
             if re.search(r"vercel (deploy )?--prod", line):
                 assert re.search(r"[Nn]ever|not|않|금지|block", line), (rel, line)
+
+
+def test_cursor_rules_defer_to_the_lab_first_contract():
+    """An always-applied Cursor rule once said lab was approved by default, told agents to commit and
+    push without asking and to deploy with `npx vercel --prod --yes`. Cursor rules may only point back
+    to AGENTS.md and its lifecycle."""
+    assert CURSOR_RULES, "the repository keeps a Cursor rule that points to AGENTS.md"
+    for rel in CURSOR_RULES:
+        text = read(rel)
+        for anchor in ("AGENTS.md", "Lab-first lifecycle", ".claude/skills/release-babdoduk"):
+            assert anchor in text, (rel, anchor)
+        for stale in ("승인된 상태", "커밋·푸시가 기본", "다시 묻지 않는다", "--yes", "git push origin lab"):
+            assert stale not in text, (rel, stale)
+
+
+def test_cleanup_is_classified_first_and_never_forced():
+    hygiene = read("docs/REPOSITORY_HYGIENE.md")
+    for required in ("git cherry origin/lab <branch>", "git diff-tree --cc", "git worktree remove <path>",
+                     "git worktree prune", "git branch -d <branch>", "status --short --ignored", "release-YYYY-MM-DD-<slug>",
+                     # Unmerged work is preserved as a verified remote tag before anything local is cleaned up.
+                     "archive-YYYY-MM[-DD]-<slug>", 'git ls-remote origin "refs/tags/', "자동으로 지우지 않는 것",
+                     "거부되면 그 브랜치는 멈추고 소유자에게 보고합니다"):
+        assert required in hygiene, required
+    for label in ("ACTIVE", "SAFE_TO_DELETE", "KEEP_FOR_RELEASE_HISTORY", "OWNER_REVIEW_REQUIRED"):
+        assert f"`{label}`" in hygiene, label
+    assert hygiene.index("## 10. 보고 형식") > hygiene.index("## 9. 정리도 lab 을 먼저 거칩니다")
+    # Deletion waits for the owner's approval of the exact list, and forced forms are never instructions.
+    assert "승인받기 전에는 아무것도 지우지 않습니다" in hygiene
+    for line in hygiene.splitlines():
+        if re.search(r"--force|-D\b|stash drop|git push origin --delete", line):
+            assert re.search(r"않|막|소유자", line), line
+    for rel in ("README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md"):
+        assert "REPOSITORY_HYGIENE.md" in read(rel), rel

@@ -3,6 +3,7 @@
 이 프로젝트는 **저장소(폴더)는 하나**만 두고, **브랜치 두 개**로 공개용과 스테이징을 나눕니다.
 별도 폴더를 복사해 “프로젝트 두 개”를 만들지 않습니다. 규칙 전문은 `AGENTS.md`(“Lab-first lifecycle”),
 절차는 `.claude/skills/release-babdoduk`, merge 전후 점검은 **`BRANCH_MERGE_CHECKLIST.md`** 입니다.
+끝난 브랜치·worktree·태그 정리는 **`REPOSITORY_HYGIENE.md`** 를 따릅니다.
 
 ---
 
