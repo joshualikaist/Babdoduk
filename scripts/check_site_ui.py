@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import os
+import shutil
+import sys
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
@@ -13,6 +16,23 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 SIZES = [(1920, 1080), (1440, 900), (768, 1024), (390, 844), (360, 800)]
+# The browser the checks drive: the installed Chrome locally (Windows classic scrollbars), or the
+# Chromium bundled with the pinned Playwright container in CI (BABDODUK_BROWSER=chromium).
+BROWSER = os.environ.get("BABDODUK_BROWSER", "chrome")
+IN_CI = os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true"
+
+
+def launch(pw):
+    return pw.chromium.launch(channel=None if BROWSER == "chromium" else BROWSER, headless=True,
+                              ignore_default_args=["--hide-scrollbars"],
+                              args=["--disable-features=OverlayScrollbar,FluentOverlayScrollbar"])
+
+
+def new_context(browser):
+    context = browser.new_context(timezone_id="Asia/Seoul", reduced_motion="reduce", service_workers="block")
+    context.route("**/*", offline_route)
+    context.add_init_script("sessionStorage.setItem('babdoduk-welcome-seen','1');")
+    return context
 LONG_TITLE = "아주긴한글제목" * 24 + " UnbrokenEnglishTitle" * 3 + "LongEnglishWord" * 30
 
 
@@ -808,6 +828,9 @@ def site_guardian(page):
                     check(chrome["overflow"] <= 0, (where, "no horizontal overflow", chrome["overflow"]))
                     check(not errors, (where, "no JS or console errors", errors[:3]))
                     check(not broken, (where, "no broken resources", broken[:3]))
+                    text = chrome["footerText"]
+                    check(("Contact" in text and "문의" not in text) if lang == "en" else ("문의" in text and "Contact" not in text),
+                          (where, "the footer contact label follows the language", text[:90]))
                     if reference is None:
                         reference = chrome
                     else:
@@ -827,7 +850,48 @@ def site_guardian(page):
 # Visual regression for the shared chrome. Golden images live in tests/visual/chrome and change only
 # with an explicit owner approval note (see docs/VISUAL_BASELINES.md); a mismatch never re-baselines.
 # ---------------------------------------------------------------------------------------------------
-BASELINE_DIR = ROOT / "tests/visual/chrome"
+BASELINE_ROOT = ROOT / "tests/visual/chrome"
+PARTS = ("nav", "footer", "footer-context")
+
+
+def baseline_platform():
+    """Pixels are only comparable within one OS and browser build, so each keeps its own approved set."""
+    os_name = {"win32": "windows", "linux": "linux", "darwin": "macos"}.get(sys.platform, sys.platform)
+    return f"{os_name}-{BROWSER}"
+
+
+def expected_shots():
+    return [f"{Path(name).stem}-{lang}-{width}-{part}.png" for lang in ("ko", "en") for width, _ in VISUAL_SIZES
+            for name in GUARD_PAGES for part in PARTS]
+
+
+def refuse_in_ci(action):
+    if IN_CI:
+        raise SystemExit(f"refusing to {action} in CI: baselines change only with an owner-approved local "
+                         "command (docs/VISUAL_BASELINES.md)")
+
+
+def write_manifest(folder, approval, source):
+    (folder / "BASELINES.json").write_text(json.dumps({
+        "approval": approval, "platform": folder.name, "source": source, "images": len(expected_shots()),
+        "fixed_now": FIXED_NOW, "sizes": VISUAL_SIZES, "pages": GUARD_PAGES, "parts": PARTS,
+        "context_above_px": CONTEXT_ABOVE}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def failure_summary(failures):
+    """Name page, language, viewport and component for every failed image (.local and the CI job summary)."""
+    rows = ["| image | page | lang | viewport | component | problem |", "|---|---|---|---|---|---|"]
+    for file_name, problem in failures:
+        m = re.match(r"(\w+)-(ko|en)-(\d+)-(nav|footer|footer-context)\.png$", file_name)
+        page, lang, width, part = m.groups() if m else ("?", "?", "?", "?")
+        rows.append(f"| {file_name} | {page}.html | {lang} | {width}px | {part} | {problem} |")
+    text = (f"## Shared chrome visual check: {len(failures)} image(s) failed ({baseline_platform()})\n\n"
+            + "\n".join(rows) + "\n\nActual renders and diff images: `.local/visual-diff/`. "
+            "Do not re-baseline to pass; see docs/VISUAL_BASELINES.md.\n")
+    (DIFF_DIR / "SUMMARY.md").write_text(text, encoding="utf-8")
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as out:
+            out.write(text)
 DIFF_DIR = ROOT / ".local/visual-diff"
 VISUAL_SIZES = [(1440, 900), (390, 844)]
 FIXED_NOW = "2026-09-28T10:00:00+09:00"
@@ -872,8 +936,12 @@ def image_diff(expected, actual):
 
 
 def chrome_visual(page, update=False, approval=None):
-    """Nav, footer and footer-context screenshots against the approved golden images."""
+    """Nav, footer and footer-context screenshots against the approved golden images of this platform."""
     count = 0
+    if update:
+        refuse_in_ci("rewrite chrome baselines")
+        if not approval:
+            raise SystemExit("refusing to rewrite baselines without --approval (see docs/VISUAL_BASELINES.md)")
     shots = []
     page.clock.set_fixed_time(FIXED_NOW)
     page.route("**/*", visual_route)
@@ -903,53 +971,50 @@ def chrome_visual(page, update=False, approval=None):
                         shots.append((f"{stem}-{part}.png", take()))
     finally:
         page.unroute("**/*", visual_route)
+    folder = BASELINE_ROOT / baseline_platform()
     if update:
-        if not approval:
-            raise SystemExit("refusing to rewrite baselines without --approval (see docs/VISUAL_BASELINES.md)")
-        BASELINE_DIR.mkdir(parents=True, exist_ok=True)
-        for old in BASELINE_DIR.glob("*.png"):
+        folder.mkdir(parents=True, exist_ok=True)
+        for old in folder.glob("*.png"):
             old.unlink()
         for file_name, data in shots:
-            (BASELINE_DIR / file_name).write_bytes(data)
-        (BASELINE_DIR / "BASELINES.json").write_text(json.dumps({
-            "approval": approval, "images": len(shots), "fixed_now": FIXED_NOW, "sizes": VISUAL_SIZES,
-            "pages": GUARD_PAGES, "context_above_px": CONTEXT_ABOVE}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            (folder / file_name).write_bytes(data)
+        write_manifest(folder, approval, f"rendered locally by check_site_ui.py ({BROWSER})")
         return len(shots)
     failures = []
+    shutil.rmtree(DIFF_DIR, ignore_errors=True)
     DIFF_DIR.mkdir(parents=True, exist_ok=True)
     for file_name, data in shots:
-        expected = BASELINE_DIR / file_name
-        if not expected.is_file():
-            failures.append(f"{file_name}: no approved baseline")
-            continue
+        expected = folder / file_name
         actual = DIFF_DIR / file_name
-        actual.write_bytes(data)
+        actual.write_bytes(data)  # kept for review whenever the image fails
+        if not expected.is_file():
+            failures.append((file_name, f"no approved baseline for {folder.name}"))
+            continue
         ratio, diff = image_diff(expected, actual)
         if ratio > 0.002:
-            failures.append(f"{file_name}: {ratio:.2%} of pixels differ")
+            failures.append((file_name, f"{ratio:.2%} of pixels differ"))
             if diff is not None:
                 diff.save(DIFF_DIR / file_name.replace(".png", ".diff.png"))
         else:
             actual.unlink()
         count += 1
+    if failures:
+        failure_summary(failures)
     assert not failures, ("shared chrome changed visually; review .local/visual-diff and follow "
-                          "docs/VISUAL_BASELINES.md before approving new baselines", failures[:8])
+                          "docs/VISUAL_BASELINES.md before approving new baselines",
+                          [f"{name}: {problem}" for name, problem in failures[:8]])
     return count
 
 
 def run_checks(screenshots=False):
     report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(channel="chrome", headless=True,
-            ignore_default_args=["--hide-scrollbars"],
-            args=["--disable-features=OverlayScrollbar,FluentOverlayScrollbar"])
-        context = browser.new_context(timezone_id="Asia/Seoul", reduced_motion="reduce", service_workers="block")
-        context.route("**/*", offline_route)
+        browser = launch(pw)
+        context = new_context(browser)
         api_attempts = []
         context.on("request", lambda req: api_attempts.append(req.url)
                    if req.resource_type in ("fetch", "xhr", "eventsource")
                    and urlparse(req.url).hostname != "site-ui.invalid" else None)
-        context.add_init_script("sessionStorage.setItem('babdoduk-welcome-seen','1');")
         page = context.new_page()
         # WebSockets bypass routing and emit no request event; record every attempt.
         page.on("websocket", lambda ws: api_attempts.append(ws.url))
@@ -982,18 +1047,47 @@ def run_checks(screenshots=False):
     return report
 
 
-def update_chrome_baselines(approval):
-    """Rewrite the golden chrome screenshots. Only after an owner-approved visual change."""
+def run_chrome_checks():
+    """The shared-chrome gate alone: site guardian and visual comparison. This is what CI runs."""
+    report = {"platform": baseline_platform(), "checks": 0}
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(channel="chrome", headless=True,
-            ignore_default_args=["--hide-scrollbars"],
-            args=["--disable-features=OverlayScrollbar,FluentOverlayScrollbar"])
-        context = browser.new_context(timezone_id="Asia/Seoul", reduced_motion="reduce", service_workers="block")
-        context.route("**/*", offline_route)
-        context.add_init_script("sessionStorage.setItem('babdoduk-welcome-seen','1');")
-        written = chrome_visual(context.new_page(), update=True, approval=approval)
+        browser = launch(pw)
+        page = new_context(browser).new_page()
+        report["guardian"] = site_guardian(page)
+        report["visual"] = chrome_visual(page)
+        report["checks"] = report["guardian"] + report["visual"]
+        browser.close()
+    return report
+
+
+def update_chrome_baselines(approval):
+    """Rewrite this platform's golden chrome screenshots. Only after an owner-approved visual change."""
+    refuse_in_ci("rewrite chrome baselines")
+    with sync_playwright() as pw:
+        browser = launch(pw)
+        written = chrome_visual(new_context(browser).new_page(), update=True, approval=approval)
         browser.close()
     return written
+
+
+def adopt_chrome_baselines(source, platform, approval):
+    """Install renders made elsewhere (for example a failed CI run's artifact) as a platform's approved set."""
+    refuse_in_ci("adopt chrome baselines")
+    if not approval:
+        raise SystemExit("refusing to adopt baselines without --approval (see docs/VISUAL_BASELINES.md)")
+    source = Path(source)
+    names = expected_shots()
+    missing = [name for name in names if not (source / name).is_file()]
+    if missing:
+        raise SystemExit(f"{source} lacks {len(missing)} of {len(names)} renders, e.g. {missing[:3]}")
+    folder = BASELINE_ROOT / platform
+    folder.mkdir(parents=True, exist_ok=True)
+    for old in folder.glob("*.png"):
+        old.unlink()
+    for name in names:
+        shutil.copyfile(source / name, folder / name)
+    write_manifest(folder, approval, f"adopted from {source.name}")
+    return len(names)
 
 
 if __name__ == "__main__":
@@ -1001,9 +1095,18 @@ if __name__ == "__main__":
     parser.add_argument("--screenshots", action="store_true")
     parser.add_argument("--update-chrome-baselines", action="store_true",
                         help="rewrite tests/visual/chrome after an owner-approved visual change")
-    parser.add_argument("--approval", help="who approved the visual change, and where (required with --update-chrome-baselines)")
+    parser.add_argument("--approval", help="who approved the visual change, and where (required to change baselines)")
+    parser.add_argument("--chrome-only", action="store_true", help="run only the site guardian and the visual check (CI)")
+    parser.add_argument("--adopt-chrome-baselines", metavar="DIR", help="install renders from DIR as approved baselines")
+    parser.add_argument("--platform", help="baseline set for --adopt-chrome-baselines, e.g. linux-chromium")
     args = parser.parse_args()
     if args.update_chrome_baselines:
-        print(f"wrote {update_chrome_baselines(args.approval)} baseline images")
+        print(f"wrote {update_chrome_baselines(args.approval)} baseline images for {baseline_platform()}")
+    elif args.adopt_chrome_baselines:
+        if not args.platform:
+            raise SystemExit("--adopt-chrome-baselines needs --platform")
+        print(f"adopted {adopt_chrome_baselines(args.adopt_chrome_baselines, args.platform, args.approval)} images as {args.platform}")
+    elif args.chrome_only:
+        print(json.dumps(run_chrome_checks(), ensure_ascii=False, indent=2))
     else:
         print(json.dumps(run_checks(args.screenshots), ensure_ascii=False, indent=2))

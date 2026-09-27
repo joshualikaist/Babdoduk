@@ -9,6 +9,9 @@ blocks.
 
     python scripts/sync_site_chrome.py          # rewrite the pages
     python scripts/sync_site_chrome.py --check  # exit 1 and show the diff if any page drifted
+
+Strings the chrome owns (CHROME_STRINGS) are written into every page's ko and en translation
+tables, and every key the chrome renders must exist in both.
 """
 from __future__ import annotations
 
@@ -43,6 +46,12 @@ PAGES = {
     "history.html": {"current": "history.html"},
     "lab.html": {"current": "lab.html", "lab": True},
     "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True},
+}
+
+# Strings the shared chrome owns. Each page keeps its own translation table, so these
+# entries are written into every page's ko and en tables by this script.
+CHROME_STRINGS = {
+    "footer.contact": {"ko": "문의", "en": "Contact"},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),
@@ -99,6 +108,40 @@ def synced(page: str) -> str:
         indent = lines[start][: len(lines[start]) - len(lines[start].lstrip())]
         block = [indent + row if row else row for row in render(page, kind)]
         lines[start:end + 1] = block
+    return sync_strings(page, "\n".join(lines))
+
+
+def chrome_keys() -> set[str]:
+    """Translation keys the shared nav and footer render."""
+    keys: set[str] = set()
+    for name in ("nav", "footer"):
+        keys |= set(re.findall(r'data-i18n(?:-aria-key)?="([^"]+)"', (SHARED / f"{name}.html").read_text(encoding="utf-8")))
+    return keys
+
+
+def sync_strings(page: str, text: str) -> str:
+    """Write CHROME_STRINGS into the page's ko and en tables; every chrome key must exist in both."""
+    lines = text.split("\n")
+    blocks = []
+    for lang in ("ko", "en"):
+        start = next(i for i, line in enumerate(lines) if line.strip() == f"{lang}: {{")
+        end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() in ("},", "}"))
+        blocks.append((start, end, lang))
+    for start, end, lang in sorted(blocks, reverse=True):  # later block first: indexes stay valid
+        body = lines[start + 1:end]
+        for key, values in CHROME_STRINGS.items():
+            anchor = next(i for i, line in enumerate(body) if line.lstrip().startswith("'footer.copyright':"))
+            indent = body[anchor][: len(body[anchor]) - len(body[anchor].lstrip())]
+            entry = f"{indent}'{key}': '{values[lang]}',"
+            found = [i for i, line in enumerate(body) if line.lstrip().startswith(f"'{key}':")]
+            if found:
+                body[found[0]] = entry
+            else:
+                body.insert(anchor + 1, entry)
+        missing = sorted(k for k in chrome_keys() if not any(line.lstrip().startswith(f"'{k}':") for line in body))
+        if missing:
+            raise SystemExit(f"{page}: the {lang} translation table lacks shared chrome keys {missing}")
+        lines[start + 1:end] = body
     return "\n".join(lines)
 
 

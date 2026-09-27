@@ -1,4 +1,5 @@
 """Shared site chrome: one source in shared/, a static copy in every page, and drift fails."""
+import json
 import re
 import shutil
 import subprocess
@@ -43,8 +44,54 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
     assert "<script" not in (ROOT / "shared/footer.html").read_text(encoding="utf-8")
 
 
-def test_ci_fails_on_chrome_drift_without_secrets():
-    workflow = (ROOT / ".github/workflows/site-chrome.yml").read_text(encoding="utf-8")
+def test_the_contact_label_is_a_chrome_string_in_both_languages():
+    for page in chrome.PAGES:
+        html = (ROOT / page).read_text(encoding="utf-8")
+        footer = html[html.index('<footer class="site-footer"'):html.index("</footer>")]
+        assert '<span data-i18n="footer.contact">문의</span>' in footer, page
+        ko, en = html[html.index("ko: {"):html.index("en: {")], html[html.index("en: {"):]
+        assert "'footer.contact': '문의'," in ko and "'footer.contact': 'Contact'," in en, page
+        english = en[:en.index("\n        }")]
+        assert "문의" not in english, page  # the English table never shows the Korean label
+
+
+def test_ci_runs_the_structural_and_the_visual_guardian_and_never_rebaselines():
+    workflow = (ROOT / ".github/workflows/ui-guardian.yml").read_text(encoding="utf-8")
+    assert not (ROOT / ".github/workflows/site-chrome.yml").exists()
     assert "python scripts/sync_site_chrome.py --check" in workflow
-    assert "permissions:\n  contents: read" in workflow
-    assert "secrets." not in workflow and "schedule:" not in workflow
+    assert "python3 scripts/check_site_ui.py --chrome-only" in workflow
+    assert "BABDODUK_BROWSER: chromium" in workflow
+    assert re.search(r"image: mcr\.microsoft\.com/playwright/python:v[\d.]+-noble-amd64@sha256:[0-9a-f]{64}", workflow)
+    assert "if: failure()" in workflow and "path: .local/visual-diff/" in workflow
+    for path in ("'**.html'", "'css/**'", "'js/**'", "'shared/**'", "'scripts/check_site_ui.py'",
+                 "'scripts/sync_site_chrome.py'", "'tests/visual/chrome/**'", "'.github/workflows/ui-guardian.yml'"):
+        assert workflow.count(path) == 2, path  # push and pull_request
+    assert "data/" not in workflow  # generated-data bot pushes do not run the browser job
+    assert "permissions:\n  contents: read" in workflow and "secrets." not in workflow and "schedule:" not in workflow
+    for forbidden in ("--update-chrome-baselines", "--adopt-chrome-baselines", "--approval"):
+        assert forbidden not in workflow, forbidden
+
+
+def test_baseline_changes_refuse_to_run_in_ci(monkeypatch):
+    import check_site_ui
+    monkeypatch.setattr(check_site_ui, "IN_CI", True)
+    for action in (lambda: check_site_ui.update_chrome_baselines("approved"),
+                   lambda: check_site_ui.adopt_chrome_baselines(ROOT, "linux-chromium", "approved")):
+        try:
+            action()
+        except SystemExit as exc:
+            assert "refusing" in str(exc)
+        else:
+            raise AssertionError("baseline change ran in CI")
+
+
+def test_every_platform_set_is_complete_and_owner_approved():
+    import check_site_ui
+    names = set(check_site_ui.expected_shots())
+    sets = sorted(p for p in (ROOT / "tests/visual/chrome").iterdir() if p.is_dir())
+    assert [p.name for p in sets] == ["linux-chromium", "windows-chrome"]
+    for folder in sets:
+        assert {p.name for p in folder.glob("*.png")} == names, folder.name
+        manifest = json.loads((folder / "BASELINES.json").read_text(encoding="utf-8"))
+        assert manifest["platform"] == folder.name and "PENDING" not in manifest["approval"]
+        assert manifest["approval"].startswith("Owner approved"), manifest["approval"]
