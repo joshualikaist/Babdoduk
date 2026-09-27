@@ -1,0 +1,79 @@
+name: ui-guardian
+
+# Guards the shared site chrome on every frontend change.
+#  chrome-sync      every page's nav/footer copy and chrome strings match shared/ (no browser).
+#  visual-guardian  scripts/check_site_ui.py --chrome-only: the site guardian (nav and footer
+#                   structure, destinations, computed footer styles, footer context, overflow,
+#                   console errors, broken resources) and the screenshot comparison of nav, footer
+#                   and footer context against tests/visual/chrome/linux-chromium.
+# The visual job runs in a digest-pinned Playwright container with its bundled Chromium, the
+# environment its baselines were rendered in. It never rewrites baselines: a mismatch fails and
+# uploads .local/visual-diff (actual and diff images, SUMMARY.md). Read-only: no secrets, no
+# writes, no deploy. Data-only bot pushes do not trigger it.
+
+on:
+  push:
+    branches: [main, lab, 'agent/**', 'release/**']
+    paths:
+      - '**.html'
+      - 'css/**'
+      - 'js/**'
+      - 'images/**'
+      - 'shared/**'
+      - 'scripts/check_site_ui.py'
+      - 'scripts/sync_site_chrome.py'
+      - 'tests/visual/chrome/**'
+      - '.github/workflows/ui-guardian.yml'
+  pull_request:
+    paths:
+      - '**.html'
+      - 'css/**'
+      - 'js/**'
+      - 'images/**'
+      - 'shared/**'
+      - 'scripts/check_site_ui.py'
+      - 'scripts/sync_site_chrome.py'
+      - 'tests/visual/chrome/**'
+      - '.github/workflows/ui-guardian.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-guardian-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chrome-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Shared nav, footer and chrome strings are in sync
+        run: python scripts/sync_site_chrome.py --check
+
+  visual-guardian:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.63.0-noble-amd64@sha256:96b39581c89131729a7ecb8d532314af54c7f9bcc7a61fe15c7a9e77602acf59
+    env:
+      BABDODUK_BROWSER: chromium
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install the image comparison libraries
+        run: python3 -m pip install --no-cache-dir --break-system-packages pillow==12.0.0 numpy==2.2.6
+      - name: Site guardian and visual chrome comparison
+        run: python3 scripts/check_site_ui.py --chrome-only
+      - name: Upload actual renders and diffs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-diff-${{ github.run_id }}
+          path: .local/visual-diff/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14

@@ -761,8 +761,8 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `scripts/portal_web_agent.py` | Portal 로컬 에이전트 (SSO · 관찰 · 수집 큐) |
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
-| `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사, 공통 chrome 가디언·시각 기준 (`docs/VISUAL_BASELINES.md`) |
-| `scripts/sync_site_chrome.py` | `shared/nav.html`·`shared/footer.html` 을 모든 페이지에 정적으로 복사. `--check` 는 어긋나면 실패 (CI `site-chrome`) |
+| `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사, 공통 chrome 가디언·시각 기준 (`docs/VISUAL_BASELINES.md`). `--chrome-only` 는 CI `ui-guardian` 이 쓰는 가디언+시각 비교만 실행 |
+| `scripts/sync_site_chrome.py` | `shared/nav.html`·`shared/footer.html` 을 모든 페이지에 정적으로 복사. `--check` 는 어긋나면 실패 (CI `ui-guardian`) |
 | `scripts/check_real_fonts.py` | 실제 웹 폰트로 공개 페이지 가로 넘침 확인 (네트워크, PASS/FAIL/SKIP) |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |
