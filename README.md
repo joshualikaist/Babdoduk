@@ -765,7 +765,6 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |
 | `scripts/refresh_magazine.py` · `refresh_kaist_menu.py` | 매거진·학식 데이터 |
 | `scripts/run_ggongbab_agent.cmd` | 작업 스케줄러 진입점 |
-| `rebuild_index.py` · `patch_site.py` | 홈 재생성·공통 패치 (레거시) |
 
 ---
 
