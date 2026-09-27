@@ -96,6 +96,8 @@ git cherry origin/main <branch>                    # 본편 대상이면 main �
 - `git worktree remove <path>` 로 하나씩 지우고, 끝나면 `git worktree prune` 을 실행합니다. `--force` 는 쓰지 않습니다(`.claude/hooks/git_guard.py` 가 막습니다).
 - 커밋 안 된 변경이 있는 worktree 는 지우지 않습니다. 소유자가 커밋·스냅숏·폐기를 먼저 결정합니다.
 - 무시된 파일은 `.local/ui-shots` 처럼 다시 만들 수 있는 산출물이어야 합니다. `.env`, 브라우저 프로필, 세션·인증 파일이 보이면 멈추고 소유자에게 묻습니다.
+- 무시된 설정 파일(`.claude/settings.local.json` 등)은 산출물이 아닙니다. 소유자 체크아웃의 같은 파일과 바이트 단위로 비교하고(`Get-FileHash`, `cmp`),
+  다르면 그 파일만 따로 보관한 뒤 worktree 를 지웁니다. "원래 체크아웃에도 있다"는 것만으로는 삭제 근거가 되지 않습니다.
 - 브랜치가 어떤 worktree 에 checkout 되어 있으면 그 브랜치는 지워지지 않습니다. worktree 를 먼저 정리합니다.
 
 ---
@@ -148,6 +150,10 @@ git push origin release-YYYY-MM-DD-<slug>
   - 참조 검색: `git grep -F <파일 이름> origin/lab`, `origin/main`, 동적 경로를 대비한 접두사 검색
   - 마지막 참조가 사라진 커밋: `git log -S<이름> origin/lab`
   - 공개 URL 로 서빙되는 파일인지(`.vercelignore`). 외부에서 링크했을 수 있다는 점도 적습니다
+- 레거시 스크립트·문서가 가리키는 것도 참조입니다. 사이트가 쓰지 않는 자산이라도 먼저 지우면 그 스크립트가 깨진 채 남습니다.
+  참조하는 파일을 먼저 폐기하고, 참조 검색을 다시 돌린 뒤, 완전히 고아가 된 자산만 지웁니다.
+- 유지 판정에도 증거(참조하는 `파일:줄`)를 붙입니다. 근거를 찾지 못하면 유지가 아니라 `OWNER_REVIEW_REQUIRED` 입니다.
+- 한 원본에서 나온 파일 묶음(압축 파일과 풀린 파일)은 함께 판단합니다. 라이선스 파일이 없는 외부 자산은 공개 서빙 여부와 함께 보고합니다.
 - 생성 데이터와 lab 전용 실험은 정리 대상이 아닙니다.
 
 ---
