@@ -8,7 +8,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 LANES = ("tips", "trend", "health", "habit")
@@ -110,6 +110,162 @@ EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 PHONE_RE = re.compile(r"(?<!\d)(?:\+?82[-\s.]?)?0?1[016789][-\s.]?\d{3,4}[-\s.]?\d{4}(?!\d)")
 SECRET_RE = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}|dooray-api\s+\S+)")
 DOORAY_LINK_RE = re.compile(r"dooray\.com|/files/[A-Za-z0-9]{8,}", re.I)
+GG_PUBLIC_URL_SOURCES = {"kaist_public", "manual"}
+
+# ---------------------------------------------------------------------------
+# Public event schema and the structure-aware privacy scan (latest.json and the archive)
+# ---------------------------------------------------------------------------
+# Every field of a public ggongbab event and the kind of value it holds. The privacy
+# patterns (e-mail, phone, token, Dooray/private link) run on "text" fields only: the words
+# a person wrote or the extractor copied. Ids, timestamps, enums and numbers are checked by
+# shape and URLs by URL rules, so a UUID such as ...-4b18-8387-8430... (read as
+# 018-8387-8430) or a numeric link path is never mistaken for a phone number. A key that is
+# not listed here is refused until it is reviewed for privacy and classified
+# (tests/ggongbab/test_privacy_validator.py keeps this schema and the exporter in step).
+GG_TEXT, GG_URL, GG_ID, GG_TIME, GG_ENUM, GG_NUMBER = "text", "url", "id", "time", "enum", "number"
+GG_EVENT_SCHEMA = {
+    "id": GG_ID,
+    "title": GG_TEXT, "summary": GG_TEXT, "dateText": GG_TEXT, "timeText": GG_TEXT,
+    "organizer": GG_TEXT, "eligibility": GG_TEXT,
+    "startAt": GG_TIME, "endAt": GG_TIME,
+    "location": {"name": GG_TEXT, "building": GG_TEXT, "room": GG_TEXT},
+    "food": {"provided": GG_ENUM, "type": GG_ENUM, "description": GG_TEXT},
+    "registration": {"required": GG_ENUM, "deadline": GG_TIME, "url": GG_URL},
+    "confidence": GG_NUMBER,
+    "sources": [{"type": GG_ENUM, "name": GG_TEXT, "url": GG_URL}],
+}
+# Top-level keys; `_preview` holds only the local preview's numeric diagnostics.
+GG_LIVE_TOP_LEVEL = {"generatedAt", "timezone", "count", "events", "_preview"}
+GG_ARCHIVE_TOP_LEVEL = {"generatedAt", "timezone", "windowDays", "count", "events"}
+GG_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
+# A whole query/fragment value that is a dialable Korean mobile number: it needs a real
+# prefix (0, +82, or 82 plus a separator), so a numeric id such as mng_no=1712345678 is not one.
+GG_URL_PHONE_RE = re.compile(r"(?:\+82[-\s.]?|82[-\s.]|0)1[016789][-\s.]?\d{3,4}[-\s.]?\d{4}")
+GG_TEXT_PATTERNS = ((EMAIL_RE, "an e-mail address"), (PHONE_RE, "a phone number"),
+                    (SECRET_RE, "a token-like string"), (DOORAY_LINK_RE, "a Dooray/private file link"))
+
+
+def gg_schema_fields(value, schema=GG_EVENT_SCHEMA, path=""):
+    """(path, kind, value) for each field present in a public event, walked by the schema.
+
+    kind is None for a key the schema does not know, and "shape" where a value has the
+    wrong container type. Values are never searched blindly: only the schema decides.
+    """
+    if isinstance(schema, dict):
+        if not isinstance(value, dict):
+            yield path, "shape", value
+            return
+        for key, item in value.items():
+            where = f"{path}.{key}" if path else key
+            if key not in schema:
+                yield where, None, item
+            else:
+                yield from gg_schema_fields(item, schema[key], where)
+    elif isinstance(schema, list):
+        if not isinstance(value, list):
+            yield path, "shape", value
+            return
+        for idx, item in enumerate(value):
+            yield from gg_schema_fields(item, schema[0], f"{path}[{idx}]")
+    else:
+        yield path, schema, value
+
+
+def gg_public_text_fields(schema=GG_EVENT_SCHEMA, path="") -> tuple[str, ...]:
+    """The explicit allowlist of privacy-scanned text fields, e.g. "location.name", "sources[].name"."""
+    fields: list[str] = []
+    for key, kind in schema.items():
+        where = f"{path}.{key}" if path else key
+        if isinstance(kind, dict):
+            fields += gg_public_text_fields(kind, where)
+        elif isinstance(kind, list):
+            fields += gg_public_text_fields(kind[0], where + "[]")
+        elif kind == GG_TEXT:
+            fields.append(where)
+    return tuple(fields)
+
+
+GG_PUBLIC_TEXT_FIELDS = gg_public_text_fields()
+
+
+def gg_text_errors(prefix: str, where: str, text) -> list[str]:
+    """Personal data in public text: strict, for every text field."""
+    if text is None:
+        return []
+    if not isinstance(text, str):
+        return [f"{where} must be text"]
+    return [f"{prefix} contains {label} in {where}" for pattern, label in GG_TEXT_PATTERNS if pattern.search(text)]
+
+
+def gg_url_errors(prefix: str, where: str, url) -> list[str]:
+    """URL rules instead of text rules: digits in a host or path are ids, not phone numbers.
+
+    Refused: a non-http(s) or host-less URL, credentials, a Dooray/private file link, an
+    e-mail address or a token anywhere in the URL (percent-decoded too), and a query or
+    fragment value that is itself a dialable mobile number, such as a prefilled form field.
+    """
+    if url in (None, ""):
+        return []
+    if not isinstance(url, str):
+        return [f"{where} invalid"]
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return [f"{where} invalid"]
+    errors = [f"{where} carries credentials"] if (parsed.username or parsed.password) else []
+    decoded = unquote(url)
+    for pattern, label in ((DOORAY_LINK_RE, "a Dooray/private file link"), (EMAIL_RE, "an e-mail address"),
+                           (SECRET_RE, "a token-like string")):
+        if pattern.search(url) or pattern.search(decoded):
+            errors.append(f"{prefix} contains {label} in {where}")
+    values = [value for _, value in parse_qsl(parsed.query, keep_blank_values=True)]
+    values += [value for _, value in parse_qsl(parsed.fragment, keep_blank_values=True)] or [unquote(parsed.fragment)]
+    if any(GG_URL_PHONE_RE.fullmatch(value.strip()) for value in values if value.strip()):
+        errors.append(f"{prefix} contains a phone number in {where} (query or fragment value)")
+    return errors
+
+
+def gg_id_errors(prefix: str, where: str, value) -> list[str]:
+    """An id is structural: a plain identifier, never scanned as text (no phone pattern)."""
+    if not isinstance(value, str) or not value:
+        return []  # a missing id is reported by the validator itself
+    errors = [] if GG_ID_RE.fullmatch(value) else [f"{where} is not a plain identifier"]
+    for pattern, label in ((SECRET_RE, "a token-like string"), (DOORAY_LINK_RE, "a Dooray/private file link")):
+        if pattern.search(value):
+            errors.append(f"{prefix} contains {label} in {where}")
+    return errors
+
+
+def gg_public_field_errors(prefix: str, tag: str, event: dict) -> list[str]:
+    """Privacy and schema-ownership errors for one public event (shared by the live feed and the archive)."""
+    errors: list[str] = []
+    for path, kind, value in gg_schema_fields(event):
+        where = f"{tag}.{path}"
+        if kind is None:
+            errors.append(f"{where} is not in the reviewed public schema; privacy review required")
+        elif kind == "shape":
+            errors.append(f"{where} has an unexpected shape")
+        elif kind == GG_TEXT:
+            errors += gg_text_errors(prefix, where, value)
+        elif kind == GG_URL:
+            errors += gg_url_errors(prefix, where, value)
+        elif kind == GG_ID:
+            errors += gg_id_errors(prefix, where, value)
+        # time, enum and number values are checked by the validators' own rules
+    for src in event.get("sources") if isinstance(event.get("sources"), list) else []:
+        if isinstance(src, dict) and src.get("url") and src.get("type") not in GG_PUBLIC_URL_SOURCES:
+            errors.append(f"{tag} exposes a {src.get('type')} source URL; only public notice links may be kept")
+    return errors
+
+
+def gg_top_level_errors(label: str, data: dict, allowed: set[str]) -> list[str]:
+    errors = [f"{label} top-level {key!r} is not in the reviewed public schema; privacy review required"
+              for key in data if key not in allowed]
+    preview = data.get("_preview")
+    if "_preview" in allowed and preview is not None and not (
+            isinstance(preview, dict)
+            and all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in preview.values())):
+        errors.append(f"{label} _preview must hold numeric counters only")
+    return errors
 
 
 def _walk_keys(obj, path: str, errors: list[str]) -> None:
@@ -161,15 +317,9 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
         return errors + ["ggongbab events must be a list"]
     if data.get("count") is not None and data.get("count") != len(events):
         errors.append("ggongbab count does not match events length")
-    raw_text = json.dumps(data, ensure_ascii=False)
-    if EMAIL_RE.search(raw_text):
-        errors.append("ggongbab export contains an e-mail address")
-    if PHONE_RE.search(raw_text):
-        errors.append("ggongbab export contains a phone number")
-    if SECRET_RE.search(raw_text):
-        errors.append("ggongbab export contains a token-like string")
-    if DOORAY_LINK_RE.search(raw_text):
-        errors.append("ggongbab export contains a Dooray/private file link")
+    # Privacy is checked field by field (gg_public_field_errors), never over the serialized
+    # JSON: structural values such as UUID ids must not be read as phone numbers.
+    errors += gg_top_level_errors("ggongbab export", data, GG_LIVE_TOP_LEVEL)
     _walk_keys(data, "$", errors)
     ids: set[str] = set()
     seen: list[tuple[str, str]] = []
@@ -178,6 +328,7 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
         if not isinstance(ev, dict):
             errors.append(f"{tag} not an object")
             continue
+        errors += gg_public_field_errors("ggongbab export", tag, ev)
         eid = ev.get("id")
         if not eid or not isinstance(eid, str):
             errors.append(f"{tag} missing id")
@@ -185,7 +336,7 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
             errors.append(f"{tag} duplicate id {eid}")
         else:
             ids.add(eid)
-        if not (ev.get("title") or "").strip():
+        if not isinstance(ev.get("title"), str) or not ev["title"].strip():
             errors.append(f"{tag} missing title")
         start = _iso(ev.get("startAt"))
         if start is None:
@@ -215,11 +366,7 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
         reg = ev.get("registration") or {}
         if reg.get("required") not in GG_TRI:
             errors.append(f"{tag} registration.required must be true/false/unknown")
-        url = reg.get("url") or ""
-        if url:
-            parsed = urlparse(url)
-            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-                errors.append(f"{tag} registration.url invalid")
+        # registration.url: URL rules in gg_public_field_errors ("... registration.url invalid")
         deadline = _iso(reg.get("deadline")) if reg.get("deadline") else None
         if reg.get("deadline") and deadline is None:
             errors.append(f"{tag} registration.deadline not ISO")
@@ -228,12 +375,15 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
         sources = ev.get("sources") or []
         if not sources:
             errors.append(f"{tag} has no sources")
-        for src in sources:
+        for src in sources if isinstance(sources, list) else []:
+            if not isinstance(src, dict):
+                errors.append(f"{tag} source not an object")
+                continue
             if src.get("type") not in GG_SOURCE_TYPES:
                 errors.append(f"{tag} source type invalid")
             if set(src.keys()) - {"type", "name", "url"}:
                 errors.append(f"{tag} source has unexpected keys")
-        key_title = _norm_title(ev.get("title") or "")
+        key_title = _norm_title(ev.get("title") if isinstance(ev.get("title"), str) else "")
         day = start.date().isoformat() if start else ""
         for other_title, other_day in seen:
             if day and day == other_day and SequenceMatcher(None, key_title, other_title).ratio() >= 0.9:
@@ -247,7 +397,6 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
 # ggongbab past listings (data/ggongbab/archive/index.json)
 # ---------------------------------------------------------------------------
 GG_ARCHIVE_WINDOW_DAYS = 30
-GG_PUBLIC_URL_SOURCES = {"kaist_public", "manual"}
 
 
 def validate_ggongbab_archive(path: Path, live_ids: set[str] | None = None) -> list[str]:
@@ -283,11 +432,8 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
         return errors + ["ggongbab archive events must be a list"]
     if data.get("count") != len(events):
         errors.append("ggongbab archive count does not match events length")
-    raw_text = json.dumps(data, ensure_ascii=False)
-    for pattern, label in ((EMAIL_RE, "an e-mail address"), (PHONE_RE, "a phone number"),
-                           (SECRET_RE, "a token-like string"), (DOORAY_LINK_RE, "a Dooray/private file link")):
-        if pattern.search(raw_text):
-            errors.append(f"ggongbab archive contains {label}")
+    # The same field-by-field privacy scan as the live feed; never a weaker rule.
+    errors += gg_top_level_errors("ggongbab archive", data, GG_ARCHIVE_TOP_LEVEL)
     _walk_keys(data, "$archive", errors)
     ids: set[str] = set()
     order: list[tuple[str, str]] = []
@@ -296,6 +442,7 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
         if not isinstance(ev, dict):
             errors.append(f"{tag} not an object")
             continue
+        errors += gg_public_field_errors("ggongbab archive", tag, ev)
         eid = ev.get("id")
         if not eid or not isinstance(eid, str):
             errors.append(f"{tag} missing id")
@@ -305,7 +452,7 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
             ids.add(eid)
             if live_ids and eid in live_ids:
                 errors.append(f"{tag} is also in the live feed")
-        if not (ev.get("title") or "").strip():
+        if not isinstance(ev.get("title"), str) or not ev["title"].strip():
             errors.append(f"{tag} missing title")
         start = _iso(ev.get("startAt"))
         if start is None:
@@ -343,13 +490,7 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
                 errors.append(f"{tag} source type invalid")
             if set(src.keys()) - {"type", "name", "url"}:
                 errors.append(f"{tag} source has unexpected keys")
-            url = src.get("url") or ""
-            if url:
-                parsed = urlparse(url)
-                if src.get("type") not in GG_PUBLIC_URL_SOURCES:
-                    errors.append(f"{tag} exposes a {src.get('type')} source URL; only public notice links may be kept")
-                elif parsed.scheme not in {"http", "https"} or not parsed.netloc:
-                    errors.append(f"{tag} source url invalid")
+            # sources[].url: URL rules and the public-notice-only rule in gg_public_field_errors
         order.append((ev.get("endAt") or ev.get("startAt") or "", eid if isinstance(eid, str) else ""))
     expected = sorted(sorted(order, key=lambda key: key[1]), key=lambda key: key[0], reverse=True)
     if order != expected:
