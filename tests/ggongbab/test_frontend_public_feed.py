@@ -83,8 +83,9 @@ def test_python_js_mapping_parity(provided):
 
 def test_static_browser_security_contract():
     code = SCRIPT.read_text(encoding="utf-8")
-    browser_files = [SCRIPT, ROOT / "js/ggongbab.js", ROOT / "js/ggongbab-public-config.js",
-                     ROOT / "ggongbab.html", ROOT / "lab-ggongbab.html"]
+    browser_files = [SCRIPT, ROOT / "js/ggongbab.js", ROOT / "js/ggongbab-select.js",
+                     ROOT / "js/ggongbab-public-config.js", ROOT / "ggongbab.html",
+                     ROOT / "lab-ggongbab.html", ROOT / "index.html"]
     public_source = "\n".join(path.read_text(encoding="utf-8") for path in browser_files)
     for forbidden in ("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY", "JSESSIONID",
                       "raw_items", "ai_parse_runs", "event_sources", "event_conflicts",
