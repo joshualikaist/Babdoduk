@@ -188,7 +188,8 @@ def test_statusline_formats_sample_session_json():
 # started from main, production moved on and babdoduk-lab kept serving stale shared UI. These
 # assertions keep the written contract from drifting back.
 # ---------------------------------------------------------------------------
-PROCESS_DOCS = ["AGENTS.md", "CLAUDE.md", "README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md"]
+PROCESS_DOCS = ["AGENTS.md", "CLAUDE.md", "README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md",
+                "docs/REPOSITORY_HYGIENE.md"]
 SKILL_DOCS = [f".claude/skills/{name}/SKILL.md" for name in ("session-start", "release-babdoduk", "handoff", "ui-review")]
 DRIFT_CHECK = "git log --format='%h %an %s' origin/lab..origin/main"
 
@@ -276,3 +277,20 @@ def test_no_document_instructs_a_cli_production_deploy():
         for line in read(rel).splitlines():
             if re.search(r"vercel (deploy )?--prod", line):
                 assert re.search(r"[Nn]ever|not|않|금지|block", line), (rel, line)
+
+
+def test_cleanup_is_classified_first_and_never_forced():
+    hygiene = read("docs/REPOSITORY_HYGIENE.md")
+    for required in ("git cherry origin/lab <branch>", "git diff-tree --cc", "git worktree remove <path>",
+                     "git worktree prune", "git branch -d <branch>", "status --short --ignored", "release-YYYY-MM-DD-<slug>"):
+        assert required in hygiene, required
+    for label in ("ACTIVE", "SAFE_TO_DELETE", "KEEP_FOR_RELEASE_HISTORY", "OWNER_REVIEW_REQUIRED"):
+        assert f"`{label}`" in hygiene, label
+    assert hygiene.index("## 10. 보고 형식") > hygiene.index("## 9. 정리도 lab 을 먼저 거칩니다")
+    # Deletion waits for the owner's approval of the exact list, and forced forms are never instructions.
+    assert "승인받기 전에는 아무것도 지우지 않습니다" in hygiene
+    for line in hygiene.splitlines():
+        if re.search(r"--force|-D\b|stash drop|git push origin --delete", line):
+            assert re.search(r"않|막|소유자", line), line
+    for rel in ("README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md"):
+        assert "REPOSITORY_HYGIENE.md" in read(rel), rel

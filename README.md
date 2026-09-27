@@ -736,6 +736,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 `git push --force`, `git reset --hard` 후 main 덮어쓰기, main ref 직접 갱신은 하지 않습니다.
 
 명령과 절차: `docs/DEPLOYMENT_AND_BRANCHES.md`, `.claude/skills/release-babdoduk`. 점검표: `docs/BRANCH_MERGE_CHECKLIST.md`.
+끝난 브랜치·worktree·태그 정리: `docs/REPOSITORY_HYGIENE.md`.
 
 ---
 
@@ -778,6 +779,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `PRD.md` · `DESIGN_SYSTEM.md` · `ARCHITECTURE.md` | 제품 요구·디자인 계약·구현 경계 |
 | `docs/DEPLOYMENT_AND_BRANCHES.md` | 배포·브랜치 |
 | `docs/BRANCH_MERGE_CHECKLIST.md` | merge 전 점검 |
+| `docs/REPOSITORY_HYGIENE.md` | 브랜치·worktree·stash·태그 정리 |
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
 
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
