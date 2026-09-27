@@ -20,6 +20,7 @@ from ggongbab.config import KST
 from ggongbab.exporter import archived_event, build_payload, public_event
 from validate_content import PHONE_RE, validate_ggongbab_archive_payload, validate_ggongbab_payload
 
+from .conftest import TEST_NOW
 from .test_export_contract import row
 
 NOW = datetime(2026, 9, 27, 12, 0, tzinfo=KST)
@@ -109,9 +110,9 @@ def test_a_phone_like_uuid_id_is_not_a_privacy_error(kind):
 
 
 def test_the_exporter_output_with_that_id_validates(settings):
-    payload = build_payload([row(id=PHONE_LIKE_UUID)], settings, food_only=True)
+    payload = build_payload([row(id=PHONE_LIKE_UUID)], settings, TEST_NOW, food_only=True)
     assert [ev["id"] for ev in payload["events"]] == [PHONE_LIKE_UUID]
-    assert validate_ggongbab_payload(payload) == []
+    assert validate_ggongbab_payload(payload, TEST_NOW) == []
 
 
 def seeded_uuids(n=4000, seed=20260927):
