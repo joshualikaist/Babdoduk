@@ -223,8 +223,10 @@ def test_export_privacy_and_validation(settings, tmp_path):
 
 
 def test_export_validator_catches_private_fields(tmp_path):
+    # Privacy is checked per field: private keys are refused by name, and personal data in
+    # public text (here the summary) is refused by pattern.
     bad = {"generatedAt": datetime.now(KST).isoformat(), "timezone": "Asia/Seoul", "events": [{
-        "id": "a", "title": "x", "startAt": FUTURE.isoformat(), "confidence": 0.9,
+        "id": "a", "title": "x", "summary": "문의 a@b.com", "startAt": FUTURE.isoformat(), "confidence": 0.9,
         "food": {"provided": True, "type": "meal"}, "registration": {}, "sources": [{"type": "dooray", "name": "Dooray"}],
         "sender_email": "a@b.com", "raw_text": "hi"}, {
         "id": "a", "title": "x", "startAt": (datetime.now(KST) - timedelta(days=3)).isoformat(), "confidence": 2,
@@ -233,7 +235,8 @@ def test_export_validator_catches_private_fields(tmp_path):
     path.write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
     errors = validate_ggongbab(path)
     joined = "\n".join(errors)
-    for needle in ("e-mail address", "private field", "duplicate id", "expired", "confidence out of range",
+    for needle in ("e-mail address in events[0].summary", "private field $.events[0].sender_email",
+                   "private field $.events[0].raw_text", "duplicate id", "expired", "confidence out of range",
                    "food.provided must be true/false/unknown", "food.type invalid",
                    "registration.url invalid", "has no sources"):
         assert needle in joined, needle
