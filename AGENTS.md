@@ -73,7 +73,7 @@ GitHub Actions (`babdoduk-content-bot`, via `scripts/publish_generated.py`) push
 ## Implementation discipline
 
 - Reuse existing patterns before adding a new one. The static HTML/CSS/JS architecture needs a demonstrated problem before a build system or framework migration is proposed.
-- Shared navigation and footer styles belong to `css/site.css` only; page translations and some component styles are still duplicated per page. Inspect every consumer and edit scoped locations; never run a blind global rewrite. `rebuild_index.py` and `patch_site.py` contain historical templates and must not be run without comparing their output against current pages.
+- Shared navigation and footer styles belong to `css/site.css` only; page translations and some component styles are still duplicated per page. Inspect every consumer and edit scoped locations; never run a blind global rewrite.
 - Do not manually edit generated `data/magazine/`, `data/kaist-menu/`, `data/ggongbab/latest.json` or `data/foods/` to make UI tests pass. Preserve their schemas, validators, provenance and branch publication rules. `data/food-log.json` and `data/ggongbab/manual.json` are authored inputs, not generated output.
 - Keep fixture and localhost preview behavior separate from normal routes. `lab-ggongbab.html` is `noindex` but that is not access control. Never let preview, raw mail, credentials or private DB content enter public HTML or JSON.
 - Preserve keyboard access, visible focus, status announcements, Korean/English copy, long-text wrapping, reduced-motion behavior and the existing scrollbar design. A visual task must not relax an assertion, publication rule or security gate.
