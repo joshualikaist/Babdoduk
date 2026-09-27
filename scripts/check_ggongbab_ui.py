@@ -185,8 +185,8 @@ def past_listings(browser, base, report):
 
         # Empty, missing, failing and malformed archives: the live feed is untouched every time,
         # and the live row that just ended still shows as past, whatever the archive file did.
-        empty = "지난 30일 동안 공개된 지난 꽁밥 기록이 없어요."
-        failed = "지난 꽁밥 기록을 불러오지 못했어요."
+        empty = "최근 30일 기록 없음"
+        failed = "지난 기록을 불러오지 못했어요."
         for label, handler, expected in (
                 ("empty", lambda route: route.fulfill(json={"events": []}), empty),
                 ("missing", lambda route: route.fulfill(status=404, body=""), empty),
@@ -375,9 +375,9 @@ def run_checks(preview=False):
             assert page.locator('[data-group="when"]').evaluate_all(
                 "els => els.map(el => el.dataset.value)") == ["today", "tomorrow", "week", "all"]
             report["checks"] += 3
-            # The list says what it holds and names its publication time, without a freshness claim.
+            # The list is labelled only by its publication time: no lifecycle paragraph, no freshness claim.
             note = page.locator(".gg-feed-note").inner_text()
-            assert "끝난 일정은 목록에서 자동으로 내려가요" in note and "마지막 발행" in note, note
+            assert note.startswith("마지막 발행") and "자동으로" not in note, note
             assert not any(word in note for word in ("실시간", "최신", "업데이트")), note
             report["checks"] += 2
             assert_fixture_clock(page)
@@ -541,7 +541,8 @@ def run_checks(preview=False):
         radar_one_today(browser, base, report)
         past_listings(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
-        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": events}))
+        published = datetime.now(timezone(timedelta(hours=9))).replace(microsecond=0).isoformat()
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"generatedAt": published, "events": events}))
         # Production page. It carries no lab affordances, so fixture and preview
         # are not merely hidden - they are unreachable, and the page can only
         # ever read the public feed.
@@ -569,7 +570,7 @@ def run_checks(preview=False):
                 assert not page.locator('meta[name="robots"]').count()
                 assert page.title() == "오늘의 꽁밥 · 밥도둑 Babdoduk"
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
-                assert page.locator(".gg-lifecycle").is_visible()
+                assert page.locator(".gg-updated").is_visible()
                 assert page.locator(".gg-archive").count() == 1
                 report["checks"] += 13
             report["production"][f"{width}x{height}"] = rectangles(page)
@@ -580,7 +581,7 @@ def run_checks(preview=False):
         reset_storage(page)
         page.goto(base + "/ggongbab.html")
         page.locator(".gg-card").first.wait_for()
-        assert page.locator(".gg-choose-link").get_attribute("href") == "mukbang.html#what"
+        assert page.locator(".gg-choose-link").get_attribute("href") == "choose.html"
         page.locator('[data-group="when"][data-value="today"]').focus()
         page.keyboard.press("Enter")
         assert page.evaluate("document.activeElement.dataset.value") == "today"

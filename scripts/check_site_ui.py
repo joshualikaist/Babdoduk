@@ -104,7 +104,7 @@ def inspect_page(page, name, size, screenshot_dir=None):
     direct = page.locator(".nav-mega-row > .site-nav-direct")
     check(direct.count() == 2, "two direct food tasks in navigation")
     check(direct.nth(0).get_attribute("href") == "ggongbab.html"
-          and direct.nth(1).get_attribute("href") == "mukbang.html#what",
+          and direct.nth(1).get_attribute("href") == "choose.html",
           "availability and choice have separate destinations")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
@@ -188,12 +188,12 @@ def inspect_page(page, name, size, screenshot_dir=None):
 
 
 def magazine_tools(page):
-    """Picker and magazine cafeteria contracts on synthetic data, at phone width."""
+    """Picker and cafeteria summary on choose.html (synthetic data, phone width); magazine provenance."""
     count = 0
 
     def check(ok, detail):
         nonlocal count
-        assert ok, f"mukbang.html tools: {detail}"
+        assert ok, f"choose.html / mukbang.html tools: {detail}"
         count += 1
 
     yesterday = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -202,7 +202,7 @@ def magazine_tools(page):
             "dinner": {"items": ["저녁"]}}]}
     page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
     page.set_viewport_size({"width": 390, "height": 844})
-    page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
+    page.goto("https://site-ui.invalid/choose.html", wait_until="networkidle")
     page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
     page.reload(wait_until="networkidle")
     tools = page.locator("#kaistToday")
@@ -212,7 +212,8 @@ def magazine_tools(page):
     check(tools.locator("img").count() == 0 and tools.locator("b").count() == 0, "generated menu text is escaped")
     check(tools.locator("[role=tablist]").count() == 0 and tools.locator(".kaist-meal[aria-pressed]").count() == 3,
           "meal and restaurant controls are pressed toggles, not partial tabs")
-    check(tools.locator(".kaist-to-hub").get_attribute("href") == "ggongbab.html#menu", "summary links to the hub")
+    check(tools.locator(".kaist-to-hub").get_attribute("href") == "ggongbab.html#menu"
+          and not tools.locator(".kaist-to-slot").count(), "summary links to the hub; the picker is on this page")
     tools.locator('.kaist-meal[data-kaist-meal="dinner"]').focus()
     page.keyboard.press("Enter")
     check(page.evaluate("document.activeElement.dataset.kaistMeal") == "dinner", "focus survives re-render")
@@ -233,6 +234,12 @@ def magazine_tools(page):
     check(dish in prefs["likes"] and dish not in prefs["eaten"], "choosing a dish is not recorded as eaten")
     page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
     page.unroute("**/data/kaist-menu/latest.json")
+
+    # The magazine is editorial only; old picker links land on the picker page.
+    page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
+    check(not page.locator("#eatApp, #kaistToday, #what").count(), "the magazine carries no picker or cafeteria tool")
+    page.goto("https://site-ui.invalid/mukbang.html#what", wait_until="networkidle")
+    check(page.url.endswith("/choose.html"), ("old #what links reach the picker", page.url))
 
     # Edition provenance: collected stories link out safely, desk memos say so,
     # and an older edition is not presented as today's.
@@ -285,7 +292,7 @@ def home_summary(page):
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
     actions = page.locator(".home-actions a").evaluate_all("els => els.map(el => el.getAttribute('href'))")
-    check(actions == ["ggongbab.html", "mukbang.html#what"], ("primary actions", actions))
+    check(actions == ["ggongbab.html", "choose.html"], ("primary actions", actions))
     check(page.locator(".home-actions a").first.bounding_box()["y"] < 844, "primary action in first mobile screen")
     check(page.locator('a[href="#"]').count() == 1 and page.locator("#navHome").get_attribute("href") == "#",
           "no placeholder links except back-to-top")
@@ -297,12 +304,12 @@ def home_summary(page):
     check(free.get_attribute("data-state") == "ready" and "오늘 1개" in free.inner_text(),
           ("only public rows are counted", free.inner_text()))
     meta = free.locator("[data-home-meta]").inner_text()
-    check(meta.startswith("마지막 발행") and "전체 목록은 꽁밥 탭에서" in meta
+    check(meta.startswith("마지막 발행")
           and not any(word in meta for word in ("최신", "최근", "실시간")),
           ("snapshot is labelled by its last publication, not as fresher elsewhere", meta))
     page.locator("#langToggle").click()
     meta_en = free.locator("[data-home-meta]").inner_text()
-    check(meta_en.startswith("Last published") and "full list" in meta_en
+    check(meta_en.startswith("Last published")
           and not any(word in meta_en.lower() for word in ("latest", "live", "real-time", "realtime")),
           ("English publication label", meta_en))
     page.locator("#langToggle").click()
@@ -313,9 +320,9 @@ def home_summary(page):
 
 
 SHELF = ["today", "pick", "map", "log"]
-SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI", "food.html"]
-GROUPS = ["바로가기", "읽어보기", "밥도둑 소식"]
-NEWS_HREFS = ["event.html#notice", "event.html#archive"]
+SHELF_HREFS = ["ggongbab.html", "choose.html", "https://naver.me/5NeqUPzI", "food.html"]
+GROUPS = ["오늘 먹기", "읽어보기", "밥도둑 소식"]
+NEWS_HREFS = ["event.html#now", "event.html#archive"]
 HOME_TOP = """() => {
   const q = s => document.querySelector(s);
   const box = el => { const r = el.getBoundingClientRect(); return {x:r.x, y:r.y, w:r.width, h:r.height, right:r.right, bottom:r.bottom}; };
@@ -380,14 +387,14 @@ def home_hero_shelf(page):
         widths = {b["name"]: b["box"]["w"] for b in top["banners"]}
         check(min(widths["today"], widths["pick"]) > max(widths["map"], widths["log"]),
               (where, "today and pick outrank the discovery banners", widths))
-        check([g["title"] for g in top["groups"]] == GROUPS and all(g["purpose"] for g in top["groups"]),
-              (where, "utility, reading and news groups, each with a stated purpose", top["groups"]))
+        check([g["title"] for g in top["groups"]] == GROUPS and not any(g["purpose"] for g in top["groups"]),
+              (where, "eat, read and news groups; the numbered title needs no description line", top["groups"]))
         check(top["news"] == NEWS_HREFS and all((ROOT / h.split("#")[0]).is_file() for h in top["news"]),
               (where, "news leads with notices; past activity is one link", top["news"]))
         blocks = top["newsBlocks"]
         check([b["kind"] for b in blocks] == ["current", "record"] and blocks[0]["y"] < blocks[1]["y"],
               (where, "current information sits above the past record", blocks))
-        check([[link["href"] for link in b["links"]] for b in blocks] == [["event.html#notice"], ["event.html#archive"]]
+        check([[link["href"] for link in b["links"]] for b in blocks] == [["event.html#now"], ["event.html#archive"]]
               and blocks[1]["links"][0]["text"].startswith("활동 기록 보기"),
               (where, "the past record has exactly one CTA, to the activity record", blocks))
         check(blocks[0]["bg"] != "rgba(0, 0, 0, 0)" and "inset" in blocks[0]["shadow"]
@@ -449,7 +456,7 @@ def home_hero_shelf(page):
         page.locator("#langToggle").click()
         english = page.evaluate(HOME_TOP)
         check(english["title"].startswith("What should") and english["banners"][0]["title"] == "Today's free food"
-              and [g["title"] for g in english["groups"]] == ["Shortcuts", "Read", "Babdoduk news"]
+              and [g["title"] for g in english["groups"]] == ["Eat today", "Read", "Babdoduk news"]
               and english["root"] <= 0 and english["body"] <= 0, (where, "English fits", english["root"], english["body"]))
         check(english["newsBlocks"][1]["links"][0]["text"].startswith("See the activity record"),
               (where, "English record CTA", english["newsBlocks"]))
@@ -482,7 +489,7 @@ def home_hero_shelf(page):
 
 
 def event_bands(page):
-    """Dates decide now / coming up / past; confirmation is reported separately."""
+    """Dates decide now / coming up / past; confirmation is reported separately and briefly."""
     count = 0
 
     def check(ok, detail):
@@ -491,86 +498,97 @@ def event_bands(page):
         count += 1
 
     today = datetime.now(timezone(timedelta(hours=9))).date()
-    labels = {"now": "진행 중", "upcoming": "예정", "past": "지난 일정"}
+    labels = {"now": "진행 중", "upcoming": "예정"}
 
     def expected(start, end):
         return "upcoming" if today.isoformat() < start else "past" if today.isoformat() > end else "now"
 
+    ROWS = """items => items.map(r => { const state = r.querySelector('[data-event-state]');
+      return {start:r.dataset.start, end:r.dataset.end, band:r.dataset.band, conf:r.dataset.confirmation,
+        list:r.parentElement.id, num:r.querySelector('.event-num').textContent,
+        chip:state.textContent, chipShown:!state.hidden, title:r.querySelector('.event-name').textContent,
+        cta:r.querySelector('[data-event-cta]').textContent, linkBand:r.querySelector('.event-link').dataset.band,
+        open:r.querySelector('details.event-more').open}; })"""
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
-    rows = page.locator(".event-tab-row").evaluate_all("""rows => rows.map(r => ({start:r.dataset.start,
-      end:r.dataset.end, band:r.dataset.band, conf:r.dataset.confirmation,
-      chip:r.querySelector('[data-event-state]').textContent, title:r.querySelector('.event-tab-title').textContent,
-      cta:r.querySelector('[data-event-cta]').textContent, linkBand:r.querySelector('.event-tab-outlink').dataset.band}))""")
+    rows = page.locator(".event-item").evaluate_all(ROWS)
+    check(len(rows) == 3, ("three authored activities", rows))
     for row in rows:
         check(row["band"] == expected(row["start"], row["end"]), ("band from dates", row))
-        check(row["chip"].startswith(labels[row["band"]]), ("band label", row))
+        check(row["list"] == ("eventList" if row["band"] == "past" else "eventUpcoming"), ("past rows under 지난 활동", row))
         check("(예정)" not in row["title"], ("tentative state is a status, not a title suffix", row))
-        if row["band"] == "past" and row["conf"] in ("announced", "tentative"):
-            check("기록 없음" in row["chip"] or "미확인" in row["chip"], ("past date is not reported as held", row))
-        check(row["linkBand"] == row["band"] and row["cta"] == ("당시 게시물 보기" if row["band"] == "past" else "페이지로 이동"),
+        check("진행됨" not in row["chip"] or row["conf"] == "held", ("only a confirmed event says it took place", row))
+        if row["band"] == "past":
+            expected_chip = {"announced": "", "tentative": "진행 여부 미확인"}.get(row["conf"])
+            if expected_chip is not None:
+                check(row["chip"] == expected_chip and row["chipShown"] == bool(expected_chip),
+                      ("a past date is not reported as held; an unconfirmed plan says so briefly", row))
+        else:
+            check(row["chip"].startswith(labels[row["band"]]), ("current rows name their band", row))
+        check(not row["open"], ("details stay folded by default", row))
+        check(row["linkBand"] == row["band"] and row["cta"] == ("당시 게시물" if row["band"] == "past" else "게시물 보기"),
               ("a past link opens the original post as a record; a live link is an action", row))
+    for list_id in ("eventUpcoming", "eventList"):
+        nums = [row["num"] for row in rows if row["list"] == list_id]
+        check(nums == [f"{i + 1:02d}" for i in range(len(nums))], ("rows are numbered per list", list_id, nums))
 
     def participation(lang_tag):
-        panels = page.locator(".event-panel").evaluate_all("""ps => ps.map(p => {
-          const fields = p.querySelectorAll('[data-detail="participation"]');
-          return {band: p.dataset.band, fields: fields.length,
+        fields = page.locator(".event-item").evaluate_all("""items => items.map(r => {
+          const fields = r.querySelectorAll('[data-detail="participation"]');
+          return {band: r.dataset.band, fields: fields.length,
                   historical: fields.length === 1 && fields[0].classList.contains('is-historical'),
-                  tags: [...p.querySelectorAll('.event-detail-historical')].map(t => t.textContent)}; })""")
-        for panel, row in zip(panels, rows):
-            past = row["band"] == "past"
-            check(panel["band"] == row["band"] and panel["fields"] == 1 and panel["historical"] == past
-                  and panel["tags"] == ([lang_tag] if past else []),
-                  ("past participation instructions are marked historical, once", panel))
-        return panels
+                  tags: [...r.querySelectorAll('.event-detail-historical')].map(t => t.textContent)}; })""")
+        for field in fields:
+            past = field["band"] == "past"
+            check(field["fields"] == 1 and field["historical"] == past and field["tags"] == ([lang_tag] if past else []),
+                  ("past participation instructions are marked historical, once", field))
 
     participation("당시 안내 · 지금은 참여할 수 없어요")
-    check(page.locator(".event-boundary a").get_attribute("href") == "ggongbab.html",
+    check(page.locator(".event-elsewhere").get_attribute("href") == "ggongbab.html",
           "free-food opportunities are pointed to the hub, not mixed into the record")
+    # Full context is one keyboard action away.
+    summary = page.locator(".event-item details.event-more summary").nth(1)
+    summary.focus()
+    page.keyboard.press("Enter")
+    note = page.locator(".event-item").nth(1).locator("[data-event-note]")
+    check(page.locator(".event-item details.event-more").nth(1).evaluate("d => d.open") and note.is_visible()
+          and "진행 여부" in note.inner_text(), ("자세히 opens the full state explanation", note.inner_text()))
     page.locator("#langToggle").click()
     english = page.locator("[data-event-cta]").all_text_contents()
-    check(english == ["View the original post" if row["band"] == "past" else "Open page" for row in rows],
+    check(english == ["Original post" if row["band"] == "past" else "View post" for row in rows],
           ("English CTA follows the band", english))
     participation("Original instructions · no longer open")
     page.locator("#langToggle").click()
     participation("당시 안내 · 지금은 참여할 수 없어요")
     live = sum(row["band"] != "past" for row in rows)
-    check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty notice only when nothing is current")
-    order = page.evaluate("""() => [...document.querySelectorAll('main h1, main h2')].map(h => h.id || h.tagName)""")
-    check(order == ["H1", "eventNoticeTitle", "eventUpcomingTitle", "eventListTitle"], ("notices, upcoming, then record", order))
-    check(page.locator("#eventNoticeEmpty").is_visible() and page.locator("#eventNotices li").count() == 0,
-          "no invented notices: the empty notice state is shown")
-    check(page.locator("#eventUpcoming li").count() == live
-          and page.locator("#eventListTitle").inner_text() == ("활동 기록" if live else "지난 활동 기록"),
-          "upcoming summary and record heading follow the dates")
-    page.locator("#eventTab0").focus()
-    page.keyboard.press("ArrowDown")
-    check(page.evaluate("document.activeElement.id") == "eventTab1"
-          and page.locator("#eventPanel1").is_visible(), "arrow keys move between events")
+    check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty state only when nothing is current")
+    check(page.locator("#eventEmpty a").get_attribute("href") == "https://www.instagram.com/babdodukms/",
+          "the empty state points to Instagram")
+    order = page.evaluate("""() => [...document.querySelectorAll('main h1, main h2')].filter(h => !h.closest('[hidden]'))
+      .map(h => h.id || h.tagName)""")
+    check(order == ["H1", "eventNowTitle", "eventListTitle"], ("지금, then 지난 활동", order))
+    check(page.locator("#eventNotices li").count() == 0 and page.locator("#eventNotices").is_hidden(),
+          "no invented notices")
+    check(not page.locator(".event-lead, .event-archive-note, .event-counts, .event-boundary").count(),
+          "no lead, scope or count paragraphs")
 
-    # A synthetic upcoming, unconfirmed row: shown as coming up, opened first.
+    # A synthetic upcoming, unconfirmed row moves into 지금 with an actionable link.
     start, end = (today + timedelta(days=3)).isoformat(), (today + timedelta(days=4)).isoformat()
     source = (ROOT / "event.html").read_text(encoding="utf-8").replace(
         'data-start="2026-05-19" data-end="2026-05-20"', f'data-start="{start}" data-end="{end}"', 1)
     page.route("**/event.html", lambda route: route.fulfill(content_type="text/html", body=source))
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
-    chip = page.locator("#eventTab1 [data-event-state]").inner_text()
-    check(chip.startswith("예정") and "미확정" in chip, ("upcoming tentative row", chip))
-    check(page.locator(".event-tab-row").nth(1).locator("[data-event-cta]").inner_text() == "페이지로 이동"
-          and page.locator(".event-tab-row").nth(1).locator(".event-tab-outlink").get_attribute("data-band") == "upcoming"
-          and page.locator("#eventPanel1 .event-detail-historical").count() == 0
-          and "is-historical" not in (page.locator('#eventPanel1 [data-detail="participation"]').get_attribute("class") or ""),
+    rows = page.locator(".event-item").evaluate_all(ROWS)
+    upcoming = [row for row in rows if row["list"] == "eventUpcoming"]
+    check(len(upcoming) == 1 and "카빙" in upcoming[0]["title"] and upcoming[0]["num"] == "01"
+          and upcoming[0]["chip"].startswith("예정") and "미확정" in upcoming[0]["chip"],
+          ("the scheduled, unconfirmed row leads under 지금", upcoming))
+    check(upcoming[0]["cta"] == "게시물 보기" and upcoming[0]["linkBand"] == "upcoming"
+          and page.locator("#eventUpcoming .event-detail-historical").count() == 0,
           "an upcoming row keeps an actionable link and unmarked instructions")
-    check(page.locator("#eventEmpty").is_hidden(), "empty notice hidden when something is scheduled")
-    check(page.locator("#eventTab1").get_attribute("aria-selected") == "true", "first scheduled event opens")
-    upcoming = page.locator("#eventUpcoming .event-upcoming-item")
-    check(upcoming.count() == 1 and "카빙" in upcoming.inner_text() and page.locator("#eventListTitle").inner_text() == "활동 기록",
-          ("the scheduled row is summarised at the top", upcoming.count()))
-    page.locator("#eventTab0").click()
-    upcoming.focus()
-    page.keyboard.press("Enter")
-    check(page.evaluate("document.activeElement.id") == "eventTab1"
-          and page.locator("#eventPanel1").is_visible(), "the summary opens its record")
+    check(page.locator("#eventEmpty").is_hidden() and page.locator("#eventUpcoming").is_visible(),
+          "empty state hidden when something is scheduled")
+    check([row["num"] for row in rows if row["list"] == "eventList"] == ["01", "02"], "the record renumbers")
     page.unroute("**/event.html")
     return count
 
@@ -712,6 +730,212 @@ def structure_and_failures(page):
     page.unroute("**/data/**")
     return count
 
+# ---------------------------------------------------------------------------------------------------
+# Site guardian: the shared chrome is identical on every public page (structure, destinations, computed
+# footer styles and the transition into the footer), in both languages and at desktop and phone widths.
+# ---------------------------------------------------------------------------------------------------
+GUARD_PAGES = ["index.html", "ggongbab.html", "choose.html", "mukbang.html", "event.html", "food.html", "history.html"]
+GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
+NAV_DIRECT = ["ggongbab.html", "choose.html"]
+NAV_MORE = ["mukbang.html", "event.html", "food.html", "history.html",
+            "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
+FOOTER_LINKS = ["ggongbab.html", "choose.html", "mukbang.html", "event.html", "food.html", "history.html"]
+CHROME = r"""() => {
+  const pick = (el, props) => { const s = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, s.getPropertyValue(p)])); };
+  const root = document.documentElement, body = document.body, footer = document.querySelector('.site-footer');
+  const r = footer.getBoundingClientRect();
+  return {
+    direct: [...document.querySelectorAll('.nav-mega-row > .site-nav-direct')].map(a => a.getAttribute('href')),
+    more: [...document.querySelectorAll('#navMorePanel > a')].map(a => a.getAttribute('href')),
+    current: [...document.querySelectorAll('.site-nav [aria-current="page"]')].map(a => a.getAttribute('href')),
+    home: document.getElementById('navHome').getAttribute('href'),
+    footerLinks: [...footer.querySelectorAll('a')].map(a => a.getAttribute('href')),
+    footerText: footer.innerText.replace(/\s+/g, ' ').trim(),
+    styles: {
+      nav: pick(document.querySelector('.site-nav'), ['height', 'position', 'background-color', 'font-family']),
+      footer: pick(footer, ['background-color', 'padding-top', 'padding-bottom', 'margin-top', 'color', 'font-family', 'position', 'z-index']),
+      inner: pick(footer.querySelector('.site-footer-inner'), ['max-width', 'padding-left', 'padding-right']),
+      hr: pick(footer.querySelector('.footer-apple-hr'), ['border-top-color', 'border-top-width', 'margin-bottom']),
+      main: pick(footer.querySelector('.footer-apple-main'), ['font-size', 'line-height', 'grid-template-columns']),
+      fine: pick(footer.querySelector('.footer-apple-fine'), ['font-size', 'color', 'border-top-color', 'padding-top'])
+    },
+    context: {below: root.scrollHeight - (r.bottom + scrollY), width: Math.round(r.width), viewport: root.clientWidth,
+              bodyPadding: getComputedStyle(body).paddingBottom, bodyMargin: getComputedStyle(body).marginBottom},
+    overflow: Math.max(root.scrollWidth - root.clientWidth, body.scrollWidth - body.clientWidth)
+  };
+}"""
+
+
+def site_guardian(page):
+    """Cross-page chrome consistency: nav, footer, footer context, overflow, console errors, broken resources."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"site guardian: {detail}"
+        count += 1
+
+    errors, broken = [], []
+    on_error = lambda exc: errors.append(str(exc)[:160])
+    on_console = lambda msg: errors.append(msg.text[:160]) if msg.type == "error" and "Failed to load resource" not in msg.text else None
+    on_response = lambda res: broken.append(f"{res.status} {res.url}") if (
+        res.status >= 400 and urlparse(res.url).hostname == "site-ui.invalid" and not res.url.endswith("/favicon.ico")) else None
+    page.on("pageerror", on_error)
+    page.on("console", on_console)
+    page.on("response", on_response)
+    try:
+        for lang in ("ko", "en"):
+            for width, height in GUARD_SIZES:
+                page.set_viewport_size({"width": width, "height": height})
+                page.goto("https://site-ui.invalid/index.html", wait_until="domcontentloaded")
+                page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
+                reference = None
+                for name in GUARD_PAGES:
+                    errors.clear()
+                    broken.clear()
+                    page.goto("https://site-ui.invalid/" + name, wait_until="networkidle")
+                    chrome = page.evaluate(CHROME)
+                    where = f"{name} {lang} {width}x{height}"
+                    check(chrome["direct"] == NAV_DIRECT and chrome["more"] == NAV_MORE, (where, "nav structure and destinations", chrome["direct"], chrome["more"]))
+                    check(chrome["current"] == ([] if name == "index.html" else [name]), (where, "one current-page marker", chrome["current"]))
+                    check(chrome["home"] == ("#" if name == "index.html" else "index.html"), (where, "wordmark destination"))
+                    check(chrome["footerLinks"] == FOOTER_LINKS, (where, "footer destinations", chrome["footerLinks"]))
+                    check(abs(chrome["context"]["below"]) < 1 and chrome["context"]["bodyPadding"] == "0px"
+                          and chrome["context"]["bodyMargin"] == "0px", (where, "no strip of canvas below the footer", chrome["context"]))
+                    check(chrome["context"]["width"] == chrome["context"]["viewport"], (where, "full-width footer", chrome["context"]))
+                    check(chrome["styles"]["footer"]["background-color"] == "rgba(0, 0, 0, 0)",
+                          (where, "the footer sits on the page canvas on every page", chrome["styles"]["footer"]))
+                    check(chrome["overflow"] <= 0, (where, "no horizontal overflow", chrome["overflow"]))
+                    check(not errors, (where, "no JS or console errors", errors[:3]))
+                    check(not broken, (where, "no broken resources", broken[:3]))
+                    if reference is None:
+                        reference = chrome
+                    else:
+                        check(chrome["footerText"] == reference["footerText"], (where, "same footer text as index"))
+                        for part, values in chrome["styles"].items():
+                            check(values == reference["styles"][part], (where, f"{part} computed style matches index",
+                                  {k: (v, reference["styles"][part][k]) for k, v in values.items() if v != reference["styles"][part][k]}))
+        page.evaluate("localStorage.setItem('babdoduk-lang', 'ko')")
+    finally:
+        page.remove_listener("pageerror", on_error)
+        page.remove_listener("console", on_console)
+        page.remove_listener("response", on_response)
+    return count
+
+
+# ---------------------------------------------------------------------------------------------------
+# Visual regression for the shared chrome. Golden images live in tests/visual/chrome and change only
+# with an explicit owner approval note (see docs/VISUAL_BASELINES.md); a mismatch never re-baselines.
+# ---------------------------------------------------------------------------------------------------
+BASELINE_DIR = ROOT / "tests/visual/chrome"
+DIFF_DIR = ROOT / ".local/visual-diff"
+VISUAL_SIZES = [(1440, 900), (390, 844)]
+FIXED_NOW = "2026-09-28T10:00:00+09:00"
+CONTEXT_ABOVE = 180
+# Motion off, and the 2% film-grain overlay hidden: it is decoration, and its noise would make every
+# baseline incompressible without telling anything about layout, surfaces or spacing.
+STILL = ("*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }"
+         " body::after { display: none !important; }")
+FIXTURES = {
+    "data/ggongbab/latest.json": {"generatedAt": "2026-09-28T09:00:00+09:00", "timezone": "Asia/Seoul", "count": 0, "events": []},
+    "data/ggongbab/archive/index.json": {"generatedAt": "2026-09-28T09:00:00+09:00", "timezone": "Asia/Seoul",
+                                         "windowDays": 30, "count": 0, "events": []},
+    "data/kaist-menu/latest.json": {"date": "2026-09-28", "restaurants": [{"id": "r1", "name": "Fixture",
+                                    "lunch": {"items": ["밥", "국"], "price": "5,000원"}}]},
+    "data/food-log.json": {"currency": "KRW", "entries": [{"date": "2026-09-10", "total": 9000, "items": []}]},
+}
+
+
+def visual_route(route):
+    path = unquote(urlparse(route.request.url).path).lstrip("/")
+    if path in FIXTURES:
+        route.fulfill(json=FIXTURES[path])
+    elif path.startswith("data/magazine/"):
+        route.fulfill(status=404, body="")  # the desk fallback is static; editions change daily
+    else:
+        route.fallback()
+
+
+def image_diff(expected, actual):
+    """Fraction of pixels whose largest channel difference exceeds 24/255 (antialiasing jitter stays below)."""
+    import numpy as np
+    from PIL import Image
+
+    a = np.asarray(Image.open(expected).convert("RGB"), dtype=np.int16)
+    b = np.asarray(Image.open(actual).convert("RGB"), dtype=np.int16)
+    if a.shape != b.shape:
+        return 1.0, None
+    mask = np.abs(a - b).max(axis=2) > 24
+    diff = np.zeros_like(a, dtype=np.uint8)
+    diff[mask] = (220, 30, 30)
+    return float(mask.mean()), Image.fromarray(diff)
+
+
+def chrome_visual(page, update=False, approval=None):
+    """Nav, footer and footer-context screenshots against the approved golden images."""
+    count = 0
+    shots = []
+    page.clock.set_fixed_time(FIXED_NOW)
+    page.route("**/*", visual_route)
+    page.emulate_media(reduced_motion="reduce")
+    try:
+        for lang in ("ko", "en"):
+            for width, height in VISUAL_SIZES:
+                page.set_viewport_size({"width": width, "height": height})
+                page.goto("https://site-ui.invalid/index.html", wait_until="domcontentloaded")
+                page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
+                for name in GUARD_PAGES:
+                    page.goto("https://site-ui.invalid/" + name, wait_until="networkidle")
+                    page.add_style_tag(content=STILL)
+                    page.evaluate("document.fonts.ready")
+                    page.wait_for_timeout(150)
+                    stem = f"{Path(name).stem}-{lang}-{width}"
+                    box = page.evaluate("""() => { const r = document.querySelector('.site-footer').getBoundingClientRect();
+                      return {top: r.top + scrollY, height: r.height, width: document.documentElement.clientWidth}; }""")
+                    targets = {
+                        "nav": lambda: page.locator(".site-nav").screenshot(animations="disabled"),
+                        "footer": lambda: page.locator(".site-footer").screenshot(animations="disabled"),
+                        "footer-context": lambda: page.screenshot(full_page=True, animations="disabled", clip={
+                            "x": 0, "y": max(0, box["top"] - CONTEXT_ABOVE), "width": box["width"],
+                            "height": box["height"] + min(CONTEXT_ABOVE, box["top"])}),
+                    }
+                    for part, take in targets.items():
+                        shots.append((f"{stem}-{part}.png", take()))
+    finally:
+        page.unroute("**/*", visual_route)
+    if update:
+        if not approval:
+            raise SystemExit("refusing to rewrite baselines without --approval (see docs/VISUAL_BASELINES.md)")
+        BASELINE_DIR.mkdir(parents=True, exist_ok=True)
+        for old in BASELINE_DIR.glob("*.png"):
+            old.unlink()
+        for file_name, data in shots:
+            (BASELINE_DIR / file_name).write_bytes(data)
+        (BASELINE_DIR / "BASELINES.json").write_text(json.dumps({
+            "approval": approval, "images": len(shots), "fixed_now": FIXED_NOW, "sizes": VISUAL_SIZES,
+            "pages": GUARD_PAGES, "context_above_px": CONTEXT_ABOVE}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return len(shots)
+    failures = []
+    DIFF_DIR.mkdir(parents=True, exist_ok=True)
+    for file_name, data in shots:
+        expected = BASELINE_DIR / file_name
+        if not expected.is_file():
+            failures.append(f"{file_name}: no approved baseline")
+            continue
+        actual = DIFF_DIR / file_name
+        actual.write_bytes(data)
+        ratio, diff = image_diff(expected, actual)
+        if ratio > 0.002:
+            failures.append(f"{file_name}: {ratio:.2%} of pixels differ")
+            if diff is not None:
+                diff.save(DIFF_DIR / file_name.replace(".png", ".diff.png"))
+        else:
+            actual.unlink()
+        count += 1
+    assert not failures, ("shared chrome changed visually; review .local/visual-diff and follow "
+                          "docs/VISUAL_BASELINES.md before approving new baselines", failures[:8])
+    return count
+
 
 def run_checks(screenshots=False):
     report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
@@ -741,6 +965,7 @@ def run_checks(screenshots=False):
         report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)
+        report["checks"] += site_guardian(page)
         # High contrast must defer to the system; custom colors/widths must not
         # leak from either the standards or WebKit rule sets.
         page.emulate_media(forced_colors="active")
@@ -750,12 +975,35 @@ def run_checks(screenshots=False):
         report["checks"] += 2
         assert not api_attempts, ("static pages attempted a live API request", api_attempts[:5])
         report["checks"] += 1
+        # Last: it fixes the page clock and data for deterministic screenshots.
+        page.emulate_media(forced_colors="none")
+        report["checks"] += chrome_visual(page)
         browser.close()
     return report
+
+
+def update_chrome_baselines(approval):
+    """Rewrite the golden chrome screenshots. Only after an owner-approved visual change."""
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(channel="chrome", headless=True,
+            ignore_default_args=["--hide-scrollbars"],
+            args=["--disable-features=OverlayScrollbar,FluentOverlayScrollbar"])
+        context = browser.new_context(timezone_id="Asia/Seoul", reduced_motion="reduce", service_workers="block")
+        context.route("**/*", offline_route)
+        context.add_init_script("sessionStorage.setItem('babdoduk-welcome-seen','1');")
+        written = chrome_visual(context.new_page(), update=True, approval=approval)
+        browser.close()
+    return written
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--screenshots", action="store_true")
+    parser.add_argument("--update-chrome-baselines", action="store_true",
+                        help="rewrite tests/visual/chrome after an owner-approved visual change")
+    parser.add_argument("--approval", help="who approved the visual change, and where (required with --update-chrome-baselines)")
     args = parser.parse_args()
-    print(json.dumps(run_checks(args.screenshots), ensure_ascii=False, indent=2))
+    if args.update_chrome_baselines:
+        print(f"wrote {update_chrome_baselines(args.approval)} baseline images")
+    else:
+        print(json.dumps(run_checks(args.screenshots), ensure_ascii=False, indent=2))

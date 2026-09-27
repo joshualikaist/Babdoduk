@@ -13,7 +13,7 @@
 |------|------|-------------|--------|
 | **오늘의 꽁밥** | `ggongbab.html` (꽁밥 탭, `#free`) | 지금·곧 참여할 수 있는 KAIST 무료 음식 일정은? | `data/ggongbab/latest.json` (생성) |
 | **KAIST 학식** | `ggongbab.html#menu` (학식 탭) | 오늘 학식 메뉴는? | `data/kaist-menu/latest.json` (생성, AI 없음) |
-| **메뉴 고르기** | `mukbang.html#what` | 뭘 먹을지 못 정했을 때 무엇을 고를까? | `data/foods/` 카탈로그 제안 (판매 여부 확인이 아님) |
+| **메뉴 고르기** | `choose.html` | 뭘 먹을지 못 정했을 때 무엇을 고를까? | `data/foods/` 카탈로그 제안 (판매 여부 확인이 아님) |
 | **밥도둑 매거진** | `mukbang.html` | 요리 비법·유행·건강·식습관 네 데스크의 이야기 | `data/magazine/` (생성) |
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `event.html` 안에 직접 작성 |
 | **먹방 가계부** | `food.html` | 무엇을 먹고 얼마를 썼나 | `data/food-log.json` (작성) + 이 브라우저의 기록 |
@@ -63,7 +63,8 @@
 python scripts\check_ggongbab_ui.py --serve   # http://127.0.0.1:8000 — 루프백 전용, .local/·디렉터리 목록 차단
 python -m pytest tests -q                       # 단위·계약·UI 테스트 (사이트 UI 전체 검사 포함)
 python scripts\validate_content.py              # 생성 JSON 검증
-python scripts\check_site_ui.py                 # 공개 페이지 × 5개 폭, 한·영 구조와 실패 상태
+python scripts\sync_site_chrome.py --check     # 모든 페이지의 내비·푸터가 shared/ 원본과 같은지
+python scripts\check_site_ui.py                 # 공개 페이지 × 5개 폭, 한·영 구조와 실패 상태, 공통 chrome 가디언·시각 기준
 python scripts\check_ggongbab_ui.py             # 오늘의 꽁밥 fixture·본편·지난 기록 검사
 python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 가로 넘침 확인 (네트워크 필요, PASS/FAIL/SKIP)
 ```
@@ -91,10 +92,11 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 
 | 파일 | 역할 |
 |------|------|
-| **`index.html`** | 홈 — 에디토리얼 히어로(두 핵심 행동 오늘의 꽁밥·메뉴 고르기, 분위기 사진, 날짜가 붙은 오늘 요약) 아래에 01 바로가기(가로 선반: 오늘의 꽁밥·메뉴 고르기·맛집 지도·먹방 가계부), 02 읽어보기(매거진 추천 글·데스크·사진 기록), 03 밥도둑 소식(강조된 공지·예정 활동 카드, 그 아래 조용한 지난 활동 기록과 링크 하나 “활동 기록 보기 →”, 이야기 링크) (`css/index.css`, `js/home.js`) |
+| **`index.html`** | 홈 — 에디토리얼 히어로(오늘의 꽁밥·메뉴 고르기, 분위기 사진, 날짜가 붙은 오늘 요약) 아래에 01 오늘 먹기(가로 선반: 오늘의 꽁밥·메뉴 고르기·맛집 지도·먹방 가계부), 02 읽어보기(매거진 추천 글·데스크·사진 기록), 03 밥도둑 소식(지금 / 지난 활동). 섹션 제목 아래 설명 문장은 두지 않는다 |
 | **`food.html`** | 먹방 가계부 — 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 날짜마다 출처를 표시하며, 같은 날짜는 브라우저 기록이 우선. 기록 주체는 소유자 결정 대기 |
-| **`event.html`** | 밥도둑 소식 — 맨 위 공지·안내(작성된 공지만, 없으면 빈 상태)와 예정된 활동, 아래 지난 활동 기록. 날짜로 계산한 진행 중·예정·지난 일정과 별도의 확인 상태, 탭형 목록(시작일 순)·상세 패널 (`css/event.css`). 지난 일정은 흐린 카드에 “당시 게시물 보기” 링크, 참여 방법은 “당시 안내 · 지금은 참여할 수 없어요”로 표시. 필드 규칙은 `docs/EVENT_DETAIL_FIELDS.md` |
-| **`mukbang.html`** | 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리(원문 링크 글과 ‘밥도둑 데스크’ 자체 메모를 구분 표시, 지난 호 표시), 날짜가 붙은 학식 요약, 메뉴 고르기(`#what`) |
+| **`event.html`** | 03 밥도둑 소식 — **지금**(작성된 공지와 진행 중·예정 활동, 없으면 “예정된 활동 없음 · Instagram ↗”)과 **지난 활동**(번호·날짜·제목·짧은 상태·당시 게시물). 날짜 구간과 확인 상태는 따로 계산하고, 날짜가 지났다고 진행됐다고 하지 않는다. 당시 안내 전문은 “자세히” 안에 (`css/event.css`, `docs/EVENT_DETAIL_FIELDS.md`) |
+| **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리(원문 링크 글과 ‘밥도둑 데스크’ 자체 메모를 구분 표시, 지난 호 표시). 편집 콘텐츠만 둔다 |
+| **`choose.html`** | 01 메뉴 고르기 — “오늘 뭐 먹지?” 슬롯(카탈로그 제안, 판매 여부 확인이 아님)과 날짜가 붙은 학식 요약. 옛 `mukbang.html#what` 링크는 이 페이지로 이동 |
 | **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 그 안내와 마지막 발행 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
@@ -135,7 +137,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 
 ## 3. 오늘의 꽁밥 파이프라인
 
-KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(메뉴 고르기)은 이 페이지의 가용 정보와 섞지 않고 `mukbang.html#what`으로 연결만 합니다.
+KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(메뉴 고르기)은 이 페이지의 가용 정보와 섞지 않고 `choose.html`로 연결만 합니다.
 
 - **꽁밥** — 무료 식사·간식·다과가 명시된 교내 행사
 - **KAIST 학식** — 공식 학식 JSON (`data/kaist-menu/latest.json`). AI를 쓰지 않습니다.
@@ -613,7 +615,7 @@ python scripts\check_ggongbab_ui.py --serve     # 127.0.0.1 로만 연다
 ```powershell
 python scripts\check_ggongbab_ui.py            # fixture + 본편 검사
 python scripts\check_ggongbab_ui.py --preview  # preview 데이터까지 포함
-python scripts\check_site_ui.py                # 8개 HTML의 scrollbar·overflow·nav 검사
+python scripts\check_site_ui.py                # 9개 HTML의 scrollbar·overflow·nav 검사, 공통 chrome 가디언·시각 기준
 ```
 
 390 / 430 / 1440 세 뷰포트에서 좌표·가로 스크롤·말줄임·sticky 필터를 확인하고,
@@ -652,8 +654,8 @@ python scripts/check_site_ui.py      # --screenshots 로 .local/site-ui-shots/ �
 python scripts/check_ggongbab_ui.py
 ```
 
-`check_site_ui.py` 는 8개 페이지 × 5개 폭(1920·1440·768·390·360)의 가로 넘침, Windows 스크롤바,
-공통 내비·푸터 계약과 함께 다음을 확인합니다: 홈 요약의 날짜·공개 조건, 매거진 학식 요약의 stale 표시와
+`check_site_ui.py` 는 9개 페이지 × 5개 폭(1920·1440·768·390·360)의 가로 넘침, Windows 스크롤바,
+공통 내비·푸터 계약과 함께 다음을 확인합니다: 홈 요약의 날짜·공개 조건, 메뉴 고르기 페이지 학식 요약의 stale 표시와
 이스케이프, 메뉴 고르기의 이유·범위 안내·"먹었어요"와 선택의 분리, 매거진 원문/데스크 구분과 지난 호,
 홈 소식의 현재 정보/지난 기록 구분, 이벤트 날짜 구간과 확인 상태·지난 일정 링크와 참여 방법 표시, 가계부 출처 표시,
 한·영 양쪽의 랜드마크·이름·터치 크기, 데이터가 모두 실패할 때의 안내.
@@ -759,7 +761,8 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `scripts/portal_web_agent.py` | Portal 로컬 에이전트 (SSO · 관찰 · 수집 큐) |
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
-| `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사 |
+| `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사, 공통 chrome 가디언·시각 기준 (`docs/VISUAL_BASELINES.md`) |
+| `scripts/sync_site_chrome.py` | `shared/nav.html`·`shared/footer.html` 을 모든 페이지에 정적으로 복사. `--check` 는 어긋나면 실패 (CI `site-chrome`) |
 | `scripts/check_real_fonts.py` | 실제 웹 폰트로 공개 페이지 가로 넘침 확인 (네트워크, PASS/FAIL/SKIP) |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |
@@ -779,6 +782,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/DEPLOYMENT_AND_BRANCHES.md` | 배포·브랜치 |
 | `docs/BRANCH_MERGE_CHECKLIST.md` | merge 전 점검 |
 | `docs/REPOSITORY_HYGIENE.md` | 브랜치·worktree·stash·태그 정리 |
+| `docs/VISUAL_BASELINES.md` | 공통 내비·푸터 시각 기준 이미지와 승인 절차 |
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
 
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),

@@ -29,7 +29,7 @@ from playwright.sync_api import sync_playwright
 
 from check_ggongbab_ui import local_server
 
-PAGES = ["index.html", "ggongbab.html", "event.html", "mukbang.html", "history.html", "food.html"]
+PAGES = ["index.html", "ggongbab.html", "choose.html", "event.html", "mukbang.html", "history.html", "food.html"]
 SIZES = [(390, 844), (360, 800), (1440, 900)]
 FONT_HOSTS = {"fonts.googleapis.com", "fonts.gstatic.com"}
 FONT_FAMILY = "Noto Sans KR"

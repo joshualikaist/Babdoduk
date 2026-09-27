@@ -365,9 +365,9 @@
     restaurantsWithMenus: restaurantsWithMenus
   };
 
-  var mukbang = document.getElementById('kaistToday');
-  if (!mukbang) return;
-  // Magazine summary: same KST clock, freshness rule and escaping as the hub.
+  var summary = document.getElementById('kaistToday');
+  if (!summary) return;
+  // Cafeteria summary on the menu picker page: same KST clock, freshness rule and escaping as the hub.
   var mukState = { status: 'loading', data: null, resto: '', meal: defaultMeal(toKst()) };
   function mukGroup(label, attr, rows, current) {
     var html = '<div class="kaist-' + attr + 's" role="group" aria-label="' + esc(label) + '">';
@@ -378,13 +378,13 @@
     return html + '</div>';
   }
   function mukRender() {
-    var focus = focusSelector(mukbang);
+    var focus = focusSelector(summary);
     var restos = restaurantsWithMenus(mukState.data);
     var stale = isStale(mukState.data, toKst());
     var title = stale && restos.length ? t('kaist.recentTitle', '최근에 올라온 KAIST 학식') : t('kaist.title', '오늘 KAIST 학식');
     var html = '<header class="kaist-head"><h2 id="kaistTitle">' + esc(title) + '</h2>';
     if (mukState.status === 'loading') {
-      mukbang.innerHTML = html + '</header><p class="kaist-empty" role="status">' + esc(t('kaist.loading', '학식 메뉴를 불러오는 중이에요.')) + '</p>';
+      summary.innerHTML = html + '</header><p class="kaist-empty" role="status">' + esc(t('kaist.loading', '학식 메뉴를 불러오는 중이에요.')) + '</p>';
       return;
     }
     if (!restos.length) {
@@ -417,12 +417,11 @@
         html += '</div>';
       }
     }
-    html += '<p class="kaist-links"><a class="kaist-to-hub" href="ggongbab.html#menu">' + esc(t('kaist.toHub', '오늘의 꽁밥에서 모든 식당 보기 →')) + '</a>';
-    html += '<a class="kaist-to-slot" href="#what">' + esc(t('kaist.toSlot', '학식이 당기지 않는다면 메뉴 고르기 →')) + '</a></p>';
-    mukbang.innerHTML = html;
-    restoreFocus(mukbang, focus);
+    html += '<p class="kaist-links"><a class="kaist-to-hub" href="ggongbab.html#menu">' + esc(t('kaist.toHub', '모든 식당 보기 →')) + '</a></p>';
+    summary.innerHTML = html;
+    restoreFocus(summary, focus);
   }
-  mukbang.addEventListener('click', function (e) {
+  summary.addEventListener('click', function (e) {
     var resto = e.target.closest && e.target.closest('[data-kaist-resto]');
     var meal = e.target.closest && e.target.closest('[data-kaist-meal]');
     if (resto) mukState.resto = resto.getAttribute('data-kaist-resto');
