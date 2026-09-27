@@ -191,6 +191,8 @@ def test_statusline_formats_sample_session_json():
 PROCESS_DOCS = ["AGENTS.md", "CLAUDE.md", "README.md", "docs/DEPLOYMENT_AND_BRANCHES.md", "docs/BRANCH_MERGE_CHECKLIST.md",
                 "docs/REPOSITORY_HYGIENE.md"]
 SKILL_DOCS = [f".claude/skills/{name}/SKILL.md" for name in ("session-start", "release-babdoduk", "handoff", "ui-review")]
+# Other agents read their own always-on rules; they get the same contract as the process docs.
+CURSOR_RULES = sorted(str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / ".cursor/rules").glob("*.mdc"))
 DRIFT_CHECK = "git log --format='%h %an %s' origin/lab..origin/main"
 
 
@@ -243,7 +245,7 @@ def test_release_starts_from_latest_main_and_promotes_selectively():
     assert "Never `git merge lab` or `git merge origin/lab` into a release" in release
     assert "goes back through lab first" in release  # behavior-changing conflict resolution
     # No document offers a whole-lab merge into main as a way to release.
-    for rel in PROCESS_DOCS + SKILL_DOCS:
+    for rel in PROCESS_DOCS + SKILL_DOCS + CURSOR_RULES:
         for line in read(rel).splitlines():
             if re.search(r"git merge (origin/)?lab\b", line):
                 assert re.search(r"[Nn]ever|not|않|아닙니다|금지", line), (rel, line)
@@ -272,11 +274,25 @@ def test_generated_data_bot_remains_an_exception():
 
 
 def test_no_document_instructs_a_cli_production_deploy():
-    docs = PROCESS_DOCS + SKILL_DOCS + [str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / "docs").glob("*.md")]
+    docs = PROCESS_DOCS + SKILL_DOCS + CURSOR_RULES
+    docs += [str(p.relative_to(ROOT)).replace("\\", "/") for p in (ROOT / "docs").glob("*.md")]
     for rel in sorted(set(docs)):
         for line in read(rel).splitlines():
             if re.search(r"vercel (deploy )?--prod", line):
                 assert re.search(r"[Nn]ever|not|않|금지|block", line), (rel, line)
+
+
+def test_cursor_rules_defer_to_the_lab_first_contract():
+    """An always-applied Cursor rule once said lab was approved by default, told agents to commit and
+    push without asking and to deploy with `npx vercel --prod --yes`. Cursor rules may only point back
+    to AGENTS.md and its lifecycle."""
+    assert CURSOR_RULES, "the repository keeps a Cursor rule that points to AGENTS.md"
+    for rel in CURSOR_RULES:
+        text = read(rel)
+        for anchor in ("AGENTS.md", "Lab-first lifecycle", ".claude/skills/release-babdoduk"):
+            assert anchor in text, (rel, anchor)
+        for stale in ("승인된 상태", "커밋·푸시가 기본", "다시 묻지 않는다", "--yes", "git push origin lab"):
+            assert stale not in text, (rel, stale)
 
 
 def test_cleanup_is_classified_first_and_never_forced():
