@@ -16,6 +16,10 @@ from ggongbab.models import EventExtraction, Evidence  # noqa: E402
 from ggongbab.parsers.ai_parser import AIResult, AIUsage  # noqa: E402
 
 REFERENCE = datetime(2026, 9, 19, 9, 0, tzinfo=KST)
+# The fixed "now" of the synthetic pipeline tests. Event dates are derived from it and it
+# is passed to every production call that compares against the current time, so a test
+# never depends on the calendar day it runs on.
+TEST_NOW = REFERENCE
 
 POSITIVE_TEXT = "9월 25일 12시 N1에서 기업 설명회를 진행합니다.\n참석자에게 점심 도시락을 제공합니다."
 NEGATIVE_TEXT = "9월 25일 12시 점심시간에 기업 설명회를 진행합니다."
@@ -48,6 +52,21 @@ def make_extraction(**overrides) -> EventExtraction:
     )
     base.update(overrides)
     return EventExtraction(**base)
+
+
+@pytest.fixture
+def pin_preview_clock(monkeypatch):
+    """generate_preview stamps and validates its payload at the current time and takes no
+    clock argument. Pin both calls to TEST_NOW, so a synthetic upcoming event stays upcoming
+    whatever day the tests run. The real exporter and validator still do all the work."""
+    import validate_content
+    from ggongbab import preview
+
+    build, validate = preview.build_payload, validate_content.validate_ggongbab_payload
+    monkeypatch.setattr(preview, "build_payload",
+                        lambda rows, settings, now=None, **kw: build(rows, settings, now or TEST_NOW, **kw))
+    monkeypatch.setattr(validate_content, "validate_ggongbab_payload",
+                        lambda data, now=None: validate(data, now or TEST_NOW))
 
 
 class FakeExtractor:

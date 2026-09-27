@@ -19,7 +19,7 @@ from ggongbab.db.repository import MemoryRepository
 from ggongbab.pipeline import Pipeline
 from ggongbab.prefilter import classify
 
-from .conftest import FakeExtractor
+from .conftest import TEST_NOW, FakeExtractor
 from .test_pipeline_export import FUTURE, FUTURE_TEXT, ListCollector, _item, future_extraction
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 9000
@@ -54,6 +54,10 @@ def write_eml(tmp_path: Path, name: str, **kw) -> Path:
 
 
 RECEIVED = datetime(2026, 9, 3, 10, 0, tzinfo=KST)
+# The backfill window closes at the end of the synthetic September. Like FUTURE it is derived
+# from the fixed test clock (TEST_NOW), and every run_backfill call gets that clock as `now`,
+# so the synthetic event is inside the window and still ahead on every calendar day.
+EVENT_UNTIL = FUTURE.date() + timedelta(days=8)
 
 
 # --- archive parsing ----------------------------------------------------------
@@ -230,7 +234,7 @@ def test_backfill_end_to_end_and_pii_sanitized(settings, tmp_path):
     items = archive_items(settings, tmp_path)
     repo = MemoryRepository()
     extractor = FakeExtractor(future_extraction)
-    report = run_backfill(settings, repo, extractor, items, event_until=date(2026, 9, 30))
+    report = run_backfill(settings, repo, extractor, items, event_until=EVENT_UNTIL, now=TEST_NOW)
     assert report.scanned == 1 and report.rule_candidates == 1 and report.ai_candidates == 1
     assert report.likely_events == 1 and report.food_provided == 1 and report.in_window == 1
     sent = extractor.calls[0][1]
@@ -246,10 +250,10 @@ def test_backfill_end_to_end_and_pii_sanitized(settings, tmp_path):
 def test_backfill_second_run_makes_no_ai_call(settings, tmp_path):
     repo = MemoryRepository()
     extractor = FakeExtractor(future_extraction)
-    first = run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=date(2026, 9, 30))
+    first = run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=EVENT_UNTIL, now=TEST_NOW)
     assert first.ai_calls == 1
 
-    second = run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=date(2026, 9, 30))
+    second = run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=EVENT_UNTIL, now=TEST_NOW)
     assert second.scanned == 1 and second.rule_candidates == 1
     assert second.ai_calls == 0 and second.ai_skipped == 1
     assert len(extractor.calls) == 1
@@ -263,11 +267,11 @@ def test_backfill_attachment_not_reloaded_when_cached(settings, tmp_path):
     repo = MemoryRepository()
     extractor = FakeExtractor(future_extraction)
     items = MailArchiveCollector(settings, tmp_path).collect()
-    run_backfill(settings, repo, extractor, items, event_until=date(2026, 9, 30))
+    run_backfill(settings, repo, extractor, items, event_until=EVENT_UNTIL, now=TEST_NOW)
     assert extractor.calls[0][2] == 1, "poster should reach the model on the first pass"
 
     fresh = MailArchiveCollector(settings, tmp_path).collect()
-    run_backfill(settings, repo, extractor, fresh, event_until=date(2026, 9, 30))
+    run_backfill(settings, repo, extractor, fresh, event_until=EVENT_UNTIL, now=TEST_NOW)
     assert len(extractor.calls) == 1
     assert fresh[0].attachments[0].data is None, "cached mail must not decode its attachment"
 
@@ -275,7 +279,7 @@ def test_backfill_attachment_not_reloaded_when_cached(settings, tmp_path):
 def test_backfill_max_ai_candidates_stops_before_any_call(settings, tmp_path):
     items = archive_items(settings, tmp_path, count=4)
     extractor = FakeExtractor(future_extraction)
-    report = run_backfill(settings, MemoryRepository(), extractor, items, max_ai_candidates=2)
+    report = run_backfill(settings, MemoryRepository(), extractor, items, max_ai_candidates=2, now=TEST_NOW)
     assert report.stopped_reason and "max-ai-candidates" in report.stopped_reason
     assert report.ai_candidates == 0 and extractor.calls == []
 
@@ -283,23 +287,25 @@ def test_backfill_max_ai_candidates_stops_before_any_call(settings, tmp_path):
 def test_backfill_force_overrides_limit(settings, tmp_path):
     items = archive_items(settings, tmp_path, count=3)
     extractor = FakeExtractor(future_extraction)
-    report = run_backfill(settings, MemoryRepository(), extractor, items, max_ai_candidates=2, force=True)
+    report = run_backfill(settings, MemoryRepository(), extractor, items, max_ai_candidates=2, force=True, now=TEST_NOW)
     assert report.stopped_reason is None and report.ai_candidates == 3
 
 
 def test_backfill_no_ai_makes_no_call(settings, tmp_path):
     extractor = FakeExtractor(future_extraction)
-    report = run_backfill(settings, MemoryRepository(), extractor, archive_items(settings, tmp_path), use_ai=False)
+    report = run_backfill(settings, MemoryRepository(), extractor, archive_items(settings, tmp_path), use_ai=False,
+                          now=TEST_NOW)
     assert extractor.calls == [] and report.rule_candidates == 1
 
 
 def test_dry_run_writes_no_events(settings, tmp_path):
     """--dry-run uses an in-memory repository, so the real DB and latest.json are untouched."""
     repo = MemoryRepository()
-    run_backfill(settings, repo, FakeExtractor(future_extraction), archive_items(settings, tmp_path))
+    run_backfill(settings, repo, FakeExtractor(future_extraction), archive_items(settings, tmp_path),
+                 now=TEST_NOW)
     assert len(repo.events) == 1        # only in memory
     report_text = run_backfill(settings, MemoryRepository(), FakeExtractor(future_extraction),
-                               archive_items(settings, tmp_path)).render(date(2026, 9, 30), dry_run=True)
+                               archive_items(settings, tmp_path), now=TEST_NOW).render(EVENT_UNTIL, dry_run=True)
     assert "DRY RUN - nothing was written" in report_text
 
 
@@ -308,7 +314,7 @@ def test_mailbox_then_project_does_not_create_second_event(settings, tmp_path):
     """The same mail arrives twice: once from the export, once as an auto-classified task."""
     repo = MemoryRepository()
     extractor = FakeExtractor(future_extraction)
-    run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=date(2026, 9, 30))
+    run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=EVENT_UNTIL, now=TEST_NOW)
     assert len(repo.events) == 1
 
     project_item = _item(ext_id="3000000001", source="dooray", subject="삼성전자 Tech Lunch Talk")
@@ -325,7 +331,7 @@ def test_project_then_mailbox_does_not_create_second_event(settings, tmp_path):
     repo = MemoryRepository()
     extractor = FakeExtractor(future_extraction)
     Pipeline(settings, repo, extractor, [ListCollector([_item(source="dooray")])]).run()
-    run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=date(2026, 9, 30))
+    run_backfill(settings, repo, extractor, archive_items(settings, tmp_path), event_until=EVENT_UNTIL, now=TEST_NOW)
     assert len(repo.events) == 1
 
 
@@ -333,7 +339,7 @@ def test_project_then_mailbox_does_not_create_second_event(settings, tmp_path):
 def test_past_event_stored_but_not_exported(settings, tmp_path):
     from ggongbab.exporter import build_payload
 
-    past = (datetime.now(KST) - timedelta(days=4)).replace(hour=12, minute=0, second=0, microsecond=0)
+    past = (TEST_NOW - timedelta(days=4)).replace(hour=12, minute=0, second=0, microsecond=0)
     # The body must state the same past date, otherwise the validator rightly
     # rejects the extraction as a date conflict and there is nothing to test here.
     past_body = (f"{past.month}월 {past.day}일 12시 N1 101호에서 설명회를 진행했습니다.\n"
@@ -349,10 +355,10 @@ def test_past_event_stored_but_not_exported(settings, tmp_path):
         })
 
     items = archive_items(settings, tmp_path, body=past_body)
-    report = run_backfill(settings, repo, FakeExtractor(past_extraction), items, event_until=date(2026, 9, 30))
+    report = run_backfill(settings, repo, FakeExtractor(past_extraction), items, event_until=EVENT_UNTIL, now=TEST_NOW)
     assert report.likely_events == 1 and report.past_events == 1 and report.in_window == 0
     assert len(repo.events) == 1, "a past event is still recorded in the database"
-    assert build_payload(repo.publishable_events(), settings)["count"] == 0, "but never published"
+    assert build_payload(repo.publishable_events(), settings, TEST_NOW)["count"] == 0, "but never published"
 
 
 def test_future_september_event_is_exported(settings, tmp_path):
@@ -360,8 +366,8 @@ def test_future_september_event_is_exported(settings, tmp_path):
 
     repo = MemoryRepository()
     run_backfill(settings, repo, FakeExtractor(future_extraction), archive_items(settings, tmp_path),
-                 event_until=date(2026, 9, 30))
-    payload = build_payload(repo.publishable_events(), settings)
+                 event_until=EVENT_UNTIL, now=TEST_NOW)
+    payload = build_payload(repo.publishable_events(), settings, TEST_NOW)
     assert payload["count"] == 1
     ev = payload["events"][0]
     assert ev["food"]["provided"] == "true" and ev["startAt"].endswith("+09:00")
@@ -378,9 +384,10 @@ def test_public_export_holds_no_mail_internals(settings, tmp_path):
     from validate_content import validate_ggongbab
 
     repo = MemoryRepository()
-    run_backfill(settings, repo, FakeExtractor(future_extraction), archive_items(settings, tmp_path))
-    payload = build_payload(repo.publishable_events(), settings)
+    run_backfill(settings, repo, FakeExtractor(future_extraction), archive_items(settings, tmp_path),
+                 now=TEST_NOW)
+    payload = build_payload(repo.publishable_events(), settings, TEST_NOW)
     blob = json.dumps(payload, ensure_ascii=False)
     for leak in ("staff.kim", "kaist.ac.kr", "Message-ID", "mail0@", "042-350"):
         assert leak not in blob, leak
-    assert validate_ggongbab(write_payload(payload, tmp_path / "out")) == []
+    assert validate_ggongbab(write_payload(payload, tmp_path / "out"), TEST_NOW) == []

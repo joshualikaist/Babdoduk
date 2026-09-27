@@ -12,11 +12,15 @@ import pytest
 from ggongbab.config import KST
 from ggongbab.exporter import build_payload, kst_iso, tri_state, write_payload
 
+from .conftest import TEST_NOW
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from validate_content import validate_ggongbab  # noqa: E402
 
-FUTURE_UTC = (datetime.now(timezone.utc) + timedelta(days=4)).replace(hour=3, minute=0, second=0, microsecond=0)
+# Derived from the fixed test clock; every export and validation below runs at TEST_NOW.
+FUTURE_UTC = (TEST_NOW.astimezone(timezone.utc) + timedelta(days=4)).replace(hour=3, minute=0, second=0,
+                                                                              microsecond=0)
 
 
 def row(**over):
@@ -40,7 +44,7 @@ def row(**over):
 
 # --- UTF-8 -------------------------------------------------------------------
 def test_utf8_json_roundtrip_is_real_korean(settings, tmp_path):
-    payload = build_payload([row()], settings)
+    payload = build_payload([row()], settings, TEST_NOW)
     path = write_payload(payload, tmp_path)
     raw = path.read_bytes()
     assert not raw.startswith(b"\xef\xbb\xbf"), "no BOM"
@@ -71,36 +75,36 @@ def test_tri_state_normalization(value, expected):
 
 
 def test_unknown_food_stays_unknown_in_public_export(settings):
-    payload = build_payload([row(food_provided="unknown", food_type="unknown", food_description="")], settings)
+    payload = build_payload([row(food_provided="unknown", food_type="unknown", food_description="")], settings, TEST_NOW)
     food = payload["events"][0]["food"]
     assert food["provided"] == "unknown"
     assert food["provided"] is not False, "unknown must not collapse into false"
 
 
 def test_explicit_false_food_is_preserved(settings):
-    payload = build_payload([row(food_provided="false", food_type="unknown")], settings)
+    payload = build_payload([row(food_provided="false", food_type="unknown")], settings, TEST_NOW)
     assert payload["events"][0]["food"]["provided"] == "false"
 
 
 def test_unknown_registration_stays_unknown_in_public_export(settings):
-    payload = build_payload([row(registration_required="unknown")], settings)
+    payload = build_payload([row(registration_required="unknown")], settings, TEST_NOW)
     reg = payload["events"][0]["registration"]
     assert reg["required"] == "unknown"
     assert reg["required"] is not False
 
 
 def test_registration_true_and_false_survive(settings):
-    assert build_payload([row(registration_required="true")], settings)["events"][0]["registration"]["required"] == "true"
-    assert build_payload([row(registration_required="false")], settings)["events"][0]["registration"]["required"] == "false"
+    assert build_payload([row(registration_required="true")], settings, TEST_NOW)["events"][0]["registration"]["required"] == "true"
+    assert build_payload([row(registration_required="false")], settings, TEST_NOW)["events"][0]["registration"]["required"] == "false"
 
 
 def test_validator_rejects_boolean_tri_state(tmp_path, settings):
-    payload = build_payload([row()], settings)
+    payload = build_payload([row()], settings, TEST_NOW)
     payload["events"][0]["food"]["provided"] = True          # the old boolean contract
     payload["events"][0]["registration"]["required"] = False
     path = tmp_path / "latest.json"
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-    errors = "\n".join(validate_ggongbab(path))
+    errors = "\n".join(validate_ggongbab(path, TEST_NOW))
     assert "food.provided must be true/false/unknown" in errors
     assert "registration.required must be true/false/unknown" in errors
 
@@ -117,7 +121,7 @@ def test_export_normalizes_db_utc_timestamps_to_kst(settings):
     end_utc = (FUTURE_UTC + timedelta(hours=1)).isoformat()
     deadline_utc = (FUTURE_UTC - timedelta(days=1)).isoformat()
     payload = build_payload([row(event_end=end_utc, registration_deadline=deadline_utc,
-                                 registration_required="true")], settings)
+                                 registration_required="true")], settings, TEST_NOW)
     ev = payload["events"][0]
     for value in (ev["startAt"], ev["endAt"], ev["registration"]["deadline"], payload["generatedAt"]):
         assert value.endswith("+09:00"), value
@@ -127,14 +131,14 @@ def test_export_normalizes_db_utc_timestamps_to_kst(settings):
 
 
 def test_validator_rejects_non_kst_offset(tmp_path, settings):
-    payload = build_payload([row()], settings)
+    payload = build_payload([row()], settings, TEST_NOW)
     payload["events"][0]["startAt"] = FUTURE_UTC.isoformat()   # +00:00
     path = tmp_path / "latest.json"
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-    assert any("not +09:00" in e for e in validate_ggongbab(path))
+    assert any("not +09:00" in e for e in validate_ggongbab(path, TEST_NOW))
 
 
 def test_full_payload_passes_validator(settings, tmp_path):
-    payload = build_payload([row()], settings)
+    payload = build_payload([row()], settings, TEST_NOW)
     path = write_payload(payload, tmp_path)
-    assert validate_ggongbab(path) == []
+    assert validate_ggongbab(path, TEST_NOW) == []
