@@ -25,6 +25,9 @@ from ggongbab.web.exit_codes import UiContractError
 from .conftest import make_extraction
 from .test_pipeline_export import FUTURE_TEXT, _item, future_extraction
 
+# generate_preview exports the synthetic FUTURE event; pin its clock to the test clock.
+pytestmark = pytest.mark.usefixtures("pin_preview_clock")
+
 ROOT = Path(__file__).resolve().parents[2]
 
 

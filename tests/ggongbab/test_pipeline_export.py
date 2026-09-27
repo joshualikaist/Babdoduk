@@ -16,13 +16,13 @@ from ggongbab.exporter import build_payload, write_payload
 from ggongbab.models import Evidence, RawItem
 from ggongbab.pipeline import Pipeline
 
-from .conftest import NEGATIVE_TEXT, POSITIVE_TEXT, REFERENCE, FakeExtractor, make_extraction
+from .conftest import NEGATIVE_TEXT, POSITIVE_TEXT, REFERENCE, TEST_NOW, FakeExtractor, make_extraction
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from validate_content import validate_ggongbab  # noqa: E402
 
-FUTURE = (datetime.now(KST) + timedelta(days=3)).replace(hour=12, minute=0, second=0, microsecond=0)
+FUTURE = (TEST_NOW + timedelta(days=3)).replace(hour=12, minute=0, second=0, microsecond=0)
 FUTURE_TEXT = f"{FUTURE.month}월 {FUTURE.day}일 12시 N1에서 기업 설명회를 진행합니다.\n참석자에게 점심 도시락을 제공합니다."
 DOORAY_POST = {
     "id": "3000000001",
@@ -210,30 +210,33 @@ def test_export_privacy_and_validation(settings, tmp_path):
         _published_row(),
         _published_row(id="2", status="review", needs_review=True),
         _published_row(id="3", confidence=0.3),
-        _published_row(id="4", event_start=(datetime.now(KST) - timedelta(days=2)).isoformat()),
+        _published_row(id="4", event_start=(TEST_NOW - timedelta(days=2)).isoformat()),
     ]
-    payload = build_payload(rows, settings)
+    payload = build_payload(rows, settings, TEST_NOW)
     assert payload["count"] == 1
     ev = payload["events"][0]
     assert ev["food"] == {"provided": "true", "type": "lunchbox", "description": "점심 도시락 제공"}
     assert ev["sources"] == [{"type": "dooray", "name": "Dooray"}]
     assert "review_reason" not in ev and "sender_email" not in json.dumps(payload)
     path = write_payload(payload, tmp_path)
-    assert validate_ggongbab(path) == []
+    assert validate_ggongbab(path, TEST_NOW) == []
 
 
 def test_export_validator_catches_private_fields(tmp_path):
-    bad = {"generatedAt": datetime.now(KST).isoformat(), "timezone": "Asia/Seoul", "events": [{
-        "id": "a", "title": "x", "startAt": FUTURE.isoformat(), "confidence": 0.9,
+    # Privacy is checked per field: private keys are refused by name, and personal data in
+    # public text (here the summary) is refused by pattern.
+    bad = {"generatedAt": TEST_NOW.isoformat(), "timezone": "Asia/Seoul", "events": [{
+        "id": "a", "title": "x", "summary": "문의 a@b.com", "startAt": FUTURE.isoformat(), "confidence": 0.9,
         "food": {"provided": True, "type": "meal"}, "registration": {}, "sources": [{"type": "dooray", "name": "Dooray"}],
         "sender_email": "a@b.com", "raw_text": "hi"}, {
-        "id": "a", "title": "x", "startAt": (datetime.now(KST) - timedelta(days=3)).isoformat(), "confidence": 2,
+        "id": "a", "title": "x", "startAt": (TEST_NOW - timedelta(days=3)).isoformat(), "confidence": 2,
         "food": {"provided": "yes", "type": "pizza"}, "registration": {"url": "javascript:alert(1)"}, "sources": []}]}
     path = tmp_path / "latest.json"
     path.write_text(json.dumps(bad, ensure_ascii=False), encoding="utf-8")
-    errors = validate_ggongbab(path)
+    errors = validate_ggongbab(path, TEST_NOW)
     joined = "\n".join(errors)
-    for needle in ("e-mail address", "private field", "duplicate id", "expired", "confidence out of range",
+    for needle in ("e-mail address in events[0].summary", "private field $.events[0].sender_email",
+                   "private field $.events[0].raw_text", "duplicate id", "expired", "confidence out of range",
                    "food.provided must be true/false/unknown", "food.type invalid",
                    "registration.url invalid", "has no sources"):
         assert needle in joined, needle

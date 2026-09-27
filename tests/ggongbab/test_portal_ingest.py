@@ -19,7 +19,7 @@ from ggongbab.portal_queue import PortalQueue, decide
 from ggongbab.prefilter import portal_detail_is_candidate, portal_list_warrants_detail
 from ggongbab.web.task_writer import PortalPayload
 
-from .conftest import FakeExtractor, make_extraction
+from .conftest import TEST_NOW, FakeExtractor, make_extraction
 from .test_pipeline_export import DOORAY_POST, FUTURE_TEXT, future_extraction
 from .test_web_agent import FakeWriter
 
@@ -94,7 +94,7 @@ def test_portal_marker_reaches_pipeline_as_portal(settings):
     published = repo.publishable_events()
     assert published
     assert any(src.get("type") == "portal" for src in published[0].get("_sources") or [])
-    payload = build_payload(published, settings, food_only=True)
+    payload = build_payload(published, settings, TEST_NOW, food_only=True)
     ev = payload["events"][0]
     assert all("url" not in src for src in ev["sources"] if src.get("type") == "portal")
 
