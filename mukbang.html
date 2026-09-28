@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/magazine.css" />
+  <!-- The menu picker moved to choose.html; keep old #what links working. -->
+  <script>if (location.hash === '#what') location.replace('choose.html');</script>
 </head>
 <body class="mg-body">
   <header class="site-nav" role="banner">
@@ -19,7 +21,7 @@
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
       <div class="nav-mega-row">
         <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
-        <a class="site-nav-direct" href="mukbang.html#what" data-i18n="nav.choose">메뉴 고르기</a>
+        <a class="site-nav-direct" href="choose.html" data-i18n="nav.choose">메뉴 고르기</a>
         <div class="nav-mega" data-mega>
           <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
           <div class="nav-mega-panel" id="navMorePanel">
@@ -88,14 +90,12 @@
 
       <div class="mg-main">
         <header class="mg-masthead">
-          <div class="mg-masthead-brand">BABDODUK MAGAZINE</div>
-          <div class="mg-masthead-issue" data-i18n="mg.issue">밥도둑 데스크 기본 글</div>
           <div class="mg-lede">
-            <h1 data-i18n-html="mg.lede.title">먹는 것도<br>하나의 취향이니까.</h1>
-            <p data-i18n-html="mg.lede.dek">요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.</p>
+            <h1 class="page-title"><span class="page-num" aria-hidden="true">02</span> <span data-i18n="mg.title">밥도둑 매거진</span></h1>
             <p class="mg-edition-status" id="mgEditionStatus" role="status" hidden></p>
-            <p class="mg-method" data-i18n="mg.method">매일 오전 10시(KST) 공개된 블로그·유튜브 글을 모아 네 갈래로 나눠요. 제목과 링크는 원문의 것이고, 한 줄 소개는 밥도둑이 붙인 메모예요. ‘밥도둑 데스크’ 글은 원문 링크가 없는 자체 메모예요.</p>
+            <p class="mg-method" data-i18n="mg.method">소개 문구는 밥도둑 메모 · 매일 10:00 KST</p>
           </div>
+          <div class="mg-masthead-issue" data-i18n="mg.issue">밥도둑 데스크 기본 글</div>
         </header>
 
         <article class="mg-hero" id="featured">
@@ -214,19 +214,7 @@
           </div>
         </section>
 
-        <section class="kaist-today" id="kaistToday" aria-labelledby="kaistTitle"></section>
 
-        <section class="mg-today" id="what" aria-labelledby="mgTodayTitle">
-          <div class="eat" id="eatApp">
-            <div class="eat-copy">
-              <p class="eat-kicker" data-i18n="eat.kicker">오늘 뭐 먹지?</p>
-              <h2 id="mgTodayTitle" data-i18n="eat.title">메뉴 고르기</h2>
-              <p class="eat-lead" data-i18n-html="eat.lead">고민은 우리가 할게.<br>배고픈 정도만 고르고, 뽑으면 돼.</p>
-              <p class="eat-meta" id="eatMeta" data-i18n="eat.meta">1,000여 가지 음식 카탈로그에서 고르는 아이디어예요. 오늘 판매 여부·가격·알레르기는 가게에서 확인해 주세요.</p>
-            </div>
-            <div class="eat-panel" id="eatPanel"></div>
-          </div>
-        </section>
       </div>
     </div>
   </main>
@@ -238,12 +226,12 @@
         <div class="footer-apple-col footer-apple-col--left">
           <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain">문의 : joshualiuniv@gmail.com</span>
+          <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true"> : </span>joshualiuniv@gmail.com</span>
         </div>
         <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
           <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="mukbang.html#what" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
+          <a href="choose.html" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
@@ -255,7 +243,7 @@
         </nav>
         <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
       </div>
-      <p class="footer-apple-fine" data-i18n="footer.fine"></p>
+      <p class="footer-apple-fine" data-i18n="footer.fine">본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.</p>
     </div>
   </footer>
 
@@ -289,8 +277,7 @@
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'mg.issue': '밥도둑 데스크 기본 글',
-          'mg.lede.title': '먹는 것도<br>하나의 취향이니까.',
-          'mg.lede.dek': '요리부터 요즘 뜨는 음식,<br>건강한 한 끼와 우리가 먹는 습관까지.',
+          'mg.title': '밥도둑 매거진',
           'mg.hero.label': '오늘의 대표 이야기',
           'mg.hero.title': '계란후라이 하나도<br>맛이 달라지는 이유.',
           'mg.hero.desc': '불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.',
@@ -331,69 +318,6 @@
           'mg.habit.a2.sum': '정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.',
           'mg.habit.a3.title': '야식을 끊기보다 시간을 바꿔보는 방법',
           'mg.habit.a3.sum': '금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.',
-          'eat.kicker': '오늘 뭐 먹지?',
-          'eat.title': '메뉴 고르기',
-          'eat.lead': '고민은 우리가 할게.<br>배고픈 정도만 고르고, 뽑으면 돼.',
-          'eat.meta': '1,000여 가지 음식 카탈로그에서 고르는 아이디어예요. 오늘 판매 여부·가격·알레르기는 가게에서 확인해 주세요.',
-          'eat.hungerAria': '배고픈 정도',
-          'eat.hunger.hungry': '배고파',
-          'eat.hunger.light': '가볍게',
-          'eat.hunger.any': '상관없어',
-          'eat.spin': '오늘 메뉴 뽑기',
-          'eat.spinning': '고르는 중…',
-          'eat.hint': '버튼을 누르면 오늘의 메뉴가 뽑혀요.',
-          'eat.hint.main': '버튼을 누르면 오늘의 메뉴가 뽑혀요',
-          'eat.hint.sub': '카테고리, 음식, 느낌이 한 줄로 맞춰집니다.',
-          'eat.hint.spin': '세 칸이 차례로 멈출 때까지 기다려 주세요.',
-          'eat.hint.land': '오늘의 한 끼가 정해졌어요.',
-          'eat.wheelAria': '오늘 메뉴를 뽑는 슬롯. 버튼을 누르면 세 칸이 돌아 한 끼가 정해집니다.',
-          'eat.result.slot': '{a} · {b} · {c}',
-          'eat.reasons': '추천 이유',
-          'eat.reason.now': '지금 시간대에 자주 먹는 메뉴예요',
-          'eat.reason.hearty': '배고프다고 해서 든든한 쪽으로 골랐어요',
-          'eat.reason.light': '가볍게 먹고 싶다고 해서 부담이 적은 쪽으로 골랐어요',
-          'eat.reason.soup': '국물이 있는 메뉴예요',
-          'eat.reason.filling': '포만감이 큰 편이에요',
-          'eat.reason.default': '배고픈 정도와 지금 시간을 기준으로 골랐어요',
-          'eat.scope': '음식 아이디어 추천이에요. 판매 여부·가격·알레르기는 가게에서 확인해 주세요.',
-          'eat.announce': '추천 메뉴: {dish}',
-          'kaist.title': '오늘 KAIST 학식',
-          'kaist.recentTitle': '최근에 올라온 KAIST 학식',
-          'kaist.staleNote': '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.',
-          'kaist.loading': '학식 메뉴를 불러오는 중이에요.',
-          'kaist.error': '학식 메뉴를 불러오지 못했어요.',
-          'kaist.restosAria': '식당',
-          'km.mealsAria': '식사 시간',
-          'km.breakfast': '아침',
-          'km.lunch': '점심',
-          'km.dinner': '저녁',
-          'kaist.empty': '아직 올라온 학식 메뉴가 없어요.',
-          'kaist.nomenu': '이 시간대 메뉴가 없어요.',
-          'kaist.toHub': '오늘의 꽁밥에서 모든 식당 보기 →',
-          'kaist.toSlot': '학식이 당기지 않는다면 메뉴 고르기 →',
-          'eat.color.red': '빨강',
-          'eat.color.black': '검정',
-          'eat.color.green': '초록',
-          'eat.result.pocket': '공이 {n} {c}에 멈췄어요.',
-          'eat.back': '뒤로',
-          'eat.reset': '처음부터',
-          'eat.result.kicker': '오늘의 밥도둑 PICK',
-          'eat.result.blurb': '지금 시간과 한 끼의 크기에 맞춰 골랐어요.',
-          'eat.take': '이걸로 할래',
-          'eat.taken': '좋아요, 이걸로 골랐어요.',
-          'eat.more': '다시 돌리기',
-          'eat.alts': '다른 추천',
-          'eat.empty': '지금은 맞는 메뉴가 없어요. 배고픔만 바꿔 다시 돌려볼까요.',
-          'eat.loadFail': '메뉴 데이터를 아직 못 읽었어요.',
-          'eat.fb.aria': '이 추천은 어땠나요',
-          'eat.fb.like': '좋아요',
-          'eat.fb.dislike': '별로예요',
-          'eat.fb.eaten': '먹었어요',
-          'eat.chip.now': '지금 시간',
-          'eat.chip.hearty': '든든',
-          'eat.chip.light': '가벼운',
-          'eat.chip.soup': '국물',
-          'eat.chip.filling': '든든',
           'mg.cal.open': '날짜 보기',
           'mg.medium.blog': '블로그',
           'mg.medium.news': '블로그',
@@ -401,14 +325,15 @@
           'mg.medium.instagram': '인스타',
           'mg.medium.desk': '데스크',
           'mg.hero.from': '출처',
-          'mg.method': '매일 오전 10시(KST) 공개된 블로그·유튜브 글을 모아 네 갈래로 나눠요. 제목과 링크는 원문의 것이고, 한 줄 소개는 밥도둑이 붙인 메모예요. ‘밥도둑 데스크’ 글은 원문 링크가 없는 자체 메모예요.',
+          'mg.method': '소개 문구는 밥도둑 메모 · 매일 10:00 KST',
           'mg.deskNote': '밥도둑 데스크 · 자체 메모',
-          'mg.editionFail': '오늘 호를 불러오지 못했어요. 아래는 밥도둑 데스크의 기본 글이에요.',
+          'mg.editionFail': '오늘 호를 불러오지 못했어요 · 기본 글',
           'mg.newTab': '(새 창)',
           'mg.issue.today': '오늘 호',
           'mg.issue.past': '지난 호',
           'mg.catsAria': '카테고리',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+          'footer.contact': '문의',
           'footer.country': '대한민국',
           'footer.navAria': '사이트 바로가기',
           'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
@@ -440,8 +365,7 @@
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'mg.issue': 'Babdoduk desk notes',
-          'mg.lede.title': 'Eating is<br>a kind of taste, too.',
-          'mg.lede.dek': 'From kitchen tips to what people are eating now,<br>plus one lighter plate and the habits around it.',
+          'mg.title': 'Babdoduk Magazine',
           'mg.hero.label': 'Featured today',
           'mg.hero.title': 'Why even a fried egg<br>can taste different.',
           'mg.hero.desc': 'Heat, timing, salt. Small moves that quietly raise a home-cooked meal.',
@@ -482,69 +406,6 @@
           'mg.habit.a2.sum': 'Rhythm over rules. Slide breakfast around class and lab hours.',
           'mg.habit.a3.title': 'Move the late snack instead of banning it',
           'mg.habit.a3.sum': 'Same bite, different hour. Timing often changes tomorrow more than restriction does.',
-          'eat.kicker': "What's for today?",
-          'eat.title': 'Choose a dish',
-          'eat.lead': "We'll do the thinking.<br>Say how hungry you are, then pick.",
-          'eat.meta': 'Ideas from a catalog of about 1,000 dishes. Check today’s availability, price and allergens with the venue.',
-          'eat.hungerAria': 'How hungry',
-          'eat.hunger.hungry': 'Hungry',
-          'eat.hunger.light': 'Keep it light',
-          'eat.hunger.any': 'No preference',
-          'eat.spin': 'Pick today’s meal',
-          'eat.spinning': 'Choosing…',
-          'eat.hint': 'Press the button and today’s dish lands on the payline.',
-          'eat.hint.main': 'Press to pick today’s meal',
-          'eat.hint.sub': 'Category, dish, and mood line up in one row.',
-          'eat.hint.spin': 'Wait until the three reels stop, one after another.',
-          'eat.hint.land': 'Today’s plate is set.',
-          'eat.wheelAria': 'A three-reel slot that lands on one dish.',
-          'eat.result.slot': '{a} · {b} · {c}',
-          'eat.reasons': 'Why this',
-          'eat.reason.now': 'Often eaten at this time of day',
-          'eat.reason.hearty': 'Filling, since you said you are hungry',
-          'eat.reason.light': 'Lighter, as you asked',
-          'eat.reason.soup': 'Comes with broth',
-          'eat.reason.filling': 'On the filling side',
-          'eat.reason.default': 'Picked for your hunger and the time of day',
-          'eat.scope': 'A dish idea. Check availability, price and allergens with the venue.',
-          'eat.announce': 'Suggested dish: {dish}',
-          'kaist.title': "Today's KAIST cafeteria",
-          'kaist.recentTitle': 'Latest KAIST cafeteria menu',
-          'kaist.staleNote': 'Menu for {date}. Today’s menu is not posted yet.',
-          'kaist.loading': 'Loading cafeteria menus…',
-          'kaist.error': 'Could not load cafeteria menus.',
-          'kaist.restosAria': 'Cafeteria',
-          'km.mealsAria': 'Meal time',
-          'km.breakfast': 'Breakfast',
-          'km.lunch': 'Lunch',
-          'km.dinner': 'Dinner',
-          'kaist.empty': 'No cafeteria menu has been posted yet.',
-          'kaist.nomenu': 'No menu for this sitting.',
-          'kaist.toHub': 'See every cafeteria in Today’s free food →',
-          'kaist.toSlot': 'Not feeling the cafeteria? Choose a dish →',
-          'eat.color.red': 'red',
-          'eat.color.black': 'black',
-          'eat.color.green': 'green',
-          'eat.result.pocket': 'The ball stopped on {n} {c}.',
-          'eat.back': 'Back',
-          'eat.reset': 'Start over',
-          'eat.result.kicker': "Today's Babdoduk PICK",
-          'eat.result.blurb': 'Picked for this hour and the size of the meal.',
-          'eat.take': "I'll go with this",
-          'eat.taken': 'Noted. You picked this one.',
-          'eat.more': 'Spin again',
-          'eat.alts': 'Other picks',
-          'eat.empty': 'Nothing fit. Change hunger and spin again.',
-          'eat.loadFail': "Couldn't load the menu list yet.",
-          'eat.fb.aria': 'How was this pick',
-          'eat.fb.like': 'Like',
-          'eat.fb.dislike': 'Not for me',
-          'eat.fb.eaten': 'Ate it',
-          'eat.chip.now': 'Right now',
-          'eat.chip.hearty': 'Filling',
-          'eat.chip.light': 'Light',
-          'eat.chip.soup': 'Broth',
-          'eat.chip.filling': 'Filling',
           'mg.cal.open': 'Pick a date',
           'mg.medium.blog': 'Blog',
           'mg.medium.news': 'Blog',
@@ -552,14 +413,15 @@
           'mg.medium.instagram': 'Instagram',
           'mg.medium.desk': 'Desk',
           'mg.hero.from': 'Source',
-          'mg.method': 'Every day at 10:00 KST we gather public blog and YouTube posts into four desks. Titles and links belong to the original source; the one-line note is Babdoduk’s. “Babdoduk desk” items are our own notes without an original link.',
+          'mg.method': 'Summaries are Babdoduk\'s notes · daily 10:00 KST',
           'mg.deskNote': 'Babdoduk desk · our note',
-          'mg.editionFail': 'Could not load today’s edition. Below are Babdoduk desk notes.',
+          'mg.editionFail': 'Couldn\'t load today\'s issue · desk notes',
           'mg.newTab': '(opens in a new tab)',
           'mg.issue.today': "Today's edition",
           'mg.issue.past': 'Past edition',
           'mg.catsAria': 'Categories',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+          'footer.contact': 'Contact',
           'footer.country': 'South Korea',
           'footer.navAria': 'Site links',
           'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.'
@@ -991,9 +853,5 @@
       });
     })();
   </script>
-  <script src="js/food-engine.js"></script>
-  <script src="js/eat-slot.js"></script>
-  <script src="js/food-picker.js"></script>
-  <script src="js/kaist-menu.js"></script>
 </body>
 </html>

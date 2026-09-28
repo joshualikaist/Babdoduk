@@ -35,7 +35,7 @@ These are hypotheses from the current features, not measured audience segments.
 | Tier | Experience | Present implementation |
 | --- | --- | --- |
 | Core | **Check today's food**: KAIST cafeteria, publishable upcoming free food | `ggongbab.html`, `js/ggongbab.js`, `js/kaist-menu.js` |
-| Core | **Choose a dish**: a quick, explainable suggestion | `js/food-engine.js`, `js/food-picker.js`, `js/eat-slot.js`, currently in `mukbang.html#what` |
+| Core | **Choose a dish**: a quick, explainable suggestion | `choose.html` with `js/food-engine.js`, `js/food-picker.js`, `js/eat-slot.js` |
 | Secondary | Explore: magazine, curated restaurant map, history and social channels | `mukbang.html`, `history.html`, external links |
 | Secondary | Participate: verified events and collaborations | `event.html` |
 | Secondary, owner decision open | Food expense and meal log: personal, creator-authored or explicitly separated modes | `food.html`, `data/food-log.json`, browser localStorage |
@@ -58,7 +58,8 @@ The home page should show the service definition, primary check action, secondar
 | --- | --- | --- | --- |
 | `index.html` | Orient and start the two core tasks | Today's food, picker, then editorial/events | Equal-weight directory of all features |
 | `ggongbab.html` | Answer what is available through free-food and cafeteria tabs | Approved registration or the dish picker | Treat catalog suggestions as live inventory |
-| `mukbang.html` | Publish four editorial desks: tips, trends, health, habits | Original story and selective food connection | Permanently own the only entry to the picker |
+| `mukbang.html` | Publish four editorial desks: tips, trends, health, habits | Original story and selective food connection | Host the picker or other utility tools |
+| `choose.html` | Suggest a dish quickly, with the dated cafeteria summary beside it | A reasoned suggestion, or the hub for every cafeteria | Treat catalog suggestions as live inventory |
 | `food.html` | Record/review food and expenses once ownership is decided | Optional return from choosing | Unlabelled mixture of personal and creator records |
 | `event.html` | Show now, coming up and past activity with verified status | Confirmed participation instructions | Past dates described as upcoming |
 | `history.html` | Explain Babdoduk's story and provenance | Relevant content and activities | Duplicate the live food dashboard |
@@ -85,7 +86,7 @@ Use a distinct state for loading, no results, outdated data, failed refresh, and
 
 Before assigning targets, establish a privacy-reviewed baseline. Candidate measures: task completion for finding a dated menu or eligible event; time to first relevant result; picker completion and alternative selection; stale-information misunderstanding in user tests; return visits to the two core tools. Views of an article, button presses and “이거 먹을래” are not evidence of a consumed meal. Do not install analytics as an incidental UI change.
 
-Open owner decisions: positioning of the creator brand relative to the campus utility; final navigation labels and picker URL; ownership/mode of the food log; verified outcomes of old events; bilingual parity; publication status of legal links; permitted measurement and privacy policy; later production promotion scope.
+Open owner decisions: positioning of the creator brand relative to the campus utility; final navigation labels; ownership/mode of the food log; verified outcomes of old events; bilingual parity; publication status of legal links; permitted measurement and privacy policy; later production promotion scope.
 
 ## Out of scope and future possibilities
 

@@ -65,29 +65,29 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
 def test_home_snapshot_copy_names_last_publication_without_freshness_claims():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     ko, en = re.findall(r"'home\.free\.asOf': '([^']*)'", html)
-    assert ko.startswith("마지막 발행 {time}") and "전체 목록" in ko
-    assert en.startswith("Last published {time}") and "full list" in en
+    assert ko == "마지막 발행 {time}" and en == "Last published {time}"
     assert not any(word in ko for word in ("최신", "최근", "실시간"))
     assert not any(word in en.lower() for word in ("latest", "live", "real-time", "realtime"))
 
 
 @pytest.mark.parametrize("name", ["ggongbab.html", "lab-ggongbab.html"])
-def test_hub_lifecycle_copy_is_bilingual_and_claims_no_live_data(name):
-    """The live list holds current and upcoming public rows only and says so; ended rows leave it
-    for the separate past listings below."""
+def test_hub_feed_note_names_the_publication_and_claims_no_live_data(name):
+    """The list is labelled by its last publication only: no lifecycle paragraph and no freshness claim.
+    Ended rows leave it for the past listings, which say so in their own short label."""
     html = (ROOT / name).read_text(encoding="utf-8")
-    ko, en = re.findall(r"'gg\.lifecycle': '([^']*)'", html)
-    assert "현재·예정" in ko and "끝난 일정" in ko and "upcoming" in en and "once they end" in en
+    assert "'gg.lifecycle'" not in html and "'gg.tagline'" not in html
     assert re.findall(r"'gg\.updated': '([^']*)'", html) == ["마지막 발행", "Last published"]
-    for text in (ko, en):
+    js = (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")
+    note = js[js.index("function feedNoteHtml"):js.index("function", js.index("function feedNoteHtml") + 10)]
+    assert "gg.updated" in note and "gg.lifecycle" not in note
+    for text in re.findall(r"'gg\.(?:updated|archive\.lead)': '([^']*)'", html):
         assert not any(word in text.lower() for word in ("실시간", "최신", "latest", "live", "real-time", "realtime"))
-    assert "feedNoteHtml" in (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")
 
 
 PAST_KEYS = ("gg.archive.title", "gg.archive.lead", "gg.archive.ended", "gg.archive.record", "gg.archive.source",
              "gg.archive.empty", "gg.archive.error", "gg.archive.loading", "gg.archive.more", "gg.archive.less", "gg.newTab")
 PAST_KO = {"gg.archive.title": "지난 꽁밥 기록", "gg.archive.ended": "종료", "gg.archive.record": "당시 공개된 꽁밥 안내 기록",
-           "gg.archive.source": "당시 공지 보기", "gg.archive.empty": "지난 30일 동안 공개된 지난 꽁밥 기록이 없어요."}
+           "gg.archive.source": "당시 공지 보기", "gg.archive.empty": "최근 30일 기록 없음"}
 PAST_EN = {"gg.archive.title": "Past free-food listings", "gg.archive.ended": "Ended",
            "gg.archive.record": "Previously published free-food listing", "gg.archive.source": "View original notice"}
 
@@ -100,7 +100,7 @@ def test_past_listing_copy_is_bilingual_and_never_claims_an_outcome(name):
     assert all(len(values) == 2 and all(values) for values in strings.values()), strings
     assert {key: strings[key][0] for key in PAST_KO} == PAST_KO
     assert {key: strings[key][1] for key in PAST_EN} == PAST_EN
-    assert "참여할 수 없어요" in strings["gg.archive.lead"][0] and "can no longer be joined" in strings["gg.archive.lead"][1]
+    assert "종료" in strings["gg.archive.lead"][0] and "ended" in strings["gg.archive.lead"][1]  # ended: no longer open
     text = " ".join(value for values in strings.values() for value in values).lower()
     for claim in ("진행됨", "진행된", "완료", "성공", "held", "completed", "successful", "took place", "happened"):
         assert claim not in text, claim
@@ -144,34 +144,43 @@ def test_shared_selector_keeps_publication_review_expiry_and_sort_semantics():
     assert result == {"today": ["today"], "future": ["today", "late"]}
 
 
-def test_past_events_are_not_reported_as_held_and_picker_stays_integrated():
+def test_past_events_are_not_reported_as_held_and_the_picker_has_its_own_page():
     html = (ROOT / "event.html").read_text(encoding="utf-8")
     rows = re.findall(r'data-start="(\d{4}-\d{2}-\d{2})"\s+data-end="(\d{4}-\d{2}-\d{2})"\s+'
                       r'data-confirmation="([^"]+)"', html)
     assert len(rows) == 3
     assert all(confirmation in ("announced", "tentative") for *_, confirmation in rows)
-    assert "'event.state.tentative.past': '당시 예정 안내 · 진행 여부 미확인'" in html
+    assert "'event.state.tentative.past': '진행 여부 미확인'" in html
+    assert "'event.state.announced.past'" not in html  # an unrecorded outcome claims nothing, visibly
     assert "'event.state.held.past'" in html  # only an explicit "held" state may say it took place
+    assert "'event.note.announced.past': '결과는 이 페이지에 기록되지 않았어요." in html  # full context behind 자세히
     # Each row's link is labelled by the page script from its date band; a past row links to
     # the original post as a record, and each authored instruction block can be marked historical.
     assert html.count("<span data-event-cta>") == 3 and "event.openPageBtn" not in html
-    assert "'event.cta.live': '페이지로 이동'" in html and "'event.cta.past': '당시 게시물 보기'" in html
-    assert "'event.cta.live': 'Open page'" in html and "'event.cta.past': 'View the original post'" in html
+    assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
+    assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
+    assert html.count('<details class="event-more">') == 3 and "event-tab" not in html
     assert html.count('<div class="event-detail-row" data-detail="participation">') == 6  # three events, ko and en
-    assert 'href="ggongbab.html" data-i18n="event.boundaryLink"' in html
-    for name in ("index.html", "ggongbab.html", "mukbang.html"):
-        assert 'href="mukbang.html#what"' in (ROOT / name).read_text(encoding="utf-8")
+    assert '<a class="event-elsewhere" href="ggongbab.html">' in html
+    for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html", "choose.html"):
+        page = (ROOT / name).read_text(encoding="utf-8")
+        assert 'href="choose.html"' in page and 'href="mukbang.html#what"' not in page, name
+    choose = (ROOT / "choose.html").read_text(encoding="utf-8")
+    assert 'id="eatApp"' in choose and 'id="kaistToday"' in choose and "js/food-picker.js" in choose
+    magazine = (ROOT / "mukbang.html").read_text(encoding="utf-8")
+    assert 'id="eatApp"' not in magazine and "js/food-picker.js" not in magazine
+    assert "location.replace('choose.html')" in magazine  # old #what links still reach the picker
 
 
 SHELF_ORDER = ["today", "pick", "map", "log"]
-SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI", "food.html"]
+SHELF_HREFS = ["ggongbab.html", "choose.html", "https://naver.me/5NeqUPzI", "food.html"]
 
 
 def test_home_top_is_one_hero_and_a_manual_banner_shelf():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     top = html.split('<section class="home-group home-read"')[0]
     assert top.count("<h1") == 1
-    assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "mukbang.html#what"]
+    assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "choose.html"]
     banners = re.findall(r'data-banner="(\w+)">\s*<a class="home-banner-link" href="([^"]+)"([^>]*)>', top)
     assert [name for name, _, _ in banners] == SHELF_ORDER
     assert [href for _, href, _ in banners] == SHELF_HREFS
@@ -201,15 +210,16 @@ def test_home_groups_brand_and_hub_name():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     groups = re.findall(r'<section class="home-group [^"]+" aria-labelledby="(\w+)">', html)
     assert groups == ["homeShelfTitle", "homeReadTitle", "homeNewsTitle"]
-    assert re.findall(r'class="home-news-row[^"]*" href="([^"]+)"', html) == ["event.html#notice", "event.html#archive"]
+    assert re.findall(r'class="home-news-row[^"]*" href="([^"]+)"', html) == ["event.html#now", "event.html#archive"]
+    assert "home-group-purpose" not in html and "home-banner-copy" not in html  # numbered titles need no leads
     assert re.findall(r'data-news="(\w+)"', html) == ["current", "record"]
     record = html.split('data-news="record"')[1].split("</div>")[0]
     assert re.findall(r'href="([^"]+)"', record) == ["event.html#archive"]  # the past is one link
     assert 'class="home-news-story" href="history.html"' in html
     event = (ROOT / "event.html").read_text(encoding="utf-8")
-    assert event.index('id="notice"') < event.index('id="upcoming"') < event.index('id="archive"')
+    assert event.index('id="now"') < event.index('id="archive"')
     assert '<ul class="event-notices" id="eventNotices" role="list"></ul>' in event  # no invented notices
-    for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html", "lab.html"):
+    for name in ("index.html", "ggongbab.html", "choose.html", "mukbang.html", "event.html", "food.html", "history.html", "lab.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
         assert 'data-i18n="nav.today">오늘의 꽁밥</a>' in page and "'nav.today': '오늘의 꽁밥'" in page, name
     site = (ROOT / "css/site.css").read_text(encoding="utf-8")

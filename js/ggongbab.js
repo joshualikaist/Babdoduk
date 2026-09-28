@@ -273,10 +273,10 @@
     var menuN = menuSnap.stale ? 0 : (menuSnap.restaurantCount || 0);
     var html = '<div class="gg-state">';
     html += '<strong>' + esc(t('gg.emptyTodayTitle', '🌵 오늘은 꽁밥 가뭄이에요')) + '</strong>';
-    html += esc(t('gg.emptyTodayBody', '아직 확인된 꽁밥 행사가 없어요. 대신 오늘 학식 {n}곳의 메뉴가 있어요.').replace('{n}', String(menuN)));
+    html += esc(t('gg.emptyTodayBody', '오늘 학식 {n}곳').replace('{n}', String(menuN)));
     html += '<br><button type="button" class="km-cta" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기 →')) + '</button></div>';
     if (!futurePublic(now).length) {
-      html += '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + esc(t('gg.emptyBody', '다른 날짜를 보거나 필터를 바꿔 보세요.')) + '</div>';
+      html += '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + '</div>';
     }
     return html;
   }
@@ -290,14 +290,13 @@
       html += '<button type="button" class="km-cta is-ghost" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기 →')) + '</button></div>';
       return html;
     }
-    return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + esc(t('gg.emptyBody', '다른 날짜를 보거나 필터를 바꿔 보세요.')) + '</div>';
+    return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + '</div>';
   }
   // What this list is (the public current and upcoming rows only; ended rows
   // leave it) and when the snapshot was published. It makes no freshness claim
   // beyond that time.
   function feedNoteHtml() {
-    var html = '<div class="gg-feed-note"><p class="gg-lifecycle">' +
-      esc(t('gg.lifecycle', '공개된 현재·예정 꽁밥만 보여 드려요. 끝난 일정은 목록에서 자동으로 내려가요.')) + '</p>';
+    var html = '<div class="gg-feed-note">';
     var g = state.free.data && toKst(state.free.data.generatedAt);
     if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '마지막 발행')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
     return html + '</div>';
@@ -347,11 +346,11 @@
     if (status === 'off') return '';
     var html = '<section class="gg-archive" aria-labelledby="ggArchiveTitle">';
     html += '<h2 class="gg-archive-title" id="ggArchiveTitle">' + esc(t('gg.archive.title', '지난 꽁밥 기록')) + '</h2>';
-    html += '<p class="gg-archive-lead">' + esc(t('gg.archive.lead', '최근 30일 동안 공개되었던 꽁밥 일정을 확인할 수 있어요. 종료된 일정이라 지금은 참여할 수 없어요.')) + '</p>';
+    html += '<p class="gg-archive-lead">' + esc(t('gg.archive.lead', '최근 30일 · 종료된 일정')) + '</p>';
     var list = status === 'loading' ? [] : pastListings(now);
     if (status === 'loading') html += '<p class="gg-archive-state">' + esc(t('gg.archive.loading', '지난 꽁밥 기록을 확인하고 있어요.')) + '</p>';
-    else if (status === 'error') html += '<p class="gg-archive-state" data-archive-state="error">' + esc(t('gg.archive.error', '지난 꽁밥 기록을 불러오지 못했어요. 현재·예정 꽁밥은 위에서 그대로 볼 수 있어요.')) + '</p>';
-    else if (!list.length) html += '<p class="gg-archive-state" data-archive-state="empty">' + esc(t('gg.archive.empty', '지난 30일 동안 공개된 지난 꽁밥 기록이 없어요.')) + '</p>';
+    else if (status === 'error') html += '<p class="gg-archive-state" data-archive-state="error">' + esc(t('gg.archive.error', '지난 기록을 불러오지 못했어요.')) + '</p>';
+    else if (!list.length) html += '<p class="gg-archive-state" data-archive-state="empty">' + esc(t('gg.archive.empty', '최근 30일 기록 없음')) + '</p>';
     if (list.length) {
       var expanded = state.archive.expanded;
       html += '<ol class="gg-past-list" id="ggPastList">';
@@ -400,7 +399,7 @@
   function render() {
     var now = nowKst();
     var focus = focusSelector();
-    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1><p class="gg-tagline">' + esc(t('gg.tagline', 'KAIST 학식 메뉴와 공개된 꽁밥 일정을 한곳에서 확인해요.')) + '</p>';
+    var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1>';
     html += metricHtml(now);
     html += '</header>';
     html += tabsHtml();
@@ -409,8 +408,7 @@
     html += '</div>';
     html += '<div id="foodHubMenu" class="food-hub-menu" role="tabpanel" aria-labelledby="foodHubTabMenu"' + (state.activeSection === 'menu' ? '' : ' hidden') + '></div>';
     html += '<aside class="gg-choose" aria-labelledby="ggChooseTitle"><p class="gg-choose-title" id="ggChooseTitle">' + esc(t('gg.choose.title', '뭘 먹을지 아직 못 정했다면')) + '</p>';
-    html += '<p class="gg-choose-body">' + esc(t('gg.choose.body', '학식·꽁밥과 별개로 음식 아이디어를 골라 드려요. 실제 판매 여부는 가게에서 확인해 주세요.')) + '</p>';
-    html += '<a class="gg-choose-link" href="mukbang.html#what">' + esc(t('gg.choose.cta', '메뉴 고르기 →')) + '</a></aside>';
+    html += '<a class="gg-choose-link" href="choose.html">' + esc(t('gg.choose.cta', '메뉴 고르기 →')) + '</a></aside>';
     root.innerHTML = html;
     if (focus) {
       var again = root.querySelector(focus);

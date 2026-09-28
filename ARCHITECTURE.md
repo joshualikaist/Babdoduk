@@ -25,7 +25,7 @@ Python collectors → private raw item and attachments → PII sanitizer → rul
                                                 └─> index.html (home summary, live only)
 
 LOCAL FRONTEND STATE
-data/foods/catalog.json + 7 packs → food engine → picker (mukbang.html#what) → optional slot animation
+data/foods/catalog.json + 7 packs → food engine → picker (choose.html) → optional slot animation
 food.html + authored data/food-log.json + browser-local entries/preferences/filters
 
 OPERATIONS
@@ -56,9 +56,9 @@ On lab the static file and the DB projection are written in sequence, not atomic
 
 ## Static frontend and local state
 
-Eight public HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-ggongbab.html`, `mukbang.html`, `food.html`, `event.html`, `history.html`, `lab.html`. CSS and JavaScript are loaded without a build step; `css/site.css` owns the shared navigation, footer, tokens and scrollbar. Vercel serves the static files; see “Environment and deployment”.
+Nine public HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-ggongbab.html`, `choose.html`, `mukbang.html`, `food.html`, `event.html`, `history.html`, `lab.html`. CSS and JavaScript are loaded without a build step; `css/site.css` owns the shared navigation, footer, tokens and scrollbar. The navigation and footer markup comes from `shared/nav.html` and `shared/footer.html`; `scripts/sync_site_chrome.py` writes a static copy into each page (so it works without JavaScript) and its `--check` mode, run by the `ui-guardian` workflow, fails on drift; the same workflow runs `scripts/check_site_ui.py --chrome-only` (site guardian and visual comparison) in a pinned Playwright container. Vercel serves the static files; see “Environment and deployment”.
 
-`js/ggongbab.js` renders normal, fixture and localhost preview modes; public routes cannot read the private preview, and normal mode fetches only `data/ggongbab/latest.json`. `js/ggongbab-select.js` holds the client-side eligibility repeat (explicit food, not under review, not ended) shared by the hub and the home summary. `js/kaist-menu.js` exports the KST date and stale rules used by the hub, the magazine summary and `js/home.js`; the home summary reads the same static snapshots as the hub and names their last publication time. `js/food-engine.js` ranks built catalog dishes; `js/food-picker.js` runs the decision UI; `js/eat-slot.js` animates a previously selected result. Filter, preference, language and food-log state use localStorage. Repeated inline page translation code remains a maintenance concern.
+`js/ggongbab.js` renders normal, fixture and localhost preview modes; public routes cannot read the private preview, and normal mode fetches only `data/ggongbab/latest.json`. `js/ggongbab-select.js` holds the client-side eligibility repeat (explicit food, not under review, not ended) shared by the hub and the home summary. `js/kaist-menu.js` exports the KST date and stale rules used by the hub, the cafeteria summary on `choose.html` and `js/home.js`; the home summary reads the same static snapshots as the hub and names their last publication time. `js/food-engine.js` ranks built catalog dishes; `js/food-picker.js` runs the decision UI; `js/eat-slot.js` animates a previously selected result. Filter, preference, language and food-log state use localStorage. Repeated inline page translation code remains a maintenance concern.
 
 ## Generated and authored data
 
