@@ -69,6 +69,7 @@ class MailHeader:
     unread: Optional[bool] = None
     body: str = ""
     body_opened: bool = False
+    received_at: Optional[datetime] = None   # to the minute; private latency metadata only
 
     @property
     def text_for_filter(self) -> str:
@@ -113,6 +114,30 @@ def parse_day(value: Any) -> Optional[date]:
             parsed = parsed.replace(year=datetime.now(KST).year)
         return parsed.date()
     return None
+
+
+def parse_moment(value: Any) -> Optional[datetime]:
+    """The full receive time (KST, to the minute) when a row carries one with a zone.
+
+    Private operational metadata for latency measurement: it goes into the private
+    collection task, never into the local state file or any public output. A clock
+    time without a zone is ambiguous, so only the day (parse_day) is kept then.
+    """
+    if value is None:
+        return None
+    if isinstance(value, (int, float)) and value > 10_000_000:
+        seconds = value / 1000 if value > 10_000_000_000 else value
+        try:
+            return datetime.fromtimestamp(seconds, KST).replace(second=0, microsecond=0)
+        except (OverflowError, OSError, ValueError):
+            return None
+    try:
+        parsed = datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(KST).replace(second=0, microsecond=0)
 
 
 # ---------------------------------------------------------------------------
@@ -453,7 +478,8 @@ def _from_json_rows(rows: list[dict[str, Any]], read_state_key: Optional[str] = 
         subject = _pick(row, "subject", "title", "mailSubject")
         if mail_id is None or subject is None:
             continue
-        received = parse_day(_pick(row, "receivedAt", "sentAt", "createdAt", "date", "receivedDate"))
+        stamp = _pick(row, "receivedAt", "sentAt", "createdAt", "date", "receivedDate")
+        received = parse_day(stamp)
         unread = None
         if read_state_key is not None:
             unread = unread_value(path_value(row, read_state_key), read_state_key)
@@ -469,6 +495,7 @@ def _from_json_rows(rows: list[dict[str, Any]], read_state_key: Optional[str] = 
             preview=_row_preview(row, preview_key),
             received=received,
             unread=bool(unread) if unread is not None else None,
+            received_at=parse_moment(stamp),
         ))
     return out
 

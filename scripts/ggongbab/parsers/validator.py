@@ -13,7 +13,8 @@ from urllib.parse import urlparse
 
 from ..config import KST
 from ..models import EventCandidate, EventExtraction, RuleFacts
-from .rule_parser import explicit_food_evidence, food_type_hint, is_real_eligibility, registration_evidence
+from .rule_parser import (explicit_food_evidence, food_type_hint, is_real_eligibility, registration_evidence,
+                          supply_limit)
 
 FALLBACK_REASONS = {
     "low_confidence",
@@ -211,7 +212,10 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
     rule_state = facts.registration_state or registration_evidence(source_text)
     quote_state = registration_evidence(ai.evidence.registration or "")
     if required == "true" and rule_state != "true" and quote_state != "true" and not url and not deadline:
-        reasons.append("신청 필요 근거 없음")
+        # "선착순, 소진 시 종료" limits a hand-out supply; reading it as sign-up is a known
+        # misreading the rules resolve on their own, so it is corrected without a review.
+        if not (facts.supply_limited or supply_limit(ai.evidence.registration or "")):
+            reasons.append("신청 필요 근거 없음")
         required = "unknown"
     elif required == "false" and rule_state != "false" and quote_state != "false":
         reasons.append("신청 불필요 근거 없음 (본문에 명시 없음)")

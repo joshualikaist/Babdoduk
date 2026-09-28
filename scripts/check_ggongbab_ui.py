@@ -87,6 +87,47 @@ def radar_one_today(browser, base, report):
         context.close()
 
 
+def open_ended_hand_out(browser, base, report):
+    """A hand-out with no end time ("11:30 ~ 소진 시까지", MISS-001) stays live for the feed's
+    three-hour grace window after it starts, then leaves for the past listings. Beverage
+    rows are grouped under 다과. Fixed page clock, synthetic data only."""
+    now = RADAR_NOW
+
+    def event(event_id, start):
+        return {"id": event_id, "title": event_id, "startAt": start.isoformat(), "endAt": None,
+                "timeText": "소진 시까지", "location": {"building": "", "room": "", "name": "문화관 앞"},
+                "food": {"provided": "true", "type": "beverage", "description": "커피"},
+                "registration": {"required": "unknown"}, "sources": [{"type": "dooray", "name": "Dooray"}]}
+
+    live = {"generatedAt": now.isoformat(), "events": [
+        event("open-running", now - timedelta(hours=1)), event("open-over", now - timedelta(hours=4))]}
+    archive = {"generatedAt": now.isoformat(), "windowDays": 30, "events": []}
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    try:
+        context.clock.set_fixed_time(now)
+        page = context.new_page()
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=live))
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=archive))
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
+        page.goto(base + "/lab-ggongbab.html")
+        page.locator(".gg-card").first.wait_for()
+
+        def live_ids():
+            return page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
+
+        assert live_ids() == ["open-running"], live_ids()
+        assert page.locator('.gg-past[data-past-id="open-over"]').count() == 1
+        assert page.locator('.gg-past[data-past-id="open-running"]').count() == 0
+        assert "사전 신청" not in page.locator(".gg-card").first.inner_text()
+        page.locator('.gg-chip[data-group="food"][data-value="refreshment"]').click()
+        assert live_ids() == ["open-running"], live_ids()
+        page.locator('.gg-chip[data-group="food"][data-value="meal"]').click()
+        assert live_ids() == [], live_ids()
+        report["checks"] += 6
+    finally:
+        context.close()
+
+
 def past_listings(browser, base, report):
     """Past listings on the public page: a separate, quiet record with no sign-up actions,
     loaded on its own so that its failure never touches the live feed. Synthetic data only."""
@@ -524,6 +565,7 @@ def run_checks(preview=False):
         # A same-day upcoming event makes the radar report one meal. The page
         # clock is fixed for this scenario only (see radar_one_today).
         radar_one_today(browser, base, report)
+        open_ended_hand_out(browser, base, report)
         past_listings(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
         published = datetime.now(timezone(timedelta(hours=9))).replace(microsecond=0).isoformat()
