@@ -401,7 +401,8 @@ def cmd_run(args) -> int:
             candidates += 1
             payload = MailPayload(mail_id=header.mail_id, subject=header.subject,
                                   body=header.body or header.preview, received=header.received,
-                                  preview_only=not header.body_opened)
+                                  preview_only=not header.body_opened,
+                                  received_at=header.received_at, discovered_at=datetime.now(KST))
             try:
                 post_id = writer.create_task(payload, dry_run=args.dry_run)
             except AgentError:

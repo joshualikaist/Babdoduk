@@ -20,11 +20,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Optional
 
-from ..config import Settings
-from ..ingest_marker import render_portal_marker
+from ..config import KST, Settings
+from ..ingest_marker import render_portal_marker, render_timing
 from .exit_codes import ProjectNotFound
 
 UA = "BabdodukGgongbabAgent/1.0 (+https://github.com/joshualikaist/Babdoduk)"
@@ -41,6 +41,9 @@ class MailPayload:
     body: str
     received: Optional[date] = None
     preview_only: bool = False
+    # Private latency metadata (to the minute / second). Never public, never sent to the AI.
+    received_at: Optional[datetime] = None
+    discovered_at: Optional[datetime] = None
 
 
 @dataclass
@@ -112,15 +115,19 @@ class TaskWriter:
         Sender and recipient lines are deliberately omitted: the pipeline does not
         need them and the sanitizer would strip them anyway.
         """
-        received = mail.received.isoformat() if mail.received else ""
+        if mail.received_at is not None:
+            received = mail.received_at.astimezone(KST).strftime("%Y-%m-%d %H:%M") + " (GMT+09:00)"
+        else:
+            received = mail.received.isoformat() if mail.received else ""
         note = " (preview only; mail body was not opened)" if mail.preview_only else ""
+        timing = render_timing(discovered_at=mail.discovered_at)
         content = (
             f"-----Original Message-----\n"
             f"Sent: {received}\n"
             f"Subject: {mail.subject}\n\n"
             f"{mail.body}\n\n"
             f"[{TASK_MARKER}] collected from the Dooray mailbox{note}"
-        )
+        ) + (f"\n{timing}" if timing else "")
         return {
             "subject": mail.subject or "(제목 없음)",
             "body": {"mimeType": "text/x-markdown", "content": content},
