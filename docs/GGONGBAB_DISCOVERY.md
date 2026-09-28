@@ -1,4 +1,4 @@
-# Ggongbab discovery: radar, evidence, evaluation (lab)
+# Ggongbab discovery: radar, evidence, evaluation
 
 The measure is not "did the model understand the mail eventually" but **"did a student know
 about the free food while it was still useful"**, without trading away privacy, truthfulness,
@@ -39,7 +39,7 @@ relaxes evidence or publication rules.
 
 | Source | Authentication | Target cadence | Trust | Output | Collector | Failure mode | State (2026-09-28) |
 |---|---|---|---|---|---|---|---|
-| Dooray mailbox (radar) | local SSO session, dedicated Chrome on 127.0.0.1:9222 | 2–5 min | A | private collection task | `dooray_web_agent.py` | SSO expiry, UI contract change, PC off | recovered and calibrated; no scheduled scanner yet (Phase 2) |
+| Dooray mailbox (radar) | local SSO session, dedicated Chrome on 127.0.0.1:9222 | 2–5 min | A | private collection task | `dooray_web_agent.py` | SSO expiry, UI contract change, PC off | recovered and calibrated; unread-safe LIST verified; no scheduled scanner yet (Phase 2) |
 | Dooray collection project | cloud API token (GitHub secret) | on trigger + 30-min schedule | A | Supabase -> feed | cloud `refresh_ggongbab.py` | GitHub schedule delay | the schedule runs ~6×/day (see `GGONGBAB_TRIGGER.md`) |
 | Portal recent LIST | local SSO session, dedicated Chrome on 127.0.0.1:9223 | 60 s | A (title = Stage A signal only) | private pending ledger | Portal worker | session expiry, transport | healthy again since 2026-09-28 13:57 |
 | KAIST public boards | none | 10–30 min | A | feed | cloud collector | markup change | rides the cloud schedule |
@@ -157,6 +157,20 @@ Body access requires a verified read-state field and an already-read row (`web/c
 The radar may analyse list-level information only (subject, preview, received time, read flag,
 id) of unread mail. Even that is allowed only after it has been shown, with a fresh unread test
 mail, that listing never changes the read state. Unread bodies are never opened automatically.
+
+**Verified 2026-09-28 16:25–16:27** with the owner's fresh unread test mail (not opened anywhere):
+* inbox load and reload in the dedicated window;
+* the radar's list code path;
+* 18 LIST GETs with page sizes 20–100.
+
+Throughout:
+* `mailSummary.flags.read` stayed `false` at every checkpoint;
+* the Dooray UI kept its unread marker (closed envelope, versus the open envelope of a read row);
+* no mail detail/body request and no non-GET request was made (339 browser GETs: app assets,
+  settings, the mail list, mail counts);
+* no unread mail became read.
+
+List-level radar analysis of unread mail is therefore allowed; bodies stay closed.
 What reaches Luna is the sanitized minimum.
 
 ## Browser and session boundary
