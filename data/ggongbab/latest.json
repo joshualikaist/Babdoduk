@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T19:10:27+09:00",
+  "generatedAt": "2026-09-28T19:39:25+09:00",
   "timezone": "Asia/Seoul",
-  "count": 6,
+  "count": 5,
   "events": [
     {
       "id": "04ed127d-1eef-4c52-a711-90dd48effdcf",
@@ -29,39 +29,6 @@
         "url": "https://docs.google.com/forms/d/e/1FAIpQLSdUscftsT2EInRIbds9-2uubAoIHijRaDKLJg9qBKmjolP_iQ/viewform"
       },
       "confidence": 1.0,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
-    {
-      "id": "8f880dc5-9849-41ce-a3f2-979b2eb50862",
-      "title": "제1회 교무처 & 학사과정생 간담회",
-      "summary": "교무처와 학사과정생이 강의계획서, 공유교과목, 강의평가제도, AI 활용 등을 주제로 대화하는 간담회입니다. 참석자 명단 확인 후 간단한 점심식사를 제공합니다.",
-      "startAt": "2026-09-30T12:00:00+09:00",
-      "endAt": "2026-09-30T13:00:00+09:00",
-      "dateText": "2026. 9. 30.(수)",
-      "timeText": "오후 12시~1시",
-      "location": {
-        "name": "창의학습관(E11) 1층 102호",
-        "building": "창의학습관(E11)",
-        "room": "102호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "간단한 점심식사"
-      },
-      "organizer": "교무처",
-      "eligibility": "선착순 90명",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-09-28T23:59:00+09:00",
-        "url": ""
-      },
-      "confidence": 0.99,
       "sources": [
         {
           "type": "dooray",
