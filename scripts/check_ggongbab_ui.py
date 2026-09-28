@@ -128,6 +128,178 @@ def open_ended_hand_out(browser, base, report):
         context.close()
 
 
+WEEK_NOW = datetime(2026, 9, 30, 12, 30, tzinfo=timezone(timedelta(hours=9)))   # a Wednesday
+MENU_IDS = ["fclt", "west", "east1", "east2", "emp", "icc", "hawam", "seoul"]
+XSS = '<img src=x onerror="window.__kmXss=1">'
+
+
+def menu_day(iso, places, marker):
+    """A synthetic daily payload: every place has lunch, even-numbered places also have dinner."""
+    rows = []
+    for idx, rid in enumerate(MENU_IDS[:places]):
+        rows.append({"id": rid, "name": f"식당 {rid}", "building": "N11", "breakfast": {"items": []},
+                     "lunch": {"items": [f"{marker} 점심 {idx}", "쌀밥"], "price": "5,000원", "kcal": ""},
+                     "dinner": {"items": [f"{marker} 저녁 {idx}"] if idx % 2 == 0 else [], "price": "", "kcal": ""}})
+    return {"date": iso, "dateLabel": iso, "fetchedAt": iso + "T06:00:00+09:00", "source": "fixture", "restaurants": rows}
+
+
+def week_index(days):
+    return {"weekStart": "2026-09-28", "weekEnd": "2026-10-04", "generatedAt": "2026-09-30T06:00:00+09:00",
+            "timezone": "Asia/Seoul", "days": [{"date": d, "available": a, "restaurantCount": n, "status": s,
+                                                "fetchedAt": None} for d, a, n, s in days]}
+
+
+def weekly_cafeteria(browser, base, report):
+    """This week's cafeteria on the normal route: date strip, today vs selected, meal kept across
+    dates, on-demand per-date loading with a page cache, distinct no-menu and failure states,
+    favorites across dates, escaping, keyboard, KO/EN and 360/390/1440. Fixed page clock and
+    synthetic data only; it runs in its own context (see radar_one_today)."""
+    today = menu_day("2026-09-30", 8, "수요일")
+    thursday = menu_day("2026-10-01", 5, "목요일")
+    thursday["restaurants"][0]["dinner"]["items"].append(XSS)
+    monday = menu_day("2026-09-28", 3, "월요일")
+    index = week_index([("2026-09-28", True, 3, "AVAILABLE"), ("2026-09-29", True, 8, "AVAILABLE"),
+                        ("2026-09-30", True, 8, "AVAILABLE"), ("2026-10-01", True, 5, "AVAILABLE"),
+                        ("2026-10-02", True, 8, "AVAILABLE"), ("2026-10-03", False, 0, "FETCH_FAILED"),
+                        ("2026-10-04", False, 0, "NOT_PUBLISHED_YET")])
+    dated = {"2026-09-28": monday, "2026-09-30": today, "2026-10-01": thursday}
+
+    def serve_day(route):
+        name = route.request.url.rsplit("/", 1)[-1].split("?")[0]
+        iso = name[:-5]
+        if iso == "2026-10-02":
+            route.abort()                                   # network failure
+        elif iso in dated:
+            route.fulfill(json=dated[iso])
+        else:
+            route.fulfill(status=404, body="")
+
+    for width, height, lang in ((390, 844, "ko"), (360, 740, "en"), (1440, 900, "ko")):
+        context = browser.new_context(viewport={"width": width, "height": height}, timezone_id="America/Los_Angeles",
+                                      locale="ko-KR", reduced_motion="reduce")
+        neutralize_public_config(context)
+        try:
+            context.clock.set_fixed_time(WEEK_NOW)          # 2026-09-29 20:30 in Los Angeles
+            page = context.new_page()
+            requests = []
+            page.on("request", lambda r: requests.append(urlparse(r.url).path))
+            page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": []}))
+            page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=today))
+            page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json=index))
+            page.route("**/data/kaist-menu/2026-*.json", serve_day)
+            page.add_init_script(f"localStorage.setItem('babdoduk-lang', '{lang}');"
+                                 "localStorage.setItem('babdoduk-menu-meal', 'dinner');"
+                                 "localStorage.setItem('babdoduk-menu-favorites', JSON.stringify(['east1']));")
+            page.goto(base + "/ggongbab.html#menu")
+            page.locator(".km-card").first.wait_for()
+            en = lang == "en"
+            days = page.locator(".km-day")
+            assert days.count() == 7
+            assert days.evaluate_all("els => els.map(el => el.dataset.kmDate)") == [
+                "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04"]
+            # Default: today in KST (the browser itself is in Los Angeles, still on the 29th).
+            wed = page.locator('[data-km-date="2026-09-30"]')
+            assert wed.get_attribute("aria-pressed") == "true" and wed.get_attribute("aria-current") == "date"
+            assert wed.locator(".km-day-today").inner_text() == ("Today" if en else "오늘")
+            assert page.locator(".km-day-today").count() == 1
+            assert page.locator("#foodHubMenu h2").inner_text() == ("This week's cafeteria" if en else "이번 주 학식")
+            assert page.locator("#foodHubTabMenu").inner_text().strip() == ("🍚 Cafeteria" if en else "🍚 학식")
+            assert page.locator(".km-date").inner_text() == ("Sep 30 · Wednesday" if en else "9월 30일 · 수요일")
+            assert page.locator('[data-km-meal="dinner"]').get_attribute("aria-pressed") == "true"
+            assert page.locator(".km-card").count() == 4 and page.locator(".km-card").first.get_attribute("data-km-id") == "east1"
+            metric = page.locator(".gg-counts").inner_text()
+            assert ("8 cafeterias" if en else "학식 8곳") in metric
+            # The today view asks for nothing new: no week index and no other date on load.
+            assert not any(path.endswith(("/week.json", "2026-09-28.json", "2026-10-01.json", "2026-10-02.json"))
+                           for path in requests)
+            # Tomorrow, across the month boundary: same meal, that day's cards and count.
+            page.locator('[data-km-date="2026-10-01"]').click()
+            page.locator(".km-card").first.wait_for()
+            assert page.locator(".km-date").inner_text() == ("Oct 1 · Thursday" if en else "10월 1일 · 목요일")
+            assert page.locator('[data-km-date="2026-10-01"]').get_attribute("aria-pressed") == "true"
+            assert wed.get_attribute("aria-pressed") == "false" and wed.get_attribute("aria-current") == "date"
+            assert page.locator('[data-km-date="2026-10-01"] .km-day-num').inner_text() == "10/1"
+            assert page.locator('[data-km-meal="dinner"]').get_attribute("aria-pressed") == "true"
+            assert page.locator(".km-card").count() == 3
+            assert ("Dinner: 3 cafeterias" if en else "저녁 메뉴 3곳") in page.locator(".km-count").inner_text()
+            assert page.locator(".km-card").first.get_attribute("data-km-id") == "east1"      # favorites are not per date
+            assert "목요일 저녁 2" in page.locator(".km-card").first.inner_text()
+            assert not page.locator("[data-km-stale]").count()                                 # future is not stale
+            assert page.locator(".gg-counts").inner_text() == metric                          # the today metric stays
+            assert page.evaluate("window.__kmXss") is None and not page.locator(".km-items img").count()
+            assert XSS in page.locator('[data-km-id="fclt"] .km-items').inner_text()
+            # Back and forth: a loaded date is not fetched again.
+            wed.click()
+            page.locator('[data-km-date="2026-10-01"]').click()
+            page.locator(".km-card").first.wait_for()
+            assert sum(path.endswith("/2026-10-01.json") for path in requests) == 1
+            assert sum(path.endswith("/week.json") for path in requests) == 1
+            # Sunday: the index says nothing is posted yet, so it is not even requested.
+            page.locator('[data-km-date="2026-10-04"]').click()
+            page.locator('[data-km-day-state="none"]').wait_for()
+            assert page.locator('[data-km-day-state="none"]').inner_text() == (
+                "No menu has been posted yet." if en else "아직 올라온 메뉴가 없어요.")
+            assert not any(path.endswith("/2026-10-04.json") for path in requests)
+            assert page.locator('[data-km-meal="dinner"]').get_attribute("aria-pressed") == "true"
+            # Friday: the request fails, which is not the same as "no menu".
+            page.locator('[data-km-date="2026-10-02"]').click()
+            page.locator('[data-km-day-state="failed"]').wait_for()
+            assert ("Couldn’t load the menu." if en else "메뉴를 불러오지 못했어요.") in page.locator(
+                '[data-km-day-state="failed"]').inner_text()
+            assert page.locator("[data-km-retry-day]").count() == 1
+            # Saturday: the collector could not fetch it and there is no file: a failure state.
+            page.locator('[data-km-date="2026-10-03"]').click()
+            page.locator('[data-km-day-state="failed"]').wait_for()
+            # A past day of this week is browsable too.
+            page.locator('[data-km-date="2026-09-28"]').click()
+            page.locator(".km-card").first.wait_for()
+            assert "월요일 저녁" in page.locator(".km-card").first.inner_text()
+            # Keyboard: arrows move between dates, Enter selects, focus survives the re-render.
+            page.locator('[data-km-date="2026-09-28"]').focus()
+            page.keyboard.press("ArrowRight")
+            assert page.evaluate("document.activeElement.dataset.kmDate") == "2026-09-29"
+            page.keyboard.press("End")
+            page.keyboard.press("ArrowLeft")
+            page.keyboard.press("ArrowLeft")
+            page.keyboard.press("ArrowLeft")
+            page.keyboard.press("Enter")
+            page.locator(".km-card").first.wait_for()
+            assert page.evaluate("document.activeElement.dataset.kmDate") == "2026-10-01"
+            assert page.locator('[data-km-date="2026-10-01"]').get_attribute("aria-pressed") == "true"
+            # Layout: seven usable buttons inside the page, no page-level horizontal overflow.
+            boxes = days.evaluate_all("els => els.map(el => { const r = el.getBoundingClientRect();"
+                                      " return {l: r.left, r: r.right, w: r.width, h: r.height}; })")
+            assert all(b["l"] >= 0 and b["r"] <= width and b["w"] >= 36 and b["h"] >= 44 for b in boxes), boxes
+            assert page.evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth")
+            # A new page load starts at today again (the date is not persisted), the meal is.
+            page.reload()
+            page.locator(".km-card").first.wait_for()
+            assert page.locator('[data-km-date="2026-09-30"]').get_attribute("aria-pressed") == "true"
+            assert page.locator('[data-km-meal="dinner"]').get_attribute("aria-pressed") == "true"
+            report["checks"] += 42
+        finally:
+            context.close()
+    # Without week.json (for example before the weekly collector runs) dates still load on demand.
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    neutralize_public_config(context)
+    try:
+        context.clock.set_fixed_time(WEEK_NOW)
+        page = context.new_page()
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": []}))
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=today))
+        page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(status=404, body=""))
+        page.route("**/data/kaist-menu/2026-*.json", serve_day)
+        page.goto(base + "/ggongbab.html#menu")
+        page.locator(".km-card").first.wait_for()
+        page.locator('[data-km-date="2026-10-01"]').click()
+        page.locator(".km-card").first.wait_for()
+        page.locator('[data-km-date="2026-10-04"]').click()
+        page.locator('[data-km-day-state="none"]').wait_for()
+        report["checks"] += 2
+    finally:
+        context.close()
+
+
 def past_listings(browser, base, report):
     """Past listings on the public page: a separate, quiet record with no sign-up actions,
     loaded on its own so that its failure never touches the live feed. Synthetic data only."""
@@ -549,7 +721,8 @@ def run_checks(preview=False):
         assert page.locator("#foodHubMenu h2").count() == 0 or "오늘" not in page.locator("#foodHubMenu h2").inner_text()
         page.locator("[data-km-stale-toggle]").click()
         page.locator(".km-card").first.wait_for()
-        assert "최근 학식" in page.locator("#foodHubMenu h2").inner_text()
+        assert "최근 학식" in page.locator("#foodHubMenu .km-date").inner_text()
+        assert page.locator("#foodHubMenu h2").inner_text() == "이번 주 학식"
         report["checks"] += 3
         drought = {"events": []}
         page.unroute("**/data/ggongbab/latest.json")
@@ -567,6 +740,7 @@ def run_checks(preview=False):
         radar_one_today(browser, base, report)
         open_ended_hand_out(browser, base, report)
         past_listings(browser, base, report)
+        weekly_cafeteria(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
         published = datetime.now(timezone(timedelta(hours=9))).replace(microsecond=0).isoformat()
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"generatedAt": published, "events": events}))

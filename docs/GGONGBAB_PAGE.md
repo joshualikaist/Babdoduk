@@ -25,7 +25,7 @@ Dooray Mail ──(에이전트 / 자동 분류)──▶ Dooray Project Task  �
 KAIST Portal (로컬 agent → ingest marker)                    ├─▶ Collectors ─▶ RawItem
 KAIST 공개 공지 (학사공지 · 문화행사)                          │
 data/ggongbab/manual.json                                    ─┘
-KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/latest.json
+KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/ (날짜별 · week.json · latest.json=오늘, docs/KAIST_MENU.md)
                                                               │
                              raw_items / attachments (Supabase, private)
                                                               │

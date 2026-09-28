@@ -65,7 +65,7 @@ Nine public HTML files are the route entry points: `index.html`, `ggongbab.html`
 | Data | Writer/owner | Consumer and failure behavior |
 | --- | --- | --- |
 | `data/magazine/index.json`, dated and latest editions | `scripts/refresh_magazine.py` using RSS/YouTube and authored fallback | Magazine and home read edition data; fallback is not evidence of a fetched story |
-| `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` parsing the official KAIST page without AI | Hub, magazine and home; zero usable restaurants keeps prior files, so clients must check the date |
+| `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` parsing the official KAIST page without AI: dated files for the current Monday–Sunday KST week, `latest.json` (today only) and the `week.json` index (`docs/KAIST_MENU.md`) | Hub (weekly), choose and home (today); zero usable restaurants keeps prior files, so clients check the date against the date they show |
 | `data/ggongbab/latest.json` | Approved export in `scripts/refresh_ggongbab.py` | Hub and home; validation precedes the final write and a failure keeps the previous file |
 | `data/ggongbab/archive/index.json` | Same export, same clock (past listings, 30 days) | Hub only, fetched separately; a failed archive keeps the previous file without blocking `latest.json`, and a failed fetch leaves the live feed untouched |
 | `data/foods/catalog.json`, 7 packs | `scripts/build_foods.py` and `scripts/food_expand.py` | Browser-only dish suggestion catalog, not restaurant inventory |
