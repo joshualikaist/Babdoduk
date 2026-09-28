@@ -263,3 +263,17 @@ def test_enable_and_dispatch_switches_do_not_overwrite_each_other(tmp_path):
     assert files.dispatch_enabled() and not files.enabled()
     files.set_dispatch(False, T0)
     assert not files.dispatch_enabled() and not files.enabled()
+
+
+@pytest.mark.skipif(__import__("os").name != "nt", reason="the operator entry point is Windows-only")
+def test_a_start_that_fails_before_the_first_scan_is_recorded_for_status_and_alerts(tmp_path, monkeypatch):
+    from ggongbab import alerts
+    workers = _workers(tmp_path, monkeypatch)
+    files = radar.RadarFiles(tmp_path)
+    files.set_enabled(True, T0)
+    assert workers.main(["radar-once"]) == 1                    # no calibrated contract here
+    runtime = files.runtime_state()
+    assert runtime["reason"] == radar.CONFIG_REQUIRED and runtime["running"] is False
+    assert radar.CONFIG_REQUIRED in (tmp_path / ".local/ops-radar.log").read_text(encoding="utf-8")
+    a = alerts.radar_alert(runtime, running=False, enabled=True, unread_disabled=False, now=T0)
+    assert (a.severity, a.reason, a.action) == ("critical", "CONFIGURATION_REQUIRED", "fix_config")

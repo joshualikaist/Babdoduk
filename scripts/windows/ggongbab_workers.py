@@ -68,14 +68,29 @@ def radar(files, *, once=False, dry_run=False, interval=None):
     from ggongbab.web.ui_contract import load_contract
 
     rf = RadarFiles(files.root)
-    contract = load_contract(rf.contract)
-    contract.require_ready()
-    if not contract.read_state_key:
-        raise OpsError("OPS_CONFIGURATION_REQUIRED")   # unread safety needs the verified read flag
-    settings = load_settings()
-    writer = None if dry_run else TaskWriter(settings)
-    if writer is not None:
-        writer.verify_project()
+    try:
+        contract = load_contract(rf.contract)
+        contract.require_ready()
+        if not contract.read_state_key:
+            raise OpsError("OPS_CONFIGURATION_REQUIRED")   # unread safety needs the verified read flag
+        settings = load_settings()
+        writer = None if dry_run else TaskWriter(settings)
+        if writer is not None:
+            writer.verify_project()
+    except Exception:
+        # A start that fails before the first scan (contract not verified, Dooray token or
+        # project rejected) is recorded with a fixed code, so status and alerts say why.
+        from ggongbab.dooray_radar import CONFIG_REQUIRED
+        from ggongbab.ops_storage import atomic_json
+        runtime = rf.runtime_state()
+        runtime.update(running=False, reason=CONFIG_REQUIRED, observed=time.time())
+        atomic_json(rf.runtime, runtime)
+        log = SafeLog(files.local / "ops-radar.log")
+        try:
+            log(CONFIG_REQUIRED)
+        finally:
+            log.close()
+        raise OpsError("OPS_CONFIGURATION_REQUIRED")
     beat_writer = None
     if settings.has_supabase and not dry_run:
         from ggongbab.db.supabase_client import SupabaseClient
