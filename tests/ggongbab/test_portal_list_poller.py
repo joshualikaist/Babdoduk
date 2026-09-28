@@ -559,3 +559,90 @@ def test_restart_after_auth_recovery_reuses_detection_ledger(tmp_path):
     assert len(restored.data["pending"]) == 1
     assert [b["status"] for b in beats] == ["auth_required", "healthy"]
     assert SECRET not in "".join(logs)
+
+
+# --- stale transport recovery (Phase 2) ---------------------------------------------------
+class Flaky:
+    """Transport failures for the first `fail` calls, then empty pages; records closing."""
+    def __init__(self, fail=0, error=None):
+        self.fail, self.calls, self.closed = fail, 0, False
+        self.error = error or ListTransportError(reason="PORTAL_LIST_CONNECTION_ERROR")
+
+    def fetch_list_page(self, _index):
+        self.calls += 1
+        if self.calls <= self.fail:
+            raise self.error
+        return page([])
+
+    def close(self):
+        self.closed = True
+
+
+def run(provider, state, *, clock=None, **kw):
+    beats, logs, sleeps = [], [], []
+    code = run_poller(provider, state, emit_heartbeat=beats.append, log=logs.append, sleep=sleeps.append,
+                      monotonic=lambda: 0, now=clock or (lambda: NOW), **kw)
+    return code, beats, logs, sleeps
+
+
+def test_a_stale_connection_is_rebuilt_from_the_open_browser_without_sso(tmp_path):
+    state, _client, _ = make_baseline(tmp_path)
+    before = deepcopy(state.data)
+    stale, fresh = Flaky(fail=99), Flaky()
+    provider = SimpleNamespace(acquire=Mock(side_effect=[stale, fresh]))
+    code, beats, logs, sleeps = run(provider, state, max_cycles=3)
+    assert code == 0 and provider.acquire.call_count == 2 and stale.closed
+    assert "PORTAL_LIST_SESSION_REBUILT" in logs and beats[-1]["status"] == "healthy"
+    assert [b["status"] for b in beats] == ["collector_error", "collector_error", "healthy"]
+    assert state.data["initialized"] and state.data["notices"] == before["notices"]   # baseline kept
+
+
+def test_the_first_failure_after_a_sleep_rebuilds_at_once(tmp_path):
+    state, _client, _ = make_baseline(tmp_path)
+    times = iter([NOW, NOW, NOW + timedelta(hours=2), NOW + timedelta(hours=2, minutes=1),
+                  NOW + timedelta(hours=2, minutes=1), NOW + timedelta(hours=2, minutes=1)])
+    first = Flaky(fail=0)
+    first.fail_after = 1
+
+    class SleptThrough(Flaky):
+        def fetch_list_page(self, index):
+            self.calls += 1
+            if self.calls >= 2:            # works before the sleep, fails after it
+                raise ListTransportError(reason="PORTAL_LIST_CONNECTION_ERROR")
+            return page([])
+
+    slept, fresh = SleptThrough(), Flaky()
+    provider = SimpleNamespace(acquire=Mock(side_effect=[slept, fresh]))
+    code, beats, logs, _ = run(provider, state, clock=lambda: next(times), max_cycles=3)
+    assert provider.acquire.call_count == 2 and slept.closed
+    assert [b["status"] for b in beats] == ["healthy", "collector_error", "healthy"]
+
+
+def test_an_expired_login_found_while_rebuilding_is_an_auth_stop_not_a_transport_retry(tmp_path):
+    state, _client, _ = make_baseline(tmp_path)
+    provider = SimpleNamespace(acquire=Mock(side_effect=[Flaky(fail=99), AuthRequired(SECRET)]))
+    code, beats, logs, _ = run(provider, state, max_cycles=5)
+    assert code == 10 and beats[-1]["status"] == "auth_required"
+    assert SECRET not in json.dumps(beats) + "".join(logs)
+
+
+def test_rebuilds_are_bounded_and_the_worker_still_stops_on_its_failure_budget(tmp_path):
+    state, _client, _ = make_baseline(tmp_path)
+    clients = [Flaky(fail=99) for _ in range(10)]
+    provider = SimpleNamespace(acquire=Mock(side_effect=clients))
+    code, beats, logs, _ = run(provider, state, max_failures=8)
+    assert code == 1
+    assert logs.count("PORTAL_LIST_SESSION_REBUILT") <= 3 and provider.acquire.call_count <= 4
+
+
+def test_an_incomplete_scan_is_not_mistaken_for_a_stale_connection(tmp_path):
+    state, _client, _ = make_baseline(tmp_path)
+    busy = Flaky(fail=2, error=ScanIncomplete())
+    provider = SimpleNamespace(acquire=Mock(return_value=busy))
+    code, beats, logs, _ = run(provider, state, max_cycles=3)
+    assert code == 0 and provider.acquire.call_count == 1 and "PORTAL_LIST_SESSION_REBUILT" not in logs
+
+
+def test_the_rebuild_log_code_is_allowed_in_the_operational_log():
+    from ggongbab.ops_policy import REASONS
+    assert "PORTAL_LIST_SESSION_REBUILT" in REASONS

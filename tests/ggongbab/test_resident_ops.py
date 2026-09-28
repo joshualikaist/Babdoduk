@@ -364,7 +364,10 @@ def test_bounded_in_process_retries_and_cooperative_stop(tmp_path):
         patch.setattr(poller.PortalListPoller, "poll_once", Mock(side_effect=errors))
         code = run_poller(provider, state, emit_heartbeat=lambda row: None, max_failures=3,
             on_retry=delays.append, sleep=calls.append, monotonic=lambda: 0, log=lambda _: None)
-        assert code == 1 and delays == [120, 240, 480] and sum(calls) == 360
+        # Backoff after the first failure; from the second, the stale transport is rebuilt
+        # after a short bounded wait (Phase 2). The failure budget still stops the worker.
+        assert code == 1 and delays == [120, 30, 30] and sum(calls) == 150
+        assert provider.acquire.call_count == 2
     provider.reset_mock()
     assert run_poller(provider, state, emit_heartbeat=lambda row: None, stop_requested=lambda: True) == 0
     provider.acquire.assert_not_called()
