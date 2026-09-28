@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from ..config import KST, Settings
-from ..ingest_marker import parse_ingest_marker, strip_ingest_marker
+from ..ingest_marker import parse_ingest_marker, parse_timing, strip_ingest_marker, strip_timing
 from ..models import RawAttachment, RawItem
 from ..parsers.dooray_mail import parse_original_message
 from ..parsers.html_text import html_to_text, inline_file_ids
@@ -245,6 +245,9 @@ class DoorayCollector(Collector):
         content = body.get("content") or ""
         raw_html = content if "html" in mime else ""
         text = html_to_text(content) if "html" in mime else content
+        # Private latency stamps leave the text here, before the sanitizer or the AI see it.
+        timing = parse_timing(text)
+        text = strip_timing(text)
         original = parse_original_message(text)
         marker = parse_ingest_marker(text)
         subject = original.subject or post.get("subject") or ""
@@ -308,6 +311,9 @@ class DoorayCollector(Collector):
                 "to_count": len(original.to),
                 "cc_count": len(original.cc),
                 "task_subject": post.get("subject") or "",
+                # Private latency metadata (raw_items only; never exported).
+                "mail_received_at": original.sent_at.isoformat() if original.sent_at else None,
+                "discovered_at": timing.get("discovered_at"),
             },
             attachments=attachments,
         )
