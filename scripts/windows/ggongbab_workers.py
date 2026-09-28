@@ -51,6 +51,77 @@ def dooray_once(files, *, run=subprocess.run):
         return result.returncode
 
 
+def radar(files, *, once=False, dry_run=False, interval=None):
+    """The Dooray Radar (list-level, unread-safe). Attaches to the already-open dedicated
+    Dooray browser; never starts, restarts or closes it and never opens a mail body."""
+    from contextlib import contextmanager
+    from datetime import datetime
+    from urllib.parse import urlparse
+    from ggongbab.config import load_settings
+    from ggongbab.dispatch import request_refresh
+    from ggongbab.dooray_radar import INTERVAL_DEFAULT, RadarFiles, run_radar
+    from ggongbab.heartbeat import HeartbeatWriter, build_heartbeat
+    from ggongbab.portal_list_state import poller_lock
+    from ggongbab.web.mail_reader import list_mails_paged
+    from ggongbab.web.resident import is_running, resident_session
+    from ggongbab.web.task_writer import TaskWriter
+    from ggongbab.web.ui_contract import load_contract
+
+    rf = RadarFiles(files.root)
+    contract = load_contract(rf.contract)
+    contract.require_ready()
+    if not contract.read_state_key:
+        raise OpsError("OPS_CONFIGURATION_REQUIRED")   # unread safety needs the verified read flag
+    settings = load_settings()
+    writer = None if dry_run else TaskWriter(settings)
+    if writer is not None:
+        writer.verify_project()
+    beat_writer = None
+    if settings.has_supabase and not dry_run:
+        from ggongbab.db.supabase_client import SupabaseClient
+        beat_writer = HeartbeatWriter(SupabaseClient(settings.supabase_url, settings.supabase_secret_key))
+
+    def heartbeat(status, scanned, success, exit_class):
+        if beat_writer is None:
+            return
+        try:
+            beat_writer.write(build_heartbeat(agent_id="dooray-radar", version="dooray-radar-v1", status=status,
+                exit_class=exit_class, auth_required=status == "auth_required",
+                ui_contract_changed=status == "ui_changed", last_scan_at=scanned, last_success_at=success))
+        except Exception:
+            pass    # the local runtime file and alerts still record the state
+
+    @contextmanager
+    def session_factory():
+        with resident_session(rf.profile, contract, start_url="", port=9222, attach_only=True,
+                              log=lambda _: None) as session:
+            yield session
+
+    log = SafeLog(files.local / "ops-radar.log")
+    try:
+        with poller_lock(rf.lock):
+            return run_radar(rf, session_factory=session_factory, writer=writer, list_mails=list_mails_paged,
+                             mail_host=urlparse(contract.mail_url).netloc, heartbeat=heartbeat,
+                             dispatch=lambda new: request_refresh(rf.dispatch, new_candidates=new),
+                             interval=interval or INTERVAL_DEFAULT, dry_run=dry_run,
+                             max_cycles=1 if once else None, browser_running=lambda: bool(is_running(9222)),
+                             log=log)
+    finally:
+        log.close()
+
+
+def alerts_command(files, emit=True):
+    from ggongbab.alerts import FileSink, evaluate, render
+    from ggongbab.dooray_radar import RadarFiles
+    found = evaluate(files.local, portal_running=lock_held(files.worker_lock),
+                     radar_running=lock_held(RadarFiles(files.root).lock))
+    if emit:
+        FileSink(files.local).emit(found)
+    for line in render(found):
+        print(line)
+    return 0 if all(a.severity == "healthy" for a in found) else 2
+
+
 class SafeLogContext:
     def __init__(self, path):
         self.log = SafeLog(path)
@@ -62,8 +133,12 @@ class SafeLogContext:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Babdoduk Windows resident operations")
-    parser.add_argument("action", choices=("watch", "worker", "enable", "stop", "status", "recover", "dooray-once", "check"))
+    parser.add_argument("action", choices=("watch", "worker", "enable", "stop", "status", "recover", "dooray-once", "check",
+                                           "radar", "radar-once", "radar-enable", "radar-disable", "radar-allow-unread",
+                                           "alerts"))
     parser.add_argument("--recover-stale", action="store_true")
+    parser.add_argument("--dry-run", action="store_true", help="radar-once: detect only; no task, state or dispatch")
+    parser.add_argument("--interval", type=int, help="radar: seconds between scans (120-300, default 180)")
     # Existing legacy launcher retains explicit safety switches, all fixed/validated.
     parser.add_argument("--since-last-run", action="store_true")
     parser.add_argument("--read-state", choices=("read",), default="read")
@@ -99,6 +174,20 @@ def main(argv=None):
             return run_worker(files, recover_stale=args.recover_stale)
         elif args.action == "dooray-once":
             return dooray_once(files)
+        elif args.action in ("radar", "radar-once"):
+            return radar(files, once=args.action == "radar-once", dry_run=args.dry_run, interval=args.interval)
+        elif args.action in ("radar-enable", "radar-disable"):
+            from ggongbab.dooray_radar import RadarFiles
+            RadarFiles(ROOT).set_enabled(args.action == "radar-enable", time.time())
+        elif args.action == "radar-allow-unread":
+            # Operator acknowledgement after reviewing why unread analysis was disabled.
+            from ggongbab.dooray_radar import RadarFiles
+            latch = RadarFiles(ROOT).unread_latch
+            if latch.exists():
+                latch.unlink()
+            print("Unread list-level analysis re-enabled after operator review.")
+        elif args.action == "alerts":
+            return alerts_command(files)
         else:
             watch(files)
         return 0

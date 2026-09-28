@@ -10,7 +10,7 @@ import sys
 import time
 
 from .heartbeat import HeartbeatWriter
-from .ops_policy import (HUMAN, REASONS, PORTAL_PORT, DOORAY_PORT, alert_state,
+from .ops_policy import (HUMAN, REASONS, PORTAL_PORT, DOORAY_PORT, WARNING_SECONDS, alert_state,
                          reason, restart_action)
 from .ops_storage import OpsError, SafeLog, atomic_json, lock_held, read_json
 from .portal_list_state import ListStateError, PortalListState, poller_lock
@@ -161,6 +161,23 @@ def run_worker(files, *, recover_stale=False, host=None, settings=None, now=time
                 journal.close()
 
 
+RESUME_GAP_SECONDS = 120
+RESUME_GRACE_SECONDS = 600
+
+
+def emit_alerts(files, now, *, portal_running):
+    """Combined operator alerts (Portal, Radar, dispatch, flash candidates) every watchdog tick,
+    so a crashed or stale Radar is reported even when its own process is gone."""
+    try:
+        from .alerts import FileSink, evaluate
+        from .dooray_radar import RadarFiles
+        found = evaluate(files.local, portal_running=portal_running,
+                         radar_running=lock_held(RadarFiles(files.root).lock), now=now)
+        FileSink(files.local).emit(found)
+    except Exception:
+        pass    # alerting must never stop the watchdog
+
+
 def launch_worker(files, recover_stale):
     command = [sys.executable, str(files.root / "scripts/windows/ggongbab_workers.py"), "worker"]
     if recover_stale:
@@ -183,12 +200,19 @@ class Watchdog:
         if self.state["latched"] not in REASONS | {""}:
             raise OpsError()
         self.log = SafeLog(files.local / "ops-watchdog.log")
+        # In memory only: a tick gap far beyond the 15 s cadence means the PC slept. The worker
+        # then gets a grace window to report before it can be judged unresponsive.
+        self.last_tick = None
+        self.resumed_at = 0.0
 
     def save(self):
         atomic_json(self.files.watch, self.state)
 
     def tick(self):
         now = self.now()
+        if self.last_tick is not None and now - self.last_tick > RESUME_GAP_SECONDS:
+            self.resumed_at = now
+        self.last_tick = now
         control = self.files.control_state()
         runtime = self.files.runtime_state()
         held = lock_held(self.files.worker_lock)
@@ -197,6 +221,12 @@ class Watchdog:
         if control["resume"] > self.state["resume"]:
             self.state.update(launches=0, recoveries=0, retry_at=0, latched="", resume=control["resume"], launched_at=0)
             self.save()
+        if (self.state["latched"] == "OPS_WORKER_UNRESPONSIVE" and held and runtime["last_success"]
+                and now - runtime["last_success"] <= WARNING_SECONDS):
+            # The worker is scanning again, so the stall was not real (e.g. judged across a sleep).
+            self.state["latched"] = ""
+            self.save()
+            self.log("WORKER_RUNNING")
         code = self.state["latched"] or runtime["manual_reason"] or runtime["reason"]
         # An explicit operator resume acknowledges an older terminal observation.
         if runtime["observed"] < control["resume"] and not self.state["latched"]:
@@ -213,6 +243,7 @@ class Watchdog:
         alert["worker_running"] = held
         alert["observed_at"] = now
         atomic_json(self.files.alert, alert)
+        emit_alerts(self.files, now, portal_running=held)
         if self.state["latched"]:
             return True
         if self.child is not None and self.child.poll() is None:
@@ -221,7 +252,8 @@ class Watchdog:
             if runtime["last_success"] and now - runtime["started"] >= 600 and now - runtime["last_success"] <= 180:
                 self.state.update(launches=1, recoveries=0)
                 self.save()
-            if now - max(runtime["observed"], self.state["launched_at"]) > 600 and now > runtime["retry_not_before"]:
+            if (now - max(runtime["observed"], self.state["launched_at"]) > 600 and now > runtime["retry_not_before"]
+                    and now - self.resumed_at > RESUME_GRACE_SECONDS):
                 self.state["latched"] = "OPS_WORKER_UNRESPONSIVE"
                 self.save()  # require human review; do not kill a maybe-writing poller
             return True
@@ -272,6 +304,22 @@ def watch(files):
             watchdog.close()
 
 
+def radar_status_lines(files, now):
+    from .dooray_radar import RadarFiles
+    radar = RadarFiles(files.root)
+    try:
+        row = radar.runtime_state()
+    except Exception:
+        return ["Dooray radar  : STATE UNREADABLE"]
+    age = int(now - row["last_success"]) if isinstance(row.get("last_success"), (int, float)) and row["last_success"] else None
+    code = row.get("reason") if row.get("reason") in REASONS else "DOORAY_RADAR_STOPPED"
+    return ["Dooray radar  : " + ("RUNNING (lock held)" if lock_held(radar.lock) else "STOPPED")
+            + (" / enabled" if radar.enabled() else " / disabled") + " / " + code + " (browser 9222)",
+            "Radar success : " + (f"{age} sec ago" if age is not None else "not observed"),
+            "Unread radar  : " + ("allowed (list level only)" if radar.unread_allowed()
+                                  else "DISABLED (fail-closed; review, then radar-allow-unread)")]
+
+
 def status_lines(files, host=None, now=None):
     now = time.time() if now is None else now
     row = files.runtime_state()
@@ -294,6 +342,6 @@ def status_lines(files, host=None, now=None):
         "Portal CDP    : " + {"verified": "OK", "absent": "ABSENT", "stale": "STALE", "unverified": "OWNER UNVERIFIED"}[state] + " (9223)",
         "Portal status : " + (alert["severity"] if control["enabled"] else "disabled") + " / " + code,
         "Last success  : " + (f"{age} sec ago (confirmed heartbeat write)" if age is not None else "not observed"),
-        "Dooray worker : NOT MANAGED (operator-triggered; audit existing tasks)",
-        "Dooray CDP    : not probed (9222)", "Cloud:", "Supabase      : not tested locally by status",
+        *radar_status_lines(files, now),
+        "Cloud:", "Supabase      : not tested locally by status",
         "Vercel        : independent", "GitHub cron   : independent"]
