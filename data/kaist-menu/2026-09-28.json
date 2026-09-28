@@ -1,15 +1,8 @@
 {
   "date": "2026-09-28",
   "dateLabel": "9월 28일",
-  "fetchedAt": "2026-09-29T00:49:00+09:00",
+  "fetchedAt": "2026-09-28T16:23:38+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
-  "status": "AVAILABLE",
-  "coverage": {
-    "requested": 8,
-    "fetched": 8,
-    "failed": [],
-    "carried": []
-  },
   "restaurants": [
     {
       "id": "fclt",
