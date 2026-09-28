@@ -54,6 +54,8 @@ class Writer:
 def run(tmp_path, headers, *, requests=(), writer=None, dispatch=None, **kw):
     files = radar.RadarFiles(tmp_path)
     files.set_enabled(True, T0)
+    if kw.pop("dispatch_on", True):
+        files.set_dispatch(True, T0)
     context = Context(requests)
     beats, logs = [], []
 
@@ -205,6 +207,9 @@ def test_enable_disable_allow_unread_and_alerts_commands(tmp_path, monkeypatch, 
     files.disable_unread(radar.INVARIANT, T0)
     assert workers.main(["radar-allow-unread"]) == 0 and files.unread_allowed()
     assert workers.main(["radar-disable"]) == 0 and not files.enabled()
+    assert not files.dispatch_enabled()
+    assert workers.main(["radar-dispatch-on"]) == 0 and files.dispatch_enabled()
+    assert workers.main(["radar-dispatch-off"]) == 0 and not files.dispatch_enabled()
     code = workers.main(["alerts"])
     out = capsys.readouterr().out
     assert code in (0, 2) and "portal" in out
@@ -238,3 +243,23 @@ def test_the_radar_code_path_can_only_list():
         assert forbidden not in source, forbidden
         assert forbidden not in radar_fn, forbidden
     assert "list_mails=list_mails_paged" in radar_fn and "attach_only=True" in radar_fn
+
+
+def test_the_cloud_trigger_stays_off_until_the_operator_turns_it_on(tmp_path):
+    dispatched = []
+    code, files, writer, *_ = run(tmp_path, [hdr("m1", "커피차 홍보 행사", "커피 제공", unread=True)],
+                                  dispatch=lambda new: dispatched.append(new) or "DISPATCHED", dispatch_on=False)
+    assert len(writer.payloads) == 1 and dispatched == []
+    assert files.runtime_state()["dispatch"] == radar.DISPATCH_OFF
+    assert json.loads(files.flash.read_text(encoding="utf-8"))["pending"][0]["dispatched"] is False
+
+
+def test_enable_and_dispatch_switches_do_not_overwrite_each_other(tmp_path):
+    files = radar.RadarFiles(tmp_path)
+    files.set_dispatch(True, T0)
+    files.set_enabled(True, T0)
+    assert files.enabled() and files.dispatch_enabled()
+    files.set_enabled(False, T0)
+    assert files.dispatch_enabled() and not files.enabled()
+    files.set_dispatch(False, T0)
+    assert not files.dispatch_enabled() and not files.enabled()

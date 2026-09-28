@@ -77,8 +77,10 @@ commit, which is bounded to existing code.
 4. `python scripts/dispatch_ggongbab_refresh.py --store-token`, then `--status` shows `token stored: yes`.
 5. `python scripts/dispatch_ggongbab_refresh.py --request` once, then confirm a `workflow_dispatch`
    run on main that logs `trigger: manual` and completes.
-6. The scheduled Radar (Phase 2) already calls the dispatcher after every cycle that registered a
-   candidate. Until step 4 stores a token, each call records `DISPATCH_NOT_CONFIGURED` and sends nothing.
+6. Only after step 5 succeeds, turn on the Radar's trigger:
+   `python scripts\windows\ggongbab_workers.py radar-dispatch-on`.
+   Until then the scheduled Radar records `DISPATCH_OFF`.
+   `radar-dispatch-off` turns the trigger off again without touching the token.
 
 **Rollback.** Run `--remove-token` and revoke the token on GitHub; the schedule keeps running.
 
