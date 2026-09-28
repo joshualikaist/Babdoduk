@@ -135,7 +135,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Babdoduk Windows resident operations")
     parser.add_argument("action", choices=("watch", "worker", "enable", "stop", "status", "recover", "dooray-once", "check",
                                            "radar", "radar-once", "radar-enable", "radar-disable", "radar-allow-unread",
-                                           "alerts"))
+                                           "radar-dispatch-on", "radar-dispatch-off", "alerts"))
     parser.add_argument("--recover-stale", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="radar-once: detect only; no task, state or dispatch")
     parser.add_argument("--interval", type=int, help="radar: seconds between scans (120-300, default 180)")
@@ -179,6 +179,10 @@ def main(argv=None):
         elif args.action in ("radar-enable", "radar-disable"):
             from ggongbab.dooray_radar import RadarFiles
             RadarFiles(ROOT).set_enabled(args.action == "radar-enable", time.time())
+        elif args.action in ("radar-dispatch-on", "radar-dispatch-off"):
+            # Owner step J: only after a stored token, one manual test dispatch and a verified cloud run.
+            from ggongbab.dooray_radar import RadarFiles
+            RadarFiles(ROOT).set_dispatch(args.action == "radar-dispatch-on", time.time())
         elif args.action == "radar-allow-unread":
             # Operator acknowledgement after reviewing why unread analysis was disabled.
             from ggongbab.dooray_radar import RadarFiles

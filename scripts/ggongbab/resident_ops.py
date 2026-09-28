@@ -317,7 +317,9 @@ def radar_status_lines(files, now):
             + (" / enabled" if radar.enabled() else " / disabled") + " / " + code + " (browser 9222)",
             "Radar success : " + (f"{age} sec ago" if age is not None else "not observed"),
             "Unread radar  : " + ("allowed (list level only)" if radar.unread_allowed()
-                                  else "DISABLED (fail-closed; review, then radar-allow-unread)")]
+                                  else "DISABLED (fail-closed; review, then radar-allow-unread)"),
+            "Cloud trigger : " + ("on (dispatch after new candidates)" if radar.dispatch_enabled()
+                                  else "off (the 30-minute schedule still runs)")]
 
 
 def status_lines(files, host=None, now=None):

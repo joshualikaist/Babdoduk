@@ -189,8 +189,10 @@ with `radar_tasks.ps1 -Action Start|Stop|Status|Remove`).
   a mail already handled is never registered again.
 * It runs the prefilter on subject + preview. A candidate becomes a preview-only collection task
   carrying `discovered_at`; any other row is recorded as filtered.
-* After a cycle that registered something, it calls the dispatcher in `GGONGBAB_TRIGGER.md`. With
-  no token stored, that call records `DISPATCH_NOT_CONFIGURED` and sends nothing.
+* After a cycle that registered something, it may call the dispatcher in `GGONGBAB_TRIGGER.md`.
+  This is a separate operator switch, off by default (`ggongbab_workers.py radar-dispatch-on` /
+  `radar-dispatch-off`); while it is off, the cycle records `DISPATCH_OFF`. With the switch on but
+  no token stored, the call records `DISPATCH_NOT_CONFIGURED` and sends nothing.
 * A candidate the prefilter marks urgent (flash / same day) enters `radar-flash.json`, which holds
   only a digest and a time. It stays there until a dispatch picks it up.
 

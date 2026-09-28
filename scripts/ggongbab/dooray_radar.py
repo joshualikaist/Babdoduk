@@ -48,6 +48,7 @@ INVARIANT = "DOORAY_UNREAD_INVARIANT_BROKEN"
 TRANSPORT = "DOORAY_TRANSPORT_FAILED"
 WRITE = "DOORAY_WRITE_FAILED"
 REASONS = frozenset({RUNNING, STOPPED, AUTH, CONTRACT, BROWSER, INVARIANT, TRANSPORT, WRITE})
+DISPATCH_OFF = "DISPATCH_OFF"
 
 
 class UnreadInvariantBroken(Exception):
@@ -72,7 +73,19 @@ class RadarFiles:
         return bool(read_json(self.control, {"enabled": False}).get("enabled"))
 
     def set_enabled(self, enabled: bool, now: float) -> None:
-        atomic_json(self.control, {"enabled": bool(enabled), "changed_at": now})
+        control = read_json(self.control, {})
+        control.update(enabled=bool(enabled), changed_at=now)
+        atomic_json(self.control, control)
+
+    def dispatch_enabled(self) -> bool:
+        """The cloud trigger is a separate operator switch (owner order: store the token, send
+        one test dispatch, verify the cloud run, and only then let the Radar dispatch)."""
+        return read_json(self.control, {}).get("dispatch") is True
+
+    def set_dispatch(self, enabled: bool, now: float) -> None:
+        control = read_json(self.control, {"enabled": False})
+        control.update(dispatch=bool(enabled), dispatch_changed_at=now)
+        atomic_json(self.control, control)
 
     def unread_allowed(self) -> bool:
         return not self.unread_latch.exists()
@@ -222,7 +235,12 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
                 if not dry_run:
                     state.mark_run(now.date())
                     state.save()
-                code = dispatch(result.registered > 0) if (dispatch and not dry_run) else "DISPATCH_SKIPPED"
+                if dry_run or not dispatch:
+                    code = "DISPATCH_SKIPPED"
+                elif not files.dispatch_enabled():
+                    code = DISPATCH_OFF
+                else:
+                    code = dispatch(result.registered > 0)
                 if not dry_run:
                     update_flash(files, result.flash, code == "DISPATCHED", now_ts)
                 if dry_run:     # a rehearsal never moves the window of the real Radar
