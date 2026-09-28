@@ -1,9 +1,10 @@
-# Low-latency refresh trigger (Option A, lab; not activated)
+# Low-latency refresh trigger (Option A; code on lab only, not activated)
 
 Owner decision 2026-09-28: **local radar → GitHub `workflow_dispatch` → the existing cloud
 pipeline**. The 30-minute schedule stays as the safety net, dispatches are debounced, and the job
 runs only from main. **Issuing the credential and activating it in production need one more
-owner approval.**
+owner approval.** The code (`scripts/ggongbab/dispatch.py`, the workflow guard, the agent flag)
+stays on lab until activation is approved.
 
 ## Why
 
