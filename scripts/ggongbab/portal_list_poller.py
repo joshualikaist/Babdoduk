@@ -14,6 +14,13 @@ from .portal_session import ListTransportError, safe_reason_code, transport_reas
 from .web.exit_codes import AuthRequired, UiContractError
 
 
+# Stale-transport recovery: after this many consecutive transport failures (or the first
+# one after a sleep), the next attempt rebuilds the HTTP session from the dedicated browser.
+REBUILD_AFTER_FAILURES = 2
+MAX_REBUILDS_PER_SERIES = 3
+REBUILD_DELAY_SECONDS = 30
+
+
 class ScanIncomplete(ListTransportError):
     def __init__(self):
         super().__init__(reason="PORTAL_LIST_SCAN_INCOMPLETE")
@@ -111,29 +118,48 @@ def run_poller(provider, state, *, emit_heartbeat, log=print, interval=60,
         scanned = now()
         client = provider.acquire()
         poller = PortalListPoller(client, state, max_pages=max_pages)
-        failures = cycles = 0
+        failures = cycles = rebuilds = 0
+        planned = interval
         while True:
             if stop_requested and stop_requested():
                 return 0
             started = monotonic()
-            scanned = now()
+            previous_scan, scanned = scanned, now()
+            # A wall-clock gap far beyond the planned wait means the PC slept or the
+            # process was suspended; the handed-off HTTP connection is then likely stale.
+            resumed = previous_scan is not None and (scanned - previous_scan).total_seconds() > max(600, 3 * planned)
             delay = interval
             try:
+                if client is None:
+                    # Rebuild of a stale transport: the same handoff from the already-open
+                    # dedicated browser. No Chrome restart, no SSO, no state or baseline change.
+                    client = provider.acquire()
+                    poller = PortalListPoller(client, state, max_pages=max_pages)
+                    log("PORTAL_LIST_SESSION_REBUILT")
                 counts = poller.poll_once()
                 successful = now()
                 beat("healthy", "0")
                 log("Portal list scan: " + " ".join(f"{k}={v}" for k, v in counts.items()))
-                failures = 0
+                failures = rebuilds = 0
                 code = 0
             except ListTransportError as exc:
                 failures += 1
                 delay = max(min(interval * 2 ** min(failures, 5), 900), exc.retry_after)
+                reason = safe_reason_code(exc)
+                # Authentication failures never reach here (AuthRequired stops the worker).
+                # A transport that keeps failing, or fails right after a sleep, is rebuilt.
+                stale = reason != "PORTAL_LIST_SCAN_INCOMPLETE" and (failures >= REBUILD_AFTER_FAILURES or resumed)
+                if stale and client is not None and rebuilds < MAX_REBUILDS_PER_SERIES:
+                    rebuilds += 1
+                    client.close()
+                    client = None
+                    delay = max(min(delay, REBUILD_DELAY_SECONDS), exc.retry_after)
                 if on_retry:
                     on_retry(delay)
-                reason = safe_reason_code(exc)
                 beat("collector_error", reason)
                 log(reason)
                 code = 1
+            planned = delay
             cycles += 1
             if max_failures is not None and failures >= max_failures:
                 return 1

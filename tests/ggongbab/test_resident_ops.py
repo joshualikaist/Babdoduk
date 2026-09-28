@@ -364,7 +364,10 @@ def test_bounded_in_process_retries_and_cooperative_stop(tmp_path):
         patch.setattr(poller.PortalListPoller, "poll_once", Mock(side_effect=errors))
         code = run_poller(provider, state, emit_heartbeat=lambda row: None, max_failures=3,
             on_retry=delays.append, sleep=calls.append, monotonic=lambda: 0, log=lambda _: None)
-        assert code == 1 and delays == [120, 240, 480] and sum(calls) == 360
+        # Backoff after the first failure; from the second, the stale transport is rebuilt
+        # after a short bounded wait (Phase 2). The failure budget still stops the worker.
+        assert code == 1 and delays == [120, 30, 30] and sum(calls) == 150
+        assert provider.acquire.call_count == 2
     provider.reset_mock()
     assert run_poller(provider, state, emit_heartbeat=lambda row: None, stop_requested=lambda: True) == 0
     provider.acquire.assert_not_called()
@@ -412,11 +415,57 @@ def test_stale_live_worker_is_reported_without_kill(files):
     try:
         dog.tick()
         child = dog.child
-        clock.value += 601
-        dog.tick()
+        for _ in range(41):                      # the watchdog keeps its 15 s cadence; the worker is silent
+            clock.value += 15
+            dog.tick()
         assert dog.state["latched"] == "OPS_WORKER_UNRESPONSIVE"
         child.terminate.assert_not_called()
         child.kill.assert_not_called()
+    finally:
+        dog.close()
+
+
+def test_a_sleep_gives_the_worker_a_grace_window_before_it_is_called_unresponsive(files):
+    clock = Clock()
+    dog, _ = watchdog(files, clock)
+    try:
+        dog.tick()
+        clock.value += 7200                      # the PC slept for two hours: no tick ran
+        dog.tick()
+        assert dog.state["latched"] == ""
+        for _ in range(38):                      # still inside the 600 s grace after waking
+            clock.value += 15
+            dog.tick()
+        assert dog.state["latched"] == ""
+    finally:
+        dog.close()
+
+
+def test_an_unresponsive_latch_clears_itself_once_the_worker_scans_again(files, monkeypatch):
+    import ggongbab.resident_ops as ops
+    clock = Clock()
+    dog, _ = watchdog(files, clock)
+    try:
+        dog.state["latched"] = "OPS_WORKER_UNRESPONSIVE"
+        monkeypatch.setattr(ops, "lock_held", lambda path: path == files.worker_lock)
+        row = files.runtime_state()
+        row.update(last_success=clock.value - 30, observed=clock.value, reason="WORKER_RUNNING", running=True)
+        atomic_json(files.runtime, row)
+        dog.tick()
+        assert dog.state["latched"] == ""
+    finally:
+        dog.close()
+
+
+def test_the_watchdog_writes_combined_alerts_every_tick(files):
+    clock = Clock()
+    dog, _ = watchdog(files, clock)
+    try:
+        dog.tick()
+        payload = json.loads((files.local / "ops-alerts.json").read_text(encoding="utf-8"))
+        assert [a["component"] for a in payload["alerts"]] == ["portal"]
+        assert set(payload["alerts"][0]) == {"component", "severity", "reason", "last_success_age_seconds",
+                                             "timestamp", "action"}
     finally:
         dog.close()
 

@@ -39,7 +39,7 @@ relaxes evidence or publication rules.
 
 | Source | Authentication | Target cadence | Trust | Output | Collector | Failure mode | State (2026-09-28) |
 |---|---|---|---|---|---|---|---|
-| Dooray mailbox (radar) | local SSO session, dedicated Chrome on 127.0.0.1:9222 | 2–5 min | A | private collection task | `dooray_web_agent.py` | SSO expiry, UI contract change, PC off | recovered and calibrated; unread-safe LIST verified; no scheduled scanner yet (Phase 2) |
+| Dooray mailbox (radar) | local SSO session, dedicated Chrome on 127.0.0.1:9222 | 2–5 min | A | private collection task | `dooray_radar.py` via `ggongbab_workers.py radar` | SSO expiry, UI contract change, PC off | built on lab; runs once the operations checkout is live (see below) |
 | Dooray collection project | cloud API token (GitHub secret) | on trigger + 30-min schedule | A | Supabase -> feed | cloud `refresh_ggongbab.py` | GitHub schedule delay | the schedule runs ~6×/day (see `GGONGBAB_TRIGGER.md`) |
 | Portal recent LIST | local SSO session, dedicated Chrome on 127.0.0.1:9223 | 60 s | A (title = Stage A signal only) | private pending ledger | Portal worker | session expiry, transport | healthy again since 2026-09-28 13:57 |
 | KAIST public boards | none | 10–30 min | A | feed | cloud collector | markup change | rides the cloud schedule |
@@ -172,6 +172,83 @@ Throughout:
 
 List-level radar analysis of unread mail is therefore allowed; bodies stay closed.
 What reaches Luna is the sanitized minimum.
+
+## Dooray Radar (Phase 2)
+
+`scripts/ggongbab/dooray_radar.py`, started by `scripts/windows/ggongbab_workers.py radar` and
+registered as the logon task `Babdoduk-Dooray-Radar` (`install_dooray_radar_task.ps1`, controlled
+with `radar_tasks.ps1 -Action Start|Stop|Status|Remove`).
+
+**What it does.**
+* Every 180 s (bounded to 120–300 s), it attaches to the already-open dedicated Dooray browser.
+  It never starts, reloads or closes Chrome and never asks for SSO.
+* It reads the inbox through the calibrated LIST endpoint. From each row it uses only the id,
+  subject, preview, received time and read flag.
+* The window is the last successful scan minus 30 minutes. On first start it is the last 24 hours.
+* The processed-mail ledger `ggongbab-mail-state.json` is shared with the earlier mail bridge, so
+  a mail already handled is never registered again.
+* It runs the prefilter on subject + preview. A candidate becomes a preview-only collection task
+  carrying `discovered_at`; any other row is recorded as filtered.
+* After a cycle that registered something, it calls the dispatcher in `GGONGBAB_TRIGGER.md`. With
+  no token stored, that call records `DISPATCH_NOT_CONFIGURED` and sends nothing.
+* A candidate the prefilter marks urgent (flash / same day) enters `radar-flash.json`, which holds
+  only a digest and a time. It stays there until a dispatch picks it up.
+
+**What it never does.**
+* It never opens a mail detail or body, not even of a read mail.
+* It never changes read state.
+* It never writes to the mailbox.
+* It never uploads subjects or previews anywhere except the private collection task.
+
+**Fail closed.**
+| Event | Result |
+|---|---|
+| A row has no read flag, or the LIST response no longer matches the contract | the Radar stops (exit 20); unread analysis is disabled |
+| The dedicated browser sends a mail-detail GET or any non-GET request to the mail host during a scan | nothing from that scan is registered; unread analysis is disabled (`radar-unread-disabled.json`) |
+| Unread analysis disabled | unread rows are skipped, read rows are still scanned; a critical alert is raised until an operator reviews the cause and runs `ggongbab_workers.py radar-allow-unread` |
+| Login expired | the Radar stops (exit 10) and waits for the owner's SSO |
+| Network or 5xx on the LIST call; browser closed | the Radar backs off (up to 15 min) and retries |
+
+Do not read mail in the dedicated Dooray window. Opening a mail there during a scan trips the
+latch on purpose.
+
+`radar-once --dry-run` rehearses one scan. It writes no task, ledger entry or dispatch. It also
+does not move the real Radar's window.
+
+## Health targets and alerts
+
+| Component | Expected | Warning | Critical |
+|---|---|---|---|
+| Portal LIST worker | a successful scan every ~60 s | > 3 min | > 10 min |
+| Dooray Radar | a successful scan every 2–5 min | > 10 min | > 30 min |
+| Flash candidate | dispatched to the cloud job promptly | no dispatch for > 10 min | — |
+
+Critical regardless of age:
+* an expired login;
+* a changed LIST/UI contract;
+* the unread radar disabled;
+* an enabled worker that is not running while its last success is stale;
+* an exhausted retry budget;
+* a rejected dispatch token.
+
+Warning:
+* any other failed dispatch (request rejected, transport error, daily cap);
+* a closed dedicated browser.
+
+`scripts/ggongbab/alerts.py` evaluates these on every watchdog tick (15 s). It writes
+`.local/ops-alerts.json`, which holds the current alerts and a bounded history of transitions.
+Each alert has only these fields:
+* component;
+* severity;
+* reason code (a fixed list);
+* seconds since the last success;
+* timestamp;
+* recommended action.
+
+It never contains a subject, preview, identifier or URL.
+
+`ggongbab_workers.py alerts` prints the same list and exits 2 when anything is not healthy. No
+external notifier is connected; picking one is an owner decision.
 
 ## Browser and session boundary
 
