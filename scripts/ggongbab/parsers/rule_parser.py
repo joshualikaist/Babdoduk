@@ -43,9 +43,9 @@ _BUILDING_ALIAS = {
 
 # --- food -------------------------------------------------------------------
 _FOOD_WORDS = (
-    r"점심(?!\s*시간)|중식|식사|저녁(?!\s*시간)|석식|조식|아침\s*식사|도시락|간식|다과|커피|음료|피자|샌드위치|햄버거|버거|치킨|김밥|떡|빵|"
-    r"식권|밀쿠폰|쿠폰|기프티콘|케이터링|뷔페|음식|먹거리|Lunch|Dinner|Breakfast|Meal|Refreshments?|Snacks?|Pizza|Sandwich(?:es)?|"
-    r"Coffee|Drinks?|Beverages?|Food|Catering|Lunch\s*box|Bento"
+    r"점심(?!\s*시간)|중식|식사|저녁(?!\s*시간)|석식|조식|아침\s*식사|도시락|간식차|간식|다과|커피차|커피|음료|피자|샌드위치|햄버거|버거|치킨|김밥|떡|빵|"
+    r"푸드\s*트럭|식권|밀쿠폰|쿠폰|기프티콘|케이터링|뷔페|음식|먹거리|Lunch|Dinner|Breakfast|Meal|Refreshments?|Snacks?|Pizza|Sandwich(?:es)?|"
+    r"Coffee|Drinks?|Beverages?|Food\s*trucks?|Food|Catering|Lunch\s*box|Bento"
 )
 _PROVIDE_WORDS = r"제공|지급|드립니다|드려요|준비(?:되어|돼|합니다|했습니다)|나눠|나눔|증정|무료(?:로)?|배부|includ(?:ed|es)|provided|served|available|free|on us|complimentary"
 # food word followed (within 30 chars) by a provision word, or provision word before food word
@@ -58,11 +58,35 @@ _NOT_PROVIDED = re.compile(r"(?:식사|점심|음식|다과)[^\n.]{0,10}(?:제�
 _FOOD_TYPE_RULES: list[tuple[re.Pattern[str], FoodType]] = [
     (re.compile(r"도시락|lunch\s*box|bento", re.I), "lunchbox"),
     (re.compile(r"식권|쿠폰|coupon|기프티콘|밀쿠폰|voucher", re.I), "coupon"),
-    (re.compile(r"점심|중식|식사|저녁|석식|조식|피자|샌드위치|햄버거|버거|치킨|김밥|뷔페|케이터링|lunch|dinner|breakfast|meal|pizza|sandwich|catering|food", re.I), "meal"),
+    (re.compile(r"점심|중식|식사|저녁|석식|조식|피자|샌드위치|햄버거|버거|치킨|김밥|뷔페|케이터링|푸드\s*트럭|lunch|dinner|breakfast|meal|pizza|sandwich|catering|food", re.I), "meal"),
     (re.compile(r"간식|스낵|snack|빵|떡", re.I), "snack"),
     (re.compile(r"다과|refreshment", re.I), "refreshment"),
     (re.compile(r"커피|음료|coffee|drink|beverage", re.I), "beverage"),
 ]
+
+# --- supply limits -------------------------------------------------------------
+# "선착순" says who gets something first. With a hand-out verb ("커피 선착순 제공",
+# "선착순 배부") or "소진 시" it limits a SUPPLY given out on the spot; only with
+# sign-up wording (신청/모집/접수/등록/마감) does it describe registration.
+_SUPPLY_VERBS = r"(?:무료\s*)?(?:제공|배부|배포|증정|지급|나눔|나눠\s*드|드립니다|드려요|선물)"
+_SUPPLY_LIMIT = re.compile(
+    rf"선착순\s*(?:\d+\s*(?:명|인|분|잔|개|세트)\s*)?[^\n.。!?]{{0,14}}?{_SUPPLY_VERBS}"
+    rf"|{_SUPPLY_VERBS}[^\n.。!?]{{0,20}}?선착순"
+    r"|(?:재고\s*)?소진\s*시\s*(?:까지|(?:조기\s*)?(?:종료|마감))?|소진될\s*때\s*까지"
+    r"|한정\s*수량|수량\s*한정|준비된\s*수량"
+    r"|while\s+supplies\s+last|until\s+(?:supplies|stock)\s+runs?\s+out|limited\s+quantit(?:y|ies)",
+    re.I,
+)
+_UNTIL_SOLD_OUT = re.compile(
+    r"소진\s*시\s*(?:까지|(?:조기\s*)?(?:종료|마감))|소진될\s*때\s*까지|소진\s*까지"
+    r"|while\s+supplies\s+last|until\s+(?:supplies|stock)\s+runs?\s+out",
+    re.I,
+)
+# First-come wording that IS about signing up.
+_FIRST_COME_SIGNUP = (
+    r"선착순\s*(?:\d+\s*(?:명|인|팀|분)\s*)?(?:으로\s*|순으로\s*)?(?:참가\s*)?(?:신청|모집|접수|등록|마감|선발)"
+    r"|(?:신청|모집|접수|등록)[^\n.。!?]{0,15}?선착순"
+)
 
 # --- eligibility -------------------------------------------------------------
 # A real audience restriction names who may attend. Words that merely refer to the
@@ -80,6 +104,8 @@ _ATTENDEE_ONLY = re.compile(
     r"(?:에게|에겐|께|분들께|들에게|은|는|이|가|을|를)?\s*$|^(?:all\s+)?(?:attendees?|participants?|visitors?|everyone|all)\s*$",
     re.I,
 )
+_ATTENDEE_WORDS = re.compile(
+    r"(?:행사\s*)?(?:참석자|참가자|참여자|방문자|신청자)\s*(?:전원|모두|분들|여러분)?", re.I)
 
 # --- registration ------------------------------------------------------------
 # Evidence that registration IS needed.
@@ -87,7 +113,7 @@ _REGISTRATION_YES = re.compile(
     r"사전\s*(?:신청|등록|접수|참가\s*신청)|"
     r"신청\s*(?:이|을|를)?\s*(?:필수|필요|바랍니다|해\s*주|하시기|링크|폼|서|기간|마감|방법)|"
     r"등록\s*(?:이|을|를)?\s*(?:필수|필요|바랍니다|해\s*주|하시기|링크|기간|마감)|접수\s*(?:기간|마감|방법|처)|참가\s*신청|"
-    r"선착순|RSVP|registration\s*(?:required|link|form|closes|deadline)|register\s+(?:at|here|by|via)|"
+    rf"{_FIRST_COME_SIGNUP}|RSVP|registration\s*(?:required|link|form|closes|deadline)|register\s+(?:at|here|by|via)|"
     r"sign[\s-]?up|apply\s+(?:at|here|by|via)|신청서|구글\s*폼|google\s*form",
     re.I,
 )
@@ -246,13 +272,32 @@ def food_type_hint(text: str) -> FoodType:
 
 
 def is_real_eligibility(value: str) -> bool:
-    """True only when the phrase actually restricts who may attend."""
+    """True only when the phrase actually restricts who may attend.
+
+    A supply limit ("선착순, 소진 시 종료", "선착순 배부") says how much there is, not who
+    may come, so it is removed before looking for a restriction; so are the words that
+    only refer to whoever shows up. "선착순 50명" keeps its meaning (a capacity).
+    """
     text = re.sub(r"\s+", " ", value or "").strip()
     if len(text) < 2:
         return False
     if _ATTENDEE_ONLY.match(text):
         return False
-    return bool(_ELIGIBILITY_MARKERS.search(text))
+    reduced = _SUPPLY_LIMIT.sub(" ", text)
+    reduced = re.sub(r"선착순(?!\s*\d)", " ", reduced)
+    reduced = _ATTENDEE_WORDS.sub(" ", reduced)
+    return bool(_ELIGIBILITY_MARKERS.search(reduced))
+
+
+def supply_limit(text: str) -> str:
+    """The first phrase that limits a hand-out supply ("선착순 제공", "소진 시까지"), or ''."""
+    match = _SUPPLY_LIMIT.search(text or "")
+    return re.sub(r"\s+", " ", match.group(0)).strip()[:60] if match else ""
+
+
+def end_condition(text: str) -> str:
+    """'until_sold_out' when the end is a supply condition instead of a clock time."""
+    return "until_sold_out" if _UNTIL_SOLD_OUT.search(text or "") else "unknown"
 
 
 def registration_evidence(text: str) -> str:
@@ -281,6 +326,7 @@ def analyze(text: str, reference: Optional[datetime] = None) -> RuleFacts:
     ref = ref_dt.astimezone(KST).date() if ref_dt.tzinfo else ref_dt.date()
     text = text or ""
     evidence = explicit_food_evidence(text)
+    supply = supply_limit(text)
     facts = RuleFacts(
         dates=extract_dates(text, ref),
         times=extract_times(text),
@@ -292,6 +338,9 @@ def analyze(text: str, reference: Optional[datetime] = None) -> RuleFacts:
         deadline_dates=extract_deadline_dates(text, ref),
         looks_like_event=bool(_EVENT_WORDS.search(text)),
         registration_state=registration_evidence(text),
+        supply_limited=bool(supply),
+        supply_limit_text=supply,
+        end_condition=end_condition(text),
     )
     return facts
 

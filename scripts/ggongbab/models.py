@@ -128,6 +128,11 @@ class RuleFacts:
     deadline_dates: list[str] = field(default_factory=list)
     looks_like_event: bool = False
     registration_state: Tri = "unknown"      # from explicit wording only
+    # Internal, not in the public schema: a first-come / until-sold-out SUPPLY limit
+    # ("커피 선착순 제공", "소진 시 종료") is not registration and not eligibility.
+    supply_limited: bool = False
+    supply_limit_text: str = ""
+    end_condition: str = "unknown"           # "until_sold_out" when the end is a supply condition
 
     @property
     def explicit_food(self) -> bool:
