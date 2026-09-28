@@ -30,7 +30,7 @@
 1. `chrome-sync`: `python scripts/sync_site_chrome.py --check`
 2. `visual-guardian`: 고정 컨테이너에서 `python3 scripts/check_site_ui.py --chrome-only` (가디언 + 시각 비교)
 
-실패하면 `.local/visual-diff/` 가 `visual-diff-<run id>` artifact 로 올라갑니다. 실패한 이미지마다 실제 렌더(`*.png`)와 차이 이미지(`*.diff.png`)가 있고, `SUMMARY.md` 와 job summary 에 페이지·언어·폭·구성요소가 표로 나옵니다.
+실패하면 `.local/visual-diff/` 가 `visual-diff-<run id>` artifact 로 올라갑니다. 실패한 이미지마다 실제 렌더(`*.png`)와 차이 이미지(`*.diff.png`)가 있고, `SUMMARY.md` 와 job summary 에 페이지·언어·폭·구성요소가 표로 나옵니다. 가디언이 실패해도 시각 비교는 끝까지 돌고, 가디언이 멈춘 페이지의 캡처(`guardian-<page>-<lang>-<width>.png`)와 실패 항목이 같은 표에 들어갑니다. 아티팩트에는 오프라인으로 띄운 공개 페이지의 화면만 담깁니다.
 
 CI 는 기준을 바꾸지 않습니다. `--update-chrome-baselines` 와 `--adopt-chrome-baselines` 는 `CI`/`GITHUB_ACTIONS` 환경에서 스스로 거부합니다.
 
