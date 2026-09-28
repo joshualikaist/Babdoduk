@@ -12,7 +12,7 @@
 | 기능 | 위치 | 답하는 질문 | 데이터 |
 |------|------|-------------|--------|
 | **오늘의 꽁밥** | `ggongbab.html` (꽁밥 탭, `#free`) | 지금·곧 참여할 수 있는 KAIST 무료 음식 일정은? | `data/ggongbab/latest.json` (생성) |
-| **KAIST 학식** | `ggongbab.html#menu` (학식 탭) | 오늘 학식 메뉴는? | `data/kaist-menu/latest.json` (생성, AI 없음) |
+| **KAIST 학식** | `ggongbab.html#menu` (학식 탭) | 이번 주 학식 메뉴는? (월–일, 날짜를 골라 봄) | `data/kaist-menu/` 날짜별 파일·`week.json`·`latest.json`(오늘) (생성, AI 없음) |
 | **메뉴 고르기** | `choose.html` | 뭘 먹을지 못 정했을 때 무엇을 고를까? | `data/foods/` 카탈로그 제안 (판매 여부 확인이 아님) |
 | **밥도둑 매거진** | `mukbang.html` | 요리 비법·유행·건강·식습관 네 데스크의 이야기 | `data/magazine/` (생성) |
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `event.html` 안에 직접 작성 |
@@ -55,7 +55,7 @@
   **마지막 발행** 시각을 함께 보여 줍니다. 예약 실행은 GitHub 사정으로 늦거나 건너뛸 수 있습니다.
 - 공개 건수처럼 수집·승인·만료에 따라 바뀌는 값은 이 README 에 적지 않습니다. 현재 상태는 생성 파일
   (`data/…/latest.json` 의 `generatedAt`·`date`)이나 공개 사이트에서 확인합니다.
-- 생성이나 검증이 실패하면 이전 파일이 남습니다. 그래서 학식은 날짜가 오늘이 아니면 “오늘의 학식”으로 보여 주지 않습니다.
+- 생성이나 검증이 실패하면 이전 파일이 남습니다. 그래서 학식은 데이터의 날짜가 고른 날짜와 다르면 그 날의 메뉴로 보여 주지 않습니다.
 
 ### 개발자 빠른 시작
 
@@ -154,7 +154,7 @@ PII 제거 → 규칙 전처리 → gpt-5.6-luna → 결정적 검증 → 중복
         ▼
 Supabase → data/ggongbab/latest.json → 꽁밥 탭
 
-학식: scripts/refresh_kaist_menu.py → data/kaist-menu/latest.json → 학식 탭
+학식: scripts/refresh_kaist_menu.py → data/kaist-menu/YYYY-MM-DD.json · week.json · latest.json → 학식 탭(이번 주)
 ```
 
 단계별 구현은 `scripts/ggongbab/` 안에 있습니다.
@@ -456,8 +456,11 @@ AI를 쓰지 않습니다. 공식 학식 페이지를 파싱합니다.
 python scripts\refresh_kaist_menu.py
 ```
 
-생성 실패 시 기존 `data/kaist-menu/latest.json` 을 보존합니다. 페이지는 payload `date`가
-오늘 KST와 다를 때 “오늘의 학식”으로 표시하지 않습니다.
+이번 주(월–일, KST) 날짜별 파일과 `week.json`, 오늘만 담는 `latest.json` 을 씁니다. 한 주의 첫 실행(또는
+`--full-week`)만 7일을 모두 받고, 이후에는 오늘과 남은 날만 받습니다(식당 8곳 × 날짜 수 요청).
+실패·빈 응답·페이지 구조 변경은 저장된 날짜 파일을 지우지 않습니다. 오늘 메뉴가 없으면 `latest.json` 을
+보존하고 종료 코드 2로 끝납니다. 학식 탭은 고른 날짜와 데이터의 날짜가 같을 때만 그 날의 메뉴로 보여 주며,
+오늘 데이터가 아직 없을 때만 “오늘 메뉴 업데이트 중”을 표시합니다. 자세한 내용: `docs/KAIST_MENU.md`.
 
 ### 종료 코드
 

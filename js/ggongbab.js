@@ -269,7 +269,7 @@
     var html = '<div class="food-hub-tabs" role="tablist" aria-label="' + esc(t('gg.tabsAria', '꽁밥과 학식')) + '">';
     var free = state.activeSection === 'free';
     html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + free + '" tabindex="' + (free ? 0 : -1) + '">🎁 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
-    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + !free + '" tabindex="' + (free ? -1 : 0) + '">🍚 ' + esc(t('gg.tab.menu', '오늘의 학식')) + '</button>';
+    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + !free + '" tabindex="' + (free ? -1 : 0) + '">🍚 ' + esc(t('gg.tab.menu', '학식')) + '</button>';
     return html + '</div>';
   }
   function emptyFreeHtml(now) {
@@ -455,6 +455,7 @@
     };
     if (mode === 'fixture') {
       opts.getData = function () { return window.BabdodukKaistMenu.fixtureMenu(staleMenuFixture, nowKst()); };
+      opts.getDay = function (date) { return window.BabdodukKaistMenu.fixtureDay(date); };
     }
     menuCtl = window.BabdodukKaistMenu.attach(host, opts);
   }

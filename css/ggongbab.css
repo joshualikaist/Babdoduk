@@ -7,7 +7,7 @@
 .food-hub-tabs { display:flex; height:46px; gap:4px; padding:4px; margin:8px 0 12px; background:var(--color-surface-muted); border:1px solid var(--color-divider); border-radius:16px; }
 .food-hub-tab { flex:1; height:36px; border:0; border-radius:12px; background:transparent; color:var(--color-ink-muted); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
 .food-hub-tab[aria-selected="true"] { background:var(--color-ink); color:var(--color-surface); }
-.food-hub-tab:focus-visible,.gg-radar-cta:focus-visible,.km-meal:focus-visible,.km-fav:focus-visible,.km-expand:focus-visible,.km-cta:focus-visible,.km-stale-toggle:focus-visible,.gg-choose-link:focus-visible,.gg-card:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
+.food-hub-tab:focus-visible,.gg-radar-cta:focus-visible,.km-day:focus-visible,.km-meal:focus-visible,.km-fav:focus-visible,.km-expand:focus-visible,.km-cta:focus-visible,.km-stale-toggle:focus-visible,.gg-choose-link:focus-visible,.gg-card:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 .gg-radar { width:100%; padding:18px; margin:0 0 14px; border-radius:24px; background:var(--color-surface); border:1px solid var(--color-divider); box-shadow:inset 4px 0 0 var(--color-accent); }
 .gg-radar-label { font-size:12px; font-weight:700; line-height:16px; color:var(--color-ink-muted); }
 .gg-radar-title { margin-top:6px; font-size:20px; font-weight:900; line-height:28px; letter-spacing:-.035em; color:#1d1d1f; }
@@ -18,10 +18,23 @@
 .gg-card.is-featured { border:1px solid #e3b9a8; background:#fff; box-shadow:0 10px 28px rgba(180,61,39,.08); }
 .gg-featured-label { display:inline-flex; height:20px; padding:0 7px; margin-bottom:8px; border-radius:6px; background:var(--color-accent-wash); color:var(--color-accent); font-size:11px; font-weight:800; letter-spacing:.04em; align-items:center; }
 .food-hub-menu { padding-top:2px; }
-.km-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; margin:4px 0 12px; }
+.km-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; margin:4px 0 10px; }
 .km-head h2 { font-size:20px; font-weight:900; line-height:26px; letter-spacing:-.03em; color:#1d1d1f; }
 .km-date { font-size:13px; font-weight:500; line-height:20px; color:#6e6e73; }
 .km-count { font-size:12px; font-weight:700; line-height:18px; color:var(--color-accent); }
+/* This week's dates: seven equal columns that fit 360px even with a visible Windows scrollbar,
+   so no internal scrolling hides the selected date. Selected = filled ink (like the hub tabs);
+   today = a small "오늘" word, not only a color. */
+.km-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; margin:0 0 12px; }
+.km-day { min-width:0; min-height:54px; padding:7px 0 5px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:1px; border:1px solid var(--color-divider); border-radius:12px; background:var(--color-surface); color:var(--color-ink-muted); font-family:inherit; cursor:pointer; }
+.km-day-dow { font-size:11px; font-weight:700; line-height:14px; }
+.km-day-num { font-size:15px; font-weight:800; line-height:19px; color:#1d1d1f; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.km-day-today { font-size:10px; font-weight:800; line-height:12px; color:var(--color-accent); white-space:nowrap; }
+.km-day.is-today { border-color:#efd3c6; }
+.km-day[aria-pressed="true"] { background:var(--color-ink); border-color:var(--color-ink); color:var(--color-surface); }
+.km-day[aria-pressed="true"] .km-day-num,.km-day[aria-pressed="true"] .km-day-today { color:var(--color-surface); }
+.km-day:not([aria-pressed="true"]):hover { border-color:rgba(30,29,26,.38); }
+.km-sub { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; margin:0 0 10px; }
 .km-meals { display:flex; height:44px; gap:3px; padding:3px; margin:0 0 14px; background:var(--color-surface-muted); border:1px solid var(--color-divider); border-radius:13px; }
 .km-meal { flex:1; height:36px; border:0; border-radius:10px; background:transparent; color:var(--color-ink-muted); font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
 .km-meal[aria-pressed="true"] { background:#fff; color:#1d1d1f; box-shadow:0 1px 4px rgba(0,0,0,.08); }

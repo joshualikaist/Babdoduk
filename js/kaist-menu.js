@@ -59,8 +59,45 @@
   function restaurantsWithMenus(data) {
     return ((data && data.restaurants) || []).filter(hasAnyMeal);
   }
+  // Weekly browsing: a payload is right when it is for the SELECTED date. A future date is
+  // not "stale" merely because it is not today; staleness is a today-only question.
+  function isDataForSelectedDate(data, selectedDate) {
+    return !!(data && data.date && selectedDate && data.date === selectedDate);
+  }
+  function isToday(selectedDate, today) {
+    return !!selectedDate && selectedDate === (today || ymd(toKst()));
+  }
   function isStale(data, today) {
-    return !data || !data.date || data.date !== ymd(today);
+    return !isDataForSelectedDate(data, ymd(today));
+  }
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function utcDay(isoDate) {
+    var p = String(isoDate || '').split('-');
+    if (p.length < 3) return null;
+    var time = Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return isNaN(time) ? null : time;
+  }
+  function utcYmd(time) {
+    var d = new Date(time);
+    return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate());
+  }
+  // Monday to Sunday of the KST week containing `todayIso` (calendar arithmetic in UTC, so
+  // month/year boundaries, leap days and the viewer's own timezone cannot shift it).
+  function weekDates(todayIso) {
+    var time = utcDay(todayIso);
+    if (time == null) return [];
+    var monday = time - ((new Date(time).getUTCDay() + 6) % 7) * 86400000;
+    var out = [];
+    for (var i = 0; i < 7; i++) out.push(utcYmd(monday + i * 86400000));
+    return out;
+  }
+  function dayLabel(isoDate) {
+    var time = utcDay(isoDate);
+    var d = new Date(time);
+    var lang = global.babdodukGetLang ? global.babdodukGetLang() : 'ko';
+    var dows = lang === 'en' ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['일', '월', '화', '수', '목', '금', '토'];
+    var day = d.getUTCDate();
+    return { dow: dows[d.getUTCDay()], num: day === 1 ? (d.getUTCMonth() + 1) + '/1' : String(day) };
   }
   function readFavorites() {
     try {
@@ -145,8 +182,27 @@
     };
   }
 
+  // Lab fixture for the other days of the week: weekdays have menus (a different number of
+  // places each day), Saturday has lunch only, Sunday has nothing published.
+  function fixtureDay(isoDate) {
+    var time = utcDay(isoDate);
+    if (time == null) return null;
+    var dow = new Date(time).getUTCDay();
+    if (dow === 0) return null;
+    var base = fixtureMenu(false);
+    var keep = dow === 6 ? 2 : Math.max(2, base.restaurants.length - (dow % 3));
+    var restaurants = base.restaurants.slice(0, keep).map(function (row) {
+      var copy = JSON.parse(JSON.stringify(row));
+      if (dow === 6) { copy.breakfast = { items: [] }; copy.dinner = { items: [] }; }
+      if (copy.lunch && copy.lunch.items && copy.lunch.items.length) copy.lunch.items[0] = copy.lunch.items[0] + ' · ' + isoDate.slice(5);
+      return copy;
+    });
+    return { date: isoDate, dateLabel: dateHeading(isoDate), fetchedAt: base.fetchedAt, source: 'fixture', restaurants: restaurants };
+  }
+
   function attach(host, options) {
     options = options || {};
+    var today = ymd(toKst());
     var state = {
       status: 'loading',
       data: null,
@@ -155,25 +211,39 @@
       favorites: readFavorites(),
       expanded: {},
       showStale: false,
-      host: host
+      host: host,
+      // The cafeteria week. The selected date is page state only: every load starts at today.
+      today: today,
+      week: weekDates(today),
+      selected: today,
+      weekIndex: null,
+      days: {}
     };
     function emit() {
       if (typeof options.onChange === 'function') options.onChange(snapshot());
     }
+    // Always TODAY: the page's top metric and the free-food hints describe today, whichever
+    // cafeteria date is being browsed.
     function snapshot() {
-      var today = toKst();
-      var stale = isStale(state.data, today);
+      var stale = !isDataForSelectedDate(state.data, ymd(toKst()));
       return {
         status: state.status,
         stale: stale,
         meal: state.meal,
         restaurantCount: (!stale && state.data) ? restaurantsWithMenus(state.data).length : 0,
         data: state.data,
-        error: state.error
+        error: state.error,
+        selectedDate: state.selected
       };
     }
-    function visibleRestaurants() {
-      var list = (state.data && state.data.restaurants) || [];
+    function selectedToday() { return isToday(state.selected, state.today); }
+    function weekEntry(date) {
+      var index = state.weekIndex;
+      if (!index || !Array.isArray(index.days)) return null;
+      return index.days.filter(function (row) { return row && row.date === date; })[0] || null;
+    }
+    function visibleRestaurants(data) {
+      var list = (data && data.restaurants) || [];
       var withMeal = list.filter(function (row) { return mealItems(row, state.meal).length > 0; });
       return sortRestaurants(withMeal, state.favorites);
     }
@@ -202,61 +272,99 @@
       }
       return html + '</article>';
     }
-    function emptyHtml(todayStale) {
-      var html = '<div class="gg-state"><strong>' + esc(todayStale ? t('km.staleEmpty', '최근 메뉴를 보려면 아래를 눌러 주세요.') : t('km.emptyTitle', '오늘 이 시간대에 공개된 메뉴가 없어요.')) + '</strong>';
+    function emptyHtml(data, todayStale) {
+      var title = todayStale ? t('km.staleEmpty', '최근 메뉴를 보려면 아래를 눌러 주세요.')
+        : (selectedToday() ? t('km.emptyTitle', '오늘 이 시간대에 공개된 메뉴가 없어요.') : t('km.emptyMeal', '이 시간대에 공개된 메뉴가 없어요.'));
+      var html = '<div class="gg-state"><strong>' + esc(title) + '</strong>';
       MEALS.forEach(function (meal) {
         if (meal === state.meal) return;
-        var n = ((state.data && state.data.restaurants) || []).filter(function (row) { return mealItems(row, meal).length; }).length;
+        var n = ((data && data.restaurants) || []).filter(function (row) { return mealItems(row, meal).length; }).length;
         if (n) html += '<button type="button" class="km-cta is-ghost" data-km-meal="' + meal + '">' + esc(t('km.mealLink', '{meal} 메뉴 보기 →').replace('{meal}', mealLabel(meal))) + '</button>';
       });
       html += '<button type="button" class="km-cta is-ghost" data-hub-tab="free">' + esc(t('km.toFree', '꽁밥 보러가기 →')) + '</button>';
       return html + '</div>';
     }
-    function render() {
-      if (!state.host) return;
-      var focus = focusSelector(state.host);
-      var today = toKst();
-      var html = '';
+    function daysHtml() {
+      var html = '<div class="km-days" role="group" aria-label="' + esc(t('km.daysAria', '날짜')) + '">';
+      state.week.forEach(function (date, idx) {
+        var on = date === state.selected;
+        var isTodayDate = isToday(date, state.today);
+        var label = dayLabel(date, idx);
+        var aria = dateHeading(date) + (isTodayDate ? ' · ' + t('km.today', '오늘') : '');
+        html += '<button type="button" class="km-day' + (isTodayDate ? ' is-today' : '') + '" data-km-date="' + esc(date) +
+          '" aria-pressed="' + on + '"' + (isTodayDate ? ' aria-current="date"' : '') + ' aria-label="' + esc(aria) + '">' +
+          '<span class="km-day-dow" aria-hidden="true">' + esc(label.dow) + '</span>' +
+          '<span class="km-day-num" aria-hidden="true">' + esc(label.num) + '</span>' +
+          (isTodayDate ? '<span class="km-day-today" aria-hidden="true">' + esc(t('km.today', '오늘')) + '</span>' : '') +
+          '</button>';
+      });
+      return html + '</div>';
+    }
+    function mealsHtml() {
+      var html = '<div class="km-meals" role="group" aria-label="' + esc(t('km.mealsAria', '식사 시간')) + '">';
+      MEALS.forEach(function (meal) {
+        html += '<button type="button" class="km-meal" data-km-meal="' + meal + '" aria-pressed="' + (state.meal === meal) + '">' + esc(mealLabel(meal)) + '</button>';
+      });
+      return html + '</div>';
+    }
+    function subHtml(dateText, count) {
+      var html = '<div class="km-sub"><p class="km-date">' + esc(dateText) + '</p>';
+      if (count != null) html += '<p class="km-count">' + esc(t('km.count', '{meal} 메뉴 {n}곳').replace('{meal}', mealLabel(state.meal)).replace('{n}', String(count))) + '</p>';
+      return html + '</div>';
+    }
+    function menuHtml(data, todayStale) {
+      var rows = visibleRestaurants(data);
+      var html = mealsHtml();
+      if (!rows.length) return html + emptyHtml(data, todayStale);
+      html += '<div class="km-grid">';
+      rows.forEach(function (row) { html += cardHtml(row); });
+      return html + '</div>';
+    }
+    function todayHtml() {
       if (state.status === 'loading') {
-        html = '<div class="gg-skeleton"></div><div class="gg-skeleton"></div>';
-      } else if (state.status === 'error') {
-        html = '<div class="gg-state"><strong>' + esc(t('km.errorTitle', '오늘 메뉴를 불러오지 못했어요.')) + '</strong>' +
+        return subHtml(dateHeading(state.selected)) + '<div class="gg-skeleton"></div><div class="gg-skeleton"></div>';
+      }
+      if (state.status === 'error') {
+        return subHtml(dateHeading(state.selected)) +
+          '<div class="gg-state"><strong>' + esc(t('km.errorTitle', '오늘 메뉴를 불러오지 못했어요.')) + '</strong>' +
           esc(options.freeCountText || '') +
           '<br><button type="button" class="km-cta" data-km-retry>' + esc(t('gg.retry', '다시 시도')) + '</button>' +
           '<button type="button" class="km-cta is-ghost" data-hub-tab="free">' + esc(t('km.toFree', '꽁밥 보러가기 →')) + '</button></div>';
-      } else {
-        var stale = isStale(state.data, today);
-        if (stale) {
-          html += '<div class="km-warn" data-km-stale="1"><strong>' + esc(t('km.staleTitle', '오늘 메뉴 업데이트 중이에요.')) + '</strong><br>' +
-            esc(t('km.staleSaved', '최근 저장된 메뉴:')) + ' ' + esc(dateHeading(state.data && state.data.date)) +
-            '<br><button type="button" class="km-stale-toggle" data-km-stale-toggle>' +
-            esc(state.showStale ? t('km.hideStale', '최근 메뉴 숨기기') : t('km.showStale', '최근 메뉴 보기')) + '</button></div>';
-        }
-        if (!stale || state.showStale) {
-          var rows = visibleRestaurants();
-          html += '<div class="km-head"><h2>' + esc(stale ? t('km.recentTitle', '최근 학식 메뉴') : t('km.title', '오늘의 학식')) + '</h2>';
-          html += '<p class="km-date">' + esc(dateHeading(state.data && state.data.date) || (state.data && state.data.dateLabel) || '') + '</p>';
-          html += '<p class="km-count">' + esc(t('km.count', '{meal} 메뉴 {n}곳').replace('{meal}', mealLabel(state.meal)).replace('{n}', String(rows.length))) + '</p></div>';
-          html += '<div class="km-meals" role="group" aria-label="' + esc(t('km.mealsAria', '식사 시간')) + '">';
-          MEALS.forEach(function (meal) {
-            html += '<button type="button" class="km-meal" data-km-meal="' + meal + '" aria-pressed="' + (state.meal === meal) + '">' + esc(mealLabel(meal)) + '</button>';
-          });
-          html += '</div>';
-          if (!rows.length) html += emptyHtml(stale);
-          else {
-            html += '<div class="km-grid">';
-            rows.forEach(function (row) { html += cardHtml(row); });
-            html += '</div>';
-          }
-        } else {
-          html += '<div class="km-meals" role="group" aria-label="' + esc(t('km.mealsAria', '식사 시간')) + '">';
-          MEALS.forEach(function (meal) {
-            html += '<button type="button" class="km-meal" data-km-meal="' + meal + '" aria-pressed="' + (state.meal === meal) + '">' + esc(mealLabel(meal)) + '</button>';
-          });
-          html += '</div>';
-          html += emptyHtml(true);
-        }
       }
+      if (isDataForSelectedDate(state.data, state.selected)) {
+        return subHtml(dateHeading(state.selected), visibleRestaurants(state.data).length) + menuHtml(state.data, false);
+      }
+      // latest.json still holds an earlier day: today's menu is not published yet.
+      var html = '<div class="km-warn" data-km-stale="1"><strong>' + esc(t('km.staleTitle', '오늘 메뉴 업데이트 중이에요.')) + '</strong><br>' +
+        esc(t('km.staleSaved', '최근 저장된 메뉴:')) + ' ' + esc(dateHeading(state.data && state.data.date)) +
+        '<br><button type="button" class="km-stale-toggle" data-km-stale-toggle>' +
+        esc(state.showStale ? t('km.hideStale', '최근 메뉴 숨기기') : t('km.showStale', '최근 메뉴 보기')) + '</button></div>';
+      if (!state.showStale) return subHtml(dateHeading(state.selected)) + html + mealsHtml() + emptyHtml(state.data, true);
+      return subHtml(t('km.recentTitle', '최근 학식 메뉴') + ' · ' + dateHeading(state.data && state.data.date),
+        visibleRestaurants(state.data).length) + html + menuHtml(state.data, false);
+    }
+    function otherDayHtml() {
+      var entry = state.days[state.selected];
+      var heading = dateHeading(state.selected);
+      if (!entry || entry.status === 'loading') {
+        return subHtml(heading) + mealsHtml() + '<div class="gg-skeleton"></div><div class="gg-skeleton"></div>';
+      }
+      if (entry.status === 'available') {
+        return subHtml(heading, visibleRestaurants(entry.data).length) + menuHtml(entry.data, false);
+      }
+      if (entry.status === 'failed') {
+        return subHtml(heading) + mealsHtml() + '<div class="gg-state" data-km-day-state="failed"><strong>' +
+          esc(t('km.dayError', '메뉴를 불러오지 못했어요.')) + '</strong><br><button type="button" class="km-cta" data-km-retry-day>' +
+          esc(t('gg.retry', '다시 시도')) + '</button></div>';
+      }
+      return subHtml(heading) + mealsHtml() + '<div class="gg-state" data-km-day-state="none"><strong>' +
+        esc(t('km.noMenuYet', '아직 올라온 메뉴가 없어요.')) + '</strong></div>';
+    }
+    function render() {
+      if (!state.host) return;
+      var focus = focusSelector(state.host);
+      var html = '<div class="km-head"><h2>' + esc(t('km.title', '이번 주 학식')) + '</h2></div>' + daysHtml();
+      html += selectedToday() ? todayHtml() : otherDayHtml();
       state.host.innerHTML = html;
       restoreFocus(state.host, focus);
     }
@@ -298,7 +406,73 @@
         emit();
       });
     }
+    // week.json only says which dates have a menu. It is asked for with the first date change,
+    // so the today view makes the same requests as before; a missing or older index is
+    // ignored and the dated files are simply fetched on demand.
+    var weekRequest = null;
+    function ensureWeek() {
+      if (!weekRequest) {
+        weekRequest = fetch(options.weekUrl || 'data/kaist-menu/week.json', { cache: 'no-store' }).then(function (res) {
+          if (!res.ok) throw new Error('missing');
+          return res.json();
+        }).then(function (index) {
+          if (index && index.weekStart === state.week[0] && Array.isArray(index.days)) state.weekIndex = index;
+        }).catch(function () {});
+      }
+      return weekRequest;
+    }
+    function loadDay(date) {
+      if (typeof options.getDay === 'function') {
+        var fixture = null;
+        try { fixture = options.getDay(date); } catch (err) { fixture = null; }
+        state.days[date] = isDataForSelectedDate(fixture, date) && restaurantsWithMenus(fixture).length
+          ? { status: 'available', data: fixture } : { status: 'none' };
+        render();
+        return;
+      }
+      state.days[date] = { status: 'loading' };
+      render();
+      var base = options.dayBase || 'data/kaist-menu/';
+      ensureWeek().then(function () {
+        var known = weekEntry(date);
+        if (known && known.available === false && known.status === 'NOT_PUBLISHED_YET') return 'none';
+        return fetch(base + date + '.json', { cache: 'no-store' }).then(function (res) {
+          if (res.status === 404) return null;
+          if (!res.ok) throw new Error('unavailable');
+          return res.json();
+        }).then(function (data) {
+          if (data === null) return known && known.status === 'FETCH_FAILED' ? 'failed' : 'none';
+          return data;
+        });
+      }).then(function (result) {
+        if (result === 'none' || result === 'failed') state.days[date] = { status: result };
+        else if (isDataForSelectedDate(result, date) && Array.isArray(result.restaurants)) {
+          state.days[date] = { status: 'available', data: result };      // kept for this page session
+        } else state.days[date] = { status: 'failed' };
+        render();
+      }).catch(function () {
+        state.days[date] = { status: 'failed' };
+        render();
+      });
+    }
+    // A loaded date is reused for the rest of the page session; only a date that has no
+    // menu yet or failed is asked again.
+    function selectDate(date) {
+      if (state.week.indexOf(date) < 0) return;
+      state.selected = date;
+      var entry = state.days[date];
+      if (!isToday(date, state.today) && (!entry || entry.status === 'failed' || entry.status === 'none')) {
+        loadDay(date);
+        return;
+      }
+      render();
+    }
     function onClick(e) {
+      var dayBtn = e.target.closest && e.target.closest('[data-km-date]');
+      if (dayBtn) {
+        selectDate(dayBtn.getAttribute('data-km-date'));
+        return;
+      }
       var mealBtn = e.target.closest && e.target.closest('[data-km-meal]');
       if (mealBtn) {
         var meal = mealBtn.getAttribute('data-km-meal');
@@ -332,16 +506,34 @@
         render();
         return;
       }
+      if (e.target.closest && e.target.closest('[data-km-retry-day]')) {
+        loadDay(state.selected);
+        return;
+      }
       if (e.target.closest && e.target.closest('[data-km-retry]')) {
         load();
       }
     }
+    // Left/Right, Home and End move between dates; Enter or Space selects (native buttons).
+    function onKeydown(e) {
+      var day = e.target.closest && e.target.closest('[data-km-date]');
+      if (!day) return;
+      var idx = state.week.indexOf(day.getAttribute('data-km-date'));
+      var next = { ArrowLeft: idx - 1, ArrowRight: idx + 1, Home: 0, End: state.week.length - 1 }[e.key];
+      if (next == null || next < 0 || next >= state.week.length) return;
+      e.preventDefault();
+      var target = state.host.querySelector('[data-km-date="' + state.week[next] + '"]');
+      if (target) target.focus();
+    }
     host.addEventListener('click', onClick);
+    host.addEventListener('keydown', onKeydown);
     function mount(nextHost) {
       if (nextHost && nextHost !== state.host) {
         state.host.removeEventListener('click', onClick);
+        state.host.removeEventListener('keydown', onKeydown);
         state.host = nextHost;
         state.host.addEventListener('click', onClick);
+        state.host.addEventListener('keydown', onKeydown);
       } else if (nextHost) state.host = nextHost;
       render();
     }
@@ -350,6 +542,7 @@
       mount: mount,
       reload: load,
       snapshot: snapshot,
+      selectDate: selectDate,
       setFreeCountText: function (text) { options.freeCountText = text; },
       setMeal: function (meal) {
         if (MEALS.indexOf(meal) >= 0) { state.meal = meal; writeMeal(meal); render(); emit(); }
@@ -361,7 +554,11 @@
     attach: attach,
     defaultMeal: defaultMeal,
     fixtureMenu: fixtureMenu,
+    fixtureDay: fixtureDay,
     isStale: isStale,
+    isDataForSelectedDate: isDataForSelectedDate,
+    isToday: isToday,
+    weekDates: weekDates,
     restaurantsWithMenus: restaurantsWithMenus
   };
 
