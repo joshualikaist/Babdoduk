@@ -20,8 +20,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 from ..config import KST
+from ..prefilter import PREFILTER_VERSION
 
 STATE_VERSION = 1
+# A mail dismissed by an older prefilter is looked at again when the rules change,
+# but only while it is recent enough to still matter.
+RECHECK_FILTERED_DAYS = 7
 
 
 def digest(value: str) -> str:
@@ -37,6 +41,7 @@ class MailRecord:
     processed_at: str = ""
     registered: bool = False
     outcome: str = ""                   # candidate / filtered / error - never mail text
+    rules: str = ""                     # prefilter version that made the decision
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
@@ -73,6 +78,7 @@ class AgentState:
                 processed_at=str(row.get("processed_at") or ""),
                 registered=bool(row.get("registered")),
                 outcome=str(row.get("outcome") or ""),
+                rules=str(row.get("rules") or ""),
             )
             state.mails[record.id_hash] = record
         return state
@@ -111,7 +117,15 @@ class AgentState:
             return False
         if record.outcome == "candidate" and not record.registered:
             return False
+        if record.outcome == "filtered" and record.rules != PREFILTER_VERSION and self._recent(record):
+            return False            # dismissed by older rules: look again with the current ones
         return True
+
+    @staticmethod
+    def _recent(record: MailRecord) -> bool:
+        day = record.received or record.processed_at[:10]
+        cutoff = (datetime.now(KST) - timedelta(days=RECHECK_FILTERED_DAYS)).date().isoformat()
+        return bool(day) and day >= cutoff
 
     def forget(self, mail_id: str) -> None:
         """Drop a non-terminal row so the next run can try the write again."""
@@ -126,6 +140,7 @@ class AgentState:
             processed_at=datetime.now(KST).isoformat(timespec="seconds"),
             registered=registered,
             outcome=outcome,
+            rules=PREFILTER_VERSION,
         )
         self.mails[record.id_hash] = record
         return record

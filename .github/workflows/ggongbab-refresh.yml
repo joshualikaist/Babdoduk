@@ -24,8 +24,18 @@ on:
           - review-report
           - export-only
           - full
+      source:
+        description: >-
+          Who asked for the run: manual (an operator) or radar (the local mailbox radar
+          after it registered a new candidate; docs/GGONGBAB_TRIGGER.md). Logged only.
+        default: manual
+        type: choice
+        options:
+          - manual
+          - radar
 
 # Shares the group with content-refresh so two jobs never push generated data at the same time.
+# A dispatch that arrives while a run is in progress waits as the single pending run.
 concurrency:
   group: babdoduk-content-refresh
   cancel-in-progress: false
@@ -35,11 +45,15 @@ permissions:
 
 jobs:
   refresh:
+    # Main only. The schedule always runs from main; a dispatch aimed at any other ref
+    # (for example with a leaked dispatch token) is skipped before a secret is read.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       # A scheduled run has no inputs, so it is a full refresh.
       MODE: ${{ github.event.inputs.mode || 'full' }}
+      TRIGGER: ${{ github.event.inputs.source || github.event_name }}
     steps:
       - name: Check required configuration
         env:
@@ -49,6 +63,7 @@ jobs:
           HAS_SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY != '' || secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
           HAS_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
         run: |
+          echo "trigger: $TRIGGER"
           # The runner falls back to an in-memory repository, or skips AI, when a
           # secret is missing and still exits 0, so a missing secret fails here.
           case "$MODE" in

@@ -387,6 +387,9 @@ def _window(args, state: AgentState) -> tuple[date, date]:
 
 
 def cmd_run(args) -> int:
+    if getattr(args, "dispatch_refresh", False) and args.run_pipeline:
+        raise UiContractError("--dispatch-refresh and --run-pipeline would make two writers",
+                              hint="use --dispatch-refresh alone; the cloud job does the ingest")
     contract = load_contract(CONTRACT_FILE)
     contract.require_ready()
     if args.read_state != "all" and contract.list_api and not contract.read_state_key:
@@ -468,7 +471,8 @@ def cmd_run(args) -> int:
             candidates += 1
             payload = MailPayload(mail_id=header.mail_id, subject=header.subject,
                                   body=header.body or header.preview, received=header.received,
-                                  preview_only=not header.body_opened)
+                                  preview_only=not header.body_opened,
+                                  received_at=header.received_at, discovered_at=datetime.now(KST))
             try:
                 post_id = writer.create_task(payload, dry_run=args.dry_run)
             except AgentError:
@@ -498,6 +502,11 @@ def cmd_run(args) -> int:
     log(f"candidates: {candidates}")
     log(f"registered: {registered}{' (dry run)' if args.dry_run else ''}")
 
+    if getattr(args, "dispatch_refresh", False) and not args.dry_run:
+        # Option A: the cloud job stays the only writer; this only asks it to run now.
+        from ggongbab.dispatch import request_refresh
+
+        log(f"dispatch: {request_refresh(LOCAL_DIR / 'dispatch-state.json', new_candidates=registered > 0)}")
     if args.run_pipeline and registered:
         code = _run_pipeline()
         args.published_snapshot = True
@@ -672,6 +681,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--project-name", default=DEFAULT_PROJECT_NAME,
                         help="exact project name that must match, or nothing is written")
     parser.add_argument("--run-pipeline", action="store_true", help="run refresh_ggongbab.py --only dooray afterwards")
+    parser.add_argument("--dispatch-refresh", action="store_true",
+                        help="after registering, ask GitHub to run the cloud refresh now (debounced; "
+                             "needs the stored dispatch token, docs/GGONGBAB_TRIGGER.md)")
     parser.add_argument("--dry-run", action="store_true", help="scan and filter but create no task and keep state unchanged")
     parser.add_argument("--headed", action="store_true", help="show the browser during --run (debugging)")
     parser.add_argument("--subject-only", action="store_true",

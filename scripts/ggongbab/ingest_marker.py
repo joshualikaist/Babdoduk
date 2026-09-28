@@ -86,3 +86,34 @@ def strip_ingest_marker(text: str) -> str:
     cleaned = _BLOCK.sub("", text)
     cleaned = re.sub(r"^\s*Original Notice\s*", "", cleaned, flags=re.I)
     return cleaned.strip()
+
+
+# Private latency stamps on a collection task, e.g.
+#   babdoduk_timing: discovered_at=2026-09-28T11:47:12+09:00
+# The collector moves them into private raw-item metadata and removes the line, so
+# they never reach the sanitizer, the AI or any public output.
+TIMING_HEAD = "babdoduk_timing:"
+_TIMING_LINE = re.compile(r"^[ \t]*babdoduk_timing:[ \t]*(.*)$\n?", re.M | re.I)
+_TIMING_FIELD = re.compile(r"^([a-z_]+)=(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:[+-]\d{2}:\d{2}|Z))$", re.I)
+
+
+def render_timing(**stamps) -> str:
+    parts = [f"{name}={value.isoformat(timespec='seconds')}" for name, value in stamps.items() if value is not None]
+    return f"{TIMING_HEAD} {' '.join(parts)}" if parts else ""
+
+
+def parse_timing(text: str) -> dict[str, str]:
+    """Known-shape name=ISO-time pairs only; anything else on the line is ignored."""
+    match = _TIMING_LINE.search(text or "")
+    if not match:
+        return {}
+    fields = {}
+    for token in match.group(1).split():
+        got = _TIMING_FIELD.match(token)
+        if got:
+            fields[got.group(1).lower()] = got.group(2)
+    return fields
+
+
+def strip_timing(text: str) -> str:
+    return _TIMING_LINE.sub("", text or "")

@@ -224,17 +224,23 @@ validator 가 하는 일:
 
 | 값 | 필요한 근거 |
 |----|-------------|
-| `true` | 사전 신청 · 신청 필수/필요 · 등록 필요 · 접수 기간 · 선착순 · RSVP · 신청 링크/폼 · 마감일 |
+| `true` | 사전 신청 · 신청 필수/필요 · 등록 필요 · 접수 기간 · 선착순 신청/모집/접수/마감 · RSVP · 신청 링크/폼 · 마감일 |
 | `false` | 신청 없이 · 별도 신청 불필요 · 현장 참여 가능 · no registration required · walk-ins welcome |
 | `unknown` | 위 어느 쪽도 본문에 없을 때 (기본값) |
 
 AI 가 `false` 라고 해도 명시 근거가 없으면 validator 가 `unknown` 으로 되돌리고 review 사유를 남긴다.
+
+**선착순은 신청 문구와 함께일 때만 신청이다.** “커피 선착순 제공”, “선착순 배부”, “(선착순, 소진 시 종료)” 는
+그 자리에서 나눠 주는 **수량 제한**이다(MISS-001). `rule_parser` 는 이를 내부 필드 `supply_limited` · `end_condition=until_sold_out`
+으로만 기록하고(공개 스키마에는 없음), 신청 여부는 `unknown` 으로 둔다. AI 가 수량 제한만 보고 `true` 라고 하면
+validator 가 review 없이 `unknown` 으로 고친다. 그 밖의 근거 없는 `true` 는 예전처럼 review 로 간다.
 
 ### 참가 자격 (`eligibility`)
 
 **실제 대상 제한**만 기록한다. 예: `KAIST 학부생 대상`, `기계공학과 학생`, `석·박사 과정 학생`, `신입생만`, `외국인 학생 대상`, `선착순 50명`.
 
 `참석자에게`, `참가자`, `방문자`, `attendees`, `everyone` 처럼 **오는 사람을 가리키는 말**은 자격 제한이 아니다 → `null`.
+“선착순, 소진 시 종료”, “선착순 배부” 같은 **수량 제한**도 자격이 아니다(`선착순 50명` 은 그대로 인원 제한으로 본다).
 (첫 실제 실행에서 “참석자에게 점심 도시락을 제공합니다”가 `eligibility="참석자"` 로 저장된 회귀. `rule_parser.is_real_eligibility()` 가 막는다.)
 본문에 없는 자격 문구도 버린다.
 
@@ -324,7 +330,7 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 
 | 단계 | 규칙 | 위치 |
 |------|------|------|
-| 브라우저 | 종료 시각(없으면 시작 시각)이 지나면 카드·개수·레이더에서 바로 숨김 | `js/ggongbab-select.js` `isUpcoming` |
+| 브라우저 | 종료 시각이 지나면 카드·개수·레이더에서 바로 숨김. 종료 시각이 없으면(“11:30 ~ 소진 시까지”) 시작 후 3시간까지 보여 준다 — export 유예(`GGONGBAB_EXPIRED_GRACE_HOURS`)와 같은 창이다(MISS-001, 2026-09-28 승인) | `js/ggongbab-select.js` `eventEnd` · `isUpcoming` |
 | export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외 | `exporter.is_expired` |
 | 검증 | 종료 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
 
@@ -539,13 +545,18 @@ python scripts\refresh_ggongbab.py ^
 
 메일함 전체를 모델에 보내지 않는다. `prefilter.classify()` 가 먼저 로컬에서 고른다.
 
-* 거부: 영수증·결제·비밀번호·인증번호·배송·뉴스레터·반송 메일 등 (denylist)
-* 필수: 행사 표현(설명회/세미나/채용/info session …) **그리고** 날짜 표현
-* 추가: 음식 표현 **또는** 식사 시간 신호(점심시간/12시/lunch) 중 하나
+* 거부: 영수증·결제·비밀번호·인증번호·배송·뉴스레터·반송 메일 등 (denylist). 제목에는 전체 목록을, 본문에는
+  거래·기계 문구만 쓴다. “수신거부”·“unsubscribe” 같은 광고 꼬리말은 음식을 나눠 주는 캠퍼스 홍보 메일에도 붙기 때문이다.
+* 바로 후보: 음식 명사와 나눔 표현이 가까이 있거나(“방문자 전원 커피 제공”, “무료 푸드트럭”, “선착순 간식 배부”)
+  커피차·푸드트럭이 있으면 **날짜가 없어도** 후보다(MISS-001: 제목에 날짜가 없었다).
+* 그 밖에는 행사 표현(설명회/세미나/채용/부스/홍보/축제/info session …) **그리고** 날짜 표현,
+  그리고 음식 표현 **또는** 식사 시간 신호(점심시간/12시/lunch) 중 하나.
+* `urgency`: 수량 제한·커피차·오늘 행사면 `high`. 스캔 순서와 알림에만 쓰고, 근거 기준은 바꾸지 않는다.
+* 후보가 아니라고 걸러진 메일은 `PREFILTER_VERSION` 과 함께 기록된다. 규칙이 바뀌면 최근 7일 안의 메일은 다시 본다.
 
 **후보 선별은 음식 제공 여부를 판단하지 않는다.** “12시 세미나”는 후보일 뿐이고, `food_provided` 는 8절대로
-AI 와 결정적 validator 가 명시 근거로만 정한다. 후보로 뽑힌 메일은 기존 v2 프롬프트 · sanitizer · validator · dedup 을 그대로 탄다.
-별도 AI 경로를 만들지 않았다.
+AI 와 결정적 validator 가 명시 근거로만 정한다. 후보로 뽑힌 메일은 기존 프롬프트 · sanitizer · validator · dedup 을 그대로 탄다.
+별도 AI 경로를 만들지 않았다. 규칙과 평가 세트는 `docs/GGONGBAB_DISCOVERY.md` 에 있다.
 
 ### 개인정보
 
