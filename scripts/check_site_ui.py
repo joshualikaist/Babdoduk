@@ -792,7 +792,8 @@ def site_guardian(page):
 
     def check(ok, detail):
         nonlocal count
-        assert ok, f"site guardian: {detail}"
+        if not ok:
+            raise AssertionError(f"site guardian: {detail}", detail)  # detail: (where, component, values)
         count += 1
 
     errors, broken = [], []
@@ -1047,16 +1048,53 @@ def run_checks(screenshots=False):
     return report
 
 
+def guardian_summary(exc, shot):
+    """A guardian failure joins the visual summary with the page it stopped on and a capture of that page."""
+    detail = exc.args[1] if len(exc.args) > 1 else str(exc)
+    where = str(detail[0]) if isinstance(detail, tuple) and detail else "?"
+    m = re.match(r"(\S+) (ko|en) (\d+)x(\d+)$", where)
+    name, lang, width = (m.group(1), m.group(2), m.group(3) + "px") if m else ("?", "?", "?")
+    component = str(detail[1]) if isinstance(detail, tuple) and len(detail) > 1 else str(detail)[:120]
+    problem = str(detail[2:] if isinstance(detail, tuple) else detail).replace("|", "/").replace("\n", " ")[:300]
+    DIFF_DIR.mkdir(parents=True, exist_ok=True)
+    capture = f"guardian-{Path(name).stem}-{lang}-{width}.png"
+    if shot:
+        (DIFF_DIR / capture).write_bytes(shot)
+    text = (f"## Site guardian failed ({baseline_platform()})\n\n| capture | page | lang | viewport | component | problem |\n"
+            f"|---|---|---|---|---|---|\n| {capture if shot else '-'} | {name} | {lang} | {width} | {component} | {problem} |\n\n"
+            "The guardian stops at its first failure; fix it and rerun to see any later ones.\n")
+    summary = DIFF_DIR / "SUMMARY.md"
+    summary.write_text(text + ("\n" + summary.read_text(encoding="utf-8") if summary.is_file() else ""), encoding="utf-8")
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as out:
+            out.write(text)
+
+
 def run_chrome_checks():
-    """The shared-chrome gate alone: site guardian and visual comparison. This is what CI runs."""
+    """The shared-chrome gate alone: site guardian and visual comparison. This is what CI runs.
+
+    Both parts always run, so one failed run shows every changed image and the guardian's finding."""
     report = {"platform": baseline_platform(), "checks": 0}
+    failed = []
     with sync_playwright() as pw:
         browser = launch(pw)
         page = new_context(browser).new_page()
-        report["guardian"] = site_guardian(page)
-        report["visual"] = chrome_visual(page)
-        report["checks"] = report["guardian"] + report["visual"]
+        guardian_error, shot = None, None
+        try:
+            report["guardian"] = site_guardian(page)
+        except AssertionError as exc:
+            guardian_error = exc
+            shot = page.screenshot(full_page=True)  # the page and viewport the guardian stopped on
+            failed.append(exc.args[0])
+        try:
+            report["visual"] = chrome_visual(page)
+        except AssertionError as exc:
+            failed.append(f"visual: {exc}")
         browser.close()
+    if guardian_error is not None:
+        guardian_summary(guardian_error, shot)  # after chrome_visual, which resets .local/visual-diff
+    assert not failed, failed
+    report["checks"] = report["guardian"] + report["visual"]
     return report
 
 
