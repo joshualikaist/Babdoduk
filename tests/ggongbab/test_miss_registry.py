@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 
 from ggongbab.config import Settings
-from ggongbab.exporter import select_public_events
+from ggongbab.exporter import build_payload
 from ggongbab.models import EventExtraction
 from ggongbab.parsers.rule_parser import analyze
 from ggongbab.parsers.validator import validate
@@ -114,7 +114,7 @@ def test_feed_and_page_keep_it_listed_while_it_may_be_running(case):
     settings = Settings()
     public = case["expected"]["public"]
     times = public["listed_at"] + public["not_listed_at"]
-    exported = {t: select_public_events([row], settings, datetime.fromisoformat(t), food_only=True) for t in times}
+    exported = {t: build_payload([row], settings, datetime.fromisoformat(t), food_only=True)["events"] for t in times}
     for t in public["listed_at"]:
         assert exported[t], ("feed", t)
     event = next(e for events in exported.values() for e in events)
