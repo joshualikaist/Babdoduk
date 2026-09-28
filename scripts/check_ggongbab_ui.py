@@ -177,7 +177,6 @@ def weekly_cafeteria(browser, base, report):
     for width, height, lang in ((390, 844, "ko"), (360, 740, "en"), (1440, 900, "ko")):
         context = browser.new_context(viewport={"width": width, "height": height}, timezone_id="America/Los_Angeles",
                                       locale="ko-KR", reduced_motion="reduce")
-        neutralize_public_config(context)
         try:
             context.clock.set_fixed_time(WEEK_NOW)          # 2026-09-29 20:30 in Los Angeles
             page = context.new_page()
@@ -281,7 +280,6 @@ def weekly_cafeteria(browser, base, report):
             context.close()
     # Without week.json (for example before the weekly collector runs) dates still load on demand.
     context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
-    neutralize_public_config(context)
     try:
         context.clock.set_fixed_time(WEEK_NOW)
         page = context.new_page()
