@@ -115,7 +115,13 @@ Status reports the poller lock, 9223's verified/missing/stale/unverified state,
 safe reason, and seconds since the last successfully written healthy heartbeat.
 It does not query any cloud service or display process/account/source identifiers,
 environment variables, cookie material, notice titles or response bodies.
-Dooray is shown as not managed, port 9222 not probed; no Dooray browser is started.
+The Dooray Radar has its own lines:
+* its enabled and running state;
+* its last scan and last success;
+* whether unread analysis is allowed;
+* whether the dedicated browser on 9222 is running.
+
+Status never starts a Dooray browser.
 
 The watchdog uses the **existing heartbeat emission path**. After the
 `ggongbab_record_heartbeat` RPC succeeds, it mirrors the confirmed success time
@@ -180,13 +186,21 @@ ends it. No WakeToRun or wake timer is installed. On wake, surviving tasks conti
 and re-evaluate elapsed times. If the worker died, the watchdog can restart it;
 after a full restart, logon is required. A usable Portal session is still required.
 
-Network/transport problems back off. The worker permits five consecutive failed
-scans with exponential delays (120, 240, 480, 900 seconds, and server Retry-After
-when longer). It then exits. The watchdog allows five additional starts after
+Network/transport problems back off. A LIST connection that went stale during sleep or a
+network change is not retried as is. After two consecutive transport failures, or on the first
+failure after a wall-clock gap (resume from sleep), the worker closes its HTTP session. It then
+takes a fresh one from the dedicated browser's existing login, after 30 s or a longer Retry-After
+(`PORTAL_LIST_SESSION_REBUILT`). It does this at most three times per failure series. It never
+deletes browser state or resets the baseline, and an expired login found while rebuilding stops
+for SSO as usual. Beyond that, the worker permits five consecutive failed scans with exponential
+delays (120, 240, 480, 900 seconds, and server Retry-After when longer). It then exits. The watchdog allows five additional starts after
 the initial start, separated by 60/120/240/480/900 seconds or a longer Retry-After.
 Budgets persist across watchdog/logon restarts. Ten minutes of continuously running
 worker time with a recent successful scan replenishes the restart budget.
 Exhaustion requires operator Start; there is no unlimited restart loop.
+
+After a resume the watchdog gives the worker 10 minutes before it can latch
+`OPS_WORKER_UNRESPONSIVE`. If that latch was set and scans later succeed again, it clears itself.
 
 Observed recovery (`new=4`, one candidate, pending increasing from 1 to 2) is evidence
 of **bounded** catch-up only. Pagination and the saved overlap window cannot
@@ -219,10 +233,68 @@ or older Dooray tasks; review those separately in Task Scheduler.
 | PORTAL_LIST_SCAN_INCOMPLETE | Stop for catch-up/window review; never advance an incomplete checkpoint |
 | OPS_CONFIGURATION_REQUIRED | Fix backend configuration/Python/repository, then Start |
 | OPS_RETRY_EXHAUSTED / OPS_WORKER_UNRESPONSIVE | Operator intervention; never a tight retry/kill loop |
+| PORTAL_LIST_SESSION_REBUILT | Informational: a stale LIST transport was replaced by a fresh session from the same login |
+| DOORAY_AUTH_REQUIRED | Radar stops; complete SSO in the dedicated Dooray window, then `radar_tasks.ps1 -Action Start` |
+| DOORAY_CONTRACT_CHANGED | Radar stops and unread analysis is disabled; re-run calibration, then `radar-allow-unread` and Start |
+| DOORAY_UNREAD_INVARIANT_BROKEN | Unread rows are skipped until review; find what opened a mail or wrote during a scan, then `radar-allow-unread` |
+| DOORAY_BROWSER_ABSENT | Open the dedicated Dooray browser (9222); the Radar retries with backoff |
+| DOORAY_TRANSPORT_FAILED / DOORAY_WRITE_FAILED | Bounded backoff up to 15 min; nothing is marked processed until its task is written |
 
 CDP timeout and owner failure keep their fixed reason in a `collector_error`
 heartbeat, distinct from a confirmed auth-required failure. The process exit
 remains compatible with the existing Portal command conventions.
+
+## 12. Dooray Radar task
+
+```powershell
+powershell -NoProfile -File scripts\windows\install_dooray_radar_task.ps1 -PythonExe .venv\Scripts\python.exe
+powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start
+powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Status
+powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Stop
+```
+
+`Babdoduk-Dooray-Radar` uses the same model as the Portal task:
+* Interactive logon, Limited privileges;
+* no stored password;
+* IgnoreNew;
+* no WakeToRun;
+* it starts 60 s after logon.
+
+It runs `ggongbab_workers.py radar` against the dedicated Dooray browser that the operator keeps
+open (and minimized). Start and Remove verify that the task belongs to this checkout and this
+user before touching it. Stop persists `enabled=false` in `radar-control.json`; the Radar exits
+within five seconds.
+
+Before the first Start, use `ggongbab_workers.py radar-once --dry-run` to rehearse. It lists once
+and registers nothing.
+
+## 13. Operations checkout
+
+The workers run from a dedicated clone, `C:\Users\joshu\Babdoduk-ops`. It is pinned to a
+reviewed lab commit and has its own `.venv`, `.env` and `.local`. The development checkout can then
+change branches without moving the collectors.
+
+The migration is owner-gated:
+1. Prepare the Python environment in the ops clone.
+2. The owner creates its `.env`. Secrets are never copied by an agent.
+3. Stop the old workers with Stop and verify that both locks are released.
+4. Copy only the approved state: the Portal baseline and pending ledger, the processed-mail ledger,
+   the calibrated Dooray contract and the ops budgets/latches. Each file is listed with its purpose
+   and a SHA-256 in a manifest before the copy and checked after it.
+5. Create fresh dedicated Portal and Dooray profiles in the ops clone. Cookies and profiles are
+   never copied; the owner completes SSO in each.
+6. Install both tasks from the ops clone and Start them.
+7. Prove healthy scans and heartbeats and observe for 10–15 minutes.
+8. Only then, remove the old checkout's task.
+
+**Rollback.** Until step 8, the old checkout still holds its unchanged state, profiles and task.
+Rollback is:
+1. Stop the new tasks.
+2. Start the old task.
+
+Because state was copied, not moved, the old ledgers are exactly as they were at the stop. The old
+worker can therefore re-detect items that the new workers handled in the meantime. For exact
+continuity, copy the new ledgers back with the same manifest check before starting the old task.
 
 ## Dooray and cloud responsibility audit
 
@@ -276,9 +348,18 @@ text/stdout/stderr, notice/mail content, identifiers and secrets are not saved.
 Existing historical log entries are not retroactively scrubbed; an oversized
 legacy file is archived intact and ages out through rotation. Do not publish it.
 
-`.local/ops-alert.json` is the future operator notifier interface: component,
-severity, action, fixed reason, success age, observed timestamp and worker-running
-flag. No third-party notifier is installed or message sent. A future external
+`.local/ops-alert.json` holds the Portal worker's own state:
+* component;
+* severity;
+* action;
+* fixed reason;
+* success age;
+* observed timestamp;
+* worker-running flag.
+
+`.local/ops-alerts.json` is the combined operator alert interface (Portal, Radar, dispatch, flash
+candidates). The watchdog rewrites it every tick; see "Health targets and alerts" in
+`GGONGBAB_DISCOVERY.md`. No third-party notifier is installed or message sent. A future external
 monitor can also observe the existing cloud `agent_heartbeats` row while this PC
 is offline. This is operator alerting, not end-user Web Push.
 
