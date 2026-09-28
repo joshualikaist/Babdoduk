@@ -97,6 +97,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-ggongbab.txt
       - name: Install dependencies
+        id: install
         run: pip install -r requirements-ggongbab.txt
       - name: Refresh ggongbab
         id: refresh
@@ -159,3 +160,17 @@ jobs:
         # mapping indicator and GitHub rejects the whole file.
         run: |
           python scripts/publish_generated.py --paths data/ggongbab --message "ggongbab: event feed refresh"
+      # Collector watch: alerts the operator even when the local PC is off. Reads heartbeat
+      # status and timestamps only; the message carries fixed codes, never mail or event text.
+      # Runs after a failed refresh too, so that failure is reported. A no-op until the
+      # Telegram secrets exist (docs/GGONGBAB_ALERTS.md); it never fails the job.
+      - name: Watch collectors and push alerts
+        if: always() && steps.install.outcome == 'success'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GGONGBAB_WATCH_PAUSED_UNTIL: ${{ vars.GGONGBAB_WATCH_PAUSED_UNTIL }}
+          REFRESH_OUTCOME: ${{ steps.refresh.outcome }}
+        run: python scripts/watch_ggongbab_collectors.py

@@ -175,7 +175,12 @@ def emit_alerts(files, now, *, portal_running):
                          radar_running=lock_held(RadarFiles(files.root).lock), now=now)
         FileSink(files.local).emit(found)
     except Exception:
-        pass    # alerting must never stop the watchdog
+        return    # alerting must never stop the watchdog
+    try:
+        from .notify import push_local
+        push_local(files.local, found, now=now)   # no-op until an operator configures a provider
+    except Exception:
+        pass
 
 
 def launch_worker(files, recover_stale):
