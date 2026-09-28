@@ -11,7 +11,7 @@ import pytest
 
 import dooray_web_agent as agent
 from ggongbab.config import KST, PROMPT_VERSION, Settings
-from ggongbab.exporter import select_public_events
+from ggongbab.exporter import build_payload
 from ggongbab.ingest_marker import parse_timing, render_timing, strip_timing
 from ggongbab.models import Evidence
 from ggongbab.parsers.ai_parser import SYSTEM_PROMPT
@@ -190,7 +190,7 @@ def test_timing_reaches_private_metadata_but_never_the_ai_or_the_feed(settings):
     row = {"id": "e1", "title": "t", "status": "published", "needs_review": False, "confidence": 0.9,
            "event_start": "2026-09-28T11:30:00+09:00", "event_end": None, "food_provided": "true",
            "food_type": "beverage", "_sources": [{"type": "dooray"}], "metadata": item.metadata}
-    [public] = select_public_events([row], Settings(), NOW, food_only=True)
+    [public] = build_payload([row], Settings(), NOW, food_only=True)["events"]
     assert "discovered_at" not in json.dumps(public) and "received_at" not in json.dumps(public)
 
 
