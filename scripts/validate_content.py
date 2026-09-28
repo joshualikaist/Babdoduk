@@ -90,6 +90,109 @@ def validate_kaist(path: Path) -> list[str]:
     for row in restos:
         if not row.get("name") or not row.get("id"):
             errors.append("kaist restaurant missing name/id")
+    status = data.get("status")
+    if status is not None and status != "AVAILABLE":
+        errors.append("kaist daily status must be AVAILABLE")
+    coverage = data.get("coverage")
+    if coverage is not None:
+        numbers = [coverage.get(key) for key in ("requested", "fetched")]
+        if not all(isinstance(n, int) and n >= 0 for n in numbers) or numbers[1] > numbers[0]:
+            errors.append("kaist coverage counts invalid")
+        for key in ("failed", "carried"):
+            if not isinstance(coverage.get(key), list) or not all(isinstance(i, str) for i in coverage.get(key)):
+                errors.append(f"kaist coverage {key} invalid")
+        if isinstance(coverage.get("carried"), list) and not set(coverage["carried"]) <= set(coverage.get("failed") or []):
+            errors.append("kaist coverage carried a restaurant that did not fail")
+    return errors
+
+
+KAIST_DAY_STATUSES = {"AVAILABLE", "NOT_PUBLISHED_YET", "FETCH_FAILED", "STALE_SAVED_DATA"}
+KAIST_DATED = re.compile(r"^(\d{4}-\d{2}-\d{2})\.json$")
+
+
+def kaist_menu_count(data: dict) -> int:
+    return sum(1 for row in data.get("restaurants") or []
+               if any(((row.get(meal) or {}).get("items")) for meal in ("breakfast", "lunch", "dinner")))
+
+
+def validate_kaist_dir(folder: Path) -> list[str]:
+    """Every dated daily file, latest.json (today's compatibility copy) and the week index."""
+    errors = []
+    dated = {}
+    for path in sorted(folder.glob("*.json")):
+        match = KAIST_DATED.match(path.name)
+        if not match:
+            continue
+        try:
+            datetime.strptime(match.group(1), "%Y-%m-%d")
+        except ValueError:
+            errors.append(f"kaist {path.name}: not a calendar date")
+            continue
+        found = validate_kaist(path)
+        data = load(path)
+        if data.get("date") != match.group(1):
+            found.append("kaist daily date does not match its filename")
+        errors.extend(f"kaist {path.name}: {e}" for e in found)
+        dated[match.group(1)] = data
+    latest = folder / "latest.json"
+    if latest.exists():
+        latest_date = load(latest).get("date")
+        twin = folder / f"{latest_date}.json"
+        if twin.exists() and twin.read_text(encoding="utf-8") != latest.read_text(encoding="utf-8"):
+            errors.append("kaist latest.json does not match its dated file")
+    week = folder / "week.json"
+    if week.exists():
+        errors.extend(validate_kaist_week(load(week), dated))
+    return errors
+
+
+def validate_kaist_week(week: dict, dated: dict) -> list[str]:
+    errors = []
+    try:
+        start = datetime.strptime(str(week.get("weekStart")), "%Y-%m-%d").date()
+        end = datetime.strptime(str(week.get("weekEnd")), "%Y-%m-%d").date()
+    except ValueError:
+        return ["kaist week.json weekStart/weekEnd invalid"]
+    if start > end:
+        errors.append("kaist week.json weekStart after weekEnd")
+    if start.weekday() != 0 or end != start + timedelta(days=6):
+        errors.append("kaist week.json is not a Monday-Sunday week")
+    if week.get("timezone") != "Asia/Seoul":
+        errors.append("kaist week.json timezone must be Asia/Seoul")
+    try:
+        generated = datetime.fromisoformat(str(week.get("generatedAt")))
+        if generated.tzinfo is None:
+            raise ValueError
+        if not start <= generated.astimezone(KST).date() <= end:
+            errors.append("kaist week.json was not generated during its own week")
+    except ValueError:
+        errors.append("kaist week.json generatedAt invalid")
+    days = week.get("days")
+    if not isinstance(days, list):
+        return errors + ["kaist week.json days missing"]
+    expected = [(start + timedelta(days=i)).isoformat() for i in range(7)]
+    got = [row.get("date") if isinstance(row, dict) else None for row in days]
+    if len(set(got)) != len(got):
+        errors.append("kaist week.json has duplicate days")
+    if got != expected:
+        errors.append("kaist week.json days are not exactly Monday-Sunday of weekStart")
+    for row in days:
+        if not isinstance(row, dict):
+            continue
+        count, available, status = row.get("restaurantCount"), row.get("available"), row.get("status")
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+            errors.append(f"kaist week.json {row.get('date')}: restaurantCount invalid")
+            continue
+        if not isinstance(available, bool) or status not in KAIST_DAY_STATUSES:
+            errors.append(f"kaist week.json {row.get('date')}: available/status invalid")
+            continue
+        saved = dated.get(row.get("date"))
+        if available != (saved is not None) or (available and count != kaist_menu_count(saved)):
+            errors.append(f"kaist week.json {row.get('date')}: does not match its dated file")
+        if available != (status in {"AVAILABLE", "STALE_SAVED_DATA"}):
+            errors.append(f"kaist week.json {row.get('date')}: status contradicts availability")
+        if not available and count:
+            errors.append(f"kaist week.json {row.get('date')}: count without a menu")
     return errors
 
 # ---------------------------------------------------------------------------
@@ -515,6 +618,8 @@ def main() -> None:
     kaist = ROOT / "data" / "kaist-menu" / "latest.json"
     if kaist.exists():
         errors.extend(validate_kaist(kaist))
+    if (ROOT / "data" / "kaist-menu").is_dir():
+        errors.extend(validate_kaist_dir(ROOT / "data" / "kaist-menu"))
     ggongbab = ROOT / "data" / "ggongbab" / "latest.json"
     if ggongbab.exists():
         errors.extend(validate_ggongbab(ggongbab))
