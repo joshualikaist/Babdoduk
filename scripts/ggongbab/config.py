@@ -18,7 +18,7 @@ KST = timezone(timedelta(hours=9), name="Asia/Seoul")
 # Bump whenever SYSTEM_PROMPT changes meaning: cached parses are keyed on this,
 # so a new version re-parses stored items instead of reusing older extractions.
 # v2: explicit-evidence rules for registration_required and eligibility.
-PROMPT_VERSION = "ggongbab-extract-v2"
+PROMPT_VERSION = "ggongbab-extract-v3"
 
 # Supabase backend key, in priority order. SUPABASE_SECRET_KEY is the current name;
 # SUPABASE_SERVICE_ROLE_KEY is the legacy name and is read only as a fallback.
