@@ -278,9 +278,16 @@ The migration is owner-gated:
 1. Prepare the Python environment in the ops clone.
 2. The owner creates its `.env`. Secrets are never copied by an agent.
 3. Stop the old workers with Stop and verify that both locks are released.
-4. Copy only the approved state: the Portal baseline and pending ledger, the processed-mail ledger,
-   the calibrated Dooray contract and the ops budgets/latches. Each file is listed with its purpose
-   and a SHA-256 in a manifest before the copy and checked after it.
+4. Copy only the approved state. Each file is listed with its purpose and a SHA-256 in a manifest
+   before the copy and checked after it. The approved files are:
+   * `portal-list-state.json`: the Portal baseline, dedup ledger and pending ledger;
+   * `ggongbab-mail-state.json`: the processed-mail ledger;
+   * `dooray-ui.json` and `portal-ui.json`: the calibrated contracts.
+
+   Not copied:
+   * locks, logs, calibration diagnostics;
+   * the ops runtime/budget/alert files, which the new workers regenerate (disabled until Start);
+   * browser profiles.
 5. Create fresh dedicated Portal and Dooray profiles in the ops clone. Cookies and profiles are
    never copied; the owner completes SSO in each.
 6. Install both tasks from the ops clone and Start them.
