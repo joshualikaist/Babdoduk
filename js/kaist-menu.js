@@ -434,8 +434,9 @@
       render();
       var base = options.dayBase || 'data/kaist-menu/';
       ensureWeek().then(function () {
+        // A date the index lists without a file is not requested: no 404 for a known gap.
         var known = weekEntry(date);
-        if (known && known.available === false && known.status === 'NOT_PUBLISHED_YET') return 'none';
+        if (known && known.available === false) return known.status === 'FETCH_FAILED' ? 'failed' : 'none';
         return fetch(base + date + '.json', { cache: 'no-store' }).then(function (res) {
           if (res.status === 404) return null;
           if (!res.ok) throw new Error('unavailable');
@@ -507,6 +508,7 @@
         return;
       }
       if (e.target.closest && e.target.closest('[data-km-retry-day]')) {
+        weekRequest = null;          // the collector may have run since: read the index again
         loadDay(state.selected);
         return;
       }
