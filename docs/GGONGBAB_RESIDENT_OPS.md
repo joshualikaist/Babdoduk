@@ -241,6 +241,14 @@ mail population before scheduling it; do not blindly run both on the same mail.
 Prefer one canonical pipeline writer (the cloud job), using local pipeline runs
 only as deliberate operator recovery, not concurrent scheduled ingestion.
 
+**Measured 2026-09-28 (MISS-001).** No Dooray mail classification was feeding the
+project: the only mailbox scan ever recorded was the operator backfill of 2026-09-22,
+and the cloud job saw the same 44 items from 2026-09-25 on. The local mailbox bridge
+therefore owns the mail population. Its session and contract were recovered on
+2026-09-28. A scheduled radar (list-level only, unread-safe) is Phase 2 of
+`docs/GGONGBAB_DISCOVERY.md`. It triggers the cloud job with `--dispatch-refresh`
+(`docs/GGONGBAB_TRIGGER.md`), never with `--run-pipeline`; the agent refuses the two together.
+
 Existing safeguards: local mail state plus task `mail_key` avoids repeated local
 task registration; canonical `(source_id, external_id)`, content hashes and event
 matching avoid normal replay duplication. Unmarked tasks independently created by
