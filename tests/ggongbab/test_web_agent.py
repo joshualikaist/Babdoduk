@@ -57,8 +57,10 @@ def test_state_holds_no_personal_information(tmp_path):
         assert leak not in blob, leak
     data = json.loads(blob)
     assert set(data["mails"][0]) == {"id_hash", "subject_hash", "received", "processed_at",
-                                     "registered", "outcome"}
+                                     "registered", "outcome", "rules"}
     assert len(data["mails"][0]["id_hash"]) == 32
+    from ggongbab.prefilter import PREFILTER_VERSION
+    assert data["mails"][0]["rules"] == PREFILTER_VERSION   # a rules version, never mail-derived
 
 
 def test_corrupt_state_file_does_not_stop_the_agent(tmp_path):
