@@ -37,6 +37,7 @@ ACTIONS = {
     "open_browser": "open the dedicated browser for this collector (keep it minimized)",
     "check_dispatch": "check the dispatch token and GitHub Actions; the schedule still runs",
     "investigate": "check the collector status and logs (codes only)",
+    "check_actions": "open the failed ggongbab-refresh run in GitHub Actions; the previous feed stays published",
 }
 # Reason codes this module may put in an alert, with the severity floor and the action.
 REASONS = {
@@ -53,6 +54,7 @@ REASONS = {
     "DISPATCH_FAILED": ("warning", "check_dispatch"),
     "DISPATCH_AUTH_FAILED": ("critical", "check_dispatch"),
     "CANDIDATE_WAITING": ("warning", "check_dispatch"),
+    "REFRESH_FAILED": ("critical", "check_actions"),
 }
 
 

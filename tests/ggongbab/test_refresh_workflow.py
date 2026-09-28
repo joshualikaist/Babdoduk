@@ -184,3 +184,15 @@ def test_dispatch_source_is_a_logged_choice_and_never_changes_the_mode():
     assert "TRIGGER: ${{ github.event.inputs.source || github.event_name }}" in text
     assert 'echo "trigger: $TRIGGER"' in text
     assert "${{ github.event.inputs.source" not in text.split("steps:", 1)[1]  # env only, never inlined into run
+
+
+def test_the_collector_watch_runs_after_failures_and_keeps_secrets_in_env():
+    """The cloud watch alerts when the operator PC is off (docs/GGONGBAB_ALERTS.md). It runs even
+    after a failed refresh, and its secrets are passed as env, never inlined into the command."""
+    text = _text()
+    step = text[text.index("      - name: Watch collectors and push alerts"):]
+    assert "if: always() && steps.install.outcome == 'success'" in step
+    assert "REFRESH_OUTCOME: ${{ steps.refresh.outcome }}" in step
+    assert "TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}" in step
+    run = step[step.index("run:"):]
+    assert "secrets." not in run and run.strip().endswith("python scripts/watch_ggongbab_collectors.py")

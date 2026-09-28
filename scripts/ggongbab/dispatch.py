@@ -110,7 +110,9 @@ def read_windows_credential(target: str = CREDENTIAL_TARGET) -> Optional[str]:
         advapi.CredFree(pointer)
 
 
-def write_windows_credential(secret: str, target: str = CREDENTIAL_TARGET) -> bool:
+def write_windows_credential(secret: str, target: str = CREDENTIAL_TARGET, *,
+                             comment: str = "Babdoduk refresh dispatch (Actions: write)",
+                             user: str = "github-dispatch") -> bool:
     """Operator activation step only (docs/GGONGBAB_TRIGGER.md); never called by the radar."""
     if os.name != "nt":
         return False
@@ -125,9 +127,9 @@ def write_windows_credential(secret: str, target: str = CREDENTIAL_TARGET) -> bo
                     ("TargetAlias", wintypes.LPWSTR), ("UserName", wintypes.LPWSTR)]
 
     blob = secret.encode("utf-16-le")
-    credential = CREDENTIAL(Flags=0, Type=1, TargetName=target, Comment="Babdoduk refresh dispatch (Actions: write)",
+    credential = CREDENTIAL(Flags=0, Type=1, TargetName=target, Comment=comment,
                             CredentialBlobSize=len(blob), CredentialBlob=blob, Persist=2,
-                            AttributeCount=0, Attributes=None, TargetAlias=None, UserName="github-dispatch")
+                            AttributeCount=0, Attributes=None, TargetAlias=None, UserName=user)
     advapi = ctypes.WinDLL("Advapi32.dll", use_last_error=True)
     advapi.CredWriteW.argtypes = [ctypes.POINTER(CREDENTIAL), wintypes.DWORD]
     advapi.CredWriteW.restype = wintypes.BOOL
