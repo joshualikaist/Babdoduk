@@ -166,3 +166,21 @@ def test_content_jobs_share_one_serial_concurrency_group():
         text = path.read_text(encoding="utf-8")
         assert re.search(r"(?m)^concurrency:\s*\n\s+group:\s*babdoduk-content-refresh\s*\n"
                          r"\s+cancel-in-progress:\s*false\s*$", text), path.name
+
+
+def test_the_refresh_job_runs_only_from_main():
+    """A dispatch aimed at another ref, e.g. with a leaked dispatch token, is skipped
+    before any step (and any secret) runs (docs/GGONGBAB_TRIGGER.md)."""
+    text = _text()
+    job = text[text.index("  refresh:"):]
+    assert re.search(r"(?m)^    if: github\.ref == 'refs/heads/main'\s*$", job[:400])
+
+
+def test_dispatch_source_is_a_logged_choice_and_never_changes_the_mode():
+    text = _text()
+    source = text[text.index("      source:"):text.index("# Shares the group")]
+    assert re.search(r"(?m)^\s*default:\s*manual\s*$", source)
+    assert {line.strip()[2:] for line in source.splitlines() if line.strip().startswith("- ")} == {"manual", "radar"}
+    assert "TRIGGER: ${{ github.event.inputs.source || github.event_name }}" in text
+    assert 'echo "trigger: $TRIGGER"' in text
+    assert "${{ github.event.inputs.source" not in text.split("steps:", 1)[1]  # env only, never inlined into run
