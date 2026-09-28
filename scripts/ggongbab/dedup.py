@@ -13,6 +13,7 @@ from datetime import datetime
 from difflib import SequenceMatcher
 from typing import Any, Optional
 
+from .config import KST
 from .models import EventCandidate
 from .parsers.validator import parse_iso
 
@@ -73,7 +74,42 @@ def score_pair(cand: EventCandidate, row: dict[str, Any]) -> float:
         score += 0.10 if b1 == b2 else -0.10
     if title_sim >= 0.92 and d1 == d2:
         score = max(score, 0.9)
+    if same_slot(cand, row) and (title_sim >= 0.5 or (org1 and org2 and similarity(org1, org2) >= 0.8)
+                                 or _explicitly_equivalent(cand, row)):
+        # The exact same start in the exact same room, plus one supporting signal, is the
+        # same event even when a second mail titles it differently (09-30 간담회, 2026-09-28).
+        score = max(score, 0.95)
     return round(score, 3)
+
+
+def _place(value: Optional[str]) -> str:
+    return _PUNCT.sub("", (value or "")).lower()
+
+
+def _minute_of(value: Any) -> Optional[str]:
+    """The start to the minute in KST, so '+00:00' and '+09:00' spellings of one instant agree."""
+    dt = value if isinstance(value, datetime) else (parse_iso(value) if isinstance(value, str) else None)
+    if dt is None or dt.tzinfo is None:
+        return None
+    return dt.astimezone(KST).strftime("%Y-%m-%dT%H:%M")
+
+
+def same_slot(cand: EventCandidate, row: dict[str, Any]) -> bool:
+    """Same start to the minute and the same room (building + room, or the full place text)."""
+    start = _minute_of(cand.event_start)
+    if not start or start != _minute_of(row.get("event_start")):
+        return False
+    room1, room2 = _place(cand.room), _place(row.get("room"))
+    b1, b2 = _place(cand.building), _place(row.get("building"))
+    if room1 and room1 == room2 and (not b1 or not b2 or b1 in b2 or b2 in b1):   # "E11" vs "창의학습관(E11)"
+        return True
+    place1, place2 = _place(cand.location_name), _place(row.get("location_name"))
+    return bool(place1) and place1 == place2
+
+
+def _explicitly_equivalent(cand: EventCandidate, row: dict[str, Any]) -> bool:
+    url1, url2 = (cand.registration_url or "").strip(), (row.get("registration_url") or "").strip()
+    return bool(url1) and url1 == url2
 
 
 def find_match(cand: EventCandidate, existing: list[dict[str, Any]], threshold: float) -> Optional[Match]:

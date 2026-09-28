@@ -1,0 +1,36 @@
+{
+  "id": "DUP-001",
+  "reported_on": "2026-09-28",
+  "summary": "Two mails announced one 09-30 lunch meeting with different titles; the second became a separate public event. Cleaned up by the owner's approval on 2026-09-28 (provenance merged into the older event).",
+  "existing": {
+    "title": "학사과정생 간담회",
+    "event_start": "2026-09-30T03:00:00+00:00",
+    "location_name": "창의학습관(E11), 1층 102호",
+    "building": "창의학습관(E11)",
+    "room": "102호",
+    "organizer": "교무처"
+  },
+  "incoming": {
+    "title": "제1회 교무처 & 학사과정생 간담회",
+    "event_start": "2026-09-30T12:00:00+09:00",
+    "location_name": "창의학습관(E11) 1층 102호",
+    "building": "창의학습관(E11)",
+    "room": "102호",
+    "organizer": "교무처"
+  },
+  "expected": {"same_event": true},
+  "controls": [
+    {"name": "same slot, different organizer and unrelated title",
+     "incoming": {"title": "로봇 동아리 정기 모임", "organizer": "로봇 동아리"},
+     "expected": {"strong_slot_match": false}},
+    {"name": "same title and room, one hour later",
+     "incoming": {"event_start": "2026-09-30T13:00:00+09:00"},
+     "expected": {"strong_slot_match": false}},
+    {"name": "same start and organizer, different room",
+     "incoming": {"room": "201호", "location_name": "창의학습관(E11) 2층 201호"},
+     "expected": {"strong_slot_match": false}},
+    {"name": "building written differently, same room and time (the likely in-run miss)",
+     "incoming": {"building": "E11", "organizer": null},
+     "expected": {"strong_slot_match": true}}
+  ]
+}
