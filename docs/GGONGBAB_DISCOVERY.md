@@ -209,8 +209,21 @@ with `radar_tasks.ps1 -Action Start|Stop|Status|Remove`).
 | Login expired | the Radar stops (exit 10) and waits for the owner's SSO |
 | Network or 5xx on the LIST call; browser closed | the Radar backs off (up to 15 min) and retries |
 
+The guard watches the dedicated browser's own traffic. The Radar's own LIST call is a single GET
+through the browser's API request context, which that guard does not see. A static test therefore
+pins the Radar code path to listing only: no body, detail, click, navigation or write call.
+
 Do not read mail in the dedicated Dooray window. Opening a mail there during a scan trips the
 latch on purpose.
+
+**Local proof (2026-09-28 ~20:30 KST, no token).** One `dry_run` scan through `run_radar`, attached to the
+open dedicated browser:
+* exit 0, heartbeat healthy;
+* 50 rows listed, 16 in the 24 h window, 3 already in the ledger, 1 candidate;
+* nothing registered, and the window did not move;
+* 2 unread before and after, 0 became read;
+* no latch;
+* 0 detail and 0 non-GET requests from the browser.
 
 `radar-once --dry-run` rehearses one scan. It writes no task, ledger entry or dispatch. It also
 does not move the real Radar's window.

@@ -223,3 +223,18 @@ def test_the_radar_task_scripts_match_the_portal_worker_model():
     assert "TASK_OWNER_UNVERIFIED" in control and "radar-enable" in control and "radar-disable" in control
     for forbidden in ("Remove-Item", "taskkill", "Stop-Process", "rmtree"):
         assert forbidden not in install + control
+
+
+def test_the_radar_code_path_can_only_list():
+    """The Radar's own LIST call goes through the API request context, which the browser request
+    guard does not see; so its code must not be able to open a body, click, or write at all."""
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parents[2] / "scripts"
+    source = (root / "ggongbab/dooray_radar.py").read_text(encoding="utf-8")
+    workers = (root / "windows/ggongbab_workers.py").read_text(encoding="utf-8")
+    radar_fn = workers[workers.index("def radar("):workers.index("def alerts_command(")]
+    for forbidden in ("open_body", "detail_api", "read_detail", "fetch_detail", ".click(", ".fill(", ".goto(",
+                      "request.post", "request.put", "request.patch", "request.delete", "mark_read", "set_read"):
+        assert forbidden not in source, forbidden
+        assert forbidden not in radar_fn, forbidden
+    assert "list_mails=list_mails_paged" in radar_fn and "attach_only=True" in radar_fn
