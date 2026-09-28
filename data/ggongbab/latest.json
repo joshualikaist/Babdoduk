@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-27T01:43:09+09:00",
+  "generatedAt": "2026-09-28T19:10:27+09:00",
   "timezone": "Asia/Seoul",
-  "count": 3,
+  "count": 6,
   "events": [
     {
       "id": "04ed127d-1eef-4c52-a711-90dd48effdcf",
@@ -37,16 +37,49 @@
       ]
     },
     {
+      "id": "8f880dc5-9849-41ce-a3f2-979b2eb50862",
+      "title": "제1회 교무처 & 학사과정생 간담회",
+      "summary": "교무처와 학사과정생이 강의계획서, 공유교과목, 강의평가제도, AI 활용 등을 주제로 대화하는 간담회입니다. 참석자 명단 확인 후 간단한 점심식사를 제공합니다.",
+      "startAt": "2026-09-30T12:00:00+09:00",
+      "endAt": "2026-09-30T13:00:00+09:00",
+      "dateText": "2026. 9. 30.(수)",
+      "timeText": "오후 12시~1시",
+      "location": {
+        "name": "창의학습관(E11) 1층 102호",
+        "building": "창의학습관(E11)",
+        "room": "102호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "간단한 점심식사"
+      },
+      "organizer": "교무처",
+      "eligibility": "선착순 90명",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-09-28T23:59:00+09:00",
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
       "id": "6b4d7b25-954b-45e6-910b-749116cc9611",
       "title": "학사과정생 간담회",
-      "summary": "교무처가 수업 및 학사제도에 대한 학사과정생의 의견을 듣는 간담회입니다. 사전 등록 참석자에게 간단한 점심식사가 제공되며, 회차별 참석 정원은 최대 90명입니다.",
+      "summary": "교무처가 수업 및 학사제도에 대한 학사과정생의 의견을 듣기 위해 개최하는 간담회입니다. 사전 등록한 참석자에게 간단한 점심식사가 제공됩니다.",
       "startAt": "2026-09-30T12:00:00+09:00",
       "endAt": "2026-09-30T13:00:00+09:00",
       "dateText": "2026.09.30.(수)",
       "timeText": "오후 12시~1시",
       "location": {
         "name": "창의학습관(E11), 1층 102호",
-        "building": "창의학습관",
+        "building": "창의학습관(E11)",
         "room": "102호"
       },
       "food": {
@@ -61,7 +94,40 @@
         "deadline": null,
         "url": "https://forms.gle/yqo6XZSs5wQLDzug9"
       },
-      "confidence": 0.99,
+      "confidence": 1.0,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "db6dd6bc-1767-4bb0-88d0-d4c957490e55",
+      "title": "2026년 10월 첫수융합포럼",
+      "summary": "수리과학과와 항공우주공학과가 공동 개최하는 융합포럼으로, Shock Waves in Compressible Flows를 주제로 진행됩니다. 참석자에게 간단한 다과가 제공됩니다.",
+      "startAt": "2026-10-07T12:00:00+09:00",
+      "endAt": "2026-10-07T13:00:00+09:00",
+      "dateText": "2026년 10월 7일(수)",
+      "timeText": "12:00~13:00",
+      "location": {
+        "name": "창의학습관(E11) 101호",
+        "building": "창의학습관(E11)",
+        "room": "101호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "간단한 다과"
+      },
+      "organizer": "수리과학과와 항공우주공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/yEBWHA1KLBsQ7ca59"
+      },
+      "confidence": 1.0,
       "sources": [
         {
           "type": "dooray",
@@ -72,7 +138,7 @@
     {
       "id": "f19cc4d3-cc7e-41fc-a8c3-975585f0b7b6",
       "title": "ME Co-op 프로그램 학부생 설명회",
-      "summary": "기계공학과 ME Co-op 프로그램의 내용과 참여기업을 안내하는 학부생 설명회입니다. 사전신청 참석자에게 샌드위치와 음료를 제공합니다.",
+      "summary": "기계공학과 ME Co-op 프로그램의 자세한 내용과 참여기업을 안내하는 학부생 설명회입니다. 오프라인 사전신청 참석자에게 샌드위치와 음료를 제공합니다.",
       "startAt": "2026-10-07T12:00:00+09:00",
       "endAt": "2026-10-07T13:00:00+09:00",
       "dateText": "10월 7일(수)",
@@ -93,6 +159,39 @@
         "required": "true",
         "deadline": "2026-09-30T18:00:00+09:00",
         "url": "https://naver.me/5HyBJgFN"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "2774195c-d3d7-467d-bb9d-c138dc031c16",
+      "title": "카카오벤처스 Temp Seoul Meetup",
+      "summary": "카카오벤처스가 /tmp Seoul과 초기 빌더 및 팀을 바라보는 관점을 소개하는 세션을 진행합니다. 40분 세션과 20분 Q&A 및 네트워킹으로 구성되며, 참석자에게 식사가 준비됩니다.",
+      "startAt": "2026-10-07T17:00:00+09:00",
+      "endAt": null,
+      "dateText": "10월 7일(수)",
+      "timeText": "오후 5시",
+      "location": {
+        "name": "KAIST 창업원",
+        "building": "창업원",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사"
+      },
+      "organizer": "카카오벤처스",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://luma.com/208ci6vs"
       },
       "confidence": 0.99,
       "sources": [
