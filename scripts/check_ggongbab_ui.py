@@ -258,9 +258,15 @@ def weekly_cafeteria(browser, base, report):
             assert ("Couldn’t load the menu." if en else "메뉴를 불러오지 못했어요.") in page.locator(
                 '[data-km-day-state="failed"]').inner_text()
             assert page.locator("[data-km-retry-day]").count() == 1
-            # Saturday: the collector could not fetch it and there is no file: a failure state.
+            # Saturday: the collector could not fetch it and there is no file: a failure state,
+            # without requesting a file the index already lists as missing (no 404).
             page.locator('[data-km-date="2026-10-03"]').click()
             page.locator('[data-km-day-state="failed"]').wait_for()
+            assert not any(path.endswith("/2026-10-03.json") for path in requests)
+            weeks_before = sum(path.endswith("/week.json") for path in requests)
+            page.locator("[data-km-retry-day]").click()
+            page.locator('[data-km-day-state="failed"]').wait_for()
+            assert sum(path.endswith("/week.json") for path in requests) == weeks_before + 1   # retry re-reads the index
             # A past day of this week is browsable too.
             page.locator('[data-km-date="2026-09-28"]').click()
             page.locator(".km-card").first.wait_for()
