@@ -1,0 +1,72 @@
+{
+  "id": "MISS-001",
+  "slug": "kakao-coffee-truck",
+  "reported_on": "2026-09-28",
+  "source_class": "dooray_mailbox",
+  "summary": "Company campus promotion with a coffee truck: free coffee for every visitor while supplies last. The mail arrived after the hand-out had started.",
+  "why_missed": [
+    "No mailbox scanner was running; the only scan ever recorded was on 2026-09-22 (forensics stage B).",
+    "GitHub ran the 30-minute cloud refresh about 6 times a day, hours apart (stage G).",
+    "The page hid an event without an end time from its start on; this one started before the mail arrived (stage L).",
+    "'선착순' was read as registration, so the card would have said 사전 신청 (stage I)."
+  ],
+  "input": {
+    "subject": "커피차와 함께하는 「카카오 AI 톡 출항 2기」 캠퍼스 홍보 행사",
+    "body": "일시: 2026. 9. 28. 11:30 ~ 소진 시까지\n장소: KAIST 대전 본원 문화관 앞\n혜택: 방문자 전원 커피 제공 (선착순, 소진 시 종료)",
+    "received_at": "2026-09-28T11:45:00+09:00"
+  },
+  "expected": {
+    "prefilter": {"subject_only_candidate": true, "full_text_candidate": true, "urgency": "high"},
+    "rules": {
+      "dates": ["2026-09-28"],
+      "times": ["11:30"],
+      "food_evidence": ["커피 제공"],
+      "food_type_hint": "beverage",
+      "registration_state": "unknown",
+      "supply_limited": true,
+      "end_condition": "until_sold_out"
+    },
+    "extraction": {
+      "is_event": true,
+      "title": "커피차와 함께하는 「카카오 AI 톡 출항 2기」 캠퍼스 홍보 행사",
+      "event_start": "2026-09-28T11:30:00+09:00",
+      "event_end": null,
+      "date_text": "2026. 9. 28.",
+      "time_text": "11:30 ~ 소진 시까지",
+      "location_name": "KAIST 대전 본원 문화관 앞",
+      "food_provided": "true",
+      "food_type": "beverage",
+      "food_description": "커피",
+      "eligibility": null,
+      "registration_required": "unknown",
+      "evidence": {
+        "event_time": "일시: 2026. 9. 28. 11:30 ~ 소진 시까지",
+        "location": "장소: KAIST 대전 본원 문화관 앞",
+        "food": "방문자 전원 커피 제공",
+        "registration": null
+      }
+    },
+    "ai_misreadings": [
+      {"name": "first-come read as registration",
+       "change": {"registration_required": "true", "evidence": {"registration": "선착순, 소진 시 종료"}}},
+      {"name": "supply limit copied into eligibility",
+       "change": {"eligibility": "선착순, 소진 시 종료"}},
+      {"name": "visitors copied into eligibility",
+       "change": {"eligibility": "방문자 전원"}}
+    ],
+    "validated": {
+      "status": "published",
+      "food_provided": "true",
+      "food_type": "beverage",
+      "registration_required": "unknown",
+      "eligibility": null,
+      "event_start": "2026-09-28T11:30:00+09:00",
+      "event_end": null
+    },
+    "public": {
+      "food_bucket": "refreshment",
+      "listed_at": ["2026-09-28T11:31:00+09:00", "2026-09-28T11:45:00+09:00", "2026-09-28T14:29:00+09:00"],
+      "not_listed_at": ["2026-09-28T14:31:00+09:00"]
+    }
+  }
+}
