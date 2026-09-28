@@ -95,3 +95,45 @@ def test_every_platform_set_is_complete_and_owner_approved():
         manifest = json.loads((folder / "BASELINES.json").read_text(encoding="utf-8"))
         assert manifest["platform"] == folder.name and "PENDING" not in manifest["approval"]
         assert manifest["approval"].startswith("Owner approved"), manifest["approval"]
+
+
+def test_a_guardian_failure_still_runs_the_visual_comparison_and_names_the_page(tmp_path, monkeypatch):
+    import check_site_ui as ui
+
+    class Page:
+        def screenshot(self, **_):
+            return b"capture"
+
+    class Browser:
+        def close(self):
+            pass
+
+    class Playwright:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+    def guardian(page):
+        detail = ("event.html ko 1440x900", "the footer sits on the page canvas on every page", {"background-color": "x"})
+        raise AssertionError(f"site guardian: {detail}", detail)
+
+    ran = []
+    monkeypatch.setattr(ui, "DIFF_DIR", tmp_path / "visual-diff")
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    monkeypatch.setattr(ui, "sync_playwright", Playwright)
+    monkeypatch.setattr(ui, "launch", lambda pw: Browser())
+    monkeypatch.setattr(ui, "new_context", lambda browser: type("Context", (), {"new_page": lambda self: Page()})())
+    monkeypatch.setattr(ui, "site_guardian", guardian)
+    monkeypatch.setattr(ui, "chrome_visual", lambda page: ran.append("visual") or 84)
+    try:
+        ui.run_chrome_checks()
+    except AssertionError as exc:
+        assert "site guardian" in str(exc)
+    else:
+        raise AssertionError("a guardian failure passed the gate")
+    assert ran == ["visual"]
+    summary = (tmp_path / "visual-diff/SUMMARY.md").read_text(encoding="utf-8")
+    assert "| guardian-event-ko-1440px.png | event.html | ko | 1440px | the footer sits on the page canvas on every page |" in summary
+    assert (tmp_path / "visual-diff/guardian-event-ko-1440px.png").read_bytes() == b"capture"
