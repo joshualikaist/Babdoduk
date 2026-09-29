@@ -16,6 +16,8 @@ ALLOWED = {
     "data/magazine": ROOT / "data" / "magazine",
     "data/kaist-menu": ROOT / "data" / "kaist-menu",
     "data/ggongbab": ROOT / "data" / "ggongbab",
+    # Magazine discovery store (registry, candidates, health, run log); not deployed (.vercelignore).
+    "research/magazine": ROOT / "research" / "magazine",
 }
 # Files inside an allowed path that are hand-edited inputs, never generated output.
 SKIP_NAMES = {"manual.json", ".staging"}

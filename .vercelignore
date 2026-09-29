@@ -3,3 +3,5 @@
 .vercel
 __pycache__
 .pytest_cache
+# Magazine discovery research store: kept in git, never served by the site.
+research

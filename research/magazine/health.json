@@ -1,0 +1,402 @@
+{
+  "generatedAt": "2026-09-29T15:15:07+09:00",
+  "adapters": {
+    "blog-irisblossomlife": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "STALE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2024-10-07T08:00:48+09:00"
+    },
+    "blog-koreanbapsang": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 10,
+      "status": "STALE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2025-03-22T02:34:09+09:00"
+    },
+    "blog-mykoreankitchen": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 5,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-26T19:00:22+09:00"
+    },
+    "blog-beyondkimchee": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 10,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-13T22:03:00+09:00"
+    },
+    "blog-seonkyounglongest": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 5,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-10T16:04:04+09:00"
+    },
+    "blog-budgetbytes": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 10,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-28T22:30:00+09:00"
+    },
+    "blog-justonecookbook": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 8,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-28T21:00:00+09:00"
+    },
+    "news-thinkfood": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T18:53:20+09:00"
+    },
+    "news-foodnews": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T23:43:49+09:00"
+    },
+    "news-foodbank": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T20:49:00+09:00"
+    },
+    "news-fsnews": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T08:43:40+09:00"
+    },
+    "news-yna-industry": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 120,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T15:07:25+09:00"
+    },
+    "news-yna-health": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 120,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T15:04:38+09:00"
+    },
+    "news-kormedi": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 10,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T15:03:00+09:00"
+    },
+    "news-newsis-health": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 100,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T15:12:14+09:00"
+    },
+    "news-donga-health": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T14:43:34+09:00"
+    },
+    "news-seoul-life": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 29,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-29T14:39:58+09:00"
+    },
+    "web-exa-trend": {
+      "type": "web_search",
+      "adapter": "FETCH_FAILED",
+      "code": "HTTP_429",
+      "items": 0,
+      "status": "DEGRADED",
+      "lastSuccessAt": null,
+      "lastFailureAt": "2026-09-29T15:15:07+09:00",
+      "failureCount": 3,
+      "newestItemAt": "2026-09-29T12:16:00+09:00"
+    },
+    "web-exa-habit": {
+      "type": "web_search",
+      "adapter": "FETCH_FAILED",
+      "code": "RATE_LIMITED_SKIPPED",
+      "items": 0,
+      "status": "DEGRADED",
+      "lastSuccessAt": null,
+      "lastFailureAt": "2026-09-29T15:15:07+09:00",
+      "failureCount": 3,
+      "newestItemAt": null
+    },
+    "web-naver-trend": {
+      "type": "web_search",
+      "adapter": "FETCH_FAILED",
+      "code": "RATE_LIMITED_SKIPPED",
+      "items": 0,
+      "status": "DEGRADED",
+      "lastSuccessAt": null,
+      "lastFailureAt": "2026-09-29T15:15:07+09:00",
+      "failureCount": 3,
+      "newestItemAt": null
+    },
+    "yt-search": {
+      "type": "youtube_search",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-25T00:00:00+09:00"
+    },
+    "yt-jachwiyorisin": {
+      "type": "youtube_channel",
+      "adapter": "OK",
+      "code": null,
+      "items": 6,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-27T00:00:00+09:00"
+    },
+    "yt-cookingtree": {
+      "type": "youtube_channel",
+      "adapter": "OK",
+      "code": null,
+      "items": 15,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-28T20:00:02+09:00"
+    },
+    "yt-haruhankki": {
+      "type": "youtube_channel",
+      "adapter": "OK",
+      "code": null,
+      "items": 6,
+      "status": "STALE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-03-03T00:00:00+09:00"
+    },
+    "yt-hamzy": {
+      "type": "youtube_channel",
+      "adapter": "OK",
+      "code": null,
+      "items": 6,
+      "status": "STALE",
+      "lastSuccessAt": "2026-09-29T15:15:07+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-05-17T00:00:00+09:00"
+    },
+    "instagram-opencli": {
+      "type": "instagram",
+      "adapter": "DISABLED",
+      "code": null,
+      "items": 0,
+      "status": "DISABLED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    }
+  },
+  "summary": {
+    "enabledSources": 25,
+    "failing": [
+      "web-exa-habit",
+      "web-exa-trend",
+      "web-naver-trend"
+    ],
+    "notConfigured": [],
+    "statusCounts": {
+      "ACTIVE": 18,
+      "STALE": 4,
+      "DEGRADED": 3,
+      "DISABLED": 1
+    },
+    "byStatus": {
+      "ACTIVE": [
+        "blog-beyondkimchee",
+        "blog-budgetbytes",
+        "blog-justonecookbook",
+        "blog-mykoreankitchen",
+        "blog-seonkyounglongest",
+        "news-donga-health",
+        "news-foodbank",
+        "news-foodnews",
+        "news-fsnews",
+        "news-kormedi",
+        "news-newsis-health",
+        "news-seoul-life",
+        "news-thinkfood",
+        "news-yna-health",
+        "news-yna-industry",
+        "yt-cookingtree",
+        "yt-jachwiyorisin",
+        "yt-search"
+      ],
+      "STALE": [
+        "blog-irisblossomlife",
+        "blog-koreanbapsang",
+        "yt-hamzy",
+        "yt-haruhankki"
+      ],
+      "DEGRADED": [
+        "web-exa-habit",
+        "web-exa-trend",
+        "web-naver-trend"
+      ],
+      "DISABLED": [
+        "instagram-opencli"
+      ]
+    },
+    "duplicates": 3,
+    "rejected": 758,
+    "new": 0,
+    "candidates": 822,
+    "page_lookups": 0,
+    "validated": 0,
+    "pruned": 0,
+    "selected": 17,
+    "fabricated": 0,
+    "staleSources": [
+      "blog-irisblossomlife",
+      "blog-koreanbapsang",
+      "yt-hamzy",
+      "yt-haruhankki"
+    ],
+    "offlineRebuildAt": "2026-09-29T16:29:27+09:00"
+  },
+  "lanes": {
+    "trend": {
+      "qualifying": 6,
+      "discoveredForLane": 65,
+      "notQualifying": {
+        "AD_OR_SPONSORED": 5,
+        "NOT_FOOD": 2,
+        "NO_DATE": 1,
+        "NO_TREND_EVIDENCE": 4,
+        "OFF_TOPIC_RESTAURANT_TRAVEL": 1,
+        "PRODUCT_ANNOUNCEMENT_ONLY": 5,
+        "PROMOTION": 3,
+        "TOO_OLD": 14,
+        "TOO_OLD_FOR_TREND": 24
+      }
+    },
+    "tips": {
+      "qualifying": 45,
+      "discoveredForLane": 0,
+      "notQualifying": {}
+    },
+    "health": {
+      "qualifying": 7,
+      "discoveredForLane": 0,
+      "notQualifying": {}
+    },
+    "habit": {
+      "qualifying": 3,
+      "discoveredForLane": 0,
+      "notQualifying": {}
+    }
+  },
+  "warnings": [
+    "web-exa-habit: RATE_LIMITED_SKIPPED",
+    "web-exa-trend: HTTP_429",
+    "web-naver-trend: RATE_LIMITED_SKIPPED",
+    "blog-irisblossomlife: SOURCE_STALE (newest item older than 120 days)",
+    "blog-koreanbapsang: SOURCE_STALE (newest item older than 120 days)",
+    "yt-hamzy: SOURCE_STALE (newest item older than 120 days)",
+    "yt-haruhankki: SOURCE_STALE (newest item older than 120 days)"
+  ],
+  "pending": [
+    "YOUTUBE_AUTOMATION_PENDING"
+  ]
+}

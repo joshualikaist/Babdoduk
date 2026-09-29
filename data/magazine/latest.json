@@ -1,116 +1,104 @@
 {
   "date": "2026-09-29",
-  "generatedAt": "2026-09-29T10:00:00+09:00",
+  "generatedAt": "2026-09-29T16:29:27+09:00",
   "schedule": "Daily 10:00 KST",
+  "rules": "lanes-v1",
   "featured": {
-    "title": "LA Galbi (Korean BBQ Short Ribs)",
-    "summary": "LA Galbi (Korea…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-    "tags": [
-      "Korea",
-      "한식"
+    "title": "“SNS 뜨기 전에 잡는다”···편의점 ‘품절템’ 뒤엔 AI 있었다",
+    "summary": "SNS에서 유행하던 치즈미역국과 카레 당면이 실제 편의점 상품으로 제작됐다.",
+    "source": "시사저널e",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_ccb18996e41398d2",
+    "url": "https://www.sisajournal-e.com/news/articleView.html?idxno=423791",
+    "medium": "news",
+    "discoveredAt": "2026-09-29T15:09:50+09:00",
+    "publishedAt": "2026-09-18T17:12:35+09:00",
+    "image": "https://cdn.sisajournal-e.com/news/thumbnail/202609/423791_239899_4930_v150.jpg",
+    "imageSource": "source_page_og",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data"
     ],
-    "source": "Korean Bapsang",
-    "url": "https://www.koreanbapsang.com/la-galbi-gui-grilled-la-style-short-ribs/",
-    "medium": "blog",
-    "laneHint": "tips",
-    "lane": "tips",
-    "category": "trend"
+    "category": "trend",
+    "heroKind": "trend"
   },
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "김치찜 레시피 부드러운 고기에 야들야들 얼큰 김치로 밥이 순삭! 돼지고기 김치찜 - 신김치 요리 11 탄",
-          "summary": "김치찜. 오늘 밥상에 올리기 좋다.\n메인 · 돼지고기, 신김치, 밀가루, 양파\n돼지고기가 주인공인 집밥.",
-          "tags": [
-            "김치찜",
-            "돼지고기",
-            "신김치",
-            "집밥"
-          ],
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/192",
+          "title": "딱 하나 남아 간신히 샀다…SNS서 난리 난 편의점 신상",
+          "summary": "최근 출시된 편의점 신상 우유 생크림빵이 사회관계망서비스(SNS)를 달구고 있다. \"편의점 네 곳을 돌아다녀 간신히 샀다\"는 후기가 보이는 등 '오픈런'까지 불사한다.",
+          "source": "한국경제",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_31444044ce34a1fa",
+          "url": "https://www.hankyung.com/article/202609167791g",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-16T15:32:23+09:00",
+          "image": "https://img.hankyung.com/photo/202609/01.45708431.1.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data"
+          ]
+        },
+        {
+          "title": "생새우·무화과 찾아 동네 한 바퀴…당근 ‘제철코어’ 검색 급증",
+          "summary": "한 해 중 짧은 기간에만 만날 수 있는 제철 먹거리를 일부러 찾아 먹는 ‘제철코어’가 새로운 먹거리 소비 트렌드로 떠오르고 있다.",
+          "source": "디지털데일리",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_0f28d4c14cab2c46",
+          "url": "https://www.ddaily.co.kr/page/view/2026092404071026235",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-26T09:00:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "유행음식으로 인싸 체험하기",
+          "summary": "",
+          "source": "침착맨",
+          "sourceId": "yt-search",
+          "candidateId": "c_9ac7692badb389ca",
+          "url": "https://www.youtube.com/watch?v=vO6-xnZwKc4",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-22T00:00:00+09:00",
+          "image": "https://i.ytimg.com/vi/vO6-xnZwKc4/hqdefault.jpg",
+          "imageSource": "youtube_thumbnail",
+          "trendEvidence": [
+            "engagement"
+          ]
+        },
+        {
+          "title": "[기획] 봄동비빔밥에서 생새우까지…올해 음식 트렌드 장악한 '이것'은?",
+          "summary": "봄동비빔밥을 만들어 먹던 봄이 지나자 복숭아를 넣은 찹쌀떡과 음료가 여름 메뉴에 올랐다. 9월에는 무화과 디저트를 파는 곳과 생새우를 먹을 수 있는 가게를 찾는 사람이 늘었다.",
+          "source": "위키트리",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cced8cfc4e7a091e",
+          "url": "https://www.wikitree.co.kr/articles/1162174",
           "medium": "blog",
-          "laneHint": "tips",
-          "lane": "tips"
-        },
-        {
-          "title": "김밥보다 짧은 한입 메뉴가 뜨는 이유",
-          "summary": "김밥보다. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "김밥보다",
-            "집밥"
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-29T12:16:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
           ]
         },
         {
-          "title": "컵라면이 다시 메인 메뉴가 되는 밤",
-          "summary": "컵라면이. 오늘 밥상에 올리기 좋다.\n메인 · 라면\n라면이 주인공인 집밥.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "컵라면이",
-            "라면",
-            "집밥"
-          ]
-        },
-        {
-          "title": "김밥이 도시락을 밀어내는 계절",
-          "summary": "김밥이. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n반찬·도시락으로도 무난하다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "김밥이",
-            "집밥"
-          ]
-        },
-        {
-          "title": "SNS에서 유행하는 한 그릇 레시피",
-          "summary": "SNS에서 유행하는 한 그릇. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "그릇",
-            "집밥"
-          ]
-        },
-        {
-          "title": "마라가 한 철 지나고 남은 것",
-          "summary": "마라가. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "마라가",
-            "집밥"
-          ]
-        },
-        {
-          "title": "한동안 안 보이던 맵부심이 다시 돌아왔다",
-          "summary": "한동안. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "한동안",
-            "집밥"
-          ]
-        },
-        {
-          "title": "편의점 냉면이 여름만의 메뉴가 아닌 밤",
-          "summary": "편의점. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "편의점",
-            "집밥"
+          "title": "틱톡에서 유행하는 음식의 진실ㅣ해파리 먹방",
+          "summary": "",
+          "source": "FoodieAlley_Mukbang_ASMR",
+          "sourceId": "yt-search",
+          "candidateId": "c_fb803e13dbe09234",
+          "url": "https://www.youtube.com/watch?v=EQtw53dMxs0",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-11T00:00:00+09:00",
+          "trendEvidence": [
+            "engagement"
           ]
         }
       ]
@@ -119,102 +107,80 @@
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
         {
-          "title": "23 Summer vegetable recipes",
-          "summary": "23 Summer veget…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "tags": [
-            "veget",
-            "한식"
-          ],
-          "source": "Korean Bapsang",
-          "url": "https://www.koreanbapsang.com/summer-vegetable-recipes/",
+          "title": "이게 바로 개쉬운 자취요리지.",
+          "summary": "치즈비엔나볶음밥을 만들어 보자 [재료] 비엔나소시지 한 줌, 모차렐라 치즈 [만드는 법] 1. 비엔나소시지를 먹기 좋게 자른 뒤 식용유에 노릇하게 볶는다. 2.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_3ebc0506bd69418e",
+          "url": "https://www.youtube.com/watch?v=AePO9VDfO3g",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-18T00:00:00+09:00",
+          "image": "https://i.ytimg.com/vi/AePO9VDfO3g/hqdefault.jpg",
+          "imageSource": "youtube_thumbnail"
+        },
+        {
+          "title": "바삭한 크럼블 미니 사과 파이 만들기 | 쉽게 만드는 애플 파이 | Easy Mini Crumble Apple Pie Recipe | Crispy & Full of Apples",
+          "summary": "바삭한 버터 크럼블과 촉촉한 사과 필링을 가득 채운, 쉽게 만드는 미니 애플 크럼블 파이예요. Easy mini apple crumble pies with a flaky butter crust, juicy…",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_9605de3e92cfc75c",
+          "url": "https://www.youtube.com/watch?v=xaLO1bDy_E8",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-22T20:00:01+09:00",
+          "image": "https://i1.ytimg.com/vi/xaLO1bDy_E8/hqdefault.jpg",
+          "imageSource": "youtube_thumbnail"
+        },
+        {
+          "title": "5가지 재료로 만드는 무화과 브리치즈 구이 5-Ingredient Baked Figs with Brie cheese",
+          "summary": "무화과를 조금 다르게 즐기고 싶을 때 이렇게 한번 구워보세요. 십자로 칼집을 낸 무화과에 브리치즈와 호두를 올리고 꿀을 살짝 뿌려 오븐에 넣으면 돼요.",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_cad6fa6637db3502",
+          "url": "https://www.youtube.com/shorts/voZfW6h5huw",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-28T20:00:02+09:00",
+          "image": "https://i3.ytimg.com/vi/voZfW6h5huw/hqdefault.jpg",
+          "imageSource": "youtube_thumbnail"
+        },
+        {
+          "title": "Yukhoe Kimbap",
+          "summary": "When I was going to culinary school in Paris, I hosted a couple of supper club dinner parties whenever I had a little…",
+          "source": "Seonkyoung Longest",
+          "sourceId": "blog-seonkyounglongest",
+          "candidateId": "c_2b478020beaa23d2",
+          "url": "https://seonkyounglongest.com/yukhoe-kimbap/",
           "medium": "blog",
-          "laneHint": "tips",
-          "lane": "tips"
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "publishedAt": "2026-09-10T16:04:04+09:00",
+          "image": "https://i0.wp.com/photos.smugmug.com/Yukhoe-Kimbap/i-BnhBvRP/0/MJQPrwVR8D8DgwcCGsh73VgZpFFLKfNTPFRxxbHfW/X2/ChatGPT%20Image%20Sep%205%2C%202026%2C%2009_08_40%20AM-X2.png?w=1170&ssl=1",
+          "imageSource": "feed_html"
         },
         {
-          "title": "동그랑땡 레시피 초보자도 쉽게! 초간단 업그레이된 밀가루없이 육즙 가득 촉촉 부드러운 동그랑땡 만들기",
-          "summary": "동그랑땡. 처음 해도 손이 덜 간다.\n메인 · 다진고기, 돼지고기, 소고기, 달걀\n명절 음식이지만 평소에도 자주 올린다.",
-          "tags": [
-            "동그랑땡",
-            "다진고기",
-            "돼지고기",
-            "집밥"
-          ],
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/163",
+          "title": "Pumpkin Bread",
+          "summary": "If you’ve got a $5 bill and a couple of quarters burning a hole in your pocket this pumpkin spice season, boy do I have…",
+          "source": "Budget Bytes",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_0a0a95222fce0f69",
+          "url": "https://www.budgetbytes.com/pumpkin-bread/",
           "medium": "blog",
-          "laneHint": "tips",
-          "lane": "tips"
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "publishedAt": "2026-09-25T22:30:00+09:00",
+          "image": "https://www.budgetbytes.com/wp-content/uploads/2022/10/3-Pumpkin-Bread-Front.jpg",
+          "imageSource": "feed_media"
         },
         {
-          "title": "Dakjuk (Korean Chicken Porridge)",
-          "summary": "Dakjuk (Korean…. 오늘 밥상에 올리기 좋다.\n메인 · 닭\n닭이 주인공인 집밥.",
-          "tags": [
-            "Korean",
-            "한식"
-          ],
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/dakjuk-korean-chicken-porridge/",
-          "medium": "blog",
-          "laneHint": "health",
-          "lane": "health"
-        },
-        {
-          "title": "냉동 만두를 바삭하게 굽는 물 한 숟갈",
-          "summary": "냉동. 오늘 밥상에 올리기 좋다.\n메인 · 냉동만두\n냉동만두가 주인공인 집밥.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "냉동",
-            "냉동만두",
-            "집밥"
-          ]
-        },
-        {
-          "title": "계란찜이 식당처럼 부풀어 오르는 법",
-          "summary": "계란찜이. 오늘 밥상에 올리기 좋다.\n메인 · 계란\n계란이 주인공인 집밥.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "계란찜이",
-            "계란",
-            "집밥"
-          ]
-        },
-        {
-          "title": "된장찌개에 멸치를 먼저 넣는 이유",
-          "summary": "된장찌개에. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "된장찌개에",
-            "집밥"
-          ]
-        },
-        {
-          "title": "밥물에 참기름 한 방울이 하는 일",
-          "summary": "밥물에. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "밥물에",
-            "집밥"
-          ]
-        },
-        {
-          "title": "라면 물 50ml가 맛을 바꾸는 이유",
-          "summary": "라면. 오늘 밥상에 올리기 좋다.\n메인 · 라면\n라면이 주인공인 집밥.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "라면",
-            "집밥"
-          ]
+          "title": "너무 맛있어서 지금 당장 팔아도 됩니다.",
+          "summary": "사천 짜계치볶이를 만들어 보자 [재료] 사천짜파게티, 떡볶이 떡, 체다 치즈, 청양고추 [만드는 법] 1. 물 450ml를 끓이고 면, 떡 한줌, 건더기 스프, 분말 스프를 넣는다. 2.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_bb328a9ebf65ce3e",
+          "url": "https://www.youtube.com/watch?v=bBcyBIrQ6Wc",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-26T00:00:00+09:00"
         }
       ]
     },
@@ -222,97 +188,30 @@
       "lead": "맛도 포기하지 않는 건강식",
       "items": [
         {
-          "title": "Bok Choy Kimchi (Quick & Easy)",
-          "summary": "Bok Choy Kimchi…. 오늘 밥상에 올리기 좋다.\n메인 · 김치\n김치가 주인공인 집밥.",
-          "tags": [
-            "Kimchi",
-            "김치",
-            "한식"
-          ],
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/bok-choy-kimchi/",
-          "medium": "blog",
-          "laneHint": "health",
-          "lane": "health"
+          "title": "배부르게 먹는데 살 빠진다?…‘볼륨매트릭스’ 다이어트 뭐길래",
+          "summary": "굶거나 식사량을 크게 줄이는 대신 물과 식이섬유가 풍부한 저열량 음식으로 식사의 부피를 키워 포만감을 유지하는 ‘볼륨매트릭스’ 다이어트가 소개됐다.지난달 11일(현지 시간) 미국 건강 전문지 ‘멘스헬스’에 따르면…",
+          "source": "동아일보 건강",
+          "sourceId": "news-donga-health",
+          "candidateId": "c_5e901290e44932dc",
+          "url": "https://www.donga.com/news/It/article/all/20260928/134740546/1",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:13:56+09:00",
+          "publishedAt": "2026-09-28T00:32:15+09:00",
+          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/28/134740547.1.jpg",
+          "imageSource": "feed_media"
         },
         {
-          "title": "국물이 있는 쪽이 더 가볍게 느껴질 때",
-          "summary": "국물이. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "국물이",
-            "집밥"
-          ]
-        },
-        {
-          "title": "단맛을 줄일 때 과일을 먼저 두는 이유",
-          "summary": "단맛을. 집에서 굽는 디저트.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "단맛을",
-            "집밥"
-          ]
-        },
-        {
-          "title": "닭가슴살 없이도 단백질 챙기는 한 끼",
-          "summary": "닭가슴살. 오늘 밥상에 올리기 좋다.\n메인 · 두부, 계란, 닭\n두부가 주인공인 집밥.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "닭가슴살",
-            "두부",
-            "계란",
-            "집밥"
-          ]
-        },
-        {
-          "title": "밥을 조금 줄일 때 먼저 손대는 반찬",
-          "summary": "밥을. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "밥을",
-            "집밥"
-          ]
-        },
-        {
-          "title": "늦은 밤 먹어도 부담이 덜한 음식",
-          "summary": "늦은. 오늘 밥상에 올리기 좋다.\n메인 · 무\n무가 주인공인 집밥.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "늦은",
-            "집밥"
-          ]
-        },
-        {
-          "title": "샐러드가 지겨울 때 먹는 건강식",
-          "summary": "샐러드가. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "샐러드가",
-            "집밥"
-          ]
-        },
-        {
-          "title": "달걀 두 개가 한 끼를 버티는 방식",
-          "summary": "달걀. 오늘 밥상에 올리기 좋다.\n메인 · 달걀\n달걀이 주인공인 집밥.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "달걀",
-            "집밥"
-          ]
+          "title": "송편·전·갈비찜 잔뜩 먹었다간…추석 연휴 소화불량 주의해야",
+          "summary": "추석 연휴에는 전이나 갈비찜 등 기름진 음식을 평소보다 많이 먹게 된다. 식사 후 바로 누워 연휴의 여유를 즐기는 경우도 많다.",
+          "source": "동아일보 건강",
+          "sourceId": "news-donga-health",
+          "candidateId": "c_077f6e78f8483f1a",
+          "url": "https://www.donga.com/news/Society/article/all/20260923/134720629/1",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:13:56+09:00",
+          "publishedAt": "2026-09-25T07:00:00+09:00",
+          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/23/134727346.1.jpg",
+          "imageSource": "feed_media"
         }
       ]
     },
@@ -320,170 +219,41 @@
       "lead": "잘 먹는 법에 대한 작은 이야기",
       "items": [
         {
-          "title": "같은 메뉴를 사흘 연속 먹지 않는 이유",
-          "summary": "같은. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "같은",
-            "집밥"
-          ]
+          "title": "‘뼈말라’ 열풍, 식생활교육 새 과제 요구",
+          "summary": "‘뼈말라’로 불리는 지나치게 마른 체형을 선호하는 분위기가 숏폼·사회관계망서비스(SNS)를 타고 10대 사이에 확산하면서 학교급식 현장에도 영향을 미치고 있다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_7eff07bc9dfabc8d",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62235",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-28T18:59:54+09:00",
+          "image": "http://www.fsnews.co.kr/news/thumbnail/202609/62235_53080_2316_v150.jpg",
+          "imageSource": "source_page_og"
         },
         {
-          "title": "점심을 거른 날의 저녁이 커지는 이유",
-          "summary": "점심을. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "점심을",
-            "집밥"
-          ]
+          "title": "月 식비 90만 원 돌파·외식비 첫 과반…저소득층·40대 가계 부담 심화",
+          "summary": "올해 2분기 우리나라 가구의 월평균 명목 식품비 지출액이 사상 처음으로 90만 원대를 돌파한 가운데 외식비 지출 비중이 전체 식비의 절반을 넘어선 것으로 나타났다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_7c075dfda947dd0b",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201278",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-29T01:28:45+09:00"
         },
         {
-          "title": "수저를 놓기 전 물 한 모금의 효과",
-          "summary": "수저를. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "수저를",
-            "집밥"
-          ]
-        },
-        {
-          "title": "천천히 먹으면 정말 덜 먹게 될까?",
-          "summary": "천천히. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "천천히",
-            "집밥"
-          ]
-        },
-        {
-          "title": "물 한 컵을 밥 전에 두는 습관",
-          "summary": "컵을. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "컵을",
-            "집밥"
-          ]
-        },
-        {
-          "title": "주말만 배달을 쓰는 규칙",
-          "summary": "주말만. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "주말만",
-            "집밥"
-          ]
-        },
-        {
-          "title": "아침을 꼭 먹어야 할까?",
-          "summary": "아침을. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "아침을",
-            "집밥"
-          ]
-        },
-        {
-          "title": "야식을 끊기보다 시간을 바꿔보는 방법",
-          "summary": "야식을. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-          "source": "밥도둑 데스크",
-          "url": "",
-          "medium": "desk",
-          "tags": [
-            "야식을",
-            "집밥"
-          ]
+          "title": "[자료] 2026년 2분기 가구의 가공식품 지출 현황과 특징",
+          "summary": "1. 2026년 2분기 가구의 식품비 지출 규모는 전년 동기 대비 3.3% 증가, 물가 상승 고려한 실질 식품비도 1.3% 증2.",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_b4439f205e14649e",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120314",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-28T22:38:23+09:00"
         }
       ]
     }
-  },
-  "desks": {
-    "blog": [
-      {
-        "title": "콩나물냉국 만드는 법 더위 식히는 아삭아삭 시원한 콩나물냉국",
-        "summary": "콩나물냉국. 오늘 밥상에 올리기 좋다.\n메인 · 소면, 무, 대파\n소면이 주인공인 집밥.",
-        "tags": [
-          "콩나물냉국",
-          "소면",
-          "집밥"
-        ],
-        "source": "엄마표 집밥",
-        "url": "https://irisblossomlife.tistory.com/201",
-        "medium": "blog",
-        "laneHint": "tips",
-        "lane": "tips"
-      },
-      {
-        "title": "LA Galbi (Korean BBQ Short Ribs)",
-        "summary": "LA Galbi (Korea…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
-        "tags": [
-          "Korea",
-          "한식"
-        ],
-        "source": "Korean Bapsang",
-        "url": "https://www.koreanbapsang.com/la-galbi-gui-grilled-la-style-short-ribs/",
-        "medium": "blog",
-        "laneHint": "tips",
-        "lane": "tips"
-      }
-    ],
-    "youtube": [],
-    "instagram": [
-      {
-        "title": "밥도둑 인스타",
-        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
-        "tags": [
-          "집밥",
-          "인스타"
-        ],
-        "source": "Instagram",
-        "url": "https://www.instagram.com/babdodukms/",
-        "medium": "instagram"
-      },
-      {
-        "title": "탐색 · #자취요리",
-        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
-        "tags": [
-          "자취요리"
-        ],
-        "source": "Instagram",
-        "url": "https://www.instagram.com/explore/tags/%EC%9E%90%EC%B7%A8%EC%9A%94%EB%A6%AC/",
-        "medium": "instagram"
-      },
-      {
-        "title": "쿠킹트리",
-        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
-        "tags": [
-          "집밥",
-          "인스타"
-        ],
-        "source": "Instagram",
-        "url": "https://www.instagram.com/cooking_tree/",
-        "medium": "instagram"
-      },
-      {
-        "title": "탐색 · #집밥",
-        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
-        "tags": [
-          "집밥"
-        ],
-        "source": "Instagram",
-        "url": "https://www.instagram.com/explore/tags/%EC%A7%91%EB%B0%A5/",
-        "medium": "instagram"
-      }
-    ]
   }
 }

@@ -183,20 +183,30 @@ What reaches Luna is the sanitized minimum.
 * SSO/MFA is human work. A login challenge, CAPTCHA or rate limit stops a collector; it is never
   bypassed.
 
-## Agent Reach (evaluated 2026-09-28, not installed)
+## Agent Reach (evaluated 2026-09-28, doctor run 2026-09-29 in an isolated environment)
 
 `Panniantong/Agent-Reach` at `a19a171fa980a0785849596492e0af4db800c82f` (still upstream HEAD, MIT, v1.5.0)
 is an installer, doctor and router rather than a data API: agents call the upstream tools directly.
 * YouTube: yt-dlp.
 * Web: Jina Reader, which sees every URL sent to it, so public URLs only.
-* Search: Exa through the global npm tool `mcporter`.
+* Search: Exa's hosted MCP server (`https://mcp.exa.ai/mcp`) through the global npm tool `mcporter`.
+  The server answers without an API key.
 * RSS: feedparser.
 * Instagram: OpenCLI, a separate npm package plus a Chrome extension and a loopback daemon on
   127.0.0.1:19825 driving a logged-in Chrome.
 * Naver Blog: no channel.
 
-**Plan (Phase 4, local sidecar, no publication):**
-* Babdoduk adapters in `scripts/discovery/` call pinned tools directly.
+**Status, 2026-09-29 (magazine):**
+* The magazine's own adapters live in `scripts/discovery/` and follow these routes as Babdoduk code:
+  RSS/Atom (active, cloud), Exa hosted MCP search without a key plus `web_fetch_exa` and Jina Reader
+  for public pages (active, cloud; also Naver Blog through `site:blog.naver.com`), and YouTube search
+  and channels through yt-dlp in a local discovery sidecar that only writes an inbox (active on the
+  operator PC; GitHub runners are blocked). Instagram through OpenCLI is an OWNER_CHECKPOINT.
+* Agent Reach itself is **not** imported, vendored or installed in the repository; it ran only in an
+  isolated virtual environment for its doctor. See `docs/MAGAZINE_DISCOVERY.md`.
+
+**Local sidecar rules (magazine: implemented for YouTube; Instagram not started):**
+* Babdoduk adapters in `scripts/discovery/` call pinned tools directly (yt-dlp 2026.8.19).
 * Agent Reach, pinned to that commit in an isolated environment, is only an optional local doctor.
 * Its `cookies` extra is never installed: it reads browser cookie stores.
 * OpenCLI gets its own audit, a version pin and an unpacked extension from a reviewed commit (Web
