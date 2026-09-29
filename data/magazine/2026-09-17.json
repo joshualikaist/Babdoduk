@@ -2,14 +2,7 @@
   "date": "2026-09-17",
   "generatedAt": "2026-09-17T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
-  "featured": {
-    "title": "시골 평상에서 묵은지 닭볶음탕",
-    "source": "햄지 Hamzy",
-    "url": "https://www.youtube.com/shorts/URkjXxZ6coM",
-    "medium": "youtube",
-    "image": "https://i.ytimg.com/vi/URkjXxZ6coM/maxresdefault.jpg",
-    "category": "trend"
-  },
+  "featured": null,
   "lanes": {
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
@@ -50,43 +43,7 @@
     },
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "시골 평상에서 묵은지 닭볶음탕",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/URkjXxZ6coM",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/URkjXxZ6coM/maxresdefault.jpg"
-        },
-        {
-          "title": "여름 대비 능이오리백숙 몸보신",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/3Wb7d33nSUg",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/3Wb7d33nSUg/maxresdefault.jpg"
-        },
-        {
-          "title": "5일째 파김치에 짜장라면",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/33VfOo4Mu2E",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/33VfOo4Mu2E/maxresdefault.jpg"
-        },
-        {
-          "title": "아는 맛이 젤 무서워...",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/wKNx-b5V4VE",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/wKNx-b5V4VE/maxresdefault.jpg"
-        },
-        {
-          "title": "전어구이에 한잔! 크~~",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/KjSIl-Y8LqA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/KjSIl-Y8LqA/maxresdefault.jpg"
-        }
-      ]
+      "items": []
     },
     "health": {
       "lead": "맛도 포기하지 않는 건강식",
@@ -127,40 +84,7 @@
     },
     "habit": {
       "lead": "잘 먹는 법에 대한 작은 이야기",
-      "items": [
-        {
-          "title": "Makgeolli (Korean Rice Wine)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/makgeolli/",
-          "medium": "blog"
-        },
-        {
-          "title": "이건 삼겹살 보다 더 맛있습니다.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=E6l5Ob8Bcdo",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/E6l5Ob8Bcdo/maxresdefault.jpg"
-        },
-        {
-          "title": "감자짜글이 감자로 꼭 만들어보세요! 뜨끈 칼칼 감자짜글이 만들기",
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/198",
-          "medium": "blog"
-        },
-        {
-          "title": "피스타치오 티라미수 Pistachio Tiramisu",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=onBeq5ltBOo",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/onBeq5ltBOo/maxresdefault.jpg"
-        },
-        {
-          "title": "Dakjuk (Korean Chicken Porridge)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/dakjuk-korean-chicken-porridge/",
-          "medium": "blog"
-        }
-      ]
+      "items": []
     }
   }
 }

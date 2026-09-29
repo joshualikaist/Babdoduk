@@ -12,20 +12,7 @@
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "명란비빔밥 만드는 법 고소한 들기름에 부드러운 명란젓의 환상 조합! 밥도둑 명란부추비빔밥",
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/169",
-          "medium": "blog"
-        },
-        {
-          "title": "Jatjuk (Pine Nut Porridge)",
-          "source": "Korean Bapsang",
-          "url": "https://www.koreanbapsang.com/jatjuk-pine-nut-porridge/",
-          "medium": "blog"
-        }
-      ]
+      "items": []
     },
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",

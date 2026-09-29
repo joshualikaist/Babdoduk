@@ -2,24 +2,11 @@
   "date": "2026-09-24",
   "generatedAt": "2026-09-24T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
-  "featured": {
-    "title": "돼지불고기 레시피 15분 완성! 고기를 재워놓아서 야들야들 부드럽고 촉촉한 돼지불고기 - 신김치 요리 10 탄",
-    "source": "엄마표 집밥",
-    "url": "https://irisblossomlife.tistory.com/182",
-    "medium": "blog",
-    "category": "trend"
-  },
+  "featured": null,
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "Baechujeon (Korean Cabbage Pancakes)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/baechujeon/",
-          "medium": "blog"
-        }
-      ]
+      "items": []
     },
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",

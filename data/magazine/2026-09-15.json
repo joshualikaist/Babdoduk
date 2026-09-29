@@ -50,36 +50,7 @@
     },
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "5일째 파김치에 짜장라면",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/33VfOo4Mu2E",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/33VfOo4Mu2E/maxresdefault.jpg"
-        },
-        {
-          "title": "아는 맛이 젤 무서워...",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/wKNx-b5V4VE",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/wKNx-b5V4VE/maxresdefault.jpg"
-        },
-        {
-          "title": "전어구이에 한잔! 크~~",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/KjSIl-Y8LqA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/KjSIl-Y8LqA/maxresdefault.jpg"
-        },
-        {
-          "title": "사치스런 저녁식사",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/M8VZIAIJGfk",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/M8VZIAIJGfk/maxresdefault.jpg"
-        }
-      ]
+      "items": []
     },
     "health": {
       "lead": "맛도 포기하지 않는 건강식",
@@ -120,40 +91,7 @@
     },
     "habit": {
       "lead": "잘 먹는 법에 대한 작은 이야기",
-      "items": [
-        {
-          "title": "Bok Choy Kimchi (Quick & Easy)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/bok-choy-kimchi/",
-          "medium": "blog"
-        },
-        {
-          "title": "불닭 100배 더 맛있게 먹는 방법. 대존맛.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=Exlla0AkUUI",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/Exlla0AkUUI/maxresdefault.jpg"
-        },
-        {
-          "title": "육전 만드는 법 육전이 이렇게 간단했나? 한번에 부치는 피자 육전",
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/164",
-          "medium": "blog"
-        },
-        {
-          "title": "대파 신선하게 보관하는 법",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/shorts/D-kcpcelIgY",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/D-kcpcelIgY/maxresdefault.jpg"
-        },
-        {
-          "title": "Dakjuk (Korean Chicken Porridge)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/dakjuk-korean-chicken-porridge/",
-          "medium": "blog"
-        }
-      ]
+      "items": []
     }
   }
 }
