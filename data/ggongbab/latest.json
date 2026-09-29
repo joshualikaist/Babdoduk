@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T19:39:25+09:00",
+  "generatedAt": "2026-09-29T15:06:26+09:00",
   "timezone": "Asia/Seoul",
-  "count": 5,
+  "count": 4,
   "events": [
     {
       "id": "04ed127d-1eef-4c52-a711-90dd48effdcf",
@@ -95,39 +95,6 @@
         "url": "https://forms.gle/yEBWHA1KLBsQ7ca59"
       },
       "confidence": 1.0,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
-    {
-      "id": "f19cc4d3-cc7e-41fc-a8c3-975585f0b7b6",
-      "title": "ME Co-op 프로그램 학부생 설명회",
-      "summary": "기계공학과 ME Co-op 프로그램의 자세한 내용과 참여기업을 안내하는 학부생 설명회입니다. 오프라인 사전신청 참석자에게 샌드위치와 음료를 제공합니다.",
-      "startAt": "2026-10-07T12:00:00+09:00",
-      "endAt": "2026-10-07T13:00:00+09:00",
-      "dateText": "10월 7일(수)",
-      "timeText": "12:00~13:00",
-      "location": {
-        "name": "기계공학동 1층 공동강의실(1501호)",
-        "building": "기계공학동",
-        "room": "1501호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "샌드위치/음료"
-      },
-      "organizer": "기계공학과",
-      "eligibility": "기계공학과 3,4학년 학생",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-09-30T18:00:00+09:00",
-        "url": "https://naver.me/5HyBJgFN"
-      },
-      "confidence": 0.99,
       "sources": [
         {
           "type": "dooray",
