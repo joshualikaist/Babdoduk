@@ -23,7 +23,7 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from . import evidence
+from . import editorial, evidence
 from .common import (canonical_url, clean_text, excerpt, is_public_url, iso, normalize_title, parse_time, sha,
                      title_similarity, youtube_id)
 from .evidence import TREND_MAX_DAYS
@@ -47,12 +47,13 @@ LANE_WORDS = {
 AD_WORDS = ("쿠팡파트너스", "파트너스 활동", "지원을 받아", "협찬", "유료광고", "광고 포함", "sponsored", "affiliate", "#ad ",
             "할인코드", "쿠폰 코드", "구매 링크")
 PROMOTION_WORDS = ("cooking challenge", "giveaway", "contest", "enter to win", "sweepstakes", "경품", "이벤트 참여",
-                   "챌린지 참여", "추첨", "공모전", "공모", "총상금", "응모", "참가자 모집", "체험단")
+                   "챌린지 참여", "추첨", "공모전", "공모", "총상금", "응모", "참가자 모집", "체험단", "프로모션", "기획전",
+                   "행사정보", "할인정보", "할인 정보", "1+1행사", "1+1 행사", "2+1행사", "2+1 행사")
 SEARCH_TYPES = ("web_search", "youtube_search")
 # Board notices, personnel, obituaries, announcements and event recaps are not stories.
 NOTICE_TAG = re.compile(r"^\s*\[[^\]]*(게시판|인사|부고|동정|알림|공지|모집|교육|행사|포토|사진|경조|화촉|신간|새 책|북)[^\]]*\]")
 EVENT_TITLE = ("성료", "개최", "시상식", "기념식", "발대식", "협약식", "간담회", "세미나", "포럼", "박람회", "페스티벌",
-               "축제", "설명회")
+               "축제", "설명회", "강좌", "강연", "특강", "웨비나", "캠페인")
 LANE_MIN_HITS = 2          # tips/health outside the source's own categories need two signals
 OFF_TOPIC = ("맛집", "리조트", "호텔", "여행", "투어", "숙소", "호캉스", "노포", "출장", "브이로그 여행", "travel", "resort", "hotel")
 BLOCKED = ("위장 학대", "경고:", "dangerous trend", "3x Speed", "위글위글", "주방템", "영수증만", "이벤트안내")
@@ -94,6 +95,7 @@ def normalize(raw: dict, source: dict, now: datetime) -> Optional[dict]:
         "requireFood": bool(source.get("requireFood")), "commercePage": bool(raw.get("commerce")),
         "sponsored": evidence.sponsored(text),
         "searchRank": raw.get("searchRank"), "viewCount": meta["viewCount"], "likeCount": meta["likeCount"],
+        "howToMarkers": editorial.how_to_markers(text),
         "trendSignals": evidence.trend_signals(evidence_text, title=title, meta=meta, now=now, published=published),
         "habitSignals": evidence.habit_signals(title, evidence_text),
         "audienceRelevance": evidence.audience(title, text),
@@ -171,12 +173,18 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
     if row.get("commercePage"):
         return "COMMERCE_PAGE"
     disclosed = evidence.NOT_SPONSORED.sub(" ", blob)          # "협찬 없이", "내돈내산" is not an ad
-    if row.get("sponsored") or any(word.lower() in disclosed for word in AD_WORDS):
+    if row.get("sponsored") or any(word.lower() in disclosed for word in AD_WORDS) or editorial.purchase_links(row):
         return "AD_OR_SPONSORED"
     if any(word in blob for word in PROMOTION_WORDS):
         return "PROMOTION"
-    if NOTICE_TAG.search(title) or any(word in title for word in EVENT_TITLE):
+    if NOTICE_TAG.search(title) or any(word in title for word in EVENT_TITLE) or editorial.event_recap(row):
         return "NOTICE_OR_EVENT"
+    if editorial.celebrity_diet(row):
+        return "CELEBRITY_DIET_GOSSIP"
+    if editorial.opinion_column(row):
+        return "OPINION_COLUMN"
+    if editorial.shopping_guide(row):
+        return "SHOPPING_OR_TRAVEL_GUIDE"
     if any(word.lower() in title.lower() for word in BLOCKED):
         return "BLOCKED_TOPIC"
     if any(word.lower() in title.lower() for word in OFF_TOPIC):
@@ -196,24 +204,59 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
     return None
 
 
-def trend_evidence(row: dict) -> tuple[list[str], dict]:
-    """(kinds, detail) that count for this row. A recipe's weak claim ("인기", "popular") does
-    not count: a recipe is not a trend without a strong claim, figures, engagement or another
-    source."""
+def trend_evidence(row: dict, now: Optional[datetime] = None, lookup: Optional[dict] = None
+                   ) -> tuple[list[str], dict, list[str]]:
+    """(kinds, detail, independent) that count for this row, re-judged from the stored facts on
+    every run so a rule change applies to the whole store:
+      explicit_source_claim  a strong claim ("품절", "오픈런", "화제") that is not the seller
+                             speaking; "인기"/"신상"/"신제품" never count on their own;
+      sales_data             measured demand that rose or set a record, not a spec or a share;
+      engagement             at least ENGAGEMENT_MIN_VIEWS within 30 days of upload;
+      corroborated           another recent story on another host - never for a launch, and
+                             only when a corroborating story is not a launch itself (the same
+                             press release in three outlets is one voice).
+    `independent` drops evidence that speaks for the seller (for the hero rule)."""
     signals = row.get("trendSignals") or {}
-    kinds, detail = [], {}
-    for kind in ("explicit_source_claim", "sales_data", "engagement"):
-        signal = signals.get(kind)
-        if not signal:
-            continue
-        if kind == "explicit_source_claim" and row.get("contentKind") == "recipe" and not signal.get("strong"):
-            continue
-        kinds.append(kind)
-        detail[kind] = signal.get("text") or ""
-    if row.get("corroboratedBy"):
+    kinds, detail, independent = [], {}, []
+    claim = signals.get("explicit_source_claim") or {}
+    if claim.get("strong") and not editorial.pr_sentence(claim.get("text") or "") and \
+            editorial.claim_counts(claim.get("text") or "", row.get("title") or "", evidence.is_food) and \
+            editorial.popularity_claim(claim.get("text") or "", evidence.STRONG_CLAIMS):
+        kinds.append("explicit_source_claim")
+        detail["explicit_source_claim"] = claim.get("text") or ""
+        independent.append("explicit_source_claim")
+    sales = signals.get("sales_data") or {}
+    if sales and editorial.demand_sentence(sales.get("text") or ""):
+        kinds.append("sales_data")
+        detail["sales_data"] = sales.get("text") or ""
+        if not editorial.pr_sentence(sales.get("text") or ""):
+            independent.append("sales_data")
+    views, published = row.get("viewCount"), parse_time(row.get("publishedAt"))
+    if isinstance(views, int) and views >= evidence.ENGAGEMENT_MIN_VIEWS and published and now and \
+            (now - published).days <= TREND_MAX_DAYS and editorial.trend_titled(row):
+        kinds.append("engagement")
+        detail["engagement"] = f"views {views:,} · uploaded {published.date().isoformat()}"
+        independent.append("engagement")
+    others = [c for c in (row.get("corroboratedBy") or []) if lookup is None or c in lookup]
+
+    def independent_voice(other: dict) -> bool:
+        # The same agency or company release relayed by two outlets on the same day is one voice;
+        # a report on another day, or one with its own popularity evidence, is another observer.
+        if editorial.announcement(other):
+            return False
+        day_a, day_b = (row.get("publishedAt") or "")[:10], (other.get("publishedAt") or "")[:10]
+        signals = other.get("trendSignals") or {}
+        own = (signals.get("explicit_source_claim") or {}).get("text") or ""
+        demand = (signals.get("sales_data") or {}).get("text") or ""
+        return day_a != day_b or editorial.popularity_claim(own, evidence.STRONG_CLAIMS) or \
+            editorial.demand_sentence(demand)
+
+    if others and not editorial.announcement(row) and \
+            (lookup is None or any(independent_voice(lookup[c]) for c in others)):
         kinds.append("corroborated")
-        detail["corroborated"] = list(row["corroboratedBy"])[:3]
-    return kinds, detail
+        detail["corroborated"] = others[:3]
+        independent.append("corroborated")
+    return kinds, detail, independent
 
 
 def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
@@ -228,8 +271,9 @@ def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
     blob = _blob(row)
     hits = {lane: sum(1 for w in words if w.lower() in blob) for lane, words in LANE_WORDS.items()}
 
-    kinds, _ = trend_evidence(row)
+    kinds = row.get("trendEvidence") if row.get("trendEvidence") is not None else trend_evidence(row, now)[0]
     business = evidence.business_title(row.get("title") or "")
+    launch = editorial.announcement(row)
     if business:
         out["trend"] = "BUSINESS_NEWS"
     elif age is None:
@@ -238,19 +282,31 @@ def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
         out["trend"] = "TOO_OLD_FOR_TREND"
     elif not food:
         out["trend"] = "NOT_FOOD"
+    elif editorial.round_up(row) or (launch and not set(kinds) & {"sales_data", "engagement"} and
+                                      not editorial.stockout(((row.get("trendEvidenceDetail") or {}).get("explicit_source_claim")) or "")):
+        # a launch is not a trend without measured demand for it (sales, engagement, stockouts or
+        # queues); a line that the ingredient is trending is the launch's framing, not evidence
+        out["trend"] = "PRODUCT_ANNOUNCEMENT_ONLY"
+    elif (kind == "recipe" or (kind == "video" and editorial.instructional(row, kind))) and \
+            not set(kinds) & {"sales_data", "explicit_source_claim"}:
+        out["trend"] = "RECIPE_WITHOUT_TREND_EVIDENCE"   # a popular recipe is a recipe, not a food trend
     elif not kinds:
         weak = (row.get("trendSignals") or {}).get("explicit_source_claim")
         out["trend"] = "RECIPE_WITHOUT_TREND_EVIDENCE" if kind == "recipe" and weak else "NO_TREND_EVIDENCE"
     else:
         out["trend"] = None
 
-    habit = row.get("habitSignals") or {}
+    habit = dict(row.get("habitSignals") or {})
+    habit["words"] = sorted(set(habit.get("words") or []) |
+                            set(evidence.habit_signals(row.get("title") or "", row.get("sourceExcerpt") or "")["words"]))
     research = evidence.is_research(row)
     limit = evidence.HABIT_RESEARCH_MAX_DAYS if research else evidence.HABIT_NEWS_MAX_DAYS
     if kind == "recipe":
         out["habit"] = "RECIPE_NOT_HABIT"
     elif business:
         out["habit"] = "BUSINESS_NEWS"
+    elif launch:
+        out["habit"] = "PRODUCT_ANNOUNCEMENT_ONLY"       # company promotion is not behavior evidence
     elif tier not in ("A", "B") or kind == "video":
         out["habit"] = "NOT_BEHAVIOR_SOURCE"
     elif age is None:
@@ -259,7 +315,8 @@ def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
         out["habit"] = "TOO_OLD_FOR_HABIT"
     elif len(habit.get("words") or []) < 2:
         out["habit"] = "NOT_HABIT_TOPIC"
-    elif not habit.get("behavior") and not research:
+    elif not research and not editorial.behavior_sentence(habit.get("behavior") or "") and \
+            not any(editorial.behavior_sentence(s) for s in evidence.sentences(row.get("sourceExcerpt") or "")):
         out["habit"] = "NO_BEHAVIOR_EVIDENCE"
     elif not food:
         out["habit"] = "NOT_FOOD"
@@ -270,16 +327,20 @@ def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
         out["health"] = "TIER_C_NOT_HEALTH_ADVICE"
     elif business:
         out["health"] = "BUSINESS_NEWS"
-    elif hits["health"] >= LANE_MIN_HITS or ("health" in hints and kind in HOW_TO_KINDS):
-        # a news feed's category is not enough: the story itself must be about eating well
+    elif launch:
+        out["health"] = "PRODUCT_ANNOUNCEMENT_ONLY"
+    elif editorial.health_story(row):
+        # the source itself frames food and health; a category or the ingredients are not enough
         out["health"] = None
     else:
-        out["health"] = "NOT_HEALTH_TOPIC"
+        out["health"] = "NO_HEALTH_BASIS"
 
-    if kind in HOW_TO_KINDS and ("tips" in hints or hits["tips"] >= LANE_MIN_HITS or kind == "recipe"):
-        out["tips"] = None
-    else:
+    if kind not in HOW_TO_KINDS or not ("tips" in hints or hits["tips"] >= LANE_MIN_HITS or kind == "recipe"):
         out["tips"] = "NOT_A_HOW_TO"
+    elif not editorial.instructional(row, kind):
+        out["tips"] = "NOT_INSTRUCTIONAL"
+    else:
+        out["tips"] = None
     return out
 
 
@@ -292,11 +353,14 @@ def classify(row: dict, now: Optional[datetime] = None) -> Optional[str]:
     ok = [lane for lane in LANE_ORDER if decisions.get(lane) is None]
     if not ok:
         return None
+    if "trend" in ok and "habit" in ok:
+        # a story about how people eat (혼밥, 도시락, 결식 ...) is a habit story even when it is recent
+        words = set((row.get("habitSignals") or {}).get("words") or []) | \
+            set(evidence.habit_signals(row.get("title") or "", row.get("sourceExcerpt") or "")["words"])
+        return "habit" if len(words) >= 3 else "trend"
     wanted = row.get("discoveryLane")
     if wanted in ok:
         return wanted
-    if "trend" in ok and "habit" in ok:
-        return "habit" if len((row.get("habitSignals") or {}).get("words") or []) >= 3 else "trend"
     for lane in ("trend", "habit"):
         if lane in ok:
             return lane
@@ -338,11 +402,13 @@ def process(rows: list[dict], now: datetime) -> dict:
         if not row.get("duplicateOf"):
             row["rejectionReason"] = rejection(row, now)
     corroborated = evidence.corroborate(rows, now)
+    lookup = {row["candidateId"]: row for row in rows}
     for row in rows:
         if row.get("duplicateOf") or row.get("rejectionReason"):
             continue
         row["corroboratedBy"] = corroborated.get(row["candidateId"]) or []
-        row["trendEvidence"], row["trendEvidenceDetail"] = trend_evidence(row)
+        row["trendEvidence"], row["trendEvidenceDetail"], row["trendEvidenceIndependent"] = \
+            trend_evidence(row, now, lookup)
         lane = classify(row, now)
         row["assignedCategory"] = lane
         if lane is None:

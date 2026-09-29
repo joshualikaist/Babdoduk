@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from discovery import adapters, common, evaluate, evidence, hosts, pipeline, process, select, sidecar, store
+from discovery import adapters, common, editorial, evaluate, evidence, hosts, pipeline, process, select, sidecar, store
 from discovery.adapters import exa_mcp, inbox, web
 
 NOW = evaluate.NOW                               # 2026-09-29 10:30 KST
@@ -53,10 +53,10 @@ def with_image(row):
 
 # --- owner test list (item 20) ------------------------------------------------------------
 def test_trend_item_requires_trend_evidence():
-    noodle = "농심이 매운맛을 줄인 컵라면을 내놓았다. 면은 더 굵게 바꿨고 국물은 사골 맛이다. 전국 매장에서 살 수 있다. " * 3
-    lunch = "이마트24가 제육 도시락을 내놓았다. 밥 양을 늘리고 반찬을 네 가지로 구성했다. 전국 매장에서 살 수 있다. " * 3
+    noodle = "농심 사골 컵라면을 먹어 봤다. 면은 굵고 국물은 사골 맛이며 매운맛은 약하다. 전국 매장에서 살 수 있다. " * 3
+    lunch = "이마트24 제육 도시락은 밥 양이 많고 반찬이 네 가지다. 전국 매장에서 살 수 있다. " * 3
     plain, claimed, title_only = run(
-        (raw("농심 사골 컵라면 출시", noodle, day(2), "https://www.hankyung.com/a/1"), NEWS),
+        (raw("농심 사골 컵라면 맛은 어떨까", noodle, day(2), "https://www.hankyung.com/a/1"), NEWS),
         (raw("세븐일레븐 크림빵", NEUTRAL + " 출시 직후 SNS에서 화제가 되며 매장마다 품절이 이어졌다.", day(2),
              "https://www.mk.co.kr/a/2"), NEWS),
         (raw("SNS서 난리 난 편의점 도시락 유행", lunch, day(2), "https://www.sedaily.com/a/3"), NEWS))
@@ -66,6 +66,9 @@ def test_trend_item_requires_trend_evidence():
     assert detail and detail in common.clean_text(NEUTRAL + " 출시 직후 SNS에서 화제가 되며 매장마다 품절이 이어졌다.")
     # A trend word in the title alone is not evidence: nothing is scored from title keywords.
     assert title_only["laneDecisions"]["trend"] == "NO_TREND_EVIDENCE"
+    [launch] = run((raw("농심 사골 컵라면 출시", "농심이 사골 컵라면을 출시했다. " + noodle, day(2), "https://www.mk.co.kr/a/9"),
+                    NEWS))
+    assert launch["laneDecisions"]["trend"] == "PRODUCT_ANNOUNCEMENT_ONLY"
 
 
 def test_a_recent_recipe_alone_is_not_a_trend():
@@ -80,13 +83,15 @@ def test_a_recent_recipe_alone_is_not_a_trend():
 
 
 def test_a_corroborated_trend_is_accepted():
+    seen = ("세븐일레븐 우유생크림빵을 사려는 손님이 저녁마다 매장 앞에 모인다. 매일유업 우유로 만든 생크림빵이다. "
+            "한 점주는 입고 직후 진열대가 빈다고 말했다. " * 2)
     a, b, same_host, other = run(
-        (raw("세븐일레븐 우유생크림빵 출시", NEUTRAL, day(3), "https://www.hankyung.com/a/1"), NEWS),
-        (raw("매일유업 손잡은 세븐일레븐 생크림빵", NEUTRAL.replace("회사는", "업체는"), day(2),
+        (raw("세븐일레븐 우유생크림빵 찾아 매장 순례", seen, day(3), "https://www.hankyung.com/a/1"), NEWS),
+        (raw("매일유업 우유 쓴 세븐일레븐 생크림빵 손님 몰려", seen.replace("점주", "직원"), day(2),
              "https://www.mk.co.kr/a/2"), NEWS),
-        (raw("세븐일레븐 우유생크림빵 가격", NEUTRAL.replace("가격은", "값은"), day(2), "https://www.hankyung.com/a/9"),
-         NEWS),
-        (raw("농심 새 컵라면 판매 시작", "농심이 새 컵라면을 내놓았다. 매운맛을 줄였다. " * 8, day(2),
+        (raw("세븐일레븐 우유생크림빵 가격", seen.replace("저녁마다", "아침마다"), day(2),
+             "https://www.hankyung.com/a/9"), NEWS),
+        (raw("농심 새 컵라면 맛 비교", "농심 컵라면 두 가지를 비교했다. 매운맛을 줄였다. " * 8, day(2),
              "https://www.sedaily.com/a/4"), NEWS))
     assert a["assignedCategory"] == "trend" and a["trendEvidence"] == ["corroborated"]
     assert b["assignedCategory"] == "trend" and "c_1" in b["trendEvidenceDetail"]["corroborated"]
@@ -120,8 +125,8 @@ def test_habit_accepts_credible_behavior_and_research_sources():
 
 
 def test_stale_research_is_never_presented_as_a_current_trend():
-    [study] = run((raw("Snacking trend among young adults", "A cohort study reports the trend toward snacking and "
-                       "meal skipping in young adults; eating habits changed over five years. " * 2, day(400),
+    [study] = run((raw("Snacking trend among young adults", "A cohort study reports the trend as consumers buy more "
+                       "snacks and skip meals; eating habits changed over five years. " * 2, day(400),
                        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2/", medium="research", trustTier="A"), SEARCH))
     assert "explicit_source_claim" in study["trendSignals"]                   # it says "trend" ...
     assert study["laneDecisions"]["trend"] == "TOO_OLD_FOR_TREND"             # ... but it is not recent
@@ -153,10 +158,13 @@ def test_the_hero_prefers_a_qualified_current_trend():
         (raw("Crispy Tofu Recipe", "Crispy tofu recipe. Ingredients: 1 block tofu, 2 tbsp starch, 1 tsp salt. "
              "Press and fry the tofu until crisp. " * 3, day(0), "https://recipes.example.org/tofu", medium="blog"),
          RECIPES),
-        (raw("편의점 신상 과자 후기", "CU편의점 신상 코너에서 산 과자 후기예요. 맛은 짭짤하고 가격은 1,700원이에요. "
+        (raw("편의점 과자 품절 후기", "CU편의점에서 이 과자가 요즘 품절 대란이라 세 곳을 돌아 겨우 샀어요. 맛은 짭짤하고 "
              "타코 맛 시즈닝이 진하게 느껴졌어요. " * 3, day(1), "https://blog.naver.com/y/2", medium="blog",
              trustTier="C"), SEARCH))
     assert trend["assignedCategory"] == "trend" and naver["assignedCategory"] == "trend"
+    [weak] = run((raw("편의점 과자 후기", "CU편의점 신상 코너에서 산 과자 후기예요. 맛은 짭짤하고 가격은 1,700원이에요. " * 4,
+                      day(1), "https://blog.naver.com/y/3", medium="blog", trustTier="C"), SEARCH))
+    assert weak.get("assignedCategory") is None and "explicit_source_claim" not in (weak.get("trendEvidence") or [])
     rows = [with_image(r) for r in (trend, recipe, naver)]
     edition, _ = select.build(rows, date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
     assert edition["featured"]["url"] == trend["sourceUrl"] and edition["featured"]["heroKind"] == "trend"
@@ -471,7 +479,7 @@ def test_sponsored_notices_events_and_business_news_are_not_lane_stories():
     assert "viral" not in str(evidence.trend_signals("링크 shop.example.co.kr/x?utm_medium=viral 입니다. 떡볶이가 맛있다."))
     honest = run((raw("편의점 신상 디저트 먹방 후기", "협찬 없이 내돈내산으로 산 편의점 신상 디저트 후기예요. " * 8, day(3),
                       "https://blog.naver.com/z/9", medium="blog", trustTier="C"), SEARCH))[0]
-    assert honest["rejectionReason"] is None
+    assert honest["rejectionReason"] != "AD_OR_SPONSORED"                 # disclosed as self-paid
     notice, event = run(
         (raw("[게시판] 식품업체, 병원에 1억원 기부", "식품업체가 병원에 1억원을 기부했다. 건강한 식생활 지원에 쓰인다. " * 4, day(0),
              "https://www.yna.co.kr/view/G1"), NEWS),
@@ -489,7 +497,7 @@ def test_a_news_feed_category_alone_does_not_make_health_advice():
                         "https://www.foodnews.co.kr/news/5"), dict(NEWS, categories=["health"])))
     [advice] = run((raw("저염 식단, 채소부터 먼저 먹으면 좋은 이유", "저염 식단과 채소 위주의 균형 잡힌 식사가 혈압 관리에 도움이 된다. " * 4,
                         day(0), "https://kormedi.com/2"), dict(NEWS, categories=["health"])))
-    assert market["laneDecisions"]["health"] == "NOT_HEALTH_TOPIC"
+    assert market["laneDecisions"]["health"] == "NO_HEALTH_BASIS"
     assert advice["assignedCategory"] == "health"
 
 
@@ -558,11 +566,12 @@ def test_a_weak_claim_echoed_by_trade_outlets_never_leads_the_page():
         (raw("CJ제일제당, 밸런스밀 저당 도시락 출시", launch, day(0), "https://newsis.com/view/1"), NEWS),
         (raw("CJ 밸런스밀 저당 도시락 앞세워 영양 도우미", launch.replace("판다", "살 수 있다"), day(0),
              "https://www.thinkfood.co.kr/news/2"), NEWS))
-    assert a["assignedCategory"] == "trend" and set(a["trendEvidence"]) == {"explicit_source_claim", "corroborated"}
-    assert not select.strong_evidence(a)                                   # "신제품" + an echo is weak
+    assert a["laneDecisions"]["trend"] == b["laneDecisions"]["trend"] == "PRODUCT_ANNOUNCEMENT_ONLY"
+    assert "corroborated" not in a["trendEvidence"]                        # one press release, one voice
+    assert not select.strong_evidence(a)
     edition, _ = select.build([with_image(a), with_image(b)], date="2026-09-29", generated_at=NOW.isoformat(),
                               recent=set())
-    assert edition["featured"]["heroKind"] == "pick"                       # in the lane, not the lead
+    assert not edition["featured"] or edition["featured"]["heroKind"] == "pick"
 
 
 def test_rebuilding_an_edition_releases_what_it_no_longer_runs(tmp_path):
@@ -572,3 +581,283 @@ def test_rebuilding_an_edition_releases_what_it_no_longer_runs(tmp_path):
     s.mark_selected([one["candidateId"], two["candidateId"]], NOW, "2026-09-29")
     s.mark_selected([two["candidateId"]], NOW, "2026-09-29")               # same date, rebuilt
     assert one["selectedFor"] is None and one["selected"] is False and two["selectedFor"] == "2026-09-29"
+
+
+# --- editorial precision (owner decision, 2026-09-29): classify the item --------------------
+VIDEO = {"id": "t-ch", "name": "Cooking channel", "type": "youtube_channel", "trustTier": "B", "categories": ["tips"],
+         "kind": "video"}
+
+
+def test_product_announcements_and_round_ups_are_not_trends():
+    pr = ("세븐일레븐은 다음달 1일부터 일본에서 직소싱한 인기 냉장 디저트를 시즌 한정으로 선보인다고 29일 밝혔다. "
+          "회사 관계자는 \"국내 소비층의 취향과 트렌드를 반영한 이색 상품을 계속 발굴하겠다\"고 말했다. "
+          "디저트 판매 데이터를 분석한 결과 여성이 전체 매출의 70%를 차지했다. " * 2)
+    launch, roundup = run(
+        (raw("세븐일레븐, 일본 인기 디저트 선보여", pr, day(0), "https://www.mt.co.kr/a/1"), NEWS),
+        (raw("[09/22 오늘의 새상품] 삼립 포케 샐러드, 이디야 음료 2종", "삼립이 헬시플레저 트렌드에 맞춰 샐러드를 출시했다. "
+             "누적 판매량 68만개를 기록한 기존 상품에 이어 신제품을 선보였다. " * 3, day(1),
+             "https://www.thinkfood.co.kr/news/2"), NEWS))
+    assert launch["laneDecisions"]["trend"] == "PRODUCT_ANNOUNCEMENT_ONLY"
+    assert launch["trendEvidence"] == []                 # the seller's words and a share of sales are not evidence
+    assert roundup["laneDecisions"]["trend"] == "PRODUCT_ANNOUNCEMENT_ONLY"   # even with a sales figure
+    edition, _ = select.build([with_image(launch)], date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    assert not edition["featured"] or edition["featured"]["heroKind"] != "trend"   # company PR never leads
+
+
+def test_real_stockouts_and_measured_sales_make_a_trend_and_can_lead():
+    text = ("최근 편의점 우유 생크림빵이 SNS를 달구고 있다. \"편의점 네 곳을 돌아다녀 간신히 샀다\"는 후기가 보이는 등 "
+            "'오픈런'까지 불사한다. 지난해 편의점 디저트 매출은 전년 대비 62.3% 올랐다. " * 2)
+    [story] = run((raw("딱 하나 남아 간신히 샀다…SNS서 난리 난 편의점 크림빵", text, day(1),
+                       "https://www.hankyung.com/article/1"), NEWS))
+    assert story["assignedCategory"] == "trend"
+    assert set(story["trendEvidenceIndependent"]) == {"explicit_source_claim", "sales_data"}
+    edition, _ = select.build([with_image(story)], date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    assert edition["featured"]["heroKind"] == "trend"
+
+
+def test_asmr_and_compilations_do_not_teach_so_they_are_not_tips():
+    asmr, compilation, lesson = run(
+        (raw("초콜릿·카라멜 카페 케이크 | 음악 없는 2시간 베이킹 ASMR", "초콜릿과 카라멜로 만든 케이크를 2시간 동안 편안하게 "
+             "즐길 수 있는 베이킹 ASMR 모음이에요. " * 3, day(2), "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+             medium="youtube"), VIDEO),
+        (raw("일단 끓이고 보는 요리모음 14탄 COMPILATIONS", "00:00:00 양념목살구이, 차돌된장짜글이 00:03:43 김치찌개 "
+             "00:08:27 두루치기 " * 3, day(2), "https://www.youtube.com/watch?v=bbbbbbbbbbb", medium="youtube"), VIDEO),
+        (raw("5가지 재료로 만드는 무화과 구이", "재료: 무화과, 브리치즈, 호두, 꿀. 만드는 방법 1. 무화과에 십자로 칼집을 낸다. "
+             "2. 치즈를 올려 7분 굽는다. " * 2, day(2), "https://www.youtube.com/watch?v=ccccccccccc",
+             medium="youtube"), VIDEO))
+    assert asmr["laneDecisions"]["tips"] == "NOT_INSTRUCTIONAL"
+    assert compilation["laneDecisions"]["tips"] == "NOT_INSTRUCTIONAL"
+    assert lesson["assignedCategory"] == "tips"
+
+
+def test_health_needs_a_health_basis_from_the_source():
+    blog = dict(RECIPES, categories=["tips", "health"])
+    salmon, guide, diet = run(
+        (raw("Salmon Fried Rice with Egg and Cabbage", "This easy salmon fried rice turns leftover rice, tender salmon, "
+             "egg and crisp cabbage into a quick one-pan meal. Ingredients: 1 cup rice, 2 eggs. " * 2, day(3),
+             "https://recipes.example.org/salmon", medium="blog"), blog),
+        (raw("Best Dashi Packets to Buy in Japan", "Dashi packets are the souvenir I recommend to every traveler. "
+             "Here's which type to choose and where to find them. " * 3, day(3),
+             "https://recipes.example.org/dashi", medium="blog"), blog),
+        (raw("배부르게 먹는데 살 빠진다?…볼륨매트릭스 다이어트", "물과 식이섬유가 풍부한 저열량 음식으로 식사의 부피를 키워 "
+             "포만감을 유지하는 식사법이다. 핵심은 칼로리 밀도다. " * 3, day(1), "https://www.donga.com/news/1"),
+         dict(NEWS, categories=["health"])))
+    assert salmon["laneDecisions"]["health"] == "NO_HEALTH_BASIS" and salmon["assignedCategory"] == "tips"
+    assert guide["rejectionReason"] == "SHOPPING_OR_TRAVEL_GUIDE"             # never health, never tips
+    assert diet["assignedCategory"] == "health"
+
+
+def test_celebrity_diet_stories_are_not_eating_habits():
+    [star] = run((raw("“13kg 뺐는데 10kg 다시 쪘다”…라미란, 직접 밝힌 요요 이유", "배우 라미란(51)이 13kg 감량 후 10kg가 "
+                      "다시 쪘다고 고백했다. 감량한 체중을 유지하려면 식사 습관과 식사 패턴을 이어가야 한다는 연구가 있다. " * 2,
+                      day(0), "https://kormedi.com/1"), NEWS))
+    assert star["rejectionReason"] == "CELEBRITY_DIET_GOSSIP"
+
+
+def test_company_promotion_is_not_habit_evidence():
+    [book] = run((raw("\"천천히 나이 드는 식탁은 이렇게\" 현대그린푸드, 저속노화 가이드북", "현대그린푸드가 레시피 103종을 엄선해 "
+                      "식생활 가이드북으로 선보인다고 29일 밝혔다. 저속노화는 식습관과 생활습관 관리를 통해 노화 속도를 늦추는 "
+                      "건강관리 방식이다. 조사 결과 응답자의 40%가 식습관을 바꿨다. " * 2, day(0), "https://newsis.com/view/2"), NEWS))
+    assert book["laneDecisions"]["habit"] == "PRODUCT_ANNOUNCEMENT_ONLY" and book.get("assignedCategory") is None
+
+
+def _recipe(n, when):
+    return raw(f"Easy Skillet Number {n}", f"Recipe {n}. Ingredients: 2 tbsp oil, 1 onion. Step 1 slice the "
+               f"onion and fry it for five minutes until golden. " * 3, when, f"https://recipes{n}.example.org/r{n}",
+               medium="blog")
+
+
+def test_old_evergreen_stories_yield_to_fresh_ones():
+    fresh = [_recipe(n, day(n)) for n in range(1, 5)]
+    old = _recipe(9, day(200))
+    rows = run(*[(r, RECIPES) for r in fresh + [old]])
+    edition, _ = select.build(rows, date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    shown = {i["url"] for i in edition["lanes"]["tips"]["items"]} | {(edition.get("featured") or {}).get("url")}
+    assert old["sourceUrl"] not in shown and len(edition["lanes"]["tips"]["items"]) <= select.LANE_SIZE
+
+
+def test_the_candidate_store_survives_a_rate_limited_run(tmp_path, monkeypatch):
+    import urllib.error
+
+    class Once:
+        calls = 0
+
+        def __init__(self, **_):
+            pass
+
+        def start(self):
+            pass
+
+        def search(self, query, objective, num):
+            Once.calls += 1
+            if Once.calls > 1:
+                raise urllib.error.HTTPError("https://mcp.exa.ai/mcp", 429, "Too Many Requests", {}, None)
+            return [{"title": "딱 하나 남아 간신히 샀다 편의점 크림빵", "url": "https://www.hankyung.com/article/7",
+                     "published": day(1), "highlights": ("편의점 크림빵이 SNS에서 화제다. '오픈런'까지 불사한다. "
+                                                         "디저트 매출은 전년 대비 62.3% 올랐다. ") * 3},
+                    {"title": "쿠폰 모음", "url": "https://www.coupang.com/np/9", "published": day(1),
+                     "highlights": "편의점 도시락 할인 쿠폰 모음입니다. " * 10}]
+
+        def fetch(self, urls, chars):
+            return []
+
+    monkeypatch.setattr(web, "ExaMCP", Once)
+    registry_path = tmp_path / "sources.json"
+    registry_path.write_text(common.dump_json({"version": 1, "sources": [
+        dict(SEARCH, id="web-trend", enabled=True, queries=["편의점 크림빵"])]}), encoding="utf-8")
+    paths = pipeline.Paths(tmp_path, registry_path=registry_path)
+    first = pipeline.discover(paths, NOW, fetcher=lambda *a, **k: b"", env={}, validate=lambda u: True, log=lambda _: None)
+    edition, chosen = select.build(first["store"].all(), date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    pipeline.finish(paths, first, edition, chosen, NOW)
+    before = {r["candidateId"]: r for r in store.CandidateStore(paths.candidates).all()}
+    assert len(before) == 2 and any(r.get("rejectionReason") == "COMMERCE_PAGE" for r in before.values())
+    later = NOW + timedelta(hours=5)
+    second = pipeline.discover(paths, later, fetcher=lambda *a, **k: b"", env={}, validate=lambda u: True,
+                               log=lambda _: None)
+    assert second["health"]["web-trend"]["code"] == "HTTP_429"
+    pipeline.finish(paths, second, None, [], later)
+    after = {r["candidateId"]: r for r in store.CandidateStore(paths.candidates).all()}
+    assert after.keys() == before.keys()                                  # nothing erased by the failure
+    assert [r for r in after.values() if r.get("selectedFor") == "2026-09-29"]
+    assert all(r["discoveryQuery"] == "편의점 크림빵" for r in after.values())
+    assert any(r.get("rejectionReason") == "COMMERCE_PAGE" for r in after.values())   # rejected rows keep provenance
+    offline = pipeline.reprocess(paths, later)                            # a rule change re-judges, never deletes
+    assert len(offline["store"].all()) == 2
+    tomorrow, _ = select.build(offline["store"].all(), date="2026-09-30", generated_at=later.isoformat(), recent=set())
+    assert not tomorrow["featured"] and not any(s["items"] for s in tomorrow["lanes"].values())   # no recycling
+
+
+def test_second_review_defects_stay_fixed():
+    award, export, column = run(
+        (raw("학생 입맛 잡은 수산물 급식메뉴", "학생 입맛을 고려한 수산물 메뉴가 학교급식 메뉴 경연대회에서 대상을 받았다. "
+             "우수작은 학교급식에 보급될 예정이다. " * 3, day(0), "http://www.fsnews.co.kr/news/1"), NEWS),
+        (raw("빙그레, ‘K-EXPO 멕시코’서 ‘메로나’ 입점 성과…중남미 공략 박차", "빙그레가 대표 아이스크림 메로나의 현지 유통채널 입점을 "
+             "확정 지었다. 현지에서 K-푸드 열풍이 이어지고 있다. " * 3, day(0), "http://www.foodnews.co.kr/news/2"), NEWS),
+        (raw("K-FOOD 기업의 성장을 연결하는 산업 플랫폼-함선옥 교수의 급식·외식 인사이트(20)", "세계적인 K-FOOD 열풍을 "
+             "어떻게 지속가능한 산업 성장으로 연결할 것인가. " * 4, day(0), "https://www.thinkfood.co.kr/news/3"), NEWS))
+    assert award["rejectionReason"] == "NOTICE_OR_EVENT"
+    assert export["laneDecisions"]["trend"] == "BUSINESS_NEWS"
+    assert column["rejectionReason"] == "OPINION_COLUMN"
+    # A popular recipe video is a recipe: tips, not a food trend.
+    [recipe] = run((raw("이게 바로 개쉬운 자취요리지.", "치즈비엔나볶음밥을 만들어 보자 [재료] 비엔나소시지 한 줌 [만드는 법] "
+                        "1. 소시지를 볶는다. 2. 밥을 넣고 볶는다. " * 2, day(3), "https://www.youtube.com/watch?v=ddddddddddd",
+                        medium="youtube", viewCount=221828), VIDEO))
+    assert recipe["laneDecisions"]["trend"] == "RECIPE_WITHOUT_TREND_EVIDENCE" and recipe["assignedCategory"] == "tips"
+    # A launch told in the second sentence, a product development story, and a spec sentence as "behavior".
+    later_launch, gadget, roundup = run(
+        (raw("CJ 밸런스밀, 저당 도시락으로 영양 도우미 나선다", "CJ제일제당의 브랜드가 라인업을 넓혔다. 식사형 제품을 "
+             "내놓으며 역할을 확장한다는 계획이다. 건강한 한 끼 식사를 책임지는 저당 도시락을 출시했다. 단백질 20g과 식이섬유를 "
+             "담았다. " * 2, day(0), "https://www.thinkfood.co.kr/news/4"), dict(NEWS, categories=["health"])),
+        (raw("식중독균 99.9% 이상 제거 ‘과일 안심하고 드세요’", "과일 표면의 세균을 99.999% 제거하는 살균·세정제가 개발돼 주목을 "
+             "끌고 있다. 과일은 비타민과 식이섬유 등 영양성분이 많다. " * 3, day(0), "https://www.thinkfood.co.kr/news/5"),
+         dict(NEWS, categories=["health"])),
+        (raw("저당 스낵부터 포케 샐러드까지, 연휴 뒤 찐 살 맛있게 빼자", "다이어트 수요가 높아지면서 식품업계가 신제품 출시에 "
+             "나섰다. 저당 크런치볼 2종을 선보였다. 신제품 음료는 시중에서 판매되는 라떼 대비 당도를 68% 낮췄다. " * 2, day(1),
+             "https://www.newsis.com/view/6"), NEWS))
+    assert later_launch["laneDecisions"]["health"] == "PRODUCT_ANNOUNCEMENT_ONLY"
+    assert gadget["laneDecisions"]["health"] == "PRODUCT_ANNOUNCEMENT_ONLY"
+    assert roundup["laneDecisions"]["habit"] in ("PRODUCT_ANNOUNCEMENT_ONLY", "NO_BEHAVIOR_EVIDENCE")
+    assert not editorial.behavior_sentence("신제품 음료는 시중에서 판매되는 라떼 대비 당도를 68% 낮추고 칼로리도 39% 줄였다.")
+    assert editorial.behavior_sentence("2분기 가구의 식품비 지출 규모는 전년 동기 대비 3.3% 증가했다.")
+    # Consumer spending data is an eating-behavior story.
+    [spend] = run((raw("[자료] 2026년 2분기 가구의 가공식품 지출 현황과 특징", "2분기 가구의 식품비 지출 규모는 전년 동기 대비 "
+                       "3.3% 증가했다. 상위 지출액 순위는 당류 및 과자류, 빵 및 떡류 순이다. " * 3, day(1),
+                       "http://www.foodnews.co.kr/news/7"), NEWS))
+    assert spend["assignedCategory"] == "habit"
+    # Headline filler ("입맛 잡은") is not corroboration.
+    a, b = run((raw("학생 입맛 잡은 생선 요리", "학생들이 좋아하는 생선 요리를 소개한다. 조림과 구이가 인기다. " * 4, day(1),
+                    "https://a.example.kr/1"), NEWS),
+               (raw("러시아 입맛 잡은 한국 라면", "러시아 소비자들이 한국 라면을 찾는다. 매운맛이 인기다. " * 4, day(1),
+                    "https://b.example.kr/2"), NEWS))
+    assert not a.get("corroboratedBy") and not b.get("corroboratedBy")
+    # A video's link list is not a card summary.
+    assert select.card_summary("▶같이 보면 좋은 영상 https://youtu.be/x ▶모아보기 https://youtube.com/p ▶원본 영상") == ""
+
+
+def test_third_review_defects_stay_fixed():
+    # English words match whole: "butter" is not "butternut", "cream" is not a shared name here.
+    assert not evidence._shared({"butter", "cookies"}, {"butternut", "creamy", "orzo"})
+    # A creator's hashtag is a label, not a claim; a sold-out sentence about goods is not about food.
+    short, collab, lecture, placement, admin = run(
+        (raw("바삭한 허니버터 쿠키 우유크림 샌드", "Watch the full recipe on YouTube #HoneyButterCookies #ViralDessert "
+             "#Dessert #SandwichCookies " * 3, day(3), "https://www.youtube.com/shorts/eeeeeeeeeee", medium="youtube"),
+         VIDEO),
+        (raw("먹고 마시고 굿즈까지 산다, 외식·카페업계 IP 협업", "팬덤 소비가 확산하면서 외식업계가 캐릭터 협업을 이어가고 있다. "
+             "굿즈는 출시 약 1주 만에 가맹점 발주 물량이 모두 소진된 데 이어 한 달 만에 전국 매장에서 완판됐다. " * 2, day(0),
+             "https://www.newsis.com/view/8"), NEWS),
+        (raw("\"젊은 내가 설마 대장암?\"…'이 강좌' 들어보세요", "최근엔 서구화된 식생활과 불규칙한 생활 습관으로 젊은 대장암 "
+             "환자가 급증하고 있다. 조기 진단이 중요하다. " * 3, day(1), "https://www.newsis.com/view/9"), NEWS),
+        (raw("이거 하나면 식당보다 100배 더 맛있습니다.", "평소 하던 요리 그대로, 마지막 한 끗은 라면장. 라면장 구매하기 "
+             "https://x.gd/abc 자세한 제품 정보 및 구매처는 영상 더보기란에서 확인하실 수 있습니다. [재료] 라면, 콩나물 "
+             "[만드는 법] 1. 라면을 끓인다. " * 2, day(2), "https://www.youtube.com/watch?v=fffffffffff", medium="youtube"),
+         VIDEO),
+        (raw("‘학교급식 운영평가’, 점수·등급 없앤다", "학교급식 운영평가가 법적 준수사항 확인 중심으로 바뀐다. 식단관리와 "
+             "영양상담 등 일반 운영 항목은 학교가 스스로 점검한다. " * 3, day(1), "http://www.fsnews.co.kr/news/10"),
+         dict(NEWS, categories=["health"])))
+    assert "explicit_source_claim" not in short.get("trendEvidence", []) and short.get("assignedCategory") != "trend"
+    assert "explicit_source_claim" not in collab.get("trendEvidence", []) and collab.get("assignedCategory") != "trend"
+    assert lecture["rejectionReason"] == "NOTICE_OR_EVENT"
+    assert placement["rejectionReason"] == "AD_OR_SPONSORED"
+    assert admin["laneDecisions"]["health"] == "NO_HEALTH_BASIS"
+    # A behavior sentence cut short in the store is found again in the excerpt.
+    [teens] = run((raw("‘뼈말라’ 열풍, 식생활교육 새 과제 요구", "마른 체형을 선호하는 분위기가 10대 사이에 확산하고 있다. "
+                       "체중감량을 이유로 급식을 거르는 학생들이 나타나고 있다. 질병관리청의 청소년건강행태조사에 따르면 "
+                       "청소년의 체형 인식이 달라졌다. " * 2, day(1), "http://www.fsnews.co.kr/news/11"),
+                   dict(NEWS, categories=["health", "habit"])))
+    assert teens["assignedCategory"] == "habit"
+    # A data release that repeats its headline before a numbered list.
+    assert select.card_summary("가공식품 지출 현황과 특징1. 2분기 가구의 식품비 지출은 3.3% 증가했다.",
+                               "가공식품 지출 현황과 특징").startswith("1. 2분기 가구의")
+
+
+def test_fourth_to_sixth_review_defects_stay_fixed():
+    # A recall ("기준치의 5배 검출", "판매 중단") is not demand; a biology "급증" is not popularity.
+    assert not editorial.demand_sentence("들기름에서 벤조피렌이 기준치의 5배 수준으로 검출돼 판매 중단과 회수 조치에 들어갔다.")
+    assert not editorial.popularity_claim("육류 중심의 식사는 체내 오메가6 지방산을 급증시켜 혈관 건강에 악영향을 준다.",
+                                          evidence.STRONG_CLAIMS)
+    assert editorial.popularity_claim("제철 먹거리를 찾아 먹는 제철코어가 새로운 먹거리 소비 트렌드로 떠오르고 있다.",
+                                      evidence.STRONG_CLAIMS)
+    # A supply deal is business news; a marketing round-up is a promotion; a campaign is an event.
+    supply, promo, campaign = run(
+        (raw("농심, 대한항공 라운지 ‘라면 라이브러리’ 제품 단독 공급", "농심이 공항 라운지에 라면을 단독 공급한다. 라면 "
+             "라이브러리에서 다양한 라면을 맛볼 수 있다. " * 3, day(1), "https://www.thinkfood.co.kr/news/12"), NEWS),
+        (raw("식품·외식업계 ‘추석 맞이’ 분주", "식품·외식업계가 귀성객을 위한 맞춤형 마케팅과 외식 할인 프로모션, 기획전을 "
+             "잇따라 선보이고 있다. " * 3, day(1), "https://www.thinkfood.co.kr/news/13"), NEWS),
+        (raw("한국외식업중앙회, 외식업 안전문화 캠페인 전개", "중앙회는 주요 상권에서 ‘2026년 외식업 안전문화 캠페인’을 "
+             "실시했다. 음식점 종사자에게 안전수칙을 안내했다. " * 3, day(1), "http://www.foodbank.co.kr/news/14"), NEWS))
+    assert supply["laneDecisions"]["trend"] == "BUSINESS_NEWS"
+    assert promo["rejectionReason"] == "PROMOTION" and campaign["rejectionReason"] == "NOTICE_OR_EVENT"
+    # Two outlets relaying one agency release on the same day are one voice.
+    release = ("식용곤충 고소애 가수분해물이 식약처 개별인정형 원료로 등록됐다. 근력 유지에 도움을 줄 수 있다는 기능성이다. "
+               "농촌진흥청은 단백질 소재 연구를 이어 왔다. " * 2)
+    one, two = run((raw("고소애, 근력 유지 기능성 원료로 인정", release, day(2), "http://www.fsnews.co.kr/news/15"), NEWS),
+                   (raw("고소애, ‘근력 유지’ 식약처 개별인정형 원료 인정", release.replace("이어 왔다", "지속해 왔다"),
+                        day(2), "http://www.foodnews.co.kr/news/16"), NEWS))
+    assert "corroborated" not in (one.get("trendEvidence") or []) and one.get("assignedCategory") != "trend"
+    # Views make a trend only when the video is about what is popular.
+    asmr_views, trend_views = run(
+        (raw("포근한 가을 베이킹 | 사과·카라멜 케이크 15가지 모음", "가을 케이크와 디저트 15가지를 2시간 동안 음악 없이 즐기는 "
+             "영상이에요. " * 4, day(5), "https://www.youtube.com/watch?v=ggggggggggg", medium="youtube",
+             viewCount=136965), VIDEO),
+        (raw("유행음식으로 인싸 체험하기", "요즘 SNS에서 뜨는 음식을 모두 먹어 봤다. 피자설기와 한정판 과자를 맛봤다. " * 3,
+             day(7), "https://www.youtube.com/watch?v=hhhhhhhhhhh", medium="youtube", viewCount=1779174),
+         dict(VIDEO, categories=["trend"])))
+    assert "engagement" not in (asmr_views.get("trendEvidence") or [])
+    assert trend_views["assignedCategory"] == "trend" and "engagement" in trend_views["trendEvidence"]
+
+
+def test_a_launch_needs_measured_demand_not_trend_framing():
+    [cake] = run((raw("신세계푸드, 가을 제철 ‘생무화과’ 올린 케이크 출시", "제철 먹거리를 찾아 먹는 제철코어가 새로운 먹거리 "
+                      "소비 트렌드로 떠오르고 있다. 신세계푸드는 생무화과를 올린 케이크를 출시했다. " * 2, day(1),
+                      "https://www.thinkfood.co.kr/news/17"), NEWS))
+    assert cake["laneDecisions"]["trend"] == "PRODUCT_ANNOUNCEMENT_ONLY"
+
+
+def test_a_launch_with_observed_stockouts_is_demand_but_a_deal_list_is_a_promotion():
+    [bun] = run((raw("세븐일레븐 우유생크림빵 출시", "세븐일레븐이 우유생크림빵을 출시했다. 출시 직후 SNS에서 화제가 되며 매장마다 "
+                     "품절이 이어졌다. " * 3, day(2), "https://www.mk.co.kr/a/20"), NEWS))
+    assert bun["assignedCategory"] == "trend"
+    [deals] = run((raw("9월 편의점 GS25 1+1행사정보와 편의점신상음식리뷰", "이번 달 편의점 1+1행사정보와 신상 음식을 모두 "
+                       "알려드려요. " * 4, day(3), "https://www.youtube.com/watch?v=iiiiiiiiiii", medium="youtube",
+                       viewCount=62071), dict(VIDEO, categories=["trend"])))
+    assert deals["rejectionReason"] == "PROMOTION"

@@ -23,10 +23,11 @@ from collections import Counter
 from datetime import datetime
 from typing import Optional
 
+from . import editorial
 from .common import parse_time
 
 TREND_MAX_DAYS = 30
-ENGAGEMENT_MIN_VIEWS = 50_000
+ENGAGEMENT_MIN_VIEWS = 100_000   # meaningful reach, not a channel's usual audience
 HABIT_NEWS_MAX_DAYS = 90         # current lifestyle reporting
 HABIT_RESEARCH_MAX_DAYS = 730    # research and survey evidence (always shown with its date)
 DETAIL_CHARS = 110
@@ -39,8 +40,9 @@ WEAK_CLAIMS = ("인기", "신상", "신제품", "popular", "new release")
 SALES_WORDS = ("판매", "매출", "주문", "거래액", "출고", "소비량", "sales", "orders")
 SALES_FIGURE = re.compile(r"(\d[\d,\.]*\s*(%|％|배|만\s*(개|봉|병|잔|건|명|팩|캔|세트)?|억\s*원|천\s*개|개|봉|병|잔|건)"
                           r"|\d+\s*위|1위|percent)", re.I)
-HABIT_WORDS = ("식습관", "식생활", "식사 습관", "식사 패턴", "먹는 습관", "끼니", "결식", "아침 식사", "아침밥", "혼밥",
+HABIT_WORDS = ("식습관", "식생활", "식사 습관", "식사 패턴", "먹는 습관", "끼니", "결식", "거르", "아침 식사", "아침밥", "혼밥",
                "1인 가구", "혼자 먹", "도시락", "간편식", "배달 음식", "배달음식", "외식", "식단", "섭취", "저당", "웰니스",
+               "식품비", "식비", "지출", "소비 행태", "구매 행태", "소비 패턴", "장보기",
                "건강한 식", "eating habit", "dietary habit", "diet quality", "meal skipping", "skipping breakfast",
                "eating pattern", "food consumption", "meal timing", "snacking")
 # A behavior sentence reports something measured: a survey, study, report or data, or a figure
@@ -80,8 +82,8 @@ LINKS = re.compile(r"(https?://\S+|www\.\S+|\S+\.(com|co\.kr|kr|net|org|io)/\S*)
 SPONSORED = re.compile(r"(유료\s*광고|광고\s*포함|광고를\s*포함|협찬|(?<![a-z])ppl(?![a-z])|paid promotion|sponsored by)", re.I)
 NOT_SPONSORED = re.compile(r"(내돈내산|협찬\s*(없|아님|아닌|을\s*받지\s*않|받지\s*않))")
 # A title that is a business result, not something people eat.
-BUSINESS_TITLE = re.compile(r"(본사|점주|가맹|영업이익|실적|주가|판로|수출|협약|투자|인수|상장|광고|\[동향\]|"
-                            r"(?<![a-z])(mou|cf)(?![a-z]))", re.I)
+BUSINESS_TITLE = re.compile(r"(본사|점주|가맹|영업이익|실적|주가|판로|수출|협약|투자|인수|상장|광고|\[동향\]|입점|공략|진출|박차|"
+                            r"산업|공급망|로드쇼|공급|납품|계약|제휴|유통망|(?<![a-z])(mou|cf)(?![a-z]))", re.I)
 SENTENCE_END = re.compile(r"(?<=[.!?。])\s+|\n")
 TOKEN = re.compile(r"[0-9A-Za-z가-힣+]+")
 PARTICLES = ("에서", "으로", "까지", "부터", "이", "가", "은", "는", "을", "를", "의", "에", "로", "와", "과", "도", "만")
@@ -92,6 +94,9 @@ STOP_TOKENS = {
     "먹거리", "간식", "이번", "가장", "진짜", "솔직", "정체", "난리", "대박", "선보여", "선보인", "출시한", "매출", "증가",
     "인기몰이", "완판", "top", "best", "new", "the", "and", "with", "for", "of", "in", "to", "a", "food", "trend",
     "trends", "korean", "korea", "recipe", "편의점신상",
+    # headline verbs and filler that say nothing about WHAT is being covered
+    "입맛", "잡은", "사로잡은", "공략", "선택", "겨냥", "확대", "강화", "진출", "성과", "박차", "달군", "나선다", "나섰다",
+    "입점", "현지", "시장", "성장", "기업", "업계", "소비", "소비자", "건강", "한끼", "식사", "간편", "메뉴",
 }
 
 
@@ -115,11 +120,12 @@ def _clip(sentence: str, at: int) -> str:
 def _claim(text: str, words, food_story: bool) -> Optional[tuple[str, str]]:
     """(term, verbatim sentence) for the first sentence that uses one of the words and is about
     food: the sentence names a food, or the story's own title does ("품절이 이어졌다" in a story
-    about a cream bun). A claim in a story about something else ("이공계 인기") does not count."""
+    about a cream bun). A claim in a story about something else ("이공계 인기") does not count, and
+    neither does the seller speaking ("…트렌드에 맞춰 선보였다", "…라고 밝혔다")."""
     for sentence in sentences(text):
         low = sentence.lower()
         hits = [(low.find(w.lower()), w) for w in words if w.lower() in low]
-        if hits and (food_story or is_food(sentence)):
+        if hits and (food_story or is_food(sentence)) and not editorial.pr_sentence(sentence) and                 (words is not STRONG_CLAIMS or editorial.popularity_claim(sentence, words)):
             at, word = min(hits)
             return word, _clip(sentence, at)
     return None
@@ -155,12 +161,14 @@ def trend_signals(text: str, *, title: str = "", meta: Optional[dict] = None, no
         signals["explicit_source_claim"] = {"term": strong[0], "text": strong[1], "strong": True}
     elif weak:
         signals["explicit_source_claim"] = {"term": weak[0], "text": weak[1], "strong": False}
-    for sentence in sentences(body):
-        figure = SALES_FIGURE.search(sentence)
-        if figure and any(w in sentence.lower() for w in SALES_WORDS) and (food_story or is_food(sentence)):
-            signals["sales_data"] = {"term": figure.group(0).strip(), "text": _clip(sentence, figure.start()),
-                                     "strong": True}
-            break
+    # Measured demand (a sales/orders/search figure that rose or set a record); an independent
+    # sentence is preferred over one that speaks for the seller.
+    demand = [s for s in sentences(body) if editorial.demand_sentence(s) and (food_story or is_food(s))]
+    demand.sort(key=editorial.pr_sentence)
+    if demand:
+        figure = SALES_FIGURE.search(demand[0]) or re.search(r"\d", demand[0])
+        signals["sales_data"] = {"term": figure.group(0).strip(), "text": _clip(demand[0], figure.start()),
+                                 "strong": True, "pr": editorial.pr_sentence(demand[0])}
     meta = meta or {}
     views = meta.get("viewCount")
     if isinstance(views, int) and views >= ENGAGEMENT_MIN_VIEWS and published and now and \
@@ -233,12 +241,18 @@ def _tokens(text: str) -> set[str]:
 
 
 def _shared(a: set[str], b: set[str]) -> set[str]:
-    """Shared words, allowing Korean compounds: "생크림빵" is inside "우유생크림빵" (3+ letters)."""
+    """Shared words, allowing Korean compounds: "생크림빵" is inside "우유생크림빵" (3+ letters).
+    Latin words match whole (a plural s aside): "butter" is not "butternut"."""
     shared = set()
     for x in a:
         for y in b:
             short, long_ = (x, y) if len(x) <= len(y) else (y, x)
-            if x == y or (len(short) >= 3 and short in long_) or (long_.startswith(short) and len(long_) - len(short) <= 2):
+            if x == y:
+                shared.add(short)
+            elif not (HANGUL.search(x) and HANGUL.search(y)):
+                if long_ == short + "s":
+                    shared.add(short)
+            elif (len(short) >= 3 and short in long_) or (long_.startswith(short) and len(long_) - len(short) <= 2):
                 shared.add(short)
     return shared
 
@@ -272,6 +286,8 @@ def corroborate(rows: list[dict], now: datetime) -> dict[str, list[str]]:
             if other is row or not host(row) or host(row) == host(other):
                 continue
             rare_b = {t for t in title_b if frequency[t] <= limit}
-            if len(_shared(rare_a, all_b)) >= 2 and len(_shared(rare_b, all_a)) >= 2:
+            one_way, other_way = _shared(rare_a, all_b), _shared(rare_b, all_a)
+            # two shared words both ways, and at least one of them a real name (3+ letters)
+            if len(one_way) >= 2 and len(other_way) >= 2 and any(len(t) >= 3 for t in one_way | other_way):
                 found.setdefault(row["candidateId"], []).append(other["candidateId"])
     return found
