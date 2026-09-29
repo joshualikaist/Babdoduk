@@ -48,6 +48,9 @@ BOILERPLATE = re.compile(r"^(watch how to make (this|these)\b|jump to recipe\b|p
 # "[대한급식신문=김보희 기자]") and carry photo captions ("사진=… 캡처"): not part of the story.
 DATELINE = re.compile(r"^\s*(\[[^\]]{1,30}\]|【[^】]{1,30}】|\([^)]{1,20}=[^)]{0,20}\))\s*([가-힣]{2,4}\s*기자\s*=\s*)?")
 CAPTION = re.compile(r"(/?\s*사진\s*=\s*[^.]{0,60}?(캡처|제공|갈무리|뉴시스|연합뉴스|DB)\s*)")
+# A video description that opens with the channel's own notices has no description to excerpt.
+CHANNEL_BOILERPLATE = re.compile(r"(멤버십\s*가입|구독과\s*좋아요|구독\s*부탁|알림\s*설정|CC\s*버튼|press cc|자막이\s*필요|"
+                                 r"협업\s*(문의|제안)|business inquir|subscribe)", re.I)
 
 
 def card_summary(text: str, title: str = "") -> str:
@@ -56,8 +59,10 @@ def card_summary(text: str, title: str = "") -> str:
     cleaned = re.sub(r"\s+", " ", URLS.sub(" ", text or "")).strip(" -|·")
     cleaned = CAPTION.sub(" ", DATELINE.sub("", cleaned)).strip()
     cleaned = re.sub(r"\s+", " ", cleaned)
-    if title and cleaned.startswith(title) and re.match(r"\s*(\d+\.|[-•▶\[])", cleaned[len(title):]):
-        cleaned = cleaned[len(title):].strip()      # a data release repeating its headline before a list
+    cleaned = re.sub(r"\.\s*\.(?!\.)", ".", cleaned)          # "제작됐다. ." once a photo credit is gone
+    head = re.sub(r"^\s*\[[^\]]{1,12}\]\s*", "", title or "")   # "[자료] 제목" as printed in the text
+    if head and cleaned.startswith(head) and re.match(r"\s*(\d+\.|[-•▶\[])", cleaned[len(head):]):
+        cleaned = cleaned[len(head):].strip()       # a data release repeating its headline before a list
     stripped = BOILERPLATE.sub("", cleaned).strip()
     if stripped != cleaned and title and stripped.lower().startswith(title.lower()):
         stripped = stripped[len(title):].strip(" -|·:")     # "Watch How to Make This <title>" heading
@@ -67,8 +72,9 @@ def card_summary(text: str, title: str = "") -> str:
         if [w.lower() for w in words[:n]] == [w.lower() for w in words[n:2 * n]]:
             cleaned = " ".join(words[n:])
             break
-    if cleaned.count("▶") >= 2 or cleaned.count("•") >= 3:
-        return ""                                  # a video's link list, not a description
+    cleaned = re.sub(r"[ㅡ\-=_~*]{4,}", " ", cleaned).strip()
+    if cleaned.count("▶") >= 2 or cleaned.count("•") >= 3 or CHANNEL_BOILERPLATE.search(cleaned[:80]):
+        return ""                                  # a video's link list or channel notice, not a description
     short = excerpt(cleaned, SUMMARY_CHARS)
     return short if len(short) >= MIN_SUMMARY else ""
 
