@@ -44,43 +44,7 @@
     },
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "집에서 만든 초간단 부대찌개",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/CCz4kgJ4osY",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/CCz4kgJ4osY/maxresdefault.jpg"
-        },
-        {
-          "title": "초초초간단 치즈감자채전",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/S1OyOEjkD4s",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/S1OyOEjkD4s/maxresdefault.jpg"
-        },
-        {
-          "title": "5일째 파김치에 짜장라면",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/33VfOo4Mu2E",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/33VfOo4Mu2E/maxresdefault.jpg"
-        },
-        {
-          "title": "아는 맛이 젤 무서워...",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/wKNx-b5V4VE",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/wKNx-b5V4VE/maxresdefault.jpg"
-        },
-        {
-          "title": "전어구이에 한잔! 크~~",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/KjSIl-Y8LqA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/KjSIl-Y8LqA/maxresdefault.jpg"
-        }
-      ]
+      "items": []
     },
     "health": {
       "lead": "맛도 포기하지 않는 건강식",
@@ -121,40 +85,7 @@
     },
     "habit": {
       "lead": "잘 먹는 법에 대한 작은 이야기",
-      "items": [
-        {
-          "title": "Makgeolli (Korean Rice Wine)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/makgeolli/",
-          "medium": "blog"
-        },
-        {
-          "title": "뜨개질하고 남이해준 밥만먹는 브이로그",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=Y8mOF5IuyQc",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/Y8mOF5IuyQc/maxresdefault.jpg"
-        },
-        {
-          "title": "두부강정 만드는 법 두부에서 양념치킨 맛이?! 1천원에 쫄깃바삭 아이 반찬에 최고 고추장 두부강정",
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/156",
-          "medium": "blog"
-        },
-        {
-          "title": "이건 배달 시키면 바닥에 돈 버리는 겁니다.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=QfddnT_S3YY",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/QfddnT_S3YY/maxresdefault.jpg"
-        },
-        {
-          "title": "Dakjuk (Korean Chicken Porridge)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/dakjuk-korean-chicken-porridge/",
-          "medium": "blog"
-        }
-      ]
+      "items": []
     }
   }
 }

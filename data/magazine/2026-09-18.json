@@ -2,38 +2,11 @@
   "date": "2026-09-18",
   "generatedAt": "2026-09-18T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
-  "featured": {
-    "title": "야식은 엽떡",
-    "source": "햄지 Hamzy",
-    "url": "https://www.youtube.com/shorts/3_6RI_drv08",
-    "medium": "youtube",
-    "image": "https://i.ytimg.com/vi/3_6RI_drv08/maxresdefault.jpg",
-    "category": "trend"
-  },
+  "featured": null,
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "포근한 가을 베이킹 ASMR | 사과·카라멜·시나몬 케이크&디저트 | 음악 없는 2시간 | No Music Cozy Fall Baking | 2 hours Baking ASMR",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=swnsjaYl3DA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/swnsjaYl3DA/maxresdefault.jpg"
-        },
-        {
-          "title": "Jatjuk (Pine Nut Porridge)",
-          "source": "Korean Bapsang",
-          "url": "https://www.koreanbapsang.com/jatjuk-pine-nut-porridge/",
-          "medium": "blog"
-        },
-        {
-          "title": "돼지불고기 레시피 15분 완성! 고기를 재워놓아서 야들야들 부드럽고 촉촉한 돼지불고기 - 신김치 요리 10 탄",
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/182",
-          "medium": "blog"
-        }
-      ]
+      "items": []
     },
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",

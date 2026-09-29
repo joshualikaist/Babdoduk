@@ -12,20 +12,7 @@
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "Bok Choy Kimchi (Quick & Easy)",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/bok-choy-kimchi/",
-          "medium": "blog"
-        },
-        {
-          "title": "김치찜 레시피 부드러운 고기에 야들야들 얼큰 김치로 밥이 순삭! 돼지고기 김치찜 - 신김치 요리 11 탄",
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/192",
-          "medium": "blog"
-        }
-      ]
+      "items": []
     },
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",

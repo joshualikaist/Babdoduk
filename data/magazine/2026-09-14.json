@@ -51,43 +51,7 @@
     },
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
-      "items": [
-        {
-          "title": "전어구이에 한잔! 크~~",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/KjSIl-Y8LqA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/KjSIl-Y8LqA/maxresdefault.jpg"
-        },
-        {
-          "title": "사치스런 저녁식사",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/M8VZIAIJGfk",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/M8VZIAIJGfk/maxresdefault.jpg"
-        },
-        {
-          "title": "소갈빗살 육개장",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/OSANKRMc5S4",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/OSANKRMc5S4/maxresdefault.jpg"
-        },
-        {
-          "title": "아으 침고여...",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/iolyI1OJogY",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/iolyI1OJogY/maxresdefault.jpg"
-        },
-        {
-          "title": "야식은 엽떡",
-          "source": "햄지 Hamzy",
-          "url": "https://www.youtube.com/shorts/3_6RI_drv08",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/3_6RI_drv08/maxresdefault.jpg"
-        }
-      ]
+      "items": []
     },
     "health": {
       "lead": "맛도 포기하지 않는 건강식",
@@ -129,41 +93,7 @@
     },
     "habit": {
       "lead": "잘 먹는 법에 대한 작은 이야기",
-      "items": [
-        {
-          "title": "신전 로제떡볶이 따라잡기",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=RetRTn3NBT0",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/RetRTn3NBT0/maxresdefault.jpg"
-        },
-        {
-          "title": "하이라이스 고기와 야채 듬뿍! 카레보다 부드럽게 맛있는 하이라이스",
-          "source": "엄마표 집밥",
-          "url": "https://irisblossomlife.tistory.com/195",
-          "medium": "blog"
-        },
-        {
-          "title": "이게 진짜 자취요리지",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/shorts/L-v1rqf14SU",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/L-v1rqf14SU/maxresdefault.jpg"
-        },
-        {
-          "title": "Butter Tteok (Butter Rice Cake) – Golden Crust, Chewy Center",
-          "source": "My Korean Kitchen",
-          "url": "https://mykoreankitchen.com/butter-tteok/",
-          "medium": "blog"
-        },
-        {
-          "title": "싹둑싹둑 미나리 볶음밥",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=GmYsazN2FXA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/GmYsazN2FXA/maxresdefault.jpg"
-        }
-      ]
+      "items": []
     }
   }
 }
