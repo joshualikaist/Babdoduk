@@ -4,9 +4,10 @@
 LANE_SIZE is a maximum, not a quota: a lane shows only what qualifies, possibly nothing.
 
 Hero (owner decision, 2026-09-29), heroKind in the edition:
-  "trend"  a qualified trend story (trendEvidence present) with a validated image of its own,
-           from a Tier A/B source and with Korean/audience relevance >= HERO_AUDIENCE;
-           published within HERO_IDEAL_DAYS preferred, 30 at most.
+  "trend"  a qualified trend story with STRONG evidence (sales figures, engagement, or a strong
+           claim such as 유행/화제/품절 - a "신제품" mention echoed by trade outlets is not enough),
+           a validated image of its own, a Tier A/B source and Korean/audience relevance >=
+           HERO_AUDIENCE; published within HERO_IDEAL_DAYS preferred, 30 at most.
   "pick"   otherwise the best recent story with its own validated image, labelled
            "오늘의 추천 글" on the page: never wording that implies today's trend. With no image
            anywhere, a text-only hero.
@@ -91,13 +92,19 @@ def _age(row: dict, now: datetime) -> Optional[float]:
     return (now - published).total_seconds() / 86400 if published else None
 
 
+def strong_evidence(row: dict) -> bool:
+    kinds = set(row.get("trendEvidence") or [])
+    claim = (row.get("trendSignals") or {}).get("explicit_source_claim") or {}
+    return bool(kinds & {"sales_data", "engagement"}) or ("explicit_source_claim" in kinds and bool(claim.get("strong")))
+
+
 def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
-    """(row, heroKind). A trend hero only on real evidence; never a recipe standing in for a trend."""
+    """(row, heroKind). A trend hero only on strong evidence; never a recipe standing in for a trend."""
     def trend_ok(row):
         age = _age(row, now)
         audience = float((row.get("audienceRelevance") or {}).get("score") or 0)
         trusted = row.get("sourceTrust") in ("A", "B")        # high source trust: never a Tier C lead
-        return (row.get("assignedCategory") == "trend" and row.get("trendEvidence") and row.get("imageValidated")
+        return (row.get("assignedCategory") == "trend" and strong_evidence(row) and row.get("imageValidated")
                 and row.get("imageUrl") and trusted and audience >= HERO_AUDIENCE
                 and age is not None and age <= HERO_MAX_DAYS)
     trends = sorted((r for r in pool if trend_ok(r)),
