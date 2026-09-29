@@ -2,230 +2,434 @@
   "version": 1,
   "sources": [
     {
-      "enabled": true,
-      "categories": [
-        "tips",
-        "habit"
-      ],
       "id": "blog-irisblossomlife",
       "name": "엄마표 집밥",
       "type": "rss",
       "url": "https://irisblossomlife.tistory.com/rss",
+      "enabled": true,
       "trustTier": "B",
-      "discoveryMethod": "rss"
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe"
     },
     {
-      "enabled": true,
-      "categories": [
-        "tips",
-        "health"
-      ],
       "id": "blog-koreanbapsang",
       "name": "Korean Bapsang",
       "type": "rss",
       "url": "https://www.koreanbapsang.com/feed/",
+      "enabled": true,
       "trustTier": "B",
-      "discoveryMethod": "rss"
+      "categories": [
+        "tips",
+        "health"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe"
     },
     {
-      "enabled": true,
-      "categories": [
-        "health",
-        "habit"
-      ],
       "id": "blog-mykoreankitchen",
       "name": "My Korean Kitchen",
       "type": "rss",
       "url": "https://www.mykoreankitchen.com/feed/",
-      "trustTier": "B",
-      "discoveryMethod": "rss"
-    },
-    {
       "enabled": true,
+      "trustTier": "B",
       "categories": [
         "tips",
         "health"
       ],
+      "discoveryMethod": "rss",
+      "kind": "recipe"
+    },
+    {
       "id": "blog-beyondkimchee",
       "name": "Beyond Kimchee",
       "type": "rss",
       "url": "https://www.beyondkimchee.com/feed/",
-      "trustTier": "B",
-      "discoveryMethod": "rss"
-    },
-    {
       "enabled": true,
-      "categories": [
-        "tips",
-        "trend"
-      ],
-      "id": "blog-seonkyounglongest",
-      "name": "Seonkyoung Longest",
-      "type": "rss",
-      "url": "https://seonkyounglongest.com/feed/",
       "trustTier": "B",
-      "discoveryMethod": "rss"
-    },
-    {
-      "enabled": true,
-      "categories": [
-        "tips",
-        "habit"
-      ],
-      "id": "blog-budgetbytes",
-      "name": "Budget Bytes",
-      "type": "rss",
-      "url": "https://www.budgetbytes.com/feed/",
-      "trustTier": "B",
-      "discoveryMethod": "rss"
-    },
-    {
-      "enabled": true,
       "categories": [
         "tips",
         "health"
       ],
+      "discoveryMethod": "rss",
+      "kind": "recipe"
+    },
+    {
+      "id": "blog-seonkyounglongest",
+      "name": "Seonkyoung Longest",
+      "type": "rss",
+      "url": "https://seonkyounglongest.com/feed/",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe"
+    },
+    {
+      "id": "blog-budgetbytes",
+      "name": "Budget Bytes",
+      "type": "rss",
+      "url": "https://www.budgetbytes.com/feed/",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe"
+    },
+    {
       "id": "blog-justonecookbook",
       "name": "Just One Cookbook",
       "type": "rss",
       "url": "https://www.justonecookbook.com/feed/",
+      "enabled": true,
       "trustTier": "B",
-      "discoveryMethod": "rss"
+      "categories": [
+        "tips",
+        "health"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe"
     },
     {
+      "id": "news-thinkfood",
+      "name": "식품음료신문",
+      "type": "rss",
+      "url": "https://www.thinkfood.co.kr/rss/allArticle.xml",
       "enabled": true,
+      "trustTier": "B",
       "categories": [
-        "tips"
+        "trend",
+        "habit"
       ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-foodnews",
+      "name": "식품저널",
+      "type": "rss",
+      "url": "https://www.foodnews.co.kr/rss/allArticle.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "trend",
+        "habit",
+        "health"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-foodbank",
+      "name": "식품외식경제",
+      "type": "rss",
+      "url": "https://www.foodbank.co.kr/rss/allArticle.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "trend",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-fsnews",
+      "name": "대한급식신문",
+      "type": "rss",
+      "url": "https://www.fsnews.co.kr/rss/allArticle.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "habit",
+        "health"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-yna-industry",
+      "name": "연합뉴스 산업",
+      "type": "rss",
+      "url": "https://www.yna.co.kr/rss/industry.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "trend"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-yna-health",
+      "name": "연합뉴스 건강",
+      "type": "rss",
+      "url": "https://www.yna.co.kr/rss/health.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-kormedi",
+      "name": "코메디닷컴",
+      "type": "rss",
+      "url": "https://kormedi.com/feed/",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-newsis-health",
+      "name": "뉴시스 건강",
+      "type": "rss",
+      "url": "https://newsis.com/RSS/health.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-donga-health",
+      "name": "동아일보 건강",
+      "type": "rss",
+      "url": "https://rss.donga.com/health.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "news-seoul-life",
+      "name": "서울신문 라이프",
+      "type": "rss",
+      "url": "https://www.seoul.co.kr/xml/rss/rss_life.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true
+    },
+    {
+      "id": "web-exa-trend",
+      "name": "Web search: trends (Exa)",
+      "type": "web_search",
+      "enabled": true,
+      "trustTier": "C",
+      "categories": [
+        "trend"
+      ],
+      "lane": "trend",
+      "discoveryMethod": "exa_mcp",
+      "requireFood": true,
+      "kind": "mixed",
+      "queries": [
+        "{year} {month}월 편의점 신상",
+        "편의점 먹거리 유행",
+        "요즘 음식 트렌드",
+        "먹방 유행",
+        "신메뉴 인기",
+        "편의점 디저트 신상",
+        "요즘 간편식",
+        "대학생 먹거리 트렌드",
+        "혼밥 트렌드",
+        "한국 음식 트렌드"
+      ],
+      "objective": "Recent Korean news, reports or blog posts from the last month about foods, convenience-store products or menus that are newly released or popular now, especially for students and single-person households. Exclude shopping pages and plain recipes.",
+      "note": "Tier per result host (discovery.hosts). Search is discovery only; a result needs retrieved text."
+    },
+    {
+      "id": "web-exa-habit",
+      "name": "Web search: eating habits (Exa)",
+      "type": "web_search",
+      "enabled": true,
+      "trustTier": "C",
+      "categories": [
+        "habit"
+      ],
+      "lane": "habit",
+      "discoveryMethod": "exa_mcp",
+      "requireFood": true,
+      "kind": "mixed",
+      "queries": [
+        "{year} 식습관 트렌드",
+        "1인 가구 식생활",
+        "대학생 식습관",
+        "혼밥 식습관",
+        "점심 도시락 트렌드",
+        "저당 식품 트렌드",
+        "웰니스 식사",
+        "간편식 식습관",
+        "식사 습관 한국",
+        "건강한 식생활"
+      ],
+      "objective": "Korean news, surveys, consumer reports or research about how people eat: meal patterns, skipping meals, eating alone, single-person households, students, ready meals and lunch boxes, low-sugar and wellness eating. Prefer recent reporting and dated studies. Exclude recipes and shopping pages.",
+      "note": "Habit needs a Tier A/B host, a date and behavior evidence; news <= 90 days, research <= 2 years."
+    },
+    {
+      "id": "web-naver-trend",
+      "name": "Naver Blog (site search)",
+      "type": "web_search",
+      "enabled": true,
+      "trustTier": "C",
+      "categories": [
+        "trend"
+      ],
+      "lane": "trend",
+      "discoveryMethod": "exa_mcp",
+      "requireFood": true,
+      "kind": "mixed",
+      "queries": [
+        "site:blog.naver.com {year} {month}월 편의점 신상 후기",
+        "site:blog.naver.com 요즘 유행 디저트 후기",
+        "site:blog.naver.com 편의점 신상 꿀조합",
+        "site:blog.naver.com {month}월 신메뉴 후기"
+      ],
+      "objective": "Recent Naver blog posts where people try new foods, convenience-store products or popular menus. Exclude sponsored posts and shopping pages.",
+      "note": "Tier C discovery: new products and what people are trying, never health or nutrition evidence. No Naver API or RSS search route exists; public site search only."
+    },
+    {
+      "id": "yt-search",
+      "name": "YouTube search (yt-dlp)",
+      "type": "youtube_search",
+      "enabled": true,
+      "trustTier": "C",
+      "categories": [
+        "trend"
+      ],
+      "lane": "trend",
+      "discoveryMethod": "yt-dlp",
+      "requireFood": true,
+      "kind": "video",
+      "localOnly": true,
+      "queries": [
+        "{year} {month}월 편의점 신상",
+        "편의점 먹거리 유행",
+        "요즘 음식 트렌드",
+        "먹방 유행",
+        "신메뉴 인기",
+        "편의점 디저트 신상",
+        "요즘 간편식",
+        "대학생 먹거리 트렌드",
+        "혼밥 트렌드",
+        "한국 음식 트렌드"
+      ],
+      "note": "Metadata only (--skip-download), no cookies or account. Runs on the operator PC through scripts/magazine_local_discovery.py; the pipeline reads its inbox."
+    },
+    {
       "id": "yt-jachwiyorisin",
       "name": "자취요리신",
       "type": "youtube_channel",
       "channelId": "UCC9pQY_uaBSa0WOpMNJHbEQ",
       "url": "https://www.youtube.com/channel/UCC9pQY_uaBSa0WOpMNJHbEQ",
-      "trustTier": "B",
-      "discoveryMethod": "youtube_feed",
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
-    },
-    {
       "enabled": true,
+      "trustTier": "B",
       "categories": [
         "tips"
       ],
+      "discoveryMethod": "youtube_feed",
+      "kind": "video",
+      "localOnly": true,
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+    },
+    {
       "id": "yt-cookingtree",
       "name": "쿠킹트리 Cooking tree",
       "type": "youtube_channel",
       "channelId": "UCtby6rJtBGgUm-2oD_E7bzw",
       "url": "https://www.youtube.com/channel/UCtby6rJtBGgUm-2oD_E7bzw",
+      "enabled": true,
       "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
       "discoveryMethod": "youtube_feed",
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
+      "kind": "video",
+      "localOnly": true,
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
     },
     {
-      "enabled": true,
-      "categories": [
-        "health"
-      ],
       "id": "yt-haruhankki",
       "name": "하루한끼",
       "type": "youtube_channel",
       "channelId": "UCPWFxcwPliEBMwJjmeFIDIg",
       "url": "https://www.youtube.com/channel/UCPWFxcwPliEBMwJjmeFIDIg",
+      "enabled": true,
       "trustTier": "B",
+      "categories": [
+        "tips",
+        "health"
+      ],
       "discoveryMethod": "youtube_feed",
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
+      "kind": "video",
+      "localOnly": true,
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
     },
     {
-      "enabled": true,
-      "categories": [
-        "trend"
-      ],
       "id": "yt-hamzy",
       "name": "햄지 Hamzy",
       "type": "youtube_channel",
       "channelId": "UCPKNKldggioffXPkSmjs5lQ",
       "url": "https://www.youtube.com/channel/UCPKNKldggioffXPkSmjs5lQ",
+      "enabled": true,
       "trustTier": "B",
+      "categories": [
+        "trend"
+      ],
       "discoveryMethod": "youtube_feed",
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
+      "kind": "video",
+      "localOnly": true,
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
     },
     {
-      "enabled": false,
-      "categories": [
-        "tips",
-        "trend",
-        "health",
-        "habit"
-      ],
-      "id": "yt-search",
-      "name": "YouTube search",
-      "type": "youtube_search",
-      "trustTier": "C",
-      "discoveryMethod": "yt-dlp|youtube_api",
-      "queries": [
-        "요리 비법",
-        "집밥 레시피",
-        "자취 요리",
-        "요즘 음식",
-        "편의점 신상",
-        "먹방 트렌드",
-        "건강한 한 끼",
-        "식습관"
-      ],
-      "note": "Implemented (YouTube Data API or local yt-dlp); not configured. No key is requested today."
-    },
-    {
-      "enabled": false,
-      "categories": [
-        "tips",
-        "trend",
-        "health",
-        "habit"
-      ],
-      "id": "web-exa",
-      "name": "Web search (Exa)",
-      "type": "web_search",
-      "trustTier": "C",
-      "discoveryMethod": "exa",
-      "queries": [
-        "요리 비법",
-        "집밥 레시피",
-        "자취 요리",
-        "요즘 음식",
-        "편의점 신상",
-        "먹방 트렌드",
-        "건강한 한 끼",
-        "식습관"
-      ],
-      "note": "Implemented (Exa search + Jina Reader for public pages); needs EXA_API_KEY, not configured."
-    },
-    {
-      "enabled": false,
-      "categories": [
-        "tips",
-        "trend"
-      ],
-      "id": "web-naver-blog",
-      "name": "Naver Blog (via web search)",
-      "type": "web_search",
-      "trustTier": "C",
-      "discoveryMethod": "exa",
-      "queries": [
-        "site:blog.naver.com 자취 요리 레시피",
-        "site:blog.naver.com 편의점 신상"
-      ],
-      "note": "Implemented through the web search adapter (site:blog.naver.com); not configured."
-    },
-    {
-      "enabled": false,
-      "categories": [
-        "trend"
-      ],
       "id": "instagram-opencli",
       "name": "Instagram (OpenCLI, local only)",
       "type": "instagram",
+      "enabled": false,
       "trustTier": "C",
+      "categories": [
+        "trend"
+      ],
+      "lane": "trend",
       "discoveryMethod": "opencli",
-      "note": "Planned: OpenCLI with a dedicated local profile only; never in GitHub Actions."
+      "kind": "mixed",
+      "note": "OWNER_CHECKPOINT: Agent Reach (a19a171) reads Instagram only through OpenCLI driving a logged-in desktop Chrome session. Needs a dedicated monitoring account/profile set up by the owner on the operator PC; no cookies in GitHub, no CAPTCHA bypass, stop on any security challenge."
     }
   ]
 }

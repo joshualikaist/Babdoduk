@@ -97,7 +97,7 @@
 
         <article class="mg-hero" id="featured" hidden>
           <div class="mg-hero-copy">
-            <span class="mg-hero-label" data-i18n="mg.hero.label">오늘의 대표 이야기</span>
+            <span class="mg-hero-label" id="mgHeroLabel" data-i18n="mg.hero.pick">오늘의 추천 글</span>
             <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
               <h2 id="mgHeroTitle"></h2>
             </a>
@@ -219,7 +219,13 @@
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'mg.title': '밥도둑 매거진',
-          'mg.hero.label': '오늘의 대표 이야기',
+          'mg.hero.pick': '오늘의 추천 글',
+          'mg.hero.trend': '지금 뜨는 먹거리',
+          'mg.ev.label': '유행 근거',
+          'mg.ev.explicit_source_claim': '원문이 인기·유행을 전함',
+          'mg.ev.corroborated': '여러 매체가 다룸',
+          'mg.ev.engagement': '조회 반응이 큼',
+          'mg.ev.sales_data': '판매 수치 보도',
           'mg.board.title': '오늘의 밥 이야기',
           'mg.index.title': '네 갈래 밥 이야기',
           'mg.cat.tips': '요리 비법',
@@ -233,7 +239,8 @@
           'mg.habit.lead': '잘 먹는 법에 대한 작은 이야기',
           'mg.cal.open': '날짜 보기',
           'mg.medium.blog': '블로그',
-          'mg.medium.news': '블로그',
+          'mg.medium.news': '기사',
+          'mg.medium.research': '연구',
           'mg.medium.youtube': '유튜브',
           'mg.medium.instagram': '인스타',
           'mg.hero.from': '출처',
@@ -337,7 +344,13 @@
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'mg.title': 'Babdoduk Magazine',
-          'mg.hero.label': 'Featured today',
+          'mg.hero.pick': "Today's pick",
+          'mg.hero.trend': 'Trending now',
+          'mg.ev.label': 'Why it is trending',
+          'mg.ev.explicit_source_claim': 'the source reports it as popular',
+          'mg.ev.corroborated': 'covered by several sources',
+          'mg.ev.engagement': 'high engagement',
+          'mg.ev.sales_data': 'sales figures reported',
           'mg.board.title': "Today's rice stories",
           'mg.index.title': 'Four food sections',
           'mg.cat.tips': 'Kitchen notes',
@@ -351,7 +364,8 @@
           'mg.habit.lead': 'Small notes on eating well',
           'mg.cal.open': 'Pick a date',
           'mg.medium.blog': 'Blog',
-          'mg.medium.news': 'Blog',
+          'mg.medium.news': 'News',
+          'mg.medium.research': 'Research',
           'mg.medium.youtube': 'YouTube',
           'mg.medium.instagram': 'Instagram',
           'mg.hero.from': 'Source',
@@ -532,12 +546,17 @@
         return escapeHtml(text || '').replace(/\n/g, '<br>');
       }
 
+      // Trend stories say why they are trends: the evidence kinds recorded by discovery.
+      var EVIDENCE = ['explicit_source_claim', 'corroborated', 'engagement', 'sales_data'];
+      function evidenceText(item) {
+        var kinds = (item.trendEvidence || []).filter(function (k) { return EVIDENCE.indexOf(k) !== -1; });
+        if (!kinds.length) return '';
+        return t('mg.ev.label', '유행 근거') + ' · ' + kinds.map(function (k) { return t('mg.ev.' + k, k); }).join(' · ');
+      }
+
       function tagsHtml(item, className) {
-        var tags = item.tags || [];
-        if (!tags.length) return '';
-        return '<p class="' + className + '">' + tags.map(function (tag) {
-          return '#' + escapeHtml(tag);
-        }).join(' ') + '</p>';
+        var line = evidenceText(item);
+        return line ? '<p class="' + className + '">' + escapeHtml(line) + '</p>' : '';
       }
 
       function safeUrl(url) {
@@ -667,12 +686,19 @@
         var metaEl = document.getElementById('mgHeroMeta');
         var srcEl = document.getElementById('mgHeroSrc');
         var linkEl = document.getElementById('mgHeroLink');
+        var heroLabel = document.getElementById('mgHeroLabel');
+        if (heroLabel) {
+          // "오늘의 추천 글" unless discovery marked a qualified trend (heroKind "trend" + evidence).
+          var heroKey = featured.heroKind === 'trend' && (featured.trendEvidence || []).length ? 'mg.hero.trend' : 'mg.hero.pick';
+          heroLabel.setAttribute('data-i18n', heroKey);
+          heroLabel.textContent = t(heroKey, heroKey === 'mg.hero.trend' ? '지금 뜨는 먹거리' : '오늘의 추천 글');
+        }
         if (titleEl) titleEl.textContent = featured.title || '';
         if (descEl) descEl.innerHTML = formatLines(featured.summary || '');
         if (metaEl) metaEl.textContent = t(LANE_META[featured.category] || 'mg.cat.tips') + ' · ' + mediumLabel(featured.medium);
         if (srcEl) srcEl.innerHTML = featured.source ? '<b>' + escapeHtml(sourceLine(featured)) + '</b>' : '';
         var tagsEl = document.getElementById('mgHeroTags');
-        if (tagsEl) tagsEl.innerHTML = (featured.tags || []).map(function (tag) { return '#' + escapeHtml(tag); }).join(' ');
+        if (tagsEl) tagsEl.textContent = evidenceText(featured);
         applyHeroImage(featured);
         if (linkEl) {
           if (featured.url) {
@@ -700,7 +726,7 @@
         Object.keys(ed.lanes || {}).forEach(function (lane) {
           var box = document.querySelector('[data-lane-items="' + lane + '"]');
           var lead = document.querySelector('#lane-' + lane + ' .mg-lane-lead');
-          if (lead && ed.lanes[lane].lead) lead.textContent = ed.lanes[lane].lead;
+          if (lead) lead.textContent = t('mg.' + lane + '.lead', ed.lanes[lane].lead || lead.textContent);
           var stories = (ed.lanes[lane].items || []).map(storyHtml).join('');
           if (box) box.innerHTML = stories || '<p class="mg-lane-empty">' + escapeHtml(t('mg.laneEmpty', '오늘은 이 갈래에 올릴 새 이야기가 없어요.')) + '</p>';
         });

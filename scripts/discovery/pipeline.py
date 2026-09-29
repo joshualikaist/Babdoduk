@@ -28,6 +28,7 @@ class Paths:
         self.candidates = self.research / "candidates.jsonl"
         self.health = self.research / "health.json"
         self.runs = self.research / "runs.jsonl"
+        self.inbox = self.research / "inbox"          # written only by the local sidecar
 
 
 def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.environ,
@@ -41,6 +42,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
     source_health = registry.load_health(paths.source_health)
     store = CandidateStore(paths.candidates)
     health, queries, new = {}, [], 0
+    throttled: set[str] = set()                # a type that answered 429 is not asked again this run
     for source in sources:
         entry = source_health.setdefault(source["id"], {})
         if not source.get("enabled"):
@@ -51,7 +53,12 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
             health[source["id"]] = {"type": source["type"], "adapter": "SKIPPED", "code": "SKIPPED_CLOUD_PARITY", "items": 0}
             log(f"discovery {source['id']}: SKIPPED_CLOUD_PARITY")
             continue
-        result = adapters.run(source, fetcher=fetcher, env=env)
+        if source["type"] in throttled:
+            result = adapters.AdapterResult(adapters.FETCH_FAILED, code="RATE_LIMITED_SKIPPED")
+        else:
+            result = adapters.run(source, fetcher=fetcher, env=env, inbox_dir=paths.inbox, now=now)
+        if result.code == "HTTP_429":
+            throttled.add(source["type"])
         ok = result.status == adapters.OK
         if result.status != adapters.NOT_CONFIGURED:
             registry.record(entry, ok=ok, now=now, code=result.code or None, count=len(result.items))
@@ -83,13 +90,39 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         if not row.get("selected"):
             row["duplicateOf"] = None
             row["rejectionReason"] = None
+            row["assignedCategory"] = None
     counts = process.process(rows, now)
     image_counts = images.enrich(rows, fetcher, validate=validate)
     for row in rows:
         if not row.get("duplicateOf") and not row.get("rejectionReason"):
             process.score(row, now)
     return {"sources": sources, "sourceHealth": source_health, "store": store, "health": health, "queries": queries,
-            "counts": dict(counts, new=new, candidates=len(rows), **image_counts)}
+            "counts": dict(counts, new=new, candidates=len(rows), **image_counts), "lanes": lane_report(rows)}
+
+
+def lane_report(rows: list[dict]) -> dict:
+    """Per lane: qualifying unique candidates (not duplicates, not rejected, assigned there),
+    and why the rows discovered for that lane did not qualify, so an empty lane is explained."""
+    report = {}
+    for lane in select.LANES:
+        qualifying = [r for r in rows if r.get("assignedCategory") == lane and not r.get("duplicateOf")
+                      and not r.get("rejectionReason")]
+        asked = [r for r in rows if r.get("discoveryLane") == lane]
+        reasons: dict[str, int] = {}
+        for row in asked:
+            if row.get("duplicateOf"):
+                key = "DUPLICATE"
+            elif row.get("rejectionReason") and row["rejectionReason"] != "NO_QUALIFYING_LANE":
+                key = row["rejectionReason"]
+            elif row.get("assignedCategory") == lane:
+                continue
+            else:
+                other = (row.get("assignedCategory") or "").upper()
+                key = (row.get("laneDecisions") or {}).get(lane) or f"ASSIGNED_{other}"
+            reasons[key] = reasons.get(key, 0) + 1
+        report[lane] = {"qualifying": len(qualifying), "discoveredForLane": len(asked),
+                        "notQualifying": dict(sorted(reasons.items()))}
+    return report
 
 
 def recent_keys(out: Path, before: str, days: int = 7) -> set[str]:
@@ -132,6 +165,7 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
                     "statusCounts": {name: len(ids) for name, ids in by_status.items()}, "byStatus": by_status,
                     **run["counts"], "pruned": pruned,
                     "selected": len(chosen), "fabricated": 0, "staleSources": stale},
+        "lanes": run.get("lanes") or {},
         "warnings": [f"{sid}: {run['health'][sid]['code']}" for sid in failing]
                     + [f"{sid}: SOURCE_STALE (newest item older than {registry.STALE_DAYS} days)" for sid in stale]
                     + [f"{sid}: {run['health'][sid]['code']}" for sid in by_status["DEGRADED"] if sid not in failing],

@@ -116,8 +116,9 @@ def test_youtube_api_failure_never_echoes_the_key():
     assert result.status == adapters.FETCH_FAILED and result.code == "HTTP_403" and "SECRET" not in repr(result)
 
 
-def test_web_search_is_not_configured_without_exa_and_keeps_query_provenance_with_it():
-    assert web.discover({"queries": ["집밥 레시피"]}, fetcher=None, env={}).status == adapters.NOT_CONFIGURED
+def test_web_search_can_be_switched_off_and_the_optional_key_route_keeps_query_provenance():
+    off = web.discover({"queries": ["집밥 레시피"]}, fetcher=None, env={"BABDODUK_EXA_MCP": "0"})
+    assert off.status == adapters.NOT_CONFIGURED and off.items == []
 
     class Response:
         def __init__(self, body):
@@ -212,11 +213,23 @@ def test_the_one_registry_is_valid_and_honest_about_what_runs():
     by_type = {}
     for s in sources:
         by_type.setdefault(s["type"], []).append(s)
-    # Adapters that need a credential or a local browser exist but are not enabled or claimed.
-    for s in by_type["instagram"] + by_type["web_search"] + by_type["youtube_search"]:
-        assert s["enabled"] is False and s.get("note"), s["id"]
+    # Instagram needs an owner-provided local session: implemented as a stub, never enabled.
+    for s in by_type["instagram"]:
+        assert s["enabled"] is False and "OWNER_CHECKPOINT" in s.get("note", ""), s["id"]
+    # Search routes run without a credential: web search through Exa's hosted MCP (cloud-safe),
+    # YouTube search through the local sidecar only. Each asks for one lane and must show food.
     assert all(s["trustTier"] == "C" for s in by_type["web_search"] + by_type["youtube_search"])
+    for s in by_type["web_search"] + by_type["youtube_search"]:
+        assert s["queries"] and s.get("lane") in ("trend", "habit") and s.get("requireFood") is True, s["id"]
+    assert {s["lane"] for s in by_type["web_search"] if s["enabled"]} == {"trend", "habit"}
+    assert any("site:blog.naver.com" in q for s in by_type["web_search"] for q in s["queries"])
+    assert all(s.get("localOnly") for s in by_type["youtube_search"] + by_type["youtube_channel"])
+    assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"])
     assert all(s.get("knownIssue") for s in by_type["youtube_channel"])
+    # Recipe blogs feed tips/health only: a recipe is not a trend or an eating-habit story.
+    for s in by_type["rss"]:
+        if s.get("kind") == "recipe":
+            assert set(s["categories"]) <= {"tips", "health"}, s["id"]
     import refresh_magazine
     source_text = Path(refresh_magazine.__file__).read_text(encoding="utf-8")
     assert "youtube.com/feeds" not in source_text and ".tistory.com" not in source_text   # no second list
@@ -235,8 +248,11 @@ def _row(**kw):
 def test_old_items_never_land_in_the_trend_lane():
     from datetime import timedelta
     from discovery import process
-    old = _row(title="편의점 신상 먹방 트렌드", publishedAt=(evaluate.NOW - timedelta(days=45)).isoformat(), categoryHints=["trend"])
-    new = _row(title="편의점 신상 먹방 트렌드", publishedAt=(evaluate.NOW - timedelta(days=3)).isoformat(), categoryHints=["trend"])
+    claim = {"explicit_source_claim": {"term": "품절", "text": "출시 사흘 만에 품절됐다.", "strong": True}}
+    old = _row(title="편의점 신상 먹방 트렌드", publishedAt=(evaluate.NOW - timedelta(days=45)).isoformat(),
+               categoryHints=["trend"], trendSignals=claim, contentKind="news")
+    new = _row(title="편의점 신상 먹방 트렌드", publishedAt=(evaluate.NOW - timedelta(days=3)).isoformat(),
+               categoryHints=["trend"], trendSignals=claim, contentKind="news")
     assert process.classify(old, evaluate.NOW) != "trend" and process.classify(new, evaluate.NOW) == "trend"
     ancient = _row(title="오래된 김치찌개 레시피", publishedAt=(evaluate.NOW - timedelta(days=400)).isoformat())
     assert process.rejection(ancient, evaluate.NOW) == "TOO_OLD"
@@ -298,9 +314,11 @@ def test_a_lane_needs_the_sources_own_category_or_two_signals():
     porridge = _row(title="Jeonbokjuk (Korean Abalone Porridge)", categoryHints=["tips", "health"],
                     sourceExcerpt="A comforting porridge, great for breakfast, made with leftover rice." * 2)
     assert process.classify(porridge) in ("tips", "health")          # one "breakfast" is not a habit story
-    habit = _row(title="아침 식사 루틴과 식습관", categoryHints=["tips"],
-                 sourceExcerpt="아침 식사 습관을 바꾸는 루틴 이야기입니다." * 3)
-    assert process.classify(habit) == "habit"
+    habit = _row(title="아침 식사 루틴과 식습관", categoryHints=["tips"], contentKind="news",
+                 sourceExcerpt="아침 식사 습관을 바꾸는 루틴 이야기입니다." * 3,
+                 publishedAt=evaluate.NOW.isoformat(),
+                 habitSignals={"words": ["식습관", "아침 식사"], "behavior": "응답자의 40%가 아침을 거른다."})
+    assert process.classify(habit, evaluate.NOW) == "habit"
 
 
 def test_contests_and_giveaways_are_rejected_as_promotions():

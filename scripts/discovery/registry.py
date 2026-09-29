@@ -31,7 +31,8 @@ LANES = ("tips", "trend", "health", "habit")
 STALE_DAYS = 120
 STATUSES = ("ACTIVE", "STALE", "DEGRADED", "DISABLED")
 AUTHORED = {"id", "name", "type", "url", "channelId", "enabled", "trustTier", "categories", "discoveryMethod",
-            "queries", "note", "knownIssue"}
+            "queries", "note", "knownIssue", "lane", "localOnly", "requireFood", "objective", "kind"}
+KINDS = {"recipe", "news", "research", "video", "mixed"}
 
 
 def load(path: Path = REGISTRY) -> list[dict]:
@@ -105,4 +106,12 @@ def validate(sources: list[dict]) -> list[str]:
             errors.append(f"{sid}: enabled must be true/false")
         if s.get("type") in ("rss", "youtube_channel") and not (s.get("url") or s.get("channelId")):
             errors.append(f"{sid}: url or channelId required")
+        if s.get("lane") is not None and s.get("lane") not in LANES:
+            errors.append(f"{sid}: lane must be one of {LANES}")
+        if s.get("kind") is not None and s.get("kind") not in KINDS:
+            errors.append(f"{sid}: kind must be one of {sorted(KINDS)}")
+        if s.get("type") in ("youtube_search", "web_search") and s.get("enabled") and not s.get("queries"):
+            errors.append(f"{sid}: a search source needs queries")
+        if s.get("type") == "instagram" and s.get("enabled"):
+            errors.append(f"{sid}: Instagram needs an owner-provided local session (OWNER_CHECKPOINT)")
     return errors
