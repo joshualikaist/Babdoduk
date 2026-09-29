@@ -48,6 +48,10 @@ jobs:
     # Main only. The schedule always runs from main; a dispatch aimed at any other ref
     # (for example with a leaked dispatch token) is skipped before a secret is read.
     if: github.ref == 'refs/heads/main'
+    # The refresh secrets live in this environment, which only main may use (no reviewer,
+    # so the schedule stays unattended). A workflow at an old tag or branch names no
+    # environment and so receives none of them (docs/GGONGBAB_TRIGGER.md).
+    environment: ggongbab-production
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -58,12 +62,20 @@ jobs:
       - name: Check required configuration
         env:
           # Booleans only: this step never receives a secret value.
+          ENVIRONMENT_MARKER: ${{ vars.GGONGBAB_ENVIRONMENT }}
           HAS_DOORAY_API_TOKEN: ${{ secrets.DOORAY_API_TOKEN != '' }}
           HAS_SUPABASE_URL: ${{ secrets.SUPABASE_URL != '' }}
           HAS_SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY != '' || secrets.SUPABASE_SERVICE_ROLE_KEY != '' }}
           HAS_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
         run: |
           echo "trigger: $TRIGGER"
+          # A non-secret variable of the environment: proves the secrets below are the
+          # environment's, not a repository-level fallback.
+          echo "environment: ${ENVIRONMENT_MARKER:-none}"
+          if [ "$ENVIRONMENT_MARKER" != "ggongbab-production" ]; then
+            echo "::error::not running in the ggongbab-production environment"
+            exit 1
+          fi
           # The runner falls back to an in-memory repository, or skips AI, when a
           # secret is missing and still exits 0, so a missing secret fails here.
           case "$MODE" in
