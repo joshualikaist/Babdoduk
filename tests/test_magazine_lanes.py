@@ -861,3 +861,11 @@ def test_a_launch_with_observed_stockouts_is_demand_but_a_deal_list_is_a_promoti
                        "알려드려요. " * 4, day(3), "https://www.youtube.com/watch?v=iiiiiiiiiii", medium="youtube",
                        viewCount=62071), dict(VIDEO, categories=["trend"])))
     assert deals["rejectionReason"] == "PROMOTION"
+
+
+def test_card_excerpts_leave_no_credit_debris_or_repeated_tagged_headlines():
+    assert select.card_summary("SNS에서 유행하던 치즈미역국이 편의점 상품으로 제작됐다. /사진 = 인스타그램 캡처.")         == "SNS에서 유행하던 치즈미역국이 편의점 상품으로 제작됐다."
+    assert select.card_summary("가공식품 지출 현황과 특징1. 2분기 가구의 식품비 지출은 3.3% 증가했다.",
+                               "[자료] 가공식품 지출 현황과 특징").startswith("1. 2분기")
+    assert select.card_summary("ㅡㅡㅡㅡㅡㅡㅡㅡ 푸디앨리 멤버십 가입하기 자막이 필요하시면 CC 버튼을 눌러주세요 (Press CC button)") == ""
+    assert select.card_summary("바삭하고 고소해서 정말 좋아요. 버터 향이 오래 남는 쿠키입니다.").startswith("바삭하고")
