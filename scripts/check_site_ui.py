@@ -339,7 +339,9 @@ def release_contracts(page):
 
 def magazine_sparse(page):
     """Sparse editions look intentional: an empty lane says so quietly, a hero without its own
-    image is text-only (no BABDODUK placeholder), no featured story hides the hero, no filler."""
+    image is text-only (no BABDODUK placeholder), no featured story hides the hero, no filler.
+    The hero label says what the hero is: 오늘의 추천 글 unless it is a qualified trend with
+    evidence, and trend stories list their evidence kinds."""
     count = 0
 
     def check(ok, detail):
@@ -356,7 +358,15 @@ def magazine_sparse(page):
     featured_img = dict(story(0, "tips"), category="tips", image="https://img.example.invalid/f.png",
                         imageSource="feed_media")
     featured_text = dict(story(0, "tips"), category="tips")
+    evidence = ["explicit_source_claim", "corroborated"]
+    featured_trend = dict(story(0, "trend"), category="trend", heroKind="trend", trendEvidence=evidence,
+                          image="https://img.example.invalid/t.png", imageSource="source_page_og", medium="news")
+    featured_claim = dict(story(0, "trend"), category="trend", heroKind="trend", medium="news",
+                          image="https://img.example.invalid/c.png", imageSource="source_page_og")   # no evidence
     fixtures = [
+        ("trend hero", featured_trend, {"tips": [story(1, "tips")], "trend": [dict(story(1, "trend"), trendEvidence=evidence)],
+                                        "health": [], "habit": [dict(story(1, "habit"), medium="research")]}),
+        ("trend claim without evidence", featured_claim, {lane: [story(1, lane)] for lane in lanes}),
         ("four lanes", featured_img, {lane: [story(1, lane)] for lane in lanes}),
         ("two lanes", featured_img, {"tips": [story(1, "tips"), story(2, "tips")], "trend": [story(1, "trend")],
                                      "health": [], "habit": []}),
@@ -386,6 +396,15 @@ def magazine_sparse(page):
             hero_hidden = page.locator("#featured").is_hidden()
             check(hero_hidden == (featured is None), (where, "the hero exists only for a real featured story"))
             if featured is not None:
+                qualified = featured.get("heroKind") == "trend" and featured.get("trendEvidence")
+                label = page.inner_text("#mgHeroLabel").strip()
+                check(label == ("지금 뜨는 먹거리" if qualified else "오늘의 추천 글"), (where, "hero label", label))
+                tags = page.inner_text("#mgHeroTags").strip()
+                check(("유행 근거" in tags and "여러 매체가 다룸" in tags) if qualified else tags == "",
+                      (where, "a trend hero lists its evidence; any other hero lists none"))
+                cards = page.locator('[data-lane-items="trend"] .mg-story-tags')
+                check(cards.count() == sum(1 for s in items["trend"] if s.get("trendEvidence")),
+                      (where, "trend cards show their evidence"))
                 visual = page.locator("#mgHeroVisual")
                 if featured.get("image"):
                     page.wait_for_function("document.getElementById('mgHeroVisual').classList.contains('has-photo')")

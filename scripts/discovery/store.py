@@ -3,8 +3,9 @@
 
 It is the research record, separate from the daily public edition. It holds public source
 metadata only: title, canonical URL, a short verbatim source excerpt, image URL, discovery
-method and query, hashes, scores and the selection/rejection decision. Never cookies, tokens,
-session data or private URLs. Bounded: a candidate not seen for RETAIN_DAYS is dropped, and the
+method, query and lane, trend/habit evidence with verbatim detail, source trust, audience
+relevance, hashes, scores and the selection/rejection decision. Never cookies, tokens, session
+data or private URLs. Bounded: a candidate not seen for RETAIN_DAYS is dropped, and the
 file never exceeds MAX_CANDIDATES (oldest last-seen first).
 """
 from __future__ import annotations
@@ -23,7 +24,13 @@ FIELDS = ("candidateId", "sourceId", "sourceName", "sourceType", "sourceUrl", "c
           "imageValidated", "categoryHints", "assignedCategory", "discoveryQuery", "discoveryMethod",
           "contentHash", "canonicalHash", "sourceItemId", "duplicateOf", "qualityScore", "freshnessScore",
           "sourceScore", "relevanceScore", "score", "selected", "selectedAt", "rejectionReason", "medium",
-          "trustTier", "seenVia", "textLength", "discoveredSeq", "selectedFor")
+          "trustTier", "seenVia", "textLength", "discoveredSeq", "selectedFor",
+          # provenance and evidence (owner decision, 2026-09-29)
+          "discoveryLane", "seenQueries", "searchRank", "sourceTrust", "contentKind", "publishedAtSource",
+          "trendSignals", "trendEvidence", "trendEvidenceDetail", "corroboratedBy", "habitSignals",
+          "audienceRelevance", "audienceScore", "laneDecisions", "viewCount", "likeCount", "requireFood",
+          "commercePage", "sponsored")
+MAX_QUERIES = 8
 
 
 def candidate_id(url: str) -> str:
@@ -57,15 +64,43 @@ class CandidateStore:
             seq = 1 + max((int(r.get("discoveredSeq") or 0) for r in self.rows.values()), default=0)
             row.update(candidateId=cid, discoveredAt=iso(now), lastSeenAt=iso(now), selected=False,
                        selectedAt=None, duplicateOf=None, rejectionReason=None, seenVia=[route],
-                       discoveredSeq=seq)
+                       discoveredSeq=seq, seenQueries=[raw["discoveryQuery"]] if raw.get("discoveryQuery") else [])
             self.rows[cid] = row
             return row
         row["lastSeenAt"] = iso(now)
         if route not in (row.get("seenVia") or []):
             row["seenVia"] = (row.get("seenVia") or []) + [route]
-        for key in ("title", "sourceExcerpt", "publishedAt", "imageUrl", "imageSource", "imageValidated", "contentHash",
-                    "textLength"):
+        query = raw.get("discoveryQuery")
+        if query and query not in (row.get("seenQueries") or []):
+            row["seenQueries"] = ((row.get("seenQueries") or []) + [query])[-MAX_QUERIES:]
+        for key in ("title", "sourceExcerpt", "publishedAt", "publishedAtSource", "imageUrl", "imageSource",
+                    "imageValidated", "contentHash", "discoveryLane", "discoveryQuery", "sourceTrust", "contentKind",
+                    "requireFood"):
             if raw.get(key) and not row.get(key):
+                row[key] = raw[key]
+        # The first route re-reading the same text (or more) refreshes what is derived from it -
+        # evidence, kind, tier, a cleaned title - so a rule change applies. Another route only adds
+        # evidence and never rewrites the first discovery's title, source, tier or kind.
+        first_route = (row.get("seenVia") or [route])[0] == route
+        refresh = first_route and (raw.get("textLength") or 0) >= (row.get("textLength") or 0)
+        if refresh:
+            row["textLength"] = raw.get("textLength") or 0
+            row["sourceExcerpt"] = raw.get("sourceExcerpt") or row.get("sourceExcerpt")
+            for key in ("medium", "contentKind", "sourceTrust", "trustTier", "requireFood", "sponsored", "title",
+                        "publishedAtSource", "trendSignals", "habitSignals", "audienceRelevance"):
+                if raw.get(key) is not None:
+                    row[key] = raw[key]
+        else:
+            signals = dict(row.get("trendSignals") or {})
+            for kind, value in (raw.get("trendSignals") or {}).items():
+                if kind not in signals or kind == "engagement":
+                    signals[kind] = value
+            row["trendSignals"] = signals
+            new_score = (raw.get("audienceRelevance") or {}).get("score") or 0
+            if new_score > ((row.get("audienceRelevance") or {}).get("score") or 0):
+                row["audienceRelevance"] = raw["audienceRelevance"]
+        for key in ("viewCount", "likeCount"):
+            if isinstance(raw.get(key), int):
                 row[key] = raw[key]
         return row
 

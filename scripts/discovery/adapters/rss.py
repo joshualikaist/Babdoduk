@@ -75,10 +75,13 @@ def parse(payload: bytes) -> list[dict]:
             link_el = node.find("atom:link", NS)
         link = link_el.get("href") if link_el is not None else ""
         image, image_source = item_image(node)
+        stats = node.find("media:group/media:community/media:statistics", NS)
+        views = stats.get("views") if stats is not None else None
         out.append({"title": clean_text(_text(node, "atom:title")), "sourceUrl": link,
                     "sourceItemId": _text(node, "yt:videoId") or _text(node, "atom:id") or link,
                     "publishedAt": parse_time(_text(node, "atom:published") or _text(node, "atom:updated")),
-                    "text": item_text(node), "imageUrl": image, "imageSource": image_source})
+                    "text": item_text(node), "imageUrl": image, "imageSource": image_source,
+                    "viewCount": int(views) if views and views.isdigit() else None})
     return [row for row in out if row["title"] and row["sourceUrl"]]
 
 
@@ -91,4 +94,5 @@ def discover(source: dict, *, fetcher) -> AdapterResult:
         items = parse(payload)
     except ET.ParseError:
         return AdapterResult(PARSE_FAILED, code="PARSE")
-    return AdapterResult(OK, items=[dict(row, medium="blog") for row in items])
+    medium = "news" if source.get("kind") == "news" else "blog"
+    return AdapterResult(OK, items=[dict(row, medium=medium) for row in items])

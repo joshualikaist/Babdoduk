@@ -29,9 +29,14 @@ def failure_code(exc: Exception) -> str:
             "ParseError": "PARSE", "ValueError": "INVALID"}.get(name, name.upper()[:24])
 
 
-def run(source: dict, *, fetcher, env) -> AdapterResult:
-    from . import instagram, rss, web, youtube
+def run(source: dict, *, fetcher, env, inbox_dir=None, now=None) -> AdapterResult:
+    from . import inbox, instagram, rss, web, youtube
     method = source.get("type")
+    if source.get("localOnly"):
+        # Collected on the operator PC by discovery.sidecar; this run only reads its inbox.
+        if inbox_dir is None:
+            return AdapterResult(NOT_CONFIGURED, code="LOCAL_INBOX_MISSING")
+        return inbox.read(source, inbox_dir, now)
     if method == "rss":
         return rss.discover(source, fetcher=fetcher)
     if method == "youtube_channel":
@@ -39,7 +44,7 @@ def run(source: dict, *, fetcher, env) -> AdapterResult:
     if method == "youtube_search":
         return youtube.discover_search(source, fetcher=fetcher, env=env)
     if method == "web_search":
-        return web.discover(source, fetcher=fetcher, env=env)
+        return web.discover(source, fetcher=fetcher, env=env, now=now)
     if method == "instagram":
         return instagram.discover(source)
     return AdapterResult(NOT_CONFIGURED, code="UNKNOWN_TYPE")

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
 from urllib.parse import parse_qsl, unquote, urlparse
@@ -28,7 +28,10 @@ def video_id(url: str) -> str:
 
 
 MAGAZINE_LANE_MAX = 8
-MAGAZINE_MEDIA = {"blog", "youtube", "instagram"}
+MAGAZINE_MEDIA = {"blog", "youtube", "instagram", "news", "research"}
+TREND_EVIDENCE = {"explicit_source_claim", "corroborated", "engagement", "sales_data"}
+MAGAZINE_RULES = "lanes-v1"
+TREND_MAX_DAYS = 30
 FABRICATED_SOURCES = {"밥도둑 데스크", "Babdoduk desk"}
 
 
@@ -49,7 +52,44 @@ def magazine_item_errors(item: dict, where: str) -> list[str]:
         errors.append(f"{where}: image is not an http(s) URL")
     if len(str(item.get("summary") or "")) > 200:
         errors.append(f"{where}: summary longer than a source excerpt")
+    if item.get("trendEvidence") is not None and not (
+            isinstance(item["trendEvidence"], list) and item["trendEvidence"]
+            and set(item["trendEvidence"]) <= TREND_EVIDENCE):
+        errors.append(f"{where}: trendEvidence must list known evidence kinds")
     return errors
+
+
+def lane_rule_errors(item: dict, lane: str, edition_date: str, where: str) -> list[str]:
+    """Trend and habit are evidence lanes (docs/MAGAZINE_DISCOVERY.md): a trend story carries
+    its trendEvidence and is at most 30 days older than the edition; every trend or habit story
+    shows its publication date."""
+    errors = []
+    if lane not in ("trend", "habit"):
+        return errors
+    published = str(item.get("publishedAt") or "")[:10]
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", published):
+        errors.append(f"{where}: {lane} story without a publication date")
+        return errors
+    if lane == "trend":
+        if not item.get("trendEvidence"):
+            errors.append(f"{where}: trend story without trendEvidence")
+        try:
+            age = (date.fromisoformat(edition_date) - date.fromisoformat(published)).days
+        except ValueError:
+            age = None
+        if age is not None and age > TREND_MAX_DAYS:
+            errors.append(f"{where}: trend story older than {TREND_MAX_DAYS} days")
+    return errors
+
+
+def story_url_key(url: str) -> str:
+    """Scheme, www. and fragment dropped, tracking parameters removed; the rest of the query
+    stays (a news CMS puts the article id there: articleView.html?idxno=123)."""
+    parsed = urlparse((url or "").strip())
+    host = (parsed.hostname or "").lower()
+    host = host[4:] if host.startswith("www.") else host
+    query = "&".join(sorted(f"{k}={v}" for k, v in parse_qsl(parsed.query) if not k.lower().startswith("utm_")))
+    return f"{host}{parsed.path.rstrip('/')}" + (f"?{query}" if query else "")
 
 
 def validate_magazine(path: Path) -> list[str]:
@@ -73,17 +113,24 @@ def validate_magazine(path: Path) -> list[str]:
     featured = data.get("featured") or {}
     if featured:
         errors.extend(magazine_item_errors(featured, f"{name} featured"))
+    if data.get("rules") == MAGAZINE_RULES and featured:
+        if featured.get("heroKind") not in ("trend", "pick"):
+            errors.append(f"{name}: featured heroKind must be trend or pick")
+        if featured.get("heroKind") == "trend" and (featured.get("category") != "trend" or not featured.get("trendEvidence")):
+            errors.append(f"{name}: a trend hero needs a trend story with trendEvidence")
+        errors.extend(lane_rule_errors(featured, featured.get("category") or "", data.get("date") or "", f"{name} featured"))
     used_urls = set()
     used_vids = set()
     used_titles = set()
-    feat_url = (featured.get("url") or "").split("?")[0].rstrip("/").lower()
+    feat_url = story_url_key(featured.get("url") or "") if featured.get("url") else ""
     feat_title = featured.get("title") or ""
     for lane in LANES:
         sources = []
         for item in (lanes.get(lane) or {}).get("items") or []:
             errors.extend(magazine_item_errors(item, f"{name} {lane}"))
+            errors.extend(lane_rule_errors(item, lane, data.get("date") or "", f"{name} {lane}"))
             title = item.get("title") or ""
-            url = (item.get("url") or "").split("?")[0].rstrip("/").lower()
+            url = story_url_key(item.get("url") or "") if item.get("url") else ""
             vid = video_id(item.get("url") or "")
             src = item.get("source") or ""
             if title in used_titles:
@@ -117,6 +164,13 @@ def validate_magazine_archive(folder: Path) -> list[str]:
             errors.extend(magazine_item_errors(item, path.name))
         if "desks" in data:
             errors.append(f"{path.name}: idea desks are not source-backed stories")
+        lanes = data.get("lanes") or {}
+        # Browsable history never shows a trend without evidence, nor the old builder's
+        # keyword-routed habit picks (select.sanitize removes both).
+        if any(not i.get("trendEvidence") for i in (lanes.get("trend") or {}).get("items") or []):
+            errors.append(f"{path.name}: trend story without trendEvidence")
+        if data.get("rules") != MAGAZINE_RULES and (lanes.get("habit") or {}).get("items"):
+            errors.append(f"{path.name}: habit stories from before the lane rules")
     return errors
 
 
