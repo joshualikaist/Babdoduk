@@ -40,7 +40,7 @@
   var menuEl = document.getElementById('homeMenuStatus');
   var freeEl = document.getElementById('homeFreeStatus');
   var featureEl = document.getElementById('homeFeature');
-  var stampEl = document.getElementById('homeStamp');
+  var todayTitleEl = document.getElementById('homeTodayTitle');
   var todayDateEl = document.querySelector('[data-home-banner-date]');
   if (!M || !F || !menuEl || !freeEl) return;
 
@@ -59,6 +59,12 @@
   }
   function lang() { return window.babdodukGetLang ? window.babdodukGetLang() : 'ko'; }
   function hm(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function dateOnly(d) {
+    if (lang() === 'en') {
+      return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] + ' ' + d.getDate();
+    }
+    return (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+  }
   function dateLabel(d) {
     if (lang() === 'en') {
       return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()] + ', ' +
@@ -145,7 +151,7 @@
   }
 
   function render() {
-    if (stampEl) stampEl.textContent = t('home.stamp', '{date} 기준').replace('{date}', dateLabel(F.nowKst()));
+    if (todayTitleEl) todayTitleEl.textContent = dateOnly(F.nowKst());
     renderMenu();
     renderFree();
     renderFeature();
@@ -160,7 +166,7 @@
   }
 
   render();
-  getJson('data/kaist-menu/latest.json').then(function (data) {
+  M.loadTodayMenu(getJson).then(function (data) {
     if (!data || !Array.isArray(data.restaurants)) throw new Error('bad');
     state.menu = { status: 'ready', data: data };
   }).catch(function () {

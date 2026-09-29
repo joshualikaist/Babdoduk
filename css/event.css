@@ -1,7 +1,5 @@
-/* Babdoduk news: the date band (now / coming up / past) is computed from each row's
-   dates and shown separately from what was announced or confirmed. The page stays quiet:
-   number, date, title, a short state and one link; the original announcement and the
-   full explanation of its state sit behind 자세히. */
+/* Babdoduk news: dates decide now / coming up / past. The page stays a flat list:
+   date, title, a short state and one link. The original announcement sits behind 자세히. */
 *, *::before, *::after { margin: 0; padding: 0; }
 
 .event-page-wrap {
@@ -15,26 +13,7 @@
 }
 
 .event-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-}
-
-/* Scope note as metadata, not a paragraph: KAIST free food lives in 오늘의 꽁밥. */
-.event-elsewhere {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-ink-muted);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.event-elsewhere:hover {
-  color: var(--color-ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  display: block;
 }
 
 .event-section {
@@ -85,10 +64,6 @@
 }
 
 .event-empty {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 16px;
   font-size: 15px;
   font-weight: 600;
   color: var(--color-ink-muted);
@@ -100,8 +75,6 @@
 
 /* Archive rows are flat: a rule between them, no card. */
 .event-item {
-  display: grid;
-  grid-template-columns: 2.75rem minmax(0, 1fr);
   padding: var(--space-6) 0;
   border-top: 1px solid var(--color-divider);
 }
@@ -109,22 +82,6 @@
 .event-item:first-child {
   border-top: 0;
   padding-top: var(--space-2);
-}
-
-.event-item > * {
-  grid-column: 2;
-}
-
-.event-num {
-  grid-column: 1;
-  grid-row: 1 / span 2;
-  padding-top: 1px;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1.5;
-  color: var(--color-accent);
-  font-variant-numeric: tabular-nums;
 }
 
 .event-date {
@@ -187,7 +144,7 @@
   margin-top: 0;
 }
 
-.event-elsewhere:focus-visible,
+.event-instagram a:focus-visible,
 .event-link:focus-visible,
 .event-more summary:focus-visible {
   outline: 2px solid var(--color-focus);
@@ -195,13 +152,41 @@
   border-radius: 4px;
 }
 
-/* Running or upcoming activity is the one place that keeps an emphasized surface. */
+/* Current and past rows share the same flat list. The date is the anchor. */
 .event-list--now .event-item {
-  margin-bottom: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  margin-bottom: 0;
+  padding: var(--space-6) 0;
+  border: 0;
+  border-top: 1px solid var(--color-divider);
+  border-radius: 0;
+  background: transparent;
+}
+
+.event-list--now .event-item:first-child {
+  border-top: 0;
+  padding-top: var(--space-2);
+}
+
+.event-instagram {
+  margin-top: var(--space-12);
+  padding: var(--space-8) 0 var(--space-4);
+  border-top: 1px solid var(--color-divider);
+}
+
+.event-instagram a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 32px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.event-instagram a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .event-more {
@@ -325,10 +310,6 @@ html[lang="en"] .event-detail-row:not(.event-detail-row--solo) {
 }
 
 @media (max-width: 520px) {
-  .event-item {
-    grid-template-columns: 2.25rem minmax(0, 1fr);
-  }
-
   /* The English label column above is more specific, so it is reset here too. */
   .event-detail-row:not(.event-detail-row--solo),
   html[lang="en"] .event-detail-row:not(.event-detail-row--solo) {

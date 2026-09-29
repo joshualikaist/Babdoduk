@@ -111,13 +111,13 @@
   border-color: rgba(30, 29, 26, 0.24);
 }
 
-/* Atmosphere collage: three framed crops with controlled asymmetry. */
+/* Atmosphere collage: framed crops, no dish labels. */
 .home-collage {
   grid-area: collage;
   position: relative;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: repeat(10, minmax(0, 1fr)) auto;
+  grid-template-rows: repeat(10, minmax(0, 1fr));
   height: 336px;
   min-width: 0;
 }
@@ -164,62 +164,12 @@
   transform: rotate(-2deg);
 }
 
-.home-photo-tag {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  display: inline-flex;
-  gap: 6px;
-  max-width: calc(100% - 28px);
-  padding: 5px 9px;
-  border-radius: 8px;
-  background: var(--color-surface);
-  color: var(--color-ink);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* A crop too narrow for its dish name keeps only the number. */
-@container (max-width: 110px) {
-  .home-photo-tag > span {
-    display: none;
-  }
-}
-
-/* The main crop's lower corner sits under the ramen photo; tag it at the top. */
-.home-photo--main .home-photo-tag {
-  top: 14px;
-  bottom: auto;
-}
-
-.home-photo-tag b {
-  color: var(--color-accent);
-  font-weight: 900;
-}
-
-.home-collage-note {
-  grid-column: 1 / -1;
-  grid-row: 11;
-  margin: 10px 0 0;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--hero-ink-soft);
-  text-align: right;
-}
-
-/* Today strip: the dated status the hub and home both read. */
+/* Today strip: the date, then the two status blocks. */
 .home-today {
   grid-area: today;
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas:
-    "head menu free"
-    "note note note";
+  grid-template-areas: "head menu free";
   min-width: 0;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
@@ -241,13 +191,7 @@
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
-}
-
-.home-stamp {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 #homeMenuStatus {
@@ -330,19 +274,6 @@
 
 .home-status[data-state="loading"] strong {
   color: var(--color-ink-muted);
-}
-
-.home-today-note {
-  grid-area: note;
-  margin: 0;
-  padding: 8px 20px;
-  border-top: 1px solid var(--color-divider);
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  background: #fbf7ef;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--color-ink-muted);
-  word-break: keep-all;
 }
 
 /* ── Below the hero: three groups, each with one job. 01 바로가기 (act),
@@ -1138,8 +1069,7 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       "head head"
-      "menu free"
-      "note note";
+      "menu free";
   }
 
   .home-today-head {
@@ -1249,24 +1179,12 @@
     transform: rotate(-1.5deg);
   }
 
-  .home-photo-tag {
-    left: 10px;
-    bottom: 10px;
-    padding: 4px 7px;
-    font-size: 11px;
-  }
-
-  .home-collage-note {
-    text-align: left;
-  }
-
   .home-today {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "head"
       "menu"
-      "free"
-      "note";
+      "free";
   }
 
   .home-today-head {
@@ -1277,10 +1195,6 @@
     padding: 14px 16px;
     border-left: 0;
     border-top: 1px solid var(--color-divider);
-  }
-
-  .home-today-note {
-    padding: 10px 16px;
   }
 
   /* Edge-to-edge shelf so the next card visibly peeks past the screen edge. */

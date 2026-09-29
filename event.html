@@ -36,9 +36,7 @@
 
   <main class="event-page-wrap">
     <header class="page-head event-head">
-      <h1 class="page-title"><span class="page-num" aria-hidden="true">03</span> <span data-i18n="event.title">밥도둑 소식</span></h1>
-      <!-- Babdoduk's own activities only. KAIST free-food opportunities live in 오늘의 꽁밥 and are never mixed in here. -->
-      <a class="event-elsewhere" href="ggongbab.html"><span data-i18n="event.boundary">꽁밥 일정</span> <span aria-hidden="true">→</span> <span data-i18n="event.boundaryLink">오늘의 꽁밥</span></a>
+      <h1 class="page-title"><span data-i18n="event.title">밥도둑 소식</span></h1>
     </header>
 
     <!-- Current relevance first: authored notices, then anything running or coming up. -->
@@ -49,7 +47,7 @@
            Add only what the owner has actually announced; the empty state below is shown otherwise. -->
       <ul class="event-notices" id="eventNotices" role="list"></ul>
       <ol class="event-list event-list--now" id="eventUpcoming" hidden></ol>
-      <p class="event-empty" id="eventEmpty"><span data-i18n="event.empty">예정된 활동 없음</span> <a class="event-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener"><span data-i18n="event.instagram">Instagram</span> <span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a></p>
+      <p class="event-empty" id="eventEmpty"><span data-i18n="event.empty">예정된 활동 없음</span></p>
     </section>
 
     <section class="event-section event-archive" id="archive" aria-labelledby="eventListTitle">
@@ -61,7 +59,6 @@
            participation instructions as historical. A date passing never proves an event took place. -->
       <ol class="event-list" id="eventList">
         <li class="event-item" data-start="2026-05-13" data-end="2026-05-20" data-confirmation="announced">
-          <span class="event-num" aria-hidden="true">01</span>
           <p class="event-date"><time datetime="2026-05-13">2026.05.13</time> — <time datetime="2026-05-20">05.20</time></p>
           <h3 class="event-name" data-i18n="event.e0.summary">밥도둑 팔로워 100명 이벤트</h3>
           <p class="event-state" data-event-state hidden></p>
@@ -73,7 +70,6 @@
           </details>
         </li>
         <li class="event-item" data-start="2026-05-19" data-end="2026-05-20" data-confirmation="tentative">
-          <span class="event-num" aria-hidden="true">02</span>
           <p class="event-date"><time datetime="2026-05-19">2026.05.19</time> — <time datetime="2026-05-20">05.20</time> <span class="event-place" data-i18n="event.e1.place">태울석림제 부스</span></p>
           <h3 class="event-name" data-i18n="event.e1.summary">KAKI × 밥도둑 〈카빙〉</h3>
           <p class="event-state" data-event-state hidden></p>
@@ -86,6 +82,10 @@
         </li>
       </ol>
     </section>
+
+    <p class="event-instagram">
+      <a href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener"><span data-i18n="event.instagramLine">Instagram @babdodukms</span> <span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
+    </p>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -144,10 +144,8 @@
           'event.title': '밥도둑 소식',
           'event.now.title': '지금',
           'event.more': '자세히',
-          'event.instagram': 'Instagram',
+          'event.instagramLine': 'Instagram @babdodukms',
           'event.e1.place': '태울석림제 부스',
-          'event.boundary': '꽁밥 일정',
-          'event.boundaryLink': '오늘의 꽁밥',
           'event.listTitle': '지난 활동',
           'event.newTab': '(새 창)',
           'event.empty': '예정된 활동 없음',
@@ -223,10 +221,8 @@
           'event.title': 'Babdoduk news',
           'event.now.title': 'Now',
           'event.more': 'Details',
-          'event.instagram': 'Instagram',
+          'event.instagramLine': 'Instagram @babdodukms',
           'event.e1.place': 'Taeul Seoklim Festival booth',
-          'event.boundary': 'Free-food events',
-          'event.boundaryLink': 'Today\'s free food',
           'event.listTitle': 'Past activities',
           'event.newTab': '(opens in a new tab)',
           'event.empty': 'Nothing scheduled',
@@ -372,12 +368,6 @@
         tag.textContent = t('event.historical', '당시 안내 · 지금은 참여할 수 없어요');
         value.insertBefore(tag, value.firstChild);
       }
-      function number(list) {
-        [].slice.call(list.children).forEach(function (row, i) {
-          var num = row.querySelector('.event-num');
-          if (num) num.textContent = String(i + 1).padStart(2, '0');
-        });
-      }
       function render() {
         var today = todayKst();
         var live = 0;
@@ -404,8 +394,6 @@
           if (cta) cta.textContent = t(band === 'past' ? 'event.cta.past' : 'event.cta.live', cta.textContent);
           markParticipation(row, band);
         });
-        number(nowList);
-        number(pastList);
         nowList.hidden = !live;
         document.getElementById('archive').hidden = !pastList.children.length;
         var notices = document.getElementById('eventNotices');
