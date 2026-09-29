@@ -339,48 +339,50 @@
       ]
     },
     "duplicates": 3,
-    "rejected": 699,
+    "rejected": 758,
     "new": 0,
     "candidates": 822,
     "page_lookups": 0,
     "validated": 0,
     "pruned": 0,
-    "selected": 27,
+    "selected": 17,
     "fabricated": 0,
     "staleSources": [
       "blog-irisblossomlife",
       "blog-koreanbapsang",
       "yt-hamzy",
       "yt-haruhankki"
-    ]
+    ],
+    "offlineRebuildAt": "2026-09-29T16:21:39+09:00"
   },
   "lanes": {
     "trend": {
-      "qualifying": 71,
+      "qualifying": 6,
       "discoveredForLane": 65,
       "notQualifying": {
-        "AD_OR_SPONSORED": 4,
+        "AD_OR_SPONSORED": 5,
         "NOT_FOOD": 2,
         "NO_DATE": 1,
-        "NO_TREND_EVIDENCE": 2,
+        "NO_TREND_EVIDENCE": 4,
         "OFF_TOPIC_RESTAURANT_TRAVEL": 1,
-        "PROMOTION": 1,
-        "TOO_OLD": 15,
+        "PRODUCT_ANNOUNCEMENT_ONLY": 5,
+        "PROMOTION": 3,
+        "TOO_OLD": 14,
         "TOO_OLD_FOR_TREND": 24
       }
     },
     "tips": {
-      "qualifying": 23,
+      "qualifying": 45,
       "discoveredForLane": 0,
       "notQualifying": {}
     },
     "health": {
-      "qualifying": 24,
+      "qualifying": 7,
       "discoveredForLane": 0,
       "notQualifying": {}
     },
     "habit": {
-      "qualifying": 2,
+      "qualifying": 3,
       "discoveredForLane": 0,
       "notQualifying": {}
     }
@@ -393,5 +395,8 @@
     "blog-koreanbapsang: SOURCE_STALE (newest item older than 120 days)",
     "yt-hamzy: SOURCE_STALE (newest item older than 120 days)",
     "yt-haruhankki: SOURCE_STALE (newest item older than 120 days)"
+  ],
+  "pending": [
+    "YOUTUBE_AUTOMATION_PENDING"
   ]
 }

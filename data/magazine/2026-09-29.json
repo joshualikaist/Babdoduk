@@ -1,19 +1,19 @@
 {
   "date": "2026-09-29",
-  "generatedAt": "2026-09-29T15:43:28+09:00",
+  "generatedAt": "2026-09-29T16:21:39+09:00",
   "schedule": "Daily 10:00 KST",
   "rules": "lanes-v1",
   "featured": {
-    "title": "세븐일레븐, 일본 인기 디저트 '생초코파이 가토오쇼콜라' 선보여",
-    "summary": "세븐일레븐은 다음달 1일부터 일본 롯데에서 직소싱한 인기 냉장 디저트 '생초코파이 가토오쇼콜라'를 시즌 한정으로 선보인다고 29일 밝혔다.",
-    "source": "머니투데이",
+    "title": "“SNS 뜨기 전에 잡는다”···편의점 ‘품절템’ 뒤엔 AI 있었다",
+    "summary": "SNS에서 유행하던 치즈미역국과 카레 당면이 실제 편의점 상품으로 제작됐다. .",
+    "source": "시사저널e",
     "sourceId": "web-exa-trend",
-    "candidateId": "c_0e422b817b6ab917",
-    "url": "https://www.mt.co.kr/living/2026/09/29/2026092910195798976",
+    "candidateId": "c_ccb18996e41398d2",
+    "url": "https://www.sisajournal-e.com/news/articleView.html?idxno=423791",
     "medium": "news",
     "discoveredAt": "2026-09-29T15:09:50+09:00",
-    "publishedAt": "2026-09-29T09:00:00+09:00",
-    "image": "https://thumb.mt.co.kr/cdn-cgi/image/f=avif/21/2026/09/2026092910195798976_1.jpg",
+    "publishedAt": "2026-09-18T17:12:35+09:00",
+    "image": "https://cdn.sisajournal-e.com/news/thumbnail/202609/423791_239899_4930_v150.jpg",
     "imageSource": "source_page_og",
     "trendEvidence": [
       "explicit_source_claim",
@@ -26,75 +26,6 @@
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
-        {
-          "title": "\"간식부터 한 끼까지 건강하게\" CJ제일제당, 밸런스밀 저당 도시락 출시",
-          "summary": "CJ제일제당이 영양 밸런스 브랜드 '밸런스밀'에 저당 도시락을 추가하며 간식부터 한 끼 식사까지 아우르는 제품군 확대에 나선다고 29일 밝혔다.",
-          "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_fbe00db5882f349a",
-          "url": "https://www.newsis.com/view/NISX20260929_0003806582",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-29T10:39:18+09:00",
-          "image": "https://image.newsis.com/2026/09/29/NISI20260929_0002250486_web.jpg?rnd=20260929095839",
-          "imageSource": "feed_html",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "corroborated"
-          ]
-        },
-        {
-          "title": "\"저당 스낵부터 포케 샐러드까지\" 명절 연휴 갑자기 찐 살, 맛있게 빼자",
-          "summary": "명절 연휴가 지나고 갑자기 찐 살에 다이어트를 결심하는 수요가 높아지면서 식품업계가 이를 도와줄 신제품 출시에 나섰다.",
-          "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_f2bc28857b431f10",
-          "url": "https://www.newsis.com/view/NISX20260928_0003805571",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-28T15:29:39+09:00",
-          "image": "https://image.newsis.com/2026/09/28/NISI20260928_0002249894_web.jpg?rnd=20260928151929",
-          "imageSource": "feed_html",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data",
-            "corroborated"
-          ]
-        },
-        {
-          "title": "[신상품] 삼립 ‘촉촉동그랑땡’ 올가홀푸드 ‘저당 통현미 크런치볼’ 외",
-          "summary": "삼립 간편식 3종삼립이 느끼함을 줄이고 재료 본연의 맛과 촉촉한 식감을 살린 간편식 3종을 출시했다.‘촉촉동그랑땡’은 국내산 돼지고기와 두부, 당근, 양파 등을 반죽해, 기름 대신 스팀으로 익혀 촉촉하고 담백하다.",
-          "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_72fe4b504b9f5248",
-          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120293",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-23T20:07:51+09:00",
-          "image": "https://cdn.foodnews.co.kr/news/thumbnail/202609/120293_86699_390_v150.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "corroborated"
-          ]
-        },
-        {
-          "title": "“SNS 뜨기 전에 잡는다”···편의점 ‘품절템’ 뒤엔 AI 있었다",
-          "summary": "SNS에서 유행하던 치즈미역국과 카레 당면이 실제 편의점 상품으로 제작됐다. .",
-          "source": "시사저널e",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_ccb18996e41398d2",
-          "url": "https://www.sisajournal-e.com/news/articleView.html?idxno=423791",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-18T17:12:35+09:00",
-          "image": "https://cdn.sisajournal-e.com/news/thumbnail/202609/423791_239899_4930_v150.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
-          ]
-        },
         {
           "title": "딱 하나 남아 간신히 샀다…SNS서 난리 난 편의점 신상",
           "summary": "최근 출시된 편의점 신상 우유 생크림빵이 사회관계망서비스(SNS)를 달구고 있다. \"편의점 네 곳을 돌아다녀 간신히 샀다\"는 후기가 보이는 등 '오픈런'까지 불사한다.",
@@ -113,54 +44,61 @@
           ]
         },
         {
-          "title": "추석 선물처럼 찾아온 9월 편의점 신상 한가위 도시락부터 핫하다는 한정선, 와사비맛&열라면맛 만두까지",
-          "summary": "쫄병아리 여러분들 ! 다들 풍요롭고 행복 가득한 한가위 보내고 있기를 바랍니다 명절에도 저 민경장군이 여러분과 함께할게요 오늘 영상도 시청해주셔서 감사합니다…",
-          "source": "민경장군",
+          "title": "생새우·무화과 찾아 동네 한 바퀴…당근 ‘제철코어’ 검색 급증",
+          "summary": "한 해 중 짧은 기간에만 만날 수 있는 제철 먹거리를 일부러 찾아 먹는 ‘제철코어’가 새로운 먹거리 소비 트렌드로 떠오르고 있다.",
+          "source": "디지털데일리",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_0f28d4c14cab2c46",
+          "url": "https://www.ddaily.co.kr/page/view/2026092404071026235",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-26T09:00:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "유행음식으로 인싸 체험하기",
+          "summary": "",
+          "source": "침착맨",
           "sourceId": "yt-search",
-          "candidateId": "c_3fefc91adb49c9f2",
-          "url": "https://www.youtube.com/watch?v=xR7zCebMVXU",
+          "candidateId": "c_9ac7692badb389ca",
+          "url": "https://www.youtube.com/watch?v=vO6-xnZwKc4",
           "medium": "youtube",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-25T00:00:00+09:00",
-          "image": "https://i.ytimg.com/vi/xR7zCebMVXU/hqdefault.jpg",
+          "publishedAt": "2026-09-22T00:00:00+09:00",
+          "image": "https://i.ytimg.com/vi/vO6-xnZwKc4/hqdefault.jpg",
           "imageSource": "youtube_thumbnail",
           "trendEvidence": [
-            "explicit_source_claim",
             "engagement"
           ]
         },
         {
-          "title": "[09/22 오늘의 새상품] 삼립 ‘피그인더가든 저당 시그니처 포케 샐러드’, 이디야커피 ‘피스타치오 음료’ 2종, 타코벨코리아 ‘안창 스테이크 크런치랩’",
-          "summary": "삼립, 맛·영양·든든함 3박자 갖춘 ‘피그인더가든 저당 시그니처 포케 샐러드’퀴노아, 렌틸콩, 현미 섞은 곡물밥에 풍성한 토핑 더해삼립 피그인더가든이 즐겁게 건강 관리를 하는 ‘헬시플레저’ 트렌드에 맞춰 맛과…",
-          "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_e969a2be052fac3d",
-          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201250",
-          "medium": "news",
+          "title": "[기획] 봄동비빔밥에서 생새우까지…올해 음식 트렌드 장악한 '이것'은?",
+          "summary": "봄동비빔밥을 만들어 먹던 봄이 지나자 복숭아를 넣은 찹쌀떡과 음료가 여름 메뉴에 올랐다. 9월에는 무화과 디저트를 파는 곳과 생새우를 먹을 수 있는 가게를 찾는 사람이 늘었다.",
+          "source": "위키트리",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cced8cfc4e7a091e",
+          "url": "https://www.wikitree.co.kr/articles/1162174",
+          "medium": "blog",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-22T18:51:41+09:00",
-          "image": "https://cdn.thinkfood.co.kr/news/photo/202609/201250_201763_5138.jpg",
-          "imageSource": "source_page_og",
+          "publishedAt": "2026-09-29T12:16:00+09:00",
           "trendEvidence": [
-            "explicit_source_claim",
-            "corroborated"
+            "explicit_source_claim"
           ]
         },
         {
-          "title": "[오늘의 신상] 롯데칠성 핫식스·굽네 파기름떡볶이 치킨·이마트24 박은영 셰프 간편식",
-          "summary": "롯데칠성음료가 시트러스와 열대 과일 풍미를 담은 에너지 음료 ‘핫식스 더킹 프로즌 블루 제로’를 출시했다.",
-          "source": "이슈앤비즈",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_2c35940a7aa997f4",
-          "url": "http://www.issuenbiz.com/news/articleView.html?idxno=79643",
-          "medium": "news",
+          "title": "틱톡에서 유행하는 음식의 진실ㅣ해파리 먹방",
+          "summary": "ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 푸디앨리 멤버십 가입하기 자막이 필요하시면 CC 버튼을 눌러주세요 (Press CC auto translation button) Filming Gear: iPhone 17…",
+          "source": "FoodieAlley_Mukbang_ASMR",
+          "sourceId": "yt-search",
+          "candidateId": "c_fb803e13dbe09234",
+          "url": "https://www.youtube.com/watch?v=EQtw53dMxs0",
+          "medium": "youtube",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-10T10:29:08+09:00",
-          "image": "https://cdn.issuenbiz.com/news/thumbnail/202609/79643_80294_1833_v150.jpg",
-          "imageSource": "source_page_og",
+          "publishedAt": "2026-09-11T00:00:00+09:00",
           "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
+            "engagement"
           ]
         }
       ]
@@ -168,6 +106,32 @@
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
+        {
+          "title": "이게 바로 개쉬운 자취요리지.",
+          "summary": "치즈비엔나볶음밥을 만들어 보자 [재료] 비엔나소시지 한 줌, 모차렐라 치즈 [만드는 법] 1. 비엔나소시지를 먹기 좋게 자른 뒤 식용유에 노릇하게 볶는다. 2.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_3ebc0506bd69418e",
+          "url": "https://www.youtube.com/watch?v=AePO9VDfO3g",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-18T00:00:00+09:00",
+          "image": "https://i.ytimg.com/vi/AePO9VDfO3g/hqdefault.jpg",
+          "imageSource": "youtube_thumbnail"
+        },
+        {
+          "title": "바삭한 크럼블 미니 사과 파이 만들기 | 쉽게 만드는 애플 파이 | Easy Mini Crumble Apple Pie Recipe | Crispy & Full of Apples",
+          "summary": "바삭한 버터 크럼블과 촉촉한 사과 필링을 가득 채운, 쉽게 만드는 미니 애플 크럼블 파이예요. Easy mini apple crumble pies with a flaky butter crust, juicy…",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_9605de3e92cfc75c",
+          "url": "https://www.youtube.com/watch?v=xaLO1bDy_E8",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-22T20:00:01+09:00",
+          "image": "https://i1.ytimg.com/vi/xaLO1bDy_E8/hqdefault.jpg",
+          "imageSource": "youtube_thumbnail"
+        },
         {
           "title": "5가지 재료로 만드는 무화과 브리치즈 구이 5-Ingredient Baked Figs with Brie cheese",
           "summary": "무화과를 조금 다르게 즐기고 싶을 때 이렇게 한번 구워보세요. 십자로 칼집을 낸 무화과에 브리치즈와 호두를 올리고 꿀을 살짝 뿌려 오븐에 넣으면 돼요.",
@@ -179,32 +143,6 @@
           "discoveredAt": "2026-09-29T15:09:50+09:00",
           "publishedAt": "2026-09-28T20:00:02+09:00",
           "image": "https://i3.ytimg.com/vi/voZfW6h5huw/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
-        },
-        {
-          "title": "일단 끓이고 보는 햄지's 요리모음 14탄 ㅣHAMZY’s Cooking COMPILATIONS PART 14",
-          "summary": "00:00:00 양념목살구이, 차돌된장짜글이, 낙지볶음, 모둠전 00:03:43 꽁치김치찌개, 불고기, 비엔나소세지 00:08:27 대패삼겹두루치기, 들기름두부구이 00:12:30 김밥, 라볶이 00:18:14…",
-          "source": "햄지 Hamzy",
-          "sourceId": "yt-hamzy",
-          "candidateId": "c_1af265c65452f5c3",
-          "url": "https://www.youtube.com/watch?v=krAloV_M2yA",
-          "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-05-03T00:00:00+09:00",
-          "image": "https://i.ytimg.com/vi/krAloV_M2yA/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
-        },
-        {
-          "title": "초콜릿·카라멜·커피 카페 케이크 & 디저트 | 음악 없는 2시간 베이킹 ASMR | No Music Chocolate·Caramel·Coffee Cafe Cake&Dessert",
-          "summary": "초콜릿, 카라멜, 커피로 만든 카페 케이크와 디저트를 음악 없이 2시간 동안 편안하게 즐길 수 있는 베이킹 ASMR 모음이에요.",
-          "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_049b4e7a815d66cb",
-          "url": "https://www.youtube.com/watch?v=p9hmv5WnE08",
-          "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-27T20:00:28+09:00",
-          "image": "https://i1.ytimg.com/vi/p9hmv5WnE08/hqdefault.jpg",
           "imageSource": "youtube_thumbnail"
         },
         {
@@ -221,19 +159,6 @@
           "imageSource": "feed_html"
         },
         {
-          "title": "Easy Potato Recipes",
-          "summary": "Few ingredients can stretch a grocery budget quite like a bag of potatoes.",
-          "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_9f2fb887826671ae",
-          "url": "https://www.budgetbytes.com/potato-recipes/",
-          "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-26T22:30:00+09:00",
-          "image": "https://www.budgetbytes.com/wp-content/uploads/2023/06/Potato-Recipes-Featured.jpg",
-          "imageSource": "feed_media"
-        },
-        {
           "title": "Pumpkin Bread",
           "summary": "If you’ve got a $5 bill and a couple of quarters burning a hole in your pocket this pumpkin spice season, boy do I have…",
           "source": "Budget Bytes",
@@ -247,30 +172,15 @@
           "imageSource": "feed_media"
         },
         {
-          "title": "Yuzu Kosho Edamame 柚子こしょう枝豆",
-          "summary": "My homemade Yuzu Kosho recipe inspired this 3-ingredient snack.",
-          "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_3575c6c7745c4f57",
-          "url": "https://www.justonecookbook.com/yuzu-kosho-edamame/",
-          "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-28T21:00:00+09:00",
-          "image": "https://www.justonecookbook.com/wp-content/uploads/2027/09/Yuzu-Kosho-Edamame-6535-I-1-1200x800.jpg",
-          "imageSource": "feed_html"
-        },
-        {
-          "title": "Easy Chicken Katsu with Caviar | Luxurious Japanese Recipe",
-          "summary": "Chicken katsu with caviar is one of those dishes that feels playful, unexpected, and quietly luxurious all at once.",
-          "source": "Seonkyoung Longest",
-          "sourceId": "blog-seonkyounglongest",
-          "candidateId": "c_f91ed9978e39bfd3",
-          "url": "https://seonkyounglongest.com/chicken-katsu-with-caviar/",
-          "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-01-11T23:03:33+09:00",
-          "image": "https://i0.wp.com/photos.smugmug.com/Chicken-Katsu-Caviar/i-zj6ZmKk/0/KPMDdcCSRxjVFbqLDVftP5Cx3nW3VhQv3xJ9jNTj6/X2/01DF3615-8CCD-405F-BDEF-D18CA70B1DA3-X2.jpg?w=1170&ssl=1",
-          "imageSource": "feed_html"
+          "title": "너무 맛있어서 지금 당장 팔아도 됩니다.",
+          "summary": "사천 짜계치볶이를 만들어 보자 [재료] 사천짜파게티, 떡볶이 떡, 체다 치즈, 청양고추 [만드는 법] 1. 물 450ml를 끓이고 면, 떡 한줌, 건더기 스프, 분말 스프를 넣는다. 2.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_bb328a9ebf65ce3e",
+          "url": "https://www.youtube.com/watch?v=bBcyBIrQ6Wc",
+          "medium": "youtube",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "publishedAt": "2026-09-26T00:00:00+09:00"
         }
       ]
     },
@@ -291,6 +201,24 @@
           "imageSource": "feed_media"
         },
         {
+          "title": "송편·전·갈비찜 잔뜩 먹었다간…추석 연휴 소화불량 주의해야",
+          "summary": "추석 연휴에는 전이나 갈비찜 등 기름진 음식을 평소보다 많이 먹게 된다. 식사 후 바로 누워 연휴의 여유를 즐기는 경우도 많다.",
+          "source": "동아일보 건강",
+          "sourceId": "news-donga-health",
+          "candidateId": "c_077f6e78f8483f1a",
+          "url": "https://www.donga.com/news/Society/article/all/20260923/134720629/1",
+          "medium": "news",
+          "discoveredAt": "2026-09-29T15:13:56+09:00",
+          "publishedAt": "2026-09-25T07:00:00+09:00",
+          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/23/134727346.1.jpg",
+          "imageSource": "feed_media"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
           "title": "‘뼈말라’ 열풍, 식생활교육 새 과제 요구",
           "summary": "‘뼈말라’로 불리는 지나치게 마른 체형을 선호하는 분위기가 숏폼·사회관계망서비스(SNS)를 타고 10대 사이에 확산하면서 학교급식 현장에도 영향을 미치고 있다.",
           "source": "대한급식신문",
@@ -304,113 +232,26 @@
           "imageSource": "source_page_og"
         },
         {
-          "title": "골고루 먹는 습관, O·X로 배워요",
-          "summary": "광주지역 어린이들이 퀴즈를 통해 6대 영양소와 편식이 건강에 미치는 영향을 알아보는 영양교육에 참여했다. 어렵게 느낄 수 있는 영양 정보를 어린이 눈높이에 맞춰 전달해 다양한 식품을 골고루 먹는 식습관을 익히도록…",
-          "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_56f8b7109b17d330",
-          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62257",
+          "title": "月 식비 90만 원 돌파·외식비 첫 과반…저소득층·40대 가계 부담 심화",
+          "summary": "올해 2분기 우리나라 가구의 월평균 명목 식품비 지출액이 사상 처음으로 90만 원대를 돌파한 가운데 외식비 지출 비중이 전체 식비의 절반을 넘어선 것으로 나타났다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_7c075dfda947dd0b",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201278",
           "medium": "news",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-29T08:38:07+09:00",
-          "image": "http://www.fsnews.co.kr/news/thumbnail/202609/62257_53104_2829_v150.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-09-29T01:28:45+09:00"
         },
         {
-          "title": "송편·전·갈비찜 잔뜩 먹었다간…추석 연휴 소화불량 주의해야",
-          "summary": "추석 연휴에는 전이나 갈비찜 등 기름진 음식을 평소보다 많이 먹게 된다. 식사 후 바로 누워 연휴의 여유를 즐기는 경우도 많다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_077f6e78f8483f1a",
-          "url": "https://www.donga.com/news/Society/article/all/20260923/134720629/1",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-25T07:00:00+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/23/134727346.1.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "Salmon Fried Rice with Egg and Cabbage",
-          "summary": "This easy salmon fried rice turns leftover rice, tender salmon, egg, and crisp cabbage into a quick one-pan meal…",
-          "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_0e08b740b9e205ed",
-          "url": "https://www.beyondkimchee.com/salmon-fried-rice/",
-          "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-13T22:03:00+09:00",
-          "image": "https://www.beyondkimchee.com/wp-content/uploads/2025/09/Salmon-fried-rice-smi.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "Mentaiko Pasta (Korean Myeongran Pasta)",
-          "summary": "This Korean-style mentaiko pasta keeps things light with a simple garlic oil base instead of cream.",
-          "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_c374940a0dd0ba00",
-          "url": "https://www.beyondkimchee.com/mentaiko-pasta/",
-          "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-08-20T20:35:00+09:00",
-          "image": "https://www.beyondkimchee.com/wp-content/uploads/2026/04/mentaiko-korean-myeongran-pasta.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "Japanese Shredded Cabbage Salad キャベツの千切り",
-          "summary": "One cabbage, two totally different salads. It all comes down to which way you slice it.",
-          "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_5ebff28d6b9d7da5",
-          "url": "https://www.justonecookbook.com/japanese-shredded-cabbage-salad/",
-          "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-21T21:00:00+09:00",
-          "image": "https://www.justonecookbook.com/wp-content/uploads/2027/09/Japanese-Shredded-Cabbage-Salad-6631-I-1-1200x800.jpg",
-          "imageSource": "feed_html"
-        },
-        {
-          "title": "Best Dashi Packets to Buy in Japan",
-          "summary": "Dashi packets are the souvenir I recommend to every traveler.",
-          "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_5ded7ac44d4cb7bc",
-          "url": "https://www.justonecookbook.com/best-dashi-packets-to-buy-in-japan/",
-          "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-14T21:00:00+09:00",
-          "image": "https://www.justonecookbook.com/wp-content/uploads/2027/08/Dashi-Packet-Souvenir-4427-1200x800.jpg",
-          "imageSource": "feed_html"
-        }
-      ]
-    },
-    "habit": {
-      "lead": "잘 먹는 법에 대한 작은 이야기",
-      "items": [
-        {
-          "title": "“13kg 뺐는데 10kg 다시 쪘다”…라미란, 직접 밝힌 요요 이유",
-          "summary": "라미란이 다이어트 성공 후 요요가 왔다고 밝혔다. 배우 라미란(51)이 13kg 감량 후 10kg가 다시 쪘다고 고백했다. 라미란은 최근 배우 류혜영의 유튜브 영상에서 함께 섬여행 백패킹을 떠났다.",
-          "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_38cc3d43b921c68b",
-          "url": "https://kormedi.com/2873989/",
+          "title": "[자료] 2026년 2분기 가구의 가공식품 지출 현황과 특징",
+          "summary": "2026년 2분기 가구의 가공식품 지출 현황과 특징1. 2026년 2분기 가구의 식품비 지출 규모는 전년 동기 대비 3.3% 증가, 물가 상승 고려한 실질 식품비도 1.3% 증2.",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_b4439f205e14649e",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120314",
           "medium": "news",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-29T13:02:00+09:00",
-          "image": "https://kormedi.com/wp-content/uploads/2026/09/10-2-edited.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "\"천천히 나이 드는 식탁은 이렇게\" 현대그린푸드, 저속노화 가이드북",
-          "summary": "현대그린푸드가 케어푸드 브랜드 '그리팅'을 운영하며 개발한 레시피 가운데 저속노화 원리에 맞는 103종을 엄선해 식생활 가이드북으로 선보인다고 29일 밝혔다.",
-          "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_8f16b74e6fab1038",
-          "url": "https://www.newsis.com/view/NISX20260929_0003806553",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-29T09:56:07+09:00",
-          "image": "https://image.newsis.com/2026/09/29/NISI20260929_0002250458_web.jpg?rnd=20260929094618",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-09-28T22:38:23+09:00"
         }
       ]
     }
