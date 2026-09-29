@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -15,33 +15,46 @@ from .common import atomic_write, dump_json, fetch, iso, read_json
 from .store import CandidateStore
 
 RUN_LOG_LINES = 400
-STALE_SOURCE_DAYS = 120
 
 
 class Paths:
-    def __init__(self, root: Path):
+    """research/magazine is the internal store: committed by the content bot so it persists across
+    GitHub Actions runs, and excluded from the website by .vercelignore."""
+
+    def __init__(self, root: Path, registry_path: Optional[Path] = None):
+        self.registry = Path(registry_path) if registry_path else registry.REGISTRY
         self.research = Path(root) / "research" / "magazine"
-        self.sources = self.research / "sources.json"
+        self.source_health = self.research / "source-health.json"
         self.candidates = self.research / "candidates.jsonl"
         self.health = self.research / "health.json"
         self.runs = self.research / "runs.jsonl"
 
 
 def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.environ,
-             validate=images.image_ok, log=print) -> dict:
-    """Collect from every enabled source into the candidate store, then process it."""
-    sources = registry.load(paths.sources) if paths.sources.exists() else registry.default_sources()
+             validate=images.image_ok, log=print, skip_types: tuple = ()) -> dict:
+    """Collect from every enabled source into the candidate store, then process it.
+
+    skip_types: source types not contacted in this run (an explicit operator choice, for example
+    a cloud-parity build on a machine that can reach what GitHub's runners cannot). A skipped
+    source is recorded as DEGRADED with SKIPPED_CLOUD_PARITY, never as a success."""
+    sources = registry.load(paths.registry)
+    source_health = registry.load_health(paths.source_health)
     store = CandidateStore(paths.candidates)
     health, queries, new = {}, [], 0
     for source in sources:
+        entry = source_health.setdefault(source["id"], {})
         if not source.get("enabled"):
-            health[source["id"]] = {"type": source["type"], "status": "DISABLED", "code": None,
-                                    "items": 0, "lastSuccessAt": source.get("lastSuccessAt")}
+            health[source["id"]] = {"type": source["type"], "adapter": "DISABLED", "code": None, "items": 0}
+            continue
+        if source["type"] in skip_types:
+            entry["lastAttemptAt"], entry["lastFailureCode"], entry["lastItemCount"] = iso(now), "SKIPPED_CLOUD_PARITY", 0
+            health[source["id"]] = {"type": source["type"], "adapter": "SKIPPED", "code": "SKIPPED_CLOUD_PARITY", "items": 0}
+            log(f"discovery {source['id']}: SKIPPED_CLOUD_PARITY")
             continue
         result = adapters.run(source, fetcher=fetcher, env=env)
         ok = result.status == adapters.OK
         if result.status != adapters.NOT_CONFIGURED:
-            registry.record(source, ok=ok, now=now, code=result.code or None, count=len(result.items))
+            registry.record(entry, ok=ok, now=now, code=result.code or None, count=len(result.items))
         before = len(store.rows)
         for raw in result.items:
             row = process.normalize(raw, source, now)
@@ -50,9 +63,8 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         new += len(store.rows) - before
         for query in result.queries:
             queries.append({"sourceId": source["id"], "query": query})
-        health[source["id"]] = {"type": source["type"], "status": result.status, "code": result.code or None,
-                                "items": len(result.items), "lastSuccessAt": source.get("lastSuccessAt"),
-                                "failureCount": source.get("failureCount", 0)}
+        health[source["id"]] = {"type": source["type"], "adapter": result.status, "code": result.code or None,
+                                "items": len(result.items)}
         log(f"discovery {source['id']}: {result.status}{' ' + result.code if result.code else ''} items={len(result.items)}")
     rows = store.all()
     newest: dict[str, str] = {}
@@ -60,8 +72,13 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         stamp = row.get("publishedAt") or ""
         if stamp > newest.get(row.get("sourceId"), ""):
             newest[row.get("sourceId")] = stamp
-    for sid, entry in health.items():
-        entry["newestItemAt"] = newest.get(sid)
+    for source in sources:
+        entry = source_health[source["id"]]
+        if newest.get(source["id"]):
+            entry["newestItemAt"] = newest[source["id"]]
+        entry["status"] = registry.status(source, entry, now)
+        health[source["id"]].update({k: entry.get(k) for k in ("status", "lastSuccessAt", "lastFailureAt",
+                                                                "failureCount", "newestItemAt")})
     for row in rows:                           # recompute decisions each run from the stored facts
         if not row.get("selected"):
             row["duplicateOf"] = None
@@ -71,7 +88,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
     for row in rows:
         if not row.get("duplicateOf") and not row.get("rejectionReason"):
             process.score(row, now)
-    return {"sources": sources, "store": store, "health": health, "queries": queries,
+    return {"sources": sources, "sourceHealth": source_health, "store": store, "health": health, "queries": queries,
             "counts": dict(counts, new=new, candidates=len(rows), **image_counts)}
 
 
@@ -99,24 +116,25 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
     """Persist registry health, the candidate store, the health report and the run log."""
     store: CandidateStore = run["store"]
     if chosen:
-        store.mark_selected(chosen, now)
+        store.mark_selected(chosen, now, (edition or {}).get("date"))
     pruned = store.prune(now)
     store.save()
-    registry.save(paths.sources, run["sources"])
+    registry.save_health(paths.source_health, run["sourceHealth"])
     enabled = [s for s in run["sources"] if s.get("enabled")]
-    failing = [sid for sid, h in run["health"].items() if h["status"] in (adapters.FETCH_FAILED, adapters.PARSE_FAILED)]
-    stale_before = iso(now - timedelta(days=STALE_SOURCE_DAYS))
-    stale = sorted(sid for sid, h in run["health"].items()
-                   if h["status"] == adapters.OK and (h.get("newestItemAt") or "") < stale_before)
+    failing = sorted(sid for sid, h in run["health"].items() if h["adapter"] in (adapters.FETCH_FAILED, adapters.PARSE_FAILED))
+    by_status = {name: sorted(sid for sid, h in run["health"].items() if h.get("status") == name) for name in registry.STATUSES}
+    stale = by_status["STALE"]
     report = {
         "generatedAt": iso(now),
         "adapters": run["health"],
         "summary": {"enabledSources": len(enabled), "failing": failing,
-                    "notConfigured": sorted(sid for sid, h in run["health"].items() if h["status"] == adapters.NOT_CONFIGURED),
+                    "notConfigured": sorted(sid for sid, h in run["health"].items() if h["adapter"] == adapters.NOT_CONFIGURED),
+                    "statusCounts": {name: len(ids) for name, ids in by_status.items()}, "byStatus": by_status,
                     **run["counts"], "pruned": pruned,
                     "selected": len(chosen), "fabricated": 0, "staleSources": stale},
         "warnings": [f"{sid}: {run['health'][sid]['code']}" for sid in failing]
-                    + [f"{sid}: SOURCE_STALE (newest item older than {STALE_SOURCE_DAYS} days)" for sid in stale],
+                    + [f"{sid}: SOURCE_STALE (newest item older than {registry.STALE_DAYS} days)" for sid in stale]
+                    + [f"{sid}: {run['health'][sid]['code']}" for sid in by_status["DEGRADED"] if sid not in failing],
     }
     atomic_write(paths.health, dump_json(report))
     line = json.dumps({"runAt": iso(now), "queries": run["queries"], "counts": report["summary"],

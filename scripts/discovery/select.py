@@ -8,6 +8,7 @@ URL, medium, dates, image and its origin, ids) but no internal scores.
 """
 from __future__ import annotations
 
+import re
 from typing import Optional
 
 from .common import excerpt
@@ -21,13 +22,35 @@ LANE_LEADS = {
     "health": "맛도 포기하지 않는 건강식",
     "habit": "잘 먹는 법에 대한 작은 이야기",
 }
-SUMMARY_CHARS = 140
+SUMMARY_CHARS = 120        # a card-length excerpt, never a paragraph
+MIN_SUMMARY = 20
+URLS = re.compile(r"(https?://\S+|www\.\S+|\S+@\S+\.\w+|#[^\s#]+)")
+
+
+BOILERPLATE = re.compile(r"^(watch how to make (this|these)\b|jump to recipe\b|print recipe\b)", re.I)
+
+
+def card_summary(text: str, title: str = "") -> str:
+    """A short verbatim excerpt without links, addresses, hashtags, embed boilerplate or a repeat
+    of the title; empty when too thin (the card then shows title and source only)."""
+    cleaned = re.sub(r"\s+", " ", URLS.sub(" ", text or "")).strip(" -|·")
+    stripped = BOILERPLATE.sub("", cleaned).strip()
+    if stripped != cleaned and title and stripped.lower().startswith(title.lower()):
+        stripped = stripped[len(title):].strip(" -|·:")     # "Watch How to Make This <title>" heading
+    cleaned = stripped
+    words = cleaned.split()
+    for n in range(min(12, len(words) // 2), 1, -1):       # an embed heading repeated as the first sentence
+        if [w.lower() for w in words[:n]] == [w.lower() for w in words[n:2 * n]]:
+            cleaned = " ".join(words[n:])
+            break
+    short = excerpt(cleaned, SUMMARY_CHARS)
+    return short if len(short) >= MIN_SUMMARY else ""
 
 
 def public_item(row: dict) -> dict:
     item = {
         "title": row["title"],
-        "summary": excerpt(row.get("sourceExcerpt") or "", SUMMARY_CHARS),
+        "summary": card_summary(row.get("sourceExcerpt") or "", row.get("title") or ""),
         "source": row.get("sourceName") or "",
         "sourceId": row.get("sourceId"),
         "candidateId": row["candidateId"],
@@ -43,15 +66,18 @@ def public_item(row: dict) -> dict:
     return item
 
 
-def eligible(rows: list[dict], recent: set[str]) -> list[dict]:
+def eligible(rows: list[dict], recent: set[str], date: str = "") -> list[dict]:
+    """Qualifying stories not already published: a story runs in one edition only (its
+    selectedFor), so an old source is never recycled as fresh content day after day."""
     return sorted((r for r in rows if not r.get("duplicateOf") and not r.get("rejectionReason")
                    and r.get("assignedCategory") and r["candidateId"] not in recent
-                   and r.get("canonicalUrl") not in recent),
+                   and r.get("canonicalUrl") not in recent
+                   and (not r.get("selectedFor") or r.get("selectedFor") == date)),
                   key=lambda r: (-(r.get("score") or 0), r["candidateId"]))
 
 
 def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -> tuple[dict, list[str]]:
-    pool = eligible(rows, recent)
+    pool = eligible(rows, recent, date)
     with_image = [r for r in pool if r.get("imageValidated") and r.get("imageUrl")]
     featured_row: Optional[dict] = (with_image or pool or [None])[0]
     lanes, chosen = {}, []

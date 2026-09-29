@@ -67,8 +67,7 @@ def fetcher(url, **_):
 
 
 def sources() -> list[dict]:
-    base = {"enabled": True, "lastAttemptAt": None, "lastSuccessAt": None, "lastFailureAt": None,
-            "failureCount": 0, "lastFailureCode": None, "lastItemCount": 0}
+    base = {"enabled": True}
     return [
         dict(base, id="eval-recipes", name="Eval Recipes", type="rss", url="https://recipes.example.org/feed",
              trustTier="B", categories=["tips"], discoveryMethod="rss"),
@@ -82,9 +81,9 @@ def sources() -> list[dict]:
 
 
 def run_evaluation(root: Path) -> dict:
-    paths = pipeline.Paths(root)
+    paths = pipeline.Paths(root, registry_path=Path(root) / "eval-sources.json")
     paths.research.mkdir(parents=True, exist_ok=True)
-    paths.sources.write_text(dump_json({"version": 1, "sources": sources()}), encoding="utf-8")
+    paths.registry.write_text(dump_json({"version": 1, "sources": sources()}), encoding="utf-8")
     run = pipeline.discover(paths, NOW, fetcher=fetcher, env={}, validate=lambda url: url.startswith("https://"),
                             log=lambda _: None)
     edition, chosen = select.build(run["store"].all(), date="2026-09-29", generated_at="2026-09-29T10:30:00+09:00",

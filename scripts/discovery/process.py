@@ -16,7 +16,9 @@ from .common import (canonical_url, clean_text, excerpt, is_public_url, iso, nor
 from .registry import TIERS
 
 TITLE_DUPLICATE = 0.82
-MAX_AGE_DAYS = 120
+EXCERPT_SUPPORT = 0.5
+MAX_AGE_DAYS = 365          # evergreen lanes (tips, health, habit)
+TREND_MAX_DAYS = 30         # "요즘": the trend lane shows only recent items
 MIN_TEXT = {"youtube": 20, "blog": 60}
 TIER_C_MIN_TEXT = 200
 
@@ -34,6 +36,9 @@ FOOD_WORDS = ("레시피", "요리", "음식", "먹", "밥", "반찬", "국", "�
               "beef", "meat", "egg", "tofu", "stew", "bread", "cake", "sauce", "kitchen", "bake", "dessert")
 AD_WORDS = ("쿠팡파트너스", "파트너스 활동", "지원을 받아", "협찬", "유료광고", "광고 포함", "sponsored", "affiliate", "#ad ",
             "할인코드", "쿠폰 코드", "구매 링크")
+PROMOTION_WORDS = ("cooking challenge", "giveaway", "contest", "enter to win", "sweepstakes", "경품", "이벤트 참여",
+                   "챌린지 참여", "추첨")
+LANE_MIN_HITS = 2          # a lane outside the source's own categories needs two signals
 OFF_TOPIC = ("맛집", "리조트", "호텔", "여행", "투어", "숙소", "호캉스", "노포", "출장", "브이로그 여행", "travel", "resort", "hotel")
 BLOCKED = ("위장 학대", "경고:", "dangerous trend", "3x Speed", "위글위글", "주방템", "영수증만", "이벤트안내")
 
@@ -79,13 +84,19 @@ def mark_duplicates(rows: list[dict]) -> int:
     for row in ordered:
         if row.get("duplicateOf"):
             continue
-        keys = [f"url:{row.get('canonicalHash')}", f"item:{row.get('sourceItemId')}"]
-        if row.get("contentHash"):
-            keys.append(f"content:{row['contentHash']}")
+        # Only real values are evidence: an absent id must never match another absent id.
+        keys = [f"{kind}:{row[field]}" for kind, field in (("url", "canonicalHash"), ("item", "sourceItemId"),
+                                                           ("content", "contentHash")) if row.get(field)]
         original = next((by_key[k] for k in keys if k in by_key), None)
         if original is None:
+            # Title similarity is supporting evidence only: it needs the same site, or a matching
+            # excerpt, before two different URLs count as one story.
             for other in kept:
-                if title_similarity(row.get("title") or "", other.get("title") or "") >= TITLE_DUPLICATE:
+                if title_similarity(row.get("title") or "", other.get("title") or "") < TITLE_DUPLICATE:
+                    continue
+                same_site = _host(row) and _host(row) == _host(other)
+                same_text = title_similarity(row.get("sourceExcerpt") or "", other.get("sourceExcerpt") or "") >= EXCERPT_SUPPORT
+                if same_site or same_text:
                     original = other["candidateId"]
                     break
         if original and original != row["candidateId"]:
@@ -96,6 +107,16 @@ def mark_duplicates(rows: list[dict]) -> int:
         for k in keys:
             by_key.setdefault(k, row["candidateId"])
     return marked
+
+
+def _host(row: dict) -> str:
+    url = row.get("canonicalUrl") or ""
+    return url.split("/")[2] if url.count("/") >= 2 else ""
+
+
+def age_days(row: dict, now: datetime) -> Optional[float]:
+    published = parse_time(row.get("publishedAt"))
+    return (now - published).total_seconds() / 86400 if published else None
 
 
 def rejection(row: dict, now: datetime) -> Optional[str]:
@@ -112,6 +133,8 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
         return "NO_SOURCE_TEXT"
     if any(word.lower() in blob for word in AD_WORDS):
         return "AD_OR_SPONSORED"
+    if any(word in blob for word in PROMOTION_WORDS):
+        return "PROMOTION"
     if any(word.lower() in title.lower() for word in BLOCKED):
         return "BLOCKED_TOPIC"
     if any(word.lower() in title.lower() for word in OFF_TOPIC):
@@ -127,13 +150,21 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
     return None
 
 
-def classify(row: dict) -> str:
+def classify(row: dict, now: Optional[datetime] = None) -> str:
+    """Keyword lane with the source's hints as tie-breakers. The trend lane ("요즘") takes only
+    items published in the last TREND_MAX_DAYS; an older item goes to its best evergreen lane."""
     blob = ((row.get("title") or "") + " " + (row.get("sourceExcerpt") or "")).lower()
     hints = row.get("categoryHints") or []
-    scores = {lane: sum(1 for w in words if w.lower() in blob) + (0.5 if lane in hints else 0)
-              for lane, words in LANE_WORDS.items()}
-    order = list(hints) + [lane for lane in LANE_WORDS if lane not in hints]
-    return max(order, key=lambda lane: (scores[lane], -order.index(lane)))
+    hits = {lane: sum(1 for w in words if w.lower() in blob) for lane, words in LANE_WORDS.items()}
+    # Defensible lanes only: the source's own categories, or a lane with at least two signals.
+    # One incidental word ("breakfast") never turns a recipe into an eating-habit story.
+    order = list(hints) + [lane for lane in LANE_WORDS if lane not in hints and hits[lane] >= LANE_MIN_HITS]
+    age = age_days(row, now) if now else None
+    if age is None or age > TREND_MAX_DAYS:
+        order = [lane for lane in order if lane != "trend"]
+    if not order:
+        return "tips"
+    return max(order, key=lambda lane: (hits[lane] + (0.5 if lane in hints else 0), -order.index(lane)))
 
 
 def score(row: dict, now: datetime) -> None:
@@ -161,6 +192,6 @@ def process(rows: list[dict], now: datetime) -> dict:
         if row["rejectionReason"]:
             rejected += 1
             continue
-        row["assignedCategory"] = classify(row)
+        row["assignedCategory"] = classify(row, now)
         score(row, now)
     return {"duplicates": duplicates, "rejected": rejected}

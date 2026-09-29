@@ -127,11 +127,14 @@ def validate_magazine_research(folder: Path) -> list[str]:
     """The discovery store: registry schema, candidates with real URLs and no session material,
     and a health report that never counts a fabricated story."""
     errors = []
-    sources = folder / "sources.json"
-    if sources.exists():
-        sys.path.insert(0, str(ROOT / "scripts"))
-        from discovery import registry
-        errors.extend("sources.json: " + e for e in registry.validate(load(sources).get("sources") or []))
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from discovery import registry
+    errors.extend("scripts/discovery/sources.json: " + e for e in registry.validate(registry.load()))
+    source_health = folder / "source-health.json"
+    if source_health.exists():
+        for sid, entry in (load(source_health).get("sources") or {}).items():
+            if entry.get("status") not in registry.STATUSES:
+                errors.append(f"source-health.json: {sid} has status {entry.get('status')!r}")
     candidates = folder / "candidates.jsonl"
     if candidates.exists():
         seen = set()
