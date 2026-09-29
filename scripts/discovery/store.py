@@ -121,7 +121,13 @@ class CandidateStore:
         atomic_write(self.path, "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in ordered))
 
     def mark_selected(self, ids: Iterable[str], now, edition: Optional[str]) -> None:
-        """A story is published once: selectedFor is the edition that first ran it."""
+        """A story is published once: selectedFor is the edition that first ran it. Rebuilding the
+        same edition releases what an earlier build of that date chose but this one did not."""
+        ids = list(ids)
+        if edition:
+            for row in self.rows.values():
+                if row.get("selectedFor") == edition and row["candidateId"] not in ids:
+                    row.update(selected=False, selectedAt=None, selectedFor=None)
         for cid in ids:
             if cid in self.rows:
                 row = self.rows[cid]

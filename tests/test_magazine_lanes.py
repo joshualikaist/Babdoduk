@@ -550,3 +550,25 @@ def test_the_free_search_server_is_used_sparingly(tmp_path, monkeypatch):
                              env={}, validate=lambda u: True, log=lambda _: None)
     assert run_["health"]["web-a"]["code"] == "HTTP_429" and run_["health"]["web-b"]["code"] == "RATE_LIMITED_SKIPPED"
     assert calls.count("search") == 1 and run_["health"]["web-b"]["status"] == "DEGRADED"
+
+
+def test_a_weak_claim_echoed_by_trade_outlets_never_leads_the_page():
+    launch = "CJ제일제당이 저당 도시락 신제품을 내놓았다. 닭가슴살과 현미밥으로 구성했다. 전국 편의점에서 판다. " * 3
+    a, b = run(
+        (raw("CJ제일제당, 밸런스밀 저당 도시락 출시", launch, day(0), "https://newsis.com/view/1"), NEWS),
+        (raw("CJ 밸런스밀 저당 도시락 앞세워 영양 도우미", launch.replace("판다", "살 수 있다"), day(0),
+             "https://www.thinkfood.co.kr/news/2"), NEWS))
+    assert a["assignedCategory"] == "trend" and set(a["trendEvidence"]) == {"explicit_source_claim", "corroborated"}
+    assert not select.strong_evidence(a)                                   # "신제품" + an echo is weak
+    edition, _ = select.build([with_image(a), with_image(b)], date="2026-09-29", generated_at=NOW.isoformat(),
+                              recent=set())
+    assert edition["featured"]["heroKind"] == "pick"                       # in the lane, not the lead
+
+
+def test_rebuilding_an_edition_releases_what_it_no_longer_runs(tmp_path):
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    one = s.upsert({"sourceUrl": "https://a.example/1", "title": "one"}, NOW)
+    two = s.upsert({"sourceUrl": "https://a.example/2", "title": "two"}, NOW)
+    s.mark_selected([one["candidateId"], two["candidateId"]], NOW, "2026-09-29")
+    s.mark_selected([two["candidateId"]], NOW, "2026-09-29")               # same date, rebuilt
+    assert one["selectedFor"] is None and one["selected"] is False and two["selectedFor"] == "2026-09-29"
