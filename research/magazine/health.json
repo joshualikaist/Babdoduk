@@ -1,0 +1,227 @@
+{
+  "generatedAt": "2026-09-29T11:19:02+09:00",
+  "adapters": {
+    "blog-irisblossomlife": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 50,
+      "status": "STALE",
+      "lastSuccessAt": "2026-09-29T11:19:02+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2024-10-07T08:00:48+09:00"
+    },
+    "blog-koreanbapsang": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 10,
+      "status": "STALE",
+      "lastSuccessAt": "2026-09-29T11:19:02+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2025-03-22T02:34:09+09:00"
+    },
+    "blog-mykoreankitchen": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 5,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T11:19:02+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-26T19:00:22+09:00"
+    },
+    "blog-beyondkimchee": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 10,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T11:19:02+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-13T22:03:00+09:00"
+    },
+    "blog-seonkyounglongest": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 5,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T11:19:02+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-10T16:04:04+09:00"
+    },
+    "blog-budgetbytes": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 10,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T11:19:02+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-28T22:30:00+09:00"
+    },
+    "blog-justonecookbook": {
+      "type": "rss",
+      "adapter": "OK",
+      "code": null,
+      "items": 8,
+      "status": "ACTIVE",
+      "lastSuccessAt": "2026-09-29T11:19:02+09:00",
+      "lastFailureAt": null,
+      "failureCount": 0,
+      "newestItemAt": "2026-09-28T21:00:00+09:00"
+    },
+    "yt-jachwiyorisin": {
+      "type": "youtube_channel",
+      "adapter": "SKIPPED",
+      "code": "SKIPPED_CLOUD_PARITY",
+      "items": 0,
+      "status": "DEGRADED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    },
+    "yt-cookingtree": {
+      "type": "youtube_channel",
+      "adapter": "SKIPPED",
+      "code": "SKIPPED_CLOUD_PARITY",
+      "items": 0,
+      "status": "DEGRADED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    },
+    "yt-haruhankki": {
+      "type": "youtube_channel",
+      "adapter": "SKIPPED",
+      "code": "SKIPPED_CLOUD_PARITY",
+      "items": 0,
+      "status": "DEGRADED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    },
+    "yt-hamzy": {
+      "type": "youtube_channel",
+      "adapter": "SKIPPED",
+      "code": "SKIPPED_CLOUD_PARITY",
+      "items": 0,
+      "status": "DEGRADED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    },
+    "yt-search": {
+      "type": "youtube_search",
+      "adapter": "DISABLED",
+      "code": null,
+      "items": 0,
+      "status": "DISABLED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    },
+    "web-exa": {
+      "type": "web_search",
+      "adapter": "DISABLED",
+      "code": null,
+      "items": 0,
+      "status": "DISABLED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    },
+    "web-naver-blog": {
+      "type": "web_search",
+      "adapter": "DISABLED",
+      "code": null,
+      "items": 0,
+      "status": "DISABLED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    },
+    "instagram-opencli": {
+      "type": "instagram",
+      "adapter": "DISABLED",
+      "code": null,
+      "items": 0,
+      "status": "DISABLED",
+      "lastSuccessAt": null,
+      "lastFailureAt": null,
+      "failureCount": null,
+      "newestItemAt": null
+    }
+  },
+  "summary": {
+    "enabledSources": 11,
+    "failing": [],
+    "notConfigured": [],
+    "statusCounts": {
+      "ACTIVE": 5,
+      "STALE": 2,
+      "DEGRADED": 4,
+      "DISABLED": 4
+    },
+    "byStatus": {
+      "ACTIVE": [
+        "blog-beyondkimchee",
+        "blog-budgetbytes",
+        "blog-justonecookbook",
+        "blog-mykoreankitchen",
+        "blog-seonkyounglongest"
+      ],
+      "STALE": [
+        "blog-irisblossomlife",
+        "blog-koreanbapsang"
+      ],
+      "DEGRADED": [
+        "yt-cookingtree",
+        "yt-hamzy",
+        "yt-haruhankki",
+        "yt-jachwiyorisin"
+      ],
+      "DISABLED": [
+        "instagram-opencli",
+        "web-exa",
+        "web-naver-blog",
+        "yt-search"
+      ]
+    },
+    "duplicates": 0,
+    "rejected": 61,
+    "new": 98,
+    "candidates": 98,
+    "page_lookups": 9,
+    "validated": 30,
+    "pruned": 0,
+    "selected": 11,
+    "fabricated": 0,
+    "staleSources": [
+      "blog-irisblossomlife",
+      "blog-koreanbapsang"
+    ]
+  },
+  "warnings": [
+    "blog-irisblossomlife: SOURCE_STALE (newest item older than 120 days)",
+    "blog-koreanbapsang: SOURCE_STALE (newest item older than 120 days)",
+    "yt-cookingtree: SKIPPED_CLOUD_PARITY",
+    "yt-hamzy: SKIPPED_CLOUD_PARITY",
+    "yt-haruhankki: SKIPPED_CLOUD_PARITY",
+    "yt-jachwiyorisin: SKIPPED_CLOUD_PARITY"
+  ]
+}
