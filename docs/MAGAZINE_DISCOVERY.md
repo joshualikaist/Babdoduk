@@ -68,7 +68,10 @@ operator PC:  scripts/magazine_local_discovery.py -> research/magazine/inbox/<so
 
 `python scripts/refresh_magazine.py` runs the pipeline; `content-refresh` calls it daily at 10:00 KST.
 - `--discover-only` updates the store without building an edition.
-- `--select-only` rebuilds today's edition from the store without the network.
+- `--select-only` re-judges every stored candidate under the current rules and rebuilds today's
+  edition, without the network. Nothing is fetched, searched or deleted, so a rule change or a
+  rate-limited route never loses a discovered candidate. A search failure also leaves the store intact
+  (tested).
 - `--sanitize-only` cleans stored editions without the network.
 
 ### Local discovery sidecar (discovery, never publication)
@@ -81,7 +84,7 @@ The normal pipeline reads the inbox as that source's adapter result, so every lo
 through the same rules, and only the normal publisher produces the public edition. An inbox older
 than 3 days is reported as `LOCAL_INBOX_STALE` (DEGRADED); a missing one as `LOCAL_INBOX_MISSING`.
 
-**Automation gap.** Nothing yet runs the sidecar on a schedule or delivers the inbox to the
+**Automation gap (`YOUTUBE_AUTOMATION_PENDING`, recorded in `health.json`).** Nothing yet runs the sidecar on a schedule or delivers the inbox to the
 repository: today's inbox came from one controlled local run (2026-09-29) committed with the lab
 change. A
 durable path needs an owner decision (a scheduled task on the operator PC plus a way to hand the
@@ -99,7 +102,29 @@ inbox; every other route is cloud-safe.
 | 요리 비법 (tips) | a recipe, cooking post or video, with the source's tips category or two how-to signals | recipe blogs, cooking channels |
 
 A candidate that qualifies for no lane is rejected (`NO_QUALIFYING_LANE`), with the reason per lane in
-`laneDecisions`. The query's own lane wins when the candidate qualifies for it.
+`laneDecisions`. A story about how people eat that also qualifies as a trend goes to habit; otherwise
+the query's own lane wins when the candidate qualifies for it.
+
+### Editorial precision (owner decision, 2026-09-29): classify the item, not the publisher
+
+Fewer good stories beat more weak ones; there is no quota. `scripts/discovery/editorial.py`:
+
+| Heading | A reader must be able to say | Fixed reasons when not |
+|---|---|---|
+| 요즘 먹방 유행 | "there is evidence this is happening now" | `PRODUCT_ANNOUNCEMENT_ONLY`: a launch, or a round-up of launches ([신상품], [오늘의 새상품], "… 외", TOP n), needs measured demand for it (sales, engagement, stockouts or queues); `RECIPE_WITHOUT_TREND_EVIDENCE`: a popular recipe is a recipe; `NO_TREND_EVIDENCE` |
+| 요리 비법 | "this teaches me something" | `NOT_INSTRUCTIONAL`: ASMR, mukbang, montages, compilations and link round-ups without instructions in the retrieved text |
+| 건강한 한 끼 | "the source supports a health or nutrition angle" | `NO_HEALTH_BASIS`: the title and text must frame food and health (never inferred from ingredients); a launch is `PRODUCT_ANNOUNCEMENT_ONLY` |
+| 식습관 | "this is about how people eat" | `CELEBRITY_DIET_GOSSIP`, `PRODUCT_ANNOUNCEMENT_ONLY` (company promotion), `NO_BEHAVIOR_EVIDENCE` (a measured sentence must be about people, not a product's specification) |
+
+Evidence is re-judged from the stored facts on every run and every offline rebuild:
+- Company PR language ("…라고 밝혔다", "트렌드에 맞춰", "인기 상품", "소비자 니즈") is never evidence, and "인기", "신상" and "신제품" never count on their own.
+- Ambiguous words ("급증", "트렌드") count only when the sentence is about demand ("오메가6를 급증시켜" and "환자가 급증" do not).
+- Sales data means a demand figure that rose or set a record. A share ("매출의 70%"), a specification ("당도 68% 낮춰") or a recall ("기준치의 5배 검출") is not sales data.
+- A creator's hashtags are labels, not claims, and a sold-out sentence about goods (굿즈) is not about food.
+- Engagement means at least 100,000 views within 30 days, on a video that is itself about what is popular.
+- Corroboration requires two distinctive shared words, one of them a real name (Latin words match whole). It never rescues a launch, and one release relayed by two outlets on the same day is one voice.
+
+Also rejected for every lane: `OPINION_COLUMN`, `SHOPPING_OR_TRAVEL_GUIDE`, `NOTICE_OR_EVENT` (board notices, events, campaigns, lectures, awards), `PROMOTION` (contests, marketing round-ups, 1+1 deal lists), `AD_OR_SPONSORED` (paid placement, purchase links), `BUSINESS_NEWS` (earnings, supply deals, exports, market columns).
 
 **trendEvidence** (found in the source's retrieved text or platform metadata, never the title alone):
 
@@ -128,11 +153,15 @@ score = 0.25 × source trust + 0.20 × freshness + 0.15 × lane relevance + 0.15
 
 Freshness is exp(−age/21 days); quality is text length plus a validated image.
 
-**Selection.** Each lane takes at most 8 stories and at most 2 from one source (publisher); **8 is a
-maximum, not a quota**. A story runs in one edition only (`selectedFor`).
+**Selection.** Each lane takes at most 6 stories and at most 2 from one source (publisher); **6 is a
+ceiling, never a number to fill**. Stories that corroborate one another take one slot. In tips and
+health an evergreen story older than 90 days runs only when fewer than 3 fresh ones qualify. A story
+runs in one edition only (`selectedFor`).
 
 **Hero.** The edition records `featured.heroKind`:
-- `trend`: a qualified trend story with evidence, a validated image of its own, a Tier A/B source and
+- `trend`: a qualified trend story with independent evidence (measured demand, strong engagement,
+  independent reporting of stockouts or popularity, or corroboration by an independent source, never the
+  seller's own words; two kinds preferred), a validated image of its own, a Tier A/B source and
   audience relevance ≥ 0.5, published within 7 days preferred (30 at most). The page labels it
   **지금 뜨는 먹거리** and lists the evidence kinds.
 - `pick`: otherwise the best recent story with its own validated image, labelled **오늘의 추천 글**,

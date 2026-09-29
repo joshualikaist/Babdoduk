@@ -29,7 +29,7 @@ FIELDS = ("candidateId", "sourceId", "sourceName", "sourceType", "sourceUrl", "c
           "discoveryLane", "seenQueries", "searchRank", "sourceTrust", "contentKind", "publishedAtSource",
           "trendSignals", "trendEvidence", "trendEvidenceDetail", "corroboratedBy", "habitSignals",
           "audienceRelevance", "audienceScore", "laneDecisions", "viewCount", "likeCount", "requireFood",
-          "commercePage", "sponsored")
+          "commercePage", "sponsored", "howToMarkers", "trendEvidenceIndependent")
 MAX_QUERIES = 8
 
 
@@ -87,7 +87,7 @@ class CandidateStore:
             row["textLength"] = raw.get("textLength") or 0
             row["sourceExcerpt"] = raw.get("sourceExcerpt") or row.get("sourceExcerpt")
             for key in ("medium", "contentKind", "sourceTrust", "trustTier", "requireFood", "sponsored", "title",
-                        "publishedAtSource", "trendSignals", "habitSignals", "audienceRelevance"):
+                        "publishedAtSource", "trendSignals", "habitSignals", "audienceRelevance", "howToMarkers"):
                 if raw.get(key) is not None:
                     row[key] = raw[key]
         else:
