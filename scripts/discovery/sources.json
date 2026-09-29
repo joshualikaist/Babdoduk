@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "enabled": true,
+      "categories": [
+        "tips",
+        "habit"
+      ],
+      "id": "blog-irisblossomlife",
+      "name": "엄마표 집밥",
+      "type": "rss",
+      "url": "https://irisblossomlife.tistory.com/rss",
+      "trustTier": "B",
+      "discoveryMethod": "rss"
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "tips",
+        "health"
+      ],
+      "id": "blog-koreanbapsang",
+      "name": "Korean Bapsang",
+      "type": "rss",
+      "url": "https://www.koreanbapsang.com/feed/",
+      "trustTier": "B",
+      "discoveryMethod": "rss"
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "id": "blog-mykoreankitchen",
+      "name": "My Korean Kitchen",
+      "type": "rss",
+      "url": "https://www.mykoreankitchen.com/feed/",
+      "trustTier": "B",
+      "discoveryMethod": "rss"
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "tips",
+        "health"
+      ],
+      "id": "blog-beyondkimchee",
+      "name": "Beyond Kimchee",
+      "type": "rss",
+      "url": "https://www.beyondkimchee.com/feed/",
+      "trustTier": "B",
+      "discoveryMethod": "rss"
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "tips",
+        "trend"
+      ],
+      "id": "blog-seonkyounglongest",
+      "name": "Seonkyoung Longest",
+      "type": "rss",
+      "url": "https://seonkyounglongest.com/feed/",
+      "trustTier": "B",
+      "discoveryMethod": "rss"
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "tips",
+        "habit"
+      ],
+      "id": "blog-budgetbytes",
+      "name": "Budget Bytes",
+      "type": "rss",
+      "url": "https://www.budgetbytes.com/feed/",
+      "trustTier": "B",
+      "discoveryMethod": "rss"
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "tips",
+        "health"
+      ],
+      "id": "blog-justonecookbook",
+      "name": "Just One Cookbook",
+      "type": "rss",
+      "url": "https://www.justonecookbook.com/feed/",
+      "trustTier": "B",
+      "discoveryMethod": "rss"
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "tips"
+      ],
+      "id": "yt-jachwiyorisin",
+      "name": "자취요리신",
+      "type": "youtube_channel",
+      "channelId": "UCC9pQY_uaBSa0WOpMNJHbEQ",
+      "url": "https://www.youtube.com/channel/UCC9pQY_uaBSa0WOpMNJHbEQ",
+      "trustTier": "B",
+      "discoveryMethod": "youtube_feed",
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "tips"
+      ],
+      "id": "yt-cookingtree",
+      "name": "쿠킹트리 Cooking tree",
+      "type": "youtube_channel",
+      "channelId": "UCtby6rJtBGgUm-2oD_E7bzw",
+      "url": "https://www.youtube.com/channel/UCtby6rJtBGgUm-2oD_E7bzw",
+      "trustTier": "B",
+      "discoveryMethod": "youtube_feed",
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "health"
+      ],
+      "id": "yt-haruhankki",
+      "name": "하루한끼",
+      "type": "youtube_channel",
+      "channelId": "UCPWFxcwPliEBMwJjmeFIDIg",
+      "url": "https://www.youtube.com/channel/UCPWFxcwPliEBMwJjmeFIDIg",
+      "trustTier": "B",
+      "discoveryMethod": "youtube_feed",
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
+    },
+    {
+      "enabled": true,
+      "categories": [
+        "trend"
+      ],
+      "id": "yt-hamzy",
+      "name": "햄지 Hamzy",
+      "type": "youtube_channel",
+      "channelId": "UCPKNKldggioffXPkSmjs5lQ",
+      "url": "https://www.youtube.com/channel/UCPKNKldggioffXPkSmjs5lQ",
+      "trustTier": "B",
+      "discoveryMethod": "youtube_feed",
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (observed daily since 2026-09-22); reachable from the operator PC."
+    },
+    {
+      "enabled": false,
+      "categories": [
+        "tips",
+        "trend",
+        "health",
+        "habit"
+      ],
+      "id": "yt-search",
+      "name": "YouTube search",
+      "type": "youtube_search",
+      "trustTier": "C",
+      "discoveryMethod": "yt-dlp|youtube_api",
+      "queries": [
+        "요리 비법",
+        "집밥 레시피",
+        "자취 요리",
+        "요즘 음식",
+        "편의점 신상",
+        "먹방 트렌드",
+        "건강한 한 끼",
+        "식습관"
+      ],
+      "note": "Implemented (YouTube Data API or local yt-dlp); not configured. No key is requested today."
+    },
+    {
+      "enabled": false,
+      "categories": [
+        "tips",
+        "trend",
+        "health",
+        "habit"
+      ],
+      "id": "web-exa",
+      "name": "Web search (Exa)",
+      "type": "web_search",
+      "trustTier": "C",
+      "discoveryMethod": "exa",
+      "queries": [
+        "요리 비법",
+        "집밥 레시피",
+        "자취 요리",
+        "요즘 음식",
+        "편의점 신상",
+        "먹방 트렌드",
+        "건강한 한 끼",
+        "식습관"
+      ],
+      "note": "Implemented (Exa search + Jina Reader for public pages); needs EXA_API_KEY, not configured."
+    },
+    {
+      "enabled": false,
+      "categories": [
+        "tips",
+        "trend"
+      ],
+      "id": "web-naver-blog",
+      "name": "Naver Blog (via web search)",
+      "type": "web_search",
+      "trustTier": "C",
+      "discoveryMethod": "exa",
+      "queries": [
+        "site:blog.naver.com 자취 요리 레시피",
+        "site:blog.naver.com 편의점 신상"
+      ],
+      "note": "Implemented through the web search adapter (site:blog.naver.com); not configured."
+    },
+    {
+      "enabled": false,
+      "categories": [
+        "trend"
+      ],
+      "id": "instagram-opencli",
+      "name": "Instagram (OpenCLI, local only)",
+      "type": "instagram",
+      "trustTier": "C",
+      "discoveryMethod": "opencli",
+      "note": "Planned: OpenCLI with a dedicated local profile only; never in GitHub Actions."
+    }
+  ]
+}

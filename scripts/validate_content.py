@@ -27,20 +27,52 @@ def video_id(url: str) -> str:
     return match.group(1) if match else ""
 
 
+MAGAZINE_LANE_MAX = 8
+MAGAZINE_MEDIA = {"blog", "youtube", "instagram"}
+FABRICATED_SOURCES = {"밥도둑 데스크", "Babdoduk desk"}
+
+
+def magazine_item_errors(item: dict, where: str) -> list[str]:
+    """Every public story is source-backed: real source name, real http(s) URL, the source's
+    title, no desk/filler medium (docs/MAGAZINE_DISCOVERY.md)."""
+    errors = []
+    url = str(item.get("url") or "")
+    if not item.get("title"):
+        errors.append(f"{where}: story without title")
+    if not re.match(r"^https?://[^/\s]+", url):
+        errors.append(f"{where}: story without a real source URL")
+    if item.get("medium") == "desk" or item.get("source") in FABRICATED_SOURCES or not item.get("source"):
+        errors.append(f"{where}: fabricated or unsourced story")
+    elif item.get("medium") not in MAGAZINE_MEDIA:
+        errors.append(f"{where}: unknown medium {item.get('medium')!r}")
+    if item.get("image") and not re.match(r"^https?://", str(item.get("image"))):
+        errors.append(f"{where}: image is not an http(s) URL")
+    if len(str(item.get("summary") or "")) > 200:
+        errors.append(f"{where}: summary longer than a source excerpt")
+    return errors
+
+
 def validate_magazine(path: Path) -> list[str]:
     errors = []
     data = load(path)
+    name = path.name
     if not data.get("date"):
         errors.append("magazine missing date")
+    if "desks" in data:
+        errors.append(f"{name}: idea desks are not source-backed stories")
     lanes = data.get("lanes") or {}
     for lane in LANES:
         if lane not in lanes:
             errors.append(f"missing lane {lane}")
             continue
-        items = lanes[lane].get("items") or []
-        if len(items) < 4:
-            errors.append(f"{lane} has only {len(items)} items")
+        items = lanes[lane].get("items")
+        if not isinstance(items, list):
+            errors.append(f"{name}: {lane} items missing")
+        elif len(items) > MAGAZINE_LANE_MAX:
+            errors.append(f"{name}: {lane} has more than {MAGAZINE_LANE_MAX} items")
     featured = data.get("featured") or {}
+    if featured:
+        errors.extend(magazine_item_errors(featured, f"{name} featured"))
     used_urls = set()
     used_vids = set()
     used_titles = set()
@@ -49,32 +81,81 @@ def validate_magazine(path: Path) -> list[str]:
     for lane in LANES:
         sources = []
         for item in (lanes.get(lane) or {}).get("items") or []:
+            errors.extend(magazine_item_errors(item, f"{name} {lane}"))
             title = item.get("title") or ""
             url = (item.get("url") or "").split("?")[0].rstrip("/").lower()
             vid = video_id(item.get("url") or "")
             src = item.get("source") or ""
             if title in used_titles:
                 errors.append(f"duplicate title {title[:40]}")
-            if url and url in used_urls:
+            if url and url in used_urls and not vid:
                 errors.append(f"duplicate url {url}")
             if vid and vid in used_vids:
                 errors.append(f"duplicate video {vid}")
             if feat_title and title == feat_title:
                 errors.append("featured repeated in lane " + lane)
-            if feat_url and url and url == feat_url:
+            if feat_url and url and url == feat_url and not vid:
                 errors.append("featured url repeated in lane " + lane)
-            if src in sources and item.get("medium") == "youtube":
-                errors.append(f"{lane} repeats youtube source {src}")
             sources.append(src)
             used_titles.add(title)
             if url:
                 used_urls.add(url)
             if vid:
                 used_vids.add(vid)
-    trend = (lanes.get("trend") or {}).get("items") or []
-    sources = {item.get("source") for item in trend if item.get("source")}
-    if len(trend) >= 4 and len(sources) == 1:
-        errors.append("trend is single-source-only")
+    return errors
+
+
+def validate_magazine_archive(folder: Path) -> list[str]:
+    """Every stored edition is browsable from the calendar, so none may carry a fabricated story."""
+    errors = []
+    for path in sorted(folder.glob("20*.json")):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.stem):
+            continue
+        data = load(path)
+        items = [data.get("featured")] + [i for spec in (data.get("lanes") or {}).values() for i in spec.get("items") or []]
+        for item in filter(None, items):
+            errors.extend(magazine_item_errors(item, path.name))
+        if "desks" in data:
+            errors.append(f"{path.name}: idea desks are not source-backed stories")
+    return errors
+
+
+RESEARCH_FORBIDDEN_KEYS = {"cookie", "cookies", "token", "session", "authorization", "password", "apikey", "api_key"}
+
+
+def validate_magazine_research(folder: Path) -> list[str]:
+    """The discovery store: registry schema, candidates with real URLs and no session material,
+    and a health report that never counts a fabricated story."""
+    errors = []
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from discovery import registry
+    errors.extend("scripts/discovery/sources.json: " + e for e in registry.validate(registry.load()))
+    source_health = folder / "source-health.json"
+    if source_health.exists():
+        for sid, entry in (load(source_health).get("sources") or {}).items():
+            if entry.get("status") not in registry.STATUSES:
+                errors.append(f"source-health.json: {sid} has status {entry.get('status')!r}")
+    candidates = folder / "candidates.jsonl"
+    if candidates.exists():
+        seen = set()
+        for number, line in enumerate(candidates.read_text(encoding="utf-8").splitlines(), 1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except ValueError:
+                errors.append(f"candidates.jsonl:{number}: not JSON")
+                continue
+            if {k.lower() for k in row} & RESEARCH_FORBIDDEN_KEYS:
+                errors.append(f"candidates.jsonl:{number}: session or credential field")
+            if not row.get("candidateId") or row["candidateId"] in seen:
+                errors.append(f"candidates.jsonl:{number}: candidateId missing or duplicate")
+            seen.add(row.get("candidateId"))
+            if not re.match(r"^https?://", str(row.get("sourceUrl") or "")):
+                errors.append(f"candidates.jsonl:{number}: sourceUrl is not http(s)")
+    health = folder / "health.json"
+    if health.exists() and (load(health).get("summary") or {}).get("fabricated", 0) != 0:
+        errors.append("health.json: fabricated stories counted")
     return errors
 
 
@@ -615,6 +696,10 @@ def main() -> None:
             latest_copy = ROOT / "data" / "magazine" / "latest.json"
             if latest_copy.exists() and latest_copy.read_text(encoding="utf-8") != mag.read_text(encoding="utf-8"):
                 errors.append("latest.json does not match dated edition")
+        errors.extend(validate_magazine_archive(ROOT / "data" / "magazine"))
+    research = ROOT / "research" / "magazine"
+    if research.is_dir():
+        errors.extend(validate_magazine_research(research))
     kaist = ROOT / "data" / "kaist-menu" / "latest.json"
     if kaist.exists():
         errors.extend(validate_kaist(kaist))

@@ -23,8 +23,10 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(chrome, "SHARED", tmp_path / "shared")
     assert chrome.main(["--check"]) == 0
     page = tmp_path / "event.html"
-    page.write_text(page.read_text(encoding="utf-8").replace('href="choose.html" class="footer-apple-a"',
-                                                            'href="mukbang.html#what" class="footer-apple-a"'), encoding="utf-8")
+    drifted = page.read_text(encoding="utf-8").replace('href="mukbang.html" class="footer-apple-a"',
+                                                        'href="choose.html" class="footer-apple-a"')
+    assert drifted != page.read_text(encoding="utf-8")
+    page.write_text(drifted, encoding="utf-8")
     assert chrome.main(["--check"]) == 1
     assert "event.html" in capsys.readouterr().out
     assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0  # rewriting restores the shared copy
@@ -35,8 +37,10 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
         html = (ROOT / page).read_text(encoding="utf-8")
         nav = html[html.index('<header class="site-nav"'):html.index("</header>")]
         footer = html[html.index('<footer class="site-footer"'):html.index("</footer>")]
-        assert 'href="choose.html"' in nav and 'href="choose.html"' in footer, page
-        assert "mukbang.html#what" not in html, page
+        # One magazine product (it carries the picker); no separate picker, no Food Log in the chrome.
+        assert 'href="mukbang.html"' in nav and 'href="mukbang.html"' in footer, page
+        for gone in ('href="choose.html"', "mukbang.html#what", 'href="food.html"'):
+            assert gone not in nav and gone not in footer, (page, gone)
         current = re.findall(r'href="([^"]+)" aria-current="page"', nav)
         assert current == ([config["current"]] if config["current"] else []), (page, current)
         assert re.search(r'<p class="footer-apple-fine" data-i18n="footer.fine">[^<]+</p>', footer), page

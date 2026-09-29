@@ -804,7 +804,7 @@ def run_checks(preview=False):
         reset_storage(page)
         page.goto(base + "/ggongbab.html")
         page.locator(".gg-card").first.wait_for()
-        assert page.locator(".gg-choose-link").get_attribute("href") == "choose.html"
+        assert page.locator(".gg-choose-link").get_attribute("href") == "mukbang.html#what"   # the one picker
         page.locator('[data-group="when"][data-value="today"]').focus()
         page.keyboard.press("Enter")
         assert page.evaluate("document.activeElement.dataset.value") == "today"

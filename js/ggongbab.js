@@ -412,7 +412,7 @@
     html += '</div>';
     html += '<div id="foodHubMenu" class="food-hub-menu" role="tabpanel" aria-labelledby="foodHubTabMenu"' + (state.activeSection === 'menu' ? '' : ' hidden') + '></div>';
     html += '<aside class="gg-choose" aria-labelledby="ggChooseTitle"><p class="gg-choose-title" id="ggChooseTitle">' + esc(t('gg.choose.title', '뭘 먹을지 아직 못 정했다면')) + '</p>';
-    html += '<a class="gg-choose-link" href="choose.html">' + esc(t('gg.choose.cta', '메뉴 고르기 →')) + '</a></aside>';
+    html += '<a class="gg-choose-link" href="mukbang.html#what">' + esc(t('gg.choose.cta', '메뉴 고르기 →')) + '</a></aside>';
     root.innerHTML = html;
     if (focus) {
       var again = root.querySelector(focus);
