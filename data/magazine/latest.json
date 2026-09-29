@@ -1,23 +1,23 @@
 {
   "date": "2026-09-29",
-  "generatedAt": "2026-09-29T15:15:07+09:00",
+  "generatedAt": "2026-09-29T15:43:28+09:00",
   "schedule": "Daily 10:00 KST",
   "rules": "lanes-v1",
   "featured": {
-    "title": "\"간식부터 한 끼까지 건강하게\" CJ제일제당, 밸런스밀 저당 도시락 출시",
-    "summary": "CJ제일제당이 영양 밸런스 브랜드 '밸런스밀'에 저당 도시락을 추가하며 간식부터 한 끼 식사까지 아우르는 제품군 확대에 나선다고 29일 밝혔다.",
-    "source": "뉴시스 건강",
-    "sourceId": "news-newsis-health",
-    "candidateId": "c_fbe00db5882f349a",
-    "url": "https://www.newsis.com/view/NISX20260929_0003806582",
+    "title": "세븐일레븐, 일본 인기 디저트 '생초코파이 가토오쇼콜라' 선보여",
+    "summary": "세븐일레븐은 다음달 1일부터 일본 롯데에서 직소싱한 인기 냉장 디저트 '생초코파이 가토오쇼콜라'를 시즌 한정으로 선보인다고 29일 밝혔다.",
+    "source": "머니투데이",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_0e422b817b6ab917",
+    "url": "https://www.mt.co.kr/living/2026/09/29/2026092910195798976",
     "medium": "news",
-    "discoveredAt": "2026-09-29T15:13:56+09:00",
-    "publishedAt": "2026-09-29T10:39:18+09:00",
-    "image": "https://image.newsis.com/2026/09/29/NISI20260929_0002250486_web.jpg?rnd=20260929095839",
-    "imageSource": "feed_html",
+    "discoveredAt": "2026-09-29T15:09:50+09:00",
+    "publishedAt": "2026-09-29T09:00:00+09:00",
+    "image": "https://thumb.mt.co.kr/cdn-cgi/image/f=avif/21/2026/09/2026092910195798976_1.jpg",
+    "imageSource": "source_page_og",
     "trendEvidence": [
       "explicit_source_claim",
-      "corroborated"
+      "sales_data"
     ],
     "category": "trend",
     "heroKind": "trend"
@@ -27,20 +27,20 @@
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "세븐일레븐, 일본 인기 디저트 '생초코파이 가토오쇼콜라' 선보여",
-          "summary": "세븐일레븐은 다음달 1일부터 일본 롯데에서 직소싱한 인기 냉장 디저트 '생초코파이 가토오쇼콜라'를 시즌 한정으로 선보인다고 29일 밝혔다.",
-          "source": "머니투데이",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_0e422b817b6ab917",
-          "url": "https://www.mt.co.kr/living/2026/09/29/2026092910195798976",
+          "title": "\"간식부터 한 끼까지 건강하게\" CJ제일제당, 밸런스밀 저당 도시락 출시",
+          "summary": "CJ제일제당이 영양 밸런스 브랜드 '밸런스밀'에 저당 도시락을 추가하며 간식부터 한 끼 식사까지 아우르는 제품군 확대에 나선다고 29일 밝혔다.",
+          "source": "뉴시스 건강",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_fbe00db5882f349a",
+          "url": "https://www.newsis.com/view/NISX20260929_0003806582",
           "medium": "news",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-29T09:00:00+09:00",
-          "image": "https://thumb.mt.co.kr/cdn-cgi/image/f=avif/21/2026/09/2026092910195798976_1.jpg",
-          "imageSource": "source_page_og",
+          "discoveredAt": "2026-09-29T15:13:56+09:00",
+          "publishedAt": "2026-09-29T10:39:18+09:00",
+          "image": "https://image.newsis.com/2026/09/29/NISI20260929_0002250486_web.jpg?rnd=20260929095839",
+          "imageSource": "feed_html",
           "trendEvidence": [
             "explicit_source_claim",
-            "sales_data"
+            "corroborated"
           ]
         },
         {
