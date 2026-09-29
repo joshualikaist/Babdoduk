@@ -15,6 +15,7 @@ from .common import UA, is_public_url
 META_IMAGE = re.compile(r"""<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)(?::src)?["'][^>]*>""", re.I)
 CONTENT = re.compile(r"""content=["']([^"']+)["']""", re.I)
 PAGE_BUDGET = 30
+PER_LANE_BUDGET = 12        # every lane's best candidates get an image check, not only the global top
 
 
 def page_image(url: str, fetcher) -> str:
@@ -47,12 +48,19 @@ def image_ok(url: str, opener=urllib.request.urlopen) -> bool:
 
 
 def enrich(rows: list[dict], fetcher, *, validate=image_ok, budget: int = PAGE_BUDGET) -> dict:
-    """For the best-ranked eligible rows only (bounded requests): validate feed images and look
-    up the item's own og:image when the feed had none."""
+    """For the best-ranked eligible rows only (bounded requests: the overall top `budget` plus
+    each lane's top PER_LANE_BUDGET): validate feed images and look up the item's own og:image
+    when the feed had none."""
     counts = {"page_lookups": 0, "validated": 0}
     ranked = sorted((r for r in rows if not r.get("duplicateOf") and not r.get("rejectionReason")),
-                    key=lambda r: -(r.get("score") or 0))
-    for row in ranked[:budget]:
+                    key=lambda r: (-(r.get("score") or 0), r.get("candidateId") or ""))
+    picked, per_lane = [], {}
+    for row in ranked:
+        lane = row.get("assignedCategory")
+        if len(picked) < budget or per_lane.get(lane, 0) < PER_LANE_BUDGET:
+            picked.append(row)
+            per_lane[lane] = per_lane.get(lane, 0) + 1
+    for row in picked:
         if not row.get("imageUrl") and row.get("medium") != "youtube":
             counts["page_lookups"] += 1
             try:

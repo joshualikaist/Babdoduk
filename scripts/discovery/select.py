@@ -1,20 +1,32 @@
 # -*- coding: utf-8 -*-
 """Editorial selection: the public daily edition from ranked, eligible candidates.
 
-LANE_SIZE is a maximum, not a quota: a lane shows only what qualifies, possibly nothing. The
-featured story is the best qualifying story with a validated image of its own; only when no
-such story exists does the page show a text-only hero. Public items carry provenance (source,
-URL, medium, dates, image and its origin, ids) but no internal scores.
+LANE_SIZE is a maximum, not a quota: a lane shows only what qualifies, possibly nothing.
+
+Hero (owner decision, 2026-09-29), heroKind in the edition:
+  "trend"  a qualified trend story (trendEvidence present) with a validated image of its own,
+           from a Tier A/B source and with Korean/audience relevance >= HERO_AUDIENCE;
+           published within HERO_IDEAL_DAYS preferred, 30 at most.
+  "pick"   otherwise the best recent story with its own validated image, labelled
+           "오늘의 추천 글" on the page: never wording that implies today's trend. With no image
+           anywhere, a text-only hero.
+Public items carry provenance (source, URL, medium, dates, image and its origin, ids, the
+trend evidence kinds) but no internal scores or evidence text.
 """
 from __future__ import annotations
 
 import re
+from datetime import datetime, timedelta
 from typing import Optional
 
-from .common import excerpt
+from .common import KST, excerpt, parse_time
 
 LANE_SIZE = 8
 PER_SOURCE_PER_LANE = 2
+HERO_IDEAL_DAYS = 7
+HERO_MAX_DAYS = 30
+HERO_AUDIENCE = 0.5
+RULES = "lanes-v1"          # editions built under the evidence rules; older ones are legacy
 LANES = ("trend", "tips", "health", "habit")
 LANE_LEADS = {
     "tips": "밥이 더 맛있어지는 작은 조리 팁",
@@ -28,12 +40,18 @@ URLS = re.compile(r"(https?://\S+|www\.\S+|\S+@\S+\.\w+|#[^\s#]+)")
 
 
 BOILERPLATE = re.compile(r"^(watch how to make (this|these)\b|jump to recipe\b|print recipe\b)", re.I)
+# News leads open with a dateline or byline ("[서울=뉴시스] 김상윤 기자 =", "【 청년일보 】",
+# "[대한급식신문=김보희 기자]") and carry photo captions ("사진=… 캡처"): not part of the story.
+DATELINE = re.compile(r"^\s*(\[[^\]]{1,30}\]|【[^】]{1,30}】|\([^)]{1,20}=[^)]{0,20}\))\s*([가-힣]{2,4}\s*기자\s*=\s*)?")
+CAPTION = re.compile(r"(/?\s*사진\s*=\s*[^.]{0,60}?(캡처|제공|갈무리|뉴시스|연합뉴스|DB)\s*)")
 
 
 def card_summary(text: str, title: str = "") -> str:
     """A short verbatim excerpt without links, addresses, hashtags, embed boilerplate or a repeat
     of the title; empty when too thin (the card then shows title and source only)."""
     cleaned = re.sub(r"\s+", " ", URLS.sub(" ", text or "")).strip(" -|·")
+    cleaned = CAPTION.sub(" ", DATELINE.sub("", cleaned)).strip()
+    cleaned = re.sub(r"\s+", " ", cleaned)
     stripped = BOILERPLATE.sub("", cleaned).strip()
     if stripped != cleaned and title and stripped.lower().startswith(title.lower()):
         stripped = stripped[len(title):].strip(" -|·:")     # "Watch How to Make This <title>" heading
@@ -63,7 +81,35 @@ def public_item(row: dict) -> dict:
     if row.get("imageUrl") and row.get("imageValidated"):
         item["image"] = row["imageUrl"]
         item["imageSource"] = row.get("imageSource")
+    if row.get("assignedCategory") == "trend" and row.get("trendEvidence"):
+        item["trendEvidence"] = list(row["trendEvidence"])
     return item
+
+
+def _age(row: dict, now: datetime) -> Optional[float]:
+    published = parse_time(row.get("publishedAt"))
+    return (now - published).total_seconds() / 86400 if published else None
+
+
+def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
+    """(row, heroKind). A trend hero only on real evidence; never a recipe standing in for a trend."""
+    def trend_ok(row):
+        age = _age(row, now)
+        audience = float((row.get("audienceRelevance") or {}).get("score") or 0)
+        trusted = row.get("sourceTrust") in ("A", "B")        # high source trust: never a Tier C lead
+        return (row.get("assignedCategory") == "trend" and row.get("trendEvidence") and row.get("imageValidated")
+                and row.get("imageUrl") and trusted and audience >= HERO_AUDIENCE
+                and age is not None and age <= HERO_MAX_DAYS)
+    trends = sorted((r for r in pool if trend_ok(r)),
+                    key=lambda r: (_age(r, now) > HERO_IDEAL_DAYS, -(r.get("score") or 0), r["candidateId"]))
+    if trends:
+        return trends[0], "trend"
+    with_image = [r for r in pool if r.get("imageValidated") and r.get("imageUrl")]
+    recent_first = sorted(with_image, key=lambda r: ((_age(r, now) is None) or _age(r, now) > HERO_MAX_DAYS,
+                                                    -(r.get("score") or 0), r["candidateId"]))
+    if recent_first:
+        return recent_first[0], "pick"
+    return (pool[0], "pick") if pool else (None, "pick")
 
 
 def eligible(rows: list[dict], recent: set[str], date: str = "") -> list[dict]:
@@ -78,8 +124,8 @@ def eligible(rows: list[dict], recent: set[str], date: str = "") -> list[dict]:
 
 def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -> tuple[dict, list[str]]:
     pool = eligible(rows, recent, date)
-    with_image = [r for r in pool if r.get("imageValidated") and r.get("imageUrl")]
-    featured_row: Optional[dict] = (with_image or pool or [None])[0]
+    now = parse_time(generated_at) or datetime.fromisoformat(date).replace(hour=10, tzinfo=KST)
+    featured_row, hero_kind = choose_hero(pool, now)
     lanes, chosen = {}, []
     if featured_row is not None:
         chosen.append(featured_row["candidateId"])
@@ -99,8 +145,8 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
         lanes[lane] = {"lead": LANE_LEADS[lane], "items": [public_item(r) for r in picked]}
     featured = None
     if featured_row is not None:
-        featured = dict(public_item(featured_row), category=featured_row["assignedCategory"])
-    edition = {"date": date, "generatedAt": generated_at, "schedule": "Daily 10:00 KST",
+        featured = dict(public_item(featured_row), category=featured_row["assignedCategory"], heroKind=hero_kind)
+    edition = {"date": date, "generatedAt": generated_at, "schedule": "Daily 10:00 KST", "rules": RULES,
                "featured": featured, "lanes": lanes}
     return edition, chosen
 
@@ -114,24 +160,33 @@ def truthful(item: dict) -> bool:
 
 def sanitize(edition: dict) -> tuple[dict, int]:
     """Past editions: drop fabricated desk items and link-only idea desks, and drop generated
-    summaries/tags (the old builder composed them; their source text was never kept)."""
+    summaries/tags (the old builder composed them; their source text was never kept). A trend
+    item without trend evidence is not shown as a trend, and an edition built before the lane
+    rules (no "rules" marker) keeps no habit items: the old builder put recipes there by keyword."""
     removed = 0
+    legacy = edition.get("rules") != RULES
 
     def clean(item):
         keep = {k: item[k] for k in ("title", "source", "url", "medium", "image", "category", "publishedAt",
-                                     "discoveredAt", "sourceId", "candidateId", "imageSource", "summary") if k in item}
+                                     "discoveredAt", "sourceId", "candidateId", "imageSource", "summary",
+                                     "heroKind", "trendEvidence") if k in item}
         if "candidateId" not in item:        # built before provenance existed: its summary was generated
             keep.pop("summary", None)
         return keep
 
+    def allowed(item, lane):
+        if lane == "trend" and not item.get("trendEvidence"):
+            return False
+        return not (lane == "habit" and legacy)
+
     featured = edition.get("featured")
-    if featured and not truthful(featured):
+    if featured and (not truthful(featured) or not allowed(featured, featured.get("category"))):
         edition["featured"], removed = None, removed + 1
     elif featured:
         edition["featured"] = clean(featured)
-    for spec in (edition.get("lanes") or {}).values():
+    for lane, spec in (edition.get("lanes") or {}).items():
         items = spec.get("items") or []
-        good = [clean(i) for i in items if truthful(i)]
+        good = [clean(i) for i in items if truthful(i) and allowed(i, lane)]
         removed += len(items) - len(good)
         spec["items"] = good
     if "desks" in edition:
