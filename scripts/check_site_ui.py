@@ -220,10 +220,14 @@ def magazine_tools(page):
         count += 1
 
     yesterday = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=1)).strftime("%Y-%m-%d")
+    today = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
     menu = {"date": yesterday, "restaurants": [{"id": "r1", "name": "<b>식당</b>",
             "breakfast": {"items": []}, "lunch": {"items": ["<img src=x onerror=alert(1)>"], "price": "5,000원"},
             "dinner": {"items": ["저녁"]}}]}
     page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
+    page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json={
+        "days": [{"date": today, "available": False, "status": "NOT_PUBLISHED_YET"}]}))
+    page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(status=404, body=""))
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/mukbang.html#what", wait_until="networkidle")
     page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
@@ -257,6 +261,8 @@ def magazine_tools(page):
     check(dish in prefs["likes"] and dish not in prefs["eaten"], "choosing a dish is not recorded as eaten")
     page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
     page.unroute("**/data/kaist-menu/latest.json")
+    page.unroute("**/data/kaist-menu/week.json")
+    page.unroute(f"**/data/kaist-menu/{today}.json")
 
     # One picker product: it lives at mukbang.html#what; choose.html is only a compatibility redirect.
     page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
@@ -432,6 +438,7 @@ def home_summary(page):
     kst = timezone(timedelta(hours=9))
     now = datetime.now(kst).replace(microsecond=0)
     yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    today = now.strftime("%Y-%m-%d")
     later = (now + timedelta(hours=2)).isoformat()
     events = [{"id": "ok", "title": "ok", "startAt": now.isoformat(), "endAt": later, "food": {"provided": "true"}},
               {"id": "review", "title": "r", "startAt": now.isoformat(), "endAt": later,
@@ -439,6 +446,9 @@ def home_summary(page):
               {"id": "unknown", "title": "u", "startAt": now.isoformat(), "endAt": later, "food": {"provided": "unknown"}}]
     page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json={
         "date": yesterday, "restaurants": [{"id": "r1", "name": "r1", "lunch": {"items": ["밥"]}}]}))
+    page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json={
+        "weekStart": "2026-09-28", "days": [{"date": today, "available": False, "status": "NOT_PUBLISHED_YET"}]}))
+    page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(status=404, body=""))
     page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={
         "generatedAt": now.isoformat(), "events": events}))
     page.route("**/data/magazine/index.json", lambda route: route.fulfill(status=404, body=""))
@@ -453,6 +463,44 @@ def home_summary(page):
     menu = page.locator("#homeMenuStatus")
     check(menu.get_attribute("data-state") == "stale" and "오늘 1곳" not in menu.inner_text(),
           ("stale cafeteria is not counted as today", menu.inner_text()))
+    head = page.locator("#homeTodayTitle").inner_text().strip()
+    check(re.fullmatch(r"\d+월 \d+일", head) is not None and "요일" not in head and "기준" not in head,
+          ("home date is the KST date only", head))
+    check(page.locator(".home-today-note, #homeStamp").count() == 0
+          and "공개 조건을 통과" not in page.locator("main").inner_text()
+          and "지금 확인된 정보" not in page.locator("main").inner_text(),
+          "the public-condition strip and explanatory header are gone")
+    check(page.locator(".home-photo-tag, .home-collage-note").count() == 0
+          and "오늘 학식 메뉴가 아니에요" not in page.content(),
+          "collage has no numbered dish labels or disclaimer")
+    choice = page.evaluate("""() => {
+      const M = window.BabdodukKaistMenu;
+      const saved = {date:'2026-09-29', restaurants:[{id:'a'}]};
+      const dated = {date:'2026-09-30', restaurants:[{id:'b'}]};
+      const open = {days:[{date:'2026-09-30', available:true}]};
+      const closed = {days:[{date:'2026-09-30', available:false}]};
+      return {
+        night: M.resolveTodayChoice(saved, open, dated, '2026-09-29').use,
+        morning: M.resolveTodayChoice(saved, open, dated, '2026-09-30').use,
+        absent: M.resolveTodayChoice(saved, closed, dated, '2026-09-30').use,
+        nofile: M.resolveTodayChoice(saved, open, null, '2026-09-30').use
+      };
+    }""")
+    check(choice == {"night": "latest", "morning": "dated", "absent": "stale", "nofile": "stale"},
+          ("23:59 uses latest; 00:01 uses today's file only when it exists", choice))
+    colors = page.evaluate("""() => {
+      const color = sel => getComputedStyle(document.querySelector(sel)).color;
+      return {copy: color('.footer-apple-copy'), mail: color('.footer-apple-email-plain'),
+              contact: color('.footer-apple-email-plain [data-i18n="footer.contact"]')};
+    }""")
+    check(colors["copy"] == colors["mail"] == colors["contact"], ("footer contact matches copyright", colors))
+    page.set_viewport_size({"width": 1440, "height": 900})
+    wide = page.evaluate("""() => {
+      const color = sel => getComputedStyle(document.querySelector(sel)).color;
+      return color('.footer-apple-copy') === color('.footer-apple-email-plain');
+    }""")
+    check(wide, "footer contact matches copyright at 1440")
+    page.set_viewport_size({"width": 390, "height": 844})
     free = page.locator("#homeFreeStatus")
     check(free.get_attribute("data-state") == "ready" and "오늘 1개" in free.inner_text(),
           ("only public rows are counted", free.inner_text()))
@@ -465,9 +513,31 @@ def home_summary(page):
     check(meta_en.startswith("Last published")
           and not any(word in meta_en.lower() for word in ("latest", "live", "real-time", "realtime")),
           ("English publication label", meta_en))
+    check(re.fullmatch(r"[A-Z][a-z]{2} \d{1,2}", page.locator("#homeTodayTitle").inner_text().strip()) is not None,
+          ("English home date is month and day", page.locator("#homeTodayTitle").inner_text()))
+    en_colors = page.evaluate("""() => {
+      const color = sel => getComputedStyle(document.querySelector(sel)).color;
+      return color('.footer-apple-copy') === color('.footer-apple-email-plain');
+    }""")
+    check(en_colors, "English footer contact matches copyright")
     page.locator("#langToggle").click()
     check(page.locator("#homeFeature").is_hidden(), "missing magazine edition leaves no empty card")
-    for pattern in ("**/data/kaist-menu/latest.json", "**/data/ggongbab/latest.json", "**/data/magazine/index.json"):
+    page.unroute("**/data/kaist-menu/week.json")
+    page.unroute(f"**/data/kaist-menu/{today}.json")
+    page.unroute("**/data/kaist-menu/latest.json")
+    page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json={
+        "date": yesterday, "restaurants": [{"id": "old", "name": "old", "lunch": {"items": ["어제밥"]}}]}))
+    page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json={
+        "weekStart": "2026-09-28", "days": [{"date": today, "available": True, "status": "AVAILABLE", "restaurantCount": 1}]}))
+    page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(json={
+        "date": today, "restaurants": [{"id": "r1", "name": "r1", "lunch": {"items": ["오늘확인된학식"]}}]}))
+    page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
+    ready = page.locator("#homeMenuStatus")
+    check(ready.get_attribute("data-state") == "ready" and "오늘 1곳" in ready.inner_text()
+          and "아직 올라오지" not in ready.inner_text(),
+          ("yesterday latest plus today's dated file is today's menu", ready.inner_text()))
+    for pattern in ("**/data/kaist-menu/latest.json", "**/data/kaist-menu/week.json",
+                    f"**/data/kaist-menu/{today}.json", "**/data/ggongbab/latest.json", "**/data/magazine/index.json"):
         page.unroute(pattern)
     return count
 
@@ -663,8 +733,7 @@ def event_bands(page):
 
     ROWS = """items => items.map(r => { const state = r.querySelector('[data-event-state]');
       return {start:r.dataset.start, end:r.dataset.end, band:r.dataset.band, conf:r.dataset.confirmation,
-        list:r.parentElement.id, num:r.querySelector('.event-num').textContent,
-        chip:state.textContent, chipShown:!state.hidden, title:r.querySelector('.event-name').textContent,
+        list:r.parentElement.id, chip:state.textContent, chipShown:!state.hidden, title:r.querySelector('.event-name').textContent,
         cta:r.querySelector('[data-event-cta]').textContent, linkBand:r.querySelector('.event-link').dataset.band,
         open:r.querySelector('details.event-more').open}; })"""
     page.set_viewport_size({"width": 390, "height": 844})
@@ -688,9 +757,15 @@ def event_bands(page):
         check(not row["open"], ("details stay folded by default", row))
         check(row["linkBand"] == row["band"] and row["cta"] == ("당시 게시물" if row["band"] == "past" else "게시물 보기"),
               ("a past link opens the original post as a record; a live link is an action", row))
-    for list_id in ("eventUpcoming", "eventList"):
-        nums = [row["num"] for row in rows if row["list"] == list_id]
-        check(nums == [f"{i + 1:02d}" for i in range(len(nums))], ("rows are numbered per list", list_id, nums))
+    check(page.locator(".event-num, .page-num").count() == 0, "event page has no decorative numbers")
+    check(page.locator(".event-elsewhere").count() == 0, "the title row does not compete with a hub cross-link")
+    empty = page.locator("#eventEmpty")
+    check("Instagram" not in empty.inner_text() and empty.locator("a").count() == 0,
+          ("empty state is only the absence line", empty.inner_text()))
+    insta = page.locator(".event-instagram a")
+    check(insta.count() == 1 and insta.get_attribute("href") == "https://www.instagram.com/babdodukms/"
+          and "noopener" in (insta.get_attribute("rel") or "") and "@babdodukms" in insta.inner_text(),
+          "Instagram is a bottom channel, not an event")
 
     def participation(lang_tag):
         fields = page.locator(".event-item").evaluate_all("""items => items.map(r => {
@@ -704,8 +779,7 @@ def event_bands(page):
                   ("past participation instructions are marked historical, once", field))
 
     participation("당시 안내 · 지금은 참여할 수 없어요")
-    check(page.locator(".event-elsewhere").get_attribute("href") == "ggongbab.html",
-          "free-food opportunities are pointed to the hub, not mixed into the record")
+    check(page.locator(".event-elsewhere").count() == 0, "free food stays in navigation, not in the news title")
     # Full context is one keyboard action away.
     summary = page.locator(".event-item details.event-more summary").nth(1)
     summary.focus()
@@ -722,8 +796,7 @@ def event_bands(page):
     participation("당시 안내 · 지금은 참여할 수 없어요")
     live = sum(row["band"] != "past" for row in rows)
     check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty state only when nothing is current")
-    check(page.locator("#eventEmpty a").get_attribute("href") == "https://www.instagram.com/babdodukms/",
-          "the empty state points to Instagram")
+    check(page.locator("#eventEmpty a").count() == 0, "Instagram is not part of the empty state")
     order = page.evaluate("""() => [...document.querySelectorAll('main h1, main h2')].filter(h => !h.closest('[hidden]'))
       .map(h => h.id || h.tagName)""")
     check(order == ["H1", "eventNowTitle", "eventListTitle"], ("지금, then 지난 활동", order))
@@ -740,7 +813,7 @@ def event_bands(page):
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
     upcoming = [row for row in rows if row["list"] == "eventUpcoming"]
-    check(len(upcoming) == 1 and "카빙" in upcoming[0]["title"] and upcoming[0]["num"] == "01"
+    check(len(upcoming) == 1 and "카빙" in upcoming[0]["title"]
           and upcoming[0]["chip"].startswith("예정") and "미확정" in upcoming[0]["chip"],
           ("the scheduled, unconfirmed row leads under 지금", upcoming))
     check(upcoming[0]["cta"] == "게시물 보기" and upcoming[0]["linkBand"] == "upcoming"
@@ -748,8 +821,7 @@ def event_bands(page):
           "an upcoming row keeps an actionable link and unmarked instructions")
     check(page.locator("#eventEmpty").is_hidden() and page.locator("#eventUpcoming").is_visible(),
           "empty state hidden when something is scheduled")
-    # 〈카빙〉 is authored as 02 and shows 01 under 지금; the one row left in the record is 01.
-    check([row["num"] for row in rows if row["list"] == "eventList"] == ["01"], "the record renumbers")
+    check(page.locator("#eventList .event-num").count() == 0, "the record has no row numbers")
     page.unroute("**/event.html")
     return count
 

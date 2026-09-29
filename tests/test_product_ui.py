@@ -184,7 +184,9 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
     assert html.count('<details class="event-more">') == 2 and "event-tab" not in html
     assert html.count('<div class="event-detail-row" data-detail="participation">') == 4  # two events, ko and en
-    assert '<a class="event-elsewhere" href="ggongbab.html">' in html
+    assert "event-elsewhere" not in html and "event-num" not in html and 'class="page-num"' not in html
+    assert 'class="event-instagram"' in html and "@babdodukms" in html
+    assert 'id="eventEmpty"' in html and "event.emptyLink" not in html
     # One picker product: it lives in the magazine at #what; choose.html only redirects there.
     for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
@@ -222,7 +224,8 @@ def test_home_top_is_one_hero_and_a_manual_banner_shelf():
     photos = re.findall(r"<img [^>]+>", collage)
     assert len(photos) == 3 and all('alt=""' in img and "width=" in img and "height=" in img for img in photos)
     assert 'loading="lazy"' not in photos[0] and 'fetchpriority="high"' in photos[0]
-    assert "오늘 학식 메뉴가 아니에요" in collage  # atmosphere photos never pose as today's menu
+    assert "오늘 학식 메뉴가 아니에요" not in collage and "home-photo-tag" not in collage
+    assert not re.search(r">0[123]<", collage)
     for src in set(re.findall(r'src="(images/home/[^"]+)"', html)):
         assert (ROOT / src).stat().st_size < 200_000, src
     home_js = (ROOT / "js/home.js").read_text(encoding="utf-8")

@@ -601,12 +601,12 @@ body::after {
   word-break: keep-all;
 }
 
-.footer-apple-email-plain,
 .footer-apple-a {
   color: var(--color-ink);
 }
 
 .footer-apple-email-plain {
+  color: var(--color-ink-muted);
   user-select: text;
 }
 

@@ -70,6 +70,50 @@
   function isStale(data, today) {
     return !isDataForSelectedDate(data, ymd(today));
   }
+  function weekDay(week, iso) {
+    var days = week && week.days;
+    if (!Array.isArray(days)) return null;
+    for (var i = 0; i < days.length; i++) {
+      if (days[i] && days[i].date === iso) return days[i];
+    }
+    return null;
+  }
+  function payloadFor(data, iso) {
+    return data && data.date === iso && Array.isArray(data.restaurants) ? data : null;
+  }
+  // latest.json is the fast snapshot. After midnight it can still name yesterday while
+  // week.json and YYYY-MM-DD.json already hold today. Stale means today's file is absent.
+  function resolveTodayChoice(latest, week, dated, todayIso) {
+    if (payloadFor(latest, todayIso)) return { use: 'latest', data: latest };
+    var entry = weekDay(week, todayIso);
+    if (entry && entry.available === false) return { use: 'stale', data: latest || null };
+    if (payloadFor(dated, todayIso)) return { use: 'dated', data: dated };
+    return { use: 'stale', data: latest || null };
+  }
+  function loadTodayMenu(getJson, now, urls) {
+    urls = urls || {};
+    var todayIso = ymd(now || toKst());
+    var latestUrl = urls.latest || 'data/kaist-menu/latest.json';
+    var weekUrl = urls.week || 'data/kaist-menu/week.json';
+    var dayBase = urls.dayBase || 'data/kaist-menu/';
+    return getJson(latestUrl).then(function (latest) {
+      if (!latest || !Array.isArray(latest.restaurants)) throw new Error('bad');
+      if (latest.date === todayIso) return latest;
+      return getJson(weekUrl).then(function (week) {
+        return finish(latest, week);
+      }, function () {
+        return finish(latest, null);
+      });
+      function finish(saved, week) {
+        if (weekDay(week, todayIso) && weekDay(week, todayIso).available === false) return saved;
+        return getJson(dayBase + todayIso + '.json').then(function (dated) {
+          return resolveTodayChoice(saved, week, dated, todayIso).data || saved;
+        }, function () {
+          return saved;
+        });
+      }
+    });
+  }
   function pad2(n) { return String(n).padStart(2, '0'); }
   function utcDay(isoDate) {
     var p = String(isoDate || '').split('-');
@@ -387,15 +431,21 @@
         emit();
         return;
       }
-      var url = options.url || 'data/kaist-menu/latest.json';
-      fetch(url, { cache: 'no-store' }).then(function (res) {
-        if (!res.ok) throw new Error('missing');
-        return res.json();
+      loadTodayMenu(function (url) {
+        return fetch(url, { cache: 'no-store' }).then(function (res) {
+          if (!res.ok) throw new Error('missing');
+          return res.json();
+        });
+      }, toKst(), {
+        latest: options.url || 'data/kaist-menu/latest.json',
+        week: options.weekUrl || 'data/kaist-menu/week.json',
+        dayBase: options.dayBase || 'data/kaist-menu/'
       }).then(function (data) {
         if (!data || !Array.isArray(data.restaurants)) throw new Error('bad');
         state.data = data;
         state.status = 'ready';
         state.error = '';
+        if (data.date) state.days[data.date] = { status: 'available', data: data };
         render();
         emit();
       }).catch(function () {
@@ -406,9 +456,9 @@
         emit();
       });
     }
-    // week.json only says which dates have a menu. It is asked for with the first date change,
-    // so the today view makes the same requests as before; a missing or older index is
-    // ignored and the dated files are simply fetched on demand.
+    // When latest.json is already today, the today view does not ask for week.json.
+    // A later date change reads the index once; a missing or older index is ignored
+    // and that date's file is fetched on demand.
     var weekRequest = null;
     function ensureWeek() {
       if (!weekRequest) {
@@ -558,6 +608,8 @@
     fixtureMenu: fixtureMenu,
     fixtureDay: fixtureDay,
     isStale: isStale,
+    resolveTodayChoice: resolveTodayChoice,
+    loadTodayMenu: loadTodayMenu,
     isDataForSelectedDate: isDataForSelectedDate,
     isToday: isToday,
     weekDates: weekDates,
@@ -629,9 +681,11 @@
   });
   document.addEventListener('babdoduk-lang', mukRender);
   mukRender();
-  fetch('data/kaist-menu/latest.json', { cache: 'no-store' }).then(function (res) {
-    if (!res.ok) throw new Error('missing');
-    return res.json();
+  loadTodayMenu(function (url) {
+    return fetch(url, { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error('missing');
+      return res.json();
+    });
   }).then(function (data) {
     if (!data || !Array.isArray(data.restaurants)) throw new Error('bad');
     mukState.data = data;

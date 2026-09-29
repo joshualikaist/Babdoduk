@@ -317,6 +317,57 @@ def weekly_cafeteria(browser, base, report):
         context.close()
 
 
+def midnight_dated_menu(browser, base, report):
+    """After midnight, yesterday's latest.json must not hide a dated file week.json already lists."""
+    yesterday = menu_day("2026-09-29", 8, "화요일")
+    today = menu_day("2026-09-30", 8, "수요일")
+    today["restaurants"][0]["lunch"]["items"].insert(0, "오늘수요일밥")
+    opened = week_index([("2026-09-29", True, 8, "AVAILABLE"), ("2026-09-30", True, 8, "AVAILABLE")])
+    closed = week_index([("2026-09-29", True, 8, "AVAILABLE"), ("2026-09-30", False, 0, "NOT_PUBLISHED_YET")])
+    before = datetime(2026, 9, 29, 23, 59, tzinfo=timezone(timedelta(hours=9)))
+    after = datetime(2026, 9, 30, 0, 1, tzinfo=timezone(timedelta(hours=9)))
+
+    def scenario(clock, week, stale, marker, forbid):
+        context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+        neutralize_public_config(context)
+        try:
+            context.clock.set_fixed_time(clock)
+            page = context.new_page()
+            requests = []
+            page.on("request", lambda request: requests.append(urlparse(request.url).path))
+            page.add_init_script("localStorage.setItem('babdoduk-menu-meal', 'lunch');")
+            page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": []}))
+            page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=yesterday))
+            page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json=week))
+            page.route("**/data/kaist-menu/2026-09-30.json", lambda route: route.fulfill(json=today))
+            page.goto(base + "/ggongbab.html#menu")
+            if stale:
+                page.locator("[data-km-stale]").wait_for()
+                assert "오늘수요일밥" not in page.locator("#foodHubMenu").inner_text()
+            else:
+                page.locator(".km-card").first.wait_for()
+                assert page.locator("[data-km-stale]").count() == 0
+                if marker:
+                    assert "오늘수요일밥" in page.locator("#foodHubMenu").inner_text()
+                else:
+                    assert "화요일 점심" in page.locator("#foodHubMenu").inner_text()
+            for path in forbid:
+                assert not any(item.endswith(path) for item in requests), (path, requests)
+            if marker:
+                page.goto(base + "/index.html")
+                status = page.locator("#homeMenuStatus[data-state='ready']")
+                status.wait_for()
+                assert status.get_attribute("data-state") == "ready"
+                assert "오늘 8곳" in status.inner_text() and "아직 올라오지" not in status.inner_text()
+            report["checks"] += 1
+        finally:
+            context.close()
+
+    scenario(before, opened, False, False, ("/week.json", "/2026-09-30.json"))
+    scenario(after, opened, False, True, ())
+    scenario(after, closed, True, False, ("/2026-09-30.json",))
+
+
 def past_listings(browser, base, report):
     """Past listings on the public page: a separate, quiet record with no sign-up actions,
     loaded on its own so that its failure never touches the live feed. Synthetic data only."""
@@ -763,6 +814,7 @@ def run_checks(preview=False):
         open_ended_hand_out(browser, base, report)
         past_listings(browser, base, report)
         weekly_cafeteria(browser, base, report)
+        midnight_dated_menu(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
         published = datetime.now(timezone(timedelta(hours=9))).replace(microsecond=0).isoformat()
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"generatedAt": published, "events": events}))
