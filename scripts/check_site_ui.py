@@ -124,7 +124,7 @@ def inspect_page(page, name, size, screenshot_dir=None):
     direct = page.locator(".nav-mega-row > .site-nav-direct")
     check(direct.count() == 2, "two direct food tasks in navigation")
     check(direct.nth(0).get_attribute("href") == "ggongbab.html"
-          and direct.nth(1).get_attribute("href") == "choose.html",
+          and direct.nth(1).get_attribute("href") == "mukbang.html#what",
           "availability and choice have separate destinations")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
@@ -208,12 +208,13 @@ def inspect_page(page, name, size, screenshot_dir=None):
 
 
 def magazine_tools(page):
-    """Picker and cafeteria summary on choose.html (synthetic data, phone width); magazine provenance."""
+    """One picker: mukbang.html#what (synthetic data, phone width); choose.html only redirects there.
+    Magazine provenance: only source-backed stories render, never desk filler."""
     count = 0
 
     def check(ok, detail):
         nonlocal count
-        assert ok, f"choose.html / mukbang.html tools: {detail}"
+        assert ok, f"mukbang.html#what / magazine: {detail}"
         count += 1
 
     yesterday = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -222,7 +223,7 @@ def magazine_tools(page):
             "dinner": {"items": ["저녁"]}}]}
     page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
     page.set_viewport_size({"width": 390, "height": 844})
-    page.goto("https://site-ui.invalid/choose.html", wait_until="networkidle")
+    page.goto("https://site-ui.invalid/mukbang.html#what", wait_until="networkidle")
     page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
     page.reload(wait_until="networkidle")
     tools = page.locator("#kaistToday")
@@ -255,14 +256,19 @@ def magazine_tools(page):
     page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
     page.unroute("**/data/kaist-menu/latest.json")
 
-    # The magazine is editorial only; old picker links land on the picker page.
+    # One picker product: it lives at mukbang.html#what; choose.html is only a compatibility redirect.
     page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
-    check(not page.locator("#eatApp, #kaistToday, #what").count(), "the magazine carries no picker or cafeteria tool")
-    page.goto("https://site-ui.invalid/mukbang.html#what", wait_until="networkidle")
-    check(page.url.endswith("/choose.html"), ("old #what links reach the picker", page.url))
+    check(page.locator("#what #eatApp").count() == 1 and page.locator("#eatApp").count() == 1,
+          "exactly one picker, inside the magazine at #what")
+    page.goto("https://site-ui.invalid/choose.html", wait_until="networkidle")
+    page.wait_for_function("location.pathname.endsWith('/mukbang.html') && location.hash === '#what'", timeout=10000)
+    page.locator("#eatApp").wait_for()
+    landed = urlparse(page.url)          # the magazine adds ?d=<edition> itself
+    check(landed.path.endswith("/mukbang.html") and landed.fragment == "what" and page.locator("#eatApp").count() == 1,
+          ("choose.html redirects to the one picker", page.url))
 
-    # Edition provenance: collected stories link out safely, desk memos say so,
-    # and an older edition is not presented as today's.
+    # Edition provenance: only source-backed stories render (a desk item or a non-http URL is
+    # dropped, never shown as a note), an empty lane says so, and an older edition is labelled.
     edition = {"date": "2026-01-02", "schedule": "Daily 10:00 KST",
                "featured": {"title": "F", "summary": "s", "source": "Src", "url": "https://example.org/f",
                             "medium": "blog", "category": "tips"},
@@ -279,8 +285,10 @@ def magazine_tools(page):
     check(lane.locator("a.mg-story").count() == 1
           and lane.locator("a.mg-story").get_attribute("rel") == "noopener", "one safe outbound story")
     check(not page.locator('a[href^="javascript"]').count(), "non-http story URLs are not linked")
-    check(lane.locator(".mg-story--desk").count() == 2 and "자체 메모" in lane.locator(".mg-story--desk").first.inner_text(),
-          "stories without a source link are labelled as desk notes")
+    check(not page.locator(".mg-story--desk").count() and "밥도둑 데스크" not in page.inner_text("main"),
+          "desk filler is never rendered")
+    check("밥도둑 데스크" not in page.content() and "계란후라이 하나도" not in page.content(),
+          "no fabricated default story in the page itself")
     check("지난 호" in page.locator(".mg-masthead-issue").inner_text(), "past edition is labelled")
     page.unroute("**/data/magazine/index.json")
     page.unroute("**/data/magazine/2026-01-02.json")
@@ -312,7 +320,7 @@ def home_summary(page):
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
     actions = page.locator(".home-actions a").evaluate_all("els => els.map(el => el.getAttribute('href'))")
-    check(actions == ["ggongbab.html", "choose.html"], ("primary actions", actions))
+    check(actions == ["ggongbab.html", "mukbang.html#what"], ("primary actions", actions))
     check(page.locator(".home-actions a").first.bounding_box()["y"] < 844, "primary action in first mobile screen")
     check(page.locator('a[href="#"]').count() == 1 and page.locator("#navHome").get_attribute("href") == "#",
           "no placeholder links except back-to-top")
@@ -339,8 +347,9 @@ def home_summary(page):
     return count
 
 
-SHELF = ["today", "pick", "map", "log"]
-SHELF_HREFS = ["ggongbab.html", "choose.html", "https://naver.me/5NeqUPzI", "food.html"]
+# Food Log is lab-only (lab.html): it has no public home banner, nav or footer link.
+SHELF = ["today", "pick", "map"]
+SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI"]
 GROUPS = ["오늘 먹기", "읽어보기", "밥도둑 소식"]
 NEWS_HREFS = ["event.html#now", "event.html#archive"]
 HOME_TOP = """() => {
@@ -405,7 +414,7 @@ def home_hero_shelf(page):
         mapped = next(b for b in top["banners"] if b["name"] == "map")
         check(mapped["target"] == "_blank" and "noopener" in mapped["rel"].split(), (where, "map opens safely", mapped))
         widths = {b["name"]: b["box"]["w"] for b in top["banners"]}
-        check(min(widths["today"], widths["pick"]) > max(widths["map"], widths["log"]),
+        check(min(widths["today"], widths["pick"]) > widths["map"],
               (where, "today and pick outrank the discovery banners", widths))
         check([g["title"] for g in top["groups"]] == GROUPS and not any(g["purpose"] for g in top["groups"]),
               (where, "eat, read and news groups; the numbered title needs no description line", top["groups"]))
@@ -754,12 +763,13 @@ def structure_and_failures(page):
 # Site guardian: the shared chrome is identical on every public page (structure, destinations, computed
 # footer styles and the transition into the footer), in both languages and at desktop and phone widths.
 # ---------------------------------------------------------------------------------------------------
-GUARD_PAGES = ["index.html", "ggongbab.html", "choose.html", "mukbang.html", "event.html", "food.html", "history.html"]
+# choose.html is a redirect to mukbang.html#what and food.html is lab-only, so neither is a guarded public page.
+GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
-NAV_DIRECT = ["ggongbab.html", "choose.html"]
-NAV_MORE = ["mukbang.html", "event.html", "food.html", "history.html",
+NAV_DIRECT = ["ggongbab.html", "mukbang.html#what"]
+NAV_MORE = ["mukbang.html", "event.html", "history.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
-FOOTER_LINKS = ["ggongbab.html", "choose.html", "mukbang.html", "event.html", "food.html", "history.html"]
+FOOTER_LINKS = ["ggongbab.html", "mukbang.html#what", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
   const pick = (el, props) => { const s = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, s.getPropertyValue(p)])); };
   const root = document.documentElement, body = document.body, footer = document.querySelector('.site-footer');

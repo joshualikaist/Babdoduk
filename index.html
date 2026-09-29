@@ -20,13 +20,12 @@
       <a href="#" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
       <div class="nav-mega-row">
         <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
-        <a class="site-nav-direct" href="choose.html" data-i18n="nav.choose">메뉴 고르기</a>
+        <a class="site-nav-direct" href="mukbang.html#what" data-i18n="nav.choose">메뉴 고르기</a>
         <div class="nav-mega" data-mega>
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
           <div class="nav-mega-panel" id="navMorePanel">
             <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
             <a class="nav-mega-link" href="event.html" data-i18n="nav.event.open">소식·이벤트</a>
-            <a class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
             <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
             <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
             <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
@@ -47,7 +46,7 @@
         <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span></h1>
         <div class="home-actions">
           <a class="btn btn-primary" href="ggongbab.html" data-i18n="home.ctaToday">오늘의 꽁밥 보기</a>
-          <a class="btn btn-secondary" href="choose.html" data-i18n="home.ctaChoose">메뉴 고르기</a>
+          <a class="btn btn-secondary" href="mukbang.html#what" data-i18n="home.ctaChoose">메뉴 고르기</a>
         </div>
       </div>
 
@@ -121,7 +120,7 @@
           </a>
         </li>
         <li class="home-banner home-banner--pick home-banner--primary" data-banner="pick">
-          <a class="home-banner-link" href="choose.html">
+          <a class="home-banner-link" href="mukbang.html#what">
             <span class="home-banner-media" aria-hidden="true">
               <img src="images/home/food-gimbap-640.jpg" alt="" width="640" height="640" loading="lazy" decoding="async" />
             </span>
@@ -150,31 +149,6 @@
             <span class="home-banner-label">MAP <span aria-hidden="true">↗</span></span>
             <h3 class="home-banner-title" data-i18n="home.banner.map.title">발로 찍은 맛집 지도</h3>
             <span class="home-banner-cta"><span data-i18n="home.banner.map.cta">네이버 지도 열기</span> <span aria-hidden="true">↗</span><span class="home-sr-only" data-i18n="home.banner.newTab">(새 창에서 열림)</span></span>
-          </a>
-        </li>
-        <li class="home-banner home-banner--log" data-banner="log">
-          <a class="home-banner-link" href="food.html">
-            <span class="home-banner-media home-banner-media--log" aria-hidden="true">
-              <svg viewBox="0 0 280 76" preserveAspectRatio="xMidYMid slice" focusable="false">
-                <rect width="280" height="76" fill="#f3ecdf"/>
-                <g fill="#fffdf8" stroke="#ded6c9">
-                  <rect x="16" y="12" width="30" height="22" rx="5"/><rect x="54" y="12" width="30" height="22" rx="5"/>
-                  <rect x="92" y="12" width="30" height="22" rx="5"/><rect x="130" y="12" width="30" height="22" rx="5"/>
-                  <rect x="168" y="12" width="30" height="22" rx="5"/><rect x="206" y="12" width="30" height="22" rx="5"/>
-                  <rect x="244" y="12" width="30" height="22" rx="5"/>
-                  <rect x="16" y="42" width="30" height="22" rx="5"/><rect x="54" y="42" width="30" height="22" rx="5"/>
-                  <rect x="92" y="42" width="30" height="22" rx="5"/><rect x="130" y="42" width="30" height="22" rx="5"/>
-                  <rect x="168" y="42" width="30" height="22" rx="5"/><rect x="206" y="42" width="30" height="22" rx="5"/>
-                  <rect x="244" y="42" width="30" height="22" rx="5"/>
-                </g>
-                <rect x="54" y="12" width="30" height="22" rx="5" fill="#f9eae2" stroke="#d9472b"/>
-                <rect x="130" y="42" width="30" height="22" rx="5" fill="#f9eae2" stroke="#d9472b"/>
-                <rect x="206" y="12" width="30" height="22" rx="5" fill="#e8d7b1" stroke="#cbb892"/>
-              </svg>
-            </span>
-            <span class="home-banner-label">LOG</span>
-            <h3 class="home-banner-title" data-i18n="home.banner.log.title">먹방 가계부</h3>
-            <span class="home-banner-cta"><span data-i18n="home.banner.log.cta">기록 보기</span> <span aria-hidden="true">→</span></span>
           </a>
         </li>
       </ul>
@@ -268,13 +242,11 @@
         <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
           <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="choose.html" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
+          <a href="mukbang.html#what" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="food.html" class="footer-apple-a" data-i18n="nav.foodlog">먹방 가계부</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
         </nav>
@@ -322,8 +294,6 @@
           'home.banner.pick.cta': '메뉴 고르기',
           'home.banner.map.title': '발로 찍은 맛집 지도',
           'home.banner.map.cta': '네이버 지도 열기',
-          'home.banner.log.title': '먹방 가계부',
-          'home.banner.log.cta': '기록 보기',
           'home.read.title': '읽어보기',
           'home.read.featured': '매거진 추천 글',
           'home.read.desks': '매거진 데스크',
@@ -407,8 +377,6 @@
           'home.banner.pick.cta': 'Choose a dish',
           'home.banner.map.title': 'Our food map',
           'home.banner.map.cta': 'Open Naver Map',
-          'home.banner.log.title': 'Food log',
-          'home.banner.log.cta': 'Open the log',
           'home.read.title': 'Read',
           'home.read.featured': 'Featured story',
           'home.read.desks': 'Magazine desks',

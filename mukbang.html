@@ -9,8 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/magazine.css" />
-  <!-- The menu picker moved to choose.html; keep old #what links working. -->
-  <script>if (location.hash === '#what') location.replace('choose.html');</script>
+  <link rel="stylesheet" href="css/choose.css" />
 </head>
 <body class="mg-body">
   <header class="site-nav" role="banner">
@@ -21,13 +20,12 @@
       <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
       <div class="nav-mega-row">
         <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
-        <a class="site-nav-direct" href="choose.html" data-i18n="nav.choose">메뉴 고르기</a>
+        <a class="site-nav-direct" href="mukbang.html#what" data-i18n="nav.choose">메뉴 고르기</a>
         <div class="nav-mega" data-mega>
           <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
           <div class="nav-mega-panel" id="navMorePanel">
             <a class="nav-mega-link is-current" href="mukbang.html" aria-current="page" data-i18n="nav.magazine">밥도둑 매거진</a>
             <a class="nav-mega-link" href="event.html" data-i18n="nav.event.open">소식·이벤트</a>
-            <a class="nav-mega-link" href="food.html" data-i18n="nav.foodlog">먹방 가계부</a>
             <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
             <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
             <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
@@ -93,19 +91,19 @@
           <div class="mg-lede">
             <h1 class="page-title"><span class="page-num" aria-hidden="true">02</span> <span data-i18n="mg.title">밥도둑 매거진</span></h1>
             <p class="mg-edition-status" id="mgEditionStatus" role="status" hidden></p>
-            <p class="mg-method" data-i18n="mg.method">소개 문구는 밥도둑 메모 · 매일 10:00 KST</p>
+            <p class="mg-method" data-i18n="mg.method">모든 이야기는 원문 출처로 이어져요 · 매일 10:00 KST</p>
           </div>
-          <div class="mg-masthead-issue" data-i18n="mg.issue">밥도둑 데스크 기본 글</div>
+          <div class="mg-masthead-issue">—</div>
         </header>
 
-        <article class="mg-hero" id="featured">
+        <article class="mg-hero" id="featured" hidden>
           <div class="mg-hero-copy">
             <span class="mg-hero-label" data-i18n="mg.hero.label">오늘의 대표 이야기</span>
             <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
-              <h2 id="mgHeroTitle" data-i18n-html="mg.hero.title">계란후라이 하나도<br>맛이 달라지는 이유.</h2>
+              <h2 id="mgHeroTitle"></h2>
             </a>
-            <p class="mg-hero-desc" id="mgHeroDesc" data-i18n="mg.hero.desc">불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.</p>
-            <p class="mg-hero-meta" id="mgHeroMeta" data-i18n="mg.hero.meta">요리 비법 · 밥도둑 데스크</p>
+            <p class="mg-hero-desc" id="mgHeroDesc"></p>
+            <p class="mg-hero-meta" id="mgHeroMeta"></p>
             <span class="mg-story-src mg-hero-src" id="mgHeroSrc"></span>
             <p class="mg-hero-tags" id="mgHeroTags"></p>
           </div>
@@ -120,7 +118,7 @@
         <section class="mg-board" id="today" aria-labelledby="mgBoardTitle">
           <div class="mg-board-head">
             <h2 id="mgBoardTitle" data-i18n="mg.board.title">오늘의 밥 이야기</h2>
-            <span id="mgBoardWeek" data-i18n="mg.board.week">밥도둑 데스크 기본 글</span>
+            <span id="mgBoardWeek">—</span>
           </div>
 
           <div class="mg-lanes">
@@ -128,21 +126,6 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.tips">요리 비법</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.tips.lead">밥이 더 맛있어지는 작은 조리 팁</h3>
               <div class="mg-lane-items" data-lane-items="tips">
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.tips.a1.title">김치볶음밥은 왜 찬밥으로 해야 맛있을까?</h4>
-                <p data-i18n="mg.tips.a1.sum">밥알을 살리고 양념은 제대로 배게 만드는 김치볶음밥의 기본 원리를 알아본다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.tips.a2.title">라면 물 50ml가 맛을 바꾸는 이유</h4>
-                <p data-i18n="mg.tips.a2.sum">국물과 면의 농도는 레시피보다 물 한 국자에 더 크게 흔들린다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.tips.a3.title">계란찜이 식당처럼 부풀어 오르는 법</h4>
-                <p data-i18n="mg.tips.a3.sum">거품, 중탕, 뚜껑. 세 가지만 맞춰도 집에서도 폭신해진다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
               </div>
             </section>
 
@@ -150,21 +133,6 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.trend">요즘 먹방 유행</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.trend.lead">요즘 사람들이 뭘 먹고 있는지</h3>
               <div class="mg-lane-items" data-lane-items="trend">
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.trend.a1.title">요즘 편의점에서 가장 많이 보이는 조합</h4>
-                <p data-i18n="mg.trend.a1.sum">삼각김밥만으로는 끝나지 않는, 야식 코너의 최근 공식들.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.trend.a2.title">한동안 안 보이던 '맵부심'이 다시 돌아왔다</h4>
-                <p data-i18n="mg.trend.a2.sum">매운맛은 유행이 아니라 주기처럼 돌아온다. 이번엔 어디서 터졌을까.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.trend.a3.title">SNS에서 유행하는 한 그릇 레시피</h4>
-                <p data-i18n="mg.trend.a3.sum">설거지가 적은 한 그릇이, 지금 가장 잘 팔리는 형식이다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
               </div>
             </section>
 
@@ -172,21 +140,6 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.health">건강한 한 끼</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.health.lead">맛도 포기하지 않는 건강식</h3>
               <div class="mg-lane-items" data-lane-items="health">
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.health.a1.title">닭가슴살 없이도 단백질 챙기는 한 끼</h4>
-                <p data-i18n="mg.health.a1.sum">두부, 계란, 콩. 이미 냉장고에 있는 것들로도 충분할 때가 많다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.health.a2.title">늦은 밤 먹어도 부담이 덜한 음식</h4>
-                <p data-i18n="mg.health.a2.sum">참는 대신, 속이 덜 무거운 쪽으로 바꾸는 현실적인 선택.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.health.a3.title">샐러드가 지겨울 때 먹는 건강식</h4>
-                <p data-i18n="mg.health.a3.sum">잎채소만 고집하지 않아도, 가볍게 먹는 방법은 남아 있다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
               </div>
             </section>
 
@@ -194,27 +147,21 @@
               <div class="mg-lane-kicker"><span data-i18n="mg.cat.habit">식습관</span></div>
               <h3 class="mg-lane-lead" data-i18n="mg.habit.lead">잘 먹는 법에 대한 작은 이야기</h3>
               <div class="mg-lane-items" data-lane-items="habit">
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.habit.a1.title">천천히 먹으면 정말 덜 먹게 될까?</h4>
-                <p data-i18n="mg.habit.a1.sum">속도만 바꿔도 포만감이 다르게 온다. 실험이 아니라 관찰에 가깝다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.habit.a2.title">아침을 꼭 먹어야 할까?</h4>
-                <p data-i18n="mg.habit.a2.sum">정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
-              <article class="mg-story mg-story--desk">
-                <h4 data-i18n="mg.habit.a3.title">야식을 끊기보다 시간을 바꿔보는 방법</h4>
-                <p data-i18n="mg.habit.a3.sum">금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.</p>
-                <span class="mg-story-src"><b data-i18n="mg.deskNote">밥도둑 데스크 · 자체 메모</b></span>
-              </article>
               </div>
             </section>
           </div>
         </section>
 
-
+        <section class="mg-picker choose-picker" id="what" aria-labelledby="eatTitle">
+          <div class="eat" id="eatApp">
+            <div class="eat-copy">
+              <h2 class="eat-question" id="eatTitle" data-i18n="eat.kicker">오늘 뭐 먹지?</h2>
+              <p class="eat-meta" id="eatMeta" data-i18n="eat.meta">판매 여부·가격·알레르기는 가게에서 확인</p>
+            </div>
+            <div class="eat-panel" id="eatPanel"></div>
+          </div>
+          <section class="kaist-today" id="kaistToday" aria-labelledby="kaistTitle"></section>
+        </section>
       </div>
     </div>
   </main>
@@ -231,13 +178,11 @@
         <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
           <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="choose.html" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
+          <a href="mukbang.html#what" class="footer-apple-a" data-i18n="nav.choose">메뉴 고르기</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="food.html" class="footer-apple-a" data-i18n="nav.foodlog">먹방 가계부</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
         </nav>
@@ -276,14 +221,9 @@
           'nav.event.open': '소식·이벤트',
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
-          'mg.issue': '밥도둑 데스크 기본 글',
           'mg.title': '밥도둑 매거진',
           'mg.hero.label': '오늘의 대표 이야기',
-          'mg.hero.title': '계란후라이 하나도<br>맛이 달라지는 이유.',
-          'mg.hero.desc': '불 조절부터 소금 넣는 타이밍까지, 집밥을 조금 더 맛있게 만드는 작은 차이를 정리했다.',
-          'mg.hero.meta': '요리 비법 · 밥도둑 데스크',
           'mg.board.title': '오늘의 밥 이야기',
-          'mg.board.week': '밥도둑 데스크 기본 글',
           'mg.index.title': '네 갈래 밥 이야기',
           'mg.cat.tips': '요리 비법',
           'mg.cat.trend': '요즘 먹방 유행',
@@ -291,43 +231,78 @@
           'mg.cat.health': '건강한 한 끼',
           'mg.cat.habit': '식습관',
           'mg.tips.lead': '밥이 더 맛있어지는 작은 조리 팁',
-          'mg.tips.a1.title': '김치볶음밥은 왜 찬밥으로 해야 맛있을까?',
-          'mg.tips.a1.sum': '밥알을 살리고 양념은 제대로 배게 만드는 김치볶음밥의 기본 원리를 알아본다.',
-          'mg.tips.a2.title': '라면 물 50ml가 맛을 바꾸는 이유',
-          'mg.tips.a2.sum': '국물과 면의 농도는 레시피보다 물 한 국자에 더 크게 흔들린다.',
-          'mg.tips.a3.title': '계란찜이 식당처럼 부풀어 오르는 법',
-          'mg.tips.a3.sum': '거품, 중탕, 뚜껑. 세 가지만 맞춰도 집에서도 폭신해진다.',
           'mg.trend.lead': '요즘 사람들이 뭘 먹고 있는지',
-          'mg.trend.a1.title': '요즘 편의점에서 가장 많이 보이는 조합',
-          'mg.trend.a1.sum': '삼각김밥만으로는 끝나지 않는, 야식 코너의 최근 공식들.',
-          'mg.trend.a2.title': "한동안 안 보이던 '맵부심'이 다시 돌아왔다",
-          'mg.trend.a2.sum': '매운맛은 유행이 아니라 주기처럼 돌아온다. 이번엔 어디서 터졌을까.',
-          'mg.trend.a3.title': 'SNS에서 유행하는 한 그릇 레시피',
-          'mg.trend.a3.sum': '설거지가 적은 한 그릇이, 지금 가장 잘 팔리는 형식이다.',
           'mg.health.lead': '맛도 포기하지 않는 건강식',
-          'mg.health.a1.title': '닭가슴살 없이도 단백질 챙기는 한 끼',
-          'mg.health.a1.sum': '두부, 계란, 콩. 이미 냉장고에 있는 것들로도 충분할 때가 많다.',
-          'mg.health.a2.title': '늦은 밤 먹어도 부담이 덜한 음식',
-          'mg.health.a2.sum': '참는 대신, 속이 덜 무거운 쪽으로 바꾸는 현실적인 선택.',
-          'mg.health.a3.title': '샐러드가 지겨울 때 먹는 건강식',
-          'mg.health.a3.sum': '잎채소만 고집하지 않아도, 가볍게 먹는 방법은 남아 있다.',
           'mg.habit.lead': '잘 먹는 법에 대한 작은 이야기',
-          'mg.habit.a1.title': '천천히 먹으면 정말 덜 먹게 될까?',
-          'mg.habit.a1.sum': '속도만 바꿔도 포만감이 다르게 온다. 실험이 아니라 관찰에 가깝다.',
-          'mg.habit.a2.title': '아침을 꼭 먹어야 할까?',
-          'mg.habit.a2.sum': '정답보다 리듬. 수업·랩 시간에 맞춰 아침을 다시 배치해 본다.',
-          'mg.habit.a3.title': '야식을 끊기보다 시간을 바꿔보는 방법',
-          'mg.habit.a3.sum': '금지보다 이동. 같은 간식이라도 언제 먹느냐가 다음 날을 가른다.',
           'mg.cal.open': '날짜 보기',
           'mg.medium.blog': '블로그',
           'mg.medium.news': '블로그',
           'mg.medium.youtube': '유튜브',
           'mg.medium.instagram': '인스타',
-          'mg.medium.desk': '데스크',
           'mg.hero.from': '출처',
-          'mg.method': '소개 문구는 밥도둑 메모 · 매일 10:00 KST',
-          'mg.deskNote': '밥도둑 데스크 · 자체 메모',
-          'mg.editionFail': '오늘 호를 불러오지 못했어요 · 기본 글',
+          'mg.method': '모든 이야기는 원문 출처로 이어져요 · 매일 10:00 KST',
+          'mg.laneEmpty': '오늘은 이 갈래에 올릴 새 이야기가 없어요.',
+          // Menu picker (#what) and today's cafeteria summary, moved from choose.html.
+          'choose.title': '메뉴 고르기',
+          'eat.kicker': '오늘 뭐 먹지?',
+          'eat.meta': '판매 여부·가격·알레르기는 가게에서 확인',
+          'eat.hungerAria': '배고픈 정도',
+          'eat.hunger.hungry': '배고파',
+          'eat.hunger.light': '가볍게',
+          'eat.hunger.any': '상관없어',
+          'eat.spin': '오늘 메뉴 뽑기',
+          'eat.spinning': '고르는 중…',
+          'eat.hint': '버튼을 누르면 오늘의 메뉴가 뽑혀요.',
+          'eat.hint.spin': '세 칸이 차례로 멈출 때까지 기다려 주세요.',
+          'eat.hint.land': '오늘의 한 끼가 정해졌어요.',
+          'eat.wheelAria': '오늘 메뉴를 뽑는 슬롯. 버튼을 누르면 세 칸이 돌아 한 끼가 정해집니다.',
+          'eat.result.slot': '{a} · {b} · {c}',
+          'eat.reasons': '추천 이유',
+          'eat.reason.now': '지금 시간대에 자주 먹는 메뉴예요',
+          'eat.reason.hearty': '배고프다고 해서 든든한 쪽으로 골랐어요',
+          'eat.reason.light': '가볍게 먹고 싶다고 해서 부담이 적은 쪽으로 골랐어요',
+          'eat.reason.soup': '국물이 있는 메뉴예요',
+          'eat.reason.filling': '포만감이 큰 편이에요',
+          'eat.reason.default': '배고픈 정도와 지금 시간을 기준으로 골랐어요',
+          'eat.scope': '판매 여부·가격·알레르기는 가게에서 확인',
+          'eat.announce': '추천 메뉴: {dish}',
+          'kaist.title': '오늘 KAIST 학식',
+          'kaist.recentTitle': '최근에 올라온 KAIST 학식',
+          'kaist.staleNote': '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.',
+          'kaist.loading': '학식 메뉴를 불러오는 중이에요.',
+          'kaist.error': '학식 메뉴를 불러오지 못했어요.',
+          'kaist.restosAria': '식당',
+          'km.mealsAria': '식사 시간',
+          'km.breakfast': '아침',
+          'km.lunch': '점심',
+          'km.dinner': '저녁',
+          'kaist.empty': '아직 올라온 학식 메뉴가 없어요.',
+          'kaist.nomenu': '이 시간대 메뉴가 없어요.',
+          'kaist.toHub': '모든 식당 보기 →',
+          'eat.color.red': '빨강',
+          'eat.color.black': '검정',
+          'eat.color.green': '초록',
+          'eat.result.pocket': '공이 {n} {c}에 멈췄어요.',
+          'eat.back': '뒤로',
+          'eat.reset': '처음부터',
+          'eat.result.kicker': '오늘의 밥도둑 PICK',
+          'eat.result.blurb': '지금 시간과 한 끼의 크기에 맞춰 골랐어요.',
+          'eat.take': '이걸로 할래',
+          'eat.taken': '좋아요, 이걸로 골랐어요.',
+          'eat.more': '다시 돌리기',
+          'eat.alts': '다른 추천',
+          'eat.empty': '지금은 맞는 메뉴가 없어요. 배고픔만 바꿔 다시 돌려볼까요.',
+          'eat.loadFail': '메뉴 데이터를 아직 못 읽었어요.',
+          'eat.fb.aria': '이 추천은 어땠나요',
+          'eat.fb.like': '좋아요',
+          'eat.fb.dislike': '별로예요',
+          'eat.fb.eaten': '먹었어요',
+          'eat.chip.now': '지금 시간',
+          'eat.chip.hearty': '든든',
+          'eat.chip.light': '가벼운',
+          'eat.chip.soup': '국물',
+          'eat.chip.filling': '든든',
+          'mg.editionFail': '오늘 호를 불러오지 못했어요.',
           'mg.newTab': '(새 창)',
           'mg.issue.today': '오늘 호',
           'mg.issue.past': '지난 호',
@@ -364,58 +339,88 @@
           'nav.event.open': 'News & events',
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
-          'mg.issue': 'Babdoduk desk notes',
           'mg.title': 'Babdoduk Magazine',
           'mg.hero.label': 'Featured today',
-          'mg.hero.title': 'Why even a fried egg<br>can taste different.',
-          'mg.hero.desc': 'Heat, timing, salt. Small moves that quietly raise a home-cooked meal.',
-          'mg.hero.meta': 'Kitchen notes · Babdoduk desk',
           'mg.board.title': "Today's rice stories",
-          'mg.board.week': 'Babdoduk desk notes',
-          'mg.index.title': 'Four food desks',
+          'mg.index.title': 'Four food sections',
           'mg.cat.tips': 'Kitchen notes',
           'mg.cat.trend': "What's in",
           'mg.cat.trendShort': "What's in",
           'mg.cat.health': 'A lighter plate',
           'mg.cat.habit': 'How we eat',
           'mg.tips.lead': 'Small cooking moves that make rice taste better',
-          'mg.tips.a1.title': 'Why kimchi fried rice wants leftover rice',
-          'mg.tips.a1.sum': 'Keep the grains separate, let the seasoning cling. The basic physics of a good wok toss.',
-          'mg.tips.a2.title': 'How 50ml of ramen water changes the bowl',
-          'mg.tips.a2.sum': 'Broth and noodles shift more with one ladle of water than with a new recipe.',
-          'mg.tips.a3.title': 'Steamed eggs that puff like the restaurant ones',
-          'mg.tips.a3.sum': 'Foam, a gentle bath, a lid. Three checks and it rises at home too.',
           'mg.trend.lead': 'What people are eating right now',
-          'mg.trend.a1.title': 'The convenience-store combos showing up everywhere',
-          'mg.trend.a1.sum': 'Triangle kimbap is only the start. Late-night aisles have new formulas.',
-          'mg.trend.a2.title': 'Spicy-flex is back after a quiet stretch',
-          'mg.trend.a2.sum': 'Heat comes in cycles, not trends. This round started somewhere familiar.',
-          'mg.trend.a3.title': 'One-bowl recipes circulating on SNS',
-          'mg.trend.a3.sum': 'Fewer dishes to wash is the format selling best right now.',
           'mg.health.lead': 'Lighter food that still tastes like dinner',
-          'mg.health.a1.title': 'A protein plate without chicken breast',
-          'mg.health.a1.sum': 'Tofu, eggs, beans. Often already in the fridge.',
-          'mg.health.a2.title': 'Late-night food that sits a little lighter',
-          'mg.health.a2.sum': 'Not willpower. Just a less heavy swap when the day runs long.',
-          'mg.health.a3.title': 'When you are tired of salad',
-          'mg.health.a3.sum': 'You can eat light without another bowl of leaves.',
           'mg.habit.lead': 'Small notes on eating well',
-          'mg.habit.a1.title': 'Does eating slowly actually mean eating less?',
-          'mg.habit.a1.sum': 'Change the pace and fullness arrives differently. More observation than experiment.',
-          'mg.habit.a2.title': 'Do you really have to eat breakfast?',
-          'mg.habit.a2.sum': 'Rhythm over rules. Slide breakfast around class and lab hours.',
-          'mg.habit.a3.title': 'Move the late snack instead of banning it',
-          'mg.habit.a3.sum': 'Same bite, different hour. Timing often changes tomorrow more than restriction does.',
           'mg.cal.open': 'Pick a date',
           'mg.medium.blog': 'Blog',
           'mg.medium.news': 'Blog',
           'mg.medium.youtube': 'YouTube',
           'mg.medium.instagram': 'Instagram',
-          'mg.medium.desk': 'Desk',
           'mg.hero.from': 'Source',
-          'mg.method': 'Summaries are Babdoduk\'s notes · daily 10:00 KST',
-          'mg.deskNote': 'Babdoduk desk · our note',
-          'mg.editionFail': 'Couldn\'t load today\'s issue · desk notes',
+          'mg.method': 'Every story links to its original source · daily 10:00 KST',
+          'mg.laneEmpty': 'No new story for this section today.',
+          // Menu picker (#what) and today's cafeteria summary, moved from choose.html.
+          'choose.title': 'Choose a dish',
+          'eat.kicker': "What's for today?",
+          'eat.meta': 'Check availability, price and allergens with the shop',
+          'eat.hungerAria': 'How hungry',
+          'eat.hunger.hungry': 'Hungry',
+          'eat.hunger.light': 'Keep it light',
+          'eat.hunger.any': 'No preference',
+          'eat.spin': 'Pick today’s meal',
+          'eat.spinning': 'Choosing…',
+          'eat.hint': 'Press the button and today’s dish lands on the payline.',
+          'eat.hint.spin': 'Wait until the three reels stop, one after another.',
+          'eat.hint.land': 'Today’s plate is set.',
+          'eat.wheelAria': 'A three-reel slot that lands on one dish.',
+          'eat.result.slot': '{a} · {b} · {c}',
+          'eat.reasons': 'Why this',
+          'eat.reason.now': 'Often eaten at this time of day',
+          'eat.reason.hearty': 'Filling, since you said you are hungry',
+          'eat.reason.light': 'Lighter, as you asked',
+          'eat.reason.soup': 'Comes with broth',
+          'eat.reason.filling': 'On the filling side',
+          'eat.reason.default': 'Picked for your hunger and the time of day',
+          'eat.scope': 'Check availability, price and allergens with the shop',
+          'eat.announce': 'Suggested dish: {dish}',
+          'kaist.title': "Today's KAIST cafeteria",
+          'kaist.recentTitle': 'Latest KAIST cafeteria menu',
+          'kaist.staleNote': 'Menu for {date}. Today’s menu is not posted yet.',
+          'kaist.loading': 'Loading cafeteria menus…',
+          'kaist.error': 'Could not load cafeteria menus.',
+          'kaist.restosAria': 'Cafeteria',
+          'km.mealsAria': 'Meal time',
+          'km.breakfast': 'Breakfast',
+          'km.lunch': 'Lunch',
+          'km.dinner': 'Dinner',
+          'kaist.empty': 'No cafeteria menu has been posted yet.',
+          'kaist.nomenu': 'No menu for this sitting.',
+          'kaist.toHub': 'All cafeterias →',
+          'eat.color.red': 'red',
+          'eat.color.black': 'black',
+          'eat.color.green': 'green',
+          'eat.result.pocket': 'The ball stopped on {n} {c}.',
+          'eat.back': 'Back',
+          'eat.reset': 'Start over',
+          'eat.result.kicker': "Today's Babdoduk PICK",
+          'eat.result.blurb': 'Picked for this hour and the size of the meal.',
+          'eat.take': "I'll go with this",
+          'eat.taken': 'Noted. You picked this one.',
+          'eat.more': 'Spin again',
+          'eat.alts': 'Other picks',
+          'eat.empty': 'Nothing fit. Change hunger and spin again.',
+          'eat.loadFail': "Couldn't load the menu list yet.",
+          'eat.fb.aria': 'How was this pick',
+          'eat.fb.like': 'Like',
+          'eat.fb.dislike': 'Not for me',
+          'eat.fb.eaten': 'Ate it',
+          'eat.chip.now': 'Right now',
+          'eat.chip.hearty': 'Filling',
+          'eat.chip.light': 'Light',
+          'eat.chip.soup': 'Broth',
+          'eat.chip.filling': 'Filling',
+          'mg.editionFail': 'Couldn\'t load today\'s issue.',
           'mg.newTab': '(opens in a new tab)',
           'mg.issue.today': "Today's edition",
           'mg.issue.past': 'Past edition',
@@ -543,22 +548,19 @@
         } catch (err) { return ''; }
       }
 
+      // Only source-backed stories are rendered: a story without a real http(s) URL is dropped.
       function storyHtml(item) {
-        var href = item.url ? safeUrl(item.url) : '';
-        var desk = item.medium === 'desk' || !href;
-        var tag = href ? 'a' : 'article';
-        var extra = href ? ' href="' + escapeHtml(href) + '" target="_blank" rel="noopener"' : '';
+        var href = item && item.url ? safeUrl(item.url) : '';
+        if (!href || !item.title || !item.source) return '';
         var sum = item.summary ? '<p class="mg-story-sum">' + formatLines(item.summary) + '</p>' : '';
-        var src = desk ? t('mg.deskNote', '밥도둑 데스크 · 자체 메모')
-          : sourceLine(item);
-        return '<' + tag + ' class="mg-story' + (desk ? ' mg-story--desk' : '') + '"' + extra + '>' +
+        return '<a class="mg-story" href="' + escapeHtml(href) + '" target="_blank" rel="noopener">' +
           '<h4>' + escapeHtml(item.title) + '</h4>' +
           sum +
-          '<span class="mg-story-src"><b>' + escapeHtml(src) + '</b>' +
-          (href ? '<span class="mg-story-out" aria-hidden="true"> ↗</span><span class="mg-sr">' + escapeHtml(t('mg.newTab', '(새 창)')) + '</span>' : '') +
+          '<span class="mg-story-src"><b>' + escapeHtml(sourceLine(item)) + '</b>' +
+          '<span class="mg-story-out" aria-hidden="true"> ↗</span><span class="mg-sr">' + escapeHtml(t('mg.newTab', '(새 창)')) + '</span>' +
           '</span>' +
           tagsHtml(item, 'mg-story-tags') +
-          '</' + tag + '>';
+          '</a>';
       }
 
       function escapeHtml(s) {
@@ -629,29 +631,25 @@
             mediaLink.removeAttribute('rel');
           }
         }
-        var vid = youtubeId(featured.url || '');
+        // The story's own image only (feed media, official thumbnail or the article's og:image).
+        // Without one the hero is text-only: the BABDODUK placeholder is never shown as a picture.
+        var hero = document.getElementById('featured');
         var src = featured.image || '';
-        var fallback = vid ? 'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg' : '';
-        if (!src && vid) src = 'https://i.ytimg.com/vi/' + vid + '/maxresdefault.jpg';
         visual.classList.remove('has-photo');
-        visual.classList.add('is-type');
+        visual.classList.remove('is-type');
         img.removeAttribute('src');
         img.alt = featured.title || '';
-        if (typeEl) typeEl.textContent = 'BABDODUK';
-        if (!src) return;
-        img.onload = function () {
-          visual.classList.add('has-photo');
-          visual.classList.remove('is-type');
-        };
-        img.onerror = function () {
-          if (fallback && img.getAttribute('src') !== fallback) {
-            img.src = fallback;
-            return;
-          }
-          visual.classList.add('is-type');
-          visual.classList.remove('has-photo');
+        if (typeEl) typeEl.textContent = '';
+        function textOnly() {
+          visual.hidden = true;
+          if (hero) hero.classList.add('mg-hero--text');
           img.removeAttribute('src');
-        };
+        }
+        if (!src) { textOnly(); return; }
+        visual.hidden = false;
+        if (hero) hero.classList.remove('mg-hero--text');
+        img.onload = function () { visual.classList.add('has-photo'); };
+        img.onerror = textOnly;
         img.src = src;
       }
 
@@ -661,7 +659,10 @@
         var parts = ed.date.split('-');
         viewYear = parseInt(parts[0], 10);
         viewMonth = parseInt(parts[1], 10) - 1;
-        var featured = ed.featured || {};
+        var featured = ed.featured && ed.featured.url && ed.featured.title ? ed.featured : null;
+        var heroEl = document.getElementById('featured');
+        if (heroEl) heroEl.hidden = !featured;
+        featured = featured || {};
         var titleEl = document.getElementById('mgHeroTitle');
         var descEl = document.getElementById('mgHeroDesc');
         var metaEl = document.getElementById('mgHeroMeta');
@@ -701,7 +702,8 @@
           var box = document.querySelector('[data-lane-items="' + lane + '"]');
           var lead = document.querySelector('#lane-' + lane + ' .mg-lane-lead');
           if (lead && ed.lanes[lane].lead) lead.textContent = ed.lanes[lane].lead;
-          if (box) box.innerHTML = (ed.lanes[lane].items || []).map(storyHtml).join('');
+          var stories = (ed.lanes[lane].items || []).map(storyHtml).join('');
+          if (box) box.innerHTML = stories || '<p class="mg-lane-empty">' + escapeHtml(t('mg.laneEmpty', '오늘은 이 갈래에 올릴 새 이야기가 없어요.')) + '</p>';
         });
         renderCalendars();
       }
@@ -796,7 +798,10 @@
           return loadEdition(wanted);
         })
         .catch(function () {
-          // No edition: keep the desk notes, say so, and show no edition date.
+          // No edition: say so, show no edition date and no stories (never stand-in text).
+          document.querySelectorAll('[data-lane-items]').forEach(function (box) {
+            box.innerHTML = '<p class="mg-lane-empty">' + escapeHtml(t('mg.laneEmpty', '오늘은 이 갈래에 올릴 새 이야기가 없어요.')) + '</p>';
+          });
           var status = document.getElementById('mgEditionStatus');
           if (status) {
             status.textContent = t('mg.editionFail', '오늘 호를 불러오지 못했어요.');
@@ -853,5 +858,9 @@
       });
     })();
   </script>
+  <script src="js/food-engine.js"></script>
+  <script src="js/eat-slot.js"></script>
+  <script src="js/food-picker.js"></script>
+  <script src="js/kaist-menu.js"></script>
 </body>
 </html>
