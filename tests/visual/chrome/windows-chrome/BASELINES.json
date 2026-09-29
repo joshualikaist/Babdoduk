@@ -1,8 +1,8 @@
 {
-  "approval": "Owner approved Babdoduk minimal-copy / shared-chrome UI on 2026-09-28 after lab review (lab e669bb6; footer Contact fix checked on lab 724a4ad). Rendered locally: Windows, installed Chrome.",
+  "approval": "Owner approved: Joshua, 2026-09-29, production nav/footer/magazine UI at main 3d01204",
   "platform": "windows-chrome",
   "source": "rendered locally by check_site_ui.py (chrome)",
-  "images": 84,
+  "images": 60,
   "fixed_now": "2026-09-28T10:00:00+09:00",
   "sizes": [
     [
@@ -17,10 +17,8 @@
   "pages": [
     "index.html",
     "ggongbab.html",
-    "choose.html",
     "mukbang.html",
     "event.html",
-    "food.html",
     "history.html"
   ],
   "parts": [

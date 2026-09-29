@@ -1,8 +1,8 @@
 {
-  "approval": "Owner approved Babdoduk minimal-copy / shared-chrome UI on 2026-09-28 after lab review (lab e669bb6; footer Contact fix checked on lab 724a4ad). CI render: ui-guardian run 36347525769 (commit 818cb68) in mcr.microsoft.com/playwright/python:v1.63.0-noble-amd64@sha256:96b39581c89131729a7ecb8d532314af54c7f9bcc7a61fe15c7a9e77602acf59, bundled Chromium.",
+  "approval": "Owner approved: Joshua, 2026-09-29, production nav/footer/magazine UI at main 3d01204 (CI renders from ui-guardian run 36539124569)",
   "platform": "linux-chromium",
-  "source": "adopted from ci-renders",
-  "images": 84,
+  "source": "adopted from ci-full",
+  "images": 60,
   "fixed_now": "2026-09-28T10:00:00+09:00",
   "sizes": [
     [
@@ -17,10 +17,8 @@
   "pages": [
     "index.html",
     "ggongbab.html",
-    "choose.html",
     "mukbang.html",
     "event.html",
-    "food.html",
     "history.html"
   ],
   "parts": [
