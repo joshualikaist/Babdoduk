@@ -74,6 +74,11 @@ def main(argv=None) -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--discover-only", action="store_true")
     mode.add_argument("--sanitize-only", action="store_true")
+    mode.add_argument("--select-only", action="store_true",
+                      help="rebuild today's edition from the stored candidates, without the network")
+    parser.add_argument("--skip-type", action="append", default=[], metavar="TYPE",
+                        help="do not contact sources of this type in this run (recorded as SKIPPED_CLOUD_PARITY), "
+                             "e.g. youtube_channel for a build that matches what GitHub's runners can reach")
     args = parser.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
     if args.sanitize_only:
@@ -82,7 +87,21 @@ def main(argv=None) -> int:
         return 0
     now = now_kst()
     paths = pipeline.Paths(ROOT)
-    run = pipeline.discover(paths, now)
+    if args.select_only:
+        from discovery.store import CandidateStore
+        store = CandidateStore(paths.candidates)
+        date = edition_date(now)
+        edition, chosen = select.build(store.all(), date=date, generated_at=iso(now), recent=pipeline.recent_keys(OUT, date))
+        if not story_count(edition):
+            print(f"[warn] magazine {date}: no qualifying story in the store")
+            return 0
+        atomic_write(OUT / f"{date}.json", dump_json(edition))
+        store.mark_selected(chosen, now, date)
+        store.save()
+        print(f"magazine {date}: {story_count(edition)} stories selected from the store (no network)")
+        print(f"latest {write_index(OUT)}")
+        return 0
+    run = pipeline.discover(paths, now, skip_types=tuple(args.skip_type))
     edition, chosen = None, []
     if not args.discover_only:
         date = edition_date(now)

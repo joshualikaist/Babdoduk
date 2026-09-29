@@ -23,7 +23,7 @@ FIELDS = ("candidateId", "sourceId", "sourceName", "sourceType", "sourceUrl", "c
           "imageValidated", "categoryHints", "assignedCategory", "discoveryQuery", "discoveryMethod",
           "contentHash", "canonicalHash", "sourceItemId", "duplicateOf", "qualityScore", "freshnessScore",
           "sourceScore", "relevanceScore", "score", "selected", "selectedAt", "rejectionReason", "medium",
-          "trustTier", "seenVia", "textLength", "discoveredSeq")
+          "trustTier", "seenVia", "textLength", "discoveredSeq", "selectedFor")
 
 
 def candidate_id(url: str) -> str:
@@ -85,11 +85,14 @@ class CandidateStore:
         ordered = sorted(self.rows.values(), key=lambda r: (int(r.get("discoveredSeq") or 0), r["candidateId"]))
         atomic_write(self.path, "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in ordered))
 
-    def mark_selected(self, ids: Iterable[str], now) -> None:
+    def mark_selected(self, ids: Iterable[str], now, edition: Optional[str]) -> None:
+        """A story is published once: selectedFor is the edition that first ran it."""
         for cid in ids:
             if cid in self.rows:
-                self.rows[cid]["selected"] = True
-                self.rows[cid]["selectedAt"] = self.rows[cid].get("selectedAt") or iso(now)
+                row = self.rows[cid]
+                row["selected"] = True
+                row["selectedAt"] = row.get("selectedAt") or iso(now)
+                row["selectedFor"] = row.get("selectedFor") or edition
 
     def get(self, cid: str) -> Optional[dict]:
         return self.rows.get(cid)
