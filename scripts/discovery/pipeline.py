@@ -86,11 +86,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         entry["status"] = registry.status(source, entry, now)
         health[source["id"]].update({k: entry.get(k) for k in ("status", "lastSuccessAt", "lastFailureAt",
                                                                 "failureCount", "newestItemAt")})
-    for row in rows:                           # recompute decisions each run from the stored facts
-        if not row.get("selected"):
-            row["duplicateOf"] = None
-            row["rejectionReason"] = None
-            row["assignedCategory"] = None
+    reset_decisions(rows)                      # recompute decisions each run from the stored facts
     counts = process.process(rows, now)
     image_counts = images.enrich(rows, fetcher, validate=validate)
     for row in rows:
@@ -98,6 +94,51 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
             process.score(row, now)
     return {"sources": sources, "sourceHealth": source_health, "store": store, "health": health, "queries": queries,
             "counts": dict(counts, new=new, candidates=len(rows), **image_counts), "lanes": lane_report(rows)}
+
+
+def pending_work(sources: list[dict]) -> list[str]:
+    """Known post-launch work recorded in every health report."""
+    local_youtube = any(s.get("enabled") and s.get("localOnly") and str(s.get("type", "")).startswith("youtube")
+                        for s in sources)
+    return ["YOUTUBE_AUTOMATION_PENDING"] if local_youtube else []
+
+
+def reset_decisions(rows: list[dict]) -> None:
+    for row in rows:
+        if not row.get("selected"):
+            row["duplicateOf"] = None
+            row["rejectionReason"] = None
+            row["assignedCategory"] = None
+
+
+def reprocess(paths: Paths, now: datetime) -> dict:
+    """Re-judge every stored candidate under the current rules, without the network: nothing is
+    fetched, searched or deleted, so a rule change or an unreachable route never loses a
+    candidate that was already discovered."""
+    store = CandidateStore(paths.candidates)
+    rows = store.all()
+    reset_decisions(rows)
+    counts = process.process(rows, now)
+    return {"store": store, "counts": dict(counts, candidates=len(rows)), "lanes": lane_report(rows)}
+
+
+def record_offline(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], now: datetime) -> dict:
+    """An offline rebuild keeps the last network run's adapter health and records its own lane
+    counts and a run-log line (mode "offline")."""
+    store: CandidateStore = run["store"]
+    store.mark_selected(chosen, now, (edition or {}).get("date"))
+    store.save()
+    report = read_json(paths.health, {}) or {}
+    report.setdefault("summary", {}).update(run["counts"], selected=len(chosen), fabricated=0,
+                                            offlineRebuildAt=iso(now))
+    report["lanes"] = run["lanes"]
+    report["pending"] = pending_work(registry.load(paths.registry))
+    atomic_write(paths.health, dump_json(report))
+    line = json.dumps({"runAt": iso(now), "mode": "offline", "queries": [], "counts": report["summary"],
+                       "edition": (edition or {}).get("date")}, ensure_ascii=False, sort_keys=True)
+    lines = paths.runs.read_text(encoding="utf-8").splitlines() if paths.runs.exists() else []
+    atomic_write(paths.runs, "\n".join((lines + [line])[-RUN_LOG_LINES:]) + "\n")
+    return report
 
 
 def lane_report(rows: list[dict]) -> dict:
@@ -166,6 +207,7 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
                     **run["counts"], "pruned": pruned,
                     "selected": len(chosen), "fabricated": 0, "staleSources": stale},
         "lanes": run.get("lanes") or {},
+        "pending": pending_work(run["sources"]),
         "warnings": [f"{sid}: {run['health'][sid]['code']}" for sid in failing]
                     + [f"{sid}: SOURCE_STALE (newest item older than {registry.STALE_DAYS} days)" for sid in stale]
                     + [f"{sid}: {run['health'][sid]['code']}" for sid in by_status["DEGRADED"] if sid not in failing],

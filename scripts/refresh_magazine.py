@@ -88,17 +88,19 @@ def main(argv=None) -> int:
     now = now_kst()
     paths = pipeline.Paths(ROOT)
     if args.select_only:
-        from discovery.store import CandidateStore
-        store = CandidateStore(paths.candidates)
+        # Offline: re-judge the stored candidates under the current rules and rebuild today's
+        # edition. Nothing is fetched or searched, and no stored candidate is dropped.
+        run = pipeline.reprocess(paths, now)
         date = edition_date(now)
-        edition, chosen = select.build(store.all(), date=date, generated_at=iso(now), recent=pipeline.recent_keys(OUT, date))
+        edition, chosen = select.build(run["store"].all(), date=date, generated_at=iso(now),
+                                       recent=pipeline.recent_keys(OUT, date))
         if not story_count(edition):
             print(f"[warn] magazine {date}: no qualifying story in the store")
             return 0
         atomic_write(OUT / f"{date}.json", dump_json(edition))
-        store.mark_selected(chosen, now, date)
-        store.save()
+        pipeline.record_offline(paths, run, edition, chosen, now)
         print(f"magazine {date}: {story_count(edition)} stories selected from the store (no network)")
+        print(f"magazine archive: removed {sanitize_all(OUT, skip=date)} fabricated or link-less items")
         print(f"latest {write_index(OUT)}")
         return 0
     run = pipeline.discover(paths, now, skip_types=tuple(args.skip_type))

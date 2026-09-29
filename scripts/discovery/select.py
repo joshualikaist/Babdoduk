@@ -4,9 +4,10 @@
 LANE_SIZE is a maximum, not a quota: a lane shows only what qualifies, possibly nothing.
 
 Hero (owner decision, 2026-09-29), heroKind in the edition:
-  "trend"  a qualified trend story with STRONG evidence (sales figures, engagement, or a strong
-           claim such as 유행/화제/품절 - a "신제품" mention echoed by trade outlets is not enough),
-           a validated image of its own, a Tier A/B source and Korean/audience relevance >=
+  "trend"  a qualified trend story with INDEPENDENT evidence - measured demand, strong engagement,
+           independent reporting of stockouts/popularity, or corroboration by another source that
+           is not the same launch - never the seller's own words; two kinds preferred. It also
+           needs a validated image of its own, a Tier A/B source and Korean/audience relevance >=
            HERO_AUDIENCE; published within HERO_IDEAL_DAYS preferred, 30 at most.
   "pick"   otherwise the best recent story with its own validated image, labelled
            "오늘의 추천 글" on the page: never wording that implies today's trend. With no image
@@ -22,7 +23,9 @@ from typing import Optional
 
 from .common import KST, excerpt, parse_time
 
-LANE_SIZE = 8
+LANE_SIZE = 6              # a ceiling for good stories, never a number to fill
+EVERGREEN_FRESH_DAYS = 90  # an older tips/health story runs only when its lane has too few fresh ones
+EVERGREEN_MIN = 3
 PER_SOURCE_PER_LANE = 2
 HERO_IDEAL_DAYS = 7
 HERO_MAX_DAYS = 30
@@ -53,6 +56,8 @@ def card_summary(text: str, title: str = "") -> str:
     cleaned = re.sub(r"\s+", " ", URLS.sub(" ", text or "")).strip(" -|·")
     cleaned = CAPTION.sub(" ", DATELINE.sub("", cleaned)).strip()
     cleaned = re.sub(r"\s+", " ", cleaned)
+    if title and cleaned.startswith(title) and re.match(r"\s*(\d+\.|[-•▶\[])", cleaned[len(title):]):
+        cleaned = cleaned[len(title):].strip()      # a data release repeating its headline before a list
     stripped = BOILERPLATE.sub("", cleaned).strip()
     if stripped != cleaned and title and stripped.lower().startswith(title.lower()):
         stripped = stripped[len(title):].strip(" -|·:")     # "Watch How to Make This <title>" heading
@@ -62,6 +67,8 @@ def card_summary(text: str, title: str = "") -> str:
         if [w.lower() for w in words[:n]] == [w.lower() for w in words[n:2 * n]]:
             cleaned = " ".join(words[n:])
             break
+    if cleaned.count("▶") >= 2 or cleaned.count("•") >= 3:
+        return ""                                  # a video's link list, not a description
     short = excerpt(cleaned, SUMMARY_CHARS)
     return short if len(short) >= MIN_SUMMARY else ""
 
@@ -92,10 +99,16 @@ def _age(row: dict, now: datetime) -> Optional[float]:
     return (now - published).total_seconds() / 86400 if published else None
 
 
+def independent_evidence(row: dict) -> list[str]:
+    if row.get("trendEvidenceIndependent") is not None:
+        return list(row["trendEvidenceIndependent"])
+    from .process import trend_evidence          # rows built outside the pipeline (tests)
+    return trend_evidence(row)[2]
+
+
 def strong_evidence(row: dict) -> bool:
-    kinds = set(row.get("trendEvidence") or [])
-    claim = (row.get("trendSignals") or {}).get("explicit_source_claim") or {}
-    return bool(kinds & {"sales_data", "engagement"}) or ("explicit_source_claim" in kinds and bool(claim.get("strong")))
+    """Evidence that does not speak for the seller: enough for a Trending-now hero."""
+    return bool(independent_evidence(row))
 
 
 def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
@@ -108,7 +121,8 @@ def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
                 and row.get("imageUrl") and trusted and audience >= HERO_AUDIENCE
                 and age is not None and age <= HERO_MAX_DAYS)
     trends = sorted((r for r in pool if trend_ok(r)),
-                    key=lambda r: (_age(r, now) > HERO_IDEAL_DAYS, -(r.get("score") or 0), r["candidateId"]))
+                    key=lambda r: (len(independent_evidence(r)) < 2, _age(r, now) > HERO_IDEAL_DAYS,
+                                   -(r.get("score") or 0), r["candidateId"]))
     if trends:
         return trends[0], "trend"
     with_image = [r for r in pool if r.get("imageValidated") and r.get("imageUrl")]
@@ -136,13 +150,23 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
     lanes, chosen = {}, []
     if featured_row is not None:
         chosen.append(featured_row["candidateId"])
+
+    def old(row):
+        age = _age(row, now)
+        return age is not None and age > EVERGREEN_FRESH_DAYS
+
     for lane in LANES:
         picked, per_source = [], {}
+        fresh = sum(1 for r in pool if r["assignedCategory"] == lane and r["candidateId"] not in chosen and not old(r))
         for row in pool:
             if len(picked) >= LANE_SIZE:
                 break
             if row["assignedCategory"] != lane or row["candidateId"] in chosen:
                 continue
+            if lane in ("tips", "health") and old(row) and fresh >= EVERGREEN_MIN:
+                continue                          # fresh stories first; an old one only fills a thin lane
+            if set(row.get("corroboratedBy") or []) & set(chosen):
+                continue                          # the same story told by another outlet: one slot per topic
             key = row.get("sourceName") or row.get("sourceId")
             if per_source.get(key, 0) >= PER_SOURCE_PER_LANE:
                 continue
