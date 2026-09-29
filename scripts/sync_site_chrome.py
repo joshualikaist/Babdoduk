@@ -39,10 +39,10 @@ LAB_RIBBON = [
 PAGES = {
     "index.html": {"current": None, "home": "#"},
     "ggongbab.html": {"current": "ggongbab.html"},
-    "choose.html": {"current": "choose.html"},
     "mukbang.html": {"current": "mukbang.html"},
     "event.html": {"current": "event.html"},
-    "food.html": {"current": "food.html"},
+    # Food Log is lab-only: no public nav/footer link points at it; it carries the lab links.
+    "food.html": {"current": None, "lab": True},
     "history.html": {"current": "history.html"},
     "lab.html": {"current": "lab.html", "lab": True},
     "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True},

@@ -705,3 +705,9 @@ body.mg-body .nav-mega-link.is-current {
     align-items: flex-start;
   }
 }
+
+/* Source-backed only: a hero without its own image is text-only (no placeholder picture),
+   and an empty lane says so quietly. */
+.mg-hero.mg-hero--text { grid-template-columns: minmax(0, 1fr); }
+.mg-hero.mg-hero--text .mg-hero-copy { max-width: 760px; }
+.mg-lane-empty { margin: 4px 0 0; font-size: 13px; line-height: 20px; color: var(--color-ink-muted, #6e6e73); }
