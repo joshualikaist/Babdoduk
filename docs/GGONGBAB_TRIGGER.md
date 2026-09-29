@@ -69,6 +69,40 @@ The main-only guard exists only in refs that contain it, so remote branches stil
 workflow file are deleted before activation. Re-running an old run executes that run's own
 commit, which is bounded to existing code.
 
+## Secrets environment
+
+The refresh job runs in the GitHub environment `ggongbab-production`.
+
+**Environment settings:**
+* Deployment branches: `main` only; no tags.
+* No required reviewer and no wait timer, so the schedule runs unattended.
+* Secrets: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `OPENAI_API_KEY`, `DOORAY_API_TOKEN`.
+* Non-secret variable: `GGONGBAB_ENVIRONMENT=ggongbab-production`.
+
+**How the job checks it:**
+* The first step fails unless that variable is present, so the job can never silently fall
+  back to repository-level secrets.
+* A workflow file at an old tag or branch names no environment, so it receives none of these
+  secrets once the repository-level copies are removed.
+
+**Migration order:**
+1. Create the environment and its secrets.
+2. Release the `environment:` workflow to main.
+3. Test `check` and `full` runs on main.
+4. Delete the repository-level secrets.
+5. Test `check` and `full` again.
+
+**Rollback:** re-add the repository secrets and remove the `environment:` line.
+
+**Known residual risk:** three old tags have no missing-secret guard in their workflow:
+* `archive-2026-09-23-phase-0-9-original`;
+* `archive-2026-09-24-phase-10b-port-snapshot`;
+* `release-2026-09-24-product-refresh`.
+
+If one of them were dispatched after step 4, it would run with no secrets and could publish an
+empty free-food feed until the next scheduled run restores it. Supabase data would not be
+touched. Dispatching needs a credential with Actions write access.
+
 ## Activation checklist (STOP: owner approval required)
 
 1. Selectively promote the workflow guard (main-only `if:` and the `source` input) to main.

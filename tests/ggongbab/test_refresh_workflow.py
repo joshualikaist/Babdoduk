@@ -135,6 +135,8 @@ def test_preflight_requires_what_each_mode_uses_and_sees_no_secret_value():
     expressions = re.findall(r"\$\{\{(.*?)\}\}", block)
     assert expressions
     for expr in expressions:
+        if expr.strip() == "vars.GGONGBAB_ENVIRONMENT":     # the environment marker, not a secret
+            continue
         assert re.fullmatch(r"\s*secrets\.\w+ != ''(\s*\|\|\s*secrets\.\w+ != '')*\s*", expr), expr
 
 
@@ -196,3 +198,16 @@ def test_the_collector_watch_runs_after_failures_and_keeps_secrets_in_env():
     assert "TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}" in step
     run = step[step.index("run:"):]
     assert "secrets." not in run and run.strip().endswith("python scripts/watch_ggongbab_collectors.py")
+
+
+def test_the_refresh_job_reads_its_secrets_from_the_main_only_environment():
+    """Secrets live in the ggongbab-production environment (main only, no reviewer). The first
+    step refuses to run outside it, so a repository-level fallback can never be used silently."""
+    text = _text()
+    job = text[text.index("  refresh:"):]
+    head = job[:job.index("    steps:")]
+    assert re.search(r"(?m)^    environment: ggongbab-production\s*$", head)
+    assert "required_reviewers" not in text and "wait-timer" not in text
+    check = job[job.index("      - name: Check required configuration"):job.index("      - uses: actions/checkout")]
+    assert "ENVIRONMENT_MARKER: ${{ vars.GGONGBAB_ENVIRONMENT }}" in check
+    assert '[ "$ENVIRONMENT_MARKER" != "ggongbab-production" ]' in check and "exit 1" in check
