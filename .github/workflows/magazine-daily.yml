@@ -84,7 +84,7 @@ jobs:
         run: |
           paths=()
           if [ "${{ steps.pick.outputs.magazine }}" = "1" ]; then
-            paths+=(data/magazine)
+            paths+=(data/magazine research/magazine)
           fi
           if [ "${{ steps.pick.outputs.kaist }}" = "1" ]; then
             paths+=(data/kaist-menu)
