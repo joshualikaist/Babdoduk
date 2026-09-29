@@ -4,6 +4,11 @@
   "schedule": "Daily 10:00 KST",
   "featured": {
     "title": "입맛 없을 때 무조건 밥 2공기 먹습니다.",
+    "summary": "입맛. 오늘 밥상에 올리기 좋다.\n메인 · 무\n설거지가 적고, 한 그릇으로 끝낸다.",
+    "tags": [
+      "입맛",
+      "자취요리"
+    ],
     "source": "자취요리신",
     "url": "https://www.youtube.com/shorts/7sxoPwNhrMU",
     "medium": "youtube",
@@ -16,6 +21,13 @@
       "items": [
         {
           "title": "너무 맛있어서 여기에 한번 빠지면 진짜 답 없습니다.",
+          "summary": "매콤한 오뎅 당면볶음을. 오늘 밥상에 올리기 좋다.\n메인 · 당면, 오뎅, 부추, 양파\n설거지가 적고, 한 그릇으로 끝낸다.",
+          "tags": [
+            "당면볶음을",
+            "당면",
+            "오뎅",
+            "자취요리"
+          ],
           "source": "자취요리신",
           "url": "https://www.youtube.com/watch?v=xwa-fR__hYs",
           "medium": "youtube",
@@ -23,12 +35,26 @@
         },
         {
           "title": "육개장 만드는 법 숙취해소로 제격! 얼큰 매콤 깔끔 시원한 전통 육개장",
+          "summary": "육개장. 오늘 밥상에 올리기 좋다.\n메인 · 소고기, 밀가루, 쌀, 무\n소고기가 주인공인 집밥.",
+          "tags": [
+            "육개장",
+            "소고기",
+            "밀가루",
+            "집밥"
+          ],
           "source": "엄마표 집밥",
           "url": "https://irisblossomlife.tistory.com/172",
           "medium": "blog"
         },
         {
           "title": "바삭한 허니버터 쿠키에 부드러운 우유크림 샌드! Crispy Honey Butter Cookies with Milk Cream",
+          "summary": "바삭한. 집에서 굽는 디저트.\n메인 · 밥상에 올리는 그 음식.\n밥 말고, 집에서 굽는 간식.",
+          "tags": [
+            "바삭한",
+            "디저트",
+            "HoneyButterCookies",
+            "허니버터쿠키"
+          ],
           "source": "쿠킹트리 Cooking tree",
           "url": "https://www.youtube.com/shorts/JVMqE7buQzM",
           "medium": "youtube",
@@ -36,12 +62,22 @@
         },
         {
           "title": "23 Summer vegetable recipes",
+          "summary": "23 Summer veget…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+          "tags": [
+            "veget",
+            "한식"
+          ],
           "source": "Korean Bapsang",
           "url": "https://www.koreanbapsang.com/summer-vegetable-recipes/",
           "medium": "blog"
         },
         {
           "title": "입맛 없을 때 무조건 밥 2공기 먹습니다.",
+          "summary": "입맛. 오늘 밥상에 올리기 좋다.\n메인 · 무\n설거지가 적고, 한 그릇으로 끝낸다.",
+          "tags": [
+            "입맛",
+            "자취요리"
+          ],
           "source": "자취요리신",
           "url": "https://www.youtube.com/shorts/7sxoPwNhrMU",
           "medium": "youtube",
@@ -54,6 +90,11 @@
       "items": [
         {
           "title": "전어구이에 한잔! 크~~",
+          "summary": "전어구이에. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "전어구이에",
+            "먹방"
+          ],
           "source": "햄지 Hamzy",
           "url": "https://www.youtube.com/shorts/KjSIl-Y8LqA",
           "medium": "youtube",
@@ -61,6 +102,11 @@
         },
         {
           "title": "사치스런 저녁식사",
+          "summary": "사치스런. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "사치스런",
+            "먹방"
+          ],
           "source": "햄지 Hamzy",
           "url": "https://www.youtube.com/shorts/M8VZIAIJGfk",
           "medium": "youtube",
@@ -68,6 +114,11 @@
         },
         {
           "title": "소갈빗살 육개장",
+          "summary": "소갈빗살. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "소갈빗살",
+            "먹방"
+          ],
           "source": "햄지 Hamzy",
           "url": "https://www.youtube.com/shorts/OSANKRMc5S4",
           "medium": "youtube",
@@ -75,6 +126,11 @@
         },
         {
           "title": "아으 침고여...",
+          "summary": "아으. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "아으",
+            "먹방"
+          ],
           "source": "햄지 Hamzy",
           "url": "https://www.youtube.com/shorts/iolyI1OJogY",
           "medium": "youtube",
@@ -82,6 +138,11 @@
         },
         {
           "title": "야식은 엽떡",
+          "summary": "야식은. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n지금 타임라인에서 자주 보이는 먹방.",
+          "tags": [
+            "야식은",
+            "먹방"
+          ],
           "source": "햄지 Hamzy",
           "url": "https://www.youtube.com/shorts/3_6RI_drv08",
           "medium": "youtube",
@@ -94,6 +155,12 @@
       "items": [
         {
           "title": "다음날 바로 굽기만 하면 끝! 폭신 촉촉 애플파이 시나몬롤 만들기 | 사과빵 | Soft Apple Pie Cinnamon Rolls Recipe | Apple Bread",
+          "summary": "전날 롤 모양까지. 집에서 굽는 디저트.\n메인 · 달걀, 무\n밥 말고, 집에서 굽는 간식.",
+          "tags": [
+            "전날롤모양까지",
+            "달걀",
+            "디저트"
+          ],
           "source": "쿠킹트리 Cooking tree",
           "url": "https://www.youtube.com/watch?v=2kJBfUi2jNg",
           "medium": "youtube",
@@ -101,12 +168,24 @@
         },
         {
           "title": "23 Summer vegetable recipes",
+          "summary": "23 Summer veget…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+          "tags": [
+            "veget",
+            "한식"
+          ],
           "source": "Korean Bapsang",
           "url": "https://www.koreanbapsang.com/summer-vegetable-recipes/",
           "medium": "blog"
         },
         {
           "title": "신전 로제떡볶이 따라잡기",
+          "summary": "신전. 오늘 밥상에 올리기 좋다.\n메인 · 소고기, 닭, 고춧가루\n소고기가 주인공인 집밥.",
+          "tags": [
+            "신전",
+            "소고기",
+            "집밥",
+            "로제떡볶이"
+          ],
           "source": "하루한끼",
           "url": "https://www.youtube.com/watch?v=RetRTn3NBT0",
           "medium": "youtube",
@@ -114,12 +193,24 @@
         },
         {
           "title": "Makgeolli (Korean Rice Wine)",
+          "summary": "막걸리. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
+          "tags": [
+            "막걸리",
+            "한식"
+          ],
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/makgeolli/",
           "medium": "blog"
         },
         {
           "title": "포근한 가을 베이킹 ASMR | 사과·카라멜·시나몬 케이크&디저트 | 음악 없는 2시간 | No Music Cozy Fall Baking | 2 hours Baking ASMR",
+          "summary": "포근한. 집에서 굽는 디저트.\n메인 · 초콜릿, 라면, 쌀\n밥 말고, 집에서 굽는 간식.",
+          "tags": [
+            "포근한",
+            "초콜릿",
+            "라면",
+            "디저트"
+          ],
           "source": "쿠킹트리 Cooking tree",
           "url": "https://www.youtube.com/watch?v=swnsjaYl3DA",
           "medium": "youtube",
@@ -132,6 +223,13 @@
       "items": [
         {
           "title": "신전 로제떡볶이 따라잡기",
+          "summary": "신전. 오늘 밥상에 올리기 좋다.\n메인 · 소고기, 닭, 고춧가루\n소고기가 주인공인 집밥.",
+          "tags": [
+            "신전",
+            "소고기",
+            "집밥",
+            "로제떡볶이"
+          ],
           "source": "하루한끼",
           "url": "https://www.youtube.com/watch?v=RetRTn3NBT0",
           "medium": "youtube",
@@ -139,12 +237,24 @@
         },
         {
           "title": "하이라이스 고기와 야채 듬뿍! 카레보다 부드럽게 맛있는 하이라이스",
+          "summary": "하이라이스. 오늘 밥상에 올리기 좋다.\n메인 · 소고기, 밀가루, 양파, 마늘\n소고기가 주인공인 집밥.",
+          "tags": [
+            "하이라이스",
+            "소고기",
+            "밀가루",
+            "집밥"
+          ],
           "source": "엄마표 집밥",
           "url": "https://irisblossomlife.tistory.com/195",
           "medium": "blog"
         },
         {
           "title": "이게 진짜 자취요리지",
+          "summary": "이게. 자취 저녁으로 좋다.\n메인 · 밥상에 올리는 그 음식.\n설거지가 적고, 한 그릇으로 끝낸다.",
+          "tags": [
+            "이게",
+            "자취요리"
+          ],
           "source": "자취요리신",
           "url": "https://www.youtube.com/shorts/L-v1rqf14SU",
           "medium": "youtube",
@@ -152,12 +262,23 @@
         },
         {
           "title": "Butter Tteok (Butter Rice Cake) – Golden Crust, Chewy Center",
+          "summary": "Butter Tteok (B…. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
+          "tags": [
+            "한식"
+          ],
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/butter-tteok/",
           "medium": "blog"
         },
         {
           "title": "싹둑싹둑 미나리 볶음밥",
+          "summary": "싹둑싹둑. 오늘 밥상에 올리기 좋다.\n메인 · 미나리, 계란\n미나리가 주인공인 집밥.",
+          "tags": [
+            "싹둑싹둑",
+            "미나리",
+            "계란",
+            "집밥"
+          ],
           "source": "하루한끼",
           "url": "https://www.youtube.com/watch?v=GmYsazN2FXA",
           "medium": "youtube",
@@ -165,5 +286,180 @@
         }
       ]
     }
+  },
+  "desks": {
+    "blog": [
+      {
+        "title": "김칫국 레시피 아~ 얼큰하다! 아삭아삭 칼칼하고 시원한 콩나물 김칫국 - 신김치 요리 7 탄",
+        "summary": "김칫국 을. 오늘 밥상에 올리기 좋다.\n메인 · 신김치, 능이, 두부, 무\n신김치가 주인공인 집밥.",
+        "tags": [
+          "김칫국을",
+          "신김치",
+          "능이",
+          "집밥"
+        ],
+        "source": "엄마표 집밥",
+        "url": "https://irisblossomlife.tistory.com/166",
+        "medium": "blog"
+      },
+      {
+        "title": "Kimbap (Seaweed Rice Rolls)",
+        "summary": "Kimbap (Seaweed…. 오늘 밥상에 올리기 좋다.\n메인 · 쌀\n쌀이 주인공인 집밥.",
+        "tags": [
+          "Seaweed",
+          "한식"
+        ],
+        "source": "Korean Bapsang",
+        "url": "https://www.koreanbapsang.com/gimbapkimbap-korean-dried-seaweed-rolls/",
+        "medium": "blog"
+      },
+      {
+        "title": "Baechujeon (Korean Cabbage Pancakes)",
+        "summary": "Baechujeon (Kor…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+        "tags": [
+          "Kor",
+          "한식"
+        ],
+        "source": "My Korean Kitchen",
+        "url": "https://mykoreankitchen.com/baechujeon/",
+        "medium": "blog"
+      },
+      {
+        "title": "김치콩나물국 끓이는 법 속풀이 해장국으로 딱 좋아! 시원하고 얼큰한 김치콩나물국",
+        "summary": "김치콩나물국 이. 오늘 밥상에 올리기 좋다.\n메인 · 소고기, 신김치, 라면, 무\n소고기가 주인공인 집밥.",
+        "tags": [
+          "김치콩나물국이",
+          "소고기",
+          "신김치",
+          "집밥"
+        ],
+        "source": "엄마표 집밥",
+        "url": "https://irisblossomlife.tistory.com/158",
+        "medium": "blog"
+      },
+      {
+        "title": "23 Summer vegetable recipes",
+        "summary": "23 Summer veget…. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n자세한 손맛은 본문에서 보면 된다.",
+        "tags": [
+          "veget",
+          "한식"
+        ],
+        "source": "Korean Bapsang",
+        "url": "https://www.koreanbapsang.com/summer-vegetable-recipes/",
+        "medium": "blog"
+      }
+    ],
+    "youtube": [
+      {
+        "title": "신전 로제떡볶이 따라잡기",
+        "summary": "신전. 오늘 밥상에 올리기 좋다.\n메인 · 소고기, 닭, 고춧가루\n소고기가 주인공인 집밥.",
+        "tags": [
+          "신전",
+          "소고기",
+          "집밥",
+          "로제떡볶이"
+        ],
+        "source": "하루한끼",
+        "url": "https://www.youtube.com/watch?v=RetRTn3NBT0",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/RetRTn3NBT0/maxresdefault.jpg"
+      },
+      {
+        "title": "이건 주기적으로 드세요.",
+        "summary": "이건. 오늘 밥상에 올리기 좋다.\n메인 · 밥상에 올리는 그 음식.\n설거지가 적고, 한 그릇으로 끝낸다.",
+        "tags": [
+          "이건",
+          "자취요리"
+        ],
+        "source": "자취요리신",
+        "url": "https://www.youtube.com/shorts/d1X1GhB5v6E",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/d1X1GhB5v6E/maxresdefault.jpg"
+      },
+      {
+        "title": "다음날 바로 굽기만 하면 끝! 폭신 촉촉 애플파이 시나몬롤 만들기 | 사과빵 | Soft Apple Pie Cinnamon Rolls Recipe | Apple Bread",
+        "summary": "전날 롤 모양까지. 집에서 굽는 디저트.\n메인 · 달걀, 무\n밥 말고, 집에서 굽는 간식.",
+        "tags": [
+          "전날롤모양까지",
+          "달걀",
+          "디저트"
+        ],
+        "source": "쿠킹트리 Cooking tree",
+        "url": "https://www.youtube.com/watch?v=2kJBfUi2jNg",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/2kJBfUi2jNg/maxresdefault.jpg"
+      },
+      {
+        "title": "시골 평상에서 묵은지 닭볶음탕",
+        "summary": "닭볶음탕. 오늘 밥상에 올리기 좋다.\n메인 · 묵은지, 닭\n지금 타임라인에서 자주 보이는 먹방.",
+        "tags": [
+          "닭볶음탕",
+          "묵은지",
+          "먹방"
+        ],
+        "source": "햄지 Hamzy",
+        "url": "https://www.youtube.com/shorts/URkjXxZ6coM",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/URkjXxZ6coM/maxresdefault.jpg"
+      },
+      {
+        "title": "싹둑싹둑 미나리 볶음밥",
+        "summary": "싹둑싹둑. 오늘 밥상에 올리기 좋다.\n메인 · 미나리, 계란\n미나리가 주인공인 집밥.",
+        "tags": [
+          "싹둑싹둑",
+          "미나리",
+          "계란",
+          "집밥"
+        ],
+        "source": "하루한끼",
+        "url": "https://www.youtube.com/watch?v=GmYsazN2FXA",
+        "medium": "youtube",
+        "image": "https://i.ytimg.com/vi/GmYsazN2FXA/maxresdefault.jpg"
+      }
+    ],
+    "instagram": [
+      {
+        "title": "밥도둑 인스타",
+        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
+        "tags": [
+          "집밥",
+          "인스타"
+        ],
+        "source": "Instagram",
+        "url": "https://www.instagram.com/babdodukms/",
+        "medium": "instagram"
+      },
+      {
+        "title": "탐색 · #편의점조합",
+        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
+        "tags": [
+          "편의점조합"
+        ],
+        "source": "Instagram",
+        "url": "https://www.instagram.com/explore/tags/%ED%8E%B8%EC%9D%98%EC%A0%90%EC%A1%B0%ED%95%A9/",
+        "medium": "instagram"
+      },
+      {
+        "title": "탐색 · #자취요리",
+        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
+        "tags": [
+          "자취요리"
+        ],
+        "source": "Instagram",
+        "url": "https://www.instagram.com/explore/tags/%EC%9E%90%EC%B7%A8%EC%9A%94%EB%A6%AC/",
+        "medium": "instagram"
+      },
+      {
+        "title": "쿠킹트리",
+        "summary": "계정 글을 긁지 않는다.\n태그로 직접 들어가 보는 창구.\n오늘의 밥 감 참고용.",
+        "tags": [
+          "집밥",
+          "인스타"
+        ],
+        "source": "Instagram",
+        "url": "https://www.instagram.com/cooking_tree/",
+        "medium": "instagram"
+      }
+    ]
   }
 }
