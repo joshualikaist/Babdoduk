@@ -45,7 +45,9 @@ Less text. Babdoduk speaks through titles, dates, images, short metadata and act
 - Prefer labels (공지, 예정, 지난 활동, 당시 게시물) over assistant-like sentences (알려 드려요, 모아 두었어요, 확인해 보세요, 골라 드려요).
 - Fuller context may sit behind a disclosure (자세히). Accessible names, screen-reader text, heading structure, focus and truth/status semantics are never cut to save words.
 
-Page heads use an index number and a one-line title (`.page-head`, `.page-title`, `.page-num` in `css/site.css`): 01 메뉴 고르기, 02 밥도둑 매거진, 03 밥도둑 소식, matching the home groups 01 오늘 먹기, 02 읽어보기, 03 밥도둑 소식. Section titles use `.page-section-title` (a title followed by a thin rule). Archive and history lists are flat (rules, numbers, dates); only current content keeps an emphasized surface.
+Page heads use an index number and a one-line title (`.page-head`, `.page-title`, `.page-num` in `css/site.css`): 02 밥도둑 매거진 (with the picker section “오늘 뭐 먹지?” at `#what`), 03 밥도둑 소식, matching the home groups 01 오늘 먹기, 02 읽어보기, 03 밥도둑 소식. Section titles use `.page-section-title` (a title followed by a thin rule). Archive and history lists are flat (rules, numbers, dates); only current content keeps an emphasized surface.
+
+Magazine states (2026-09-29): a story card needs a real source link; there is no desk or filler card. An empty lane shows one quiet sentence (`.mg-lane-empty`). A featured story without its own image uses the text-only hero (`.mg-hero--text`); the BABDODUK wordmark is never shown as a stand-in picture, and with no featured story the hero is hidden.
 
 ## Component and interaction contracts
 

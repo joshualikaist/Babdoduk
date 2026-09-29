@@ -166,11 +166,12 @@ def test_shared_selector_keeps_publication_review_expiry_and_sort_semantics():
     assert result == {"today": ["today"], "future": ["today", "late"]}
 
 
-def test_past_events_are_not_reported_as_held_and_the_picker_has_its_own_page():
+def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     html = (ROOT / "event.html").read_text(encoding="utf-8")
     rows = re.findall(r'data-start="(\d{4}-\d{2}-\d{2})"\s+data-end="(\d{4}-\d{2}-\d{2})"\s+'
                       r'data-confirmation="([^"]+)"', html)
-    assert len(rows) == 3
+    assert len(rows) == 2
+    assert "STROKE" not in html and "언빌리버블" not in html and "event.e2" not in html   # it did not happen
     assert all(confirmation in ("announced", "tentative") for *_, confirmation in rows)
     assert "'event.state.tentative.past': '진행 여부 미확인'" in html
     assert "'event.state.announced.past'" not in html  # an unrecorded outcome claims nothing, visibly
@@ -178,31 +179,40 @@ def test_past_events_are_not_reported_as_held_and_the_picker_has_its_own_page():
     assert "'event.note.announced.past': '결과는 이 페이지에 기록되지 않았어요." in html  # full context behind 자세히
     # Each row's link is labelled by the page script from its date band; a past row links to
     # the original post as a record, and each authored instruction block can be marked historical.
-    assert html.count("<span data-event-cta>") == 3 and "event.openPageBtn" not in html
+    assert html.count("<span data-event-cta>") == 2 and "event.openPageBtn" not in html
     assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
     assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
-    assert html.count('<details class="event-more">') == 3 and "event-tab" not in html
-    assert html.count('<div class="event-detail-row" data-detail="participation">') == 6  # three events, ko and en
+    assert html.count('<details class="event-more">') == 2 and "event-tab" not in html
+    assert html.count('<div class="event-detail-row" data-detail="participation">') == 4  # two events, ko and en
     assert '<a class="event-elsewhere" href="ggongbab.html">' in html
-    for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html", "choose.html"):
+    # One picker product: it lives in the magazine at #what; choose.html only redirects there.
+    for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
-        assert 'href="choose.html"' in page and 'href="mukbang.html#what"' not in page, name
+        assert 'href="choose.html"' not in page, name
+        if name != "mukbang.html":
+            assert 'id="eatApp"' not in page and "js/food-picker.js" not in page, name   # no second picker
     choose = (ROOT / "choose.html").read_text(encoding="utf-8")
-    assert 'id="eatApp"' in choose and 'id="kaistToday"' in choose and "js/food-picker.js" in choose
+    assert 'content="noindex"' in choose and "location.replace('mukbang.html#what')" in choose
+    assert 'url=mukbang.html#what' in choose and 'id="eatApp"' not in choose and "food-picker.js" not in choose
     magazine = (ROOT / "mukbang.html").read_text(encoding="utf-8")
-    assert 'id="eatApp"' not in magazine and "js/food-picker.js" not in magazine
-    assert "location.replace('choose.html')" in magazine  # old #what links still reach the picker
+    assert magazine.count('id="eatApp"') == 1 and magazine.count('id="kaistToday"') == 1
+    assert magazine.count("js/food-picker.js") == 1 and 'id="what"' in magazine
+    assert "location.replace('choose.html')" not in magazine
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    assert 'href="mukbang.html#what"' in index           # the home call to action reaches the picker
 
 
-SHELF_ORDER = ["today", "pick", "map", "log"]
-SHELF_HREFS = ["ggongbab.html", "choose.html", "https://naver.me/5NeqUPzI", "food.html"]
+# Food Log is unreleased (lab only): no home banner.
+SHELF_ORDER = ["today", "pick", "map"]
+SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI"]
 
 
 def test_home_top_is_one_hero_and_a_manual_banner_shelf():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     top = html.split('<section class="home-group home-read"')[0]
     assert top.count("<h1") == 1
-    assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "choose.html"]
+    assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "mukbang.html#what"]
+    assert 'href="food.html"' not in html and 'data-banner="log"' not in html
     banners = re.findall(r'data-banner="(\w+)">\s*<a class="home-banner-link" href="([^"]+)"([^>]*)>', top)
     assert [name for name, _, _ in banners] == SHELF_ORDER
     assert [href for _, href, _ in banners] == SHELF_HREFS
@@ -241,9 +251,10 @@ def test_home_groups_brand_and_hub_name():
     event = (ROOT / "event.html").read_text(encoding="utf-8")
     assert event.index('id="now"') < event.index('id="archive"')
     assert '<ul class="event-notices" id="eventNotices" role="list"></ul>' in event  # no invented notices
-    for name in ("index.html", "ggongbab.html", "choose.html", "mukbang.html", "event.html", "food.html", "history.html", "lab.html"):
+    for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html", "lab.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
         assert 'data-i18n="nav.today">오늘의 꽁밥</a>' in page and "'nav.today': '오늘의 꽁밥'" in page, name
+    assert "site-nav" not in (ROOT / "choose.html").read_text(encoding="utf-8")   # a redirect, no chrome
     site = (ROOT / "css/site.css").read_text(encoding="utf-8")
     wordmark = site[site.index(".site-nav-wordmark {"):site.index(".site-nav-wordmark::before")]
     assert "#6366f1 0%" in wordmark and "#db2777 100%" in wordmark and "wordmark-holo" in wordmark

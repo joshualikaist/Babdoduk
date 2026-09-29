@@ -6,7 +6,8 @@ Status: `main` production baseline, as prepared for the Phase 10B release (`rele
 
 ```text
 EXTERNAL SERVICE                 GENERATED DATA                     FRONTEND (static, Vercel project babdoduk)
-RSS / YouTube ── magazine refresh ──> data/magazine/ ────────────> mukbang.html, index.html
+source registry ── discovery (scripts/discovery) ──> research/magazine/ (internal, not served)
+                                                  └─> data/magazine/ (public edition) ──> mukbang.html, index.html
 KAIST official cafeteria HTML ──────> data/kaist-menu/ ──────────> ggongbab.html, mukbang.html, index.html
 
 Dooray project / KAIST public notices / authored manual input / mail-archive backfill
@@ -25,8 +26,8 @@ Python collectors → private raw item and attachments → PII sanitizer → rul
                                                 └─> index.html (home summary, live only)
 
 LOCAL FRONTEND STATE
-data/foods/catalog.json + 7 packs → food engine → picker (choose.html) → optional slot animation
-food.html + authored data/food-log.json + browser-local entries/preferences/filters
+data/foods/catalog.json + 7 packs → food engine → picker (mukbang.html#what; choose.html redirects) → optional slot animation
+food.html (unreleased, lab only) + authored data/food-log.json + browser-local entries/preferences/filters
 
 OPERATIONS
 GitHub Actions content-refresh → validate_content.py → allowlisted generated paths to lab and main
@@ -56,7 +57,7 @@ On lab the static file and the DB projection are written in sequence, not atomic
 
 ## Static frontend and local state
 
-Nine public HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-ggongbab.html`, `choose.html`, `mukbang.html`, `food.html`, `event.html`, `history.html`, `lab.html`. CSS and JavaScript are loaded without a build step; `css/site.css` owns the shared navigation, footer, tokens and scrollbar. The navigation and footer markup comes from `shared/nav.html` and `shared/footer.html`; `scripts/sync_site_chrome.py` writes a static copy into each page (so it works without JavaScript) and its `--check` mode, run by the `ui-guardian` workflow, fails on drift; the same workflow runs `scripts/check_site_ui.py --chrome-only` (site guardian and visual comparison) in a pinned Playwright container. Vercel serves the static files; see “Environment and deployment”.
+Nine HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-ggongbab.html`, `choose.html` (a noindex redirect to `mukbang.html#what`, where the one picker lives), `mukbang.html`, `food.html` (unreleased, lab only, noindex/nofollow), `event.html`, `history.html`, `lab.html`. CSS and JavaScript are loaded without a build step; `css/site.css` owns the shared navigation, footer, tokens and scrollbar. The navigation and footer markup comes from `shared/nav.html` and `shared/footer.html`; `scripts/sync_site_chrome.py` writes a static copy into each page (so it works without JavaScript) and its `--check` mode, run by the `ui-guardian` workflow, fails on drift; the same workflow runs `scripts/check_site_ui.py --chrome-only` (site guardian and visual comparison) in a pinned Playwright container. Vercel serves the static files; see “Environment and deployment”.
 
 `js/ggongbab.js` renders normal, fixture and localhost preview modes; public routes cannot read the private preview, and normal mode fetches only `data/ggongbab/latest.json`. `js/ggongbab-select.js` holds the client-side eligibility repeat (explicit food, not under review, not ended) shared by the hub and the home summary. `js/kaist-menu.js` exports the KST date and stale rules used by the hub, the cafeteria summary on `choose.html` and `js/home.js`; the home summary reads the same static snapshots as the hub and names their last publication time. `js/food-engine.js` ranks built catalog dishes; `js/food-picker.js` runs the decision UI; `js/eat-slot.js` animates a previously selected result. Filter, preference, language and food-log state use localStorage. Repeated inline page translation code remains a maintenance concern.
 
@@ -64,7 +65,7 @@ Nine public HTML files are the route entry points: `index.html`, `ggongbab.html`
 
 | Data | Writer/owner | Consumer and failure behavior |
 | --- | --- | --- |
-| `data/magazine/index.json`, dated and latest editions | `scripts/refresh_magazine.py` using RSS/YouTube and authored fallback | Magazine and home read edition data; fallback is not evidence of a fetched story |
+| `data/magazine/index.json`, dated and latest editions | `scripts/refresh_magazine.py` through `scripts/discovery/` (registry `scripts/discovery/sources.json`, internal store `research/magazine/`), source-backed stories only, no authored fallback (`docs/MAGAZINE_DISCOVERY.md`) | Magazine and home read edition data; fallback is not evidence of a fetched story |
 | `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` parsing the official KAIST page without AI: dated files for the current Monday–Sunday KST week, `latest.json` (today only) and the `week.json` index (`docs/KAIST_MENU.md`) | Hub (weekly), choose and home (today); zero usable restaurants keeps prior files, so clients check the date against the date they show |
 | `data/ggongbab/latest.json` | Approved export in `scripts/refresh_ggongbab.py` | Hub and home; validation precedes the final write and a failure keeps the previous file |
 | `data/ggongbab/archive/index.json` | Same export, same clock (past listings, 30 days) | Hub only, fetched separately; a failed archive keeps the previous file without blocking `latest.json`, and a failed fetch leaves the live feed untouched |

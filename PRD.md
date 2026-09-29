@@ -35,10 +35,10 @@ These are hypotheses from the current features, not measured audience segments.
 | Tier | Experience | Present implementation |
 | --- | --- | --- |
 | Core | **Check today's food**: KAIST cafeteria, publishable upcoming free food | `ggongbab.html`, `js/ggongbab.js`, `js/kaist-menu.js` |
-| Core | **Choose a dish**: a quick, explainable suggestion | `choose.html` with `js/food-engine.js`, `js/food-picker.js`, `js/eat-slot.js` |
-| Secondary | Explore: magazine, curated restaurant map, history and social channels | `mukbang.html`, `history.html`, external links |
+| Core | **Choose a dish**: a quick, explainable suggestion | inside the magazine at `mukbang.html#what` with `js/food-engine.js`, `js/food-picker.js`, `js/eat-slot.js`; `choose.html` only redirects there |
+| Secondary | Explore: the source-backed magazine, curated restaurant map, history and social channels | `mukbang.html` (`docs/MAGAZINE_DISCOVERY.md`), `history.html`, external links |
 | Secondary | Participate: verified events and collaborations | `event.html` |
-| Secondary, owner decision open | Food expense and meal log: personal, creator-authored or explicitly separated modes | `food.html`, `data/food-log.json`, browser localStorage |
+| Unreleased (lab only) | Food expense and meal log: personal, creator-authored or explicitly separated modes; owner decision open | `food.html` (noindex, nofollow; linked only from `lab.html`), `data/food-log.json`, browser localStorage |
 | Experimental | Isolated layout, fixture and preview work | `lab.html`, `lab-ggongbab.html` |
 | Operational | Collection, validation, publication, session recovery and monitoring | `scripts/`, `supabase/`, workflows; never a public navigation destination |
 
@@ -58,21 +58,21 @@ The home page should show the service definition, primary check action, secondar
 | --- | --- | --- | --- |
 | `index.html` | Orient and start the two core tasks | Today's food, picker, then editorial/events | Equal-weight directory of all features |
 | `ggongbab.html` | Answer what is available through free-food and cafeteria tabs | Approved registration or the dish picker | Treat catalog suggestions as live inventory |
-| `mukbang.html` | Publish four editorial desks: tips, trends, health, habits | Original story and selective food connection | Host the picker or other utility tools |
-| `choose.html` | Suggest a dish quickly, with the dated cafeteria summary beside it | A reasoned suggestion, or the hub for every cafeteria | Treat catalog suggestions as live inventory |
-| `food.html` | Record/review food and expenses once ownership is decided | Optional return from choosing | Unlabelled mixture of personal and creator records |
+| `mukbang.html` | Publish four source-backed lanes (tips, trends, health, habits), and host the one dish picker at `#what` with the dated cafeteria summary | Original story; a reasoned dish suggestion; the hub for every cafeteria | Fabricated or unsourced stories; treating catalog suggestions as live inventory |
+| `choose.html` | Compatibility redirect to `mukbang.html#what` (noindex) | — | A second picker |
+| `food.html` | Unreleased, lab only: record/review food and expenses once ownership is decided | `lab.html` | Any public navigation link; unlabelled mixture of personal and creator records |
 | `event.html` | Show now, coming up and past activity with verified status | Confirmed participation instructions | Past dates described as upcoming |
 | `history.html` | Explain Babdoduk's story and provenance | Relevant content and activities | Duplicate the live food dashboard |
 | `lab.html`, `lab-ggongbab.html` | Isolated experiments and tests | Development documentation | Public core navigation or private preview exposure |
 
-Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **메뉴 고르기** for the recommendation tool. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs should continue to resolve during a later navigation change. A separate picker destination is a proposed future phase, not a current route.
+Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **밥도둑 매거진** for the magazine, which carries the picker (owner decision, 2026-09-29: one picker product, not a separate navigation destination). The home call to action may still read **메뉴 고르기** and points to `mukbang.html#what`. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs keep resolving: `choose.html` redirects to `mukbang.html#what`.
 
 ## Functional requirements
 
 - Free-food publication requires explicit `food.provided == "true"`, approved/published state, `needs_review == false`, confidence and date/horizon checks. The UI must hide ended events, preserve ascending date order, filters, Radar and featured next event. Initial period is **전체 예정**; a previously saved filter takes precedence. Unknown food is not a negative or a positive assertion.
 - Cafeteria menus must carry their actual date/source. A stale payload must not be presented as today's confirmed menu. Restaurant, meal, favourites and retry behavior should be consistent wherever the menu appears.
 - Dish recommendations must identify the result as a catalog suggestion, show an intelligible reason and alternatives, preserve local feedback, and never claim live availability, validated health/allergen safety or a measured probability. A “choose” action does not prove the user ate the dish.
-- Magazine stories retain their category, source, edition date and original link. Authored fallback and collected items need an honest presentation. Each category remains a vertical reading flow.
+- Magazine stories are source-backed only: a real source, URL and title, and a short excerpt of retrieved source text. There is no authored fallback (no Babdoduk Desk). A lane may be sparse or empty. The trend lane shows only recent items, and a story runs once. The daily JSON is publication output; the research layer (registry, candidates, health) is separate (`docs/MAGAZINE_DISCOVERY.md`). Each category remains a vertical reading flow.
 - Events must be classified as NOW / COMING UP / PAST by dates and separately report whether occurrence was confirmed, tentative, cancelled or unknown. Past dates do not prove an event happened. Collaborations appear only when supported by authored facts. Existing four detail fields and index/date contract remain until an approved replacement.
 - The food log must explain whether an entry is personal, creator-authored or both before changing storage or merging behavior. Existing local entries must remain readable through any later redesign.
 
