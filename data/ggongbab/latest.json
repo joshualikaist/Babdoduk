@@ -1,41 +1,8 @@
 {
-  "generatedAt": "2026-09-29T15:06:26+09:00",
+  "generatedAt": "2026-09-29T22:18:03+09:00",
   "timezone": "Asia/Seoul",
-  "count": 4,
+  "count": 3,
   "events": [
-    {
-      "id": "04ed127d-1eef-4c52-a711-90dd48effdcf",
-      "title": "Is the Existential Risk of AI Real?",
-      "summary": "AI의 실존적 위험이 얼마나 현실적인 문제인지와 대응 방안을 논의하는 런치 세미나입니다. 두 연사의 자유대담과 청중 토론으로 진행되며 참석자에게 샌드위치가 제공됩니다.",
-      "startAt": "2026-09-29T12:00:00+09:00",
-      "endAt": "2026-09-29T13:00:00+09:00",
-      "dateText": "2026년 9월 29일(화)",
-      "timeText": "12:00–13:00",
-      "location": {
-        "name": "KAIST 대전 본원 학술문화관(E9) 2층 양승택오디토리움",
-        "building": "E9",
-        "room": "2층 양승택오디토리움"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "샌드위치"
-      },
-      "organizer": "KAIST AI철학 연구센터",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://docs.google.com/forms/d/e/1FAIpQLSdUscftsT2EInRIbds9-2uubAoIHijRaDKLJg9qBKmjolP_iQ/viewform"
-      },
-      "confidence": 1.0,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
     {
       "id": "6b4d7b25-954b-45e6-910b-749116cc9611",
       "title": "학사과정생 간담회",
