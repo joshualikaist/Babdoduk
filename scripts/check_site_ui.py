@@ -122,10 +122,12 @@ def inspect_page(page, name, size, screenshot_dir=None):
         check(metrics["viewportGutter"] == 16, ("visible Windows scrollbar gutter", metrics))
 
     direct = page.locator(".nav-mega-row > .site-nav-direct")
-    check(direct.count() == 2, "two direct food tasks in navigation")
+    check(direct.count() == 2, "two direct destinations in navigation")
     check(direct.nth(0).get_attribute("href") == "ggongbab.html"
-          and direct.nth(1).get_attribute("href") == "mukbang.html#what",
-          "availability and choice have separate destinations")
+          and direct.nth(1).get_attribute("href") == "mukbang.html",
+          "today's food and the magazine (which carries the picker) are the direct destinations")
+    check(not page.locator('.site-nav a[href="mukbang.html#what"], .site-nav a[href="choose.html"]').count(),
+          "the picker is not presented as a separate product in navigation")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
     nav_items = page.locator("#navHome, .site-nav-direct, .nav-mega-trigger, #langToggle").evaluate_all(
@@ -148,10 +150,10 @@ def inspect_page(page, name, size, screenshot_dir=None):
                                for href in footer_links if not href.startswith(("mailto:", "https:"))),
           ("footer links resolve to real pages", footer_links))
     check(direct.nth(0).inner_text() == "오늘의 꽁밥"
-          and direct.nth(1).inner_text() == "메뉴 고르기", "Korean primary labels")
+          and direct.nth(1).inner_text() == "밥도둑 매거진", "Korean primary labels")
     page.locator("#langToggle").click()
     english = [direct.nth(i).inner_text() for i in range(2)]
-    check(english == ["Today's free food", "Choose a dish"], ("English primary labels", english,
+    check(english == ["Today's free food", "Magazine"], ("English primary labels", english,
           page.evaluate("document.documentElement.lang")))
     page.locator("#langToggle").click()
     nav = page.locator(".nav-mega-trigger").first
@@ -292,6 +294,110 @@ def magazine_tools(page):
     check("지난 호" in page.locator(".mg-masthead-issue").inner_text(), "past edition is labelled")
     page.unroute("**/data/magazine/index.json")
     page.unroute("**/data/magazine/2026-01-02.json")
+    return count
+
+
+PNG_1PX = bytes.fromhex("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
+                        "0000000d49444154789c6360f8cfc0f01f0005000101d9b3c6600000000049454e44ae426082")
+
+
+def release_contracts(page):
+    """Product roles that changed: choose.html only redirects, food.html is lab-only (noindex,
+    nofollow, reachable from lab.html, linked from no public page in either language), and the
+    event that did not happen appears nowhere."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"release contracts: {detail}"
+        count += 1
+
+    choose = (ROOT / "choose.html").read_text(encoding="utf-8")
+    check('name="robots" content="noindex"' in choose and "mukbang.html#what" in choose
+          and 'id="eatApp"' not in choose and "food-picker.js" not in choose,
+          "choose.html is a noindex redirect with no picker of its own")
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/food.html", wait_until="networkidle")
+    robots = page.locator('meta[name="robots"]').get_attribute("content") or ""
+    check("noindex" in robots and "nofollow" in robots, ("food.html is noindex, nofollow", robots))
+    check(page.locator("#foodSourceLegend").count() == 1, "the Food Log implementation is kept")
+    page.goto("https://site-ui.invalid/lab.html", wait_until="networkidle")
+    check(page.locator('main a[href="food.html"]').count() == 1, "the lab links the Food Log (lab-only access)")
+    for lang in ("ko", "en"):
+        for name in GUARD_PAGES + ["choose.html"]:
+            page.goto("https://site-ui.invalid/index.html", wait_until="domcontentloaded")
+            page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
+            page.goto("https://site-ui.invalid/" + name, wait_until="networkidle")
+            links = page.locator('a[href="food.html"], a[href$="/food.html"]').count()
+            check(links == 0, (f"{name} {lang}: no public link to the Food Log", links))
+            if name == "event.html":
+                check("STROKE" not in page.content() and "Unbelievable" not in page.content(),
+                      (f"{name} {lang}: no trace of the event that did not happen"))
+    page.evaluate("localStorage.setItem('babdoduk-lang', 'ko')")
+    return count
+
+
+def magazine_sparse(page):
+    """Sparse editions look intentional: an empty lane says so quietly, a hero without its own
+    image is text-only (no BABDODUK placeholder), no featured story hides the hero, no filler."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"mukbang.html sparse: {detail}"
+        count += 1
+
+    lanes = ("tips", "trend", "health", "habit")
+
+    def story(n, lane):
+        return {"title": f"{lane} story {n}", "summary": "원문에서 가져온 짧은 발췌입니다.", "source": "Real Source",
+                "url": f"https://example.org/{lane}/{n}", "medium": "blog"}
+
+    featured_img = dict(story(0, "tips"), category="tips", image="https://img.example.invalid/f.png",
+                        imageSource="feed_media")
+    featured_text = dict(story(0, "tips"), category="tips")
+    fixtures = [
+        ("four lanes", featured_img, {lane: [story(1, lane)] for lane in lanes}),
+        ("two lanes", featured_img, {"tips": [story(1, "tips"), story(2, "tips")], "trend": [story(1, "trend")],
+                                     "health": [], "habit": []}),
+        ("one lane empty", featured_text, {"tips": [story(1, "tips")], "trend": [story(1, "trend")],
+                                           "health": [story(1, "health")], "habit": []}),
+        ("all empty", None, {lane: [] for lane in lanes}),
+    ]
+    page.route("https://img.example.invalid/**", lambda route: route.fulfill(body=PNG_1PX, content_type="image/png"))
+    page.route("**/data/magazine/index.json", lambda route: route.fulfill(
+        json={"latest": "2026-01-03", "dates": ["2026-01-03"]}))
+    for label, featured, items in fixtures:
+        edition = {"date": "2026-01-03", "schedule": "Daily 10:00 KST", "featured": featured,
+                   "lanes": {lane: {"lead": lane, "items": items[lane]} for lane in lanes}}
+        def serve(payload):
+            return lambda route: route.fulfill(json=payload)   # Playwright passes (route, request)
+        page.route("**/data/magazine/2026-01-03.json", serve(edition))
+        for width, height in ((390, 844), (1440, 900)):
+            page.set_viewport_size({"width": width, "height": height})
+            page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
+            where = f"{label} {width}"
+            empty = sum(1 for lane in lanes if not items[lane])
+            check(page.locator(".mg-lane-empty").count() == empty, (where, "one quiet note per empty lane"))
+            check(page.locator("a.mg-story").count() == sum(len(v) for v in items.values()), (where, "no filler stories"))
+            main = page.inner_text("main")
+            check("밥도둑 데스크" not in main and "BABDODUK" not in page.locator("#featured").inner_text(),
+                  (where, "no desk filler and no placeholder word"))
+            hero_hidden = page.locator("#featured").is_hidden()
+            check(hero_hidden == (featured is None), (where, "the hero exists only for a real featured story"))
+            if featured is not None:
+                visual = page.locator("#mgHeroVisual")
+                if featured.get("image"):
+                    page.wait_for_function("document.getElementById('mgHeroVisual').classList.contains('has-photo')")
+                    check(visual.is_visible(), (where, "the story's own image is shown"))
+                else:
+                    check(visual.is_hidden() and "mg-hero--text" in (page.locator("#featured").get_attribute("class") or ""),
+                          (where, "no image: a quiet text-only hero"))
+            check(page.evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth"),
+                  (where, "no page-level horizontal overflow"))
+        page.unroute("**/data/magazine/2026-01-03.json")
+    page.unroute("**/data/magazine/index.json")
+    page.unroute("https://img.example.invalid/**")
     return count
 
 
@@ -440,11 +546,15 @@ def home_hero_shelf(page):
         check(levels[0] == 1 and all(b <= a + 1 for a, b in zip(levels, levels[1:])), (where, "heading order", levels))
         track = top["track"]
         check(track["overflow"] in ("auto", "scroll") and track["snap"].startswith("x"), (where, "native scroll snap", track))
-        check(track["scroll"] > track["client"], (where, "the shelf continues beyond the view", track))
-        peek = next(b["box"] for b in top["banners"] if b["box"]["right"] > track["box"]["right"] + 1)
-        check(peek["x"] < track["box"]["right"] - 24, (where, "the next banner visibly peeks", peek, track["box"]))
         if width >= 1024:
             check(top["banners"][0]["box"]["y"] < height, (where, "shelf starts inside the first screen", top["shelf"]))
+        if track["scroll"] <= track["client"] + 1:
+            # Everything fits (three banners on a wide screen): nothing to scroll, so no buttons.
+            check(not top["navShown"] and all(b["box"]["right"] <= track["box"]["right"] + 1 for b in top["banners"]),
+                  (where, "a shelf that fits shows every banner and no scroll buttons", track))
+            continue
+        peek = next(b["box"] for b in top["banners"] if b["box"]["right"] > track["box"]["right"] + 1)
+        check(peek["x"] < track["box"]["right"] - 24, (where, "the next banner visibly peeks", peek, track["box"]))
         if width >= 768:
             check(top["navShown"], (where, "desktop shelf buttons are shown"))
             prev, nxt = page.locator('[data-shelf-dir="-1"]'), page.locator('[data-shelf-dir="1"]')
@@ -541,7 +651,9 @@ def event_bands(page):
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
-    check(len(rows) == 3, ("three authored activities", rows))
+    check(len(rows) == 2, ("two authored activities", rows))
+    check("STROKE" not in page.content() and "언빌리버블" not in page.content(),
+          "an event that did not happen is not presented")
     for row in rows:
         check(row["band"] == expected(row["start"], row["end"]), ("band from dates", row))
         check(row["list"] == ("eventList" if row["band"] == "past" else "eventUpcoming"), ("past rows under 지난 활동", row))
@@ -617,7 +729,8 @@ def event_bands(page):
           "an upcoming row keeps an actionable link and unmarked instructions")
     check(page.locator("#eventEmpty").is_hidden() and page.locator("#eventUpcoming").is_visible(),
           "empty state hidden when something is scheduled")
-    check([row["num"] for row in rows if row["list"] == "eventList"] == ["01", "02"], "the record renumbers")
+    # 〈카빙〉 is authored as 02 and shows 01 under 지금; the one row left in the record is 01.
+    check([row["num"] for row in rows if row["list"] == "eventList"] == ["01"], "the record renumbers")
     page.unroute("**/event.html")
     return count
 
@@ -739,7 +852,7 @@ def structure_and_failures(page):
     check(page.locator("#homeMenuStatus").get_attribute("data-state") == "error"
           and page.locator("#homeFreeStatus").get_attribute("data-state") == "error", "home names unavailable data")
     check(page.locator(".home-hero h1").is_visible() and page.locator(".home-actions .btn-primary").is_visible()
-          and page.locator("#homeShelf > li[data-banner]").count() == 4, "hero and shelf survive missing data")
+          and page.locator("#homeShelf > li[data-banner]").count() == len(SHELF), "hero and shelf survive missing data")
     check(page.locator("#homeFeature").is_hidden() and page.locator(".home-desks a").count() == 4
           and page.locator(".home-read .explore-card").is_visible() and page.locator(".home-news-row").count() == 2
           and page.locator(".home-news-story").is_visible(),
@@ -755,7 +868,10 @@ def structure_and_failures(page):
     check(page.locator("#mgEditionStatus").is_visible(), "magazine says the edition did not load")
     text = page.locator("main").inner_text()
     check("min read" not in text and "ISSUE 01" not in text and "2026.09.12" not in text,
-          "fallback desk notes carry no invented edition metadata")
+          "no invented edition metadata")
+    check("밥도둑 데스크" not in text and not page.locator("a.mg-story, .mg-story--desk").count()
+          and page.locator(".mg-lane-empty").count() == 4 and page.locator("#featured").is_hidden(),
+          "a failed edition shows no stand-in stories: four quiet lane notes and no hero")
     page.unroute("**/data/**")
     return count
 
@@ -766,10 +882,10 @@ def structure_and_failures(page):
 # choose.html is a redirect to mukbang.html#what and food.html is lab-only, so neither is a guarded public page.
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
-NAV_DIRECT = ["ggongbab.html", "mukbang.html#what"]
-NAV_MORE = ["mukbang.html", "event.html", "history.html",
+NAV_DIRECT = ["ggongbab.html", "mukbang.html"]
+NAV_MORE = ["event.html", "history.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
-FOOTER_LINKS = ["ggongbab.html", "mukbang.html#what", "mukbang.html", "event.html", "history.html"]
+FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
   const pick = (el, props) => { const s = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, s.getPropertyValue(p)])); };
   const root = document.documentElement, body = document.body, footer = document.querySelector('.site-footer');
@@ -1035,6 +1151,8 @@ def run_checks(screenshots=False):
                 report["results"][f"{name}:{size[0]}x{size[1]}"] = result
                 report["checks"] += result["checks"]
         report["checks"] += magazine_tools(page)
+        report["checks"] += magazine_sparse(page)
+        report["checks"] += release_contracts(page)
         report["checks"] += home_summary(page)
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)

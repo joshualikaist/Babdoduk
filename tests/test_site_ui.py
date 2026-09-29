@@ -8,6 +8,9 @@ def test_public_page_inventory_and_shared_styles():
                           "ggongbab.html", "lab-ggongbab.html", "event.html", "lab.html"}
     for name in pages:
         html = (ROOT / name).read_text(encoding="utf-8")
+        if name == "choose.html":      # compatibility redirect to the one picker; no page of its own
+            assert 'url=mukbang.html#what' in html and 'content="noindex"' in html and "<main" not in html
+            continue
         assert 'href="css/site.css"' in html
         # Shared chrome is owned by css/site.css; page copies drift silently.
         inline = "".join(part.split("</style>")[0] for part in html.split("<style>")[1:])

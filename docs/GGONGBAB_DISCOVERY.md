@@ -195,6 +195,13 @@ is an installer, doctor and router rather than a data API: agents call the upstr
   127.0.0.1:19825 driving a logged-in Chrome.
 * Naver Blog: no channel.
 
+**Status, 2026-09-29 (magazine):**
+* The magazine's own adapters live in `scripts/discovery/` and follow these routes as Babdoduk code:
+  RSS/Atom (active), YouTube channel feeds (active from the operator PC, DEGRADED on GitHub runners),
+  YouTube search via Data API or yt-dlp (implemented, disabled), and Exa search with Jina Reader for
+  public pages (implemented, disabled). Instagram through OpenCLI is planned only.
+* Agent Reach itself is **not** installed, imported or integrated. See `docs/MAGAZINE_DISCOVERY.md`.
+
 **Plan (Phase 4, local sidecar, no publication):**
 * Babdoduk adapters in `scripts/discovery/` call pinned tools directly.
 * Agent Reach, pinned to that commit in an isolated environment, is only an optional local doctor.
