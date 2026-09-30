@@ -5,7 +5,7 @@ Authored configuration lives in `scripts/discovery/sources.json`, versioned with
 name, type, url or channel, enabled, trust tier, categories, discovery method, queries, notes.
 Nothing else lists sources. Runtime health lives in `research/magazine/source-health.json`
 (lastAttemptAt, lastSuccessAt, lastFailureAt, failureCount, lastFailureCode, lastItemCount,
-newestItemAt, status); `view()` merges both for reports.
+newestItemAt, status).
 
 Trust tiers: A authoritative / original publisher, B established creator / food publication /
 official brand, C discovery or community source (never published on its own as factual advice).
@@ -52,10 +52,6 @@ def save_health(path: Path, health: dict) -> None:
     atomic_write(path, dump_json({"version": 1, "sources": health}))
 
 
-def enabled(sources: list[dict]) -> list[dict]:
-    return [s for s in sources if s.get("enabled")]
-
-
 def record(entry: dict, *, ok: bool, now, code: Optional[str] = None, count: int = 0) -> dict:
     entry["lastAttemptAt"] = iso(now)
     entry["lastItemCount"] = count
@@ -79,11 +75,6 @@ def status(source: dict, entry: dict, now) -> str:
     if entry.get("lastSuccessAt") and (newest is None or now - newest > timedelta(days=STALE_DAYS)):
         return "STALE"
     return "ACTIVE" if entry.get("lastSuccessAt") else "DEGRADED"
-
-
-def view(sources: list[dict], health: dict) -> list[dict]:
-    """Registry rows with their health, for reports and validation."""
-    return [dict(s, **(health.get(s["id"]) or {})) for s in sources]
 
 
 def validate(sources: list[dict]) -> list[str]:
