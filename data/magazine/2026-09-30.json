@@ -1,6 +1,6 @@
 {
   "date": "2026-09-30",
-  "generatedAt": "2026-09-30T15:08:01+09:00",
+  "generatedAt": "2026-10-01T00:11:15+09:00",
   "schedule": "Daily 10:00 KST",
   "rules": "lanes-v1",
   "featured": {
@@ -41,6 +41,22 @@
           "trendEvidence": [
             "sales_data",
             "corroborated"
+          ]
+        },
+        {
+          "title": "\"이게 화장품이야?\"…찐만두 쿠션·삼각김밥 파우치 등장",
+          "summary": "편의점 CU가 뷰티 브랜드 '페리페라'와 손잡고 자체 캐릭터를 활용한 뷰티 상품을 선보인다. 편의점이 보유한 브랜드 자산과 캐릭터 IP(지식재산권)를 뷰티 브랜드에 제공해 제품화하는 것은 업계 최초다.BGF리테일이…",
+          "source": "한국경제",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_d2dcc19c758397c2",
+          "url": "https://www.hankyung.com/article/202609288147g",
+          "medium": "news",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "publishedAt": "2026-09-28T08:41:21+09:00",
+          "image": "https://img.hankyung.com/photo/202609/01.45851394.1.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "sales_data"
           ]
         },
         {
@@ -96,37 +112,19 @@
           ]
         },
         {
-          "title": "한솥도시락, ‘돼지고기 단백질 시대’ 열다…건강 트렌드 맞춘 신메뉴 인기",
-          "summary": "국내 소비자들의 건강에 대한 관심이 높아지며 단백질 섭취가 식생활의 핵심 키워드로 부상하고 있다. 식품산업통계정보에 따르면 국내 단백질 식품 시장은 2018년 813억 원 규모에서 2023년 4,000억 원…",
-          "source": "뉴스탭",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_bda655ea2f835ab9",
-          "url": "https://www.newstap.co.kr/news/articleView.html?idxno=315410",
+          "title": "\"식품안전 정책·기준 마련 위한 위원회 새 구성\"",
+          "summary": "식품안전 분야의 주요 정책과 기준·규격 등에 대한 전문적인 논의와 자문을 위한 식품위생심의위원회가 새롭게 출범했다.",
+          "source": "뉴시스 건강",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_c58a42bcf45f4c99",
+          "url": "https://www.newsis.com/view/NISX20260930_0003809262",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-24T09:00:00+09:00",
-          "image": "https://cdn.newstap.co.kr/news/photo/202510/315410_418529_3348.jpg",
-          "imageSource": "source_page_og",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "publishedAt": "2026-09-30T16:35:03+09:00",
+          "image": "https://image.newsis.com/2026/09/30/NISI20260930_0002252272_web.jpg?rnd=20260930160956",
+          "imageSource": "feed_html",
           "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
-          ]
-        },
-        {
-          "title": "3천원대 마요부터 단백질 강화 메뉴까지…도시락 시장, 초개인화 경쟁 본격화",
-          "summary": "연초부터 이어진 고물가 기조 속에서 소비 시장의 결이 달라지고 있다. 지출 부담이 커질수록 소비자는 획일적인 상품 대신 자신의 생활 방식과 가치관에 맞는 선택을 강화하는 흐름을 보이고 있다.",
-          "source": "뉴스탭",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_8aad02e9a5c00dbc",
-          "url": "https://www.newstap.co.kr/news/articleView.html?idxno=322706",
-          "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-02T09:00:00+09:00",
-          "image": "https://cdn.newstap.co.kr/news/photo/202602/322706_427727_2341.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
+            "corroborated"
           ]
         }
       ]
@@ -299,6 +297,19 @@
           "imageSource": "source_page_og"
         },
         {
+          "title": "체중 127㎏까지 늘었던 40대女 52kg 감량…출근 전 매일 실천한 습관은",
+          "summary": "하루에 약 6000kcal를 먹을 때도 있었다는 40대 여성이 식단 조절과 하루 1만 5000보 걷기로 약 52kg을 감량했다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6408d0f77374f419",
+          "url": "https://kormedi.com/2874758/",
+          "medium": "news",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "publishedAt": "2026-09-30T23:03:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/09/unnamed-file-56-edited.png",
+          "imageSource": "feed_media"
+        },
+        {
           "title": "“허, 그 친구 대장암 4기인데”… 뭘 먹었길래?",
           "summary": "고기 구이를 먹을 때 상추, 깻잎, 마늘 등을 곁들이면 유해 물질 배출에 도움이 된다. 사진=게티이미지뱅크 대장암 환자가 크게 늘고 있다.",
           "source": "코메디닷컴",
@@ -325,6 +336,19 @@
           "imageSource": "source_page_og"
         },
         {
+          "title": "「한국인은 왜 이렇게 먹을까?」 식사 방식으로 본 한국 음식문화사",
+          "summary": "한국인의 밥상은 서양은 물론이고 이웃 나라인 중국이나 일본과도 확연히 다르다. 음식과 식사 도구도 다르고, 식사 예절도 다르다.",
+          "source": "webzine.nfm.go.kr",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_f19f1e5ea949f376",
+          "url": "https://webzine.nfm.go.kr/2025/08/27/%EC%8B%9D%EC%82%AC-%EB%B0%A9%EC%8B%9D%EC%9C%BC%EB%A1%9C-%EB%B3%B8-%ED%95%9C%EA%B5%AD-%EC%9D%8C%EC%8B%9D%EB%AC%B8%ED%99%94%EC%82%AC/",
+          "medium": "research",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "publishedAt": "2025-08-27T09:00:00+09:00",
+          "image": "https://webzine.nfm.go.kr/wp-content/uploads/2026/01/cropped-cropped-nfm_2026_black.png",
+          "imageSource": "source_page_og"
+        },
+        {
           "title": "\"밥상도 '저당 시대'\"…고추장·간장까지 바꿨다, 저당 소스 시장 4배 급성장 [건강잇슈]",
           "summary": "건강을 위해 당 섭취를 줄이려는 소비자들이 음료와 간식을 넘어 조리용 소스와 장류까지 선택을 바꾸고 있다. 기존 식습관을 크게 바꾸지 않고도 자주 사용하는 양념을 저당 제품으로 교체하는 소비가 늘면서 저당 소스…",
           "source": "파이낸셜뉴스",
@@ -336,30 +360,6 @@
           "publishedAt": "2026-07-24T13:40:04+09:00",
           "image": "https://image.fnnews.com/resource/media/image/2026/07/23/202607231434061647_e.jpg",
           "imageSource": "source_page_og"
-        },
-        {
-          "title": "고추장·소스까지 … 뉴노멀 된 '저당식품'",
-          "summary": "건강을 생각하는 소비자들의 증가로 식품업계의 저당 경쟁이 가열되고 있으며, 저당 제품이 간장, 소스 등 일상 식품으로도 확산되고 있다.",
-          "source": "매일경제",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_5c83dd532ff90780",
-          "url": "https://www.mk.co.kr/news/it/12135826",
-          "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-08-25T09:00:00+09:00",
-          "image": "https://pimg.mk.co.kr/news/cms/202608/26/20260826_01110305000003_M00.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "영양소 적정 섭취기준 개정",
-          "summary": "보건복지부(장관 정은경)은 국민의 건강증진에 필요한 영양소 41종*의 적정 섭취 기준을 담은 ‘2025 한국인 영양소 섭취기준’(이하 ‘영양소 섭취기준’)을 개정하여 배포하였다.",
-          "source": "mohw.go.kr",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_af5db9deb6e61113",
-          "url": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1488441&mid=a10503000000",
-          "medium": "research",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2025-12-31T12:00:00+09:00"
         }
       ]
     }
