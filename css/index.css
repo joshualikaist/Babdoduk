@@ -81,16 +81,6 @@
   box-decoration-break: clone;
 }
 
-.home-lead {
-  margin: var(--space-4) 0 0;
-  max-width: 30rem;
-  font-size: clamp(1rem, 1.4vw, 1.0625rem);
-  line-height: 1.65;
-  color: #4a453e;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-}
-
 .home-actions {
   display: flex;
   flex-wrap: wrap;
@@ -329,7 +319,7 @@
 }
 
 /* Shelf: native horizontal scroll, never automatic. Level 2 (오늘의 꽁밥,
-   메뉴 고르기) is wider and heavier than level 3 (map, food log). */
+   메뉴 고르기) is wider and heavier than level 3 (map). */
 
 .home-shelf-nav {
   display: flex;
@@ -455,13 +445,6 @@
   line-height: 1.24;
 }
 
-.home-banner--magazine .home-banner-title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-}
-
 .home-banner-copy {
   position: relative;
   margin: 0;
@@ -562,22 +545,19 @@
   border-radius: 14px;
 }
 
-/* Map and food log: an illustrated strip across the top. */
-.home-banner--map .home-banner-link,
-.home-banner--log .home-banner-link {
+/* Map: an illustrated strip across the top. */
+.home-banner--map .home-banner-link {
   padding-top: 92px;
 }
 
-.home-banner--map .home-banner-media,
-.home-banner--log .home-banner-media {
+.home-banner--map .home-banner-media {
   top: 0;
   left: 0;
   right: 0;
   height: 76px;
 }
 
-.home-banner-media--map svg,
-.home-banner-media--log svg {
+.home-banner-media--map svg {
   width: 100%;
   height: 100%;
   display: block;
@@ -778,15 +758,6 @@
   color: var(--color-ink-muted);
 }
 
-.home-news-body {
-  margin: var(--space-3) 0 0;
-  max-width: 30rem;
-  font-size: 15px;
-  line-height: 1.65;
-  color: #4a453e;
-  word-break: keep-all;
-}
-
 .home-news-story {
   display: inline-flex;
   align-items: center;
@@ -842,15 +813,6 @@
 
 .home-news-block--record .home-news-kicker {
   color: var(--color-ink-muted);
-}
-
-.home-news-block-note {
-  margin: 4px 0 0;
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--color-ink-muted);
-  word-break: keep-all;
-  overflow-wrap: anywhere;
 }
 
 .home-news-row {

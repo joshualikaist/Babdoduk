@@ -350,7 +350,6 @@ body.mg-body .site-footer {
   gap: 28px 32px;
   align-items: center;
   padding: 28px 0 8px;
-  min-width: 0;
 }
 
 .mg-hero-label {
@@ -483,10 +482,6 @@ body.mg-body .site-footer {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0 28px;
-}
-
-.mg-lane {
-  min-width: 0;
 }
 
 .mg-lane-kicker {
