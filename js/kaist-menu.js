@@ -333,7 +333,7 @@
       state.week.forEach(function (date, idx) {
         var on = date === state.selected;
         var isTodayDate = isToday(date, state.today);
-        var label = dayLabel(date, idx);
+        var label = dayLabel(date);
         var aria = dateHeading(date) + (isTodayDate ? ' · ' + t('km.today', '오늘') : '');
         html += '<button type="button" class="km-day' + (isTodayDate ? ' is-today' : '') + '" data-km-date="' + esc(date) +
           '" aria-pressed="' + on + '"' + (isTodayDate ? ' aria-current="date"' : '') + ' aria-label="' + esc(aria) + '">' +
@@ -592,13 +592,8 @@
     load();
     return {
       mount: mount,
-      reload: load,
       snapshot: snapshot,
-      selectDate: selectDate,
-      setFreeCountText: function (text) { options.freeCountText = text; },
-      setMeal: function (meal) {
-        if (MEALS.indexOf(meal) >= 0) { state.meal = meal; writeMeal(meal); render(); emit(); }
-      }
+      setFreeCountText: function (text) { options.freeCountText = text; }
     };
   }
 

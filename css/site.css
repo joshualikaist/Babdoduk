@@ -120,10 +120,6 @@ body {
   padding: 64px 0 0;
 }
 
-body.welcome-popup-open {
-  overflow: hidden;
-}
-
 body::before {
   content: '';
   position: fixed;
@@ -663,108 +659,6 @@ body::after {
   .footer-apple-col--right { order: 3; }
 }
 
-#welcomePopup.popup-overlay {
-  flex: none;
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  min-height: 100dvh;
-  margin: 0;
-  pointer-events: none;
-}
-
-#welcomePopup.popup-overlay.is-open {
-  pointer-events: auto;
-}
-
-.popup-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10050;
-  background: rgba(20, 20, 20, 0.18);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px max(16px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-bottom));
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 200ms ease, visibility 200ms ease;
-}
-
-.popup-overlay.is-open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.popup-box {
-  width: min(420px, 100%);
-  padding: 28px 24px 22px;
-  background: rgba(255, 255, 255, 0.78);
-  -webkit-backdrop-filter: blur(20px) saturate(115%);
-  backdrop-filter: blur(20px) saturate(115%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 22px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.14);
-  color: var(--text);
-  transform: none;
-}
-
-.popup-overlay.is-open .popup-box {
-  transform: none;
-}
-
-.popup-box h2 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  margin-bottom: 10px;
-  color: var(--text);
-}
-
-.popup-box p {
-  font-size: 0.92rem;
-  line-height: 1.65;
-  color: var(--text-secondary);
-}
-
-.popup-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 22px;
-}
-
-.popup-btn {
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 12px;
-  border: none;
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background var(--ease), border-color var(--ease), opacity var(--ease);
-}
-
-.popup-btn.primary {
-  background: #1b1b1a;
-  color: #fff;
-  box-shadow: none;
-}
-
-.popup-btn.secondary {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border-strong);
-}
-
-.popup-btn:hover {
-  transform: none;
-  opacity: 0.92;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -784,8 +678,7 @@ body::after {
   transform: translateY(-1px);
 }
 
-.btn:focus-visible,
-.popup-btn:focus-visible {
+.btn:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
@@ -808,11 +701,6 @@ body::after {
   border-color: var(--border-strong);
 }
 
-.btn-accent {
-  background: var(--color-accent);
-  color: #fff;
-}
-
 .page-fill {
   position: relative;
   z-index: 1;
@@ -829,8 +717,6 @@ body::after {
   .scroll-progress-bar { animation: none; }
   .explore-card,
   .btn,
-  .popup-overlay,
-  .popup-box,
   .nav-mega-panel {
     transition: none !important;
   }

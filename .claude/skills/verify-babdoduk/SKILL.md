@@ -1,6 +1,6 @@
 ---
 name: verify-babdoduk
-description: Run and interpret Babdoduk's four verification gates (pytest, content validator, site UI checker, food-hub UI checker). Use the relevant subset while iterating and all four before a handoff or release that changes frontend or product behavior.
+description: Run and interpret Babdoduk's five verification gates (pytest, content validator, shared chrome sync check, site UI checker, food-hub UI checker). Use the relevant subset while iterating and all five before a handoff or release that changes frontend or product behavior.
 ---
 
 # Verify Babdoduk
@@ -17,13 +17,13 @@ Run from the repository root, one gate at a time, because parallel browser runs 
 
 `pytest.ini` sets `addopts = -q`. Add `-o addopts=""` to get the "N passed" line. The browser checks use installed Chrome through Playwright. They never call live accounts or databases.
 
-The four gates block web fonts to stay deterministic. For a change that affects layout or copy, also run the separate real-font smoke, `python scripts/check_real_fonts.py`. It needs the network for Google Fonts and reports PASS, FAIL (exit 1) or SKIP (exit 3, font not loaded, which proves nothing). Report a SKIP as a SKIP, never as a pass.
+The browser gates block web fonts to stay deterministic. For a change that affects layout or copy, also run the separate real-font smoke, `python scripts/check_real_fonts.py`. It needs the network for Google Fonts and reports PASS, FAIL (exit 1) or SKIP (exit 3, font not loaded, which proves nothing). Report a SKIP as a SKIP, never as a pass.
 
 ## Which gates
 
 `AGENTS.md` ("Verification by change type") decides which gates a change needs:
 - **While iterating:** run the test file you touched (`python -m pytest tests/<file> -q`) and the checker for the page you changed.
-- **Before a handoff or release that changes frontend or product behavior:** run all four.
+- **Before a handoff or release that changes frontend or product behavior:** run all five.
 - **Documentation only:** check links and facts against the code; no browser gates.
 
 ## Failures are evidence

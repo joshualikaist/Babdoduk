@@ -134,6 +134,3 @@ class CandidateStore:
                 row["selected"] = True
                 row["selectedAt"] = row.get("selectedAt") or iso(now)
                 row["selectedFor"] = row.get("selectedFor") or edition
-
-    def get(self, cid: str) -> Optional[dict]:
-        return self.rows.get(cid)

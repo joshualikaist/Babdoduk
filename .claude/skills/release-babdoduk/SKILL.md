@@ -49,7 +49,7 @@ git diff --name-only BASE_MAIN HEAD -- scripts/dooray_web_agent.py scripts/porta
 These paths are protected unless the task explicitly authorizes one of them, and a UI release adds no browser backend. If any command prints something, STOP and do not push.
 
 ## 4. Gates
-On a clean release HEAD, run all four gates from `/verify-babdoduk` one at a time, plus the real-font smoke for layout or copy changes. Keep the first-run results.
+On a clean release HEAD, run all five gates from `/verify-babdoduk` one at a time, plus the real-font smoke for layout or copy changes. Keep the first-run results.
 
 ## 5. Push the release branch
 - `git push -u origin release/<name>`. Push normally; a non-fast-forward rejection means STOP.

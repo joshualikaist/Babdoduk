@@ -8,7 +8,6 @@ import subprocess
 from datetime import timedelta
 from pathlib import Path
 
-import pytest
 
 from discovery import adapters, common, editorial, evaluate, evidence, hosts, pipeline, process, select, sidecar, store
 from discovery.adapters import exa_mcp, inbox, web

@@ -1,4 +1,4 @@
-"""Contracts for the lab polish: midnight menu choice, quiet home, event list, history."""
+"""Contracts for the lab polish: midnight menu choice, quiet home, event list, history, link preview."""
 from pathlib import Path
 import re
 
@@ -26,6 +26,41 @@ def test_home_and_event_drop_the_noisy_chrome():
     empty = event.split('id="eventEmpty"')[1].split("</p>")[0]
     assert "instagram.com" not in empty
     assert 'class="event-instagram"' in event and "@babdodukms" in event
+
+
+LOOPY = "https://babdoduk.vercel.app/images/kakao-loopy.jpg"
+
+
+def head_meta(html: str) -> dict:
+    head = html.split("</head>", 1)[0]
+    return dict(re.findall(r'<meta property="(og:[\w:]+)" content="([^"]*)"', head))
+
+
+def jpeg_size(data: bytes) -> tuple[int, int]:
+    assert data[:2] == b"\xff\xd8", "not a JPEG"
+    i = 2
+    while i < len(data):
+        marker, length = data[i + 1], int.from_bytes(data[i + 2:i + 4], "big")
+        if marker in (0xC0, 0xC1, 0xC2):
+            return int.from_bytes(data[i + 7:i + 9], "big"), int.from_bytes(data[i + 5:i + 7], "big")
+        i += 2 + length
+    raise AssertionError("no frame header")
+
+
+def test_home_link_preview_is_the_loopy_card():
+    # Kakao once showed the first food photo (kimchi-jjigae) because the page had no preview image.
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    meta = head_meta(html)
+    assert meta["og:title"] == "밥도둑 Babdoduk"
+    assert meta["og:description"] == "KAIST 꽁밥 일정"
+    assert meta["og:image"] == LOOPY
+    assert f'<link rel="image_src" href="{LOOPY}" />' in html
+    width, height = jpeg_size((ROOT / "images/kakao-loopy.jpg").read_bytes())
+    assert (meta["og:image:width"], meta["og:image:height"]) == (str(width), str(height))
+    body = html.split("<body", 1)[1]
+    assert re.search(r'<img src="([^"]+)"', body).group(1) == "images/kakao-loopy.jpg"  # first image a scraper sees
+    for page in ("ggongbab.html", "mukbang.html", "event.html", "history.html"):
+        assert head_meta((ROOT / page).read_text(encoding="utf-8"))["og:image"] == LOOPY, page
 
 
 def test_footer_contact_uses_the_copyright_color():

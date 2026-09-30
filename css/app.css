@@ -91,16 +91,6 @@
   color: var(--text) !important;
 }
 
-.ggongbab-map-wrap {
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-sm) !important;
-  border: 1px solid var(--border) !important;
-}
-
-.ggongbab-tabs-col {
-  top: calc(var(--nav-top) + env(safe-area-inset-top) + var(--nav-h) + 12px) !important;
-}
-
 .lab-panel h2,
 .lab-note {
   color: var(--text) !important;
@@ -119,8 +109,7 @@
   box-shadow: 0 0 0 2px var(--bg) !important;
 }
 
-.lab-title,
-.history-title {
+.lab-title {
   letter-spacing: -0.035em;
 }
 

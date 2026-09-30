@@ -29,8 +29,8 @@
   var ARCHIVE_PREVIEW = 5;
   var state = {
     activeSection: 'free',
-    free: { status: 'loading', data: null, error: '' },
-    menu: { status: 'loading', data: null, error: '', meal: 'lunch' },
+    free: { status: 'loading', data: null },
+    menu: { status: 'loading' },
     archive: { status: 'loading', data: null, expanded: false },
     news: { status: 'loading', items: [] },
     when: 'all',
@@ -178,7 +178,7 @@
       .map(function (src) { return safeHref(src.url); }).filter(Boolean)[0] || '';
   }
   function cardHtml(ev, now, featured) {
-    var s = toKst(ev.startAt), e = toKst(ev.endAt);
+    var s = toKst(ev.startAt);
     var reg = ev.registration || {};
     var place = placeLabel(ev), map = mapLink(ev);
     var foodLabel = foodLabelOf(ev);
@@ -500,8 +500,6 @@
     var opts = {
       onChange: function (snap) {
         state.menu.status = snap.status;
-        state.menu.data = snap.data;
-        state.menu.error = snap.error || '';
         var metric = document.querySelector('.gg-counts');
         if (metric) metric.outerHTML = metricHtml(nowKst(), snap);
       },

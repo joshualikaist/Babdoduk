@@ -37,7 +37,6 @@ STRONG_CLAIMS = ("유행", "화제", "급증", "품절", "트렌드", "열풍", 
                  "인기 급상승", "돌풍", "신드롬", "완판", "역대급", "SNS를 달구", "sns를 달구", "viral", "trending",
                  "trend", "sold out", "craze", "all the rage")
 WEAK_CLAIMS = ("인기", "신상", "신제품", "popular", "new release")
-SALES_WORDS = ("판매", "매출", "주문", "거래액", "출고", "소비량", "sales", "orders")
 SALES_FIGURE = re.compile(r"(\d[\d,\.]*\s*(%|％|배|만\s*(개|봉|병|잔|건|명|팩|캔|세트)?|억\s*원|천\s*개|개|봉|병|잔|건)"
                           r"|\d+\s*위|1위|percent)", re.I)
 HABIT_WORDS = ("식습관", "식생활", "식사 습관", "식사 패턴", "먹는 습관", "끼니", "결식", "거르", "아침 식사", "아침밥", "혼밥",
@@ -65,7 +64,6 @@ FOOD_EN = ("recipe", "recipes", "food", "foods", "cook", "cooking", "kimchi", "r
            "chicken", "pork", "beef", "meat", "egg", "eggs", "tofu", "stew", "bread", "cake", "sauce", "kitchen",
            "bake", "baking", "dessert", "desserts", "diet", "diets", "eating", "nutrition", "dietary", "breakfast",
            "lunch", "dinner")
-FOOD_WORDS = FOOD_KO + FOOD_EN
 FOOD_EN_RE = re.compile(r"\b(" + "|".join(FOOD_EN) + r")\b", re.I)
 AUDIENCE = {
     "korea": ("한국", "국내", "k-푸드", "k푸드", "케이푸드", "korean", "korea", "kimchi", "김치"),
