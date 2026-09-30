@@ -571,6 +571,7 @@
 }
 
 .hc-ev-apply.btn {
+  gap: 4px;
   height: 36px;
   padding: 0 14px;
   font-size: 13px;
