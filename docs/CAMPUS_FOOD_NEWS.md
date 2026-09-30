@@ -1,4 +1,4 @@
-# Campus food news — lab only
+# Campus food news
 
 Owner decision, 2026-09-30: the KAIST food hub keeps its navigation and two tabs.
 The free-food tab shows actual free opportunities, **먹거리 소식 / Campus food

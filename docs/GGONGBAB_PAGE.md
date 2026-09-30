@@ -3,7 +3,7 @@
 2026-09-30 lab 확장: 무료 음식과 캠퍼스 먹거리 소식을 구분합니다. 소식은 별도 `news.json`으로 표시하며 무료 집계·레이더·지난 기록에 섞지 않습니다. [출처 검증과 운영](CAMPUS_FOOD_NEWS.md).
 
 **Production (`main`):** 공개 페이지(`ggongbab.html`)와 홈 요약은 검증된 정적 스냅숏
-`data/ggongbab/latest.json` 만 읽는다. 브라우저는 DB에 접속하지 않는다.
+`data/ggongbab/latest.json` 을 읽고, 먹거리 소식은 검증된 별도 `data/ggongbab/news.json`에서 읽는다. 브라우저는 DB에 접속하지 않는다.
 
 **Lab-only / not promoted to production in the current main baseline:** 공개 DB projection과
 브라우저 Realtime·정적 fallback, 그리고 Portal LIST 전용 Stage A poller(본문 수집·공개 행사 발행 없음)는
@@ -47,7 +47,7 @@ KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/ (�
 ```
 
 * **Supabase PostgreSQL 이 canonical DB** 다. Git 에 있는 JSON 은 공개 캐시(정적 export)일 뿐이다.
-* production(`main`)의 공개 페이지 normal 모드는 `data/ggongbab/latest.json` 만 fetch한다.
+* production(`main`)의 공개 페이지 normal 모드는 무료 행사와 먹거리 소식을 각각 `data/ggongbab/latest.json`, `data/ggongbab/news.json`에서 fetch한다.
   private/canonical DB에는 접근하지 않는다. (Lab-only: 공개 projection SELECT/Realtime과 정적 fallback)
 * 코드 위치
 
