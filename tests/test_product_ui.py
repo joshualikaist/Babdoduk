@@ -182,9 +182,9 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert 'href="mukbang.html#what"' in index           # the home call to action reaches the picker
 
 
-# Food Log is unreleased (lab only): no home banner.
-SHELF_ORDER = ["today", "pick", "map"]
-SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI"]
+# Food Log is unreleased (lab only): no home banner. Free food is the calendar above the shelf.
+SHELF_ORDER = ["pick", "map"]
+SHELF_HREFS = ["mukbang.html#what", "https://naver.me/5NeqUPzI"]
 
 
 def test_home_top_is_one_hero_and_a_manual_banner_shelf():

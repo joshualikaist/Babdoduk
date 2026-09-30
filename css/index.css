@@ -19,28 +19,40 @@
   padding-bottom: 32px;
 }
 
-/* ── Hero: one editorial anchor. The two food tasks, an atmosphere collage
-   (labelled: not today's menu) and the dated status strip. ── */
-.home-hero {
+/* ── Top: who we are, the free-food calendar, the cafeteria line, then the collage. On wide
+   screens a paper band sits behind the copy and the collage; the calendar has its own surface. ── */
+.home-top {
   --hero-paper: #eee3cf;
   --hero-ink-soft: #5a534a;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
   grid-template-areas:
-    "copy collage"
-    "today today";
-  gap: var(--space-6) var(--space-12);
+    "hero collage"
+    "cal cal"
+    "menu menu";
+  column-gap: var(--space-12);
   margin-top: var(--space-4);
-  padding: var(--space-8) 40px 20px;
+}
+
+.home-top::before {
+  content: "";
+  grid-column: 1 / -1;
+  grid-row: 1;
   border-radius: var(--radius-xl);
   background: var(--hero-paper);
   border: 1px solid rgba(30, 29, 26, 0.08);
 }
 
-.home-hero-copy {
-  grid-area: copy;
+.home-hero {
+  grid-area: hero;
+  position: relative;
   align-self: center;
+  min-width: 0;
+  padding: var(--space-8) 0 var(--space-8) 40px;
+}
+
+.home-hero-copy {
   min-width: 0;
 }
 
@@ -108,8 +120,9 @@
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-rows: repeat(10, minmax(0, 1fr));
-  height: 336px;
+  height: 300px;
   min-width: 0;
+  margin: var(--space-8) 40px var(--space-8) 0;
 }
 
 .home-photo {
@@ -154,63 +167,604 @@
   transform: rotate(-2deg);
 }
 
-/* Today strip: the date, then the two status blocks. */
-.home-today {
-  grid-area: today;
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "head menu free";
+/* ── 오늘의 꽁밥: one restrained surface. Answer line, month grid, the selected day and what
+   comes next. One accent (today, food markers, links); ink marks the chosen date. No shadows,
+   no inner cards, no cell borders. ── */
+.home-cal {
+  grid-area: cal;
   min-width: 0;
+  margin-top: var(--space-4);
+  padding: var(--space-6) 28px 18px;
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   border: 1px solid rgba(30, 29, 26, 0.1);
 }
 
-.home-today-head {
-  grid-area: head;
+.home-cal-head {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 4px;
-  min-width: 0;
-  padding: 14px 20px;
+  margin-bottom: var(--space-4);
 }
 
-.home-today-head h2 {
+.home-cal-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
   margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+
+.home-cal-date {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-cal-answer {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-cal[data-state="loading"] .home-cal-answer {
+  font-weight: 500;
+  color: var(--color-ink-muted);
+}
+
+.home-cal-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "month"
+    "day"
+    "next";
+  gap: var(--space-4);
+}
+
+.home-cal-month {
+  grid-area: month;
+  min-width: 0;
+}
+
+.home-cal-day {
+  grid-area: day;
+  min-width: 0;
+}
+
+.home-cal-next {
+  grid-area: next;
+  min-width: 0;
+}
+
+.home-cal-day[hidden],
+.home-cal-next[hidden] {
+  display: none;
+}
+
+/* Month header: the month on the left, then 오늘 (only away from this month) and the arrows. */
+.hc-month {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.hc-month-title {
+  margin: 0 auto 0 4px;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 
-#homeMenuStatus {
-  grid-area: menu;
+.hc-nav,
+.hc-today {
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-#homeFreeStatus {
-  grid-area: free;
+.hc-nav {
+  width: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.hc-nav svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.hc-nav[aria-disabled="true"] {
+  color: #c5c0b6;
+  cursor: default;
+}
+
+.hc-today {
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.hc-today[hidden] {
+  display: none;
+}
+
+.hc-nav:focus-visible,
+.hc-today:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* The grid: Monday first, seven even columns, 48px rows with the marker slot always reserved. */
+.hc-grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.hc-grid th {
+  padding: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+
+.hc-grid abbr {
+  text-decoration: none;
+}
+
+.hc-cell {
+  height: 48px;
+  padding: 0;
+  text-align: center;
+  vertical-align: top;
+  cursor: pointer;
+}
+
+.hc-cell:focus {
+  outline: none;
+}
+
+.hc-cell.is-off {
+  cursor: default;
+}
+
+.hc-num {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-top: 2px;
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+  transition: background-color 140ms cubic-bezier(0.22, 1, 0.36, 1), color 140ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 140ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hc-cell.is-other .hc-num {
+  font-weight: 400;
+  color: var(--color-ink-muted);
+}
+
+.hc-cell.is-off .hc-num {
+  font-weight: 400;
+  color: #c5c0b6;
+}
+
+.hc-cell.is-today .hc-num {
+  font-weight: 800;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.hc-cell[aria-selected="true"] .hc-num {
+  font-weight: 800;
+  color: var(--color-surface);
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+}
+
+.hc-cell.is-today[aria-selected="true"] .hc-num {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+@media (hover: hover) {
+  .hc-cell:not(.is-off):not([aria-selected="true"]):hover .hc-num,
+  .hc-nav:not([aria-disabled="true"]):hover,
+  .hc-today:hover {
+    background: rgba(30, 29, 26, 0.06);
+  }
+
+  .hc-ev-btn:hover .hc-ev-title,
+  .hc-next-row:hover .hc-next-name {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+.hc-cell:not(.is-off):not([aria-selected="true"]):active .hc-num {
+  background: rgba(30, 29, 26, 0.1);
+}
+
+.hc-cell:focus-visible .hc-num {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.hc-marks {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  height: 5px;
+  margin-top: 3px;
+}
+
+.hc-dot {
+  box-sizing: border-box;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+/* A past event: hollow and muted, so what is still ahead stays dominant. */
+.hc-dot.is-past {
+  background: transparent;
+  border: 1px solid var(--color-ink-muted);
+}
+
+/* The selected day: its events, each one tap from its details. */
+.hc-day-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hc-rel {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--color-accent);
+}
+
+.hc-empty {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.hc-events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hc-ev + .hc-ev {
+  border-top: 1px solid var(--color-divider);
+}
+
+.hc-ev-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 36px 12px 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hc-ev-title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.hc-ev-meta {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.hc-ev-time {
+  font-weight: 700;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.hc-ev-chev {
+  position: absolute;
+  top: 15px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-ink-muted);
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hc-ev-btn[aria-expanded="true"] .hc-ev-chev {
+  transform: rotate(180deg);
+}
+
+.hc-ev-btn:focus-visible,
+.hc-next-row:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.hc-ev.is-past .hc-ev-title,
+.hc-ev.is-past .hc-ev-time {
+  color: var(--color-ink-muted);
+}
+
+.hc-ev-detail {
+  padding: 0 0 14px;
+}
+
+.hc-ev-detail[hidden] {
+  display: none;
+}
+
+.hc-ev-line {
+  margin: 0 0 4px;
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.hc-ev-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 10px 0 0;
+}
+
+.hc-ev-apply.btn {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hc-ev-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.hc-ev-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.hc-ev-src {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
+/* 다가오는 꽁밥: later dates only, at most four rows, one tap to the day and its details. */
+.hc-next-title {
+  margin: 0 0 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-divider);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.hc-next-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hc-next-row {
+  display: grid;
+  grid-template-columns: 92px 44px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hc-next-date,
+.hc-next-time {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hc-next-date {
+  color: var(--color-ink-muted);
+}
+
+.hc-next-name {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-cal-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-top: var(--space-4);
+  padding-top: 14px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.home-cal-all {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.home-cal-all:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.home-cal-pub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.home-cal-pub:empty {
+  display: none;
+}
+
+/* Phones: in 다가오는 꽁밥 the date takes its own line, so a title keeps its width. */
+@media (max-width: 640px) {
+  .hc-next-row {
+    grid-template-columns: 44px minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  .hc-next-date {
+    grid-column: 1 / -1;
+  }
+
+  .hc-next-date:empty {
+    display: none;
+  }
+}
+
+/* Wide enough for the split: the day and what is next on the left, the month on the right. */
+@media (min-width: 768px) {
+  .home-cal-body {
+    grid-template-columns: minmax(0, 1fr) 364px;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "day month"
+      "next month";
+    align-items: start;
+    column-gap: 28px;
+    row-gap: var(--space-6);
+  }
+
+  .home-cal-month {
+    padding-left: 28px;
+    border-left: 1px solid var(--color-divider);
+  }
+}
+
+@media (forced-colors: active) {
+  .hc-cell.is-today .hc-num {
+    border-color: CanvasText;
+  }
+
+  .hc-cell[aria-selected="true"] .hc-num {
+    forced-color-adjust: none;
+    background: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+
+  .hc-dot {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .hc-dot.is-past {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}
+
+/* Cafeteria line: outside the calendar, one row on the page. */
+.home-menu-line {
+  grid-area: menu;
+  min-width: 0;
+  margin-top: var(--space-3);
 }
 
 .home-status {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
   min-width: 0;
-  padding: 14px 20px;
-  border-left: 1px solid var(--color-divider);
-  border-radius: 0;
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
   color: inherit;
   text-decoration: none;
 }
 
 .home-status-label {
-  flex: 0 0 40px;
-  width: 40px;
-  height: 40px;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--color-accent-wash);
   color: var(--color-accent);
   font-size: 13px;
@@ -225,13 +779,15 @@
 
 .home-status-body {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
   min-width: 0;
 }
 
 .home-status strong {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   line-height: 1.4;
   letter-spacing: -0.02em;
@@ -251,10 +807,15 @@
 }
 
 .home-status-cta {
-  margin-top: 2px;
+  margin-left: auto;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-accent);
+}
+
+.home-status:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .home-status:hover strong {
@@ -385,6 +946,16 @@
   flex-basis: var(--banner-primary);
 }
 
+@media (min-width: 641px) {
+  .home-banner {
+    flex: 1 1 0;
+  }
+
+  .home-banner--primary {
+    flex-grow: 1.45;
+  }
+}
+
 .home-banner-link {
   position: relative;
   display: flex;
@@ -405,13 +976,6 @@
 .home-banner-link:hover {
   transform: translateY(-2px);
   border-color: rgba(30, 29, 26, 0.24);
-}
-
-.home-banner-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
 }
 
 .home-banner-label {
@@ -483,51 +1047,6 @@
 
 .home-banner-link:hover .home-banner-media img {
   transform: scale(1.02);
-}
-
-/* 오늘의 꽁밥: the ink card, stamped with today's KST date. */
-.home-banner--today .home-banner-link {
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-  color: var(--color-surface);
-}
-
-.home-banner--today .home-banner-label,
-.home-banner--today .home-banner-copy {
-  color: rgba(255, 253, 248, 0.78);
-}
-
-.home-banner--today .home-banner-label b {
-  color: #f3a58f;
-}
-
-.home-banner--today .home-banner-cta {
-  color: #f7c9b8;
-}
-
-.home-banner-date {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  line-height: 1;
-  text-align: right;
-}
-
-.home-banner-date:empty {
-  display: none;
-}
-
-.home-banner-date-day {
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: -0.04em;
-}
-
-.home-banner-date-week {
-  margin-top: 5px;
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255, 253, 248, 0.72);
 }
 
 /* 메뉴 고르기: warm wash with a food crop on the right. */
@@ -1008,43 +1527,28 @@
 
 /* ── Responsive: one task-first column on phones ── */
 @media (max-width: 1100px) {
+  .home-top {
+    column-gap: var(--space-8);
+  }
+
   .home-hero {
-    gap: var(--space-6) var(--space-8);
-    padding: 28px 28px 18px;
+    padding: 28px 0 28px 28px;
   }
 
   .home-collage {
-    height: 320px;
+    height: 280px;
+    margin: 28px 28px 28px 0;
   }
 }
 
 @media (max-width: 960px) {
   .home-hero {
-    padding: 28px 24px 20px;
+    padding: 28px 0 28px 24px;
   }
 
   .home-collage {
-    height: 300px;
-  }
-
-  .home-today {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      "head head"
-      "menu free";
-  }
-
-  .home-today-head {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 2px 12px;
-    padding-bottom: 4px;
-  }
-
-  #homeMenuStatus {
-    border-left: 0;
+    height: 260px;
+    margin: 28px 24px 28px 0;
   }
 
   .home-shelf-track {
@@ -1068,17 +1572,32 @@
 }
 
 /* One task-first column once the copy and the collage no longer fit side by side. */
+/* Phones and narrow tablets: copy on its own paper, then the calendar, the cafeteria line and,
+   last, the decorative collage. The schedule is never behind the pictures. */
 @media (max-width: 720px) {
-  .home-hero {
+  .home-top {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "copy"
-      "collage"
-      "today";
+      "hero"
+      "cal"
+      "menu"
+      "collage";
+  }
+
+  .home-top::before {
+    display: none;
+  }
+
+  .home-hero {
+    padding: 28px 24px;
+    border-radius: var(--radius-xl);
+    background: var(--hero-paper);
+    border: 1px solid rgba(30, 29, 26, 0.08);
   }
 
   .home-collage {
     height: 250px;
+    margin: var(--space-6) 0 0;
   }
 }
 
@@ -1095,10 +1614,20 @@
   }
 
   .home-hero {
-    gap: var(--space-6);
-    margin-top: var(--space-4);
-    padding: 24px 18px 18px;
+    padding: 22px 18px 20px;
     border-radius: var(--radius-lg);
+  }
+
+  .home-cal {
+    margin-top: var(--space-3);
+    padding: 18px 12px 12px;
+  }
+
+  .home-cal-head,
+  .home-cal-day,
+  .home-cal-next,
+  .home-cal-foot {
+    padding-inline: 4px;
   }
 
   .home-title {
@@ -1106,9 +1635,14 @@
   }
 
   /* Side by side when both labels fit (390px), stacked on narrower phones. */
+  .home-actions {
+    margin-top: var(--space-4);
+  }
+
   .home-actions .btn {
     flex: 1 1 auto;
-    padding: 12px 14px;
+    min-height: 48px;
+    padding: 10px 14px;
   }
 
   .home-collage {
@@ -1139,24 +1673,6 @@
     grid-column: 7 / 13;
     grid-row: 6 / 11;
     transform: rotate(-1.5deg);
-  }
-
-  .home-today {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "head"
-      "menu"
-      "free";
-  }
-
-  .home-today-head {
-    padding: 14px 16px 2px;
-  }
-
-  .home-status {
-    padding: 14px 16px;
-    border-left: 0;
-    border-top: 1px solid var(--color-divider);
   }
 
   /* Edge-to-edge shelf so the next card visibly peeks past the screen edge. */
@@ -1208,7 +1724,11 @@
   .home-banner-link,
   .home-banner-media img,
   .home-shelf-btn,
-  .home-news-arrow {
+  .home-news-arrow,
+  .hc-num,
+  .hc-nav,
+  .hc-today,
+  .hc-ev-chev {
     transition: none;
   }
 
