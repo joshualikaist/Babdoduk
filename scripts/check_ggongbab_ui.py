@@ -45,6 +45,14 @@ FIXTURE_CLOCK_SCRIPT = f"""(() => {{
 # clock and the synthetic event both derive from it, so the host clock never
 # decides which calendar day the event falls on.
 RADAR_NOW = datetime.fromisoformat(FIXTURE_NOW)
+# UI checks must use the static snapshot. A configured public feed file must not
+# change what these pages count.
+EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG = {};"
+
+
+def neutralize_public_config(context):
+    context.route("**/js/ggongbab-public-config.js", lambda route: route.fulfill(
+        content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG))
 
 
 def one_today_payload(now=RADAR_NOW):
