@@ -1,41 +1,8 @@
 {
-  "generatedAt": "2026-09-29T22:18:03+09:00",
+  "generatedAt": "2026-09-30T17:25:50+09:00",
   "timezone": "Asia/Seoul",
-  "count": 3,
+  "count": 2,
   "events": [
-    {
-      "id": "6b4d7b25-954b-45e6-910b-749116cc9611",
-      "title": "학사과정생 간담회",
-      "summary": "교무처가 수업 및 학사제도에 대한 학사과정생의 의견을 듣기 위해 개최하는 간담회입니다. 사전 등록한 참석자에게 간단한 점심식사가 제공됩니다.",
-      "startAt": "2026-09-30T12:00:00+09:00",
-      "endAt": "2026-09-30T13:00:00+09:00",
-      "dateText": "2026.09.30.(수)",
-      "timeText": "오후 12시~1시",
-      "location": {
-        "name": "창의학습관(E11), 1층 102호",
-        "building": "창의학습관(E11)",
-        "room": "102호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "간단한 점심식사"
-      },
-      "organizer": "교무처",
-      "eligibility": "KAIST에 재학중인 학사과정생",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/yqo6XZSs5wQLDzug9"
-      },
-      "confidence": 1.0,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
     {
       "id": "db6dd6bc-1767-4bb0-88d0-d4c957490e55",
       "title": "2026년 10월 첫수융합포럼",
