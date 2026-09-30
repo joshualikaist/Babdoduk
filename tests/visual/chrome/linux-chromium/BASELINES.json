@@ -1,7 +1,7 @@
 {
-  "approval": "Owner approved: Joshua, 2026-09-29, production nav/footer/magazine UI at main 3d01204 (CI renders from ui-guardian run 36539124569)",
+  "approval": "Owner approved lab 97ab444ca52535f788fd952786b703eae0b332c7 on 2026-09-30; ui-guardian run 36668709637 actual failing renders plus previously passing approved renders; release candidate visually compared at 12 KO/EN views",
   "platform": "linux-chromium",
-  "source": "adopted from ci-full",
+  "source": "adopted from ci-complete",
   "images": 60,
   "fixed_now": "2026-09-28T10:00:00+09:00",
   "sizes": [

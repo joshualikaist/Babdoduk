@@ -1,5 +1,5 @@
 {
-  "approval": "Owner approved: Joshua, 2026-09-29, production nav/footer/magazine UI at main 3d01204",
+  "approval": "Owner approved lab 97ab444ca52535f788fd952786b703eae0b332c7 on 2026-09-30; release candidate d3d7cc8 compared at 12 KO/EN viewport-page combinations",
   "platform": "windows-chrome",
   "source": "rendered locally by check_site_ui.py (chrome)",
   "images": 60,
