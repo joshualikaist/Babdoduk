@@ -21,7 +21,10 @@
     return (s === 'true' || s === 'false') ? s : 'unknown';
   }
   // Unknown food is neither a positive nor a negative claim: it is not shown.
-  function isPublic(ev) { return tri((ev.food || {}).provided) === 'true' && !ev.needs_review && !ev.needsReview; }
+  function isPublic(ev) {
+    return (!ev.contentType || ev.contentType === 'free_food') &&
+      tri((ev.food || {}).provided) === 'true' && !ev.needs_review && !ev.needsReview;
+  }
   // With no end time ("11:30 ~ 소진 시까지"), an event stays current for the same window
   // the feed keeps it after it starts (GGONGBAB_EXPIRED_GRACE_HOURS, 3 h), so a hand-out
   // that began before anyone saw the notice is still listed while it may be running.

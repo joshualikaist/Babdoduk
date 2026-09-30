@@ -99,6 +99,14 @@ def run(pages=PAGES, sizes=SIZES) -> dict:
         context.route("**/*", route)
         context.route("**/data/ggongbab/latest.json", lambda r: r.fulfill(json=live))
         context.route("**/data/ggongbab/archive/index.json", lambda r: r.fulfill(json=past))
+        context.route("**/data/ggongbab/news.json", lambda r: r.fulfill(json={"items": [
+            {"id": "news-00000000000000000000000000000001", "contentType": "campus_food_news",
+             "noticeDate": now.date().isoformat(), "title": "교내 신규 식당 오픈 및 운영시간 변경 안내 " * 4,
+             "summary": "캠퍼스 식당의 점심 영업시간 변경을 안내합니다.",
+             "sources": [{"type": "portal", "name": "KAIST 포탈"}]},
+            {"id": "news-00000000000000000000000000000002", "contentType": "campus_food_news",
+             "noticeDate": now.date().isoformat(), "title": "CampusRestaurantOpeningAndServiceHoursUpdate" * 4,
+             "sources": [{"type": "portal", "name": "KAIST 포탈"}]}]}))
         page = context.new_page()
         errors: list[str] = []
         page.on("pageerror", lambda error: errors.append(type(error).__name__ + ": " + str(error)[:120]))

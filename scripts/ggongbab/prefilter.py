@@ -181,7 +181,9 @@ def portal_list_warrants_detail(title: str, meta: str = "") -> bool:
         return False
     if DENY.search(title or "") or DENY.search(text[:800]):
         return False
-    return bool(EVENT_WORDS.search(text) or FOOD_WORDS.search(text) or MEAL_TIME.search(text))
+    from .food_news import is_news_candidate
+    return bool(EVENT_WORDS.search(text) or FOOD_WORDS.search(text) or MEAL_TIME.search(text)
+                or is_news_candidate(title))
 
 
 def portal_detail_is_candidate(title: str, body: str, *, has_list_date: bool = False) -> Decision:

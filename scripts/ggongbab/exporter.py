@@ -57,7 +57,9 @@ def _when(value: Any) -> Optional[datetime]:
 
 
 def publication_eligible(row: dict[str, Any], settings: Settings, *, food_only: bool = False) -> bool:
-    """The publication policy apart from time. The live feed and the archive share it."""
+    """The publication policy apart from time. The live feed and archive share it."""
+    if row.get("contentType", row.get("content_type", "free_food")) != "free_food":
+        return False  # A news row requires a separately validated free event to coexist.
     if food_only and tri_state(row.get("food_provided")) != "true":
         return False
     if row.get("status") != "published" or row.get("needs_review"):

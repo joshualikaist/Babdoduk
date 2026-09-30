@@ -96,6 +96,13 @@ def validate_archive_export(path: Path, live_payload: dict) -> list[str]:
 def export(settings: Settings, repo, dry_run: bool) -> int:
     # One clock for both files: a row is live or archived, never both and never neither.
     now = datetime.now(KST)
+    if not dry_run:
+        from ggongbab.food_news import load_news, write_news
+        try:
+            news = load_news(ROOT / "research/ggongbab/food-news.json", now)
+        except Exception:
+            print("[error] campus news validation failed; previous snapshots retained")
+            return 2
     payload = build_payload(repo.publishable_events(), settings, now, food_only=True)
     # Evidence of past publication is read before latest.json is replaced. The record
     # must never cost the live feed a refresh, so a failed read only skips the archive
@@ -127,6 +134,7 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
         staged_archive = write_archive(archive, tmp_dir)
         archive_errors = validate_archive_export(staged_archive, payload)
     final = write_payload(payload, DATA_DIR)
+    write_news(news, DATA_DIR / "news.json")
     # The live feed matters more than the record: a bad archive keeps the previous
     # one (or none) and is reported, but does not hold back latest.json.
     if archive_errors:
