@@ -25,7 +25,7 @@
 
 - [ ] `git status` — 의도하지 않은 파일(대용량 zip, `__pycache__`, 로컬 설정)이 커밋에 없다
 - [ ] 변경 파일이 이번 작업 범위와 맞고, 보호 영역(`supabase/`, workflow, collector 등)은 승인이 있을 때만 들어 있다
-- [ ] 게이트 첫 실행 결과를 기록했다(`/verify-babdoduk`): pytest, `validate_content.py`, `check_site_ui.py`, `check_ggongbab_ui.py`, 레이아웃·문구 변경이면 `check_real_fonts.py`
+- [ ] 게이트 첫 실행 결과를 기록했다(`/verify-babdoduk`): pytest, `validate_content.py`, `sync_site_chrome.py --check`, `check_site_ui.py`, `check_ggongbab_ui.py`, 레이아웃·문구 변경이면 `check_real_fonts.py`
 - [ ] 공통 내비·푸터·i18n(STR)을 여러 HTML 에 반영했다면 같은 패턴인지 모든 페이지를 훑었다
 
 ---
@@ -62,7 +62,7 @@
 
 ## 5. 이 프로젝트에서 특히 신경 쓸 곳
 
-- HTML 이 페이지마다 비슷한 블록(헤더, 메가메뉴, 푸터, `STR` 객체)을 각자 들고 있다. 한 파일만 고치면 다른 페이지와 어긋날 수 있다
+- 내비·푸터는 `shared/` 에서 `scripts/sync_site_chrome.py` 로 각 페이지에 복사된다(직접 고치지 말고 `shared/` 를 고친 뒤 동기화). `STR` 번역 표와 페이지 CSS 는 여전히 페이지마다 따로 있어서 한 파일만 고치면 다른 페이지와 어긋날 수 있다
 - 점검할 때 `index.html`, `ggongbab.html`, `mukbang.html`, `event.html`, `food.html`, `history.html` 을 번갈아 열어 본다(lab 작업이면 `lab-ggongbab.html` 도)
 - lab 전용 실험(Realtime·공개 projection·Portal LIST poller·Windows worker)은 본편 release 에 섞이지 않게 한다
 - 이미지·데이터 경로의 대소문자·상대 경로가 배포 환경과 맞는지 본다

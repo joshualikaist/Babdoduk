@@ -191,9 +191,6 @@ the hero. It needs at least 200 characters of retrieved text.
 `data/magazine/`, so the next run starts from it. The store is bounded: 90 days since last seen, at
 most 4,000 candidates.
 
-**Caveat until promotion to main:** main's daily run mirrors `data/magazine/` onto lab with main's
-older builder. The research store is new, so main's publisher does not touch it.
-
 ## Registry and source status
 
 `scripts/discovery/sources.json` is the only list of sources, versioned with the code.

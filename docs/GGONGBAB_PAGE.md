@@ -160,7 +160,7 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 | `GGONGBAB_AI_MODEL` / `GGONGBAB_AI_FALLBACK_MODEL` | Variable | 모델 override |
 
 로컬은 `.env.example` 을 `.env` 로 복사해 채운다. `.env` 는 gitignore 되어 있다.
-의존성: `pip install -r requirements-ggongbab.txt` (openai, pydantic, pytest).
+의존성: `pip install -r requirements-ggongbab.txt` (openai, pydantic, pytest, playwright).
 
 ---
 
@@ -336,8 +336,7 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 | export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외 | `exporter.is_expired` |
 | 검증 | 종료 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
 
-화면에는 “공개된 현재·예정 꽁밥만 보여 드려요. 끝난 일정은 목록에서 자동으로 내려가요.”라는 안내와 스냅숏의
-**마지막 발행** 시각(`generatedAt`, KST)을 목록 맨 위에 함께 보여 준다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
+화면에는 스냅숏의 **마지막 발행** 시각(`generatedAt`, KST)만 목록 맨 위에 보여 준다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
 끝난 행사를 `latest.json` 에 다시 넣거나 위 검증 규칙을 느슨하게 하지 않는다.
 
 ### 지난 꽁밥 기록 (`data/ggongbab/archive/index.json`, V1)
@@ -388,7 +387,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 
 ## 12. Deployment · branches
 
-* 기능 코드(`lab-ggongbab.html`, `css/ggongbab.css`, `js/ggongbab.js`, `scripts/**`)는 **lab 에서만** 개발하고, 공개 반영은 사람이 `main` 에 merge 한다.
+* 기능 코드(`lab-ggongbab.html`, `css/ggongbab.css`, `js/ggongbab.js`, `scripts/**`)는 **lab 에서만** 개발하고, 공개 반영은 `AGENTS.md` 의 lab-first 절차(승인된 lab 커밋을 `origin/main` 기반 release 브랜치로 옮겨 검증한 뒤 merge)를 따른다.
 * `.github/workflows/ggongbab-refresh.yml` 이 `*/30 * * * *` 로 돈다(정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
   `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
 * `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
@@ -407,7 +406,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 
 * nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
 * `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
-* 꽁밥 탭 목록 맨 위에 목록의 범위(현재·예정만, 끝난 일정은 자동으로 내려감)와 마지막 발행 시각을 함께 보여 준다(`gg.lifecycle`, `gg.updated`). 11절 “끝난 행사” 참고.
+* 꽁밥 탭 목록 맨 위에 마지막 발행 시각을 보여 준다(`gg.updated`). 11절 “끝난 행사” 참고.
 * **지난 꽁밥 기록**은 live 목록 아래 별도 영역(`section.gg-archive`)이다. `data/ggongbab/archive/index.json` 을 live 와 **따로**
   fetch 하고, live 피드에 있지만 이미 끝난 행(유예 3시간 안이라 아직 파일에 남은 행)도 여기에 보여 준다. 두 목록 모두
   `ggongbab-select.js` 의 같은 규칙(`isPublic`, `isUpcoming`)으로 나누므로 한 행이 양쪽에 동시에 나오지 않는다.
@@ -415,8 +414,8 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
     음식 색 배지 없음. 신청하기·마감·사전 신청 배지는 데이터에 남아 있어도 그리지 않는다.
   - 링크는 공개 공지 URL(`kaist_public`/`manual`, http(s))이 있을 때만 “당시 공지 보기 ↗”. 내부 출처는 링크가 없다.
   - 최근에 끝난 것부터 5개, 나머지는 “지난 기록 N개 더 보기” 버튼(`aria-expanded`). 화면에서도 30일 창을 다시 적용한다.
-  - 파일이 없으면(404, 첫 export 전) 빈 상태 “지난 30일 동안 공개된 지난 꽁밥 기록이 없어요.”, 읽기 실패면 아카이브 영역에만
-    “지난 꽁밥 기록을 불러오지 못했어요.”를 보이고 live 목록·개수·레이더는 그대로다. live 가 실패해도 아카이브는 읽힌다.
+  - 파일이 없으면(404, 첫 export 전) 빈 상태 “최근 30일 기록 없음”, 읽기 실패면 아카이브 영역에만
+    “지난 기록을 불러오지 못했어요.”를 보이고 live 목록·개수·레이더는 그대로다. live 가 실패해도 아카이브는 읽힌다.
   - live 필터(sticky)는 live 목록과 한 상자(`.gg-live`)에 있어 아카이브 영역에서는 따라오지 않는다. 필터는 아카이브에 적용되지 않는다.
   - preview·blocked 모드에서는 아카이브를 읽지 않는다. fixture 모드는 합성 기록(`fixtureArchive`)을 쓴다.
 * 세로 피드: 날짜 헤더(오늘/내일 배지) → 카드(시각 · 제목 · 건물/호실 · 지도 링크 · 음식 태그 · 사전 신청 · 마감 · 요약 · 신청/원문 버튼).

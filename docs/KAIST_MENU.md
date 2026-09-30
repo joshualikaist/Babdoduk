@@ -1,7 +1,7 @@
 # KAIST cafeteria: this week's menus
 
 The 학식 tab of `ggongbab.html` shows the official KAIST cafeteria menus for the whole current
-week, one date at a time. Home (`index.html`) and `choose.html` still show only today's summary.
+week, one date at a time. Home (`index.html`) and the magazine's `#what` section (`mukbang.html`) show only today's summary.
 
 ## Week
 
@@ -16,7 +16,7 @@ A week runs Monday to Sunday in KST (`Asia/Seoul`), whatever the server's or the
 | File | Meaning |
 |---|---|
 | `data/kaist-menu/YYYY-MM-DD.json` | The validated menu of that date. Written only when at least one restaurant has a menu for it. |
-| `data/kaist-menu/latest.json` | **Today's** snapshot, byte-identical to today's dated file. Home, `choose.html` and the hub's today view read it. It never becomes the week. |
+| `data/kaist-menu/latest.json` | **Today's** snapshot, byte-identical to today's dated file. Home, the magazine's `#what` section and the hub's today view read it. It never becomes the week. |
 | `data/kaist-menu/week.json` | A small index of the current week. It holds no menus. |
 
 `week.json`:
@@ -96,13 +96,14 @@ made 8 per run).
 * Workflow logs print exception class names only.
 
 **Publication:** `publish_generated.py` mirrors `data/kaist-menu/` from the main-branch run onto
-lab and main. Until this collector runs on main, the scheduled run removes `week.json` and future
-dated files from lab. The page handles that (see below).
+lab and main.
 
 ## Page
 
-* **Loading:** the hub loads `latest.json` for today exactly as before. `week.json` and other dates
-  are requested only when someone picks another date.
+* **Loading:** the hub loads `latest.json` for today. `week.json` and other dates are requested
+  only when someone picks another date, or when `latest.json` still names an earlier day (just
+  after midnight): then `week.json` and today's `YYYY-MM-DD.json` are read and, when today's file
+  exists, used instead (`loadTodayMenu`, the same rule for home and the magazine summary).
   * `week.json` comes first, so a date the index marks `NOT_PUBLISHED_YET` is not requested at all.
   * Then comes `YYYY-MM-DD.json`. A loaded date is kept in memory for the page session.
   * A missing or older `week.json` is ignored.
@@ -112,7 +113,8 @@ dated files from lab. The page handles that (see below).
   * Favorites are the same on every date.
 * **Freshness:** `isDataForSelectedDate(data, date)` decides whether a payload is right for the
   selected date; `isToday(date)` is a separate question. Only today's view can be stale: when
-  `latest.json` still holds an earlier day, the saved-menu notice appears. A future date is
+  `latest.json` still holds an earlier day and today's dated file is absent, the saved-menu notice
+  appears. A future date is
   never called stale.
 * **States:**
 
