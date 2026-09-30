@@ -10,7 +10,6 @@
     popularityNovelty: 10
   };
 
-  var catalog = null;
   var foods = [];
   var byId = {};
   var weights = DEFAULT_WEIGHTS;
@@ -105,7 +104,6 @@
         return res.json();
       })
       .then(function (payload) {
-        catalog = payload;
         weights = payload.scoreWeights || DEFAULT_WEIGHTS;
         return Promise.all((payload.packs || []).map(function (pack) {
           return fetch(pack.src, { cache: 'no-store' }).then(function (res) {
@@ -347,78 +345,10 @@
     return { picks: picks, ranked: ranked, count: foods.length };
   }
 
-  function quickPick(opts) {
-    opts = opts || {};
-    var slot = mealSlot();
-    var prefs = loadPrefs();
-    var answers = opts.answers || {};
-    var merged = {
-      craving: answers.craving || 'any',
-      kind: 'any',
-      hunger: answers.hunger || 'any',
-      dining: 'any',
-      budget: 'any'
-    };
-    if (merged.hunger === 'any' && merged.craving === 'any') {
-      merged.craving = slot === 'breakfast' ? 'light' : 'hearty';
-      merged.hunger = 'mid';
-    }
-    var skip = {};
-    (opts.excludeIds || []).forEach(function (id) { skip[id] = true; });
-    var pool = foods.filter(function (food) {
-      if (skip[food.id]) return false;
-      if (!passesHard(food, merged, prefs)) return false;
-      if ((food.mealTime || []).indexOf(slot) === -1) return false;
-      if (merged.hunger === 'heavy' && (food.satiety || 0) < 3) return false;
-      if (merged.hunger === 'light' && (food.satiety || 0) > 3) return false;
-      return true;
-    });
-    if (!pool.length) {
-      pool = foods.filter(function (food) {
-        if (skip[food.id]) return false;
-        return passesHard(food, merged, prefs);
-      });
-    }
-    pool.sort(function (a, b) { return (b.popularity || 0) - (a.popularity || 0); });
-    var pick;
-    if (Math.random() < 0.55) {
-      var top = pool.slice(0, Math.min(pool.length, 48));
-      pick = top[Math.floor(Math.random() * top.length)];
-    } else {
-      pick = pool[Math.floor(Math.random() * pool.length)];
-    }
-    pick = pick || pool[0];
-    var rolling = [];
-    var seenRoll = {};
-    if (pick) {
-      rolling.push(pick);
-      seenRoll[pick.id] = true;
-    }
-    var i;
-    var mix = pool.slice();
-    for (i = mix.length - 1; i > 0; i -= 1) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = mix[i];
-      mix[i] = mix[j];
-      mix[j] = tmp;
-    }
-    for (i = 0; i < mix.length && rolling.length < 16; i += 1) {
-      if (seenRoll[mix[i].id]) continue;
-      seenRoll[mix[i].id] = true;
-      rolling.push(mix[i]);
-    }
-    return { food: pick, rolling: rolling, answers: merged, slot: slot };
-  }
-
   root.BabdodukFoods = {
     load: loadCatalog,
     recommend: recommend,
-    quickPick: quickPick,
-    mealSlot: mealSlot,
-    prefs: { load: loadPrefs, save: savePrefs, feedback: applyFeedback },
-    get: function (id) { return byId[id]; },
-    all: function () { return foods; },
-    count: function () { return foods.length; },
-    catalogCount: function () { return catalog && catalog.count ? catalog.count : foods.length; }
+    prefs: { feedback: applyFeedback },
+    all: function () { return foods; }
   };
 })(window);

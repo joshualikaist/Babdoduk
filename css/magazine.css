@@ -435,26 +435,6 @@ body.mg-body .site-footer {
   transform: scale(1.015);
 }
 
-.mg-hero-visual.is-type {
-  background:
-    linear-gradient(180deg, #f3ece0, #e8d6c0);
-}
-
-.mg-hero-type {
-  display: none;
-  max-width: 86%;
-  font-size: clamp(28px, 4.6vw, 52px);
-  font-weight: 800;
-  letter-spacing: -0.07em;
-  line-height: 0.92;
-  color: rgba(30, 29, 26, 0.16);
-  text-align: center;
-}
-
-.mg-hero-visual.is-type .mg-hero-type {
-  display: block;
-}
-
 .mg-board-head {
   display: flex;
   justify-content: space-between;
