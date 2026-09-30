@@ -18,10 +18,6 @@ def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def host(url: str) -> str:
-    return urlparse(url or "").netloc.replace("www.", "")
-
-
 def video_id(url: str) -> str:
     match = re.search(r"(?:youtu\.be/|v=|shorts/|embed/)([A-Za-z0-9_-]{11})", url or "")
     return match.group(1) if match else ""

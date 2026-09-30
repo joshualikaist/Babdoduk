@@ -4,15 +4,15 @@
 
 ## 페이지 구조
 
-제목 **03 밥도둑 소식** 아래에 설명 문단 없이 바로 두 목록이 옵니다.
+제목 **밥도둑 소식** 아래에 설명 문단 없이 바로 두 목록이 옵니다.
 
-- **지금** (`#now`): 작성된 공지(`#eventNotices`)와 진행 중·예정 활동(`#eventUpcoming`). 둘 다 없으면 “예정된 활동 없음 · Instagram ↗” 한 줄만 보입니다.
-- **지난 활동** (`#archive`, 목록 `#eventList`): 번호 · 날짜 · 제목 · 짧은 상태 · 당시 게시물 링크. 당시 안내 전문과 상태 설명은 **자세히**(`<details>`) 안에 접혀 있습니다.
-- 꽁밥 일정은 제목 옆 작은 링크(“꽁밥 일정 → 오늘의 꽁밥”)로만 가리킵니다. 이 페이지는 밥도둑이 직접 연 활동만 다룹니다.
+- **지금** (`#now`): 작성된 공지(`#eventNotices`)와 진행 중·예정 활동(`#eventUpcoming`). 둘 다 없으면 “예정된 활동 없음” 한 줄만 보입니다. Instagram 링크는 목록 아래 한 줄로 따로 있습니다.
+- **지난 활동** (`#archive`, 목록 `#eventList`): 날짜 · 제목 · 짧은 상태 · 당시 게시물 링크. 당시 안내 전문과 상태 설명은 **자세히**(`<details>`) 안에 접혀 있습니다.
+- 이 페이지는 밥도둑이 직접 연 활동만 다룹니다. 꽁밥 일정은 싣지 않습니다.
 
 ## 목록 정렬 규칙
 
-행사는 모두 `#eventList` 안의 `<li class="event-item">` 로 작성합니다. 스크립트가 날짜를 보고 진행 중·예정 행을 **지금**으로 옮기고, 목록마다 번호(01, 02, …)를 다시 매깁니다.
+행사는 모두 `#eventList` 안의 `<li class="event-item">` 로 작성합니다. 스크립트가 날짜를 보고 진행 중·예정 행을 **지금**으로 옮깁니다. 행에는 번호가 없습니다.
 
 1. **시작일이 빠른 행사가 위**에 오도록 정렬합니다.
 2. **시작일이 같으면** **종료일이 빠른 행사**를 위에 둡니다.
@@ -30,7 +30,6 @@
 
 ```html
 <li class="event-item" data-start="2026-05-19" data-end="2026-05-20" data-confirmation="tentative">
-  <span class="event-num" aria-hidden="true">02</span>
   <p class="event-date"><time datetime="2026-05-19">2026.05.19</time> — <time datetime="2026-05-20">05.20</time>
     <span class="event-place" data-i18n="event.e1.place">태울석림제 부스</span></p>
   <h3 class="event-name" data-i18n="event.e1.summary">KAKI × 밥도둑 〈카빙〉</h3>

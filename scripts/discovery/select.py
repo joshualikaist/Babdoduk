@@ -18,10 +18,11 @@ trend evidence kinds) but no internal scores or evidence text.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 from .common import KST, excerpt, parse_time
+from .process import age_days
 
 LANE_SIZE = 6              # a ceiling for good stories, never a number to fill
 EVERGREEN_FRESH_DAYS = 90  # an older tips/health story runs only when its lane has too few fresh ones
@@ -100,11 +101,6 @@ def public_item(row: dict) -> dict:
     return item
 
 
-def _age(row: dict, now: datetime) -> Optional[float]:
-    published = parse_time(row.get("publishedAt"))
-    return (now - published).total_seconds() / 86400 if published else None
-
-
 def independent_evidence(row: dict) -> list[str]:
     if row.get("trendEvidenceIndependent") is not None:
         return list(row["trendEvidenceIndependent"])
@@ -120,19 +116,19 @@ def strong_evidence(row: dict) -> bool:
 def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
     """(row, heroKind). A trend hero only on strong evidence; never a recipe standing in for a trend."""
     def trend_ok(row):
-        age = _age(row, now)
+        age = age_days(row, now)
         audience = float((row.get("audienceRelevance") or {}).get("score") or 0)
         trusted = row.get("sourceTrust") in ("A", "B")        # high source trust: never a Tier C lead
         return (row.get("assignedCategory") == "trend" and strong_evidence(row) and row.get("imageValidated")
                 and row.get("imageUrl") and trusted and audience >= HERO_AUDIENCE
                 and age is not None and age <= HERO_MAX_DAYS)
     trends = sorted((r for r in pool if trend_ok(r)),
-                    key=lambda r: (len(independent_evidence(r)) < 2, _age(r, now) > HERO_IDEAL_DAYS,
+                    key=lambda r: (len(independent_evidence(r)) < 2, age_days(r, now) > HERO_IDEAL_DAYS,
                                    -(r.get("score") or 0), r["candidateId"]))
     if trends:
         return trends[0], "trend"
     with_image = [r for r in pool if r.get("imageValidated") and r.get("imageUrl")]
-    recent_first = sorted(with_image, key=lambda r: ((_age(r, now) is None) or _age(r, now) > HERO_MAX_DAYS,
+    recent_first = sorted(with_image, key=lambda r: ((age_days(r, now) is None) or age_days(r, now) > HERO_MAX_DAYS,
                                                     -(r.get("score") or 0), r["candidateId"]))
     if recent_first:
         return recent_first[0], "pick"
@@ -158,7 +154,7 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
         chosen.append(featured_row["candidateId"])
 
     def old(row):
-        age = _age(row, now)
+        age = age_days(row, now)
         return age is not None and age > EVERGREEN_FRESH_DAYS
 
     for lane in LANES:

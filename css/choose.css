@@ -1,14 +1,5 @@
-/* Menu picker page (choose.html): the page head, the picker (.eat*) and the
-   cafeteria summary (.kaist-*). Moved from magazine.css when the picker left the
-   magazine; the rules are unchanged except for the page layout at the top. */
-
-.choose-page {
-  position: relative;
-  z-index: 1;
-  flex: 1 0 auto;
-  width: min(var(--container-editorial), calc(100% - 32px));
-  margin: 0 auto;
-}
+/* The menu picker (.eat*) and the cafeteria summary (.kaist-*) in the magazine's #what
+   section (mukbang.html). choose.html only redirects there. */
 
 .choose-picker {
   margin-top: var(--space-8);
@@ -336,17 +327,6 @@
   margin-bottom: 18px;
 }
 
-.eat-progress {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #777168;
-}
-
-.eat-progress span {
-  color: #1e1d1a;
-}
-
 .eat-textbtn {
   padding: 0;
   border: none;
@@ -550,8 +530,7 @@
   .eat-alt:hover {
     transform: none;
   }
-  .eat-spinbtn:hover:not(:disabled) .eat-spinbtn-icon,
-  .eat-wheel.is-drag .eat-wheel-canvas {
+  .eat-spinbtn:hover:not(:disabled) .eat-spinbtn-icon {
     transform: none;
   }
 }

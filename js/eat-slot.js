@@ -133,10 +133,8 @@
       machine.querySelector('[data-reel="1"] .eat-reel-ring'),
       machine.querySelector('[data-reel="2"] .eat-reel-ring')
     ];
-    var angles = [0, 0, 0];
 
     function setAngle(idx, deg, blurring) {
-      angles[idx] = deg;
       rings[idx].style.transform = 'rotateX(' + deg + 'deg)';
       rings[idx].parentNode.classList.toggle('is-fast', !!blurring);
     }
@@ -252,9 +250,6 @@
 
     return {
       spinning: function () { return spinning; },
-      preview: function (foods) {
-        if (!spinning) layout((foods && foods[0]) || { nameKo: '제육볶음', cuisine: 'korean' }, foods || [], 4);
-      },
       spin: function (food, foods) { return spinTo(food, foods || []); },
       destroy: function () {
         live = false;
@@ -269,8 +264,6 @@
 
   root.BabdodukSlot = {
     create: create,
-    labelsOf: labelsOf,
-    cuisineLabel: cuisineLabel,
-    traitLabel: traitLabel
+    labelsOf: labelsOf
   };
 })(window);

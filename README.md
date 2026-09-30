@@ -22,7 +22,7 @@
 
 먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다.
 
-홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`mukbang.html#what`)로 바로 시작하게 하고, 그 아래에 01 바로가기 · 02 읽어보기 ·
+홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`mukbang.html#what`)로 바로 시작하게 하고, 그 아래에 01 오늘 먹기 · 02 읽어보기 ·
 03 밥도둑 소식을 둡니다. `history.html` 은 밥도둑이 걸어온 길입니다.
 
 ### 섞지 않는 두 가지
@@ -97,10 +97,10 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 |------|------|
 | **`index.html`** | 홈 — 에디토리얼 히어로(오늘의 꽁밥·메뉴 고르기, 분위기 사진, 날짜가 붙은 오늘 요약) 아래에 01 오늘 먹기(가로 선반: 오늘의 꽁밥·메뉴 고르기·맛집 지도), 02 읽어보기(매거진 추천 글·데스크·사진 기록), 03 밥도둑 소식(지금 / 지난 활동). 섹션 제목 아래 설명 문장은 두지 않는다 |
 | **`food.html`** | 먹방 가계부 — **공개 전, 실험실 전용**(`noindex, nofollow`, 공개 링크 없음, `lab.html` 에서 진입). 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 기록 주체는 소유자 결정 대기 |
-| **`event.html`** | 03 밥도둑 소식 — **지금**(작성된 공지와 진행 중·예정 활동, 없으면 “예정된 활동 없음 · Instagram ↗”)과 **지난 활동**(번호·날짜·제목·짧은 상태·당시 게시물). 날짜 구간과 확인 상태는 따로 계산하고, 날짜가 지났다고 진행됐다고 하지 않는다. 당시 안내 전문은 “자세히” 안에 (`css/event.css`, `docs/EVENT_DETAIL_FIELDS.md`) |
+| **`event.html`** | 밥도둑 소식 — **지금**(작성된 공지와 진행 중·예정 활동, 없으면 “예정된 활동 없음”)과 **지난 활동**(날짜·제목·짧은 상태·당시 게시물). Instagram 링크는 목록 아래 한 줄로 따로 있다. 날짜 구간과 확인 상태는 따로 계산하고, 날짜가 지났다고 진행됐다고 하지 않는다. 당시 안내 전문은 “자세히” 안에 (`css/event.css`, `docs/EVENT_DETAIL_FIELDS.md`) |
 | **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리. **원문 출처가 있는 글만** 싣고(‘밥도둑 데스크’ 대체 글 없음), 갈래가 비면 조용히 “새 이야기가 없어요”라고 적는다. 대표 글은 근거가 있는 요즘 유행 글이면 “지금 뜨는 먹거리”, 아니면 “오늘의 추천 글”로 표시하고, 자기 이미지가 없으면 글만 있는 히어로. YouTube 는 운영 PC 의 로컬 수집(`scripts/magazine_local_discovery.py`, 수집만 하고 발행하지 않음)으로 들어온다. 아래 `#what` 에 **메뉴 고르기**(“오늘 뭐 먹지?” 슬롯, 카탈로그 제안)와 날짜가 붙은 오늘 학식 요약. 수집·선정 방식은 `docs/MAGAZINE_DISCOVERY.md` |
 | **`choose.html`** | 호환용 이동 페이지 — `mukbang.html#what` 으로 바로 이동(`noindex`). 별도 추천기 제품이 아님 |
-| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 그 안내와 마지막 발행 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
+| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 발행 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
@@ -140,7 +140,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 
 ## 3. 오늘의 꽁밥 파이프라인
 
-KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(메뉴 고르기)은 이 페이지의 가용 정보와 섞지 않고 `choose.html`로 연결만 합니다.
+KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(메뉴 고르기)은 이 페이지의 가용 정보와 섞지 않고 `mukbang.html#what`으로 연결만 합니다.
 
 - **꽁밥** — 무료 식사·간식·다과가 명시된 교내 행사
 - **KAIST 학식** — 공식 학식 JSON (`data/kaist-menu/latest.json`). AI를 쓰지 않습니다.
@@ -671,7 +671,7 @@ python scripts/check_ggongbab_ui.py
 (예: 2026-09 영어 필터 칩, 390·360px)은 따로 확인합니다.
 
 ```powershell
-python scripts/check_real_fonts.py   # 6개 공개 페이지 × 한·영 × 390·360·1440, Google Fonts 만 허용
+python scripts/check_real_fonts.py   # 7개 페이지(choose 이동·실험실 전용 food 포함) × 한·영 × 390·360·1440, Google Fonts 만 허용
 ```
 
 폰트가 실제로 로드된 캡처만 인정합니다. 넘침이나 페이지 오류가 있으면 FAIL(종료 코드 1), 폰트를 못 받았으면 결과를
@@ -685,6 +685,7 @@ python scripts/check_real_fonts.py   # 6개 공개 페이지 × 한·영 × 390�
 |----------|------|---------|
 | `.github/workflows/ggongbab-refresh.yml` | 30분 | 수집·파싱·저장 후 `data/ggongbab/` 를 lab·main에 푸시 |
 | `.github/workflows/magazine-daily.yml` | 매일 | 매거진·학식 데이터 갱신 |
+| `.github/workflows/ui-guardian.yml` | 프론트엔드 변경 push·PR | 공통 내비·푸터 동기화 확인과 시각 기준 비교(읽기 전용, 배포 없음) |
 
 `ggongbab-refresh.yml` 은 YAML 문법 오류로 GitHub에서 실행되지 않다가 2026-09-25 에 고쳐졌고, 수동 `check`·`dry-run`·
 `review-report` 실행이 main 에서 통과한 뒤 2026-09-26 에 예약(`*/30 * * * *`, UTC, 항상 `full`)을 다시 켰습니다.
@@ -791,6 +792,11 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/REPOSITORY_HYGIENE.md` | 브랜치·worktree·stash·태그 정리 |
 | `docs/VISUAL_BASELINES.md` | 공통 내비·푸터 시각 기준 이미지와 승인 절차 |
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
+| `docs/KAIST_MENU.md` | 이번 주 학식 수집·파일·화면 규칙 |
+| `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
+| `docs/CAMPUS_FOOD_NEWS.md` | 먹거리 소식(꽁밥과 분리된 뉴스) |
+| `docs/GGONGBAB_DISCOVERY.md` | 꽁밥 레이더·근거·평가 |
+| `docs/GGONGBAB_TRIGGER.md` | 저지연 새로고침 트리거(Option A, 미활성) |
 
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),

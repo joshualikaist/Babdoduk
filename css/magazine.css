@@ -350,7 +350,6 @@ body.mg-body .site-footer {
   gap: 28px 32px;
   align-items: center;
   padding: 28px 0 8px;
-  min-width: 0;
 }
 
 .mg-hero-label {
@@ -436,26 +435,6 @@ body.mg-body .site-footer {
   transform: scale(1.015);
 }
 
-.mg-hero-visual.is-type {
-  background:
-    linear-gradient(180deg, #f3ece0, #e8d6c0);
-}
-
-.mg-hero-type {
-  display: none;
-  max-width: 86%;
-  font-size: clamp(28px, 4.6vw, 52px);
-  font-weight: 800;
-  letter-spacing: -0.07em;
-  line-height: 0.92;
-  color: rgba(30, 29, 26, 0.16);
-  text-align: center;
-}
-
-.mg-hero-visual.is-type .mg-hero-type {
-  display: block;
-}
-
 .mg-board-head {
   display: flex;
   justify-content: space-between;
@@ -483,10 +462,6 @@ body.mg-body .site-footer {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0 28px;
-}
-
-.mg-lane {
-  min-width: 0;
 }
 
 .mg-lane-kicker {

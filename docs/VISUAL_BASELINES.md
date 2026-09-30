@@ -8,7 +8,7 @@
 | `footer` | 푸터 전체 |
 | `footer-context` | 푸터 바로 위 180px + 푸터 전체. 한 페이지에서만 푸터가 따로 떨어진 판처럼 보이는 문제(2026-09)를 잡기 위한 캡처 |
 
-- 페이지: `index`, `ggongbab`, `choose`, `mukbang`, `event`, `food`, `history`. 한국어·영어, 1440×900·390×844. 파일 이름은 `<page>-<lang>-<width>-<part>.png`.
+- 페이지: `index`, `ggongbab`, `mukbang`, `event`, `history`. 한국어·영어, 1440×900·390×844. 파일 이름은 `<page>-<lang>-<width>-<part>.png`.
 - 결정성: 오프라인(외부 폰트·서비스 차단), 브라우저 시계 고정(`2026-09-28T10:00+09:00`), 생성 데이터 대신 고정 fixture, 애니메이션·전환 끔, 2% 필름 그레인 오버레이 숨김.
 - 비교: 크기가 같아야 하고, 채널 차이가 24/255 를 넘는 픽셀이 0.2% 이하여야 통과합니다.
 
@@ -49,7 +49,7 @@ CI 는 기준을 바꾸지 않습니다. `--update-chrome-baselines` 와 `--adop
 python scripts/check_site_ui.py --update-chrome-baselines --approval "<누가, 언제, 어디서 승인했는지>"
 ```
 
-CI 세트는 CI 가 렌더링한 이미지를 받아서 채택합니다. 기준이 없거나 달라서 실패한 `ui-guardian` 실행의 artifact 에 그 커밋의 렌더가 들어 있습니다(기준이 없을 때는 84장 전부).
+CI 세트는 CI 가 렌더링한 이미지를 받아서 채택합니다. 기준이 없거나 달라서 실패한 `ui-guardian` 실행의 artifact 에 그 커밋의 렌더가 들어 있습니다(기준이 없을 때는 60장 전부).
 
 ```powershell
 gh run download <run id> --name visual-diff-<run id> --dir .local/ci-renders
@@ -57,5 +57,5 @@ python scripts/check_site_ui.py --adopt-chrome-baselines .local/ci-renders --pla
 ```
 
 - `--approval` 없이는 기준을 쓰지 않습니다. 메모는 세트의 `BASELINES.json` 에 남습니다.
-- 채택은 84장 전부가 있을 때만 됩니다. 일부만 바꾸지 않습니다.
+- 채택은 60장 전부가 있을 때만 됩니다. 일부만 바꾸지 않습니다.
 - 검사가 실패했을 때 기준을 다시 만들어 “통과”시키지 않습니다. 먼저 차이 이미지로 원인을 확인합니다.
