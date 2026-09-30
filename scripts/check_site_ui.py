@@ -463,9 +463,10 @@ def home_summary(page):
     menu = page.locator("#homeMenuStatus")
     check(menu.get_attribute("data-state") == "stale" and "오늘 1곳" not in menu.inner_text(),
           ("stale cafeteria is not counted as today", menu.inner_text()))
-    head = page.locator("#homeTodayTitle").inner_text().strip()
-    check(re.fullmatch(r"\d+월 \d+일", head) is not None and "요일" not in head and "기준" not in head,
-          ("home date is the KST date only", head))
+    head = page.locator("#homeCalToday").inner_text().strip()
+    kst_label = f"{now.month}월 {now.day}일 ({'월화수목금토일'[now.weekday()]})"
+    check(head == kst_label and "요일" not in head and "기준" not in head,
+          ("the calendar names today's KST date, briefly", head, kst_label))
     check(page.locator(".home-today-note, #homeStamp").count() == 0
           and "공개 조건을 통과" not in page.locator("main").inner_text()
           and "지금 확인된 정보" not in page.locator("main").inner_text(),
@@ -501,20 +502,21 @@ def home_summary(page):
     }""")
     check(wide, "footer contact matches copyright at 1440")
     page.set_viewport_size({"width": 390, "height": 844})
-    free = page.locator("#homeFreeStatus")
-    check(free.get_attribute("data-state") == "ready" and "오늘 1개" in free.inner_text(),
-          ("only public rows are counted", free.inner_text()))
-    meta = free.locator("[data-home-meta]").inner_text()
+    free = page.locator("#homeCal")
+    answer = page.locator("#homeCalAnswer").inner_text()
+    check(free.get_attribute("data-state") == "ready" and answer.startswith("오늘 1개"),
+          ("only public rows are counted", answer))
+    meta = page.locator("#homeCalPublished").inner_text()
     check(meta.startswith("마지막 발행")
           and not any(word in meta for word in ("최신", "최근", "실시간")),
           ("snapshot is labelled by its last publication, not as fresher elsewhere", meta))
     page.locator("#langToggle").click()
-    meta_en = free.locator("[data-home-meta]").inner_text()
+    meta_en = page.locator("#homeCalPublished").inner_text()
     check(meta_en.startswith("Last published")
           and not any(word in meta_en.lower() for word in ("latest", "live", "real-time", "realtime")),
           ("English publication label", meta_en))
-    check(re.fullmatch(r"[A-Z][a-z]{2} \d{1,2}", page.locator("#homeTodayTitle").inner_text().strip()) is not None,
-          ("English home date is month and day", page.locator("#homeTodayTitle").inner_text()))
+    check(re.fullmatch(r"[A-Z][a-z]{2} \d{1,2} \([A-Z][a-z]{2}\)", page.locator("#homeCalToday").inner_text().strip()) is not None,
+          ("English calendar date is month, day and weekday", page.locator("#homeCalToday").inner_text()))
     en_colors = page.evaluate("""() => {
       const color = sel => getComputedStyle(document.querySelector(sel)).color;
       return color('.footer-apple-copy') === color('.footer-apple-email-plain');
@@ -542,9 +544,10 @@ def home_summary(page):
     return count
 
 
-# Food Log is lab-only (lab.html): it has no public home banner, nav or footer link.
-SHELF = ["today", "pick", "map"]
-SHELF_HREFS = ["ggongbab.html", "mukbang.html#what", "https://naver.me/5NeqUPzI"]
+# Food Log is lab-only (lab.html): it has no public home banner, nav or footer link. Free food is the
+# calendar above the shelf, so the shelf keeps the picker and the map.
+SHELF = ["pick", "map"]
+SHELF_HREFS = ["mukbang.html#what", "https://naver.me/5NeqUPzI"]
 GROUPS = ["오늘 먹기", "읽어보기", "밥도둑 소식"]
 NEWS_HREFS = ["event.html#now", "event.html#archive"]
 HOME_TOP = """() => {
@@ -568,7 +571,8 @@ HOME_TOP = """() => {
       priority: img.getAttribute('fetchpriority')})),
     headings: [...document.querySelectorAll('main h1, main h2, main h3')].filter(h => !h.closest('[hidden]'))
       .map(h => Number(h.tagName[1])),
-    states: [q('#homeMenuStatus').dataset.state, q('#homeFreeStatus').dataset.state],
+    states: [q('#homeMenuStatus').dataset.state, q('#homeCal').dataset.state],
+    cal: box(q('#homeCal')), grid: box(q('#homeCal .hc-grid')), collage: box(q('.home-collage')),
     groups: [...document.querySelectorAll('main > .home-group')].map(g => ({
       title: g.querySelector('h2 [data-i18n]').textContent, purpose: (g.querySelector('.home-group-purpose') || {}).textContent || ''})),
     news: [...document.querySelectorAll('.home-news-row')].map(a => a.getAttribute('href')),
@@ -582,7 +586,7 @@ HOME_TOP = """() => {
 
 
 def home_hero_shelf(page):
-    """One editorial hero with the dated strip, then a five-banner shelf that only moves when asked."""
+    """One editorial hero, the free-food calendar in the first screen, then a shelf that only moves when asked."""
     count = 0
 
     def check(ok, detail):
@@ -609,8 +613,12 @@ def home_hero_shelf(page):
         mapped = next(b for b in top["banners"] if b["name"] == "map")
         check(mapped["target"] == "_blank" and "noopener" in mapped["rel"].split(), (where, "map opens safely", mapped))
         widths = {b["name"]: b["box"]["w"] for b in top["banners"]}
-        check(min(widths["today"], widths["pick"]) > widths["map"],
-              (where, "today and pick outrank the discovery banners", widths))
+        check(widths["pick"] > widths["map"], (where, "the picker outranks the discovery banner", widths))
+        check(top["grid"]["bottom"] <= height and top["grid"]["h"] > 0,
+              (where, "the calendar grid is in the first screen", top["grid"]))
+        if width <= 720:
+            check(top["cal"]["y"] < top["collage"]["y"],
+                  (where, "phones: the calendar comes before the decorative collage", top["cal"], top["collage"]))
         check([g["title"] for g in top["groups"]] == GROUPS and not any(g["purpose"] for g in top["groups"]),
               (where, "eat, read and news groups; the numbered title needs no description line", top["groups"]))
         check(top["news"] == NEWS_HREFS and all((ROOT / h.split("#")[0]).is_file() for h in top["news"]),
@@ -635,8 +643,6 @@ def home_hero_shelf(page):
         check(levels[0] == 1 and all(b <= a + 1 for a, b in zip(levels, levels[1:])), (where, "heading order", levels))
         track = top["track"]
         check(track["overflow"] in ("auto", "scroll") and track["snap"].startswith("x"), (where, "native scroll snap", track))
-        if width >= 1024:
-            check(top["banners"][0]["box"]["y"] < height, (where, "shelf starts inside the first screen", top["shelf"]))
         if track["scroll"] <= track["client"] + 1:
             # Everything fits (three banners on a wide screen): nothing to scroll, so no buttons.
             check(not top["navShown"] and all(b["box"]["right"] <= track["box"]["right"] + 1 for b in top["banners"]),
@@ -683,7 +689,7 @@ def home_hero_shelf(page):
             (where, "nothing moves on its own"))
         page.locator("#langToggle").click()
         english = page.evaluate(HOME_TOP)
-        check(english["title"].startswith("What should") and english["banners"][0]["title"] == "Today's free food"
+        check(english["title"].startswith("What should") and english["banners"][0]["title"] == "Can't decide? Give it a spin"
               and [g["title"] for g in english["groups"]] == ["Eat today", "Read", "Babdoduk news"]
               and english["root"] <= 0 and english["body"] <= 0, (where, "English fits", english["root"], english["body"]))
         check(english["newsBlocks"][1]["links"][0]["text"].startswith("See the activity record"),
@@ -698,7 +704,7 @@ def home_hero_shelf(page):
     motion = link.evaluate("el => [getComputedStyle(el).transform, getComputedStyle(el).transitionDuration]")
     check(motion == ["none", "0s"], ("reduced motion keeps banners still", motion))
 
-    # Menu published today and no free food: the strip says so; the hero keeps its shape.
+    # Menu published today and no free food: the calendar says so; the hero keeps its shape.
     today = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
     page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json={
         "date": today, "restaurants": [{"id": "r1", "name": "r1", "lunch": {"items": ["밥"]}}]}))
@@ -708,7 +714,7 @@ def home_hero_shelf(page):
     page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
     top = page.evaluate(HOME_TOP)
     check(top["states"] == ["ready", "empty"] and "오늘 1곳" in page.locator("#homeMenuStatus").inner_text()
-          and "예정된 꽁밥이 아직 없어요" in page.locator("#homeFreeStatus").inner_text(), ("menu ready, free empty", top["states"]))
+          and page.locator("#homeCalAnswer").inner_text() == "예정된 꽁밥이 없어요", ("menu ready, free empty", top["states"]))
     check(top["hero"]["h"] > 0 and [b["name"] for b in top["banners"]] == SHELF and top["root"] <= 0,
           "hero and shelf keep their shape")
     page.unroute("**/data/kaist-menu/latest.json")
@@ -941,7 +947,11 @@ def structure_and_failures(page):
     page.route("**/data/**", lambda route: route.fulfill(status=503, body=""))
     page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
     check(page.locator("#homeMenuStatus").get_attribute("data-state") == "error"
-          and page.locator("#homeFreeStatus").get_attribute("data-state") == "error", "home names unavailable data")
+          and page.locator("#homeCal").get_attribute("data-state") == "error", "home names unavailable data")
+    cal_text = page.locator("#homeCal").inner_text()
+    check("불러오지 못했어요" in cal_text and not any(word in cal_text for word in ("일정 없음", "기록 없음", "예정된 꽁밥이 없어요"))
+          and page.locator("#homeCal .hc-dot").count() == 0 and page.locator("#homeCalAll").get_attribute("href") == "ggongbab.html#free",
+          ("a failed schedule is not an empty one", cal_text))
     check(page.locator(".home-hero h1").is_visible() and page.locator(".home-actions .btn-primary").is_visible()
           and page.locator("#homeShelf > li[data-banner]").count() == len(SHELF), "hero and shelf survive missing data")
     check(page.locator("#homeFeature").is_hidden() and page.locator(".home-desks a").count() == 4
