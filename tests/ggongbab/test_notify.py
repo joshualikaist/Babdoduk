@@ -175,3 +175,12 @@ def test_cloud_notifier_reads_only_the_environment_it_is_given():
     assert isinstance(cloud_watch.cloud_notifier({"TELEGRAM_BOT_TOKEN": TOKEN, "TELEGRAM_CHAT_ID": "1"}),
                       notify.TelegramNotifier)
     assert isinstance(cloud_watch.cloud_notifier({"NTFY_TOKEN": "tk_x", "NTFY_TOPIC": "t"}), notify.NtfyNotifier)
+
+
+def test_owner_connection_test_uses_only_the_approved_safe_message(tmp_path, monkeypatch):
+    import alert_push
+    sink = Recorder()
+    monkeypatch.setattr(alert_push, "CONFIG", tmp_path / "absent.json")
+    monkeypatch.setattr(notify, "local_notifier", lambda _: sink)
+    assert alert_push.main(["--test"]) == 0
+    assert sink.messages == ["✅ Babdoduk monitoring connected\n\ncomponent: operations\nstatus: healthy"]

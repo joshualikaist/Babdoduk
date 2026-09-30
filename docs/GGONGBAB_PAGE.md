@@ -1,5 +1,7 @@
 # 꽁밥 (KAIST 무료 식사 행사) 자동 수집 시스템
 
+2026-09-30 lab 확장: 무료 음식과 캠퍼스 먹거리 소식을 구분합니다. 소식은 별도 `news.json`으로 표시하며 무료 집계·레이더·지난 기록에 섞지 않습니다. [출처 검증과 운영](CAMPUS_FOOD_NEWS.md).
+
 **Production (`main`):** 공개 페이지(`ggongbab.html`)와 홈 요약은 검증된 정적 스냅숏
 `data/ggongbab/latest.json` 만 읽는다. 브라우저는 DB에 접속하지 않는다.
 

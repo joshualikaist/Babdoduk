@@ -30,6 +30,7 @@ from .ops_storage import atomic_json, read_json
 KST = timezone(timedelta(hours=9))
 TELEGRAM_API = "https://api.telegram.org"
 TOKEN_TARGET = "babdoduk/alert-telegram"
+CONNECTION_TEST_MESSAGE = "✅ Babdoduk monitoring connected\n\ncomponent: operations\nstatus: healthy"
 NTFY_TOKEN_TARGET = "babdoduk/alert-ntfy"
 REMIND_CRITICAL_SECONDS = 6 * 3600
 RETRY_AFTER_FAILURE_SECONDS = 300

@@ -69,6 +69,8 @@ Navigation labels are **오늘의 꽁밥** for the availability hub (owner decis
 
 ## Functional requirements
 
+- **Owner decision, 2026-09-30 (lab only):** the KAIST food hub adds campus food news after free opportunities, with existing navigation and two tabs. Openings/service changes need no giveaway and never inflate free metrics or archive. News with a source-backed giveaway can coexist with a separately validated free event. See `docs/CAMPUS_FOOD_NEWS.md`.
+
 - Free-food publication requires explicit `food.provided == "true"`, approved/published state, `needs_review == false`, confidence and date/horizon checks. The UI must hide ended events, preserve ascending date order, filters, Radar and featured next event. Initial period is **전체 예정**; a previously saved filter takes precedence. Unknown food is not a negative or a positive assertion.
 - Cafeteria menus must carry their actual date/source. A stale payload must not be presented as today's confirmed menu. Restaurant, meal, favourites and retry behavior should be consistent wherever the menu appears.
 - Dish recommendations must identify the result as a catalog suggestion, show an intelligible reason and alternatives, preserve local feedback, and never claim live availability, validated health/allergen safety or a measured probability. A “choose” action does not prove the user ate the dish.

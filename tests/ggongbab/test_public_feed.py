@@ -277,7 +277,14 @@ def test_supabase_publication_has_no_500_row_or_two_day_cutoff(monkeypatch):
         "status": "eq.published", "needs_review": "eq.false", "order": "id.asc"})
 
 
-def test_export_writes_snapshot_and_syncs_same_ids(settings, monkeypatch, tmp_path):
+@pytest.fixture
+def reviewed_news_input(tmp_path):
+    reviewed = tmp_path / "research/ggongbab/food-news.json"
+    reviewed.parent.mkdir(parents=True)
+    reviewed.write_text('{"records": []}', encoding="utf-8")
+
+
+def test_export_writes_snapshot_and_syncs_same_ids(settings, monkeypatch, tmp_path, reviewed_news_input):
     current = datetime.now(KST)
     repo = Repo([event(event_start=(current + timedelta(days=1)).isoformat())])
     monkeypatch.setattr(refresh, "ROOT", tmp_path)
@@ -285,9 +292,24 @@ def test_export_writes_snapshot_and_syncs_same_ids(settings, monkeypatch, tmp_pa
     assert refresh.export(settings, repo, False) == 0
     payload = json.loads((tmp_path / "data/latest.json").read_text(encoding="utf-8"))
     assert {e["id"] for e in payload["events"]} == set(repo.public_events)
+    news = json.loads((tmp_path / "data/news.json").read_text(encoding="utf-8"))
+    assert news["items"] == [] and news["count"] == 0
 
 
-def test_refresh_sync_failure_is_non_green_and_snapshot_survives(settings, monkeypatch, tmp_path, capsys):
+def test_invalid_free_snapshot_does_not_replace_news(settings, monkeypatch, tmp_path, reviewed_news_input):
+    monkeypatch.setattr(refresh, "ROOT", tmp_path)
+    monkeypatch.setattr(refresh, "DATA_DIR", tmp_path / "data")
+    monkeypatch.setattr(refresh, "validate_export", lambda _: ["synthetic invalid free feed"])
+    folder = tmp_path / "data"
+    folder.mkdir()
+    previous = '{"preserved":true}'
+    (folder / "news.json").write_text(previous, encoding="utf-8")
+    repo = Repo([event(event_start=(datetime.now(KST) + timedelta(days=1)).isoformat())])
+    assert refresh.export(settings, repo, False) == 23
+    assert (folder / "news.json").read_text(encoding="utf-8") == previous
+
+
+def test_refresh_sync_failure_is_non_green_and_snapshot_survives(settings, monkeypatch, tmp_path, capsys, reviewed_news_input):
     repo = Repo([event(event_start=(datetime.now(KST) + timedelta(days=1)).isoformat())])
     monkeypatch.setattr(refresh, "ROOT", tmp_path)
     monkeypatch.setattr(refresh, "DATA_DIR", tmp_path / "data")

@@ -1,5 +1,7 @@
 # Babdoduk design system
 
+Lab food hub (owner decision, 2026-09-30): 먹거리 소식 / Campus food news follows actual free opportunities as lightweight date/title/fact/source rows. No numbered cards or magazine narrative. Navigation, tabs and home metrics stay unchanged. See `docs/CAMPUS_FOOD_NEWS.md`.
+
 Status: proposed shared rules for lab. This describes target behavior; current CSS still has page-specific styles. Migrate incrementally after a representative page proves the rule. `PRD.md` determines which experience leads.
 
 ## Identity and repeated devices

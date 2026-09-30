@@ -1,5 +1,10 @@
 # Portal LIST-only local poller
 
+Lab discovery expansion, 2026-09-30: service-change news joins the existing
+free-food signals as Stage A candidates. Newly qualifying recent rows can be
+reconsidered without resetting state. This grants no detail access or automatic
+publication; see [CAMPUS_FOOD_NEWS.md](CAMPUS_FOOD_NEWS.md).
+
 This mode reuses a human-authenticated Portal session. It does not automate
 credentials, SSO/MFA, authentication endpoints, notice details, or view counts.
 No live Portal compatibility claim is made by the synthetic tests.

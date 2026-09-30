@@ -760,6 +760,13 @@ def main() -> None:
     if (ROOT / "data" / "kaist-menu").is_dir():
         errors.extend(validate_kaist_dir(ROOT / "data" / "kaist-menu"))
     ggongbab = ROOT / "data" / "ggongbab" / "latest.json"
+    news = ROOT / "data" / "ggongbab" / "news.json"
+    if news.exists():
+        from ggongbab.food_news import validate_news_payload
+        try:
+            errors.extend(validate_news_payload(load(news)))
+        except (ValueError, TypeError):
+            errors.append("news JSON invalid (values suppressed)")
     if ggongbab.exists():
         errors.extend(validate_ggongbab(ggongbab))
     # Past listings are optional until the first export writes them. The live/archive

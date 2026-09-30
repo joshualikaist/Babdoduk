@@ -97,6 +97,68 @@ def radar_one_today(browser, base, report):
         context.close()
 
 
+def campus_food_news(browser, base, report):
+    """News and an independently valid free offer coexist without sharing counts."""
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    neutralize_public_config(context)
+    context.route("https://fonts.googleapis.com/**", lambda route: route.abort())
+    context.route("https://fonts.gstatic.com/**", lambda route: route.abort())
+    try:
+        context.clock.set_fixed_time(RADAR_NOW)
+        page = context.new_page()
+        free = one_today_payload()
+        news = {"id": "news-00000000000000000000000000000001", "contentType": "campus_food_news",
+                "noticeDate": RADAR_NOW.date().isoformat(), "title": "교내 신규 식당 오픈 안내",
+                "summary": "점심 영업을 시작합니다.", "hasFreeOffer": False,
+                "sources": [{"type": "portal", "name": "KAIST 포탈", "url": "https://portal.kaist.ac.kr/PRIVATE-ID"}]}
+        both = {**news, "id": "news-00000000000000000000000000000002", "hasFreeOffer": True,
+                "title": "교내 카페 오픈 및 커피 무료 제공"}
+        poisoned = {**news, "id": "news-00000000000000000000000000000003", "title": "pstNo=PRIVATE-ID"}
+        old_news = {**news, "id": "news-00000000000000000000000000000004",
+                    "noticeDate": (RADAR_NOW - timedelta(days=31)).date().isoformat()}
+        future_news = {**news, "id": "news-00000000000000000000000000000005",
+                       "noticeDate": (RADAR_NOW + timedelta(days=1)).date().isoformat()}
+        mixed = [*free["events"], {**free["events"][0], **news}]
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": mixed}))
+        page.route("**/data/ggongbab/news.json", lambda route: route.fulfill(json={"items": [news, both, news, poisoned, old_news, future_news]}))
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json={"events": [
+            {**mixed[1], "startAt": (RADAR_NOW - timedelta(days=1)).isoformat()}]}))
+        for width, lang in ((390, "ko"), (1440, "ko"), (390, "en")):
+            page.set_viewport_size({"width": width, "height": 844})
+            page.goto("about:blank")
+            page.goto(base + "/ggongbab.html#free")
+            page.locator(".gg-news-row").first.wait_for()
+            if lang == "en":
+                page.locator("#langToggle").click()
+            assert page.locator("#ggNewsTitle").inner_text() == ("Campus food news" if lang == "en" else "먹거리 소식")
+            assert page.locator(".gg-news-row").count() == 2
+            assert page.locator(".gg-card").count() == 1
+            assert page.locator(".gg-past").count() == 0
+            assert page.locator(".gg-card").first.get_attribute("data-id") == "one"
+            assert page.locator(".gg-radar-count").inner_text() == ("1 today" if lang == "en" else "오늘 1개")
+            assert page.locator(".gg-news [href]").count() == 0
+            assert "PRIVATE-ID" not in page.locator(".gg-news").inner_html()
+            assert page.locator(".gg-news").evaluate("el => !!(el.compareDocumentPosition(document.querySelector('.gg-live')) & Node.DOCUMENT_POSITION_PRECEDING)")
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            page.locator(".gg-news").scroll_into_view_if_needed()
+            page.locator(".gg-news").screenshot(path=str(OUT / f"campus-news-section-{width}-{lang}.png"))
+            page.evaluate("window.scrollTo(0, 0)")
+            page.screenshot(path=str(OUT / f"campus-news-{width}-{lang}.png"), full_page=True)
+            page.locator("#foodHubTabMenu").click()
+            assert not page.locator(".gg-news").is_visible()
+            report["checks"] += 11
+        page.unroute("**/data/ggongbab/news.json")
+        page.route("**/data/ggongbab/news.json", lambda route: route.fulfill(status=503, body=""))
+        page.goto("about:blank")
+        page.goto(base + "/ggongbab.html#free")
+        page.locator(".gg-news-state").wait_for()
+        page.wait_for_function("document.querySelector('.gg-news-state').textContent.includes('unavailable')")
+        assert page.locator(".gg-card").count() == 1
+        report["checks"] += 1
+    finally:
+        context.close()
+
+
 def open_ended_hand_out(browser, base, report):
     """A hand-out with no end time ("11:30 ~ 소진 시까지", MISS-001) stays live for the feed's
     three-hour grace window after it starts, then leaves for the past listings. Beverage
@@ -811,6 +873,7 @@ def run_checks(preview=False):
         # A same-day upcoming event makes the radar report one meal. The page
         # clock is fixed for this scenario only (see radar_one_today).
         radar_one_today(browser, base, report)
+        campus_food_news(browser, base, report)
         open_ended_hand_out(browser, base, report)
         past_listings(browser, base, report)
         weekly_cafeteria(browser, base, report)

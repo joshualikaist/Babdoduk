@@ -63,7 +63,10 @@ class PortalListPoller:
         for key, entry in observed.items():
             previous = old["notices"].get(key)
             eligible = floor is None or notice_timestamp(entry["reg_dt"]) >= floor
-            changed = previous is None or previous["fingerprint"] != entry["fingerprint"]
+            # A broader reviewed discovery rule can newly qualify an unchanged
+            # recent title. Preserve the baseline and reconsider only that transition.
+            changed = (previous is None or previous["fingerprint"] != entry["fingerprint"]
+                       or (entry["candidate"] and not previous["candidate"]))
             if not baseline and eligible and changed and entry["public"]:
                 counts["new" if previous is None else "updated"] += 1
                 if entry["candidate"]:

@@ -27,6 +27,7 @@ VOLATILE_KEYS = {
     "data/ggongbab/latest.json": {"generatedAt"},
     # Past listings are stamped on every export too; an added or aged-out listing still commits.
     "data/ggongbab/archive/index.json": {"generatedAt"},
+    "data/ggongbab/news.json": {"generatedAt"},
 }
 
 

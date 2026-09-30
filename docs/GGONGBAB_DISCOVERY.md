@@ -1,5 +1,10 @@
 # Ggongbab discovery: radar, evidence, evaluation
 
+2026-09-30 lab scope extension: the food hub also retains campus food-service
+news candidates without a giveaway. News uses a separate reviewed projection,
+never the free-food event array or metrics. The existing free-food evidence bar
+and Portal LIST-only boundary remain. See [CAMPUS_FOOD_NEWS.md](CAMPUS_FOOD_NEWS.md).
+
 The measure is not "did the model understand the mail eventually" but **"did a student know
 about the free food while it was still useful"**, without trading away privacy, truthfulness,
 source provenance, account security or deterministic validation. MISS-001 (2026-09-28, a coffee

@@ -32,6 +32,7 @@
     free: { status: 'loading', data: null, error: '' },
     menu: { status: 'loading', data: null, error: '', meal: 'lunch' },
     archive: { status: 'loading', data: null, expanded: false },
+    news: { status: 'loading', items: [] },
     when: 'all',
     food: 'all'
   };
@@ -398,7 +399,60 @@
         });
       }
     }
-    return html + '</div></div>' + archiveHtml(now);
+    return html + '</div></div>' + newsHtml() + archiveHtml(now);
+  }
+  function newsHtml() {
+    if (state.news.status === 'off') return '';
+    var html = '<section class="gg-news" aria-labelledby="ggNewsTitle"><h2 id="ggNewsTitle">' +
+      esc(t('gg.news.title', '먹거리 소식')) + '</h2>';
+    if (state.news.status === 'loading') return html + '<p class="gg-news-state">' + esc(t('gg.news.loading', '소식을 확인하고 있어요.')) + '</p></section>';
+    if (state.news.status === 'error') return html + '<p class="gg-news-state">' + esc(t('gg.news.error', '소식을 불러오지 못했어요.')) + '</p></section>';
+    if (!state.news.items.length) return html + '<p class="gg-news-state">' + esc(t('gg.news.empty', '최근 30일 등록된 소식 없음')) + '</p></section>';
+    html += '<ul class="gg-news-list">';
+    state.news.items.forEach(function (item) {
+      var day = toKst(item.noticeDate + 'T12:00:00+09:00');
+      html += '<li class="gg-news-row" data-news-id="' + esc(item.id) + '"><time datetime="' + esc(item.noticeDate) + '">' +
+        esc(dayLabel(day)) + '</time><div class="gg-news-facts"><h3>' + esc(item.title) + '</h3>';
+      if (item.location) html += '<p class="gg-news-place">' + esc(item.location) + '</p>';
+      if (item.summary) html += '<p>' + esc(item.summary) + '</p>';
+      html += '<span class="gg-news-source">' + esc(sourceLabel(item)) + '</span></div></li>';
+    });
+    return html + '</ul></section>';
+  }
+  function acceptNews(data) {
+    if (!data || !Array.isArray(data.items)) throw new Error('bad news');
+    var seen = {};
+    state.news.items = data.items.filter(function (item) {
+      if (!item || item.contentType !== 'campus_food_news' || !/^news-[a-f0-9]{32}$/.test(item.id || '') ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(item.noticeDate || '') || typeof item.title !== 'string' || !item.title || seen[item.id]) return false;
+      // Defense in depth: private source URLs/IDs are never rendered, including
+      // malformed static payloads. The exporter is the authoritative validator.
+      var text = [item.title, item.summary || '', item.location || ''].join(' ');
+      if (/portal\.kaist\.ac\.kr|sso\.kaist\.ac\.kr|\/wz\/|pstNo|boardNo|external[_ ]?id|https?:\/\//i.test(text) ||
+          /\b[a-z_][\w-]*\s*=\s*\S+/i.test(text)) return false;
+      var date = toKst(item.noticeDate + 'T12:00:00+09:00');
+      if (!date || ymd(date) !== item.noticeDate) return false;
+      var today = nowKst();
+      if (item.noticeDate > ymd(today) || item.noticeDate < ymd(addDays(today, -30))) return false;
+      seen[item.id] = true;
+      return true;
+    });
+    state.news.status = 'ready';
+    render();
+  }
+  function loadNews() {
+    if (mode === 'preview' || mode === 'blocked') { state.news.status = 'off'; return; }
+    if (mode === 'fixture') {
+      acceptNews({ items: [{ id: 'news-00000000000000000000000000000001', contentType: 'campus_food_news',
+        noticeDate: ymd(nowKst()), title: '교내 새 식당 오픈 안내', summary: '점심 영업을 시작합니다.',
+        hasFreeOffer: false, sources: [{ type: 'portal', name: 'KAIST 포탈' }] }] });
+      return;
+    }
+    fetch('data/ggongbab/news.json', { cache: 'no-store' }).then(function (res) {
+      if (res.status === 404) return { items: [] };
+      if (!res.ok) throw new Error('unavailable');
+      return res.json();
+    }).then(acceptNews).catch(function () { state.news.status = 'error'; render(); });
   }
   function render() {
     var now = nowKst();
@@ -702,5 +756,6 @@
   });
   loadFree();
   loadArchive();
+  loadNews();
   if (document.hidden) pauseFeed(); else resumeFeed();
 })();

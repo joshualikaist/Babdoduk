@@ -77,9 +77,10 @@ def test_other_generated_paths_keep_committing_on_any_change():
     """Only the ggongbab feed and its archive are guarded; magazine and menu publishing are unchanged."""
     for path in ("data/magazine/latest.json", "data/kaist-menu/latest.json"):
         assert _meaningful(FEED, _feed(generatedAt="later"), path) == [path]
-    assert set(publish_generated.VOLATILE_KEYS) == {FEED_PATH, ARCHIVE_PATH}
+    assert set(publish_generated.VOLATILE_KEYS) == {FEED_PATH, ARCHIVE_PATH, "data/ggongbab/news.json"}
     assert publish_generated.VOLATILE_KEYS[FEED_PATH] == {"generatedAt"}
     assert publish_generated.VOLATILE_KEYS[ARCHIVE_PATH] == {"generatedAt"}
+    assert publish_generated.VOLATILE_KEYS["data/ggongbab/news.json"] == {"generatedAt"}
 
 
 # ---------------------------------------------------------------------------
@@ -179,13 +180,22 @@ def _artifact(tmp_path, payload) -> Path:
 
 
 @pytest.mark.parametrize("branch", ["lab", "main"])
-def test_generated_at_only_run_neither_commits_nor_pushes(origin, tmp_path, capsys, branch):
-    before = _git(origin, "rev-parse", branch)
+def test_generated_at_only_run_neither_commits_nor_pushes(origin, tmp_path, capsys, monkeypatch, branch):
+    before = {name: _git(origin, "rev-parse", name) for name in ("lab", "main")}
     artifact = _artifact(tmp_path, _feed(generatedAt="2026-09-25T10:30:00+09:00"))
+    commands = []
+    original = publish_generated.run
+
+    def observe(cmd, cwd=None):
+        commands.append(cmd)
+        return original(cmd, cwd)
+
+    monkeypatch.setattr(publish_generated, "run", observe)
 
     publish_generated.update_branch(branch, artifact, ["data/ggongbab"], MESSAGE)
 
-    assert _git(origin, "rev-parse", branch) == before
+    assert {name: _git(origin, "rev-parse", name) for name in before} == before
+    assert not any(cmd[:2] in (["git", "commit"], ["git", "push"]) for cmd in commands)
     assert f"{branch}: no meaningful feed change" in capsys.readouterr().out
 
 

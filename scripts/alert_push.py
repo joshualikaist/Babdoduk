@@ -100,7 +100,7 @@ def main(argv=None) -> int:
         if notifier is None:
             print(notify.NOT_CONFIGURED)
             return 1
-        result = notifier.send(notify.format_message([Alert.of("portal", "OK", 0, 0.0)], source="local PC (test)"))
+        result = notifier.send(notify.CONNECTION_TEST_MESSAGE)
         print(result)
         return 0 if result == notify.SENT else 1
     removed = dispatch.delete_windows_credential(notify.TOKEN_TARGET)

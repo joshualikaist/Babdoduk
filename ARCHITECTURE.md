@@ -1,5 +1,7 @@
 # Babdoduk architecture and change boundaries
 
+Lab extension (2026-09-30): reviewed `research/ggongbab/food-news.json` → `food_news.py` → validated `data/ggongbab/news.json`, read only by the hub. News never enters canonical free events, public DB projection, free counts or archive. Portal LIST still produces Stage A metadata only. See `docs/CAMPUS_FOOD_NEWS.md`.
+
 Status: `main` production baseline, as prepared for the Phase 10B release (`release/product-refresh-2026-09`, based on `origin/main` 1331489, 2026-09-24). “In code” does not establish that a config is active, that a deployment serves it or that its data is fresh. Sections labelled **Lab-only / not promoted to production in the current main baseline** describe work that exists only on the `lab` branch.
 
 ## Production system map (`main`)

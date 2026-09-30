@@ -244,6 +244,9 @@ def data_dir(tmp_path, monkeypatch):
     folder.mkdir(parents=True)
     monkeypatch.setattr(refresh_ggongbab, "DATA_DIR", folder)
     monkeypatch.setattr(refresh_ggongbab, "ROOT", tmp_path)
+    reviewed = tmp_path / "research/ggongbab/food-news.json"
+    reviewed.parent.mkdir(parents=True)
+    reviewed.write_text('{"records": []}', encoding="utf-8")
     return folder
 
 
@@ -302,6 +305,7 @@ def test_a_failing_archive_query_never_costs_the_live_feed_a_refresh(settings, d
 def test_dry_run_writes_neither_file(settings, data_dir, capsys):
     assert refresh_ggongbab.export(settings, StubRepo([_fresh_row("x")]), dry_run=True) == 0
     assert not (data_dir / "latest.json").exists() and not (data_dir / "archive").exists()
+    assert not (data_dir / "news.json").exists()
     assert "archive: 0 ended listing(s) in the last 30 days" in capsys.readouterr().out
 
 

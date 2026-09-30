@@ -5,6 +5,8 @@
 
 공개 사이트: **https://babdoduk.vercel.app** (`main` 브랜치)
 
+Lab 전용 확장: 무료 일정 아래 **먹거리 소식**을 별도 `news.json`으로 표시합니다. 식당 개점·영업 변경은 무료 음식 수에 포함하지 않습니다. [출처 검증과 운영](docs/CAMPUS_FOOD_NEWS.md).
+
 ## 한눈에 보기
 
 ### 공개 기능

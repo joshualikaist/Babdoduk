@@ -61,6 +61,12 @@ A token is never stored in the repository, `.env`, logs, Supabase, browser stora
 
 ## Activation (owner approval required; nothing below has been run)
 
+Status for the campus-news task: **PARTIALLY CONFIGURED**, not ACTIVE. Code and
+synthetic tests do not establish a stored credential, a successful real message,
+or owner phone delivery. Do not create a bot or send a test during this lab task.
+The current operations checkout may predate this CLI: install the reviewed alert
+code there at the owner checkpoint before using the commands below.
+
 1. In Telegram, open @BotFather, then `/newbot`. Name it, for example, "Babdoduk Ops"; the bot
    username must end in `bot`. Keep the token private.
 2. Open the new bot, press **Start**, and send it any message.
@@ -75,10 +81,38 @@ A token is never stored in the repository, `.env`, logs, Supabase, browser stora
 
    * `--store-telegram-token` prompts without echo.
    * `--find-telegram-chat` prints your chat id.
-   * `--test` sends one test message.
+   * `--test` sends exactly the safe connection message below. It does not assert
+     that Portal/Radar are healthy and contains no source content.
 4. On GitHub, add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` as secrets of the
    `ggongbab-production` environment. Then dispatch `ggongbab-refresh` once in `check` mode and
    confirm the log line `cloud watch: all watched collectors healthy` or `PUSH_SENT`.
+
+The owner checkpoint sequence is: open @BotFather and `/newbot`; create the
+Babdoduk operations bot; send `/start` to that bot; store its token via the
+non-echoing prompt; obtain the chat ID only in the owner's local terminal (do
+not paste it in chat/logs); configure local delivery; add cloud copies **only**
+as `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` environment secrets in
+`ggongbab-production`; send one connection test and confirm phone receipt.
+
+```
+✅ Babdoduk monitoring connected
+
+component: operations
+status: healthy
+```
+
+Then test a local warning and its recovery with synthetic `Alert` rows and a
+separate `.local/telegram-acceptance/` PushPolicy state, using the configured
+notifier. Preserve the live collectors, heartbeat and alert state. The existing
+`test_a_brief_warning_never_reaches_the_phone_but_a_lasting_one_does` and recovery
+tests show the warning/debounce/healthy sequence; real phone receipt must be
+recorded independently. Finally temporarily rename only `.local/alert-push.json`
+to `.local/alert-push.disabled.json` to disable local sending, run the approved
+main `ggongbab-refresh` check at the checkpoint, and verify cloud phone delivery
+for an actual stale heartbeat (or a separately approved synthetic cloud test).
+Restore the local configuration afterward. Do not falsify or delete production
+heartbeats to manufacture an alert. Each delivery remains unverified until the
+owner confirms receipt; no mailbox/Portal title, private URL or ID is permitted.
 
 **Rollback:**
 1. Run `python scripts\alert_push.py --remove`.
