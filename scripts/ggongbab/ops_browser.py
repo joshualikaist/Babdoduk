@@ -185,6 +185,45 @@ def ensure_tabs(port: int, mail_host: str, dooray_url: str, *, roles=("portal", 
     return tab_roles(targets(port), mail_host)
 
 
+def wake_tabs(port: int, mail_host: str, *, cdp=None, wait: float = 15, sleep=time.sleep,
+              clock=time.monotonic) -> dict:
+    """Restore any page that Chrome discarded or froze, before a Playwright client attaches.
+
+    Playwright initialises EVERY page while attaching, so one dead tab (measured: the hidden
+    Portal tab discarded under memory pressure) blocks both workers. Each page is probed with a
+    renderer round trip; an unresponsive one is restored with `Target.activateTarget` - Chrome
+    reloads a discarded tab from its own URL and session, exactly as a click on the tab would;
+    the window stays minimized. Nothing is navigated, typed, evaluated or closed. A page that
+    stays unresponsive fails closed. Returns counts and the roles restored.
+    """
+    from .cdp_lite import LoopbackCdp
+    restored, roles = 0, []
+    with (cdp or LoopbackCdp)(port) as client:
+        targets = (client.call("Target.getTargets") or {}).get("targetInfos")
+        if targets is None:
+            raise OpsError("OPS_BROWSER_TARGETS_UNAVAILABLE")
+        pages = [t for t in targets if t.get("type") == "page"]
+        for target in pages:
+            attached = client.call("Target.attachToTarget", {"targetId": target["targetId"], "flatten": True})
+            if not attached:
+                raise OpsError("OPS_BROWSER_TAB_UNRESPONSIVE")
+            session = attached["sessionId"]
+            try:
+                if client.call("Runtime.getIsolateId", session=session, timeout=2) is not None:
+                    continue
+                client.call("Target.activateTarget", {"targetId": target["targetId"]})
+                deadline = clock() + wait
+                while client.call("Runtime.getIsolateId", session=session, timeout=1.5) is None:
+                    if clock() >= deadline:
+                        raise OpsError("OPS_BROWSER_TAB_UNRESPONSIVE")
+                    sleep(0.5)
+                restored += 1
+                roles.append(role_of(target.get("url", ""), mail_host) or "other")
+            finally:
+                client.call("Target.detachFromTarget", {"sessionId": session}, timeout=2)
+    return {"pages": len(pages), "restored": restored, "roles": roles}
+
+
 def start_dedicated(profile: Path, *, port: int, roles, dooray_url: str, mail_host: str, start=None,
                     settled=wait_for_settled_pages, ensure=ensure_tabs, log=lambda _: None) -> None:
     """Start a dedicated Chrome with its tabs: the Ops Chrome uses roles portal + dooray.

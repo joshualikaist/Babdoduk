@@ -16,7 +16,7 @@ import subprocess
 import time
 
 from .ops_browser import (PORTAL_START, START_LOCK, dooray_host, dooray_start_url, slot_for,
-                          start_dedicated)
+                          start_dedicated, wake_tabs)
 from .ops_storage import OpsError
 from .portal_list_state import ListStateError, poller_lock
 from .portal_session import verify_resident_owner
@@ -103,13 +103,14 @@ def start_lock(path, *, timeout=60, sleep=time.sleep):
 
 class ResidentHost:
     def __init__(self, root, *, role="portal", slot=None, run=powershell, split=split_command,
-                 start=start_chrome, verify=verify_resident_owner, sleep=time.sleep):
+                 start=start_chrome, verify=verify_resident_owner, sleep=time.sleep, wake=wake_tabs):
         self.root = Path(root).resolve()
         self.role = role
         slot = slot or slot_for(self.root, role)
         self.profile, self.port, self.unified = slot.profile, slot.port, slot.unified
         self.owner_code = OWNER_CODES[role]
         self.run, self.split, self.start, self.verify, self.sleep = run, split, start, verify, sleep
+        self.wake = wake
 
     @property
     def contract_path(self):
@@ -194,6 +195,12 @@ class ResidentHost:
                     raise OpsError(self.owner_code) from None
                 log("PORTAL_BROWSER_STARTED")
         self.verify(self.profile, self.port)
+        # Only after the owner is verified: restore a tab Chrome discarded or froze, so it
+        # cannot block a Playwright attach (OPS_BROWSER_TAB_UNRESPONSIVE when it stays dead).
+        woke = self.wake(self.port, dooray_host(self.contract_path))
+        if woke["restored"]:
+            log("OPS_BROWSER_TAB_RESTORED")
+        return woke
 
 
 class PortalHost(ResidentHost):

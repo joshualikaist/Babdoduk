@@ -90,7 +90,7 @@ def ops_browser_command(files, args):
         for key in ("result", "cycles_run", "portal_ok", "portal_failed", "dooray_ok", "dooray_failed", "overlaps",
                     "chrome_pid", "chrome_created", "windows", "tabs", "browser_changed", "tabs_closed",
                     "cross_navigation", "pages_added", "windows_added", "guard_violations",
-                    "unread_still_unread", "unread_became_read", "dooray_counts", "failures"):
+                    "unread_still_unread", "unread_became_read", "tabs_restored", "dooray_counts", "failures"):
             print(f"{key:<20}: {report.get(key)}")
         return 0 if report["result"] == "PASS" else 1
     if action == "legacy-browser-close":
@@ -128,7 +128,7 @@ def radar(files, *, once=False, dry_run=False, interval=None):
     from ggongbab.dispatch import request_refresh
     from ggongbab.dooray_radar import INTERVAL_DEFAULT, BrowserUnverified, RadarFiles, dooray_page, run_radar
     from ggongbab.heartbeat import HeartbeatWriter, build_heartbeat
-    from ggongbab.ops_browser import slot_for
+    from ggongbab.ops_browser import slot_for, wake_tabs
     from ggongbab.portal_list_state import poller_lock
     from ggongbab.portal_session import verify_resident_owner
     from ggongbab.web.mail_reader import list_mails_paged
@@ -185,6 +185,15 @@ def radar(files, *, once=False, dry_run=False, interval=None):
             verify_resident_owner(slot.profile, slot.port)
         except Exception:
             raise BrowserUnverified() from None
+        # A tab Chrome discarded/froze (in the Ops Chrome possibly the Portal tab) would block
+        # the attach; it is restored, never navigated. A just-restored inbox reloads, so wait
+        # for it to settle before the unread guard starts watching.
+        try:
+            woke = wake_tabs(slot.port, mail_host)
+        except Exception:
+            raise ConnectionError("DOORAY_BROWSER_ABSENT") from None
+        if "dooray" in woke["roles"]:
+            time.sleep(RESTORE_SETTLE_SECONDS)
         with resident_session(slot.profile, contract, start_url="", port=slot.port, attach_only=True,
                               log=lambda _: None) as session:
             session.page = dooray_page(session.context, mail_host)   # never the Portal tab
@@ -215,6 +224,7 @@ def alerts_command(files, emit=True):
     return 0 if all(a.severity == "healthy" for a in found) else 2
 
 
+RESTORE_SETTLE_SECONDS = 15
 OPS_BROWSER_ACTIONS = ("ops-browser-start", "ops-browser-status", "ops-browser-recover", "ops-browser-mode",
                        "ops-browser-verify", "ops-browser-profiles", "legacy-browser-close", "legacy-browser-start")
 

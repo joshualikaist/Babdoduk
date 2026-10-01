@@ -41,6 +41,19 @@ opens with exactly the two tabs; afterwards Chrome restores its own tabs, and St
 only for a role that has none. It never closes a tab. SSO may open extra pages while you log in;
 that is fine.
 
+**Discarded tabs (measured 2026-10-01).** On this PC (about 0.4 GB of RAM free, on battery)
+Chrome discarded the hidden Portal tab of the minimized Ops Chrome within minutes
+(`document.wasDiscarded`). Playwright initialises every page when it attaches, so one discarded
+tab made both workers' attach time out. The Dooray tab, which keeps a websocket, was never
+discarded. Before every attach, each worker therefore checks every tab over a small loopback CDP
+client. A tab that does not answer is restored with `Target.activateTarget`: Chrome reloads its
+own URL with its existing session, the same as clicking the tab, and the window stays minimized.
+Nothing is navigated, typed, evaluated or closed. A restored Dooray inbox settles for 15 s before
+the unread guard starts. A tab that cannot be restored fails closed: Portal takes the existing
+`PORTAL_CDP_ATTACH_TIMEOUT` path (one verified-browser recovery, then manual), and the Radar backs
+off with `DOORAY_BROWSER_ABSENT`. Either worker may restore the other's discarded tab, because
+that tab blocks both; neither ever navigates a live tab.
+
 Which browser the workers attach to is `.local/ops-browser.json`: `{"mode": "unified"}` (the Ops
 Chrome) or `{"mode": "separate"}` (the legacy Portal 9223 + Dooray 9222 browsers). A missing file
 means `separate`; corrupt content fails closed. Sections 1-13 describe the workers themselves and
@@ -310,6 +323,8 @@ or older Dooray tasks; review those separately in Task Scheduler.
 | DOORAY_BROWSER_UNVERIFIED | The listener is not positively the dedicated Chrome (profile, port, loopback, `chrome.exe`). The Radar never attaches; it retries with backoff and raises a critical alert. Run `status_ops_browser.cmd` and find what owns the port |
 | OPS_BROWSER_UNVERIFIED / OPS_BROWSER_STALE | Start refuses an unknown/ambiguous owner or a dedicated process without a listener; use `recover_ops_browser.cmd` for the stale case only |
 | OPS_WORKERS_STILL_RUNNING | The browser mode changes only while both workers are stopped |
+| OPS_BROWSER_TAB_RESTORED | Informational: a tab Chrome had discarded/frozen was restored before an attach (section 0) |
+| OPS_BROWSER_TAB_UNRESPONSIVE | A tab stayed dead after restore; Portal follows `PORTAL_CDP_ATTACH_TIMEOUT`, the Radar backs off. Click the tab, or `recover_ops_browser.cmd` |
 | DOORAY_TRANSPORT_FAILED / DOORAY_WRITE_FAILED | Bounded backoff up to 15 min; nothing is marked processed until its task is written |
 
 CDP timeout and owner failure keep their fixed reason in a `collector_error`

@@ -134,7 +134,13 @@ def run_worker(files, *, recover_stale=False, host=None, settings=None, now=time
                     try:
                         host.ensure(recover_stale=recover_stale, log=journal)
                     except OpsError as exc:
-                        raise AuthRequired(str(exc)) from None
+                        # A tab that cannot be restored blocks the attach exactly like the known
+                        # CDP attach timeout: one verified-browser recovery, then manual.
+                        code = str(exc)
+                        if code in ("OPS_BROWSER_TAB_UNRESPONSIVE", "OPS_BROWSER_TARGETS_UNAVAILABLE",
+                                    "OPS_BROWSER_CDP_ERROR"):
+                            code = "PORTAL_CDP_ATTACH_TIMEOUT"
+                        raise AuthRequired(code) from None
                     # The Ops Chrome (shared with the Radar) or, in separate mode, the Portal browser.
                     return PortalSessionProvider(host.profile, host.port).acquire()
 

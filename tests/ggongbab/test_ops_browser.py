@@ -194,6 +194,7 @@ def unified_host(tmp_path, inventory, *, tokens=None, **kw):
     }
     run = Mock(return_value=json.dumps(inventory))
     start, verify = Mock(), Mock()
+    kw.setdefault("wake", Mock(return_value={"pages": 2, "restored": 0, "roles": []}))
     host = PortalHost(tmp_path, run=run, split=lambda value: tokens[value], start=start, verify=verify,
                       sleep=lambda _: None, **kw)
     return host, run, start, verify
@@ -359,6 +360,9 @@ def test_radar_verifies_the_owner_before_every_attach_and_uses_only_the_dooray_t
         yield SimpleNamespace(context=SimpleNamespace(pages=[portal, inbox]), page=portal)
 
     monkeypatch.setattr("ggongbab.web.resident.resident_session", resident_session)
+    woke = []
+    monkeypatch.setattr("ggongbab.ops_browser.wake_tabs",
+                        lambda port, host: woke.append((port, host)) or {"pages": 2, "restored": 0, "roles": []})
     probed = []
     monkeypatch.setattr("ggongbab.web.resident.is_running", lambda p: probed.append(p) or {"Browser": "x"})
     assert workers.radar(Files(tmp_path), dry_run=True, once=True) == 0
@@ -366,7 +370,7 @@ def test_radar_verifies_the_owner_before_every_attach_and_uses_only_the_dooray_t
     with pytest.raises(radar.BrowserUnverified):
         with captured["session_factory"]():
             pytest.fail("attached to an unverified browser")
-    assert attached == []                                   # no attach without a verified owner
+    assert attached == [] and woke == []                    # no wake or attach without a verified owner
     owner.side_effect = None
     with captured["session_factory"]() as session:
         assert session.page is inbox                         # never the Portal tab
@@ -374,6 +378,7 @@ def test_radar_verifies_the_owner_before_every_attach_and_uses_only_the_dooray_t
     assert owner.call_args.args[1] == port and Path(owner.call_args.args[0]).name == profile
     assert attached[0][0] == profile and attached[0][1]["attach_only"] and attached[0][1]["start_url"] == ""
     assert attached[0][1]["port"] == port and not portal.navigations
+    assert woke == [(port, "kaist.gov-dooray.com")]          # dead tabs restored before the attach
 
 
 def test_an_unverified_radar_browser_backs_off_and_alerts_without_attaching(tmp_path):

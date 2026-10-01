@@ -128,6 +128,23 @@ def test_one_real_chrome_serves_two_concurrent_cdp_clients(tmp_path, pages_serve
         time.sleep(1)
         assert len(ob.page_targets(port)) == 3 and window_ids(port) == windows           # tab, not window
 
+        # A hidden tab that Chrome froze must not block attaching: wake_tabs restores it.
+        from ggongbab.cdp_lite import LoopbackCdp
+        hidden = [p for p in ob.page_targets(port) if p["url"].endswith("/portal-like")][0]
+        with LoopbackCdp(port) as cdp:
+            session = cdp.call("Target.attachToTarget", {"targetId": hidden["id"], "flatten": True})["sessionId"]
+            cdp.call("Page.setWebLifecycleState", {"state": "frozen"}, session=session)
+            cdp.call("Target.detachFromTarget", {"sessionId": session})
+        woke = ob.wake_tabs(port, "")
+        assert woke["pages"] == 3 and set(woke["roles"]) <= {"other"}
+        from playwright.sync_api import sync_playwright
+        from ggongbab.web.resident import endpoint
+        with sync_playwright() as pw:
+            browser = pw.chromium.connect_over_cdp(endpoint(port), timeout=20_000)   # no hang
+            assert len(browser.contexts[0].pages) == 3
+            browser.close()
+        assert {p["id"] for p in ob.page_targets(port)} >= {p["id"] for p in pages}       # nothing closed
+
         with pytest.raises(Exception):
             _cdp_close(port, owner["pid"] + 1)               # a different PID is never closed
         assert is_running(port)

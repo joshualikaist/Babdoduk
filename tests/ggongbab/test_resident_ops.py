@@ -199,7 +199,8 @@ def host_fixture(tmp_path, inventory):
               "other": ["chrome.exe", "--user-data-dir=OTHER", "--remote-debugging-port=9222"]}
     run = Mock(return_value=json.dumps(inventory))
     start, verify = Mock(), Mock()
-    host = PortalHost(tmp_path, run=run, split=lambda value: tokens[value], start=start, verify=verify, sleep=lambda _: None)
+    host = PortalHost(tmp_path, run=run, split=lambda value: tokens[value], start=start, verify=verify, sleep=lambda _: None,
+                      wake=Mock(return_value={"pages": 1, "restored": 0, "roles": []}))
     return host, run, start, verify
 
 

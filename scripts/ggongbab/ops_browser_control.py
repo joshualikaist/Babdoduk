@@ -141,23 +141,15 @@ def close_verified_browser(host, *, verify=None, connect=None, sleep=time.sleep)
     raise OpsError("OPS_BROWSER_CLOSE_FAILED")   # never escalated to a forced kill
 
 
-def _cdp_close(port, expected_pid):
-    from playwright.sync_api import sync_playwright
-    from .web.resident import endpoint
-    with sync_playwright() as pw:
-        browser = pw.chromium.connect_over_cdp(endpoint(port), timeout=30_000)
-        try:
-            cdp = browser.new_browser_cdp_session()
-            processes = cdp.send("SystemInfo.getProcessInfo").get("processInfo", [])
-            owners = [p.get("id") for p in processes if p.get("type") == "browser"]
-            if owners != [expected_pid]:
-                raise OpsError("OPS_BROWSER_UNVERIFIED")
-            cdp.send("Browser.close")
-        finally:
-            try:
-                browser.close()
-            except Exception:  # noqa: BLE001 - the browser is already going away
-                pass
+def _cdp_close(port, expected_pid, *, cdp=None):
+    """Browser-level only (no page attach), so a discarded tab cannot block the close."""
+    from .cdp_lite import LoopbackCdp
+    with (cdp or LoopbackCdp)(port) as client:
+        info = client.call("SystemInfo.getProcessInfo", timeout=10)
+        owners = [p.get("id") for p in (info or {}).get("processInfo", []) if p.get("type") == "browser"]
+        if owners != [expected_pid]:
+            raise OpsError("OPS_BROWSER_UNVERIFIED")
+        client.call("Browser.close", timeout=5)
 
 
 def close_legacy(files, role, *, host=None, **kwargs):

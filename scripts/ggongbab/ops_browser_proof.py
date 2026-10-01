@@ -36,21 +36,22 @@ FATAL = frozenset({"OPS_BROWSER_CHANGED", "DOORAY_UNREAD_INVARIANT_BROKEN", "DOO
                    "PORTAL_RESIDENT_OWNER_UNVERIFIED", "PORTAL_UI_CHANGED", "OPS_BROWSER_UNVERIFIED"})
 
 
-def window_ids(port):
-    """Distinct Chrome window ids of the page targets (CDP Browser.getWindowForTarget)."""
-    from playwright.sync_api import sync_playwright
-    from .web.resident import endpoint
-    with sync_playwright() as pw:
-        browser = pw.chromium.connect_over_cdp(endpoint(port), timeout=30_000)
-        try:
-            cdp = browser.new_browser_cdp_session()
-            ids = set()
-            for info in cdp.send("Target.getTargets")["targetInfos"]:
-                if info.get("type") == "page":
-                    ids.add(cdp.send("Browser.getWindowForTarget", {"targetId": info["targetId"]})["windowId"])
-            return ids
-        finally:
-            browser.close()   # detach only; the browser keeps running
+def window_ids(port, *, cdp=None):
+    """Distinct Chrome window ids of the page targets. Browser-level CDP only, so a discarded
+    tab cannot block it (Target.getTargets + Browser.getWindowForTarget)."""
+    from .cdp_lite import LoopbackCdp
+    with (cdp or LoopbackCdp)(port) as client:
+        targets = (client.call("Target.getTargets") or {}).get("targetInfos")
+        if targets is None:
+            raise OpsError("OPS_BROWSER_TARGETS_UNAVAILABLE")
+        ids = set()
+        for info in targets:
+            if info.get("type") == "page":
+                window = client.call("Browser.getWindowForTarget", {"targetId": info["targetId"]})
+                if not window:
+                    raise OpsError("OPS_BROWSER_TARGETS_UNAVAILABLE")
+                ids.add(window["windowId"])
+        return ids
 
 
 def snapshot(host, port, mail_host, *, targets=page_targets, windows=window_ids):
@@ -103,12 +104,15 @@ def dooray_code(exc):
     return radar.TRANSPORT
 
 
-def portal_job(slot):
-    """The worker's own handoff + one LIST GET, attached through a barrier-holding wrapper."""
+def portal_job(slot, mail_host="", wake=None):
+    """The worker's own handoff + one LIST GET, attached through a barrier-holding wrapper.
+    Like the worker (ResidentHost.ensure), a discarded/frozen tab is restored first."""
     def job(barrier):
+        from .ops_browser import wake_tabs
         from .portal_session import PortalSessionProvider
         from .web.resident import resident_session
-        marks = {}
+        woke = (wake or wake_tabs)(slot.port, mail_host)
+        marks = {"restored": woke["restored"]}
 
         @contextmanager
         def attach(*args, **kwargs):
@@ -137,6 +141,10 @@ def dooray_job(slot, root, contract, mail_host, now):
             verify_resident_owner(slot.profile, slot.port)
         except Exception:
             raise radar.BrowserUnverified() from None
+        from .ops_browser import wake_tabs
+        woke = wake_tabs(slot.port, mail_host)            # as the Radar does before attaching
+        if "dooray" in woke["roles"]:
+            time.sleep(15)                                # a restored inbox settles first
         headers = []
 
         def listing(session, **kwargs):
@@ -158,6 +166,7 @@ def dooray_job(slot, root, contract, mail_host, now):
             violations = len(guard.violations)
         marks["detached"] = time.monotonic()
         return {"ok": True, "counts": result.counts(), "guard_violations": violations, **marks,
+                "restored": woke["restored"],
                 "unread": {digest(h.mail_id) for h in headers if h.unread},
                 "read": {digest(h.mail_id) for h in headers if h.unread is False}}
     return job
@@ -205,13 +214,13 @@ def run_proof(root, *, cycles=10, interval=60, dooray_every=3, host=None, contra
         if not contract.read_state_key:
             raise OpsError("OPS_CONFIGURATION_REQUIRED")   # the unread guard needs the read flag
     snap = snap or (lambda: snapshot(host, slot.port, mail_host))
-    portal = portal or portal_job(slot)
+    portal = portal or portal_job(slot, mail_host)
     dooray = dooray or (lambda now: dooray_job(slot, root, contract, mail_host, now))
     report = {"started": round(clock(), 3), "cycles_planned": cycles, "cycles_run": 0, "port": slot.port,
               "portal_ok": 0, "portal_failed": 0, "dooray_ok": 0, "dooray_failed": 0, "overlaps": 0,
               "failures": [], "browser_changed": 0, "tabs_closed": 0, "cross_navigation": 0,
               "pages_added": 0, "windows_added": 0, "guard_violations": 0,
-              "unread_still_unread": 0, "unread_became_read": 0}
+              "unread_still_unread": 0, "unread_became_read": 0, "tabs_restored": 0}
     first = None
     unread_seen = set()
     stop = False
@@ -234,6 +243,7 @@ def run_proof(root, *, cycles=10, interval=60, dooray_every=3, host=None, contra
             report["failures"].append("OPS_BROWSER_CHANGED")
         portal_result = results["portal"]
         report["portal_ok" if portal_result["ok"] else "portal_failed"] += 1
+        report["tabs_restored"] += sum(r.get("restored", 0) for r in results.values())
         if not portal_result["ok"]:
             report["failures"].append(portal_result["code"])
         if with_dooray:
