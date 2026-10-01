@@ -1,4 +1,4 @@
-"""Home free-food calendar: a Monday-first KST month, today and selection states, event markers,
+"""Home free-food calendar: a Sunday-first KST month, today and selection states, event markers,
 the next-event default, the day panel and its disclosure, loading failures and the layout.
 Synthetic data is served to the test browser only; no generated file is read or changed."""
 import re
@@ -92,43 +92,60 @@ def day_title(page):
     return " ".join(page.locator(".hc-day-title").inner_text().split())
 
 
-def test_month_math_is_monday_first_and_calendar_correct(browser):
+def test_month_math_is_sunday_first_and_calendar_correct(browser):
     context, page, errors = open_home(browser)
     math = page.evaluate("""() => {
       const C = window.BabdodukHomeCalendar;
-      const oct = C.monthGrid('2026-10'), feb27 = C.monthGrid('2027-02'), feb28 = C.monthGrid('2028-02');
-      return {octFirst: oct[0][0], octLast: oct[oct.length - 1][6], octRows: oct.length,
-              feb27Rows: feb27.length, feb27First: feb27[0][0], feb28Has29: feb28.flat().includes('2028-02-29'),
+      const span = ym => { const g = C.monthGrid(ym); return [g[0][0], g[g.length - 1][6], g.length]; };
+      const feb28 = C.monthGrid('2028-02');
+      return {oct: span('2026-10'), nov: span('2026-11'), aug: span('2026-08'), feb26: span('2026-02'),
+              feb28: span('2028-02'), feb28Has29: feb28.flat().includes('2028-02-29'),
               after29: feb28.flat()[feb28.flat().indexOf('2028-02-29') + 1],
+              columnsOk: ['2026-08', '2026-10', '2026-11', '2028-02'].every(ym =>
+                C.monthGrid(ym).every(week => week.every((iso, c) => C.weekdaySun(iso) === c))),
               days: ['2026-02', '2027-02', '2028-02', '2000-02', '2100-02', '2026-12'].map(C.daysInMonth),
-              monday: C.weekdayMon('2026-10-05'), sunday: C.weekdayMon('2026-10-04'),
+              sunday: C.weekdaySun('2026-10-04'), saturday: C.weekdaySun('2026-10-10'),
               clamp: [C.shiftMonth('2026-01-31', 1), C.shiftMonth('2028-01-31', 1), C.shiftMonth('2026-03-31', -1)],
               months: [C.addMonths('2026-01', -1), C.addMonths('2026-12', 1), C.addMonths('2026-10', 14)],
               days7: C.addDays('2026-12-28', 7)};
     }""")
-    assert math["octFirst"] == "2026-09-28" and math["octLast"] == "2026-11-01" and math["octRows"] == 5
-    assert math["feb27Rows"] == 4 and math["feb27First"] == "2027-02-01"   # starts on a Monday, 28 days
-    assert math["feb28Has29"] and math["after29"] == "2028-03-01"          # leap year
-    assert math["days"] == [28, 28, 29, 29, 28, 31]                        # 2000 leap, 2100 not
-    assert math["monday"] == 0 and math["sunday"] == 6
+    assert math["oct"] == ["2026-09-27", "2026-10-31", 5]     # starts Thursday: 4 leading days, none after
+    assert math["nov"] == ["2026-11-01", "2026-12-05", 5]     # starts on a Sunday: no leading overflow
+    assert math["aug"] == ["2026-07-26", "2026-09-05", 6]     # starts on a Saturday: 6 leading days, 6 rows
+    assert math["feb26"] == ["2026-02-01", "2026-02-28", 4]   # Sunday start, 28 days: exactly 4 rows
+    assert math["feb28"] == ["2028-01-30", "2028-03-04", 5]   # leap-year February
+    assert math["feb28Has29"] and math["after29"] == "2028-03-01"
+    assert math["columnsOk"]                                   # column 0 is always a Sunday
+    assert math["days"] == [28, 28, 29, 29, 28, 31]            # 2000 leap, 2100 not
+    assert math["sunday"] == 0 and math["saturday"] == 6
     assert math["clamp"] == ["2026-02-28", "2028-02-29", "2026-02-28"]
     assert math["months"] == ["2025-12", "2027-01", "2027-12"] and math["days7"] == "2027-01-04"
     assert not errors
     context.close()
 
 
-def test_rendered_grid_is_monday_first_with_muted_overflow(browser):
+def test_rendered_grid_is_sunday_first_with_muted_overflow(browser):
     context, page, _ = open_home(browser)
     heads = page.locator("#homeCalGrid thead th").all_inner_texts()
-    assert heads == ["월", "화", "수", "목", "금", "토", "일"]
+    assert heads == ["일", "월", "화", "수", "목", "금", "토"]
+    titles = [a.get_attribute("title") for a in page.locator("#homeCalGrid thead abbr").all()]
+    assert titles == ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"]
     assert page.locator(".hc-month-title").inner_text() == "10월"
     assert page.locator("#homeCalGrid tbody tr").count() == 5
     first = page.locator("#homeCalGrid tbody td").first
-    assert first.get_attribute("data-date") == "2026-09-28" and "is-other" in first.get_attribute("class")
-    assert "is-other" in cell(page, "2026-11-01").get_attribute("class")
-    assert "is-other" not in cell(page, "2026-10-31").get_attribute("class")
-    weekday = page.locator("#homeCalGrid thead abbr").first.get_attribute("title")
-    assert weekday == "월요일"
+    assert first.get_attribute("data-date") == "2026-09-27" and "is-other" in first.get_attribute("class")
+    last = page.locator("#homeCalGrid tbody td").last
+    assert last.get_attribute("data-date") == "2026-10-31" and "is-other" not in last.get_attribute("class")
+    assert "is-other" in cell(page, "2026-09-30").get_attribute("class")
+    assert "is-other" not in cell(page, "2026-10-01").get_attribute("class")
+    page.locator("[data-hc-step='1']").click()                        # November starts on a Sunday
+    assert page.locator(".hc-month-title").inner_text() == "11월"
+    first = page.locator("#homeCalGrid tbody td").first
+    assert first.get_attribute("data-date") == "2026-11-01" and "is-other" not in first.get_attribute("class")
+    last = page.locator("#homeCalGrid tbody td").last
+    assert last.get_attribute("data-date") == "2026-12-05" and "is-other" in last.get_attribute("class")
+    rows = page.evaluate("Array.from(document.querySelectorAll('#homeCalGrid tbody tr'), r => r.cells.length)")
+    assert rows == [7] * 5
     context.close()
 
 
@@ -292,7 +309,7 @@ def test_month_navigation_bounds_and_return_to_today(browser):
     assert today_button.is_hidden()
     page.locator('[data-hc-step="1"]').click()
     assert page.locator(".hc-month-title").inner_text() == "11월" and today_button.is_visible()
-    assert page.locator("#homeCalGrid tbody td").first.get_attribute("data-date") == "2026-10-26"
+    assert page.locator("#homeCalGrid tbody td").first.get_attribute("data-date") == "2026-11-01"   # starts on a Sunday
     assert day_title(page) == "10월 7일 (수)"      # the selection is kept
     page.locator('[data-hc-step="-1"]').click()
     page.locator('[data-hc-step="-1"]').click()
@@ -318,26 +335,43 @@ def test_keyboard_follows_the_date_grid_pattern(browser):
     def active():
         return page.evaluate("document.activeElement.dataset.date")
 
-    for key, expected in (("ArrowRight", "2026-10-08"), ("ArrowDown", "2026-10-15"), ("Home", "2026-10-12"),
-                          ("End", "2026-10-18"), ("ArrowUp", "2026-10-11"), ("ArrowLeft", "2026-10-10")):
+    # Home = the row's Sunday, End = the row's Saturday.
+    for key, expected in (("ArrowRight", "2026-10-08"), ("ArrowDown", "2026-10-15"), ("Home", "2026-10-11"),
+                          ("End", "2026-10-17"), ("ArrowUp", "2026-10-10"), ("ArrowLeft", "2026-10-09")):
         page.keyboard.press(key)
         assert active() == expected, key
         assert page.locator('#homeCalGrid td[tabindex="0"]').count() == 1
     assert cell(page, "2026-10-07").get_attribute("aria-selected") == "true"    # moving is not selecting
     page.keyboard.press("PageDown")
-    assert active() == "2026-11-10" and page.locator(".hc-month-title").inner_text() == "11월"
+    assert active() == "2026-11-09" and page.locator(".hc-month-title").inner_text() == "11월"
     page.keyboard.press("PageUp")
-    assert active() == "2026-10-10" and page.locator(".hc-month-title").inner_text() == "10월"
+    assert active() == "2026-10-09" and page.locator(".hc-month-title").inner_text() == "10월"
     page.keyboard.press("Enter")
-    assert cell(page, "2026-10-10").get_attribute("aria-selected") == "true"
-    assert day_title(page) == "10월 10일 (토)"
+    assert cell(page, "2026-10-09").get_attribute("aria-selected") == "true"
+    assert day_title(page) == "10월 9일 (금)"
     page.keyboard.press("ArrowRight")
     page.keyboard.press(" ")
-    assert cell(page, "2026-10-11").get_attribute("aria-selected") == "true" and active() == "2026-10-11"
+    assert cell(page, "2026-10-10").get_attribute("aria-selected") == "true" and active() == "2026-10-10"
     focus = page.evaluate("getComputedStyle(document.activeElement.querySelector('.hc-num')).outlineStyle")
     assert focus == "solid"                                   # focus-visible ring
     context.close()
 
+
+
+def test_home_and_end_stay_on_a_row_that_already_starts_or_ends_there(browser):
+    context, page, _ = open_home(browser)
+
+    def active():
+        return page.evaluate("document.activeElement.dataset.date")
+
+    cell(page, "2026-10-04").focus()                  # a Sunday
+    page.keyboard.press("Home")
+    assert active() == "2026-10-04"
+    page.keyboard.press("End")
+    assert active() == "2026-10-10"                   # the Saturday of the same row
+    page.keyboard.press("End")
+    assert active() == "2026-10-10"
+    context.close()
 
 def test_grid_and_rows_expose_their_states(browser):
     context, page, _ = open_home(browser)
@@ -398,7 +432,9 @@ def test_english_strings(browser):
     context, page, _ = open_home(browser, lang="en")
     assert page.locator(".home-cal-title [data-i18n]").inner_text() == "Free food today"
     assert answer(page) == "None today · next Oct 7 (Wed)"
-    assert page.locator("#homeCalGrid thead th").all_inner_texts() == ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    assert page.locator("#homeCalGrid thead th").all_inner_texts() == ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    titles = [a.get_attribute("title") for a in page.locator("#homeCalGrid thead abbr").all()]
+    assert titles == ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     assert page.locator(".hc-month-title").inner_text() == "October"
     assert day_title(page) == "Oct 7 (Wed)"
     assert page.locator(".hc-ev-meta").nth(1).inner_text() == "Refreshments · Sign-up required"
