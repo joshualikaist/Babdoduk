@@ -57,6 +57,7 @@ REASONS = {
     "CANDIDATE_WAITING": ("warning", "check_dispatch"),
     "REFRESH_FAILED": ("critical", "check_actions"),
     "CONFIGURATION_REQUIRED": ("critical", "fix_config"),
+    "BROWSER_UNVERIFIED": ("critical", "investigate"),
 }
 
 
@@ -109,7 +110,8 @@ def portal_alert(runtime: dict, *, running: bool, enabled: bool, now: float) -> 
 
 
 RADAR_HUMAN = {"DOORAY_AUTH_REQUIRED": "AUTH_EXPIRED", "DOORAY_CONTRACT_CHANGED": "CONTRACT_CHANGED",
-               "DOORAY_BROWSER_ABSENT": "BROWSER_ABSENT", "DOORAY_CONFIGURATION_REQUIRED": "CONFIGURATION_REQUIRED"}
+               "DOORAY_BROWSER_ABSENT": "BROWSER_ABSENT", "DOORAY_CONFIGURATION_REQUIRED": "CONFIGURATION_REQUIRED",
+               "DOORAY_BROWSER_UNVERIFIED": "BROWSER_UNVERIFIED"}
 
 
 def radar_alert(runtime: dict, *, running: bool, enabled: bool, unread_disabled: bool, now: float) -> Alert:
@@ -118,7 +120,8 @@ def radar_alert(runtime: dict, *, running: bool, enabled: bool, unread_disabled:
     if unread_disabled:
         return Alert.of("dooray_radar", "UNREAD_RADAR_DISABLED", age, now)
     human = RADAR_HUMAN.get(runtime.get("reason") or "")
-    if human in {"AUTH_EXPIRED", "CONTRACT_CHANGED", "CONFIGURATION_REQUIRED"} or (human and severity != "healthy"):
+    if (human in {"AUTH_EXPIRED", "CONTRACT_CHANGED", "CONFIGURATION_REQUIRED", "BROWSER_UNVERIFIED"}
+            or (human and severity != "healthy")):
         return Alert.of("dooray_radar", human, age, now)
     if enabled and not running and severity != "healthy":
         return Alert.of("dooray_radar", "WORKER_NOT_RUNNING", age, now)

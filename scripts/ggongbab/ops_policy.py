@@ -1,6 +1,8 @@
 """Pure operational policy: fixed reasons, no content or account information."""
 from .portal_session import SAFE_REASON_CODES
 
+# Legacy dedicated browsers (`separate` mode, the rollback). The unified Ops Chrome uses
+# ops_browser.UNIFIED_PORT; which one a worker attaches to is ops_browser.slot_for().
 PORTAL_PORT = 9223
 DOORAY_PORT = 9222
 WARNING_SECONDS = 180
@@ -28,7 +30,12 @@ REASONS = SAFE_REASON_CODES | TRANSIENT | HUMAN | frozenset({
     # Dooray Radar (scripts/ggongbab/dooray_radar.py)
     "DOORAY_RADAR_RUNNING", "DOORAY_RADAR_STOPPED", "DOORAY_AUTH_REQUIRED", "DOORAY_CONTRACT_CHANGED",
     "DOORAY_BROWSER_ABSENT", "DOORAY_UNREAD_INVARIANT_BROKEN", "DOORAY_TRANSPORT_FAILED", "DOORAY_WRITE_FAILED",
-    "DOORAY_CONFIGURATION_REQUIRED",
+    "DOORAY_CONFIGURATION_REQUIRED", "DOORAY_BROWSER_UNVERIFIED",
+    # Unified Ops Chrome (scripts/ggongbab/ops_browser.py)
+    "OPS_BROWSER_TAB_OPENED", "OPS_BROWSER_TAB_OPEN_FAILED", "OPS_BROWSER_TARGETS_UNAVAILABLE",
+    "OPS_BROWSER_START_BUSY", "OPS_BROWSER_MODE_CHANGED", "OPS_WORKERS_STILL_RUNNING",
+    "OPS_BROWSER_UNVERIFIED", "OPS_BROWSER_STALE", "OPS_BROWSER_CHANGED", "OPS_BROWSER_CLOSE_FAILED",
+    "OPS_PROOF_JOB_TIMEOUT",
 })
 
 

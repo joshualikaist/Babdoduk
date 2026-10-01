@@ -167,8 +167,11 @@ def chrome_executable() -> str:
 
 
 def start_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, start_url: str = "",
-                 log=print) -> subprocess.Popen:
-    """Launch a normal Chrome with the dedicated profile and a loopback debug port."""
+                 log=print, start_urls=()) -> subprocess.Popen:
+    """Launch a normal Chrome with the dedicated profile and a loopback debug port.
+
+    Several start addresses open as tabs of one window (the Ops Chrome's Portal + Dooray).
+    """
     profile_dir = Path(profile_dir).resolve()
     profile_dir.mkdir(parents=True, exist_ok=True)
     ensure_session_restore(profile_dir)
@@ -184,6 +187,7 @@ def start_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, start_url: s
     ]
     if start_url:
         args.append(start_url)
+    args.extend(url for url in start_urls if url)
     log(f"Browser engine : Google Chrome (resident, debug port {port} on {DEBUG_HOST})")
     log(f"  executable   : {Path(executable).parent.name}/{Path(executable).name}")
     process = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

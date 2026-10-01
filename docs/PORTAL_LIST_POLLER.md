@@ -11,8 +11,11 @@ No live Portal compatibility claim is made by the synthetic tests.
 
 ## Run and recover
 
-Install `requirements-ggongbab.txt`. Use the existing dedicated resident Chrome
-on Windows, loopback port 9223 and `.local/portal-browser-profile`.
+Install `requirements-ggongbab.txt`. Use the dedicated resident Chrome on Windows: the
+Babdoduk Ops Chrome's Portal tab (loopback 9224, `.local/ops-browser-profile`) once the workers
+are in unified mode, or the legacy Portal browser (loopback 9223, `.local/portal-browser-profile`)
+in `separate` mode (`GGONGBAB_RESIDENT_OPS.md` sections 0 and 14). The manual commands below
+default to the legacy port; pass `--port 9224` for the Ops Chrome.
 
 ```powershell
 # Human SSO/MFA only, if prompted:

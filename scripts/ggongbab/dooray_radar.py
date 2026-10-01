@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Dooray mailbox Radar: list-level, unread-safe, fail-closed candidate registration.
 
-Every 2-5 minutes the Radar lists the inbox through the calibrated LIST endpoint of the
-already-open dedicated Dooray browser and reads, per row, only: stable id, subject, preview,
+Every 2-5 minutes the Radar lists the inbox through the calibrated LIST endpoint, from the Dooray
+tab of the already-open dedicated browser (the Ops Chrome, whose Portal tab it never uses, or the
+legacy Dooray browser after a rollback), and reads, per row, only: stable id, subject, preview,
 received time and read flag. It never opens a mail detail or body - not even of a read mail -
 and never changes read state. Candidates (prefilter) become preview-only collection tasks for
 the cloud job; the processed-mail ledger (`ggongbab-mail-state.json`) prevents replays.
@@ -48,12 +49,40 @@ INVARIANT = "DOORAY_UNREAD_INVARIANT_BROKEN"
 TRANSPORT = "DOORAY_TRANSPORT_FAILED"
 WRITE = "DOORAY_WRITE_FAILED"
 CONFIG_REQUIRED = "DOORAY_CONFIGURATION_REQUIRED"
-REASONS = frozenset({RUNNING, STOPPED, AUTH, CONTRACT, BROWSER, INVARIANT, TRANSPORT, WRITE, CONFIG_REQUIRED})
+UNVERIFIED = "DOORAY_BROWSER_UNVERIFIED"
+REASONS = frozenset({RUNNING, STOPPED, AUTH, CONTRACT, BROWSER, INVARIANT, TRANSPORT, WRITE, CONFIG_REQUIRED,
+                     UNVERIFIED})
 DISPATCH_OFF = "DISPATCH_OFF"
+MAIL_PATH = re.compile(r"^/mail(/|$)", re.I)
 
 
 class UnreadInvariantBroken(Exception):
     """The dedicated browser sent a detail/body or write request while the Radar was scanning."""
+
+
+class BrowserUnverified(Exception):
+    """The loopback listener is not positively the expected dedicated Chrome. Never attach."""
+
+
+def dooray_page(context, mail_host: str):
+    """The Dooray tab of a (possibly shared) browser: a top-level https page on the mail host,
+    the inbox preferred. Any other site's tab - the Portal tab of the Ops Chrome - is never used."""
+    fallback = None
+    for page in list(context.pages):
+        try:
+            if page.is_closed():
+                continue
+            url = urlparse(page.url or "")
+        except Exception:  # noqa: BLE001 - a tab closing while we look
+            continue
+        if url.scheme != "https" or url.netloc.lower() != mail_host.lower():
+            continue
+        if MAIL_PATH.match(url.path or "/"):
+            return page
+        fallback = fallback or page
+    if fallback is None:
+        raise ConnectionError(BROWSER)
+    return fallback
 
 
 class RadarFiles:
@@ -278,6 +307,13 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
                 save(last_scan=now_ts, reason=INVARIANT)
                 heartbeat("collector_error", now, None, INVARIANT)
                 log(INVARIANT)
+            except BrowserUnverified:
+                # Fail closed without attaching; retried with backoff, alerted as critical.
+                failures += 1
+                save(last_scan=now_ts, reason=UNVERIFIED)
+                heartbeat("collector_error", now, None, UNVERIFIED)
+                log(UNVERIFIED)
+                delay = min(interval * 2 ** min(failures, 3), 900)
             except AgentError:
                 failures += 1
                 save(last_scan=now_ts, reason=WRITE)

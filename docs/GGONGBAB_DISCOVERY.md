@@ -44,9 +44,9 @@ relaxes evidence or publication rules.
 
 | Source | Authentication | Target cadence | Trust | Output | Collector | Failure mode | State (2026-09-28) |
 |---|---|---|---|---|---|---|---|
-| Dooray mailbox (radar) | local SSO session, dedicated Chrome on 127.0.0.1:9222 | 2–5 min | A | private collection task | `dooray_radar.py` via `ggongbab_workers.py radar` | SSO expiry, UI contract change, PC off | built on lab; runs once the operations checkout is live (see below) |
+| Dooray mailbox (radar) | local SSO session, Dooray tab of the Babdoduk Ops Chrome on 127.0.0.1:9224 (legacy: own Chrome on 9222) | 2–5 min | A | private collection task | `dooray_radar.py` via `ggongbab_workers.py radar` | SSO expiry, UI contract change, PC off | built on lab; runs once the operations checkout is live (see below) |
 | Dooray collection project | cloud API token (GitHub secret) | on trigger + 30-min schedule | A | Supabase -> feed | cloud `refresh_ggongbab.py` | GitHub schedule delay | the schedule runs ~6×/day (see `GGONGBAB_TRIGGER.md`) |
-| Portal recent LIST | local SSO session, dedicated Chrome on 127.0.0.1:9223 | 60 s | A (title = Stage A signal only) | private pending ledger | Portal worker | session expiry, transport | healthy again since 2026-09-28 13:57 |
+| Portal recent LIST | local SSO session, Portal tab of the Babdoduk Ops Chrome on 127.0.0.1:9224 (legacy: own Chrome on 9223) | 60 s | A (title = Stage A signal only) | private pending ledger | Portal worker | session expiry, transport | healthy again since 2026-09-28 13:57 |
 | KAIST public boards | none | 10–30 min | A | feed | cloud collector | markup change | rides the cloud schedule |
 | Department / student-council pages | none | 10–30 min | A/B | candidate | not built | markup change | Phase 4 |
 | Curated Instagram accounts | dedicated local account and profile | 30–60 min | B | private review only | local sidecar | login challenge, rate limit, ban | Phase 4 POC |
@@ -272,9 +272,12 @@ external notifier is connected; picking one is an owner decision.
 
 ## Browser and session boundary
 
-* Each authenticated platform has its own dedicated browser profile under `.local/`; the owner's
-  everyday Chrome profile is never used.
-* Debug ports are loopback only (9222 Dooray, 9223 Portal), never 0.0.0.0, LAN or a tunnel.
+* The authenticated platforms share one dedicated browser profile under `.local/`
+  (`ops-browser-profile`, the Babdoduk Ops Chrome: a Portal tab and a Dooray tab; the two
+  earlier per-platform profiles are kept as rollback assets). The owner's everyday Chrome
+  profile is never used.
+* Debug ports are loopback only (9224 Ops Chrome; legacy 9222 Dooray, 9223 Portal), never
+  0.0.0.0, LAN or a tunnel. See `GGONGBAB_RESIDENT_OPS.md` sections 0 and 14.
 * Cookies, session tokens, SSO material, addresses, private URLs and mail ids never go to Git,
   Actions artifacts, Supabase public tables, public JSON or logs.
 * SSO/MFA is human work. A login challenge, CAPTCHA or rate limit stops a collector; it is never
