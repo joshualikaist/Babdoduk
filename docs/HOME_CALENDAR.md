@@ -11,8 +11,9 @@ One surface (`section#homeCal`), right below the hero copy:
 * **Answer line** (today's status only):
   `오늘 2개 · 12:00부터` · `오늘은 없어요 · 다음 10월 7일 (수)` ·
   `오늘 일정은 끝났어요 · 다음 …` · `오늘 일정은 끝났어요` · `예정된 꽁밥이 없어요`.
-* **Month grid**: seven columns, Monday first (월 … 일), like the cafeteria week and the hub's
-  "이번 주". 4–6 rows; other-month days are muted.
+* **Month grid**: seven columns, Sunday first (일 월 화 수 목 금 토; EN Sun … Sat), as on a
+  wall calendar (owner decision, 2026-10-01). The cafeteria week and the hub's "이번 주" keep their
+  own Monday–Sunday logic. 4–6 rows; other-month days are muted.
 * **Selected day**: that date's events, one row each (title / time · place / food · 사전 신청).
   A row opens inline (one at a time) for the full time and place, eligibility, the sign-up deadline,
   the sign-up link and a public original post. There is no modal.
@@ -64,7 +65,7 @@ Motion is limited to 140 ms colour changes and is removed under `prefers-reduced
 
 APG date-grid pattern: `table role="grid"` labelled by the month; focusable `gridcell`s with a
 roving tabindex, `aria-selected`, `aria-current="date"` and a full-date label that includes the event
-count. Arrow keys move by day and week, Home/End to the week's ends, PageUp/PageDown by month,
+count. Arrow keys move by day and week, Home/End to the row's Sunday/Saturday, PageUp/PageDown by month,
 Enter/Space select. A polite live region announces the selected day. Event rows are buttons with
 `aria-expanded`/`aria-controls`. Presence is never colour alone (shape and label), forced-colors
 keeps today, the selection and the markers, and phone cells are 44 px or wider at 390 px.

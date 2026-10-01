@@ -316,7 +316,7 @@
   outline-offset: 2px;
 }
 
-/* The grid: Monday first, seven even columns, 48px rows with the marker slot always reserved. */
+/* The grid: Sunday first, seven even columns, 48px rows with the marker slot always reserved. */
 .hc-grid {
   width: 100%;
   border-collapse: collapse;

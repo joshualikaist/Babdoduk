@@ -21,7 +21,7 @@
     return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
   }
   function addDays(iso, n) { return msToIso(isoToMs(iso) + n * DAY_MS); }
-  function weekdayMon(iso) { return (new Date(isoToMs(iso)).getUTCDay() + 6) % 7; } // 0 = Monday
+  function weekdaySun(iso) { return new Date(isoToMs(iso)).getUTCDay(); } // 0 = Sunday (grid column)
   function daysInMonth(ym) { return new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 0)).getUTCDate(); }
   function monthOf(iso) { return iso.slice(0, 7); }
   function addMonths(ym, n) {
@@ -29,10 +29,10 @@
     var y = +ym.slice(0, 4) + Math.floor(m / 12);
     return y + '-' + pad(((m % 12) + 12) % 12 + 1);
   }
-  // Monday-first weeks covering the month: 4 to 6 rows, overflow days included.
+  // Sunday-first weeks covering the month: 4 to 6 rows, overflow days included.
   function monthGrid(ym) {
     var first = ym + '-01';
-    var lead = weekdayMon(first);
+    var lead = weekdaySun(first);
     var rows = Math.ceil((lead + daysInMonth(ym)) / 7);
     var start = addDays(first, -lead);
     var weeks = [];
@@ -145,10 +145,10 @@
   }
 
   // ---- Copy ----
-  var DOW_KO = ['월', '화', '수', '목', '금', '토', '일'];
-  var DOW_KO_FULL = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
-  var DOW_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  var DOW_EN_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  var DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
+  var DOW_KO_FULL = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+  var DOW_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var DOW_EN_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   var MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var MON_EN_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
     'October', 'November', 'December'];
@@ -169,13 +169,13 @@
   function dateLabel(iso) {
     var m = +iso.slice(5, 7);
     var d = +iso.slice(8, 10);
-    var w = weekdayMon(iso);
+    var w = weekdaySun(iso);
     return lang() === 'en' ? MON_EN[m - 1] + ' ' + d + ' (' + DOW_EN[w] + ')' : m + '월 ' + d + '일 (' + DOW_KO[w] + ')';
   }
   function longDateLabel(iso) {
     var m = +iso.slice(5, 7);
     var d = +iso.slice(8, 10);
-    var w = weekdayMon(iso);
+    var w = weekdaySun(iso);
     return lang() === 'en' ? DOW_EN_FULL[w] + ', ' + MON_EN_FULL[m - 1] + ' ' + d : m + '월 ' + d + '일 ' + DOW_KO_FULL[w];
   }
   function monthLabel(ym, todayIso) {
@@ -572,8 +572,8 @@
       case 'ArrowRight': target = addDays(iso, 1); break;
       case 'ArrowUp': target = addDays(iso, -7); break;
       case 'ArrowDown': target = addDays(iso, 7); break;
-      case 'Home': target = addDays(iso, -weekdayMon(iso)); break;
-      case 'End': target = addDays(iso, 6 - weekdayMon(iso)); break;
+      case 'Home': target = addDays(iso, -weekdaySun(iso)); break;      // Sunday of the row
+      case 'End': target = addDays(iso, 6 - weekdaySun(iso)); break;    // Saturday of the row
       case 'PageUp': target = shiftMonth(iso, -1); break;
       case 'PageDown': target = shiftMonth(iso, 1); break;
       case 'Enter':
@@ -593,7 +593,7 @@
       addDays: addDays,
       addMonths: addMonths,
       shiftMonth: shiftMonth,
-      weekdayMon: weekdayMon,
+      weekdaySun: weekdaySun,
       daysInMonth: daysInMonth,
       buildIndex: buildIndex,
       countsOn: countsOn,
