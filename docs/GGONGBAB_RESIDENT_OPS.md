@@ -26,8 +26,11 @@ All commands run from the operations checkout (`C:\Users\joshu\Babdoduk-ops`).
 | Start the workers | `scripts\windows\start_ggongbab_workers.cmd` and `powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start` |
 | Roll back to two browsers | section 14 |
 
-Status shows only `running / missing / stale / unverified` for the browser and `present / absent`
-for each tab. It never shows an account, cookie, URL, notice title or mail subject.
+Status shows only `running / missing / stale / unverified` for the browser and, per tab,
+`present` (Dooray: `present (inbox)`), `SSO login page` or `absent`. Before login the Portal
+tab sits on the KAIST SSO page; while any SSO page is open, Start and Recover open no tab, so a
+login in progress never gets a duplicate. Status never shows an account, cookie, URL, notice
+title or mail subject.
 
 Do **not** use `dooray_web_agent.py --setup` to log in again: it rewrites the calibrated
 `mail_url` and marks the Dooray contract unverified. `portal_web_agent.py --setup --cdp` is not

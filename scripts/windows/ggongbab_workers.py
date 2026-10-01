@@ -67,7 +67,7 @@ def ops_browser_command(files, args):
     if action == "ops-browser-start":
         control.start(files)
         print("\n".join(control.status(files)))
-        print("Log in by hand in a tab only if it asks: Portal SSO, then Dooray SSO -> 메일 -> 받은메일함.")
+        print("Log in by hand in a tab only if it asks: Portal SSO, then Dooray SSO -> Mail -> Inbox.")
         return 0
     if action == "ops-browser-recover":
         return ops_browser_recover(files)

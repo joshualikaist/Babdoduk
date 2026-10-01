@@ -35,6 +35,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SECRET = "SYNTHETIC-SECRET-TITLE"
 PORTAL_URL = "https://portal.kaist.ac.kr/index.html?token=" + SECRET
 DOORAY_URL = "https://kaist.gov-dooray.com/mail/systems/inbox?q=" + SECRET
+SSO_URL = "https://sso.kaist.ac.kr/auth/twofactor/mfa/login2Fact?state=" + SECRET
+DOORAY_LOGIN = "https://kaist.gov-dooray.com/idp/multi?next=" + SECRET
 
 
 @pytest.fixture(autouse=True)
@@ -125,14 +127,24 @@ def test_tabs_are_opened_only_for_a_missing_role_on_loopback():
             {"id": "a", "url": PORTAL_URL}, {"id": "b", "url": DOORAY_URL}]
     counts = ob.ensure_tabs(9224, "kaist.gov-dooray.com", ob.DOORAY_FALLBACK, targets=targets,
                             opener=lambda r, timeout: opened.append((r.get_method(), r.full_url)) or Response())
-    assert counts == {"portal": 1, "dooray": 1}
+    assert counts == {"portal": 1, "dooray": 1, "sso": 0, "inbox": 1}
     assert opened == [("PUT", "http://127.0.0.1:9224/json/new?" + ob.DOORAY_FALLBACK)]
     assert ob.ensure_tabs(9224, "kaist.gov-dooray.com", ob.DOORAY_FALLBACK,
-                          targets=fake_targets(PORTAL_URL, DOORAY_URL), opener=Mock()) == {"portal": 1, "dooray": 1}
+                          targets=fake_targets(PORTAL_URL, DOORAY_URL), opener=Mock())["portal"] == 1
     with pytest.raises(OpsError):
         ob.open_tab(9224, "http://portal.kaist.ac.kr/")       # https only
     with pytest.raises(OpsError):
         ob.open_tab(9224, "https://x.invalid/?a=1")           # no query values
+
+
+def test_no_tab_is_opened_while_a_kaist_sso_login_page_is_open():
+    """Before login the Portal tab sits on the KAIST SSO page; opening another Portal tab
+    then would duplicate it."""
+    opener = Mock()
+    counts = ob.ensure_tabs(9224, "kaist.gov-dooray.com", ob.DOORAY_FALLBACK,
+                            targets=fake_targets(SSO_URL, DOORAY_LOGIN), opener=opener)
+    opener.assert_not_called()
+    assert counts == {"portal": 0, "dooray": 1, "sso": 1, "inbox": 0}
 
 
 def test_fresh_profile_starts_with_both_tabs_used_profile_restores_instead(tmp_path):
@@ -162,8 +174,9 @@ def test_settling_waits_for_session_restore_to_stop_adding_pages():
 def test_roles_are_exact_https_hostnames():
     host = "kaist.gov-dooray.com"
     assert ob.role_of(PORTAL_URL, host) == "portal" and ob.role_of(DOORAY_URL, host) == "dooray"
-    for url in ("http://portal.kaist.ac.kr/", "https://portal.kaist.ac.kr.evil.invalid/",
-                "https://sso.kaist.ac.kr/", "chrome://newtab/", "https://evil.invalid/kaist.gov-dooray.com"):
+    assert ob.role_of(SSO_URL, host) == "sso"
+    for url in ("http://portal.kaist.ac.kr/", "https://portal.kaist.ac.kr.evil.invalid/", "http://sso.kaist.ac.kr/",
+                "chrome://newtab/", "https://evil.invalid/kaist.gov-dooray.com"):
         assert ob.role_of(url, host) == ""
 
 
@@ -393,8 +406,12 @@ def test_ops_browser_status_shows_states_and_tabs_only(tmp_path):
     targets = fake_targets(PORTAL_URL, DOORAY_URL, "https://kaist.gov-dooray.com/mail/" + SECRET)
     lines = "\n".join(ops_browser_lines(tmp_path, "verified", 9224, targets=targets))
     assert "Ops browser   : running (127.0.0.1:9224)" in lines
-    assert "Portal tab    : present" in lines and "Dooray tab    : present" in lines
-    assert SECRET not in lines and "http" not in lines and "kaist" not in lines
+    assert "Portal tab    : present" in lines and "Dooray tab    : present (inbox)" in lines
+    assert SECRET not in lines and "http" not in lines and "kaist" not in lines.lower().replace("kaist sso", "")
+    login = "\n".join(ops_browser_lines(tmp_path, "verified", 9224, targets=fake_targets(SSO_URL, DOORAY_LOGIN)))
+    assert "Portal tab    : SSO login page (log in there)" in login
+    assert "Dooray tab    : present (login or not on the inbox) / KAIST SSO login page open" in login
+    assert SECRET not in login and "http" not in login and "idp" not in login
     absent = "\n".join(ops_browser_lines(tmp_path, "verified", 9224, targets=fake_targets(PORTAL_URL)))
     assert "Dooray tab    : absent" in absent
     never = Mock(side_effect=AssertionError("queried an unverified listener"))
@@ -414,7 +431,7 @@ def test_worker_status_reports_the_mode_ports_and_tabs(tmp_path):
     ob.set_mode(files.local, "unified")
     unified = "\n".join(status_lines(files, host=host, now=1000, targets=fake_targets(PORTAL_URL, DOORAY_URL)))
     assert "unified" in unified and "(9224)" in unified and "(browser 9224)" in unified
-    assert "Portal tab    : present" in unified and "Dooray tab    : present" in unified
+    assert "Portal tab    : present" in unified and "Dooray tab    : present (inbox)" in unified
     assert SECRET not in unified and "9222" not in unified
 
 

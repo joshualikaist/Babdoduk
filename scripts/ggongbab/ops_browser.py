@@ -15,6 +15,7 @@ Nothing here reads cookies, credentials, titles or mail. Tab detection uses the 
 from __future__ import annotations
 
 import json
+import re
 import time
 import urllib.error
 import urllib.request
@@ -33,6 +34,7 @@ MODE_FILE = "ops-browser.json"
 START_LOCK = "ops-browser.lock"
 PORTAL_START = "https://" + PORTAL_HOST + "/"
 DOORAY_FALLBACK = "https://kaist.gov-dooray.com/mail/systems/inbox"
+SSO_HOST = "sso.kaist.ac.kr"             # a tab here is a login in progress, not a missing tab
 
 
 @dataclass(frozen=True)
@@ -89,7 +91,7 @@ def dooray_host(contract_path: Path) -> str:
 
 
 def role_of(url: str, mail_host: str) -> str:
-    """'portal', 'dooray' or ''. A page belongs to a role only by exact https hostname."""
+    """'portal', 'dooray', 'sso' (a KAIST SSO login page) or ''. Exact https hostname only."""
     try:
         parts = urlsplit(url or "")
     except ValueError:
@@ -101,6 +103,8 @@ def role_of(url: str, mail_host: str) -> str:
         return "portal"
     if mail_host and host == mail_host.lower():
         return "dooray"
+    if host == SSO_HOST:
+        return "sso"
     return ""
 
 
@@ -118,11 +122,14 @@ def page_targets(port: int, *, timeout: float = 2.0, opener=urllib.request.urlop
 
 
 def tab_roles(targets: list[dict], mail_host: str) -> dict[str, int]:
-    counts = {"portal": 0, "dooray": 0}
+    """Page counts per role, plus 'inbox': Dooray pages on the /mail application area."""
+    counts = {"portal": 0, "dooray": 0, "sso": 0, "inbox": 0}
     for target in targets:
         role = role_of(target["url"], mail_host)
         if role:
             counts[role] += 1
+        if role == "dooray" and re.match(r"^/mail(/|$)", urlsplit(target["url"]).path or "/"):
+            counts["inbox"] += 1
     return counts
 
 
@@ -164,10 +171,14 @@ def wait_for_settled_pages(port: int, *, targets=page_targets, settle: float = 2
 
 def ensure_tabs(port: int, mail_host: str, dooray_url: str, *, roles=("portal", "dooray"),
                 targets=page_targets, opener=None, log=lambda _: None) -> dict[str, int]:
-    """Open a role's tab only when that role has no page at all. Never closes or moves a tab."""
+    """Open a role's tab only when that role has no page at all. Never closes or moves a tab.
+
+    While a KAIST SSO page is open a login is in progress and that page may BE the missing tab
+    (Portal redirects there before login), so nothing is opened then: no duplicate tabs.
+    """
     present = tab_roles(targets(port), mail_host)
     for role in roles:
-        if not present[role]:
+        if not present[role] and not present["sso"]:
             open_tab(port, PORTAL_START if role == "portal" else dooray_url,
                      **({"opener": opener} if opener else {}))
             log("OPS_BROWSER_TAB_OPENED")

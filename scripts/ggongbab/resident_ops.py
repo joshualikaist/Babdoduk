@@ -319,7 +319,12 @@ def ops_browser_lines(root, state, port, *, targets=page_targets):
     if state == "verified":
         try:
             counts = tab_roles(targets(port), dooray_host(Path(root) / ".local" / "dooray-ui.json"))
-            tabs = {role: "present" if count else "absent" for role, count in counts.items()}
+            login = " / KAIST SSO login page open" if counts["sso"] else ""
+            tabs = {"portal": "present" if counts["portal"] else
+                              ("SSO login page (log in there)" if counts["sso"] else "absent"),
+                    "dooray": ("present (inbox)" if counts["inbox"] else
+                               "present (login or not on the inbox)" + login if counts["dooray"] else
+                               "absent" + login)}
         except OpsError:
             pass
     elif state in ("absent", "stale"):
