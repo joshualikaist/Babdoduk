@@ -1,5 +1,69 @@
 # Phase 2C-OPS: Windows resident operations (lab)
 
+## 0. Babdoduk Ops Chrome: the one browser to keep open
+
+```text
+Babdoduk Ops Chrome   (one window, minimized is fine)
+  [ KAIST Portal ] [ Dooray 받은메일함 ]
+  profile .local\ops-browser-profile   CDP 127.0.0.1:9224 (loopback only)
+        |-- Babdoduk-Portal-Worker   (LIST-only polling, its own task and failure domain)
+        `-- Babdoduk-Dooray-Radar    (list-level, unread-safe, its own task and failure domain)
+```
+
+The two workers stay separate processes and Task Scheduler tasks: a Portal failure never stops
+the Radar and a Radar failure never stops Portal. Only the browser is shared. It is a dedicated
+profile, never the owner's own Chrome profile, and its debugging port is bound to 127.0.0.1 only.
+
+All commands run from the operations checkout (`C:\Users\joshu\Babdoduk-ops`).
+
+| Need | Command |
+|---|---|
+| Open / reuse the Ops Chrome | `scripts\windows\start_ops_browser.cmd` |
+| Is it running, are both tabs there? | `scripts\windows\status_ops_browser.cmd` (or `status_ggongbab_workers.cmd` for everything) |
+| A tab asks for SSO | Log in **by hand** in that tab: Portal SSO in the Portal tab; Dooray SSO, then 메일 → 받은메일함 in the Dooray tab. Then start the stopped worker (below). |
+| Browser stuck / stale | `scripts\windows\recover_ops_browser.cmd` (pauses both workers, then targeted recovery) |
+| Stop the workers | `scripts\windows\stop_ggongbab_workers.cmd` and `powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Stop` |
+| Start the workers | `scripts\windows\start_ggongbab_workers.cmd` and `powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start` |
+| Roll back to two browsers | section 14 |
+
+Status shows only `running / missing / stale / unverified` for the browser and, per tab,
+`present` (Dooray: `present (inbox)`), `SSO login page` or `absent`. Before login the Portal
+tab sits on the KAIST SSO page; while any SSO page is open, Start and Recover open no tab, so a
+login in progress never gets a duplicate. Status never shows an account, cookie, URL, notice
+title or mail subject.
+
+Do **not** use `dooray_web_agent.py --setup` to log in again: it rewrites the calibrated
+`mail_url` and marks the Dooray contract unverified. `portal_web_agent.py --setup --cdp` is not
+needed either (it opens an extra Portal tab). Logging in by hand in the existing tab is enough.
+
+Start reuses a verified Ops Chrome and starts one only when none exists. A brand-new profile
+opens with exactly the two tabs; afterwards Chrome restores its own tabs, and Start opens a tab
+only for a role that has none. It never closes a tab. SSO may open extra pages while you log in;
+that is fine.
+
+**Discarded tabs (measured 2026-10-01).** On this PC (about 0.4 GB of RAM free, on battery)
+Chrome discarded the hidden Portal tab of the minimized Ops Chrome within minutes
+(`document.wasDiscarded`). Playwright initialises every page when it attaches, so one discarded
+tab made both workers' attach time out. The Dooray tab, which keeps a websocket, was never
+discarded. Before every attach, each worker therefore checks every tab over a small loopback CDP
+client. A tab that does not answer is restored with `Target.activateTarget`: Chrome reloads its
+own URL with its existing session, the same as clicking the tab, and the window stays minimized.
+Nothing is navigated, typed, evaluated or closed. A restored Dooray inbox settles for 15 s before
+the unread guard starts. A tab that cannot be restored fails closed: Portal takes the existing
+`PORTAL_CDP_ATTACH_TIMEOUT` path (one verified-browser recovery, then manual), and the Radar backs
+off with `DOORAY_BROWSER_ABSENT`; an attach that still times out is also `DOORAY_BROWSER_ABSENT`.
+Either worker may restore the other's discarded tab, because that tab blocks both. Neither ever
+navigates a live tab. Restores are logged as `OPS_BROWSER_TAB_RESTORED`. After the cutover the
+Dooray tab was suspended once too, and the Radar restored it at its next scan. To make discards
+rarer, add `portal.kaist.ac.kr` and `kaist.gov-dooray.com` in the Ops Chrome under
+chrome://settings/performance → "Always keep these sites active". Chrome may still discard tabs
+under critical memory pressure; the restore handles that.
+
+Which browser the workers attach to is `.local/ops-browser.json`: `{"mode": "unified"}` (the Ops
+Chrome) or `{"mode": "separate"}` (the legacy Portal 9223 + Dooray 9222 browsers). A missing file
+means `separate`; corrupt content fails closed. Sections 1-13 describe the workers themselves and
+apply in both modes; where they name a port, the mode decides which one.
+
 ## 1. What this worker does
 
 The Portal worker reuses a manually authenticated session and polls the pinned
@@ -22,9 +86,9 @@ also protects against a separately started `portal_web_agent.py --poll-list`.
 Neither stale lock filenames nor process restart resets the baseline.
 
 This is not a public server. No site/browser connects to this PC. Collection and
-heartbeats use outbound HTTPS. Chrome CDP is **local loopback only**, Portal 9223
-and Dooray 9222; these are not public listening services and must not be exposed
-through a firewall/router tunnel.
+heartbeats use outbound HTTPS. Chrome CDP is **local loopback only**: the Ops Chrome on
+9224, or in `separate` mode Portal 9223 and Dooray 9222. These are not public listening
+services and must not be exposed through a firewall/router tunnel.
 
 ## 2. What happens if my PC is off?
 
@@ -79,8 +143,11 @@ not clear a saved auth/UI/manual latch or reset the retry budget.
 
 Worker startup takes the existing poller lock before inspecting the ledger and
 Chrome. If no listener **and no matching dedicated browser process** exists,
-it starts only `.local/portal-browser-profile` on 9223, using existing session
-restore behavior and the Portal landing page. It then verifies ownership again
+it starts only the dedicated browser of the current mode: the Ops Chrome
+(`.local/ops-browser-profile` on 9224, Portal and Dooray tabs, session restore), or in
+`separate` mode `.local/portal-browser-profile` on 9223 with the Portal landing page. A start
+of the shared browser is serialised by `.local/ops-browser.lock`, so an operator Start and a
+worker bootstrap never launch it twice. The worker then verifies ownership again
 and performs the normal in-memory session handoff and LIST verification.
 SSO/MFA prompts are for a human. No authentication endpoint is replayed.
 
@@ -111,15 +178,17 @@ state survives logon until the operator explicitly starts workers again.
 scripts\windows\status_ggongbab_workers.cmd
 ```
 
-Status reports the poller lock, 9223's verified/missing/stale/unverified state,
-safe reason, and seconds since the last successfully written healthy heartbeat.
+Status reports the browser mode, the poller lock, the Portal browser's
+verified/missing/stale/unverified state (in unified mode also the Ops Chrome line and whether
+its Portal and Dooray tabs are present), safe reason, and seconds since the last successfully
+written healthy heartbeat.
 It does not query any cloud service or display process/account/source identifiers,
 environment variables, cookie material, notice titles or response bodies.
 The Dooray Radar has its own lines:
 * its enabled and running state;
 * its last scan and last success;
 * whether unread analysis is allowed;
-* whether the dedicated browser on 9222 is running.
+* the port of the browser it uses (9224 unified, 9222 separate).
 
 Status never starts a Dooray browser.
 
@@ -146,6 +215,16 @@ absence is not evidence that the HTTP session expired.
 
 ## 7. Portal manual login recovery
 
+Unified mode (the normal case):
+
+```cmd
+scripts\windows\start_ops_browser.cmd
+rem log in by hand in the Ops Chrome's Portal tab, then:
+scripts\windows\start_ggongbab_workers.cmd
+```
+
+`separate` mode (after a rollback):
+
 ```cmd
 scripts\windows\stop_ggongbab_workers.cmd
 python scripts\portal_web_agent.py --setup --cdp
@@ -161,15 +240,23 @@ contract verification or a forced fresh login.
 ## 8. Browser recovery
 
 ```cmd
-scripts\windows\recover_portal_browser.cmd
+scripts\windows\recover_ops_browser.cmd
 ```
 
-This disables polling and waits for its lock, inspects only the dedicated Portal
-Chrome, and makes one recovery/setup attempt. A known CDP attach timeout or a
+In unified mode this disables **both** workers and waits for their locks (Portal worker,
+watchdog, Radar), then inspects only the Ops Chrome and makes one recovery attempt: a healthy
+verified browser is reused, an absent one is started with its tabs, and only a verified
+dedicated process that is stale (no listener) or behind a recorded `PORTAL_CDP_ATTACH_TIMEOUT`
+is stopped and restarted. A missing Portal or Dooray tab is reopened. Then log in by hand where
+a tab asks and start both workers again. `recover_portal_browser.cmd` does the same in unified
+mode. In `separate` mode it keeps its original behaviour, described next.
+
+`recover_portal_browser.cmd` in `separate` mode disables polling and waits for its lock,
+inspects only the dedicated Portal Chrome, and makes one recovery/setup attempt. A known CDP attach timeout or a
 matching non-listening stale process permits targeted restart. A healthy verified
 browser is reused; an absent browser is started. Immediately before stopping a
 stale process, Windows rechecks its exact command line, PID creation time and any
-9223 owner. An unrelated/reused PID or ambiguous owner aborts. No `taskkill /IM`,
+owner of that browser's port (9224 or 9223). An unrelated/reused PID or ambiguous owner aborts. No `taskkill /IM`,
 profile deletion, cookie clearing or state reset is used. Complete manual login
 if prompted, then run Start; recovery itself does not enter a login loop.
 
@@ -237,7 +324,12 @@ or older Dooray tasks; review those separately in Task Scheduler.
 | DOORAY_AUTH_REQUIRED | Radar stops; complete SSO in the dedicated Dooray window, then `radar_tasks.ps1 -Action Start` |
 | DOORAY_CONTRACT_CHANGED | Radar stops and unread analysis is disabled; re-run calibration, then `radar-allow-unread` and Start |
 | DOORAY_UNREAD_INVARIANT_BROKEN | Unread rows are skipped until review; find what opened a mail or wrote during a scan, then `radar-allow-unread` |
-| DOORAY_BROWSER_ABSENT | Open the dedicated Dooray browser (9222); the Radar retries with backoff |
+| DOORAY_BROWSER_ABSENT | The browser or its Dooray tab is missing: `start_ops_browser.cmd` (unified) or open the dedicated Dooray browser on 9222 (separate); the Radar retries with backoff |
+| DOORAY_BROWSER_UNVERIFIED | The listener is not positively the dedicated Chrome (profile, port, loopback, `chrome.exe`). The Radar never attaches; it retries with backoff and raises a critical alert. Run `status_ops_browser.cmd` and find what owns the port |
+| OPS_BROWSER_UNVERIFIED / OPS_BROWSER_STALE | Start refuses an unknown/ambiguous owner or a dedicated process without a listener; use `recover_ops_browser.cmd` for the stale case only |
+| OPS_WORKERS_STILL_RUNNING | The browser mode changes only while both workers are stopped |
+| OPS_BROWSER_TAB_RESTORED | Informational: a tab Chrome had discarded/frozen was restored before an attach (section 0) |
+| OPS_BROWSER_TAB_UNRESPONSIVE | A tab stayed dead after restore; Portal follows `PORTAL_CDP_ATTACH_TIMEOUT`, the Radar backs off. Click the tab, or `recover_ops_browser.cmd` |
 | DOORAY_TRANSPORT_FAILED / DOORAY_WRITE_FAILED | Bounded backoff up to 15 min; nothing is marked processed until its task is written |
 
 CDP timeout and owner failure keep their fixed reason in a `collector_error`
@@ -260,9 +352,12 @@ powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Stop
 * no WakeToRun;
 * it starts 60 s after logon.
 
-It runs `ggongbab_workers.py radar` against the dedicated Dooray browser that the operator keeps
-open (and minimized). Start and Remove verify that the task belongs to this checkout and this
-user before touching it. Stop persists `enabled=false` in `radar-control.json`; the Radar exits
+It runs `ggongbab_workers.py radar` against the Dooray tab of the Ops Chrome (in `separate` mode,
+the dedicated Dooray browser), which the operator keeps open and minimized. Before every attach
+it runs the same owner check as the Portal handoff (listener, loopback, `chrome.exe`, port, the
+one expected user-data-dir); it uses only a top-level https page on the Dooray mail host, the
+inbox preferred, and never the Portal tab. Start and Remove verify that the task belongs to this
+checkout and this user before touching it. Stop persists `enabled=false` in `radar-control.json`; the Radar exits
 within five seconds.
 
 Before the first Start, use `ggongbab_workers.py radar-once --dry-run` to rehearse. It lists once
@@ -303,12 +398,83 @@ Because state was copied, not moved, the old ledgers are exactly as they were at
 worker can therefore re-detect items that the new workers handled in the meantime. For exact
 continuity, copy the new ledgers back with the same manifest check before starting the old task.
 
+## 14. Unified Ops Chrome: migration, proof and rollback
+
+This is how two dedicated windows (Portal 9223, Dooray 9222) become one Ops Chrome (9224).
+The migration never copies, extracts or decrypts cookies or other profile data between profiles,
+and never touches the owner's own Chrome profile. The new profile starts empty and the owner
+logs in by hand once in each tab.
+
+1. Deploy the code with no `.local/ops-browser.json` (= `separate`): the workers keep the legacy
+   browsers and behave as before.
+2. `scripts\windows\start_ops_browser.cmd` creates `.local/ops-browser-profile` and opens the Ops
+   Chrome on 9224 with the Portal and Dooray tabs, next to the untouched legacy browsers.
+3. Owner checkpoint: Portal SSO in the Portal tab; Dooray SSO → 메일 → 받은메일함 in the Dooray tab.
+4. Verify and prove, changing no worker state (no ledger, baseline, pending, heartbeat, task,
+   mail state, flash, dispatch or unread latch; counts only, in `.local/ops-browser-proof.json`):
+
+   ```cmd
+   python scripts\windows\ggongbab_workers.py ops-browser-verify
+   python scripts\windows\ggongbab_workers.py ops-browser-verify --cycles 10 --interval 60 --dooray-every 3
+   ```
+
+   Every cycle runs the Portal handoff with one LIST GET and, every third cycle, a dry-run Radar
+   list scan under the unread guard. They run as two CDP clients that are attached at the same
+   time. Each cycle checks the same Chrome PID and creation time, the same tabs on the same
+   roles (no cross-navigation), no added page and no added window. PASS needs every scan to
+   succeed, every Dooray cycle to overlap with Portal, exactly one window and zero unread-guard
+   violations.
+5. Cutover:
+
+   ```cmd
+   scripts\windows\stop_ggongbab_workers.cmd
+   powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Stop
+   python scripts\windows\ggongbab_workers.py ops-browser-mode --to unified
+   scripts\windows\start_ggongbab_workers.cmd
+   powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start
+   scripts\windows\status_ggongbab_workers.cmd
+   ```
+
+   `ops-browser-mode` refuses while any worker lock (Portal worker, watchdog, Radar) is held.
+6. Close the two legacy browsers. Each one is closed only after it is verified (profile, port,
+   loopback, `chrome.exe`), and the CDP endpoint must report that verified PID as its browser
+   process before `Browser.close` is sent. A close that does not complete is reported, never
+   forced. The profile directories stay as rollback assets.
+
+   ```cmd
+   python scripts\windows\ggongbab_workers.py legacy-browser-close --role portal
+   python scripts\windows\ggongbab_workers.py legacy-browser-close --role dooray
+   python scripts\windows\ggongbab_workers.py ops-browser-profiles
+   ```
+
+**Rollback** (state, ledgers, baselines and pending entries are never rebuilt; the Ops Chrome
+profile is kept for diagnosis):
+
+```cmd
+scripts\windows\stop_ggongbab_workers.cmd
+powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Stop
+python scripts\windows\ggongbab_workers.py ops-browser-mode --to separate
+python scripts\windows\ggongbab_workers.py legacy-browser-start --role dooray
+scripts\windows\start_ggongbab_workers.cmd
+powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start
+```
+
+The Portal worker starts the legacy Portal browser itself when it is absent (section 4), or start
+it explicitly with `legacy-browser-start --role portal`. If a legacy session has expired, log in
+by hand in that browser. The Ops Chrome may stay open during a rollback: it uses its own port.
+
+The opt-in real-browser test `tests/ggongbab/test_ops_browser_real_chrome.py`
+(`BABDODUK_REAL_CHROME=1`) checks the shared layer on the installed Chrome with a throwaway
+profile, port and local pages. It covers one window with two tabs, two overlapping CDP clients,
+no closed, navigated or added tab or window, and a PID-bound close. It never contacts
+Portal/Dooray.
+
 ## Dooray and cloud responsibility audit
 
 `collectors/dooray.py` reads collection-project tasks, task bodies and optional
 attachments via Dooray's project API. It cannot scan the authenticated web mail
 inbox. Tasks may already be produced by Dooray's configured mail classification.
-The local Dooray browser on **9222** uniquely scans mail and creates candidate
+The local Dooray browser session (the Ops Chrome's Dooray tab; 9222 in `separate` mode) uniquely scans mail and creates candidate
 project tasks; it is useful for missing classification coverage, recovery or
 operator-requested backfill. Verified read-state rules still protect mail bodies.
 

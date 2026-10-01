@@ -199,7 +199,8 @@ def host_fixture(tmp_path, inventory):
               "other": ["chrome.exe", "--user-data-dir=OTHER", "--remote-debugging-port=9222"]}
     run = Mock(return_value=json.dumps(inventory))
     start, verify = Mock(), Mock()
-    host = PortalHost(tmp_path, run=run, split=lambda value: tokens[value], start=start, verify=verify, sleep=lambda _: None)
+    host = PortalHost(tmp_path, run=run, split=lambda value: tokens[value], start=start, verify=verify, sleep=lambda _: None,
+                      wake=Mock(return_value={"pages": 1, "restored": 0, "roles": []}))
     return host, run, start, verify
 
 
@@ -245,7 +246,8 @@ def test_stale_recovery_stops_exact_verified_process(tmp_path):
     host, run, start, verify = host_fixture(tmp_path, inventory(True, [DEDICATED, OTHER], [123]))
     run.side_effect = [json.dumps(inventory(True, [DEDICATED, OTHER], [123])), "", json.dumps(inventory(processes=[OTHER]))]
     host.ensure(recover_stale=True)
-    assert run.call_args_list[1].args == (STOP_SCRIPT, DEDICATED)
+    # The exact verified identity plus the slot's port (stdin JSON, never interpolated).
+    assert run.call_args_list[1].args == (STOP_SCRIPT, dict(DEDICATED, port=9223))
     start.assert_called_once()
     assert "CreationDate" in STOP_SCRIPT and "CommandLine -cne" in STOP_SCRIPT
     assert "Stop-Process -Id $proc.ProcessId" in STOP_SCRIPT
@@ -347,9 +349,18 @@ def test_ports_and_no_profile_or_state_removal_or_detail_endpoints():
     assert PORTAL_PORT == 9223 and DOORAY_PORT == 9222
     source = "\n".join((ROOT / name).read_text(encoding="utf-8") for name in (
         "scripts/ggongbab/resident_ops.py", "scripts/ggongbab/windows_portal_host.py",
-        "scripts/windows/ggongbab_workers.py"))
-    for forbidden in ("rmtree", "Remove-Item", "taskkill", "recents/{", "fetch_detail", "fill(", "otp", "password="):
+        "scripts/windows/ggongbab_workers.py", "scripts/ggongbab/ops_browser.py",
+        "scripts/ggongbab/ops_browser_control.py", "scripts/ggongbab/ops_browser_proof.py",
+        "scripts/windows/ops_browser.ps1"))
+    for forbidden in ("rmtree", "Remove-Item", "taskkill", "recents/{", "fetch_detail", "fill(", "otp", "password=",
+                      "clear_cookies", "Network.clearBrowserCookies", "Storage.clearDataForOrigin",
+                      "open_body", "detail_api"):
         assert forbidden not in source
+    # The Ops Chrome modules delete nothing at all (profiles, state, latches stay as they are).
+    new = "\n".join((ROOT / "scripts/ggongbab" / name).read_text(encoding="utf-8") for name in (
+        "ops_browser.py", "ops_browser_control.py", "ops_browser_proof.py"))
+    for forbidden in ("unlink(", "rmdir", "os.remove", "shutil", "Stop-Process", "kill("):
+        assert forbidden not in new
     assert "portal-list-state.json" in source and "portal-list.lock" in source
     assert "ggongbab_public_events" not in source
 

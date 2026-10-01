@@ -10,8 +10,8 @@ import sys
 import time
 
 from .heartbeat import HeartbeatWriter
-from .ops_policy import (HUMAN, REASONS, PORTAL_PORT, DOORAY_PORT, WARNING_SECONDS, alert_state,
-                         reason, restart_action)
+from .ops_browser import dooray_host, page_targets, read_mode, slot_for, tab_roles
+from .ops_policy import HUMAN, REASONS, WARNING_SECONDS, alert_state, reason, restart_action
 from .ops_storage import OpsError, SafeLog, atomic_json, lock_held, read_json
 from .portal_list_state import ListStateError, PortalListState, poller_lock
 from .portal_list_poller import run_poller
@@ -134,8 +134,15 @@ def run_worker(files, *, recover_stale=False, host=None, settings=None, now=time
                     try:
                         host.ensure(recover_stale=recover_stale, log=journal)
                     except OpsError as exc:
-                        raise AuthRequired(str(exc)) from None
-                    return PortalSessionProvider(host.profile, PORTAL_PORT).acquire()
+                        # A tab that cannot be restored blocks the attach exactly like the known
+                        # CDP attach timeout: one verified-browser recovery, then manual.
+                        code = str(exc)
+                        if code in ("OPS_BROWSER_TAB_UNRESPONSIVE", "OPS_BROWSER_TARGETS_UNAVAILABLE",
+                                    "OPS_BROWSER_CDP_ERROR"):
+                            code = "PORTAL_CDP_ATTACH_TIMEOUT"
+                        raise AuthRequired(code) from None
+                    # The Ops Chrome (shared with the Radar) or, in separate mode, the Portal browser.
+                    return PortalSessionProvider(host.profile, host.port).acquire()
 
             return run_poller(Provider(), state, emit_heartbeat=lambda row: journal.heartbeat(row, writer),
                 log=journal, interval=60, max_failures=5, on_retry=journal.retry,
@@ -309,6 +316,29 @@ def watch(files):
             watchdog.close()
 
 
+BROWSER_STATES = {"verified": "running", "absent": "missing", "stale": "stale", "unverified": "unverified"}
+
+
+def ops_browser_lines(root, state, port, *, targets=page_targets):
+    """Ops Chrome + tab presence. A tab is looked up only on a verified owner; never a URL/title."""
+    tabs = {"portal": "unknown", "dooray": "unknown"}
+    if state == "verified":
+        try:
+            counts = tab_roles(targets(port), dooray_host(Path(root) / ".local" / "dooray-ui.json"))
+            login = " / KAIST SSO login page open" if counts["sso"] else ""
+            tabs = {"portal": "present" if counts["portal"] else
+                              ("SSO login page (log in there)" if counts["sso"] else "absent"),
+                    "dooray": ("present (inbox)" if counts["inbox"] else
+                               "present (login or not on the inbox)" + login if counts["dooray"] else
+                               "absent" + login)}
+        except OpsError:
+            pass
+    elif state in ("absent", "stale"):
+        tabs = {"portal": "absent", "dooray": "absent"}
+    return [f"Ops browser   : {BROWSER_STATES[state]} (127.0.0.1:{port})",
+            f"Portal tab    : {tabs['portal']}", f"Dooray tab    : {tabs['dooray']}"]
+
+
 def radar_status_lines(files, now):
     from .dooray_radar import RadarFiles
     radar = RadarFiles(files.root)
@@ -318,8 +348,9 @@ def radar_status_lines(files, now):
         return ["Dooray radar  : STATE UNREADABLE"]
     age = int(now - row["last_success"]) if isinstance(row.get("last_success"), (int, float)) and row["last_success"] else None
     code = row.get("reason") if row.get("reason") in REASONS else "DOORAY_RADAR_STOPPED"
+    port = slot_for(files.root, "dooray").port
     return ["Dooray radar  : " + ("RUNNING (lock held)" if lock_held(radar.lock) else "STOPPED")
-            + (" / enabled" if radar.enabled() else " / disabled") + " / " + code + " (browser 9222)",
+            + (" / enabled" if radar.enabled() else " / disabled") + " / " + code + f" (browser {port})",
             "Radar success : " + (f"{age} sec ago" if age is not None else "not observed"),
             "Unread radar  : " + ("allowed (list level only)" if radar.unread_allowed()
                                   else "DISABLED (fail-closed; review, then radar-allow-unread)"),
@@ -327,13 +358,15 @@ def radar_status_lines(files, now):
                                   else "off (the 30-minute schedule still runs)")]
 
 
-def status_lines(files, host=None, now=None):
+def status_lines(files, host=None, now=None, targets=page_targets):
     now = time.time() if now is None else now
     row = files.runtime_state()
     control = files.control_state()
     watch_state = read_json(files.watch, {})
     code = reason(watch_state.get("latched") or row["manual_reason"] or row["reason"])
     alert = alert_state(code, row["last_success"], now)
+    unified = read_mode(files.local) == "unified"
+    port = slot_for(files.root, "portal").port
     state, _ = (host or PortalHost(files.root)).inspect()
     running = lock_held(files.worker_lock)
     if not running and code == "WORKER_RUNNING":
@@ -345,8 +378,10 @@ def status_lines(files, host=None, now=None):
         alert = alert_state("PORTAL_RESIDENT_OWNER_UNVERIFIED", row["last_success"], now)
     age = alert["last_success_age_seconds"]
     return ["Babdoduk Worker Status",
+        "Browser mode  : " + ("unified (one Babdoduk Ops Chrome)" if unified else "separate (legacy Portal + Dooray browsers)"),
+        *(ops_browser_lines(files.root, state, port, targets=targets) if unified else []),
         "Portal worker : " + ("RUNNING (lock held)" if running else "STOPPED"),
-        "Portal CDP    : " + {"verified": "OK", "absent": "ABSENT", "stale": "STALE", "unverified": "OWNER UNVERIFIED"}[state] + " (9223)",
+        "Portal CDP    : " + {"verified": "OK", "absent": "ABSENT", "stale": "STALE", "unverified": "OWNER UNVERIFIED"}[state] + f" ({port})",
         "Portal status : " + (alert["severity"] if control["enabled"] else "disabled") + " / " + code,
         "Last success  : " + (f"{age} sec ago (confirmed heartbeat write)" if age is not None else "not observed"),
         *radar_status_lines(files, now),
