@@ -51,8 +51,13 @@ own URL with its existing session, the same as clicking the tab, and the window 
 Nothing is navigated, typed, evaluated or closed. A restored Dooray inbox settles for 15 s before
 the unread guard starts. A tab that cannot be restored fails closed: Portal takes the existing
 `PORTAL_CDP_ATTACH_TIMEOUT` path (one verified-browser recovery, then manual), and the Radar backs
-off with `DOORAY_BROWSER_ABSENT`. Either worker may restore the other's discarded tab, because
-that tab blocks both; neither ever navigates a live tab.
+off with `DOORAY_BROWSER_ABSENT`; an attach that still times out is also `DOORAY_BROWSER_ABSENT`.
+Either worker may restore the other's discarded tab, because that tab blocks both. Neither ever
+navigates a live tab. Restores are logged as `OPS_BROWSER_TAB_RESTORED`. After the cutover the
+Dooray tab was suspended once too, and the Radar restored it at its next scan. To make discards
+rarer, add `portal.kaist.ac.kr` and `kaist.gov-dooray.com` in the Ops Chrome under
+chrome://settings/performance → "Always keep these sites active". Chrome may still discard tabs
+under critical memory pressure; the restore handles that.
 
 Which browser the workers attach to is `.local/ops-browser.json`: `{"mode": "unified"}` (the Ops
 Chrome) or `{"mode": "separate"}` (the legacy Portal 9223 + Dooray 9222 browsers). A missing file

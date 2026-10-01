@@ -366,3 +366,35 @@ def test_the_close_is_sent_only_to_the_verified_browser_pid():
     assert "Browser.close" not in cdp.calls
     control._cdp_close(9222, 44, cdp=cdp)
     assert cdp.calls[-1] == "Browser.close" and "Target.attachToTarget" not in cdp.calls
+
+
+def test_a_radar_attach_timeout_is_a_browser_condition_and_scan_errors_pass_through(tmp_path, monkeypatch):
+    from ggongbab.web.exit_codes import UiContractError
+    from ggongbab.web.resident import ResidentAttachTimeout
+    workers = workers_module(tmp_path, monkeypatch)
+    contract = SimpleNamespace(require_ready=lambda: None, read_state_key="read", mail_url=INBOX)
+    monkeypatch.setattr("ggongbab.web.ui_contract.load_contract", lambda path: contract)
+    monkeypatch.setattr("ggongbab.config.load_settings", lambda: SimpleNamespace(has_supabase=False))
+    captured = {}
+    monkeypatch.setattr("ggongbab.dooray_radar.run_radar", lambda rf, **kw: captured.update(kw) or 0)
+    monkeypatch.setattr("ggongbab.portal_session.verify_resident_owner", lambda *a: None)
+    monkeypatch.setattr("ggongbab.ops_browser.wake_tabs", lambda port, host: {"pages": 2, "restored": 1, "roles": ["portal"]})
+    monkeypatch.setattr("ggongbab.web.resident.resident_session",
+                        Mock(side_effect=ResidentAttachTimeout("PORTAL_CDP_ATTACH_TIMEOUT")))
+    workers.radar(Files(tmp_path), dry_run=True, once=True)
+    with pytest.raises(ConnectionError, match="DOORAY_BROWSER_ABSENT"):
+        with captured["session_factory"]():
+            pass
+    inbox = SimpleNamespace(url=INBOX, is_closed=lambda: False)
+
+    @contextmanager
+    def live(*a, **k):
+        yield SimpleNamespace(context=SimpleNamespace(pages=[inbox]), page=None)
+
+    monkeypatch.setattr("ggongbab.web.resident.resident_session", live)
+    workers.radar(Files(tmp_path), dry_run=True, once=True)
+    with pytest.raises(UiContractError):                     # a scan error keeps its own meaning
+        with captured["session_factory"]():
+            raise UiContractError("DOORAY_CONTRACT_CHANGED")
+    log = (tmp_path / ".local" / "ops-radar.log").read_text(encoding="utf-8")
+    assert "OPS_BROWSER_TAB_RESTORED" in log                  # restores are visible to the operator

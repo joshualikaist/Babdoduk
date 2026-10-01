@@ -122,7 +122,7 @@ def radar(files, *, once=False, dry_run=False, interval=None):
     """The Dooray Radar (list-level, unread-safe). Attaches to the Dooray tab of the already-open
     dedicated browser (the Ops Chrome, or the legacy Dooray browser in separate mode); never
     starts, restarts or closes it, never uses another site's tab and never opens a mail body."""
-    from contextlib import contextmanager
+    from contextlib import ExitStack, contextmanager
     from urllib.parse import urlparse
     from ggongbab.config import load_settings
     from ggongbab.dispatch import request_refresh
@@ -132,7 +132,7 @@ def radar(files, *, once=False, dry_run=False, interval=None):
     from ggongbab.portal_list_state import poller_lock
     from ggongbab.portal_session import verify_resident_owner
     from ggongbab.web.mail_reader import list_mails_paged
-    from ggongbab.web.resident import is_running, resident_session
+    from ggongbab.web.resident import ResidentError, is_running, resident_session
     from ggongbab.web.task_writer import TaskWriter
     from ggongbab.web.ui_contract import load_contract
 
@@ -192,10 +192,17 @@ def radar(files, *, once=False, dry_run=False, interval=None):
             woke = wake_tabs(slot.port, mail_host)
         except Exception:
             raise ConnectionError("DOORAY_BROWSER_ABSENT") from None
+        if woke["restored"]:
+            log("OPS_BROWSER_TAB_RESTORED")
         if "dooray" in woke["roles"]:
             time.sleep(RESTORE_SETTLE_SECONDS)
-        with resident_session(slot.profile, contract, start_url="", port=slot.port, attach_only=True,
-                              log=lambda _: None) as session:
+        with ExitStack() as stack:
+            try:
+                session = stack.enter_context(resident_session(slot.profile, contract, start_url="", port=slot.port,
+                                                               attach_only=True, log=lambda _: None))
+            except ResidentError:
+                # An attach that times out is a browser condition, not a task-write failure.
+                raise ConnectionError("DOORAY_BROWSER_ABSENT") from None
             session.page = dooray_page(session.context, mail_host)   # never the Portal tab
             yield session
 
