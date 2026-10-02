@@ -1,7 +1,7 @@
 {
   "weekStart": "2026-09-28",
   "weekEnd": "2026-10-04",
-  "generatedAt": "2026-10-01T23:40:53+09:00",
+  "generatedAt": "2026-10-02T09:22:35+09:00",
   "timezone": "Asia/Seoul",
   "days": [
     {
@@ -37,21 +37,21 @@
       "available": true,
       "restaurantCount": 8,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-10-01T23:40:53+09:00"
+      "fetchedAt": "2026-10-02T09:22:35+09:00"
     },
     {
       "date": "2026-10-03",
       "available": true,
       "restaurantCount": 5,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-10-01T23:40:53+09:00"
+      "fetchedAt": "2026-10-02T09:22:35+09:00"
     },
     {
       "date": "2026-10-04",
       "available": true,
       "restaurantCount": 5,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-10-01T23:40:53+09:00"
+      "fetchedAt": "2026-10-02T09:22:35+09:00"
     }
   ]
 }
