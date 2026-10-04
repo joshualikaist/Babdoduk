@@ -61,6 +61,7 @@ Magazine states (2026-09-29): a story card needs a real source link; there is no
 | Food opportunity card | Time/date, place, explicitly provided food, eligibility, registration requirement and approved action. “Unknown” is not a positive badge. |
 | Menu card | Official meal date, restaurant/building, meal period, items, price/calories only when provided by source. Stale data is visibly labelled. |
 | Recommendation card | Dish idea, plain-language reason, alternatives and feedback. Internal scoring is not a probability of fit or proof of sale. |
+| Free-food calendar (home) | Sunday-first KST month on one surface: today an accent ring, the selected date an ink disc, both an accent disc; an upcoming event a filled accent dot, a past one a hollow muted ring, at most two. Titles never sit in cells; the day panel lists them with inline details. Free food only (`docs/HOME_CALENDAR.md`). |
 | Event row | Date, title, one short state and the post link; the full announcement and state explanation sit behind 자세히. The date band (now, coming up, past) is separate from the confirmed, tentative, unknown or cancelled status. Partner marks require authored evidence. |
 | Badges | Distinct meaning for source, date, eligibility, editorial opinion and warning; text conveys state even without color. |
 | Filters | Preserve the selected value, expose `aria-pressed`, support keyboard/touch and a useful empty result. |

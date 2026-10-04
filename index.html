@@ -13,6 +13,12 @@
   <meta property="og:image:height" content="1200" />
   <link rel="image_src" href="https://babdoduk.vercel.app/images/kakao-loopy.jpg" />
   <meta property="og:image:alt" content="밥도둑 로고" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="밥도둑" />
 
   <title>밥도둑 Babdoduk</title>
   <meta name="description" content="KAIST 꽁밥 일정" />
@@ -48,17 +54,50 @@
   </header>
 
   <main class="page-fill home" id="main">
-    <section class="home-hero" aria-labelledby="homeTitle">
-      <div class="home-hero-copy">
-        <p class="home-kicker">
-          <img src="images/profile-instagram.jpg" alt="" width="32" height="32" decoding="async" />
-          <span data-i18n="home.kicker">BABDODUK · KAIST FOOD</span>
-        </p>
-        <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span></h1>
-        <div class="home-actions">
-          <a class="btn btn-primary" href="ggongbab.html" data-i18n="home.ctaToday">오늘의 꽁밥 보기</a>
-          <a class="btn btn-secondary" href="mukbang.html#what" data-i18n="home.ctaChoose">메뉴 고르기</a>
+    <!-- The top, in reading order: who we are, the free-food calendar, the cafeteria line, then the
+         decorative collage. On wide screens the collage sits beside the copy on the same paper band. -->
+    <div class="home-top">
+      <section class="home-hero" aria-labelledby="homeTitle">
+        <div class="home-hero-copy">
+          <p class="home-kicker">
+            <img src="images/profile-instagram.jpg" alt="" width="32" height="32" decoding="async" />
+            <span data-i18n="home.kicker">BABDODUK · KAIST FOOD</span>
+          </p>
+          <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span></h1>
+          <div class="home-actions">
+            <a class="btn btn-primary" href="ggongbab.html" data-i18n="home.ctaToday">오늘의 꽁밥 보기</a>
+            <a class="btn btn-secondary" href="mukbang.html#what" data-i18n="home.ctaChoose">메뉴 고르기</a>
+          </div>
         </div>
+      </section>
+
+      <!-- Free food only: the published schedule and the past listings, never menus, stories or Babdoduk events. -->
+      <section class="home-cal" id="homeCal" aria-labelledby="homeCalTitle" data-state="loading">
+        <div class="home-cal-head">
+          <h2 class="home-cal-title" id="homeCalTitle"><span data-i18n="home.cal.title">오늘의 꽁밥</span> <span class="home-cal-date" id="homeCalToday"></span></h2>
+          <p class="home-cal-answer" id="homeCalAnswer" data-i18n="home.free.loading">꽁밥 일정 확인 중</p>
+        </div>
+        <div class="home-cal-body">
+          <div class="home-cal-month" id="homeCalGrid"></div>
+          <div class="home-cal-day" id="homeCalDay" hidden></div>
+          <div class="home-cal-next" id="homeCalNext" hidden></div>
+        </div>
+        <div class="home-cal-foot">
+          <a class="home-cal-all" id="homeCalAll" href="ggongbab.html#free" data-i18n="home.cal.all">전체 일정 →</a>
+          <p class="home-cal-pub" id="homeCalPublished"></p>
+        </div>
+        <p class="home-sr-only" id="homeCalLive" aria-live="polite"></p>
+      </section>
+
+      <div class="home-menu-line">
+        <a class="home-status" id="homeMenuStatus" href="ggongbab.html#menu" data-state="loading">
+          <span class="home-status-label" aria-hidden="true" data-i18n="home.menu.label">학식</span>
+          <span class="home-status-body">
+            <strong data-home-headline data-i18n="home.menu.loading">학식 메뉴 확인 중</strong>
+            <span class="home-status-meta" data-home-meta></span>
+            <span class="home-status-cta" data-i18n="home.menu.cta">학식 보기 →</span>
+          </span>
+        </a>
       </div>
 
       <!-- Decorative crops only. No dish names: these are not a menu. -->
@@ -74,28 +113,7 @@
         </div>
       </div>
 
-      <section class="home-today" aria-labelledby="homeTodayTitle">
-        <div class="home-today-head">
-          <h2 id="homeTodayTitle"></h2>
-        </div>
-        <a class="home-status" id="homeMenuStatus" href="ggongbab.html#menu" data-state="loading">
-          <span class="home-status-label" aria-hidden="true" data-i18n="home.menu.label">학식</span>
-          <span class="home-status-body">
-            <strong data-home-headline data-i18n="home.menu.loading">학식 메뉴 확인 중</strong>
-            <span class="home-status-meta" data-home-meta></span>
-            <span class="home-status-cta" data-i18n="home.menu.cta">학식 보기 →</span>
-          </span>
-        </a>
-        <a class="home-status" id="homeFreeStatus" href="ggongbab.html#free" data-state="loading">
-          <span class="home-status-label" aria-hidden="true" data-i18n="home.free.label">꽁밥</span>
-          <span class="home-status-body">
-            <strong data-home-headline data-i18n="home.free.loading">꽁밥 일정 확인 중</strong>
-            <span class="home-status-meta" data-home-meta></span>
-            <span class="home-status-cta" data-i18n="home.free.cta">꽁밥 보기 →</span>
-          </span>
-        </a>
-      </section>
-    </section>
+    </div>
 
     <!-- Below the hero: three groups with distinct jobs, in this order: act, read, catch up. -->
     <section class="home-group home-shelf" aria-labelledby="homeShelfTitle">
@@ -114,16 +132,6 @@
       </div>
       <!-- Native horizontal scroll: swipe, trackpad, wheel or the buttons. Nothing moves on its own. -->
       <ul class="home-shelf-track" id="homeShelf" role="list">
-        <li class="home-banner home-banner--today home-banner--primary" data-banner="today">
-          <a class="home-banner-link" href="ggongbab.html">
-            <span class="home-banner-top">
-              <span class="home-banner-label">TODAY</span>
-              <span class="home-banner-date" data-home-banner-date></span>
-            </span>
-            <h3 class="home-banner-title" data-i18n="home.banner.today.title">오늘의 꽁밥</h3>
-            <span class="home-banner-cta"><span data-i18n="home.banner.today.cta">확인하러 가기</span> <span aria-hidden="true">→</span></span>
-          </a>
-        </li>
         <li class="home-banner home-banner--pick home-banner--primary" data-banner="pick">
           <a class="home-banner-link" href="mukbang.html#what">
             <span class="home-banner-media" aria-hidden="true">
@@ -284,8 +292,6 @@
           'home.shelf.title': '오늘 먹기',
           'home.shelf.prev': '이전 배너',
           'home.shelf.next': '다음 배너',
-          'home.banner.today.title': '오늘의 꽁밥',
-          'home.banner.today.cta': '확인하러 가기',
           'home.banner.pick.title': '못 정했다면, 한 번 돌려 봐요',
           'home.banner.pick.cta': '메뉴 고르기',
           'home.banner.map.title': '발로 찍은 맛집 지도',
@@ -310,15 +316,48 @@
           'home.menu.last': '마지막으로 올라온 메뉴: {date}',
           'home.menu.retry': '오늘의 꽁밥에서 다시 확인해 주세요',
           'home.menu.cta': '학식 보기 →',
-          'home.free.label': '꽁밥',
           'home.free.loading': '꽁밥 일정 확인 중',
-          'home.free.today': '오늘 {n}개 예정',
-          'home.free.soonest': '가장 빠른 시작 {time}',
-          'home.free.next': '오늘은 없어요 · 다음 일정 {date}',
-          'home.free.none': '예정된 꽁밥이 아직 없어요',
           'home.free.error': '꽁밥 일정을 불러오지 못했어요',
           'home.free.asOf': '마지막 발행 {time}',
-          'home.free.cta': '꽁밥 보기 →',
+          'home.cal.title': '오늘의 꽁밥',
+          'home.cal.answer.today': '오늘 {n}개 · {time}부터',
+          'home.cal.answer.next': '오늘은 없어요 · 다음 {date}',
+          'home.cal.answer.endedNext': '오늘 일정은 끝났어요 · 다음 {date}',
+          'home.cal.answer.ended': '오늘 일정은 끝났어요',
+          'home.cal.answer.none': '예정된 꽁밥이 없어요',
+          'home.cal.all': '전체 일정 →',
+          'home.cal.hub': '꽁밥 페이지 →',
+          'home.cal.todayBtn': '오늘',
+          'home.cal.prev': '이전 달',
+          'home.cal.nextMonth': '다음 달',
+          'home.cal.upcoming': '다가오는 꽁밥',
+          'home.cal.empty': '일정 없음',
+          'home.cal.noRecord': '기록 없음',
+          'home.cal.archiveError': '지난 기록을 불러오지 못했어요',
+          'home.cal.rel.today': '오늘',
+          'home.cal.rel.tomorrow': '내일',
+          'home.cal.cell.active': '꽁밥 {n}개',
+          'home.cal.cell.past': '지난 꽁밥 {n}개',
+          'home.cal.ev.ended': '종료',
+          'home.cal.ev.food': '{food} 제공',
+          'home.cal.ev.reg': '사전 신청',
+          'home.cal.ev.timeTbd': '시간 미정',
+          'home.cal.ev.who': '대상 · {who}',
+          'home.cal.ev.deadline': '신청 마감 · {date}',
+          'home.cal.ev.apply': '신청하기',
+          'home.cal.ev.original': '원문 보기',
+          'home.cal.ev.source': '출처 · {source}',
+          'home.cal.src.mail': 'KAIST 메일',
+          'home.cal.src.portal': 'KAIST 포탈',
+          'home.cal.src.public': 'KAIST 공식 공지',
+          'home.cal.src.manual': '밥도둑 등록',
+          'home.cal.food.meal': '식사',
+          'home.cal.food.lunchbox': '도시락',
+          'home.cal.food.snack': '간식',
+          'home.cal.food.refreshment': '다과',
+          'home.cal.food.beverage': '음료',
+          'home.cal.food.coupon': '식권',
+          'home.cal.food.other': '음식',
           'home.mag.more': '매거진 전체 보기 →',
           'home.mag.edition': '{date}자',
           'home.desk.tips': '요리 비법',
@@ -358,8 +397,6 @@
           'home.shelf.title': 'Eat today',
           'home.shelf.prev': 'Previous cards',
           'home.shelf.next': 'Next cards',
-          'home.banner.today.title': "Today's free food",
-          'home.banner.today.cta': 'Check now',
           'home.banner.pick.title': "Can't decide? Give it a spin",
           'home.banner.pick.cta': 'Choose a dish',
           'home.banner.map.title': 'Our food map',
@@ -384,15 +421,48 @@
           'home.menu.last': 'Latest posted menu: {date}',
           'home.menu.retry': "Check again in Today's free food",
           'home.menu.cta': 'See cafeteria →',
-          'home.free.label': 'Free',
           'home.free.loading': 'Checking free food',
-          'home.free.today': '{n} scheduled today',
-          'home.free.soonest': 'earliest starts {time}',
-          'home.free.next': 'None today · next on {date}',
-          'home.free.none': 'No free-food events scheduled yet',
           'home.free.error': 'Could not load free-food events',
           'home.free.asOf': 'Last published {time}',
-          'home.free.cta': 'See free food →',
+          'home.cal.title': 'Free food today',
+          'home.cal.answer.today': '{n} today · from {time}',
+          'home.cal.answer.next': 'None today · next {date}',
+          'home.cal.answer.endedNext': 'Today’s are over · next {date}',
+          'home.cal.answer.ended': 'Today’s are over',
+          'home.cal.answer.none': 'Nothing scheduled',
+          'home.cal.all': 'All events →',
+          'home.cal.hub': 'Open free food →',
+          'home.cal.todayBtn': 'Today',
+          'home.cal.prev': 'Previous month',
+          'home.cal.nextMonth': 'Next month',
+          'home.cal.upcoming': 'Coming up',
+          'home.cal.empty': 'Nothing scheduled',
+          'home.cal.noRecord': 'No record',
+          'home.cal.archiveError': 'Couldn’t load past records',
+          'home.cal.rel.today': 'Today',
+          'home.cal.rel.tomorrow': 'Tomorrow',
+          'home.cal.cell.active': 'free food: {n}',
+          'home.cal.cell.past': 'past: {n}',
+          'home.cal.ev.ended': 'Ended',
+          'home.cal.ev.food': '{food}',
+          'home.cal.ev.reg': 'Sign-up required',
+          'home.cal.ev.timeTbd': 'Time TBD',
+          'home.cal.ev.who': 'Open to: {who}',
+          'home.cal.ev.deadline': 'Sign up by {date}',
+          'home.cal.ev.apply': 'Sign up',
+          'home.cal.ev.original': 'Original post',
+          'home.cal.ev.source': 'Source: {source}',
+          'home.cal.src.mail': 'KAIST mail',
+          'home.cal.src.portal': 'KAIST Portal',
+          'home.cal.src.public': 'KAIST notice',
+          'home.cal.src.manual': 'Added by Babdoduk',
+          'home.cal.food.meal': 'Meal',
+          'home.cal.food.lunchbox': 'Lunch box',
+          'home.cal.food.snack': 'Snacks',
+          'home.cal.food.refreshment': 'Refreshments',
+          'home.cal.food.beverage': 'Drinks',
+          'home.cal.food.coupon': 'Meal voucher',
+          'home.cal.food.other': 'Food',
           'home.mag.more': 'Open the magazine →',
           'home.mag.edition': '{date} edition',
           'home.desk.tips': 'Kitchen notes',
@@ -533,6 +603,7 @@
   </script>
   <script src="js/kaist-menu.js"></script>
   <script src="js/ggongbab-select.js"></script>
+  <script src="js/home-calendar.js"></script>
   <script src="js/home.js"></script>
 </body>
 </html>

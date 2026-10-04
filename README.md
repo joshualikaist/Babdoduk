@@ -22,8 +22,8 @@
 
 먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다.
 
-홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`mukbang.html#what`)로 바로 시작하게 하고, 그 아래에 01 오늘 먹기 · 02 읽어보기 ·
-03 밥도둑 소식을 둡니다. `history.html` 은 밥도둑이 걸어온 길입니다.
+홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`mukbang.html#what`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
+학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에 01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식을 둡니다. `history.html` 은 밥도둑이 걸어온 길입니다.
 
 ### 섞지 않는 두 가지
 
@@ -95,7 +95,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 
 | 파일 | 역할 |
 |------|------|
-| **`index.html`** | 홈 — 에디토리얼 히어로(오늘의 꽁밥·메뉴 고르기, 분위기 사진, 날짜가 붙은 오늘 요약) 아래에 01 오늘 먹기(가로 선반: 오늘의 꽁밥·메뉴 고르기·맛집 지도), 02 읽어보기(매거진 추천 글·데스크·사진 기록), 03 밥도둑 소식(지금 / 지난 활동). 섹션 제목 아래 설명 문장은 두지 않는다 |
+| **`index.html`** | 홈 — 에디토리얼 히어로(오늘의 꽁밥·메뉴 고르기, 분위기 사진) 바로 아래 **오늘의 꽁밥 달력**(오늘 한 줄 요약, 일요일 시작 KST 월 달력, 고른 날의 일정, 다가오는 꽁밥; `js/home-calendar.js`, `docs/HOME_CALENDAR.md`)과 학식 한 줄, 그 아래에 01 오늘 먹기(가로 선반: 메뉴 고르기·맛집 지도), 02 읽어보기(매거진 추천 글·데스크·사진 기록), 03 밥도둑 소식(지금 / 지난 활동). 섹션 제목 아래 설명 문장은 두지 않는다 |
 | **`food.html`** | 먹방 가계부 — **공개 전, 실험실 전용**(`noindex, nofollow`, 공개 링크 없음, `lab.html` 에서 진입). 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 기록 주체는 소유자 결정 대기 |
 | **`event.html`** | 밥도둑 소식 — **지금**(작성된 공지와 진행 중·예정 활동, 없으면 “예정된 활동 없음”)과 **지난 활동**(날짜·제목·짧은 상태·당시 게시물). Instagram 링크는 목록 아래 한 줄로 따로 있다. 날짜 구간과 확인 상태는 따로 계산하고, 날짜가 지났다고 진행됐다고 하지 않는다. 당시 안내 전문은 “자세히” 안에 (`css/event.css`, `docs/EVENT_DETAIL_FIELDS.md`) |
 | **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리. **원문 출처가 있는 글만** 싣고(‘밥도둑 데스크’ 대체 글 없음), 갈래가 비면 조용히 “새 이야기가 없어요”라고 적는다. 대표 글은 근거가 있는 요즘 유행 글이면 “지금 뜨는 먹거리”, 아니면 “오늘의 추천 글”로 표시하고, 자기 이미지가 없으면 글만 있는 히어로. YouTube 는 운영 PC 의 로컬 수집(`scripts/magazine_local_discovery.py`, 수집만 하고 발행하지 않음)으로 들어온다. 아래 `#what` 에 **메뉴 고르기**(“오늘 뭐 먹지?” 슬롯, 카탈로그 제안)와 날짜가 붙은 오늘 학식 요약. 수집·선정 방식은 `docs/MAGAZINE_DISCOVERY.md` |
@@ -792,6 +792,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/REPOSITORY_HYGIENE.md` | 브랜치·worktree·stash·태그 정리 |
 | `docs/VISUAL_BASELINES.md` | 공통 내비·푸터 시각 기준 이미지와 승인 절차 |
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
+| `docs/HOME_CALENDAR.md` | 홈 꽁밥 달력(표시·기본 선택·데이터 규칙, 선착순 공개 계약 대기) |
 | `docs/KAIST_MENU.md` | 이번 주 학식 수집·파일·화면 규칙 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/CAMPUS_FOOD_NEWS.md` | 먹거리 소식(꽁밥과 분리된 뉴스) |
