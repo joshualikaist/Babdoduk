@@ -1,57 +1,57 @@
 {
-  "weekStart": "2026-09-28",
-  "weekEnd": "2026-10-04",
-  "generatedAt": "2026-10-04T22:22:59+09:00",
+  "weekStart": "2026-10-05",
+  "weekEnd": "2026-10-11",
+  "generatedAt": "2026-10-05T08:45:22+09:00",
   "timezone": "Asia/Seoul",
   "days": [
     {
-      "date": "2026-09-28",
-      "available": true,
-      "restaurantCount": 8,
-      "status": "STALE_SAVED_DATA",
-      "fetchedAt": "2026-09-28T16:23:38+09:00"
+      "date": "2026-10-05",
+      "available": false,
+      "restaurantCount": 0,
+      "status": "FETCH_FAILED",
+      "fetchedAt": null
     },
     {
-      "date": "2026-09-29",
-      "available": true,
-      "restaurantCount": 8,
-      "status": "AVAILABLE",
-      "fetchedAt": "2026-09-29T23:14:41+09:00"
+      "date": "2026-10-06",
+      "available": false,
+      "restaurantCount": 0,
+      "status": "FETCH_FAILED",
+      "fetchedAt": null
     },
     {
-      "date": "2026-09-30",
-      "available": true,
-      "restaurantCount": 8,
-      "status": "AVAILABLE",
-      "fetchedAt": "2026-09-30T09:01:07+09:00"
+      "date": "2026-10-07",
+      "available": false,
+      "restaurantCount": 0,
+      "status": "FETCH_FAILED",
+      "fetchedAt": null
     },
     {
-      "date": "2026-10-01",
-      "available": true,
-      "restaurantCount": 8,
-      "status": "AVAILABLE",
-      "fetchedAt": "2026-10-01T23:40:53+09:00"
+      "date": "2026-10-08",
+      "available": false,
+      "restaurantCount": 0,
+      "status": "FETCH_FAILED",
+      "fetchedAt": null
     },
     {
-      "date": "2026-10-02",
-      "available": true,
-      "restaurantCount": 8,
-      "status": "STALE_SAVED_DATA",
-      "fetchedAt": "2026-10-02T16:22:13+09:00"
+      "date": "2026-10-09",
+      "available": false,
+      "restaurantCount": 0,
+      "status": "FETCH_FAILED",
+      "fetchedAt": null
     },
     {
-      "date": "2026-10-03",
-      "available": true,
-      "restaurantCount": 5,
-      "status": "AVAILABLE",
-      "fetchedAt": "2026-10-03T21:40:18+09:00"
+      "date": "2026-10-10",
+      "available": false,
+      "restaurantCount": 0,
+      "status": "FETCH_FAILED",
+      "fetchedAt": null
     },
     {
-      "date": "2026-10-04",
-      "available": true,
-      "restaurantCount": 5,
-      "status": "AVAILABLE",
-      "fetchedAt": "2026-10-04T22:22:59+09:00"
+      "date": "2026-10-11",
+      "available": false,
+      "restaurantCount": 0,
+      "status": "FETCH_FAILED",
+      "fetchedAt": null
     }
   ]
 }
