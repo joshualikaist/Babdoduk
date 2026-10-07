@@ -1,41 +1,8 @@
 {
-  "generatedAt": "2026-09-30T17:25:50+09:00",
+  "generatedAt": "2026-10-07T16:43:00+09:00",
   "timezone": "Asia/Seoul",
-  "count": 2,
+  "count": 1,
   "events": [
-    {
-      "id": "db6dd6bc-1767-4bb0-88d0-d4c957490e55",
-      "title": "2026년 10월 첫수융합포럼",
-      "summary": "수리과학과와 항공우주공학과가 공동 개최하는 융합포럼으로, Shock Waves in Compressible Flows를 주제로 진행됩니다. 참석자에게 간단한 다과가 제공됩니다.",
-      "startAt": "2026-10-07T12:00:00+09:00",
-      "endAt": "2026-10-07T13:00:00+09:00",
-      "dateText": "2026년 10월 7일(수)",
-      "timeText": "12:00~13:00",
-      "location": {
-        "name": "창의학습관(E11) 101호",
-        "building": "창의학습관(E11)",
-        "room": "101호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "refreshment",
-        "description": "간단한 다과"
-      },
-      "organizer": "수리과학과와 항공우주공학과",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/yEBWHA1KLBsQ7ca59"
-      },
-      "confidence": 1.0,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
     {
       "id": "2774195c-d3d7-467d-bb9d-c138dc031c16",
       "title": "카카오벤처스 Temp Seoul Meetup",
