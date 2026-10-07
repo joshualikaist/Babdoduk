@@ -1,40 +1,6 @@
 {
-  "generatedAt": "2026-10-07T16:43:00+09:00",
+  "generatedAt": "2026-10-08T00:31:16+09:00",
   "timezone": "Asia/Seoul",
-  "count": 1,
-  "events": [
-    {
-      "id": "2774195c-d3d7-467d-bb9d-c138dc031c16",
-      "title": "카카오벤처스 Temp Seoul Meetup",
-      "summary": "카카오벤처스가 /tmp Seoul과 초기 빌더 및 팀을 바라보는 관점을 소개하는 세션을 진행합니다. 40분 세션과 20분 Q&A 및 네트워킹으로 구성되며, 참석자에게 식사가 준비됩니다.",
-      "startAt": "2026-10-07T17:00:00+09:00",
-      "endAt": null,
-      "dateText": "10월 7일(수)",
-      "timeText": "오후 5시",
-      "location": {
-        "name": "KAIST 창업원",
-        "building": "창업원",
-        "room": ""
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사"
-      },
-      "organizer": "카카오벤처스",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://luma.com/208ci6vs"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    }
-  ]
+  "count": 0,
+  "events": []
 }
