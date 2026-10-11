@@ -29,6 +29,21 @@ VOLATILE_KEYS = {
     "data/ggongbab/archive/index.json": {"generatedAt"},
     "data/ggongbab/news.json": {"generatedAt"},
 }
+# The KAIST menu files are re-stamped on every run even when no menu changed: fetchedAt in
+# the dated files and latest.json, generatedAt plus each day's fetchedAt in week.json. Those
+# stamps alone made 24 of 61 menu bot commits on main (2026-09-12 to 10-11), each one two
+# deployments. They are ignored at any depth; any other change still commits every file.
+KAIST_DIR = "data/kaist-menu/"
+KAIST_VOLATILE = {"generatedAt", "fetchedAt"}
+
+
+def volatile_keys(path: str) -> Optional[tuple[set[str], bool]]:
+    """(keys to ignore, at any depth?) for a generated path, or None when every change counts."""
+    if path in VOLATILE_KEYS:
+        return VOLATILE_KEYS[path], False
+    if path.startswith(KAIST_DIR) and path.endswith(".json"):
+        return KAIST_VOLATILE, True
+    return None
 
 
 def run(cmd: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
@@ -71,23 +86,29 @@ def copy_allowed(src_root: Path, dest_root: Path, paths: list[str]) -> None:
                 file.unlink()
 
 
-def _semantic(text: str, volatile: set[str]):
-    data = json.loads(text)
-    if isinstance(data, dict):
-        data = {key: value for key, value in data.items() if key not in volatile}
-    return data
+def _strip(value, volatile: set[str], deep: bool):
+    if isinstance(value, dict):
+        return {key: (_strip(item, volatile, deep) if deep else item)
+                for key, item in value.items() if key not in volatile}
+    if deep and isinstance(value, list):
+        return [_strip(item, volatile, deep) for item in value]
+    return value
+
+
+def _semantic(text: str, volatile: set[str], deep: bool = False):
+    return _strip(json.loads(text), volatile, deep)
 
 
 def meaningful_changes(changed: list[str], before: Callable[[str], Optional[str]],
                        after: Callable[[str], Optional[str]]) -> list[str]:
-    """The changed paths whose content differs beyond their VOLATILE_KEYS."""
+    """The changed paths whose content differs beyond their volatile keys."""
     meaningful = []
     for path in changed:
-        volatile = VOLATILE_KEYS.get(path)
+        rule = volatile_keys(path)
         old, new = before(path), after(path)
-        if volatile and old is not None and new is not None:
+        if rule and old is not None and new is not None:
             try:
-                if _semantic(old, volatile) == _semantic(new, volatile):
+                if _semantic(old, *rule) == _semantic(new, *rule):
                     continue
             except ValueError:
                 pass
@@ -120,7 +141,7 @@ def update_branch(branch: str, artifact: Path, paths: list[str], message: str) -
         staged = run(["git", "diff", "--cached", "--name-only", "-z"], work).stdout.split("\0")
         if not meaningful_changes([p for p in staged if p], lambda p: _committed(work, p),
                                   lambda p: _on_disk(work, p)):
-            print(f"{branch}: no meaningful feed change (only generatedAt differs); nothing committed")
+            print(f"{branch}: no meaningful feed change (only generatedAt/fetchedAt stamps differ); nothing committed")
             return
         must(["git", "config", "user.name", "babdoduk-content-bot"], work)
         must(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], work)
