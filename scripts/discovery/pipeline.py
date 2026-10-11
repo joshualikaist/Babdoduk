@@ -88,8 +88,9 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
                                                                 "failureCount", "newestItemAt")})
     reset_decisions(rows)                      # recompute decisions each run from the stored facts
     counts = process.process(rows, now)
-    image_counts = images.enrich(rows, fetcher, validate=validate)
-    for row in rows:
+    whole = [row for row in rows if not row.get("compact")]
+    image_counts = images.enrich(whole, fetcher, validate=validate)
+    for row in whole:
         if not row.get("duplicateOf") and not row.get("rejectionReason"):
             process.score(row, now)
     return {"sources": sources, "sourceHealth": source_health, "store": store, "health": health, "queries": queries,
@@ -104,8 +105,10 @@ def pending_work(sources: list[dict]) -> list[str]:
 
 
 def reset_decisions(rows: list[dict]) -> None:
+    """A published story keeps its decision, and so does a compact row: it no longer has the
+    facts to be judged again (store.stays_whole)."""
     for row in rows:
-        if not row.get("selected"):
+        if not row.get("selected") and not row.get("compact"):
             row["duplicateOf"] = None
             row["rejectionReason"] = None
             row["assignedCategory"] = None
@@ -159,29 +162,28 @@ def lane_report(rows: list[dict]) -> dict:
                 continue
             else:
                 other = (row.get("assignedCategory") or "").upper()
-                key = (row.get("laneDecisions") or {}).get(lane) or f"ASSIGNED_{other}"
+                # A compact row keeps no per-lane reasons, only that no lane took it.
+                key = (row.get("laneDecisions") or {}).get(lane) or (f"ASSIGNED_{other}" if other else
+                                                                      row.get("rejectionReason") or "UNJUDGED")
             reasons[key] = reasons.get(key, 0) + 1
         report[lane] = {"qualifying": len(qualifying), "discoveredForLane": len(asked),
                         "notQualifying": dict(sorted(reasons.items()))}
     return report
 
 
-def recent_keys(out: Path, before: str, days: int = 7) -> set[str]:
-    """Candidates and URLs already published in the last editions, so the same story does not
-    run again the next morning."""
+def recent_keys(out: Path, before: str, days: Optional[int] = None) -> set[str]:
+    """Candidates and URLs of the editions before `before` (all of them, or the last `days`): a
+    story runs once. The editions are kept for good while the store keeps a published story's own
+    row only ANCHOR_DAYS (store.py), so they are the lasting record of what already ran."""
     keys: set[str] = set()
-    for path in sorted(out.glob("20*.json"), reverse=True):
-        if path.stem >= before:
-            continue
+    editions = sorted((path for path in out.glob("20*.json") if path.stem < before), reverse=True)
+    for path in editions[:days]:
         edition = read_json(path, {})
         items = [edition.get("featured") or {}] + [i for s in (edition.get("lanes") or {}).values() for i in s.get("items") or []]
         for item in items:
             for key in (item.get("candidateId"), item.get("url")):
                 if key:
                     keys.add(key)
-        days -= 1
-        if days <= 0:
-            break
     from .common import canonical_url
     return keys | {canonical_url(k) for k in keys if k.startswith("http")}
 

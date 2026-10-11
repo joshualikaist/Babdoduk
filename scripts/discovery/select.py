@@ -137,8 +137,9 @@ def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
 
 def eligible(rows: list[dict], recent: set[str], date: str = "") -> list[dict]:
     """Qualifying stories not already published: a story runs in one edition only (its
-    selectedFor), so an old source is never recycled as fresh content day after day."""
-    return sorted((r for r in rows if not r.get("duplicateOf") and not r.get("rejectionReason")
+    selectedFor), so an old source is never recycled as fresh content day after day. A compact
+    row (store.compact) is never a story: it no longer has the facts to show or judge."""
+    return sorted((r for r in rows if not r.get("compact") and not r.get("duplicateOf") and not r.get("rejectionReason")
                    and r.get("assignedCategory") and r["candidateId"] not in recent
                    and r.get("canonicalUrl") not in recent
                    and (not r.get("selectedFor") or r.get("selectedFor") == date)),

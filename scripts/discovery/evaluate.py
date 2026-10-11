@@ -88,10 +88,10 @@ def run_evaluation(root: Path) -> dict:
                             log=lambda _: None)
     edition, chosen = select.build(run["store"].all(), date="2026-09-29", generated_at="2026-09-29T10:30:00+09:00",
                                    recent=set())
+    rows = run["store"].all()          # as this run judged them: finish() compacts what can no longer change
     report = pipeline.finish(paths, run, edition, chosen, NOW)
     stories = [edition["featured"]] + [i for s in edition["lanes"].values() for i in s["items"]]
     stories = [s for s in stories if s]
-    rows = run["store"].all()
     return {
         "edition": edition,
         "rows": rows,
