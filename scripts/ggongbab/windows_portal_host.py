@@ -51,6 +51,12 @@ Stop-Process -Id $proc.ProcessId -ErrorAction Stop
 '''
 
 OWNER_CODES = {"portal": "PORTAL_RESIDENT_OWNER_UNVERIFIED", "dooray": "DOORAY_BROWSER_UNVERIFIED"}
+# One process snapshot can catch a Chrome process mid-exit (no command line yet or any more) or a
+# process query that is still slow after the PC wakes. Measured 2026-10-01 22:12: one such read
+# right after a resume latched the Portal worker for 10 days. Re-read before failing closed: a real
+# unknown or ambiguous owner stays unverified in every snapshot, so this only delays that verdict.
+OWNER_RETRIES = 3
+OWNER_RETRY_SECONDS = 5
 
 
 def powershell(script, payload=None):
@@ -176,10 +182,28 @@ class ResidentHost:
                 return
         raise OpsError(self.owner_code)
 
+    def _inspect_settled(self):
+        state, process = self.inspect()
+        for _ in range(OWNER_RETRIES):
+            if state != "unverified":
+                break
+            self.sleep(OWNER_RETRY_SECONDS)
+            state, process = self.inspect()
+        return state, process
+
+    def _verify_settled(self):
+        for attempt in range(OWNER_RETRIES + 1):
+            try:
+                return self.verify(self.profile, self.port)
+            except Exception:
+                if attempt == OWNER_RETRIES:
+                    raise
+                self.sleep(OWNER_RETRY_SECONDS)
+
     def ensure(self, *, recover_stale=False, log=lambda _: None):
         lock = start_lock(self.root / ".local" / START_LOCK, sleep=self.sleep) if self.unified else _nothing()
         with lock:
-            state, process = self.inspect()
+            state, process = self._inspect_settled()
             if state == "unverified" or (state == "stale" and not recover_stale):
                 raise OpsError(self.owner_code)
             if recover_stale and process is not None:
@@ -194,7 +218,7 @@ class ResidentHost:
                 except Exception:
                     raise OpsError(self.owner_code) from None
                 log("PORTAL_BROWSER_STARTED")
-        self.verify(self.profile, self.port)
+        self._verify_settled()
         # Only after the owner is verified: restore a tab Chrome discarded or froze, so it
         # cannot block a Playwright attach (OPS_BROWSER_TAB_UNRESPONSIVE when it stays dead).
         woke = self.wake(self.port, dooray_host(self.contract_path))

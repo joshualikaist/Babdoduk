@@ -508,3 +508,50 @@ def test_duplicate_or_wrong_port_flags_never_allow_stop(tmp_path, extra):
         host.ensure(recover_stale=True)
     assert all(call.args[0] != STOP_SCRIPT for call in run.call_args_list)
     start.assert_not_called()
+
+
+def retry_host(tmp_path, snapshots, verify=None):
+    profile = tmp_path.resolve() / ".local/portal-browser-profile"
+    tokens = {"dedicated": ["chrome.exe", f"--user-data-dir={profile}", "--remote-debugging-port=9223",
+                            "--remote-debugging-address=127.0.0.1"], "other": ["chrome.exe"]}
+    run = Mock(side_effect=[json.dumps(s) for s in snapshots])
+    start, slept = Mock(), []
+    host = PortalHost(tmp_path, run=run, split=lambda value: tokens[value], start=start,
+                      verify=verify or Mock(), sleep=slept.append,
+                      wake=Mock(return_value={"pages": 1, "restored": 0, "roles": []}))
+    return host, run, start, slept
+
+
+MID_EXIT = {"pid": 77, "command": "", "created": "5"}   # a renderer gone mid-snapshot: no command line
+
+
+def test_one_unreadable_snapshot_after_a_resume_is_read_again_not_latched(tmp_path):
+    host, run, start, slept = retry_host(tmp_path, [inventory(True, [DEDICATED, MID_EXIT], [123]),
+                                                    inventory(True, [DEDICATED, OTHER], [123])])
+    host.ensure()
+    assert slept == [5] and run.call_count == 2
+    start.assert_not_called()
+    assert all(call.args[0] != STOP_SCRIPT for call in run.call_args_list)
+
+
+def test_an_owner_that_stays_unverified_still_fails_closed_after_the_rereads(tmp_path):
+    unknown = inventory(True, [OTHER], [456])            # a listener that is not the dedicated Chrome
+    host, run, start, slept = retry_host(tmp_path, [unknown] * 4)
+    with pytest.raises(OpsError, match="^PORTAL_RESIDENT_OWNER_UNVERIFIED$"):
+        host.ensure(recover_stale=True)
+    assert slept == [5, 5, 5] and run.call_count == 4
+    start.assert_not_called()
+    assert all(call.args[0] != STOP_SCRIPT for call in run.call_args_list)
+
+
+def test_the_final_owner_check_is_also_reread_before_it_fails(tmp_path):
+    from ggongbab.web.exit_codes import AuthRequired
+    flaky = Mock(side_effect=[AuthRequired("PORTAL_RESIDENT_OWNER_UNVERIFIED"), None])
+    host, _, _, slept = retry_host(tmp_path, [inventory(True, [DEDICATED], [123])], verify=flaky)
+    host.ensure()
+    assert flaky.call_count == 2 and slept == [5]
+    always = Mock(side_effect=AuthRequired("PORTAL_RESIDENT_OWNER_UNVERIFIED"))
+    host, _, _, slept = retry_host(tmp_path, [inventory(True, [DEDICATED], [123])], verify=always)
+    with pytest.raises(AuthRequired):
+        host.ensure()
+    assert always.call_count == 4 and slept == [5, 5, 5]
