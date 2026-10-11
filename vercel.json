@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
+    {
+      "src": "/(food\\.html|lab\\.html|lab-ggongbab\\.html|calendar\\.ics|data/food-log\\.json)",
+      "missing": [{ "type": "host", "value": "babdoduk-lab.vercel.app" }],
+      "status": 404
+    }
+  ]
+}

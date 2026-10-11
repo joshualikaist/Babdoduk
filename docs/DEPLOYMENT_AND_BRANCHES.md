@@ -114,6 +114,17 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 `.claude/settings.json` 과 `.claude/hooks/git_guard.py` 도 이 명령을 막습니다. Vercel 프로젝트 설정 자체는
 이 문서가 바꾸지 않으며, 설정 변경은 소유자가 Vercel 대시보드에서 합니다.
 
+### 무엇이 서빙되는가 (2026-10-12)
+
+- **`.vercelignore`**: 사이트 자원(페이지, `css/`, `js/`, `images/`, `data/`, `manifest.json`)만 배포합니다. 코드·테스트·문서
+  (`scripts/`, `tests/`, `docs/`, `*.md`), 사람이 쓰는 입력(`inputs/`), 작업 기록(`research/`), 도구 설정(`.claude/`,
+  `.github/`, `.cursor/`)은 두 프로젝트 모두 배포하지 않습니다. 그 전에는 production 이 `scripts/`, `.claude/settings.json`,
+  `data/ggongbab/manual.json` 까지 서빙했습니다.
+- **`vercel.json`**: 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`,
+  `calendar.ics`)는 babdoduk-lab.vercel.app 이 아닌 모든 주소에서 404 입니다. 두 브랜치가 같은 파일을 갖고 있어도
+  production 은 서빙하지 않으므로, 릴리스·back-sync 때 따로 지우거나 되살릴 파일이 없습니다. 고유 배포 URL
+  (`babdoduk-<hash>-….vercel.app`)은 Vercel 로그인 뒤에 있어서, production 쪽 404 는 릴리스 뒤 babdoduk.vercel.app 에서 확인합니다.
+
 ---
 
 ## 5. 다른 호스팅 (참고)

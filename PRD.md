@@ -63,7 +63,7 @@ The home page should show the service definition, primary check action, secondar
 | `food.html` | Unreleased, lab only: record/review food and expenses once ownership is decided | `lab.html` | Any public navigation link; unlabelled mixture of personal and creator records |
 | `event.html` | Show now, coming up and past activity with verified status | Confirmed participation instructions | Past dates described as upcoming |
 | `history.html` | Explain Babdoduk's story and provenance | Relevant content and activities | Duplicate the live food dashboard |
-| `lab.html`, `lab-ggongbab.html` | Isolated experiments and tests | Development documentation | Public core navigation or private preview exposure |
+| `lab.html`, `lab-ggongbab.html` | Isolated experiments and tests | Development documentation | Public core navigation or private preview exposure; served on babdoduk-lab only (`vercel.json` answers 404 elsewhere) |
 
 Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **밥도둑 매거진** for the magazine, which carries the picker (owner decision, 2026-09-29: one picker product, not a separate navigation destination). The home call to action may still read **메뉴 고르기** and points to `mukbang.html#what`. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs keep resolving: `choose.html` redirects to `mukbang.html#what`.
 
