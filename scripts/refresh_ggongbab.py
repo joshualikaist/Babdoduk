@@ -20,7 +20,7 @@ Gov-Dooray has no mail REST API, so the archive is what the mail client exports:
 Exit codes: 0 ok · 2 legacy keep-snapshot status (not emitted by combined publication)
 · 20 every collector failed · 21 Supabase unreachable · 22 AI auth/quota fatal
 · 23 snapshot validation/write or public-feed synchronization failed.
-20–23 fail the GitHub Actions job.
+Every non-zero exit, 2 included, fails the GitHub Actions job.
 Nothing private (mail text, addresses, tokens) is printed.
 """
 from __future__ import annotations
@@ -63,9 +63,10 @@ def classify_refresh_exit(*, supabase_error: bool = False, collectors_all_failed
                           publish_error: bool = False, export_code: int = 0, fatal: str = "") -> int:
     """Map a refresh outcome to a process exit.
 
-    Exit 2 is the only non-zero code the workflow turns into a green job:
-    validation rejected the new snapshot, so the previous file stays.
-    Database, collector, quota/auth, and publication failures stay non-zero.
+    Exit 2 is the legacy keep-snapshot status: nothing here emits it any more, and
+    the workflow, shared with main where 2 still means a failed refresh, fails it
+    like every other non-zero exit. Database, collector, quota/auth, and
+    publication failures stay non-zero.
     """
     if supabase_error:
         return EXIT_SUPABASE
@@ -81,8 +82,8 @@ def classify_refresh_exit(*, supabase_error: bool = False, collectors_all_failed
 
 
 def workflow_stays_green(code: int) -> bool:
-    """True only for success and the intentional keep-previous-snapshot exit."""
-    return code in (EXIT_OK, EXIT_KEEP_SNAPSHOT)
+    """True only for success: a refresh that published nothing fails the job."""
+    return code == EXIT_OK
 
 
 def run_notice(stats) -> list[str]:

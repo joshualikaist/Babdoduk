@@ -470,7 +470,7 @@
     els.all.textContent = state.status === 'error' ? t('home.cal.hub', '꽁밥 페이지 →') : t('home.cal.all', '전체 일정 →');
     var published = state.status === 'ready' && F.toKst(state.live.generatedAt);
     els.published.textContent = published
-      ? fill(t('home.free.asOf', '마지막 발행 {time}'), { time: dateLabel(F.ymd(published)) + ' ' + hm(published) }) : '';
+      ? fill(t('home.free.asOf', '마지막 변경 {time}'), { time: dateLabel(F.ymd(published)) + ' ' + hm(published) }) : '';
   }
   function render() {
     renderHead();

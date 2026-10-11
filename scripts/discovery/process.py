@@ -21,7 +21,7 @@ from __future__ import annotations
 import math
 import re
 from datetime import datetime
-from typing import Optional
+from typing import Iterable, Optional
 
 from . import editorial, evidence
 from .common import (canonical_url, clean_text, excerpt, is_public_url, iso, normalize_title, parse_time, sha,
@@ -107,21 +107,31 @@ def normalize(raw: dict, source: dict, now: datetime) -> Optional[dict]:
     }
 
 
-def mark_duplicates(rows: list[dict]) -> int:
+def _dedup_keys(row: dict) -> list[str]:
+    # Only real values are evidence: an absent id must never match another absent id.
+    return [f"{kind}:{row[field]}" for kind, field in (("url", "canonicalHash"), ("item", "sourceItemId"),
+                                                       ("content", "contentHash")) if row.get(field)]
+
+
+def mark_duplicates(rows: list[dict], anchors: Iterable[dict] = ()) -> int:
     """Deterministic: the earliest-discovered row of a group is canonical; later rows point at it
     with duplicateOf. Signals: canonical URL, source item id (YouTube video id), content hash and
-    normalized-title similarity. Provenance of every duplicate stays in the store."""
+    normalized-title similarity. Provenance of every duplicate stays in the store. Anchors (the
+    compact rows of published stories) are originals only and are never marked: a copy of a
+    published story under another URL is a duplicate whatever its discovery order."""
     # Discovery order is persistent (discoveredSeq), so the same row stays the original run after run.
     ordered = sorted(rows, key=lambda r: (int(r.get("discoveredSeq") or 0), r["candidateId"]))
     by_key: dict[str, str] = {}
     kept: list[dict] = []
     marked = 0
+    for anchor in anchors:
+        kept.append(anchor)
+        for k in _dedup_keys(anchor):
+            by_key.setdefault(k, anchor["candidateId"])
     for row in ordered:
         if row.get("duplicateOf"):
             continue
-        # Only real values are evidence: an absent id must never match another absent id.
-        keys = [f"{kind}:{row[field]}" for kind, field in (("url", "canonicalHash"), ("item", "sourceItemId"),
-                                                           ("content", "contentHash")) if row.get(field)]
+        keys = _dedup_keys(row)
         original = next((by_key[k] for k in keys if k in by_key), None)
         if original is None:
             # Title similarity is supporting evidence only: it needs the same site, or a matching
@@ -396,14 +406,17 @@ def score(row: dict, now: datetime) -> None:
 
 def process(rows: list[dict], now: datetime) -> dict:
     """Dedup, filter, corroborate, lane rules and ranking in place. Returns counts for the run
-    report."""
-    duplicates = mark_duplicates(rows)
-    for row in rows:
+    report. A compact row (store.compact) keeps the decision it was saved with and takes no part,
+    except that a published story's compact row still anchors dedup; the counts cover every row."""
+    whole = [row for row in rows if not row.get("compact")]
+    anchors = [row for row in rows if row.get("compact") and row.get("selected")]
+    duplicates = mark_duplicates(whole, anchors) + sum(1 for row in rows if row.get("compact") and row.get("duplicateOf"))
+    for row in whole:
         if not row.get("duplicateOf"):
             row["rejectionReason"] = rejection(row, now)
-    corroborated = evidence.corroborate(rows, now)
-    lookup = {row["candidateId"]: row for row in rows}
-    for row in rows:
+    corroborated = evidence.corroborate(whole, now)
+    lookup = {row["candidateId"]: row for row in whole}
+    for row in whole:
         if row.get("duplicateOf") or row.get("rejectionReason"):
             continue
         row["corroboratedBy"] = corroborated.get(row["candidateId"]) or []

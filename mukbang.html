@@ -89,7 +89,7 @@
         </nav>
         <div class="mg-index-meta">LATEST</div>
         <div class="mg-index-date" id="mgIndexDate">—</div>
-        <div class="mg-index-schedule" id="mgSchedule">Daily 10:00 KST</div>
+        <div class="mg-index-schedule" id="mgSchedule"></div>
         <div class="mg-cal" data-cal-root>
           <div class="mg-cal-head">
             <button type="button" data-cal-prev aria-label="이전 달">‹</button>
@@ -106,7 +106,7 @@
           <div class="mg-lede">
             <h1 class="page-title"><span class="page-num" aria-hidden="true">02</span> <span data-i18n="mg.title">밥도둑 매거진</span></h1>
             <p class="mg-edition-status" id="mgEditionStatus" role="status" hidden></p>
-            <p class="mg-method" data-i18n="mg.method">모든 이야기는 원문 출처로 이어져요 · 매일 10:00 KST</p>
+            <p class="mg-method" data-i18n="mg.method">모든 이야기는 원문 출처로 이어져요 · 하루 한 번 발행</p>
           </div>
           <div class="mg-masthead-issue">—</div>
         </header>
@@ -247,7 +247,7 @@
           'mg.medium.research': '연구',
           'mg.medium.youtube': '유튜브',
           'mg.medium.instagram': '인스타',
-          'mg.method': '모든 이야기는 원문 출처로 이어져요 · 매일 10:00 KST',
+          'mg.method': '모든 이야기는 원문 출처로 이어져요 · 하루 한 번 발행',
           'mg.laneEmpty': '오늘은 이 갈래에 올릴 새 이야기가 없어요.',
           // Menu picker (#what) and today's cafeteria summary, moved from choose.html.
           'eat.kicker': '오늘 뭐 먹지?',
@@ -300,7 +300,9 @@
           'mg.editionFail': '오늘 호를 불러오지 못했어요.',
           'mg.newTab': '(새 창)',
           'mg.issue.today': '오늘 호',
+          'mg.issue.latest': '최신 호',
           'mg.issue.past': '지난 호',
+          'mg.published': '{time} 발행',
           'mg.catsAria': '카테고리',
           'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
           'footer.contact': '문의',
@@ -348,7 +350,7 @@
           'mg.medium.research': 'Research',
           'mg.medium.youtube': 'YouTube',
           'mg.medium.instagram': 'Instagram',
-          'mg.method': 'Every story links to its original source · daily 10:00 KST',
+          'mg.method': 'Every story links to its original source · published daily',
           'mg.laneEmpty': 'No new story for this section today.',
           // Menu picker (#what) and today's cafeteria summary, moved from choose.html.
           'eat.kicker': "What's for today?",
@@ -401,7 +403,9 @@
           'mg.editionFail': 'Couldn\'t load today\'s issue.',
           'mg.newTab': '(opens in a new tab)',
           'mg.issue.today': "Today's edition",
+          'mg.issue.latest': 'Latest edition',
           'mg.issue.past': 'Past edition',
+          'mg.published': 'Published {time} KST',
           'mg.catsAria': 'Categories',
           'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
           'footer.contact': 'Contact',
@@ -499,6 +503,23 @@
 
       function fmtDot(iso) {
         return iso.replace(/-/g, '.');
+      }
+
+      // KST calendar date of an instant (ms), whatever the viewer's timezone.
+      function kstIso(ms) {
+        var kst = new Date(ms + 9 * 3600000);
+        return kst.getUTCFullYear() + '-' + String(kst.getUTCMonth() + 1).padStart(2, '0') + '-' +
+          String(kst.getUTCDate()).padStart(2, '0');
+      }
+
+      // When this edition was actually built (its generatedAt), in KST: the scheduled run starts
+      // hours late on GitHub, so a fixed "10:00" would be a claim the edition does not support.
+      function publishedLabel(ed) {
+        var ms = Date.parse(ed.generatedAt || '');
+        if (isNaN(ms)) return '';
+        var kst = new Date(ms + 9 * 3600000);
+        var time = String(kst.getUTCHours()).padStart(2, '0') + ':' + String(kst.getUTCMinutes()).padStart(2, '0');
+        return t('mg.published', '{time} 발행').replace('{time}', time);
       }
 
       function sourceLine(item) {
@@ -677,11 +698,17 @@
         var issue = document.querySelector('.mg-masthead-issue');
         if (indexDate) indexDate.textContent = dateLabel;
         if (mobileDate) mobileDate.textContent = dateLabel;
-        if (schedule) schedule.textContent = ed.schedule || 'Daily 10:00 KST';
-        if (week) week.textContent = dateLabel + ' · ' + (ed.schedule || 'Daily 10:00 KST');
-        var kst = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);
-        var todayIso = kst.getFullYear() + '-' + String(kst.getMonth() + 1).padStart(2, '0') + '-' + String(kst.getDate()).padStart(2, '0');
-        if (issue) issue.textContent = dateLabel + ' · ' + (ed.date === todayIso ? t('mg.issue.today', '오늘 호') : t('mg.issue.past', '지난 호'));
+        var published = publishedLabel(ed);
+        if (schedule) schedule.textContent = published;
+        if (week) week.textContent = dateLabel + (published ? ' · ' + published : '');
+        // Today's run starts hours after midnight, so until it lands yesterday's edition is still
+        // the newest one: "latest", not "past". An older or superseded edition is a past one.
+        var todayIso = kstIso(Date.now());
+        var yesterdayIso = kstIso(Date.now() - 86400000);
+        var label = ed.date === todayIso ? t('mg.issue.today', '오늘 호')
+          : ed.date === yesterdayIso && ed.date === index.latest ? t('mg.issue.latest', '최신 호')
+            : t('mg.issue.past', '지난 호');
+        if (issue) issue.textContent = dateLabel + ' · ' + label;
         Object.keys(ed.lanes || {}).forEach(function (lane) {
           var box = document.querySelector('[data-lane-items="' + lane + '"]');
           var lead = document.querySelector('#lane-' + lane + ' .mg-lane-lead');
