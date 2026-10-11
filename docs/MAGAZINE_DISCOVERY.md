@@ -180,7 +180,7 @@ the hero. It needs at least 200 characters of retrieved text.
 
 | Public: `data/magazine/` (served) | Internal: `research/magazine/` (not served) |
 |---|---|
-| Daily edition, `latest.json`, `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: every candidate with provenance |
+| Daily edition, `latest.json`, `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance, the rest as fingerprints (see Persistence) |
 | Per story: title, short summary, source, URL, medium (blog, news, research, youtube), publishedAt, discoveredAt, image and its origin, sourceId, candidateId; trend stories also `trendEvidence` (kinds) | discoveryMethod, discoveryQuery, discoveryLane, seenQueries, trendEvidence and detail, sourceTrust, audienceRelevance, laneDecisions, scores, duplicateOf, selectedFor, rejectionReason |
 | Featured: `heroKind` (`trend` or `pick`) | `inbox/` (local sidecar output), `source-health.json`, `health.json` (with per-lane counts and reasons), `runs.jsonl` |
 
@@ -188,8 +188,26 @@ the hero. It needs at least 200 characters of retrieved text.
 
 **Persistence.** GitHub Actions runs are stateless. After a magazine run, the content bot commits
 `research/magazine/` to lab and main through `scripts/publish_generated.py`, the same path as
-`data/magazine/`, so the next run starts from it. The store is bounded: 90 days since last seen, at
-most 4,000 candidates.
+`data/magazine/`, so the next run starts from it. A row stays whole only while it can still change
+a decision (`scripts/discovery/store.py`):
+
+| Row | Whole | Then |
+|---|---|---|
+| Qualifying, not yet run | until it runs, or 90 days after it was last seen | dropped |
+| Passed the hard rules but no lane (`NO_QUALIFYING_LANE`) | while it can still be paired by corroboration (dated, food, published within 30 days) and was seen within 14 days: a story from another site can still make it a trend, and it can make one | fingerprint |
+| Published | on its edition day (a rebuild), then like the row above, counting from its edition or last sighting | anchor: the fingerprint plus its dedup keys, kept 30 days after its edition |
+| Rejected by a hard rule, or a duplicate | never | fingerprint |
+
+A fingerprint keeps the candidate id, source, URL, title, discovery method, query and lane, discovery
+and last-seen times and the decision; it is dropped 7 days after it was last seen. A compact row is
+not judged again until an adapter returns its item, which rebuilds it whole from the source (its
+first discovery and selection are kept). A published story's anchor still marks a later copy under
+another URL as its duplicate. Unpublished rows never exceed 4,000 (oldest last-seen first), and the
+cap never removes a published story. A story runs once: every earlier edition's candidate ids and
+URLs are excluded from selection (`pipeline.recent_keys`), so a story whose anchor is gone does not
+run again either. Measured 2026-10-11, before this: 4,000 rows and 8.0 MB, 3,654 of them rejected
+(7 MB), and the cap had already evicted 2 published stories. Replaying the next run on that store
+with these rules: 2.6 MB (732 whole rows, 1,924 compact) and no publishing decision changed.
 
 ## Registry and source status
 

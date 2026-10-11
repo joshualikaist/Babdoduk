@@ -207,6 +207,136 @@ def test_the_store_is_bounded_and_keeps_no_session_material(tmp_path):
     assert "cookie" not in text and "a.example/new" in text and "a.example/old" not in text
 
 
+# --- the store keeps what can still change a decision (2026-10-12) ----------------------------
+def _seen(s, name, when, published=None, title=None, text=None, **decision):
+    """A stored food candidate (published the day before it was seen, unless given) with the
+    facts a run keeps, and the decision a run gave it."""
+    from datetime import timedelta
+    url = f"https://a.example/{name}"
+    row = s.upsert({"sourceUrl": url, "canonicalUrl": url, "title": title or f"{name} 김치볶음밥 레시피", "sourceId": "src",
+                    "discoveryMethod": "rss", "sourceExcerpt": text or "양파를 먼저 볶아 단맛을 낸다. " * 12,
+                    "textLength": 300, "publishedAt": common.iso(published or when - timedelta(days=1)),
+                    "contentHash": "h-" + name, "canonicalHash": common.sha(url), "sourceItemId": url}, when)
+    row.update(decision)
+    return row["candidateId"]
+
+
+def test_the_cap_never_evicts_a_published_story(tmp_path, monkeypatch):
+    from datetime import timedelta
+    monkeypatch.setattr(store, "MAX_CANDIDATES", 2)
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    ran_at = evaluate.NOW - timedelta(days=10)
+    ran = _seen(s, "ran", ran_at, assignedCategory="tips")
+    s.mark_selected([ran], ran_at, "2026-09-19")
+    newer = [_seen(s, f"new{n}", evaluate.NOW) for n in range(3)]
+    assert s.prune(evaluate.NOW) == 1                     # one unpublished row over the cap, never the story
+    assert ran in s.rows and s.rows[ran]["selectedFor"] == "2026-09-19" and len(s.rows) == 3
+    assert sum(cid in s.rows for cid in newer) == 2
+
+
+def test_rows_that_can_no_longer_change_are_kept_as_fingerprints(tmp_path, monkeypatch):
+    from datetime import timedelta
+    monkeypatch.setattr(store, "LIVE_DAYS", 3)
+    monkeypatch.setattr(store, "FINGERPRINT_DAYS", 7)
+    now = evaluate.NOW
+    s = store.CandidateStore(tmp_path / "candidates.jsonl")
+    ids = {
+        "pool": _seen(s, "pool", now - timedelta(days=30), assignedCategory="tips"),   # can still run
+        "hard": _seen(s, "hard", now, rejectionReason="NOT_FOOD"),                    # a hard rule: final
+        "copy": _seen(s, "copy", now, duplicateOf="c_original"),
+        "lane": _seen(s, "lane", now - timedelta(days=2), rejectionReason="NO_QUALIFYING_LANE"),
+        "lane-old": _seen(s, "lane-old", now - timedelta(days=4), rejectionReason="NO_QUALIFYING_LANE"),
+        # Seen today, but corroboration can never pair them: published too long ago, or not food.
+        "lane-dated": _seen(s, "lane-dated", now, published=now - timedelta(days=40),
+                            rejectionReason="NO_QUALIFYING_LANE"),
+        "lane-other": _seen(s, "lane-other", now, title="분기 실적 발표", text="회사의 분기 매출과 영업이익이 늘었다. " * 8,
+                            rejectionReason="NO_QUALIFYING_LANE"),
+        "gone": _seen(s, "gone", now - timedelta(days=8), rejectionReason="NOT_FOOD"),
+    }
+    assert s.prune(now) == 1                              # a fingerprint is dropped FINGERPRINT_DAYS after
+    s.save()
+    saved = {r["candidateId"]: r for r in store.CandidateStore(tmp_path / "candidates.jsonl").all()}
+    assert ids["gone"] not in saved
+    # Corroboration can still make a recent food story that passed the hard rules a trend.
+    assert {name for name, cid in ids.items() if cid in saved and not saved[cid].get("compact")} == {"pool", "lane"}
+    hard = saved[ids["hard"]]
+    assert hard["compact"] is True and set(hard) <= set(store.FINGERPRINT) | {"compact"}
+    assert hard["rejectionReason"] == "NOT_FOOD" and hard["sourceUrl"] == "https://a.example/hard"
+    assert hard["title"] == "hard 김치볶음밥 레시피" and hard["discoveryMethod"] == "rss" and "sourceExcerpt" not in hard
+    assert saved[ids["copy"]]["duplicateOf"] == "c_original"
+    assert saved[ids["lane-old"]]["rejectionReason"] == "NO_QUALIFYING_LANE"
+    from validate_content import validate_magazine_research
+    assert validate_magazine_research(tmp_path) == []      # compact rows still carry a real URL
+
+
+def test_a_published_story_stays_whole_for_a_rebuild_of_its_edition(tmp_path):
+    from datetime import timedelta
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    # An evergreen recipe: too old to corroborate anything, but today's edition may be rebuilt.
+    ran = _seen(s, "evergreen", evaluate.NOW, published=evaluate.NOW - timedelta(days=200), assignedCategory="tips")
+    s.mark_selected([ran], evaluate.NOW, "2026-09-29")
+    s.prune(evaluate.NOW)
+    assert not s.rows[ran].get("compact") and s.rows[ran]["sourceExcerpt"]
+    s.prune(evaluate.NOW + timedelta(days=2))
+    assert s.rows[ran]["compact"] is True and s.rows[ran]["selectedFor"] == "2026-09-29"
+
+
+def test_a_compact_row_keeps_its_decision_until_its_item_is_seen_again(tmp_path):
+    from datetime import timedelta
+    from discovery import process
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    first = evaluate.NOW - timedelta(days=1)
+    cid = _seen(s, "short", first, rejectionReason="NO_SOURCE_TEXT")
+    s.prune(evaluate.NOW)
+    s.save()
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    fingerprint = dict(s.rows[cid])
+    pipeline.reset_decisions(s.all())
+    process.process(s.all(), evaluate.NOW)                # nothing left to judge it on: it keeps its decision
+    assert s.rows[cid] == fingerprint and fingerprint["compact"] is True
+    # The item comes back: rebuilt whole from the source, judged afresh, first discovery kept.
+    again = s.upsert({"sourceUrl": "https://a.example/short", "title": "짧았던 글의 전문", "sourceExcerpt": "전문 " * 80,
+                      "textLength": 400, "sourceId": "src", "discoveryMethod": "rss"}, evaluate.NOW)
+    assert s.rows[cid] is again and not again.get("compact") and again["rejectionReason"] is None
+    assert again["discoveredSeq"] == fingerprint["discoveredSeq"] and again["discoveredAt"] == fingerprint["discoveredAt"]
+    assert again["sourceExcerpt"].startswith("전문") and again["lastSeenAt"] == common.iso(evaluate.NOW)
+    assert len(s.rows) == 1                               # the same candidate, not a new one
+
+
+def test_a_published_story_still_stops_its_copies_once_compacted(tmp_path):
+    from datetime import timedelta
+    from discovery import process
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    ran_at = evaluate.NOW - timedelta(days=store.LIVE_DAYS + 1)
+    ran = _seen(s, "ran", ran_at, assignedCategory="tips")
+    s.mark_selected([ran], ran_at, "2026-09-10")
+    s.prune(evaluate.NOW)
+    anchor = s.rows[ran]
+    assert anchor["compact"] is True and anchor["selectedFor"] == "2026-09-10" and anchor["contentHash"] == "h-ran"
+    assert "sourceExcerpt" not in anchor
+    # The same text under another URL, discovered later: a duplicate of the published story.
+    copy = s.upsert({"sourceUrl": "https://b.example/repost", "canonicalUrl": "https://b.example/repost",
+                     "title": "다른 제목의 같은 글", "contentHash": "h-ran", "sourceExcerpt": "양파를 먼저 볶아 단맛을 낸다. " * 12,
+                     "textLength": 300, "sourceId": "src2", "discoveryMethod": "rss"}, evaluate.NOW)
+    pipeline.reset_decisions(s.all())
+    process.process(s.all(), evaluate.NOW)
+    assert copy["duplicateOf"] == ran and s.rows[ran] == anchor           # the anchor itself is never re-judged
+    assert not select.eligible(s.all(), set(), "2026-09-29")
+    # The anchor goes ANCHOR_DAYS after its edition; the editions keep the story from running again.
+    s.prune(ran_at + timedelta(days=store.ANCHOR_DAYS + 1))
+    assert ran not in s.rows
+
+
+def test_every_earlier_edition_keeps_its_stories_from_running_again(tmp_path):
+    editions = [("2026-08-01", "c_old")] + [(f"2026-09-{day}", f"c_{day}") for day in range(19, 30)]
+    for date, cid in editions:
+        (tmp_path / f"{date}.json").write_text(json.dumps({"date": date, "lanes": {}, "featured": {
+            "candidateId": cid, "url": f"https://a.example/{cid}?utm_source=x"}}), encoding="utf-8")
+    keys = pipeline.recent_keys(tmp_path, "2026-09-29")       # ten editions and one from August before it
+    assert {"c_old", "c_19", "c_28", "https://a.example/c_old"} <= keys and "c_29" not in keys
+    assert "c_old" not in pipeline.recent_keys(tmp_path, "2026-09-29", days=7)
+
+
 def test_the_one_registry_is_valid_and_honest_about_what_runs():
     sources = registry.load()                                   # scripts/discovery/sources.json
     assert registry.validate(sources) == []
