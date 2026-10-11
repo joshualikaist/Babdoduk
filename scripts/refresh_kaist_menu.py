@@ -5,6 +5,8 @@ Writes, for the current KST week (Monday-Sunday):
   data/kaist-menu/YYYY-MM-DD.json   one validated daily payload per date that has a menu
   data/kaist-menu/latest.json       TODAY's payload only (compatibility for home/choose/hub)
   data/kaist-menu/week.json         a small index: which dates have a menu and how many places
+Dated files of other weeks are removed: the page requests only the dates week.json lists, and
+latest.json keeps the last saved menu by itself.
 
 Bounded collection (docs/KAIST_MENU.md): the first run of a week (or --full-week) fetches all
 seven days; later runs refresh today and the remaining days of the week only. 8 restaurants per
@@ -355,8 +357,21 @@ def refresh(out: Path = OUT, *, now: Optional[datetime] = None, fetcher: Callabl
                  for day in week],
     }
     atomic_write(out / "week.json", dumps(index))
+    pruned = prune_other_weeks(out, week)
     return {"today": today.isoformat(), "todayAvailable": today_saved is not None,
-            "requests": budget.requests, "statuses": statuses}
+            "requests": budget.requests, "statuses": statuses, "pruned": pruned}
+
+
+def prune_other_weeks(out: Path, week: list[date]) -> list[str]:
+    """Remove the dated files outside `week`, once week.json describes it (2026-10-12: 22 files
+    from three weeks had piled up with no reader)."""
+    keep = {day_path(out, day).name for day in week}
+    removed = []
+    for path in sorted(out.glob("*.json")):
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}\.json", path.name) and path.name not in keep:
+            path.unlink()
+            removed.append(path.name)
+    return removed
 
 
 def main(argv=None) -> int:

@@ -337,6 +337,19 @@ def test_every_earlier_edition_keeps_its_stories_from_running_again(tmp_path):
     assert "c_old" not in pipeline.recent_keys(tmp_path, "2026-09-29", days=7)
 
 
+def test_the_index_names_the_newest_edition_and_no_latest_copy_is_kept(tmp_path):
+    import refresh_magazine
+    story = {"title": "t", "url": "https://a.example/1", "source": "s", "medium": "blog"}
+    for date, items in (("2026-10-10", [story]), ("2026-10-11", [story]), ("2026-10-12", [])):
+        (tmp_path / f"{date}.json").write_text(json.dumps({"date": date, "featured": None,
+                                                          "lanes": {"tips": {"items": items}}}), encoding="utf-8")
+    (tmp_path / "latest.json").write_text("{}", encoding="utf-8")       # the retired copy
+    assert refresh_magazine.write_index(tmp_path) == "2026-10-11"         # an empty edition is not listed
+    index = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
+    assert index == {"latest": "2026-10-11", "dates": ["2026-10-11", "2026-10-10"]}
+    assert not (tmp_path / "latest.json").exists()
+
+
 def test_the_one_registry_is_valid_and_honest_about_what_runs():
     sources = registry.load()                                   # scripts/discovery/sources.json
     assert registry.validate(sources) == []

@@ -15,7 +15,7 @@ A week runs Monday to Sunday in KST (`Asia/Seoul`), whatever the server's or the
 
 | File | Meaning |
 |---|---|
-| `data/kaist-menu/YYYY-MM-DD.json` | The validated menu of that date. Written only when at least one restaurant has a menu for it. |
+| `data/kaist-menu/YYYY-MM-DD.json` | The validated menu of that date. Written only when at least one restaurant has a menu for it. Only the current week's files are kept: every run removes the other weeks' once `week.json` describes the new week. |
 | `data/kaist-menu/latest.json` | **Today's** snapshot, byte-identical to today's dated file. Home, the magazine's `#what` section and the hub's today view read it. It never becomes the week. |
 | `data/kaist-menu/week.json` | A small index of the current week. It holds no menus. |
 
