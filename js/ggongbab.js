@@ -299,7 +299,7 @@
   function feedNoteHtml() {
     var html = '<div class="gg-feed-note">';
     var g = state.free.data && toKst(state.free.data.generatedAt);
-    if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '마지막 발행')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
+    if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '마지막 변경')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
     return html + '</div>';
   }
   // Past listings: public rows that have ended, from the archive file plus any live-feed row

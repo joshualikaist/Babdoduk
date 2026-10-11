@@ -336,7 +336,7 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 | export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외 | `exporter.is_expired` |
 | 검증 | 종료 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
 
-화면에는 스냅숏의 **마지막 발행** 시각(`generatedAt`, KST)만 목록 맨 위에 보여 준다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
+화면에는 스냅숏의 **마지막 변경** 시각(`generatedAt`, KST)만 목록 맨 위에 보여 준다. 행사 내용이 같고 `generatedAt` 만 바뀐 export 는 커밋하지 않으므로(`publish_generated.py`) 이 시각은 마지막으로 확인한 때가 아니라 목록이 마지막으로 바뀐 때다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
 끝난 행사를 `latest.json` 에 다시 넣거나 위 검증 규칙을 느슨하게 하지 않는다.
 
 ### 지난 꽁밥 기록 (`data/ggongbab/archive/index.json`, V1)
@@ -406,7 +406,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 
 * nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
 * `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
-* 꽁밥 탭 목록 맨 위에 마지막 발행 시각을 보여 준다(`gg.updated`). 11절 “끝난 행사” 참고.
+* 꽁밥 탭 목록 맨 위에 마지막 변경 시각을 보여 준다(`gg.updated`). 11절 “끝난 행사” 참고.
 * **지난 꽁밥 기록**은 live 목록 아래 별도 영역(`section.gg-archive`)이다. `data/ggongbab/archive/index.json` 을 live 와 **따로**
   fetch 하고, live 피드에 있지만 이미 끝난 행(유예 3시간 안이라 아직 파일에 남은 행)도 여기에 보여 준다. 두 목록 모두
   `ggongbab-select.js` 의 같은 규칙(`isPublic`, `isUpcoming`)으로 나누므로 한 행이 양쪽에 동시에 나오지 않는다.
