@@ -1316,9 +1316,12 @@ def run_checks(screenshots=False):
         report["checks"] += 2
         assert not api_attempts, ("static pages attempted a live API request", api_attempts[:5])
         report["checks"] += 1
-        # Last: it fixes the page clock and data for deterministic screenshots.
+        # Last: it fixes the page clock and data for deterministic screenshots. Its baselines exist
+        # per OS and browser build (baseline_platform); the tests workflow, which has none, skips
+        # it explicitly, and ui-guardian compares them in the container they were rendered in.
         page.emulate_media(forced_colors="none")
-        report["checks"] += chrome_visual(page)
+        if os.environ.get("BABDODUK_CHROME_VISUAL") != "skip":
+            report["checks"] += chrome_visual(page)
         browser.close()
     return report
 
