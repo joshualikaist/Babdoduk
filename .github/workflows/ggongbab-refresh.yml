@@ -148,9 +148,12 @@ jobs:
             exit "$code"
           fi
           if [ "$code" -eq 2 ]; then
-            echo "::warning::nothing safe to publish (exit 2, reason above); keeping the previous latest.json"
+            # Every exit 2 is a failure: Supabase unreachable, every collector failed, or the
+            # export or campus news did not validate. Nothing is published and the previous files
+            # stay, but the run is red, so a stale feed is noticed instead of passing as green.
+            echo "::error::refresh failed (exit 2, reason above); nothing published, previous files kept"
             echo "publish=0" >> "$GITHUB_OUTPUT"
-            exit 0
+            exit 1
           fi
           if [ "$code" -ne 0 ]; then
             echo "publish=0" >> "$GITHUB_OUTPUT"
@@ -161,7 +164,7 @@ jobs:
       # cannot reach the publisher even if the refresh script were wrong.
       - name: Validate generated JSON
         if: steps.refresh.outputs.publish == '1' && (env.MODE == 'export-only' || env.MODE == 'full')
-        run: python scripts/validate_content.py
+        run: python scripts/validate_content.py --only ggongbab
       - name: Publish generated data to lab and main
         if: steps.refresh.outputs.publish == '1' && (env.MODE == 'export-only' || env.MODE == 'full')
         env:

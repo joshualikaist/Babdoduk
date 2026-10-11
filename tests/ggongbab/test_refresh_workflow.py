@@ -199,3 +199,29 @@ def test_the_refresh_job_reads_its_secrets_from_the_main_only_environment():
     check = job[job.index("      - name: Check required configuration"):job.index("      - uses: actions/checkout")]
     assert "ENVIRONMENT_MARKER: ${{ vars.GGONGBAB_ENVIRONMENT }}" in check
     assert '[ "$ENVIRONMENT_MARKER" != "ggongbab-production" ]' in check and "exit 1" in check
+
+
+def test_a_failed_refresh_is_red_and_still_publishes_nothing():
+    """Every exit 2 of refresh_ggongbab.py is a failure (Supabase unreachable, every collector
+    failed, invalid export or news). It used to end green, so a starved feed went unnoticed."""
+    refresh = _steps(_text())["Refresh ggongbab"]
+    block = re.search(r'if \[ "\$code" -eq 2 \]; then(.*?)\n\s*fi\n', refresh, re.S).group(1)
+    assert "publish=0" in block and "exit 1" in block and "::error::" in block
+    assert "exit 0" not in block
+
+
+def test_each_job_validates_only_the_families_it_publishes():
+    validate = _steps(_text())["Validate generated JSON"]
+    assert "python scripts/validate_content.py --only ggongbab" in validate
+    content = (WORKFLOWS / "magazine-daily.yml").read_text(encoding="utf-8")
+    step = content[content.index("- name: Validate generated JSON"):content.index("- name: Publish generated data")]
+    assert "families+=(magazine)" in step and "families+=(kaist-menu)" in step
+    assert 'python scripts/validate_content.py --only "${families[@]}"' in step
+    assert "pydantic" not in content            # the content job no longer imports ggongbab news
+
+
+def test_the_content_job_runs_only_from_main_with_a_time_limit():
+    content = (WORKFLOWS / "magazine-daily.yml").read_text(encoding="utf-8")
+    job = content[content.index("  refresh:"):]
+    assert re.search(r"(?m)^    if: github\.ref == 'refs/heads/main'\s*$", job[:600])
+    assert re.search(r"(?m)^    timeout-minutes: 30\s*$", job[:600])
