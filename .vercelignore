@@ -5,3 +5,23 @@ __pycache__
 .pytest_cache
 # Magazine discovery research store: kept in git, never served by the site.
 research
+# Not site resources: code, tests, documentation, authored inputs, contracts and tool
+# settings stay in git and are never deployed. The site is the pages, css/, js/, images/,
+# data/ and manifest.json.
+scripts
+tests
+docs
+supabase
+inputs
+i18n
+schemas
+shared
+.claude
+.cursor
+.github
+*.md
+*.txt
+*.ini
+.env.example
+.gitattributes
+.gitignore

@@ -20,7 +20,7 @@ Lab 전용 확장: 무료 일정 아래 **먹거리 소식**을 별도 `news.jso
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `event.html` 안에 직접 작성 |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 
-먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다.
+먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
 
 홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`mukbang.html#what`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
 학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에 01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식을 둡니다. `history.html` 은 밥도둑이 걸어온 길입니다.
@@ -149,7 +149,7 @@ KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지
 Dooray mailbox  ─┐
 KAIST Portal (로컬 resident Chrome + SSO) ─┼─▶ Dooray 수집 프로젝트 ─▶ Collectors
 KAIST 공개 공지 (학사공지 · 문화행사)     ─┤
-manual.json                            ─┘
+inputs/ggongbab/manual.json            ─┘
         │
         ▼
 PII 제거 → 규칙 전처리 → gpt-5.6-luna → 결정적 검증 → 중복 제거
@@ -164,7 +164,7 @@ Supabase → data/ggongbab/latest.json → 꽁밥 탭
 
 | 모듈 | 역할 |
 |------|------|
-| `collectors/` | Dooray 업무 프로젝트(메일·Portal marker), KAIST 공개 공지, `manual.json`. PortalCollector는 클라우드에서 비활성 |
+| `collectors/` | Dooray 업무 프로젝트(메일·Portal marker), KAIST 공개 공지, `inputs/ggongbab/manual.json`. PortalCollector는 클라우드에서 비활성 |
 | `prefilter.py` | 규칙 기반 1차 선별. 여기서 걸러진 메일은 모델에 보내지 않는다 |
 | `parsers/ai_parser.py` | OpenAI Responses API + Structured Outputs |
 | `parsers/ai_errors.py` | 실패를 **로그에 안전한 범주**로 분류 (§6) |

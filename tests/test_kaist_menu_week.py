@@ -142,6 +142,17 @@ def test_a_new_week_starts_a_new_baseline(tmp_path):
     assert (week["weekStart"], week["weekEnd"]) == ("2026-10-05", "2026-10-11")
 
 
+def test_a_new_week_removes_the_dated_files_of_other_weeks(tmp_path):
+    run(tmp_path, Site())                                                  # 09-28 .. 10-04 saved
+    (tmp_path / "2026-09-01.json").write_text("{}", encoding="utf-8")       # an older leftover
+    # Monday before the cafeterias post: no menu today, latest.json keeps the last saved menu.
+    summary = run(tmp_path, Site(default="empty"), now=datetime(2026, 10, 5, 6, 0, tzinfo=KST))
+    assert "2026-09-28.json" in summary["pruned"] and "2026-09-01.json" in summary["pruned"]
+    assert not list(tmp_path.glob("2026-09-*.json")) and not (tmp_path / "2026-10-04.json").exists()
+    assert json.loads((tmp_path / "latest.json").read_text(encoding="utf-8"))["date"] == "2026-09-30"
+    assert _validated(tmp_path) == []                       # the index and the files still agree
+
+
 # --- failures never erase a known-good day --------------------------------------------------
 @pytest.mark.parametrize("failure", ["down", "notable", "empty"])
 def test_a_known_good_day_survives_failure_parser_change_and_empty_answers(tmp_path, failure):

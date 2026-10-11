@@ -181,7 +181,7 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
     if not dry_run:
         from ggongbab.food_news import load_news, write_news
         try:
-            news = load_news(ROOT / "research/ggongbab/food-news.json", now)
+            news = load_news(ROOT / "inputs/ggongbab/food-news.json", now)
         except Exception:
             print("[error] campus news validation failed; previous snapshots retained")
             return EXIT_PUBLISH

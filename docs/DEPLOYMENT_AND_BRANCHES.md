@@ -114,6 +114,17 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 `.claude/settings.json` 과 `.claude/hooks/git_guard.py` 도 이 명령을 막습니다. Vercel 프로젝트 설정 자체는
 이 문서가 바꾸지 않으며, 설정 변경은 소유자가 Vercel 대시보드에서 합니다.
 
+### 무엇이 서빙되는가 (2026-10-12)
+
+- **`.vercelignore`**: 사이트 자원(페이지, `css/`, `js/`, `images/`, `data/`, `manifest.json`)만 배포합니다. 코드·테스트·문서
+  (`scripts/`, `tests/`, `docs/`, `*.md`), 사람이 쓰는 입력(`inputs/`), 작업 기록(`research/`), 도구 설정(`.claude/`,
+  `.github/`, `.cursor/`)은 두 프로젝트 모두 배포하지 않습니다. 그 전에는 production 이 `scripts/`, `.claude/settings.json`,
+  `data/ggongbab/manual.json` 까지 서빙했습니다.
+- **`vercel.json`**: 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`,
+  `calendar.ics`)는 babdoduk-lab.vercel.app 이 아닌 모든 주소에서 404 입니다. 두 브랜치가 같은 파일을 갖고 있어도
+  production 은 서빙하지 않으므로, 릴리스·back-sync 때 따로 지우거나 되살릴 파일이 없습니다. 고유 배포 URL
+  (`babdoduk-<hash>-….vercel.app`)은 Vercel 로그인 뒤에 있어서, production 쪽 404 는 릴리스 뒤 babdoduk.vercel.app 에서 확인합니다.
+
 ---
 
 ## 5. 다른 호스팅 (참고)
@@ -144,6 +155,6 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 - 생성: `python scripts/refresh_magazine.py`, `python scripts/refresh_kaist_menu.py`
 - 검증: `python scripts/validate_content.py` — 실패하면 프로덕션 데이터는 그대로 둔다
 - 배포: `python scripts/publish_generated.py` 가 워크트리로 `origin/lab`, `origin/main`에 **허용 경로만** 복사한다. `git merge lab` 을 쓰지 않는다
-- YouTube 검색 소스는 저장소 secret `YOUTUBE_API_KEY`가 있을 때만 넓어진다. 화면의 가로 매거진 레일은 제거되었다
+- YouTube 소스 5개는 2026-10-12부터 꺼져 있다(운영 PC 사이드카가 9/29 이후 입력을 보내지 않음). 화면의 가로 매거진 레일은 제거되었다
 - 꽁밥 파이프라인(Dooray → OpenAI → Supabase → JSON)은 `docs/GGONGBAB_PAGE.md` 참고. 과거 메일 일괄 수집은 같은 문서 16절(메일함 backfill, 수동 1회 실행이며 cron 대상이 아님). Secrets: `DOORAY_API_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`(옛 이름 `SUPABASE_SERVICE_ROLE_KEY` 는 fallback), `OPENAI_API_KEY`
 - 이 액션은 기능 HTML/JS를 main에 실어 보내지 않는다. 슬롯·학식 UI 같은 코드는 기존처럼 lab에서 시험한 뒤 공개 반영할 때만 `main`에 merge한다

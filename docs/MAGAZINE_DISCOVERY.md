@@ -14,8 +14,8 @@ down or thin, the edition is smaller, and a lane may be empty. An empty lane is 
 | Korean food-industry and health news RSS (식품음료신문, 식품저널, 식품외식경제, 대한급식신문, 연합뉴스 산업·건강, 코메디닷컴, 뉴시스 건강, 동아일보 건강, 서울신문 라이프) | trend, habit, health (evidence rules apply) | cloud | active; Korean hosts time out now and then from GitHub runners (recorded as FETCH_FAILED) |
 | Web search, Exa hosted MCP (`https://mcp.exa.ai/mcp`, **no key**), with page text from `web_fetch_exa` and Jina Reader | trend (10 queries), habit (10 queries) | cloud | active, **with a free daily quota** (below) |
 | Naver Blog through the same web search (`site:blog.naver.com`) | trend | cloud | active, Tier C |
-| YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | active on the operator PC |
-| YouTube channels (4): Atom feed, else yt-dlp channel listing | tips, health, trend | **local only** (sidecar) | active on the operator PC |
+| YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
+| YouTube channels (4): Atom feed, else yt-dlp channel listing | tips, health, trend | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
 | Exa REST search with `EXA_API_KEY` | - | optional | not configured, not needed |
 | YouTube Data API with `YOUTUBE_API_KEY` | - | optional | not configured, not requested |
 | Instagram (OpenCLI) | trend | local only | **OWNER_CHECKPOINT**, disabled |
@@ -61,7 +61,7 @@ scripts/discovery/sources.json   (the one registry)
       -> research/magazine/candidates.jsonl   (candidate store)
       -> normalize (+ evidence) -> dedup -> quality filter -> corroboration -> lane rules -> rank
       -> editorial selection (hero rule)
-      -> data/magazine/YYYY-MM-DD.json, latest.json, index.json   (public output)
+      -> data/magazine/YYYY-MM-DD.json, index.json   (public output; index.latest names the newest edition)
 
 operator PC:  scripts/magazine_local_discovery.py -> research/magazine/inbox/<sourceId>.json
 ```
@@ -87,13 +87,12 @@ The normal pipeline reads the inbox as that source's adapter result, so every lo
 through the same rules, and only the normal publisher produces the public edition. An inbox older
 than 3 days is reported as `LOCAL_INBOX_STALE` (DEGRADED); a missing one as `LOCAL_INBOX_MISSING`.
 
-**Automation gap (`YOUTUBE_AUTOMATION_PENDING`, recorded in `health.json`).** Nothing yet runs the sidecar on a schedule or delivers the inbox to the
-repository: today's inbox came from one controlled local run (2026-09-29) committed with the lab
-change. A
-durable path needs an owner decision (a scheduled task on the operator PC plus a way to hand the
-inbox to the publisher, which touches the paused publisher credential / operations work). Until
-then YouTube candidates reach the magazine only when an operator runs the sidecar and commits the
-inbox; every other route is cloud-safe.
+**YouTube is off (owner decision, 2026-10-12).** Nothing ever ran the sidecar on a schedule or
+delivered the inbox to the repository: the only inbox came from one controlled local run
+(2026-09-29). The five YouTube sources are disabled in the registry and the stale inbox files are
+gone, so `health.json` no longer records `YOUTUBE_AUTOMATION_PENDING`. Turning them back on needs
+that delivery path first (a scheduled task on the operator PC plus a way to hand the inbox to the
+publisher).
 
 ## Lanes are rules (owner decision, 2026-09-29)
 
@@ -183,7 +182,7 @@ the hero. It needs at least 200 characters of retrieved text.
 
 | Public: `data/magazine/` (served) | Internal: `research/magazine/` (not served) |
 |---|---|
-| Daily edition, `latest.json`, `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance, the rest as fingerprints (see Persistence) |
+| Daily edition and `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance, the rest as fingerprints (see Persistence) |
 | Per story: title, short summary, source, URL, medium (blog, news, research, youtube), publishedAt, discoveredAt, image and its origin, sourceId, candidateId; trend stories also `trendEvidence` (kinds) | discoveryMethod, discoveryQuery, discoveryLane, seenQueries, trendEvidence and detail, sourceTrust, audienceRelevance, laneDecisions, scores, duplicateOf, selectedFor, rejectionReason |
 | Featured: `heroKind` (`trend` or `pick`) | `inbox/` (local sidecar output), `source-health.json`, `health.json` (with per-lane counts and reasons), `runs.jsonl` |
 

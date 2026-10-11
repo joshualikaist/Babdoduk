@@ -61,11 +61,13 @@ def sanitize_all(out: Path, *, skip: str = "") -> int:
 
 
 def write_index(out: Path) -> str:
+    """index.json names the newest edition with stories; the pages read that edition directly.
+    The old latest.json copy of it had no reader and is removed (the publisher then removes it
+    from lab and main too)."""
     dates = sorted((p.stem for p in dated_files(out) if story_count(read_json(p, {})) > 0), reverse=True)
     latest = dates[0] if dates else ""
     atomic_write(out / "index.json", dump_json({"latest": latest, "dates": dates}))
-    if latest:
-        atomic_write(out / "latest.json", (out / f"{latest}.json").read_text(encoding="utf-8"))
+    (out / "latest.json").unlink(missing_ok=True)
     return latest
 
 
