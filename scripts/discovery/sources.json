@@ -492,7 +492,7 @@
       "id": "yt-search",
       "name": "YouTube search (yt-dlp)",
       "type": "youtube_search",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "C",
       "categories": [
         "trend"
@@ -514,7 +514,7 @@
         "혼밥 트렌드",
         "한국 음식 트렌드"
       ],
-      "note": "Metadata only (--skip-download), no cookies or account. Runs on the operator PC through scripts/magazine_local_discovery.py; the pipeline reads its inbox."
+      "note": "Metadata only (--skip-download), no cookies or account. Runs on the operator PC through scripts/magazine_local_discovery.py; the pipeline reads its inbox. Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
     },
     {
       "id": "yt-jachwiyorisin",
@@ -522,7 +522,7 @@
       "type": "youtube_channel",
       "channelId": "UCC9pQY_uaBSa0WOpMNJHbEQ",
       "url": "https://www.youtube.com/channel/UCC9pQY_uaBSa0WOpMNJHbEQ",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "tips"
@@ -530,7 +530,8 @@
       "discoveryMethod": "youtube_feed",
       "kind": "video",
       "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
     },
     {
       "id": "yt-cookingtree",
@@ -538,7 +539,7 @@
       "type": "youtube_channel",
       "channelId": "UCtby6rJtBGgUm-2oD_E7bzw",
       "url": "https://www.youtube.com/channel/UCtby6rJtBGgUm-2oD_E7bzw",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "tips"
@@ -546,7 +547,8 @@
       "discoveryMethod": "youtube_feed",
       "kind": "video",
       "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
     },
     {
       "id": "yt-haruhankki",
@@ -554,7 +556,7 @@
       "type": "youtube_channel",
       "channelId": "UCPWFxcwPliEBMwJjmeFIDIg",
       "url": "https://www.youtube.com/channel/UCPWFxcwPliEBMwJjmeFIDIg",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "tips",
@@ -563,7 +565,8 @@
       "discoveryMethod": "youtube_feed",
       "kind": "video",
       "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
     },
     {
       "id": "yt-hamzy",
@@ -571,7 +574,7 @@
       "type": "youtube_channel",
       "channelId": "UCPKNKldggioffXPkSmjs5lQ",
       "url": "https://www.youtube.com/channel/UCPKNKldggioffXPkSmjs5lQ",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "trend"
@@ -579,7 +582,8 @@
       "discoveryMethod": "youtube_feed",
       "kind": "video",
       "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
     },
     {
       "id": "instagram-opencli",
