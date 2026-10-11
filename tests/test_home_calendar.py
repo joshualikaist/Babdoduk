@@ -439,7 +439,7 @@ def test_english_strings(browser):
     assert day_title(page) == "Oct 7 (Wed)"
     assert page.locator(".hc-ev-meta").nth(1).inner_text() == "Refreshments · Sign-up required"
     assert page.locator("#homeCalAll").inner_text() == "All events →"
-    assert page.locator("#homeCalPublished").inner_text().startswith("Last published Oct 1 (Thu)")
+    assert page.locator("#homeCalPublished").inner_text().startswith("Last changed Oct 1 (Thu)")
     page.locator("#langToggle").click()
     assert answer(page) == "오늘은 없어요 · 다음 10월 7일 (수)"
     assert page.locator(".hc-ev-meta").nth(1).inner_text() == "간단한 다과 제공 · 사전 신청"

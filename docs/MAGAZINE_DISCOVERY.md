@@ -66,7 +66,10 @@ scripts/discovery/sources.json   (the one registry)
 operator PC:  scripts/magazine_local_discovery.py -> research/magazine/inbox/<sourceId>.json
 ```
 
-`python scripts/refresh_magazine.py` runs the pipeline; `content-refresh` calls it daily at 10:00 KST.
+`python scripts/refresh_magazine.py` runs the pipeline; `content-refresh` is scheduled daily at 10:00 KST,
+and GitHub usually starts it hours later (2026-10-09 to 10-11: 15:30 to 16:00 KST). The page therefore shows
+each edition's own build time (`generatedAt`), never a fixed hour, and until today's edition lands it
+labels yesterday's, the newest one, `최신 호`, not `지난 호`.
 - `--discover-only` updates the store without building an edition.
 - `--select-only` re-judges every stored candidate under the current rules and rebuilds today's
   edition, without the network. Nothing is fetched, searched or deleted, so a rule change or a

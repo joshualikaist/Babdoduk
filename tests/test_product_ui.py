@@ -84,21 +84,22 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
             assert word not in source, (script, word)
 
 
-def test_home_snapshot_copy_names_last_publication_without_freshness_claims():
+def test_home_snapshot_copy_names_last_change_without_freshness_claims():
+    # An export that changes nothing is not committed, so the stamp is the list's last change.
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     ko, en = re.findall(r"'home\.free\.asOf': '([^']*)'", html)
-    assert ko == "마지막 발행 {time}" and en == "Last published {time}"
+    assert ko == "마지막 변경 {time}" and en == "Last changed {time}"
     assert not any(word in ko for word in ("최신", "최근", "실시간"))
     assert not any(word in en.lower() for word in ("latest", "live", "real-time", "realtime"))
 
 
 @pytest.mark.parametrize("name", ["ggongbab.html", "lab-ggongbab.html"])
-def test_hub_feed_note_names_the_publication_and_claims_no_live_data(name):
-    """The list is labelled by its last publication only: no lifecycle paragraph and no freshness claim.
+def test_hub_feed_note_names_the_last_change_and_claims_no_live_data(name):
+    """The list is labelled by its last change only: no lifecycle paragraph and no freshness claim.
     Ended rows leave it for the past listings, which say so in their own short label."""
     html = (ROOT / name).read_text(encoding="utf-8")
     assert "'gg.lifecycle'" not in html and "'gg.tagline'" not in html
-    assert re.findall(r"'gg\.updated': '([^']*)'", html) == ["마지막 발행", "Last published"]
+    assert re.findall(r"'gg\.updated': '([^']*)'", html) == ["마지막 변경", "Last changed"]
     js = (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")
     note = js[js.index("function feedNoteHtml"):js.index("function", js.index("function feedNoteHtml") + 10)]
     assert "gg.updated" in note and "gg.lifecycle" not in note

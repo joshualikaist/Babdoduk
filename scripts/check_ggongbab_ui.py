@@ -741,9 +741,10 @@ def run_checks(preview=False):
             assert page.locator('[data-group="when"]').evaluate_all(
                 "els => els.map(el => el.dataset.value)") == ["today", "tomorrow", "week", "all"]
             report["checks"] += 3
-            # The list is labelled only by its publication time: no lifecycle paragraph, no freshness claim.
+            # The list is labelled only by when the feed last changed: no lifecycle paragraph, no
+            # freshness claim (an unchanged refresh is not committed, so its stamp is the last change).
             note = page.locator(".gg-feed-note").inner_text()
-            assert note.startswith("마지막 발행") and "자동으로" not in note, note
+            assert note.startswith("마지막 변경") and "자동으로" not in note, note
             assert not any(word in note for word in ("실시간", "최신", "업데이트")), note
             report["checks"] += 2
             assert_fixture_clock(page)

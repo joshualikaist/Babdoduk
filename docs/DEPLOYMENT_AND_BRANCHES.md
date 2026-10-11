@@ -136,7 +136,7 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 
 | 경로 | 시각 (KST) | 브랜치 |
 |------|------------|--------|
-| `data/magazine/` | 매일 10:00 | lab **과** main에 같은 JSON만 푸시 |
+| `data/magazine/` | 매일 10:00 예약 (실제 시작은 GitHub 사정으로 몇 시간 늦음, 2026-10-09~11 측정 15:30~16:00) | lab **과** main에 같은 JSON만 푸시 |
 | `data/kaist-menu/` | 06:00, 10:30, 16:30 | 동일 |
 | `data/ggongbab/latest.json` | 30분마다 예약 (실제로는 GitHub 가 하루 6회 안팎, 몇 시간 간격으로만 실행 — 2026-09-28 측정, `docs/GGONGBAB_TRIGGER.md`) | 동일 (`.github/workflows/ggongbab-refresh.yml`, `python scripts/refresh_ggongbab.py`). `manual.json` 은 손으로 쓰는 입력이라 복사 대상이 아니다. 행사 내용이 같고 `generatedAt` 만 바뀌면 커밋하지 않는다. 2026-09-25 YAML 오류 복구, 2026-09-26 예약 재활성화 |
 

@@ -35,7 +35,7 @@ Review rendered pages, not only CSS or DOM numbers. Take the screenshots and loo
   - primary: `오늘의 꽁밥 보기` → `ggongbab.html`;
   - secondary: `메뉴 고르기` → `mukbang.html#what`.
 - The collage is decorative (`aria-hidden`, no visible label and no dish names); it never implies today's menu.
-- The today strip keeps the `#homeMenuStatus` and `#homeFreeStatus` states and the "마지막 발행 {time}" wording. It makes no "latest", "real-time" or "live" claims.
+- The today strip keeps the `#homeMenuStatus` and `#homeFreeStatus` states and the "마지막 변경 {time}" wording. It makes no "latest", "real-time" or "live" claims.
 - Banner shelf:
   - `01 오늘 먹기`: 오늘의 꽁밥 and 메뉴 고르기 (wider, level 2), then the map (level 3);
   - native swipe and wheel scrolling, with a visible peek of the next card;
