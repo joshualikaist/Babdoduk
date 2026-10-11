@@ -1,6 +1,40 @@
 {
-  "generatedAt": "2026-10-08T00:31:16+09:00",
+  "generatedAt": "2026-10-12T02:37:30+09:00",
   "timezone": "Asia/Seoul",
-  "count": 0,
-  "events": []
+  "count": 1,
+  "events": [
+    {
+      "id": "35ea43d7-f095-4541-ac2c-877c3c11c651",
+      "title": "2026 가을학기 중간고사 ME PIZZA DAY",
+      "summary": "기계공학과 전체 학부 학생을 대상으로 2026년 가을학기 중간고사 PIZZA DAY를 진행합니다. 피자와 음료 등이 제공됩니다.",
+      "startAt": "2026-10-16T18:00:00+09:00",
+      "endAt": null,
+      "dateText": "2026.10.16.(금)",
+      "timeText": "18:00~",
+      "location": {
+        "name": "기계공학동(N7) 야외 BBQ PIT",
+        "building": "N7",
+        "room": "야외 BBQ PIT"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "피자 + 음료 등"
+      },
+      "organizer": "기계공학과행정팀",
+      "eligibility": "기계공학과 전체 학부 학생",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    }
+  ]
 }
