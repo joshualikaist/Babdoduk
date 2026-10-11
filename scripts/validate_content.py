@@ -536,10 +536,16 @@ def validate_ggongbab(path: Path, now: datetime | None = None) -> list[str]:
 
 
 def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[str]:
-    """Validate in memory too, so local preview rejects PII before writing JSON."""
+    """Validate in memory too, so local preview rejects PII before writing JSON.
+
+    Expiry is judged at `now` when a caller passes one (an export about to be written), and
+    otherwise at the file's own generatedAt, like the archive: a snapshot that is not
+    regenerated still describes the same moment (the page applies the window again), so a
+    committed feed never starts failing later and blocking another family's publish
+    (measured 2026-10-07: one expired event stopped that evening's KAIST menu update)."""
     errors: list[str] = []
-    now = now or datetime.now(KST)
     generated = _iso(data.get("generatedAt"))
+    now = now or generated or datetime.now(KST)
     if generated is None:
         errors.append("ggongbab generatedAt missing or not ISO with offset")
     elif generated.utcoffset() != KST_OFFSET:
@@ -732,10 +738,20 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
     return errors
 
 
-def main() -> None:
+FAMILIES = ("magazine", "kaist-menu", "ggongbab")
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Validate every family, or with --only the families a job is about to publish: a
+    problem in one family must not block another family's publish."""
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--only", nargs="+", choices=FAMILIES, default=list(FAMILIES),
+                        help="families to validate (magazine includes research/magazine)")
+    families = set(parser.parse_args(argv).only)
     mag_index = ROOT / "data" / "magazine" / "index.json"
     errors = []
-    if mag_index.exists():
+    if "magazine" in families and mag_index.exists():
         index = load(mag_index)
         latest = index.get("latest")
         mag = ROOT / "data" / "magazine" / f"{latest}.json"
@@ -748,16 +764,27 @@ def main() -> None:
                 errors.append("latest.json does not match dated edition")
         errors.extend(validate_magazine_archive(ROOT / "data" / "magazine"))
     research = ROOT / "research" / "magazine"
-    if research.is_dir():
+    if "magazine" in families and research.is_dir():
         errors.extend(validate_magazine_research(research))
     kaist = ROOT / "data" / "kaist-menu" / "latest.json"
-    if kaist.exists():
+    if "kaist-menu" in families and kaist.exists():
         errors.extend(validate_kaist(kaist))
-    if (ROOT / "data" / "kaist-menu").is_dir():
+    if "kaist-menu" in families and (ROOT / "data" / "kaist-menu").is_dir():
         errors.extend(validate_kaist_dir(ROOT / "data" / "kaist-menu"))
+    if "ggongbab" in families:
+        errors.extend(validate_ggongbab_family())
+    if errors:
+        print("\n".join(errors))
+        sys.exit(1)
+    print("content validation ok" + ("" if families == set(FAMILIES) else f" ({', '.join(sorted(families))})"))
+
+
+def validate_ggongbab_family() -> list[str]:
+    errors: list[str] = []
     ggongbab = ROOT / "data" / "ggongbab" / "latest.json"
     news = ROOT / "data" / "ggongbab" / "news.json"
     if news.exists():
+        # Imported here: food_news pulls in pydantic, which only the ggongbab job installs.
         from ggongbab.food_news import validate_news_payload
         try:
             errors.extend(validate_news_payload(load(news)))
@@ -770,10 +797,7 @@ def main() -> None:
     archive = ROOT / "data" / "ggongbab" / "archive" / "index.json"
     if archive.exists():
         errors.extend(validate_ggongbab_archive(archive))
-    if errors:
-        print("\n".join(errors))
-        sys.exit(1)
-    print("content validation ok")
+    return errors
 
 
 if __name__ == "__main__":
