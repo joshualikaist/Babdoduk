@@ -1,109 +1,122 @@
 {
-  "date": "2026-10-10",
-  "generatedAt": "2026-10-10T15:31:34+09:00",
+  "date": "2026-10-11",
+  "generatedAt": "2026-10-11T15:36:58+09:00",
   "schedule": "Daily 10:00 KST",
   "rules": "lanes-v1",
   "featured": {
-    "title": "공복에는 역시 달걀 두부 생선 등 단백질…꼭 피해야 할 음식은?",
-    "summary": "아침 공복에 달걀을 먹으면 단백질 섭취, 혈당 관리에 도움이 된다. 사진=게티이미지뱅크 병원에서 혈액검사 예약을 할 때 대부분 8시간 이상 공복 후에 오라고 한다.",
-    "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_953d9ce496af20e4",
-    "url": "https://kormedi.com/2881779/",
+    "title": "日 생초코파이 100만개 팔리자 2탄까지…편의점 냉장고에 무슨 일이",
+    "summary": "편의점 디저트 경쟁이 빵과 케이크를 넘어 냉장·냉동 상품으로 빠르게 확산하고 있다. 일본 현지 인기 상품을 직접 들여오거나 유명 디저트 브랜드와 손잡는 방식으로 다른 편의점에서는 살 수 없는 상품을 확보하려는…",
+    "source": "세계일보",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_e3915bda852e1a31",
+    "url": "https://www.segye.com/newsView/20261011503277",
     "medium": "news",
-    "discoveredAt": "2026-10-10T15:31:34+09:00",
-    "publishedAt": "2026-10-10T14:01:00+09:00",
-    "image": "https://kormedi.com/wp-content/uploads/2023/10/gettyimages-1490657810.jpg",
-    "imageSource": "feed_media",
-    "category": "health",
-    "heroKind": "pick"
+    "discoveredAt": "2026-10-11T15:36:58+09:00",
+    "publishedAt": "2026-10-11T07:40:00+09:00",
+    "image": "https://www.segye.com/content/image/2026/10/11/20261011503278.jpg",
+    "imageSource": "source_page_og",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
   },
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "내가 먹은 그릭요거트, 사실 가짜?…진짜 고르는 방법",
-          "summary": "최근 시중에 판매되는 그릭 요거트 중 상당수가 '가짜 그릭 요거트'라는 지적이 나왔다. 우리가 건강과 다이어트를 위해 챙겨먹은 ‘그릭 요거트’가 사실 가짜일 수 있다는 지적이 나왔다.",
-          "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_90d7147f3b4ce6ad",
-          "url": "https://kormedi.com/2880499/",
-          "medium": "news",
-          "discoveredAt": "2026-10-10T15:31:34+09:00",
-          "publishedAt": "2026-10-10T12:03:00+09:00",
-          "trendEvidence": [
-            "corroborated"
-          ]
-        },
-        {
-          "title": "금융권 해킹 악용에 AI 도구 개발자 \"내 취지와 달라\"…소스코드 비공개",
-          "summary": "국내 금융권 연쇄 해킹에 악용된 것으로 추정된 인공지능(AI) 기반 침투 도구 '아르텍스(ARTEX)' 개발자가 소스코드 공개를 중단했다.",
-          "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_2d7f09ee64f3b8c3",
-          "url": "https://www.newsis.com/view/NISX20261009_0003820295",
-          "medium": "news",
-          "discoveredAt": "2026-10-10T15:31:34+09:00",
-          "publishedAt": "2026-10-09T19:05:18+09:00",
-          "trendEvidence": [
-            "corroborated"
-          ]
-        },
-        {
-          "title": "미국 이어…HLB \"담관암 신약, 유럽서도 본심사\"",
-          "summary": "미국 식품의약국(FDA) 허가를 받은 HLB의 담관암 신약 ‘리라푸그라티닙’(lirafugratinib)이 유럽에서도 허가를 위한 본심사 과정에 돌입했다.",
-          "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_8c598929e309bf4f",
-          "url": "https://www.newsis.com/view/NISX20261007_0003816847",
-          "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-07T09:46:35+09:00",
-          "trendEvidence": [
-            "corroborated"
-          ]
-        },
-        {
-          "title": "요즘 SNS에서 유행하는 먹거리, 진짜 맛있을까? 10월 1주 차 유행 음식 솔직 리뷰",
-          "summary": "요즘 SNS에서 유행하는 먹거리, 진짜 맛있을까? 10월 1주 차 유행 음식 솔직 리뷰｜갓나온 맛도리 EP.193",
-          "source": "SBS",
+          "title": "두쫀쿠·버터떡 이어 피자설기까지…피자헛도 뛰어든 ‘디저트 유행’[똑똑! 스마슈머]",
+          "summary": "두바이 쫀득 쿠키와 버터떡에 이어 최근 사회관계망서비스(SNS)에서 인기를 끌고 있는 ‘피자설기’가 프랜차이즈 매장에도 등장했다.",
+          "source": "서울경제",
           "sourceId": "web-exa-trend",
-          "candidateId": "c_75c2d3cf786a0438",
-          "url": "https://news.sbs.co.kr/news/endPage.do?news_id=N1008787615",
+          "candidateId": "c_c9cc89ce4e204148",
+          "url": "https://www.sedaily.com/article/20099695",
           "medium": "news",
-          "discoveredAt": "2026-10-10T15:31:34+09:00",
-          "publishedAt": "2026-10-08T14:45:02+09:00",
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-10T10:00:00+09:00",
+          "image": "https://wimg.sedaily.com/news/cms/2026/10/08/news-p.v1.20261008.a5f93f3b965e492db6245e0a23615850_Z1.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data"
+          ]
+        },
+        {
+          "title": "[트렌드 포커스] 1인 가구 증가에 판 커진 간편식 시장…차별화된 맛과 기술력으로 승부",
+          "summary": "집에서 혼자 간편하게 즐길 수 있는 간편식 제품이 빠르게 성장하고 있는 것. 다만 다른 점이 있다면 과거에는 바쁜 일상에서 끼니를 해결하기 위한 대체식에 가까웠다면 최근에는 맛과 영양, 편의성까지 고려한 하나의…",
+          "source": "시사캐스트",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_e64820c7dd003bfd",
+          "url": "http://www.sisacast.kr/news/articleView.html?idxno=100866",
+          "medium": "news",
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-09T19:10:54+09:00",
+          "image": "http://www.sisacast.kr/news/thumbnail/202610/100866_109805_4321_v150.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data"
+          ]
+        },
+        {
+          "title": "GS25, 70만개 팔린 한정선 찹쌀떡 2탄 출시... 이번엔 피스타치오",
+          "summary": "GS25가 올 하반기 '떡지순례' 열풍의 주역으로 떠오른 '한정선 요거트 찹쌀떡' 인기에 힘입어 후속 제품을 출시했다. 해당 제품은 누적 판매량 70만개를 기록하며 품절 대란을 일으킬만큼 인기가 많았다.",
+          "source": "인사이트",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_792e7108ab270831",
+          "url": "https://web.insight.co.kr/news/576568",
+          "medium": "news",
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-06T18:40:00+09:00",
+          "image": "https://img.insight.co.kr/static/2026/10/06/1200/img_20261006091429_25x7819l.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data"
+          ]
+        },
+        {
+          "title": "“20대 아니여도 돼?” 韓대표 무려 91년생 35살…이혼도 결혼도 ‘다 괜찮다’는 미인대회[이슈픽]",
+          "summary": "만 35세 여성이 세계 최고 권위의 미인대회인 미스유니버스에 한국 대표로 참가한다. 7일 미스유니버스 코리아 등에 따르면 오는 11월 카리브해 미국령 푸에르토리코에서 열리는 제75회 미스유니버스 세계대회에 한국…",
+          "source": "서울신문 라이프",
+          "sourceId": "news-seoul-life",
+          "candidateId": "c_77c4693ef98b287a",
+          "url": "https://www.seoul.co.kr/news/newsView.php?id=20261008500109",
+          "medium": "news",
+          "discoveredAt": "2026-10-08T15:48:07+09:00",
+          "publishedAt": "2026-10-08T13:20:05+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "2026년 10월 9일 신상 식품 소식",
+          "summary": "GS25 여주 고구마 샐러드, CU 초성 마카롱, 브레드앤버터 한글 패키지 등 편의점·외식·간편식 신규 소식 20건을 정리했습니다.",
+          "source": "오늘의 신상 식품",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_6435433d907e5578",
+          "url": "https://food.mingky.me/news/2026-10-09-new-food/",
+          "medium": "blog",
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-09T09:00:00+09:00",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
-          "title": "노랑통닭, 부산국제영화제 4년 연속 공식 후원",
-          "summary": "노랑푸드가 운영하는 치킨 프랜차이즈 노랑통닭이 제31회 부산국제영화제(BIFF) 개막을 맞아 공식 후원사로 참여하고 부산 영화의전당에서 ‘노랑통닭 치킨존’을 운영한다고 6일 밝혔다.2009년 부산에서 첫발을 내디딘…",
-          "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_229e6473008c37e6",
-          "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68625",
+          "title": "\"K-건강빵도 해외로\" 파리바게뜨, '파란라벨' 싱가포르 전 매장 확대",
+          "summary": "파리바게뜨가 건강 베이커리 브랜드 '파란라벨'의 판매를 싱가포르 전 매장으로 확대하며 글로벌 시장 공략에 나선다고 7일 밝혔다.",
+          "source": "뉴시스 건강",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_be9073786411fd5f",
+          "url": "https://www.newsis.com/view/NISX20261007_0003816866",
           "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
-          "publishedAt": "2026-10-09T00:44:19+09:00",
+          "discoveredAt": "2026-10-07T15:40:53+09:00",
+          "publishedAt": "2026-10-07T09:59:15+09:00",
           "trendEvidence": [
-            "corroborated"
-          ]
-        },
-        {
-          "title": "원산지 위반 1만4000건 육박",
-          "summary": "2023년 이후 농축수산물 원산지 표시 위반으로 적발된 곳이 1만4000개소에 육박하고 위반 물량도 2만1000t을 넘어선 것으로 나타났다.",
-          "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_0f07da9e2ea112a1",
-          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62318",
-          "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
-          "publishedAt": "2026-10-08T22:26:23+09:00",
-          "trendEvidence": [
-            "corroborated"
+            "sales_data"
           ]
         }
       ]
@@ -112,62 +125,59 @@
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
         {
-          "title": "Coconut Curry Beans and Greens",
-          "summary": "When it comes to Thai curry flavors, I always crave green curry!",
+          "title": "Best Pumpkin Recipes",
+          "summary": "I LOVE October. Pumpkins, costumes, cider, the smell of fallen leaves, and lots and lots of candy…what’s not to love?",
           "source": "Budget Bytes",
           "sourceId": "blog-budgetbytes",
-          "candidateId": "c_6eb4246a8412984e",
-          "url": "https://www.budgetbytes.com/coconut-curry-beans-and-greens/",
+          "candidateId": "c_d38ca82c61a457fa",
+          "url": "https://www.budgetbytes.com/pumpkin-recipes/",
           "medium": "blog",
-          "discoveredAt": "2026-10-10T15:31:34+09:00",
-          "publishedAt": "2026-10-09T22:30:00+09:00"
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-10T22:30:00+09:00",
+          "image": "https://www.budgetbytes.com/wp-content/uploads/2022/10/Pumpkin-Recipes-Collage.jpg",
+          "imageSource": "feed_media"
         }
       ]
     },
     "health": {
       "lead": "맛도 포기하지 않는 건강식",
-      "items": [
-        {
-          "title": "“포슬포슬, 살찔 줄 알았는데”⋯10월 제철 ‘이 열매’ 다이어트에도 좋다고?",
-          "summary": "밤은 식이섬유도 들어 있어 소화와 흡수 속도를 늦추고 포만감을 유지하는 데 도움이 된다. 사진=GPT생성 밤은 탄수화물이 많아 살이 찔 것 같지만 의외로 식이섬유가 풍부하다.",
-          "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_9c8cd5227b683b8c",
-          "url": "https://kormedi.com/2879980/",
-          "medium": "news",
-          "discoveredAt": "2026-10-10T15:31:34+09:00",
-          "publishedAt": "2026-10-10T08:03:00+09:00",
-          "image": "https://kormedi.com/wp-content/uploads/2026/10/unnamed-file-15.png",
-          "imageSource": "feed_media"
-        }
-      ]
+      "items": []
     },
     "habit": {
       "lead": "잘 먹는 법에 대한 작은 이야기",
       "items": [
         {
-          "title": "“먹는 건 1등, 운동은 꼴찌?”…대한민국 4050 몸속에 쌓이는 ‘시한폭탄’ [헬스픽]",
-          "summary": "대한민국 40~50대 중년층의 식사량은 늘어난 반면 신체 활동량은 최저 수준으로 떨어졌다는 보건 당국의 조사 결과가 나왔다.",
-          "source": "서울신문 라이프",
-          "sourceId": "news-seoul-life",
-          "candidateId": "c_e2736b214d317997",
-          "url": "https://www.seoul.co.kr/news/newsView.php?id=20261009500142",
+          "title": "‘30kg 감량’ 이수현 “일본 편의점에서 식단 해결”⋯뭐 먹었을까?",
+          "summary": "다이어트에 성공한 이수현은 일본 출장 중 편의점 음식으로 식단을 관리했다. 남매 듀오 악뮤(AKMU) 이수현이 30kg 감량 후에도 체중 관리를 이어갔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_97b547e25e2a2d29",
+          "url": "https://kormedi.com/2880125/",
           "medium": "news",
-          "discoveredAt": "2026-10-10T15:31:34+09:00",
-          "publishedAt": "2026-10-09T17:19:18+09:00",
-          "image": "https://img.seoul.co.kr/img/upload/2025/08/05/SSC_20250805151959_V.jpg",
-          "imageSource": "feed_html"
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-11T15:03:00+09:00"
         },
         {
-          "title": "혈관 끈적이고 콩팥 망가지기 전에…‘100세 시대’ 꼭 마셔야 할 ‘이것’ [헬스픽]",
-          "summary": "세계적인 장수 마을 주민들이 공통으로 즐겨 마시는 음료는 물, 블랙커피, 레드와인인 것으로 나타났다. 다만 레드와인은 술인 만큼 건강에 득보다 실이 더 클 수 있다는 지적도 함께 나온다.",
-          "source": "서울신문 라이프",
-          "sourceId": "news-seoul-life",
-          "candidateId": "c_cde7979310821dfe",
-          "url": "https://www.seoul.co.kr/news/newsView.php?id=20261008500241",
+          "title": "68세 주병진 “살찐다 싶으면 ‘이것’만 먹고 잔다”⋯변함없는 체형 비결은?",
+          "summary": "주병진은 몸이 무거워졌다고 느끼는 날에는 저녁까지 달걀만 먹고 잠자리에 든다고 밝혔다. 사진=tvN STORY ‘남겨서 뭐하게’ 방송인 주병진이 오래전 입던 양복을 지금도 입을 수 있는 체형 관리법을 공개했다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_fd217976efead36f",
+          "url": "https://kormedi.com/2879474/",
           "medium": "news",
-          "discoveredAt": "2026-10-10T15:31:34+09:00",
-          "publishedAt": "2026-10-08T17:11:18+09:00"
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-11T13:04:00+09:00"
+        },
+        {
+          "title": "건강 챙기는 소비자 늘자…편의점 간편식도 ‘저당·고단백’",
+          "summary": "1인 가구 증가와 고물가로 편의점 간편식으로 한 끼를 해결하는 소비자가 늘고 있는 가운데 편의점업계의 간편식 경쟁이 치열하다.",
+          "source": "이코노믹리뷰",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_b5e43f029f760861",
+          "url": "https://www.econovill.com/news/articleView.html?idxno=746695",
+          "medium": "news",
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-07-31T08:48:42+09:00"
         }
       ]
     }
