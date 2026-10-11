@@ -239,9 +239,9 @@ def data_dir(tmp_path, monkeypatch):
     folder.mkdir(parents=True)
     monkeypatch.setattr(refresh_ggongbab, "DATA_DIR", folder)
     monkeypatch.setattr(refresh_ggongbab, "ROOT", tmp_path)
-    reviewed = tmp_path / "research/ggongbab/food-news.json"
-    reviewed.parent.mkdir(parents=True)
-    reviewed.write_text('{"records": []}', encoding="utf-8")
+    public_news = tmp_path / "inputs/ggongbab/food-news.json"
+    public_news.parent.mkdir(parents=True)
+    public_news.write_text('{"items": []}', encoding="utf-8")
     return folder
 
 

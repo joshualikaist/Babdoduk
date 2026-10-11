@@ -30,8 +30,13 @@ candidate rule, not that resident worker. It does not fetch bodies, create
 empty-body tasks or publish news. Portal's detail/view-count boundary stays
 unchanged. Source evidence requires a separate authorized review.
 
-Reviewed input lives in `research/ggongbab/food-news.json` (excluded from Vercel).
-Each record has `reviewed: true`, `sourceType` (`portal` or `kaist_public`),
+The review file stays on the operator PC (`.local/ggongbab/food-news-review.json`), never in
+git: this repository is public and its records carry source excerpts, some from the KAIST Portal.
+`python scripts/export_food_news.py --review` validates it and writes only the public items to
+`inputs/ggongbab/food-news.json`; that file is committed, and the refresh publishes it as
+`data/ggongbab/news.json` after checking every item again on its own (allowlisted keys, clean
+text, a generic source, the id its own facts derive). Data plan phase 2, 2026-10-12.
+Each review record has `reviewed: true`, `sourceType` (`portal` or `kaist_public`),
 `title`, ISO `noticeDate`, `dateVerified: true`, sanitized `evidence`, and
 `campusEvidence`. Title and campus evidence must occur in the excerpt; optional
 `summary`/`location` must be exact excerpts too. Never commit raw mail, whole
@@ -40,8 +45,8 @@ pending. No guessed facts and no source-detail requests are implied by review.
 
 `food_news.extract_reviewed_news` validates source, campus scope, service-change
 classification, factual support, verified date and privacy. Unreviewed sources
-fail closed. `python scripts/export_food_news.py` generates the snapshot; normal
-refresh export also uses this path. Dry-run writes nothing. Bad input keeps the
+fail closed. `python scripts/export_food_news.py` generates the snapshot from the public
+items; normal refresh export also uses this path. Dry-run writes nothing. Bad input keeps the
 last good news snapshot and prevents publication. This first path requires source
 review, not automatic candidate publication. No DB migration is introduced.
 

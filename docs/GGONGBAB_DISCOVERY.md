@@ -53,7 +53,7 @@ relaxes evidence or publication rules.
 | General web / Naver Blog via search | search API | 1–3 h | C | private review only | local sidecar | third-party ranking, SSRF | Phase 4 POC |
 | Food RSS, Naver Blog RSS | none | 30–60 min | B/C | magazine | local sidecar | feed change | Phase 4 POC |
 | YouTube | none | 6–24 h | C | magazine only | local sidecar | yt-dlp breakage | Phase 4 POC |
-| Manual (`data/ggongbab/manual.json`) | owner | on demand | A | feed | cloud collector | — | 0 items |
+| Manual (`inputs/ggongbab/manual.json`) | owner | on demand | A | feed | cloud collector | — | 0 items |
 
 **Trust tiers.** A: KAIST official notices, Portal, institutional mail, official department pages.
 B: official department/student-council/club accounts, a company's own campus-event account.

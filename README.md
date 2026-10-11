@@ -149,7 +149,7 @@ KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지
 Dooray mailbox  ─┐
 KAIST Portal (로컬 resident Chrome + SSO) ─┼─▶ Dooray 수집 프로젝트 ─▶ Collectors
 KAIST 공개 공지 (학사공지 · 문화행사)     ─┤
-manual.json                            ─┘
+inputs/ggongbab/manual.json            ─┘
         │
         ▼
 PII 제거 → 규칙 전처리 → gpt-5.6-luna → 결정적 검증 → 중복 제거
@@ -164,7 +164,7 @@ Supabase → data/ggongbab/latest.json → 꽁밥 탭
 
 | 모듈 | 역할 |
 |------|------|
-| `collectors/` | Dooray 업무 프로젝트(메일·Portal marker), KAIST 공개 공지, `manual.json`. PortalCollector는 클라우드에서 비활성 |
+| `collectors/` | Dooray 업무 프로젝트(메일·Portal marker), KAIST 공개 공지, `inputs/ggongbab/manual.json`. PortalCollector는 클라우드에서 비활성 |
 | `prefilter.py` | 규칙 기반 1차 선별. 여기서 걸러진 메일은 모델에 보내지 않는다 |
 | `parsers/ai_parser.py` | OpenAI Responses API + Structured Outputs |
 | `parsers/ai_errors.py` | 실패를 **로그에 안전한 범주**로 분류 (§6) |

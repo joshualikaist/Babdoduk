@@ -14,6 +14,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data" / "ggongbab"
+# Authored inputs the refresh reads. Kept in git, never deployed (.vercelignore) and never
+# written by the content bot (publish_generated.py copies only data/ and research/magazine).
+INPUTS_DIR = ROOT / "inputs" / "ggongbab"
 KST = timezone(timedelta(hours=9), name="Asia/Seoul")
 # Bump whenever SYSTEM_PROMPT changes meaning: cached parses are keyed on this,
 # so a new version re-parses stored items instead of reusing older extractions.
@@ -106,7 +109,7 @@ class Settings:
     # Collectors
     kaist_public_enabled: bool = field(default_factory=lambda: _bool("GGONGBAB_KAIST_PUBLIC_ENABLED", True))
     kaist_public_max_items: int = field(default_factory=lambda: _int("GGONGBAB_KAIST_PUBLIC_MAX_ITEMS", 40))
-    manual_path: Path = field(default_factory=lambda: Path(os.environ.get("GGONGBAB_MANUAL_PATH", str(DATA_DIR / "manual.json"))))
+    manual_path: Path = field(default_factory=lambda: Path(os.environ.get("GGONGBAB_MANUAL_PATH", str(INPUTS_DIR / "manual.json"))))
 
     # Dedup
     dedup_threshold: float = field(default_factory=lambda: _float("GGONGBAB_DEDUP_THRESHOLD", 0.72))

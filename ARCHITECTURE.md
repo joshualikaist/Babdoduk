@@ -1,6 +1,6 @@
 # Babdoduk architecture and change boundaries
 
-Food hub extension (2026-09-30): reviewed `research/ggongbab/food-news.json` → `food_news.py` → validated `data/ggongbab/news.json`, read only by the hub. News never enters canonical free events, public DB projection, free counts or archive. The separate lab Portal LIST worker still produces Stage A metadata only. See `docs/CAMPUS_FOOD_NEWS.md`.
+Food hub extension (2026-09-30): a review file on the operator PC (`.local/`, with source excerpts) → `export_food_news.py --review` → public items in `inputs/ggongbab/food-news.json` → `food_news.py` → validated `data/ggongbab/news.json`, read only by the hub. News never enters canonical free events, public DB projection, free counts or archive. The separate lab Portal LIST worker still produces Stage A metadata only. See `docs/CAMPUS_FOOD_NEWS.md`.
 
 Status: `main` production baseline (reviewed 2026-09-30). “In code” does not establish that a config is active, that a deployment serves it or that its data is fresh. Sections labelled **Lab-only / not promoted to production in the current main baseline** describe work that exists only on the `lab` branch.
 
@@ -73,7 +73,8 @@ Nine HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-
 | `data/ggongbab/archive/index.json` | Same export, same clock (past listings, 30 days) | Hub only, fetched separately; a failed archive keeps the previous file without blocking `latest.json`, and a failed fetch leaves the live feed untouched |
 | `data/foods/catalog.json`, 7 packs | `scripts/build_foods.py` and `scripts/food_expand.py` | Browser-only dish suggestion catalog, not restaurant inventory |
 | `data/food-log.json` | Human-authored | `food.html` combines it with browser-local entries by date and labels each day's source |
-| `data/ggongbab/manual.json` | Human-authored collector input | Private pipeline input, excluded from generated-data mirroring |
+| `inputs/ggongbab/manual.json` | Human-authored collector input | Pipeline input, never deployed, never written by the content bot |
+| `inputs/ggongbab/food-news.json` | Public items of the operator-PC news review | The refresh publishes it as `data/ggongbab/news.json`; never deployed |
 
 `.github/workflows/magazine-daily.yml` (content-refresh) refreshes magazine and cafeteria data on schedules and manually. `.github/workflows/ggongbab-refresh.yml` refreshes the approved free-food output on a 30-minute schedule (cron `*/30 * * * *`, UTC; a scheduled run is always `full`) and by manual dispatch in five modes, of which only `export-only` and `full` can publish. GitHub rejected the file as invalid YAML until the 2026-09-25 repair; the schedule was re-enabled on 2026-09-26 after the manual `check`, `dry-run` and `review-report` runs passed on main. A `full` run collects sources, calls OpenAI, writes Supabase and pushes `data/ggongbab/` to lab and main; the publisher skips the commit when only `generatedAt` changed. `scripts/publish_generated.py` mirrors only allowlisted generated paths using detached worktrees; it is not a feature-code merge or a generic deployment command. Rebase behavior inside that operational publisher is specific to its isolated generated-data commits and must not be copied into manual branch handling.
 
