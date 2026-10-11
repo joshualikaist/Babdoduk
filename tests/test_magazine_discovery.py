@@ -369,6 +369,10 @@ def test_the_one_registry_is_valid_and_honest_about_what_runs():
     assert all(s.get("localOnly") for s in by_type["youtube_search"] + by_type["youtube_channel"])
     assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"])
     assert all(s.get("knownIssue") for s in by_type["youtube_channel"])
+    # Off since 2026-10-12: their only input, the operator-PC sidecar, stopped on 09-29.
+    for s in by_type["youtube_search"] + by_type["youtube_channel"]:
+        assert s["enabled"] is False and "Disabled 2026-10-12" in s["note"], s["id"]
+    assert pipeline.pending_work(sources) == []
     # Recipe blogs feed tips/health only: a recipe is not a trend or an eating-habit story.
     for s in by_type["rss"]:
         if s.get("kind") == "recipe":
