@@ -105,7 +105,12 @@
         return finish(latest, null);
       });
       function finish(saved, week) {
-        if (weekDay(week, todayIso) && weekDay(week, todayIso).available === false) return saved;
+        var entry = weekDay(week, todayIso);
+        // The bot publishes the dated files and week.json together, so only a date the index
+        // lists can have a file: before a new week is published (Monday morning) today is not
+        // in it, and asking would only be a 404. Without an index, today's file is still tried.
+        if (week && !entry) return saved;
+        if (entry && entry.available === false) return saved;
         return getJson(dayBase + todayIso + '.json').then(function (dated) {
           return resolveTodayChoice(saved, week, dated, todayIso).data || saved;
         }, function () {
@@ -261,6 +266,7 @@
       week: weekDates(today),
       selected: today,
       weekIndex: null,
+      otherWeek: false,
       days: {}
     };
     function emit() {
@@ -466,7 +472,9 @@
           if (!res.ok) throw new Error('missing');
           return res.json();
         }).then(function (index) {
-          if (index && index.weekStart === state.week[0] && Array.isArray(index.days)) state.weekIndex = index;
+          if (!index || !Array.isArray(index.days)) return;
+          if (index.weekStart === state.week[0]) state.weekIndex = index;
+          else state.otherWeek = true;   // the published files are another week's
         }).catch(function () {});
       }
       return weekRequest;
@@ -484,8 +492,10 @@
       render();
       var base = options.dayBase || 'data/kaist-menu/';
       ensureWeek().then(function () {
-        // A date the index lists without a file is not requested: no 404 for a known gap.
+        // A date the index lists without a file is not requested: no 404 for a known gap. Nor is
+        // any date while the published index is another week's: its files are published with it.
         var known = weekEntry(date);
+        if (!known && state.otherWeek) return 'none';
         if (known && known.available === false) return known.status === 'FETCH_FAILED' ? 'failed' : 'none';
         return fetch(base + date + '.json', { cache: 'no-store' }).then(function (res) {
           if (res.status === 404) return null;

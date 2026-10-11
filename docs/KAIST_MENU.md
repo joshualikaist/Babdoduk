@@ -106,7 +106,11 @@ lab and main.
   exists, used instead (`loadTodayMenu`, the same rule for home and the magazine summary).
   * `week.json` comes first, so a date the index marks `NOT_PUBLISHED_YET` is not requested at all.
   * Then comes `YYYY-MM-DD.json`. A loaded date is kept in memory for the page session.
-  * A missing or older `week.json` is ignored.
+  * The bot publishes the dated files together with `week.json`, so only a date the published index
+    lists is requested. While `week.json` is still another week's (Monday before the first run of
+    the week), today shows the saved-menu notice and another date shows no menu yet, with no request
+    and no 404.
+  * A missing `week.json` is ignored: dates are then requested on demand.
 * **Selection:**
   * The selected date is page state and every load starts at today KST.
   * The meal (아침/점심/저녁) keeps its saved behavior and stays the same when the date changes.
