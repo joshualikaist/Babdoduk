@@ -67,7 +67,7 @@ scripts/discovery/sources.json   (the one registry)
       -> research/magazine/candidates.jsonl   (candidate store)
       -> normalize (+ evidence) -> dedup -> quality filter -> corroboration -> lane rules -> rank
       -> editorial selection (hero rule)
-      -> data/magazine/YYYY-MM-DD.json, latest.json, index.json   (public output)
+      -> data/magazine/YYYY-MM-DD.json, index.json   (public output; index.latest names the newest edition)
 
 operator PC:  scripts/magazine_local_discovery.py -> research/magazine/inbox/<sourceId>.json
 ```
@@ -190,7 +190,7 @@ the hero. It needs at least 200 characters of retrieved text.
 
 | Public: `data/magazine/` (served) | Internal: `research/magazine/` (not served) |
 |---|---|
-| Daily edition, `latest.json`, `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance, the rest as fingerprints (see Persistence) |
+| Daily edition and `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance, the rest as fingerprints (see Persistence) |
 | Per story: title, short summary, source, URL, medium (blog, news, research, youtube), publishedAt, discoveredAt, image and its origin, sourceId, candidateId; trend stories also `trendEvidence` (kinds) | discoveryMethod, discoveryQuery, discoveryLane, seenQueries, trendEvidence and detail, sourceTrust, audienceRelevance, laneDecisions, scores, duplicateOf, selectedFor, rejectionReason |
 | Featured: `heroKind` (`trend` or `pick`) | `inbox/` (local sidecar output), `source-health.json`, `health.json` (with per-lane counts and reasons), `runs.jsonl` |
 
