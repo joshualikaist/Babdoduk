@@ -152,18 +152,20 @@ def test_conflicting_second_source_keeps_the_public_event(settings):
 def test_refresh_exit_classes_and_workflow():
     assert refresh.classify_refresh_exit(export_code=0) == 0
     assert refresh.classify_refresh_exit(export_code=2) == 2
-    assert refresh.workflow_stays_green(2) is True
     assert refresh.classify_refresh_exit(collectors_all_failed=True) == 20
     assert refresh.classify_refresh_exit(supabase_error=True) == 21
     assert refresh.classify_refresh_exit(fatal="quota_exhausted", export_code=0) == 22
     assert refresh.classify_refresh_exit(fatal="auth", export_code=2) == 22
     assert refresh.classify_refresh_exit(publish_error=True) == 23
-    for code in (20, 21, 22, 23):
+    # A refresh that published nothing is red: the legacy 2 (on main still every failed
+    # refresh) as much as 20-23. The workflow file is the same on lab and main.
+    for code in (2, 20, 21, 22, 23):
         assert refresh.workflow_stays_green(code) is False
     workflow = (ROOT / ".github" / "workflows" / "ggongbab-refresh.yml").read_text(encoding="utf-8")
-    keep = workflow.index("nothing safe to publish")
+    legacy = workflow.index('if [ "$code" -eq 2 ]; then')
     fail = workflow.index("infrastructure or publication failure")
-    assert keep < workflow.index("exit 0", keep) < fail
+    assert legacy < workflow.index("exit 1", legacy) < fail
+    assert "exit 0" not in workflow[legacy:fail]
     assert 'exit "$code"' in workflow[fail:]
 
 
