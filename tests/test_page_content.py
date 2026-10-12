@@ -103,10 +103,10 @@ def test_an_edit_reaches_the_page_in_both_languages(tmp_path, monkeypatch):
     page = chrome.synced("event.html")
     assert page != (ROOT / "event.html").read_text(encoding="utf-8")   # the committed page is now stale
     strings = tables(page)
-    assert strings["ko"]["event.e2.summary"] == "밥도둑 시식회" and strings["en"]["event.e2.summary"] == "밥도둑 시식회".upper()
+    assert strings["ko"]["event.e3.summary"] == "밥도둑 시식회" and strings["en"]["event.e3.summary"] == "밥도둑 시식회".upper()
     assert strings["en"]["event.n0.text"] == "It's in November."
     assert '<strong data-i18n="event.n0.title">시식회 안내</strong>' in page
-    assert page.count('<li class="event-item"') == 3
+    assert page.count('<li class="event-item"') == len(EVENTS["activities"]) + 1
 
 
 def test_content_the_contracts_cannot_judge_is_refused(tmp_path):
