@@ -216,7 +216,8 @@ and, while it can still corroborate, its words as an unordered list (`textWords`
 - `tests/test_magazine_lanes.py` checks that a held row decides as the full judgement with its text
   would, as it ages (trend and habit windows, too old) and as new stories corroborate it. On the
   committed store of 2026-10-12, matching by title alone would have lost 112 of 174 corroborations;
-  the stored words keep them.
+  the stored words keep them. Replaying that store, all 1,044 whole rows decided the same held as
+  judged with their text, on the day and 31 and 95 days later (past the trend and habit windows).
 - A card for a held story takes its sentence from the publisher's page (`discovery.preview`), like
   a web search result.
 
