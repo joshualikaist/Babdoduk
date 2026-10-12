@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 """Editorial selection: the public daily edition from ranked, eligible candidates.
 
-LANE_SIZE is a maximum, not a quota: a lane shows only what qualifies, possibly nothing.
+Every lane carries LANE_SIZE stories (owner decision, 2026-10-12: five per lane in every
+edition). A lane is filled best-first in tiers until it is full: fresh stories, at most
+PER_SOURCE_PER_LANE from one source; then fresh stories from any source; then older tips and health
+stories (past EVERGREEN_FRESH_DAYS, still within the evergreen window). Only qualifying stories
+count, and a story runs once: a lane that still has fewer is published with what it has and the
+run report names it (pipeline.finish), never filled with anything made up.
 
 Hero (owner decision, 2026-09-29), heroKind in the edition:
   "trend"  a qualified trend story with INDEPENDENT evidence - measured demand, strong engagement,
@@ -26,10 +31,9 @@ import content_labels
 from .common import KST, excerpt, parse_time
 from .process import age_days
 
-LANE_SIZE = 6              # a ceiling for good stories, never a number to fill
-EVERGREEN_FRESH_DAYS = 90  # an older tips/health story runs only when its lane has too few fresh ones
-EVERGREEN_MIN = 3
-PER_SOURCE_PER_LANE = 2
+LANE_SIZE = 5              # stories per lane, every edition (owner decision, 2026-10-12)
+EVERGREEN_FRESH_DAYS = 90  # an older tips/health story fills its lane only after every fresh one
+PER_SOURCE_PER_LANE = 2    # variety first; relaxed only when the lane cannot be filled otherwise
 HERO_IDEAL_DAYS = 7
 HERO_MAX_DAYS = 30
 HERO_AUDIENCE = 0.5
@@ -153,26 +157,29 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
 
     def old(row):
         age = age_days(row, now)
-        return age is not None and age > EVERGREEN_FRESH_DAYS
+        return row["assignedCategory"] in ("tips", "health") and age is not None and age > EVERGREEN_FRESH_DAYS
 
+    # Tiers, in order, until the lane holds LANE_SIZE: (may this row run, given how many its
+    # source already has in the lane?)
+    tiers = (lambda row, used: not old(row) and used < PER_SOURCE_PER_LANE,
+             lambda row, used: not old(row),
+             lambda row, used: True)
     for lane in LANES:
         picked, per_source = [], {}
-        fresh = sum(1 for r in pool if r["assignedCategory"] == lane and r["candidateId"] not in chosen and not old(r))
-        for row in pool:
-            if len(picked) >= LANE_SIZE:
-                break
-            if row["assignedCategory"] != lane or row["candidateId"] in chosen:
-                continue
-            if lane in ("tips", "health") and old(row) and fresh >= EVERGREEN_MIN:
-                continue                          # fresh stories first; an old one only fills a thin lane
-            if set(row.get("corroboratedBy") or []) & set(chosen):
-                continue                          # the same story told by another outlet: one slot per topic
-            key = row.get("sourceName") or row.get("sourceId")
-            if per_source.get(key, 0) >= PER_SOURCE_PER_LANE:
-                continue
-            per_source[key] = per_source.get(key, 0) + 1
-            picked.append(row)
-            chosen.append(row["candidateId"])
+        for allowed in tiers:
+            for row in pool:
+                if len(picked) >= LANE_SIZE:
+                    break
+                if row["assignedCategory"] != lane or row["candidateId"] in chosen:
+                    continue
+                if set(row.get("corroboratedBy") or []) & set(chosen):
+                    continue                      # the same story told by another outlet: one slot per topic
+                key = row.get("sourceName") or row.get("sourceId")
+                if not allowed(row, per_source.get(key, 0)):
+                    continue
+                per_source[key] = per_source.get(key, 0) + 1
+                picked.append(row)
+                chosen.append(row["candidateId"])
         lanes[lane] = {"lead": LANE_LEADS[lane], "items": [public_item(r) for r in picked]}
     featured = None
     if featured_row is not None:

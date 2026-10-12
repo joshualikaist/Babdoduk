@@ -200,6 +200,10 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
     failing = sorted(sid for sid, h in run["health"].items() if h["adapter"] in (adapters.FETCH_FAILED, adapters.PARSE_FAILED))
     by_status = {name: sorted(sid for sid, h in run["health"].items() if h.get("status") == name) for name in registry.STATUSES}
     stale = by_status["STALE"]
+    # How full each lane of today's edition is: a lane short of select.LANE_SIZE is named, so a
+    # thin source mix shows up in the report instead of as a quiet gap on the page.
+    fill = {lane: len(((edition or {}).get("lanes") or {}).get(lane, {}).get("items") or []) for lane in select.LANES}
+    short = sorted(lane for lane, n in fill.items() if edition and n < select.LANE_SIZE)
     report = {
         "generatedAt": iso(now),
         "adapters": run["health"],
@@ -207,12 +211,14 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
                     "notConfigured": sorted(sid for sid, h in run["health"].items() if h["adapter"] == adapters.NOT_CONFIGURED),
                     "statusCounts": {name: len(ids) for name, ids in by_status.items()}, "byStatus": by_status,
                     **run["counts"], "pruned": pruned,
-                    "selected": len(chosen), "fabricated": 0, "staleSources": stale},
+                    "selected": len(chosen), "fabricated": 0, "staleSources": stale,
+                    "laneFill": fill if edition else {}, "shortLanes": short},
         "lanes": run.get("lanes") or {},
         "pending": pending_work(run["sources"]),
         "warnings": [f"{sid}: {run['health'][sid]['code']}" for sid in failing]
                     + [f"{sid}: SOURCE_STALE (newest item older than {registry.STALE_DAYS} days)" for sid in stale]
-                    + [f"{sid}: {run['health'][sid]['code']}" for sid in by_status["DEGRADED"] if sid not in failing],
+                    + [f"{sid}: {run['health'][sid]['code']}" for sid in by_status["DEGRADED"] if sid not in failing]
+                    + [f"lane {lane}: {fill[lane]} of {select.LANE_SIZE} stories" for lane in short],
     }
     atomic_write(paths.health, dump_json(report))
     line = json.dumps({"runAt": iso(now), "queries": run["queries"], "counts": report["summary"],
