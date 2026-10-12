@@ -2,11 +2,13 @@
 
 The magazine (`mukbang.html`) publishes **source-backed stories only**. There is no Babdoduk Desk
 fallback and no generated filler: every story has a real source, a real URL, the source's own
-title and a short excerpt of text that was actually retrieved from that source. Every lane carries
-five stories (owner decision, 2026-10-12). When sources are down or thin and a lane cannot be filled
-from qualifying stories, it carries what it has; the run report names it (`summary.laneFill`,
-`summary.shortLanes` and a warning in `research/magazine/health.json`) and explains it (`lanes`),
-never silent and never filled with anything made up.
+title and at most one sentence of the publisher's own preview (docs/MAGAZINE_SOURCES.md, which
+also sets what is collected and shown, how a source is proposed and how its owner leaves). Every lane
+carries five stories (owner decision, 2026-10-12). When sources are down or thin and a lane cannot be
+filled from qualifying stories, it carries what it has; the run report names it (`summary.laneFill`,
+`summary.shortLanes` and a warning in `research/magazine/health.json`), the run log prints a `[warn]`
+line, the GitHub Actions run shows a warning and a lane table (`refresh_magazine.announce`), and the
+report explains it (`lanes`): never silent and never filled with anything made up.
 
 ## Routes: implemented, where they run
 
@@ -15,11 +17,11 @@ never silent and never filled with anything made up.
 | Recipe RSS/Atom (7 blogs) | tips, health | cloud | active |
 | Korean food-industry and health news RSS (식품음료신문, 식품저널, 식품외식경제, 대한급식신문, 연합뉴스 산업·건강, 코메디닷컴, 뉴시스 건강, 동아일보 건강, 서울신문 라이프) | trend, habit, health (evidence rules apply) | cloud | active; Korean hosts time out now and then from GitHub runners (recorded as FETCH_FAILED) |
 | Web search, Exa hosted MCP (`https://mcp.exa.ai/mcp`, **no key**), with page text from `web_fetch_exa` and Jina Reader | trend (10 queries), habit (10 queries) | cloud | active, **with a free daily quota** (below) |
-| Naver Blog through the same web search (`site:blog.naver.com`) | trend | cloud | active, Tier C |
-| YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | active on the operator PC |
-| YouTube channels (4): Atom feed, else yt-dlp channel listing | tips, health, trend | **local only** (sidecar) | active on the operator PC |
+| Naver pages (blog, post, cafe, news) | - | - | **not collected** (decisions 3-4): the `site:blog.naver.com` search is off since 2026-10-12, web search drops a Naver result before reading it, and one stored earlier is rejected (`HOST_NOT_COLLECTED`). A Naver blog joins only through its owner's RSS with recorded permission |
+| YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
+| YouTube channels (4) through the YouTube Data API (`playlistItems.list`, 1 quota unit a channel) | tips, health, trend | cloud, with the `YOUTUBE_API_KEY` secret | **active since 2026-10-12** (magazine sourcing plan, decision 1); without the key a channel fails for that run |
 | Exa REST search with `EXA_API_KEY` | - | optional | not configured, not needed |
-| YouTube Data API with `YOUTUBE_API_KEY` | tips, trend | cloud (any runner) | ready in code, waiting for the owner's key (magazine sourcing plan, decision 1): registered channels through `playlistItems.list` (1 unit), queries through `search.list` (at most 100 calls a day) |
+| YouTube search through the Data API (`search.list`, 100 units a query) | trend | cloud | ready in code, off (the registry's `yt-search` stays disabled) |
 | Instagram (OpenCLI) | trend | local only | **OWNER_CHECKPOINT**, disabled |
 
 Evidence for the split (probe workflow runs 36525458559 and 36525712270 on a GitHub-hosted runner,
@@ -67,15 +69,20 @@ scripts/discovery/sources.json   (the one registry)
       -> research/magazine/candidates.jsonl   (candidate store)
       -> normalize (+ evidence) -> dedup -> quality filter -> corroboration -> lane rules -> rank
       -> editorial selection (hero rule)
-      -> data/magazine/YYYY-MM-DD.json, latest.json, index.json   (public output)
+      -> data/magazine/YYYY-MM-DD.json, index.json   (public output; index.latest names the newest edition)
 
 operator PC:  scripts/magazine_local_discovery.py -> research/magazine/inbox/<sourceId>.json
 ```
 
-`python scripts/refresh_magazine.py` runs the pipeline; `content-refresh` is scheduled daily at 10:00 KST,
-and GitHub usually starts it hours later (2026-10-09 to 10-11: 15:30 to 16:00 KST). The page therefore shows
-each edition's own build time (`generatedAt`), never a fixed hour, and until today's edition lands it
-labels yesterday's, the newest one, `최신 호`, not `지난 호`.
+`python scripts/refresh_magazine.py` runs the pipeline. `content-refresh` schedules it at 10:07 KST, with
+backups at 10:53, 12:23 and 16:17 KST (since 2026-10-12). The schedules avoid the hour and the half hour,
+where GitHub delays or drops scheduled runs: the old 10:00 KST run started hours late (2026-10-09 to 10-11:
+15:30 to 16:00 KST; 10-12: 15:44). A scheduled run passes `--if-missing`, so it builds today's edition
+only while that edition is missing: the first run that starts publishes it and the others change
+nothing. A manual run always rebuilds. The page shows each edition's own build time (`generatedAt`),
+never a fixed hour, and until today's edition lands it labels yesterday's, the newest one, `최신 호`,
+not `지난 호`.
+- `--if-missing` does nothing when today's edition is already built.
 - `--discover-only` updates the store without building an edition.
 - `--select-only` re-judges every stored candidate under the current rules and rebuilds today's
   edition, without the network. Nothing is fetched, searched or deleted, so a rule change or a
@@ -93,13 +100,17 @@ The normal pipeline reads the inbox as that source's adapter result, so every lo
 through the same rules, and only the normal publisher produces the public edition. An inbox older
 than 3 days is reported as `LOCAL_INBOX_STALE` (DEGRADED); a missing one as `LOCAL_INBOX_MISSING`.
 
-**Automation gap (`YOUTUBE_AUTOMATION_PENDING`, recorded in `health.json`).** Nothing yet runs the sidecar on a schedule or delivers the inbox to the
-repository: today's inbox came from one controlled local run (2026-09-29) committed with the lab
-change. A
-durable path needs an owner decision (a scheduled task on the operator PC plus a way to hand the
-inbox to the publisher, which touches the paused publisher credential / operations work). Until
-then YouTube candidates reach the magazine only when an operator runs the sidecar and commits the
-inbox; every other route is cloud-safe.
+**YouTube runs through the Data API (owner decisions, 2026-10-12).** The sidecar route never ran
+on a schedule, so YouTube was turned off; the four channels came back through the YouTube Data API,
+which answers any runner. YouTube search (`yt-search`) stays off. The API's terms apply
+(YouTube API Services Developer Policies III.E.4 and III.F.2):
+- **30 days.** Data from the API is kept at most 30 days, then refreshed or deleted: a stored row of
+  a YouTube video is dropped 30 days after the API last returned it (`store.YOUTUBE_DAYS`), published
+  or not. A video runs only on data the API returned within 2 days and while its upload is at most
+  28 days old (`select.youtube_runnable`), and editions older than 28 days lose their YouTube videos
+  (`select.sanitize`), so nothing from the API is kept past 30 days and a video never runs twice.
+- **Attribution.** A YouTube card names YouTube as its medium in both languages, with the channel's
+  name, and links to the video on YouTube.
 
 ## Lanes are rules (owner decision, 2026-09-29)
 
@@ -146,8 +157,8 @@ Also rejected for every lane: `OPINION_COLUMN`, `SHOPPING_OR_TRAVEL_GUIDE`, `NOT
 
 A recipe is not a trend: for recipe content a weak claim ("인기", "popular") does not count. A
 research paper older than 30 days is never a trend, whatever words it uses; it may be a habit
-story, shown with its date. `trendEvidenceDetail` keeps the verbatim sentence or metadata behind
-each kind, internally.
+story, shown with its date. `trendEvidenceDetail` holds the verbatim sentence or metadata behind
+each kind, in memory only for the run that read it (the store never writes it; see Persistence).
 
 **Audience relevance** (`audienceRelevance`): Korea, convenience stores, students and young adults,
 single-person households, quick meals, budget. It ranks what a KAIST student is likely to care about
@@ -190,11 +201,30 @@ the hero. It needs at least 200 characters of retrieved text.
 
 | Public: `data/magazine/` (served) | Internal: `research/magazine/` (not served) |
 |---|---|
-| Daily edition, `latest.json`, `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance, the rest as fingerprints (see Persistence) |
-| Per story: title, short summary, source, URL, medium (blog, news, research, youtube), publishedAt, discoveredAt, image and its origin, sourceId, candidateId; trend stories also `trendEvidence` (kinds) | discoveryMethod, discoveryQuery, discoveryLane, seenQueries, trendEvidence and detail, sourceTrust, audienceRelevance, laneDecisions, scores, duplicateOf, selectedFor, rejectionReason |
+| Daily edition and `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance and no text of the source beyond the title, the rest as fingerprints (see Persistence) |
+| Per story: title, one-sentence summary, source, URL, medium (blog, news, research, youtube), publishedAt, discoveredAt, image and its origin, sourceId, candidateId; trend stories also `trendEvidence` (kinds) | discoveryMethod, discoveryQuery, discoveryLane, seenQueries, trendEvidence (kinds), sourceTrust, audienceRelevance, laneDecisions, textFacts, textWords, scores, duplicateOf, selectedFor, rejectionReason |
 | Featured: `heroKind` (`trend` or `pick`) | `inbox/` (local sidecar output), `source-health.json`, `health.json` (with per-lane counts and reasons), `runs.jsonl` |
 
 `research/` is listed in `.vercelignore`, so the website never serves it.
+
+**No text in the store** (magazine sourcing plan, decision 6). The repository is public, so the
+store keeps no text of the source beyond its title: the excerpt and the evidence sentences
+(`trendSignals` and `habitSignals` text, `trendEvidenceDetail`) stay in memory for the run that read
+them (`store.stored`). A row keeps instead what later runs need from its text (`textFacts`: food or
+not, research, a launch, its own popularity claim or measured demand, habit words, lane word counts)
+and, while it can still corroborate, its words as an unordered list (`textWords`).
+- A row its source lists again is read again and judged in full (`store.upsert` marks it fresh).
+  Another route's text is not its text: through another route it only gains evidence.
+- A whole row its source no longer lists is held (`process.held_*`): it keeps its decision, which
+  only needs no text to change - its age (the trend and habit windows, `TOO_OLD`), the hosts open
+  discovery reads, and corroboration by the stories of the run, through its stored words.
+- `tests/test_magazine_lanes.py` checks that a held row decides as the full judgement with its text
+  would, as it ages (trend and habit windows, too old) and as new stories corroborate it. On the
+  committed store of 2026-10-12, matching by title alone would have lost 112 of 174 corroborations;
+  the stored words keep them. Replaying that store, all 1,044 whole rows decided the same held as
+  judged with their text, on the day and 31 and 95 days later (past the trend and habit windows).
+- A card for a held story takes its sentence from the publisher's page (`discovery.preview`), like
+  a web search result.
 
 **Persistence.** GitHub Actions runs are stateless. After a magazine run, the content bot commits
 `research/magazine/` to lab and main through `scripts/publish_generated.py`, the same path as
@@ -242,8 +272,8 @@ with these rules: 2.6 MB (732 whole rows, 1,924 compact) and no publishing decis
 original. A candidate's id is its canonical URL, so the same URL reached through two routes is one
 candidate, with both routes in `seenVia` and every query in `seenQueries`. A later candidate points at
 the original with `duplicateOf` when the source item id, the content hash (title plus text), or a
-similar title **with** the same site or a matching excerpt match. Title similarity alone is never
-enough.
+similar title **with** the same site or a matching text match (the excerpts when the run read both,
+else the stored words). Title similarity alone is never enough.
 
 **Quality filter.** Each rejection records a fixed reason: `BAD_URL`, `NO_TITLE`, `NO_SOURCE_TEXT`
 (less than 60 characters of retrieved text; 20 for a video; 120 for research), `COMMERCE_PAGE`,
@@ -253,9 +283,25 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
 
 ## Truth and image rules
 
-- **Summary:** at most 120 characters, cut from the source's own text (for a web page its first
-  real paragraph, without bylines, captions or links). If less than 20 characters remain, the card
-  shows title and source only. Nothing is written by Babdoduk.
+- **Sentence:** one verbatim sentence of the publisher's own preview, at most 120 characters
+  (`select.card_summary`): the first sentence of at least 20 characters among the opening three,
+  without bylines, captions or links. A registered feed's item text is its preview. A web search
+  result's page text only decides its lane, and a story its feed no longer lists has no text left:
+  when such a story is published, `discovery.preview` reads the page's og:description (else meta
+  description) once, after robots.txt allows it and two seconds after the last request to that host.
+  Without a sentence the card shows title, source and date.
+  Nothing is written by Babdoduk.
+- **Not without permission:** a newspaper association member's article
+  (`scripts/discovery/newspaper-members.json`) and a Naver page are collected only from a source
+  registered with the owner's permission (`"permission"`; owner decision 2026-10-12: the association's
+  rule lets only a non-commercial individual link to a member's article without it). Search results on
+  those hosts are dropped before any page is read, a feed item on them is not stored
+  (`process.collected`), stored rows leave the store (`pipeline.drop_not_collected`) and past editions
+  lose them (`select.sanitize`).
+- **Title and link only:** a source registered `"excerpt": false` and any page of a newspaper
+  association member collected with its permission show no sentence and no photo, so they never take
+  the hero's image slot. The stored candidates follow the current registry and list every run
+  (`pipeline.apply_excerpt_rules`).
 - **Date:** every card shows the source's publication date. For web pages it comes from search or
   page metadata, else the page's own printed date near its top (`publishedAtSource`).
 - **Image:** in order of preference, RSS/Atom media of the same item, an image in the same feed
@@ -264,7 +310,9 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
 - **Stored editions:** every run sanitizes them. Desk items, link-less items and idea desks are
   removed; generated summaries of items built before provenance existed are dropped; a trend item
   without evidence and the old builder's keyword-routed habit items (editions without
-  `rules: "lanes-v1"`) are removed.
+  `rules: "lanes-v1"`) are removed. They follow today's publishing rules too: a withdrawn source's
+  stories are removed, and a title-and-link-only story loses its sentence and photo. A file is
+  rewritten only when cleaning changed it.
 - **Validation:** `validate_content.py` rejects any desk, sourceless or link-less story, a trend story
   without evidence, older than 30 days or undated, an undated habit story, and a trend hero without
   evidence. A lane with fewer than five stories is valid (an honest shortage) but is reported.

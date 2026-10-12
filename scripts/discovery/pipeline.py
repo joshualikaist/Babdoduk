@@ -67,7 +67,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         before = len(store.rows)
         for raw in result.items:
             row = process.normalize(raw, source, now)
-            if row and row["sourceUrl"]:
+            if row and row["sourceUrl"] and process.collected(row, source):
                 store.upsert(row, now)
         new += len(store.rows) - before
         for query in result.queries:
@@ -75,6 +75,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         health[source["id"]] = {"type": source["type"], "adapter": result.status, "code": result.code or None,
                                 "items": len(result.items)}
         log(f"discovery {source['id']}: {result.status}{' ' + result.code if result.code else ''} items={len(result.items)}")
+    drop_not_collected(store, sources)
     rows = store.all()
     newest: dict[str, str] = {}
     for row in rows:
@@ -88,6 +89,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         entry["status"] = registry.status(source, entry, now)
         health[source["id"]].update({k: entry.get(k) for k in ("status", "lastSuccessAt", "lastFailureAt",
                                                                 "failureCount", "newestItemAt")})
+    apply_excerpt_rules(rows, sources)
     reset_decisions(rows)                      # recompute decisions each run from the stored facts
     counts = process.process(rows, now)
     whole = [row for row in rows if not row.get("compact")]
@@ -106,22 +108,50 @@ def pending_work(sources: list[dict]) -> list[str]:
     return ["YOUTUBE_AUTOMATION_PENDING"] if local_youtube else []
 
 
+def drop_not_collected(store: CandidateStore, sources: list[dict]) -> int:
+    """Stories on a host collected only with its owner's permission (a Naver page, a newspaper
+    association member's article; docs/MAGAZINE_SOURCES.md) leave the store unless their source
+    carries that permission: neither their titles nor their links are kept, published or not."""
+    by_id = {s.get("id"): s for s in sources}
+    gone = [cid for cid, row in store.rows.items()
+            if row.get("sourceUrl") and not process.collected(row, by_id.get(row.get("sourceId")))]
+    for cid in gone:
+        del store.rows[cid]
+    return len(gone)
+
+
+def apply_excerpt_rules(rows: list[dict], sources: list[dict]) -> None:
+    """Today's excerpt rules on every stored story, not only on new ones: a source or host that is
+    now shown by title and link only (docs/MAGAZINE_SOURCES.md) shows no excerpt or photo from the
+    stories it gave before either."""
+    by_id = {s.get("id"): s for s in sources}
+    for row in rows:
+        if not row.get("compact"):
+            row["excerptAllowed"] = process.excerpt_allowed(row, by_id.get(row.get("sourceId")))
+
+
 def reset_decisions(rows: list[dict]) -> None:
     """A published story keeps its decision, and so does a compact row: it no longer has the
-    facts to be judged again (store.stays_whole)."""
+    facts to be judged again (store.stays_whole). A whole row stored without its text keeps its
+    rejection reason, which process.process holds; its lane is placed again from what it stored."""
     for row in rows:
         if not row.get("selected") and not row.get("compact"):
             row["duplicateOf"] = None
-            row["rejectionReason"] = None
             row["assignedCategory"] = None
+            if process.judged_now(row):
+                row["rejectionReason"] = None
 
 
 def reprocess(paths: Paths, now: datetime) -> dict:
     """Re-judge every stored candidate under the current rules, without the network: nothing is
-    fetched, searched or deleted, so a rule change or an unreachable route never loses a
-    candidate that was already discovered."""
+    fetched or searched, and nothing is deleted but a story that may not be kept at all
+    (drop_not_collected), so a rule change or an unreachable route never loses a candidate that
+    was already discovered."""
     store = CandidateStore(paths.candidates)
+    sources = registry.load(paths.registry)
+    drop_not_collected(store, sources)
     rows = store.all()
+    apply_excerpt_rules(rows, sources)
     reset_decisions(rows)
     counts = process.process(rows, now)
     return {"store": store, "counts": dict(counts, candidates=len(rows)), "lanes": lane_report(rows)}
@@ -190,6 +220,17 @@ def recent_keys(out: Path, before: str, days: Optional[int] = None) -> set[str]:
     return keys | {canonical_url(k) for k in keys if k.startswith("http")}
 
 
+def lane_fill(edition: Optional[dict]) -> tuple[dict, list[str]]:
+    """({lane: stories}, lanes short of select.LANE_SIZE) for an edition; ({}, []) without one. A
+    short lane is named in the run report and announced, so a thin source mix shows up instead of
+    as a quiet gap on the page."""
+    if not edition:
+        return {}, []
+    lanes = edition.get("lanes") or {}
+    fill = {lane: len((lanes.get(lane) or {}).get("items") or []) for lane in select.LANES}
+    return fill, sorted(lane for lane, n in fill.items() if n < select.LANE_SIZE)
+
+
 def runnable(rows: list[dict], sources: list[dict]) -> list[dict]:
     """The stored stories whose source is still enabled: a source turned off (its terms, a dead
     route) publishes nothing more, not even what it collected before. Its rows stay in the store
@@ -210,10 +251,7 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
     failing = sorted(sid for sid, h in run["health"].items() if h["adapter"] in (adapters.FETCH_FAILED, adapters.PARSE_FAILED))
     by_status = {name: sorted(sid for sid, h in run["health"].items() if h.get("status") == name) for name in registry.STATUSES}
     stale = by_status["STALE"]
-    # How full each lane of today's edition is: a lane short of select.LANE_SIZE is named, so a
-    # thin source mix shows up in the report instead of as a quiet gap on the page.
-    fill = {lane: len(((edition or {}).get("lanes") or {}).get(lane, {}).get("items") or []) for lane in select.LANES}
-    short = sorted(lane for lane, n in fill.items() if edition and n < select.LANE_SIZE)
+    fill, short = lane_fill(edition)
     report = {
         "generatedAt": iso(now),
         "adapters": run["health"],
@@ -222,7 +260,7 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
                     "statusCounts": {name: len(ids) for name, ids in by_status.items()}, "byStatus": by_status,
                     **run["counts"], "pruned": pruned,
                     "selected": len(chosen), "fabricated": 0, "staleSources": stale,
-                    "laneFill": fill if edition else {}, "shortLanes": short},
+                    "laneFill": fill, "shortLanes": short},
         "lanes": run.get("lanes") or {},
         "pending": pending_work(run["sources"]),
         "warnings": [f"{sid}: {run['health'][sid]['code']}" for sid in failing]

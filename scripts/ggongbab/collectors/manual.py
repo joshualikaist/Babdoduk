@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Manual input collector: data/ggongbab/manual.json.
+"""Manual input collector: inputs/ggongbab/manual.json (authored, never deployed).
 
 Entries are written by hand when automatic collection misses something. They
 go through the same parser -> validator -> dedup -> exporter path as mail.

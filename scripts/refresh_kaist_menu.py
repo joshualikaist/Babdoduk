@@ -5,6 +5,8 @@ Writes, for the current KST week (Monday-Sunday):
   data/kaist-menu/YYYY-MM-DD.json   one validated daily payload per date that has a menu
   data/kaist-menu/latest.json       TODAY's payload only (compatibility for home/choose/hub)
   data/kaist-menu/week.json         a small index: which dates have a menu and how many places
+Dated files of other weeks are removed: the page requests only the dates week.json lists, and
+latest.json keeps the last saved menu by itself.
 
 Bounded collection (docs/KAIST_MENU.md): the first run of a week (or --full-week) fetches all
 seven days; later runs refresh today and the remaining days of the week only. 8 restaurants per
@@ -28,12 +30,15 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Optional
 
+import content_labels
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "kaist-menu"
 UA = "BabdodukMenu/1.0 (+https://github.com/joshualikaist/Babdoduk)"
 KST = timezone(timedelta(hours=9))
 TIMEZONE = "Asia/Seoul"
 BASE = "https://www.kaist.ac.kr/kr/html/campus/053001.html"
+SCHEMA_VERSION = 1      # schemas/kaist-menu-day.schema.json and kaist-menu-week.schema.json
 
 # Day states. AVAILABLE: a validated menu for that date. NOT_PUBLISHED_YET: every restaurant
 # answered with an empty official table. FETCH_FAILED: no usable answer and nothing saved.
@@ -47,17 +52,9 @@ REQUEST_PAUSE_SECONDS = 0.25
 MAX_CONSECUTIVE_FAILURES = 8        # one date's worth of restaurants: the site is down, stop
 RUN_BUDGET_SECONDS = 480            # later dates keep their saved files
 
-# Codes taken from official ActFodlst('...') on 053001.html — not guessed.
-RESTAURANTS = [
-    {"id": "fclt", "name": "카이마루 N11", "building": "N11"},
-    {"id": "west", "name": "서맛골 W2", "building": "W2"},
-    {"id": "east1", "name": "동맛골 학생식당 E5", "building": "E5"},
-    {"id": "east2", "name": "동맛골 교직원식당 E5", "building": "E5"},
-    {"id": "emp", "name": "교수회관 N6", "building": "N6"},
-    {"id": "icc", "name": "문지캠퍼스", "building": "문지"},
-    {"id": "hawam", "name": "화암 기숙사", "building": "화암"},
-    {"id": "seoul", "name": "서울캠퍼스", "building": "서울"},
-]
+# The ids are the codes of the official ActFodlst('...') calls on 053001.html, not guessed; names,
+# buildings and order are the shared labels (data/content/labels.json).
+RESTAURANTS = content_labels.restaurants()
 MEALS = ("breakfast", "lunch", "dinner")
 
 NOTE = re.compile(r"^(\*|안녕하세요|운영시간|금액|알레르기|인스타|주말)")
@@ -277,6 +274,7 @@ def decide(day: date, restaurants: list, coverage: dict, saved: Optional[dict],
         order = {row["id"]: idx for idx, row in enumerate(RESTAURANTS)}
         restaurants = sorted(restaurants, key=lambda row: order.get(row.get("id"), len(order)))
         payload = {
+            "schemaVersion": SCHEMA_VERSION,
             "date": day.isoformat(),
             "dateLabel": f"{day.month}월 {day.day}일",
             "fetchedAt": fetched_at.isoformat(timespec="seconds"),
@@ -347,6 +345,7 @@ def refresh(out: Path = OUT, *, now: Optional[datetime] = None, fetcher: Callabl
         if not latest.exists() or latest.read_text(encoding="utf-8") != text:
             atomic_write(latest, text)
     index = {
+        "schemaVersion": SCHEMA_VERSION,
         "weekStart": week[0].isoformat(),
         "weekEnd": week[-1].isoformat(),
         "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),
@@ -355,8 +354,21 @@ def refresh(out: Path = OUT, *, now: Optional[datetime] = None, fetcher: Callabl
                  for day in week],
     }
     atomic_write(out / "week.json", dumps(index))
+    pruned = prune_other_weeks(out, week)
     return {"today": today.isoformat(), "todayAvailable": today_saved is not None,
-            "requests": budget.requests, "statuses": statuses}
+            "requests": budget.requests, "statuses": statuses, "pruned": pruned}
+
+
+def prune_other_weeks(out: Path, week: list[date]) -> list[str]:
+    """Remove the dated files outside `week`, once week.json describes it (2026-10-12: 22 files
+    from three weeks had piled up with no reader)."""
+    keep = {day_path(out, day).name for day in week}
+    removed = []
+    for path in sorted(out.glob("*.json")):
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}\.json", path.name) and path.name not in keep:
+            path.unlink()
+            removed.append(path.name)
+    return removed
 
 
 def main(argv=None) -> int:

@@ -138,14 +138,16 @@ def test_web_search_can_be_switched_off_and_the_optional_key_route_keeps_query_p
     def opener(request, timeout):
         sent.append(json.loads(request.data))
         return Response(json.dumps({"results": [
-            {"title": "자취 볶음밥", "url": "https://blog.naver.com/x/1", "text": "레시피 " * 60},
+            {"title": "자취 볶음밥", "url": "https://cook.example.org/x/1", "text": "레시피 " * 60},
+            {"title": "네이버 글", "url": "https://blog.naver.com/x/2", "text": "레시피 " * 60},
             {"title": "사설 주소", "url": "http://192.168.0.2/recipe", "text": "레시피 " * 60}]}).encode())
 
-    result = web.discover({"queries": ["site:blog.naver.com 자취 요리"]}, fetcher=None, env={"EXA_API_KEY": "k"},
+    result = web.discover({"queries": ["site:cook.example.org 자취 요리"]}, fetcher=None, env={"EXA_API_KEY": "k"},
                           opener=opener)
-    assert sent[0]["includeDomains"] == ["blog.naver.com"] and sent[0]["query"] == "자취 요리"
-    assert [i["sourceUrl"] for i in result.items] == ["https://blog.naver.com/x/1"]      # private address dropped
-    assert result.items[0]["discoveryQuery"] == "site:blog.naver.com 자취 요리" and result.queries
+    assert sent[0]["includeDomains"] == ["cook.example.org"] and sent[0]["query"] == "자취 요리"
+    # A private address and a Naver page (never read by open discovery) are dropped.
+    assert [i["sourceUrl"] for i in result.items] == ["https://cook.example.org/x/1"]
+    assert result.items[0]["discoveryQuery"] == "site:cook.example.org 자취 요리" and result.queries
 
 
 def test_instagram_is_not_configured_and_contributes_nothing():
@@ -337,6 +339,53 @@ def test_every_earlier_edition_keeps_its_stories_from_running_again(tmp_path):
     assert "c_old" not in pipeline.recent_keys(tmp_path, "2026-09-29", days=7)
 
 
+def test_the_index_names_the_newest_edition_and_no_latest_copy_is_kept(tmp_path):
+    import refresh_magazine
+    story = {"title": "t", "url": "https://a.example/1", "source": "s", "medium": "blog"}
+    for date, items in (("2026-10-10", [story]), ("2026-10-11", [story]), ("2026-10-12", [])):
+        (tmp_path / f"{date}.json").write_text(json.dumps({"date": date, "featured": None,
+                                                          "lanes": {"tips": {"items": items}}}), encoding="utf-8")
+    (tmp_path / "latest.json").write_text("{}", encoding="utf-8")       # the retired copy
+    assert refresh_magazine.write_index(tmp_path) == "2026-10-11"         # an empty edition is not listed
+    index = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
+    assert index == {"schemaVersion": 1, "latest": "2026-10-11", "dates": ["2026-10-11", "2026-10-10"]}
+    assert not (tmp_path / "latest.json").exists()
+    from schema_check import schema_errors
+    assert schema_errors(index, "magazine-index") == []
+
+
+def test_a_scheduled_run_builds_only_a_missing_edition(tmp_path, monkeypatch, capsys):
+    """--if-missing (every scheduled run): the first run that starts builds today's edition, and a
+    later one finds it built and contacts nothing."""
+    import refresh_magazine
+
+    class Discovered(Exception):
+        pass
+
+    def discover(*args, **kwargs):
+        raise Discovered
+
+    monkeypatch.setattr(refresh_magazine, "OUT", tmp_path)
+    monkeypatch.setattr(refresh_magazine, "now_kst", lambda: evaluate.NOW)          # 2026-09-29 10:30 KST
+    monkeypatch.setattr(pipeline, "discover", discover)
+    with pytest.raises(Discovered):                                                 # not built yet: it runs
+        refresh_magazine.main(["--if-missing"])
+    story = {"title": "t", "url": "https://a.example/1", "source": "s", "medium": "blog"}
+    (tmp_path / "2026-09-29.json").write_text(json.dumps({"date": "2026-09-29", "featured": None,
+                                                          "lanes": {"tips": {"items": [story]}}}), encoding="utf-8")
+    assert refresh_magazine.main(["--if-missing"]) == 0
+    assert "magazine 2026-09-29: already built" in capsys.readouterr().out
+    with pytest.raises(Discovered):                                                 # a manual run rebuilds
+        refresh_magazine.main([])
+
+
+def test_a_new_edition_keeps_its_contract_and_claims_no_schedule(result):
+    from schema_check import schema_errors
+    edition = result["edition"]
+    assert edition["schemaVersion"] == 1 and "schedule" not in edition
+    assert schema_errors(edition, "magazine-edition") == []
+
+
 def test_the_one_registry_is_valid_and_honest_about_what_runs():
     sources = registry.load()                                   # scripts/discovery/sources.json
     assert registry.validate(sources) == []
@@ -352,10 +401,19 @@ def test_the_one_registry_is_valid_and_honest_about_what_runs():
     for s in by_type["web_search"] + by_type["youtube_search"]:
         assert s["queries"] and s.get("lane") in ("trend", "habit") and s.get("requireFood") is True, s["id"]
     assert {s["lane"] for s in by_type["web_search"] if s["enabled"]} == {"trend", "habit"}
-    assert any("site:blog.naver.com" in q for s in by_type["web_search"] for q in s["queries"])
-    assert all(s.get("localOnly") for s in by_type["youtube_search"] + by_type["youtube_channel"])
-    assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"])
-    assert all(s.get("knownIssue") for s in by_type["youtube_channel"])
+    # Open discovery never reads a Naver page (decisions 3-4): no enabled search asks for one.
+    assert not any("naver" in q for s in by_type["web_search"] if s["enabled"] for q in s["queries"])
+    assert all(s.get("localOnly") for s in by_type["youtube_search"])
+    assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"] + by_type["youtube_channel"])
+    # YouTube search stays off (its only input, the operator-PC sidecar, stopped on 09-29); the
+    # channels run through the YouTube Data API since 2026-10-12 (owner decision 1) and say what
+    # they need.
+    for s in by_type["youtube_search"]:
+        assert s["enabled"] is False and "Disabled 2026-10-12" in s["note"], s["id"]
+    for s in by_type["youtube_channel"]:
+        assert s["enabled"] is True and s["discoveryMethod"] == "youtube_data_api", s["id"]
+        assert "YOUTUBE_API_KEY" in s["knownIssue"] and "30 days" in s["note"], s["id"]
+    assert pipeline.pending_work(sources) == []
     # Recipe blogs feed tips/health only: a recipe is not a trend or an eating-habit story.
     for s in by_type["rss"]:
         if s.get("kind") == "recipe":

@@ -15,7 +15,7 @@ A week runs Monday to Sunday in KST (`Asia/Seoul`), whatever the server's or the
 
 | File | Meaning |
 |---|---|
-| `data/kaist-menu/YYYY-MM-DD.json` | The validated menu of that date. Written only when at least one restaurant has a menu for it. |
+| `data/kaist-menu/YYYY-MM-DD.json` | The validated menu of that date. Written only when at least one restaurant has a menu for it. Only the current week's files are kept: every run removes the other weeks' once `week.json` describes the new week. |
 | `data/kaist-menu/latest.json` | **Today's** snapshot, byte-identical to today's dated file. Home, the magazine's `#what` section and the hub's today view read it. It never becomes the week. |
 | `data/kaist-menu/week.json` | A small index of the current week. It holds no menus. |
 
@@ -54,7 +54,8 @@ and adds:
 ## Collection
 
 `python scripts/refresh_kaist_menu.py` runs in `content-refresh` (`magazine-daily.yml`) at
-06:00, 10:30 and 16:30 KST, as before. It is never polled.
+05:47, 10:07, 10:53, 12:23 and 16:17 KST (since 2026-10-12; before, 06:00, 10:30 and 16:30 KST, which
+GitHub delayed or dropped because scheduled runs crowd the hour and the half hour). It is never polled.
 
 **Which days a run fetches:**
 * The first run of a week, or `--full-week`, fetches all seven days (baseline).

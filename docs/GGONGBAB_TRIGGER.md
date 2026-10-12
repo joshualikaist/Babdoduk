@@ -8,7 +8,8 @@ stays on lab until activation is approved.
 
 ## Why
 
-The cloud refresh is scheduled `*/30 * * * *`, but GitHub started it far less often. Measured on
+The cloud refresh was scheduled `*/30 * * * *`, but GitHub started it far less often. Since 2026-10-12 it
+is `7,37 * * * *`: the same rate, off the hour and the half hour, where scheduled runs crowd. Measured on
 2026-09-28:
 * 6 of 48 runs a day since 2026-09-25, with gaps of 159–373 min;
 * `magazine-daily` slots also start 2.5–5.5 h late, and no run was cancelled.

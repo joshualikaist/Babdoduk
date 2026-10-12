@@ -180,7 +180,7 @@
       "id": "news-thinkfood",
       "name": "식품음료신문",
       "type": "rss",
-      "url": "https://www.thinkfood.co.kr/rss/allArticle.xml",
+      "url": "https://cdn.thinkfood.co.kr/rss/gn_rss_allArticle.xml",
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -189,7 +189,8 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "note": "Since 2026-10-12 the publisher's full-text feed, listed on https://www.thinkfood.co.kr/rssIndex.html: the allArticle.xml feed stops at 300 characters, which hid the habit words. Verified that day: robots.txt allows it; 3 of 50 qualified for habit, 3 for trend; 42 of 50 about food."
     },
     {
       "id": "news-foodnews",
@@ -242,21 +243,24 @@
       "name": "연합뉴스 산업",
       "type": "rss",
       "url": "https://www.yna.co.kr/rss/industry.xml",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "trend"
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 연합뉴스 is a member of 한국신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json).",
+      "knownIssue": "Off since 2026-10-12: 한국온라인신문협회's 디지털뉴스 이용규칙 lets only a non-commercial individual link to a member's articles without permission and forbids republishing its RSS, so this source runs again only with the member's permission (\"permission\"; magazine sourcing plan, decision 5, owner decision 2026-10-12)."
     },
     {
       "id": "news-yna-health",
       "name": "연합뉴스 건강",
       "type": "rss",
       "url": "https://www.yna.co.kr/rss/health.xml",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "health",
@@ -264,7 +268,10 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 연합뉴스 is a member of 한국신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json).",
+      "knownIssue": "Off since 2026-10-12: 한국온라인신문협회's 디지털뉴스 이용규칙 lets only a non-commercial individual link to a member's articles without permission and forbids republishing its RSS, so this source runs again only with the member's permission (\"permission\"; magazine sourcing plan, decision 5, owner decision 2026-10-12)."
     },
     {
       "id": "news-kormedi",
@@ -279,7 +286,10 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
+      "note": "Read 5 pages deep (2026-10-12): the site posts about 50 stories a day and a feed page holds 10, so one page saw a fifth of them; the feed and ?paged=2-5 gave 5 of 50 habit stories that day. robots.txt disallows */page/ but not the ?paged=N form the adapter reads."
     },
     {
       "id": "news-newsis-health",
@@ -295,14 +305,14 @@
       "discoveryMethod": "rss",
       "kind": "news",
       "requireFood": true,
-      "note": "Despite its path this is 뉴시스's IT·바이오 feed (its channel title, checked 2026-10-12), so it is named 뉴시스, not 뉴시스 건강; the old address answers 301 to this one. It yields mostly trend stories."
+      "note": "Despite its path this is 뉴시스's IT·바이오 feed (its channel title, checked 2026-10-12), so it is named 뉴시스, not 뉴시스 건강; the old address answers 301 to this one. It yields mostly trend stories. 뉴시스 is not a newspaper association member (checked 2026-10-12)."
     },
     {
       "id": "news-donga-health",
       "name": "동아일보 건강",
       "type": "rss",
       "url": "https://rss.donga.com/health.xml",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "health",
@@ -310,14 +320,17 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 동아일보 is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json).",
+      "knownIssue": "Off since 2026-10-12: 한국온라인신문협회's 디지털뉴스 이용규칙 lets only a non-commercial individual link to a member's articles without permission and forbids republishing its RSS, so this source runs again only with the member's permission (\"permission\"; magazine sourcing plan, decision 5, owner decision 2026-10-12)."
     },
     {
       "id": "news-seoul-life",
       "name": "서울신문 라이프",
       "type": "rss",
       "url": "https://www.seoul.co.kr/xml/rss/rss_life.xml",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "health",
@@ -325,7 +338,10 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 서울신문 is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json).",
+      "knownIssue": "Off since 2026-10-12: 한국온라인신문협회's 디지털뉴스 이용규칙 lets only a non-commercial individual link to a member's articles without permission and forbids republishing its RSS, so this source runs again only with the member's permission (\"permission\"; magazine sourcing plan, decision 5, owner decision 2026-10-12)."
     },
     {
       "id": "news-hidoc-healthylife",
@@ -373,15 +389,14 @@
       "discoveryMethod": "rss",
       "kind": "news",
       "requireFood": true,
-      "excerpt": false,
-      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 8 of 50 qualified for health. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 8 of 50 qualified for health. Items are dated only by dc:date. (주)헬스조선 is a company of its own, not a newspaper association member (checked 2026-10-12: its footer and the member lists), so its cards carry a sentence like other sources."
     },
     {
       "id": "news-ladykhan-living",
       "name": "레이디경향 리빙",
       "type": "rss",
       "url": "https://lady.khan.co.kr/rss/rssdata/living_news.xml",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "health",
@@ -392,14 +407,15 @@
       "kind": "news",
       "requireFood": true,
       "excerpt": false,
-      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 12 of 50 qualified for health, 1 for habit. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 12 of 50 qualified for health, 1 for habit. Items are dated only by dc:date. excerpt false: 경향신문 (레이디경향 has the same publisher) is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json).",
+      "knownIssue": "Off since 2026-10-12: 한국온라인신문협회's 디지털뉴스 이용규칙 lets only a non-commercial individual link to a member's articles without permission and forbids republishing its RSS, so this source runs again only with the member's permission (\"permission\"; magazine sourcing plan, decision 5, owner decision 2026-10-12)."
     },
     {
       "id": "news-ladykhan-wellness",
       "name": "레이디경향 웰니스",
       "type": "rss",
       "url": "https://lady.khan.co.kr/rss/rssdata/wellness_news.xml",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "B",
       "categories": [
         "health"
@@ -408,7 +424,25 @@
       "kind": "news",
       "requireFood": true,
       "excerpt": false,
-      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 50 qualified for health. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 50 qualified for health. Items are dated only by dc:date. excerpt false: 경향신문 (레이디경향 has the same publisher) is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json).",
+      "knownIssue": "Off since 2026-10-12: 한국온라인신문협회's 디지털뉴스 이용규칙 lets only a non-commercial individual link to a member's articles without permission and forbids republishing its RSS, so this source runs again only with the member's permission (\"permission\"; magazine sourcing plan, decision 5, owner decision 2026-10-12)."
+    },
+    {
+      "id": "news-foodicon",
+      "name": "푸드아이콘",
+      "type": "rss",
+      "url": "http://www.foodicon.co.kr/rss/allArticle.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "trend",
+        "habit",
+        "health"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true,
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 1 of 50 qualified for habit, 1 for health, 2 for trend (items 10-07 to 10-13; 39 of 50 about food). Address as listed on https://www.foodicon.co.kr/rssIndex.html; not a newspaper association member."
     },
     {
       "id": "web-exa-trend",
@@ -492,7 +526,7 @@
       "id": "yt-search",
       "name": "YouTube search (yt-dlp)",
       "type": "youtube_search",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "C",
       "categories": [
         "trend"
@@ -514,7 +548,7 @@
         "혼밥 트렌드",
         "한국 음식 트렌드"
       ],
-      "note": "Metadata only (--skip-download), no cookies or account. Runs on the operator PC through scripts/magazine_local_discovery.py; the pipeline reads its inbox."
+      "note": "Metadata only (--skip-download), no cookies or account. Runs on the operator PC through scripts/magazine_local_discovery.py; the pipeline reads its inbox. Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
     },
     {
       "id": "yt-jachwiyorisin",
@@ -527,10 +561,10 @@
       "categories": [
         "tips"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "yt-cookingtree",
@@ -543,10 +577,10 @@
       "categories": [
         "tips"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "yt-haruhankki",
@@ -560,10 +594,10 @@
         "tips",
         "health"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "yt-hamzy",
@@ -576,10 +610,10 @@
       "categories": [
         "trend"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "instagram-opencli",

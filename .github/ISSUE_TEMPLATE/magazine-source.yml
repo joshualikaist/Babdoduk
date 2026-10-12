@@ -1,0 +1,73 @@
+name: 매거진 자료원 제안 · Propose a magazine source
+description: 밥도둑 매거진에 실을 만한 음식 이야기 피드를 제안합니다. Suggest a feed of food stories for the Babdoduk magazine.
+title: "[자료원] "
+labels: ["magazine-source"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        기준은 [docs/MAGAZINE_SOURCES.md](https://github.com/joshualikaist/Babdoduk/blob/main/docs/MAGAZINE_SOURCES.md), 절차는 [CONTRIBUTING.md](https://github.com/joshualikaist/Babdoduk/blob/main/CONTRIBUTING.md)에 있습니다.
+        발행처가 직접 낸 피드만 등록합니다. 매거진에는 링크가 걸린 제목, 출처, 날짜, 그리고 발행처 미리보기의 한 문장만 실립니다.
+
+        Rules: docs/MAGAZINE_SOURCES.md. Only a publisher's own feed is registered. The magazine shows the linked title, the source, the date and one sentence of the publisher's own preview.
+  - type: input
+    id: name
+    attributes:
+      label: 자료원 이름 · Source name
+      placeholder: 예) 배고픈맘의 행복레시피
+    validations:
+      required: true
+  - type: input
+    id: feed
+    attributes:
+      label: 피드 주소 · Feed URL
+      description: RSS 또는 Atom 주소. 티스토리는 보통 /rss, WordPress는 /feed/ 입니다. RSS or Atom; a Tistory blog is usually /rss, WordPress /feed/.
+      placeholder: https://example.tistory.com/rss
+    validations:
+      required: true
+  - type: input
+    id: site
+    attributes:
+      label: 사이트 주소 · Site URL
+      placeholder: https://example.tistory.com
+  - type: checkboxes
+    id: lanes
+    attributes:
+      label: 채울 갈래 · Lanes it would fill
+      options:
+        - label: 요리 비법 · Cooking tips (tips)
+        - label: 요즘 유행 · Food trends (trend)
+        - label: 건강한 한 끼 · Healthy eating (health)
+        - label: 식습관 · Eating habits, with evidence (habit)
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 종류 · Kind
+      options:
+        - 레시피 블로그 · Recipe blog
+        - 뉴스·전문지 · News or trade publication
+        - 공공기관·연구 · Public body or research
+        - 기타 · Other
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 왜 좋은 자료원인가요? · Why this source?
+      description: 최근 글 두세 편의 링크, 음식 이야기의 비중, 새 글이 올라오는 빈도. Two or three recent posts, how much of it is about food, how often it posts.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 확인 · Checks
+      options:
+        - label: 발행처가 직접 낸 피드입니다(다른 서비스가 만든 피드가 아닙니다). It is the publisher's own feed.
+          required: true
+        - label: 사이트의 robots.txt가 이 피드를 허용합니다. The site's robots.txt allows this feed.
+          required: true
+        - label: 최근 14일 안에 새 글이 있습니다. There is a new post within the last 14 days.
+          required: true
+        - label: 네이버 블로그라면 제가 블로그 주인이거나 주인의 허락을 받았습니다. If it is a Naver blog, I own it or have its owner's permission.
+        - label: 이 제안이 등록부 항목이 되면 CC0 1.0으로 내놓는 데 동의합니다. I agree that the resulting registry entry is dedicated to the public domain (CC0 1.0).
+          required: true

@@ -3,6 +3,14 @@
 LIST detection never calls this exporter. A reviewed source excerpt must support
 every displayed fact; this module cannot fetch a body, infer a place, or turn a
 news item into a free-food event.
+
+Two places (data plan phase 2, 2026-10-12). The review file, whose records carry the
+source excerpts (some from the KAIST Portal), stays on the operator PC in .local/ and
+is never committed: this repository is public. publish_review() turns it into the
+public items alone, written to inputs/ggongbab/food-news.json, which is committed and
+which the refresh publishes as data/ggongbab/news.json (load_news). The refresh never
+sees an excerpt, so every public item is checked again on its own: allowlisted keys,
+clean text, a generic source and the id its own facts derive.
 """
 from __future__ import annotations
 
@@ -12,6 +20,8 @@ import uuid
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+import content_labels
+
 from .config import KST
 from .parsers.rule_parser import explicit_food_evidence
 from .public_sanitizer import public_text
@@ -20,7 +30,7 @@ FOOD_SERVICE = re.compile(r"식당|매장|카페|버거|치킨|급식|학식|푸
 SERVICE_CHANGE = re.compile(r"오픈|개점|개업|입점|영업|운영\s*시간|폐점|이전|서비스|메뉴|출시|판매|휴무|휴업|재개|opening|opens?\b|closure|closing|relocat|operating\s*hours|service\s*launch|menu\s*change", re.I)
 NON_SERVICE = re.compile(r"연구실|연구소|연구센터|실험실|논문|채용|설문|research\s*(?:lab|cent[er]+)|laboratory|job\s*opening", re.I)
 PRIVATE = re.compile(r"portal\.kaist\.ac\.kr|sso\.kaist\.ac\.kr|/wz/|pstNo|boardNo|JSESSIONID|external[_ ]?id", re.I)
-SOURCE_NAMES = {"portal": "KAIST 포탈", "kaist_public": "KAIST 공지"}
+SOURCE_NAMES = content_labels.source_news_names()      # data/content/labels.json
 FIELDS = {"id", "contentType", "noticeDate", "title", "summary", "location", "sources", "hasFreeOffer"}
 
 
@@ -35,6 +45,11 @@ def _clean(value, *, required=False, limit=240):
             or PRIVATE.search(value) or public_text(value) != value):
         raise ValueError("NEWS_UNSAFE_OR_UNVERIFIED_TEXT")
     return value.strip()
+
+
+def _derived_id(source: str, stamp: str, title: str) -> str:
+    """From public facts only, never a Portal identifier."""
+    return "news-" + uuid.uuid5(uuid.NAMESPACE_URL, source + stamp + title).hex
 
 
 def extract_reviewed_news(record: dict) -> dict:
@@ -62,7 +77,7 @@ def extract_reviewed_news(record: dict) -> dict:
         raise ValueError("NEWS_DATE_INVALID")
     if record.get("dateVerified") is not True:
         raise ValueError("NEWS_DATE_UNVERIFIED")
-    item = {"id": "news-" + uuid.uuid5(uuid.NAMESPACE_URL, source + stamp + title).hex,
+    item = {"id": _derived_id(source, stamp, title),
             "contentType": "campus_food_news", "noticeDate": stamp, "title": title,
             "sources": [{"type": source, "name": SOURCE_NAMES[source]}]}
     for key in ("summary", "location"):
@@ -89,10 +104,35 @@ def extract_reviewed_news(record: dict) -> dict:
     return item
 
 
+def check_public_item(item) -> None:
+    """One public item, as committed or published: allowlisted keys, the id its own facts
+    derive, a real date, clean public text and a generic source. ValueError otherwise, with
+    the values suppressed."""
+    if (not isinstance(item, dict) or set(item) - FIELDS
+            or not {"id", "contentType", "noticeDate", "title", "sources"} <= set(item)
+            or item["contentType"] != "campus_food_news"
+            or not re.fullmatch(r"news-[a-f0-9]{32}", item["id"])):
+        raise ValueError("NEWS_PUBLIC_ITEM_INVALID")
+    if date.fromisoformat(item["noticeDate"]).isoformat() != item["noticeDate"]:
+        raise ValueError("NEWS_PUBLIC_ITEM_INVALID")
+    _clean(item["title"], required=True)
+    for key in ("summary", "location"):
+        if key in item:
+            _clean(item[key], required=True, limit=160)
+    if "hasFreeOffer" in item and type(item["hasFreeOffer"]) is not bool:
+        raise ValueError("NEWS_PUBLIC_ITEM_INVALID")
+    if item["sources"] not in [[{"type": kind, "name": name}] for kind, name in SOURCE_NAMES.items()]:
+        raise ValueError("NEWS_PUBLIC_ITEM_INVALID")
+    if item["id"] != _derived_id(item["sources"][0]["type"], item["noticeDate"], item["title"]):
+        raise ValueError("NEWS_PUBLIC_ITEM_INVALID")
+
+
 def validate_news_payload(payload) -> list[str]:
     """Strict standalone schema. In particular there is no events array or source URL."""
     errors = []
-    if not isinstance(payload, dict) or set(payload) != {"generatedAt", "timezone", "count", "items"}:
+    if not isinstance(payload, dict) or not ({"generatedAt", "timezone", "count", "items"} <= set(payload)
+                                              <= {"schemaVersion", "generatedAt", "timezone", "count", "items"}) \
+            or payload.get("schemaVersion", 1) != 1:
         return ["news top-level schema invalid"]
     try:
         stamp = datetime.fromisoformat(payload["generatedAt"])
@@ -110,47 +150,62 @@ def validate_news_payload(payload) -> list[str]:
     seen = set()
     for item in items:
         try:
-            if (not isinstance(item, dict) or set(item) - FIELDS
-                    or not {"id", "contentType", "noticeDate", "title", "sources"} <= set(item)
-                    or item["contentType"] != "campus_food_news"
-                    or not re.fullmatch(r"news-[a-f0-9]{32}", item["id"])):
-                raise ValueError()
+            check_public_item(item)
             if item["id"] in seen:
                 raise ValueError()
             seen.add(item["id"])
-            if date.fromisoformat(item["noticeDate"]).isoformat() != item["noticeDate"]:
-                raise ValueError()
-            _clean(item["title"], required=True)
-            for key in ("summary", "location"):
-                if key in item:
-                    _clean(item[key], required=True, limit=160)
-            if "hasFreeOffer" in item and type(item["hasFreeOffer"]) is not bool:
-                raise ValueError()
-            if item["sources"] not in [[{"type": kind, "name": name}] for kind, name in SOURCE_NAMES.items()]:
-                raise ValueError()
         except (KeyError, ValueError, TypeError):
             errors.append("news item failed schema/privacy validation (values suppressed)")
     return errors
 
 
-def build_news(records: list[dict], now: datetime | None = None) -> dict:
-    now = now or datetime.now(KST)
+def review_to_public(records: list[dict]) -> list[dict]:
+    """Operator PC: the reviewed records to their public items. Every record must pass and
+    no two may describe the same notice."""
     items = [extract_reviewed_news(record) for record in records]
+    if len({item["id"] for item in items}) != len(items):
+        raise ValueError("NEWS_DUPLICATE")
+    return sorted(items, key=lambda item: (item["noticeDate"], item["id"]), reverse=True)
+
+
+def publish_review(review: Path, public_input: Path) -> int:
+    """Operator PC: write the public items of the private review file to the committed input.
+    Nothing is written unless every record passes. Returns the number of items."""
+    records = json.loads(review.read_text(encoding="utf-8"))
+    if not isinstance(records, dict) or set(records) != {"records"} or not isinstance(records["records"], list):
+        raise ValueError("NEWS_REVIEW_INPUT_INVALID")
+    items = review_to_public(records["records"])
+    for item in items:
+        check_public_item(item)
+    public_input.parent.mkdir(parents=True, exist_ok=True)
+    temporary = public_input.with_suffix(".json.tmp")
+    temporary.write_text(json.dumps({"items": items}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temporary.replace(public_input)
+    return len(items)
+
+
+def build_news(items: list[dict], now: datetime | None = None) -> dict:
+    """The published snapshot from public items (publish_review's output)."""
+    now = now or datetime.now(KST)
+    for item in items:
+        check_public_item(item)
+    if len({item["id"] for item in items}) != len(items):
+        raise ValueError("NEWS_DUPLICATE")
     # Dates describe the notice, never an inferred opening day.
     items = [item for item in items if now.date() - timedelta(days=30) <= date.fromisoformat(item["noticeDate"]) <= now.date()]
     items.sort(key=lambda item: (item["noticeDate"], item["id"]), reverse=True)
-    payload = {"generatedAt": now.astimezone(KST).isoformat(timespec="seconds"), "timezone": "Asia/Seoul",
-               "count": len(items), "items": items}
+    payload = {"schemaVersion": 1, "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),
+               "timezone": "Asia/Seoul", "count": len(items), "items": items}
     if validate_news_payload(payload):
         raise ValueError("NEWS_EXPORT_INVALID")
     return payload
 
 
-def load_news(reviewed: Path, now: datetime | None = None) -> dict:
-    records = json.loads(reviewed.read_text(encoding="utf-8"))
-    if not isinstance(records, dict) or set(records) != {"records"} or not isinstance(records["records"], list):
-        raise ValueError("NEWS_REVIEW_INPUT_INVALID")
-    return build_news(records["records"], now)
+def load_news(public_input: Path, now: datetime | None = None) -> dict:
+    data = json.loads(public_input.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or set(data) != {"items"} or not isinstance(data["items"], list):
+        raise ValueError("NEWS_PUBLIC_INPUT_INVALID")
+    return build_news(data["items"], now)
 
 
 def write_news(payload: dict, destination: Path) -> None:
@@ -162,7 +217,7 @@ def write_news(payload: dict, destination: Path) -> None:
     temporary.replace(destination)
 
 
-def export_news(reviewed: Path, destination: Path, now: datetime | None = None) -> dict:
-    payload = load_news(reviewed, now)
+def export_news(public_input: Path, destination: Path, now: datetime | None = None) -> dict:
+    payload = load_news(public_input, now)
     write_news(payload, destination)
     return payload

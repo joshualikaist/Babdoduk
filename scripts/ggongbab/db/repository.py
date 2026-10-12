@@ -10,12 +10,13 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any, Optional, Protocol
 
+import content_labels
+
 from ..config import KST, PROMPT_VERSION
 from ..models import RawAttachment, RawItem
 from .supabase_client import SupabaseClient
 
-SOURCE_NAMES = {"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지",
-                "manual": "Manual", "portal": "KAIST Portal"}
+SOURCE_NAMES = content_labels.source_data_names()   # data/content/labels.json
 SOURCE_PRIORITY = {"manual": 5, "dooray": 10, "dooray_mailbox": 15, "kaist_public": 20, "portal": 30}
 
 

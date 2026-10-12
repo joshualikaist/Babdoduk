@@ -36,7 +36,9 @@ python scripts\check_ggongbab_ui.py --serve --port 8000
 ```
 
 - Normal: http://127.0.0.1:8000/lab-ggongbab.html
-- Synthetic fixture: http://127.0.0.1:8000/lab-ggongbab.html?fixture=1
+- Synthetic fixture: http://127.0.0.1:8000/lab-ggongbab.html?fixture=1 (its data is
+  `tests/fixtures/ggongbab-lab.js`, relative to the page clock; `tests/` is never deployed, so this
+  mode works only from the local server)
 - Live preview: http://127.0.0.1:8000/lab-ggongbab.html?preview=1
 - Coordinate overlay: add `&debug-layout=1` to either local test mode.
 

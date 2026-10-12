@@ -26,7 +26,7 @@ KAIST 공개 공지 · 수동 입력을 모아 OpenAI로 구조화하고, 규칙
 Dooray Mail ──(에이전트 / 자동 분류)──▶ Dooray Project Task  ─┐
 KAIST Portal (로컬 agent → ingest marker)                    ├─▶ Collectors ─▶ RawItem
 KAIST 공개 공지 (학사공지 · 문화행사)                          │
-data/ggongbab/manual.json                                    ─┘
+inputs/ggongbab/manual.json                                  ─┘
 KAIST 학식 (`refresh_kaist_menu.py`, AI 없음) ──▶ data/kaist-menu/ (날짜별 · week.json · latest.json=오늘, docs/KAIST_MENU.md)
                                                               │
                              raw_items / attachments (Supabase, private)
@@ -388,7 +388,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 ## 12. Deployment · branches
 
 * 기능 코드(`lab-ggongbab.html`, `css/ggongbab.css`, `js/ggongbab.js`, `scripts/**`)는 **lab 에서만** 개발하고, 공개 반영은 `AGENTS.md` 의 lab-first 절차(승인된 lab 커밋을 `origin/main` 기반 release 브랜치로 옮겨 검증한 뒤 merge)를 따른다.
-* `.github/workflows/ggongbab-refresh.yml` 이 `*/30 * * * *` 로 돈다(정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
+* `.github/workflows/ggongbab-refresh.yml` 이 `7,37 * * * *` 로 돈다(30분마다, 예약이 몰리는 정각·30분을 피함. 정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
   `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
 * `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
   브랜치마다 비교해서 `generatedAt` 말고 달라진 것이 없으면 커밋하지 않는다(`VOLATILE_KEYS`, 두 파일 모두).
@@ -404,7 +404,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 
 ## 13. Frontend (`lab-ggongbab.html`)
 
-* nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
+* nav · footer · 번역(`i18n/ko.json`·`en.json` 에서 동기화) · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
 * `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
 * 꽁밥 탭 목록 맨 위에 마지막 변경 시각을 보여 준다(`gg.updated`). 11절 “끝난 행사” 참고.
 * **지난 꽁밥 기록**은 live 목록 아래 별도 영역(`section.gg-archive`)이다. `data/ggongbab/archive/index.json` 을 live 와 **따로**

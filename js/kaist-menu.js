@@ -193,62 +193,6 @@
     fav.sort(function (a, b) { return favorites.indexOf(a.id) - favorites.indexOf(b.id); });
     return fav.concat(rest);
   }
-  function fixtureMenu(stale, now) {
-    var today = now || toKst();
-    var date = stale ? ymd(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)) : ymd(today);
-    var longName = '아주 긴 메뉴 이름으로 확인하는 특제 돈가스 덮밥과 계절 나물 모둠';
-    return {
-      date: date,
-      dateLabel: dateHeading(date),
-      fetchedAt: new Date().toISOString(),
-      source: 'fixture',
-      restaurants: [
-        { id: 'fclt', name: '카이마루 N11', building: 'N11',
-          breakfast: { hours: '', items: ['쌀밥', '사골파국', '너비아니구이'], price: '3,500원', kcal: '623 kcal' },
-          lunch: { hours: '', items: ['자율코너', '쌀밥', '시금치된장국', '닭살고추장볶음', '목이버섯굴소스볶음', '열무겉절이', '맛김치', '야채샐러드'], price: '5,500원', kcal: '1,292 kcal' },
-          dinner: { hours: '', items: ['쌀밥', '된장찌개', '제육볶음'], price: '5,500원', kcal: '1,180 kcal' } },
-        { id: 'west', name: '서맛골 W2', building: 'W2',
-          breakfast: { hours: '', items: [] },
-          lunch: { hours: '', items: ['비빔밥', '미역국', '김치'], price: '4,000원', kcal: '' },
-          dinner: { hours: '', items: ['라면', '김밥'], price: '4,000원', kcal: '' } },
-        { id: 'east1', name: '동맛골 1층', building: 'E2',
-          breakfast: { hours: '', items: [] },
-          lunch: { hours: '', items: ['백반', '콩나물국'], price: '', kcal: '980 kcal' },
-          dinner: { hours: '', items: ['볶음밥', '계란국'], price: '', kcal: '1,050 kcal' } },
-        { id: 'east2', name: '동맛골 2층', building: 'E2',
-          breakfast: { hours: '', items: [] },
-          lunch: { hours: '', items: ['돈가스', '우동', '샐러드'], price: '6,000원', kcal: '1,410 kcal' },
-          dinner: { hours: '', items: ['카레라이스', '단무지'], price: '5,500원', kcal: '1,200 kcal' } },
-        { id: 'icc', name: 'ICC 식당', building: 'W1',
-          breakfast: { hours: '', items: ['토스트', '우유'], price: '3,000원', kcal: '' },
-          lunch: { hours: '', items: [longName, '스프', '샐러드', '피클', '후식 과일', '미니 빵', '수프 리필', '계절 음료'], price: '7,000원', kcal: '1,520 kcal' },
-          dinner: { hours: '', items: [] } },
-        { id: 'hawam', name: '교수회관', building: 'N1',
-          breakfast: { hours: '', items: [] },
-          lunch: { hours: '', items: ['한정식', '국', '나물'], price: '8,000원', kcal: '1,100 kcal' },
-          dinner: { hours: '', items: [] } }
-      ]
-    };
-  }
-
-  // Lab fixture for the other days of the week: weekdays have menus (a different number of
-  // places each day), Saturday has lunch only, Sunday has nothing published.
-  function fixtureDay(isoDate) {
-    var time = utcDay(isoDate);
-    if (time == null) return null;
-    var dow = new Date(time).getUTCDay();
-    if (dow === 0) return null;
-    var base = fixtureMenu(false);
-    var keep = dow === 6 ? 2 : Math.max(2, base.restaurants.length - (dow % 3));
-    var restaurants = base.restaurants.slice(0, keep).map(function (row) {
-      var copy = JSON.parse(JSON.stringify(row));
-      if (dow === 6) { copy.breakfast = { items: [] }; copy.dinner = { items: [] }; }
-      if (copy.lunch && copy.lunch.items && copy.lunch.items.length) copy.lunch.items[0] = copy.lunch.items[0] + ' · ' + isoDate.slice(5);
-      return copy;
-    });
-    return { date: isoDate, dateLabel: dateHeading(isoDate), fetchedAt: base.fetchedAt, source: 'fixture', restaurants: restaurants };
-  }
-
   function attach(host, options) {
     options = options || {};
     var today = ymd(toKst());
@@ -610,8 +554,6 @@
   global.BabdodukKaistMenu = {
     attach: attach,
     defaultMeal: defaultMeal,
-    fixtureMenu: fixtureMenu,
-    fixtureDay: fixtureDay,
     isStale: isStale,
     resolveTodayChoice: resolveTodayChoice,
     loadTodayMenu: loadTodayMenu,

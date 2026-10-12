@@ -127,9 +127,7 @@
     return F.futurePublic(publicList(), now);
   }
   function foodTypeLabel(type) {
-    return t('gg.food.' + type, {
-      meal: '식사', lunchbox: '도시락', snack: '간식', refreshment: '다과', beverage: '음료', coupon: '식권', other: '기타', unknown: ''
-    }[type] || '');
+    return t('gg.food.' + type, '');      // the page's tables carry every type (data/content/labels.json)
   }
   function mapLink(ev) {
     var loc = ev.location || {};
@@ -139,10 +137,10 @@
   }
   function sourceLabel(ev) {
     var types = (ev.sources || []).map(function (src) { return src.type; });
-    if (types.indexOf('dooray') >= 0 || types.indexOf('dooray_mailbox') >= 0) return t('gg.source.mail', 'KAIST 메일');
-    if (types.indexOf('portal') >= 0) return t('gg.source.portal', 'KAIST 포탈');
-    if (types.indexOf('kaist_public') >= 0) return t('gg.source.public', 'KAIST 공식 공지');
-    if (types.indexOf('manual') >= 0) return t('gg.source.manual', '밥도둑 등록');
+    if (types.indexOf('dooray') >= 0 || types.indexOf('dooray_mailbox') >= 0) return t('gg.source.mail', '');
+    if (types.indexOf('portal') >= 0) return t('gg.source.portal', '');
+    if (types.indexOf('kaist_public') >= 0) return t('gg.source.public', '');
+    if (types.indexOf('manual') >= 0) return t('gg.source.manual', '');
     return '';
   }
   function deadlineHtml(ev, now) {
@@ -438,12 +436,7 @@
   }
   function loadNews() {
     if (mode === 'preview' || mode === 'blocked') { state.news.status = 'off'; return; }
-    if (mode === 'fixture') {
-      acceptNews({ items: [{ id: 'news-00000000000000000000000000000001', contentType: 'campus_food_news',
-        noticeDate: ymd(nowKst()), title: '교내 새 식당 오픈 안내', summary: '점심 영업을 시작합니다.',
-        hasFreeOffer: false, sources: [{ type: 'portal', name: 'KAIST 포탈' }] }] });
-      return;
-    }
+    if (mode === 'fixture') { acceptNews(labFixtures().news(nowKst())); return; }
     fetch('data/ggongbab/news.json', { cache: 'no-store' }).then(function (res) {
       if (res.status === 404) return { items: [] };
       if (!res.ok) throw new Error('unavailable');
@@ -502,40 +495,15 @@
       freeCountText: freeText
     };
     if (mode === 'fixture') {
-      opts.getData = function () { return window.BabdodukKaistMenu.fixtureMenu(staleMenuFixture, nowKst()); };
-      opts.getDay = function (date) { return window.BabdodukKaistMenu.fixtureDay(date); };
+      opts.getData = function () { return labFixtures().menu(staleMenuFixture, nowKst()); };
+      opts.getDay = function (date) { return labFixtures().menuDay(date); };
     }
     menuCtl = window.BabdodukKaistMenu.attach(host, opts);
   }
-  function fixtureData() {
-    var today = nowKst();
-    function stamp(day, hour) { return ymd(addDays(today, day)) + 'T' + hour + ':00:00+09:00'; }
-    var titles = ['캠퍼스 진로 이야기와 점심 한 끼','커피 한 잔, 연구 이야기','함께 나누는 오후의 다과','아이디어와 피자를 나누는 저녁','오늘 신청하는 캠퍼스 워크숍','미리 만나는 연구실 오픈데이','새로운 친구와 함께하는 점심','아주 긴 제목으로 확인하는 캠퍼스 진로 탐색과 융합 연구 협력 그리고 함께하는 따뜻한 식사에 관한 특별한 이야기','긴 소개글이 있는 캠퍼스 모임','다양한 전공이 함께하는 교류회'];
-    var sourceCycle = [
-      [{ type: 'dooray', name: 'Dooray' }],
-      [{ type: 'portal', name: 'KAIST Portal' }],
-      [{ type: 'kaist_public', name: 'KAIST 공지', url: 'https://example.org/events' }],
-      [{ type: 'manual', name: 'Manual', url: 'https://example.org/events' }]
-    ];
-    var events = [];
-    for (var i = 0; i < 10; i++) {
-      var day = i < 3 ? 0 : i === 3 ? 1 : Math.min(2, 7 - (today.getDay() || 7));
-      events.push({
-        id: 'fixture-' + i,
-        title: titles[i],
-        summary: i === 8 ? '누구나 편하게 모여 새로운 연구와 진로에 관한 생각을 나눕니다. '.repeat(12) : '관심 있는 이야기를 나누고, 준비된 음식을 함께 즐겨 보세요.',
-        startAt: stamp(day, i === 0 ? '12' : i === 1 ? '15' : '18'),
-        endAt: stamp(day, i === 0 ? '13' : i === 1 ? '16' : '19'),
-        location: { building: 'N1', room: i === 6 ? '' : '101호', name: 'KI빌딩' },
-        food: { provided: 'true', type: i === 0 ? 'lunchbox' : i === 1 ? 'beverage' : i === 2 ? 'refreshment' : i === 8 ? 'snack' : 'meal', description: i === 0 ? '점심 도시락' : i === 1 ? '커피' : i === 2 ? '커피 · 다과' : i === 8 ? '샌드위치' : '피자 제공' },
-        registration: { required: i === 1 ? 'false' : 'true', deadline: i === 4 ? stamp(0, '23') : null, url: i === 0 || i === 4 ? 'https://example.org/register' : '' },
-        organizer: i === 9 ? '다양한 전공과 연구실이 함께 기획하고 운영하는 캠퍼스 교류 및 협력 준비위원회'.repeat(3) : '',
-        eligibility: i === 9 ? 'KAIST 학부생과 대학원생 및 다양한 연구에 관심 있는 모든 구성원 '.repeat(5) : 'KAIST 학부 및 대학원생',
-        sources: sourceCycle[i % 4]
-      });
-    }
-    events[7].title = events[7].title.repeat(3);
-    return { generatedAt: new Date().toISOString(), count: events.length, events: events, _preview: { publicCount: events.length, explicitFood: events.length } };
+  // Fixture mode's synthetic data: tests/fixtures/ggongbab-lab.js, loaded at the end of this file.
+  function labFixtures() {
+    if (!window.BabdodukLabFixtures) throw new Error('fixtures unavailable');
+    return window.BabdodukLabFixtures;
   }
   function acceptFree(data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad payload');
@@ -551,36 +519,13 @@
     if (mode === 'blocked') { state.free.status = 'blocked'; render(); return; }
     state.free.status = 'loading';
     render();
-    if (mode === 'fixture') { acceptFree(fixtureData()); return; }
+    if (mode === 'fixture') {
+      try { acceptFree(labFixtures().freeFeed(nowKst())); } catch (err) { state.free.status = 'error'; render(); }
+      return;
+    }
     fetch(DATA_URL, { cache: 'no-store' }).then(function (res) {
       if (!res.ok) throw new Error('unavailable'); return res.json();
     }).then(acceptFree).catch(function () { state.free.status = 'error'; render(); });
-  }
-  // Fixture past listings, relative to the fixture clock: what an archive may hold, plus rows
-  // the page must still refuse (under review, unknown food, older than the window, not ended).
-  function fixtureArchive() {
-    var today = nowKst();
-    function at(days, hour) { return ymd(addDays(today, days)) + 'T' + hour + ':00:00+09:00'; }
-    var titles = ['지난주 진로 특강과 점심 도시락', '연구실 오픈데이 다과', '아주 긴 제목으로 확인하는 지난 캠퍼스 교류회와 함께 나눈 저녁 식사에 관한 기록 '.repeat(2),
-      '대학원 설명회 샌드위치', '동아리 박람회 간식', '학과 간담회 피자', '국제 교류 커피 모임'];
-    var events = titles.map(function (title, i) {
-      return {
-        id: 'past-' + i, title: title, summary: '지난 안내입니다.',
-        startAt: at(-1 - i * 3, '12'), endAt: at(-1 - i * 3, '13'),
-        location: { building: 'N1', room: '101호', name: 'KI빌딩' },
-        food: { provided: 'true', type: i % 2 ? 'snack' : 'lunchbox', description: i % 2 ? '다과' : '점심 도시락' },
-        organizer: '', eligibility: '',
-        sources: i === 0 ? [{ type: 'kaist_public', name: 'KAIST 공지', url: 'https://example.org/notice' }]
-          : i === 1 ? [{ type: 'manual', name: 'Manual', url: 'javascript:alert(1)' }] : [{ type: 'dooray', name: 'Dooray' }]
-      };
-    });
-    // Old data may still carry sign-up fields; the page must never render them.
-    events[0].registration = { required: 'true', url: 'https://example.org/register', deadline: at(-3, '18') };
-    events.push({ id: 'past-review', title: '검토 중', startAt: at(-2, '12'), food: { provided: 'true' }, needs_review: true, sources: [] });
-    events.push({ id: 'past-unknown', title: '음식 미확인', startAt: at(-2, '12'), food: { provided: 'unknown' }, sources: [] });
-    events.push({ id: 'past-old', title: '오래된 기록', startAt: at(-45, '12'), endAt: at(-45, '13'), food: { provided: 'true' }, sources: [] });
-    events.push({ id: 'past-future', title: '아직 안 끝남', startAt: at(2, '12'), food: { provided: 'true' }, sources: [] });
-    return { generatedAt: new Date().toISOString(), windowDays: ARCHIVE_WINDOW_DAYS, count: events.length, events: events };
   }
   function acceptArchive(data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad archive');
@@ -590,7 +535,7 @@
   }
   function loadArchive() {
     if (mode === 'preview' || mode === 'blocked') { state.archive.status = 'off'; return; }
-    if (mode === 'fixture') { acceptArchive(fixtureArchive()); return; }
+    if (mode === 'fixture') { acceptArchive(labFixtures().archive(nowKst(), ARCHIVE_WINDOW_DAYS)); return; }
     fetch(ARCHIVE_URL, { cache: 'no-store' }).then(function (res) {
       if (res.status === 404) return { events: [] }; // not generated yet: nothing has been archived
       if (!res.ok) throw new Error('unavailable');
@@ -716,7 +661,25 @@
   window.addEventListener('hashchange', function () {
     if (location.hash === '#menu' || location.hash === '#free') setTab(location.hash.slice(1));
   });
-  loadFree();
-  loadArchive();
-  loadNews();
+  function start() {
+    loadFree();
+    loadArchive();
+    loadNews();
+  }
+  // Fixture mode (the lab page only) reads its synthetic data from tests/fixtures/, which the local
+  // server serves (python scripts/check_ggongbab_ui.py --serve) and no deployment carries.
+  if (mode === 'fixture') {
+    var fixtureScript = document.createElement('script');
+    fixtureScript.src = 'tests/fixtures/ggongbab-lab.js';
+    fixtureScript.onload = start;
+    fixtureScript.onerror = function () {
+      state.free.status = 'error';
+      state.archive.status = 'off';
+      state.news.status = 'off';
+      render();
+    };
+    document.head.appendChild(fixtureScript);
+  } else {
+    start();
+  }
 })();

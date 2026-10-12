@@ -9,7 +9,7 @@ name: ggongbab-refresh
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # every 30 minutes, UTC (GitHub may delay or skip individual runs); always full
+    - cron: '7,37 * * * *'   # every 30 minutes, off the busy :00 and :30 (GitHub may still delay or skip runs); always full
   workflow_dispatch:
     inputs:
       mode:

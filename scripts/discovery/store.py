@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 """Persistent candidate store: research/magazine/candidates.jsonl (one JSON object per line).
 
-It is the research record, separate from the daily public edition. It holds public source
-metadata only: title, canonical URL, a short verbatim source excerpt, image URL, discovery
-method, query and lane, trend/habit evidence with verbatim detail, source trust, audience
-relevance, hashes, scores and the selection/rejection decision. Never cookies, tokens, session
-data or private URLs.
+It is the research record, separate from the daily public edition, and it lives in a public
+repository, so it keeps no text of the source beyond its title (magazine sourcing plan, decision
+6): address, fingerprints and decisions. A row holds the title, canonical URL, image URL, discovery
+method, query and lane, the kinds of trend/habit evidence found (never the sentences), source
+trust, audience relevance, hashes, scores and the selection/rejection decision, plus what the text
+said that a later run still needs (process.text_facts: food or not, research, a launch, lane word
+counts) and, while it can corroborate, its words as an unordered list (textWords). Never cookies,
+tokens, session data or private URLs.
+
+The text itself (the excerpt and the evidence sentences) lives only in memory, for the run that
+read it from the source (TRANSIENT; stored() writes the rest). A row read again from its source is
+judged again in full; a row its source no longer lists keeps its decision, which only its age and
+corroboration can still change (process.process).
 
 Bounded by prune(), after every network run. A row stays whole while it can still change a
 decision: a qualifying story (the pool); a story that passed the hard rules while it can still
@@ -31,14 +39,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Optional
 
+from . import hosts
 from .common import atomic_write, canonical_url, iso, parse_time, sha
-from .evidence import TREND_MAX_DAYS, is_food
+from .evidence import TREND_MAX_DAYS, food_story
 
 RETAIN_DAYS = 90
 MAX_CANDIDATES = 4000
 LIVE_DAYS = 14
 FINGERPRINT_DAYS = 7                 # 92% of re-sightings came within a week (2026-10-11)
 ANCHOR_DAYS = 30
+# YouTube API Services Developer Policies III.E.4: data from the API is kept at most 30 days, then
+# refreshed or deleted. A run that gets the video from the API again refreshes it (lastSeenAt).
+YOUTUBE_DAYS = 30
 FINGERPRINT = ("candidateId", "sourceId", "sourceUrl", "title", "discoveryMethod", "discoveryQuery", "discoveryLane",
                "discoveredAt", "discoveredSeq", "lastSeenAt", "rejectionReason", "duplicateOf")
 ANCHOR = FINGERPRINT + ("canonicalUrl", "canonicalHash", "sourceItemId", "contentHash", "publishedAt",
@@ -57,6 +69,21 @@ FIELDS = ("candidateId", "sourceId", "sourceName", "sourceType", "sourceUrl", "c
           "audienceRelevance", "audienceScore", "laneDecisions", "viewCount", "likeCount", "requireFood",
           "commercePage", "sponsored", "howToMarkers", "trendEvidenceIndependent", "excerptAllowed")
 MAX_QUERIES = 8
+# In memory only: the source's own text and what quotes it, read again from the source on every
+# run that lists the item ("fresh" marks a row read in this run).
+TRANSIENT = ("sourceExcerpt", "trendEvidenceDetail", "fresh")
+
+
+def stored(row: dict) -> dict:
+    """A row as written: no sentence of the source - the excerpt, the evidence sentences of
+    trendSignals and habitSignals and their detail stay with the run that read them."""
+    out = {k: v for k, v in row.items() if k not in TRANSIENT}
+    if isinstance(out.get("trendSignals"), dict):
+        out["trendSignals"] = {kind: ({k: v for k, v in signal.items() if k != "text"} if isinstance(signal, dict)
+                                      else signal) for kind, signal in out["trendSignals"].items()}
+    if isinstance(out.get("habitSignals"), dict):
+        out["habitSignals"] = {k: v for k, v in out["habitSignals"].items() if k != "behavior"}
+    return out
 
 
 def candidate_id(url: str) -> str:
@@ -74,8 +101,7 @@ def can_corroborate(row: dict, now: datetime) -> bool:
     """Whether evidence.corroborate can still pair this row with another story. Its age only
     grows, so once this is false it stays false until the item is seen again."""
     published = parse_time(row.get("publishedAt"))
-    return bool(published) and (now - published).days <= TREND_MAX_DAYS and \
-        is_food(row.get("title") or "", row.get("sourceExcerpt") or "")
+    return bool(published) and (now - published).days <= TREND_MAX_DAYS and food_story(row)
 
 
 def stays_whole(row: dict, now: datetime) -> bool:
@@ -104,7 +130,14 @@ def compact(row: dict) -> dict:
     return out
 
 
+def youtube_row(row: dict) -> bool:
+    """A row about a YouTube video, whatever route found it: its data follows YouTube's terms."""
+    return row.get("medium") == "youtube" or hosts.youtube_page(row.get("sourceUrl") or "")
+
+
 def expired(row: dict, now: datetime) -> bool:
+    if youtube_row(row) and days_since(row.get("lastSeenAt"), now) > YOUTUBE_DAYS:
+        return True                          # published or not: not refreshed within 30 days
     if row.get("selected"):
         return bool(row.get("compact")) and days_since(row.get("selectedAt") or row.get("lastSeenAt"), now) > ANCHOR_DAYS
     limit = FINGERPRINT_DAYS if row.get("compact") else RETAIN_DAYS
@@ -143,6 +176,7 @@ class CandidateStore:
             # A compact row seen again is rebuilt whole from this sighting and judged again; it
             # keeps when it was first discovered and whether it already ran.
             row.update(history or {})
+            row["fresh"] = True
             self.rows[cid] = row
             return row
         row["lastSeenAt"] = iso(now)
@@ -151,16 +185,22 @@ class CandidateStore:
         query = raw.get("discoveryQuery")
         if query and query not in (row.get("seenQueries") or []):
             row["seenQueries"] = ((row.get("seenQueries") or []) + [query])[-MAX_QUERIES:]
-        for key in ("title", "sourceExcerpt", "publishedAt", "publishedAtSource", "imageUrl", "imageSource",
-                    "imageValidated", "contentHash", "discoveryLane", "discoveryQuery", "sourceTrust", "contentKind",
-                    "requireFood"):
-            if raw.get(key) and not row.get(key):
-                row[key] = raw[key]
+        # A row stored without its text (TRANSIENT) gets it back from its own route and is judged
+        # again in full. Another route's text is not its text: the row keeps its stored decision
+        # and this sighting only adds evidence.
+        first_route = (row.get("seenVia") or [route])[0] == route
+        held = not row.get("fresh") and not row.get("sourceExcerpt")
+        foreign = held and not first_route
+        if not foreign:
+            for key in ("title", "sourceExcerpt", "publishedAt", "publishedAtSource", "imageUrl", "imageSource",
+                        "imageValidated", "contentHash", "discoveryLane", "discoveryQuery", "sourceTrust",
+                        "contentKind", "requireFood"):
+                if raw.get(key) and not row.get(key):
+                    row[key] = raw[key]
         # The first route re-reading the same text (or more) refreshes what is derived from it -
         # evidence, kind, tier, a cleaned title - so a rule change applies. Another route only adds
         # evidence and never rewrites the first discovery's title, source, tier or kind.
-        first_route = (row.get("seenVia") or [route])[0] == route
-        refresh = first_route and (raw.get("textLength") or 0) >= (row.get("textLength") or 0)
+        refresh = not foreign and (held or (first_route and (raw.get("textLength") or 0) >= (row.get("textLength") or 0)))
         if refresh:
             row["textLength"] = raw.get("textLength") or 0
             row["sourceExcerpt"] = raw.get("sourceExcerpt") or row.get("sourceExcerpt")
@@ -180,6 +220,8 @@ class CandidateStore:
         for key in ("viewCount", "likeCount"):
             if isinstance(raw.get(key), int):
                 row[key] = raw[key]
+        if not foreign:
+            row["fresh"] = True
         return row
 
     def all(self) -> list[dict]:
@@ -190,6 +232,9 @@ class CandidateStore:
         longer matter (module docstring). Returns the number of rows dropped."""
         rows = [r if r.get("compact") or stays_whole(r, now) else compact(r) for r in self.rows.values()]
         rows = [r for r in rows if not expired(r, now)]
+        for row in rows:
+            if not row.get("compact") and not can_corroborate(row, now):
+                row.pop("textWords", None)          # only corroboration reads a stored row's words
         published = [r for r in rows if r.get("selected")]
         others = sorted((r for r in rows if not r.get("selected")), key=lambda r: r.get("lastSeenAt") or "",
                         reverse=True)[:MAX_CANDIDATES]
@@ -198,8 +243,10 @@ class CandidateStore:
         return removed
 
     def save(self) -> None:
+        """Write every row as stored(): the rows in memory keep their text for the rest of the run."""
         ordered = sorted(self.rows.values(), key=lambda r: (int(r.get("discoveredSeq") or 0), r["candidateId"]))
-        atomic_write(self.path, "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in ordered))
+        atomic_write(self.path, "".join(json.dumps(stored(r), ensure_ascii=False, sort_keys=True) + "\n"
+                                        for r in ordered))
 
     def mark_selected(self, ids: Iterable[str], now, edition: Optional[str]) -> None:
         """A story is published once: selectedFor is the edition that first ran it. Rebuilding the

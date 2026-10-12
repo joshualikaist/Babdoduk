@@ -233,7 +233,7 @@
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
-      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="홈으로">Babdoduk</a>
       <div class="nav-mega-row">
         <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
         <a class="site-nav-direct" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
@@ -256,7 +256,10 @@
       <h1 class="history-title-main" data-i18n="history.heroTitle">밥도둑의 역사</h1>
     </header>
 
-    <ol class="timeline" aria-label="타임라인">
+    <ol class="timeline" aria-label="타임라인" data-i18n-aria-key="history.timelineAria">
+      <!-- Written from data/content/history.json by scripts/sync_site_chrome.py, oldest first with
+           the roadmap last; never edit the rows here. -->
+      <!-- @content:timeline -->
       <li class="timeline-item">
         <div class="timeline-item-grid">
           <div class="timeline-item-photo-cell">
@@ -268,7 +271,7 @@
                 height="340"
                 loading="lazy"
                 decoding="async"
-                alt=""
+                alt="인스타그램 공식 로고"
                 data-i18n-alt="history.t1.photoAlt"
               />
             </figure>
@@ -305,7 +308,7 @@
       <li class="timeline-item">
         <div class="timeline-item-grid">
           <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2" data-i18n-aria-key="history.t4.photoAlt">
+            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2" data-i18n-aria-key="history.t3.photoAlt">
               <span class="timeline-mark" aria-hidden="true">ver2</span>
             </figure>
           </div>
@@ -313,10 +316,10 @@
             <span class="timeline-marker" aria-hidden="true"></span>
           </div>
           <div class="timeline-item-body">
-            <time class="timeline-year" datetime="2026-09-30" data-i18n="history.t4.year">2026.9.30</time>
+            <time class="timeline-year" datetime="2026-09-30" data-i18n="history.t3.year">2026.9.30</time>
             <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t4.label">Babdoduk ver2. 오픈</h2>
-            <p class="timeline-desc" data-i18n="history.t4.desc">오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.</p>
+            <h2 class="timeline-label" data-i18n="history.t3.label">Babdoduk ver2. 오픈</h2>
+            <p class="timeline-desc" data-i18n="history.t3.desc">오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.</p>
           </div>
         </div>
       </li>
@@ -329,13 +332,14 @@
             <span class="timeline-marker" aria-hidden="true"></span>
           </div>
           <div class="timeline-item-body">
-            <span class="timeline-year" data-i18n="history.t3.year">—</span>
+            <span class="timeline-year">—</span>
             <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t3.label">로드맵</h2>
-            <p class="timeline-desc" data-i18n="history.t3.desc">브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.</p>
+            <h2 class="timeline-label" data-i18n="history.roadmap.label">로드맵</h2>
+            <p class="timeline-desc" data-i18n="history.roadmap.desc">브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.</p>
           </div>
         </div>
       </li>
+      <!-- @end content -->
     </ol>
 
     <nav class="history-next" aria-label="더 둘러보기" data-i18n-aria-key="history.nextAria">
@@ -369,200 +373,101 @@
     </div>
   </footer>
 
+  <!-- @i18n:strings -->
   <script>
-    (function () {
-      var STR = {
-        ko: {
-          docTitle: '역사 · 밥도둑 Babdoduk',
-          'a11y.scrollProgress': '페이지 스크롤 진행',
-          'nav.navAria': '주요 메뉴',
-          'nav.homeAria': '홈으로',
-          'nav.history': '역사',
-          'nav.lab': '실험실',
-          'nav.instagram': '인스타그램',
-          'nav.today': '오늘의 꽁밥',
-          'nav.more': '더보기',
-          'nav.map': '맛집 지도',
-          'nav.magazine': '밥도둑 매거진',
-          'nav.event': '소식·이벤트',
-          'nav.event.open': '소식·이벤트',
-          'nav.langBtn': '언어 (EN)',
-          'nav.langAria': '영어로 전환',
-          'history.heroTitle': '밥도둑의 역사',
-          'history.t1.photoAlt': '인스타그램 공식 로고',
-          'history.t1.year': '2025.4.1',
-          'history.t1.label': '공식 인스타그램 채널 개설',
-          'history.t1.desc': '밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.',
-          'history.t2.photoAlt': '밥도둑 로고',
-          'history.t2.year': '2026.5.7',
-          'history.t2.label': '통합 웹 허브 오픈',
-          'history.t2.desc': '주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.',
-          'history.t3.year': '—',
-          'history.t3.label': '로드맵',
-          'history.t3.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
-          'history.t4.photoAlt': 'Babdoduk ver2',
-          'history.t4.year': '2026.9.30',
-          'history.t4.label': 'Babdoduk ver2. 오픈',
-          'history.t4.desc': '오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.',
-          'history.nextAria': '더 둘러보기',
-          'history.next.events': '지난 활동 기록 →',
-          'history.next.magazine': '밥도둑 매거진 →',
-          'history.next.insta': '인스타그램 ↗',
-          'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
-          'footer.contact': '문의',
-          'footer.country': '대한민국',
-          'footer.navAria': '사이트 바로가기',
-          'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
-        },
-        en: {
-          docTitle: 'History · Babdoduk',
-          'a11y.scrollProgress': 'Page scroll progress',
-          'nav.navAria': 'Main menu',
-          'nav.homeAria': 'Home',
-          'nav.history': 'History',
-          'nav.lab': 'Lab',
-          'nav.instagram': 'Instagram',
-          'nav.today': "Today's free food",
-          'nav.more': 'More',
-          'nav.map': 'Food map',
-          'nav.magazine': 'Magazine',
-          'nav.event': 'News & events',
-          'nav.event.open': 'News & events',
-          'nav.langBtn': '한국어',
-          'nav.langAria': 'Switch to Korean',
-          'history.heroTitle': 'History of Babdoduk',
-          'history.t1.photoAlt': 'Official Instagram logo',
-          'history.t1.year': 'Apr 1, 2025',
-          'history.t1.label': 'Official Instagram launch',
-          'history.t1.desc': 'Launched the official Babdoduk Instagram channel and began publishing recipe- and lifestyle-oriented content.',
-          'history.t2.photoAlt': 'Babdoduk wordmark',
-          'history.t2.year': 'May 7, 2026',
-          'history.t2.label': 'Integrated web hub',
-          'history.t2.desc': 'Shipped a public web hub that centralizes key SNS links, the food-expense log, event information, and related tools.',
-          'history.t3.year': '—',
-          'history.t3.label': 'Roadmap',
-          'history.t3.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
-          'history.t4.photoAlt': 'Babdoduk ver2',
-          'history.t4.year': 'Sep 30, 2026',
-          'history.t4.label': 'Babdoduk ver2. Open',
-          'history.t4.desc': 'Published today\'s free food, cafeteria menus, and the magazine in a new structure.',
-          'history.nextAria': 'Explore more',
-          'history.next.events': 'Past activity record →',
-          'history.next.magazine': 'Babdoduk Magazine →',
-          'history.next.insta': 'Instagram ↗',
-          'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
-          'footer.contact': 'Contact',
-          'footer.country': 'South Korea',
-          'footer.navAria': 'Site links',
-          'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.'
-        }
-      };
-      function applyLang(lang) {
-        if (lang !== 'en') lang = 'ko';
-        document.documentElement.lang = lang;
-        try { localStorage.setItem('babdoduk-lang', lang); } catch (e) {}
-        var T = STR[lang];
-        document.title = T.docTitle;
-        document.querySelectorAll('[data-i18n]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n');
-          if (T[k] !== undefined) el.textContent = T[k];
-        });
-        document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-html');
-          if (T[k] !== undefined) el.innerHTML = T[k];
-        });
-        document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-aria-key');
-          if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
-        });
-        document.querySelectorAll('[data-i18n-alt]').forEach(function (el) {
-          var ka = el.getAttribute('data-i18n-alt');
-          if (T[ka] !== undefined) el.setAttribute('alt', T[ka]);
-        });
-        var navInner = document.getElementById('siteNavInner');
-        if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
-        var sp = document.getElementById('scrollProgressWrap');
-        if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-        var tl = document.querySelector('.timeline');
-        if (tl && lang === 'en') tl.setAttribute('aria-label', 'Timeline');
-        else if (tl) tl.setAttribute('aria-label', '타임라인');
+    // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.
+    window.BABDODUK_STR = {
+      ko: {
+        docTitle: '역사 · 밥도둑 Babdoduk',
+        'a11y.scrollProgress': '페이지 스크롤 진행',
+        'footer.contact': '문의',
+        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.country': '대한민국',
+        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.navAria': '사이트 바로가기',
+        'history.heroTitle': '밥도둑의 역사',
+        'history.next.events': '지난 활동 기록 →',
+        'history.next.insta': '인스타그램 ↗',
+        'history.next.magazine': '밥도둑 매거진 →',
+        'history.nextAria': '더 둘러보기',
+        'history.roadmap.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
+        'history.roadmap.label': '로드맵',
+        'history.t1.desc': '밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.',
+        'history.t1.label': '공식 인스타그램 채널 개설',
+        'history.t1.photoAlt': '인스타그램 공식 로고',
+        'history.t1.year': '2025.4.1',
+        'history.t2.desc': '주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.',
+        'history.t2.label': '통합 웹 허브 오픈',
+        'history.t2.photoAlt': '밥도둑 로고',
+        'history.t2.year': '2026.5.7',
+        'history.t3.desc': '오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.',
+        'history.t3.label': 'Babdoduk ver2. 오픈',
+        'history.t3.photoAlt': 'Babdoduk ver2',
+        'history.t3.year': '2026.9.30',
+        'history.timelineAria': '타임라인',
+        'nav.event': '소식·이벤트',
+        'nav.event.open': '소식·이벤트',
+        'nav.history': '역사',
+        'nav.homeAria': '홈으로',
+        'nav.instagram': '인스타그램',
+        'nav.lab': '실험실',
+        'nav.labFeed': '꽁밥 실험',
+        'nav.langAria': '영어로 전환',
+        'nav.langBtn': '언어 (EN)',
+        'nav.magazine': '밥도둑 매거진',
+        'nav.map': '맛집 지도',
+        'nav.more': '더보기',
+        'nav.navAria': '주요 메뉴',
+        'nav.today': '오늘의 꽁밥',
+        'nav.topAria': '맨 위로',
+      },
+      en: {
+        docTitle: 'History · Babdoduk',
+        'a11y.scrollProgress': 'Page scroll progress',
+        'footer.contact': 'Contact',
+        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.country': 'South Korea',
+        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.navAria': 'Site links',
+        'history.heroTitle': 'History of Babdoduk',
+        'history.next.events': 'Past activity record →',
+        'history.next.insta': 'Instagram ↗',
+        'history.next.magazine': 'Babdoduk Magazine →',
+        'history.nextAria': 'Explore more',
+        'history.roadmap.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
+        'history.roadmap.label': 'Roadmap',
+        'history.t1.desc': 'Launched the official Babdoduk Instagram channel and began publishing recipe- and lifestyle-oriented content.',
+        'history.t1.label': 'Official Instagram launch',
+        'history.t1.photoAlt': 'Official Instagram logo',
+        'history.t1.year': 'Apr 1, 2025',
+        'history.t2.desc': 'Shipped a public web hub that centralizes key SNS links, the food-expense log, event information, and related tools.',
+        'history.t2.label': 'Integrated web hub',
+        'history.t2.photoAlt': 'Babdoduk wordmark',
+        'history.t2.year': 'May 7, 2026',
+        'history.t3.desc': 'Published today\'s free food, cafeteria menus, and the magazine in a new structure.',
+        'history.t3.label': 'Babdoduk ver2. Open',
+        'history.t3.photoAlt': 'Babdoduk ver2',
+        'history.t3.year': 'Sep 30, 2026',
+        'history.timelineAria': 'Timeline',
+        'nav.event': 'News & events',
+        'nav.event.open': 'News & events',
+        'nav.history': 'History',
+        'nav.homeAria': 'Home',
+        'nav.instagram': 'Instagram',
+        'nav.lab': 'Lab',
+        'nav.labFeed': 'Ggongbab lab',
+        'nav.langAria': 'Switch to Korean',
+        'nav.langBtn': '한국어',
+        'nav.magazine': 'Magazine',
+        'nav.map': 'Food map',
+        'nav.more': 'More',
+        'nav.navAria': 'Main menu',
+        'nav.today': 'Today\'s free food',
+        'nav.topAria': 'Back to top',
       }
-      window.babdodukApplyLang = applyLang;
-      window.babdodukGetLang = function () {
-        return document.documentElement.lang === 'en' ? 'en' : 'ko';
-      };
-      var saved = 'ko';
-      try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
-      applyLang(saved === 'en' ? 'en' : 'ko');
-      var langBtnEl = document.getElementById('langToggle');
-      if (langBtnEl) {
-        langBtnEl.addEventListener('click', function () {
-          applyLang(window.babdodukGetLang() === 'ko' ? 'en' : 'ko');
-        });
-      }
-    })();
+    };
   </script>
-
-  <script>
-    (function () {
-      var bar = document.getElementById('scrollProgressBar');
-      var wrap = bar && bar.parentElement;
-      function onScroll() {
-        if (!bar) return;
-        var el = document.documentElement;
-        var total = el.scrollHeight - el.clientHeight;
-        var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
-        bar.style.width = pct + '%';
-        if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
-      }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll);
-      onScroll();
-    })();
-  </script>
-
-  <script>
-    (function () {
-      document.querySelectorAll('[data-mega]').forEach(function (mega) {
-        mega.addEventListener('click', function (e) {
-          e.stopPropagation();
-        });
-        var trigger = mega.querySelector('.nav-mega-trigger');
-        var panel = mega.querySelector('.nav-mega-panel');
-        if (!trigger || !panel) return;
-        trigger.addEventListener('click', function (e) {
-          e.stopPropagation();
-          var willOpen = !mega.classList.contains('is-open');
-          document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-            m.classList.remove('is-open');
-            var t = m.querySelector('.nav-mega-trigger');
-            if (t) t.setAttribute('aria-expanded', 'false');
-          });
-          if (willOpen) {
-            mega.classList.add('is-open');
-            trigger.setAttribute('aria-expanded', 'true');
-          }
-        });
-      });
-      document.addEventListener('click', function () {
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) t.setAttribute('aria-expanded', 'false');
-        });
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key !== 'Escape') return;
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) {
-            t.setAttribute('aria-expanded', 'false');
-            t.focus();
-          }
-        });
-      });
-    })();
-  </script>
+  <script src="js/site.js"></script>
+  <!-- @end i18n -->
 </body>
 </html>

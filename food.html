@@ -502,7 +502,7 @@
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
-      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="홈으로">Babdoduk</a>
       <div class="nav-mega-row">
         <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
         <a class="site-nav-direct" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
@@ -636,233 +636,130 @@
     </div>
   </footer>
 
+  <!-- @i18n:strings -->
   <script>
-    (function () {
-      var STR = {
-        ko: {
-          docTitle: '먹방 가계부 · 밥도둑 Babdoduk',
-          'a11y.scrollProgress': '페이지 스크롤 진행',
-          'nav.navAria': '주요 메뉴',
-          'nav.homeAria': '맨 위로',
-          'nav.history': '역사',
-          'nav.instagram': '인스타그램',
-          'nav.today': '오늘의 꽁밥',
-          'nav.more': '더보기',
-          'nav.map': '맛집 지도',
-          'nav.magazine': '밥도둑 매거진',
-          'nav.event': '소식·이벤트',
-          'nav.event.open': '소식·이벤트',
-          'nav.langBtn': '언어 (EN)',
-          'nav.langAria': '영어로 전환',
-          'food.heading': '먹방 가계부',
-          'food.cardMonthPick': '월 합계',
-          'food.cardWeekPick': '주 합계 (ISO)',
-          'food.pickYear': '연도',
-          'food.pickMonth': '월',
-          'food.pickWeek': '주차',
-          'food.calPrev': '이전 달',
-          'food.calNext': '다음 달',
-          'cal.sun': '일',
-          'cal.mon': '월',
-          'cal.tue': '화',
-          'cal.wed': '수',
-          'cal.thu': '목',
-          'cal.fri': '금',
-          'cal.sat': '토',
-          'food.fetchErr': '가계부 데이터를 불러오지 못했어요.',
-          'food.input.sectionTitle': '오늘 지출 입력',
-          'food.input.dateLabel': '날짜',
-          'food.input.colMeal': '식사 종류',
-          'food.input.colPrice': '가격 (원)',
-          'food.input.totalLabel': '총액 (원)',
-          'food.input.addRow': '더 입력하기',
-          'food.input.reset': '초기화',
-          'food.input.save': '저장하기',
-          'food.input.hint': '이 브라우저에만 저장돼요. 같은 날짜는 덮어쓰고, 브라우저 데이터를 지우면 함께 지워져요.',
-          'food.input.saved': '저장했습니다. 집계와 달력을 확인하세요.',
-          'food.input.errNoDate': '날짜를 선택하세요.',
-          'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
-          'food.src.shared': '밥도둑 공개 기록',
-          'food.src.browser': '이 브라우저에 저장한 기록',
-          'food.src.replaces': '같은 날짜의 공개 기록 대신 보여요',
-          'food.legend': '● 이 브라우저에 저장한 날 · 공개 기록 {shared}일 · 이 브라우저 {browser}일',
-          'food.input.rowMeal': '{n}번째 식사 종류',
-          'food.input.rowPrice': '{n}번째 가격 (원)',
-          'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
-          'footer.contact': '문의',
-          'footer.country': '대한민국',
-          'footer.navAria': '사이트 바로가기',
-          'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
-        },
-        en: {
-          docTitle: 'Food log · Babdoduk',
-          'a11y.scrollProgress': 'Page scroll progress',
-          'nav.navAria': 'Main menu',
-          'nav.homeAria': 'Back to top',
-          'nav.history': 'History',
-          'nav.instagram': 'Instagram',
-          'nav.today': "Today's free food",
-          'nav.more': 'More',
-          'nav.map': 'Food map',
-          'nav.magazine': 'Magazine',
-          'nav.event': 'News & events',
-          'nav.event.open': 'News & events',
-          'nav.langBtn': '한국어',
-          'nav.langAria': 'Switch to Korean',
-          'food.heading': 'Food expense log',
-          'food.cardMonthPick': 'Month total',
-          'food.cardWeekPick': 'Week total (ISO)',
-          'food.pickYear': 'Year',
-          'food.pickMonth': 'Month',
-          'food.pickWeek': 'Week',
-          'food.calPrev': 'Previous month',
-          'food.calNext': 'Next month',
-          'cal.sun': 'Su',
-          'cal.mon': 'Mo',
-          'cal.tue': 'Tu',
-          'cal.wed': 'We',
-          'cal.thu': 'Th',
-          'cal.fri': 'Fr',
-          'cal.sat': 'Sa',
-          'food.fetchErr': 'Couldn\'t load the food log.',
-          'food.input.sectionTitle': 'Add spending',
-          'food.input.dateLabel': 'Date',
-          'food.input.colMeal': 'Meal',
-          'food.input.colPrice': 'Amount (₩)',
-          'food.input.totalLabel': 'Total (₩)',
-          'food.input.addRow': 'Add row',
-          'food.input.reset': 'Reset',
-          'food.input.save': 'Save',
-          'food.input.hint': 'Saved in this browser only. A date saved again is overwritten, and clearing browser data deletes it.',
-          'food.input.saved': 'Saved. Check the summaries and calendar.',
-          'food.input.errNoDate': 'Pick a date.',
-          'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
-          'food.src.shared': 'Babdoduk’s published log',
-          'food.src.browser': 'Saved in this browser',
-          'food.src.replaces': 'shown instead of the published entry for this date',
-          'food.legend': '● marks days saved in this browser · published {shared} days · this browser {browser} days',
-          'food.input.rowMeal': 'Meal, row {n}',
-          'food.input.rowPrice': 'Amount (₩), row {n}',
-          'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
-          'footer.contact': 'Contact',
-          'footer.country': 'South Korea',
-          'footer.navAria': 'Site links',
-          'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.'
-        }
-      };
-
-      window.BABDODUK_STR = STR;
-
-      function applyLang(lang) {
-        if (lang !== 'en') lang = 'ko';
-        document.documentElement.lang = lang;
-        try {
-          localStorage.setItem('babdoduk-lang', lang);
-        } catch (e) {}
-        var T = STR[lang];
-        document.title = T.docTitle;
-
-        document.querySelectorAll('[data-i18n]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n');
-          if (T[k] !== undefined) el.textContent = T[k];
-        });
-        document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-html');
-          if (T[k] !== undefined) el.innerHTML = T[k];
-        });
-        document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-aria-key');
-          if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
-        });
-
-        var navInner = document.getElementById('siteNavInner');
-        if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
-
-        var sp = document.getElementById('scrollProgressWrap');
-        if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-
-        window.dispatchEvent(new CustomEvent('babdoduk-langchange'));
+    // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.
+    window.BABDODUK_STR = {
+      ko: {
+        docTitle: '먹방 가계부 · 밥도둑 Babdoduk',
+        'a11y.scrollProgress': '페이지 스크롤 진행',
+        'cal.fri': '금',
+        'cal.mon': '월',
+        'cal.sat': '토',
+        'cal.sun': '일',
+        'cal.thu': '목',
+        'cal.tue': '화',
+        'cal.wed': '수',
+        'food.calNext': '다음 달',
+        'food.calPrev': '이전 달',
+        'food.cardMonthPick': '월 합계',
+        'food.cardWeekPick': '주 합계 (ISO)',
+        'food.fetchErr': '가계부 데이터를 불러오지 못했어요.',
+        'food.heading': '먹방 가계부',
+        'food.input.addRow': '더 입력하기',
+        'food.input.colMeal': '식사 종류',
+        'food.input.colPrice': '가격 (원)',
+        'food.input.dateLabel': '날짜',
+        'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
+        'food.input.errNoDate': '날짜를 선택하세요.',
+        'food.input.hint': '이 브라우저에만 저장돼요. 같은 날짜는 덮어쓰고, 브라우저 데이터를 지우면 함께 지워져요.',
+        'food.input.reset': '초기화',
+        'food.input.rowMeal': '{n}번째 식사 종류',
+        'food.input.rowPrice': '{n}번째 가격 (원)',
+        'food.input.save': '저장하기',
+        'food.input.saved': '저장했습니다. 집계와 달력을 확인하세요.',
+        'food.input.sectionTitle': '오늘 지출 입력',
+        'food.input.totalLabel': '총액 (원)',
+        'food.legend': '● 이 브라우저에 저장한 날 · 공개 기록 {shared}일 · 이 브라우저 {browser}일',
+        'food.pickMonth': '월',
+        'food.pickWeek': '주차',
+        'food.pickYear': '연도',
+        'food.src.browser': '이 브라우저에 저장한 기록',
+        'food.src.replaces': '같은 날짜의 공개 기록 대신 보여요',
+        'food.src.shared': '밥도둑 공개 기록',
+        'footer.contact': '문의',
+        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.country': '대한민국',
+        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.navAria': '사이트 바로가기',
+        'nav.event': '소식·이벤트',
+        'nav.event.open': '소식·이벤트',
+        'nav.history': '역사',
+        'nav.homeAria': '홈으로',
+        'nav.instagram': '인스타그램',
+        'nav.lab': '실험실',
+        'nav.labFeed': '꽁밥 실험',
+        'nav.langAria': '영어로 전환',
+        'nav.langBtn': '언어 (EN)',
+        'nav.magazine': '밥도둑 매거진',
+        'nav.map': '맛집 지도',
+        'nav.more': '더보기',
+        'nav.navAria': '주요 메뉴',
+        'nav.today': '오늘의 꽁밥',
+        'nav.topAria': '맨 위로',
+      },
+      en: {
+        docTitle: 'Food log · Babdoduk',
+        'a11y.scrollProgress': 'Page scroll progress',
+        'cal.fri': 'Fr',
+        'cal.mon': 'Mo',
+        'cal.sat': 'Sa',
+        'cal.sun': 'Su',
+        'cal.thu': 'Th',
+        'cal.tue': 'Tu',
+        'cal.wed': 'We',
+        'food.calNext': 'Next month',
+        'food.calPrev': 'Previous month',
+        'food.cardMonthPick': 'Month total',
+        'food.cardWeekPick': 'Week total (ISO)',
+        'food.fetchErr': 'Couldn\'t load the food log.',
+        'food.heading': 'Food expense log',
+        'food.input.addRow': 'Add row',
+        'food.input.colMeal': 'Meal',
+        'food.input.colPrice': 'Amount (₩)',
+        'food.input.dateLabel': 'Date',
+        'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
+        'food.input.errNoDate': 'Pick a date.',
+        'food.input.hint': 'Saved in this browser only. A date saved again is overwritten, and clearing browser data deletes it.',
+        'food.input.reset': 'Reset',
+        'food.input.rowMeal': 'Meal, row {n}',
+        'food.input.rowPrice': 'Amount (₩), row {n}',
+        'food.input.save': 'Save',
+        'food.input.saved': 'Saved. Check the summaries and calendar.',
+        'food.input.sectionTitle': 'Add spending',
+        'food.input.totalLabel': 'Total (₩)',
+        'food.legend': '● marks days saved in this browser · published {shared} days · this browser {browser} days',
+        'food.pickMonth': 'Month',
+        'food.pickWeek': 'Week',
+        'food.pickYear': 'Year',
+        'food.src.browser': 'Saved in this browser',
+        'food.src.replaces': 'shown instead of the published entry for this date',
+        'food.src.shared': 'Babdoduk’s published log',
+        'footer.contact': 'Contact',
+        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.country': 'South Korea',
+        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.navAria': 'Site links',
+        'nav.event': 'News & events',
+        'nav.event.open': 'News & events',
+        'nav.history': 'History',
+        'nav.homeAria': 'Home',
+        'nav.instagram': 'Instagram',
+        'nav.lab': 'Lab',
+        'nav.labFeed': 'Ggongbab lab',
+        'nav.langAria': 'Switch to Korean',
+        'nav.langBtn': '한국어',
+        'nav.magazine': 'Magazine',
+        'nav.map': 'Food map',
+        'nav.more': 'More',
+        'nav.navAria': 'Main menu',
+        'nav.today': 'Today\'s free food',
+        'nav.topAria': 'Back to top',
       }
-
-      window.babdodukApplyLang = applyLang;
-      window.babdodukGetLang = function () {
-        return document.documentElement.lang === 'en' ? 'en' : 'ko';
-      };
-
-      var saved = 'ko';
-      try {
-        saved = localStorage.getItem('babdoduk-lang') || 'ko';
-      } catch (e) {}
-      applyLang(saved === 'en' ? 'en' : 'ko');
-
-      var langBtnEl = document.getElementById('langToggle');
-      if (langBtnEl) {
-        langBtnEl.addEventListener('click', function () {
-          var next = window.babdodukGetLang() === 'ko' ? 'en' : 'ko';
-          applyLang(next);
-        });
-      }
-    })();
+    };
   </script>
-
-  <script>
-    (function () {
-      var bar = document.getElementById('scrollProgressBar');
-      var wrap = bar && bar.parentElement;
-      function onScroll() {
-        if (!bar) return;
-        var el = document.documentElement;
-        var total = el.scrollHeight - el.clientHeight;
-        var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
-        bar.style.width = pct + '%';
-        if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
-      }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll);
-      onScroll();
-
-      document.querySelectorAll('[data-mega]').forEach(function (mega) {
-        mega.addEventListener('click', function (e) {
-          e.stopPropagation();
-        });
-        var trigger = mega.querySelector('.nav-mega-trigger');
-        var panel = mega.querySelector('.nav-mega-panel');
-        if (!trigger || !panel) return;
-        trigger.addEventListener('click', function (e) {
-          e.stopPropagation();
-          var willOpen = !mega.classList.contains('is-open');
-          document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-            m.classList.remove('is-open');
-            var t = m.querySelector('.nav-mega-trigger');
-            if (t) t.setAttribute('aria-expanded', 'false');
-          });
-          if (willOpen) {
-            mega.classList.add('is-open');
-            trigger.setAttribute('aria-expanded', 'true');
-          }
-        });
-      });
-      document.addEventListener('click', function () {
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) t.setAttribute('aria-expanded', 'false');
-        });
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key !== 'Escape') return;
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) {
-            t.setAttribute('aria-expanded', 'false');
-            t.focus();
-          }
-        });
-      });
-
-    })();
-  </script>
+  <script src="js/site.js"></script>
+  <!-- @end i18n -->
   <script>
     (function () {
       function parseISODate(iso) {
@@ -1481,7 +1378,7 @@
           }
         });
 
-      window.addEventListener('babdoduk-langchange', function () {
+      document.addEventListener('babdoduk-lang', function () {
         if (!gridEl || !detailEl) return;
         document.querySelectorAll('#foodInputBody select.food-in-meal').forEach(function (sel) {
           fillMealSelectElement(sel, sel.value);

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/magazine-sources.schema.json",
+  "title": "Magazine source registry: scripts/discovery/sources.json",
+  "description": "Written by people: every source the magazine collects from. One entry per source; a proposal adds or changes one entry. scripts/discovery/registry.py validates the same rules (registry.AUTHORED lists the fields) and adds the ones a schema cannot say. A source is collected only through its publisher's own feed or an official API (docs/MAGAZINE_DISCOVERY.md).",
+  "type": "object",
+  "required": ["version", "sources"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"type": "integer", "const": 1},
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/source"}
+    }
+  },
+  "$defs": {
+    "lane": {"enum": ["tips", "trend", "health", "habit"]},
+    "source": {
+      "type": "object",
+      "required": ["id", "name", "type", "enabled", "trustTier", "categories", "discoveryMethod", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "maxLength": 64},
+        "name": {"type": "string", "minLength": 1},
+        "type": {"enum": ["rss", "youtube_channel", "youtube_search", "web_search", "instagram"]},
+        "url": {"type": "string", "pattern": "^https?://"},
+        "channelId": {"type": "string", "pattern": "^UC[A-Za-z0-9_-]+$"},
+        "enabled": {"type": "boolean"},
+        "trustTier": {"description": "A: official or expert; B: established media or a known creator; C: discovery only, never health advice.",
+                      "enum": ["A", "B", "C"]},
+        "categories": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/lane"}},
+        "discoveryMethod": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["recipe", "news", "research", "video", "mixed"]},
+        "lane": {"$ref": "#/$defs/lane"},
+        "queries": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "objective": {"type": "string", "minLength": 1},
+        "requireFood": {"type": "boolean"},
+        "excerpt": {"description": "false: cards from this source show title, source, date and link only, no excerpt and no photo (required for a newspaper association member).", "type": "boolean"},
+        "permission": {"description": "Who allowed collection, when and where it is recorded, where the owner's permission is needed (a Naver blog's RSS; a newspaper association member, whose articles are collected only with it).", "type": "string", "minLength": 1},
+        "withdrawn": {"description": "The owner's request to leave: when, how it was received. The source stays disabled and its stories leave the archive.", "type": "string", "minLength": 1},
+        "localOnly": {"type": "boolean"},
+        "pagedFeed": {"description": "The feed pages back (WordPress: ?paged=N).", "const": "wordpress"},
+        "feedPages": {"description": "Pages read: the feed and its older pages.", "type": "integer", "minimum": 1, "maximum": 5},
+        "note": {"type": "string", "minLength": 1},
+        "knownIssue": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

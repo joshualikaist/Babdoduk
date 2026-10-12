@@ -11,7 +11,7 @@ Run from the repository root, one gate at a time, because parallel browser runs 
 | --- | --- | --- |
 | Tests (unit, contracts, UI; includes a full site-UI run) | `python -m pytest tests -q` | ~90 s |
 | Generated content | `python scripts/validate_content.py` | seconds |
-| Shared nav and footer match `shared/` | `python scripts/sync_site_chrome.py --check` | seconds |
+| Shared nav, footer, translations, labels and page content match `shared/`, `i18n/` and `data/content/` | `python scripts/sync_site_chrome.py --check` | seconds |
 | Site UI: every public page, 5 sizes, KO/EN, failures, chrome guardian and visual baselines | `python scripts/check_site_ui.py` | ~90 s |
 | Food hub UI: fixture, preview and production pages | `python scripts/check_ggongbab_ui.py` | ~20 s |
 

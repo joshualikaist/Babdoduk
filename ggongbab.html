@@ -49,7 +49,7 @@
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
-      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="홈으로">Babdoduk</a>
       <div class="nav-mega-row">
         <a class="site-nav-direct is-current" href="ggongbab.html" aria-current="page" data-i18n="nav.today">오늘의 꽁밥</a>
         <a class="site-nav-direct" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
@@ -105,375 +105,275 @@
     </div>
   </footer>
 
+  <!-- @i18n:strings -->
   <script>
-    (function () {
-      var STR = {
-        ko: {
-          docTitle: '오늘의 꽁밥 · 밥도둑 Babdoduk',
-          'a11y.scrollProgress': '페이지 스크롤 진행',
-          'nav.navAria': '주요 메뉴',
-          'nav.homeAria': '홈으로',
-          'nav.history': '역사',
-          'nav.instagram': '인스타그램',
-          'nav.today': '오늘의 꽁밥',
-          'nav.more': '더보기',
-          'nav.map': '맛집 지도',
-          'nav.magazine': '밥도둑 매거진',
-          'nav.event': '소식·이벤트',
-          'nav.event.open': '소식·이벤트',
-          'nav.langBtn': '언어 (EN)',
-          'nav.langAria': '영어로 전환',
-          'ggongbab.title': '오늘의 꽁밥',
-          'gg.tab.free': '꽁밥',
-          'gg.tab.menu': '학식',
-          'gg.tabsAria': '꽁밥과 학식',
-          'gg.next': '다음 꽁밥',
-          'gg.radar.label': '오늘의 꽁밥 레이더',
-          'gg.radar.zero': '🌵 오늘은 꽁밥 가뭄',
-          'gg.radar.some': '🍙 한 끼는 건질 수 있어요',
-          'gg.radar.many': '🔥 오늘 꽁밥 풍년',
-          'gg.radar.count': '오늘 {n}개',
-          'gg.radar.next': '가장 빠른 꽁밥',
-          'gg.radar.cta': '자세히 보기 →',
-          'gg.emptyTodayTitle': '🌵 오늘은 꽁밥 가뭄이에요',
-          'gg.emptyTodayBody': '오늘 학식 {n}곳',
-          'gg.toMenu': '오늘 학식 보러가기 →',
-          'gg.source.mail': 'KAIST 메일',
-          'gg.source.portal': 'KAIST 포탈',
-          'gg.source.public': 'KAIST 공식 공지',
-          'gg.source.manual': '밥도둑 등록',
-          'gg.metric.free': '오늘 꽁밥 {n}개',
-          'gg.metric.menu': '학식 {n}곳',
-          'gg.metric.menuStale': '학식 업데이트 중',
-          'km.title': '이번 주 학식',
-          'km.today': '오늘',
-          'km.daysAria': '날짜',
-          'km.noMenuYet': '아직 올라온 메뉴가 없어요.',
-          'km.dayError': '메뉴를 불러오지 못했어요.',
-          'km.emptyMeal': '이 시간대에 공개된 메뉴가 없어요.',
-          'km.breakfast': '아침',
-          'km.lunch': '점심',
-          'km.dinner': '저녁',
-          'km.fav': '즐겨찾기',
-          'km.unfav': '즐겨찾기 해제',
-          'km.errorTitle': '오늘 메뉴를 불러오지 못했어요.',
-          'km.toFree': '꽁밥 보러가기 →',
-          'km.staleTitle': '오늘 메뉴 업데이트 중이에요.',
-          'km.showStale': '최근 메뉴 보기',
-          'gg.today': '오늘',
-          'gg.tomorrow': '내일',
-          'gg.thisWeek': '이번 주',
-          'gg.upcoming': '전체 예정',
-          'gg.filter.all': '전체',
-          'gg.filter.meal': '식사',
-          'gg.filter.snack': '간식',
-          'gg.filter.refreshment': '다과',
-          'gg.filtersAria': '기간과 음식 종류 필터',
-          'gg.food.meal': '식사',
-          'gg.food.lunchbox': '도시락',
-          'gg.food.snack': '간식',
-          'gg.food.refreshment': '다과',
-          'gg.food.beverage': '음료',
-          'gg.food.coupon': '식권',
-          'gg.food.other': '기타',
-          'gg.food.unknown': '',
-          'gg.foodProvided': '식사 제공',
-          'gg.regNotNeeded': '신청 없이 참여',
-          'gg.regRequired': '사전 신청',
-          'gg.eligibility': '대상',
-          'gg.register': '신청하기',
-          'gg.map': '지도',
-          'gg.updated': '마지막 변경',
-          'gg.archive.title': '지난 꽁밥 기록',
-          'gg.news.title': '먹거리 소식',
-          'gg.news.loading': '소식을 확인하고 있어요.',
-          'gg.news.error': '소식을 불러오지 못했어요.',
-          'gg.news.empty': '최근 30일 등록된 소식 없음',
-          'gg.archive.lead': '최근 30일 · 종료된 일정',
-          'gg.archive.ended': '종료',
-          'gg.archive.record': '당시 공개된 꽁밥 안내 기록',
-          'gg.archive.source': '당시 공지 보기',
-          'gg.archive.empty': '최근 30일 기록 없음',
-          'gg.archive.error': '지난 기록을 불러오지 못했어요.',
-          'gg.archive.loading': '지난 꽁밥 기록을 확인하고 있어요.',
-          'gg.archive.more': '지난 기록 {n}개 더 보기',
-          'gg.archive.less': '지난 기록 접기',
-          'gg.newTab': '(새 창)',
-          'gg.errorTitle': '행사 목록을 불러오지 못했어요.',
-          'gg.errorBody': '잠시 후 다시 시도해 주세요.',
-          'gg.retry': '다시 시도',
-          'gg.emptyTitle': '이번 조건에 맞는 꽁밥이 아직 없어요.',
-          'gg.noscript': '행사 목록을 보려면 JavaScript를 켜 주세요.',
-          'gg.choose.title': '뭘 먹을지 아직 못 정했다면',
-          'gg.choose.cta': '메뉴 고르기 →',
-          'gg.timeTbd': '시간 미정',
-          'gg.placeTbd': '장소 미정',
-          'gg.organizer': '주최',
-          'gg.officialNotice': '공식 공지',
-          'gg.deadlineClosed': '신청 마감',
-          'gg.deadlineTodayAt': '오늘 마감 · {time}',
-          'gg.deadlineAt': '마감 · {date}',
-          'gg.foodFallback': '음식 제공',
-          'gg.metric.menuLoading': '학식 확인 중',
-          'gg.metric.freeLoading': '오늘 꽁밥 확인 중',
-          'gg.metric.freeError': '꽁밥 불러오기 실패',
-          'gg.metric.menuError': '학식 불러오기 실패',
-          'gg.menu.freeHint': '꽁밥은 {n}개 있어요.',
-          'km.expand': '전체 메뉴 {n}개 보기 ↓',
-          'km.collapse': '메뉴 접기 ↑',
-          'km.count': '{meal} 메뉴 {n}곳',
-          'km.mealsAria': '식사 시간',
-          'km.mealLink': '{meal} 메뉴 보기 →',
-          'km.emptyTitle': '오늘 이 시간대에 공개된 메뉴가 없어요.',
-          'km.staleEmpty': '최근 메뉴를 보려면 아래를 눌러 주세요.',
-          'km.staleSaved': '최근 저장된 메뉴:',
-          'km.hideStale': '최근 메뉴 숨기기',
-          'km.recentTitle': '최근 학식 메뉴',
-          'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
-          'footer.contact': '문의',
-          'footer.country': '대한민국',
-          'footer.navAria': '사이트 바로가기',
-          'footer.fine':
-            '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
-        },
-        en: {
-          docTitle: "Today's free food · Babdoduk",
-          'a11y.scrollProgress': 'Page scroll progress',
-          'nav.navAria': 'Main menu',
-          'nav.homeAria': 'Home',
-          'nav.history': 'History',
-          'nav.instagram': 'Instagram',
-          'nav.today': "Today's free food",
-          'nav.more': 'More',
-          'nav.map': 'Food map',
-          'nav.magazine': 'Magazine',
-          'nav.event': 'News & events',
-          'nav.event.open': 'News & events',
-          'nav.langBtn': '한국어',
-          'nav.langAria': 'Switch to Korean',
-          'ggongbab.title': "Today's free food",
-          'gg.tab.free': 'Free food',
-          'gg.tab.menu': 'Cafeteria',
-          'gg.tabsAria': 'Free food and cafeteria',
-          'gg.next': 'Next free meal',
-          'gg.radar.label': "Today's free-food radar",
-          'gg.radar.zero': '🌵 No free food today',
-          'gg.radar.some': '🍙 You can still grab a meal',
-          'gg.radar.many': '🔥 Free-food jackpot today',
-          'gg.radar.count': '{n} today',
-          'gg.radar.next': 'Soonest free meal',
-          'gg.radar.cta': 'See details →',
-          'gg.emptyTodayTitle': '🌵 No free food today',
-          'gg.emptyTodayBody': '{n} cafeterias today',
-          'gg.toMenu': 'See today’s cafeteria →',
-          'gg.source.mail': 'KAIST mail',
-          'gg.source.portal': 'KAIST portal',
-          'gg.source.public': 'KAIST notice',
-          'gg.source.manual': 'Added by Babdoduk',
-          'gg.metric.free': '{n} free meals today',
-          'gg.metric.menu': '{n} cafeterias',
-          'gg.metric.menuStale': 'Cafeteria updating',
-          'km.title': "This week's cafeteria",
-          'km.today': 'Today',
-          'km.daysAria': 'Date',
-          'km.noMenuYet': 'No menu has been posted yet.',
-          'km.dayError': 'Couldn’t load the menu.',
-          'km.emptyMeal': 'No menu published for this meal.',
-          'km.breakfast': 'Breakfast',
-          'km.lunch': 'Lunch',
-          'km.dinner': 'Dinner',
-          'km.fav': 'Favorite',
-          'km.unfav': 'Remove favorite',
-          'km.errorTitle': 'Could not load today’s menu.',
-          'km.toFree': 'See free food →',
-          'km.staleTitle': 'Today’s menu is still updating.',
-          'km.showStale': 'Show latest saved menu',
-          'gg.today': 'Today',
-          'gg.tomorrow': 'Tomorrow',
-          'gg.thisWeek': 'This week',
-          'gg.upcoming': 'All upcoming',
-          'gg.filter.all': 'All',
-          'gg.filter.meal': 'Meals',
-          'gg.filter.snack': 'Snacks',
-          'gg.filter.refreshment': 'Refreshments',
-          'gg.filtersAria': 'Filter by period and food type',
-          'gg.food.meal': 'Meal',
-          'gg.food.lunchbox': 'Lunch box',
-          'gg.food.snack': 'Snack',
-          'gg.food.refreshment': 'Refreshments',
-          'gg.food.beverage': 'Drinks',
-          'gg.food.coupon': 'Meal coupon',
-          'gg.food.other': 'Other',
-          'gg.food.unknown': '',
-          'gg.foodProvided': 'Food provided',
-          'gg.regNotNeeded': 'No registration',
-          'gg.regRequired': 'Registration required',
-          'gg.eligibility': 'Eligibility',
-          'gg.register': 'Register',
-          'gg.map': 'Map',
-          'gg.updated': 'Last changed',
-          'gg.archive.title': 'Past free-food listings',
-          'gg.news.title': 'Campus food news',
-          'gg.news.loading': 'Checking campus food news.',
-          'gg.news.error': 'Campus food news is unavailable.',
-          'gg.news.empty': 'No news added in the last 30 days',
-          'gg.archive.lead': 'Last 30 days · ended',
-          'gg.archive.ended': 'Ended',
-          'gg.archive.record': 'Previously published free-food listing',
-          'gg.archive.source': 'View original notice',
-          'gg.archive.empty': 'Nothing in the last 30 days',
-          'gg.archive.error': 'Couldn\'t load past listings.',
-          'gg.archive.loading': 'Checking past listings.',
-          'gg.archive.more': 'Show {n} more past listings',
-          'gg.archive.less': 'Show fewer past listings',
-          'gg.newTab': '(opens in a new tab)',
-          'gg.errorTitle': 'Could not load the event list.',
-          'gg.errorBody': 'Please try again in a moment.',
-          'gg.retry': 'Retry',
-          'gg.emptyTitle': 'No free-food events match this filter yet.',
-          'gg.noscript': 'Enable JavaScript to see the event list.',
-          'gg.choose.title': 'Still deciding what to eat?',
-          'gg.choose.cta': 'Choose a dish →',
-          'gg.timeTbd': 'Time TBA',
-          'gg.placeTbd': 'Place TBA',
-          'gg.organizer': 'Host',
-          'gg.officialNotice': 'Official notice',
-          'gg.deadlineClosed': 'Registration closed',
-          'gg.deadlineTodayAt': 'Closes today · {time}',
-          'gg.deadlineAt': 'Closes · {date}',
-          'gg.foodFallback': 'Food provided',
-          'gg.metric.menuLoading': 'Checking cafeteria',
-          'gg.metric.freeLoading': 'Checking free food',
-          'gg.metric.freeError': 'Free food unavailable',
-          'gg.metric.menuError': 'Cafeteria unavailable',
-          'gg.menu.freeHint': '{n} free-food events today.',
-          'km.expand': 'Show all {n} items ↓',
-          'km.collapse': 'Show less ↑',
-          'km.count': '{meal}: {n} cafeterias',
-          'km.mealsAria': 'Meal time',
-          'km.mealLink': 'See {meal} menus →',
-          'km.emptyTitle': 'No menu published for this meal today.',
-          'km.staleEmpty': 'Open the latest saved menu below.',
-          'km.staleSaved': 'Latest saved menu:',
-          'km.hideStale': 'Hide latest menu',
-          'km.recentTitle': 'Latest cafeteria menu',
-          'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
-          'footer.contact': 'Contact',
-          'footer.country': 'South Korea',
-          'footer.navAria': 'Site links',
-          'footer.fine':
-            'Independent content site. For business registration or legal matters, please reach out by email.'
-        }
-      };
-      window.BABDODUK_STR = STR;
-      function applyLang(lang) {
-        if (lang !== 'en') lang = 'ko';
-        document.documentElement.lang = lang;
-        try { localStorage.setItem('babdoduk-lang', lang); } catch (e) {}
-        var T = STR[lang];
-        document.title = T.docTitle;
-        document.querySelectorAll('[data-i18n]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n');
-          if (T[k] !== undefined) el.textContent = T[k];
-        });
-        document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-html');
-          if (T[k] !== undefined) el.innerHTML = T[k];
-        });
-        document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-aria-key');
-          if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
-        });
-        document.querySelectorAll('[data-i18n-alt]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-alt');
-          if (T[k] !== undefined) el.setAttribute('alt', T[k]);
-        });
-        var navInner = document.getElementById('siteNavInner');
-        if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
-        var sp = document.getElementById('scrollProgressWrap');
-        if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-        try {
-          document.dispatchEvent(new CustomEvent('babdoduk-lang', { detail: lang }));
-        } catch (e) {}
+    // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.
+    window.BABDODUK_STR = {
+      ko: {
+        docTitle: '오늘의 꽁밥 · 밥도둑 Babdoduk',
+        'a11y.scrollProgress': '페이지 스크롤 진행',
+        'footer.contact': '문의',
+        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.country': '대한민국',
+        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.navAria': '사이트 바로가기',
+        'gg.archive.empty': '최근 30일 기록 없음',
+        'gg.archive.ended': '종료',
+        'gg.archive.error': '지난 기록을 불러오지 못했어요.',
+        'gg.archive.lead': '최근 30일 · 종료된 일정',
+        'gg.archive.less': '지난 기록 접기',
+        'gg.archive.loading': '지난 꽁밥 기록을 확인하고 있어요.',
+        'gg.archive.more': '지난 기록 {n}개 더 보기',
+        'gg.archive.record': '당시 공개된 꽁밥 안내 기록',
+        'gg.archive.source': '당시 공지 보기',
+        'gg.archive.title': '지난 꽁밥 기록',
+        'gg.choose.cta': '메뉴 고르기 →',
+        'gg.choose.title': '뭘 먹을지 아직 못 정했다면',
+        'gg.deadlineAt': '마감 · {date}',
+        'gg.deadlineClosed': '신청 마감',
+        'gg.deadlineTodayAt': '오늘 마감 · {time}',
+        'gg.eligibility': '대상',
+        'gg.emptyTitle': '이번 조건에 맞는 꽁밥이 아직 없어요.',
+        'gg.emptyTodayBody': '오늘 학식 {n}곳',
+        'gg.emptyTodayTitle': '🌵 오늘은 꽁밥 가뭄이에요',
+        'gg.errorBody': '잠시 후 다시 시도해 주세요.',
+        'gg.errorTitle': '행사 목록을 불러오지 못했어요.',
+        'gg.filter.all': '전체',
+        'gg.filter.meal': '식사',
+        'gg.filter.refreshment': '다과',
+        'gg.filter.snack': '간식',
+        'gg.filtersAria': '기간과 음식 종류 필터',
+        'gg.food.beverage': '음료',
+        'gg.food.coupon': '식권',
+        'gg.food.lunchbox': '도시락',
+        'gg.food.meal': '식사',
+        'gg.food.other': '기타',
+        'gg.food.refreshment': '다과',
+        'gg.food.snack': '간식',
+        'gg.food.unknown': '',
+        'gg.foodFallback': '음식 제공',
+        'gg.foodProvided': '식사 제공',
+        'gg.map': '지도',
+        'gg.menu.freeHint': '꽁밥은 {n}개 있어요.',
+        'gg.metric.free': '오늘 꽁밥 {n}개',
+        'gg.metric.freeError': '꽁밥 불러오기 실패',
+        'gg.metric.freeLoading': '오늘 꽁밥 확인 중',
+        'gg.metric.menu': '학식 {n}곳',
+        'gg.metric.menuError': '학식 불러오기 실패',
+        'gg.metric.menuLoading': '학식 확인 중',
+        'gg.metric.menuStale': '학식 업데이트 중',
+        'gg.newTab': '(새 창)',
+        'gg.news.empty': '최근 30일 등록된 소식 없음',
+        'gg.news.error': '소식을 불러오지 못했어요.',
+        'gg.news.loading': '소식을 확인하고 있어요.',
+        'gg.news.title': '먹거리 소식',
+        'gg.next': '다음 꽁밥',
+        'gg.noscript': '행사 목록을 보려면 JavaScript를 켜 주세요.',
+        'gg.officialNotice': '공식 공지',
+        'gg.organizer': '주최',
+        'gg.placeTbd': '장소 미정',
+        'gg.radar.count': '오늘 {n}개',
+        'gg.radar.cta': '자세히 보기 →',
+        'gg.radar.label': '오늘의 꽁밥 레이더',
+        'gg.radar.many': '🔥 오늘 꽁밥 풍년',
+        'gg.radar.next': '가장 빠른 꽁밥',
+        'gg.radar.some': '🍙 한 끼는 건질 수 있어요',
+        'gg.radar.zero': '🌵 오늘은 꽁밥 가뭄',
+        'gg.regNotNeeded': '신청 없이 참여',
+        'gg.regRequired': '사전 신청',
+        'gg.register': '신청하기',
+        'gg.retry': '다시 시도',
+        'gg.source.mail': 'KAIST 메일',
+        'gg.source.manual': '밥도둑 등록',
+        'gg.source.portal': 'KAIST 포탈',
+        'gg.source.public': 'KAIST 공식 공지',
+        'gg.tab.free': '꽁밥',
+        'gg.tab.menu': '학식',
+        'gg.tabsAria': '꽁밥과 학식',
+        'gg.thisWeek': '이번 주',
+        'gg.timeTbd': '시간 미정',
+        'gg.toMenu': '오늘 학식 보러가기 →',
+        'gg.today': '오늘',
+        'gg.tomorrow': '내일',
+        'gg.upcoming': '전체 예정',
+        'gg.updated': '마지막 변경',
+        'ggongbab.title': '오늘의 꽁밥',
+        'km.breakfast': '아침',
+        'km.collapse': '메뉴 접기 ↑',
+        'km.count': '{meal} 메뉴 {n}곳',
+        'km.dayError': '메뉴를 불러오지 못했어요.',
+        'km.daysAria': '날짜',
+        'km.dinner': '저녁',
+        'km.emptyMeal': '이 시간대에 공개된 메뉴가 없어요.',
+        'km.emptyTitle': '오늘 이 시간대에 공개된 메뉴가 없어요.',
+        'km.errorTitle': '오늘 메뉴를 불러오지 못했어요.',
+        'km.expand': '전체 메뉴 {n}개 보기 ↓',
+        'km.fav': '즐겨찾기',
+        'km.hideStale': '최근 메뉴 숨기기',
+        'km.lunch': '점심',
+        'km.mealLink': '{meal} 메뉴 보기 →',
+        'km.mealsAria': '식사 시간',
+        'km.noMenuYet': '아직 올라온 메뉴가 없어요.',
+        'km.recentTitle': '최근 학식 메뉴',
+        'km.showStale': '최근 메뉴 보기',
+        'km.staleEmpty': '최근 메뉴를 보려면 아래를 눌러 주세요.',
+        'km.staleSaved': '최근 저장된 메뉴:',
+        'km.staleTitle': '오늘 메뉴 업데이트 중이에요.',
+        'km.title': '이번 주 학식',
+        'km.toFree': '꽁밥 보러가기 →',
+        'km.today': '오늘',
+        'km.unfav': '즐겨찾기 해제',
+        'nav.event': '소식·이벤트',
+        'nav.event.open': '소식·이벤트',
+        'nav.history': '역사',
+        'nav.homeAria': '홈으로',
+        'nav.instagram': '인스타그램',
+        'nav.lab': '실험실',
+        'nav.labFeed': '꽁밥 실험',
+        'nav.langAria': '영어로 전환',
+        'nav.langBtn': '언어 (EN)',
+        'nav.magazine': '밥도둑 매거진',
+        'nav.map': '맛집 지도',
+        'nav.more': '더보기',
+        'nav.navAria': '주요 메뉴',
+        'nav.today': '오늘의 꽁밥',
+        'nav.topAria': '맨 위로',
+      },
+      en: {
+        docTitle: 'Today\'s free food · Babdoduk',
+        'a11y.scrollProgress': 'Page scroll progress',
+        'footer.contact': 'Contact',
+        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.country': 'South Korea',
+        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.navAria': 'Site links',
+        'gg.archive.empty': 'Nothing in the last 30 days',
+        'gg.archive.ended': 'Ended',
+        'gg.archive.error': 'Couldn\'t load past listings.',
+        'gg.archive.lead': 'Last 30 days · ended',
+        'gg.archive.less': 'Show fewer past listings',
+        'gg.archive.loading': 'Checking past listings.',
+        'gg.archive.more': 'Show {n} more past listings',
+        'gg.archive.record': 'Previously published free-food listing',
+        'gg.archive.source': 'View original notice',
+        'gg.archive.title': 'Past free-food listings',
+        'gg.choose.cta': 'Choose a dish →',
+        'gg.choose.title': 'Still deciding what to eat?',
+        'gg.deadlineAt': 'Closes · {date}',
+        'gg.deadlineClosed': 'Registration closed',
+        'gg.deadlineTodayAt': 'Closes today · {time}',
+        'gg.eligibility': 'Eligibility',
+        'gg.emptyTitle': 'No free-food events match this filter yet.',
+        'gg.emptyTodayBody': '{n} cafeterias today',
+        'gg.emptyTodayTitle': '🌵 No free food today',
+        'gg.errorBody': 'Please try again in a moment.',
+        'gg.errorTitle': 'Could not load the event list.',
+        'gg.filter.all': 'All',
+        'gg.filter.meal': 'Meals',
+        'gg.filter.refreshment': 'Refreshments',
+        'gg.filter.snack': 'Snacks',
+        'gg.filtersAria': 'Filter by period and food type',
+        'gg.food.beverage': 'Drinks',
+        'gg.food.coupon': 'Meal voucher',
+        'gg.food.lunchbox': 'Lunch box',
+        'gg.food.meal': 'Meal',
+        'gg.food.other': 'Other',
+        'gg.food.refreshment': 'Refreshments',
+        'gg.food.snack': 'Snack',
+        'gg.food.unknown': '',
+        'gg.foodFallback': 'Food provided',
+        'gg.foodProvided': 'Food provided',
+        'gg.map': 'Map',
+        'gg.menu.freeHint': '{n} free-food events today.',
+        'gg.metric.free': '{n} free meals today',
+        'gg.metric.freeError': 'Free food unavailable',
+        'gg.metric.freeLoading': 'Checking free food',
+        'gg.metric.menu': '{n} cafeterias',
+        'gg.metric.menuError': 'Cafeteria unavailable',
+        'gg.metric.menuLoading': 'Checking cafeteria',
+        'gg.metric.menuStale': 'Cafeteria updating',
+        'gg.newTab': '(opens in a new tab)',
+        'gg.news.empty': 'No news added in the last 30 days',
+        'gg.news.error': 'Campus food news is unavailable.',
+        'gg.news.loading': 'Checking campus food news.',
+        'gg.news.title': 'Campus food news',
+        'gg.next': 'Next free meal',
+        'gg.noscript': 'Enable JavaScript to see the event list.',
+        'gg.officialNotice': 'Official notice',
+        'gg.organizer': 'Host',
+        'gg.placeTbd': 'Place TBA',
+        'gg.radar.count': '{n} today',
+        'gg.radar.cta': 'See details →',
+        'gg.radar.label': 'Today\'s free-food radar',
+        'gg.radar.many': '🔥 Free-food jackpot today',
+        'gg.radar.next': 'Soonest free meal',
+        'gg.radar.some': '🍙 You can still grab a meal',
+        'gg.radar.zero': '🌵 No free food today',
+        'gg.regNotNeeded': 'No registration',
+        'gg.regRequired': 'Registration required',
+        'gg.register': 'Register',
+        'gg.retry': 'Retry',
+        'gg.source.mail': 'KAIST mail',
+        'gg.source.manual': 'Added by Babdoduk',
+        'gg.source.portal': 'KAIST Portal',
+        'gg.source.public': 'KAIST notice',
+        'gg.tab.free': 'Free food',
+        'gg.tab.menu': 'Cafeteria',
+        'gg.tabsAria': 'Free food and cafeteria',
+        'gg.thisWeek': 'This week',
+        'gg.timeTbd': 'Time TBA',
+        'gg.toMenu': 'See today’s cafeteria →',
+        'gg.today': 'Today',
+        'gg.tomorrow': 'Tomorrow',
+        'gg.upcoming': 'All upcoming',
+        'gg.updated': 'Last changed',
+        'ggongbab.title': 'Today\'s free food',
+        'km.breakfast': 'Breakfast',
+        'km.collapse': 'Show less ↑',
+        'km.count': '{meal}: {n} cafeterias',
+        'km.dayError': 'Couldn’t load the menu.',
+        'km.daysAria': 'Date',
+        'km.dinner': 'Dinner',
+        'km.emptyMeal': 'No menu published for this meal.',
+        'km.emptyTitle': 'No menu published for this meal today.',
+        'km.errorTitle': 'Could not load today’s menu.',
+        'km.expand': 'Show all {n} items ↓',
+        'km.fav': 'Favorite',
+        'km.hideStale': 'Hide latest menu',
+        'km.lunch': 'Lunch',
+        'km.mealLink': 'See {meal} menus →',
+        'km.mealsAria': 'Meal time',
+        'km.noMenuYet': 'No menu has been posted yet.',
+        'km.recentTitle': 'Latest cafeteria menu',
+        'km.showStale': 'Show latest saved menu',
+        'km.staleEmpty': 'Open the latest saved menu below.',
+        'km.staleSaved': 'Latest saved menu:',
+        'km.staleTitle': 'Today’s menu is still updating.',
+        'km.title': 'This week\'s cafeteria',
+        'km.toFree': 'See free food →',
+        'km.today': 'Today',
+        'km.unfav': 'Remove favorite',
+        'nav.event': 'News & events',
+        'nav.event.open': 'News & events',
+        'nav.history': 'History',
+        'nav.homeAria': 'Home',
+        'nav.instagram': 'Instagram',
+        'nav.lab': 'Lab',
+        'nav.labFeed': 'Ggongbab lab',
+        'nav.langAria': 'Switch to Korean',
+        'nav.langBtn': '한국어',
+        'nav.magazine': 'Magazine',
+        'nav.map': 'Food map',
+        'nav.more': 'More',
+        'nav.navAria': 'Main menu',
+        'nav.today': 'Today\'s free food',
+        'nav.topAria': 'Back to top',
       }
-      window.babdodukApplyLang = applyLang;
-      window.babdodukGetLang = function () {
-        return document.documentElement.lang === 'en' ? 'en' : 'ko';
-      };
-      var saved = 'ko';
-      try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
-      applyLang(saved === 'en' ? 'en' : 'ko');
-      var langBtnEl = document.getElementById('langToggle');
-      if (langBtnEl) {
-        langBtnEl.addEventListener('click', function () {
-          applyLang(window.babdodukGetLang() === 'ko' ? 'en' : 'ko');
-        });
-      }
-    })();
+    };
   </script>
+  <script src="js/site.js"></script>
+  <!-- @end i18n -->
 
-  <script>
-    (function () {
-      var bar = document.getElementById('scrollProgressBar');
-      var wrap = bar && bar.parentElement;
-      function onScroll() {
-        if (!bar) return;
-        var el = document.documentElement;
-        var total = el.scrollHeight - el.clientHeight;
-        var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
-        bar.style.width = pct + '%';
-        if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
-      }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll);
-      onScroll();
-    })();
-  </script>
-
-
-  <script>
-    (function () {
-      document.querySelectorAll('[data-mega]').forEach(function (mega) {
-        mega.addEventListener('click', function (e) {
-          e.stopPropagation();
-        });
-        var trigger = mega.querySelector('.nav-mega-trigger');
-        var panel = mega.querySelector('.nav-mega-panel');
-        if (!trigger || !panel) return;
-        trigger.addEventListener('click', function (e) {
-          e.stopPropagation();
-          var willOpen = !mega.classList.contains('is-open');
-          document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-            m.classList.remove('is-open');
-            var t = m.querySelector('.nav-mega-trigger');
-            if (t) t.setAttribute('aria-expanded', 'false');
-          });
-          if (willOpen) {
-            mega.classList.add('is-open');
-            trigger.setAttribute('aria-expanded', 'true');
-          }
-        });
-      });
-      document.addEventListener('click', function () {
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) t.setAttribute('aria-expanded', 'false');
-        });
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key !== 'Escape') return;
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) {
-            t.setAttribute('aria-expanded', 'false');
-            t.focus();
-          }
-        });
-      });
-    })();
-  </script>
   <script src="js/kaist-menu.js"></script>
   <script src="js/ggongbab-select.js"></script>
   <script src="js/ggongbab.js"></script>
