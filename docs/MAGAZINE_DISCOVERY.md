@@ -49,7 +49,10 @@ only in an isolated virtual environment with an isolated home directory, and its
 there (RSS and Jina Reader available; YouTube needs yt-dlp; web search needs mcporter + Exa MCP;
 Instagram needs OpenCLI with a logged-in desktop Chrome). Nothing from it is imported, vendored or
 installed in the repository. Babdoduk implements the same routes in its own code:
-- RSS: `adapters/rss.py` (stdlib parser, same fields as feedparser for our feeds);
+- RSS: `adapters/rss.py` (stdlib parser, same fields as feedparser for our feeds). A WordPress feed
+  registered with `"pagedFeed": "wordpress", "feedPages": N` (N at most 5) is also read at
+  `?paged=2…N`, 2 s apart, stopping at the first failed or repeated page, so a recipe blog brings a
+  reserve of evergreen stories for the five-per-lane rule, not only its newest posts;
 - web search: `adapters/exa_mcp.py`, a small MCP client for the same hosted Exa server Agent Reach
   configures through mcporter, with **no API key**;
 - web reading: `web_fetch_exa`, then Jina Reader (`r.jina.ai`) for public URLs only;

@@ -470,3 +470,46 @@ def test_a_repeated_embed_heading_is_dropped_but_a_normal_sentence_is_kept():
         "Chicken katsu with caviar is one of those")
     normal = "Miso Eggplant Stir-Fry recipe with silky Japanese eggplant in a sweet-savory glaze."
     assert select.card_summary(normal, "Miso Eggplant Stir-Fry") == normal
+
+
+def _feed(*slugs: str) -> bytes:
+    items = "".join(f"<item><title>Recipe {s}</title><link>https://blog.example.org/{s}/</link>"
+                    f"<pubDate>Mon, 05 Oct 2026 09:00:00 +0000</pubDate><description>Recipe {s}.</description></item>"
+                    for s in slugs)
+    return f"<rss version='2.0'><channel><title>Blog</title>{items}</channel></rss>".encode()
+
+
+def test_a_wordpress_feed_brings_its_older_pages_politely():
+    source = {"id": "blog-x", "url": "https://blog.example.org/feed/", "pagedFeed": "wordpress", "feedPages": 3}
+    assert rss.page_urls(source) == ["https://blog.example.org/feed/", "https://blog.example.org/feed/?paged=2",
+                                     "https://blog.example.org/feed/?paged=3"]
+    assert rss.page_urls(dict(source, url="https://b.example.org/?feed=rss2"))[1] == "https://b.example.org/?feed=rss2&paged=2"
+    assert rss.page_urls(dict(source, pagedFeed=None)) == ["https://blog.example.org/feed/"]
+    pages = {source["url"]: _feed("a", "b"), source["url"] + "?paged=2": _feed("c", "d")}
+    asked, pauses = [], []
+
+    def fetcher(url, accept):
+        asked.append(url)
+        if url not in pages:
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)   # past WordPress's last page
+        return pages[url]
+
+    result = rss.discover(source, fetcher=fetcher, sleep=pauses.append)
+    assert result.status == adapters.OK and [i["sourceUrl"].rsplit("/", 2)[1] for i in result.items] == ["a", "b", "c", "d"]
+    assert asked == rss.page_urls(source) and pauses == [rss.PAGE_PAUSE, rss.PAGE_PAUSE]
+    # A site that ignores ?paged answers with the first page again: nothing new, so it stops.
+    asked.clear()
+    result = rss.discover(source, fetcher=lambda url, accept: asked.append(url) or _feed("a", "b"), sleep=pauses.append)
+    assert len(result.items) == 2 and len(asked) == 2
+    # The feed itself failing is still a failure; only an older page is optional.
+    assert rss.discover(source, fetcher=lambda url, accept: 1 / 0, sleep=pauses.append).status == adapters.FETCH_FAILED
+
+
+def test_feed_pages_are_declared_in_the_registry_and_bounded():
+    base = {"id": "blog-x", "name": "X", "type": "rss", "url": "https://blog.example.org/feed/", "enabled": True,
+            "trustTier": "B", "categories": ["tips"], "kind": "recipe"}
+    assert registry.validate([dict(base, pagedFeed="wordpress", feedPages=3)]) == []
+    for bad in ({"feedPages": 3}, {"pagedFeed": "wordpress", "feedPages": 6}, {"pagedFeed": "tistory"},
+                {"pagedFeed": "wordpress", "feedPages": True}):
+        assert registry.validate([dict(base, **bad)]), bad
+    assert registry.validate(registry.load()) == []          # the committed registry
