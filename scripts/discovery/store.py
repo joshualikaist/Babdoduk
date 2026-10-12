@@ -39,6 +39,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Optional
 
+from . import hosts
 from .common import atomic_write, canonical_url, iso, parse_time, sha
 from .evidence import TREND_MAX_DAYS, food_story
 
@@ -47,6 +48,9 @@ MAX_CANDIDATES = 4000
 LIVE_DAYS = 14
 FINGERPRINT_DAYS = 7                 # 92% of re-sightings came within a week (2026-10-11)
 ANCHOR_DAYS = 30
+# YouTube API Services Developer Policies III.E.4: data from the API is kept at most 30 days, then
+# refreshed or deleted. A run that gets the video from the API again refreshes it (lastSeenAt).
+YOUTUBE_DAYS = 30
 FINGERPRINT = ("candidateId", "sourceId", "sourceUrl", "title", "discoveryMethod", "discoveryQuery", "discoveryLane",
                "discoveredAt", "discoveredSeq", "lastSeenAt", "rejectionReason", "duplicateOf")
 ANCHOR = FINGERPRINT + ("canonicalUrl", "canonicalHash", "sourceItemId", "contentHash", "publishedAt",
@@ -126,7 +130,14 @@ def compact(row: dict) -> dict:
     return out
 
 
+def youtube_row(row: dict) -> bool:
+    """A row about a YouTube video, whatever route found it: its data follows YouTube's terms."""
+    return row.get("medium") == "youtube" or hosts.youtube_page(row.get("sourceUrl") or "")
+
+
 def expired(row: dict, now: datetime) -> bool:
+    if youtube_row(row) and days_since(row.get("lastSeenAt"), now) > YOUTUBE_DAYS:
+        return True                          # published or not: not refreshed within 30 days
     if row.get("selected"):
         return bool(row.get("compact")) and days_since(row.get("selectedAt") or row.get("lastSeenAt"), now) > ANCHOR_DAYS
     limit = FINGERPRINT_DAYS if row.get("compact") else RETAIN_DAYS

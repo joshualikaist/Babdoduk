@@ -112,6 +112,10 @@ def naver_blog_feed(url: str) -> bool:
     return bool(_match(host_of(url), NAVER_BLOG_FEEDS))
 
 
+def youtube_page(url: str) -> bool:
+    return bool(_match(host_of(url), VIDEO_HOSTS))
+
+
 def classify_host(url: str) -> dict:
     """{"tier", "medium", "name", "commerce", "known"} for a search result URL."""
     host = host_of(url)
