@@ -31,7 +31,9 @@ LANES = ("tips", "trend", "health", "habit")
 STALE_DAYS = 120
 STATUSES = ("ACTIVE", "STALE", "DEGRADED", "DISABLED")
 AUTHORED = {"id", "name", "type", "url", "channelId", "enabled", "trustTier", "categories", "discoveryMethod",
-            "queries", "note", "knownIssue", "lane", "localOnly", "requireFood", "objective", "kind"}
+            "queries", "note", "knownIssue", "lane", "localOnly", "requireFood", "objective", "kind",
+            "pagedFeed", "feedPages"}
+MAX_FEED_PAGES = 5         # adapters.rss.page_urls: the feed and at most four older pages
 KINDS = {"recipe", "news", "research", "video", "mixed"}
 
 
@@ -103,6 +105,13 @@ def validate(sources: list[dict]) -> list[str]:
             errors.append(f"{sid}: kind must be one of {sorted(KINDS)}")
         if s.get("type") in ("youtube_search", "web_search") and s.get("enabled") and not s.get("queries"):
             errors.append(f"{sid}: a search source needs queries")
+        pages = s.get("feedPages")
+        if pages is not None and (not isinstance(pages, int) or isinstance(pages, bool) or not 1 <= pages <= MAX_FEED_PAGES):
+            errors.append(f"{sid}: feedPages must be a whole number from 1 to {MAX_FEED_PAGES}")
+        if s.get("pagedFeed") is not None and (s.get("pagedFeed") != "wordpress" or s.get("type") != "rss"):
+            errors.append(f"{sid}: pagedFeed is only \"wordpress\", on an rss source")
+        if (pages or 1) > 1 and s.get("pagedFeed") != "wordpress":
+            errors.append(f"{sid}: feedPages above 1 needs a feed that pages back (pagedFeed)")
         if s.get("type") == "instagram" and s.get("enabled"):
             errors.append(f"{sid}: Instagram needs an owner-provided local session (OWNER_CHECKPOINT)")
     return errors

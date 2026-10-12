@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import html
 import re
+import time
 import xml.etree.ElementTree as ET
 
 from ..common import clean_text, parse_time
@@ -85,14 +86,43 @@ def parse(payload: bytes) -> list[dict]:
     return [row for row in out if row["title"] and row["sourceUrl"]]
 
 
-def discover(source: dict, *, fetcher) -> AdapterResult:
+ACCEPT = "application/rss+xml, application/atom+xml, application/xml, text/xml"
+PAGE_PAUSE = 2.0          # seconds between two requests to the same site
+
+
+def page_urls(source: dict) -> list[str]:
+    """The feed, then its older pages when the registry says the feed pages back (WordPress
+    feeds take ?paged=N): a recipe blog then brings a reserve of evergreen stories, not only its
+    newest few."""
+    url = source["url"]
+    pages = int(source.get("feedPages") or 1)
+    if pages <= 1 or source.get("pagedFeed") != "wordpress":
+        return [url]
+    joiner = "&" if "?" in url else "?"
+    return [url] + [f"{url}{joiner}paged={n}" for n in range(2, pages + 1)]
+
+
+def discover(source: dict, *, fetcher, sleep=time.sleep) -> AdapterResult:
+    first, *older = page_urls(source)
     try:
-        payload = fetcher(source["url"], accept="application/rss+xml, application/atom+xml, application/xml, text/xml")
+        payload = fetcher(first, accept=ACCEPT)
     except Exception as exc:  # noqa: BLE001
         return AdapterResult(FETCH_FAILED, code=failure_code(exc))
     try:
         items = parse(payload)
     except ET.ParseError:
         return AdapterResult(PARSE_FAILED, code="PARSE")
+    seen = {row["sourceUrl"] for row in items}
+    for url in older:
+        sleep(PAGE_PAUSE)
+        try:
+            page = parse(fetcher(url, accept=ACCEPT))
+        except Exception:  # noqa: BLE001 - an older page is a bonus: the feed itself already answered
+            break
+        new = [row for row in page if row["sourceUrl"] not in seen]
+        if not new:
+            break                                 # past the last page, or a site that ignores ?paged
+        seen.update(row["sourceUrl"] for row in new)
+        items += new
     medium = "news" if source.get("kind") == "news" else "blog"
     return AdapterResult(OK, items=[dict(row, medium=medium) for row in items])
