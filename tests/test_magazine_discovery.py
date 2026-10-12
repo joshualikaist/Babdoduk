@@ -354,6 +354,31 @@ def test_the_index_names_the_newest_edition_and_no_latest_copy_is_kept(tmp_path)
     assert schema_errors(index, "magazine-index") == []
 
 
+def test_a_scheduled_run_builds_only_a_missing_edition(tmp_path, monkeypatch, capsys):
+    """--if-missing (every scheduled run): the first run that starts builds today's edition, and a
+    later one finds it built and contacts nothing."""
+    import refresh_magazine
+
+    class Discovered(Exception):
+        pass
+
+    def discover(*args, **kwargs):
+        raise Discovered
+
+    monkeypatch.setattr(refresh_magazine, "OUT", tmp_path)
+    monkeypatch.setattr(refresh_magazine, "now_kst", lambda: evaluate.NOW)          # 2026-09-29 10:30 KST
+    monkeypatch.setattr(pipeline, "discover", discover)
+    with pytest.raises(Discovered):                                                 # not built yet: it runs
+        refresh_magazine.main(["--if-missing"])
+    story = {"title": "t", "url": "https://a.example/1", "source": "s", "medium": "blog"}
+    (tmp_path / "2026-09-29.json").write_text(json.dumps({"date": "2026-09-29", "featured": None,
+                                                          "lanes": {"tips": {"items": [story]}}}), encoding="utf-8")
+    assert refresh_magazine.main(["--if-missing"]) == 0
+    assert "magazine 2026-09-29: already built" in capsys.readouterr().out
+    with pytest.raises(Discovered):                                                 # a manual run rebuilds
+        refresh_magazine.main([])
+
+
 def test_a_new_edition_keeps_its_contract_and_claims_no_schedule(result):
     from schema_check import schema_errors
     edition = result["edition"]

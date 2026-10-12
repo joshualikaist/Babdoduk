@@ -72,7 +72,7 @@ def test_dispatch_offers_every_mode_and_defaults_to_the_harmless_one():
 def test_schedule_runs_every_30_minutes_as_a_full_refresh():
     """Re-enabled after check, dry-run and review-report passed on main."""
     code = "\n".join(line for line in _text().splitlines() if not line.lstrip().startswith("#"))
-    assert re.findall(r"(?m)^\s*- cron:\s*'([^']+)'", code) == ["*/30 * * * *"]
+    assert re.findall(r"(?m)^\s*- cron:\s*'([^']+)'", code) == ["7,37 * * * *"]
     assert re.search(r"(?m)^\s*schedule:\s*$", code) and re.search(r"(?m)^\s*workflow_dispatch:\s*$", code)
     # A scheduled run has no inputs; it must fall back to full, never to a diagnostic mode.
     assert re.search(r"(?m)^\s*MODE:\s*\$\{\{\s*github\.event\.inputs\.mode \|\| 'full'\s*\}\}\s*$", code)
@@ -230,6 +230,37 @@ def test_each_job_validates_only_the_families_it_publishes():
     assert "families+=(magazine)" in step and "families+=(kaist-menu)" in step
     assert 'python scripts/validate_content.py --only "${families[@]}"' in step
     assert "pydantic" not in content            # the content job no longer imports ggongbab news
+
+
+def _crons(path: Path) -> list[str]:
+    code = "\n".join(line for line in path.read_text(encoding="utf-8").splitlines() if not line.lstrip().startswith("#"))
+    return re.findall(r"(?m)^\s*- cron:\s*'([^']+)'", code)
+
+
+def test_no_schedule_starts_on_the_hour_or_the_half_hour():
+    """GitHub delays or drops scheduled runs at :00 and :30: on 2026-10-12 the 10:00 KST magazine run
+    started at 15:44 and the 10:30 KST run never started."""
+    for path in (WORKFLOW, WORKFLOWS / "magazine-daily.yml"):
+        for cron in _crons(path):
+            minutes = cron.split()[0].split(",")
+            assert all(m.isdigit() and int(m) not in (0, 30) for m in minutes), (path.name, cron)
+
+
+def test_scheduled_magazine_runs_build_only_a_missing_edition():
+    """Every schedule but the early KAIST one runs the magazine with --if-missing: the first run that
+    starts publishes today's edition and the others are backups. A manual run always rebuilds."""
+    path = WORKFLOWS / "magazine-daily.yml"
+    assert _crons(path) == ["47 20 * * *", "7 1 * * *", "53 1 * * *", "23 3 * * *", "17 7 * * *"]
+    steps = _steps(path.read_text(encoding="utf-8"))
+    pick = steps["Choose jobs"]
+    dispatch = pick[pick.index('case "${TARGET:-both}" in'):pick.index('case "${SCHEDULE}" in')]
+    scheduled = pick[pick.index('case "${SCHEDULE}" in'):]
+    assert "once=1" not in dispatch
+    assert "'47 20 * * *') kaist=1 ;;" in scheduled and "*) mag=1; kaist=1; once=1 ;;" in scheduled
+    assert 'echo "once=${once}" >> "$GITHUB_OUTPUT"' in pick
+    refresh = steps["Refresh magazine"]
+    assert "ONCE: ${{ steps.pick.outputs.once }}" in refresh
+    assert "python scripts/refresh_magazine.py --if-missing" in refresh
 
 
 def test_the_content_job_runs_only_from_main_with_a_time_limit():
