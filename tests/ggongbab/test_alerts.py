@@ -92,6 +92,23 @@ def test_evaluate_reads_only_operational_files_and_emits_only_the_fixed_fields(t
     assert all(set(row) == FIELDS for row in again["history"])
 
 
+def test_the_alert_file_stays_readable_and_recovers_from_an_oversized_one(tmp_path):
+    """2026-10-12: a 200-entry history reached 16,392 bytes, over the 16 KB that
+    ops_storage.read_json accepts, so every later emit failed and no alert was written or pushed."""
+    from ggongbab.ops_storage import read_json
+    sink = alerts.FileSink(tmp_path)
+    reasons = ["SCAN_DELAYED", "SCAN_STALE", "OK", "WORKER_NOT_RUNNING", "AUTH_EXPIRED"]
+    for n in range(400):                         # many transitions: each emit changes the alert
+        sink.emit([alerts.Alert.of("portal", reasons[n % len(reasons)], n, NOW + n)])
+    assert (tmp_path / "ops-alerts.json").stat().st_size <= alerts.MAX_SINK_BYTES
+    assert read_json(tmp_path / "ops-alerts.json", {})["history"]          # still readable, still kept
+    (tmp_path / "ops-alerts.json").write_text('{"alerts": [], "history": [' + '{"x": 1},' * 3000 + '{}]}',
+                                              encoding="utf-8")                # the oversized file of 10-12
+    payload = sink.emit([alerts.Alert.of("portal", "AUTH_EXPIRED", 5, NOW)])
+    assert payload["alerts"][0]["reason"] == "AUTH_EXPIRED" and len(payload["history"]) == 1
+    assert read_json(tmp_path / "ops-alerts.json", {})["worst"] == "critical"
+
+
 def test_unknown_reasons_cannot_carry_free_text():
     a = alerts.Alert.of("portal", "SOME PRIVATE TEXT", 5, NOW)
     assert a.reason == "NO_SUCCESS_RECORDED" and "PRIVATE" not in json.dumps(asdict(a))

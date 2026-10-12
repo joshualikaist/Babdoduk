@@ -183,9 +183,12 @@ def emit_alerts(files, now, *, portal_running, toast=None):
         from .dooray_radar import RadarFiles
         found = evaluate(files.local, portal_running=portal_running,
                          radar_running=lock_held(RadarFiles(files.root).lock), now=now)
-        FileSink(files.local).emit(found)
     except Exception:
         return    # alerting must never stop the watchdog
+    try:
+        FileSink(files.local).emit(found)
+    except Exception:
+        pass      # a local file problem must not silence the pushes below
     try:
         from .notify import push_local
         # The external push is a no-op until an operator configures a provider.
