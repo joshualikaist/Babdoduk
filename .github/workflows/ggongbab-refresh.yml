@@ -175,6 +175,15 @@ jobs:
         # mapping indicator and GitHub rejects the whole file.
         run: |
           python scripts/publish_generated.py --paths data/ggongbab --message "ggongbab: event feed refresh"
+      # After publication on purpose: the lab browser feed reads this projection, and a sync
+      # failure turns the job red without ever holding back data/ggongbab/latest.json.
+      - name: Sync the public DB feed
+        if: steps.refresh.outputs.publish == '1' && (env.MODE == 'export-only' || env.MODE == 'full')
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/sync_public_feed.py
       # Collector watch: alerts the operator even when the local PC is off. Reads heartbeat
       # status and timestamps only; the message carries fixed codes, never mail or event text.
       # Runs after a failed refresh too, so that failure is reported. A no-op until the
