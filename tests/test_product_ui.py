@@ -162,7 +162,8 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
     assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
     assert html.count('<details class="event-more">') == 2 and "event-tab" not in html
-    assert html.count('<div class="event-detail-row" data-detail="participation">') == 4  # two events, ko and en
+    # Two events, each in the Korean markup and in the ko and en tables (data/content/events.json).
+    assert html.count('<div class="event-detail-row" data-detail="participation">') == 6
     assert "event-elsewhere" not in html and "event-num" not in html and 'class="page-num"' not in html
     assert 'class="event-instagram"' in html and "@babdodukms" in html
     assert 'id="eventEmpty"' in html and "event.emptyLink" not in html
@@ -232,7 +233,9 @@ def test_home_groups_brand_and_hub_name():
     assert 'class="home-news-story" href="history.html"' in html
     event = (ROOT / "event.html").read_text(encoding="utf-8")
     assert event.index('id="now"') < event.index('id="archive"')
-    assert '<ul class="event-notices" id="eventNotices" role="list"></ul>' in event  # no invented notices
+    # No invented notices: the list the sync writes from data/content/events.json is empty.
+    assert re.search(r'<ul class="event-notices" id="eventNotices" role="list">\s*<!-- @content:notices -->'
+                     r'\s*<!-- @end content -->\s*</ul>', event)
     for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html", "lab.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
         assert 'data-i18n="nav.today">오늘의 꽁밥</a>' in page and "'nav.today': '오늘의 꽁밥'" in page, name

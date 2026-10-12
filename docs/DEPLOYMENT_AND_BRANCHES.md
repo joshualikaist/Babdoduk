@@ -117,7 +117,7 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 ### 무엇이 서빙되는가 (2026-10-12)
 
 - **`.vercelignore`**: 사이트 자원(페이지, `css/`, `js/`, `images/`, `data/`, `manifest.json`)만 배포합니다. 코드·테스트·문서
-  (`scripts/`, `tests/`, `docs/`, `*.md`), 사람이 쓰는 입력(`inputs/`), 페이지에 미리 써 넣는 공통 라벨(`data/content/`),
+  (`scripts/`, `tests/`, `docs/`, `*.md`), 사람이 쓰는 입력(`inputs/`), 페이지에 미리 써 넣는 공통 라벨·소식·역사(`data/content/`),
   작업 기록(`research/`), 도구 설정(`.claude/`, `.github/`, `.cursor/`)은 두 프로젝트 모두 배포하지 않습니다.
   그 전에는 production 이 `scripts/`, `.claude/settings.json`, `data/ggongbab/manual.json` 까지 서빙했습니다.
 - **`vercel.json`**: 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`,

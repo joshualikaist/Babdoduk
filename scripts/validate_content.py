@@ -798,7 +798,8 @@ def validate_authored(root: Path = ROOT) -> list[str]:
     """Hand-written data, beyond its schema: the foods catalog agrees with its packs, a dish
     sits in its cuisine group's pack and its id and names are unique; a food-log day's total is
     the sum of its items; manual and news-input ids are unique, and every public news item
-    re-derives its own id. The foods packs are the source since 2026-10-12 (the Python
+    re-derives its own id; an activity ends on or after its start and a detail carries no
+    markup but <strong>. The foods packs are the source since 2026-10-12 (the Python
     generators that wrote them retired); these are the checks the generators made."""
     errors: list[str] = []
     catalog_path = root / "data" / "foods" / "catalog.json"
@@ -864,6 +865,9 @@ def validate_authored(root: Path = ROOT) -> list[str]:
                 errors.append(f"inputs/ggongbab/food-news.json: item {index} fails the public news check (values suppressed)")
         if len({item.get("id") for item in items if isinstance(item, dict)}) != len(items):
             errors.append("inputs/ggongbab/food-news.json: an id is used twice")
+    # The page content of data/content/ (events, history): what its contracts cannot say.
+    from page_content import content_errors
+    errors += content_errors(root)
     return errors
 
 
