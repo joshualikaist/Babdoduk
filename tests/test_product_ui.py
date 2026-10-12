@@ -236,7 +236,7 @@ def test_home_top_is_one_hero_and_a_manual_banner_shelf():
 
 def test_home_strings_exist_in_both_languages():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    blocks = dict(re.findall(r"(ko|en): \{(.*?)\n        \}", html, re.S))
+    blocks = dict(re.findall(r"(ko|en): \{(.*?)\n      \}", html, re.S))
     keys = {lang: set(re.findall(r"^\s*'?([\w.]+)'?\s*:", body, re.M)) for lang, body in blocks.items()}
     assert keys["ko"] == keys["en"]
     used = set(re.findall(r'data-i18n(?:-html|-aria-key)?="([\w.]+)"', html))

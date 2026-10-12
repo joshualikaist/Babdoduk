@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the shared site navigation and footer into every page.
+"""Write the shared site navigation and footer, the translations and the authored content into every page.
 
 shared/nav.html and shared/footer.html are the single source of truth. Each page
 keeps a static copy, so navigation and footer work without JavaScript; this script
@@ -10,12 +10,15 @@ blocks.
     python scripts/sync_site_chrome.py          # rewrite the pages
     python scripts/sync_site_chrome.py --check  # exit 1 and show the diff if any page drifted
 
-Strings the chrome owns (CHROME_STRINGS) are written into every page's ko and en translation
-tables, and every key the chrome renders must exist in both.
+Each page's translation table is written whole, between `<!-- @i18n:strings -->` and
+`<!-- @end i18n -->`, followed by js/site.js (the language switch, scroll progress and "more"
+menu every page shares). The table holds the page's title and the keys of the families it shows
+(PAGES `strings`, plus a11y, nav and footer on every page) from i18n/ko.json and i18n/en.json, the
+shared labels it shows (label_strings) and its data/content/ entries (CONTENT_STRINGS). Every key
+the chrome renders must exist in both languages.
 
 The shared labels (data/content/labels.json: free-food types, sources, magazine lanes, the
-picker's cuisines) are written the same way: into the translation tables of the pages that show
-them (label_strings) and into the marked blocks of the scripts that need them (LABEL_BLOCKS), so
+picker's cuisines) also go into the marked blocks of the scripts that need them (LABEL_BLOCKS), so
 a label is named once and the same everywhere.
 
 The authored page content (data/content/events.json and history.json, rendered by
@@ -38,6 +41,9 @@ from page_content import js_str
 ROOT = Path(__file__).resolve().parents[1]
 SHARED = ROOT / "shared"
 LABELS = ROOT / "data" / "content" / "labels.json"
+I18N = ROOT / "i18n"
+# The key families every page's table carries; PAGES `strings` adds the page's own.
+COMMON_STRINGS = ("a11y", "nav", "footer")
 # The food types the home calendar names (js/home-calendar.js FOOD_TYPES); any other type reads
 # home.cal.foodFallback there.
 HOME_FOOD_TYPES = ("meal", "lunchbox", "snack", "refreshment", "beverage", "coupon")
@@ -53,23 +59,19 @@ LAB_RIBBON = [
 ]
 
 # Page -> the nav link it marks as current (None on the home page, whose wordmark
-# scrolls to the top instead of linking to itself).
+# scrolls to the top instead of linking to itself), and the i18n/ key families its
+# translation table carries besides COMMON_STRINGS (`strings`).
 PAGES = {
-    "index.html": {"current": None, "home": "#"},
-    "ggongbab.html": {"current": "ggongbab.html"},
-    "mukbang.html": {"current": "mukbang.html"},
-    "event.html": {"current": "event.html"},
+    "index.html": {"current": None, "home": "#", "strings": ("home", "explore", "profile")},
+    "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km")},
+    "mukbang.html": {"current": "mukbang.html", "strings": ("eat", "kaist", "km", "mg")},
+    "event.html": {"current": "event.html", "strings": ("event",)},
     # Food Log is lab-only: no public nav/footer link points at it; it carries the lab links.
-    "food.html": {"current": None, "lab": True},
-    "history.html": {"current": "history.html"},
-    "lab.html": {"current": "lab.html", "lab": True},
-    "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True},
-}
-
-# Strings the shared chrome owns. Each page keeps its own translation table, so these
-# entries are written into every page's ko and en tables by this script.
-CHROME_STRINGS = {
-    "footer.contact": {"ko": "문의", "en": "Contact"},
+    "food.html": {"current": None, "lab": True, "strings": ("cal", "food")},
+    "history.html": {"current": "history.html", "strings": ("history",)},
+    "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
+    "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
+                          "strings": ("gg", "ggongbab", "km")},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),
@@ -96,6 +98,9 @@ def render_nav(page: str, config: dict) -> list[str]:
         out.append(line)
     rendered = "\n".join(out)
     rendered = rendered.replace('<a href="index.html" id="navHome"', f'<a href="{config.get("home", "index.html")}" id="navHome"')
+    if config.get("home") == "#":  # the home page's wordmark scrolls to the top
+        rendered = rendered.replace('data-i18n-aria-key="nav.homeAria" aria-label="홈으로"',
+                                    'data-i18n-aria-key="nav.topAria" aria-label="맨 위로"', 1)
     if current:
         pattern = re.compile(r'<a class="(site-nav-direct|nav-mega-link)" href="' + re.escape(current) + '"')
         match = pattern.search(rendered)
@@ -126,7 +131,7 @@ def synced(page: str) -> str:
         indent = lines[start][: len(lines[start]) - len(lines[start].lstrip())]
         block = [indent + row if row else row for row in render(page, kind)]
         lines[start:end + 1] = block
-    text = sync_strings(page, "\n".join(lines))
+    text = fill_blocks(page, "\n".join(lines), "i18n", {"strings": render_strings(page)})
     if page in CONTENT_BLOCKS:
         text = fill_blocks(page, text, "content", CONTENT_BLOCKS[page]())
     return text
@@ -183,10 +188,14 @@ LABEL_BLOCKS = {
 }
 
 
-# Page blocks rendered from data/content/ (scripts/page_content.py).
+# Page blocks rendered from data/content/ (scripts/page_content.py), and their translations.
 CONTENT_BLOCKS = {
     "event.html": page_content.event_blocks,
     "history.html": page_content.history_blocks,
+}
+CONTENT_STRINGS = {
+    "event.html": page_content.event_strings,
+    "history.html": page_content.history_strings,
 }
 
 
@@ -217,32 +226,43 @@ def synced_script(path: str) -> str:
     return fill_blocks(path, (ROOT / path).read_text(encoding="utf-8"), "labels", rendered)
 
 
-def sync_strings(page: str, text: str) -> str:
-    """Write CHROME_STRINGS and the page's shared labels into its ko and en tables; every chrome
-    key must exist in both."""
-    lines = text.split("\n")
-    blocks = []
+def i18n() -> dict[str, dict[str, str]]:
+    return {lang: json.loads((I18N / f"{lang}.json").read_text(encoding="utf-8")) for lang in ("ko", "en")}
+
+
+def page_strings(page: str) -> dict[str, dict[str, str]]:
+    """The page's translation table in each language: its title, its families' keys from i18n/, the
+    shared labels it shows and its data/content/ entries."""
+    data = i18n()
+    families = COMMON_STRINGS + PAGES[page].get("strings", ())
+    labelled = label_strings(page)
+    content = CONTENT_STRINGS[page]() if page in CONTENT_STRINGS else {"ko": {}, "en": {}}
+    tables = {}
     for lang in ("ko", "en"):
-        start = next(i for i, line in enumerate(lines) if line.strip() == f"{lang}: {{")
-        end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() in ("},", "}"))
-        blocks.append((start, end, lang))
-    strings = dict(CHROME_STRINGS, **label_strings(page))
-    for start, end, lang in sorted(blocks, reverse=True):  # later block first: indexes stay valid
-        body = lines[start + 1:end]
-        for key, values in strings.items():
-            anchor = next(i for i, line in enumerate(body) if line.lstrip().startswith("'footer.copyright':"))
-            indent = body[anchor][: len(body[anchor]) - len(body[anchor].lstrip())]
-            entry = f"{indent}'{key}': {js_str(values[lang])},"
-            found = [i for i, line in enumerate(body) if line.lstrip().startswith(f"'{key}':")]
-            if found:
-                body[found[0]] = entry
-            else:
-                body.insert(anchor + 1, entry)
-        missing = sorted(k for k in chrome_keys() if not any(line.lstrip().startswith(f"'{k}':") for line in body))
-        if missing:
-            raise SystemExit(f"{page}: the {lang} translation table lacks shared chrome keys {missing}")
-        lines[start + 1:end] = body
-    return "\n".join(lines)
+        entries = {key: value for key, value in data[lang].items() if key.split(".")[0] in families}
+        entries.update({key: pair[lang] for key, pair in labelled.items()})
+        entries.update(content[lang])
+        tables[lang] = {"docTitle": data[lang][f"title.{page[:-len('.html')]}"], **dict(sorted(entries.items()))}
+    missing = sorted(key for key in chrome_keys() for lang in ("ko", "en") if key not in tables[lang])
+    if missing:
+        raise SystemExit(f"{page}: the translation table lacks shared chrome keys {missing}")
+    return tables
+
+
+def render_strings(page: str) -> list[str]:
+    """The table script and js/site.js, as the page's `@i18n:strings` block."""
+    rows = ["<script>",
+            "  // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.",
+            "  window.BABDODUK_STR = {"]
+    tables = page_strings(page)
+    for lang in ("ko", "en"):
+        rows.append(f"    {lang}: {{")
+        for key, value in tables[lang].items():
+            name = key if key.isidentifier() else f"'{key}'"
+            rows.append(f"      {name}: {js_str(value)},")
+        rows.append("    }" + ("," if lang == "ko" else ""))
+    rows += ["  };", "</script>", '<script src="js/site.js"></script>']
+    return rows
 
 
 def main(argv: list[str] | None = None) -> int:

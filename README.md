@@ -771,7 +771,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
 | `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사, 공통 chrome 가디언·시각 기준 (`docs/VISUAL_BASELINES.md`). `--chrome-only` 는 CI `ui-guardian` 이 쓰는 가디언+시각 비교만 실행 |
-| `scripts/sync_site_chrome.py` | `shared/nav.html`·`shared/footer.html` 을 모든 페이지에 정적으로 복사하고, 공통 라벨(`data/content/labels.json`: 무료 음식 종류·출처·식당·요리 분류·매거진 코너)을 페이지 번역 표와 스크립트의 `// @labels:` 블록에, 소식·역사(`data/content/events.json`·`history.json`)를 `event.html`·`history.html` 의 행과 번역 표에 씀. `--check` 는 어긋나면 실패 (CI `ui-guardian`) |
+| `scripts/sync_site_chrome.py` | `shared/nav.html`·`shared/footer.html` 을 모든 페이지에 정적으로 복사하고, 각 페이지의 번역 표를 `i18n/ko.json`·`en.json`(페이지가 쓰는 키 묶음)과 공통 라벨(`data/content/labels.json`), 소식·역사(`data/content/events.json`·`history.json`)로 다시 쓰고 바로 뒤에 `js/site.js`(언어 전환·스크롤·더보기 메뉴)를 붙임. 공통 라벨은 스크립트의 `// @labels:` 블록에도, 소식·역사는 `event.html`·`history.html` 의 행에도 씀. `--check` 는 어긋나면 실패 (CI `ui-guardian`) |
 | `scripts/check_real_fonts.py` | 실제 웹 폰트로 공개 페이지 가로 넘침 확인 (네트워크, PASS/FAIL/SKIP) |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |

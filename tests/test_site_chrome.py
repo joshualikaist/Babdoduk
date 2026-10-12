@@ -17,13 +17,23 @@ def test_every_page_carries_the_shared_nav_and_footer():
 
 def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     shutil.copytree(ROOT / "shared", tmp_path / "shared")
+    shutil.copytree(ROOT / "i18n", tmp_path / "i18n")
     for page in list(chrome.PAGES) + list(chrome.LABEL_BLOCKS) + ["data/content/labels.json"]:
         (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / page, tmp_path / page)
     monkeypatch.setattr(chrome, "ROOT", tmp_path)
     monkeypatch.setattr(chrome, "SHARED", tmp_path / "shared")
     monkeypatch.setattr(chrome, "LABELS", tmp_path / "data/content/labels.json")
+    monkeypatch.setattr(chrome, "I18N", tmp_path / "i18n")
     assert chrome.main(["--check"]) == 0
+    # A translation is written once, in i18n/: an edit there reaches every page that shows it.
+    english = json.loads((tmp_path / "i18n/en.json").read_text(encoding="utf-8"))
+    english["footer.contact"] = "Get in touch"
+    (tmp_path / "i18n/en.json").write_text(json.dumps(english, ensure_ascii=False), encoding="utf-8")
+    assert chrome.main(["--check"]) == 1
+    assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0
+    for page in chrome.PAGES:
+        assert "'footer.contact': 'Get in touch'," in (tmp_path / page).read_text(encoding="utf-8"), page
     # A label is named in one place: an edit there fails the check until the pages are rewritten.
     labels = json.loads((tmp_path / "data/content/labels.json").read_text(encoding="utf-8"))
     labels["freeFood"]["lunchbox"]["en"] = "Packed lunch"
@@ -68,7 +78,7 @@ def test_the_contact_label_is_a_chrome_string_in_both_languages():
         assert '<span data-i18n="footer.contact">문의</span>' in footer, page
         ko, en = html[html.index("ko: {"):html.index("en: {")], html[html.index("en: {"):]
         assert "'footer.contact': '문의'," in ko and "'footer.contact': 'Contact'," in en, page
-        english = en[:en.index("\n        }")]
+        english = en[:en.index("\n      }")]
         assert "문의" not in english, page  # the English table never shows the Korean label
 
 
