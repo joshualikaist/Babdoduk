@@ -10,12 +10,15 @@ A result is kept only with source text that was actually retrieved: the page tex
 web_fetch_exa, else Jina Reader (r.jina.ai, public pages only), else the search highlights,
 which are verbatim passages of the same page. The date comes from the search or page
 metadata, else the page's own printed date near its top (publishedAtSource says which).
-Trust tier and medium come from the result's host (discovery.hosts), never from the route:
-a Naver blog is Tier C even when found by a news query. `site:blog.naver.com` in a query
-restricts the MCP route through the query itself and the REST route through includeDomains.
+Trust tier and medium come from the result's host (discovery.hosts), never from the route.
+A result on a host that open discovery may not read (a Naver page: hosts.collectable) is
+dropped before any page is fetched. `site:` in a query restricts the MCP route through the
+query itself and the REST route through includeDomains.
 
-Search is discovery only. Result order is Exa's, never presented as Naver's or anyone's
-ranking, and nothing is written about a page beyond its own title and text.
+Search is discovery only. Result order is Exa's, never presented as anyone's ranking, and
+nothing is written about a page beyond its own title and text. The page text decides the lane;
+the card never shows it (docs/MAGAZINE_SOURCES.md: a card's sentence is the publisher's own
+preview, read by discovery.preview when the story is published).
 """
 from __future__ import annotations
 
@@ -27,7 +30,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from ..common import KST, UA, canonical_url, clean_text, is_public_url, parse_time
-from ..hosts import classify_host, split_title
+from ..hosts import classify_host, collectable, split_title
 from . import FETCH_FAILED, NOT_CONFIGURED, OK, AdapterResult, failure_code
 from .exa_mcp import ExaMCP, MCPError
 
@@ -174,7 +177,7 @@ def discover(source: dict, *, fetcher, env=os.environ, opener=urllib.request.url
             failure = failure_code(exc)
             break
         ran.append(query)
-        public = [h for h in hits if is_public_url(h.get("url") or "")]
+        public = [h for h in hits if is_public_url(h.get("url") or "") and collectable(h.get("url") or "")]
         found.extend((query, rank, hit) for rank, hit in enumerate(public, 1))
     # One page read per distinct URL, in batches, after all searches.
     urls = list(dict.fromkeys(hit["url"] for _, _, hit in found))
@@ -220,7 +223,7 @@ def _discover_rest(queries, lane, key, fetcher, env, opener, now) -> AdapterResu
         ran.append(query)
         for rank, hit in enumerate(results, 1):
             url = hit.get("url") or ""
-            if not is_public_url(url):
+            if not is_public_url(url) or not collectable(url):
                 continue
             raw = hit.get("text") or ""
             if len(clean_text(raw)) < MIN_TEXT and env.get("BABDODUK_JINA_READER") == "1":

@@ -18,7 +18,9 @@ Hero (owner decision, 2026-09-29), heroKind in the edition:
            "오늘의 추천 글" on the page: never wording that implies today's trend. With no image
            anywhere, a text-only hero.
 Public items carry provenance (source, URL, medium, dates, image and its origin, ids, the
-trend evidence kinds) but no internal scores or evidence text.
+trend evidence kinds) but no internal scores or evidence text. A card's sentence is one verbatim
+sentence of the publisher's preview; a source or host shown by title and link only carries no
+sentence and no photo, so it never leads with an image (docs/MAGAZINE_SOURCES.md).
 """
 from __future__ import annotations
 
@@ -28,6 +30,7 @@ from typing import Optional
 
 import content_labels
 
+from . import hosts
 from .common import KST, excerpt, parse_time
 from .process import age_days
 
@@ -42,6 +45,9 @@ LANES = ("trend", "tips", "health", "habit")
 LANE_LEADS = content_labels.lane_leads()          # data/content/labels.json, the page shows its own copy
 SUMMARY_CHARS = 120        # a card-length excerpt, never a paragraph
 MIN_SUMMARY = 20
+FIRST_SENTENCES = 3        # the card's sentence comes from the opening of the preview
+# A sentence ends at . ! ? or 。 after a letter, never after a digit ("1. 2분기", "3.3%").
+SENTENCE_END = re.compile(r"(?<=[^\d\s][.!?。])\s+")
 URLS = re.compile(r"(https?://\S+|www\.\S+|\S+@\S+\.\w+|#[^\s#]+)")
 
 
@@ -56,8 +62,10 @@ CHANNEL_BOILERPLATE = re.compile(r"(멤버십\s*가입|구독과\s*좋아요|구
 
 
 def card_summary(text: str, title: str = "") -> str:
-    """A short verbatim excerpt without links, addresses, hashtags, embed boilerplate or a repeat
-    of the title; empty when too thin (the card then shows title and source only)."""
+    """One verbatim sentence of the publisher's preview, at most SUMMARY_CHARS, without links,
+    addresses, hashtags, embed boilerplate or a repeat of the title (docs/MAGAZINE_SOURCES.md).
+    It is the first sentence that says something, so a greeting does not stand in for the story;
+    empty when there is none (the card then shows title and source only)."""
     cleaned = re.sub(r"\s+", " ", URLS.sub(" ", text or "")).strip(" -|·")
     cleaned = CAPTION.sub(" ", DATELINE.sub("", cleaned)).strip()
     cleaned = re.sub(r"\s+", " ", cleaned)
@@ -77,16 +85,31 @@ def card_summary(text: str, title: str = "") -> str:
     cleaned = re.sub(r"[ㅡ\-=_~*]{4,}", " ", cleaned).strip()
     if cleaned.count("▶") >= 2 or cleaned.count("•") >= 3 or CHANNEL_BOILERPLATE.search(cleaned[:80]):
         return ""                                  # a video's link list or channel notice, not a description
-    short = excerpt(cleaned, SUMMARY_CHARS)
-    return short if len(short) >= MIN_SUMMARY else ""
+    for sentence in [s for s in SENTENCE_END.split(cleaned) if s.strip()][:FIRST_SENTENCES]:
+        if len(sentence.strip()) >= MIN_SUMMARY:
+            return excerpt(sentence, SUMMARY_CHARS)
+    return ""
+
+
+def shows_media(row: dict) -> bool:
+    """Whether the card may carry the story's excerpt and photo: a source or host shown by title,
+    source, date and link only (process.excerpt_allowed) carries neither."""
+    return row.get("excerptAllowed", True) is not False
+
+
+def has_image(row: dict) -> bool:
+    """A validated image the card may show (never a photo of a title-and-link-only story)."""
+    return bool(row.get("imageUrl") and row.get("imageValidated")) and shows_media(row)
 
 
 def public_item(row: dict) -> dict:
+    # A web search result's text is the page body, not the publisher's preview: its sentence is
+    # read from the publisher's page when the story is published (discovery.preview).
+    preview = row.get("sourceType") != "web_search"
     item = {
         "title": row["title"],
-        # A source registered with "excerpt": false is shown by title, source, date and link only.
         "summary": card_summary(row.get("sourceExcerpt") or "", row.get("title") or "")
-        if row.get("excerptAllowed", True) else "",
+        if shows_media(row) and preview else "",
         "source": row.get("sourceName") or "",
         "sourceId": row.get("sourceId"),
         "candidateId": row["candidateId"],
@@ -96,7 +119,7 @@ def public_item(row: dict) -> dict:
     }
     if row.get("publishedAt"):
         item["publishedAt"] = row["publishedAt"]
-    if row.get("imageUrl") and row.get("imageValidated"):
+    if has_image(row):
         item["image"] = row["imageUrl"]
         item["imageSource"] = row.get("imageSource")
     if row.get("assignedCategory") == "trend" and row.get("trendEvidence"):
@@ -122,15 +145,14 @@ def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
         age = age_days(row, now)
         audience = float((row.get("audienceRelevance") or {}).get("score") or 0)
         trusted = row.get("sourceTrust") in ("A", "B")        # high source trust: never a Tier C lead
-        return (row.get("assignedCategory") == "trend" and strong_evidence(row) and row.get("imageValidated")
-                and row.get("imageUrl") and trusted and audience >= HERO_AUDIENCE
-                and age is not None and age <= HERO_MAX_DAYS)
+        return (row.get("assignedCategory") == "trend" and strong_evidence(row) and has_image(row)
+                and trusted and audience >= HERO_AUDIENCE and age is not None and age <= HERO_MAX_DAYS)
     trends = sorted((r for r in pool if trend_ok(r)),
                     key=lambda r: (len(independent_evidence(r)) < 2, age_days(r, now) > HERO_IDEAL_DAYS,
                                    -(r.get("score") or 0), r["candidateId"]))
     if trends:
         return trends[0], "trend"
-    with_image = [r for r in pool if r.get("imageValidated") and r.get("imageUrl")]
+    with_image = [r for r in pool if has_image(r)]
     recent_first = sorted(with_image, key=lambda r: ((age_days(r, now) is None) or age_days(r, now) > HERO_MAX_DAYS,
                                                     -(r.get("score") or 0), r["candidateId"]))
     if recent_first:
@@ -200,11 +222,14 @@ def truthful(item: dict) -> bool:
             and item.get("source") not in ("", None, "밥도둑 데스크") and bool(item.get("title")))
 
 
-def sanitize(edition: dict) -> tuple[dict, int]:
+def sanitize(edition: dict, withdrawn: frozenset = frozenset(), quiet: frozenset = frozenset()) -> tuple[dict, int]:
     """Past editions: drop fabricated desk items and link-only idea desks, and drop generated
     summaries/tags (the old builder composed them; their source text was never kept). A trend
     item without trend evidence is not shown as a trend, and an edition built before the lane
-    rules (no "rules" marker) keeps no habit items: the old builder put recipes there by keyword."""
+    rules (no "rules" marker) keeps no habit items: the old builder put recipes there by keyword.
+    The archive follows today's publishing rules (docs/MAGAZINE_SOURCES.md): a withdrawn source
+    (registry "withdrawn") keeps no story anywhere, and a story from a source registered "excerpt":
+    false (`quiet`) or a newspaper association member keeps title, source, date and link only."""
     removed = 0
     legacy = edition.get("rules") != RULES
 
@@ -214,9 +239,14 @@ def sanitize(edition: dict) -> tuple[dict, int]:
                                      "heroKind", "trendEvidence") if k in item}
         if "candidateId" not in item:        # built before provenance existed: its summary was generated
             keep.pop("summary", None)
+        if item.get("sourceId") in quiet or not hosts.excerpt_allowed(item.get("url") or ""):
+            for key in ("summary", "image", "imageSource"):
+                keep.pop(key, None)
         return keep
 
     def allowed(item, lane):
+        if item.get("sourceId") in withdrawn:
+            return False
         if lane == "trend" and not item.get("trendEvidence"):
             return False
         return not (lane == "habit" and legacy)

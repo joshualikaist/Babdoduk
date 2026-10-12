@@ -776,6 +776,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |
 | `scripts/refresh_magazine.py` · `refresh_kaist_menu.py` | 매거진·학식 데이터 |
+| `scripts/check_source.py` | 매거진 자료원 검사: 등록 규칙, robots.txt, 피드 한 번 읽기, 갈래별 수율 (네트워크, 아무것도 쓰지 않음) |
 | `scripts/run_ggongbab_agent.cmd` | 작업 스케줄러 진입점 |
 
 ---
@@ -796,6 +797,8 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/HOME_CALENDAR.md` | 홈 꽁밥 달력(표시·기본 선택·데이터 규칙, 선착순 공개 계약 대기) |
 | `docs/KAIST_MENU.md` | 이번 주 학식 수집·파일·화면 규칙 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
+| `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
+| `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
 | `docs/CAMPUS_FOOD_NEWS.md` | 먹거리 소식(꽁밥과 분리된 뉴스) |
 | `docs/GGONGBAB_DISCOVERY.md` | 꽁밥 레이더·근거·평가 |
 | `docs/GGONGBAB_TRIGGER.md` | 저지연 새로고침 트리거(Option A, 미활성) |
@@ -803,3 +806,17 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
 `GGONGBAB_RESIDENT_OPS.md`(Windows 상주 worker). 해당 기능이 main에 승격될 때 함께 옮깁니다.
+
+## 15. 라이선스
+
+- **코드:** 이 저장소의 소스 코드는 [MIT 라이선스](LICENSE)입니다.
+- **매거진 자료원 등록부** `scripts/discovery/sources.json`: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)입니다.
+  누구나 출처 표시 없이 다시 쓸 수 있습니다.
+- **라이선스가 주어지지 않는 것:** 다음은 각 권리자에게 있습니다.
+  - 밥도둑 이름과 로고
+  - `images/`의 이미지·캐릭터·사진 (예: 카카오 캐릭터)
+  - 생성 데이터 `data/`·`research/`. 학식 메뉴는 KAIST의 것이고, 매거진의 제목과 문장은 각 발행처의 것입니다.
+    밥도둑은 링크와 한 문장만 싣습니다.
+  - 다른 곳에서 가져온 글꼴·라이브러리. 각자의 라이선스를 따릅니다.
+
+기여는 같은 조건으로 받습니다(`CONTRIBUTING.md`).

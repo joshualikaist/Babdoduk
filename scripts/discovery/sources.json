@@ -249,7 +249,9 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 연합뉴스 is a member of 한국신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json)."
     },
     {
       "id": "news-yna-health",
@@ -264,7 +266,9 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 연합뉴스 is a member of 한국신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json)."
     },
     {
       "id": "news-kormedi",
@@ -295,7 +299,7 @@
       "discoveryMethod": "rss",
       "kind": "news",
       "requireFood": true,
-      "note": "Despite its path this is 뉴시스's IT·바이오 feed (its channel title, checked 2026-10-12), so it is named 뉴시스, not 뉴시스 건강; the old address answers 301 to this one. It yields mostly trend stories."
+      "note": "Despite its path this is 뉴시스's IT·바이오 feed (its channel title, checked 2026-10-12), so it is named 뉴시스, not 뉴시스 건강; the old address answers 301 to this one. It yields mostly trend stories. 뉴시스 is not a newspaper association member (checked 2026-10-12)."
     },
     {
       "id": "news-donga-health",
@@ -310,7 +314,9 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 동아일보 is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json)."
     },
     {
       "id": "news-seoul-life",
@@ -325,7 +331,9 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "excerpt": false,
+      "note": "excerpt false: 서울신문 is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json)."
     },
     {
       "id": "news-hidoc-healthylife",
@@ -373,8 +381,7 @@
       "discoveryMethod": "rss",
       "kind": "news",
       "requireFood": true,
-      "excerpt": false,
-      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 8 of 50 qualified for health. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 8 of 50 qualified for health. Items are dated only by dc:date. (주)헬스조선 is a company of its own, not a newspaper association member (checked 2026-10-12: its footer and the member lists), so its cards carry a sentence like other sources."
     },
     {
       "id": "news-ladykhan-living",
@@ -392,7 +399,7 @@
       "kind": "news",
       "requireFood": true,
       "excerpt": false,
-      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 12 of 50 qualified for health, 1 for habit. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 12 of 50 qualified for health, 1 for habit. Items are dated only by dc:date. excerpt false: 경향신문 (레이디경향 has the same publisher) is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json)."
     },
     {
       "id": "news-ladykhan-wellness",
@@ -408,7 +415,7 @@
       "kind": "news",
       "requireFood": true,
       "excerpt": false,
-      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 50 qualified for health. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 50 qualified for health. Items are dated only by dc:date. excerpt false: 경향신문 (레이디경향 has the same publisher) is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json)."
     },
     {
       "id": "web-exa-trend",
