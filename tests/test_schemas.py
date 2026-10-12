@@ -218,3 +218,21 @@ def test_authored_data_agrees_with_itself(tmp_path):
     errors = validate_content.validate_authored(tmp_path)
     assert any("catalog count" in e for e in errors) and any("food-log" in e for e in errors)
     assert any("public news check" in e for e in errors)
+
+
+def test_the_food_packs_are_the_source_and_keep_the_generators_checks(tmp_path):
+    """build_foods.py and food_expand.py retired on 2026-10-12: their rules live in
+    validate_content.validate_authored."""
+    assert not (sc.ROOT / "scripts" / "build_foods.py").exists() and not (sc.ROOT / "scripts" / "food_expand.py").exists()
+    shutil.copytree(sc.ROOT / "data" / "foods", tmp_path / "data" / "foods")
+    packs = tmp_path / "data" / "foods" / "packs"
+    korean = json.loads((packs / "korean.json").read_text(encoding="utf-8"))
+    western = json.loads((packs / "western.json").read_text(encoding="utf-8"))
+    korean["items"][1]["nameKo"] = korean["items"][0]["nameKo"]          # two dishes, one name
+    western["items"][0]["cuisineGroup"] = "korean"                         # a Korean dish in the western pack
+    (packs / "korean.json").write_text(json.dumps(korean, ensure_ascii=False), encoding="utf-8")
+    (packs / "western.json").write_text(json.dumps(dict(western, pack="westen"), ensure_ascii=False), encoding="utf-8")
+    errors = validate_content.validate_authored(tmp_path)
+    assert any("nameKo" in e for e in errors)
+    assert any("belongs in korean, not western" in e for e in errors)
+    assert any("must say pack 'western'" in e for e in errors)
