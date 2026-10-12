@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from . import adapters, images, process, registry, select
-from .common import atomic_write, dump_json, fetch, iso, read_json
+from .common import HostPacer, atomic_write, dump_json, fetch, iso, read_json
 from .store import CandidateStore
 
 RUN_LOG_LINES = 400
@@ -38,6 +38,8 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
     skip_types: source types not contacted in this run (an explicit operator choice, for example
     a cloud-parity build on a machine that can reach what GitHub's runners cannot). A skipped
     source is recorded as DEGRADED with SKIPPED_CLOUD_PARITY, never as a success."""
+    if fetcher is fetch:
+        fetcher = HostPacer(fetch)             # two seconds between requests to one host (docs/MAGAZINE_SOURCES.md)
     sources = registry.load(paths.registry)
     source_health = registry.load_health(paths.source_health)
     store = CandidateStore(paths.candidates)
@@ -188,6 +190,14 @@ def recent_keys(out: Path, before: str, days: Optional[int] = None) -> set[str]:
     return keys | {canonical_url(k) for k in keys if k.startswith("http")}
 
 
+def runnable(rows: list[dict], sources: list[dict]) -> list[dict]:
+    """The stored stories whose source is still enabled: a source turned off (its terms, a dead
+    route) publishes nothing more, not even what it collected before. Its rows stay in the store
+    for deduplication until they expire."""
+    off = {s.get("id") for s in sources if not s.get("enabled")}
+    return [r for r in rows if r.get("sourceId") not in off]
+
+
 def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], now: datetime) -> dict:
     """Persist registry health, the candidate store, the health report and the run log."""
     store: CandidateStore = run["store"]
@@ -200,6 +210,10 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
     failing = sorted(sid for sid, h in run["health"].items() if h["adapter"] in (adapters.FETCH_FAILED, adapters.PARSE_FAILED))
     by_status = {name: sorted(sid for sid, h in run["health"].items() if h.get("status") == name) for name in registry.STATUSES}
     stale = by_status["STALE"]
+    # How full each lane of today's edition is: a lane short of select.LANE_SIZE is named, so a
+    # thin source mix shows up in the report instead of as a quiet gap on the page.
+    fill = {lane: len(((edition or {}).get("lanes") or {}).get(lane, {}).get("items") or []) for lane in select.LANES}
+    short = sorted(lane for lane, n in fill.items() if edition and n < select.LANE_SIZE)
     report = {
         "generatedAt": iso(now),
         "adapters": run["health"],
@@ -207,12 +221,14 @@ def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], 
                     "notConfigured": sorted(sid for sid, h in run["health"].items() if h["adapter"] == adapters.NOT_CONFIGURED),
                     "statusCounts": {name: len(ids) for name, ids in by_status.items()}, "byStatus": by_status,
                     **run["counts"], "pruned": pruned,
-                    "selected": len(chosen), "fabricated": 0, "staleSources": stale},
+                    "selected": len(chosen), "fabricated": 0, "staleSources": stale,
+                    "laneFill": fill if edition else {}, "shortLanes": short},
         "lanes": run.get("lanes") or {},
         "pending": pending_work(run["sources"]),
         "warnings": [f"{sid}: {run['health'][sid]['code']}" for sid in failing]
                     + [f"{sid}: SOURCE_STALE (newest item older than {registry.STALE_DAYS} days)" for sid in stale]
-                    + [f"{sid}: {run['health'][sid]['code']}" for sid in by_status["DEGRADED"] if sid not in failing],
+                    + [f"{sid}: {run['health'][sid]['code']}" for sid in by_status["DEGRADED"] if sid not in failing]
+                    + [f"lane {lane}: {fill[lane]} of {select.LANE_SIZE} stories" for lane in short],
     }
     atomic_write(paths.health, dump_json(report))
     line = json.dumps({"runAt": iso(now), "queries": run["queries"], "counts": report["summary"],

@@ -33,6 +33,8 @@
       "name": "My Korean Kitchen",
       "type": "rss",
       "url": "https://www.mykoreankitchen.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -47,6 +49,8 @@
       "name": "Beyond Kimchee",
       "type": "rss",
       "url": "https://www.beyondkimchee.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -61,6 +65,8 @@
       "name": "Seonkyoung Longest",
       "type": "rss",
       "url": "https://seonkyounglongest.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -74,6 +80,8 @@
       "name": "Budget Bytes",
       "type": "rss",
       "url": "https://www.budgetbytes.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -87,6 +95,8 @@
       "name": "Just One Cookbook",
       "type": "rss",
       "url": "https://www.justonecookbook.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -95,6 +105,76 @@
       ],
       "discoveryMethod": "rss",
       "kind": "recipe"
+    },
+    {
+      "id": "blog-cultureagora",
+      "name": "기록하는 인간 (요리)",
+      "type": "rss",
+      "url": "https://cultureagora.tistory.com/rss",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe",
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 10 qualified for tips; 3-4 recipes a day."
+    },
+    {
+      "id": "blog-twins0807",
+      "name": "배고픈맘의 행복레시피",
+      "type": "rss",
+      "url": "https://twins0807.tistory.com/rss",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe",
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 10 qualified for tips."
+    },
+    {
+      "id": "blog-seon1982",
+      "name": "알고 보면 (방송 레시피)",
+      "type": "rss",
+      "url": "https://seon1982.tistory.com/rss",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe",
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 4 of 5 qualified for tips; the feed lists 5 items."
+    },
+    {
+      "id": "blog-dalsoonlife",
+      "name": "달순생활",
+      "type": "rss",
+      "url": "https://dalsoonlife.tistory.com/rss",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe",
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 12 of 15 qualified for tips, 1 for health."
+    },
+    {
+      "id": "blog-heysukim114",
+      "name": "고요한 산사의 풍경소리 (집밥)",
+      "type": "rss",
+      "url": "https://heysukim114.tistory.com/rss",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "recipe",
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 43 of 50 qualified for tips, 5 for health. The feed was 2.65 MB, under the 3 MB read cap (common.MAX_BYTES)."
     },
     {
       "id": "news-thinkfood",
@@ -203,9 +283,9 @@
     },
     {
       "id": "news-newsis-health",
-      "name": "뉴시스 건강",
+      "name": "뉴시스",
       "type": "rss",
-      "url": "https://newsis.com/RSS/health.xml",
+      "url": "https://www.newsis.com/RSS/health.xml",
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -214,7 +294,8 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "note": "Despite its path this is 뉴시스's IT·바이오 feed (its channel title, checked 2026-10-12), so it is named 뉴시스, not 뉴시스 건강; the old address answers 301 to this one. It yields mostly trend stories."
     },
     {
       "id": "news-donga-health",
@@ -245,6 +326,89 @@
       "discoveryMethod": "rss",
       "kind": "news",
       "requireFood": true
+    },
+    {
+      "id": "news-hidoc-healthylife",
+      "name": "하이닥 헬시라이프",
+      "type": "rss",
+      "url": "https://news.hidoc.co.kr/rss/S1N4.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true,
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 11 of 20 items qualified for health. Food and nutrition explainers; the feed has no images."
+    },
+    {
+      "id": "news-ikunkang-life",
+      "name": "건강다이제스트",
+      "type": "rss",
+      "url": "https://www.ikunkang.com/rss/S1N8.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "tips"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true,
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 3 of 20 qualified for health. Low volume: 건강 레시피 and 약선요리 columns."
+    },
+    {
+      "id": "news-healthchosun",
+      "name": "헬스조선",
+      "type": "rss",
+      "url": "https://health.chosun.com/site/data/rss/rss.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true,
+      "excerpt": false,
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 8 of 50 qualified for health. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+    },
+    {
+      "id": "news-ladykhan-living",
+      "name": "레이디경향 리빙",
+      "type": "rss",
+      "url": "https://lady.khan.co.kr/rss/rssdata/living_news.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health",
+        "tips",
+        "habit"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true,
+      "excerpt": false,
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 12 of 50 qualified for health, 1 for habit. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
+    },
+    {
+      "id": "news-ladykhan-wellness",
+      "name": "레이디경향 웰니스",
+      "type": "rss",
+      "url": "https://lady.khan.co.kr/rss/rssdata/wellness_news.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "health"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true,
+      "excerpt": false,
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 50 qualified for health. Items are dated only by dc:date. excerpt false: a newspaper association (KONA) group title, whose terms rule out repeating headline and excerpt; shown by title, source, date and link only (magazine sourcing plan, decision 5)."
     },
     {
       "id": "web-exa-trend",
@@ -306,7 +470,7 @@
       "id": "web-naver-trend",
       "name": "Naver Blog (site search)",
       "type": "web_search",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "C",
       "categories": [
         "trend"
@@ -322,7 +486,7 @@
         "site:blog.naver.com {month}월 신메뉴 후기"
       ],
       "objective": "Recent Naver blog posts where people try new foods, convenience-store products or popular menus. Exclude sponsored posts and shopping pages.",
-      "note": "Tier C discovery: new products and what people are trying, never health or nutrition evidence. No Naver API or RSS search route exists; public site search only."
+      "note": "Tier C discovery: new products and what people are trying, never health or nutrition evidence. No Naver API or RSS search route exists; public site search only. Disabled 2026-10-12 (magazine sourcing plan): Naver's terms of service forbid automated collection and automated searches of its content without permission (https://policy.naver.com/rules/service.html), and the route read blog.naver.com pages; over 9/28-10/11 it gave 7 usable trend stories and 2 published."
     },
     {
       "id": "yt-search",

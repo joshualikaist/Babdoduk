@@ -470,3 +470,112 @@ def test_a_repeated_embed_heading_is_dropped_but_a_normal_sentence_is_kept():
         "Chicken katsu with caviar is one of those")
     normal = "Miso Eggplant Stir-Fry recipe with silky Japanese eggplant in a sweet-savory glaze."
     assert select.card_summary(normal, "Miso Eggplant Stir-Fry") == normal
+
+
+def _feed(*slugs: str) -> bytes:
+    items = "".join(f"<item><title>Recipe {s}</title><link>https://blog.example.org/{s}/</link>"
+                    f"<pubDate>Mon, 05 Oct 2026 09:00:00 +0000</pubDate><description>Recipe {s}.</description></item>"
+                    for s in slugs)
+    return f"<rss version='2.0'><channel><title>Blog</title>{items}</channel></rss>".encode()
+
+
+def test_a_wordpress_feed_brings_its_older_pages_politely():
+    source = {"id": "blog-x", "url": "https://blog.example.org/feed/", "pagedFeed": "wordpress", "feedPages": 3}
+    assert rss.page_urls(source) == ["https://blog.example.org/feed/", "https://blog.example.org/feed/?paged=2",
+                                     "https://blog.example.org/feed/?paged=3"]
+    assert rss.page_urls(dict(source, url="https://b.example.org/?feed=rss2"))[1] == "https://b.example.org/?feed=rss2&paged=2"
+    assert rss.page_urls(dict(source, pagedFeed=None)) == ["https://blog.example.org/feed/"]
+    pages = {source["url"]: _feed("a", "b"), source["url"] + "?paged=2": _feed("c", "d")}
+    asked, pauses = [], []
+
+    def fetcher(url, accept):
+        asked.append(url)
+        if url not in pages:
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)   # past WordPress's last page
+        return pages[url]
+
+    result = rss.discover(source, fetcher=fetcher, sleep=pauses.append)
+    assert result.status == adapters.OK and [i["sourceUrl"].rsplit("/", 2)[1] for i in result.items] == ["a", "b", "c", "d"]
+    assert asked == rss.page_urls(source) and pauses == [rss.PAGE_PAUSE, rss.PAGE_PAUSE]
+    # A site that ignores ?paged answers with the first page again: nothing new, so it stops.
+    asked.clear()
+    result = rss.discover(source, fetcher=lambda url, accept: asked.append(url) or _feed("a", "b"), sleep=pauses.append)
+    assert len(result.items) == 2 and len(asked) == 2
+    # The feed itself failing is still a failure; only an older page is optional.
+    assert rss.discover(source, fetcher=lambda url, accept: 1 / 0, sleep=pauses.append).status == adapters.FETCH_FAILED
+
+
+def test_feed_pages_are_declared_in_the_registry_and_bounded():
+    base = {"id": "blog-x", "name": "X", "type": "rss", "url": "https://blog.example.org/feed/", "enabled": True,
+            "trustTier": "B", "categories": ["tips"], "kind": "recipe"}
+    assert registry.validate([dict(base, pagedFeed="wordpress", feedPages=3)]) == []
+    for bad in ({"feedPages": 3}, {"pagedFeed": "wordpress", "feedPages": 6}, {"pagedFeed": "tistory"},
+                {"pagedFeed": "wordpress", "feedPages": True}):
+        assert registry.validate([dict(base, **bad)]), bad
+    assert registry.validate(registry.load()) == []          # the committed registry
+
+
+def test_with_a_key_a_channel_comes_from_the_data_api_from_any_runner(tmp_path):
+    asked = []
+    payload = {"items": [
+        {"snippet": {"title": "15분 집밥 레시피", "description": "간장 계란밥 만드는 법",
+                     "publishedAt": "2026-10-11T03:00:00Z"},
+         "contentDetails": {"videoId": "abcdefghijk", "videoPublishedAt": "2026-10-10T09:00:00Z"}},
+        {"snippet": {"title": "Private video"}, "contentDetails": {"videoId": "zzzzzzzzzzz"}}]}
+
+    def fetcher(url, accept):
+        asked.append(url)
+        return json.dumps(payload).encode()
+
+    source = {"id": "yt-x", "type": "youtube_channel", "channelId": "UCabc123", "enabled": True, "localOnly": True}
+    result = adapters.run(source, fetcher=fetcher, env={"YOUTUBE_API_KEY": "k-123"}, inbox_dir=tmp_path)
+    assert result.status == adapters.OK and len(asked) == 1
+    assert asked[0].startswith("https://www.googleapis.com/youtube/v3/playlistItems?") and "playlistId=UUabc123" in asked[0]
+    [item] = result.items                                     # a private upload is skipped
+    assert item["sourceUrl"] == "https://www.youtube.com/watch?v=abcdefghijk" and item["medium"] == "youtube"
+    assert item["publishedAt"].isoformat().startswith("2026-10-10") and item["imageSource"] == "youtube_thumbnail"
+    # Without a key nothing changes: a local-only channel is still read from the operator PC's inbox.
+    assert adapters.run(source, fetcher=fetcher, env={}, inbox_dir=None).code == "LOCAL_INBOX_MISSING"
+    # A failed call never carries the URL, and so never the key.
+    failed = youtube.discover_channel(source, fetcher=lambda url, accept: 1 / 0, env={"YOUTUBE_API_KEY": "k-123"})
+    assert failed.status == adapters.FETCH_FAILED and "k-123" not in repr(failed)
+    assert youtube.uploads_playlist("UCabc") == "UUabc" and youtube.uploads_playlist("xyz") == ""
+
+
+def test_requests_to_one_host_are_two_seconds_apart():
+    now, pauses, asked = [100.0], [], []
+
+    def sleep(seconds):
+        pauses.append(round(seconds, 2))
+        now[0] += seconds
+
+    pacer = common.HostPacer(lambda url, **kw: asked.append(url) or b"", sleep=sleep, clock=lambda: now[0])
+    pacer("https://www.yna.co.kr/rss/health.xml")
+    now[0] += 0.5
+    pacer("https://www.yna.co.kr/rss/industry.xml")           # the same newspaper, 0.5 s later
+    pacer("https://kormedi.com/feed/")                          # another host: no wait
+    now[0] += 5
+    pacer("https://www.yna.co.kr/rss/culture.xml")             # long enough apart already
+    assert pauses == [1.5] and len(asked) == 4
+    # A failed request still counts as a request to that host.
+    failing = common.HostPacer(lambda url, **kw: 1 / 0, sleep=sleep, clock=lambda: now[0])
+    for _ in range(2):
+        try:
+            failing("https://www.yna.co.kr/rss/health.xml")
+        except ZeroDivisionError:
+            pass
+    assert pauses[-1] == 2.0
+
+
+def test_an_item_dated_only_by_dc_date_keeps_its_date():
+    feed = ("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'><channel><title>K</title>"
+            "<item><title>A</title><link>https://k.example.kr/a</link><dc:date>2026-10-12T13:06:39+09:00</dc:date></item>"
+            "<item><title>B</title><link>https://k.example.kr/b</link><dc:date>2026-10-12 13:33:32</dc:date></item>"
+            "<item><title>C</title><link>https://k.example.kr/c</link><pubDate>Mon, 12 Oct 2026 04:00:00 +0000</pubDate>"
+            "<dc:date>2020-01-01 00:00:00</dc:date></item>"
+            "<item><title>D</title><link>https://k.example.kr/d</link></item></channel></rss>").encode()
+    a, b, c, d = rss.parse(feed)
+    assert a["publishedAt"].isoformat() == "2026-10-12T13:06:39+09:00"
+    assert b["publishedAt"].isoformat() == "2026-10-12T13:33:32+09:00"     # a zoneless dc:date is KST
+    assert c["publishedAt"].isoformat() == "2026-10-12T04:00:00+00:00"     # pubDate wins when both exist
+    assert d["publishedAt"] is None

@@ -284,6 +284,10 @@ def test_an_empty_lane_is_valid_when_search_is_genuinely_exhausted(tmp_path, mon
     assert edition["lanes"]["trend"]["items"] == [] and edition["featured"] is None
     assert report["lanes"]["trend"] == {"qualifying": 0, "discoveredForLane": 1,
                                         "notQualifying": {"COMMERCE_PAGE": 1}}
+    # A lane short of its five stories is named in the report, not left as a quiet gap.
+    assert report["summary"]["laneFill"] == {"trend": 0, "tips": 0, "health": 0, "habit": 0}
+    assert report["summary"]["shortLanes"] == ["habit", "health", "tips", "trend"]
+    assert "lane trend: 0 of 5 stories" in report["warnings"]
     assert run_["queries"] == [{"sourceId": "web-trend", "query": "편의점 도시락 유행"}]
     import validate_content
     path = tmp_path / "2026-09-29.json"
@@ -660,19 +664,73 @@ def test_company_promotion_is_not_habit_evidence():
     assert book["laneDecisions"]["habit"] == "PRODUCT_ANNOUNCEMENT_ONLY" and book.get("assignedCategory") is None
 
 
-def _recipe(n, when):
-    return raw(f"Easy Skillet Number {n}", f"Recipe {n}. Ingredients: 2 tbsp oil, 1 onion. Step 1 slice the "
-               f"onion and fry it for five minutes until golden. " * 3, when, f"https://recipes{n}.example.org/r{n}",
-               medium="blog")
+# Eight recipes that share no sentences, so none is a near-duplicate of another.
+DISHES = {
+    1: ("Garlic Butter Shrimp", "12 shrimp, 3 cloves garlic, 2 tbsp butter, parsley",
+        "Melt the butter, add the garlic, sear the shrimp two minutes a side and finish with parsley."),
+    2: ("Lemon Herb Chicken", "2 chicken thighs, 1 lemon, thyme, rosemary",
+        "Rub the thighs with herbs and lemon zest, roast at 200C for thirty minutes, squeeze the lemon over."),
+    3: ("Spicy Tofu Stew", "1 block tofu, gochugaru, zucchini, anchovy stock",
+        "Simmer the stock with chili flakes, add the zucchini, slide in the tofu and boil five minutes."),
+    4: ("Miso Glazed Salmon", "2 salmon fillets, 1 tbsp miso, mirin, honey",
+        "Whisk the miso with mirin and honey, brush the fillets and broil until caramelised."),
+    5: ("Sesame Noodle Salad", "200 g soba, cucumber, sesame paste, rice vinegar",
+        "Boil the soba, rinse it cold, toss it with julienned cucumber and the sesame dressing."),
+    6: ("Mushroom Risotto", "arborio rice, shiitake, parmesan, white wine",
+        "Toast the rice, deglaze with wine, add stock ladle by ladle, stir in the mushrooms and cheese."),
+    7: ("Kimchi Fried Rice", "2 cups cooked rice, aged kimchi, pork belly, fried egg",
+        "Render the pork, fry the kimchi until sticky, fold in the rice and top it with an egg."),
+    8: ("Roasted Pumpkin Soup", "1 small pumpkin, onion, cream, nutmeg",
+        "Roast the pumpkin cubes, sweat the onion, blend with stock and finish with cream and nutmeg."),
+}
+SECOND_BLOG = dict(RECIPES, id="t-recipes-b", name="Second Recipe Blog")
 
 
-def test_old_evergreen_stories_yield_to_fresh_ones():
-    fresh = [_recipe(n, day(n)) for n in range(1, 5)]
-    old = _recipe(9, day(200))
-    rows = run(*[(r, RECIPES) for r in fresh + [old]])
+def _dish(n, when):
+    name, ingredients, method = DISHES[n]
+    slug = name.lower().replace(" ", "-")
+    return raw(name, f"{name} recipe. Ingredients: {ingredients}. {method} " * 3, when,
+               f"https://recipes{n}.example.org/{slug}", medium="blog")
+
+
+def _tips(rows):
     edition, _ = select.build(rows, date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
-    shown = {i["url"] for i in edition["lanes"]["tips"]["items"]} | {(edition.get("featured") or {}).get("url")}
-    assert old["sourceUrl"] not in shown and len(edition["lanes"]["tips"]["items"]) <= select.LANE_SIZE
+    return edition, edition["lanes"]["tips"]["items"]
+
+
+def test_every_lane_carries_five_stories_fresh_ones_first():
+    """Owner decision 2026-10-12: five stories per lane in every edition."""
+    rows = run(*[(_dish(n, day(n)), RECIPES) for n in (1, 2, 3, 4)],
+               *[(_dish(n, day(n)), SECOND_BLOG) for n in (5, 6, 7)],
+               (_dish(8, day(200)), RECIPES))
+    assert all(r.get("assignedCategory") == "tips" and not r.get("duplicateOf") for r in rows)
+    edition, tips = _tips(rows)
+    assert select.LANE_SIZE == 5 and len(tips) == 5
+    assert "roasted-pumpkin-soup" not in " ".join(i["url"] for i in tips)   # an old story waits for the fresh ones
+    sources = [i["source"] for i in tips]
+    assert set(sources) == {"Recipe Blog", "Second Recipe Blog"}
+    assert max(sources.count(s) for s in set(sources)) <= 3   # two each first; the cap gives way only to fill
+
+
+def test_a_thin_lane_is_filled_with_older_stories_after_every_fresh_one():
+    rows = run(*[(_dish(n, day(n)), RECIPES) for n in (1, 2)],
+               *[(_dish(n, day(150 + n)), RECIPES) for n in (3, 4, 5, 6)])
+    edition, tips = _tips(rows)
+    hero = (edition.get("featured") or {}).get("url")
+    fresh = [r["sourceUrl"] for r in rows[:2] if r["sourceUrl"] != hero]
+    assert len(tips) == 5
+    assert [i["url"] for i in tips[:len(fresh)]] == fresh          # the fresh ones lead
+    assert all(i["publishedAt"] for i in tips)                     # an older story shows its own date
+
+
+def test_a_lane_never_takes_a_story_twice_or_one_already_published():
+    rows = run(*[(_dish(n, day(n)), RECIPES) for n in (1, 2, 3, 4, 5, 6)])
+    published = {rows[0]["candidateId"], rows[1]["sourceUrl"]}
+    edition, _ = select.build(rows, date="2026-09-29", generated_at=NOW.isoformat(), recent=published)
+    shown = [i["url"] for lane in edition["lanes"].values() for i in lane["items"]]
+    shown.append((edition.get("featured") or {}).get("url"))
+    assert rows[0]["sourceUrl"] not in shown and rows[1]["sourceUrl"] not in shown
+    assert len(shown) == len(set(shown))
 
 
 def test_the_candidate_store_survives_a_rate_limited_run(tmp_path, monkeypatch):
@@ -868,3 +926,29 @@ def test_card_excerpts_leave_no_credit_debris_or_repeated_tagged_headlines():
                                "[자료] 가공식품 지출 현황과 특징").startswith("1. 2분기")
     assert select.card_summary("ㅡㅡㅡㅡㅡㅡㅡㅡ 푸디앨리 멤버십 가입하기 자막이 필요하시면 CC 버튼을 눌러주세요 (Press CC button)") == ""
     assert select.card_summary("바삭하고 고소해서 정말 좋아요. 버터 향이 오래 남는 쿠키입니다.").startswith("바삭하고")
+
+
+def test_a_source_without_excerpts_is_shown_by_title_and_link_only():
+    """Registry "excerpt": false (a newspaper association member): the card keeps title, source,
+    date and link; the excerpt still serves the lane rules but is never shown."""
+    quiet = dict(RECIPES, id="t-quiet", name="Quiet Paper", excerpt=False)
+    [shown, plain] = run((_dish(1, day(1)), quiet), (_dish(2, day(2)), RECIPES))
+    assert shown["excerptAllowed"] is False and plain["excerptAllowed"] is True
+    assert shown["assignedCategory"] == "tips"                    # judged on its text as before
+    item, other = select.public_item(shown), select.public_item(plain)
+    assert item["summary"] == "" and item["source"] == "Quiet Paper" and item["url"] == shown["sourceUrl"]
+    assert other["summary"]
+
+
+def test_a_source_turned_off_publishes_nothing_more():
+    """Stories a source collected before it was turned off (its terms, a dead route) do not run."""
+    off = dict(RECIPES, id="t-off", name="Turned Off Blog", enabled=False)
+    rows = run(*[(_dish(n, day(n)), off) for n in (1, 2, 3)], *[(_dish(n, day(n)), RECIPES) for n in (4, 5)])
+    kept = pipeline.runnable(rows, [dict(RECIPES, enabled=True), off])
+    assert {r["sourceId"] for r in kept} == {"t-recipes"} and len(kept) == 2
+    edition, _ = select.build(kept, date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    shown = [i for lane in edition["lanes"].values() for i in lane["items"]] + [edition.get("featured") or {}]
+    assert all(i.get("source") != "Turned Off Blog" for i in shown)
+    # The refresh hands the selector only these rows, with or without a network run.
+    source = (ROOT / "scripts/refresh_magazine.py").read_text(encoding="utf-8")
+    assert source.count("pipeline.runnable(") == 2 and "select.build(rows," in source

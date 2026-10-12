@@ -2,9 +2,11 @@
 
 The magazine (`mukbang.html`) publishes **source-backed stories only**. There is no Babdoduk Desk
 fallback and no generated filler: every story has a real source, a real URL, the source's own
-title and a short excerpt of text that was actually retrieved from that source. When sources are
-down or thin, the edition is smaller, and a lane may be empty. An empty lane is explained in
-`research/magazine/health.json` (`lanes`), never silent.
+title and a short excerpt of text that was actually retrieved from that source. Every lane carries
+five stories (owner decision, 2026-10-12). When sources are down or thin and a lane cannot be filled
+from qualifying stories, it carries what it has; the run report names it (`summary.laneFill`,
+`summary.shortLanes` and a warning in `research/magazine/health.json`) and explains it (`lanes`),
+never silent and never filled with anything made up.
 
 ## Routes: implemented, where they run
 
@@ -17,7 +19,7 @@ down or thin, the edition is smaller, and a lane may be empty. An empty lane is 
 | YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | active on the operator PC |
 | YouTube channels (4): Atom feed, else yt-dlp channel listing | tips, health, trend | **local only** (sidecar) | active on the operator PC |
 | Exa REST search with `EXA_API_KEY` | - | optional | not configured, not needed |
-| YouTube Data API with `YOUTUBE_API_KEY` | - | optional | not configured, not requested |
+| YouTube Data API with `YOUTUBE_API_KEY` | tips, trend | cloud (any runner) | ready in code, waiting for the owner's key (magazine sourcing plan, decision 1): registered channels through `playlistItems.list` (1 unit), queries through `search.list` (at most 100 calls a day) |
 | Instagram (OpenCLI) | trend | local only | **OWNER_CHECKPOINT**, disabled |
 
 Evidence for the split (probe workflow runs 36525458559 and 36525712270 on a GitHub-hosted runner,
@@ -47,11 +49,15 @@ only in an isolated virtual environment with an isolated home directory, and its
 there (RSS and Jina Reader available; YouTube needs yt-dlp; web search needs mcporter + Exa MCP;
 Instagram needs OpenCLI with a logged-in desktop Chrome). Nothing from it is imported, vendored or
 installed in the repository. Babdoduk implements the same routes in its own code:
-- RSS: `adapters/rss.py` (stdlib parser, same fields as feedparser for our feeds);
+- RSS: `adapters/rss.py` (stdlib parser, same fields as feedparser for our feeds). A WordPress feed
+  registered with `"pagedFeed": "wordpress", "feedPages": N` (N at most 5) is also read at
+  `?paged=2…N`, 2 s apart, stopping at the first failed or repeated page, so a recipe blog brings a
+  reserve of evergreen stories for the five-per-lane rule, not only its newest posts;
 - web search: `adapters/exa_mcp.py`, a small MCP client for the same hosted Exa server Agent Reach
   configures through mcporter, with **no API key**;
 - web reading: `web_fetch_exa`, then Jina Reader (`r.jina.ai`) for public URLs only;
-- YouTube: yt-dlp (pinned 2026.8.19), metadata only.
+- YouTube: with `YOUTUBE_API_KEY`, the Data API from any runner (`adapters/youtube.py`: a channel's uploads
+  playlist, then search); without it, yt-dlp (pinned 2026.8.19), metadata only, on the operator PC.
 
 ## Pipeline
 
@@ -156,10 +162,11 @@ score = 0.25 × source trust + 0.20 × freshness + 0.15 × lane relevance + 0.15
 
 Freshness is exp(−age/21 days); quality is text length plus a validated image.
 
-**Selection.** Each lane takes at most 6 stories and at most 2 from one source (publisher); **6 is a
-ceiling, never a number to fill**. Stories that corroborate one another take one slot. In tips and
-health an evergreen story older than 90 days runs only when fewer than 3 fresh ones qualify. A story
-runs in one edition only (`selectedFor`).
+**Selection.** Each lane carries **5 stories** (`select.LANE_SIZE`, owner decision 2026-10-12), filled
+best-first in tiers until it is full: fresh stories, at most 2 from one source (publisher); then fresh
+stories from any source; then, in tips and health, evergreen stories older than 90 days (each shows
+its own date). Stories that corroborate one another take one slot. A story runs in one edition only
+(`selectedFor`), so a lane is filled from new and not-yet-published stories, never by repeating one.
 
 **Hero.** The edition records `featured.heroKind`:
 - `trend`: a qualified trend story with independent evidence (measured demand, strong engagement,
@@ -260,14 +267,15 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
   `rules: "lanes-v1"`) are removed.
 - **Validation:** `validate_content.py` rejects any desk, sourceless or link-less story, a trend story
   without evidence, older than 30 days or undated, an undated habit story, and a trend hero without
-  evidence. Sparse and empty lanes are valid.
+  evidence. A lane with fewer than five stories is valid (an honest shortage) but is reported.
 
 ## Health report
 
 `research/magazine/health.json` is written on every run: per adapter its status, code, item count
 and last success; the counts of candidates, new, duplicates, rejected and selected; per lane the
 qualifying count, how many candidates were discovered for it and why the others did not qualify;
-`fabricated: 0`; warnings for failing, stale and degraded sources.
+`fabricated: 0`; `laneFill` (stories per lane in the edition) and `shortLanes`; warnings for failing,
+stale and degraded sources and for every lane short of five stories.
 
 ## Tests and evaluation
 
