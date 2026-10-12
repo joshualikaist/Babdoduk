@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from . import adapters, images, process, registry, select
-from .common import atomic_write, dump_json, fetch, iso, read_json
+from .common import HostPacer, atomic_write, dump_json, fetch, iso, read_json
 from .store import CandidateStore
 
 RUN_LOG_LINES = 400
@@ -38,6 +38,8 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
     skip_types: source types not contacted in this run (an explicit operator choice, for example
     a cloud-parity build on a machine that can reach what GitHub's runners cannot). A skipped
     source is recorded as DEGRADED with SKIPPED_CLOUD_PARITY, never as a success."""
+    if fetcher is fetch:
+        fetcher = HostPacer(fetch)             # two seconds between requests to one host (docs/MAGAZINE_SOURCES.md)
     sources = registry.load(paths.registry)
     source_health = registry.load_health(paths.source_health)
     store = CandidateStore(paths.candidates)

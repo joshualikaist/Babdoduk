@@ -540,3 +540,28 @@ def test_with_a_key_a_channel_comes_from_the_data_api_from_any_runner(tmp_path):
     failed = youtube.discover_channel(source, fetcher=lambda url, accept: 1 / 0, env={"YOUTUBE_API_KEY": "k-123"})
     assert failed.status == adapters.FETCH_FAILED and "k-123" not in repr(failed)
     assert youtube.uploads_playlist("UCabc") == "UUabc" and youtube.uploads_playlist("xyz") == ""
+
+
+def test_requests_to_one_host_are_two_seconds_apart():
+    now, pauses, asked = [100.0], [], []
+
+    def sleep(seconds):
+        pauses.append(round(seconds, 2))
+        now[0] += seconds
+
+    pacer = common.HostPacer(lambda url, **kw: asked.append(url) or b"", sleep=sleep, clock=lambda: now[0])
+    pacer("https://www.yna.co.kr/rss/health.xml")
+    now[0] += 0.5
+    pacer("https://www.yna.co.kr/rss/industry.xml")           # the same newspaper, 0.5 s later
+    pacer("https://kormedi.com/feed/")                          # another host: no wait
+    now[0] += 5
+    pacer("https://www.yna.co.kr/rss/culture.xml")             # long enough apart already
+    assert pauses == [1.5] and len(asked) == 4
+    # A failed request still counts as a request to that host.
+    failing = common.HostPacer(lambda url, **kw: 1 / 0, sleep=sleep, clock=lambda: now[0])
+    for _ in range(2):
+        try:
+            failing("https://www.yna.co.kr/rss/health.xml")
+        except ZeroDivisionError:
+            pass
+    assert pauses[-1] == 2.0
