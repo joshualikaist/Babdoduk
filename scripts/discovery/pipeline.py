@@ -190,6 +190,14 @@ def recent_keys(out: Path, before: str, days: Optional[int] = None) -> set[str]:
     return keys | {canonical_url(k) for k in keys if k.startswith("http")}
 
 
+def runnable(rows: list[dict], sources: list[dict]) -> list[dict]:
+    """The stored stories whose source is still enabled: a source turned off (its terms, a dead
+    route) publishes nothing more, not even what it collected before. Its rows stay in the store
+    for deduplication until they expire."""
+    off = {s.get("id") for s in sources if not s.get("enabled")}
+    return [r for r in rows if r.get("sourceId") not in off]
+
+
 def finish(paths: Paths, run: dict, edition: Optional[dict], chosen: list[str], now: datetime) -> dict:
     """Persist registry health, the candidate store, the health report and the run log."""
     store: CandidateStore = run["store"]
