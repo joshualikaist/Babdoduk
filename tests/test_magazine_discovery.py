@@ -591,3 +591,17 @@ def test_requests_to_one_host_are_two_seconds_apart():
         except ZeroDivisionError:
             pass
     assert pauses[-1] == 2.0
+
+
+def test_an_item_dated_only_by_dc_date_keeps_its_date():
+    feed = ("<rss version='2.0' xmlns:dc='http://purl.org/dc/elements/1.1/'><channel><title>K</title>"
+            "<item><title>A</title><link>https://k.example.kr/a</link><dc:date>2026-10-12T13:06:39+09:00</dc:date></item>"
+            "<item><title>B</title><link>https://k.example.kr/b</link><dc:date>2026-10-12 13:33:32</dc:date></item>"
+            "<item><title>C</title><link>https://k.example.kr/c</link><pubDate>Mon, 12 Oct 2026 04:00:00 +0000</pubDate>"
+            "<dc:date>2020-01-01 00:00:00</dc:date></item>"
+            "<item><title>D</title><link>https://k.example.kr/d</link></item></channel></rss>").encode()
+    a, b, c, d = rss.parse(feed)
+    assert a["publishedAt"].isoformat() == "2026-10-12T13:06:39+09:00"
+    assert b["publishedAt"].isoformat() == "2026-10-12T13:33:32+09:00"     # a zoneless dc:date is KST
+    assert c["publishedAt"].isoformat() == "2026-10-12T04:00:00+00:00"     # pubDate wins when both exist
+    assert d["publishedAt"] is None

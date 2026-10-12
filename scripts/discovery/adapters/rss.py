@@ -12,7 +12,10 @@ from ..common import clean_text, parse_time
 from . import OK, PARSE_FAILED, FETCH_FAILED, AdapterResult, failure_code
 
 NS = {"atom": "http://www.w3.org/2005/Atom", "media": "http://search.yahoo.com/mrss/",
-      "content": "http://purl.org/rss/1.0/modules/content/", "yt": "http://www.youtube.com/xml/schemas/2015"}
+      "content": "http://purl.org/rss/1.0/modules/content/", "yt": "http://www.youtube.com/xml/schemas/2015",
+      "dc": "http://purl.org/dc/elements/1.1/"}
+# A dc:date with no zone ("2026-10-12 13:33:32") is the publisher's local time; our feeds are Korean.
+LOCAL_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$")
 IMG_SRC = re.compile(r"""<img[^>]+?src=["']([^"']+)["']""", re.I)
 BAD_IMAGE = re.compile(r"(1x1|pixel|spacer|blank\.gif|gravatar|emoji|/icons?/|logo|avatar|feeds\.feedburner)", re.I)
 
@@ -54,6 +57,18 @@ def item_image(node) -> tuple[str, str]:
     return "", ""
 
 
+def item_date(node):
+    """pubDate, else the Dublin Core dc:date that some Korean feeds carry instead (헬스조선, 레이디경향,
+    푸드투데이, 경향): without it every item of those feeds was undated and could not run."""
+    published = parse_time(_text(node, "pubDate"))
+    if published:
+        return published
+    raw = _text(node, "dc:date").strip()
+    if LOCAL_DATE.match(raw):
+        raw = raw.replace(" ", "T") + "+09:00"
+    return parse_time(raw)
+
+
 def item_text(node) -> str:
     bodies = [clean_text(_text(node, p)) for p in ("content:encoded", "description", "atom:content",
                                                  "atom:summary", "media:group/media:description")]
@@ -68,7 +83,7 @@ def parse(payload: bytes) -> list[dict]:
         guid = (_text(node, "guid") or "").strip()
         image, image_source = item_image(node)
         out.append({"title": clean_text(_text(node, "title")), "sourceUrl": link or guid, "sourceItemId": guid or link,
-                    "publishedAt": parse_time(_text(node, "pubDate")), "text": item_text(node),
+                    "publishedAt": item_date(node), "text": item_text(node),
                     "imageUrl": image, "imageSource": image_source})
     for node in root.findall("atom:entry", NS):
         link_el = node.find("atom:link[@rel='alternate']", NS)
