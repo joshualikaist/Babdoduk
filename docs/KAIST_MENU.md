@@ -54,7 +54,8 @@ and adds:
 ## Collection
 
 `python scripts/refresh_kaist_menu.py` runs in `content-refresh` (`magazine-daily.yml`) at
-06:00, 10:30 and 16:30 KST, as before. It is never polled.
+05:47, 10:07, 10:53, 12:23 and 16:17 KST (since 2026-10-12; before, 06:00, 10:30 and 16:30 KST, which
+GitHub delayed or dropped because scheduled runs crowd the hour and the half hour). It is never polled.
 
 **Which days a run fetches:**
 * The first run of a week, or `--full-week`, fetches all seven days (baseline).
