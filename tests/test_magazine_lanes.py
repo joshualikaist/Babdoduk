@@ -938,3 +938,17 @@ def test_a_source_without_excerpts_is_shown_by_title_and_link_only():
     item, other = select.public_item(shown), select.public_item(plain)
     assert item["summary"] == "" and item["source"] == "Quiet Paper" and item["url"] == shown["sourceUrl"]
     assert other["summary"]
+
+
+def test_a_source_turned_off_publishes_nothing_more():
+    """Stories a source collected before it was turned off (its terms, a dead route) do not run."""
+    off = dict(RECIPES, id="t-off", name="Turned Off Blog", enabled=False)
+    rows = run(*[(_dish(n, day(n)), off) for n in (1, 2, 3)], *[(_dish(n, day(n)), RECIPES) for n in (4, 5)])
+    kept = pipeline.runnable(rows, [dict(RECIPES, enabled=True), off])
+    assert {r["sourceId"] for r in kept} == {"t-recipes"} and len(kept) == 2
+    edition, _ = select.build(kept, date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    shown = [i for lane in edition["lanes"].values() for i in lane["items"]] + [edition.get("featured") or {}]
+    assert all(i.get("source") != "Turned Off Blog" for i in shown)
+    # The refresh hands the selector only these rows, with or without a network run.
+    source = (ROOT / "scripts/refresh_magazine.py").read_text(encoding="utf-8")
+    assert source.count("pipeline.runnable(") == 2 and "select.build(rows," in source
