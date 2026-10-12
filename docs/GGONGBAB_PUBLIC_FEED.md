@@ -151,6 +151,18 @@ This change does not install a new scheduler or automatically call a live DB.
 Phase 2B must retain client expiry filtering and snapshot fallback/reload on lost
 connections. Realtime delivery latency is separate from the ingestion cadence.
 
+### The scheduled sync step (owner, 2026-10-13)
+
+Until then nothing scheduled refreshed the projection: the ggongbab-refresh workflow runs
+`main`'s code, which had no synchronizer, so the projection kept the four rows of
+2026-09-23 while the snapshot moved on. `python scripts/sync_public_feed.py` is the
+synchronizer alone (`sync_public_feed`: the same selection, time and sanitizer as the
+snapshot of that run, read straight from the canonical rows). The workflow runs it as a
+separate step **after** "Publish generated data", so a sync failure turns the job red
+but never holds back `data/ggongbab/latest.json`. Exit 0 synchronized, 21 backend not
+configured, 23 preparation or replacement failed (value-free code in the log; the
+projection keeps its previous generation).
+
 ## Privileges and Realtime
 
 Both projection and generation tables enable RLS and explicitly revoke all
