@@ -23,8 +23,8 @@ def tables(html: str) -> dict:
     """The page's ko and en translation tables, as the browser evaluates them."""
     if not shutil.which("node"):
         pytest.skip("node is not installed")
-    start = html.index("var STR = ") + len("var STR = ")
-    end = html.index("\n      };\n", start) + len("\n      }")
+    start = html.index("window.BABDODUK_STR = ") + len("window.BABDODUK_STR = ")
+    end = html.index("\n    };\n", start) + len("\n    }")
     result = subprocess.run(["node", "-e", "process.stdout.write(JSON.stringify(" + html[start:end] + "))"],
                             capture_output=True, text=True, encoding="utf-8", check=True)
     return json.loads(result.stdout)
@@ -74,7 +74,8 @@ def test_order_and_dates_are_computed_not_authored():
     assert '<time datetime="2026-05-19">2026.05.19</time></p>' in rows         # one day, one date
     assert "2026.12.30</time> — <time datetime=\"2027-01-02\">2027.01.02</time>" in rows  # the year changes
     assert blocks["notices"][0].count("나중") == 1 and "먼저" in blocks["notices"][1]   # newest first
-    assert "'event.n0.title': 'Newer'," in blocks["events:en"] and "'event.e2.summary': '연말'," in blocks["events:ko"]
+    strings = page_content.event_strings(data)
+    assert strings["en"]["event.n0.title"] == "Newer" and strings["ko"]["event.e2.summary"] == "연말"
     history = page_content.history_blocks({"schemaVersion": 1, "roadmap": HISTORY["roadmap"],
                                            "milestones": list(reversed(HISTORY["milestones"]))})
     assert history == page_content.history_blocks(HISTORY)

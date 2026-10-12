@@ -404,7 +404,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 
 ## 13. Frontend (`lab-ggongbab.html`)
 
-* nav · footer · `STR` i18n · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
+* nav · footer · 번역(`i18n/ko.json`·`en.json` 에서 동기화) · `babdoduk-lang` localStorage 정책은 다른 페이지와 동일하다. 페이지 전용 문자열은 `gg.*` 키.
 * `js/ggongbab.js` 가 `fetch('data/ggongbab/latest.json', {cache: 'no-store'})` 로 읽고 loading(skeleton) / error(재시도 버튼) / empty 상태를 각각 그린다.
 * 꽁밥 탭 목록 맨 위에 마지막 변경 시각을 보여 준다(`gg.updated`). 11절 “끝난 행사” 참고.
 * **지난 꽁밥 기록**은 live 목록 아래 별도 영역(`section.gg-archive`)이다. `data/ggongbab/archive/index.json` 을 live 와 **따로**

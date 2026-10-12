@@ -2,7 +2,7 @@
 
 `event.html` 의 소식은 **`data/content/events.json`** 에 씁니다(계약 `schemas/content-events.schema.json`). 고친 뒤
 `python scripts/sync_site_chrome.py` 를 실행하면 페이지의 행과 한·영 번역(`event.eN.*`, `event.nN.*`)이 다시 써집니다.
-페이지의 행이나 `STR` 표를 직접 고치지 않습니다. 고친 채로 두면 `sync_site_chrome.py --check`(CI)가 실패합니다.
+페이지의 행이나 번역 표(`window.BABDODUK_STR`)를 직접 고치지 않습니다. 고친 채로 두면 `sync_site_chrome.py --check`(CI)가 실패합니다.
 상세 본문(`details`)은 아래 **네 가지 라벨만** 씁니다. (다른 이름으로 바꾸지 않습니다.)
 
 ## 페이지 구조
@@ -75,7 +75,7 @@
 </li>
 ```
 
-한국어 글은 마크업에 바로 들어가 자바스크립트 없이도 읽히고, 영어는 `STR` 표에서 언어를 바꿀 때 씁니다.
+한국어 글은 마크업에 바로 들어가 자바스크립트 없이도 읽히고, 영어는 번역 표에서 언어를 바꿀 때 씁니다.
 
 ## 날짜 구간과 확인 상태 (분리)
 

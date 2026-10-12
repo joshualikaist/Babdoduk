@@ -45,16 +45,12 @@ def attr(value: str) -> str:
 
 
 def js_str(value: str) -> str:
-    """A JavaScript string literal in the tables' own style: single quotes unless the text has one."""
-    if "'" not in value:
-        return f"'{value}'"
-    if '"' not in value:
-        return f'"{value}"'
-    return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
-
-
-def entry(key: str, value: str) -> str:
-    return f"'{key}': {js_str(value)},"
+    """A JavaScript string literal in the tables' own style: single quotes, an apostrophe as \\'.
+    Backslashes, line breaks and `</script` or `<!--` (which would break the page's script) are escaped."""
+    value = (value.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r")
+             .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
+    value = re.sub(r"<(/script|!--)", r"<\\\1", value, flags=re.I)
+    return f"'{value}'"
 
 
 def dotted(day: str) -> str:
@@ -127,20 +123,24 @@ def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
               f'<strong data-i18n="event.{key}.title">{text(item["title"]["ko"])}</strong>'
               f'<p data-i18n="event.{key}.text">{text(item["text"]["ko"])}</p></li>'
               for key, item in notices(data)]
-    blocks = {"events": rows, "notices": listed}
+    return {"events": rows, "notices": listed}
+
+
+def event_strings(data: dict | None = None) -> dict[str, dict[str, str]]:
+    """The translations of the rows and notices, by language."""
+    data = load("events") if data is None else data
+    tables: dict[str, dict[str, str]] = {}
     for lang in LANGS:
-        table: list[str] = []
+        table = tables[lang] = {}
         for key, item in activities(data):
-            table.append(entry(f"event.{key}.summary", item["title"][lang]))
+            table[f"event.{key}.summary"] = item["title"][lang]
             if "place" in item:
-                table.append(entry(f"event.{key}.place", item["place"][lang]))
-            sheet = detail_sheet(item["details"], lang)
-            table.append(f"'event.{key}.detail':")
-            table += [f"  {js_str(part)} +" for part in sheet[:-1]] + [f"  {js_str(sheet[-1])},"]
+                table[f"event.{key}.place"] = item["place"][lang]
+            table[f"event.{key}.detail"] = "".join(detail_sheet(item["details"], lang))
         for key, item in notices(data):
-            table += [entry(f"event.{key}.title", item["title"][lang]), entry(f"event.{key}.text", item["text"][lang])]
-        blocks[f"events:{lang}"] = table
-    return blocks
+            table[f"event.{key}.title"] = item["title"][lang]
+            table[f"event.{key}.text"] = item["text"][lang]
+    return tables
 
 
 def picture(key: str, item: dict) -> list[str]:
@@ -206,18 +206,23 @@ def history_blocks(data: dict | None = None) -> dict[str, list[str]]:
                            '<span class="timeline-next-mark">NEXT</span></div>'],
                           '<span class="timeline-year">—</span>', "roadmap", roadmap["title"]["ko"],
                           roadmap["text"]["ko"], ' aria-hidden="true"')
-    blocks = {"timeline": rows}
+    return {"timeline": rows}
+
+
+def history_strings(data: dict | None = None) -> dict[str, dict[str, str]]:
+    """The translations of the timeline, by language."""
+    data = load("history") if data is None else data
+    tables: dict[str, dict[str, str]] = {}
     for lang in LANGS:
-        table: list[str] = []
+        table = tables[lang] = {}
         for key, item in milestones(data):
-            table += [entry(f"history.{key}.photoAlt", item["picture"]["alt"][lang]),
-                      entry(f"history.{key}.year", milestone_date(item["date"], lang)),
-                      entry(f"history.{key}.label", item["title"][lang]),
-                      entry(f"history.{key}.desc", item["text"][lang])]
-        table += [entry("history.roadmap.label", roadmap["title"][lang]),
-                  entry("history.roadmap.desc", roadmap["text"][lang])]
-        blocks[f"timeline:{lang}"] = table
-    return blocks
+            table[f"history.{key}.photoAlt"] = item["picture"]["alt"][lang]
+            table[f"history.{key}.year"] = milestone_date(item["date"], lang)
+            table[f"history.{key}.label"] = item["title"][lang]
+            table[f"history.{key}.desc"] = item["text"][lang]
+        table["history.roadmap.label"] = data["roadmap"]["title"][lang]
+        table["history.roadmap.desc"] = data["roadmap"]["text"][lang]
+    return tables
 
 
 def content_errors(root: Path = ROOT) -> list[str]:

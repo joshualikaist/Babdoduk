@@ -33,7 +33,7 @@
       <div class="scroll-progress-bar" id="scrollProgressBar"></div>
     </div>
     <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
-      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="맨 위로">Babdoduk</a>
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="홈으로">Babdoduk</a>
       <div class="nav-mega-row">
         <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
         <a class="site-nav-direct is-current" href="mukbang.html" aria-current="page" data-i18n="nav.magazine">밥도둑 매거진</a>
@@ -204,276 +204,266 @@
     </div>
   </footer>
 
+  <!-- @i18n:strings -->
   <script>
-    (function () {
-      var STR = {
-        ko: {
-          docTitle: '밥도둑 매거진 · 밥도둑 Babdoduk',
-          'a11y.scrollProgress': '페이지 스크롤 진행',
-          'nav.navAria': '주요 메뉴',
-          'nav.homeAria': '홈으로',
-          'nav.history': '역사',
-          'nav.instagram': '인스타그램',
-          'nav.today': '오늘의 꽁밥',
-          'nav.more': '더보기',
-          'nav.map': '맛집 지도',
-          'nav.magazine': '밥도둑 매거진',
-          'nav.event': '소식·이벤트',
-          'nav.event.open': '소식·이벤트',
-          'nav.langBtn': '언어 (EN)',
-          'nav.langAria': '영어로 전환',
-          'mg.title': '밥도둑 매거진',
-          'mg.hero.pick': '오늘의 추천 글',
-          'mg.hero.trend': '지금 뜨는 먹거리',
-          'mg.ev.label': '유행 근거',
-          'mg.ev.explicit_source_claim': '원문이 인기·유행을 전함',
-          'mg.ev.corroborated': '여러 매체가 다룸',
-          'mg.ev.engagement': '조회 반응이 큼',
-          'mg.ev.sales_data': '판매 수치 보도',
-          'mg.board.title': '오늘의 밥 이야기',
-          'mg.index.title': '네 갈래 밥 이야기',
-          'mg.cat.tips': '요리 비법',
-          'mg.cat.trend': '요즘 먹방 유행',
-          'mg.cat.trendShort': '먹방 유행',
-          'mg.cat.health': '건강한 한 끼',
-          'mg.cat.habit': '식습관',
-          'mg.tips.lead': '밥이 더 맛있어지는 작은 조리 팁',
-          'mg.trend.lead': '요즘 사람들이 뭘 먹고 있는지',
-          'mg.health.lead': '맛도 포기하지 않는 건강식',
-          'mg.habit.lead': '잘 먹는 법에 대한 작은 이야기',
-          'mg.cal.open': '날짜 보기',
-          'mg.medium.blog': '블로그',
-          'mg.medium.news': '기사',
-          'mg.medium.research': '연구',
-          'mg.medium.youtube': '유튜브',
-          'mg.medium.instagram': '인스타',
-          'mg.method': '모든 이야기는 원문 출처로 이어져요 · 하루 한 번 발행',
-          'mg.laneEmpty': '오늘은 이 갈래에 올릴 새 이야기가 없어요.',
-          // Menu picker (#what) and today's cafeteria summary, moved from choose.html.
-          'eat.kicker': '오늘 뭐 먹지?',
-          'eat.meta': '판매 여부·가격·알레르기는 가게에서 확인',
-          'eat.hungerAria': '배고픈 정도',
-          'eat.hunger.hungry': '배고파',
-          'eat.hunger.light': '가볍게',
-          'eat.hunger.any': '상관없어',
-          'eat.spin': '오늘 메뉴 뽑기',
-          'eat.spinning': '고르는 중…',
-          'eat.hint.spin': '세 칸이 차례로 멈출 때까지 기다려 주세요.',
-          'eat.hint.land': '오늘의 한 끼가 정해졌어요.',
-          'eat.wheelAria': '오늘 메뉴를 뽑는 슬롯. 버튼을 누르면 세 칸이 돌아 한 끼가 정해집니다.',
-          'eat.result.slot': '{a} · {b} · {c}',
-          'eat.reasons': '추천 이유',
-          'eat.reason.now': '지금 시간대에 자주 먹는 메뉴예요',
-          'eat.reason.hearty': '배고프다고 해서 든든한 쪽으로 골랐어요',
-          'eat.reason.light': '가볍게 먹고 싶다고 해서 부담이 적은 쪽으로 골랐어요',
-          'eat.reason.soup': '국물이 있는 메뉴예요',
-          'eat.reason.filling': '포만감이 큰 편이에요',
-          'eat.reason.default': '배고픈 정도와 지금 시간을 기준으로 골랐어요',
-          'eat.scope': '판매 여부·가격·알레르기는 가게에서 확인',
-          'eat.announce': '추천 메뉴: {dish}',
-          'kaist.title': '오늘 KAIST 학식',
-          'kaist.recentTitle': '최근에 올라온 KAIST 학식',
-          'kaist.staleNote': '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.',
-          'kaist.loading': '학식 메뉴를 불러오는 중이에요.',
-          'kaist.error': '학식 메뉴를 불러오지 못했어요.',
-          'kaist.restosAria': '식당',
-          'km.mealsAria': '식사 시간',
-          'km.breakfast': '아침',
-          'km.lunch': '점심',
-          'km.dinner': '저녁',
-          'kaist.empty': '아직 올라온 학식 메뉴가 없어요.',
-          'kaist.nomenu': '이 시간대 메뉴가 없어요.',
-          'kaist.toHub': '모든 식당 보기 →',
-          'eat.back': '뒤로',
-          'eat.reset': '처음부터',
-          'eat.result.kicker': '오늘의 밥도둑 PICK',
-          'eat.take': '이걸로 할래',
-          'eat.taken': '좋아요, 이걸로 골랐어요.',
-          'eat.more': '다시 돌리기',
-          'eat.alts': '다른 추천',
-          'eat.empty': '지금은 맞는 메뉴가 없어요. 배고픔만 바꿔 다시 돌려볼까요.',
-          'eat.loadFail': '메뉴 데이터를 아직 못 읽었어요.',
-          'eat.fb.aria': '이 추천은 어땠나요',
-          'eat.fb.like': '좋아요',
-          'eat.fb.dislike': '별로예요',
-          'eat.fb.eaten': '먹었어요',
-          'mg.editionFail': '오늘 호를 불러오지 못했어요.',
-          'mg.newTab': '(새 창)',
-          'mg.issue.today': '오늘 호',
-          'mg.issue.latest': '최신 호',
-          'mg.issue.past': '지난 호',
-          'mg.published': '{time} 발행',
-          'mg.catsAria': '카테고리',
-          'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
-          'footer.contact': '문의',
-          'footer.country': '대한민국',
-          'footer.navAria': '사이트 바로가기',
-          'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.'
-        },
-        en: {
-          docTitle: 'Babdoduk Magazine · Babdoduk',
-          'a11y.scrollProgress': 'Page scroll progress',
-          'nav.navAria': 'Main menu',
-          'nav.homeAria': 'Home',
-          'nav.history': 'History',
-          'nav.instagram': 'Instagram',
-          'nav.today': "Today's free food",
-          'nav.more': 'More',
-          'nav.map': 'Food map',
-          'nav.magazine': 'Magazine',
-          'nav.event': 'News & events',
-          'nav.event.open': 'News & events',
-          'nav.langBtn': '한국어',
-          'nav.langAria': 'Switch to Korean',
-          'mg.title': 'Babdoduk Magazine',
-          'mg.hero.pick': "Today's pick",
-          'mg.hero.trend': 'Trending now',
-          'mg.ev.label': 'Why it is trending',
-          'mg.ev.explicit_source_claim': 'the source reports it as popular',
-          'mg.ev.corroborated': 'covered by several sources',
-          'mg.ev.engagement': 'high engagement',
-          'mg.ev.sales_data': 'sales figures reported',
-          'mg.board.title': "Today's rice stories",
-          'mg.index.title': 'Four food sections',
-          'mg.cat.tips': 'Kitchen notes',
-          'mg.cat.trend': "What's in",
-          'mg.cat.trendShort': "What's in",
-          'mg.cat.health': 'A lighter plate',
-          'mg.cat.habit': 'How we eat',
-          'mg.tips.lead': 'Small cooking moves that make rice taste better',
-          'mg.trend.lead': 'What people are eating right now',
-          'mg.health.lead': 'Lighter food that still tastes like dinner',
-          'mg.habit.lead': 'Small notes on eating well',
-          'mg.cal.open': 'Pick a date',
-          'mg.medium.blog': 'Blog',
-          'mg.medium.news': 'News',
-          'mg.medium.research': 'Research',
-          'mg.medium.youtube': 'YouTube',
-          'mg.medium.instagram': 'Instagram',
-          'mg.method': 'Every story links to its original source · published daily',
-          'mg.laneEmpty': 'No new story for this section today.',
-          // Menu picker (#what) and today's cafeteria summary, moved from choose.html.
-          'eat.kicker': "What's for today?",
-          'eat.meta': 'Check availability, price and allergens with the shop',
-          'eat.hungerAria': 'How hungry',
-          'eat.hunger.hungry': 'Hungry',
-          'eat.hunger.light': 'Keep it light',
-          'eat.hunger.any': 'No preference',
-          'eat.spin': 'Pick today’s meal',
-          'eat.spinning': 'Choosing…',
-          'eat.hint.spin': 'Wait until the three reels stop, one after another.',
-          'eat.hint.land': 'Today’s plate is set.',
-          'eat.wheelAria': 'A three-reel slot that lands on one dish.',
-          'eat.result.slot': '{a} · {b} · {c}',
-          'eat.reasons': 'Why this',
-          'eat.reason.now': 'Often eaten at this time of day',
-          'eat.reason.hearty': 'Filling, since you said you are hungry',
-          'eat.reason.light': 'Lighter, as you asked',
-          'eat.reason.soup': 'Comes with broth',
-          'eat.reason.filling': 'On the filling side',
-          'eat.reason.default': 'Picked for your hunger and the time of day',
-          'eat.scope': 'Check availability, price and allergens with the shop',
-          'eat.announce': 'Suggested dish: {dish}',
-          'kaist.title': "Today's KAIST cafeteria",
-          'kaist.recentTitle': 'Latest KAIST cafeteria menu',
-          'kaist.staleNote': 'Menu for {date}. Today’s menu is not posted yet.',
-          'kaist.loading': 'Loading cafeteria menus…',
-          'kaist.error': 'Could not load cafeteria menus.',
-          'kaist.restosAria': 'Cafeteria',
-          'km.mealsAria': 'Meal time',
-          'km.breakfast': 'Breakfast',
-          'km.lunch': 'Lunch',
-          'km.dinner': 'Dinner',
-          'kaist.empty': 'No cafeteria menu has been posted yet.',
-          'kaist.nomenu': 'No menu for this sitting.',
-          'kaist.toHub': 'All cafeterias →',
-          'eat.back': 'Back',
-          'eat.reset': 'Start over',
-          'eat.result.kicker': "Today's Babdoduk PICK",
-          'eat.take': "I'll go with this",
-          'eat.taken': 'Noted. You picked this one.',
-          'eat.more': 'Spin again',
-          'eat.alts': 'Other picks',
-          'eat.empty': 'Nothing fit. Change hunger and spin again.',
-          'eat.loadFail': "Couldn't load the menu list yet.",
-          'eat.fb.aria': 'How was this pick',
-          'eat.fb.like': 'Like',
-          'eat.fb.dislike': 'Not for me',
-          'eat.fb.eaten': 'Ate it',
-          'mg.editionFail': 'Couldn\'t load today\'s issue.',
-          'mg.newTab': '(opens in a new tab)',
-          'mg.issue.today': "Today's edition",
-          'mg.issue.latest': 'Latest edition',
-          'mg.issue.past': 'Past edition',
-          'mg.published': 'Published {time} KST',
-          'mg.catsAria': 'Categories',
-          'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
-          'footer.contact': 'Contact',
-          'footer.country': 'South Korea',
-          'footer.navAria': 'Site links',
-          'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.'
-        }
-      };
-      window.BABDODUK_STR = STR;
-      function applyLang(lang) {
-        if (lang !== 'en') lang = 'ko';
-        document.documentElement.lang = lang;
-        try { localStorage.setItem('babdoduk-lang', lang); } catch (e) {}
-        var T = STR[lang];
-        document.title = T.docTitle;
-        document.querySelectorAll('[data-i18n]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n');
-          if (T[k] !== undefined) el.textContent = T[k];
-        });
-        document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-html');
-          if (T[k] !== undefined) el.innerHTML = T[k];
-        });
-        document.querySelectorAll('[data-i18n-aria-key]').forEach(function (el) {
-          var k = el.getAttribute('data-i18n-aria-key');
-          if (T[k] !== undefined) el.setAttribute('aria-label', T[k]);
-        });
-        var navInner = document.getElementById('siteNavInner');
-        if (navInner && T['nav.navAria']) navInner.setAttribute('aria-label', T['nav.navAria']);
-        var sp = document.getElementById('scrollProgressWrap');
-        if (sp && T['a11y.scrollProgress']) sp.setAttribute('aria-label', T['a11y.scrollProgress']);
-        try {
-          document.dispatchEvent(new CustomEvent('babdoduk-lang', { detail: lang }));
-        } catch (err) {}
+    // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.
+    window.BABDODUK_STR = {
+      ko: {
+        docTitle: '밥도둑 매거진 · 밥도둑 Babdoduk',
+        'a11y.scrollProgress': '페이지 스크롤 진행',
+        'eat.alts': '다른 추천',
+        'eat.announce': '추천 메뉴: {dish}',
+        'eat.back': '뒤로',
+        'eat.empty': '지금은 맞는 메뉴가 없어요. 배고픔만 바꿔 다시 돌려볼까요.',
+        'eat.fb.aria': '이 추천은 어땠나요',
+        'eat.fb.dislike': '별로예요',
+        'eat.fb.eaten': '먹었어요',
+        'eat.fb.like': '좋아요',
+        'eat.hint.land': '오늘의 한 끼가 정해졌어요.',
+        'eat.hint.spin': '세 칸이 차례로 멈출 때까지 기다려 주세요.',
+        'eat.hunger.any': '상관없어',
+        'eat.hunger.hungry': '배고파',
+        'eat.hunger.light': '가볍게',
+        'eat.hungerAria': '배고픈 정도',
+        'eat.kicker': '오늘 뭐 먹지?',
+        'eat.loadFail': '메뉴 데이터를 아직 못 읽었어요.',
+        'eat.meta': '판매 여부·가격·알레르기는 가게에서 확인',
+        'eat.more': '다시 돌리기',
+        'eat.reason.default': '배고픈 정도와 지금 시간을 기준으로 골랐어요',
+        'eat.reason.filling': '포만감이 큰 편이에요',
+        'eat.reason.hearty': '배고프다고 해서 든든한 쪽으로 골랐어요',
+        'eat.reason.light': '가볍게 먹고 싶다고 해서 부담이 적은 쪽으로 골랐어요',
+        'eat.reason.now': '지금 시간대에 자주 먹는 메뉴예요',
+        'eat.reason.soup': '국물이 있는 메뉴예요',
+        'eat.reasons': '추천 이유',
+        'eat.reset': '처음부터',
+        'eat.result.kicker': '오늘의 밥도둑 PICK',
+        'eat.result.slot': '{a} · {b} · {c}',
+        'eat.scope': '판매 여부·가격·알레르기는 가게에서 확인',
+        'eat.spin': '오늘 메뉴 뽑기',
+        'eat.spinning': '고르는 중…',
+        'eat.take': '이걸로 할래',
+        'eat.taken': '좋아요, 이걸로 골랐어요.',
+        'eat.wheelAria': '오늘 메뉴를 뽑는 슬롯. 버튼을 누르면 세 칸이 돌아 한 끼가 정해집니다.',
+        'footer.contact': '문의',
+        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.country': '대한민국',
+        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.navAria': '사이트 바로가기',
+        'kaist.empty': '아직 올라온 학식 메뉴가 없어요.',
+        'kaist.error': '학식 메뉴를 불러오지 못했어요.',
+        'kaist.loading': '학식 메뉴를 불러오는 중이에요.',
+        'kaist.nomenu': '이 시간대 메뉴가 없어요.',
+        'kaist.recentTitle': '최근에 올라온 KAIST 학식',
+        'kaist.restosAria': '식당',
+        'kaist.staleNote': '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.',
+        'kaist.title': '오늘 KAIST 학식',
+        'kaist.toHub': '모든 식당 보기 →',
+        'km.breakfast': '아침',
+        'km.collapse': '메뉴 접기 ↑',
+        'km.count': '{meal} 메뉴 {n}곳',
+        'km.dayError': '메뉴를 불러오지 못했어요.',
+        'km.daysAria': '날짜',
+        'km.dinner': '저녁',
+        'km.emptyMeal': '이 시간대에 공개된 메뉴가 없어요.',
+        'km.emptyTitle': '오늘 이 시간대에 공개된 메뉴가 없어요.',
+        'km.errorTitle': '오늘 메뉴를 불러오지 못했어요.',
+        'km.expand': '전체 메뉴 {n}개 보기 ↓',
+        'km.fav': '즐겨찾기',
+        'km.hideStale': '최근 메뉴 숨기기',
+        'km.lunch': '점심',
+        'km.mealLink': '{meal} 메뉴 보기 →',
+        'km.mealsAria': '식사 시간',
+        'km.noMenuYet': '아직 올라온 메뉴가 없어요.',
+        'km.recentTitle': '최근 학식 메뉴',
+        'km.showStale': '최근 메뉴 보기',
+        'km.staleEmpty': '최근 메뉴를 보려면 아래를 눌러 주세요.',
+        'km.staleSaved': '최근 저장된 메뉴:',
+        'km.staleTitle': '오늘 메뉴 업데이트 중이에요.',
+        'km.title': '이번 주 학식',
+        'km.toFree': '꽁밥 보러가기 →',
+        'km.today': '오늘',
+        'km.unfav': '즐겨찾기 해제',
+        'mg.board.title': '오늘의 밥 이야기',
+        'mg.cal.open': '날짜 보기',
+        'mg.cat.habit': '식습관',
+        'mg.cat.health': '건강한 한 끼',
+        'mg.cat.tips': '요리 비법',
+        'mg.cat.trend': '요즘 먹방 유행',
+        'mg.cat.trendShort': '먹방 유행',
+        'mg.catsAria': '카테고리',
+        'mg.editionFail': '오늘 호를 불러오지 못했어요.',
+        'mg.ev.corroborated': '여러 매체가 다룸',
+        'mg.ev.engagement': '조회 반응이 큼',
+        'mg.ev.explicit_source_claim': '원문이 인기·유행을 전함',
+        'mg.ev.label': '유행 근거',
+        'mg.ev.sales_data': '판매 수치 보도',
+        'mg.habit.lead': '잘 먹는 법에 대한 작은 이야기',
+        'mg.health.lead': '맛도 포기하지 않는 건강식',
+        'mg.hero.pick': '오늘의 추천 글',
+        'mg.hero.trend': '지금 뜨는 먹거리',
+        'mg.index.title': '네 갈래 밥 이야기',
+        'mg.issue.latest': '최신 호',
+        'mg.issue.past': '지난 호',
+        'mg.issue.today': '오늘 호',
+        'mg.laneEmpty': '오늘은 이 갈래에 올릴 새 이야기가 없어요.',
+        'mg.medium.blog': '블로그',
+        'mg.medium.instagram': '인스타',
+        'mg.medium.news': '기사',
+        'mg.medium.research': '연구',
+        'mg.medium.youtube': '유튜브',
+        'mg.method': '모든 이야기는 원문 출처로 이어져요 · 하루 한 번 발행',
+        'mg.newTab': '(새 창)',
+        'mg.published': '{time} 발행',
+        'mg.tips.lead': '밥이 더 맛있어지는 작은 조리 팁',
+        'mg.title': '밥도둑 매거진',
+        'mg.trend.lead': '요즘 사람들이 뭘 먹고 있는지',
+        'nav.event': '소식·이벤트',
+        'nav.event.open': '소식·이벤트',
+        'nav.history': '역사',
+        'nav.homeAria': '홈으로',
+        'nav.instagram': '인스타그램',
+        'nav.lab': '실험실',
+        'nav.labFeed': '꽁밥 실험',
+        'nav.langAria': '영어로 전환',
+        'nav.langBtn': '언어 (EN)',
+        'nav.magazine': '밥도둑 매거진',
+        'nav.map': '맛집 지도',
+        'nav.more': '더보기',
+        'nav.navAria': '주요 메뉴',
+        'nav.today': '오늘의 꽁밥',
+        'nav.topAria': '맨 위로',
+      },
+      en: {
+        docTitle: 'Babdoduk Magazine · Babdoduk',
+        'a11y.scrollProgress': 'Page scroll progress',
+        'eat.alts': 'Other picks',
+        'eat.announce': 'Suggested dish: {dish}',
+        'eat.back': 'Back',
+        'eat.empty': 'Nothing fit. Change hunger and spin again.',
+        'eat.fb.aria': 'How was this pick',
+        'eat.fb.dislike': 'Not for me',
+        'eat.fb.eaten': 'Ate it',
+        'eat.fb.like': 'Like',
+        'eat.hint.land': 'Today’s plate is set.',
+        'eat.hint.spin': 'Wait until the three reels stop, one after another.',
+        'eat.hunger.any': 'No preference',
+        'eat.hunger.hungry': 'Hungry',
+        'eat.hunger.light': 'Keep it light',
+        'eat.hungerAria': 'How hungry',
+        'eat.kicker': 'What\'s for today?',
+        'eat.loadFail': 'Couldn\'t load the menu list yet.',
+        'eat.meta': 'Check availability, price and allergens with the shop',
+        'eat.more': 'Spin again',
+        'eat.reason.default': 'Picked for your hunger and the time of day',
+        'eat.reason.filling': 'On the filling side',
+        'eat.reason.hearty': 'Filling, since you said you are hungry',
+        'eat.reason.light': 'Lighter, as you asked',
+        'eat.reason.now': 'Often eaten at this time of day',
+        'eat.reason.soup': 'Comes with broth',
+        'eat.reasons': 'Why this',
+        'eat.reset': 'Start over',
+        'eat.result.kicker': 'Today\'s Babdoduk PICK',
+        'eat.result.slot': '{a} · {b} · {c}',
+        'eat.scope': 'Check availability, price and allergens with the shop',
+        'eat.spin': 'Pick today’s meal',
+        'eat.spinning': 'Choosing…',
+        'eat.take': 'I\'ll go with this',
+        'eat.taken': 'Noted. You picked this one.',
+        'eat.wheelAria': 'A three-reel slot that lands on one dish.',
+        'footer.contact': 'Contact',
+        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.country': 'South Korea',
+        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.navAria': 'Site links',
+        'kaist.empty': 'No cafeteria menu has been posted yet.',
+        'kaist.error': 'Could not load cafeteria menus.',
+        'kaist.loading': 'Loading cafeteria menus…',
+        'kaist.nomenu': 'No menu for this sitting.',
+        'kaist.recentTitle': 'Latest KAIST cafeteria menu',
+        'kaist.restosAria': 'Cafeteria',
+        'kaist.staleNote': 'Menu for {date}. Today’s menu is not posted yet.',
+        'kaist.title': 'Today\'s KAIST cafeteria',
+        'kaist.toHub': 'All cafeterias →',
+        'km.breakfast': 'Breakfast',
+        'km.collapse': 'Show less ↑',
+        'km.count': '{meal}: {n} cafeterias',
+        'km.dayError': 'Couldn’t load the menu.',
+        'km.daysAria': 'Date',
+        'km.dinner': 'Dinner',
+        'km.emptyMeal': 'No menu published for this meal.',
+        'km.emptyTitle': 'No menu published for this meal today.',
+        'km.errorTitle': 'Could not load today’s menu.',
+        'km.expand': 'Show all {n} items ↓',
+        'km.fav': 'Favorite',
+        'km.hideStale': 'Hide latest menu',
+        'km.lunch': 'Lunch',
+        'km.mealLink': 'See {meal} menus →',
+        'km.mealsAria': 'Meal time',
+        'km.noMenuYet': 'No menu has been posted yet.',
+        'km.recentTitle': 'Latest cafeteria menu',
+        'km.showStale': 'Show latest saved menu',
+        'km.staleEmpty': 'Open the latest saved menu below.',
+        'km.staleSaved': 'Latest saved menu:',
+        'km.staleTitle': 'Today’s menu is still updating.',
+        'km.title': 'This week\'s cafeteria',
+        'km.toFree': 'See free food →',
+        'km.today': 'Today',
+        'km.unfav': 'Remove favorite',
+        'mg.board.title': 'Today\'s rice stories',
+        'mg.cal.open': 'Pick a date',
+        'mg.cat.habit': 'How we eat',
+        'mg.cat.health': 'A lighter plate',
+        'mg.cat.tips': 'Kitchen notes',
+        'mg.cat.trend': 'What\'s in',
+        'mg.cat.trendShort': 'What\'s in',
+        'mg.catsAria': 'Categories',
+        'mg.editionFail': 'Couldn\'t load today\'s issue.',
+        'mg.ev.corroborated': 'covered by several sources',
+        'mg.ev.engagement': 'high engagement',
+        'mg.ev.explicit_source_claim': 'the source reports it as popular',
+        'mg.ev.label': 'Why it is trending',
+        'mg.ev.sales_data': 'sales figures reported',
+        'mg.habit.lead': 'Small notes on eating well',
+        'mg.health.lead': 'Lighter food that still tastes like dinner',
+        'mg.hero.pick': 'Today\'s pick',
+        'mg.hero.trend': 'Trending now',
+        'mg.index.title': 'Four food sections',
+        'mg.issue.latest': 'Latest edition',
+        'mg.issue.past': 'Past edition',
+        'mg.issue.today': 'Today\'s edition',
+        'mg.laneEmpty': 'No new story for this section today.',
+        'mg.medium.blog': 'Blog',
+        'mg.medium.instagram': 'Instagram',
+        'mg.medium.news': 'News',
+        'mg.medium.research': 'Research',
+        'mg.medium.youtube': 'YouTube',
+        'mg.method': 'Every story links to its original source · published daily',
+        'mg.newTab': '(opens in a new tab)',
+        'mg.published': 'Published {time} KST',
+        'mg.tips.lead': 'Small cooking moves that make rice taste better',
+        'mg.title': 'Babdoduk Magazine',
+        'mg.trend.lead': 'What people are eating right now',
+        'nav.event': 'News & events',
+        'nav.event.open': 'News & events',
+        'nav.history': 'History',
+        'nav.homeAria': 'Home',
+        'nav.instagram': 'Instagram',
+        'nav.lab': 'Lab',
+        'nav.labFeed': 'Ggongbab lab',
+        'nav.langAria': 'Switch to Korean',
+        'nav.langBtn': '한국어',
+        'nav.magazine': 'Magazine',
+        'nav.map': 'Food map',
+        'nav.more': 'More',
+        'nav.navAria': 'Main menu',
+        'nav.today': 'Today\'s free food',
+        'nav.topAria': 'Back to top',
       }
-      window.babdodukApplyLang = applyLang;
-      window.babdodukGetLang = function () {
-        return document.documentElement.lang === 'en' ? 'en' : 'ko';
-      };
-      var saved = 'ko';
-      try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
-      applyLang(saved === 'en' ? 'en' : 'ko');
-      var langBtnEl = document.getElementById('langToggle');
-      if (langBtnEl) {
-        langBtnEl.addEventListener('click', function () {
-          applyLang(window.babdodukGetLang() === 'ko' ? 'en' : 'ko');
-        });
-      }
-    })();
+    };
   </script>
-
-  <script>
-    (function () {
-      var bar = document.getElementById('scrollProgressBar');
-      var wrap = bar && bar.parentElement;
-      function onScroll() {
-        if (!bar) return;
-        var el = document.documentElement;
-        var total = el.scrollHeight - el.clientHeight;
-        var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
-        bar.style.width = pct + '%';
-        if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
-      }
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll);
-      onScroll();
-    })();
-  </script>
+  <script src="js/site.js"></script>
+  <!-- @end i18n -->
 
   <script>
     (function () {
@@ -823,50 +813,6 @@
           viewMonth = now.getMonth();
           renderCalendars();
         });
-    })();
-  </script>
-
-  <script>
-    (function () {
-      document.querySelectorAll('[data-mega]').forEach(function (mega) {
-        mega.addEventListener('click', function (e) {
-          e.stopPropagation();
-        });
-        var trigger = mega.querySelector('.nav-mega-trigger');
-        var panel = mega.querySelector('.nav-mega-panel');
-        if (!trigger || !panel) return;
-        trigger.addEventListener('click', function (e) {
-          e.stopPropagation();
-          var willOpen = !mega.classList.contains('is-open');
-          document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-            m.classList.remove('is-open');
-            var t = m.querySelector('.nav-mega-trigger');
-            if (t) t.setAttribute('aria-expanded', 'false');
-          });
-          if (willOpen) {
-            mega.classList.add('is-open');
-            trigger.setAttribute('aria-expanded', 'true');
-          }
-        });
-      });
-      document.addEventListener('click', function () {
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) t.setAttribute('aria-expanded', 'false');
-        });
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key !== 'Escape') return;
-        document.querySelectorAll('[data-mega].is-open').forEach(function (m) {
-          m.classList.remove('is-open');
-          var t = m.querySelector('.nav-mega-trigger');
-          if (t) {
-            t.setAttribute('aria-expanded', 'false');
-            t.focus();
-          }
-        });
-      });
     })();
   </script>
   <script src="js/food-engine.js"></script>

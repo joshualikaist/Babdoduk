@@ -181,7 +181,7 @@ def test_the_hero_falls_back_to_todays_pick_label_when_no_trend_qualifies():
     edition, _ = select.build([with_image(recipe)], date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
     assert edition["featured"]["heroKind"] == "pick" and edition["featured"]["category"] == "tips"
     page = (ROOT / "mukbang.html").read_text(encoding="utf-8")
-    assert "'mg.hero.pick': '오늘의 추천 글'" in page and "'mg.hero.pick': \"Today's pick\"" in page
+    assert "'mg.hero.pick': '오늘의 추천 글'" in page and "'mg.hero.pick': 'Today\\'s pick'" in page
     assert 'id="mgHeroLabel" data-i18n="mg.hero.pick">오늘의 추천 글<' in page        # the default label
     assert "featured.heroKind === 'trend' && (featured.trendEvidence || []).length" in page
     assert "오늘의 대표 이야기" not in page
