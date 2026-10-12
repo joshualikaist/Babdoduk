@@ -268,6 +268,19 @@ def content_errors(root: Path = ROOT) -> list[str]:
     return errors
 
 
+def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
+    """The world cup's dishes as a script block in worldcup.html: data/content/ is never deployed
+    (.vercelignore), so the page carries them instead of fetching them."""
+    data = load("worldcup") if data is None else data
+    payload = json.dumps({"basis": data["basis"], "dishes": data["dishes"]}, ensure_ascii=False)
+    return {"worldcup": [
+        "<script>",
+        "  // Written by scripts/sync_site_chrome.py from data/content/worldcup.json; edit that, not this.",
+        "  window.BABDODUK_WORLDCUP = " + payload.replace("<", "\\u003c") + ";",
+        "</script>",
+    ]}
+
+
 def worldcup_errors(root: Path = ROOT) -> list[str]:
     """data/content/worldcup.json: a bracket (a power of two) of catalog dishes."""
     path = root / "data" / "content" / "worldcup.json"

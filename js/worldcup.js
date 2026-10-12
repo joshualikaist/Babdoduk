@@ -1,4 +1,5 @@
-/* KAIST menu world cup (worldcup.html): two dishes at a time from data/content/worldcup.json, with
+/* KAIST menu world cup (worldcup.html): two dishes at a time from data/content/worldcup.json (the
+   sync writes it into the page as window.BABDODUK_WORLDCUP; data/content/ is never deployed), with
    names and flavours from the food catalog (data/foods/). Progress and past winners stay in this
    browser (localStorage `babdoduk-worldcup`); nothing is sent anywhere. */
 (function () {
@@ -278,8 +279,8 @@
   $('wcHistoryClear').addEventListener('click', clearHistory);
   document.addEventListener('babdoduk-lang', render);
 
-  Promise.all([getJson('data/content/worldcup.json'), getJson('data/foods/catalog.json')]).then(function (loaded) {
-    var cup = loaded[0], catalog = loaded[1];
+  var cup = window.BABDODUK_WORLDCUP || {};
+  getJson('data/foods/catalog.json').then(function (catalog) {
     return Promise.all((catalog.packs || []).map(function (pack) { return getJson(pack.src); })).then(function (packs) {
       packs.forEach(function (pack) { (pack.items || []).forEach(function (dish) { dishes[dish.id] = dish; }); });
       set = (cup.dishes || []).filter(function (id) { return dishes[id]; });
