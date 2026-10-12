@@ -84,7 +84,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | 메일·Portal 수집 에이전트, 로컬 미리보기 | §5 · §7, `docs/GGONGBAB_PREVIEW.md` |
 | UI 검증 · 테스트 | §8 · §9 |
 | 자동화 · 브랜치 · 배포 | §10 · §11, `docs/DEPLOYMENT_AND_BRANCHES.md` |
-| 이벤트 카드 작성 규칙 | `docs/EVENT_DETAIL_FIELDS.md` |
+| 소식·이벤트 쓰는 법 (`data/content/events.json`) | `docs/EVENT_DETAIL_FIELDS.md` |
 | 보안 원칙 | §12 |
 
 아래 운영 기록 중 날짜가 있는 상태 설명은 현재 상태 보장이 아니며, 실행 전 코드·데이터·배포 브랜치를 확인합니다.
@@ -101,7 +101,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리. **원문 출처가 있는 글만** 싣고(‘밥도둑 데스크’ 대체 글 없음), 갈래가 비면 조용히 “새 이야기가 없어요”라고 적는다. 대표 글은 근거가 있는 요즘 유행 글이면 “지금 뜨는 먹거리”, 아니면 “오늘의 추천 글”로 표시하고, 자기 이미지가 없으면 글만 있는 히어로. YouTube 는 운영 PC 의 로컬 수집(`scripts/magazine_local_discovery.py`, 수집만 하고 발행하지 않음)으로 들어온다. 아래 `#what` 에 **메뉴 고르기**(“오늘 뭐 먹지?” 슬롯, 카탈로그 제안)와 날짜가 붙은 오늘 학식 요약. 수집·선정 방식은 `docs/MAGAZINE_DISCOVERY.md` |
 | **`choose.html`** | 호환용 이동 페이지 — `mukbang.html#what` 으로 바로 이동(`noindex`). 별도 추천기 제품이 아님 |
 | **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 변경 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
-| **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
+| **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 (`data/content/history.json` 에서 동기화) |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 
@@ -770,7 +770,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `scripts/refresh_ggongbab.py` | 파이프라인 실행·내보내기·검토 리포트 |
 | `scripts/check_ggongbab_ui.py` | UI 좌표·보안 검사, 로컬 서버 (§8) |
 | `scripts/check_site_ui.py` | 전체 공개 HTML의 로컬 scrollbar·overflow·nav 회귀 검사, 공통 chrome 가디언·시각 기준 (`docs/VISUAL_BASELINES.md`). `--chrome-only` 는 CI `ui-guardian` 이 쓰는 가디언+시각 비교만 실행 |
-| `scripts/sync_site_chrome.py` | `shared/nav.html`·`shared/footer.html` 을 모든 페이지에 정적으로 복사하고, 공통 라벨(`data/content/labels.json`: 무료 음식 종류·출처·식당·요리 분류·매거진 코너)을 페이지 번역 표와 스크립트의 `// @labels:` 블록에 씀. `--check` 는 어긋나면 실패 (CI `ui-guardian`) |
+| `scripts/sync_site_chrome.py` | `shared/nav.html`·`shared/footer.html` 을 모든 페이지에 정적으로 복사하고, 공통 라벨(`data/content/labels.json`: 무료 음식 종류·출처·식당·요리 분류·매거진 코너)을 페이지 번역 표와 스크립트의 `// @labels:` 블록에, 소식·역사(`data/content/events.json`·`history.json`)를 `event.html`·`history.html` 의 행과 번역 표에 씀. `--check` 는 어긋나면 실패 (CI `ui-guardian`) |
 | `scripts/check_real_fonts.py` | 실제 웹 폰트로 공개 페이지 가로 넘침 확인 (네트워크, PASS/FAIL/SKIP) |
 | `scripts/validate_content.py` | 생성 JSON 스키마 검증 |
 | `scripts/publish_generated.py` | 생성 데이터만 lab·main에 푸시 |

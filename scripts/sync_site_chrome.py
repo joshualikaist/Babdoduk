@@ -17,6 +17,11 @@ The shared labels (data/content/labels.json: free-food types, sources, magazine 
 picker's cuisines) are written the same way: into the translation tables of the pages that show
 them (label_strings) and into the marked blocks of the scripts that need them (LABEL_BLOCKS), so
 a label is named once and the same everywhere.
+
+The authored page content (data/content/events.json and history.json, rendered by
+scripts/page_content.py) is written into the marked blocks of event.html and history.html
+(CONTENT_BLOCKS): the rows between `<!-- @content:<name> -->` and `<!-- @end content -->`, and
+their translations between `// @content:<name>:<lang>` and `// @end content`.
 """
 from __future__ import annotations
 
@@ -26,6 +31,9 @@ import json
 import re
 import sys
 from pathlib import Path
+
+import page_content
+from page_content import js_str
 
 ROOT = Path(__file__).resolve().parents[1]
 SHARED = ROOT / "shared"
@@ -118,7 +126,10 @@ def synced(page: str) -> str:
         indent = lines[start][: len(lines[start]) - len(lines[start].lstrip())]
         block = [indent + row if row else row for row in render(page, kind)]
         lines[start:end + 1] = block
-    return sync_strings(page, "\n".join(lines))
+    text = sync_strings(page, "\n".join(lines))
+    if page in CONTENT_BLOCKS:
+        text = fill_blocks(page, text, "content", CONTENT_BLOCKS[page]())
+    return text
 
 
 def chrome_keys() -> set[str]:
@@ -131,15 +142,6 @@ def chrome_keys() -> set[str]:
 
 def labels() -> dict:
     return json.loads(LABELS.read_text(encoding="utf-8"))
-
-
-def js_str(value: str) -> str:
-    """A JavaScript string literal in the tables' own style: single quotes unless the text has one."""
-    if "'" not in value:
-        return f"'{value}'"
-    if '"' not in value:
-        return f'"{value}"'
-    return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
 def label_strings(page: str) -> dict[str, dict[str, str]]:
@@ -181,19 +183,38 @@ LABEL_BLOCKS = {
 }
 
 
+# Page blocks rendered from data/content/ (scripts/page_content.py).
+CONTENT_BLOCKS = {
+    "event.html": page_content.event_blocks,
+    "history.html": page_content.history_blocks,
+}
+
+
+def fill_blocks(path: str, text: str, kind: str, rendered: dict[str, list[str]]) -> str:
+    """Replace the lines between each `// @<kind>:<name>` (or `<!-- @<kind>:<name> -->`) marker and
+    the next `// @end <kind>` (or `<!-- @end <kind> -->`) with the rendered rows, at the marker's
+    indentation."""
+    lines = text.split("\n")
+    for name, rows in rendered.items():
+        opening = (f"// @{kind}:{name}", f"<!-- @{kind}:{name} -->")
+        starts = [i for i, line in enumerate(lines) if line.strip() in opening]
+        if len(starts) != 1:
+            raise SystemExit(f"{path}: expected one {opening[0]} block, found {len(starts)}")
+        start = starts[0]
+        closing = (f"// @end {kind}", f"<!-- @end {kind} -->")
+        end = next((i for i in range(start + 1, len(lines)) if lines[i].strip() in closing), None)
+        if end is None:
+            raise SystemExit(f"{path}: the {opening[0]} block has no {closing[0]}")
+        indent = lines[start][: len(lines[start]) - len(lines[start].lstrip())]
+        lines[start + 1:end] = [indent + row if row else row for row in rows]
+    return "\n".join(lines)
+
+
 def synced_script(path: str) -> str:
     """The script with its label blocks rendered from data/content/labels.json."""
-    lines = (ROOT / path).read_text(encoding="utf-8").split("\n")
     data = labels()
-    for name, render_block in LABEL_BLOCKS[path].items():
-        starts = [i for i, line in enumerate(lines) if line.strip().startswith(f"// @labels:{name}")]
-        if len(starts) != 1:
-            raise SystemExit(f"{path}: expected one // @labels:{name} block, found {len(starts)}")
-        start = starts[0]
-        end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == "// @end labels")
-        indent = lines[start][: len(lines[start]) - len(lines[start].lstrip())]
-        lines[start + 1:end] = [indent + row for row in render_block(data)]
-    return "\n".join(lines)
+    rendered = {name: render_block(data) for name, render_block in LABEL_BLOCKS[path].items()}
+    return fill_blocks(path, (ROOT / path).read_text(encoding="utf-8"), "labels", rendered)
 
 
 def sync_strings(page: str, text: str) -> str:
@@ -246,7 +267,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         if drifted:
             print(f"\nsite chrome drift in {len(drifted)} file(s): {', '.join(drifted)}. Edit shared/nav.html, "
-                  "shared/footer.html or data/content/labels.json, then run python scripts/sync_site_chrome.py.")
+                  "shared/footer.html or data/content/, then run python scripts/sync_site_chrome.py.")
             return 1
         print(f"site chrome in sync: {len(PAGES)} pages, {len(LABEL_BLOCKS)} scripts")
         return 0

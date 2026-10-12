@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "notices": [],
+  "activities": [
+    {
+      "start": "2026-05-13",
+      "end": "2026-05-20",
+      "confirmation": "announced",
+      "link": "https://www.instagram.com/babdodukms/",
+      "title": {
+        "ko": "밥도둑 팔로워 100명 이벤트",
+        "en": "Babdoduk 100 followers event"
+      },
+      "details": {
+        "summary": {
+          "ko": "팔로워 100명 달성 기념 이벤트입니다.",
+          "en": "Giveaway celebrating 100 followers."
+        },
+        "duration": {
+          "ko": "2026년 5월 13일(수) ~ 2026년 5월 20일(수)",
+          "en": "Wednesday, May 13 through Wednesday, May 20, 2026."
+        },
+        "prizes": {
+          "ko": "메가커피 아메리카노 모바일 쿠폰을 <strong>5명</strong>에게 증정합니다.",
+          "en": "Mega Coffee Americano mobile coupons for <strong>5 winners</strong>."
+        },
+        "participation": {
+          "ko": "인스타그램 게시물에 안내된 대로 참여해 주세요.",
+          "en": "Follow the instructions in the Instagram post."
+        }
+      }
+    },
+    {
+      "start": "2026-05-19",
+      "end": "2026-05-20",
+      "confirmation": "tentative",
+      "link": "https://www.instagram.com/babdodukms/",
+      "title": {
+        "ko": "KAKI × 밥도둑 〈카빙〉",
+        "en": "KAKI × Babdoduk: Carving"
+      },
+      "place": {
+        "ko": "태울석림제 부스",
+        "en": "Taeul Seoklim Festival booth"
+      },
+      "details": {
+        "summary": {
+          "ko": "태울석림제 부스 — 〈카빙〉 KAKI × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.",
+          "en": "Festival booth — Carving (KAKI) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page."
+        },
+        "duration": {
+          "ko": "2026년 5월 19일 ~ 2026년 5월 20일 <strong>(예정)</strong>",
+          "en": "May 19–20, 2026 <strong>(tentative)</strong>"
+        },
+        "prizes": {
+          "ko": "현장·인스타 공지에 따라 안내됩니다. (추후 구체화 예정)",
+          "en": "Per on-site / Instagram notices. (Details to be added.)"
+        },
+        "participation": {
+          "ko": "<strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>KAKI</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 당시 게시물에 있어요.",
+          "en": "<strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions are in the original post."
+        }
+      }
+    }
+  ]
+}

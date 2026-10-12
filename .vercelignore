@@ -15,7 +15,7 @@ supabase
 inputs
 i18n
 schemas
-# Shared labels: written into the pages by scripts/sync_site_chrome.py, never fetched.
+# Shared labels and page content: written into the pages by scripts/sync_site_chrome.py, never fetched.
 data/content
 shared
 .claude

@@ -41,6 +41,8 @@ CONTRACTS = (
     ("inputs/ggongbab/manual.json", "ggongbab-manual", "authored", False),
     ("inputs/ggongbab/food-news.json", "ggongbab-news-input", "authored", False),
     ("data/content/labels.json", "content-labels", "authored", False),
+    ("data/content/events.json", "content-events", "authored", False),
+    ("data/content/history.json", "content-history", "authored", False),
 )
 ANNOTATIONS = {"$schema", "$id", "$comment", "title", "description", "examples"}
 KEYWORDS = ANNOTATIONS | {"$defs", "$ref", "type", "enum", "const", "properties", "required",

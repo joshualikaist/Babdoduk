@@ -257,6 +257,9 @@
     </header>
 
     <ol class="timeline" aria-label="타임라인">
+      <!-- Written from data/content/history.json by scripts/sync_site_chrome.py, oldest first with
+           the roadmap last; never edit the rows here. -->
+      <!-- @content:timeline -->
       <li class="timeline-item">
         <div class="timeline-item-grid">
           <div class="timeline-item-photo-cell">
@@ -268,7 +271,7 @@
                 height="340"
                 loading="lazy"
                 decoding="async"
-                alt=""
+                alt="인스타그램 공식 로고"
                 data-i18n-alt="history.t1.photoAlt"
               />
             </figure>
@@ -305,7 +308,7 @@
       <li class="timeline-item">
         <div class="timeline-item-grid">
           <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2" data-i18n-aria-key="history.t4.photoAlt">
+            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2" data-i18n-aria-key="history.t3.photoAlt">
               <span class="timeline-mark" aria-hidden="true">ver2</span>
             </figure>
           </div>
@@ -313,10 +316,10 @@
             <span class="timeline-marker" aria-hidden="true"></span>
           </div>
           <div class="timeline-item-body">
-            <time class="timeline-year" datetime="2026-09-30" data-i18n="history.t4.year">2026.9.30</time>
+            <time class="timeline-year" datetime="2026-09-30" data-i18n="history.t3.year">2026.9.30</time>
             <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t4.label">Babdoduk ver2. 오픈</h2>
-            <p class="timeline-desc" data-i18n="history.t4.desc">오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.</p>
+            <h2 class="timeline-label" data-i18n="history.t3.label">Babdoduk ver2. 오픈</h2>
+            <p class="timeline-desc" data-i18n="history.t3.desc">오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.</p>
           </div>
         </div>
       </li>
@@ -329,13 +332,14 @@
             <span class="timeline-marker" aria-hidden="true"></span>
           </div>
           <div class="timeline-item-body">
-            <span class="timeline-year" data-i18n="history.t3.year">—</span>
+            <span class="timeline-year">—</span>
             <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t3.label">로드맵</h2>
-            <p class="timeline-desc" data-i18n="history.t3.desc">브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.</p>
+            <h2 class="timeline-label" data-i18n="history.roadmap.label">로드맵</h2>
+            <p class="timeline-desc" data-i18n="history.roadmap.desc">브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.</p>
           </div>
         </div>
       </li>
+      <!-- @end content -->
     </ol>
 
     <nav class="history-next" aria-label="더 둘러보기" data-i18n-aria-key="history.nextAria">
@@ -389,6 +393,7 @@
           'nav.langBtn': '언어 (EN)',
           'nav.langAria': '영어로 전환',
           'history.heroTitle': '밥도둑의 역사',
+          // @content:timeline:ko
           'history.t1.photoAlt': '인스타그램 공식 로고',
           'history.t1.year': '2025.4.1',
           'history.t1.label': '공식 인스타그램 채널 개설',
@@ -397,13 +402,13 @@
           'history.t2.year': '2026.5.7',
           'history.t2.label': '통합 웹 허브 오픈',
           'history.t2.desc': '주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.',
-          'history.t3.year': '—',
-          'history.t3.label': '로드맵',
-          'history.t3.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
-          'history.t4.photoAlt': 'Babdoduk ver2',
-          'history.t4.year': '2026.9.30',
-          'history.t4.label': 'Babdoduk ver2. 오픈',
-          'history.t4.desc': '오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.',
+          'history.t3.photoAlt': 'Babdoduk ver2',
+          'history.t3.year': '2026.9.30',
+          'history.t3.label': 'Babdoduk ver2. 오픈',
+          'history.t3.desc': '오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.',
+          'history.roadmap.label': '로드맵',
+          'history.roadmap.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
+          // @end content
           'history.nextAria': '더 둘러보기',
           'history.next.events': '지난 활동 기록 →',
           'history.next.magazine': '밥도둑 매거진 →',
@@ -431,6 +436,7 @@
           'nav.langBtn': '한국어',
           'nav.langAria': 'Switch to Korean',
           'history.heroTitle': 'History of Babdoduk',
+          // @content:timeline:en
           'history.t1.photoAlt': 'Official Instagram logo',
           'history.t1.year': 'Apr 1, 2025',
           'history.t1.label': 'Official Instagram launch',
@@ -439,13 +445,13 @@
           'history.t2.year': 'May 7, 2026',
           'history.t2.label': 'Integrated web hub',
           'history.t2.desc': 'Shipped a public web hub that centralizes key SNS links, the food-expense log, event information, and related tools.',
-          'history.t3.year': '—',
-          'history.t3.label': 'Roadmap',
-          'history.t3.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
-          'history.t4.photoAlt': 'Babdoduk ver2',
-          'history.t4.year': 'Sep 30, 2026',
-          'history.t4.label': 'Babdoduk ver2. Open',
-          'history.t4.desc': 'Published today\'s free food, cafeteria menus, and the magazine in a new structure.',
+          'history.t3.photoAlt': 'Babdoduk ver2',
+          'history.t3.year': 'Sep 30, 2026',
+          'history.t3.label': 'Babdoduk ver2. Open',
+          'history.t3.desc': "Published today's free food, cafeteria menus, and the magazine in a new structure.",
+          'history.roadmap.label': 'Roadmap',
+          'history.roadmap.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
+          // @end content
           'history.nextAria': 'Explore more',
           'history.next.events': 'Past activity record →',
           'history.next.magazine': 'Babdoduk Magazine →',
