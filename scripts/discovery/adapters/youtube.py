@@ -28,7 +28,9 @@ def _thumb(vid: str) -> str:
     return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg" if vid else ""
 
 
-def discover_channel(source: dict, *, fetcher) -> AdapterResult:
+def discover_channel(source: dict, *, fetcher, env=os.environ) -> AdapterResult:
+    if env.get("YOUTUBE_API_KEY"):
+        return _api_channel(source, env["YOUTUBE_API_KEY"], fetcher)
     url = "https://www.youtube.com/feeds/videos.xml?channel_id=" + urllib.parse.quote(source["channelId"])
     try:
         payload = fetcher(url, accept="application/atom+xml, application/xml")
@@ -81,6 +83,40 @@ def _api_search(queries, key, fetcher) -> AdapterResult:
 
 
 CHANNEL_LATEST = 6
+
+
+def uploads_playlist(channel_id: str) -> str:
+    """A channel's uploads playlist: its id with UC replaced by UU."""
+    return "UU" + channel_id[2:] if channel_id.startswith("UC") else ""
+
+
+def _api_channel(source: dict, key: str, fetcher) -> AdapterResult:
+    """A registered channel's newest uploads through the Data API: playlistItems.list on the
+    uploads playlist, one quota unit per call (search.list costs 100 and has its own daily limit).
+    The API's terms apply to what is kept: titles, descriptions and thumbnails come from the API,
+    are shown with the channel's name and link to YouTube."""
+    playlist = uploads_playlist(source.get("channelId") or "")
+    if not playlist:
+        return AdapterResult(NOT_CONFIGURED, code="YOUTUBE_CHANNEL_ID")
+    params = urllib.parse.urlencode({"part": "snippet,contentDetails", "playlistId": playlist,
+                                     "maxResults": CHANNEL_LATEST, "key": key})
+    try:
+        data = json.loads(fetcher("https://www.googleapis.com/youtube/v3/playlistItems?" + params,
+                                  accept="application/json"))
+    except Exception as exc:  # noqa: BLE001 - never echo the URL: it carries the key
+        return AdapterResult(FETCH_FAILED, code=failure_code(exc))
+    items = []
+    for entry in data.get("items") or []:
+        snip, details = entry.get("snippet") or {}, entry.get("contentDetails") or {}
+        vid = details.get("videoId") or (snip.get("resourceId") or {}).get("videoId")
+        if not vid or snip.get("title") in ("Private video", "Deleted video"):
+            continue
+        items.append({"title": clean_text(snip.get("title")), "sourceUrl": f"https://www.youtube.com/watch?v={vid}",
+                      "sourceItemId": f"yt:{vid}",
+                      "publishedAt": parse_time(details.get("videoPublishedAt") or snip.get("publishedAt")),
+                      "publishedAtSource": "platform_metadata", "text": clean_text(snip.get("description")),
+                      "imageUrl": _thumb(vid), "imageSource": "youtube_thumbnail", "medium": "youtube"})
+    return AdapterResult(OK, items=items)
 
 
 def ytdlp_channel(source: dict, runner, binary: str) -> AdapterResult:
