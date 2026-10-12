@@ -19,7 +19,7 @@ never silent and never filled with anything made up.
 | YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
 | YouTube channels (4): Atom feed, else yt-dlp channel listing | tips, health, trend | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
 | Exa REST search with `EXA_API_KEY` | - | optional | not configured, not needed |
-| YouTube Data API with `YOUTUBE_API_KEY` | - | optional | not configured, not requested |
+| YouTube Data API with `YOUTUBE_API_KEY` | tips, trend | cloud (any runner) | ready in code, waiting for the owner's key (magazine sourcing plan, decision 1): registered channels through `playlistItems.list` (1 unit), queries through `search.list` (at most 100 calls a day) |
 | Instagram (OpenCLI) | trend | local only | **OWNER_CHECKPOINT**, disabled |
 
 Evidence for the split (probe workflow runs 36525458559 and 36525712270 on a GitHub-hosted runner,
@@ -56,7 +56,8 @@ installed in the repository. Babdoduk implements the same routes in its own code
 - web search: `adapters/exa_mcp.py`, a small MCP client for the same hosted Exa server Agent Reach
   configures through mcporter, with **no API key**;
 - web reading: `web_fetch_exa`, then Jina Reader (`r.jina.ai`) for public URLs only;
-- YouTube: yt-dlp (pinned 2026.8.19), metadata only.
+- YouTube: with `YOUTUBE_API_KEY`, the Data API from any runner (`adapters/youtube.py`: a channel's uploads
+  playlist, then search); without it, yt-dlp (pinned 2026.8.19), metadata only, on the operator PC.
 
 ## Pipeline
 

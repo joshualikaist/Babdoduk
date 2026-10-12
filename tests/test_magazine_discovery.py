@@ -539,3 +539,30 @@ def test_feed_pages_are_declared_in_the_registry_and_bounded():
                 {"pagedFeed": "wordpress", "feedPages": True}):
         assert registry.validate([dict(base, **bad)]), bad
     assert registry.validate(registry.load()) == []          # the committed registry
+
+
+def test_with_a_key_a_channel_comes_from_the_data_api_from_any_runner(tmp_path):
+    asked = []
+    payload = {"items": [
+        {"snippet": {"title": "15분 집밥 레시피", "description": "간장 계란밥 만드는 법",
+                     "publishedAt": "2026-10-11T03:00:00Z"},
+         "contentDetails": {"videoId": "abcdefghijk", "videoPublishedAt": "2026-10-10T09:00:00Z"}},
+        {"snippet": {"title": "Private video"}, "contentDetails": {"videoId": "zzzzzzzzzzz"}}]}
+
+    def fetcher(url, accept):
+        asked.append(url)
+        return json.dumps(payload).encode()
+
+    source = {"id": "yt-x", "type": "youtube_channel", "channelId": "UCabc123", "enabled": True, "localOnly": True}
+    result = adapters.run(source, fetcher=fetcher, env={"YOUTUBE_API_KEY": "k-123"}, inbox_dir=tmp_path)
+    assert result.status == adapters.OK and len(asked) == 1
+    assert asked[0].startswith("https://www.googleapis.com/youtube/v3/playlistItems?") and "playlistId=UUabc123" in asked[0]
+    [item] = result.items                                     # a private upload is skipped
+    assert item["sourceUrl"] == "https://www.youtube.com/watch?v=abcdefghijk" and item["medium"] == "youtube"
+    assert item["publishedAt"].isoformat().startswith("2026-10-10") and item["imageSource"] == "youtube_thumbnail"
+    # Without a key nothing changes: a local-only channel is still read from the operator PC's inbox.
+    assert adapters.run(source, fetcher=fetcher, env={}, inbox_dir=None).code == "LOCAL_INBOX_MISSING"
+    # A failed call never carries the URL, and so never the key.
+    failed = youtube.discover_channel(source, fetcher=lambda url, accept: 1 / 0, env={"YOUTUBE_API_KEY": "k-123"})
+    assert failed.status == adapters.FETCH_FAILED and "k-123" not in repr(failed)
+    assert youtube.uploads_playlist("UCabc") == "UUabc" and youtube.uploads_playlist("xyz") == ""

@@ -32,6 +32,12 @@ def failure_code(exc: Exception) -> str:
 def run(source: dict, *, fetcher, env, inbox_dir=None, now=None) -> AdapterResult:
     from . import inbox, instagram, rss, web, youtube
     method = source.get("type")
+    if method in ("youtube_channel", "youtube_search") and env.get("YOUTUBE_API_KEY"):
+        # The Data API answers from any runner: localOnly only ever covered the keyless routes
+        # (the channel's Atom feed and yt-dlp), which GitHub-hosted runners cannot reach.
+        if method == "youtube_channel":
+            return youtube.discover_channel(source, fetcher=fetcher, env=env)
+        return youtube.discover_search(source, fetcher=fetcher, env=env)
     if source.get("localOnly"):
         # Collected on the operator PC by discovery.sidecar; this run only reads its inbox.
         if inbox_dir is None:
@@ -40,7 +46,7 @@ def run(source: dict, *, fetcher, env, inbox_dir=None, now=None) -> AdapterResul
     if method == "rss":
         return rss.discover(source, fetcher=fetcher)
     if method == "youtube_channel":
-        return youtube.discover_channel(source, fetcher=fetcher)
+        return youtube.discover_channel(source, fetcher=fetcher, env=env)
     if method == "youtube_search":
         return youtube.discover_search(source, fetcher=fetcher, env=env)
     if method == "web_search":
