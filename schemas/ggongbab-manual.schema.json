@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/ggongbab-manual.schema.json",
+  "title": "Hand-written free-food notices: inputs/ggongbab/manual.json",
+  "description": "Written by a person when automatic collection misses a notice, read by the manual collector (scripts/ggongbab/collectors/manual.py). Each item goes through the same parser, validator, dedup and exporter as mail; change `text` to re-parse and keep `id` stable.",
+  "type": "object",
+  "required": ["items"],
+  "additionalProperties": false,
+  "properties": {
+    "_comment": {"type": "string"},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title": {"type": "string"},
+          "text": {"type": "string", "minLength": 1},
+          "url": {"type": "string", "pattern": "^https?://[^\\s/]+"},
+          "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}
+        }
+      }
+    }
+  }
+}

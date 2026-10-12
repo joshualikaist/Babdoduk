@@ -1,0 +1,5 @@
+-r requirements-ggongbab.txt
+
+# Tests only: the reference JSON Schema implementation tests/test_schemas.py checks the built-in
+# contract checker (scripts/schema_check.py) against. Nothing at run time needs it.
+jsonschema==4.26.0
