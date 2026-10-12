@@ -110,6 +110,21 @@ def test_validator_and_publisher_run_only_in_publishing_modes():
         "Publish generated data to lab and main"]
 
 
+def test_the_public_feed_sync_runs_after_publication_and_only_when_it_published():
+    """The projection step (owner, 2026-10-13) comes after the publisher, so its failure turns the
+    job red without holding back latest.json; it gets the backend secrets and nothing else."""
+    steps = _steps(_text())
+    names = list(steps)
+    assert names.index("Sync the public DB feed") == names.index("Publish generated data to lab and main") + 1
+    block = steps["Sync the public DB feed"]
+    cond = _if(block)
+    assert "steps.refresh.outputs.publish == '1'" in cond
+    assert set(re.findall(r"env\.MODE == '([^']+)'", cond)) == PUBLISHING
+    assert "run: python scripts/sync_public_feed.py" in block and "continue-on-error" not in block
+    assert set(re.findall(r"secrets\.([A-Z_]+)", block)) == {"SUPABASE_URL", "SUPABASE_SECRET_KEY",
+                                                              "SUPABASE_SERVICE_ROLE_KEY"}
+
+
 def test_publisher_is_limited_to_ggongbab_data():
     block = _steps(_text())["Publish generated data to lab and main"]
     command = re.search(r"python scripts/publish_generated\.py (.+)", block).group(1)
