@@ -306,7 +306,7 @@
       "id": "web-naver-trend",
       "name": "Naver Blog (site search)",
       "type": "web_search",
-      "enabled": true,
+      "enabled": false,
       "trustTier": "C",
       "categories": [
         "trend"
@@ -322,7 +322,7 @@
         "site:blog.naver.com {month}월 신메뉴 후기"
       ],
       "objective": "Recent Naver blog posts where people try new foods, convenience-store products or popular menus. Exclude sponsored posts and shopping pages.",
-      "note": "Tier C discovery: new products and what people are trying, never health or nutrition evidence. No Naver API or RSS search route exists; public site search only."
+      "note": "Tier C discovery: new products and what people are trying, never health or nutrition evidence. No Naver API or RSS search route exists; public site search only. Disabled 2026-10-12 (magazine sourcing plan): Naver's terms of service forbid automated collection and automated searches of its content without permission (https://policy.naver.com/rules/service.html), and the route read blog.naver.com pages; over 9/28-10/11 it gave 7 usable trend stories and 2 published."
     },
     {
       "id": "yt-search",
