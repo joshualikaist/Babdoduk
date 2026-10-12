@@ -128,7 +128,9 @@ def check_public_item(item) -> None:
 def validate_news_payload(payload) -> list[str]:
     """Strict standalone schema. In particular there is no events array or source URL."""
     errors = []
-    if not isinstance(payload, dict) or set(payload) != {"generatedAt", "timezone", "count", "items"}:
+    if not isinstance(payload, dict) or not ({"generatedAt", "timezone", "count", "items"} <= set(payload)
+                                              <= {"schemaVersion", "generatedAt", "timezone", "count", "items"}) \
+            or payload.get("schemaVersion", 1) != 1:
         return ["news top-level schema invalid"]
     try:
         stamp = datetime.fromisoformat(payload["generatedAt"])
@@ -190,8 +192,8 @@ def build_news(items: list[dict], now: datetime | None = None) -> dict:
     # Dates describe the notice, never an inferred opening day.
     items = [item for item in items if now.date() - timedelta(days=30) <= date.fromisoformat(item["noticeDate"]) <= now.date()]
     items.sort(key=lambda item: (item["noticeDate"], item["id"]), reverse=True)
-    payload = {"generatedAt": now.astimezone(KST).isoformat(timespec="seconds"), "timezone": "Asia/Seoul",
-               "count": len(items), "items": items}
+    payload = {"schemaVersion": 1, "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),
+               "timezone": "Asia/Seoul", "count": len(items), "items": items}
     if validate_news_payload(payload):
         raise ValueError("NEWS_EXPORT_INVALID")
     return payload

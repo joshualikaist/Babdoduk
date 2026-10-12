@@ -27,6 +27,9 @@ PUBLIC_SOURCE_NAMES = {"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함",
                        "manual": "Manual", "portal": "KAIST Portal"}
 TRI = ("true", "false", "unknown")
 ARCHIVE_WINDOW_DAYS = 30
+# The public files' contract version (schemas/ggongbab-*.schema.json). Readers ignore it; a
+# change a reader must know about bumps it, with both versions accepted while pages catch up.
+SCHEMA_VERSION = 1
 # Rows are read back further than the window, so a multi-day event that started
 # before it but ended inside it is not missed.
 ARCHIVE_LOOKBACK_DAYS = 60
@@ -154,6 +157,7 @@ def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[
     now = now or datetime.now(KST)
     events = select_public_events(rows, settings, now, food_only=food_only)
     return {
+        "schemaVersion": SCHEMA_VERSION,
         "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),
         "timezone": "Asia/Seoul",
         "count": len(events),
@@ -236,6 +240,7 @@ def build_archive(rows: list[dict[str, Any]], settings: Settings, listed: set[st
         events.append(archived_event(row))
     events = archive_sort(events)
     return {
+        "schemaVersion": SCHEMA_VERSION,
         "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),
         "timezone": "Asia/Seoul",
         "windowDays": window_days,
