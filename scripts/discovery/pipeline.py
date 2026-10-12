@@ -119,12 +119,14 @@ def apply_excerpt_rules(rows: list[dict], sources: list[dict]) -> None:
 
 def reset_decisions(rows: list[dict]) -> None:
     """A published story keeps its decision, and so does a compact row: it no longer has the
-    facts to be judged again (store.stays_whole)."""
+    facts to be judged again (store.stays_whole). A whole row stored without its text keeps its
+    rejection reason, which process.process holds; its lane is placed again from what it stored."""
     for row in rows:
         if not row.get("selected") and not row.get("compact"):
             row["duplicateOf"] = None
-            row["rejectionReason"] = None
             row["assignedCategory"] = None
+            if process.judged_now(row):
+                row["rejectionReason"] = None
 
 
 def reprocess(paths: Paths, now: datetime) -> dict:

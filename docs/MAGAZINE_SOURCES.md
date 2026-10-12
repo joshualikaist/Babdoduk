@@ -68,6 +68,18 @@
 - **이미지:** 원본 주소로 보여 주기만 하고 복사하지 않습니다. YouTube 썸네일은 API에서 받은 것만 씁니다.
 - 한 번 실은 이야기는 다시 싣지 않습니다. 밥도둑은 이야기를 지어내지 않습니다.
 
+## 공개 저장소에 남기는 것
+
+저장소가 공개되어 있으므로, 후보 기록(`research/magazine/candidates.jsonl`)에는 남의 글을 쌓지 않습니다(결정 6).
+
+- **남기는 것:** 제목, 주소, 판정(갈래, 탈락 이유, 근거의 종류), 지문입니다.
+  - 지문 1: 같은 이야기를 알아보는 낱말 목록(순서 없음, 30일 동안).
+  - 지문 2: 글이 음식 이야기인지 등 판정에 필요한 몇 가지 사실.
+- **남기지 않는 것:** 발췌와 근거 문장은 그 글을 읽은 실행 동안만 메모리에 둡니다.
+- **다시 피드에 나온 글:** 다시 읽어 처음부터 판정합니다.
+- **피드에서 사라진 글:** 남긴 판정을 그대로 쓰되, 나이와 다른 이야기의 뒷받침만 다시 봅니다.
+  이런 글이 실릴 때 카드의 문장은 발행처 페이지의 미리보기에서 읽습니다.
+
 ## 5건을 못 채우는 날
 
 갈래마다 5건을 싣습니다. 채우는 순서는 이렇습니다.
@@ -121,6 +133,8 @@ Sources are registered one entry each in `scripts/discovery/sources.json` (contr
 
 - Only the publisher's own RSS/Atom feed or an official API, only where robots.txt allows it.
 - At most once a day, two seconds apart per host.
+- The public candidate store keeps no text of the source beyond the title: decisions, a few facts
+  and, for 30 days, an unordered word list (decision 6).
 - A source must be active (a post within 14 days), about food, and written by people.
 - A Naver blog is registered only with its owner's permission, recorded in `"permission"`.
 - Open web search never reads a Naver page.

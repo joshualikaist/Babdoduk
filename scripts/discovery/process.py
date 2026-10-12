@@ -61,6 +61,46 @@ HOW_TO_KINDS = ("recipe", "video", "post")
 LANE_ORDER = ("trend", "habit", "health", "tips")
 
 
+def judged_now(row: dict) -> bool:
+    """Whether this run has the story's text to judge it with: read from its source in this run
+    (store.upsert marks it fresh), or a row kept from before the store dropped text."""
+    return bool(row.get("fresh") or row.get("sourceExcerpt"))
+
+
+def lane_hits(row: dict) -> dict:
+    """How many of each lane's words the title and text use (as stored once the text is gone)."""
+    facts = row.get("textFacts") or {}
+    if not judged_now(row) and "laneHits" in facts:
+        return facts["laneHits"]
+    blob = _blob(row)
+    return {lane: sum(1 for w in words if w.lower() in blob) for lane, words in LANE_WORDS.items()}
+
+
+def _voice(row: dict) -> dict:
+    """Whether a story announces a launch and whether it makes its own popularity claim or reports
+    measured demand: from its text when this run read it, else as stored (text_facts)."""
+    facts = row.get("textFacts") or {}
+    if not judged_now(row) and "announcement" in facts:
+        return {k: bool(facts.get(k)) for k in ("announcement", "popularity", "demand")}
+    signals = row.get("trendSignals") or {}
+    own = (signals.get("explicit_source_claim") or {}).get("text") or ""
+    demand = (signals.get("sales_data") or {}).get("text") or ""
+    return {"announcement": editorial.announcement(row),
+            "popularity": editorial.popularity_claim(own, evidence.STRONG_CLAIMS),
+            "demand": editorial.demand_sentence(demand)}
+
+
+def text_facts(row: dict) -> dict:
+    """What a story's text says that later runs still need once the store has dropped the text
+    (store.stored, decision 6): food or not, research, a launch, its own popularity claim or
+    measured demand, its habit words and how often each lane's words occur."""
+    habit = set((row.get("habitSignals") or {}).get("words") or []) | \
+        set(evidence.habit_signals(row.get("title") or "", row.get("sourceExcerpt") or "")["words"])
+    return {"food": evidence.is_food(row.get("title") or "", row.get("sourceExcerpt") or ""),
+            "research": evidence.is_research(row), **_voice(row), "habitWords": sorted(habit),
+            "laneHits": lane_hits(row)}
+
+
 def excerpt_allowed(row: dict, source: Optional[dict]) -> bool:
     """Whether the card may show the story's excerpt and photo: not for a source registered with
     "excerpt": false, nor for a newspaper association member's page (docs/MAGAZINE_SOURCES.md)."""
@@ -120,6 +160,15 @@ def _dedup_keys(row: dict) -> list[str]:
                                                        ("content", "contentHash")) if row.get(field)]
 
 
+def _same_text(a: dict, b: dict) -> bool:
+    """Whether two stories' texts match: their excerpts when this run read both, else the overlap of
+    their stored words (on the committed store of 2026-10-12 the two agreed on every pair)."""
+    if a.get("sourceExcerpt") and b.get("sourceExcerpt"):
+        return title_similarity(a["sourceExcerpt"], b["sourceExcerpt"]) >= EXCERPT_SUPPORT
+    words_a, words_b = evidence.text_words(a), evidence.text_words(b)
+    return bool(words_a and words_b) and len(words_a & words_b) / len(words_a | words_b) >= EXCERPT_SUPPORT
+
+
 def mark_duplicates(rows: list[dict], anchors: Iterable[dict] = ()) -> int:
     """Deterministic: the earliest-discovered row of a group is canonical; later rows point at it
     with duplicateOf. Signals: canonical URL, source item id (YouTube video id), content hash and
@@ -147,8 +196,7 @@ def mark_duplicates(rows: list[dict], anchors: Iterable[dict] = ()) -> int:
                 if title_similarity(row.get("title") or "", other.get("title") or "") < TITLE_DUPLICATE:
                     continue
                 same_site = _host(row) and _host(row) == _host(other)
-                same_text = title_similarity(row.get("sourceExcerpt") or "", other.get("sourceExcerpt") or "") >= EXCERPT_SUPPORT
-                if same_site or same_text:
+                if same_site or _same_text(row, other):
                     original = other["candidateId"]
                     break
         if original and original != row["candidateId"]:
@@ -223,6 +271,17 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
     return None
 
 
+def independent_voice(row: dict, other: dict) -> bool:
+    """Whether `other` corroborates `row` as another observer: the same agency or company release
+    relayed by two outlets on the same day is one voice; a report on another day, or one with its
+    own popularity evidence, is another observer."""
+    voice = _voice(other)
+    if voice["announcement"]:
+        return False
+    return (row.get("publishedAt") or "")[:10] != (other.get("publishedAt") or "")[:10] or \
+        voice["popularity"] or voice["demand"]
+
+
 def trend_evidence(row: dict, now: Optional[datetime] = None, lookup: Optional[dict] = None
                    ) -> tuple[list[str], dict, list[str]]:
     """(kinds, detail, independent) that count for this row, re-judged from the stored facts on
@@ -257,21 +316,8 @@ def trend_evidence(row: dict, now: Optional[datetime] = None, lookup: Optional[d
         detail["engagement"] = f"views {views:,} · uploaded {published.date().isoformat()}"
         independent.append("engagement")
     others = [c for c in (row.get("corroboratedBy") or []) if lookup is None or c in lookup]
-
-    def independent_voice(other: dict) -> bool:
-        # The same agency or company release relayed by two outlets on the same day is one voice;
-        # a report on another day, or one with its own popularity evidence, is another observer.
-        if editorial.announcement(other):
-            return False
-        day_a, day_b = (row.get("publishedAt") or "")[:10], (other.get("publishedAt") or "")[:10]
-        signals = other.get("trendSignals") or {}
-        own = (signals.get("explicit_source_claim") or {}).get("text") or ""
-        demand = (signals.get("sales_data") or {}).get("text") or ""
-        return day_a != day_b or editorial.popularity_claim(own, evidence.STRONG_CLAIMS) or \
-            editorial.demand_sentence(demand)
-
     if others and not editorial.announcement(row) and \
-            (lookup is None or any(independent_voice(lookup[c]) for c in others)):
+            (lookup is None or any(independent_voice(row, lookup[c]) for c in others)):
         kinds.append("corroborated")
         detail["corroborated"] = others[:3]
         independent.append("corroborated")
@@ -369,14 +415,18 @@ def classify(row: dict, now: Optional[datetime] = None) -> Optional[str]:
     evergreen lanes, and among tips/health the source's own category and word signals."""
     decisions = lane_decisions(row, now)
     row["laneDecisions"] = decisions
+    words = set((row.get("habitSignals") or {}).get("words") or []) | \
+        set(evidence.habit_signals(row.get("title") or "", row.get("sourceExcerpt") or "")["words"])
+    return _choose(row, decisions, words)
+
+
+def _choose(row: dict, decisions: dict, habit_words: set) -> Optional[str]:
     ok = [lane for lane in LANE_ORDER if decisions.get(lane) is None]
     if not ok:
         return None
     if "trend" in ok and "habit" in ok:
         # a story about how people eat (혼밥, 도시락, 결식 ...) is a habit story even when it is recent
-        words = set((row.get("habitSignals") or {}).get("words") or []) | \
-            set(evidence.habit_signals(row.get("title") or "", row.get("sourceExcerpt") or "")["words"])
-        return "habit" if len(words) >= 3 else "trend"
+        return "habit" if len(habit_words) >= 3 else "trend"
     wanted = row.get("discoveryLane")
     if wanted in ok:
         return wanted
@@ -384,16 +434,82 @@ def classify(row: dict, now: Optional[datetime] = None) -> Optional[str]:
         if lane in ok:
             return lane
     hints = row.get("categoryHints") or []
-    blob = _blob(row)
-    hits = {lane: sum(1 for w in LANE_WORDS[lane] if w.lower() in blob) for lane in ok}
-    return max(ok, key=lambda lane: (hits[lane] + (0.5 if lane in hints else 0), -ok.index(lane)))
+    hits = lane_hits(row)
+    return max(ok, key=lambda lane: (hits.get(lane, 0) + (0.5 if lane in hints else 0), -ok.index(lane)))
+
+
+# --- a stored row without its text (decision 6) ---------------------------------------------
+# lane_decisions and rejection read the text. A row its source no longer lists keeps what they
+# decided; only these can still change it, and they need no text: its age (the trend and habit
+# windows, TOO_OLD), the hosts open discovery reads, and corroboration by the stories of the run.
+HELD_TREND_FIXED = ("BUSINESS_NEWS", "NO_DATE")                          # checked before the age
+HELD_HABIT_FIXED = ("RECIPE_NOT_HABIT", "BUSINESS_NEWS", "PRODUCT_ANNOUNCEMENT_ONLY", "NOT_BEHAVIOR_SOURCE",
+                    "NO_DATE")
+
+
+def held_rejection(row: dict, now: datetime) -> Optional[str]:
+    """rejection() for a stored row: the reason it was stored with, or a hard rule it fails now
+    that needs no text. A row that passed (or found no lane) stays to be placed again."""
+    reason = row.get("rejectionReason")
+    if reason not in (None, "NO_QUALIFYING_LANE"):
+        return reason
+    if row.get("sourceType") in SEARCH_TYPES and not hosts.collectable(row.get("sourceUrl") or ""):
+        return "HOST_NOT_COLLECTED"
+    age = age_days(row, now)
+    if age is not None and age > (RESEARCH_MAX_DAYS if evidence.is_research(row) else MAX_AGE_DAYS):
+        return "TOO_OLD"
+    return None
+
+
+def held_trend_evidence(row: dict, now: datetime, lookup: dict) -> tuple[list[str], list[str]]:
+    """(kinds, independent) for a stored row: what its text showed, engagement only within
+    TREND_MAX_DAYS of upload, and corroboration as it stands in this run."""
+    published = parse_time(row.get("publishedAt"))
+    expired = {"corroborated"} | ({"engagement"} if not (published and (now - published).days <= TREND_MAX_DAYS)
+                                  else set())
+    kinds = [k for k in row.get("trendEvidence") or [] if k not in expired]
+    independent = [k for k in row.get("trendEvidenceIndependent") or [] if k not in expired]
+    others = [c for c in row.get("corroboratedBy") or [] if c in lookup]
+    if others and not _voice(row)["announcement"] and any(independent_voice(row, lookup[c]) for c in others):
+        kinds.append("corroborated")
+        independent.append("corroborated")
+    return kinds, independent
+
+
+def held_lane_decisions(row: dict, now: datetime, kinds: list[str]) -> dict:
+    """lane_decisions() for a stored row: the reasons it was stored with, moved on by age and by
+    trend evidence, in lane_decisions' own order of checks."""
+    out = dict(row.get("laneDecisions") or {})
+    age = age_days(row, now)
+    if out.get("trend") not in HELD_TREND_FIXED:
+        if age is not None and age > TREND_MAX_DAYS:
+            out["trend"] = "TOO_OLD_FOR_TREND"
+        elif out.get("trend") == "NO_TREND_EVIDENCE" and kinds:
+            out["trend"] = None
+        elif out.get("trend") is None and not kinds:
+            out["trend"] = "NO_TREND_EVIDENCE"
+    if out.get("habit") not in HELD_HABIT_FIXED:
+        limit = evidence.HABIT_RESEARCH_MAX_DAYS if evidence.is_research(row) else evidence.HABIT_NEWS_MAX_DAYS
+        if age is not None and age > limit:
+            out["habit"] = "TOO_OLD_FOR_HABIT"
+    return out
+
+
+def held_classify(row: dict, now: datetime) -> Optional[str]:
+    """classify() for a stored row. One that was never placed has no reasons to start from."""
+    if not row.get("laneDecisions"):
+        return None
+    decisions = held_lane_decisions(row, now, row.get("trendEvidence") or [])
+    row["laneDecisions"] = decisions
+    facts = row.get("textFacts") or {}
+    words = set(facts.get("habitWords") or (row.get("habitSignals") or {}).get("words") or [])
+    return _choose(row, decisions, words)
 
 
 def score(row: dict, now: datetime) -> None:
     """0.25 source trust + 0.20 freshness + 0.15 lane relevance + 0.15 quality + 0.25 audience
     relevance, plus up to 0.10 for trend evidence in the trend lane. Deterministic."""
     lane = row.get("assignedCategory") or "tips"
-    blob = _blob(row)
     when = parse_time(row.get("publishedAt")) or parse_time(row.get("discoveredAt")) or now
     days = max(0.0, (now - when).total_seconds() / 86400)
     row["sourceScore"] = TIERS.get(row.get("sourceTrust") or row.get("trustTier"), 0.5)
@@ -403,7 +519,7 @@ def score(row: dict, now: datetime) -> None:
     elif lane == "trend":
         relevance = len(row.get("trendEvidence") or []) / 2
     else:
-        relevance = sum(1 for w in LANE_WORDS[lane] if w.lower() in blob) / 3
+        relevance = lane_hits(row).get(lane, 0) / 3
     row["relevanceScore"] = round(min(1.0, relevance), 3)
     text_part = min(1.0, (row.get("textLength") or 0) / 400)
     row["qualityScore"] = round(0.6 * text_part + 0.4 * (1.0 if row.get("imageValidated") else 0.0), 3)
@@ -416,22 +532,31 @@ def score(row: dict, now: datetime) -> None:
 def process(rows: list[dict], now: datetime) -> dict:
     """Dedup, filter, corroborate, lane rules and ranking in place. Returns counts for the run
     report. A compact row (store.compact) keeps the decision it was saved with and takes no part,
-    except that a published story's compact row still anchors dedup; the counts cover every row."""
+    except that a published story's compact row still anchors dedup; the counts cover every row.
+    A whole row read from its source in this run is judged in full and keeps what its text said
+    (text_facts, its words); a whole row stored without its text is held (held_*)."""
     whole = [row for row in rows if not row.get("compact")]
     anchors = [row for row in rows if row.get("compact") and row.get("selected")]
+    for row in whole:
+        if judged_now(row):
+            row["textFacts"], row["textWords"] = text_facts(row), sorted(evidence.text_words(row))
     duplicates = mark_duplicates(whole, anchors) + sum(1 for row in rows if row.get("compact") and row.get("duplicateOf"))
     for row in whole:
         if not row.get("duplicateOf"):
-            row["rejectionReason"] = rejection(row, now)
+            row["rejectionReason"] = rejection(row, now) if judged_now(row) else held_rejection(row, now)
     corroborated = evidence.corroborate(whole, now)
     lookup = {row["candidateId"]: row for row in whole}
     for row in whole:
         if row.get("duplicateOf") or row.get("rejectionReason"):
             continue
         row["corroboratedBy"] = corroborated.get(row["candidateId"]) or []
-        row["trendEvidence"], row["trendEvidenceDetail"], row["trendEvidenceIndependent"] = \
-            trend_evidence(row, now, lookup)
-        lane = classify(row, now)
+        if judged_now(row):
+            row["trendEvidence"], row["trendEvidenceDetail"], row["trendEvidenceIndependent"] = \
+                trend_evidence(row, now, lookup)
+            lane = classify(row, now)
+        else:
+            row["trendEvidence"], row["trendEvidenceIndependent"] = held_trend_evidence(row, now, lookup)
+            lane = held_classify(row, now)
         row["assignedCategory"] = lane
         if lane is None:
             row["rejectionReason"] = "NO_QUALIFYING_LANE"

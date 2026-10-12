@@ -147,8 +147,8 @@ Also rejected for every lane: `OPINION_COLUMN`, `SHOPPING_OR_TRAVEL_GUIDE`, `NOT
 
 A recipe is not a trend: for recipe content a weak claim ("인기", "popular") does not count. A
 research paper older than 30 days is never a trend, whatever words it uses; it may be a habit
-story, shown with its date. `trendEvidenceDetail` keeps the verbatim sentence or metadata behind
-each kind, internally.
+story, shown with its date. `trendEvidenceDetail` holds the verbatim sentence or metadata behind
+each kind, in memory only for the run that read it (the store never writes it; see Persistence).
 
 **Audience relevance** (`audienceRelevance`): Korea, convenience stores, students and young adults,
 single-person households, quick meals, budget. It ranks what a KAIST student is likely to care about
@@ -191,11 +191,29 @@ the hero. It needs at least 200 characters of retrieved text.
 
 | Public: `data/magazine/` (served) | Internal: `research/magazine/` (not served) |
 |---|---|
-| Daily edition and `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance, the rest as fingerprints (see Persistence) |
-| Per story: title, short summary, source, URL, medium (blog, news, research, youtube), publishedAt, discoveredAt, image and its origin, sourceId, candidateId; trend stories also `trendEvidence` (kinds) | discoveryMethod, discoveryQuery, discoveryLane, seenQueries, trendEvidence and detail, sourceTrust, audienceRelevance, laneDecisions, scores, duplicateOf, selectedFor, rejectionReason |
+| Daily edition and `index.json`; `rules: "lanes-v1"` | `candidates.jsonl`: recent candidates with provenance and no text of the source beyond the title, the rest as fingerprints (see Persistence) |
+| Per story: title, one-sentence summary, source, URL, medium (blog, news, research, youtube), publishedAt, discoveredAt, image and its origin, sourceId, candidateId; trend stories also `trendEvidence` (kinds) | discoveryMethod, discoveryQuery, discoveryLane, seenQueries, trendEvidence (kinds), sourceTrust, audienceRelevance, laneDecisions, textFacts, textWords, scores, duplicateOf, selectedFor, rejectionReason |
 | Featured: `heroKind` (`trend` or `pick`) | `inbox/` (local sidecar output), `source-health.json`, `health.json` (with per-lane counts and reasons), `runs.jsonl` |
 
 `research/` is listed in `.vercelignore`, so the website never serves it.
+
+**No text in the store** (magazine sourcing plan, decision 6). The repository is public, so the
+store keeps no text of the source beyond its title: the excerpt and the evidence sentences
+(`trendSignals` and `habitSignals` text, `trendEvidenceDetail`) stay in memory for the run that read
+them (`store.stored`). A row keeps instead what later runs need from its text (`textFacts`: food or
+not, research, a launch, its own popularity claim or measured demand, habit words, lane word counts)
+and, while it can still corroborate, its words as an unordered list (`textWords`).
+- A row its source lists again is read again and judged in full (`store.upsert` marks it fresh).
+  Another route's text is not its text: through another route it only gains evidence.
+- A whole row its source no longer lists is held (`process.held_*`): it keeps its decision, which
+  only needs no text to change - its age (the trend and habit windows, `TOO_OLD`), the hosts open
+  discovery reads, and corroboration by the stories of the run, through its stored words.
+- `tests/test_magazine_lanes.py` checks that a held row decides as the full judgement with its text
+  would, as it ages (trend and habit windows, too old) and as new stories corroborate it. On the
+  committed store of 2026-10-12, matching by title alone would have lost 112 of 174 corroborations;
+  the stored words keep them.
+- A card for a held story takes its sentence from the publisher's page (`discovery.preview`), like
+  a web search result.
 
 **Persistence.** GitHub Actions runs are stateless. After a magazine run, the content bot commits
 `research/magazine/` to lab and main through `scripts/publish_generated.py`, the same path as
@@ -243,8 +261,8 @@ with these rules: 2.6 MB (732 whole rows, 1,924 compact) and no publishing decis
 original. A candidate's id is its canonical URL, so the same URL reached through two routes is one
 candidate, with both routes in `seenVia` and every query in `seenQueries`. A later candidate points at
 the original with `duplicateOf` when the source item id, the content hash (title plus text), or a
-similar title **with** the same site or a matching excerpt match. Title similarity alone is never
-enough.
+similar title **with** the same site or a matching text match (the excerpts when the run read both,
+else the stored words). Title similarity alone is never enough.
 
 **Quality filter.** Each rejection records a fixed reason: `BAD_URL`, `NO_TITLE`, `NO_SOURCE_TEXT`
 (less than 60 characters of retrieved text; 20 for a video; 120 for research), `COMMERCE_PAGE`,
@@ -257,9 +275,10 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
 - **Sentence:** one verbatim sentence of the publisher's own preview, at most 120 characters
   (`select.card_summary`): the first sentence of at least 20 characters among the opening three,
   without bylines, captions or links. A registered feed's item text is its preview. A web search
-  result's page text only decides its lane: when the story is published, `discovery.preview` reads
-  the page's og:description (else meta description) once, after robots.txt allows it and two seconds
-  after the last request to that host. Without a sentence the card shows title, source and date.
+  result's page text only decides its lane, and a story its feed no longer lists has no text left:
+  when such a story is published, `discovery.preview` reads the page's og:description (else meta
+  description) once, after robots.txt allows it and two seconds after the last request to that host.
+  Without a sentence the card shows title, source and date.
   Nothing is written by Babdoduk.
 - **Title and link only:** a source registered `"excerpt": false` and any page of a newspaper
   association member (`scripts/discovery/newspaper-members.json`) show no sentence and no photo, so they never take

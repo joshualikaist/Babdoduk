@@ -219,8 +219,10 @@ def test_query_provenance_is_persisted(tmp_path):
     assert saved["discoveryMethod"] == "exa_mcp" and saved["discoveryQuery"] == "2026 혼밥 식습관"
     assert saved["discoveryLane"] == "habit" and saved["seenQueries"] == ["2026 혼밥 식습관"]
     assert saved["assignedCategory"] == "habit" and saved["sourceTrust"] == "B" and saved["selectedFor"] == "2026-09-29"
-    for key in ("trendEvidence", "trendEvidenceDetail", "audienceRelevance", "duplicateOf", "rejectionReason"):
+    for key in ("trendEvidence", "audienceRelevance", "duplicateOf", "rejectionReason", "laneDecisions", "textFacts"):
         assert key in saved, key
+    # No sentence of the source is stored (decision 6): the excerpt and the evidence detail stay in memory.
+    assert "sourceExcerpt" not in saved and "trendEvidenceDetail" not in saved
 
 
 def test_local_discovery_cannot_directly_publish(tmp_path):
@@ -1103,17 +1105,19 @@ def test_a_chosen_web_result_gets_the_publishers_own_sentence_politely():
         return {"candidateId": cid, "title": title, "url": f"https://{host}/a/{cid}", "summary": ""}
 
     web = {"sourceType": "web_search", "excerptAllowed": True}
-    rows = {"c1": web, "c2": web, "c3": dict(web, excerptAllowed=False), "c4": {"sourceType": "rss"}, "c5": web,
-            "c6": web, "c7": web, "c8": web, "c9": web}
+    rows = {"c1": web, "c2": web, "c3": dict(web, excerptAllowed=False), "c5": web, "c6": web, "c7": web, "c8": web,
+            "c9": web, "c4": {"sourceType": "rss", "sourceExcerpt": "피드가 이번 실행에 보낸 글입니다."},
+            "c10": {"sourceType": "rss"}}                     # a stored story its feed no longer lists
     edition = {"featured": card("c1", "open.example.org"),
                "lanes": {"trend": {"items": [card("c2", "closed.example.org"), card("c3", "paper.example.org"),
                                              card("c4", "feed.example.org"), card("c5", "refuse.example.org"),
                                              card("c6", "refuse.example.org"), card("c7", "m.blog.naver.com"),
-                                             card("c8", "gone.example.org"), card("c9", "locked.example.org")]}}}
-    assert preview.fill(edition, rows, fetcher, log=lambda _: None) == 2
+                                             card("c8", "gone.example.org"), card("c9", "locked.example.org"),
+                                             card("c10", "held.example.org")]}}}
+    assert preview.fill(edition, rows, fetcher, log=lambda _: None) == 3
     assert edition["featured"]["summary"] == "편의점 디저트가 SNS에서 화제가 되며 매장마다 품절이 이어졌다."
     summaries = {i["candidateId"]: i["summary"] for i in edition["lanes"]["trend"]["items"]}
-    assert summaries.pop("c8") and not any(summaries.values())          # no robots.txt: nothing disallowed
+    assert summaries.pop("c8") and summaries.pop("c10") and not any(summaries.values())   # c8: no robots.txt
     pages = [u for u in asked if not u.endswith("/robots.txt")]
     assert "https://closed.example.org/a/c2" not in pages                # robots.txt said no
     assert "https://locked.example.org/a/c9" not in pages                # robots.txt refused to be read
@@ -1196,3 +1200,88 @@ def test_a_proposed_source_is_checked_against_the_rules_robots_and_its_own_feed(
     naver = dict(entry, id="blog-naver", url="https://rss.blog.naver.com/someone.xml")
     ok, lines = check_source.check(naver, fetcher=fetcher, robots=preview.Robots(fetcher), now=NOW)
     assert not ok and any("permission" in line for line in lines)
+
+
+# --- the public store keeps no text of the source (decision 6, 2026-10-12) ------------------
+BEHAVIOR = ("1인 가구 식생활 조사에서 응답자의 45%가 아침 식사를 거른다고 답했다. 점심은 편의점 도시락과 간편식으로 "
+            "해결하는 비율이 늘었다. " * 3)
+
+
+def _mixed_rows():
+    """A trend story told by two outlets, a habit survey, a recipe and a health story."""
+    return run((raw("세븐일레븐 우유생크림빵", NEUTRAL + " 출시 직후 SNS에서 화제가 되며 매장마다 품절이 이어졌다.", day(2),
+                    "https://www.foodnews.co.kr/news/2"), NEWS),
+               (raw("우유생크림빵 품절 대란", "세븐일레븐 우유생크림빵이 매장마다 품절됐다. 편의점 네 곳을 돌아 겨우 샀다는 "
+                    "후기가 이어진다. " * 3, day(1), "https://www.thinkfood.co.kr/news/3"), NEWS),
+               (raw("1인 가구 식습관 조사", BEHAVIOR, day(20), "https://www.fsnews.co.kr/news/4"), NEWS),
+               (_dish(1, day(1)), RECIPES),
+               (raw("배부르게 먹는데 살 빠진다?…볼륨매트릭스 다이어트", "물과 식이섬유가 풍부한 저열량 음식으로 식사의 부피를 "
+                    "키워 포만감을 유지하는 식사법이다. 핵심은 칼로리 밀도다. " * 3, day(1), "https://kormedi.com/6"),
+                dict(NEWS, categories=["health"])))
+
+
+def _as_stored(rows):
+    return [json.loads(json.dumps(store.stored(r), ensure_ascii=False)) for r in rows]
+
+
+def _decisions(rows, days):
+    pipeline.reset_decisions(rows)
+    process.process(rows, NOW + timedelta(days=days))
+    return {r["candidateId"]: (r.get("assignedCategory"), r.get("rejectionReason"), sorted(r.get("trendEvidence") or []))
+            for r in rows}
+
+
+def test_the_public_store_keeps_no_sentence_of_the_source(tmp_path):
+    rows = _mixed_rows()
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    s.rows = {r["candidateId"]: r for r in rows}
+    s.save()
+    text = (tmp_path / "c.jsonl").read_text(encoding="utf-8")
+    assert "sourceExcerpt" not in text and "trendEvidenceDetail" not in text and "behavior" not in text
+    assert "출시 직후 SNS에서 화제가 되며" not in text and "응답자의 45%가" not in text       # no sentence of any story
+    saved = {r["candidateId"]: r for r in store.CandidateStore(tmp_path / "c.jsonl").all()}
+    trend = saved[rows[0]["candidateId"]]
+    assert trend["trendEvidence"] and "text" not in trend["trendSignals"]["explicit_source_claim"]
+    assert trend["textFacts"]["food"] is True and trend["textWords"]                  # facts and words only
+    assert rows[0]["sourceExcerpt"]                                                   # the run keeps its text
+
+
+def test_a_stored_story_keeps_its_decision_as_a_full_judgement_would():
+    """Held without its text, a story moves exactly as the full judgement with its text: out of the
+    trend window, out of the habit window, too old; corroboration from stored words."""
+    fresh = _mixed_rows()
+    held = _as_stored(fresh)
+    assert not any(process.judged_now(r) for r in held)
+    assert _decisions(json.loads(json.dumps(fresh)), 0)[fresh[0]["candidateId"]][0] == "trend"
+    for days in (0, 5, 29, 31, 95, 400):
+        assert _decisions(json.loads(json.dumps(fresh)), days) == _decisions(json.loads(json.dumps(held)), days), days
+
+
+def test_a_new_story_corroborates_a_stored_one():
+    """Two outlets report the same sell-out on different days; the earlier report is stored without
+    its text and still gains the later one's corroboration, through its stored words."""
+    first, second = run(
+        (raw("편의점 우유생크림빵 품절 대란", "편의점 우유생크림빵이 SNS에서 화제가 되며 매장마다 품절이 이어졌다. 오픈런까지 "
+             "벌어졌다는 후기가 이어진다. " * 3, day(2), "https://www.foodnews.co.kr/news/7"), NEWS),
+        (raw("우유생크림빵 오픈런 행렬", "우유생크림빵을 사려는 오픈런이 이어지고 있다. 매장마다 생크림빵 품절 안내문이 "
+             "붙었다. " * 3, day(1), "https://www.thinkfood.co.kr/news/8"), NEWS))
+    both_fresh = _decisions(json.loads(json.dumps([first, second])), 0)
+    assert "corroborated" in both_fresh[first["candidateId"]][2]
+    assert _decisions(_as_stored([first]) + json.loads(json.dumps([second])), 0) == both_fresh
+    assert _decisions(json.loads(json.dumps([first])) + _as_stored([second]), 0) == both_fresh
+
+
+def test_a_story_read_again_by_its_own_feed_is_judged_again(tmp_path):
+    item = raw("1인 가구 식습관 조사", BEHAVIOR, day(20), "https://www.fsnews.co.kr/news/4")
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    s.upsert(process.normalize(item, NEWS, NOW), NOW)
+    process.process(s.all(), NOW)
+    s.save()
+    again = store.CandidateStore(tmp_path / "c.jsonl")
+    [row] = again.all()
+    assert not process.judged_now(row) and row["assignedCategory"] == "habit"
+    other = dict(NEWS, id="t-other")                      # another route: its text is not this story's
+    again.upsert(process.normalize(dict(item, text="다른 경로가 읽은 글입니다. " * 6), other, NOW), NOW)
+    assert not process.judged_now(row) and len(row["seenVia"]) == 2
+    again.upsert(process.normalize(item, NEWS, NOW), NOW)  # its own feed lists it again
+    assert process.judged_now(row) and row["sourceExcerpt"].startswith("1인 가구 식생활 조사에서")
