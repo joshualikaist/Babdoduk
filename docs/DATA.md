@@ -12,7 +12,7 @@ contracts themselves are standard JSON Schema files in `schemas/` (data plan pha
 | `data/ggongbab/archive/index.json` | Past listings, last 30 days | same | `ggongbab-archive` | same | same | yes |
 | `data/ggongbab/news.json` | Campus food news | same, from `inputs/ggongbab/food-news.json` | `ggongbab-news` | same, plus each item's derived id | `ggongbab.html` | yes |
 | `data/kaist-menu/YYYY-MM-DD.json` | One day's cafeteria menus; current week only | content bot, `refresh_kaist_menu.py` (scheduled 06:00, 10:30, 16:30) | `kaist-menu-day` | `--only kaist-menu`: dates, counts, coverage | hub (other dates) | yes |
-| `data/kaist-menu/latest.json` | Today's menus, a byte-identical copy of today's file | same | `kaist-menu-day` | same | home, magazine `#what`, hub (today) | yes |
+| `data/kaist-menu/latest.json` | Today's menus, a byte-identical copy of today's file | same | `kaist-menu-day` | same | home, magazine `#kaistToday`, hub (today) | yes |
 | `data/kaist-menu/week.json` | Which dates of the current week have a file | same | `kaist-menu-week` | same: Monday to Sunday, agrees with the files | hub | yes |
 | `data/magazine/YYYY-MM-DD.json` | One edition | content bot, `refresh_magazine.py` (scheduled daily 10:00) | `magazine-edition` | `--only magazine`: lanes, trend evidence, duplicates, no fabricated story | `mukbang.html`, home feature | yes |
 | `data/magazine/index.json` | Editions with stories, newest first | same | `magazine-index` | same | same | yes |

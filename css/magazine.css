@@ -435,6 +435,55 @@ body.mg-body .site-footer {
   transform: scale(1.015);
 }
 
+/* First screen (owner choice A, 2026-10-13): the featured story with the picker (#what) beside
+   it when the column is wide enough, right below it otherwise. Without a featured story the
+   picker has the row to itself. */
+.mg-main {
+  container: mg-main / inline-size;
+}
+
+.mg-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  padding-top: 28px;
+}
+
+.mg-top .mg-hero {
+  padding: 0;
+}
+
+.mg-top .choose-picker {
+  margin-top: 0;
+}
+
+@container mg-main (min-width: 820px) {
+  .mg-top:not(:has(> .mg-hero[hidden])) {
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 36%, 360px);
+    gap: 28px 32px;
+    align-items: start;
+  }
+
+  .mg-top:not(:has(> .mg-hero[hidden])) .mg-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .mg-top:not(:has(> .mg-hero[hidden])) .mg-hero-visual {
+    order: -1;
+  }
+
+  .mg-top:not(:has(> .mg-hero[hidden])) .mg-hero h2 {
+    font-size: clamp(28px, 3vw, 38px);
+  }
+
+  .mg-top:not(:has(> .mg-hero[hidden])) .eat {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
 .mg-board-head {
   display: flex;
   justify-content: space-between;

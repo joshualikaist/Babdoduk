@@ -111,23 +111,35 @@
           <div class="mg-masthead-issue">—</div>
         </header>
 
-        <article class="mg-hero" id="featured" hidden>
-          <div class="mg-hero-copy">
-            <span class="mg-hero-label" id="mgHeroLabel" data-i18n="mg.hero.pick">오늘의 추천 글</span>
-            <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
-              <h2 id="mgHeroTitle"></h2>
-            </a>
-            <p class="mg-hero-desc" id="mgHeroDesc"></p>
-            <p class="mg-hero-meta" id="mgHeroMeta"></p>
-            <span class="mg-story-src mg-hero-src" id="mgHeroSrc"></span>
-            <p class="mg-hero-tags" id="mgHeroTags"></p>
-          </div>
-          <figure class="mg-hero-visual" id="mgHeroVisual">
-            <a id="mgHeroMediaLink" href="#featured">
-              <img id="mgHeroImg" alt="" />
-            </a>
-          </figure>
-        </article>
+        <div class="mg-top">
+          <article class="mg-hero" id="featured" hidden>
+            <div class="mg-hero-copy">
+              <span class="mg-hero-label" id="mgHeroLabel" data-i18n="mg.hero.pick">오늘의 추천 글</span>
+              <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
+                <h2 id="mgHeroTitle"></h2>
+              </a>
+              <p class="mg-hero-desc" id="mgHeroDesc"></p>
+              <p class="mg-hero-meta" id="mgHeroMeta"></p>
+              <span class="mg-story-src mg-hero-src" id="mgHeroSrc"></span>
+              <p class="mg-hero-tags" id="mgHeroTags"></p>
+            </div>
+            <figure class="mg-hero-visual" id="mgHeroVisual">
+              <a id="mgHeroMediaLink" href="#featured">
+                <img id="mgHeroImg" alt="" />
+              </a>
+            </figure>
+          </article>
+
+          <section class="mg-picker choose-picker" id="what" aria-labelledby="eatTitle">
+            <div class="eat" id="eatApp">
+              <div class="eat-copy">
+                <h2 class="eat-question" id="eatTitle" data-i18n="eat.kicker">오늘 뭐 먹지?</h2>
+                <p class="eat-meta" id="eatMeta" data-i18n="eat.meta">판매 여부·가격·알레르기는 가게에서 확인</p>
+              </div>
+              <div class="eat-panel" id="eatPanel"></div>
+            </div>
+          </section>
+        </div>
 
         <section class="mg-board" id="today" aria-labelledby="mgBoardTitle">
           <div class="mg-board-head">
@@ -166,16 +178,7 @@
           </div>
         </section>
 
-        <section class="mg-picker choose-picker" id="what" aria-labelledby="eatTitle">
-          <div class="eat" id="eatApp">
-            <div class="eat-copy">
-              <h2 class="eat-question" id="eatTitle" data-i18n="eat.kicker">오늘 뭐 먹지?</h2>
-              <p class="eat-meta" id="eatMeta" data-i18n="eat.meta">판매 여부·가격·알레르기는 가게에서 확인</p>
-            </div>
-            <div class="eat-panel" id="eatPanel"></div>
-          </div>
-          <section class="kaist-today" id="kaistToday" aria-labelledby="kaistTitle"></section>
-        </section>
+        <section class="kaist-today" id="kaistToday" aria-labelledby="kaistTitle"></section>
       </div>
     </div>
   </main>

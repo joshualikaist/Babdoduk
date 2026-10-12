@@ -1,5 +1,5 @@
-/* The menu picker (.eat*) and the cafeteria summary (.kaist-*) in the magazine's #what
-   section (mukbang.html). choose.html only redirects there. */
+/* The menu picker (.eat*, the magazine's #what) and the cafeteria summary (.kaist-*,
+   #kaistToday) in mukbang.html. choose.html only redirects there. */
 
 .choose-picker {
   margin-top: var(--space-8);
