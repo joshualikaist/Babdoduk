@@ -98,7 +98,8 @@
       hasFreeOffer: false, sources: [{ type: 'portal', name: 'KAIST 포탈' }] }] };
   }
 
-  // Today's cafeteria menus; `stale` dates them yesterday.
+  // Today's cafeteria menus; `stale` dates them yesterday. The places are the real ones, in their
+  // order (data/content/labels.json `restaurants`); the menus are invented.
   function menu(stale, now) {
     var today = now || toKst();
     var date = stale ? ymd(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)) : ymd(today);
@@ -117,21 +118,21 @@
           breakfast: { hours: '', items: [] },
           lunch: { hours: '', items: ['비빔밥', '미역국', '김치'], price: '4,000원', kcal: '' },
           dinner: { hours: '', items: ['라면', '김밥'], price: '4,000원', kcal: '' } },
-        { id: 'east1', name: '동맛골 1층', building: 'E2',
+        { id: 'east1', name: '동맛골 학생식당 E5', building: 'E5',
           breakfast: { hours: '', items: [] },
           lunch: { hours: '', items: ['백반', '콩나물국'], price: '', kcal: '980 kcal' },
           dinner: { hours: '', items: ['볶음밥', '계란국'], price: '', kcal: '1,050 kcal' } },
-        { id: 'east2', name: '동맛골 2층', building: 'E2',
+        { id: 'east2', name: '동맛골 교직원식당 E5', building: 'E5',
           breakfast: { hours: '', items: [] },
           lunch: { hours: '', items: ['돈가스', '우동', '샐러드'], price: '6,000원', kcal: '1,410 kcal' },
           dinner: { hours: '', items: ['카레라이스', '단무지'], price: '5,500원', kcal: '1,200 kcal' } },
-        { id: 'icc', name: 'ICC 식당', building: 'W1',
-          breakfast: { hours: '', items: ['토스트', '우유'], price: '3,000원', kcal: '' },
-          lunch: { hours: '', items: [longName, '스프', '샐러드', '피클', '후식 과일', '미니 빵', '수프 리필', '계절 음료'], price: '7,000원', kcal: '1,520 kcal' },
-          dinner: { hours: '', items: [] } },
-        { id: 'hawam', name: '교수회관', building: 'N1',
+        { id: 'emp', name: '교수회관 N6', building: 'N6',
           breakfast: { hours: '', items: [] },
           lunch: { hours: '', items: ['한정식', '국', '나물'], price: '8,000원', kcal: '1,100 kcal' },
+          dinner: { hours: '', items: [] } },
+        { id: 'icc', name: '문지캠퍼스', building: '문지',
+          breakfast: { hours: '', items: ['토스트', '우유'], price: '3,000원', kcal: '' },
+          lunch: { hours: '', items: [longName, '스프', '샐러드', '피클', '후식 과일', '미니 빵', '수프 리필', '계절 음료'], price: '7,000원', kcal: '1,520 kcal' },
           dinner: { hours: '', items: [] } }
       ]
     };

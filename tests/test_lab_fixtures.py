@@ -59,3 +59,12 @@ def test_the_fixture_follows_the_page_clock():
     assert out["news"] == "2026-10-12"
     assert out["menu"] == "2026-10-12" and out["stale"] == "2026-10-11"
     assert out["saturday"] == [True, True] and out["sunday"] is None
+
+
+def test_the_fixture_cafeterias_are_the_real_ones():
+    labels = json.loads((ROOT / "data/content/labels.json").read_text(encoding="utf-8"))["restaurants"]
+    shown = run_fixture("F.menu(false, new Date(2026, 9, 12, 12, 0)).restaurants"
+                        ".map(r => ({id: r.id, name: r.name, building: r.building}))")
+    real = [{"id": r["id"], "name": r["name"], "building": r["building"]} for r in labels]
+    assert shown == [r for r in real if r["id"] in {s["id"] for s in shown}]   # the same places, in their order
+    assert len(shown) == 6
