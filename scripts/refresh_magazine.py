@@ -25,7 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from discovery import pipeline, select  # noqa: E402
+from discovery import pipeline, registry, select  # noqa: E402
 from discovery.common import atomic_write, dump_json, iso, now_kst, read_json  # noqa: E402
 
 OUT = ROOT / "data" / "magazine"
@@ -94,7 +94,8 @@ def main(argv=None) -> int:
         # edition. Nothing is fetched or searched, and no stored candidate is dropped.
         run = pipeline.reprocess(paths, now)
         date = edition_date(now)
-        edition, chosen = select.build(run["store"].all(), date=date, generated_at=iso(now),
+        rows = pipeline.runnable(run["store"].all(), registry.load(paths.registry))
+        edition, chosen = select.build(rows, date=date, generated_at=iso(now),
                                        recent=pipeline.recent_keys(OUT, date))
         if not story_count(edition):
             print(f"[warn] magazine {date}: no qualifying story in the store")
@@ -109,7 +110,8 @@ def main(argv=None) -> int:
     edition, chosen = None, []
     if not args.discover_only:
         date = edition_date(now)
-        edition, chosen = select.build(run["store"].all(), date=date, generated_at=iso(now),
+        rows = pipeline.runnable(run["store"].all(), run["sources"])
+        edition, chosen = select.build(rows, date=date, generated_at=iso(now),
                                        recent=pipeline.recent_keys(OUT, date))
         written = bool(story_count(edition))
         if written:
