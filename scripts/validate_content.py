@@ -369,8 +369,8 @@ GG_EVENT_SCHEMA = {
     "sources": [{"type": GG_ENUM, "name": GG_TEXT, "url": GG_URL}],
 }
 # Top-level keys; `_preview` holds only the local preview's numeric diagnostics.
-GG_LIVE_TOP_LEVEL = {"generatedAt", "timezone", "count", "events", "_preview"}
-GG_ARCHIVE_TOP_LEVEL = {"generatedAt", "timezone", "windowDays", "count", "events"}
+GG_LIVE_TOP_LEVEL = {"schemaVersion", "generatedAt", "timezone", "count", "events", "_preview"}
+GG_ARCHIVE_TOP_LEVEL = {"schemaVersion", "generatedAt", "timezone", "windowDays", "count", "events"}
 GG_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
 # A whole query/fragment value that is a dialable Korean mobile number: it needs a real
 # prefix (0, +82, or 82 plus a separator), so a numeric id such as mng_no=1712345678 is not one.

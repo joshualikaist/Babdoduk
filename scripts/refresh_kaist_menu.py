@@ -36,6 +36,7 @@ UA = "BabdodukMenu/1.0 (+https://github.com/joshualikaist/Babdoduk)"
 KST = timezone(timedelta(hours=9))
 TIMEZONE = "Asia/Seoul"
 BASE = "https://www.kaist.ac.kr/kr/html/campus/053001.html"
+SCHEMA_VERSION = 1      # schemas/kaist-menu-day.schema.json and kaist-menu-week.schema.json
 
 # Day states. AVAILABLE: a validated menu for that date. NOT_PUBLISHED_YET: every restaurant
 # answered with an empty official table. FETCH_FAILED: no usable answer and nothing saved.
@@ -279,6 +280,7 @@ def decide(day: date, restaurants: list, coverage: dict, saved: Optional[dict],
         order = {row["id"]: idx for idx, row in enumerate(RESTAURANTS)}
         restaurants = sorted(restaurants, key=lambda row: order.get(row.get("id"), len(order)))
         payload = {
+            "schemaVersion": SCHEMA_VERSION,
             "date": day.isoformat(),
             "dateLabel": f"{day.month}월 {day.day}일",
             "fetchedAt": fetched_at.isoformat(timespec="seconds"),
@@ -349,6 +351,7 @@ def refresh(out: Path = OUT, *, now: Optional[datetime] = None, fetcher: Callabl
         if not latest.exists() or latest.read_text(encoding="utf-8") != text:
             atomic_write(latest, text)
     index = {
+        "schemaVersion": SCHEMA_VERSION,
         "weekStart": week[0].isoformat(),
         "weekEnd": week[-1].isoformat(),
         "generatedAt": now.astimezone(KST).isoformat(timespec="seconds"),

@@ -189,7 +189,9 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
     featured = None
     if featured_row is not None:
         featured = dict(public_item(featured_row), category=featured_row["assignedCategory"], heroKind=hero_kind)
-    edition = {"date": date, "generatedAt": generated_at, "schedule": "Daily 10:00 KST", "rules": RULES,
+    # The nominal "Daily 10:00 KST" schedule is no longer written: the scheduled run starts hours
+    # late, and the page shows generatedAt (schemas/magazine-edition.schema.json).
+    edition = {"schemaVersion": 1, "date": date, "generatedAt": generated_at, "rules": RULES,
                "featured": featured, "lanes": lanes}
     return edition, chosen
 

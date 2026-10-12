@@ -142,3 +142,17 @@ def test_full_payload_passes_validator(settings, tmp_path):
     payload = build_payload([row()], settings, TEST_NOW)
     path = write_payload(payload, tmp_path)
     assert validate_ggongbab(path, TEST_NOW) == []
+
+
+# --- the published contract (schemas/, docs/DATA.md) -----------------------------------
+def test_the_feed_and_archive_as_exported_keep_their_contracts(settings):
+    from ggongbab.exporter import build_archive
+    from schema_check import schema_errors
+    payload = build_payload([row(), row(id="22222222-2222-2222-2222-222222222222", registration_url="https://a.example/form")],
+                            settings, TEST_NOW)
+    assert payload["schemaVersion"] == 1 and payload["count"] == 2
+    assert schema_errors(payload, "ggongbab-feed") == []
+    past = row(event_start=(TEST_NOW - timedelta(days=2)).isoformat())
+    archive = build_archive([past], settings, {past["id"]}, TEST_NOW)
+    assert archive["schemaVersion"] == 1 and archive["count"] == 1
+    assert schema_errors(archive, "ggongbab-archive") == []

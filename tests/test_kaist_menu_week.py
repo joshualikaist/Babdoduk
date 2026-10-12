@@ -248,6 +248,12 @@ def _validated(tmp_path):
 def test_generated_week_and_dated_files_validate(tmp_path):
     run(tmp_path, Site({"2026-10-04": "empty", ("west", "2026-10-02"): "down"}))
     assert _validated(tmp_path) == []
+    from schema_check import schema_errors           # schemas/kaist-menu-*.schema.json, docs/DATA.md
+    for path in sorted(tmp_path.glob("*.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert data["schemaVersion"] == 1, path.name
+        contract = "kaist-menu-week" if path.name == "week.json" else "kaist-menu-day"
+        assert schema_errors(data, contract) == [], path.name
 
 
 @pytest.mark.parametrize("tamper,message", [
