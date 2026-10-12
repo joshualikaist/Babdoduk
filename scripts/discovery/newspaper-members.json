@@ -256,6 +256,7 @@
       "domains": [
         "chinese.joins.com",
         "japanese.joins.com",
+        "jhealthmedia.joins.com",
         "joongang.co.kr",
         "joongang.joins.com",
         "joongangdaily.joins.com",
@@ -264,7 +265,7 @@
         "news.joins.com"
       ],
       "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
-      "note": "koreajoongangdaily.com footer: JoongAng Ilbo, 사업자 110-81-00999. Do not match joins.com wholesale: www.joins.com shows a 서비스 종료 notice and jmagazine.joins.com redirects to forbeskorea.co.kr (another company). koreadaily.com (Joongangilbo USA) and isplus.com / economist.co.kr (일간스포츠) are not members."
+      "note": "koreajoongangdaily.com footer: JoongAng Ilbo, 사업자 110-81-00999. Do not match joins.com wholesale: www.joins.com shows a 서비스 종료 notice and jmagazine.joins.com redirects to forbeskorea.co.kr (another company). koreadaily.com (Joongangilbo USA) and isplus.com / economist.co.kr (일간스포츠) are not members. jhealthmedia.joins.com (헬스중앙) names 중앙일보 as its publisher in its footer (checked 2026-10-12)."
     },
     {
       "name": "코리아타임스",

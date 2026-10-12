@@ -180,7 +180,7 @@
       "id": "news-thinkfood",
       "name": "식품음료신문",
       "type": "rss",
-      "url": "https://www.thinkfood.co.kr/rss/allArticle.xml",
+      "url": "https://cdn.thinkfood.co.kr/rss/gn_rss_allArticle.xml",
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -189,7 +189,8 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "note": "Since 2026-10-12 the publisher's full-text feed, listed on https://www.thinkfood.co.kr/rssIndex.html: the allArticle.xml feed stops at 300 characters, which hid the habit words. Verified that day: robots.txt allows it; 3 of 50 qualified for habit, 3 for trend; 42 of 50 about food."
     },
     {
       "id": "news-foodnews",
@@ -283,7 +284,10 @@
       ],
       "discoveryMethod": "rss",
       "kind": "news",
-      "requireFood": true
+      "requireFood": true,
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
+      "note": "Read 5 pages deep (2026-10-12): the site posts about 50 stories a day and a feed page holds 10, so one page saw a fifth of them; the feed and ?paged=2-5 gave 5 of 50 habit stories that day. robots.txt disallows */page/ but not the ?paged=N form the adapter reads."
     },
     {
       "id": "news-newsis-health",
@@ -416,6 +420,23 @@
       "requireFood": true,
       "excerpt": false,
       "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 10 of 50 qualified for health. Items are dated only by dc:date. excerpt false: 경향신문 (레이디경향 has the same publisher) is a member of 한국신문협회 and 한국온라인신문협회, so its stories are shown by title, source, date and link only (magazine sourcing plan, decision 5; scripts/discovery/newspaper-members.json)."
+    },
+    {
+      "id": "news-foodicon",
+      "name": "푸드아이콘",
+      "type": "rss",
+      "url": "http://www.foodicon.co.kr/rss/allArticle.xml",
+      "enabled": true,
+      "trustTier": "B",
+      "categories": [
+        "trend",
+        "habit",
+        "health"
+      ],
+      "discoveryMethod": "rss",
+      "kind": "news",
+      "requireFood": true,
+      "note": "Verified 2026-10-12: robots.txt allows the feed; read with the pipeline's own rules that day: 1 of 50 qualified for habit, 1 for health, 2 for trend (items 10-07 to 10-13; 39 of 50 about food). Address as listed on https://www.foodicon.co.kr/rssIndex.html; not a newspaper association member."
     },
     {
       "id": "web-exa-trend",
