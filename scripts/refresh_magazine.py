@@ -66,7 +66,7 @@ def write_index(out: Path) -> str:
     from lab and main too)."""
     dates = sorted((p.stem for p in dated_files(out) if story_count(read_json(p, {})) > 0), reverse=True)
     latest = dates[0] if dates else ""
-    atomic_write(out / "index.json", dump_json({"latest": latest, "dates": dates}))
+    atomic_write(out / "index.json", dump_json({"schemaVersion": 1, "latest": latest, "dates": dates}))
     (out / "latest.json").unlink(missing_ok=True)
     return latest
 

@@ -346,8 +346,17 @@ def test_the_index_names_the_newest_edition_and_no_latest_copy_is_kept(tmp_path)
     (tmp_path / "latest.json").write_text("{}", encoding="utf-8")       # the retired copy
     assert refresh_magazine.write_index(tmp_path) == "2026-10-11"         # an empty edition is not listed
     index = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
-    assert index == {"latest": "2026-10-11", "dates": ["2026-10-11", "2026-10-10"]}
+    assert index == {"schemaVersion": 1, "latest": "2026-10-11", "dates": ["2026-10-11", "2026-10-10"]}
     assert not (tmp_path / "latest.json").exists()
+    from schema_check import schema_errors
+    assert schema_errors(index, "magazine-index") == []
+
+
+def test_a_new_edition_keeps_its_contract_and_claims_no_schedule(result):
+    from schema_check import schema_errors
+    edition = result["edition"]
+    assert edition["schemaVersion"] == 1 and "schedule" not in edition
+    assert schema_errors(edition, "magazine-edition") == []
 
 
 def test_the_one_registry_is_valid_and_honest_about_what_runs():

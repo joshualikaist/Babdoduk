@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/foods-pack.schema.json",
+  "title": "One food pack: data/foods/packs/<pack>.json",
+  "description": "A group of dishes for the picker (js/food-engine.js). Every dish carries every field; the vocabularies below are the only values the picker understands, and the scores run 0-5 (texture, flavor) or 1-5. Ids are lower-case words joined by hyphens; a few keep an accent (rosé, canelé) because visitors may have saved them. parentId names the dish's cluster (the picker never suggests two dishes of one cluster together); validate_content.py adds unique ids across packs and counts that match the catalog.",
+  "type": "object",
+  "required": ["pack", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "pack": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+    "items": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/dish"}}
+  },
+  "$defs": {
+    "score": {"type": "integer", "minimum": 1, "maximum": 5},
+    "level": {"type": "integer", "minimum": 0, "maximum": 5},
+    "dish": {
+      "type": "object",
+      "required": ["id", "parentId", "nameKo", "nameEn", "category", "cuisine", "cuisineGroup", "region", "dishType",
+                   "mainProtein", "mainCarb", "temperature", "texture", "flavor", "satiety", "healthiness", "priceLevel",
+                   "prepDifficulty", "popularity", "adventurousness", "allergens", "diet", "diningMode", "mealTime",
+                   "occasion", "season", "keywords"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9à-ÿ]+(-[a-z0-9à-ÿ]+)*$"},
+        "parentId": {"type": "string", "pattern": "^[a-z0-9à-ÿ]+(-[a-z0-9à-ÿ]+)*$"},
+        "nameKo": {"type": "string", "minLength": 1},
+        "nameEn": {"type": "string", "minLength": 1},
+        "category": {"enum": ["main", "side", "share", "snack", "dessert"]},
+        "cuisine": {"enum": ["american", "british", "cantonese", "chinese", "dongbei", "french", "fusion", "hawaiian",
+                             "indian", "indonesian", "italian", "japanese", "kansai", "korean", "korean-chinese",
+                             "korean-fusion", "levantine", "malaysian", "mexican", "sichuan", "spanish", "thai",
+                             "turkish", "vietnamese", "xinjiang"]},
+        "cuisineGroup": {"enum": ["american", "chinese", "dessert", "french", "fusion", "indian", "italian", "japanese",
+                                  "korean", "mexican", "middle-eastern", "snack", "southeast-asian", "western"]},
+        "region": {"enum": ["china", "france", "india", "indonesia", "italy", "japan", "korea", "lebanon", "malaysia",
+                            "mexico", "spain", "thailand", "turkey", "uk", "usa", "vietnam"]},
+        "dishType": {"enum": ["braise", "bread", "cake", "curry", "dip", "drink", "dumpling", "egg", "fried", "grill",
+                              "hotpot", "ice", "noodle", "pancake", "pasta", "pizza", "porridge", "raw", "rice-bowl",
+                              "roll", "salad", "sandwich", "savory-pancake", "soup", "stew", "stir-fry", "street", "wrap"]},
+        "mainProtein": {"enum": ["beef", "chicken", "duck", "egg", "fish", "lamb", "mixed", "none", "offal", "pork",
+                                 "seafood", "shrimp", "tofu"]},
+        "mainCarb": {"enum": ["bread", "corn", "glass-noodle", "none", "noodle", "pasta", "potato", "rice", "rice-cake",
+                              "rice-noodle", "wheat"]},
+        "temperature": {"enum": ["hot", "cold"]},
+        "texture": {
+          "type": "object",
+          "required": ["soft", "chewy", "crispy", "soupy"],
+          "additionalProperties": false,
+          "properties": {
+            "soft": {"$ref": "#/$defs/level"}, "chewy": {"$ref": "#/$defs/level"},
+            "crispy": {"$ref": "#/$defs/level"}, "soupy": {"$ref": "#/$defs/level"}
+          }
+        },
+        "flavor": {
+          "type": "object",
+          "required": ["salty", "sweet", "sour", "spicy", "umami", "rich"],
+          "additionalProperties": false,
+          "properties": {
+            "salty": {"$ref": "#/$defs/level"}, "sweet": {"$ref": "#/$defs/level"}, "sour": {"$ref": "#/$defs/level"},
+            "spicy": {"$ref": "#/$defs/level"}, "umami": {"$ref": "#/$defs/level"}, "rich": {"$ref": "#/$defs/level"}
+          }
+        },
+        "satiety": {"$ref": "#/$defs/score"},
+        "healthiness": {"$ref": "#/$defs/score"},
+        "priceLevel": {"type": "integer", "minimum": 1, "maximum": 3},
+        "prepDifficulty": {"$ref": "#/$defs/score"},
+        "popularity": {"$ref": "#/$defs/score"},
+        "adventurousness": {"$ref": "#/$defs/score"},
+        "allergens": {"type": "array", "uniqueItems": true,
+                      "items": {"enum": ["dairy", "egg", "fish", "gluten", "peanut", "sesame", "shellfish", "soy", "tree-nut"]}},
+        "diet": {"type": "array", "uniqueItems": true, "items": {"enum": ["halal", "vegan", "vegetarian"]}},
+        "diningMode": {"type": "array", "uniqueItems": true, "items": {"enum": ["delivery", "homeCooking", "restaurant"]}},
+        "mealTime": {"type": "array", "minItems": 1, "uniqueItems": true,
+                     "items": {"enum": ["breakfast", "lunch", "dinner", "lateNight"]}},
+        "occasion": {"type": "array", "uniqueItems": true, "items": {"enum": ["solo", "friends", "group", "date", "drinks"]}},
+        "season": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["all", "summer", "fall", "winter"]}},
+        "keywords": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

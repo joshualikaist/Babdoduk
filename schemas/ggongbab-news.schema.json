@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/ggongbab-news.schema.json",
+  "title": "Campus food news: data/ggongbab/news.json",
+  "description": "Written by scripts/refresh_ggongbab.py from inputs/ggongbab/food-news.json (ggongbab.food_news) and read by ggongbab.html. Never an events array, never a source URL or review evidence. food_news.check_public_item adds the id rule (derived from source, date and title) and the privacy scan.",
+  "type": "object",
+  "required": ["generatedAt", "timezone", "count", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "generatedAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+09:00$"},
+    "timezone": {"const": "Asia/Seoul"},
+    "count": {"type": "integer", "minimum": 0},
+    "items": {"type": "array", "items": {"$ref": "#/$defs/item"}}
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": ["id", "contentType", "noticeDate", "title", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^news-[a-f0-9]{32}$"},
+        "contentType": {"const": "campus_food_news"},
+        "noticeDate": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 240},
+        "summary": {"type": "string", "minLength": 1, "maxLength": 160},
+        "location": {"type": "string", "minLength": 1, "maxLength": 160},
+        "hasFreeOffer": {"type": "boolean"},
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "anyOf": [
+              {"type": "object", "required": ["type", "name"], "additionalProperties": false,
+               "properties": {"type": {"const": "portal"}, "name": {"const": "KAIST 포탈"}}},
+              {"type": "object", "required": ["type", "name"], "additionalProperties": false,
+               "properties": {"type": {"const": "kaist_public"}, "name": {"const": "KAIST 공지"}}}
+            ]
+          }
+        }
+      }
+    }
+  }
+}

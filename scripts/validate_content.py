@@ -369,8 +369,8 @@ GG_EVENT_SCHEMA = {
     "sources": [{"type": GG_ENUM, "name": GG_TEXT, "url": GG_URL}],
 }
 # Top-level keys; `_preview` holds only the local preview's numeric diagnostics.
-GG_LIVE_TOP_LEVEL = {"generatedAt", "timezone", "count", "events", "_preview"}
-GG_ARCHIVE_TOP_LEVEL = {"generatedAt", "timezone", "windowDays", "count", "events"}
+GG_LIVE_TOP_LEVEL = {"schemaVersion", "generatedAt", "timezone", "count", "events", "_preview"}
+GG_ARCHIVE_TOP_LEVEL = {"schemaVersion", "generatedAt", "timezone", "windowDays", "count", "events"}
 GG_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
 # A whole query/fragment value that is a dialable Korean mobile number: it needs a real
 # prefix (0, +82, or 82 plus a separator), so a numeric id such as mng_no=1712345678 is not one.
@@ -738,19 +738,25 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
     return errors
 
 
-FAMILIES = ("magazine", "kaist-menu", "ggongbab")
+FAMILIES = ("magazine", "kaist-menu", "ggongbab", "authored")
 
 
 def main(argv: list[str] | None = None) -> None:
     """Validate every family, or with --only the families a job is about to publish: a
-    problem in one family must not block another family's publish."""
+    problem in one family must not block another family's publish. Every file is first held
+    to its contract in schemas/ (schema_check.CONTRACTS, docs/DATA.md); the rules below add
+    what a schema cannot state. `authored` is the hand-written data: foods, the food log and
+    inputs/."""
     import argparse
+    from schema_check import contract_errors
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", nargs="+", choices=FAMILIES, default=list(FAMILIES),
                         help="families to validate (magazine includes research/magazine)")
     families = set(parser.parse_args(argv).only)
     mag_index = ROOT / "data" / "magazine" / "index.json"
-    errors = []
+    errors = contract_errors(families)
+    if "authored" in families:
+        errors.extend(validate_authored())
     if "magazine" in families and mag_index.exists():
         index = load(mag_index)
         latest = index.get("latest")
@@ -777,6 +783,65 @@ def main(argv: list[str] | None = None) -> None:
         print("\n".join(errors))
         sys.exit(1)
     print("content validation ok" + ("" if families == set(FAMILIES) else f" ({', '.join(sorted(families))})"))
+
+
+def validate_authored(root: Path = ROOT) -> list[str]:
+    """Hand-written data, beyond its schema: the foods catalog agrees with its packs and dish
+    ids are unique across them; a food-log day's total is the sum of its items; manual and
+    news-input ids are unique, and every public news item re-derives its own id."""
+    errors: list[str] = []
+    catalog_path = root / "data" / "foods" / "catalog.json"
+    if catalog_path.exists():
+        catalog = load(catalog_path)
+        seen: dict[str, str] = {}
+        total = 0
+        for pack in catalog.get("packs") or []:
+            path = root / str(pack.get("src") or "")
+            if not path.is_file():
+                errors.append(f"foods catalog names a missing pack {pack.get('src')}")
+                continue
+            items = load(path).get("items") or []
+            total += len(items)
+            if pack.get("count") != len(items):
+                errors.append(f"foods catalog count for {pack.get('id')} is {pack.get('count')}, the pack has {len(items)}")
+            for item in items:
+                dish = item.get("id")
+                if dish in seen:
+                    errors.append(f"foods dish id {dish} is in both {seen[dish]} and {pack.get('id')}")
+                seen[dish] = pack.get("id")
+        if catalog.get("count") != total:
+            errors.append(f"foods catalog count is {catalog.get('count')}, the packs hold {total}")
+        listed = {pack.get("src") for pack in catalog.get("packs") or []}
+        for path in sorted((root / "data" / "foods" / "packs").glob("*.json")):
+            if path.relative_to(root).as_posix() not in listed:
+                errors.append(f"foods pack {path.name} is not in the catalog")
+    log_path = root / "data" / "food-log.json"
+    if log_path.exists():
+        dates = set()
+        for entry in load(log_path).get("entries") or []:
+            if entry.get("date") in dates:
+                errors.append(f"food-log has {entry.get('date')} twice")
+            dates.add(entry.get("date"))
+            if entry.get("total") != sum(item.get("amount") or 0 for item in entry.get("items") or []):
+                errors.append(f"food-log {entry.get('date')}: total is not the sum of its items")
+    manual = root / "inputs" / "ggongbab" / "manual.json"
+    if manual.exists():
+        ids = [item.get("id") for item in load(manual).get("items") or []]
+        if len(set(ids)) != len(ids):
+            errors.append("inputs/ggongbab/manual.json: an id is used twice")
+    news = root / "inputs" / "ggongbab" / "food-news.json"
+    if news.exists():
+        # Imported here: food_news pulls in pydantic, which only the ggongbab job installs.
+        from ggongbab.food_news import check_public_item
+        items = load(news).get("items") or []
+        for index, item in enumerate(items):
+            try:
+                check_public_item(item)
+            except (KeyError, ValueError, TypeError):
+                errors.append(f"inputs/ggongbab/food-news.json: item {index} fails the public news check (values suppressed)")
+        if len({item.get("id") for item in items if isinstance(item, dict)}) != len(items):
+            errors.append("inputs/ggongbab/food-news.json: an id is used twice")
+    return errors
 
 
 def validate_ggongbab_family() -> list[str]:
