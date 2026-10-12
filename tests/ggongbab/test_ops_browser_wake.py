@@ -32,15 +32,16 @@ from ggongbab.windows_portal_host import PortalHost
 ROOT = Path(__file__).resolve().parents[2]
 HOST = "kaist.gov-dooray.com"
 SAFE_METHODS = {"Target.getTargets", "Target.attachToTarget", "Target.detachFromTarget", "Runtime.getIsolateId",
-                "Target.activateTarget"}
+                "Page.reload"}
 
 
 # --- a fake browser-level CDP endpoint for wake_tabs --------------------------------------
 class FakeCdp:
-    """Pages: {target_id: (url, alive_before, alive_after_activate)}."""
-    def __init__(self, pages):
-        self.pages, self.calls, self.activated = pages, [], set()
-        self.sessions = {}
+    """Pages: {target_id: (url, alive_before, alive_after_reload)}; `busy` pages miss only the
+    first, short probe (a renderer that is working, not a discarded tab)."""
+    def __init__(self, pages, busy=()):
+        self.pages, self.calls, self.reloaded, self.busy = pages, [], set(), set(busy)
+        self.sessions, self.probes = {}, {}
 
     def __call__(self, port):
         self.port = port
@@ -64,11 +65,15 @@ class FakeCdp:
             return {"sessionId": sid}
         if method == "Runtime.getIsolateId":
             target = self.sessions[session]
+            self.probes[target] = self.probes.get(target, 0) + 1
+            if target in self.busy:
+                return {"id": "isolate"} if self.probes[target] > 1 else None
             _, before, after = self.pages[target]
-            alive = after if target in self.activated else before
+            alive = after if target in self.reloaded else before
             return {"id": "isolate"} if alive else None
-        if method == "Target.activateTarget":
-            self.activated.add(params["targetId"])
+        if method == "Page.reload":
+            assert session and params == {}, "a reload is sent only on the page's own session"
+            self.reloaded.add(self.sessions[session])
             return {}
         if method == "Target.detachFromTarget":
             return {}
@@ -82,15 +87,24 @@ INBOX = "https://" + HOST + "/mail/systems/inbox"
 def test_live_tabs_are_left_alone():
     cdp = FakeCdp({"p": (PORTAL, True, True), "d": (INBOX, True, True)})
     assert ob.wake_tabs(9224, HOST, cdp=cdp) == {"pages": 2, "restored": 0, "roles": []}
-    assert "Target.activateTarget" not in cdp.calls and set(cdp.calls) <= SAFE_METHODS
+    assert "Page.reload" not in cdp.calls and set(cdp.calls) <= SAFE_METHODS
     assert cdp.calls.count("Target.detachFromTarget") == 2
 
 
-def test_a_discarded_portal_tab_is_restored_by_activation_only():
+def test_a_discarded_portal_tab_is_reloaded_in_place_without_activation():
+    """`Target.activateTarget` restored AND focused a minimized window (measured 2026-10-12,
+    Chrome 154), so the Ops Chrome jumped in front of the owner's work; `Page.reload` on the
+    discarded tab's own session brought it back with the window left minimized."""
     cdp = FakeCdp({"p": (PORTAL, False, True), "d": (INBOX, True, True)})
     assert ob.wake_tabs(9224, HOST, cdp=cdp, sleep=lambda _: None) == {"pages": 2, "restored": 1, "roles": ["portal"]}
-    assert cdp.activated == {"p"}                           # never the live Dooray tab
-    assert set(cdp.calls) <= SAFE_METHODS                    # no navigate, reload, evaluate or close
+    assert cdp.reloaded == {"p"}                             # never the live Dooray tab
+    assert "Target.activateTarget" not in cdp.calls and set(cdp.calls) <= SAFE_METHODS
+
+
+def test_a_busy_tab_that_answers_the_longer_probe_is_never_reloaded():
+    cdp = FakeCdp({"p": (PORTAL, True, True), "d": (INBOX, True, True)}, busy={"d"})
+    assert ob.wake_tabs(9224, HOST, cdp=cdp) == {"pages": 2, "restored": 0, "roles": []}
+    assert cdp.reloaded == set() and cdp.probes["d"] == 2
 
 
 def test_a_tab_that_stays_dead_fails_closed():
@@ -233,8 +247,12 @@ def test_the_client_follows_only_the_loopback_endpoint_of_the_same_port(ws, ok):
 def test_the_client_source_reads_no_content():
     source = (ROOT / "scripts/ggongbab/cdp_lite.py").read_text(encoding="utf-8")
     wake = (ROOT / "scripts/ggongbab/ops_browser.py").read_text(encoding="utf-8")
-    for forbidden in ("Runtime.evaluate", "Page.navigate", "Page.reload", "getCookies", "Input.", "closeTarget"):
+    for forbidden in ("Runtime.evaluate", "Page.navigate", "getCookies", "Input.", "closeTarget"):
         assert forbidden not in source and forbidden not in wake
+    # The only reload is the restore of a page that answered neither probe, and nothing in the
+    # ops layer may activate a target or the window again.
+    assert "Page.reload" not in source and wake.count('client.call("Page.reload"') == 1
+    assert 'call("Target.activateTarget"' not in wake
     assert '"127.0.0.1"' in source and "0.0.0.0" not in source
 
 

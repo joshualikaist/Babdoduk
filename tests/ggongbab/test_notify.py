@@ -133,6 +133,79 @@ def test_local_notifier_needs_both_config_and_a_stored_token(tmp_path):
     assert TOKEN not in (tmp_path / "alert-push.json").read_text(encoding="utf-8")
 
 
+# --- Windows toast on the operations PC --------------------------------------------------------
+class Run:
+    def __init__(self, code=0, error=None):
+        self.code, self.error, self.commands = code, error, []
+
+    def __call__(self, command, **kwargs):
+        self.commands.append((command, kwargs))
+        if self.error:
+            raise self.error
+        return type("Done", (), {"returncode": self.code})()
+
+
+def test_the_toast_is_fixed_korean_wording_from_fixed_fields():
+    title, body = notify.format_toast([Alert.of("portal", "AUTH_EXPIRED", 63564, NOW)])
+    assert title == "밥도둑 운영: 조치가 필요합니다"
+    assert body.splitlines() == ["Portal 공지 수집 · 로그인 만료",
+                                 "운영 Chrome에서 직접 로그인하세요. 로그인 화면이 닫히면 저절로 다시 시작합니다."]
+    assert notify.format_toast([], ["dooray_radar"]) == ("밥도둑 운영: 다시 정상입니다", "Dooray 메일 레이더 · 다시 정상")
+    for reason in ("AUTH_EXPIRED", "SCAN_STALE", "BROWSER_ABSENT", "CONTRACT_CHANGED", "WORKER_NOT_RUNNING"):
+        _, text = notify.format_toast([Alert.of("portal", reason, 900, NOW)])
+        assert PRIVATE not in text and "http" not in text
+
+
+def test_the_toast_runs_hidden_powershell_and_reports_fixed_codes():
+    run = Run()
+    toast = notify.WindowsToastNotifier(run=run)
+    assert toast.send(("밥도둑 운영: 조치가 필요합니다", "Portal 공지 수집 · 로그인 만료")) == notify.SENT
+    command, kwargs = run.commands[0]
+    assert command[:5] == ["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass"]
+    assert command[5] == "-EncodedCommand" and kwargs["timeout"] == 30
+    import base64
+    import subprocess
+    script = base64.b64decode(command[6]).decode("utf-16-le")
+    assert "ToastNotificationManager" in script and notify.TOAST_APP_ID in script
+    assert "로그인" not in script                      # the text travels base64-encoded, never spliced in
+    assert kwargs["creationflags"] == getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    assert notify.WindowsToastNotifier(run=Run(code=1)).send(("t", "b")) == notify.TRANSPORT_FAILED
+    assert notify.WindowsToastNotifier(run=Run(error=OSError("x"))).send(("t", "b")) == notify.TRANSPORT_FAILED
+
+
+def test_the_toast_is_on_by_default_on_windows_and_can_be_turned_off(tmp_path):
+    assert isinstance(notify.local_toast(tmp_path, windows=True), notify.WindowsToastNotifier)
+    assert notify.local_toast(tmp_path, windows=False) is None
+    (tmp_path / notify.TOAST_CONFIG).write_text(json.dumps({"enabled": False}), encoding="utf-8")
+    assert notify.local_toast(tmp_path, windows=True) is None
+
+
+def test_the_toast_waits_out_a_brief_critical_and_keeps_its_own_state(tmp_path):
+    """Right after the PC wakes, a scan is late until the workers catch up; that should not pop a
+    toast. A critical that lasts 3 minutes does, once, with its own state file."""
+    toast = Recorder()
+    assert notify.push_local(tmp_path, [crit()], now=NOW, notifier=None, toast=toast) == notify.NOT_CONFIGURED
+    assert toast.messages == []
+    notify.push_local(tmp_path, [ok()], now=NOW + 60, notifier=None, toast=toast)           # caught up: quiet
+    notify.push_local(tmp_path, [crit()], now=NOW + 120, notifier=None, toast=toast)
+    notify.push_local(tmp_path, [crit()], now=NOW + 120 + notify.TOAST_CRITICAL_AFTER_SECONDS, notifier=None,
+                      toast=toast)
+    assert len(toast.messages) == 1 and isinstance(toast.messages[0], str)               # Recorder has no render
+    assert (tmp_path / notify.TOAST_STATE).exists() and not (tmp_path / "alert-push-state.json").exists()
+
+
+def test_the_toast_renders_korean_through_its_own_render_hook(tmp_path):
+    run = Run()
+    toast = notify.WindowsToastNotifier(run=run)
+    policy = notify.PushPolicy(tmp_path / "s.json")
+    assert notify.push([Alert.of("portal", "AUTH_EXPIRED", 900, NOW)], toast, policy, source="local PC", now=NOW) == notify.SENT
+    import base64
+    script = base64.b64decode(run.commands[0][0][6]).decode("utf-16-le")
+    encoded = [part.split("'")[0] for part in script.split("FromBase64String('")[1:]]
+    title, body = (base64.b64decode(e).decode("utf-8") for e in encoded)
+    assert title == "밥도둑 운영: 조치가 필요합니다" and body.startswith("Portal 공지 수집 · 로그인 만료")
+
+
 # --- cloud monitor ------------------------------------------------------------------------
 def iso(seconds_ago):
     from datetime import datetime, timezone

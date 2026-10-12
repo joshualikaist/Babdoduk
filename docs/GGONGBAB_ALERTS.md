@@ -2,7 +2,8 @@
 
 Collector failures must reach the operator even when the Windows PC that runs the workers is off.
 There are two senders. They share one message format and one provider (Telegram preferred;
-authenticated ntfy as the alternative).
+authenticated ntfy as the alternative). On the operations PC itself a Windows toast also shows
+each alert (owner decision 2026-10-12): no account, token or network, see "Windows toast" below.
 
 | Sender | Where it runs | Reacts within | Sees |
 |---|---|---|---|
@@ -42,6 +43,14 @@ fixed list become `NO_SUCCESS_RECORDED`.
 * Recovery: pushed only for something that was pushed.
 * A failed push waits 5 minutes before retrying.
 * State: `.local/alert-push-state.json`.
+
+**Windows toast (this PC):** the watchdog passes `notify.local_toast` to the same push, with its own
+state file (`.local/alert-toast-state.json`). PowerShell shows it through the Windows toast API under
+PowerShell's app id, hidden and without taking focus. The wording is fixed Korean text per
+component, reason and action (`notify.format_toast`): never a subject, title, id or URL. A
+critical alert must last 3 minutes before it shows, so a scan that is only late right after the
+PC wakes stays quiet; warnings wait 10 minutes as above. It is on by default on Windows;
+`{"enabled": false}` in `.local/alert-toast.json` turns it off.
 
 **Cloud:** there is no state between runs, so a problem is repeated on every scheduled run until it
 is fixed. When the PC is deliberately off for days, set the repository variable

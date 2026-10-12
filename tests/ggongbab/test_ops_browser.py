@@ -109,41 +109,61 @@ def fake_targets(*urls):
     return lambda port: [{"id": f"t{i}", "url": url} for i, url in enumerate(urls)]
 
 
-def test_tabs_are_opened_only_for_a_missing_role_on_loopback():
-    opened = []
+class TabCdp:
+    """A browser-level CDP endpoint that records the targets it is asked to create."""
+    def __init__(self, reply=None):
+        self.created, self.reply = [], reply
 
-    class Response:
-        def __enter__(self):
-            return self
-        def __exit__(self, *a):
-            return None
-        def read(self):
-            return b"{}"
+    def __call__(self, port):
+        self.port = port
+        return self
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        return None
+
+    def call(self, method, params=None, **_):
+        assert method == "Target.createTarget", method
+        self.created.append(params)
+        return {"targetId": "new"} if self.reply is None else self.reply
+
+
+def test_tabs_are_opened_only_for_a_missing_role_in_the_background():
+    """A new tab is a background target: DevTools `PUT /json/new` restored and focused a
+    minimized window (measured 2026-10-12, Chrome 154), `Target.createTarget` with
+    `background: true` did not."""
+    cdp = TabCdp()
     calls = []
     def targets(port):
         calls.append(port)
         return [{"id": "a", "url": PORTAL_URL}] if len(calls) == 1 else [
             {"id": "a", "url": PORTAL_URL}, {"id": "b", "url": DOORAY_URL}]
-    counts = ob.ensure_tabs(9224, "kaist.gov-dooray.com", ob.DOORAY_FALLBACK, targets=targets,
-                            opener=lambda r, timeout: opened.append((r.get_method(), r.full_url)) or Response())
+    counts = ob.ensure_tabs(9224, "kaist.gov-dooray.com", ob.DOORAY_FALLBACK, targets=targets, cdp=cdp)
     assert counts == {"portal": 1, "dooray": 1, "sso": 0, "inbox": 1}
-    assert opened == [("PUT", "http://127.0.0.1:9224/json/new?" + ob.DOORAY_FALLBACK)]
+    assert cdp.port == 9224 and cdp.created == [{"url": ob.DOORAY_FALLBACK, "background": True}]
+    unused = TabCdp()
     assert ob.ensure_tabs(9224, "kaist.gov-dooray.com", ob.DOORAY_FALLBACK,
-                          targets=fake_targets(PORTAL_URL, DOORAY_URL), opener=Mock())["portal"] == 1
+                          targets=fake_targets(PORTAL_URL, DOORAY_URL), cdp=unused)["portal"] == 1
+    assert unused.created == []
     with pytest.raises(OpsError):
-        ob.open_tab(9224, "http://portal.kaist.ac.kr/")       # https only
+        ob.open_tab(9224, "http://portal.kaist.ac.kr/", cdp=TabCdp())       # https only
     with pytest.raises(OpsError):
-        ob.open_tab(9224, "https://x.invalid/?a=1")           # no query values
+        ob.open_tab(9224, "https://x.invalid/?a=1", cdp=TabCdp())           # no query values
+    with pytest.raises(OpsError, match="OPS_BROWSER_TAB_OPEN_FAILED"):
+        ob.open_tab(9224, ob.PORTAL_START, cdp=TabCdp(reply={}))            # no target created
+    source = (Path(__file__).resolve().parents[2] / "scripts/ggongbab/ops_browser.py").read_text(encoding="utf-8")
+    assert "/json/new" not in source.replace("`PUT /json/new`", "")
 
 
 def test_no_tab_is_opened_while_a_kaist_sso_login_page_is_open():
     """Before login the Portal tab sits on the KAIST SSO page; opening another Portal tab
     then would duplicate it."""
-    opener = Mock()
+    cdp = TabCdp()
     counts = ob.ensure_tabs(9224, "kaist.gov-dooray.com", ob.DOORAY_FALLBACK,
-                            targets=fake_targets(SSO_URL, DOORAY_LOGIN), opener=opener)
-    opener.assert_not_called()
+                            targets=fake_targets(SSO_URL, DOORAY_LOGIN), cdp=cdp)
+    assert cdp.created == []
     assert counts == {"portal": 0, "dooray": 1, "sso": 1, "inbox": 0}
 
 
@@ -270,7 +290,45 @@ def test_a_worker_start_of_the_unified_browser_opens_both_tabs(tmp_path, monkeyp
     assert seen["profile"] == host.profile and seen["port"] == 9224 and seen["roles"] == ("portal", "dooray")
     assert seen["dooray_url"] == "https://kaist.gov-dooray.com/mail/systems/inbox"   # no query value
     assert seen["mail_host"] == "kaist.gov-dooray.com"
+    assert seen["minimized"] is False              # an operator's start: a normal window for the login
     verify.assert_called_once_with(host.profile, 9224)
+
+
+def test_a_start_no_person_asked_for_opens_minimized_in_the_background(tmp_path, monkeypatch):
+    """A worker or watchdog start passes `minimized`; Chrome then gets STARTUPINFO
+    SW_SHOWMINNOACTIVE, which opened it minimized without taking the focus (measured 2026-10-12)."""
+    write_contract(tmp_path)
+    host, run, start, verify = unified_host(tmp_path, inv(False, [LEGACY_PORTAL, PERSONAL], []))
+    seen = {}
+    monkeypatch.setattr("ggongbab.windows_portal_host.start_dedicated",
+                        lambda profile, **kw: seen.update(kw, profile=profile))
+    host.ensure(minimized=True)
+    assert seen["minimized"] is True
+    from ggongbab.web import resident
+    popen = []
+    exe = tmp_path / "chrome.exe"
+    exe.write_text("", encoding="utf-8")
+    monkeypatch.setattr(resident, "WINDOWS_CHROME_PATHS", (str(exe),))
+    monkeypatch.setattr(resident.subprocess, "Popen", lambda args, **kw: popen.append(kw) or SimpleNamespace(poll=lambda: None))
+    monkeypatch.setattr(resident, "is_running", lambda *_a, **_k: {"Browser": "Chrome/1"})
+    monkeypatch.setattr(resident, "minimized_startup", lambda: "SW_SHOWMINNOACTIVE")
+    resident.start_chrome(host.profile, port=9224, log=lambda *_: None, minimized=True)
+    resident.start_chrome(host.profile, port=9224, log=lambda *_: None)
+    assert popen[0]["startupinfo"] == "SW_SHOWMINNOACTIVE" and "startupinfo" not in popen[1]
+    starts = []
+    ob.start_dedicated(host.profile, port=9224, roles=("portal",), dooray_url=ob.DOORAY_FALLBACK,
+                       mail_host="kaist.gov-dooray.com", start=lambda profile, **kw: starts.append(kw),
+                       settled=lambda port: [], ensure=lambda *a, **k: None, minimized=True)
+    assert starts[-1]["minimized"] is True
+
+
+def test_the_minimized_start_up_info_never_activates_the_window():
+    from ggongbab.web import resident
+    info = resident.minimized_startup()
+    if not hasattr(resident.subprocess, "STARTUPINFO"):
+        assert info is None                        # not Windows: a normal start
+    else:
+        assert info.wShowWindow == 7 and info.dwFlags & resident.subprocess.STARTF_USESHOWWINDOW
 
 
 def test_concurrent_starts_of_the_shared_browser_are_serialised(tmp_path):

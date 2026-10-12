@@ -157,19 +157,22 @@ class ResidentHost:
         except Exception:
             return "unverified", None
 
-    def _start(self, log):
+    def _start(self, log, minimized=False):
         if self.unified:
             # The Ops Chrome opens (or restores) both tabs, whichever worker starts it.
             start_dedicated(self.profile, port=self.port, roles=("portal", "dooray"),
                             dooray_url=dooray_start_url(self.contract_path),
-                            mail_host=dooray_host(self.contract_path), start=self.start, log=log)
+                            mail_host=dooray_host(self.contract_path), start=self.start, log=log,
+                            minimized=minimized)
         elif self.role == "portal":
             # Legacy Portal browser: unchanged behaviour (landing page + session restore).
-            self.start(self.profile, port=self.port, start_url=PORTAL_START, log=lambda _: None)
+            self.start(self.profile, port=self.port, start_url=PORTAL_START, log=lambda _: None,
+                       minimized=minimized)
         else:
             start_dedicated(self.profile, port=self.port, roles=("dooray",),
                             dooray_url=dooray_start_url(self.contract_path),
-                            mail_host=dooray_host(self.contract_path), start=self.start, log=log)
+                            mail_host=dooray_host(self.contract_path), start=self.start, log=log,
+                            minimized=minimized)
 
     def stop_verified(self, process):
         """Stop exactly one process that inspect() just verified, rechecked by STOP_SCRIPT."""
@@ -200,7 +203,9 @@ class ResidentHost:
                     raise
                 self.sleep(OWNER_RETRY_SECONDS)
 
-    def ensure(self, *, recover_stale=False, log=lambda _: None):
+    def ensure(self, *, recover_stale=False, log=lambda _: None, minimized=False):
+        """`minimized`: a start that no person asked for (worker, watchdog) opens minimized and
+        in the background; an operator's start stays a normal window for a manual login."""
         lock = start_lock(self.root / ".local" / START_LOCK, sleep=self.sleep) if self.unified else _nothing()
         with lock:
             state, process = self._inspect_settled()
@@ -214,7 +219,7 @@ class ResidentHost:
                 # Existing helper retains profile/session restore; no credentials, no cleanup.
                 log("PORTAL_BROWSER_ABSENT")
                 try:
-                    self._start(log)
+                    self._start(log, minimized)
                 except Exception:
                     raise OpsError(self.owner_code) from None
                 log("PORTAL_BROWSER_STARTED")

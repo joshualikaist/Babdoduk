@@ -37,6 +37,17 @@ def test_expired_logins_and_contract_changes_are_critical_with_an_operator_actio
     assert (radar.severity, radar.reason) == ("critical", "CONTRACT_CHANGED")
 
 
+@pytest.mark.parametrize("code", ["PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS", "PORTAL_SESSION_HANDOFF_FAILED"])
+def test_a_portal_tab_without_a_usable_login_asks_for_a_login(code):
+    """After the PC slept the Portal tab sat on the KAIST SSO page (2026-10-12): the alert asks
+    for a login, not for a worker restart that cannot work without one."""
+    portal = alerts.portal_alert({"last_success": NOW - 63564, "manual_reason": code}, running=False,
+                                 enabled=True, now=NOW)
+    assert (portal.severity, portal.reason, portal.action) == ("critical", "AUTH_EXPIRED", "login")
+    from ggongbab.ops_policy import LOGIN
+    assert set(alerts.PORTAL_HUMAN) & LOGIN == LOGIN    # every login latch is reported as a login
+
+
 def test_a_disabled_unread_radar_is_critical():
     a = alerts.radar_alert({"last_success": NOW - 30, "reason": "DOORAY_UNREAD_INVARIANT_BROKEN"}, running=True,
                            enabled=True, unread_disabled=True, now=NOW)

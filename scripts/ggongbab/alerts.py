@@ -32,7 +32,7 @@ ACTIONS = {
     "none": "no action",
     "wait": "transient; the collector retries on its own",
     "restart_worker": "run start_ggongbab_workers.cmd after checking the status",
-    "login": "complete SSO/MFA in the dedicated browser window, then start the worker",
+    "login": "complete SSO/MFA in the Ops Chrome; the collector resumes on its own once the login page closes",
     "review_contract": "the list/UI contract changed; re-run calibration before resuming",
     "open_browser": "open the dedicated browser for this collector (keep it minimized)",
     "check_dispatch": "check the dispatch token and GitHub Actions; the schedule still runs",
@@ -93,8 +93,11 @@ def staleness(component: str, age: Optional[int]) -> tuple[str, str]:
     return "healthy", "OK"
 
 
+# The login latches (ops_policy.LOGIN) all mean the browser holds no usable Portal login - for
+# example the Portal tab sits on the KAIST SSO page after the PC slept - so they ask for a login.
 PORTAL_HUMAN = {"PORTAL_LIST_AUTH_REQUIRED": "AUTH_EXPIRED", "PORTAL_LIST_REDIRECT_REQUIRES_MANUAL_REVIEW": "AUTH_EXPIRED",
                 "PORTAL_SESSION_COOKIE_MISSING_OR_AMBIGUOUS": "AUTH_EXPIRED", "PORTAL_SESSION_COOKIE_UNUSABLE": "AUTH_EXPIRED",
+                "PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS": "AUTH_EXPIRED", "PORTAL_SESSION_HANDOFF_FAILED": "AUTH_EXPIRED",
                 "PORTAL_UI_CHANGED": "CONTRACT_CHANGED", "OPS_RETRY_EXHAUSTED": "RETRY_EXHAUSTED"}
 
 

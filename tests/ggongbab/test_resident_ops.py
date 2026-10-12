@@ -154,6 +154,108 @@ def test_terminal_latch_survives_logon_and_only_explicit_start_resumes(files, co
         dog.close()
 
 
+PORTAL_PAGE = "https://portal.kaist.ac.kr/main"
+SSO_PAGE = "https://sso.kaist.ac.kr/auth/kaist/user/login/view"
+
+
+def latched_dog(files, clock, code):
+    dog, launch = watchdog(files, clock)
+    dog.tick()
+    dog.child.poll.return_value = 10
+    clock.value += 1
+    record(files, code, clock)
+    dog.tick()
+    assert dog.state["latched"] == code
+    pages = {"urls": [PORTAL_PAGE]}
+    dog.targets = lambda port: [{"id": f"t{i}", "url": url} for i, url in enumerate(pages["urls"])]
+    return dog, launch, pages
+
+
+def ticks(dog, clock, n=1):
+    for _ in range(n):
+        clock.value += 15
+        dog.tick()
+
+
+def test_a_login_latch_resumes_after_a_person_logged_in_again(files):
+    """After the PC slept the Portal tab sat on the KAIST SSO page and the worker stopped with
+    PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS. The watchdog never logs in: it waits until a person has
+    an SSO page open and closed again in the dedicated browser, then acknowledges the latch the
+    same way an operator's start does."""
+    clock = Clock()
+    dog, launch, pages = latched_dog(files, clock, "PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS")
+    try:
+        launches = launch.call_count
+        ticks(dog, clock, 3)                                 # a Portal page alone: no login seen
+        assert dog.state["latched"] and launch.call_count == launches
+        pages["urls"] = [SSO_PAGE]                           # a person is logging in
+        ticks(dog, clock)
+        assert dog.state["latched"] and launch.call_count == launches
+        pages["urls"] = [PORTAL_PAGE]                        # the login finished
+        ticks(dog, clock)
+        assert files.control_state() == {"enabled": True, "resume": clock()}
+        assert "OPS_AUTO_RESUMED" in (files.local / "ops-watchdog.log").read_text(encoding="utf-8")
+        ticks(dog, clock)
+        assert not dog.state["latched"] and launch.call_count == launches + 1
+    finally:
+        dog.close()
+
+
+def test_every_automatic_resume_needs_a_new_login(files):
+    """A session that is still broken cannot resume itself in a loop."""
+    clock = Clock()
+    code = "PORTAL_LIST_AUTH_REQUIRED"
+    dog, launch, pages = latched_dog(files, clock, code)
+    try:
+        pages["urls"] = [SSO_PAGE]
+        ticks(dog, clock)
+        pages["urls"] = [PORTAL_PAGE]
+        ticks(dog, clock, 2)                                 # resumed and relaunched
+        launches = launch.call_count
+        dog.child.poll.return_value = 10                     # the same login problem again
+        clock.value += 1
+        record(files, code, clock)
+        ticks(dog, clock)
+        assert dog.state["latched"] == code
+        ticks(dog, clock, 5)                                 # the Portal page alone is not a new login
+        assert dog.state["latched"] == code and launch.call_count == launches
+    finally:
+        dog.close()
+
+
+@pytest.mark.parametrize("code", ["PORTAL_UI_CHANGED", "PORTAL_RESIDENT_OWNER_UNVERIFIED",
+                                  "PORTAL_LIST_STATE_UNAVAILABLE"])
+def test_only_login_latches_resume_on_their_own(files, code):
+    clock = Clock()
+    dog, launch, pages = latched_dog(files, clock, code)
+    try:
+        launches = launch.call_count
+        pages["urls"] = [SSO_PAGE]
+        ticks(dog, clock)
+        pages["urls"] = [PORTAL_PAGE]
+        ticks(dog, clock, 3)
+        assert dog.state["latched"] == code and launch.call_count == launches
+    finally:
+        dog.close()
+
+
+def test_an_unverified_browser_or_two_portal_pages_never_resume(files):
+    clock = Clock()
+    dog, launch, pages = latched_dog(files, clock, "PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS")
+    try:
+        launches = launch.call_count
+        pages["urls"] = [SSO_PAGE]
+        ticks(dog, clock)
+        pages["urls"] = [PORTAL_PAGE, PORTAL_PAGE]           # ambiguous: two Portal pages
+        ticks(dog, clock, 2)
+        dog.host.inspect.return_value = ("unverified", None)
+        pages["urls"] = [PORTAL_PAGE]
+        ticks(dog, clock, 2)
+        assert dog.state["latched"] and launch.call_count == launches
+    finally:
+        dog.close()
+
+
 def test_retry_after_is_kept_across_process_restart(files):
     clock = Clock()
     dog, launch = watchdog(files, clock)

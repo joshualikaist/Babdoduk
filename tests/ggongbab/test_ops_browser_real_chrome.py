@@ -10,7 +10,7 @@ started is closed. It proves on a real browser what the unified design relies on
   * two CDP clients (two threads, two Playwright drivers) are attached at the same time;
   * neither client closes Chrome, closes or navigates the other's tab, or opens a window;
   * detaching leaves Chrome running with every tab where it was;
-  * `PUT /json/new` adds a tab to the existing window, not a new window;
+  * a new tab (`Target.createTarget`, background) joins the existing window, not a new window;
   * the graceful close is bound to the verified browser PID.
 """
 from __future__ import annotations

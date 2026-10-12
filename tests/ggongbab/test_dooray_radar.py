@@ -163,9 +163,38 @@ def test_transient_list_failures_back_off_but_a_contract_change_fails_closed(tmp
     assert files.runtime_state()["reason"] == (radar.CONTRACT if latched else radar.TRANSPORT)
 
 
-def test_an_expired_login_stops_for_a_human(tmp_path):
-    code, files, _, beats, _ = run(tmp_path, AuthRequired("expired"))
-    assert code == 10 and beats[-1][0] == "auth_required" and files.unread_allowed()
+def test_an_expired_login_is_reported_and_never_ends_the_radar(tmp_path):
+    code, files, _, beats, logs = run(tmp_path, AuthRequired("expired"))
+    assert code == 0 and beats[-1][0] == "auth_required" and files.unread_allowed()
+    assert files.runtime_state()["reason"] == radar.AUTH and logs[-1] == radar.AUTH
+
+
+def test_an_expired_login_waits_for_a_person_and_resumes_by_itself(tmp_path, monkeypatch):
+    """Nothing restarts an exited Radar (its task runs at logon), so an expired Dooray login is
+    retried with backoff, at most AUTH_RETRY_MAX apart, and the Radar resumes on the first scan
+    after a person logs in again in the Ops Chrome."""
+    files = radar.RadarFiles(tmp_path)
+    files.set_enabled(True, T0)
+    attempts, beats, waits = [], [], []
+
+    @contextmanager
+    def session_factory():
+        yield SimpleNamespace(context=Context(), page=None)
+
+    def list_mails(session, **_):
+        attempts.append(1)
+        if len(attempts) <= 4:
+            raise AuthRequired("expired")
+        return []
+
+    monkeypatch.setattr(radar, "_wait", lambda _files, seconds, _sleep, _dry: waits.append(seconds) or True)
+    code = radar.run_radar(files, session_factory=session_factory, writer=Writer(), list_mails=list_mails,
+                           mail_host=HOST, heartbeat=lambda *a: beats.append(a[0]), max_cycles=5,
+                           clock=lambda: T0, sleep=lambda _: None)
+    assert code == 0 and len(attempts) == 5
+    assert waits == [180, 360, radar.AUTH_RETRY_MAX, radar.AUTH_RETRY_MAX]
+    assert beats == ["auth_required"] * 4 + ["healthy"]
+    assert files.runtime_state()["reason"] == radar.RUNNING and files.unread_allowed()
 
 
 def test_a_closed_browser_is_reported_and_never_started(tmp_path):
