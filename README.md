@@ -55,7 +55,7 @@
 ### 데이터는 스냅숏입니다
 
 - `main` 이 내보내는 데이터는 **생성 시점의 정적 스냅숏**입니다. 화면은 “실시간”이라고 하지 않고, 각 데이터의 날짜나
-  **마지막 발행** 시각을 함께 보여 줍니다. 예약 실행은 GitHub 사정으로 늦거나 건너뛸 수 있습니다.
+  **마지막 변경** 시각을 함께 보여 줍니다. 예약 실행은 GitHub 사정으로 늦거나 건너뛸 수 있습니다.
 - 공개 건수처럼 수집·승인·만료에 따라 바뀌는 값은 이 README 에 적지 않습니다. 현재 상태는 생성 파일
   (`data/…/latest.json` 의 `generatedAt`·`date`)이나 공개 사이트에서 확인합니다.
 - 생성이나 검증이 실패하면 이전 파일이 남습니다. 그래서 학식은 데이터의 날짜가 고른 날짜와 다르면 그 날의 메뉴로 보여 주지 않습니다.
@@ -100,7 +100,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`event.html`** | 밥도둑 소식 — **지금**(작성된 공지와 진행 중·예정 활동, 없으면 “예정된 활동 없음”)과 **지난 활동**(날짜·제목·짧은 상태·당시 게시물). Instagram 링크는 목록 아래 한 줄로 따로 있다. 날짜 구간과 확인 상태는 따로 계산하고, 날짜가 지났다고 진행됐다고 하지 않는다. 당시 안내 전문은 “자세히” 안에 (`css/event.css`, `docs/EVENT_DETAIL_FIELDS.md`) |
 | **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리. **원문 출처가 있는 글만** 싣고(‘밥도둑 데스크’ 대체 글 없음), 갈래가 비면 조용히 “새 이야기가 없어요”라고 적는다. 대표 글은 근거가 있는 요즘 유행 글이면 “지금 뜨는 먹거리”, 아니면 “오늘의 추천 글”로 표시하고, 자기 이미지가 없으면 글만 있는 히어로. YouTube 는 운영 PC 의 로컬 수집(`scripts/magazine_local_discovery.py`, 수집만 하고 발행하지 않음)으로 들어온다. 아래 `#what` 에 **메뉴 고르기**(“오늘 뭐 먹지?” 슬롯, 카탈로그 제안)와 날짜가 붙은 오늘 학식 요약. 수집·선정 방식은 `docs/MAGAZINE_DISCOVERY.md` |
 | **`choose.html`** | 호환용 이동 페이지 — `mukbang.html#what` 으로 바로 이동(`noindex`). 별도 추천기 제품이 아님 |
-| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 발행 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
+| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 변경 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
@@ -109,7 +109,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
 홈은 첫 방문 환영 팝업을 띄우지 않습니다(핵심 과업을 가리지 않기 위해). 기존 `babdoduk-welcome-snooze-until` 값은 남아 있어도 무해합니다.
-홈 요약은 `js/kaist-menu.js`의 날짜 판정과 `js/ggongbab-select.js`의 공개 조건을 재사용하며, 꽁밥은 검증된 정적 스냅숏의 마지막 발행 시각을 함께 표시합니다. 홈과 `ggongbab.html` 은 같은 정적 스냅숏(`data/ggongbab/latest.json`)을 읽습니다.
+홈 요약은 `js/kaist-menu.js`의 날짜 판정과 `js/ggongbab-select.js`의 공개 조건을 재사용하며, 꽁밥은 검증된 정적 스냅숏의 마지막 변경 시각을 함께 표시합니다. 홈과 `ggongbab.html` 은 같은 정적 스냅숏(`data/ggongbab/latest.json`)을 읽습니다.
 
 ### `ggongbab.html` 와 `lab-ggongbab.html`
 

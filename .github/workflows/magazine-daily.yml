@@ -29,7 +29,12 @@ permissions:
 
 jobs:
   refresh:
+    # Main only, like the free-food job: generators run the code of the ref they start from and
+    # the publisher mirrors that output into lab and main, so a dispatch from any other branch or
+    # tag must not run. A hung source cannot hold the shared concurrency group for hours.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
@@ -37,10 +42,6 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      # validate_content.py checks data/ggongbab/news.json through ggongbab.food_news, which
-      # imports ggongbab.models (pydantic). Nothing else in this job needs a package.
-      - name: Install dependencies
-        run: python -m pip install "pydantic>=2.6"
       - name: Choose jobs
         id: pick
         env:
@@ -80,8 +81,21 @@ jobs:
             exit 0
           fi
           exit "$code"
+      # Only the families this run refreshed: another family's data cannot block this publish.
       - name: Validate generated JSON
-        run: python scripts/validate_content.py
+        run: |
+          families=()
+          if [ "${{ steps.pick.outputs.magazine }}" = "1" ]; then
+            families+=(magazine)
+          fi
+          if [ "${{ steps.pick.outputs.kaist }}" = "1" ]; then
+            families+=(kaist-menu)
+          fi
+          if [ "${#families[@]}" -eq 0 ]; then
+            echo "nothing to validate"
+            exit 0
+          fi
+          python scripts/validate_content.py --only "${families[@]}"
       - name: Publish generated data to lab and main
         env:
           GIT_TERMINAL_PROMPT: 0

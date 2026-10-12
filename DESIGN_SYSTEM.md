@@ -42,7 +42,7 @@ Container roles: reading around 720 px, interactive tool around 960 px, broad ed
 Less text. Babdoduk speaks through titles, dates, images, short metadata and actions, not paragraphs of UI explanation.
 
 - If the title already explains the section, there is no description line. If the UI already explains the action, there is no sentence for it.
-- Keep a sentence only when the reader needs it to understand, decide, trust or act: freshness (마지막 발행), provenance (소개 문구는 밥도둑 메모), safety (판매 여부·가격·알레르기는 가게에서 확인), storage (이 브라우저에만 저장) and honest states (진행 여부 미확인).
+- Keep a sentence only when the reader needs it to understand, decide, trust or act: freshness (마지막 변경), provenance (소개 문구는 밥도둑 메모), safety (판매 여부·가격·알레르기는 가게에서 확인), storage (이 브라우저에만 저장) and honest states (진행 여부 미확인).
 - Budgets: section title one line; metadata one short line; call to action two to five words; empty state one short sentence; status a short noun phrase. Long-form writing belongs in magazine content, not in navigation or utility UI.
 - Prefer labels (공지, 예정, 지난 활동, 당시 게시물) over assistant-like sentences (알려 드려요, 모아 두었어요, 확인해 보세요, 골라 드려요).
 - Fuller context may sit behind a disclosure (자세히). Accessible names, screen-reader text, heading structure, focus and truth/status semantics are never cut to save words.

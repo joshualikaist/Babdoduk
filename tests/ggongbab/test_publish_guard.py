@@ -73,9 +73,9 @@ def test_new_missing_or_unreadable_files_always_count():
     assert publish_generated.meaningful_changes(fp, lambda p: _dump(FEED), lambda p: "{not json") == fp
 
 
-def test_other_generated_paths_keep_committing_on_any_change():
-    """Only the ggongbab feed and its archive are guarded; magazine and menu publishing are unchanged."""
-    for path in ("data/magazine/latest.json", "data/kaist-menu/latest.json"):
+def test_magazine_files_keep_committing_on_any_change():
+    """Only the ggongbab feed, its archive and news, and the KAIST menu stamps are guarded."""
+    for path in ("data/magazine/latest.json", "data/magazine/2026-10-12.json", "research/magazine/health.json"):
         assert _meaningful(FEED, _feed(generatedAt="later"), path) == [path]
     assert set(publish_generated.VOLATILE_KEYS) == {FEED_PATH, ARCHIVE_PATH, "data/ggongbab/news.json"}
     assert publish_generated.VOLATILE_KEYS[FEED_PATH] == {"generatedAt"}
@@ -239,3 +239,31 @@ def test_archive_publishes_once_then_generated_at_only_runs_stay_quiet(origin, t
     last = _git(origin, "rev-parse", branch)
     assert last != first
     assert sorted(_git(origin, "diff", "--name-only", first, last).splitlines()) == sorted([ARCHIVE_PATH, FEED_PATH])
+
+
+DAY = {"date": "2026-10-12", "dateLabel": "10.12", "fetchedAt": "2026-10-12T06:01:00+09:00", "status": "AVAILABLE",
+       "restaurants": [{"id": "fclt", "lunch": {"items": ["kimchi stew"], "price": "5,000"}}]}
+WEEK = {"weekStart": "2026-10-12", "weekEnd": "2026-10-18", "generatedAt": "2026-10-12T06:01:00+09:00",
+        "days": [{"date": "2026-10-12", "available": True, "restaurantCount": 1, "status": "AVAILABLE",
+                  "fetchedAt": "2026-10-12T06:01:00+09:00"}]}
+
+
+def test_kaist_menu_files_that_only_got_new_stamps_are_not_a_change():
+    restamped = {**DAY, "fetchedAt": "2026-10-12T10:31:00+09:00"}
+    for path in ("data/kaist-menu/2026-10-12.json", "data/kaist-menu/latest.json"):
+        assert _meaningful(DAY, restamped, path) == []
+    week = json.loads(json.dumps(WEEK))
+    week["generatedAt"] = "2026-10-12T10:31:00+09:00"
+    week["days"][0]["fetchedAt"] = "2026-10-12T10:31:00+09:00"       # nested stamp, same week
+    assert _meaningful(WEEK, week, "data/kaist-menu/week.json") == []
+
+
+def test_a_real_menu_or_week_change_still_commits():
+    changed = json.loads(json.dumps(DAY))
+    changed["restaurants"][0]["lunch"]["items"] = ["bibimbap"]
+    changed["fetchedAt"] = "2026-10-12T10:31:00+09:00"
+    assert _meaningful(DAY, changed, "data/kaist-menu/2026-10-12.json") == ["data/kaist-menu/2026-10-12.json"]
+    week = json.loads(json.dumps(WEEK))
+    week["days"][0]["available"] = False
+    assert _meaningful(WEEK, week, "data/kaist-menu/week.json") == ["data/kaist-menu/week.json"]
+    assert _meaningful(DAY, DAY, "data/kaist-menu/.gitkeep") == ["data/kaist-menu/.gitkeep"]  # not JSON: counts

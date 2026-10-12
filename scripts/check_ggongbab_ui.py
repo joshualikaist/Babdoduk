@@ -425,6 +425,39 @@ def midnight_dated_menu(browser, base, report):
     scenario(after, closed, True, False, ("/2026-09-30.json",))
 
 
+def new_week_before_its_menu(browser, base, report):
+    """Monday before the collector publishes the new week: latest.json is Sunday's and week.json
+    still last week's. The bot publishes the dated files with the index, so no dated file is
+    requested (each would be a 404 in the console): today shows the saved-menu notice, another day
+    of the new week shows no menu yet, and the home page says today's menu is not up yet."""
+    sunday = menu_day("2026-10-04", 5, "일요일")
+    last_week = week_index([(f"2026-{day}", True, 5, "AVAILABLE") for day in
+                            ("09-28", "09-29", "09-30", "10-01", "10-02", "10-03", "10-04")])
+    monday = datetime(2026, 10, 5, 8, 0, tzinfo=timezone(timedelta(hours=9)))
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    neutralize_public_config(context)
+    try:
+        context.clock.set_fixed_time(monday)
+        page = context.new_page()
+        requests = []
+        page.on("request", lambda request: requests.append(urlparse(request.url).path))
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"events": []}))
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=sunday))
+        page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json=last_week))
+        page.route("**/data/kaist-menu/2026-*.json", lambda route: route.fulfill(status=404, body=""))
+        page.goto(base + "/ggongbab.html#menu")
+        page.locator("[data-km-stale]").wait_for()
+        page.locator('[data-km-date="2026-10-06"]').click()
+        page.locator('[data-km-day-state="none"]').wait_for()
+        page.goto(base + "/index.html")
+        page.locator("#homeMenuStatus[data-state='stale']").wait_for()
+        dated = [path for path in requests if path.startswith("/data/kaist-menu/2026-")]
+        assert dated == [], dated
+        report["checks"] += 4
+    finally:
+        context.close()
+
+
 def past_listings(browser, base, report):
     """Past listings on the public page: a separate, quiet record with no sign-up actions,
     loaded on its own so that its failure never touches the live feed. Synthetic data only."""
@@ -701,9 +734,10 @@ def run_checks(preview=False):
             assert page.locator('[data-group="when"]').evaluate_all(
                 "els => els.map(el => el.dataset.value)") == ["today", "tomorrow", "week", "all"]
             report["checks"] += 3
-            # The list is labelled only by its publication time: no lifecycle paragraph, no freshness claim.
+            # The list is labelled only by when the feed last changed: no lifecycle paragraph, no
+            # freshness claim (an unchanged refresh is not committed, so its stamp is the last change).
             note = page.locator(".gg-feed-note").inner_text()
-            assert note.startswith("마지막 발행") and "자동으로" not in note, note
+            assert note.startswith("마지막 변경") and "자동으로" not in note, note
             assert not any(word in note for word in ("실시간", "최신", "업데이트")), note
             report["checks"] += 2
             assert_fixture_clock(page)
@@ -868,6 +902,7 @@ def run_checks(preview=False):
         past_listings(browser, base, report)
         weekly_cafeteria(browser, base, report)
         midnight_dated_menu(browser, base, report)
+        new_week_before_its_menu(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
         published = datetime.now(timezone(timedelta(hours=9))).replace(microsecond=0).isoformat()
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"generatedAt": published, "events": events}))

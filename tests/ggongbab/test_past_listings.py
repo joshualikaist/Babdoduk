@@ -211,6 +211,14 @@ def test_the_live_feed_still_refuses_expired_events(settings):
     assert validate_ggongbab_payload(live, now=NOW) == []
 
 
+def test_a_committed_live_feed_is_judged_at_its_own_generation_time(settings):
+    """Without an explicit `now` the validator uses the file's generatedAt, as the archive does:
+    a committed snapshot never starts failing later and blocking another family's publish."""
+    live = build_payload([row("x", ended_hours_ago=-5)], settings, NOW - timedelta(hours=12), food_only=True)
+    assert validate_ggongbab_payload(live) == []          # the wall clock is weeks past this file
+    assert any("expired" in err for err in validate_ggongbab_payload(live, now=NOW + timedelta(hours=12)))
+
+
 # ---------------------------------------------------------------------------
 # The export writes both files, from one clock, with the live feed first
 # ---------------------------------------------------------------------------

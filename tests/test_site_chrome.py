@@ -59,6 +59,21 @@ def test_the_contact_label_is_a_chrome_string_in_both_languages():
         assert "문의" not in english, page  # the English table never shows the Korean label
 
 
+def test_every_pull_request_runs_the_tests_and_the_content_validator():
+    workflow = (ROOT / ".github/workflows/tests.yml").read_text(encoding="utf-8")
+    assert "on:\n  pull_request:\n  push:" in workflow
+    for step in ("python -m pytest tests -q", "python scripts/validate_content.py",
+                 "python scripts/sync_site_chrome.py --check"):
+        assert f"run: {step}\n" in workflow, step
+    # Content-bot data pushes do not run it; a code push to any working branch does.
+    assert "paths-ignore:\n      - 'data/**'\n      - 'research/**'" in workflow
+    assert "permissions:\n  contents: read" in workflow and "secrets." not in workflow and "schedule:" not in workflow
+    # Only the screenshot comparison is left to ui-guardian, by name; nothing else is skipped.
+    assert "BABDODUK_CHROME_VISUAL: skip" in workflow and "--deselect" not in workflow and " -k " not in workflow
+    for forbidden in ("--update-chrome-baselines", "--adopt-chrome-baselines", "--approval", "git push", "vercel"):
+        assert forbidden not in workflow, forbidden
+
+
 def test_ci_runs_the_structural_and_the_visual_guardian_and_never_rebaselines():
     workflow = (ROOT / ".github/workflows/ui-guardian.yml").read_text(encoding="utf-8")
     assert not (ROOT / ".github/workflows/site-chrome.yml").exists()

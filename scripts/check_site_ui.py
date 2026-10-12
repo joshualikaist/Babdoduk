@@ -12,6 +12,7 @@ import re
 import subprocess
 from urllib.parse import unquote, urlparse
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -307,6 +308,58 @@ PNG_1PX = bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000
                         "0000000d49444154789c6360f8cfc0f01f0005000101d9b3c6600000000049454e44ae426082")
 
 
+def magazine_edition_time(page):
+    """The masthead says when an edition was actually built (its generatedAt, KST), never a fixed
+    schedule: the scheduled run starts hours late. Until today's edition lands, yesterday's newest
+    edition is the latest one, not a past one; an older edition is a past one. Fixed page clock
+    in its own context, so it cannot leak into the other checks. Text as set, before the
+    masthead's CSS capitals."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"mukbang.html edition time: {detail}"
+        count += 1
+
+    lanes = ("tips", "trend", "health", "habit")
+    editions = {day: {"date": day, "generatedAt": f"{day}T15:36:00+09:00", "schedule": "Daily 10:00 KST",
+                      "featured": None, "lanes": {lane: {"lead": lane, "items": []} for lane in lanes}}
+                for day in ("2026-01-01", "2026-01-02")}
+    context = new_context(page.context.browser)
+    try:
+        context.clock.set_fixed_time("2026-01-03T09:00:00+09:00")      # the morning before 01-03 runs
+        view = context.new_page()
+        view.route("**/data/magazine/index.json", lambda route: route.fulfill(
+            json={"latest": "2026-01-02", "dates": ["2026-01-01", "2026-01-02"]}))
+        view.route("**/data/magazine/2026-01-0*.json", lambda route: route.fulfill(
+            json=editions[urlparse(route.request.url).path.rsplit("/", 1)[-1][:-len(".json")]]))
+        view.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
+        issue = view.locator(".mg-masthead-issue").text_content().strip()
+        check(issue == "2026.01.02 · 최신 호", ("yesterday's newest edition is the latest one", issue))
+        stamps = [view.locator(sel).text_content().strip() for sel in ("#mgSchedule", "#mgBoardWeek")]
+        check(stamps == ["15:36 발행", "2026.01.02 · 15:36 발행"], ("the edition's own build time", stamps))
+        claims = view.locator(".mg-method, #mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()
+        check(not any("10:00" in text for text in claims), ("no fixed schedule is claimed", claims))
+        view.locator("#langToggle").click()
+        # The magazine redraws its masthead in a task after the switch (mukbang.html's setTimeout), so
+        # wait for the redraw, up to 5 s, before reading; a masthead that never changes still fails below.
+        try:
+            view.wait_for_function("() => document.documentElement.lang === 'en' && !/[가-힣]/.test("
+                                   "document.querySelector('.mg-masthead-issue').textContent)", timeout=5000)
+        except PlaywrightTimeoutError:
+            pass
+        issue_en = view.locator(".mg-masthead-issue").text_content().strip()
+        check(issue_en == "2026.01.02 · Latest edition" and
+              view.locator("#mgSchedule").text_content().strip() == "Published 15:36 KST", ("English", issue_en))
+        view.locator("#langToggle").click()
+        view.goto("https://site-ui.invalid/mukbang.html?d=2026-01-01", wait_until="networkidle")
+        past = view.locator(".mg-masthead-issue").text_content().strip()
+        check(past == "2026.01.01 · 지난 호", ("an older edition is a past one", past))
+    finally:
+        context.close()
+    return count
+
+
 def release_contracts(page):
     """Product roles that changed: choose.html only redirects, food.html is lab-only (noindex,
     nofollow, reachable from lab.html, linked from no public page in either language), and the
@@ -507,14 +560,14 @@ def home_summary(page):
     check(free.get_attribute("data-state") == "ready" and answer.startswith("오늘 1개"),
           ("only public rows are counted", answer))
     meta = page.locator("#homeCalPublished").inner_text()
-    check(meta.startswith("마지막 발행")
+    check(meta.startswith("마지막 변경")
           and not any(word in meta for word in ("최신", "최근", "실시간")),
-          ("snapshot is labelled by its last publication, not as fresher elsewhere", meta))
+          ("snapshot is labelled by its last change, not as fresher elsewhere", meta))
     page.locator("#langToggle").click()
     meta_en = page.locator("#homeCalPublished").inner_text()
-    check(meta_en.startswith("Last published")
+    check(meta_en.startswith("Last changed")
           and not any(word in meta_en.lower() for word in ("latest", "live", "real-time", "realtime")),
-          ("English publication label", meta_en))
+          ("English last-change label", meta_en))
     check(re.fullmatch(r"[A-Z][a-z]{2} \d{1,2} \([A-Z][a-z]{2}\)", page.locator("#homeCalToday").inner_text().strip()) is not None,
           ("English calendar date is month, day and weekday", page.locator("#homeCalToday").inner_text()))
     en_colors = page.evaluate("""() => {
@@ -1253,6 +1306,7 @@ def run_checks(screenshots=False):
                 report["checks"] += result["checks"]
         report["checks"] += magazine_tools(page)
         report["checks"] += magazine_sparse(page)
+        report["checks"] += magazine_edition_time(page)
         report["checks"] += release_contracts(page)
         report["checks"] += home_summary(page)
         report["checks"] += home_hero_shelf(page)
@@ -1270,9 +1324,12 @@ def run_checks(screenshots=False):
         report["checks"] += 2
         assert not api_attempts, ("static pages attempted a live API request", api_attempts[:5])
         report["checks"] += 1
-        # Last: it fixes the page clock and data for deterministic screenshots.
+        # Last: it fixes the page clock and data for deterministic screenshots. Its baselines exist
+        # per OS and browser build (baseline_platform); the tests workflow, which has none, skips
+        # it explicitly, and ui-guardian compares them in the container they were rendered in.
         page.emulate_media(forced_colors="none")
-        report["checks"] += chrome_visual(page)
+        if os.environ.get("BABDODUK_CHROME_VISUAL") != "skip":
+            report["checks"] += chrome_visual(page)
         browser.close()
     return report
 

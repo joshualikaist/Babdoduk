@@ -19,7 +19,8 @@ One surface (`section#homeCal`), right below the hero copy:
   the sign-up link and a public original post. There is no modal.
 * **다가오는 꽁밥**: up to four upcoming events on dates after the selected day (or after today when a
   past day is selected). Hidden when there are none, never an empty heading.
-* **Footer**: `전체 일정 →` (the hub, `ggongbab.html#free`) and `마지막 발행 {time}`.
+* **Footer**: `전체 일정 →` (the hub, `ggongbab.html#free`) and `마지막 변경 {time}` (the feed's
+  `generatedAt`: an export that changes nothing is not committed, so it is the last change).
 
 On phones the order is copy, calendar, cafeteria line, collage. On wide screens the collage stays
 beside the copy on the paper band and the calendar splits into the day (left) and the month (right,
