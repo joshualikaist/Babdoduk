@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/magazine-health.schema.json",
+  "title": "Magazine run report: research/magazine/health.json",
+  "description": "Written by every magazine run (discovery.pipeline.finish, or record_offline for a rebuild), never deployed. Per-source adapter results, run counts, per-lane reasons, warnings. `summary.fabricated` is always 0: a story is never made up.",
+  "type": "object",
+  "required": ["summary"],
+  "additionalProperties": false,
+  "properties": {
+    "generatedAt": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T"},
+    "adapters": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "required": ["type", "adapter"],
+          "properties": {
+            "type": {"enum": ["rss", "youtube_channel", "youtube_search", "web_search", "instagram"]},
+            "adapter": {"type": "string"},
+            "status": {"enum": ["ACTIVE", "STALE", "DEGRADED", "DISABLED"]}
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": ["fabricated"],
+      "properties": {
+        "fabricated": {"const": 0},
+        "candidates": {"type": "integer", "minimum": 0},
+        "selected": {"type": "integer", "minimum": 0}
+      }
+    },
+    "lanes": {"type": "object"},
+    "pending": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  }
+}

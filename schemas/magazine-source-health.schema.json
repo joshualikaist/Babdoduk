@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/magazine-source-health.schema.json",
+  "title": "Per-source health: research/magazine/source-health.json",
+  "description": "Written by every magazine run (discovery.registry), never deployed. One entry per source id of scripts/discovery/sources.json; the status rules are in docs/MAGAZINE_DISCOVERY.md (Registry and source status).",
+  "type": "object",
+  "required": ["sources"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {"type": "integer"},
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {"enum": ["ACTIVE", "STALE", "DEGRADED", "DISABLED"]},
+            "lastAttemptAt": {"type": ["string", "null"]},
+            "lastSuccessAt": {"type": ["string", "null"]},
+            "lastFailureAt": {"type": ["string", "null"]},
+            "lastFailureCode": {"type": ["string", "null"]},
+            "failureCount": {"type": ["integer", "null"], "minimum": 0},
+            "lastItemCount": {"type": ["integer", "null"], "minimum": 0},
+            "newestItemAt": {"type": ["string", "null"]}
+          }
+        }
+      }
+    }
+  }
+}
