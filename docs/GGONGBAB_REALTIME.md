@@ -17,8 +17,9 @@ by this feature. Platform/dashboard headers were not inspected or changed.
 
 Load order: existing menu script, `js/ggongbab-public-config.js`,
 `js/ggongbab-public-feed.js`, existing renderer `js/ggongbab.js`.
-The committed config is intentionally empty, so the site works with JSON without
-configuration. To enable this on an operator-authorized lab site:
+An empty config keeps the site on JSON. Since 2026-10-13 the `lab` branch commits
+the owner-supplied public project URL and publishable key (owner-authorized Phase 2B
+acceptance); `main` never carries this file. To enable this on another lab site:
 
 1. In the Supabase dashboard obtain the project URL and **browser publishable
    key**, or the legacy **anon** key. Do not use any backend/privileged key.
@@ -29,7 +30,8 @@ configuration. To enable this on an operator-authorized lab site:
 3. A dashboard environment variable alone does **not** change a static file.
    There is no automatic build substitution. Review/commit the two public values
    separately if desired, or supply the file in an authorized artifact workflow.
-   This implementation commits neither project identifiers nor real keys.
+   The implementation commit carried neither; the lab config commit of 2026-10-13
+   carries the two public values and nothing else.
 4. Only an HTTPS origin (no credentials/path/query/fragment) and a publishable
    prefix or JWT whose role is `anon` pass the accidental-misconfiguration guard.
    This is not JWT signature verification; database grants/RLS are authoritative.
