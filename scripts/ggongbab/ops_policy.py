@@ -36,7 +36,15 @@ REASONS = SAFE_REASON_CODES | TRANSIENT | HUMAN | frozenset({
     "OPS_BROWSER_START_BUSY", "OPS_BROWSER_MODE_CHANGED", "OPS_WORKERS_STILL_RUNNING",
     "OPS_BROWSER_UNVERIFIED", "OPS_BROWSER_STALE", "OPS_BROWSER_CHANGED", "OPS_BROWSER_CLOSE_FAILED",
     "OPS_PROOF_JOB_TIMEOUT", "OPS_BROWSER_TAB_UNRESPONSIVE", "OPS_BROWSER_TAB_RESTORED",
-    "OPS_BROWSER_CDP_ERROR",
+    "OPS_BROWSER_CDP_ERROR", "OPS_AUTO_RESUMED",
+})
+# The latches a person clears by logging in again in the dedicated browser. The watchdog resumes
+# on its own once it sees that login finish (resident_ops.Watchdog.login_completed); the others
+# (contract, owner, state, budget) still need an operator's start after review.
+LOGIN = frozenset({
+    "PORTAL_LIST_AUTH_REQUIRED", "PORTAL_LIST_REDIRECT_REQUIRES_MANUAL_REVIEW",
+    "PORTAL_SESSION_COOKIE_MISSING_OR_AMBIGUOUS", "PORTAL_SESSION_COOKIE_UNUSABLE",
+    "PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS", "PORTAL_SESSION_HANDOFF_FAILED",
 })
 
 

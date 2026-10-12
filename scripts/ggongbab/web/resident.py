@@ -166,11 +166,25 @@ def chrome_executable() -> str:
                         hint="install Google Chrome, or run setup without --cdp")
 
 
+def minimized_startup():
+    """Windows start-up info that opens the first window minimized without activating it
+    (SW_SHOWMINNOACTIVE, which Chrome honours - measured 2026-10-12). None elsewhere."""
+    if not hasattr(subprocess, "STARTUPINFO"):
+        return None
+    info = subprocess.STARTUPINFO()
+    info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    info.wShowWindow = 7                                     # SW_SHOWMINNOACTIVE
+    return info
+
+
 def start_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, start_url: str = "",
-                 log=print, start_urls=()) -> subprocess.Popen:
+                 log=print, start_urls=(), minimized: bool = False) -> subprocess.Popen:
     """Launch a normal Chrome with the dedicated profile and a loopback debug port.
 
     Several start addresses open as tabs of one window (the Ops Chrome's Portal + Dooray).
+    `minimized` opens it minimized and in the background: for starts no person asked for, so a
+    worker or the watchdog never puts a window in front of the owner's work. An operator's
+    start stays a normal window, ready for a manual login.
     """
     profile_dir = Path(profile_dir).resolve()
     profile_dir.mkdir(parents=True, exist_ok=True)
@@ -190,7 +204,9 @@ def start_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, start_url: s
     args.extend(url for url in start_urls if url)
     log(f"Browser engine : Google Chrome (resident, debug port {port} on {DEBUG_HOST})")
     log(f"  executable   : {Path(executable).parent.name}/{Path(executable).name}")
-    process = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    startup = minimized_startup() if minimized else None
+    process = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                               **({"startupinfo": startup} if startup is not None else {}))
     deadline = time.time() + START_TIMEOUT_SECONDS
     while time.time() < deadline:
         if is_running(port):

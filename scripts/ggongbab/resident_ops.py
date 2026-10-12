@@ -11,7 +11,7 @@ import time
 
 from .heartbeat import HeartbeatWriter
 from .ops_browser import dooray_host, page_targets, read_mode, slot_for, tab_roles
-from .ops_policy import HUMAN, REASONS, WARNING_SECONDS, alert_state, reason, restart_action
+from .ops_policy import HUMAN, LOGIN, REASONS, WARNING_SECONDS, alert_state, reason, restart_action
 from .ops_storage import OpsError, SafeLog, atomic_json, lock_held, read_json
 from .portal_list_state import ListStateError, PortalListState, poller_lock
 from .portal_list_poller import run_poller
@@ -132,7 +132,8 @@ def run_worker(files, *, recover_stale=False, host=None, settings=None, now=time
                 def acquire(self):
                     from .web.exit_codes import AuthRequired
                     try:
-                        host.ensure(recover_stale=recover_stale, log=journal)
+                        # A worker start is never the owner's: the browser opens minimized.
+                        host.ensure(recover_stale=recover_stale, log=journal, minimized=True)
                     except OpsError as exc:
                         # A tab that cannot be restored blocks the attach exactly like the known
                         # CDP attach timeout: one verified-browser recovery, then manual.
@@ -172,9 +173,10 @@ RESUME_GAP_SECONDS = 120
 RESUME_GRACE_SECONDS = 600
 
 
-def emit_alerts(files, now, *, portal_running):
+def emit_alerts(files, now, *, portal_running, toast=None):
     """Combined operator alerts (Portal, Radar, dispatch, flash candidates) every watchdog tick,
-    so a crashed or stale Radar is reported even when its own process is gone."""
+    so a crashed or stale Radar is reported even when its own process is gone. `toast`: the
+    Windows toast of this PC (notify.local_toast), passed by the running watchdog only."""
     try:
         from .alerts import FileSink, evaluate
         from .dooray_radar import RadarFiles
@@ -185,7 +187,8 @@ def emit_alerts(files, now, *, portal_running):
         return    # alerting must never stop the watchdog
     try:
         from .notify import push_local
-        push_local(files.local, found, now=now)   # no-op until an operator configures a provider
+        # The external push is a no-op until an operator configures a provider.
+        push_local(files.local, found, now=now, toast=toast)
     except Exception:
         pass
 
@@ -200,8 +203,11 @@ def launch_worker(files, recover_stale):
 
 class Watchdog:
     """Persistent bounded restart budget. Only a held child handle may be terminated."""
-    def __init__(self, files, *, launch=launch_worker, host=None, now=time.time):
+    def __init__(self, files, *, launch=launch_worker, host=None, now=time.time, targets=page_targets, toast=None):
         self.files, self.launch, self.host, self.now = files, launch, host or PortalHost(files.root), now
+        self.targets, self.toast = targets, toast
+        # In memory only: whether a KAIST SSO page was seen open since the current login latch.
+        self.sso_for, self.sso_seen = "", False
         self.child = None
         self.state = read_json(files.watch, {"launches": 0, "recoveries": 0, "retry_at": 0,
                                             "latched": "", "resume": 0, "launched_at": 0})
@@ -219,6 +225,31 @@ class Watchdog:
 
     def save(self):
         atomic_json(self.files.watch, self.state)
+
+    def login_completed(self, browser_state):
+        """True once a person has logged in again in the dedicated browser - never automated.
+
+        Since the current login latch a KAIST SSO page was open, and now it has closed with
+        exactly one Portal page open. Read from the verified browser's loopback page list only
+        (scheme and host of each page, in memory); nothing is attached, typed, sent or stored.
+        Needing a new SSO page each time means a session that is still broken can never resume
+        itself in a loop: every resume follows a login someone actually did.
+        """
+        if self.sso_for != self.state["latched"]:
+            self.sso_for, self.sso_seen = self.state["latched"], False
+        if browser_state != "verified":
+            return False
+        try:
+            counts = tab_roles(self.targets(self.host.port), dooray_host(self.files.local / "dooray-ui.json"))
+        except Exception:
+            return False    # an unreadable page list never resumes anything
+        if counts["sso"]:
+            self.sso_seen = True
+            return False
+        if not self.sso_seen or counts["portal"] != 1:
+            return False
+        self.sso_seen = False
+        return True
 
     def tick(self):
         now = self.now()
@@ -255,7 +286,13 @@ class Watchdog:
         alert["worker_running"] = held
         alert["observed_at"] = now
         atomic_json(self.files.alert, alert)
-        emit_alerts(self.files, now, portal_running=held)
+        emit_alerts(self.files, now, portal_running=held, toast=self.toast)
+        if self.state["latched"] in LOGIN and self.login_completed(browser_state):
+            # The same acknowledgement an operator's start writes; the next tick clears the
+            # latch and launches the worker against the session the person just logged in to.
+            self.files.set_enabled(True, now)
+            self.log("OPS_AUTO_RESUMED")
+            return True
         if self.state["latched"]:
             return True
         if self.child is not None and self.child.poll() is None:
@@ -308,7 +345,8 @@ class Watchdog:
 
 def watch(files):
     with poller_lock(files.watch_lock):
-        watchdog = Watchdog(files)
+        from .notify import local_toast
+        watchdog = Watchdog(files, toast=local_toast(files.local))
         try:
             while watchdog.tick():
                 time.sleep(15)

@@ -133,20 +133,24 @@ def tab_roles(targets: list[dict], mail_host: str) -> dict[str, int]:
     return counts
 
 
-def open_tab(port: int, url: str, *, opener=urllib.request.urlopen) -> None:
-    """Open one tab in the existing window (DevTools `PUT /json/new`). Never a new window."""
+def open_tab(port: int, url: str, *, cdp=None) -> None:
+    """Open one background tab in the existing window. Never a new window, never in front."""
     if urlsplit(url).scheme != "https" or "?" in url or "#" in url:
         raise OpsError("OPS_CONFIGURATION_REQUIRED")
-    new_tab(port, url, opener=opener)
+    new_tab(port, url, cdp=cdp)
 
 
-def new_tab(port: int, url: str, *, opener=urllib.request.urlopen) -> None:
-    request = urllib.request.Request(f"http://127.0.0.1:{int(port)}/json/new?{url}", method="PUT")
+def new_tab(port: int, url: str, *, cdp=None) -> None:
+    """`Target.createTarget` with `background: true`. DevTools `PUT /json/new` restores and focuses
+    a minimized window (measured 2026-10-12, Chrome 154); a background target does neither."""
+    from .cdp_lite import LoopbackCdp
     try:
-        with opener(request, timeout=10) as response:
-            response.read()
-    except (urllib.error.URLError, OSError, ValueError, TimeoutError):
+        with (cdp or LoopbackCdp)(port) as client:
+            created = client.call("Target.createTarget", {"url": url, "background": True})
+    except OpsError:
         raise OpsError("OPS_BROWSER_TAB_OPEN_FAILED") from None
+    if not (created or {}).get("targetId"):
+        raise OpsError("OPS_BROWSER_TAB_OPEN_FAILED")
 
 
 def wait_for_settled_pages(port: int, *, targets=page_targets, settle: float = 2.0, timeout: float = 15.0,
@@ -170,7 +174,7 @@ def wait_for_settled_pages(port: int, *, targets=page_targets, settle: float = 2
 
 
 def ensure_tabs(port: int, mail_host: str, dooray_url: str, *, roles=("portal", "dooray"),
-                targets=page_targets, opener=None, log=lambda _: None) -> dict[str, int]:
+                targets=page_targets, cdp=None, log=lambda _: None) -> dict[str, int]:
     """Open a role's tab only when that role has no page at all. Never closes or moves a tab.
 
     While a KAIST SSO page is open a login is in progress and that page may BE the missing tab
@@ -179,22 +183,27 @@ def ensure_tabs(port: int, mail_host: str, dooray_url: str, *, roles=("portal", 
     present = tab_roles(targets(port), mail_host)
     for role in roles:
         if not present[role] and not present["sso"]:
-            open_tab(port, PORTAL_START if role == "portal" else dooray_url,
-                     **({"opener": opener} if opener else {}))
+            open_tab(port, PORTAL_START if role == "portal" else dooray_url, cdp=cdp)
             log("OPS_BROWSER_TAB_OPENED")
     return tab_roles(targets(port), mail_host)
 
 
+BUSY_PROBE_SECONDS = 5                   # a busy renderer answers within this; a discarded tab never does
+
+
 def wake_tabs(port: int, mail_host: str, *, cdp=None, wait: float = 15, sleep=time.sleep,
               clock=time.monotonic) -> dict:
-    """Restore any page that Chrome discarded or froze, before a Playwright client attaches.
+    """Restore any page that Chrome discarded, before a Playwright client attaches.
 
     Playwright initialises EVERY page while attaching, so one dead tab (measured: the hidden
     Portal tab discarded under memory pressure) blocks both workers. Each page is probed with a
-    renderer round trip; an unresponsive one is restored with `Target.activateTarget` - Chrome
-    reloads a discarded tab from its own URL and session, exactly as a click on the tab would;
-    the window stays minimized. Nothing is navigated, typed, evaluated or closed. A page that
-    stays unresponsive fails closed. Returns counts and the roles restored.
+    renderer round trip, and once more with a longer wait so a merely busy page is left alone.
+    A page that answers neither is reloaded in place with `Page.reload` on its own session:
+    Chrome reloads the discarded tab from its own URL and session, as a click on the tab would,
+    without activating the tab or the window. (`Target.activateTarget`, used before, restores
+    and focuses a minimized window - measured 2026-10-12, Chrome 154 - so the Ops Chrome jumped
+    in front of the owner's work.) Nothing is navigated elsewhere, typed, evaluated or closed. A
+    page that stays unresponsive fails closed. Returns counts and the roles restored.
     """
     from .cdp_lite import LoopbackCdp
     restored, roles = 0, []
@@ -211,7 +220,9 @@ def wake_tabs(port: int, mail_host: str, *, cdp=None, wait: float = 15, sleep=ti
             try:
                 if client.call("Runtime.getIsolateId", session=session, timeout=2) is not None:
                     continue
-                client.call("Target.activateTarget", {"targetId": target["targetId"]})
+                if client.call("Runtime.getIsolateId", session=session, timeout=BUSY_PROBE_SECONDS) is not None:
+                    continue
+                client.call("Page.reload", {}, session=session)
                 deadline = clock() + wait
                 while client.call("Runtime.getIsolateId", session=session, timeout=1.5) is None:
                     if clock() >= deadline:
@@ -225,17 +236,19 @@ def wake_tabs(port: int, mail_host: str, *, cdp=None, wait: float = 15, sleep=ti
 
 
 def start_dedicated(profile: Path, *, port: int, roles, dooray_url: str, mail_host: str, start=None,
-                    settled=wait_for_settled_pages, ensure=ensure_tabs, log=lambda _: None) -> None:
+                    settled=wait_for_settled_pages, ensure=ensure_tabs, log=lambda _: None,
+                    minimized: bool = False) -> None:
     """Start a dedicated Chrome with its tabs: the Ops Chrome uses roles portal + dooray.
 
     A fresh profile gets the start addresses on the command line (one window, one tab each).
     A used profile starts with no address, so Chrome restores its own tabs instead of adding
-    duplicates; a role that restore did not bring back is then opened as a tab.
+    duplicates; a role that restore did not bring back is then opened as a tab. `minimized`:
+    a start no person asked for (a worker or the watchdog) opens minimized and in the background.
     """
     from .web.resident import start_chrome
     start = start or start_chrome
     urls = tuple(PORTAL_START if role == "portal" else dooray_url for role in roles)
     fresh = not (Path(profile) / "Default" / "Preferences").exists()
-    start(Path(profile), port=port, start_urls=urls if fresh else (), log=lambda _: None)
+    start(Path(profile), port=port, start_urls=urls if fresh else (), log=lambda _: None, minimized=minimized)
     settled(port)
     ensure(port, mail_host, dooray_url, roles=roles, log=log)

@@ -3,7 +3,7 @@
 ## 0. Babdoduk Ops Chrome: the one browser to keep open
 
 ```text
-Babdoduk Ops Chrome   (one window, minimized is fine)
+Babdoduk Ops Chrome   (one window, keep it minimized; the workers never bring it forward)
   [ KAIST Portal ] [ Dooray 받은메일함 ]
   profile .local\ops-browser-profile   CDP 127.0.0.1:9224 (loopback only)
         |-- Babdoduk-Portal-Worker   (LIST-only polling, its own task and failure domain)
@@ -20,7 +20,7 @@ All commands run from the operations checkout (`C:\Users\joshu\Babdoduk-ops`).
 |---|---|
 | Open / reuse the Ops Chrome | `scripts\windows\start_ops_browser.cmd` |
 | Is it running, are both tabs there? | `scripts\windows\status_ops_browser.cmd` (or `status_ggongbab_workers.cmd` for everything) |
-| A tab asks for SSO | Log in **by hand** in that tab: Portal SSO in the Portal tab; Dooray SSO, then 메일 → 받은메일함 in the Dooray tab. Then start the stopped worker (below). |
+| A tab asks for SSO | Log in **by hand** in that tab: Portal SSO in the Portal tab; Dooray SSO, then 메일 → 받은메일함 in the Dooray tab. A Windows toast asks for it. The Portal worker resumes by itself once the SSO page has closed; the Radar retries at most every 10 minutes. Starting the worker (below) still works. |
 | Browser stuck / stale | `scripts\windows\recover_ops_browser.cmd` (pauses both workers, then targeted recovery) |
 | Stop the workers | `scripts\windows\stop_ggongbab_workers.cmd` and `powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Stop` |
 | Start the workers | `scripts\windows\start_ggongbab_workers.cmd` and `powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start` |
@@ -46,9 +46,17 @@ Chrome discarded the hidden Portal tab of the minimized Ops Chrome within minute
 (`document.wasDiscarded`). Playwright initialises every page when it attaches, so one discarded
 tab made both workers' attach time out. The Dooray tab, which keeps a websocket, was never
 discarded. Before every attach, each worker therefore checks every tab over a small loopback CDP
-client. A tab that does not answer is restored with `Target.activateTarget`: Chrome reloads its
-own URL with its existing session, the same as clicking the tab, and the window stays minimized.
-Nothing is navigated, typed, evaluated or closed. A restored Dooray inbox settles for 15 s before
+client. A tab that answers neither probe (2 s, then 5 s more, so a merely busy page is left
+alone) is reloaded in place with `Page.reload` on its own session: Chrome reloads its own URL with
+its existing session, the same as clicking the tab, and the tab and the window stay in the
+background. Nothing is navigated elsewhere, typed, evaluated or closed. Until 2026-10-12 the
+restore used `Target.activateTarget`, which restores AND focuses a minimized window (reproduced
+that day with a throwaway Chrome 154 profile), so the Ops Chrome jumped in front of the owner's
+work - 33 restores on 10-12 alone. New tabs likewise open with `Target.createTarget` in the
+background (DevTools `PUT /json/new` also restored and focused the window), and a start that no
+person asked for (a worker or the watchdog) opens Chrome minimized without activation
+(`STARTUPINFO` SW_SHOWMINNOACTIVE). An operator's `start_ops_browser.cmd` still opens a normal
+window, ready for a manual login. A restored Dooray inbox settles for 15 s before
 the unread guard starts. A tab that cannot be restored fails closed: Portal takes the existing
 `PORTAL_CDP_ATTACH_TIMEOUT` path (one verified-browser recovery, then manual), and the Radar backs
 off with `DOORAY_BROWSER_ABSENT`; an attach that still times out is also `DOORAY_BROWSER_ABSENT`.
@@ -273,6 +281,15 @@ ends it. No WakeToRun or wake timer is installed. On wake, surviving tasks conti
 and re-evaluate elapsed times. If the worker died, the watchdog can restart it;
 after a full restart, logon is required. A usable Portal session is still required.
 
+Sleep is what usually ends a Portal login (measured 2026-10-12: standby at 05:46, wake at 08:20,
+`PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS` at 08:22; the worker had run for 3.2 hours since 02:32).
+Windows put the PC in standby after 30 idle minutes, so the owner's decision of 2026-10-12 is:
+plugged in, the PC never sleeps (`powercfg /change standby-timeout-ac 0`; restore with `30`); on
+battery it still sleeps after 30 minutes. When a login latch happens anyway, a Windows toast asks
+for the login and the watchdog resumes the worker by itself once it has seen a KAIST SSO page open
+and close again with one Portal page left (`OPS_AUTO_RESUMED`, read from the loopback page list
+only). It never logs in, types or replays anything; a new SSO page is needed for every resume.
+
 Network/transport problems back off. A LIST connection that went stale during sleep or a
 network change is not retried as is. After two consecutive transport failures, or on the first
 failure after a wall-clock gap (resume from sleep), the worker closes its HTTP session. It then
@@ -313,15 +330,16 @@ or older Dooray tasks; review those separately in Task Scheduler.
 | PORTAL_HEARTBEAT_WRITE_FAILED | Separate heartbeat failure; bounded restart, no false healthy confirmation |
 | PORTAL_CDP_ATTACH_TIMEOUT | One bounded retry with verified dedicated-browser recovery, then manual |
 | PORTAL_RESIDENT_OWNER_UNVERIFIED | Inspect absence vs stale vs ambiguous ownership; no automatic kill of an unverified process. Before it latches, the worker re-reads the process snapshot and the owner check 3 times, 5 s apart: one unreadable read right after a resume (a Chrome process mid-exit, a slow query) latched the worker from 2026-10-01 to 10-12 |
-| PORTAL_LIST_AUTH_REQUIRED / REDIRECT_REQUIRES_MANUAL_REVIEW | Manual setup/review, no automatic login |
-| PORTAL_SESSION_COOKIE_MISSING_OR_AMBIGUOUS / COOKIE_UNUSABLE / CONTEXT_MISSING_OR_AMBIGUOUS / SESSION_HANDOFF_FAILED | Manual inspection/setup |
+| PORTAL_LIST_AUTH_REQUIRED / REDIRECT_REQUIRES_MANUAL_REVIEW | Log in by hand in the Ops Chrome's Portal tab; the watchdog resumes after the SSO page closes. No automatic login |
+| PORTAL_SESSION_COOKIE_MISSING_OR_AMBIGUOUS / COOKIE_UNUSABLE / CONTEXT_MISSING_OR_AMBIGUOUS / SESSION_HANDOFF_FAILED | The Portal tab holds no usable login (for example it sits on the SSO page after sleep) or there are two Portal tabs: log in by hand or close the extra tab; the watchdog resumes once it has seen the login finish |
 | PORTAL_UI_CHANGED | Stop for contract review; detail access remains blocked |
 | PORTAL_LIST_STATE_UNAVAILABLE / OPS_STATE_UNAVAILABLE | Stop; inspect storage, never reset the baseline |
 | PORTAL_LIST_SCAN_INCOMPLETE | Stop for catch-up/window review; never advance an incomplete checkpoint |
 | OPS_CONFIGURATION_REQUIRED | Fix backend configuration/Python/repository, then Start |
 | OPS_RETRY_EXHAUSTED / OPS_WORKER_UNRESPONSIVE | Operator intervention; never a tight retry/kill loop |
 | PORTAL_LIST_SESSION_REBUILT | Informational: a stale LIST transport was replaced by a fresh session from the same login |
-| DOORAY_AUTH_REQUIRED | Radar stops; complete SSO in the dedicated Dooray window, then `radar_tasks.ps1 -Action Start` |
+| DOORAY_AUTH_REQUIRED | The Radar keeps running and retries the list at most every 10 minutes (`AUTH_RETRY_MAX`); complete SSO in the Ops Chrome's Dooray tab and the next scan resumes by itself |
+| OPS_AUTO_RESUMED | Informational: the watchdog saw a person finish an SSO login and acknowledged a login latch, as Start would |
 | DOORAY_CONTRACT_CHANGED | Radar stops and unread analysis is disabled; re-run calibration, then `radar-allow-unread` and Start |
 | DOORAY_UNREAD_INVARIANT_BROKEN | Unread rows are skipped until review; find what opened a mail or wrote during a scan, then `radar-allow-unread` |
 | DOORAY_BROWSER_ABSENT | The browser or its Dooray tab is missing: `start_ops_browser.cmd` (unified) or open the dedicated Dooray browser on 9222 (separate); the Radar retries with backoff |

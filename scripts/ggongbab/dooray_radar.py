@@ -34,6 +34,7 @@ from .web.task_writer import MailPayload
 
 INTERVAL_DEFAULT = 180
 INTERVAL_MIN, INTERVAL_MAX = 120, 300
+AUTH_RETRY_MAX = 600       # while the login is expired: at most one LIST attempt every 10 minutes
 OVERLAP_SECONDS = 1800
 FIRST_WINDOW_SECONDS = 86400
 MAX_ROWS = 200
@@ -231,7 +232,8 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
               dry_run: bool = False, max_cycles: Optional[int] = None,
               clock: Callable[[], float] = time.time, sleep: Callable[[float], None] = time.sleep,
               browser_running: Callable[[], bool] = lambda: True, log: Callable[[str], None] = lambda _: None) -> int:
-    """The Radar loop. Returns 0 when stopped, 10 on expired login, 20 on a contract change."""
+    """The Radar loop. Returns 0 when stopped and 20 on a contract change. An expired login is
+    retried with backoff (at most AUTH_RETRY_MAX seconds apart) until a person logs in again."""
     if not INTERVAL_MIN <= interval <= INTERVAL_MAX:
         raise ValueError("interval must be 120-300 seconds")
     runtime = files.runtime_state()
@@ -281,10 +283,14 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
                 log(RUNNING)
                 failures = 0
             except AuthRequired:
+                # Nothing restarts an exited Radar (its task runs at logon), so it waits instead:
+                # once a person logs in again in the Ops Chrome, the next scan finds the session
+                # valid and the Radar resumes by itself. Waiting backs off to AUTH_RETRY_MAX.
+                failures += 1
                 save(last_scan=now_ts, reason=AUTH)
                 heartbeat("auth_required", now, None, "10")
                 log(AUTH)
-                return 10
+                delay = min(interval * 2 ** min(failures - 1, 3), AUTH_RETRY_MAX)
             except UiContractError as exc:
                 if transient_list_failure(exc):
                     failures += 1
