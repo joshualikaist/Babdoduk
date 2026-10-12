@@ -32,7 +32,7 @@ STALE_DAYS = 120
 STATUSES = ("ACTIVE", "STALE", "DEGRADED", "DISABLED")
 AUTHORED = {"id", "name", "type", "url", "channelId", "enabled", "trustTier", "categories", "discoveryMethod",
             "queries", "note", "knownIssue", "lane", "localOnly", "requireFood", "objective", "kind",
-            "pagedFeed", "feedPages"}
+            "pagedFeed", "feedPages", "excerpt"}
 MAX_FEED_PAGES = 5         # adapters.rss.page_urls: the feed and at most four older pages
 KINDS = {"recipe", "news", "research", "video", "mixed"}
 
@@ -105,6 +105,8 @@ def validate(sources: list[dict]) -> list[str]:
             errors.append(f"{sid}: kind must be one of {sorted(KINDS)}")
         if s.get("type") in ("youtube_search", "web_search") and s.get("enabled") and not s.get("queries"):
             errors.append(f"{sid}: a search source needs queries")
+        if s.get("excerpt") is not None and not isinstance(s.get("excerpt"), bool):
+            errors.append(f"{sid}: excerpt must be true/false")
         pages = s.get("feedPages")
         if pages is not None and (not isinstance(pages, int) or isinstance(pages, bool) or not 1 <= pages <= MAX_FEED_PAGES):
             errors.append(f"{sid}: feedPages must be a whole number from 1 to {MAX_FEED_PAGES}")

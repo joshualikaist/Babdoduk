@@ -87,7 +87,9 @@ def card_summary(text: str, title: str = "") -> str:
 def public_item(row: dict) -> dict:
     item = {
         "title": row["title"],
-        "summary": card_summary(row.get("sourceExcerpt") or "", row.get("title") or ""),
+        # A source registered with "excerpt": false is shown by title, source, date and link only.
+        "summary": card_summary(row.get("sourceExcerpt") or "", row.get("title") or "")
+        if row.get("excerptAllowed", True) else "",
         "source": row.get("sourceName") or "",
         "sourceId": row.get("sourceId"),
         "candidateId": row["candidateId"],

@@ -926,3 +926,15 @@ def test_card_excerpts_leave_no_credit_debris_or_repeated_tagged_headlines():
                                "[자료] 가공식품 지출 현황과 특징").startswith("1. 2분기")
     assert select.card_summary("ㅡㅡㅡㅡㅡㅡㅡㅡ 푸디앨리 멤버십 가입하기 자막이 필요하시면 CC 버튼을 눌러주세요 (Press CC button)") == ""
     assert select.card_summary("바삭하고 고소해서 정말 좋아요. 버터 향이 오래 남는 쿠키입니다.").startswith("바삭하고")
+
+
+def test_a_source_without_excerpts_is_shown_by_title_and_link_only():
+    """Registry "excerpt": false (a newspaper association member): the card keeps title, source,
+    date and link; the excerpt still serves the lane rules but is never shown."""
+    quiet = dict(RECIPES, id="t-quiet", name="Quiet Paper", excerpt=False)
+    [shown, plain] = run((_dish(1, day(1)), quiet), (_dish(2, day(2)), RECIPES))
+    assert shown["excerptAllowed"] is False and plain["excerptAllowed"] is True
+    assert shown["assignedCategory"] == "tips"                    # judged on its text as before
+    item, other = select.public_item(shown), select.public_item(plain)
+    assert item["summary"] == "" and item["source"] == "Quiet Paper" and item["url"] == shown["sourceUrl"]
+    assert other["summary"]
