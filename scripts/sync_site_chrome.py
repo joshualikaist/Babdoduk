@@ -205,6 +205,7 @@ LABEL_BLOCKS = present(ALL_LABEL_BLOCKS, ROOT)
 CONTENT_BLOCKS = {
     "event.html": page_content.event_blocks,
     "history.html": page_content.history_blocks,
+    "worldcup.html": page_content.worldcup_blocks,
 }
 CONTENT_STRINGS = {
     "event.html": page_content.event_strings,

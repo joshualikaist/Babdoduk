@@ -46,7 +46,10 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
     assert re.findall(r'<script\s+src="([^"]+)"', html) == ["js/site.js", "js/worldcup.js"]
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    assert set(re.findall(r"getJson\('([^']+)'\)", script)) == {"data/content/worldcup.json", "data/foods/catalog.json"}
+    assert set(re.findall(r"getJson\('([^']+)'\)", script)) == {"data/foods/catalog.json"}
+    # data/content/ is never deployed (.vercelignore): the sync writes the dishes into the page.
+    embedded = re.search(r"window\.BABDODUK_WORLDCUP = (\{.*\});", html).group(1)
+    assert json.loads(embedded)["dishes"] == CUP["dishes"]
     for forbidden in ("supabase", "XMLHttpRequest", "WebSocket", "sendBeacon", "POST"):
         assert forbidden not in script, forbidden
     assert "var KEY = 'babdoduk-worldcup';" in script and "localStorage.setItem(KEY" in script
