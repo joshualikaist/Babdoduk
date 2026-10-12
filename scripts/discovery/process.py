@@ -101,6 +101,13 @@ def text_facts(row: dict) -> dict:
             "laneHits": lane_hits(row)}
 
 
+def collected(row: dict, source: Optional[dict]) -> bool:
+    """Whether the story may be kept at all: a page on a host collected only with its owner's
+    permission (a Naver page, a newspaper association member's article: hosts.collectable) is kept
+    only from a source registered with that permission (docs/MAGAZINE_SOURCES.md)."""
+    return hosts.collectable(row.get("sourceUrl") or "") or bool((source or {}).get("permission"))
+
+
 def excerpt_allowed(row: dict, source: Optional[dict]) -> bool:
     """Whether the card may show the story's excerpt and photo: not for a source registered with
     "excerpt": false, nor for a newspaper association member's page (docs/MAGAZINE_SOURCES.md)."""
@@ -231,7 +238,7 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
     if not is_public_url(url):
         return "BAD_URL"
     if row.get("sourceType") in SEARCH_TYPES and not hosts.collectable(url):
-        return "HOST_NOT_COLLECTED"                # a Naver page found by search, stored before the rule
+        return "HOST_NOT_COLLECTED"                # found by search on a host collected only with permission
     if len(title) < 4:
         return "NO_TITLE"
     minimum = MIN_TEXT.get(row.get("medium"), MIN_TEXT["blog"])

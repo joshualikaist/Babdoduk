@@ -67,7 +67,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         before = len(store.rows)
         for raw in result.items:
             row = process.normalize(raw, source, now)
-            if row and row["sourceUrl"]:
+            if row and row["sourceUrl"] and process.collected(row, source):
                 store.upsert(row, now)
         new += len(store.rows) - before
         for query in result.queries:
@@ -75,6 +75,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         health[source["id"]] = {"type": source["type"], "adapter": result.status, "code": result.code or None,
                                 "items": len(result.items)}
         log(f"discovery {source['id']}: {result.status}{' ' + result.code if result.code else ''} items={len(result.items)}")
+    drop_not_collected(store, sources)
     rows = store.all()
     newest: dict[str, str] = {}
     for row in rows:
@@ -107,6 +108,18 @@ def pending_work(sources: list[dict]) -> list[str]:
     return ["YOUTUBE_AUTOMATION_PENDING"] if local_youtube else []
 
 
+def drop_not_collected(store: CandidateStore, sources: list[dict]) -> int:
+    """Stories on a host collected only with its owner's permission (a Naver page, a newspaper
+    association member's article; docs/MAGAZINE_SOURCES.md) leave the store unless their source
+    carries that permission: neither their titles nor their links are kept, published or not."""
+    by_id = {s.get("id"): s for s in sources}
+    gone = [cid for cid, row in store.rows.items()
+            if row.get("sourceUrl") and not process.collected(row, by_id.get(row.get("sourceId")))]
+    for cid in gone:
+        del store.rows[cid]
+    return len(gone)
+
+
 def apply_excerpt_rules(rows: list[dict], sources: list[dict]) -> None:
     """Today's excerpt rules on every stored story, not only on new ones: a source or host that is
     now shown by title and link only (docs/MAGAZINE_SOURCES.md) shows no excerpt or photo from the
@@ -131,11 +144,14 @@ def reset_decisions(rows: list[dict]) -> None:
 
 def reprocess(paths: Paths, now: datetime) -> dict:
     """Re-judge every stored candidate under the current rules, without the network: nothing is
-    fetched, searched or deleted, so a rule change or an unreachable route never loses a
-    candidate that was already discovered."""
+    fetched or searched, and nothing is deleted but a story that may not be kept at all
+    (drop_not_collected), so a rule change or an unreachable route never loses a candidate that
+    was already discovered."""
     store = CandidateStore(paths.candidates)
+    sources = registry.load(paths.registry)
+    drop_not_collected(store, sources)
     rows = store.all()
-    apply_excerpt_rules(rows, registry.load(paths.registry))
+    apply_excerpt_rules(rows, sources)
     reset_decisions(rows)
     counts = process.process(rows, now)
     return {"store": store, "counts": dict(counts, candidates=len(rows)), "lanes": lane_report(rows)}

@@ -29,10 +29,15 @@
 5. **사람이 쓴 글.** AI가 쓴 글, 다른 글을 다시 쓴 글, 광고 글을 올리는 사이트는 등록하지 않습니다.
 6. **네이버 블로그는 주인의 허락이 있을 때만.** 블로그 주인이 낸 RSS를 쓰고, 누가 언제 어디서 허락했는지 `"permission"`에 적습니다.
    허락이 없으면 검사가 등록을 막습니다.
-7. **신문협회 회원사는 발췌 없이.** 한국온라인신문협회의 「디지털뉴스 이용규칙」은 기사 제목과 본문 일부를 함께 반복해 싣는 것을 금지합니다.
+7. **신문협회 회원사는 그 회원사의 허락이 있을 때만.** 한국온라인신문협회의 「디지털뉴스 이용규칙」을 따릅니다(소유자 결정, 2026-10-12).
+   - 규칙은 비영리·일반 개인·한정적 범위라는 조건을 모두 갖춘 사용자에게만 허락 없는 직접링크(기사 주소로 바로 가는 링크)를 허용합니다.
+     법인·단체, 많은 사람이 찾는 사이트는 회원사의 허락을 받아야 합니다.
+   - RSS로 받은 기사를 허락 없이 공중에 다시 내보내는 것도 금지합니다. 기사 제목과 본문 일부를 함께 반복해 싣는 것도 금지합니다.
+   - 밥도둑은 여러 사람이 보는 공개 사이트이므로, 허락이 없는 회원사 기사는 모으지도, 저장하지도, 싣지도 않습니다.
+     웹 검색으로 찾은 기사도 마찬가지입니다.
    - 그 협회 회원은 한국신문협회 회원사여야 하므로, 한국신문협회 회원사 55곳과 디지털타임스를 회원사로 봅니다.
    - 목록과 근거는 `scripts/discovery/newspaper-members.json`에 있습니다(2026-10-12 확인).
-   - 회원사의 피드는 `"excerpt": false`로 등록합니다. 그렇지 않으면 검사가 등록을 막습니다.
+   - 허락을 받으면 누가 언제 어디서 허락했는지 `"permission"`에 적고 `"excerpt": false`로 등록합니다. 그렇지 않으면 검사가 등록을 막습니다.
 
 신뢰 등급(`trustTier`)은 이렇게 정합니다.
 
@@ -60,9 +65,11 @@
   - 카드의 문장은 그 이야기가 실릴 때 발행처 페이지의 `og:description`(또는 meta description)에서 한 번 읽습니다(`discovery.preview`).
   - 이때도 robots.txt를 먼저 확인하고 2초 간격을 지킵니다.
   - 읽지 못하면 문장 없이 싣습니다.
-- **신문협회 회원사 기사와 `"excerpt": false` 자료원:** 제목·출처·날짜·링크만 보여 주고, 문장과 사진은 싣지 않습니다(결정 5).
+- **신문협회 회원사 기사:** 그 회원사의 허락이 없으면 싣지 않습니다(결정 5).
   - 회원사 도메인은 `scripts/discovery/newspaper-members.json`에 있고, 어떤 경로로 들어온 기사에든 적용됩니다.
     다른 회사가 운영하는 하위 도메인(예: 헬스조선 `health.chosun.com`)은 회원사로 보지 않습니다.
+  - 저장소에 남아 있던 회원사 기사와 지난 호에 실렸던 회원사 기사도 다음 실행 때 지웁니다.
+- **허락받은 회원사 기사와 `"excerpt": false` 자료원:** 제목·출처·날짜·링크만 보여 주고, 문장과 사진은 싣지 않습니다.
   - 이런 기사는 사진이 필요한 대표 이야기 자리에 오지 않습니다. 갈래 판단에는 그대로 쓰입니다.
   - 등록부나 회원사 목록이 바뀌면 이미 모아 둔 이야기에도 다음 실행부터 적용됩니다.
 - **이미지:** 원본 주소로 보여 주기만 하고 복사하지 않습니다. YouTube 썸네일은 API에서 받은 것만 씁니다.
@@ -148,11 +155,14 @@ Sources are registered one entry each in `scripts/discovery/sources.json` (contr
 - The linked title, the source name as displayed and the date.
 - One sentence (at most 120 characters) of the publisher's own preview: the feed item's text, or,
   for a web search result, the page's `og:description`, read once when the story is published.
-- A newspaper association member, or any source registered with `"excerpt": false`, is shown by
-  title, source, date and link only, with no sentence and no photo. The usage rule is the Korea
-  Online Newspaper Association's; its members must belong to the Korea Newspaper Association (한국신문협회),
-  so all 55 of those members plus 디지털타임스 count (`scripts/discovery/newspaper-members.json`, with
-  evidence).
+- A newspaper association member's article runs only with that member's permission. The usage rule
+  is the Korea Online Newspaper Association's: only a non-commercial individual may link to a member's
+  article without permission, and a member's RSS may not be republished, so Babdoduk, a public site,
+  collects, keeps and shows none of their articles without it. Its members must belong to the Korea
+  Newspaper Association (한국신문협회), so all 55 of those members plus 디지털타임스 count
+  (`scripts/discovery/newspaper-members.json`, with evidence).
+- A member that gave permission, or any source registered with `"excerpt": false`, is shown by
+  title, source, date and link only, with no sentence and no photo.
 - Images are linked, never copied. Nothing is AI-written.
 - A lane short of five stories runs with what it has and is announced in the run report and on
   the GitHub Actions run.
