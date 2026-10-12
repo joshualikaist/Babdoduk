@@ -69,6 +69,8 @@ PAGES = {
     # Food Log is lab-only: no public nav/footer link points at it; it carries the lab links.
     "food.html": {"current": None, "lab": True, "strings": ("cal", "food")},
     "history.html": {"current": "history.html", "strings": ("history",)},
+    # The menu world cup opens from an activity on event.html; no nav link points at it.
+    "worldcup.html": {"current": None, "strings": ("wc",)},
     "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
     "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
                           "strings": ("gg", "ggongbab", "km")},

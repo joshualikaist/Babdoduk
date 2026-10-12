@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/content-worldcup.schema.json",
+  "title": "Menu world cup: data/content/worldcup.json",
+  "description": "Written by a person: the dishes of worldcup.html, by catalog id (data/foods/). The page shuffles them into a bracket; names and flavours come from the catalog. validate_content.py checks what a schema cannot: every id is a catalog dish and the count is a power of two.",
+  "type": "object",
+  "required": ["schemaVersion", "basis", "dishes"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "basis": {
+      "description": "One plain sentence per language: how the dishes were chosen.",
+      "type": "object",
+      "required": ["ko", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "ko": {"type": "string", "minLength": 1},
+        "en": {"type": "string", "minLength": 1}
+      }
+    },
+    "dishes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"}
+    }
+  }
+}
