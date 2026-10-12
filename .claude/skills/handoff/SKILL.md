@@ -12,7 +12,7 @@ Use this at the end of a coding session, or when the owner asks for a commit.
 2. Classify every path:
    - session-owned;
    - owner/pre-existing (compare with the `/session-start` record);
-   - generated data (`data/magazine/`, `data/kaist-menu/`, `data/ggongbab/latest.json`, `data/foods/`);
+   - generated data (`data/magazine/`, `data/kaist-menu/`, `data/ggongbab/latest.json`);
    - unrelated.
    Only session-owned paths may be staged.
 3. Verify with `/verify-babdoduk` for the change type, and keep the exact first-run results, failures included.

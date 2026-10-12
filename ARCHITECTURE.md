@@ -73,7 +73,7 @@ Nine HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-
 | `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` parsing the official KAIST page without AI: dated files for the current Monday–Sunday KST week, `latest.json` (today only) and the `week.json` index (`docs/KAIST_MENU.md`) | Hub (weekly), magazine `#what` and home (today); zero usable restaurants keeps prior files, so clients check the date against the date they show |
 | `data/ggongbab/latest.json` | Approved export in `scripts/refresh_ggongbab.py` | Hub and home; validation precedes the final write and a failure keeps the previous file |
 | `data/ggongbab/archive/index.json` | Same export, same clock (past listings, 30 days) | Hub only, fetched separately; a failed archive keeps the previous file without blocking `latest.json`, and a failed fetch leaves the live feed untouched |
-| `data/foods/catalog.json`, 7 packs | `scripts/build_foods.py` and `scripts/food_expand.py` | Browser-only dish suggestion catalog, not restaurant inventory |
+| `data/foods/catalog.json`, 7 packs | Human-authored; the packs are the source (the Python generators retired 2026-10-12) and `validate_content.py --only authored` keeps their rules | Browser-only dish suggestion catalog, not restaurant inventory |
 | `data/food-log.json` | Human-authored | `food.html` combines it with browser-local entries by date and labels each day's source |
 | `inputs/ggongbab/manual.json` | Human-authored collector input | Pipeline input, never deployed, never written by the content bot |
 | `inputs/ggongbab/food-news.json` | Public items of the operator-PC news review | The refresh publishes it as `data/ggongbab/news.json`; never deployed |

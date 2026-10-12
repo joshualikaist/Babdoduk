@@ -785,30 +785,53 @@ def main(argv: list[str] | None = None) -> None:
     print("content validation ok" + ("" if families == set(FAMILIES) else f" ({', '.join(sorted(families))})"))
 
 
+# Which pack a dish belongs in, by its cuisine group (the retired scripts/build_foods.py rule).
+FOOD_PACK_OF_GROUP = {
+    "korean": "korean", "chinese": "chinese", "japanese": "japanese", "southeast-asian": "southeast-asian",
+    "italian": "western", "french": "western", "american": "western", "mexican": "western", "western": "western",
+    "indian": "indian-middle-eastern", "middle-eastern": "indian-middle-eastern",
+    "fusion": "fusion-snack-dessert", "snack": "fusion-snack-dessert", "dessert": "fusion-snack-dessert",
+}
+
+
 def validate_authored(root: Path = ROOT) -> list[str]:
-    """Hand-written data, beyond its schema: the foods catalog agrees with its packs and dish
-    ids are unique across them; a food-log day's total is the sum of its items; manual and
-    news-input ids are unique, and every public news item re-derives its own id."""
+    """Hand-written data, beyond its schema: the foods catalog agrees with its packs, a dish
+    sits in its cuisine group's pack and its id and names are unique; a food-log day's total is
+    the sum of its items; manual and news-input ids are unique, and every public news item
+    re-derives its own id. The foods packs are the source since 2026-10-12 (the Python
+    generators that wrote them retired); these are the checks the generators made."""
     errors: list[str] = []
     catalog_path = root / "data" / "foods" / "catalog.json"
     if catalog_path.exists():
         catalog = load(catalog_path)
         seen: dict[str, str] = {}
+        names: dict[str, set] = {"nameKo": set(), "nameEn": set()}
         total = 0
         for pack in catalog.get("packs") or []:
             path = root / str(pack.get("src") or "")
             if not path.is_file():
                 errors.append(f"foods catalog names a missing pack {pack.get('src')}")
                 continue
-            items = load(path).get("items") or []
+            data = load(path)
+            items = data.get("items") or []
             total += len(items)
             if pack.get("count") != len(items):
                 errors.append(f"foods catalog count for {pack.get('id')} is {pack.get('count')}, the pack has {len(items)}")
+            if data.get("pack") != path.stem or pack.get("id") != path.stem:
+                errors.append(f"foods pack {path.name} must say pack {path.stem!r} and be listed as {path.stem!r}")
             for item in items:
                 dish = item.get("id")
                 if dish in seen:
                     errors.append(f"foods dish id {dish} is in both {seen[dish]} and {pack.get('id')}")
                 seen[dish] = pack.get("id")
+                for key, used in names.items():
+                    if item.get(key) in used:
+                        errors.append(f"foods dish {dish}: {key} {item.get(key)!r} is used by another dish")
+                    used.add(item.get(key))
+                home = FOOD_PACK_OF_GROUP.get(item.get("cuisineGroup"))
+                if home != path.stem:
+                    errors.append(f"foods dish {dish}: cuisine group {item.get('cuisineGroup')!r} belongs in "
+                                  f"{home or 'no pack'}, not {path.stem}")
         if catalog.get("count") != total:
             errors.append(f"foods catalog count is {catalog.get('count')}, the packs hold {total}")
         listed = {pack.get("src") for pack in catalog.get("packs") or []}
