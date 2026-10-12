@@ -55,7 +55,7 @@ FIELDS = ("candidateId", "sourceId", "sourceName", "sourceType", "sourceUrl", "c
           "discoveryLane", "seenQueries", "searchRank", "sourceTrust", "contentKind", "publishedAtSource",
           "trendSignals", "trendEvidence", "trendEvidenceDetail", "corroboratedBy", "habitSignals",
           "audienceRelevance", "audienceScore", "laneDecisions", "viewCount", "likeCount", "requireFood",
-          "commercePage", "sponsored", "howToMarkers", "trendEvidenceIndependent")
+          "commercePage", "sponsored", "howToMarkers", "trendEvidenceIndependent", "excerptAllowed")
 MAX_QUERIES = 8
 
 

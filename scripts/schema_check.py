@@ -35,6 +35,7 @@ CONTRACTS = (
     ("research/magazine/runs.jsonl", "magazine-run", "magazine", True),
     ("research/magazine/health.json", "magazine-health", "magazine", False),
     ("research/magazine/source-health.json", "magazine-source-health", "magazine", False),
+    ("scripts/discovery/sources.json", "magazine-sources", "magazine", False),
     ("data/foods/catalog.json", "foods-catalog", "authored", False),
     ("data/foods/packs/*.json", "foods-pack", "authored", False),
     ("data/food-log.json", "food-log", "authored", False),

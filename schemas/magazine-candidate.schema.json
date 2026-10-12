@@ -71,6 +71,7 @@
         "viewCount": {"$ref": "#/$defs/int"},
         "likeCount": {"$ref": "#/$defs/int"},
         "requireFood": {"$ref": "#/$defs/bool"},
+        "excerptAllowed": {"$ref": "#/$defs/bool"},
         "commercePage": {"$ref": "#/$defs/bool"},
         "sponsored": {"$ref": "#/$defs/bool"},
         "howToMarkers": {"$ref": "#/$defs/int"},
