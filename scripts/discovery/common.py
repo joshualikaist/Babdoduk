@@ -10,6 +10,7 @@ import os
 import re
 import ssl
 import tempfile
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -57,6 +58,27 @@ def fetch(url: str, *, timeout: int = 20, accept: str = "*/*", headers: Optional
     request = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": accept, **(headers or {})})
     with urllib.request.urlopen(request, timeout=timeout, context=ssl.create_default_context()) as res:
         return res.read(MAX_BYTES)
+
+
+class HostPacer:
+    """A fetcher that leaves at least `gap` seconds between two requests to the same host, so no
+    publisher sees a burst from one run (two feeds of one newspaper, a feed and its older pages)."""
+
+    def __init__(self, fetcher, gap: float = 2.0, sleep=time.sleep, clock=time.monotonic):
+        self.fetcher, self.gap, self.sleep, self.clock = fetcher, gap, sleep, clock
+        self.last: dict[str, float] = {}
+
+    def __call__(self, url: str, **kwargs):
+        host = (urllib.parse.urlparse(url).hostname or "").lower()
+        last = self.last.get(host)
+        if last is not None:
+            wait = self.gap - (self.clock() - last)
+            if wait > 0:
+                self.sleep(wait)
+        try:
+            return self.fetcher(url, **kwargs)
+        finally:
+            self.last[host] = self.clock()
 
 
 def is_public_url(url: str) -> bool:
