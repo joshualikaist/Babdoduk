@@ -22,7 +22,7 @@ import argparse
 import os
 import re
 import sys
-from datetime import datetime, timedelta
+from datetime import date as day, datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -56,8 +56,9 @@ def archive_rules() -> dict:
             "quiet": frozenset(s["id"] for s in sources if s.get("excerpt") is False)}
 
 
-def sanitize_all(out: Path, *, skip: str = "", rules: Optional[dict] = None) -> int:
-    """Clean every stored edition but `skip`; a file is rewritten only when cleaning changed it."""
+def sanitize_all(out: Path, *, skip: str = "", rules: Optional[dict] = None, today: str = "") -> int:
+    """Clean every stored edition but `skip`; a file is rewritten only when cleaning changed it. An
+    edition more than select.YOUTUBE_ARCHIVE_DAYS before `today` loses its YouTube videos."""
     removed = 0
     for path in dated_files(out):
         if path.stem == skip:
@@ -66,7 +67,8 @@ def sanitize_all(out: Path, *, skip: str = "", rules: Optional[dict] = None) -> 
         if not isinstance(edition, dict):
             continue
         before = dump_json(edition)
-        cleaned, n = select.sanitize(edition, **(rules or {}))
+        old = bool(today) and (day.fromisoformat(today) - day.fromisoformat(path.stem)).days > select.YOUTUBE_ARCHIVE_DAYS
+        cleaned, n = select.sanitize(edition, youtube_expired=old, **(rules or {}))
         if dump_json(cleaned) != before:
             atomic_write(path, dump_json(cleaned))
         removed += n
@@ -115,7 +117,8 @@ def main(argv=None) -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     rules = archive_rules()
     if args.sanitize_only:
-        print(f"magazine sanitized: removed {sanitize_all(OUT, rules=rules)} fabricated, link-less "
+        removed = sanitize_all(OUT, rules=rules, today=edition_date(now_kst()))
+        print(f"magazine sanitized: removed {removed} fabricated, link-less "
               f"or withdrawn items")
         print(f"latest {write_index(OUT)}")
         return 0
@@ -135,7 +138,7 @@ def main(argv=None) -> int:
         atomic_write(OUT / f"{date}.json", dump_json(edition))
         pipeline.record_offline(paths, run, edition, chosen, now)
         print(f"magazine {date}: {story_count(edition)} stories selected from the store (no network)")
-        print(f"magazine archive: removed {sanitize_all(OUT, skip=date, rules=rules)} fabricated, "
+        print(f"magazine archive: removed {sanitize_all(OUT, skip=date, rules=rules, today=date)} fabricated, "
               f"link-less or withdrawn items")
         print(f"latest {write_index(OUT)}")
         announce(edition)
@@ -156,7 +159,7 @@ def main(argv=None) -> int:
         else:
             print(f"[warn] magazine {date}: no qualifying story; the previous edition stays latest")
             chosen = []
-        removed = sanitize_all(OUT, skip=date if written else "", rules=rules)
+        removed = sanitize_all(OUT, skip=date if written else "", rules=rules, today=date)
         print(f"magazine archive: removed {removed} fabricated, link-less or withdrawn items")
         print(f"latest {write_index(OUT)}")
     report = pipeline.finish(paths, run, edition, chosen, now)

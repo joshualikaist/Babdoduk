@@ -378,12 +378,16 @@ def test_the_one_registry_is_valid_and_honest_about_what_runs():
     assert {s["lane"] for s in by_type["web_search"] if s["enabled"]} == {"trend", "habit"}
     # Open discovery never reads a Naver page (decisions 3-4): no enabled search asks for one.
     assert not any("naver" in q for s in by_type["web_search"] if s["enabled"] for q in s["queries"])
-    assert all(s.get("localOnly") for s in by_type["youtube_search"] + by_type["youtube_channel"])
-    assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"])
-    assert all(s.get("knownIssue") for s in by_type["youtube_channel"])
-    # Off since 2026-10-12: their only input, the operator-PC sidecar, stopped on 09-29.
-    for s in by_type["youtube_search"] + by_type["youtube_channel"]:
+    assert all(s.get("localOnly") for s in by_type["youtube_search"])
+    assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"] + by_type["youtube_channel"])
+    # YouTube search stays off (its only input, the operator-PC sidecar, stopped on 09-29); the
+    # channels run through the YouTube Data API since 2026-10-12 (owner decision 1) and say what
+    # they need.
+    for s in by_type["youtube_search"]:
         assert s["enabled"] is False and "Disabled 2026-10-12" in s["note"], s["id"]
+    for s in by_type["youtube_channel"]:
+        assert s["enabled"] is True and s["discoveryMethod"] == "youtube_data_api", s["id"]
+        assert "YOUTUBE_API_KEY" in s["knownIssue"] and "30 days" in s["note"], s["id"]
     assert pipeline.pending_work(sources) == []
     # Recipe blogs feed tips/health only: a recipe is not a trend or an eating-habit story.
     for s in by_type["rss"]:

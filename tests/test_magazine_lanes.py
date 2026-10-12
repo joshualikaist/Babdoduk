@@ -1285,3 +1285,47 @@ def test_a_story_read_again_by_its_own_feed_is_judged_again(tmp_path):
     assert not process.judged_now(row) and len(row["seenVia"]) == 2
     again.upsert(process.normalize(item, NEWS, NOW), NOW)  # its own feed lists it again
     assert process.judged_now(row) and row["sourceExcerpt"].startswith("1인 가구 식생활 조사에서")
+
+
+# --- YouTube Data API terms (decision 1; Developer Policies III.E.4 and III.F.2) -------------
+def test_youtube_data_is_kept_at_most_thirty_days(tmp_path):
+    def video(cid, seen_days, **kw):
+        return dict({"candidateId": cid, "sourceId": "yt-x", "sourceUrl": f"https://www.youtube.com/watch?v={cid[-11:]}",
+                     "title": "두부 강정 만들기", "medium": "youtube", "lastSeenAt": day(seen_days),
+                     "discoveredAt": day(seen_days), "rejectionReason": None, "assignedCategory": "tips"}, **kw)
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    rows = [video("c_00000000000aaaa1", 29), video("c_00000000000aaaa2", 31),
+            video("c_00000000000aaaa3", 31, selected=True, selectedFor="2026-09-10", selectedAt=day(19)),
+            dict(video("c_00000000000aaaa4", 31), compact=True, medium=None),     # a fingerprint: known by its host
+            {"candidateId": "c_00000000000bbbb1", "sourceUrl": "https://blog.example.org/1", "title": "블로그 글",
+             "lastSeenAt": day(31), "rejectionReason": None, "assignedCategory": "tips"}]
+    s.rows = {r["candidateId"]: r for r in rows}
+    s.prune(NOW)
+    assert sorted(s.rows) == ["c_00000000000aaaa1", "c_00000000000bbbb1"]     # a blog row keeps its 90 days
+
+
+def test_a_youtube_video_runs_only_on_fresh_api_data_and_a_recent_upload():
+    def video(seen, uploaded):
+        return {"medium": "youtube", "sourceUrl": "https://www.youtube.com/watch?v=abcdefghijk",
+                "lastSeenAt": day(seen), "publishedAt": day(uploaded)}
+    assert select.youtube_runnable(video(0, 10), NOW) and select.youtube_runnable(video(1, 28), NOW)
+    assert not select.youtube_runnable(video(2, 10), NOW)                      # not refreshed by the API lately
+    assert not select.youtube_runnable(video(0, 29), NOW)                      # its archive entry would outlive the rule
+    assert select.youtube_runnable({"medium": "blog", "lastSeenAt": day(40), "publishedAt": day(300)}, NOW)
+
+
+def test_old_editions_lose_their_youtube_videos(tmp_path):
+    import refresh_magazine
+
+    def item(n, medium, url):
+        return {"title": f"Story {n}", "source": "Channel", "sourceId": "yt-x", "url": url, "medium": medium,
+                "candidateId": f"c_{n:016d}"}
+    for date in ("2026-08-31", "2026-09-01"):
+        edition = {"rules": select.RULES, "date": date, "featured": None,
+                   "lanes": {"tips": {"items": [item(1, "youtube", "https://www.youtube.com/watch?v=abcdefghijk"),
+                                                item(2, "blog", "https://blog.example.org/2")]}}}
+        (tmp_path / f"{date}.json").write_text(common.dump_json(edition), encoding="utf-8")
+    refresh_magazine.sanitize_all(tmp_path, today="2026-09-29")
+    kept = {date: [i["medium"] for i in json.loads((tmp_path / f"{date}.json").read_text(encoding="utf-8"))
+                   ["lanes"]["tips"]["items"]] for date in ("2026-08-31", "2026-09-01")}
+    assert kept == {"2026-08-31": ["blog"], "2026-09-01": ["youtube", "blog"]}       # kept 28 days, then gone

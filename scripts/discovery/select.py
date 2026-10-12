@@ -42,6 +42,12 @@ HERO_MAX_DAYS = 30
 HERO_AUDIENCE = 0.5
 RULES = "lanes-v1"          # editions built under the evidence rules; older ones are legacy
 LANES = ("trend", "tips", "health", "habit")
+# YouTube's terms keep API data at most 30 days (store.YOUTUBE_DAYS). A video runs only on data the
+# API returned within YOUTUBE_SEEN_DAYS, and only while its upload is within YOUTUBE_ARCHIVE_DAYS;
+# its archive entry leaves after YOUTUBE_ARCHIVE_DAYS, so it is never kept past 30 days and, being
+# too old by then, never runs twice.
+YOUTUBE_SEEN_DAYS = 2
+YOUTUBE_ARCHIVE_DAYS = 28
 LANE_LEADS = content_labels.lane_leads()          # data/content/labels.json, the page shows its own copy
 SUMMARY_CHARS = 120        # a card-length excerpt, never a paragraph
 MIN_SUMMARY = 20
@@ -171,9 +177,18 @@ def eligible(rows: list[dict], recent: set[str], date: str = "") -> list[dict]:
                   key=lambda r: (-(r.get("score") or 0), r["candidateId"]))
 
 
+def youtube_runnable(row: dict, now: datetime) -> bool:
+    """A YouTube video runs only on data its API returned within YOUTUBE_SEEN_DAYS and while its
+    upload is within YOUTUBE_ARCHIVE_DAYS (the constants above); any other story always may."""
+    if not (row.get("medium") == "youtube" or hosts.youtube_page(row.get("sourceUrl") or "")):
+        return True
+    seen, uploaded = parse_time(row.get("lastSeenAt")), parse_time(row.get("publishedAt"))
+    return bool(seen and uploaded) and (now - seen).days < YOUTUBE_SEEN_DAYS and         (now - uploaded).days <= YOUTUBE_ARCHIVE_DAYS
+
+
 def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -> tuple[dict, list[str]]:
-    pool = eligible(rows, recent, date)
     now = parse_time(generated_at) or datetime.fromisoformat(date).replace(hour=10, tzinfo=KST)
+    pool = [row for row in eligible(rows, recent, date) if youtube_runnable(row, now)]
     featured_row, hero_kind = choose_hero(pool, now)
     lanes, chosen = {}, []
     if featured_row is not None:
@@ -222,14 +237,17 @@ def truthful(item: dict) -> bool:
             and item.get("source") not in ("", None, "밥도둑 데스크") and bool(item.get("title")))
 
 
-def sanitize(edition: dict, withdrawn: frozenset = frozenset(), quiet: frozenset = frozenset()) -> tuple[dict, int]:
+def sanitize(edition: dict, withdrawn: frozenset = frozenset(), quiet: frozenset = frozenset(),
+             youtube_expired: bool = False) -> tuple[dict, int]:
     """Past editions: drop fabricated desk items and link-only idea desks, and drop generated
     summaries/tags (the old builder composed them; their source text was never kept). A trend
     item without trend evidence is not shown as a trend, and an edition built before the lane
     rules (no "rules" marker) keeps no habit items: the old builder put recipes there by keyword.
     The archive follows today's publishing rules (docs/MAGAZINE_SOURCES.md): a withdrawn source
     (registry "withdrawn") keeps no story anywhere, and a story from a source registered "excerpt":
-    false (`quiet`) or a newspaper association member keeps title, source, date and link only."""
+    false (`quiet`) or a newspaper association member keeps title, source, date and link only. An
+    edition older than YOUTUBE_ARCHIVE_DAYS (`youtube_expired`) keeps no YouTube video: YouTube's
+    terms keep API data at most 30 days."""
     removed = 0
     legacy = edition.get("rules") != RULES
 
@@ -246,6 +264,8 @@ def sanitize(edition: dict, withdrawn: frozenset = frozenset(), quiet: frozenset
 
     def allowed(item, lane):
         if item.get("sourceId") in withdrawn:
+            return False
+        if youtube_expired and (item.get("medium") == "youtube" or hosts.youtube_page(item.get("url") or "")):
             return False
         if lane == "trend" and not item.get("trendEvidence"):
             return False

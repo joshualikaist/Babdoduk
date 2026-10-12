@@ -19,9 +19,9 @@ report explains it (`lanes`): never silent and never filled with anything made u
 | Web search, Exa hosted MCP (`https://mcp.exa.ai/mcp`, **no key**), with page text from `web_fetch_exa` and Jina Reader | trend (10 queries), habit (10 queries) | cloud | active, **with a free daily quota** (below) |
 | Naver pages (blog, post, cafe, news) | - | - | **not collected** (decisions 3-4): the `site:blog.naver.com` search is off since 2026-10-12, web search drops a Naver result before reading it, and one stored earlier is rejected (`HOST_NOT_COLLECTED`). A Naver blog joins only through its owner's RSS with recorded permission |
 | YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
-| YouTube channels (4): Atom feed, else yt-dlp channel listing | tips, health, trend | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
+| YouTube channels (4) through the YouTube Data API (`playlistItems.list`, 1 quota unit a channel) | tips, health, trend | cloud, with the `YOUTUBE_API_KEY` secret | **active since 2026-10-12** (magazine sourcing plan, decision 1); without the key a channel fails for that run |
 | Exa REST search with `EXA_API_KEY` | - | optional | not configured, not needed |
-| YouTube Data API with `YOUTUBE_API_KEY` | tips, trend | cloud (any runner) | ready in code, waiting for the owner's key (magazine sourcing plan, decision 1): registered channels through `playlistItems.list` (1 unit), queries through `search.list` (at most 100 calls a day) |
+| YouTube search through the Data API (`search.list`, 100 units a query) | trend | cloud | ready in code, off (the registry's `yt-search` stays disabled) |
 | Instagram (OpenCLI) | trend | local only | **OWNER_CHECKPOINT**, disabled |
 
 Evidence for the split (probe workflow runs 36525458559 and 36525712270 on a GitHub-hosted runner,
@@ -95,12 +95,17 @@ The normal pipeline reads the inbox as that source's adapter result, so every lo
 through the same rules, and only the normal publisher produces the public edition. An inbox older
 than 3 days is reported as `LOCAL_INBOX_STALE` (DEGRADED); a missing one as `LOCAL_INBOX_MISSING`.
 
-**YouTube is off (owner decision, 2026-10-12).** Nothing ever ran the sidecar on a schedule or
-delivered the inbox to the repository: the only inbox came from one controlled local run
-(2026-09-29). The five YouTube sources are disabled in the registry and the stale inbox files are
-gone, so `health.json` no longer records `YOUTUBE_AUTOMATION_PENDING`. Turning them back on needs
-that delivery path first (a scheduled task on the operator PC plus a way to hand the inbox to the
-publisher).
+**YouTube runs through the Data API (owner decisions, 2026-10-12).** The sidecar route never ran
+on a schedule, so YouTube was turned off; the four channels came back through the YouTube Data API,
+which answers any runner. YouTube search (`yt-search`) stays off. The API's terms apply
+(YouTube API Services Developer Policies III.E.4 and III.F.2):
+- **30 days.** Data from the API is kept at most 30 days, then refreshed or deleted: a stored row of
+  a YouTube video is dropped 30 days after the API last returned it (`store.YOUTUBE_DAYS`), published
+  or not. A video runs only on data the API returned within 2 days and while its upload is at most
+  28 days old (`select.youtube_runnable`), and editions older than 28 days lose their YouTube videos
+  (`select.sanitize`), so nothing from the API is kept past 30 days and a video never runs twice.
+- **Attribution.** A YouTube card names YouTube as its medium in both languages, with the channel's
+  name, and links to the video on YouTube.
 
 ## Lanes are rules (owner decision, 2026-09-29)
 

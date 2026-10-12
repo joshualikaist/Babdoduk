@@ -550,16 +550,15 @@
       "type": "youtube_channel",
       "channelId": "UCC9pQY_uaBSa0WOpMNJHbEQ",
       "url": "https://www.youtube.com/channel/UCC9pQY_uaBSa0WOpMNJHbEQ",
-      "enabled": false,
+      "enabled": true,
       "trustTier": "B",
       "categories": [
         "tips"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
-      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "yt-cookingtree",
@@ -567,16 +566,15 @@
       "type": "youtube_channel",
       "channelId": "UCtby6rJtBGgUm-2oD_E7bzw",
       "url": "https://www.youtube.com/channel/UCtby6rJtBGgUm-2oD_E7bzw",
-      "enabled": false,
+      "enabled": true,
       "trustTier": "B",
       "categories": [
         "tips"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
-      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "yt-haruhankki",
@@ -584,17 +582,16 @@
       "type": "youtube_channel",
       "channelId": "UCPWFxcwPliEBMwJjmeFIDIg",
       "url": "https://www.youtube.com/channel/UCPWFxcwPliEBMwJjmeFIDIg",
-      "enabled": false,
+      "enabled": true,
       "trustTier": "B",
       "categories": [
         "tips",
         "health"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
-      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "yt-hamzy",
@@ -602,16 +599,15 @@
       "type": "youtube_channel",
       "channelId": "UCPKNKldggioffXPkSmjs5lQ",
       "url": "https://www.youtube.com/channel/UCPKNKldggioffXPkSmjs5lQ",
-      "enabled": false,
+      "enabled": true,
       "trustTier": "B",
       "categories": [
         "trend"
       ],
-      "discoveryMethod": "youtube_feed",
+      "discoveryMethod": "youtube_data_api",
       "kind": "video",
-      "localOnly": true,
-      "knownIssue": "GitHub-hosted runners receive HTTP 404 from YouTube channel feeds (daily since 2026-09-22; probe 36525458559) and YouTube's bot check on video metadata; collected on the operator PC by the local sidecar and read from research/magazine/inbox/.",
-      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube."
+      "knownIssue": "Needs the YOUTUBE_API_KEY secret: without it the channel's Atom feed answers 404 on GitHub-hosted runners (since 2026-09-22) and the source fails for that run.",
+      "note": "Disabled 2026-10-12 (owner decision, data plan phase 2): the operator-PC sidecar last delivered on 2026-09-29, and GitHub-hosted runners cannot reach YouTube. Re-enabled 2026-10-12 through the YouTube Data API (magazine sourcing plan, decision 1): the channel's newest uploads by playlistItems.list, one quota unit a run. YouTube's terms: API data is kept at most 30 days (store.YOUTUBE_DAYS), and a video runs only while its upload is under 28 days old (select.YOUTUBE_ARCHIVE_DAYS), shown as YouTube with its channel name."
     },
     {
       "id": "instagram-opencli",
