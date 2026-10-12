@@ -12,6 +12,7 @@ import re
 import subprocess
 from urllib.parse import unquote, urlparse
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -340,6 +341,13 @@ def magazine_edition_time(page):
         claims = view.locator(".mg-method, #mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()
         check(not any("10:00" in text for text in claims), ("no fixed schedule is claimed", claims))
         view.locator("#langToggle").click()
+        # The magazine redraws its masthead in a task after the switch (mukbang.html's setTimeout), so
+        # wait for the redraw, up to 5 s, before reading; a masthead that never changes still fails below.
+        try:
+            view.wait_for_function("() => document.documentElement.lang === 'en' && !/[가-힣]/.test("
+                                   "document.querySelector('.mg-masthead-issue').textContent)", timeout=5000)
+        except PlaywrightTimeoutError:
+            pass
         issue_en = view.locator(".mg-masthead-issue").text_content().strip()
         check(issue_en == "2026.01.02 · Latest edition" and
               view.locator("#mgSchedule").text_content().strip() == "Published 15:36 KST", ("English", issue_en))
