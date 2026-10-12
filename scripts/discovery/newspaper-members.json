@@ -1,7 +1,7 @@
 {
   "version": 1,
   "checked": "2026-10-12",
-  "about": "Newspaper association members, by the web hosts their articles are published on. The magazine shows their stories by title, source, date and link only: no excerpt, no photo (magazine sourcing plan, decision 5; docs/MAGAZINE_SOURCES.md). The usage rule is 한국온라인신문협회's 디지털뉴스 이용규칙 (Ver 3.0, 2007-03-05); its members must belong to 한국신문협회, so every 한국신문협회 member is listed, plus 디지털타임스 (한국온라인신문협회 only). A domain covers its subdomains; `exceptions` are subdomains run by another, non-member company; `unclear` hosts are treated as members.",
+  "about": "Newspaper association members, by the web hosts their articles are published on. The usage rule lets only a non-commercial individual link to their articles without permission and forbids republishing their RSS, so the magazine collects, keeps and shows none of their stories without the member's permission, and shows one it may collect by title, source, date and link only: no excerpt, no photo (magazine sourcing plan, decision 5, owner decision 2026-10-12; docs/MAGAZINE_SOURCES.md). The usage rule is 한국온라인신문협회's 디지털뉴스 이용규칙 (Ver 3.0, 2007-03-05); its members must belong to 한국신문협회, so every 한국신문협회 member is listed, plus 디지털타임스 (한국온라인신문협회 only). A domain covers its subdomains; `exceptions` are subdomains run by another, non-member company; `unclear` hosts are treated as members.",
   "rule": "https://www.kona.or.kr/pages/page_64.php",
   "lists": {
     "kan": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",

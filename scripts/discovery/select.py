@@ -20,7 +20,8 @@ Hero (owner decision, 2026-09-29), heroKind in the edition:
 Public items carry provenance (source, URL, medium, dates, image and its origin, ids, the
 trend evidence kinds) but no internal scores or evidence text. A card's sentence is one verbatim
 sentence of the publisher's preview; a source or host shown by title and link only carries no
-sentence and no photo, so it never leads with an image (docs/MAGAZINE_SOURCES.md).
+sentence and no photo, so it never leads with an image, and a page collected only with its owner's
+permission never runs without it (docs/MAGAZINE_SOURCES.md).
 """
 from __future__ import annotations
 
@@ -238,16 +239,17 @@ def truthful(item: dict) -> bool:
 
 
 def sanitize(edition: dict, withdrawn: frozenset = frozenset(), quiet: frozenset = frozenset(),
-             youtube_expired: bool = False) -> tuple[dict, int]:
+             permitted: frozenset = frozenset(), youtube_expired: bool = False) -> tuple[dict, int]:
     """Past editions: drop fabricated desk items and link-only idea desks, and drop generated
     summaries/tags (the old builder composed them; their source text was never kept). A trend
     item without trend evidence is not shown as a trend, and an edition built before the lane
     rules (no "rules" marker) keeps no habit items: the old builder put recipes there by keyword.
     The archive follows today's publishing rules (docs/MAGAZINE_SOURCES.md): a withdrawn source
-    (registry "withdrawn") keeps no story anywhere, and a story from a source registered "excerpt":
-    false (`quiet`) or a newspaper association member keeps title, source, date and link only. An
-    edition older than YOUTUBE_ARCHIVE_DAYS (`youtube_expired`) keeps no YouTube video: YouTube's
-    terms keep API data at most 30 days."""
+    (registry "withdrawn") keeps no story anywhere, nor does a page collected only with its owner's
+    permission (a Naver page, a newspaper association member's article) whose source does not carry
+    it (`permitted`), and a story from a source registered "excerpt": false (`quiet`) or a member
+    keeps title, source, date and link only. An edition older than YOUTUBE_ARCHIVE_DAYS
+    (`youtube_expired`) keeps no YouTube video: YouTube's terms keep API data at most 30 days."""
     removed = 0
     legacy = edition.get("rules") != RULES
 
@@ -264,6 +266,8 @@ def sanitize(edition: dict, withdrawn: frozenset = frozenset(), quiet: frozenset
 
     def allowed(item, lane):
         if item.get("sourceId") in withdrawn:
+            return False
+        if not hosts.collectable(item.get("url") or "") and item.get("sourceId") not in permitted:
             return False
         if youtube_expired and (item.get("medium") == "youtube" or hosts.youtube_page(item.get("url") or "")):
             return False

@@ -11,8 +11,8 @@ web_fetch_exa, else Jina Reader (r.jina.ai, public pages only), else the search 
 which are verbatim passages of the same page. The date comes from the search or page
 metadata, else the page's own printed date near its top (publishedAtSource says which).
 Trust tier and medium come from the result's host (discovery.hosts), never from the route.
-A result on a host that open discovery may not read (a Naver page: hosts.collectable) is
-dropped before any page is fetched. `site:` in a query restricts the MCP route through the
+A result on a host collected only with its owner's permission (a Naver page, a newspaper
+association member's article: hosts.collectable) is dropped before any page is fetched. `site:` in a query restricts the MCP route through the
 query itself and the REST route through includeDomains.
 
 Search is discovery only. Result order is Exa's, never presented as anyone's ranking, and

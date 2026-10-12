@@ -286,8 +286,15 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
   description) once, after robots.txt allows it and two seconds after the last request to that host.
   Without a sentence the card shows title, source and date.
   Nothing is written by Babdoduk.
+- **Not without permission:** a newspaper association member's article
+  (`scripts/discovery/newspaper-members.json`) and a Naver page are collected only from a source
+  registered with the owner's permission (`"permission"`; owner decision 2026-10-12: the association's
+  rule lets only a non-commercial individual link to a member's article without it). Search results on
+  those hosts are dropped before any page is read, a feed item on them is not stored
+  (`process.collected`), stored rows leave the store (`pipeline.drop_not_collected`) and past editions
+  lose them (`select.sanitize`).
 - **Title and link only:** a source registered `"excerpt": false` and any page of a newspaper
-  association member (`scripts/discovery/newspaper-members.json`) show no sentence and no photo, so they never take
+  association member collected with its permission show no sentence and no photo, so they never take
   the hero's image slot. The stored candidates follow the current registry and list every run
   (`pipeline.apply_excerpt_rules`).
 - **Date:** every card shows the source's publication date. For web pages it comes from search or

@@ -12,9 +12,9 @@ tier the registry gives them.
 
 Shopping and listing pages are not stories and are rejected (COMMERCE_PAGE).
 
-Two publishing rules also come from the host (docs/MAGAZINE_SOURCES.md): a newspaper association
-member's story is shown without excerpt or photo (excerpt_allowed), and open discovery never reads
-a Naver page (collectable).
+Publishing rules also come from the host (docs/MAGAZINE_SOURCES.md): nothing on a Naver page or a
+newspaper association member's site is collected without its owner's permission (collectable), and
+a member's story collected with permission is shown without excerpt or photo (excerpt_allowed).
 """
 from __future__ import annotations
 
@@ -62,18 +62,20 @@ VIDEO_HOSTS = ("youtube.com", "youtu.be", "m.youtube.com")
 
 
 def _members(path: Path = MEMBERS) -> tuple[tuple[str, ...], tuple[str, ...]]:
-    """(member domains, exceptions) from newspaper-members.json: newspaper association members,
-    whose usage rule (한국온라인신문협회 디지털뉴스 이용규칙) forbids repeating a headline with an excerpt,
-    so their stories are shown by title, source, date and link only - no excerpt and no photo
-    (magazine sourcing plan, decision 5; docs/MAGAZINE_SOURCES.md). A domain covers its subdomains,
-    except the listed subdomains another company runs; an unclear host counts as a member."""
+    """(member domains, exceptions) from newspaper-members.json: newspaper association members.
+    Their usage rule (한국온라인신문협회 디지털뉴스 이용규칙) lets only a non-commercial individual link
+    to their articles without permission and forbids republishing their RSS, so a public site
+    collects none of their stories without the member's permission, and shows one it may collect by
+    title, source, date and link only (magazine sourcing plan, decision 5; docs/MAGAZINE_SOURCES.md).
+    A domain covers its subdomains, except the listed subdomains another company runs; an unclear
+    host counts as a member."""
     data = json.loads(path.read_text(encoding="utf-8"))
     domains = {d for m in data["members"] for d in m.get("domains", []) + m.get("unclear", [])}
     exceptions = {d for m in data["members"] for d in m.get("exceptions", [])}
     return tuple(sorted(domains)), tuple(sorted(exceptions))
 
 
-NO_EXCERPT_HOSTS, NO_EXCERPT_EXCEPT = _members()
+MEMBER_HOSTS, MEMBER_EXCEPT = _members()
 # Naver's terms forbid automated collection and search without permission, so open discovery never
 # reads a Naver page. A Naver blog is collected only through its owner's own RSS, registered with
 # the owner's permission (registry "permission"; decisions 3 and 4).
@@ -97,15 +99,22 @@ def _match(host: str, names) -> str:
     return ""
 
 
+def member(url: str) -> bool:
+    """A newspaper association member's page (newspaper-members.json)."""
+    host = host_of(url)
+    return bool(_match(host, MEMBER_HOSTS)) and not _match(host, MEMBER_EXCEPT)
+
+
 def excerpt_allowed(url: str) -> bool:
     """False for a newspaper association member's page: title, source, date and link only."""
-    host = host_of(url)
-    return bool(_match(host, NO_EXCERPT_EXCEPT)) or not _match(host, NO_EXCERPT_HOSTS)
+    return not member(url)
 
 
 def collectable(url: str) -> bool:
-    """Whether open discovery (a search route) may read this page at all."""
-    return not _match(host_of(url), NOT_COLLECTED_HOSTS)
+    """Whether a page may be collected without its owner's permission: never a Naver page nor a
+    newspaper association member's. A registered source can carry that permission
+    (process.collected); open discovery never can."""
+    return not _match(host_of(url), NOT_COLLECTED_HOSTS) and not member(url)
 
 
 def naver_blog_feed(url: str) -> bool:

@@ -16,7 +16,7 @@ module reads the publisher's page once for that description:
   - a page that cannot be read leaves the card with title, source, date and link
 
 Nothing is read for a story shown by title and link only (process.excerpt_allowed) or on a host
-open discovery may not read (hosts.collectable).
+collected only with its owner's permission (hosts.collectable).
 """
 from __future__ import annotations
 

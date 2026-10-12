@@ -37,7 +37,7 @@
         "objective": {"type": "string", "minLength": 1},
         "requireFood": {"type": "boolean"},
         "excerpt": {"description": "false: cards from this source show title, source, date and link only, no excerpt and no photo (required for a newspaper association member).", "type": "boolean"},
-        "permission": {"description": "Who allowed collection, when and where it is recorded, for a platform that needs the author's permission (a Naver blog's RSS).", "type": "string", "minLength": 1},
+        "permission": {"description": "Who allowed collection, when and where it is recorded, where the owner's permission is needed (a Naver blog's RSS; a newspaper association member, whose articles are collected only with it).", "type": "string", "minLength": 1},
         "withdrawn": {"description": "The owner's request to leave: when, how it was received. The source stays disabled and its stories leave the archive.", "type": "string", "minLength": 1},
         "localOnly": {"type": "boolean"},
         "pagedFeed": {"description": "The feed pages back (WordPress: ?paged=N).", "const": "wordpress"},
