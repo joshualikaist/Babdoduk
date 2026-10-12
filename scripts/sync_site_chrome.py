@@ -172,8 +172,18 @@ def _object(mapping: dict) -> str:
     return json.dumps(mapping, ensure_ascii=False)
 
 
+# Scripts of lab-only experiments (not promoted to production in the current main baseline). A tree
+# without one, like main, has no block to write there; any other missing script stops the sync.
+LAB_ONLY_SCRIPTS = {"js/ggongbab-public-feed.js"}
+
+
+def present(blocks: dict, root: Path) -> dict:
+    """The label blocks of the scripts this tree has: lab-only scripts it lacks are left out."""
+    return {path: block for path, block in blocks.items() if path not in LAB_ONLY_SCRIPTS or (root / path).exists()}
+
+
 # Script blocks between `// @labels:<name>` and `// @end labels`, rendered from the labels.
-LABEL_BLOCKS = {
+ALL_LABEL_BLOCKS = {
     "js/eat-slot.js": {
         "cuisines": lambda data: [
             f"var CUISINE_BY_CUISINE = {_object(data['cuisines']['byCuisine'])};",
@@ -186,6 +196,7 @@ LABEL_BLOCKS = {
         ],
     },
 }
+LABEL_BLOCKS = present(ALL_LABEL_BLOCKS, ROOT)
 
 
 # Page blocks rendered from data/content/ (scripts/page_content.py), and their translations.
