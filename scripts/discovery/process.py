@@ -93,6 +93,8 @@ def normalize(raw: dict, source: dict, now: datetime) -> Optional[dict]:
         "medium": medium, "trustTier": tier, "sourceTrust": tier,
         "contentKind": evidence.content_kind(title, text, medium, source.get("kind") or ""),
         "requireFood": bool(source.get("requireFood")), "commercePage": bool(raw.get("commerce")),
+        # A source registered with "excerpt": false shows no excerpt on its cards (docs/MAGAZINE_SOURCES.md).
+        "excerptAllowed": source.get("excerpt") is not False,
         "sponsored": evidence.sponsored(text),
         "searchRank": raw.get("searchRank"), "viewCount": meta["viewCount"], "likeCount": meta["likeCount"],
         "howToMarkers": editorial.how_to_markers(text),
