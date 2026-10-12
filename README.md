@@ -608,7 +608,8 @@ python scripts\check_ggongbab_ui.py --serve     # 127.0.0.1 로만 연다
 요청 자체를 시도하지 않고 안내 문구만 보여 줍니다. 진단 패널도 허용 목록에 있는 숫자
 카운터만 렌더링하므로, 로컬 payload에 예상 밖의 필드가 있어도 화면에 나오지 않습니다.
 
-모델을 부르지 않고 레이아웃만 보려면 `?fixture=1` 을 씁니다. 자세한 내용은
+모델을 부르지 않고 레이아웃만 보려면 `?fixture=1` 을 씁니다. 시험용 데이터는
+`tests/fixtures/ggongbab-lab.js` 에 있고 배포되지 않으므로 로컬 서버에서만 됩니다. 자세한 내용은
 `docs/GGONGBAB_PREVIEW.md`.
 
 > 이 저장소에서 `python -m http.server` 는 쓰지 마세요. 디렉터리 목록과 `.local/` 을 그대로
