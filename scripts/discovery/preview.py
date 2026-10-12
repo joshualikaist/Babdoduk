@@ -3,8 +3,9 @@
 
 A card's sentence comes from text the publisher wrote to present the page: a registered feed's
 own item text, else the page's og:description, meta description or twitter:description. A web
-search result carries the page body, not a preview, so once its story is chosen for the edition
-this module reads the publisher's page once for that description:
+search result carries the page body, not a preview, and a story its feed no longer lists has no
+text left (the store keeps none, decision 6), so once such a story is chosen for the edition this
+module reads the publisher's page once for that description:
 
   - robots.txt of the page's host decides, read once per host and run; one that answers 401/403
     or cannot be read (server error, timeout) counts as a refusal, a missing one (other 4xx) as
@@ -95,8 +96,9 @@ class Robots:
 
 
 def needs_preview(row: dict) -> bool:
-    """A chosen story whose collected text is not the publisher's preview (a web search result)."""
-    return row.get("sourceType") == "web_search" and shows_media(row)
+    """A chosen story without the publisher's preview in hand: a web search result (its text is the
+    page body), or a story stored without its text whose feed no longer lists it."""
+    return shows_media(row) and (row.get("sourceType") == "web_search" or not row.get("sourceExcerpt"))
 
 
 def _cards(edition: dict) -> Iterator[dict]:

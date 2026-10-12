@@ -104,6 +104,23 @@ def is_food(title: str, text: str = "") -> bool:
     return any(w in low for w in FOOD_KO) or bool(FOOD_EN_RE.search(blob))
 
 
+def food_story(row: dict) -> bool:
+    """Whether a story is about food: from its text when this run read it, else the answer stored
+    with it (store.stored keeps no text; process.text_facts keeps what it said)."""
+    facts = row.get("textFacts") or {}
+    if row.get("sourceExcerpt") or "food" not in facts:
+        return is_food(row.get("title") or "", row.get("sourceExcerpt") or "")
+    return bool(facts["food"])
+
+
+def text_words(row: dict) -> set[str]:
+    """The words of a story's text (corroborate's tokens): from the text when this run read it,
+    else the unordered list stored with it."""
+    if row.get("sourceExcerpt") or row.get("textWords") is None:
+        return _tokens(row.get("sourceExcerpt") or "")
+    return set(row["textWords"])
+
+
 def sentences(text: str) -> list[str]:
     return [s.strip() for s in SENTENCE_END.split(text or "") if s and s.strip()]
 
@@ -208,6 +225,9 @@ def business_title(title: str) -> bool:
 def is_research(row: dict) -> bool:
     if row.get("contentKind") == "research" or row.get("medium") == "research":
         return True
+    facts = row.get("textFacts") or {}
+    if not row.get("sourceExcerpt") and "research" in facts:
+        return bool(facts["research"])                  # judged from the text before it was dropped
     blob = (row.get("sourceExcerpt") or "").lower()
     return row.get("sourceTrust") == "A" and any(w in blob for w in RESEARCH_TEXT)
 
@@ -271,10 +291,10 @@ def corroborate(rows: list[dict], now: datetime) -> dict[str, list[str]]:
         published = parse_time(row.get("publishedAt"))
         if row.get("duplicateOf") or row.get("rejectionReason") or not published:
             continue
-        if (now - published).days > TREND_MAX_DAYS or not is_food(row.get("title") or "", row.get("sourceExcerpt") or ""):
+        if (now - published).days > TREND_MAX_DAYS or not food_story(row):
             continue
         title_tokens = _tokens(row.get("title") or "")
-        recent.append((row, title_tokens, title_tokens | _tokens(row.get("sourceExcerpt") or "")))
+        recent.append((row, title_tokens, title_tokens | text_words(row)))
     frequency = Counter(token for _, _, everything in recent for token in everything)
     limit = max(3, int(RARE_SHARE * len(recent)))
     found: dict[str, list[str]] = {}
