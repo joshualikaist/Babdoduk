@@ -179,3 +179,28 @@ def test_a_guardian_failure_still_runs_the_visual_comparison_and_names_the_page(
     summary = (tmp_path / "visual-diff/SUMMARY.md").read_text(encoding="utf-8")
     assert "| guardian-event-ko-1440px.png | event.html | ko | 1440px | the footer sits on the page canvas on every page |" in summary
     assert (tmp_path / "visual-diff/guardian-event-ko-1440px.png").read_bytes() == b"capture"
+
+
+def test_a_tree_without_the_lab_only_feed_still_syncs(tmp_path, monkeypatch):
+    """main has no js/ggongbab-public-feed.js (the public feed is lab-only): the sync leaves its block
+    out there, and any other missing script still stops it."""
+    for folder in ("shared", "i18n"):
+        if (ROOT / folder).exists():
+            shutil.copytree(ROOT / folder, tmp_path / folder)
+    for page in list(chrome.PAGES) + ["js/eat-slot.js", "data/content/labels.json"]:
+        (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(ROOT / page, tmp_path / page)
+    for name, value in (("ROOT", tmp_path), ("SHARED", tmp_path / "shared"), ("I18N", tmp_path / "i18n"),
+                        ("LABELS", tmp_path / "data/content/labels.json")):
+        if hasattr(chrome, name):
+            monkeypatch.setattr(chrome, name, value)
+    monkeypatch.setattr(chrome, "LABEL_BLOCKS", chrome.present(chrome.ALL_LABEL_BLOCKS, tmp_path))
+    assert list(chrome.LABEL_BLOCKS) == ["js/eat-slot.js"]
+    assert chrome.main(["--check"]) == 0
+    (tmp_path / "js/eat-slot.js").unlink()
+    try:
+        chrome.main(["--check"])
+    except FileNotFoundError:
+        pass
+    else:
+        raise AssertionError("a missing script passed the sync")
