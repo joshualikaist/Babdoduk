@@ -23,7 +23,7 @@ import re
 from datetime import datetime
 from typing import Iterable, Optional
 
-from . import editorial, evidence
+from . import editorial, evidence, hosts
 from .common import (canonical_url, clean_text, excerpt, is_public_url, iso, normalize_title, parse_time, sha,
                      title_similarity, youtube_id)
 from .evidence import TREND_MAX_DAYS
@@ -61,6 +61,12 @@ HOW_TO_KINDS = ("recipe", "video", "post")
 LANE_ORDER = ("trend", "habit", "health", "tips")
 
 
+def excerpt_allowed(row: dict, source: Optional[dict]) -> bool:
+    """Whether the card may show the story's excerpt and photo: not for a source registered with
+    "excerpt": false, nor for a newspaper association member's page (docs/MAGAZINE_SOURCES.md)."""
+    return (source or {}).get("excerpt") is not False and hosts.excerpt_allowed(row.get("sourceUrl") or "")
+
+
 def normalize(raw: dict, source: dict, now: datetime) -> Optional[dict]:
     url = (raw.get("sourceUrl") or "").strip()
     if url.startswith("//"):
@@ -93,8 +99,7 @@ def normalize(raw: dict, source: dict, now: datetime) -> Optional[dict]:
         "medium": medium, "trustTier": tier, "sourceTrust": tier,
         "contentKind": evidence.content_kind(title, text, medium, source.get("kind") or ""),
         "requireFood": bool(source.get("requireFood")), "commercePage": bool(raw.get("commerce")),
-        # A source registered with "excerpt": false shows no excerpt on its cards (docs/MAGAZINE_SOURCES.md).
-        "excerptAllowed": source.get("excerpt") is not False,
+        "excerptAllowed": excerpt_allowed({"sourceUrl": url}, source),
         "sponsored": evidence.sponsored(text),
         "searchRank": raw.get("searchRank"), "viewCount": meta["viewCount"], "likeCount": meta["likeCount"],
         "howToMarkers": editorial.how_to_markers(text),
@@ -177,6 +182,8 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
     blob = _blob(row)
     if not is_public_url(url):
         return "BAD_URL"
+    if row.get("sourceType") in SEARCH_TYPES and not hosts.collectable(url):
+        return "HOST_NOT_COLLECTED"                # a Naver page found by search, stored before the rule
     if len(title) < 4:
         return "NO_TITLE"
     minimum = MIN_TEXT.get(row.get("medium"), MIN_TEXT["blog"])

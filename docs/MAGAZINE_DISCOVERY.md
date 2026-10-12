@@ -2,11 +2,13 @@
 
 The magazine (`mukbang.html`) publishes **source-backed stories only**. There is no Babdoduk Desk
 fallback and no generated filler: every story has a real source, a real URL, the source's own
-title and a short excerpt of text that was actually retrieved from that source. Every lane carries
-five stories (owner decision, 2026-10-12). When sources are down or thin and a lane cannot be filled
-from qualifying stories, it carries what it has; the run report names it (`summary.laneFill`,
-`summary.shortLanes` and a warning in `research/magazine/health.json`) and explains it (`lanes`),
-never silent and never filled with anything made up.
+title and at most one sentence of the publisher's own preview (docs/MAGAZINE_SOURCES.md, which
+also sets what is collected and shown, how a source is proposed and how its owner leaves). Every lane
+carries five stories (owner decision, 2026-10-12). When sources are down or thin and a lane cannot be
+filled from qualifying stories, it carries what it has; the run report names it (`summary.laneFill`,
+`summary.shortLanes` and a warning in `research/magazine/health.json`), the run log prints a `[warn]`
+line, the GitHub Actions run shows a warning and a lane table (`refresh_magazine.announce`), and the
+report explains it (`lanes`): never silent and never filled with anything made up.
 
 ## Routes: implemented, where they run
 
@@ -15,7 +17,7 @@ never silent and never filled with anything made up.
 | Recipe RSS/Atom (7 blogs) | tips, health | cloud | active |
 | Korean food-industry and health news RSS (식품음료신문, 식품저널, 식품외식경제, 대한급식신문, 연합뉴스 산업·건강, 코메디닷컴, 뉴시스 건강, 동아일보 건강, 서울신문 라이프) | trend, habit, health (evidence rules apply) | cloud | active; Korean hosts time out now and then from GitHub runners (recorded as FETCH_FAILED) |
 | Web search, Exa hosted MCP (`https://mcp.exa.ai/mcp`, **no key**), with page text from `web_fetch_exa` and Jina Reader | trend (10 queries), habit (10 queries) | cloud | active, **with a free daily quota** (below) |
-| Naver Blog through the same web search (`site:blog.naver.com`) | trend | cloud | active, Tier C |
+| Naver pages (blog, post, cafe, news) | - | - | **not collected** (decisions 3-4): the `site:blog.naver.com` search is off since 2026-10-12, web search drops a Naver result before reading it, and one stored earlier is rejected (`HOST_NOT_COLLECTED`). A Naver blog joins only through its owner's RSS with recorded permission |
 | YouTube search, yt-dlp metadata only | trend (10 queries) | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
 | YouTube channels (4): Atom feed, else yt-dlp channel listing | tips, health, trend | **local only** (sidecar) | **disabled 2026-10-12** (no input since 09-29) |
 | Exa REST search with `EXA_API_KEY` | - | optional | not configured, not needed |
@@ -252,9 +254,17 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
 
 ## Truth and image rules
 
-- **Summary:** at most 120 characters, cut from the source's own text (for a web page its first
-  real paragraph, without bylines, captions or links). If less than 20 characters remain, the card
-  shows title and source only. Nothing is written by Babdoduk.
+- **Sentence:** one verbatim sentence of the publisher's own preview, at most 120 characters
+  (`select.card_summary`): the first sentence of at least 20 characters among the opening three,
+  without bylines, captions or links. A registered feed's item text is its preview. A web search
+  result's page text only decides its lane: when the story is published, `discovery.preview` reads
+  the page's og:description (else meta description) once, after robots.txt allows it and two seconds
+  after the last request to that host. Without a sentence the card shows title, source and date.
+  Nothing is written by Babdoduk.
+- **Title and link only:** a source registered `"excerpt": false` and any page of a newspaper
+  association member (`scripts/discovery/newspaper-members.json`) show no sentence and no photo, so they never take
+  the hero's image slot. The stored candidates follow the current registry and list every run
+  (`pipeline.apply_excerpt_rules`).
 - **Date:** every card shows the source's publication date. For web pages it comes from search or
   page metadata, else the page's own printed date near its top (`publishedAtSource`).
 - **Image:** in order of preference, RSS/Atom media of the same item, an image in the same feed
@@ -263,7 +273,9 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
 - **Stored editions:** every run sanitizes them. Desk items, link-less items and idea desks are
   removed; generated summaries of items built before provenance existed are dropped; a trend item
   without evidence and the old builder's keyword-routed habit items (editions without
-  `rules: "lanes-v1"`) are removed.
+  `rules: "lanes-v1"`) are removed. They follow today's publishing rules too: a withdrawn source's
+  stories are removed, and a title-and-link-only story loses its sentence and photo. A file is
+  rewritten only when cleaning changed it.
 - **Validation:** `validate_content.py` rejects any desk, sourceless or link-less story, a trend story
   without evidence, older than 30 days or undated, an undated habit story, and a trend hero without
   evidence. A lane with fewer than five stories is valid (an honest shortage) but is reported.
