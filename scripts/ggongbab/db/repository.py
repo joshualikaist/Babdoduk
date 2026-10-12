@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import uuid
+from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any, Optional, Protocol
 
@@ -40,6 +41,8 @@ class Repository(Protocol):
     def link_event_source(self, event_id: str, raw_item_id: str, score: float) -> None: ...
     def publishable_events(self) -> list[dict[str, Any]]: ...
     def recent_published_events(self, days: int) -> list[dict[str, Any]]: ...
+    def public_feed_generation(self) -> int: ...
+    def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int: ...
     def review_events(self) -> list[dict[str, Any]]: ...
     def start_ingest_run(self, source_type: str) -> str: ...
     def finish_ingest_run(self, run_id: str, **fields: Any) -> None: ...
@@ -185,6 +188,17 @@ class SupabaseRepository:
         })
         return self._with_sources(rows)
 
+    def public_feed_generation(self) -> int:
+        rows = self.client.select_all("ggongbab_public_feed_state", {"select": "generation", "order": "singleton.asc"})
+        if len(rows) != 1 or type(rows[0].get("generation")) is not int or rows[0]["generation"] < 0:
+            from .supabase_client import SupabaseError
+            raise SupabaseError("PUBLIC_FEED_GENERATION_INVALID")
+        return rows[0]["generation"]
+
+    def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int:
+        return self.client.rpc("ggongbab_replace_public_feed", {"p_generation": generation, "p_rows": rows},
+                               returning=True)
+
     def recent_published_events(self, days: int) -> list[dict[str, Any]]:
         """Published rows that started in the last `days` days (read-only; for the past-listings archive)."""
         now = datetime.now(KST)
@@ -220,6 +234,8 @@ class MemoryRepository:
         self.events: dict[str, dict[str, Any]] = {}
         self.event_sources: dict[tuple[str, str], float] = {}
         self.ingest_runs: dict[str, dict[str, Any]] = {}
+        self.public_events: dict[str, dict[str, Any]] = {}
+        self._public_generation = 0
 
     def source_id(self, source_type: str) -> str:
         return self.sources.setdefault(source_type, str(uuid.uuid4()))
@@ -324,6 +340,23 @@ class MemoryRepository:
         rows = [dict(r) for r in self.events.values() if r.get("status") == "published" and not r.get("needs_review")]
         rows.sort(key=lambda r: r.get("event_start") or "9999")
         return self._with_sources(rows)
+
+    def public_feed_generation(self) -> int:
+        return self._public_generation
+
+    def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int:
+        if generation != self._public_generation:
+            raise ValueError("PUBLIC_FEED_CONCURRENT_SYNC")
+        desired = {}
+        for row in rows:
+            previous = self.public_events.get(row["id"])
+            if previous and previous["content_revision"] == row["content_revision"]:
+                desired[row["id"]] = deepcopy(previous)
+            else:
+                desired[row["id"]] = {**deepcopy(row), "updated_at": _now()}
+        self.public_events = desired
+        self._public_generation += 1
+        return self._public_generation
 
     def recent_published_events(self, days: int) -> list[dict[str, Any]]:
         now = datetime.now(KST)

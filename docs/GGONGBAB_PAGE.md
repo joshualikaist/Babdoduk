@@ -393,6 +393,10 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 * `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
   브랜치마다 비교해서 `generatedAt` 말고 달라진 것이 없으면 커밋하지 않는다(`VOLATILE_KEYS`, 두 파일 모두).
 * 종료 코드 2 = “안전하게 내보낼 것이 없음”(Supabase 불통, 모든 collector 실패, export 검증 실패). 이때 이전 `latest.json` 을 유지하고 publish 단계를 건너뛴다.
+* 발행 다음 단계 **Sync the public DB feed** (소유자 승인 2026-10-13): `python scripts/sync_public_feed.py` 가 같은 선택(`build_payload`)으로
+  Supabase 공개 테이블(`ggongbab_public_events`)을 원자적으로 바꾼다(`ggongbab_replace_public_feed`, 이미 적용된 migration 004).
+  `latest.json` 에 실린 것만 들어가고, 실패하면 작업이 빨간색이 되지만 이미 발행된 `latest.json` 은 그대로다(종료 21 설정 없음, 23 동기화 실패).
+  공개 테이블을 브라우저가 읽는 기능은 여전히 lab 전용이다.
 * `ggongbab.html`(본편)은 옛 3열 UI 를 버리고 lab 과 같은 피드 UI 로 교체됐다.
   승격은 손으로 베끼는 것이 아니라 `lab-ggongbab.html` 에서 `<meta name="robots">`,
   lab 리본(마크업과 CSS), `data-gg-lab`, `nav.lab` 항목을 빼고 제목을 바꾸는 기계적 변환이다.

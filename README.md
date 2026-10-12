@@ -684,7 +684,7 @@ python scripts/check_real_fonts.py   # 7개 페이지(choose 이동·실험실 �
 
 | 워크플로 | 주기 | 하는 일 |
 |----------|------|---------|
-| `.github/workflows/ggongbab-refresh.yml` | 30분 | 수집·파싱·저장 후 `data/ggongbab/` 를 lab·main에 푸시 |
+| `.github/workflows/ggongbab-refresh.yml` | 30분 | 수집·파싱·저장 후 `data/ggongbab/` 를 lab·main에 푸시하고, 그다음 Supabase 공개 테이블을 같은 내용으로 동기화(`scripts/sync_public_feed.py`) |
 | `.github/workflows/magazine-daily.yml` | 매일 | 매거진·학식 데이터 갱신 |
 | `.github/workflows/ui-guardian.yml` | 프론트엔드 변경 push·PR | 공통 내비·푸터 동기화 확인과 시각 기준 비교(읽기 전용, 배포 없음) |
 
