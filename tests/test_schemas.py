@@ -188,6 +188,22 @@ def test_a_store_row_is_whole_or_compact_never_a_mix():
     assert sc.schema_errors(dict(VALID["magazine-candidate"], compact=True), "magazine-candidate")
 
 
+def test_a_row_as_the_store_writes_it_fits_the_contract():
+    """Decision 6: what the store writes (store.stored) - facts and words, no sentence - passes."""
+    from datetime import datetime, timezone
+    from discovery import process, store
+    now = datetime(2026, 10, 12, 10, 0, tzinfo=timezone.utc)
+    raw = {"title": "편의점 우유생크림빵 품절 대란", "sourceUrl": "https://news.example.co.kr/1", "publishedAt": now,
+           "medium": "news", "text": "편의점 우유생크림빵이 SNS에서 화제가 되며 매장마다 품절이 이어졌다. " * 4}
+    source = {"id": "t-news", "name": "뉴스", "type": "rss", "trustTier": "B", "categories": ["trend"], "kind": "news"}
+    row = process.normalize(raw, source, now)
+    row.update(candidateId="c_0123456789abcdef", discoveredSeq=1, discoveredAt=now.isoformat())
+    process.process([row], now)
+    written = json.loads(json.dumps(store.stored(row), ensure_ascii=False))
+    assert written["textFacts"] and written["textWords"] and "sourceExcerpt" not in written
+    assert sc.schema_errors(written, "magazine-candidate") == []
+
+
 def test_a_schema_outside_the_supported_subset_is_refused(tmp_path, monkeypatch):
     (tmp_path / "odd.schema.json").write_text(json.dumps({"type": "object", "if": {}}), encoding="utf-8")
     monkeypatch.setattr(sc, "SCHEMAS", tmp_path)

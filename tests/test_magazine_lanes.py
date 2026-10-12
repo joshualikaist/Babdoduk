@@ -9,7 +9,8 @@ from datetime import timedelta
 from pathlib import Path
 
 
-from discovery import adapters, common, editorial, evaluate, evidence, hosts, pipeline, process, select, sidecar, store
+from discovery import (adapters, common, editorial, evaluate, evidence, hosts, pipeline, preview, process, registry,
+                       select, sidecar, store)
 from discovery.adapters import exa_mcp, inbox, web
 
 NOW = evaluate.NOW                               # 2026-09-29 10:30 KST
@@ -113,7 +114,7 @@ def test_habit_accepts_credible_behavior_and_research_sources():
         (raw("Dietary habits of university students", "This study of 327 college students examined eating "
              "habits, meal skipping and convenience food consumption after the return to in-person classes. " * 2,
              day(400), "https://pmc.ncbi.nlm.nih.gov/articles/PMC1/", medium="research", trustTier="A"), SEARCH),
-        (raw("나의 혼밥 식습관 이야기", behavior, day(5), "https://blog.naver.com/x/1", medium="blog", trustTier="C"),
+        (raw("나의 혼밥 식습관 이야기", behavior, day(5), "https://honbap.tistory.com/1", medium="blog", trustTier="C"),
          SEARCH),
         (raw("대학생 식습관 설문", "대학생 식습관 설문에서 응답자의 38%가 저녁 끼니를 배달 음식으로 해결한다고 답했다. "
              "아침 식사를 거르는 비율도 높았다. " * 3, day(120), "https://www.hani.co.kr/a/H2"), NEWS))
@@ -151,25 +152,25 @@ def test_audience_relevance_influences_rank_and_hero():
 
 
 def test_the_hero_prefers_a_qualified_current_trend():
-    trend, recipe, naver = run(
+    trend, recipe, blog = run(
         (raw("편의점 우유생크림빵 품절 대란", NEUTRAL + " 출시 직후 SNS에서 화제가 되며 편의점마다 품절이 이어졌다.", day(2),
-             "https://www.hankyung.com/a/1"), NEWS),
+             "https://www.thinkfood.co.kr/news/articleView.html?idxno=1"), NEWS),
         (raw("Crispy Tofu Recipe", "Crispy tofu recipe. Ingredients: 1 block tofu, 2 tbsp starch, 1 tsp salt. "
              "Press and fry the tofu until crisp. " * 3, day(0), "https://recipes.example.org/tofu", medium="blog"),
          RECIPES),
         (raw("편의점 과자 품절 후기", "CU편의점에서 이 과자가 요즘 품절 대란이라 세 곳을 돌아 겨우 샀어요. 맛은 짭짤하고 "
-             "타코 맛 시즈닝이 진하게 느껴졌어요. " * 3, day(1), "https://blog.naver.com/y/2", medium="blog",
+             "타코 맛 시즈닝이 진하게 느껴졌어요. " * 3, day(1), "https://snack.tistory.com/2", medium="blog",
              trustTier="C"), SEARCH))
-    assert trend["assignedCategory"] == "trend" and naver["assignedCategory"] == "trend"
+    assert trend["assignedCategory"] == "trend" and blog["assignedCategory"] == "trend"
     [weak] = run((raw("편의점 과자 후기", "CU편의점 신상 코너에서 산 과자 후기예요. 맛은 짭짤하고 가격은 1,700원이에요. " * 4,
-                      day(1), "https://blog.naver.com/y/3", medium="blog", trustTier="C"), SEARCH))
+                      day(1), "https://snack.tistory.com/3", medium="blog", trustTier="C"), SEARCH))
     assert weak.get("assignedCategory") is None and "explicit_source_claim" not in (weak.get("trendEvidence") or [])
-    rows = [with_image(r) for r in (trend, recipe, naver)]
+    rows = [with_image(r) for r in (trend, recipe, blog)]
     edition, _ = select.build(rows, date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
     assert edition["featured"]["url"] == trend["sourceUrl"] and edition["featured"]["heroKind"] == "trend"
     assert edition["featured"]["trendEvidence"] == ["explicit_source_claim"]
     # A Tier C blog with one weak claim ("신상") may sit in the lane but never leads the page.
-    edition, _ = select.build([with_image(naver), with_image(recipe)], date="2026-09-29",
+    edition, _ = select.build([with_image(blog), with_image(recipe)], date="2026-09-29",
                               generated_at=NOW.isoformat(), recent=set())
     assert edition["featured"]["heroKind"] == "pick"
 
@@ -218,8 +219,10 @@ def test_query_provenance_is_persisted(tmp_path):
     assert saved["discoveryMethod"] == "exa_mcp" and saved["discoveryQuery"] == "2026 혼밥 식습관"
     assert saved["discoveryLane"] == "habit" and saved["seenQueries"] == ["2026 혼밥 식습관"]
     assert saved["assignedCategory"] == "habit" and saved["sourceTrust"] == "B" and saved["selectedFor"] == "2026-09-29"
-    for key in ("trendEvidence", "trendEvidenceDetail", "audienceRelevance", "duplicateOf", "rejectionReason"):
+    for key in ("trendEvidence", "audienceRelevance", "duplicateOf", "rejectionReason", "laneDecisions", "textFacts"):
         assert key in saved, key
+    # No sentence of the source is stored (decision 6): the excerpt and the evidence detail stay in memory.
+    assert "sourceExcerpt" not in saved and "trendEvidenceDetail" not in saved
 
 
 def test_local_discovery_cannot_directly_publish(tmp_path):
@@ -481,7 +484,7 @@ def test_sponsored_notices_events_and_business_news_are_not_lane_stories():
     assert ppl["rejectionReason"] == "AD_OR_SPONSORED"
     assert "viral" not in str(evidence.trend_signals("링크 shop.example.co.kr/x?utm_medium=viral 입니다. 떡볶이가 맛있다."))
     honest = run((raw("편의점 신상 디저트 먹방 후기", "협찬 없이 내돈내산으로 산 편의점 신상 디저트 후기예요. " * 8, day(3),
-                      "https://blog.naver.com/z/9", medium="blog", trustTier="C"), SEARCH))[0]
+                      "https://dessert.tistory.com/9", medium="blog", trustTier="C"), SEARCH))[0]
     assert honest["rejectionReason"] != "AD_OR_SPONSORED"                 # disclosed as self-paid
     notice, event = run(
         (raw("[게시판] 식품업체, 병원에 1억원 기부", "식품업체가 병원에 1억원을 기부했다. 건강한 식생활 지원에 쓰인다. " * 4, day(0),
@@ -611,11 +614,16 @@ def test_real_stockouts_and_measured_sales_make_a_trend_and_can_lead():
     text = ("최근 편의점 우유 생크림빵이 SNS를 달구고 있다. \"편의점 네 곳을 돌아다녀 간신히 샀다\"는 후기가 보이는 등 "
             "'오픈런'까지 불사한다. 지난해 편의점 디저트 매출은 전년 대비 62.3% 올랐다. " * 2)
     [story] = run((raw("딱 하나 남아 간신히 샀다…SNS서 난리 난 편의점 크림빵", text, day(1),
-                       "https://www.hankyung.com/article/1"), NEWS))
+                       "https://www.foodnews.co.kr/news/articleView.html?idxno=1"), NEWS))
     assert story["assignedCategory"] == "trend"
     assert set(story["trendEvidenceIndependent"]) == {"explicit_source_claim", "sales_data"}
     edition, _ = select.build([with_image(story)], date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
     assert edition["featured"]["heroKind"] == "trend"
+    # The same story on a newspaper association member's site shows no photo, so it cannot lead with one.
+    [member] = run((raw("딱 하나 남아 간신히 샀다…SNS서 난리 난 편의점 크림빵", text, day(1),
+                        "https://www.hankyung.com/article/1"), NEWS))
+    edition, _ = select.build([with_image(member)], date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    assert edition["featured"]["heroKind"] == "pick" and "image" not in edition["featured"]
 
 
 def test_asmr_and_compilations_do_not_teach_so_they_are_not_tips():
@@ -925,7 +933,25 @@ def test_card_excerpts_leave_no_credit_debris_or_repeated_tagged_headlines():
     assert select.card_summary("가공식품 지출 현황과 특징1. 2분기 가구의 식품비 지출은 3.3% 증가했다.",
                                "[자료] 가공식품 지출 현황과 특징").startswith("1. 2분기")
     assert select.card_summary("ㅡㅡㅡㅡㅡㅡㅡㅡ 푸디앨리 멤버십 가입하기 자막이 필요하시면 CC 버튼을 눌러주세요 (Press CC button)") == ""
-    assert select.card_summary("바삭하고 고소해서 정말 좋아요. 버터 향이 오래 남는 쿠키입니다.").startswith("바삭하고")
+    # "좋아요" inside a sentence is not a channel's like-button notice.
+    assert select.card_summary("바삭하고 고소해서 아이들 간식으로 정말 좋아요. 버터 향이 오래 남는 쿠키입니다.") \
+        == "바삭하고 고소해서 아이들 간식으로 정말 좋아요."
+
+
+def test_a_card_carries_one_sentence_of_the_publishers_preview():
+    """docs/MAGAZINE_SOURCES.md: one verbatim sentence, at most SUMMARY_CHARS, never a paragraph."""
+    assert select.card_summary("편의점 업계가 간편식 경쟁력을 높이고 있다. 두 번째 문장도 충분히 길게 이어지는 설명입니다.") \
+        == "편의점 업계가 간편식 경쟁력을 높이고 있다."
+    # A greeting does not stand in for the story: the first sentence that says something.
+    assert select.card_summary("안녕하세요. 오늘은 집에서 만드는 바삭한 두부 강정 레시피를 소개할게요. 재료는 간단해요.") \
+        == "오늘은 집에서 만드는 바삭한 두부 강정 레시피를 소개할게요."
+    # Sentences too short to say anything leave the card with title, source, date and link.
+    assert select.card_summary("바삭하고 고소해서 정말 좋아요. 버터 향이 오래 남는 쿠키입니다.") == ""
+    # A decimal or a list number does not end a sentence; a long sentence is cut, never extended.
+    assert select.card_summary("2분기 가구의 식품비 지출은 3.3% 증가했고 외식비 비중도 커졌다. 다음 문장입니다.") \
+        == "2분기 가구의 식품비 지출은 3.3% 증가했고 외식비 비중도 커졌다."
+    cut = select.card_summary("국물 " * 90 + "끝난다.")
+    assert cut.endswith("…") and len(cut) <= select.SUMMARY_CHARS + 1 and "끝난다" not in cut
 
 
 def test_a_source_without_excerpts_is_shown_by_title_and_link_only():
@@ -935,9 +961,10 @@ def test_a_source_without_excerpts_is_shown_by_title_and_link_only():
     [shown, plain] = run((_dish(1, day(1)), quiet), (_dish(2, day(2)), RECIPES))
     assert shown["excerptAllowed"] is False and plain["excerptAllowed"] is True
     assert shown["assignedCategory"] == "tips"                    # judged on its text as before
-    item, other = select.public_item(shown), select.public_item(plain)
+    item, other = select.public_item(with_image(shown)), select.public_item(with_image(plain))
     assert item["summary"] == "" and item["source"] == "Quiet Paper" and item["url"] == shown["sourceUrl"]
-    assert other["summary"]
+    assert "image" not in item                                    # no photo either
+    assert other["summary"] and other["image"]
 
 
 def test_a_source_turned_off_publishes_nothing_more():
@@ -952,3 +979,353 @@ def test_a_source_turned_off_publishes_nothing_more():
     # The refresh hands the selector only these rows, with or without a network run.
     source = (ROOT / "scripts/refresh_magazine.py").read_text(encoding="utf-8")
     assert source.count("pipeline.runnable(") == 2 and "select.build(rows," in source
+
+
+# --- publishing rules (magazine sourcing plan, owner decisions 3-9, 2026-10-12) --------------
+PAPER = "paper.example.kr"            # stands in for a newspaper association member's domain
+
+
+def test_a_newspaper_association_page_shows_no_excerpt_or_photo_and_never_leads(monkeypatch):
+    """Decision 5: the host decides, whatever the route; the story still counts for its lane."""
+    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
+    [paper, blog] = run((dict(_dish(1, day(1)), sourceUrl=f"https://www.{PAPER}/food/1"), RECIPES),
+                        (_dish(2, day(2)), RECIPES))
+    assert paper["excerptAllowed"] is False and blog["excerptAllowed"] is True
+    assert paper["assignedCategory"] == "tips"
+    item = select.public_item(with_image(paper))
+    assert item["summary"] == "" and "image" not in item and item["url"] == paper["sourceUrl"]
+    edition, _ = select.build([paper, with_image(blog)], date="2026-09-29", generated_at=NOW.isoformat(), recent=set())
+    assert edition["featured"]["candidateId"] == blog["candidateId"]      # only a photo the page may show leads
+
+
+def test_the_newspaper_association_list_names_hosts_with_evidence():
+    data = json.loads(hosts.MEMBERS.read_text(encoding="utf-8"))
+    assert data["checked"] and data["rule"].startswith("https://")
+    for member in data["members"]:
+        assert member["name"] and member["evidence"].startswith("http") and (member["kan"] or member["kona"])
+        for host in member["domains"] + member.get("unclear", []) + member.get("exceptions", []):
+            assert host == host.lower().strip() and not host.startswith("www.") and "/" not in host, host
+    assert sum(m["kan"] for m in data["members"]) == 55 and sum(m["kona"] for m in data["members"]) == 21
+    shown = {url: hosts.excerpt_allowed(url) for url in (
+        "https://www.yna.co.kr/view/AKR1", "https://www.chosun.com/national/1", "https://rss.donga.com/health.xml",
+        "https://lady.khan.co.kr/view/1", "https://www.dt.co.kr/contents.html?article_no=1",       # members
+        "https://health.chosun.com/site/data/html_dir/1.html", "https://biz.chosun.com/1",          # other companies
+        "https://www.newsis.com/view/1", "https://kormedi.com/1", "https://news.hidoc.co.kr/1")}
+    assert [url for url, allowed in shown.items() if not allowed] == list(shown)[:5]
+
+
+def test_stored_stories_follow_todays_excerpt_rules(monkeypatch):
+    [mine, theirs] = run((_dish(3, day(3)), RECIPES), (dict(_dish(4, day(4)), sourceUrl=f"https://{PAPER}/4"), RECIPES))
+    assert mine["excerptAllowed"] and theirs["excerptAllowed"]           # stored before the rules changed
+    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
+    pipeline.apply_excerpt_rules([mine, theirs], [RECIPES])
+    assert mine["excerptAllowed"] is True and theirs["excerptAllowed"] is False      # the host, now
+    pipeline.apply_excerpt_rules([mine, theirs], [dict(RECIPES, excerpt=False)])
+    assert mine["excerptAllowed"] is False                                          # the registry, now
+    source = (ROOT / "scripts/discovery/pipeline.py").read_text(encoding="utf-8")
+    assert source.count("apply_excerpt_rules(rows, ") == 2                          # network run and rebuild
+
+
+def test_open_discovery_never_reads_a_naver_page():
+    """Decisions 3-4: Naver's terms forbid automated collection without permission."""
+    [found] = run((raw("편의점 신상 과자 후기", "CU편의점에서 이 과자가 요즘 품절 대란이라 세 곳을 돌아 겨우 샀어요. " * 4, day(1),
+                       "https://m.blog.naver.com/a/2", medium="blog", trustTier="C"), SEARCH))
+    assert found["rejectionReason"] == "HOST_NOT_COLLECTED"
+    assert not hosts.collectable("https://n.news.naver.com/article/1") and not hosts.collectable("https://naver.me/x")
+    assert hosts.collectable("https://www.hankyung.com/article/1")
+    # A Naver blog registered through its owner's own RSS, with the owner's permission, is a source.
+    owned = dict(RECIPES, id="t-naver-owned", url="https://rss.blog.naver.com/owner.xml",
+                 permission="블로그 주인이 2026-10-20 자료원 제안 이슈에서 허락")
+    [post] = run((dict(_dish(5, day(5)), sourceUrl="https://blog.naver.com/owner/5"), owned))
+    assert post.get("rejectionReason") is None and post["assignedCategory"] == "tips"
+
+
+def test_a_web_result_never_shows_its_page_text():
+    [found] = run((raw("편의점 디저트 품절 대란", "편의점 디저트가 요즘 품절 대란이라 매장마다 줄을 선다. SNS에서 화제다. " * 4,
+                       day(1), "https://dessert.example.org/a/1", medium="blog", trustTier="C"), SEARCH))
+    assert found["sourceExcerpt"] and select.public_item(found)["summary"] == ""
+
+
+def test_the_registry_holds_a_proposed_source_to_the_publishing_rules(monkeypatch):
+    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
+    base = {"type": "rss", "enabled": True, "trustTier": "B", "categories": ["tips"], "discoveryMethod": "rss",
+            "kind": "recipe"}
+    good = [dict(base, id="naver-owned", name="네이버 블로그", url="https://rss.blog.naver.com/owner.xml",
+                 permission="블로그 주인이 2026-10-20 자료원 제안 이슈에서 허락"),
+            dict(base, id="paper-food", name="Paper", url=f"https://www.{PAPER}/rss/food.xml", excerpt=False),
+            dict(base, id="gone", name="Gone", url="https://gone.example.org/feed", enabled=False,
+                 withdrawn="2026-10-20 운영자 메일로 받은 요청")]
+    assert registry.validate(good) == []
+    bad = [dict(base, id="naver-unasked", name="x", url="https://rss.blog.naver.com/someone.xml"),
+           dict(base, id="paper-excerpt", name="x", url=f"https://news.{PAPER}/rss.xml"),
+           dict(base, id="gone-on", name="x", url="https://gone.example.org/feed", withdrawn="2026-10-20 메일"),
+           dict(base, id="blank", name="x", url="https://ok.example.org/feed", permission=" "),
+           {"id": "naver-search", "name": "x", "type": "web_search", "enabled": True, "trustTier": "C",
+            "categories": ["trend"], "discoveryMethod": "exa", "kind": "mixed", "lane": "trend",
+            "queries": ["site:blog.naver.com 편의점 신상"]}]
+    errors = registry.validate(bad)
+    for sid in ("naver-unasked", "paper-excerpt", "gone-on", "blank", "naver-search"):
+        assert any(e.startswith(sid + ":") for e in errors), sid
+
+
+PREVIEW_PAGE = ('<html><head><meta charset="utf-8">'
+                '<meta name="description" content="메타 설명은 두 번째 후보이고 충분히 길게 씁니다.">'
+                '<meta property="og:description" content="편의점 디저트가 SNS에서 화제가 되며 매장마다 품절이 이어졌다. 둘째 문장.">'
+                '</head><body><p>본문 첫 단락은 카드에 실리지 않는다.</p></body></html>')
+
+
+def test_the_publishers_description_is_read_from_the_page_head():
+    assert preview.description(PREVIEW_PAGE).startswith("편의점 디저트가")             # og:description first
+    assert preview.description('<meta content="속성 순서가 달라도 &amp; 읽는다" name="description">') == "속성 순서가 달라도 & 읽는다"
+    assert preview.description("<head></head><body><meta name='description' content='본문의 태그'></body>") == ""
+    euc = ('<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">'
+           '<meta property="og:description" content="한글 설명">').encode("cp949")
+    assert preview.description(preview.decode(euc)) == "한글 설명"
+
+
+def test_a_chosen_web_result_gets_the_publishers_own_sentence_politely():
+    import urllib.error
+    asked = []
+
+    def fetcher(url, **_):
+        asked.append(url)
+        if url.endswith("/robots.txt"):
+            if "closed." in url:
+                return "User-agent: *\nDisallow: /\n".encode()
+            if "gone." in url:
+                raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+            if "locked." in url:
+                raise urllib.error.HTTPError(url, 403, "Forbidden", {}, None)
+            return "User-agent: *\nAllow: /\n".encode()
+        if "refuse." in url:
+            raise urllib.error.HTTPError(url, 429, "Too Many Requests", {}, None)
+        return PREVIEW_PAGE.encode("utf-8")
+
+    def card(cid, host, title="제목"):
+        return {"candidateId": cid, "title": title, "url": f"https://{host}/a/{cid}", "summary": ""}
+
+    web = {"sourceType": "web_search", "excerptAllowed": True}
+    rows = {"c1": web, "c2": web, "c3": dict(web, excerptAllowed=False), "c5": web, "c6": web, "c7": web, "c8": web,
+            "c9": web, "c4": {"sourceType": "rss", "sourceExcerpt": "피드가 이번 실행에 보낸 글입니다."},
+            "c10": {"sourceType": "rss"}}                     # a stored story its feed no longer lists
+    edition = {"featured": card("c1", "open.example.org"),
+               "lanes": {"trend": {"items": [card("c2", "closed.example.org"), card("c3", "paper.example.org"),
+                                             card("c4", "feed.example.org"), card("c5", "refuse.example.org"),
+                                             card("c6", "refuse.example.org"), card("c7", "m.blog.naver.com"),
+                                             card("c8", "gone.example.org"), card("c9", "locked.example.org"),
+                                             card("c10", "held.example.org")]}}}
+    assert preview.fill(edition, rows, fetcher, log=lambda _: None) == 3
+    assert edition["featured"]["summary"] == "편의점 디저트가 SNS에서 화제가 되며 매장마다 품절이 이어졌다."
+    summaries = {i["candidateId"]: i["summary"] for i in edition["lanes"]["trend"]["items"]}
+    assert summaries.pop("c8") and summaries.pop("c10") and not any(summaries.values())   # c8: no robots.txt
+    pages = [u for u in asked if not u.endswith("/robots.txt")]
+    assert "https://closed.example.org/a/c2" not in pages                # robots.txt said no
+    assert "https://locked.example.org/a/c9" not in pages                # robots.txt refused to be read
+    assert not any(h in u for u in asked for h in ("paper.", "feed.", "naver"))   # nothing to read there
+    assert pages.count("https://refuse.example.org/a/c5") == 1 and "https://refuse.example.org/a/c6" not in pages
+    assert sum(u == "https://open.example.org/robots.txt" for u in asked) == 1
+
+
+def test_a_short_lane_is_published_with_what_it_has_and_announced(tmp_path):
+    """Decision 9: never filled with anything made up; the run says so where the owner sees it."""
+    import refresh_magazine
+    edition = {"date": "2026-10-12",
+               "lanes": {lane: {"items": [{}] * (3 if lane == "habit" else 5)} for lane in select.LANES}}
+    printed, summary = [], tmp_path / "summary.md"
+    env = {"GITHUB_ACTIONS": "true", "GITHUB_STEP_SUMMARY": str(summary)}
+    assert refresh_magazine.announce(edition, env=env, out=printed.append) == ["lane habit: 3 of 5 stories"]
+    assert printed == ["::warning title=Magazine lane short::2026-10-12 lane habit: 3 of 5 stories"]
+    assert "| habit | 3 of 5 |" in summary.read_text(encoding="utf-8")
+    printed.clear()
+    refresh_magazine.announce(edition, env={}, out=printed.append)
+    assert printed == ["[warn] magazine 2026-10-12 lane habit: 3 of 5 stories"]
+    full = {"date": "2026-10-12", "lanes": {lane: {"items": [{}] * 5} for lane in select.LANES}}
+    assert refresh_magazine.announce(full, env={}, out=printed.append) == [] and len(printed) == 1
+
+
+def test_an_owners_request_to_leave_removes_their_stories_from_the_archive():
+    def story(sid, n):
+        return {"title": f"Story {n}", "source": sid, "sourceId": sid, "url": f"https://{sid}.example.org/{n}",
+                "medium": "blog", "candidateId": f"c_{n}"}
+    edition = {"rules": select.RULES, "featured": dict(story("t-gone", 1), category="tips"),
+               "lanes": {"tips": {"items": [story("t-gone", 2), story("t-kept", 3)]}}}
+    cleaned, removed = select.sanitize(edition, frozenset({"t-gone"}))
+    assert removed == 2 and cleaned["featured"] is None
+    assert [i["title"] for i in cleaned["lanes"]["tips"]["items"]] == ["Story 3"]
+
+
+def test_the_archive_follows_todays_title_and_link_only_rules(monkeypatch, tmp_path):
+    import refresh_magazine
+    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
+
+    def story(sid, url, n):
+        return {"title": f"Story {n}", "source": sid, "sourceId": sid, "url": url, "medium": "news",
+                "candidateId": f"c_{n}", "summary": "발행처 미리보기의 한 문장입니다.", "image": url + ".jpg",
+                "imageSource": "feed_html"}
+    edition = {"rules": select.RULES, "date": "2026-10-01", "featured": None,
+               "lanes": {"health": {"items": [story("t-paper", f"https://www.{PAPER}/1", 1),
+                                              story("t-quiet", "https://quiet.example.org/2", 2),
+                                              story("t-open", "https://open.example.org/3", 3)]}}}
+    path = tmp_path / "2026-10-01.json"
+    path.write_text(common.dump_json(edition), encoding="utf-8")
+    rules = {"quiet": frozenset({"t-quiet"})}
+    assert refresh_magazine.sanitize_all(tmp_path, rules=rules) == 0                 # no story removed
+    items = json.loads(path.read_text(encoding="utf-8"))["lanes"]["health"]["items"]
+    assert [("summary" in i, "image" in i) for i in items] == [(False, False), (False, False), (True, True)]
+    stamp = path.stat().st_mtime_ns
+    refresh_magazine.sanitize_all(tmp_path, rules=rules)
+    assert path.stat().st_mtime_ns == stamp                                          # unchanged: not rewritten
+
+
+def test_a_proposed_source_is_checked_against_the_rules_robots_and_its_own_feed():
+    import check_source
+    feed = evaluate.rss([{"title": "양파 간장 조림 레시피", "link": "https://cook.example.org/1"},
+                         {"title": "두부 부침 레시피", "link": "https://cook.example.org/2",
+                          "text": evaluate.LONG.replace("양파", "두부")}])
+    asked = []
+
+    def fetcher(url, **_):
+        asked.append(url)
+        if url.endswith("/robots.txt"):
+            return ("User-agent: *\nDisallow: /private/\n" if "cook." in url else "User-agent: *\nDisallow: /\n").encode()
+        return feed
+
+    entry = {"id": "blog-cook", "name": "Cook", "type": "rss", "url": "https://cook.example.org/rss", "enabled": True,
+             "trustTier": "B", "categories": ["tips"], "discoveryMethod": "rss", "kind": "recipe"}
+    ok, lines = check_source.check(entry, fetcher=fetcher, robots=preview.Robots(fetcher), now=NOW)
+    assert ok and "  qualifying: tips 2, trend 0, health 0, habit 0" in lines
+    closed = dict(entry, id="blog-closed", url="https://closed.example.org/rss")
+    ok, lines = check_source.check(closed, fetcher=fetcher, robots=preview.Robots(fetcher), now=NOW)
+    assert not ok and "https://closed.example.org/rss" not in asked              # robots.txt said no
+    naver = dict(entry, id="blog-naver", url="https://rss.blog.naver.com/someone.xml")
+    ok, lines = check_source.check(naver, fetcher=fetcher, robots=preview.Robots(fetcher), now=NOW)
+    assert not ok and any("permission" in line for line in lines)
+
+
+# --- the public store keeps no text of the source (decision 6, 2026-10-12) ------------------
+BEHAVIOR = ("1인 가구 식생활 조사에서 응답자의 45%가 아침 식사를 거른다고 답했다. 점심은 편의점 도시락과 간편식으로 "
+            "해결하는 비율이 늘었다. " * 3)
+
+
+def _mixed_rows():
+    """A trend story told by two outlets, a habit survey, a recipe and a health story."""
+    return run((raw("세븐일레븐 우유생크림빵", NEUTRAL + " 출시 직후 SNS에서 화제가 되며 매장마다 품절이 이어졌다.", day(2),
+                    "https://www.foodnews.co.kr/news/2"), NEWS),
+               (raw("우유생크림빵 품절 대란", "세븐일레븐 우유생크림빵이 매장마다 품절됐다. 편의점 네 곳을 돌아 겨우 샀다는 "
+                    "후기가 이어진다. " * 3, day(1), "https://www.thinkfood.co.kr/news/3"), NEWS),
+               (raw("1인 가구 식습관 조사", BEHAVIOR, day(20), "https://www.fsnews.co.kr/news/4"), NEWS),
+               (_dish(1, day(1)), RECIPES),
+               (raw("배부르게 먹는데 살 빠진다?…볼륨매트릭스 다이어트", "물과 식이섬유가 풍부한 저열량 음식으로 식사의 부피를 "
+                    "키워 포만감을 유지하는 식사법이다. 핵심은 칼로리 밀도다. " * 3, day(1), "https://kormedi.com/6"),
+                dict(NEWS, categories=["health"])))
+
+
+def _as_stored(rows):
+    return [json.loads(json.dumps(store.stored(r), ensure_ascii=False)) for r in rows]
+
+
+def _decisions(rows, days):
+    pipeline.reset_decisions(rows)
+    process.process(rows, NOW + timedelta(days=days))
+    return {r["candidateId"]: (r.get("assignedCategory"), r.get("rejectionReason"), sorted(r.get("trendEvidence") or []))
+            for r in rows}
+
+
+def test_the_public_store_keeps_no_sentence_of_the_source(tmp_path):
+    rows = _mixed_rows()
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    s.rows = {r["candidateId"]: r for r in rows}
+    s.save()
+    text = (tmp_path / "c.jsonl").read_text(encoding="utf-8")
+    assert "sourceExcerpt" not in text and "trendEvidenceDetail" not in text and "behavior" not in text
+    assert "출시 직후 SNS에서 화제가 되며" not in text and "응답자의 45%가" not in text       # no sentence of any story
+    saved = {r["candidateId"]: r for r in store.CandidateStore(tmp_path / "c.jsonl").all()}
+    trend = saved[rows[0]["candidateId"]]
+    assert trend["trendEvidence"] and "text" not in trend["trendSignals"]["explicit_source_claim"]
+    assert trend["textFacts"]["food"] is True and trend["textWords"]                  # facts and words only
+    assert rows[0]["sourceExcerpt"]                                                   # the run keeps its text
+
+
+def test_a_stored_story_keeps_its_decision_as_a_full_judgement_would():
+    """Held without its text, a story moves exactly as the full judgement with its text: out of the
+    trend window, out of the habit window, too old; corroboration from stored words."""
+    fresh = _mixed_rows()
+    held = _as_stored(fresh)
+    assert not any(process.judged_now(r) for r in held)
+    assert _decisions(json.loads(json.dumps(fresh)), 0)[fresh[0]["candidateId"]][0] == "trend"
+    for days in (0, 5, 29, 31, 95, 400):
+        assert _decisions(json.loads(json.dumps(fresh)), days) == _decisions(json.loads(json.dumps(held)), days), days
+
+
+def test_a_new_story_corroborates_a_stored_one():
+    """Two outlets report the same sell-out on different days; the earlier report is stored without
+    its text and still gains the later one's corroboration, through its stored words."""
+    first, second = run(
+        (raw("편의점 우유생크림빵 품절 대란", "편의점 우유생크림빵이 SNS에서 화제가 되며 매장마다 품절이 이어졌다. 오픈런까지 "
+             "벌어졌다는 후기가 이어진다. " * 3, day(2), "https://www.foodnews.co.kr/news/7"), NEWS),
+        (raw("우유생크림빵 오픈런 행렬", "우유생크림빵을 사려는 오픈런이 이어지고 있다. 매장마다 생크림빵 품절 안내문이 "
+             "붙었다. " * 3, day(1), "https://www.thinkfood.co.kr/news/8"), NEWS))
+    both_fresh = _decisions(json.loads(json.dumps([first, second])), 0)
+    assert "corroborated" in both_fresh[first["candidateId"]][2]
+    assert _decisions(_as_stored([first]) + json.loads(json.dumps([second])), 0) == both_fresh
+    assert _decisions(json.loads(json.dumps([first])) + _as_stored([second]), 0) == both_fresh
+
+
+def test_a_story_read_again_by_its_own_feed_is_judged_again(tmp_path):
+    item = raw("1인 가구 식습관 조사", BEHAVIOR, day(20), "https://www.fsnews.co.kr/news/4")
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    s.upsert(process.normalize(item, NEWS, NOW), NOW)
+    process.process(s.all(), NOW)
+    s.save()
+    again = store.CandidateStore(tmp_path / "c.jsonl")
+    [row] = again.all()
+    assert not process.judged_now(row) and row["assignedCategory"] == "habit"
+    other = dict(NEWS, id="t-other")                      # another route: its text is not this story's
+    again.upsert(process.normalize(dict(item, text="다른 경로가 읽은 글입니다. " * 6), other, NOW), NOW)
+    assert not process.judged_now(row) and len(row["seenVia"]) == 2
+    again.upsert(process.normalize(item, NEWS, NOW), NOW)  # its own feed lists it again
+    assert process.judged_now(row) and row["sourceExcerpt"].startswith("1인 가구 식생활 조사에서")
+
+
+# --- YouTube Data API terms (decision 1; Developer Policies III.E.4 and III.F.2) -------------
+def test_youtube_data_is_kept_at_most_thirty_days(tmp_path):
+    def video(cid, seen_days, **kw):
+        return dict({"candidateId": cid, "sourceId": "yt-x", "sourceUrl": f"https://www.youtube.com/watch?v={cid[-11:]}",
+                     "title": "두부 강정 만들기", "medium": "youtube", "lastSeenAt": day(seen_days),
+                     "discoveredAt": day(seen_days), "rejectionReason": None, "assignedCategory": "tips"}, **kw)
+    s = store.CandidateStore(tmp_path / "c.jsonl")
+    rows = [video("c_00000000000aaaa1", 29), video("c_00000000000aaaa2", 31),
+            video("c_00000000000aaaa3", 31, selected=True, selectedFor="2026-09-10", selectedAt=day(19)),
+            dict(video("c_00000000000aaaa4", 31), compact=True, medium=None),     # a fingerprint: known by its host
+            {"candidateId": "c_00000000000bbbb1", "sourceUrl": "https://blog.example.org/1", "title": "블로그 글",
+             "lastSeenAt": day(31), "rejectionReason": None, "assignedCategory": "tips"}]
+    s.rows = {r["candidateId"]: r for r in rows}
+    s.prune(NOW)
+    assert sorted(s.rows) == ["c_00000000000aaaa1", "c_00000000000bbbb1"]     # a blog row keeps its 90 days
+
+
+def test_a_youtube_video_runs_only_on_fresh_api_data_and_a_recent_upload():
+    def video(seen, uploaded):
+        return {"medium": "youtube", "sourceUrl": "https://www.youtube.com/watch?v=abcdefghijk",
+                "lastSeenAt": day(seen), "publishedAt": day(uploaded)}
+    assert select.youtube_runnable(video(0, 10), NOW) and select.youtube_runnable(video(1, 28), NOW)
+    assert not select.youtube_runnable(video(2, 10), NOW)                      # not refreshed by the API lately
+    assert not select.youtube_runnable(video(0, 29), NOW)                      # its archive entry would outlive the rule
+    assert select.youtube_runnable({"medium": "blog", "lastSeenAt": day(40), "publishedAt": day(300)}, NOW)
+
+
+def test_old_editions_lose_their_youtube_videos(tmp_path):
+    import refresh_magazine
+
+    def item(n, medium, url):
+        return {"title": f"Story {n}", "source": "Channel", "sourceId": "yt-x", "url": url, "medium": medium,
+                "candidateId": f"c_{n:016d}"}
+    for date in ("2026-08-31", "2026-09-01"):
+        edition = {"rules": select.RULES, "date": date, "featured": None,
+                   "lanes": {"tips": {"items": [item(1, "youtube", "https://www.youtube.com/watch?v=abcdefghijk"),
+                                                item(2, "blog", "https://blog.example.org/2")]}}}
+        (tmp_path / f"{date}.json").write_text(common.dump_json(edition), encoding="utf-8")
+    refresh_magazine.sanitize_all(tmp_path, today="2026-09-29")
+    kept = {date: [i["medium"] for i in json.loads((tmp_path / f"{date}.json").read_text(encoding="utf-8"))
+                   ["lanes"]["tips"]["items"]] for date in ("2026-08-31", "2026-09-01")}
+    assert kept == {"2026-08-31": ["blog"], "2026-09-01": ["youtube", "blog"]}       # kept 28 days, then gone

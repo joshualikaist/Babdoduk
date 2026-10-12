@@ -1,0 +1,24 @@
+name: 자료원에서 빠지기 · Remove my source
+description: 블로그·매체 주인이 밥도둑 매거진에서 빠지기를 요청합니다. A blog or publication owner asks to leave the Babdoduk magazine.
+title: "[빠지기] "
+labels: ["magazine-source-removal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        7일 안에 등록부 항목을 끄고, 다음 매거진 실행에서 이미 실린 이야기도 지난 호에서 지웁니다. 주인임을 증명할 서류는 받지 않습니다.
+        공개 이슈가 불편하면 사이트 아래의 문의 메일로 알려 주셔도 됩니다.
+
+        Within seven days we turn the source off, and the next magazine run removes its stories from past editions too. We ask for no proof of ownership. If you prefer not to post publicly, use the contact email at the bottom of the site.
+  - type: input
+    id: address
+    attributes:
+      label: 사이트 또는 피드 주소 · Site or feed URL
+      placeholder: https://example.tistory.com
+    validations:
+      required: true
+  - type: textarea
+    id: note
+    attributes:
+      label: 덧붙일 말 · Anything else
+      description: 선택. 특정 글만 빼고 싶다면 그 주소를 적어 주세요. Optional; list specific posts if only those should go.

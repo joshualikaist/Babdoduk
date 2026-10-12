@@ -1,0 +1,601 @@
+{
+  "version": 1,
+  "checked": "2026-10-12",
+  "about": "Newspaper association members, by the web hosts their articles are published on. The magazine shows their stories by title, source, date and link only: no excerpt, no photo (magazine sourcing plan, decision 5; docs/MAGAZINE_SOURCES.md). The usage rule is 한국온라인신문협회's 디지털뉴스 이용규칙 (Ver 3.0, 2007-03-05); its members must belong to 한국신문협회, so every 한국신문협회 member is listed, plus 디지털타임스 (한국온라인신문협회 only). A domain covers its subdomains; `exceptions` are subdomains run by another, non-member company; `unclear` hosts are treated as members.",
+  "rule": "https://www.kona.or.kr/pages/page_64.php",
+  "lists": {
+    "kan": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+    "kona": "https://www.kona.or.kr/pages/page_28.php"
+  },
+  "members": [
+    {
+      "name": "경향신문",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "khan.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "sports./lady./weekly.khan.co.kr (스포츠경향·레이디경향·주간경향) carry the same publisher 박종성. k-health.com (헬스경향) is 주식회사 헬스경향: not a member."
+    },
+    {
+      "name": "국민일보",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "kmib.co.kr",
+        "kukminilbo.co.kr",
+        "themission.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "themission.co.kr (더미션) footer: 법인명 국민일보, same registration 서울 아04191. kukminilbo.co.kr redirects to kmib.co.kr. kukinews.com (쿠키뉴스) is a separate publisher."
+    },
+    {
+      "name": "내일신문",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "naeil.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "localnaeil.com is (주)내일엘엠씨: not a member."
+    },
+    {
+      "name": "뉴스1",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "happypet.co.kr",
+        "news1.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "happypet.co.kr (해피펫) footer: 뉴스1, same 사업자 101-86-62870."
+    },
+    {
+      "name": "대한경제",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "dnews.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "동아일보",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "donga.com",
+        "hbrkorea.com"
+      ],
+      "unclear": [
+        "sports.donga.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "KONA member is 동아닷컴 (donga.com). weekly./shindonga.donga.com share donga.com's registration 서울아00741; bizn./woman.donga.com name the same 발행인 신석호. hbrkorea.com footer: (주)동아일보사. sports.donga.com shows only 'Copyright © 스포츠동아'. dongascience.com is (주)동아사이언스: not a member."
+    },
+    {
+      "name": "매일경제",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "mk.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "pulse.mk.co.kr (English), luxmen.mk.co.kr (발행인 장승준) and star.mk.co.kr (→ mk.co.kr/star) are the same family; site copyright 매경AX. mksports.co.kr (MK스포츠) and mkhealth.co.kr ((주)매경헬스) are separate publishers: not members."
+    },
+    {
+      "name": "머니투데이",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "moneytoday.co.kr",
+        "mt.co.kr",
+        "unicornfactory.co.kr"
+      ],
+      "exceptions": [
+        "moneys.mt.co.kr",
+        "star.mt.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "unicornfactory.co.kr has the same 등록번호 서울아01084 and 사업자 762-86-02890 as mt.co.kr. star.mt.co.kr = old 스타뉴스 ((주)브릴리언트코리아); moneys.mt.co.kr redirects to sidae.com (동행미디어 시대). newsis.com, starnewskorea.com, thebell.co.kr: not members."
+    },
+    {
+      "name": "문화일보",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "munhwa.co.kr",
+        "munhwa.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "munhwa.co.kr redirects to munhwa.com."
+    },
+    {
+      "name": "브릿지경제",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "viva100.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "Footer self-declares '한국신문협회, 한국온라인신문협회 회원사'. viva2080.com is (주)비바2080: not a member."
+    },
+    {
+      "name": "서울경제",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "golfmonthlykorea.com",
+        "pagol.kr",
+        "sed.co.kr",
+        "sedaily.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "golfmonthlykorea.com and pagol.kr footers: 상호 서울경제신문, 사업자 208-81-10310. decenter.kr and lifejump.co.kr ((주)런앤이매진) and sentv.co.kr (㈜서울경제티브이): not members."
+    },
+    {
+      "name": "서울신문",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "seoul.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "nownews.seoul.co.kr (나우뉴스) footer: Copyright 서울신문. public25.com (퍼블릭타임스) is unrelated."
+    },
+    {
+      "name": "세계일보",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "segye.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "sportsworldi.com (스포츠월드) and segyebiz.com (세계비즈) name a different publisher (문준식) and are not listed: treat as non-members."
+    },
+    {
+      "name": "스포츠서울",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "sportsseoul.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "스포츠조선",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "sports.chosun.com",
+        "sportschosun.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "KAN links sports.chosun.com, which now redirects to www.sportschosun.com."
+    },
+    {
+      "name": "아시아경제",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "asiae.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "asiatoday.co.kr (아시아투데이) is a different company."
+    },
+    {
+      "name": "아주경제",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "ajunews.com",
+        "ajupress.com"
+      ],
+      "unclear": [
+        "ajudaily.com",
+        "kyungjeilbo.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "KAN English page links ajupress.com. kyungjeilbo.com and ajudaily.com share chairman/publisher 곽영길 but have their own registrations and address."
+    },
+    {
+      "name": "연합뉴스",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "yna.co.kr",
+        "yonhapnews.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "yonhapnews.co.kr redirects to yna.co.kr. yonhapnewstv.co.kr, einfomax.co.kr ((주)연합인포맥스) and yonhapmidas.com ((재)연합뉴스동북아센터) are separate entities."
+    },
+    {
+      "name": "이데일리",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "edaily.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "전자신문",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "etnews.co.kr",
+        "etnews.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "etnews.com is run by 전자신문인터넷 (the KONA member). eduplusnews.com (이티에듀 주식회사) is separate."
+    },
+    {
+      "name": "조선일보",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "chosun.com"
+      ],
+      "exceptions": [
+        "biz.chosun.com",
+        "health.chosun.com",
+        "it.chosun.com",
+        "m.health.chosun.com",
+        "monthly.chosun.com",
+        "weekly.chosun.com",
+        "woman.chosun.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "Excluded hosts are other companies: 조선비즈, (주)헬스조선, IT조선, ㈜조선뉴스프레스 (주간조선·월간조선·여성조선). sports.chosun.com is member 스포츠조선. kid.chosun.com names 발행인 홍준호 (same as 조선일보). futurechosun.com is (주)더나은미래."
+    },
+    {
+      "name": "중앙일보",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "chinese.joins.com",
+        "japanese.joins.com",
+        "jhealthmedia.joins.com",
+        "joongang.co.kr",
+        "joongang.joins.com",
+        "joongangdaily.joins.com",
+        "koreajoongangdaily.com",
+        "koreajoongangdaily.joins.com",
+        "news.joins.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "koreajoongangdaily.com footer: JoongAng Ilbo, 사업자 110-81-00999. Do not match joins.com wholesale: www.joins.com shows a 서비스 종료 notice and jmagazine.joins.com redirects to forbeskorea.co.kr (another company). koreadaily.com (Joongangilbo USA) and isplus.com / economist.co.kr (일간스포츠) are not members. jhealthmedia.joins.com (헬스중앙) names 중앙일보 as its publisher in its footer (checked 2026-10-12)."
+    },
+    {
+      "name": "코리아타임스",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "koreatimes.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "koreatimes.com is 미주한국일보 (a different company), not this member."
+    },
+    {
+      "name": "파이낸셜뉴스",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "fnnews.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "fntimes.com is 한국금융신문 (different)."
+    },
+    {
+      "name": "한겨레",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "economyinsight.co.kr",
+        "hani.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "h21.hani.co.kr and economyinsight.co.kr footers: 한겨레신문(주). cine21.com is 씨네21(주): not a member."
+    },
+    {
+      "name": "한국경제",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "arte.co.kr",
+        "hankyung.com"
+      ],
+      "unclear": [
+        "kedglobal.com",
+        "magazine.hankyung.com"
+      ],
+      "exceptions": [
+        "tenasia.hankyung.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "arte.co.kr 사업자 110-81-07390 matches hankyung.com. tenasia.hankyung.com redirects to tenasia.co.kr ((주)코리아엔터테인먼트미디어). KAN's English page links kedglobal.com for this member, but its footer shows a separate 사업자 796-87-01625. magazine.hankyung.com shows a separate 사업자 104-81-47761. wowtv.co.kr ((주)한국경제티브이) is not a member."
+    },
+    {
+      "name": "한국일보",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "hankookilbo.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "헤럴드경제 ((주)헤럴드, incl. The Korea Herald)",
+      "kan": true,
+      "kona": true,
+      "domains": [
+        "heraldbiz.com",
+        "heraldcorp.com",
+        "heraldeco.com",
+        "heraldmuse.com",
+        "heraldpop.com",
+        "koreaherald.com",
+        "realfoods.co.kr",
+        "theinvestor.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "KAN lists 헤럴드경제 (biz.heraldcorp.com; publisher 최진영). koreaherald.com, realfoods.co.kr (리얼푸드), heraldmuse.com, theinvestor.co.kr and heraldeco.com all name (주)헤럴드 / Herald Corporation in their footers (publisher 최진영 where shown; 사업자 104-81-06004 where shown). heraldpop.com and heraldbiz.com redirect into this family."
+    },
+    {
+      "name": "강원도민일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kado.net"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "강원일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kwnews.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경기일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kyeonggi.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경남신문",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "knnews.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경남일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "gnnews.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경북도민일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "hidomin.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경북매일",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kbmaeil.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경북일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kyongbuk.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경상일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "ksilbo.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "경인일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kyeongin.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "광주일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kwangju.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "국제신문",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "kookje.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "대구일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "idaegu.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "대전일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "daejonilbo.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "매일신문",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "imaeil.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "부산일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "busan.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "영남일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "yeongnam.co.kr",
+        "yeongnam.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13",
+      "note": "yeongnam.co.kr (KAN English link) redirects to yeongnam.com."
+    },
+    {
+      "name": "울산매일",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "iusm.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "인천일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "incheonilbo.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "전라일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "jeollailbo.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "전북도민일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "domin.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "전북일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "jjan.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "제주일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "jejunews.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "중도일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "joongdo.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "중부매일",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "jbnews.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "중부일보",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "joongboo.com"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "충청투데이",
+      "kan": true,
+      "kona": false,
+      "domains": [
+        "cctoday.co.kr"
+      ],
+      "evidence": "http://www.presskorea.or.kr/space/user_link.php?m=2&sm=2&tm=13"
+    },
+    {
+      "name": "디지털타임스",
+      "kan": false,
+      "kona": true,
+      "domains": [
+        "dt.co.kr"
+      ],
+      "evidence": "https://www.kona.or.kr/pages/page_28.php",
+      "note": "Not on the KAN list. It is a member of 한국온라인신문협회, the body that wrote the usage rule (its 연혁, kona.or.kr/pages/page_24.php, names it 회장사 of the 21st board from 2023-04). Its footer address is 새문안로22, the same as 문화일보."
+    }
+  ]
+}

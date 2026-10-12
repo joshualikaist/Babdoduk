@@ -138,14 +138,16 @@ def test_web_search_can_be_switched_off_and_the_optional_key_route_keeps_query_p
     def opener(request, timeout):
         sent.append(json.loads(request.data))
         return Response(json.dumps({"results": [
-            {"title": "자취 볶음밥", "url": "https://blog.naver.com/x/1", "text": "레시피 " * 60},
+            {"title": "자취 볶음밥", "url": "https://cook.example.org/x/1", "text": "레시피 " * 60},
+            {"title": "네이버 글", "url": "https://blog.naver.com/x/2", "text": "레시피 " * 60},
             {"title": "사설 주소", "url": "http://192.168.0.2/recipe", "text": "레시피 " * 60}]}).encode())
 
-    result = web.discover({"queries": ["site:blog.naver.com 자취 요리"]}, fetcher=None, env={"EXA_API_KEY": "k"},
+    result = web.discover({"queries": ["site:cook.example.org 자취 요리"]}, fetcher=None, env={"EXA_API_KEY": "k"},
                           opener=opener)
-    assert sent[0]["includeDomains"] == ["blog.naver.com"] and sent[0]["query"] == "자취 요리"
-    assert [i["sourceUrl"] for i in result.items] == ["https://blog.naver.com/x/1"]      # private address dropped
-    assert result.items[0]["discoveryQuery"] == "site:blog.naver.com 자취 요리" and result.queries
+    assert sent[0]["includeDomains"] == ["cook.example.org"] and sent[0]["query"] == "자취 요리"
+    # A private address and a Naver page (never read by open discovery) are dropped.
+    assert [i["sourceUrl"] for i in result.items] == ["https://cook.example.org/x/1"]
+    assert result.items[0]["discoveryQuery"] == "site:cook.example.org 자취 요리" and result.queries
 
 
 def test_instagram_is_not_configured_and_contributes_nothing():
@@ -374,13 +376,18 @@ def test_the_one_registry_is_valid_and_honest_about_what_runs():
     for s in by_type["web_search"] + by_type["youtube_search"]:
         assert s["queries"] and s.get("lane") in ("trend", "habit") and s.get("requireFood") is True, s["id"]
     assert {s["lane"] for s in by_type["web_search"] if s["enabled"]} == {"trend", "habit"}
-    assert any("site:blog.naver.com" in q for s in by_type["web_search"] for q in s["queries"])
-    assert all(s.get("localOnly") for s in by_type["youtube_search"] + by_type["youtube_channel"])
-    assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"])
-    assert all(s.get("knownIssue") for s in by_type["youtube_channel"])
-    # Off since 2026-10-12: their only input, the operator-PC sidecar, stopped on 09-29.
-    for s in by_type["youtube_search"] + by_type["youtube_channel"]:
+    # Open discovery never reads a Naver page (decisions 3-4): no enabled search asks for one.
+    assert not any("naver" in q for s in by_type["web_search"] if s["enabled"] for q in s["queries"])
+    assert all(s.get("localOnly") for s in by_type["youtube_search"])
+    assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"] + by_type["youtube_channel"])
+    # YouTube search stays off (its only input, the operator-PC sidecar, stopped on 09-29); the
+    # channels run through the YouTube Data API since 2026-10-12 (owner decision 1) and say what
+    # they need.
+    for s in by_type["youtube_search"]:
         assert s["enabled"] is False and "Disabled 2026-10-12" in s["note"], s["id"]
+    for s in by_type["youtube_channel"]:
+        assert s["enabled"] is True and s["discoveryMethod"] == "youtube_data_api", s["id"]
+        assert "YOUTUBE_API_KEY" in s["knownIssue"] and "30 days" in s["note"], s["id"]
     assert pipeline.pending_work(sources) == []
     # Recipe blogs feed tips/health only: a recipe is not a trend or an eating-habit story.
     for s in by_type["rss"]:
