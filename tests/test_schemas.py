@@ -74,6 +74,7 @@ VALID = {
     "food-log": {"currency": "KRW", "entries": [{"date": "2026-05-06", "total": 9200, "note": "",
                                                  "items": [{"meal": "저녁", "label": "돈까스", "amount": 9200}]}]},
 }
+VALID["magazine-sources"] = json.loads((sc.ROOT / "scripts/discovery/sources.json").read_text(encoding="utf-8"))
 for _name in ("labels", "events", "history"):
     VALID[f"content-{_name}"] = json.loads((sc.ROOT / f"data/content/{_name}.json").read_text(encoding="utf-8"))
 COMPACT = {"compact": True, "candidateId": "c_0123456789abcdef", "sourceUrl": "https://a.example/onion",
@@ -144,6 +145,11 @@ BREAKS = {
                        ("a source shown as nothing known", _set("sources.portal.shownAs", "web")),
                        ("a lane without a lead", _set("magazineLanes.habit.lead", _set.DELETE)),
                        ("an upper-case cafeteria id", _set("restaurants.0.id", "FCLT"))],
+    "magazine-sources": [("a field the registry does not know", _set("sources.0.cookie", "x")),
+                         ("a tier beyond C", _set("sources.0.trustTier", "D")),
+                         ("a lane that does not exist", _set("sources.0.categories", ["dessert"])),
+                         ("more pages than allowed", _set("sources.0.feedPages", 9)),
+                         ("a source without its kind", _set("sources.0.kind", _set.DELETE))],
     "content-events": [("a state nobody announces", _set("activities.0.confirmation", "done")),
                        ("a title without English", _set("activities.0.title.en", _set.DELETE)),
                        ("a note beside the labelled rows", _set("activities.0.details.note", {"ko": "a", "en": "a"})),
@@ -251,3 +257,12 @@ def test_the_food_packs_are_the_source_and_keep_the_generators_checks(tmp_path):
     assert any("nameKo" in e for e in errors)
     assert any("belongs in korean, not western" in e for e in errors)
     assert any("must say pack 'western'" in e for e in errors)
+
+
+def test_the_registry_contract_names_the_fields_the_registry_accepts():
+    from discovery import registry
+    source = sc.load_schema("magazine-sources")["$defs"]["source"]
+    assert set(source["properties"]) == registry.AUTHORED
+    assert set(source["properties"]["type"]["enum"]) == registry.TYPES
+    assert set(source["properties"]["kind"]["enum"]) == registry.KINDS
+    assert source["properties"]["feedPages"]["maximum"] == registry.MAX_FEED_PAGES

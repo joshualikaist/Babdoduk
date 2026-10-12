@@ -27,7 +27,7 @@ contracts themselves are standard JSON Schema files in `schemas/` (data plan pha
 | `inputs/ggongbab/manual.json` | Hand-written free-food notices | a person | `ggongbab-manual` | `--only authored`: unique ids | the free-food refresh | no |
 | `inputs/ggongbab/food-news.json` | Public campus news items | operator PC, `export_food_news.py --review` (the review file stays in `.local/`) | `ggongbab-news-input` | `--only authored`: each item's derived id | the free-food refresh | no |
 | `calendar.ics` | KAIST Portal calendar export | a person | none | none | `lab.html` | babdoduk-lab only |
-| `scripts/discovery/sources.json` | Magazine source registry | a person | `discovery.registry.validate` | `--only magazine` | the magazine run | no |
+| `scripts/discovery/sources.json` | Magazine source registry: one entry per source | a person (one source per change) | `magazine-sources` | `--only magazine`, plus `discovery.registry.validate` | the magazine run | no |
 
 `python scripts/validate_content.py` checks every family; a bot passes `--only` with the families it
 refreshed, so a problem in one cannot block another's publish.
