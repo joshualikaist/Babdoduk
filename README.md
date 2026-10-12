@@ -690,6 +690,8 @@ python scripts/check_real_fonts.py   # 7개 페이지(choose 이동·실험실 �
 
 `ggongbab-refresh.yml` 은 YAML 문법 오류로 GitHub에서 실행되지 않다가 2026-09-25 에 고쳐졌고, 수동 `check`·`dry-run`·
 `review-report` 실행이 main 에서 통과한 뒤 2026-09-26 에 예약(`*/30 * * * *`, UTC, 항상 `full`)을 다시 켰습니다.
+2026-10-12부터는 예약이 몰려 늦거나 빠지는 정각·30분을 피해 매시 7분·37분(`7,37 * * * *`)에 돕니다. 매거진·학식
+예약(`magazine-daily.yml`)도 같은 이유로 05:47·10:07·10:53·12:23·16:17(KST)로 옮겼고, 매거진은 오늘 호가 아직 없을 때만 만듭니다.
 `full` 은 Supabase 쓰기·OpenAI 호출·lab/main 푸시를 합니다. 행사 내용이 같고 `generatedAt` 만 바뀌면 커밋하지 않으므로
 새 소식이 없는 실행은 배포를 만들지 않습니다.
 

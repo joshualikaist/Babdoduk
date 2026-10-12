@@ -74,10 +74,15 @@ scripts/discovery/sources.json   (the one registry)
 operator PC:  scripts/magazine_local_discovery.py -> research/magazine/inbox/<sourceId>.json
 ```
 
-`python scripts/refresh_magazine.py` runs the pipeline; `content-refresh` is scheduled daily at 10:00 KST,
-and GitHub usually starts it hours later (2026-10-09 to 10-11: 15:30 to 16:00 KST). The page therefore shows
-each edition's own build time (`generatedAt`), never a fixed hour, and until today's edition lands it
-labels yesterday's, the newest one, `최신 호`, not `지난 호`.
+`python scripts/refresh_magazine.py` runs the pipeline. `content-refresh` schedules it at 10:07 KST, with
+backups at 10:53, 12:23 and 16:17 KST (since 2026-10-12). The schedules avoid the hour and the half hour,
+where GitHub delays or drops scheduled runs: the old 10:00 KST run started hours late (2026-10-09 to 10-11:
+15:30 to 16:00 KST; 10-12: 15:44). A scheduled run passes `--if-missing`, so it builds today's edition
+only while that edition is missing: the first run that starts publishes it and the others change
+nothing. A manual run always rebuilds. The page shows each edition's own build time (`generatedAt`),
+never a fixed hour, and until today's edition lands it labels yesterday's, the newest one, `최신 호`,
+not `지난 호`.
+- `--if-missing` does nothing when today's edition is already built.
 - `--discover-only` updates the store without building an edition.
 - `--select-only` re-judges every stored candidate under the current rules and rebuilds today's
   edition, without the network. Nothing is fetched, searched or deleted, so a rule change or a

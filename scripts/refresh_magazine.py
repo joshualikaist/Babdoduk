@@ -4,6 +4,7 @@
     python scripts/refresh_magazine.py                 # discover, then build today's edition
     python scripts/refresh_magazine.py --discover-only # discovery into the candidate store only
     python scripts/refresh_magazine.py --sanitize-only # clean stored editions, no network
+    python scripts/refresh_magazine.py --if-missing    # a scheduled run: only if today's edition is missing
 
 Pipeline (scripts/discovery/, docs/MAGAZINE_DISCOVERY.md): source registry -> adapters ->
 candidate store (research/magazine/) -> normalize -> dedup -> quality filter -> category ->
@@ -110,11 +111,20 @@ def main(argv=None) -> int:
     mode.add_argument("--sanitize-only", action="store_true")
     mode.add_argument("--select-only", action="store_true",
                       help="rebuild today's edition from the stored candidates, without the network")
+    parser.add_argument("--if-missing", action="store_true",
+                        help="do nothing when today's edition is already built: the scheduled runs, so the first "
+                             "one that starts publishes the edition and the later ones are backups")
     parser.add_argument("--skip-type", action="append", default=[], metavar="TYPE",
                         help="do not contact sources of this type in this run (recorded as SKIPPED_CLOUD_PARITY), "
                              "e.g. youtube_channel for a build that matches what GitHub's runners can reach")
     args = parser.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
+    if args.if_missing:
+        date = edition_date(now_kst())
+        built = read_json(OUT / f"{date}.json", None)
+        if isinstance(built, dict) and story_count(built):
+            print(f"magazine {date}: already built; nothing to do")
+            return 0
     rules = archive_rules()
     if args.sanitize_only:
         removed = sanitize_all(OUT, rules=rules, today=edition_date(now_kst()))
