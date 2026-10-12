@@ -26,6 +26,8 @@ import re
 from datetime import datetime
 from typing import Optional
 
+import content_labels
+
 from .common import KST, excerpt, parse_time
 from .process import age_days
 
@@ -37,12 +39,7 @@ HERO_MAX_DAYS = 30
 HERO_AUDIENCE = 0.5
 RULES = "lanes-v1"          # editions built under the evidence rules; older ones are legacy
 LANES = ("trend", "tips", "health", "habit")
-LANE_LEADS = {
-    "tips": "밥이 더 맛있어지는 작은 조리 팁",
-    "trend": "요즘 사람들이 뭘 먹고 있는지",
-    "health": "맛도 포기하지 않는 건강식",
-    "habit": "잘 먹는 법에 대한 작은 이야기",
-}
+LANE_LEADS = content_labels.lane_leads()          # data/content/labels.json, the page shows its own copy
 SUMMARY_CHARS = 120        # a card-length excerpt, never a paragraph
 MIN_SUMMARY = 20
 URLS = re.compile(r"(https?://\S+|www\.\S+|\S+@\S+\.\w+|#[^\s#]+)")

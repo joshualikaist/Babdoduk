@@ -132,7 +132,7 @@ git cherry origin/main <branch>                    # 본편 대상이면 main �
 - 로컬에만 있는 고유 커밋(원격 `archive-*` 태그로 보존·확인하기 전), 백업·스냅숏 브랜치
 - 다른 도구(Codex 등)의 worktree·브랜치, 정체를 모르는 worktree
 - lab 전용 실험(`lab` 브랜치의 Realtime·공개 projection·Portal LIST poller·Windows worker 코드)
-- 생성 데이터(`data/magazine/**`, `data/kaist-menu/**`, `data/ggongbab/latest.json`, `data/ggongbab/archive/**`)와 직접 작성한 데이터(`data/foods/**`, `data/food-log.json`, `inputs/**`). 보관 기간은 제품 결정입니다
+- 생성 데이터(`data/magazine/**`, `data/kaist-menu/**`, `data/ggongbab/latest.json`, `data/ggongbab/archive/**`)와 직접 작성한 데이터(`data/foods/**`, `data/content/**`, `data/food-log.json`, `inputs/**`). 보관 기간은 제품 결정입니다
 
 ---
 

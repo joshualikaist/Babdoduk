@@ -30,6 +30,8 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Optional
 
+import content_labels
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "kaist-menu"
 UA = "BabdodukMenu/1.0 (+https://github.com/joshualikaist/Babdoduk)"
@@ -50,17 +52,9 @@ REQUEST_PAUSE_SECONDS = 0.25
 MAX_CONSECUTIVE_FAILURES = 8        # one date's worth of restaurants: the site is down, stop
 RUN_BUDGET_SECONDS = 480            # later dates keep their saved files
 
-# Codes taken from official ActFodlst('...') on 053001.html — not guessed.
-RESTAURANTS = [
-    {"id": "fclt", "name": "카이마루 N11", "building": "N11"},
-    {"id": "west", "name": "서맛골 W2", "building": "W2"},
-    {"id": "east1", "name": "동맛골 학생식당 E5", "building": "E5"},
-    {"id": "east2", "name": "동맛골 교직원식당 E5", "building": "E5"},
-    {"id": "emp", "name": "교수회관 N6", "building": "N6"},
-    {"id": "icc", "name": "문지캠퍼스", "building": "문지"},
-    {"id": "hawam", "name": "화암 기숙사", "building": "화암"},
-    {"id": "seoul", "name": "서울캠퍼스", "building": "서울"},
-]
+# The ids are the codes of the official ActFodlst('...') calls on 053001.html, not guessed; names,
+# buildings and order are the shared labels (data/content/labels.json).
+RESTAURANTS = content_labels.restaurants()
 MEALS = ("breakfast", "lunch", "dinner")
 
 NOTE = re.compile(r"^(\*|안녕하세요|운영시간|금액|알레르기|인스타|주말)")

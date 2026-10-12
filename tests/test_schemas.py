@@ -74,6 +74,7 @@ VALID = {
     "food-log": {"currency": "KRW", "entries": [{"date": "2026-05-06", "total": 9200, "note": "",
                                                  "items": [{"meal": "저녁", "label": "돈까스", "amount": 9200}]}]},
 }
+VALID["content-labels"] = json.loads((sc.ROOT / "data/content/labels.json").read_text(encoding="utf-8"))
 COMPACT = {"compact": True, "candidateId": "c_0123456789abcdef", "sourceUrl": "https://a.example/onion",
            "rejectionReason": "NOT_FOOD", "discoveredSeq": 7}
 
@@ -138,6 +139,10 @@ BREAKS = {
                    ("a field missing", _set("items.0.keywords", _set.DELETE)),
                    ("an upper-case id", _set("items.0.id", "Kimchi"))],
     "food-log": [("another currency", _set("currency", "USD")), ("a negative amount", _set("entries.0.items.0.amount", -1))],
+    "content-labels": [("a label without English", _set("freeFood.meal.en", _set.DELETE)),
+                       ("a source shown as nothing known", _set("sources.portal.shownAs", "web")),
+                       ("a lane without a lead", _set("magazineLanes.habit.lead", _set.DELETE)),
+                       ("an upper-case cafeteria id", _set("restaurants.0.id", "FCLT"))],
 }
 
 

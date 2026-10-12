@@ -12,17 +12,27 @@ blocks.
 
 Strings the chrome owns (CHROME_STRINGS) are written into every page's ko and en translation
 tables, and every key the chrome renders must exist in both.
+
+The shared labels (data/content/labels.json: free-food types, sources, magazine lanes, the
+picker's cuisines) are written the same way: into the translation tables of the pages that show
+them (label_strings) and into the marked blocks of the scripts that need them (LABEL_BLOCKS), so
+a label is named once and the same everywhere.
 """
 from __future__ import annotations
 
 import argparse
 import difflib
+import json
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SHARED = ROOT / "shared"
+LABELS = ROOT / "data" / "content" / "labels.json"
+# The food types the home calendar names (js/home-calendar.js FOOD_TYPES); any other type reads
+# home.cal.foodFallback there.
+HOME_FOOD_TYPES = ("meal", "lunchbox", "snack", "refreshment", "beverage", "coupon")
 
 LAB_LINKS = [
     '<a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>',
@@ -119,20 +129,89 @@ def chrome_keys() -> set[str]:
     return keys
 
 
+def labels() -> dict:
+    return json.loads(LABELS.read_text(encoding="utf-8"))
+
+
+def js_str(value: str) -> str:
+    """A JavaScript string literal in the tables' own style: single quotes unless the text has one."""
+    if "'" not in value:
+        return f"'{value}'"
+    if '"' not in value:
+        return f'"{value}"'
+    return "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
+
+
+def label_strings(page: str) -> dict[str, dict[str, str]]:
+    """The shared labels a page's translation tables carry, by key."""
+    data, out = labels(), {}
+    if page in ("ggongbab.html", "lab-ggongbab.html"):
+        out.update({f"gg.food.{kind}": pair for kind, pair in data["freeFood"].items()})
+        out.update({f"gg.source.{group}": pair for group, pair in data["sourceLabels"].items()})
+    if page == "index.html":
+        out.update({f"home.cal.food.{kind}": data["freeFood"][kind] for kind in HOME_FOOD_TYPES})
+        out.update({f"home.cal.src.{group}": pair for group, pair in data["sourceLabels"].items()})
+        out.update({f"home.desk.{lane}": spec["name"] for lane, spec in data["magazineLanes"].items()})
+    if page == "mukbang.html":
+        for lane, spec in data["magazineLanes"].items():
+            out[f"mg.cat.{lane}"] = spec["name"]
+            out[f"mg.{lane}.lead"] = spec["lead"]
+            if "short" in spec:
+                out[f"mg.cat.{lane}Short"] = spec["short"]
+    return out
+
+
+def _object(mapping: dict) -> str:
+    return json.dumps(mapping, ensure_ascii=False)
+
+
+# Script blocks between `// @labels:<name>` and `// @end labels`, rendered from the labels.
+LABEL_BLOCKS = {
+    "js/eat-slot.js": {
+        "cuisines": lambda data: [
+            f"var CUISINE_BY_CUISINE = {_object(data['cuisines']['byCuisine'])};",
+            f"var CUISINE_BY_GROUP = {_object(data['cuisines']['byGroup'])};",
+        ],
+    },
+    "js/ggongbab-public-feed.js": {
+        "source-names": lambda data: [
+            "var NAMES = Object.freeze(" + _object({k: v["dataName"] for k, v in data["sources"].items()}) + ");",
+        ],
+    },
+}
+
+
+def synced_script(path: str) -> str:
+    """The script with its label blocks rendered from data/content/labels.json."""
+    lines = (ROOT / path).read_text(encoding="utf-8").split("\n")
+    data = labels()
+    for name, render_block in LABEL_BLOCKS[path].items():
+        starts = [i for i, line in enumerate(lines) if line.strip().startswith(f"// @labels:{name}")]
+        if len(starts) != 1:
+            raise SystemExit(f"{path}: expected one // @labels:{name} block, found {len(starts)}")
+        start = starts[0]
+        end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == "// @end labels")
+        indent = lines[start][: len(lines[start]) - len(lines[start].lstrip())]
+        lines[start + 1:end] = [indent + row for row in render_block(data)]
+    return "\n".join(lines)
+
+
 def sync_strings(page: str, text: str) -> str:
-    """Write CHROME_STRINGS into the page's ko and en tables; every chrome key must exist in both."""
+    """Write CHROME_STRINGS and the page's shared labels into its ko and en tables; every chrome
+    key must exist in both."""
     lines = text.split("\n")
     blocks = []
     for lang in ("ko", "en"):
         start = next(i for i, line in enumerate(lines) if line.strip() == f"{lang}: {{")
         end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() in ("},", "}"))
         blocks.append((start, end, lang))
+    strings = dict(CHROME_STRINGS, **label_strings(page))
     for start, end, lang in sorted(blocks, reverse=True):  # later block first: indexes stay valid
         body = lines[start + 1:end]
-        for key, values in CHROME_STRINGS.items():
+        for key, values in strings.items():
             anchor = next(i for i, line in enumerate(body) if line.lstrip().startswith("'footer.copyright':"))
             indent = body[anchor][: len(body[anchor]) - len(body[anchor].lstrip())]
-            entry = f"{indent}'{key}': '{values[lang]}',"
+            entry = f"{indent}'{key}': {js_str(values[lang])},"
             found = [i for i, line in enumerate(body) if line.lstrip().startswith(f"'{key}':")]
             if found:
                 body[found[0]] = entry
@@ -150,10 +229,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true", help="report drift instead of rewriting")
     args = parser.parse_args(argv)
     drifted = []
-    for page in PAGES:
+    targets = [(page, synced) for page in PAGES] + [(path, synced_script) for path in LABEL_BLOCKS]
+    for page, render_target in targets:
         path = ROOT / page
         current = path.read_text(encoding="utf-8")
-        expected = synced(page)
+        expected = render_target(page)
         if current == expected:
             continue
         drifted.append(page)
@@ -165,10 +245,10 @@ def main(argv: list[str] | None = None) -> int:
             path.write_bytes(expected.encode("utf-8"))
     if args.check:
         if drifted:
-            print(f"\nsite chrome drift in {len(drifted)} page(s): {', '.join(drifted)}. "
-                  "Edit shared/nav.html or shared/footer.html, then run python scripts/sync_site_chrome.py.")
+            print(f"\nsite chrome drift in {len(drifted)} file(s): {', '.join(drifted)}. Edit shared/nav.html, "
+                  "shared/footer.html or data/content/labels.json, then run python scripts/sync_site_chrome.py.")
             return 1
-        print(f"site chrome in sync: {len(PAGES)} pages")
+        print(f"site chrome in sync: {len(PAGES)} pages, {len(LABEL_BLOCKS)} scripts")
         return 0
     print(f"rewrote {len(drifted)} page(s)" + (f": {', '.join(drifted)}" if drifted else ""))
     return 0

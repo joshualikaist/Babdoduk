@@ -62,7 +62,7 @@
 
 ## 5. 이 프로젝트에서 특히 신경 쓸 곳
 
-- 내비·푸터는 `shared/` 에서 `scripts/sync_site_chrome.py` 로 각 페이지에 복사된다(직접 고치지 말고 `shared/` 를 고친 뒤 동기화). `STR` 번역 표와 페이지 CSS 는 여전히 페이지마다 따로 있어서 한 파일만 고치면 다른 페이지와 어긋날 수 있다
+- 내비·푸터는 `shared/` 에서, 공통 라벨은 `data/content/labels.json` 에서 `scripts/sync_site_chrome.py` 로 각 페이지에 복사된다(직접 고치지 말고 원본을 고친 뒤 동기화). `STR` 번역 표와 페이지 CSS 는 여전히 페이지마다 따로 있어서 한 파일만 고치면 다른 페이지와 어긋날 수 있다
 - 점검할 때 `index.html`, `ggongbab.html`, `mukbang.html`, `event.html`, `food.html`, `history.html` 을 번갈아 열어 본다(lab 작업이면 `lab-ggongbab.html` 도)
 - lab 전용 실험(Realtime·공개 projection·Portal LIST poller·Windows worker)은 본편 release 에 섞이지 않게 한다
 - 이미지·데이터 경로의 대소문자·상대 경로가 배포 환경과 맞는지 본다
