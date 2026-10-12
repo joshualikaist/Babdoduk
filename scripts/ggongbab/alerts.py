@@ -169,22 +169,37 @@ def evaluate(local: Path, *, portal_running: bool, radar_running: bool, now: Opt
     return alerts
 
 
+MAX_SINK_BYTES = 12000     # ops_storage.read_json refuses a state file over 16384 bytes
+
+
 class FileSink:
-    """Local, provider-free sink: the current alerts plus a bounded transition history."""
-    def __init__(self, local: Path, history: int = 200):
+    """Local, provider-free sink: the current alerts plus a bounded transition history.
+
+    The file must stay readable by ops_storage.read_json, which refuses anything over 16 KB: on
+    2026-10-12 a 200-entry history reached 16,392 bytes, every later emit failed, and no alert
+    was written or pushed until it was found the next day. The history is now cut by size as
+    well as count, and a file that cannot be read starts a fresh history instead of stopping
+    every alert after it."""
+    def __init__(self, local: Path, history: int = 50):
         self.path, self.history = Path(local) / "ops-alerts.json", history
 
     def emit(self, alerts: Iterable[Alert]) -> dict:
         alerts = list(alerts)
-        previous = read_json(self.path, {"alerts": [], "history": []})
-        before = {(a["component"], a["reason"], a["severity"]) for a in previous.get("alerts", [])}
+        try:
+            previous = read_json(self.path, {"alerts": [], "history": []})
+        except Exception:
+            previous = {"alerts": [], "history": []}
+        before = {(a.get("component"), a.get("reason"), a.get("severity")) for a in previous.get("alerts", [])
+                  if isinstance(a, dict)}
         now_rows = [asdict(a) for a in alerts]
         changes = [r for r in now_rows if (r["component"], r["reason"], r["severity"]) not in before]
-        history = (previous.get("history", []) + changes)[-self.history:]
+        history = [h for h in previous.get("history", []) if isinstance(h, dict)]
+        history = (history + changes)[-self.history:]
         payload = {"observed_at": max((a.timestamp for a in alerts), default=time.time()),
-                   "worst": max((SEVERITIES.index(a.severity) for a in alerts), default=0),
+                   "worst": SEVERITIES[max((SEVERITIES.index(a.severity) for a in alerts), default=0)],
                    "alerts": now_rows, "history": history}
-        payload["worst"] = SEVERITIES[payload["worst"]]
+        while payload["history"] and len(json.dumps(payload, ensure_ascii=False).encode("utf-8")) > MAX_SINK_BYTES:
+            payload["history"] = payload["history"][1:]
         atomic_json(self.path, payload)
         return payload
 
