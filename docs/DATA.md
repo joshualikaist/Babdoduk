@@ -18,7 +18,10 @@ contracts themselves are standard JSON Schema files in `schemas/` (data plan pha
 | `data/magazine/index.json` | Editions with stories, newest first | same | `magazine-index` | same | same | yes |
 | `research/magazine/candidates.jsonl` | Candidate store, one row per line (`docs/MAGAZINE_DISCOVERY.md`, Persistence) | same | `magazine-candidate` | same: unique ids, real URLs, no session fields | the next magazine run | no |
 | `research/magazine/health.json`, `source-health.json`, `runs.jsonl` | Run reports | same | `magazine-health`, `magazine-source-health`, `magazine-run` | same | operators | no |
-| `data/foods/catalog.json`, `data/foods/packs/*.json` | Food dictionary for the picker | `scripts/build_foods.py` (phase 4 makes these files the source) | `foods-catalog`, `foods-pack` | `--only authored`: counts match, unique dish ids | `mukbang.html#what` (`js/food-engine.js`) | yes |
+| `data/foods/catalog.json`, `data/foods/packs/*.json` | Food dictionary for the picker | a person (the source since phase 4; the Python generators retired) | `foods-catalog`, `foods-pack` | `--only authored`: counts match, unique dish ids and names, each dish in its cuisine group's pack | `mukbang.html#what` (`js/food-engine.js`) | yes |
+| `data/content/labels.json` | Shared labels: free-food types, sources, cafeterias, the picker's cuisines, magazine lanes | a person | `content-labels` | `--only authored`; `sync_site_chrome.py --check` fails when a page's copy differs | the pipeline (`scripts/content_labels.py`); the pages carry a copy written by `scripts/sync_site_chrome.py` | no |
+| `data/content/events.json` | News and events: the owner's notices and activities | a person (`docs/EVENT_DETAIL_FIELDS.md`) | `content-events` | `--only authored`: an activity ends on or after its start, a detail carries no markup but `<strong>` | `event.html`, written in by `scripts/sync_site_chrome.py` | no |
+| `data/content/history.json` | The history timeline and its roadmap | a person | `content-history` | `--only authored`: one milestone per date, its image exists | `history.html`, written in by `scripts/sync_site_chrome.py` | no |
 | `data/food-log.json` | The creator's food log | a person | `food-log` | `--only authored`: each day's total | `food.html` | babdoduk-lab only |
 | `inputs/ggongbab/manual.json` | Hand-written free-food notices | a person | `ggongbab-manual` | `--only authored`: unique ids | the free-food refresh | no |
 | `inputs/ggongbab/food-news.json` | Public campus news items | operator PC, `export_food_news.py --review` (the review file stays in `.local/`) | `ggongbab-news-input` | `--only authored`: each item's derived id | the free-food refresh | no |
@@ -34,11 +37,19 @@ refreshed, so a problem in one cannot block another's publish.
   Actions job runs **main's** code, validates the families it refreshed and publishes them to lab
   and main with `scripts/publish_generated.py`, which copies only those folders. A file whose only
   change is a timestamp is not committed. Never edit these by hand.
-- **Authored** (foods, the food log, `inputs/`, the registry): a normal commit through the
-  lab-first lifecycle (`AGENTS.md`).
+- **Authored** (foods, the shared labels, the food log, `inputs/`, the registry): a normal commit
+  through the lab-first lifecycle (`AGENTS.md`).
+- **Written into the pages** (`data/content/`): a label or an entry is written once. `python
+  scripts/sync_site_chrome.py` writes the labels into the translation tables of the pages that
+  show them and into the `// @labels:` blocks of `js/eat-slot.js` and `js/ggongbab-public-feed.js`,
+  and renders `events.json` and `history.json` (`scripts/page_content.py`) into the `@content`
+  blocks of `event.html` and `history.html`: the rows with their Korean text, and both translation
+  tables. Order and keys are computed (activities by date, `event.e0` first). The pipeline reads the
+  labels through `scripts/content_labels.py`. The browser never fetches the folder, so it is not
+  deployed.
 - **Served** (`docs/DEPLOYMENT_AND_BRANCHES.md`): `.vercelignore` deploys only the pages, `css/`,
-  `js/`, `images/`, `data/` and `manifest.json`; `vercel.json` serves the lab experiments on
-  babdoduk-lab alone.
+  `js/`, `images/`, `data/` (except `data/content/`) and `manifest.json`; `vercel.json` serves the
+  lab experiments on babdoduk-lab alone.
 
 ## Changing a format
 

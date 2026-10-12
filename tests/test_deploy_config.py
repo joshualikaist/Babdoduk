@@ -44,7 +44,8 @@ def test_only_site_resources_are_deployed():
     entries = [line.strip() for line in (ROOT / ".vercelignore").read_text(encoding="utf-8").splitlines()
                if line.strip() and not line.startswith("#")]
     for name in ("research", "scripts", "tests", "docs", "supabase", "inputs", "i18n", "schemas", "shared",
-                 ".claude", ".cursor", ".github", "*.md", "*.txt", "*.ini", ".env.example", ".local", ".env"):
+                 "data/content", ".claude", ".cursor", ".github", "*.md", "*.txt", "*.ini", ".env.example",
+                 ".local", ".env"):
         assert name in entries, name
     # Nothing the pages load is ignored: no entry names a site file or folder.
     for entry in entries:

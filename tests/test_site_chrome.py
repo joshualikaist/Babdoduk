@@ -17,11 +17,24 @@ def test_every_page_carries_the_shared_nav_and_footer():
 
 def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     shutil.copytree(ROOT / "shared", tmp_path / "shared")
-    for page in chrome.PAGES:
+    for page in list(chrome.PAGES) + list(chrome.LABEL_BLOCKS) + ["data/content/labels.json"]:
+        (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / page, tmp_path / page)
     monkeypatch.setattr(chrome, "ROOT", tmp_path)
     monkeypatch.setattr(chrome, "SHARED", tmp_path / "shared")
+    monkeypatch.setattr(chrome, "LABELS", tmp_path / "data/content/labels.json")
     assert chrome.main(["--check"]) == 0
+    # A label is named in one place: an edit there fails the check until the pages are rewritten.
+    labels = json.loads((tmp_path / "data/content/labels.json").read_text(encoding="utf-8"))
+    labels["freeFood"]["lunchbox"]["en"] = "Packed lunch"
+    labels["cuisines"]["byGroup"]["mexican"] = "멕시칸"
+    (tmp_path / "data/content/labels.json").write_text(json.dumps(labels, ensure_ascii=False), encoding="utf-8")
+    assert chrome.main(["--check"]) == 1
+    assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0
+    assert "'gg.food.lunchbox': 'Packed lunch'," in (tmp_path / "ggongbab.html").read_text(encoding="utf-8")
+    assert "'home.cal.food.lunchbox': 'Packed lunch'," in (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert '"mexican": "멕시칸"' in (tmp_path / "js/eat-slot.js").read_text(encoding="utf-8")
+    capsys.readouterr()
     page = tmp_path / "event.html"
     drifted = page.read_text(encoding="utf-8").replace('href="mukbang.html" class="footer-apple-a"',
                                                         'href="choose.html" class="footer-apple-a"')

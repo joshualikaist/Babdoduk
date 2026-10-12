@@ -74,6 +74,8 @@ VALID = {
     "food-log": {"currency": "KRW", "entries": [{"date": "2026-05-06", "total": 9200, "note": "",
                                                  "items": [{"meal": "저녁", "label": "돈까스", "amount": 9200}]}]},
 }
+for _name in ("labels", "events", "history"):
+    VALID[f"content-{_name}"] = json.loads((sc.ROOT / f"data/content/{_name}.json").read_text(encoding="utf-8"))
 COMPACT = {"compact": True, "candidateId": "c_0123456789abcdef", "sourceUrl": "https://a.example/onion",
            "rejectionReason": "NOT_FOOD", "discoveredSeq": 7}
 
@@ -138,6 +140,19 @@ BREAKS = {
                    ("a field missing", _set("items.0.keywords", _set.DELETE)),
                    ("an upper-case id", _set("items.0.id", "Kimchi"))],
     "food-log": [("another currency", _set("currency", "USD")), ("a negative amount", _set("entries.0.items.0.amount", -1))],
+    "content-labels": [("a label without English", _set("freeFood.meal.en", _set.DELETE)),
+                       ("a source shown as nothing known", _set("sources.portal.shownAs", "web")),
+                       ("a lane without a lead", _set("magazineLanes.habit.lead", _set.DELETE)),
+                       ("an upper-case cafeteria id", _set("restaurants.0.id", "FCLT"))],
+    "content-events": [("a state nobody announces", _set("activities.0.confirmation", "done")),
+                       ("a title without English", _set("activities.0.title.en", _set.DELETE)),
+                       ("a note beside the labelled rows", _set("activities.0.details.note", {"ko": "a", "en": "a"})),
+                       ("a label outside the fixed four", _set("activities.0.details.winners", {"ko": "a", "en": "a"})),
+                       ("a link that is not https", _set("activities.0.link", "http://instagram.com/babdodukms"))],
+    "content-history": [("a picture from outside images/", _set("milestones.0.picture.image", "https://a.example/x.png")),
+                        ("a milestone without a date", _set("milestones.0.date", _set.DELETE)),
+                        ("a mark too long to be a mark", _set("milestones.1.picture.mark", "Babdoduk version two")),
+                        ("a roadmap without its text", _set("roadmap.text", _set.DELETE))],
 }
 
 
@@ -218,3 +233,21 @@ def test_authored_data_agrees_with_itself(tmp_path):
     errors = validate_content.validate_authored(tmp_path)
     assert any("catalog count" in e for e in errors) and any("food-log" in e for e in errors)
     assert any("public news check" in e for e in errors)
+
+
+def test_the_food_packs_are_the_source_and_keep_the_generators_checks(tmp_path):
+    """build_foods.py and food_expand.py retired on 2026-10-12: their rules live in
+    validate_content.validate_authored."""
+    assert not (sc.ROOT / "scripts" / "build_foods.py").exists() and not (sc.ROOT / "scripts" / "food_expand.py").exists()
+    shutil.copytree(sc.ROOT / "data" / "foods", tmp_path / "data" / "foods")
+    packs = tmp_path / "data" / "foods" / "packs"
+    korean = json.loads((packs / "korean.json").read_text(encoding="utf-8"))
+    western = json.loads((packs / "western.json").read_text(encoding="utf-8"))
+    korean["items"][1]["nameKo"] = korean["items"][0]["nameKo"]          # two dishes, one name
+    western["items"][0]["cuisineGroup"] = "korean"                         # a Korean dish in the western pack
+    (packs / "korean.json").write_text(json.dumps(korean, ensure_ascii=False), encoding="utf-8")
+    (packs / "western.json").write_text(json.dumps(dict(western, pack="westen"), ensure_ascii=False), encoding="utf-8")
+    errors = validate_content.validate_authored(tmp_path)
+    assert any("nameKo" in e for e in errors)
+    assert any("belongs in korean, not western" in e for e in errors)
+    assert any("must say pack 'western'" in e for e in errors)

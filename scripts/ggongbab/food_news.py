@@ -20,6 +20,8 @@ import uuid
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+import content_labels
+
 from .config import KST
 from .parsers.rule_parser import explicit_food_evidence
 from .public_sanitizer import public_text
@@ -28,7 +30,7 @@ FOOD_SERVICE = re.compile(r"식당|매장|카페|버거|치킨|급식|학식|푸
 SERVICE_CHANGE = re.compile(r"오픈|개점|개업|입점|영업|운영\s*시간|폐점|이전|서비스|메뉴|출시|판매|휴무|휴업|재개|opening|opens?\b|closure|closing|relocat|operating\s*hours|service\s*launch|menu\s*change", re.I)
 NON_SERVICE = re.compile(r"연구실|연구소|연구센터|실험실|논문|채용|설문|research\s*(?:lab|cent[er]+)|laboratory|job\s*opening", re.I)
 PRIVATE = re.compile(r"portal\.kaist\.ac\.kr|sso\.kaist\.ac\.kr|/wz/|pstNo|boardNo|JSESSIONID|external[_ ]?id", re.I)
-SOURCE_NAMES = {"portal": "KAIST 포탈", "kaist_public": "KAIST 공지"}
+SOURCE_NAMES = content_labels.source_news_names()      # data/content/labels.json
 FIELDS = {"id", "contentType", "noticeDate", "title", "summary", "location", "sources", "hasFreeOffer"}
 
 

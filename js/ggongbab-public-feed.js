@@ -7,8 +7,10 @@
   'use strict';
   var TABLE = 'ggongbab_public_events';
   var COLUMNS = 'id,title,summary,start_at,end_at,date_text,time_text,location_name,building,room,food_provided,food_type,food_description,organizer,eligibility,registration_required,registration_deadline,registration_url,source_types,confidence,content_revision,updated_at';
-  var NAMES = Object.freeze({ dooray: 'Dooray', dooray_mailbox: 'Dooray 메일함',
-    kaist_public: 'KAIST 공지', manual: 'Manual', portal: 'KAIST Portal' });
+  // The sources' public names (data/content/labels.json; written by scripts/sync_site_chrome.py).
+  // @labels:source-names
+  var NAMES = Object.freeze({"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal"});
+  // @end labels
   var SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js';
   var sdkPromise;
 

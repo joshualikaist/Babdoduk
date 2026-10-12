@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/content-events.schema.json",
+  "title": "News and events: data/content/events.json",
+  "description": "Written by a person: only what the owner has actually announced. scripts/sync_site_chrome.py writes it into event.html (rows by start date, notices newest first). A detail value may carry <strong> and no other markup (validate_content.py); every other text is plain. docs/EVENT_DETAIL_FIELDS.md.",
+  "type": "object",
+  "required": ["schemaVersion", "notices", "activities"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "notices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["date", "title", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "date": {"$ref": "#/$defs/date"},
+          "title": {"$ref": "#/$defs/pair"},
+          "text": {"$ref": "#/$defs/pair"}
+        }
+      }
+    },
+    "activities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["start", "end", "confirmation", "link", "title", "details"],
+        "additionalProperties": false,
+        "properties": {
+          "start": {"$ref": "#/$defs/date"},
+          "end": {"$ref": "#/$defs/date"},
+          "confirmation": {
+            "description": "What was announced or verified. A date passing never makes an activity held.",
+            "enum": ["announced", "tentative", "held", "cancelled"]
+          },
+          "link": {"type": "string", "pattern": "^https://"},
+          "title": {"$ref": "#/$defs/pair"},
+          "place": {"$ref": "#/$defs/pair"},
+          "details": {
+            "description": "The fixed labelled rows (summary, duration, prizes, participation; at least the summary), or one note for an activity they do not fit.",
+            "anyOf": [
+              {
+                "type": "object",
+                "required": ["summary"],
+                "additionalProperties": false,
+                "properties": {
+                  "summary": {"$ref": "#/$defs/pair"},
+                  "duration": {"$ref": "#/$defs/pair"},
+                  "prizes": {"$ref": "#/$defs/pair"},
+                  "participation": {"$ref": "#/$defs/pair"}
+                }
+              },
+              {
+                "type": "object",
+                "required": ["note"],
+                "additionalProperties": false,
+                "properties": {"note": {"$ref": "#/$defs/pair"}}
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "pair": {
+      "type": "object",
+      "required": ["ko", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "ko": {"type": "string", "minLength": 1},
+        "en": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

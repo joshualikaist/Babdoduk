@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "milestones": [
+    {
+      "date": "2025-04-01",
+      "title": {
+        "ko": "공식 인스타그램 채널 개설",
+        "en": "Official Instagram launch"
+      },
+      "text": {
+        "ko": "밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.",
+        "en": "Launched the official Babdoduk Instagram channel and began publishing recipe- and lifestyle-oriented content."
+      },
+      "picture": {
+        "image": "images/history-t1.png",
+        "width": 352,
+        "height": 340,
+        "alt": {
+          "ko": "인스타그램 공식 로고",
+          "en": "Official Instagram logo"
+        }
+      }
+    },
+    {
+      "date": "2026-05-07",
+      "title": {
+        "ko": "통합 웹 허브 오픈",
+        "en": "Integrated web hub"
+      },
+      "text": {
+        "ko": "주요 SNS·서비스 연결, 먹방 가계부, 이벤트 안내 등을 단일 웹사이트에서 제공하는 공개 허브를 구축했습니다.",
+        "en": "Shipped a public web hub that centralizes key SNS links, the food-expense log, event information, and related tools."
+      },
+      "picture": {
+        "mark": "Babdoduk",
+        "alt": {
+          "ko": "밥도둑 로고",
+          "en": "Babdoduk wordmark"
+        }
+      }
+    },
+    {
+      "date": "2026-09-30",
+      "title": {
+        "ko": "Babdoduk ver2. 오픈",
+        "en": "Babdoduk ver2. Open"
+      },
+      "text": {
+        "ko": "오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.",
+        "en": "Published today's free food, cafeteria menus, and the magazine in a new structure."
+      },
+      "picture": {
+        "mark": "ver2",
+        "alt": {
+          "ko": "Babdoduk ver2",
+          "en": "Babdoduk ver2"
+        }
+      }
+    }
+  ],
+  "roadmap": {
+    "title": {
+      "ko": "로드맵",
+      "en": "Roadmap"
+    },
+    "text": {
+      "ko": "브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.",
+      "en": "This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones."
+    }
+  }
+}

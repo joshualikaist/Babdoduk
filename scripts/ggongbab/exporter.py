@@ -19,12 +19,14 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
+import content_labels
+
 from .config import DATA_DIR, KST, Settings
 from .parsers.validator import parse_iso
 from .public_sanitizer import public_text, public_url
 
-PUBLIC_SOURCE_NAMES = {"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지",
-                       "manual": "Manual", "portal": "KAIST Portal"}
+# The name each source type carries in the public data: the shared labels (data/content/labels.json).
+PUBLIC_SOURCE_NAMES = content_labels.source_data_names()
 TRI = ("true", "false", "unknown")
 ARCHIVE_WINDOW_DAYS = 30
 # The public files' contract version (schemas/ggongbab-*.schema.json). Readers ignore it; a
