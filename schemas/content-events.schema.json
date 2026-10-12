@@ -34,7 +34,10 @@
             "description": "What was announced or verified. A date passing never makes an activity held.",
             "enum": ["announced", "tentative", "held", "cancelled"]
           },
-          "link": {"type": "string", "pattern": "^https://"},
+          "link": {
+            "description": "The original post (https://), or a page of this site where people take part (name.html; it must exist).",
+            "anyOf": [{"type": "string", "pattern": "^https://"}, {"type": "string", "pattern": "^[a-z0-9-]+[.]html$"}]
+          },
           "title": {"$ref": "#/$defs/pair"},
           "place": {"$ref": "#/$defs/pair"},
           "details": {

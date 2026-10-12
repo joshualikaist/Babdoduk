@@ -61,6 +61,34 @@
           "en": "<strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions are in the original post."
         }
       }
+    },
+    {
+      "start": "2026-10-13",
+      "end": "2026-11-30",
+      "confirmation": "announced",
+      "link": "worldcup.html",
+      "title": {
+        "ko": "KAIST 메뉴 월드컵 32강",
+        "en": "KAIST Menu World Cup: round of 32"
+      },
+      "details": {
+        "summary": {
+          "ko": "학식 단골 메뉴와 학생들이 많이 찾는 메뉴 32개 중 나의 최애 메뉴를 고르는 월드컵입니다.",
+          "en": "Pick your favorite from 32 dishes: cafeteria regulars and the dishes students order most."
+        },
+        "duration": {
+          "ko": "2026년 10월 13일(화) ~ 2026년 11월 30일(월)",
+          "en": "Tuesday, October 13 through Monday, November 30, 2026."
+        },
+        "prizes": {
+          "ko": "<strong>경품 없음</strong> · 사이트 안에서 하는 놀이예요.",
+          "en": "<strong>No prizes</strong>: a game on this site."
+        },
+        "participation": {
+          "ko": "‘참여하기’를 누르면 바로 시작해요. 로그인은 필요 없고, 결과는 내 브라우저에만 남아요.",
+          "en": "Press “Take part” to start. No sign-in; your results stay in this browser."
+        }
+      }
     }
   ]
 }

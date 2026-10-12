@@ -75,7 +75,7 @@ VALID = {
                                                  "items": [{"meal": "저녁", "label": "돈까스", "amount": 9200}]}]},
 }
 VALID["magazine-sources"] = json.loads((sc.ROOT / "scripts/discovery/sources.json").read_text(encoding="utf-8"))
-for _name in ("labels", "events", "history"):
+for _name in ("labels", "events", "history", "worldcup"):
     VALID[f"content-{_name}"] = json.loads((sc.ROOT / f"data/content/{_name}.json").read_text(encoding="utf-8"))
 COMPACT = {"compact": True, "candidateId": "c_0123456789abcdef", "sourceUrl": "https://a.example/onion",
            "rejectionReason": "NOT_FOOD", "discoveredSeq": 7}
@@ -154,7 +154,12 @@ BREAKS = {
                        ("a title without English", _set("activities.0.title.en", _set.DELETE)),
                        ("a note beside the labelled rows", _set("activities.0.details.note", {"ko": "a", "en": "a"})),
                        ("a label outside the fixed four", _set("activities.0.details.winners", {"ko": "a", "en": "a"})),
-                       ("a link that is not https", _set("activities.0.link", "http://instagram.com/babdodukms"))],
+                       ("a link that is not https", _set("activities.0.link", "http://instagram.com/babdodukms")),
+                       ("a page link that leaves the site root", _set("activities.0.link", "../worldcup.html"))],
+    "content-worldcup": [("a dish listed twice", _set("dishes.1", "kr-bulgogi")),
+                         ("an id that is not a catalog id", _set("dishes.0", "Bulgogi!")),
+                         ("a basis without English", _set("basis.en", _set.DELETE)),
+                         ("a bracket of two", _set("dishes", ["kr-bulgogi", "kr-jeyuk"]))],
     "content-history": [("a picture from outside images/", _set("milestones.0.picture.image", "https://a.example/x.png")),
                         ("a milestone without a date", _set("milestones.0.date", _set.DELETE)),
                         ("a mark too long to be a mark", _set("milestones.1.picture.mark", "Babdoduk version two")),

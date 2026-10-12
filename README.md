@@ -102,6 +102,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`choose.html`** | 호환용 이동 페이지 — `mukbang.html#what` 으로 바로 이동(`noindex`). 별도 추천기 제품이 아님 |
 | **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 변경 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 (`data/content/history.json` 에서 동기화) |
+| **`worldcup.html`** | KAIST 메뉴 월드컵 — 밥도둑 소식의 활동에서 여는 놀이. `data/content/worldcup.json` 의 메뉴 32개(음식 사전 id)를 섞어 둘씩 고르고, 진행과 우승 기록은 이 브라우저(localStorage `babdoduk-worldcup`)에만 남는다. 사진·경품 없음 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 

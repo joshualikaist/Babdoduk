@@ -95,6 +95,17 @@ def detail_sheet(details: dict, lang: str) -> list[str]:
     return rows + ["</div>"]
 
 
+def event_link(link: str) -> str:
+    """The original post opens in a new tab; a page of this site where people take part (an
+    activity like the menu world cup) opens in place."""
+    if link.startswith("https://"):
+        return (f'  <a class="event-link" href="{attr(link)}" target="_blank" rel="noopener noreferrer">'
+                '<span data-event-cta>당시 게시물</span> <span aria-hidden="true">↗</span>'
+                '<span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>')
+    return (f'  <a class="event-link" href="{attr(link)}" data-event-page>'
+            '<span data-event-cta>참여하기</span> <span aria-hidden="true">→</span></a>')
+
+
 def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
     data = load("events") if data is None else data
     rows: list[str] = []
@@ -108,9 +119,7 @@ def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
             f'  <p class="event-date">{date_range(item["start"], item["end"])}{place}</p>',
             f'  <h3 class="event-name" data-i18n="event.{key}.summary">{text(item["title"]["ko"])}</h3>',
             '  <p class="event-state" data-event-state hidden></p>',
-            f'  <a class="event-link" href="{attr(item["link"])}" target="_blank" rel="noopener noreferrer">'
-            '<span data-event-cta>당시 게시물</span> <span aria-hidden="true">↗</span>'
-            '<span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>',
+            event_link(item["link"]),
             '  <details class="event-more">',
             '    <summary data-i18n="event.more">자세히</summary>',
             '    <p class="event-note" data-event-note></p>',
@@ -235,6 +244,9 @@ def content_errors(root: Path = ROOT) -> list[str]:
             name = (item.get("title") or {}).get("ko")
             if str(item.get("end")) < str(item.get("start")):
                 errors.append(f"events.json: {name} ends before it starts")
+            link = str(item.get("link") or "")
+            if not link.startswith("https://") and not (root / link).is_file():
+                errors.append(f"events.json: {name} links {link}, which is not a page of this site")
             for field, pair in (item.get("details") or {}).items():
                 for lang, value in (pair or {}).items():
                     bare = INLINE_MARKUP.sub("", str(value))
@@ -252,4 +264,27 @@ def content_errors(root: Path = ROOT) -> list[str]:
             image = (item.get("picture") or {}).get("image")
             if image and not (root / image).is_file():
                 errors.append(f"history.json: {item.get('date')} shows {image}, which does not exist")
+    errors += worldcup_errors(root)
+    return errors
+
+
+def worldcup_errors(root: Path = ROOT) -> list[str]:
+    """data/content/worldcup.json: a bracket (a power of two) of catalog dishes."""
+    path = root / "data" / "content" / "worldcup.json"
+    if not path.exists():
+        return []
+    dishes = json.loads(path.read_text(encoding="utf-8")).get("dishes") or []
+    errors = []
+    if len(dishes) < 4 or len(dishes) & (len(dishes) - 1):
+        errors.append(f"worldcup.json: {len(dishes)} dishes do not make a bracket (4, 8, 16, 32 or 64)")
+    if len(set(dishes)) != len(dishes):
+        errors.append("worldcup.json: a dish is listed twice")
+    catalog_path = root / "data" / "foods" / "catalog.json"
+    if catalog_path.exists():
+        known = set()
+        for pack in json.loads(catalog_path.read_text(encoding="utf-8")).get("packs") or []:
+            pack_path = root / str(pack.get("src") or "")
+            if pack_path.is_file():
+                known |= {item.get("id") for item in json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []}
+        errors += [f"worldcup.json: {dish} is not a catalog dish" for dish in dishes if dish not in known]
     return errors

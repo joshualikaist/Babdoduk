@@ -1,0 +1,387 @@
+/* KAIST menu world cup (worldcup.html): two dish cards at a time, a thin progress line, then the
+   winner. No pictures: the catalog has none, so a card is the dish name, its other-language name
+   and up to two flavour tags. */
+*, *::before, *::after { margin: 0; padding: 0; }
+
+.wc-page {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 16px var(--space-12);
+}
+
+.wc-back {
+  margin-bottom: var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wc-back a {
+  color: var(--color-ink-muted);
+  text-decoration: none;
+}
+
+.wc-back a:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+.wc-lede {
+  margin-top: var(--space-3);
+  max-width: 36rem;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+  overflow-wrap: break-word;
+}
+
+.wc-stage {
+  margin-top: var(--space-8);
+}
+
+.wc-view[hidden],
+.wc-history[hidden],
+.wc-error[hidden],
+.wc-card-tags[hidden],
+.wc-btn[hidden],
+#wcLoadingText[hidden] {
+  display: none;
+}
+
+.wc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.wc-loading,
+.wc-intro,
+.wc-result {
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+}
+
+.wc-loading {
+  color: var(--color-ink-muted);
+}
+
+.wc-error {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.wc-basis {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--color-ink);
+  overflow-wrap: break-word;
+}
+
+.wc-note {
+  margin-top: var(--space-4);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.wc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.wc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wc-btn--main {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: #fffdf8;
+}
+
+.wc-btn:hover {
+  border-color: var(--color-ink);
+}
+
+.wc-btn--main:hover {
+  background: #36332d;
+}
+
+.wc-btn:focus-visible,
+.wc-card:focus-visible,
+.wc-text:focus-visible,
+.wc-back a:focus-visible,
+.wc-winner:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* A match: round, count and a thin line for the whole bracket, then the two cards. */
+.wc-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.wc-round {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.wc-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.wc-track {
+  height: 4px;
+  margin-top: var(--space-3);
+  border-radius: 999px;
+  background: var(--color-divider);
+  overflow: hidden;
+}
+
+.wc-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 200ms ease;
+}
+
+.wc-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.wc-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 220px;
+  padding: var(--space-6) var(--space-4);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 150ms ease, transform 150ms ease, background-color 150ms ease;
+}
+
+.wc-card:hover {
+  border-color: var(--color-ink);
+  transform: translateY(-2px);
+}
+
+.wc-card.is-picked {
+  border-color: var(--color-accent);
+  background: var(--color-accent-wash);
+}
+
+.wc-card-name {
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.wc-card-sub {
+  font-size: 14px;
+  color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.wc-card-tags {
+  margin-top: var(--space-1);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.wc-vs {
+  align-self: center;
+  justify-self: center;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-muted);
+}
+
+.wc-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.wc-text {
+  min-height: 44px;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.wc-text:hover:not(:disabled) {
+  color: var(--color-ink);
+}
+
+.wc-text:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* The winner */
+.wc-result {
+  text-align: center;
+}
+
+.wc-result .wc-actions {
+  justify-content: center;
+}
+
+.wc-result-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--color-accent);
+}
+
+.wc-winner {
+  margin-top: var(--space-3);
+  font-size: clamp(36px, 7vw, 56px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.wc-winner-sub {
+  margin-top: var(--space-2);
+  font-size: 16px;
+  color: var(--color-ink-muted);
+}
+
+.wc-finalist {
+  margin-top: var(--space-4);
+  font-size: 14px;
+  color: var(--color-ink-muted);
+}
+
+.wc-share-status {
+  min-height: 1.5em;
+  margin-top: var(--space-3);
+  font-size: 14px;
+  color: var(--color-ink-muted);
+}
+
+.wc-history {
+  margin-top: var(--space-8);
+}
+
+.wc-history h3 {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.wc-history-list {
+  list-style: none;
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+}
+
+.wc-history-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-divider);
+  font-size: 15px;
+}
+
+.wc-history-list time {
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.wc-scope {
+  margin-top: var(--space-8);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+@media (max-width: 560px) {
+  .wc-loading,
+  .wc-intro,
+  .wc-result {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .wc-pair {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .wc-card {
+    min-height: 132px;
+  }
+
+  .wc-actions .wc-btn {
+    flex: 1 1 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-card,
+  .wc-track span {
+    transition: none;
+  }
+
+  .wc-card:hover {
+    transform: none;
+  }
+}
