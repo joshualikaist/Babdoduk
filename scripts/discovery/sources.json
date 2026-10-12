@@ -33,6 +33,8 @@
       "name": "My Korean Kitchen",
       "type": "rss",
       "url": "https://www.mykoreankitchen.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -47,6 +49,8 @@
       "name": "Beyond Kimchee",
       "type": "rss",
       "url": "https://www.beyondkimchee.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -61,6 +65,8 @@
       "name": "Seonkyoung Longest",
       "type": "rss",
       "url": "https://seonkyounglongest.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -74,6 +80,8 @@
       "name": "Budget Bytes",
       "type": "rss",
       "url": "https://www.budgetbytes.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
@@ -87,6 +95,8 @@
       "name": "Just One Cookbook",
       "type": "rss",
       "url": "https://www.justonecookbook.com/feed/",
+      "pagedFeed": "wordpress",
+      "feedPages": 5,
       "enabled": true,
       "trustTier": "B",
       "categories": [
