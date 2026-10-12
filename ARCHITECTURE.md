@@ -69,7 +69,7 @@ Nine HTML files are the route entry points: `index.html`, `ggongbab.html`, `lab-
 
 | Data | Writer/owner | Consumer and failure behavior |
 | --- | --- | --- |
-| `data/magazine/index.json`, dated and latest editions | `scripts/refresh_magazine.py` through `scripts/discovery/` (registry `scripts/discovery/sources.json`, internal store `research/magazine/`), source-backed stories only, no authored fallback (`docs/MAGAZINE_DISCOVERY.md`) | Magazine and home read edition data; fallback is not evidence of a fetched story |
+| `data/magazine/index.json` and the dated editions (no `latest.json` since 2026-10-12) | `scripts/refresh_magazine.py` through `scripts/discovery/` (registry `scripts/discovery/sources.json`, internal store `research/magazine/`), source-backed stories only, no authored fallback (`docs/MAGAZINE_DISCOVERY.md`) | Magazine and home read edition data; fallback is not evidence of a fetched story |
 | `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` parsing the official KAIST page without AI: dated files for the current Monday–Sunday KST week, `latest.json` (today only) and the `week.json` index (`docs/KAIST_MENU.md`) | Hub (weekly), magazine `#what` and home (today); zero usable restaurants keeps prior files, so clients check the date against the date they show |
 | `data/ggongbab/latest.json` | Approved export in `scripts/refresh_ggongbab.py` | Hub and home; validation precedes the final write and a failure keeps the previous file |
 | `data/ggongbab/archive/index.json` | Same export, same clock (past listings, 30 days) | Hub only, fetched separately; a failed archive keeps the previous file without blocking `latest.json`, and a failed fetch leaves the live feed untouched |
