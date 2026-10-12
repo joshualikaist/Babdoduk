@@ -2,9 +2,11 @@
 
 The magazine (`mukbang.html`) publishes **source-backed stories only**. There is no Babdoduk Desk
 fallback and no generated filler: every story has a real source, a real URL, the source's own
-title and a short excerpt of text that was actually retrieved from that source. When sources are
-down or thin, the edition is smaller, and a lane may be empty. An empty lane is explained in
-`research/magazine/health.json` (`lanes`), never silent.
+title and a short excerpt of text that was actually retrieved from that source. Every lane carries
+five stories (owner decision, 2026-10-12). When sources are down or thin and a lane cannot be filled
+from qualifying stories, it carries what it has; the run report names it (`summary.laneFill`,
+`summary.shortLanes` and a warning in `research/magazine/health.json`) and explains it (`lanes`),
+never silent and never filled with anything made up.
 
 ## Routes: implemented, where they run
 
@@ -156,10 +158,11 @@ score = 0.25 × source trust + 0.20 × freshness + 0.15 × lane relevance + 0.15
 
 Freshness is exp(−age/21 days); quality is text length plus a validated image.
 
-**Selection.** Each lane takes at most 6 stories and at most 2 from one source (publisher); **6 is a
-ceiling, never a number to fill**. Stories that corroborate one another take one slot. In tips and
-health an evergreen story older than 90 days runs only when fewer than 3 fresh ones qualify. A story
-runs in one edition only (`selectedFor`).
+**Selection.** Each lane carries **5 stories** (`select.LANE_SIZE`, owner decision 2026-10-12), filled
+best-first in tiers until it is full: fresh stories, at most 2 from one source (publisher); then fresh
+stories from any source; then, in tips and health, evergreen stories older than 90 days (each shows
+its own date). Stories that corroborate one another take one slot. A story runs in one edition only
+(`selectedFor`), so a lane is filled from new and not-yet-published stories, never by repeating one.
 
 **Hero.** The edition records `featured.heroKind`:
 - `trend`: a qualified trend story with independent evidence (measured demand, strong engagement,
@@ -260,14 +263,15 @@ and broad news feeds), `WEAK_TIER_C`, `TOO_OLD` (more than 365 days; research 2 
   `rules: "lanes-v1"`) are removed.
 - **Validation:** `validate_content.py` rejects any desk, sourceless or link-less story, a trend story
   without evidence, older than 30 days or undated, an undated habit story, and a trend hero without
-  evidence. Sparse and empty lanes are valid.
+  evidence. A lane with fewer than five stories is valid (an honest shortage) but is reported.
 
 ## Health report
 
 `research/magazine/health.json` is written on every run: per adapter its status, code, item count
 and last success; the counts of candidates, new, duplicates, rejected and selected; per lane the
 qualifying count, how many candidates were discovered for it and why the others did not qualify;
-`fabricated: 0`; warnings for failing, stale and degraded sources.
+`fabricated: 0`; `laneFill` (stories per lane in the edition) and `shortLanes`; warnings for failing,
+stale and degraded sources and for every lane short of five stories.
 
 ## Tests and evaluation
 
