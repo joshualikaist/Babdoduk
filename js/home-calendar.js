@@ -192,8 +192,8 @@
     var food = ev.food || {};
     var type = FOOD_TYPES.indexOf(food.type) >= 0 ? food.type : '';
     var typeLabel = type ? t('home.cal.food.' + type, '') : '';
-    if (lang() === 'en') return typeLabel || t('home.cal.food.other', 'Food');
-    var desc = food.description && String(food.description).length <= 22 ? food.description : typeLabel || t('home.cal.food.other', '음식');
+    if (lang() === 'en') return typeLabel || t('home.cal.foodFallback', 'Food');
+    var desc = food.description && String(food.description).length <= 22 ? food.description : typeLabel || t('home.cal.foodFallback', '음식');
     return fill(t('home.cal.ev.food', '{food} 제공'), { food: desc });
   }
 

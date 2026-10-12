@@ -131,9 +131,7 @@
     return F.futurePublic(publicList(), now);
   }
   function foodTypeLabel(type) {
-    return t('gg.food.' + type, {
-      meal: '식사', lunchbox: '도시락', snack: '간식', refreshment: '다과', beverage: '음료', coupon: '식권', other: '기타', unknown: ''
-    }[type] || '');
+    return t('gg.food.' + type, '');      // the page's tables carry every type (data/content/labels.json)
   }
   function mapLink(ev) {
     var loc = ev.location || {};
@@ -143,10 +141,10 @@
   }
   function sourceLabel(ev) {
     var types = (ev.sources || []).map(function (src) { return src.type; });
-    if (types.indexOf('dooray') >= 0 || types.indexOf('dooray_mailbox') >= 0) return t('gg.source.mail', 'KAIST 메일');
-    if (types.indexOf('portal') >= 0) return t('gg.source.portal', 'KAIST 포탈');
-    if (types.indexOf('kaist_public') >= 0) return t('gg.source.public', 'KAIST 공식 공지');
-    if (types.indexOf('manual') >= 0) return t('gg.source.manual', '밥도둑 등록');
+    if (types.indexOf('dooray') >= 0 || types.indexOf('dooray_mailbox') >= 0) return t('gg.source.mail', '');
+    if (types.indexOf('portal') >= 0) return t('gg.source.portal', '');
+    if (types.indexOf('kaist_public') >= 0) return t('gg.source.public', '');
+    if (types.indexOf('manual') >= 0) return t('gg.source.manual', '');
     return '';
   }
   function deadlineHtml(ev, now) {

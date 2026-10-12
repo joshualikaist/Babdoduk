@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/content-labels.schema.json",
+  "title": "Shared labels: data/content/labels.json",
+  "description": "Written by a person. Read by the pipeline (scripts/content_labels.py: source names in the public data, cafeteria names, magazine lane leads) and baked into the pages and scripts by scripts/sync_site_chrome.py (free-food types, source labels, magazine lanes, the picker's cuisine labels). A label shown in both languages has ko and en.",
+  "type": "object",
+  "required": ["schemaVersion", "freeFood", "sources", "sourceLabels", "restaurants", "cuisines", "magazineLanes"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "freeFood": {
+      "type": "object",
+      "required": ["meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"],
+      "additionalProperties": false,
+      "patternProperties": {"^[a-z]+$": {"$ref": "#/$defs/pair"}}
+    },
+    "sources": {
+      "type": "object",
+      "required": ["dooray", "dooray_mailbox", "kaist_public", "manual", "portal"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["dataName", "shownAs"],
+          "additionalProperties": false,
+          "properties": {
+            "dataName": {"type": "string", "minLength": 1},
+            "newsName": {"type": "string", "minLength": 1},
+            "shownAs": {"enum": ["mail", "portal", "public", "manual"]}
+          }
+        }
+      }
+    },
+    "sourceLabels": {
+      "type": "object",
+      "required": ["mail", "portal", "public", "manual"],
+      "additionalProperties": false,
+      "patternProperties": {"^[a-z]+$": {"$ref": "#/$defs/pair"}}
+    },
+    "restaurants": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "building"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9]+$"},
+          "name": {"type": "string", "minLength": 1},
+          "building": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "cuisines": {
+      "type": "object",
+      "required": ["byCuisine", "byGroup"],
+      "additionalProperties": false,
+      "properties": {
+        "byCuisine": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+        "byGroup": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}}
+      }
+    },
+    "magazineLanes": {
+      "type": "object",
+      "required": ["tips", "trend", "health", "habit"],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z]+$": {
+          "type": "object",
+          "required": ["name", "lead"],
+          "additionalProperties": false,
+          "properties": {
+            "name": {"$ref": "#/$defs/pair"},
+            "short": {"$ref": "#/$defs/pair"},
+            "lead": {"$ref": "#/$defs/pair"}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pair": {
+      "type": "object",
+      "required": ["ko", "en"],
+      "additionalProperties": false,
+      "properties": {"ko": {"type": "string"}, "en": {"type": "string"}}
+    }
+  }
+}
