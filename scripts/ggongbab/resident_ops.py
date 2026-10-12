@@ -171,6 +171,7 @@ def run_worker(files, *, recover_stale=False, host=None, settings=None, now=time
 
 RESUME_GAP_SECONDS = 120
 RESUME_GRACE_SECONDS = 600
+QUICK_RETRY_SECONDS = 120     # Watchdog.may_resume: one retry of a login latch when the tabs look right
 
 
 def emit_alerts(files, now, *, portal_running, toast=None):
@@ -206,8 +207,9 @@ class Watchdog:
     def __init__(self, files, *, launch=launch_worker, host=None, now=time.time, targets=page_targets, toast=None):
         self.files, self.launch, self.host, self.now = files, launch, host or PortalHost(files.root), now
         self.targets, self.toast = targets, toast
-        # In memory only: whether a KAIST SSO page was seen open since the current login latch.
-        self.sso_for, self.sso_seen = "", False
+        # In memory only: whether a KAIST SSO page was seen open since the current login latch,
+        # when this process first saw that latch, and whether its one quick retry is spent.
+        self.sso_for, self.sso_seen, self.latch_seen_at, self.quick_retry_used = "", False, 0.0, False
         self.child = None
         self.state = read_json(files.watch, {"launches": 0, "recoveries": 0, "retry_at": 0,
                                             "latched": "", "resume": 0, "launched_at": 0})
@@ -226,30 +228,40 @@ class Watchdog:
     def save(self):
         atomic_json(self.files.watch, self.state)
 
-    def login_completed(self, browser_state):
-        """True once a person has logged in again in the dedicated browser - never automated.
+    def may_resume(self, browser_state, now):
+        """Whether a login latch may be acknowledged now: "login", "retry" or None. Never a login.
 
-        Since the current login latch a KAIST SSO page was open, and now it has closed with
-        exactly one Portal page open. Read from the verified browser's loopback page list only
-        (scheme and host of each page, in memory); nothing is attached, typed, sent or stored.
-        Needing a new SSO page each time means a session that is still broken can never resume
-        itself in a loop: every resume follows a login someone actually did.
+        Read from the verified browser's loopback page list only (scheme and host of each page,
+        in memory); nothing is attached, typed, sent or stored. Either way exactly one Portal page
+        must be open and no KAIST SSO page:
+          * "login" - since the latch a KAIST SSO page was open and has now closed: a person has
+            logged in again. Each such resume needs a new SSO page.
+          * "retry" - once, QUICK_RETRY_SECONDS after the latch, while the page list looks right.
+            On 2026-10-12 the worker latched with PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS two
+            minutes after the PC woke, and the same login then worked 16 hours later on a plain
+            start: the browser had not settled. The quick retry is spent until a scan succeeds,
+            so a session that is really broken cannot resume itself in a loop.
         """
         if self.sso_for != self.state["latched"]:
-            self.sso_for, self.sso_seen = self.state["latched"], False
+            self.sso_for, self.sso_seen, self.latch_seen_at = self.state["latched"], False, now
         if browser_state != "verified":
-            return False
+            return None
         try:
             counts = tab_roles(self.targets(self.host.port), dooray_host(self.files.local / "dooray-ui.json"))
         except Exception:
-            return False    # an unreadable page list never resumes anything
+            return None     # an unreadable page list never resumes anything
         if counts["sso"]:
             self.sso_seen = True
-            return False
-        if not self.sso_seen or counts["portal"] != 1:
-            return False
-        self.sso_seen = False
-        return True
+            return None
+        if counts["portal"] != 1:
+            return None
+        if self.sso_seen:
+            self.sso_seen = False
+            return "login"
+        if not self.quick_retry_used and now - self.latch_seen_at >= QUICK_RETRY_SECONDS:
+            self.quick_retry_used = True
+            return "retry"
+        return None
 
     def tick(self):
         now = self.now()
@@ -287,9 +299,11 @@ class Watchdog:
         alert["observed_at"] = now
         atomic_json(self.files.alert, alert)
         emit_alerts(self.files, now, portal_running=held, toast=self.toast)
-        if self.state["latched"] in LOGIN and self.login_completed(browser_state):
+        if self.quick_retry_used and runtime["last_success"] and runtime["last_success"] > self.state["resume"]:
+            self.quick_retry_used = False     # a scan succeeded since the last resume
+        if self.state["latched"] in LOGIN and self.may_resume(browser_state, now):
             # The same acknowledgement an operator's start writes; the next tick clears the
-            # latch and launches the worker against the session the person just logged in to.
+            # latch and launches the worker against the browser's current login.
             self.files.set_enabled(True, now)
             self.log("OPS_AUTO_RESUMED")
             return True

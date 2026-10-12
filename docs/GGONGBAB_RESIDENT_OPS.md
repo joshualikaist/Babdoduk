@@ -289,6 +289,10 @@ battery it still sleeps after 30 minutes. When a login latch happens anyway, a W
 for the login and the watchdog resumes the worker by itself once it has seen a KAIST SSO page open
 and close again with one Portal page left (`OPS_AUTO_RESUMED`, read from the loopback page list
 only). It never logs in, types or replays anything; a new SSO page is needed for every resume.
+If the tabs already look right (one Portal page, no SSO page), it first retries such a latch once,
+two minutes after it: on 10-12 the latch came two minutes after the wake, while the browser was
+still settling, and the same login worked on a plain start 16 hours later. That retry is spent
+until a scan succeeds, so a broken session cannot resume itself in a loop.
 
 Network/transport problems back off. A LIST connection that went stale during sleep or a
 network change is not retried as is. After two consecutive transport failures, or on the first
