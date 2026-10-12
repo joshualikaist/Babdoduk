@@ -12,7 +12,8 @@ official brand, C discovery or community source (never published on its own as f
 
 Publishing rules a source carries (docs/MAGAZINE_SOURCES.md; policy_errors checks them): "excerpt":
 false shows it by title, source, date and link only (required for a newspaper association
-member), "permission" records who allowed collection where a platform needs it (a Naver blog), and
+member), "permission" records who allowed collection where the owner's permission is needed (a
+Naver blog; a newspaper association member, whose articles are collected only with it), and
 "withdrawn" records an owner's request to leave: the source stays off and its stories leave the
 archive.
 
@@ -141,8 +142,12 @@ def policy_errors(s: dict) -> list[str]:
         for site in sorted({d for q in s.get("queries") or [] for d in re.findall(r"site:(\S+)", q)}):
             if not hosts.collectable("https://" + site.strip("/") + "/"):
                 errors.append(f"{sid}: open discovery may not read {site}")
-    if url and not hosts.excerpt_allowed(url) and s.get("excerpt") is not False:
-        errors.append(f"{sid}: a newspaper association member is shown without excerpts (\"excerpt\": false)")
+    if url and hosts.member(url):
+        if s.get("enabled") and not s.get("permission"):
+            errors.append(f"{sid}: a newspaper association member's articles are collected only with its "
+                          f"permission (\"permission\")")
+        if s.get("excerpt") is not False:
+            errors.append(f"{sid}: a newspaper association member is shown without excerpts (\"excerpt\": false)")
     if s.get("withdrawn") and s.get("enabled"):
         errors.append(f"{sid}: a withdrawn source stays disabled")
     return errors

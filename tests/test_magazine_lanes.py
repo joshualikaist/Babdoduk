@@ -194,19 +194,19 @@ def test_query_provenance_is_persisted(tmp_path):
             return {"name": "exa"}
 
         def search(self, query, objective, num):
-            return [{"title": "혼밥 식습관 조사 | 연합뉴스", "url": "https://www.yna.co.kr/view/Q1", "published": day(5),
+            return [{"title": "혼밥 식습관 조사 | 뉴시스", "url": "https://www.newsis.com/view/Q1", "published": day(5),
                      "highlights": "혼밥 식습관 조사 결과 응답자의 40%가 끼니를 거른다고 답했다."}]
 
         def fetch(self, urls, chars):
-            return [{"url": "https://www.yna.co.kr/view/Q1", "title": "혼밥 식습관 조사", "body":
+            return [{"url": "https://www.newsis.com/view/Q1", "title": "혼밥 식습관 조사", "body":
                      "1인 가구의 혼밥 식습관 조사 결과 응답자의 40%가 하루 한 끼 이상 끼니를 거른다고 답했다. " * 3}]
 
     source = dict(SEARCH, id="web-habit", lane="habit", queries=["{year} 혼밥 식습관"], categories=["habit"])
     result = web.discover(source, fetcher=None, env={}, client=FakeMCP(), now=NOW)
     assert result.status == adapters.OK and result.queries == ["2026 혼밥 식습관"]
     [item] = result.items
-    assert item["siteName"] == "연합뉴스" and item["trustTier"] == "B" and item["title"] == "혼밥 식습관 조사"
-    FakeMCP.search = lambda self, q, o, n: [{"title": "혼밥 식습관 ...", "url": "https://www.yna.co.kr/view/Q1",
+    assert item["siteName"] == "뉴시스" and item["trustTier"] == "B" and item["title"] == "혼밥 식습관 조사"
+    FakeMCP.search = lambda self, q, o, n: [{"title": "혼밥 식습관 ...", "url": "https://www.newsis.com/view/Q1",
                                              "published": day(5), "highlights": ""}]
     whole = web.discover(source, fetcher=None, env={}, client=FakeMCP(), now=NOW).items[0]
     assert whole["title"] == "혼밥 식습관 조사"                   # the page's whole title, not the cut one
@@ -537,7 +537,7 @@ def test_the_free_search_server_is_used_sparingly(tmp_path, monkeypatch):
 
         def search(self, query, objective, num):
             calls.append("search")
-            return [{"title": f"편의점 신상 {query} {n}", "url": f"https://www.hankyung.com/a/{query}{n}", "published": day(1),
+            return [{"title": f"편의점 신상 {query} {n}", "url": f"https://www.newsis.com/a/{query}{n}", "published": day(1),
                      "highlights": "편의점 신상 디저트가 SNS에서 화제다. " * 5} for n in range(6)]
 
         def fetch(self, urls, chars):
@@ -757,7 +757,7 @@ def test_the_candidate_store_survives_a_rate_limited_run(tmp_path, monkeypatch):
             Once.calls += 1
             if Once.calls > 1:
                 raise urllib.error.HTTPError("https://mcp.exa.ai/mcp", 429, "Too Many Requests", {}, None)
-            return [{"title": "딱 하나 남아 간신히 샀다 편의점 크림빵", "url": "https://www.hankyung.com/article/7",
+            return [{"title": "딱 하나 남아 간신히 샀다 편의점 크림빵", "url": "https://www.newsis.com/view/7",
                      "published": day(1), "highlights": ("편의점 크림빵이 SNS에서 화제다. '오픈런'까지 불사한다. "
                                                          "디저트 매출은 전년 대비 62.3% 올랐다. ") * 3},
                     {"title": "쿠폰 모음", "url": "https://www.coupang.com/np/9", "published": day(1),
@@ -986,9 +986,11 @@ PAPER = "paper.example.kr"            # stands in for a newspaper association me
 
 
 def test_a_newspaper_association_page_shows_no_excerpt_or_photo_and_never_leads(monkeypatch):
-    """Decision 5: the host decides, whatever the route; the story still counts for its lane."""
-    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
-    [paper, blog] = run((dict(_dish(1, day(1)), sourceUrl=f"https://www.{PAPER}/food/1"), RECIPES),
+    """Decision 5: a member's page, collected with the member's permission, shows no excerpt or
+    photo whatever the source says; the story still counts for its lane."""
+    monkeypatch.setattr(hosts, "MEMBER_HOSTS", (PAPER,))
+    allowed = dict(RECIPES, id="t-paper", name="Paper", permission="회원사가 2026-10-20 메일로 허락")
+    [paper, blog] = run((dict(_dish(1, day(1)), sourceUrl=f"https://www.{PAPER}/food/1"), allowed),
                         (_dish(2, day(2)), RECIPES))
     assert paper["excerptAllowed"] is False and blog["excerptAllowed"] is True
     assert paper["assignedCategory"] == "tips"
@@ -1012,12 +1014,55 @@ def test_the_newspaper_association_list_names_hosts_with_evidence():
         "https://health.chosun.com/site/data/html_dir/1.html", "https://biz.chosun.com/1",          # other companies
         "https://www.newsis.com/view/1", "https://kormedi.com/1", "https://news.hidoc.co.kr/1")}
     assert [url for url, allowed in shown.items() if not allowed] == list(shown)[:5]
+    assert [url for url in shown if not hosts.collectable(url)] == list(shown)[:5]        # nor collected
+
+
+def test_a_members_article_is_kept_only_with_the_members_permission(tmp_path, monkeypatch):
+    """Decision 5 as the association's rule says (owner, 2026-10-12): only a non-commercial individual
+    may link to a member's article without permission, and its RSS may not be republished. A public
+    site keeps none of it without the member's permission: not from a feed, not in the store."""
+    import urllib.error
+    monkeypatch.setattr(hosts, "MEMBER_HOSTS", (PAPER,))
+    feed = evaluate.rss([{"title": "양파 간장 조림 레시피", "link": f"https://www.{PAPER}/food/1"},
+                         {"title": "두부 부침 레시피", "link": "https://cook.example.org/2",
+                          "text": evaluate.LONG.replace("양파", "두부")}])
+
+    def fetcher(url, **_):
+        if url == "https://feed.example.org/rss":
+            return feed
+        raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+
+    allowed = dict(RECIPES, id="t-paper", name="Paper", url=f"https://www.{PAPER}/rss.xml", enabled=False,
+                   excerpt=False, permission="회원사가 2026-10-20 메일로 허락")
+    sources = [dict(RECIPES, url="https://feed.example.org/rss", enabled=True, discoveryMethod="rss"), allowed]
+    paths = pipeline.Paths(tmp_path, registry_path=tmp_path / "sources.json")
+    paths.research.mkdir(parents=True)
+    paths.registry.write_text(json.dumps({"version": 1, "sources": sources}), encoding="utf-8")
+    stored_before = [
+        {"candidateId": "c_old", "sourceId": "t-recipes", "sourceType": "rss", "title": "예전 회원사 기사",
+         "sourceUrl": f"https://www.{PAPER}/food/0", "lastSeenAt": NOW.isoformat(), "selected": True,
+         "compact": True},
+        {"candidateId": "c_found", "sourceId": "t-search", "sourceType": "web_search", "title": "검색된 회원사 기사",
+         "sourceUrl": f"https://news.{PAPER}/a/7", "lastSeenAt": NOW.isoformat(), "compact": True,
+         "rejectionReason": "NO_QUALIFYING_LANE"},
+        {"candidateId": "c_ok", "sourceId": "t-paper", "sourceType": "rss", "title": "허락받은 회원사 기사",
+         "sourceUrl": f"https://www.{PAPER}/food/9", "lastSeenAt": NOW.isoformat(), "compact": True,
+         "rejectionReason": "NO_QUALIFYING_LANE"}]
+    paths.candidates.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in stored_before),
+                                encoding="utf-8")
+    run_ = pipeline.discover(paths, NOW, fetcher=fetcher, env={}, validate=lambda url: True, log=lambda _: None)
+    urls = sorted(r["sourceUrl"] for r in run_["store"].all())
+    assert urls == ["https://cook.example.org/2", f"https://www.{PAPER}/food/9"]   # only with permission
+    # An offline rebuild applies the same rule to what it finds stored.
+    paths.candidates.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in stored_before),
+                                encoding="utf-8")
+    assert [r["candidateId"] for r in pipeline.reprocess(paths, NOW)["store"].all()] == ["c_ok"]
 
 
 def test_stored_stories_follow_todays_excerpt_rules(monkeypatch):
     [mine, theirs] = run((_dish(3, day(3)), RECIPES), (dict(_dish(4, day(4)), sourceUrl=f"https://{PAPER}/4"), RECIPES))
     assert mine["excerptAllowed"] and theirs["excerptAllowed"]           # stored before the rules changed
-    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
+    monkeypatch.setattr(hosts, "MEMBER_HOSTS", (PAPER,))
     pipeline.apply_excerpt_rules([mine, theirs], [RECIPES])
     assert mine["excerptAllowed"] is True and theirs["excerptAllowed"] is False      # the host, now
     pipeline.apply_excerpt_rules([mine, theirs], [dict(RECIPES, excerpt=False)])
@@ -1032,7 +1077,7 @@ def test_open_discovery_never_reads_a_naver_page():
                        "https://m.blog.naver.com/a/2", medium="blog", trustTier="C"), SEARCH))
     assert found["rejectionReason"] == "HOST_NOT_COLLECTED"
     assert not hosts.collectable("https://n.news.naver.com/article/1") and not hosts.collectable("https://naver.me/x")
-    assert hosts.collectable("https://www.hankyung.com/article/1")
+    assert hosts.collectable("https://www.newsis.com/view/1")
     # A Naver blog registered through its owner's own RSS, with the owner's permission, is a source.
     owned = dict(RECIPES, id="t-naver-owned", url="https://rss.blog.naver.com/owner.xml",
                  permission="블로그 주인이 2026-10-20 자료원 제안 이슈에서 허락")
@@ -1047,24 +1092,28 @@ def test_a_web_result_never_shows_its_page_text():
 
 
 def test_the_registry_holds_a_proposed_source_to_the_publishing_rules(monkeypatch):
-    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
+    monkeypatch.setattr(hosts, "MEMBER_HOSTS", (PAPER,))
     base = {"type": "rss", "enabled": True, "trustTier": "B", "categories": ["tips"], "discoveryMethod": "rss",
             "kind": "recipe"}
     good = [dict(base, id="naver-owned", name="네이버 블로그", url="https://rss.blog.naver.com/owner.xml",
                  permission="블로그 주인이 2026-10-20 자료원 제안 이슈에서 허락"),
-            dict(base, id="paper-food", name="Paper", url=f"https://www.{PAPER}/rss/food.xml", excerpt=False),
+            dict(base, id="paper-food", name="Paper", url=f"https://www.{PAPER}/rss/food.xml", excerpt=False,
+                 permission="회원사가 2026-10-20 메일로 허락"),
+            dict(base, id="paper-off", name="Paper", url=f"https://www.{PAPER}/rss/life.xml", excerpt=False,
+                 enabled=False),
             dict(base, id="gone", name="Gone", url="https://gone.example.org/feed", enabled=False,
                  withdrawn="2026-10-20 운영자 메일로 받은 요청")]
     assert registry.validate(good) == []
     bad = [dict(base, id="naver-unasked", name="x", url="https://rss.blog.naver.com/someone.xml"),
            dict(base, id="paper-excerpt", name="x", url=f"https://news.{PAPER}/rss.xml"),
+           dict(base, id="paper-unasked", name="x", url=f"https://news.{PAPER}/rss.xml", excerpt=False),
            dict(base, id="gone-on", name="x", url="https://gone.example.org/feed", withdrawn="2026-10-20 메일"),
            dict(base, id="blank", name="x", url="https://ok.example.org/feed", permission=" "),
            {"id": "naver-search", "name": "x", "type": "web_search", "enabled": True, "trustTier": "C",
             "categories": ["trend"], "discoveryMethod": "exa", "kind": "mixed", "lane": "trend",
             "queries": ["site:blog.naver.com 편의점 신상"]}]
     errors = registry.validate(bad)
-    for sid in ("naver-unasked", "paper-excerpt", "gone-on", "blank", "naver-search"):
+    for sid in ("naver-unasked", "paper-excerpt", "paper-unasked", "gone-on", "blank", "naver-search"):
         assert any(e.startswith(sid + ":") for e in errors), sid
 
 
@@ -1156,7 +1205,7 @@ def test_an_owners_request_to_leave_removes_their_stories_from_the_archive():
 
 def test_the_archive_follows_todays_title_and_link_only_rules(monkeypatch, tmp_path):
     import refresh_magazine
-    monkeypatch.setattr(hosts, "NO_EXCERPT_HOSTS", (PAPER,))
+    monkeypatch.setattr(hosts, "MEMBER_HOSTS", (PAPER,))
 
     def story(sid, url, n):
         return {"title": f"Story {n}", "source": sid, "sourceId": sid, "url": url, "medium": "news",
@@ -1165,11 +1214,14 @@ def test_the_archive_follows_todays_title_and_link_only_rules(monkeypatch, tmp_p
     edition = {"rules": select.RULES, "date": "2026-10-01", "featured": None,
                "lanes": {"health": {"items": [story("t-paper", f"https://www.{PAPER}/1", 1),
                                               story("t-quiet", "https://quiet.example.org/2", 2),
-                                              story("t-open", "https://open.example.org/3", 3)]}}}
+                                              story("t-open", "https://open.example.org/3", 3),
+                                              story("t-feed", f"https://news.{PAPER}/4", 4),
+                                              story("t-search", "https://blog.naver.com/a/5", 5)]}}}
     path = tmp_path / "2026-10-01.json"
     path.write_text(common.dump_json(edition), encoding="utf-8")
-    rules = {"quiet": frozenset({"t-quiet"})}
-    assert refresh_magazine.sanitize_all(tmp_path, rules=rules) == 0                 # no story removed
+    rules = {"quiet": frozenset({"t-quiet"}), "permitted": frozenset({"t-paper"})}
+    # A member's article or a Naver page leaves the archive unless its source has the permission.
+    assert refresh_magazine.sanitize_all(tmp_path, rules=rules) == 2
     items = json.loads(path.read_text(encoding="utf-8"))["lanes"]["health"]["items"]
     assert [("summary" in i, "image" in i) for i in items] == [(False, False), (False, False), (True, True)]
     stamp = path.stat().st_mtime_ns

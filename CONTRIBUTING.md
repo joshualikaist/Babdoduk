@@ -30,8 +30,9 @@
 - 검색 결과나 다른 서비스가 만든 피드, 페이지를 긁어 오는 방식.
 - 광고 글이 많거나 AI가 쓴 글을 올리는 사이트.
 
-신문협회 회원사(`scripts/discovery/newspaper-members.json`)의 피드는 `"excerpt": false`로 등록합니다.
-그 기사는 제목·출처·날짜·링크만 보여 줍니다.
+신문협회 회원사(`scripts/discovery/newspaper-members.json`)의 기사는 그 회원사의 허락이 있을 때만 모읍니다.
+허락받았다면 누가 언제 어디서 허락했는지 `"permission"`에 적고 `"excerpt": false`로 등록합니다. 그 기사는
+제목·출처·날짜·링크만 보여 줍니다.
 
 ## 자료원에서 빠지기 (블로그·매체 주인)
 

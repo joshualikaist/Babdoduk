@@ -50,10 +50,12 @@ def story_count(edition: dict) -> int:
 
 def archive_rules() -> dict:
     """The registry's publishing rules the archive follows too (select.sanitize): sources whose
-    owners asked to leave, and sources shown by title, source, date and link only."""
+    owners asked to leave, sources shown by title, source, date and link only, and sources whose
+    owners allowed collection where it needs their permission."""
     sources = registry.load()
     return {"withdrawn": frozenset(s["id"] for s in sources if s.get("withdrawn")),
-            "quiet": frozenset(s["id"] for s in sources if s.get("excerpt") is False)}
+            "quiet": frozenset(s["id"] for s in sources if s.get("excerpt") is False),
+            "permitted": frozenset(s["id"] for s in sources if s.get("permission"))}
 
 
 def sanitize_all(out: Path, *, skip: str = "", rules: Optional[dict] = None, today: str = "") -> int:
