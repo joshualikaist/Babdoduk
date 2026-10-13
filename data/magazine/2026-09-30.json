@@ -3,108 +3,40 @@
   "generatedAt": "2026-10-01T00:11:15+09:00",
   "schedule": "Daily 10:00 KST",
   "rules": "lanes-v1",
-  "featured": {
-    "title": "\"우리 할머니가 먹던 건데\"…요즘 2030 푹 빠지더니, 전국 '오픈런'까지[지금사는방식]",
-    "summary": "편집자주요즘 사람들은 무엇을 살까요. 다이소에서 꼭 집어오는 생활용품부터 올리브영에서 품절을 부르는 화장품, 줄 서서 사는 빵까지. 익숙한 소비 장면 속에는 지금의 시장 흐름이 고스란히 담겨 있습니다.",
-    "source": "아시아경제",
-    "sourceId": "web-exa-trend",
-    "candidateId": "c_13b2f6d44cdcbd99",
-    "url": "https://www.asiae.co.kr/article/2026092316002644781",
-    "medium": "news",
-    "discoveredAt": "2026-09-30T15:08:01+09:00",
-    "publishedAt": "2026-09-24T09:00:00+09:00",
-    "image": "https://cphoto.asiae.co.kr/listimglink/1/2026092310232739742_1790126607.jpg",
-    "imageSource": "source_page_og",
-    "trendEvidence": [
-      "explicit_source_claim",
-      "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
-  },
+  "featured": null,
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
           "title": "1인 외식 선택지 넓어졌다…캐치테이블, '2026 혼밥 트렌드' 공개",
-          "summary": "요식업 통합 솔루션 기업 와드가 운영하는 캐치테이블이 ‘2026 혼밥 트렌드 리포트’를 공개했다. 올해 혼밥 수요가 연령과 가격대, 외식 업종 전반으로 확대된 것으로 나타났다.",
           "source": "신아일보",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_83235524224ce7f3",
           "url": "https://www.shinailbo.co.kr/news/articleView.html?idxno=5063005",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-17T11:10:00+09:00",
           "image": "https://cdn.shinailbo.co.kr/news/photo/202609/5063005_2060769_5238.jpg",
+          "publishedAt": "2026-09-17T11:10:00+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_83235524224ce7f3",
           "imageSource": "source_page_og",
+          "summary": "요식업 통합 솔루션 기업 와드가 운영하는 캐치테이블이 ‘2026 혼밥 트렌드 리포트’를 공개했다. 올해 혼밥 수요가 연령과 가격대, 외식 업종 전반으로 확대된 것으로 나타났다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
           ]
         },
         {
-          "title": "\"이게 화장품이야?\"…찐만두 쿠션·삼각김밥 파우치 등장",
-          "summary": "편의점 CU가 뷰티 브랜드 '페리페라'와 손잡고 자체 캐릭터를 활용한 뷰티 상품을 선보인다. 편의점이 보유한 브랜드 자산과 캐릭터 IP(지식재산권)를 뷰티 브랜드에 제공해 제품화하는 것은 업계 최초다.BGF리테일이…",
-          "source": "한국경제",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_d2dcc19c758397c2",
-          "url": "https://www.hankyung.com/article/202609288147g",
-          "medium": "news",
-          "discoveredAt": "2026-10-01T00:11:15+09:00",
-          "publishedAt": "2026-09-28T08:41:21+09:00",
-          "image": "https://img.hankyung.com/photo/202609/01.45851394.1.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "sales_data"
-          ]
-        },
-        {
-          "title": "일단 이거부터 먹어봐…요즘 난리났다는 롯데리아 신메뉴",
-          "summary": "\"일단 이거부터 먹어봐\"…요즘 난리났다는 롯데리아 신메뉴 '리아 두툼새우' 2주 만에 100만 개 돌파…목표치 242% 달성 여름 신메뉴 검색량 1위…맥도날드·버거킹 신상 제쳐 롯데리아가 대표 메뉴를 재해석해…",
-          "source": "한국경제",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_724c931d56d209da",
-          "url": "https://www.hankyung.com/article/202609232538g",
-          "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-23T09:00:00+09:00",
-          "image": "https://img.hankyung.com/photo/202609/01.45795478.1.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
-          ]
-        },
-        {
-          "title": "“줄서 먹던 한정선, 편의점으로”…GS25, 요거트 찹쌀떡 단독 출시",
-          "summary": "GS리테일이 운영하는 편의점 GS25가 디저트 브랜드 ‘한정선’과 협업한 찹쌀떡을 출시한다.",
-          "source": "매일경제",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_e61793afe972350c",
-          "url": "https://www.mk.co.kr/news/economy/12143281",
-          "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-03T09:00:00+09:00",
-          "image": "https://pimg.mk.co.kr/news/cms/202609/03/news-p.v1.20260903.103384bb93f44109a32f2754a6a0d484_R.jpeg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
-          ]
-        },
-        {
           "title": "오늘의집, ‘점심 도시락’ 트렌드…관련 검색량 최대 500% 증가",
-          "summary": "오늘의집은 고물가 영향으로 점심값을 절감하고 건강을 챙기려는 이용자들을 중심으로 도시락 관련 콘텐츠와 검색 수요가 크게 증가하고 있다고 2일 밝혔다.",
           "source": "한국일보",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_98fb6f80e3a3fc3e",
           "url": "https://daily.hankooki.com/news/articleView.html?idxno=1401767",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-02T09:51:49+09:00",
           "image": "https://cdn.daily.hankooki.com/news/thumbnail/202609/1401767_1581525_432_v150.jpg",
+          "publishedAt": "2026-09-02T09:51:49+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_98fb6f80e3a3fc3e",
           "imageSource": "source_page_og",
+          "summary": "오늘의집은 고물가 영향으로 점심값을 절감하고 건강을 챙기려는 이용자들을 중심으로 도시락 관련 콘텐츠와 검색 수요가 크게 증가하고 있다고 2일 밝혔다.",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data",
@@ -113,16 +45,16 @@
         },
         {
           "title": "\"식품안전 정책·기준 마련 위한 위원회 새 구성\"",
-          "summary": "식품안전 분야의 주요 정책과 기준·규격 등에 대한 전문적인 논의와 자문을 위한 식품위생심의위원회가 새롭게 출범했다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_c58a42bcf45f4c99",
           "url": "https://www.newsis.com/view/NISX20260930_0003809262",
           "medium": "news",
-          "discoveredAt": "2026-10-01T00:11:15+09:00",
-          "publishedAt": "2026-09-30T16:35:03+09:00",
           "image": "https://image.newsis.com/2026/09/30/NISI20260930_0002252272_web.jpg?rnd=20260930160956",
+          "publishedAt": "2026-09-30T16:35:03+09:00",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_c58a42bcf45f4c99",
           "imageSource": "feed_html",
+          "summary": "식품안전 분야의 주요 정책과 기준·규격 등에 대한 전문적인 논의와 자문을 위한 식품위생심의위원회가 새롭게 출범했다.",
           "trendEvidence": [
             "corroborated"
           ]
@@ -134,79 +66,79 @@
       "items": [
         {
           "title": "지금까지 만든 것 중 최고! 촉촉한 미니 마틸다 초콜릿 케이크 만들기 | The Best Moist & Fudge Mini Matilda Chocolate Cake Recipe",
-          "summary": "지금까지 만들어본 것 중 가장 마음에 들었던, 정말 촉촉한 미니 마틸다 초콜릿 케이크예요. My favorite Mini Matilda Chocolate Cake so far, with ultra-moist…",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_ad84f4e640ea4f8c",
           "url": "https://www.youtube.com/watch?v=JozYGH2UkV4",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-25T20:00:34+09:00",
           "image": "https://i3.ytimg.com/vi/JozYGH2UkV4/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
+          "publishedAt": "2026-09-25T20:00:34+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_ad84f4e640ea4f8c",
+          "imageSource": "youtube_thumbnail",
+          "summary": "지금까지 만들어본 것 중 가장 마음에 들었던, 정말 촉촉한 미니 마틸다 초콜릿 케이크예요. My favorite Mini Matilda Chocolate Cake so far, with ultra-moist…"
         },
         {
           "title": "요즘 줄 서서 먹는다는 피자설기, 집에서 만들기 Korean Rice Cake Pizza?! Pizza Seolgi",
-          "summary": "요즘 줄 서서 먹는다는 피자설기를 집에서 만들어봤어요. 포슬포슬하고 촉촉한 백설기에 토마토 페이스트, 모짜렐라치즈, 햄, 옥수수, 양파, 청피망, 올리브를 올려 따뜻할 때 치즈 쭉쭉 늘려 먹으면 더 맛있어요.",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_62d294fffe7b9ca7",
           "url": "https://www.youtube.com/shorts/YEenFmMR5pU",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-13T19:50:45+09:00",
           "image": "https://i2.ytimg.com/vi/YEenFmMR5pU/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
+          "publishedAt": "2026-09-13T19:50:45+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_62d294fffe7b9ca7",
+          "imageSource": "youtube_thumbnail",
+          "summary": "요즘 줄 서서 먹는다는 피자설기를 집에서 만들어봤어요. 포슬포슬하고 촉촉한 백설기에 토마토 페이스트, 모짜렐라치즈, 햄, 옥수수, 양파, 청피망, 올리브를 올려 따뜻할 때 치즈 쭉쭉 늘려 먹으면 더 맛있어요."
         },
         {
           "title": "Easy Potato Recipes",
-          "summary": "Few ingredients can stretch a grocery budget quite like a bag of potatoes.",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_9f2fb887826671ae",
           "url": "https://www.budgetbytes.com/potato-recipes/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-26T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2023/06/Potato-Recipes-Featured.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-26T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_9f2fb887826671ae",
+          "imageSource": "feed_media",
+          "summary": "Few ingredients can stretch a grocery budget quite like a bag of potatoes."
         },
         {
           "title": "Classic Potato Soup",
-          "summary": "Some recipes just feel like home, and Classic Potato Soup is one of them for me.",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_8cb2f7af44a67691",
           "url": "https://www.budgetbytes.com/classic-potato-soup/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-23T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2026/09/1-Classic-Potato-Soup-Overhead-Wide.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-23T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_8cb2f7af44a67691",
+          "imageSource": "feed_media",
+          "summary": "Some recipes just feel like home, and Classic Potato Soup is one of them for me."
         },
         {
           "title": "제발 대패삼겹살은 절대 굽지 마세요.",
-          "summary": "대패양배추찜을 만들어 보자 [재료] 대패삼겹살 300g, 양배추 1/4통, 청양고추, 폰즈 소스 또는 참소스 [간장 소스] 진간장 2스푼 식초 1스푼 설탕 1/2스푼 고춧가루 1/2스푼 [만드는 법] 1.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_73abbfd49c334eb4",
           "url": "https://www.youtube.com/watch?v=rKfz2fOrn9E",
           "medium": "youtube",
+          "publishedAt": "2026-09-20T00:00:00+09:00",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-20T00:00:00+09:00"
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_73abbfd49c334eb4",
+          "summary": "대패양배추찜을 만들어 보자 [재료] 대패삼겹살 300g, 양배추 1/4통, 청양고추, 폰즈 소스 또는 참소스 [간장 소스] 진간장 2스푼 식초 1스푼 설탕 1/2스푼 고춧가루 1/2스푼 [만드는 법] 1."
         },
         {
           "title": "Salmon Fried Rice with Egg and Cabbage",
-          "summary": "This easy salmon fried rice turns leftover rice, tender salmon, egg, and crisp cabbage into a quick one-pan meal…",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_0e08b740b9e205ed",
           "url": "https://www.beyondkimchee.com/salmon-fried-rice/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-13T22:03:00+09:00",
           "image": "https://www.beyondkimchee.com/wp-content/uploads/2025/09/Salmon-fried-rice-smi.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-09-13T22:03:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_0e08b740b9e205ed",
+          "imageSource": "source_page_og",
+          "summary": "This easy salmon fried rice turns leftover rice, tender salmon, egg, and crisp cabbage into a quick one-pan meal…"
         }
       ]
     },
@@ -215,68 +147,42 @@
       "items": [
         {
           "title": "[제440호 레시피] 오리훈제단호박볶음",
-          "summary": "노란빛으로 물든 건강한 한 끼 ‘단호박’가을철 대표 채소인 단호박은 짙은 노란빛과 달콤한 맛이 특징인 식재료로 찌거나 구워 먹으며, 죽과 샐러드 등 다양한 요리에 활용된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_21dfa523ab024ec9",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62269",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-30T03:15:52+09:00",
           "image": "http://www.fsnews.co.kr/news/thumbnail/202609/62269_53114_253_v150.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "2030은 담배·지방 늘고, 4050은 비만·만성질환 ‘비상’",
-          "summary": "지난해 2030대 청년층은 흡연과 지방 섭취가 증가하고 신체활동이 감소하는 등 건강 행태가 전반적으로 악화됐으며, 4050대 중장년층은 비만과 만성질환이 증가한 것으로 나타났다.질병관리청은 30일 주요 만성질환…",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_6fc901c0dbc26e13",
-          "url": "https://www.donga.com/news/Society/article/all/20260930/134757133/1",
-          "medium": "news",
+          "publishedAt": "2026-09-30T03:15:52+09:00",
           "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-30T06:14:56+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/30/134757134.1.jpg",
-          "imageSource": "feed_media"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_21dfa523ab024ec9",
+          "imageSource": "source_page_og",
+          "summary": "노란빛으로 물든 건강한 한 끼 ‘단호박’가을철 대표 채소인 단호박은 짙은 노란빛과 달콤한 맛이 특징인 식재료로 찌거나 구워 먹으며, 죽과 샐러드 등 다양한 요리에 활용된다."
         },
         {
           "title": "[제440호 레시피] 고구마그라탱",
-          "summary": "땅속에서 자란 영양 보물 ‘고구마’호박고구마, 밤고구마 등 전분 함량과 당도에 따라 다른 매력을 지닌 고구마는 달콤한 맛이 특징인 대표적인 구황작물로, 찌거나 구워 먹는 것은 물론 다양한 요리에 활용된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_74e6fc8db6d2ea2a",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62270",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-30T03:15:41+09:00",
           "image": "http://www.fsnews.co.kr/news/thumbnail/202609/62270_53116_519_v150.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "추석은 ‘기름 음식’ 천국… 혈관 지킬 ‘기름’은 따로 있다",
-          "summary": "추석 연휴 ‘오메가6’ 폭식 경보… 혈관 건강 비상 민족 대명절 추석 연휴에는 전, 갈비찜, 잡채 등 기름지고 칼로리가 높은 음식을 많이 섭취하게 된다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_dc956d4f11e3eae3",
-          "url": "https://www.donga.com/news/It/article/all/20260922/134714337/2",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-23T04:30:00+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/22/134374542.7.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-30T03:15:41+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_74e6fc8db6d2ea2a",
+          "imageSource": "source_page_og",
+          "summary": "땅속에서 자란 영양 보물 ‘고구마’호박고구마, 밤고구마 등 전분 함량과 당도에 따라 다른 매력을 지닌 고구마는 달콤한 맛이 특징인 대표적인 구황작물로, 찌거나 구워 먹는 것은 물론 다양한 요리에 활용된다."
         },
         {
           "title": "식품안전관리인증원, 비타민Cㆍ수분ㆍ회분 분석능력 국제적 인정 받아",
-          "summary": "한국식품안전관리인증원(원장 한상배)은 영국 환경식품농림부 식품환경연구청(FERA)이 운영하는 국제 비교숙련도 평가(FAPAS, Food Analysis Performance Assessment Scheme)…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_b8b1619f431850a4",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120349",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-30T19:59:34+09:00",
           "image": "https://cdn.foodnews.co.kr/news/thumbnail/202609/120349_86748_68_v150.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-09-30T19:59:34+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_b8b1619f431850a4",
+          "imageSource": "source_page_og",
+          "summary": "한국식품안전관리인증원(원장 한상배)은 영국 환경식품농림부 식품환경연구청(FERA)이 운영하는 국제 비교숙련도 평가(FAPAS, Food Analysis Performance Assessment Scheme)…"
         }
       ]
     },
@@ -285,81 +191,55 @@
       "items": [
         {
           "title": "[박성은의 리테일 읽기] 혼밥의 진화…'대충 한 끼'서 '나를 위한 미식'",
-          "summary": "한때 SNS(사회관계망서비스)에서 ‘혼밥 난이도 레벨’이라는 이야기가 화제가 된 바 있다. 가장 초보인 편의점에서 삼각김밥, 도시락을 먹는 것부터 시작해 패스트푸드와 국밥집, 고깃집을 거쳐 아웃백, 빕스와 같은…",
           "source": "신아일보",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_a599413244f96459",
           "url": "https://www.shinailbo.co.kr/news/articleView.html?idxno=5063782",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-21T18:00:00+09:00",
           "image": "https://cdn.shinailbo.co.kr/news/photo/202609/5063782_2061566_4941.png",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-09-21T18:00:00+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_a599413244f96459",
+          "imageSource": "source_page_og",
+          "summary": "한때 SNS(사회관계망서비스)에서 ‘혼밥 난이도 레벨’이라는 이야기가 화제가 된 바 있다. 가장 초보인 편의점에서 삼각김밥, 도시락을 먹는 것부터 시작해 패스트푸드와 국밥집, 고깃집을 거쳐 아웃백, 빕스와 같은…"
         },
         {
           "title": "체중 127㎏까지 늘었던 40대女 52kg 감량…출근 전 매일 실천한 습관은",
-          "summary": "하루에 약 6000kcal를 먹을 때도 있었다는 40대 여성이 식단 조절과 하루 1만 5000보 걷기로 약 52kg을 감량했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_6408d0f77374f419",
           "url": "https://kormedi.com/2874758/",
           "medium": "news",
-          "discoveredAt": "2026-10-01T00:11:15+09:00",
-          "publishedAt": "2026-09-30T23:03:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/09/unnamed-file-56-edited.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-30T23:03:00+09:00",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6408d0f77374f419",
+          "imageSource": "feed_media",
+          "summary": "하루에 약 6000kcal를 먹을 때도 있었다는 40대 여성이 식단 조절과 하루 1만 5000보 걷기로 약 52kg을 감량했다."
         },
         {
           "title": "“허, 그 친구 대장암 4기인데”… 뭘 먹었길래?",
-          "summary": "고기 구이를 먹을 때 상추, 깻잎, 마늘 등을 곁들이면 유해 물질 배출에 도움이 된다. 사진=게티이미지뱅크 대장암 환자가 크게 늘고 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_2d0378beb2cc1710",
           "url": "https://kormedi.com/2875533/",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-30T14:01:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2025/10/unnamed-file-207.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "'혼밥남 12명' 5주간 교육했더니…\"식단 개선해야겠네요\"",
-          "summary": "영양 관리 정책 사각지대에 놓인 것으로 평가받는 1인 가구 성인 남성을 대상으로 식생활 관리 프로그램의 효과를 검증한 연구 결과가 나왔다.",
-          "source": "연합뉴스",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_60c87c498876d942",
-          "url": "https://www.yna.co.kr/view/AKR20260807097000063",
-          "medium": "news",
+          "publishedAt": "2026-09-30T14:01:00+09:00",
           "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-08-10T09:00:00+09:00",
-          "image": "https://img7.yna.co.kr/photo/yna/YH/2016/03/20/PYH2016032004480001300_P4.jpg",
-          "imageSource": "source_page_og"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2d0378beb2cc1710",
+          "imageSource": "feed_media",
+          "summary": "고기 구이를 먹을 때 상추, 깻잎, 마늘 등을 곁들이면 유해 물질 배출에 도움이 된다. 사진=게티이미지뱅크 대장암 환자가 크게 늘고 있다."
         },
         {
           "title": "「한국인은 왜 이렇게 먹을까?」 식사 방식으로 본 한국 음식문화사",
-          "summary": "한국인의 밥상은 서양은 물론이고 이웃 나라인 중국이나 일본과도 확연히 다르다. 음식과 식사 도구도 다르고, 식사 예절도 다르다.",
           "source": "webzine.nfm.go.kr",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_f19f1e5ea949f376",
           "url": "https://webzine.nfm.go.kr/2025/08/27/%EC%8B%9D%EC%82%AC-%EB%B0%A9%EC%8B%9D%EC%9C%BC%EB%A1%9C-%EB%B3%B8-%ED%95%9C%EA%B5%AD-%EC%9D%8C%EC%8B%9D%EB%AC%B8%ED%99%94%EC%82%AC/",
           "medium": "research",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2025-08-27T09:00:00+09:00",
           "image": "https://webzine.nfm.go.kr/wp-content/uploads/2026/01/cropped-cropped-nfm_2026_black.png",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "\"밥상도 '저당 시대'\"…고추장·간장까지 바꿨다, 저당 소스 시장 4배 급성장 [건강잇슈]",
-          "summary": "건강을 위해 당 섭취를 줄이려는 소비자들이 음료와 간식을 넘어 조리용 소스와 장류까지 선택을 바꾸고 있다. 기존 식습관을 크게 바꾸지 않고도 자주 사용하는 양념을 저당 제품으로 교체하는 소비가 늘면서 저당 소스…",
-          "source": "파이낸셜뉴스",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_89d1e1ddb6f5b667",
-          "url": "https://www.fnnews.com/news/202607231347396935",
-          "medium": "news",
+          "publishedAt": "2025-08-27T09:00:00+09:00",
           "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-07-24T13:40:04+09:00",
-          "image": "https://image.fnnews.com/resource/media/image/2026/07/23/202607231434061647_e.jpg",
-          "imageSource": "source_page_og"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_f19f1e5ea949f376",
+          "imageSource": "source_page_og",
+          "summary": "한국인의 밥상은 서양은 물론이고 이웃 나라인 중국이나 일본과도 확연히 다르다. 음식과 식사 도구도 다르고, 식사 예절도 다르다."
         }
       ]
     }

@@ -2,14 +2,7 @@
   "date": "2026-09-12",
   "generatedAt": "2026-09-12T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
-  "featured": {
-    "title": "바삭하게 깨지는 사과 크렘 브륄레 치즈케이크 만들기 | Apple Creme Brulee Cheesecake with a Crackly Sugar Top Recipe",
-    "source": "쿠킹트리 Cooking tree",
-    "url": "https://www.youtube.com/watch?v=kGbHF6Nd8ng",
-    "medium": "youtube",
-    "image": "https://i.ytimg.com/vi/kGbHF6Nd8ng/maxresdefault.jpg",
-    "category": "health"
-  },
+  "featured": null,
   "lanes": {
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
@@ -21,24 +14,10 @@
           "medium": "blog"
         },
         {
-          "title": "밀가루 없이 만든 저당 마틸다 초콜릿 케이크 | 진하고 꾸덕한 초코 케이크 | Lower-Sugar Matilda Chocolate Cake Recipe | Flourless",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=Ck2e1EeGaPY",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/Ck2e1EeGaPY/maxresdefault.jpg"
-        },
-        {
           "title": "20 Korean Vegan Recipes",
           "source": "Korean Bapsang",
           "url": "https://www.koreanbapsang.com/15-korean-vegan-recipes/",
           "medium": "blog"
-        },
-        {
-          "title": "제발 일본 여행 가지마세요.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=Z7Aj3J-KcHs",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/Z7Aj3J-KcHs/maxresdefault.jpg"
         }
       ]
     },
@@ -56,24 +35,10 @@
           "medium": "blog"
         },
         {
-          "title": "바삭하게 깨지는 사과 크렘 브륄레 치즈케이크 만들기 | Apple Creme Brulee Cheesecake with a Crackly Sugar Top Recipe",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=kGbHF6Nd8ng",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/kGbHF6Nd8ng/maxresdefault.jpg"
-        },
-        {
           "title": "Makgeolli (Korean Rice Wine)",
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/makgeolli/",
           "medium": "blog"
-        },
-        {
-          "title": "뜨개질하고 남이해준 밥만먹는 브이로그",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=Y8mOF5IuyQc",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/Y8mOF5IuyQc/maxresdefault.jpg"
         },
         {
           "title": "20 Korean Vegan Recipes",

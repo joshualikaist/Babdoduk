@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "GS25, '한정선 피스타치오 찹쌀떡' 출시…2만개 사전 예약",
-    "summary": "GS25, '한정선 피스타치오 찹쌀떡' 출시…2만개 사전 예약 요거트 찹쌀떡 70만개 판매 인기에 후속 제품 선보여 (서울=연합뉴스) 한주홍 기자 = GS25는 디저트 브랜드 로로멜로와 손잡고 '한정선 피스타치오…",
     "source": "한국경제TV",
-    "sourceId": "web-exa-trend",
-    "candidateId": "c_f4f6a206433942da",
     "url": "https://www.wowtv.co.kr/NewsCenter/News/Read?articleId=AKR20261005012900030",
     "medium": "news",
-    "discoveredAt": "2026-10-05T15:24:08+09:00",
-    "publishedAt": "2026-10-05T08:44:57+09:00",
     "image": "https://img.wowtv.co.kr/YH/2026-10-05/AKR20261005012900030_01_i.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-05T08:44:57+09:00",
+    "discoveredAt": "2026-10-05T15:24:08+09:00",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_f4f6a206433942da",
     "imageSource": "source_page_og",
+    "summary": "GS25, '한정선 피스타치오 찹쌀떡' 출시…2만개 사전 예약 요거트 찹쌀떡 70만개 판매 인기에 후속 제품 선보여 (서울=연합뉴스) 한주홍 기자 = GS25는 디저트 브랜드 로로멜로와 손잡고 '한정선 피스타치오…",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,89 +28,61 @@
       "items": [
         {
           "title": "포트폴리오 다변화는 숙제…새 성장축 찾는 급식업계 [다시 뛰는 급식업계③]",
-          "summary": "안정적인 단체급식 수요를 기반으로 성장해온 주요 급식업체들이 플랫폼과 식음 솔루션, 케어푸드, 외식 등으로 사업 영역을 넓히며 포트폴리오 다변화에 속도를 내고 있다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_cc2786e7c30baddd",
           "url": "https://www.newsis.com/view/NISX20261002_0003812761",
           "medium": "news",
-          "discoveredAt": "2026-10-05T15:24:08+09:00",
-          "publishedAt": "2026-10-05T08:00:00+09:00",
           "image": "https://image.newsis.com/2026/10/02/NISI20261002_0002254572_web.jpg?rnd=20261002152920",
+          "publishedAt": "2026-10-05T08:00:00+09:00",
+          "discoveredAt": "2026-10-05T15:24:08+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_cc2786e7c30baddd",
           "imageSource": "feed_html",
+          "summary": "안정적인 단체급식 수요를 기반으로 성장해온 주요 급식업체들이 플랫폼과 식음 솔루션, 케어푸드, 외식 등으로 사업 영역을 넓히며 포트폴리오 다변화에 속도를 내고 있다.",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "농식품부 ‘농산물무역정책심의회’, 법정 위원회 격상",
-          "summary": "수입농산물 정책의 투명성과 현장 소통을 강화하기 위해 법정 위원회로 격상된 농림축산식품부 ‘농산물무역정책심의회(위원장 농식품부 차관)’가 2일 첫 회의를 열고, 생산자 단체 등 이해관계자들의 의견을 무역정책에 적극…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_103a9c85b618e5be",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120408",
           "medium": "news",
-          "discoveredAt": "2026-10-02T15:25:18+09:00",
           "publishedAt": "2026-10-02T22:31:18+09:00",
-          "trendEvidence": [
-            "corroborated"
-          ]
-        },
-        {
-          "title": "정부, 농축산물 할인 지원에 6년간 1조3천억…예산 25배 급증",
-          "summary": "농림축산식품부가 소비자 물가 안정을 위한 농축산물 할인 지원에 6년간 1조3천억원에 가까운 예산을 투입한 것으..",
-          "source": "연합뉴스 산업",
-          "sourceId": "news-yna-industry",
-          "candidateId": "c_aa51bea578e15e98",
-          "url": "https://www.yna.co.kr/view/AKR20261003032900030",
-          "medium": "news",
-          "discoveredAt": "2026-10-04T15:30:40+09:00",
-          "publishedAt": "2026-10-04T06:01:01+09:00",
+          "discoveredAt": "2026-10-02T15:25:18+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_103a9c85b618e5be",
+          "summary": "수입농산물 정책의 투명성과 현장 소통을 강화하기 위해 법정 위원회로 격상된 농림축산식품부 ‘농산물무역정책심의회(위원장 농식품부 차관)’가 2일 첫 회의를 열고, 생산자 단체 등 이해관계자들의 의견을 무역정책에 적극…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "윤준병 의원, 상습 밥상 담합 기업 아웃법 발의",
-          "summary": "식품ㆍ양곡 등 국민 생활과 직결된 생필품 시장에서 과징금만 감수하면 천문학적인 부당이득을 챙길 수 있어 반복돼 온 기업들의 상습적 가격 담합을 근절하기 위한 입법 조치가 추진된다.더불어민주당 윤준병 의원은 2일…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_9373b7aa4c90c532",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120399",
           "medium": "news",
-          "discoveredAt": "2026-10-02T15:25:18+09:00",
           "publishedAt": "2026-10-02T20:31:09+09:00",
+          "discoveredAt": "2026-10-02T15:25:18+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_9373b7aa4c90c532",
+          "summary": "식품ㆍ양곡 등 국민 생활과 직결된 생필품 시장에서 과징금만 감수하면 천문학적인 부당이득을 챙길 수 있어 반복돼 온 기업들의 상습적 가격 담합을 근절하기 위한 입법 조치가 추진된다.더불어민주당 윤준병 의원은 2일…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "[요즈음] 자고 나면 새 디저트…SNS가 바꾼 먹거리 유행",
-          "summary": "“요즘은 뭐가 유행한다고 해도 ‘또 새로운 게 나왔구나’ 싶어요. 먹어보기도 전에 다음 음식이 유행하니까요.”",
           "source": "asiatime.co.kr",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_0badb12b054004bc",
           "url": "https://www.asiatime.co.kr/article/20260918500206",
           "medium": "news",
-          "discoveredAt": "2026-10-01T00:11:15+09:00",
           "publishedAt": "2026-09-21T09:00:00+09:00",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_0badb12b054004bc",
+          "summary": "“요즘은 뭐가 유행한다고 해도 ‘또 새로운 게 나왔구나’ 싶어요. 먹어보기도 전에 다음 음식이 유행하니까요.”",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
-          ]
-        },
-        {
-          "title": "CU '리센느 빵' 구매 10명 중 7명 남성…30대 남성이 최대 고객",
-          "summary": "리센느 빵, 한정선 요거트 찹살떡 등 편의점 업계가 인기 협업 제품을 경쟁적으로 출시하고 있다.",
-          "source": "연합뉴스 산업",
-          "sourceId": "news-yna-industry",
-          "candidateId": "c_ac701744eb974d94",
-          "url": "https://www.yna.co.kr/view/AKR20261002170600030",
-          "medium": "news",
-          "discoveredAt": "2026-10-04T15:30:40+09:00",
-          "publishedAt": "2026-10-04T07:11:00+09:00",
-          "trendEvidence": [
-            "corroborated"
           ]
         }
       ]
@@ -120,79 +92,79 @@
       "items": [
         {
           "title": "Easy Chicken Katsu with Caviar | Luxurious Japanese Recipe",
-          "summary": "Chicken katsu with caviar is one of those dishes that feels playful, unexpected, and quietly luxurious all at once.",
           "source": "Seonkyoung Longest",
-          "sourceId": "blog-seonkyounglongest",
-          "candidateId": "c_f91ed9978e39bfd3",
           "url": "https://seonkyounglongest.com/chicken-katsu-with-caviar/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-01-11T23:03:33+09:00",
           "image": "https://i0.wp.com/photos.smugmug.com/Chicken-Katsu-Caviar/i-zj6ZmKk/0/KPMDdcCSRxjVFbqLDVftP5Cx3nW3VhQv3xJ9jNTj6/X2/01DF3615-8CCD-405F-BDEF-D18CA70B1DA3-X2.jpg?w=1170&ssl=1",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-01-11T23:03:33+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-seonkyounglongest",
+          "candidateId": "c_f91ed9978e39bfd3",
+          "imageSource": "feed_html",
+          "summary": "Chicken katsu with caviar is one of those dishes that feels playful, unexpected, and quietly luxurious all at once."
         },
         {
           "title": "Creamy Butternut Squash Orzo",
-          "summary": "Can I let you in on a little secret? I’m obsessed with this Creamy Butternut Squash Orzo!",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_eb0643e98cfeffad",
           "url": "https://www.budgetbytes.com/creamy-butternut-squash-orzo/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-18T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2026/09/1-Butternut-Squash-Orzo-Overhead-Wide.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-18T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_eb0643e98cfeffad",
+          "imageSource": "feed_media",
+          "summary": "Can I let you in on a little secret? I’m obsessed with this Creamy Butternut Squash Orzo!"
         },
         {
           "title": "Jeonbokjuk (Korean Abalone Porridge with Fresh Abalone)",
-          "summary": "Jeonbokjuk is a comforting Korean abalone porridge made with fresh abalone, leftover rice, and a light savory broth.",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_40d283477b914df7",
           "url": "https://www.beyondkimchee.com/jeonbokjuk-abalone-porridge/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-05-09T12:36:00+09:00",
           "image": "https://www.beyondkimchee.com/wp-content/uploads/2025/09/abalone-porridge-jeonbokjuk-serving.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-05-09T12:36:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_40d283477b914df7",
+          "imageSource": "source_page_og",
+          "summary": "Jeonbokjuk is a comforting Korean abalone porridge made with fresh abalone, leftover rice, and a light savory broth."
         },
         {
           "title": "Mul Naengmyeon (Korean Cold Noodle Soup with Icy Broth)",
-          "summary": "A refreshing bowl of mul naengmyeon with chewy buckwheat noodles, sliced beef, and an icy, clean broth made easily at…",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_dd859b1374470db6",
           "url": "https://www.beyondkimchee.com/mul-naengmyeon-korean-cold-noodle-soup/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-07-01T20:35:00+09:00",
           "image": "https://www.beyondkimchee.com/wp-content/uploads/2025/09/mul-naengmyeon-korean-cold-noodle.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-07-01T20:35:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_dd859b1374470db6",
+          "imageSource": "source_page_og",
+          "summary": "A refreshing bowl of mul naengmyeon with chewy buckwheat noodles, sliced beef, and an icy, clean broth made easily at…"
         },
         {
           "title": "Cantonese Steamed Fish (Authentic Ginger & Scallions)",
-          "summary": "Cantonese Steamed Fish is one of the purest expressions of traditional Chinese cooking.",
           "source": "Seonkyoung Longest",
-          "sourceId": "blog-seonkyounglongest",
-          "candidateId": "c_de5a16e48106b420",
           "url": "https://seonkyounglongest.com/cantonese-steamed-fish/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-01-21T02:13:38+09:00",
           "image": "https://i0.wp.com/photos.smugmug.com/Cantonese-Steamed-Sea-Bream/i-VHFjkhj/0/MRGTfhppf3VntB2TDP3CnkjPv3B3JrR2jvq7LR558/X2/IMG_4507-2%20copy-X2.jpg?w=1170&ssl=1",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-01-21T02:13:38+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-seonkyounglongest",
+          "candidateId": "c_de5a16e48106b420",
+          "imageSource": "feed_html",
+          "summary": "Cantonese Steamed Fish is one of the purest expressions of traditional Chinese cooking."
         },
         {
           "title": "집밥력 - 나를 돌보는 식사의 힘",
-          "summary": "누적 조회 수 720만 뷰 이상을 기록 중인 웰니스 크리에이터 홀썸모먼트의 신간 『집밥력』이 세미콜론에서 출간됩니다.",
           "source": "영풍문고",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_cf1265838a7b28e1",
           "url": "https://www.ypbooks.co.kr/books/202606227262311786",
           "medium": "blog",
+          "publishedAt": "2026-06-23T09:00:00+09:00",
           "discoveredAt": "2026-10-02T15:25:18+09:00",
-          "publishedAt": "2026-06-23T09:00:00+09:00"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_cf1265838a7b28e1",
+          "summary": "누적 조회 수 720만 뷰 이상을 기록 중인 웰니스 크리에이터 홀썸모먼트의 신간 『집밥력』이 세미콜론에서 출간됩니다."
         }
       ]
     },
@@ -201,27 +173,27 @@
       "items": [
         {
           "title": "\"염증 없애려 영양제부터 찾지 마세요\"…만성염증 줄이는 생활 습관",
-          "summary": "김성은 인턴 기자 = 만성염증을 줄이려면 영양제에 의존하기보다 비만과 내장지방, 혈당 등 염증을 유발하는 원인을 파악하고 식습관과 수면 습관을 개선해야 한다는 전문가의 조언이 나왔다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_4e8c71dcbbf57088",
           "url": "https://www.newsis.com/view/NISX20261004_0003813826",
           "medium": "news",
-          "discoveredAt": "2026-10-05T15:24:08+09:00",
-          "publishedAt": "2026-10-04T22:03:00+09:00",
           "image": "https://image.newsis.com/2026/10/04/NISI20261004_0002255340_web.jpg?rnd=20261004111023",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-04T22:03:00+09:00",
+          "discoveredAt": "2026-10-05T15:24:08+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_4e8c71dcbbf57088",
+          "imageSource": "feed_html",
+          "summary": "김성은 인턴 기자 = 만성염증을 줄이려면 영양제에 의존하기보다 비만과 내장지방, 혈당 등 염증을 유발하는 원인을 파악하고 식습관과 수면 습관을 개선해야 한다는 전문가의 조언이 나왔다."
         },
         {
           "title": "50대 야노시호 “아침마다 ‘이 주스’, 몸 가벼워져”… 나잇살 없는 비결?",
-          "summary": "방송인 겸 모델로 활동 중인 야노시호(50)가 몸을 가볍게 만드는 아침 식단을 공개했다. 야노시호는 최근 자신의 유튜브 채널에서 ‘도쿄 엄마’로 부를 정도로 인연이 깊은 지인의 일본 집을 방문해 평소 자신이…",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_500a68174e12389a",
           "url": "https://kormedi.com/2878473/",
           "medium": "news",
+          "publishedAt": "2026-10-05T08:05:00+09:00",
           "discoveredAt": "2026-10-05T15:24:08+09:00",
-          "publishedAt": "2026-10-05T08:05:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_500a68174e12389a",
+          "summary": "방송인 겸 모델로 활동 중인 야노시호(50)가 몸을 가볍게 만드는 아침 식단을 공개했다. 야노시호는 최근 자신의 유튜브 채널에서 ‘도쿄 엄마’로 부를 정도로 인연이 깊은 지인의 일본 집을 방문해 평소 자신이…"
         }
       ]
     },
@@ -230,16 +202,16 @@
       "items": [
         {
           "title": "젊은 층에서 대장암 발생 많아져…예방에 도움 되는 섬유질 식품들",
-          "summary": "고구마에는 수용성 및 불용성 식이 섬유가 모두 들어 있어 대장암을 예방하는 데 도움이 되는 식품으로 꼽힌다. 사진=클립아트코리아 전 세계적으로 50세 미만의 비교적 젊은 층에서 대장암(결장암, 직장암)이 증가하는…",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_25ee3ba9dce2f33b",
           "url": "https://kormedi.com/2878819/",
           "medium": "news",
-          "discoveredAt": "2026-10-05T15:24:08+09:00",
-          "publishedAt": "2026-10-05T10:05:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/tip243t002411.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-05T10:05:00+09:00",
+          "discoveredAt": "2026-10-05T15:24:08+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_25ee3ba9dce2f33b",
+          "imageSource": "feed_media",
+          "summary": "고구마에는 수용성 및 불용성 식이 섬유가 모두 들어 있어 대장암을 예방하는 데 도움이 되는 식품으로 꼽힌다. 사진=클립아트코리아 전 세계적으로 50세 미만의 비교적 젊은 층에서 대장암(결장암, 직장암)이 증가하는…"
         }
       ]
     }

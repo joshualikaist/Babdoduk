@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "GS25, 3900원 피스타치오 찹쌀떡 출시… 7일부터 우리동네GS 앱서 2만 개 사전 예약",
-    "summary": "GS리테일이 운영하는 편의점 GS25가 디저트 브랜드 ‘로로멜로’와 함께 ‘한정선 피스타치오 찹쌀떡’을 출시한다.",
     "source": "스페셜타임스",
-    "sourceId": "web-exa-trend",
-    "candidateId": "c_e5a26dcfe260131b",
     "url": "https://www.specialtimes.co.kr/news/articleView.html?idxno=470559",
     "medium": "news",
-    "discoveredAt": "2026-10-05T15:24:08+09:00",
-    "publishedAt": "2026-10-05T09:38:26+09:00",
     "image": "https://cdn.specialtimes.co.kr/news/thumbnail/202610/470559_463364_3826_v150.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-05T09:38:26+09:00",
+    "discoveredAt": "2026-10-05T15:24:08+09:00",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_e5a26dcfe260131b",
     "imageSource": "source_page_og",
+    "summary": "GS리테일이 운영하는 편의점 GS25가 디저트 브랜드 ‘로로멜로’와 함께 ‘한정선 피스타치오 찹쌀떡’을 출시한다.",
+    "heroKind": "pick",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "pick"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,84 +28,70 @@
       "items": [
         {
           "title": "\"어린이집 식중독 예방 철저\"…식약처, 위생점검",
-          "summary": "식품의약품안전처가 어린이집 급식 안전을 위해 선제적 점검에 나선다. 겨울철 자주 발생하는 노로바이러스 식중독 등의 발생을 예방하기 위해서다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_3f57469cbeda6fc2",
           "url": "https://www.newsis.com/view/NISX20261002_0003812625",
           "medium": "news",
-          "discoveredAt": "2026-10-02T15:25:18+09:00",
           "publishedAt": "2026-10-02T14:34:59+09:00",
+          "discoveredAt": "2026-10-02T15:25:18+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_3f57469cbeda6fc2",
+          "summary": "식품의약품안전처가 어린이집 급식 안전을 위해 선제적 점검에 나선다. 겨울철 자주 발생하는 노로바이러스 식중독 등의 발생을 예방하기 위해서다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
-          "title": "SNS 유행이 만든 제품…CU·오리온·세븐일레븐, '소비자발 상품기획' 속도",
-          "summary": "소비자가 형성한 먹거리 유행과 구매 데이터가 식품·편의점업계의 상품기획에 직접 반영되고 있다. SNS를 중심으로 확산한 새로운 조합과 섭취법이 신제품 개발로 이어지는 동시에 실제 판매 과정에서 확인된 고객 반응도…",
-          "source": "경제일보",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_4ad9aac02cd7233d",
-          "url": "https://www.kyungjeilbo.com/view/20261006082449492",
-          "medium": "blog",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
-          "publishedAt": "2026-10-06T09:33:54+09:00",
-          "trendEvidence": [
-            "explicit_source_claim"
-          ]
-        },
-        {
           "title": "'GLP-1' 비만약, 온라인 불법 유통…949건 적발",
-          "summary": "GLP-1 계열 비만치료제를 온라인에서 불법 판매하거나 알선·광고한 게시물 949건이 적발됐다. 식품의약품안전처는 GLP-1 계열 비만치료제의 해외직구 등 온라인 불법 판매 및 알선·광고 행위를 지난 1월 1일부터…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_0c005b8a38035cef",
           "url": "https://www.newsis.com/view/NISX20261006_0003814897",
           "medium": "news",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
           "publishedAt": "2026-10-06T09:02:14+09:00",
+          "discoveredAt": "2026-10-06T16:00:20+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_0c005b8a38035cef",
+          "summary": "GLP-1 계열 비만치료제를 온라인에서 불법 판매하거나 알선·광고한 게시물 949건이 적발됐다. 식품의약품안전처는 GLP-1 계열 비만치료제의 해외직구 등 온라인 불법 판매 및 알선·광고 행위를 지난 1월 1일부터…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "수원KT위즈파크, ‘식품안심구역’ 지정받아",
-          "summary": "수원특례시의 대표 복합 스포츠 문화공간인 수원KT위즈파크가 ‘식품안심구역’으로 지정됐다.‘식품안심구역’은 일정 구역 내 위치한 식품접객업소 중 ‘식품안심업소’ 기준을 충족하는 업소 비율이 일정 수준 이상인 지역을…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_477bc148b1c39071",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120426",
           "medium": "news",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
           "publishedAt": "2026-10-06T19:30:38+09:00",
+          "discoveredAt": "2026-10-06T16:00:20+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_477bc148b1c39071",
+          "summary": "수원특례시의 대표 복합 스포츠 문화공간인 수원KT위즈파크가 ‘식품안심구역’으로 지정됐다.‘식품안심구역’은 일정 구역 내 위치한 식품접객업소 중 ‘식품안심업소’ 기준을 충족하는 업소 비율이 일정 수준 이상인 지역을…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "파리바게뜨, 필리핀 핵심 상권 8호점 ‘글로리에타점’ 오픈",
-          "summary": "파리바게뜨가 필리핀 마카티(Makati)에 필리핀 8호점 ‘글로리에타점’을 열었다.메트로 마닐라의 마카티는 글로벌 기업과 금융기관, 쇼핑몰이 밀집한 필리핀의 대표적인 업무·상업 중심지다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_6c6fc8621c3b037a",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201335",
           "medium": "news",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
           "publishedAt": "2026-10-06T19:11:53+09:00",
+          "discoveredAt": "2026-10-06T16:00:20+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_6c6fc8621c3b037a",
+          "summary": "파리바게뜨가 필리핀 마카티(Makati)에 필리핀 8호점 ‘글로리에타점’을 열었다.메트로 마닐라의 마카티는 글로벌 기업과 금융기관, 쇼핑몰이 밀집한 필리핀의 대표적인 업무·상업 중심지다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "[국감] “수억 벌고 벌금은 100만원”…윤준병 의원, 원산지 위반 단속ㆍ제재 강화 촉구",
-          "summary": "최근 4년간 농축수산물 원산지 표시 위반으로 적발된 업소가 1만4000곳에 육박하고 위반 물량은 2만1000톤을 넘어선 것으로 나타났다.",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_ba8bf932f6f35deb",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120417",
           "medium": "news",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
           "publishedAt": "2026-10-06T18:37:07+09:00",
+          "discoveredAt": "2026-10-06T16:00:20+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_ba8bf932f6f35deb",
+          "summary": "최근 4년간 농축수산물 원산지 표시 위반으로 적발된 업소가 1만4000곳에 육박하고 위반 물량은 2만1000톤을 넘어선 것으로 나타났다.",
           "trendEvidence": [
             "corroborated"
           ]
@@ -117,53 +103,53 @@
       "items": [
         {
           "title": "Donggeurangttaeng (Korean Meat Patties)",
-          "summary": "Donggeurangttaeng are small Korean meat patties coated in egg and pan-fried until golden.",
           "source": "My Korean Kitchen",
-          "sourceId": "blog-mykoreankitchen",
-          "candidateId": "c_eec87cab99d321b8",
           "url": "https://mykoreankitchen.com/korean-meat-patties/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-26T19:00:22+09:00",
           "image": "https://mykoreankitchen.com/wp-content/uploads/2026/09/2.-Homemade-Korean-Meat-Patties.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-09-26T19:00:22+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-mykoreankitchen",
+          "candidateId": "c_eec87cab99d321b8",
+          "imageSource": "source_page_og",
+          "summary": "Donggeurangttaeng are small Korean meat patties coated in egg and pan-fried until golden."
         },
         {
           "title": "Dakjuk (Korean Chicken Porridge)",
-          "summary": "Learn how to make dakjuk, a deeply savory Korean chicken porridge with tender chicken, a beautifully seasoned broth…",
           "source": "My Korean Kitchen",
-          "sourceId": "blog-mykoreankitchen",
-          "candidateId": "c_4970574371081585",
           "url": "https://mykoreankitchen.com/dakjuk-korean-chicken-porridge/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-08-21T19:00:44+09:00",
           "image": "https://mykoreankitchen.com/wp-content/uploads/2026/08/1.-dakjuk-korean-chicken-porridge.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-08-21T19:00:44+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-mykoreankitchen",
+          "candidateId": "c_4970574371081585",
+          "imageSource": "source_page_og",
+          "summary": "Learn how to make dakjuk, a deeply savory Korean chicken porridge with tender chicken, a beautifully seasoned broth…"
         },
         {
           "title": "Crockpot Mac And Cheese",
-          "summary": "This Crockpot Mac and Cheese gives you tender macaroni in a rich, creamy sauce with very little hands-on work.",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_6408af757c60ffcb",
           "url": "https://www.budgetbytes.com/crockpot-mac-and-cheese/",
           "medium": "blog",
+          "publishedAt": "2026-10-05T22:30:00+09:00",
           "discoveredAt": "2026-10-06T16:00:20+09:00",
-          "publishedAt": "2026-10-05T22:30:00+09:00"
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_6408af757c60ffcb",
+          "summary": "This Crockpot Mac and Cheese gives you tender macaroni in a rich, creamy sauce with very little hands-on work."
         },
         {
           "title": "Bean Sprout Salad もやしのナムル",
-          "summary": "Leftover bean sprouts never go to waste in my kitchen. I’ll show you the best way to blanch and the prepping secret I…",
           "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_49b530529c251efe",
           "url": "https://www.justonecookbook.com/bean-sprout-namul/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-08-27T15:00:00+09:00",
           "image": "https://www.justonecookbook.com/wp-content/uploads/2027/08/Bean-Sprout-Salad-9459-I-1200x800.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-08-27T15:00:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-justonecookbook",
+          "candidateId": "c_49b530529c251efe",
+          "imageSource": "feed_html",
+          "summary": "Leftover bean sprouts never go to waste in my kitchen. I’ll show you the best way to blanch and the prepping secret I…"
         }
       ]
     },
@@ -171,30 +157,17 @@
       "lead": "맛도 포기하지 않는 건강식",
       "items": [
         {
-          "title": "소금, 적게 먹을수록 좋다?…극단적 저염식도 기억력 ↓ [건강팩트체크]",
-          "summary": "음식의 맛은 ‘간’이 좌우한다. 소금을 너무 많이 넣어도, 반대로 너무 적게 넣어도 최상의 맛을 내기 어렵다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_5f13ee01a57ca663",
-          "url": "https://www.donga.com/news/It/article/all/20261006/134791322/2",
-          "medium": "news",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
-          "publishedAt": "2026-10-06T10:10:35+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/10/06/134791268.3.jpg",
-          "imageSource": "feed_media"
-        },
-        {
           "title": "\"영양제, 돈만 날리는 경우 많아\"…정형돈 유튜브 나온 서울대 교수의 경고",
-          "summary": "서울대학교병원 신경과 이승훈 교수가 영양제 섭취만으로 건강을 증진하려는 현대인들의 습관을 지적하며, 올바른 건강 관리의 본질은 '기본 생활습관 개선'에 있다고 밝혔다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_0f9e5765a779d328",
           "url": "https://www.newsis.com/view/NISX20261001_0003810775",
           "medium": "news",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
-          "publishedAt": "2026-10-06T00:00:00+09:00",
           "image": "https://image.newsis.com/2026/10/01/NISI20261001_0002253265_web.jpg?rnd=20261001135706",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-06T00:00:00+09:00",
+          "discoveredAt": "2026-10-06T16:00:20+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_0f9e5765a779d328",
+          "imageSource": "feed_html",
+          "summary": "서울대학교병원 신경과 이승훈 교수가 영양제 섭취만으로 건강을 증진하려는 현대인들의 습관을 지적하며, 올바른 건강 관리의 본질은 '기본 생활습관 개선'에 있다고 밝혔다."
         }
       ]
     },
@@ -203,14 +176,14 @@
       "items": [
         {
           "title": "“장내 미생물 불균형 커진다”… 항생제 복용 시 멀리해야 할 음식",
-          "summary": "항생제 치료를 받는 동안 단 음식을 많이 먹으면 장내 미생물 불균형이 더 심해질 수 있다는 연구 결과가 나왔다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_10fc7a822db309e1",
           "url": "https://kormedi.com/2879246/",
           "medium": "news",
+          "publishedAt": "2026-10-06T14:49:21+09:00",
           "discoveredAt": "2026-10-06T16:00:20+09:00",
-          "publishedAt": "2026-10-06T14:49:21+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_10fc7a822db309e1",
+          "summary": "항생제 치료를 받는 동안 단 음식을 많이 먹으면 장내 미생물 불균형이 더 심해질 수 있다는 연구 결과가 나왔다."
         }
       ]
     }

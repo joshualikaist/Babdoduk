@@ -5,107 +5,92 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "식당 테이블 간장 금지?…식약처 \"사실 아닙니다\"",
-    "summary": "요기와 최근 온라인에서 식당 테이블에 여러 사람이 함께 이용할 수 있도록 소스류를 비치하는 것이 금지됐다는 내용이 확산하자 식품의약품안전처가 사실관계 바로잡기에 나섰다.",
     "source": "뉴시스 건강",
-    "sourceId": "news-newsis-health",
-    "candidateId": "c_53404e35e9d1df93",
     "url": "https://www.newsis.com/view/NISX20261002_0003813297",
     "medium": "news",
-    "discoveredAt": "2026-10-03T14:53:34+09:00",
-    "publishedAt": "2026-10-03T05:01:00+09:00",
     "image": "https://image.newsis.com/2026/10/02/NISI20261002_0002254936_web.jpg?rnd=20261002221224",
+    "category": "trend",
+    "publishedAt": "2026-10-03T05:01:00+09:00",
+    "discoveredAt": "2026-10-03T14:53:34+09:00",
+    "sourceId": "news-newsis-health",
+    "candidateId": "c_53404e35e9d1df93",
     "imageSource": "feed_html",
+    "summary": "요기와 최근 온라인에서 식당 테이블에 여러 사람이 함께 이용할 수 있도록 소스류를 비치하는 것이 금지됐다는 내용이 확산하자 식품의약품안전처가 사실관계 바로잡기에 나섰다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "세븐일레븐, '소화가잘되는우유 디저트' 4종 출시",
-          "summary": "세븐일레븐은 '소화가잘되는우유' 크림을 활용해 품질과 함량을 개선한 디저트 4종을 순차적으로 선보인다고 13일 밝혔다.",
-          "source": "전자신문",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_09964442787469b0",
-          "url": "https://www.etnews.com/20260913000005",
-          "medium": "news",
-          "discoveredAt": "2026-10-03T14:53:34+09:00",
-          "publishedAt": "2026-09-13T09:00:00+09:00",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
-          ]
-        },
-        {
           "title": "\"변성전분에 젤라틴까지\"…가짜 그릭 요거트 넘쳐나, 진짜 찾는 기준은",
-          "summary": "이지우 인턴 기자 = 건강을 위해 챙겨 먹는 그릭 요거트, 치즈, 버터 중 상당수가 건강과는 거리가 먼 첨가물이나 팜유로 채워진 ‘가짜 유제품’일 수 있다는 지적이 나왔다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_9e152f88ec752e61",
           "url": "https://www.newsis.com/view/NISX20261002_0003811801",
           "medium": "news",
-          "discoveredAt": "2026-10-03T14:53:34+09:00",
           "publishedAt": "2026-10-03T12:30:00+09:00",
+          "discoveredAt": "2026-10-03T14:53:34+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_9e152f88ec752e61",
+          "summary": "이지우 인턴 기자 = 건강을 위해 챙겨 먹는 그릭 요거트, 치즈, 버터 중 상당수가 건강과는 거리가 먼 첨가물이나 팜유로 채워진 ‘가짜 유제품’일 수 있다는 지적이 나왔다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "비만약, 주사 대신 알약으로 바꾸면…효과는?",
-          "summary": "주사형 비만치료제를 쓰던 환자가 먹는 약으로 갈아타도 감량 효과가 이어진다는 실사용 데이터가 나왔다. 3일 관련업계에 따르면, 노보 노디스크는 지난달 30일(현지시간) 이탈리아 밀라노에서 열린 제62회…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_acae4207ea9254d6",
           "url": "https://www.newsis.com/view/NISX20261002_0003812238",
           "medium": "news",
-          "discoveredAt": "2026-10-03T14:53:34+09:00",
           "publishedAt": "2026-10-03T11:01:00+09:00",
+          "discoveredAt": "2026-10-03T14:53:34+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_acae4207ea9254d6",
+          "summary": "주사형 비만치료제를 쓰던 환자가 먹는 약으로 갈아타도 감량 효과가 이어진다는 실사용 데이터가 나왔다. 3일 관련업계에 따르면, 노보 노디스크는 지난달 30일(현지시간) 이탈리아 밀라노에서 열린 제62회…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "조리 전공 고교생, K-푸드 실무 배운다",
-          "summary": "조리·식품 분야를 전공하는 고등학생들이 식품산업 현장에서 HACCP과 GMP, 식품 제조·개발 등을 직접 배우는 실무교육에 나섰다.전남광주특별시곡성교육지원청(교육장 심치숙, 이하 곡성교육청)은…",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_b186c526c1b84848",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62290",
           "medium": "news",
-          "discoveredAt": "2026-10-01T00:11:15+09:00",
           "publishedAt": "2026-10-01T05:11:58+09:00",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_b186c526c1b84848",
+          "summary": "조리·식품 분야를 전공하는 고등학생들이 식품산업 현장에서 HACCP과 GMP, 식품 제조·개발 등을 직접 배우는 실무교육에 나섰다.전남광주특별시곡성교육지원청(교육장 심치숙, 이하 곡성교육청)은…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "송미령 장관, 산단 노동자 ‘천원의 아침밥’ 현장 찾아 든든한 한 끼 격려",
-          "summary": "송미령 농림축산식품부 장관은 30일 전북특별자치도 전주시 소재 산업단지 시범사업으로 운영하는 ‘산단 노동자 천원의 아침밥’을 점검하고 산단 노동자 및 사업 운영 관계자들을 격려했다.정부는 인기를 얻고 있는 ‘대학생…",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_73119f983e549e3a",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68585",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
           "publishedAt": "2026-09-30T22:22:35+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_73119f983e549e3a",
+          "summary": "송미령 농림축산식품부 장관은 30일 전북특별자치도 전주시 소재 산업단지 시범사업으로 운영하는 ‘산단 노동자 천원의 아침밥’을 점검하고 산단 노동자 및 사업 운영 관계자들을 격려했다.정부는 인기를 얻고 있는 ‘대학생…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "식품 담합 과징금 2조 넘었다",
-          "summary": "최근 10년간 식품업체의 가격·입찰 담합으로 부과된 과징금이 2조1900억 원을 넘어선 것으로 나타났다. 특히 올해 설탕·밀가루·전분당 등 식품산업의 기초 원재료 분야에서 대규모 담합이 잇따라 적발되면서 전체…",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_77a87e3c3002c2df",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62300",
           "medium": "news",
-          "discoveredAt": "2026-10-03T14:53:34+09:00",
           "publishedAt": "2026-10-03T22:33:34+09:00",
+          "discoveredAt": "2026-10-03T14:53:34+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_77a87e3c3002c2df",
+          "summary": "최근 10년간 식품업체의 가격·입찰 담합으로 부과된 과징금이 2조1900억 원을 넘어선 것으로 나타났다. 특히 올해 설탕·밀가루·전분당 등 식품산업의 기초 원재료 분야에서 대규모 담합이 잇따라 적발되면서 전체…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -117,77 +102,77 @@
       "items": [
         {
           "title": "Pumpkin Curry",
-          "summary": "This Pumpkin Curry is thick, velvety, rich, and flavor-packed, with tender fresh pumpkin, warm spices, and creamy…",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_942bd46bf692691e",
           "url": "https://www.budgetbytes.com/pumpkin-curry/",
           "medium": "blog",
+          "publishedAt": "2026-10-02T22:30:00+09:00",
           "discoveredAt": "2026-10-03T14:53:34+09:00",
-          "publishedAt": "2026-10-02T22:30:00+09:00"
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_942bd46bf692691e",
+          "summary": "This Pumpkin Curry is thick, velvety, rich, and flavor-packed, with tender fresh pumpkin, warm spices, and creamy…"
         },
         {
           "title": "Buffalo Chicken Grilled Cheese",
-          "summary": "Confession: the only time I ever care about sports is when I’m tasked with providing the snacks, and this crispy…",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_9c1e232ae28bb133",
           "url": "https://www.budgetbytes.com/buffalo-chicken-grilled-cheese/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-21T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2026/09/Buffalo-Chicken-Grilled-Cheese-Front-Stack.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-21T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_9c1e232ae28bb133",
+          "imageSource": "feed_media",
+          "summary": "Confession: the only time I ever care about sports is when I’m tasked with providing the snacks, and this crispy…"
         },
         {
           "title": "Baechujeon (Korean Cabbage Pancakes)",
-          "summary": "Baechujeon (배추전) is a traditional Korean pancake made with napa cabbage.",
           "source": "My Korean Kitchen",
-          "sourceId": "blog-mykoreankitchen",
-          "candidateId": "c_90c35303c5e0ecc9",
           "url": "https://mykoreankitchen.com/baechujeon/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-07-31T19:00:23+09:00",
           "image": "https://mykoreankitchen.com/wp-content/uploads/2026/07/1.-baechujeon-korean-cabbage-pancake-1.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-07-31T19:00:23+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-mykoreankitchen",
+          "candidateId": "c_90c35303c5e0ecc9",
+          "imageSource": "source_page_og",
+          "summary": "Baechujeon (배추전) is a traditional Korean pancake made with napa cabbage."
         },
         {
           "title": "Japanese Shredded Cabbage Salad キャベツの千切り",
-          "summary": "One cabbage, two totally different salads. It all comes down to which way you slice it.",
           "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_5ebff28d6b9d7da5",
           "url": "https://www.justonecookbook.com/japanese-shredded-cabbage-salad/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-21T21:00:00+09:00",
           "image": "https://www.justonecookbook.com/wp-content/uploads/2027/09/Japanese-Shredded-Cabbage-Salad-6631-I-1-1200x800.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-09-21T21:00:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-justonecookbook",
+          "candidateId": "c_5ebff28d6b9d7da5",
+          "imageSource": "feed_html",
+          "summary": "One cabbage, two totally different salads. It all comes down to which way you slice it."
         },
         {
           "title": "벨큐브로 초간단 미니 치즈케이크 3가지 3 Mini Cheesecake Bites with Belcube Cheese",
-          "summary": "벨큐브를 미니 비스킷 사이에 그대로 넣고 꾹 눌러봤어요. 작은 라이브니즈 미니버터비스킷이랑 크기도 잘 맞아서 비스킷 사이에 벨큐브 하나만 넣어도 귀여운 한입 사이즈로 완성돼요~ 기본 버전부터 딸기잼을 더한 버전…",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_1cd3df5b9d413bbc",
           "url": "https://www.youtube.com/shorts/mgqRQdGYQ0M",
           "medium": "youtube",
+          "publishedAt": "2026-09-21T20:00:27+09:00",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-21T20:00:27+09:00"
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_1cd3df5b9d413bbc",
+          "summary": "벨큐브를 미니 비스킷 사이에 그대로 넣고 꾹 눌러봤어요. 작은 라이브니즈 미니버터비스킷이랑 크기도 잘 맞아서 비스킷 사이에 벨큐브 하나만 넣어도 귀여운 한입 사이즈로 완성돼요~ 기본 버전부터 딸기잼을 더한 버전…"
         },
         {
           "title": "Miso Eggplant Stir-Fryナスの味噌炒め",
-          "summary": "Miso Eggplant Stir-Fry recipe with silky Japanese eggplant in a sweet-savory miso-ginger glaze.",
           "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_b0f0e1a0a1b9240e",
           "url": "https://www.justonecookbook.com/stir-fry-miso-eggplant/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-10T16:00:00+09:00",
           "image": "https://www.justonecookbook.com/wp-content/uploads/2021/03/Stir-Fry-Miso-Eggplant-5169.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-09-10T16:00:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-justonecookbook",
+          "candidateId": "c_b0f0e1a0a1b9240e",
+          "imageSource": "feed_html",
+          "summary": "Miso Eggplant Stir-Fry recipe with silky Japanese eggplant in a sweet-savory miso-ginger glaze."
         }
       ]
     },
@@ -196,42 +181,16 @@
       "items": [
         {
           "title": "“비행기만 타면 몸살 나”…기내에서 건강 챙기는 5가지 방법",
-          "summary": "영양사들은 비행기를 타기 전에 건강한 식사를 하면 컨디션 유지에 도움이 된다고 조언했다. 사진=클립아트코리아 해외여행을 다녀온 뒤 몸살이나 피로를 호소하는 사람이 적지 않다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_4c3f0b23e67e65f2",
           "url": "https://kormedi.com/2874292/",
           "medium": "news",
-          "discoveredAt": "2026-10-03T14:53:34+09:00",
-          "publishedAt": "2026-10-03T07:02:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/09/yaytg1050521.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "근감소증 있으면 치매 위험 42%↑…혈관성 치매는 70%↑ [노화설계]",
-          "summary": "나이가 들면서 근육량과 근력, 신체 기능이 떨어지는 ‘근감소증’이 있는 사람은 그렇지 않은 사람보다 치매 위험이 42% 높다는 대규모 분석 결과가 나왔다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_3d56e2520a52622e",
-          "url": "https://www.donga.com/news/It/article/all/20260922/134720650/2",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-23T07:30:00+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/22/134720611.3.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "지속적으로 답답한 ‘기능성 소화불량’ 황해쑥이 해법 될까",
-          "summary": "속이 쓰리거나 더부룩하고 식사 후 금세 배가 부르는 증상이 반복되는데도 위내시경에서는 특별한 이상이 발견되지 않는 사람들이 있다. 대표적인 질환이 ‘기능성 소화불량’이다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_d556183ec9c637a1",
-          "url": "https://www.donga.com/news/It/article/all/20260922/134713976/2",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-23T04:30:00+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/22/134713965.3.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-03T07:02:00+09:00",
+          "discoveredAt": "2026-10-03T14:53:34+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_4c3f0b23e67e65f2",
+          "imageSource": "feed_media",
+          "summary": "영양사들은 비행기를 타기 전에 건강한 식사를 하면 컨디션 유지에 도움이 된다고 조언했다. 사진=클립아트코리아 해외여행을 다녀온 뒤 몸살이나 피로를 호소하는 사람이 적지 않다."
         }
       ]
     },
@@ -240,60 +199,60 @@
       "items": [
         {
           "title": "우선 밥, 빵부터 줄이고…혈당 낮추는 데 좋은 8가지 습관",
-          "summary": "달걀 같은 단백질 식품과 섬유질이 많은 채소를 적당히 잘 먹으면 혈당을 관리하는 데 도움이 된다. 사진=게티이미지뱅크 당뇨병이나 당뇨 전 단계에 있는 사람이 혈당을 관리하는 데 도움이 되는 생활 습관이 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_6f6c14f609e2a5de",
           "url": "https://kormedi.com/2878544/",
           "medium": "news",
-          "discoveredAt": "2026-10-03T14:53:34+09:00",
-          "publishedAt": "2026-10-03T11:05:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/gettyimages-2287363211.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-03T11:05:00+09:00",
+          "discoveredAt": "2026-10-03T14:53:34+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6f6c14f609e2a5de",
+          "imageSource": "feed_media",
+          "summary": "달걀 같은 단백질 식품과 섬유질이 많은 채소를 적당히 잘 먹으면 혈당을 관리하는 데 도움이 된다. 사진=게티이미지뱅크 당뇨병이나 당뇨 전 단계에 있는 사람이 혈당을 관리하는 데 도움이 되는 생활 습관이 있다."
         },
         {
           "title": "지방간에 좋다고 올리브유 '원샷'?…\"기존 식단에 더하면 역효과\"",
-          "summary": "이지우 인턴 기자 = 올리브유를 무작정 기존 식단에 추가해서 먹을 경우 오히려 건강에 악영향을 끼칠 수 있다는 전문가의 경고가 나왔다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_1ec62c3569aba1bf",
           "url": "https://www.newsis.com/view/NISX20261002_0003812158",
           "medium": "news",
+          "publishedAt": "2026-10-02T16:43:00+09:00",
           "discoveredAt": "2026-10-03T14:53:34+09:00",
-          "publishedAt": "2026-10-02T16:43:00+09:00"
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_1ec62c3569aba1bf",
+          "summary": "이지우 인턴 기자 = 올리브유를 무작정 기존 식단에 추가해서 먹을 경우 오히려 건강에 악영향을 끼칠 수 있다는 전문가의 경고가 나왔다."
         },
         {
           "title": "농진청, 고령층 위한 건강 식생활 연구성과 공개",
-          "summary": "농촌진흥청(청장 이승돈)이 고령자의 영양 불균형을 해소하고 신체 특성을 고려한 건강 식생활 관련 연구 성과를 발표했다.2024 국민건강통계에 따르면 65세 이상 고령자의 26.6%는 씹는 데 불편함을 겪으며, 영양…",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_0165001b6ab5c9df",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201320",
           "medium": "news",
+          "publishedAt": "2026-10-02T01:03:41+09:00",
           "discoveredAt": "2026-10-02T15:25:18+09:00",
-          "publishedAt": "2026-10-02T01:03:41+09:00"
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_0165001b6ab5c9df",
+          "summary": "농촌진흥청(청장 이승돈)이 고령자의 영양 불균형을 해소하고 신체 특성을 고려한 건강 식생활 관련 연구 성과를 발표했다.2024 국민건강통계에 따르면 65세 이상 고령자의 26.6%는 씹는 데 불편함을 겪으며, 영양…"
         },
         {
           "title": "영양소 적정 섭취기준 개정",
-          "summary": "보건복지부(장관 정은경)은 국민의 건강증진에 필요한 영양소 41종*의 적정 섭취 기준을 담은 ‘2025 한국인 영양소 섭취기준’(이하 ‘영양소 섭취기준’)을 개정하여 배포하였다.",
           "source": "mohw.go.kr",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_af5db9deb6e61113",
           "url": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1488441&mid=a10503000000",
           "medium": "research",
+          "publishedAt": "2025-12-31T12:00:00+09:00",
           "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2025-12-31T12:00:00+09:00"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_af5db9deb6e61113",
+          "summary": "보건복지부(장관 정은경)은 국민의 건강증진에 필요한 영양소 41종*의 적정 섭취 기준을 담은 ‘2025 한국인 영양소 섭취기준’(이하 ‘영양소 섭취기준’)을 개정하여 배포하였다."
         },
         {
           "title": "정보마당 > 간행물·자료집 > 소비자를 위한 건강 식생활 가이드 -건강기능식품을 통한 올바른 영양성분 섭취 중심으로-",
-          "summary": "소비자를 위한 건강 식생활 가이드(건강기능식품을 통한 올바른 영양성분 섭취 중심으로)를 발간하여 게시하오니 참고 바랍니다.",
           "source": "nifds.go.kr",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_706864be05881e2c",
           "url": "https://nifds.go.kr/brd/m_18/view.do?seq=12798",
           "medium": "research",
+          "publishedAt": "2024-12-27T12:00:00+09:00",
           "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2024-12-27T12:00:00+09:00"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_706864be05881e2c",
+          "summary": "소비자를 위한 건강 식생활 가이드(건강기능식품을 통한 올바른 영양성분 섭취 중심으로)를 발간하여 게시하오니 참고 바랍니다."
         }
       ]
     }

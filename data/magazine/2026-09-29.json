@@ -5,98 +5,81 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "“SNS 뜨기 전에 잡는다”···편의점 ‘품절템’ 뒤엔 AI 있었다",
-    "summary": "SNS에서 유행하던 치즈미역국과 카레 당면이 실제 편의점 상품으로 제작됐다.",
     "source": "시사저널e",
-    "sourceId": "web-exa-trend",
-    "candidateId": "c_ccb18996e41398d2",
     "url": "https://www.sisajournal-e.com/news/articleView.html?idxno=423791",
     "medium": "news",
-    "discoveredAt": "2026-09-29T15:09:50+09:00",
-    "publishedAt": "2026-09-18T17:12:35+09:00",
     "image": "https://cdn.sisajournal-e.com/news/thumbnail/202609/423791_239899_4930_v150.jpg",
+    "category": "trend",
+    "publishedAt": "2026-09-18T17:12:35+09:00",
+    "discoveredAt": "2026-09-29T15:09:50+09:00",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_ccb18996e41398d2",
     "imageSource": "source_page_og",
+    "summary": "SNS에서 유행하던 치즈미역국과 카레 당면이 실제 편의점 상품으로 제작됐다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "딱 하나 남아 간신히 샀다…SNS서 난리 난 편의점 신상",
-          "summary": "최근 출시된 편의점 신상 우유 생크림빵이 사회관계망서비스(SNS)를 달구고 있다. \"편의점 네 곳을 돌아다녀 간신히 샀다\"는 후기가 보이는 등 '오픈런'까지 불사한다.",
-          "source": "한국경제",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_31444044ce34a1fa",
-          "url": "https://www.hankyung.com/article/202609167791g",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-16T15:32:23+09:00",
-          "image": "https://img.hankyung.com/photo/202609/01.45708431.1.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
-          ]
-        },
-        {
           "title": "생새우·무화과 찾아 동네 한 바퀴…당근 ‘제철코어’ 검색 급증",
-          "summary": "한 해 중 짧은 기간에만 만날 수 있는 제철 먹거리를 일부러 찾아 먹는 ‘제철코어’가 새로운 먹거리 소비 트렌드로 떠오르고 있다.",
           "source": "디지털데일리",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_0f28d4c14cab2c46",
           "url": "https://www.ddaily.co.kr/page/view/2026092404071026235",
           "medium": "news",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
           "publishedAt": "2026-09-26T09:00:00+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_0f28d4c14cab2c46",
+          "summary": "한 해 중 짧은 기간에만 만날 수 있는 제철 먹거리를 일부러 찾아 먹는 ‘제철코어’가 새로운 먹거리 소비 트렌드로 떠오르고 있다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "유행음식으로 인싸 체험하기",
-          "summary": "",
           "source": "침착맨",
-          "sourceId": "yt-search",
-          "candidateId": "c_9ac7692badb389ca",
           "url": "https://www.youtube.com/watch?v=vO6-xnZwKc4",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-22T00:00:00+09:00",
           "image": "https://i.ytimg.com/vi/vO6-xnZwKc4/hqdefault.jpg",
+          "publishedAt": "2026-09-22T00:00:00+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-search",
+          "candidateId": "c_9ac7692badb389ca",
           "imageSource": "youtube_thumbnail",
+          "summary": "",
           "trendEvidence": [
             "engagement"
           ]
         },
         {
           "title": "[기획] 봄동비빔밥에서 생새우까지…올해 음식 트렌드 장악한 '이것'은?",
-          "summary": "봄동비빔밥을 만들어 먹던 봄이 지나자 복숭아를 넣은 찹쌀떡과 음료가 여름 메뉴에 올랐다. 9월에는 무화과 디저트를 파는 곳과 생새우를 먹을 수 있는 가게를 찾는 사람이 늘었다.",
           "source": "위키트리",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_cced8cfc4e7a091e",
           "url": "https://www.wikitree.co.kr/articles/1162174",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
           "publishedAt": "2026-09-29T12:16:00+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cced8cfc4e7a091e",
+          "summary": "봄동비빔밥을 만들어 먹던 봄이 지나자 복숭아를 넣은 찹쌀떡과 음료가 여름 메뉴에 올랐다. 9월에는 무화과 디저트를 파는 곳과 생새우를 먹을 수 있는 가게를 찾는 사람이 늘었다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "틱톡에서 유행하는 음식의 진실ㅣ해파리 먹방",
-          "summary": "",
           "source": "FoodieAlley_Mukbang_ASMR",
-          "sourceId": "yt-search",
-          "candidateId": "c_fb803e13dbe09234",
           "url": "https://www.youtube.com/watch?v=EQtw53dMxs0",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
           "publishedAt": "2026-09-11T00:00:00+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-search",
+          "candidateId": "c_fb803e13dbe09234",
+          "summary": "",
           "trendEvidence": [
             "engagement"
           ]
@@ -108,150 +91,123 @@
       "items": [
         {
           "title": "이게 바로 개쉬운 자취요리지.",
-          "summary": "치즈비엔나볶음밥을 만들어 보자 [재료] 비엔나소시지 한 줌, 모차렐라 치즈 [만드는 법] 1. 비엔나소시지를 먹기 좋게 자른 뒤 식용유에 노릇하게 볶는다. 2.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_3ebc0506bd69418e",
           "url": "https://www.youtube.com/watch?v=AePO9VDfO3g",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-18T00:00:00+09:00",
           "image": "https://i.ytimg.com/vi/AePO9VDfO3g/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
+          "publishedAt": "2026-09-18T00:00:00+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_3ebc0506bd69418e",
+          "imageSource": "youtube_thumbnail",
+          "summary": "치즈비엔나볶음밥을 만들어 보자 [재료] 비엔나소시지 한 줌, 모차렐라 치즈 [만드는 법] 1. 비엔나소시지를 먹기 좋게 자른 뒤 식용유에 노릇하게 볶는다. 2."
         },
         {
           "title": "바삭한 크럼블 미니 사과 파이 만들기 | 쉽게 만드는 애플 파이 | Easy Mini Crumble Apple Pie Recipe | Crispy & Full of Apples",
-          "summary": "바삭한 버터 크럼블과 촉촉한 사과 필링을 가득 채운, 쉽게 만드는 미니 애플 크럼블 파이예요. Easy mini apple crumble pies with a flaky butter crust, juicy…",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_9605de3e92cfc75c",
           "url": "https://www.youtube.com/watch?v=xaLO1bDy_E8",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-22T20:00:01+09:00",
           "image": "https://i1.ytimg.com/vi/xaLO1bDy_E8/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
+          "publishedAt": "2026-09-22T20:00:01+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_9605de3e92cfc75c",
+          "imageSource": "youtube_thumbnail",
+          "summary": "바삭한 버터 크럼블과 촉촉한 사과 필링을 가득 채운, 쉽게 만드는 미니 애플 크럼블 파이예요. Easy mini apple crumble pies with a flaky butter crust, juicy…"
         },
         {
           "title": "5가지 재료로 만드는 무화과 브리치즈 구이 5-Ingredient Baked Figs with Brie cheese",
-          "summary": "무화과를 조금 다르게 즐기고 싶을 때 이렇게 한번 구워보세요. 십자로 칼집을 낸 무화과에 브리치즈와 호두를 올리고 꿀을 살짝 뿌려 오븐에 넣으면 돼요.",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_cad6fa6637db3502",
           "url": "https://www.youtube.com/shorts/voZfW6h5huw",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-28T20:00:02+09:00",
           "image": "https://i3.ytimg.com/vi/voZfW6h5huw/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
+          "publishedAt": "2026-09-28T20:00:02+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_cad6fa6637db3502",
+          "imageSource": "youtube_thumbnail",
+          "summary": "무화과를 조금 다르게 즐기고 싶을 때 이렇게 한번 구워보세요. 십자로 칼집을 낸 무화과에 브리치즈와 호두를 올리고 꿀을 살짝 뿌려 오븐에 넣으면 돼요."
         },
         {
           "title": "Yukhoe Kimbap",
-          "summary": "When I was going to culinary school in Paris, I hosted a couple of supper club dinner parties whenever I had a little…",
           "source": "Seonkyoung Longest",
-          "sourceId": "blog-seonkyounglongest",
-          "candidateId": "c_2b478020beaa23d2",
           "url": "https://seonkyounglongest.com/yukhoe-kimbap/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-10T16:04:04+09:00",
           "image": "https://i0.wp.com/photos.smugmug.com/Yukhoe-Kimbap/i-BnhBvRP/0/MJQPrwVR8D8DgwcCGsh73VgZpFFLKfNTPFRxxbHfW/X2/ChatGPT%20Image%20Sep%205%2C%202026%2C%2009_08_40%20AM-X2.png?w=1170&ssl=1",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-09-10T16:04:04+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-seonkyounglongest",
+          "candidateId": "c_2b478020beaa23d2",
+          "imageSource": "feed_html",
+          "summary": "When I was going to culinary school in Paris, I hosted a couple of supper club dinner parties whenever I had a little…"
         },
         {
           "title": "Pumpkin Bread",
-          "summary": "If you’ve got a $5 bill and a couple of quarters burning a hole in your pocket this pumpkin spice season, boy do I have…",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_0a0a95222fce0f69",
           "url": "https://www.budgetbytes.com/pumpkin-bread/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-25T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2022/10/3-Pumpkin-Bread-Front.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-25T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_0a0a95222fce0f69",
+          "imageSource": "feed_media",
+          "summary": "If you’ve got a $5 bill and a couple of quarters burning a hole in your pocket this pumpkin spice season, boy do I have…"
         },
         {
           "title": "너무 맛있어서 지금 당장 팔아도 됩니다.",
-          "summary": "사천 짜계치볶이를 만들어 보자 [재료] 사천짜파게티, 떡볶이 떡, 체다 치즈, 청양고추 [만드는 법] 1. 물 450ml를 끓이고 면, 떡 한줌, 건더기 스프, 분말 스프를 넣는다. 2.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_bb328a9ebf65ce3e",
           "url": "https://www.youtube.com/watch?v=bBcyBIrQ6Wc",
           "medium": "youtube",
+          "publishedAt": "2026-09-26T00:00:00+09:00",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-26T00:00:00+09:00"
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_bb328a9ebf65ce3e",
+          "summary": "사천 짜계치볶이를 만들어 보자 [재료] 사천짜파게티, 떡볶이 떡, 체다 치즈, 청양고추 [만드는 법] 1. 물 450ml를 끓이고 면, 떡 한줌, 건더기 스프, 분말 스프를 넣는다. 2."
         }
       ]
     },
     "health": {
       "lead": "맛도 포기하지 않는 건강식",
-      "items": [
-        {
-          "title": "배부르게 먹는데 살 빠진다?…‘볼륨매트릭스’ 다이어트 뭐길래",
-          "summary": "굶거나 식사량을 크게 줄이는 대신 물과 식이섬유가 풍부한 저열량 음식으로 식사의 부피를 키워 포만감을 유지하는 ‘볼륨매트릭스’ 다이어트가 소개됐다.지난달 11일(현지 시간) 미국 건강 전문지 ‘멘스헬스’에 따르면…",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_5e901290e44932dc",
-          "url": "https://www.donga.com/news/It/article/all/20260928/134740546/1",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-28T00:32:15+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/28/134740547.1.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "송편·전·갈비찜 잔뜩 먹었다간…추석 연휴 소화불량 주의해야",
-          "summary": "추석 연휴에는 전이나 갈비찜 등 기름진 음식을 평소보다 많이 먹게 된다. 식사 후 바로 누워 연휴의 여유를 즐기는 경우도 많다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_077f6e78f8483f1a",
-          "url": "https://www.donga.com/news/Society/article/all/20260923/134720629/1",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-25T07:00:00+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/23/134727346.1.jpg",
-          "imageSource": "feed_media"
-        }
-      ]
+      "items": []
     },
     "habit": {
       "lead": "잘 먹는 법에 대한 작은 이야기",
       "items": [
         {
           "title": "‘뼈말라’ 열풍, 식생활교육 새 과제 요구",
-          "summary": "‘뼈말라’로 불리는 지나치게 마른 체형을 선호하는 분위기가 숏폼·사회관계망서비스(SNS)를 타고 10대 사이에 확산하면서 학교급식 현장에도 영향을 미치고 있다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_7eff07bc9dfabc8d",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62235",
           "medium": "news",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-28T18:59:54+09:00",
           "image": "http://www.fsnews.co.kr/news/thumbnail/202609/62235_53080_2316_v150.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-09-28T18:59:54+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_7eff07bc9dfabc8d",
+          "imageSource": "source_page_og",
+          "summary": "‘뼈말라’로 불리는 지나치게 마른 체형을 선호하는 분위기가 숏폼·사회관계망서비스(SNS)를 타고 10대 사이에 확산하면서 학교급식 현장에도 영향을 미치고 있다."
         },
         {
           "title": "月 식비 90만 원 돌파·외식비 첫 과반…저소득층·40대 가계 부담 심화",
-          "summary": "올해 2분기 우리나라 가구의 월평균 명목 식품비 지출액이 사상 처음으로 90만 원대를 돌파한 가운데 외식비 지출 비중이 전체 식비의 절반을 넘어선 것으로 나타났다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_7c075dfda947dd0b",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201278",
           "medium": "news",
+          "publishedAt": "2026-09-29T01:28:45+09:00",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-29T01:28:45+09:00"
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_7c075dfda947dd0b",
+          "summary": "올해 2분기 우리나라 가구의 월평균 명목 식품비 지출액이 사상 처음으로 90만 원대를 돌파한 가운데 외식비 지출 비중이 전체 식비의 절반을 넘어선 것으로 나타났다."
         },
         {
           "title": "[자료] 2026년 2분기 가구의 가공식품 지출 현황과 특징",
-          "summary": "1. 2026년 2분기 가구의 식품비 지출 규모는 전년 동기 대비 3.3% 증가, 물가 상승 고려한 실질 식품비도 1.3% 증2.",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_b4439f205e14649e",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120314",
           "medium": "news",
+          "publishedAt": "2026-09-28T22:38:23+09:00",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-28T22:38:23+09:00"
+          "sourceId": "news-foodnews",
+          "candidateId": "c_b4439f205e14649e",
+          "summary": "1. 2026년 2분기 가구의 식품비 지출 규모는 전년 동기 대비 3.3% 증가, 물가 상승 고려한 실질 식품비도 1.3% 증2."
         }
       ]
     }
