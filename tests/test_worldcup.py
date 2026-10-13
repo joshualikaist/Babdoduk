@@ -48,14 +48,17 @@ def test_an_activity_page_link_must_be_a_page_of_this_site(tmp_path):
 
 def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
-    assert re.findall(r'<script\s+src="([^"]+)"', html) == ["js/site.js", "js/worldcup.js"]
+    assert re.findall(r'<script\s+src="([^"]+)"', html) == ["js/site.js", "js/ggongbab-public-config.js", "js/worldcup.js"]
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     assert set(re.findall(r"getJson\('([^']+)'\)", script)) == {"data/foods/catalog.json"}
     # data/content/ is never deployed (.vercelignore): the sync writes the dishes into the page.
     embedded = re.search(r"window\.BABDODUK_WORLDCUP = (\{.*\});", html).group(1)
     assert json.loads(embedded)["dishes"] == CUP["dishes"]
-    for forbidden in ("supabase", "XMLHttpRequest", "WebSocket", "sendBeacon", "POST"):
+    for forbidden in ("supabase", "XMLHttpRequest", "WebSocket", "sendBeacon", "createClient"):
         assert forbidden not in script, forbidden
+    # Stage 2 (lab): the only write is one finished game through the validating RPC.
+    assert re.findall(r"api\('([a-z_/]+)", script) == ["worldcup_dish_stats", "worldcup_totals", "rpc/worldcup_record_game"]
+    assert "method: body ? 'POST' : 'GET'" in script and "log.length !== size - 1" in script
     assert "var KEY = 'babdoduk-worldcup';" in script and "localStorage.setItem(KEY" in script
     assert html.count('<button type="button" class="wc-card"') == 2
     assert 'id="wcStatus" role="status"' in html and "'wc.title': 'Babdoduk Food World Cup'" in html
