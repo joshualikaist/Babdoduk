@@ -359,10 +359,10 @@
 }
 
 /* Hover only with a real pointer, so a tap never leaves a sticky hover. The tints are the tokens
-   at low alpha (accent #b43d27, ink #1e1d1a), as at .wc-card.is-picked. */
+   at low alpha (accent #be185d, ink #1e1d1a), as at .wc-card.is-picked. */
 @media (hover: hover) and (pointer: fine) {
   .wc-tool--undo:hover:not(:disabled) {
-    background: rgba(180, 61, 39, 0.14);
+    background: rgba(190, 24, 93, 0.14);
   }
 
   .wc-tool--restart:hover:not(:disabled) {
@@ -373,7 +373,7 @@
 
 /* Press, for touch and mouse alike; after the hover rules, so it also shows under the pointer. */
 .wc-tool--undo:active:not(:disabled) {
-  background: rgba(180, 61, 39, 0.2);
+  background: rgba(190, 24, 93, 0.2);
 }
 
 .wc-tool--restart:active:not(:disabled) {
@@ -548,7 +548,7 @@
 .wc-card.is-picked {
   border-color: var(--color-accent);
   background: var(--color-accent-wash);
-  box-shadow: 0 0 0 3px var(--color-accent-wash), 0 12px 28px rgba(180, 61, 39, 0.18);
+  box-shadow: 0 0 0 3px var(--color-accent-wash), 0 12px 28px rgba(190, 24, 93, 0.18);
   transform: scale(1.03);
 }
 

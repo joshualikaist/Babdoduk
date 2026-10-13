@@ -356,7 +356,7 @@
       ctx.fillStyle = '#fffdf8';
       ctx.fillRect(0, 0, 1080, 1350);
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#b43d27';
+      ctx.fillStyle = '#be185d';
       fitText(ctx, t('wc.cardKicker', '나의 최애 메뉴'), 540, 120, 900, 40, 800);
       ctx.fillStyle = '#1e1d1a';
       fitText(ctx, name(result.id), 540, 250, 960, 104, 900);
