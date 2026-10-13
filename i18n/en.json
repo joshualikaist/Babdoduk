@@ -383,6 +383,8 @@
   "wc.lede": "Pick the dish you would rather eat, two at a time, until one is left: your favorite.",
   "wc.loading": "Loading the dishes…",
   "wc.note": "No sign-in needed. Your progress and results stay in this browser.",
+  "wc.photoCredit": "Photo {author} · {license}",
+  "wc.photos": "Photos are freely licensed Wikimedia Commons pictures, cropped and resized; author and license are under each photo. A shop's dish may look different.",
   "wc.pick": "Pick {dish}",
   "wc.progressAria": "Overall progress",
   "wc.restart": "Start over",

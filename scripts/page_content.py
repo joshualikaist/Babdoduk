@@ -272,7 +272,8 @@ def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
     """The world cup's dishes as a script block in worldcup.html: data/content/ is never deployed
     (.vercelignore), so the page carries them instead of fetching them."""
     data = load("worldcup") if data is None else data
-    payload = json.dumps({"basis": data["basis"], "dishes": data["dishes"]}, ensure_ascii=False)
+    payload = json.dumps({"basis": data["basis"], "dishes": data["dishes"], "photos": data.get("photos") or {}},
+                         ensure_ascii=False)
     return {"worldcup": [
         "<script>",
         "  // Written by scripts/sync_site_chrome.py from data/content/worldcup.json; edit that, not this.",
@@ -286,8 +287,17 @@ def worldcup_errors(root: Path = ROOT) -> list[str]:
     path = root / "data" / "content" / "worldcup.json"
     if not path.exists():
         return []
-    dishes = json.loads(path.read_text(encoding="utf-8")).get("dishes") or []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    dishes = data.get("dishes") or []
     errors = []
+    photos = data.get("photos") or {}
+    for dish in dishes:
+        photo = photos.get(dish)
+        if not photo:
+            errors.append(f"worldcup.json: {dish} has no photo")
+        elif not (root / str(photo.get("image") or "")).is_file():
+            errors.append(f"worldcup.json: {dish} shows {photo.get('image')}, which does not exist")
+    errors += [f"worldcup.json: a photo for {dish}, which is not in the bracket" for dish in photos if dish not in dishes]
     if len(dishes) < 4 or len(dishes) & (len(dishes) - 1):
         errors.append(f"worldcup.json: {len(dishes)} dishes do not make a bracket (4, 8, 16, 32 or 64)")
     if len(set(dishes)) != len(dishes):

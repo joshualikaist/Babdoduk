@@ -8,6 +8,7 @@
   var HISTORY = 10;
   // Flavour and texture tags, most telling first; a card shows at most two (score 4 or 5).
   var TAGS = ['spicy', 'crispy', 'soupy', 'sweet', 'chewy', 'rich', 'umami', 'sour', 'salty', 'soft'];
+  var cup = window.BABDODUK_WORLDCUP || {};
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var dishes = {};
   var set = [];
@@ -19,6 +20,7 @@
   var busy = false;
   var $ = function (id) { return document.getElementById(id); };
   var cards = [].slice.call(document.querySelectorAll('.wc-card'));
+  var credits = [].slice.call(document.querySelectorAll('.wc-slot .wc-credit a'));
 
   function lang() { return window.babdodukGetLang ? window.babdodukGetLang() : 'ko'; }
   function t(key, fallback) {
@@ -50,6 +52,24 @@
     });
     return TAGS.filter(function (k) { return scores[k] >= 4; }).slice(0, 2)
       .map(function (k) { return t('wc.tag.' + k, k); });
+  }
+  // A dish's photo (data/content/worldcup.json `photos`) and its credit link; a missing or broken
+  // file hides both rather than showing an empty frame.
+  function showPhoto(img, link, id) {
+    var photo = (cup.photos || {})[id];
+    var caption = link.parentNode;
+    img.hidden = caption.hidden = !photo;
+    if (!photo) { img.removeAttribute('src'); return; }
+    img.onerror = function () { img.hidden = caption.hidden = true; };
+    if (img.getAttribute('src') !== photo.image) img.src = photo.image;
+    link.href = photo.source;
+    link.textContent = fill(t('wc.photoCredit', '사진 {author} · {license}'), { author: photo.author, license: photo.license });
+  }
+  function preload(ids) {
+    ids.forEach(function (id) {
+      var photo = id && (cup.photos || {})[id];
+      if (photo) { var img = new Image(); img.src = photo.image; }
+    });
   }
   function roundName(size) {
     if (size === 2) return t('wc.round.final', '결승');
@@ -130,7 +150,10 @@
       tagLine.textContent = tags(id).join(' · ');
       tagLine.hidden = !tagLine.textContent;
       card.setAttribute('aria-label', fill(t('wc.pick', '{dish} 고르기'), { dish: name(id) }));
+      showPhoto(card.querySelector('.wc-photo'), credits[side], id);
     });
+    var next = game.winners.length * 2 + 2;
+    preload([game.entrants[next], game.entrants[next + 1]]);
     $('wcUndo').disabled = !game.stack.length;
     if (focus) cards[0].focus();
     if (focus !== null) announce(fill(t('wc.announce', '{round} {n}번째 경기: {a} 대 {b}'),
@@ -140,6 +163,8 @@
     $('wcWinner').textContent = name(result.id);
     $('wcWinnerSub').textContent = otherName(result.id);
     $('wcFinalist').textContent = fill(t('wc.finalist', '결승 상대: {dish}'), { dish: name(result.finalist) });
+    showPhoto($('wcWinnerImg'), $('wcWinnerCredit'), result.id);
+    $('wcWinnerFigure').hidden = $('wcWinnerImg').hidden;
     $('wcShareStatus').textContent = '';
     if (focus) {
       $('wcWinner').focus();
@@ -279,7 +304,6 @@
   $('wcHistoryClear').addEventListener('click', clearHistory);
   document.addEventListener('babdoduk-lang', render);
 
-  var cup = window.BABDODUK_WORLDCUP || {};
   getJson('data/foods/catalog.json').then(function (catalog) {
     return Promise.all((catalog.packs || []).map(function (pack) { return getJson(pack.src); })).then(function (packs) {
       packs.forEach(function (pack) { (pack.items || []).forEach(function (dish) { dishes[dish.id] = dish; }); });

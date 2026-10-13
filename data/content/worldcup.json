@@ -37,5 +37,229 @@
     "sea-pho",
     "sea-pad-thai",
     "in-butter-chicken"
-  ]
+  ],
+  "photos": {
+    "kr-bulgogi": {
+      "image": "images/worldcup/kr-bulgogi.jpg",
+      "author": "ayustety",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean.cuisine-Bulgogi-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-jeyuk": {
+      "image": "images/worldcup/kr-jeyuk.jpg",
+      "author": "대경라이프",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Jeyuk-bokkeum_4.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-kimchi-jjigae": {
+      "image": "images/worldcup/kr-kimchi-jjigae.jpg",
+      "author": "miyagawa",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_stew-Kimchi_jjigae-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-budae": {
+      "image": "images/worldcup/kr-budae.jpg",
+      "author": "T.Tseng",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Budae_jjigae_(28587380901).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-sundubu": {
+      "image": "images/worldcup/kr-sundubu.jpg",
+      "author": "avlxyz",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean.cuisine-Sundubu_jjigae-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-bibimbap": {
+      "image": "images/worldcup/kr-bibimbap.jpg",
+      "author": "abex (a flickr user)",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean.food-Bibimbap-02.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-kimchi-bokkeumbap": {
+      "image": "images/worldcup/kr-kimchi-bokkeumbap.jpg",
+      "author": "Sharon Ang",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Kimchi_fried_rice.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "kr-dakgalbi": {
+      "image": "images/worldcup/kr-dakgalbi.jpg",
+      "author": "Nagyman, a flickr user",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Dakgalbi.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-samgyeopsal": {
+      "image": "images/worldcup/kr-samgyeopsal.jpg",
+      "author": "ProjectManhattan",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Samgyeopsal_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-dwaeji-gukbap": {
+      "image": "images/worldcup/kr-dwaeji-gukbap.jpg",
+      "author": "Leefect",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:%EB%8F%BC%EC%A7%80%EA%B5%AD%EB%B0%A5.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-tteokbokki": {
+      "image": "images/worldcup/kr-tteokbokki.jpg",
+      "author": "Teemeah",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Tteokbokki_making_process_step_5.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-gimbap": {
+      "image": "images/worldcup/kr-gimbap.jpg",
+      "author": "Jordi Sanchez",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Gimbap_8.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-ramyeon": {
+      "image": "images/worldcup/kr-ramyeon.jpg",
+      "author": "대경라이프",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ramyeon_with_baechu-gimchi.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-naengmyeon": {
+      "image": "images/worldcup/kr-naengmyeon.jpg",
+      "author": "chomjong",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Mul-naengmyeon_1.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-fried-chicken": {
+      "image": "images/worldcup/kr-fried-chicken.jpg",
+      "author": "Startandstar",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_fried_chicken_juicy.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "kr-yangnyeom-chicken": {
+      "image": "images/worldcup/kr-yangnyeom-chicken.jpg",
+      "author": "Vee Satayamas",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Yangnyeom_chicken_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-jjajang": {
+      "image": "images/worldcup/kr-jjajang.jpg",
+      "author": "사랑",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Jajangmyeon_0.jpg"
+    },
+    "kr-jjamppong": {
+      "image": "images/worldcup/kr-jjamppong.jpg",
+      "author": "Jungyeon",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Jjamppong_(Korean_Chines_seafood_noodle_soup).jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "kr-tangsuyuk": {
+      "image": "images/worldcup/kr-tangsuyuk.jpg",
+      "author": "최광모",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Tangsuyuk.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "cn-mara-tang": {
+      "image": "images/worldcup/cn-mara-tang.jpg",
+      "author": "N509FZ",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Malatang_from_Hope_Tree_(20220226172344).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "cn-hotpot": {
+      "image": "images/worldcup/cn-hotpot.jpg",
+      "author": "Akira CA",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Yuanyang_Chongqing_Hotpot_Box_Hill.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "jp-tonkatsu": {
+      "image": "images/worldcup/jp-tonkatsu.jpg",
+      "author": "ayustety from Tokyo, Japan",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Tonkatsu_by_ayustety_in_Tokyo.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "jp-kare": {
+      "image": "images/worldcup/jp-kare.jpg",
+      "author": "Ocdp",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Beef_curry_rice_003.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "jp-sushi": {
+      "image": "images/worldcup/jp-sushi.jpg",
+      "author": "Yumi Kimura",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Various_sushi,_beautiful_October_night_at_midnight.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "jp-ramen": {
+      "image": "images/worldcup/jp-ramen.jpg",
+      "author": "Guilhem Vellut from Paris, France",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Tonkotsu_Ramen_Special,_Hakata_Choten,_Paris_001.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "it-pz-pepperoni": {
+      "image": "images/worldcup/it-pz-pepperoni.jpg",
+      "author": "Dale Cruse from San Francisco, CA, USA",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:All_Good_pizza_(38501728345).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "us-burger": {
+      "image": "images/worldcup/us-burger.jpg",
+      "author": "Renee Comet (photographer)",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Cheeseburger.jpg"
+    },
+    "it-carbonara": {
+      "image": "images/worldcup/it-carbonara.jpg",
+      "author": "gaku.",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Spaghetti_alla_carbonara_classica.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "us-steak": {
+      "image": "images/worldcup/us-steak.jpg",
+      "author": "Johann Jaritz",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ossiacher_Tauern_Rindfleischfest_Beef-Steak_13082006_04.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+    },
+    "sea-pho": {
+      "image": "images/worldcup/sea-pho.jpg",
+      "author": "Andy Li",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Pho_Bo_by_Banh_%26_Mee_in_Kirkgate_Market.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "sea-pad-thai": {
+      "image": "images/worldcup/sea-pad-thai.jpg",
+      "author": "Takeaway",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Phat_Thai_kung_Chang_Khien_street_stall.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "in-butter-chicken": {
+      "image": "images/worldcup/in-butter-chicken.jpg",
+      "author": "stu_spivack",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Chicken_makhani.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    }
+  }
 }
