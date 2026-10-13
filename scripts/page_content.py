@@ -15,6 +15,7 @@ from __future__ import annotations
 import html
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -95,6 +96,31 @@ def detail_sheet(details: dict, lang: str) -> list[str]:
     return rows + ["</div>"]
 
 
+def event_pictures(key: str, item: dict) -> list[str]:
+    """Two pictures side by side with VS between them (one alone has no VS), and their credit.
+    The pictures repeat the row's link for the eye only: the link below is the one to tab to."""
+    pictures = item.get("pictures")
+    if not pictures:
+        return []
+    images = [f'<img src="{attr(src)}" alt="" width="720" height="540" loading="lazy" decoding="async" />'
+              for src in pictures["images"]]
+    middle = '<span class="event-teaser-vs">VS</span>'.join(images) if len(images) == 2 else images[0]
+    href = attr(item["link"])
+    return [f'  <a class="event-teaser" href="{href}" tabindex="-1" aria-hidden="true">{middle}</a>',
+            f'  <p class="event-teaser-credit" data-i18n="event.{key}.credit">{text(pictures["credit"]["ko"])}</p>']
+
+
+def event_link(link: str) -> str:
+    """The original post opens in a new tab; a page of this site where people take part (an
+    activity like the menu world cup) opens in place."""
+    if link.startswith("https://"):
+        return (f'  <a class="event-link" href="{attr(link)}" target="_blank" rel="noopener noreferrer">'
+                '<span data-event-cta>당시 게시물</span> <span aria-hidden="true">↗</span>'
+                '<span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>')
+    return (f'  <a class="event-link" href="{attr(link)}" data-event-page>'
+            '<span data-event-cta>참여하기</span> <span aria-hidden="true">→</span></a>')
+
+
 def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
     data = load("events") if data is None else data
     rows: list[str] = []
@@ -108,9 +134,8 @@ def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
             f'  <p class="event-date">{date_range(item["start"], item["end"])}{place}</p>',
             f'  <h3 class="event-name" data-i18n="event.{key}.summary">{text(item["title"]["ko"])}</h3>',
             '  <p class="event-state" data-event-state hidden></p>',
-            f'  <a class="event-link" href="{attr(item["link"])}" target="_blank" rel="noopener noreferrer">'
-            '<span data-event-cta>당시 게시물</span> <span aria-hidden="true">↗</span>'
-            '<span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>',
+            *event_pictures(key, item),
+            event_link(item["link"]),
             '  <details class="event-more">',
             '    <summary data-i18n="event.more">자세히</summary>',
             '    <p class="event-note" data-event-note></p>',
@@ -136,6 +161,8 @@ def event_strings(data: dict | None = None) -> dict[str, dict[str, str]]:
             table[f"event.{key}.summary"] = item["title"][lang]
             if "place" in item:
                 table[f"event.{key}.place"] = item["place"][lang]
+            if "pictures" in item:
+                table[f"event.{key}.credit"] = item["pictures"]["credit"][lang]
             table[f"event.{key}.detail"] = "".join(detail_sheet(item["details"], lang))
         for key, item in notices(data):
             table[f"event.{key}.title"] = item["title"][lang]
@@ -235,6 +262,12 @@ def content_errors(root: Path = ROOT) -> list[str]:
             name = (item.get("title") or {}).get("ko")
             if str(item.get("end")) < str(item.get("start")):
                 errors.append(f"events.json: {name} ends before it starts")
+            for image in (item.get("pictures") or {}).get("images") or []:
+                if not (root / image).is_file():
+                    errors.append(f"events.json: {name} shows {image}, which does not exist")
+            link = str(item.get("link") or "")
+            if not link.startswith("https://") and not (root / link).is_file():
+                errors.append(f"events.json: {name} links {link}, which is not a page of this site")
             for field, pair in (item.get("details") or {}).items():
                 for lang, value in (pair or {}).items():
                     bare = INLINE_MARKUP.sub("", str(value))
@@ -252,4 +285,73 @@ def content_errors(root: Path = ROOT) -> list[str]:
             image = (item.get("picture") or {}).get("image")
             if image and not (root / image).is_file():
                 errors.append(f"history.json: {item.get('date')} shows {image}, which does not exist")
+    errors += worldcup_errors(root)
     return errors
+
+
+def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
+    """The world cup's dishes as a script block in worldcup.html: data/content/ is never deployed
+    (.vercelignore), so the page carries them instead of fetching them."""
+    data = load("worldcup") if data is None else data
+    payload = json.dumps({"size": data.get("size", len(data["dishes"])), "basis": data["basis"],
+                          "dishes": data["dishes"], "photos": data.get("photos") or {}},
+                         ensure_ascii=False)
+    return {"worldcup": [
+        "<script>",
+        "  // Written by scripts/sync_site_chrome.py from data/content/worldcup.json; edit that, not this.",
+        "  window.BABDODUK_WORLDCUP = " + payload.replace("<", "\\u003c") + ";",
+        "</script>",
+    ]}
+
+
+def worldcup_errors(root: Path = ROOT) -> list[str]:
+    """data/content/worldcup.json: a pool of catalog dishes, each with a photo, at least as large as a
+    game (`size`, a power of two)."""
+    path = root / "data" / "content" / "worldcup.json"
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    dishes = data.get("dishes") or []
+    errors = []
+    photos = data.get("photos") or {}
+    for dish in dishes:
+        photo = photos.get(dish)
+        if not photo:
+            errors.append(f"worldcup.json: {dish} has no photo")
+        elif not (root / str(photo.get("image") or "")).is_file():
+            errors.append(f"worldcup.json: {dish} shows {photo.get('image')}, which does not exist")
+    errors += [f"worldcup.json: a photo for {dish}, which is not in the bracket" for dish in photos if dish not in dishes]
+    size = data.get("size", len(dishes))
+    if size < 4 or size & (size - 1) or len(dishes) < size:
+        errors.append(f"worldcup.json: a game of {size} from {len(dishes)} dishes is not a bracket")
+    if len(set(dishes)) != len(dishes):
+        errors.append("worldcup.json: a dish is listed twice")
+    catalog_path = root / "data" / "foods" / "catalog.json"
+    if catalog_path.exists():
+        names = {}
+        for pack in json.loads(catalog_path.read_text(encoding="utf-8")).get("packs") or []:
+            pack_path = root / str(pack.get("src") or "")
+            if pack_path.is_file():
+                names |= {item.get("id"): item.get("nameKo") or "" for item in json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []}
+        errors += [f"worldcup.json: {dish} is not a catalog dish" for dish in dishes if dish not in names]
+        families = Counter(same_dish(dish, names[dish]) for dish in dishes if dish in names)
+        errors += [f"worldcup.json: {count} dishes are {family}; at most {SAME_DISH_LIMIT} of the same dish"
+                   for family, count in families.items() if count > SAME_DISH_LIMIT]
+    return errors
+
+
+# The owner's variety rule (2026-10-13): at most five variants of the same dish in the pool. A dish
+# whose Korean name contains one of these words is that dish (the longest match wins: 볶음밥, not 밥).
+SAME_DISH_LIMIT = 5
+SAME_DISH = ("김밥", "치킨", "떡볶이", "라볶이", "라면", "피자", "버거", "초밥", "스시", "우동", "만두", "볶음밥", "국밥",
+             "파스타", "샐러드", "케이크", "샌드위치", "카레", "커리", "냉면", "쌀국수", "짬뽕", "짜장", "탕수육", "돈까스",
+             "카츠", "와플", "토스트", "마라", "컵밥", "덮밥", "비빔밥", "정식", "세트", "도시락", "찌개", "전골", "국수",
+             "꼬치", "롤", "빙수", "타코", "부리또", "케밥", "스테이크", "리조또", "그라탕", "튀김", "덴뿌라", "말이",
+             "볶음면", "소바", "라멘")
+
+
+def same_dish(dish: str, name_ko: str) -> str:
+    """The family a pool dish counts against: a SAME_DISH word in its Korean name, else the dish itself."""
+    name = name_ko.replace(" ", "")
+    hits = [word for word in SAME_DISH if word in name]
+    return max(hits, key=len) if hits else dish

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/content-worldcup.schema.json",
+  "title": "Menu world cup: data/content/worldcup.json",
+  "description": "Written by a person: the dishes of worldcup.html, by catalog id (data/foods/). The page shuffles them into a bracket; names and flavours come from the catalog. validate_content.py checks what a schema cannot: every id is a catalog dish and the count is a power of two.",
+  "type": "object",
+  "required": ["schemaVersion", "size", "basis", "dishes", "photos"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "size": {"description": "Dishes per game, drawn at random from `dishes` (the pool).", "enum": [4, 8, 16, 32, 64]},
+    "basis": {
+      "description": "One plain sentence per language: how the dishes were chosen.",
+      "type": "object",
+      "required": ["ko", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "ko": {"type": "string", "minLength": 1},
+        "en": {"type": "string", "minLength": 1}
+      }
+    },
+    "photos": {
+      "description": "One photo per dish, a freely licensed file from Wikimedia Commons, cropped and resized into images/worldcup/. The page shows author and license under each photo.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["image", "author", "license", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "image": {"type": "string", "pattern": "^images/worldcup/[a-z0-9-]+[.]jpg$"},
+          "author": {"type": "string", "minLength": 1, "maxLength": 120},
+          "license": {"enum": ["CC0", "Public domain", "CC BY 2.0", "CC BY 2.5", "CC BY 3.0", "CC BY 4.0",
+                               "CC BY-SA 2.0", "CC BY-SA 2.5", "CC BY-SA 3.0", "CC BY-SA 4.0",
+                               "CC BY 2.0 kr", "CC BY-SA 2.0 kr"]},
+          "licenseUrl": {"type": "string", "pattern": "^https://creativecommons[.]org/"},
+          "source": {"type": "string", "pattern": "^https://commons[.]wikimedia[.]org/wiki/File:"}
+        }
+      }
+    },
+    "dishes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 1024,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"}
+    }
+  }
+}

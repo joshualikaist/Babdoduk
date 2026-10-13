@@ -61,6 +61,44 @@
           "en": "<strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions are in the original post."
         }
       }
+    },
+    {
+      "start": "2026-10-13",
+      "end": "2026-10-30",
+      "confirmation": "announced",
+      "link": "worldcup.html",
+      "title": {
+        "ko": "먹방 월드컵 32강",
+        "en": "Food World Cup: round of 32"
+      },
+      "details": {
+        "summary": {
+          "ko": "700개가 넘는 메뉴 중 32개가 맞붙어요. 치킨이냐 피자냐, 나의 최애는?",
+          "en": "32 of more than 700 dishes face off. Chicken or pizza? Find your favorite."
+        },
+        "duration": {
+          "ko": "2026년 10월 13일(화) ~ 2026년 10월 30일(금)",
+          "en": "Tuesday, October 13 through Friday, October 30, 2026."
+        },
+        "prizes": {
+          "ko": "<strong>경품 없음</strong>",
+          "en": "<strong>No prizes</strong>"
+        },
+        "participation": {
+          "ko": "로그인 없이 바로 시작해요.",
+          "en": "No sign-in needed."
+        }
+      },
+      "pictures": {
+        "images": [
+          "images/worldcup/kr-fried-chicken.jpg",
+          "images/worldcup/it-pz-pepperoni.jpg"
+        ],
+        "credit": {
+          "ko": "사진 Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), 위키미디어 공용",
+          "en": "Photos Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), Wikimedia Commons"
+        }
+      }
     }
   ]
 }

@@ -123,10 +123,10 @@ def inspect_page(page, name, size, screenshot_dir=None):
         check(metrics["viewportGutter"] == 16, ("visible Windows scrollbar gutter", metrics))
 
     direct = page.locator(".nav-mega-row > .site-nav-direct")
-    check(direct.count() == 2, "two direct destinations in navigation")
-    check(direct.nth(0).get_attribute("href") == "ggongbab.html"
-          and direct.nth(1).get_attribute("href") == "mukbang.html",
-          "today's food and the magazine (which carries the picker) are the direct destinations")
+    check(direct.count() == 3, "three direct destinations in navigation")
+    check([direct.nth(i).get_attribute("href") for i in range(3)] == ["ggongbab.html", "mukbang.html", "event.html"],
+          "today's food, the magazine (which carries the picker) and the news are the direct destinations "
+          "(owner, 2026-10-13: news left the More menu)")
     check(not page.locator('.site-nav a[href="mukbang.html#what"], .site-nav a[href="choose.html"]').count(),
           "the picker is not presented as a separate product in navigation")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
@@ -794,11 +794,21 @@ def event_bands(page):
       return {start:r.dataset.start, end:r.dataset.end, band:r.dataset.band, conf:r.dataset.confirmation,
         list:r.parentElement.id, chip:state.textContent, chipShown:!state.hidden, title:r.querySelector('.event-name').textContent,
         cta:r.querySelector('[data-event-cta]').textContent, linkBand:r.querySelector('.event-link').dataset.band,
+        onSite:r.querySelector('.event-link').hasAttribute('data-event-page'),
         open:r.querySelector('details.event-more').open}; })"""
+
+    def cta(row, lang="ko"):
+        """An original post is a record once past; an activity on a page of this site opens it."""
+        words = {"ko": (("지금 해보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
+                 "en": (("Play now", "Open the page"), ("View post", "Original post"))}[lang]
+        return words[0 if row["onSite"] else 1][row["band"] == "past"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
-    check(len(rows) == 2, ("two authored activities", rows))
+    check(len(rows) == 3, ("three authored activities", rows))
+    check([row["title"] for row in rows if row["onSite"]] == ["먹방 월드컵 32강"]
+          and page.locator(".event-link[data-event-page][target]").count() == 0,
+          ("the menu world cup opens its page in place", rows))
     check("STROKE" not in page.content() and "언빌리버블" not in page.content(),
           "an event that did not happen is not presented")
     for row in rows:
@@ -814,7 +824,7 @@ def event_bands(page):
         else:
             check(row["chip"].startswith(labels[row["band"]]), ("current rows name their band", row))
         check(not row["open"], ("details stay folded by default", row))
-        check(row["linkBand"] == row["band"] and row["cta"] == ("당시 게시물" if row["band"] == "past" else "게시물 보기"),
+        check(row["linkBand"] == row["band"] and row["cta"] == cta(row),
               ("a past link opens the original post as a record; a live link is an action", row))
     check(page.locator(".event-num, .page-num").count() == 0, "event page has no decorative numbers")
     check(page.locator(".event-elsewhere").count() == 0, "the title row does not compete with a hub cross-link")
@@ -840,15 +850,15 @@ def event_bands(page):
     participation("당시 안내 · 지금은 참여할 수 없어요")
     check(page.locator(".event-elsewhere").count() == 0, "free food stays in navigation, not in the news title")
     # Full context is one keyboard action away.
-    summary = page.locator(".event-item details.event-more summary").nth(1)
-    summary.focus()
+    tentative = page.locator('.event-item[data-confirmation="tentative"]')
+    tentative.locator("details.event-more summary").focus()
     page.keyboard.press("Enter")
-    note = page.locator(".event-item").nth(1).locator("[data-event-note]")
-    check(page.locator(".event-item details.event-more").nth(1).evaluate("d => d.open") and note.is_visible()
+    note = tentative.locator("[data-event-note]")
+    check(tentative.locator("details.event-more").evaluate("d => d.open") and note.is_visible()
           and "진행 여부" in note.inner_text(), ("자세히 opens the full state explanation", note.inner_text()))
     page.locator("#langToggle").click()
     english = page.locator("[data-event-cta]").all_text_contents()
-    check(english == ["Original post" if row["band"] == "past" else "View post" for row in rows],
+    check(english == [cta(row, "en") for row in rows],
           ("English CTA follows the band", english))
     participation("Original instructions · no longer open")
     page.locator("#langToggle").click()
@@ -871,8 +881,8 @@ def event_bands(page):
     page.route("**/event.html", lambda route: route.fulfill(content_type="text/html", body=source))
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
-    upcoming = [row for row in rows if row["list"] == "eventUpcoming"]
-    check(len(upcoming) == 1 and "카빙" in upcoming[0]["title"]
+    upcoming = [row for row in rows if row["list"] == "eventUpcoming" and "카빙" in row["title"]]
+    check(len(upcoming) == 1
           and upcoming[0]["chip"].startswith("예정") and "미확정" in upcoming[0]["chip"],
           ("the scheduled, unconfirmed row leads under 지금", upcoming))
     check(upcoming[0]["cta"] == "게시물 보기" and upcoming[0]["linkBand"] == "upcoming"
@@ -882,6 +892,60 @@ def event_bands(page):
           "empty state hidden when something is scheduled")
     check(page.locator("#eventList .event-num").count() == 0, "the record has no row numbers")
     page.unroute("**/event.html")
+    return count
+
+
+def worldcup_play(page):
+    """The menu world cup (worldcup.html): a whole bracket by keyboard, one undo, the winner kept
+    only in this browser. The context runs with reduced motion, so each pick renders at once."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    dishes, size = cup["dishes"], cup["size"]
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.reload(wait_until="networkidle")
+    page.locator("#wcStart").click()
+    check(page.locator("#wcRound").inner_text() == "32강" and page.locator("#wcCount").inner_text() == "1 / 16"
+          and page.evaluate("document.activeElement.classList.contains('wc-card')"), "the first match has focus on a card")
+    first = page.locator(".wc-card").first.get_attribute("data-id")
+    page.keyboard.press("Enter")
+    check(page.locator("#wcCount").inner_text() == "2 / 16", "a pick moves to the next match")
+    page.locator("#wcUndo").click()
+    check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcCount").inner_text() == "1 / 16",
+          "undo returns to the same match")
+    check(page.locator("#wcUndo").is_disabled(), "nothing to undo on the first match of a fresh game")
+    # 처음부터 draws a new bracket, and 되돌리기 takes it back (owner 2026-10-13: no confirm step).
+    page.locator(".wc-card").first.focus()
+    page.keyboard.press("Enter")
+    second = [page.locator(".wc-card").nth(i).get_attribute("data-id") for i in (0, 1)]
+    page.locator("#wcRestart").click()
+    check(page.locator("#wcCount").inner_text() == "1 / 16" and page.locator("#wcUndo").is_enabled(),
+          "a restart draws a new bracket that undo can take back")
+    page.locator(".wc-card").first.focus()
+    page.keyboard.press("Enter")
+    page.locator("#wcUndo").click()
+    page.locator("#wcUndo").click()
+    check([page.locator(".wc-card").nth(i).get_attribute("data-id") for i in (0, 1)] == second
+          and page.locator("#wcCount").inner_text() == "2 / 16", "undo after a restart brings the earlier bracket back")
+    page.locator("#wcUndo").click()
+    check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcUndo").is_disabled(),
+          "and on to its first match, with nothing left to undo")
+    for _ in range(size - 1):
+        page.locator(".wc-card").first.focus()
+        page.keyboard.press("Enter")
+    check(page.locator("#wcResult").is_visible() and page.evaluate("document.activeElement.id") == "wcWinner",
+          "after the final the winner is shown and focused")
+    saved = page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup'))")
+    check(saved["game"] is None and len(saved["winners"]) == 1 and saved["winners"][0]["id"] in dishes,
+          ("the winner is kept in this browser only", saved["winners"]))
+    check(page.locator("#wcHistoryList li").count() == 1, "the past winner is listed")
     return count
 
 
@@ -1036,8 +1100,8 @@ def structure_and_failures(page):
 # choose.html is a redirect to mukbang.html#what and food.html is lab-only, so neither is a guarded public page.
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
-NAV_DIRECT = ["ggongbab.html", "mukbang.html"]
-NAV_MORE = ["event.html", "history.html",
+NAV_DIRECT = ["ggongbab.html", "mukbang.html", "event.html"]
+NAV_MORE = ["history.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
 FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
@@ -1311,6 +1375,7 @@ def run_checks(screenshots=False):
         report["checks"] += home_summary(page)
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
+        report["checks"] += worldcup_play(page)
         report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)

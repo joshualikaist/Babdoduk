@@ -50,9 +50,10 @@
 |------|----|
 | `start`, `end` | `YYYY-MM-DD` (KST). 하루 행사면 같은 날을 씁니다 |
 | `confirmation` | `announced` · `tentative` · `held` · `cancelled` (아래 “날짜 구간과 확인 상태”) |
-| `link` | 당시 게시물 주소(`https://`) |
+| `link` | 당시 게시물 주소(`https://`, 새 창). 이 사이트 안에서 하는 활동이면 그 페이지 이름(`worldcup.html`, 같은 창, 버튼 “참여하기”/지난 뒤 “페이지 보기”). 페이지가 없으면 검사가 실패합니다 |
 | `title` | 제목. “(예정)”을 붙이지 않습니다 |
 | `place` | 선택. 장소는 제목에 섞지 않고 여기에 둡니다 |
+| `pictures` | 선택. 실제 사진 1~2장(`images/` 안)과 출처(`credit`, 한·영). 두 장이면 가운데 VS. 자리표시 그림은 넣지 않습니다 |
 | `details` | 네 줄(`summary` 필수, `duration`·`prizes`·`participation` 선택) **또는** `note` 한 블록 |
 
 - 모든 글은 `ko` 와 `en` 을 함께 씁니다. 한쪽만 있으면 계약 검사가 실패합니다.

@@ -1,0 +1,711 @@
+/* 먹방 월드컵 (worldcup.html): two dish cards at a time, each with its name, other-language name, up
+   to two flavour tags and a credited free photo, a thin progress line, then the winner. */
+*, *::before, *::after { margin: 0; padding: 0; }
+
+.wc-page {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 16px var(--space-12);
+}
+
+.wc-back {
+  margin-bottom: var(--space-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wc-back a {
+  color: var(--color-ink-muted);
+  text-decoration: none;
+}
+
+.wc-back a:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+.wc-stage {
+  margin-top: var(--space-8);
+}
+
+.wc-view[hidden],
+.wc-photo[hidden],
+.wc-credit[hidden],
+.wc-winner-photo[hidden],
+.wc-history[hidden],
+.wc-error[hidden],
+.wc-card-tags[hidden],
+.wc-btn[hidden],
+#wcLoadingText[hidden] {
+  display: none;
+}
+
+.wc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.wc-loading,
+.wc-intro,
+.wc-result {
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+}
+
+.wc-loading {
+  color: var(--color-ink-muted);
+}
+
+.wc-error {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.wc-basis {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--color-ink);
+  overflow-wrap: break-word;
+}
+
+.wc-note {
+  margin-top: var(--space-4);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+}
+
+.wc-note + .wc-note {
+  margin-top: var(--space-1);
+}
+
+.wc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.wc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wc-btn--main {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: #fffdf8;
+}
+
+.wc-btn:hover {
+  border-color: var(--color-ink);
+}
+
+.wc-btn--main:hover {
+  background: #36332d;
+}
+
+.wc-btn:focus-visible,
+.wc-card:focus-visible,
+.wc-text:focus-visible,
+.wc-tool:focus-visible,
+.wc-back a:focus-visible,
+.wc-winner:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* A match: round, count and a thin line for the whole bracket, then the two cards. */
+.wc-match {
+  scroll-margin-top: calc(var(--nav-h) + 12px);
+}
+
+.wc-progress {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.wc-round {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.wc-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.wc-track {
+  height: 4px;
+  margin-top: var(--space-3);
+  border-radius: 999px;
+  background: var(--color-divider);
+  overflow: hidden;
+}
+
+.wc-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 200ms ease;
+}
+
+/* Both cards share the first row (so they are always the same height and their photos line up)
+   and both credits the second, however long a credit is. */
+.wc-pair {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.wc-slot {
+  display: contents;
+}
+
+.wc-slot .wc-card { grid-row: 1; }
+.wc-slot .wc-credit { grid-row: 2; }
+.wc-slot:first-child > * { grid-column: 1; }
+.wc-slot:last-child > * { grid-column: 3; }
+
+.wc-vs {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* The photo sits under the words (owner, 2026-10-13); 4:3 crops, cover keeps any stray size tidy. */
+.wc-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin-top: auto;          /* words at the top, photos level across the two cards */
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--color-surface-muted);
+}
+
+.wc-credit {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-ink-muted);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.wc-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wc-winner-photo {
+  max-width: 420px;
+  margin: var(--space-4) auto 0;
+}
+
+.wc-winner-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.wc-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 220px;
+  padding: var(--space-4);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 150ms ease, transform 150ms ease, background-color 150ms ease;
+}
+
+.wc-card:hover {
+  border-color: var(--color-ink);
+  transform: translateY(-2px);
+}
+
+.wc-card.is-picked {
+  border-color: var(--color-accent);
+  background: var(--color-accent-wash);
+}
+
+.wc-card-name {
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.wc-card-sub {
+  font-size: 14px;
+  color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.wc-card-tags {
+  margin-top: var(--space-1);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.wc-vs {
+  align-self: center;
+  justify-self: center;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-muted);
+}
+
+.wc-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* Undo and restart under the match: a line icon and a bold short label on a 12px control (owner
+   2026-10-13: fewer words, livelier lettering than a plain underline). 되돌리기 steps back one pick,
+   or takes back a restart, and is used often: the warm one, accent-wash fill and an accent arrow.
+   처음부터 draws a new bracket: quieter (outline, muted label) and on the far side, so a slip is less
+   likely, and 되돌리기 still brings the old bracket back. Never red: nothing here is final. */
+.wc-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 1px solid transparent;         /* transparent, so forced colours still draw the edge */
+  border-radius: 12px;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wc-tool-icon {
+  display: block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.wc-tool--undo {
+  background: var(--color-accent-wash);
+}
+
+.wc-tool--undo .wc-tool-icon {
+  color: var(--color-accent);
+}
+
+.wc-tool--restart {
+  margin-inline-start: auto;             /* far right, and still right when the row wraps */
+  border-color: var(--color-divider);
+  color: var(--color-ink-muted);
+}
+
+/* Hover only with a real pointer, so a tap never leaves a sticky hover. The tints are the tokens
+   at low alpha (accent #b43d27, ink #1e1d1a), as at .wc-card.is-picked. */
+@media (hover: hover) and (pointer: fine) {
+  .wc-tool--undo:hover:not(:disabled) {
+    background: rgba(180, 61, 39, 0.14);
+  }
+
+  .wc-tool--restart:hover:not(:disabled) {
+    background: rgba(30, 29, 26, 0.06);
+    color: var(--color-ink);
+  }
+}
+
+/* Press, for touch and mouse alike; after the hover rules, so it also shows under the pointer. */
+.wc-tool--undo:active:not(:disabled) {
+  background: rgba(180, 61, 39, 0.2);
+}
+
+.wc-tool--restart:active:not(:disabled) {
+  background: rgba(30, 29, 26, 0.1);
+  color: var(--color-ink);
+}
+
+/* First match of a fresh game: nothing to take back. Faded, muted and without the fill, so the
+   state is not opacity alone. */
+.wc-tool:disabled {
+  background: none;
+  color: var(--color-ink-muted);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.wc-tool:disabled .wc-tool-icon {
+  color: inherit;
+}
+
+/* Motion only for people who have not asked for less: a quick tint, a small press, the undo arrow
+   leans back and the restart arrows turn half a circle (the glyph lands on itself). */
+@media (prefers-reduced-motion: no-preference) {
+  .wc-tool {
+    transition: background-color var(--ease), color var(--ease), transform var(--ease);
+  }
+
+  .wc-tool-icon {
+    transition: transform var(--ease);
+  }
+
+  .wc-tool:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .wc-tool--undo:hover:not(:disabled) .wc-tool-icon {
+    transform: translateX(-2px);
+  }
+
+  .wc-tool--restart:hover:not(:disabled) .wc-tool-icon {
+    transform: rotate(180deg);
+  }
+}
+
+/* High contrast: system colours only (the accent arrow follows the label). */
+@media (forced-colors: active) {
+  .wc-tool .wc-tool-icon {
+    color: inherit;
+  }
+
+  .wc-tool:disabled {
+    opacity: 1;
+    color: GrayText;
+  }
+}
+
+/* 기록 지우기 under the past winners stays a quiet underlined text button. */
+.wc-text {
+  min-height: 44px;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.wc-text:hover:not(:disabled) {
+  color: var(--color-ink);
+}
+
+.wc-text:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* The winner */
+.wc-result {
+  text-align: center;
+}
+
+.wc-result .wc-actions {
+  justify-content: center;
+}
+
+.wc-result-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--color-accent);
+}
+
+.wc-winner {
+  margin-top: var(--space-3);
+  font-size: clamp(36px, 7vw, 56px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.wc-winner-sub {
+  margin-top: var(--space-2);
+  font-size: 16px;
+  color: var(--color-ink-muted);
+}
+
+.wc-finalist {
+  margin-top: var(--space-4);
+  font-size: 14px;
+  color: var(--color-ink-muted);
+}
+
+.wc-share-status {
+  min-height: 1.5em;
+  margin-top: var(--space-3);
+  font-size: 14px;
+  color: var(--color-ink-muted);
+}
+
+.wc-history {
+  margin-top: var(--space-8);
+}
+
+.wc-history h3 {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.wc-history-list {
+  list-style: none;
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+}
+
+.wc-history-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-divider);
+  font-size: 15px;
+}
+
+.wc-history-list time {
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* One footnote line that splits evenly at the middle dot rather than leaving a lone word. */
+.wc-scope {
+  margin-top: var(--space-8);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+/* Pick feedback: the chosen card pops with a check, the other steps back. */
+.wc-card {
+  position: relative;
+}
+
+.wc-card.is-picked {
+  border-color: var(--color-accent);
+  background: var(--color-accent-wash);
+  box-shadow: 0 0 0 3px var(--color-accent-wash), 0 12px 28px rgba(180, 61, 39, 0.18);
+  transform: scale(1.03);
+}
+
+.wc-card.is-picked::after {
+  content: "✓";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fffdf8;
+  font-size: 18px;
+  font-weight: 900;
+  animation: wc-stamp 260ms ease-out;
+}
+
+.wc-card.is-dropped {
+  opacity: 0.35;
+  filter: grayscale(0.6);
+  transform: scale(0.96);
+}
+
+/* A new round: a banner in the middle of the screen for about a second. */
+.wc-banner {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  z-index: 40;
+  padding: 18px 34px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fffdf8;
+  font-size: clamp(26px, 6vw, 40px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.wc-banner[hidden] {
+  display: none;
+}
+
+.wc-banner.is-on {
+  animation: wc-banner 1100ms ease-out both;
+}
+
+.wc-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.wc-result.is-celebrating .wc-winner,
+.wc-result.is-celebrating .wc-winner-photo img {
+  animation: wc-pop 650ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes wc-stamp {
+  from { transform: scale(0.2) rotate(-30deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes wc-banner {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  18% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+@keyframes wc-pop {
+  from { transform: scale(0.85); opacity: 0.2; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 560px) {
+  .wc-loading,
+  .wc-intro,
+  .wc-result {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  /* Phone: the two dishes stay side by side, square photos, VS between them. */
+  .wc-pair {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .wc-slot:last-child > * { grid-column: 2; }
+
+  .wc-vs {
+    grid-column: auto;
+    grid-row: auto;
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    padding: 6px 8px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fffdf8;
+    font-size: 11px;
+  }
+
+  .wc-card {
+    min-height: 0;
+    padding: var(--space-3) var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .wc-card-name {
+    font-size: 19px;
+  }
+
+  .wc-card-sub,
+  .wc-card-tags {
+    font-size: 12px;
+  }
+
+  .wc-photo {
+    aspect-ratio: 1 / 1;
+  }
+
+  .wc-actions .wc-btn {
+    flex: 1 1 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wc-card,
+  .wc-track span {
+    transition: none;
+  }
+
+  .wc-card.is-picked,
+  .wc-card.is-dropped {
+    transform: none;
+  }
+
+  .wc-card.is-picked::after,
+  .wc-banner.is-on,
+  .wc-result.is-celebrating .wc-winner,
+  .wc-result.is-celebrating .wc-winner-photo img {
+    animation: none;
+  }
+
+  .wc-card:hover {
+    transform: none;
+  }
+}

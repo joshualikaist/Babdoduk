@@ -30,6 +30,18 @@ def test_lab_only_experiments_answer_404_on_every_host_but_the_lab():
         assert not pattern.fullmatch("/" + path), path
 
 
+def test_nothing_the_site_fetches_is_left_out_of_the_deployment():
+    """.vercelignore keeps code, docs and data/content/ out of the deployment: no page or script may
+    fetch a path under them (a page that did would fail only once deployed)."""
+    ignored = [line.strip().rstrip("/") for line in (ROOT / ".vercelignore").read_text(encoding="utf-8").splitlines()
+               if line.strip() and not line.startswith("#") and "*" not in line]
+    sources = sorted(ROOT.glob("*.html")) + sorted((ROOT / "js").glob("*.js"))
+    for source in sources:
+        text = source.read_text(encoding="utf-8")
+        for path in re.findall(r"""(?:fetch|getJson|getJSON)\(\s*['"]([^'"]+)['"]""", text):
+            assert not any(path == p or path.startswith(p + "/") for p in ignored), (source.name, path)
+
+
 def test_no_product_page_links_a_lab_only_experiment():
     lab_pages = {name for name in LAB_ONLY if name.endswith(".html")}
     for page in sorted(ROOT.glob("*.html")):
