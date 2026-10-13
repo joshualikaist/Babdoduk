@@ -95,6 +95,20 @@ def detail_sheet(details: dict, lang: str) -> list[str]:
     return rows + ["</div>"]
 
 
+def event_pictures(key: str, item: dict) -> list[str]:
+    """Two pictures side by side with VS between them (one alone has no VS), and their credit.
+    The pictures repeat the row's link for the eye only: the link below is the one to tab to."""
+    pictures = item.get("pictures")
+    if not pictures:
+        return []
+    images = [f'<img src="{attr(src)}" alt="" width="720" height="540" loading="lazy" decoding="async" />'
+              for src in pictures["images"]]
+    middle = '<span class="event-teaser-vs">VS</span>'.join(images) if len(images) == 2 else images[0]
+    href = attr(item["link"])
+    return [f'  <a class="event-teaser" href="{href}" tabindex="-1" aria-hidden="true">{middle}</a>',
+            f'  <p class="event-teaser-credit" data-i18n="event.{key}.credit">{text(pictures["credit"]["ko"])}</p>']
+
+
 def event_link(link: str) -> str:
     """The original post opens in a new tab; a page of this site where people take part (an
     activity like the menu world cup) opens in place."""
@@ -119,6 +133,7 @@ def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
             f'  <p class="event-date">{date_range(item["start"], item["end"])}{place}</p>',
             f'  <h3 class="event-name" data-i18n="event.{key}.summary">{text(item["title"]["ko"])}</h3>',
             '  <p class="event-state" data-event-state hidden></p>',
+            *event_pictures(key, item),
             event_link(item["link"]),
             '  <details class="event-more">',
             '    <summary data-i18n="event.more">자세히</summary>',
@@ -145,6 +160,8 @@ def event_strings(data: dict | None = None) -> dict[str, dict[str, str]]:
             table[f"event.{key}.summary"] = item["title"][lang]
             if "place" in item:
                 table[f"event.{key}.place"] = item["place"][lang]
+            if "pictures" in item:
+                table[f"event.{key}.credit"] = item["pictures"]["credit"][lang]
             table[f"event.{key}.detail"] = "".join(detail_sheet(item["details"], lang))
         for key, item in notices(data):
             table[f"event.{key}.title"] = item["title"][lang]
@@ -244,6 +261,9 @@ def content_errors(root: Path = ROOT) -> list[str]:
             name = (item.get("title") or {}).get("ko")
             if str(item.get("end")) < str(item.get("start")):
                 errors.append(f"events.json: {name} ends before it starts")
+            for image in (item.get("pictures") or {}).get("images") or []:
+                if not (root / image).is_file():
+                    errors.append(f"events.json: {name} shows {image}, which does not exist")
             link = str(item.get("link") or "")
             if not link.startswith("https://") and not (root / link).is_file():
                 errors.append(f"events.json: {name} links {link}, which is not a page of this site")
@@ -272,7 +292,8 @@ def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
     """The world cup's dishes as a script block in worldcup.html: data/content/ is never deployed
     (.vercelignore), so the page carries them instead of fetching them."""
     data = load("worldcup") if data is None else data
-    payload = json.dumps({"basis": data["basis"], "dishes": data["dishes"], "photos": data.get("photos") or {}},
+    payload = json.dumps({"size": data.get("size", len(data["dishes"])), "basis": data["basis"],
+                          "dishes": data["dishes"], "photos": data.get("photos") or {}},
                          ensure_ascii=False)
     return {"worldcup": [
         "<script>",
@@ -283,7 +304,8 @@ def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
 
 
 def worldcup_errors(root: Path = ROOT) -> list[str]:
-    """data/content/worldcup.json: a bracket (a power of two) of catalog dishes."""
+    """data/content/worldcup.json: a pool of catalog dishes, each with a photo, at least as large as a
+    game (`size`, a power of two)."""
     path = root / "data" / "content" / "worldcup.json"
     if not path.exists():
         return []
@@ -298,8 +320,9 @@ def worldcup_errors(root: Path = ROOT) -> list[str]:
         elif not (root / str(photo.get("image") or "")).is_file():
             errors.append(f"worldcup.json: {dish} shows {photo.get('image')}, which does not exist")
     errors += [f"worldcup.json: a photo for {dish}, which is not in the bracket" for dish in photos if dish not in dishes]
-    if len(dishes) < 4 or len(dishes) & (len(dishes) - 1):
-        errors.append(f"worldcup.json: {len(dishes)} dishes do not make a bracket (4, 8, 16, 32 or 64)")
+    size = data.get("size", len(dishes))
+    if size < 4 or size & (size - 1) or len(dishes) < size:
+        errors.append(f"worldcup.json: a game of {size} from {len(dishes)} dishes is not a bracket")
     if len(set(dishes)) != len(dishes):
         errors.append("worldcup.json: a dish is listed twice")
     catalog_path = root / "data" / "foods" / "catalog.json"

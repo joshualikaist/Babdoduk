@@ -12,9 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 CUP = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
 
 
-def test_the_bracket_is_32_distinct_catalog_dishes():
-    assert len(CUP["dishes"]) == 32 and len(set(CUP["dishes"])) == 32
+def test_each_game_draws_32_from_a_pool_of_distinct_catalog_dishes():
+    assert CUP["size"] == 32 and len(CUP["dishes"]) >= 32 and len(set(CUP["dishes"])) == len(CUP["dishes"])
     assert page_content.worldcup_errors(ROOT) == []
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    assert "shuffle(set).slice(0, size)" in script            # a fresh draw from the pool each game
 
 
 def test_a_broken_bracket_is_refused(tmp_path):
@@ -27,13 +29,14 @@ def test_a_broken_bracket_is_refused(tmp_path):
         return page_content.worldcup_errors(tmp_path)
 
     assert errors(CUP["dishes"]) == []
-    assert any("bracket" in e for e in errors(CUP["dishes"][:31]))
+    assert any("not a bracket" in e for e in errors(CUP["dishes"][:31]))           # fewer dishes than a game
     assert any("twice" in e for e in errors(CUP["dishes"][:31] + CUP["dishes"][:1]))
     assert any("not a catalog dish" in e for e in errors(CUP["dishes"][:31] + ["kr-made-up-dish"]))
 
 
 def test_an_activity_page_link_must_be_a_page_of_this_site(tmp_path):
     shutil.copytree(ROOT / "data/content", tmp_path / "data/content")
+    shutil.copytree(ROOT / "images/worldcup", tmp_path / "images/worldcup")       # the teaser's pictures
 
     def event_errors():
         return [e for e in page_content.content_errors(tmp_path) if e.startswith("events.json")]
@@ -55,7 +58,7 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
         assert forbidden not in script, forbidden
     assert "var KEY = 'babdoduk-worldcup';" in script and "localStorage.setItem(KEY" in script
     assert html.count('<button type="button" class="wc-card"') == 2
-    assert 'id="wcStatus" role="status"' in html and "'wc.title': 'KAIST Menu World Cup'" in html
+    assert 'id="wcStatus" role="status"' in html and "'wc.title': 'Babdoduk Food World Cup'" in html
     # Pictures are decoration inside the pick buttons (the button names the dish); no claims about
     # what is on sale: the catalog is general information.
     main = html.split("<main", 1)[1].split("</main>", 1)[0]

@@ -799,14 +799,14 @@ def event_bands(page):
 
     def cta(row, lang="ko"):
         """An original post is a record once past; an activity on a page of this site opens it."""
-        words = {"ko": (("참여하기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
-                 "en": (("Take part", "Open the page"), ("View post", "Original post"))}[lang]
+        words = {"ko": (("지금 해보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
+                 "en": (("Play now", "Open the page"), ("View post", "Original post"))}[lang]
         return words[0 if row["onSite"] else 1][row["band"] == "past"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
     check(len(rows) == 3, ("three authored activities", rows))
-    check([row["title"] for row in rows if row["onSite"]] == ["KAIST 메뉴 월드컵 32강"]
+    check([row["title"] for row in rows if row["onSite"]] == ["먹방 월드컵 32강"]
           and page.locator(".event-link[data-event-page][target]").count() == 0,
           ("the menu world cup opens its page in place", rows))
     check("STROKE" not in page.content() and "언빌리버블" not in page.content(),
@@ -905,7 +905,8 @@ def worldcup_play(page):
         assert ok, f"worldcup.html: {detail}"
         count += 1
 
-    dishes = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))["dishes"]
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    dishes, size = cup["dishes"], cup["size"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
@@ -919,7 +920,7 @@ def worldcup_play(page):
     page.locator("#wcUndo").click()
     check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcCount").inner_text() == "1 / 16",
           "undo returns to the same match")
-    for _ in range(len(dishes) - 1):
+    for _ in range(size - 1):
         page.locator(".wc-card").first.focus()
         page.keyboard.press("Enter")
     check(page.locator("#wcResult").is_visible() and page.evaluate("document.activeElement.id") == "wcWinner",

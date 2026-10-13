@@ -174,7 +174,7 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert len(rows) == 3
     assert "STROKE" not in html and "언빌리버블" not in html   # it did not happen
     # The third row is the site's own menu world cup (2026-10-13), held on worldcup.html.
-    assert "'event.e2.summary': 'KAIST 메뉴 월드컵 32강'" in html and 'href="worldcup.html" data-event-page>' in html
+    assert "'event.e2.summary': '먹방 월드컵 32강'" in html and 'href="worldcup.html" data-event-page>' in html
     assert all(confirmation in ("announced", "tentative") for *_, confirmation in rows)
     assert "'event.state.tentative.past': '진행 여부 미확인'" in html
     assert "'event.state.announced.past'" not in html  # an unrecorded outcome claims nothing, visibly
@@ -185,7 +185,7 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert html.count("<span data-event-cta>") == 3 and "event.openPageBtn" not in html
     # An activity held on a page of this site opens it in place; an original post opens a new tab.
     assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == 2
-    assert "'event.cta.page': '참여하기'" in html and "'event.cta.pagePast': 'Open the page'" in html
+    assert "'event.cta.page': '지금 해보기'" in html and "'event.cta.pagePast': 'Open the page'" in html
     assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
     assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
     assert html.count('<details class="event-more">') == 3 and "event-tab" not in html
