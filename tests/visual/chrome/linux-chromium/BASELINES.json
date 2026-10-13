@@ -1,5 +1,5 @@
 {
-  "approval": "Owner (KAIST MESC), 2026-10-13, Claude Code session: approved the new top bar as shown on babdoduk-lab and the home/event footer changes; 34 renders from ui-guardian run 38412656676 (release/worldcup-20261013) plus the 26 images that run matched against the previous set",
+  "approval": "Owner approved lab 1cb7091 on 2026-10-13 (new top bar and footer, as for windows-chrome); 34 renders from ui-guardian run 38412656676 on release/worldcup-20261013 plus the 26 images that run matched against the previous set",
   "platform": "linux-chromium",
   "source": "adopted from ci-renders",
   "images": 60,

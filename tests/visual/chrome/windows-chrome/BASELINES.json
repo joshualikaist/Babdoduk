@@ -1,5 +1,5 @@
 {
-  "approval": "Owner (KAIST MESC), 2026-10-13, Claude Code session: approved the new top bar as shown on babdoduk-lab (소식·이벤트 as a direct link, '소식' on phones) and earlier '모두 승인' for the home/event footer changes; release/worldcup-20261013",
+  "approval": "Owner approved lab 1cb7091 on 2026-10-13 (new top bar: 소식·이벤트 direct, '소식' on phones; home/event footer changes), Claude Code session; release/worldcup-20261013",
   "platform": "windows-chrome",
   "source": "rendered locally by check_site_ui.py (chrome)",
   "images": 60,
