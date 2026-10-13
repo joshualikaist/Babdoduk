@@ -346,7 +346,7 @@ or older Dooray tasks; review those separately in Task Scheduler.
 | OPS_AUTO_RESUMED | Informational: the watchdog saw a person finish an SSO login and acknowledged a login latch, as Start would |
 | DOORAY_CONTRACT_CHANGED | Radar stops and unread analysis is disabled; re-run calibration, then `radar-allow-unread` and Start |
 | DOORAY_UNREAD_INVARIANT_BROKEN | Unread rows are skipped until review; find what opened a mail or wrote during a scan, then `radar-allow-unread` |
-| DOORAY_BROWSER_ABSENT | The browser or its Dooray tab is missing: `start_ops_browser.cmd` (unified) or open the dedicated Dooray browser on 9222 (separate); the Radar retries with backoff |
+| DOORAY_BROWSER_ABSENT | The browser or its Dooray tab is missing: `start_ops_browser.cmd` (unified) or open the dedicated Dooray browser on 9222 (separate); the Radar retries with backoff. A warning at first, critical (with reminders) once no scan has succeeded for 30 minutes |
 | DOORAY_BROWSER_UNVERIFIED | The listener is not positively the dedicated Chrome (profile, port, loopback, `chrome.exe`). The Radar never attaches; it retries with backoff and raises a critical alert. Run `status_ops_browser.cmd` and find what owns the port |
 | OPS_BROWSER_UNVERIFIED / OPS_BROWSER_STALE | Start refuses an unknown/ambiguous owner or a dedicated process without a listener; use `recover_ops_browser.cmd` for the stale case only |
 | OPS_WORKERS_STILL_RUNNING | The browser mode changes only while both workers are stopped |

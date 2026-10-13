@@ -125,7 +125,11 @@ def radar_alert(runtime: dict, *, running: bool, enabled: bool, unread_disabled:
     human = RADAR_HUMAN.get(runtime.get("reason") or "")
     if (human in {"AUTH_EXPIRED", "CONTRACT_CHANGED", "CONFIGURATION_REQUIRED", "BROWSER_UNVERIFIED"}
             or (human and severity != "healthy")):
-        return Alert.of("dooray_radar", human, age, now)
+        # A cause whose floor is only a warning (the browser is not open) still becomes critical,
+        # and so is reminded, once no scan has succeeded for the critical window: from 2026-10-05
+        # to 10-11 the Radar waited a week for a closed Ops Chrome behind one warning.
+        floor = REASONS[human][0]
+        return Alert.of("dooray_radar", human, age, now, max(floor, severity, key=SEVERITIES.index))
     if enabled and not running and severity != "healthy":
         return Alert.of("dooray_radar", "WORKER_NOT_RUNNING", age, now)
     return Alert.of("dooray_radar", code, age, now, severity)
