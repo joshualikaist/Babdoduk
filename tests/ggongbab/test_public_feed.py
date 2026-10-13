@@ -328,7 +328,10 @@ def test_migration_allowlist_privileges_and_atomicity():
     sql = (ROOT / "supabase/migrations/004_ggongbab_public_feed.sql").read_text(encoding="utf-8").lower()
     table = sql.split("create table if not exists public.ggongbab_public_events (", 1)[1].split("\n);", 1)[0]
     columns = re.findall(r"^  (\w+) (?:uuid|text|timestamptz|double)", table, re.M)
-    assert set(columns) == set(PUBLIC_COLUMNS)
+    later = (ROOT / "supabase/migrations/006_ggongbab_giveaway.sql").read_text(encoding="utf-8").lower()
+    added = re.findall(r"alter table public\.ggongbab_public_events\s+((?:add column if not exists \w+[^;]*?,?\s*)+);", later)
+    columns += re.findall(r"add column if not exists (\w+)", " ".join(added))
+    assert sorted(columns) == sorted(PUBLIC_COLUMNS)
     assert "references" not in table and "jsonb" not in table
     assert "alter table public.ggongbab_public_events enable row level security" in sql
     assert "revoke all on table public.ggongbab_public_events from public, anon, authenticated, service_role" in sql

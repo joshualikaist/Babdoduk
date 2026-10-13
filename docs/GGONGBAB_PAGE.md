@@ -317,6 +317,22 @@ GitHub Actions 의 `workflow_dispatch` → mode `review-report` 는 건수만 �
 **tri-state:** `food.provided` 와 `registration.required` 는 **`"true"` / `"false"` / `"unknown"` 문자열**이다. boolean 이 아니다.
 “본문에 없음”(`unknown`)을 `false` 로 접으면 “신청 불필요”라는 없는 사실을 만들어 내기 때문이다. `food.type` 은 `provided="true"` 일 때만 채워진다.
 
+**경품 행사와 포스터 근거 (오너 결정 2026-10-14, 마이그레이션 006).**
+
+공개 목록에 오르는 행사는 두 종류다.
+- 음식 제공이 명시된 행사(`food.provided == "true"`).
+- 참가자가 경품·기념품을 받거나 추첨에 참여할 수 있는 행사. 이런 행사에는 선택 필드 `"giveaway": {"provided": "true", "description": "경품 추첨 (…)"}` 이 붙는다.
+
+경품 행사는 화면에서 🎁 표시를 달고, 꽁밥(무료 음식) 개수에는 세지 않는다. 행사일이 따로 없는 경품 행사는 신청 마감 시각을 `startAt` 으로 쓴다. 이때 `startAt` 과 `registration.deadline` 이 같다.
+
+선택 필드 `food.source` 는 음식 근거를 어디서 읽었는지 기록한다.
+- `"text"`: 본문이나 첨부 문서 텍스트.
+- `"poster"`: 메일에 첨부된 포스터 이미지에만 있었음. AI 가 이미지에서 인용하고, 그 항목을 `evidence.from_poster` 에 적었으며, 실제로 이미지가 함께 보내진 경우에만 인정한다(`parsers/validator.py`).
+
+`validate_content` 는 다음 규칙을 강제한다.
+- 음식도 경품도 없는 행은 거절한다.
+- `food.source` 는 `food.provided == "true"` 일 때만 허용한다.
+
 **시각:** `startAt` · `endAt` · `registration.deadline` · `generatedAt` 은 모두 **Asia/Seoul(`+09:00`)** 로 내보낸다.
 DB 의 `timestamptz` 는 UTC 로 조회되지만(`2026-09-25T03:00:00+00:00`), 공개 피드는 캠퍼스 현지 시각이므로 export 직전에 `exporter.kst_iso()` 가 변환한다(`2026-09-25T12:00:00+09:00`). DB 표현은 그대로 둔다.
 
@@ -350,7 +366,7 @@ live 피드는 “지금·앞으로 참여할 수 있는 꽁밥”, 아카이브
 
 | 조건 | 규칙 | 위치 |
 |------|------|------|
-| 공개 자격 | live 피드와 같은 함수: 음식 명시(`food.provided == "true"`), `status='published'`, `needs_review=false`, confidence ≥ 기준 | `exporter.publication_eligible` |
+| 공개 자격 | live 피드와 같은 함수: 음식 명시(`food.provided == "true"`) 또는 경품(`giveaway`), `status='published'`, `needs_review=false`, confidence ≥ 기준 | `exporter.publication_eligible` |
 | 끝남 | live 피드가 버리는 바로 그 규칙: 종료(없으면 시작) + 유예 3시간 < `now` | `exporter.is_expired` |
 | 공개된 적 있음 | 이 export 직전의 `latest.json` 또는 `archive/index.json` 에 실렸던 id 만 | `exporter.previously_listed_ids` |
 | 공개 기간 | 종료(없으면 시작)가 `now` 기준 30일 안 | `ARCHIVE_WINDOW_DAYS` |

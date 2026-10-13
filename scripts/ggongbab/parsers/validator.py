@@ -3,6 +3,10 @@
 
 Every AI result is checked against RuleFacts computed from the same text.
 Conflicts never get published silently; they become needs_review or a fallback call.
+
+A quote the AI read from an attached image (named in `evidence.from_poster`) cannot be found in
+the text. Since 2026-10-14 (owner decision) it is accepted when images were actually sent with
+the item: food stated only in a poster is published, with `food_evidence_source = "poster"`.
 """
 from __future__ import annotations
 
@@ -13,8 +17,8 @@ from urllib.parse import urlparse
 
 from ..config import KST
 from ..models import EventCandidate, EventExtraction, RuleFacts
-from .rule_parser import (explicit_food_evidence, food_type_hint, is_real_eligibility, registration_evidence,
-                          supply_limit)
+from .rule_parser import (GIVEAWAY_EVIDENCE, explicit_food_evidence, food_type_hint, is_real_eligibility,
+                          registration_evidence, supply_limit)
 
 FALLBACK_REASONS = {
     "low_confidence",
@@ -81,6 +85,11 @@ def _evidence_supported(quote: Optional[str], source_text: str) -> bool:
     return shingles and hits / len(shingles) >= 0.6
 
 
+def _from_poster(ai: EventExtraction, field: str, images: int) -> bool:
+    """The AI says this quote came from an image, and images were in fact sent."""
+    return images > 0 and field in (ai.evidence.from_poster or [])
+
+
 def fallback_reasons(ai: EventExtraction, facts: RuleFacts, source_text: str, threshold: float) -> list[str]:
     """Reasons that justify a second parse with the fallback model (never for every mail)."""
     reasons: list[str] = []
@@ -105,9 +114,14 @@ def fallback_reasons(ai: EventExtraction, facts: RuleFacts, source_text: str, th
 
 
 def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_type: str = "manual",
-             source_priority: int = 100, reference: Optional[datetime] = None) -> EventCandidate:
-    """Turn an AI extraction into a validated candidate with review flags."""
+             source_priority: int = 100, reference: Optional[datetime] = None, images: int = 0) -> EventCandidate:
+    """Turn an AI extraction into a validated candidate with review flags. `images` is how many
+    images were sent with the item; without any, no quote can come from a poster."""
     reasons: list[str] = []
+
+    def supported(quote: Optional[str], field: str) -> bool:
+        return _evidence_supported(quote, source_text) or (_from_poster(ai, field, images) and len(_norm(quote)) >= 4)
+
     confidence = max(0.0, min(1.0, float(ai.confidence)))
     title = (ai.title or "").strip()
     cand = EventCandidate(title=title or "(제목 없음)", is_event=bool(ai.is_event),
@@ -123,20 +137,19 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
     # --- date / time --------------------------------------------------
     start = parse_iso(ai.event_start)
     end = parse_iso(ai.event_end)
-    if start and facts.dates and start.date().isoformat() not in facts.dates:
+    poster_time = _from_poster(ai, "event_time", images) and not _evidence_supported(ai.evidence.event_time, source_text)
+    if start and facts.dates and start.date().isoformat() not in facts.dates and not poster_time:
         reasons.append(f"날짜 충돌: AI {start.date().isoformat()} vs 본문 {', '.join(facts.dates[:3])}")
         start = None
         end = None
-    if start and facts.times and start.strftime("%H:%M") not in facts.times:
+    if start and facts.times and start.strftime("%H:%M") not in facts.times and not poster_time:
         reasons.append(f"시간 충돌: AI {start.strftime('%H:%M')} vs 본문 {', '.join(facts.times[:3])}")
-    if start and not facts.dates and not _evidence_supported(ai.evidence.event_time, source_text):
+    if start and not facts.dates and not supported(ai.evidence.event_time, "event_time"):
         reasons.append("날짜 근거 없음")
         start = None
         end = None
     if end and start and end < start:
         end = None
-    if start is None:
-        reasons.append("행사 시작 시각 확정 불가")
     cand.event_start = start
     cand.event_end = end
     cand.date_text = (ai.date_text or "").strip() or None
@@ -146,7 +159,7 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
     building = (ai.building or "").strip() or None
     if building:
         if facts.buildings and _norm(building) not in {_norm(b) for b in facts.buildings}:
-            if not _evidence_supported(ai.evidence.location, source_text):
+            if not supported(ai.evidence.location, "location"):
                 reasons.append(f"장소 충돌: AI {building} vs 본문 {', '.join(facts.buildings[:3])}")
                 building = None
     elif len(facts.buildings) == 1:
@@ -154,7 +167,7 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
     cand.building = building
     cand.room = (ai.room or "").strip() or None
     cand.location_name = (ai.location_name or "").strip() or None
-    if cand.location_name and not facts.buildings and not _evidence_supported(ai.evidence.location, source_text) \
+    if cand.location_name and not facts.buildings and not supported(ai.evidence.location, "location") \
             and not _evidence_supported(cand.location_name, source_text):
         reasons.append("장소 근거 없음")
         cand.location_name = None
@@ -163,10 +176,15 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
     food_provided = ai.food_provided
     food_type = ai.food_type
     food_desc = (ai.food_description or "").strip() or None
+    food_source = None
     if food_provided == "true":
         quote = ai.evidence.food or ""
-        ok = bool(explicit_food_evidence(quote)) and _evidence_supported(quote, source_text)
+        in_text = bool(explicit_food_evidence(quote)) and _evidence_supported(quote, source_text)
+        on_poster = not in_text and bool(explicit_food_evidence(quote)) and _from_poster(ai, "food", images)
+        ok = in_text or on_poster
+        food_source = "text" if in_text else ("poster" if on_poster else None)
         if not ok and facts.explicit_food:
+            food_source = "text"
             ok = True  # the rules found explicit provision even if the AI quote is weak
             if not quote:
                 food_desc = food_desc or facts.food_evidence[0]
@@ -185,6 +203,19 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
     cand.food_provided = food_provided
     cand.food_type = food_type if food_provided == "true" else ("unknown" if food_provided == "unknown" else food_type)
     cand.food_description = food_desc
+    cand.food_evidence_source = food_source if food_provided == "true" else None
+
+    # --- giveaway (a prize draw or gift for participants; listed apart from free food) ----
+    giveaway = ai.giveaway or "unknown"
+    gift_quote = ai.evidence.giveaway or ""
+    if giveaway == "true":
+        same_as_food = food_provided == "true" and _norm(gift_quote) == _norm(ai.evidence.food)
+        if same_as_food or not GIVEAWAY_EVIDENCE.search(gift_quote) or not supported(gift_quote, "giveaway"):
+            if not same_as_food:
+                reasons.append("경품 근거 없음")
+            giveaway = "unknown"
+    cand.giveaway = giveaway
+    cand.giveaway_description = ((ai.giveaway_description or "").strip() or None) if giveaway == "true" else None
 
     # --- registration -------------------------------------------------
     url = (ai.registration_url or "").strip() or None
@@ -202,10 +233,16 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
         if known and deadline.date().isoformat() not in known:
             reasons.append("신청 마감일이 본문 날짜와 불일치")
             deadline = None
-        elif not known and not _evidence_supported(ai.evidence.registration, source_text):
+        elif not known and not supported(ai.evidence.registration, "registration"):
             reasons.append("신청 마감 근거 없음")
             deadline = None
     cand.registration_deadline = deadline
+    # A giveaway with no event date of its own is listed until its sign-up deadline (owner, 2026-10-14).
+    if cand.event_start is None and cand.giveaway == "true" and deadline is not None:
+        cand.event_start = deadline
+        cand.event_end = None
+    if cand.event_start is None:
+        reasons.append("행사 시작 시각 확정 불가")
     # "not stated" is not "not required": only explicit wording (or a registration
     # link / deadline in the source) may decide either way.
     required = ai.registration_required

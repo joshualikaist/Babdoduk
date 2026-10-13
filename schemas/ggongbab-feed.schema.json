@@ -51,6 +51,16 @@
           }
         },
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "giveaway": {
+          "description": "Present only when participants can win or receive a prize or gift (owner decision 2026-10-14); the page marks the listing with a gift and keeps it out of the free-food counts.",
+          "type": "object",
+          "required": ["provided", "description"],
+          "additionalProperties": false,
+          "properties": {
+            "provided": {"const": "true"},
+            "description": {"type": "string"}
+          }
+        },
         "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}}
       }
     },
@@ -71,7 +81,9 @@
       "properties": {
         "provided": {"$ref": "#/$defs/tri"},
         "type": {"enum": ["meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"]},
-        "description": {"type": "string"}
+        "description": {"type": "string"},
+        "source": {"description": "Where the food evidence was read: the text, or only an attached poster image.",
+                   "enum": ["text", "poster"]}
       }
     },
     "source": {
