@@ -86,3 +86,34 @@ def test_a_missing_photo_is_refused(tmp_path):
     errors = page_content.worldcup_errors(tmp_path)
     assert any(f"{CUP['dishes'][0]} has no photo" in e for e in errors)
     assert any("which does not exist" in e for e in errors)              # the files are not in tmp_path
+
+
+def test_the_pool_is_large_and_varied_as_the_copy_says():
+    # The page, the event and the share text all say "more than 600 dishes" (owner, 2026-10-13:
+    # aim for 1,000, at most five variants of the same dish).
+    assert len(CUP["dishes"]) > 600
+    for text in (CUP["basis"]["ko"], (ROOT / "i18n/ko.json").read_text(encoding="utf-8")):
+        assert "600개가 넘는 메뉴" in text
+    assert "more than 600 dishes" in CUP["basis"]["en"]
+    names = {}
+    for pack in json.loads((ROOT / "data/foods/catalog.json").read_text(encoding="utf-8"))["packs"]:
+        names |= {f["id"]: f["nameKo"] for f in json.loads((ROOT / pack["src"]).read_text(encoding="utf-8"))["items"]}
+    families = {}
+    for dish in CUP["dishes"]:
+        families.setdefault(page_content.same_dish(dish, names[dish]), []).append(dish)
+    assert max(len(members) for members in families.values()) <= page_content.SAME_DISH_LIMIT == 5
+    assert page_content.same_dish("x", "치즈 볶음밥") == "볶음밥" and page_content.same_dish("x", "잡채") == "x"
+
+
+def test_a_sixth_variant_of_the_same_dish_is_refused(tmp_path):
+    shutil.copytree(ROOT / "data/foods", tmp_path / "data/foods")
+    (tmp_path / "data/content").mkdir(parents=True)
+    names = {}
+    for pack in json.loads((ROOT / "data/foods/catalog.json").read_text(encoding="utf-8"))["packs"]:
+        names |= {f["id"]: f["nameKo"] for f in json.loads((ROOT / pack["src"]).read_text(encoding="utf-8"))["items"]}
+    gimbap = [d for d, name in names.items() if page_content.same_dish(d, name) == "김밥"][:6]
+    others = [d for d in CUP["dishes"] if d not in gimbap and page_content.same_dish(d, names[d]) != "김밥"]
+    dishes = gimbap + others[:32 - len(gimbap)]
+    (tmp_path / "data/content/worldcup.json").write_text(json.dumps(dict(CUP, dishes=dishes, photos={})), encoding="utf-8")
+    assert len(gimbap) == 6
+    assert "worldcup.json: 6 dishes are 김밥; at most 5 of the same dish" in page_content.worldcup_errors(tmp_path)
