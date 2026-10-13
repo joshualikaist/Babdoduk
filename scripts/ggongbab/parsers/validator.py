@@ -210,7 +210,12 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
     gift_quote = ai.evidence.giveaway or ""
     if giveaway == "true":
         same_as_food = food_provided == "true" and _norm(gift_quote) == _norm(ai.evidence.food)
-        if same_as_food or not GIVEAWAY_EVIDENCE.search(gift_quote) or not supported(gift_quote, "giveaway"):
+        quote_ok = bool(GIVEAWAY_EVIDENCE.search(gift_quote)) and supported(gift_quote, "giveaway")
+        # As with food: the AI sometimes quotes the wrong half of the sentence (measured: 1 run in
+        # 4 on a real expo mail), so gift wording the rules find in the text backs its "true" -
+        # outside the food sentence, so "커피 증정" never doubles as a giveaway.
+        rest = source_text.replace(ai.evidence.food or "\x00", " ") if food_provided == "true" else source_text
+        if same_as_food or not (quote_ok or GIVEAWAY_EVIDENCE.search(rest)):
             if not same_as_food:
                 reasons.append("경품 근거 없음")
             giveaway = "unknown"

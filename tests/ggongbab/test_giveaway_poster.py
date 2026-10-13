@@ -86,11 +86,20 @@ def test_a_prize_draw_without_food_is_a_publishable_giveaway():
     assert cand.food_provided == "unknown" and not cand.needs_review
 
 
-def test_a_giveaway_without_wording_or_quote_is_dropped():
+def test_a_giveaway_without_wording_in_the_quote_or_the_text_is_dropped():
     ext = expo(evidence=Evidence(event_time="10월 20일(월) 10:00~17:00", location=None, food=None,
                                  registration=None, giveaway="많은 참여 바랍니다"))
-    cand = validate(ext, analyze(EXPO, NOW), EXPO, reference=NOW)
+    plain = EXPO.replace("방문객 대상 경품 추첨 이벤트를 진행합니다.", "많은 참여 바랍니다.")
+    cand = validate(ext, analyze(plain, NOW), plain, reference=NOW)
     assert cand.giveaway == "unknown" and "경품 근거 없음" in cand.review_reasons
+
+
+def test_a_weak_giveaway_quote_is_backed_by_gift_wording_in_the_text():
+    """Measured on the real expo mail: 1 run in 4 quoted '이벤트를 진행합니다' without the prize words."""
+    ext = expo(evidence=Evidence(event_time="10월 20일(월) 10:00~17:00", location=None, food=None,
+                                 registration=None, giveaway="이벤트를 진행합니다"))
+    cand = validate(ext, analyze(EXPO, NOW), EXPO, reference=NOW)
+    assert cand.giveaway == "true" and not cand.needs_review
 
 
 def test_food_handed_out_is_not_also_a_giveaway():
