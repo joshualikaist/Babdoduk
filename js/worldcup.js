@@ -1,7 +1,9 @@
-/* KAIST menu world cup (worldcup.html): two dishes at a time from data/content/worldcup.json (the
-   sync writes it into the page as window.BABDODUK_WORLDCUP; data/content/ is never deployed), with
-   names and flavours from the food catalog (data/foods/). Progress and past winners stay in this
-   browser (localStorage `babdoduk-worldcup`); nothing is sent anywhere. */
+/* Babdoduk food world cup (worldcup.html): each game draws `size` dishes (32) from the pool in
+   data/content/worldcup.json (the sync writes it into the page as window.BABDODUK_WORLDCUP;
+   data/content/ is never deployed) and plays them two at a time, with names and flavours from the
+   food catalog (data/foods/). A pick pops, a new round gets a banner, the winner gets confetti and
+   a result image to save. Progress and past winners stay in this browser (localStorage
+   `babdoduk-worldcup`); nothing is sent anywhere. */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -11,7 +13,8 @@
   var cup = window.BABDODUK_WORLDCUP || {};
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var dishes = {};
-  var set = [];
+  var set = [];         // the pool
+  var size = 0;         // dishes per game (a power of two)
   var basis = null;
   var game = null;      // { entrants: [ids], winners: [ids], stack: [{ entrants, winners }] }
   var winners = [];     // [{ id, finalist, date }], newest first
@@ -78,7 +81,7 @@
   }
 
   // ---- saved state ---------------------------------------------------------------------------
-  function signature() { return set.join(','); }
+  function signature() { return size + ':' + set.join(','); }
   function validGame(g) {
     if (!g || !Array.isArray(g.entrants) || !Array.isArray(g.winners) || !Array.isArray(g.stack)) return false;
     var size = g.entrants.length;
@@ -113,8 +116,8 @@
     return { round: roundName(game.entrants.length), n: game.winners.length + 1, total: game.entrants.length / 2 };
   }
   function picksMade() {
-    var made = 0, size = set.length;
-    while (size > game.entrants.length) { made += size / 2; size /= 2; }
+    var made = 0, round = size;
+    while (round > game.entrants.length) { made += round / 2; round /= 2; }
     return made + game.winners.length;
   }
   function pair() {
@@ -123,7 +126,7 @@
   }
   function renderIntro() {
     $('wcBasis').textContent = basis ? (basis[lang()] || basis.ko) : '';
-    $('wcStart').textContent = fill(t('wc.start', '{n}강 시작'), { n: set.length });
+    $('wcStart').textContent = fill(t('wc.start', '{n}강 시작'), { n: size });
     var resumable = !!game;
     $('wcResume').hidden = !resumable;
     // A game in progress makes resuming the main action; starting over stays one tap away.
@@ -132,7 +135,7 @@
     if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어서 하기 · {round} {n}/{total}'), progress());
   }
   function renderMatch(focus) {
-    var p = progress(), ids = pair(), done = picksMade(), all = set.length - 1;
+    var p = progress(), ids = pair(), done = picksMade(), all = size - 1;
     $('wcRound').textContent = p.round;
     $('wcCount').textContent = fill(t('wc.count', '{n} / {total}'), p);
     var bar = $('wcBar');
@@ -155,7 +158,12 @@
     var next = game.winners.length * 2 + 2;
     preload([game.entrants[next], game.entrants[next + 1]]);
     $('wcUndo').disabled = !game.stack.length;
-    if (focus) cards[0].focus();
+    if (focus) {
+      // Keep the round title and both cards in view rather than scrolling to the focused card.
+      cards[0].focus({ preventScroll: true });
+      var box = $('wcMatch').getBoundingClientRect();
+      if (box.top < 0 || box.top > window.innerHeight * 0.4) $('wcMatch').scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+    }
     if (focus !== null) announce(fill(t('wc.announce', '{round} {n}번째 경기: {a} 대 {b}'),
       { round: p.round, n: p.n, a: name(ids[0]), b: name(ids[1]) }));
   }
@@ -204,7 +212,7 @@
     return a;
   }
   function start() {
-    game = { entrants: shuffle(set), winners: [], stack: [] };
+    game = { entrants: shuffle(set).slice(0, size), winners: [], stack: [] };
     result = null;
     store();
     show('match');
@@ -223,6 +231,7 @@
     store();
     show('result');
     renderResult(true);
+    celebrate();
   }
   function pick(side) {
     if (busy || view !== 'match') return;
@@ -235,14 +244,155 @@
       game.winners = [];
     }
     store();
-    if (reduced) { renderMatch(true); return; }
+    var newRound = game.winners.length === 0;          // this pick closed a round
+    if (reduced) { renderMatch(true); if (newRound) banner(); return; }
     busy = true;
     cards[side].classList.add('is-picked');
+    cards[1 - side].classList.add('is-dropped');
+    burst(cards[side]);
     setTimeout(function () {
       cards[side].classList.remove('is-picked');
+      cards[1 - side].classList.remove('is-dropped');
       busy = false;
       renderMatch(true);
-    }, 220);
+      if (newRound) banner();
+    }, 480);
+  }
+
+  // ---- celebration ---------------------------------------------------------------------------
+  // A round banner ("16강 진출!", "결승전!") for a moment; screen readers get the match announcement.
+  function banner() {
+    var el = $('wcBanner'), round = game.entrants.length;
+    el.textContent = round === 2 ? t('wc.banner.final', '결승전!') : round === 4 ? t('wc.banner.semi', '준결승!')
+      : fill(t('wc.banner.n', '{n}강 진출!'), { n: round });
+    el.hidden = false;
+    el.classList.remove('is-on');
+    void el.offsetWidth;                                // restart the animation
+    el.classList.add('is-on');
+    clearTimeout(banner.timer);
+    banner.timer = setTimeout(function () { el.hidden = true; el.classList.remove('is-on'); }, 1100);
+  }
+  // Confetti on a full-window canvas that ignores the pointer and removes itself; nothing with
+  // reduced motion. A pick gets a small burst from the card, the winner two big ones.
+  var COLORS = ['#f45e45', '#ffb703', '#219ebc', '#8ecae6', '#fb8500', '#6a994e', '#c77dff'];
+  function confetti(origins, count, duration) {
+    if (reduced) return;
+    var canvas = document.createElement('canvas');
+    canvas.className = 'wc-confetti';
+    canvas.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(canvas);
+    var ratio = Math.min(window.devicePixelRatio || 1, 2), w = window.innerWidth, h = window.innerHeight;
+    canvas.width = w * ratio;
+    canvas.height = h * ratio;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    var bits = [];
+    origins.forEach(function (o) {
+      for (var i = 0; i < count; i++) {
+        bits.push({ x: o.x, y: o.y, vx: (Math.random() - 0.5) * o.spread + o.drift, vy: -(Math.random() * o.lift + o.lift / 2),
+                    size: 5 + Math.random() * 6, rot: Math.random() * 6.28, spin: (Math.random() - 0.5) * 0.3,
+                    color: COLORS[i % COLORS.length], shape: i % 3 });
+      }
+    });
+    var started = null;
+    function frame(now) {
+      if (started === null) started = now;
+      var age = now - started;
+      ctx.clearRect(0, 0, w, h);
+      bits.forEach(function (b) {
+        b.vy += 0.32; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.rot += b.spin;
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+        ctx.globalAlpha = Math.max(0, 1 - age / duration);
+        ctx.fillStyle = b.color;
+        if (b.shape === 1) { ctx.beginPath(); ctx.arc(0, 0, b.size / 2.4, 0, 6.283); ctx.fill(); }
+        else ctx.fillRect(-b.size / 2, -b.size / 4, b.size, b.shape ? b.size / 2 : b.size / 3);
+        ctx.restore();
+      });
+      if (age < duration) requestAnimationFrame(frame); else canvas.remove();
+    }
+    requestAnimationFrame(frame);
+  }
+  function burst(card) {
+    var r = card.getBoundingClientRect();
+    confetti([{ x: r.left + r.width / 2, y: r.top + r.height * 0.45, spread: 10, drift: 0, lift: 8 }], 28, 900);
+  }
+  function celebrate() {
+    var w = window.innerWidth, h = window.innerHeight;
+    confetti([{ x: w * 0.15, y: h * 0.7, spread: 9, drift: 4, lift: 13 },
+              { x: w * 0.85, y: h * 0.7, spread: 9, drift: -4, lift: 13 }], 90, 2800);
+    var box = $('wcResult');
+    box.classList.remove('is-celebrating');
+    void box.offsetWidth;
+    box.classList.add('is-celebrating');
+  }
+
+  // ---- result image ----------------------------------------------------------------------------
+  // A 1080x1350 card (the winner, its photo and the photo credit, the site) to keep or post.
+  function fitText(ctx, text, x, y, max, px, weight) {
+    var font = function (n) { return weight + ' ' + n + "px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif"; };
+    ctx.font = font(px);
+    while (px > 28 && ctx.measureText(text).width > max) { px -= 4; ctx.font = font(px); }
+    ctx.fillText(text, x, y);
+  }
+  function saveImage() {
+    var status = $('wcShareStatus'), photo = (cup.photos || {})[result.id];
+    var canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1350;
+    var ctx = canvas.getContext('2d');
+    function draw(img) {
+      ctx.fillStyle = '#fffdf8';
+      ctx.fillRect(0, 0, 1080, 1350);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#b43d27';
+      fitText(ctx, t('wc.cardKicker', '나의 최애 메뉴'), 540, 120, 900, 40, 800);
+      ctx.fillStyle = '#1e1d1a';
+      fitText(ctx, name(result.id), 540, 250, 960, 104, 900);
+      ctx.fillStyle = '#6d665e';
+      fitText(ctx, otherName(result.id), 540, 320, 960, 40, 500);
+      if (img) {
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(60, 380, 960, 720, 36); else ctx.rect(60, 380, 960, 720);
+        ctx.clip();
+        ctx.drawImage(img, 60, 380, 960, 720);
+        ctx.restore();
+        ctx.fillStyle = '#6d665e';
+        fitText(ctx, fill(t('wc.photoCredit', '사진 {author} · {license}'), { author: photo.author, license: photo.license }),
+                540, 1150, 960, 26, 500);
+      }
+      ctx.fillStyle = '#1e1d1a';
+      fitText(ctx, t('wc.cardBrand', '밥도둑 먹방 월드컵'), 540, 1240, 960, 44, 800);
+      ctx.fillStyle = '#6d665e';
+      fitText(ctx, location.host, 540, 1295, 960, 30, 500);
+      canvas.toBlob(function (blob) {
+        if (!blob) { status.textContent = t('wc.shareFailed', '공유하지 못했어요.'); return; }
+        var file = typeof File === 'function' ? new File([blob], 'babdoduk-worldcup.jpg', { type: 'image/jpeg' }) : null;
+        // Phones get the share sheet (straight to a story or a chat); a computer saves the file.
+        var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        if (touch && file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({ files: [file], title: document.title }).catch(function () {});
+          return;
+        }
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'babdoduk-worldcup.jpg';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+        status.textContent = t('wc.saved', '이미지를 저장했어요.');
+      }, 'image/jpeg', 0.9);
+    }
+    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    fonts.then(function () {
+      if (!photo) { draw(null); return; }
+      var img = new Image();
+      img.onload = function () { draw(img); };
+      img.onerror = function () { draw(null); };
+      img.src = photo.image;
+    });
   }
   function undo() {
     if (!game || !game.stack.length || busy) return;
@@ -301,6 +451,7 @@
   $('wcRestart').addEventListener('click', start);
   $('wcAgain').addEventListener('click', start);
   $('wcShare').addEventListener('click', share);
+  $('wcSaveImage').addEventListener('click', saveImage);
   $('wcHistoryClear').addEventListener('click', clearHistory);
   document.addEventListener('babdoduk-lang', render);
 
@@ -308,7 +459,8 @@
     return Promise.all((catalog.packs || []).map(function (pack) { return getJson(pack.src); })).then(function (packs) {
       packs.forEach(function (pack) { (pack.items || []).forEach(function (dish) { dishes[dish.id] = dish; }); });
       set = (cup.dishes || []).filter(function (id) { return dishes[id]; });
-      if (set.length < 4 || (set.length & (set.length - 1))) throw new Error('bracket');
+      size = cup.size || set.length;
+      if (size < 4 || (size & (size - 1)) || set.length < size) throw new Error('bracket');
       basis = cup.basis || null;
     });
   }).then(ready, failed);

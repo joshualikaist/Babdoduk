@@ -64,29 +64,39 @@
     },
     {
       "start": "2026-10-13",
-      "end": "2026-11-30",
+      "end": "2026-10-30",
       "confirmation": "announced",
       "link": "worldcup.html",
       "title": {
-        "ko": "KAIST 메뉴 월드컵 32강",
-        "en": "KAIST Menu World Cup: round of 32"
+        "ko": "먹방 월드컵 32강",
+        "en": "Food World Cup: round of 32"
       },
       "details": {
         "summary": {
-          "ko": "학식 단골 메뉴와 학생들이 많이 찾는 메뉴 32개 중 나의 최애 메뉴를 고르는 월드컵입니다.",
-          "en": "Pick your favorite from 32 dishes: cafeteria regulars and the dishes students order most."
+          "ko": "128개 메뉴 중 매번 다른 32개가 맞붙어요. 치킨이냐 피자냐, 끝까지 살아남는 나의 최애 메뉴는?",
+          "en": "Every game draws 32 of 128 dishes. Chicken or pizza? Find the one dish that survives to the end."
         },
         "duration": {
-          "ko": "2026년 10월 13일(화) ~ 2026년 11월 30일(월)",
-          "en": "Tuesday, October 13 through Monday, November 30, 2026."
+          "ko": "2026년 10월 13일(화) ~ 2026년 10월 30일(금)",
+          "en": "Tuesday, October 13 through Friday, October 30, 2026."
         },
         "prizes": {
           "ko": "<strong>경품 없음</strong> · 사이트 안에서 하는 놀이예요.",
           "en": "<strong>No prizes</strong>: a game on this site."
         },
         "participation": {
-          "ko": "‘참여하기’를 누르면 바로 시작해요. 로그인은 필요 없고, 결과는 내 브라우저에만 남아요.",
-          "en": "Press “Take part” to start. No sign-in; your results stay in this browser."
+          "ko": "‘지금 해보기’를 누르면 바로 시작해요. 로그인은 필요 없고, 결과는 내 브라우저에만 남아요. 우승 메뉴는 이미지로 저장할 수 있어요.",
+          "en": "Press “Play now” to start. No sign-in; your results stay in this browser, and you can save the winner as an image."
+        }
+      },
+      "pictures": {
+        "images": [
+          "images/worldcup/kr-fried-chicken.jpg",
+          "images/worldcup/it-pz-pepperoni.jpg"
+        ],
+        "credit": {
+          "ko": "사진 Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), 위키미디어 공용",
+          "en": "Photos Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), Wikimedia Commons"
         }
       }
     }
