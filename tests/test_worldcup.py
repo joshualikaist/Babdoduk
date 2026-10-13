@@ -1,7 +1,6 @@
 """The 먹방 world cup (worldcup.html, owner P4 2026-10-13): a bracket of catalog dishes from
-data/content/worldcup.json, played in the browser; on lab only, a finished game is also counted
-anonymously (tests/test_worldcup_stats.py). Static checks; the keyboard play-through runs in
-scripts/check_site_ui.py (worldcup_play)."""
+data/content/worldcup.json, played in the browser with nothing sent anywhere. Static checks; the
+keyboard play-through runs in scripts/check_site_ui.py (worldcup_play)."""
 import json
 import re
 import shutil

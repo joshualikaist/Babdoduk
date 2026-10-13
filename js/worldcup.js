@@ -195,91 +195,6 @@
     });
     $('wcHistory').hidden = !winners.length || view === 'loading' || view === 'match';
   }
-  // ---- everyone's picks (lab, stage 2) ----------------------------------------------------------
-  var stats = {}, totalGames = 0, statsApi = null, lastPick = null;
-  function statsConfig() {
-    var c = window.BABDODUK_PUBLIC_FEED_CONFIG;
-    try {
-      var url = new URL(c.SUPABASE_URL), key = c.SUPABASE_PUBLISHABLE_KEY;
-      if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash || url.username) return null;
-      if (!/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) return null;
-      return { base: url.origin + '/rest/v1/', key: key };
-    } catch (e) { return null; }
-  }
-  function api(path, body) {
-    var headers = { apikey: statsApi.key, Authorization: 'Bearer ' + statsApi.key, Accept: 'application/json' };
-    if (body) headers['Content-Type'] = 'application/json';
-    return fetch(statsApi.base + path, { method: body ? 'POST' : 'GET', headers: headers,
-                                         body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
-      .then(function (r) {
-        if (!r.ok) throw new Error('unavailable');
-        return r.status === 204 ? null : r.json();
-      });
-  }
-  function loadStats() {
-    if (!statsApi) return Promise.resolve();
-    return Promise.all([api('worldcup_dish_stats?select=dish_id,matches,wins,entries,titles'),
-                        api('worldcup_totals?select=games')]).then(function (got) {
-      stats = {};
-      (got[0] || []).forEach(function (row) { if (dishes[row.dish_id]) stats[row.dish_id] = row; });
-      totalGames = (got[1] && got[1][0] && got[1][0].games) || 0;
-      render();
-    }).catch(function () { stats = {}; totalGames = 0; renderRanking(); });
-  }
-  // A finished game, once: the whole bracket in play order. The server checks it against the pool.
-  function record(log) {
-    if (!statsApi || !log || log.length !== size - 1) return;
-    api('rpc/worldcup_record_game', { p_size: size, p_matches: log }).then(loadStats, function () {});
-  }
-  function winRate(id) {
-    var s = stats[id];
-    return s && s.matches >= 3 ? Math.round(s.wins / s.matches * 100) : null;
-  }
-  function ranked() {
-    return Object.keys(stats).filter(function (id) { return stats[id].entries >= 3; }).sort(function (a, b) {
-      var x = stats[a], y = stats[b];
-      return y.titles / y.entries - x.titles / x.entries || y.wins / Math.max(y.matches, 1) - x.wins / Math.max(x.matches, 1);
-    });
-  }
-  function renderLastPick() {
-    // Both win rates or an empty line: a 'not enough games yet' sentence would only be noise. With
-    // stats on, the line keeps its height either way, so the cards never jump between matches.
-    var line = $('wcLastPick');
-    var a = lastPick && statsApi ? winRate(lastPick.w) : null;
-    var b = lastPick && statsApi ? winRate(lastPick.l) : null;
-    line.hidden = !statsApi;
-    line.textContent = a === null || b === null ? ''
-      : fill(t('wc.last', '모두의 승률 {a} {pa}% · {b} {pb}%'), { a: name(lastPick.w), pa: a, b: name(lastPick.l), pb: b });
-  }
-  function renderRanking() {
-    var box = $('wcRanking'), list = $('wcRankingList'), order = ranked();
-    box.hidden = !statsApi || !totalGames || !order.length || view === 'match' || view === 'loading';
-    if (box.hidden) return;
-    $('wcRankingTotal').textContent = fill(t('wc.rankingTotal', '총 {n}판'), { n: totalGames.toLocaleString() });
-    list.textContent = '';
-    order.slice(0, 10).forEach(function (id, i) {
-      var s = stats[id], item = document.createElement('li'), photo = (cup.photos || {})[id];
-      if (photo) {
-        var img = document.createElement('img');
-        img.src = photo.image; img.alt = ''; img.width = 48; img.height = 36; img.loading = 'lazy';
-        item.appendChild(img);
-      }
-      var label = document.createElement('span');
-      label.className = 'wc-ranking-name';
-      label.textContent = (i + 1) + '. ' + name(id);
-      var rate = document.createElement('span');
-      rate.className = 'wc-ranking-rate';
-      rate.textContent = fill(t('wc.rankingRate', '우승 {t}% · 승률 {w}%'),
-        { t: Math.round(s.titles / s.entries * 100), w: Math.round(s.wins / Math.max(s.matches, 1) * 100) });
-      item.appendChild(label);
-      item.appendChild(rate);
-      list.appendChild(item);
-    });
-    var mine = $('wcRankingMine');
-    var place = result ? order.indexOf(result.id) : -1;
-    mine.hidden = view !== 'result' || place < 0;
-    if (!mine.hidden) mine.textContent = fill(t('wc.rankingMine', '내 우승 메뉴는 {n}위'), { n: place + 1 });
-  }
   function render() {
     if (view === 'intro') renderIntro();
     if (view === 'match') renderMatch(null);
@@ -307,7 +222,6 @@
         : game.stack[0];
     }
     game = { entrants: shuffle(set).slice(0, size), winners: [], stack: before ? [before] : [], log: [] };
-    lastPick = null;
     result = null;
     store();
     show('match');
@@ -331,8 +245,9 @@
   function pick(side) {
     if (busy || view !== 'match') return;
     var ids = pair(), chosen = ids[side];
-    game.stack.push({ entrants: game.entrants.slice(), winners: game.winners.slice() });
+    game.stack.push({ entrants: game.entrants.slice(), winners: game.winners.slice(), log: (game.log || []).length });
     game.winners.push(chosen);
+    if (game.log) game.log.push([chosen, ids[1 - side]]);
     if (game.winners.length * 2 === game.entrants.length) {
       if (game.winners.length === 1) { finish(chosen, ids[1 - side]); return; }
       game.entrants = game.winners;
@@ -499,7 +414,6 @@
       game.winners = previous.winners;
       if (game.log) game.log.length = previous.log || 0;
     }
-    lastPick = null;
     store();
     renderMatch(true);
   }
@@ -538,9 +452,6 @@
     restore();
     show('intro');
     renderIntro();
-    statsApi = statsConfig();
-    $('wcStatsNote').hidden = !statsApi;       // a finished game is counted only when stats are on
-    loadStats();
   }
   function failed() {
     show('loading');

@@ -74,7 +74,6 @@
           <button type="button" class="wc-btn" id="wcResume" hidden></button>
         </div>
         <p class="wc-note" data-i18n="wc.note">이 브라우저에 저장돼요</p>
-        <p class="wc-note" id="wcStatsNote" data-i18n="wc.rankingNote" hidden>끝난 판만 익명으로 집계해요</p>
       </div>
 
       <div class="wc-view wc-match" id="wcMatch" hidden>
@@ -82,7 +81,6 @@
           <h3 class="wc-round" id="wcRound"></h3>
           <p class="wc-count" id="wcCount"></p>
         </div>
-        <p class="wc-last" id="wcLastPick" hidden></p>
         <div class="wc-track" id="wcProgress" role="progressbar" aria-valuemin="0" aria-valuemax="31" aria-valuenow="0"><span id="wcBar"></span></div>
         <div class="wc-pair">
           <div class="wc-slot">
@@ -124,13 +122,6 @@
         </div>
         <p class="wc-share-status" id="wcShareStatus" role="status"></p>
       </div>
-
-      <section class="wc-ranking" id="wcRanking" aria-labelledby="wcRankingTitle" hidden>
-        <h3 id="wcRankingTitle" data-i18n="wc.ranking">모두의 랭킹</h3>
-        <p class="wc-ranking-total" id="wcRankingTotal"></p>
-        <ol class="wc-ranking-list" id="wcRankingList"></ol>
-        <p class="wc-ranking-mine" id="wcRankingMine" hidden></p>
-      </section>
 
       <section class="wc-history" id="wcHistory" aria-labelledby="wcHistoryTitle" hidden>
         <h3 id="wcHistoryTitle" data-i18n="wc.history">내 우승 기록</h3>
@@ -211,17 +202,11 @@
         'wc.finalist': '결승 상대: {dish}',
         'wc.history': '내 우승 기록',
         'wc.historyClear': '기록 지우기',
-        'wc.last': '모두의 승률 {a} {pa}% · {b} {pb}%',
         'wc.loading': '불러오는 중…',
         'wc.note': '이 브라우저에 저장돼요',
         'wc.photoCredit': '사진 {author} · {license}',
         'wc.pick': '{dish} 고르기',
         'wc.progressAria': '전체 진행',
-        'wc.ranking': '모두의 랭킹',
-        'wc.rankingMine': '내 우승 메뉴는 {n}위',
-        'wc.rankingNote': '끝난 판만 익명으로 집계해요',
-        'wc.rankingRate': '우승 {t}% · 승률 {w}%',
-        'wc.rankingTotal': '총 {n}판',
         'wc.restart': '처음부터',
         'wc.resume': '이어하기 · {round} {n}/{total}',
         'wc.round.final': '결승',
@@ -289,17 +274,11 @@
         'wc.finalist': 'Final opponent: {dish}',
         'wc.history': 'Your winners',
         'wc.historyClear': 'Clear history',
-        'wc.last': 'Everyone\'s win rate: {a} {pa}% · {b} {pb}%',
         'wc.loading': 'Loading…',
         'wc.note': 'Saved in this browser',
         'wc.photoCredit': 'Photo {author} · {license}',
         'wc.pick': 'Pick {dish}',
         'wc.progressAria': 'Overall progress',
-        'wc.ranking': 'Everyone\'s ranking',
-        'wc.rankingMine': 'Your winner is #{n}',
-        'wc.rankingNote': 'Only finished games are counted, anonymously',
-        'wc.rankingRate': 'won {t}% · win rate {w}%',
-        'wc.rankingTotal': '{n} games',
         'wc.restart': 'Start over',
         'wc.resume': 'Resume · {round} {n}/{total}',
         'wc.round.final': 'Final',
@@ -340,7 +319,6 @@
   </script>
   <!-- @end content -->
   <!-- Lab only (stage 2): the public project values the stats read; empty config = no stats. -->
-  <script src="js/ggongbab-public-config.js"></script>
   <script src="js/worldcup.js"></script>
 </body>
 </html>
