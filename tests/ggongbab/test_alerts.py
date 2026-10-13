@@ -117,3 +117,13 @@ def test_unknown_reasons_cannot_carry_free_text():
 def test_render_is_one_line_per_alert_with_an_action():
     lines = alerts.render([alerts.Alert.of("dooray_radar", "AUTH_EXPIRED", 30, NOW)])
     assert len(lines) == 1 and "complete SSO/MFA" in lines[0]
+
+
+def test_a_closed_browser_escalates_to_critical_once_scans_are_stale():
+    """2026-10-05..11: the Ops Chrome was closed for a week behind a single warning."""
+    fresh = alerts.radar_alert({"last_success": NOW - 700, "reason": "DOORAY_BROWSER_ABSENT"}, running=True,
+                               enabled=True, unread_disabled=False, now=NOW)
+    stale = alerts.radar_alert({"last_success": NOW - 7 * 86400, "reason": "DOORAY_BROWSER_ABSENT"}, running=True,
+                               enabled=True, unread_disabled=False, now=NOW)
+    assert (fresh.reason, fresh.severity) == ("BROWSER_ABSENT", "warning")
+    assert (stale.reason, stale.severity, stale.action) == ("BROWSER_ABSENT", "critical", "open_browser")
