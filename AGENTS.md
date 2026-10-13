@@ -33,7 +33,7 @@ Record the owner's bypass authorization in the task report. A bypass change is b
 
 ## Before starting
 
-1. Read the documents the task needs: `PRD.md` for product scope, `DESIGN_SYSTEM.md` for visual work, `ARCHITECTURE.md` for system boundaries, `README.md` and the `docs/` file governing the feature. Inspect the implementation and tests before planning a replacement.
+1. Read the documents the task needs: `PRD.md` for product scope, `DESIGN_SYSTEM.md` for visual work, `ARCHITECTURE.md` for system boundaries, `docs/GUIDE.md` (pages, data, pipelines and operations; `README.md` is only the short overview) and the `docs/` file governing the feature. Inspect the implementation and tests before planning a replacement.
 2. Follow the session-start procedure. Preserve unrelated or user-owned changes. Do not assume a local `main` or cached remote ref describes the deployed site.
 3. State the intended file scope. Separate frontend presentation from generated data, canonical DB, local agents and deployment operations.
 4. Work on your own task branch, created from the latest `origin/lab`, in your own worktree (see Lab-first lifecycle for the only exceptions). Never change `main`, merge to it, deploy production or force push without explicit owner authorization. Do not reset or rebase over pushed or generated-data commits.
