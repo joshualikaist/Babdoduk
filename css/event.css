@@ -24,6 +24,64 @@
   margin-top: var(--space-8);
 }
 
+/* An activity's pictures (data/content/events.json `pictures`): two side by side with VS. */
+.event-teaser {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 520px;
+  margin-top: var(--space-3);
+  text-decoration: none;
+}
+
+.event-teaser img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.event-teaser-vs {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fffdf8;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.event-teaser-credit {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-ink-muted);
+}
+
+.event-link[data-event-page] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: var(--space-3);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--color-ink);
+  color: #fffdf8;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.event-link[data-event-page][data-band="past"] {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-divider);
+}
+
 .event-section[hidden],
 .event-list[hidden],
 .event-notices[hidden],
