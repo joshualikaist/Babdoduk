@@ -96,7 +96,7 @@ Discovery v2 Phase 1 (after MISS-001, 2026-09-28; `docs/GGONGBAB_DISCOVERY.md`) 
 
 Dooray: `scripts/dooray_web_agent.py` and `scripts/ggongbab/web/` manage resident-browser use, calibration, read-state verification and task writing. A verified read-state field and at least two explicitly read rows are required for detail calibration; unknown/unread rows cannot be fetched for verification. `--run --read-state read` fails closed when the field is unavailable. Backfill/preview behavior is separately documented in `docs/GGONGBAB_PREVIEW.md`.
 
-Portal: `main` contains the earlier Portal observation, discovery and queue diagnostics (`scripts/portal_web_agent.py`, `scripts/ggongbab/portal_*.py`) described in `README.md`; the cloud collector stays disabled and notice detail replay stays blocked. The LIST-only session poller and the Windows resident workers are lab-only (see above). Authenticated browser profiles and `.local/` are sensitive local material.
+Portal: `main` contains the earlier Portal observation, discovery and queue diagnostics (`scripts/portal_web_agent.py`, `scripts/ggongbab/portal_*.py`) described in `docs/GUIDE.md`; the cloud collector stays disabled and notice detail replay stays blocked. The LIST-only session poller and the Windows resident workers are lab-only (see above). Authenticated browser profiles and `.local/` are sensitive local material.
 
 ## Environment and deployment
 
