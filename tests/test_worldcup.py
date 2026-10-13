@@ -19,6 +19,7 @@ def test_the_bracket_is_32_distinct_catalog_dishes():
 
 def test_a_broken_bracket_is_refused(tmp_path):
     shutil.copytree(ROOT / "data/foods", tmp_path / "data/foods")
+    shutil.copytree(ROOT / "images/worldcup", tmp_path / "images/worldcup")
     (tmp_path / "data/content").mkdir(parents=True)
 
     def errors(dishes):
@@ -55,6 +56,30 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     assert "var KEY = 'babdoduk-worldcup';" in script and "localStorage.setItem(KEY" in script
     assert html.count('<button type="button" class="wc-card"') == 2
     assert 'id="wcStatus" role="status"' in html and "'wc.title': 'KAIST Menu World Cup'" in html
-    # No pictures and no claims about what is on sale: the catalog is general information.
-    assert "<img" not in html.split("<main", 1)[1].split("</main>", 1)[0]
-    assert "판매 여부와 가격은 가게에서 확인" in html
+    # Pictures are decoration inside the pick buttons (the button names the dish); no claims about
+    # what is on sale: the catalog is general information.
+    main = html.split("<main", 1)[1].split("</main>", 1)[0]
+    assert re.findall(r"<img [^>]*>", main) and all('alt=""' in tag for tag in re.findall(r"<img [^>]*>", main))
+    assert "판매 여부와 가격은 가게에서 확인" in html and "위키미디어 공용의 자유 이용 사진" in html
+
+
+def test_every_dish_has_a_credited_free_photo_on_disk():
+    photos = CUP["photos"]
+    assert set(photos) == set(CUP["dishes"])
+    for dish, photo in photos.items():
+        assert (ROOT / photo["image"]).is_file() and photo["image"] == f"images/worldcup/{dish}.jpg"
+        assert photo["source"].startswith("https://commons.wikimedia.org/wiki/File:") and photo["author"]
+        assert "NC" not in photo["license"] and "ND" not in photo["license"]
+        assert (ROOT / photo["image"]).stat().st_size < 150_000          # a cropped, resized copy
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    assert "showPhoto(" in script and "wc.photoCredit" in script
+
+
+def test_a_missing_photo_is_refused(tmp_path):
+    shutil.copytree(ROOT / "data/foods", tmp_path / "data/foods")
+    (tmp_path / "data/content").mkdir(parents=True)
+    broken = dict(CUP, photos={k: v for k, v in CUP["photos"].items() if k != CUP["dishes"][0]})
+    (tmp_path / "data/content/worldcup.json").write_text(json.dumps(broken), encoding="utf-8")
+    errors = page_content.worldcup_errors(tmp_path)
+    assert any(f"{CUP['dishes'][0]} has no photo" in e for e in errors)
+    assert any("which does not exist" in e for e in errors)              # the files are not in tmp_path

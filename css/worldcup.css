@@ -43,6 +43,9 @@
 }
 
 .wc-view[hidden],
+.wc-photo[hidden],
+.wc-credit[hidden],
+.wc-winner-photo[hidden],
 .wc-history[hidden],
 .wc-error[hidden],
 .wc-card-tags[hidden],
@@ -176,23 +179,81 @@
   transition: width 200ms ease;
 }
 
+/* Both cards share the first row (so they are always the same height and their photos line up)
+   and both credits the second, however long a credit is. */
 .wc-pair {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: stretch;
-  gap: var(--space-4);
+  gap: var(--space-2) var(--space-4);
   margin-top: var(--space-6);
+}
+
+.wc-slot {
+  display: contents;
+}
+
+.wc-slot .wc-card { grid-row: 1; }
+.wc-slot .wc-credit { grid-row: 2; }
+.wc-slot:first-child > * { grid-column: 1; }
+.wc-slot:last-child > * { grid-column: 3; }
+
+.wc-vs {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* The photo sits under the words (owner, 2026-10-13); 4:3 crops, cover keeps any stray size tidy. */
+.wc-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin-top: auto;          /* words at the top, photos level across the two cards */
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--color-surface-muted);
+}
+
+.wc-credit {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--color-ink-muted);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.wc-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wc-winner-photo {
+  max-width: 420px;
+  margin: var(--space-4) auto 0;
+}
+
+.wc-winner-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-md);
+  object-fit: cover;
 }
 
 .wc-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: var(--space-2);
   min-width: 0;
   min-height: 220px;
-  padding: var(--space-6) var(--space-4);
+  padding: var(--space-4);
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
@@ -361,13 +422,46 @@
     padding: var(--space-6) var(--space-4);
   }
 
+  /* Phone: the two dishes stay side by side, square photos, VS between them. */
   .wc-pair {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-2);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .wc-slot:last-child > * { grid-column: 2; }
+
+  .wc-vs {
+    grid-column: auto;
+    grid-row: auto;
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    padding: 6px 8px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fffdf8;
+    font-size: 11px;
   }
 
   .wc-card {
-    min-height: 132px;
+    min-height: 0;
+    padding: var(--space-3) var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .wc-card-name {
+    font-size: 19px;
+  }
+
+  .wc-card-sub,
+  .wc-card-tags {
+    font-size: 12px;
+  }
+
+  .wc-photo {
+    aspect-ratio: 1 / 1;
   }
 
   .wc-actions .wc-btn {
