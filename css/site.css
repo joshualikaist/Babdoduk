@@ -449,7 +449,20 @@ body::after {
   outline-offset: -2px;
 }
 
+/* A direct link with a long label shows a short one on phones (only one is ever rendered). */
+.nav-label-short {
+  display: none;
+}
+
 @media (max-width: 520px) {
+  .nav-label-long {
+    display: none;
+  }
+
+  .nav-label-short {
+    display: inline;
+  }
+
   .site-nav-inner {
     grid-template-columns: auto minmax(0, 1fr) auto;
     column-gap: 2px;
@@ -477,13 +490,40 @@ body::after {
     font-size: 0.75rem;
   }
 
+  /* More now sits right of three direct links: its panel opens toward the left edge. */
   .nav-mega-panel {
-    left: 50%;
-    transform: translate(-50%, -4px);
+    left: auto;
+    right: 0;
+    transform: translateY(-4px);
   }
 
   .nav-mega.is-open .nav-mega-panel {
-    transform: translate(-50%, 0);
+    transform: translateY(0);
+  }
+}
+
+/* The narrowest phones (under 380px): three direct links, More and the language switch still fit
+   on one row without touching. */
+@media (max-width: 379px) {
+  .site-nav-wordmark,
+  .site-nav-item.site-nav-lang,
+  .site-nav-direct,
+  .nav-mega-trigger {
+    padding-left: 2px;
+    padding-right: 2px;
+    letter-spacing: -0.05em;     /* the text stays 12px (site guardian) */
+  }
+}
+
+@media (max-width: 339px) {
+  .site-nav-wordmark,
+  .site-nav-item.site-nav-lang {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .nav-mega-trigger::after {
+    margin-left: 2px;
   }
 }
 
