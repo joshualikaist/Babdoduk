@@ -24,6 +24,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <!-- Jua (OFL) for the round splash only, cut to its letters (8강 진출! 4강 진출! 결승! VS, and the English). -->
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%2148FQSTVaefhilmnrstu%EA%B0%95%EA%B2%B0%EC%8A%B9%EC%A7%84%EC%B6%9C" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/worldcup.css" />
 </head>
@@ -129,7 +131,9 @@
         <button type="button" class="wc-text" id="wcHistoryClear" data-i18n="wc.historyClear">기록 지우기</button>
       </section>
       <p class="wc-sr" id="wcStatus" role="status" aria-live="polite"></p>
-      <div class="wc-banner" id="wcBanner" aria-hidden="true" hidden></div>
+      <!-- The round splash from the quarterfinals on (js/worldcup.js showSplash): decoration in the
+           top layer over a match already rendered and announced; filled only while it plays. -->
+      <div class="wc-splash" id="wcSplash" popover="manual" aria-hidden="true"></div>
     </section>
 
     <p class="wc-scope" data-i18n="wc.scope">사진: 위키미디어 공용, 잘라서 줄임 · 판매 여부와 가격은 가게에서 확인</p>
@@ -191,9 +195,6 @@
         'wc.announce': '{round} {n}번째 경기: {a} 대 {b}',
         'wc.announceWinner': '우승 메뉴: {dish}',
         'wc.back': '밥도둑 소식',
-        'wc.banner.final': '결승전!',
-        'wc.banner.n': '{n}강 진출!',
-        'wc.banner.semi': '준결승!',
         'wc.cardBrand': '밥도둑 먹방 월드컵',
         'wc.cardKicker': '나의 최애 메뉴',
         'wc.copied': '결과와 링크를 복사했어요',
@@ -218,6 +219,9 @@
         'wc.share': '공유하기',
         'wc.shareFailed': '공유하지 못했어요. 주소창의 주소를 복사해 주세요.',
         'wc.shareText': '나의 먹방 월드컵 우승 메뉴는 {dish}!',
+        'wc.splash.final': '결승!',
+        'wc.splash.quarter': '8강 진출!',
+        'wc.splash.semi': '4강 진출!',
         'wc.start': '{n}강 시작',
         'wc.tag.chewy': '쫄깃한',
         'wc.tag.crispy': '바삭한',
@@ -263,9 +267,6 @@
         'wc.announce': '{round}, match {n}: {a} or {b}',
         'wc.announceWinner': 'Winner: {dish}',
         'wc.back': 'Babdoduk news',
-        'wc.banner.final': 'The final!',
-        'wc.banner.n': 'Round of {n}!',
-        'wc.banner.semi': 'Semifinal!',
         'wc.cardBrand': 'Babdoduk Food World Cup',
         'wc.cardKicker': 'My favorite dish',
         'wc.copied': 'Result and link copied',
@@ -290,6 +291,9 @@
         'wc.share': 'Share',
         'wc.shareFailed': 'Could not share. Copy the address from the address bar.',
         'wc.shareText': 'My Food World Cup winner: {dish}!',
+        'wc.splash.final': 'The Final!',
+        'wc.splash.quarter': 'Quarterfinals!',
+        'wc.splash.semi': 'Semifinals!',
         'wc.start': 'Start the round of {n}',
         'wc.tag.chewy': 'Chewy',
         'wc.tag.crispy': 'Crispy',

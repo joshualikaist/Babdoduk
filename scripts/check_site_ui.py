@@ -895,9 +895,24 @@ def event_bands(page):
     return count
 
 
+# Every round splash the page opens, in order: beforetoggle fires as showPopover() runs.
+SPLASH_LOG = """() => { window.__splashes = [];
+  document.querySelector('#wcSplash').addEventListener('beforetoggle', e => {
+    if (e.newState === 'open') window.__splashes.push(e.target.dataset.round); }); }"""
+SPLASH_OPEN = "document.querySelector('#wcSplash').matches(':popover-open')"
+
+
+def worldcup_saved(cup, entrants, winners):
+    """A stored game `winners` picks into a round of `entrants`, as js/worldcup.js keeps it."""
+    ids = cup["dishes"][:entrants]
+    return {"v": 1, "set": f"{cup['size']}:" + ",".join(cup["dishes"]), "winners": [],
+            "game": {"entrants": ids, "winners": ids[0:winners * 2:2], "stack": [], "log": []}}
+
+
 def worldcup_play(page):
     """The menu world cup (worldcup.html): a whole bracket by keyboard, one undo, the winner kept
-    only in this browser. The context runs with reduced motion, so each pick renders at once."""
+    only in this browser. The context runs with reduced motion, so each pick renders at once and no
+    round splash opens; worldcup_splash plays them with motion."""
     count = 0
 
     def check(ok, detail):
@@ -911,6 +926,7 @@ def worldcup_play(page):
     page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
     page.locator("#wcStart").click()
     check(page.locator("#wcRound").inner_text() == "32강" and page.locator("#wcCount").inner_text() == "1 / 16"
           and page.evaluate("document.activeElement.classList.contains('wc-card')"), "the first match has focus on a card")
@@ -937,15 +953,155 @@ def worldcup_play(page):
     page.locator("#wcUndo").click()
     check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcUndo").is_disabled(),
           "and on to its first match, with nothing left to undo")
-    for _ in range(size - 1):
-        page.locator(".wc-card").first.focus()
+    page.locator(".wc-card").first.focus()
+    on_first = "document.activeElement === document.querySelector('.wc-card')"
+    for i in range(size - 1):
+        if i:
+            check(page.evaluate(on_first), ("after each pick focus is on the next match's first card", i))
         page.keyboard.press("Enter")
+        if i == size // 2 + size // 4 - 1:              # the round of 16 just closed
+            page.wait_for_function("document.getElementById('wcStatus').textContent.startsWith('8강 1번째 경기')")
+            check(page.locator("#wcRound").inner_text() == "8강" and not page.evaluate(SPLASH_OPEN),
+                  "with reduced motion the 8강 match comes at once, announced, without a splash")
     check(page.locator("#wcResult").is_visible() and page.evaluate("document.activeElement.id") == "wcWinner",
           "after the final the winner is shown and focused")
+    check(page.evaluate("window.__splashes") == [], ("reduced motion: no round splash at all", page.evaluate("window.__splashes")))
     saved = page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup'))")
     check(saved["game"] is None and len(saved["winners"]) == 1 and saved["winners"][0]["id"] in dishes,
           ("the winner is kept in this browser only", saved["winners"]))
     check(page.locator("#wcHistoryList li").count() == 1, "the past winner is listed")
+    return count
+
+
+def worldcup_splash(page):
+    """The round splash with motion (owner 2026-10-14): none for 16강; 8강 and 4강 a black stage
+    with the round, above the navigation, the match already rendered, focused and announced
+    beneath; the final adds the crash of the two finalists. Enter, Space, a held key or a tap
+    skips it and never picks; played out (finish() on its animations, so no wall clock) it hands
+    over to the match; a failing animation never blocks the game. Saved games are seeded just
+    before each round closes, so only a handful of picks run with motion."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html splash: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    page.emulate_media(reduced_motion="no-preference")
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+    stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
+    on_first = "document.activeElement === document.querySelector('.wc-card')"
+    closed = "!" + SPLASH_OPEN
+    shown = "[...document.querySelectorAll('.wc-card')].every(c => getComputedStyle(c).opacity === '1')"
+
+    def close_round(entrants):
+        """Seed the last match of a round of `entrants`, resume, and pick it by keyboard."""
+        page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))",
+                      worldcup_saved(cup, entrants, entrants // 2 - 1))
+        page.reload(wait_until="networkidle")
+        page.evaluate(SPLASH_LOG)
+        page.locator("#wcResume").click()
+        page.locator(".wc-card").first.focus()
+        page.keyboard.press("Enter")
+
+    close_round(32)
+    page.wait_for_function("document.getElementById('wcRound').textContent === '16강'")
+    check(page.evaluate("window.__splashes") == [] and page.evaluate(on_first), "no splash for the round of 16")
+
+    close_round(16)
+    page.wait_for_function(SPLASH_OPEN)
+    seen = page.evaluate(r"""() => { const s = document.querySelector('#wcSplash');
+      const nav = document.querySelector('.site-nav').getBoundingClientRect();
+      const top = document.elementFromPoint(nav.left + nav.width / 2, nav.top + nav.height / 2);
+      return {round: s.dataset.round, title: s.querySelector('.wc-splash-title').textContent.replace(/\s/g, ' '), overNav: s.contains(top),
+              fighters: s.querySelectorAll('.wc-fighter').length, hidden: s.getAttribute('aria-hidden')}; }""")
+    check(seen == {"round": "8", "title": "8강 진출!", "overNav": True, "fighters": 0, "hidden": "true"},
+          ("8강: the round alone on a stage above the navigation, hidden from screen readers", seen))
+    check(page.locator("#wcRound").inner_text() == "8강" and page.evaluate(on_first),
+          "the 8강 match is already rendered and focused under it")
+    page.wait_for_function("document.getElementById('wcStatus').textContent.startsWith('8강 1번째 경기')")
+    check(page.evaluate(SPLASH_OPEN), "and announced while the splash plays")
+    page.keyboard.press("Enter")
+    page.wait_for_function(closed)
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 8 and game["winners"] == [] and page.evaluate(on_first)
+          and page.locator("#wcCount").inner_text() == "1 / 4", ("Enter skips to the match without a pick", game["winners"]))
+
+    close_round(8)
+    page.wait_for_function(SPLASH_OPEN)
+    check(page.evaluate("window.__splashes") == ["4"], "4강 gets the splash")
+    page.keyboard.press(" ")
+    page.wait_for_function(closed)
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 4 and game["winners"] == [] and page.evaluate(on_first),
+          ("Space skips without a pick, even on its release", game["winners"]))
+
+    # A key held through the skip: its repeats are swallowed, so they never pick.
+    close_round(8)
+    page.wait_for_function(SPLASH_OPEN)
+    page.keyboard.down("Enter")
+    page.wait_for_function(closed)
+    page.keyboard.down("Enter")                       # Playwright sends a second down as a repeat
+    page.keyboard.down("Enter")
+    page.keyboard.up("Enter")
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 4 and game["winners"] == [] and page.evaluate(on_first),
+          ("a held key skips once and never picks", game["winners"]))
+
+    # A screen reader activates the card under the splash: that ends the splash, it is not a pick.
+    close_round(8)
+    page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("() => document.querySelector('.wc-card').click()")
+    page.wait_for_function(closed)
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 4 and game["winners"] == [], ("a click from assistive technology only ends it", game["winners"]))
+
+    close_round(4)
+    page.wait_for_function(SPLASH_OPEN)
+    crash = page.evaluate("""() => { const s = document.querySelector('#wcSplash');
+      return {round: s.dataset.round, title: s.querySelector('.wc-splash-title').textContent,
+              fighters: [...s.querySelectorAll('.wc-fighter-face .wc-card-name')].map(n => n.textContent),
+              cards: [...document.querySelectorAll('.wc-card')].map(c => c.querySelector('.wc-card-name').textContent),
+              hiddenCards: [...document.querySelectorAll('.wc-card')].every(c => c.style.opacity === '0'),
+              vs: s.querySelector('.wc-splash-vs').textContent, flashes: s.querySelectorAll('.wc-splash-flash').length}; }""")
+    check(crash["round"] == "2" and crash["title"] == "결승!" and crash["fighters"] == crash["cards"]
+          and len(crash["cards"]) == 2 and crash["hiddenCards"] and crash["vs"] == "VS" and crash["flashes"] == 1,
+          ("the final: the two finalists' doubles crash under a VS stamp, with one flash", crash))
+    page.mouse.click(195, 422)                        # a tap in the middle, over where the cards are
+    page.wait_for_function(closed)
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 2 and game["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown),
+          ("a tap skips to the final without a pick, the cards shown again", game["winners"]))
+
+    # Played out: finish() runs the splash to its end (no waiting on the clock).
+    close_round(4)
+    page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.finish())")
+    page.wait_for_function(closed)
+    check(page.evaluate(on_first) and page.locator("#wcCount").inner_text() == "1 / 1" and page.evaluate(shown)
+          and page.evaluate("document.querySelector('#wcSplash').childElementCount") == 0,
+          "played out, the splash hands over to the final with focus on its first card")
+    page.keyboard.press("Enter")
+    check(page.locator("#wcResult").is_visible() and page.evaluate("document.activeElement.id") == "wcWinner",
+          "and the final is played to the winner")
+
+    # Anything failing only takes the splash away: the match still comes and takes picks.
+    page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", worldcup_saved(cup, 16, 7))
+    page.reload(wait_until="networkidle")
+    page.evaluate("() => { Element.prototype.animate = () => { throw new Error('no animation'); }; }")
+    page.locator("#wcResume").click()
+    page.locator(".wc-card").first.focus()
+    page.keyboard.press("Enter")
+    page.wait_for_function("document.getElementById('wcRound').textContent === '8강'")
+    check(page.evaluate(closed) and page.evaluate(on_first), "a failing splash leaves the 8강 match open")
+    page.keyboard.press("Enter")
+    check(len(page.evaluate(stored)["winners"]) == 1, "and its cards still take a pick")
+
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.emulate_media(reduced_motion="reduce")
+    page.reload(wait_until="networkidle")
     return count
 
 
@@ -1376,6 +1532,7 @@ def run_checks(screenshots=False):
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
         report["checks"] += worldcup_play(page)
+        report["checks"] += worldcup_splash(page)
         report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)

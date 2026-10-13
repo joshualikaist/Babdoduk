@@ -1,10 +1,12 @@
 """The 먹방 world cup (worldcup.html, owner P4 2026-10-13): a bracket of catalog dishes from
 data/content/worldcup.json, played in the browser with nothing sent anywhere. Static checks; the
-keyboard play-through runs in scripts/check_site_ui.py (worldcup_play)."""
+keyboard play-through runs in scripts/check_site_ui.py (worldcup_play), and the round splash with
+motion in worldcup_splash."""
 import json
 import re
 import shutil
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import page_content
 
@@ -139,3 +141,76 @@ def test_a_sixth_variant_of_the_same_dish_is_refused(tmp_path):
     (tmp_path / "data/content/worldcup.json").write_text(json.dumps(dict(CUP, dishes=dishes, photos={})), encoding="utf-8")
     assert len(gimbap) == 6
     assert "worldcup.json: 6 dishes are 김밥; at most 5 of the same dish" in page_content.worldcup_errors(tmp_path)
+
+
+def splash_module():
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    return script.split("// ---- round splash", 1)[1].split("// ---- celebration", 1)[0]
+
+
+def test_a_new_round_takes_the_screen_from_the_quarterfinals_on():
+    # Owner, 2026-10-14: no banner over the cards ("8강 진출 16강 진출이 음식이랑 같이 떠 있어");
+    # from 8강 a black full-screen beat, 결승 with the finalists' crash. Nothing for 16강.
+    html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    module = splash_module()
+    assert "wcBanner" not in html and "wc-banner" not in css and "function banner" not in module
+    spec = re.search(r"var SPLASH = \{(.*?)\n  \};", module, re.S).group(1)
+    assert re.findall(r"^\s*(\d+): \{ key: '(wc\.splash\.\w+)', text: '([^']+)', ms: (\d+) \}", spec, re.M) == [
+        ("8", "wc.splash.quarter", "8강 진출!", "800"), ("4", "wc.splash.semi", "4강 진출!", "800"),
+        ("2", "wc.splash.final", "결승!", "2000")]
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
+    assert [ko[f"wc.splash.{k}"] for k in ("quarter", "semi", "final")] == ["8강 진출!", "4강 진출!", "결승!"]
+    assert [en[f"wc.splash.{k}"] for k in ("quarter", "semi", "final")] == ["Quarterfinals!", "Semifinals!", "The Final!"]
+    assert not any(k.startswith("wc.banner") for k in ko)
+    # A top-layer popover above the navigation, decoration only; reduced motion, forced colours or
+    # no popover support: straight to the match.
+    assert '<div class="wc-splash" id="wcSplash" popover="manual" aria-hidden="true"></div>' in html
+    assert "!reduced && !(forcedColors && forcedColors.matches)" in module and "typeof splashEl.showPopover === 'function'" in module
+    assert "if (reduced) { renderMatch(true); return; }" in (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+
+
+def test_the_splash_moves_only_transform_and_opacity_and_flashes_once_in_white():
+    module = splash_module()
+    moved = set()
+    for call in re.findall(r"track\([^;]*?\]\]\);", module, re.S):
+        moved |= set(re.findall(r"[{,] (\w+): (?!function)", call))
+    assert moved == {"transform", "opacity"}, moved
+    assert module.count("'wc-splash-flash'") == 1                       # one flash, in the final only
+    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    flash = css.rsplit(".wc-splash-flash {", 1)[1].split("}", 1)[0]          # its own rule, after the shared one
+    assert "background: #fff;" in flash
+    # Black and white with the wordmark gradient: never red, never the old red-brown accent.
+    block = css.split("/* The round splash", 1)[1].split(".wc-confetti {", 1)[0]
+    colours = set(re.findall(r"#[0-9a-fA-F]{3,6}\b", block))
+    assert colours <= {"#000", "#fff", "#ec4899", "#a855f7", "#6366f1", "#c44fd0"}, colours
+    # The shake stays within 8 px; the stages are 0.8 s and 2 s.
+    amps = [float(a) for a in re.findall(r"amp = phone \? (\d+) : (\d+)", module)[0]]
+    assert max(amps) <= 8
+
+
+def test_the_splash_font_is_jua_cut_to_its_letters_with_a_fallback():
+    html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    link = re.search(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Jua[^"]+)" rel="stylesheet" />', html).group(1)
+    letters = set(parse_qs(urlparse(link).query)["text"][0])
+    for lang in ("ko", "en"):
+        strings = json.loads((ROOT / f"i18n/{lang}.json").read_text(encoding="utf-8"))
+        for key in ("wc.splash.quarter", "wc.splash.semi", "wc.splash.final", "wc.vs"):
+            assert set(strings[key]) - {" "} <= letters, (lang, key, set(strings[key]) - letters)
+    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    title = css.split(".wc-splash-title,\n.wc-splash-vs {", 1)[1].split("}", 1)[0]
+    assert "font-family: 'Jua', 'Noto Sans KR'," in title and "sans-serif;" in title and "font-synthesis: none;" in title
+
+
+def test_a_skip_is_never_a_pick():
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    pick = script.split("function pick(side) {", 1)[1]
+    assert pick.lstrip().startswith("if (splash) { endSplash('skip'); return; }")
+    assert "splashEl.addEventListener('click', function () { endSplash('skip'); });" in script
+    assert "if (e.detail && Date.now() < quietUntil) return;" in script                 # a tap just after
+    keyup = script.split("document.addEventListener('keyup', function (e) {", 1)[1].split("}, true);", 1)[0]
+    assert "e.preventDefault();" in keyup and "heldKey" in keyup                         # Space clicks on release
+    # The match is rendered and focused before the splash, and gets focus again after it.
+    assert "renderMatch(true, splashing);\n      if (splashing) showSplash(round);" in script
+    assert "if (reason !== 'quiet' && view === 'match') cards[0].focus({ preventScroll: true });" in script
