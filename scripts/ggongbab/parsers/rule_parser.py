@@ -249,6 +249,14 @@ def extract_buildings(text: str) -> list[str]:
     return found
 
 
+# A prize draw or gift for participants (the AI's giveaway quote must say so).
+GIVEAWAY_EVIDENCE = re.compile(
+    r"경품|추첨|럭키\s*드로우|기념품|굿즈|사은품|상품권|선물|증정|"
+    r"prizes?|raffle|lucky\s*draw|giveaways?|souvenirs?|gift|goodies",
+    re.I,
+)
+
+
 def explicit_food_evidence(text: str) -> list[str]:
     """Phrases that explicitly say food/drink is provided. Time-of-day words alone never match."""
     if not text:

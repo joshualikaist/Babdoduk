@@ -8,7 +8,7 @@ contracts themselves are standard JSON Schema files in `schemas/` (data plan pha
 
 | File | What it holds | Written by | Contract (`schemas/`) | Checked by (`validate_content.py`) | Read by | Served |
 |---|---|---|---|---|---|---|
-| `data/ggongbab/latest.json` | Free-food events now and upcoming | content bot, `refresh_ggongbab.py` (cloud, scheduled every 30 min) | `ggongbab-feed` | `--only ggongbab`: expiry, explicit food, privacy | `ggongbab.html`, home calendar | yes |
+| `data/ggongbab/latest.json` | Free-food events now and upcoming | content bot, `refresh_ggongbab.py` (cloud, scheduled every 30 min) | `ggongbab-feed` | `--only ggongbab`: expiry, explicit food or a giveaway, privacy | `ggongbab.html`, home calendar | yes |
 | `data/ggongbab/archive/index.json` | Past listings, last 30 days | same | `ggongbab-archive` | same | same | yes |
 | `data/ggongbab/news.json` | Campus food news | same, from `inputs/ggongbab/food-news.json` | `ggongbab-news` | same, plus each item's derived id | `ggongbab.html` | yes |
 | `data/kaist-menu/YYYY-MM-DD.json` | One day's cafeteria menus; current week only | content bot, `refresh_kaist_menu.py` (scheduled 06:00, 10:30, 16:30) | `kaist-menu-day` | `--only kaist-menu`: dates, counts, coverage | hub (other dates) | yes |

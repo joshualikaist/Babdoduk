@@ -15,6 +15,8 @@ PUBLIC_FIELDS = (
     "location_name", "building", "room", "food_provided", "food_type", "food_description",
     "organizer", "eligibility", "registration_required", "registration_deadline",
     "registration_url", "source_types", "confidence",
+    # Migration 006 (2026-10-14): a giveaway listing and where the food evidence was read.
+    "food_source", "giveaway", "giveaway_description",
 )
 PUBLIC_COLUMNS = PUBLIC_FIELDS + ("content_revision", "updated_at")
 
@@ -45,6 +47,9 @@ def public_row(event):
         "registration_url": event["registration"]["url"],
         "source_types": sorted({s["type"] for s in event["sources"]}),
         "confidence": event["confidence"],
+        "food_source": event["food"].get("source", ""),
+        "giveaway": (event.get("giveaway") or {}).get("provided", "false"),
+        "giveaway_description": (event.get("giveaway") or {}).get("description", ""),
     }
     row["content_revision"] = content_revision(row)
     return row
@@ -52,19 +57,24 @@ def public_row(event):
 
 def to_snapshot_event(row):
     """Phase 2B reference mapping; public row only, timestamps normalized to KST."""
-    return {
+    food = {"provided": row["food_provided"], "type": row["food_type"], "description": row["food_description"]}
+    if row.get("food_source") in ("text", "poster"):
+        food["source"] = row["food_source"]
+    event = {
         "id": row["id"], "title": row["title"], "summary": row["summary"],
         "startAt": kst_iso(row["start_at"]), "endAt": kst_iso(row["end_at"]),
         "dateText": row["date_text"], "timeText": row["time_text"],
         "location": {"name": row["location_name"], "building": row["building"], "room": row["room"]},
-        "food": {"provided": row["food_provided"], "type": row["food_type"],
-                 "description": row["food_description"]},
+        "food": food,
         "organizer": row["organizer"], "eligibility": row["eligibility"],
         "registration": {"required": row["registration_required"],
                          "deadline": kst_iso(row["registration_deadline"]), "url": row["registration_url"]},
         "confidence": row["confidence"],
         "sources": [{"type": kind, "name": PUBLIC_SOURCE_NAMES[kind]} for kind in row["source_types"]],
     }
+    if row.get("giveaway") == "true":
+        event["giveaway"] = {"provided": "true", "description": row.get("giveaway_description") or ""}
+    return event
 
 
 @dataclass

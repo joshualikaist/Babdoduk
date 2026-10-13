@@ -250,7 +250,8 @@ def test_an_internal_source_never_carries_a_url(kind, source_type):
 # ---------------------------------------------------------------------------
 # Changing this list is a privacy decision. Review the new field, then update both lists.
 EXPECTED_TEXT_FIELDS = ("title", "summary", "dateText", "timeText", "organizer", "eligibility",
-                        "location.name", "location.building", "location.room", "food.description", "sources[].name")
+                        "location.name", "location.building", "location.room", "food.description",
+                        "giveaway.description", "sources[].name")
 
 
 def test_the_privacy_scanned_text_fields_are_an_explicit_reviewed_list():
@@ -261,7 +262,7 @@ def test_privacy_patterns_run_only_on_the_allowlisted_text_fields(monkeypatch):
     scanned = []
     real = vc.gg_text_errors
     monkeypatch.setattr(vc, "gg_text_errors", lambda prefix, where, text: scanned.append(where) or real(prefix, where, text))
-    assert validate_ggongbab_payload(live(event(id=PHONE_LIKE_UUID)), NOW) == []
+    assert validate_ggongbab_payload(live(event(id=PHONE_LIKE_UUID, giveaway={"provided": "true", "description": "경품"})), NOW) == []
     assert sorted(scanned) == sorted(f"events[0].{field.replace('[]', '[0]')}" for field in EXPECTED_TEXT_FIELDS)
 
 

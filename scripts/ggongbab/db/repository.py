@@ -119,7 +119,7 @@ class SupabaseRepository:
             "prompt_version": f"eq.{prompt_version}",
             "status": "eq.ok",
             "role": "eq.primary",
-            "select": "parsed_json,model,confidence,created_at",
+            "select": "parsed_json,model,confidence,input_kind,created_at",
             "order": "created_at.desc",
             "limit": 1,
         })

@@ -28,10 +28,14 @@ def test_ai_schema_parses_and_rejects_bad_enum():
 
 
 def test_ai_schema_is_strict_friendly():
-    # Structured Outputs requires every field to be present (None allowed, no defaults).
-    schema = EventExtraction.model_json_schema()
+    # Structured Outputs requires every field to be present (None allowed, no defaults). What is
+    # sent is the SDK's strict conversion: the v4 fields' null defaults are dropped there.
+    from openai.lib._pydantic import to_strict_json_schema
+    schema = to_strict_json_schema(EventExtraction)
     assert set(schema["required"]) == set(schema["properties"].keys())
-    assert set(schema["$defs"]["Evidence"]["required"]) == {"event_time", "location", "food", "registration"}
+    assert set(schema["$defs"]["Evidence"]["required"]) == {"event_time", "location", "food", "registration",
+                                                             "giveaway", "from_poster"}
+    assert '"default"' not in json.dumps(schema)
 
 
 # --- validator: regression fixtures -----------------------------------------
