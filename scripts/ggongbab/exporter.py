@@ -5,6 +5,11 @@ Only status=published, needs_review=false, confidence >= threshold and not
 expired events are written to the live feed. The payload contains no sender
 addresses, raw text/HTML, Dooray ids, prompts or private attachment links.
 
+The ggongbab feed lists explicit free food, and since 2026-10-14 (owner decision) also events with
+a prize draw or giveaway for participants: such an event carries `giveaway`, and the page marks
+it 🎁 and keeps it out of the free-food counts. `food.source` says where the food evidence was
+read: "text", or "poster" when it was only in an attached image.
+
 The archive (past listings) holds the same rows once they have expired, for a
 30-day public window, and only if they already appeared in a published file:
 eligible now is not proof of having been listed (a mail-archive backfill can
@@ -65,7 +70,7 @@ def publication_eligible(row: dict[str, Any], settings: Settings, *, food_only: 
     """The publication policy apart from time. The live feed and archive share it."""
     if row.get("contentType", row.get("content_type", "free_food")) != "free_food":
         return False  # A news row requires a separately validated free event to coexist.
-    if food_only and tri_state(row.get("food_provided")) != "true":
+    if food_only and tri_state(row.get("food_provided")) != "true" and tri_state(row.get("giveaway")) != "true":
         return False
     if row.get("status") != "published" or row.get("needs_review"):
         return False
@@ -95,7 +100,16 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
         if stype in {"kaist_public", "manual"} and url.startswith("http"):
             entry["url"] = url  # only public web links; Dooray/task links are never exported
         sources.append(entry)
-    return {
+    food_provided = tri_state(row.get("food_provided"))
+    food = {
+        "provided": food_provided,
+        # A type without provision is meaningless (and refused by validate_content).
+        "type": (row.get("food_type") or "unknown") if food_provided == "true" else "unknown",
+        "description": row.get("food_description") or "",
+    }
+    if food_provided == "true" and row.get("food_evidence_source") in ("text", "poster"):
+        food["source"] = row["food_evidence_source"]
+    event = {
         "id": row["id"],
         "title": row.get("title") or "",
         "summary": row.get("summary") or "",
@@ -108,11 +122,7 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
             "building": row.get("building") or "",
             "room": row.get("room") or "",
         },
-        "food": {
-            "provided": tri_state(row.get("food_provided")),
-            "type": row.get("food_type") or "unknown",
-            "description": row.get("food_description") or "",
-        },
+        "food": food,
         "organizer": row.get("organizer") or "",
         "eligibility": row.get("eligibility") or "",
         "registration": {
@@ -123,6 +133,9 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
         "confidence": round(float(row.get("confidence") or 0), 3),
         "sources": sources,
     }
+    if tri_state(row.get("giveaway")) == "true":
+        event["giveaway"] = {"provided": "true", "description": row.get("giveaway_description") or ""}
+    return event
 
 
 def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[datetime] = None,

@@ -90,6 +90,7 @@ FILLABLE_FIELDS = (
     "summary", "event_start", "event_end", "registration_deadline", "date_text", "time_text",
     "location_name", "building", "room", "food_type", "food_description", "organizer",
     "eligibility", "registration_required", "registration_url",
+    "giveaway", "giveaway_description", "food_evidence_source",
 )
 
 
@@ -119,6 +120,7 @@ def merge_into(existing: dict[str, Any], cand: EventCandidate) -> tuple[dict[str
     if old_food == "unknown" and new_food != "unknown":
         updated["food_provided"] = new_food
         updated["food_type"] = new.get("food_type") or "unknown"
+        updated["food_evidence_source"] = new.get("food_evidence_source")
     elif old_food != "unknown" and new_food != "unknown" and old_food != new_food:
         reasons.append(f"병합 충돌 food_provided: {old_food} vs {new_food}")
     updated["confidence"] = round(max(float(existing.get("confidence") or 0), float(new.get("confidence") or 0)), 3)

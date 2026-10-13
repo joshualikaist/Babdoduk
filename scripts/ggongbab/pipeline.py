@@ -187,8 +187,10 @@ class Pipeline:
             except Exception:  # noqa: BLE001 - schema drift; re-parse
                 extraction = None
             if extraction is not None:
+                # Poster quotes stay acceptable only if that parse was made with images.
+                images_sent = 1 if cached.get("input_kind") == "text+image" else 0
                 cand = validate(extraction, facts, clean_text, source_type=item.source_type,
-                                source_priority=source_priority, reference=reference)
+                                source_priority=source_priority, reference=reference, images=images_sent)
                 return ParseOutcome(candidate=cand, skipped_cached=True)
 
         if self.extractor is None:
@@ -222,7 +224,7 @@ class Pipeline:
             return ParseOutcome(candidate=None, ai_calls=1, error=primary.error,
                                 error_category=category)
         cand = validate(primary.extraction, facts, clean_text, source_type=item.source_type,
-                        source_priority=source_priority, reference=reference)
+                        source_priority=source_priority, reference=reference, images=len(images))
         calls = 1
         used_fallback = False
         reasons = fallback_reasons(primary.extraction, facts, clean_text, self.settings.ai_confidence_threshold)
@@ -234,7 +236,7 @@ class Pipeline:
             self.stats.fallback_attempted += 1
             if fb.extraction is not None:
                 fb_cand = validate(fb.extraction, facts, clean_text, source_type=item.source_type,
-                                   source_priority=source_priority, reference=reference)
+                                   source_priority=source_priority, reference=reference, images=len(images))
                 # Captured before pick_better, which may append a reason to the
                 # primary candidate when the fallback disagrees about is_event.
                 primary_reasons = len(cand.review_reasons)
