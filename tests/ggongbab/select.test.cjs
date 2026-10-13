@@ -56,3 +56,63 @@ test('open-ended rows still need explicit food and no review to be listed', () =
   assert.equal(F.todayUpcoming([{ ...coffee, food: { provided: 'unknown' } }], at('11:45')).length, 0);
   assert.equal(F.todayUpcoming([{ ...coffee, needs_review: true }], at('11:45')).length, 0);
 });
+
+// Owner decisions 2026-10-14: a giveaway (prize draw or gift for participants) is listed with a
+// gift mark but never counted as free food; a giveaway with no event date of its own is listed at,
+// and until, its sign-up deadline.
+const giftOnly = { id: 'expo', startAt: '2026-09-28T12:00:00+09:00', endAt: '2026-09-28T17:00:00+09:00',
+  food: { provided: 'unknown', type: 'unknown', description: '' },
+  giveaway: { provided: 'true', description: '경품 추첨 (에어팟)' } };
+const both = { ...coffee, id: 'both', giveaway: { provided: 'true', description: '기념품 증정' } };
+
+test('a giveaway-only row is listed but never counted as free food', () => {
+  assert.equal(F.isPublic(giftOnly), true);
+  assert.equal(F.isFreeFood(giftOnly), false);
+  assert.equal(F.isGiveawayOnly(giftOnly), true);
+  assert.equal(F.hasGiveaway(giftOnly), true);
+  assert.equal(F.hasFood(giftOnly), false);
+  assert.deepEqual(Array.from(F.todayUpcoming([giftOnly, coffee], at('09:00')), e => e.id), ['miss-001']);
+  assert.deepEqual(Array.from(F.futurePublic([giftOnly], at('09:00')), e => e.id), []);
+  assert.equal(F.isPublic({ ...giftOnly, food: { provided: 'false' } }), true);
+});
+
+test('a row with food and a giveaway counts once, as free food', () => {
+  assert.equal(F.isFreeFood(both), true);
+  assert.equal(F.isGiveawayOnly(both), false);
+  assert.deepEqual(Array.from(F.todayUpcoming([both], at('09:00')), e => e.id), ['both']);
+});
+
+test('only a real giveaway lists a row without food; review and news still exclude it', () => {
+  for (const giveaway of [undefined, null, 'true', { provided: 'false' }, { provided: 'unknown' }, {}]) {
+    assert.equal(F.isPublic({ ...giftOnly, giveaway }), false, JSON.stringify(giveaway));
+  }
+  assert.equal(F.isPublic({ ...giftOnly, giveaway: { provided: true, description: '' } }), true);
+  assert.equal(F.isPublic({ ...giftOnly, needs_review: true }), false);
+  assert.equal(F.isPublic({ ...giftOnly, needsReview: true }), false);
+  assert.equal(F.isPublic({ ...giftOnly, contentType: 'campus_food_news' }), false);
+});
+
+test('a deadline-only giveaway is recognised by instant, from either feed path', () => {
+  const deadline = { ...giftOnly, id: 'draw', startAt: '2026-10-18T23:59:00+09:00', endAt: null,
+    registration: { required: 'true', deadline: '2026-10-18T23:59:00+09:00', url: '' } };
+  assert.equal(F.isDeadlineOnly(deadline), true);
+  // The same instant spelled in UTC, as another path may write it.
+  assert.equal(F.isDeadlineOnly({ ...deadline, registration: { deadline: '2026-10-18T14:59:00Z' } }), true);
+  assert.equal(F.isDeadlineOnly({ ...deadline, registration: { deadline: '2026-10-17T23:59:00+09:00' } }), false);
+  assert.equal(F.isDeadlineOnly({ ...deadline, registration: null }), false);
+  assert.equal(F.isDeadlineOnly({ ...deadline, registration: undefined }), false);   // the archive has none
+  // Food with a deadline at its start is an event, not a deadline-only giveaway.
+  const { giveaway, ...food } = { ...deadline, food: coffee.food };
+  assert.equal(F.isDeadlineOnly(food), false);
+});
+
+test('a deadline-only giveaway is listed until its deadline, without the open-ended grace', () => {
+  const deadline = { ...giftOnly, id: 'draw', startAt: '2026-09-28T18:00:00+09:00', endAt: null,
+    registration: { required: 'true', deadline: '2026-09-28T18:00:00+09:00' } };
+  assert.equal(F.eventEnd(deadline).getTime(), F.toKst(deadline.startAt).getTime());
+  assert.equal(F.isUpcoming(deadline, at('17:59')), true);
+  assert.equal(F.isUpcoming(deadline, at('18:01')), false);
+  // A giveaway that has its own event time keeps the hand-out grace like any open-ended event.
+  const dated = { ...deadline, registration: { required: 'true', deadline: '2026-09-27T18:00:00+09:00' } };
+  assert.equal(F.isUpcoming(dated, at('20:59')), true);
+});

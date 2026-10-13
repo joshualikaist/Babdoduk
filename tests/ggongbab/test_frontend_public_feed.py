@@ -306,3 +306,42 @@ def test_browser_visibility_pauses_and_reconciles(ui):
     page.wait_for_function("feedTest.selects.length >= 3")
     assert ids(page) == []
     assert page.evaluate("feedTest.maxActive") == 1
+
+
+def test_browser_giveaway_rows_render_the_same_from_both_paths(ui):
+    """Migration 006: a giveaway and food read from a poster, from the lab Realtime rows and from
+    the static snapshot, become the same cards and the same free-food count (giveaways never count)."""
+    gift = row(5, title="Expo", food_provided="unknown", food_type="unknown", food_description="",
+               food_source="", giveaway="true", giveaway_description="경품 추첨 (에어팟)",
+               start_at="2026-09-23T14:00:00+09:00", end_at="2026-09-23T17:00:00+09:00")
+    talk = row(6, title="Talk", food_type="snack", food_description="샌드위치", food_source="poster",
+               giveaway="true", giveaway_description="기념품 증정",
+               start_at="2026-09-23T18:00:00+09:00", end_at="2026-09-23T20:00:00+09:00")
+    draw = row(7, title="Draw", food_provided="false", food_type="unknown", food_description="",
+               food_source="", giveaway="true", giveaway_description="커피 쿠폰",
+               start_at="2026-09-25T14:59:00Z", end_at=None, registration_required="true",
+               registration_deadline="2026-09-25T23:59:00+09:00", registration_url="https://example.org/apply")
+    rows = [row(1), gift, talk, draw]
+    expected = [row(1)["id"], gift["id"], talk["id"], draw["id"]]
+
+    def cards(page):
+        page.locator(".gg-card").first.wait_for()
+        return {"ids": ids(page), "count": page.locator(".gg-radar-count").inner_text(),
+                "featured": page.locator("[data-featured]").get_attribute("data-id"),
+                "html": page.locator(".gg-card").evaluate_all("els => els.map(el => el.outerHTML)")}
+
+    live = cards(ui["open"](rows))
+    assert live["ids"] == expected and live["count"] == "오늘 2개" and live["featured"] == row(1)["id"]
+    page = ui["page"]
+    assert page.locator(f'[data-id="{gift["id"]}"] .gg-food-primary').count() == 0
+    assert page.locator(f'[data-id="{gift["id"]}"] .gg-gift-badge').count() == 1
+    assert page.locator(f'[data-id="{talk["id"]}"] .gg-food-source').count() == 1
+    assert page.locator(f'[data-id="{draw["id"]}"] .gg-time.is-deadline').inner_text() == "신청 마감 9월 25일 (금) 23:59"
+    # The static snapshot of the same rows; the draw's deadline is spelled in UTC there, the same instant.
+    snapshot = [to_snapshot_event(item) for item in rows]
+    snapshot[3]["registration"]["deadline"] = "2026-09-25T14:59:00Z"
+    ui["config"] = False
+    ui["snapshot"] = {"generatedAt": "2026-09-23T09:00:00+09:00", "events": snapshot}
+    static = cards(ui["open"](rows))
+    assert page.locator(".gg-updated").count() == 1      # this time it is the snapshot
+    assert static == live

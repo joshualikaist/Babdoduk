@@ -54,7 +54,9 @@
     var s = F.toKst(ev.startAt);
     return s ? F.ymd(s) : '';
   }
-  // Live rows first, so a row that is in both files is taken once, from the live copy.
+  // Live rows first, so a row that is in both files is taken once, from the live copy. A
+  // giveaway-only listing (`food: false`) is kept for its 🎁 marker and its row, but no free-food
+  // count, answer, default date or 다가오는 꽁밥 row ever counts it.
   function buildIndex(liveEvents, archiveEvents, now, windowStart) {
     var seen = {};
     var days = {};
@@ -65,7 +67,7 @@
       var active = F.isUpcoming(ev, now);
       if (!active && day < windowStart) return;
       seen[ev.id] = true;
-      (days[day] = days[day] || []).push({ ev: ev, active: active });
+      (days[day] = days[day] || []).push({ ev: ev, active: active, food: F.hasFood(ev) });
     }
     (liveEvents || []).forEach(add);
     (archiveEvents || []).forEach(add);
@@ -76,15 +78,24 @@
     });
     return days;
   }
+  // active/past count free food only; gifts counts the giveaway-only listings, apart.
   function countsOn(days, iso) {
     var active = 0;
     var past = 0;
-    (days[iso] || []).forEach(function (item) { if (item.active) active++; else past++; });
-    return { active: active, past: past };
+    var gifts = 0;
+    var giftsActive = 0;
+    (days[iso] || []).forEach(function (item) {
+      if (!item.food) {
+        gifts++;
+        if (item.active) giftsActive++;
+      } else if (item.active) active++;
+      else past++;
+    });
+    return { active: active, past: past, gifts: gifts, giftsActive: giftsActive };
   }
   function nextActiveDay(days, afterIso) {
     return Object.keys(days).filter(function (day) {
-      return day > afterIso && days[day].some(function (item) { return item.active; });
+      return day > afterIso && days[day].some(function (item) { return item.active && item.food; });
     }).sort()[0] || '';
   }
   // Today when it still has something on; otherwise the next date that does; otherwise today.
@@ -93,7 +104,7 @@
     return nextActiveDay(days, todayIso) || todayIso;
   }
   function answerFor(days, todayIso) {
-    var list = days[todayIso] || [];
+    var list = (days[todayIso] || []).filter(function (item) { return item.food; });
     var active = list.filter(function (item) { return item.active; });
     var next = nextActiveDay(days, todayIso);
     if (active.length) {
@@ -196,6 +207,16 @@
     var desc = food.description && String(food.description).length <= 22 ? food.description : typeLabel || t('home.cal.foodFallback', '음식');
     return fill(t('home.cal.ev.food', '{food} 제공'), { food: desc });
   }
+  // The giveaway mark: the emoji is decoration, the word says it (owner decision 2026-10-14).
+  var GIFT = '<span aria-hidden="true">🎁</span> ';
+  function giftText(ev) {
+    return F.hasGiveaway(ev) ? String(ev.giveaway.description || '').trim() : '';
+  }
+  // A deadline-only giveaway's time is its sign-up deadline, never an event time.
+  function timeText(ev, start) {
+    if (!start) return t('home.cal.ev.timeTbd', '시간 미정');
+    return F.isDeadlineOnly(ev) ? fill(t('home.cal.ev.signUpBy', '신청 마감 {time}'), { time: hm(start) }) : hm(start);
+  }
 
   // ---- State and rendering ----
   var root = document.getElementById('homeCal');
@@ -275,6 +296,7 @@
     var parts = [longDateLabel(iso)];
     if (counts.active) parts.push(fill(t('home.cal.cell.active', '꽁밥 {n}개'), { n: counts.active }));
     if (counts.past) parts.push(fill(t('home.cal.cell.past', '지난 꽁밥 {n}개'), { n: counts.past }));
+    if (counts.gifts) parts.push(fill(t('home.cal.cell.gift', '경품 {n}개'), { n: counts.gifts }));
     return parts.join(', ');
   }
   function cellHtml(iso) {
@@ -287,16 +309,19 @@
       return '<td class="' + cls.join(' ') + '" aria-disabled="true"><span class="hc-num" aria-hidden="true">' + day +
         '</span><span class="hc-marks" aria-hidden="true"></span></td>';
     }
-    var counts = state.status === 'ready' ? countsOn(state.days, iso) : { active: 0, past: 0 };
+    var counts = state.status === 'ready' ? countsOn(state.days, iso) : { active: 0, past: 0, gifts: 0, giftsActive: 0 };
     var dots = Math.min(counts.active, 2);
     var rings = Math.min(counts.past, 2 - dots);
     var marks = '';
     for (var i = 0; i < dots; i++) marks += '<span class="hc-dot"></span>';
     for (var j = 0; j < rings; j++) marks += '<span class="hc-dot is-past"></span>';
+    // A giveaway-only listing: one 🎁 at the date's corner, outside the free-food marker slot,
+    // so it never reads as (or displaces) a free-food dot. The cell's label names it.
+    var gift = counts.gifts ? '<span class="hc-gift' + (counts.giftsActive ? '' : ' is-past') + '" aria-hidden="true">🎁</span>' : '';
     return '<td class="' + cls.join(' ') + '" data-date="' + iso + '" tabindex="' + (iso === state.focus ? '0' : '-1') +
       '" aria-selected="' + (iso === state.selected ? 'true' : 'false') + '"' +
       (iso === state.todayIso ? ' aria-current="date"' : '') + ' aria-label="' + esc(cellLabel(iso, counts)) + '">' +
-      '<span class="hc-num" aria-hidden="true">' + day + '</span><span class="hc-marks" aria-hidden="true">' + marks + '</span></td>';
+      '<span class="hc-num" aria-hidden="true">' + day + '</span><span class="hc-marks" aria-hidden="true">' + marks + '</span>' + gift + '</td>';
   }
 
   var CHEVRON = {
@@ -350,26 +375,32 @@
   function metaLines(item) {
     var ev = item.ev;
     var start = F.toKst(ev.startAt);
-    var when = '<span class="hc-ev-time">' + esc(start ? hm(start) : t('home.cal.ev.timeTbd', '시간 미정')) + '</span>';
+    var when = '<span class="hc-ev-time">' + esc(timeText(ev, start)) + '</span>';
     var place = shortPlace(ev.location);
     var first = (item.active ? '' : esc(t('home.cal.ev.ended', '종료')) + ' · ') + when + (place ? ' · ' + esc(place) : '');
-    var second = [foodText(ev)];
-    if (item.active && F.tri((ev.registration || {}).required) === 'true') second.push(t('home.cal.ev.reg', '사전 신청'));
-    return '<span class="hc-ev-meta">' + first + '</span><span class="hc-ev-meta">' + esc(second.join(' · ')) + '</span>';
+    // A giveaway-only row names no food at all; a row with both shows both.
+    var second = item.food ? [esc(foodText(ev))] : [];
+    if (F.hasGiveaway(ev)) second.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
+    if (item.active && F.tri((ev.registration || {}).required) === 'true') second.push(esc(t('home.cal.ev.reg', '사전 신청')));
+    return '<span class="hc-ev-meta">' + first + '</span><span class="hc-ev-meta">' + second.join(' · ') + '</span>';
   }
   function detailHtml(item) {
     var ev = item.ev;
     var start = F.toKst(ev.startAt);
     var end = F.toKst(ev.endAt);
+    var deadlineOnly = F.isDeadlineOnly(ev);
     var rows = [];
-    var when = start ? hm(start) + (end && F.ymd(end) === F.ymd(start) && end > start ? '–' + hm(end) : '') : '';
+    var when = start ? (deadlineOnly ? timeText(ev, start)
+      : hm(start) + (end && F.ymd(end) === F.ymd(start) && end > start ? '–' + hm(end) : '')) : '';
     var line = [when, fullPlace(ev.location)].filter(Boolean).join(' · ');
     if (line) rows.push('<p class="hc-ev-line">' + esc(line) + '</p>');
+    var gift = giftText(ev);
+    if (gift) rows.push('<p class="hc-ev-line">' + esc(fill(t('home.cal.ev.giftDetail', '경품 · {gift}'), { gift: gift })) + '</p>');
     if (ev.eligibility) rows.push('<p class="hc-ev-line">' + esc(fill(t('home.cal.ev.who', '대상 · {who}'), { who: ev.eligibility })) + '</p>');
     var reg = ev.registration || {};
     var deadline = F.toKst(reg.deadline);
     var closed = !item.active || (deadline && deadline < F.nowKst());
-    if (deadline && !closed) {
+    if (deadline && !closed && !deadlineOnly) {   // a deadline-only giveaway already leads with it
       rows.push('<p class="hc-ev-line">' + esc(fill(t('home.cal.ev.deadline', '신청 마감 · {date}'),
         { date: dateLabel(F.ymd(deadline)) + ' ' + hm(deadline) })) + '</p>');
     }
@@ -423,13 +454,14 @@
     els.day.hidden = false;
   }
   // Only dates after the selected day (or after today, when a past day is selected); never the selected day again.
+  // Free food only, like its title: a giveaway-only listing is found by its 🎁 date.
   function renderNext() {
     var after = state.selected > state.todayIso ? state.selected : state.todayIso;
     var rows = [];
     if (state.status === 'ready') {
       Object.keys(state.days).filter(function (day) { return day > after; }).sort().forEach(function (day) {
         state.days[day].forEach(function (item) {
-          if (item.active && rows.length < UPCOMING_ROWS) rows.push({ day: day, item: item });
+          if (item.active && item.food && rows.length < UPCOMING_ROWS) rows.push({ day: day, item: item });
         });
       });
     }
@@ -480,12 +512,13 @@
   }
 
   function announce(iso) {
-    var list = state.days[iso] || [];
-    var active = list.filter(function (item) { return item.active; }).length;
-    var status = active ? fill(t('home.cal.cell.active', '꽁밥 {n}개'), { n: active })
-      : list.length ? fill(t('home.cal.cell.past', '지난 꽁밥 {n}개'), { n: list.length })
-      : iso >= state.todayIso ? t('home.cal.empty', '일정 없음') : t('home.cal.noRecord', '기록 없음');
-    els.live.textContent = longDateLabel(iso) + ' · ' + status;
+    var counts = countsOn(state.days, iso);
+    var parts = [];
+    if (counts.active) parts.push(fill(t('home.cal.cell.active', '꽁밥 {n}개'), { n: counts.active }));
+    else if (counts.past) parts.push(fill(t('home.cal.cell.past', '지난 꽁밥 {n}개'), { n: counts.past }));
+    if (counts.gifts) parts.push(fill(t('home.cal.cell.gift', '경품 {n}개'), { n: counts.gifts }));
+    if (!parts.length) parts.push(iso >= state.todayIso ? t('home.cal.empty', '일정 없음') : t('home.cal.noRecord', '기록 없음'));
+    els.live.textContent = longDateLabel(iso) + ' · ' + parts.join(', ');
   }
   function select(iso, focus) {
     if (!selectable(iso)) return;
