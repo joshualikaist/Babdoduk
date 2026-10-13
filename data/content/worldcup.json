@@ -751,7 +751,24 @@
     "kr-spicy-shrimp-soup",
     "kr-steamed-fermented-skate",
     "kr-steamed-squid",
-    "kr-sweet-and-sour-fish"
+    "kr-sweet-and-sour-fish",
+    "ds-salt-bread",
+    "cn-stir-fish-fragrant",
+    "fx-cupbap",
+    "kr-beef-eonyang",
+    "kr-guk-dogani",
+    "kr-guk-jaecheop",
+    "kr-guk-seonji",
+    "kr-jj-haemuljjim",
+    "kr-juk-jat",
+    "kr-last-cold-naengchae",
+    "kr-more-kongbap",
+    "kr-noodle-jajang",
+    "kr-noodle-samseon-jjamppong",
+    "kr-street-eggbbang",
+    "kr-whole-boiled-chicken",
+    "kr-eel-soup",
+    "kr-jeju-seaweed-and-pork-soup"
   ],
   "photos": {
     "kr-bulgogi": {
@@ -5948,6 +5965,123 @@
       "license": "CC BY 2.0",
       "source": "https://commons.wikimedia.org/wiki/File:Deep_fried_fish_in_a_sweet_%26_sour_sauce.jpg",
       "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "ds-salt-bread": {
+      "image": "images/worldcup/ds-salt-bread.jpg",
+      "author": "逃亡者 (Wikimedia Commons)",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Salt_bread_(sold_at_supermarkets_in_Otaru).jpg"
+    },
+    "cn-stir-fish-fragrant": {
+      "image": "images/worldcup/cn-stir-fish-fragrant.jpg",
+      "author": "avlxyz",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Fish_flavoured_sliced_pork_from_Melbourne.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "fx-cupbap": {
+      "image": "images/worldcup/fx-cupbap.jpg",
+      "author": "Nasuin",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Cup_bap_20191129_131957065_02.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-beef-eonyang": {
+      "image": "images/worldcup/kr-beef-eonyang.jpg",
+      "author": "국립국어원",
+      "license": "CC BY-SA 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Bulgogi_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en"
+    },
+    "kr-guk-dogani": {
+      "image": "images/worldcup/kr-guk-dogani.jpg",
+      "author": "lazy fri13th",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Dogani-tang.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-guk-jaecheop": {
+      "image": "images/worldcup/kr-guk-jaecheop.jpg",
+      "author": "shizu k (shezzz)",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_clam_soup-Jaecheopguk-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-guk-seonji": {
+      "image": "images/worldcup/kr-guk-seonji.jpg",
+      "author": "SJ Yang",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_soup-Seonjiguk-02.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-jj-haemuljjim": {
+      "image": "images/worldcup/kr-jj-haemuljjim.jpg",
+      "author": "Choi Kwang-mo",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:2020-08-16_%ED%95%B4%EB%AC%BC%EC%B0%9C_IMG_0498.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "kr-juk-jat": {
+      "image": "images/worldcup/kr-juk-jat.jpg",
+      "author": "맘앤쿡",
+      "license": "CC BY 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Jatjuk.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/kr/deed.en"
+    },
+    "kr-last-cold-naengchae": {
+      "image": "images/worldcup/kr-last-cold-naengchae.jpg",
+      "author": "국립국어원",
+      "license": "CC BY-SA 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Jokbal_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en"
+    },
+    "kr-more-kongbap": {
+      "image": "images/worldcup/kr-more-kongbap.jpg",
+      "author": "길남 김",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Kongbap-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-noodle-jajang": {
+      "image": "images/worldcup/kr-noodle-jajang.jpg",
+      "author": "국립국어원",
+      "license": "CC BY-SA 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Jajangmyeon.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en"
+    },
+    "kr-noodle-samseon-jjamppong": {
+      "image": "images/worldcup/kr-noodle-samseon-jjamppong.jpg",
+      "author": "Alfpooh",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Jjampong.JPG"
+    },
+    "kr-street-eggbbang": {
+      "image": "images/worldcup/kr-street-eggbbang.jpg",
+      "author": "travel oriented",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Gyeranppang_by_travel_oriented.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-whole-boiled-chicken": {
+      "image": "images/worldcup/kr-whole-boiled-chicken.jpg",
+      "author": "Trainholic",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Dalgi_Yaksutang_Baeksuk.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-eel-soup": {
+      "image": "images/worldcup/kr-eel-soup.jpg",
+      "author": "Zi Li",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Hamburger_Aalsuppe_bei_Hamburger_Fischerstuben.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-jeju-seaweed-and-pork-soup": {
+      "image": "images/worldcup/kr-jeju-seaweed-and-pork-soup.jpg",
+      "author": "공석배",
+      "license": "CC BY 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:%EC%8B%A0%EC%84%A4%EC%98%A4%EB%A6%84_%EB%AA%B8%EA%B5%AD.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
     }
   }
 }
