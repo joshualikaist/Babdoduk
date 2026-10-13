@@ -73,20 +73,20 @@
       },
       "details": {
         "summary": {
-          "ko": "700개가 넘는 메뉴 중 매번 다른 32개가 맞붙어요. 치킨이냐 피자냐, 끝까지 살아남는 나의 최애 메뉴는?",
-          "en": "Every game draws 32 of more than 700 dishes. Chicken or pizza? Find the one dish that survives to the end."
+          "ko": "700개가 넘는 메뉴 중 32개가 맞붙어요. 치킨이냐 피자냐, 나의 최애는?",
+          "en": "32 of more than 700 dishes face off. Chicken or pizza? Find your favorite."
         },
         "duration": {
           "ko": "2026년 10월 13일(화) ~ 2026년 10월 30일(금)",
           "en": "Tuesday, October 13 through Friday, October 30, 2026."
         },
         "prizes": {
-          "ko": "<strong>경품 없음</strong> · 사이트 안에서 하는 놀이예요.",
-          "en": "<strong>No prizes</strong>: a game on this site."
+          "ko": "<strong>경품 없음</strong>",
+          "en": "<strong>No prizes</strong>"
         },
         "participation": {
-          "ko": "‘지금 해보기’를 누르면 바로 시작해요. 로그인은 필요 없고, 결과는 내 브라우저에만 남아요. 우승 메뉴는 이미지로 저장할 수 있어요.",
-          "en": "Press “Play now” to start. No sign-in; your results stay in this browser, and you can save the winner as an image."
+          "ko": "로그인 없이 바로 시작해요.",
+          "en": "No sign-in needed."
         }
       },
       "pictures": {

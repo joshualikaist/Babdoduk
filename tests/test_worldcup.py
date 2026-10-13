@@ -1,6 +1,7 @@
-"""The KAIST menu world cup (worldcup.html, owner P4 2026-10-13): a bracket of catalog dishes from
-data/content/worldcup.json, played in the browser with nothing sent anywhere. Static checks; the
-keyboard play-through runs in scripts/check_site_ui.py (worldcup_play)."""
+"""The 먹방 world cup (worldcup.html, owner P4 2026-10-13): a bracket of catalog dishes from
+data/content/worldcup.json, played in the browser; on lab only, a finished game is also counted
+anonymously (tests/test_worldcup_stats.py). Static checks; the keyboard play-through runs in
+scripts/check_site_ui.py (worldcup_play)."""
 import json
 import re
 import shutil
@@ -66,7 +67,27 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     # what is on sale: the catalog is general information.
     main = html.split("<main", 1)[1].split("</main>", 1)[0]
     assert re.findall(r"<img [^>]*>", main) and all('alt=""' in tag for tag in re.findall(r"<img [^>]*>", main))
-    assert "판매 여부와 가격은 가게에서 확인" in html and "위키미디어 공용의 자유 이용 사진" in html
+    assert "판매 여부와 가격은 가게에서 확인" in html and "사진: 위키미디어 공용, 잘라서 줄임" in html
+
+
+def test_undo_and_restart_are_an_icon_and_a_short_label():
+    # Owner, 2026-10-13: fewer words, and the two controls under the match less bland than a plain
+    # underline. The icon is decoration (aria-hidden); the visible word is the button's name, and
+    # the translation goes on the inner span so the language switch never wipes the icon.
+    html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    tools = html.split('<div class="wc-tools">', 1)[1].split("</div>", 1)[0]
+    for button, key in (("wcUndo", "wc.undo"), ("wcRestart", "wc.restart")):
+        markup = tools.split(f'id="{button}">', 1)[1].split("</button>", 1)[0]
+        assert re.search(r'<svg class="wc-tool-icon"[^>]*aria-hidden="true"', markup), button
+        assert f'<span data-i18n="{key}">' in markup and "data-i18n" not in tools.split(f'id="{button}"', 1)[0].rsplit("<button", 1)[1]
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
+    assert (ko["wc.undo"], en["wc.undo"]) == ("되돌리기", "Undo")
+    assert (ko["wc.restart"], en["wc.restart"]) == (ko["eat.reset"], en["eat.reset"])   # the picker's word
+    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    assert ".wc-tool:focus-visible" in css and "min-height: 44px" in css.split(".wc-tool {", 1)[1].split("}", 1)[0]
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    assert "if (previous.game)" in script            # 되돌리기 takes back 처음부터
 
 
 def test_every_dish_has_a_credited_free_photo_on_disk():
@@ -95,7 +116,9 @@ def test_the_pool_is_large_and_varied_as_the_copy_says():
     # The page, the event and the share text all say "more than 700 dishes" (owner, 2026-10-13:
     # aim for 1,000, at most five variants of the same dish).
     assert len(CUP["dishes"]) > 700
-    for text in (CUP["basis"]["ko"], (ROOT / "i18n/ko.json").read_text(encoding="utf-8")):
+    events = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))
+    teaser = next(a for a in events["activities"] if a.get("link") == "worldcup.html")
+    for text in (CUP["basis"]["ko"], teaser["details"]["summary"]["ko"]):
         assert "700개가 넘는 메뉴" in text
     assert "more than 700 dishes" in CUP["basis"]["en"]
     names = {}
