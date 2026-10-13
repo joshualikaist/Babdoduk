@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 HOST = "home-calendar.invalid"
 NOW = "2026-10-01T09:00:00+09:00"   # a Thursday; October 2026 starts on a Thursday
-ACCENT = "rgb(180, 61, 39)"
+ACCENT = "rgb(190, 24, 93)"   # --color-accent #be185d (brand pink since 2026-10-13)
 INK = "rgb(30, 29, 26)"
 KAIST_E11 = {"name": "창의학습관(E11) 101호", "building": "창의학습관(E11)", "room": "101호"}
 
