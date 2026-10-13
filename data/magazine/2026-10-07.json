@@ -3,58 +3,23 @@
   "generatedAt": "2026-10-07T15:40:53+09:00",
   "schedule": "Daily 10:00 KST",
   "rules": "lanes-v1",
-  "featured": {
-    "title": "이걸 편의점에서 판다고?…난리 난 3800원 신상 뭐길래",
-    "summary": "사회관계망서비스(SNS)에서 인기를 모으면서 전국 각지 떡집 '오픈런'과 '떡지순례(떡+성지순례)'를 이끈 피자떡이 편의점에서도 선보인다.",
-    "source": "한국경제",
-    "sourceId": "web-exa-trend",
-    "candidateId": "c_8794250b82e51d75",
-    "url": "https://www.hankyung.com/article/202610064604g",
-    "medium": "news",
-    "discoveredAt": "2026-10-07T15:40:53+09:00",
-    "publishedAt": "2026-10-06T16:53:38+09:00",
-    "image": "https://img.hankyung.com/photo/202610/01.45950238.1.jpg",
-    "imageSource": "source_page_og",
-    "trendEvidence": [
-      "explicit_source_claim",
-      "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
-  },
+  "featured": null,
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "“SNS서 뜨면 바로 편의점으로”…이번엔 ‘피자 설기’ 흥행 노린다",
-          "summary": "사회관계망서비스(SNS)에서 화제가 된 디저트가 전국 편의점 매대로 옮겨오는 속도가 빨라지고 있다. 두바이 초콜릿과 두바이 쫀득쿠키(두쫀쿠), 성수동 찹쌀떡 등이 잇달아 편의점 상품으로 변신한 데 이어 이번에는…",
-          "source": "매일경제",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_d358ea4f8d30b7d0",
-          "url": "https://www.mk.co.kr/news/economy/12168977",
-          "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-06T09:46:30+09:00",
-          "image": "https://pimg.mk.co.kr/news/cms/202610/06/news-p.v1.20261006.0cef90cb3aa940a0b92b8d9098023332_R.jpeg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "sales_data"
-          ]
-        },
-        {
           "title": "품절 대란 '한정선 찹쌀떡' 2탄 출시, GS25 디저트 흥행 신화 잇는다",
-          "summary": "편의점 매장에 디저트 열풍을 불러일으킨 히트 상품이 한층 진화한 풍미를 안고 다시 찾아온다. GS리테일이 운영하는 편의점 GS25는 디저트 전문 브랜드 '로로멜로'와 손잡고 '한정선 피스타치오 찹쌀떡'을 시장에…",
           "source": "뉴스N연합",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_36e9073c42d9b14c",
           "url": "https://www.newsyonhap.com/news/128697",
           "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-05T09:00:00+09:00",
           "image": "https://img.ehom.kr/news/2026/10/05/48542ad7fac51244993563c2385b6684105218_thumb.jpg",
+          "publishedAt": "2026-10-05T09:00:00+09:00",
+          "discoveredAt": "2026-10-07T15:40:53+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_36e9073c42d9b14c",
           "imageSource": "source_page_og",
+          "summary": "편의점 매장에 디저트 열풍을 불러일으킨 히트 상품이 한층 진화한 풍미를 안고 다시 찾아온다. GS리테일이 운영하는 편의점 GS25는 디저트 전문 브랜드 '로로멜로'와 손잡고 '한정선 피스타치오 찹쌀떡'을 시장에…",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -62,63 +27,31 @@
         },
         {
           "title": "편의점 라면 유통, 동네 슈퍼 제치고 1위 올라",
-          "summary": "국내 라면 시장이 유통 채널과 맛의 영역 모두에서 거센 세대교체를 겪고 있다. 장기간 라면 유통의 텃밭 역할을 해온 동네 일반슈퍼가 저물고 편의점이 단독 1위 판매처로 올라선 가운데, 소비 트렌드 역시 전통적인…",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_f205324337b64b09",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201233",
           "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-07T16:54:00+09:00",
           "image": "https://cdn.thinkfood.co.kr/news/photo/202609/201233_201734_1118.jpg",
+          "publishedAt": "2026-10-07T16:54:00+09:00",
+          "discoveredAt": "2026-10-07T15:40:53+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_f205324337b64b09",
           "imageSource": "source_page_og",
+          "summary": "국내 라면 시장이 유통 채널과 맛의 영역 모두에서 거센 세대교체를 겪고 있다. 장기간 라면 유통의 텃밭 역할을 해온 동네 일반슈퍼가 저물고 편의점이 단독 1위 판매처로 올라선 가운데, 소비 트렌드 역시 전통적인…",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
           ]
         },
         {
-          "title": "우지 라면 계보 잇는 삼양식품 ‘짜르르’, 100일간 누적 1000만개 판매",
-          "summary": "출시 100일을 앞둔 삼양식품의 우지 짜장라면 ‘짜르르’가 누적 1000만개 판매되며 흥행을 이어가고 있다. 삼양식품은 서울 명동사옥에서 7일 ‘짜르르’ 미디어 시식회를 열고 이 같은 성과를 밝혔다.",
-          "source": "서울신문",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_f4586bbd07d50dbd",
-          "url": "https://m.seoul.co.kr/news/2026/10/07/20261007500164?cp=seoul",
-          "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-07T14:37:21+09:00",
-          "image": "https://img.seoul.co.kr/img/upload/2026/10/07/SSC_20261007143719.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "sales_data"
-          ]
-        },
-        {
-          "title": "“11시 반에 40개 풀었는데 다 나갔어요”…파바 초코츄러스, 왜 인기일까 [밀착취재]",
-          "summary": "스무살 대학생인 동생에게 물었다. 돌아온 답은 편의점 신상도, 서울 성수동 유명 디저트도 아니었다. “파리바게뜨 초코쫀득츄러스.”",
-          "source": "세계일보",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_937af5aebda3ea5f",
-          "url": "https://www.segye.com/newsView/20261006517881",
-          "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-07T06:00:00+09:00",
-          "image": "https://www.segye.com/content/image/2026/10/06/20261006517616.jpg",
-          "imageSource": "source_page_og",
-          "trendEvidence": [
-            "explicit_source_claim"
-          ]
-        },
-        {
           "title": "“남편이 공평한 가사 분담 원해”… 가사, 요리에서 벗어나고 싶은 중년 여성의 마음은?",
-          "summary": "65세 이상 중 절반 이상이 부부의 공평한 가사 분담이 필요하다고 본다는 조사 결과가 나왔다. 사진=게티이미지뱅크 맞벌이를 하는 젊은 부부는 대부분 가사 분담을 하고 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_2f6e5e93f0ab7643",
           "url": "https://kormedi.com/2880003/",
           "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
           "publishedAt": "2026-10-07T14:01:00+09:00",
+          "discoveredAt": "2026-10-07T15:40:53+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2f6e5e93f0ab7643",
+          "summary": "65세 이상 중 절반 이상이 부부의 공평한 가사 분담이 필요하다고 본다는 조사 결과가 나왔다. 사진=게티이미지뱅크 맞벌이를 하는 젊은 부부는 대부분 가사 분담을 하고 있다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
@@ -130,71 +63,60 @@
       "items": [
         {
           "title": "Korean Pork Cutlet (Donkatsu)",
-          "summary": "Korean donkatsu is a thin, crispy pork cutlet served with a savory-sweet brown sauce, steamed rice, shredded cabbage…",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_74f36678a994148b",
           "url": "https://www.beyondkimchee.com/korean-donkatsu/",
           "medium": "blog",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-06T21:07:00+09:00",
           "image": "https://www.beyondkimchee.com/wp-content/uploads/2025/09/donkatsu-korean-pork-cutlet.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "왕뚜껑 국물 라볶이 꿀조합 편의점 신상 모디슈머 레시피",
-          "summary": "왕뚜껑 국물 라볶이 꿀조합 편의점 신상 모디슈머 레시피 : 네이버 블로그",
-          "source": "네이버 블로그",
-          "sourceId": "web-naver-trend",
-          "candidateId": "c_21640b71ed41e5e0",
-          "url": "https://m.blog.naver.com/byulbyullog/224271549795?targetKeyword=%EA%BF%80%EC%A1%B0%ED%95%A9%EB%A0%88%EC%8B%9C%ED%94%BC",
-          "medium": "blog",
+          "publishedAt": "2026-10-06T21:07:00+09:00",
           "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-05-01T09:00:00+09:00"
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_74f36678a994148b",
+          "imageSource": "source_page_og",
+          "summary": "Korean donkatsu is a thin, crispy pork cutlet served with a savory-sweet brown sauce, steamed rice, shredded cabbage…"
         },
         {
           "title": "Dwaeji Gukbap (Busan Pork Rice Soup)",
-          "summary": "A comforting bowl of dwaeji gukbap (Busan pork rice soup) made the easy way at home.",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_d326144b8f9f0ea4",
           "url": "https://www.beyondkimchee.com/dwaeji-gukbap-pork-rice-soup/",
           "medium": "blog",
+          "publishedAt": "2026-04-13T21:07:00+09:00",
           "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-04-13T21:07:00+09:00"
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_d326144b8f9f0ea4",
+          "summary": "A comforting bowl of dwaeji gukbap (Busan pork rice soup) made the easy way at home."
         },
         {
           "title": "2026 소비 트렌드: 음식이 콘텐츠가 되는 시대",
-          "summary": "최근 SNS에서는 조금 독특한 챌린지가 화제가 되고 있습니다. 바로 달리면서 버터를 만드는 ‘버터런(Butter Run)’입니다.",
           "source": "모비인사이드 MOBIINSIDE",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_ce095166240ad704",
           "url": "https://www.mobiinside.co.kr/2026/03/17/butter-run-challenge-2026-consumer-trend/",
           "medium": "blog",
+          "publishedAt": "2026-03-17T19:12:14+09:00",
           "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-03-17T19:12:14+09:00"
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_ce095166240ad704",
+          "summary": "최근 SNS에서는 조금 독특한 챌린지가 화제가 되고 있습니다. 바로 달리면서 버터를 만드는 ‘버터런(Butter Run)’입니다."
         },
         {
           "title": "Le Cordon Bleu Paris | My 9-Month Journey",
-          "summary": "Le Cordon Bleu Paris, My 9-Month Journey It’s already been ten months since I arrived in Paris.",
           "source": "Seonkyoung Longest",
-          "sourceId": "blog-seonkyounglongest",
-          "candidateId": "c_60654a8f06d404a6",
           "url": "https://seonkyounglongest.com/le-cordon-bleu-paris/",
           "medium": "blog",
+          "publishedAt": "2026-04-07T21:00:47+09:00",
           "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-04-07T21:00:47+09:00"
+          "sourceId": "blog-seonkyounglongest",
+          "candidateId": "c_60654a8f06d404a6",
+          "summary": "Le Cordon Bleu Paris, My 9-Month Journey It’s already been ten months since I arrived in Paris."
         },
         {
           "title": "“두쫀쿠 대신 먹어요” 요즘 SNS를 가득 채운 의외의 음식",
-          "summary": "궁금하신 내용을 등록하여 주시면 관련 부서에서 검토 후 이메일을 통해 답변 드리겠습니다.",
           "source": "eland.co.kr",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_f6d93657c24ac528",
           "url": "https://www.eland.co.kr/mgzn/viewMgzn?categoryIdx=2&mgznIdx=1498",
           "medium": "blog",
+          "publishedAt": "2026-03-09T09:00:00+09:00",
           "discoveredAt": "2026-10-03T14:53:34+09:00",
-          "publishedAt": "2026-03-09T09:00:00+09:00"
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_f6d93657c24ac528",
+          "summary": "궁금하신 내용을 등록하여 주시면 관련 부서에서 검토 후 이메일을 통해 답변 드리겠습니다."
         }
       ]
     },
@@ -203,25 +125,25 @@
       "items": [
         {
           "title": "건강 식생활, 마음건강 다진다",
-          "summary": "창원지역 정신질환자의 건강한 식생활을 돕기 위해 급식 위생·영양관리부터 교육과 상담, 요리교실까지 연계한 지원이 추진된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_5ae44f93836d5be4",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62315",
           "medium": "news",
+          "publishedAt": "2026-10-07T06:59:57+09:00",
           "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-07T06:59:57+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_5ae44f93836d5be4",
+          "summary": "창원지역 정신질환자의 건강한 식생활을 돕기 위해 급식 위생·영양관리부터 교육과 상담, 요리교실까지 연계한 지원이 추진된다."
         },
         {
           "title": "\"비만치료제 써볼까?\"…발생 가능 부작용은 '이것'",
-          "summary": "최근 다이어트를 목적으로 마운자로, 위고비 등 GLP-1 계열 비만치료제를 처방받는 사람들이 늘고 있다. 체중 감량 효과가 알려지면서 수요가 증가한 가운데, 온라인에서 비만치료제를 불법 판매하거나 알선·광고하는…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_6f1a083b2dc83f70",
           "url": "https://www.newsis.com/view/NISX20261007_0003816661",
           "medium": "news",
+          "publishedAt": "2026-10-07T09:29:30+09:00",
           "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-07T09:29:30+09:00"
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_6f1a083b2dc83f70",
+          "summary": "최근 다이어트를 목적으로 마운자로, 위고비 등 GLP-1 계열 비만치료제를 처방받는 사람들이 늘고 있다. 체중 감량 효과가 알려지면서 수요가 증가한 가운데, 온라인에서 비만치료제를 불법 판매하거나 알선·광고하는…"
         }
       ]
     },
@@ -230,25 +152,14 @@
       "items": [
         {
           "title": "CJ프레시웨이, AI 솔루션 ‘냠냠키즈’로 영유아 식습관 개선 돕는다",
-          "summary": "CJ프레시웨이의 키즈 식품 전문 브랜드 ‘아이누리’는 AI 기반 영유아 식습관 관리 솔루션 ‘냠냠키즈’를 활용, 어린이집과 유치원의 디지털 식생활 교육 지원을 강화한다.‘냠냠키즈’는 AI 푸드스캐너 전문 기업…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_a1911cd789738d26",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120439",
           "medium": "news",
+          "publishedAt": "2026-10-07T19:26:02+09:00",
           "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-07T19:26:02+09:00"
-        },
-        {
-          "title": "“약 먹을 땐 단 음식 피하세요”… 장 건강 무너뜨리는 뜻밖의 범인 [헬스픽]",
-          "summary": "항생제를 복용할 때 무심코 먹은 단 음식이 장내 미생물 생태계를 심각하게 훼손하고, 유해균의 폭증을 부추길 수 있다는 연구 결과가 나왔다.",
-          "source": "서울신문 라이프",
-          "sourceId": "news-seoul-life",
-          "candidateId": "c_0e652aba56340346",
-          "url": "https://www.seoul.co.kr/news/newsView.php?id=20261006500272",
-          "medium": "news",
-          "discoveredAt": "2026-10-07T15:40:53+09:00",
-          "publishedAt": "2026-10-06T17:41:18+09:00"
+          "sourceId": "news-foodnews",
+          "candidateId": "c_a1911cd789738d26",
+          "summary": "CJ프레시웨이의 키즈 식품 전문 브랜드 ‘아이누리’는 AI 기반 영유아 식습관 관리 솔루션 ‘냠냠키즈’를 활용, 어린이집과 유치원의 디지털 식생활 교육 지원을 강화한다.‘냠냠키즈’는 AI 푸드스캐너 전문 기업…"
         }
       ]
     }

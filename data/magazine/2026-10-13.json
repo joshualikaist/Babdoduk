@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-13",
+  "generatedAt": "2026-10-13T16:36:20+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "건강 챙기고 맛도 살리고…식품업계, 저당 라인업 확대",
+    "summary": "건강을 즐겁게 관리하는 헬시플레저 트렌드가 지속되는 가운데 식품업계가 건강과 맛을 함께 고려한 저당 신제품을 잇달아 선보이며 소비자의 선택지를 확대하고 있다.",
+    "source": "뉴시스",
+    "sourceId": "news-newsis-health",
+    "candidateId": "c_b964557e7577f65e",
+    "url": "https://www.newsis.com/view/NISX20261012_0003822663",
+    "medium": "news",
+    "discoveredAt": "2026-10-13T16:36:20+09:00",
+    "publishedAt": "2026-10-13T07:00:00+09:00",
+    "image": "https://image.newsis.com/2026/10/12/NISI20261012_0002260519_web.jpg?rnd=20261012095115",
+    "imageSource": "feed_html",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "버거킹, 미래 성장 교두보 R&D 공간 ‘플레임랩’ 문 연다",
+          "summary": "버거킹이 제품 연구개발(R&D) 역량 강화를 위한 신규 공간 ‘플레임랩(Flame Lab)’을 조성한다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_c3585c166abb92fb",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201385",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-12T17:06:20+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201385_201936_617.jpg",
+          "imageSource": "feed_html",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "편의점 10월 신상, 피자절편·피스타치오 찹쌀떡",
+          "summary": "편의점 10월 신상은 CU 피자절편, GS25 한정선 피스타치오 찹쌀떡, 세븐일레븐 올 뉴 바삭통소시지마끼 세 가지로 압축된다.",
+          "source": "티스토리",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_f89836ade1ce1c05",
+          "url": "https://e8d11f.tistory.com/319",
+          "medium": "blog",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-06T22:15:23+09:00",
+          "image": "https://img1.daumcdn.net/thumb/R800x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdna%2FsKjHs%2FdJMcacSfLrm%2FAAAAAAAAAAAAAAAAAAAAAN6knb7RJxdQ2kQYqjevi8yhHlt9jckiMJmdOuMI7E-3%2Fimg.jpg%3Fcredential%3DyqXZFxpELC7KVnFOS48ylbz2pIh7yKj8%26expires%3D1793458799%26allow_ip%3D%26allow_referer%3D%26signature%3Dz7%252FkSwZ7UAAQJ%252B%252B%252BvLajuM2Fz2I%253D",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data"
+          ]
+        },
+        {
+          "title": "\"마음 놓고 먹을 수 있도록\" 식품업계, 환자들의 식탁 지킨다",
+          "summary": "식품업계가 희귀질환과 신장질환 등으로 일반적인 식사가 어려운 환자들을 위해 맞춤형 식품 개발과 공급을 이어가고 있다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_3896358c3a8eb7a2",
+          "url": "https://www.newsis.com/view/NISX20261013_0003823058",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T14:05:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "GS25 신상 초콜릿케이크…'이것' 표시안해 회수",
+          "summary": "GS25 편의점에서 판매 중인 초콜릿케이크가 알레르기 유발물질인 '달걀'이 표시되지 않아 판매 중단 조치됐다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_10ab35aca2ac7722",
+          "url": "https://www.newsis.com/view/NISX20261012_0003822851",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-12T18:57:05+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "국산 분질미에 무알콜 보존기술 탑재 ‘K-떡볶이’, 할랄시장 점령",
+          "summary": "농림식품기술기획평가원(원장 박홍재)은 국제협력기반수출농업경쟁력강화기술개발사업 지원을 통해 국산 분질미를 활용한 중동 맞춤형 떡볶이를 개발하고, 글로벌 식품 인증 획득과 함께 연구기간 동안 누적 수출액 약…",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_5d4d4c8ad799f696",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201373",
+          "medium": "news",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "publishedAt": "2026-10-09T03:18:05+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "루꼴라 김밥 만들기｜소고기 불고기와 루꼴라로 만드는 이색 건강 김밥 레시피",
+          "summary": "오늘 소개할 요리는 소고기 루꼴라 김밥 입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_1ced24be6c0102d2",
+          "url": "https://cultureagora.tistory.com/385",
+          "medium": "blog",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T10:30:01+09:00",
+          "image": "https://blog.kakaocdn.net/dn/96LHy/dJMcajcWjjE/isBhP6yfo77tjHM1CE4cBk/tfile.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "알토란 배우 양희경의 꽈리목이버섯조림 꽈목조림 만드는 법",
+          "summary": "알토란 614회에서는 반찬 백화점 한 상 편이 방송되었습니다.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_537e57064df28a56",
+          "url": "https://seon1982.tistory.com/4123",
+          "medium": "blog",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T00:00:24+09:00",
+          "image": "https://blog.kakaocdn.net/dn/bi8XMc/dJMcaaHdP1q/S44wUGWC1K8TPc23HOk8HK/img.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "가지볶음 레시피｜굴소스로 만드는 매콤한 중국식 가지볶음",
+          "summary": "가지는 기름을 잘 흡수해서 볶는 방법에 따라 맛이 크게 달라지는 채소입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_4cab6ee44b810b5d",
+          "url": "https://cultureagora.tistory.com/373",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-10T17:00:33+09:00",
+          "image": "https://blog.kakaocdn.net/dn/dWf1iA/dJMcablM1iG/ay0rBssHtARMklunuQZVy0/tfile.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "신상출시 편스토랑 도경완의 팽이버섯 비빔국수 만드는 법",
+          "summary": "340회 신상출시 편스토랑에서 도경완은 저당 안주 레시피로 면 대신 팽이버섯을 활용한 비빔국수 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_8fedadc98b036d88",
+          "url": "https://seon1982.tistory.com/4120",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-11T00:00:16+09:00",
+          "image": "https://blog.kakaocdn.net/dn/dGzbCy/dJMcahl1tUm/tFOUkNnd6jwaePak8awKMk/img.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "쏙은 무청으로 만드는 무청김치 가을김치 요리 레시피",
+          "summary": "애들 아빠가 텃밭에 심은 무에서 무청을 쏙아 가져다주면서 무청이 너무 어리고 연한 게 김치 담으면 맛있을 것 같다고 합니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_68dc3ddabd0f1675",
+          "url": "https://twins0807.tistory.com/entry/%EC%8F%99%EC%9D%80-%EB%AC%B4%EC%B2%AD%EC%9C%BC%EB%A1%9C-%EB%A7%8C%EB%93%9C%EB%8A%94-%EB%AC%B4%EC%B2%AD%EA%B9%80%EC%B9%98-%EA%B0%80%EC%9D%84%EA%B9%80%EC%B9%98-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-05T18:01:41+09:00",
+          "image": "https://blog.kakaocdn.net/dn/l4XQ0/dJMcafIsf7I/yB2kwjsPkFn91laKOxLUgk/img.jpg",
+          "imageSource": "feed_html"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“건강에 좋다지만 살찔까 걱정?”… 그래도 주목해야 할 아보카도 효능 5가지",
+          "summary": "샌드위치, 토스트, 샐러드까지 어디에나 잘 어울려 이제는 장바구니의 단골이 된 아보카도.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_4e80acb34b9fe8d9",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68539",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T15:00:00+09:00",
+          "image": "https://cdn.news.hidoc.co.kr/news/thumbnail/202610/68539_93067_3129_v150.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "장윤주도 먹던데… ‘흰 빵보다 포만감 3배’ 높은 아침식사 메뉴",
+          "summary": "아침 식사는 하루를 시작하는 데 필요한 에너지와 영양소를 보충하는 중요한 식사다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_95fb0ff5f462c481",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/12/2026101202005.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T04:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/10/12/2026101202004_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“여보, 부부 둘만 30년 사는 시대야”…35세 자녀, 독립 못한 경우는? / 아침 잠 깬 뒤 ‘이 습관’, 심장마비 위험 높여…의사가 경고, 뭐길래? [코메디닷컴 X 종근당건강] / “치매 오기 전 식단부터 바꿨더니”⋯12주 만에 노인에게 찾아온 효과",
+          "summary": "“여보, 부부 둘만 30년 사는 시대야”…35세 자녀, 독립 못한 경우는?",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_c748319bced52bfe",
+          "url": "https://kormedi.com/2882951/",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T06:00:00+09:00",
+          "image": "https://cdn.kormedi.com/wp-content/uploads/2023/06/thumb-kakaonewsletter04.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“훌륭한 아침 메뉴”… 심장 보는 의사가 꼽은 ‘노화 막는 음식 조합’",
+          "summary": "아침에 간편하게 챙겨 먹는 식단이 건강을 망치고 있을 수도 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_75c1963aaceb9608",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/12/2026101202071.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T06:00:00+09:00"
+        },
+        {
+          "title": "[FI 창간 9주년 특집Ⅰ-2027 식품트렌드 전망 ①] 한 입의 가치가 바뀐다…‘무엇을 뺐나’에서 ‘어떤 영양을 채웠나’로",
+          "summary": "〈연재를 시작하며〉식품을 선택하는 소비자의 질문이 구체화되고 있다.",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_1d74ba0af9f61f6a",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35630",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-12T22:10:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“매번 챙기기 번거롭고 쉽게 질려”…단백질 식품, 일상식 접목 선호 높아져",
+          "summary": "단백질 섭취가 일상적인 식습관으로 자리 잡았으나, 섭취 번거로움과 맛에 대한 피로감으로 인해 소비자들의 고민이 깊어지고 있다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_a358bb8da2183181",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201383",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-12T16:07:24+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201383_201928_546.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "중년 여성, 식후에 또 빵 vs 20대 여성은 샐러드… 몸에 어떤 변화가?",
+          "summary": "채소, 과일, 올리브유 등이 풍부한 샐러드는 염증을 줄이고 혈당-체중 관리에 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_f6f6516b541c3215",
+          "url": "https://kormedi.com/2881970/",
+          "medium": "news",
+          "discoveredAt": "2026-10-11T15:36:58+09:00",
+          "publishedAt": "2026-10-11T14:01:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2023/01/gettyimages-479831662.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "뇌 건강하게 만드는 식탁…자주 챙겨 먹으면 좋은 식품 6가지",
+          "summary": "연어와 참치 등 오메가-3 지방산이 풍부한 생선은 뇌 건강에 좋은 식품으로 꼽힌다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_0c4ae760efa44a39",
+          "url": "https://kormedi.com/2883122/",
+          "medium": "news",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T09:23:39+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/10/twi001t3334148.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "미국발 ‘초가공식품 규제’ 본격화…K-푸드 대응 서둘러야",
+          "summary": "미국 정부가 초가공식품(UPF·Ultra-Processed Foods)을 식품 정책의 핵심 규제 대상으로 끌어들이며 글로벌 식품산업 전반에 긴장감이 고조되고 있다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_dd2e3cc23d954a56",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201355",
+          "medium": "news",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-12T16:55:00+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201355_201902_5350.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "건강한 식생활을 실천해요! 정부, 한국인을 위한 식생활지침 발표(4.14)",
+          "summary": "",
+          "source": "mohw.go.kr",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_ce68b460dfd35119",
+          "url": "https://www.mohw.go.kr/board.es?act=view&bid=0027&cg_code=&list_no=365279&mid=a10503010100&tag=",
+          "medium": "research",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "publishedAt": "2026-02-10T09:00:00+09:00"
+        }
+      ]
+    }
+  }
+}

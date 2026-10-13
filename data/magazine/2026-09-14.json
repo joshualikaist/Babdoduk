@@ -2,25 +2,11 @@
   "date": "2026-09-14",
   "generatedAt": "2026-09-14T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
-  "featured": {
-    "title": "입맛 없을 때 무조건 밥 2공기 먹습니다.",
-    "source": "자취요리신",
-    "url": "https://www.youtube.com/shorts/7sxoPwNhrMU",
-    "medium": "youtube",
-    "image": "https://i.ytimg.com/vi/7sxoPwNhrMU/maxresdefault.jpg",
-    "category": "tips"
-  },
+  "featured": null,
   "lanes": {
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
-        {
-          "title": "너무 맛있어서 여기에 한번 빠지면 진짜 답 없습니다.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=xwa-fR__hYs",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/xwa-fR__hYs/maxresdefault.jpg"
-        },
         {
           "title": "육개장 만드는 법 숙취해소로 제격! 얼큰 매콤 깔끔 시원한 전통 육개장",
           "source": "엄마표 집밥",
@@ -28,24 +14,10 @@
           "medium": "blog"
         },
         {
-          "title": "바삭한 허니버터 쿠키에 부드러운 우유크림 샌드! Crispy Honey Butter Cookies with Milk Cream",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/shorts/JVMqE7buQzM",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/JVMqE7buQzM/maxresdefault.jpg"
-        },
-        {
           "title": "23 Summer vegetable recipes",
           "source": "Korean Bapsang",
           "url": "https://www.koreanbapsang.com/summer-vegetable-recipes/",
           "medium": "blog"
-        },
-        {
-          "title": "입맛 없을 때 무조건 밥 2공기 먹습니다.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/shorts/7sxoPwNhrMU",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/7sxoPwNhrMU/maxresdefault.jpg"
         }
       ]
     },
@@ -57,37 +29,16 @@
       "lead": "맛도 포기하지 않는 건강식",
       "items": [
         {
-          "title": "다음날 바로 굽기만 하면 끝! 폭신 촉촉 애플파이 시나몬롤 만들기 | 사과빵 | Soft Apple Pie Cinnamon Rolls Recipe | Apple Bread",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=2kJBfUi2jNg",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/2kJBfUi2jNg/maxresdefault.jpg"
-        },
-        {
           "title": "23 Summer vegetable recipes",
           "source": "Korean Bapsang",
           "url": "https://www.koreanbapsang.com/summer-vegetable-recipes/",
           "medium": "blog"
         },
         {
-          "title": "신전 로제떡볶이 따라잡기",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=RetRTn3NBT0",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/RetRTn3NBT0/maxresdefault.jpg"
-        },
-        {
           "title": "Makgeolli (Korean Rice Wine)",
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/makgeolli/",
           "medium": "blog"
-        },
-        {
-          "title": "포근한 가을 베이킹 ASMR | 사과·카라멜·시나몬 케이크&디저트 | 음악 없는 2시간 | No Music Cozy Fall Baking | 2 hours Baking ASMR",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=swnsjaYl3DA",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/swnsjaYl3DA/maxresdefault.jpg"
         }
       ]
     },

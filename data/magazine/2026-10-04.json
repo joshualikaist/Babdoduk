@@ -5,17 +5,17 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "밥 먹고 가볍게 걸었더니 혈당이 ‘뚝’…빈속 걷기 운동은 어떤 효과?",
-    "summary": "식후에 가볍게 걸으면 소화뿐만 아니라 혈당 관리에도 좋은 효과를 얻을 수 있다. 사진=게티이미지뱅크 걷기는 신체 및 정신 건강에 좋지만 언제 하느냐에 따라 효과가 크게 다르다.",
     "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_30f0d0a29704aa74",
     "url": "https://kormedi.com/2878597/",
     "medium": "news",
-    "discoveredAt": "2026-10-04T15:30:40+09:00",
-    "publishedAt": "2026-10-04T11:05:00+09:00",
     "image": "https://kormedi.com/wp-content/uploads/2026/10/gettyimages-a14503322.jpg",
-    "imageSource": "feed_media",
     "category": "habit",
+    "publishedAt": "2026-10-04T11:05:00+09:00",
+    "discoveredAt": "2026-10-04T15:30:40+09:00",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_30f0d0a29704aa74",
+    "imageSource": "feed_media",
+    "summary": "식후에 가볍게 걸으면 소화뿐만 아니라 혈당 관리에도 좋은 효과를 얻을 수 있다. 사진=게티이미지뱅크 걷기는 신체 및 정신 건강에 좋지만 언제 하느냐에 따라 효과가 크게 다르다.",
     "heroKind": "pick"
   },
   "lanes": {
@@ -23,85 +23,71 @@
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "“살찐다” 오해받던 ‘제로 음료’…2년 추적했더니 ‘뜻밖의 결과’",
-          "summary": "다이어트 중 무설탕 음료를 마셔도 물을 마신 것만큼 체중 감량에 효과가 있다는 연구 결과가 나왔다. 인공감미료가 오히려 식욕을 자극해 다이어트를 방해한다는 의구심이 있었으나, 실제 임상 시험 결과 체중 감량 효과는…",
-          "source": "서울신문 라이프",
-          "sourceId": "news-seoul-life",
-          "candidateId": "c_8579820791c9d56c",
-          "url": "https://www.seoul.co.kr/news/newsView.php?id=20261004500004",
-          "medium": "news",
-          "discoveredAt": "2026-10-04T15:30:40+09:00",
-          "publishedAt": "2026-10-04T07:22:18+09:00",
-          "trendEvidence": [
-            "explicit_source_claim"
-          ]
-        },
-        {
           "title": "산단 노동자 ‘천원의 아침밥’ 현장 찾은 송미령 장관",
-          "summary": "송미령 농림축산식품부 장관은 30일 전북 전주 소재 산업단지를 찾아 ‘산단 노동자 천원의 아침밥’ 운영 현장을 점검하고, 현장 노동자와 사업 관계자들을 격려했다.‘천원의 아침밥’은 대학생들의 호응에 힘입어 지원…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_4b60fd3d9313c693",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120351",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
           "publishedAt": "2026-09-30T19:59:34+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_4b60fd3d9313c693",
+          "summary": "송미령 농림축산식품부 장관은 30일 전북 전주 소재 산업단지를 찾아 ‘산단 노동자 천원의 아침밥’ 운영 현장을 점검하고, 현장 노동자와 사업 관계자들을 격려했다.‘천원의 아침밥’은 대학생들의 호응에 힘입어 지원…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "네이버 노조, 15개 계열사 통합교섭 요구…노동위에 시정신청",
-          "summary": "네이버 노동조합이 네이버와 15개 계열사를 아우르는 통합교섭을 요구하며 법적 절차에 들어갔다. 네이버가 계열사 노동자들의 근로조건을 실질적으로 결정하는 '사용자'에 해당하는지를 두고 노동위원회의 판단을 받겠다는…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_939c40c504165bda",
           "url": "https://www.newsis.com/view/NISX20261002_0003812412",
           "medium": "news",
-          "discoveredAt": "2026-10-02T15:25:18+09:00",
           "publishedAt": "2026-10-02T12:43:46+09:00",
+          "discoveredAt": "2026-10-02T15:25:18+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_939c40c504165bda",
+          "summary": "네이버 노동조합이 네이버와 15개 계열사를 아우르는 통합교섭을 요구하며 법적 절차에 들어갔다. 네이버가 계열사 노동자들의 근로조건을 실질적으로 결정하는 '사용자'에 해당하는지를 두고 노동위원회의 판단을 받겠다는…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "‘하루 한 알’ 비만약, ‘주 1회’로 줄까⋯노보, 중국 후보물질에 선급금 3억달러",
-          "summary": "미국에서 하루 한 번 복용하는 먹는 비만약 ‘위고비’ 25mg 제품. 노보 노디스크가 이번에 항서제약에서 도입한 HRS-1596은 주 1회 복용을 목표로 개발 중인 별도 후보물질이다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_7db11a6f252ddba4",
           "url": "https://kormedi.com/2876675/",
           "medium": "news",
-          "discoveredAt": "2026-10-01T15:40:29+09:00",
           "publishedAt": "2026-10-01T14:49:23+09:00",
+          "discoveredAt": "2026-10-01T15:40:29+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_7db11a6f252ddba4",
+          "summary": "미국에서 하루 한 번 복용하는 먹는 비만약 ‘위고비’ 25mg 제품. 노보 노디스크가 이번에 항서제약에서 도입한 HRS-1596은 주 1회 복용을 목표로 개발 중인 별도 후보물질이다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "네이버·카카오 노조, '원청 책임' 요구… \"모기업 포함 통합교섭하라\"",
-          "summary": "네이버와 카카오 노동조합이 모기업과 계열사 노조가 함께 참여하는 통합교섭을 요구했다. 모기업이 계열사의 근로조건에 실질적인 영향력을 행사하면서도 법인이 다르다는 이유로 교섭 책임을 지지 않고 있다는 주장이다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_daeb6b10a5c3250f",
           "url": "https://www.newsis.com/view/NISX20261001_0003810718",
           "medium": "news",
-          "discoveredAt": "2026-10-01T15:40:29+09:00",
           "publishedAt": "2026-10-01T14:30:29+09:00",
+          "discoveredAt": "2026-10-01T15:40:29+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_daeb6b10a5c3250f",
+          "summary": "네이버와 카카오 노동조합이 모기업과 계열사 노조가 함께 참여하는 통합교섭을 요구했다. 모기업이 계열사의 근로조건에 실질적인 영향력을 행사하면서도 법인이 다르다는 이유로 교섭 책임을 지지 않고 있다는 주장이다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "수입농산물 정책 추진 ‘농산물무역정책심의회’ 첫발",
-          "summary": "농림축산식품부(장관 송미령)는 2일 양재동 aT센터에서 생산자 및 소비자 단체, 전문가, 유관기관 등 위원 14명을 포함한 약 30명이 참석한 가운데 2026년 제1차 ‘농산물무역정책심의회(위원장 농식품부…",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_72ddf41872b99caa",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201329",
           "medium": "news",
-          "discoveredAt": "2026-10-03T14:53:34+09:00",
           "publishedAt": "2026-10-03T01:13:02+09:00",
+          "discoveredAt": "2026-10-03T14:53:34+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_72ddf41872b99caa",
+          "summary": "농림축산식품부(장관 송미령)는 2일 양재동 aT센터에서 생산자 및 소비자 단체, 전문가, 유관기관 등 위원 14명을 포함한 약 30명이 참석한 가운데 2026년 제1차 ‘농산물무역정책심의회(위원장 농식품부…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -113,110 +99,85 @@
       "items": [
         {
           "title": "Bok Choy Kimchi (Quick & Easy)",
-          "summary": "Bok choy kimchi isn’t a substitute for napa cabbage kimchi – it’s a different style of kimchi altogether.",
           "source": "My Korean Kitchen",
-          "sourceId": "blog-mykoreankitchen",
-          "candidateId": "c_c89d6f14640e26bb",
           "url": "https://mykoreankitchen.com/bok-choy-kimchi/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-07-17T19:50:05+09:00",
           "image": "https://mykoreankitchen.com/wp-content/uploads/2026/07/1.-bok-choy-kimchi-recipe.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-07-17T19:50:05+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-mykoreankitchen",
+          "candidateId": "c_c89d6f14640e26bb",
+          "imageSource": "source_page_og",
+          "summary": "Bok choy kimchi isn’t a substitute for napa cabbage kimchi – it’s a different style of kimchi altogether."
         },
         {
           "title": "Greek Chicken Soup",
-          "summary": "Greek Chicken Soup, or Avgolemono soup, is a bright, lemony chicken and rice soup with the silkiest broth (made without…",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_ab089883b92a4632",
           "url": "https://www.budgetbytes.com/greek-chicken-soup/",
           "medium": "blog",
+          "publishedAt": "2026-10-03T22:30:00+09:00",
           "discoveredAt": "2026-10-04T15:30:40+09:00",
-          "publishedAt": "2026-10-03T22:30:00+09:00"
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_ab089883b92a4632",
+          "summary": "Greek Chicken Soup, or Avgolemono soup, is a bright, lemony chicken and rice soup with the silkiest broth (made without…"
         },
         {
           "title": "Classic Chili Recipe",
-          "summary": "While I have several chili recipes on the website already, this Classic Homemade Beef Chili recipe is my absolute…",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_9b4113fe12c922b2",
           "url": "https://www.budgetbytes.com/basic-chili/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-16T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2025/03/4-Classic-Homemade-Chili-Front-Bowl.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-16T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_9b4113fe12c922b2",
+          "imageSource": "feed_media",
+          "summary": "While I have several chili recipes on the website already, this Classic Homemade Beef Chili recipe is my absolute…"
         },
         {
           "title": "Tokoroten (Japanese Jelly Noodles) ところてん",
-          "summary": "I'll show you the two-minute step most people rush, plus how to cut the blocks so they press into neat, even strands…",
           "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_750a0bdd2f665d58",
           "url": "https://www.justonecookbook.com/tokoroten/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-07T21:00:00+09:00",
           "image": "https://www.justonecookbook.com/wp-content/uploads/2026/08/Tokoroten-Japanese-Jelly-Noodles-5961-I-1-1200x800.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-09-07T21:00:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-justonecookbook",
+          "candidateId": "c_750a0bdd2f665d58",
+          "imageSource": "feed_html",
+          "summary": "I'll show you the two-minute step most people rush, plus how to cut the blocks so they press into neat, even strands…"
         },
         {
           "title": "A Day in My Life at Ritz Paris Escoffier Pastry School",
-          "summary": "A Day in My Life at Ritz Paris Escoffier Pastry School. At 6:30 in the morning, I wake up on my own—about 20 minutes…",
           "source": "Seonkyoung Longest",
-          "sourceId": "blog-seonkyounglongest",
-          "candidateId": "c_34d51da8cf515d46",
           "url": "https://seonkyounglongest.com/ritz-paris/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-07-11T16:51:23+09:00",
           "image": "https://i0.wp.com/photos.smugmug.com/From-My-Table-009/i-ZnxwRFZ/1/LjFNJp3WL82C4s9gdBMzPzgWwDSHfxnSdgxrfcszn/X2/ChatGPT%20Image%20Jul%2010%2C%202026%2C%2005_04_20%20PM-X2.png?w=1170&ssl=1",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-07-11T16:51:23+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-seonkyounglongest",
+          "candidateId": "c_34d51da8cf515d46",
+          "imageSource": "feed_html",
+          "summary": "A Day in My Life at Ritz Paris Escoffier Pastry School. At 6:30 in the morning, I wake up on my own—about 20 minutes…"
         },
         {
           "title": "Tonpeiyaki (Pork and Cabbage Omelette) とん平焼き",
-          "summary": "A spoonful of potato starch in the egg is my trick for a fold that never tears, and it's ready in 20 minutes when I'm…",
           "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_fda738a229267434",
           "url": "https://www.justonecookbook.com/tonpeiyaki/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-08-31T21:00:00+09:00",
           "image": "https://www.justonecookbook.com/wp-content/uploads/2026/09/Tonpeiyaki-6169-I-1-1200x800.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-08-31T21:00:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-justonecookbook",
+          "candidateId": "c_fda738a229267434",
+          "imageSource": "feed_html",
+          "summary": "A spoonful of potato starch in the egg is my trick for a fold that never tears, and it's ready in 20 minutes when I'm…"
         }
       ]
     },
     "health": {
       "lead": "맛도 포기하지 않는 건강식",
-      "items": [
-        {
-          "title": "2026 식품 트렌드 석권한 ‘혼밥+웰니스’…1인가구 겨냥한 건강 간편식 열풍",
-          "summary": "최근 MZ세대 사이에서는 단순히 굶거나 참는 고통스러운 다이어트 대신, 즐겁게 건강을 관리하는 ‘헬시 플레저’가 하나의 문화로 뿌리내렸다. 식품업계의 화두는 단연 ‘혼웰식(혼밥+웰니스)’다.",
-          "source": "세계일보",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_b37e1861e4e95176",
-          "url": "https://www.segye.com/newsView/20260208502296",
-          "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-02-08T07:36:36+09:00",
-          "image": "https://www.segye.com/content/image/2026/02/08/20260208502297.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "선우용여 “치매가 제일 무서워…내 정신으로 잘 살고 싶다” 검사 결과 27점",
-          "summary": "선우용여가 뇌경색 이후 달라진 아침 식단과 혈압·혈당 관리 습관을 공개했다. 치매안심센터에서 받은 인지선별검사는 30점 만점에 27점으로 정상 범위였으며, 선우용여는 조기에 자신의 상태를 확인하는 것이 중요하다고…",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_762292e0f7f63566",
-          "url": "https://www.donga.com/news/Culture/article/all/20260929/134752211/2",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-29T14:43:34+09:00"
-        }
-      ]
+      "items": []
     },
     "habit": {
       "lead": "잘 먹는 법에 대한 작은 이야기",

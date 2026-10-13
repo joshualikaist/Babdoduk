@@ -3,109 +3,91 @@
   "generatedAt": "2026-10-09T15:56:29+09:00",
   "schedule": "Daily 10:00 KST",
   "rules": "lanes-v1",
-  "featured": {
-    "title": "요즘 '떡지순례'는 편의점에서…피자설기부터 찹쌀떡까지",
-    "summary": "올해 초 두바이 쫀득 쿠키(두쫀쿠)가 디저트 시장을 휩쓴데 이어 떡을 활용한 이색 간식이 유행으로 떠올랐다. SNS를 중심으로 피자설기, 찹쌀떡 등이 인기를 끌며 유명 떡집을 찾아가는 '떡지순례'와 '오픈런'…",
-    "source": "머니투데이",
-    "sourceId": "web-exa-trend",
-    "candidateId": "c_d12643c73be85269",
-    "url": "https://www.mt.co.kr/living/2026/10/06/2026100615333213897",
-    "medium": "news",
-    "discoveredAt": "2026-10-09T15:56:29+09:00",
-    "publishedAt": "2026-10-06T15:40:11+09:00",
-    "image": "https://thumb.mt.co.kr/cdn-cgi/image/w=1200,h=818,fit=cover,bg=white,f=auto,quality=high,sharpen=2,g=face/21/2026/10/2026100615333213897_1.jpg",
-    "imageSource": "source_page_og",
-    "trendEvidence": [
-      "explicit_source_claim",
-      "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
-  },
+  "featured": null,
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
           "title": "삼각김밥 넘어 ′마끼′ 승부…세븐일레븐, 통소시지 신제품 선봬",
-          "summary": "세븐일레븐의 간편식 전략이 밥 품질 개선을 앞세워 상품군 확장으로 이어지고 있다.",
           "source": "megaeconomy.co.kr",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_e50589b9d4b637b5",
           "url": "https://www.megaeconomy.co.kr/news/newsview.php?ncode=1065602585331579",
           "medium": "blog",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
           "publishedAt": "2026-10-06T17:43:26+09:00",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_e50589b9d4b637b5",
+          "summary": "세븐일레븐의 간편식 전략이 밥 품질 개선을 앞세워 상품군 확장으로 이어지고 있다.",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "“살 빼려고 밥 줄이고 지방 늘렸는데”…흔한 ‘이 식단’, 소장에 종양 늘었다고?",
-          "summary": "살 빼려고 밥과 빵은 줄이고 지방은 많이 먹는 ‘저탄고지’ 다이어트. 탄수화물 섭취를 매우 적게 제한하는 케토제닉 식단이 대표적이다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_4e37cee70ccfd434",
           "url": "https://kormedi.com/2879875/",
           "medium": "news",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
           "publishedAt": "2026-10-09T12:03:00+09:00",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_4e37cee70ccfd434",
+          "summary": "살 빼려고 밥과 빵은 줄이고 지방은 많이 먹는 ‘저탄고지’ 다이어트. 탄수화물 섭취를 매우 적게 제한하는 케토제닉 식단이 대표적이다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "감칠맛 살리는 가쓰오부시…\"국물만 드세요\" 왜?",
-          "summary": "℃ 최근 오코노미야키와 타코야키 등 일본 음식이 인기를 끌면서 고명으로 올라가는 가쓰오부시를 찾는 경우도 늘고 있다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_fdf0fd0ae1f71480",
           "url": "https://www.newsis.com/view/NISX20261007_0003817531",
           "medium": "news",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
           "publishedAt": "2026-10-09T12:01:00+09:00",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_fdf0fd0ae1f71480",
+          "summary": "℃ 최근 오코노미야키와 타코야키 등 일본 음식이 인기를 끌면서 고명으로 올라가는 가쓰오부시를 찾는 경우도 늘고 있다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "신약대신 화장품·빵집…기준강화에 부작용 속출['상폐룰' 제약사 항변②]",
-          "summary": "코스닥 상장 유지 요건 강화에 따라 국내 바이오 기업들이 화장품, 뷰티기기, 부동산 임대 등 신약개발과는 다른 본업 이외에 집중하기 시작하면서 연구개발에 써야 할 자금과 인력이 분산된다는 우려가 나온다.",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_786b06c48452ee86",
           "url": "https://www.newsis.com/view/NISX20261008_0003818964",
           "medium": "news",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
           "publishedAt": "2026-10-09T11:01:00+09:00",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_786b06c48452ee86",
+          "summary": "코스닥 상장 유지 요건 강화에 따라 국내 바이오 기업들이 화장품, 뷰티기기, 부동산 임대 등 신약개발과는 다른 본업 이외에 집중하기 시작하면서 연구개발에 써야 할 자금과 인력이 분산된다는 우려가 나온다.",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "노인·장애인 급식, 절반 이상 ‘사각지대’",
-          "summary": "영양사가 없는 소규모 노인·장애인 복지시설 급식소 절반 이상이 사회복지급식관리지원센터(이하 센터)의 전문적인 위생·영양관리 지원을 받지 못하는 것으로 나타났다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_eb60c16d29eabda7",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62327",
           "medium": "news",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
           "publishedAt": "2026-10-09T03:27:00+09:00",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_eb60c16d29eabda7",
+          "summary": "영양사가 없는 소규모 노인·장애인 복지시설 급식소 절반 이상이 사회복지급식관리지원센터(이하 센터)의 전문적인 위생·영양관리 지원을 받지 못하는 것으로 나타났다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "식품·주류업계, 문화예술에 ‘브랜드’ 입혀 소비자 접점 확대",
-          "summary": "식품·유통업계에서 문화예술을 활용해 소비자에게 새로운 브랜드 경험을 제공하는 ‘컬처 마케팅’이 주목을 받고 있다.",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_561eaffe912dd513",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68627",
           "medium": "news",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
           "publishedAt": "2026-10-09T01:31:01+09:00",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_561eaffe912dd513",
+          "summary": "식품·유통업계에서 문화예술을 활용해 소비자에게 새로운 브랜드 경험을 제공하는 ‘컬처 마케팅’이 주목을 받고 있다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
@@ -117,38 +99,38 @@
       "items": [
         {
           "title": "혜자 통등심돈까스&치킨까스 & 우도땅콩참치마요김밥 가격·출시일·후기 | GS25 신상",
-          "summary": "GS25 혜자 통등심돈까스&치킨까스 & 우도땅콩참치마요김밥은 GS25 10월 1주차 신상으로 함께 소개된 도시락과 김밥입니다.",
           "source": "퍅미",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_69538ed464a834a5",
           "url": "https://pyakmi.com/products/451",
           "medium": "blog",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
-          "publishedAt": "2026-10-01T12:00:00+09:00",
           "image": "https://pyakmi.com/storage/products/1791210685_6ac3b4bd78ea1.webp",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-01T12:00:00+09:00",
+          "discoveredAt": "2026-10-09T15:56:29+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_69538ed464a834a5",
+          "imageSource": "source_page_og",
+          "summary": "GS25 혜자 통등심돈까스&치킨까스 & 우도땅콩참치마요김밥은 GS25 10월 1주차 신상으로 함께 소개된 도시락과 김밥입니다."
         },
         {
           "title": "Yakgwa (Traditional Korean Honey Cookies)",
-          "summary": "Slow-fried dough and a ginger-honey soak create this chewy Korean honey cookie.",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_3f2e5930ab6676f3",
           "url": "https://www.beyondkimchee.com/yakgwa-korean-honey-cookies/",
           "medium": "blog",
+          "publishedAt": "2026-02-06T22:00:00+09:00",
           "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-02-06T22:00:00+09:00"
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_3f2e5930ab6676f3",
+          "summary": "Slow-fried dough and a ginger-honey soak create this chewy Korean honey cookie."
         },
         {
           "title": "Sulppang (Korean Makgeolli Bread)",
-          "summary": "Soft, airy sulppang made with makgeolli (Korean rice wine) for a naturally light rise and gentle tang.",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_9c7b7d9afc8eddb3",
           "url": "https://www.beyondkimchee.com/sulppang-makgeolli-bread/",
           "medium": "blog",
+          "publishedAt": "2026-06-09T20:56:00+09:00",
           "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-06-09T20:56:00+09:00"
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_9c7b7d9afc8eddb3",
+          "summary": "Soft, airy sulppang made with makgeolli (Korean rice wine) for a naturally light rise and gentle tang."
         }
       ]
     },
@@ -157,38 +139,27 @@
       "items": [
         {
           "title": "통곡물 빵 vs 사워도우 빵…혈당에 더 나은 선택은?",
-          "summary": "단백질이나 채소와 함께 빵을 먹으면 혈당을 낮추는 데 도움이 된다. 사진=게티이미지뱅크 빵은 흔히 ‘혈당의 적’으로 불린다. 식후 혈당 수치를 급격히 끌어올리기 때문이다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_634abaf0ea2339fb",
           "url": "https://kormedi.com/2880197/",
           "medium": "news",
-          "discoveredAt": "2026-10-09T15:56:29+09:00",
-          "publishedAt": "2026-10-09T08:03:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/gettyimages-1226930762.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "“뱃살 빼려면 근육부터 지켜라”… 당뇨·고지혈증 싹 달아나게 만든 단백질의 비밀 [헬스픽]",
-          "summary": "복부 비만과 뱃살로 고민하는 이들이 다이어트를 결심할 때 가장 경계해야 할 것은 무작정 굶거나 탄수화물만 극단적으로 줄이는 식단이다.",
-          "source": "서울신문 라이프",
-          "sourceId": "news-seoul-life",
-          "candidateId": "c_640d8d6545cf8d08",
-          "url": "https://www.seoul.co.kr/news/newsView.php?id=20261008500309",
-          "medium": "news",
+          "publishedAt": "2026-10-09T08:03:00+09:00",
           "discoveredAt": "2026-10-09T15:56:29+09:00",
-          "publishedAt": "2026-10-08T22:29:31+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_634abaf0ea2339fb",
+          "imageSource": "feed_media",
+          "summary": "단백질이나 채소와 함께 빵을 먹으면 혈당을 낮추는 데 도움이 된다. 사진=게티이미지뱅크 빵은 흔히 ‘혈당의 적’으로 불린다. 식후 혈당 수치를 급격히 끌어올리기 때문이다."
         },
         {
           "title": "‘살던 곳에서 건강하게’…제20회 영양의 날, 재택영양관리·통합돌봄 조명",
-          "summary": "‘10월 14일 영양의 날’을 맞아 ‘살던 곳에서 건강하게! 영양사와 함께하는 재택영양관리’를 주제로 기념식과 전문가 세미나가 개최된다.‘영양의 날’은 모든 국민이 올바른 식생활로 건강한 삶을 실천할 수 있도록…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_d00ad30ecb555fd3",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120470",
           "medium": "news",
+          "publishedAt": "2026-10-09T00:55:10+09:00",
           "discoveredAt": "2026-10-09T15:56:29+09:00",
-          "publishedAt": "2026-10-09T00:55:10+09:00"
+          "sourceId": "news-foodnews",
+          "candidateId": "c_d00ad30ecb555fd3",
+          "summary": "‘10월 14일 영양의 날’을 맞아 ‘살던 곳에서 건강하게! 영양사와 함께하는 재택영양관리’를 주제로 기념식과 전문가 세미나가 개최된다.‘영양의 날’은 모든 국민이 올바른 식생활로 건강한 삶을 실천할 수 있도록…"
         }
       ]
     },
@@ -197,25 +168,25 @@
       "items": [
         {
           "title": "초라하게 혼밥한다고?…혼자 앉는 자리가 비싸졌다",
-          "summary": "혼자 밥을 먹으면서 한 끼에 5만원 이상을 쓰는 사람이 늘고 있다. 올해 혼밥 예약 3건 가운데 2건이 1인당 5만원 이상인 식당에서 이뤄졌다.",
           "source": "다음뉴스",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_2afee4fc72f0fa7a",
           "url": "https://v.daum.net/v/20260914135241076",
           "medium": "news",
+          "publishedAt": "2026-09-14T12:00:00+09:00",
           "discoveredAt": "2026-10-09T15:56:29+09:00",
-          "publishedAt": "2026-09-14T12:00:00+09:00"
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_2afee4fc72f0fa7a",
+          "summary": "혼자 밥을 먹으면서 한 끼에 5만원 이상을 쓰는 사람이 늘고 있다. 올해 혼밥 예약 3건 가운데 2건이 1인당 5만원 이상인 식당에서 이뤄졌다."
         },
         {
           "title": "한국의 40, 50대 “많이 먹고 운동 안 해”… 체중, 고지혈증에 어떤 변화가?",
-          "summary": "중년은 고지방-탄수화물 음식을 줄이고 달걀 등 단백질을 보강하는 게 좋다. 사진=게티이미지뱅크 40~50대는 평생 건강의 갈림길이나 다름 없다. 노화가 본격적으로 이어지고 근육은 감소한다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_04978ab44b1bf452",
           "url": "https://kormedi.com/2881621/",
           "medium": "news",
+          "publishedAt": "2026-10-09T14:01:00+09:00",
           "discoveredAt": "2026-10-09T15:56:29+09:00",
-          "publishedAt": "2026-10-09T14:01:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_04978ab44b1bf452",
+          "summary": "중년은 고지방-탄수화물 음식을 줄이고 달걀 등 단백질을 보강하는 게 좋다. 사진=게티이미지뱅크 40~50대는 평생 건강의 갈림길이나 다름 없다. 노화가 본격적으로 이어지고 근육은 감소한다."
         }
       ]
     }

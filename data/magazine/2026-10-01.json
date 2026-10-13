@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "美 점령한 CJ ‘비비고 김밥’…올 상반기 매출 전년동기대비 59% 증가",
-    "summary": "CJ제일제당은 미국시장에서 올해 1~7월 ‘비비고 김밥’ 매출이 전년 동기 대비 59% 증가했다고 밝혔다.비비고 김밥은 2024년 12월 미국 대형 유통업체 크로거(Kroger)에 입점한 이후 올해…",
     "source": "식품음료신문",
-    "sourceId": "news-thinkfood",
-    "candidateId": "c_d6e8ee8637b8713f",
     "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201313",
     "medium": "news",
-    "discoveredAt": "2026-10-01T15:40:29+09:00",
-    "publishedAt": "2026-10-01T19:11:37+09:00",
     "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201313_201835_1116.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-01T19:11:37+09:00",
+    "discoveredAt": "2026-10-01T15:40:29+09:00",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_d6e8ee8637b8713f",
     "imageSource": "source_page_og",
+    "summary": "CJ제일제당은 미국시장에서 올해 1~7월 ‘비비고 김밥’ 매출이 전년 동기 대비 59% 증가했다고 밝혔다.비비고 김밥은 2024년 12월 미국 대형 유통업체 크로거(Kroger)에 입점한 이후 올해…",
+    "heroKind": "trend",
     "trendEvidence": [
       "sales_data",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "한솥도시락, ‘돼지고기 단백질 시대’ 열다…건강 트렌드 맞춘 신메뉴 인기",
-          "summary": "국내 소비자들의 건강에 대한 관심이 높아지며 단백질 섭취가 식생활의 핵심 키워드로 부상하고 있다. 식품산업통계정보에 따르면 국내 단백질 식품 시장은 2018년 813억 원 규모에서 2023년 4,000억 원…",
           "source": "뉴스탭",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_bda655ea2f835ab9",
           "url": "https://www.newstap.co.kr/news/articleView.html?idxno=315410",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-24T09:00:00+09:00",
           "image": "https://cdn.newstap.co.kr/news/photo/202510/315410_418529_3348.jpg",
+          "publishedAt": "2026-09-24T09:00:00+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_bda655ea2f835ab9",
           "imageSource": "source_page_og",
+          "summary": "국내 소비자들의 건강에 대한 관심이 높아지며 단백질 섭취가 식생활의 핵심 키워드로 부상하고 있다. 식품산업통계정보에 따르면 국내 단백질 식품 시장은 2018년 813억 원 규모에서 2023년 4,000억 원…",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -45,16 +45,16 @@
         },
         {
           "title": "캐치테이블 ‘2026 혼밥 트렌드’ 공개",
-          "summary": "요식업 전문 통합 솔루션 기업 와드(대표이사 용태순)가 운영하는 캐치테이블이 ‘2026 혼밥 트렌드 리포트’를 공개했다.",
           "source": "호텔앤레스토랑",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_8bf5f30e37b61d03",
           "url": "https://www.hotelrestaurant.co.kr/news/articleView.html?idxno=22271",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-14T16:27:16+09:00",
           "image": "https://cdn.hotelrestaurant.co.kr/news/photo/202609/22271_73441_2622.jpg",
+          "publishedAt": "2026-09-14T16:27:16+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_8bf5f30e37b61d03",
           "imageSource": "source_page_og",
+          "summary": "요식업 전문 통합 솔루션 기업 와드(대표이사 용태순)가 운영하는 캐치테이블이 ‘2026 혼밥 트렌드 리포트’를 공개했다.",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data",
@@ -63,16 +63,16 @@
         },
         {
           "title": "3천원대 마요부터 단백질 강화 메뉴까지…도시락 시장, 초개인화 경쟁 본격화",
-          "summary": "연초부터 이어진 고물가 기조 속에서 소비 시장의 결이 달라지고 있다. 지출 부담이 커질수록 소비자는 획일적인 상품 대신 자신의 생활 방식과 가치관에 맞는 선택을 강화하는 흐름을 보이고 있다.",
           "source": "뉴스탭",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_8aad02e9a5c00dbc",
           "url": "https://www.newstap.co.kr/news/articleView.html?idxno=322706",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-02T09:00:00+09:00",
           "image": "https://cdn.newstap.co.kr/news/photo/202602/322706_427727_2341.jpg",
+          "publishedAt": "2026-09-02T09:00:00+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_8aad02e9a5c00dbc",
           "imageSource": "source_page_og",
+          "summary": "연초부터 이어진 고물가 기조 속에서 소비 시장의 결이 달라지고 있다. 지출 부담이 커질수록 소비자는 획일적인 상품 대신 자신의 생활 방식과 가치관에 맞는 선택을 강화하는 흐름을 보이고 있다.",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -80,14 +80,14 @@
         },
         {
           "title": "혼자 먹어도 고급스럽게…1인 외식이 바꾼 F&B 매장 지형도",
-          "summary": "혼자 식사하는 문화가 인구 구조 변화와 개인화된 소비 성향을 타고 외식 산업의 핵심 매출 축으로 정착하고 있다.",
           "source": "TENANT news",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_44d0b69a6ed4f044",
           "url": "https://tnnews.co.kr/archives/293486",
           "medium": "blog",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
           "publishedAt": "2026-09-14T09:00:49+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_44d0b69a6ed4f044",
+          "summary": "혼자 식사하는 문화가 인구 구조 변화와 개인화된 소비 성향을 타고 외식 산업의 핵심 매출 축으로 정착하고 있다.",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -95,32 +95,32 @@
         },
         {
           "title": "명절 끝났는데 속이 아직 더부룩⋯소화제와 가스제거제, 뭐가 다를까",
-          "summary": "증상별 소화제 라인업 사진=한미약품 연휴가 끝났는데도 속이 더부룩하다. 배까지 빵빵하게 부풀어 소화제를 먹어야 할지 가스제거제를 먹어야 할지 헷갈린다. 두 약의 쓰임은 다르다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_a9d2a4dee4f5fa37",
           "url": "https://kormedi.com/2875837/",
           "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-30T14:46:34+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/09/unnamed-file-59.png",
+          "publishedAt": "2026-09-30T14:46:34+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a9d2a4dee4f5fa37",
           "imageSource": "feed_media",
+          "summary": "증상별 소화제 라인업 사진=한미약품 연휴가 끝났는데도 속이 더부룩하다. 배까지 빵빵하게 부풀어 소화제를 먹어야 할지 가스제거제를 먹어야 할지 헷갈린다. 두 약의 쓰임은 다르다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "“점심 한 끼도 아깝다”…고물가에 다시 뜨는 ‘도시락족’, 검색량 4배 껑충",
-          "summary": "고물가 여파로 점심값 부담이 커지면서 직접 도시락을 준비해 먹는 이른바 ‘도시락족’이 다시 주목받고 있다. 외식 물가 상승으로 점심 한 끼에 대한 부담이 커진 가운데 식비 절감과 건강 관리를 동시에 챙길 수 있는…",
           "source": "megaeconomy.co.kr",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_7136f004da8d986a",
           "url": "https://megaeconomy.co.kr/news/newsview.php?ncode=1065591249650007",
           "medium": "blog",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-02T14:34:47+09:00",
           "image": "https://megaeconomy.co.kr/news/data/20260902/p1065591249650007_441_thum.jpg",
+          "publishedAt": "2026-09-02T14:34:47+09:00",
+          "discoveredAt": "2026-09-30T15:08:01+09:00",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_7136f004da8d986a",
           "imageSource": "source_page_og",
+          "summary": "고물가 여파로 점심값 부담이 커지면서 직접 도시락을 준비해 먹는 이른바 ‘도시락족’이 다시 주목받고 있다. 외식 물가 상승으로 점심 한 끼에 대한 부담이 커진 가운데 식비 절감과 건강 관리를 동시에 챙길 수 있는…",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -133,77 +133,77 @@
       "items": [
         {
           "title": "요즘 핫한 요거트 찹쌀떡 직접 만들기 | 쫀득한 모찌 속에 요거트 아이스크림 | Fresh Fruit Yogurt Ice Cream Rice Cake (Mochi) Recipe",
-          "summary": "생과일을 쏙 끼워 먹는 쫀득한 요거트 찹쌀떡, 속에는 상큼하고 부드러운 요거트 아이스크림을 가득 채웠어요. Chewy fresh fruit yogurt mochi filled with creamy yogurt…",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_9c0e3b5648023241",
           "url": "https://www.youtube.com/watch?v=o7baQU9RDKI",
           "medium": "youtube",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-18T20:00:33+09:00",
           "image": "https://i4.ytimg.com/vi/o7baQU9RDKI/hqdefault.jpg",
-          "imageSource": "youtube_thumbnail"
+          "publishedAt": "2026-09-18T20:00:33+09:00",
+          "discoveredAt": "2026-09-29T15:09:50+09:00",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_9c0e3b5648023241",
+          "imageSource": "youtube_thumbnail",
+          "summary": "생과일을 쏙 끼워 먹는 쫀득한 요거트 찹쌀떡, 속에는 상큼하고 부드러운 요거트 아이스크림을 가득 채웠어요. Chewy fresh fruit yogurt mochi filled with creamy yogurt…"
         },
         {
           "title": "Sheet Pan Chicken Thighs",
-          "summary": "These Sheet Pan Chicken Thighs roast up juicy and golden with butternut squash, Brussels sprouts, and red onion all on…",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_f2d0a7eb98fb1494",
           "url": "https://www.budgetbytes.com/sheet-pan-chicken-thighs/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-28T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2026/09/3-Autumn-Sheet-Pan-Chicken-Thighs-Overhead-Wide.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-28T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_f2d0a7eb98fb1494",
+          "imageSource": "feed_media",
+          "summary": "These Sheet Pan Chicken Thighs roast up juicy and golden with butternut squash, Brussels sprouts, and red onion all on…"
         },
         {
           "title": "Chicken Stew",
-          "summary": "Okay guys, this Chicken Stew recipe is definitely at the top of my list of all-time favorite recipes!",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_61b98a5e24547c31",
           "url": "https://www.budgetbytes.com/chicken-stew/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-19T22:30:00+09:00",
           "image": "https://www.budgetbytes.com/wp-content/uploads/2021/10/1-Chicken-Stew-Overhead-Wide.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-09-19T22:30:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_61b98a5e24547c31",
+          "imageSource": "feed_media",
+          "summary": "Okay guys, this Chicken Stew recipe is definitely at the top of my list of all-time favorite recipes!"
         },
         {
           "title": "Yuzu Kosho Edamame 柚子こしょう枝豆",
-          "summary": "My homemade Yuzu Kosho recipe inspired this 3-ingredient snack.",
           "source": "Just One Cookbook",
-          "sourceId": "blog-justonecookbook",
-          "candidateId": "c_3575c6c7745c4f57",
           "url": "https://www.justonecookbook.com/yuzu-kosho-edamame/",
           "medium": "blog",
-          "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-09-28T21:00:00+09:00",
           "image": "https://www.justonecookbook.com/wp-content/uploads/2027/09/Yuzu-Kosho-Edamame-6535-I-1-1200x800.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-09-28T21:00:00+09:00",
+          "discoveredAt": "2026-09-29T11:19:02+09:00",
+          "sourceId": "blog-justonecookbook",
+          "candidateId": "c_3575c6c7745c4f57",
+          "imageSource": "feed_html",
+          "summary": "My homemade Yuzu Kosho recipe inspired this 3-ingredient snack."
         },
         {
           "title": "쿠킹트리의 베이킹 촬영하는 날의 하루 A Baking Filming Day at Cooking Tree",
-          "summary": "평소 영상에서는 잘 보이지 않았던 쿠킹트리의 하루를 가볍게 함께 담아봤어요 댓글을 확인하고 레시피를 정리한 뒤, 오늘 디저트에 어울리는 그릇과 실바니안도 고르고 하나씩 재료를 준비해 촬영해요.",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_3704cbcc8fd34ec0",
           "url": "https://www.youtube.com/shorts/NRQg-w5Vk1g",
           "medium": "youtube",
+          "publishedAt": "2026-09-16T19:02:01+09:00",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-16T19:02:01+09:00"
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_3704cbcc8fd34ec0",
+          "summary": "평소 영상에서는 잘 보이지 않았던 쿠킹트리의 하루를 가볍게 함께 담아봤어요 댓글을 확인하고 레시피를 정리한 뒤, 오늘 디저트에 어울리는 그릇과 실바니안도 고르고 하나씩 재료를 준비해 촬영해요."
         },
         {
           "title": "카레에 이걸 넣으면 진심 대박 맛도리",
-          "summary": "만두카레를 만들어 보자 [재료] 냉동 만두, 양파, 고형 카레 [만드는 법] 1. 팬에 식용유와 버터를 두르고 양파와 냉동 만두를 볶는다. 2. 만두가 노릇해지면 먹기 좋게 자른다. 3.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_baa24371a58a2ec5",
           "url": "https://www.youtube.com/watch?v=uygyE4foDpo",
           "medium": "youtube",
+          "publishedAt": "2026-09-24T00:00:00+09:00",
           "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "publishedAt": "2026-09-24T00:00:00+09:00"
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_baa24371a58a2ec5",
+          "summary": "만두카레를 만들어 보자 [재료] 냉동 만두, 양파, 고형 카레 [만드는 법] 1. 팬에 식용유와 버터를 두르고 양파와 냉동 만두를 볶는다. 2. 만두가 노릇해지면 먹기 좋게 자른다. 3."
         }
       ]
     },
@@ -212,77 +212,51 @@
       "items": [
         {
           "title": "\"가을엔 구수한 메밀 향\" 외식·카페업계, 식이섬유 가득 메밀 메뉴 풍성",
-          "summary": "가을을 맞아 외식·카페업계가 구수한 풍미의 메밀을 활용한 신제품과 메뉴를 잇따라 선보이고 있다. 메밀면과 같은 전통적인 활용법을 넘어 빵과 도넛, 한식 다이닝 등으로 메뉴가 다양해지면서 계절감과 건강을 함께…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_c42db9aa2d07fd73",
           "url": "https://www.newsis.com/view/NISX20260930_0003808970",
           "medium": "news",
-          "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-10-01T05:15:00+09:00",
           "image": "https://image.newsis.com/2026/09/30/NISI20260930_0002251466_web.jpg?rnd=20260930085341",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-01T05:15:00+09:00",
+          "discoveredAt": "2026-10-01T15:40:29+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_c42db9aa2d07fd73",
+          "imageSource": "feed_html",
+          "summary": "가을을 맞아 외식·카페업계가 구수한 풍미의 메밀을 활용한 신제품과 메뉴를 잇따라 선보이고 있다. 메밀면과 같은 전통적인 활용법을 넘어 빵과 도넛, 한식 다이닝 등으로 메뉴가 다양해지면서 계절감과 건강을 함께…"
         },
         {
           "title": "수능 D-50, 급식 식단도 ‘컨디션 관리’",
-          "summary": "2027학년도 대학수학능력시험이 50일 앞으로 다가오면서 고3 수험생의 학교급식 식단에도 관심이 높아지는 시기다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_5e235984a1e96604",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62265",
           "medium": "news",
-          "discoveredAt": "2026-10-01T00:11:15+09:00",
-          "publishedAt": "2026-10-01T06:35:49+09:00",
           "image": "http://www.fsnews.co.kr/news/thumbnail/202609/62265_53111_387_v150.jpg",
-          "imageSource": "source_page_og"
-        },
-        {
-          "title": "무엇을 먹을까, 어떻게 고를까[기고/정재훈]",
-          "summary": "유튜브 건강 콘텐츠를 보면 음식 하나로 건강 문제가 해결될 것처럼 이야기하는 경우가 많다. “이것만 먹으면 혈당이 내려간다” “이 음식이 염증을 없앤다”처럼 단정적이고 과장된 주장도 넘쳐난다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_9a76601acb1b986b",
-          "url": "https://www.donga.com/news/It/article/all/20260922/134714146/2",
-          "medium": "news",
-          "discoveredAt": "2026-09-29T15:13:56+09:00",
-          "publishedAt": "2026-09-23T04:30:00+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/22/134719066.1.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "‘오운완’ 인증에 러닝 열풍인데…30대 남성 10명 중 6명 비만",
-          "summary": "질병관리청 ‘2025년 국민건강영양조사’ 결과, 30대 남성 비만율은 전년보다 9.9%포인트 오른 59.0%로 나타났다.",
-          "source": "동아일보 건강",
-          "sourceId": "news-donga-health",
-          "candidateId": "c_7bf61e7a7b9016c5",
-          "url": "https://www.donga.com/news/Society/article/all/20260930/134758414/2",
-          "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-09-30T10:59:16+09:00",
-          "image": "https://dimg.donga.com/wps/NEWS/IMAGE/2026/09/30/134758402.3.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-01T06:35:49+09:00",
+          "discoveredAt": "2026-10-01T00:11:15+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_5e235984a1e96604",
+          "imageSource": "source_page_og",
+          "summary": "2027학년도 대학수학능력시험이 50일 앞으로 다가오면서 고3 수험생의 학교급식 식단에도 관심이 높아지는 시기다."
         },
         {
           "title": "“영양제 먹지도 않았는데 비타민D 중독”…25세男, 일하던 공장에 단서가",
-          "summary": "중국 25세 남성이 비타민D 만드는 공장에서 일하다가 비타민D에 중독돼 신장 손상이 발생한 사례가 전해졌다. 의료진은 공장에서 비타민D 분말을 과도하게 흡입한 것을 원인으로 추정했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_e90eead9cb04181b",
           "url": "https://kormedi.com/2876414/",
           "medium": "news",
+          "publishedAt": "2026-10-01T15:29:17+09:00",
           "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-10-01T15:29:17+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_e90eead9cb04181b",
+          "summary": "중국 25세 남성이 비타민D 만드는 공장에서 일하다가 비타민D에 중독돼 신장 손상이 발생한 사례가 전해졌다. 의료진은 공장에서 비타민D 분말을 과도하게 흡입한 것을 원인으로 추정했다."
         },
         {
           "title": "CJ프레시웨이, 노인의 날 맞아 시니어 시설에 영양 특식 제공",
-          "summary": "CJ프레시웨이는 노인의 날(10월 2일)을 앞둔 9월 30일 서울 지역 데이케어센터 12곳의 어르신 470여 명에게 맞춤형 영양 특식을 제공했다.CJ프레시웨이는 시니어 급식 전문성을 높이기 위해 경희대와 산학협력을…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_b15d6aeeb47ca34a",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120382",
           "medium": "news",
+          "publishedAt": "2026-10-01T20:55:56+09:00",
           "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-10-01T20:55:56+09:00"
+          "sourceId": "news-foodnews",
+          "candidateId": "c_b15d6aeeb47ca34a",
+          "summary": "CJ프레시웨이는 노인의 날(10월 2일)을 앞둔 9월 30일 서울 지역 데이케어센터 12곳의 어르신 470여 명에게 맞춤형 영양 특식을 제공했다.CJ프레시웨이는 시니어 급식 전문성을 높이기 위해 경희대와 산학협력을…"
         }
       ]
     },
@@ -291,77 +265,53 @@
       "items": [
         {
           "title": "\"식사할때 스마트폰 보나요?\"…어린이 행태조사",
-          "summary": "올해 시행되는 어린이 식생활 기초행태조사에 새롭게 추가되는 문항이다. 식품의약품안전처는 이번 조사에서 최근 변화한 식생활 환경을 반영해 간편식 섭취 여부와 다이어트 등 의도적인 체중 조절 여부 등을 묻는 문항을…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_46ff7f709f70f75d",
           "url": "https://www.newsis.com/view/NISX20261001_0003810053",
           "medium": "news",
-          "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-10-01T09:28:54+09:00",
           "image": "https://image.newsis.com/2026/10/01/NISI20261001_0002252752_web.jpg?rnd=20261001091357",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-01T09:28:54+09:00",
+          "discoveredAt": "2026-10-01T15:40:29+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_46ff7f709f70f75d",
+          "imageSource": "feed_html",
+          "summary": "올해 시행되는 어린이 식생활 기초행태조사에 새롭게 추가되는 문항이다. 식품의약품안전처는 이번 조사에서 최근 변화한 식생활 환경을 반영해 간편식 섭취 여부와 다이어트 등 의도적인 체중 조절 여부 등을 묻는 문항을…"
         },
         {
           "title": "전국 어린이 6만명 식생활 살핀다",
-          "summary": "전국 미취학 아동과 초등학생 6만여 명의 식품 섭취와 식습관, 급식 안전 체감도 등을 파악하는 대규모 조사가 실시된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_bd48f1b7d44ff43b",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62296",
           "medium": "news",
-          "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-10-01T23:28:22+09:00",
           "image": "http://www.fsnews.co.kr/news/thumbnail/202610/62296_53142_2751_v150.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-01T23:28:22+09:00",
+          "discoveredAt": "2026-10-01T15:40:29+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_bd48f1b7d44ff43b",
+          "imageSource": "source_page_og",
+          "summary": "전국 미취학 아동과 초등학생 6만여 명의 식품 섭취와 식습관, 급식 안전 체감도 등을 파악하는 대규모 조사가 실시된다."
         },
         {
           "title": "“스트레스와 우울 감소”…커피 마시면 기분 달라지는 이유는?",
-          "summary": "커피를 마시고 한결 기분이 나아졌다면 카페인 덕분일까. 카페인을 제거한 디카페인 커피를 마신 사람들에게서도 스트레스와 우울 점수가 낮아졌다는 연구 결과가 나왔다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_bee525a799309642",
           "url": "https://kormedi.com/2875397/",
           "medium": "news",
-          "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-10-01T13:05:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/09/2-30.jpg",
-          "imageSource": "feed_media"
-        },
-        {
-          "title": "[바이오스냅] 식약처, 어린이 6만여명 대상 식생활 조사",
-          "summary": "어린이들의 식생활 환경 변화를 파악하고 건강한 식습관 형성을 지원하기 위한 조사가 오는 12월까지 진행된다.",
-          "source": "연합뉴스 건강",
-          "sourceId": "news-yna-health",
-          "candidateId": "c_9b14b57a102c49be",
-          "url": "https://www.yna.co.kr/view/AKR20261001048100017",
-          "medium": "news",
+          "publishedAt": "2026-10-01T13:05:00+09:00",
           "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2026-10-01T09:36:27+09:00"
-        },
-        {
-          "title": "고추장·소스까지 … 뉴노멀 된 '저당식품'",
-          "summary": "건강을 생각하는 소비자들의 증가로 식품업계의 저당 경쟁이 가열되고 있으며, 저당 제품이 간장, 소스 등 일상 식품으로도 확산되고 있다.",
-          "source": "매일경제",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_5c83dd532ff90780",
-          "url": "https://www.mk.co.kr/news/it/12135826",
-          "medium": "news",
-          "discoveredAt": "2026-09-30T15:08:01+09:00",
-          "publishedAt": "2026-08-25T09:00:00+09:00",
-          "image": "https://pimg.mk.co.kr/news/cms/202608/26/20260826_01110305000003_M00.jpg",
-          "imageSource": "source_page_og"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_bee525a799309642",
+          "imageSource": "feed_media",
+          "summary": "커피를 마시고 한결 기분이 나아졌다면 카페인 덕분일까. 카페인을 제거한 디카페인 커피를 마신 사람들에게서도 스트레스와 우울 점수가 낮아졌다는 연구 결과가 나왔다."
         },
         {
           "title": "식이영양 - 국가건강정보포털",
-          "summary": "본 페이지에서 제공하는 내용은 참고사항일 뿐 게시물에 대한 법적책임은 없음을 밝혀드립니다. 자세한 내용은 전문가와 상담하시기 바랍니다.",
           "source": "health.kdca.go.kr",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_4c82bb6ff0000a3d",
           "url": "https://health.kdca.go.kr/healthinfo/biz/health/gnrlzHealthInfo/gnrlzHealthInfo/gnrlzHealthInfoView.do?cntnts_sn=6693",
           "medium": "research",
+          "publishedAt": "2025-04-30T12:00:00+09:00",
           "discoveredAt": "2026-10-01T15:40:29+09:00",
-          "publishedAt": "2025-04-30T12:00:00+09:00"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_4c82bb6ff0000a3d",
+          "summary": "본 페이지에서 제공하는 내용은 참고사항일 뿐 게시물에 대한 법적책임은 없음을 밝혀드립니다. 자세한 내용은 전문가와 상담하시기 바랍니다."
         }
       ]
     }

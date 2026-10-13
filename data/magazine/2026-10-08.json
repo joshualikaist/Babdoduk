@@ -5,110 +5,93 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "\"이걸 편의점에서 판다고?\"…난리 난 3800원 '신상' 뭐길래 [갓신상]",
-    "summary": "\"이걸 편의점에서 판다고?\"…난리 난 3800원 '신상' 뭐길래 [갓신상] | 한국경제TV",
     "source": "한국경제TV",
-    "sourceId": "web-exa-trend",
-    "candidateId": "c_c4f3ea68e094f3b1",
     "url": "https://www.wowtv.co.kr/NewsCenter/News/Read?articleId=202610064604g",
     "medium": "news",
-    "discoveredAt": "2026-10-07T15:40:53+09:00",
-    "publishedAt": "2026-10-06T16:53:38+09:00",
     "image": "https://img.hankyung.com/photo/202610/01.45950238.1.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-06T16:53:38+09:00",
+    "discoveredAt": "2026-10-07T15:40:53+09:00",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_c4f3ea68e094f3b1",
     "imageSource": "source_page_og",
+    "summary": "\"이걸 편의점에서 판다고?\"…난리 난 3800원 '신상' 뭐길래 [갓신상] | 한국경제TV",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
       "lead": "요즘 사람들이 뭘 먹고 있는지",
       "items": [
         {
-          "title": "네스프레소, 부산국제영화제 공식 스폰서…커피 라운지 운영",
-          "summary": "네스프레소는 제31회 부산국제영화제 공식 스폰서로 참여해 7일부터 14일까지 커피 라운지를 운영한다고 6일 밝..",
-          "source": "연합뉴스 산업",
-          "sourceId": "news-yna-industry",
-          "candidateId": "c_86af48d17c23d23a",
-          "url": "https://www.yna.co.kr/view/AKR20261006114700030",
-          "medium": "news",
-          "discoveredAt": "2026-10-06T16:00:20+09:00",
-          "publishedAt": "2026-10-06T14:15:40+09:00",
-          "image": "https://img.yna.co.kr/etc/inner/KR/2026/10/06/AKR20261006114700030_01_i_P2.jpg",
-          "imageSource": "feed_media",
-          "trendEvidence": [
-            "explicit_source_claim",
-            "corroborated"
-          ]
-        },
-        {
           "title": "\"국내 첫 GLP-1 비만약\"…한미약품 '에페' 허가",
-          "summary": "식품의약품안전처가 한미약품이 개발한 국내 첫 GLP-1 계열 비만치료제 신약을 허가했다. 식약처는 국내에서 개발된 45번째 신약인 한미약품의 '에페오토인젝터주 2·4·6·8·10㎎'(성분명 에페글레나타이드)를…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_c5e12bb58cbef6d0",
           "url": "https://www.newsis.com/view/NISX20261007_0003817964",
           "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
           "publishedAt": "2026-10-07T17:23:49+09:00",
+          "discoveredAt": "2026-10-08T15:48:07+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_c5e12bb58cbef6d0",
+          "summary": "식품의약품안전처가 한미약품이 개발한 국내 첫 GLP-1 계열 비만치료제 신약을 허가했다. 식약처는 국내에서 개발된 45번째 신약인 한미약품의 '에페오토인젝터주 2·4·6·8·10㎎'(성분명 에페글레나타이드)를…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "'한국판 위고비' 나온다…한미 비만약 '에페' 승인(종합)",
-          "summary": "식품의약품안전처가 한미약품이 개발한 국내 첫 GLP-1 계열 비만치료제 신약을 허가했다. 식약처는 국내에서 개발된 45번째 신약인 한미약품의 '에페오토인젝터주 2·4·6·8·10㎎'(성분명 에페글레나타이드)를…",
           "source": "뉴시스 건강",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_e01aeddf1129dc3c",
           "url": "https://www.newsis.com/view/NISX20261007_0003818003",
           "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
           "publishedAt": "2026-10-07T17:48:32+09:00",
+          "discoveredAt": "2026-10-08T15:48:07+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_e01aeddf1129dc3c",
+          "summary": "식품의약품안전처가 한미약품이 개발한 국내 첫 GLP-1 계열 비만치료제 신약을 허가했다. 식약처는 국내에서 개발된 45번째 신약인 한미약품의 '에페오토인젝터주 2·4·6·8·10㎎'(성분명 에페글레나타이드)를…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "가을 식탁 달라졌다… ‘취향 저격’ 신제품 봇물",
-          "summary": "가을을 맞아 식품·외식업계가 익숙한 메뉴에 새로운 맛과 경험을 더한 제품을 잇달아 선보이고 있다. 소비자가 직접 신제품을 고르는 참여형 마케팅부터 계절 대표 메뉴의 귀환, SNS에서 확산한 새로운 먹는 법까지…",
           "source": "프레스맨",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_def5bf5845f43980",
           "url": "https://www.pressman.kr/news/articleView.html?idxno=103889",
           "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
           "publishedAt": "2026-10-06T11:19:15+09:00",
+          "discoveredAt": "2026-10-08T15:48:07+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_def5bf5845f43980",
+          "summary": "가을을 맞아 식품·외식업계가 익숙한 메뉴에 새로운 맛과 경험을 더한 제품을 잇달아 선보이고 있다. 소비자가 직접 신제품을 고르는 참여형 마케팅부터 계절 대표 메뉴의 귀환, SNS에서 확산한 새로운 먹는 법까지…",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "동서식품, ‘카누 원두커피 X 창경궁 대온실 작은 음악회’ 진행",
-          "summary": "동서식품(대표 김광수)이 오는 10월 26일 서울 종로구 창경궁에서 ‘카누 원두커피 X 창경궁 대온실 작은 음악회’를 진행한다. 행사는 국가유산청 궁능유적본부 창경궁관리소(소장 김대열)와 협업해 진행된다.",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_452c88ac51c7fe5d",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68623",
           "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
           "publishedAt": "2026-10-09T00:17:20+09:00",
+          "discoveredAt": "2026-10-08T15:48:07+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_452c88ac51c7fe5d",
+          "summary": "동서식품(대표 김광수)이 오는 10월 26일 서울 종로구 창경궁에서 ‘카누 원두커피 X 창경궁 대온실 작은 음악회’를 진행한다. 행사는 국가유산청 궁능유적본부 창경궁관리소(소장 김대열)와 협업해 진행된다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "전주시, ‘3D 식품프린팅’ 연구지원센터 유치 나서…식량과학원 등 6개 기관과 맞손",
-          "summary": "전주시가 국가 연구기관, 대학, 병원과 손잡고 농림축산식품부의 ‘3D 식품프린팅’ 분야 푸드테크 연구지원센터 유치에 나선다.시는 7일 전주소통협력센터에서 농촌진흥청 국립식량과학원, 한국식품연구원…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_a7cb4c3585acb278",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120454",
           "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
           "publishedAt": "2026-10-08T19:12:50+09:00",
+          "discoveredAt": "2026-10-08T15:48:07+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_a7cb4c3585acb278",
+          "summary": "전주시가 국가 연구기관, 대학, 병원과 손잡고 농림축산식품부의 ‘3D 식품프린팅’ 분야 푸드테크 연구지원센터 유치에 나선다.시는 7일 전주소통협력센터에서 농촌진흥청 국립식량과학원, 한국식품연구원…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -120,47 +103,36 @@
       "items": [
         {
           "title": "Savory Pumpkin Fritters",
-          "summary": "These Savory Pumpkin Fritters are crisp and golden around the edges, with soft, tender centers packed with pumpkin…",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_3ab18d33bf63391e",
           "url": "https://www.budgetbytes.com/savory-pumpkin-fritters/",
           "medium": "blog",
+          "publishedAt": "2026-10-07T22:30:00+09:00",
           "discoveredAt": "2026-10-08T15:48:07+09:00",
-          "publishedAt": "2026-10-07T22:30:00+09:00"
-        },
-        {
-          "title": "편의점 꿀조합 레시피 올여름 편의점디저트 이거",
-          "summary": "비슷한 모양의 참 크래커/ 아이비 있는데요 그것보다 바삭하면서 파사삭 부서지는 에이스의 식감에 마지막 특유 짭조름함이 탁 치는 게 무조건 과자는 에이스입니다",
-          "source": "네이버 블로그",
-          "sourceId": "web-naver-trend",
-          "candidateId": "c_93baafc1a53ab33c",
-          "url": "https://m.blog.naver.com/wishu00/224313819856",
-          "medium": "blog",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
-          "publishedAt": "2026-06-12T12:00:00+09:00"
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_3ab18d33bf63391e",
+          "summary": "These Savory Pumpkin Fritters are crisp and golden around the edges, with soft, tender centers packed with pumpkin…"
         },
         {
           "title": "Hoppang (Korean Steamed Sweet Red Bean Buns)",
-          "summary": "Soft, pillowy Korean hoppang filled with sweet red bean paste—steamed until fluffy and comforting.",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_8a8d5901a4098559",
           "url": "https://www.beyondkimchee.com/hoppang/",
           "medium": "blog",
+          "publishedAt": "2026-01-09T17:29:40+09:00",
           "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-01-09T17:29:40+09:00"
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_8a8d5901a4098559",
+          "summary": "Soft, pillowy Korean hoppang filled with sweet red bean paste—steamed until fluffy and comforting."
         },
         {
           "title": "Ssuk Beomuri (Korean Mugwort Rice Cake)",
-          "summary": "Ssuk beomuri is a traditional Korean mugwort rice cake made with rice flour and fresh ssuk, steamed into soft, crumbly…",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_621a6b95af199416",
           "url": "https://www.beyondkimchee.com/ssuk-beomuri-mugwort-rice-cake/",
           "medium": "blog",
+          "publishedAt": "2026-03-16T17:45:03+09:00",
           "discoveredAt": "2026-09-29T11:19:02+09:00",
-          "publishedAt": "2026-03-16T17:45:03+09:00"
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_621a6b95af199416",
+          "summary": "Ssuk beomuri is a traditional Korean mugwort rice cake made with rice flour and fresh ssuk, steamed into soft, crumbly…"
         }
       ]
     },
@@ -169,25 +141,14 @@
       "items": [
         {
           "title": "뮤지컬로 배우는 건강한 식습관",
-          "summary": "강원 철원지역 유아들이 뮤지컬을 통해 건강한 식습관의 중요성을 배웠다. 친숙한 동화 속 캐릭터를 활용해 어린이들이 올바른 식생활을 쉽고 재미있게 이해하도록 마련한 교육이다.강원 철원교육지원청(교육장 최일호, 이하…",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_86012facacfe5a6b",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62328",
           "medium": "news",
+          "publishedAt": "2026-10-09T00:48:15+09:00",
           "discoveredAt": "2026-10-08T15:48:07+09:00",
-          "publishedAt": "2026-10-09T00:48:15+09:00"
-        },
-        {
-          "title": "두유·젤리·잼까지…대세 떠오른 '저당' 식품들",
-          "summary": "새해를 맞아 다이어트를 결심하는 소비자들 사이에서 과도한 제한이나 극단적인 식단 대신, 맛과 즐거움을 유지하면서도 섭취 부담을 낮춘 '로우스펙' 식품이 떠오르고 있다.",
-          "source": "파이낸셜뉴스",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_f35863d84298f11b",
-          "url": "https://www.fnnews.com/news/202601080929564235",
-          "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
-          "publishedAt": "2026-01-08T09:33:27+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_86012facacfe5a6b",
+          "summary": "강원 철원지역 유아들이 뮤지컬을 통해 건강한 식습관의 중요성을 배웠다. 친숙한 동화 속 캐릭터를 활용해 어린이들이 올바른 식생활을 쉽고 재미있게 이해하도록 마련한 교육이다.강원 철원교육지원청(교육장 최일호, 이하…"
         }
       ]
     },
@@ -196,16 +157,16 @@
       "items": [
         {
           "title": "“나혼산 자연인” 김민, 통째 뜯어 먹은 바게트와 ‘이 소스’⋯몸엔 무슨 일이?",
-          "summary": "김민은 긴 바게트를 통째 뜯어 먹었다. 페트병 용기에 올리브 오일과 발사믹 식초를 섞은 뒤 바게트를 이 소스에 찍어 먹었다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_6690ac374029665a",
           "url": "https://kormedi.com/2878799/",
           "medium": "news",
-          "discoveredAt": "2026-10-08T15:48:07+09:00",
-          "publishedAt": "2026-10-08T13:44:51+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/image-47.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-08T13:44:51+09:00",
+          "discoveredAt": "2026-10-08T15:48:07+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6690ac374029665a",
+          "imageSource": "feed_media",
+          "summary": "김민은 긴 바게트를 통째 뜯어 먹었다. 페트병 용기에 올리브 오일과 발사믹 식초를 섞은 뒤 바게트를 이 소스에 찍어 먹었다."
         }
       ]
     }
