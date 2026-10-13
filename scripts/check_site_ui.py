@@ -123,10 +123,10 @@ def inspect_page(page, name, size, screenshot_dir=None):
         check(metrics["viewportGutter"] == 16, ("visible Windows scrollbar gutter", metrics))
 
     direct = page.locator(".nav-mega-row > .site-nav-direct")
-    check(direct.count() == 2, "two direct destinations in navigation")
-    check(direct.nth(0).get_attribute("href") == "ggongbab.html"
-          and direct.nth(1).get_attribute("href") == "mukbang.html",
-          "today's food and the magazine (which carries the picker) are the direct destinations")
+    check(direct.count() == 3, "three direct destinations in navigation")
+    check([direct.nth(i).get_attribute("href") for i in range(3)] == ["ggongbab.html", "mukbang.html", "event.html"],
+          "today's food, the magazine (which carries the picker) and the news are the direct destinations "
+          "(owner, 2026-10-13: news left the More menu)")
     check(not page.locator('.site-nav a[href="mukbang.html#what"], .site-nav a[href="choose.html"]').count(),
           "the picker is not presented as a separate product in navigation")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
@@ -1082,8 +1082,8 @@ def structure_and_failures(page):
 # choose.html is a redirect to mukbang.html#what and food.html is lab-only, so neither is a guarded public page.
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
-NAV_DIRECT = ["ggongbab.html", "mukbang.html"]
-NAV_MORE = ["event.html", "history.html",
+NAV_DIRECT = ["ggongbab.html", "mukbang.html", "event.html"]
+NAV_MORE = ["history.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
 FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
