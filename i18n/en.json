@@ -388,7 +388,7 @@
   "wc.historyClear": "Clear the record",
   "wc.last": "You picked {a}: everyone's win rate {pa}% vs {b} {pb}%",
   "wc.lastNew": "You picked {a}: not many games recorded yet",
-  "wc.lede": "Every game draws 32 of 128 dishes. Pick the one you would rather eat, two at a time; the last one standing is your favorite.",
+  "wc.lede": "Every game draws 32 of more than 700 dishes. Pick the one you would rather eat, two at a time; the last one standing is your favorite.",
   "wc.loading": "Loading the dishes…",
   "wc.note": "No sign-in needed. Your progress and results stay in this browser.",
   "wc.photoCredit": "Photo {author} · {license}",

@@ -29,7 +29,7 @@
 ## 적용 (소유자, 한 번)
 
 1. Supabase 대시보드 → SQL Editor 에서 `supabase/migrations/005_worldcup_stats.sql` 내용을 붙여 넣고 실행합니다(004 다음).
-2. 풀을 넣습니다(백엔드 키, 운영 사본 `.env`): `python scripts/worldcup_stats.py seed` → `pool 128 | counted dishes 128 | pool dishes missing 0`
+2. 풀을 넣습니다(백엔드 키, 운영 사본 `.env`): `python scripts/worldcup_stats.py seed` → `pool N | counted dishes N | pool dishes missing 0` (N 은 풀 크기)
 3. 확인: `python scripts/worldcup_stats.py check`
 4. 풀이 늘면 2를 다시 실행합니다. 이미 있는 메뉴의 합계는 바뀌지 않습니다.
 
