@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "size": 32,
   "basis": {
-    "ko": "학식 단골부터 세계 음식까지 700개가 넘는 메뉴 중 매 판 32개를 무작위로 뽑아요. 메뉴 정보는 밥도둑 음식 사전에서 가져와요.",
-    "en": "Each game draws 32 of more than 700 dishes, from cafeteria regulars to food from around the world. Dish details come from the Babdoduk food catalog."
+    "ko": "700개가 넘는 메뉴 중 무작위로 뽑아요",
+    "en": "Drawn at random from more than 700 dishes"
   },
   "dishes": [
     "kr-bulgogi",

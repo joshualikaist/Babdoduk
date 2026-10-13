@@ -927,6 +927,23 @@ def worldcup_play(page):
     page.locator("#wcUndo").click()
     check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcCount").inner_text() == "1 / 16",
           "undo returns to the same match")
+    check(page.locator("#wcUndo").is_disabled(), "nothing to undo on the first match of a fresh game")
+    # 처음부터 draws a new bracket, and 되돌리기 takes it back (owner 2026-10-13: no confirm step).
+    page.locator(".wc-card").first.focus()
+    page.keyboard.press("Enter")
+    second = [page.locator(".wc-card").nth(i).get_attribute("data-id") for i in (0, 1)]
+    page.locator("#wcRestart").click()
+    check(page.locator("#wcCount").inner_text() == "1 / 16" and page.locator("#wcUndo").is_enabled(),
+          "a restart draws a new bracket that undo can take back")
+    page.locator(".wc-card").first.focus()
+    page.keyboard.press("Enter")
+    page.locator("#wcUndo").click()
+    page.locator("#wcUndo").click()
+    check([page.locator(".wc-card").nth(i).get_attribute("data-id") for i in (0, 1)] == second
+          and page.locator("#wcCount").inner_text() == "2 / 16", "undo after a restart brings the earlier bracket back")
+    page.locator("#wcUndo").click()
+    check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcUndo").is_disabled(),
+          "and on to its first match, with nothing left to undo")
     for _ in range(size - 1):
         page.locator(".wc-card").first.focus()
         page.keyboard.press("Enter")
@@ -980,9 +997,12 @@ def worldcup_stats(page):
     check(page.locator("#wcRankingList li").count() == 10 and "1,234" in page.locator("#wcRankingTotal").inner_text(),
           "the intro shows everyone's top ten and the number of games")
     page.locator("#wcStart").click()
+    top = page.locator(".wc-card").first.bounding_box()["y"]
     page.keyboard.press("Enter")
     check(page.locator("#wcLastPick").is_visible() and "%" in page.locator("#wcLastPick").inner_text(),
           "after a pick, the last pick's win rates")
+    check(abs(page.locator(".wc-card").first.bounding_box()["y"] - top) < 1,
+          "the win-rate line keeps its place, so the cards do not jump when it fills")
     for _ in range(size - 2):
         page.locator(".wc-card").first.focus()
         page.keyboard.press("Enter")

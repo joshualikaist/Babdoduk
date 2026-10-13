@@ -135,7 +135,7 @@
     // A game in progress makes resuming the main action; starting over stays one tap away.
     $('wcResume').classList.toggle('wc-btn--main', resumable);
     $('wcStart').classList.toggle('wc-btn--main', !resumable);
-    if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어서 하기 · {round} {n}/{total}'), progress());
+    if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어하기 · {round} {n}/{total}'), progress());
   }
   function renderMatch(focus) {
     var p = progress(), ids = pair(), done = picksMade(), all = size - 1;
@@ -246,19 +246,20 @@
     });
   }
   function renderLastPick() {
+    // Both win rates or an empty line: a 'not enough games yet' sentence would only be noise. With
+    // stats on, the line keeps its height either way, so the cards never jump between matches.
     var line = $('wcLastPick');
-    if (!lastPick || !statsApi || !Object.keys(stats).length) { line.hidden = true; return; }
-    var a = winRate(lastPick.w), b = winRate(lastPick.l);
-    line.textContent = a !== null && b !== null
-      ? fill(t('wc.last', '방금 고른 {a}: 모두의 승률 {pa}% · {b} {pb}%'), { a: name(lastPick.w), pa: a, b: name(lastPick.l), pb: b })
-      : fill(t('wc.lastNew', '방금 고른 {a}: 아직 모두의 기록이 적어요'), { a: name(lastPick.w) });
-    line.hidden = false;
+    var a = lastPick && statsApi ? winRate(lastPick.w) : null;
+    var b = lastPick && statsApi ? winRate(lastPick.l) : null;
+    line.hidden = !statsApi;
+    line.textContent = a === null || b === null ? ''
+      : fill(t('wc.last', '모두의 승률 {a} {pa}% · {b} {pb}%'), { a: name(lastPick.w), pa: a, b: name(lastPick.l), pb: b });
   }
   function renderRanking() {
     var box = $('wcRanking'), list = $('wcRankingList'), order = ranked();
     box.hidden = !statsApi || !totalGames || !order.length || view === 'match' || view === 'loading';
     if (box.hidden) return;
-    $('wcRankingTotal').textContent = fill(t('wc.rankingTotal', '지금까지 {n}판'), { n: totalGames.toLocaleString() });
+    $('wcRankingTotal').textContent = fill(t('wc.rankingTotal', '총 {n}판'), { n: totalGames.toLocaleString() });
     list.textContent = '';
     order.slice(0, 10).forEach(function (id, i) {
       var s = stats[id], item = document.createElement('li'), photo = (cup.photos || {})[id];
@@ -281,7 +282,7 @@
     var mine = $('wcRankingMine');
     var place = result ? order.indexOf(result.id) : -1;
     mine.hidden = view !== 'result' || place < 0;
-    if (!mine.hidden) mine.textContent = fill(t('wc.rankingMine', '내 우승 메뉴 {dish}는 모두의 랭킹 {n}위예요'), { dish: name(result.id), n: place + 1 });
+    if (!mine.hidden) mine.textContent = fill(t('wc.rankingMine', '내 우승 메뉴는 {n}위'), { n: place + 1 });
   }
   function render() {
     if (view === 'intro') renderIntro();
@@ -301,7 +302,16 @@
     return a;
   }
   function start() {
-    game = { entrants: shuffle(set).slice(0, size), winners: [], stack: [], log: [] };
+    // 처음부터 keeps the bracket being left as the new game's first undo step, so 되돌리기 brings it
+    // back. One is kept: its own restart step is dropped, and restarting again before a pick keeps
+    // the one already there.
+    var before = null;
+    if (game && game.stack.length) {
+      var own = game.stack.filter(function (step) { return !step.game; });
+      before = own.length ? { game: { entrants: game.entrants, winners: game.winners, stack: own, log: game.log || [] } }
+        : game.stack[0];
+    }
+    game = { entrants: shuffle(set).slice(0, size), winners: [], stack: before ? [before] : [], log: [] };
     lastPick = null;
     result = null;
     store();
@@ -475,7 +485,7 @@
         document.body.appendChild(link);
         link.click();
         setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
-        status.textContent = t('wc.saved', '이미지를 저장했어요.');
+        status.textContent = t('wc.saved', '저장했어요');
       }, 'image/jpeg', 0.9);
     }
     var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
@@ -490,15 +500,19 @@
   function undo() {
     if (!game || !game.stack.length || busy) return;
     var previous = game.stack.pop();
-    game.entrants = previous.entrants;
-    game.winners = previous.winners;
-    if (game.log) game.log.length = previous.log || 0;
+    if (previous.game) {
+      if (validGame(previous.game)) game = previous.game;       // takes back 처음부터
+    } else {
+      game.entrants = previous.entrants;
+      game.winners = previous.winners;
+      if (game.log) game.log.length = previous.log || 0;
+    }
     lastPick = null;
     store();
     renderMatch(true);
   }
   function share() {
-    var text = fill(t('wc.shareText', '나의 KAIST 메뉴 월드컵 우승 메뉴는 {dish}!'), { dish: name(result.id) });
+    var text = fill(t('wc.shareText', '나의 먹방 월드컵 우승 메뉴는 {dish}!'), { dish: name(result.id) });
     var url = location.origin + location.pathname;
     var status = $('wcShareStatus');
     if (navigator.share) {
@@ -507,7 +521,7 @@
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text + ' ' + url).then(function () {
-        status.textContent = t('wc.copied', '결과와 주소를 복사했어요.');
+        status.textContent = t('wc.copied', '결과와 링크를 복사했어요');
       }, function () {
         status.textContent = t('wc.shareFailed', '공유하지 못했어요.');
       });
@@ -533,6 +547,7 @@
     show('intro');
     renderIntro();
     statsApi = statsConfig();
+    $('wcStatsNote').hidden = !statsApi;       // a finished game is counted only when stats are on
     loadStats();
   }
   function failed() {
