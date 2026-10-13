@@ -244,7 +244,8 @@
   object-fit: cover;
 }
 
-.wc-card {
+.wc-card,
+.wc-fighter-face {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -575,30 +576,205 @@
   transform: scale(0.96);
 }
 
-/* A new round: a banner in the middle of the screen for about a second. */
-.wc-banner {
+/* The round splash (js/worldcup.js showSplash, owner 2026-10-14): from the quarterfinals on, a
+   black stage in the top layer, above the navigation, with the round in Jua; the final adds the
+   crash of the two finalists under a VS stamp. The script builds it only while it plays and moves
+   only transform and opacity; with reduced motion or forced colours it is never opened. Colours:
+   black and white, accents from the wordmark gradient (#ec4899, #a855f7, #6366f1). */
+.wc-splash {
+  display: none;                         /* where popovers are not supported: never shown */
+}
+
+.wc-splash:popover-open {
+  display: block;
   position: fixed;
-  top: 45%;
-  left: 50%;
-  z-index: 40;
-  padding: 18px 34px;
-  border-radius: 999px;
-  background: var(--color-ink);
-  color: #fffdf8;
-  font-size: clamp(26px, 6vw, 40px);
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  inset: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  overflow: hidden;
+  overflow: clip;
+  touch-action: pinch-zoom;              /* no scrolling under it; zoom still works */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wc-splash::backdrop {
+  background: transparent;
+}
+
+.wc-splash-bg,
+.wc-splash-stage,
+.wc-splash-center,
+.wc-splash-flash {
+  position: absolute;
+  inset: 0;
+}
+
+.wc-splash-bg {
+  background: #000;
+}
+
+.wc-splash-flash {
+  background: #fff;
+  opacity: 0;
+}
+
+.wc-splash-center {
+  display: grid;
+  place-items: center;
+}
+
+.wc-splash-center > * {
+  grid-area: 1 / 1;
+}
+
+.wc-splash-title,
+.wc-splash-vs {
+  position: relative;
+  font-family: 'Jua', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  font-weight: 900;                      /* Jua has one weight; the fallback gets its heaviest */
+  font-synthesis: none;
+  line-height: 1.15;
   white-space: nowrap;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
+  color: #fff;
 }
 
-.wc-banner[hidden] {
-  display: none;
+.wc-splash-title {
+  padding: 0.12em 0.18em;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0.04em 0.18em rgba(168, 85, 247, 0.45);
 }
 
-.wc-banner.is-on {
-  animation: wc-banner 1100ms ease-out both;
+.wc-splash-ch {
+  display: inline-block;
+}
+
+.wc-splash-gap {
+  width: 0.26em;
+}
+
+/* Two gradient rules frame the title, drawn in from opposite sides. */
+.wc-splash-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: max(3px, 0.05em);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
+}
+
+.wc-splash-line--top { top: 0; }
+.wc-splash-line--bottom { bottom: 0; }
+
+.wc-splash-glow,
+.wc-splash-ring,
+.wc-splash-wave {
+  border-radius: 50%;
+}
+
+.wc-splash-glow {
+  background: radial-gradient(closest-side, rgba(168, 85, 247, 0.42), rgba(236, 72, 153, 0.16) 55%, transparent);
+}
+
+.wc-splash-ring,
+.wc-splash-wave {
+  border: 3px solid rgba(255, 255, 255, 0.85);
+}
+
+/* The crash: thin speed lines from the edges, coloured rays from the impact, a shock ring. */
+.wc-splash-lines,
+.wc-splash-burst,
+.wc-splash-wave {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.wc-splash-lines {
+  background: repeating-conic-gradient(from 2deg, transparent 0deg 5.2deg, rgba(255, 255, 255, 0.5) 5.6deg 6deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 24%, #000 52%);
+  mask: radial-gradient(circle, transparent 0 24%, #000 52%);
+}
+
+.wc-splash-burst {
+  background: repeating-conic-gradient(from -4deg, #fff 0deg 3deg, transparent 3deg 22.5deg,
+    #ec4899 22.5deg 26deg, transparent 26deg 45deg, #a855f7 45deg 48deg, transparent 48deg 67.5deg,
+    #6366f1 67.5deg 71deg, transparent 71deg 90deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 9%, #000 14% 36%, transparent 70%);
+  mask: radial-gradient(circle, transparent 0 9%, #000 14% 36%, transparent 70%);
+}
+
+.wc-splash-vs {
+  line-height: 1;
+  padding: 0 0.12em 0.14em 0;
+  transform-origin: 50% 55%;
+  /* A pink-to-indigo extrusion, then a dark halo so the letters hold over any photo. */
+  text-shadow: 0.03em 0.03em 0 #ec4899, 0.06em 0.06em 0 #c44fd0, 0.09em 0.09em 0 #a855f7, 0.12em 0.12em 0 #6366f1,
+    0.06em 0.08em 0.16em rgba(0, 0, 0, 0.75), 0 0 0.3em rgba(168, 85, 247, 0.55);
+}
+
+/* A finalist: the double of its card (same face, same box), a brand rim and speed streaks. */
+.wc-fighter {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.wc-fighter-face {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  cursor: inherit;
+  transition: none;
+}
+
+.wc-fighter-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: calc(var(--radius-lg) + 4px);
+  background: linear-gradient(160deg, #ec4899, #a855f7);
+  box-shadow: 0 0 36px 4px rgba(236, 72, 153, 0.55);
+}
+
+.wc-fighter--right .wc-fighter-glow {
+  background: linear-gradient(200deg, #6366f1, #a855f7);
+  box-shadow: 0 0 36px 4px rgba(99, 102, 241, 0.6);
+}
+
+.wc-fighter-trail {
+  position: absolute;
+  top: 6%;
+  bottom: 6%;
+  width: 120%;
+  right: 100%;
+  transform-origin: right center;
+}
+
+.wc-fighter--right .wc-fighter-trail {
+  right: auto;
+  left: 100%;
+  transform-origin: left center;
+}
+
+.wc-fighter-streak {
+  position: absolute;
+  right: 6px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+}
+
+.wc-fighter--right .wc-fighter-streak {
+  right: auto;
+  left: 6px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
 }
 
 .wc-confetti {
@@ -618,14 +794,6 @@
 @keyframes wc-stamp {
   from { transform: scale(0.2) rotate(-30deg); opacity: 0; }
   to { transform: scale(1) rotate(0); opacity: 1; }
-}
-
-@keyframes wc-banner {
-  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  18% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
-  30% { transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
 }
 
 @keyframes wc-pop {
@@ -735,7 +903,8 @@
     font-size: 11px;
   }
 
-  .wc-card {
+  .wc-card,
+  .wc-fighter-face {
     min-height: 0;
     padding: var(--space-3) var(--space-2);
     gap: var(--space-1);
@@ -781,7 +950,6 @@
   }
 
   .wc-card.is-picked::after,
-  .wc-banner.is-on,
   .wc-result.is-celebrating .wc-winner,
   .wc-result.is-celebrating .wc-winner-photo img {
     animation: none;
