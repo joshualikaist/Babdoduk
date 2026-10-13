@@ -15,6 +15,7 @@ from __future__ import annotations
 import html
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -327,10 +328,30 @@ def worldcup_errors(root: Path = ROOT) -> list[str]:
         errors.append("worldcup.json: a dish is listed twice")
     catalog_path = root / "data" / "foods" / "catalog.json"
     if catalog_path.exists():
-        known = set()
+        names = {}
         for pack in json.loads(catalog_path.read_text(encoding="utf-8")).get("packs") or []:
             pack_path = root / str(pack.get("src") or "")
             if pack_path.is_file():
-                known |= {item.get("id") for item in json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []}
-        errors += [f"worldcup.json: {dish} is not a catalog dish" for dish in dishes if dish not in known]
+                names |= {item.get("id"): item.get("nameKo") or "" for item in json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []}
+        errors += [f"worldcup.json: {dish} is not a catalog dish" for dish in dishes if dish not in names]
+        families = Counter(same_dish(dish, names[dish]) for dish in dishes if dish in names)
+        errors += [f"worldcup.json: {count} dishes are {family}; at most {SAME_DISH_LIMIT} of the same dish"
+                   for family, count in families.items() if count > SAME_DISH_LIMIT]
     return errors
+
+
+# The owner's variety rule (2026-10-13): at most five variants of the same dish in the pool. A dish
+# whose Korean name contains one of these words is that dish (the longest match wins: 볶음밥, not 밥).
+SAME_DISH_LIMIT = 5
+SAME_DISH = ("김밥", "치킨", "떡볶이", "라볶이", "라면", "피자", "버거", "초밥", "스시", "우동", "만두", "볶음밥", "국밥",
+             "파스타", "샐러드", "케이크", "샌드위치", "카레", "커리", "냉면", "쌀국수", "짬뽕", "짜장", "탕수육", "돈까스",
+             "카츠", "와플", "토스트", "마라", "컵밥", "덮밥", "비빔밥", "정식", "세트", "도시락", "찌개", "전골", "국수",
+             "꼬치", "롤", "빙수", "타코", "부리또", "케밥", "스테이크", "리조또", "그라탕", "튀김", "덴뿌라", "말이",
+             "볶음면", "소바", "라멘")
+
+
+def same_dish(dish: str, name_ko: str) -> str:
+    """The family a pool dish counts against: a SAME_DISH word in its Korean name, else the dish itself."""
+    name = name_ko.replace(" ", "")
+    hits = [word for word in SAME_DISH if word in name]
+    return max(hits, key=len) if hits else dish

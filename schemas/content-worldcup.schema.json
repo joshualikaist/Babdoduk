@@ -40,7 +40,7 @@
     "dishes": {
       "type": "array",
       "minItems": 4,
-      "maxItems": 256,
+      "maxItems": 1024,
       "uniqueItems": true,
       "items": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"}
     }
