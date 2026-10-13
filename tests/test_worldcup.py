@@ -167,6 +167,9 @@ def test_a_new_round_takes_the_screen_from_the_quarterfinals_on():
     assert [ko[f"wc.splash.{k}"] for k in ("quarter", "semi", "final")] == ["8강 진출!", "4강 진출!", "결승!"]
     assert [en[f"wc.splash.{k}"] for k in ("quarter", "semi", "final")] == ["Quarterfinals!", "Semifinals!", "The Final!"]
     assert not any(k.startswith("wc.banner") for k in ko)
+    # The owner says 8강, 4강, 결승: the semifinal's round header too (English keeps Semifinal).
+    assert (ko["wc.round.semi"], en["wc.round.semi"]) == ("4강", "Semifinal")
+    assert "준결승" not in (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     # A top-layer popover above the navigation, decoration only; reduced motion, forced colours or
     # no popover support: straight to the match.
     assert '<div class="wc-splash" id="wcSplash" popover="manual" aria-hidden="true"></div>' in html

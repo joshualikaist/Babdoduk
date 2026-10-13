@@ -79,7 +79,7 @@
   }
   function roundName(size) {
     if (size === 2) return t('wc.round.final', '결승');
-    if (size === 4) return t('wc.round.semi', '준결승');
+    if (size === 4) return t('wc.round.semi', '4강');
     return fill(t('wc.round.n', '{n}강'), { n: size });
   }
 
@@ -480,9 +480,30 @@
   }
   // 결승: the finalists fly in, crash, recoil and settle onto the real cards beneath.
   function crash(stage, w, h) {
-    var cx = w / 2, cy = h / 2, phone = w <= 560;
-    var gap = phone ? 12 : 28, kick = phone ? 22 : 40, IMPACT = 1100, STOP = 110;
-    var cardHeight = cards[0].getBoundingClientRect().height;
+    var cx = w / 2, cy = h / 2, phone = w <= 560, IMPACT = 1100, STOP = 110;
+    // The real cards stay hidden until their doubles land on them, and are measured at rest: a
+    // pick's scale or a hover lift must not shrink or shift a double.
+    cards.forEach(function (card) { card.style.transition = 'none'; card.style.transform = 'none'; card.style.opacity = '0'; });
+    var rects = cards.map(function (card) { return card.getBoundingClientRect(); });
+    var cardW = rects[0].width, cardHeight = rects[0].height;
+    // Wide screens: side by side, a little bigger. A phone's pair already fills the width, so
+    // there they grow about 1.5x and clash on a diagonal, the left one high and the right one
+    // low, overlapping in the middle under the VS: the whole screen, nothing outside it.
+    var diagonal = phone && h > w * 1.2, gap = diagonal ? 0 : phone ? 12 : 28, z, seats;
+    if (diagonal) {
+      var edge = 16;
+      z = Math.max(1, Math.min(1.6, w * 0.7 / cardW, (h - 56) / (1.84 * cardHeight)));
+      var dy = cardHeight * z * 0.42;                   // the two overlap by 16% of their height
+      seats = [{ x: edge + cardW * z / 2, y: cy - dy }, { x: w - edge - cardW * z / 2, y: cy + dy }];
+    } else {
+      z = Math.max(1, Math.min(1.2, w * 0.9 / (2 * cardW + gap), h * 0.7 / cardHeight));
+      seats = [{ x: cx - cardW * z / 2 - gap / 2, y: cy }, { x: cx + cardW * z / 2 + gap / 2, y: cy }];
+    }
+    // Into each other at the hit, then thrown back (less on the diagonal, which has no room).
+    // The recoil never throws a card off the screen: at most the room beside it, less its tilt.
+    var lean = diagonal ? 0.5 : 1, push = diagonal ? 18 : gap / 2 + 2;
+    var room = seats[0].x - cardW * z * 0.525 - cardHeight * z * Math.sin(4 * lean * Math.PI / 180) / 2 - 4;
+    var kick = Math.max(0, Math.min(diagonal ? 4 : phone ? 22 : 40, room));
     var lines = node('i', 'wc-splash-lines', stage), burstRays = node('i', 'wc-splash-burst', stage);
     var wave = node('i', 'wc-splash-wave', stage);
     var big = Math.hypot(w, h) * 1.1, rays = Math.max(cardHeight * 2.3, Math.min(w, h)), ring = Math.min(w, h) * 0.6;
@@ -512,7 +533,7 @@
                   [IMPACT + 190, { transform: 'translate(' + -amp * 0.2 + 'px, ' + amp * 0.1 + 'px)' }],
                   [IMPACT + 250, { transform: 'translate(0px, 0px)' }]]);
     cards.forEach(function (card, side) {
-      var r = card.getBoundingClientRect(), dir = side ? 1 : -1;
+      var r = rects[side], dir = side ? 1 : -1, seat = seats[side];
       var fighter = node('div', 'wc-fighter wc-fighter--' + (side ? 'right' : 'left'), stage);
       fighter.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
       var glow = node('i', 'wc-fighter-glow', fighter), trail = node('i', 'wc-fighter-trail', fighter);
@@ -522,36 +543,38 @@
       });
       var face = node('div', 'wc-fighter-face', fighter);
       [].forEach.call(card.childNodes, function (child) { face.appendChild(child.cloneNode(true)); });
-      var homeX = r.left + r.width / 2, homeY = r.top + r.height / 2;
-      // A little bigger on a wide stage; on a phone the pair already fills the width.
-      var z = Math.max(1, Math.min(1.2, w * 0.9 / (2 * r.width + gap), h * 0.7 / r.height)), half = r.width * z / 2;
-      function at(x, rot, sx, sy) { return { transform: pose(x - homeX, cy - homeY, rot, sx * z, (sy == null ? sx : sy) * z) }; }
-      var contact = cx + dir * (half - 2), seat = cx + dir * (half + gap / 2);
+      var homeX = r.left + r.width / 2, homeY = r.top + r.height / 2, half = r.width * z / 2;
+      // A pose on the stage, as a move from the card's own place; the last one is the card itself.
+      function at(x, rot, sx, sy) { return { transform: pose(x - homeX, seat.y - homeY, rot, sx * z, (sy == null ? sx : sy) * z) }; }
       var off = half + r.height * z * 0.17 + 48;        // tilted, with its glow, still wholly off screen
       track(fighter, [[780, at(dir < 0 ? -off : w + off, dir * -9, 1.04, 0.97), EASE.rush],
-                      [IMPACT, at(contact, dir * -2, 0.86, 1.08)],
-                      [IMPACT + STOP, at(contact, dir * -2, 0.86, 1.08), EASE.out],
-                      [IMPACT + STOP + 90, at(seat + dir * kick, dir * 4, 1.05, 0.97), EASE.bouncy],
-                      [1480, at(seat, 0, 1, 1)],
-                      [1560, at(seat, 0, 1, 1), EASE.soft],
+                      [IMPACT, at(seat.x - dir * push, dir * -2 * lean, 0.88, 1.06)],
+                      [IMPACT + STOP, at(seat.x - dir * push, dir * -2 * lean, 0.88, 1.06), EASE.out],
+                      [IMPACT + STOP + 90, at(seat.x + dir * kick, dir * 4 * lean, lean < 1 ? 1.02 : 1.05, 0.97), EASE.bouncy],
+                      [1480, at(seat.x, 0, 1, 1)],
+                      [1560, at(seat.x, 0, 1, 1), EASE.soft],
                       [1960, { transform: pose(0, 0, 0, 1) }]]);
       track(trail, [[780, { transform: 'scaleX(0.4)', opacity: 0 }], [840, { transform: 'scaleX(1)', opacity: 1 }],
                     [IMPACT - 30, { transform: 'scaleX(1)', opacity: 1 }], [IMPACT + 20, { transform: 'scaleX(0.2)', opacity: 0 }]]);
       track(glow, [[780, { opacity: 1 }], [1560, { opacity: 1 }, EASE.io], [1800, { opacity: 0 }]]);
-      card.style.opacity = '0';                         // until its double lands on it
     });
     var vsBox = node('div', 'wc-splash-center', stage), vs = node('p', 'wc-splash-vs', vsBox);
     vs.textContent = t('wc.vs', 'VS');
-    var vsSize = Math.min(w * 0.27, h * 0.23, 190);
+    var vsSize = Math.min(w * (diagonal ? 0.32 : 0.27), h * 0.23, 190);
     vs.style.fontSize = vsSize + 'px';
+    // On the diagonal the lower card's name sits at the seam, so the VS lands just above that
+    // name (with room for its bounce), on the upper card's photo; side by side it sits on the
+    // seam, below both names.
+    var nameTop = cards[1].querySelector('.wc-card-name').getBoundingClientRect().top - rects[1].top;
+    var vsY = diagonal ? seats[1].y - cardHeight * z / 2 + nameTop * z - 6 - vsSize * 0.66 - cy : 0;
     var real = document.querySelector('.wc-vs').getBoundingClientRect();
     var to = real.width ? pose(real.left + real.width / 2 - cx, real.top + real.height / 2 - cy, 0, Math.max(0.12, real.height / vsSize * 1.2))
       : pose(0, 0, 0, 0.3);
-    track(vs, [[IMPACT + 30, { transform: pose(0, 0, -14, 3.2), opacity: 0 }, EASE.in],
-               [IMPACT + 150, { transform: pose(0, 0, 4, 0.82), opacity: 1 }, 'ease-out'],
-               [IMPACT + 230, { transform: pose(0, 0, -2, 1.12), opacity: 1 }, 'ease-in-out'],
-               [IMPACT + 320, { transform: pose(0, 0, 0, 1), opacity: 1 }],
-               [1560, { transform: pose(0, 0, 0, 1), opacity: 1 }, EASE.io],
+    track(vs, [[IMPACT + 30, { transform: pose(0, vsY, -14, 3.2), opacity: 0 }, EASE.in],
+               [IMPACT + 150, { transform: pose(0, vsY, 4, 0.82), opacity: 1 }, 'ease-out'],
+               [IMPACT + 230, { transform: pose(0, vsY, -2, 1.12), opacity: 1 }, 'ease-in-out'],
+               [IMPACT + 320, { transform: pose(0, vsY, 0, 1), opacity: 1 }],
+               [1560, { transform: pose(0, vsY, 0, 1), opacity: 1 }, EASE.io],
                [1880, { transform: to, opacity: 0 }]]);
   }
   function showSplash(round) {
@@ -577,17 +600,12 @@
                       [235, { transform: 'translate(0px, -2px)' }], [270, { transform: 'translate(0px, 1px)' }],
                       [300, { transform: 'translate(0px, 0px)' }]]);
       }
-      // The clock: when it runs out (or a test finishes it) the splash ends; if it never does, a
-      // timer ends it anyway, unless someone paused it to look.
+      // The clock: when it runs out (or a test finishes it) the splash ends; if it never does
+      // (paused, throttled, broken), a timer ends it anyway.
       var clock = splashEl.animate(null, { duration: spec.ms });
       clock.onfinish = function () { if (splash && splash.run === run) endSplash('end'); };
       splash.anims.push(clock);
-      (function later() {
-        splash.safety = setTimeout(function () {
-          if (!splash || splash.run !== run) return;
-          if (clock.playState === 'paused') later(); else endSplash('end');
-        }, spec.ms + 1500);
-      })();
+      splash.safety = setTimeout(function () { if (splash && splash.run === run) endSplash('end'); }, spec.ms + 1500);
     } catch (e) {
       endSplash('quiet');
     }
@@ -600,7 +618,7 @@
     if (!s) return;
     splash = null;
     clearTimeout(s.safety);
-    cards.forEach(function (card) { card.style.opacity = ''; });
+    cards.forEach(function (card) { card.style.opacity = card.style.transform = card.style.transition = ''; });
     busy = false;
     if (reason !== 'quiet' && view === 'match') cards[0].focus({ preventScroll: true });
     function close() {
