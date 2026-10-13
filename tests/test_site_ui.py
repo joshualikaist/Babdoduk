@@ -36,5 +36,5 @@ def test_scrollbar_css_contract_and_no_trend_carousel():
 
 def test_all_public_pages_windows_scrollbars_and_overflow():
     report = run_checks()
-    assert len(report["results"]) == 45
+    assert len(report["results"]) == 50          # ten public pages (worldcup.html since 2026-10-13) x five widths
     assert all(result["overflow"] == 0 for result in report["results"].values())
