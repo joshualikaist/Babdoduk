@@ -57,7 +57,8 @@ def test_state_holds_no_personal_information(tmp_path):
         assert leak not in blob, leak
     data = json.loads(blob)
     assert set(data["mails"][0]) == {"id_hash", "subject_hash", "received", "processed_at",
-                                     "registered", "outcome", "rules"}
+                                     "registered", "outcome", "rules", "reason"}
+    assert data["mails"][0]["reason"] == ""     # a rule phrase when given, never mail text
     assert len(data["mails"][0]["id_hash"]) == 32
     from ggongbab.prefilter import PREFILTER_VERSION
     assert data["mails"][0]["rules"] == PREFILTER_VERSION   # a rules version, never mail-derived

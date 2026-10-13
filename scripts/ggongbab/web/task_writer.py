@@ -11,6 +11,9 @@ Deliberately uses the Dooray Project REST API rather than clicking the web UI's
 
 Fail closed: the project is re-verified by id AND exact name before every run.
 If verification fails, nothing is written.
+
+A mail's poster images (since 2026-10-14) are uploaded as files of its task, where the cloud
+collector already downloads task files for the AI (collectors/dooray.py).
 """
 from __future__ import annotations
 
@@ -20,7 +23,7 @@ import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Optional
 
@@ -31,6 +34,13 @@ from .exit_codes import ProjectNotFound
 UA = "BabdodukGgongbabAgent/1.0 (+https://github.com/joshualikaist/Babdoduk)"
 DEFAULT_PROJECT_NAME = "밥도둑-꽁밥-행사-수집함"
 TASK_MARKER = "ggongbab-agent"
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Redirects are followed by hand, so the auth header never follows a hop off Dooray."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # noqa: ANN001
+        return None
 
 
 def mail_identity(mail_id: str) -> str:
@@ -50,6 +60,8 @@ class MailPayload:
     # Private latency metadata (to the minute / second). Never public, never sent to the AI.
     received_at: Optional[datetime] = None
     discovered_at: Optional[datetime] = None
+    # Poster images (mime, bytes), already shrunk by the Radar; uploaded as task files.
+    images: list = field(default_factory=list)
 
 
 @dataclass
@@ -71,6 +83,9 @@ class TaskWriter:
         self._ctx = ssl.create_default_context()
         self._verified = False
         self._mail_index: Optional[dict[str, str]] = None
+        self.uploads = {"uploaded": 0, "failed": 0}
+        labels = urllib.parse.urlparse(settings.dooray_base).netloc.split(":")[0].split(".")
+        self._trusted_domain = ".".join(labels[-2:]).lower() if len(labels) >= 2 else ""
 
     # -- transport -----------------------------------------------------
     def _request(self, method: str, path: str, body: Optional[dict[str, Any]] = None) -> dict[str, Any]:
@@ -170,6 +185,8 @@ class TaskWriter:
         # Reuse that post instead of appending a second one.
         existing = self.find_existing_mail_task(mail.mail_id)
         if existing:
+            if mail.images and not self._post_files(existing):
+                self.attach_images(existing, mail.images)
             return existing
         payload = self._request("POST", f"/project/v1/projects/{self.settings.dooray_project_id}/posts",
                                 self.build_task(mail))
@@ -179,7 +196,65 @@ class TaskWriter:
             raise ProjectNotFound("task creation returned no post id")
         if self._mail_index is not None:
             self._mail_index[f"mail_key={mail_identity(mail.mail_id)}"] = post_id
+        if mail.images:
+            self.attach_images(post_id, mail.images)
         return post_id
+
+    def attach_images(self, post_id: str, images: list) -> int:
+        """Upload poster images to the task. A failed upload never fails the task: its text is
+        already there, and the count shows up in the Radar's runtime counts."""
+        done = 0
+        for index, (mime, data) in enumerate(images, start=1):
+            ext = {"image/jpeg": "jpg", "image/png": "png", "image/gif": "gif", "image/webp": "webp"}.get(mime, "bin")
+            try:
+                self.upload_file(post_id, f"poster-{index}.{ext}", mime, data)
+                done += 1
+                self.uploads["uploaded"] += 1
+            except ProjectNotFound:
+                self.uploads["failed"] += 1
+        return done
+
+    def _post_files(self, post_id: str) -> list:
+        try:
+            payload = self._request("GET", f"/project/v1/projects/{self.settings.dooray_project_id}/posts/{post_id}/files")
+        except ProjectNotFound:
+            return []
+        files = payload.get("result")
+        return files if isinstance(files, list) else []
+
+    def upload_file(self, post_id: str, filename: str, mime: str, data: bytes) -> str:
+        """POST a task file (multipart). Dooray answers the API host with a 307 to its file host;
+        the auth header is re-sent only while the hop stays on the configured Dooray domain."""
+        boundary = "----babdoduk" + hashlib.sha256(data).hexdigest()[:24]
+        body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n"
+                f"Content-Type: {mime}\r\n\r\n").encode("utf-8") + data + f"\r\n--{boundary}--\r\n".encode("ascii")
+        url = (self.settings.dooray_base.rstrip("/")
+               + f"/project/v1/projects/{self.settings.dooray_project_id}/posts/{post_id}/files")
+        opener = urllib.request.build_opener(_NoRedirect, urllib.request.HTTPSHandler(context=self._ctx))
+        for _ in range(4):
+            host = urllib.parse.urlparse(url).netloc.split(":")[0].lower()
+            headers = {"Accept": "application/json", "User-Agent": UA,
+                       "Content-Type": f"multipart/form-data; boundary={boundary}"}
+            if self._trusted_domain and (host == self._trusted_domain or host.endswith("." + self._trusted_domain)):
+                headers["Authorization"] = f"dooray-api {self.settings.dooray_token}"
+            req = urllib.request.Request(url, data=body, method="POST", headers=headers)
+            try:
+                with opener.open(req, timeout=max(self.timeout, 60)) as res:
+                    raw = res.read()
+            except urllib.error.HTTPError as exc:
+                location = exc.headers.get("Location")
+                if exc.code in (307, 308) and location:
+                    url = urllib.parse.urljoin(url, location)
+                    continue
+                raise ProjectNotFound(f"file upload: HTTP {exc.code}") from exc
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                raise ProjectNotFound(f"file upload: {exc.__class__.__name__}") from exc
+            payload = json.loads(raw.decode("utf-8")) if raw else {}
+            header = payload.get("header") or {}
+            if header and header.get("isSuccessful") is False:
+                raise ProjectNotFound(f"file upload: {header.get('resultMessage', 'not successful')}")
+            return str((payload.get("result") or {}).get("id") or "")
+        raise ProjectNotFound("file upload: too many redirects")
 
     def find_existing_mail_task(self, mail_id: str) -> Optional[str]:
         """Return a collection-project post that already carries this mail hash."""

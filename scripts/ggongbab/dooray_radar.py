@@ -1,18 +1,24 @@
 # -*- coding: utf-8 -*-
-"""Dooray mailbox Radar: list-level, unread-safe, fail-closed candidate registration.
+"""Dooray mailbox Radar: reads every new mail in full and registers candidates, fail-closed.
 
 Every 2-5 minutes the Radar lists the inbox through the calibrated LIST endpoint, from the Dooray
 tab of the already-open dedicated browser (the Ops Chrome, whose Portal tab it never uses, or the
-legacy Dooray browser after a rollback), and reads, per row, only: stable id, subject, preview,
-received time and read flag. It never opens a mail detail or body - not even of a read mail -
-and never changes read state. Candidates (prefilter) become preview-only collection tasks for
-the cloud job; the processed-mail ledger (`ggongbab-mail-state.json`) prevents replays.
+legacy Dooray browser after a rollback). Each mail it has not handled yet is opened (owner decision
+2026-10-14, after two events were missed because their food or prize wording was only in a poster
+or the body): the body, the text of its attachments (PDF, HWP, HWPX, DOCX, PPTX, XLSX) and the
+count of its poster images go to the prefilter, and a candidate becomes a collection task holding
+that text, with its poster images attached as task files for the cloud AI. A mail whose subject is
+plainly transactional (receipts, password resets) is never opened.
 
-Fail closed (owner rule, 2026-09-28): if the read flag is missing, the LIST contract changes,
-or the dedicated browser sends a mail-detail request or any non-GET request to the mail host
-during a scan, unread analysis is disabled (`radar-unread-disabled.json`, cleared only by an
-operator) and a critical alert is raised. The Radar never starts, restarts or closes Chrome and
-never asks for SSO by itself.
+Opening a mail marks it read, so an unread mail is marked unread again right after
+(web/mail_detail.py). The processed-mail ledger (`ggongbab-mail-state.json`) prevents replays and
+records the prefilter's reason for each mail.
+
+Fail closed: if the read flag is missing or the LIST contract changes, if the dedicated browser
+itself sends a mail-detail request or any non-GET request to the mail host during a scan, or if an
+opened unread mail cannot be marked unread again, unread mail is no longer opened
+(`radar-unread-disabled.json`, cleared only by an operator) and a critical alert is raised. The
+Radar never starts, restarts or closes Chrome and never asks for SSO by itself.
 """
 from __future__ import annotations
 
@@ -27,8 +33,9 @@ from urllib.parse import urlparse
 
 from .config import KST
 from .ops_storage import atomic_json, read_json
-from .prefilter import classify
+from .prefilter import DENY, classify
 from .web.exit_codes import AgentError, AuthRequired, UiContractError
+from .web.mail_detail import MailOpener, MailUnavailable, UnreadRestoreFailed
 from .web.state import AgentState, digest
 from .web.task_writer import MailPayload
 
@@ -38,6 +45,8 @@ AUTH_RETRY_MAX = 600       # while the login is expired: at most one LIST attemp
 OVERLAP_SECONDS = 1800
 FIRST_WINDOW_SECONDS = 86400
 MAX_ROWS = 200
+RECHECK_MAX_DAYS = 14
+RECHECK_MAX_ROWS = 1000
 FLASH_KEEP_SECONDS = 6 * 3600
 DETAIL_PATH = re.compile(r"/v\d+/wapi/mails/\d{6,}")
 
@@ -51,14 +60,16 @@ TRANSPORT = "DOORAY_TRANSPORT_FAILED"
 WRITE = "DOORAY_WRITE_FAILED"
 CONFIG_REQUIRED = "DOORAY_CONFIGURATION_REQUIRED"
 UNVERIFIED = "DOORAY_BROWSER_UNVERIFIED"
+RESTORE = "DOORAY_UNREAD_RESTORE_FAILED"
 REASONS = frozenset({RUNNING, STOPPED, AUTH, CONTRACT, BROWSER, INVARIANT, TRANSPORT, WRITE, CONFIG_REQUIRED,
-                     UNVERIFIED})
+                     UNVERIFIED, RESTORE})
 DISPATCH_OFF = "DISPATCH_OFF"
 MAIL_PATH = re.compile(r"^/mail(/|$)", re.I)
 
 
 class UnreadInvariantBroken(Exception):
-    """The dedicated browser sent a detail/body or write request while the Radar was scanning."""
+    """The dedicated browser itself sent a detail/body or write request while the Radar was scanning.
+    The Radar's own requests go through the API request context, which this guard does not see."""
 
 
 class BrowserUnverified(Exception):
@@ -164,6 +175,11 @@ class ScanResult:
     unread_skipped: int = 0
     candidates: int = 0
     registered: int = 0
+    opened: int = 0             # mails read in full
+    unread_restored: int = 0    # unread mails marked unread again after reading
+    unavailable: int = 0        # detail not readable (deleted or moved since the listing); retried
+    denied: int = 0             # transactional subjects, never opened
+    images: int = 0             # poster images attached to new tasks
     flash: list = field(default_factory=list)
 
     def counts(self) -> dict:
@@ -171,10 +187,11 @@ class ScanResult:
 
 
 def scan_once(session, state: AgentState, writer, *, list_mails, now: datetime, since: datetime,
-              allow_unread: bool, dry_run: bool, guard: RequestGuard) -> ScanResult:
-    """One list-level pass. Raises UiContractError / UnreadInvariantBroken to fail closed."""
+              allow_unread: bool, dry_run: bool, guard: RequestGuard, opener,
+              limit: int = MAX_ROWS, recheck: bool = False) -> ScanResult:
+    """One pass. Raises UiContractError / UnreadInvariantBroken / UnreadRestoreFailed to fail closed."""
     result = ScanResult()
-    headers = list_mails(session, limit=MAX_ROWS, target=None, since=since.date())
+    headers = list_mails(session, limit=limit, target=None, since=since.date())
     result.rows = len(headers)
     if any(h.unread is None for h in headers):
         raise UiContractError(CONTRACT)
@@ -186,28 +203,46 @@ def scan_once(session, state: AgentState, writer, *, list_mails, now: datetime, 
             continue
         result.in_window += 1
         result.unread += bool(header.unread)
-        if state.seen(header.mail_id):
+        if state.seen(header.mail_id, recheck=recheck):
             result.seen += 1
             continue
         if header.unread and not allow_unread:
             result.unread_skipped += 1
             continue
-        decision = classify(header.subject, header.preview, now)
-        if not decision.candidate:
+        if DENY.search(header.subject or ""):
+            result.denied += 1
             if not dry_run:
-                state.record(header.mail_id, header.subject, header.received, registered=False, outcome="filtered")
+                state.record(header.mail_id, header.subject, header.received, registered=False, outcome="filtered",
+                             reason="denylist: transactional subject (not opened)")
             continue
-        result.candidates += 1
-        if decision.urgency == "high":
-            result.flash.append(digest(header.mail_id))
-        if dry_run:
-            continue
-        post_id = writer.create_task(MailPayload(
-            mail_id=header.mail_id, subject=header.subject, body=header.preview, received=header.received,
-            preview_only=True, received_at=header.received_at, discovered_at=now))
-        if post_id:
-            state.record(header.mail_id, header.subject, header.received, registered=True, outcome="candidate")
-            result.registered += 1
+        try:
+            with opener.open(session, header) as mail:
+                result.opened += 1
+                # Marked unread again when this block ends; a failed restore raises instead.
+                result.unread_restored += bool(header.unread)
+                decision = classify(header.subject, mail.filter_text() or header.preview, now, images=mail.image_count)
+                if not decision.candidate:
+                    if not dry_run:
+                        state.record(header.mail_id, header.subject, header.received, registered=False,
+                                     outcome="filtered", reason=decision.reason)
+                    continue
+                result.candidates += 1
+                if decision.urgency == "high":
+                    result.flash.append(digest(header.mail_id))
+                if dry_run:
+                    continue
+                images = opener.images(session, mail) if mail.image_count else []
+                post_id = writer.create_task(MailPayload(
+                    mail_id=header.mail_id, subject=header.subject, body=mail.task_body() or header.preview,
+                    received=header.received, preview_only=False, received_at=header.received_at,
+                    discovered_at=now, images=images))
+                if post_id:
+                    state.record(header.mail_id, header.subject, header.received, registered=True,
+                                 outcome="candidate", reason=decision.reason)
+                    result.registered += 1
+                    result.images += len(images)
+        except MailUnavailable:
+            result.unavailable += 1     # not recorded: the next scan tries again
     if guard.violations:
         raise UnreadInvariantBroken()
     return result
@@ -231,11 +266,18 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
               dispatch: Optional[Callable[[bool], str]] = None, interval: int = INTERVAL_DEFAULT,
               dry_run: bool = False, max_cycles: Optional[int] = None,
               clock: Callable[[], float] = time.time, sleep: Callable[[float], None] = time.sleep,
-              browser_running: Callable[[], bool] = lambda: True, log: Callable[[str], None] = lambda _: None) -> int:
+              browser_running: Callable[[], bool] = lambda: True, log: Callable[[str], None] = lambda _: None,
+              opener=None, recheck_days: int = 0) -> int:
     """The Radar loop. Returns 0 when stopped and 20 on a contract change. An expired login is
-    retried with backoff (at most AUTH_RETRY_MAX seconds apart) until a person logs in again."""
+    retried with backoff (at most AUTH_RETRY_MAX seconds apart) until a person logs in again.
+
+    `recheck_days` (an operator's one-off run, with max_cycles=1) widens the window to that many
+    days, so mail an older prefilter dismissed is read again under the current rules."""
     if not INTERVAL_MIN <= interval <= INTERVAL_MAX:
         raise ValueError("interval must be 120-300 seconds")
+    if not 0 <= recheck_days <= RECHECK_MAX_DAYS:
+        raise ValueError(f"recheck_days must be 0-{RECHECK_MAX_DAYS}")
+    opener = opener or MailOpener(mail_host)
     runtime = files.runtime_state()
     runtime.update(started=clock(), running=True, reason=RUNNING)
     cycles = failures = 0
@@ -253,6 +295,8 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
             now = datetime.fromtimestamp(now_ts, KST)
             last = runtime.get("last_success")
             since_ts = (last - OVERLAP_SECONDS) if last else (now_ts - FIRST_WINDOW_SECONDS)
+            if recheck_days:
+                since_ts = min(since_ts, now_ts - recheck_days * 86400)
             since = datetime.fromtimestamp(since_ts, KST)
             delay = interval
             try:
@@ -263,7 +307,9 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
                     guard = RequestGuard(session.context, mail_host)
                     with guard.watching():
                         result = scan_once(session, state, writer, list_mails=list_mails, now=now, since=since,
-                                           allow_unread=files.unread_allowed(), dry_run=dry_run, guard=guard)
+                                           allow_unread=files.unread_allowed(), dry_run=dry_run, guard=guard,
+                                           opener=opener, limit=RECHECK_MAX_ROWS if recheck_days else MAX_ROWS,
+                                           recheck=bool(recheck_days))
                 if not dry_run:
                     state.mark_run(now.date())
                     state.save()
@@ -275,10 +321,11 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
                     code = dispatch(result.registered > 0)
                 if not dry_run:
                     update_flash(files, result.flash, code == "DISPATCHED", now_ts)
+                counts = result.counts() | {"uploads_failed": (getattr(writer, "uploads", None) or {}).get("failed", 0)}
                 if dry_run:     # a rehearsal never moves the window of the real Radar
-                    save(last_dry_run=now_ts, reason=RUNNING, counts=result.counts(), dispatch=code)
+                    save(last_dry_run=now_ts, reason=RUNNING, counts=counts, dispatch=code)
                 else:
-                    save(last_scan=now_ts, last_success=now_ts, reason=RUNNING, counts=result.counts(), dispatch=code)
+                    save(last_scan=now_ts, last_success=now_ts, reason=RUNNING, counts=counts, dispatch=code)
                 heartbeat("healthy", now, now, "0")
                 log(RUNNING)
                 failures = 0
@@ -313,6 +360,14 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
                 save(last_scan=now_ts, reason=INVARIANT)
                 heartbeat("collector_error", now, None, INVARIANT)
                 log(INVARIANT)
+            except UnreadRestoreFailed:
+                # A mail stayed read. Stop opening unread mail until an operator looks; read mail
+                # is still scanned on the next cycle (this scan's ledger entries were not saved, so
+                # those mails are read again and an existing task is found and reused).
+                files.disable_unread(RESTORE, now_ts)
+                save(last_scan=now_ts, reason=RESTORE)
+                heartbeat("collector_error", now, None, RESTORE)
+                log(RESTORE)
             except BrowserUnverified:
                 # Fail closed without attaching; retried with backoff, alerted as critical.
                 failures += 1

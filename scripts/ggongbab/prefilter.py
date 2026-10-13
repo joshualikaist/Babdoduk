@@ -10,6 +10,11 @@ food is provided - that stays with the AI plus the deterministic validator, whic
 require explicit provision wording (see parsers/rule_parser.explicit_food_evidence).
 It is tuned for recall: a flash hand-out ("방문자 전원 커피 제공", "커피차") is worth a
 look even when the subject or preview carries no date (MISS-001).
+
+Since 2026-10-14 the Radar opens every new mail, so the text here is the whole body plus the text of
+its attachments, and two more shapes are candidates (owner decision, two missed events): an event
+mail with a poster image, whose food wording may be only in the image, and an event with a prize
+draw or giveaway, which is listed even without food.
 """
 from __future__ import annotations
 
@@ -20,7 +25,7 @@ from typing import Optional
 
 # Recorded with every "filtered" mail decision, so a rule upgrade re-examines recent
 # mail that an older version dismissed (web/state.py).
-PREFILTER_VERSION = "2026-09-28.flash-1"
+PREFILTER_VERSION = "2026-10-14.full-1"
 
 # Event-shaped wording.
 EVENT_WORDS = re.compile(
@@ -60,6 +65,13 @@ STRONG_PROVISION = re.compile(
 FLASH_WORDS = re.compile(
     r"소진\s*시|소진될\s*때|선착순\s*(?:제공|배부|배포|증정|지급|나눔)|(?:방문자|참석자)\s*전원|커피차|커피\s*트럭|"
     r"푸드\s*트럭|간식차|현장\s*(?:배부|증정|제공)|금일|오늘|지금\s*바로|while\s+supplies\s+last|today",
+    re.I,
+)
+
+# A prize draw or giveaway for participants. Listed with a gift mark, never counted as food.
+GIVEAWAY_WORDS = re.compile(
+    r"경품|추첨|럭키\s*드로우|기념품|굿즈|상품권|사은품|선물|증정|"
+    r"prizes?|raffle|lucky\s*draw|giveaways?|souvenirs?|gift\s*cards?|goodies",
     re.I,
 )
 
@@ -106,6 +118,8 @@ class Decision:
     has_date: bool = False
     has_provision: bool = False       # a food noun next to a hand-out word, or a coffee/food truck
     urgency: str = "normal"           # "high" for flash hand-outs or same-day events; never a truth signal
+    has_giveaway: bool = False        # a prize draw or giveaway
+    images: int = 0                   # poster-like images in the mail (attachments, inline, rendered pages)
 
     @property
     def strong(self) -> bool:
@@ -126,8 +140,9 @@ def urgency(text: str, now: Optional[datetime] = None) -> str:
     return "normal"
 
 
-def classify(subject: str, body: str, now: Optional[datetime] = None) -> Decision:
-    """Decide whether this mail is worth an AI call."""
+def classify(subject: str, body: str, now: Optional[datetime] = None, *, images: int = 0) -> Decision:
+    """Decide whether this mail is worth an AI call. `body` is the whole text the caller has (the
+    Radar: the mail body plus attachment text); `images` counts the mail's poster-like images."""
     text = f"{subject or ''}\n{body or ''}"
     if not text.strip():
         return Decision(False, "empty")
@@ -139,13 +154,24 @@ def classify(subject: str, body: str, now: Optional[datetime] = None) -> Decisio
     has_time = bool(MEAL_TIME.search(text))
     has_date = bool(DATE_HINT.search(text))
     has_provision = bool(STRONG_PROVISION.search(text))
-    d = Decision(False, "", has_event, has_food, has_time, has_date, has_provision, urgency(text, now))
+    has_giveaway = bool(GIVEAWAY_WORDS.search(text))
+    d = Decision(False, "", has_event, has_food, has_time, has_date, has_provision, urgency(text, now),
+                 has_giveaway, max(0, int(images or 0)))
 
     if has_provision:
         # A hand-out is worth a look without a date: a flash event's subject and
         # preview often carry none, and the hand-out may already have started.
         d.candidate = True
         d.reason = "food provision wording" + (" + event" if has_event else "") + (" + date" if has_date else "")
+        return d
+    if has_giveaway and (has_event or has_date):
+        d.candidate = True
+        d.reason = "giveaway wording" + (" + event" if has_event else "") + (" + date" if has_date else "")
+        return d
+    if has_event and d.images:
+        # The food or the date may be only in the poster; the AI reads it.
+        d.candidate = True
+        d.reason = "event + poster image" + (" + date" if has_date else "")
         return d
     if not has_event:
         d.reason = "no event wording"

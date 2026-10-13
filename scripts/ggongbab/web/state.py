@@ -3,7 +3,9 @@
 
 `.local/ggongbab-mail-state.json` records only what is needed to avoid touching a
 mail twice: a stable identifier hash, a subject hash, the received date, when it
-was processed and whether it became a task.
+was processed, whether it became a task and the prefilter's reason (a fixed rule
+phrase such as "no event wording", never mail text), so an operator can look up
+why a mail was or was not picked (`ggongbab_workers.py mail-lookup`).
 
 Never stored: message bodies, subjects in clear text, e-mail addresses, sender
 names, cookies, tokens.
@@ -42,6 +44,7 @@ class MailRecord:
     registered: bool = False
     outcome: str = ""                   # candidate / filtered / error - never mail text
     rules: str = ""                     # prefilter version that made the decision
+    reason: str = ""                    # the prefilter's rule phrase - never mail text
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
@@ -79,6 +82,7 @@ class AgentState:
                 registered=bool(row.get("registered")),
                 outcome=str(row.get("outcome") or ""),
                 rules=str(row.get("rules") or ""),
+                reason=str(row.get("reason") or ""),
             )
             state.mails[record.id_hash] = record
         return state
@@ -104,11 +108,13 @@ class AgentState:
                 os.unlink(tmp_name)
 
     # -- queries -------------------------------------------------------
-    def seen(self, mail_id: str) -> bool:
+    def seen(self, mail_id: str, *, recheck: bool = False) -> bool:
         """True only after a confirmed filter or a confirmed task write.
 
         A failed write stays absent, or is stored as write-failed, and both are
         retried. An unconfirmed candidate (no post id) is not terminal either.
+        `recheck` (an operator's radar-recheck) looks again at every mail an older
+        prefilter dismissed, however old; the caller bounds the window.
         """
         record = self.mails.get(digest(mail_id))
         if record is None:
@@ -117,7 +123,7 @@ class AgentState:
             return False
         if record.outcome == "candidate" and not record.registered:
             return False
-        if record.outcome == "filtered" and record.rules != PREFILTER_VERSION and self._recent(record):
+        if record.outcome == "filtered" and record.rules != PREFILTER_VERSION and (recheck or self._recent(record)):
             return False            # dismissed by older rules: look again with the current ones
         return True
 
@@ -127,12 +133,17 @@ class AgentState:
         cutoff = (datetime.now(KST) - timedelta(days=RECHECK_FILTERED_DAYS)).date().isoformat()
         return bool(day) and day >= cutoff
 
+    def lookup_subject(self, subject: str) -> list[MailRecord]:
+        """Records whose subject hash matches: how an operator asks about one mail by its subject."""
+        wanted = digest(subject)
+        return sorted((m for m in self.mails.values() if m.subject_hash == wanted), key=lambda m: m.processed_at)
+
     def forget(self, mail_id: str) -> None:
         """Drop a non-terminal row so the next run can try the write again."""
         self.mails.pop(digest(mail_id), None)
 
     def record(self, mail_id: str, subject: str, received: Optional[date], *,
-               registered: bool, outcome: str) -> MailRecord:
+               registered: bool, outcome: str, reason: str = "") -> MailRecord:
         record = MailRecord(
             id_hash=digest(mail_id),
             subject_hash=digest(subject),
@@ -141,6 +152,7 @@ class AgentState:
             registered=registered,
             outcome=outcome,
             rules=PREFILTER_VERSION,
+            reason=reason[:120],
         )
         self.mails[record.id_hash] = record
         return record
