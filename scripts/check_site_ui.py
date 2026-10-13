@@ -1058,12 +1058,19 @@ def worldcup_splash(page):
           ("a held key skips once and never picks", game["winners"]))
 
     # A screen reader activates the card under the splash: that ends the splash, it is not a pick.
+    # The splash is held still first, so only that click can end it.
     close_round(8)
     page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("() => document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.pause())")
     page.evaluate("() => document.querySelector('.wc-card').click()")
-    page.wait_for_function(closed)
+    try:
+        page.wait_for_function(closed, timeout=3000)
+        ended = True
+    except PlaywrightTimeoutError:
+        ended = False
     game = page.evaluate(stored)
-    check(len(game["entrants"]) == 4 and game["winners"] == [], ("a click from assistive technology only ends it", game["winners"]))
+    check(ended and len(game["entrants"]) == 4 and game["winners"] == [],
+          ("a click from assistive technology only ends it", ended, game["winners"]))
 
     close_round(4)
     page.wait_for_function(SPLASH_OPEN)
