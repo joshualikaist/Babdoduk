@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "count": 1001,
+  "count": 1314,
   "scoreWeights": {
     "taste": 35,
     "craving": 20,
@@ -13,12 +13,12 @@
     {
       "id": "chinese",
       "src": "data/foods/packs/chinese.json",
-      "count": 84
+      "count": 102
     },
     {
       "id": "fusion-snack-dessert",
       "src": "data/foods/packs/fusion-snack-dessert.json",
-      "count": 148
+      "count": 201
     },
     {
       "id": "indian-middle-eastern",
@@ -28,12 +28,12 @@
     {
       "id": "japanese",
       "src": "data/foods/packs/japanese.json",
-      "count": 94
+      "count": 113
     },
     {
       "id": "korean",
       "src": "data/foods/packs/korean.json",
-      "count": 423
+      "count": 634
     },
     {
       "id": "southeast-asian",
@@ -43,7 +43,7 @@
     {
       "id": "western",
       "src": "data/foods/packs/western.json",
-      "count": 170
+      "count": 182
     }
   ]
 }
