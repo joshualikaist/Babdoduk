@@ -6,7 +6,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   var TABLE = 'ggongbab_public_events';
-  var COLUMNS = 'id,title,summary,start_at,end_at,date_text,time_text,location_name,building,room,food_provided,food_type,food_description,organizer,eligibility,registration_required,registration_deadline,registration_url,source_types,confidence,content_revision,updated_at';
+  var COLUMNS = 'id,title,summary,start_at,end_at,date_text,time_text,location_name,building,room,food_provided,food_type,food_description,organizer,eligibility,registration_required,registration_deadline,registration_url,source_types,confidence,food_source,giveaway,giveaway_description,content_revision,updated_at';
   // The sources' public names (data/content/labels.json; written by scripts/sync_site_chrome.py).
   // @labels:source-names
   var NAMES = Object.freeze({"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal"});
@@ -21,12 +21,14 @@
     return new Date(date.getTime() + 9 * 3600000).toISOString().slice(0, 19) + '+09:00';
   }
   function mapRow(row) {
-    return {
+    var food = { provided: row.food_provided, type: row.food_type, description: row.food_description };
+    if (row.food_source === 'text' || row.food_source === 'poster') food.source = row.food_source;
+    var event = {
       id: row.id, title: row.title, summary: row.summary,
       startAt: kst(row.start_at), endAt: kst(row.end_at),
       dateText: row.date_text, timeText: row.time_text,
       location: { name: row.location_name, building: row.building, room: row.room },
-      food: { provided: row.food_provided, type: row.food_type, description: row.food_description },
+      food: food,
       organizer: row.organizer, eligibility: row.eligibility,
       registration: { required: row.registration_required, deadline: kst(row.registration_deadline), url: row.registration_url },
       confidence: row.confidence,
@@ -34,6 +36,9 @@
         return Object.prototype.hasOwnProperty.call(NAMES, kind);
       }).map(function (kind) { return { type: kind, name: NAMES[kind] }; })
     };
+    // Migration 006: a giveaway listing (a prize draw or gift for participants).
+    if (row.giveaway === 'true') event.giveaway = { provided: 'true', description: row.giveaway_description || '' };
+    return event;
   }
   function publicConfig(config) {
     try {

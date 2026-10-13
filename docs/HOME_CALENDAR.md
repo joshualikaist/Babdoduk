@@ -17,8 +17,9 @@ One surface (`section#homeCal`), right below the hero copy:
 * **Selected day**: that date's events, one row each (title / time · place / food · 사전 신청).
   A row opens inline (one at a time) for the full time and place, eligibility, the sign-up deadline,
   the sign-up link and a public original post. There is no modal.
-* **다가오는 꽁밥**: up to four upcoming events on dates after the selected day (or after today when a
-  past day is selected). Hidden when there are none, never an empty heading.
+* **다가오는 꽁밥**: up to four upcoming free-food events on dates after the selected day (or after today
+  when a past day is selected). Hidden when there are none, never an empty heading. A giveaway-only
+  listing is not one of them; its date carries the 🎁 marker instead.
 * **Footer**: `전체 일정 →` (the hub, `ggongbab.html#free`) and `마지막 변경 {time}` (the feed's
   `generatedAt`: an export that changes nothing is not committed, so it is the last change).
 
@@ -33,8 +34,17 @@ beside the copy on the paper band and the calendar splits into the day (left) an
   Realtime client. Nothing else enters the grid: no cafeteria menus, stories, Babdoduk events or
   campus news.
 * **Eligibility and time**: `js/ggongbab-select.js` (`isPublic`, `isUpcoming`, `eventEnd`), so the
-  explicit-food rule and the 3-hour open-ended window are the hub's. A row is upcoming while it has
-  not ended, and past afterwards. Rows are keyed by `id` and the live copy wins over an archived one.
+  listing rule (explicit food, or a giveaway) and the 3-hour open-ended window are the hub's. A row is
+  upcoming while it has not ended, and past afterwards; a deadline-only giveaway ends at its sign-up
+  deadline. Rows are keyed by `id` and the live copy wins over an archived one.
+* **Giveaways** (owner decision 2026-10-14): a listing with `giveaway` and no explicit food is shown
+  but never counted as free food. It adds no dot, no count to the answer line or a cell's `꽁밥 N개`,
+  is never the default date and never a 다가오는 꽁밥 row. Its date gets one 🎁 in the cell's upper
+  right (muted when every such listing that day has ended), outside the reserved dot slot, and the
+  cell's label adds `경품 N개`. Its row says `🎁 경품` instead of a food, its details add
+  `경품 · {description}`, and a deadline-only giveaway (`startAt` equals `registration.deadline`) reads
+  `신청 마감 23:59` where a time would be. A row with food and a gift is free food, with `🎁 경품` after
+  its food.
 * **KST**: dates are computed from `toKst`/`ymd` and whole-day arithmetic in UTC, so the browser's
   time zone never changes "today".
 * **Retained window**: the archive's `windowDays` (30) before today. Older days are inert (not
@@ -45,7 +55,8 @@ beside the copy on the paper band and the calendar splits into the day (left) an
   today's month. `오늘` (shown only on another month) returns there with the same rule. Coming back to
   the tab after midnight (KST) starts again from the new today; there are no timers.
 * **Markers**: an upcoming event is a filled accent dot, a past one a hollow muted ring; at most two
-  per day, never a count, title or icon. The marker slot is always reserved.
+  per day, never a count, title or icon. The marker slot is always reserved. The 🎁 of a giveaway-only
+  listing is the one exception to "no icon" and sits outside that slot (see Giveaways).
 * **Links**: a sign-up link while the event is open (not ended, deadline not passed); an original
   post only for public web sources (`kaist_public`, `manual`). Mail and other internal sources are
   named in plain text (`출처 · KAIST 메일`). Mail-system hosts are never linked.

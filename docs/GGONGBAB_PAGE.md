@@ -317,6 +317,22 @@ GitHub Actions 의 `workflow_dispatch` → mode `review-report` 는 건수만 �
 **tri-state:** `food.provided` 와 `registration.required` 는 **`"true"` / `"false"` / `"unknown"` 문자열**이다. boolean 이 아니다.
 “본문에 없음”(`unknown`)을 `false` 로 접으면 “신청 불필요”라는 없는 사실을 만들어 내기 때문이다. `food.type` 은 `provided="true"` 일 때만 채워진다.
 
+**경품 행사와 포스터 근거 (오너 결정 2026-10-14, 마이그레이션 006).**
+
+공개 목록에 오르는 행사는 두 종류다.
+- 음식 제공이 명시된 행사(`food.provided == "true"`).
+- 참가자가 경품·기념품을 받거나 추첨에 참여할 수 있는 행사. 이런 행사에는 선택 필드 `"giveaway": {"provided": "true", "description": "경품 추첨 (…)"}` 이 붙는다.
+
+경품 행사는 화면에서 🎁 표시를 달고, 꽁밥(무료 음식) 개수에는 세지 않는다. 행사일이 따로 없는 경품 행사는 신청 마감 시각을 `startAt` 으로 쓴다. 이때 `startAt` 과 `registration.deadline` 이 같다.
+
+선택 필드 `food.source` 는 음식 근거를 어디서 읽었는지 기록한다.
+- `"text"`: 본문이나 첨부 문서 텍스트.
+- `"poster"`: 메일에 첨부된 포스터 이미지에만 있었음. AI 가 이미지에서 인용하고, 그 항목을 `evidence.from_poster` 에 적었으며, 실제로 이미지가 함께 보내진 경우에만 인정한다(`parsers/validator.py`).
+
+`validate_content` 는 다음 규칙을 강제한다.
+- 음식도 경품도 없는 행은 거절한다.
+- `food.source` 는 `food.provided == "true"` 일 때만 허용한다.
+
 **시각:** `startAt` · `endAt` · `registration.deadline` · `generatedAt` 은 모두 **Asia/Seoul(`+09:00`)** 로 내보낸다.
 DB 의 `timestamptz` 는 UTC 로 조회되지만(`2026-09-25T03:00:00+00:00`), 공개 피드는 캠퍼스 현지 시각이므로 export 직전에 `exporter.kst_iso()` 가 변환한다(`2026-09-25T12:00:00+09:00`). DB 표현은 그대로 둔다.
 
@@ -332,7 +348,7 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 
 | 단계 | 규칙 | 위치 |
 |------|------|------|
-| 브라우저 | 종료 시각이 지나면 카드·개수·레이더에서 바로 숨김. 종료 시각이 없으면(“11:30 ~ 소진 시까지”) 시작 후 3시간까지 보여 준다 — export 유예(`GGONGBAB_EXPIRED_GRACE_HOURS`)와 같은 창이다(MISS-001, 2026-09-28 승인) | `js/ggongbab-select.js` `eventEnd` · `isUpcoming` |
+| 브라우저 | 종료 시각이 지나면 카드·개수·레이더에서 바로 숨김. 종료 시각이 없으면(“11:30 ~ 소진 시까지”) 시작 후 3시간까지 보여 준다 — export 유예(`GGONGBAB_EXPIRED_GRACE_HOURS`)와 같은 창이다(MISS-001, 2026-09-28 승인). 행사일 없이 신청 마감만 있는 경품 행사는 마감 시각까지만 보여 준다(유예 없음) | `js/ggongbab-select.js` `eventEnd` · `isUpcoming` |
 | export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외 | `exporter.is_expired` |
 | 검증 | 종료 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
 
@@ -350,7 +366,7 @@ live 피드는 “지금·앞으로 참여할 수 있는 꽁밥”, 아카이브
 
 | 조건 | 규칙 | 위치 |
 |------|------|------|
-| 공개 자격 | live 피드와 같은 함수: 음식 명시(`food.provided == "true"`), `status='published'`, `needs_review=false`, confidence ≥ 기준 | `exporter.publication_eligible` |
+| 공개 자격 | live 피드와 같은 함수: 음식 명시(`food.provided == "true"`) 또는 경품(`giveaway`), `status='published'`, `needs_review=false`, confidence ≥ 기준 | `exporter.publication_eligible` |
 | 끝남 | live 피드가 버리는 바로 그 규칙: 종료(없으면 시작) + 유예 3시간 < `now` | `exporter.is_expired` |
 | 공개된 적 있음 | 이 export 직전의 `latest.json` 또는 `archive/index.json` 에 실렸던 id 만 | `exporter.previously_listed_ids` |
 | 공개 기간 | 종료(없으면 시작)가 `now` 기준 30일 안 | `ARCHIVE_WINDOW_DAYS` |
@@ -423,9 +439,20 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
   - live 필터(sticky)는 live 목록과 한 상자(`.gg-live`)에 있어 아카이브 영역에서는 따라오지 않는다. 필터는 아카이브에 적용되지 않는다.
   - preview·blocked 모드에서는 아카이브를 읽지 않는다. fixture 모드는 합성 기록(`fixtureArchive`)을 쓴다.
 * 세로 피드: 날짜 헤더(오늘/내일 배지) → 카드(시각 · 제목 · 건물/호실 · 지도 링크 · 음식 태그 · 사전 신청 · 마감 · 요약 · 신청/원문 버튼).
+* **경품 행사 (오너 결정 2026-10-14).** 11절 “경품 행사와 포스터 근거”의 화면 쪽 규칙이다. 판정은 `ggongbab-select.js` 한 곳에 있다
+  (`isPublic` = 음식 명시 또는 경품, `isFreeFood` = 음식 명시, `isDeadlineOnly`). 정적 스냅숏과 lab Realtime 행이 같은 모양으로 들어오므로 두 경로가 같은 카드가 된다.
+  - 카드에 「🎁 경품」 배지와 “경품 · {설명}” 줄을 단다. 이모지는 장식(`aria-hidden`)이고 낱말이 뜻을 전한다.
+  - 경품만 있는 행사에는 음식 배지가 없다. 「음식 제공」 같은 대체 문구도 쓰지 않는다. 음식과 경품이 둘 다 있으면 둘 다 보인다.
+  - 개수(레이더 · 상단 지표 · 꽁밥 탭 · 학식 탭의 꽁밥 안내)는 음식 명시 행사만 센다. 경품만 있는 행사는 목록에는 나오지만 꽁밥으로 세지 않는다.
+  - 「다음 꽁밥」(featured)과 레이더의 “가장 빠른 꽁밥”은 언제나 음식 행사다. 경품만 있는 행사는 레이더가 세지 않으므로 featured 가 되지 않는다.
+  - 행사일 없이 신청 마감만 있는 경품(`startAt` = `registration.deadline`, 같은 시각인지로 비교)은 시각 자리에 “신청 마감 10월 18일 (토) 23:59”를 쓰고 따로 마감 줄을 반복하지 않는다.
+  - `food.source == "poster"` 이면 음식 배지 안에 “· 포스터 기준”을 붙인다. 근거가 포스터 이미지뿐이었다는 사실을 그대로 밝힌다.
+  - 지난 꽁밥 기록에서도 경품 행은 「🎁 경품」 표시와 “당시 공개된 경품 안내 기록”을 단다(음식이 함께 있으면 꽁밥 기록). 아카이브에는 `registration` 이 없어서 마감만 있던 경품도 날짜·시각으로만 기록된다.
 * **tri-state 표시:** `true` 만 「식사 제공」/「사전 신청」으로, `false` 는 「식사 없음」/「신청 없이 참여」로, `unknown` 은 점선 테두리의 「식사 여부 미확인」으로 그린다.
   `unknown` 을 `false` 처럼 보여 주지 않는다. 옛 boolean payload 도 `tri()` 가 받아 준다.
-* 필터: 기간(오늘/내일/이번 주/전체 예정) × 음식(전체/식사/간식/다과). 선택은 `babdoduk-ggongbab-filter` 에 저장.
+* 필터: 기간(오늘/내일/이번 주/전체 예정) × 음식(전체/식사/간식/다과/🎁 경품). 선택은 `babdoduk-ggongbab-filter` 에 저장.
+  식사·간식·다과는 음식 명시 행사만 고르고(경품만 있는 행사는 어느 음식 종류에도 들지 않는다), 「🎁 경품」은 음식 여부와 상관없이 경품 행사를 모두 고른다.
+  저장값이 모르는 값이면 「전체」로 돌아가고, 예전 저장값(`all`/`meal`/`snack`/`refreshment`)은 그대로 읽힌다.
 * 모든 시각은 KST 로 계산한다(뷰어 시간대 무관). 지도는 카드 안 Google Maps 검색 링크로만 제공(보조 기능).
 * 가로 캐러셀 없음. 페이지 전체가 세로 스크롤.
 

@@ -87,9 +87,9 @@ test('mapping discards unrecognized sources and extra fields', () => {
   assert.deepEqual(event.sources, [{ type: 'portal', name: 'KAIST Portal' }]);
   assert.equal(JSON.stringify(event).includes('PRIVATE'), false);
 });
-test('exact 22-column select and ordered paginated public table only', async () => {
+test('exact 25-column select (22 + migration 006) and ordered paginated public table only', async () => {
   const h = harness(); await h.live();
-  assert.equal(feed.columns.split(',').length, 22);
+  assert.equal(feed.columns.split(',').length, 25);
   assert.deepEqual(h.calls.map(c => c.table), ['ggongbab_public_events', 'ggongbab_public_events']);
   assert.ok(h.calls.every(c => c.columns === feed.columns && c.signal instanceof AbortSignal));
   assert.deepEqual(h.calls[0].order, [['start_at', { ascending: true }], ['id', { ascending: true }]]);
