@@ -658,7 +658,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  color: #b43d27;
+  color: var(--color-accent);
   font-weight: 700;
   text-decoration: none;
 }

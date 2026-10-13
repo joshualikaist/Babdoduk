@@ -9,7 +9,7 @@
 
 .page-home::before {
   background:
-    radial-gradient(ellipse 70% 50% at 8% -10%, rgba(217, 71, 43, 0.08), transparent 52%),
+    radial-gradient(ellipse 70% 50% at 8% -10%, rgba(236, 72, 153, 0.08), transparent 52%),
     radial-gradient(ellipse 55% 40% at 96% 8%, rgba(232, 215, 177, 0.5), transparent 58%);
 }
 
@@ -88,7 +88,7 @@
 
 /* A marker stroke under the question, not a gradient on the letters. */
 .home-title-mark {
-  background: linear-gradient(transparent 66%, rgba(217, 71, 43, 0.28) 66%, rgba(217, 71, 43, 0.28) 90%, transparent 90%);
+  background: linear-gradient(transparent 66%, rgba(236, 72, 153, 0.26) 66%, rgba(236, 72, 153, 0.26) 90%, transparent 90%);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
@@ -1054,7 +1054,7 @@
 .home-banner--pick .home-banner-link {
   padding-right: 46%;
   background: var(--color-accent-wash);
-  border-color: rgba(180, 61, 39, 0.18);
+  border-color: rgba(190, 24, 93, 0.18);
 }
 
 .home-banner--pick .home-banner-media {

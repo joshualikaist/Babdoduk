@@ -23,7 +23,7 @@ Five repeated devices make the product recognizable beyond its logo:
 | Canvas | `--color-canvas: #f7f4ee` candidate; page overrides require a named reason | `site.css` default `#f7f7f5`, home `#f5f1e8`, magazine `#f7f4ee` |
 | Paper surface | `--color-surface: #fffdf8` candidate, with a muted surface token for grouped controls | Current `--surface` and magazine paper |
 | Ink | `--color-ink: #1e1d1a` candidate; muted ink remains distinct and contrast-tested | Current `--text`, magazine ink |
-| Food accent | `--color-accent: #b43d27` for shared navigation and readable links; home still has editorial `#d9472b` | Older shared `--accent: #ff675d` remains during migration |
+| Brand accent | `--color-accent: #be185d` (the wordmark's pink, deepened for text: 5.9:1 on the surface) for shared navigation and readable links, `--color-accent-wash: #fce7f3` behind it; the full wordmark gradient only on large surfaces, never as text (owner decision 2026-10-13, replacing the red-brown `#b43d27`) | Older shared `--accent: #db2777` remains during migration |
 | States | Semantic `info`, `success`, `warning`, `error`, `unknown`; never color-only or inferred from “food” | Existing loading/error/review states |
 | Borders | One subdued separator role plus strong focus/control boundary | Current `--border`, `--border-strong` |
 | Shadows | Small elevation only for overlap/floating controls; ordinary cards use surface and border | Existing `--shadow-*` |
