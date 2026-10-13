@@ -336,6 +336,7 @@
 }
 
 .hc-cell {
+  position: relative;
   height: 48px;
   padding: 0;
   text-align: center;
@@ -441,6 +442,29 @@
 .hc-dot.is-past {
   background: transparent;
   border: 1px solid var(--color-ink-muted);
+}
+
+/* A giveaway-only listing (owner decision 2026-10-14): a small 🎁 on the date's upper right,
+   outside the free-food marker slot, so it never takes a dot's place or shifts the grid. */
+.hc-gift {
+  position: absolute;
+  top: 0;
+  left: min(calc(50% + 8px), calc(100% - 12px));
+  width: 12px;
+  height: 12px;
+  font-size: 10px;
+  line-height: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.hc-gift.is-past {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+.hc-ev-gift {
+  white-space: nowrap;
 }
 
 /* The selected day: its events, each one tap from its details. */
