@@ -49,16 +49,17 @@ def test_the_labels_keep_their_contract():
 def test_the_picker_calls_a_dish_korean_only_when_it_is():
     foods = dishes()
     shown = slot_labels(foods)
-    assert len(shown) == len(foods) == 1001
+    assert len(shown) == len(foods) == 1314
     for food, label in zip(foods, shown):
         if label == "한식":
             assert food["cuisine"] == "korean" or food["cuisineGroup"] == "korean", food["id"]
     groups = {food["cuisineGroup"] for food in foods}
     assert groups <= set(LABELS["cuisines"]["byGroup"])            # no dish falls back to the default
-    # The fix of 2026-10-12, exactly: 121 western dishes stop being 한식, nothing else moves.
+    # The fix of 2026-10-12, exactly: 121 western dishes stop being 한식, nothing else moves. The MFDS dishes of
+    # 2026-10-13 (P5) add 9 more the old map would have sent to 한식 (7 pastas, a potato soup, hotcakes).
     old = [OLD_CUISINE.get(f["cuisine"]) or OLD_CUISINE.get(f["cuisineGroup"]) or "한식" for f in foods]
     moved = [(o, n) for o, n in zip(old, shown) if o != n]
-    assert len(moved) == 121 and set(moved) == {("한식", "양식")}
+    assert len(moved) == 121 + 9 and set(moved) == {("한식", "양식")}
 
 
 def test_the_pipeline_reads_the_same_labels():
