@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "size": 32,
   "basis": {
-    "ko": "학식 단골부터 세계 음식까지 600개가 넘는 메뉴 중 매 판 32개를 무작위로 뽑아요. 메뉴 정보는 밥도둑 음식 사전에서 가져와요.",
-    "en": "Each game draws 32 of more than 600 dishes, from cafeteria regulars to food from around the world. Dish details come from the Babdoduk food catalog."
+    "ko": "학식 단골부터 세계 음식까지 700개가 넘는 메뉴 중 매 판 32개를 무작위로 뽑아요. 메뉴 정보는 밥도둑 음식 사전에서 가져와요.",
+    "en": "Each game draws 32 of more than 700 dishes, from cafeteria regulars to food from around the world. Dish details come from the Babdoduk food catalog."
   },
   "dishes": [
     "kr-bulgogi",
@@ -651,7 +651,107 @@
     "kr-juk-beef",
     "kr-anju-cheese-ball",
     "kr-last-memil-jeon",
-    "it-pasta-bolognese"
+    "it-pasta-bolognese",
+    "kr-fried-seaweed-glass-noodle-rolls",
+    "kr-grilled-beef-brisket",
+    "kr-marinated-pork-ribs",
+    "kr-shrimp-tempura",
+    "kr-squid-and-pork-belly-bulgogi",
+    "kr-steamed-eggs-gyeranjjim",
+    "cn-chili-sauce-shrimp-gganso",
+    "cn-shrimp-toast-menbosha",
+    "ds-glutinous-rice-doughnut",
+    "ds-honey-filled-rice-cakes-kkultteok",
+    "ds-injeolmi-rice-cake",
+    "ds-korean-croquette-goroke",
+    "ds-red-bean-and-butter-bread",
+    "ds-songpyeon-rice-cakes",
+    "ds-sweet-red-bean-mochi-chapssaltteok",
+    "ds-sweet-rice-punch-sikhye",
+    "it-spaghetti-and-meatballs",
+    "it-tomato-spaghetti",
+    "kr-acorn-jelly-salad",
+    "kr-bean-sprout-soup",
+    "kr-beef-rice-cake-soup",
+    "kr-braised-pork-ribs",
+    "kr-clam-soup",
+    "kr-cold-raw-fish-soup-mulhoe",
+    "kr-fried-egg",
+    "kr-garlic-chive-pancake",
+    "kr-grilled-duck",
+    "kr-grilled-shellfish",
+    "kr-korean-meat-patties-donggeurangttaeng",
+    "kr-mussel-soup",
+    "kr-pan-fried-spam",
+    "kr-red-bean-porridge-with-rice-balls",
+    "kr-soy-braised-beef-jangjorim",
+    "kr-spicy-octopus-and-pork-belly",
+    "kr-steamed-corn",
+    "kr-steamed-sweet-potato",
+    "sn-candied-sweet-potatoes",
+    "cn-beef-hotpot-huoguo",
+    "cn-chinese-mustard-platter-yangjangpi",
+    "cn-chive-japchae",
+    "cn-jellyfish-salad",
+    "ds-grilled-rice-cake-bars-garaetteok",
+    "ds-milkshake",
+    "ds-mugwort-rice-cake",
+    "ds-rainbow-rice-cake",
+    "ds-red-bean-layered-rice-cake-sirutteok",
+    "ds-ring-doughnut",
+    "ds-roasted-grain-drink-misutgaru",
+    "ds-steamed-white-rice-cake-baekseolgi",
+    "ds-sweet-rice-with-dates-and-chestnuts-yaksik",
+    "ds-watermelon-punch-hwachae",
+    "fx-potato-gratin",
+    "it-baked-spaghetti",
+    "it-spaghetti-napolitan",
+    "kr-acorn-jelly-rice-soup",
+    "kr-boiled-beef-slices",
+    "kr-braised-tofu",
+    "kr-chodang-white-soft-tofu",
+    "kr-clam-sujebi",
+    "kr-cold-acorn-jelly-soup",
+    "kr-fried-meatballs-in-sauce-nanjawanseu",
+    "kr-grilled-chicken-drumsticks",
+    "kr-grilled-chicken-wings",
+    "kr-grilled-corn-on-the-cob",
+    "kr-grilled-saury",
+    "kr-kimchi-soup",
+    "kr-mild-octopus-soup",
+    "kr-oyster-jjamppong",
+    "kr-oyster-porridge",
+    "kr-oyster-rice",
+    "kr-potato-sujebi",
+    "kr-soy-braised-chicken",
+    "kr-steamed-cockles",
+    "kr-steamed-potatoes",
+    "kr-stuffed-chili-pancakes",
+    "kr-sweet-and-sour-eggplant",
+    "kr-sweet-and-sour-shrimp",
+    "kr-white-jjamppong",
+    "us-pork-chop-in-sauce",
+    "us-potato-soup",
+    "world-beef-stew",
+    "ds-fermented-rice-cake-jeungpyeon",
+    "ds-glutinous-rice-balls-gyeongdan",
+    "ds-patterned-rice-cake-jeolpyeon",
+    "ds-puffed-rice-crackers-yugwa",
+    "ds-sorghum-pancakes-with-red-bean",
+    "kr-beef-and-vegetable-skewers-sanjeok",
+    "kr-buckwheat-pancake",
+    "kr-crab-kimchi-stew-gegukji",
+    "kr-grilled-deodeok-root",
+    "kr-grilled-herring",
+    "kr-grilled-horse-mackerel",
+    "kr-grilled-pomfret",
+    "kr-napa-cabbage-pancake",
+    "kr-sesame-porridge",
+    "kr-shepherd-s-purse-doenjang-soup",
+    "kr-spicy-shrimp-soup",
+    "kr-steamed-fermented-skate",
+    "kr-steamed-squid",
+    "kr-sweet-and-sour-fish"
   ],
   "photos": {
     "kr-bulgogi": {
@@ -5152,6 +5252,702 @@
       "license": "CC BY-SA 4.0",
       "source": "https://commons.wikimedia.org/wiki/File:Food_in_Lichen_Stary_(spaghetti_bolognese).jpg",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-fried-seaweed-glass-noodle-rolls": {
+      "image": "images/worldcup/kr-fried-seaweed-glass-noodle-rolls.jpg",
+      "author": "Valenzuela400",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Gimmari_%EA%B9%80%EB%A7%90%EC%9D%B4C1.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-grilled-beef-brisket": {
+      "image": "images/worldcup/kr-grilled-beef-brisket.jpg",
+      "author": "Takeaway",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Suea_rong_hai.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-marinated-pork-ribs": {
+      "image": "images/worldcup/kr-marinated-pork-ribs.jpg",
+      "author": "델제수",
+      "license": "CC BY 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Yangnyeom-dwaeji-galbi.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/kr/deed.en"
+    },
+    "kr-shrimp-tempura": {
+      "image": "images/worldcup/kr-shrimp-tempura.jpg",
+      "author": "毒島みるく",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Shrimp_tempura_bowl_of_Japanese_National_Diet_Library.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "kr-squid-and-pork-belly-bulgogi": {
+      "image": "images/worldcup/kr-squid-and-pork-belly-bulgogi.jpg",
+      "author": "aka_maya at Flickr",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Osam_bulgogi-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-steamed-eggs-gyeranjjim": {
+      "image": "images/worldcup/kr-steamed-eggs-gyeranjjim.jpg",
+      "author": "stuart_spivack (a flickr user)",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean.Banchan-Gyeran.jjim-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "cn-chili-sauce-shrimp-gganso": {
+      "image": "images/worldcup/cn-chili-sauce-shrimp-gganso.jpg",
+      "author": "최광모",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Kkansyo-saeu_DSC00978.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "cn-shrimp-toast-menbosha": {
+      "image": "images/worldcup/cn-shrimp-toast-menbosha.jpg",
+      "author": "Hhaithait (talk)",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Shippoku_hadosi.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "ds-glutinous-rice-doughnut": {
+      "image": "images/worldcup/ds-glutinous-rice-doughnut.jpg",
+      "author": "Gidiyorum",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Chapssal-doneot.png",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "ds-honey-filled-rice-cakes-kkultteok": {
+      "image": "images/worldcup/ds-honey-filled-rice-cakes-kkultteok.jpg",
+      "author": "AndrewEick",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean.dessert-Tteok-Songpyeon-Kkultteok.01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "ds-injeolmi-rice-cake": {
+      "image": "images/worldcup/ds-injeolmi-rice-cake.jpg",
+      "author": "World to Table at Flickr",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_rice_cake_with_soybean_powder-Injeolmi-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "ds-korean-croquette-goroke": {
+      "image": "images/worldcup/ds-korean-croquette-goroke.jpg",
+      "author": "Pieria(Uploader and Photographer)",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Korokke.jpg"
+    },
+    "ds-red-bean-and-butter-bread": {
+      "image": "images/worldcup/ds-red-bean-and-butter-bread.jpg",
+      "author": "Kykk wiki",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:An-bata_Manhattan.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "ds-songpyeon-rice-cakes": {
+      "image": "images/worldcup/ds-songpyeon-rice-cakes.jpg",
+      "author": "Korea.net / Korean Culture and Information Service",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:KOCIS_songpyeon_(4994899617).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "ds-sweet-red-bean-mochi-chapssaltteok": {
+      "image": "images/worldcup/ds-sweet-red-bean-mochi-chapssaltteok.jpg",
+      "author": "Debbie Tingzon",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:%EC%B0%B9%EC%8C%80%EB%96%A1_-_Chapssaltteok.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "ds-sweet-rice-punch-sikhye": {
+      "image": "images/worldcup/ds-sweet-rice-punch-sikhye.jpg",
+      "author": "gliuoo",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_rice_punch-Sikhye-01A.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "it-spaghetti-and-meatballs": {
+      "image": "images/worldcup/it-spaghetti-and-meatballs.jpg",
+      "author": "jeffreyw",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Spaghetti_and_meatballs_1.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "it-tomato-spaghetti": {
+      "image": "images/worldcup/it-tomato-spaghetti.jpg",
+      "author": "Alessio Sbarbaro User_talk:Yoggysot",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Pasta_al_Pomodoro_01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-acorn-jelly-salad": {
+      "image": "images/worldcup/kr-acorn-jelly-salad.jpg",
+      "author": "Deborah Hong",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_acorn_jelly-Dotorimuk-04.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-bean-sprout-soup": {
+      "image": "images/worldcup/kr-bean-sprout-soup.jpg",
+      "author": "HapaK at Flickr",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_bean_sprout_soup-Kongnamulguk-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-beef-rice-cake-soup": {
+      "image": "images/worldcup/kr-beef-rice-cake-soup.jpg",
+      "author": "해능",
+      "license": "CC BY-SA 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Tteokguk_1.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en"
+    },
+    "kr-braised-pork-ribs": {
+      "image": "images/worldcup/kr-braised-pork-ribs.jpg",
+      "author": "Alpha",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Braised_Pork_Spare_Ribs_with_Preserved_Mustard_Greens.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-clam-soup": {
+      "image": "images/worldcup/kr-clam-soup.jpg",
+      "author": "Jdcgumpal",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Clam_soup.JPG",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-cold-raw-fish-soup-mulhoe": {
+      "image": "images/worldcup/kr-cold-raw-fish-soup-mulhoe.jpg",
+      "author": "Tong-Seob Kim at Flickr from Incheon, South Korea",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Jeju-Jari_mulhoe-Sliced_raw_damselfish_with_spicy_sauce-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-fried-egg": {
+      "image": "images/worldcup/kr-fried-egg.jpg",
+      "author": "Balise42",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Two_fried_eggs.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-garlic-chive-pancake": {
+      "image": "images/worldcup/kr-garlic-chive-pancake.jpg",
+      "author": "경빈마마",
+      "license": "CC BY 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Haemul-buchu-buchimgae_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/kr/deed.en"
+    },
+    "kr-grilled-duck": {
+      "image": "images/worldcup/kr-grilled-duck.jpg",
+      "author": "Mack Male from Edmonton, AB, Canada",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Duck_(3375040232).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-grilled-shellfish": {
+      "image": "images/worldcup/kr-grilled-shellfish.jpg",
+      "author": "Timber Tank",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Seokhwa_gui-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-korean-meat-patties-donggeurangttaeng": {
+      "image": "images/worldcup/kr-korean-meat-patties-donggeurangttaeng.jpg",
+      "author": "Chloe Lim",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Donggeurang-ttaeng.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-mussel-soup": {
+      "image": "images/worldcup/kr-mussel-soup.jpg",
+      "author": "Bryantdmo",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Mussel_soup.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-pan-fried-spam": {
+      "image": "images/worldcup/kr-pan-fried-spam.jpg",
+      "author": "Lhe3460",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Spam_in_a_Frying_Pan.JPG",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-red-bean-porridge-with-rice-balls": {
+      "image": "images/worldcup/kr-red-bean-porridge-with-rice-balls.jpg",
+      "author": "국립국어원",
+      "license": "CC BY-SA 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Danpatjuk.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en"
+    },
+    "kr-soy-braised-beef-jangjorim": {
+      "image": "images/worldcup/kr-soy-braised-beef-jangjorim.jpg",
+      "author": "Hyeon-Jeong Suk",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Jangjorim.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-spicy-octopus-and-pork-belly": {
+      "image": "images/worldcup/kr-spicy-octopus-and-pork-belly.jpg",
+      "author": "travel oriented",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Jukkumi-samgyeopsal.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-steamed-corn": {
+      "image": "images/worldcup/kr-steamed-corn.jpg",
+      "author": "Gaurav Dhwaj Khadka",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Steamed_Corn.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-steamed-sweet-potato": {
+      "image": "images/worldcup/kr-steamed-sweet-potato.jpg",
+      "author": "경빈마마",
+      "license": "CC BY 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Steaming_bam-goguma.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    },
+    "sn-candied-sweet-potatoes": {
+      "image": "images/worldcup/sn-candied-sweet-potatoes.jpg",
+      "author": "竹麦魚(Searobin)",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Daigaku-Imo.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+    },
+    "cn-beef-hotpot-huoguo": {
+      "image": "images/worldcup/cn-beef-hotpot-huoguo.jpg",
+      "author": "LriaS MAOVK wouexj",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:HK_%E4%B8%8A%E7%92%B0_Sheung_Wan_%E6%91%A9%E5%88%A9%E8%87%A3%E8%A1%97_Morrison_Street_%E6%B0%B8%E6%A8%82%E8%A1%97_Wing_Lok_Street_Maxim%27s_%E7%BE%8E%E5%BF%83%E5%BF%AB%E9%A4%90%E5%BB%B3_MX_fast_food_restaurant_food_dinner_hotpot_beef_soup_October_2019_SS2_01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "cn-chinese-mustard-platter-yangjangpi": {
+      "image": "images/worldcup/cn-chinese-mustard-platter-yangjangpi.jpg",
+      "author": "춘천막국수",
+      "license": "CC BY 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Yangjangpi.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    },
+    "cn-chive-japchae": {
+      "image": "images/worldcup/cn-chive-japchae.jpg",
+      "author": "chomjong",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Buchu-japchae.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "cn-jellyfish-salad": {
+      "image": "images/worldcup/cn-jellyfish-salad.jpg",
+      "author": "Bình Giang",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Nom_sua.JPG"
+    },
+    "ds-grilled-rice-cake-bars-garaetteok": {
+      "image": "images/worldcup/ds-grilled-rice-cake-bars-garaetteok.jpg",
+      "author": "최광모",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:20150313%EA%B0%80%EB%9E%98%EB%96%A1_%EA%B3%84%EC%A0%88%EB%B0%A5%EC%83%81_%EC%9D%B8%EC%82%AC%EB%8F%99%EC%A0%9038.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "ds-milkshake": {
+      "image": "images/worldcup/ds-milkshake.jpg",
+      "author": "Samat Jain from New York City, USA",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Chili-mango_milkshake_-_Sparkys_-_Hatch_New_Mexico.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "ds-mugwort-rice-cake": {
+      "image": "images/worldcup/ds-mugwort-rice-cake.jpg",
+      "author": "wizdata",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Jeolpyeon_5.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "ds-rainbow-rice-cake": {
+      "image": "images/worldcup/ds-rainbow-rice-cake.jpg",
+      "author": "lesterhead, Caspian blue",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_rice_cake-Mujigae_tteok-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "ds-red-bean-layered-rice-cake-sirutteok": {
+      "image": "images/worldcup/ds-red-bean-layered-rice-cake-sirutteok.jpg",
+      "author": "Hyeon-Jeong Suk",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Sirutteok.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "ds-ring-doughnut": {
+      "image": "images/worldcup/ds-ring-doughnut.jpg",
+      "author": "Gaurav Dhwaj Khadka",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Doughnut_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "ds-roasted-grain-drink-misutgaru": {
+      "image": "images/worldcup/ds-roasted-grain-drink-misutgaru.jpg",
+      "author": "국립국어원",
+      "license": "CC BY-SA 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Misu.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en"
+    },
+    "ds-steamed-white-rice-cake-baekseolgi": {
+      "image": "images/worldcup/ds-steamed-white-rice-cake-baekseolgi.jpg",
+      "author": "wizdata",
+      "license": "CC0",
+      "source": "https://commons.wikimedia.org/wiki/File:Baek-seolgi.jpg",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    },
+    "ds-sweet-rice-with-dates-and-chestnuts-yaksik": {
+      "image": "images/worldcup/ds-sweet-rice-with-dates-and-chestnuts-yaksik.jpg",
+      "author": "Korea.net / Korean Culture and Information Service",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:KOCIS_yaksik,_sweet_rice_with_nuts_and_jujubes_(4646381547).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "ds-watermelon-punch-hwachae": {
+      "image": "images/worldcup/ds-watermelon-punch-hwachae.jpg",
+      "author": "Donghwan Seong",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Subak_hwachae,_made_with_watermelon.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "fx-potato-gratin": {
+      "image": "images/worldcup/fx-potato-gratin.jpg",
+      "author": "Dreamyshade",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Potato_gratin_on_stove.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "it-baked-spaghetti": {
+      "image": "images/worldcup/it-baked-spaghetti.jpg",
+      "author": "Geoffreyrabbit",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Baked_meat_sauce_pasta.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "it-spaghetti-napolitan": {
+      "image": "images/worldcup/it-spaghetti-napolitan.jpg",
+      "author": "amadeusrecord",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Naporitan_by_amadeusrecord.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-acorn-jelly-rice-soup": {
+      "image": "images/worldcup/kr-acorn-jelly-rice-soup.jpg",
+      "author": "Ryan Bodenstein",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:%EB%8F%84%ED%86%A0%EB%A6%AC_%EB%AC%B5%EB%B0%A5_flick.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-boiled-beef-slices": {
+      "image": "images/worldcup/kr-boiled-beef-slices.jpg",
+      "author": "chomjong",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Suyuk_and_seonji.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-braised-tofu": {
+      "image": "images/worldcup/kr-braised-tofu.jpg",
+      "author": "angela n. at Flickr",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Dubu_jorim-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-chodang-white-soft-tofu": {
+      "image": "images/worldcup/kr-chodang-white-soft-tofu.jpg",
+      "author": "Republic of Korea from Seoul, Republic of Korea",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Chodang_Sundubu_04_(33422779322).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-clam-sujebi": {
+      "image": "images/worldcup/kr-clam-sujebi.jpg",
+      "author": "굿바이 조미료",
+      "license": "CC BY 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Jaecheop-sujebi_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/kr/deed.en"
+    },
+    "kr-cold-acorn-jelly-soup": {
+      "image": "images/worldcup/kr-cold-acorn-jelly-soup.jpg",
+      "author": "Joe Mabel",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_acorn_jellies.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+    },
+    "kr-fried-meatballs-in-sauce-nanjawanseu": {
+      "image": "images/worldcup/kr-fried-meatballs-in-sauce-nanjawanseu.jpg",
+      "author": "쿠쿠양",
+      "license": "CC BY 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Nanja-wanseu.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    },
+    "kr-grilled-chicken-drumsticks": {
+      "image": "images/worldcup/kr-grilled-chicken-drumsticks.jpg",
+      "author": "Diana from Pennsylvania USA",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Barbecued_chicken_drumsticks-02.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-grilled-chicken-wings": {
+      "image": "images/worldcup/kr-grilled-chicken-wings.jpg",
+      "author": "Amin",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Skewer_with_marinated_chicken_wings_bbq_barbeque.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-grilled-corn-on-the-cob": {
+      "image": "images/worldcup/kr-grilled-corn-on-the-cob.jpg",
+      "author": "TAPAS KUMAR HALDER",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Indian_Roasted_Corn_on_the_Cob-_Kolkata_-_West_Bengal_-_DSC_0007.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-grilled-saury": {
+      "image": "images/worldcup/kr-grilled-saury.jpg",
+      "author": "se7en",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Fish_on_dish_(14967972879).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-kimchi-soup": {
+      "image": "images/worldcup/kr-kimchi-soup.jpg",
+      "author": "MARCUS NUNES",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Kimchi_soup_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-mild-octopus-soup": {
+      "image": "images/worldcup/kr-mild-octopus-soup.jpg",
+      "author": "L. W. Yang",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_soup-Galbi-nakji-yeonpo-tang.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-oyster-jjamppong": {
+      "image": "images/worldcup/kr-oyster-jjamppong.jpg",
+      "author": "Linusblanket17",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Gul-jjamppong.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-oyster-porridge": {
+      "image": "images/worldcup/kr-oyster-porridge.jpg",
+      "author": "Peachyeung316",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Oyster_Rice_Soup_from_Tsui_King_Lau_Wan_Chai.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-oyster-rice": {
+      "image": "images/worldcup/kr-oyster-rice.jpg",
+      "author": "pelican from Tokyo, Japan",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Oyster_rice_(5441715942).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-potato-sujebi": {
+      "image": "images/worldcup/kr-potato-sujebi.jpg",
+      "author": "Junho Jung at Flickr from South Korea",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korea-Sokcho-Gamja_ongsimi-Potato_dumpling_soup-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-soy-braised-chicken": {
+      "image": "images/worldcup/kr-soy-braised-chicken.jpg",
+      "author": "USDAgov",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:MyPlate_gov_Cultural_Food_(20241025-USDA-FNS-UNK-0010).jpg"
+    },
+    "kr-steamed-cockles": {
+      "image": "images/worldcup/kr-steamed-cockles.jpg",
+      "author": "Sadopaul",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Kkomak_Jjim.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-steamed-potatoes": {
+      "image": "images/worldcup/kr-steamed-potatoes.jpg",
+      "author": "ProjectManhattan",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Steamed_potatoe.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-stuffed-chili-pancakes": {
+      "image": "images/worldcup/kr-stuffed-chili-pancakes.jpg",
+      "author": "南宮博士",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_pancake-Gochujeon-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-sweet-and-sour-eggplant": {
+      "image": "images/worldcup/kr-sweet-and-sour-eggplant.jpg",
+      "author": "Ewan Munro from London, UK",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Sichuan_Restaurant,_Acton,_London_(4466383851).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-sweet-and-sour-shrimp": {
+      "image": "images/worldcup/kr-sweet-and-sour-shrimp.jpg",
+      "author": "Jon Sullivan",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File:Sweet_sour_shrimp_pea_pods_asparagus_food_dinner.jpg"
+    },
+    "kr-white-jjamppong": {
+      "image": "images/worldcup/kr-white-jjamppong.jpg",
+      "author": "Galaxea",
+      "license": "CC BY 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Ulmyeon.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    },
+    "us-pork-chop-in-sauce": {
+      "image": "images/worldcup/us-pork-chop-in-sauce.jpg",
+      "author": "Kham Tran - www.khamtran.com",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Pork-Chop-Dinner-2009.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "us-potato-soup": {
+      "image": "images/worldcup/us-potato-soup.jpg",
+      "author": "Cajsa Lilliehook from Portland",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Pumpkin_Potato_Soup_(8399852127).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "world-beef-stew": {
+      "image": "images/worldcup/world-beef-stew.jpg",
+      "author": "Andrea Nguyen",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Claypot_beef_stew_with_potatoes_and_mushrooms.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "ds-fermented-rice-cake-jeungpyeon": {
+      "image": "images/worldcup/ds-fermented-rice-cake-jeungpyeon.jpg",
+      "author": "Joseph Steinberg (Baltimoron in Korea) at Flickr",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_rice_cake-Jeungpyeon-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "ds-glutinous-rice-balls-gyeongdan": {
+      "image": "images/worldcup/ds-glutinous-rice-balls-gyeongdan.jpg",
+      "author": "Hyeon-Jeong Suk",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Gyeongdan.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "ds-patterned-rice-cake-jeolpyeon": {
+      "image": "images/worldcup/ds-patterned-rice-cake-jeolpyeon.jpg",
+      "author": "국립국어원",
+      "license": "CC BY-SA 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Jeolpyeon_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/kr/deed.en"
+    },
+    "ds-puffed-rice-crackers-yugwa": {
+      "image": "images/worldcup/ds-puffed-rice-crackers-yugwa.jpg",
+      "author": "abex",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean.desserts-Yugwa-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "ds-sorghum-pancakes-with-red-bean": {
+      "image": "images/worldcup/ds-sorghum-pancakes-with-red-bean.jpg",
+      "author": "박 엘리사벳",
+      "license": "CC BY 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Susu-bukkumi.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/kr/deed.en"
+    },
+    "kr-beef-and-vegetable-skewers-sanjeok": {
+      "image": "images/worldcup/kr-beef-and-vegetable-skewers-sanjeok.jpg",
+      "author": "한산도수산",
+      "license": "CC BY 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Ttangdureup_(Aralia_cordata)_2.png",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/kr/deed.en"
+    },
+    "kr-buckwheat-pancake": {
+      "image": "images/worldcup/kr-buckwheat-pancake.jpg",
+      "author": "cube300 at Flickr",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_buckwheat_pancake-Memiljeon-02.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-crab-kimchi-stew-gegukji": {
+      "image": "images/worldcup/kr-crab-kimchi-stew-gegukji.jpg",
+      "author": "Seosan City Government",
+      "license": "CC BY-SA 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:%EC%84%9C%EC%82%B0_9%EB%AF%B8_%EA%B2%8C%EA%B5%AD%EC%A7%80.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    "kr-grilled-deodeok-root": {
+      "image": "images/worldcup/kr-grilled-deodeok-root.jpg",
+      "author": "ayustety",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean.food-Deodeok.gui-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-grilled-herring": {
+      "image": "images/worldcup/kr-grilled-herring.jpg",
+      "author": "jetalone",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Grilled_kibinago_by_jetalone_in_Yakushima.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-grilled-horse-mackerel": {
+      "image": "images/worldcup/kr-grilled-horse-mackerel.jpg",
+      "author": "Bosc d'Anjou from New York, NY, USA",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Grilled_horse-mackerel_(5171123164).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-grilled-pomfret": {
+      "image": "images/worldcup/kr-grilled-pomfret.jpg",
+      "author": "Hyeon-Jeong Suk",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Byeongeo-gui.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+    },
+    "kr-napa-cabbage-pancake": {
+      "image": "images/worldcup/kr-napa-cabbage-pancake.jpg",
+      "author": "맛짱",
+      "license": "CC BY 2.0 kr",
+      "source": "https://commons.wikimedia.org/wiki/File:Baechu-jeon_2.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/kr/deed.en"
+    },
+    "kr-sesame-porridge": {
+      "image": "images/worldcup/kr-sesame-porridge.jpg",
+      "author": "Satomi Abe",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Korean_cuisine-Juk-01.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-shepherd-s-purse-doenjang-soup": {
+      "image": "images/worldcup/kr-shepherd-s-purse-doenjang-soup.jpg",
+      "author": "경빈마마",
+      "license": "CC BY 4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Naengi-doenjang-guk.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    },
+    "kr-spicy-shrimp-soup": {
+      "image": "images/worldcup/kr-spicy-shrimp-soup.jpg",
+      "author": "Takeaway",
+      "license": "CC BY-SA 3.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Kaeng_som_kung.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+    },
+    "kr-steamed-fermented-skate": {
+      "image": "images/worldcup/kr-steamed-fermented-skate.jpg",
+      "author": "Republic of Korea from Seoul, Republic of Korea",
+      "license": "CC BY-SA 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Naju_City_44_(17097269978).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    "kr-steamed-squid": {
+      "image": "images/worldcup/kr-steamed-squid.jpg",
+      "author": "안경12",
+      "license": "CC BY 2.5",
+      "source": "https://commons.wikimedia.org/wiki/File:Ojingeo_sundae_(stuffed_squid).jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.5"
+    },
+    "kr-sweet-and-sour-fish": {
+      "image": "images/worldcup/kr-sweet-and-sour-fish.jpg",
+      "author": "Yun Huang Yong from Harbord, Australia",
+      "license": "CC BY 2.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Deep_fried_fish_in_a_sweet_%26_sour_sauce.jpg",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
     }
   }
 }
