@@ -7,7 +7,7 @@ Babdoduk Ops Chrome   (one window, keep it minimized; the workers never bring it
   [ KAIST Portal ] [ Dooray 받은메일함 ]
   profile .local\ops-browser-profile   CDP 127.0.0.1:9224 (loopback only)
         |-- Babdoduk-Portal-Worker   (LIST-only polling, its own task and failure domain)
-        `-- Babdoduk-Dooray-Radar    (list-level, unread-safe, its own task and failure domain)
+        `-- Babdoduk-Dooray-Radar    (reads new mail, restores unread, its own task and failure domain)
 ```
 
 The two workers stay separate processes and Task Scheduler tasks: a Portal failure never stops

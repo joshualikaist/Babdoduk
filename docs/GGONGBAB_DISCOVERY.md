@@ -157,11 +157,14 @@ The trigger in `GGONGBAB_TRIGGER.md` is what closes that gap. None of these time
 
 ## Unread mail
 
-In the scheduled mode (`--read-state read`) an unread row is skipped before it is even classified.
-Body access requires a verified read-state field and an already-read row (`web/calibrate.py`).
-The radar may analyse list-level information only (subject, preview, received time, read flag,
-id) of unread mail. Even that is allowed only after it has been shown, with a fresh unread test
-mail, that listing never changes the read state. Unread bodies are never opened automatically.
+**Since 2026-10-14 the Radar opens unread mail too** (owner decision after two missed events, see
+"Whole-mail reading" below). The legacy agent's scheduled mode (`--read-state read`) still skips an
+unread row before it is even classified, and its body access still requires a verified read-state
+field and an already-read row (`web/calibrate.py`).
+
+Until 2026-10-14 the radar analysed list-level information only (subject, preview, received time,
+read flag, id) of unread mail, after it had been shown with a fresh unread test mail that listing
+never changes the read state:
 
 **Verified 2026-09-28 16:25–16:27** with the owner's fresh unread test mail (not opened anywhere):
 * inbox load and reload in the dedicated window;
@@ -175,7 +178,6 @@ Throughout:
   settings, the mail list, mail counts);
 * no unread mail became read.
 
-List-level radar analysis of unread mail is therefore allowed; bodies stay closed.
 What reaches Luna is the sanitized minimum.
 
 ## Dooray Radar (Phase 2)
@@ -187,13 +189,16 @@ with `radar_tasks.ps1 -Action Start|Stop|Status|Remove`).
 **What it does.**
 * Every 180 s (bounded to 120–300 s), it attaches to the already-open dedicated Dooray browser.
   It never starts, reloads or closes Chrome and never asks for SSO.
-* It reads the inbox through the calibrated LIST endpoint. From each row it uses only the id,
-  subject, preview, received time and read flag.
+* It reads the inbox through the calibrated LIST endpoint (id, subject, preview, received time,
+  read flag), then opens each mail it has not handled yet (see "Whole-mail reading" below). A mail
+  whose subject is plainly transactional (receipts, password resets) is never opened.
 * The window is the last successful scan minus 30 minutes. On first start it is the last 24 hours.
 * The processed-mail ledger `ggongbab-mail-state.json` is shared with the earlier mail bridge, so
   a mail already handled is never registered again.
-* It runs the prefilter on subject + preview. A candidate becomes a preview-only collection task
-  carrying `discovered_at`; any other row is recorded as filtered.
+* It runs the prefilter on the subject, the whole body and the attachments' text, with the count of
+  poster images. A candidate becomes a collection task carrying that text, `discovered_at` and its
+  poster images as task files; any other mail is recorded as filtered. The ledger keeps the
+  prefilter's rule phrase for every mail (`ggongbab_workers.py mail-lookup --subject "..."`).
 * After a cycle that registered something, it may call the dispatcher in `GGONGBAB_TRIGGER.md`.
   This is a separate operator switch, off by default (`ggongbab_workers.py radar-dispatch-on` /
   `radar-dispatch-off`); while it is off, the cycle records `DISPATCH_OFF`. With the switch on but
@@ -202,23 +207,57 @@ with `radar_tasks.ps1 -Action Start|Stop|Status|Remove`).
   only a digest and a time. It stays there until a dispatch picks it up.
 
 **What it never does.**
-* It never opens a mail detail or body, not even of a read mail.
-* It never changes read state.
-* It never writes to the mailbox.
-* It never uploads subjects or previews anywhere except the private collection task.
+* It never leaves an opened unread mail read: it marks it unread again, or stops opening unread mail.
+* It never writes anything else to the mailbox (no move, delete, flag or reply).
+* It never fetches an image hosted outside Dooray (often a read-tracking pixel).
+* It never uploads subjects, bodies, attachment text or images anywhere except the private
+  collection task, and never prints or logs them.
 
 **Fail closed.**
 | Event | Result |
 |---|---|
 | A row has no read flag, or the LIST response no longer matches the contract | the Radar stops (exit 20); unread analysis is disabled |
-| The dedicated browser sends a mail-detail GET or any non-GET request to the mail host during a scan | nothing from that scan is registered; unread analysis is disabled (`radar-unread-disabled.json`) |
+| The dedicated browser itself sends a mail-detail GET or any non-GET request to the mail host during a scan | nothing from that scan is registered; unread analysis is disabled (`radar-unread-disabled.json`) |
+| An opened unread mail cannot be marked unread again (`DOORAY_UNREAD_RESTORE_FAILED`) | nothing from that scan is recorded; unread analysis is disabled |
+| A mail's detail cannot be read (deleted or moved since the listing) | it is not recorded and is tried again next scan |
 | Unread analysis disabled | unread rows are skipped, read rows are still scanned; a critical alert is raised until an operator reviews the cause and runs `ggongbab_workers.py radar-allow-unread` |
 | Login expired | the Radar stops (exit 10) and waits for the owner's SSO |
 | Network or 5xx on the LIST call; browser closed | the Radar backs off (up to 15 min) and retries |
 
-The guard watches the dedicated browser's own traffic. The Radar's own LIST call is a single GET
-through the browser's API request context, which that guard does not see. A static test therefore
-pins the Radar code path to listing only: no body, detail, click, navigation or write call.
+The guard watches the dedicated browser's own traffic. The Radar's own calls go through the
+browser's API request context, which that guard does not see. A static test therefore pins the
+Radar code path to GETs plus the one unread-restore POST: no click, navigation, move, delete or
+mark-read call.
+
+### Whole-mail reading (2026-10-14)
+
+Two events were missed: a talk concert whose food wording was only in the body (the prefilter saw
+the subject and a preview), and an expo with a prize draw and no food. The owner decided:
+* open every new mail, unread ones too, and read its body, attachments and posters;
+* list a prize draw or giveaway with a gift mark, kept apart from free-food counts;
+* publish food evidence found only in a poster, recording that source.
+
+`web/mail_detail.py` reads one mail:
+* the detail GET (which marks the mail read; verified on the live tenant);
+* the text of up to 4 attachments, PDF, HWP, HWPX, DOCX, PPTX, XLSX or TXT
+  (`parsers/attachment_text.py`; pypdfium2 and olefile from `requirements-ggongbab.txt`);
+* a PDF or HWP with almost no text is a designed poster, so its first page becomes an image;
+* the same-host inline images and image attachments: for a candidate, up to 3 posters,
+  attachments first, shrunk to 1600 px JPEG and uploaded as files of its task, where the cloud
+  collector already reads task images for the AI.
+
+An unread mail is then marked unread again with the web app's own call,
+`POST /v2/wapi/mails/unread {"mailIdList": [id]}`. The prefilter adds two candidate shapes:
+* an event mail with a poster image (its food or date may be only in the image);
+* giveaway wording (경품, 추첨, 기념품, 증정 ...) with an event or a date.
+
+Measured 2026-10-14, dry run over 7 days of the live inbox:
+* 50 mails opened in 36 s, 34 candidates, 13 attachments read;
+* both missed mails became candidates: the concert on its body's food wording, the expo on its
+  prize draw.
+
+`radar-recheck --days N` (1-14, Radar disabled first) reads again the mail an older prefilter
+dismissed.
 
 Do not read mail in the dedicated Dooray window. Opening a mail there during a scan trips the
 latch on purpose.

@@ -118,10 +118,11 @@ def dooray_once(files, *, run=subprocess.run):
         return result.returncode
 
 
-def radar(files, *, once=False, dry_run=False, interval=None):
-    """The Dooray Radar (list-level, unread-safe). Attaches to the Dooray tab of the already-open
-    dedicated browser (the Ops Chrome, or the legacy Dooray browser in separate mode); never
-    starts, restarts or closes it, never uses another site's tab and never opens a mail body."""
+def radar(files, *, once=False, dry_run=False, interval=None, recheck_days=0):
+    """The Dooray Radar. Attaches to the Dooray tab of the already-open dedicated browser (the Ops
+    Chrome, or the legacy Dooray browser in separate mode); never starts, restarts or closes it and
+    never uses another site's tab. It reads each new mail in full and marks an unread one unread
+    again (owner decision 2026-10-14; ggongbab/web/mail_detail.py)."""
     from contextlib import ExitStack, contextmanager
     from urllib.parse import urlparse
     from ggongbab.config import load_settings
@@ -214,9 +215,23 @@ def radar(files, *, once=False, dry_run=False, interval=None):
                              dispatch=lambda new: request_refresh(rf.dispatch, new_candidates=new),
                              interval=interval or INTERVAL_DEFAULT, dry_run=dry_run,
                              max_cycles=1 if once else None, browser_running=lambda: bool(is_running(slot.port)),
-                             log=log)
+                             log=log, recheck_days=recheck_days)
     finally:
         log.close()
+
+
+def mail_lookup(files, subject):
+    """Why was this mail (not) picked? Matches the ledger by subject hash; prints no mail text."""
+    from ggongbab.dooray_radar import RadarFiles
+    from ggongbab.web.state import AgentState
+    records = AgentState.load(RadarFiles(files.root).mail_state).lookup_subject(subject or "")
+    if not records:
+        print("No ledger entry for that exact subject (not scanned yet, or the subject differs).")
+        return 0
+    for r in records:
+        print(f"received {r.received or '?'} | processed {r.processed_at[:16]} | {r.outcome}"
+              f"{' (task registered)' if r.registered else ''} | rules {r.rules or '?'} | {r.reason or 'no reason recorded'}")
+    return 0
 
 
 def alerts_command(files, emit=True):
@@ -248,10 +263,14 @@ class SafeLogContext:
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Babdoduk Windows resident operations")
     parser.add_argument("action", choices=("watch", "worker", "enable", "stop", "status", "recover", "dooray-once", "check",
-                                           "radar", "radar-once", "radar-enable", "radar-disable", "radar-allow-unread",
-                                           "radar-dispatch-on", "radar-dispatch-off", "alerts", *OPS_BROWSER_ACTIONS))
+                                           "radar", "radar-once", "radar-recheck", "radar-enable", "radar-disable",
+                                           "radar-allow-unread", "radar-dispatch-on", "radar-dispatch-off", "mail-lookup",
+                                           "alerts", *OPS_BROWSER_ACTIONS))
     parser.add_argument("--recover-stale", action="store_true")
-    parser.add_argument("--dry-run", action="store_true", help="radar-once: detect only; no task, state or dispatch")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="radar-once/radar-recheck: detect only; no task, state or dispatch")
+    parser.add_argument("--days", type=int, default=7, help="radar-recheck: days of mail to read again (1-14)")
+    parser.add_argument("--subject", help="mail-lookup: the exact subject to look up")
     parser.add_argument("--interval", type=int, help="radar: seconds between scans (120-300, default 180); "
                                                      "ops-browser-verify: seconds between cycles (default 60)")
     parser.add_argument("--to", choices=("unified", "separate"), help="ops-browser-mode: switch the workers' browser")
@@ -295,6 +314,14 @@ def main(argv=None):
             return dooray_once(files)
         elif args.action in ("radar", "radar-once"):
             return radar(files, once=args.action == "radar-once", dry_run=args.dry_run, interval=args.interval)
+        elif args.action == "radar-recheck":
+            # One pass over the last N days: mail an older prefilter dismissed is read again.
+            # Needs the Radar lock, so run it while the resident Radar is disabled.
+            if not 1 <= args.days <= 14:
+                raise OpsError("OPS_CONFIGURATION_REQUIRED")
+            return radar(files, once=True, dry_run=args.dry_run, recheck_days=args.days)
+        elif args.action == "mail-lookup":
+            return mail_lookup(files, args.subject)
         elif args.action in ("radar-enable", "radar-disable"):
             from ggongbab.dooray_radar import RadarFiles
             RadarFiles(ROOT).set_enabled(args.action == "radar-enable", time.time())
@@ -308,7 +335,7 @@ def main(argv=None):
             latch = RadarFiles(ROOT).unread_latch
             if latch.exists():
                 latch.unlink()
-            print("Unread list-level analysis re-enabled after operator review.")
+            print("Opening unread mail re-enabled after operator review.")
         elif args.action == "alerts":
             return alerts_command(files)
         elif args.action in OPS_BROWSER_ACTIONS:
