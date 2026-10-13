@@ -132,7 +132,7 @@
     // A game in progress makes resuming the main action; starting over stays one tap away.
     $('wcResume').classList.toggle('wc-btn--main', resumable);
     $('wcStart').classList.toggle('wc-btn--main', !resumable);
-    if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어서 하기 · {round} {n}/{total}'), progress());
+    if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어하기 · {round} {n}/{total}'), progress());
   }
   function renderMatch(focus) {
     var p = progress(), ids = pair(), done = picksMade(), all = size - 1;
@@ -195,6 +195,91 @@
     });
     $('wcHistory').hidden = !winners.length || view === 'loading' || view === 'match';
   }
+  // ---- everyone's picks (lab, stage 2) ----------------------------------------------------------
+  var stats = {}, totalGames = 0, statsApi = null, lastPick = null;
+  function statsConfig() {
+    var c = window.BABDODUK_PUBLIC_FEED_CONFIG;
+    try {
+      var url = new URL(c.SUPABASE_URL), key = c.SUPABASE_PUBLISHABLE_KEY;
+      if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash || url.username) return null;
+      if (!/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) return null;
+      return { base: url.origin + '/rest/v1/', key: key };
+    } catch (e) { return null; }
+  }
+  function api(path, body) {
+    var headers = { apikey: statsApi.key, Authorization: 'Bearer ' + statsApi.key, Accept: 'application/json' };
+    if (body) headers['Content-Type'] = 'application/json';
+    return fetch(statsApi.base + path, { method: body ? 'POST' : 'GET', headers: headers,
+                                         body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('unavailable');
+        return r.status === 204 ? null : r.json();
+      });
+  }
+  function loadStats() {
+    if (!statsApi) return Promise.resolve();
+    return Promise.all([api('worldcup_dish_stats?select=dish_id,matches,wins,entries,titles'),
+                        api('worldcup_totals?select=games')]).then(function (got) {
+      stats = {};
+      (got[0] || []).forEach(function (row) { if (dishes[row.dish_id]) stats[row.dish_id] = row; });
+      totalGames = (got[1] && got[1][0] && got[1][0].games) || 0;
+      render();
+    }).catch(function () { stats = {}; totalGames = 0; renderRanking(); });
+  }
+  // A finished game, once: the whole bracket in play order. The server checks it against the pool.
+  function record(log) {
+    if (!statsApi || !log || log.length !== size - 1) return;
+    api('rpc/worldcup_record_game', { p_size: size, p_matches: log }).then(loadStats, function () {});
+  }
+  function winRate(id) {
+    var s = stats[id];
+    return s && s.matches >= 3 ? Math.round(s.wins / s.matches * 100) : null;
+  }
+  function ranked() {
+    return Object.keys(stats).filter(function (id) { return stats[id].entries >= 3; }).sort(function (a, b) {
+      var x = stats[a], y = stats[b];
+      return y.titles / y.entries - x.titles / x.entries || y.wins / Math.max(y.matches, 1) - x.wins / Math.max(x.matches, 1);
+    });
+  }
+  function renderLastPick() {
+    // Both win rates or an empty line: a 'not enough games yet' sentence would only be noise. With
+    // stats on, the line keeps its height either way, so the cards never jump between matches.
+    var line = $('wcLastPick');
+    var a = lastPick && statsApi ? winRate(lastPick.w) : null;
+    var b = lastPick && statsApi ? winRate(lastPick.l) : null;
+    line.hidden = !statsApi;
+    line.textContent = a === null || b === null ? ''
+      : fill(t('wc.last', '모두의 승률 {a} {pa}% · {b} {pb}%'), { a: name(lastPick.w), pa: a, b: name(lastPick.l), pb: b });
+  }
+  function renderRanking() {
+    var box = $('wcRanking'), list = $('wcRankingList'), order = ranked();
+    box.hidden = !statsApi || !totalGames || !order.length || view === 'match' || view === 'loading';
+    if (box.hidden) return;
+    $('wcRankingTotal').textContent = fill(t('wc.rankingTotal', '총 {n}판'), { n: totalGames.toLocaleString() });
+    list.textContent = '';
+    order.slice(0, 10).forEach(function (id, i) {
+      var s = stats[id], item = document.createElement('li'), photo = (cup.photos || {})[id];
+      if (photo) {
+        var img = document.createElement('img');
+        img.src = photo.image; img.alt = ''; img.width = 48; img.height = 36; img.loading = 'lazy';
+        item.appendChild(img);
+      }
+      var label = document.createElement('span');
+      label.className = 'wc-ranking-name';
+      label.textContent = (i + 1) + '. ' + name(id);
+      var rate = document.createElement('span');
+      rate.className = 'wc-ranking-rate';
+      rate.textContent = fill(t('wc.rankingRate', '우승 {t}% · 승률 {w}%'),
+        { t: Math.round(s.titles / s.entries * 100), w: Math.round(s.wins / Math.max(s.matches, 1) * 100) });
+      item.appendChild(label);
+      item.appendChild(rate);
+      list.appendChild(item);
+    });
+    var mine = $('wcRankingMine');
+    var place = result ? order.indexOf(result.id) : -1;
+    mine.hidden = view !== 'result' || place < 0;
+    if (!mine.hidden) mine.textContent = fill(t('wc.rankingMine', '내 우승 메뉴는 {n}위'), { n: place + 1 });
+  }
   function render() {
     if (view === 'intro') renderIntro();
     if (view === 'match') renderMatch(null);
@@ -212,7 +297,17 @@
     return a;
   }
   function start() {
-    game = { entrants: shuffle(set).slice(0, size), winners: [], stack: [] };
+    // 처음부터 keeps the bracket being left as the new game's first undo step, so 되돌리기 brings it
+    // back. One is kept: its own restart step is dropped, and restarting again before a pick keeps
+    // the one already there.
+    var before = null;
+    if (game && game.stack.length) {
+      var own = game.stack.filter(function (step) { return !step.game; });
+      before = own.length ? { game: { entrants: game.entrants, winners: game.winners, stack: own, log: game.log || [] } }
+        : game.stack[0];
+    }
+    game = { entrants: shuffle(set).slice(0, size), winners: [], stack: before ? [before] : [], log: [] };
+    lastPick = null;
     result = null;
     store();
     show('match');
@@ -382,7 +477,7 @@
         document.body.appendChild(link);
         link.click();
         setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
-        status.textContent = t('wc.saved', '이미지를 저장했어요.');
+        status.textContent = t('wc.saved', '저장했어요');
       }, 'image/jpeg', 0.9);
     }
     var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
@@ -397,13 +492,19 @@
   function undo() {
     if (!game || !game.stack.length || busy) return;
     var previous = game.stack.pop();
-    game.entrants = previous.entrants;
-    game.winners = previous.winners;
+    if (previous.game) {
+      if (validGame(previous.game)) game = previous.game;       // takes back 처음부터
+    } else {
+      game.entrants = previous.entrants;
+      game.winners = previous.winners;
+      if (game.log) game.log.length = previous.log || 0;
+    }
+    lastPick = null;
     store();
     renderMatch(true);
   }
   function share() {
-    var text = fill(t('wc.shareText', '나의 KAIST 메뉴 월드컵 우승 메뉴는 {dish}!'), { dish: name(result.id) });
+    var text = fill(t('wc.shareText', '나의 먹방 월드컵 우승 메뉴는 {dish}!'), { dish: name(result.id) });
     var url = location.origin + location.pathname;
     var status = $('wcShareStatus');
     if (navigator.share) {
@@ -412,7 +513,7 @@
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text + ' ' + url).then(function () {
-        status.textContent = t('wc.copied', '결과와 주소를 복사했어요.');
+        status.textContent = t('wc.copied', '결과와 링크를 복사했어요');
       }, function () {
         status.textContent = t('wc.shareFailed', '공유하지 못했어요.');
       });
@@ -437,6 +538,9 @@
     restore();
     show('intro');
     renderIntro();
+    statsApi = statsConfig();
+    $('wcStatsNote').hidden = !statsApi;       // a finished game is counted only when stats are on
+    loadStats();
   }
   function failed() {
     show('loading');
