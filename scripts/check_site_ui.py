@@ -900,6 +900,33 @@ SPLASH_LOG = """() => { window.__splashes = [];
   document.querySelector('#wcSplash').addEventListener('beforetoggle', e => {
     if (e.newState === 'open') window.__splashes.push(e.target.dataset.round); }); }"""
 SPLASH_OPEN = "document.querySelector('#wcSplash').matches(':popover-open')"
+# The final's crash held still and seeked: fighter boxes off the stage from the hit to the end,
+# the clash scale against the real card, card text under the VS at rest, the landing error.
+SPLASH_GEOMETRY = """() => { const s = document.querySelector('#wcSplash'), all = s.getAnimations({subtree: true});
+  const box = el => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+  const fighters = () => [...s.querySelectorAll('.wc-fighter')].map(box);
+  const seek = t => all.forEach(a => { a.currentTime = t; });
+  all.forEach(a => a.pause());
+  let outside = 0;
+  for (let t = 1100; t <= 1999; t += 20) {
+    seek(t);
+    outside += fighters().filter(b => b[0] < 0 || b[1] < 0 || b[2] > s.clientWidth || b[3] > s.clientHeight).length;
+  }
+  seek(1500);
+  const real = [...document.querySelectorAll('.wc-card')].map(c => {    // where each card rests
+    const was = [c.style.transition, c.style.transform];
+    c.style.transition = 'none'; c.style.transform = 'none';
+    const b = box(c);
+    [c.style.transition, c.style.transform] = was;
+    return b; });
+  const vs = box(s.querySelector('.wc-splash-vs'));
+  const scale = Math.min(...fighters().map(b => b[2] - b[0])) / (real[0][2] - real[0][0]);
+  const covered = [...s.querySelectorAll('.wc-fighter-face .wc-card-name, .wc-fighter-face .wc-card-sub, .wc-fighter-face .wc-card-tags')]
+    .filter(el => !el.hidden && el.textContent).map(box)
+    .filter(b => !(b[2] <= vs[0] || b[0] >= vs[2] || b[3] <= vs[1] || b[1] >= vs[3])).length;
+  seek(1999);
+  const miss = Math.max(...fighters().flatMap((b, i) => b.map((v, k) => Math.abs(v - real[i][k]))));
+  return {outside, scale: Math.round(scale * 100) / 100, covered, miss: Math.round(miss * 100) / 100}; }"""
 
 
 def worldcup_saved(cup, entrants, winners):
@@ -1051,13 +1078,14 @@ def worldcup_splash(page):
           ("a held key skips once and never picks", game["winners"]))
 
     # A screen reader activates the card under the splash: that ends the splash, it is not a pick.
-    # The splash is held still first, so only that click can end it.
+    # The splash is held still first and the click must end it within a second, long before its
+    # safety timer would.
     close_round(8)
     page.wait_for_function(SPLASH_OPEN)
     page.evaluate("() => document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.pause())")
     page.evaluate("() => document.querySelector('.wc-card').click()")
     try:
-        page.wait_for_function(closed, timeout=3000)
+        page.wait_for_function(closed, timeout=1000)
         ended = True
     except PlaywrightTimeoutError:
         ended = False
@@ -1082,9 +1110,18 @@ def worldcup_splash(page):
     check(len(game["entrants"]) == 2 and game["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown),
           ("a tap skips to the final without a pick, the cards shown again", game["winners"]))
 
-    # Played out: finish() runs the splash to its end (no waiting on the clock).
+    # The phone crash, on a 360 px screen: the finalists clash about 1.5x their size (on a
+    # diagonal, a phone's pair already fills the width), stay on the screen from the hit to the
+    # end, the VS never covers a name, and they land exactly on the real cards. Read in one call
+    # with the splash held still and seeked, so no timer runs in between.
+    page.set_viewport_size({"width": 360, "height": 800})
     close_round(4)
     page.wait_for_function(SPLASH_OPEN)
+    geometry = page.evaluate(SPLASH_GEOMETRY)
+    check(geometry["outside"] == 0 and 1.45 <= geometry["scale"] <= 1.7 and geometry["covered"] == 0 and geometry["miss"] < 1,
+          ("phone crash: bigger, on the screen, VS clear of the names, landing on the cards", geometry))
+
+    # Played out: finish() runs the splash to its end (no waiting on the clock).
     page.evaluate("document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.finish())")
     page.wait_for_function(closed)
     check(page.evaluate(on_first) and page.locator("#wcCount").inner_text() == "1 / 1" and page.evaluate(shown)
@@ -1093,6 +1130,15 @@ def worldcup_splash(page):
     page.keyboard.press("Enter")
     check(page.locator("#wcResult").is_visible() and page.evaluate("document.activeElement.id") == "wcWinner",
           "and the final is played to the winner")
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    # A splash that never finishes (held still here) still ends by itself and gives the match back.
+    close_round(16)
+    page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("() => document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.pause())")
+    page.wait_for_function(closed, timeout=8000)
+    check(page.evaluate(on_first) and page.evaluate(shown) and len(page.evaluate(stored)["entrants"]) == 8,
+          "a stuck splash ends by itself, focus on the 8강 match")
 
     # Anything failing only takes the splash away: the match still comes and takes picks.
     page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", worldcup_saved(cup, 16, 7))
