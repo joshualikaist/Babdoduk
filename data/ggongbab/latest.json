@@ -1,9 +1,42 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-13T03:12:09+09:00",
+  "generatedAt": "2026-10-14T02:57:10+09:00",
   "timezone": "Asia/Seoul",
-  "count": 1,
+  "count": 2,
   "events": [
+    {
+      "id": "3f1c34c3-a144-444f-bc56-a8734b778298",
+      "title": "KAIST 기후테크 세미나 #5",
+      "summary": "기후테크 창업가의 \"전환\" — 바이오 기술로 희토류를 회수하기까지를 주제로 하는 세미나입니다. KAIST 학생·연구원·창업팀 누구나 참여할 수 있으며, 사전 신청자에게 햄버거를 제공합니다.",
+      "startAt": "2026-10-14T13:00:00+09:00",
+      "endAt": "2026-10-14T14:00:00+09:00",
+      "dateText": "2026년 10월 14일(수)",
+      "timeText": "13:00–14:00",
+      "location": {
+        "name": "KAIST 교육지원동(W8) 1층 K-Space",
+        "building": "W8",
+        "room": "1층 K-Space"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "햄버거"
+      },
+      "organizer": "KAIST 녹색성장지속가능대학원",
+      "eligibility": "KAIST 학생·연구원·창업팀 누구나",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/WhCbWE9D7UwXq1bj8"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "35ea43d7-f095-4541-ac2c-877c3c11c651",
       "title": "2026 가을학기 중간고사 ME PIZZA DAY",
