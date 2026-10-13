@@ -89,12 +89,12 @@ def test_a_missing_photo_is_refused(tmp_path):
 
 
 def test_the_pool_is_large_and_varied_as_the_copy_says():
-    # The page, the event and the share text all say "more than 600 dishes" (owner, 2026-10-13:
+    # The page, the event and the share text all say "more than 700 dishes" (owner, 2026-10-13:
     # aim for 1,000, at most five variants of the same dish).
-    assert len(CUP["dishes"]) > 600
+    assert len(CUP["dishes"]) > 700
     for text in (CUP["basis"]["ko"], (ROOT / "i18n/ko.json").read_text(encoding="utf-8")):
-        assert "600개가 넘는 메뉴" in text
-    assert "more than 600 dishes" in CUP["basis"]["en"]
+        assert "700개가 넘는 메뉴" in text
+    assert "more than 700 dishes" in CUP["basis"]["en"]
     names = {}
     for pack in json.loads((ROOT / "data/foods/catalog.json").read_text(encoding="utf-8"))["packs"]:
         names |= {f["id"]: f["nameKo"] for f in json.loads((ROOT / pack["src"]).read_text(encoding="utf-8"))["items"]}
