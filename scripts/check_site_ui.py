@@ -2147,6 +2147,207 @@ def worldcup_stats(page):
     return count
 
 
+def worldcup_final_saved(cup, category):
+    """A stored game at its final, with the whole bracket's log up to it (the last two entries are the
+    semifinals), so the next pick ends it with a runner-up and two semifinalists. Returns (save, ids)."""
+    pool = [d for d in cup["dishes"] if cup["categories"][d] == category]
+    winner, finalist, semi_a, semi_b = pool[:4]
+    filler = pool[4:]
+    log = [[filler[i % len(filler)], filler[(i + 1) % len(filler)]] for i in range(0, 2 * (cup["size"] - 4), 2)]
+    log += [[winner, semi_a], [finalist, semi_b]]
+    game = {"entrants": [winner, finalist], "winners": [], "stack": [], "log": log, "category": category}
+    save = {"v": 1, "set": f"{cup['size']}:" + ",".join(cup["dishes"]), "winners": [], "game": game}
+    return save, (winner, finalist, semi_a, semi_b)
+
+
+def png_size(data):
+    assert data[:8] == b"\x89PNG\r\n\x1a\n", "not a PNG"
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+
+
+# The story card's preview, redrawn on a fresh canvas and exported: works only for an untainted image.
+STORY_SNAP = """() => { const img = document.getElementById('wcStoryPreview'), q = s => document.querySelector(s);
+  let exported = null, pixel = null;
+  if (img && !img.hidden && img.naturalWidth) {
+    const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0);
+    try { exported = c.toDataURL('image/png').slice(0, 22); pixel = [...ctx.getImageData(540, 20, 1, 1).data]; } catch (e) { exported = 'tainted: ' + e.name; }
+  }
+  return {width: img.naturalWidth, height: img.naturalHeight, hidden: img.hidden, src: img.getAttribute('src'), alt: img.alt,
+    busy: q('#wcStory').getAttribute('aria-busy'), exported, pixel,
+    save: q('#wcSaveImage').innerText.replace(/\\s+/g, ' ').trim(), share: q('#wcShare').innerText.replace(/\\s+/g, ' ').trim(),
+    hint: q('.wc-story-hint').innerText, toast: q('#wcShareStatus').textContent,
+    toastShown: q('#wcShareStatus').classList.contains('is-shown'), role: q('#wcShareStatus').getAttribute('role')}; }"""
+# Web Share and the clipboard, recorded instead of performed; `touch` makes the page see a phone.
+SHARE_STUB = """([touch, files, fail]) => { window.__shared = []; window.__copied = [];
+  const mm = window.__realMatchMedia || (window.__realMatchMedia = window.matchMedia.bind(window));
+  window.matchMedia = q => q === '(pointer: coarse)' ? {matches: touch, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}} : mm(q);
+  navigator.canShare = d => !d.files || files;
+  navigator.share = d => { window.__shared.push({files: (d.files || []).map(f => ({name: f.name, type: f.type, size: f.size})),
+    text: d.text || null, url: d.url || null, title: d.title || null});
+    return fail ? Promise.reject(new DOMException('stub', fail)) : Promise.resolve(); };
+  navigator.clipboard.writeText = t => { window.__copied.push(t); return Promise.resolve(); }; }"""
+FRIEND_SNAP = """() => { const q = s => document.querySelector(s), shown = e => !!e && !e.hidden && e.getBoundingClientRect().width > 0;
+  return {banner: shown(q('#wcFriend')), text: q('#wcFriendText').textContent, photo: q('#wcFriendPhoto').getAttribute('src'),
+    photoShown: shown(q('#wcFriendPhoto')), pressed: [...document.querySelectorAll('.wc-tile[aria-pressed="true"]')].map(t => t.dataset.cat),
+    match: shown(q('#wcMatch')), start: shown(q('#wcStart')), locked: shown(q('#wcLocked')), saved: localStorage.getItem('babdoduk-worldcup'),
+    query: location.search, overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
+
+
+def worldcup_share(page):
+    """The world cup's sharing (owner 2026-10-14, docs/WORLDCUP_SHARE.md): the winner's 1080x1920 story
+    card is drawn at once and previewed (an untainted canvas); 스토리 이미지 저장 downloads the PNG on a
+    computer and hands the file to the share sheet on a phone; 공유하기 shares the file, the text and the
+    friend link on a phone (the text and the link when files cannot go), copies the link on a computer;
+    "저장했어요" and "링크를 복사했어요" are toasts read out once. The friend link shows its banner and its
+    category, ignores what is not in the pool, never starts a game and stays locked before the launch."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html sharing: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    errors = []
+
+    def on_error(error):
+        errors.append(str(error))
+
+    page.on("pageerror", on_error)
+    page.clock.set_fixed_time(WC_RUNNING)
+    page.set_viewport_size({"width": 1280, "height": 900})
+    save, (winner, finalist, semi_a, semi_b) = worldcup_final_saved(cup, "korean")
+    page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+    page.evaluate("s => { localStorage.setItem('babdoduk-worldcup', JSON.stringify(s)); localStorage.removeItem('babdoduk-lang'); }", save)
+    page.reload(wait_until="networkidle")
+    page.locator("#wcResume").click()
+    page.locator(f'.wc-card[data-id="{winner}"]').click()
+    check(page.locator("#wcResult").is_visible() and page.locator("#wcWinner").inner_text() == cup_name(winner),
+          "the last pick of the final shows the winner")
+    page.wait_for_function("() => { const i = document.getElementById('wcStoryPreview'); return !i.hidden && i.naturalWidth > 0; }")
+    snap = page.evaluate(STORY_SNAP)
+    check(snap["width"] == 1080 and snap["height"] == 1920 and snap["busy"] is None and snap["src"].startswith("blob:"),
+          ("the story card is drawn at once, 1080x1920, and previewed", snap))
+    check(snap["exported"] == "data:image/png;base64," and snap["pixel"] and snap["pixel"][3] == 255 and snap["pixel"][0] > snap["pixel"][1],
+          ("the canvas is untainted (toDataURL works) and the background is the brand's pink", snap))
+    check(snap["save"].replace(" ", "") == "📥스토리이미지저장" and snap["share"].replace(" ", "") == "📤공유하기"
+          and snap["hint"] == "인스타 스토리: 공유하기 → Instagram → 스토리" and snap["alt"].endswith(cup_name(winner)),
+          ("the two buttons, the Instagram hint and the preview's text", snap))
+    check(snap["role"] == "status", "the toast is a status region")
+    friend_url = f"https://site-ui.invalid/worldcup.html?from={winner}&cat=korean"
+    # A computer: the PNG is downloaded; 공유하기 copies the friend link. Neither opens a share sheet.
+    page.evaluate(SHARE_STUB, [False, True, None])
+    with page.expect_download() as download:
+        page.locator("#wcSaveImage").click()
+    data = Path(download.value.path()).read_bytes()
+    check(png_size(data) == (1080, 1920) and download.value.suggested_filename == "babdoduk-worldcup-story.png",
+          ("스토리 이미지 저장 downloads the 1080x1920 PNG", png_size(data)))
+    page.wait_for_function("document.getElementById('wcShareStatus').textContent === '저장했어요'")
+    check(page.evaluate("document.getElementById('wcShareStatus').classList.contains('is-shown')"), "저장했어요 shows as a toast")
+    page.locator("#wcShare").click()
+    page.wait_for_function("document.getElementById('wcShareStatus').textContent === '링크를 복사했어요'")
+    check(page.evaluate("window.__copied") == [friend_url] and page.evaluate("window.__shared") == [],
+          ("a computer copies the friend link (this host), no share sheet", page.evaluate("window.__copied")))
+    # Keyboard: both buttons are reachable and show a focus ring.
+    page.locator("#wcSaveImage").focus()
+    page.keyboard.press("Tab")
+    check(page.evaluate("document.activeElement.id") == "wcShare"
+          and page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none",
+          "Tab moves from 저장 to 공유하기 with a visible focus ring")
+    # A phone: the share sheet gets the PNG, the text and the link; 저장 hands over the file alone.
+    page.evaluate(SHARE_STUB, [True, True, None])
+    page.locator("#wcShare").click()
+    page.wait_for_function("window.__shared.length === 1")
+    shared = page.evaluate("window.__shared")[0]
+    check(shared["files"] and shared["files"][0]["type"] == "image/png" and shared["files"][0]["size"] > 50_000
+          and shared["url"] == friend_url and cup_name(winner) in shared["text"] and "한식" in shared["text"],
+          ("공유하기 on a phone shares the PNG file, the text and the friend link", shared))
+    page.locator("#wcSaveImage").click()
+    page.wait_for_function("window.__shared.length === 2")
+    shared = page.evaluate("window.__shared")[1]
+    check(len(shared["files"]) == 1 and shared["files"][0]["type"] == "image/png" and shared["text"] is None and shared["url"] is None,
+          ("스토리 이미지 저장 on a phone opens the share sheet with the file alone", shared))
+    page.evaluate(SHARE_STUB, [True, False, None])                 # a browser that cannot share files
+    page.locator("#wcShare").click()
+    page.wait_for_function("window.__shared.length === 1")
+    shared = page.evaluate("window.__shared")[0]
+    check(shared["files"] == [] and shared["url"] == friend_url and shared["text"], ("without file sharing: the text and the link", shared))
+    page.evaluate(SHARE_STUB, [True, True, "AbortError"])            # closing the sheet says nothing
+    page.evaluate("document.getElementById('wcShareStatus').textContent = ''")
+    page.locator("#wcShare").click()
+    page.wait_for_timeout(200)
+    check(page.evaluate("window.__copied") == [] and page.evaluate("document.getElementById('wcShareStatus').textContent") == "",
+          "a cancelled share sheet is not an error")
+    page.evaluate(SHARE_STUB, [True, True, "NotAllowedError"])       # a refused share falls back to the link
+    page.locator("#wcShare").click()
+    page.wait_for_function("window.__copied.length === 1")
+    check(page.evaluate("window.__copied") == [friend_url], "a refused share copies the friend link instead")
+    # English: the card is drawn again in English.
+    before = page.evaluate("document.getElementById('wcStoryPreview').src")
+    page.locator("#langToggle").click()
+    page.wait_for_function("b => { const i = document.getElementById('wcStoryPreview'); return !i.hidden && i.src !== b && i.naturalWidth === 1080; }", arg=before)
+    check(page.locator("#wcSaveImage").inner_text().strip().endswith("Save story image")
+          and page.evaluate("document.getElementById('wcStoryPreview').alt").startswith("Story image preview"),
+          "a language switch redraws the card and the buttons in English")
+    page.locator("#langToggle").click()
+    page.evaluate("localStorage.removeItem('babdoduk-lang')")
+
+    # The friend link: a banner and the category, never a game.
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    def friend(query):
+        page.goto("https://site-ui.invalid/worldcup.html" + query, wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        page.reload(wait_until="networkidle")
+        return page.evaluate(FRIEND_SNAP)
+
+    shot = friend(f"?from={finalist}&cat=korean")
+    check(shot["banner"] and shot["text"] == f"친구의 최애는 {cup_name(finalist)}! 🏆 너도 해봐" and shot["photoShown"]
+          and shot["photo"] == f"images/worldcup/{finalist}.jpg", ("the friend's banner with the dish and its photo", shot))
+    check(shot["pressed"] == ["korean"] and not shot["match"] and shot["start"] and not shot["saved"] and shot["overflow"] <= 0,
+          ("the friend's category is chosen and nothing starts", shot))
+    page.locator("#langToggle").click()
+    check(page.locator("#wcFriendText").inner_text().startswith("Your friend"), "the banner in English")
+    page.locator("#langToggle").click()
+    shot = friend(f"?from={finalist}&cat=nope")
+    check(shot["banner"] and shot["pressed"] == ["all"], ("an unknown category is ignored, the banner stays", shot))
+    shot = friend("?from=not-a-dish&cat=japanese")
+    check(not shot["banner"] and shot["pressed"] == ["japanese"], ("a dish outside the pool is ignored", shot))
+    shot = friend("?from=%3Cimg%3E&cat=%3Cb%3E")
+    check(not shot["banner"] and shot["pressed"] == ["all"] and not shot["match"], ("nonsense is ignored", shot))
+    # Before the launch: the banner, no photo request, the game locked.
+    photos = mystery_requests(page)
+    page.clock.set_fixed_time(WC_SOON)
+    shot = friend(f"?from={finalist}&cat=korean")
+    check(shot["banner"] and not shot["photoShown"] and shot["photo"] is None and shot["locked"] and not shot["start"]
+          and not shot["match"] and not shot["saved"], ("before the launch the banner shows and the game stays locked", shot))
+    check(not photos, ("no dish photo is requested before the launch", photos))
+    page.evaluate("document.querySelector('#wcStart').click()")
+    check(page.locator("#wcMatch").is_hidden(), "a forced start does nothing before the launch")
+    page.clock.set_fixed_time(WC_RUNNING)
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.remove_listener("pageerror", on_error)
+    check(not errors, ("no page errors", errors))
+    return count
+
+
+def cup_name(dish):
+    """The Korean name of a catalog dish."""
+    return page_names()[dish][0]
+
+
+_NAMES = {}
+
+
+def page_names():
+    if not _NAMES:
+        for pack in json.loads((ROOT / "data/foods/catalog.json").read_text(encoding="utf-8"))["packs"]:
+            for item in json.loads((ROOT / pack["src"]).read_text(encoding="utf-8")).get("items") or []:
+                _NAMES[item["id"]] = (item.get("nameKo") or "", item.get("nameEn") or "")
+    return _NAMES
+
+
 def food_provenance(page):
     """Published and browser-saved food log entries are labelled; storage keeps its shape."""
     count = 0
@@ -2589,6 +2790,7 @@ def run_checks(screenshots=False):
         report["checks"] += worldcup_gacha(cup_page)
         report["checks"] += worldcup_sound(cup_page)
         report["checks"] += worldcup_stats(cup_page)
+        report["checks"] += worldcup_share(cup_page)
         report["checks"] += worldcup_gate(cup_page)
         report["checks"] += home_wc_promo(cup_page)
         cup_context.close()

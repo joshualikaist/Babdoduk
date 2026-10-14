@@ -5,14 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="밥도둑 Babdoduk" />
-  <meta property="og:title" content="먹방 월드컵 · 밥도둑 Babdoduk" />
-  <meta property="og:description" content="700개가 넘는 메뉴 중 32개가 맞붙는 먹방 월드컵. 나의 최애 메뉴는?" />
+  <meta property="og:title" content="밥도둑 먹방 월드컵 · 너의 최애 메뉴는?" />
+  <meta property="og:description" content="700개가 넘는 메뉴 중 32개가 맞붙는 먹방 월드컵. 오늘의 32강, 뭐가 나올까?" />
   <meta property="og:url" content="https://babdoduk.vercel.app/worldcup.html" />
-  <meta property="og:image" content="https://babdoduk.vercel.app/images/kakao-loopy.jpg" />
+  <!-- The world cup's link preview (KakaoTalk and others): a teaser that shows no category tile
+       (images/worldcup/og-worldcup.jpg, 1200x630, docs/WORLDCUP_SHARE.md). -->
+  <meta property="og:image" content="https://babdoduk.vercel.app/images/worldcup/og-worldcup.jpg" />
   <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="1200" />
-  <link rel="image_src" href="https://babdoduk.vercel.app/images/kakao-loopy.jpg" />
-  <meta property="og:image:alt" content="밥도둑 로고" />
+  <meta property="og:image:height" content="630" />
+  <link rel="image_src" href="https://babdoduk.vercel.app/images/worldcup/og-worldcup.jpg" />
+  <meta property="og:image:alt" content="오늘의 32강, 뭐가 나올까? 밥도둑 먹방 월드컵" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="밥도둑 먹방 월드컵 · 너의 최애 메뉴는?" />
+  <meta name="twitter:description" content="700개가 넘는 메뉴 중 32개가 맞붙는 먹방 월드컵. 오늘의 32강, 뭐가 나올까?" />
+  <meta name="twitter:image" content="https://babdoduk.vercel.app/images/worldcup/og-worldcup.jpg" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
   <link rel="manifest" href="/manifest.json" />
@@ -77,6 +83,8 @@
            with the headline, the category tiles (js/worldcup.js fills them from data/content/worldcup.json
            `categories`), five dishes of the next draw and the big start button. -->
       <div class="wc-view wc-intro" id="wcIntro" hidden>
+        <!-- A friend's shared result (worldcup.html?from=<dish>&cat=<category>, js/worldcup.js challenge). -->
+        <p class="wc-friend" id="wcFriend" hidden><img class="wc-friend-photo" id="wcFriendPhoto" alt="" width="40" height="40" hidden /><span class="wc-friend-text" id="wcFriendText"></span></p>
         <!-- @content:worldcup-entry -->
         <div class="wc-floaters" id="wcFloaters" aria-hidden="true"></div>
         <div class="wc-intro-card">
@@ -145,13 +153,21 @@
           <figcaption class="wc-credit"><a id="wcWinnerCredit" target="_blank" rel="noopener noreferrer"></a></figcaption>
         </figure>
         <p class="wc-finalist" id="wcFinalist"></p>
+        <!-- The Instagram story card (js/worldcup.js prepareStory, docs/WORLDCUP_SHARE.md): drawn as soon
+             as the winner is decided, previewed here, saved or shared in the same tap. -->
+        <div class="wc-story" id="wcStory">
+          <img class="wc-story-preview" id="wcStoryPreview" alt="" width="1080" height="1920" hidden />
+          <div class="wc-story-side">
+            <button type="button" class="wc-btn wc-btn--main" id="wcSaveImage"><span class="wc-btn-icon" aria-hidden="true">📥</span><span data-i18n="wc.save">스토리 이미지 저장</span></button>
+            <button type="button" class="wc-btn wc-btn--share" id="wcShare"><span class="wc-btn-icon" aria-hidden="true">📤</span><span data-i18n="wc.share">공유하기</span></button>
+            <p class="wc-story-hint" data-i18n="wc.shareHint">인스타 스토리: 공유하기 → Instagram → 스토리</p>
+          </div>
+        </div>
         <div class="wc-actions">
-          <button type="button" class="wc-btn wc-btn--main" id="wcSaveImage" data-i18n="wc.save">이미지 저장</button>
-          <button type="button" class="wc-btn" id="wcShare" data-i18n="wc.share">공유하기</button>
           <button type="button" class="wc-btn" id="wcAgain" data-i18n="wc.again">다시 하기</button>
           <a class="wc-btn" href="mukbang.html#what" data-i18n="wc.toPicker">메뉴 고르기</a>
         </div>
-        <p class="wc-share-status" id="wcShareStatus" role="status"></p>
+        <p class="wc-toast" id="wcShareStatus" role="status" aria-live="polite"></p>
       </div>
 
       <section class="wc-ranking" id="wcRanking" aria-labelledby="wcRankingTitle" hidden>
@@ -256,7 +272,7 @@
         'wc.catGame': '{cat} {n}강',
         'wc.catLabel': '카테고리',
         'wc.catLanded': '{cat} 당첨!',
-        'wc.copied': '결과와 링크를 복사했어요',
+        'wc.copied': '링크를 복사했어요',
         'wc.count': '{n} / {total}',
         'wc.countdown.d': 'D-{n}',
         'wc.countdown.hours': '{h}시간 {m}분 남음',
@@ -266,6 +282,8 @@
         'wc.ended': '이벤트 종료 · 그래도 계속 즐길 수 있어요',
         'wc.error': '메뉴를 불러오지 못했어요. 새로고침해 주세요.',
         'wc.finalist': '결승 상대: {dish}',
+        'wc.friend': '친구의 최애는 {dish}! 🏆 너도 해봐',
+        'wc.friendCta': '나도 해보기',
         'wc.gacha.ask': '너의 최애는?',
         'wc.gacha.drawing': '{game} 뽑는 중…',
         'wc.gacha.skip': '건너뛰기',
@@ -283,6 +301,7 @@
         'wc.photoChip': '사진 위키미디어 공용(잘라서 줄임)',
         'wc.photoCredit': '사진 {author} · {license}',
         'wc.pick': '{dish} 고르기',
+        'wc.preparing': '이미지를 만드는 중이에요',
         'wc.preview': '이 중에서 나와요!',
         'wc.progressAria': '전체 진행',
         'wc.ranking': '모두의 랭킹',
@@ -294,11 +313,12 @@
         'wc.round.final': '결승',
         'wc.round.n': '{n}강',
         'wc.round.semi': '4강',
-        'wc.save': '이미지 저장',
+        'wc.save': '스토리 이미지 저장',
         'wc.saved': '저장했어요',
         'wc.share': '공유하기',
-        'wc.shareFailed': '공유하지 못했어요. 주소창의 주소를 복사해 주세요.',
-        'wc.shareText': '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!',
+        'wc.shareFailed': '공유하지 못했어요. 다시 눌러 주세요.',
+        'wc.shareHint': '인스타 스토리: 공유하기 → Instagram → 스토리',
+        'wc.shareText': '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}! 너의 최애는?',
         'wc.sound': '배경음악',
         'wc.sound.aria': '배경음악 켜기/끄기',
         'wc.splash.final': '결승!',
@@ -306,6 +326,12 @@
         'wc.splash.semi': '4강 진출!',
         'wc.start': '{n}강 시작',
         'wc.state.soon': '{date} 공개 예정',
+        'wc.story.alt': '스토리 이미지 미리보기: {dish}',
+        'wc.story.credit': '사진: 위키미디어 공용 · {credits}',
+        'wc.story.cta': '너의 최애는?',
+        'wc.story.final': '결승 상대',
+        'wc.story.semi': '4강',
+        'wc.story.won': '{game} 우승',
         'wc.tag.chewy': '쫄깃한',
         'wc.tag.crispy': '바삭한',
         'wc.tag.rich': '진한',
@@ -366,7 +392,7 @@
         'wc.catGame': '{cat} · Round of {n}',
         'wc.catLabel': 'Category',
         'wc.catLanded': '{cat} it is!',
-        'wc.copied': 'Result and link copied',
+        'wc.copied': 'Link copied',
         'wc.count': '{n} of {total}',
         'wc.countdown.d': 'D-{n}',
         'wc.countdown.hours': '{h}h {m}m left',
@@ -376,6 +402,8 @@
         'wc.ended': 'Event over · you can still play',
         'wc.error': 'Could not load the dishes. Please reload.',
         'wc.finalist': 'Final opponent: {dish}',
+        'wc.friend': 'Your friend’s favorite: {dish}! 🏆 Your turn',
+        'wc.friendCta': 'Play it too',
         'wc.gacha.ask': 'Who’s your favorite?',
         'wc.gacha.drawing': 'Drawing {game}…',
         'wc.gacha.skip': 'Skip',
@@ -393,6 +421,7 @@
         'wc.photoChip': 'Photos: Wikimedia Commons (cropped, resized)',
         'wc.photoCredit': 'Photo {author} · {license}',
         'wc.pick': 'Pick {dish}',
+        'wc.preparing': 'Making the image…',
         'wc.preview': 'These might show up!',
         'wc.progressAria': 'Overall progress',
         'wc.ranking': 'Everyone\'s ranking',
@@ -404,11 +433,12 @@
         'wc.round.final': 'Final',
         'wc.round.n': 'Round of {n}',
         'wc.round.semi': 'Semifinal',
-        'wc.save': 'Save image',
+        'wc.save': 'Save story image',
         'wc.saved': 'Saved',
         'wc.share': 'Share',
-        'wc.shareFailed': 'Could not share. Copy the address from the address bar.',
-        'wc.shareText': 'My Food World Cup ({cat}) winner: {dish}!',
+        'wc.shareFailed': 'Could not share. Please try again.',
+        'wc.shareHint': 'Instagram story: Share → Instagram → Story',
+        'wc.shareText': 'My Food World Cup ({cat}) winner: {dish}! What’s yours?',
         'wc.sound': 'Music',
         'wc.sound.aria': 'Turn music on/off',
         'wc.splash.final': 'The Final!',
@@ -416,6 +446,12 @@
         'wc.splash.semi': 'Semifinals!',
         'wc.start': 'Start the round of {n}',
         'wc.state.soon': 'Opens {date}',
+        'wc.story.alt': 'Story image preview: {dish}',
+        'wc.story.credit': 'Photos: Wikimedia Commons · {credits}',
+        'wc.story.cta': 'What’s yours?',
+        'wc.story.final': 'Runner-up',
+        'wc.story.semi': 'Semifinal',
+        'wc.story.won': '{game} champion',
         'wc.tag.chewy': 'Chewy',
         'wc.tag.crispy': 'Crispy',
         'wc.tag.rich': 'Rich',
