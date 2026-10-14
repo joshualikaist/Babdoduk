@@ -2095,6 +2095,11 @@ STORY_SNAP = """() => { const img = document.getElementById('wcStoryPreview'), q
     save: q('#wcSaveImage').innerText.replace(/\\s+/g, ' ').trim(), share: q('#wcShare').innerText.replace(/\\s+/g, ' ').trim(),
     hint: q('.wc-story-hint').innerText, toast: q('#wcShareStatus').textContent,
     toastShown: q('#wcShareStatus').classList.contains('is-shown'), role: q('#wcShareStatus').getAttribute('role')}; }"""
+# Every string the story card draws, recorded (the card is pixels): the credit line must carry no names.
+CARD_TEXT_SPY = """() => { window.__cardText = [];
+  if (window.__cardSpy) return; window.__cardSpy = true;
+  const draw = CanvasRenderingContext2D.prototype.fillText;
+  CanvasRenderingContext2D.prototype.fillText = function (text, ...rest) { window.__cardText.push(String(text)); return draw.call(this, text, ...rest); }; }"""
 # Web Share and the clipboard, recorded instead of performed; `touch` makes the page see a phone.
 SHARE_STUB = """([touch, files, fail]) => { window.__shared = []; window.__copied = [];
   const mm = window.__realMatchMedia || (window.__realMatchMedia = window.matchMedia.bind(window));
@@ -2139,10 +2144,33 @@ def worldcup_share(page):
     page.evaluate("s => { localStorage.setItem('babdoduk-worldcup', JSON.stringify(s)); localStorage.removeItem('babdoduk-lang'); }", save)
     page.reload(wait_until="networkidle")
     page.locator("#wcResume").click()
+    page.evaluate(CARD_TEXT_SPY)
     page.locator(f'.wc-card[data-id="{winner}"]').click()
     check(page.locator("#wcResult").is_visible() and page.locator("#wcWinner").inner_text() == cup_name(winner),
           "the last pick of the final shows the winner")
     page.wait_for_function("() => { const i = document.getElementById('wcStoryPreview'); return !i.hidden && i.naturalWidth > 0; }")
+    card_photos = [cup["photos"][d] for d in (winner, finalist, semi_a, semi_b)]
+
+    def card_credit_ok(texts, line):
+        """One short credit line, no photographer or licence on the card; the page lists them all."""
+        lines = [t for t in texts if "Wikimedia" in t]
+        return (lines == [line] and all(p["author"] not in t and p["license"] not in t for p in card_photos for t in texts)
+                and not any("CC BY" in t for t in texts))
+
+    check(card_credit_ok(page.evaluate("window.__cardText"), "📷 Wikimedia Commons · 사진 출처 babdoduk.vercel.app/worldcup.html"),
+          ("the card's one credit line names no photographer", page.evaluate("window.__cardText")))
+    # The result screen lists the author and licence, linked, of the four photos on the card.
+    page.locator("#wcCredits summary").click()
+    items = page.locator("#wcCreditsList li").evaluate_all(
+        "els => els.map(li => ({text: li.innerText, links: [...li.querySelectorAll('a')].map(a => [a.textContent, a.href])}))")
+    check(page.locator("#wcCredits summary").inner_text() == "사진 출처" and page.locator("#wcCredits").evaluate("el => el.open")
+          and len(items) == 4, ("the credits disclosure lists the 4 photos", items))
+    for item, dish, photo in zip(items, (winner, finalist, semi_a, semi_b), card_photos):
+        check(cup_name(dish) in item["text"] and photo["author"] in item["text"] and photo["license"] in item["text"]
+              and item["links"] == [[photo["author"], photo["source"]], [photo["license"], photo["licenseUrl"]]],
+              ("author and licence, with links, for " + dish, item))
+    check(page.evaluate("""() => [...document.querySelectorAll('#wcCreditsList a')].every(a => a.target === '_blank' && /noopener/.test(a.rel))"""),
+          "the credit links open in a new tab safely")
     snap = page.evaluate(STORY_SNAP)
     check(snap["width"] == 1080 and snap["height"] == 1920 and snap["busy"] is None and snap["src"].startswith("blob:"),
           ("the story card is drawn at once, 1080x1920, and previewed", snap))
@@ -2202,11 +2230,16 @@ def worldcup_share(page):
     check(page.evaluate("window.__copied") == [friend_url], "a refused share copies the friend link instead")
     # English: the card is drawn again in English.
     before = page.evaluate("document.getElementById('wcStoryPreview').src")
+    page.evaluate(CARD_TEXT_SPY)
     page.locator("#langToggle").click()
     page.wait_for_function("b => { const i = document.getElementById('wcStoryPreview'); return !i.hidden && i.src !== b && i.naturalWidth === 1080; }", arg=before)
     check(page.locator("#wcSaveImage").inner_text().strip().endswith("Save story image")
           and page.evaluate("document.getElementById('wcStoryPreview').alt").startswith("Story image preview"),
           "a language switch redraws the card and the buttons in English")
+    check(card_credit_ok(page.evaluate("window.__cardText"), "📷 Wikimedia Commons · photo credits at babdoduk.vercel.app/worldcup.html"),
+          ("the English card's one credit line names no photographer", page.evaluate("window.__cardText")))
+    check(page.locator("#wcCredits summary").inner_text() == "Photo credits" and page.locator("#wcCreditsList li").count() == 4,
+          "the credits are listed in English too")
     page.locator("#langToggle").click()
     page.evaluate("localStorage.removeItem('babdoduk-lang')")
 
