@@ -1,5 +1,5 @@
 {
-  "approval": "Owner approved lab 09fc976 on 2026-10-14 (release: ggongbab giveaway/poster, world cup motion/categories/entry/launch, brand pink); CI renders from ui-guardian run 38525418639 for the 11 changed images, the other 49 unchanged",
+  "approval": "Owner approved index-ko-390-footer and index-ko-390-footer-context (AskUserQuestion 2026-10-14: \"승인 (추천)\"; 1 px footer offset from the compact promo); CI render from ui-guardian run 38590752253 for the 1 changed image, the other 59 unchanged",
   "platform": "linux-chromium",
   "source": "adopted from ci-full",
   "images": 60,
