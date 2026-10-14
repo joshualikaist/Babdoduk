@@ -446,9 +446,9 @@ def test_english_strings(browser):
     context.close()
 
 
-@pytest.mark.parametrize("width", [320, 390])
-def test_phones_put_the_calendar_first_without_overflow(browser, width):
-    context, page, _ = open_home(browser, size=(width, 844))
+@pytest.mark.parametrize("width, height", [(320, 844), (360, 800), (390, 844)])
+def test_phones_put_the_calendar_first_without_overflow(browser, width, height):
+    context, page, _ = open_home(browser, size=(width, height))
     box = page.evaluate("""() => { const r = s => document.querySelector(s).getBoundingClientRect();
       return {overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
               cal: r('#homeCal').top, collage: r('.home-collage').top, menu: r('.home-menu-line').top,
@@ -457,8 +457,8 @@ def test_phones_put_the_calendar_first_without_overflow(browser, width):
     assert box["hero"] <= box["cal"] < box["menu"] < box["collage"]      # copy, calendar, cafeteria, collage
     # 44 px targets at phone width; at 320 px (small phones, 400% zoom) still well above WCAG's 24 px.
     assert box["grid"]["right"] <= width and box["cell"]["width"] >= (44 if width >= 390 else 36)
-    if width == 390:
-        assert box["grid"]["bottom"] <= 844                                # the whole month in the first screen
+    if width >= 360:
+        assert box["grid"]["bottom"] <= height                             # the whole month in the first screen
     assert page.locator('[data-banner="today"], #homeFreeStatus, .home-today').count() == 0
     assert page.locator("#homeMenuStatus").count() == 1
     context.close()

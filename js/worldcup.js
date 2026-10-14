@@ -2,9 +2,10 @@
    data/content/worldcup.json (the sync writes it into the page as window.BABDODUK_WORLDCUP;
    data/content/ is never deployed) and plays them two at a time, with names and flavours from the
    food catalog (data/foods/). A pick pops; from the quarterfinals on a new round takes the screen
-   for a beat (the final with a crash of the two finalists); the winner gets confetti and a result
-   image to save. Progress and past winners stay in this browser (localStorage
-   `babdoduk-worldcup`); nothing is sent anywhere.
+   for a beat (the final with a crash of the two finalists); the winner gets confetti and an
+   Instagram story card (1080x1920) to save or share, with a link that challenges a friend
+   (worldcup.html?from=<dish>&cat=<category>, docs/WORLDCUP_SHARE.md). Progress and past winners
+   stay in this browser (localStorage `babdoduk-worldcup`); nothing is sent anywhere.
    Categories (owner 2026-10-14): the start screen offers the whole pool or one of seven categories
    (data/content/worldcup.json `categories`); a game draws its 32 dishes from the chosen one and
    keeps `category` in the saved game (an older save has none and counts as the whole pool).
@@ -24,7 +25,9 @@
    Before the launch nothing of the draw is revealed (owner 2026-10-14: "최대한 공개 안하게끔"): the
    tiles and the preview sit in a mystery box that is blurred (css/worldcup-entry.css), inert and hidden
    from assistive tech, the floating and preview photos are blurred placeholders with no `src` (no
-   photo is requested), and no tile is chosen. At the launch moment the real photos load. */
+   photo is requested), and no tile is chosen. At the launch moment the real photos load.
+   Sound (owner 2026-10-14): an original music loop and effects, synthesized in this file (no audio
+   file), behind a 🔇/🔊 toggle that is off until pressed (see "---- sound"). worldcup.html only. */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -206,7 +209,8 @@
       node('span', 'wc-tile-name', tile);
       node('span', 'wc-tile-n', tile);
       tile.addEventListener('click', function () {
-        if (cat === 'random') spinTiles(); else choose(cat, true);
+        if (cat === 'random') spinTiles();
+        else { sound.fx('pop'); choose(cat, true); }
       });
     });
   }
@@ -280,6 +284,7 @@
       if (lit) lit.classList.remove('is-spin');
       lit = box.querySelector('[data-cat="' + CATEGORIES[(from + i) % count] + '"]');
       lit.classList.add('is-spin');
+      sound.fx('tick');
       spin.timer = i >= steps ? setTimeout(function () { stopSpin(true); }, 240)
         : setTimeout(step, 45 + 230 * Math.pow(i / steps, 2.4));
     })();
@@ -295,6 +300,7 @@
     if (land) landSpin(s.target);
   }
   function landSpin(cat) {
+    sound.fx('ding');
     choose(cat, true);
     announce(fill(t('wc.catLanded', '{cat} 당첨!'), { cat: catName(cat) }));
   }
@@ -325,6 +331,7 @@
       if (locked()) { box.setAttribute('inert', ''); box.setAttribute('aria-hidden', 'true'); }
       else { box.removeAttribute('inert'); box.removeAttribute('aria-hidden'); }
     }
+    renderFriend();
     if (resumable) $('wcResumeLabel').textContent = fill(t('wc.resume', '이어하기 · {cat} {round} {n}/{total}'), progress());
     [].forEach.call($('wcPreviewPhotos').querySelectorAll('img[data-id]'), function (img) { img.alt = name(img.getAttribute('data-id')); });
   }
@@ -415,11 +422,39 @@
     $('wcFinalist').textContent = fill(t('wc.finalist', '결승 상대: {dish}'), { dish: name(result.finalist) });
     showPhoto($('wcWinnerImg'), $('wcWinnerCredit'), result.id);
     $('wcWinnerFigure').hidden = $('wcWinnerImg').hidden;
-    $('wcShareStatus').textContent = '';
+    renderCredits();
+    prepareStory();                            // the story card is made now, so a tap can hand it over at once
     if (focus) {
       $('wcWinner').focus();
       announce(fill(t('wc.announceWinner', '우승 메뉴: {dish}'), { dish: name(result.id) }));
     }
+  }
+  // 사진 출처: the author and licence, linked, of every photo on the story card (the winner, the
+  // runner-up and the two semifinalists), so the card itself can carry a single line.
+  function renderCredits() {
+    var list = $('wcCreditsList');
+    var entries = [[result.id, t('wc.credits.winner', '우승')], [result.finalist, t('wc.story.final', '결승 상대')]]
+      .concat((result.semis || []).map(function (id) { return [id, t('wc.story.semi', '4강')]; }));
+    function link(parent, href, text) {
+      var a = node('a', '', parent);
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = text;
+    }
+    list.textContent = '';
+    entries.forEach(function (entry) {
+      var photo = entry[0] && photoOf(entry[0]);
+      if (!photo || !photo.author) return;
+      var item = node('li', 'wc-credits-item', list);
+      node('span', 'wc-credits-role', item).textContent = entry[1];
+      node('span', 'wc-credits-dish', item).textContent = name(entry[0]);
+      link(item, photo.source, photo.author);
+      item.appendChild(document.createTextNode(' · '));
+      if (photo.licenseUrl) link(item, photo.licenseUrl, photo.license);
+      else item.appendChild(document.createTextNode(photo.license));
+    });
+    $('wcCredits').hidden = !list.children.length;
   }
   function renderHistory() {
     if (embedded) return;
@@ -494,17 +529,28 @@
   function finish(winner, finalist) {
     winners.unshift({ id: winner, finalist: finalist, date: todayKst() });
     winners = winners.slice(0, HISTORY);
-    result = { id: winner, finalist: finalist, category: game.category };
+    result = { id: winner, finalist: finalist, category: game.category, semis: semifinalists(winner, finalist) };
     game = null;
     store();
     show('result');
     renderResult(true);
     celebrate();
+    sound.fx('fanfare', 150);
+  }
+  // The two dishes that lost in the semifinals, from the bracket's log (its last three matches are
+  // the semifinals and the final); none when the log is incomplete (a game saved before it existed).
+  function semifinalists(winner, finalist) {
+    var log = game.log || [], n = log.length;
+    if (n < 3) return [];
+    var semis = [log[n - 3], log[n - 2]], won = semis.map(function (m) { return m && m[0]; });
+    if (won.indexOf(winner) < 0 || won.indexOf(finalist) < 0) return [];
+    return semis.map(function (m) { return m[1]; }).filter(function (id) { return !!dishes[id]; });
   }
   function pick(side) {
     if (splash) { endSplash('skip'); return; }          // a screen reader's click on a card under the splash
     if (busy || view !== 'match') return;
     var ids = pair(), chosen = ids[side];
+    sound.fx('blip', 0, game.winners.length / Math.max(1, game.entrants.length / 2 - 1));   // higher through the round
     game.stack.push({ entrants: game.entrants.slice(), winners: game.winners.slice(), log: (game.log || []).length });
     game.winners.push(chosen);
     if (game.log) game.log.push([chosen, ids[1 - side]]);
@@ -747,6 +793,7 @@
       splashEl.textContent = '';
       splashEl.setAttribute('data-round', String(round));
       splashEl.showPopover();
+      sound.raise();
       var w = splashEl.clientWidth, h = splashEl.clientHeight;
       var bg = node('i', 'wc-splash-bg', splashEl), stage = node('div', 'wc-splash-stage', splashEl);
       var fade = round === 2 ? [1640, 1960] : [650, 800];
@@ -764,6 +811,9 @@
       var clock = splashEl.animate(null, { duration: spec.ms });
       clock.onfinish = function () { if (splash && splash.run === run) endSplash('end'); };
       splash.anims.push(clock);
+      // Its sound, on the same clock: the title whooshes in and lands; the finalists rush and crash.
+      sound.scene(clock, round === 2 ? [['whoosh', 0], ['hit', 170], ['whoosh', 760, true], ['boom', 1100]]
+        : [['whoosh', 0], ['hit', 170]]);
       splash.safety = setTimeout(function () { if (splash && splash.run === run) endSplash('end'); }, spec.ms + 1500);
     } catch (e) {
       endSplash('quiet');
@@ -777,6 +827,7 @@
     if (!s) return;
     splash = null;
     clearTimeout(s.safety);
+    sound.endScene(reason);                           // a skip silences what is left of its sound
     cards.forEach(function (card) { card.style.opacity = card.style.transform = card.style.transition = ''; });
     busy = false;
     if (reason !== 'quiet' && view === 'match') cards[0].focus({ preventScroll: true });
@@ -860,6 +911,353 @@
     box.classList.add('is-celebrating');
   }
 
+  // ---- sound -------------------------------------------------------------------------------------
+  // Owner 2026-10-14 ("배경음악 ... 킬 수 있도록"): an upbeat loop and a few effects, all original and
+  // synthesized here with the Web Audio API: no audio file, no borrowed melody. soundKit() is the
+  // instrument (it touches nothing of the page, so it can also render offline); `sound` plays it.
+  //
+  // The loop: F major, 124 BPM, 16 bars (31 s). A (bars 1-8, F Dm Bb C twice): four-on-the-floor,
+  // offbeat hats, a syncopated bass, soft pads, bubbly arpeggio and the lead's hook, a snare fill
+  // into B. B (bars 9-16, Bb C Am Dm Bb C F C): the chorus an octave up, with claps, open hats, an
+  // octave-bouncing bass and offbeat chord stabs. Notes are scheduled a little ahead on the audio
+  // clock from a short timer (a look-ahead clock), and everything goes through a compressor and a
+  // limiter, so the mix stays modest and never clips.
+  function soundKit(ctx) {
+    var STEP = 60 / 124 / 4;                        // a 16th note
+    var CHORDS = 'F Dm Bb C F Dm Bb C Bb C Am Dm Bb C F C'.split(' ');
+    var VOICE = { F: [60, 65, 69], Dm: [62, 65, 69], Bb: [62, 65, 70], C: [60, 64, 67], Am: [60, 64, 69] };
+    var ROOT = { F: 41, Dm: 38, Bb: 34, C: 36, Am: 33 };
+    // The lead, one character per 16th: '1' to 'f' climb the F major scale from F4 to F6, '-' holds
+    // the note before, '.' rests. A's hook, then B's chorus.
+    var LEAD = 'a.a.c.a-..8.9.a.' + '9-8-6-..5.6.8.9.' + '8.8.b.8-..6.8.9.' + '7-5-7-9---..c.a.' +
+               'a.a.c.a-..8.9.a.' + 'c-a-9-8-..9.a.d.' + 'd-c-a-8-..a.8.6.' + '7-9-c---9-7-5---' +
+               'd.d.d.c-d-..b.c.' + 'c.c.c.a-9-..7.9.' + 'a.a.a.9-a-..c.e.' + 'd---c-a-d-..a.c.' +
+               'd.d.d.c-d-..b.c.' + 'c.c.c.a-9-..c.d.' + 'f.e.c.a-c-..a.c.' + '9-7-5-7-9-------';
+    var DEGREE = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
+    var KICK = ['x...x...x...x...', 'x...x...x...x.x.'], HAT = ['..c...c...c...c.', 'c.o.c.o.c.o.c.oc'];
+    var BASS = ['r..r..r.r..r..r.', 'r.o.r.o.r.o.r.o.'], STAB = '..x...x...x...x.';
+    function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+    var noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = noise.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+
+    var comp = ctx.createDynamicsCompressor(), limit = ctx.createDynamicsCompressor(), master = ctx.createGain();
+    comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.2;
+    limit.threshold.value = -6; limit.knee.value = 0; limit.ratio.value = 20; limit.attack.value = 0.001; limit.release.value = 0.1;
+    master.gain.value = 0.6;
+    comp.connect(limit); limit.connect(master); master.connect(ctx.destination);
+    var music = ctx.createGain();
+    music.gain.value = 0;
+    music.connect(comp);
+    function filter(type, f, q, dest) {
+      var n = ctx.createBiquadFilter();
+      n.type = type; n.frequency.value = f;
+      if (q) n.Q.value = q;
+      n.connect(dest);
+      return n;
+    }
+    // One long-lived filter per instrument; a note only adds an oscillator and a gain.
+    var lead = ctx.createGain(), echo = ctx.createDelay(1), feedback = ctx.createGain(), wet = ctx.createGain();
+    echo.delayTime.value = STEP * 3; feedback.gain.value = 0.25; wet.gain.value = 0.18;   // a dotted-8th echo
+    lead.connect(music); lead.connect(echo); echo.connect(feedback); feedback.connect(echo); echo.connect(wet); wet.connect(music);
+    var HATS = filter('highpass', 7500, 0, music), SNARES = filter('bandpass', 1800, 0.7, music), LOW = filter('lowpass', 700, 1, music),
+        PADS = filter('lowpass', 1400, 0.7, music), STABS = filter('lowpass', 2400, 0, music), BRIGHT = filter('lowpass', 3000, 0, lead);
+
+    // An envelope: up to `peak` in `attack`, then down to silence by t + len (never a ramp to 0).
+    function env(g, t, peak, len, attack) {
+      attack = attack || 0.005;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(len, attack + 0.01));
+    }
+    function tone(type, f, t, len, peak, dest, attack) {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f, t);
+      o.connect(g); g.connect(dest);
+      env(g, t, peak, len, attack);
+      o.start(t); o.stop(t + len + 0.05);           // a stopped, unreferenced node is collected
+      return o;
+    }
+    function hiss(t, len, peak, dest, attack) {
+      var s = ctx.createBufferSource(), g = ctx.createGain();
+      s.buffer = noise;
+      s.loop = true;
+      s.connect(g); g.connect(dest);
+      env(g, t, peak, len, attack || 0.002);
+      s.start(t, Math.random() * 0.4); s.stop(t + len + 0.05);
+    }
+    function pad(f, t, len, peak) {                 // a held chord tone: in, held, out (linear, so it can reach 0)
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f, t);
+      o.connect(g); g.connect(PADS);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(peak, t + 0.15);
+      g.gain.setValueAtTime(peak, t + len - 0.25);
+      g.gain.linearRampToValueAtTime(0, t + len);
+      o.start(t); o.stop(t + len + 0.05);
+    }
+    function kick(t, peak, dest) {
+      tone('sine', 150, t, 0.3, peak, dest).frequency.exponentialRampToValueAtTime(46, t + 0.1);
+    }
+    function snare(t, peak) {
+      hiss(t, 0.16, peak, SNARES);
+      tone('triangle', 185, t, 0.08, peak * 0.5, music);
+    }
+
+    // The effects, each (time, destination, argument).
+    var sfx = {
+      pop: function (t, o) {                         // a tile: a jelly bloop that bends up
+        tone('sine', 380, t, 0.12, 0.35, o).frequency.exponentialRampToValueAtTime(1100, t + 0.06);
+        tone('triangle', 760, t, 0.05, 0.06, o);
+      },
+      blip: function (t, o, up) {                    // a pick: a two-step blip, higher through the round
+        var m = [72, 74, 77, 79, 81, 84, 86, 89][Math.round(Math.max(0, Math.min(1, up || 0)) * 7)];
+        tone('square', hz(m), t, 0.07, 0.1, filter('lowpass', 3000, 0, o));
+        tone('triangle', hz(m + 12), t + 0.045, 0.14, 0.24, o);
+      },
+      tick: function (t, o) {                        // 아무거나: one step of the light
+        tone('triangle', 1500, t, 0.03, 0.16, o);
+        hiss(t, 0.012, 0.08, filter('highpass', 4000, 0, o));
+      },
+      ding: function (t, o) {                        // 아무거나 lands
+        tone('triangle', hz(84), t, 0.25, 0.16, o);
+        tone('triangle', hz(89), t + 0.09, 0.5, 0.18, o);
+        tone('sine', hz(101), t + 0.09, 0.4, 0.04, o);
+      },
+      whoosh: function (t, o, long) {               // a round comes in: band-passed noise sweeping up
+        var len = long ? 0.36 : 0.26, f = filter('bandpass', 300, 1.2, o), g = ctx.createGain(), s = ctx.createBufferSource();
+        f.frequency.setValueAtTime(300, t);
+        f.frequency.exponentialRampToValueAtTime(5000, t + len);
+        s.buffer = noise; s.loop = true; s.connect(g); g.connect(f);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(long ? 0.5 : 0.4, t + len * 0.85);
+        g.gain.linearRampToValueAtTime(0, t + len + 0.06);
+        s.start(t, Math.random() * 0.3); s.stop(t + len + 0.1);
+      },
+      hit: function (t, o, soft) {                  // the round title lands: a thump, a burst, a chord stab
+        var k = soft ? 0.5 : 1, stab = filter('lowpass', 2500, 0, o);
+        kick(t, 0.75 * k, o);
+        hiss(t, 0.25, 0.3 * k, filter('lowpass', 1800, 0, o));
+        [65, 69, 72, 77].forEach(function (m) { tone('square', hz(m), t, 0.3, 0.045 * k, stab); });
+      },
+      boom: function (t, o) {                        // 결승: a deep boom, a sweep down, then a shimmer
+        tone('sine', 100, t, 1.2, 0.9, o).frequency.exponentialRampToValueAtTime(28, t + 0.8);
+        tone('sine', 55, t, 1.0, 0.35, o);
+        var sweep = filter('lowpass', 3000, 0, o);
+        sweep.frequency.setValueAtTime(3000, t);
+        sweep.frequency.exponentialRampToValueAtTime(120, t + 0.7);
+        hiss(t, 0.9, 0.5, sweep);
+        hiss(t + 0.02, 1.6, 0.07, filter('highpass', 6000, 0, o));
+        [1397, 1760, 2093, 2794, 3520, 4186].forEach(function (f, n) {
+          tone('sine', f * (1 + (n % 2 ? 0.003 : -0.003)), t + 0.05 + n * 0.035, 1.4, 0.03, o, 0.02);
+        });
+      },
+      crank: function (t, o) {                       // the gacha's crank: a ratchet of three clicks
+        var hp = filter('highpass', 3000, 0, o);
+        [0, 0.06, 0.12].forEach(function (dt) { hiss(t + dt, 0.015, 0.25, hp); tone('square', 900, t + dt, 0.012, 0.04, o); });
+      },
+      capsule: function (t, o, n) {                  // a capsule pops open, a step higher each time
+        var m = [72, 74, 77, 79, 81, 84, 86, 89][Math.min(n || 0, 7)];
+        tone('sine', hz(m) * 0.6, t, 0.1, 0.3, o).frequency.exponentialRampToValueAtTime(hz(m) * 1.6, t + 0.05);
+        tone('triangle', hz(m + 12), t + 0.03, 0.25, 0.07, o);
+      },
+      tada: function (t, o) {                        // 너의 최애는?: ta (C), da (F)
+        var lp = filter('lowpass', 3200, 0, o);
+        [72, 76, 79].forEach(function (m) { tone('square', hz(m), t, 0.09, 0.04, lp); tone('triangle', hz(m), t, 0.09, 0.07, o); });
+        [77, 81, 84, 89].forEach(function (m) { tone('square', hz(m), t + 0.14, 0.7, 0.035, lp, 0.01); tone('triangle', hz(m), t + 0.14, 0.7, 0.06, o, 0.01); });
+        tone('sine', hz(101), t + 0.16, 0.4, 0.03, o);
+      },
+      fanfare: function (t, o) {                     // the winner: an original brassy call over an F chord
+        var brass = filter('lowpass', 2200, 0, o);
+        [[0, 72, 0.12], [0.12, 77, 0.12], [0.24, 81, 0.12], [0.36, 84, 0.3], [0.7, 81, 0.14], [0.86, 84, 0.14], [1.0, 89, 1.0]]
+          .forEach(function (n) { tone('sawtooth', hz(n[1]), t + n[0], n[2], 0.14, brass, 0.02); tone('triangle', hz(n[1] - 12), t + n[0], n[2], 0.09, o, 0.02); });
+        [65, 69, 72].forEach(function (m) { tone('sawtooth', hz(m), t + 1.0, 1.0, 0.05, brass, 0.03); });
+        hiss(t + 1.0, 1.2, 0.07, filter('highpass', 6000, 0, o), 0.05);
+      }
+    };
+
+    return {
+      STEP: STEP, LENGTH: LEAD.length, music: music, sfx: sfx,
+      bus: function () { var g = ctx.createGain(); g.connect(comp); return g; },
+      step: function (pos, t) {                      // schedule one 16th of the loop at time t
+        var s = pos % 16, bar = pos >> 4, b = bar < 8 ? 0 : 1, chord = CHORDS[bar], voice = VOICE[chord], c = LEAD[pos], n = 1;
+        if (KICK[b][s] === 'x') kick(t, 0.85, music);
+        if (s === 4 || s === 12) {
+          snare(t, b ? 0.42 : 0.32);
+          if (b) hiss(t + 0.012, 0.12, 0.2, SNARES);  // B: a clap on the snare
+        }
+        if ((bar === 7 && s >= 13) || (bar === 15 && s >= 14)) snare(t, 0.12 + (s - 12) * 0.06);   // fills into B and back to A
+        if (bar === 7 && s === 8) {                  // a riser into B
+          var rise = filter('bandpass', 500, 1, music);
+          rise.frequency.setValueAtTime(500, t);
+          rise.frequency.exponentialRampToValueAtTime(6000, t + STEP * 8);
+          hiss(t, STEP * 8, 0.12, rise, STEP * 7);
+        }
+        if (bar === 8 && s === 0) hiss(t, 1.4, 0.1, HATS);   // a crash on the chorus
+        if (HAT[b][s] !== '.') hiss(t, HAT[b][s] === 'o' ? 0.16 : 0.035, HAT[b][s] === 'o' ? 0.09 : 0.12, HATS);
+        if (BASS[b][s] !== '.') tone('sawtooth', hz(ROOT[chord] + (BASS[b][s] === 'o' ? 12 : 0)), t, STEP * (b ? 1.4 : 1.8), 0.24, LOW);
+        if (s === 0) voice.forEach(function (m) { pad(hz(m), t, STEP * 16, b ? 0.022 : 0.03); });
+        if (b && STAB[s] === 'x') voice.forEach(function (m) { tone('square', hz(m + 12), t, 0.1, 0.022, STABS); });
+        if (!b && s % 2 === 0) {                     // A: a bubbly arpeggio of the chord, on the 8ths
+          var f = hz(voice[[0, 1, 2, 1][(s / 2) % 4]] + 12);
+          tone('sine', f * 0.5, t, 0.12, 0.06, music).frequency.exponentialRampToValueAtTime(f, t + 0.03);
+        }
+        if (c !== '-' && c !== '.') {
+          while (LEAD[(pos + n) % LEAD.length] === '-') n++;
+          var note = hz(65 + DEGREE['123456789abcdef'.indexOf(c)]), len = STEP * n * 0.92;
+          tone('triangle', note, t, len, 0.13, lead, 0.01);
+          tone('square', note * 1.003, t, len * 0.8, 0.035, BRIGHT, 0.01);
+          if (b) tone('sine', note * 2, t, len * 0.6, 0.025, lead, 0.01);
+        }
+      }
+    };
+  }
+  // The player: nothing exists until sound is turned on by a press (browsers let audio start only
+  // from a user gesture), then one AudioContext for the whole visit. Off by default; the choice is
+  // kept in `babdoduk-worldcup-sound`, except with reduced motion, where every visit starts off.
+  // A remembered "on" starts at the first press anywhere. Effects play only while it is on; the
+  // music ducks under a round's scene and under the big hits, and sleeps while the tab is hidden.
+  var sound = (function () {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    var KEY = 'babdoduk-worldcup-sound', AHEAD = 0.12, WAKE = 25, LEVEL = 0.5;
+    var DUCK = { hit: [0.35, 0.3], boom: [0.15, 0.9], tada: [0.5, 0.6], fanfare: [0.3, 1.8] };   // [music level, seconds]
+    var dock = $('wcSoundDock'), button = $('wcSound');
+    var supported = !!(AC && dock && button);
+    var ctx = null, kit = null, fxBus = null, timer = 0, pos = 0, next = 0, level = LEVEL, wanted = false;
+    var scene = null;          // the splash on screen: { clock, plan: [[effect, ms on its clock, argument]] }
+    if (supported && !reduced) {
+      try { wanted = localStorage.getItem(KEY) === '1'; } catch (e) { /* no storage: off */ }
+    }
+    function live() { return wanted && ctx && ctx.state !== 'closed' && !document.hidden; }
+    function build() {
+      ctx = new AC();
+      kit = soundKit(ctx);
+      fxBus = kit.bus();
+    }
+    function loop() {
+      timer = 0;
+      if (!ctx || ctx.state !== 'running' || !wanted) return;
+      var now = ctx.currentTime;
+      if (next < now) next = now + 0.05;             // after a stall, carry on rather than burst
+      while (next < now + AHEAD) {
+        kit.step(pos, next);
+        pos = (pos + 1) % kit.LENGTH;
+        next += kit.STEP;
+      }
+      timer = setTimeout(loop, WAKE);
+    }
+    function play() {                                // fade in from the start of the bar it stopped in
+      if (timer) return;
+      kit.music.gain.cancelScheduledValues(ctx.currentTime);
+      kit.music.gain.setTargetAtTime(level, ctx.currentTime, 0.25);
+      pos -= pos % 16;
+      next = ctx.currentTime + 0.06;
+      loop();
+    }
+    function wake() {                                // inside a press, or when the tab is back
+      if (!wanted || document.hidden) return;
+      if (!ctx) build();
+      if (ctx.state === 'running') { play(); return; }
+      ctx.resume().then(function () { if (wanted && !document.hidden) play(); }, function () { /* the next press retries */ });
+    }
+    function hush() {                                // silence effects already scheduled (a skip, sound off)
+      if (!ctx) return;
+      var old = fxBus;
+      old.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
+      setTimeout(function () { old.disconnect(); }, 300);
+      fxBus = kit.bus();
+    }
+    function stop() {
+      clearTimeout(timer);
+      timer = 0;
+      if (!ctx) return;
+      hush();
+      kit.music.gain.cancelScheduledValues(ctx.currentTime);
+      kit.music.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+      var c = ctx;
+      setTimeout(function () { if (!wanted && c.state === 'running') c.suspend(); }, 500);
+    }
+    function sync() { if (button) button.setAttribute('aria-pressed', String(wanted)); }
+    function fx(name, ms, arg) {                     // an effect now, or `ms` from now, ahead by the output latency
+      if (!live()) return;
+      var now = ctx.currentTime, t = Math.max(now, now + (ms || 0) / 1000 - (ctx.outputLatency || ctx.baseLatency || 0));
+      kit.sfx[name](t, fxBus, arg);
+      var dip = DUCK[name];
+      if (dip) {
+        kit.music.gain.setTargetAtTime(level * dip[0], t, 0.015);
+        kit.music.gain.setTargetAtTime(level, t + dip[1], 0.25);
+      }
+    }
+    function duck(on) {
+      level = on ? LEVEL * 0.55 : LEVEL;
+      if (live() && timer) kit.music.gain.setTargetAtTime(level, ctx.currentTime, 0.12);
+    }
+    function cue() {                                 // the scene's effects still to come, timed by its clock
+      if (!scene || !live()) return;
+      var at = scene.clock.currentTime || 0;
+      scene.plan.forEach(function (e) {
+        if (e.done || e[1] < at - 30) return;
+        e.done = true;
+        fx(e[0], e[1] - at, e[2]);
+      });
+    }
+    if (supported) {
+      button.addEventListener('click', function () {
+        wanted = !wanted;
+        try { localStorage.setItem(KEY, wanted ? '1' : '0'); } catch (e) { /* kept for this visit only */ }
+        if (wanted) wake(); else stop();
+        sync();
+        cue();                                       // turned on mid-scene: the rest of it
+      });
+      // A remembered "on" starts at the first press; a suspended context retries on the next one.
+      ['pointerdown', 'pointerup', 'keydown', 'click'].forEach(function (type) {
+        document.addEventListener(type, function () { if (wanted && (!ctx || ctx.state !== 'running' || !timer)) wake(); }, true);
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (!ctx) return;
+        if (document.hidden) {
+          clearTimeout(timer);
+          timer = 0;
+          if (ctx.state === 'running') ctx.suspend();
+        } else wake();
+      });
+    }
+    return {
+      fx: fx,
+      // The toggle in the corner, a manual popover in the top layer: shown on worldcup.html only.
+      show: function () {
+        if (!supported) return;
+        dock.hidden = false;
+        sync();
+        this.raise();
+      },
+      // A splash opens above everything: the toggle is shown again, so it stacks above the splash.
+      raise: function () {
+        if (!supported || dock.hidden || typeof dock.showPopover !== 'function') return;
+        var focused = document.activeElement === button;
+        try {
+          if (dock.matches(':popover-open')) dock.hidePopover();
+          dock.showPopover();
+        } catch (e) { /* it stays where it is */ }
+        if (focused) button.focus({ preventScroll: true });
+      },
+      owns: function (el) { return !!(supported && el && el.closest && el.closest('#wcSoundDock')); },
+      scene: function (clock, plan) {
+        scene = { clock: clock, plan: plan };
+        duck(true);
+        var s = scene;
+        (clock.ready || Promise.resolve()).then(function () { if (scene === s) cue(); }, function () {});
+      },
+      endScene: function (reason) {
+        if (!scene) return;
+        scene = null;
+        if (reason !== 'end') hush();
+        duck(false);
+      }
+    };
+  })();
+
   // ---- start gacha ---------------------------------------------------------------------------------
   // Owner 2026-10-14: pressing start opens a capsule machine for about 5 s, once per start (never on
   // 이어하기). 뽑는 중: the machine drops in and cranks three times; six of the drawn dishes pour out
@@ -900,6 +1298,7 @@
       splashEl.textContent = '';
       splashEl.setAttribute('data-round', 'start');
       splashEl.showPopover();
+      sound.raise();
       var W = splashEl.clientWidth, H = splashEl.clientHeight, cx = W / 2, cy = H / 2, phone = W <= 560;
       var bg = node('i', 'wc-splash-bg', splashEl), glow = node('i', 'wc-gacha-glow', splashEl);
       var stage = node('div', 'wc-splash-stage', splashEl);
@@ -1046,78 +1445,566 @@
       var clock = splashEl.animate(null, { duration: G.end });
       clock.onfinish = function () { if (splash && splash.run === run) endSplash('end'); };
       splash.anims.push(clock);
+      // Its sound: the machine lands, the crank ratchets, each capsule pops a step higher, ta-da for
+      // the question, the two cards pop and bump, and a whoosh onto the match.
+      var plan = [['pop', 264]];
+      for (c = 0; c < G.cranks; c++) plan.push(['crank', T0 + c * G.crank]);
+      for (p = 0; p < G.pour; p++) plan.push(['capsule', tR + p * G.pourGap + 234, p]);
+      plan.push(['tada', tD + 200], ['pop', tD + 560], ['hit', tE + 260, true], ['whoosh', tF + 300]);
+      sound.scene(clock, plan);
       splash.safety = setTimeout(function () { if (splash && splash.run === run) endSplash('end'); }, G.end + 1500);
     } catch (e) {
       endSplash('quiet');
     }
   }
 
-  // ---- result image ----------------------------------------------------------------------------
-  // A 1080x1350 card (the winner, its photo and the photo credit, the site) to keep or post.
-  function fitText(ctx, text, x, y, max, px, weight) {
-    var font = function (n) { return weight + ' ' + n + "px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif"; };
-    ctx.font = font(px);
-    while (px > 28 && ctx.measureText(text).width > max) { px -= 4; ctx.font = font(px); }
-    ctx.fillText(text, x, y);
+  // ---- the story card ------------------------------------------------------------------------------
+  // Owner 2026-10-14: the moment the winner is decided, a 1080x1920 Instagram story card (9:16 only)
+  // is drawn here, shown as a small preview on the result and kept ready, so 스토리 이미지 저장 and
+  // 공유하기 hand the file over inside the same tap (a share sheet needs the tap's activation). Beat by
+  // beat: the brand's pink-to-indigo gradient with soft glows, rays and confetti; "🏆 나의 최애 메뉴";
+  // the winner's photo, large and rounded, with a crown; the dish name huge in Jua and its other name
+  // small; "한식 32강 우승"; the runner-up and the other two semifinalists as photo chips; the CTA
+  // "너의 최애는? 👉 babdoduk.vercel.app" and the wordmark; the photo credits, tiny. Instagram's own
+  // controls cover about 250 px at the top and at the bottom of a story, so everything that matters
+  // sits between STORY.top and STORY.bottom; only decoration and the credits go outside.
+  // The photos are this site's own files (images/worldcup/), so the canvas is never tainted and can be
+  // exported. The lettering is Jua cut to exactly this card's letters (loadStoryFont); without it (no
+  // network, a slow font) the card is drawn in Noto Sans KR rather than in a mix of the two.
+  // docs/WORLDCUP_SHARE.md describes the card, the share flows and the friend link.
+  var STORY = { w: 1080, h: 1920, top: 250, bottom: 1670, pad: 72 };
+  var storyFonts = 0;     // each card's Jua subset is its own family: the page's own Jua is never touched
+  var story = null;       // { key, promise, file, url }: the card of the result on screen
+  function storyKey() { return result ? [result.id, result.finalist, (result.semis || []).join(','), result.category, lang()].join('|') : ''; }
+  function rng(seed) {          // mulberry32: the same winner always gets the same confetti
+    var a = 0;
+    for (var i = 0; i < seed.length; i++) a = Math.imul(a ^ seed.charCodeAt(i), 2654435761);
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var x = Math.imul(a ^ (a >>> 15), 1 | a);
+      x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
   }
-  function saveImage() {
-    var status = $('wcShareStatus'), photo = (cup.photos || {})[result.id];
-    var canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 1350;
-    var ctx = canvas.getContext('2d');
-    function draw(img) {
-      ctx.fillStyle = '#fffdf8';
-      ctx.fillRect(0, 0, 1080, 1350);
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#be185d';
-      fitText(ctx, gameLabel(result.category) + ' · ' + t('wc.cardKicker', '나의 최애 메뉴'), 540, 120, 900, 40, 800);
-      ctx.fillStyle = '#1e1d1a';
-      fitText(ctx, name(result.id), 540, 250, 960, 104, 900);
-      ctx.fillStyle = '#6d665e';
-      fitText(ctx, otherName(result.id), 540, 320, 960, 40, 500);
-      if (img) {
-        ctx.save();
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(60, 380, 960, 720, 36); else ctx.rect(60, 380, 960, 720);
-        ctx.clip();
-        ctx.drawImage(img, 60, 380, 960, 720);
-        ctx.restore();
-        ctx.fillStyle = '#6d665e';
-        fitText(ctx, fill(t('wc.photoCredit', '사진 {author} · {license}'), { author: photo.author, license: photo.license }),
-                540, 1150, 960, 26, 500);
-      }
-      ctx.fillStyle = '#1e1d1a';
-      fitText(ctx, t('wc.cardBrand', '밥도둑 먹방 월드컵'), 540, 1240, 960, 44, 800);
-      ctx.fillStyle = '#6d665e';
-      fitText(ctx, location.host, 540, 1295, 960, 30, 500);
-      canvas.toBlob(function (blob) {
-        if (!blob) { status.textContent = t('wc.shareFailed', '공유하지 못했어요.'); return; }
-        var file = typeof File === 'function' ? new File([blob], 'babdoduk-worldcup.jpg', { type: 'image/jpeg' }) : null;
-        // Phones get the share sheet (straight to a story or a chat); a computer saves the file.
-        var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        if (touch && file && navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: document.title }).catch(function () {});
-          return;
-        }
-        var link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'babdoduk-worldcup.jpg';
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
-        status.textContent = t('wc.saved', '저장했어요');
-      }, 'image/jpeg', 0.9);
-    }
-    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-    fonts.then(function () {
-      if (!photo) { draw(null); return; }
+  function within(promise, ms, fallback) {
+    return Promise.race([promise.catch(function () { return fallback; }),
+                         new Promise(function (resolve) { setTimeout(function () { resolve(fallback); }, ms); })]);
+  }
+  // Jua with only `text`'s letters (Google Fonts `text=`, a few KB). The stylesheet is read but never
+  // applied (media "not all"): its font file becomes a FontFace of a family of the card's own.
+  function loadStoryFont(text) {
+    if (typeof FontFace !== 'function' || !document.fonts) return Promise.resolve(null);
+    var letters = Array.from(new Set(Array.from(text.replace(/\s+/g, '')))).join('');
+    var family = 'BabdodukStory' + (++storyFonts);
+    return within(new Promise(function (resolve) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.media = 'not all';
+      link.crossOrigin = 'anonymous';
+      link.href = 'https://fonts.googleapis.com/css2?family=Jua&display=block&text=' + encodeURIComponent(letters);
+      link.onload = function () {
+        var src = null;
+        try {
+          [].forEach.call(link.sheet.cssRules, function (rule) {
+            var m = rule.style && /url\(["']?([^"')]+)["']?\)/.exec(rule.style.getPropertyValue('src'));
+            if (m && !src) src = m[1];
+          });
+        } catch (e) { /* an unreadable sheet: the card falls back */ }
+        link.remove();
+        if (!src || !/^https:\/\/fonts\.gstatic\.com\//.test(src)) { resolve(null); return; }
+        new FontFace(family, 'url(' + src + ')').load().then(function (face) {
+          document.fonts.add(face);
+          resolve(family);
+        }, function () { resolve(null); });
+      };
+      link.onerror = function () { link.remove(); resolve(null); };
+      document.head.appendChild(link);
+    }), 4000, null);
+  }
+  function loadPhoto(id) {
+    var photo = id && photoOf(id);
+    if (!photo) return Promise.resolve(null);
+    return within(new Promise(function (resolve) {
       var img = new Image();
-      img.onload = function () { draw(img); };
-      img.onerror = function () { draw(null); };
-      img.src = photo.image;
-    });
+      img.decoding = 'async';
+      img.onload = function () { resolve(img); };
+      img.onerror = function () { resolve(null); };
+      img.src = photo.image;                          // same origin: the canvas stays exportable
+    }), 6000, null);
   }
+  function rounded(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function cover(ctx, img, x, y, w, h) {          // object-fit: cover
+    var s = Math.max(w / img.naturalWidth, h / img.naturalHeight), sw = w / s, sh = h / s;
+    ctx.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
+  }
+  function clip(ctx, text, max) {                  // an ellipsis rather than a line that runs off
+    if (ctx.measureText(text).width <= max) return text;
+    var chars = Array.from(text);
+    while (chars.length > 1 && ctx.measureText(chars.join('') + '…').width > max) chars.pop();
+    return chars.join('').trim() + '…';
+  }
+  // The dish name: one line as large as fits (up to 168 px), else two balanced lines, else clipped.
+  function nameLines(ctx, text, font, max) {
+    var size;
+    for (size = 168; size >= 96; size -= 6) {
+      ctx.font = font(size);
+      if (ctx.measureText(text).width <= max) return { size: size, lines: [text] };
+    }
+    var words = text.split(' ');
+    if (words.length > 1) {
+      var best = null;
+      for (var i = 1; i < words.length; i++) {
+        var pair = [words.slice(0, i).join(' '), words.slice(i).join(' ')];
+        ctx.font = font(100);
+        var wide = Math.max(ctx.measureText(pair[0]).width, ctx.measureText(pair[1]).width);
+        if (!best || wide < best.wide) best = { lines: pair, wide: wide };
+      }
+      for (size = 112; size >= 64; size -= 4) {
+        ctx.font = font(size);
+        if (best.lines.every(function (line) { return ctx.measureText(line).width <= max; })) return { size: size, lines: best.lines };
+      }
+      ctx.font = font(64);
+      return { size: 64, lines: best.lines.map(function (line) { return clip(ctx, line, max); }) };
+    }
+    ctx.font = font(96);
+    return { size: 96, lines: [clip(ctx, text, max)] };
+  }
+  function sparkle(ctx, x, y, r, color, alpha) {   // a four-pointed star
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.quadraticCurveTo(x, y, x, y + r);
+    ctx.quadraticCurveTo(x, y, x - r, y);
+    ctx.quadraticCurveTo(x, y, x, y - r);
+    ctx.fill();
+    ctx.restore();
+  }
+  // A gold crown with three points, pearls on the points and gems on the band.
+  function crown(ctx, cx, cy, w, angle) {
+    var h = w * 0.74, x = -w / 2, top = -h / 2, base = h / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.shadowColor = 'rgba(80, 20, 60, 0.35)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 10;
+    var gold = ctx.createLinearGradient(0, top, 0, base);
+    gold.addColorStop(0, '#fff3a3');
+    gold.addColorStop(0.45, '#fcd34d');
+    gold.addColorStop(1, '#f59e0b');
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.08, base);
+    ctx.lineTo(x + w * 0.02, top + h * 0.2);
+    ctx.lineTo(x + w * 0.29, top + h * 0.5);
+    ctx.lineTo(0, top + h * 0.02);
+    ctx.lineTo(x + w * 0.71, top + h * 0.5);
+    ctx.lineTo(x + w * 0.98, top + h * 0.2);
+    ctx.lineTo(x + w * 0.92, base);
+    ctx.closePath();
+    ctx.fillStyle = gold;
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = w * 0.035;
+    ctx.strokeStyle = '#b45309';
+    ctx.stroke();
+    rounded(ctx, x + w * 0.06, base - h * 0.26, w * 0.88, h * 0.26, h * 0.06);   // the band
+    ctx.fillStyle = '#f59e0b';
+    ctx.fill();
+    ctx.stroke();
+    [[x + w * 0.02, top + h * 0.2], [0, top + h * 0.02], [x + w * 0.98, top + h * 0.2]].forEach(function (p) {
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], w * 0.065, 0, Math.PI * 2);
+      ctx.fillStyle = '#fffbeb';
+      ctx.fill();
+      ctx.stroke();
+    });
+    [[-w * 0.27, '#60a5fa'], [0, '#ec4899'], [w * 0.27, '#60a5fa']].forEach(function (g, i) {
+      ctx.beginPath();
+      ctx.arc(g[0], base - h * 0.13, w * (i === 1 ? 0.07 : 0.05), 0, Math.PI * 2);
+      ctx.fillStyle = g[1];
+      ctx.fill();
+      ctx.lineWidth = w * 0.02;
+      ctx.stroke();
+    });
+    ctx.beginPath();                                  // a glint on the left point
+    ctx.moveTo(x + w * 0.12, top + h * 0.42);
+    ctx.lineTo(x + w * 0.2, top + h * 0.62);
+    ctx.lineWidth = w * 0.03;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.stroke();
+    ctx.restore();
+  }
+  function storyTexts() {
+    var host = /^babdoduk(-lab)?\.vercel\.app$/.test(location.hostname) ? location.hostname : 'babdoduk.vercel.app';
+    var opponents = [result.finalist].concat(result.semis || []).filter(Boolean);
+    var photos = [result.id].concat(opponents).map(photoOf).filter(Boolean);
+    var credited = photos.length > 0;   // the names and licences are on the page (renderCredits), not on the card
+    return {
+      kicker: t('wc.cardKicker', '나의 최애 메뉴'),
+      name: name(result.id),
+      sub: otherName(result.id),
+      won: fill(t('wc.story.won', '{game} 우승'), { game: gameLabel(result.category) }),
+      emoji: CATEGORY_EMOJI[result.category] || '🏆',
+      chips: opponents.map(function (id, i) {
+        return { id: id, label: t(i ? 'wc.story.semi' : 'wc.story.final', i ? '4강' : '결승 상대'), name: name(id) };
+      }),
+      cta: t('wc.story.cta', '너의 최애는?'),
+      host: host,
+      brand: t('wc.cardBrand', '밥도둑 먹방 월드컵'),
+      credit: credited ? fill(t('wc.story.credit', '📷 Wikimedia Commons · 사진 출처 {host}/worldcup.html'), { host: host }) : ''
+    };
+  }
+  // The card, top to bottom. The photo gives way when the name needs two lines, so the wordmark always
+  // ends inside the safe zone.
+  function drawStory(canvas, words, family, photos) {
+    var W = STORY.w, H = STORY.h, ctx = canvas.getContext('2d'), inner = W - 2 * STORY.pad;
+    var sans = "'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+    var display = function (px) { return family ? px + "px '" + family + "', " + sans : '900 ' + px + 'px ' + sans; };
+    var plain = function (weight, px) { return weight + ' ' + px + 'px ' + sans; };
+    var random = rng(result.id);
+    function shadow(color, blur, y) { ctx.shadowColor = color; ctx.shadowBlur = blur; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = y; }
+    function noShadow() { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
+    function pill(text, font, y, h, fill, ink, stroke) {
+      ctx.font = font;
+      var w = Math.min(ctx.measureText(text).width + h, inner);
+      rounded(ctx, (W - w) / 2, y, w, h, h / 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      noShadow();
+      if (stroke) { ctx.lineWidth = 3; ctx.strokeStyle = stroke; ctx.stroke(); }
+      ctx.fillStyle = ink;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(clip(ctx, text, w - h * 0.6), W / 2, y + h / 2 + 2);
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.textAlign = 'center';
+
+    // The layout first: the name's size decides how tall the photo can be.
+    var fit = nameLines(ctx, words.name, display, inner);
+    var lineH = Math.round(fit.size * 1.06), nameH = fit.size + (fit.lines.length - 1) * lineH;
+    var chips = words.chips.slice(0, 3), subH = words.sub ? 58 : 0, chipsH = chips.length ? 128 : 0;
+    var photoH = Math.max(380, Math.min(540, 882 - nameH - subH - chipsH));
+    var photoW = Math.round(photoH * 1.4);
+    var photoTop = 410, frame = 18;
+    var nameTop = photoTop + photoH + frame + 46;
+    var wonY = nameTop + nameH + subH + 34, chipY = wonY + 78 + 30, ctaY = chipY + chipsH + (chipsH ? 2 : 30);
+
+    // The brand gradient, pink at the top to indigo at the bottom, with soft lights.
+    var bg = ctx.createLinearGradient(0, 0, W * 0.55, H);
+    bg.addColorStop(0, '#f472b6');
+    bg.addColorStop(0.22, '#db2777');
+    bg.addColorStop(0.55, '#a21caf');
+    bg.addColorStop(0.82, '#6d28d9');
+    bg.addColorStop(1, '#4338ca');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    [[140, 360, 520, 'rgba(255, 255, 255, 0.30)'], [1000, 980, 560, 'rgba(251, 207, 232, 0.22)'],
+     [880, 150, 420, 'rgba(253, 224, 71, 0.20)'], [120, 1700, 620, 'rgba(129, 140, 248, 0.45)'],
+     [980, 1820, 520, 'rgba(56, 189, 248, 0.22)']].forEach(function (g) {
+      var glow = ctx.createRadialGradient(g[0], g[1], 0, g[0], g[1], g[2]);
+      glow.addColorStop(0, g[3]);
+      glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
+    });
+    // Rays from behind the photo, a trophy-stage light.
+    var cx = W / 2, cy = photoTop + photoH / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    var rays = ctx.createRadialGradient(0, 0, 80, 0, 0, 1000);
+    rays.addColorStop(0, 'rgba(255, 255, 255, 0.17)');
+    rays.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = rays;
+    for (var r = 0; r < 18; r++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, 1100, r * Math.PI / 9, r * Math.PI / 9 + Math.PI / 22);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+    // Confetti and sparkles: thick in the bands Instagram covers, a few down the sides, none on words.
+    var colors = ['#fde047', '#fbcfe8', '#ffffff', '#a5f3fc', '#c4b5fd', '#fdba74', '#f9a8d4'];
+    for (var i = 0; i < 96; i++) {
+      var band = i % 3, x = random() * W, y;
+      if (band === 0) y = 14 + random() * (STORY.top - 10);
+      else if (band === 1) y = STORY.bottom + 24 + random() * (H - STORY.bottom - 150);
+      else { y = STORY.top + random() * (STORY.bottom - STORY.top); x = random() < 0.5 ? 8 + random() * 44 : W - 8 - random() * 44; }
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(random() * Math.PI);
+      ctx.globalAlpha = 0.55 + random() * 0.45;
+      ctx.fillStyle = colors[i % colors.length];
+      var kind = i % 4, s = 12 + random() * 16;
+      if (kind === 0) ctx.fillRect(-s / 2, -s * 0.22, s, s * 0.44);
+      else if (kind === 1) { ctx.beginPath(); ctx.arc(0, 0, s * 0.34, 0, Math.PI * 2); ctx.fill(); }
+      else if (kind === 2) { rounded(ctx, -s * 0.8, -s * 0.16, s * 1.6, s * 0.32, s * 0.16); ctx.fill(); }
+      else { ctx.beginPath(); ctx.moveTo(0, -s * 0.5); ctx.lineTo(s * 0.45, s * 0.35); ctx.lineTo(-s * 0.45, s * 0.35); ctx.closePath(); ctx.fill(); }
+      ctx.restore();
+    }
+    [[96, 300, 28], [986, 300, 36], [44, 760, 22], [1040, 900, 26], [150, 1726, 34], [930, 1730, 26], [540, 110, 32],
+     [290, 176, 18], [790, 196, 22], [1036, 1650, 18]].forEach(function (s, n) {
+      sparkle(ctx, s[0], s[1], s[2], n % 3 ? '#ffffff' : '#fef08a', 0.92);
+    });
+
+    // "🏆 나의 최애 메뉴" on a glassy pill.
+    pill('🏆 ' + words.kicker, display(52), 268, 92, 'rgba(255, 255, 255, 0.2)', '#ffffff', 'rgba(255, 255, 255, 0.6)');
+    // The winner's photo in a white frame, tilted a little, with a crown on its corner.
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-0.035);
+    shadow('rgba(46, 16, 101, 0.45)', 70, 34);
+    rounded(ctx, -photoW / 2 - frame, -photoH / 2 - frame, photoW + 2 * frame, photoH + 2 * frame, 60);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    noShadow();
+    rounded(ctx, -photoW / 2, -photoH / 2, photoW, photoH, 44);
+    if (photos[0]) {
+      ctx.save();
+      ctx.clip();
+      cover(ctx, photos[0], -photoW / 2, -photoH / 2, photoW, photoH);
+      ctx.restore();
+    } else {
+      var empty = ctx.createLinearGradient(0, -photoH / 2, 0, photoH / 2);
+      empty.addColorStop(0, '#fdf2f8');
+      empty.addColorStop(1, '#eef2ff');
+      ctx.fillStyle = empty;
+      ctx.fill();
+      ctx.font = plain(400, 240);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(words.emoji, 0, 0);
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.restore();
+    crown(ctx, cx - photoW / 2 + 24, photoTop - 4, 196, -0.36);
+
+    // The dish name, huge, and its other name.
+    ctx.font = display(fit.size);
+    shadow('rgba(59, 7, 100, 0.5)', 32, 8);
+    ctx.fillStyle = '#ffffff';
+    fit.lines.forEach(function (line, n) { ctx.fillText(line, W / 2, nameTop + fit.size * 0.86 + n * lineH); });
+    noShadow();
+    if (words.sub) {
+      ctx.font = plain(600, 40);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+      ctx.fillText(clip(ctx, words.sub, inner), W / 2, nameTop + nameH + 46);
+    }
+    // "🍚 한식 32강 우승" on a white pill.
+    shadow('rgba(46, 16, 101, 0.3)', 24, 8);
+    pill(words.emoji + ' ' + words.won, display(46), wonY, 78, '#ffffff', '#be185d');
+
+    // The runner-up and the semifinalists: photo chips in one row.
+    var gap = 16, chipH = 100;
+    var chipW = chips.length === 1 ? 560 : (inner - gap * (chips.length - 1)) / chips.length;
+    var rowX = (W - (chipW * chips.length + gap * (chips.length - 1))) / 2;
+    chips.forEach(function (chip, n) {
+      var x = rowX + n * (chipW + gap), img = photos[n + 1], d = 76, px = x + 12, py = chipY + (chipH - d) / 2;
+      rounded(ctx, x, chipY, chipW, chipH, chipH / 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.17)';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.stroke();
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(px + d / 2, py + d / 2, d / 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#fce7f3';
+      ctx.fill();
+      if (img) { ctx.clip(); cover(ctx, img, px, py, d, d); }
+      ctx.restore();
+      ctx.beginPath();
+      ctx.arc(px + d / 2, py + d / 2, d / 2, 0, Math.PI * 2);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+      var tx = px + d + 14, room = x + chipW - tx - 26;
+      ctx.textAlign = 'left';
+      ctx.font = plain(700, 23);
+      ctx.fillStyle = n ? 'rgba(255, 255, 255, 0.8)' : '#fde68a';
+      ctx.fillText(clip(ctx, chip.label, room), tx, chipY + 40);
+      var size = chips.length === 1 ? 40 : 34;
+      ctx.font = display(size);
+      while (size > 24 && ctx.measureText(chip.name).width > room) { size -= 2; ctx.font = display(size); }
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(clip(ctx, chip.name, room), tx, chipY + 44 + size);
+      ctx.textAlign = 'center';
+    });
+
+    // The call to play, "너의 최애는? 👉 babdoduk.vercel.app", and the wordmark: both inside the safe zone.
+    shadow('rgba(30, 10, 60, 0.4)', 28, 10);
+    pill(words.cta + ' 👉 ' + words.host, display(44), ctaY, 88, '#1e1d1a', '#ffffff');
+    ctx.font = plain(900, 46);
+    var mark = 'Babdoduk', mw = ctx.measureText(mark).width;
+    ctx.font = plain(700, 26);
+    var bw = ctx.measureText(words.brand).width, total = mw + 20 + bw, left = (W - total) / 2, base = ctaY + 88 + 62;
+    ctx.textAlign = 'left';
+    ctx.font = plain(900, 46);
+    var holo = ctx.createLinearGradient(left, 0, left + mw, 0);
+    holo.addColorStop(0, '#ffffff');
+    holo.addColorStop(0.5, '#fce7f3');
+    holo.addColorStop(1, '#e0e7ff');
+    ctx.fillStyle = holo;
+    ctx.fillText(mark, left, base);
+    ctx.font = plain(700, 26);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+    ctx.fillText(words.brand, left + mw + 20, base - 4);
+    ctx.textAlign = 'center';
+
+    // The photo credit, tiny, at the very bottom: one line, no names. The licences ask for attribution
+    // "reasonable to the medium"; the authors and licences, with links, are listed on the result screen
+    // (renderCredits) and this line points there.
+    if (words.credit) {
+      ctx.font = plain(500, 20);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+      ctx.fillText(clip(ctx, words.credit, inner), W / 2, H - 70);
+    }
+  }
+  // The card of the result on screen: drawn once per winner and language, then kept.
+  function prepareStory() {
+    var key = storyKey();
+    if (!key) return Promise.resolve(null);
+    if (story && story.key === key) return story.promise;
+    if (story && story.url) URL.revokeObjectURL(story.url);
+    var mine = story = { key: key, file: null, url: null };
+    var words = storyTexts(), preview = $('wcStoryPreview');
+    preview.hidden = true;
+    $('wcStory').setAttribute('aria-busy', 'true');
+    var juaText = ['🏆 ' + words.kicker, words.name, words.emoji + ' ' + words.won, words.cta + ' 👉 ' + words.host]
+      .concat(words.chips.map(function (c) { return c.name; })).join('');
+    var plainText = [words.sub, words.credit, words.brand, 'Babdoduk'].concat(words.chips.map(function (c) { return c.label; })).join('');
+    var noto = document.fonts && document.fonts.load ? Promise.all(['500', '600', '700', '900'].map(function (w) {
+      return document.fonts.load(w + " 40px 'Noto Sans KR'", plainText + juaText);
+    })) : Promise.resolve();
+    mine.promise = Promise.all([loadStoryFont(juaText), within(noto, 3000, null),
+                                Promise.all([result.id].concat(words.chips.map(function (c) { return c.id; })).map(loadPhoto))])
+      .then(function (got) {
+        if (story !== mine) return null;
+        var canvas = document.createElement('canvas');
+        canvas.width = STORY.w;
+        canvas.height = STORY.h;
+        drawStory(canvas, words, got[0], got[2]);
+        return new Promise(function (resolve) { canvas.toBlob(resolve, 'image/png'); });
+      })
+      .then(function (blob) {
+        if (story !== mine || !blob) return null;
+        mine.file = typeof File === 'function' ? new File([blob], 'babdoduk-worldcup-story.png', { type: 'image/png' }) : blob;
+        mine.url = URL.createObjectURL(blob);
+        preview.src = mine.url;
+        preview.alt = fill(t('wc.story.alt', '스토리 이미지 미리보기: {dish}'), { dish: words.name });
+        preview.hidden = false;
+        $('wcStory').removeAttribute('aria-busy');
+        return mine.file;
+      })
+      .catch(function () { $('wcStory').removeAttribute('aria-busy'); return null; });
+    return mine.promise;
+  }
+  // A short message in the toast, read out once (role="status").
+  var toastTimer = 0;
+  function toast(text) {
+    var box = $('wcShareStatus');
+    clearTimeout(toastTimer);
+    box.textContent = '';
+    box.classList.remove('is-shown');
+    setTimeout(function () {
+      box.textContent = text;
+      box.classList.add('is-shown');
+      toastTimer = setTimeout(function () { box.classList.remove('is-shown'); }, 2800);
+    }, 30);
+  }
+  function touchDevice() { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); }
+  function canShareFile(file) {
+    try { return !!(file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; }
+  }
+  function download(file) {
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(file);
+    link.download = 'babdoduk-worldcup-story.png';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+    toast(t('wc.saved', '저장했어요'));
+  }
+  // 📥 스토리 이미지 저장: a computer downloads the PNG; a phone, where a download lands somewhere hard
+  // to find, opens the share sheet with the file alone ("이미지 저장" or straight to a story).
+  function saveStory() {
+    var file = story && story.key === storyKey() ? story.file : null;
+    if (!file) {
+      toast(t('wc.preparing', '이미지를 만드는 중이에요'));
+      prepareStory().then(function (made) { if (made) download(made); else toast(t('wc.shareFailed', '공유하지 못했어요.')); });
+      return;
+    }
+    if (touchDevice() && canShareFile(file)) {
+      navigator.share({ files: [file] }).catch(function (e) { if (!e || e.name !== 'AbortError') download(file); });
+      return;
+    }
+    download(file);
+  }
+  // The friend challenge: this page with the winner and the category, on this host (lab links stay on lab).
+  function shareUrl() {
+    return location.origin + location.pathname + '?from=' + encodeURIComponent(result.id) + '&cat=' + encodeURIComponent(result.category);
+  }
+  function copyLink(url) {
+    function done() { toast(t('wc.copied', '링크를 복사했어요')); }
+    function legacy() {
+      var area = document.createElement('textarea');
+      area.value = url;
+      area.setAttribute('readonly', '');
+      area.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      area.remove();
+      if (ok) done(); else toast(t('wc.shareFailed', '공유하지 못했어요.'));
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, legacy);
+    else legacy();
+  }
+  // 📤 공유하기: on a phone the share sheet (Web Share Level 2) with the card, the text and the link,
+  // where Instagram (스토리) and KakaoTalk are; without file sharing the text and the link; on a
+  // computer the link is copied.
+  function share() {
+    var text = fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'),
+      { cat: catName(result.category), dish: name(result.id) });
+    var url = shareUrl(), file = story && story.key === storyKey() ? story.file : null;
+    if (!touchDevice() || !navigator.share) { copyLink(url); return; }
+    var data = { title: document.title, text: text, url: url };
+    if (canShareFile(file)) data.files = [file];
+    navigator.share(data).catch(function (e) { if (!e || e.name !== 'AbortError') copyLink(url); });
+  }
+  // The KakaoTalk hook (docs/WORLDCUP_SHARE.md): no SDK is loaded until the owner has an app key. Once
+  // the Kakao JS SDK is on the page and Kakao.init(<key>) has run, a 카카오톡 button can call
+  // Kakao.Share.sendDefault(window.BabdodukWorldcupShare.kakaoFeed()) for a feed card.
+  window.BabdodukWorldcupShare = {
+    kakaoFeed: function () {
+      if (!result) return null;
+      var url = shareUrl(), photo = photoOf(result.id);
+      return {
+        objectType: 'feed',
+        content: {
+          title: fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'), { cat: catName(result.category), dish: name(result.id) }),
+          description: t('wc.story.cta', '너의 최애는?'),
+          imageUrl: photo ? new URL(photo.image, location.href).href : new URL('images/worldcup/og-worldcup.jpg', location.href).href,
+          link: { mobileWebUrl: url, webUrl: url }
+        },
+        buttons: [{ title: t('wc.friendCta', '나도 해보기'), link: { mobileWebUrl: url, webUrl: url } }]
+      };
+    }
+  };
   function undo() {
     if (!game || !game.stack.length || busy) return;
     var previous = game.stack.pop();
@@ -1134,25 +2021,6 @@
     }
     store();
     renderMatch(true);
-  }
-  function share() {
-    var text = fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'),
-      { cat: catName(result.category), dish: name(result.id) });
-    var url = location.origin + location.pathname;
-    var status = $('wcShareStatus');
-    if (navigator.share) {
-      navigator.share({ title: document.title, text: text, url: url }).catch(function () {});
-      return;
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text + ' ' + url).then(function () {
-        status.textContent = t('wc.copied', '결과와 링크를 복사했어요');
-      }, function () {
-        status.textContent = t('wc.shareFailed', '공유하지 못했어요.');
-      });
-      return;
-    }
-    status.textContent = t('wc.shareFailed', '공유하지 못했어요.');
   }
   function clearHistory() {
     winners = [];
@@ -1178,16 +2046,48 @@
     var cat = query.get('cat');
     return CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all';
   }
+  // The friend challenge (a shared result): worldcup.html?from=<dish>&cat=<category>. A dish of the
+  // pool shows "친구의 최애는 ○○! 🏆 너도 해봐" over the start screen, a known category is the tile
+  // chosen; anything else is ignored. It never starts a game (that is go=1 alone), and before the
+  // launch the banner shows while the game stays locked, with no photo.
+  var friend = null;    // the friend's dish id, from the address
+  function challenge() {
+    if (embedded || !window.URLSearchParams) return { id: null, cat: null };
+    var query = new URLSearchParams(location.search), id = query.get('from'), cat = query.get('cat');
+    return { id: set.indexOf(id) >= 0 ? id : null,
+             cat: CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : null };
+  }
+  function renderFriend() {
+    var box = $('wcFriend');
+    if (!box) return;
+    box.hidden = !friend;
+    if (!friend) return;
+    var text = $('wcFriendText'), parts = t('wc.friend', '친구의 최애는 {dish}! 🏆 너도 해봐').split('{dish}');
+    text.textContent = '';
+    text.appendChild(document.createTextNode(parts[0]));
+    node('strong', 'wc-friend-dish', text).textContent = name(friend);
+    text.appendChild(document.createTextNode(parts.slice(1).join(name(friend))));
+    var img = $('wcFriendPhoto'), photo = photoOf(friend);
+    img.hidden = locked() || !photo;                              // before the launch no photo is requested
+    if (!img.hidden && img.getAttribute('src') !== photo.image) {
+      img.onerror = function () { img.hidden = true; };
+      img.src = photo.image;
+    }
+  }
   function cleanAddress() {
     try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* keep the address */ }
   }
   function ready() {
     buildTiles();
+    if (!embedded) sound.show();
     if (!embedded) restore();                  // the news page's card starts fresh, whatever is saved
     buildFloaters();
     show('intro');
     var asked = requested();
     if (asked) cleanAddress();
+    var pal = asked ? { id: null, cat: null } : challenge();
+    friend = pal.id;
+    if (pal.cat) category = pal.cat;           // the friend's category is the tile chosen
     if (asked && locked()) asked = null;       // go=1 before the launch is just the locked start screen
     choose(asked || category, false);          // the first draw: its photos shuffle in
     renderIntro();
@@ -1237,7 +2137,7 @@
     $('wcRestart').addEventListener('click', function () { if (!busy) start(game ? game.category : category, true); });
     $('wcAgain').addEventListener('click', function () { start(result ? result.category : category, true); });
     $('wcShare').addEventListener('click', share);
-    $('wcSaveImage').addEventListener('click', saveImage);
+    $('wcSaveImage').addEventListener('click', saveStory);
     $('wcHistoryClear').addEventListener('click', clearHistory);
   }
   document.addEventListener('babdoduk-lang', render);
@@ -1268,6 +2168,7 @@
       return;
     }
     if (/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) return;
+    if (sound.owns(e.target) && (e.key === 'Enter' || e.key === ' ')) return;   // the sound toggle never skips
     if (e.ctrlKey || e.metaKey || e.altKey) { endSplash('quiet'); return; }
     e.preventDefault();
     e.stopPropagation();
