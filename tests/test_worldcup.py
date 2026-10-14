@@ -18,7 +18,7 @@ def test_each_game_draws_32_from_a_pool_of_distinct_catalog_dishes():
     assert CUP["size"] == 32 and len(CUP["dishes"]) >= 32 and len(set(CUP["dishes"])) == len(CUP["dishes"])
     assert page_content.worldcup_errors(ROOT) == []
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    assert "shuffle(set).slice(0, size)" in script            # a fresh draw from the pool each game
+    assert "shuffle(poolOf(cat)).slice(0, size)" in script    # a fresh draw from the chosen category each game
 
 
 def test_a_broken_bracket_is_refused(tmp_path):
@@ -56,6 +56,7 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     # data/content/ is never deployed (.vercelignore): the sync writes the dishes into the page.
     embedded = re.search(r"window\.BABDODUK_WORLDCUP = (\{.*\});", html).group(1)
     assert json.loads(embedded)["dishes"] == CUP["dishes"]
+    assert json.loads(embedded)["categories"] == CUP["categories"]
     for forbidden in ("supabase", "XMLHttpRequest", "WebSocket", "sendBeacon", "POST"):
         assert forbidden not in script, forbidden
     assert "var KEY = 'babdoduk-worldcup';" in script and "localStorage.setItem(KEY" in script
@@ -217,3 +218,78 @@ def test_a_skip_is_never_a_pick():
     # The match is rendered and focused before the splash, and gets focus again after it.
     assert "renderMatch(true, splashing);\n      if (splashing) showSplash(round);" in script
     assert "if (reason !== 'quiet' && view === 'match') cards[0].focus({ preventScroll: true });" in script
+
+
+# ---- categories (owner, 2026-10-14: "너무 좋아") -------------------------------------------------------
+# What the owner approved: 전체 plus seven categories, each played as a 32강. The pool was derived from
+# the catalog's cuisineGroup, so the counts below are exactly the approved table.
+CATEGORY_COUNTS = {"korean": 268, "chinese": 75, "japanese": 75, "western": 132, "world": 86, "snack": 35, "dessert": 92}
+
+
+def catalog_items():
+    items = {}
+    for pack in json.loads((ROOT / "data/foods/catalog.json").read_text(encoding="utf-8"))["packs"]:
+        for item in json.loads((ROOT / pack["src"]).read_text(encoding="utf-8"))["items"]:
+            items[item["id"]] = item
+    return items
+
+
+def test_every_pool_dish_is_in_exactly_one_category_and_the_counts_are_the_approved_ones():
+    categories = CUP["categories"]
+    assert set(categories) == set(CUP["dishes"])                      # one entry per dish, none for a stranger
+    assert set(categories.values()) == set(page_content.WORLDCUP_CATEGORIES) == set(CATEGORY_COUNTS)
+    counts = {key: sum(1 for c in categories.values() if c == key) for key in CATEGORY_COUNTS}
+    assert counts == CATEGORY_COUNTS
+    assert sum(counts.values()) == len(CUP["dishes"]) == 763            # 전체
+    assert min(counts.values()) >= CUP["size"]                          # every category fills a 32강
+    items = catalog_items()
+    for dish, key in categories.items():                               # and it is the catalog's own cuisineGroup
+        assert key == page_content.worldcup_category(items[dish]), dish
+    assert not [g for g in {i["cuisineGroup"] for i in items.values()} if g not in page_content.WORLDCUP_CATEGORY_BY_GROUP]
+
+
+def test_a_dish_without_or_in_the_wrong_category_is_refused(tmp_path):
+    shutil.copytree(ROOT / "data/foods", tmp_path / "data/foods")
+    shutil.copytree(ROOT / "images/worldcup", tmp_path / "images/worldcup")
+    (tmp_path / "data/content").mkdir(parents=True)
+    first = CUP["dishes"][0]
+
+    def errors(categories):
+        (tmp_path / "data/content/worldcup.json").write_text(json.dumps(dict(CUP, categories=categories)), encoding="utf-8")
+        return page_content.worldcup_errors(tmp_path)
+
+    assert errors(CUP["categories"]) == []
+    assert any(f"{first} has no category" in e for e in errors({k: v for k, v in CUP["categories"].items() if k != first}))
+    assert any("not in the bracket" in e for e in errors(dict(CUP["categories"], **{"kr-made-up-dish": "korean"})))
+    assert any("does not exist" in e for e in errors(dict(CUP["categories"], **{first: "brunch"})))
+    assert any(f"{first} is in the category 'dessert', but the catalog says" in e
+               for e in errors(dict(CUP["categories"], **{first: "dessert"})))
+    thin = {d: ("korean" if c == "snack" else c) for d, c in CUP["categories"].items()}      # no snacks left
+    assert any("the category 'snack' has 0 dishes, fewer than a game of 32" in e for e in errors(thin))
+
+
+def test_the_start_screen_offers_the_categories_with_counts_and_keeps_the_choice_in_the_saved_game():
+    html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
+    keys = ["all", *CATEGORY_COUNTS]
+    assert re.search(r"var CATEGORIES = \[(.*?)\];", script).group(1).replace("'", "").replace(" ", "").split(",") == keys
+    assert [ko[f"wc.cat.{k}"] for k in keys] == ["전체", "한식", "중식", "일식", "양식", "아시아·세계", "분식·간식", "디저트·카페"]
+    assert [en[f"wc.cat.{k}"] for k in keys] == ["All", "Korean", "Chinese", "Japanese", "Western", "Asian & world",
+                                                 "Snacks", "Desserts & café"]
+    # The chips sit above the start button, in a labelled group of toggle buttons that wrap.
+    intro = html.split('id="wcIntro"', 1)[1].split('id="wcStart"', 1)[0]
+    assert 'id="wcCats" role="group" aria-labelledby="wcCatsLabel"' in intro
+    assert "aria-pressed" in script and "'aria-label', catName(cat) + ' ' + n" in script
+    assert ".wc-chip:focus-visible" in css and "min-height: 44px" in css.split(".wc-chip {", 1)[1].split("}", 1)[0]
+    assert "flex-wrap: wrap" in css.split(".wc-cats {", 1)[1].split("}", 1)[0]
+    # The saved game records its category; an older one has none and is the whole pool.
+    assert "category: cat };" in script and "if (g.category == null) return 'all';" in script
+    assert "var KEY = 'babdoduk-worldcup';" in script and "{ v: 1, set: signature()" in script      # old saves stay readable
+    # The category is shown while playing, on the result, in the share text and on the image.
+    assert "$('wcGame').textContent = gameLabel(game.category);" in script
+    assert "$('wcResultGame').textContent = gameLabel(result.category);" in script
+    assert "{cat}" in ko["wc.shareText"] and "{cat}" in en["wc.shareText"] and "gameLabel(result.category) + ' · '" in script
+    assert (ko["wc.catGame"], en["wc.catGame"]) == ("{cat} {n}강", "{cat} · Round of {n}")
