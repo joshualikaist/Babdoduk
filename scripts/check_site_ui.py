@@ -1129,6 +1129,32 @@ GATE_SNAP = """() => { const shown = e => !!e && !e.hidden && getComputedStyle(e
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
 
 
+# The mystery box (owner 2026-10-14): before the launch the tiles, the preview photos and the floating
+# photos are blurred, inert or aria-hidden placeholders with no photo request; live and ended leave them alone.
+MYSTERY_SNAP = """() => { const q = s => document.querySelector(s), all = s => [...document.querySelectorAll(s)];
+  const shown = e => !!e && !e.hidden && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
+  const blur = e => { const m = /blur\\(([\\d.]+)px\\)/.exec(getComputedStyle(e).filter); return m ? Number(m[1]) : 0; };
+  const sat = e => { const m = /saturate\\(([\\d.]+)\\)/.exec(getComputedStyle(e).filter); return m ? Number(m[1]) : 1; };
+  const body = q('#wcMysteryBody'), lock = q('#wcMysteryLock'), badge = q('.wc-mystery-badge');
+  return {tilesBlur: blur(q('.wc-tiles')), tilesSat: sat(q('.wc-tiles')),
+    previewBlur: blur(q('.wc-preview-photos')), floaterBlur: all('.wc-floater').filter(shown).map(blur),
+    inert: !!body && body.inert, ariaHidden: body && body.getAttribute('aria-hidden'),
+    pressed: all('.wc-tile[aria-pressed]').length, pressedTrue: all('.wc-tile[aria-pressed="true"]').length,
+    previewImgs: all('#wcPreviewPhotos img').map(i => ({src: i.getAttribute('src'), alt: i.alt, id: i.getAttribute('data-id')})),
+    floaterSrc: all('.wc-floater').filter(shown).map(i => i.getAttribute('src')),
+    lock: shown(lock), badge: badge && shown(badge) && badge.textContent.trim().replace(/\\s+/g, ' '),
+    sr: lock && lock.querySelector('.wc-sr').textContent, srHidden: lock && lock.getAttribute('aria-hidden'),
+    badgeHidden: badge && badge.getAttribute('aria-hidden'),
+    pointer: getComputedStyle(q('.wc-tiles')).pointerEvents}; }"""
+
+
+def mystery_requests(page):
+    """Start logging the dish photos (images/worldcup/*) a page requests; returns the list."""
+    seen = []
+    page.on("request", lambda request: seen.append(request.url) if "/images/worldcup/" in request.url else None)
+    return seen
+
+
 def worldcup_gate(page):
     """The launch gate (owner 2026-10-14, js/worldcup-gate.js): before 2026-10-16 the start screen is a teaser
     with a locked pill and a countdown and nothing plays, not even with go=1 or a saved game; from the first
@@ -1151,20 +1177,60 @@ def worldcup_gate(page):
         page.evaluate("localStorage.removeItem('babdoduk-lang')")
         return page.evaluate(GATE_SNAP)
 
+    photos = mystery_requests(page)
+
+    def mystery_hidden(shot, where):
+        """Before the launch: blurred past reading, inert, no photo, one sentence for screen readers."""
+        check(shot["tilesBlur"] >= 10 and shot["tilesSat"] < 1 and shot["previewBlur"] >= 8
+              and shot["floaterBlur"] and all(b >= 8 for b in shot["floaterBlur"]),
+              (where, "tiles, preview and floating photos are blurred", shot))
+        check(shot["inert"] and shot["ariaHidden"] == "true", (where, "the blurred area is inert and aria-hidden", shot))
+        check(shot["pressed"] == 0 and shot["pointer"] == "none", (where, "no tile is chosen or clickable", shot))
+        check(len(shot["previewImgs"]) == 5 and all(i["src"] is None and i["alt"] == "" and i["id"] is None for i in shot["previewImgs"])
+              and shot["floaterSrc"] and all(src is None for src in shot["floaterSrc"]),
+              (where, "the preview and floating photos are placeholders with no src", shot))
+        check(shot["lock"] and shot["badge"] in ("🔒 10/16 공개", "🔒 Opens Oct 16") and shot["badgeHidden"] == "true"
+              and shot["sr"] in ("카테고리는 10/16에 공개돼요", "The categories are revealed on Oct 16.") and shot["srHidden"] is None,
+              (where, "the lock badge is visible and a sentence is for screen readers", shot))
+
+    def mystery_open(shot, where):
+        """Live and ended: nothing blurred, the tiles work, the real photos are there, no lock."""
+        check(shot["tilesBlur"] == 0 and shot["previewBlur"] == 0 and not any(shot["floaterBlur"]), (where, "unblurred", shot))
+        check(not shot["inert"] and shot["ariaHidden"] is None and shot["pressedTrue"] == 1 and shot["pointer"] != "none",
+              (where, "the tiles are interactive and one is chosen", shot))
+        check(len(shot["previewImgs"]) == 5 and all((i["src"] or "").startswith("images/worldcup/") and i["alt"] for i in shot["previewImgs"])
+              and shot["floaterSrc"] and all((src or "").startswith("images/worldcup/") for src in shot["floaterSrc"]) and not shot["lock"],
+              (where, "the real photos load and no lock shows", shot))
+
     # worldcup.html before the launch: the teaser, locked, nothing playable.
+    photos.clear()
     shot = snap(SITE_HOST, "worldcup.html", WC_SOON)
+    mystery_hidden(page.evaluate(MYSTERY_SNAP), "worldcup.html")
+    check(not photos, ("worldcup.html requests no dish photo before the launch", photos))
     check(shot["phase"] == "soon" and shot["locked"] and shot["pill"] == "🔒 10/16 오픈" and shot["count"] == "D-2 · 1일 2시간 남음",
           ("locked pill and countdown", shot))
     check(not shot["start"] and not shot["resume"] and not shot["match"] and shot["intro"] and shot["tiles"] == 9
           and shot["floaters"] == 4, ("the teaser stays, the start button is gone", shot))
     check(shot["overflow"] <= 0, ("no horizontal scroll", shot["overflow"]))
-    page.locator('.wc-tile[data-cat="korean"]').click()
+    # The mystery box takes neither a tap nor the keyboard: a tile is not chosen, and Tab never enters it.
+    page.locator('.wc-tile[data-cat="korean"]').scroll_into_view_if_needed()
+    tile = page.locator('.wc-tile[data-cat="korean"]').bounding_box()
+    page.mouse.click(tile["x"] + tile["width"] / 2, tile["y"] + tile["height"] / 2)
+    page.evaluate("document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)")
+    entered = False
+    for _ in range(14):
+        page.keyboard.press("Tab")
+        entered = entered or page.evaluate("!!document.activeElement.closest('#wcMysteryBody')")
+    check(not entered and page.locator(".wc-tile[aria-pressed]").count() == 0 and page.locator("#wcPreview img[src]").count() == 0,
+          "a tap or Tab does not reach the blurred tiles")
     page.evaluate("document.querySelector('#wcStart').click()")              # even a forced click starts nothing
     check(page.locator("#wcMatch").is_hidden() and not page.evaluate("localStorage.getItem('babdoduk-worldcup')"),
           "a forced start click does nothing")
     page.locator("#langToggle").click()
     shot = page.evaluate(GATE_SNAP)
     check(shot["pill"] == "🔒 Opens Oct 16" and shot["count"] == "D-2 · 1d 2h left", ("English", shot))
+    mystery_hidden(page.evaluate(MYSTERY_SNAP), "worldcup.html English")
+    check(not photos, ("a language switch loads no dish photo before the launch", photos))
     page.locator("#langToggle").click()
     for query in ("?cat=korean&go=1", "?go=1", "?cat=nope&go=1"):
         shot = snap(SITE_HOST, "worldcup.html", WC_SOON, query)
@@ -1185,31 +1251,38 @@ def worldcup_gate(page):
     for now in (WC_OPENS, WC_RUNNING, WC_LAST):
         shot = snap(SITE_HOST, "worldcup.html", now)
         check(shot["phase"] == "live" and shot["start"] and not shot["locked"] and not shot["ended"], ("open", now, shot))
+        mystery_open(page.evaluate(MYSTERY_SNAP), ("worldcup.html", now))
     shot = snap(SITE_HOST, "worldcup.html", WC_LAST, "?cat=korean&go=1")
     check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", ("go=1 starts on the last day", shot))
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     # After the end: still playable, with a small note.
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED)
     check(shot["phase"] == "ended" and shot["start"] and shot["ended"] and not shot["locked"], ("after the end: playable with a note", shot))
+    mystery_open(page.evaluate(MYSTERY_SNAP), ("worldcup.html", "ended"))
     check("이벤트 종료" in page.locator(".wc-ended").inner_text(), "the note says the event is over")
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED, "?cat=korean&go=1")
     check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", "after the end go=1 still plays")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
 
     # The news card: before the launch the teaser with the locked pill, in the coming-up list.
+    photos.clear()
     shot = snap(SITE_HOST, "event.html", WC_SOON)
     check(shot["band"] == "upcoming" and shot["state"] == "10/16 공개 예정" and shot["locked"] and not shot["start"] and shot["tiles"] == 9
           and shot["floaters"] == 4 and shot["pill"] == "🔒 10/16 오픈" and shot["count"] == "D-2 · 1일 2시간 남음",
           ("the event card is locked", shot))
     check(page.locator("#eventUpcoming .wc-embed").count() == 1 and shot["overflow"] <= 0, "in 지금, no horizontal scroll")
+    mystery_hidden(page.evaluate(MYSTERY_SNAP), "event.html")
+    check(not photos, ("event.html requests no dish photo before the launch", photos))
     page.locator("#langToggle").click()
     shot = page.evaluate(GATE_SNAP)
     check(shot["state"] == "Opens Oct 16" and shot["pill"] == "🔒 Opens Oct 16", ("English event card", shot))
+    mystery_hidden(page.evaluate(MYSTERY_SNAP), "event.html English")
     page.locator("#langToggle").click()
     page.evaluate("document.querySelector('#wcStart').click()")
     check(page.url.endswith("/event.html"), "a forced start click on the card goes nowhere")
     shot = snap(SITE_HOST, "event.html", WC_RUNNING)
     check(shot["band"] == "now" and shot["state"].startswith("진행 중") and shot["start"] and not shot["locked"], ("running card", shot))
+    mystery_open(page.evaluate(MYSTERY_SNAP), ("event.html", "running"))
     shot = snap(SITE_HOST, "event.html", WC_LAST)
     check(shot["band"] == "now" and shot["start"], ("running on the last day", shot))
     shot = snap(SITE_HOST, "event.html", WC_ENDED)
@@ -1226,6 +1299,7 @@ def worldcup_gate(page):
     for host, early in (("babdoduk.vercel.app", False), (SITE_HOST, False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
         shot = snap(host, "worldcup.html", WC_SOON)
         check(shot["locked"] == (not early) and shot["start"] == early, (host, "worldcup.html", shot))
+        (mystery_open if early else mystery_hidden)(page.evaluate(MYSTERY_SNAP), (host, "worldcup.html"))
         shot = snap(host, "event.html", WC_SOON)
         check(shot["locked"] == (not early) and shot["start"] == early and shot["band"] == ("now" if early else "upcoming")
               and shot["state"].startswith("진행 중" if early else "10/16 공개 예정"), (host, "event.html", shot))
@@ -1265,13 +1339,18 @@ def home_wc_promo(page):
         soon: shown(soon) && {href: soon.getAttribute('href'), text: soon.textContent.trim().replace(/\\s+/g, ' ')},
         live: shown(live) && {href: live.getAttribute('href'), text: live.textContent.trim().replace(/\\s+/g, ' ')},
         photos: [...document.querySelectorAll('.home-wc-photo')].map(i => i.naturalWidth > 0),
+        photoSrc: [...document.querySelectorAll('.home-wc-photo')].map(i => i.getAttribute('src')),
+        photoBlur: [...document.querySelectorAll('.home-wc-photo')].map(i => { const m = /blur\\(([\\d.]+)px\\)/.exec(getComputedStyle(i).filter); return m ? Number(m[1]) : 0; }),
         height: promo ? box(promo).height : 0, top: promo ? box(promo).top : 0,
         hero: box(q('#homeTitle')).top, cal: shown(q('#homeCal')), calTop: box(q('#homeCal')).top,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
 
+    home_photos = mystery_requests(page)
+
     def snap(host, now, size=(390, 844)):
         page.set_viewport_size({"width": size[0], "height": size[1]})
         page.clock.set_fixed_time(now)
+        home_photos.clear()
         gate_page(page, host, "index.html")
         page.evaluate("localStorage.removeItem('babdoduk-lang')")
         return page.evaluate(SNAP)
@@ -1284,13 +1363,17 @@ def home_wc_promo(page):
               and shot["count"] == "D-2 · 1일 2시간 남음" and visible == full, (width, "before the launch", shot, visible))
         check(shot["soon"] and shot["soon"]["href"] == "event.html" and shot["soon"]["text"] == "자세히 보기 →" and not shot["live"],
               (width, "links to the news page", shot))
-        check(all(shot["photos"]) and len(shot["photos"]) == 2, (width, "two dish photos load", shot["photos"]))
+        check(not any(shot["photos"]) and shot["photoSrc"] == [None, None] and len(shot["photoBlur"]) == 2 and all(b >= 3 for b in shot["photoBlur"]),
+              (width, "two blurred placeholders, no dish photo before the launch", shot["photos"], shot["photoSrc"], shot["photoBlur"]))
+        check(not home_photos, (width, "no dish photo is requested before the launch", home_photos))
         # A phone: above the copy; wider, in the paper band under it. Either way before the calendar.
         order = shot["top"] < shot["hero"] if width < 721 else shot["hero"] < shot["top"]
         check(shot["overflow"] <= 0 and shot["cal"] and order and shot["top"] < shot["calTop"],
               (width, "in the hero band, the calendar stays", shot))
         check(shot["height"] <= (100 if width < 641 else 80), (width, "a compact band", shot["height"]))
         shot = snap(SITE_HOST, WC_RUNNING, (width, height))
+        check(all(shot["photos"]) and len(shot["photos"]) == 2 and not any(shot["photoBlur"]),
+              (width, "running: the two dish photos load, unblurred", shot["photos"], shot["photoBlur"]))
         check(shot["shown"] and shot["states"] == ["지금 진행 중 · 10/23까지"] and not shot["soon"] and not shot["countShown"]
               and shot["live"] == {"href": "worldcup.html", "text": "🎰 지금 하기"}, (width, "running", shot))
         check(shot["overflow"] <= 0 and shot["height"] <= (100 if width < 641 else 80), (width, "running: compact, no horizontal scroll", shot))
@@ -1335,6 +1418,7 @@ def home_wc_promo(page):
     synthetic = gate_preview(page)
     for host, early in (("babdoduk.vercel.app", False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
         shot = snap(host, WC_SOON)
+        check(all(shot["photos"]) == early and (not any(shot["photoBlur"]) if early else all(shot["photoBlur"])), (host, "promo photos", shot))
         check(shot["shown"] and bool(shot["live"]) == early and bool(shot["soon"]) == (not early)
               and shot["states"] == (["지금 진행 중 · 10/23까지"] if early else ["10/16 오픈!"]), (host, shot))
     if synthetic:

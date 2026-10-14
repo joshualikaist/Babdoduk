@@ -64,12 +64,13 @@
     <div class="home-top">
       <!-- The 먹방 월드컵 promo (owner 2026-10-14; a paragraph, not a heading: the h1 comes first). Before the
            launch it counts down and points to the news page, while it runs it starts the game, after the
-           end it is gone. js/worldcup-gate.js decides (data-wc-show) from data/content/events.json; the
+           end it is gone. Its two dish photos are blurred placeholders with no `src` until it is live
+           (data-wc-src; nothing is revealed before the launch). js/worldcup-gate.js decides (data-wc-show) from data/content/events.json; the
            fonts and texts are written by the sync. -->
       <section class="home-wc" aria-labelledby="homeWcTitle" data-wc-show="soon live" hidden>
         <div class="home-wc-photos" aria-hidden="true">
-          <img class="home-wc-photo home-wc-photo--a" src="images/worldcup/kr-bulgogi.jpg" alt="" width="720" height="540" decoding="async" />
-          <img class="home-wc-photo home-wc-photo--b" src="images/worldcup/kr-kimchi-jjigae.jpg" alt="" width="720" height="540" decoding="async" />
+          <img class="home-wc-photo home-wc-photo--a" data-wc-src="images/worldcup/kr-bulgogi.jpg" alt="" width="720" height="540" decoding="async" />
+          <img class="home-wc-photo home-wc-photo--b" data-wc-src="images/worldcup/kr-kimchi-jjigae.jpg" alt="" width="720" height="540" decoding="async" />
         </div>
         <div class="home-wc-body">
           <p class="home-wc-title" id="homeWcTitle"><span aria-hidden="true">🏆</span> <span data-i18n="home.wc.title">밥도둑 먹방 월드컵</span></p>
