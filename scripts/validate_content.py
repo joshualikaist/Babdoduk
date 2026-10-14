@@ -363,7 +363,9 @@ GG_EVENT_SCHEMA = {
     "organizer": GG_TEXT, "eligibility": GG_TEXT,
     "startAt": GG_TIME, "endAt": GG_TIME,
     "location": {"name": GG_TEXT, "building": GG_TEXT, "room": GG_TEXT},
-    "food": {"provided": GG_ENUM, "type": GG_ENUM, "description": GG_TEXT},
+    "food": {"provided": GG_ENUM, "type": GG_ENUM, "description": GG_TEXT, "source": GG_ENUM},
+    # A prize draw or gift for participants (owner decision 2026-10-14), listed with a gift mark.
+    "giveaway": {"provided": GG_ENUM, "description": GG_TEXT},
     "registration": {"required": GG_ENUM, "deadline": GG_TIME, "url": GG_URL},
     "confidence": GG_NUMBER,
     "sources": [{"type": GG_ENUM, "name": GG_TEXT, "url": GG_URL}],
@@ -377,6 +379,22 @@ GG_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
 GG_URL_PHONE_RE = re.compile(r"(?:\+82[-\s.]?|82[-\s.]|0)1[016789][-\s.]?\d{3,4}[-\s.]?\d{4}")
 GG_TEXT_PATTERNS = ((EMAIL_RE, "an e-mail address"), (PHONE_RE, "a phone number"),
                     (SECRET_RE, "a token-like string"), (DOORAY_LINK_RE, "a Dooray/private file link"))
+
+
+def gg_listing_basis_errors(tag: str, ev: dict) -> list[str]:
+    """A listing stands on explicit food, or on a giveaway (a gift for participants). The extra
+    fields are checked here because a schema cannot tie them to food.provided."""
+    errors: list[str] = []
+    food = ev.get("food") if isinstance(ev.get("food"), dict) else {}
+    giveaway = ev.get("giveaway")
+    if giveaway is not None and (not isinstance(giveaway, dict) or giveaway.get("provided") != "true"
+                                 or set(giveaway) - {"provided", "description"}):
+        errors.append(f"{tag} giveaway must be {{provided: \"true\", description}} when present")
+    if food.get("source") is not None and (food.get("source") not in ("text", "poster") or food.get("provided") != "true"):
+        errors.append(f"{tag} food.source is text/poster and only with food.provided true")
+    if food.get("provided") != "true" and not (isinstance(giveaway, dict) and giveaway.get("provided") == "true"):
+        errors.append(f"{tag} food.provided must be true unless the listing is a giveaway")
+    return errors
 
 
 def gg_schema_fields(value, schema=GG_EVENT_SCHEMA, path=""):
@@ -603,6 +621,7 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
             errors.append(f"{tag} food.type invalid")
         if food.get("provided") != "true" and food.get("type") not in (None, "", "unknown"):
             errors.append(f"{tag} food.type set while food.provided is not true")
+        errors += gg_listing_basis_errors(tag, ev)
         reg = ev.get("registration") or {}
         if reg.get("required") not in GG_TRI:
             errors.append(f"{tag} registration.required must be true/false/unknown")
@@ -712,8 +731,7 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
             elif last < generated - timedelta(days=GG_ARCHIVE_WINDOW_DAYS):
                 errors.append(f"{tag} ended outside the {GG_ARCHIVE_WINDOW_DAYS}-day public window")
         food = ev.get("food") or {}
-        if food.get("provided") != "true":
-            errors.append(f"{tag} food.provided must be true: only explicit-food listings are archived")
+        errors += gg_listing_basis_errors(tag, ev)
         if food.get("type") not in GG_FOOD_TYPES:
             errors.append(f"{tag} food.type invalid")
         for key in ("registration", "confidence"):

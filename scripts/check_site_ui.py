@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
@@ -53,10 +53,17 @@ def contrast(a, b):
     return (light + .05) / (dark + .05)
 
 
+SITE_HOST = "site-ui.invalid"
+# Hosts the launch gate tells apart (js/worldcup-gate.js): production, lab and localhost are served from
+# the same files here, so a check can load a page "as" each; every other host is refused.
+GATE_HOSTS = {"babdoduk.vercel.app": "production", "babdoduk-lab.vercel.app": "lab", "localhost": "localhost"}
+SERVED_HOSTS = {SITE_HOST, *GATE_HOSTS}
+
+
 def offline_route(route):
     url = urlparse(route.request.url)
     path = unquote(url.path).lstrip("/")
-    if url.hostname != "site-ui.invalid":
+    if url.hostname not in SERVED_HOSTS:
         route.abort()  # no external fonts, SDKs, DBs, APIs, or image hosts
     elif path == "data/ggongbab/latest.json":
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
@@ -799,8 +806,8 @@ def event_bands(page):
 
     def cta(row, lang="ko"):
         """An original post is a record once past; an activity on a page of this site opens it."""
-        words = {"ko": (("지금 해보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
-                 "en": (("Play now", "Open the page"), ("View post", "Original post"))}[lang]
+        words = {"ko": (("페이지 보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
+                 "en": (("Open the page", "Open the page"), ("View post", "Original post"))}[lang]
         return words[0 if row["onSite"] else 1][row["band"] == "past"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
@@ -822,7 +829,9 @@ def event_bands(page):
                 check(row["chip"] == expected_chip and row["chipShown"] == bool(expected_chip),
                       ("a past date is not reported as held; an unconfirmed plan says so briefly", row))
         else:
-            check(row["chip"].startswith(labels[row["band"]]), ("current rows name their band", row))
+            # The world cup before its launch says when it opens (js/worldcup-gate.js).
+            wanted = "10/16 공개 예정" if row["band"] == "upcoming" and row["onSite"] else labels[row["band"]]
+            check(row["chip"].startswith(wanted), ("current rows name their band", row))
         check(not row["open"], ("details stay folded by default", row))
         check(row["linkBand"] == row["band"] and row["cta"] == cta(row),
               ("a past link opens the original post as a record; a live link is an action", row))
@@ -895,9 +904,486 @@ def event_bands(page):
     return count
 
 
+# The page clocks of the world cup's launch window (2026-10-16 .. 2026-10-23, Korea time, both days included).
+WC_SOON = "2026-10-14T21:30:00+09:00"        # before the launch: D-2, 1 day 2 hours left
+WC_EVE = "2026-10-15T23:59:00+09:00"         # the last minute before it opens
+WC_OPENS = "2026-10-15T15:00:00Z"            # = 2026-10-16 00:00 in Korea, whatever the browser's timezone
+WC_RUNNING = "2026-10-18T12:00:00+09:00"
+WC_LAST = "2026-10-23T23:59:00+09:00"
+WC_ENDED = "2026-10-24T00:00:00+09:00"
+
+
+def event_entry(page):
+    """The world cup's start screen in its activity's card on event.html (owner 2026-10-14: the live
+    event, not a teaser photo and a button): the headline, nine tiles with counts, the preview, the
+    start button and the photo chip; no teaser, no 지금 해보기; the start opens worldcup.html with the
+    category and go=1, and worldcup.html then plays that category at once, only for go=1. The page
+    clock is fixed inside the launch window (WC_RUNNING), so the checks do not depend on the wall clock;
+    worldcup_gate covers before the launch, the last day, the end and the hosts."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"event.html entry: {detail}"
+        count += 1
+
+    source = (ROOT / "event.html").read_text(encoding="utf-8")
+    row = 'data-start="2026-10-16" data-end="2026-10-23"'
+    assert row in source
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    counts = {"all": len(cup["dishes"])}
+    for dish, cat in cup["categories"].items():
+        counts[cat] = counts.get(cat, 0) + 1
+    SNAP = """() => { const box = document.querySelector('.event-item .wc-embed'), r = e => e && e.getBoundingClientRect();
+      const visible = e => !!e && getComputedStyle(e).display !== 'none' && r(e).width > 0;
+      const link = document.querySelector('.event-link[data-event-page]');
+      return {embed: visible(box), intro: visible(document.querySelector('#wcIntro')),
+        title: document.querySelector('#wcIntroTitle').textContent, tone: document.querySelector('.wc-intro-tone').textContent,
+        tiles: [...document.querySelectorAll('.wc-tile')].map(t => ({cat: t.dataset.cat, name: t.querySelector('.wc-tile-name').textContent,
+          n: t.querySelector('.wc-tile-n').textContent, pressed: t.getAttribute('aria-pressed')})),
+        preview: [...document.querySelectorAll('#wcPreviewPhotos img')].map(i => ({src: i.getAttribute('src'), alt: i.alt, ok: i.naturalWidth > 0})),
+        floaters: [...document.querySelectorAll('.wc-floater')].filter(visible).length,
+        start: visible(document.querySelector('#wcStart')) && document.querySelector('#wcStart').textContent,
+        chip: visible(document.querySelector('.wc-chip')) && document.querySelector('.wc-chip').textContent.trim(),
+        link: visible(link) && link.textContent.trim(), teaser: document.querySelectorAll('.event-teaser').length,
+        scripts: [...document.scripts].map(s => s.getAttribute('src')).filter(Boolean),
+        slim: window.BABDODUK_WORLDCUP ? Object.keys(window.BABDODUK_WORLDCUP).sort() : null,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        text: document.body.innerText}; }"""
+
+    page.clock.set_fixed_time(WC_RUNNING)
+    for width, height in ((390, 844), (1280, 800)):
+        page.set_viewport_size({"width": width, "height": height})
+        page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-lang')")
+        page.wait_for_selector("#wcIntro:not([hidden])")
+        snap = page.evaluate(SNAP)
+        check(snap["embed"] and snap["intro"] and snap["title"] == "오늘의 32강, 뭐가 나올까?"
+              and snap["tone"] == "시험기간으로 지친 당신! 메뉴나 골라~", (width, "the headline and tone line", snap["title"]))
+        check([t["cat"] for t in snap["tiles"]] == ["all", "korean", "chinese", "japanese", "western", "world", "snack", "dessert", "random"]
+              and [t["n"] for t in snap["tiles"][:-1]] == [f"{counts[t['cat']]}개" for t in snap["tiles"][:-1]]
+              and snap["tiles"][-1]["name"] == "아무거나" and snap["tiles"][-1]["pressed"] is None
+              and [t["pressed"] for t in snap["tiles"][:-1]].count("true") == 1, (width, "nine tiles with counts, the random tile", snap["tiles"]))
+        check(len(snap["preview"]) == 5 and all(p["ok"] and p["alt"] and p["src"].startswith("images/worldcup/") for p in snap["preview"]),
+              (width, "five dishes of the next draw, loaded and named", snap["preview"]))
+        check(snap["floaters"] == 4 and snap["start"] == "🎰32강 시작", (width, "floating photos and the start button", snap["floaters"], snap["start"]))
+        check(snap["chip"] == "📷 사진 위키미디어 공용(잘라서 줄임)" and "판매 여부" not in snap["text"],
+              (width, "one photo chip and no price sentence", snap["chip"]))
+        check(snap["teaser"] == 0 and snap["link"] is False and "지금 해보기" not in snap["text"] and "VS" not in snap["text"],
+              (width, "no teaser photos, no vs badge and no 지금 해보기 button", snap["link"]))
+        check(snap["overflow"] <= 0, (width, "no horizontal scroll", snap["overflow"]))
+        check("js/worldcup.js" in snap["scripts"] and "js/worldcup-entry-data.js" in snap["scripts"]
+              and "photos" not in snap["slim"] and "basis" not in snap["slim"], (width, "the slim data, not the pool with its photo credits", snap["slim"]))
+        # Inside the card: after the date, title and state, before 자세히.
+        order = page.evaluate("""() => { const item = document.querySelector('.event-item .wc-embed').closest('.event-item');
+          return [...item.children].map(c => c.className.split(' ')[0] || c.tagName); }""")
+        check(order == ["event-date", "event-name", "event-state", "wc-embed", "event-link", "event-more"], (width, "inside the event card", order))
+        # Keyboard: a tile toggles with Space and the start button is reachable and focus is visible.
+        page.locator('.wc-tile[data-cat="korean"]').focus()
+        page.keyboard.press("Space")
+        check(page.locator('.wc-tile[data-cat="korean"]').get_attribute("aria-pressed") == "true"
+              and page.locator("#wcPreviewPhotos img").count() == 5, (width, "a tile is chosen by keyboard"))
+        page.locator("#wcStart").focus()
+        check(page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none", (width, "visible focus on the start button"))
+
+    # English, and the language switch re-words the tiles and the headline.
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.locator("#langToggle").click()
+    snap = page.evaluate(SNAP)
+    check(snap["title"] == "What’s in today’s round of 32?" and snap["start"] == "🎰Start the round of 32"
+          and snap["tiles"][1]["name"] == "Korean" and snap["tiles"][-1]["name"] == "Surprise me"
+          and snap["chip"] == "📷 Photos: Wikimedia Commons (cropped, resized)", ("English", snap["title"], snap["start"]))
+    check(snap["overflow"] <= 0, "English: no horizontal scroll")
+    page.locator("#langToggle").click()
+
+    # Start: worldcup.html?cat=<chosen>&go=1; a saved game is not touched until then.
+    page.locator('.wc-tile[data-cat="japanese"]').click()
+    with page.expect_navigation() as navigation:
+        page.locator("#wcStart").click()
+    sent = urlparse(navigation.value.url)
+    check(sent.path == "/worldcup.html" and parse_qs(sent.query) == {"cat": ["japanese"], "go": ["1"]},
+          ("the start opens the game page with the category and go=1", navigation.value.url))
+    page.wait_for_selector("#wcMatch:not([hidden])")
+    game = page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup')).game")
+    check(game["category"] == "japanese" and game["winners"] == [] and len(game["entrants"]) == 32
+          and all(cup["categories"][d] == "japanese" for d in game["entrants"]), ("worldcup.html started the chosen category", game["category"]))
+    check(page.url.endswith("/worldcup.html") and page.locator("#wcGame").inner_text() == "일식 32강",
+          ("the address is cleaned and the match is on screen", page.url, page.locator("#wcGame").inner_text()))
+    check(page.evaluate("document.activeElement === document.querySelector('.wc-card')"), "the first card has the focus")
+    page.reload(wait_until="networkidle")
+    check(page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup')).game.entrants") == game["entrants"]
+          and page.locator("#wcResume").is_visible() and page.locator("#wcMatch").is_hidden(),
+          "a reload keeps the game and offers 이어하기, it does not deal another")
+
+    # Never without go=1; an unknown category is ignored (the whole pool); a saved game is replaced by a fresh one.
+    def arrive(query, saved=None):
+        page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        if saved:
+            page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", saved)
+        page.goto("https://site-ui.invalid/worldcup.html" + query, wait_until="networkidle")
+        return page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup'))")
+
+    for query in ("?cat=korean", "?cat=korean&go=0", "?go=true", ""):
+        stored = arrive(query)
+        check(page.locator("#wcIntro").is_visible() and page.locator("#wcMatch").is_hidden()
+              and not (stored or {}).get("game"), ("no go=1, no auto start", query))
+    check(page.locator("#wcIntro").is_visible() and page.locator('.wc-tile[data-cat="all"]').get_attribute("aria-pressed") == "true",
+          "the start screen without go=1 (all chosen)")
+    chips = page.locator(".wc-chip")
+    check(chips.count() == 1 and " ".join(chips.inner_text().split()) == "📷 사진 위키미디어 공용(잘라서 줄임)" and "판매 여부" not in page.content()
+          and page.locator(".wc-scope").count() == 0, "worldcup.html ends with the one photo chip")
+    stored = arrive("?cat=korean&go=1")
+    check(stored["game"]["category"] == "korean" and page.locator("#wcGame").inner_text() == "한식 32강", "go=1 starts korean")
+    for query in ("?cat=nope&go=1", "?go=1", "?cat=%3Cb%3E&go=1"):
+        stored = arrive(query)
+        check(stored["game"]["category"] == "all" and page.locator("#wcGame").inner_text() == "전체 32강", ("an unknown category is ignored", query))
+    old = worldcup_saved(cup, 16, 7, "korean")
+    stored = arrive("?cat=western&go=1", old)
+    check(stored["game"]["category"] == "western" and len(stored["game"]["entrants"]) == 32 and stored["game"]["winners"] == []
+          and stored["game"]["entrants"] != old["game"]["entrants"], "a saved game is replaced when a start is asked for")
+    stored = arrive("?cat=western", old)
+    check(stored["game"]["entrants"] == old["game"]["entrants"] and page.locator("#wcResume").is_visible(),
+          "without go=1 a saved game stays and 이어하기 is offered")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+
+    # With motion the arrival plays the start gacha, as if the button had been pressed on the page.
+    page.emulate_media(reduced_motion="no-preference")
+    page.goto("https://site-ui.invalid/worldcup.html?cat=chinese&go=1", wait_until="networkidle")
+    page.wait_for_function(SPLASH_OPEN)
+    seen = page.evaluate("""() => { const s = document.querySelector('#wcSplash');
+      return {round: s.dataset.round, line: s.querySelector('.wc-gacha-line').textContent}; }""")
+    check(seen == {"round": "start", "line": "중식 32강 뽑는 중…"}, ("the gacha plays for the asked category", seen))
+    page.screenshot(path=str(ROOT / ".local/site-ui-shots/worldcup-go-gacha.png")) if (ROOT / ".local/site-ui-shots").is_dir() else None
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.emulate_media(reduced_motion="reduce")
+
+    # A past row has no start screen, loads no world cup script and links to the page instead.
+    page.clock.set_fixed_time(WC_ENDED)
+    page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+    snap = page.evaluate(SNAP)
+    check(not snap["embed"] and snap["link"] == "페이지 보기 →" and "js/worldcup.js" not in snap["scripts"] and snap["slim"] is None
+          and "worldcup.html" == page.locator(".event-link[data-event-page]").get_attribute("href"),
+          ("past: only the link, nothing loaded", snap["link"], snap["scripts"]))
+
+    # The script not arriving leaves the link, not an empty card.
+    page.clock.set_fixed_time(WC_RUNNING)
+    page.route("**/js/worldcup-entry-data.js", lambda route: route.fulfill(status=404, body=""))
+    page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+    snap = page.evaluate(SNAP)
+    check(not snap["embed"] or not snap["intro"], "a failed load shows no half-built start screen")
+    check(snap["link"] == "페이지 보기 →", ("a failed load falls back to the link", snap["link"]))
+    page.unroute("**/js/worldcup-entry-data.js")
+    return count
+
+
+GATE_PREVIEW = "2026-10-13"
+
+
+def gate_window():
+    """The launch window the sync wrote into js/worldcup-gate.js."""
+    source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
+    return json.loads(re.search(r"window\.BABDODUK_WC_WINDOW = (\{.*\});", source).group(1))
+
+
+def gate_preview(page):
+    """Serve js/worldcup-gate.js with a lab `previewFrom` (GATE_PREVIEW) when the data carries none
+    (production's data/content/events.json never does), so the lab override is still checked. Returns
+    whether it did; the caller unroutes it after the override checks."""
+    source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
+    window = gate_window()
+    if "previewFrom" in window:
+        return False
+    window["previewFrom"] = GATE_PREVIEW
+    body = re.sub(r"window\.BABDODUK_WC_WINDOW = \{.*\};", lambda m: "window.BABDODUK_WC_WINDOW = " + json.dumps(window) + ";", source)
+    page.route("**/js/worldcup-gate.js", lambda route: route.fulfill(content_type="application/javascript", body=body))
+    return True
+
+
+def gate_page(page, host, name, query=""):
+    """A page of this site loaded as the production, lab or localhost host (served from the same files)."""
+    scheme = "http" if host == "localhost" else "https"
+    page.goto(f"{scheme}://{host}/{name}{query}", wait_until="networkidle")
+
+
+GATE_SNAP = """() => { const shown = e => !!e && !e.hidden && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
+  const q = s => document.querySelector(s);
+  const row = q('.event-item[data-start="2026-10-16"]');
+  return {phase: document.documentElement.getAttribute('data-wc-phase'),
+    locked: shown(q('#wcLocked')), pill: q('.wc-locked-pill') && q('.wc-locked-pill').textContent.trim().replace(/\\s+/g, ' '),
+    count: q('.wc-locked-count') && q('.wc-locked-count').textContent,
+    start: shown(q('#wcStart')), resume: shown(q('#wcResume')), ended: shown(q('.wc-ended')),
+    tiles: [...document.querySelectorAll('.wc-tile')].filter(shown).length,
+    floaters: [...document.querySelectorAll('.wc-floater')].filter(shown).length,
+    match: shown(q('#wcMatch')), intro: shown(q('#wcIntro')),
+    saved: localStorage.getItem('babdoduk-worldcup'),
+    state: row && row.querySelector('[data-event-state]').textContent, band: row && row.dataset.band,
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
+
+
+def worldcup_gate(page):
+    """The launch gate (owner 2026-10-14, js/worldcup-gate.js): before 2026-10-16 the start screen is a teaser
+    with a locked pill and a countdown and nothing plays, not even with go=1 or a saved game; from the first
+    to the last day (23:59 Korea time) it is the game; after it worldcup.html plays on with a note and the
+    news card is a past row. Lab and localhost, and only they, honour `previewFrom` and open it early.
+    Every case fixes the page clock."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"world cup gate: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    def snap(host, name, now, query=""):
+        page.clock.set_fixed_time(now)
+        gate_page(page, host, name, query)
+        page.evaluate("localStorage.removeItem('babdoduk-lang')")
+        return page.evaluate(GATE_SNAP)
+
+    # worldcup.html before the launch: the teaser, locked, nothing playable.
+    shot = snap(SITE_HOST, "worldcup.html", WC_SOON)
+    check(shot["phase"] == "soon" and shot["locked"] and shot["pill"] == "🔒 10/16 오픈" and shot["count"] == "D-2 · 1일 2시간 남음",
+          ("locked pill and countdown", shot))
+    check(not shot["start"] and not shot["resume"] and not shot["match"] and shot["intro"] and shot["tiles"] == 9
+          and shot["floaters"] == 4, ("the teaser stays, the start button is gone", shot))
+    check(shot["overflow"] <= 0, ("no horizontal scroll", shot["overflow"]))
+    page.locator('.wc-tile[data-cat="korean"]').click()
+    page.evaluate("document.querySelector('#wcStart').click()")              # even a forced click starts nothing
+    check(page.locator("#wcMatch").is_hidden() and not page.evaluate("localStorage.getItem('babdoduk-worldcup')"),
+          "a forced start click does nothing")
+    page.locator("#langToggle").click()
+    shot = page.evaluate(GATE_SNAP)
+    check(shot["pill"] == "🔒 Opens Oct 16" and shot["count"] == "D-2 · 1d 2h left", ("English", shot))
+    page.locator("#langToggle").click()
+    for query in ("?cat=korean&go=1", "?go=1", "?cat=nope&go=1"):
+        shot = snap(SITE_HOST, "worldcup.html", WC_SOON, query)
+        check(shot["locked"] and shot["intro"] and not shot["match"] and not shot["saved"] and page.url.endswith("/worldcup.html"),
+              ("go=1 does not start a game and the address is cleaned", query, shot))
+    saved = worldcup_saved(cup, 16, 7, "korean")
+    page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", saved)
+    page.reload(wait_until="networkidle")
+    shot = page.evaluate(GATE_SNAP)
+    check(shot["locked"] and not shot["resume"] and not shot["start"] and not shot["match"]
+          and json.loads(shot["saved"])["game"]["entrants"] == saved["game"]["entrants"],
+          ("a saved game is neither offered nor touched before the launch", shot))
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    shot = snap(SITE_HOST, "worldcup.html", WC_EVE)
+    check(shot["locked"] and shot["count"] == "D-1 · 1분 남음", ("the last minute", shot))
+
+    # The launch moment, read as Korea time: midnight there is the first moment, whatever the clock's zone.
+    for now in (WC_OPENS, WC_RUNNING, WC_LAST):
+        shot = snap(SITE_HOST, "worldcup.html", now)
+        check(shot["phase"] == "live" and shot["start"] and not shot["locked"] and not shot["ended"], ("open", now, shot))
+    shot = snap(SITE_HOST, "worldcup.html", WC_LAST, "?cat=korean&go=1")
+    check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", ("go=1 starts on the last day", shot))
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    # After the end: still playable, with a small note.
+    shot = snap(SITE_HOST, "worldcup.html", WC_ENDED)
+    check(shot["phase"] == "ended" and shot["start"] and shot["ended"] and not shot["locked"], ("after the end: playable with a note", shot))
+    check("이벤트 종료" in page.locator(".wc-ended").inner_text(), "the note says the event is over")
+    shot = snap(SITE_HOST, "worldcup.html", WC_ENDED, "?cat=korean&go=1")
+    check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", "after the end go=1 still plays")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+
+    # The news card: before the launch the teaser with the locked pill, in the coming-up list.
+    shot = snap(SITE_HOST, "event.html", WC_SOON)
+    check(shot["band"] == "upcoming" and shot["state"] == "10/16 공개 예정" and shot["locked"] and not shot["start"] and shot["tiles"] == 9
+          and shot["floaters"] == 4 and shot["pill"] == "🔒 10/16 오픈" and shot["count"] == "D-2 · 1일 2시간 남음",
+          ("the event card is locked", shot))
+    check(page.locator("#eventUpcoming .wc-embed").count() == 1 and shot["overflow"] <= 0, "in 지금, no horizontal scroll")
+    page.locator("#langToggle").click()
+    shot = page.evaluate(GATE_SNAP)
+    check(shot["state"] == "Opens Oct 16" and shot["pill"] == "🔒 Opens Oct 16", ("English event card", shot))
+    page.locator("#langToggle").click()
+    page.evaluate("document.querySelector('#wcStart').click()")
+    check(page.url.endswith("/event.html"), "a forced start click on the card goes nowhere")
+    shot = snap(SITE_HOST, "event.html", WC_RUNNING)
+    check(shot["band"] == "now" and shot["state"].startswith("진행 중") and shot["start"] and not shot["locked"], ("running card", shot))
+    shot = snap(SITE_HOST, "event.html", WC_LAST)
+    check(shot["band"] == "now" and shot["start"], ("running on the last day", shot))
+    shot = snap(SITE_HOST, "event.html", WC_ENDED)
+    check(shot["band"] == "past" and not shot["start"] and page.locator(".wc-embed").is_hidden()
+          and page.locator("#eventList .event-link[data-event-page]").count() == 1, ("past card", shot))
+
+    # Without a previewFrom in the data (production), no host opens it before the start.
+    if "previewFrom" not in gate_window():
+        for host in ("babdoduk.vercel.app", "babdoduk-lab.vercel.app", "localhost"):
+            shot = snap(host, "worldcup.html", WC_SOON)
+            check(shot["locked"] and not shot["start"], (host, "no previewFrom: locked", shot))
+    synthetic = gate_preview(page)
+    # The lab override: only on lab and localhost (previewFrom), never on production or another host.
+    for host, early in (("babdoduk.vercel.app", False), (SITE_HOST, False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
+        shot = snap(host, "worldcup.html", WC_SOON)
+        check(shot["locked"] == (not early) and shot["start"] == early, (host, "worldcup.html", shot))
+        shot = snap(host, "event.html", WC_SOON)
+        check(shot["locked"] == (not early) and shot["start"] == early and shot["band"] == ("now" if early else "upcoming")
+              and shot["state"].startswith("진행 중" if early else "10/16 공개 예정"), (host, "event.html", shot))
+        shot = snap(host, "worldcup.html", WC_SOON, "?cat=korean&go=1")
+        check(shot["match"] == early, (host, "go=1", shot))
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    # Lab opens it from 2026-10-13, not before; and it still closes at the end like production.
+    shot = snap("babdoduk-lab.vercel.app", "worldcup.html", "2026-10-12T23:59:00+09:00")
+    check(shot["locked"] and shot["count"].startswith("D-"), ("lab before previewFrom", shot))
+    shot = snap("babdoduk-lab.vercel.app", "worldcup.html", WC_ENDED)
+    check(shot["ended"] and shot["start"], ("lab after the end", shot))
+    if synthetic:
+        page.unroute("**/js/worldcup-gate.js")
+    source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
+    check(source.count("'babdoduk-lab.vercel.app'") == 1 and "location.hostname" in source, "the gate names the lab host once")
+    return count
+
+
+def home_wc_promo(page):
+    """The home page's 먹방 월드컵 promo (index.html): before the launch the countdown and a link to the news
+    page, while it runs the 지금 하기 button for the game, after the end nothing; the same on lab with the
+    override. It stays inside 390 px without pushing the hero or the calendar out. Fixed page clocks."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"home world cup promo: {detail}"
+        count += 1
+
+    SNAP = """() => { const q = s => document.querySelector(s);
+      const shown = e => !!e && !e.hidden && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
+      const promo = q('.home-wc'), box = e => e.getBoundingClientRect();
+      const soon = q('.home-wc-cta--soon'), live = q('.home-wc-cta--live');
+      return {shown: shown(promo), title: q('.home-wc-title').textContent.trim(),
+        states: [...document.querySelectorAll('.home-wc-state')].filter(shown).map(e => e.textContent.trim()),
+        count: q('.home-wc-count').textContent, countShown: shown(q('.home-wc-count')),
+        soon: shown(soon) && {href: soon.getAttribute('href'), text: soon.textContent.trim().replace(/\\s+/g, ' ')},
+        live: shown(live) && {href: live.getAttribute('href'), text: live.textContent.trim().replace(/\\s+/g, ' ')},
+        photos: [...document.querySelectorAll('.home-wc-photo')].map(i => i.naturalWidth > 0),
+        height: promo ? box(promo).height : 0, top: promo ? box(promo).top : 0,
+        hero: box(q('#homeTitle')).top, cal: shown(q('#homeCal')), calTop: box(q('#homeCal')).top,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
+
+    def snap(host, now, size=(390, 844)):
+        page.set_viewport_size({"width": size[0], "height": size[1]})
+        page.clock.set_fixed_time(now)
+        gate_page(page, host, "index.html")
+        page.evaluate("localStorage.removeItem('babdoduk-lang')")
+        return page.evaluate(SNAP)
+
+    for width, height in ((390, 844), (360, 800), (1280, 800)):
+        shot = snap(SITE_HOST, WC_SOON, (width, height))
+        full = "D-2 · 1일 2시간 남음" if width >= 641 else "D-2"       # a phone keeps just the days
+        visible = page.locator(".home-wc-count").inner_text().strip()
+        check(shot["shown"] and shot["title"] == "🏆 밥도둑 먹방 월드컵" and shot["states"] == ["10/16 오픈!"]
+              and shot["count"] == "D-2 · 1일 2시간 남음" and visible == full, (width, "before the launch", shot, visible))
+        check(shot["soon"] and shot["soon"]["href"] == "event.html" and shot["soon"]["text"] == "자세히 보기 →" and not shot["live"],
+              (width, "links to the news page", shot))
+        check(all(shot["photos"]) and len(shot["photos"]) == 2, (width, "two dish photos load", shot["photos"]))
+        # A phone: above the copy; wider, in the paper band under it. Either way before the calendar.
+        order = shot["top"] < shot["hero"] if width < 721 else shot["hero"] < shot["top"]
+        check(shot["overflow"] <= 0 and shot["cal"] and order and shot["top"] < shot["calTop"],
+              (width, "in the hero band, the calendar stays", shot))
+        check(shot["height"] <= (100 if width < 641 else 80), (width, "a compact band", shot["height"]))
+        shot = snap(SITE_HOST, WC_RUNNING, (width, height))
+        check(shot["shown"] and shot["states"] == ["지금 진행 중 · 10/23까지"] and not shot["soon"] and not shot["countShown"]
+              and shot["live"] == {"href": "worldcup.html", "text": "🎰 지금 하기"}, (width, "running", shot))
+        check(shot["overflow"] <= 0 and shot["height"] <= (100 if width < 641 else 80), (width, "running: compact, no horizontal scroll", shot))
+        shot = snap(SITE_HOST, WC_LAST, (width, height))
+        check(shot["shown"] and shot["live"], (width, "still there on the last day", shot))
+        shot = snap(SITE_HOST, WC_ENDED, (width, height))
+        check(not shot["shown"] and shot["cal"] and shot["overflow"] <= 0, (width, "gone after the end", shot))
+        check(page.locator(".home-top").evaluate("e => e.getBoundingClientRect().top") < 120, (width, "after the end the hero is back at the top"))
+
+    # English, on the page's language switch.
+    snap(SITE_HOST, WC_SOON)
+    page.locator("#langToggle").click()
+    shot = page.evaluate(SNAP)
+    check(shot["title"] == "🏆 Food World Cup" and shot["states"] == ["Opens Oct 16!"] and shot["count"] == "D-2 · 1d 2h left"
+          and shot["soon"]["text"] == "Preview →" and shot["overflow"] <= 0, ("English before the launch", shot))
+    page.clock.set_fixed_time(WC_RUNNING)
+    page.reload(wait_until="networkidle")
+    shot = page.evaluate(SNAP)
+    check(shot["states"] == ["Live now · until Oct 23"] and shot["live"]["text"] == "🎰 Play now" and shot["overflow"] <= 0,
+          ("English running", shot))
+    page.evaluate("localStorage.removeItem('babdoduk-lang')")
+
+    # Keyboard: the button is reachable and its focus ring shows; the whole band is its click target.
+    snap(SITE_HOST, WC_RUNNING)
+    page.locator(".home-wc-cta--live").focus()
+    check(page.evaluate("getComputedStyle(document.querySelector('.home-wc-cta--live'), '::after').outlineStyle") != "none",
+          "visible focus on the promo button")
+    box = page.locator(".home-wc").bounding_box()
+    with page.expect_navigation() as navigation:
+        page.mouse.click(box["x"] + box["width"] - 6, box["y"] + 6)
+    check(urlparse(navigation.value.url).path == "/worldcup.html", "a click anywhere on the band follows its link")
+    check(contrast("rgb(253, 230, 138)", "rgb(190, 24, 93)") >= 4.5 and contrast("rgb(157, 23, 77)", "rgb(255, 255, 255)") >= 4.5,
+          "the state line and the button keep their contrast on the gradient")
+
+    # Lab opens it early (previewFrom); production does not. Without one in the data (production),
+    # no host does; the override then runs on a synthetic previewFrom.
+    if "previewFrom" not in gate_window():
+        for host in ("babdoduk.vercel.app", "babdoduk-lab.vercel.app", "localhost"):
+            shot = snap(host, WC_SOON)
+            check(shot["shown"] and not shot["live"] and shot["soon"] and shot["states"] == ["10/16 오픈!"],
+                  (host, "no previewFrom: soon", shot))
+    synthetic = gate_preview(page)
+    for host, early in (("babdoduk.vercel.app", False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
+        shot = snap(host, WC_SOON)
+        check(shot["shown"] and bool(shot["live"]) == early and bool(shot["soon"]) == (not early)
+              and shot["states"] == (["지금 진행 중 · 10/23까지"] if early else ["10/16 오픈!"]), (host, shot))
+    if synthetic:
+        page.unroute("**/js/worldcup-gate.js")
+    return count
+
+
+# Every round splash the page opens, in order: beforetoggle fires as showPopover() runs.
+SPLASH_LOG = """() => { window.__splashes = [];
+  document.querySelector('#wcSplash').addEventListener('beforetoggle', e => {
+    if (e.newState === 'open') window.__splashes.push(e.target.dataset.round); }); }"""
+SPLASH_OPEN = "document.querySelector('#wcSplash').matches(':popover-open')"
+# The final's crash held still and seeked: fighter boxes off the stage from the hit to the end,
+# the clash scale against the real card, card text under the VS at rest, the landing error.
+SPLASH_GEOMETRY = """() => { const s = document.querySelector('#wcSplash'), all = s.getAnimations({subtree: true});
+  const box = el => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+  const fighters = () => [...s.querySelectorAll('.wc-fighter')].map(box);
+  const seek = t => all.forEach(a => { a.currentTime = t; });
+  all.forEach(a => a.pause());
+  let outside = 0;
+  for (let t = 1100; t <= 1999; t += 20) {
+    seek(t);
+    outside += fighters().filter(b => b[0] < 0 || b[1] < 0 || b[2] > s.clientWidth || b[3] > s.clientHeight).length;
+  }
+  seek(1500);
+  const real = [...document.querySelectorAll('.wc-card')].map(c => {    // where each card rests
+    const was = [c.style.transition, c.style.transform];
+    c.style.transition = 'none'; c.style.transform = 'none';
+    const b = box(c);
+    [c.style.transition, c.style.transform] = was;
+    return b; });
+  const vs = box(s.querySelector('.wc-splash-vs'));
+  const scale = Math.min(...fighters().map(b => b[2] - b[0])) / (real[0][2] - real[0][0]);
+  const covered = [...s.querySelectorAll('.wc-fighter-face .wc-card-name, .wc-fighter-face .wc-card-sub, .wc-fighter-face .wc-card-tags')]
+    .filter(el => !el.hidden && el.textContent).map(box)
+    .filter(b => !(b[2] <= vs[0] || b[0] >= vs[2] || b[3] <= vs[1] || b[1] >= vs[3])).length;
+  seek(1999);
+  const miss = Math.max(...fighters().flatMap((b, i) => b.map((v, k) => Math.abs(v - real[i][k]))));
+  return {outside, scale: Math.round(scale * 100) / 100, covered, miss: Math.round(miss * 100) / 100}; }"""
+
+
+def worldcup_saved(cup, entrants, winners, category=None):
+    """A stored game `winners` picks into a round of `entrants`, as js/worldcup.js keeps it. Without
+    `category` it is an older save (none recorded: the whole pool); with one, its dishes are drawn from it."""
+    pool = [d for d in cup["dishes"] if category in (None, "all") or cup["categories"][d] == category]
+    ids = pool[:entrants]
+    game = {"entrants": ids, "winners": ids[0:winners * 2:2], "stack": [], "log": []}
+    if category:
+        game["category"] = category
+    return {"v": 1, "set": f"{cup['size']}:" + ",".join(cup["dishes"]), "winners": [], "game": game}
+
+
 def worldcup_play(page):
     """The menu world cup (worldcup.html): a whole bracket by keyboard, one undo, the winner kept
-    only in this browser. The context runs with reduced motion, so each pick renders at once."""
+    only in this browser. The context runs with reduced motion, so each pick renders at once and no
+    round splash opens; worldcup_splash plays them with motion."""
     count = 0
 
     def check(ok, detail):
@@ -911,6 +1397,7 @@ def worldcup_play(page):
     page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
     page.locator("#wcStart").click()
     check(page.locator("#wcRound").inner_text() == "32강" and page.locator("#wcCount").inner_text() == "1 / 16"
           and page.evaluate("document.activeElement.classList.contains('wc-card')"), "the first match has focus on a card")
@@ -937,15 +1424,436 @@ def worldcup_play(page):
     page.locator("#wcUndo").click()
     check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcUndo").is_disabled(),
           "and on to its first match, with nothing left to undo")
-    for _ in range(size - 1):
-        page.locator(".wc-card").first.focus()
+    page.locator(".wc-card").first.focus()
+    on_first = "document.activeElement === document.querySelector('.wc-card')"
+    for i in range(size - 1):
+        if i:
+            check(page.evaluate(on_first), ("after each pick focus is on the next match's first card", i))
         page.keyboard.press("Enter")
+        if i == size // 2 + size // 4 - 1:              # the round of 16 just closed
+            page.wait_for_function("document.getElementById('wcStatus').textContent.startsWith('8강 1번째 경기')")
+            check(page.locator("#wcRound").inner_text() == "8강" and not page.evaluate(SPLASH_OPEN),
+                  "with reduced motion the 8강 match comes at once, announced, without a splash")
     check(page.locator("#wcResult").is_visible() and page.evaluate("document.activeElement.id") == "wcWinner",
           "after the final the winner is shown and focused")
+    check(page.evaluate("window.__splashes") == [], ("reduced motion: no round splash at all", page.evaluate("window.__splashes")))
     saved = page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup'))")
     check(saved["game"] is None and len(saved["winners"]) == 1 and saved["winners"][0]["id"] in dishes,
           ("the winner is kept in this browser only", saved["winners"]))
     check(page.locator("#wcHistoryList li").count() == 1, "the past winner is listed")
+    return count
+
+
+def worldcup_categories(page):
+    """The world cup's categories (owner 2026-10-14): big tiles with an emoji and a count above the
+    start button, toggled by keyboard, 아무거나 landing on another category, five photos of the very
+    bracket the start then plays, a game drawn from the chosen category, the category shown while
+    playing and on the result, kept by resume, and an older save without one read as the whole pool.
+    Also the start screen itself: the owner's headline and tone line, and no notes under the button.
+    The context runs with reduced motion: 아무거나 lands at once and no gacha opens."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html categories: {detail}"
+        count += 1
+
+    def save(state):
+        page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", state)
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    cats = cup["categories"]
+    korean = [d for d in cup["dishes"] if cats[d] == "korean"]
+    stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
+    chips = ("[...document.querySelectorAll('#wcCats .wc-tile[aria-pressed]')].map(c => [c.dataset.cat,"
+             " c.querySelector('.wc-tile-name').textContent + c.querySelector('.wc-tile-n').textContent,"
+             " c.getAttribute('aria-pressed'), c.querySelector('.wc-tile-emoji').textContent])")
+    preview = "[...document.querySelectorAll('#wcPreviewPhotos img')].map(i => i.dataset.id)"
+    for size in ((390, 844), (1280, 800)):
+        page.set_viewport_size({"width": size[0], "height": size[1]})
+        page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        page.reload(wait_until="networkidle")
+        got = page.evaluate(chips)
+        check([c[0] for c in got] == ["all", "korean", "chinese", "japanese", "western", "world", "snack", "dessert"],
+              ("the eight chips in order", got))
+        check([c[1] for c in got] == ["전체763개", "한식268개", "중식75개", "일식75개", "양식132개", "아시아·세계86개",
+                                      "분식·간식35개", "디저트·카페92개"], ("each tile carries its count", got))
+        check([c[3] for c in got] == ["🎲", "🍚", "🥟", "🍣", "🍝", "🍜", "🍢", "🍰"], ("each tile its emoji", got))
+        check([c[2] for c in got] == ["true"] + ["false"] * 7, ("전체 is chosen by default", got))
+        check(page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), (size, "no horizontal scroll with the tiles"))
+        above = page.evaluate("document.querySelector('#wcCats').getBoundingClientRect().bottom <= "
+                              "document.querySelector('#wcStart').getBoundingClientRect().top")
+        check(above, "the tiles sit above the start button")
+        board = page.evaluate("""() => { const t = [...document.querySelectorAll('#wcCats .wc-tile')];   // layout boxes: the chosen one is tilted
+          return {n: t.length, cols: new Set(t.map(e => e.offsetLeft)).size, minH: Math.min(...t.map(e => e.offsetHeight)),
+                  minW: Math.min(...t.map(e => e.offsetWidth))}; }""")
+        check(board["n"] == 9 and board["cols"] == 3 and board["minH"] >= 88 and board["minW"] >= 80,
+              (size, "nine big tiles on a 3-column board, roomy at a phone's width", board))
+        intro = page.evaluate("""() => ({title: document.getElementById('wcIntroTitle').textContent,
+          mark: document.querySelector('#wcIntroTitle .wc-hl').textContent,
+          tone: document.querySelector('.wc-intro-tone').textContent,
+          notes: document.querySelectorAll('#wcIntro .wc-note').length,
+          text: document.getElementById('wcIntro').innerText})""")
+        check(intro["title"] == "오늘의 32강, 뭐가 나올까?" and intro["mark"] == "32강"
+              and intro["tone"] == "시험기간으로 지친 당신! 메뉴나 골라~", ("the owner's headline and tone line", intro))
+        check(intro["notes"] == 0 and "이 브라우저에 저장돼요" not in intro["text"] and "익명으로 집계" not in intro["text"]
+              and "무작위로 뽑아요" not in intro["text"], "no notes under the button any more")
+        shown = page.evaluate(preview)
+        check(len(shown) == 5 and len(set(shown)) == 5, ("five photos of the next draw", shown))
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    # Tiles by keyboard: Tab reaches them, Space and Enter choose; the focus ring is visible.
+    page.locator('#wcCats [data-cat="all"]').focus()
+    page.keyboard.press("Tab")
+    check(page.evaluate("document.activeElement.dataset.cat") == "korean", "Tab moves to the next tile")
+    check(page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none", "a focused tile shows a focus ring")
+    page.keyboard.press("Space")
+    got = page.evaluate(chips)
+    check([c[0] for c in got if c[2] == "true"] == ["korean"], ("Space on 한식 chooses it alone", got))
+    page.locator('#wcCats [data-cat="dessert"]').focus()
+    page.keyboard.press("Enter")
+    check([c[0] for c in page.evaluate(chips) if c[2] == "true"] == ["dessert"], "Enter chooses a tile too")
+    # 아무거나 (reduced motion: at once) lands on another category and says which.
+    for _ in range(3):
+        before = [c[0] for c in page.evaluate(chips) if c[2] == "true"][0]
+        page.locator('#wcCats [data-cat="random"]').focus()
+        page.keyboard.press("Enter")
+        after = [c[0] for c in page.evaluate(chips) if c[2] == "true"]
+        page.wait_for_function("document.getElementById('wcStatus').textContent.endsWith('당첨!')")
+        check(len(after) == 1 and after[0] != before and page.locator("#wcCats .wc-tile--random").get_attribute("aria-pressed") is None,
+              ("아무거나 lands on one other category", before, after))
+    page.locator('#wcCats [data-cat="korean"]').click()
+    check(page.locator("#wcStartLabel").inner_text() == "32강 시작", "the start button still says 32강 시작")
+    teased = page.evaluate(preview)
+    check(len(teased) == 5 and all(cats[d] == "korean" for d in teased), ("the photos follow the chosen category", teased))
+
+    # 32 cards, all from 한식, and the category on the round header; the five photos were really in it.
+    page.locator("#wcStart").click()
+    check(page.evaluate("window.__splashes || []") == [] and not page.evaluate(SPLASH_OPEN), "reduced motion: no start gacha")
+    game = page.evaluate(stored)
+    check(set(teased) <= set(game["entrants"]), ("이 중에서 나와요: the five photos are in the game", teased))
+    check(len(game["entrants"]) == 32 and len(set(game["entrants"])) == 32 and set(game["entrants"]) <= set(korean)
+          and game["category"] == "korean", ("32 distinct 한식 dishes are drawn", game["category"], len(game["entrants"])))
+    check(page.locator("#wcGame").inner_text() == "한식 32강" and page.locator("#wcRound").inner_text() == "32강",
+          ("the category shows over the round", page.locator("#wcGame").inner_text()))
+    shown = [page.locator(".wc-card").nth(i).get_attribute("data-id") for i in (0, 1)]
+    check(all(cats[d] == "korean" for d in shown), ("the cards on screen are 한식", shown))
+    page.keyboard.press("Enter")
+
+    # Resume keeps it, also after a reload.
+    page.reload(wait_until="networkidle")
+    resume = page.locator("#wcResume").inner_text()
+    check("한식" in resume and page.locator('#wcCats [data-cat="korean"]').get_attribute("aria-pressed") == "true",
+          ("the saved 한식 game is offered and its chip chosen", resume))
+    page.locator("#wcResume").click()
+    check(page.locator("#wcGame").inner_text() == "한식 32강" and page.locator("#wcCount").inner_text() == "2 / 16"
+          and page.evaluate(stored)["category"] == "korean", "resuming plays the same 한식 game")
+    # 처음부터 stays in the category.
+    page.locator("#wcRestart").click()
+    check(page.evaluate(stored)["category"] == "korean" and set(page.evaluate(stored)["entrants"]) <= set(korean),
+          "a restart draws a new bracket from the same category")
+
+    # English: the chips, the header and the resume label follow the language.
+    page.locator("#langToggle").click()
+    check(page.locator("#wcGame").inner_text() == "Korean · Round of 32", ("the header in English", page.locator("#wcGame").inner_text()))
+    save(worldcup_saved(cup, 16, 7, "korean"))
+    page.reload(wait_until="networkidle")
+    got = page.evaluate(chips)
+    check([c[1] for c in got] == ["All763 dishes", "Korean268 dishes", "Chinese75 dishes", "Japanese75 dishes", "Western132 dishes",
+                                  "Asian & world86 dishes", "Snacks35 dishes", "Desserts & café92 dishes"], ("the tiles in English", got))
+    check(page.locator("#wcIntroTitle").inner_text() == "What\u2019s in today\u2019s round of 32?"
+          and page.locator("#wcIntroTitle .wc-hl").inner_text() == "round of 32", page.locator("#wcIntroTitle").inner_text())
+    check("Korean" in page.locator("#wcResume").inner_text() and page.locator("#wcNew").is_visible()
+          and page.locator("#wcStart").is_hidden(), ("a saved game: the big 이어하기 and a small 새로 시작", page.locator("#wcResume").inner_text()))
+    page.locator("#langToggle").click()
+
+    # An older save has no category: whole pool, readable, resumable.
+    save(worldcup_saved(cup, 16, 7))
+    page.reload(wait_until="networkidle")
+    check(page.locator("#wcResume").is_visible() and "전체" in page.locator("#wcResume").inner_text()
+          and page.locator('#wcCats [data-cat="all"]').get_attribute("aria-pressed") == "true", "an older save counts as 전체")
+    page.locator("#wcResume").click()
+    check(page.locator("#wcGame").inner_text() == "전체 32강" and page.locator("#wcCount").inner_text() == "8 / 8",
+          "and resumes as 전체 32강")
+
+    # The result shows the category too.
+    save(worldcup_saved(cup, 2, 0, "korean"))
+    page.reload(wait_until="networkidle")
+    page.locator("#wcResume").click()
+    page.keyboard.press("Enter")
+    check(page.locator("#wcResult").is_visible() and page.locator("#wcResultGame").inner_text() == "한식 32강",
+          ("the result names the category", page.locator("#wcResultGame").inner_text()))
+    # Playing again keeps the category.
+    page.locator("#wcAgain").click()
+    check(page.evaluate(stored)["category"] == "korean", "다시 하기 plays the same category")
+
+    # An unreadable category in a save is dropped rather than trusted.
+    bad = worldcup_saved(cup, 16, 7, "korean")
+    bad["game"]["category"] = "brunch"
+    save(bad)
+    page.reload(wait_until="networkidle")
+    check(page.locator("#wcResume").is_hidden(), "a save with an unknown category is not offered")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    return count
+
+
+def worldcup_splash(page):
+    """The round splash with motion (owner 2026-10-14): none for 16강; 8강 and 4강 a black stage
+    with the round, above the navigation, the match already rendered, focused and announced
+    beneath; the final adds the crash of the two finalists. Enter, Space, a held key or a tap
+    skips it and never picks; played out (finish() on its animations, so no wall clock) it hands
+    over to the match; a failing animation never blocks the game. Saved games are seeded just
+    before each round closes, so only a handful of picks run with motion."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html splash: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    page.emulate_media(reduced_motion="no-preference")
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+    stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
+    on_first = "document.activeElement === document.querySelector('.wc-card')"
+    closed = "!" + SPLASH_OPEN
+    shown = "[...document.querySelectorAll('.wc-card')].every(c => getComputedStyle(c).opacity === '1')"
+
+    def close_round(entrants):
+        """Seed the last match of a round of `entrants`, resume, and pick it by keyboard."""
+        page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))",
+                      worldcup_saved(cup, entrants, entrants // 2 - 1))
+        page.reload(wait_until="networkidle")
+        page.evaluate(SPLASH_LOG)
+        page.locator("#wcResume").click()
+        page.locator(".wc-card").first.focus()
+        page.keyboard.press("Enter")
+
+    close_round(32)
+    page.wait_for_function("document.getElementById('wcRound').textContent === '16강'")
+    check(page.evaluate("window.__splashes") == [] and page.evaluate(on_first), "no splash for the round of 16")
+
+    close_round(16)
+    page.wait_for_function(SPLASH_OPEN)
+    seen = page.evaluate(r"""() => { const s = document.querySelector('#wcSplash');
+      const nav = document.querySelector('.site-nav').getBoundingClientRect();
+      const top = document.elementFromPoint(nav.left + nav.width / 2, nav.top + nav.height / 2);
+      return {round: s.dataset.round, title: s.querySelector('.wc-splash-title').textContent.replace(/\s/g, ' '), overNav: s.contains(top),
+              fighters: s.querySelectorAll('.wc-fighter').length, hidden: s.getAttribute('aria-hidden')}; }""")
+    check(seen == {"round": "8", "title": "8강 진출!", "overNav": True, "fighters": 0, "hidden": "true"},
+          ("8강: the round alone on a stage above the navigation, hidden from screen readers", seen))
+    check(page.locator("#wcRound").inner_text() == "8강" and page.evaluate(on_first),
+          "the 8강 match is already rendered and focused under it")
+    page.wait_for_function("document.getElementById('wcStatus').textContent.startsWith('8강 1번째 경기')")
+    check(page.evaluate(SPLASH_OPEN), "and announced while the splash plays")
+    page.keyboard.press("Enter")
+    page.wait_for_function(closed)
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 8 and game["winners"] == [] and page.evaluate(on_first)
+          and page.locator("#wcCount").inner_text() == "1 / 4", ("Enter skips to the match without a pick", game["winners"]))
+
+    close_round(8)
+    page.wait_for_function(SPLASH_OPEN)
+    check(page.evaluate("window.__splashes") == ["4"], "4강 gets the splash")
+    page.keyboard.press(" ")
+    page.wait_for_function(closed)
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 4 and game["winners"] == [] and page.evaluate(on_first),
+          ("Space skips without a pick, even on its release", game["winners"]))
+
+    # A key held through the skip: its repeats are swallowed, so they never pick.
+    close_round(8)
+    page.wait_for_function(SPLASH_OPEN)
+    page.keyboard.down("Enter")
+    page.wait_for_function(closed)
+    page.keyboard.down("Enter")                       # Playwright sends a second down as a repeat
+    page.keyboard.down("Enter")
+    page.keyboard.up("Enter")
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 4 and game["winners"] == [] and page.evaluate(on_first),
+          ("a held key skips once and never picks", game["winners"]))
+
+    # A screen reader activates the card under the splash: that ends the splash, it is not a pick.
+    # The splash is held still first and the click must end it within a second, long before its
+    # safety timer would.
+    close_round(8)
+    page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("() => document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.pause())")
+    page.evaluate("() => document.querySelector('.wc-card').click()")
+    try:
+        page.wait_for_function(closed, timeout=1000)
+        ended = True
+    except PlaywrightTimeoutError:
+        ended = False
+    game = page.evaluate(stored)
+    check(ended and len(game["entrants"]) == 4 and game["winners"] == [],
+          ("a click from assistive technology only ends it", ended, game["winners"]))
+
+    close_round(4)
+    page.wait_for_function(SPLASH_OPEN)
+    crash = page.evaluate("""() => { const s = document.querySelector('#wcSplash');
+      return {round: s.dataset.round, title: s.querySelector('.wc-splash-title').textContent,
+              fighters: [...s.querySelectorAll('.wc-fighter-face .wc-card-name')].map(n => n.textContent),
+              cards: [...document.querySelectorAll('.wc-card')].map(c => c.querySelector('.wc-card-name').textContent),
+              hiddenCards: [...document.querySelectorAll('.wc-card')].every(c => c.style.opacity === '0'),
+              vs: s.querySelector('.wc-splash-vs').textContent, flashes: s.querySelectorAll('.wc-splash-flash').length}; }""")
+    check(crash["round"] == "2" and crash["title"] == "결승!" and crash["fighters"] == crash["cards"]
+          and len(crash["cards"]) == 2 and crash["hiddenCards"] and crash["vs"] == "VS" and crash["flashes"] == 1,
+          ("the final: the two finalists' doubles crash under a VS stamp, with one flash", crash))
+    page.mouse.click(195, 422)                        # a tap in the middle, over where the cards are
+    page.wait_for_function(closed)
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 2 and game["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown),
+          ("a tap skips to the final without a pick, the cards shown again", game["winners"]))
+
+    # The phone crash, on a 360 px screen: the finalists clash about 1.5x their size (on a
+    # diagonal, a phone's pair already fills the width), stay on the screen from the hit to the
+    # end, the VS never covers a name, and they land exactly on the real cards. Read in one call
+    # with the splash held still and seeked, so no timer runs in between.
+    page.set_viewport_size({"width": 360, "height": 800})
+    close_round(4)
+    page.wait_for_function(SPLASH_OPEN)
+    geometry = page.evaluate(SPLASH_GEOMETRY)
+    check(geometry["outside"] == 0 and 1.45 <= geometry["scale"] <= 1.7 and geometry["covered"] == 0 and geometry["miss"] < 1,
+          ("phone crash: bigger, on the screen, VS clear of the names, landing on the cards", geometry))
+
+    # Played out: finish() runs the splash to its end (no waiting on the clock).
+    page.evaluate("document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.finish())")
+    page.wait_for_function(closed)
+    check(page.evaluate(on_first) and page.locator("#wcCount").inner_text() == "1 / 1" and page.evaluate(shown)
+          and page.evaluate("document.querySelector('#wcSplash').childElementCount") == 0,
+          "played out, the splash hands over to the final with focus on its first card")
+    page.keyboard.press("Enter")
+    check(page.locator("#wcResult").is_visible() and page.evaluate("document.activeElement.id") == "wcWinner",
+          "and the final is played to the winner")
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    # A splash that never finishes (held still here) still ends by itself and gives the match back.
+    close_round(16)
+    page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("() => document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.pause())")
+    page.wait_for_function(closed, timeout=8000)
+    check(page.evaluate(on_first) and page.evaluate(shown) and len(page.evaluate(stored)["entrants"]) == 8,
+          "a stuck splash ends by itself, focus on the 8강 match")
+
+    # Anything failing only takes the splash away: the match still comes and takes picks.
+    page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", worldcup_saved(cup, 16, 7))
+    page.reload(wait_until="networkidle")
+    page.evaluate("() => { Element.prototype.animate = () => { throw new Error('no animation'); }; }")
+    page.locator("#wcResume").click()
+    page.locator(".wc-card").first.focus()
+    page.keyboard.press("Enter")
+    page.wait_for_function("document.getElementById('wcRound').textContent === '8강'")
+    check(page.evaluate(closed) and page.evaluate(on_first), "a failing splash leaves the 8강 match open")
+    page.keyboard.press("Enter")
+    check(len(page.evaluate(stored)["winners"]) == 1, "and its cards still take a pick")
+
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.emulate_media(reduced_motion="reduce")
+    page.reload(wait_until="networkidle")
+    return count
+
+def worldcup_gacha(page):
+    """The start gacha with motion (owner 2026-10-14): 32강 시작, 새로 시작, 처음부터 and 다시 하기 open
+    it, 이어하기 never; the game is stored and its first match rendered, focused and announced
+    beneath; six of the drawn dishes pour out; a key or a tap skips it without a pick; played out
+    (finish(), no wall clock) it hands over to the match; reduced motion has none of it. The start
+    screen's own motion is over within 5 s and moves only transform, scale and opacity."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html gacha: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
+    on_first = "document.activeElement === document.querySelector('.wc-card')"
+    closed = "!" + SPLASH_OPEN
+    shown = "[...document.querySelectorAll('.wc-card')].every(c => getComputedStyle(c).opacity === '1')"
+    page.emulate_media(reduced_motion="no-preference")
+    for width, height in ((390, 844), (1280, 800)):
+        page.set_viewport_size({"width": width, "height": height})
+        page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        page.reload(wait_until="networkidle")
+        page.evaluate(SPLASH_LOG)
+        motion = page.evaluate("""() => document.getAnimations().filter(a => a.effect && a.effect.target
+          && a.effect.target.closest('#wcIntro')).map(a => {
+          const t = a.effect.getComputedTiming(), k = a.effect.getKeyframes();
+          return {end: t.endTime, props: [...new Set(k.flatMap(f => Object.keys(f)))]
+            .filter(p => !['offset', 'computedOffset', 'easing', 'composite'].includes(p))}; })""")
+        check(motion and max(m["end"] for m in motion) <= 5000, (width, "the arrival motion ends within 5 s", motion))
+        check({p for m in motion for p in m["props"]} <= {"transform", "scale", "opacity"}, (width, "only transform, scale, opacity", motion))
+        teased = page.evaluate("[...document.querySelectorAll('#wcPreviewPhotos img')].map(i => i.dataset.id)")
+        page.locator("#wcStart").click()
+        page.wait_for_function(SPLASH_OPEN)
+        seen = page.evaluate("""() => { const s = document.querySelector('#wcSplash');
+          return {round: s.dataset.round, line: s.querySelector('.wc-gacha-line').textContent,
+                  ask: s.querySelector('.wc-gacha-ask').textContent, hidden: s.getAttribute('aria-hidden'),
+                  caps: [...s.querySelectorAll('.wc-gacha-caps .wc-cap-photo')].map(i => i.getAttribute('src')),
+                  duel: [...s.querySelectorAll('.wc-duelist img')].map(i => i.getAttribute('src')),
+                  cards: [...document.querySelectorAll('.wc-card')].map(c => getComputedStyle(c).opacity)}; }""")
+        game = page.evaluate(stored)
+        photo = lambda d: cup["photos"][d]["image"]
+        check(seen["round"] == "start" and seen["line"] == "전체 32강 뽑는 중…" and seen["ask"] == "너의 최애는?"
+              and seen["hidden"] == "true", (width, "the gacha opens with its one line and its question", seen))
+        check(seen["caps"] == [photo(d) for d in game["entrants"][2:8]] + [photo(d) for d in game["entrants"][:2]]
+              and seen["duel"] == [photo(d) for d in game["entrants"][:2]], (width, "it pours the drawn dishes, the first two last"))
+        check(set(teased) <= set(game["entrants"]) and game["winners"] == [], "the stored game is the bracket previewed")
+        check(seen["cards"] == ["0", "0"] and page.evaluate(on_first) and page.locator("#wcRound").inner_text() == "32강",
+              "under it the first match is rendered and focused, its cards waiting")
+        page.wait_for_function("document.getElementById('wcStatus').textContent.startsWith('32강 1번째 경기')")
+        page.keyboard.press("Enter")
+        page.wait_for_function(closed)
+        check(page.evaluate(stored)["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown),
+              (width, "Enter skips to the match without a pick"))
+
+    # 처음부터 plays it again; a tap anywhere skips it, never a pick.
+    page.locator("#wcRestart").click()
+    page.wait_for_function(SPLASH_OPEN)
+    page.mouse.click(640, 400)
+    page.wait_for_function(closed)
+    check(page.evaluate(stored)["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown), "a tap skips it without a pick")
+    # Played out, it lands on the match.
+    page.locator("#wcRestart").click()
+    page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("document.getAnimations().forEach(a => { if (a.effect && isFinite(a.effect.getComputedTiming().endTime)) a.finish(); })")
+    page.wait_for_function(closed)
+    check(page.evaluate(on_first) and page.evaluate(shown) and page.evaluate("document.querySelector('#wcSplash').childElementCount") == 0
+          and page.evaluate(stored)["winners"] == [], "played out, it hands over to the first match")
+    page.keyboard.press("Enter")
+    page.wait_for_function("document.getElementById('wcCount').textContent === '2 / 16'")
+    check(page.evaluate(stored)["winners"] != [], "and the match takes a pick")
+    # 이어하기 never plays it.
+    page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
+    page.locator("#wcResume").click()
+    check(page.evaluate("window.__splashes") == [] and page.evaluate(on_first) and page.locator("#wcCount").inner_text() == "2 / 16",
+          "이어하기 goes straight to the match")
+    # 새로 시작 under 이어하기 does.
+    page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
+    page.locator("#wcNew").click()
+    page.wait_for_function(SPLASH_OPEN)
+    check(page.evaluate("window.__splashes") == ["start"], "새로 시작 opens the gacha")
+    page.keyboard.press("Escape")
+    page.wait_for_function(closed)
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.emulate_media(reduced_motion="reduce")
+    # Reduced motion: still pictures, a still button, and the match at once.
+    page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
+    check(page.evaluate("document.getAnimations().filter(a => a.effect && a.effect.target && a.effect.target.closest('#wcIntro')).length") == 0
+          and page.locator(".wc-floater").count() >= 4,
+          "reduced motion: the photos are there and nothing moves")
+    page.locator("#wcStart").click()
+    check(page.evaluate("window.__splashes") == [] and page.evaluate(on_first), "reduced motion: no gacha")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.reload(wait_until="networkidle")
     return count
 
 
@@ -1359,7 +2267,7 @@ def run_checks(screenshots=False):
         api_attempts = []
         context.on("request", lambda req: api_attempts.append(req.url)
                    if req.resource_type in ("fetch", "xhr", "eventsource")
-                   and urlparse(req.url).hostname != "site-ui.invalid" else None)
+                   and urlparse(req.url).hostname not in SERVED_HOSTS else None)
         page = context.new_page()
         # WebSockets bypass routing and emit no request event; record every attempt.
         page.on("websocket", lambda ws: api_attempts.append(ws.url))
@@ -1375,7 +2283,23 @@ def run_checks(screenshots=False):
         report["checks"] += home_summary(page)
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
-        report["checks"] += worldcup_play(page)
+        # The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a context whose page
+        # clock is fixed (inside the window unless a check sets another), so nothing depends on today.
+        cup_context = new_context(browser)
+        cup_context.on("request", lambda req: api_attempts.append(req.url)
+                       if req.resource_type in ("fetch", "xhr", "eventsource")
+                       and urlparse(req.url).hostname not in SERVED_HOSTS else None)
+        cup_page = cup_context.new_page()
+        cup_page.on("websocket", lambda ws: api_attempts.append(ws.url))
+        cup_page.clock.set_fixed_time(WC_RUNNING)
+        report["checks"] += event_entry(cup_page)
+        report["checks"] += worldcup_play(cup_page)
+        report["checks"] += worldcup_categories(cup_page)
+        report["checks"] += worldcup_splash(cup_page)
+        report["checks"] += worldcup_gacha(cup_page)
+        report["checks"] += worldcup_gate(cup_page)
+        report["checks"] += home_wc_promo(cup_page)
+        cup_context.close()
         report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)

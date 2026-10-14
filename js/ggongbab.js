@@ -58,6 +58,10 @@
     } catch (e) { return ''; }
   }
   var toKst = F.toKst, nowKst = F.nowKst, ymd = F.ymd, tri = F.tri, isPublic = F.isPublic, isUpcoming = F.isUpcoming;
+  var hasFood = F.hasFood, hasGiveaway = F.hasGiveaway, isDeadlineOnly = F.isDeadlineOnly;
+  // The food-type row: the food buckets, then giveaways (a listing of its own, never a food type).
+  var FOOD_FILTERS = ['all', 'meal', 'snack', 'refreshment', 'giveaway'];
+  var GIFT = '<span aria-hidden="true">🎁</span> ';
   function hm(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
   function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
   function dayLabel(d) {
@@ -101,13 +105,18 @@
     }
     return ymd(s) >= ymd(today);
   }
+  // A food chip matches only rows with explicit food (a giveaway-only row is in no food bucket);
+  // the giveaway chip matches every giveaway, with or without food.
   function inFood(ev) {
     if (state.food === 'all') return true;
+    if (state.food === 'giveaway') return hasGiveaway(ev);
     return foodBucket(ev) === state.food;
   }
   function publicList() {
     return ((state.free.data && state.free.data.events) || []).filter(isPublic);
   }
+  // Free food only (F.todayUpcoming): the radar, the hero metric, the tab and the cafeteria hint
+  // count it; a giveaway-only listing is shown but never counted.
   function todayUpcoming(now) {
     return F.todayUpcoming(publicList(), now);
   }
@@ -162,9 +171,25 @@
     if (loc.name && loc.name.replace(/[\s·]/g, '') !== compactPlace && pieces.indexOf(loc.name) < 0) pieces.push(loc.name);
     return pieces.join(' · ');
   }
+  // Only for explicit food: a giveaway-only listing never gets a food label or the "음식 제공" fallback.
   function foodLabelOf(ev) {
+    if (!hasFood(ev)) return '';
     var food = ev.food || {};
     return food.description && food.description.length <= 22 ? food.description : foodTypeLabel(food.type) || t('gg.foodFallback', '음식 제공');
+  }
+  // The food badge, with an honest note when the food was stated only in an attached poster.
+  function foodBadgeHtml(ev) {
+    if (!hasFood(ev)) return '';
+    var html = '<span class="gg-food-primary is-' + esc(foodBucket(ev)) + '"><span>' + esc(foodLabelOf(ev)) + '</span>';
+    if ((ev.food || {}).source === 'poster') html += '<span class="gg-food-source"> · ' + esc(t('gg.foodSource.poster', '포스터 기준')) + '</span>';
+    return html + '</span>';
+  }
+  function giveawayText(ev) {
+    return hasGiveaway(ev) ? String(ev.giveaway.description || '').trim() : '';
+  }
+  // A deadline-only giveaway's date is its sign-up deadline, never an event time.
+  function signUpByText(s) {
+    return t('gg.giveaway.signUpBy', '신청 마감 {date}').replace('{date}', dayLabel(s) + ' ' + hm(s));
   }
   // Only public web notices (KAIST notices, Babdoduk's own entries) have a link; internal sources never do.
   function publicSourceUrl(ev) {
@@ -175,22 +200,26 @@
     var s = toKst(ev.startAt);
     var reg = ev.registration || {};
     var place = placeLabel(ev), map = mapLink(ev);
-    var foodLabel = foodLabelOf(ev);
-    var bucket = foodBucket(ev);
+    var gift = hasGiveaway(ev), giftText = giveawayText(ev);
+    var deadlineOnly = isDeadlineOnly(ev);
     var deadline = toKst(reg.deadline), closed = deadline && deadline < now;
     var html = '<article class="gg-card' + (featured ? ' is-featured' : '') + '" data-id="' + esc(ev.id) + '"' + (featured ? ' data-featured="1"' : '') + '>';
     if (featured) html += '<p class="gg-featured-label">' + esc(t('gg.next', '다음 꽁밥')) + '</p>';
-    html += '<div class="gg-card-top"><time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
-    html += '<div class="gg-card-badges"><span class="gg-food-primary is-' + esc(bucket) + '"><span>' + esc(foodLabel) + '</span></span>';
+    html += '<div class="gg-card-top' + (deadlineOnly ? ' is-deadline' : '') + '">';
+    if (deadlineOnly) html += '<p class="gg-time is-deadline' + (closed ? ' is-closed' : '') + '">' + esc(signUpByText(s)) + '</p>';
+    else html += '<time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
+    html += '<div class="gg-card-badges">' + foodBadgeHtml(ev);
+    if (gift) html += '<span class="gg-gift-badge">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>';
     if (tri(reg.required) === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
     if (tri(reg.required) === 'false') html += '<span class="gg-reg-badge is-free">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</span>';
     html += '</div></div><h3 class="gg-title">' + esc(ev.title) + '</h3>';
     html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || t('gg.placeTbd', '장소 미정'));
     if (map) html += ' · <a href="' + esc(map) + '" target="_blank" rel="noopener">' + esc(t('gg.map','지도')) + '</a>';
     html += '</p>';
+    if (giftText) html += '<p class="gg-giveaway">' + esc(t('gg.giveaway.label', '경품')) + ' · ' + esc(giftText) + '</p>';
     if (ev.eligibility) html += '<p class="gg-eligibility">' + esc(t('gg.eligibility','대상')) + ' · ' + esc(ev.eligibility) + '</p>';
     if (ev.organizer) html += '<p class="gg-organizer">' + esc(t('gg.organizer', '주최')) + ' · ' + esc(ev.organizer) + '</p>';
-    html += deadlineHtml(ev, now);
+    if (!deadlineOnly) html += deadlineHtml(ev, now);   // a deadline-only giveaway already leads with it
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
     var regUrl = closed ? '' : safeHref(reg.url);
     var source = publicSourceUrl(ev);
@@ -204,11 +233,12 @@
     if (via) html += '<p class="gg-source">' + esc(via) + '</p>';
     return html + '</article>';
   }
-  function chip(group, value, label, pressed) {
-    return '<button type="button" class="gg-chip" data-group="' + group + '" data-value="' + value + '" aria-pressed="' + (pressed ? 'true' : 'false') + '">' + esc(label) + '</button>';
+  // `icon` is decorative markup: the label alone names the chip.
+  function chip(group, value, label, pressed, icon) {
+    return '<button type="button" class="gg-chip" data-group="' + group + '" data-value="' + value + '" aria-pressed="' + (pressed ? 'true' : 'false') + '">' + (icon || '') + esc(label) + '</button>';
   }
   function filtersHtml() {
-    var h = '<div class="gg-filters" role="group" aria-label="' + esc(t('gg.filtersAria', '기간과 음식 종류 필터')) + '">';
+    var h = '<div class="gg-filters" role="group" aria-label="' + esc(t('gg.filtersAria', '기간, 음식 종류와 경품 필터')) + '">';
     h += '<div class="gg-filter-row">';
     h += chip('when', 'today', t('gg.today', '오늘'), state.when === 'today');
     h += chip('when', 'tomorrow', t('gg.tomorrow', '내일'), state.when === 'tomorrow');
@@ -219,6 +249,7 @@
     h += chip('food', 'meal', t('gg.filter.meal', '식사'), state.food === 'meal');
     h += chip('food', 'snack', t('gg.filter.snack', '간식'), state.food === 'snack');
     h += chip('food', 'refreshment', t('gg.filter.refreshment', '다과'), state.food === 'refreshment');
+    h += chip('food', 'giveaway', t('gg.filter.giveaway', '경품'), state.food === 'giveaway', GIFT);
     h += '</div></div>';
     return h;
   }
@@ -263,7 +294,7 @@
     var todayN = todayUpcoming(nowKst()).length;
     var html = '<div class="food-hub-tabs" role="tablist" aria-label="' + esc(t('gg.tabsAria', '꽁밥과 학식')) + '">';
     var free = state.activeSection === 'free';
-    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + free + '" tabindex="' + (free ? 0 : -1) + '">🎁 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
+    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + free + '" tabindex="' + (free ? 0 : -1) + '">🍱 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
     html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + !free + '" tabindex="' + (free ? -1 : 0) + '">🍚 ' + esc(t('gg.tab.menu', '학식')) + '</button>';
     return html + '</div>';
   }
@@ -324,15 +355,18 @@
   // A record, not an invitation: no registration, deadline or primary button, whatever the data holds.
   function pastHtml(ev) {
     var s = toKst(ev.startAt);
-    var meta = [placeLabel(ev), foodLabelOf(ev)].filter(Boolean).join(' · ');
+    var gift = hasGiveaway(ev);
+    var meta = [placeLabel(ev), foodLabelOf(ev), giveawayText(ev)].filter(Boolean).join(' · ');
     var via = sourceLabel(ev);
     var source = publicSourceUrl(ev);
+    var record = hasFood(ev) ? t('gg.archive.record', '당시 공개된 꽁밥 안내 기록') : t('gg.archive.recordGiveaway', '당시 공개된 경품 안내 기록');
     var html = '<li class="gg-past" data-past-id="' + esc(ev.id) + '">';
     html += '<p class="gg-past-top"><span class="gg-past-badge">' + esc(t('gg.archive.ended', '종료')) + '</span>' +
+      (gift ? '<span class="gg-past-gift">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>' : '') +
       '<span class="gg-past-when">' + esc(s ? dayLabel(s) + ' ' + hm(s) : t('gg.timeTbd', '시간 미정')) + '</span></p>';
     html += '<h3 class="gg-past-title">' + esc(ev.title) + '</h3>';
     if (meta) html += '<p class="gg-past-meta">' + esc(meta) + '</p>';
-    html += '<p class="gg-past-note">' + esc(t('gg.archive.record', '당시 공개된 꽁밥 안내 기록') + (via ? ' · ' + via : '')) + '</p>';
+    html += '<p class="gg-past-note">' + esc(record + (via ? ' · ' + via : '')) + '</p>';
     if (source) {
       html += '<a class="gg-past-link" href="' + esc(source) + '" target="_blank" rel="noopener">' +
         esc(t('gg.archive.source', '당시 공지 보기')) + ' <span aria-hidden="true">↗</span>' +
@@ -375,6 +409,8 @@
     else {
       html += feedNoteHtml();
       var events = visibleEvents(now);
+      // The featured "다음 꽁밥" is the radar's next free meal: always a food row (one that also has a
+      // giveaway may be it), never a giveaway-only row, which the radar does not count.
       var featuredId = (earliestToday(now) || {}).id;
       if (!events.length) {
         if (!todayUpcoming(now).length) html += emptyFreeHtml(now);
@@ -651,7 +687,7 @@
   try {
     var saved = JSON.parse(localStorage.getItem('babdoduk-ggongbab-filter') || 'null');
     if (saved && ['today', 'tomorrow', 'week', 'all'].indexOf(saved.when) >= 0) { state.when = saved.when; savedFilter = true; }
-    if (saved && ['all', 'meal', 'snack', 'refreshment'].indexOf(saved.food) >= 0) state.food = saved.food;
+    if (saved && FOOD_FILTERS.indexOf(saved.food) >= 0) state.food = saved.food;   // anything else stays 'all'
   } catch (err) {}
   try {
     var tabSaved = localStorage.getItem(TAB_KEY);

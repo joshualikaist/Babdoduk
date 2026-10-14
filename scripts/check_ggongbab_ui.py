@@ -198,6 +198,213 @@ def open_ended_hand_out(browser, base, report):
         context.close()
 
 
+def giveaway_payloads(now=RADAR_NOW):
+    """Synthetic live feed and past listings with giveaways (owner decisions 2026-10-14), all
+    derived from one reference time: a giveaway-only expo that starts before the first meal, a meal,
+    a talk with a gift and food read only from its poster, a deadline-only prize draw (its startAt
+    is its sign-up deadline) and one whose deadline passed an hour ago."""
+    def at(days, hour, minute=0):
+        return (now + timedelta(days=days)).replace(hour=hour, minute=minute, second=0, microsecond=0).isoformat()
+
+    no_food = {"provided": "unknown", "type": "unknown", "description": ""}
+    place = {"building": "N1", "room": "101호", "name": "KI빌딩"}
+    mail = [{"type": "dooray", "name": "Dooray"}]
+    draw = at(2, 23, 59)
+    closed = (now - timedelta(hours=1)).isoformat()
+    live = {"generatedAt": now.isoformat(), "events": [
+        {"id": "gift-expo", "title": "캠퍼스 창업 엑스포", "summary": "부스를 돌고 스탬프를 모아요.",
+         "startAt": at(0, 10), "endAt": at(0, 17), "location": place, "food": no_food,
+         "giveaway": {"provided": "true", "description": "경품 추첨 (에어팟)"},
+         "registration": {"required": "unknown", "deadline": None, "url": ""}, "sources": mail},
+        {"id": "food-lunch", "title": "진로 특강과 점심", "summary": "특강 뒤 점심을 함께해요.",
+         "startAt": at(0, 12), "endAt": at(0, 13), "location": place,
+         "food": {"provided": "true", "type": "lunchbox", "description": "점심 도시락", "source": "text"},
+         "registration": {"required": "true", "deadline": None, "url": ""}, "sources": mail},
+        {"id": "both-talk", "title": "토크 콘서트", "summary": "연사와 이야기 나누는 저녁.",
+         "startAt": at(0, 18), "endAt": at(0, 20), "location": place,
+         "food": {"provided": "true", "type": "snack", "description": "샌드위치", "source": "poster"},
+         "giveaway": {"provided": "true", "description": "기념품 증정"},
+         "registration": {"required": "false", "deadline": None, "url": ""}, "sources": mail},
+        {"id": "gift-draw", "title": "설문 참여 경품 추첨", "summary": "설문에 답하면 추첨에 들어가요.",
+         "startAt": draw, "endAt": None, "location": {"building": "", "room": "", "name": ""},
+         "food": {"provided": "false", "type": "unknown", "description": ""},
+         "giveaway": {"provided": "true", "description": "커피 쿠폰 20명"},
+         "registration": {"required": "true", "deadline": draw, "url": "https://example.org/apply"},
+         "sources": [{"type": "kaist_public", "name": "KAIST 공지", "url": "https://example.org/notice"}]},
+        # A deadline-only giveaway whose deadline passed an hour ago: past at once, no 3-hour grace.
+        {"id": "gift-closed", "title": "마감된 경품 이벤트", "summary": "", "startAt": closed, "endAt": None,
+         "location": place, "food": no_food, "giveaway": {"provided": "true", "description": "굿즈"},
+         "registration": {"required": "true", "deadline": closed, "url": "https://example.org/apply"},
+         "sources": mail}]}
+    archive = {"generatedAt": now.isoformat(), "windowDays": 30, "events": [
+        {"id": "past-gift", "title": "지난 경품 행사", "summary": "", "startAt": at(-2, 12), "endAt": at(-2, 15),
+         "location": place, "food": no_food, "giveaway": {"provided": "true", "description": "경품 추첨"},
+         "sources": mail},
+        {"id": "past-food", "title": "지난 점심 모임", "summary": "", "startAt": at(-3, 12), "endAt": at(-3, 13),
+         "location": place, "food": {"provided": "true", "type": "lunchbox", "description": "점심 도시락"},
+         "sources": mail}]}
+    return live, archive
+
+
+GIVEAWAY_SHOTS = OUT / "giveaway"
+
+
+def squash(text):
+    return " ".join((text or "").split())
+
+
+def giveaway_listings(browser, base, report):
+    """Giveaways on the public hub (owner decisions 2026-10-14): a 🎁 badge and no food label on a
+    giveaway-only card, both marks on a card with food and a gift, a poster note on food read only
+    from a poster, a deadline-only date line, the giveaway chip and its saved value, counts and a
+    featured pick that never count a giveaway-only listing, and 🎁 past rows. Fixed page clock and
+    synthetic data only; screenshots at 390 and 1280 px in Korean and English."""
+    live, archive = giveaway_payloads()
+    GIVEAWAY_SHOTS.mkdir(parents=True, exist_ok=True)
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    neutralize_public_config(context)
+    try:
+        context.clock.set_fixed_time(RADAR_NOW)
+        page = context.new_page()
+        errors = []
+        page.on("pageerror", lambda error: errors.append(type(error).__name__))
+        feed = {"live": live}
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=feed["live"]))
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=archive))
+        page.route("**/data/ggongbab/news.json", lambda route: route.fulfill(status=404, body=""))
+        page.route("**/data/kaist-menu/**", lambda route: route.fulfill(status=404, body=""))
+
+        def ids():
+            return page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
+
+        def card(event_id):
+            return page.locator(f'.gg-card[data-id="{event_id}"]')
+
+        def chip(value):
+            return page.locator(f'.gg-chip[data-group="food"][data-value="{value}"]')
+
+        def settled(selector, where):
+            # A timeout here keeps what the page showed, so a rare stall can be read afterwards.
+            try:
+                page.locator(selector).first.wait_for()
+            except Exception:
+                page.screenshot(path=str(GIVEAWAY_SHOTS / f"stalled-{where}.png"), full_page=True)
+                raise AssertionError(("giveaway page did not settle", where, selector, page.url, errors))
+
+        def open_hub(lang):
+            page.goto(base + "/ggongbab.html#free")
+            page.evaluate("""lang => { localStorage.setItem('babdoduk-lang', lang);
+              localStorage.removeItem('babdoduk-ggongbab-filter'); }""", lang)
+            page.reload()
+            settled(".gg-past", f"open-{lang}")
+
+        for width, lang in ((390, "ko"), (1280, "ko"), (390, "en"), (1280, "en")):
+            en = lang == "en"
+            page.set_viewport_size({"width": width, "height": 844})
+            open_hub(lang)
+            # Everything live is listed, in start order; the closed draw has left for the past rows.
+            assert ids() == ["gift-expo", "food-lunch", "both-talk", "gift-draw"], ids()
+            # Only food counts: two today (lunch, talk), never the expo that starts first.
+            assert page.locator(".gg-radar-count").inner_text() == ("2 today" if en else "오늘 2개")
+            assert page.locator(".gg-counts").inner_text().startswith("2 free meals today" if en else "오늘 꽁밥 2개")
+            assert page.locator("#foodHubTabFree").inner_text().split()[-1] == "2"
+            assert page.locator("[data-featured]").get_attribute("data-id") == "food-lunch"
+            assert page.locator(".gg-radar-cta").get_attribute("data-gg-scroll") == "food-lunch"
+            badge = "🎁 Giveaway" if en else "🎁 경품"
+            # A giveaway-only card: the gift badge and its description, never a food label or fallback.
+            expo = card("gift-expo")
+            assert expo.locator(".gg-food-primary").count() == 0
+            assert squash(expo.locator(".gg-gift-badge").text_content()) == badge
+            assert expo.locator(".gg-gift-badge [aria-hidden='true']").text_content() == "🎁"
+            assert expo.locator(".gg-giveaway").inner_text() == ("Giveaway · " if en else "경품 · ") + "경품 추첨 (에어팟)"
+            for word in ("음식 제공", "식사 제공", "Food provided"):
+                assert word not in expo.inner_text(), word
+            # Food and a giveaway: both marks; the food was read only from the poster, and says so.
+            talk = card("both-talk")
+            assert squash(talk.locator(".gg-food-primary").text_content()) == (
+                "샌드위치 · per poster" if en else "샌드위치 · 포스터 기준")
+            assert squash(talk.locator(".gg-gift-badge").text_content()) == badge
+            assert talk.locator(".gg-giveaway").inner_text().endswith("기념품 증정")
+            # Text evidence and plain food carry neither mark.
+            lunch = card("food-lunch")
+            assert lunch.locator(".gg-food-source, .gg-gift-badge, .gg-giveaway").count() == 0
+            assert lunch.locator("time.gg-time").inner_text() == "12:00"
+            # A deadline-only giveaway leads with its sign-up deadline, not an event time.
+            draw = card("gift-draw")
+            assert draw.locator("time.gg-time").count() == 0 and draw.locator(".gg-deadline").count() == 0
+            assert draw.locator(".gg-time.is-deadline").inner_text() == (
+                "Sign up by Sep 22 (Tue) 23:59" if en else "신청 마감 9월 22일 (화) 23:59")
+            assert draw.locator(".gg-btn--primary").get_attribute("href") == "https://example.org/apply"
+            # Past rows: a giveaway gets the gift mark and its own record note, never a food label.
+            assert page.locator(".gg-past").evaluate_all("els => els.map(el => el.dataset.pastId)") == [
+                "gift-closed", "past-gift", "past-food"]
+            past = page.locator('.gg-past[data-past-id="past-gift"]')
+            assert squash(past.locator(".gg-past-gift").text_content()) == badge
+            assert past.locator(".gg-past-note").inner_text().startswith(
+                "Previously published giveaway listing" if en else "당시 공개된 경품 안내 기록")
+            assert "음식 제공" not in past.inner_text() and "Food provided" not in past.inner_text()
+            assert page.locator('.gg-past[data-past-id="past-food"] .gg-past-gift').count() == 0
+            assert page.locator('.gg-past[data-past-id="gift-closed"] .gg-past-gift').count() == 1
+            assert page.locator(".gg-archive .gg-btn, .gg-archive .gg-deadline").count() == 0
+            # The chip: last in the food-type row, named by its word (the emoji is decoration).
+            gift_chip = chip("giveaway")
+            assert page.locator('.gg-chip[data-group="food"]').evaluate_all("els => els.map(el => el.dataset.value)") == [
+                "all", "meal", "snack", "refreshment", "giveaway"]
+            assert squash(gift_chip.text_content()) == badge and gift_chip.get_attribute("aria-pressed") == "false"
+            assert page.get_by_role("button", name="Giveaway" if en else "경품", exact=True).count() == 1
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            for right, edge in page.locator(".gg-card-badges, .gg-card-top").evaluate_all(
+                    "els => els.map(el => [el.getBoundingClientRect().right, el.closest('.gg-card').getBoundingClientRect().right])"):
+                assert right <= edge + 0.5, (right, edge)
+            page.evaluate("document.fonts.ready")
+            page.screenshot(path=str(GIVEAWAY_SHOTS / f"giveaway-page-{width}-{lang}.png"), full_page=True)
+            report["checks"] += 33
+            if width != 390 or lang != "ko":
+                continue
+            # Filtering (once): the giveaway chip shows every giveaway, with or without food; the food
+            # chips never match a giveaway-only row; counts do not follow the filter.
+            gift_chip.focus()
+            page.keyboard.press("Enter")
+            assert page.evaluate("document.activeElement.dataset.value") == "giveaway"
+            assert gift_chip.get_attribute("aria-pressed") == "true" and chip("all").get_attribute("aria-pressed") == "false"
+            assert ids() == ["gift-expo", "both-talk", "gift-draw"], ids()
+            assert page.locator(".gg-radar-count").inner_text() == "오늘 2개"
+            assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-ggongbab-filter')).food") == "giveaway"
+            page.reload()
+            settled(".gg-card", "saved-giveaway")
+            assert chip("giveaway").get_attribute("aria-pressed") == "true"
+            assert ids() == ["gift-expo", "both-talk", "gift-draw"], ids()
+            for value, expected in (("meal", ["food-lunch"]), ("snack", ["both-talk"]), ("refreshment", []),
+                                    ("all", ["gift-expo", "food-lunch", "both-talk", "gift-draw"])):
+                chip(value).click()
+                assert ids() == expected, (value, ids())
+                assert chip(value).get_attribute("aria-pressed") == "true"
+            # Saved values: an old one still works; an unknown or missing one falls back to all.
+            for saved, pressed in (({"when": "all", "food": "snack"}, "snack"),
+                                   ({"when": "all", "food": "prize"}, "all"), ({"when": "all"}, "all")):
+                page.evaluate("value => localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify(value))", saved)
+                page.reload()
+                settled(".gg-chip", f"saved-{saved.get('food', 'none')}")
+                assert chip(pressed).get_attribute("aria-pressed") == "true", saved
+                assert page.locator('.gg-chip[data-group="food"][aria-pressed="true"]').count() == 1, saved
+            page.evaluate("localStorage.removeItem('babdoduk-ggongbab-filter')")
+            report["checks"] += 22
+
+        # Giveaways only: listed, but the radar reports no free food and nothing is featured.
+        feed["live"] = dict(live, events=[live["events"][0], live["events"][3]])
+        page.set_viewport_size({"width": 390, "height": 844})
+        open_hub("ko")
+        assert ids() == ["gift-expo", "gift-draw"], ids()
+        assert page.locator(".gg-radar-count").inner_text() == "오늘 0개"
+        assert "가뭄" in page.locator(".gg-radar-title").inner_text()
+        assert page.locator("[data-featured], .gg-radar-cta").count() == 0
+        assert page.locator(".gg-counts").inner_text().startswith("오늘 꽁밥 0개")
+        assert not errors, errors
+        report["checks"] += 6
+    finally:
+        context.close()
+
+
 WEEK_NOW = datetime(2026, 9, 30, 12, 30, tzinfo=timezone(timedelta(hours=9)))   # a Wednesday
 MENU_IDS = ["fclt", "west", "east1", "east2", "emp", "icc", "hawam", "seoul"]
 XSS = '<img src=x onerror="window.__kmXss=1">'
@@ -604,9 +811,17 @@ class LocalHandler(SimpleHTTPRequestHandler):
         return None
 
 
+class LocalServer(ThreadingHTTPServer):
+    """The stdlib backlog is 5. A page that opens a dozen assets at once (scripts, styles, fonts)
+    overflows it on Windows, and the browser gets ERR_CONNECTION_REFUSED for a script, so the page
+    never starts and the scenario stalls at random. A generous backlog removes that flake."""
+    request_queue_size = 128
+    daemon_threads = True
+
+
 @contextmanager
 def local_server(port=0):
-    server = ThreadingHTTPServer(("127.0.0.1", port), partial(LocalHandler, directory=str(ROOT)))
+    server = LocalServer(("127.0.0.1", port), partial(LocalHandler, directory=str(ROOT)))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -899,6 +1114,7 @@ def run_checks(preview=False):
         radar_one_today(browser, base, report)
         campus_food_news(browser, base, report)
         open_ended_hand_out(browser, base, report)
+        giveaway_listings(browser, base, report)
         past_listings(browser, base, report)
         weekly_cafeteria(browser, base, report)
         midnight_dated_menu(browser, base, report)
@@ -1009,7 +1225,7 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
     if args.serve:
-        server = ThreadingHTTPServer(("127.0.0.1", args.port), partial(LocalHandler, directory=str(ROOT)))
+        server = LocalServer(("127.0.0.1", args.port), partial(LocalHandler, directory=str(ROOT)))
         try:
             server.serve_forever()
         except KeyboardInterrupt:

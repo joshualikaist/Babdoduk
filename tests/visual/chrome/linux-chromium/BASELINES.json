@@ -1,7 +1,7 @@
 {
-  "approval": "Owner approved lab 1cb7091 on 2026-10-13 (new top bar and footer, as for windows-chrome); 34 renders from ui-guardian run 38412656676 on release/worldcup-20261013 plus the 26 images that run matched against the previous set",
+  "approval": "Owner approved lab 09fc976 on 2026-10-14 (release: ggongbab giveaway/poster, world cup motion/categories/entry/launch, brand pink); CI renders from ui-guardian run 38525418639 for the 11 changed images, the other 49 unchanged",
   "platform": "linux-chromium",
-  "source": "adopted from ci-renders",
+  "source": "adopted from ci-full",
   "images": 60,
   "fixed_now": "2026-09-28T10:00:00+09:00",
   "sizes": [

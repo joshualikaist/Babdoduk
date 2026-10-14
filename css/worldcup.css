@@ -44,17 +44,7 @@
   display: none;
 }
 
-.wc-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
 .wc-loading,
-.wc-intro,
 .wc-result {
   padding: var(--space-8) var(--space-6);
   background: var(--color-surface);
@@ -71,22 +61,23 @@
   font-weight: 600;
 }
 
-.wc-basis {
-  font-size: 16px;
-  line-height: 1.65;
-  color: var(--color-ink);
-  overflow-wrap: break-word;
-}
-
-.wc-note {
-  margin-top: var(--space-4);
+/* The game being played, "한식 32강": a small accent line over the round, and over the winner. */
+.wc-game {
+  margin-bottom: var(--space-1);
   font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-ink-muted);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
 }
 
-.wc-note + .wc-note {
+.wc-game[hidden] {
+  display: none;
+}
+
+.wc-result .wc-game {
   margin-top: var(--space-1);
+  margin-bottom: 0;
 }
 
 .wc-actions {
@@ -96,38 +87,16 @@
   margin-top: var(--space-6);
 }
 
-.wc-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 48px;
-  padding: 0 var(--space-6);
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-md);
-  background: var(--color-canvas);
-  color: var(--color-ink);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 .wc-btn--main {
   border-color: var(--color-ink);
   background: var(--color-ink);
   color: #fffdf8;
 }
 
-.wc-btn:hover {
-  border-color: var(--color-ink);
-}
-
 .wc-btn--main:hover {
   background: #36332d;
 }
 
-.wc-btn:focus-visible,
 .wc-card:focus-visible,
 .wc-text:focus-visible,
 .wc-tool:focus-visible,
@@ -244,7 +213,8 @@
   object-fit: cover;
 }
 
-.wc-card {
+.wc-card,
+.wc-fighter-face {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -359,10 +329,10 @@
 }
 
 /* Hover only with a real pointer, so a tap never leaves a sticky hover. The tints are the tokens
-   at low alpha (accent #b43d27, ink #1e1d1a), as at .wc-card.is-picked. */
+   at low alpha (accent #be185d, ink #1e1d1a), as at .wc-card.is-picked. */
 @media (hover: hover) and (pointer: fine) {
   .wc-tool--undo:hover:not(:disabled) {
-    background: rgba(180, 61, 39, 0.14);
+    background: rgba(190, 24, 93, 0.14);
   }
 
   .wc-tool--restart:hover:not(:disabled) {
@@ -373,7 +343,7 @@
 
 /* Press, for touch and mouse alike; after the hover rules, so it also shows under the pointer. */
 .wc-tool--undo:active:not(:disabled) {
-  background: rgba(180, 61, 39, 0.2);
+  background: rgba(190, 24, 93, 0.2);
 }
 
 .wc-tool--restart:active:not(:disabled) {
@@ -529,17 +499,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* One footnote line that splits evenly at the middle dot rather than leaving a lone word. */
-.wc-scope {
-  margin-top: var(--space-8);
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-ink-muted);
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
-
 /* Pick feedback: the chosen card pops with a check, the other steps back. */
 .wc-card {
   position: relative;
@@ -548,7 +507,7 @@
 .wc-card.is-picked {
   border-color: var(--color-accent);
   background: var(--color-accent-wash);
-  box-shadow: 0 0 0 3px var(--color-accent-wash), 0 12px 28px rgba(180, 61, 39, 0.18);
+  box-shadow: 0 0 0 3px var(--color-accent-wash), 0 12px 28px rgba(190, 24, 93, 0.18);
   transform: scale(1.03);
 }
 
@@ -575,30 +534,205 @@
   transform: scale(0.96);
 }
 
-/* A new round: a banner in the middle of the screen for about a second. */
-.wc-banner {
+/* The round splash (js/worldcup.js showSplash, owner 2026-10-14): from the quarterfinals on, a
+   black stage in the top layer, above the navigation, with the round in Jua; the final adds the
+   crash of the two finalists under a VS stamp. The script builds it only while it plays and moves
+   only transform and opacity; with reduced motion or forced colours it is never opened. Colours:
+   black and white, accents from the wordmark gradient (#ec4899, #a855f7, #6366f1). */
+.wc-splash {
+  display: none;                         /* where popovers are not supported: never shown */
+}
+
+.wc-splash:popover-open {
+  display: block;
   position: fixed;
-  top: 45%;
-  left: 50%;
-  z-index: 40;
-  padding: 18px 34px;
-  border-radius: 999px;
-  background: var(--color-ink);
-  color: #fffdf8;
-  font-size: clamp(26px, 6vw, 40px);
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  inset: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  overflow: hidden;
+  overflow: clip;
+  touch-action: pinch-zoom;              /* no scrolling under it; zoom still works */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wc-splash::backdrop {
+  background: transparent;
+}
+
+.wc-splash-bg,
+.wc-splash-stage,
+.wc-splash-center,
+.wc-splash-flash {
+  position: absolute;
+  inset: 0;
+}
+
+.wc-splash-bg {
+  background: #000;
+}
+
+.wc-splash-flash {
+  background: #fff;
+  opacity: 0;
+}
+
+.wc-splash-center {
+  display: grid;
+  place-items: center;
+}
+
+.wc-splash-center > * {
+  grid-area: 1 / 1;
+}
+
+.wc-splash-title,
+.wc-splash-vs {
+  position: relative;
+  font-family: 'Jua', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  font-weight: 900;                      /* Jua has one weight; the fallback gets its heaviest */
+  font-synthesis: none;
+  line-height: 1.15;
   white-space: nowrap;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
+  color: #fff;
 }
 
-.wc-banner[hidden] {
-  display: none;
+.wc-splash-title {
+  padding: 0.12em 0.18em;
+  letter-spacing: -0.01em;
+  text-shadow: 0 0.04em 0.18em rgba(168, 85, 247, 0.45);
 }
 
-.wc-banner.is-on {
-  animation: wc-banner 1100ms ease-out both;
+.wc-splash-ch {
+  display: inline-block;
+}
+
+.wc-splash-gap {
+  width: 0.26em;
+}
+
+/* Two gradient rules frame the title, drawn in from opposite sides. */
+.wc-splash-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: max(3px, 0.05em);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ec4899, #a855f7, #6366f1);
+}
+
+.wc-splash-line--top { top: 0; }
+.wc-splash-line--bottom { bottom: 0; }
+
+.wc-splash-glow,
+.wc-splash-ring,
+.wc-splash-wave {
+  border-radius: 50%;
+}
+
+.wc-splash-glow {
+  background: radial-gradient(closest-side, rgba(168, 85, 247, 0.42), rgba(236, 72, 153, 0.16) 55%, transparent);
+}
+
+.wc-splash-ring,
+.wc-splash-wave {
+  border: 3px solid rgba(255, 255, 255, 0.85);
+}
+
+/* The crash: thin speed lines from the edges, coloured rays from the impact, a shock ring. */
+.wc-splash-lines,
+.wc-splash-burst,
+.wc-splash-wave {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.wc-splash-lines {
+  background: repeating-conic-gradient(from 2deg, transparent 0deg 5.2deg, rgba(255, 255, 255, 0.5) 5.6deg 6deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 24%, #000 52%);
+  mask: radial-gradient(circle, transparent 0 24%, #000 52%);
+}
+
+.wc-splash-burst {
+  background: repeating-conic-gradient(from -4deg, #fff 0deg 3deg, transparent 3deg 22.5deg,
+    #ec4899 22.5deg 26deg, transparent 26deg 45deg, #a855f7 45deg 48deg, transparent 48deg 67.5deg,
+    #6366f1 67.5deg 71deg, transparent 71deg 90deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 9%, #000 14% 36%, transparent 70%);
+  mask: radial-gradient(circle, transparent 0 9%, #000 14% 36%, transparent 70%);
+}
+
+.wc-splash-vs {
+  line-height: 1;
+  padding: 0 0.12em 0.14em 0;
+  transform-origin: 50% 55%;
+  /* A pink-to-indigo extrusion, then a dark halo so the letters hold over any photo. */
+  text-shadow: 0.03em 0.03em 0 #ec4899, 0.06em 0.06em 0 #c44fd0, 0.09em 0.09em 0 #a855f7, 0.12em 0.12em 0 #6366f1,
+    0.06em 0.08em 0.16em rgba(0, 0, 0, 0.75), 0 0 0.3em rgba(168, 85, 247, 0.55);
+}
+
+/* A finalist: the double of its card (same face, same box), a brand rim and speed streaks. */
+.wc-fighter {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.wc-fighter-face {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  cursor: inherit;
+  transition: none;
+}
+
+.wc-fighter-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: calc(var(--radius-lg) + 4px);
+  background: linear-gradient(160deg, #ec4899, #a855f7);
+  box-shadow: 0 0 36px 4px rgba(236, 72, 153, 0.55);
+}
+
+.wc-fighter--right .wc-fighter-glow {
+  background: linear-gradient(200deg, #6366f1, #a855f7);
+  box-shadow: 0 0 36px 4px rgba(99, 102, 241, 0.6);
+}
+
+.wc-fighter-trail {
+  position: absolute;
+  top: 6%;
+  bottom: 6%;
+  width: 120%;
+  right: 100%;
+  transform-origin: right center;
+}
+
+.wc-fighter--right .wc-fighter-trail {
+  right: auto;
+  left: 100%;
+  transform-origin: left center;
+}
+
+.wc-fighter-streak {
+  position: absolute;
+  right: 6px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(270deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+}
+
+.wc-fighter--right .wc-fighter-streak {
+  right: auto;
+  left: 6px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
 }
 
 .wc-confetti {
@@ -620,14 +754,6 @@
   to { transform: scale(1) rotate(0); opacity: 1; }
 }
 
-@keyframes wc-banner {
-  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-  18% { transform: translate(-50%, -50%) scale(1.06); opacity: 1; }
-  30% { transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-}
-
 @keyframes wc-pop {
   from { transform: scale(0.85); opacity: 0.2; }
   to { transform: scale(1); opacity: 1; }
@@ -635,7 +761,6 @@
 
 @media (max-width: 560px) {
   .wc-loading,
-  .wc-intro,
   .wc-result {
     padding: var(--space-6) var(--space-4);
   }
@@ -663,7 +788,8 @@
     font-size: 11px;
   }
 
-  .wc-card {
+  .wc-card,
+  .wc-fighter-face {
     min-height: 0;
     padding: var(--space-3) var(--space-2);
     gap: var(--space-1);
@@ -699,7 +825,6 @@
   }
 
   .wc-card.is-picked::after,
-  .wc-banner.is-on,
   .wc-result.is-celebrating .wc-winner,
   .wc-result.is-celebrating .wc-winner-photo img {
     animation: none;
@@ -708,4 +833,299 @@
   .wc-card:hover {
     transform: none;
   }
+}
+
+/* The start gacha (js/worldcup.js showGacha, owner 2026-10-14): in the splash's popover, a night
+   stage with a pink and violet glow, a capsule machine with a face (220 x 330 at --k = 1) whose
+   screen counts the draw, capsules that pop open on dish photos, "너의 최애는?" on a pill, the
+   first two dishes as photo cards with a VS badge, and a small 건너뛰기 hint. The script builds it
+   only while it plays and moves only transform and opacity. The brand mix: pink, violet, indigo,
+   with cyan and yellow only as capsule colours. */
+.wc-splash[data-round="start"] .wc-splash-bg {
+  background: radial-gradient(70% 55% at 50% 42%, #2b1755, #130d24 72%);
+}
+
+.wc-gacha-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 45% at 50% 55%, rgba(168, 85, 247, 0.36), rgba(236, 72, 153, 0.14) 55%, transparent 75%);
+  opacity: 0;
+}
+
+.wc-gacha {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 220px;
+  height: 330px;
+  margin: -175px 0 0 -110px;
+  scale: var(--k, 1);
+  transform-origin: 50% 100%;
+}
+
+.wc-gacha-dome {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.5) 0 9%, rgba(255, 255, 255, 0.07) 10% 60%, rgba(99, 102, 241, 0.22) 100%);
+}
+
+.wc-gacha-ball {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.75) 0 14%, transparent 15%), linear-gradient(var(--c) 0 50%, #fffdf8 50%);
+  box-shadow: inset 0 -3px 0 rgba(30, 29, 26, 0.18);
+}
+
+.wc-gacha-ball:nth-child(1) { --c: #ec4899; left: 22px; top: 120px; }
+.wc-gacha-ball:nth-child(2) { --c: #06b6d4; left: 70px; top: 134px; rotate: 20deg; }
+.wc-gacha-ball:nth-child(3) { --c: #a855f7; left: 118px; top: 124px; rotate: -15deg; }
+.wc-gacha-ball:nth-child(4) { --c: #6366f1; left: 40px; top: 76px; rotate: 40deg; }
+.wc-gacha-ball:nth-child(5) { --c: #fde047; left: 88px; top: 86px; }
+.wc-gacha-ball:nth-child(6) { --c: #ec4899; left: 134px; top: 78px; rotate: -30deg; }
+.wc-gacha-ball:nth-child(7) { --c: #06b6d4; left: 66px; top: 38px; rotate: 60deg; }
+
+.wc-gacha-body {
+  position: absolute;
+  left: 0;
+  top: 168px;
+  width: 220px;
+  height: 150px;
+  border-radius: 30px 30px 24px 24px;
+  background: linear-gradient(120deg, #ec4899, #a855f7 45%, #6366f1 80%);
+  box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.28), inset 0 -8px 0 rgba(30, 29, 26, 0.22);
+}
+
+.wc-gacha-body::before,
+.wc-gacha-body::after {                   /* feet */
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 30px;
+  height: 14px;
+  border-radius: 8px;
+  background: #0f0e0c;
+}
+
+.wc-gacha-body::before { left: 34px; }
+.wc-gacha-body::after { right: 34px; }
+
+.wc-gacha-screen {
+  position: absolute;
+  left: 20px;
+  top: 16px;
+  width: 72px;
+  height: 38px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #0f0e0c;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.wc-gacha-count {
+  display: block;
+  color: #67e8f9;
+  font-family: var(--wc-display);
+  font-size: 26px;
+  line-height: 38px;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
+  white-space: pre;
+}
+
+.wc-gacha-crank {
+  position: absolute;
+  right: 22px;
+  top: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #fffdf8;
+  box-shadow: inset 0 -3px 0 rgba(30, 29, 26, 0.15), 0 0 0 3px rgba(30, 29, 26, 0.25);
+}
+
+.wc-gacha-crank::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 50%;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 5px;
+  background: #4f46e5;
+}
+
+.wc-gacha-eye {
+  position: absolute;
+  top: 66px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 58% 58%, #0f0e0c 0 32%, #fff 34%);
+  box-shadow: 0 0 0 2px #0f0e0c;
+}
+
+.wc-gacha-eye--l { left: 62px; }
+.wc-gacha-eye--r { right: 62px; }
+
+.wc-gacha-mouth {                         /* the chute: the capsules come out of it */
+  position: absolute;
+  left: 50%;
+  top: 100px;
+  width: 66px;
+  height: 32px;
+  margin-left: -33px;
+  border-radius: 12px 12px 18px 18px;
+  background: #0f0e0c;
+  transform-origin: 50% 0;
+}
+
+.wc-gacha-caps {
+  position: absolute;
+  inset: 0;
+}
+
+.wc-cap {
+  position: absolute;
+  width: var(--cap, 56px);
+  height: var(--cap, 56px);
+  margin: calc(var(--cap, 56px) / -2) 0 0 calc(var(--cap, 56px) / -2);
+}
+
+.wc-cap-y {
+  position: absolute;
+  inset: 0;
+}
+
+.wc-cap-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fce7f3;
+  box-shadow: 0 0 0 2px #0f0e0c;
+}
+
+.wc-cap-shell {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  clip-path: inset(0 0 50% 0);
+  background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.75) 0 12%, transparent 13%), var(--c, #ec4899);
+  box-shadow: inset 0 0 0 2px #0f0e0c;
+}
+
+/* The first two dishes: photo cards with a white ring, the size of the real match photos. */
+.wc-duelist {
+  position: absolute;
+  margin: 0;
+  border-radius: 16px;
+  background: #fce7f3;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 7px #0f0e0c, 0 16px 34px rgba(0, 0, 0, 0.4);
+}
+
+.wc-duelist img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.wc-gacha-vs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  border: 3px solid #0f0e0c;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ec4899, #a855f7 50%, #6366f1);
+  box-shadow: 0 0 0 4px #fff, 0 0 0 7px #0f0e0c;
+}
+
+.wc-gacha-vs b {
+  color: #fff;
+  font-family: var(--wc-display);
+  font-size: 32px;
+  font-weight: 400;
+  -webkit-text-stroke: 4px #0f0e0c;
+  paint-order: stroke fill;
+}
+
+/* One line of text at a time: 한식 32강 뽑는 중…, then 너의 최애는?. */
+.wc-gacha-line,
+.wc-gacha-ask {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  font-family: var(--wc-display);
+  font-weight: 400;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.wc-gacha-line {
+  top: max(9%, env(safe-area-inset-top));
+  font-size: clamp(20px, 5.4vw, 30px);
+  line-height: 1.3;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(168, 85, 247, 0.6);
+}
+
+.wc-gacha-ask {
+  top: 13%;
+}
+
+.wc-gacha-ask span {
+  display: inline-block;
+  max-width: 100%;
+  padding: 6px 20px 8px;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #be185d, #7e22ce 55%, #4338ca);
+  color: #fff;
+  font-size: clamp(28px, 8.5vw, 50px);
+  line-height: 1.2;
+  -webkit-text-stroke: 5px #0f0e0c;
+  paint-order: stroke fill;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px #0f0e0c;
+  rotate: -4deg;
+}
+
+.wc-gacha-skip {
+  position: absolute;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  translate: -50% 0;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: var(--wc-display);
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.wc-gacha-skip-icon {
+  font-size: 14px;
 }

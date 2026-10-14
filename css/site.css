@@ -10,16 +10,16 @@
   --text: #171717;
   --text-secondary: #6b6b67;
   --text-tertiary: #777772;
-  --accent: #ff675d;
-  --accent-soft: rgba(255, 103, 93, 0.12);
+  --accent: #db2777;
+  --accent-soft: rgba(219, 39, 119, 0.12);
   /* Semantic roles coexist with page-specific legacy tokens during migration. */
   --color-canvas: var(--bg);
   --color-surface: #fffdf8;
   --color-surface-muted: #f5f1e8;
   --color-ink: #1e1d1a;
   --color-ink-muted: #6d665e;
-  --color-accent: #b43d27;
-  --color-accent-wash: #f9eae2;
+  --color-accent: #be185d;
+  --color-accent-wash: #fce7f3;
   --color-divider: #ded6c9;
   --color-focus: #1e1d1a;
   --space-1: 4px;

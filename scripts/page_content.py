@@ -17,6 +17,7 @@ import json
 import re
 from collections import Counter
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "data" / "content"
@@ -96,18 +97,21 @@ def detail_sheet(details: dict, lang: str) -> list[str]:
     return rows + ["</div>"]
 
 
-def event_pictures(key: str, item: dict) -> list[str]:
-    """Two pictures side by side with VS between them (one alone has no VS), and their credit.
-    The pictures repeat the row's link for the eye only: the link below is the one to tab to."""
-    pictures = item.get("pictures")
-    if not pictures:
+def event_entry(item: dict) -> list[str]:
+    """The world cup's start screen right in the card of the activity that runs it (owner 2026-10-14:
+    the news page shows the live event, not a teaser photo and a button). The same markup as
+    worldcup.html's (worldcup_entry); js/worldcup.js, loaded by the page only while the activity is
+    running, fills it and sends the start to worldcup.html. The link below stays for a past activity
+    and when the script does not run."""
+    if item.get("entry") != "worldcup":
         return []
-    images = [f'<img src="{attr(src)}" alt="" width="720" height="540" loading="lazy" decoding="async" />'
-              for src in pictures["images"]]
-    middle = '<span class="event-teaser-vs">VS</span>'.join(images) if len(images) == 2 else images[0]
-    href = attr(item["link"])
-    return [f'  <a class="event-teaser" href="{href}" tabindex="-1" aria-hidden="true">{middle}</a>',
-            f'  <p class="event-teaser-credit" data-i18n="event.{key}.credit">{text(pictures["credit"]["ko"])}</p>']
+    return ['  <div class="wc-embed" data-wc-embed>',
+            '    <div class="wc-view wc-intro" id="wcIntro" hidden>',
+            *["      " + row for row in worldcup_entry()],
+            '    </div>',
+            *["    " + row for row in worldcup_chip()],
+            '    <p class="wc-sr" id="wcStatus" role="status" aria-live="polite"></p>',
+            '  </div>']
 
 
 def event_link(link: str) -> str:
@@ -118,7 +122,7 @@ def event_link(link: str) -> str:
                 '<span data-event-cta>당시 게시물</span> <span aria-hidden="true">↗</span>'
                 '<span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>')
     return (f'  <a class="event-link" href="{attr(link)}" data-event-page>'
-            '<span data-event-cta>참여하기</span> <span aria-hidden="true">→</span></a>')
+            '<span data-event-cta>페이지 보기</span> <span aria-hidden="true">→</span></a>')
 
 
 def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
@@ -134,7 +138,7 @@ def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
             f'  <p class="event-date">{date_range(item["start"], item["end"])}{place}</p>',
             f'  <h3 class="event-name" data-i18n="event.{key}.summary">{text(item["title"]["ko"])}</h3>',
             '  <p class="event-state" data-event-state hidden></p>',
-            *event_pictures(key, item),
+            *event_entry(item),
             event_link(item["link"]),
             '  <details class="event-more">',
             '    <summary data-i18n="event.more">자세히</summary>',
@@ -161,8 +165,6 @@ def event_strings(data: dict | None = None) -> dict[str, dict[str, str]]:
             table[f"event.{key}.summary"] = item["title"][lang]
             if "place" in item:
                 table[f"event.{key}.place"] = item["place"][lang]
-            if "pictures" in item:
-                table[f"event.{key}.credit"] = item["pictures"]["credit"][lang]
             table[f"event.{key}.detail"] = "".join(detail_sheet(item["details"], lang))
         for key, item in notices(data):
             table[f"event.{key}.title"] = item["title"][lang]
@@ -262,9 +264,10 @@ def content_errors(root: Path = ROOT) -> list[str]:
             name = (item.get("title") or {}).get("ko")
             if str(item.get("end")) < str(item.get("start")):
                 errors.append(f"events.json: {name} ends before it starts")
-            for image in (item.get("pictures") or {}).get("images") or []:
-                if not (root / image).is_file():
-                    errors.append(f"events.json: {name} shows {image}, which does not exist")
+            if item.get("entry") and (item["entry"] != "worldcup" or item.get("link") != "worldcup.html"):
+                errors.append(f"events.json: {name} shows the entry {item['entry']!r}, which only worldcup.html has")
+            if "previewFrom" in item and (not item.get("entry") or str(item["previewFrom"]) > str(item.get("start"))):
+                errors.append(f"events.json: {name} has a previewFrom that is not on or before the start of an activity with an entry")
             link = str(item.get("link") or "")
             if not link.startswith("https://") and not (root / link).is_file():
                 errors.append(f"events.json: {name} links {link}, which is not a page of this site")
@@ -289,24 +292,183 @@ def content_errors(root: Path = ROOT) -> list[str]:
     return errors
 
 
+def worldcup_entry(data: dict | None = None) -> list[str]:
+    """The world cup's start screen, the one markup of worldcup.html and of the event card that runs
+    it (owner 2026-10-14: "초입이 재미있어야"). js/worldcup.js fills the floating photos, the headline's
+    round, the tiles and the preview. Inside <div class="wc-view wc-intro" id="wcIntro" hidden>."""
+    size = (load("worldcup") if data is None else data).get("size", 32)
+    return [
+        '<div class="wc-floaters" id="wcFloaters" aria-hidden="true"></div>',
+        '<div class="wc-intro-card">',
+        f'  <h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">{size}강</span>, 뭐가 나올까?</h3>',
+        '  <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>',
+        '  <p class="wc-ended" data-wc-show="ended" hidden><span aria-hidden="true">🏁</span> '
+        '<span data-i18n="wc.ended">이벤트 종료 · 그래도 계속 즐길 수 있어요</span></p>',
+        '  <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>',
+        '  <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>',
+        '  <div class="wc-preview" id="wcPreview" hidden>',
+        '    <p class="wc-preview-label"><span class="wc-preview-emoji" aria-hidden="true">👀</span> '
+        '<span data-i18n="wc.preview">이 중에서 나와요!</span></p>',
+        '    <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>',
+        '  </div>',
+        '  <div class="wc-intro-actions">',
+        # Before the launch (js/worldcup-gate.js): the start button gives way to this locked pill.
+        '    <p class="wc-locked" id="wcLocked" data-wc-show="soon" hidden><span class="wc-locked-pill">'
+        '<span aria-hidden="true">🔒</span> <span data-wc-fmt="wc.locked">곧 오픈</span></span> '
+        '<span class="wc-locked-count" data-wc-countdown></span></p>',
+        '    <button type="button" class="wc-btn wc-btn--big" id="wcStart"><span class="wc-btn-emoji" aria-hidden="true">🎰</span>'
+        f'<span id="wcStartLabel">{size}강 시작</span></button>',
+        '    <button type="button" class="wc-btn wc-btn--big wc-btn--resume" id="wcResume" hidden><span class="wc-btn-emoji" '
+        'aria-hidden="true">▶</span><span id="wcResumeLabel"></span></button>',
+        '    <button type="button" class="wc-link" id="wcNew" hidden><span data-i18n="wc.newStart">새로 시작</span></button>',
+        '  </div>',
+        '</div>',
+    ]
+
+
+def worldcup_chip() -> list[str]:
+    """The one photo-credit chip (owner 2026-10-14): every photo is a cropped, resized Wikimedia Commons
+    file, credited by name where it is shown large (the match, the winner)."""
+    return ['<p class="wc-chip"><span aria-hidden="true">📷</span> <span data-i18n="wc.photoChip">'
+            '사진 위키미디어 공용(잘라서 줄임)</span></p>']
+
+
+# The launch gate's texts (js/worldcup-gate.js): the locked pill, the countdown, the dates. The home
+# page's promo carries these besides its own `home.wc` family.
+WORLDCUP_GATE_KEYS = ("wc.locked", "wc.dateShort", "wc.months", "wc.countdown.d", "wc.countdown.long",
+                      "wc.countdown.hours", "wc.countdown.minutes")
+# The translation keys the start screen uses (the event page carries these, not the whole `wc` family).
+WORLDCUP_ENTRY_KEYS = ("wc.intro.title", "wc.intro.tone", "wc.catLabel", "wc.preview", "wc.start", "wc.resume",
+                       "wc.newStart", "wc.round.n", "wc.round.semi", "wc.round.final", "wc.catCount", "wc.catLanded",
+                       "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
+                       "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.cat.randomSub",
+                       "wc.photoChip", "wc.ended", "wc.state.soon", *WORLDCUP_GATE_KEYS)
+# Every dish photo is images/worldcup/<id>.jpg; the event page's slim data lists no paths.
+WORLDCUP_PHOTO_PATH = "images/worldcup/{id}.jpg"
+
+
 def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
     """The world cup's dishes as a script block in worldcup.html: data/content/ is never deployed
     (.vercelignore), so the page carries them instead of fetching them."""
     data = load("worldcup") if data is None else data
     payload = json.dumps({"size": data.get("size", len(data["dishes"])), "basis": data["basis"],
-                          "dishes": data["dishes"], "photos": data.get("photos") or {}},
+                          "dishes": data["dishes"], "categories": data.get("categories") or {},
+                          "photos": data.get("photos") or {}},
                          ensure_ascii=False)
     return {"worldcup": [
         "<script>",
         "  // Written by scripts/sync_site_chrome.py from data/content/worldcup.json; edit that, not this.",
         "  window.BABDODUK_WORLDCUP = " + payload.replace("<", "\\u003c") + ";",
         "</script>",
+    ], "worldcup-font": [
+        "<!-- Jua (OFL) for the world cup's display lettering only (titles, category tiles, buttons, the",
+        "     splash and the start gacha): just the letters of WORLDCUP_JUA_KEYS in scripts/page_content.py. -->",
+        f'<link href="{worldcup_font_url()}" rel="stylesheet" />',
+    ], "worldcup-entry": worldcup_entry(data), "worldcup-chip": worldcup_chip()}
+
+
+def worldcup_font_block() -> dict[str, list[str]]:
+    """The display font alone, for the event page's start screen."""
+    return {"worldcup-font": worldcup_blocks()["worldcup-font"]}
+
+
+def home_font_block() -> dict[str, list[str]]:
+    """The display font for the home page's world cup promo: just the letters of HOME_JUA_KEYS."""
+    return {"worldcup-font": [
+        "<!-- Jua (OFL) for the world cup promo's lettering only: just the letters of HOME_JUA_KEYS in",
+        "     scripts/page_content.py. -->",
+        f'<link href="{worldcup_font_url(HOME_JUA_KEYS)}" rel="stylesheet" />',
     ]}
 
 
+def worldcup_gate(data: dict | None = None) -> dict:
+    """The world cup's launch window, read from the activity of data/content/events.json that shows its
+    start screen: the first and last day (KST, both included) and, for lab only, `previewFrom`."""
+    data = load("events") if data is None else data
+    item = next(item for item in data["activities"] if item.get("entry") == "worldcup")
+    gate = {"start": item["start"], "end": item["end"]}
+    if "previewFrom" in item:
+        gate["previewFrom"] = item["previewFrom"]
+    return gate
+
+
+def worldcup_gate_blocks(data: dict | None = None) -> dict[str, list[str]]:
+    """js/worldcup-gate.js: the launch window as a script block (data/content/ is never deployed)."""
+    return {"worldcup-gate": ["window.BABDODUK_WC_WINDOW = " + json.dumps(worldcup_gate(data)) + ";"]}
+
+
+def catalog_names(root: Path = ROOT) -> dict[str, list[str]]:
+    """[Korean, English] name of every catalog dish."""
+    names = {}
+    catalog = json.loads((root / "data" / "foods" / "catalog.json").read_text(encoding="utf-8"))
+    for pack in catalog.get("packs") or []:
+        for item in json.loads((root / pack["src"]).read_text(encoding="utf-8")).get("items") or []:
+            names[item["id"]] = [item.get("nameKo") or "", item.get("nameEn") or ""]
+    return names
+
+
+def worldcup_entry_data_blocks(data: dict | None = None) -> dict[str, list[str]]:
+    """What the start screen needs on the event page, without the catalog's 1.3 MB and the photo
+    credits: the game size, each dish's Korean and English name and category, and where the photos are. Written into
+    js/worldcup-entry-data.js, which the page loads only while the world cup runs."""
+    data = load("worldcup") if data is None else data
+    names = catalog_names()
+    categories = data.get("categories") or {}
+    payload = json.dumps({"size": data.get("size", len(data["dishes"])), "photoPath": WORLDCUP_PHOTO_PATH,
+                          "dishes": {dish: [*names[dish], categories[dish]] for dish in data["dishes"]}},
+                         ensure_ascii=False, separators=(",", ":"))
+    return {"worldcup": ["window.BABDODUK_WORLDCUP = " + payload.replace("<", "\\u003c") + ";"]}
+
+
+# The world cup's display lettering is Jua (owner 2026-10-14: a playful entry). Google Fonts sends
+# only the letters asked for (`text=`), so the link carries every letter these labels use, in both
+# languages. Dish names are never set in Jua (dynamic text would mix fonts letter by letter).
+WORLDCUP_JUA_KEYS = ("wc.locked", "wc.ended", "wc.months", "wc.dateShort", "wc.title", "wc.intro.title", "wc.start", "wc.resume", "wc.newStart", "wc.preview",
+                     "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
+                     "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.catGame",
+                     "wc.round.n", "wc.round.semi", "wc.round.final", "wc.gacha.drawing", "wc.gacha.ask",
+                     "wc.gacha.skip", "wc.splash.quarter", "wc.splash.semi", "wc.splash.final", "wc.vs")
+
+
+# The home page's promo sets only its title, its state line and its button in Jua (months are the
+# English month names of the date it shows).
+HOME_JUA_KEYS = ("home.wc.title", "home.wc.soon", "home.wc.live", "home.wc.cta.soon", "home.wc.cta.live",
+                 "wc.months", "wc.dateShort")
+
+
+def worldcup_font_letters(keys: tuple[str, ...] | None = None) -> str:
+    letters = set("0123456789 !")
+    for lang in LANGS:
+        strings = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
+        for key in WORLDCUP_JUA_KEYS if keys is None else keys:
+            letters |= set(re.sub(r"\{\w+\}", "", strings[key]))
+    return "".join(sorted(letters))
+
+
+def worldcup_font_url(keys: tuple[str, ...] | None = None) -> str:
+    return "https://fonts.googleapis.com/css2?family=Jua&display=swap&text=" + quote(worldcup_font_letters(keys), safe="")
+
+
+# The world cup's categories (owner, 2026-10-14): each dish of the pool is in exactly one, taken from
+# the catalog's `cuisineGroup`. "all" is the whole pool and is not stored. js/worldcup.js lists the
+# same keys in the order of the chips.
+WORLDCUP_CATEGORIES = ("korean", "chinese", "japanese", "western", "world", "snack", "dessert")
+WORLDCUP_CATEGORY_BY_GROUP = {
+    "korean": "korean", "chinese": "chinese", "japanese": "japanese",
+    "western": "western", "italian": "western", "american": "western", "french": "western", "mexican": "western",
+    "southeast-asian": "world", "indian": "world", "middle-eastern": "world", "fusion": "world",
+    "snack": "snack", "dessert": "dessert",
+}
+
+
+def worldcup_category(item: dict) -> str | None:
+    """The world cup category of one catalog dish, or None when its cuisineGroup is not mapped."""
+    return WORLDCUP_CATEGORY_BY_GROUP.get(item.get("cuisineGroup") or "")
+
+
 def worldcup_errors(root: Path = ROOT) -> list[str]:
-    """data/content/worldcup.json: a pool of catalog dishes, each with a photo, at least as large as a
-    game (`size`, a power of two)."""
+    """data/content/worldcup.json: a pool of catalog dishes, each with a photo and exactly one category,
+    at least as large as a game (`size`, a power of two); every category holds at least a game of dishes."""
     path = root / "data" / "content" / "worldcup.json"
     if not path.exists():
         return []
@@ -320,19 +482,36 @@ def worldcup_errors(root: Path = ROOT) -> list[str]:
             errors.append(f"worldcup.json: {dish} has no photo")
         elif not (root / str(photo.get("image") or "")).is_file():
             errors.append(f"worldcup.json: {dish} shows {photo.get('image')}, which does not exist")
+        elif photo.get("image") != WORLDCUP_PHOTO_PATH.format(id=dish):
+            errors.append(f"worldcup.json: {dish} shows {photo.get('image')}, not {WORLDCUP_PHOTO_PATH.format(id=dish)}")
     errors += [f"worldcup.json: a photo for {dish}, which is not in the bracket" for dish in photos if dish not in dishes]
     size = data.get("size", len(dishes))
     if size < 4 or size & (size - 1) or len(dishes) < size:
         errors.append(f"worldcup.json: a game of {size} from {len(dishes)} dishes is not a bracket")
     if len(set(dishes)) != len(dishes):
         errors.append("worldcup.json: a dish is listed twice")
+    categories = data.get("categories") or {}
+    errors += [f"worldcup.json: {dish} has no category" for dish in dishes if dish not in categories]
+    errors += [f"worldcup.json: a category for {dish}, which is not in the bracket" for dish in categories if dish not in dishes]
+    errors += [f"worldcup.json: {dish} is in the category {key!r}, which does not exist"
+               for dish, key in categories.items() if key not in WORLDCUP_CATEGORIES]
+    for key in WORLDCUP_CATEGORIES:
+        have = sum(1 for dish in dishes if categories.get(dish) == key)
+        if have < size:
+            errors.append(f"worldcup.json: the category {key!r} has {have} dishes, fewer than a game of {size}")
     catalog_path = root / "data" / "foods" / "catalog.json"
     if catalog_path.exists():
         names = {}
+        groups = {}
         for pack in json.loads(catalog_path.read_text(encoding="utf-8")).get("packs") or []:
             pack_path = root / str(pack.get("src") or "")
             if pack_path.is_file():
-                names |= {item.get("id"): item.get("nameKo") or "" for item in json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []}
+                items = json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []
+                names |= {item.get("id"): item.get("nameKo") or "" for item in items}
+                groups |= {item.get("id"): worldcup_category(item) for item in items}
+        # The category follows the catalog (cuisineGroup), so a dish cannot drift into another one.
+        errors += [f"worldcup.json: {dish} is in the category {categories[dish]!r}, but the catalog says {groups[dish]!r}"
+                   for dish in dishes if dish in categories and dish in groups and categories[dish] != groups[dish]]
         errors += [f"worldcup.json: {dish} is not a catalog dish" for dish in dishes if dish not in names]
         families = Counter(same_dish(dish, names[dish]) for dish in dishes if dish in names)
         errors += [f"worldcup.json: {count} dishes are {family}; at most {SAME_DISH_LIMIT} of the same dish"

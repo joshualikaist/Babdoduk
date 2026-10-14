@@ -206,7 +206,7 @@ body.mg-body .site-footer {
 }
 
 .mg-story-out {
-  color: #b43d27;
+  color: var(--color-accent);
   font-weight: 700;
 }
 

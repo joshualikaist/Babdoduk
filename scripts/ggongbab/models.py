@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 SourceType = Literal["dooray", "dooray_mailbox", "kaist_public", "manual", "portal"]
 Tri = Literal["true", "false", "unknown"]
 FoodType = Literal["meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"]
+EvidenceField = Literal["event_time", "location", "food", "registration", "giveaway"]
 
 
 # ---------------------------------------------------------------------------
@@ -86,6 +87,12 @@ class Evidence(BaseModel):
     location: Optional[str] = Field(description="Verbatim quote that states the venue, or null.")
     food: Optional[str] = Field(description="Verbatim quote that explicitly says food/drink is PROVIDED, or null.")
     registration: Optional[str] = Field(description="Verbatim quote about registration/deadline/link, or null.")
+    # v4 fields default to null so an older parse (or a test) without them still validates; the
+    # SDK still lists every property as required in the strict schema and drops null defaults.
+    giveaway: Optional[str] = Field(default=None, description="Verbatim quote that states a prize draw or giveaway for participants, or null.")
+    from_poster: Optional[list[EvidenceField]] = Field(
+        default=None,
+        description="Which of the quotes above were read from an attached image (a poster) rather than from the text.")
 
 
 class EventExtraction(BaseModel):
@@ -102,6 +109,8 @@ class EventExtraction(BaseModel):
     food_provided: Tri
     food_type: FoodType
     food_description: Optional[str]
+    giveaway: Optional[Tri] = Field(default=None, description="'true' only when participants can win or receive a prize or gift (경품 추첨, 기념품 증정); null if not stated.")
+    giveaway_description: Optional[str] = Field(default=None, description="What is drawn or given, as written. Null if none.")
     organizer: Optional[str]
     eligibility: Optional[str]
     registration_required: Tri
@@ -157,6 +166,10 @@ class EventCandidate:
     food_provided: Tri = "unknown"
     food_type: FoodType = "unknown"
     food_description: Optional[str] = None
+    # Where the food evidence was read: "text" (body or attachment text) or "poster" (an image only).
+    food_evidence_source: Optional[str] = None
+    giveaway: Tri = "unknown"
+    giveaway_description: Optional[str] = None
     organizer: Optional[str] = None
     eligibility: Optional[str] = None
     registration_required: Tri = "unknown"
@@ -187,6 +200,9 @@ class EventCandidate:
             "food_provided": self.food_provided,
             "food_type": self.food_type,
             "food_description": self.food_description,
+            "food_evidence_source": self.food_evidence_source,
+            "giveaway": self.giveaway,
+            "giveaway_description": self.giveaway_description,
             "organizer": self.organizer,
             "eligibility": self.eligibility,
             "registration_required": self.registration_required,

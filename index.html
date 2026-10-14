@@ -25,6 +25,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- @content:worldcup-font -->
+  <!-- Jua (OFL) for the world cup promo's lettering only: just the letters of HOME_JUA_KEYS in
+       scripts/page_content.py. -->
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%2C%2F0123456789ACDFJLMNOPSWabcdegilnoprstuvwy%C2%B7%EA%B8%88%EA%B8%B0%EA%B9%8C%EB%8F%84%EB%91%91%EB%93%9C%EB%A8%B9%EB%B0%A5%EB%B0%A9%EB%B3%B4%EC%84%B8%EC%98%A4%EC%9B%94%EC%9E%90%EC%A4%91%EC%A7%80%EC%A7%84%EC%BB%B5%ED%94%88%ED%95%98%ED%96%89%ED%9E%88" rel="stylesheet" />
+  <!-- @end content -->
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/index.css" />
 </head>
@@ -57,6 +62,24 @@
     <!-- The top, in reading order: who we are, the free-food calendar, the cafeteria line, then the
          decorative collage. On wide screens the collage sits beside the copy on the same paper band. -->
     <div class="home-top">
+      <!-- The 먹방 월드컵 promo (owner 2026-10-14; a paragraph, not a heading: the h1 comes first). Before the
+           launch it counts down and points to the news page, while it runs it starts the game, after the
+           end it is gone. js/worldcup-gate.js decides (data-wc-show) from data/content/events.json; the
+           fonts and texts are written by the sync. -->
+      <section class="home-wc" aria-labelledby="homeWcTitle" data-wc-show="soon live" hidden>
+        <div class="home-wc-photos" aria-hidden="true">
+          <img class="home-wc-photo home-wc-photo--a" src="images/worldcup/kr-bulgogi.jpg" alt="" width="720" height="540" decoding="async" />
+          <img class="home-wc-photo home-wc-photo--b" src="images/worldcup/kr-kimchi-jjigae.jpg" alt="" width="720" height="540" decoding="async" />
+        </div>
+        <div class="home-wc-body">
+          <p class="home-wc-title" id="homeWcTitle"><span aria-hidden="true">🏆</span> <span data-i18n="home.wc.title">밥도둑 먹방 월드컵</span></p>
+          <p class="home-wc-line" data-wc-show="soon" hidden><span class="home-wc-state" data-wc-fmt="home.wc.soon">10/16 오픈!</span> <span class="home-wc-count" data-wc-countdown></span></p>
+          <p class="home-wc-line" data-wc-show="live" hidden><span class="home-wc-state" data-wc-fmt="home.wc.live" data-wc-date="end">지금 진행 중 · 10/23까지</span></p>
+        </div>
+        <a class="home-wc-cta home-wc-cta--soon" href="event.html" data-wc-show="soon" hidden><span data-i18n="home.wc.cta.soon">자세히 보기</span> <span aria-hidden="true">→</span></a>
+        <a class="home-wc-cta home-wc-cta--live" href="worldcup.html" data-wc-show="live" hidden><span aria-hidden="true">🎰</span> <span data-i18n="home.wc.cta.live">지금 하기</span></a>
+      </section>
+
       <section class="home-hero" aria-labelledby="homeTitle">
         <div class="home-hero-copy">
           <p class="home-kicker">
@@ -153,9 +176,9 @@
                 <path d="M170 0v120" stroke="#d8c49a" stroke-width="5"/>
                 <rect x="16" y="10" width="40" height="18" rx="4" fill="#67745d" opacity=".28"/>
                 <rect x="190" y="82" width="56" height="26" rx="4" fill="#67745d" opacity=".22"/>
-                <circle cx="120" cy="52" r="7" fill="#d9472b"/>
+                <circle cx="120" cy="52" r="7" fill="#db2777"/>
                 <circle cx="120" cy="52" r="3" fill="#fcfaf5"/>
-                <circle cx="214" cy="92" r="6" fill="#d9472b"/>
+                <circle cx="214" cy="92" r="6" fill="#db2777"/>
                 <circle cx="214" cy="92" r="2.5" fill="#fcfaf5"/>
               </svg>
             </span>
@@ -192,7 +215,7 @@
         </div>
           <a class="explore-card explore-card--insta" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener">
             <span class="explore-badge" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#191714" stroke-width="1.7"/><circle cx="12" cy="12" r="4" stroke="#191714" stroke-width="1.7"/><circle cx="17.2" cy="6.8" r="1" fill="#d9472b"/></svg>
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#191714" stroke-width="1.7"/><circle cx="12" cy="12" r="4" stroke="#191714" stroke-width="1.7"/><circle cx="17.2" cy="6.8" r="1" fill="#db2777"/></svg>
             </span>
             <div class="explore-media explore-collage" aria-hidden="true">
               <img src="images/home/food-jjigae-720.jpg" alt="" width="720" height="960" loading="lazy" decoding="async" />
@@ -294,14 +317,18 @@
         'home.cal.answer.today': '오늘 {n}개 · {time}부터',
         'home.cal.archiveError': '지난 기록을 불러오지 못했어요',
         'home.cal.cell.active': '꽁밥 {n}개',
+        'home.cal.cell.gift': '경품 {n}개',
         'home.cal.cell.past': '지난 꽁밥 {n}개',
         'home.cal.empty': '일정 없음',
         'home.cal.ev.apply': '신청하기',
         'home.cal.ev.deadline': '신청 마감 · {date}',
         'home.cal.ev.ended': '종료',
         'home.cal.ev.food': '{food} 제공',
+        'home.cal.ev.gift': '경품',
+        'home.cal.ev.giftDetail': '경품 · {gift}',
         'home.cal.ev.original': '원문 보기',
         'home.cal.ev.reg': '사전 신청',
+        'home.cal.ev.signUpBy': '신청 마감 {time}',
         'home.cal.ev.source': '출처 · {source}',
         'home.cal.ev.timeTbd': '시간 미정',
         'home.cal.ev.who': '대상 · {who}',
@@ -360,6 +387,11 @@
         'home.shelf.prev': '이전 배너',
         'home.shelf.title': '오늘 먹기',
         'home.title': 'KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span>',
+        'home.wc.cta.live': '지금 하기',
+        'home.wc.cta.soon': '자세히 보기',
+        'home.wc.live': '지금 진행 중 · {date}까지',
+        'home.wc.soon': '{date} 오픈!',
+        'home.wc.title': '밥도둑 먹방 월드컵',
         'nav.event': '소식·이벤트',
         'nav.event.open': '소식·이벤트',
         'nav.eventShort': '소식',
@@ -378,6 +410,13 @@
         'nav.topAria': '맨 위로',
         'profile.subtitle': '카이스트 기계과 먹방1티어 학생의 먹방일기',
         'profile.titleHtml': '밥도둑 <span class="title-en">Babdoduk</span>',
+        'wc.countdown.d': 'D-{n}',
+        'wc.countdown.hours': '{h}시간 {m}분 남음',
+        'wc.countdown.long': '{d}일 {h}시간 남음',
+        'wc.countdown.minutes': '{m}분 남음',
+        'wc.dateShort': '{m}/{d}',
+        'wc.locked': '{date} 오픈',
+        'wc.months': '1,2,3,4,5,6,7,8,9,10,11,12',
       },
       en: {
         docTitle: 'Babdoduk',
@@ -402,14 +441,18 @@
         'home.cal.answer.today': '{n} today · from {time}',
         'home.cal.archiveError': 'Couldn’t load past records',
         'home.cal.cell.active': 'free food: {n}',
+        'home.cal.cell.gift': 'giveaways: {n}',
         'home.cal.cell.past': 'past: {n}',
         'home.cal.empty': 'Nothing scheduled',
         'home.cal.ev.apply': 'Sign up',
         'home.cal.ev.deadline': 'Sign up by {date}',
         'home.cal.ev.ended': 'Ended',
         'home.cal.ev.food': '{food}',
+        'home.cal.ev.gift': 'Giveaway',
+        'home.cal.ev.giftDetail': 'Giveaway: {gift}',
         'home.cal.ev.original': 'Original post',
         'home.cal.ev.reg': 'Sign-up required',
+        'home.cal.ev.signUpBy': 'Sign up by {time}',
         'home.cal.ev.source': 'Source: {source}',
         'home.cal.ev.timeTbd': 'Time TBD',
         'home.cal.ev.who': 'Open to: {who}',
@@ -468,6 +511,11 @@
         'home.shelf.prev': 'Previous cards',
         'home.shelf.title': 'Eat today',
         'home.title': 'What should we eat<br /><span class="home-title-mark">at KAIST today?</span>',
+        'home.wc.cta.live': 'Play now',
+        'home.wc.cta.soon': 'Preview',
+        'home.wc.live': 'Live now · until {date}',
+        'home.wc.soon': 'Opens {date}!',
+        'home.wc.title': 'Food World Cup',
         'nav.event': 'News & events',
         'nav.event.open': 'News & events',
         'nav.eventShort': 'News',
@@ -486,11 +534,19 @@
         'nav.topAria': 'Back to top',
         'profile.subtitle': 'Food diary of a KAIST Mechanical Engineering student (mukbang tier 1).',
         'profile.titleHtml': '<span class="title-en">Babdoduk</span>',
+        'wc.countdown.d': 'D-{n}',
+        'wc.countdown.hours': '{h}h {m}m left',
+        'wc.countdown.long': '{d}d {h}h left',
+        'wc.countdown.minutes': '{m}m left',
+        'wc.dateShort': '{mon} {d}',
+        'wc.locked': 'Opens {date}',
+        'wc.months': 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec',
       }
     };
   </script>
   <script src="js/site.js"></script>
   <!-- @end i18n -->
+  <script src="js/worldcup-gate.js"></script>
   <script src="js/kaist-menu.js"></script>
   <script src="js/ggongbab-select.js"></script>
   <script src="js/home-calendar.js"></script>

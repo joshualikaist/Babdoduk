@@ -24,46 +24,36 @@
   margin-top: var(--space-8);
 }
 
-/* An activity's pictures (data/content/events.json `pictures`): two side by side with VS. */
-.event-teaser {
+/* The world cup's start screen in its activity's card (data/content/events.json `entry`): the same
+   markup and css/worldcup-entry.css as worldcup.html, a band the width of the page column. Only while
+   the activity runs; the link takes over for a past one, and when the script does not run. */
+.wc-embed {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-2);
-  max-width: 520px;
-  margin-top: var(--space-3);
-  text-decoration: none;
+  margin: var(--space-3) -16px 0;
 }
 
-.event-teaser img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
-  border-radius: var(--radius-md);
-  object-fit: cover;
+.wc-embed .wc-intro {
+  margin-inline: 0;
 }
 
-.event-teaser-vs {
-  padding: 6px 9px;
-  border-radius: 999px;
-  background: var(--color-ink);
-  color: #fffdf8;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
+.wc-embed:not([data-ready]) .wc-chip {
+  display: none;
 }
 
-.event-teaser-credit {
-  margin-top: 4px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--color-ink-muted);
+.event-item[data-band="past"] .wc-embed {
+  display: none;
 }
 
 .event-link[data-event-page] {
+  display: none;
+}
+
+.event-item[data-band="past"] .event-link[data-event-page],
+.wc-embed[data-failed] ~ .event-link[data-event-page] {
   display: inline-flex;
+}
+
+.event-link[data-event-page] {
   align-items: center;
   gap: 6px;
   min-height: 44px;

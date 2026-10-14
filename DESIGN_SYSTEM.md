@@ -23,7 +23,7 @@ Five repeated devices make the product recognizable beyond its logo:
 | Canvas | `--color-canvas: #f7f4ee` candidate; page overrides require a named reason | `site.css` default `#f7f7f5`, home `#f5f1e8`, magazine `#f7f4ee` |
 | Paper surface | `--color-surface: #fffdf8` candidate, with a muted surface token for grouped controls | Current `--surface` and magazine paper |
 | Ink | `--color-ink: #1e1d1a` candidate; muted ink remains distinct and contrast-tested | Current `--text`, magazine ink |
-| Food accent | `--color-accent: #b43d27` for shared navigation and readable links; home still has editorial `#d9472b` | Older shared `--accent: #ff675d` remains during migration |
+| Brand accent | `--color-accent: #be185d` (the wordmark's pink, deepened for text: 5.9:1 on the surface) for shared navigation and readable links, `--color-accent-wash: #fce7f3` behind it; the full wordmark gradient only on large surfaces, never as text (owner decision 2026-10-13, replacing the red-brown `#b43d27`) | Older shared `--accent: #db2777` remains during migration |
 | States | Semantic `info`, `success`, `warning`, `error`, `unknown`; never color-only or inferred from “food” | Existing loading/error/review states |
 | Borders | One subdued separator role plus strong focus/control boundary | Current `--border`, `--border-strong` |
 | Shadows | Small elevation only for overlap/floating controls; ordinary cards use surface and border | Existing `--shadow-*` |
@@ -58,10 +58,10 @@ Magazine first screen (owner choice A, 2026-10-13): the featured story and the p
 | Navigation | Clear primary destinations for checking and choosing; current page state; keyboard opening/closing and Escape; stable language control; experimental pages off normal navigation. Mobile hierarchy may use More for secondary links. |
 | Buttons | Primary action once per decision region; secondary/text actions have distinguishable hover, focus, disabled and busy states. External navigation uses a link, not a button. |
 | Editorial card | Category, meaningful title, source, edition/date when relevant, summary and original link. Generated fallback may need its own label. |
-| Food opportunity card | Time/date, place, explicitly provided food, eligibility, registration requirement and approved action. “Unknown” is not a positive badge. |
+| Food opportunity card | Time/date, place, explicitly provided food, eligibility, registration requirement and approved action. “Unknown” is not a positive badge. A giveaway (owner decision 2026-10-14) carries a labelled 🎁 badge and no food label unless food is explicit; food read only from a poster says so (포스터 기준); free-food counts never include a giveaway-only listing. |
 | Menu card | Official meal date, restaurant/building, meal period, items, price/calories only when provided by source. Stale data is visibly labelled. |
 | Recommendation card | Dish idea, plain-language reason, alternatives and feedback. Internal scoring is not a probability of fit or proof of sale. |
-| Free-food calendar (home) | Sunday-first KST month on one surface: today an accent ring, the selected date an ink disc, both an accent disc; an upcoming event a filled accent dot, a past one a hollow muted ring, at most two. Titles never sit in cells; the day panel lists them with inline details. Free food only (`docs/HOME_CALENDAR.md`). |
+| Free-food calendar (home) | Sunday-first KST month on one surface: today an accent ring, the selected date an ink disc, both an accent disc; an upcoming event a filled accent dot, a past one a hollow muted ring, at most two. Titles never sit in cells; the day panel lists them with inline details. Free food only, except a giveaway-only listing: one 🎁 at the date's corner, never a dot or a count (`docs/HOME_CALENDAR.md`). |
 | Event row | Date, title, one short state and the post link; the full announcement and state explanation sit behind 자세히. The date band (now, coming up, past) is separate from the confirmed, tentative, unknown or cancelled status. Partner marks require authored evidence. |
 | Badges | Distinct meaning for source, date, eligibility, editorial opinion and warning; text conveys state even without color. |
 | Filters | Preserve the selected value, expose `aria-pressed`, support keyboard/touch and a useful empty result. |

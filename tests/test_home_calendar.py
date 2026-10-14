@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 HOST = "home-calendar.invalid"
 NOW = "2026-10-01T09:00:00+09:00"   # a Thursday; October 2026 starts on a Thursday
-ACCENT = "rgb(180, 61, 39)"
+ACCENT = "rgb(190, 24, 93)"   # --color-accent #be185d (brand pink since 2026-10-13)
 INK = "rgb(30, 29, 26)"
 KAIST_E11 = {"name": "창의학습관(E11) 101호", "building": "창의학습관(E11)", "room": "101호"}
 
@@ -487,4 +487,104 @@ def test_no_weight_900_or_decoration_in_the_module(browser):
     for word in ("실시간", "LIVE", "놓치지", "서둘러", "최신"):
         assert word not in text
     assert re.search(r"[☀-➿\U0001F300-\U0001FAFF]", text) is None   # no emoji
+    context.close()
+
+
+# Giveaways (owner decisions 2026-10-14): listed with a 🎁 marker, never counted as free food.
+NO_FOOD = {"provided": "unknown", "type": "unknown", "description": ""}
+EXPO = ev("expo", "2026-10-01T14:00:00+09:00", "2026-10-01T17:00:00+09:00", title="창업 엑스포", food=NO_FOOD,
+          giveaway={"provided": "true", "description": "경품 추첨 (에어팟)"})
+TALK = ev("talk", "2026-10-07T18:00:00+09:00", "2026-10-07T20:00:00+09:00", title="토크 콘서트",
+          food={"provided": "true", "type": "snack", "description": "샌드위치", "source": "poster"},
+          giveaway={"provided": "true", "description": "기념품 증정"})
+DRAW = ev("draw", "2026-10-09T23:59:00+09:00", title="설문 경품 추첨",
+          food={"provided": "false", "type": "unknown", "description": ""},
+          giveaway={"provided": "true", "description": "커피 쿠폰"},
+          registration={"required": "true", "deadline": "2026-10-09T23:59:00+09:00", "url": "https://forms.gle/draw"})
+PAST_GIFT = ev("past-gift", "2026-09-28T12:00:00+09:00", "2026-09-28T15:00:00+09:00", title="지난 경품 행사",
+               food=NO_FOOD, giveaway={"provided": "true", "description": "굿즈"})
+GIFT_LIVE = {"generatedAt": LIVE["generatedAt"], "events": [EXPO, FORUM, MEETUP, TALK, DRAW]}
+GIFT_ARCHIVE = {"generatedAt": LIVE["generatedAt"], "windowDays": 30, "events": [PAST, PAST_GIFT]}
+
+
+def gift(page, iso):
+    return cell(page, iso).locator(".hc-gift")
+
+
+def test_a_giveaway_is_marked_but_never_counted(browser):
+    context, page, errors = open_home(browser, live=GIFT_LIVE, archive=GIFT_ARCHIVE)
+    # Today has only a giveaway: the answer and the default day still speak of free food.
+    assert answer(page) == "오늘은 없어요 · 다음 10월 7일 (수)"
+    assert cell(page, "2026-10-07").get_attribute("aria-selected") == "true"
+    assert dots(page, "2026-10-01") == [] and gift(page, "2026-10-01").count() == 1
+    assert cell(page, "2026-10-01").get_attribute("aria-label") == "10월 1일 목요일, 경품 1개"
+    # Food with a gift is free food: a dot and the count, no separate gift marker on the date.
+    assert dots(page, "2026-10-07") == ["live", "live"] and gift(page, "2026-10-07").count() == 0
+    assert cell(page, "2026-10-07").get_attribute("aria-label") == "10월 7일 수요일, 꽁밥 3개"
+    # A deadline-only draw and a past giveaway: markers only, a muted one for the past.
+    assert dots(page, "2026-10-09") == [] and gift(page, "2026-10-09").get_attribute("class") == "hc-gift"
+    assert dots(page, "2026-09-28") == [] and "is-past" in gift(page, "2026-09-28").get_attribute("class")
+    assert cell(page, "2026-09-28").get_attribute("aria-label") == "9월 28일 월요일, 경품 1개"
+    assert gift(page, "2026-10-01").get_attribute("aria-hidden") == "true"
+    # The marker is outside the reserved free-food slot: the grid does not move.
+    heights = page.locator("#homeCalGrid .hc-marks").evaluate_all("els => [...new Set(els.map(e => e.getBoundingClientRect().height))]")
+    assert heights == [5]
+    box = gift(page, "2026-10-01").evaluate("""el => { const g = el.getBoundingClientRect(), c = el.closest('td').getBoundingClientRect();
+      return g.left >= c.left && g.right <= c.right + 0.5 && g.top >= c.top; }""")
+    assert box
+    # 다가오는 꽁밥 is free food only.
+    assert page.locator(".hc-next-row").count() == 0                     # nothing after 10/7 but the draw
+    assert not errors
+    context.close()
+
+
+def test_giveaway_rows_name_no_food_and_lead_with_a_deadline(browser):
+    context, page, errors = open_home(browser, live=GIFT_LIVE, archive=GIFT_ARCHIVE)
+    cell(page, "2026-10-01").click()
+    assert page.locator("#homeCalLive").inner_text() == "10월 1일 목요일 · 경품 1개"
+    assert page.locator(".hc-ev-title").all_inner_texts() == ["창업 엑스포"]
+    meta = page.locator(".hc-ev-meta").all_inner_texts()
+    assert meta == ["14:00 · E11 101호", "🎁 경품"]
+    assert "제공" not in page.locator("#homeCalDay").inner_text() and "음식" not in page.locator("#homeCalDay").inner_text()
+    page.locator(".hc-ev-btn").click()
+    assert "경품 · 경품 추첨 (에어팟)" in page.locator(".hc-ev-detail").inner_text()
+    # Food and a gift: both, in that order.
+    cell(page, "2026-10-07").click()
+    assert page.locator(".hc-ev-meta").all_inner_texts()[-1] == "샌드위치 제공 · 🎁 경품"
+    # A deadline-only giveaway: its time is the sign-up deadline, never an event time, said once.
+    cell(page, "2026-10-09").click()
+    assert page.locator(".hc-ev-meta").all_inner_texts() == ["신청 마감 23:59 · E11 101호", "🎁 경품 · 사전 신청"]
+    page.locator(".hc-ev-btn").click()
+    detail = page.locator(".hc-ev-detail").inner_text()
+    assert detail.startswith("신청 마감 23:59 · 창의학습관(E11) 101호") and "신청 마감 · " not in detail
+    assert page.locator(".hc-ev-detail a.hc-ev-apply").get_attribute("href") == "https://forms.gle/draw"
+    # The only emoji the module ever shows is the gift, and only for a giveaway.
+    emoji = set(re.findall(r"[☀-➿\U0001F300-\U0001FAFF]", page.locator("#homeCal").inner_text()))
+    assert emoji == {"🎁"}
+    assert not errors
+    context.close()
+
+
+def test_a_giveaway_only_today_does_not_inflate_the_answer(browser):
+    lunch = ev("lunch", "2026-10-01T12:00:00+09:00", "2026-10-01T13:00:00+09:00", title="점심 간담회")
+    early = ev("early-gift", "2026-10-01T10:00:00+09:00", "2026-10-01T11:00:00+09:00", title="오전 경품", food=NO_FOOD,
+               giveaway={"provided": "true", "description": ""})
+    live = {"generatedAt": LIVE["generatedAt"], "events": [early, lunch, EXPO]}
+    context, page, _ = open_home(browser, live=live)
+    assert answer(page) == "오늘 1개 · 12:00부터"                       # the meal only, from its own time
+    assert cell(page, "2026-10-01").get_attribute("aria-label") == "10월 1일 목요일, 꽁밥 1개, 경품 2개"
+    assert dots(page, "2026-10-01") == ["live"]
+    assert page.locator(".hc-ev-title").all_inner_texts() == ["오전 경품", "점심 간담회", "창업 엑스포"]
+    context.close()
+
+
+def test_giveaway_english_strings(browser):
+    context, page, _ = open_home(browser, live=GIFT_LIVE, archive=GIFT_ARCHIVE, lang="en")
+    assert cell(page, "2026-10-01").get_attribute("aria-label") == "Thursday, October 1, giveaways: 1"
+    cell(page, "2026-10-09").click()
+    assert page.locator(".hc-ev-meta").all_inner_texts() == ["Sign up by 23:59 · E11 101호", "🎁 Giveaway · Sign-up required"]
+    page.locator(".hc-ev-btn").click()
+    assert "Giveaway: 커피 쿠폰" in page.locator(".hc-ev-detail").inner_text()
+    cell(page, "2026-10-07").click()
+    assert page.locator(".hc-ev-meta").all_inner_texts()[-1] == "Snack · 🎁 Giveaway"
     context.close()
