@@ -63,8 +63,8 @@
       }
     },
     {
-      "start": "2026-10-13",
-      "end": "2026-10-30",
+      "start": "2026-10-16",
+      "end": "2026-10-23",
       "confirmation": "announced",
       "link": "worldcup.html",
       "title": {
@@ -77,8 +77,8 @@
           "en": "32 of more than 700 dishes face off. Chicken or pizza? Find your favorite."
         },
         "duration": {
-          "ko": "2026년 10월 13일(화) ~ 2026년 10월 30일(금)",
-          "en": "Tuesday, October 13 through Friday, October 30, 2026."
+          "ko": "2026년 10월 16일(금) ~ 2026년 10월 23일(금)",
+          "en": "Friday, October 16 through Friday, October 23, 2026."
         },
         "prizes": {
           "ko": "<strong>경품 없음</strong>",
@@ -89,7 +89,8 @@
           "en": "No sign-in needed."
         }
       },
-      "entry": "worldcup"
+      "entry": "worldcup",
+      "previewFrom": "2026-10-13"
     }
   ]
 }

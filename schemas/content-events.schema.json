@@ -44,6 +44,10 @@
             "description": "The start screen of the activity shown right in its card while it runs (its link must be that page). Only the menu world cup has one.",
             "const": "worldcup"
           },
+          "previewFrom": {
+            "description": "Lab only (js/worldcup-gate.js): from this KST date babdoduk-lab.vercel.app and localhost treat the activity as started, so it can be tested before `start`. Production ignores it. Only an activity with an entry has one, and it is not after `start`.",
+            "$ref": "#/$defs/date"
+          },
           "details": {
             "description": "The fixed labelled rows (summary, duration, prizes, participation; at least the summary), or one note for an activity they do not fit.",
             "anyOf": [
