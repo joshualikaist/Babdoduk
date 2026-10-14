@@ -20,6 +20,8 @@
      data-wc-show="soon live"        hidden unless the phase is one of these
      data-wc-fmt="<i18n key>"        text = the key with {date} (the first day; data-wc-date="end" for the last)
      data-wc-countdown               "D-2 · 1일 3시간 남음" while soon, else empty (spans .wc-cd-d and .wc-cd-rest)
+     data-wc-src="<path>"            an <img> that gets this `src` only once the world cup is live: before the
+                                     launch no photo is requested (owner 2026-10-14: nothing revealed)
    A phase change fires `babdoduk-wc-phase` on the document. */
 // @content:worldcup-gate
 window.BABDODUK_WC_WINDOW = {"start": "2026-10-16", "end": "2026-10-23", "previewFrom": "2026-10-13"};
@@ -92,6 +94,9 @@ window.BABDODUK_WC_WINDOW = {"start": "2026-10-16", "end": "2026-10-23", "previe
     each('[data-wc-fmt]', function (el) {
       var date = el.getAttribute('data-wc-date') === 'end' ? win.end : win.start;
       el.textContent = fill(t(el.getAttribute('data-wc-fmt')), { date: shortDate(date) });
+    });
+    each('[data-wc-src]', function (el) {
+      if (current === 'live' && !el.getAttribute('src')) el.setAttribute('src', el.getAttribute('data-wc-src'));
     });
     each('[data-wc-countdown]', function (el) {
       var parts = current === 'soon' ? countdownParts(now) : ['', ''];

@@ -22,7 +22,11 @@
    only for go=1 with a known category; the address is then cleaned so a reload never restarts.
    The launch gate (owner 2026-10-14, js/worldcup-gate.js): before the world cup opens (`locked`) the
    start screen is a teaser only: the start button is a locked pill with a countdown, 이어하기 and
-   go=1 do nothing and start() refuses. After the end it plays on, with a small note. */
+   go=1 do nothing and start() refuses. After the end it plays on, with a small note.
+   Before the launch nothing of the draw is revealed (owner 2026-10-14: "최대한 공개 안하게끔"): the
+   tiles and the preview sit in a mystery box that is blurred (css/worldcup-entry.css), inert and hidden
+   from assistive tech, the floating and preview photos are blurred placeholders with no `src` (no
+   photo is requested), and no tile is chosen. At the launch moment the real photos load. */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -215,7 +219,9 @@
       tile.querySelector('.wc-tile-name').textContent = cat === 'random' ? t('wc.cat.random', '아무거나') : catName(cat);
       tile.querySelector('.wc-tile-n').textContent = cat === 'random' ? t('wc.cat.randomSub', '랜덤!')
         : fill(t('wc.catCount', '{n}개'), { n: poolOf(cat).length });
-      if (cat !== 'random') tile.setAttribute('aria-pressed', cat === category ? 'true' : 'false');
+      if (cat === 'random') return;
+      if (locked()) tile.removeAttribute('aria-pressed');          // a mystery box: nothing is chosen yet
+      else tile.setAttribute('aria-pressed', cat === category ? 'true' : 'false');
     });
   }
   // `user`: a tap or a key chose it (the tile pops and the button breathes again); otherwise the
@@ -241,13 +247,16 @@
       var photo = photoOf(id);
       if (!photo) return;
       var item = node('li', 'wc-preview-item', list), img = node('img', 'wc-preview-photo', item);
-      img.alt = name(id);
+      img.alt = '';
       img.width = 160;
       img.height = 160;
       img.decoding = 'async';
-      img.setAttribute('data-id', id);
-      img.onerror = function () { item.hidden = true; };
-      img.src = photo.image;
+      if (!locked()) {                                             // before the launch: a blurred placeholder, no name, no photo, no request
+        img.alt = name(id);
+        img.setAttribute('data-id', id);
+        img.onerror = function () { item.hidden = true; };
+        img.src = photo.image;
+      }
       if (animate && moving()) {
         item.animate([{ transform: 'translateY(-22px) rotate(-18deg) scale(0.4)', opacity: 0 }, { transform: 'none', opacity: 1 }],
                      { duration: 480, delay: 40 + i * 70, easing: EASE.bouncy, fill: 'backwards' });
@@ -313,8 +322,14 @@
     $('wcStart').hidden = resumable || locked();
     $('wcResume').hidden = $('wcNew').hidden = !resumable;
     if (gate) gate.refresh();
+    // The tiles and the preview are a mystery box before the launch: nothing in it can be focused or read out.
+    var box = $('wcMysteryBody');
+    if (box) {
+      if (locked()) { box.setAttribute('inert', ''); box.setAttribute('aria-hidden', 'true'); }
+      else { box.removeAttribute('inert'); box.removeAttribute('aria-hidden'); }
+    }
     if (resumable) $('wcResumeLabel').textContent = fill(t('wc.resume', '이어하기 · {cat} {round} {n}/{total}'), progress());
-    [].forEach.call($('wcPreviewPhotos').querySelectorAll('img'), function (img) { img.alt = name(img.getAttribute('data-id')); });
+    [].forEach.call($('wcPreviewPhotos').querySelectorAll('img[data-id]'), function (img) { img.alt = name(img.getAttribute('data-id')); });
   }
   // Dish photos around the card: four on a phone, six wider, drawn from the whole pool per visit.
   function buildFloaters() {
@@ -328,7 +343,7 @@
       img.decoding = 'async';
       img.hidden = !photo;
       img.onerror = function () { img.hidden = true; };
-      if (photo) img.src = photo.image;
+      if (photo && !locked()) img.src = photo.image;               // before the launch a blurred placeholder, no request
     });
   }
   // On arrival the photos pop out and bob twice and the big button breathes three times; a new
@@ -1328,7 +1343,14 @@
   document.addEventListener('babdoduk-lang', render);
   document.addEventListener('babdoduk-lang', function () { endSplash('quiet'); });
   // The launch moment passing while the start screen is open: the locked pill gives way to the button.
-  document.addEventListener('babdoduk-wc-phase', function () { if (view === 'intro') { renderIntro(); ambient(true); } });
+  // The photos and the tile choice, which stayed hidden until now, come in with it.
+  document.addEventListener('babdoduk-wc-phase', function () {
+    if (view !== 'intro') return;
+    buildFloaters();
+    choose(category, false);
+    renderIntro();
+    ambient(true);
+  });
 
   // Skipping a splash. A tap anywhere (on the up event, so it is never a pick; the down event
   // keeps focus on the card); any key but a bare modifier, browser shortcuts still work. A key

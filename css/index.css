@@ -78,6 +78,17 @@
 .home-wc-photo--a { top: 0; left: 0; rotate: -8deg; }
 .home-wc-photo--b { top: 6px; right: 0; rotate: 7deg; }
 
+/* Before the launch the two photos are blurred placeholders with no `src` (js/worldcup-gate.js sets it
+   from data-wc-src once the world cup is live): owner 2026-10-14, nothing of the draw is revealed. */
+html[data-wc-phase="soon"] .home-wc-photo {
+  filter: blur(3px) saturate(0.6);
+  background:
+    radial-gradient(circle at 28% 30%, #fbbf24 0 22%, transparent 55%),
+    radial-gradient(circle at 72% 64%, #fb7185 0 24%, transparent 58%),
+    radial-gradient(circle at 40% 82%, #818cf8 0 20%, transparent 56%),
+    #fbcfe8;
+}
+
 .home-wc-body {
   min-width: 0;
 }

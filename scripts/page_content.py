@@ -304,12 +304,22 @@ def worldcup_entry(data: dict | None = None) -> list[str]:
         '  <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>',
         '  <p class="wc-ended" data-wc-show="ended" hidden><span aria-hidden="true">🏁</span> '
         '<span data-i18n="wc.ended">이벤트 종료 · 그래도 계속 즐길 수 있어요</span></p>',
-        '  <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>',
-        '  <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>',
-        '  <div class="wc-preview" id="wcPreview" hidden>',
-        '    <p class="wc-preview-label"><span class="wc-preview-emoji" aria-hidden="true">👀</span> '
+        # The tiles and the preview are one mystery box before the launch (owner 2026-10-14: blurred, nothing
+        # revealed): js/worldcup.js makes the body inert and hidden from assistive tech while the gate says
+        # `soon`, css/worldcup-entry.css blurs it, and the lock over it (data-wc-show) says when it opens.
+        '  <div class="wc-mystery" id="wcMystery">',
+        '    <div class="wc-mystery-body" id="wcMysteryBody">',
+        '      <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>',
+        '      <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>',
+        '      <div class="wc-preview" id="wcPreview" hidden>',
+        '        <p class="wc-preview-label"><span class="wc-preview-emoji" aria-hidden="true">👀</span> '
         '<span data-i18n="wc.preview">이 중에서 나와요!</span></p>',
-        '    <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>',
+        '        <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>',
+        '      </div>',
+        '    </div>',
+        '    <p class="wc-mystery-lock" id="wcMysteryLock" data-wc-show="soon" hidden>'
+        '<span class="wc-sr" data-wc-fmt="wc.mystery.sr">카테고리는 곧 공개돼요</span>'
+        '<span class="wc-mystery-badge" aria-hidden="true"><span>🔒</span> <span data-wc-fmt="wc.mystery.badge">곧 공개</span></span></p>',
         '  </div>',
         '  <div class="wc-intro-actions">',
         # Before the launch (js/worldcup-gate.js): the start button gives way to this locked pill.
@@ -342,7 +352,7 @@ WORLDCUP_ENTRY_KEYS = ("wc.intro.title", "wc.intro.tone", "wc.catLabel", "wc.pre
                        "wc.newStart", "wc.round.n", "wc.round.semi", "wc.round.final", "wc.catCount", "wc.catLanded",
                        "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
                        "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.cat.randomSub",
-                       "wc.photoChip", "wc.ended", "wc.state.soon", *WORLDCUP_GATE_KEYS)
+                       "wc.photoChip", "wc.ended", "wc.state.soon", "wc.mystery.badge", "wc.mystery.sr", *WORLDCUP_GATE_KEYS)
 # Every dish photo is images/worldcup/<id>.jpg; the event page's slim data lists no paths.
 WORLDCUP_PHOTO_PATH = "images/worldcup/{id}.jpg"
 
