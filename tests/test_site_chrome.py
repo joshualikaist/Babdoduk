@@ -18,7 +18,7 @@ def test_every_page_carries_the_shared_nav_and_footer():
 def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     shutil.copytree(ROOT / "shared", tmp_path / "shared")
     shutil.copytree(ROOT / "i18n", tmp_path / "i18n")
-    for page in list(chrome.PAGES) + list(chrome.LABEL_BLOCKS) + ["data/content/labels.json"]:
+    for page in list(chrome.PAGES) + list(chrome.LABEL_BLOCKS) + list(chrome.CONTENT_SCRIPTS) + ["data/content/labels.json"]:
         (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / page, tmp_path / page)
     monkeypatch.setattr(chrome, "ROOT", tmp_path)
@@ -187,7 +187,7 @@ def test_a_tree_without_the_lab_only_feed_still_syncs(tmp_path, monkeypatch):
     for folder in ("shared", "i18n"):
         if (ROOT / folder).exists():
             shutil.copytree(ROOT / folder, tmp_path / folder)
-    for page in list(chrome.PAGES) + ["js/eat-slot.js", "data/content/labels.json"]:
+    for page in list(chrome.PAGES) + ["js/eat-slot.js", *chrome.CONTENT_SCRIPTS, "data/content/labels.json"]:
         (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / page, tmp_path / page)
     for name, value in (("ROOT", tmp_path), ("SHARED", tmp_path / "shared"), ("I18N", tmp_path / "i18n"),

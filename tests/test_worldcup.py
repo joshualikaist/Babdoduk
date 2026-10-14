@@ -38,7 +38,6 @@ def test_a_broken_bracket_is_refused(tmp_path):
 
 def test_an_activity_page_link_must_be_a_page_of_this_site(tmp_path):
     shutil.copytree(ROOT / "data/content", tmp_path / "data/content")
-    shutil.copytree(ROOT / "images/worldcup", tmp_path / "images/worldcup")       # the teaser's pictures
 
     def event_errors():
         return [e for e in page_content.content_errors(tmp_path) if e.startswith("events.json")]
@@ -69,7 +68,12 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     # what is on sale: the catalog is general information.
     main = html.split("<main", 1)[1].split("</main>", 1)[0]
     assert re.findall(r"<img [^>]*>", main) and all('alt=""' in tag for tag in re.findall(r"<img [^>]*>", main))
-    assert "판매 여부와 가격은 가게에서 확인" in html and "사진: 위키미디어 공용, 잘라서 줄임" in html
+    # One small photo chip, no price sentence (owner 2026-10-14); the photos are credited by name large.
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
+    assert (ko["wc.photoChip"], en["wc.photoChip"]) == ("사진 위키미디어 공용(잘라서 줄임)", "Photos: Wikimedia Commons (cropped, resized)")
+    assert html.count('<p class="wc-chip"><span aria-hidden="true">📷</span> <span data-i18n="wc.photoChip">') == 1
+    assert "판매 여부" not in html and "wc.scope" not in html and "wc-scope" not in html and "wc.scope" not in ko | en
 
 
 def test_undo_and_restart_are_an_icon_and_a_short_label():
@@ -274,7 +278,7 @@ def test_a_dish_without_or_in_the_wrong_category_is_refused(tmp_path):
 def test_the_start_screen_offers_the_categories_with_counts_and_keeps_the_choice_in_the_saved_game():
     html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    css = (ROOT / "css/worldcup-entry.css").read_text(encoding="utf-8")        # the start screen's styles
     ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
     en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
     keys = ["all", *CATEGORY_COUNTS]
@@ -335,7 +339,7 @@ def test_the_start_screen_has_the_owners_headline_and_no_notes():
     for strings in (ko, en):
         for key in page_content.WORLDCUP_JUA_KEYS:
             assert set(re.sub(r"\{\w+\}", "", strings[key])) <= letters, key
-    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    css = "".join((ROOT / f"css/{name}.css").read_text(encoding="utf-8") for name in ("worldcup", "worldcup-entry"))
     assert "background-clip: text" not in css                   # the highlighter is a background, never gradient text
     assert "#b43d27" not in css and "#f45e45" not in (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
 
@@ -363,8 +367,8 @@ def test_the_start_gacha_plays_on_a_start_only_and_never_with_reduced_motion():
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     gacha = module("// ---- start gacha", "// ---- result image")
     # Only the starts open it; 이어하기 never does.
-    assert "$('wcStart').addEventListener('click', function () { stopSpin(true); start(category, true); });" in script
-    assert "$('wcNew').addEventListener('click', function () { stopSpin(true); start(category, true); });" in script
+    assert "$('wcStart').addEventListener('click', begin);" in script and "$('wcNew').addEventListener('click', begin);" in script
+    assert "function begin() {\n    stopSpin(true);" in script and "    start(category, true);\n  }" in script
     assert "function resume() {\n    if (!game) { start(category, false); return; }\n    show('match');\n    renderMatch(true);\n  }" in script
     # The game is stored and the match rendered, focused and announced before it opens.
     assert "store();                                            // the draw is kept before anything moves" in script
@@ -385,3 +389,106 @@ def test_the_start_gacha_plays_on_a_start_only_and_never_with_reduced_motion():
     assert (ko["wc.gacha.drawing"], ko["wc.gacha.ask"]) == ("{game} 뽑는 중…", "너의 최애는?")
     assert "[tD + 120, { transform: 'translateY(0px)', opacity: 0 }]" in gacha
     assert "[tD + 200, { transform: 'scale(1.6)', opacity: 0 }" in gacha
+
+
+# ---- the start screen in the news page's card (owner, 2026-10-14) ------------------------------------
+def event_page():
+    return (ROOT / "event.html").read_text(encoding="utf-8")
+
+
+def test_the_event_card_shows_the_start_screen_instead_of_a_teaser_and_a_button():
+    html = event_page()
+    events = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))
+    cup_event = next(a for a in events["activities"] if a.get("link") == "worldcup.html")
+    assert cup_event["entry"] == "worldcup" and "pictures" not in cup_event
+    # The teaser photos with their vs badge, their credit and the 지금 해보기 button are gone.
+    for gone in ("event-teaser", "event.e2.credit", "Startandstar", "event.cta.page'", "지금 해보기"):
+        assert gone not in html and gone not in (ROOT / "css/event.css").read_text(encoding="utf-8"), gone
+    row = html.split('data-i18n="event.e2.summary"', 1)[1].split("</li>", 1)[0]
+    entry = row.split('<div class="wc-embed" data-wc-embed>', 1)[1].split('<a class="event-link"', 1)[0]
+    # The same markup as worldcup.html's start screen: one source (page_content.worldcup_entry).
+    wc = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    wc_entry = wc.split('id="wcIntro" hidden>', 1)[1].split('<div class="wc-view wc-match"', 1)[0]
+    squash = lambda markup: re.sub(r"\s+", " ", markup)
+    for part in page_content.worldcup_entry():
+        assert squash(part.strip()) in squash(entry) and squash(part.strip()) in squash(wc_entry), part
+    assert 'id="wcStart"' in entry and 'id="wcCats" role="group" aria-labelledby="wcCatsLabel"' in entry
+    assert entry.count('<p class="wc-chip">') == 1 and 'id="wcStatus" role="status"' in entry     # the one chip, announcements
+    # The card keeps its date range, title and state; the link stays for a past row and a failed load.
+    assert '<time datetime="2026-10-13">2026.10.13</time> — <time datetime="2026-10-30">10.30</time>' in html
+    assert 'href="worldcup.html" data-event-page><span data-event-cta>페이지 보기</span>' in row
+    assert "자세히" in row
+
+
+def test_the_event_page_loads_the_world_cup_only_for_its_running_card():
+    html = event_page()
+    # Static: the small stylesheet and the Jua letters; the script and its data are added by the page
+    # script only while a row that shows the start screen is running or coming up.
+    assert 'href="css/worldcup-entry.css"' in html and "family=Jua" in html
+    assert not re.search(r'<script[^>]+src="js/worldcup', html) and "BABDODUK_WORLDCUP" not in html
+    assert "['js/worldcup-entry-data.js', 'js/worldcup.js']" in html and "script.async = false;" in html
+    assert '.event-item:not([data-band="past"]) [data-wc-embed]' in html
+    assert len(html.encode("utf-8")) < 40_000                 # no pool inlined: the page stays light
+    # The slim data: names, categories and the photo path; no photo credits, no 1.3 MB catalog.
+    data = (ROOT / "js/worldcup-entry-data.js").read_text(encoding="utf-8")
+    slim = json.loads(re.search(r"window.BABDODUK_WORLDCUP = (\{.*\});", data).group(1))
+    assert sorted(slim) == ["dishes", "photoPath", "size"] and slim["size"] == 32 and slim["photoPath"] == page_content.WORLDCUP_PHOTO_PATH
+    assert list(slim["dishes"]) == CUP["dishes"] and {d: v[2] for d, v in slim["dishes"].items()} == CUP["categories"]
+    names = page_content.catalog_names(ROOT)
+    assert all(v[:2] == names[d] for d, v in slim["dishes"].items())
+    assert "author" not in data and "license" not in data and len(data.encode("utf-8")) < 60_000
+    assert all(photo["image"] == page_content.WORLDCUP_PHOTO_PATH.format(id=dish) for dish, photo in CUP["photos"].items())
+    # The page's table carries the start screen's keys only, not the whole `wc` family.
+    table = html.split("window.BABDODUK_STR = {", 1)[1]
+    keys = set(re.findall(r"'(wc\.[\w.]+)':", table.split("    en: {", 1)[0]))
+    assert keys == set(page_content.WORLDCUP_ENTRY_KEYS)
+
+
+def test_the_embedded_start_opens_the_game_page_and_the_game_page_starts_only_for_go():
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    # In the card there is no match, result, splash or stored game; the start navigates.
+    assert "var embedded = !document.getElementById('wcMatch');" in script
+    assert "location.href = 'worldcup.html?cat=' + encodeURIComponent(category) + '&go=1';" in script
+    assert "if (!embedded) restore();" in script and "if (embedded) return;" in script
+    assert "data/foods/catalog.json" in script and "embedded ? new Promise" in script       # the catalog only on the game page
+    # The game page: only go=1; a category is checked against the known ones, else the whole pool;
+    # the address is cleaned; the start is the same call as the button's.
+    requested = module("function requested() {", "function cleanAddress()")
+    assert "query.get('go') !== '1'" in requested and "CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all'" in requested
+    assert "history.replaceState(null, '', location.pathname + location.hash)" in script
+    assert "// as if 32강 시작 had been pressed here\n      start(asked, true);" in script
+    # Starting replaces a saved game exactly as 새로 시작 does (start(cat, true) keeps its undo step).
+    assert "$('wcNew').addEventListener('click', begin);" in script
+
+
+def test_the_entry_markup_and_the_chip_have_one_source():
+    blocks = page_content.worldcup_blocks()
+    assert blocks["worldcup-entry"] == page_content.worldcup_entry() and blocks["worldcup-chip"] == page_content.worldcup_chip()
+    css = (ROOT / "css/worldcup-entry.css").read_text(encoding="utf-8")
+    assert ".wc-chip {" in css and ".wc-tile {" in css and ".wc-tile {" not in (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    for page in ("worldcup.html", "event.html"):
+        assert 'href="css/worldcup-entry.css"' in (ROOT / page).read_text(encoding="utf-8")
+
+
+def test_an_entry_must_belong_to_the_world_cup_page(tmp_path):
+    shutil.copytree(ROOT / "data/content", tmp_path / "data/content")
+    (tmp_path / "worldcup.html").write_text("<!doctype html>", encoding="utf-8")
+    path = tmp_path / "data/content/events.json"
+    events = json.loads(path.read_text(encoding="utf-8"))
+    cup_event = next(a for a in events["activities"] if a.get("link") == "worldcup.html")
+    assert [e for e in page_content.content_errors(tmp_path) if e.startswith("events.json")] == []
+    cup_event["link"] = "https://example.com/post"
+    path.write_text(json.dumps(events), encoding="utf-8")
+    assert any("shows the entry 'worldcup'" in e for e in page_content.content_errors(tmp_path))
+
+
+def test_every_photo_must_follow_the_shared_path(tmp_path):
+    shutil.copytree(ROOT / "data/foods", tmp_path / "data/foods")
+    shutil.copytree(ROOT / "images/worldcup", tmp_path / "images/worldcup")
+    (tmp_path / "data/content").mkdir(parents=True)
+    dish = CUP["dishes"][0]
+    (tmp_path / "images/worldcup/other.jpg").write_bytes(b"x")
+    photos = dict(CUP["photos"], **{dish: dict(CUP["photos"][dish], image="images/worldcup/other.jpg")})
+    (tmp_path / "data/content/worldcup.json").write_text(json.dumps(dict(CUP, photos=photos)), encoding="utf-8")
+    assert any(f"{dish} shows images/worldcup/other.jpg, not images/worldcup/{dish}.jpg" in e
+               for e in page_content.worldcup_errors(tmp_path))
