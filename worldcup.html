@@ -24,8 +24,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
-  <!-- Jua (OFL) for the round splash only, cut to its letters (8강 진출! 4강 진출! 결승! VS, and the English). -->
-  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%2148FQSTVaefhilmnrstu%EA%B0%95%EA%B2%B0%EC%8A%B9%EC%A7%84%EC%B6%9C" rel="stylesheet" />
+  <!-- @content:worldcup-font -->
+  <!-- Jua (OFL) for the world cup's display lettering only (titles, category tiles, buttons, the
+       splash and the start gacha): just the letters of WORLDCUP_JUA_KEYS in scripts/page_content.py. -->
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%26%2C%2F0123456789%3FABCDFJKNQRSTVWabcdefghiklmnoprstuvwy%C2%B7%C3%A9%E2%80%99%E2%80%A6%EA%B0%80%EA%B0%84%EA%B0%95%EA%B1%B0%EA%B1%B4%EA%B2%B0%EA%B3%84%EA%B8%B0%EA%B9%8C%EB%82%98%EB%84%88%EB%8A%94%EB%8A%98%EB%8F%84%EB%91%91%EB%93%9C%EB%94%94%EB%9B%B0%EB%A1%9C%EB%A8%B9%EB%AC%B4%EB%AD%90%EB%B0%A5%EB%B0%A9%EB%B6%84%EB%BD%91%EC%83%88%EC%84%9C%EC%84%B8%EC%8A%B9%EC%8B%9C%EC%8B%9D%EC%95%84%EC%95%A0%EC%96%91%EC%96%B4%EC%97%90%EC%98%A4%EC%98%AC%EC%99%80%EC%9A%94%EC%9B%94%EC%9D%98%EC%9D%B4%EC%9D%BC%EC%9E%91%EC%A0%80%EC%A0%84%EC%A4%91%EC%A7%84%EC%B2%B4%EC%B5%9C%EC%B6%9C%EC%B9%B4%EC%BB%B5%ED%8A%B8%ED%8E%98%ED%95%98%ED%95%9C" rel="stylesheet" />
+  <!-- @end content -->
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/worldcup.css" />
 </head>
@@ -69,16 +72,26 @@
         <p class="wc-error" id="wcError" role="alert" hidden data-i18n="wc.error">메뉴를 불러오지 못했어요. 새로고침해 주세요.</p>
       </div>
 
+      <!-- The start screen (owner 2026-10-14: "초입이 재미있어야"): dish photos float around a round card
+           with the headline, the category tiles (js/worldcup.js fills them from data/content/worldcup.json
+           `categories`), five dishes of the next draw and the big start button. -->
       <div class="wc-view wc-intro" id="wcIntro" hidden>
-        <p class="wc-basis" id="wcBasis"></p>
-        <!-- The categories (data/content/worldcup.json `categories`); js/worldcup.js fills the chips. -->
-        <p class="wc-cats-label" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>
-        <div class="wc-cats" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>
-        <div class="wc-actions">
-          <button type="button" class="wc-btn wc-btn--main" id="wcStart">32강 시작</button>
-          <button type="button" class="wc-btn" id="wcResume" hidden></button>
+        <div class="wc-floaters" id="wcFloaters" aria-hidden="true"></div>
+        <div class="wc-intro-card">
+          <h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">32강</span>, 뭐가 나올까?</h3>
+          <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>
+          <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>
+          <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>
+          <div class="wc-preview" id="wcPreview" hidden>
+            <p class="wc-preview-label"><span class="wc-preview-emoji" aria-hidden="true">👀</span> <span data-i18n="wc.preview">이 중에서 나와요!</span></p>
+            <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>
+          </div>
+          <div class="wc-intro-actions">
+            <button type="button" class="wc-btn wc-btn--big" id="wcStart"><span class="wc-btn-emoji" aria-hidden="true">🎰</span><span id="wcStartLabel">32강 시작</span></button>
+            <button type="button" class="wc-btn wc-btn--big wc-btn--resume" id="wcResume" hidden><span class="wc-btn-emoji" aria-hidden="true">▶</span><span id="wcResumeLabel"></span></button>
+            <button type="button" class="wc-link" id="wcNew" hidden><span data-i18n="wc.newStart">새로 시작</span></button>
+          </div>
         </div>
-        <p class="wc-note" data-i18n="wc.note">이 브라우저에 저장돼요</p>
       </div>
 
       <div class="wc-view wc-match" id="wcMatch" hidden>
@@ -136,8 +149,9 @@
         <button type="button" class="wc-text" id="wcHistoryClear" data-i18n="wc.historyClear">기록 지우기</button>
       </section>
       <p class="wc-sr" id="wcStatus" role="status" aria-live="polite"></p>
-      <!-- The round splash from the quarterfinals on (js/worldcup.js showSplash): decoration in the
-           top layer over a match already rendered and announced; filled only while it plays. -->
+      <!-- The start gacha (js/worldcup.js showGacha) and the round splash from the quarterfinals on
+           (showSplash): decoration in the top layer over a match already rendered and announced;
+           filled only while it plays. -->
       <div class="wc-splash" id="wcSplash" popover="manual" aria-hidden="true"></div>
     </section>
 
@@ -207,21 +221,31 @@
         'wc.cat.dessert': '디저트·카페',
         'wc.cat.japanese': '일식',
         'wc.cat.korean': '한식',
+        'wc.cat.random': '아무거나',
+        'wc.cat.randomSub': '랜덤!',
         'wc.cat.snack': '분식·간식',
         'wc.cat.western': '양식',
         'wc.cat.world': '아시아·세계',
+        'wc.catCount': '{n}개',
         'wc.catGame': '{cat} {n}강',
         'wc.catLabel': '카테고리',
+        'wc.catLanded': '{cat} 당첨!',
         'wc.copied': '결과와 링크를 복사했어요',
         'wc.count': '{n} / {total}',
         'wc.error': '메뉴를 불러오지 못했어요. 새로고침해 주세요.',
         'wc.finalist': '결승 상대: {dish}',
+        'wc.gacha.ask': '너의 최애는?',
+        'wc.gacha.drawing': '{game} 뽑는 중…',
+        'wc.gacha.skip': '건너뛰기',
         'wc.history': '내 우승 기록',
         'wc.historyClear': '기록 지우기',
+        'wc.intro.title': '오늘의 {n}강, 뭐가 나올까?',
+        'wc.intro.tone': '시험기간으로 지친 당신! 메뉴나 골라~',
         'wc.loading': '불러오는 중…',
-        'wc.note': '이 브라우저에 저장돼요',
+        'wc.newStart': '새로 시작',
         'wc.photoCredit': '사진 {author} · {license}',
         'wc.pick': '{dish} 고르기',
+        'wc.preview': '이 중에서 나와요!',
         'wc.progressAria': '전체 진행',
         'wc.restart': '처음부터',
         'wc.resume': '이어하기 · {cat} {round} {n}/{total}',
@@ -289,21 +313,31 @@
         'wc.cat.dessert': 'Desserts & café',
         'wc.cat.japanese': 'Japanese',
         'wc.cat.korean': 'Korean',
+        'wc.cat.random': 'Surprise me',
+        'wc.cat.randomSub': 'Random!',
         'wc.cat.snack': 'Snacks',
         'wc.cat.western': 'Western',
         'wc.cat.world': 'Asian & world',
+        'wc.catCount': '{n} dishes',
         'wc.catGame': '{cat} · Round of {n}',
         'wc.catLabel': 'Category',
+        'wc.catLanded': '{cat} it is!',
         'wc.copied': 'Result and link copied',
         'wc.count': '{n} of {total}',
         'wc.error': 'Could not load the dishes. Please reload.',
         'wc.finalist': 'Final opponent: {dish}',
+        'wc.gacha.ask': 'Who’s your favorite?',
+        'wc.gacha.drawing': 'Drawing {game}…',
+        'wc.gacha.skip': 'Skip',
         'wc.history': 'Your winners',
         'wc.historyClear': 'Clear history',
+        'wc.intro.title': 'What’s in today’s round of {n}?',
+        'wc.intro.tone': 'Exam week got you? Just pick a menu~',
         'wc.loading': 'Loading…',
-        'wc.note': 'Saved in this browser',
+        'wc.newStart': 'New game',
         'wc.photoCredit': 'Photo {author} · {license}',
         'wc.pick': 'Pick {dish}',
+        'wc.preview': 'These might show up!',
         'wc.progressAria': 'Overall progress',
         'wc.restart': 'Start over',
         'wc.resume': 'Resume · {cat}, {round} {n}/{total}',

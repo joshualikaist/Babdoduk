@@ -7,7 +7,11 @@
    `babdoduk-worldcup`); nothing is sent anywhere.
    Categories (owner 2026-10-14): the start screen offers the whole pool or one of seven categories
    (data/content/worldcup.json `categories`); a game draws its 32 dishes from the chosen one and
-   keeps `category` in the saved game (an older save has none and counts as the whole pool). */
+   keeps `category` in the saved game (an older save has none and counts as the whole pool).
+   The start screen (owner 2026-10-14: "초입이 재미있어야"): dish photos float around a round card,
+   "오늘의 32강, 뭐가 나올까?", big category tiles (and 🙈 아무거나, which spins through them), five
+   dishes of the next draw, and a big start button that opens the start gacha (about 5 s, skippable,
+   never on 이어하기). Nothing of the motion with reduced motion. */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -20,11 +24,12 @@
   var CATEGORIES = ['all', 'korean', 'chinese', 'japanese', 'western', 'world', 'snack', 'dessert'];
   var CATEGORY_NAMES = { all: '전체', korean: '한식', chinese: '중식', japanese: '일식', western: '양식',
                          world: '아시아·세계', snack: '분식·간식', dessert: '디저트·카페' };
+  var CATEGORY_EMOJI = { all: '🎲', korean: '🍚', chinese: '🥟', japanese: '🍣', western: '🍝', world: '🍜',
+                         snack: '🍢', dessert: '🍰' };
   var set = [];         // the pool
-  var category = 'all'; // the chip chosen on the start screen (a game in progress has its own)
+  var category = 'all'; // the tile chosen on the start screen (a game in progress has its own)
   var size = 0;         // dishes per game (a power of two)
-  var basis = null;
-  var game = null;      // { entrants: [ids], winners: [ids], stack: [{ entrants, winners }], log, category }
+  var game = null;     // { entrants: [ids], winners: [ids], stack: [{ entrants, winners }], log, category }
   var winners = [];     // [{ id, finalist, date }], newest first
   var result = null;    // { id, finalist, category } of the game just finished
   var view = 'loading';
@@ -154,40 +159,178 @@
     var i = game.winners.length * 2;
     return [game.entrants[i], game.entrants[i + 1]];
   }
-  // The category chips, built once: a chip keeps focus while it is pressed.
-  function buildChips() {
+  // ---- the start screen ------------------------------------------------------------------------
+  // Big category tiles (owner 2026-10-14: "재미"): an emoji, the name and the count, each a toggle
+  // (aria-pressed) that pops, tilts and glows when chosen; 🙈 아무거나 is a plain button that spins
+  // through them and lands on one. Choosing a category draws its next bracket at once (`pending`),
+  // so the five photos under the tiles really are in the next game ("이 중에서 나와요!") and the start
+  // gacha pours the same dishes, already loaded.
+  var pending = null;   // { cat, ids }: the bracket that the next start from this screen plays
+  var spin = null;      // the 아무거나 run: { target, timer, anim }
+  function draw(cat) { return shuffle(poolOf(cat)).slice(0, size); }
+  function canAnimate() { return typeof Element.prototype.animate === 'function'; }
+  function moving() { return !reduced && canAnimate(); }
+  function buildTiles() {
     var box = $('wcCats');
     box.textContent = '';
-    CATEGORIES.forEach(function (cat) {
-      var chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'wc-chip';
-      chip.setAttribute('data-cat', cat);
-      chip.appendChild(Object.assign(document.createElement('span'), { className: 'wc-chip-name' }));
-      chip.appendChild(Object.assign(document.createElement('span'), { className: 'wc-chip-n' }));
-      chip.addEventListener('click', function () { category = cat; renderChips(); });
-      box.appendChild(chip);
+    CATEGORIES.concat('random').forEach(function (cat) {
+      var tile = node('button', cat === 'random' ? 'wc-tile wc-tile--random' : 'wc-tile', box);
+      tile.type = 'button';
+      tile.setAttribute('data-cat', cat);
+      var emoji = node('span', 'wc-tile-emoji', tile);
+      emoji.setAttribute('aria-hidden', 'true');
+      emoji.textContent = cat === 'random' ? '🙈' : CATEGORY_EMOJI[cat];
+      node('span', 'wc-tile-name', tile);
+      node('span', 'wc-tile-n', tile);
+      tile.addEventListener('click', function () {
+        if (cat === 'random') spinTiles(); else choose(cat, true);
+      });
     });
   }
-  function renderChips() {
-    [].forEach.call($('wcCats').querySelectorAll('.wc-chip'), function (chip) {
-      var cat = chip.getAttribute('data-cat'), n = poolOf(cat).length;
-      chip.querySelector('.wc-chip-name').textContent = catName(cat);
-      chip.querySelector('.wc-chip-n').textContent = String(n);
-      chip.setAttribute('aria-label', catName(cat) + ' ' + n);
-      chip.setAttribute('aria-pressed', cat === category ? 'true' : 'false');
+  function renderTiles() {
+    [].forEach.call($('wcCats').querySelectorAll('.wc-tile'), function (tile) {
+      var cat = tile.getAttribute('data-cat');
+      tile.querySelector('.wc-tile-name').textContent = cat === 'random' ? t('wc.cat.random', '아무거나') : catName(cat);
+      tile.querySelector('.wc-tile-n').textContent = cat === 'random' ? t('wc.cat.randomSub', '랜덤!')
+        : fill(t('wc.catCount', '{n}개'), { n: poolOf(cat).length });
+      if (cat !== 'random') tile.setAttribute('aria-pressed', cat === category ? 'true' : 'false');
     });
+  }
+  // `user`: a tap or a key chose it (the tile pops and the button breathes again); otherwise the
+  // first draw on arrival. Either way the five photos shuffle in.
+  function choose(cat, user) {
+    stopSpin(false);
+    category = cat;
+    pending = { cat: cat, ids: draw(cat) };
+    renderTiles();
+    renderPreview(true);
+    if (!user || !moving()) return;
+    var emoji = $('wcCats').querySelector('[data-cat="' + cat + '"] .wc-tile-emoji');
+    emoji.animate([{ transform: 'none' }, { transform: 'scale(1.5) rotate(-14deg)', offset: 0.35 },
+                   { transform: 'scale(0.92) rotate(6deg)', offset: 0.7 }, { transform: 'none' }],
+                  { duration: 520, easing: 'ease-out' });
+    ambient(false);
+  }
+  // 이 중에서 나와요: five dishes of the pending bracket (not the first match, which stays a surprise).
+  function renderPreview(animate) {
+    var list = $('wcPreviewPhotos');
+    list.textContent = '';
+    (pending ? pending.ids.slice(2, 7) : []).forEach(function (id, i) {
+      var photo = (cup.photos || {})[id];
+      if (!photo) return;
+      var item = node('li', 'wc-preview-item', list), img = node('img', 'wc-preview-photo', item);
+      img.alt = name(id);
+      img.width = 160;
+      img.height = 160;
+      img.decoding = 'async';
+      img.setAttribute('data-id', id);
+      img.onerror = function () { item.hidden = true; };
+      img.src = photo.image;
+      if (animate && moving()) {
+        item.animate([{ transform: 'translateY(-22px) rotate(-18deg) scale(0.4)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+                     { duration: 480, delay: 40 + i * 70, easing: EASE.bouncy, fill: 'backwards' });
+      }
+    });
+    $('wcPreview').hidden = !list.children.length;
+  }
+  // 아무거나: the light runs through the tiles, a full lap and on to a category other than the one
+  // chosen, slowing down like a slot machine (about 1.3 s); a second tap or 32강 시작 lands it at
+  // once. With reduced motion it lands straight away.
+  function spinTiles() {
+    if (spin) { stopSpin(true); return; }
+    var others = CATEGORIES.filter(function (c) { return c !== category; });
+    var target = others[Math.floor(Math.random() * others.length)];
+    if (!moving()) { landSpin(target); return; }
+    var box = $('wcCats'), from = CATEGORIES.indexOf(category), count = CATEGORIES.length;
+    var steps = count + (CATEGORIES.indexOf(target) - from + count) % count, i = 0, lit = null;
+    var die = box.querySelector('[data-cat="random"] .wc-tile-emoji');
+    spin = { target: target, timer: 0,
+             anim: die.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], { duration: 420, iterations: Infinity }) };
+    box.classList.add('is-spinning');
+    (function step() {
+      i++;
+      if (lit) lit.classList.remove('is-spin');
+      lit = box.querySelector('[data-cat="' + CATEGORIES[(from + i) % count] + '"]');
+      lit.classList.add('is-spin');
+      spin.timer = i >= steps ? setTimeout(function () { stopSpin(true); }, 240)
+        : setTimeout(step, 45 + 230 * Math.pow(i / steps, 2.4));
+    })();
+  }
+  function stopSpin(land) {
+    if (!spin) return;
+    var s = spin;
+    spin = null;
+    clearTimeout(s.timer);
+    s.anim.cancel();
+    $('wcCats').classList.remove('is-spinning');
+    [].forEach.call($('wcCats').querySelectorAll('.is-spin'), function (tile) { tile.classList.remove('is-spin'); });
+    if (land) landSpin(s.target);
+  }
+  function landSpin(cat) {
+    choose(cat, true);
+    announce(fill(t('wc.catLanded', '{cat} 당첨!'), { cat: catName(cat) }));
+  }
+  // "오늘의 32강, 뭐가 나올까?": the round (or its number) on a pink-to-blue highlighter.
+  function renderTitle() {
+    var title = $('wcIntroTitle'), text = fill(t('wc.intro.title', '오늘의 {n}강, 뭐가 나올까?'), { n: size });
+    var mark = roundName(size), at = text.toLowerCase().indexOf(mark.toLowerCase());
+    if (at < 0) { mark = String(size); at = text.indexOf(mark); }
+    title.textContent = '';
+    if (at < 0) { title.textContent = text; return; }
+    title.appendChild(document.createTextNode(text.slice(0, at)));
+    node('span', 'wc-hl', title).textContent = text.slice(at, at + mark.length);
+    title.appendChild(document.createTextNode(text.slice(at + mark.length)));
   }
   function renderIntro() {
-    renderChips();
-    $('wcBasis').textContent = basis ? (basis[lang()] || basis.ko) : '';
-    $('wcStart').textContent = fill(t('wc.start', '{n}강 시작'), { n: size });
+    renderTiles();
+    renderTitle();
+    $('wcStartLabel').textContent = fill(t('wc.start', '{n}강 시작'), { n: size });
+    // A game in progress makes resuming the big button; 새로 시작 is a small link under it.
     var resumable = !!game;
-    $('wcResume').hidden = !resumable;
-    // A game in progress makes resuming the main action; starting over stays one tap away.
-    $('wcResume').classList.toggle('wc-btn--main', resumable);
-    $('wcStart').classList.toggle('wc-btn--main', !resumable);
-    if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어하기 · {cat} {round} {n}/{total}'), progress());
+    $('wcStart').hidden = resumable;
+    $('wcResume').hidden = $('wcNew').hidden = !resumable;
+    if (resumable) $('wcResumeLabel').textContent = fill(t('wc.resume', '이어하기 · {cat} {round} {n}/{total}'), progress());
+    [].forEach.call($('wcPreviewPhotos').querySelectorAll('img'), function (img) { img.alt = name(img.getAttribute('data-id')); });
+  }
+  // Dish photos around the card: four on a phone, six wider, drawn from the whole pool per visit.
+  function buildFloaters() {
+    var box = $('wcFloaters'), wide = window.matchMedia && window.matchMedia('(min-width: 700px)').matches;
+    box.textContent = '';
+    shuffle(set).slice(0, wide ? 6 : 4).forEach(function (id) {
+      var photo = (cup.photos || {})[id], img = node('img', 'wc-floater', box);
+      img.alt = '';
+      img.width = 160;
+      img.height = 160;
+      img.decoding = 'async';
+      img.hidden = !photo;
+      img.onerror = function () { img.hidden = true; };
+      if (photo) img.src = photo.image;
+    });
+  }
+  // On arrival the photos pop out and bob twice and the big button breathes three times; a new
+  // category makes them hop once and the button breathe twice. Every run is over within 5 s (no
+  // motion that keeps going on its own), and none with reduced motion.
+  var ambientAnims = [];
+  function stopAmbient() { ambientAnims.forEach(function (a) { a.cancel(); }); ambientAnims = []; }
+  function ambient(arriving) {
+    stopAmbient();
+    if (!moving() || view !== 'intro') return;
+    [].forEach.call($('wcFloaters').children, function (img, i) {
+      if (arriving) {
+        ambientAnims.push(img.animate([{ transform: 'translateY(26px) scale(0.4)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+                                      { duration: 560, delay: 120 + i * 90, easing: EASE.bouncy, fill: 'backwards' }));
+      }
+      ambientAnims.push(img.animate([{ transform: 'none' }, { transform: 'translateY(-12px) rotate(' + (i % 2 ? 4 : -4) + 'deg)' }, { transform: 'none' }],
+                                    { duration: arriving ? 1700 : 640, delay: arriving ? 760 + i * 110 : i * 45,
+                                      iterations: arriving ? 2 : 1, easing: 'ease-in-out' }));
+    });
+    var button = game ? $('wcResume') : $('wcStart'), breath = { duration: 1400, delay: arriving ? 600 : 120,
+                                                                 iterations: arriving ? 3 : 2, easing: 'ease-in-out' };
+    ambientAnims.push(button.animate([{ scale: '1' }, { scale: '1.05', offset: 0.45 }, { scale: '1' }], breath));
+    try {
+      ambientAnims.push(button.animate([{ opacity: 0.3 }, { opacity: 0.9, offset: 0.45 }, { opacity: 0.3 }],
+                                       Object.assign({ pseudoElement: '::before' }, breath)));
+    } catch (e) { /* no pseudo-element animation: the button breathes without its glow */ }
   }
   // `instant`: a round splash covers the screen, so the match jumps into view rather than scrolling.
   function renderMatch(focus, instant) {
@@ -274,8 +417,9 @@
     }
     return a;
   }
-  // `cat`: the category of the new game (the chip chosen, or the one being played again).
-  function start(cat) {
+  // `cat`: the category of the new game (the tile chosen, or the one being played again).
+  // `animate`: 32강 시작, 새로 시작, 처음부터 and 다시 하기 open the start gacha; 이어하기 never does.
+  function start(cat, animate) {
     cat = CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all';
     // 처음부터 keeps the bracket being left as the new game's first undo step, so 되돌리기 brings it
     // back. One is kept: its own restart step is dropped, and restarting again before a pick keeps
@@ -287,16 +431,24 @@
                                       category: game.category } }
         : game.stack[0];
     }
+    // From the start screen the bracket is the one already drawn there (its photos are on screen).
+    var entrants = view === 'intro' && pending && pending.cat === cat ? pending.ids : draw(cat);
+    pending = null;
+    stopAmbient();
     category = cat;
-    game = { entrants: shuffle(poolOf(cat)).slice(0, size), winners: [], stack: before ? [before] : [], log: [],
-             category: cat };
+    game = { entrants: entrants, winners: [], stack: before ? [before] : [], log: [], category: cat };
     result = null;
-    store();
+    store();                                            // the draw is kept before anything moves
     show('match');
+    if (animate && canGacha()) {
+      renderMatch(true, true);
+      showGacha();
+      return;
+    }
     renderMatch(true);
   }
   function resume() {
-    if (!game) { start(category); return; }
+    if (!game) { start(category, false); return; }
     show('match');
     renderMatch(true);
   }
@@ -597,7 +749,11 @@
     }
     if (reason !== 'skip') { close(); return; }
     quietUntil = Date.now() + 350;
-    s.anims.forEach(function (a) { a.onfinish = null; a.pause(); });
+    // The frozen frame fades out; the real match under it (the gacha's fade-in) shows at once.
+    s.anims.forEach(function (a) {
+      a.onfinish = null;
+      if (a.effect && a.effect.target && !splashEl.contains(a.effect.target)) a.cancel(); else a.pause();
+    });
     try {
       var fade = splashEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: 'ease-out', fill: 'forwards' });
       s.anims.push(fade);
@@ -609,7 +765,7 @@
   // ---- celebration ---------------------------------------------------------------------------
   // Confetti on a full-window canvas that ignores the pointer and removes itself; nothing with
   // reduced motion. A pick gets a small burst from the card, the winner two big ones.
-  var COLORS = ['#f45e45', '#ffb703', '#219ebc', '#8ecae6', '#fb8500', '#6a994e', '#c77dff'];
+  var COLORS = ['#ec4899', '#a855f7', '#6366f1', '#06b6d4', '#fde047', '#f9a8d4', '#c4b5fd'];   // the brand mix
   var SPARKS = ['#ffffff', '#ec4899', '#a855f7', '#6366f1', '#f9a8d4', '#ffffff', '#c4b5fd'];   // the splash's crash
   function confetti(origins, count, duration, host, colors) {
     if (reduced) return;
@@ -663,6 +819,198 @@
     box.classList.remove('is-celebrating');
     void box.offsetWidth;
     box.classList.add('is-celebrating');
+  }
+
+  // ---- start gacha ---------------------------------------------------------------------------------
+  // Owner 2026-10-14: pressing start opens a capsule machine for about 5 s, once per start (never on
+  // 이어하기). 뽑는 중: the machine drops in and cranks three times; six of the drawn dishes pour out
+  // as capsules that pop open on their photos while its screen counts to 32. 너의 최애는?: the
+  // machine sinks, the first two dishes fly out, burst into photo cards and bump under a VS. Then
+  // they fly onto the real match beneath, which is already stored, rendered, focused and announced.
+  // It plays in the splash's popover on the splash's clock, with its skip and interrupts (a tap or a
+  // key skips and never picks): one line of text at a time, no flash, no vibration, and nothing of
+  // it with reduced motion, forced colours or no popover support. Only transform and opacity move.
+  var GACHA = { crank: 260, cranks: 3, pour: 6, pourGap: 110, count: 1200, end: 4880 };
+  var SHELLS = ['#ec4899', '#06b6d4', '#a855f7', '#fde047', '#6366f1', '#f9a8d4', '#ec4899', '#06b6d4'];
+  var MACHINE = '<div class="wc-gacha-dome">' + new Array(8).join('<i class="wc-gacha-ball"></i>') + '</div>' +
+    '<div class="wc-gacha-body"><span class="wc-gacha-screen"><span class="wc-gacha-count"></span></span>' +
+    '<span class="wc-gacha-crank"></span><span class="wc-gacha-eye wc-gacha-eye--l"></span>' +
+    '<span class="wc-gacha-eye wc-gacha-eye--r"></span><span class="wc-gacha-mouth"></span></div>';
+  function canGacha() {
+    return !reduced && !(forcedColors && forcedColors.matches) && !document.hidden
+      && typeof splashEl.showPopover === 'function' && typeof splashEl.animate === 'function';
+  }
+  // A capsule: a dish photo in a white ring under half a coloured shell (span > span > img + i).
+  function capsule(parent, id, color, px) {
+    var cap = node('span', 'wc-cap', parent), inner = node('span', 'wc-cap-y', cap), img = node('img', 'wc-cap-photo', inner);
+    var photo = (cup.photos || {})[id];
+    img.alt = '';
+    img.decoding = 'async';
+    if (photo) img.src = photo.image;
+    node('i', 'wc-cap-shell', inner).style.setProperty('--c', color);
+    cap.style.setProperty('--cap', px + 'px');
+    return cap;
+  }
+  function showGacha() {
+    endSplash('quiet');
+    var run = ++splashRun, ids = game.entrants, G = GACHA;
+    splash = { anims: [], width: window.innerWidth, run: run, round: 'start' };
+    busy = true;
+    try {
+      if (splashEl.getAnimations) splashEl.getAnimations().forEach(function (a) { a.cancel(); });
+      splashEl.textContent = '';
+      splashEl.setAttribute('data-round', 'start');
+      splashEl.showPopover();
+      var W = splashEl.clientWidth, H = splashEl.clientHeight, cx = W / 2, cy = H / 2, phone = W <= 560;
+      var bg = node('i', 'wc-splash-bg', splashEl), glow = node('i', 'wc-gacha-glow', splashEl);
+      var stage = node('div', 'wc-splash-stage', splashEl);
+      var line = node('p', 'wc-gacha-line', stage);
+      line.textContent = fill(t('wc.gacha.drawing', '{game} 뽑는 중…'), { game: gameLabel(game.category) });
+      var machine = node('div', 'wc-gacha', stage);
+      machine.innerHTML = MACHINE;
+      var k = Math.max(0.6, Math.min(phone ? 0.92 : 1.2, (H - 230) / 330, (W - 24) / 260));
+      machine.style.setProperty('--k', String(k));
+      var strip = [];
+      for (var n = 0; n <= size; n++) strip.push((n < 10 ? '0' : '') + n);
+      machine.querySelector('.wc-gacha-count').textContent = strip.join('\n');
+      var caps = node('div', 'wc-gacha-caps', stage), duel = node('div', 'wc-gacha-caps', stage);
+      var ask = node('p', 'wc-gacha-ask', stage);
+      node('span', '', ask).textContent = t('wc.gacha.ask', '너의 최애는?');
+      var badge = node('div', 'wc-gacha-vs', stage);
+      node('b', '', badge).textContent = t('wc.vs', 'VS');
+      var skip = node('p', 'wc-gacha-skip', splashEl);
+      node('span', '', skip).textContent = t('wc.gacha.skip', '건너뛰기');
+      node('span', 'wc-gacha-skip-icon', skip).textContent = '⏭';
+
+      // One read pass before any animation: the machine's mouth and floor, and the real match.
+      var mouth = machine.querySelector('.wc-gacha-mouth').getBoundingClientRect(), body = machine.getBoundingClientRect();
+      var mx = mouth.left + mouth.width / 2, my = mouth.top + mouth.height / 2, floor = body.bottom + 26 * k;
+      var photos = cards.map(function (card) { return card.querySelector('.wc-photo').getBoundingClientRect(); });
+      var realVs = document.querySelector('.wc-vs'), vsBox = realVs.getBoundingClientRect();
+      var ratio = photos[0].width ? photos[0].height / photos[0].width : (phone ? 1 : 0.75);
+      var fw = Math.min(photos[0].width || (phone ? 150 : 260), W * 0.42, H * 0.34 / ratio), fh = fw * ratio;
+      var seat = fw / 2 + (phone ? 10 : 28), contact = fw / 2 - 3;
+      var T0 = 450, tP = T0 + G.cranks * G.crank, tR = tP + 110, tD = tR + G.count, tE = tD + 960, tF = tE + 620;
+
+      // The night stage and its glow, until the cards are on their way to the match.
+      track(bg, [[0, { opacity: 0 }, EASE.out], [220, { opacity: 1 }], [tF, { opacity: 1 }, EASE.io], [tF + 300, { opacity: 0 }]]);
+      track(glow, [[0, { opacity: 0 }], [300, { opacity: 1 }], [tF, { opacity: 1 }], [tF + 250, { opacity: 0 }]]);
+      track(line, [[200, { transform: 'translateY(8px)', opacity: 0 }, EASE.out], [400, { transform: 'translateY(0px)', opacity: 1 }],
+                   [tD, { transform: 'translateY(0px)', opacity: 1 }], [tD + 120, { transform: 'translateY(0px)', opacity: 0 }]]);
+      track(skip, [[500, { opacity: 0 }], [800, { opacity: 1 }], [tF, { opacity: 1 }], [tF + 200, { opacity: 0 }]]);
+
+      // 등장 (drops in with a squash), 퐁 (squashes as it pours), then it sinks out of the way.
+      var sunk = { transform: pose(0, H * 0.24, 0, 0.8), opacity: 0.2 };
+      track(machine, [[0, { transform: pose(0, -48, 0, 0.92), opacity: 0 }, 'cubic-bezier(0.5, 0, 1, 0.6)'],
+                      [264, { transform: pose(0, 0), opacity: 1 }], [336, { transform: pose(0, 0, 0, 1.08, 0.9), opacity: 1 }, EASE.out],
+                      [408, { transform: pose(0, 0, 0, 0.97, 1.04), opacity: 1 }], [480, { transform: pose(0, 0), opacity: 1 }],
+                      [tP, { transform: pose(0, 0), opacity: 1 }, 'ease-in'], [tP + 110, { transform: pose(0, 0, 0, 1.08, 0.88), opacity: 1 }],
+                      [tP + 144, { transform: pose(0, 0, 0, 0.94, 1.1), opacity: 1 }, EASE.bouncy], [tP + 480, { transform: pose(0, 0), opacity: 1 }],
+                      [tD + 100, { transform: pose(0, 0), opacity: 1 }, EASE.io], [tD + 420, sunk], [tF, sunk],
+                      [tF + 180, { transform: sunk.transform, opacity: 0 }]]);
+      // 가샤: each turn of the crank jiggles the balls, shakes the body and makes the machine squint.
+      var crank = [], shake = [], eyes = [], balls = [[], [], [], [], [], [], []];
+      for (var c = 0; c < G.cranks; c++) {
+        var at = T0 + c * G.crank, amp = [0.6, 0.8, 1][Math.min(c, 2)];
+        crank.push([at, { transform: 'rotate(' + c * 180 + 'deg)' }, EASE.io], [at + 200, { transform: 'rotate(' + (c + 1) * 180 + 'deg)' }]);
+        [0, 3, -3, 2, -1, 0].forEach(function (x, i) { shake.push([at + i * 48, { transform: 'translateX(' + x * amp + 'px)' }]); });
+        eyes.push([at, { transform: 'scaleY(1)' }], [at + 88, { transform: 'scaleY(0.25)' }], [at + 220, { transform: 'scaleY(1)' }]);
+        balls.forEach(function (steps, i) {
+          var d = (i % 2 ? 1 : -1) * amp, b = at + i * 10;
+          steps.push([b, { transform: 'none' }, 'ease-in-out'], [b + 60, { transform: pose(7 * d, -6 * amp, 14 * d) }, 'ease-in-out'],
+                     [b + 120, { transform: pose(-5 * d, 3 * amp, -10 * d) }, 'ease-in-out'],
+                     [b + 180, { transform: pose(3 * d, -2 * amp, 5 * d) }, 'ease-in-out'], [b + 240, { transform: 'none' }]);
+        });
+      }
+      track(machine.querySelector('.wc-gacha-crank'), crank);
+      track(machine.querySelector('.wc-gacha-body'), shake);
+      [].forEach.call(machine.querySelectorAll('.wc-gacha-eye'), function (eye) { track(eye, eyes); });
+      [].forEach.call(machine.querySelectorAll('.wc-gacha-ball'), function (ball, i) { track(ball, balls[i]); });
+      track(machine.querySelector('.wc-gacha-mouth'), [[tR, { transform: 'scaleY(1)' }], [tR + 76, { transform: 'scaleY(1.35)' }],
+                                                      [tR + 684, { transform: 'scaleY(1.35)' }], [tR + 760, { transform: 'scaleY(1)' }]]);
+      track(machine.querySelector('.wc-gacha-count'), [[tR, { transform: 'translateY(0px)' }, 'steps(' + size + ', end)'],
+                                                      [tR + G.count, { transform: 'translateY(' + -size * 38 + 'px)' }]]);
+      track(machine.querySelector('.wc-gacha-screen'), [[tD, { transform: 'scale(1)' }, EASE.out], [tD + 96, { transform: 'scale(1.25)' }],
+                                                       [tD + 320, { transform: 'scale(1)' }]]);
+      // 퐁: dishes 3 to 8 of the draw pour from the mouth, arc out to the floor on alternating sides
+      // and pop their shells at the top of the arc; then they sink with the machine.
+      var xs = [-0.86, 0.38, -0.62, 0.86, -0.38, 0.62], px = Math.round(64 * k), half = Math.min(W, 560) / 2 - px / 2 - 4;
+      for (var p = 0; p < G.pour; p++) {
+        var cap = capsule(caps, ids[p + 2], SHELLS[p], px), from = tR + p * G.pourGap, x = xs[p], dx = cx + x * half - mx;
+        var peak = -(120 + (p % 3) * 25) * k, land = floor - my - px / 2, turn = (x < 0 ? -1 : 1) * (300 + p * 30);
+        cap.style.left = mx + 'px';
+        cap.style.top = my + 'px';
+        track(cap, [[from, { transform: 'translate(0px, 0px)', opacity: 0 }], [from + 42, { transform: 'translate(' + dx * 0.08 + 'px, 0px)', opacity: 1 }],
+                    [from + 520, { transform: 'translate(' + dx + 'px, 0px)', opacity: 1 }], [tD + 100, { transform: 'translate(' + dx + 'px, 0px)', opacity: 1 }, EASE.io],
+                    [tD + 420, { transform: 'translate(' + dx + 'px, ' + H * 0.2 + 'px)', opacity: 0.18 }],
+                    [tF, { transform: 'translate(' + dx + 'px, ' + H * 0.2 + 'px)', opacity: 0.18 }],
+                    [tF + 180, { transform: 'translate(' + dx + 'px, ' + H * 0.2 + 'px)', opacity: 0 }]]);
+        track(cap.firstChild, [[from, { transform: pose(0, 0, 0, 0.5) }, 'cubic-bezier(0.2, 0.6, 0.35, 1)'],
+                               [from + 306, { transform: pose(0, peak, turn / 2) }, 'cubic-bezier(0.55, 0, 0.85, 0.35)'],
+                               [from + 530, { transform: pose(0, land, turn) }], [from + 571, { transform: pose(0, land, turn, 1.18, 0.82) }],
+                               [from + 626, { transform: pose(0, land - 14 * k, turn, 0.96, 1.04) }], [from + 680, { transform: pose(0, land, turn) }]]);
+        track(cap.firstChild.lastChild, [[from + 234, { transform: 'none', opacity: 1 }, EASE.out],
+                                         [from + 494, { transform: pose(x < 0 ? -18 : 18, -26, x < 0 ? -40 : 40), opacity: 0 }]]);
+      }
+      // 너의 최애는?: the question stamps in, the first two dishes fly from the mouth to their seats,
+      // burst, and photo cards of the first match take their place.
+      track(ask, [[tD + 200, { transform: 'scale(1.6)', opacity: 0 }, EASE.back], [tD + 460, { transform: 'scale(1)', opacity: 1 }],
+                  [tE, { transform: 'scale(1)', opacity: 1 }, EASE.io], [tE + 200, { transform: 'translateY(-12px) scale(0.8)', opacity: 1 }],
+                  [tF, { transform: 'translateY(-12px) scale(0.8)', opacity: 1 }], [tF + 180, { transform: 'translateY(-12px) scale(0.8)', opacity: 0 }]]);
+      var dpx = Math.round(72 * k);
+      [0, 1].forEach(function (side) {
+        var sign = side ? 1 : -1, go = tD + 80 + side * 40, cap = capsule(duel, ids[side], SHELLS[side + 2], dpx);
+        var tx = cx + sign * seat - mx, ty = cy - my;
+        cap.style.left = mx + 'px';
+        cap.style.top = my + 'px';
+        track(cap, [[go, { transform: 'translate(0px, 0px) scale(1)', opacity: 0 }], [go + 42, { transform: 'translate(' + tx * 0.1 + 'px, 0px) scale(1)', opacity: 1 }],
+                    [go + 420, { transform: 'translate(' + tx + 'px, 0px) scale(1)', opacity: 1 }], [tD + 560, { transform: 'translate(' + tx + 'px, 0px) scale(1)', opacity: 1 }],
+                    [tD + 700, { transform: 'translate(' + tx + 'px, 0px) scale(1.3)', opacity: 0 }]]);
+        track(cap.firstChild, [[go, { transform: pose(0, 0, 0, 0.6) }, 'cubic-bezier(0.2, 0.6, 0.35, 1)'],
+                               [go + 252, { transform: pose(0, Math.min(0, ty) - 60, sign * 200, 1.1) }, 'cubic-bezier(0.55, 0, 0.85, 0.35)'],
+                               [go + 420, { transform: pose(0, ty, sign * 360) }]]);
+        var card = node('figure', 'wc-duelist', stage), photo = (cup.photos || {})[ids[side]], img = node('img', '', card);
+        img.alt = '';
+        if (photo) img.src = photo.image;
+        card.style.cssText = 'left:' + cx + 'px;top:' + cy + 'px;width:' + fw + 'px;height:' + fh + 'px;margin:' + -fh / 2 + 'px 0 0 ' + -fw / 2 + 'px';
+        var r = photos[side], rest = pose(sign * seat, 0, sign * 3);
+        var to = r.width ? pose(r.left + r.width / 2 - cx, r.top + r.height / 2 - cy, 0, r.width / fw, r.height / fh) : rest;
+        // Pop in, wind up, bump into each other (a short stop at contact), bounce back, settle, fly.
+        track(card, [[tD + 560, { transform: pose(sign * seat, 0, sign * 6, 0.3), opacity: 0 }, EASE.bouncy],
+                     [tD + 940, { transform: pose(sign * seat, 0, sign * 6), opacity: 1 }],
+                     [tE, { transform: pose(sign * seat, 0, sign * 6), opacity: 1 }, EASE.out],
+                     [tE + 130, { transform: pose(sign * (seat + 14), 0, sign * 9, 0.94, 1.04), opacity: 1 }, EASE.in],
+                     [tE + 260, { transform: pose(sign * contact, 0, 0, 0.9, 1.08), opacity: 1 }],
+                     [tE + 330, { transform: pose(sign * contact, 0, 0, 0.9, 1.08), opacity: 1 }, EASE.out],
+                     [tE + 420, { transform: pose(sign * (fw / 2 + 20), 0, -sign * 3, 1.03, 0.98), opacity: 1 }, EASE.bouncy],
+                     [tE + 600, { transform: rest, opacity: 1 }], [tF, { transform: rest, opacity: 1 }, EASE.soft],
+                     [tF + 370, { transform: to, opacity: 1 }], [tF + 450, { transform: to, opacity: 0 }]]);
+      });
+      // VS: stamps at the bump, then flies onto the real VS.
+      var vsTo = vsBox.width ? pose(vsBox.left + vsBox.width / 2 - cx, vsBox.top + vsBox.height / 2 - cy, 0, Math.max(0.3, vsBox.height / 76))
+        : pose(0, 0, 0, 0.3);
+      track(badge, [[tE + 258, { transform: 'scale(0)', opacity: 0 }], [tE + 260, { transform: 'scale(0)', opacity: 1 }, EASE.out],
+                    [tE + 392, { transform: 'scale(1.15)', opacity: 1 }], [tE + 480, { transform: 'scale(1)', opacity: 1 }],
+                    [tF + 80, { transform: 'scale(1)', opacity: 1 }, EASE.io], [tF + 400, { transform: vsTo, opacity: 0 }]]);
+      track(stage, [[tE + 260, { transform: 'translate(0px, 0px)' }], [tE + 290, { transform: 'translate(4px, 0px)' }],
+                    [tE + 325, { transform: 'translate(-3px, 0px)' }], [tE + 360, { transform: 'translate(2px, 0px)' }],
+                    [tE + 400, { transform: 'translate(0px, 0px)' }]]);
+      cue(tE + 260, function () {
+        confetti([{ x: cx, y: cy, spread: 12, drift: 0, lift: 8 }], phone ? 18 : 26, 700, splashEl, SPARKS);
+      });
+      // The real match fades in under the landing cards, and its VS pops.
+      cards.concat([].slice.call(document.querySelectorAll('.wc-slot .wc-credit'))).forEach(function (el) {
+        track(el, [[tF + 330, { opacity: 0 }, EASE.out], [tF + 450, { opacity: 1 }]]);
+      });
+      track(realVs, [[tF + 450, { scale: '0', opacity: 0 }, EASE.bouncy], [tF + 690, { scale: '1', opacity: 1 }]]);
+
+      var clock = splashEl.animate(null, { duration: G.end });
+      clock.onfinish = function () { if (splash && splash.run === run) endSplash('end'); };
+      splash.anims.push(clock);
+      splash.safety = setTimeout(function () { if (splash && splash.run === run) endSplash('end'); }, G.end + 1500);
+    } catch (e) {
+      endSplash('quiet');
+    }
   }
 
   // ---- result image ----------------------------------------------------------------------------
@@ -781,13 +1129,16 @@
     });
   }
   function ready() {
-    buildChips();
+    buildTiles();
     restore();
+    buildFloaters();
     show('intro');
+    choose(category, false);                   // the first draw: its photos shuffle in
     renderIntro();
-    // The splash font, fetched now so the first splash does not start in the fallback.
+    ambient(true);
+    // The display font, fetched now so the gacha and the first splash do not start in the fallback.
     if (!reduced && document.fonts && document.fonts.load) {
-      document.fonts.load('1em Jua', t('wc.splash.quarter', '8강 진출!') + t('wc.splash.final', '결승!')).catch(function () {});
+      document.fonts.load('1em Jua', t('wc.gacha.ask', '너의 최애는?') + t('wc.splash.quarter', '8강 진출!')).catch(function () {});
     }
   }
   function failed() {
@@ -802,11 +1153,14 @@
       pick(side);
     });
   });
-  $('wcStart').addEventListener('click', function () { start(category); });
-  $('wcResume').addEventListener('click', resume);
+  // Every start but 이어하기 opens the gacha (never pass the click event as `animate`). 32강 시작 in
+  // the middle of 아무거나 lands it first; 처음부터 waits for a pick's feedback to end.
+  $('wcStart').addEventListener('click', function () { stopSpin(true); start(category, true); });
+  $('wcNew').addEventListener('click', function () { stopSpin(true); start(category, true); });
+  $('wcResume').addEventListener('click', function () { stopSpin(false); resume(); });
   $('wcUndo').addEventListener('click', undo);
-  $('wcRestart').addEventListener('click', function () { start(game ? game.category : category); });
-  $('wcAgain').addEventListener('click', function () { start(result ? result.category : category); });
+  $('wcRestart').addEventListener('click', function () { if (!busy) start(game ? game.category : category, true); });
+  $('wcAgain').addEventListener('click', function () { start(result ? result.category : category, true); });
   $('wcShare').addEventListener('click', share);
   $('wcSaveImage').addEventListener('click', saveImage);
   $('wcHistoryClear').addEventListener('click', clearHistory);
@@ -844,7 +1198,10 @@
   window.addEventListener('resize', function () { if (splash && window.innerWidth !== splash.width) endSplash('quiet'); });
   if (window.matchMedia) {
     var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var onMotion = function (e) { reduced = e.matches; if (reduced) endSplash('skip'); };
+    var onMotion = function (e) {
+      reduced = e.matches;
+      if (reduced) { endSplash('skip'); stopAmbient(); stopSpin(true); }
+    };
     if (motion.addEventListener) motion.addEventListener('change', onMotion);
     else if (motion.addListener) motion.addListener(onMotion);
   }
@@ -855,7 +1212,6 @@
       set = (cup.dishes || []).filter(function (id) { return dishes[id]; });
       size = cup.size || set.length;
       if (size < 4 || (size & (size - 1)) || set.length < size) throw new Error('bracket');
-      basis = cup.basis || null;
     });
   }).then(ready, failed);
 })();

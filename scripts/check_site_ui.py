@@ -1005,9 +1005,12 @@ def worldcup_play(page):
 
 
 def worldcup_categories(page):
-    """The world cup's categories (owner 2026-10-14): chips with counts above the start button, a
-    game drawn from the chosen category, the category shown while playing and on the result, kept by
-    resume, and an older save without one read as the whole pool."""
+    """The world cup's categories (owner 2026-10-14): big tiles with an emoji and a count above the
+    start button, toggled by keyboard, 아무거나 landing on another category, five photos of the very
+    bracket the start then plays, a game drawn from the chosen category, the category shown while
+    playing and on the result, kept by resume, and an older save without one read as the whole pool.
+    Also the start screen itself: the owner's headline and tone line, and no notes under the button.
+    The context runs with reduced motion: 아무거나 lands at once and no gacha opens."""
     count = 0
 
     def check(ok, detail):
@@ -1022,8 +1025,10 @@ def worldcup_categories(page):
     cats = cup["categories"]
     korean = [d for d in cup["dishes"] if cats[d] == "korean"]
     stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
-    chips = ("[...document.querySelectorAll('#wcCats .wc-chip')]"
-             ".map(c => [c.dataset.cat, c.textContent, c.getAttribute('aria-pressed')])")
+    chips = ("[...document.querySelectorAll('#wcCats .wc-tile[aria-pressed]')].map(c => [c.dataset.cat,"
+             " c.querySelector('.wc-tile-name').textContent + c.querySelector('.wc-tile-n').textContent,"
+             " c.getAttribute('aria-pressed'), c.querySelector('.wc-tile-emoji').textContent])")
+    preview = "[...document.querySelectorAll('#wcPreviewPhotos img')].map(i => i.dataset.id)"
     for size in ((390, 844), (1280, 800)):
         page.set_viewport_size({"width": size[0], "height": size[1]})
         page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
@@ -1032,28 +1037,62 @@ def worldcup_categories(page):
         got = page.evaluate(chips)
         check([c[0] for c in got] == ["all", "korean", "chinese", "japanese", "western", "world", "snack", "dessert"],
               ("the eight chips in order", got))
-        check([c[1] for c in got] == ["전체763", "한식268", "중식75", "일식75", "양식132", "아시아·세계86", "분식·간식35", "디저트·카페92"],
-              ("each chip carries its count", got))
+        check([c[1] for c in got] == ["전체763개", "한식268개", "중식75개", "일식75개", "양식132개", "아시아·세계86개",
+                                      "분식·간식35개", "디저트·카페92개"], ("each tile carries its count", got))
+        check([c[3] for c in got] == ["🎲", "🍚", "🥟", "🍣", "🍝", "🍜", "🍢", "🍰"], ("each tile its emoji", got))
         check([c[2] for c in got] == ["true"] + ["false"] * 7, ("전체 is chosen by default", got))
-        check(page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), (size, "no horizontal scroll with the chips"))
+        check(page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), (size, "no horizontal scroll with the tiles"))
         above = page.evaluate("document.querySelector('#wcCats').getBoundingClientRect().bottom <= "
                               "document.querySelector('#wcStart').getBoundingClientRect().top")
-        check(above, "the chips sit above the start button")
-        check(page.evaluate("[...document.querySelectorAll('#wcCats .wc-chip')].every(c => c.getBoundingClientRect().height >= 44)"),
-              "each chip is at least 44 px tall")
+        check(above, "the tiles sit above the start button")
+        board = page.evaluate("""() => { const t = [...document.querySelectorAll('#wcCats .wc-tile')];   // layout boxes: the chosen one is tilted
+          return {n: t.length, cols: new Set(t.map(e => e.offsetLeft)).size, minH: Math.min(...t.map(e => e.offsetHeight)),
+                  minW: Math.min(...t.map(e => e.offsetWidth))}; }""")
+        check(board["n"] == 9 and board["cols"] == 3 and board["minH"] >= 88 and board["minW"] >= 80,
+              (size, "nine big tiles on a 3-column board, roomy at a phone's width", board))
+        intro = page.evaluate("""() => ({title: document.getElementById('wcIntroTitle').textContent,
+          mark: document.querySelector('#wcIntroTitle .wc-hl').textContent,
+          tone: document.querySelector('.wc-intro-tone').textContent,
+          notes: document.querySelectorAll('#wcIntro .wc-note').length,
+          text: document.getElementById('wcIntro').innerText})""")
+        check(intro["title"] == "오늘의 32강, 뭐가 나올까?" and intro["mark"] == "32강"
+              and intro["tone"] == "시험기간으로 지친 당신! 메뉴나 골라~", ("the owner's headline and tone line", intro))
+        check(intro["notes"] == 0 and "이 브라우저에 저장돼요" not in intro["text"] and "익명으로 집계" not in intro["text"]
+              and "무작위로 뽑아요" not in intro["text"], "no notes under the button any more")
+        shown = page.evaluate(preview)
+        check(len(shown) == 5 and len(set(shown)) == 5, ("five photos of the next draw", shown))
     page.set_viewport_size({"width": 390, "height": 844})
 
-    # A chip by keyboard; the focus ring is visible.
-    page.locator('#wcCats [data-cat="korean"]').focus()
-    check(page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none", "a focused chip shows a focus ring")
-    page.keyboard.press("Enter")
+    # Tiles by keyboard: Tab reaches them, Space and Enter choose; the focus ring is visible.
+    page.locator('#wcCats [data-cat="all"]').focus()
+    page.keyboard.press("Tab")
+    check(page.evaluate("document.activeElement.dataset.cat") == "korean", "Tab moves to the next tile")
+    check(page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none", "a focused tile shows a focus ring")
+    page.keyboard.press("Space")
     got = page.evaluate(chips)
-    check([c[0] for c in got if c[2] == "true"] == ["korean"], ("pressing 한식 chooses it alone", got))
-    check(page.locator("#wcStart").inner_text() == "32강 시작", "the start button still says 32강 시작")
+    check([c[0] for c in got if c[2] == "true"] == ["korean"], ("Space on 한식 chooses it alone", got))
+    page.locator('#wcCats [data-cat="dessert"]').focus()
+    page.keyboard.press("Enter")
+    check([c[0] for c in page.evaluate(chips) if c[2] == "true"] == ["dessert"], "Enter chooses a tile too")
+    # 아무거나 (reduced motion: at once) lands on another category and says which.
+    for _ in range(3):
+        before = [c[0] for c in page.evaluate(chips) if c[2] == "true"][0]
+        page.locator('#wcCats [data-cat="random"]').focus()
+        page.keyboard.press("Enter")
+        after = [c[0] for c in page.evaluate(chips) if c[2] == "true"]
+        page.wait_for_function("document.getElementById('wcStatus').textContent.endsWith('당첨!')")
+        check(len(after) == 1 and after[0] != before and page.locator("#wcCats .wc-tile--random").get_attribute("aria-pressed") is None,
+              ("아무거나 lands on one other category", before, after))
+    page.locator('#wcCats [data-cat="korean"]').click()
+    check(page.locator("#wcStartLabel").inner_text() == "32강 시작", "the start button still says 32강 시작")
+    teased = page.evaluate(preview)
+    check(len(teased) == 5 and all(cats[d] == "korean" for d in teased), ("the photos follow the chosen category", teased))
 
-    # 32 cards, all from 한식, and the category on the round header.
+    # 32 cards, all from 한식, and the category on the round header; the five photos were really in it.
     page.locator("#wcStart").click()
+    check(page.evaluate("window.__splashes || []") == [] and not page.evaluate(SPLASH_OPEN), "reduced motion: no start gacha")
     game = page.evaluate(stored)
+    check(set(teased) <= set(game["entrants"]), ("이 중에서 나와요: the five photos are in the game", teased))
     check(len(game["entrants"]) == 32 and len(set(game["entrants"])) == 32 and set(game["entrants"]) <= set(korean)
           and game["category"] == "korean", ("32 distinct 한식 dishes are drawn", game["category"], len(game["entrants"])))
     check(page.locator("#wcGame").inner_text() == "한식 32강" and page.locator("#wcRound").inner_text() == "32강",
@@ -1081,9 +1120,12 @@ def worldcup_categories(page):
     save(worldcup_saved(cup, 16, 7, "korean"))
     page.reload(wait_until="networkidle")
     got = page.evaluate(chips)
-    check([c[1] for c in got] == ["All763", "Korean268", "Chinese75", "Japanese75", "Western132", "Asian & world86", "Snacks35",
-                                  "Desserts & café92"], ("the chips in English", got))
-    check("Korean" in page.locator("#wcResume").inner_text(), page.locator("#wcResume").inner_text())
+    check([c[1] for c in got] == ["All763 dishes", "Korean268 dishes", "Chinese75 dishes", "Japanese75 dishes", "Western132 dishes",
+                                  "Asian & world86 dishes", "Snacks35 dishes", "Desserts & café92 dishes"], ("the tiles in English", got))
+    check(page.locator("#wcIntroTitle").inner_text() == "What\u2019s in today\u2019s round of 32?"
+          and page.locator("#wcIntroTitle .wc-hl").inner_text() == "round of 32", page.locator("#wcIntroTitle").inner_text())
+    check("Korean" in page.locator("#wcResume").inner_text() and page.locator("#wcNew").is_visible()
+          and page.locator("#wcStart").is_hidden(), ("a saved game: the big 이어하기 and a small 새로 시작", page.locator("#wcResume").inner_text()))
     page.locator("#langToggle").click()
 
     # An older save has no category: whole pool, readable, resumable.
@@ -1270,6 +1312,107 @@ def worldcup_splash(page):
 
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.emulate_media(reduced_motion="reduce")
+    page.reload(wait_until="networkidle")
+    return count
+
+def worldcup_gacha(page):
+    """The start gacha with motion (owner 2026-10-14): 32강 시작, 새로 시작, 처음부터 and 다시 하기 open
+    it, 이어하기 never; the game is stored and its first match rendered, focused and announced
+    beneath; six of the drawn dishes pour out; a key or a tap skips it without a pick; played out
+    (finish(), no wall clock) it hands over to the match; reduced motion has none of it. The start
+    screen's own motion is over within 5 s and moves only transform, scale and opacity."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html gacha: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
+    on_first = "document.activeElement === document.querySelector('.wc-card')"
+    closed = "!" + SPLASH_OPEN
+    shown = "[...document.querySelectorAll('.wc-card')].every(c => getComputedStyle(c).opacity === '1')"
+    page.emulate_media(reduced_motion="no-preference")
+    for width, height in ((390, 844), (1280, 800)):
+        page.set_viewport_size({"width": width, "height": height})
+        page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        page.reload(wait_until="networkidle")
+        page.evaluate(SPLASH_LOG)
+        motion = page.evaluate("""() => document.getAnimations().filter(a => a.effect && a.effect.target
+          && a.effect.target.closest('#wcIntro')).map(a => {
+          const t = a.effect.getComputedTiming(), k = a.effect.getKeyframes();
+          return {end: t.endTime, props: [...new Set(k.flatMap(f => Object.keys(f)))]
+            .filter(p => !['offset', 'computedOffset', 'easing', 'composite'].includes(p))}; })""")
+        check(motion and max(m["end"] for m in motion) <= 5000, (width, "the arrival motion ends within 5 s", motion))
+        check({p for m in motion for p in m["props"]} <= {"transform", "scale", "opacity"}, (width, "only transform, scale, opacity", motion))
+        teased = page.evaluate("[...document.querySelectorAll('#wcPreviewPhotos img')].map(i => i.dataset.id)")
+        page.locator("#wcStart").click()
+        page.wait_for_function(SPLASH_OPEN)
+        seen = page.evaluate("""() => { const s = document.querySelector('#wcSplash');
+          return {round: s.dataset.round, line: s.querySelector('.wc-gacha-line').textContent,
+                  ask: s.querySelector('.wc-gacha-ask').textContent, hidden: s.getAttribute('aria-hidden'),
+                  caps: [...s.querySelectorAll('.wc-gacha-caps .wc-cap-photo')].map(i => i.getAttribute('src')),
+                  duel: [...s.querySelectorAll('.wc-duelist img')].map(i => i.getAttribute('src')),
+                  cards: [...document.querySelectorAll('.wc-card')].map(c => getComputedStyle(c).opacity)}; }""")
+        game = page.evaluate(stored)
+        photo = lambda d: cup["photos"][d]["image"]
+        check(seen["round"] == "start" and seen["line"] == "전체 32강 뽑는 중…" and seen["ask"] == "너의 최애는?"
+              and seen["hidden"] == "true", (width, "the gacha opens with its one line and its question", seen))
+        check(seen["caps"] == [photo(d) for d in game["entrants"][2:8]] + [photo(d) for d in game["entrants"][:2]]
+              and seen["duel"] == [photo(d) for d in game["entrants"][:2]], (width, "it pours the drawn dishes, the first two last"))
+        check(set(teased) <= set(game["entrants"]) and game["winners"] == [], "the stored game is the bracket previewed")
+        check(seen["cards"] == ["0", "0"] and page.evaluate(on_first) and page.locator("#wcRound").inner_text() == "32강",
+              "under it the first match is rendered and focused, its cards waiting")
+        page.wait_for_function("document.getElementById('wcStatus').textContent.startsWith('32강 1번째 경기')")
+        page.keyboard.press("Enter")
+        page.wait_for_function(closed)
+        check(page.evaluate(stored)["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown),
+              (width, "Enter skips to the match without a pick"))
+
+    # 처음부터 plays it again; a tap anywhere skips it, never a pick.
+    page.locator("#wcRestart").click()
+    page.wait_for_function(SPLASH_OPEN)
+    page.mouse.click(640, 400)
+    page.wait_for_function(closed)
+    check(page.evaluate(stored)["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown), "a tap skips it without a pick")
+    # Played out, it lands on the match.
+    page.locator("#wcRestart").click()
+    page.wait_for_function(SPLASH_OPEN)
+    page.evaluate("document.getAnimations().forEach(a => { if (a.effect && isFinite(a.effect.getComputedTiming().endTime)) a.finish(); })")
+    page.wait_for_function(closed)
+    check(page.evaluate(on_first) and page.evaluate(shown) and page.evaluate("document.querySelector('#wcSplash').childElementCount") == 0
+          and page.evaluate(stored)["winners"] == [], "played out, it hands over to the first match")
+    page.keyboard.press("Enter")
+    page.wait_for_function("document.getElementById('wcCount').textContent === '2 / 16'")
+    check(page.evaluate(stored)["winners"] != [], "and the match takes a pick")
+    # 이어하기 never plays it.
+    page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
+    page.locator("#wcResume").click()
+    check(page.evaluate("window.__splashes") == [] and page.evaluate(on_first) and page.locator("#wcCount").inner_text() == "2 / 16",
+          "이어하기 goes straight to the match")
+    # 새로 시작 under 이어하기 does.
+    page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
+    page.locator("#wcNew").click()
+    page.wait_for_function(SPLASH_OPEN)
+    check(page.evaluate("window.__splashes") == ["start"], "새로 시작 opens the gacha")
+    page.keyboard.press("Escape")
+    page.wait_for_function(closed)
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.emulate_media(reduced_motion="reduce")
+    # Reduced motion: still pictures, a still button, and the match at once.
+    page.reload(wait_until="networkidle")
+    page.evaluate(SPLASH_LOG)
+    check(page.evaluate("document.getAnimations().filter(a => a.effect && a.effect.target && a.effect.target.closest('#wcIntro')).length") == 0
+          and page.locator(".wc-floater").count() >= 4,
+          "reduced motion: the photos are there and nothing moves")
+    page.locator("#wcStart").click()
+    check(page.evaluate("window.__splashes") == [] and page.evaluate(on_first), "reduced motion: no gacha")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.reload(wait_until="networkidle")
     return count
 
@@ -1703,6 +1846,7 @@ def run_checks(screenshots=False):
         report["checks"] += worldcup_play(page)
         report["checks"] += worldcup_categories(page)
         report["checks"] += worldcup_splash(page)
+        report["checks"] += worldcup_gacha(page)
         report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)
