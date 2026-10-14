@@ -22,7 +22,7 @@
      data-wc-countdown               "D-2 · 1일 3시간 남음" while soon, else empty (spans .wc-cd-d and .wc-cd-rest)
    A phase change fires `babdoduk-wc-phase` on the document. */
 // @content:worldcup-gate
-window.BABDODUK_WC_WINDOW = {"start": "2026-10-16", "end": "2026-10-23", "previewFrom": "2026-10-13"};
+window.BABDODUK_WC_WINDOW = {"start": "2026-10-16", "end": "2026-10-23"};
 // @end content
 (function () {
   'use strict';

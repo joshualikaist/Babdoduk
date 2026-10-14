@@ -505,8 +505,11 @@ def gate_script():
 def test_the_launch_window_is_the_events_dates_written_into_the_gate():
     assert (CUP_EVENT["start"], CUP_EVENT["end"]) == ("2026-10-16", "2026-10-23")
     window = json.loads(re.search(r"window.BABDODUK_WC_WINDOW = (\{.*\});", gate_script()).group(1))
-    assert window == {"start": CUP_EVENT["start"], "end": CUP_EVENT["end"], "previewFrom": CUP_EVENT["previewFrom"]}
-    assert window == page_content.worldcup_gate() and window["previewFrom"] < window["start"]
+    expected = {"start": CUP_EVENT["start"], "end": CUP_EVENT["end"]}
+    if "previewFrom" in CUP_EVENT:                      # lab only: production's data carries none
+        expected["previewFrom"] = CUP_EVENT["previewFrom"]
+    assert window == expected and window == page_content.worldcup_gate()
+    assert "previewFrom" not in window or window["previewFrom"] < window["start"]
     # The event's own duration text names the same days.
     assert "10월 16일" in CUP_EVENT["details"]["duration"]["ko"] and "10월 23일" in CUP_EVENT["details"]["duration"]["ko"]
     assert "October 16" in CUP_EVENT["details"]["duration"]["en"] and "October 23" in CUP_EVENT["details"]["duration"]["en"]
