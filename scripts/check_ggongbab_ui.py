@@ -817,9 +817,17 @@ class LocalHandler(SimpleHTTPRequestHandler):
         return None
 
 
+class LocalServer(ThreadingHTTPServer):
+    """The stdlib backlog is 5. A page that opens a dozen assets at once (scripts, styles, fonts)
+    overflows it on Windows, and the browser gets ERR_CONNECTION_REFUSED for a script, so the page
+    never starts and the scenario stalls at random. A generous backlog removes that flake."""
+    request_queue_size = 128
+    daemon_threads = True
+
+
 @contextmanager
 def local_server(port=0):
-    server = ThreadingHTTPServer(("127.0.0.1", port), partial(LocalHandler, directory=str(ROOT)))
+    server = LocalServer(("127.0.0.1", port), partial(LocalHandler, directory=str(ROOT)))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -1227,7 +1235,7 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
     if args.serve:
-        server = ThreadingHTTPServer(("127.0.0.1", args.port), partial(LocalHandler, directory=str(ROOT)))
+        server = LocalServer(("127.0.0.1", args.port), partial(LocalHandler, directory=str(ROOT)))
         try:
             server.serve_forever()
         except KeyboardInterrupt:
