@@ -2,14 +2,7 @@
   "date": "2026-09-15",
   "generatedAt": "2026-09-15T10:00:00+09:00",
   "schedule": "Daily 10:00 KST",
-  "featured": {
-    "title": "국수에 이걸 넣으면 대존맛",
-    "source": "자취요리신",
-    "url": "https://www.youtube.com/shorts/2uGCAsEqlos",
-    "medium": "youtube",
-    "image": "https://i.ytimg.com/vi/2uGCAsEqlos/maxresdefault.jpg",
-    "category": "tips"
-  },
+  "featured": null,
   "lanes": {
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
@@ -21,24 +14,10 @@
           "medium": "blog"
         },
         {
-          "title": "폭신폭신 애플파이 시나몬롤 Soft & Gooey Apple Pie Cinnamon Rolls",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/shorts/z0dlH6C91sI",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/z0dlH6C91sI/maxresdefault.jpg"
-        },
-        {
           "title": "무생채 만드는 법 10분 완성 쉽고 간단한 아삭아삭 무생채",
           "source": "엄마표 집밥",
           "url": "https://irisblossomlife.tistory.com/200",
           "medium": "blog"
-        },
-        {
-          "title": "국수에 이걸 넣으면 대존맛",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/shorts/2uGCAsEqlos",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/2uGCAsEqlos/maxresdefault.jpg"
         },
         {
           "title": "Gochu Doenjang Muchim (Green Chili Peppers Seasoned with Doenjang)",
@@ -62,24 +41,10 @@
           "medium": "blog"
         },
         {
-          "title": "바나나 브레드가 티라미수가 되면? What If Banana Bread Became Tiramisu? #Shorts",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/shorts/cDjkKGvo5J8",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/cDjkKGvo5J8/maxresdefault.jpg"
-        },
-        {
           "title": "Bok Choy Kimchi (Quick & Easy)",
           "source": "My Korean Kitchen",
           "url": "https://mykoreankitchen.com/bok-choy-kimchi/",
           "medium": "blog"
-        },
-        {
-          "title": "대파 100배 맛있게 먹는법",
-          "source": "하루한끼",
-          "url": "https://www.youtube.com/watch?v=DMs6z_ecX7E",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/DMs6z_ecX7E/maxresdefault.jpg"
         },
         {
           "title": "Kimbap (Seaweed Rice Rolls)",
