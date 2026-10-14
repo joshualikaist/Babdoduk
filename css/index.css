@@ -34,8 +34,8 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 10px;
-  margin: 0 0 8px;
-  padding: 8px 10px;
+  margin: 0 0 6px;
+  padding: 4px 8px 4px 10px;
   border: 1px solid transparent;
   border-radius: var(--radius-lg);
   background: linear-gradient(115deg, #be185d, #a21caf 50%, #4f46e5);
@@ -60,23 +60,23 @@
 
 .home-wc-photos {
   position: relative;
-  width: 56px;
-  height: 44px;
+  width: 46px;
+  height: 36px;
 }
 
 .home-wc-photo {
   position: absolute;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border: 2px solid #fff;
-  border-radius: 11px;
+  border-radius: 9px;
   object-fit: cover;
   background: #fce7f3;
   box-shadow: 0 6px 14px rgba(30, 29, 26, 0.28);
 }
 
 .home-wc-photo--a { top: 0; left: 0; rotate: -8deg; }
-.home-wc-photo--b { top: 6px; right: 0; rotate: 7deg; }
+.home-wc-photo--b { top: 5px; right: 0; rotate: 7deg; }
 
 /* Before the launch the two photos are blurred placeholders with no `src` (js/worldcup-gate.js sets it
    from data-wc-src once the world cup is live): owner 2026-10-14, nothing of the draw is revealed. */
@@ -115,12 +115,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
   flex-wrap: wrap;
   align-items: center;
   gap: 0 8px;
-  margin: 2px 0 0;
+  margin: 0;
 }
 
 .home-wc-state {
   font-size: 0.85rem;
-  line-height: 1.3;
+  line-height: 1.25;
   color: #fde68a;                         /* warm yellow on the gradient: 6.9:1 on the pink end */
 }
 
@@ -146,16 +146,16 @@ html[data-wc-phase="soon"] .home-wc-photo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 14px;
+  gap: 6px;
+  min-height: 36px;                       /* the whole band is the link (::after), so 44 px of target remain */
+  padding: 0 12px;
   border-radius: 999px;
   background: #fff;
   color: #9d174d;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   text-decoration: none;
   white-space: nowrap;
-  box-shadow: 0 4px 0 rgba(30, 27, 75, 0.35), 0 8px 16px rgba(30, 27, 75, 0.2);
+  box-shadow: 0 3px 0 rgba(30, 27, 75, 0.35), 0 6px 12px rgba(30, 27, 75, 0.2);
   transition: transform 160ms ease;
 }
 
@@ -199,12 +199,22 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
+/* A phone: the band is one slim row, so the soon button (the longer words) is a little tighter and its
+   title keeps to one line next to it. */
+@media (max-width: 440px) {
+  .home-wc-cta--soon {
+    gap: 4px;
+    padding: 0 10px;
+    font-size: 0.82rem;
+  }
+}
+
 /* A very narrow phone: the button is its emoji or arrow (its words stay for screen readers), so the band
    stays a single slim row. */
 @media (max-width: 379px) {
   .home-wc-cta {
     padding: 0;
-    width: 44px;
+    width: 40px;
   }
 
   .home-wc-cta [data-i18n] {
@@ -235,6 +245,10 @@ html[data-wc-phase="soon"] .home-wc-photo {
     border-radius: 13px;
   }
 
+  .home-wc-line {
+    margin-top: 2px;
+  }
+
   .home-wc-photo--b { top: 5px; }
 
   .home-wc-title {
@@ -254,6 +268,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 
   .home-wc-cta {
+    min-height: 44px;
     padding: 0 16px;
     font-size: 1rem;
   }
@@ -1877,7 +1892,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 
   .home-wc {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     align-self: auto;
   }
 
