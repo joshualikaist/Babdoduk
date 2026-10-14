@@ -49,7 +49,7 @@ def test_an_activity_page_link_must_be_a_page_of_this_site(tmp_path):
 
 def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
-    assert re.findall(r'<script\s+src="([^"]+)"', html) == ["js/site.js", "js/worldcup.js"]
+    assert re.findall(r'<script\s+src="([^"]+)"', html) == ["js/site.js", "js/worldcup-gate.js", "js/worldcup.js"]
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     assert set(re.findall(r"getJson\('([^']+)'\)", script)) == {"data/foods/catalog.json"}
     # data/content/ is never deployed (.vercelignore): the sync writes the dishes into the page.
@@ -365,8 +365,8 @@ def test_the_start_gacha_plays_on_a_start_only_and_never_with_reduced_motion():
     gacha = module("// ---- start gacha", "// ---- result image")
     # Only the starts open it; 이어하기 never does.
     assert "$('wcStart').addEventListener('click', begin);" in script and "$('wcNew').addEventListener('click', begin);" in script
-    assert "function begin() {\n    stopSpin(true);" in script and "    start(category, true);\n  }" in script
-    assert "function resume() {\n    if (!game) { start(category, false); return; }\n    show('match');\n    renderMatch(true);\n  }" in script
+    assert "function begin() {\n    if (locked()) return;\n    stopSpin(true);" in script and "    start(category, true);\n  }" in script
+    assert "function resume() {\n    if (locked()) return;\n    if (!game) { start(category, false); return; }\n    show('match');\n    renderMatch(true);\n  }" in script
     # The game is stored and the match rendered, focused and announced before it opens.
     assert "store();                                            // the draw is kept before anything moves" in script
     assert "if (animate && canGacha()) {\n      renderMatch(true, true);\n      showGacha();" in script
@@ -412,7 +412,7 @@ def test_the_event_card_shows_the_start_screen_instead_of_a_teaser_and_a_button(
     assert 'id="wcStart"' in entry and 'id="wcCats" role="group" aria-labelledby="wcCatsLabel"' in entry
     assert entry.count('<p class="wc-chip">') == 1 and 'id="wcStatus" role="status"' in entry     # the one chip, announcements
     # The card keeps its date range, title and state; the link stays for a past row and a failed load.
-    assert '<time datetime="2026-10-13">2026.10.13</time> — <time datetime="2026-10-30">10.30</time>' in html
+    assert '<time datetime="2026-10-16">2026.10.16</time> — <time datetime="2026-10-23">10.23</time>' in html
     assert 'href="worldcup.html" data-event-page><span data-event-cta>페이지 보기</span>' in row
     assert "자세히" in row
 
@@ -422,7 +422,8 @@ def test_the_event_page_loads_the_world_cup_only_for_its_running_card():
     # Static: the small stylesheet and the Jua letters; the script and its data are added by the page
     # script only while a row that shows the start screen is running or coming up.
     assert 'href="css/worldcup-entry.css"' in html and "family=Jua" in html
-    assert not re.search(r'<script[^>]+src="js/worldcup', html) and "BABDODUK_WORLDCUP" not in html
+    # (the launch gate is the one script it carries up front: js/worldcup-gate.js, a few hundred bytes of logic)
+    assert re.findall(r'<script[^>]+src="(js/worldcup[^"]*)"', html) == ["js/worldcup-gate.js"] and "BABDODUK_WORLDCUP" not in html
     assert "['js/worldcup-entry-data.js', 'js/worldcup.js']" in html and "script.async = false;" in html
     assert '.event-item:not([data-band="past"]) [data-wc-embed]' in html
     assert len(html.encode("utf-8")) < 40_000                 # no pool inlined: the page stays light
@@ -489,3 +490,102 @@ def test_every_photo_must_follow_the_shared_path(tmp_path):
     (tmp_path / "data/content/worldcup.json").write_text(json.dumps(dict(CUP, photos=photos)), encoding="utf-8")
     assert any(f"{dish} shows images/worldcup/other.jpg, not images/worldcup/{dish}.jpg" in e
                for e in page_content.worldcup_errors(tmp_path))
+
+
+# ---- the launch gate (owner 2026-10-14): 10/16 - 10/23, lab opens it early --------------------------------------
+
+EVENTS = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))
+CUP_EVENT = next(a for a in EVENTS["activities"] if a.get("entry") == "worldcup")
+
+
+def gate_script():
+    return (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
+
+
+def test_the_launch_window_is_the_events_dates_written_into_the_gate():
+    assert (CUP_EVENT["start"], CUP_EVENT["end"]) == ("2026-10-16", "2026-10-23")
+    window = json.loads(re.search(r"window.BABDODUK_WC_WINDOW = (\{.*\});", gate_script()).group(1))
+    assert window == {"start": CUP_EVENT["start"], "end": CUP_EVENT["end"], "previewFrom": CUP_EVENT["previewFrom"]}
+    assert window == page_content.worldcup_gate() and window["previewFrom"] < window["start"]
+    # The event's own duration text names the same days.
+    assert "10월 16일" in CUP_EVENT["details"]["duration"]["ko"] and "10월 23일" in CUP_EVENT["details"]["duration"]["ko"]
+    assert "October 16" in CUP_EVENT["details"]["duration"]["en"] and "October 23" in CUP_EVENT["details"]["duration"]["en"]
+
+
+def test_only_lab_and_localhost_honour_the_preview_date():
+    script = gate_script()
+    assert script.count("previewFrom") >= 2 and "location.hostname" in script
+    assert re.search(r"host === 'babdoduk-lab\.vercel\.app' \|\| host === 'localhost' \|\| host === '127\.0\.0\.1'", script)
+    # The page never trusts a query string or storage for it: the date comes from the data and the host alone.
+    assert "location.search" not in script and "localStorage" not in script
+
+
+def test_a_preview_date_needs_an_entry_and_is_not_after_the_start(tmp_path):
+    shutil.copytree(ROOT / "data/content", tmp_path / "data/content")
+    (tmp_path / "worldcup.html").write_text("<!doctype html>", encoding="utf-8")
+    path = tmp_path / "data/content/events.json"
+
+    def errors(**change):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        item = next(a for a in data["activities"] if a.get("entry") == "worldcup")
+        item.update(change)
+        path.write_text(json.dumps(data), encoding="utf-8")
+        return [e for e in page_content.content_errors(tmp_path) if "previewFrom" in e]
+
+    assert errors() == []
+    assert errors(previewFrom="2026-10-17") and not errors(previewFrom="2026-10-16")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    first = data["activities"][0]
+    first["previewFrom"] = "2026-05-01"                     # an activity without a start screen has none
+    path.write_text(json.dumps(data), encoding="utf-8")
+    assert any("previewFrom" in e for e in page_content.content_errors(tmp_path))
+
+
+def test_every_page_that_shows_the_world_cup_loads_the_gate_before_its_own_script():
+    for name, own in (("worldcup.html", '<script src="js/worldcup.js">'), ("event.html", "var rows = [].slice"),
+                      ("index.html", '<script src="js/home.js">')):
+        html = (ROOT / name).read_text(encoding="utf-8")
+        assert html.count('<script src="js/worldcup-gate.js"></script>') == 1, name
+        tag = html.index('<script src="js/worldcup-gate.js">')
+        assert tag < html.index(own), name
+        assert html.index("window.BABDODUK_STR") < tag, name        # the texts it fills are there first
+
+
+def test_the_start_screen_has_a_locked_pill_and_an_ended_note_driven_by_the_gate():
+    entry = "\n".join(page_content.worldcup_entry())
+    assert 'id="wcLocked" data-wc-show="soon" hidden' in entry and "data-wc-countdown" in entry and 'data-wc-fmt="wc.locked"' in entry
+    assert 'class="wc-ended" data-wc-show="ended" hidden' in entry
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    # Nothing starts before the launch, by any path: the start, 이어하기, a start from the address and the games themselves.
+    for guarded in ("function start(cat, animate) {\n    if (locked()) return;", "function resume() {\n    if (locked()) return;",
+                    "function begin() {\n    if (locked()) return;", "if (asked && locked()) asked = null;"):
+        assert guarded in script, guarded
+
+
+def test_the_gate_texts_exist_in_both_languages_on_the_pages_that_show_them():
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
+    keys = [*page_content.WORLDCUP_GATE_KEYS, "wc.ended", "wc.state.soon", "home.wc.title", "home.wc.soon", "home.wc.live",
+            "home.wc.cta.soon", "home.wc.cta.live"]
+    for key in keys:
+        assert ko[key] and en[key], key
+    assert ko["wc.locked"] == "{date} 오픈" and en["wc.locked"] == "Opens {date}"
+    assert ko["wc.state.soon"] == "{date} 공개 예정" and ko["home.wc.soon"] == "{date} 오픈!"
+    for name in ("event.html", "index.html"):
+        html = (ROOT / name).read_text(encoding="utf-8")
+        for key in page_content.WORLDCUP_GATE_KEYS:
+            assert f"'{key}':" in html, (name, key)
+
+
+def test_the_home_promo_is_text_from_i18n_with_real_dish_photos_and_hides_itself_after_the_end():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    promo = html.split('<section class="home-wc"', 1)[1].split("</section>", 1)[0]
+    assert 'data-wc-show="soon live" hidden' in html and 'class="home-wc-cta home-wc-cta--soon" href="event.html"' in promo
+    assert 'class="home-wc-cta home-wc-cta--live" href="worldcup.html"' in promo
+    for photo in re.findall(r'src="(images/worldcup/[^"]+)"', promo):
+        assert (ROOT / photo).is_file() and photo.split("/")[-1][:-4] in CUP["photos"], photo
+    assert len(re.findall(r'src="images/worldcup/', promo)) == 2
+    assert html.index('<div class="home-top">') < html.index('<section class="home-wc"') < html.index('<section class="home-hero"')
+    assert "family=Jua" in html                                                                      # the letters the sync asks for
+    css = (ROOT / "css/index.css").read_text(encoding="utf-8")
+    assert "linear-gradient(115deg, #be185d, #a21caf 50%, #4f46e5)" in css and ".home-wc[hidden]" in css

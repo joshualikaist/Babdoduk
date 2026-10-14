@@ -27,7 +27,7 @@
   <!-- @content:worldcup-font -->
   <!-- Jua (OFL) for the world cup's display lettering only (titles, category tiles, buttons, the
        splash and the start gacha): just the letters of WORLDCUP_JUA_KEYS in scripts/page_content.py. -->
-  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%26%2C%2F0123456789%3FABCDFJKNQRSTVWabcdefghiklmnoprstuvwy%C2%B7%C3%A9%E2%80%99%E2%80%A6%EA%B0%80%EA%B0%84%EA%B0%95%EA%B1%B0%EA%B1%B4%EA%B2%B0%EA%B3%84%EA%B8%B0%EA%B9%8C%EB%82%98%EB%84%88%EB%8A%94%EB%8A%98%EB%8F%84%EB%91%91%EB%93%9C%EB%94%94%EB%9B%B0%EB%A1%9C%EB%A8%B9%EB%AC%B4%EB%AD%90%EB%B0%A5%EB%B0%A9%EB%B6%84%EB%BD%91%EC%83%88%EC%84%9C%EC%84%B8%EC%8A%B9%EC%8B%9C%EC%8B%9D%EC%95%84%EC%95%A0%EC%96%91%EC%96%B4%EC%97%90%EC%98%A4%EC%98%AC%EC%99%80%EC%9A%94%EC%9B%94%EC%9D%98%EC%9D%B4%EC%9D%BC%EC%9E%91%EC%A0%80%EC%A0%84%EC%A4%91%EC%A7%84%EC%B2%B4%EC%B5%9C%EC%B6%9C%EC%B9%B4%EC%BB%B5%ED%8A%B8%ED%8E%98%ED%95%98%ED%95%9C" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%26%2C%2F0123456789%3FABCDEFJKMNOQRSTVWabcdefghiklmnoprstuvwy%C2%B7%C3%A9%E2%80%99%E2%80%A6%EA%B0%80%EA%B0%84%EA%B0%95%EA%B1%B0%EA%B1%B4%EA%B2%B0%EA%B3%84%EA%B7%B8%EA%B8%B0%EA%B8%B8%EA%B9%8C%EB%82%98%EB%84%88%EB%8A%94%EB%8A%98%EB%8F%84%EB%91%91%EB%93%9C%EB%94%94%EB%9B%B0%EB%9E%98%EB%A1%9C%EB%A3%8C%EB%A8%B9%EB%AC%B4%EB%AD%90%EB%B0%A5%EB%B0%A9%EB%B2%A4%EB%B6%84%EB%BD%91%EC%83%88%EC%84%9C%EC%84%B8%EC%86%8D%EC%88%98%EC%8A%B9%EC%8B%9C%EC%8B%9D%EC%95%84%EC%95%A0%EC%96%91%EC%96%B4%EC%97%90%EC%98%A4%EC%98%AC%EC%99%80%EC%9A%94%EC%9B%94%EC%9D%98%EC%9D%B4%EC%9D%BC%EC%9E%88%EC%9E%91%EC%A0%80%EC%A0%84%EC%A2%85%EC%A4%91%EC%A6%90%EC%A7%84%EC%B2%B4%EC%B5%9C%EC%B6%9C%EC%B9%B4%EC%BB%B5%ED%8A%B8%ED%8E%98%ED%94%88%ED%95%98%ED%95%9C" rel="stylesheet" />
   <!-- @end content -->
   <link rel="stylesheet" href="css/site.css" />
   <link rel="stylesheet" href="css/worldcup-entry.css" />
@@ -82,6 +82,7 @@
         <div class="wc-intro-card">
           <h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">32강</span>, 뭐가 나올까?</h3>
           <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>
+          <p class="wc-ended" data-wc-show="ended" hidden><span aria-hidden="true">🏁</span> <span data-i18n="wc.ended">이벤트 종료 · 그래도 계속 즐길 수 있어요</span></p>
           <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>
           <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>
           <div class="wc-preview" id="wcPreview" hidden>
@@ -89,6 +90,7 @@
             <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>
           </div>
           <div class="wc-intro-actions">
+            <p class="wc-locked" id="wcLocked" data-wc-show="soon" hidden><span class="wc-locked-pill"><span aria-hidden="true">🔒</span> <span data-wc-fmt="wc.locked">곧 오픈</span></span> <span class="wc-locked-count" data-wc-countdown></span></p>
             <button type="button" class="wc-btn wc-btn--big" id="wcStart"><span class="wc-btn-emoji" aria-hidden="true">🎰</span><span id="wcStartLabel">32강 시작</span></button>
             <button type="button" class="wc-btn wc-btn--big wc-btn--resume" id="wcResume" hidden><span class="wc-btn-emoji" aria-hidden="true">▶</span><span id="wcResumeLabel"></span></button>
             <button type="button" class="wc-link" id="wcNew" hidden><span data-i18n="wc.newStart">새로 시작</span></button>
@@ -237,6 +239,12 @@
         'wc.catLanded': '{cat} 당첨!',
         'wc.copied': '결과와 링크를 복사했어요',
         'wc.count': '{n} / {total}',
+        'wc.countdown.d': 'D-{n}',
+        'wc.countdown.hours': '{h}시간 {m}분 남음',
+        'wc.countdown.long': '{d}일 {h}시간 남음',
+        'wc.countdown.minutes': '{m}분 남음',
+        'wc.dateShort': '{m}/{d}',
+        'wc.ended': '이벤트 종료 · 그래도 계속 즐길 수 있어요',
         'wc.error': '메뉴를 불러오지 못했어요. 새로고침해 주세요.',
         'wc.finalist': '결승 상대: {dish}',
         'wc.gacha.ask': '너의 최애는?',
@@ -247,6 +255,8 @@
         'wc.intro.title': '오늘의 {n}강, 뭐가 나올까?',
         'wc.intro.tone': '시험기간으로 지친 당신! 메뉴나 골라~',
         'wc.loading': '불러오는 중…',
+        'wc.locked': '{date} 오픈',
+        'wc.months': '1,2,3,4,5,6,7,8,9,10,11,12',
         'wc.newStart': '새로 시작',
         'wc.photoChip': '사진 위키미디어 공용(잘라서 줄임)',
         'wc.photoCredit': '사진 {author} · {license}',
@@ -267,6 +277,7 @@
         'wc.splash.quarter': '8강 진출!',
         'wc.splash.semi': '4강 진출!',
         'wc.start': '{n}강 시작',
+        'wc.state.soon': '{date} 공개 예정',
         'wc.tag.chewy': '쫄깃한',
         'wc.tag.crispy': '바삭한',
         'wc.tag.rich': '진한',
@@ -329,6 +340,12 @@
         'wc.catLanded': '{cat} it is!',
         'wc.copied': 'Result and link copied',
         'wc.count': '{n} of {total}',
+        'wc.countdown.d': 'D-{n}',
+        'wc.countdown.hours': '{h}h {m}m left',
+        'wc.countdown.long': '{d}d {h}h left',
+        'wc.countdown.minutes': '{m}m left',
+        'wc.dateShort': '{mon} {d}',
+        'wc.ended': 'Event over · you can still play',
         'wc.error': 'Could not load the dishes. Please reload.',
         'wc.finalist': 'Final opponent: {dish}',
         'wc.gacha.ask': 'Who’s your favorite?',
@@ -339,6 +356,8 @@
         'wc.intro.title': 'What’s in today’s round of {n}?',
         'wc.intro.tone': 'Exam week got you? Just pick a menu~',
         'wc.loading': 'Loading…',
+        'wc.locked': 'Opens {date}',
+        'wc.months': 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec',
         'wc.newStart': 'New game',
         'wc.photoChip': 'Photos: Wikimedia Commons (cropped, resized)',
         'wc.photoCredit': 'Photo {author} · {license}',
@@ -359,6 +378,7 @@
         'wc.splash.quarter': 'Quarterfinals!',
         'wc.splash.semi': 'Semifinals!',
         'wc.start': 'Start the round of {n}',
+        'wc.state.soon': 'Opens {date}',
         'wc.tag.chewy': 'Chewy',
         'wc.tag.crispy': 'Crispy',
         'wc.tag.rich': 'Rich',
@@ -387,6 +407,7 @@
   </script>
   <!-- @end content -->
   <!-- Lab only (stage 2): the public project values the stats read; empty config = no stats. -->
+  <script src="js/worldcup-gate.js"></script>
   <script src="js/worldcup.js"></script>
 </body>
 </html>

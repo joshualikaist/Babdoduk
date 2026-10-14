@@ -19,6 +19,248 @@
   padding-bottom: 32px;
 }
 
+/* ── The 먹방 월드컵 promo (owner 2026-10-14): a pink-to-blue band in the world cup's own lettering (Jua,
+   the letters the sync asks Google Fonts for) with two of its dish photos. Before the launch it counts
+   down and opens the news page; while it runs its button starts the game; after the end
+   js/worldcup-gate.js hides it (data-wc-show). It is the first thing of .home-top: on a phone above the
+   copy, on a wide screen under it inside the paper band, where it costs the calendar below only a few
+   pixels (tests/test_home_calendar.py keeps the whole month on the first screen). ── */
+.home-wc {
+  --wc-display: 'Jua', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  grid-area: promo;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(115deg, #be185d, #a21caf 50%, #4f46e5);
+  box-shadow: 0 10px 26px rgba(126, 34, 206, 0.2), 0 2px 6px rgba(190, 24, 93, 0.16);
+  color: #fff;
+}
+
+.home-wc[hidden],
+.home-wc [hidden] {
+  display: none;
+}
+
+.home-wc::before {                        /* a soft light in the corner, behind the photos */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 40% 90% at 4% 0%, rgba(255, 255, 255, 0.22), transparent 70%);
+  pointer-events: none;
+}
+
+.home-wc-photos {
+  position: relative;
+  width: 56px;
+  height: 44px;
+}
+
+.home-wc-photo {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 2px solid #fff;
+  border-radius: 11px;
+  object-fit: cover;
+  background: #fce7f3;
+  box-shadow: 0 6px 14px rgba(30, 29, 26, 0.28);
+}
+
+.home-wc-photo--a { top: 0; left: 0; rotate: -8deg; }
+.home-wc-photo--b { top: 6px; right: 0; rotate: 7deg; }
+
+.home-wc-body {
+  min-width: 0;
+}
+
+.home-wc-title,
+.home-wc-state,
+.home-wc-cta {
+  font-family: var(--wc-display);
+  font-weight: 400;                       /* Jua has one weight */
+  font-synthesis: none;
+  letter-spacing: 0;
+}
+
+.home-wc-title {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.home-wc-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  margin: 2px 0 0;
+}
+
+.home-wc-state {
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: #fde68a;                         /* warm yellow on the gradient: 6.9:1 on the pink end */
+}
+
+.home-wc-count {
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.home-wc-count:empty {
+  display: none;
+}
+
+.home-wc-count .wc-cd-rest {
+  display: none;                          /* a phone keeps just "D-2" */
+}
+
+.home-wc-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: #9d174d;
+  font-size: 0.92rem;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 rgba(30, 27, 75, 0.35), 0 8px 16px rgba(30, 27, 75, 0.2);
+  transition: transform 160ms ease;
+}
+
+.home-wc-cta::after {                     /* the whole band is the link */
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--radius-lg);
+}
+
+.home-wc-cta:hover {
+  transform: translateY(-1px);
+}
+
+.home-wc-cta:focus-visible {
+  outline: none;
+}
+
+.home-wc-cta:focus-visible::after {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-wc-cta {
+    transition: none;
+  }
+
+  .home-wc-cta:hover {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .home-wc {
+    border-color: CanvasText;
+  }
+
+  .home-wc-cta {
+    border: 1px solid ButtonText;
+  }
+}
+
+/* A very narrow phone: the button is its emoji or arrow (its words stay for screen readers), so the band
+   stays a single slim row. */
+@media (max-width: 379px) {
+  .home-wc-cta {
+    padding: 0;
+    width: 44px;
+  }
+
+  .home-wc-cta [data-i18n] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* Room enough (a big phone, or the paper band of a wide screen): the whole countdown, bigger lettering. */
+@media (min-width: 441px) and (max-width: 720px), (min-width: 861px) {
+  .home-wc {
+    column-gap: 16px;
+    padding: 10px 14px 10px 12px;
+  }
+
+  .home-wc-photos {
+    width: 70px;
+    height: 54px;
+  }
+
+  .home-wc-photo {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  .home-wc-photo--b { top: 5px; }
+
+  .home-wc-title {
+    font-size: 1.3rem;
+  }
+
+  .home-wc-state {
+    font-size: 1.05rem;
+  }
+
+  .home-wc-count {
+    font-size: 12px;
+  }
+
+  .home-wc-count .wc-cd-rest {
+    display: inline;
+  }
+
+  .home-wc-cta {
+    padding: 0 16px;
+    font-size: 1rem;
+  }
+}
+
+/* Side by side (above 720 px): under the copy in the paper band, in line with it; the copy gives up the
+   bottom padding the promo now provides. */
+@media (min-width: 721px) {
+  .home-wc {
+    margin: 0 0 20px 40px;
+    align-self: start;
+  }
+
+  .home-top:has(.home-wc:not([hidden])) .home-hero {
+    padding-bottom: 0;
+  }
+}
+
 /* ── Top: who we are, the free-food calendar, the cafeteria line, then the collage. On wide
    screens a paper band sits behind the copy and the collage; the calendar has its own surface. ── */
 .home-top {
@@ -29,6 +271,7 @@
   grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
   grid-template-areas:
     "hero collage"
+    "promo collage"
     "cal cal"
     "menu menu";
   column-gap: var(--space-12);
@@ -38,7 +281,7 @@
 .home-top::before {
   content: "";
   grid-column: 1 / -1;
-  grid-row: 1;
+  grid-row: 1 / 3;
   border-radius: var(--radius-xl);
   background: var(--hero-paper);
   border: 1px solid rgba(30, 29, 26, 0.08);
@@ -1556,6 +1799,10 @@
     column-gap: var(--space-8);
   }
 
+  .home-wc {
+    margin-left: 28px;
+  }
+
   .home-hero {
     padding: 28px 0 28px 28px;
   }
@@ -1569,6 +1816,10 @@
 @media (max-width: 960px) {
   .home-hero {
     padding: 28px 0 28px 24px;
+  }
+
+  .home-wc {
+    margin-left: 24px;
   }
 
   .home-collage {
@@ -1603,6 +1854,7 @@
   .home-top {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
+      "promo"
       "hero"
       "cal"
       "menu"
@@ -1611,6 +1863,11 @@
 
   .home-top::before {
     display: none;
+  }
+
+  .home-wc {
+    margin: 0 0 8px;
+    align-self: auto;
   }
 
   .home-hero {

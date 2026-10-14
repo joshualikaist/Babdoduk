@@ -206,14 +206,17 @@ CONTENT_BLOCKS = {
     "event.html": lambda: {**page_content.event_blocks(), **page_content.worldcup_font_block()},
     "history.html": page_content.history_blocks,
     "worldcup.html": page_content.worldcup_blocks,
+    "index.html": page_content.home_font_block,
 }
 # Scripts with `// @content:<name>` blocks written from data/content/ (loaded by a page only when needed).
 CONTENT_SCRIPTS = {
     "js/worldcup-entry-data.js": page_content.worldcup_entry_data_blocks,
+    "js/worldcup-gate.js": page_content.worldcup_gate_blocks,
 }
 # The single keys (not whole families) a page's table carries besides its PAGES `strings`.
 PAGE_KEYS = {
     "event.html": page_content.WORLDCUP_ENTRY_KEYS,
+    "index.html": page_content.WORLDCUP_GATE_KEYS,
 }
 CONTENT_STRINGS = {
     "event.html": page_content.event_strings,

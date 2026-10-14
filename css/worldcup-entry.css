@@ -395,6 +395,71 @@
   outline-offset: 3px;
 }
 
+/* Before the launch (js/worldcup-gate.js) the big button is a locked pill with a countdown under it;
+   after the end the card carries a small note. Both show by data-wc-show. */
+.wc-locked,
+.wc-ended {
+  margin: 0;
+  text-align: center;
+}
+
+.wc-locked[hidden],
+.wc-ended[hidden] {
+  display: none;
+}
+
+.wc-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.wc-locked-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 62px;
+  padding: 8px 20px;
+  border: 2px dashed #8b5cf6;
+  border-radius: 20px;
+  background: #ede9fe;
+  color: #4c1d95;
+  font-family: var(--wc-display);
+  font-size: 23px;
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.wc-locked-count {
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.wc-locked-count:empty {
+  display: none;
+}
+
+.wc-ended {
+  margin-top: var(--space-3);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
 @media (min-width: 561px) {
   .wc-intro {
     padding: 56px 16px 60px;
@@ -441,6 +506,12 @@
   }
 
   .wc-btn.wc-btn--big {
+    width: min(100%, 380px);
+    min-height: 68px;
+    font-size: 27px;
+  }
+
+  .wc-locked-pill {
     width: min(100%, 380px);
     min-height: 68px;
     font-size: 27px;
