@@ -294,7 +294,8 @@ def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
     (.vercelignore), so the page carries them instead of fetching them."""
     data = load("worldcup") if data is None else data
     payload = json.dumps({"size": data.get("size", len(data["dishes"])), "basis": data["basis"],
-                          "dishes": data["dishes"], "photos": data.get("photos") or {}},
+                          "dishes": data["dishes"], "categories": data.get("categories") or {},
+                          "photos": data.get("photos") or {}},
                          ensure_ascii=False)
     return {"worldcup": [
         "<script>",
@@ -304,9 +305,26 @@ def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
     ]}
 
 
+# The world cup's categories (owner, 2026-10-14): each dish of the pool is in exactly one, taken from
+# the catalog's `cuisineGroup`. "all" is the whole pool and is not stored. js/worldcup.js lists the
+# same keys in the order of the chips.
+WORLDCUP_CATEGORIES = ("korean", "chinese", "japanese", "western", "world", "snack", "dessert")
+WORLDCUP_CATEGORY_BY_GROUP = {
+    "korean": "korean", "chinese": "chinese", "japanese": "japanese",
+    "western": "western", "italian": "western", "american": "western", "french": "western", "mexican": "western",
+    "southeast-asian": "world", "indian": "world", "middle-eastern": "world", "fusion": "world",
+    "snack": "snack", "dessert": "dessert",
+}
+
+
+def worldcup_category(item: dict) -> str | None:
+    """The world cup category of one catalog dish, or None when its cuisineGroup is not mapped."""
+    return WORLDCUP_CATEGORY_BY_GROUP.get(item.get("cuisineGroup") or "")
+
+
 def worldcup_errors(root: Path = ROOT) -> list[str]:
-    """data/content/worldcup.json: a pool of catalog dishes, each with a photo, at least as large as a
-    game (`size`, a power of two)."""
+    """data/content/worldcup.json: a pool of catalog dishes, each with a photo and exactly one category,
+    at least as large as a game (`size`, a power of two); every category holds at least a game of dishes."""
     path = root / "data" / "content" / "worldcup.json"
     if not path.exists():
         return []
@@ -326,13 +344,28 @@ def worldcup_errors(root: Path = ROOT) -> list[str]:
         errors.append(f"worldcup.json: a game of {size} from {len(dishes)} dishes is not a bracket")
     if len(set(dishes)) != len(dishes):
         errors.append("worldcup.json: a dish is listed twice")
+    categories = data.get("categories") or {}
+    errors += [f"worldcup.json: {dish} has no category" for dish in dishes if dish not in categories]
+    errors += [f"worldcup.json: a category for {dish}, which is not in the bracket" for dish in categories if dish not in dishes]
+    errors += [f"worldcup.json: {dish} is in the category {key!r}, which does not exist"
+               for dish, key in categories.items() if key not in WORLDCUP_CATEGORIES]
+    for key in WORLDCUP_CATEGORIES:
+        have = sum(1 for dish in dishes if categories.get(dish) == key)
+        if have < size:
+            errors.append(f"worldcup.json: the category {key!r} has {have} dishes, fewer than a game of {size}")
     catalog_path = root / "data" / "foods" / "catalog.json"
     if catalog_path.exists():
         names = {}
+        groups = {}
         for pack in json.loads(catalog_path.read_text(encoding="utf-8")).get("packs") or []:
             pack_path = root / str(pack.get("src") or "")
             if pack_path.is_file():
-                names |= {item.get("id"): item.get("nameKo") or "" for item in json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []}
+                items = json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []
+                names |= {item.get("id"): item.get("nameKo") or "" for item in items}
+                groups |= {item.get("id"): worldcup_category(item) for item in items}
+        # The category follows the catalog (cuisineGroup), so a dish cannot drift into another one.
+        errors += [f"worldcup.json: {dish} is in the category {categories[dish]!r}, but the catalog says {groups[dish]!r}"
+                   for dish in dishes if dish in categories and dish in groups and categories[dish] != groups[dish]]
         errors += [f"worldcup.json: {dish} is not a catalog dish" for dish in dishes if dish not in names]
         families = Counter(same_dish(dish, names[dish]) for dish in dishes if dish in names)
         errors += [f"worldcup.json: {count} dishes are {family}; at most {SAME_DISH_LIMIT} of the same dish"

@@ -936,11 +936,15 @@ SPLASH_GEOMETRY = """() => { const s = document.querySelector('#wcSplash'), all 
   return {outside, scale: Math.round(scale * 100) / 100, covered, miss: Math.round(miss * 100) / 100}; }"""
 
 
-def worldcup_saved(cup, entrants, winners):
-    """A stored game `winners` picks into a round of `entrants`, as js/worldcup.js keeps it."""
-    ids = cup["dishes"][:entrants]
-    return {"v": 1, "set": f"{cup['size']}:" + ",".join(cup["dishes"]), "winners": [],
-            "game": {"entrants": ids, "winners": ids[0:winners * 2:2], "stack": [], "log": []}}
+def worldcup_saved(cup, entrants, winners, category=None):
+    """A stored game `winners` picks into a round of `entrants`, as js/worldcup.js keeps it. Without
+    `category` it is an older save (none recorded: the whole pool); with one, its dishes are drawn from it."""
+    pool = [d for d in cup["dishes"] if category in (None, "all") or cup["categories"][d] == category]
+    ids = pool[:entrants]
+    game = {"entrants": ids, "winners": ids[0:winners * 2:2], "stack": [], "log": []}
+    if category:
+        game["category"] = category
+    return {"v": 1, "set": f"{cup['size']}:" + ",".join(cup["dishes"]), "winners": [], "game": game}
 
 
 def worldcup_play(page):
@@ -1004,6 +1008,118 @@ def worldcup_play(page):
     check(saved["game"] is None and len(saved["winners"]) == 1 and saved["winners"][0]["id"] in dishes,
           ("the winner is kept in this browser only", saved["winners"]))
     check(page.locator("#wcHistoryList li").count() == 1, "the past winner is listed")
+    return count
+
+
+def worldcup_categories(page):
+    """The world cup's categories (owner 2026-10-14): chips with counts above the start button, a
+    game drawn from the chosen category, the category shown while playing and on the result, kept by
+    resume, and an older save without one read as the whole pool."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html categories: {detail}"
+        count += 1
+
+    def save(state):
+        page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", state)
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    cats = cup["categories"]
+    korean = [d for d in cup["dishes"] if cats[d] == "korean"]
+    stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
+    chips = ("[...document.querySelectorAll('#wcCats .wc-chip')]"
+             ".map(c => [c.dataset.cat, c.textContent, c.getAttribute('aria-pressed')])")
+    for size in ((390, 844), (1280, 800)):
+        page.set_viewport_size({"width": size[0], "height": size[1]})
+        page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        page.reload(wait_until="networkidle")
+        got = page.evaluate(chips)
+        check([c[0] for c in got] == ["all", "korean", "chinese", "japanese", "western", "world", "snack", "dessert"],
+              ("the eight chips in order", got))
+        check([c[1] for c in got] == ["전체763", "한식268", "중식75", "일식75", "양식132", "아시아·세계86", "분식·간식35", "디저트·카페92"],
+              ("each chip carries its count", got))
+        check([c[2] for c in got] == ["true"] + ["false"] * 7, ("전체 is chosen by default", got))
+        check(page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), (size, "no horizontal scroll with the chips"))
+        above = page.evaluate("document.querySelector('#wcCats').getBoundingClientRect().bottom <= "
+                              "document.querySelector('#wcStart').getBoundingClientRect().top")
+        check(above, "the chips sit above the start button")
+        check(page.evaluate("[...document.querySelectorAll('#wcCats .wc-chip')].every(c => c.getBoundingClientRect().height >= 44)"),
+              "each chip is at least 44 px tall")
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    # A chip by keyboard; the focus ring is visible.
+    page.locator('#wcCats [data-cat="korean"]').focus()
+    check(page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none", "a focused chip shows a focus ring")
+    page.keyboard.press("Enter")
+    got = page.evaluate(chips)
+    check([c[0] for c in got if c[2] == "true"] == ["korean"], ("pressing 한식 chooses it alone", got))
+    check(page.locator("#wcStart").inner_text() == "32강 시작", "the start button still says 32강 시작")
+
+    # 32 cards, all from 한식, and the category on the round header.
+    page.locator("#wcStart").click()
+    game = page.evaluate(stored)
+    check(len(game["entrants"]) == 32 and len(set(game["entrants"])) == 32 and set(game["entrants"]) <= set(korean)
+          and game["category"] == "korean", ("32 distinct 한식 dishes are drawn", game["category"], len(game["entrants"])))
+    check(page.locator("#wcGame").inner_text() == "한식 32강" and page.locator("#wcRound").inner_text() == "32강",
+          ("the category shows over the round", page.locator("#wcGame").inner_text()))
+    shown = [page.locator(".wc-card").nth(i).get_attribute("data-id") for i in (0, 1)]
+    check(all(cats[d] == "korean" for d in shown), ("the cards on screen are 한식", shown))
+    page.keyboard.press("Enter")
+
+    # Resume keeps it, also after a reload.
+    page.reload(wait_until="networkidle")
+    resume = page.locator("#wcResume").inner_text()
+    check("한식" in resume and page.locator('#wcCats [data-cat="korean"]').get_attribute("aria-pressed") == "true",
+          ("the saved 한식 game is offered and its chip chosen", resume))
+    page.locator("#wcResume").click()
+    check(page.locator("#wcGame").inner_text() == "한식 32강" and page.locator("#wcCount").inner_text() == "2 / 16"
+          and page.evaluate(stored)["category"] == "korean", "resuming plays the same 한식 game")
+    # 처음부터 stays in the category.
+    page.locator("#wcRestart").click()
+    check(page.evaluate(stored)["category"] == "korean" and set(page.evaluate(stored)["entrants"]) <= set(korean),
+          "a restart draws a new bracket from the same category")
+
+    # English: the chips, the header and the resume label follow the language.
+    page.locator("#langToggle").click()
+    check(page.locator("#wcGame").inner_text() == "Korean · Round of 32", ("the header in English", page.locator("#wcGame").inner_text()))
+    save(worldcup_saved(cup, 16, 7, "korean"))
+    page.reload(wait_until="networkidle")
+    got = page.evaluate(chips)
+    check([c[1] for c in got] == ["All763", "Korean268", "Chinese75", "Japanese75", "Western132", "Asian & world86", "Snacks35",
+                                  "Desserts & café92"], ("the chips in English", got))
+    check("Korean" in page.locator("#wcResume").inner_text(), page.locator("#wcResume").inner_text())
+    page.locator("#langToggle").click()
+
+    # An older save has no category: whole pool, readable, resumable.
+    save(worldcup_saved(cup, 16, 7))
+    page.reload(wait_until="networkidle")
+    check(page.locator("#wcResume").is_visible() and "전체" in page.locator("#wcResume").inner_text()
+          and page.locator('#wcCats [data-cat="all"]').get_attribute("aria-pressed") == "true", "an older save counts as 전체")
+    page.locator("#wcResume").click()
+    check(page.locator("#wcGame").inner_text() == "전체 32강" and page.locator("#wcCount").inner_text() == "8 / 8",
+          "and resumes as 전체 32강")
+
+    # The result shows the category too.
+    save(worldcup_saved(cup, 2, 0, "korean"))
+    page.reload(wait_until="networkidle")
+    page.locator("#wcResume").click()
+    page.keyboard.press("Enter")
+    check(page.locator("#wcResult").is_visible() and page.locator("#wcResultGame").inner_text() == "한식 32강",
+          ("the result names the category", page.locator("#wcResultGame").inner_text()))
+    # Playing again keeps the category.
+    page.locator("#wcAgain").click()
+    check(page.evaluate(stored)["category"] == "korean", "다시 하기 plays the same category")
+
+    # An unreadable category in a save is dropped rather than trusted.
+    bad = worldcup_saved(cup, 16, 7, "korean")
+    bad["game"]["category"] = "brunch"
+    save(bad)
+    page.reload(wait_until="networkidle")
+    check(page.locator("#wcResume").is_hidden(), "a save with an unknown category is not offered")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     return count
 
 
@@ -1667,6 +1783,7 @@ def run_checks(screenshots=False):
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
         report["checks"] += worldcup_play(page)
+        report["checks"] += worldcup_categories(page)
         report["checks"] += worldcup_splash(page)
         report["checks"] += worldcup_stats(page)
         report["checks"] += history_archive(page)
