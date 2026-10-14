@@ -56,10 +56,17 @@ def contrast(a, b):
 EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABASE_URL:'',SUPABASE_PUBLISHABLE_KEY:''});"
 
 
+SITE_HOST = "site-ui.invalid"
+# Hosts the launch gate tells apart (js/worldcup-gate.js): production, lab and localhost are served from
+# the same files here, so a check can load a page "as" each; every other host is refused.
+GATE_HOSTS = {"babdoduk.vercel.app": "production", "babdoduk-lab.vercel.app": "lab", "localhost": "localhost"}
+SERVED_HOSTS = {SITE_HOST, *GATE_HOSTS}
+
+
 def offline_route(route):
     url = urlparse(route.request.url)
     path = unquote(url.path).lstrip("/")
-    if url.hostname != "site-ui.invalid":
+    if url.hostname not in SERVED_HOSTS:
         route.abort()  # no external fonts, SDKs, DBs, APIs, or image hosts
     elif path == "js/ggongbab-public-config.js":
         # Lab carries the public project values; the static checks run with none, so no page
@@ -829,7 +836,9 @@ def event_bands(page):
                 check(row["chip"] == expected_chip and row["chipShown"] == bool(expected_chip),
                       ("a past date is not reported as held; an unconfirmed plan says so briefly", row))
         else:
-            check(row["chip"].startswith(labels[row["band"]]), ("current rows name their band", row))
+            # The world cup before its launch says when it opens (js/worldcup-gate.js).
+            wanted = "10/16 공개 예정" if row["band"] == "upcoming" and row["onSite"] else labels[row["band"]]
+            check(row["chip"].startswith(wanted), ("current rows name their band", row))
         check(not row["open"], ("details stay folded by default", row))
         check(row["linkBand"] == row["band"] and row["cta"] == cta(row),
               ("a past link opens the original post as a record; a live link is an action", row))
@@ -902,12 +911,22 @@ def event_bands(page):
     return count
 
 
+# The page clocks of the world cup's launch window (2026-10-16 .. 2026-10-23, Korea time, both days included).
+WC_SOON = "2026-10-14T21:30:00+09:00"        # before the launch: D-2, 1 day 2 hours left
+WC_EVE = "2026-10-15T23:59:00+09:00"         # the last minute before it opens
+WC_OPENS = "2026-10-15T15:00:00Z"            # = 2026-10-16 00:00 in Korea, whatever the browser's timezone
+WC_RUNNING = "2026-10-18T12:00:00+09:00"
+WC_LAST = "2026-10-23T23:59:00+09:00"
+WC_ENDED = "2026-10-24T00:00:00+09:00"
+
+
 def event_entry(page):
     """The world cup's start screen in its activity's card on event.html (owner 2026-10-14: the live
     event, not a teaser photo and a button): the headline, nine tiles with counts, the preview, the
     start button and the photo chip; no teaser, no 지금 해보기; the start opens worldcup.html with the
-    category and go=1, and worldcup.html then plays that category at once, only for go=1. The dates
-    of the row are fixed here, so the checks do not depend on the wall clock."""
+    category and go=1, and worldcup.html then plays that category at once, only for go=1. The page
+    clock is fixed inside the launch window (WC_RUNNING), so the checks do not depend on the wall clock;
+    worldcup_gate covers before the launch, the last day, the end and the hosts."""
     count = 0
 
     def check(ok, detail):
@@ -916,12 +935,8 @@ def event_entry(page):
         count += 1
 
     source = (ROOT / "event.html").read_text(encoding="utf-8")
-    row = 'data-start="2026-10-13" data-end="2026-10-30"'
+    row = 'data-start="2026-10-16" data-end="2026-10-23"'
     assert row in source
-
-    def serve(start, end):
-        body = source.replace(row, f'data-start="{start}" data-end="{end}"', 1)
-        page.route("**/event.html", lambda route: route.fulfill(content_type="text/html", body=body))
 
     cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
     counts = {"all": len(cup["dishes"])}
@@ -944,7 +959,7 @@ def event_entry(page):
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         text: document.body.innerText}; }"""
 
-    serve("2000-01-01", "2999-12-31")
+    page.clock.set_fixed_time(WC_RUNNING)
     for width, height in ((390, 844), (1280, 800)):
         page.set_viewport_size({"width": width, "height": height})
         page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
@@ -1050,26 +1065,240 @@ def event_entry(page):
     page.screenshot(path=str(ROOT / ".local/site-ui-shots/worldcup-go-gacha.png")) if (ROOT / ".local/site-ui-shots").is_dir() else None
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.emulate_media(reduced_motion="reduce")
-    page.unroute("**/event.html")
 
     # A past row has no start screen, loads no world cup script and links to the page instead.
-    serve("2000-01-01", "2000-01-02")
+    page.clock.set_fixed_time(WC_ENDED)
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     snap = page.evaluate(SNAP)
     check(not snap["embed"] and snap["link"] == "페이지 보기 →" and "js/worldcup.js" not in snap["scripts"] and snap["slim"] is None
           and "worldcup.html" == page.locator(".event-link[data-event-page]").get_attribute("href"),
           ("past: only the link, nothing loaded", snap["link"], snap["scripts"]))
-    page.unroute("**/event.html")
 
     # The script not arriving leaves the link, not an empty card.
-    serve("2000-01-01", "2999-12-31")
+    page.clock.set_fixed_time(WC_RUNNING)
     page.route("**/js/worldcup-entry-data.js", lambda route: route.fulfill(status=404, body=""))
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     snap = page.evaluate(SNAP)
     check(not snap["embed"] or not snap["intro"], "a failed load shows no half-built start screen")
     check(snap["link"] == "페이지 보기 →", ("a failed load falls back to the link", snap["link"]))
     page.unroute("**/js/worldcup-entry-data.js")
-    page.unroute("**/event.html")
+    return count
+
+
+def gate_page(page, host, name, query=""):
+    """A page of this site loaded as the production, lab or localhost host (served from the same files)."""
+    scheme = "http" if host == "localhost" else "https"
+    page.goto(f"{scheme}://{host}/{name}{query}", wait_until="networkidle")
+
+
+GATE_SNAP = """() => { const shown = e => !!e && !e.hidden && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
+  const q = s => document.querySelector(s);
+  const row = q('.event-item[data-start="2026-10-16"]');
+  return {phase: document.documentElement.getAttribute('data-wc-phase'),
+    locked: shown(q('#wcLocked')), pill: q('.wc-locked-pill') && q('.wc-locked-pill').textContent.trim().replace(/\\s+/g, ' '),
+    count: q('.wc-locked-count') && q('.wc-locked-count').textContent,
+    start: shown(q('#wcStart')), resume: shown(q('#wcResume')), ended: shown(q('.wc-ended')),
+    tiles: [...document.querySelectorAll('.wc-tile')].filter(shown).length,
+    floaters: [...document.querySelectorAll('.wc-floater')].filter(shown).length,
+    match: shown(q('#wcMatch')), intro: shown(q('#wcIntro')),
+    saved: localStorage.getItem('babdoduk-worldcup'),
+    state: row && row.querySelector('[data-event-state]').textContent, band: row && row.dataset.band,
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
+
+
+def worldcup_gate(page):
+    """The launch gate (owner 2026-10-14, js/worldcup-gate.js): before 2026-10-16 the start screen is a teaser
+    with a locked pill and a countdown and nothing plays, not even with go=1 or a saved game; from the first
+    to the last day (23:59 Korea time) it is the game; after it worldcup.html plays on with a note and the
+    news card is a past row. Lab and localhost, and only they, honour `previewFrom` and open it early.
+    Every case fixes the page clock."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"world cup gate: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    def snap(host, name, now, query=""):
+        page.clock.set_fixed_time(now)
+        gate_page(page, host, name, query)
+        page.evaluate("localStorage.removeItem('babdoduk-lang')")
+        return page.evaluate(GATE_SNAP)
+
+    # worldcup.html before the launch: the teaser, locked, nothing playable.
+    shot = snap(SITE_HOST, "worldcup.html", WC_SOON)
+    check(shot["phase"] == "soon" and shot["locked"] and shot["pill"] == "🔒 10/16 오픈" and shot["count"] == "D-2 · 1일 2시간 남음",
+          ("locked pill and countdown", shot))
+    check(not shot["start"] and not shot["resume"] and not shot["match"] and shot["intro"] and shot["tiles"] == 9
+          and shot["floaters"] == 4, ("the teaser stays, the start button is gone", shot))
+    check(shot["overflow"] <= 0, ("no horizontal scroll", shot["overflow"]))
+    page.locator('.wc-tile[data-cat="korean"]').click()
+    page.evaluate("document.querySelector('#wcStart').click()")              # even a forced click starts nothing
+    check(page.locator("#wcMatch").is_hidden() and not page.evaluate("localStorage.getItem('babdoduk-worldcup')"),
+          "a forced start click does nothing")
+    page.locator("#langToggle").click()
+    shot = page.evaluate(GATE_SNAP)
+    check(shot["pill"] == "🔒 Opens Oct 16" and shot["count"] == "D-2 · 1d 2h left", ("English", shot))
+    page.locator("#langToggle").click()
+    for query in ("?cat=korean&go=1", "?go=1", "?cat=nope&go=1"):
+        shot = snap(SITE_HOST, "worldcup.html", WC_SOON, query)
+        check(shot["locked"] and shot["intro"] and not shot["match"] and not shot["saved"] and page.url.endswith("/worldcup.html"),
+              ("go=1 does not start a game and the address is cleaned", query, shot))
+    saved = worldcup_saved(cup, 16, 7, "korean")
+    page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", saved)
+    page.reload(wait_until="networkidle")
+    shot = page.evaluate(GATE_SNAP)
+    check(shot["locked"] and not shot["resume"] and not shot["start"] and not shot["match"]
+          and json.loads(shot["saved"])["game"]["entrants"] == saved["game"]["entrants"],
+          ("a saved game is neither offered nor touched before the launch", shot))
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    shot = snap(SITE_HOST, "worldcup.html", WC_EVE)
+    check(shot["locked"] and shot["count"] == "D-1 · 1분 남음", ("the last minute", shot))
+
+    # The launch moment, read as Korea time: midnight there is the first moment, whatever the clock's zone.
+    for now in (WC_OPENS, WC_RUNNING, WC_LAST):
+        shot = snap(SITE_HOST, "worldcup.html", now)
+        check(shot["phase"] == "live" and shot["start"] and not shot["locked"] and not shot["ended"], ("open", now, shot))
+    shot = snap(SITE_HOST, "worldcup.html", WC_LAST, "?cat=korean&go=1")
+    check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", ("go=1 starts on the last day", shot))
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    # After the end: still playable, with a small note.
+    shot = snap(SITE_HOST, "worldcup.html", WC_ENDED)
+    check(shot["phase"] == "ended" and shot["start"] and shot["ended"] and not shot["locked"], ("after the end: playable with a note", shot))
+    check("이벤트 종료" in page.locator(".wc-ended").inner_text(), "the note says the event is over")
+    shot = snap(SITE_HOST, "worldcup.html", WC_ENDED, "?cat=korean&go=1")
+    check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", "after the end go=1 still plays")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+
+    # The news card: before the launch the teaser with the locked pill, in the coming-up list.
+    shot = snap(SITE_HOST, "event.html", WC_SOON)
+    check(shot["band"] == "upcoming" and shot["state"] == "10/16 공개 예정" and shot["locked"] and not shot["start"] and shot["tiles"] == 9
+          and shot["floaters"] == 4 and shot["pill"] == "🔒 10/16 오픈" and shot["count"] == "D-2 · 1일 2시간 남음",
+          ("the event card is locked", shot))
+    check(page.locator("#eventUpcoming .wc-embed").count() == 1 and shot["overflow"] <= 0, "in 지금, no horizontal scroll")
+    page.locator("#langToggle").click()
+    shot = page.evaluate(GATE_SNAP)
+    check(shot["state"] == "Opens Oct 16" and shot["pill"] == "🔒 Opens Oct 16", ("English event card", shot))
+    page.locator("#langToggle").click()
+    page.evaluate("document.querySelector('#wcStart').click()")
+    check(page.url.endswith("/event.html"), "a forced start click on the card goes nowhere")
+    shot = snap(SITE_HOST, "event.html", WC_RUNNING)
+    check(shot["band"] == "now" and shot["state"].startswith("진행 중") and shot["start"] and not shot["locked"], ("running card", shot))
+    shot = snap(SITE_HOST, "event.html", WC_LAST)
+    check(shot["band"] == "now" and shot["start"], ("running on the last day", shot))
+    shot = snap(SITE_HOST, "event.html", WC_ENDED)
+    check(shot["band"] == "past" and not shot["start"] and page.locator(".wc-embed").is_hidden()
+          and page.locator("#eventList .event-link[data-event-page]").count() == 1, ("past card", shot))
+
+    # The lab override: only on lab and localhost (previewFrom), never on production or another host.
+    for host, early in (("babdoduk.vercel.app", False), (SITE_HOST, False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
+        shot = snap(host, "worldcup.html", WC_SOON)
+        check(shot["locked"] == (not early) and shot["start"] == early, (host, "worldcup.html", shot))
+        shot = snap(host, "event.html", WC_SOON)
+        check(shot["locked"] == (not early) and shot["start"] == early and shot["band"] == ("now" if early else "upcoming")
+              and shot["state"].startswith("진행 중" if early else "10/16 공개 예정"), (host, "event.html", shot))
+        shot = snap(host, "worldcup.html", WC_SOON, "?cat=korean&go=1")
+        check(shot["match"] == early, (host, "go=1", shot))
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    # Lab opens it from 2026-10-13, not before; and it still closes at the end like production.
+    shot = snap("babdoduk-lab.vercel.app", "worldcup.html", "2026-10-12T23:59:00+09:00")
+    check(shot["locked"] and shot["count"].startswith("D-"), ("lab before previewFrom", shot))
+    shot = snap("babdoduk-lab.vercel.app", "worldcup.html", WC_ENDED)
+    check(shot["ended"] and shot["start"], ("lab after the end", shot))
+    source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
+    check(source.count("'babdoduk-lab.vercel.app'") == 1 and "location.hostname" in source, "the gate names the lab host once")
+    return count
+
+
+def home_wc_promo(page):
+    """The home page's 먹방 월드컵 promo (index.html): before the launch the countdown and a link to the news
+    page, while it runs the 지금 하기 button for the game, after the end nothing; the same on lab with the
+    override. It stays inside 390 px without pushing the hero or the calendar out. Fixed page clocks."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"home world cup promo: {detail}"
+        count += 1
+
+    SNAP = """() => { const q = s => document.querySelector(s);
+      const shown = e => !!e && !e.hidden && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
+      const promo = q('.home-wc'), box = e => e.getBoundingClientRect();
+      const soon = q('.home-wc-cta--soon'), live = q('.home-wc-cta--live');
+      return {shown: shown(promo), title: q('.home-wc-title').textContent.trim(),
+        states: [...document.querySelectorAll('.home-wc-state')].filter(shown).map(e => e.textContent.trim()),
+        count: q('.home-wc-count').textContent, countShown: shown(q('.home-wc-count')),
+        soon: shown(soon) && {href: soon.getAttribute('href'), text: soon.textContent.trim().replace(/\\s+/g, ' ')},
+        live: shown(live) && {href: live.getAttribute('href'), text: live.textContent.trim().replace(/\\s+/g, ' ')},
+        photos: [...document.querySelectorAll('.home-wc-photo')].map(i => i.naturalWidth > 0),
+        height: promo ? box(promo).height : 0, top: promo ? box(promo).top : 0,
+        hero: box(q('#homeTitle')).top, cal: shown(q('#homeCal')), calTop: box(q('#homeCal')).top,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
+
+    def snap(host, now, size=(390, 844)):
+        page.set_viewport_size({"width": size[0], "height": size[1]})
+        page.clock.set_fixed_time(now)
+        gate_page(page, host, "index.html")
+        page.evaluate("localStorage.removeItem('babdoduk-lang')")
+        return page.evaluate(SNAP)
+
+    for width, height in ((390, 844), (360, 800), (1280, 800)):
+        shot = snap(SITE_HOST, WC_SOON, (width, height))
+        full = "D-2 · 1일 2시간 남음" if width >= 641 else "D-2"       # a phone keeps just the days
+        visible = page.locator(".home-wc-count").inner_text().strip()
+        check(shot["shown"] and shot["title"] == "🏆 밥도둑 먹방 월드컵" and shot["states"] == ["10/16 오픈!"]
+              and shot["count"] == "D-2 · 1일 2시간 남음" and visible == full, (width, "before the launch", shot, visible))
+        check(shot["soon"] and shot["soon"]["href"] == "event.html" and shot["soon"]["text"] == "자세히 보기 →" and not shot["live"],
+              (width, "links to the news page", shot))
+        check(all(shot["photos"]) and len(shot["photos"]) == 2, (width, "two dish photos load", shot["photos"]))
+        # A phone: above the copy; wider, in the paper band under it. Either way before the calendar.
+        order = shot["top"] < shot["hero"] if width < 721 else shot["hero"] < shot["top"]
+        check(shot["overflow"] <= 0 and shot["cal"] and order and shot["top"] < shot["calTop"],
+              (width, "in the hero band, the calendar stays", shot))
+        check(shot["height"] <= (100 if width < 641 else 80), (width, "a compact band", shot["height"]))
+        shot = snap(SITE_HOST, WC_RUNNING, (width, height))
+        check(shot["shown"] and shot["states"] == ["지금 진행 중 · 10/23까지"] and not shot["soon"] and not shot["countShown"]
+              and shot["live"] == {"href": "worldcup.html", "text": "🎰 지금 하기"}, (width, "running", shot))
+        check(shot["overflow"] <= 0 and shot["height"] <= (100 if width < 641 else 80), (width, "running: compact, no horizontal scroll", shot))
+        shot = snap(SITE_HOST, WC_LAST, (width, height))
+        check(shot["shown"] and shot["live"], (width, "still there on the last day", shot))
+        shot = snap(SITE_HOST, WC_ENDED, (width, height))
+        check(not shot["shown"] and shot["cal"] and shot["overflow"] <= 0, (width, "gone after the end", shot))
+        check(page.locator(".home-top").evaluate("e => e.getBoundingClientRect().top") < 120, (width, "after the end the hero is back at the top"))
+
+    # English, on the page's language switch.
+    snap(SITE_HOST, WC_SOON)
+    page.locator("#langToggle").click()
+    shot = page.evaluate(SNAP)
+    check(shot["title"] == "🏆 Food World Cup" and shot["states"] == ["Opens Oct 16!"] and shot["count"] == "D-2 · 1d 2h left"
+          and shot["soon"]["text"] == "Preview →" and shot["overflow"] <= 0, ("English before the launch", shot))
+    page.clock.set_fixed_time(WC_RUNNING)
+    page.reload(wait_until="networkidle")
+    shot = page.evaluate(SNAP)
+    check(shot["states"] == ["Live now · until Oct 23"] and shot["live"]["text"] == "🎰 Play now" and shot["overflow"] <= 0,
+          ("English running", shot))
+    page.evaluate("localStorage.removeItem('babdoduk-lang')")
+
+    # Keyboard: the button is reachable and its focus ring shows; the whole band is its click target.
+    snap(SITE_HOST, WC_RUNNING)
+    page.locator(".home-wc-cta--live").focus()
+    check(page.evaluate("getComputedStyle(document.querySelector('.home-wc-cta--live'), '::after').outlineStyle") != "none",
+          "visible focus on the promo button")
+    box = page.locator(".home-wc").bounding_box()
+    with page.expect_navigation() as navigation:
+        page.mouse.click(box["x"] + box["width"] - 6, box["y"] + 6)
+    check(urlparse(navigation.value.url).path == "/worldcup.html", "a click anywhere on the band follows its link")
+    check(contrast("rgb(253, 230, 138)", "rgb(190, 24, 93)") >= 4.5 and contrast("rgb(157, 23, 77)", "rgb(255, 255, 255)") >= 4.5,
+          "the state line and the button keep their contrast on the gradient")
+
+    # Lab opens it early (previewFrom); production does not.
+    for host, early in (("babdoduk.vercel.app", False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
+        shot = snap(host, WC_SOON)
+        check(shot["shown"] and bool(shot["live"]) == early and bool(shot["soon"]) == (not early)
+              and shot["states"] == (["지금 진행 중 · 10/23까지"] if early else ["10/16 오픈!"]), (host, shot))
     return count
 
 
@@ -2081,7 +2310,7 @@ def run_checks(screenshots=False):
         api_attempts = []
         context.on("request", lambda req: api_attempts.append(req.url)
                    if req.resource_type in ("fetch", "xhr", "eventsource")
-                   and urlparse(req.url).hostname != "site-ui.invalid" else None)
+                   and urlparse(req.url).hostname not in SERVED_HOSTS else None)
         page = context.new_page()
         # WebSockets bypass routing and emit no request event; record every attempt.
         page.on("websocket", lambda ws: api_attempts.append(ws.url))
@@ -2097,12 +2326,24 @@ def run_checks(screenshots=False):
         report["checks"] += home_summary(page)
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
-        report["checks"] += event_entry(page)
-        report["checks"] += worldcup_play(page)
-        report["checks"] += worldcup_categories(page)
-        report["checks"] += worldcup_splash(page)
-        report["checks"] += worldcup_gacha(page)
-        report["checks"] += worldcup_stats(page)
+        # The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a context whose page
+        # clock is fixed (inside the window unless a check sets another), so nothing depends on today.
+        cup_context = new_context(browser)
+        cup_context.on("request", lambda req: api_attempts.append(req.url)
+                       if req.resource_type in ("fetch", "xhr", "eventsource")
+                       and urlparse(req.url).hostname not in SERVED_HOSTS else None)
+        cup_page = cup_context.new_page()
+        cup_page.on("websocket", lambda ws: api_attempts.append(ws.url))
+        cup_page.clock.set_fixed_time(WC_RUNNING)
+        report["checks"] += event_entry(cup_page)
+        report["checks"] += worldcup_play(cup_page)
+        report["checks"] += worldcup_categories(cup_page)
+        report["checks"] += worldcup_splash(cup_page)
+        report["checks"] += worldcup_gacha(cup_page)
+        report["checks"] += worldcup_stats(cup_page)
+        report["checks"] += worldcup_gate(cup_page)
+        report["checks"] += home_wc_promo(cup_page)
+        cup_context.close()
         report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)

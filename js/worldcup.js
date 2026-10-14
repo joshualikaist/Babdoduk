@@ -19,7 +19,10 @@
    data is js/worldcup-entry-data.js (names and categories, photos by path), nothing of a saved
    game or the stats is read, and 32강 시작 opens worldcup.html?cat=<category>&go=1. worldcup.html
    starts that category at once (the start gacha, as if the button had been pressed there) and
-   only for go=1 with a known category; the address is then cleaned so a reload never restarts. */
+   only for go=1 with a known category; the address is then cleaned so a reload never restarts.
+   The launch gate (owner 2026-10-14, js/worldcup-gate.js): before the world cup opens (`locked`) the
+   start screen is a teaser only: the start button is a locked pill with a countdown, 이어하기 and
+   go=1 do nothing and start() refuses. After the end it plays on, with a small note. */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -29,6 +32,8 @@
   var cup = window.BABDODUK_WORLDCUP || {};
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var embedded = !document.getElementById('wcMatch');   // the news page's card: the start screen alone
+  var gate = window.BabdodukWorldcup;                    // js/worldcup-gate.js; without it the game is open
+  function locked() { return !!gate && gate.phase() === 'soon'; }
   var dishes = {};
   var CATEGORIES = ['all', 'korean', 'chinese', 'japanese', 'western', 'world', 'snack', 'dessert'];
   var CATEGORY_NAMES = { all: '전체', korean: '한식', chinese: '중식', japanese: '일식', western: '양식',
@@ -303,9 +308,11 @@
     renderTitle();
     $('wcStartLabel').textContent = fill(t('wc.start', '{n}강 시작'), { n: size });
     // A game in progress makes resuming the big button; 새로 시작 is a small link under it.
-    var resumable = !!game;
-    $('wcStart').hidden = resumable;
+    // Before the launch only the locked pill shows (the gate fills it in), whatever is saved.
+    var resumable = !!game && !locked();
+    $('wcStart').hidden = resumable || locked();
     $('wcResume').hidden = $('wcNew').hidden = !resumable;
+    if (gate) gate.refresh();
     if (resumable) $('wcResumeLabel').textContent = fill(t('wc.resume', '이어하기 · {cat} {round} {n}/{total}'), progress());
     [].forEach.call($('wcPreviewPhotos').querySelectorAll('img'), function (img) { img.alt = name(img.getAttribute('data-id')); });
   }
@@ -341,7 +348,7 @@
                                     { duration: arriving ? 1700 : 640, delay: arriving ? 760 + i * 110 : i * 45,
                                       iterations: arriving ? 2 : 1, easing: 'ease-in-out' }));
     });
-    var button = game ? $('wcResume') : $('wcStart'), breath = { duration: 1400, delay: arriving ? 600 : 120,
+    var button = game && !locked() ? $('wcResume') : $('wcStart'), breath = { duration: 1400, delay: arriving ? 600 : 120,
                                                                  iterations: arriving ? 3 : 2, easing: 'ease-in-out' };
     ambientAnims.push(button.animate([{ scale: '1' }, { scale: '1.05', offset: 0.45 }, { scale: '1' }], breath));
     try {
@@ -526,6 +533,7 @@
   // `cat`: the category of the new game (the tile chosen, or the one being played again).
   // `animate`: 32강 시작, 새로 시작, 처음부터 and 다시 하기 open the start gacha; 이어하기 never does.
   function start(cat, animate) {
+    if (locked()) return;                      // not before the launch, by any path
     cat = CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all';
     // 처음부터 keeps the bracket being left as the new game's first undo step, so 되돌리기 brings it
     // back. One is kept: its own restart step is dropped, and restarting again before a pick keeps
@@ -555,6 +563,7 @@
     renderMatch(true);
   }
   function resume() {
+    if (locked()) return;
     if (!game) { start(category, false); return; }
     show('match');
     renderMatch(true);
@@ -1259,6 +1268,7 @@
     show('intro');
     var asked = requested();
     if (asked) cleanAddress();
+    if (asked && locked()) asked = null;       // go=1 before the launch is just the locked start screen
     choose(asked || category, false);          // the first draw: its photos shuffle in
     renderIntro();
     if (asked) {                               // as if 32강 시작 had been pressed here
@@ -1299,6 +1309,7 @@
   // the middle of 아무거나 lands it first; 처음부터 waits for a pick's feedback to end.
   // In the news page's card 32강 시작 opens the game page with the chosen category, which starts it.
   function begin() {
+    if (locked()) return;
     stopSpin(true);
     if (embedded) { location.href = 'worldcup.html?cat=' + encodeURIComponent(category) + '&go=1'; return; }
     start(category, true);
@@ -1316,6 +1327,8 @@
   }
   document.addEventListener('babdoduk-lang', render);
   document.addEventListener('babdoduk-lang', function () { endSplash('quiet'); });
+  // The launch moment passing while the start screen is open: the locked pill gives way to the button.
+  document.addEventListener('babdoduk-wc-phase', function () { if (view === 'intro') { renderIntro(); ambient(true); } });
 
   // Skipping a splash. A tap anywhere (on the up event, so it is never a pick; the down event
   // keeps focus on the card); any key but a bare modifier, browser shortcuts still work. A key

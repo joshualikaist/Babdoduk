@@ -266,6 +266,8 @@ def content_errors(root: Path = ROOT) -> list[str]:
                 errors.append(f"events.json: {name} ends before it starts")
             if item.get("entry") and (item["entry"] != "worldcup" or item.get("link") != "worldcup.html"):
                 errors.append(f"events.json: {name} shows the entry {item['entry']!r}, which only worldcup.html has")
+            if "previewFrom" in item and (not item.get("entry") or str(item["previewFrom"]) > str(item.get("start"))):
+                errors.append(f"events.json: {name} has a previewFrom that is not on or before the start of an activity with an entry")
             link = str(item.get("link") or "")
             if not link.startswith("https://") and not (root / link).is_file():
                 errors.append(f"events.json: {name} links {link}, which is not a page of this site")
@@ -300,6 +302,8 @@ def worldcup_entry(data: dict | None = None) -> list[str]:
         '<div class="wc-intro-card">',
         f'  <h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">{size}강</span>, 뭐가 나올까?</h3>',
         '  <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>',
+        '  <p class="wc-ended" data-wc-show="ended" hidden><span aria-hidden="true">🏁</span> '
+        '<span data-i18n="wc.ended">이벤트 종료 · 그래도 계속 즐길 수 있어요</span></p>',
         '  <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>',
         '  <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>',
         '  <div class="wc-preview" id="wcPreview" hidden>',
@@ -308,6 +312,10 @@ def worldcup_entry(data: dict | None = None) -> list[str]:
         '    <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>',
         '  </div>',
         '  <div class="wc-intro-actions">',
+        # Before the launch (js/worldcup-gate.js): the start button gives way to this locked pill.
+        '    <p class="wc-locked" id="wcLocked" data-wc-show="soon" hidden><span class="wc-locked-pill">'
+        '<span aria-hidden="true">🔒</span> <span data-wc-fmt="wc.locked">곧 오픈</span></span> '
+        '<span class="wc-locked-count" data-wc-countdown></span></p>',
         '    <button type="button" class="wc-btn wc-btn--big" id="wcStart"><span class="wc-btn-emoji" aria-hidden="true">🎰</span>'
         f'<span id="wcStartLabel">{size}강 시작</span></button>',
         '    <button type="button" class="wc-btn wc-btn--big wc-btn--resume" id="wcResume" hidden><span class="wc-btn-emoji" '
@@ -325,12 +333,16 @@ def worldcup_chip() -> list[str]:
             '사진 위키미디어 공용(잘라서 줄임)</span></p>']
 
 
+# The launch gate's texts (js/worldcup-gate.js): the locked pill, the countdown, the dates. The home
+# page's promo carries these besides its own `home.wc` family.
+WORLDCUP_GATE_KEYS = ("wc.locked", "wc.dateShort", "wc.months", "wc.countdown.d", "wc.countdown.long",
+                      "wc.countdown.hours", "wc.countdown.minutes")
 # The translation keys the start screen uses (the event page carries these, not the whole `wc` family).
 WORLDCUP_ENTRY_KEYS = ("wc.intro.title", "wc.intro.tone", "wc.catLabel", "wc.preview", "wc.start", "wc.resume",
                        "wc.newStart", "wc.round.n", "wc.round.semi", "wc.round.final", "wc.catCount", "wc.catLanded",
                        "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
                        "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.cat.randomSub",
-                       "wc.photoChip")
+                       "wc.photoChip", "wc.ended", "wc.state.soon", *WORLDCUP_GATE_KEYS)
 # Every dish photo is images/worldcup/<id>.jpg; the event page's slim data lists no paths.
 WORLDCUP_PHOTO_PATH = "images/worldcup/{id}.jpg"
 
@@ -360,6 +372,31 @@ def worldcup_font_block() -> dict[str, list[str]]:
     return {"worldcup-font": worldcup_blocks()["worldcup-font"]}
 
 
+def home_font_block() -> dict[str, list[str]]:
+    """The display font for the home page's world cup promo: just the letters of HOME_JUA_KEYS."""
+    return {"worldcup-font": [
+        "<!-- Jua (OFL) for the world cup promo's lettering only: just the letters of HOME_JUA_KEYS in",
+        "     scripts/page_content.py. -->",
+        f'<link href="{worldcup_font_url(HOME_JUA_KEYS)}" rel="stylesheet" />',
+    ]}
+
+
+def worldcup_gate(data: dict | None = None) -> dict:
+    """The world cup's launch window, read from the activity of data/content/events.json that shows its
+    start screen: the first and last day (KST, both included) and, for lab only, `previewFrom`."""
+    data = load("events") if data is None else data
+    item = next(item for item in data["activities"] if item.get("entry") == "worldcup")
+    gate = {"start": item["start"], "end": item["end"]}
+    if "previewFrom" in item:
+        gate["previewFrom"] = item["previewFrom"]
+    return gate
+
+
+def worldcup_gate_blocks(data: dict | None = None) -> dict[str, list[str]]:
+    """js/worldcup-gate.js: the launch window as a script block (data/content/ is never deployed)."""
+    return {"worldcup-gate": ["window.BABDODUK_WC_WINDOW = " + json.dumps(worldcup_gate(data)) + ";"]}
+
+
 def catalog_names(root: Path = ROOT) -> dict[str, list[str]]:
     """[Korean, English] name of every catalog dish."""
     names = {}
@@ -386,24 +423,30 @@ def worldcup_entry_data_blocks(data: dict | None = None) -> dict[str, list[str]]
 # The world cup's display lettering is Jua (owner 2026-10-14: a playful entry). Google Fonts sends
 # only the letters asked for (`text=`), so the link carries every letter these labels use, in both
 # languages. Dish names are never set in Jua (dynamic text would mix fonts letter by letter).
-WORLDCUP_JUA_KEYS = ("wc.title", "wc.intro.title", "wc.start", "wc.resume", "wc.newStart", "wc.preview",
+WORLDCUP_JUA_KEYS = ("wc.locked", "wc.ended", "wc.months", "wc.dateShort", "wc.title", "wc.intro.title", "wc.start", "wc.resume", "wc.newStart", "wc.preview",
                      "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
                      "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.catGame",
                      "wc.round.n", "wc.round.semi", "wc.round.final", "wc.gacha.drawing", "wc.gacha.ask",
                      "wc.gacha.skip", "wc.splash.quarter", "wc.splash.semi", "wc.splash.final", "wc.vs")
 
 
-def worldcup_font_letters() -> str:
+# The home page's promo sets only its title, its state line and its button in Jua (months are the
+# English month names of the date it shows).
+HOME_JUA_KEYS = ("home.wc.title", "home.wc.soon", "home.wc.live", "home.wc.cta.soon", "home.wc.cta.live",
+                 "wc.months", "wc.dateShort")
+
+
+def worldcup_font_letters(keys: tuple[str, ...] | None = None) -> str:
     letters = set("0123456789 !")
     for lang in LANGS:
         strings = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
-        for key in WORLDCUP_JUA_KEYS:
+        for key in WORLDCUP_JUA_KEYS if keys is None else keys:
             letters |= set(re.sub(r"\{\w+\}", "", strings[key]))
     return "".join(sorted(letters))
 
 
-def worldcup_font_url() -> str:
-    return "https://fonts.googleapis.com/css2?family=Jua&display=swap&text=" + quote(worldcup_font_letters(), safe="")
+def worldcup_font_url(keys: tuple[str, ...] | None = None) -> str:
+    return "https://fonts.googleapis.com/css2?family=Jua&display=swap&text=" + quote(worldcup_font_letters(keys), safe="")
 
 
 # The world cup's categories (owner, 2026-10-14): each dish of the pool is in exactly one, taken from
