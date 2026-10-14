@@ -163,7 +163,7 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert html.count("<span data-event-cta>") == 3 and "event.openPageBtn" not in html
     # An activity held on a page of this site opens it in place; an original post opens a new tab.
     assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == 2
-    assert "'event.cta.page': '지금 해보기'" in html and "'event.cta.pagePast': 'Open the page'" in html
+    assert "'event.cta.page'" not in html and "'event.cta.pagePast': 'Open the page'" in html   # no 지금 해보기 button: the start screen is in the card
     assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
     assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
     assert html.count('<details class="event-more">') == 3 and "event-tab" not in html

@@ -89,16 +89,7 @@
           "en": "No sign-in needed."
         }
       },
-      "pictures": {
-        "images": [
-          "images/worldcup/kr-fried-chicken.jpg",
-          "images/worldcup/it-pz-pepperoni.jpg"
-        ],
-        "credit": {
-          "ko": "사진 Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), 위키미디어 공용",
-          "en": "Photos Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), Wikimedia Commons"
-        }
-      }
+      "entry": "worldcup"
     }
   ]
 }

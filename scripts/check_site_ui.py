@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
@@ -799,8 +799,8 @@ def event_bands(page):
 
     def cta(row, lang="ko"):
         """An original post is a record once past; an activity on a page of this site opens it."""
-        words = {"ko": (("지금 해보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
-                 "en": (("Play now", "Open the page"), ("View post", "Original post"))}[lang]
+        words = {"ko": (("페이지 보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
+                 "en": (("Open the page", "Open the page"), ("View post", "Original post"))}[lang]
         return words[0 if row["onSite"] else 1][row["band"] == "past"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
@@ -891,6 +891,177 @@ def event_bands(page):
     check(page.locator("#eventEmpty").is_hidden() and page.locator("#eventUpcoming").is_visible(),
           "empty state hidden when something is scheduled")
     check(page.locator("#eventList .event-num").count() == 0, "the record has no row numbers")
+    page.unroute("**/event.html")
+    return count
+
+
+def event_entry(page):
+    """The world cup's start screen in its activity's card on event.html (owner 2026-10-14: the live
+    event, not a teaser photo and a button): the headline, nine tiles with counts, the preview, the
+    start button and the photo chip; no teaser, no 지금 해보기; the start opens worldcup.html with the
+    category and go=1, and worldcup.html then plays that category at once, only for go=1. The dates
+    of the row are fixed here, so the checks do not depend on the wall clock."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"event.html entry: {detail}"
+        count += 1
+
+    source = (ROOT / "event.html").read_text(encoding="utf-8")
+    row = 'data-start="2026-10-13" data-end="2026-10-30"'
+    assert row in source
+
+    def serve(start, end):
+        body = source.replace(row, f'data-start="{start}" data-end="{end}"', 1)
+        page.route("**/event.html", lambda route: route.fulfill(content_type="text/html", body=body))
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    counts = {"all": len(cup["dishes"])}
+    for dish, cat in cup["categories"].items():
+        counts[cat] = counts.get(cat, 0) + 1
+    SNAP = """() => { const box = document.querySelector('.event-item .wc-embed'), r = e => e && e.getBoundingClientRect();
+      const visible = e => !!e && getComputedStyle(e).display !== 'none' && r(e).width > 0;
+      const link = document.querySelector('.event-link[data-event-page]');
+      return {embed: visible(box), intro: visible(document.querySelector('#wcIntro')),
+        title: document.querySelector('#wcIntroTitle').textContent, tone: document.querySelector('.wc-intro-tone').textContent,
+        tiles: [...document.querySelectorAll('.wc-tile')].map(t => ({cat: t.dataset.cat, name: t.querySelector('.wc-tile-name').textContent,
+          n: t.querySelector('.wc-tile-n').textContent, pressed: t.getAttribute('aria-pressed')})),
+        preview: [...document.querySelectorAll('#wcPreviewPhotos img')].map(i => ({src: i.getAttribute('src'), alt: i.alt, ok: i.naturalWidth > 0})),
+        floaters: [...document.querySelectorAll('.wc-floater')].filter(visible).length,
+        start: visible(document.querySelector('#wcStart')) && document.querySelector('#wcStart').textContent,
+        chip: visible(document.querySelector('.wc-chip')) && document.querySelector('.wc-chip').textContent.trim(),
+        link: visible(link) && link.textContent.trim(), teaser: document.querySelectorAll('.event-teaser').length,
+        scripts: [...document.scripts].map(s => s.getAttribute('src')).filter(Boolean),
+        slim: window.BABDODUK_WORLDCUP ? Object.keys(window.BABDODUK_WORLDCUP).sort() : null,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        text: document.body.innerText}; }"""
+
+    serve("2000-01-01", "2999-12-31")
+    for width, height in ((390, 844), (1280, 800)):
+        page.set_viewport_size({"width": width, "height": height})
+        page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-lang')")
+        page.wait_for_selector("#wcIntro:not([hidden])")
+        snap = page.evaluate(SNAP)
+        check(snap["embed"] and snap["intro"] and snap["title"] == "오늘의 32강, 뭐가 나올까?"
+              and snap["tone"] == "시험기간으로 지친 당신! 메뉴나 골라~", (width, "the headline and tone line", snap["title"]))
+        check([t["cat"] for t in snap["tiles"]] == ["all", "korean", "chinese", "japanese", "western", "world", "snack", "dessert", "random"]
+              and [t["n"] for t in snap["tiles"][:-1]] == [f"{counts[t['cat']]}개" for t in snap["tiles"][:-1]]
+              and snap["tiles"][-1]["name"] == "아무거나" and snap["tiles"][-1]["pressed"] is None
+              and [t["pressed"] for t in snap["tiles"][:-1]].count("true") == 1, (width, "nine tiles with counts, the random tile", snap["tiles"]))
+        check(len(snap["preview"]) == 5 and all(p["ok"] and p["alt"] and p["src"].startswith("images/worldcup/") for p in snap["preview"]),
+              (width, "five dishes of the next draw, loaded and named", snap["preview"]))
+        check(snap["floaters"] == 4 and snap["start"] == "🎰32강 시작", (width, "floating photos and the start button", snap["floaters"], snap["start"]))
+        check(snap["chip"] == "📷 사진 위키미디어 공용(잘라서 줄임)" and "판매 여부" not in snap["text"],
+              (width, "one photo chip and no price sentence", snap["chip"]))
+        check(snap["teaser"] == 0 and snap["link"] is False and "지금 해보기" not in snap["text"] and "VS" not in snap["text"],
+              (width, "no teaser photos, no vs badge and no 지금 해보기 button", snap["link"]))
+        check(snap["overflow"] <= 0, (width, "no horizontal scroll", snap["overflow"]))
+        check("js/worldcup.js" in snap["scripts"] and "js/worldcup-entry-data.js" in snap["scripts"]
+              and "photos" not in snap["slim"] and "basis" not in snap["slim"], (width, "the slim data, not the pool with its photo credits", snap["slim"]))
+        # Inside the card: after the date, title and state, before 자세히.
+        order = page.evaluate("""() => { const item = document.querySelector('.event-item .wc-embed').closest('.event-item');
+          return [...item.children].map(c => c.className.split(' ')[0] || c.tagName); }""")
+        check(order == ["event-date", "event-name", "event-state", "wc-embed", "event-link", "event-more"], (width, "inside the event card", order))
+        # Keyboard: a tile toggles with Space and the start button is reachable and focus is visible.
+        page.locator('.wc-tile[data-cat="korean"]').focus()
+        page.keyboard.press("Space")
+        check(page.locator('.wc-tile[data-cat="korean"]').get_attribute("aria-pressed") == "true"
+              and page.locator("#wcPreviewPhotos img").count() == 5, (width, "a tile is chosen by keyboard"))
+        page.locator("#wcStart").focus()
+        check(page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none", (width, "visible focus on the start button"))
+
+    # English, and the language switch re-words the tiles and the headline.
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.locator("#langToggle").click()
+    snap = page.evaluate(SNAP)
+    check(snap["title"] == "What’s in today’s round of 32?" and snap["start"] == "🎰Start the round of 32"
+          and snap["tiles"][1]["name"] == "Korean" and snap["tiles"][-1]["name"] == "Surprise me"
+          and snap["chip"] == "📷 Photos: Wikimedia Commons (cropped, resized)", ("English", snap["title"], snap["start"]))
+    check(snap["overflow"] <= 0, "English: no horizontal scroll")
+    page.locator("#langToggle").click()
+
+    # Start: worldcup.html?cat=<chosen>&go=1; a saved game is not touched until then.
+    page.locator('.wc-tile[data-cat="japanese"]').click()
+    with page.expect_navigation() as navigation:
+        page.locator("#wcStart").click()
+    sent = urlparse(navigation.value.url)
+    check(sent.path == "/worldcup.html" and parse_qs(sent.query) == {"cat": ["japanese"], "go": ["1"]},
+          ("the start opens the game page with the category and go=1", navigation.value.url))
+    page.wait_for_selector("#wcMatch:not([hidden])")
+    game = page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup')).game")
+    check(game["category"] == "japanese" and game["winners"] == [] and len(game["entrants"]) == 32
+          and all(cup["categories"][d] == "japanese" for d in game["entrants"]), ("worldcup.html started the chosen category", game["category"]))
+    check(page.url.endswith("/worldcup.html") and page.locator("#wcGame").inner_text() == "일식 32강",
+          ("the address is cleaned and the match is on screen", page.url, page.locator("#wcGame").inner_text()))
+    check(page.evaluate("document.activeElement === document.querySelector('.wc-card')"), "the first card has the focus")
+    page.reload(wait_until="networkidle")
+    check(page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup')).game.entrants") == game["entrants"]
+          and page.locator("#wcResume").is_visible() and page.locator("#wcMatch").is_hidden(),
+          "a reload keeps the game and offers 이어하기, it does not deal another")
+
+    # Never without go=1; an unknown category is ignored (the whole pool); a saved game is replaced by a fresh one.
+    def arrive(query, saved=None):
+        page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        if saved:
+            page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", saved)
+        page.goto("https://site-ui.invalid/worldcup.html" + query, wait_until="networkidle")
+        return page.evaluate("JSON.parse(localStorage.getItem('babdoduk-worldcup'))")
+
+    for query in ("?cat=korean", "?cat=korean&go=0", "?go=true", ""):
+        stored = arrive(query)
+        check(page.locator("#wcIntro").is_visible() and page.locator("#wcMatch").is_hidden()
+              and not (stored or {}).get("game"), ("no go=1, no auto start", query))
+    check(page.locator("#wcIntro").is_visible() and page.locator('.wc-tile[data-cat="all"]').get_attribute("aria-pressed") == "true",
+          "the start screen without go=1 (all chosen)")
+    chips = page.locator(".wc-chip")
+    check(chips.count() == 1 and " ".join(chips.inner_text().split()) == "📷 사진 위키미디어 공용(잘라서 줄임)" and "판매 여부" not in page.content()
+          and page.locator(".wc-scope").count() == 0, "worldcup.html ends with the one photo chip")
+    stored = arrive("?cat=korean&go=1")
+    check(stored["game"]["category"] == "korean" and page.locator("#wcGame").inner_text() == "한식 32강", "go=1 starts korean")
+    for query in ("?cat=nope&go=1", "?go=1", "?cat=%3Cb%3E&go=1"):
+        stored = arrive(query)
+        check(stored["game"]["category"] == "all" and page.locator("#wcGame").inner_text() == "전체 32강", ("an unknown category is ignored", query))
+    old = worldcup_saved(cup, 16, 7, "korean")
+    stored = arrive("?cat=western&go=1", old)
+    check(stored["game"]["category"] == "western" and len(stored["game"]["entrants"]) == 32 and stored["game"]["winners"] == []
+          and stored["game"]["entrants"] != old["game"]["entrants"], "a saved game is replaced when a start is asked for")
+    stored = arrive("?cat=western", old)
+    check(stored["game"]["entrants"] == old["game"]["entrants"] and page.locator("#wcResume").is_visible(),
+          "without go=1 a saved game stays and 이어하기 is offered")
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+
+    # With motion the arrival plays the start gacha, as if the button had been pressed on the page.
+    page.emulate_media(reduced_motion="no-preference")
+    page.goto("https://site-ui.invalid/worldcup.html?cat=chinese&go=1", wait_until="networkidle")
+    page.wait_for_function(SPLASH_OPEN)
+    seen = page.evaluate("""() => { const s = document.querySelector('#wcSplash');
+      return {round: s.dataset.round, line: s.querySelector('.wc-gacha-line').textContent}; }""")
+    check(seen == {"round": "start", "line": "중식 32강 뽑는 중…"}, ("the gacha plays for the asked category", seen))
+    page.screenshot(path=str(ROOT / ".local/site-ui-shots/worldcup-go-gacha.png")) if (ROOT / ".local/site-ui-shots").is_dir() else None
+    page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+    page.emulate_media(reduced_motion="reduce")
+    page.unroute("**/event.html")
+
+    # A past row has no start screen, loads no world cup script and links to the page instead.
+    serve("2000-01-01", "2000-01-02")
+    page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+    snap = page.evaluate(SNAP)
+    check(not snap["embed"] and snap["link"] == "페이지 보기 →" and "js/worldcup.js" not in snap["scripts"] and snap["slim"] is None
+          and "worldcup.html" == page.locator(".event-link[data-event-page]").get_attribute("href"),
+          ("past: only the link, nothing loaded", snap["link"], snap["scripts"]))
+    page.unroute("**/event.html")
+
+    # The script not arriving leaves the link, not an empty card.
+    serve("2000-01-01", "2999-12-31")
+    page.route("**/js/worldcup-entry-data.js", lambda route: route.fulfill(status=404, body=""))
+    page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
+    snap = page.evaluate(SNAP)
+    check(not snap["embed"] or not snap["intro"], "a failed load shows no half-built start screen")
+    check(snap["link"] == "페이지 보기 →", ("a failed load falls back to the link", snap["link"]))
+    page.unroute("**/js/worldcup-entry-data.js")
     page.unroute("**/event.html")
     return count
 
@@ -1843,6 +2014,7 @@ def run_checks(screenshots=False):
         report["checks"] += home_summary(page)
         report["checks"] += home_hero_shelf(page)
         report["checks"] += event_bands(page)
+        report["checks"] += event_entry(page)
         report["checks"] += worldcup_play(page)
         report["checks"] += worldcup_categories(page)
         report["checks"] += worldcup_splash(page)

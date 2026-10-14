@@ -11,7 +11,13 @@
    The start screen (owner 2026-10-14: "초입이 재미있어야"): dish photos float around a round card,
    "오늘의 32강, 뭐가 나올까?", big category tiles (and 🙈 아무거나, which spins through them), five
    dishes of the next draw, and a big start button that opens the start gacha (about 5 s, skippable,
-   never on 이어하기). Nothing of the motion with reduced motion. */
+   never on 이어하기). Nothing of the motion with reduced motion.
+   The same start screen runs in the news page's world cup card (event.html, owner 2026-10-14: the
+   live event, not a teaser): there is no match, result or splash in that page (`embedded`), the
+   data is js/worldcup-entry-data.js (names and categories, photos by path), nothing of a saved
+   game is read, and 32강 시작 opens worldcup.html?cat=<category>&go=1. worldcup.html
+   starts that category at once (the start gacha, as if the button had been pressed there) and
+   only for go=1 with a known category; the address is then cleaned so a reload never restarts. */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -20,6 +26,7 @@
   var TAGS = ['spicy', 'crispy', 'soupy', 'sweet', 'chewy', 'rich', 'umami', 'sour', 'salty', 'soft'];
   var cup = window.BABDODUK_WORLDCUP || {};
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var embedded = !document.getElementById('wcMatch');   // the news page's card: the start screen alone
   var dishes = {};
   var CATEGORIES = ['all', 'korean', 'chinese', 'japanese', 'western', 'world', 'snack', 'dessert'];
   var CATEGORY_NAMES = { all: '전체', korean: '한식', chinese: '중식', japanese: '일식', western: '양식',
@@ -72,7 +79,7 @@
   // A dish's photo (data/content/worldcup.json `photos`) and its credit link; a missing or broken
   // file hides both rather than showing an empty frame.
   function showPhoto(img, link, id) {
-    var photo = (cup.photos || {})[id];
+    var photo = photoOf(id);
     var caption = link.parentNode;
     img.hidden = caption.hidden = !photo;
     if (!photo) { img.removeAttribute('src'); return; }
@@ -81,9 +88,15 @@
     link.href = photo.source;
     link.textContent = fill(t('wc.photoCredit', '사진 {author} · {license}'), { author: photo.author, license: photo.license });
   }
+  // A dish's photo: its entry in the pool, or (the news page's data) the shared path pattern.
+  function photoOf(id) {
+    var photo = (cup.photos || {})[id];
+    if (!photo && cup.photoPath && dishes[id]) photo = { image: cup.photoPath.replace('{id}', id) };
+    return photo;
+  }
   function preload(ids) {
     ids.forEach(function (id) {
-      var photo = id && (cup.photos || {})[id];
+      var photo = id && photoOf(id);
       if (photo) { var img = new Image(); img.src = photo.image; }
     });
   }
@@ -142,7 +155,8 @@
   function show(which) {
     view = which;
     ['Loading', 'Intro', 'Match', 'Result'].forEach(function (part) {
-      $('wc' + part).hidden = part.toLowerCase() !== which;
+      var el = $('wc' + part);
+      if (el) el.hidden = part.toLowerCase() !== which;
     });
     renderHistory();
   }
@@ -216,7 +230,7 @@
     var list = $('wcPreviewPhotos');
     list.textContent = '';
     (pending ? pending.ids.slice(2, 7) : []).forEach(function (id, i) {
-      var photo = (cup.photos || {})[id];
+      var photo = photoOf(id);
       if (!photo) return;
       var item = node('li', 'wc-preview-item', list), img = node('img', 'wc-preview-photo', item);
       img.alt = name(id);
@@ -294,10 +308,10 @@
   }
   // Dish photos around the card: four on a phone, six wider, drawn from the whole pool per visit.
   function buildFloaters() {
-    var box = $('wcFloaters'), wide = window.matchMedia && window.matchMedia('(min-width: 700px)').matches;
+    var box = $('wcFloaters'), wide = !embedded && window.matchMedia && window.matchMedia('(min-width: 700px)').matches;
     box.textContent = '';
     shuffle(set).slice(0, wide ? 6 : 4).forEach(function (id) {
-      var photo = (cup.photos || {})[id], img = node('img', 'wc-floater', box);
+      var photo = photoOf(id), img = node('img', 'wc-floater', box);
       img.alt = '';
       img.width = 160;
       img.height = 160;
@@ -386,6 +400,7 @@
     }
   }
   function renderHistory() {
+    if (embedded) return;
     var list = $('wcHistoryList');
     list.textContent = '';
     winners.forEach(function (w) {
@@ -843,7 +858,7 @@
   // A capsule: a dish photo in a white ring under half a coloured shell (span > span > img + i).
   function capsule(parent, id, color, px) {
     var cap = node('span', 'wc-cap', parent), inner = node('span', 'wc-cap-y', cap), img = node('img', 'wc-cap-photo', inner);
-    var photo = (cup.photos || {})[id];
+    var photo = photoOf(id);
     img.alt = '';
     img.decoding = 'async';
     if (photo) img.src = photo.image;
@@ -969,7 +984,7 @@
         track(cap.firstChild, [[go, { transform: pose(0, 0, 0, 0.6) }, 'cubic-bezier(0.2, 0.6, 0.35, 1)'],
                                [go + 252, { transform: pose(0, Math.min(0, ty) - 60, sign * 200, 1.1) }, 'cubic-bezier(0.55, 0, 0.85, 0.35)'],
                                [go + 420, { transform: pose(0, ty, sign * 360) }]]);
-        var card = node('figure', 'wc-duelist', stage), photo = (cup.photos || {})[ids[side]], img = node('img', '', card);
+        var card = node('figure', 'wc-duelist', stage), photo = photoOf(ids[side]), img = node('img', '', card);
         img.alt = '';
         if (photo) img.src = photo.image;
         card.style.cssText = 'left:' + cx + 'px;top:' + cy + 'px;width:' + fw + 'px;height:' + fh + 'px;margin:' + -fh / 2 + 'px 0 0 ' + -fw / 2 + 'px';
@@ -1128,20 +1143,47 @@
       return response.json();
     });
   }
+  // The address that starts a game at once: worldcup.html?cat=<category>&go=1 (the news page's start).
+  // Only go=1 starts anything; an unknown or missing category is the whole pool. The address is
+  // cleaned afterwards, so a reload shows the start screen (or the game in progress) rather than
+  // dealing another game.
+  function requested() {
+    if (embedded || !window.URLSearchParams) return null;
+    var query = new URLSearchParams(location.search);
+    if (query.get('go') !== '1') return null;
+    var cat = query.get('cat');
+    return CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all';
+  }
+  function cleanAddress() {
+    try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* keep the address */ }
+  }
   function ready() {
     buildTiles();
-    restore();
+    if (!embedded) restore();                  // the news page's card starts fresh, whatever is saved
     buildFloaters();
     show('intro');
-    choose(category, false);                   // the first draw: its photos shuffle in
+    var asked = requested();
+    if (asked) cleanAddress();
+    choose(asked || category, false);          // the first draw: its photos shuffle in
     renderIntro();
+    if (asked) {                               // as if 32강 시작 had been pressed here
+      start(asked, true);
+      return;
+    }
     ambient(true);
+    if (embedded) {
+      $('wcIntro').parentNode.setAttribute('data-ready', '');
+    }
     // The display font, fetched now so the gacha and the first splash do not start in the fallback.
     if (!reduced && document.fonts && document.fonts.load) {
       document.fonts.load('1em Jua', t('wc.gacha.ask', '너의 최애는?') + t('wc.splash.quarter', '8강 진출!')).catch(function () {});
     }
   }
   function failed() {
+    if (embedded) {                            // the card falls back to its link
+      [].forEach.call(document.querySelectorAll('[data-wc-embed]'), function (box) { box.setAttribute('data-failed', ''); });
+      return;
+    }
     show('loading');
     $('wcLoadingText').hidden = true;
     $('wcError').hidden = false;
@@ -1155,15 +1197,23 @@
   });
   // Every start but 이어하기 opens the gacha (never pass the click event as `animate`). 32강 시작 in
   // the middle of 아무거나 lands it first; 처음부터 waits for a pick's feedback to end.
-  $('wcStart').addEventListener('click', function () { stopSpin(true); start(category, true); });
-  $('wcNew').addEventListener('click', function () { stopSpin(true); start(category, true); });
+  // In the news page's card 32강 시작 opens the game page with the chosen category, which starts it.
+  function begin() {
+    stopSpin(true);
+    if (embedded) { location.href = 'worldcup.html?cat=' + encodeURIComponent(category) + '&go=1'; return; }
+    start(category, true);
+  }
+  $('wcStart').addEventListener('click', begin);
+  $('wcNew').addEventListener('click', begin);
   $('wcResume').addEventListener('click', function () { stopSpin(false); resume(); });
-  $('wcUndo').addEventListener('click', undo);
-  $('wcRestart').addEventListener('click', function () { if (!busy) start(game ? game.category : category, true); });
-  $('wcAgain').addEventListener('click', function () { start(result ? result.category : category, true); });
-  $('wcShare').addEventListener('click', share);
-  $('wcSaveImage').addEventListener('click', saveImage);
-  $('wcHistoryClear').addEventListener('click', clearHistory);
+  if (!embedded) {
+    $('wcUndo').addEventListener('click', undo);
+    $('wcRestart').addEventListener('click', function () { if (!busy) start(game ? game.category : category, true); });
+    $('wcAgain').addEventListener('click', function () { start(result ? result.category : category, true); });
+    $('wcShare').addEventListener('click', share);
+    $('wcSaveImage').addEventListener('click', saveImage);
+    $('wcHistoryClear').addEventListener('click', clearHistory);
+  }
   document.addEventListener('babdoduk-lang', render);
   document.addEventListener('babdoduk-lang', function () { endSplash('quiet'); });
 
@@ -1171,9 +1221,11 @@
   // keeps focus on the card); any key but a bare modifier, browser shortcuts still work. A key
   // held from the pick or through the skip neither skips again nor picks: its repeats and its
   // release are swallowed.
-  splashEl.addEventListener('click', function () { endSplash('skip'); });
-  splashEl.addEventListener('mousedown', function (e) { e.preventDefault(); });
-  splashEl.addEventListener('wheel', function () { endSplash('quiet'); }, { passive: true });
+  if (splashEl) {
+    splashEl.addEventListener('click', function () { endSplash('skip'); });
+    splashEl.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    splashEl.addEventListener('wheel', function () { endSplash('quiet'); }, { passive: true });
+  }
   document.addEventListener('keydown', function (e) {
     if (!splash) {
       if (heldKey && e.key === heldKey && e.repeat) { e.preventDefault(); e.stopPropagation(); }
@@ -1206,12 +1258,27 @@
     else if (motion.addListener) motion.addListener(onMotion);
   }
 
-  getJson('data/foods/catalog.json').then(function (catalog) {
+  function bracket() {
+    set = (cup.dishes || []).filter(function (id) { return dishes[id]; });
+    size = cup.size || set.length;
+    if (size < 4 || (size & (size - 1)) || set.length < size) throw new Error('bracket');
+  }
+  // The names come from the food catalog; the news page's card carries them in its data instead.
+  var loaded = embedded ? new Promise(function (resolve) {
+    var rows = cup.dishes || {};                 // { id: [Korean name, English name, category] }
+    cup.dishes = Object.keys(rows);
+    cup.categories = {};
+    cup.dishes.forEach(function (id) {
+      dishes[id] = { id: id, nameKo: rows[id][0], nameEn: rows[id][1] };
+      cup.categories[id] = rows[id][2];
+    });
+    bracket();
+    resolve();
+  }) : getJson('data/foods/catalog.json').then(function (catalog) {
     return Promise.all((catalog.packs || []).map(function (pack) { return getJson(pack.src); })).then(function (packs) {
       packs.forEach(function (pack) { (pack.items || []).forEach(function (dish) { dishes[dish.id] = dish; }); });
-      set = (cup.dishes || []).filter(function (id) { return dishes[id]; });
-      size = cup.size || set.length;
-      if (size < 4 || (size & (size - 1)) || set.length < size) throw new Error('bracket');
+      bracket();
     });
-  }).then(ready, failed);
+  });
+  loaded.then(ready, failed);
 })();
