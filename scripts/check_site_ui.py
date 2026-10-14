@@ -1948,6 +1948,129 @@ def worldcup_gacha(page):
     return count
 
 
+# Counts the AudioContexts a page makes; the real one is kept (headless Chromium plays it to no device).
+WC_AUDIO = """(() => { const A = window.AudioContext; if (!A) return; let n = 0;
+  class Counted extends A { constructor(...args) { super(...args); n++; window.__audio = this; } }
+  window.AudioContext = Counted; window.webkitAudioContext = Counted; window.__audioContexts = () => n; })();"""
+SOUND_STATE = """() => { const dock = document.getElementById('wcSoundDock'), b = document.getElementById('wcSound');
+  const r = b.getBoundingClientRect(), top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  return {shown: !dock.hidden && r.width >= 44 && r.height >= 44, pressed: b.getAttribute('aria-pressed'),
+          label: b.getAttribute('aria-label'), text: b.querySelector('.wc-sound-label').textContent,
+          onTop: !!top && b.contains(top), contexts: window.__audioContexts ? window.__audioContexts() : -1,
+          state: window.__audio ? window.__audio.state : null, stored: localStorage.getItem('babdoduk-worldcup-sound'),
+          splash: document.querySelector('#wcSplash').matches(':popover-open')}; }"""
+
+
+def worldcup_sound(page):
+    """The music toggle (owner 2026-10-14): original music and effects synthesized in the page, off on a
+    first visit; the first press makes the one AudioContext; aria-pressed follows; the choice is kept
+    (but reduced motion starts off every visit); in the start gacha the toggle sits above the scene and
+    neither a tap nor Enter or Space on it skips the scene; the music sleeps with a hidden tab; before
+    the launch the toggle works and nothing of the game starts. No page error throughout."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html sound: {detail}"
+        count += 1
+
+    errors = []
+    on_error = lambda exc: errors.append(str(exc)[:200])
+    page.on("pageerror", on_error)
+    state = lambda: page.evaluate(SOUND_STATE)
+    stored = "JSON.parse(localStorage.getItem('babdoduk-worldcup')).game"
+    running = "window.__audio && window.__audio.state === 'running'"
+    try:
+        page.add_init_script(WC_AUDIO)
+        page.emulate_media(reduced_motion="no-preference")
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup'); localStorage.removeItem('babdoduk-worldcup-sound')")
+        page.reload(wait_until="networkidle")
+        s = state()
+        check(s["shown"] and s["pressed"] == "false" and s["label"] == "배경음악 켜기/끄기" and s["text"] == "배경음악"
+              and s["contexts"] == 0 and s["stored"] is None, ("a first visit: the toggle is there, off, and makes no audio", s))
+        page.locator('.wc-tile[data-cat="korean"]').click()
+        check(state()["contexts"] == 0, "a tile while sound is off makes no AudioContext")
+        page.locator("#wcSound").click()
+        page.wait_for_function(running)
+        s = state()
+        check(s["pressed"] == "true" and s["contexts"] == 1 and s["stored"] == "1", ("the press turns it on: one AudioContext", s))
+        # In the start gacha the toggle is above the scene; neither a tap nor a key on it skips the scene.
+        page.locator("#wcStart").click()
+        page.wait_for_function(SPLASH_OPEN)
+        page.evaluate("document.getAnimations().forEach(a => a.pause())")   # hold the scene still while it is pressed
+        check(state()["onTop"], "the toggle sits above the gacha")
+        page.locator("#wcSound").click()
+        s = state()
+        check(s["splash"] and s["pressed"] == "false" and s["stored"] == "0", ("a tap on it in the gacha turns it off, no skip", s))
+        page.locator("#wcSound").click()
+        page.keyboard.press("Enter")
+        s = state()
+        check(s["splash"] and s["pressed"] == "false" and s["contexts"] == 1, ("Enter on it toggles too, no skip", s))
+        page.keyboard.press(" ")
+        s = state()
+        check(s["splash"] and s["pressed"] == "true" and s["contexts"] == 1, ("and Space, no skip, still one AudioContext", s))
+        page.keyboard.press("Escape")
+        page.wait_for_function("!" + SPLASH_OPEN)
+        check(page.evaluate(stored)["winners"] == [] and state()["shown"], "the scene skips as before, without a pick; the toggle stays")
+        page.locator(".wc-card").first.focus()
+        page.keyboard.press("Enter")
+        page.wait_for_function("document.getElementById('wcCount').textContent === '2 / 16'")
+        check(state()["contexts"] == 1, "a pick plays its effect on the same AudioContext")
+        # A hidden tab: the music sleeps, and wakes when the tab is back.
+        page.evaluate("Object.defineProperty(document, 'hidden', {configurable: true, get: () => true});"
+                      "document.dispatchEvent(new Event('visibilitychange'))")
+        page.wait_for_function("window.__audio.state === 'suspended'")
+        page.evaluate("delete document.hidden; document.dispatchEvent(new Event('visibilitychange'))")
+        page.wait_for_function(running)
+        check(state()["contexts"] == 1, "a hidden tab suspends it and its return resumes it")
+        # The choice is kept: the next visit shows it on and starts at the first press anywhere.
+        page.reload(wait_until="networkidle")
+        s = state()
+        check(s["pressed"] == "true" and s["contexts"] == 0, ("remembered on, nothing made before a press", s))
+        page.locator(".wc-intro-title").click()
+        page.wait_for_function(running)
+        check(state()["contexts"] == 1, "the first press anywhere starts the remembered music")
+        page.locator("#wcSound").click()
+        page.wait_for_function("window.__audio.state === 'suspended'")
+        check(state()["pressed"] == "false", "turned off, the music fades and the context sleeps")
+        page.reload(wait_until="networkidle")
+        s = state()
+        check(s["pressed"] == "false" and s["stored"] == "0", ("turned off, it stays off", s))
+        # Reduced motion: available, but off on every visit.
+        page.evaluate("localStorage.setItem('babdoduk-worldcup-sound', '1')")
+        page.emulate_media(reduced_motion="reduce")
+        page.reload(wait_until="networkidle")
+        s = state()
+        check(s["shown"] and s["pressed"] == "false" and s["contexts"] == 0, ("reduced motion: there, but off", s))
+        # English.
+        page.evaluate("localStorage.setItem('babdoduk-lang', 'en')")
+        page.reload(wait_until="networkidle")
+        s = state()
+        check(s["label"] == "Turn music on/off" and s["text"] == "Music", ("the toggle in English", s))
+        page.evaluate("localStorage.setItem('babdoduk-lang', 'ko')")
+        # Before the launch: the toggle works, and nothing of the game starts.
+        page.clock.set_fixed_time(WC_SOON)
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup'); localStorage.removeItem('babdoduk-worldcup-sound')")
+        page.reload(wait_until="networkidle")
+        page.locator("#wcSound").click()
+        page.wait_for_function(running)
+        s = state()
+        check(s["pressed"] == "true" and s["contexts"] == 1 and page.evaluate("document.documentElement.dataset.wcPhase") == "soon"
+              and page.locator("#wcLocked").is_visible() and page.locator("#wcMatch").is_hidden()
+              and not page.evaluate("localStorage.getItem('babdoduk-worldcup')") and not s["splash"],
+              ("before the launch the toggle plays music and nothing of the game", s))
+        check(not errors, ("no page error", errors[:3]))
+    finally:
+        page.remove_listener("pageerror", on_error)
+        page.clock.set_fixed_time(WC_RUNNING)
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup'); localStorage.removeItem('babdoduk-worldcup-sound');"
+                      "localStorage.setItem('babdoduk-lang', 'ko')")
+        page.emulate_media(reduced_motion="reduce")
+    return count
+
+
 def worldcup_stats(page):
     """Stage 2 (lab): with a public config the world cup reads everyone's counts, shows the last
     pick's win rates and the ranking, records a finished game once as a valid bracket, and still
@@ -2464,6 +2587,7 @@ def run_checks(screenshots=False):
         report["checks"] += worldcup_categories(cup_page)
         report["checks"] += worldcup_splash(cup_page)
         report["checks"] += worldcup_gacha(cup_page)
+        report["checks"] += worldcup_sound(cup_page)
         report["checks"] += worldcup_stats(cup_page)
         report["checks"] += worldcup_gate(cup_page)
         report["checks"] += home_wc_promo(cup_page)

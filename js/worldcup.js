@@ -26,7 +26,9 @@
    Before the launch nothing of the draw is revealed (owner 2026-10-14: "최대한 공개 안하게끔"): the
    tiles and the preview sit in a mystery box that is blurred (css/worldcup-entry.css), inert and hidden
    from assistive tech, the floating and preview photos are blurred placeholders with no `src` (no
-   photo is requested), and no tile is chosen. At the launch moment the real photos load. */
+   photo is requested), and no tile is chosen. At the launch moment the real photos load.
+   Sound (owner 2026-10-14): an original music loop and effects, synthesized in this file (no audio
+   file), behind a 🔇/🔊 toggle that is off until pressed (see "---- sound"). worldcup.html only. */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -209,7 +211,8 @@
       node('span', 'wc-tile-name', tile);
       node('span', 'wc-tile-n', tile);
       tile.addEventListener('click', function () {
-        if (cat === 'random') spinTiles(); else choose(cat, true);
+        if (cat === 'random') spinTiles();
+        else { sound.fx('pop'); choose(cat, true); }
       });
     });
   }
@@ -283,6 +286,7 @@
       if (lit) lit.classList.remove('is-spin');
       lit = box.querySelector('[data-cat="' + CATEGORIES[(from + i) % count] + '"]');
       lit.classList.add('is-spin');
+      sound.fx('tick');
       spin.timer = i >= steps ? setTimeout(function () { stopSpin(true); }, 240)
         : setTimeout(step, 45 + 230 * Math.pow(i / steps, 2.4));
     })();
@@ -298,6 +302,7 @@
     if (land) landSpin(s.target);
   }
   function landSpin(cat) {
+    sound.fx('ding');
     choose(cat, true);
     announce(fill(t('wc.catLanded', '{cat} 당첨!'), { cat: catName(cat) }));
   }
@@ -593,11 +598,13 @@
     show('result');
     renderResult(true);
     celebrate();
+    sound.fx('fanfare', 150);
   }
   function pick(side) {
     if (splash) { endSplash('skip'); return; }          // a screen reader's click on a card under the splash
     if (busy || view !== 'match') return;
     var ids = pair(), chosen = ids[side];
+    sound.fx('blip', 0, game.winners.length / Math.max(1, game.entrants.length / 2 - 1));   // higher through the round
     game.stack.push({ entrants: game.entrants.slice(), winners: game.winners.slice(), log: (game.log || []).length });
     game.winners.push(chosen);
     if (game.log) game.log.push([chosen, ids[1 - side]]);
@@ -841,6 +848,7 @@
       splashEl.textContent = '';
       splashEl.setAttribute('data-round', String(round));
       splashEl.showPopover();
+      sound.raise();
       var w = splashEl.clientWidth, h = splashEl.clientHeight;
       var bg = node('i', 'wc-splash-bg', splashEl), stage = node('div', 'wc-splash-stage', splashEl);
       var fade = round === 2 ? [1640, 1960] : [650, 800];
@@ -858,6 +866,9 @@
       var clock = splashEl.animate(null, { duration: spec.ms });
       clock.onfinish = function () { if (splash && splash.run === run) endSplash('end'); };
       splash.anims.push(clock);
+      // Its sound, on the same clock: the title whooshes in and lands; the finalists rush and crash.
+      sound.scene(clock, round === 2 ? [['whoosh', 0], ['hit', 170], ['whoosh', 760, true], ['boom', 1100]]
+        : [['whoosh', 0], ['hit', 170]]);
       splash.safety = setTimeout(function () { if (splash && splash.run === run) endSplash('end'); }, spec.ms + 1500);
     } catch (e) {
       endSplash('quiet');
@@ -871,6 +882,7 @@
     if (!s) return;
     splash = null;
     clearTimeout(s.safety);
+    sound.endScene(reason);                           // a skip silences what is left of its sound
     cards.forEach(function (card) { card.style.opacity = card.style.transform = card.style.transition = ''; });
     busy = false;
     if (reason !== 'quiet' && view === 'match') cards[0].focus({ preventScroll: true });
@@ -954,6 +966,353 @@
     box.classList.add('is-celebrating');
   }
 
+  // ---- sound -------------------------------------------------------------------------------------
+  // Owner 2026-10-14 ("배경음악 ... 킬 수 있도록"): an upbeat loop and a few effects, all original and
+  // synthesized here with the Web Audio API: no audio file, no borrowed melody. soundKit() is the
+  // instrument (it touches nothing of the page, so it can also render offline); `sound` plays it.
+  //
+  // The loop: F major, 124 BPM, 16 bars (31 s). A (bars 1-8, F Dm Bb C twice): four-on-the-floor,
+  // offbeat hats, a syncopated bass, soft pads, bubbly arpeggio and the lead's hook, a snare fill
+  // into B. B (bars 9-16, Bb C Am Dm Bb C F C): the chorus an octave up, with claps, open hats, an
+  // octave-bouncing bass and offbeat chord stabs. Notes are scheduled a little ahead on the audio
+  // clock from a short timer (a look-ahead clock), and everything goes through a compressor and a
+  // limiter, so the mix stays modest and never clips.
+  function soundKit(ctx) {
+    var STEP = 60 / 124 / 4;                        // a 16th note
+    var CHORDS = 'F Dm Bb C F Dm Bb C Bb C Am Dm Bb C F C'.split(' ');
+    var VOICE = { F: [60, 65, 69], Dm: [62, 65, 69], Bb: [62, 65, 70], C: [60, 64, 67], Am: [60, 64, 69] };
+    var ROOT = { F: 41, Dm: 38, Bb: 34, C: 36, Am: 33 };
+    // The lead, one character per 16th: '1' to 'f' climb the F major scale from F4 to F6, '-' holds
+    // the note before, '.' rests. A's hook, then B's chorus.
+    var LEAD = 'a.a.c.a-..8.9.a.' + '9-8-6-..5.6.8.9.' + '8.8.b.8-..6.8.9.' + '7-5-7-9---..c.a.' +
+               'a.a.c.a-..8.9.a.' + 'c-a-9-8-..9.a.d.' + 'd-c-a-8-..a.8.6.' + '7-9-c---9-7-5---' +
+               'd.d.d.c-d-..b.c.' + 'c.c.c.a-9-..7.9.' + 'a.a.a.9-a-..c.e.' + 'd---c-a-d-..a.c.' +
+               'd.d.d.c-d-..b.c.' + 'c.c.c.a-9-..c.d.' + 'f.e.c.a-c-..a.c.' + '9-7-5-7-9-------';
+    var DEGREE = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23, 24];
+    var KICK = ['x...x...x...x...', 'x...x...x...x.x.'], HAT = ['..c...c...c...c.', 'c.o.c.o.c.o.c.oc'];
+    var BASS = ['r..r..r.r..r..r.', 'r.o.r.o.r.o.r.o.'], STAB = '..x...x...x...x.';
+    function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+    var noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = noise.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+
+    var comp = ctx.createDynamicsCompressor(), limit = ctx.createDynamicsCompressor(), master = ctx.createGain();
+    comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.2;
+    limit.threshold.value = -6; limit.knee.value = 0; limit.ratio.value = 20; limit.attack.value = 0.001; limit.release.value = 0.1;
+    master.gain.value = 0.6;
+    comp.connect(limit); limit.connect(master); master.connect(ctx.destination);
+    var music = ctx.createGain();
+    music.gain.value = 0;
+    music.connect(comp);
+    function filter(type, f, q, dest) {
+      var n = ctx.createBiquadFilter();
+      n.type = type; n.frequency.value = f;
+      if (q) n.Q.value = q;
+      n.connect(dest);
+      return n;
+    }
+    // One long-lived filter per instrument; a note only adds an oscillator and a gain.
+    var lead = ctx.createGain(), echo = ctx.createDelay(1), feedback = ctx.createGain(), wet = ctx.createGain();
+    echo.delayTime.value = STEP * 3; feedback.gain.value = 0.25; wet.gain.value = 0.18;   // a dotted-8th echo
+    lead.connect(music); lead.connect(echo); echo.connect(feedback); feedback.connect(echo); echo.connect(wet); wet.connect(music);
+    var HATS = filter('highpass', 7500, 0, music), SNARES = filter('bandpass', 1800, 0.7, music), LOW = filter('lowpass', 700, 1, music),
+        PADS = filter('lowpass', 1400, 0.7, music), STABS = filter('lowpass', 2400, 0, music), BRIGHT = filter('lowpass', 3000, 0, lead);
+
+    // An envelope: up to `peak` in `attack`, then down to silence by t + len (never a ramp to 0).
+    function env(g, t, peak, len, attack) {
+      attack = attack || 0.005;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(len, attack + 0.01));
+    }
+    function tone(type, f, t, len, peak, dest, attack) {
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f, t);
+      o.connect(g); g.connect(dest);
+      env(g, t, peak, len, attack);
+      o.start(t); o.stop(t + len + 0.05);           // a stopped, unreferenced node is collected
+      return o;
+    }
+    function hiss(t, len, peak, dest, attack) {
+      var s = ctx.createBufferSource(), g = ctx.createGain();
+      s.buffer = noise;
+      s.loop = true;
+      s.connect(g); g.connect(dest);
+      env(g, t, peak, len, attack || 0.002);
+      s.start(t, Math.random() * 0.4); s.stop(t + len + 0.05);
+    }
+    function pad(f, t, len, peak) {                 // a held chord tone: in, held, out (linear, so it can reach 0)
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f, t);
+      o.connect(g); g.connect(PADS);
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(peak, t + 0.15);
+      g.gain.setValueAtTime(peak, t + len - 0.25);
+      g.gain.linearRampToValueAtTime(0, t + len);
+      o.start(t); o.stop(t + len + 0.05);
+    }
+    function kick(t, peak, dest) {
+      tone('sine', 150, t, 0.3, peak, dest).frequency.exponentialRampToValueAtTime(46, t + 0.1);
+    }
+    function snare(t, peak) {
+      hiss(t, 0.16, peak, SNARES);
+      tone('triangle', 185, t, 0.08, peak * 0.5, music);
+    }
+
+    // The effects, each (time, destination, argument).
+    var sfx = {
+      pop: function (t, o) {                         // a tile: a jelly bloop that bends up
+        tone('sine', 380, t, 0.12, 0.35, o).frequency.exponentialRampToValueAtTime(1100, t + 0.06);
+        tone('triangle', 760, t, 0.05, 0.06, o);
+      },
+      blip: function (t, o, up) {                    // a pick: a two-step blip, higher through the round
+        var m = [72, 74, 77, 79, 81, 84, 86, 89][Math.round(Math.max(0, Math.min(1, up || 0)) * 7)];
+        tone('square', hz(m), t, 0.07, 0.1, filter('lowpass', 3000, 0, o));
+        tone('triangle', hz(m + 12), t + 0.045, 0.14, 0.24, o);
+      },
+      tick: function (t, o) {                        // 아무거나: one step of the light
+        tone('triangle', 1500, t, 0.03, 0.16, o);
+        hiss(t, 0.012, 0.08, filter('highpass', 4000, 0, o));
+      },
+      ding: function (t, o) {                        // 아무거나 lands
+        tone('triangle', hz(84), t, 0.25, 0.16, o);
+        tone('triangle', hz(89), t + 0.09, 0.5, 0.18, o);
+        tone('sine', hz(101), t + 0.09, 0.4, 0.04, o);
+      },
+      whoosh: function (t, o, long) {               // a round comes in: band-passed noise sweeping up
+        var len = long ? 0.36 : 0.26, f = filter('bandpass', 300, 1.2, o), g = ctx.createGain(), s = ctx.createBufferSource();
+        f.frequency.setValueAtTime(300, t);
+        f.frequency.exponentialRampToValueAtTime(5000, t + len);
+        s.buffer = noise; s.loop = true; s.connect(g); g.connect(f);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(long ? 0.5 : 0.4, t + len * 0.85);
+        g.gain.linearRampToValueAtTime(0, t + len + 0.06);
+        s.start(t, Math.random() * 0.3); s.stop(t + len + 0.1);
+      },
+      hit: function (t, o, soft) {                  // the round title lands: a thump, a burst, a chord stab
+        var k = soft ? 0.5 : 1, stab = filter('lowpass', 2500, 0, o);
+        kick(t, 0.75 * k, o);
+        hiss(t, 0.25, 0.3 * k, filter('lowpass', 1800, 0, o));
+        [65, 69, 72, 77].forEach(function (m) { tone('square', hz(m), t, 0.3, 0.045 * k, stab); });
+      },
+      boom: function (t, o) {                        // 결승: a deep boom, a sweep down, then a shimmer
+        tone('sine', 100, t, 1.2, 0.9, o).frequency.exponentialRampToValueAtTime(28, t + 0.8);
+        tone('sine', 55, t, 1.0, 0.35, o);
+        var sweep = filter('lowpass', 3000, 0, o);
+        sweep.frequency.setValueAtTime(3000, t);
+        sweep.frequency.exponentialRampToValueAtTime(120, t + 0.7);
+        hiss(t, 0.9, 0.5, sweep);
+        hiss(t + 0.02, 1.6, 0.07, filter('highpass', 6000, 0, o));
+        [1397, 1760, 2093, 2794, 3520, 4186].forEach(function (f, n) {
+          tone('sine', f * (1 + (n % 2 ? 0.003 : -0.003)), t + 0.05 + n * 0.035, 1.4, 0.03, o, 0.02);
+        });
+      },
+      crank: function (t, o) {                       // the gacha's crank: a ratchet of three clicks
+        var hp = filter('highpass', 3000, 0, o);
+        [0, 0.06, 0.12].forEach(function (dt) { hiss(t + dt, 0.015, 0.25, hp); tone('square', 900, t + dt, 0.012, 0.04, o); });
+      },
+      capsule: function (t, o, n) {                  // a capsule pops open, a step higher each time
+        var m = [72, 74, 77, 79, 81, 84, 86, 89][Math.min(n || 0, 7)];
+        tone('sine', hz(m) * 0.6, t, 0.1, 0.3, o).frequency.exponentialRampToValueAtTime(hz(m) * 1.6, t + 0.05);
+        tone('triangle', hz(m + 12), t + 0.03, 0.25, 0.07, o);
+      },
+      tada: function (t, o) {                        // 너의 최애는?: ta (C), da (F)
+        var lp = filter('lowpass', 3200, 0, o);
+        [72, 76, 79].forEach(function (m) { tone('square', hz(m), t, 0.09, 0.04, lp); tone('triangle', hz(m), t, 0.09, 0.07, o); });
+        [77, 81, 84, 89].forEach(function (m) { tone('square', hz(m), t + 0.14, 0.7, 0.035, lp, 0.01); tone('triangle', hz(m), t + 0.14, 0.7, 0.06, o, 0.01); });
+        tone('sine', hz(101), t + 0.16, 0.4, 0.03, o);
+      },
+      fanfare: function (t, o) {                     // the winner: an original brassy call over an F chord
+        var brass = filter('lowpass', 2200, 0, o);
+        [[0, 72, 0.12], [0.12, 77, 0.12], [0.24, 81, 0.12], [0.36, 84, 0.3], [0.7, 81, 0.14], [0.86, 84, 0.14], [1.0, 89, 1.0]]
+          .forEach(function (n) { tone('sawtooth', hz(n[1]), t + n[0], n[2], 0.14, brass, 0.02); tone('triangle', hz(n[1] - 12), t + n[0], n[2], 0.09, o, 0.02); });
+        [65, 69, 72].forEach(function (m) { tone('sawtooth', hz(m), t + 1.0, 1.0, 0.05, brass, 0.03); });
+        hiss(t + 1.0, 1.2, 0.07, filter('highpass', 6000, 0, o), 0.05);
+      }
+    };
+
+    return {
+      STEP: STEP, LENGTH: LEAD.length, music: music, sfx: sfx,
+      bus: function () { var g = ctx.createGain(); g.connect(comp); return g; },
+      step: function (pos, t) {                      // schedule one 16th of the loop at time t
+        var s = pos % 16, bar = pos >> 4, b = bar < 8 ? 0 : 1, chord = CHORDS[bar], voice = VOICE[chord], c = LEAD[pos], n = 1;
+        if (KICK[b][s] === 'x') kick(t, 0.85, music);
+        if (s === 4 || s === 12) {
+          snare(t, b ? 0.42 : 0.32);
+          if (b) hiss(t + 0.012, 0.12, 0.2, SNARES);  // B: a clap on the snare
+        }
+        if ((bar === 7 && s >= 13) || (bar === 15 && s >= 14)) snare(t, 0.12 + (s - 12) * 0.06);   // fills into B and back to A
+        if (bar === 7 && s === 8) {                  // a riser into B
+          var rise = filter('bandpass', 500, 1, music);
+          rise.frequency.setValueAtTime(500, t);
+          rise.frequency.exponentialRampToValueAtTime(6000, t + STEP * 8);
+          hiss(t, STEP * 8, 0.12, rise, STEP * 7);
+        }
+        if (bar === 8 && s === 0) hiss(t, 1.4, 0.1, HATS);   // a crash on the chorus
+        if (HAT[b][s] !== '.') hiss(t, HAT[b][s] === 'o' ? 0.16 : 0.035, HAT[b][s] === 'o' ? 0.09 : 0.12, HATS);
+        if (BASS[b][s] !== '.') tone('sawtooth', hz(ROOT[chord] + (BASS[b][s] === 'o' ? 12 : 0)), t, STEP * (b ? 1.4 : 1.8), 0.24, LOW);
+        if (s === 0) voice.forEach(function (m) { pad(hz(m), t, STEP * 16, b ? 0.022 : 0.03); });
+        if (b && STAB[s] === 'x') voice.forEach(function (m) { tone('square', hz(m + 12), t, 0.1, 0.022, STABS); });
+        if (!b && s % 2 === 0) {                     // A: a bubbly arpeggio of the chord, on the 8ths
+          var f = hz(voice[[0, 1, 2, 1][(s / 2) % 4]] + 12);
+          tone('sine', f * 0.5, t, 0.12, 0.06, music).frequency.exponentialRampToValueAtTime(f, t + 0.03);
+        }
+        if (c !== '-' && c !== '.') {
+          while (LEAD[(pos + n) % LEAD.length] === '-') n++;
+          var note = hz(65 + DEGREE['123456789abcdef'.indexOf(c)]), len = STEP * n * 0.92;
+          tone('triangle', note, t, len, 0.13, lead, 0.01);
+          tone('square', note * 1.003, t, len * 0.8, 0.035, BRIGHT, 0.01);
+          if (b) tone('sine', note * 2, t, len * 0.6, 0.025, lead, 0.01);
+        }
+      }
+    };
+  }
+  // The player: nothing exists until sound is turned on by a press (browsers let audio start only
+  // from a user gesture), then one AudioContext for the whole visit. Off by default; the choice is
+  // kept in `babdoduk-worldcup-sound`, except with reduced motion, where every visit starts off.
+  // A remembered "on" starts at the first press anywhere. Effects play only while it is on; the
+  // music ducks under a round's scene and under the big hits, and sleeps while the tab is hidden.
+  var sound = (function () {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    var KEY = 'babdoduk-worldcup-sound', AHEAD = 0.12, WAKE = 25, LEVEL = 0.5;
+    var DUCK = { hit: [0.35, 0.3], boom: [0.15, 0.9], tada: [0.5, 0.6], fanfare: [0.3, 1.8] };   // [music level, seconds]
+    var dock = $('wcSoundDock'), button = $('wcSound');
+    var supported = !!(AC && dock && button);
+    var ctx = null, kit = null, fxBus = null, timer = 0, pos = 0, next = 0, level = LEVEL, wanted = false;
+    var scene = null;          // the splash on screen: { clock, plan: [[effect, ms on its clock, argument]] }
+    if (supported && !reduced) {
+      try { wanted = localStorage.getItem(KEY) === '1'; } catch (e) { /* no storage: off */ }
+    }
+    function live() { return wanted && ctx && ctx.state !== 'closed' && !document.hidden; }
+    function build() {
+      ctx = new AC();
+      kit = soundKit(ctx);
+      fxBus = kit.bus();
+    }
+    function loop() {
+      timer = 0;
+      if (!ctx || ctx.state !== 'running' || !wanted) return;
+      var now = ctx.currentTime;
+      if (next < now) next = now + 0.05;             // after a stall, carry on rather than burst
+      while (next < now + AHEAD) {
+        kit.step(pos, next);
+        pos = (pos + 1) % kit.LENGTH;
+        next += kit.STEP;
+      }
+      timer = setTimeout(loop, WAKE);
+    }
+    function play() {                                // fade in from the start of the bar it stopped in
+      if (timer) return;
+      kit.music.gain.cancelScheduledValues(ctx.currentTime);
+      kit.music.gain.setTargetAtTime(level, ctx.currentTime, 0.25);
+      pos -= pos % 16;
+      next = ctx.currentTime + 0.06;
+      loop();
+    }
+    function wake() {                                // inside a press, or when the tab is back
+      if (!wanted || document.hidden) return;
+      if (!ctx) build();
+      if (ctx.state === 'running') { play(); return; }
+      ctx.resume().then(function () { if (wanted && !document.hidden) play(); }, function () { /* the next press retries */ });
+    }
+    function hush() {                                // silence effects already scheduled (a skip, sound off)
+      if (!ctx) return;
+      var old = fxBus;
+      old.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
+      setTimeout(function () { old.disconnect(); }, 300);
+      fxBus = kit.bus();
+    }
+    function stop() {
+      clearTimeout(timer);
+      timer = 0;
+      if (!ctx) return;
+      hush();
+      kit.music.gain.cancelScheduledValues(ctx.currentTime);
+      kit.music.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+      var c = ctx;
+      setTimeout(function () { if (!wanted && c.state === 'running') c.suspend(); }, 500);
+    }
+    function sync() { if (button) button.setAttribute('aria-pressed', String(wanted)); }
+    function fx(name, ms, arg) {                     // an effect now, or `ms` from now, ahead by the output latency
+      if (!live()) return;
+      var now = ctx.currentTime, t = Math.max(now, now + (ms || 0) / 1000 - (ctx.outputLatency || ctx.baseLatency || 0));
+      kit.sfx[name](t, fxBus, arg);
+      var dip = DUCK[name];
+      if (dip) {
+        kit.music.gain.setTargetAtTime(level * dip[0], t, 0.015);
+        kit.music.gain.setTargetAtTime(level, t + dip[1], 0.25);
+      }
+    }
+    function duck(on) {
+      level = on ? LEVEL * 0.55 : LEVEL;
+      if (live() && timer) kit.music.gain.setTargetAtTime(level, ctx.currentTime, 0.12);
+    }
+    function cue() {                                 // the scene's effects still to come, timed by its clock
+      if (!scene || !live()) return;
+      var at = scene.clock.currentTime || 0;
+      scene.plan.forEach(function (e) {
+        if (e.done || e[1] < at - 30) return;
+        e.done = true;
+        fx(e[0], e[1] - at, e[2]);
+      });
+    }
+    if (supported) {
+      button.addEventListener('click', function () {
+        wanted = !wanted;
+        try { localStorage.setItem(KEY, wanted ? '1' : '0'); } catch (e) { /* kept for this visit only */ }
+        if (wanted) wake(); else stop();
+        sync();
+        cue();                                       // turned on mid-scene: the rest of it
+      });
+      // A remembered "on" starts at the first press; a suspended context retries on the next one.
+      ['pointerdown', 'pointerup', 'keydown', 'click'].forEach(function (type) {
+        document.addEventListener(type, function () { if (wanted && (!ctx || ctx.state !== 'running' || !timer)) wake(); }, true);
+      });
+      document.addEventListener('visibilitychange', function () {
+        if (!ctx) return;
+        if (document.hidden) {
+          clearTimeout(timer);
+          timer = 0;
+          if (ctx.state === 'running') ctx.suspend();
+        } else wake();
+      });
+    }
+    return {
+      fx: fx,
+      // The toggle in the corner, a manual popover in the top layer: shown on worldcup.html only.
+      show: function () {
+        if (!supported) return;
+        dock.hidden = false;
+        sync();
+        this.raise();
+      },
+      // A splash opens above everything: the toggle is shown again, so it stacks above the splash.
+      raise: function () {
+        if (!supported || dock.hidden || typeof dock.showPopover !== 'function') return;
+        var focused = document.activeElement === button;
+        try {
+          if (dock.matches(':popover-open')) dock.hidePopover();
+          dock.showPopover();
+        } catch (e) { /* it stays where it is */ }
+        if (focused) button.focus({ preventScroll: true });
+      },
+      owns: function (el) { return !!(supported && el && el.closest && el.closest('#wcSoundDock')); },
+      scene: function (clock, plan) {
+        scene = { clock: clock, plan: plan };
+        duck(true);
+        var s = scene;
+        (clock.ready || Promise.resolve()).then(function () { if (scene === s) cue(); }, function () {});
+      },
+      endScene: function (reason) {
+        if (!scene) return;
+        scene = null;
+        if (reason !== 'end') hush();
+        duck(false);
+      }
+    };
+  })();
+
   // ---- start gacha ---------------------------------------------------------------------------------
   // Owner 2026-10-14: pressing start opens a capsule machine for about 5 s, once per start (never on
   // 이어하기). 뽑는 중: the machine drops in and cranks three times; six of the drawn dishes pour out
@@ -994,6 +1353,7 @@
       splashEl.textContent = '';
       splashEl.setAttribute('data-round', 'start');
       splashEl.showPopover();
+      sound.raise();
       var W = splashEl.clientWidth, H = splashEl.clientHeight, cx = W / 2, cy = H / 2, phone = W <= 560;
       var bg = node('i', 'wc-splash-bg', splashEl), glow = node('i', 'wc-gacha-glow', splashEl);
       var stage = node('div', 'wc-splash-stage', splashEl);
@@ -1140,6 +1500,13 @@
       var clock = splashEl.animate(null, { duration: G.end });
       clock.onfinish = function () { if (splash && splash.run === run) endSplash('end'); };
       splash.anims.push(clock);
+      // Its sound: the machine lands, the crank ratchets, each capsule pops a step higher, ta-da for
+      // the question, the two cards pop and bump, and a whoosh onto the match.
+      var plan = [['pop', 264]];
+      for (c = 0; c < G.cranks; c++) plan.push(['crank', T0 + c * G.crank]);
+      for (p = 0; p < G.pour; p++) plan.push(['capsule', tR + p * G.pourGap + 234, p]);
+      plan.push(['tada', tD + 200], ['pop', tD + 560], ['hit', tE + 260, true], ['whoosh', tF + 300]);
+      sound.scene(clock, plan);
       splash.safety = setTimeout(function () { if (splash && splash.run === run) endSplash('end'); }, G.end + 1500);
     } catch (e) {
       endSplash('quiet');
@@ -1278,6 +1645,7 @@
   }
   function ready() {
     buildTiles();
+    if (!embedded) sound.show();
     if (!embedded) restore();                  // the news page's card starts fresh, whatever is saved
     buildFloaters();
     show('intro');
@@ -1368,6 +1736,7 @@
       return;
     }
     if (/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) return;
+    if (sound.owns(e.target) && (e.key === 'Enter' || e.key === ' ')) return;   // the sound toggle never skips
     if (e.ctrlKey || e.metaKey || e.altKey) { endSplash('quiet'); return; }
     e.preventDefault();
     e.stopPropagation();

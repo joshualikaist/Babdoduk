@@ -447,6 +447,8 @@
   "wc.share": "공유하기",
   "wc.shareFailed": "공유하지 못했어요. 주소창의 주소를 복사해 주세요.",
   "wc.shareText": "나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!",
+  "wc.sound": "배경음악",
+  "wc.sound.aria": "배경음악 켜기/끄기",
   "wc.splash.final": "결승!",
   "wc.splash.quarter": "8강 진출!",
   "wc.splash.semi": "4강 진출!",
