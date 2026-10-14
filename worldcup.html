@@ -83,11 +83,16 @@
           <h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">32강</span>, 뭐가 나올까?</h3>
           <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>
           <p class="wc-ended" data-wc-show="ended" hidden><span aria-hidden="true">🏁</span> <span data-i18n="wc.ended">이벤트 종료 · 그래도 계속 즐길 수 있어요</span></p>
-          <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>
-          <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>
-          <div class="wc-preview" id="wcPreview" hidden>
-            <p class="wc-preview-label"><span class="wc-preview-emoji" aria-hidden="true">👀</span> <span data-i18n="wc.preview">이 중에서 나와요!</span></p>
-            <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>
+          <div class="wc-mystery" id="wcMystery">
+            <div class="wc-mystery-body" id="wcMysteryBody">
+              <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>
+              <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>
+              <div class="wc-preview" id="wcPreview" hidden>
+                <p class="wc-preview-label"><span class="wc-preview-emoji" aria-hidden="true">👀</span> <span data-i18n="wc.preview">이 중에서 나와요!</span></p>
+                <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>
+              </div>
+            </div>
+            <p class="wc-mystery-lock" id="wcMysteryLock" data-wc-show="soon" hidden><span class="wc-sr" data-wc-fmt="wc.mystery.sr">카테고리는 곧 공개돼요</span><span class="wc-mystery-badge" aria-hidden="true"><span>🔒</span> <span data-wc-fmt="wc.mystery.badge">곧 공개</span></span></p>
           </div>
           <div class="wc-intro-actions">
             <p class="wc-locked" id="wcLocked" data-wc-show="soon" hidden><span class="wc-locked-pill"><span aria-hidden="true">🔒</span> <span data-wc-fmt="wc.locked">곧 오픈</span></span> <span class="wc-locked-count" data-wc-countdown></span></p>
@@ -257,6 +262,8 @@
         'wc.loading': '불러오는 중…',
         'wc.locked': '{date} 오픈',
         'wc.months': '1,2,3,4,5,6,7,8,9,10,11,12',
+        'wc.mystery.badge': '{date} 공개',
+        'wc.mystery.sr': '카테고리는 {date}에 공개돼요',
         'wc.newStart': '새로 시작',
         'wc.photoChip': '사진 위키미디어 공용(잘라서 줄임)',
         'wc.photoCredit': '사진 {author} · {license}',
@@ -358,6 +365,8 @@
         'wc.loading': 'Loading…',
         'wc.locked': 'Opens {date}',
         'wc.months': 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec',
+        'wc.mystery.badge': 'Opens {date}',
+        'wc.mystery.sr': 'The categories are revealed on {date}.',
         'wc.newStart': 'New game',
         'wc.photoChip': 'Photos: Wikimedia Commons (cropped, resized)',
         'wc.photoCredit': 'Photo {author} · {license}',

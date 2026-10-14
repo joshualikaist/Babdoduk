@@ -424,6 +424,8 @@
   "wc.loading": "불러오는 중…",
   "wc.locked": "{date} 오픈",
   "wc.months": "1,2,3,4,5,6,7,8,9,10,11,12",
+  "wc.mystery.badge": "{date} 공개",
+  "wc.mystery.sr": "카테고리는 {date}에 공개돼요",
   "wc.newStart": "새로 시작",
   "wc.photoChip": "사진 위키미디어 공용(잘라서 줄임)",
   "wc.photoCredit": "사진 {author} · {license}",
