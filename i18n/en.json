@@ -447,6 +447,8 @@
   "wc.share": "Share",
   "wc.shareFailed": "Could not share. Copy the address from the address bar.",
   "wc.shareText": "My Food World Cup ({cat}) winner: {dish}!",
+  "wc.sound": "Music",
+  "wc.sound.aria": "Turn music on/off",
   "wc.splash.final": "The Final!",
   "wc.splash.quarter": "Quarterfinals!",
   "wc.splash.semi": "Semifinals!",

@@ -171,6 +171,12 @@
            (showSplash): decoration in the top layer over a match already rendered and announced;
            filled only while it plays. -->
       <div class="wc-splash" id="wcSplash" popover="manual" aria-hidden="true"></div>
+      <!-- The music toggle (js/worldcup.js sound): off until pressed; original music and effects made
+           in the page, no audio file. A manual popover in the top layer, so it stays above the
+           splash and the gacha, where pressing it never skips. Shown once the page is ready. -->
+      <div class="wc-sound-dock" id="wcSoundDock" popover="manual" hidden>
+        <button type="button" class="wc-sound" id="wcSound" aria-pressed="false" data-i18n-aria-key="wc.sound.aria" aria-label="배경음악 켜기/끄기"><span class="wc-sound-icon wc-sound-off" aria-hidden="true">🔇</span><span class="wc-sound-icon wc-sound-on" aria-hidden="true">🔊</span><span class="wc-sound-label" data-i18n="wc.sound">배경음악</span></button>
+      </div>
     </section>
 
     <!-- @content:worldcup-chip -->
@@ -293,6 +299,8 @@
         'wc.share': '공유하기',
         'wc.shareFailed': '공유하지 못했어요. 주소창의 주소를 복사해 주세요.',
         'wc.shareText': '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!',
+        'wc.sound': '배경음악',
+        'wc.sound.aria': '배경음악 켜기/끄기',
         'wc.splash.final': '결승!',
         'wc.splash.quarter': '8강 진출!',
         'wc.splash.semi': '4강 진출!',
@@ -401,6 +409,8 @@
         'wc.share': 'Share',
         'wc.shareFailed': 'Could not share. Copy the address from the address bar.',
         'wc.shareText': 'My Food World Cup ({cat}) winner: {dish}!',
+        'wc.sound': 'Music',
+        'wc.sound.aria': 'Turn music on/off',
         'wc.splash.final': 'The Final!',
         'wc.splash.quarter': 'Quarterfinals!',
         'wc.splash.semi': 'Semifinals!',
