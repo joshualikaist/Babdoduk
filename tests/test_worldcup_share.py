@@ -96,3 +96,27 @@ def test_no_kakao_sdk_and_no_external_script():
     # The documented hook for later: a feed template, used once the owner adds the SDK and an app key.
     assert "window.BabdodukWorldcupShare = {" in SCRIPT and "objectType: 'feed'" in SCRIPT
     assert "Kakao" in (ROOT / "docs/WORLDCUP_SHARE.md").read_text(encoding="utf-8")
+
+
+def test_the_card_carries_one_credit_line_and_the_page_lists_the_names():
+    # Names and licences are attributed on the result screen; the card's tiny line points there.
+    story = SCRIPT.split("  function storyTexts() {", 1)[1].split("  function drawStory(", 1)[0]
+    assert "credits.join" not in story and "p.author" not in story and "p.license" not in story
+    assert "fill(t('wc.story.credit'" in story and "{ host: host }" in story
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
+    for table, line in ((ko, "📷 Wikimedia Commons · 사진 출처 {host}/worldcup.html"),
+                        (en, "📷 Wikimedia Commons · photo credits at {host}/worldcup.html")):
+        assert table["wc.story.credit"] == line and "{credits}" not in table["wc.story.credit"]
+        assert table["wc.credits"] and table["wc.credits.winner"]
+    drawn = SCRIPT.split("The photo credit, tiny, at the very bottom", 1)[1].split("  // The card of the result on screen", 1)[0]
+    assert "ctx.fillText(clip(ctx, words.credit, inner), W / 2, H - 70);" in drawn and "lines" not in drawn
+    # The result screen: a disclosure with the author and licence (both linked) of the winner, the
+    # runner-up and the two semifinalists, filled when the result shows.
+    html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    result = html.split('id="wcResult"', 1)[1].split("</section>", 1)[0]
+    assert '<details class="wc-credits" id="wcCredits" hidden>' in result and 'id="wcCreditsList"' in result
+    assert "renderCredits();" in SCRIPT.split("function renderResult(", 1)[1].split("function renderHistory(", 1)[0]
+    credits = SCRIPT.split("  function renderCredits() {", 1)[1].split("\n  }\n", 1)[0]
+    assert "result.id" in credits and "result.finalist" in credits and "result.semis" in credits
+    assert "photo.source" in credits and "photo.licenseUrl" in credits and "noopener noreferrer" in credits

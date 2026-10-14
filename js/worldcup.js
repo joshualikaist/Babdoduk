@@ -426,11 +426,39 @@
     $('wcFinalist').textContent = fill(t('wc.finalist', '결승 상대: {dish}'), { dish: name(result.finalist) });
     showPhoto($('wcWinnerImg'), $('wcWinnerCredit'), result.id);
     $('wcWinnerFigure').hidden = $('wcWinnerImg').hidden;
+    renderCredits();
     prepareStory();                            // the story card is made now, so a tap can hand it over at once
     if (focus) {
       $('wcWinner').focus();
       announce(fill(t('wc.announceWinner', '우승 메뉴: {dish}'), { dish: name(result.id) }));
     }
+  }
+  // 사진 출처: the author and licence, linked, of every photo on the story card (the winner, the
+  // runner-up and the two semifinalists), so the card itself can carry a single line.
+  function renderCredits() {
+    var list = $('wcCreditsList');
+    var entries = [[result.id, t('wc.credits.winner', '우승')], [result.finalist, t('wc.story.final', '결승 상대')]]
+      .concat((result.semis || []).map(function (id) { return [id, t('wc.story.semi', '4강')]; }));
+    function link(parent, href, text) {
+      var a = node('a', '', parent);
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = text;
+    }
+    list.textContent = '';
+    entries.forEach(function (entry) {
+      var photo = entry[0] && photoOf(entry[0]);
+      if (!photo || !photo.author) return;
+      var item = node('li', 'wc-credits-item', list);
+      node('span', 'wc-credits-role', item).textContent = entry[1];
+      node('span', 'wc-credits-dish', item).textContent = name(entry[0]);
+      link(item, photo.source, photo.author);
+      item.appendChild(document.createTextNode(' · '));
+      if (photo.licenseUrl) link(item, photo.licenseUrl, photo.license);
+      else item.appendChild(document.createTextNode(photo.license));
+    });
+    $('wcCredits').hidden = !list.children.length;
   }
   function renderHistory() {
     if (embedded) return;
@@ -1718,7 +1746,7 @@
     var host = /^babdoduk(-lab)?\.vercel\.app$/.test(location.hostname) ? location.hostname : 'babdoduk.vercel.app';
     var opponents = [result.finalist].concat(result.semis || []).filter(Boolean);
     var photos = [result.id].concat(opponents).map(photoOf).filter(Boolean);
-    var credits = photos.filter(function (p) { return p.author; }).map(function (p) { return p.author + ' (' + p.license + ')'; });
+    var credited = photos.length > 0;   // the names and licences are on the page (renderCredits), not on the card
     return {
       kicker: t('wc.cardKicker', '나의 최애 메뉴'),
       name: name(result.id),
@@ -1731,7 +1759,7 @@
       cta: t('wc.story.cta', '너의 최애는?'),
       host: host,
       brand: t('wc.cardBrand', '밥도둑 먹방 월드컵'),
-      credit: credits.length ? fill(t('wc.story.credit', '사진: 위키미디어 공용 · {credits}'), { credits: credits.join(', ') }) : ''
+      credit: credited ? fill(t('wc.story.credit', '📷 Wikimedia Commons · 사진 출처 {host}/worldcup.html'), { host: host }) : ''
     };
   }
   // The card, top to bottom. The photo gives way when the name needs two lines, so the wordmark always
@@ -1930,17 +1958,13 @@
     ctx.fillText(words.brand, left + mw + 20, base - 4);
     ctx.textAlign = 'center';
 
-    // The photo credits (the licences ask for them), small, at the very bottom: two lines at most.
+    // The photo credit, tiny, at the very bottom: one line, no names. The licences ask for attribution
+    // "reasonable to the medium"; the authors and licences, with links, are listed on the result screen
+    // (renderCredits) and this line points there.
     if (words.credit) {
       ctx.font = plain(500, 20);
       ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
-      var lines = [words.credit];
-      if (ctx.measureText(words.credit).width > inner) {
-        var parts = words.credit.split(', '), first = '';
-        while (parts.length && ctx.measureText(first + parts[0] + ',').width <= inner) first += parts.shift() + ', ';
-        lines = [first.replace(/, $/, ','), clip(ctx, parts.join(', '), inner)];
-      }
-      lines.forEach(function (line, n) { ctx.fillText(line, W / 2, H - 70 + n * 28 - (lines.length - 1) * 14); });
+      ctx.fillText(clip(ctx, words.credit, inner), W / 2, H - 70);
     }
   }
   // The card of the result on screen: drawn once per winner and language, then kept.
