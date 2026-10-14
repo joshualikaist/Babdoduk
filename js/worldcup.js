@@ -6,7 +6,10 @@
    image to save. Progress and past winners stay in this browser (localStorage
    `babdoduk-worldcup`). Lab only, stage 2 (docs/WORLDCUP_STATS.md): with the public project
    config, everyone's anonymous counts are read and a finished game is recorded once through the
-   validating RPC worldcup_record_game; without it, or when that fails, the game is unchanged. */
+   validating RPC worldcup_record_game; without it, or when that fails, the game is unchanged.
+   Categories (owner 2026-10-14): the start screen offers the whole pool or one of seven categories
+   (data/content/worldcup.json `categories`); a game draws its 32 dishes from the chosen one and
+   keeps `category` in the saved game (an older save has none and counts as the whole pool). */
 (function () {
   'use strict';
   var KEY = 'babdoduk-worldcup';
@@ -16,12 +19,16 @@
   var cup = window.BABDODUK_WORLDCUP || {};
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var dishes = {};
+  var CATEGORIES = ['all', 'korean', 'chinese', 'japanese', 'western', 'world', 'snack', 'dessert'];
+  var CATEGORY_NAMES = { all: '전체', korean: '한식', chinese: '중식', japanese: '일식', western: '양식',
+                         world: '아시아·세계', snack: '분식·간식', dessert: '디저트·카페' };
   var set = [];         // the pool
+  var category = 'all'; // the chip chosen on the start screen (a game in progress has its own)
   var size = 0;         // dishes per game (a power of two)
   var basis = null;
-  var game = null;      // { entrants: [ids], winners: [ids], stack: [{ entrants, winners }] }
+  var game = null;      // { entrants: [ids], winners: [ids], stack: [{ entrants, winners }], log, category }
   var winners = [];     // [{ id, finalist, date }], newest first
-  var result = null;    // { id, finalist } of the game just finished
+  var result = null;    // { id, finalist, category } of the game just finished
   var view = 'loading';
   var busy = false;
   var $ = function (id) { return document.getElementById(id); };
@@ -77,6 +84,20 @@
       if (photo) { var img = new Image(); img.src = photo.image; }
     });
   }
+  // ---- categories ----------------------------------------------------------------------------
+  // The dishes of one category, or the whole pool for 'all'.
+  function poolOf(cat) {
+    if (cat === 'all') return set;
+    var of = cup.categories || {};
+    return set.filter(function (id) { return of[id] === cat; });
+  }
+  // A saved game's category: none (an older save) is the whole pool; an unknown one is unreadable.
+  function savedCategory(g) {
+    if (g.category == null) return 'all';
+    return CATEGORIES.indexOf(g.category) >= 0 ? g.category : null;
+  }
+  function catName(cat) { return t('wc.cat.' + cat, CATEGORY_NAMES[cat] || cat); }
+  function gameLabel(cat) { return fill(t('wc.catGame', '{cat} {n}강'), { cat: catName(cat), n: size }); }
   function roundName(size) {
     if (size === 2) return t('wc.round.final', '결승');
     if (size === 4) return t('wc.round.semi', '4강');
@@ -89,7 +110,10 @@
     if (!g || !Array.isArray(g.entrants) || !Array.isArray(g.winners) || !Array.isArray(g.stack)) return false;
     var size = g.entrants.length;
     if (size < 2 || (size & (size - 1)) || g.winners.length >= size / 2) return false;
-    return g.entrants.concat(g.winners).every(function (id) { return set.indexOf(id) >= 0; });
+    var cat = savedCategory(g);
+    if (!cat) return false;
+    var pool = poolOf(cat);
+    return g.entrants.concat(g.winners).every(function (id) { return pool.indexOf(id) >= 0; });
   }
   function restore() {
     try {
@@ -98,7 +122,11 @@
       winners = (Array.isArray(saved.winners) ? saved.winners : []).filter(function (w) {
         return w && dishes[w.id] && typeof w.date === 'string';
       }).slice(0, HISTORY);
-      if (saved.set === signature() && validGame(saved.game)) game = saved.game;
+      if (saved.set === signature() && validGame(saved.game)) {
+        game = saved.game;
+        game.category = savedCategory(game);        // an older save is the whole pool
+        category = game.category;                    // the chips start on the game being resumed
+      }
     } catch (e) { /* unreadable storage: start fresh */ }
   }
   function store() {
@@ -117,7 +145,8 @@
     renderRanking();
   }
   function progress() {
-    return { round: roundName(game.entrants.length), n: game.winners.length + 1, total: game.entrants.length / 2 };
+    return { round: roundName(game.entrants.length), n: game.winners.length + 1, total: game.entrants.length / 2,
+             cat: catName(game.category) };
   }
   function picksMade() {
     var made = 0, round = size;
@@ -128,7 +157,32 @@
     var i = game.winners.length * 2;
     return [game.entrants[i], game.entrants[i + 1]];
   }
+  // The category chips, built once: a chip keeps focus while it is pressed.
+  function buildChips() {
+    var box = $('wcCats');
+    box.textContent = '';
+    CATEGORIES.forEach(function (cat) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'wc-chip';
+      chip.setAttribute('data-cat', cat);
+      chip.appendChild(Object.assign(document.createElement('span'), { className: 'wc-chip-name' }));
+      chip.appendChild(Object.assign(document.createElement('span'), { className: 'wc-chip-n' }));
+      chip.addEventListener('click', function () { category = cat; renderChips(); });
+      box.appendChild(chip);
+    });
+  }
+  function renderChips() {
+    [].forEach.call($('wcCats').querySelectorAll('.wc-chip'), function (chip) {
+      var cat = chip.getAttribute('data-cat'), n = poolOf(cat).length;
+      chip.querySelector('.wc-chip-name').textContent = catName(cat);
+      chip.querySelector('.wc-chip-n').textContent = String(n);
+      chip.setAttribute('aria-label', catName(cat) + ' ' + n);
+      chip.setAttribute('aria-pressed', cat === category ? 'true' : 'false');
+    });
+  }
   function renderIntro() {
+    renderChips();
     $('wcBasis').textContent = basis ? (basis[lang()] || basis.ko) : '';
     $('wcStart').textContent = fill(t('wc.start', '{n}강 시작'), { n: size });
     var resumable = !!game;
@@ -136,11 +190,12 @@
     // A game in progress makes resuming the main action; starting over stays one tap away.
     $('wcResume').classList.toggle('wc-btn--main', resumable);
     $('wcStart').classList.toggle('wc-btn--main', !resumable);
-    if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어하기 · {round} {n}/{total}'), progress());
+    if (resumable) $('wcResume').textContent = fill(t('wc.resume', '이어하기 · {cat} {round} {n}/{total}'), progress());
   }
   // `instant`: a round splash covers the screen, so the match jumps into view rather than scrolling.
   function renderMatch(focus, instant) {
     var p = progress(), ids = pair(), done = picksMade(), all = size - 1;
+    $('wcGame').textContent = gameLabel(game.category);
     $('wcRound').textContent = p.round;
     $('wcCount').textContent = fill(t('wc.count', '{n} / {total}'), p);
     var bar = $('wcBar');
@@ -179,6 +234,7 @@
       { round: p.round, n: p.n, a: name(ids[0]), b: name(ids[1]) }));
   }
   function renderResult(focus) {
+    $('wcResultGame').textContent = gameLabel(result.category);
     $('wcWinner').textContent = name(result.id);
     $('wcWinnerSub').textContent = otherName(result.id);
     $('wcFinalist').textContent = fill(t('wc.finalist', '결승 상대: {dish}'), { dish: name(result.finalist) });
@@ -308,17 +364,22 @@
     }
     return a;
   }
-  function start() {
+  // `cat`: the category of the new game (the chip chosen, or the one being played again).
+  function start(cat) {
+    cat = CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all';
     // 처음부터 keeps the bracket being left as the new game's first undo step, so 되돌리기 brings it
     // back. One is kept: its own restart step is dropped, and restarting again before a pick keeps
     // the one already there.
     var before = null;
     if (game && game.stack.length) {
       var own = game.stack.filter(function (step) { return !step.game; });
-      before = own.length ? { game: { entrants: game.entrants, winners: game.winners, stack: own, log: game.log || [] } }
+      before = own.length ? { game: { entrants: game.entrants, winners: game.winners, stack: own, log: game.log || [],
+                                      category: game.category } }
         : game.stack[0];
     }
-    game = { entrants: shuffle(set).slice(0, size), winners: [], stack: before ? [before] : [], log: [] };
+    category = cat;
+    game = { entrants: shuffle(poolOf(cat)).slice(0, size), winners: [], stack: before ? [before] : [], log: [],
+             category: cat };
     lastPick = null;
     result = null;
     store();
@@ -326,7 +387,7 @@
     renderMatch(true);
   }
   function resume() {
-    if (!game) { start(); return; }
+    if (!game) { start(category); return; }
     show('match');
     renderMatch(true);
   }
@@ -334,7 +395,7 @@
     record(game.log);
     winners.unshift({ id: winner, finalist: finalist, date: todayKst() });
     winners = winners.slice(0, HISTORY);
-    result = { id: winner, finalist: finalist };
+    result = { id: winner, finalist: finalist, category: game.category };
     game = null;
     store();
     show('result');
@@ -716,7 +777,7 @@
       ctx.fillRect(0, 0, 1080, 1350);
       ctx.textAlign = 'center';
       ctx.fillStyle = '#be185d';
-      fitText(ctx, t('wc.cardKicker', '나의 최애 메뉴'), 540, 120, 900, 40, 800);
+      fitText(ctx, gameLabel(result.category) + ' · ' + t('wc.cardKicker', '나의 최애 메뉴'), 540, 120, 900, 40, 800);
       ctx.fillStyle = '#1e1d1a';
       fitText(ctx, name(result.id), 540, 250, 960, 104, 900);
       ctx.fillStyle = '#6d665e';
@@ -767,7 +828,11 @@
     if (!game || !game.stack.length || busy) return;
     var previous = game.stack.pop();
     if (previous.game) {
-      if (validGame(previous.game)) game = previous.game;       // takes back 처음부터
+      if (validGame(previous.game)) {                            // takes back 처음부터
+        game = previous.game;
+        game.category = savedCategory(game);
+        category = game.category;
+      }
     } else {
       game.entrants = previous.entrants;
       game.winners = previous.winners;
@@ -778,7 +843,8 @@
     renderMatch(true);
   }
   function share() {
-    var text = fill(t('wc.shareText', '나의 먹방 월드컵 우승 메뉴는 {dish}!'), { dish: name(result.id) });
+    var text = fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'),
+      { cat: catName(result.category), dish: name(result.id) });
     var url = location.origin + location.pathname;
     var status = $('wcShareStatus');
     if (navigator.share) {
@@ -809,6 +875,7 @@
     });
   }
   function ready() {
+    buildChips();
     restore();
     show('intro');
     renderIntro();
@@ -832,11 +899,11 @@
       pick(side);
     });
   });
-  $('wcStart').addEventListener('click', function () { start(); });
+  $('wcStart').addEventListener('click', function () { start(category); });
   $('wcResume').addEventListener('click', resume);
   $('wcUndo').addEventListener('click', undo);
-  $('wcRestart').addEventListener('click', start);
-  $('wcAgain').addEventListener('click', start);
+  $('wcRestart').addEventListener('click', function () { start(game ? game.category : category); });
+  $('wcAgain').addEventListener('click', function () { start(result ? result.category : category); });
   $('wcShare').addEventListener('click', share);
   $('wcSaveImage').addEventListener('click', saveImage);
   $('wcHistoryClear').addEventListener('click', clearHistory);
