@@ -551,6 +551,55 @@
   overflow-wrap: anywhere;
 }
 
+/* 사진 출처: the author and licence, linked, of the four photos on the story card (renderCredits). */
+.wc-credits {
+  max-width: 520px;
+  margin: var(--space-3) auto 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-ink-muted);
+  text-align: left;
+}
+
+.wc-credits[hidden] {
+  display: none;
+}
+
+.wc-credits summary {
+  cursor: pointer;
+  width: fit-content;
+  margin: 0 auto;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.wc-credits-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wc-credits-item {
+  overflow-wrap: anywhere;
+}
+
+.wc-credits-role {
+  margin-right: var(--space-2);
+  font-weight: 700;
+}
+
+.wc-credits-dish {
+  margin-right: var(--space-2);
+}
+
+.wc-credits a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* 저장했어요 / 링크를 복사했어요: a toast at the bottom of the screen, and the same words read out once. */
 .wc-toast {
   position: fixed;
