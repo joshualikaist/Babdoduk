@@ -486,6 +486,50 @@ def magazine_sparse(page):
     return count
 
 
+HOME_CLOCK = {"now": None}      # the moment the home page's clock is fixed at (WC_SOON unless a check moves it)
+
+
+def home_now():
+    """The moment the home checks' page clock is fixed at (WC_SOON), as a Korean-time datetime. The home
+    page's first-screen checks run on this page (home_page), never on the wall clock or the lab host."""
+    return datetime.fromisoformat(HOME_CLOCK["now"] or WC_SOON)
+
+
+def set_home_clock(page, now):
+    HOME_CLOCK["now"] = now
+    page.clock.set_fixed_time(now)
+
+
+def home_page(browser, api_attempts):
+    """A page for the home checks: a fixed clock (WC_SOON: the world cup promo is in its `soon` state) on the
+    production-like site host, so the promo, the calendar and the cafeteria line never depend on today's
+    date, on the lab `previewFrom` override or on the published listings. The synthetic data is relative to
+    that clock: a free-food row eight days ahead (the next one) and one that ended today at 00:20, which is
+    the calendar's longest answer ("오늘 일정은 끝났어요 · 다음 ...", two lines on a 360 px phone)."""
+    context = new_context(browser)
+    context.on("request", lambda req: api_attempts.append(req.url)
+               if req.resource_type in ("fetch", "xhr", "eventsource")
+               and urlparse(req.url).hostname not in SERVED_HOSTS else None)
+    HOME_CLOCK["now"] = WC_SOON
+
+    def feed(route):
+        future = (home_now() + timedelta(days=8)).isoformat()
+        route.fulfill(json={"events": [{"id": "ui-synthetic", "title": LONG_TITLE, "summary": LONG_TITLE,
+                                        "startAt": future, "food": {"provided": "true", "type": "meal"}}]})
+
+    def archive(route):
+        today = home_now().strftime("%Y-%m-%d")
+        route.fulfill(json={"events": [{"id": "ui-ended-today", "title": "ended", "summary": "ended",
+                                        "startAt": f"{today}T00:10:00+09:00", "endAt": f"{today}T00:20:00+09:00",
+                                        "food": {"provided": "true", "type": "meal"}}]})
+    context.route("**/data/ggongbab/latest.json", feed)
+    context.route("**/data/ggongbab/archive/index.json", archive)
+    page = context.new_page()
+    page.on("websocket", lambda ws: api_attempts.append(ws.url))
+    page.clock.set_fixed_time(WC_SOON)
+    return page
+
+
 def home_summary(page):
     """Home leads with the two food tasks and states only what the payloads support."""
     count = 0
@@ -495,8 +539,7 @@ def home_summary(page):
         assert ok, f"index.html summary: {detail}"
         count += 1
 
-    kst = timezone(timedelta(hours=9))
-    now = datetime.now(kst).replace(microsecond=0)
+    now = home_now()
     yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     today = now.strftime("%Y-%m-%d")
     later = (now + timedelta(hours=2)).isoformat()
@@ -648,6 +691,7 @@ HOME_TOP = """() => {
 def home_hero_shelf(page):
     """One editorial hero, the free-food calendar in the first screen, then a shelf that only moves when asked."""
     count = 0
+    set_home_clock(page, WC_SOON)            # the promo's `soon` state, whatever today is
 
     def check(ok, detail):
         nonlocal count
@@ -765,11 +809,12 @@ def home_hero_shelf(page):
     check(motion == ["none", "0s"], ("reduced motion keeps banners still", motion))
 
     # Menu published today and no free food: the calendar says so; the hero keeps its shape.
-    today = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
+    today = home_now().strftime("%Y-%m-%d")
     page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json={
         "date": today, "restaurants": [{"id": "r1", "name": "r1", "lunch": {"items": ["밥"]}}]}))
     page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={
-        "generatedAt": datetime.now(timezone(timedelta(hours=9))).isoformat(), "events": []}))
+        "generatedAt": home_now().isoformat(), "events": []}))
+    page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json={"events": []}))
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
     top = page.evaluate(HOME_TOP)
@@ -779,6 +824,70 @@ def home_hero_shelf(page):
           "hero and shelf keep their shape")
     page.unroute("**/data/kaist-menu/latest.json")
     page.unroute("**/data/ggongbab/latest.json")
+    page.unroute("**/data/ggongbab/archive/index.json")
+    return count
+
+
+# The home page's first screen in every state of the world cup promo (js/worldcup-gate.js, its `phase`):
+# the page clock is fixed per state and the page is served as the production-like site host, so the
+# promo's height never depends on today's date or on the lab `previewFrom` override.
+HOME_FIRST_SCREENS = ((360, 800), (390, 844), (1440, 900))
+HOME_FIRST_SCREEN = """() => { const q = s => document.querySelector(s);
+  const box = e => { const r = e.getBoundingClientRect(); return {top: r.top, bottom: r.bottom, height: r.height}; };
+  const promo = q('.home-wc'), shown = !!promo && !promo.hidden && getComputedStyle(promo).display !== 'none';
+  const cta = [...document.querySelectorAll('.home-wc-cta')].filter(e => !e.hidden && getComputedStyle(e).display !== 'none');
+  return {phase: document.documentElement.getAttribute('data-wc-phase'), shown, promo: shown ? box(promo) : null,
+    cta: cta.length === 1 ? box(cta[0]) : cta.length, preview: window.BabdodukWorldcup.preview(),
+    grid: box(q('#homeCal .hc-grid')), cal: box(q('#homeCal')), collage: box(q('.home-collage')),
+    hero: box(q('.home-hero')), answer: q('#homeCalAnswer').textContent.trim(),
+    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
+
+
+def home_first_screen(page):
+    """The month calendar fits the first screen whatever the world cup promo shows: soon, live (first and last
+    day) and ended, at 360x800 and 390x844 (the whole month), and its grid ends by 900 px at 1440x900. The
+    live promo is never taller than the soon one (it is the band the baselines and these limits were tuned
+    for), and it is one slim row on a phone. Every state runs on a fixed page clock (WC_*), in Korean and in
+    English, so the checks do not depend on today or on the lab override."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"index.html first screen: {detail}"
+        count += 1
+
+    states = (("soon", "soon", WC_SOON), ("live", "live", WC_RUNNING),
+              ("last day", "live", WC_LAST), ("ended", "ended", WC_ENDED))
+
+    for width, height in HOME_FIRST_SCREENS:
+        page.set_viewport_size({"width": width, "height": height})
+        for lang in ("ko", "en"):
+            soon_height = None
+            for state, phase, now in states:
+                where = f"{width}x{height} {lang} {state}"
+                set_home_clock(page, now)
+                page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
+                page.wait_for_function("document.getElementById('homeCal').dataset.state !== 'loading'")
+                if lang == "en":
+                    page.locator("#langToggle").click()
+                shot = page.evaluate(HOME_FIRST_SCREEN)
+                page.evaluate("localStorage.removeItem('babdoduk-lang')")
+                check(shot["phase"] == phase and not shot["preview"], (where, "the fixed clock, not the lab override, decides", shot))
+                check(shot["shown"] == (phase != "ended") and (shot["cta"] != 0 if shot["shown"] else True),
+                      (where, "the promo is there unless the world cup is over", shot))
+                check(shot["overflow"] <= 0, (where, "no horizontal overflow", shot["overflow"]))
+                if lang == "ko":     # the English hero is taller by its own copy, before any promo: not a contract
+                    check(0 < shot["grid"]["bottom"] <= height,
+                          (where, "the calendar grid is in the first screen", shot["grid"], shot["answer"]))
+                if width <= 720:
+                    check(shot["cal"]["top"] < shot["collage"]["top"], (where, "phones: the calendar comes before the collage", shot))
+                if shot["shown"]:
+                    if width <= 440:
+                        check(shot["promo"]["height"] <= 56 and shot["cta"]["height"] <= 40,
+                              (where, "a phone: one slim row", shot["promo"], shot["cta"]))
+                    soon_height = shot["promo"]["height"] if state == "soon" else soon_height
+                    check(shot["promo"]["height"] <= soon_height + 0.5,
+                          (where, "no taller than the soon band", shot["promo"]["height"], soon_height))
     return count
 
 
@@ -1363,13 +1472,13 @@ def home_wc_promo(page):
         order = shot["top"] < shot["hero"] if width < 721 else shot["hero"] < shot["top"]
         check(shot["overflow"] <= 0 and shot["cal"] and order and shot["top"] < shot["calTop"],
               (width, "in the hero band, the calendar stays", shot))
-        check(shot["height"] <= (100 if width < 641 else 80), (width, "a compact band", shot["height"]))
+        check(shot["height"] <= (56 if width < 441 else 100 if width < 641 else 80), (width, "a compact band", shot["height"]))
         shot = snap(SITE_HOST, WC_RUNNING, (width, height))
         check(all(shot["photos"]) and len(shot["photos"]) == 2 and not any(shot["photoBlur"]),
               (width, "running: the two dish photos load, unblurred", shot["photos"], shot["photoBlur"]))
         check(shot["shown"] and shot["states"] == ["지금 진행 중 · 10/23까지"] and not shot["soon"] and not shot["countShown"]
               and shot["live"] == {"href": "worldcup.html", "text": "🎰 지금 하기"}, (width, "running", shot))
-        check(shot["overflow"] <= 0 and shot["height"] <= (100 if width < 641 else 80), (width, "running: compact, no horizontal scroll", shot))
+        check(shot["overflow"] <= 0 and shot["height"] <= (56 if width < 441 else 100 if width < 641 else 80), (width, "running: compact, no horizontal scroll", shot))
         shot = snap(SITE_HOST, WC_LAST, (width, height))
         check(shot["shown"] and shot["live"], (width, "still there on the last day", shot))
         shot = snap(SITE_HOST, WC_ENDED, (width, height))
@@ -2721,8 +2830,13 @@ def run_checks(screenshots=False):
         report["checks"] += magazine_sparse(page)
         report["checks"] += magazine_edition_time(page)
         report["checks"] += release_contracts(page)
-        report["checks"] += home_summary(page)
-        report["checks"] += home_hero_shelf(page)
+        # The home page's checks own a page whose clock is fixed (home_page), so the world cup promo's
+        # state and the calendar do not depend on today.
+        home = home_page(browser, api_attempts)
+        report["checks"] += home_summary(home)
+        report["checks"] += home_hero_shelf(home)
+        report["checks"] += home_first_screen(home)
+        home.context.close()
         report["checks"] += event_bands(page)
         # The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a context whose page
         # clock is fixed (inside the window unless a check sets another), so nothing depends on today.
