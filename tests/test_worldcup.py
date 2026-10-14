@@ -282,12 +282,14 @@ def test_the_start_screen_offers_the_categories_with_counts_and_keeps_the_choice
     assert [ko[f"wc.cat.{k}"] for k in keys] == ["전체", "한식", "중식", "일식", "양식", "아시아·세계", "분식·간식", "디저트·카페"]
     assert [en[f"wc.cat.{k}"] for k in keys] == ["All", "Korean", "Chinese", "Japanese", "Western", "Asian & world",
                                                  "Snacks", "Desserts & café"]
-    # The chips sit above the start button, in a labelled group of toggle buttons that wrap.
+    # The tiles sit above the start button, in a labelled group of toggle buttons on a 3 x 3 board
+    # (owner 2026-10-14: big tiles rather than pills). The name is the visible text; the emoji is decoration.
     intro = html.split('id="wcIntro"', 1)[1].split('id="wcStart"', 1)[0]
     assert 'id="wcCats" role="group" aria-labelledby="wcCatsLabel"' in intro
-    assert "aria-pressed" in script and "'aria-label', catName(cat) + ' ' + n" in script
-    assert ".wc-chip:focus-visible" in css and "min-height: 44px" in css.split(".wc-chip {", 1)[1].split("}", 1)[0]
-    assert "flex-wrap: wrap" in css.split(".wc-cats {", 1)[1].split("}", 1)[0]
+    assert "tile.setAttribute('aria-pressed', cat === category ? 'true' : 'false')" in script
+    assert "emoji.setAttribute('aria-hidden', 'true');" in script
+    assert ".wc-tile:focus-visible" in css and "min-height: 96px" in css.split(".wc-tile {", 1)[1].split("}", 1)[0]
+    assert "grid-template-columns: repeat(3, minmax(0, 1fr))" in css.split(".wc-tiles {", 1)[1].split("}", 1)[0]
     # The saved game records its category; an older one has none and is the whole pool.
     assert "category: cat };" in script and "if (g.category == null) return 'all';" in script
     assert "var KEY = 'babdoduk-worldcup';" in script and "{ v: 1, set: signature()" in script      # old saves stay readable
@@ -296,3 +298,90 @@ def test_the_start_screen_offers_the_categories_with_counts_and_keeps_the_choice
     assert "$('wcResultGame').textContent = gameLabel(result.category);" in script
     assert "{cat}" in ko["wc.shareText"] and "{cat}" in en["wc.shareText"] and "gameLabel(result.category) + ' · '" in script
     assert (ko["wc.catGame"], en["wc.catGame"]) == ("{cat} {n}강", "{cat} · Round of {n}")
+
+
+# ---- the start screen and the start gacha (owner, 2026-10-14: "초입이 재미있어야") -----------------------
+def module(start, end):
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    return script.split(start, 1)[1].split(end, 1)[0]
+
+
+def moved_properties(code):
+    """Every property a track() or an .animate() keyframe list in `code` moves."""
+    moved = set()
+    for call in re.findall(r"track\([^;]*?\]\]\);", code, re.S):
+        moved |= set(re.findall(r"[{,] (\w+): (?!function)", call))
+    for call in re.findall(r"\.animate\(\[.*?\]", code, re.S):
+        moved |= set(re.findall(r"[{,] (\w+): ", call)) - {"offset"}
+    return moved
+
+
+def test_the_start_screen_has_the_owners_headline_and_no_notes():
+    html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
+    assert (ko["wc.intro.title"], en["wc.intro.title"]) == ("오늘의 {n}강, 뭐가 나올까?", "What’s in today’s round of {n}?")
+    assert (ko["wc.intro.tone"], en["wc.intro.tone"]) == ("시험기간으로 지친 당신! 메뉴나 골라~", "Exam week got you? Just pick a menu~")
+    # The static page (before the script) already says it, the round on the highlighter.
+    assert '<h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">32강</span>, 뭐가 나올까?</h3>' in html
+    # The two notes under the button are gone (owner's mark-up), with their keys, and so is the old line.
+    for gone in ("wc.note", "wc.rankingNote"):
+        assert gone not in ko and gone not in en and gone not in html
+    assert "이 브라우저에 저장돼요" not in html and "익명으로 집계" not in html and "wcStatsNote" not in html
+    assert "700개가 넘는 메뉴 중 무작위로 뽑아요" not in html.split('id="wcIntro"', 1)[1].split("</main>", 1)[0]
+    # The display lettering is Jua, cut to the letters of its labels in both languages.
+    link = re.search(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Jua[^"]+)" rel="stylesheet" />', html).group(1)
+    letters = set(parse_qs(urlparse(link).query)["text"][0])
+    for strings in (ko, en):
+        for key in page_content.WORLDCUP_JUA_KEYS:
+            assert set(re.sub(r"\{\w+\}", "", strings[key])) <= letters, key
+    css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
+    assert "background-clip: text" not in css                   # the highlighter is a background, never gradient text
+    assert "#b43d27" not in css and "#f45e45" not in (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+
+
+def test_the_tiles_preview_the_dishes_the_next_game_really_draws():
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    emoji = dict(re.findall(r"(\w+): '([^']+)'", re.search(r"var CATEGORY_EMOJI = \{(.*?)\};", script, re.S).group(1)))
+    assert emoji == {"all": "🎲", "korean": "🍚", "chinese": "🥟", "japanese": "🍣", "western": "🍝", "world": "🍜",
+                     "snack": "🍢", "dessert": "🍰"}
+    # Choosing draws the bracket; the photos are five of it; a start from this screen plays that bracket.
+    assert "pending = { cat: cat, ids: draw(cat) };" in script
+    assert "(pending ? pending.ids.slice(2, 7) : [])" in script
+    assert "view === 'intro' && pending && pending.cat === cat ? pending.ids : draw(cat)" in script
+    # 아무거나 lands on another category, at once with reduced motion, and says which.
+    assert "c !== category" in script and "if (!moving()) { landSpin(target); return; }" in script
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    assert (ko["wc.cat.random"], ko["wc.preview"], ko["wc.catLanded"]) == ("아무거나", "이 중에서 나와요!", "{cat} 당첨!")
+    # The start screen's motion moves only transform, scale and opacity; arrival runs are bounded.
+    intro = module("// ---- the start screen", "// `instant`: a round splash")
+    assert moved_properties(intro) <= {"transform", "scale", "opacity"}, moved_properties(intro)
+    assert "iterations: arriving ? 3 : 2" in intro and "iterations: arriving ? 2 : 1" in intro
+
+
+def test_the_start_gacha_plays_on_a_start_only_and_never_with_reduced_motion():
+    script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
+    gacha = module("// ---- start gacha", "// ---- result image")
+    # Only the starts open it; 이어하기 never does.
+    assert "$('wcStart').addEventListener('click', function () { stopSpin(true); start(category, true); });" in script
+    assert "$('wcNew').addEventListener('click', function () { stopSpin(true); start(category, true); });" in script
+    assert "function resume() {\n    if (!game) { start(category, false); return; }\n    show('match');\n    renderMatch(true);\n  }" in script
+    # The game is stored and the match rendered, focused and announced before it opens.
+    assert "store();                                            // the draw is kept before anything moves" in script
+    assert "if (animate && canGacha()) {\n      renderMatch(true, true);\n      showGacha();" in script
+    assert "!reduced && !(forcedColors && forcedColors.matches) && !document.hidden" in gacha
+    assert "typeof splashEl.showPopover === 'function'" in gacha
+    # It plays in the splash's popover, so a tap or a key skips it and never picks (test_a_skip_is_never_a_pick).
+    assert "splashEl.setAttribute('data-round', 'start');" in gacha and "splash = {" in gacha
+    # About 5 s, only transform, scale and opacity, no flash, a jolt of at most 4 px.
+    end = int(re.search(r"end: (\d+) \}", gacha).group(1))
+    assert 4500 <= end <= 5200
+    assert moved_properties(gacha) <= {"transform", "scale", "opacity"}, moved_properties(gacha)
+    assert "wc-splash-flash" not in gacha and "Flash" not in gacha
+    jolts = [abs(int(x)) for x in re.findall(r"translate\((-?\d+)px, 0px\)' \}\]", gacha)]
+    assert jolts and max(jolts) <= 4
+    # One line of text at a time: the drawing line is gone before the question comes.
+    ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
+    assert (ko["wc.gacha.drawing"], ko["wc.gacha.ask"]) == ("{game} 뽑는 중…", "너의 최애는?")
+    assert "[tD + 120, { transform: 'translateY(0px)', opacity: 0 }]" in gacha
+    assert "[tD + 200, { transform: 'scale(1.6)', opacity: 0 }" in gacha
