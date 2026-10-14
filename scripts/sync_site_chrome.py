@@ -203,9 +203,17 @@ LABEL_BLOCKS = present(ALL_LABEL_BLOCKS, ROOT)
 
 # Page blocks rendered from data/content/ (scripts/page_content.py), and their translations.
 CONTENT_BLOCKS = {
-    "event.html": page_content.event_blocks,
+    "event.html": lambda: {**page_content.event_blocks(), **page_content.worldcup_font_block()},
     "history.html": page_content.history_blocks,
     "worldcup.html": page_content.worldcup_blocks,
+}
+# Scripts with `// @content:<name>` blocks written from data/content/ (loaded by a page only when needed).
+CONTENT_SCRIPTS = {
+    "js/worldcup-entry-data.js": page_content.worldcup_entry_data_blocks,
+}
+# The single keys (not whole families) a page's table carries besides its PAGES `strings`.
+PAGE_KEYS = {
+    "event.html": page_content.WORLDCUP_ENTRY_KEYS,
 }
 CONTENT_STRINGS = {
     "event.html": page_content.event_strings,
@@ -233,6 +241,11 @@ def fill_blocks(path: str, text: str, kind: str, rendered: dict[str, list[str]])
     return "\n".join(lines)
 
 
+def synced_content_script(path: str) -> str:
+    """The script with its content blocks rendered from data/content/."""
+    return fill_blocks(path, (ROOT / path).read_text(encoding="utf-8"), "content", CONTENT_SCRIPTS[path]())
+
+
 def synced_script(path: str) -> str:
     """The script with its label blocks rendered from data/content/labels.json."""
     data = labels()
@@ -253,7 +266,8 @@ def page_strings(page: str) -> dict[str, dict[str, str]]:
     content = CONTENT_STRINGS[page]() if page in CONTENT_STRINGS else {"ko": {}, "en": {}}
     tables = {}
     for lang in ("ko", "en"):
-        entries = {key: value for key, value in data[lang].items() if key.split(".")[0] in families}
+        entries = {key: value for key, value in data[lang].items()
+                   if key.split(".")[0] in families or key in PAGE_KEYS.get(page, ())}
         entries.update({key: pair[lang] for key, pair in labelled.items()})
         entries.update(content[lang])
         tables[lang] = {"docTitle": data[lang][f"title.{page[:-len('.html')]}"], **dict(sorted(entries.items()))}
@@ -284,7 +298,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true", help="report drift instead of rewriting")
     args = parser.parse_args(argv)
     drifted = []
-    targets = [(page, synced) for page in PAGES] + [(path, synced_script) for path in LABEL_BLOCKS]
+    targets = ([(page, synced) for page in PAGES] + [(path, synced_script) for path in LABEL_BLOCKS]
+               + [(path, synced_content_script) for path in CONTENT_SCRIPTS])
     for page, render_target in targets:
         path = ROOT / page
         current = path.read_text(encoding="utf-8")
@@ -303,7 +318,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"\nsite chrome drift in {len(drifted)} file(s): {', '.join(drifted)}. Edit shared/nav.html, "
                   "shared/footer.html, i18n/ or data/content/, then run python scripts/sync_site_chrome.py.")
             return 1
-        print(f"site chrome in sync: {len(PAGES)} pages, {len(LABEL_BLOCKS)} scripts")
+        print(f"site chrome in sync: {len(PAGES)} pages, {len(LABEL_BLOCKS) + len(CONTENT_SCRIPTS)} scripts")
         return 0
     print(f"rewrote {len(drifted)} page(s)" + (f": {', '.join(drifted)}" if drifted else ""))
     return 0

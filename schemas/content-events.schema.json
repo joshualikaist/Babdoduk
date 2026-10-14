@@ -40,16 +40,9 @@
           },
           "title": {"$ref": "#/$defs/pair"},
           "place": {"$ref": "#/$defs/pair"},
-          "pictures": {
-            "description": "Up to two real pictures shown on the row (never a placeholder), with their credit in both languages.",
-            "type": "object",
-            "required": ["images", "credit"],
-            "additionalProperties": false,
-            "properties": {
-              "images": {"type": "array", "minItems": 1, "maxItems": 2,
-                         "items": {"type": "string", "pattern": "^images/[a-z0-9/_-]+[.](jpg|png|webp)$"}},
-              "credit": {"$ref": "#/$defs/pair"}
-            }
+          "entry": {
+            "description": "The start screen of the activity shown right in its card while it runs (its link must be that page). Only the menu world cup has one.",
+            "const": "worldcup"
           },
           "details": {
             "description": "The fixed labelled rows (summary, duration, prizes, participation; at least the summary), or one note for an activity they do not fit.",

@@ -24,7 +24,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <!-- @content:worldcup-font -->
+  <!-- Jua (OFL) for the world cup's display lettering only (titles, category tiles, buttons, the
+       splash and the start gacha): just the letters of WORLDCUP_JUA_KEYS in scripts/page_content.py. -->
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%26%2C%2F0123456789%3FABCDFJKNQRSTVWabcdefghiklmnoprstuvwy%C2%B7%C3%A9%E2%80%99%E2%80%A6%EA%B0%80%EA%B0%84%EA%B0%95%EA%B1%B0%EA%B1%B4%EA%B2%B0%EA%B3%84%EA%B8%B0%EA%B9%8C%EB%82%98%EB%84%88%EB%8A%94%EB%8A%98%EB%8F%84%EB%91%91%EB%93%9C%EB%94%94%EB%9B%B0%EB%A1%9C%EB%A8%B9%EB%AC%B4%EB%AD%90%EB%B0%A5%EB%B0%A9%EB%B6%84%EB%BD%91%EC%83%88%EC%84%9C%EC%84%B8%EC%8A%B9%EC%8B%9C%EC%8B%9D%EC%95%84%EC%95%A0%EC%96%91%EC%96%B4%EC%97%90%EC%98%A4%EC%98%AC%EC%99%80%EC%9A%94%EC%9B%94%EC%9D%98%EC%9D%B4%EC%9D%BC%EC%9E%91%EC%A0%80%EC%A0%84%EC%A4%91%EC%A7%84%EC%B2%B4%EC%B5%9C%EC%B6%9C%EC%B9%B4%EC%BB%B5%ED%8A%B8%ED%8E%98%ED%95%98%ED%95%9C" rel="stylesheet" />
+  <!-- @end content -->
   <link rel="stylesheet" href="css/site.css" />
+  <link rel="stylesheet" href="css/worldcup-entry.css" />
   <link rel="stylesheet" href="css/event.css" />
 </head>
 <body>
@@ -107,9 +113,29 @@
           <p class="event-date"><time datetime="2026-10-13">2026.10.13</time> — <time datetime="2026-10-30">10.30</time></p>
           <h3 class="event-name" data-i18n="event.e2.summary">먹방 월드컵 32강</h3>
           <p class="event-state" data-event-state hidden></p>
-          <a class="event-teaser" href="worldcup.html" tabindex="-1" aria-hidden="true"><img src="images/worldcup/kr-fried-chicken.jpg" alt="" width="720" height="540" loading="lazy" decoding="async" /><span class="event-teaser-vs">VS</span><img src="images/worldcup/it-pz-pepperoni.jpg" alt="" width="720" height="540" loading="lazy" decoding="async" /></a>
-          <p class="event-teaser-credit" data-i18n="event.e2.credit">사진 Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), 위키미디어 공용</p>
-          <a class="event-link" href="worldcup.html" data-event-page><span data-event-cta>참여하기</span> <span aria-hidden="true">→</span></a>
+          <div class="wc-embed" data-wc-embed>
+            <div class="wc-view wc-intro" id="wcIntro" hidden>
+              <div class="wc-floaters" id="wcFloaters" aria-hidden="true"></div>
+              <div class="wc-intro-card">
+                <h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">32강</span>, 뭐가 나올까?</h3>
+                <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>
+                <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>
+                <div class="wc-tiles" id="wcCats" role="group" aria-labelledby="wcCatsLabel"></div>
+                <div class="wc-preview" id="wcPreview" hidden>
+                  <p class="wc-preview-label"><span class="wc-preview-emoji" aria-hidden="true">👀</span> <span data-i18n="wc.preview">이 중에서 나와요!</span></p>
+                  <ul class="wc-preview-photos" id="wcPreviewPhotos"></ul>
+                </div>
+                <div class="wc-intro-actions">
+                  <button type="button" class="wc-btn wc-btn--big" id="wcStart"><span class="wc-btn-emoji" aria-hidden="true">🎰</span><span id="wcStartLabel">32강 시작</span></button>
+                  <button type="button" class="wc-btn wc-btn--big wc-btn--resume" id="wcResume" hidden><span class="wc-btn-emoji" aria-hidden="true">▶</span><span id="wcResumeLabel"></span></button>
+                  <button type="button" class="wc-link" id="wcNew" hidden><span data-i18n="wc.newStart">새로 시작</span></button>
+                </div>
+              </div>
+            </div>
+            <p class="wc-chip"><span aria-hidden="true">📷</span> <span data-i18n="wc.photoChip">사진 위키미디어 공용(잘라서 줄임)</span></p>
+            <p class="wc-sr" id="wcStatus" role="status" aria-live="polite"></p>
+          </div>
+          <a class="event-link" href="worldcup.html" data-event-page><span data-event-cta>페이지 보기</span> <span aria-hidden="true">→</span></a>
           <details class="event-more">
             <summary data-i18n="event.more">자세히</summary>
             <p class="event-note" data-event-note></p>
@@ -159,7 +185,6 @@
         'event.band.now': '진행 중',
         'event.band.upcoming': '예정',
         'event.cta.live': '게시물 보기',
-        'event.cta.page': '지금 해보기',
         'event.cta.pagePast': '페이지 보기',
         'event.cta.past': '당시 게시물',
         'event.e0.detail': '<div class="event-detail-sheet"><div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">팔로워 100명 달성 기념 이벤트입니다.</div></div><div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 13일(수) ~ 2026년 5월 20일(수)</div></div><div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">메가커피 아메리카노 모바일 쿠폰을 <strong>5명</strong>에게 증정합니다.</div></div><div class="event-detail-row" data-detail="participation"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">인스타그램 게시물에 안내된 대로 참여해 주세요.</div></div></div>',
@@ -167,7 +192,6 @@
         'event.e1.detail': '<div class="event-detail-sheet"><div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">태울석림제 부스 — 〈카빙〉 KAKI × 밥도둑 콜라보입니다. <strong>일정·세부는 예정</strong>이며 확정 시 인스타·이 페이지에서 안내합니다.</div></div><div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 5월 19일 ~ 2026년 5월 20일 <strong>(예정)</strong></div></div><div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value">현장·인스타 공지에 따라 안내됩니다. (추후 구체화 예정)</div></div><div class="event-detail-row" data-detail="participation"><div class="event-detail-label">참여 방법</div><div class="event-detail-value"><strong>스토리 공유 이벤트</strong>입니다. 인스타그램 스토리 공유 시 <strong>KAKI</strong>와 <strong>밥도둑</strong> 계정을 모두 태그해 주세요. 상세 안내는 당시 게시물에 있어요.</div></div></div>',
         'event.e1.place': '태울석림제 부스',
         'event.e1.summary': 'KAKI × 밥도둑 〈카빙〉',
-        'event.e2.credit': '사진 Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), 위키미디어 공용',
         'event.e2.detail': '<div class="event-detail-sheet"><div class="event-detail-row"><div class="event-detail-label">이벤트 내용</div><div class="event-detail-value">700개가 넘는 메뉴 중 32개가 맞붙어요. 치킨이냐 피자냐, 나의 최애는?</div></div><div class="event-detail-row"><div class="event-detail-label">진행 기간</div><div class="event-detail-value">2026년 10월 13일(화) ~ 2026년 10월 30일(금)</div></div><div class="event-detail-row"><div class="event-detail-label">이벤트 상품</div><div class="event-detail-value"><strong>경품 없음</strong></div></div><div class="event-detail-row" data-detail="participation"><div class="event-detail-label">참여 방법</div><div class="event-detail-value">로그인 없이 바로 시작해요.</div></div></div>',
         'event.e2.summary': '먹방 월드컵 32강',
         'event.empty': '예정된 활동 없음',
@@ -214,6 +238,29 @@
         'nav.navAria': '주요 메뉴',
         'nav.today': '오늘의 꽁밥',
         'nav.topAria': '맨 위로',
+        'wc.cat.all': '전체',
+        'wc.cat.chinese': '중식',
+        'wc.cat.dessert': '디저트·카페',
+        'wc.cat.japanese': '일식',
+        'wc.cat.korean': '한식',
+        'wc.cat.random': '아무거나',
+        'wc.cat.randomSub': '랜덤!',
+        'wc.cat.snack': '분식·간식',
+        'wc.cat.western': '양식',
+        'wc.cat.world': '아시아·세계',
+        'wc.catCount': '{n}개',
+        'wc.catLabel': '카테고리',
+        'wc.catLanded': '{cat} 당첨!',
+        'wc.intro.title': '오늘의 {n}강, 뭐가 나올까?',
+        'wc.intro.tone': '시험기간으로 지친 당신! 메뉴나 골라~',
+        'wc.newStart': '새로 시작',
+        'wc.photoChip': '사진 위키미디어 공용(잘라서 줄임)',
+        'wc.preview': '이 중에서 나와요!',
+        'wc.resume': '이어하기 · {cat} {round} {n}/{total}',
+        'wc.round.final': '결승',
+        'wc.round.n': '{n}강',
+        'wc.round.semi': '4강',
+        'wc.start': '{n}강 시작',
       },
       en: {
         docTitle: 'News & events · Babdoduk',
@@ -221,7 +268,6 @@
         'event.band.now': 'Now',
         'event.band.upcoming': 'Coming up',
         'event.cta.live': 'View post',
-        'event.cta.page': 'Play now',
         'event.cta.pagePast': 'Open the page',
         'event.cta.past': 'Original post',
         'event.e0.detail': '<div class="event-detail-sheet"><div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Giveaway celebrating 100 followers.</div></div><div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">Wednesday, May 13 through Wednesday, May 20, 2026.</div></div><div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Mega Coffee Americano mobile coupons for <strong>5 winners</strong>.</div></div><div class="event-detail-row" data-detail="participation"><div class="event-detail-label">How to participate</div><div class="event-detail-value">Follow the instructions in the Instagram post.</div></div></div>',
@@ -229,7 +275,6 @@
         'event.e1.detail': '<div class="event-detail-sheet"><div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">Festival booth — Carving (KAKI) × Babdoduk collaboration. <strong>Schedule and details are TBA</strong>; watch Instagram and this page.</div></div><div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">May 19–20, 2026 <strong>(tentative)</strong></div></div><div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value">Per on-site / Instagram notices. (Details to be added.)</div></div><div class="event-detail-row" data-detail="participation"><div class="event-detail-label">How to participate</div><div class="event-detail-value"><strong>Story share event</strong>. Tag both <strong>KAKI</strong> and <strong>Babdoduk</strong> on Instagram Stories. Full instructions are in the original post.</div></div></div>',
         'event.e1.place': 'Taeul Seoklim Festival booth',
         'event.e1.summary': 'KAKI × Babdoduk: Carving',
-        'event.e2.credit': 'Photos Startandstar (CC0) · Dale Cruse from San Francisco, CA, USA (CC BY 2.0), Wikimedia Commons',
         'event.e2.detail': '<div class="event-detail-sheet"><div class="event-detail-row"><div class="event-detail-label">Event summary</div><div class="event-detail-value">32 of more than 700 dishes face off. Chicken or pizza? Find your favorite.</div></div><div class="event-detail-row"><div class="event-detail-label">Duration</div><div class="event-detail-value">Tuesday, October 13 through Friday, October 30, 2026.</div></div><div class="event-detail-row"><div class="event-detail-label">Prizes</div><div class="event-detail-value"><strong>No prizes</strong></div></div><div class="event-detail-row" data-detail="participation"><div class="event-detail-label">How to participate</div><div class="event-detail-value">No sign-in needed.</div></div></div>',
         'event.e2.summary': 'Food World Cup: round of 32',
         'event.empty': 'Nothing scheduled',
@@ -276,6 +321,29 @@
         'nav.navAria': 'Main menu',
         'nav.today': 'Today\'s free food',
         'nav.topAria': 'Back to top',
+        'wc.cat.all': 'All',
+        'wc.cat.chinese': 'Chinese',
+        'wc.cat.dessert': 'Desserts & café',
+        'wc.cat.japanese': 'Japanese',
+        'wc.cat.korean': 'Korean',
+        'wc.cat.random': 'Surprise me',
+        'wc.cat.randomSub': 'Random!',
+        'wc.cat.snack': 'Snacks',
+        'wc.cat.western': 'Western',
+        'wc.cat.world': 'Asian & world',
+        'wc.catCount': '{n} dishes',
+        'wc.catLabel': 'Category',
+        'wc.catLanded': '{cat} it is!',
+        'wc.intro.title': 'What’s in today’s round of {n}?',
+        'wc.intro.tone': 'Exam week got you? Just pick a menu~',
+        'wc.newStart': 'New game',
+        'wc.photoChip': 'Photos: Wikimedia Commons (cropped, resized)',
+        'wc.preview': 'These might show up!',
+        'wc.resume': 'Resume · {cat}, {round} {n}/{total}',
+        'wc.round.final': 'Final',
+        'wc.round.n': 'Round of {n}',
+        'wc.round.semi': 'Semifinal',
+        'wc.start': 'Start the round of {n}',
       }
     };
   </script>
@@ -319,6 +387,22 @@
         tag.textContent = t('event.historical', '당시 안내 · 지금은 참여할 수 없어요');
         value.insertBefore(tag, value.firstChild);
       }
+      // The world cup's start screen (data/content/events.json `entry`) is js/worldcup.js with its data,
+      // loaded only while a row that shows it is running or coming up; a past row has a link instead.
+      var entryLoading = false;
+      function loadEntry() {
+        if (entryLoading || !document.querySelector('.event-item:not([data-band="past"]) [data-wc-embed]')) return;
+        entryLoading = true;
+        ['js/worldcup-entry-data.js', 'js/worldcup.js'].forEach(function (src) {
+          var script = document.createElement('script');
+          script.src = src;
+          script.async = false;                     // in this order
+          script.onerror = function () {
+            [].forEach.call(document.querySelectorAll('[data-wc-embed]'), function (box) { box.setAttribute('data-failed', ''); });
+          };
+          document.body.appendChild(script);
+        });
+      }
       function render() {
         var today = todayKst();
         var live = 0;
@@ -345,12 +429,13 @@
           var onSite = link && link.hasAttribute('data-event-page');
           if (link) link.setAttribute('data-band', band);
           if (cta) cta.textContent = onSite
-            ? t(band === 'past' ? 'event.cta.pagePast' : 'event.cta.page', cta.textContent)
+            ? t('event.cta.pagePast', cta.textContent)
             : t(band === 'past' ? 'event.cta.past' : 'event.cta.live', cta.textContent);
           markParticipation(row, band);
         });
         nowList.hidden = !live;
         document.getElementById('archive').hidden = !pastList.children.length;
+        if (live) loadEntry();
         var notices = document.getElementById('eventNotices');
         var empty = document.getElementById('eventEmpty');
         notices.hidden = !notices.children.length;
