@@ -424,6 +424,8 @@
   "wc.loading": "Loading…",
   "wc.locked": "Opens {date}",
   "wc.months": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
+  "wc.mystery.badge": "Opens {date}",
+  "wc.mystery.sr": "The categories are revealed on {date}.",
   "wc.newStart": "New game",
   "wc.photoChip": "Photos: Wikimedia Commons (cropped, resized)",
   "wc.photoCredit": "Photo {author} · {license}",
