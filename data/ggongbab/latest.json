@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T02:57:10+09:00",
+  "generatedAt": "2026-10-14T16:48:35+09:00",
   "timezone": "Asia/Seoul",
-  "count": 2,
+  "count": 5,
   "events": [
     {
       "id": "3f1c34c3-a144-444f-bc56-a8734b778298",
@@ -20,7 +20,8 @@
       "food": {
         "provided": "true",
         "type": "meal",
-        "description": "햄버거"
+        "description": "햄버거",
+        "source": "text"
       },
       "organizer": "KAIST 녹색성장지속가능대학원",
       "eligibility": "KAIST 학생·연구원·창업팀 누구나",
@@ -29,7 +30,7 @@
         "deadline": null,
         "url": "https://forms.gle/WhCbWE9D7UwXq1bj8"
       },
-      "confidence": 0.99,
+      "confidence": 1.0,
       "sources": [
         {
           "type": "dooray",
@@ -53,7 +54,8 @@
       "food": {
         "provided": "true",
         "type": "meal",
-        "description": "피자 + 음료 등"
+        "description": "피자 + 음료 등",
+        "source": "text"
       },
       "organizer": "기계공학과행정팀",
       "eligibility": "기계공학과 전체 학부 학생",
@@ -69,6 +71,118 @@
           "name": "Dooray"
         }
       ]
+    },
+    {
+      "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
+      "title": "자연과학과 함께하는 토크 콘서트",
+      "summary": "학사과정 학생을 대상으로 물리학과, 수리과학과, 화학과, 생명과학과 교수들이 강연과 토크를 진행합니다. 11월 2일부터 5일까지 샌드위치가, 11월 6일에는 쉐이크쉑 버거가 제공되며 경품 추첨이 있습니다.",
+      "startAt": "2026-11-02T12:00:00+09:00",
+      "endAt": "2026-11-06T19:30:00+09:00",
+      "dateText": "November 2 – 5 (Mon. – Thu.); November 6 (Fri.)",
+      "timeText": "12:00–12:50; 16:00–19:30",
+      "location": {
+        "name": "Natural Science Building, Common Lecture Hall (Room 1501, E6-1); KI Building, Fusion Hall (Room C101, E4)",
+        "building": "E6-1; E4",
+        "room": "1501; C101"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "Sandwiches; Shake Shack burgers",
+        "source": "text"
+      },
+      "organizer": "College of Natural Sciences; KAIST 자연과학대학/ KAI-X",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "Galaxy Z Flip8 (1EA), Galaxy Watch (1EA), Apple Watch (1EA), Galaxy Buds4 (3EA)"
+      }
+    },
+    {
+      "id": "ed473c75-3ff6-4b6c-afd8-ab08649b4f35",
+      "title": "KAIST 문지책방 제7권 <벌거벗은 동물사> 행사",
+      "summary": "저자 강연과 저자와의 티타임으로 진행되는 문지책방 행사입니다. 사전등록자 중 추첨을 통해 주제 도서를 증정합니다.",
+      "startAt": "2026-11-11T15:00:00+09:00",
+      "endAt": "2026-11-11T17:00:00+09:00",
+      "dateText": "2026. 11. 11. (수)",
+      "timeText": "15:00 ~ 17:00",
+      "location": {
+        "name": "KAIST 문지캠퍼스, 강의동 L507호",
+        "building": "",
+        "room": "L507호"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "의과학대학원",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-03T23:59:00+09:00",
+        "url": "https://forms.gle/ZDVNCnpe1QRPhe2dA"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "주제 도서"
+      }
+    },
+    {
+      "id": "2f507eea-eb2d-4881-8cd9-50df4fc11de9",
+      "title": "제10회 INNOVATE KOREA",
+      "summary": "헤럴드가 주최하는 제10회 INNOVATE KOREA 공연으로, 국내 뮤지컬 배우들이 출연합니다. KAIST 재학생과 교수 및 임직원은 무료 사전 티켓팅을 우선 신청할 수 있습니다.",
+      "startAt": "2026-11-17T14:00:00+09:00",
+      "endAt": "2026-11-17T18:00:00+09:00",
+      "dateText": "11월 17일",
+      "timeText": "14:00 - 18:00",
+      "location": {
+        "name": "KAIST 류근철 스포츠컴플렉스",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "헤럴드",
+      "eligibility": "카이스트 재학생과 교수 및 임직원",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-10-18T23:59:00+09:00",
+        "url": "https://itforum.heraldcorp.com/2026/"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "아이패드 1명, 에어팟 1명"
+      }
     }
   ]
 }
