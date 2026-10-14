@@ -297,7 +297,8 @@ def test_the_start_screen_offers_the_categories_with_counts_and_keeps_the_choice
     # The category is shown while playing, on the result, in the share text and on the image.
     assert "$('wcGame').textContent = gameLabel(game.category);" in script
     assert "$('wcResultGame').textContent = gameLabel(result.category);" in script
-    assert "{cat}" in ko["wc.shareText"] and "{cat}" in en["wc.shareText"] and "gameLabel(result.category) + ' · '" in script
+    assert "{cat}" in ko["wc.shareText"] and "{cat}" in en["wc.shareText"]
+    assert "won: fill(t('wc.story.won', '{game} 우승'), { game: gameLabel(result.category) })" in script     # the story card
     assert (ko["wc.catGame"], en["wc.catGame"]) == ("{cat} {n}강", "{cat} · Round of {n}")
 
 

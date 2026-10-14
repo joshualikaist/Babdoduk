@@ -59,8 +59,12 @@ def test_home_link_preview_is_the_loopy_card():
     assert (meta["og:image:width"], meta["og:image:height"]) == (str(width), str(height))
     body = html.split("<body", 1)[1]
     assert re.search(r'<img src="([^"]+)"', body).group(1) == "images/kakao-loopy.jpg"  # first image a scraper sees
-    for page in ("ggongbab.html", "mukbang.html", "event.html", "history.html"):
+    for page in ("ggongbab.html", "mukbang.html", "history.html"):
         assert head_meta((ROOT / page).read_text(encoding="utf-8"))["og:image"] == LOOPY, page
+    # The news page and the world cup show the world cup's teaser instead (owner 2026-10-14,
+    # tests/test_worldcup_share.py).
+    for page in ("event.html", "worldcup.html"):
+        assert head_meta((ROOT / page).read_text(encoding="utf-8"))["og:image"].endswith("/images/worldcup/og-worldcup.jpg"), page
 
 
 def test_footer_contact_uses_the_copyright_color():

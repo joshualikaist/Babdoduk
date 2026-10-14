@@ -463,11 +463,164 @@
   color: var(--color-ink-muted);
 }
 
-.wc-share-status {
-  min-height: 1.5em;
-  margin-top: var(--space-3);
-  font-size: 14px;
+/* The story card (js/worldcup.js prepareStory, owner 2026-10-14): its preview, tilted like a photo
+   just printed, beside 📥 스토리 이미지 저장 and 📤 공유하기 and the one-line Instagram hint. While it
+   is being drawn a gradient placeholder holds its place. */
+.wc-story {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  max-width: 520px;
+  margin: var(--space-6) auto 0;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(150deg, #fdf2f8, #f5f3ff 55%, #eff6ff);
+  text-align: left;
+}
+
+.wc-story-preview,
+.wc-story[aria-busy="true"]::before {
+  flex: none;
+  width: 128px;
+  height: auto;
+  aspect-ratio: 9 / 16;
+  border-radius: 14px;
+  rotate: -3deg;
+}
+
+.wc-story-preview {
+  box-shadow: 0 16px 32px rgba(79, 70, 229, 0.24), 0 3px 8px rgba(30, 29, 26, 0.12);
+  animation: wc-story-in 460ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.wc-story-preview[hidden] {
+  display: none;
+}
+
+.wc-story[aria-busy="true"]::before {
+  content: "";
+  background: var(--wc-grad);
+  opacity: 0.35;
+}
+
+@keyframes wc-story-in {
+  from { transform: translateY(14px) scale(0.86); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.wc-story-side {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  max-width: 280px;
+}
+
+.wc-story-side .wc-btn {
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0 var(--space-4);
+  word-break: keep-all;
+  text-wrap: balance;
+}
+
+.wc-btn--share {
+  border-color: transparent;
+  background: var(--wc-grad);
+  color: #fff;
+}
+
+.wc-btn--share:hover {
+  border-color: transparent;
+  background: linear-gradient(115deg, #be185d, #86198f 48%, #4338ca);
+}
+
+.wc-btn-icon {
+  flex: none;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.wc-story-hint {
+  font-size: 12px;
+  line-height: 1.5;
   color: var(--color-ink-muted);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 저장했어요 / 링크를 복사했어요: a toast at the bottom of the screen, and the same words read out once. */
+.wc-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  max-width: calc(100% - 32px);
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fffdf8;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(30, 29, 26, 0.25);
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.wc-toast.is-shown {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* A friend's shared result over the start screen: "친구의 최애는 ○○! 🏆 너도 해봐". */
+.wc-friend {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: min(100%, 560px);
+  margin: -20px auto 16px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fffdf8;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  box-shadow: 0 10px 26px rgba(79, 70, 229, 0.25), 0 2px 6px rgba(30, 29, 26, 0.12);
+}
+
+.wc-friend[hidden],
+.wc-friend-photo[hidden] {
+  display: none;
+}
+
+.wc-friend-photo {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin: -2px 0 -2px -10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.wc-friend-text {
+  min-width: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.wc-friend-dish {
+  color: #f9a8d4;
 }
 
 .wc-history {
@@ -811,6 +964,21 @@
   .wc-actions .wc-btn {
     flex: 1 1 100%;
   }
+
+  .wc-story {
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .wc-story-preview,
+  .wc-story[aria-busy="true"]::before {
+    width: 96px;
+  }
+
+  .wc-story-side .wc-btn {
+    padding: 0 var(--space-2);
+    font-size: 14px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -825,6 +993,7 @@
   }
 
   .wc-card.is-picked::after,
+  .wc-story-preview,
   .wc-result.is-celebrating .wc-winner,
   .wc-result.is-celebrating .wc-winner-photo img {
     animation: none;
@@ -832,6 +1001,10 @@
 
   .wc-card:hover {
     transform: none;
+  }
+
+  .wc-toast {
+    transition: none;
   }
 }
 

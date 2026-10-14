@@ -2,9 +2,10 @@
    data/content/worldcup.json (the sync writes it into the page as window.BABDODUK_WORLDCUP;
    data/content/ is never deployed) and plays them two at a time, with names and flavours from the
    food catalog (data/foods/). A pick pops; from the quarterfinals on a new round takes the screen
-   for a beat (the final with a crash of the two finalists); the winner gets confetti and a result
-   image to save. Progress and past winners stay in this browser (localStorage
-   `babdoduk-worldcup`); nothing is sent anywhere.
+   for a beat (the final with a crash of the two finalists); the winner gets confetti and an
+   Instagram story card (1080x1920) to save or share, with a link that challenges a friend
+   (worldcup.html?from=<dish>&cat=<category>, docs/WORLDCUP_SHARE.md). Progress and past winners
+   stay in this browser (localStorage `babdoduk-worldcup`); nothing is sent anywhere.
    Categories (owner 2026-10-14): the start screen offers the whole pool or one of seven categories
    (data/content/worldcup.json `categories`); a game draws its 32 dishes from the chosen one and
    keeps `category` in the saved game (an older save has none and counts as the whole pool).
@@ -330,6 +331,7 @@
       if (locked()) { box.setAttribute('inert', ''); box.setAttribute('aria-hidden', 'true'); }
       else { box.removeAttribute('inert'); box.removeAttribute('aria-hidden'); }
     }
+    renderFriend();
     if (resumable) $('wcResumeLabel').textContent = fill(t('wc.resume', '이어하기 · {cat} {round} {n}/{total}'), progress());
     [].forEach.call($('wcPreviewPhotos').querySelectorAll('img[data-id]'), function (img) { img.alt = name(img.getAttribute('data-id')); });
   }
@@ -420,7 +422,7 @@
     $('wcFinalist').textContent = fill(t('wc.finalist', '결승 상대: {dish}'), { dish: name(result.finalist) });
     showPhoto($('wcWinnerImg'), $('wcWinnerCredit'), result.id);
     $('wcWinnerFigure').hidden = $('wcWinnerImg').hidden;
-    $('wcShareStatus').textContent = '';
+    prepareStory();                            // the story card is made now, so a tap can hand it over at once
     if (focus) {
       $('wcWinner').focus();
       announce(fill(t('wc.announceWinner', '우승 메뉴: {dish}'), { dish: name(result.id) }));
@@ -499,13 +501,22 @@
   function finish(winner, finalist) {
     winners.unshift({ id: winner, finalist: finalist, date: todayKst() });
     winners = winners.slice(0, HISTORY);
-    result = { id: winner, finalist: finalist, category: game.category };
+    result = { id: winner, finalist: finalist, category: game.category, semis: semifinalists(winner, finalist) };
     game = null;
     store();
     show('result');
     renderResult(true);
     celebrate();
     sound.fx('fanfare', 150);
+  }
+  // The two dishes that lost in the semifinals, from the bracket's log (its last three matches are
+  // the semifinals and the final); none when the log is incomplete (a game saved before it existed).
+  function semifinalists(winner, finalist) {
+    var log = game.log || [], n = log.length;
+    if (n < 3) return [];
+    var semis = [log[n - 3], log[n - 2]], won = semis.map(function (m) { return m && m[0]; });
+    if (won.indexOf(winner) < 0 || won.indexOf(finalist) < 0) return [];
+    return semis.map(function (m) { return m[1]; }).filter(function (id) { return !!dishes[id]; });
   }
   function pick(side) {
     if (splash) { endSplash('skip'); return; }          // a screen reader's click on a card under the splash
@@ -1419,72 +1430,557 @@
     }
   }
 
-  // ---- result image ----------------------------------------------------------------------------
-  // A 1080x1350 card (the winner, its photo and the photo credit, the site) to keep or post.
-  function fitText(ctx, text, x, y, max, px, weight) {
-    var font = function (n) { return weight + ' ' + n + "px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif"; };
-    ctx.font = font(px);
-    while (px > 28 && ctx.measureText(text).width > max) { px -= 4; ctx.font = font(px); }
-    ctx.fillText(text, x, y);
+  // ---- the story card ------------------------------------------------------------------------------
+  // Owner 2026-10-14: the moment the winner is decided, a 1080x1920 Instagram story card (9:16 only)
+  // is drawn here, shown as a small preview on the result and kept ready, so 스토리 이미지 저장 and
+  // 공유하기 hand the file over inside the same tap (a share sheet needs the tap's activation). Beat by
+  // beat: the brand's pink-to-indigo gradient with soft glows, rays and confetti; "🏆 나의 최애 메뉴";
+  // the winner's photo, large and rounded, with a crown; the dish name huge in Jua and its other name
+  // small; "한식 32강 우승"; the runner-up and the other two semifinalists as photo chips; the CTA
+  // "너의 최애는? 👉 babdoduk.vercel.app" and the wordmark; the photo credits, tiny. Instagram's own
+  // controls cover about 250 px at the top and at the bottom of a story, so everything that matters
+  // sits between STORY.top and STORY.bottom; only decoration and the credits go outside.
+  // The photos are this site's own files (images/worldcup/), so the canvas is never tainted and can be
+  // exported. The lettering is Jua cut to exactly this card's letters (loadStoryFont); without it (no
+  // network, a slow font) the card is drawn in Noto Sans KR rather than in a mix of the two.
+  // docs/WORLDCUP_SHARE.md describes the card, the share flows and the friend link.
+  var STORY = { w: 1080, h: 1920, top: 250, bottom: 1670, pad: 72 };
+  var storyFonts = 0;     // each card's Jua subset is its own family: the page's own Jua is never touched
+  var story = null;       // { key, promise, file, url }: the card of the result on screen
+  function storyKey() { return result ? [result.id, result.finalist, (result.semis || []).join(','), result.category, lang()].join('|') : ''; }
+  function rng(seed) {          // mulberry32: the same winner always gets the same confetti
+    var a = 0;
+    for (var i = 0; i < seed.length; i++) a = Math.imul(a ^ seed.charCodeAt(i), 2654435761);
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      var x = Math.imul(a ^ (a >>> 15), 1 | a);
+      x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
   }
-  function saveImage() {
-    var status = $('wcShareStatus'), photo = (cup.photos || {})[result.id];
-    var canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 1350;
-    var ctx = canvas.getContext('2d');
-    function draw(img) {
-      ctx.fillStyle = '#fffdf8';
-      ctx.fillRect(0, 0, 1080, 1350);
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#be185d';
-      fitText(ctx, gameLabel(result.category) + ' · ' + t('wc.cardKicker', '나의 최애 메뉴'), 540, 120, 900, 40, 800);
-      ctx.fillStyle = '#1e1d1a';
-      fitText(ctx, name(result.id), 540, 250, 960, 104, 900);
-      ctx.fillStyle = '#6d665e';
-      fitText(ctx, otherName(result.id), 540, 320, 960, 40, 500);
-      if (img) {
-        ctx.save();
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(60, 380, 960, 720, 36); else ctx.rect(60, 380, 960, 720);
-        ctx.clip();
-        ctx.drawImage(img, 60, 380, 960, 720);
-        ctx.restore();
-        ctx.fillStyle = '#6d665e';
-        fitText(ctx, fill(t('wc.photoCredit', '사진 {author} · {license}'), { author: photo.author, license: photo.license }),
-                540, 1150, 960, 26, 500);
-      }
-      ctx.fillStyle = '#1e1d1a';
-      fitText(ctx, t('wc.cardBrand', '밥도둑 먹방 월드컵'), 540, 1240, 960, 44, 800);
-      ctx.fillStyle = '#6d665e';
-      fitText(ctx, location.host, 540, 1295, 960, 30, 500);
-      canvas.toBlob(function (blob) {
-        if (!blob) { status.textContent = t('wc.shareFailed', '공유하지 못했어요.'); return; }
-        var file = typeof File === 'function' ? new File([blob], 'babdoduk-worldcup.jpg', { type: 'image/jpeg' }) : null;
-        // Phones get the share sheet (straight to a story or a chat); a computer saves the file.
-        var touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        if (touch && file && navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: document.title }).catch(function () {});
-          return;
-        }
-        var link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'babdoduk-worldcup.jpg';
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
-        status.textContent = t('wc.saved', '저장했어요');
-      }, 'image/jpeg', 0.9);
-    }
-    var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-    fonts.then(function () {
-      if (!photo) { draw(null); return; }
+  function within(promise, ms, fallback) {
+    return Promise.race([promise.catch(function () { return fallback; }),
+                         new Promise(function (resolve) { setTimeout(function () { resolve(fallback); }, ms); })]);
+  }
+  // Jua with only `text`'s letters (Google Fonts `text=`, a few KB). The stylesheet is read but never
+  // applied (media "not all"): its font file becomes a FontFace of a family of the card's own.
+  function loadStoryFont(text) {
+    if (typeof FontFace !== 'function' || !document.fonts) return Promise.resolve(null);
+    var letters = Array.from(new Set(Array.from(text.replace(/\s+/g, '')))).join('');
+    var family = 'BabdodukStory' + (++storyFonts);
+    return within(new Promise(function (resolve) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.media = 'not all';
+      link.crossOrigin = 'anonymous';
+      link.href = 'https://fonts.googleapis.com/css2?family=Jua&display=block&text=' + encodeURIComponent(letters);
+      link.onload = function () {
+        var src = null;
+        try {
+          [].forEach.call(link.sheet.cssRules, function (rule) {
+            var m = rule.style && /url\(["']?([^"')]+)["']?\)/.exec(rule.style.getPropertyValue('src'));
+            if (m && !src) src = m[1];
+          });
+        } catch (e) { /* an unreadable sheet: the card falls back */ }
+        link.remove();
+        if (!src || !/^https:\/\/fonts\.gstatic\.com\//.test(src)) { resolve(null); return; }
+        new FontFace(family, 'url(' + src + ')').load().then(function (face) {
+          document.fonts.add(face);
+          resolve(family);
+        }, function () { resolve(null); });
+      };
+      link.onerror = function () { link.remove(); resolve(null); };
+      document.head.appendChild(link);
+    }), 4000, null);
+  }
+  function loadPhoto(id) {
+    var photo = id && photoOf(id);
+    if (!photo) return Promise.resolve(null);
+    return within(new Promise(function (resolve) {
       var img = new Image();
-      img.onload = function () { draw(img); };
-      img.onerror = function () { draw(null); };
-      img.src = photo.image;
-    });
+      img.decoding = 'async';
+      img.onload = function () { resolve(img); };
+      img.onerror = function () { resolve(null); };
+      img.src = photo.image;                          // same origin: the canvas stays exportable
+    }), 6000, null);
   }
+  function rounded(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function cover(ctx, img, x, y, w, h) {          // object-fit: cover
+    var s = Math.max(w / img.naturalWidth, h / img.naturalHeight), sw = w / s, sh = h / s;
+    ctx.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
+  }
+  function clip(ctx, text, max) {                  // an ellipsis rather than a line that runs off
+    if (ctx.measureText(text).width <= max) return text;
+    var chars = Array.from(text);
+    while (chars.length > 1 && ctx.measureText(chars.join('') + '…').width > max) chars.pop();
+    return chars.join('').trim() + '…';
+  }
+  // The dish name: one line as large as fits (up to 168 px), else two balanced lines, else clipped.
+  function nameLines(ctx, text, font, max) {
+    var size;
+    for (size = 168; size >= 96; size -= 6) {
+      ctx.font = font(size);
+      if (ctx.measureText(text).width <= max) return { size: size, lines: [text] };
+    }
+    var words = text.split(' ');
+    if (words.length > 1) {
+      var best = null;
+      for (var i = 1; i < words.length; i++) {
+        var pair = [words.slice(0, i).join(' '), words.slice(i).join(' ')];
+        ctx.font = font(100);
+        var wide = Math.max(ctx.measureText(pair[0]).width, ctx.measureText(pair[1]).width);
+        if (!best || wide < best.wide) best = { lines: pair, wide: wide };
+      }
+      for (size = 112; size >= 64; size -= 4) {
+        ctx.font = font(size);
+        if (best.lines.every(function (line) { return ctx.measureText(line).width <= max; })) return { size: size, lines: best.lines };
+      }
+      ctx.font = font(64);
+      return { size: 64, lines: best.lines.map(function (line) { return clip(ctx, line, max); }) };
+    }
+    ctx.font = font(96);
+    return { size: 96, lines: [clip(ctx, text, max)] };
+  }
+  function sparkle(ctx, x, y, r, color, alpha) {   // a four-pointed star
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.quadraticCurveTo(x, y, x, y + r);
+    ctx.quadraticCurveTo(x, y, x - r, y);
+    ctx.quadraticCurveTo(x, y, x, y - r);
+    ctx.fill();
+    ctx.restore();
+  }
+  // A gold crown with three points, pearls on the points and gems on the band.
+  function crown(ctx, cx, cy, w, angle) {
+    var h = w * 0.74, x = -w / 2, top = -h / 2, base = h / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+    ctx.shadowColor = 'rgba(80, 20, 60, 0.35)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 10;
+    var gold = ctx.createLinearGradient(0, top, 0, base);
+    gold.addColorStop(0, '#fff3a3');
+    gold.addColorStop(0.45, '#fcd34d');
+    gold.addColorStop(1, '#f59e0b');
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.08, base);
+    ctx.lineTo(x + w * 0.02, top + h * 0.2);
+    ctx.lineTo(x + w * 0.29, top + h * 0.5);
+    ctx.lineTo(0, top + h * 0.02);
+    ctx.lineTo(x + w * 0.71, top + h * 0.5);
+    ctx.lineTo(x + w * 0.98, top + h * 0.2);
+    ctx.lineTo(x + w * 0.92, base);
+    ctx.closePath();
+    ctx.fillStyle = gold;
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = w * 0.035;
+    ctx.strokeStyle = '#b45309';
+    ctx.stroke();
+    rounded(ctx, x + w * 0.06, base - h * 0.26, w * 0.88, h * 0.26, h * 0.06);   // the band
+    ctx.fillStyle = '#f59e0b';
+    ctx.fill();
+    ctx.stroke();
+    [[x + w * 0.02, top + h * 0.2], [0, top + h * 0.02], [x + w * 0.98, top + h * 0.2]].forEach(function (p) {
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], w * 0.065, 0, Math.PI * 2);
+      ctx.fillStyle = '#fffbeb';
+      ctx.fill();
+      ctx.stroke();
+    });
+    [[-w * 0.27, '#60a5fa'], [0, '#ec4899'], [w * 0.27, '#60a5fa']].forEach(function (g, i) {
+      ctx.beginPath();
+      ctx.arc(g[0], base - h * 0.13, w * (i === 1 ? 0.07 : 0.05), 0, Math.PI * 2);
+      ctx.fillStyle = g[1];
+      ctx.fill();
+      ctx.lineWidth = w * 0.02;
+      ctx.stroke();
+    });
+    ctx.beginPath();                                  // a glint on the left point
+    ctx.moveTo(x + w * 0.12, top + h * 0.42);
+    ctx.lineTo(x + w * 0.2, top + h * 0.62);
+    ctx.lineWidth = w * 0.03;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.stroke();
+    ctx.restore();
+  }
+  function storyTexts() {
+    var host = /^babdoduk(-lab)?\.vercel\.app$/.test(location.hostname) ? location.hostname : 'babdoduk.vercel.app';
+    var opponents = [result.finalist].concat(result.semis || []).filter(Boolean);
+    var photos = [result.id].concat(opponents).map(photoOf).filter(Boolean);
+    var credits = photos.filter(function (p) { return p.author; }).map(function (p) { return p.author + ' (' + p.license + ')'; });
+    return {
+      kicker: t('wc.cardKicker', '나의 최애 메뉴'),
+      name: name(result.id),
+      sub: otherName(result.id),
+      won: fill(t('wc.story.won', '{game} 우승'), { game: gameLabel(result.category) }),
+      emoji: CATEGORY_EMOJI[result.category] || '🏆',
+      chips: opponents.map(function (id, i) {
+        return { id: id, label: t(i ? 'wc.story.semi' : 'wc.story.final', i ? '4강' : '결승 상대'), name: name(id) };
+      }),
+      cta: t('wc.story.cta', '너의 최애는?'),
+      host: host,
+      brand: t('wc.cardBrand', '밥도둑 먹방 월드컵'),
+      credit: credits.length ? fill(t('wc.story.credit', '사진: 위키미디어 공용 · {credits}'), { credits: credits.join(', ') }) : ''
+    };
+  }
+  // The card, top to bottom. The photo gives way when the name needs two lines, so the wordmark always
+  // ends inside the safe zone.
+  function drawStory(canvas, words, family, photos) {
+    var W = STORY.w, H = STORY.h, ctx = canvas.getContext('2d'), inner = W - 2 * STORY.pad;
+    var sans = "'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
+    var display = function (px) { return family ? px + "px '" + family + "', " + sans : '900 ' + px + 'px ' + sans; };
+    var plain = function (weight, px) { return weight + ' ' + px + 'px ' + sans; };
+    var random = rng(result.id);
+    function shadow(color, blur, y) { ctx.shadowColor = color; ctx.shadowBlur = blur; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = y; }
+    function noShadow() { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
+    function pill(text, font, y, h, fill, ink, stroke) {
+      ctx.font = font;
+      var w = Math.min(ctx.measureText(text).width + h, inner);
+      rounded(ctx, (W - w) / 2, y, w, h, h / 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      noShadow();
+      if (stroke) { ctx.lineWidth = 3; ctx.strokeStyle = stroke; ctx.stroke(); }
+      ctx.fillStyle = ink;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(clip(ctx, text, w - h * 0.6), W / 2, y + h / 2 + 2);
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.textAlign = 'center';
+
+    // The layout first: the name's size decides how tall the photo can be.
+    var fit = nameLines(ctx, words.name, display, inner);
+    var lineH = Math.round(fit.size * 1.06), nameH = fit.size + (fit.lines.length - 1) * lineH;
+    var chips = words.chips.slice(0, 3), subH = words.sub ? 58 : 0, chipsH = chips.length ? 128 : 0;
+    var photoH = Math.max(380, Math.min(540, 882 - nameH - subH - chipsH));
+    var photoW = Math.round(photoH * 1.4);
+    var photoTop = 410, frame = 18;
+    var nameTop = photoTop + photoH + frame + 46;
+    var wonY = nameTop + nameH + subH + 34, chipY = wonY + 78 + 30, ctaY = chipY + chipsH + (chipsH ? 2 : 30);
+
+    // The brand gradient, pink at the top to indigo at the bottom, with soft lights.
+    var bg = ctx.createLinearGradient(0, 0, W * 0.55, H);
+    bg.addColorStop(0, '#f472b6');
+    bg.addColorStop(0.22, '#db2777');
+    bg.addColorStop(0.55, '#a21caf');
+    bg.addColorStop(0.82, '#6d28d9');
+    bg.addColorStop(1, '#4338ca');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    [[140, 360, 520, 'rgba(255, 255, 255, 0.30)'], [1000, 980, 560, 'rgba(251, 207, 232, 0.22)'],
+     [880, 150, 420, 'rgba(253, 224, 71, 0.20)'], [120, 1700, 620, 'rgba(129, 140, 248, 0.45)'],
+     [980, 1820, 520, 'rgba(56, 189, 248, 0.22)']].forEach(function (g) {
+      var glow = ctx.createRadialGradient(g[0], g[1], 0, g[0], g[1], g[2]);
+      glow.addColorStop(0, g[3]);
+      glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
+    });
+    // Rays from behind the photo, a trophy-stage light.
+    var cx = W / 2, cy = photoTop + photoH / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    var rays = ctx.createRadialGradient(0, 0, 80, 0, 0, 1000);
+    rays.addColorStop(0, 'rgba(255, 255, 255, 0.17)');
+    rays.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = rays;
+    for (var r = 0; r < 18; r++) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, 1100, r * Math.PI / 9, r * Math.PI / 9 + Math.PI / 22);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+    // Confetti and sparkles: thick in the bands Instagram covers, a few down the sides, none on words.
+    var colors = ['#fde047', '#fbcfe8', '#ffffff', '#a5f3fc', '#c4b5fd', '#fdba74', '#f9a8d4'];
+    for (var i = 0; i < 96; i++) {
+      var band = i % 3, x = random() * W, y;
+      if (band === 0) y = 14 + random() * (STORY.top - 10);
+      else if (band === 1) y = STORY.bottom + 24 + random() * (H - STORY.bottom - 150);
+      else { y = STORY.top + random() * (STORY.bottom - STORY.top); x = random() < 0.5 ? 8 + random() * 44 : W - 8 - random() * 44; }
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(random() * Math.PI);
+      ctx.globalAlpha = 0.55 + random() * 0.45;
+      ctx.fillStyle = colors[i % colors.length];
+      var kind = i % 4, s = 12 + random() * 16;
+      if (kind === 0) ctx.fillRect(-s / 2, -s * 0.22, s, s * 0.44);
+      else if (kind === 1) { ctx.beginPath(); ctx.arc(0, 0, s * 0.34, 0, Math.PI * 2); ctx.fill(); }
+      else if (kind === 2) { rounded(ctx, -s * 0.8, -s * 0.16, s * 1.6, s * 0.32, s * 0.16); ctx.fill(); }
+      else { ctx.beginPath(); ctx.moveTo(0, -s * 0.5); ctx.lineTo(s * 0.45, s * 0.35); ctx.lineTo(-s * 0.45, s * 0.35); ctx.closePath(); ctx.fill(); }
+      ctx.restore();
+    }
+    [[96, 300, 28], [986, 300, 36], [44, 760, 22], [1040, 900, 26], [150, 1726, 34], [930, 1730, 26], [540, 110, 32],
+     [290, 176, 18], [790, 196, 22], [1036, 1650, 18]].forEach(function (s, n) {
+      sparkle(ctx, s[0], s[1], s[2], n % 3 ? '#ffffff' : '#fef08a', 0.92);
+    });
+
+    // "🏆 나의 최애 메뉴" on a glassy pill.
+    pill('🏆 ' + words.kicker, display(52), 268, 92, 'rgba(255, 255, 255, 0.2)', '#ffffff', 'rgba(255, 255, 255, 0.6)');
+    // The winner's photo in a white frame, tilted a little, with a crown on its corner.
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-0.035);
+    shadow('rgba(46, 16, 101, 0.45)', 70, 34);
+    rounded(ctx, -photoW / 2 - frame, -photoH / 2 - frame, photoW + 2 * frame, photoH + 2 * frame, 60);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    noShadow();
+    rounded(ctx, -photoW / 2, -photoH / 2, photoW, photoH, 44);
+    if (photos[0]) {
+      ctx.save();
+      ctx.clip();
+      cover(ctx, photos[0], -photoW / 2, -photoH / 2, photoW, photoH);
+      ctx.restore();
+    } else {
+      var empty = ctx.createLinearGradient(0, -photoH / 2, 0, photoH / 2);
+      empty.addColorStop(0, '#fdf2f8');
+      empty.addColorStop(1, '#eef2ff');
+      ctx.fillStyle = empty;
+      ctx.fill();
+      ctx.font = plain(400, 240);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(words.emoji, 0, 0);
+      ctx.textBaseline = 'alphabetic';
+    }
+    ctx.restore();
+    crown(ctx, cx - photoW / 2 + 24, photoTop - 4, 196, -0.36);
+
+    // The dish name, huge, and its other name.
+    ctx.font = display(fit.size);
+    shadow('rgba(59, 7, 100, 0.5)', 32, 8);
+    ctx.fillStyle = '#ffffff';
+    fit.lines.forEach(function (line, n) { ctx.fillText(line, W / 2, nameTop + fit.size * 0.86 + n * lineH); });
+    noShadow();
+    if (words.sub) {
+      ctx.font = plain(600, 40);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+      ctx.fillText(clip(ctx, words.sub, inner), W / 2, nameTop + nameH + 46);
+    }
+    // "🍚 한식 32강 우승" on a white pill.
+    shadow('rgba(46, 16, 101, 0.3)', 24, 8);
+    pill(words.emoji + ' ' + words.won, display(46), wonY, 78, '#ffffff', '#be185d');
+
+    // The runner-up and the semifinalists: photo chips in one row.
+    var gap = 16, chipH = 100;
+    var chipW = chips.length === 1 ? 560 : (inner - gap * (chips.length - 1)) / chips.length;
+    var rowX = (W - (chipW * chips.length + gap * (chips.length - 1))) / 2;
+    chips.forEach(function (chip, n) {
+      var x = rowX + n * (chipW + gap), img = photos[n + 1], d = 76, px = x + 12, py = chipY + (chipH - d) / 2;
+      rounded(ctx, x, chipY, chipW, chipH, chipH / 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.17)';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.stroke();
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(px + d / 2, py + d / 2, d / 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#fce7f3';
+      ctx.fill();
+      if (img) { ctx.clip(); cover(ctx, img, px, py, d, d); }
+      ctx.restore();
+      ctx.beginPath();
+      ctx.arc(px + d / 2, py + d / 2, d / 2, 0, Math.PI * 2);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+      var tx = px + d + 14, room = x + chipW - tx - 26;
+      ctx.textAlign = 'left';
+      ctx.font = plain(700, 23);
+      ctx.fillStyle = n ? 'rgba(255, 255, 255, 0.8)' : '#fde68a';
+      ctx.fillText(clip(ctx, chip.label, room), tx, chipY + 40);
+      var size = chips.length === 1 ? 40 : 34;
+      ctx.font = display(size);
+      while (size > 24 && ctx.measureText(chip.name).width > room) { size -= 2; ctx.font = display(size); }
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(clip(ctx, chip.name, room), tx, chipY + 44 + size);
+      ctx.textAlign = 'center';
+    });
+
+    // The call to play, "너의 최애는? 👉 babdoduk.vercel.app", and the wordmark: both inside the safe zone.
+    shadow('rgba(30, 10, 60, 0.4)', 28, 10);
+    pill(words.cta + ' 👉 ' + words.host, display(44), ctaY, 88, '#1e1d1a', '#ffffff');
+    ctx.font = plain(900, 46);
+    var mark = 'Babdoduk', mw = ctx.measureText(mark).width;
+    ctx.font = plain(700, 26);
+    var bw = ctx.measureText(words.brand).width, total = mw + 20 + bw, left = (W - total) / 2, base = ctaY + 88 + 62;
+    ctx.textAlign = 'left';
+    ctx.font = plain(900, 46);
+    var holo = ctx.createLinearGradient(left, 0, left + mw, 0);
+    holo.addColorStop(0, '#ffffff');
+    holo.addColorStop(0.5, '#fce7f3');
+    holo.addColorStop(1, '#e0e7ff');
+    ctx.fillStyle = holo;
+    ctx.fillText(mark, left, base);
+    ctx.font = plain(700, 26);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+    ctx.fillText(words.brand, left + mw + 20, base - 4);
+    ctx.textAlign = 'center';
+
+    // The photo credits (the licences ask for them), small, at the very bottom: two lines at most.
+    if (words.credit) {
+      ctx.font = plain(500, 20);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.72)';
+      var lines = [words.credit];
+      if (ctx.measureText(words.credit).width > inner) {
+        var parts = words.credit.split(', '), first = '';
+        while (parts.length && ctx.measureText(first + parts[0] + ',').width <= inner) first += parts.shift() + ', ';
+        lines = [first.replace(/, $/, ','), clip(ctx, parts.join(', '), inner)];
+      }
+      lines.forEach(function (line, n) { ctx.fillText(line, W / 2, H - 70 + n * 28 - (lines.length - 1) * 14); });
+    }
+  }
+  // The card of the result on screen: drawn once per winner and language, then kept.
+  function prepareStory() {
+    var key = storyKey();
+    if (!key) return Promise.resolve(null);
+    if (story && story.key === key) return story.promise;
+    if (story && story.url) URL.revokeObjectURL(story.url);
+    var mine = story = { key: key, file: null, url: null };
+    var words = storyTexts(), preview = $('wcStoryPreview');
+    preview.hidden = true;
+    $('wcStory').setAttribute('aria-busy', 'true');
+    var juaText = ['🏆 ' + words.kicker, words.name, words.emoji + ' ' + words.won, words.cta + ' 👉 ' + words.host]
+      .concat(words.chips.map(function (c) { return c.name; })).join('');
+    var plainText = [words.sub, words.credit, words.brand, 'Babdoduk'].concat(words.chips.map(function (c) { return c.label; })).join('');
+    var noto = document.fonts && document.fonts.load ? Promise.all(['500', '600', '700', '900'].map(function (w) {
+      return document.fonts.load(w + " 40px 'Noto Sans KR'", plainText + juaText);
+    })) : Promise.resolve();
+    mine.promise = Promise.all([loadStoryFont(juaText), within(noto, 3000, null),
+                                Promise.all([result.id].concat(words.chips.map(function (c) { return c.id; })).map(loadPhoto))])
+      .then(function (got) {
+        if (story !== mine) return null;
+        var canvas = document.createElement('canvas');
+        canvas.width = STORY.w;
+        canvas.height = STORY.h;
+        drawStory(canvas, words, got[0], got[2]);
+        return new Promise(function (resolve) { canvas.toBlob(resolve, 'image/png'); });
+      })
+      .then(function (blob) {
+        if (story !== mine || !blob) return null;
+        mine.file = typeof File === 'function' ? new File([blob], 'babdoduk-worldcup-story.png', { type: 'image/png' }) : blob;
+        mine.url = URL.createObjectURL(blob);
+        preview.src = mine.url;
+        preview.alt = fill(t('wc.story.alt', '스토리 이미지 미리보기: {dish}'), { dish: words.name });
+        preview.hidden = false;
+        $('wcStory').removeAttribute('aria-busy');
+        return mine.file;
+      })
+      .catch(function () { $('wcStory').removeAttribute('aria-busy'); return null; });
+    return mine.promise;
+  }
+  // A short message in the toast, read out once (role="status").
+  var toastTimer = 0;
+  function toast(text) {
+    var box = $('wcShareStatus');
+    clearTimeout(toastTimer);
+    box.textContent = '';
+    box.classList.remove('is-shown');
+    setTimeout(function () {
+      box.textContent = text;
+      box.classList.add('is-shown');
+      toastTimer = setTimeout(function () { box.classList.remove('is-shown'); }, 2800);
+    }, 30);
+  }
+  function touchDevice() { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); }
+  function canShareFile(file) {
+    try { return !!(file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; }
+  }
+  function download(file) {
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(file);
+    link.download = 'babdoduk-worldcup-story.png';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(function () { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+    toast(t('wc.saved', '저장했어요'));
+  }
+  // 📥 스토리 이미지 저장: a computer downloads the PNG; a phone, where a download lands somewhere hard
+  // to find, opens the share sheet with the file alone ("이미지 저장" or straight to a story).
+  function saveStory() {
+    var file = story && story.key === storyKey() ? story.file : null;
+    if (!file) {
+      toast(t('wc.preparing', '이미지를 만드는 중이에요'));
+      prepareStory().then(function (made) { if (made) download(made); else toast(t('wc.shareFailed', '공유하지 못했어요.')); });
+      return;
+    }
+    if (touchDevice() && canShareFile(file)) {
+      navigator.share({ files: [file] }).catch(function (e) { if (!e || e.name !== 'AbortError') download(file); });
+      return;
+    }
+    download(file);
+  }
+  // The friend challenge: this page with the winner and the category, on this host (lab links stay on lab).
+  function shareUrl() {
+    return location.origin + location.pathname + '?from=' + encodeURIComponent(result.id) + '&cat=' + encodeURIComponent(result.category);
+  }
+  function copyLink(url) {
+    function done() { toast(t('wc.copied', '링크를 복사했어요')); }
+    function legacy() {
+      var area = document.createElement('textarea');
+      area.value = url;
+      area.setAttribute('readonly', '');
+      area.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      area.remove();
+      if (ok) done(); else toast(t('wc.shareFailed', '공유하지 못했어요.'));
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, legacy);
+    else legacy();
+  }
+  // 📤 공유하기: on a phone the share sheet (Web Share Level 2) with the card, the text and the link,
+  // where Instagram (스토리) and KakaoTalk are; without file sharing the text and the link; on a
+  // computer the link is copied.
+  function share() {
+    var text = fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'),
+      { cat: catName(result.category), dish: name(result.id) });
+    var url = shareUrl(), file = story && story.key === storyKey() ? story.file : null;
+    if (!touchDevice() || !navigator.share) { copyLink(url); return; }
+    var data = { title: document.title, text: text, url: url };
+    if (canShareFile(file)) data.files = [file];
+    navigator.share(data).catch(function (e) { if (!e || e.name !== 'AbortError') copyLink(url); });
+  }
+  // The KakaoTalk hook (docs/WORLDCUP_SHARE.md): no SDK is loaded until the owner has an app key. Once
+  // the Kakao JS SDK is on the page and Kakao.init(<key>) has run, a 카카오톡 button can call
+  // Kakao.Share.sendDefault(window.BabdodukWorldcupShare.kakaoFeed()) for a feed card.
+  window.BabdodukWorldcupShare = {
+    kakaoFeed: function () {
+      if (!result) return null;
+      var url = shareUrl(), photo = photoOf(result.id);
+      return {
+        objectType: 'feed',
+        content: {
+          title: fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'), { cat: catName(result.category), dish: name(result.id) }),
+          description: t('wc.story.cta', '너의 최애는?'),
+          imageUrl: photo ? new URL(photo.image, location.href).href : new URL('images/worldcup/og-worldcup.jpg', location.href).href,
+          link: { mobileWebUrl: url, webUrl: url }
+        },
+        buttons: [{ title: t('wc.friendCta', '나도 해보기'), link: { mobileWebUrl: url, webUrl: url } }]
+      };
+    }
+  };
   function undo() {
     if (!game || !game.stack.length || busy) return;
     var previous = game.stack.pop();
@@ -1501,25 +1997,6 @@
     }
     store();
     renderMatch(true);
-  }
-  function share() {
-    var text = fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'),
-      { cat: catName(result.category), dish: name(result.id) });
-    var url = location.origin + location.pathname;
-    var status = $('wcShareStatus');
-    if (navigator.share) {
-      navigator.share({ title: document.title, text: text, url: url }).catch(function () {});
-      return;
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text + ' ' + url).then(function () {
-        status.textContent = t('wc.copied', '결과와 링크를 복사했어요');
-      }, function () {
-        status.textContent = t('wc.shareFailed', '공유하지 못했어요.');
-      });
-      return;
-    }
-    status.textContent = t('wc.shareFailed', '공유하지 못했어요.');
   }
   function clearHistory() {
     winners = [];
@@ -1545,6 +2022,34 @@
     var cat = query.get('cat');
     return CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all';
   }
+  // The friend challenge (a shared result): worldcup.html?from=<dish>&cat=<category>. A dish of the
+  // pool shows "친구의 최애는 ○○! 🏆 너도 해봐" over the start screen, a known category is the tile
+  // chosen; anything else is ignored. It never starts a game (that is go=1 alone), and before the
+  // launch the banner shows while the game stays locked, with no photo.
+  var friend = null;    // the friend's dish id, from the address
+  function challenge() {
+    if (embedded || !window.URLSearchParams) return { id: null, cat: null };
+    var query = new URLSearchParams(location.search), id = query.get('from'), cat = query.get('cat');
+    return { id: set.indexOf(id) >= 0 ? id : null,
+             cat: CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : null };
+  }
+  function renderFriend() {
+    var box = $('wcFriend');
+    if (!box) return;
+    box.hidden = !friend;
+    if (!friend) return;
+    var text = $('wcFriendText'), parts = t('wc.friend', '친구의 최애는 {dish}! 🏆 너도 해봐').split('{dish}');
+    text.textContent = '';
+    text.appendChild(document.createTextNode(parts[0]));
+    node('strong', 'wc-friend-dish', text).textContent = name(friend);
+    text.appendChild(document.createTextNode(parts.slice(1).join(name(friend))));
+    var img = $('wcFriendPhoto'), photo = photoOf(friend);
+    img.hidden = locked() || !photo;                              // before the launch no photo is requested
+    if (!img.hidden && img.getAttribute('src') !== photo.image) {
+      img.onerror = function () { img.hidden = true; };
+      img.src = photo.image;
+    }
+  }
   function cleanAddress() {
     try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* keep the address */ }
   }
@@ -1556,6 +2061,9 @@
     show('intro');
     var asked = requested();
     if (asked) cleanAddress();
+    var pal = asked ? { id: null, cat: null } : challenge();
+    friend = pal.id;
+    if (pal.cat) category = pal.cat;           // the friend's category is the tile chosen
     if (asked && locked()) asked = null;       // go=1 before the launch is just the locked start screen
     choose(asked || category, false);          // the first draw: its photos shuffle in
     renderIntro();
@@ -1605,7 +2113,7 @@
     $('wcRestart').addEventListener('click', function () { if (!busy) start(game ? game.category : category, true); });
     $('wcAgain').addEventListener('click', function () { start(result ? result.category : category, true); });
     $('wcShare').addEventListener('click', share);
-    $('wcSaveImage').addEventListener('click', saveImage);
+    $('wcSaveImage').addEventListener('click', saveStory);
     $('wcHistoryClear').addEventListener('click', clearHistory);
   }
   document.addEventListener('babdoduk-lang', render);
