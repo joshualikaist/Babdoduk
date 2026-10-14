@@ -17,6 +17,7 @@ import json
 import re
 from collections import Counter
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "data" / "content"
@@ -302,7 +303,34 @@ def worldcup_blocks(data: dict | None = None) -> dict[str, list[str]]:
         "  // Written by scripts/sync_site_chrome.py from data/content/worldcup.json; edit that, not this.",
         "  window.BABDODUK_WORLDCUP = " + payload.replace("<", "\\u003c") + ";",
         "</script>",
+    ], "worldcup-font": [
+        "<!-- Jua (OFL) for the world cup's display lettering only (titles, category tiles, buttons, the",
+        "     splash and the start gacha): just the letters of WORLDCUP_JUA_KEYS in scripts/page_content.py. -->",
+        f'<link href="{worldcup_font_url()}" rel="stylesheet" />',
     ]}
+
+
+# The world cup's display lettering is Jua (owner 2026-10-14: a playful entry). Google Fonts sends
+# only the letters asked for (`text=`), so the link carries every letter these labels use, in both
+# languages. Dish names are never set in Jua (dynamic text would mix fonts letter by letter).
+WORLDCUP_JUA_KEYS = ("wc.title", "wc.intro.title", "wc.start", "wc.resume", "wc.newStart", "wc.preview",
+                     "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
+                     "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.catGame",
+                     "wc.round.n", "wc.round.semi", "wc.round.final", "wc.gacha.drawing", "wc.gacha.ask",
+                     "wc.gacha.skip", "wc.splash.quarter", "wc.splash.semi", "wc.splash.final", "wc.vs")
+
+
+def worldcup_font_letters() -> str:
+    letters = set("0123456789 !")
+    for lang in LANGS:
+        strings = json.loads((ROOT / "i18n" / f"{lang}.json").read_text(encoding="utf-8"))
+        for key in WORLDCUP_JUA_KEYS:
+            letters |= set(re.sub(r"\{\w+\}", "", strings[key]))
+    return "".join(sorted(letters))
+
+
+def worldcup_font_url() -> str:
+    return "https://fonts.googleapis.com/css2?family=Jua&display=swap&text=" + quote(worldcup_font_letters(), safe="")
 
 
 # The world cup's categories (owner, 2026-10-14): each dish of the pool is in exactly one, taken from

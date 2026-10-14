@@ -54,7 +54,6 @@
 }
 
 .wc-loading,
-.wc-intro,
 .wc-result {
   padding: var(--space-8) var(--space-6);
   background: var(--color-surface);
@@ -71,81 +70,453 @@
   font-weight: 600;
 }
 
-.wc-basis {
-  font-size: 16px;
-  line-height: 1.65;
+/* The start screen (owner 2026-10-14: "초입이 재미있어야", a campus game lobby rather than a form).
+   A band the width of the screen on a phone: dish photos float behind the edges of a round card
+   with a pink-to-blue rim; in it the headline in Jua with the round on a highlighter, the owner's
+   tone line, the category tiles, five dishes of the next draw and the big breathing button. The
+   brand mix is pink (#db2777, deepened to #be185d for text) and indigo/blue; never the old red-brown.
+   Only transform and opacity move (js/worldcup.js ambient, choose, renderPreview, spinTiles). */
+.wc-page {
+  --wc-display: 'Jua', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --wc-grad: linear-gradient(115deg, #db2777, #a21caf 48%, #4f46e5);
+  --wc-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow-x: clip;                       /* the floating photos never widen the page */
+}
+
+.wc-head .page-title,
+.wc-intro-title,
+.wc-tile-name,
+.wc-preview-label,
+.wc-btn.wc-btn--big,
+.wc-link {
+  font-family: var(--wc-display);
+  font-weight: 400;                       /* Jua has one weight */
+  font-synthesis: none;
+  letter-spacing: 0;
+}
+
+.wc-intro {
+  position: relative;
+  margin-inline: -16px;
+  padding: 44px 16px 48px;
+}
+
+.wc-intro::before {                       /* soft pink and blue light behind the card */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(closest-side, rgba(236, 72, 153, 0.2), transparent) 0 0 / 64% 70% no-repeat,
+    radial-gradient(closest-side, rgba(99, 102, 241, 0.2), transparent) 100% 100% / 64% 70% no-repeat;
+  pointer-events: none;
+}
+
+.wc-floaters {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wc-floater {
+  position: absolute;
+  width: var(--s);
+  height: var(--s);
+  border: 4px solid #fff;
+  border-radius: 24px;
+  object-fit: cover;
+  background: #fce7f3;
+  box-shadow: 0 14px 30px rgba(30, 29, 26, 0.18), 0 2px 6px rgba(30, 29, 26, 0.08);
+  rotate: var(--r);
+}
+
+.wc-floater[hidden] {
+  display: none;
+}
+
+/* A phone: four photos peeking from behind the card's top and bottom corners. */
+.wc-floater:nth-child(1) { --s: 72px; --r: -11deg; top: 2px; left: 8px; }
+.wc-floater:nth-child(2) { --s: 60px; --r: 9deg; top: 10px; right: 10px; }
+.wc-floater:nth-child(3) { --s: 58px; --r: 8deg; bottom: 8px; left: 20px; }
+.wc-floater:nth-child(4) { --s: 74px; --r: -7deg; bottom: 0; right: 12px; }
+
+.wc-intro-card {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 28px 16px 24px;
+  border: 2px solid transparent;
+  border-radius: 28px;
+  background:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    linear-gradient(135deg, #f9a8d4, #c4b5fd 50%, #93c5fd) border-box;
+  box-shadow: 0 24px 60px rgba(79, 70, 229, 0.16), 0 6px 18px rgba(219, 39, 119, 0.1);
+  text-align: center;
+}
+
+.wc-intro-title {
+  font-size: 30px;
+  line-height: 1.3;
   color: var(--color-ink);
-  overflow-wrap: break-word;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
-.wc-note {
-  margin-top: var(--space-4);
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--color-ink-muted);
+/* The round on a pink-to-blue highlighter: accent text over the light lower half (never gradient text). */
+.wc-hl {
+  padding: 0 0.08em;
+  color: var(--color-accent);
+  background: linear-gradient(100deg, #fbcfe8, #ddd6fe 50%, #bfdbfe) 0 88% / 100% 0.46em no-repeat;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
-.wc-note + .wc-note {
-  margin-top: var(--space-1);
-}
-
-/* The categories on the start screen (owner 2026-10-14): short filter chips that wrap, the chosen
-   one filled like the main button. A chip is a toggle button (aria-pressed), 44px tall to tap. */
-.wc-cats-label {
-  margin-top: var(--space-6);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-ink-muted);
-}
-
-.wc-cats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+.wc-intro-tone {
   margin-top: var(--space-2);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
-.wc-chip {
-  display: inline-flex;
+/* The category tiles: a 3 x 3 board (eight categories and 아무거나), big enough for a thumb. */
+.wc-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: var(--space-6);
+}
+
+.wc-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-divider);
-  border-radius: 999px;
-  background: var(--color-canvas);
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 96px;
+  padding: 10px 4px 9px;
+  border: 2px solid #ece6f6;
+  border-radius: 20px;
+  background: #fff;
   color: var(--color-ink);
   font: inherit;
-  font-size: 14px;
-  font-weight: 700;
   line-height: 1.2;
+  box-shadow: 0 3px 0 #e6def3;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.wc-chip-n {
+.wc-tile::after {                         /* the brand glow of the chosen tile */
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.22), 0 12px 28px rgba(219, 39, 119, 0.34);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wc-tile-emoji {
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.wc-tile-name {
+  font-size: 17px;
+  line-height: 1.2;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.wc-tile-n {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-ink-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.wc-chip:hover {
-  border-color: var(--color-ink);
+.wc-tile[aria-pressed="true"] {
+  border-color: #db2777;
+  background: linear-gradient(150deg, #fdf2f8, #eef2ff);
+  box-shadow: 0 4px 0 #be185d;
+  transform: rotate(-2.5deg) scale(1.05);
 }
 
-.wc-chip[aria-pressed="true"] {
-  border-color: var(--color-ink);
-  background: var(--color-ink);
-  color: #fffdf8;
+.wc-tile:nth-child(even)[aria-pressed="true"] {
+  transform: rotate(2.5deg) scale(1.05);
 }
 
-.wc-chip[aria-pressed="true"] .wc-chip-n {
-  color: #d9d4ca;
+.wc-tile[aria-pressed="true"]::after {
+  opacity: 1;
 }
 
-.wc-chip:focus-visible {
+.wc-tile[aria-pressed="true"] .wc-tile-n {
+  color: var(--color-accent);
+}
+
+/* 아무거나: a dashed lilac tile; while it spins, the light runs through the others. */
+.wc-tile--random {
+  border-style: dashed;
+  border-color: #c4b5fd;
+  background: #faf5ff;
+  box-shadow: 0 3px 0 #ddd6fe;
+}
+
+.wc-tile--random .wc-tile-n {
+  color: #6d28d9;
+}
+
+.wc-tile.is-spin {
+  border-color: #6366f1;
+  background: #eef2ff;
+  transform: scale(1.07);
+}
+
+.wc-tiles.is-spinning .wc-tile[aria-pressed="true"]:not(.is-spin) {
+  transform: none;
+}
+
+.wc-tiles.is-spinning .wc-tile[aria-pressed="true"]:not(.is-spin)::after {
+  opacity: 0;
+}
+
+.wc-tile:focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
+}
+
+/* 이 중에서 나와요: five photos of the next draw, a fanned row of stickers. */
+.wc-preview {
+  margin-top: var(--space-6);
+}
+
+.wc-preview[hidden] {
+  display: none;
+}
+
+.wc-preview-label {
+  font-size: 18px;
+  line-height: 1.3;
+  color: var(--color-accent);
+}
+
+.wc-preview-photos {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 460px;
+  margin: var(--space-3) auto 0;
+  list-style: none;
+}
+
+.wc-preview-item {
+  min-width: 0;
+  rotate: var(--r, 0deg);
+}
+
+.wc-preview-item[hidden] {
+  display: none;
+}
+
+.wc-preview-item:nth-child(1) { --r: -7deg; }
+.wc-preview-item:nth-child(2) { --r: 4deg; }
+.wc-preview-item:nth-child(3) { --r: -3deg; }
+.wc-preview-item:nth-child(4) { --r: 6deg; }
+.wc-preview-item:nth-child(5) { --r: -5deg; }
+
+.wc-preview-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 3px solid #fff;
+  border-radius: 16px;
+  object-fit: cover;
+  background: #fce7f3;
+  box-shadow: 0 6px 14px rgba(30, 29, 26, 0.16);
+}
+
+/* The big button: 🎰 32강 시작 (or ▶ 이어하기), a gradient key with a lip and a glow that breathes. */
+.wc-intro-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--space-6);
+}
+
+.wc-btn.wc-btn--big {
+  position: relative;
+  isolation: isolate;
+  gap: 10px;
+  width: 100%;
+  min-height: 62px;
+  padding: 8px 20px;
+  border-color: transparent;
+  border-radius: 20px;
+  background: var(--wc-grad);
+  color: #fff;
+  font-size: 23px;
+  line-height: 1.2;
+  text-align: center;
+  box-shadow: 0 5px 0 #5b21b6, 0 14px 30px rgba(126, 34, 206, 0.3);
+  touch-action: manipulation;
+}
+
+.wc-btn--big::before {                    /* the glow that breathes with the button */
+  content: "";
+  position: absolute;
+  inset: -12px;
+  z-index: -1;
+  border-radius: 30px;
+  background: radial-gradient(closest-side, rgba(236, 72, 153, 0.55), transparent);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.wc-btn.wc-btn--big:hover {
+  border-color: transparent;
+}
+
+.wc-btn.wc-btn--resume {
+  background: linear-gradient(115deg, #4f46e5, #7c3aed 52%, #db2777);
+}
+
+.wc-btn-emoji {
+  flex: none;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.wc-link {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font-size: 17px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.wc-link:hover {
+  color: var(--color-ink);
+}
+
+.wc-link[hidden] {
+  display: none;
+}
+
+.wc-link:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+@media (min-width: 561px) {
+  .wc-intro {
+    padding: 56px 16px 60px;
+  }
+
+  .wc-intro-card {
+    padding: 44px 40px 36px;
+  }
+
+  .wc-intro-title {
+    font-size: 42px;
+  }
+
+  .wc-intro-tone {
+    font-size: 17px;
+  }
+
+  .wc-tiles {
+    gap: 14px;
+  }
+
+  .wc-tile {
+    min-height: 112px;
+  }
+
+  .wc-tile-emoji {
+    font-size: 38px;
+  }
+
+  .wc-tile-name {
+    font-size: 21px;
+  }
+
+  .wc-tile-n {
+    font-size: 13px;
+  }
+
+  .wc-preview-label {
+    font-size: 21px;
+  }
+
+  .wc-preview-photos {
+    gap: 12px;
+  }
+
+  .wc-btn.wc-btn--big {
+    width: min(100%, 380px);
+    min-height: 68px;
+    font-size: 27px;
+  }
+}
+
+/* Wider: six photos float in the room either side of the card, larger. */
+@media (min-width: 700px) {
+  .wc-floater:nth-child(1) { --s: 128px; --r: -9deg; top: 4%; left: calc(50% - 404px); right: auto; bottom: auto; }
+  .wc-floater:nth-child(2) { --s: 104px; --r: 7deg; top: 40%; left: calc(50% - 404px); right: auto; bottom: auto; }
+  .wc-floater:nth-child(3) { --s: 120px; --r: -5deg; bottom: 6%; left: calc(50% - 404px); right: auto; top: auto; }
+  .wc-floater:nth-child(4) { --s: 116px; --r: 8deg; top: 2%; right: calc(50% - 406px); left: auto; bottom: auto; }
+  .wc-floater:nth-child(5) { --s: 132px; --r: -8deg; top: 38%; right: calc(50% - 406px); left: auto; bottom: auto; }
+  .wc-floater:nth-child(6) { --s: 108px; --r: 10deg; bottom: 4%; right: calc(50% - 408px); left: auto; top: auto; }
+}
+
+/* Press, hover and the chosen tile's spring, only for people who have not asked for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .wc-tile {
+    transition: transform 420ms var(--wc-spring);
+    transition: transform 460ms linear(0, 0.06, 0.199, 0.369, 0.539, 0.69, 0.813, 0.905, 0.971, 1.012, 1.035, 1.045, 1.045, 1.041, 1.034, 1.026, 1.018, 1.012, 1.007, 1.003, 1, 0.999, 0.998, 0.998, 1);
+  }
+
+  .wc-tile::after {
+    transition: opacity 200ms ease-out;
+  }
+
+  .wc-tile:active {
+    transform: scale(0.95);
+  }
+
+  .wc-tile.is-spin {
+    transition-duration: 120ms;
+  }
+
+  .wc-btn.wc-btn--big {
+    transition: transform 100ms cubic-bezier(0, 0, 0.15, 1);
+  }
+
+  .wc-btn--big:active {
+    transform: translateY(3px) scale(0.97);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .wc-tile:hover:not([aria-pressed="true"]) {
+    transform: translateY(-3px);
+  }
+
+  .wc-btn--big:hover {
+    transform: translateY(-2px);
+  }
 }
 
 /* The game being played, "한식 32강": a small accent line over the round, and over the winner. */
@@ -501,14 +872,20 @@
 
 /* High contrast: system colours only (the accent arrow follows the label). */
 @media (forced-colors: active) {
-  .wc-chip[aria-pressed="true"] {
-    border-width: 3px;
-    background: Highlight;
-    color: HighlightText;
+  .wc-tile[aria-pressed="true"] {
+    border-width: 4px;
+    border-color: Highlight;
   }
 
-  .wc-chip[aria-pressed="true"] .wc-chip-n {
-    color: inherit;
+  .wc-tile::after,
+  .wc-floaters,
+  .wc-intro::before,
+  .wc-btn--big::before {
+    display: none;
+  }
+
+  .wc-hl {
+    background: none;
   }
 
   .wc-tool .wc-tool-icon {
@@ -963,7 +1340,6 @@
 
 @media (max-width: 560px) {
   .wc-loading,
-  .wc-intro,
   .wc-result {
     padding: var(--space-6) var(--space-4);
   }
@@ -1046,4 +1422,299 @@
   .wc-card:hover {
     transform: none;
   }
+}
+
+/* The start gacha (js/worldcup.js showGacha, owner 2026-10-14): in the splash's popover, a night
+   stage with a pink and violet glow, a capsule machine with a face (220 x 330 at --k = 1) whose
+   screen counts the draw, capsules that pop open on dish photos, "너의 최애는?" on a pill, the
+   first two dishes as photo cards with a VS badge, and a small 건너뛰기 hint. The script builds it
+   only while it plays and moves only transform and opacity. The brand mix: pink, violet, indigo,
+   with cyan and yellow only as capsule colours. */
+.wc-splash[data-round="start"] .wc-splash-bg {
+  background: radial-gradient(70% 55% at 50% 42%, #2b1755, #130d24 72%);
+}
+
+.wc-gacha-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 45% at 50% 55%, rgba(168, 85, 247, 0.36), rgba(236, 72, 153, 0.14) 55%, transparent 75%);
+  opacity: 0;
+}
+
+.wc-gacha {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 220px;
+  height: 330px;
+  margin: -175px 0 0 -110px;
+  scale: var(--k, 1);
+  transform-origin: 50% 100%;
+}
+
+.wc-gacha-dome {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.5) 0 9%, rgba(255, 255, 255, 0.07) 10% 60%, rgba(99, 102, 241, 0.22) 100%);
+}
+
+.wc-gacha-ball {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.75) 0 14%, transparent 15%), linear-gradient(var(--c) 0 50%, #fffdf8 50%);
+  box-shadow: inset 0 -3px 0 rgba(30, 29, 26, 0.18);
+}
+
+.wc-gacha-ball:nth-child(1) { --c: #ec4899; left: 22px; top: 120px; }
+.wc-gacha-ball:nth-child(2) { --c: #06b6d4; left: 70px; top: 134px; rotate: 20deg; }
+.wc-gacha-ball:nth-child(3) { --c: #a855f7; left: 118px; top: 124px; rotate: -15deg; }
+.wc-gacha-ball:nth-child(4) { --c: #6366f1; left: 40px; top: 76px; rotate: 40deg; }
+.wc-gacha-ball:nth-child(5) { --c: #fde047; left: 88px; top: 86px; }
+.wc-gacha-ball:nth-child(6) { --c: #ec4899; left: 134px; top: 78px; rotate: -30deg; }
+.wc-gacha-ball:nth-child(7) { --c: #06b6d4; left: 66px; top: 38px; rotate: 60deg; }
+
+.wc-gacha-body {
+  position: absolute;
+  left: 0;
+  top: 168px;
+  width: 220px;
+  height: 150px;
+  border-radius: 30px 30px 24px 24px;
+  background: linear-gradient(120deg, #ec4899, #a855f7 45%, #6366f1 80%);
+  box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.28), inset 0 -8px 0 rgba(30, 29, 26, 0.22);
+}
+
+.wc-gacha-body::before,
+.wc-gacha-body::after {                   /* feet */
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 30px;
+  height: 14px;
+  border-radius: 8px;
+  background: #0f0e0c;
+}
+
+.wc-gacha-body::before { left: 34px; }
+.wc-gacha-body::after { right: 34px; }
+
+.wc-gacha-screen {
+  position: absolute;
+  left: 20px;
+  top: 16px;
+  width: 72px;
+  height: 38px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #0f0e0c;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.wc-gacha-count {
+  display: block;
+  color: #67e8f9;
+  font-family: var(--wc-display);
+  font-size: 26px;
+  line-height: 38px;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
+  white-space: pre;
+}
+
+.wc-gacha-crank {
+  position: absolute;
+  right: 22px;
+  top: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #fffdf8;
+  box-shadow: inset 0 -3px 0 rgba(30, 29, 26, 0.15), 0 0 0 3px rgba(30, 29, 26, 0.25);
+}
+
+.wc-gacha-crank::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 50%;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 5px;
+  background: #4f46e5;
+}
+
+.wc-gacha-eye {
+  position: absolute;
+  top: 66px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 58% 58%, #0f0e0c 0 32%, #fff 34%);
+  box-shadow: 0 0 0 2px #0f0e0c;
+}
+
+.wc-gacha-eye--l { left: 62px; }
+.wc-gacha-eye--r { right: 62px; }
+
+.wc-gacha-mouth {                         /* the chute: the capsules come out of it */
+  position: absolute;
+  left: 50%;
+  top: 100px;
+  width: 66px;
+  height: 32px;
+  margin-left: -33px;
+  border-radius: 12px 12px 18px 18px;
+  background: #0f0e0c;
+  transform-origin: 50% 0;
+}
+
+.wc-gacha-caps {
+  position: absolute;
+  inset: 0;
+}
+
+.wc-cap {
+  position: absolute;
+  width: var(--cap, 56px);
+  height: var(--cap, 56px);
+  margin: calc(var(--cap, 56px) / -2) 0 0 calc(var(--cap, 56px) / -2);
+}
+
+.wc-cap-y {
+  position: absolute;
+  inset: 0;
+}
+
+.wc-cap-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fce7f3;
+  box-shadow: 0 0 0 2px #0f0e0c;
+}
+
+.wc-cap-shell {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  clip-path: inset(0 0 50% 0);
+  background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.75) 0 12%, transparent 13%), var(--c, #ec4899);
+  box-shadow: inset 0 0 0 2px #0f0e0c;
+}
+
+/* The first two dishes: photo cards with a white ring, the size of the real match photos. */
+.wc-duelist {
+  position: absolute;
+  margin: 0;
+  border-radius: 16px;
+  background: #fce7f3;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 7px #0f0e0c, 0 16px 34px rgba(0, 0, 0, 0.4);
+}
+
+.wc-duelist img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.wc-gacha-vs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  border: 3px solid #0f0e0c;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ec4899, #a855f7 50%, #6366f1);
+  box-shadow: 0 0 0 4px #fff, 0 0 0 7px #0f0e0c;
+}
+
+.wc-gacha-vs b {
+  color: #fff;
+  font-family: var(--wc-display);
+  font-size: 32px;
+  font-weight: 400;
+  -webkit-text-stroke: 4px #0f0e0c;
+  paint-order: stroke fill;
+}
+
+/* One line of text at a time: 한식 32강 뽑는 중…, then 너의 최애는?. */
+.wc-gacha-line,
+.wc-gacha-ask {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  font-family: var(--wc-display);
+  font-weight: 400;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.wc-gacha-line {
+  top: max(9%, env(safe-area-inset-top));
+  font-size: clamp(20px, 5.4vw, 30px);
+  line-height: 1.3;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(168, 85, 247, 0.6);
+}
+
+.wc-gacha-ask {
+  top: 13%;
+}
+
+.wc-gacha-ask span {
+  display: inline-block;
+  max-width: 100%;
+  padding: 6px 20px 8px;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #be185d, #7e22ce 55%, #4338ca);
+  color: #fff;
+  font-size: clamp(28px, 8.5vw, 50px);
+  line-height: 1.2;
+  -webkit-text-stroke: 5px #0f0e0c;
+  paint-order: stroke fill;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px #0f0e0c;
+  rotate: -4deg;
+}
+
+.wc-gacha-skip {
+  position: absolute;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  translate: -50% 0;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: var(--wc-display);
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.wc-gacha-skip-icon {
+  font-size: 14px;
 }
