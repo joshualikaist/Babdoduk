@@ -1085,6 +1085,29 @@ def event_entry(page):
     return count
 
 
+GATE_PREVIEW = "2026-10-13"
+
+
+def gate_window():
+    """The launch window the sync wrote into js/worldcup-gate.js."""
+    source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
+    return json.loads(re.search(r"window\.BABDODUK_WC_WINDOW = (\{.*\});", source).group(1))
+
+
+def gate_preview(page):
+    """Serve js/worldcup-gate.js with a lab `previewFrom` (GATE_PREVIEW) when the data carries none
+    (production's data/content/events.json never does), so the lab override is still checked. Returns
+    whether it did; the caller unroutes it after the override checks."""
+    source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
+    window = gate_window()
+    if "previewFrom" in window:
+        return False
+    window["previewFrom"] = GATE_PREVIEW
+    body = re.sub(r"window\.BABDODUK_WC_WINDOW = \{.*\};", lambda m: "window.BABDODUK_WC_WINDOW = " + json.dumps(window) + ";", source)
+    page.route("**/js/worldcup-gate.js", lambda route: route.fulfill(content_type="application/javascript", body=body))
+    return True
+
+
 def gate_page(page, host, name, query=""):
     """A page of this site loaded as the production, lab or localhost host (served from the same files)."""
     scheme = "http" if host == "localhost" else "https"
@@ -1193,6 +1216,12 @@ def worldcup_gate(page):
     check(shot["band"] == "past" and not shot["start"] and page.locator(".wc-embed").is_hidden()
           and page.locator("#eventList .event-link[data-event-page]").count() == 1, ("past card", shot))
 
+    # Without a previewFrom in the data (production), no host opens it before the start.
+    if "previewFrom" not in gate_window():
+        for host in ("babdoduk.vercel.app", "babdoduk-lab.vercel.app", "localhost"):
+            shot = snap(host, "worldcup.html", WC_SOON)
+            check(shot["locked"] and not shot["start"], (host, "no previewFrom: locked", shot))
+    synthetic = gate_preview(page)
     # The lab override: only on lab and localhost (previewFrom), never on production or another host.
     for host, early in (("babdoduk.vercel.app", False), (SITE_HOST, False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
         shot = snap(host, "worldcup.html", WC_SOON)
@@ -1208,6 +1237,8 @@ def worldcup_gate(page):
     check(shot["locked"] and shot["count"].startswith("D-"), ("lab before previewFrom", shot))
     shot = snap("babdoduk-lab.vercel.app", "worldcup.html", WC_ENDED)
     check(shot["ended"] and shot["start"], ("lab after the end", shot))
+    if synthetic:
+        page.unroute("**/js/worldcup-gate.js")
     source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
     check(source.count("'babdoduk-lab.vercel.app'") == 1 and "location.hostname" in source, "the gate names the lab host once")
     return count
@@ -1294,11 +1325,20 @@ def home_wc_promo(page):
     check(contrast("rgb(253, 230, 138)", "rgb(190, 24, 93)") >= 4.5 and contrast("rgb(157, 23, 77)", "rgb(255, 255, 255)") >= 4.5,
           "the state line and the button keep their contrast on the gradient")
 
-    # Lab opens it early (previewFrom); production does not.
+    # Lab opens it early (previewFrom); production does not. Without one in the data (production),
+    # no host does; the override then runs on a synthetic previewFrom.
+    if "previewFrom" not in gate_window():
+        for host in ("babdoduk.vercel.app", "babdoduk-lab.vercel.app", "localhost"):
+            shot = snap(host, WC_SOON)
+            check(shot["shown"] and not shot["live"] and shot["soon"] and shot["states"] == ["10/16 오픈!"],
+                  (host, "no previewFrom: soon", shot))
+    synthetic = gate_preview(page)
     for host, early in (("babdoduk.vercel.app", False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
         shot = snap(host, WC_SOON)
         check(shot["shown"] and bool(shot["live"]) == early and bool(shot["soon"]) == (not early)
               and shot["states"] == (["지금 진행 중 · 10/23까지"] if early else ["10/16 오픈!"]), (host, shot))
+    if synthetic:
+        page.unroute("**/js/worldcup-gate.js")
     return count
 
 
