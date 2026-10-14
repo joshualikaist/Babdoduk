@@ -537,6 +537,17 @@
   background: linear-gradient(115deg, #be185d, #86198f 48%, #4338ca);
 }
 
+.wc-btn--kakao {
+  border-color: #f2d800;
+  background: #fee500;
+  color: #191600;
+}
+
+.wc-btn--kakao:hover {
+  border-color: #e6cc00;
+  background: #f5dc00;
+}
+
 .wc-btn-icon {
   flex: none;
   font-size: 18px;
