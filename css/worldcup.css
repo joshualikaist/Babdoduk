@@ -1129,3 +1129,97 @@
 .wc-gacha-skip-icon {
   font-size: 14px;
 }
+
+/* The music toggle (js/worldcup.js sound, owner 2026-10-14): a pill in the bottom corner, in the top
+   layer (a manual popover) so it stays above the splash and the gacha; 🔇 off, 🔊 on, an icon alone
+   on a phone. Off by default. */
+.wc-sound-dock {
+  position: fixed;
+  inset: auto max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) auto;
+  z-index: 10002;                        /* where popovers are not supported: above the navigation */
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+
+.wc-sound-dock[hidden] {
+  display: none;
+}
+
+.wc-sound {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px 0 12px;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.wc-sound[aria-pressed="true"] {
+  background: var(--color-ink);
+  color: #fffdf8;
+}
+
+.wc-sound-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.wc-sound[aria-pressed="true"] .wc-sound-off,
+.wc-sound[aria-pressed="false"] .wc-sound-on {
+  display: none;
+}
+
+/* A dark ring on a white halo: visible on the page and on the black splash alike. */
+.wc-sound:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wc-sound:hover {
+    border-color: var(--color-accent);
+  }
+}
+
+@media (max-width: 420px) {
+  .wc-sound {
+    padding: 0;
+  }
+
+  .wc-sound-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (forced-colors: active) {
+  .wc-sound {
+    border-color: ButtonText;
+  }
+
+  .wc-sound:focus-visible {
+    outline-color: Highlight;
+  }
+}
