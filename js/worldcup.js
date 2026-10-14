@@ -424,6 +424,7 @@
     $('wcWinnerFigure').hidden = $('wcWinnerImg').hidden;
     renderCredits();
     prepareStory();                            // the story card is made now, so a tap can hand it over at once
+    showKakao();                               // the Kakao SDK is fetched only now, on the result screen
     if (focus) {
       $('wcWinner').focus();
       announce(fill(t('wc.announceWinner', '우승 메뉴: {dish}'), { dish: name(result.id) }));
@@ -1986,25 +1987,75 @@
     if (canShareFile(file)) data.files = [file];
     navigator.share(data).catch(function (e) { if (!e || e.name !== 'AbortError') copyLink(url); });
   }
-  // The KakaoTalk hook (docs/WORLDCUP_SHARE.md): no SDK is loaded until the owner has an app key. Once
-  // the Kakao JS SDK is on the page and Kakao.init(<key>) has run, a 카카오톡 button can call
-  // Kakao.Share.sendDefault(window.BabdodukWorldcupShare.kakaoFeed()) for a feed card.
-  window.BabdodukWorldcupShare = {
-    kakaoFeed: function () {
-      if (!result) return null;
-      var url = shareUrl(), photo = photoOf(result.id);
-      return {
-        objectType: 'feed',
-        content: {
-          title: fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'), { cat: catName(result.category), dish: name(result.id) }),
-          description: t('wc.story.cta', '너의 최애는?'),
-          imageUrl: photo ? new URL(photo.image, location.href).href : new URL('images/worldcup/og-worldcup.jpg', location.href).href,
-          link: { mobileWebUrl: url, webUrl: url }
-        },
-        buttons: [{ title: t('wc.friendCta', '나도 해보기'), link: { mobileWebUrl: url, webUrl: url } }]
-      };
-    }
+  // ---- KakaoTalk share card (docs/WORLDCUP_SHARE.md) --------------------------------------------------
+  // The one place a third-party script is loaded: the official Kakao JS SDK, pinned to a version with
+  // its SRI hash (computed from the file and checked against Kakao's download page), fetched only when
+  // the result screen appears, never on another page and never before a winner exists. The JavaScript
+  // key is a public, domain-restricted value (the owner registered babdoduk.vercel.app and
+  // babdoduk-lab.vercel.app in Kakao Developers); it is the only copy and belongs in this constant.
+  var KAKAO_JS_KEY = '92860c2f30dc6829c664d36be75e0b3d';
+  var KAKAO_SDK = {
+    src: 'https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js',
+    integrity: 'sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy'
   };
+  var kakaoLoad = null;                         // resolves true once Kakao.Share is ready, false for good if not
+  function kakaoReady() {
+    try {
+      if (!window.Kakao) return false;
+      if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_JS_KEY);
+      return !!(window.Kakao.isInitialized() && window.Kakao.Share && window.Kakao.Share.sendDefault);
+    } catch (e) { return false; }
+  }
+  function loadKakao() {
+    if (kakaoLoad) return kakaoLoad;
+    kakaoLoad = new Promise(function (resolve) {
+      if (window.Kakao) { resolve(kakaoReady()); return; }
+      var tag = document.createElement('script'), done = false;
+      function finish(ok) { if (done) return; done = true; clearTimeout(timer); resolve(ok); }
+      var timer = setTimeout(function () { finish(false); }, 8000);
+      tag.src = KAKAO_SDK.src;
+      tag.integrity = KAKAO_SDK.integrity;
+      tag.crossOrigin = 'anonymous';
+      tag.async = true;
+      tag.onload = function () { finish(kakaoReady()); };
+      tag.onerror = function () { finish(false); };
+      try { document.head.appendChild(tag); } catch (e) { finish(false); }
+    });
+    return kakaoLoad;
+  }
+  // The 💬 카카오톡 button stays hidden until the SDK is loaded and initialised; if that fails the page
+  // simply keeps its other share buttons.
+  function showKakao() {
+    var button = $('wcKakao');
+    if (!button || embedded) return;
+    loadKakao().then(function (ok) { button.hidden = !ok || !result; });
+  }
+  function kakaoFeed() {
+    if (!result) return null;
+    var url = shareUrl(), photo = photoOf(result.id), cta = t('wc.kakao.cta', '너도 해보기');
+    return {
+      objectType: 'feed',
+      content: {
+        title: fill(t('wc.kakao.title', '친구의 우승 메뉴는 {dish}! 🏆'), { dish: name(result.id) }),
+        description: fill(t('wc.kakao.desc', '{game} · 너의 최애는?'), { game: gameLabel(result.category) }),
+        imageUrl: new URL(photo && photo.image ? photo.image : 'images/worldcup/og-worldcup.jpg', location.href).href,
+        link: { mobileWebUrl: url, webUrl: url }
+      },
+      buttons: [{ title: cta, link: { mobileWebUrl: url, webUrl: url } }]
+    };
+  }
+  function shareKakao() {
+    var feed = kakaoFeed();
+    if (!feed) return;
+    try {
+      if (!kakaoReady()) throw new Error('kakao unavailable');
+      window.Kakao.Share.sendDefault(feed);
+    } catch (e) {
+      $('wcKakao').hidden = true;               // the SDK is not usable after all: the existing share flow instead
+      share();
+    }
+  }
+  window.BabdodukWorldcupShare = { kakaoFeed: kakaoFeed };
   function undo() {
     if (!game || !game.stack.length || busy) return;
     var previous = game.stack.pop();
@@ -2137,6 +2188,7 @@
     $('wcRestart').addEventListener('click', function () { if (!busy) start(game ? game.category : category, true); });
     $('wcAgain').addEventListener('click', function () { start(result ? result.category : category, true); });
     $('wcShare').addEventListener('click', share);
+    $('wcKakao').addEventListener('click', shareKakao);
     $('wcSaveImage').addEventListener('click', saveStory);
     $('wcHistoryClear').addEventListener('click', clearHistory);
   }

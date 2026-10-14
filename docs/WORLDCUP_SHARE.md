@@ -47,16 +47,21 @@
 
 `worldcup.html` 과 `event.html` 의 `og:*`·`twitter:*` 메타가 `images/worldcup/og-worldcup.jpg`(1200×630, 300KB 미만)를 가리킵니다. 출시 전 비공개 원칙에 맞춰 카테고리 타일은 보이지 않는 티저입니다: "오늘의 32강, 뭐가 나올까?", 캡슐 뽑기 기계, 트로피, 흐린 음식 사진. 이미지는 한 번 렌더링해 저장한 파일입니다(Playwright 로 HTML 을 찍어 JPEG 로 저장). 카카오톡은 미리보기를 캐시하므로, 바꾼 뒤에는 카카오 개발자 도구의 "공유 디버거"에서 캐시를 지워야 새 그림이 보입니다.
 
-## 카카오톡 SDK (나중에, 소유자 앱 키가 생기면)
+## 카카오톡 공유 카드 (Kakao JS SDK, lab 먼저)
 
-지금은 외부 스크립트가 없습니다. 카카오톡은 휴대폰 공유 시트로 갑니다. SDK 로 피드 카드를 보내려면 따로 승인된 작업에서:
+결과 화면의 "💬 카카오톡" 버튼이 카카오톡 피드 카드를 보냅니다. 휴대폰 공유 시트(📤 공유하기)와는 별개의 길입니다.
 
-1. 소유자: [Kakao Developers](https://developers.kakao.com) 에서 앱을 만들고 **JavaScript 키**를 받습니다. "플랫폼 → Web" 에 `https://babdoduk.vercel.app`, `https://babdoduk-lab.vercel.app` 를 등록합니다(키는 공개값이고 이 도메인에서만 동작).
-2. 페이지: 버전을 고정한 Kakao JS SDK 를 `integrity`·`crossorigin` 과 함께 `worldcup.html` 에 넣고 `Kakao.init('<JavaScript 키>')` 를 부릅니다.
-3. 결과 화면에 "💬 카카오톡" 버튼을 두고 `Kakao.Share.sendDefault(window.BabdodukWorldcupShare.kakaoFeed())` 를 부릅니다. `kakaoFeed()` 가 이미 피드 템플릿(제목 = 공유 문구, 이미지 = 우승 메뉴 사진, 링크·버튼 = 친구 도전 링크)을 만듭니다.
-4. `tests/test_worldcup_share.py` 의 "외부 스크립트 없음" 검사를 SDK 주소 하나만 허용하도록 바꿉니다.
+- **SDK**: 공식 Kakao JS SDK `2.8.3` 하나만, `https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js`, `integrity="sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy"`, `crossorigin="anonymous"`. 해시는 Kakao 개발자 문서 다운로드 페이지의 값이고, 파일을 직접 받아 sha384 를 계산해 같은 값임을 확인했습니다.
+- **언제 받나**: `js/worldcup.js` 의 `renderResult` → `showKakao()` → `loadKakao()` 만 받습니다(`<script>` 태그를 동적으로 만듦). 시작·대결 화면이나 다른 페이지에서는 받지 않고, HTML 에는 외부 스크립트 태그가 없습니다. 8초 안에 받아지지 않거나 무결성 검사·초기화가 실패하면 버튼은 계속 숨겨져 있고 다시 시도하지 않습니다. 누른 순간 SDK 가 쓸 수 없으면 버튼을 숨기고 기존 공유(`share()`)로 넘어갑니다.
+- **키**: JavaScript 키는 `js/worldcup.js` 의 상수 `KAKAO_JS_KEY` 한 곳에만 있습니다. 공개값(도메인 제한)이라 코드에 둡니다. REST·Admin 키는 어디에도 쓰지 않고 받지도 않습니다. `Kakao.init` 은 `Kakao.isInitialized()` 로 지켜 한 번만 부릅니다.
+- **등록된 도메인**(Kakao Developers → 앱 → 플랫폼 → Web): `https://babdoduk.vercel.app`, `https://babdoduk-lab.vercel.app`. 다른 주소(로컬 미리보기 등)에서는 카카오가 거절하므로 공유가 되지 않습니다.
+- **키를 바꾸려면**: Kakao Developers 에서 앱의 JavaScript 키를 재발급(또는 새 앱을 만들어 같은 두 도메인을 등록)하고, `KAKAO_JS_KEY` 와 `tests/test_worldcup_share.py` 의 `KAKAO_KEY` 를 새 값으로 바꾼 뒤 lab 에서 확인하고 같은 순서(lab → 승인 → main)로 내보냅니다. 옛 키는 Kakao 쪽에서 폐기합니다. SDK 버전을 올릴 때는 다운로드 페이지의 새 버전과 해시를 쓰고 파일을 받아 직접 sha384 를 계산해 대조한 뒤, 코드의 `KAKAO_SDK` 와 테스트의 `KAKAO_SRC`·`KAKAO_INTEGRITY` 를 함께 바꿉니다.
+- **카드 내용** (`kakaoFeed()`, `window.BabdodukWorldcupShare.kakaoFeed()`): 제목 "친구의 우승 메뉴는 ○○! 🏆", 설명 "한식 32강 · 너의 최애는?", 이미지 = 지금 origin 의 절대 https 주소(우승 메뉴 사진 `images/worldcup/<id>.jpg`, 없으면 `images/worldcup/og-worldcup.jpg`), 링크와 "너도 해보기" 버튼 = 친구 도전 링크(`worldcup.html?from=<메뉴 id>&cat=<카테고리>`, mobileWebUrl·webUrl 모두). 문구는 `i18n` 의 `wc.kakao*` 키입니다.
+- **CSP**: 이 저장소의 `vercel.json` 에는 `Content-Security-Policy` 헤더도 `<meta>` CSP 도 없어서 따로 허용할 것이 없습니다. CSP 를 도입할 때는 `script-src https://t1.kakaocdn.net` 과 카카오 공유 창이 쓰는 주소를 허용해야 합니다.
+- 카카오 서버가 카드 이미지를 가져가므로 lab 이든 production 이든 이미지 주소는 공개로 열려 있어야 합니다. 출시 전(`soon`)에는 결과 화면 자체가 없습니다.
 
 ## 시험
 
-- `tests/test_worldcup_share.py`: 카드 크기 1080×1920, 버튼과 문구, 공유 흐름 분기, 친구 링크, og/twitter 메타와 이미지(크기·용량), 외부 스크립트·Kakao SDK 없음.
+- `tests/test_worldcup_share.py`: 카드 크기 1080×1920, 버튼과 문구, 공유 흐름 분기, 친구 링크, og/twitter 메타와 이미지(크기·용량), 외부 스크립트 태그 없음, Kakao SDK 는 고정 주소·integrity·키 한 곳·결과 화면에서만 로드.
 - `scripts/check_site_ui.py` `worldcup_share`: 우승까지 진행, 버튼, 생성된 카드가 1080×1920 이고 캔버스가 오염되지 않음, `navigator.share`/`canShare` 를 대신해 PNG 파일 공유 확인, 컴퓨터의 링크 복사와 토스트, 친구 링크(올바른 값·틀린 값), 출시 전 잠금, 페이지 오류 없음.
+- `scripts/check_site_ui.py` `worldcup_kakao`: CDN 주소를 가짜 SDK 로 대신해, 결과 전에는 카카오 요청이 없고, `init` 이 키와 함께 한 번만 불리고, `sendDefault` 의 템플릿(제목·설명·절대 https 이미지·친구 링크 버튼)이 맞고, SDK 로딩 실패 시 버튼이 숨겨지고 페이지 오류가 없음.

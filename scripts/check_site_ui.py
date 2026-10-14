@@ -2504,6 +2504,140 @@ def worldcup_share(page):
     return count
 
 
+KAKAO_SDK_URL = "https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js"
+KAKAO_SDK_INTEGRITY = "sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy"
+KAKAO_JS_KEY = "92860c2f30dc6829c664d36be75e0b3d"
+# A fulfilled response cannot match the real file's SRI hash, so this spy records the integrity and
+# crossOrigin the page asks for (asserted against the pinned values) and does not apply the integrity.
+KAKAO_SPY = """(() => {
+  window.__kakaoEls = [];
+  const proto = HTMLScriptElement.prototype;
+  Object.defineProperty(proto, 'integrity', { configurable: true, get() { return this.__integrity || ''; },
+    set(v) { this.__integrity = v; window.__kakaoEls.push(this); } });
+})();"""
+# Fake SDKs: "ok" behaves; "send-throws" fails when sharing; "init-throws" fails to initialise.
+KAKAO_FAKES = {
+    "ok": """window.__kakao = { init: [], sent: [] };
+      window.Kakao = { init(k) { window.__kakao.init.push(k); this._ok = true; }, isInitialized() { return !!this._ok; },
+        Share: { sendDefault(t) { window.__kakao.sent.push(JSON.parse(JSON.stringify(t))); } } };""",
+    "send-throws": """window.__kakao = { init: [], sent: [] };
+      window.Kakao = { init(k) { window.__kakao.init.push(k); this._ok = true; }, isInitialized() { return !!this._ok; },
+        Share: { sendDefault() { throw new Error('popup blocked'); } } };""",
+    "init-throws": """window.__kakao = { init: [], sent: [] };
+      window.Kakao = { init() { throw new Error('invalid key'); }, isInitialized() { return false; }, Share: { sendDefault() {} } };""",
+}
+
+
+def worldcup_kakao(page):
+    """The KakaoTalk share card (owner 2026-10-15, docs/WORLDCUP_SHARE.md): the pinned Kakao SDK is requested
+    only when the result screen appears (never on the start/match screens or another page), with its
+    integrity and crossorigin; Kakao.init runs once with the key; the button hands sendDefault a feed whose
+    image is an absolute https URL on this origin and whose link and button are the friend link; a failing
+    SDK (blocked, init error, share error) hides the button or falls back to the existing share, and the
+    page never errors. The CDN is stood in for by a fake script."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"worldcup.html KakaoTalk: {detail}"
+        count += 1
+
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
+    save, (winner, finalist, _semi_a, _semi_b) = worldcup_final_saved(cup, "korean")
+    view = page.context.new_page()
+    errors, kakao_requests = [], []
+    view.on("pageerror", lambda error: errors.append(str(error)))
+    view.on("request", lambda req: kakao_requests.append(req.url) if "kakao" in (urlparse(req.url).hostname or "") else None)
+    view.add_init_script(KAKAO_SPY)
+    view.clock.set_fixed_time(WC_RUNNING)
+    view.set_viewport_size({"width": 1280, "height": 900})
+
+    def serve(mode):
+        view.unroute(KAKAO_SDK_URL)
+        if mode:
+            view.route(KAKAO_SDK_URL, lambda route: route.fulfill(content_type="application/javascript", body=KAKAO_FAKES[mode]))
+
+    def to_result():
+        """Loads the world cup with the stored final and plays the last pick; returns the Kakao requests made before it."""
+        view.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
+        view.evaluate("s => { localStorage.setItem('babdoduk-worldcup', JSON.stringify(s)); localStorage.removeItem('babdoduk-lang'); }", save)
+        kakao_requests.clear()
+        view.reload(wait_until="networkidle")
+        view.locator("#wcResume").click()
+        before = list(kakao_requests)
+        view.locator(f'.wc-card[data-id="{winner}"]').click()
+        view.wait_for_selector("#wcResult:not([hidden])")
+        return before
+
+    serve("ok")
+    # Nothing Kakao on the other pages or the world cup start screen.
+    for name in ("index.html", "event.html", "mukbang.html", "worldcup.html"):
+        view.goto("https://site-ui.invalid/" + name, wait_until="networkidle")
+    check(not kakao_requests, ("no Kakao request on the other pages or the world cup start screen", kakao_requests))
+    before = to_result()
+    check(not before, ("no Kakao request through the start screen and the match", before))
+    view.wait_for_function("() => !document.getElementById('wcKakao').hidden")
+    check(kakao_requests == [KAKAO_SDK_URL], ("the pinned SDK is requested once, on the result", kakao_requests))
+    tags = view.evaluate("window.__kakaoEls.map(e => ({src: e.src, integrity: e.__integrity, crossOrigin: e.crossOrigin}))")
+    check(tags == [{"src": KAKAO_SDK_URL, "integrity": KAKAO_SDK_INTEGRITY, "crossOrigin": "anonymous"}],
+          ("the script tag carries the pinned integrity and crossorigin=anonymous", tags))
+    check(view.evaluate("window.__kakao.init") == [KAKAO_JS_KEY], ("Kakao.init ran once with the key", view.evaluate("window.__kakao.init")))
+    check(view.evaluate("document.querySelectorAll('script[src*=kakao]').length") == 1, "one SDK tag on the page")
+    button = view.locator("#wcKakao")
+    check("".join(button.inner_text().split()) == "💬카카오톡" and button.evaluate("el => el.tagName") == "BUTTON",
+          ("the button is 💬 카카오톡", button.inner_text()))
+    # Keyboard: Tab from 공유하기 reaches it with a visible focus ring; Enter shares.
+    view.locator("#wcShare").focus()
+    view.keyboard.press("Tab")
+    check(view.evaluate("document.activeElement.id") == "wcKakao"
+          and view.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none",
+          "Tab reaches 카카오톡 after 공유하기 with a visible focus ring")
+    view.keyboard.press("Enter")
+    view.wait_for_function("window.__kakao.sent.length === 1")
+    feed = view.evaluate("window.__kakao.sent")[0]
+    friend_url = f"https://site-ui.invalid/worldcup.html?from={winner}&cat=korean"
+    content, buttons = feed["content"], feed["buttons"]
+    check(feed["objectType"] == "feed" and content["title"] == f"친구의 우승 메뉴는 {cup_name(winner)}! 🏆"
+          and content["description"] == "한식 32강 · 너의 최애는?", ("title and description", content))
+    check(content["imageUrl"] == f"https://site-ui.invalid/images/worldcup/{winner}.jpg",
+          ("the image is the winner's photo, an absolute https URL on this origin", content["imageUrl"]))
+    check(content["link"] == {"mobileWebUrl": friend_url, "webUrl": friend_url}
+          and len(buttons) == 1 and buttons[0]["title"] == "너도 해보기"
+          and buttons[0]["link"] == {"mobileWebUrl": friend_url, "webUrl": friend_url},
+          ("the link and the 너도 해보기 button are the friend link", feed))
+    # English, and a second game: still one request and one init.
+    view.locator("#langToggle").click()
+    check("".join(view.locator("#wcKakao").inner_text().split()) == "💬KakaoTalk", "the button in English")
+    view.locator("#wcKakao").click()
+    sent = view.evaluate("window.__kakao.sent")[1]
+    check(sent["content"]["title"] == f"My friend’s champion: {page_names()[winner][1]}! 🏆" and "32" in sent["content"]["description"]
+          and sent["buttons"][0]["title"] == "Try it too", ("the English feed", sent))
+    view.locator("#langToggle").click()
+    view.locator("#wcAgain").click()
+    check(kakao_requests == [KAKAO_SDK_URL] and view.evaluate("window.__kakao.init") == [KAKAO_JS_KEY],
+          ("one request and one init for the whole visit", (kakao_requests, view.evaluate("window.__kakao.init"))))
+    # The fallback: sendDefault throwing hides the button and falls back to the existing share (a computer copies the link).
+    serve("send-throws")
+    to_result()
+    view.wait_for_function("() => !document.getElementById('wcKakao').hidden")
+    view.evaluate(SHARE_STUB, [False, True, None])
+    view.locator("#wcKakao").click()
+    view.wait_for_function("window.__copied.length === 1")
+    check(view.evaluate("window.__copied") == [friend_url] and view.locator("#wcKakao").is_hidden(),
+          "a failing sendDefault hides the button and falls back to the link copy")
+    # The SDK failing to initialise, and the SDK blocked: no button, the other buttons stay, no errors.
+    for mode in ("init-throws", None):
+        serve(mode)
+        to_result()
+        view.wait_for_timeout(300)
+        check(view.locator("#wcKakao").is_hidden() and view.locator("#wcShare").is_visible()
+              and view.locator("#wcSaveImage").is_visible(), (f"the SDK {mode or 'blocked'}: no 카카오톡 button, the rest remains", mode))
+    check(not errors, ("no page errors", errors))
+    view.evaluate("localStorage.removeItem('babdoduk-worldcup'); localStorage.removeItem('babdoduk-lang')")   # the context is shared
+    view.close()
+    return count
+
+
 def cup_name(dish):
     """The Korean name of a catalog dish."""
     return page_names()[dish][0]
@@ -2967,6 +3101,7 @@ def run_checks(screenshots=False):
         report["checks"] += worldcup_gacha(cup_page)
         report["checks"] += worldcup_sound(cup_page)
         report["checks"] += worldcup_share(cup_page)
+        report["checks"] += worldcup_kakao(cup_page)
         report["checks"] += worldcup_gate(cup_page)
         report["checks"] += worldcup_boundaries(cup_page)
         report["checks"] += home_wc_promo(cup_page)
