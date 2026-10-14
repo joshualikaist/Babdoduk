@@ -26,21 +26,17 @@
 - **먹방 월드컵 시작 화면**: 이모지 카테고리 타일과 🙈 아무거나, 다음 판에 나올 메뉴 사진 미리보기, 그리고 시작하면 약 5초 캡슐 뽑기 장면(탭하면 건너뜀)이 나와요. 사진 출처는 "📷 사진 위키미디어 공용(잘라서 줄임)" 한 줄로 줄였어요.
 - **소식 페이지**의 먹방 월드컵 카드에 같은 시작 화면이 그대로 들어왔어요(티저 사진과 "지금 해보기" 버튼은 없앴어요). 카테고리를 고르고 "32강 시작"을 누르면 월드컵 페이지가 그 카테고리로 바로 시작해요(`worldcup.html?cat=korean&go=1`, `go=1`일 때만). 행사가 끝나면 카드는 "페이지 보기" 링크만 남아요.
 
-<img src="docs/readme/home-phone.jpg" alt="휴대폰에서 본 홈" width="240" align="right" />
-
 ## 어떻게 돌아가나
 
-```mermaid
-flowchart LR
-  A["학식 · 공지 · 메일<br/>음식 기사"] --> B["GitHub Actions<br/>수집 · 검증"]
-  B --> C["정적 JSON<br/>data/"]
-  C --> D["페이지<br/>HTML · CSS · JS"]
-  D --> E["Vercel<br/>babdoduk.vercel.app"]
-```
+<img src="docs/readme/home-phone.jpg" alt="휴대폰에서 본 홈" width="240" align="right" />
+
+학식·공지·메일 → GitHub Actions(수집·검증) → 정적 JSON(`data/`) → 페이지(HTML·CSS·JS) → Vercel (babdoduk.vercel.app)
 
 - 빌드 단계가 없는 정적 사이트예요. 브라우저는 같은 사이트의 JSON만 읽어요.
 - 데이터는 만든 시점의 스냅숏이라, 화면에 날짜나 마지막 변경 시각을 함께 보여 줘요.
 - 생성이나 검증이 실패하면 이전 파일이 그대로 남아요.
+
+<br clear="right" />
 
 ## 시작하기
 
