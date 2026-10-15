@@ -588,3 +588,70 @@ def test_giveaway_english_strings(browser):
     cell(page, "2026-10-07").click()
     assert page.locator(".hc-ev-meta").all_inner_texts()[-1] == "Snack · 🎁 Giveaway"
     context.close()
+
+
+# Month, year and leap-day boundaries under fixed KST clocks (stage 5 date scenarios).
+def _month_events(last, first):
+    """A lunch on `last` (ended by 13:00), a deadline-only prize draw due at 23:59 that day (listed at
+    its deadline, no grace), and a lunch on `first`, the next day."""
+    return {"generatedAt": LIVE["generatedAt"], "events": [
+        ev("last-lunch", f"{last}T12:00:00+09:00", f"{last}T13:00:00+09:00", title="마지막 날 점심"),
+        ev("last-draw", f"{last}T23:59:00+09:00", title="말일 경품 추첨", food=NO_FOOD,
+           giveaway={"provided": "true", "description": "커피 쿠폰"},
+           registration={"required": "true", "deadline": f"{last}T23:59:00+09:00", "url": "https://forms.gle/draw"}),
+        ev("first-lunch", f"{first}T12:00:00+09:00", f"{first}T13:00:00+09:00", title="첫날 점심")]}
+
+
+@pytest.mark.parametrize("last, first, title_last, title_first, last_label", [
+    ("2026-10-31", "2026-11-01", "10월", "11월", "10월 31일 토요일"),
+    ("2026-12-31", "2027-01-01", "12월", "1월", "12월 31일 목요일"),
+    ("2028-02-29", "2028-03-01", "2월", "3월", "2월 29일 화요일"),        # a leap day
+])
+def test_the_last_second_and_the_first_second_of_a_month(browser, last, first, title_last, title_first, last_label):
+    live = _month_events(last, first)
+    # 23:59:59 on the last day: still that day and month. The lunch is over, the draw closes at 23:59:00
+    # and is past too, the next day's lunch is next.
+    context, page, errors = open_home(browser, live=live, archive={"windowDays": 30, "events": []}, now=f"{last}T23:59:59+09:00")
+    current = page.locator('#homeCalGrid td[aria-current="date"]')
+    assert current.count() == 1 and current.get_attribute("data-date") == last
+    assert page.locator(".hc-month-title").inner_text() == title_last
+    assert cell(page, last).get_attribute("aria-label").startswith(last_label)
+    assert answer(page).startswith("오늘 일정은 끝났어요 · 다음 ")
+    assert dots(page, last) == ["past"]
+    assert gift(page, last).count() == 1 and "is-past" in gift(page, last).get_attribute("class")   # the draw closed at 23:59:00
+    assert page.locator("#homeCalToday").inner_text().startswith(f"{int(last[5:7])}월 {int(last[8:10])}일 (")
+    # (When the next event is in the next month, the default day panel shows it while the grid keeps today's
+    # month: the approved default in js/home-calendar.js, not a lost selection.)
+    assert day_title(page).startswith(f"{int(first[5:7])}월 {int(first[8:10])}일") and "내일" in day_title(page)
+    assert not errors
+    context.close()
+    # One second later it is the next day and, across a month, the next month: today moves, the title follows.
+    context, page, errors = open_home(browser, live=live, archive={"windowDays": 30, "events": []}, now=f"{first}T00:00:00+09:00")
+    current = page.locator('#homeCalGrid td[aria-current="date"]')
+    assert current.count() == 1 and current.get_attribute("data-date") == first
+    assert page.locator(".hc-month-title").inner_text() == title_first
+    assert answer(page).startswith("오늘 1개 · 12:00부터")
+    assert dots(page, first) == ["live"]
+    assert page.locator("#homeCalToday").inner_text().startswith(f"{int(first[5:7])}월 {int(first[8:10])}일 (")
+    yesterday = cell(page, last)           # November starts on a Sunday, so October 31 is not on its grid
+    assert yesterday.count() == 0 or "is-other" in yesterday.get_attribute("class")
+    assert not errors
+    context.close()
+
+
+def test_a_deadline_only_draw_on_the_last_day_is_live_until_its_deadline(browser):
+    live = _month_events("2026-10-31", "2026-11-01")
+    context, page, _ = open_home(browser, live=live, archive={"windowDays": 30, "events": []}, now="2026-10-31T23:58:59+09:00")
+    assert gift(page, "2026-10-31").get_attribute("class") == "hc-gift"                 # not yet past
+    assert answer(page).startswith("오늘 일정은 끝났어요")                                # the draw is never counted
+    cell(page, "2026-10-31").click()
+    meta = page.locator(".hc-ev-meta").all_inner_texts()
+    assert "신청 마감 23:59 · E11 101호" in meta and "🎁 경품 · 사전 신청" in meta, meta
+    # Navigating into the next month and back keeps today marked on the last day.
+    page.locator("[data-hc-step='1']").click()
+    assert page.locator(".hc-month-title").inner_text() == "11월"
+    assert cell(page, "2026-11-01").get_attribute("aria-current") is None
+    page.locator("[data-hc-step='-1']").click()
+    assert page.locator(".hc-month-title").inner_text() == "10월"
+    assert cell(page, "2026-10-31").get_attribute("aria-current") == "date"
+    context.close()
