@@ -9,7 +9,9 @@ name: e2e-live
 # Pushes of the content bot touch only generated data (scripts/publish_generated.py) and are ignored.
 # Strictly read-only: no secrets, no writes, no deploy. The script aborts every non-GET request in
 # the browser (the world cup's stats RPC on lab included) and never touches Dooray or the Portal.
-# workflow_dispatch can still run either site (or both) by hand.
+# workflow_dispatch can still run either site (or both) by hand. target=browsers (never on a push) runs
+# scripts/e2e_browsers.py instead: the same read-only journeys in WebKit (iPhone 13), Firefox and
+# Chromium (Pixel 7) against both sites.
 
 on:
   push:
@@ -24,7 +26,7 @@ on:
       target:
         description: 'Which site to check'
         type: choice
-        options: [both, prod, lab]
+        options: [both, prod, lab, browsers]
         default: both
 
 permissions:
@@ -73,6 +75,9 @@ jobs:
         run: |
           python -m pip install --no-cache-dir playwright==1.63.0
           python -m playwright install --with-deps chromium
+      - name: Install WebKit and Firefox (browsers check only)
+        if: env.TARGET == 'browsers'
+        run: python -m playwright install --with-deps webkit firefox
       - name: Production
         id: prod
         if: env.TARGET == 'both' || env.TARGET == 'prod'
@@ -83,6 +88,16 @@ jobs:
         if: env.TARGET == 'both' || env.TARGET == 'lab'
         continue-on-error: true
         run: python scripts/e2e_live.py --base https://babdoduk-lab.vercel.app --out .local/e2e-live
+      - name: Browsers on production
+        id: bprod
+        if: env.TARGET == 'browsers'
+        continue-on-error: true
+        run: python scripts/e2e_browsers.py --base https://babdoduk.vercel.app --out .local/e2e-live
+      - name: Browsers on lab
+        id: blab
+        if: env.TARGET == 'browsers'
+        continue-on-error: true
+        run: python scripts/e2e_browsers.py --base https://babdoduk-lab.vercel.app --out .local/e2e-live
       - name: Upload reports and failure screenshots
         if: always()
         uses: actions/upload-artifact@v7
@@ -93,7 +108,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - name: Fail the run if any site failed
-        if: steps.prod.outcome == 'failure' || steps.lab.outcome == 'failure'
+        if: steps.prod.outcome == 'failure' || steps.lab.outcome == 'failure' || steps.bprod.outcome == 'failure' || steps.blab.outcome == 'failure'
         run: |
-          echo "production: ${{ steps.prod.outcome }}, lab: ${{ steps.lab.outcome }}"
+          echo "production: ${{ steps.prod.outcome }}, lab: ${{ steps.lab.outcome }}, browsers prod: ${{ steps.bprod.outcome }}, browsers lab: ${{ steps.blab.outcome }}"
           exit 1
