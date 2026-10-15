@@ -1,16 +1,24 @@
 name: e2e-live
 
-# Stage 1 of the end-to-end checks: every morning (07:30 KST) a real Chromium opens the deployed
-# production site and babdoduk-lab like a visitor (Korean and English, phone and desktop) and walks
-# the journeys in scripts/e2e_live.py: home, 꽁밥, magazine/events/history, the 먹방 월드컵, links,
-# images, console errors and load times. A failure makes the run red, so GitHub emails the owner.
+# Stage 1 of the end-to-end checks, run once per deploy (owner 2026-10-15: whenever the service is
+# developed, not daily). A push to main or lab first waits for the Vercel deployment of that exact
+# commit to succeed, then a real Chromium opens the site that branch deploys (main: production, lab:
+# babdoduk-lab) like a visitor (Korean and English, phone and desktop) and walks the journeys in
+# scripts/e2e_live.py: home, 꽁밥, magazine/events/history, the 먹방 월드컵, links, images, console
+# errors and load times. A failure makes the run red, so GitHub emails the owner.
+# Pushes of the content bot touch only generated data (scripts/publish_generated.py) and are ignored.
 # Strictly read-only: no secrets, no writes, no deploy. The script aborts every non-GET request in
 # the browser (the world cup's stats RPC on lab included) and never touches Dooray or the Portal.
-# Schedules run only from the default branch (main).
+# workflow_dispatch can still run either site (or both) by hand.
 
 on:
-  schedule:
-    - cron: '30 22 * * *'   # 07:30 KST
+  push:
+    branches: [main, lab]
+    paths-ignore:
+      - 'data/magazine/**'
+      - 'data/kaist-menu/**'
+      - 'data/ggongbab/**'
+      - 'research/**'
   workflow_dispatch:
     inputs:
       target:
@@ -21,10 +29,11 @@ on:
 
 permissions:
   contents: read
+  statuses: read          # the commit status that tells when the Vercel deployment succeeded
 
 concurrency:
-  group: e2e-live
-  cancel-in-progress: false
+  group: e2e-live-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   e2e:
@@ -32,8 +41,30 @@ jobs:
     timeout-minutes: 40
     env:
       PYTHONIOENCODING: utf-8
-      TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'both' }}
+      # A push checks only the site its branch deploys; a manual run takes its input.
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || (github.ref_name == 'main' && 'prod' || 'lab') }}
     steps:
+      - name: Wait for the Vercel deployment of this commit
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_CONTEXT: ${{ github.ref_name == 'main' && 'Vercel – babdoduk' || 'Vercel – babdoduk-lab' }}
+        run: |
+          deadline=$((SECONDS + 900))
+          state=none
+          while [ "$SECONDS" -lt "$deadline" ]; do
+            state=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/status" \
+              --jq ".statuses[] | select(.context == \"$VERCEL_CONTEXT\") | .state" | head -n 1)
+            state=${state:-none}
+            echo "$VERCEL_CONTEXT: $state"
+            case "$state" in
+              success) exit 0 ;;
+              failure|error) echo "::error::$VERCEL_CONTEXT reported $state for ${{ github.sha }}; the deployment failed, so there is nothing to check."; exit 1 ;;
+            esac
+            sleep 20
+          done
+          echo "::error::Timed out after 15 minutes waiting for $VERCEL_CONTEXT to succeed for ${{ github.sha }} (last state: $state)."
+          exit 1
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
