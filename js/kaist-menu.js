@@ -126,6 +126,14 @@
     var time = Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
     return isNaN(time) ? null : time;
   }
+  // Saturday or Sunday (KST calendar date): the cafeterias post no menu, so a missing one is not
+  // "still updating" (owner 2026-10-16). Public holidays are not known to the site.
+  function isWeekend(isoDate) {
+    var time = utcDay(isoDate);
+    if (time == null) return false;
+    var dow = new Date(time).getUTCDay();
+    return dow === 0 || dow === 6;
+  }
   function utcYmd(time) {
     var d = new Date(time);
     return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate());
@@ -219,10 +227,12 @@
     // Always TODAY: the page's top metric and the free-food hints describe today, whichever
     // cafeteria date is being browsed.
     function snapshot() {
-      var stale = !isDataForSelectedDate(state.data, ymd(toKst()));
+      var todayIso = ymd(toKst());
+      var stale = !isDataForSelectedDate(state.data, todayIso);
       return {
         status: state.status,
         stale: stale,
+        weekend: isWeekend(todayIso),
         meal: state.meal,
         restaurantCount: (!stale && state.data) ? restaurantsWithMenus(state.data).length : 0,
         data: state.data,
@@ -329,7 +339,8 @@
         return subHtml(dateHeading(state.selected), visibleRestaurants(state.data).length) + menuHtml(state.data, false);
       }
       // latest.json still holds an earlier day: today's menu is not published yet.
-      var html = '<div class="km-warn" data-km-stale="1"><strong>' + esc(t('km.staleTitle', '오늘 메뉴 업데이트 중이에요.')) + '</strong><br>' +
+      var staleTitle = isWeekend(state.selected) ? t('km.weekendTitle', '주말엔 학식이 없어요.') : t('km.staleTitle', '오늘 메뉴 업데이트 중이에요.');
+      var html = '<div class="km-warn" data-km-stale="1"><strong>' + esc(staleTitle) + '</strong><br>' +
         esc(t('km.staleSaved', '최근 저장된 메뉴:')) + ' ' + esc(dateHeading(state.data && state.data.date)) +
         '<br><button type="button" class="km-stale-toggle" data-km-stale-toggle>' +
         esc(state.showStale ? t('km.hideStale', '최근 메뉴 숨기기') : t('km.showStale', '최근 메뉴 보기')) + '</button></div>';
@@ -559,6 +570,7 @@
     loadTodayMenu: loadTodayMenu,
     isDataForSelectedDate: isDataForSelectedDate,
     isToday: isToday,
+    isWeekend: isWeekend,
     weekDates: weekDates,
     restaurantsWithMenus: restaurantsWithMenus
   };
@@ -592,7 +604,8 @@
     } else {
       var dateText = dateHeading(mukState.data.date) || mukState.data.dateLabel || '';
       html += '<p class="kaist-date' + (stale ? ' is-stale' : '') + '">' + esc(stale
-        ? t('kaist.staleNote', '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.').replace('{date}', dateText)
+        ? (isWeekend(ymd(toKst())) ? t('kaist.weekendNote', '{date} 메뉴예요. 주말엔 학식이 없어요.')
+          : t('kaist.staleNote', '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.')).replace('{date}', dateText)
         : dateText) + '</p></header>';
       if (!restos.some(function (row) { return row.id === mukState.resto; })) mukState.resto = restos[0].id;
       var resto = restos.filter(function (row) { return row.id === mukState.resto; })[0];
