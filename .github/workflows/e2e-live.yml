@@ -24,9 +24,9 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Which site to check'
+        description: 'Which site to check (quality: stage 4 accessibility, links and performance of both sites)'
         type: choice
-        options: [both, prod, lab, browsers]
+        options: [both, prod, lab, browsers, quality]
         default: both
 
 permissions:
@@ -98,6 +98,16 @@ jobs:
         if: env.TARGET == 'browsers'
         continue-on-error: true
         run: python scripts/e2e_browsers.py --base https://babdoduk-lab.vercel.app --out .local/e2e-live
+      - name: Quality (accessibility, links, performance), production
+        id: qprod
+        if: env.TARGET == 'quality'
+        continue-on-error: true
+        run: python scripts/e2e_quality.py --base https://babdoduk.vercel.app --out .local/e2e-live
+      - name: Quality (accessibility, links, performance), lab
+        id: qlab
+        if: env.TARGET == 'quality'
+        continue-on-error: true
+        run: python scripts/e2e_quality.py --base https://babdoduk-lab.vercel.app --out .local/e2e-live
       - name: Upload reports and failure screenshots
         if: always()
         uses: actions/upload-artifact@v7
@@ -108,7 +118,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
       - name: Fail the run if any site failed
-        if: steps.prod.outcome == 'failure' || steps.lab.outcome == 'failure' || steps.bprod.outcome == 'failure' || steps.blab.outcome == 'failure'
+        if: steps.prod.outcome == 'failure' || steps.lab.outcome == 'failure' || steps.bprod.outcome == 'failure' || steps.blab.outcome == 'failure' || steps.qprod.outcome == 'failure' || steps.qlab.outcome == 'failure'
         run: |
-          echo "production: ${{ steps.prod.outcome }}, lab: ${{ steps.lab.outcome }}, browsers prod: ${{ steps.bprod.outcome }}, browsers lab: ${{ steps.blab.outcome }}"
+          echo "production: ${{ steps.prod.outcome }}, lab: ${{ steps.lab.outcome }}, browsers prod: ${{ steps.bprod.outcome }}, browsers lab: ${{ steps.blab.outcome }}, quality prod: ${{ steps.qprod.outcome }}, quality lab: ${{ steps.qlab.outcome }}"
           exit 1
