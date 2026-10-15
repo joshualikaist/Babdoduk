@@ -837,7 +837,8 @@ HOME_FIRST_SCREEN = """() => { const q = s => document.querySelector(s);
   const promo = q('.home-wc'), shown = !!promo && !promo.hidden && getComputedStyle(promo).display !== 'none';
   const cta = [...document.querySelectorAll('.home-wc-cta')].filter(e => !e.hidden && getComputedStyle(e).display !== 'none');
   return {phase: document.documentElement.getAttribute('data-wc-phase'), shown, promo: shown ? box(promo) : null,
-    cta: cta.length === 1 ? box(cta[0]) : cta.length, preview: window.BabdodukWorldcup.preview(),
+    cta: cta.length === 1 ? box(cta[0].querySelector('.home-wc-pill')) : cta.length,
+    target: cta.length === 1 ? box(cta[0]) : null, preview: window.BabdodukWorldcup.preview(),
     grid: box(q('#homeCal .hc-grid')), cal: box(q('#homeCal')), collage: box(q('.home-collage')),
     hero: box(q('.home-hero')), answer: q('#homeCalAnswer').textContent.trim(),
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
@@ -885,6 +886,8 @@ def home_first_screen(page):
                     if width <= 440:
                         check(shot["promo"]["height"] <= 56 and shot["cta"]["height"] <= 40,
                               (where, "a phone: one slim row", shot["promo"], shot["cta"]))
+                        check(shot["target"]["height"] >= 44,
+                              (where, "a phone: the slim button is still a 44 px tap target", shot["target"]))
                     soon_height = shot["promo"]["height"] if state == "soon" else soon_height
                     check(shot["promo"]["height"] <= soon_height + 0.5,
                           (where, "no taller than the soon band", shot["promo"]["height"], soon_height))

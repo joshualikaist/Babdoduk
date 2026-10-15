@@ -437,12 +437,17 @@ def giveaway_listings(browser, base, report):
             assert squash(gift_chip.text_content()) == badge and gift_chip.get_attribute("aria-pressed") == "false"
             assert page.get_by_role("button", name="Giveaway" if en else "경품", exact=True).count() == 1
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            # Every chip is a 44 px tap target (owner 2026-10-16) whose visible pill stays 34 px tall.
+            for box in page.locator(".gg-chip").evaluate_all(
+                    "els => els.map(el => { const r = el.getBoundingClientRect(), s = getComputedStyle(el);"
+                    " return [r.width, r.height, r.height - parseFloat(s.borderTopWidth) - parseFloat(s.borderBottomWidth)]; })"):
+                assert min(box[0], box[1]) >= 44 and round(box[2]) == 34, box
             for right, edge in page.locator(".gg-card-badges, .gg-card-top").evaluate_all(
                     "els => els.map(el => [el.getBoundingClientRect().right, el.closest('.gg-card').getBoundingClientRect().right])"):
                 assert right <= edge + 0.5, (right, edge)
             page.evaluate("document.fonts.ready")
             page.screenshot(path=str(GIVEAWAY_SHOTS / f"giveaway-page-{width}-{lang}.png"), full_page=True)
-            report["checks"] += 33
+            report["checks"] += 34
             if width != 390 or lang != "ko":
                 continue
             # Filtering (once): the giveaway chip shows every giveaway, with or without food; the food
