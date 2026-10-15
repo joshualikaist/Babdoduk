@@ -51,13 +51,24 @@ RECORD_RPC = "rpc/worldcup_record_game"
 
 # ---- pure helpers (tested in tests/test_e2e_live.py) ---------------------------------------------------
 
-def read_wc_window(root: Path = ROOT) -> dict:
-    """The world cup window from js/worldcup-gate.js (written there from data/content/events.json)."""
-    text = (root / "js" / "worldcup-gate.js").read_text(encoding="utf-8")
+def parse_wc_window(text: str) -> dict:
     match = re.search(r"window\.BABDODUK_WC_WINDOW\s*=\s*(\{.*?\});", text)
     if not match:
         raise RuntimeError("BABDODUK_WC_WINDOW not found in js/worldcup-gate.js")
     return json.loads(match.group(1))
+
+
+def read_wc_window(base: str | None = None, root: Path = ROOT) -> dict:
+    """The world cup window of the site under test (its served js/worldcup-gate.js, so a lab-only
+    previewFrom is seen where it exists); the repo's copy when the site cannot be read."""
+    if base:
+        try:
+            from urllib.request import urlopen
+            with urlopen(base.rstrip("/") + "/js/worldcup-gate.js", timeout=30) as resp:
+                return parse_wc_window(resp.read().decode("utf-8"))
+        except Exception:
+            pass
+    return parse_wc_window((root / "js" / "worldcup-gate.js").read_text(encoding="utf-8"))
 
 
 def kst_date(now: dt.datetime) -> str:
@@ -494,7 +505,7 @@ def run(base: str, out: Path) -> Report:
     from playwright.sync_api import sync_playwright
 
     rep = Report(base.rstrip("/"), out)
-    window = read_wc_window()
+    window = read_wc_window(rep.base)
     now = dt.datetime.now(dt.timezone.utc)
     phase = wc_phase(now, window, rep.is_lab)
     catalog = json.loads((ROOT / "data" / "content" / "worldcup.json").read_text(encoding="utf-8"))
