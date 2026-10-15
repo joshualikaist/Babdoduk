@@ -40,6 +40,13 @@
   min-width: 0;
 }
 
+/* Until js/food-picker.js has drawn the picker (after its dish packs load), the panel keeps the picker's
+   height, so the board below does not jump; choose.html opens the page right here (owner 2026-10-16,
+   layout shift). */
+.eat-panel:empty {
+  min-height: 378px;
+}
+
 .eat-home {
   min-width: 0;
 }
