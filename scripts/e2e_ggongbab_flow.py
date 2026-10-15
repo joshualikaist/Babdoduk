@@ -131,13 +131,12 @@ def make_poster_png() -> bytes:
 
 
 def write_fixtures() -> None:
-    # The PDF avoids a leading "Date:" label on purpose: sanitizer._HEADER_LINE strips such lines as mail
-    # headers (a known finding, see tests/ggongbab/test_e2e_ggongbab_flow.py).
+    # The PDF keeps its "Date:" and "Venue:" labels: they are flyer content, not a mail header block.
     (FIXTURES / "poster.png").write_bytes(make_poster_png())
     (FIXTURES / "announcement.pdf").write_bytes(_pdf([
         "Startup Networking Day",
-        "When: September 24, 2026, 18:00-20:00",
-        "Where: Building E3, room 201",
+        "Date: September 24, 2026, 18:00-20:00",
+        "Venue: Building E3, room 201",
         "Dinner provided for all attendees.",
         "Please register at https://example.org/networking-day",
     ]))
@@ -164,8 +163,11 @@ EXPECT: dict[str, Expect] = {
     "food-pdf": Expect(True, "food provision wording + event + date", attachment_block=True, published=True, food="text"),
     "food-poster": Expect(True, "event + poster image", images=1, restored=True, published=True, food="poster"),
     "giveaway-expo": Expect(True, "giveaway wording + event + date", published=True, giveaway=True),
-    "giveaway-deadline": Expect(True, "giveaway wording + event + date", published=True, giveaway=True,
-                                deadline_only=True),
+    # A survey with a prize draw and no event to attend is not listed (owner decision 2026-10-15).
+    "giveaway-deadline": Expect(True, "giveaway wording + event + date"),
+    # A booth with a prize draw and only a sign-up deadline is listed, starting at its deadline.
+    "giveaway-booth": Expect(True, "giveaway wording + event + date", published=True, giveaway=True,
+                             deadline_only=True),
     "multi-session": Expect(True, "food provision wording + event + date", published=True, food="text"),
     "newsletter": Expect(False, "no event wording"),
     "receipt": Expect(False, "denylist: transactional subject (not opened)", opened=False),
@@ -327,7 +329,7 @@ SCRIPT = {
         date_text="September 24, 2026", time_text="18:00-20:00", location_name="Building E3, room 201",
         building="E3", room="201", food_provided="true", food_type="meal", food_description="저녁 식사",
         registration_required="true", registration_url="https://example.org/networking-day", confidence=0.9,
-        evidence=ev(event_time="When: September 24, 2026, 18:00-20:00", location="Where: Building E3, room 201",
+        evidence=ev(event_time="Date: September 24, 2026, 18:00-20:00", location="Venue: Building E3, room 201",
                           food="Dinner provided for all attendees", registration="Please register at")),
     "진로 토크 콘서트": lambda: ext(
         title="진로 토크 콘서트", summary="진로 토크 콘서트. 점심 도시락이 제공됩니다.",
@@ -343,13 +345,16 @@ SCRIPT = {
         giveaway="true", giveaway_description="경품 추첨 (에어팟 3명), 스탬프 투어 기념품", confidence=0.92,
         evidence=ev(event_time="9월 20일(일) 10:00~17:00", location="KI빌딩 1층 로비",
                           food=None, registration=None, giveaway="방문객 대상 경품 추첨(에어팟 3명)을 진행")),
+    # A survey with a prize draw and nothing to attend: the model reads it as no event (prompt rule 7).
     "KAIST 설문 참여 이벤트": lambda: ext(
-        title="KAIST 설문 참여 이벤트", summary="설문에 참여하면 추첨으로 문화상품권을 받습니다.",
-        date_text="9월 24일(목)", time_text="23:59", giveaway="true", giveaway_description="문화상품권 20명 추첨",
-        registration_required="true", registration_deadline="2026-09-24T23:59:00+09:00",
-        registration_url="https://example.org/survey", confidence=0.9,
-        evidence=ev(event_time=None, location=None, food=None, registration="응모 마감: 9월 24일(목) 23:59",
-                          giveaway="추첨을 통해 문화상품권을 20명에게 드립니다")),
+        is_event=False, title="KAIST 설문 참여 이벤트", summary="설문 참여자 추첨으로 문화상품권을 제공합니다.",
+        confidence=0.95),
+    "굿즈 팝업스토어": lambda: ext(
+        title="캠퍼스 굿즈 팝업스토어 경품", summary="팝업스토어 부스를 방문하면 경품 추첨 응모권을 줍니다.",
+        date_text="9월 24일(목)", time_text="23:59", location_name="굿즈 팝업스토어 부스",
+        giveaway="true", giveaway_description="경품 추첨 응모권",
+        registration_required="true", registration_deadline="2026-09-24T23:59:00+09:00", confidence=0.9,
+        evidence=ev(registration="응모 마감: 9월 24일(목) 23:59", giveaway="경품 추첨 응모권을 드립니다")),
     "AI 특강 시리즈": lambda: ext(
         title="AI 특강 시리즈", summary="3회에 걸친 AI 특강. 매 회 샌드위치를 제공합니다.",
         event_start="2026-09-21T12:00:00+09:00", event_end="2026-09-23T13:00:00+09:00",
@@ -502,7 +507,7 @@ def run_flow(ai: str = "fake", page: bool = True) -> Report:
                 report.check(outcome.request.log.index(restore_posts[0]) > last_get, f"{row.key}: restored before the last download")
         report.check(all(e[0] == "GET" or e[1] == f"https://{HOST}/v2/wapi/mails/unread" for e in outcome.request.log),
                      "the Radar sent a request that is neither a GET nor the unread restore")
-        report.check(outcome.result.denied == 1 and outcome.result.opened == 7 and outcome.result.registered == 6,
+        report.check(outcome.result.denied == 1 and outcome.result.opened == 8 and outcome.result.registered == 7,
                      f"radar counts: {outcome.result.counts()}")
         report.check(len(outcome.flash) == 2, f"flash (same-day) candidates: {len(outcome.flash)}, expected 2")
 
@@ -548,7 +553,7 @@ def run_flow(ai: str = "fake", page: bool = True) -> Report:
         report.extractor_calls = extractor.calls
         report.usage = pipeline.stats.model_usage
         if ai == "fake":
-            report.check(len(extractor.calls) == 6, f"{len(extractor.calls)} AI calls, expected 6")
+            report.check(len(extractor.calls) == 7, f"{len(extractor.calls)} AI calls, expected 7")
             by_key = {c["key"]: c["images"] for c in extractor.calls}
             report.check(by_key.get("진로 토크 콘서트") == 1 and sum(by_key.values()) == 1, f"images sent to the AI: {by_key}")
 
@@ -587,7 +592,7 @@ def run_flow(ai: str = "fake", page: bool = True) -> Report:
         if multi:
             report.check(multi["startAt"].startswith("2026-09-21T12:00") and multi["endAt"].startswith("2026-09-23T13:00"),
                          f"multi-session spans {multi['startAt']} .. {multi['endAt']}")
-        draw = published.get(rows["giveaway-deadline"].event_id)
+        draw = published.get(rows["giveaway-booth"].event_id)
         if draw:
             report.check(draw["startAt"].startswith("2026-09-24T23:59") and draw["registration"]["deadline"] == draw["startAt"],
                          f"deadline-only giveaway startAt {draw['startAt']}")

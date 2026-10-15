@@ -49,8 +49,27 @@ def strip_dooray_ids(text: str) -> str:
     return _DOORAY_MEMBER.sub("[member]", text)
 
 
+_HEADER_ADDRESS_KEY = re.compile(r"^\s*(To|Cc|Bcc|From|Sent|받는\s*사람|참조|숨은\s*참조|보낸\s*사람)\s*[:：]", re.I)
+_FORWARD_MARKER = re.compile(
+    r"^\s*(?:-{2,}\s*(?:Original Message|Forwarded message|원본\s*메시지|전달된\s*메시지)\s*-{2,}|"
+    r"Begin forwarded message:?)\s*$", re.I)
+
+
 def strip_headers(text: str) -> str:
-    return _HEADER_LINE.sub("", text)
+    """Drop mail header lines (To/Cc/From/Sent/Date and the Korean forms) only where a mail header
+    block is: at the top of the text or right after a forwarded-message marker. A header block is a run
+    of consecutive header lines that names an address field. A line like "Date: September 24" inside the
+    body or an attachment's text is event content and stays."""
+    lines = text.split("\n")
+    starts = [0] + [i + 1 for i, line in enumerate(lines) if _FORWARD_MARKER.match(line)]
+    drop: set[int] = set()
+    for start in starts:
+        end = start
+        while end < len(lines) and _HEADER_LINE.match(lines[end]):
+            end += 1
+        if end > start and any(_HEADER_ADDRESS_KEY.match(lines[i]) for i in range(start, end)):
+            drop.update(range(start, end))
+    return "\n".join(line for i, line in enumerate(lines) if i not in drop)
 
 
 def strip_quote_chain(text: str) -> str:
