@@ -44,6 +44,34 @@
   display: none;
 }
 
+/* Until the page script has put every row in its band (it sets data-ready), the two sections keep their
+   place invisibly and the page takes the first screen, so nothing jumps when the rows move from 지난 활동
+   to 지금 and the start screen appears (owner 2026-10-16, layout shift). Without scripting the rows stay
+   where the markup has them, visible. */
+@media (scripting: enabled) {
+  .event-page-wrap:not([data-ready]) {
+    min-height: 100vh;
+  }
+
+  .event-page-wrap:not([data-ready]) .event-section,
+  .event-page-wrap:not([data-ready]) .event-instagram {
+    visibility: hidden;
+  }
+}
+
+/* A running or coming world cup row keeps its start screen's height (755 px on a phone, 915 px from
+   561 px) until js/worldcup.js has drawn it, so the past activities below do not jump (owner 2026-10-16,
+   layout shift). A failed load gives the place back to the link. */
+.event-item:is([data-band="now"], [data-band="upcoming"]) .wc-embed:not([data-ready]):not([data-failed]) {
+  min-height: 755px;
+}
+
+@media (min-width: 561px) {
+  .event-item:is([data-band="now"], [data-band="upcoming"]) .wc-embed:not([data-ready]):not([data-failed]) {
+    min-height: 915px;
+  }
+}
+
 .event-link[data-event-page] {
   display: none;
 }
