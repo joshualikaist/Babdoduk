@@ -47,3 +47,8 @@ def test_post_violations_production_vs_lab():
     other = {"host": "x.supabase.co", "path": "/rest/v1/something"}
     assert e2e.post_violations([rpc], is_lab=False) == [rpc]
     assert e2e.post_violations([rpc, other], is_lab=True) == [other]
+
+
+def test_parse_wc_window_reads_the_served_gate_script():
+    text = 'x\nwindow.BABDODUK_WC_WINDOW = {"start": "2026-10-16", "end": "2026-10-23"};\n(function(){})();'
+    assert e2e.parse_wc_window(text) == {"start": "2026-10-16", "end": "2026-10-23"}
