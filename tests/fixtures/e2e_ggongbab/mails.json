@@ -18,7 +18,13 @@
       "minutes_before": 990,
       "unread": false,
       "html": "<p>안녕하세요. 행사 안내문을 첨부합니다.</p><p>자세한 내용은 첨부 파일을 확인해 주세요.</p>",
-      "attachments": [{"name": "안내문.pdf", "file": "announcement.pdf", "extension": "pdf"}]
+      "attachments": [
+        {
+          "name": "안내문.pdf",
+          "file": "announcement.pdf",
+          "extension": "pdf"
+        }
+      ]
     },
     {
       "key": "food-poster",
@@ -27,7 +33,13 @@
       "minutes_before": 900,
       "unread": true,
       "html": "<p>진로 토크 콘서트를 개최합니다.</p><p>자세한 내용은 첨부 포스터를 확인해 주세요.</p>",
-      "attachments": [{"name": "포스터.png", "file": "poster.png", "extension": "png"}]
+      "attachments": [
+        {
+          "name": "포스터.png",
+          "file": "poster.png",
+          "extension": "png"
+        }
+      ]
     },
     {
       "key": "giveaway-expo",
@@ -45,6 +57,15 @@
       "minutes_before": 780,
       "unread": false,
       "html": "<p>학생 생활 만족도 설문에 참여하신 분 중 추첨을 통해 문화상품권을 20명에게 드립니다.</p><p>응모 마감: 9월 24일(목) 23:59</p><p>참여: https://example.org/survey</p>",
+      "attachments": []
+    },
+    {
+      "key": "giveaway-booth",
+      "mail_id": "3000000009",
+      "subject": "캠퍼스 굿즈 팝업스토어 경품 안내",
+      "minutes_before": 720,
+      "unread": false,
+      "html": "<p>캠퍼스 굿즈 팝업스토어 부스를 방문하시면 경품 추첨 응모권을 드립니다.</p><p>응모 마감: 9월 24일(목) 23:59</p>",
       "attachments": []
     },
     {
