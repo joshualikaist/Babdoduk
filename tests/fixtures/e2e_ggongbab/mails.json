@@ -1,0 +1,78 @@
+{
+  "note": "Synthetic mails for scripts/e2e_ggongbab_flow.py. Nothing here is real mail. Times are minutes before the harness's fixed reference clock.",
+  "reference": "2026-09-20T09:00:00+09:00",
+  "mails": [
+    {
+      "key": "food-body",
+      "mail_id": "3000000001",
+      "subject": "[진로] 반도체 산업 진로 특강 안내",
+      "minutes_before": 1130,
+      "unread": true,
+      "html": "<p>안녕하세요, 학생지원팀입니다.</p><p>9월 20일(일) 12:30~13:30 N1 101호에서 반도체 산업 진로 특강을 진행합니다. 참석자에게 점심 도시락을 제공합니다.</p><p>사전 신청 필수: https://example.org/career-apply</p>",
+      "attachments": []
+    },
+    {
+      "key": "food-pdf",
+      "mail_id": "3000000002",
+      "subject": "스타트업 네트워킹 데이 안내",
+      "minutes_before": 990,
+      "unread": false,
+      "html": "<p>안녕하세요. 행사 안내문을 첨부합니다.</p><p>자세한 내용은 첨부 파일을 확인해 주세요.</p>",
+      "attachments": [{"name": "안내문.pdf", "file": "announcement.pdf", "extension": "pdf"}]
+    },
+    {
+      "key": "food-poster",
+      "mail_id": "3000000003",
+      "subject": "[홍보] 진로 토크 콘서트 안내",
+      "minutes_before": 900,
+      "unread": true,
+      "html": "<p>진로 토크 콘서트를 개최합니다.</p><p>자세한 내용은 첨부 포스터를 확인해 주세요.</p>",
+      "attachments": [{"name": "포스터.png", "file": "poster.png", "extension": "png"}]
+    },
+    {
+      "key": "giveaway-expo",
+      "mail_id": "3000000004",
+      "subject": "캠퍼스 창업 엑스포 개최 안내",
+      "minutes_before": 1380,
+      "unread": false,
+      "html": "<p>9월 20일(일) 10:00~17:00 KI빌딩 1층 로비에서 캠퍼스 창업 엑스포를 개최합니다.</p><p>방문객 대상 경품 추첨(에어팟 3명)을 진행하며, 스탬프 투어에 참여하신 분께는 기념품을 증정합니다.</p>",
+      "attachments": []
+    },
+    {
+      "key": "giveaway-deadline",
+      "mail_id": "3000000005",
+      "subject": "KAIST 설문 참여 이벤트 안내",
+      "minutes_before": 780,
+      "unread": false,
+      "html": "<p>학생 생활 만족도 설문에 참여하신 분 중 추첨을 통해 문화상품권을 20명에게 드립니다.</p><p>응모 마감: 9월 24일(목) 23:59</p><p>참여: https://example.org/survey</p>",
+      "attachments": []
+    },
+    {
+      "key": "multi-session",
+      "mail_id": "3000000006",
+      "subject": "AI 특강 시리즈 (3회) 안내",
+      "minutes_before": 1260,
+      "unread": false,
+      "html": "<p>AI 특강 시리즈를 총 3회 진행합니다.</p><p>1회: 9월 21일(월) 12:00~13:00<br>2회: 9월 22일(화) 12:00~13:00<br>3회: 9월 23일(수) 12:00~13:00</p><p>장소: E11 201호. 매 회 참석자에게 샌드위치를 제공합니다.</p>",
+      "attachments": []
+    },
+    {
+      "key": "newsletter",
+      "mail_id": "3000000007",
+      "subject": "[KAIST 소식] 이번 주 캠퍼스 소식",
+      "minutes_before": 600,
+      "unread": false,
+      "html": "<p>도서관 운영시간이 변경되었습니다.</p><p>기숙사 시설 점검 일정을 안내드립니다.</p><p>학식 메뉴가 개편되었습니다.</p>",
+      "attachments": []
+    },
+    {
+      "key": "receipt",
+      "mail_id": "3000000008",
+      "subject": "[결제 완료] 학생식당 영수증",
+      "minutes_before": 300,
+      "unread": true,
+      "html": "<p>결제가 완료되었습니다. 감사합니다.</p>",
+      "attachments": []
+    }
+  ]
+}
