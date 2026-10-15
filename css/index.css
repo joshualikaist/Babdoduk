@@ -48,6 +48,16 @@
   display: none;
 }
 
+/* Until js/worldcup-gate.js has decided (it sets html[data-wc-phase] in the same step as it shows the
+   band), the band keeps its place, invisible, so the copy and the calendar below do not jump when it
+   appears (owner 2026-10-16, layout shift). Without scripting it stays out, as before. */
+@media (scripting: enabled) {
+  html:not([data-wc-phase]) .home-wc[hidden] {
+    display: grid;
+    visibility: hidden;
+  }
+}
+
 .home-wc::before {                        /* a soft light in the corner, behind the photos */
   content: "";
   position: absolute;
@@ -311,6 +321,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
+@media (min-width: 721px) and (scripting: enabled) {
+  html:not([data-wc-phase]) .home-top:has(.home-wc) .home-hero {
+    padding-bottom: 0;                    /* the band's reserved place, as above */
+  }
+}
+
 /* ── Top: who we are, the free-food calendar, the cafeteria line, then the collage. On wide
    screens a paper band sits behind the copy and the collage; the calendar has its own surface. ── */
 .home-top {
@@ -528,6 +544,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .home-cal-month {
   grid-area: month;
   min-width: 0;
+}
+
+/* Before js/home-calendar.js draws the month: the height of a five-week month (header, weekday row and
+   five 48 px rows), so the page below does not jump when it does. */
+.home-cal-month:empty {
+  min-height: 304px;
 }
 
 .home-cal-day {

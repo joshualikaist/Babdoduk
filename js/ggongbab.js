@@ -399,7 +399,8 @@
   function freePaneHtml(now) {
     var html = '';
     if (state.free.status === 'ready') html += radarHtml(now);
-    else if (state.free.status === 'loading') html += '<div class="gg-skeleton" style="height:160px"></div>';
+    // The radar's own height (238 px in both languages at every width), so it does not push the list when it lands.
+    else if (state.free.status === 'loading') html += '<div class="gg-skeleton" style="height:238px;margin-bottom:14px"></div>';
     // The live list and its sticky filters share one box, so the filters stop at the archive.
     html += '<div class="gg-live">';
     html += filtersHtml();

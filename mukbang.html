@@ -112,7 +112,7 @@
         </header>
 
         <div class="mg-top">
-          <article class="mg-hero" id="featured" hidden>
+          <article class="mg-hero" id="featured" hidden data-pending>
             <div class="mg-hero-copy">
               <span class="mg-hero-label" id="mgHeroLabel" data-i18n="mg.hero.pick">오늘의 추천 글</span>
               <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
@@ -658,7 +658,10 @@
         viewMonth = parseInt(parts[1], 10) - 1;
         var featured = ed.featured && ed.featured.url && ed.featured.title ? ed.featured : null;
         var heroEl = document.getElementById('featured');
-        if (heroEl) heroEl.hidden = !featured;
+        if (heroEl) {
+          heroEl.hidden = !featured;
+          heroEl.removeAttribute('data-pending');   // its reserved place (css/magazine.css) is no longer needed
+        }
         featured = featured || {};
         var titleEl = document.getElementById('mgHeroTitle');
         var descEl = document.getElementById('mgHeroDesc');
@@ -808,6 +811,8 @@
           return loadEdition(wanted);
         })
         .catch(function () {
+          var pendingHero = document.getElementById('featured');
+          if (pendingHero) pendingHero.removeAttribute('data-pending');
           // No edition: say so, show no edition date and no stories (never stand-in text).
           document.querySelectorAll('[data-lane-items]').forEach(function (box) {
             box.innerHTML = '<p class="mg-lane-empty">' + escapeHtml(t('mg.laneEmpty', '오늘은 이 갈래에 올릴 새 이야기가 없어요.')) + '</p>';

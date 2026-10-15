@@ -484,6 +484,8 @@
         var empty = document.getElementById('eventEmpty');
         notices.hidden = !notices.children.length;
         empty.hidden = live > 0 || notices.children.length > 0;
+        // The sections may show now: every row is in its band (css/event.css kept them invisible until here).
+        document.querySelector('.event-page-wrap').setAttribute('data-ready', '');
       }
       render();
       document.addEventListener('babdoduk-lang', render);

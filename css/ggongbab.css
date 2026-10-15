@@ -113,6 +113,9 @@
 .gg-state strong { display:block; font-size:15px; font-weight:700; line-height:22px; color:#1d1d1f; margin-bottom:6px; }
 .gg-state button { margin-top:12px; font:inherit; padding:8px 14px; border:1px solid #d2d2d7; border-radius:10px; background:#fff; cursor:pointer; }
 .gg-state code { display:block; margin-top:12px; font-size:11px; text-align:left; }
+/* While the hub is still loading (its skeletons are showing) it takes the first screen, so the footer
+   starts below it and does not jump when the list lands (owner 2026-10-16, layout shift). */
+#ggongbabFeed:has(.gg-skeleton) { min-height:100vh; }
 .gg-skeleton { height:128px; border-radius:18px; margin-bottom:12px; background:linear-gradient(90deg,#f2f2f7,#fafafa,#f2f2f7); background-size:200% 100%; animation:gg-shimmer 1.4s ease infinite; }
 @keyframes gg-shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
 /* What the list holds and when it was published: quiet source metadata, not a status badge. */
