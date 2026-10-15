@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "10년간 8500만 알 팔렸다…10돌 맞은 서울우유 ‘까요까요’, 누적 1700만 개 돌파",
-    "summary": "하나씩 껍질을 까먹는 재미와 풍부한 영양을 동시에 갖춰 어린이 대표 간식으로 안착한 서울우유협동조합의 ‘까요까요’가 출시 10주년을 맞아 누적 판매량 1700만 개를 넘어섰다.",
     "source": "식품음료신문",
-    "sourceId": "news-thinkfood",
-    "candidateId": "c_e25469cea6e59a9b",
     "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201404",
     "medium": "news",
-    "discoveredAt": "2026-10-14T14:59:52+09:00",
-    "publishedAt": "2026-10-14T10:27:34+09:00",
     "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201404_201968_2725.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-14T10:27:34+09:00",
+    "discoveredAt": "2026-10-14T14:59:52+09:00",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_e25469cea6e59a9b",
     "imageSource": "feed_html",
+    "summary": "하나씩 껍질을 까먹는 재미와 풍부한 영양을 동시에 갖춰 어린이 대표 간식으로 안착한 서울우유협동조합의 ‘까요까요’가 출시 10주년을 맞아 누적 판매량 1700만 개를 넘어섰다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "sales_data",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,32 +28,32 @@
       "items": [
         {
           "title": "\"게임 상품 사러 왔다가 음료도\" GS25 '블루 아카이브'와 추가 협업",
-          "summary": "GS리테일이 운영하는 편의점 GS25는 게임 IP 협업 상품의 누적 판매량이 2300만개를 넘어섰다고 14일 밝혔다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_988d7f919669d502",
           "url": "https://www.newsis.com/view/NISX20261014_0003825179",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T10:03:59+09:00",
           "image": "https://image.newsis.com/2026/10/14/NISI20261014_0002262757_web.jpg?rnd=20261014095533",
+          "publishedAt": "2026-10-14T10:03:59+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_988d7f919669d502",
           "imageSource": "feed_html",
+          "summary": "GS리테일이 운영하는 편의점 GS25는 게임 IP 협업 상품의 누적 판매량이 2300만개를 넘어섰다고 14일 밝혔다.",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "버거킹, 제품혁신센터 ‘플레임랩’ 이달 오픈… 소비자 소통의 장 활용",
-          "summary": "버거킹이 제품 연구개발(R&D) 역량 강화를 위한 신규 공간 ‘플레임랩(Flame Lab)’을 조성하고 10월 중 정식 공개한다.플레임랩은 서울 종로구 익선동에 조성되는 버거킹의 제품 개발 및 혁신을 위한 R&D…",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_14cade06417e7bce",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68645",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T02:52:10+09:00",
           "image": "http://www.foodbank.co.kr/news/thumbnail/202610/68645_30193_5125_v150.jpg",
+          "publishedAt": "2026-10-14T02:52:10+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_14cade06417e7bce",
           "imageSource": "source_page_og",
+          "summary": "버거킹이 제품 연구개발(R&D) 역량 강화를 위한 신규 공간 ‘플레임랩(Flame Lab)’을 조성하고 10월 중 정식 공개한다.플레임랩은 서울 종로구 익선동에 조성되는 버거킹의 제품 개발 및 혁신을 위한 R&D…",
           "trendEvidence": [
             "explicit_source_claim",
             "corroborated"
@@ -61,42 +61,42 @@
         },
         {
           "title": "\"아이들 몰리는 곳에서\"…식품위생법 14건 적발",
-          "summary": "학교 주변 등 아이들이 많은 곳에서 식품을 조리·판매하면서 식품위생법을 위반한 업체 등이 적발됐다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_94c5f5e0268e1379",
           "url": "https://www.newsis.com/view/NISX20261014_0003824930",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
           "publishedAt": "2026-10-14T08:51:17+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_94c5f5e0268e1379",
+          "summary": "학교 주변 등 아이들이 많은 곳에서 식품을 조리·판매하면서 식품위생법을 위반한 업체 등이 적발됐다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "아침에 삶은 달걀 + 녹색 채소 먹었더니…체중, 염증에 변화가?",
-          "summary": "단백질, 비타민 A가 많은 삶은 달걀은 아침 건강식으로 간편하게 먹을 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_6ea679b9d8b644cb",
           "url": "https://kormedi.com/2883614/",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
           "publishedAt": "2026-10-13T19:01:00+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6ea679b9d8b644cb",
+          "summary": "단백질, 비타민 A가 많은 삶은 달걀은 아침 건강식으로 간편하게 먹을 수 있다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "“어른 돼도 마음 놓고 밥 먹어요”…CJ제일제당, 희귀질환자 위한 '저단백밥' 지원 결실",
-          "summary": "CJ제일제당이 질병관리청, 한국희귀ㆍ난치성질환연합회와 함께 만든 '희귀질환자 특수식 구매 지원체계'가 환자와 가족들에게 힘이 되고 있다.단백질을 소화하지 못하는 ‘선천성대사이상(PKU 등)’ 환자들에게 단백질…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_dff50bea68f1e437",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120478",
           "medium": "news",
-          "discoveredAt": "2026-10-12T15:44:20+09:00",
           "publishedAt": "2026-10-12T19:56:59+09:00",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_dff50bea68f1e437",
+          "summary": "CJ제일제당이 질병관리청, 한국희귀ㆍ난치성질환연합회와 함께 만든 '희귀질환자 특수식 구매 지원체계'가 환자와 가족들에게 힘이 되고 있다.단백질을 소화하지 못하는 ‘선천성대사이상(PKU 등)’ 환자들에게 단백질…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -108,62 +108,62 @@
       "items": [
         {
           "title": "두부 스크램블 만들기｜포슬포슬 비건 스타일 두부볶음",
-          "summary": "벌써 10년도 더 된 일이지만, 캐나다 온타리오주, 앨버타주, 브리티시컬럼비아 주를 두루 여행할 때 머물렀던 도시마다 비건 레스토랑이 너무 힙했고, 그 레스토랑마다 꼭 이 메뉴가 있었습니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_ab8aaecca87cd016",
           "url": "https://cultureagora.tistory.com/386",
           "medium": "blog",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-13T22:30:08+09:00",
           "image": "https://blog.kakaocdn.net/dn/EPWpr/dJMcafV3IyT/m2imYOrkFKK9ulimkdCrvk/tfile.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-13T22:30:08+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_ab8aaecca87cd016",
+          "imageSource": "feed_html",
+          "summary": "벌써 10년도 더 된 일이지만, 캐나다 온타리오주, 앨버타주, 브리티시컬럼비아 주를 두루 여행할 때 머물렀던 도시마다 비건 레스토랑이 너무 힙했고, 그 레스토랑마다 꼭 이 메뉴가 있었습니다."
         },
         {
           "title": "청경채 버섯볶음 레시피｜아삭하고 담백한 중국식 채소볶음 만들기",
-          "summary": "중국집에서 먹던 아삭한 채소볶음이 생각날 때 집에서도 간단하게 만들어 볼 수 있는 요리가 있습니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_1b631f146bdcf68a",
           "url": "https://cultureagora.tistory.com/376",
           "medium": "blog",
-          "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-11T11:53:42+09:00",
           "image": "https://blog.kakaocdn.net/dn/IVn56/dJMcab65X49/0aCKFGyoDi92KQRErA2SFK/tfile.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-11T11:53:42+09:00",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_1b631f146bdcf68a",
+          "imageSource": "feed_html",
+          "summary": "중국집에서 먹던 아삭한 채소볶음이 생각날 때 집에서도 간단하게 만들어 볼 수 있는 요리가 있습니다."
         },
         {
           "title": "알토란 정미경 요리연구가의 피칸멸치볶음 만드는 법",
-          "summary": "알토란 614회에서는 반찬 백화점 한 상 편이 방송되었습니다.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_3c396b3094cbf0a1",
           "url": "https://seon1982.tistory.com/4124",
           "medium": "blog",
+          "publishedAt": "2026-10-14T00:00:45+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T00:00:45+09:00"
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_3c396b3094cbf0a1",
+          "summary": "알토란 614회에서는 반찬 백화점 한 상 편이 방송되었습니다."
         },
         {
           "title": "반건조 가오리 찜 양념 만들기 간재미찜 요리 레시피",
-          "summary": "아버님이 가오리 찜이 드시고 싶다고 하셨어 요즘 날씨에 말린 가오리를 어디에서 구입하는 게 좋을까 고민하다가 인터넷으로 손질된 반건조 가오리를 주문했습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_54c703a6fff3a4cd",
           "url": "https://twins0807.tistory.com/entry/%EB%B0%98%EA%B1%B4%EC%A1%B0-%EA%B0%80%EC%98%A4%EB%A6%AC-%EC%B0%9C-%EC%96%91%EB%85%90-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EA%B0%84%EC%9E%AC%EB%AF%B8%EC%B0%9C-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-10-12T19:53:40+09:00",
           "discoveredAt": "2026-10-13T16:36:20+09:00",
-          "publishedAt": "2026-10-12T19:53:40+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_54c703a6fff3a4cd",
+          "summary": "아버님이 가오리 찜이 드시고 싶다고 하셨어 요즘 날씨에 말린 가오리를 어디에서 구입하는 게 좋을까 고민하다가 인터넷으로 손질된 반건조 가오리를 주문했습니다."
         },
         {
           "title": "냄새 걱정 없는 청국장 끓이는 방법: 초보도 쉬운 풀무원 생청국장 레시피",
-          "summary": "구수한 향과 깊은 감칠맛으로 언제나 밥상을 든든하게 채워주는 최고의 한식 메뉴, 바로 청국장이에요.",
           "source": "달순생활",
-          "sourceId": "blog-dalsoonlife",
-          "candidateId": "c_ec7cd35a3de1c182",
           "url": "https://dalsoonlife.tistory.com/243",
           "medium": "blog",
+          "publishedAt": "2026-10-13T15:47:35+09:00",
           "discoveredAt": "2026-10-13T16:36:20+09:00",
-          "publishedAt": "2026-10-13T15:47:35+09:00"
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_ec7cd35a3de1c182",
+          "summary": "구수한 향과 깊은 감칠맛으로 언제나 밥상을 든든하게 채워주는 최고의 한식 메뉴, 바로 청국장이에요."
         }
       ]
     },
@@ -172,62 +172,62 @@
       "items": [
         {
           "title": "“약인 줄 알았는데 독이었다”… 견과류 먹으면 큰일나는 순간",
-          "summary": "견과류는 불포화지방산, 단백질, 비타민E 등 영양소가 풍부한 식품이다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_4a0e590887019caa",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/14/2026101401235.html",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T12:00:00+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/10/14/2026101401231_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-14T12:00:00+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_4a0e590887019caa",
+          "imageSource": "source_page_og",
+          "summary": "견과류는 불포화지방산, 단백질, 비타민E 등 영양소가 풍부한 식품이다."
         },
         {
           "title": "학교 영양교육, 가정으로 넓힌다",
-          "summary": "학생과 학부모가 함께 식습관과 영양상태를 점검하고 건강한 식생활 실천 방법을 배우는 자리가 마련된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_d2dfab947d8b4e83",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62381",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T23:20:29+09:00",
           "image": "http://www.fsnews.co.kr/news/thumbnail/202610/62381_53243_535_v150.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-14T23:20:29+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_d2dfab947d8b4e83",
+          "imageSource": "source_page_og",
+          "summary": "학생과 학부모가 함께 식습관과 영양상태를 점검하고 건강한 식생활 실천 방법을 배우는 자리가 마련된다."
         },
         {
           "title": "유치원 간식 당류·나트륨 관리 강화",
-          "summary": "유치원에서 제공하는 간식의 당류·나트륨 과다 섭취를 예방하고 영양과 품질을 체계적으로 관리하기 위한 제도 마련이 추진된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_db57ceabc5b1a7ec",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62380",
           "medium": "news",
+          "publishedAt": "2026-10-14T23:17:54+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T23:17:54+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_db57ceabc5b1a7ec",
+          "summary": "유치원에서 제공하는 간식의 당류·나트륨 과다 섭취를 예방하고 영양과 품질을 체계적으로 관리하기 위한 제도 마련이 추진된다."
         },
         {
           "title": "“달걀만 매일 먹었는데”… 단백질 더 풍부하고 ‘염증’까지 잡는 음식",
-          "summary": "단백질은 근육을 유지하는 데 필수적인 영양소다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_82083b5f9a89f81d",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/13/2026101302926.html",
           "medium": "news",
+          "publishedAt": "2026-10-14T06:30:00+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T06:30:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_82083b5f9a89f81d",
+          "summary": "단백질은 근육을 유지하는 데 필수적인 영양소다."
         },
         {
           "title": "\"담배 끊어야 신장도 산다\"... '만성콩팥병' 위험 낮추는 습관 5가지",
-          "summary": "콩팥(신장)은 혈액 속 노폐물을 걸러 소변으로 내보내고 몸속 수분과 혈압을 조절하는 장기다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_eb35c5ae4f663773",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68435",
           "medium": "news",
+          "publishedAt": "2026-10-10T17:00:00+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-10T17:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_eb35c5ae4f663773",
+          "summary": "콩팥(신장)은 혈액 속 노폐물을 걸러 소변으로 내보내고 몸속 수분과 혈압을 조절하는 장기다."
         }
       ]
     },
@@ -236,62 +236,62 @@
       "items": [
         {
           "title": "뱃살 줄이고 식욕 억제까지…콩, 복부비만·대사증후군 개선 ‘과학적 입증’",
-          "summary": "매년 10월 11일 ‘비만 예방의 날’을 맞아 비만이 단순한 체형 문제를 넘어 적극적인 치료와 관리가 필요한 만성 질환으로 지목되는 가운데, 두부나 두유 등 일상적인 콩 식품 섭취가 복부비만을 억제하고 식욕을…",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_4bfd2e82fa673e92",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201402",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T09:59:48+09:00",
           "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201402_201966_253.png",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-14T09:59:48+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_4bfd2e82fa673e92",
+          "imageSource": "source_page_og",
+          "summary": "매년 10월 11일 ‘비만 예방의 날’을 맞아 비만이 단순한 체형 문제를 넘어 적극적인 치료와 관리가 필요한 만성 질환으로 지목되는 가운데, 두부나 두유 등 일상적인 콩 식품 섭취가 복부비만을 억제하고 식욕을…"
         },
         {
           "title": "“안 굶어도 내장지방 쑥쑥 빠진다”… 비만전문의가 강조한 습관 2가지",
-          "summary": "체중 감량을 위해 당장 식사량을 줄이고 운동에 나서는 사람이 많다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_ecc47a3ac7e90cf3",
           "url": "https://kormedi.com/2883080/",
           "medium": "news",
-          "discoveredAt": "2026-10-13T16:36:20+09:00",
-          "publishedAt": "2026-10-13T00:09:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/tica1010006918-edited.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-13T00:09:00+09:00",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ecc47a3ac7e90cf3",
+          "imageSource": "feed_media",
+          "summary": "체중 감량을 위해 당장 식사량을 줄이고 운동에 나서는 사람이 많다."
         },
         {
           "title": "“국에 밥 말아 후루룩?”…한 그릇 뚝딱했더니 혈당에 이런 변화가?",
-          "summary": "국에 밥을 말아 먹으면 식사를 빨리 끝내게 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_89a2d6083e72133f",
           "url": "https://kormedi.com/2883609/",
           "medium": "news",
+          "publishedAt": "2026-10-14T07:11:53+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T07:11:53+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_89a2d6083e72133f",
+          "summary": "국에 밥을 말아 먹으면 식사를 빨리 끝내게 된다."
         },
         {
           "title": "“첫인상에 영향 준다” 데이트 앞둔 사람이 ‘먹으면 안 되는’ 음식",
-          "summary": "호감 가는 사람과의 만남을 앞두고 있다면 섭취하는 음식에도 신경 쓰는 게 좋겠다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_b74739b29b8b5be5",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/14/2026101401468.html",
           "medium": "news",
+          "publishedAt": "2026-10-14T14:00:00+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T14:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b74739b29b8b5be5",
+          "summary": "호감 가는 사람과의 만남을 앞두고 있다면 섭취하는 음식에도 신경 쓰는 게 좋겠다."
         },
         {
           "title": "\"초콜릿 원료가 당뇨병 위험 낮춘다?\"… 코코아의 뜻밖의 효능 4가지",
-          "summary": "﻿코코아는 가루를 물이나 우유에 타 마시기도 하고, 초콜릿이나 추출물로 먹기도 한다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_fcdead9b4d937c5f",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68536",
           "medium": "news",
+          "publishedAt": "2026-10-14T05:00:00+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T05:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_fcdead9b4d937c5f",
+          "summary": "﻿코코아는 가루를 물이나 우유에 타 마시기도 하고, 초콜릿이나 추출물로 먹기도 한다."
         }
       ]
     }
