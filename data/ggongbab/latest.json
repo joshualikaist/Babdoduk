@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T22:09:44+09:00",
+  "generatedAt": "2026-10-15T13:39:42+09:00",
   "timezone": "Asia/Seoul",
   "count": 4,
   "events": [
@@ -29,6 +29,40 @@
         "required": "unknown",
         "deadline": null,
         "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "5ec8c23a-86a6-4455-b85d-d508a3049307",
+      "title": "ME 가을학기 학부생과 지도교수님 만남의 주간",
+      "summary": "가을학기 학부생과 지도교수와의 만남의 주간 행사로, 기계공학동 뒷편 BBQ PIT 또는 잔디밭에서 그룹별로 점심을 먹으며 진행됩니다. 당일 점심 도시락이 제공됩니다.",
+      "startAt": "2026-10-29T12:00:00+09:00",
+      "endAt": "2026-10-29T13:00:00+09:00",
+      "dateText": "10/29(목)",
+      "timeText": "12:00~13:00",
+      "location": {
+        "name": "기계공학동 뒷편 BBQ PIT 또는 잔디밭",
+        "building": "기계공학동",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "점심 도시락",
+        "source": "text"
+      },
+      "organizer": "기계공학과 행정팀",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/BEkdTcjbZyCqPJWZA"
       },
       "confidence": 0.99,
       "sources": [
@@ -111,43 +145,6 @@
       "giveaway": {
         "provided": "true",
         "description": "주제 도서"
-      }
-    },
-    {
-      "id": "2f507eea-eb2d-4881-8cd9-50df4fc11de9",
-      "title": "제10회 INNOVATE KOREA",
-      "summary": "헤럴드가 주최하는 제10회 INNOVATE KOREA 공연으로, 국내 뮤지컬 배우들이 출연합니다. KAIST 재학생과 교수 및 임직원은 무료 사전 티켓팅을 우선 신청할 수 있습니다.",
-      "startAt": "2026-11-17T14:00:00+09:00",
-      "endAt": "2026-11-17T18:00:00+09:00",
-      "dateText": "11월 17일",
-      "timeText": "14:00 - 18:00",
-      "location": {
-        "name": "KAIST 류근철 스포츠컴플렉스",
-        "building": "",
-        "room": ""
-      },
-      "food": {
-        "provided": "unknown",
-        "type": "unknown",
-        "description": ""
-      },
-      "organizer": "헤럴드",
-      "eligibility": "카이스트 재학생과 교수 및 임직원",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-10-18T23:59:00+09:00",
-        "url": "https://itforum.heraldcorp.com/2026/"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "아이패드 1명, 에어팟 1명"
       }
     }
   ]
