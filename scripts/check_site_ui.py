@@ -1427,6 +1427,119 @@ def worldcup_gate(page):
     return count
 
 
+# The launch window to the second (Korea time): the last second before it opens and the last second of it.
+WC_EVE_SECOND = "2026-10-15T23:59:59+09:00"
+WC_LAST_SECOND = "2026-10-23T23:59:59+09:00"
+
+HOME_PROMO_SNAP = """() => { const q = s => document.querySelector(s);
+  const shown = e => !!e && !e.hidden && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
+  const blur = e => { const m = /blur\\(([\\d.]+)px\\)/.exec(getComputedStyle(e).filter); return m ? Number(m[1]) : 0; };
+  const soon = q('.home-wc-cta--soon'), live = q('.home-wc-cta--live'), photos = [...document.querySelectorAll('.home-wc-photo')];
+  return {shown: shown(q('.home-wc')), soon: shown(soon), live: shown(live) && live.getAttribute('href'),
+    states: [...document.querySelectorAll('.home-wc-state')].filter(shown).map(e => e.textContent.trim()),
+    loaded: photos.length > 0 && photos.every(i => i.naturalWidth > 0), blurred: photos.some(i => blur(i) > 0),
+    cal: shown(q('#homeCal')), overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
+
+EVENT_ROWS_SNAP = """() => [...document.querySelectorAll('.event-item')].map(r => ({start: r.dataset.start, end: r.dataset.end,
+  band: r.dataset.band, list: r.parentElement.id, wc: !!r.querySelector('.event-link[data-event-page]')}))
+  .concat([{empty: !document.querySelector('#eventEmpty').hidden && getComputedStyle(document.querySelector('#eventEmpty')).display !== 'none'}])"""
+
+
+def worldcup_boundaries(page):
+    """The world cup's window to the second, on every surface and on both hosts, under fixed page clocks
+    (owner stage 5, 2026-10-15): 10/15 23:59:59 locked; 10/16 00:00:00 open (tiles unblurred, dish photos
+    load, go=1 starts); 10/23 23:59:59 still open; 10/24 00:00:00 ended (home promo gone, the event card a
+    past row, worldcup.html playable with the 이벤트 종료 note, go=1 works). The event page's bands follow
+    the same dates for every activity. worldcup_gate covers the minutes and the hosts one by one; this is the
+    seconds, side by side, so a boundary cannot drift on one surface only."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"world cup boundaries: {detail}"
+        count += 1
+
+    page.set_viewport_size({"width": 390, "height": 844})
+    kst = timezone(timedelta(hours=9))
+
+    def visit(host, name, now, query=""):
+        page.clock.set_fixed_time(now)
+        gate_page(page, host, name, query)
+        page.evaluate("localStorage.removeItem('babdoduk-lang')")
+
+    def surfaces(host, now, phase):
+        where = (host, now, phase)
+        # worldcup.html
+        visit(host, "worldcup.html", now)
+        shot, mystery = page.evaluate(GATE_SNAP), page.evaluate(MYSTERY_SNAP)
+        check(shot["phase"] == {"locked": "soon"}.get(phase, phase), (where, "worldcup.html phase", shot["phase"]))
+        if phase == "locked":
+            check(shot["locked"] and not shot["start"] and mystery["tilesBlur"] >= 10 and mystery["inert"]
+                  and all(i["src"] is None for i in mystery["previewImgs"]), (where, "locked: blurred, inert, no photo", shot, mystery))
+        else:
+            check(shot["start"] and not shot["locked"] and shot["ended"] == (phase == "ended"), (where, "playable", shot))
+            check(mystery["tilesBlur"] == 0 and not mystery["inert"] and not mystery["lock"]
+                  and all((i["src"] or "").startswith("images/worldcup/") for i in mystery["previewImgs"]) and len(mystery["previewImgs"]) == 5,
+                  (where, "tiles unblurred and the dish photos present", mystery))
+            check(page.evaluate("[...document.querySelectorAll('#wcPreviewPhotos img')].every(i => i.complete && i.naturalWidth > 0)"),
+                  (where, "the preview photos load"))
+            check(shot["ended"] == (phase == "ended") and (phase != "ended" or "이벤트 종료" in page.locator(".wc-ended").inner_text()),
+                  (where, "the end note only after the end"))
+        # go=1
+        visit(host, "worldcup.html", now, "?cat=korean&go=1")
+        shot = page.evaluate(GATE_SNAP)
+        check(shot["match"] == (phase != "locked") and (phase == "locked" or json.loads(shot["saved"])["game"]["category"] == "korean"),
+              (where, "go=1 starts a game unless locked", shot))
+        check((phase != "locked") or not shot["saved"], (where, "locked: nothing saved"))
+        page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
+        # event.html: the bands of every activity follow the date; the world cup card follows the phase
+        visit(host, "event.html", now)
+        rows = page.evaluate(EVENT_ROWS_SNAP)
+        today = datetime.fromisoformat(now).astimezone(kst).date().isoformat()
+        empty = rows.pop()["empty"]
+        for row in rows:
+            want = "upcoming" if today < row["start"] else "past" if today > row["end"] else "now"
+            if row["start"] == "2026-10-16":      # the world cup card also follows the lab override
+                want = {"locked": "upcoming", "live": "now", "ended": "past"}[phase]
+            check(row["band"] == want and row["list"] == ("eventList" if want == "past" else "eventUpcoming"),
+                  (where, "event band follows the Korean date", today, row))
+        check(empty == all(row["band"] == "past" for row in rows), (where, "the empty line only when nothing is current", rows))
+        cup = [row for row in rows if row["wc"] or row["start"] == "2026-10-16"]
+        want_band = {"locked": "upcoming", "live": "now", "ended": "past"}[phase]
+        check(len(cup) == 1 and cup[0]["band"] == want_band, (where, "the world cup card band", cup))
+        shot = page.evaluate(GATE_SNAP)
+        check(bool(shot["start"]) == (phase == "live") and shot["locked"] == (phase == "locked"), (where, "the card's start screen", shot))
+        if phase == "ended":
+            check(page.locator(".wc-embed").is_hidden() and page.locator("#eventList .event-link[data-event-page]").count() == 1,
+                  (where, "the card is a past row with its link"))
+        # index.html: the promo
+        visit(host, "index.html", now)
+        promo = page.evaluate(HOME_PROMO_SNAP)
+        check(promo["cal"] and promo["overflow"] <= 0, (where, "home keeps its calendar", promo))
+        if phase == "locked":
+            check(promo["shown"] and promo["soon"] and not promo["live"] and promo["states"] == ["10/16 오픈!"] and not promo["loaded"],
+                  (where, "home promo: countdown, placeholders", promo))
+        elif phase == "live":
+            check(promo["shown"] and promo["live"] == "worldcup.html" and not promo["soon"] and promo["loaded"] and not promo["blurred"],
+                  (where, "home promo: play now, photos load", promo))
+        else:
+            check(not promo["shown"], (where, "home promo hidden after the end", promo))
+
+    # The production host: strict, whatever the data says.
+    for phase, now in (("locked", WC_EVE_SECOND), ("live", WC_OPENS), ("live", WC_LAST_SECOND), ("ended", WC_ENDED)):
+        surfaces("babdoduk.vercel.app", now, phase)
+    # The lab host opens early (previewFrom) and closes with production: open at the last second before the
+    # launch, still open at the last second, ended at midnight; the home promo goes then too.
+    synthetic = gate_preview(page)
+    early = gate_window().get("previewFrom", GATE_PREVIEW) <= "2026-10-15"
+    check(early, "the lab preview starts before the launch day")
+    for phase, now in (("live", WC_EVE_SECOND), ("live", WC_OPENS), ("live", WC_LAST_SECOND), ("ended", WC_ENDED)):
+        surfaces("babdoduk-lab.vercel.app", now, phase)
+    if synthetic:
+        page.unroute("**/js/worldcup-gate.js")
+    return count
+
+
 def home_wc_promo(page):
     """The home page's 먹방 월드컵 promo (index.html): before the launch the countdown and a link to the news
     page, while it runs the 지금 하기 button for the game, after the end nothing; the same on lab with the
@@ -3074,6 +3187,7 @@ def run_checks(screenshots=False):
         report["checks"] += worldcup_share(cup_page)
         report["checks"] += worldcup_kakao(cup_page)
         report["checks"] += worldcup_gate(cup_page)
+        report["checks"] += worldcup_boundaries(cup_page)
         report["checks"] += home_wc_promo(cup_page)
         cup_context.close()
         report["checks"] += history_archive(page)
