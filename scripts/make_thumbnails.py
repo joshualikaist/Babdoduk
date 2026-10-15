@@ -25,7 +25,7 @@ WORLDCUP = ROOT / "images" / "worldcup"
 WORLDCUP_THUMBS = WORLDCUP / "thumb"
 WORLDCUP_WIDTHS = (160, 320)
 HOME = ROOT / "images" / "home"
-HOME_WIDTHS = (240, 400)
+HOME_WIDTHS = (240, 400, 520)
 QUALITY = 74
 
 
