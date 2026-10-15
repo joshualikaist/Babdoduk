@@ -46,7 +46,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
   margin-bottom: 8px;
 }
 
@@ -80,14 +80,14 @@ body.mg-body .site-footer {
 }
 
 .mg-index-nav a:hover {
-  color: #f45e45;
+  color: #c8402a;
 }
 
 .mg-index-num {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #777168;
+  color: #6b655d;
   font-variant-numeric: tabular-nums;
 }
 
@@ -96,7 +96,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-index-date {
@@ -111,7 +111,7 @@ body.mg-body .site-footer {
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-cal {
@@ -156,7 +156,7 @@ body.mg-body .site-footer {
 .mg-cal-week span {
   font-size: 9px;
   letter-spacing: 0.06em;
-  color: #777168;
+  color: #6b655d;
   text-transform: uppercase;
 }
 
@@ -193,7 +193,7 @@ body.mg-body .site-footer {
   margin-top: 8px;
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-story-src b {
@@ -264,7 +264,7 @@ body.mg-body .site-footer {
 }
 
 .mg-hero a.mg-hero-title-link:hover h2 {
-  color: #f45e45;
+  color: #c8402a;
 }
 
 .mg-mobile-edition {
@@ -308,7 +308,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -339,7 +339,7 @@ body.mg-body .site-footer {
   max-width: min(36rem, 100%);
   font-size: 16px;
   line-height: 1.65;
-  color: #777168;
+  color: #6b655d;
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -358,7 +358,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #f45e45;
+  color: #c8402a;
   margin-bottom: 12px;
 }
 
@@ -385,7 +385,7 @@ body.mg-body .site-footer {
   font-size: 13px;
   font-weight: 650;
   letter-spacing: -0.02em;
-  color: #c45a3a;
+  color: #a94a2e;
   line-height: 1.45;
 }
 
@@ -393,7 +393,7 @@ body.mg-body .site-footer {
   margin-top: 16px;
   font-size: 12px;
   letter-spacing: 0.04em;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-hero-visual {
@@ -503,7 +503,7 @@ body.mg-body .site-footer {
 
 .mg-board-head span {
   font-size: 12px;
-  color: #777168;
+  color: #6b655d;
   letter-spacing: 0.04em;
 }
 
@@ -531,8 +531,8 @@ body.mg-body .site-footer {
   background: currentColor;
 }
 
-.mg-lane--tips { color: #f45e45; }
-.mg-lane--trend { color: #c48412; }
+.mg-lane--tips { color: #c8402a; }
+.mg-lane--trend { color: #8a5a00; }
 .mg-lane--health { color: #6b6a3a; }
 .mg-lane--habit { color: #7a5c46; }
 
@@ -585,14 +585,14 @@ body.mg-body .site-footer {
 }
 
 .mg-story:hover h4 {
-  color: #f45e45;
+  color: #c8402a;
 }
 
 .mg-story p {
   margin-top: 6px;
   font-size: 13px;
   line-height: 1.6;
-  color: #777168;
+  color: #6b655d;
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -609,7 +609,7 @@ body.mg-body .site-footer {
   font-size: 12px;
   font-weight: 650;
   letter-spacing: -0.02em;
-  color: #c45a3a;
+  color: #a94a2e;
   line-height: 1.45;
 }
 
@@ -641,8 +641,8 @@ body.mg-body .site-footer {
 }
 
 .mg-mobile-cats a:hover {
-  border-bottom-color: #f45e45;
-  color: #f45e45;
+  border-bottom-color: #c8402a;
+  color: #c8402a;
 }
 
 body.mg-body .nav-mega-link.is-current {

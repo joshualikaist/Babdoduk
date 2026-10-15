@@ -18,7 +18,7 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #f45e45;
+  color: #c8402a;
   margin-bottom: 10px;
 }
 
@@ -33,7 +33,7 @@
 .eat-meta {
   margin-top: 10px;
   font-size: 13px;
-  color: #777168;
+  color: #6b655d;
 }
 
 .eat-panel {
@@ -91,7 +91,7 @@
 .eat-textbtn:focus-visible,
 .eat-fb:focus-visible,
 .eat-alt:focus-visible {
-  outline: 2px solid #f45e45;
+  outline: 2px solid #c8402a;
   outline-offset: 2px;
 }
 
@@ -331,7 +331,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: #777168;
+  color: #6b655d;
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
@@ -339,7 +339,7 @@
 }
 
 .eat-textbtn:hover {
-  color: #f45e45;
+  color: #c8402a;
 }
 
 .eat-btn:hover,
@@ -360,7 +360,7 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.16em;
-  color: #777168;
+  color: #6b655d;
   margin-bottom: 8px;
 }
 
@@ -476,7 +476,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
 }
 
 .eat-alts {
@@ -504,7 +504,7 @@
 .eat-alt span {
   font-size: 12px;
   letter-spacing: 0.1em;
-  color: #777168;
+  color: #6b655d;
 }
 
 .eat-alt strong {
@@ -514,7 +514,7 @@
 }
 
 .eat-empty {
-  color: #777168;
+  color: #6b655d;
   line-height: 1.6;
 }
 
