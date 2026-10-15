@@ -673,11 +673,13 @@ def weekly_cafeteria(browser, base, report):
 def weekend_and_holiday_menu(browser, base, report):
     """Days with no cafeteria menu (stage 5 date scenarios), under fixed page clocks and synthetic data.
     A Saturday the collector has not published (week.json lists it as NOT_PUBLISHED_YET, no dated file):
-    the hub says today's menu is not up and offers the last saved one, the home page says the same and
-    names the last posted day, a tap on the empty Sunday says no menu is posted, Friday still opens, and
+    the hub says there is no cafeteria on weekends (owner 2026-10-16: never "still updating" on a
+    weekend) and offers the last saved one, the home page says the same and names the last posted day, a tap on the empty Sunday says no menu is posted, Friday still opens, and
     no dated file the index lists as missing is ever requested (no 404, no page or console error).
     A holiday weekday whose file exists but lists no dish at all: an empty-state sentence with a way to the
-    free-food tab, a count of zero, never a blank card or an error."""
+    free-food tab, a count of zero, never a blank card or an error.
+    A weekday morning whose menu is not up yet (latest.json still names the day before): the hub and the
+    home page keep the "still updating" / "not posted yet" wording, never the weekend one."""
     kst = timezone(timedelta(hours=9))
     friday = menu_day("2026-10-16", 8, "금요일")
     week = {"weekStart": "2026-10-12", "weekEnd": "2026-10-18", "generatedAt": "2026-10-16T18:00:00+09:00",
@@ -715,10 +717,11 @@ def weekend_and_holiday_menu(browser, base, report):
             assert page.locator(".km-day-today").count() == 1
             assert page.locator('[data-km-date="2026-10-17"]').get_attribute("aria-current") == "date"
             stale = page.locator("[data-km-stale]").inner_text()
-            assert ("Today’s menu is still updating." if en else "오늘 메뉴 업데이트 중이에요.") in stale, stale
+            assert ("No cafeteria meals on weekends." if en else "주말엔 학식이 없어요.") in stale, stale
+            assert ("still updating" not in stale) and ("업데이트 중" not in stale), stale
             assert ("Oct 16" if en else "10월 16일") in stale, stale
             assert page.locator(".km-card").count() == 0
-            assert ("Cafeteria updating" if en else "학식 업데이트 중") in page.locator(".gg-counts").inner_text()
+            assert ("No cafeteria on weekends" if en else "주말엔 학식 없음") in page.locator(".gg-counts").inner_text()
             # Sunday: nothing posted, said in one sentence; Friday still opens.
             page.locator('[data-km-date="2026-10-18"]').click()
             page.locator('[data-km-day-state="none"]').wait_for()
@@ -734,11 +737,37 @@ def weekend_and_holiday_menu(browser, base, report):
             status.wait_for()
             text = status.inner_text()
             assert ("Fri, Oct 16" if en else "10월 16일 금요일") in text, text
-            assert ("not posted yet" if en else "아직 올라오지 않았어요") in text and "불러오지 못" not in text and "couldn" not in text.lower(), text
+            assert ("No cafeteria meals on weekends" if en else "주말엔 학식이 없어요") in text and "불러오지 못" not in text and "couldn" not in text.lower(), text
             missing = [path for path in requests if path.endswith(("/2026-10-17.json", "/2026-10-18.json"))]
             assert missing == [], missing
             assert problems == [], problems
-            report["checks"] += 13
+            report["checks"] += 14
+        finally:
+            context.close()
+
+    # A weekday morning (Friday 10:00) before the collector published Friday: still "updating".
+    thursday = menu_day("2026-10-15", 8, "목요일")
+    friday_week = dict(week, days=[dict(day, available=False, restaurantCount=0, status="NOT_PUBLISHED_YET")
+                                   if day["date"] >= "2026-10-16" else day for day in week["days"]])
+    for lang in ("ko", "en"):
+        en = lang == "en"
+        context, page, problems, requests = open_context(datetime(2026, 10, 16, 10, 0, tzinfo=kst), lang)
+        try:
+            page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=thursday))
+            page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json=friday_week))
+            page.route("**/data/kaist-menu/2026-*.json", lambda route: route.fulfill(status=404, body=""))
+            page.goto(base + "/ggongbab.html#menu")
+            page.locator("[data-km-stale]").wait_for()
+            stale = page.locator("[data-km-stale]").inner_text()
+            assert ("Today’s menu is still updating." if en else "오늘 메뉴 업데이트 중이에요.") in stale, stale
+            assert ("Cafeteria updating" if en else "학식 업데이트 중") in page.locator(".gg-counts").inner_text()
+            page.goto(base + "/index.html")
+            status = page.locator("#homeMenuStatus[data-state='stale']")
+            status.wait_for()
+            text = status.inner_text()
+            assert ("not posted yet" if en else "아직 올라오지 않았어요") in text and ("weekend" not in text and "주말" not in text), text
+            assert problems == [], problems
+            report["checks"] += 4
         finally:
             context.close()
 
@@ -1282,13 +1311,15 @@ def run_checks(preview=False):
         page.goto(base + "/lab-ggongbab.html?fixture=1&stale-menu=1")
         page.locator("#foodHubTabMenu").click()
         page.locator("[data-km-stale]").wait_for()
-        assert "학식 업데이트 중" in page.locator(".gg-counts").inner_text()
+        # The fixture clock (FIXTURE_NOW) is a Sunday: a missing menu then reads as the weekend, not "updating".
+        assert "주말엔 학식 없음" in page.locator(".gg-counts").inner_text()
+        assert "주말엔 학식이 없어요." in page.locator("[data-km-stale]").inner_text()
         assert page.locator("#foodHubMenu h2").count() == 0 or "오늘" not in page.locator("#foodHubMenu h2").inner_text()
         page.locator("[data-km-stale-toggle]").click()
         page.locator(".km-card").first.wait_for()
         assert "최근 학식" in page.locator("#foodHubMenu .km-date").inner_text()
         assert page.locator("#foodHubMenu h2").inner_text() == "이번 주 학식"
-        report["checks"] += 3
+        report["checks"] += 4
         drought = {"events": []}
         page.unroute("**/data/ggongbab/latest.json")
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=drought))
