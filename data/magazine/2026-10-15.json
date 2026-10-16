@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "[국감-식약처] 아직도 학교 주변 200m? ‘어린이 식생활안전관리 특별법’ 현실과 괴리 커",
-    "summary": "K-푸드가 전 세계적으로 드높은 위상을 펼치고 있지만 정작 국내에선 개선될 문제점이 산적해 있는 것으로 나타났다.",
     "source": "식품음료신문",
-    "sourceId": "news-thinkfood",
-    "candidateId": "c_43554008d3c3fa24",
     "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201405",
     "medium": "news",
-    "discoveredAt": "2026-10-15T14:46:41+09:00",
-    "publishedAt": "2026-10-15T09:46:24+09:00",
     "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201405_201973_238.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-15T09:46:24+09:00",
+    "discoveredAt": "2026-10-15T14:46:41+09:00",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_43554008d3c3fa24",
     "imageSource": "feed_html",
+    "summary": "K-푸드가 전 세계적으로 드높은 위상을 펼치고 있지만 정작 국내에선 개선될 문제점이 산적해 있는 것으로 나타났다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "서울우유, 10살 ‘까요까요’ 누적 판매량 1700만 개 넘어서",
-          "summary": "서울우유협동조합(조합장 문진섭)은 출시 10주년을 맞은 어린이 치즈 ‘까요까요’의 올 8월 기준 누적 판매량이 1700만 개를 돌파했다고 14일 밝혔다.",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_c85b9deb3d65ff45",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120529",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T04:59:51+09:00",
           "image": "https://cdn.foodnews.co.kr/news/thumbnail/202610/120529_86955_5850_v150.jpg",
+          "publishedAt": "2026-10-15T04:59:51+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_c85b9deb3d65ff45",
           "imageSource": "source_page_og",
+          "summary": "서울우유협동조합(조합장 문진섭)은 출시 10주년을 맞은 어린이 치즈 ‘까요까요’의 올 8월 기준 누적 판매량이 1700만 개를 돌파했다고 14일 밝혔다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -45,16 +45,16 @@
         },
         {
           "title": "버거킹, 제품 개발ㆍ혁신 공간 ‘플레임랩’ 연다",
-          "summary": "버거킹이 제품 개발과 혁신을 위한 R&D 공간인 ‘플레임랩(Flame Lab)’을 서울 익선동에 연다.이곳은 변화하는 소비자 취향과 외식 트렌드를 보다 면밀히 반영하고, 새로운 아이디어를 실제 제품으로 구현하기…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_780925313685dac7",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120481",
           "medium": "news",
-          "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-12T19:56:59+09:00",
           "image": "https://cdn.foodnews.co.kr/news/thumbnail/202610/120481_86901_4738_v150.jpg",
+          "publishedAt": "2026-10-12T19:56:59+09:00",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_780925313685dac7",
           "imageSource": "source_page_og",
+          "summary": "버거킹이 제품 개발과 혁신을 위한 R&D 공간인 ‘플레임랩(Flame Lab)’을 서울 익선동에 연다.이곳은 변화하는 소비자 취향과 외식 트렌드를 보다 면밀히 반영하고, 새로운 아이디어를 실제 제품으로 구현하기…",
           "trendEvidence": [
             "explicit_source_claim",
             "corroborated"
@@ -62,42 +62,42 @@
         },
         {
           "title": "편의점 김밥 한 줄에 나트륨 하루 기준치 최대 70%…컵라면 곁들이면 ‘과잉’",
-          "summary": "편의점 김밥 한 줄에 하루 나트륨 기준치의 최대 70%가 들어 있는 것으로 나타났다.반면 열량은 하루 필요량의 18~27% 수준에 그쳐, 한 끼 식사로 먹을 때는 함께 섭취하는 식품 선택이 중요한 것으로…",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_2f772a422ad245ec",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35702",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
           "publishedAt": "2026-10-15T21:18:00+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_2f772a422ad245ec",
+          "summary": "편의점 김밥 한 줄에 하루 나트륨 기준치의 최대 70%가 들어 있는 것으로 나타났다.반면 열량은 하루 필요량의 18~27% 수준에 그쳐, 한 끼 식사로 먹을 때는 함께 섭취하는 식품 선택이 중요한 것으로…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "\"저단백밥 구매 부담 낮췄다\" CJ제일제당, 희귀질환자 지원 확대",
-          "summary": "CJ제일제당이 선천성대사이상 희귀질환자를 위한 '햇반 저단백밥' 공급을 확대하며 특수식 지원을 이어가고 있다고 12일 밝혔다.CJ제일제당에 따르면 질병관리청, 한국희귀·난치성질환연합회와 구축한 '희귀질환자 특수식…",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_35a51d9515beee4c",
           "url": "https://www.newsis.com/view/NISX20261012_0003821616",
           "medium": "news",
-          "discoveredAt": "2026-10-12T15:44:20+09:00",
           "publishedAt": "2026-10-12T10:20:31+09:00",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_35a51d9515beee4c",
+          "summary": "CJ제일제당이 선천성대사이상 희귀질환자를 위한 '햇반 저단백밥' 공급을 확대하며 특수식 지원을 이어가고 있다고 12일 밝혔다.CJ제일제당에 따르면 질병관리청, 한국희귀·난치성질환연합회와 구축한 '희귀질환자 특수식…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“콜레스테롤 높아서 피했는데”⋯탱글탱글 제철 ‘이것’, 알고 보니 고단백·저지방?",
-          "summary": "대하에는 100g당 단백질 약 18.1g, 지방 약 0.6g, 콜레스테롤 약 93mg이 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_3ed5fe1b8622bc7d",
           "url": "https://kormedi.com/2884167/",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
           "publishedAt": "2026-10-15T12:06:00+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_3ed5fe1b8622bc7d",
+          "summary": "대하에는 100g당 단백질 약 18.1g, 지방 약 0.6g, 콜레스테롤 약 93mg이 있다.",
           "trendEvidence": [
             "corroborated"
           ]
@@ -109,64 +109,64 @@
       "items": [
         {
           "title": "참치 양배추 볶음 덮밥 만들기 다이어트 양배추 요리 레시피",
-          "summary": "추석부터 해서 퐁당퐁당 연휴가 있다 보니 그동안 다이어트 식단을 제대로 못하고 있었습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_4857c0366505d372",
           "url": "https://twins0807.tistory.com/entry/%EC%B0%B8%EC%B9%98-%EC%96%91%EB%B0%B0%EC%B6%94-%EB%B3%B6%EC%9D%8C-%EB%8D%AE%EB%B0%A5-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%8B%A4%EC%9D%B4%EC%96%B4%ED%8A%B8-%EC%96%91%EB%B0%B0%EC%B6%94-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-14T19:31:47+09:00",
           "image": "https://blog.kakaocdn.net/dn/RnSCN/dJMcah0tw3j/yCTzcfIRoNhGfOPiOx73TK/img.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-14T19:31:47+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_4857c0366505d372",
+          "imageSource": "feed_html",
+          "summary": "추석부터 해서 퐁당퐁당 연휴가 있다 보니 그동안 다이어트 식단을 제대로 못하고 있었습니다."
         },
         {
           "title": "브로콜리 두부볶음 만들기｜고혈압 식단을 위한 저염 반찬 레시피",
-          "summary": "건강한 식단에서 가장 신경 쓰이는 것 중 하나가 소금 섭취량이죠.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_064fb42583de1da8",
           "url": "https://cultureagora.tistory.com/375",
           "medium": "blog",
-          "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-11T05:38:50+09:00",
           "image": "https://blog.kakaocdn.net/dn/bVE0IW/dJMcadKvs20/Qe6spEzQ1pOdVmYiE37KXK/tfile.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-11T05:38:50+09:00",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_064fb42583de1da8",
+          "imageSource": "feed_html",
+          "summary": "건강한 식단에서 가장 신경 쓰이는 것 중 하나가 소금 섭취량이죠."
         },
         {
           "title": "토마토 계란볶음 만들기｜부드럽고 촉촉한 중국식 토달볶 레시피",
-          "summary": "토마토와 계란만 있어도 빠르게 만들 수 있는 대표적인 중국 가정식 요리, 토마토 계란볶음입니다.중국에서는 시홍스 차오지단(西红柿炒鸡蛋)이라고 부르는 익숙한 집밥 메뉴로, 한국에서는 토마토 달걀볶음이나 줄여서…",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_3e93e0180ced7648",
           "url": "https://cultureagora.tistory.com/372",
           "medium": "blog",
-          "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-10T07:42:58+09:00",
           "image": "https://blog.kakaocdn.net/dn/cv3y34/dJMb992vPbC/3QhMYUIkPPariptX4pJPGK/tfile.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-10T07:42:58+09:00",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_3e93e0180ced7648",
+          "imageSource": "feed_html",
+          "summary": "토마토와 계란만 있어도 빠르게 만들 수 있는 대표적인 중국 가정식 요리, 토마토 계란볶음입니다.중국에서는 시홍스 차오지단(西红柿炒鸡蛋)이라고 부르는 익숙한 집밥 메뉴로, 한국에서는 토마토 달걀볶음이나 줄여서…"
         },
         {
           "title": "아들 집에 가면서 정성껏 만들어 간 밑반찬 6가지",
-          "summary": "아들 집에 가면서 정성껏 만들어 간 밑반찬 6가지 언제나 집밥을 챙겨 먹는 우리 집!",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_e9e4ad62e687eb3e",
           "url": "https://heysukim114.tistory.com/entry/%EC%95%84%EB%93%A4-%EC%A7%91%EC%97%90-%EA%B0%80%EB%A9%B4%EC%84%9C-%EC%A0%95%EC%84%B1%EA%BB%8F-%EB%A7%8C%EB%93%A4%EC%96%B4-%EA%B0%84-%EB%B0%91%EB%B0%98%EC%B0%AC-6%EA%B0%80%EC%A7%80",
           "medium": "blog",
+          "publishedAt": "2026-10-15T00:00:53+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T00:00:53+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_e9e4ad62e687eb3e",
+          "summary": "아들 집에 가면서 정성껏 만들어 간 밑반찬 6가지 언제나 집밥을 챙겨 먹는 우리 집!"
         },
         {
           "title": "알토란 정미경 요리연구가의 피칸떡갈비 만드는 법",
-          "summary": "알토란 614회에서는 반찬 백화점 한 상 편이 방송되었습니다.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_f6db88950036de5e",
           "url": "https://seon1982.tistory.com/4125",
           "medium": "blog",
+          "publishedAt": "2026-10-15T00:00:53+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T00:00:53+09:00"
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_f6db88950036de5e",
+          "summary": "알토란 614회에서는 반찬 백화점 한 상 편이 방송되었습니다."
         }
       ]
     },
@@ -175,66 +175,66 @@
       "items": [
         {
           "title": "“무작정 뛰지 마세요”…나이 들수록 뼈 건강에 좋은 운동",
-          "summary": "충격을 주는 점프나 달리기 등의 운동보다는 체중 부하를 이용하는 스쿼트 같은 저항 운동을 통해 안전하게 뼈 건강을 강화할 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_a091b9766c5abb92",
           "url": "https://kormedi.com/2884901/",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T10:10:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/gettyimages-jv12389174-edited.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-15T10:10:00+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a091b9766c5abb92",
+          "imageSource": "feed_media",
+          "summary": "충격을 주는 점프나 달리기 등의 운동보다는 체중 부하를 이용하는 스쿼트 같은 저항 운동을 통해 안전하게 뼈 건강을 강화할 수 있다."
         },
         {
           "title": "“밥 먹고 씻을까? 씻고 먹을까?”⋯식후 건강 해치는 습관 3가지",
-          "summary": "평소 소화기관이 예민한 사람은 식후 격렬한 활동이나 뜨거운 목욕은 멀리해야 한다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_8e2484fd103be3e6",
           "url": "https://kormedi.com/2884869/",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-14T23:03:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/aaas-23.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-14T23:03:00+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8e2484fd103be3e6",
+          "imageSource": "feed_media",
+          "summary": "평소 소화기관이 예민한 사람은 식후 격렬한 활동이나 뜨거운 목욕은 멀리해야 한다."
         },
         {
           "title": "“열량 낮은 다이어트 간식” 은행 먹을 때 반드시 지켜야 할 ‘수칙’",
-          "summary": "쫀득한 식감과 고소한 맛이 특징인 은행이 제철을 맞았다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_0d70acad25dd8279",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/15/2026101501493.html",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T11:20:00+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/10/15/2026101501488_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-15T11:20:00+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_0d70acad25dd8279",
+          "imageSource": "source_page_og",
+          "summary": "쫀득한 식감과 고소한 맛이 특징인 은행이 제철을 맞았다."
         },
         {
           "title": "“뱃살 쏙”… 20kg 감량 한혜연, ‘밥 대신 먹는’ 음식은?",
-          "summary": "다이어트 성공 후에도 늘씬한 몸매를 유지하려면 건강한 식습관을 유지하는 것이 중요하다.20kg 감량에 성공한 스타일리스트 한혜연이 최근 자신의 인스타그램에 근황 사진을 게재했다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_f6c2fb33faa53f53",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/14/2026101403037.html",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T01:30:00+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/10/14/2026101403032_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-15T01:30:00+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_f6c2fb33faa53f53",
+          "imageSource": "source_page_og",
+          "summary": "다이어트 성공 후에도 늘씬한 몸매를 유지하려면 건강한 식습관을 유지하는 것이 중요하다.20kg 감량에 성공한 스타일리스트 한혜연이 최근 자신의 인스타그램에 근황 사진을 게재했다."
         },
         {
           "title": "“우리 쌀 드시고 건강하세요”…농협-영양사협회, ‘행복米밥차’ 운영",
-          "summary": "농협경제지주(대표이사 김주양)는 14일 서울 여의도성모병원에서 ‘행복米밥차’를 운영했다.농협은 대한영양사협회(회장 송진선)와 함께 ‘쌀 중심 레시피 급식 적용 이벤트’ 우수 급식소로 선정된 여의도성모병원을 찾아 양…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_a14a5f95d51f961d",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120543",
           "medium": "news",
+          "publishedAt": "2026-10-15T22:50:22+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T22:50:22+09:00"
+          "sourceId": "news-foodnews",
+          "candidateId": "c_a14a5f95d51f961d",
+          "summary": "농협경제지주(대표이사 김주양)는 14일 서울 여의도성모병원에서 ‘행복米밥차’를 운영했다.농협은 대한영양사협회(회장 송진선)와 함께 ‘쌀 중심 레시피 급식 적용 이벤트’ 우수 급식소로 선정된 여의도성모병원을 찾아 양…"
         }
       ]
     },
@@ -243,58 +243,58 @@
       "items": [
         {
           "title": "‘영앤리치’ 시미즈, 몸매 관리 비결?…아침 샐러드에 듬뿍 넣은 반전 식재료, 뭐야?",
-          "summary": "시미즈가 아보카도와 오이, 방울토마토에 올리브유와 각종 시즈닝을 곁들인 샐러드를 아침 식사로 즐기는 모습을 공개했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_dc061e9d273c9658",
           "url": "https://kormedi.com/2883373/",
           "medium": "news",
+          "publishedAt": "2026-10-15T08:05:00+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T08:05:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_dc061e9d273c9658",
+          "summary": "시미즈가 아보카도와 오이, 방울토마토에 올리브유와 각종 시즈닝을 곁들인 샐러드를 아침 식사로 즐기는 모습을 공개했다."
         },
         {
           "title": "야식 즐기는 사람, 살만 찌는 게 아니다⋯지방간·간경변 위험 최대 30%↑",
-          "summary": "밤늦게 음식을 먹는 사람은 그렇지 않은 사람보다 지방간·간경변 위험이 20~30% 높다는 연구 결과가 나왔다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_946ca30e4f436d10",
           "url": "https://kormedi.com/2881868/",
           "medium": "news",
+          "publishedAt": "2026-10-13T17:01:00+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-13T17:01:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_946ca30e4f436d10",
+          "summary": "밤늦게 음식을 먹는 사람은 그렇지 않은 사람보다 지방간·간경변 위험이 20~30% 높다는 연구 결과가 나왔다."
         },
         {
           "title": "\"밤만 되면 간식 찾는다\"… 야식 유혹에서 벗어나는 방법",
-          "summary": "많은 현대인이 쉽게 뿌리치지 못하는 유혹 중 하나가 바로 야식이다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_bfb67b622fa3ce78",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68583",
           "medium": "news",
+          "publishedAt": "2026-10-15T05:00:00+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-15T05:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_bfb67b622fa3ce78",
+          "summary": "많은 현대인이 쉽게 뿌리치지 못하는 유혹 중 하나가 바로 야식이다."
         },
         {
           "title": "두부·두유 자주 먹는 성인, 복부비만 적었다…콩의 대사건강 가치 주목",
-          "summary": "두부·두유 등 비발효 콩식품을 자주 섭취하는 성인에서 복부비만이 적게 나타났다는 연구 결과가 나왔다.중국 성인 대상 연구에서도 콩 섭취와 복부비만·혈중지질·혈압 지표 사이의 연관성이 확인되면서 일상 식재료인 콩의…",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_45c48a4be7a8e2e1",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35667",
           "medium": "news",
+          "publishedAt": "2026-10-14T18:06:00+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T18:06:00+09:00"
+          "sourceId": "news-foodicon",
+          "candidateId": "c_45c48a4be7a8e2e1",
+          "summary": "두부·두유 등 비발효 콩식품을 자주 섭취하는 성인에서 복부비만이 적게 나타났다는 연구 결과가 나왔다.중국 성인 대상 연구에서도 콩 섭취와 복부비만·혈중지질·혈압 지표 사이의 연관성이 확인되면서 일상 식재료인 콩의…"
         },
         {
           "title": "단백질만으론 부족, 근육 지키려면 함께 챙길 영양소 4가지",
-          "summary": "계단을 오르다 숨이 차고, 단단히 닫힌 병뚜껑 하나 여는 데도 예전 같지 않다고 느낀 적이 있다면 근육이 약해진 신호일지 모른다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_daf2bfc4194b624f",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68386",
           "medium": "news",
+          "publishedAt": "2026-10-09T03:00:00+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-09T03:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_daf2bfc4194b624f",
+          "summary": "계단을 오르다 숨이 차고, 단단히 닫힌 병뚜껑 하나 여는 데도 예전 같지 않다고 느낀 적이 있다면 근육이 약해진 신호일지 모른다."
         }
       ]
     }
