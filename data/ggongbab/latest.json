@@ -1,46 +1,12 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-15T18:29:20+09:00",
+  "generatedAt": "2026-10-17T00:03:31+09:00",
   "timezone": "Asia/Seoul",
-  "count": 5,
+  "count": 4,
   "events": [
     {
-      "id": "35ea43d7-f095-4541-ac2c-877c3c11c651",
-      "title": "2026 가을학기 중간고사 ME PIZZA DAY",
-      "summary": "기계공학과 전체 학부 학생을 대상으로 2026년 가을학기 중간고사 PIZZA DAY를 진행합니다. 피자와 음료 등이 제공됩니다.",
-      "startAt": "2026-10-16T18:00:00+09:00",
-      "endAt": null,
-      "dateText": "2026.10.16.(금)",
-      "timeText": "18:00~",
-      "location": {
-        "name": "기계공학동(N7) 야외 BBQ PIT",
-        "building": "N7",
-        "room": "야외 BBQ PIT"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "피자 + 음료 등",
-        "source": "text"
-      },
-      "organizer": "기계공학과행정팀",
-      "eligibility": "기계공학과 전체 학부 학생",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
-    {
       "id": "5ec8c23a-86a6-4455-b85d-d508a3049307",
-      "title": "ME 가을학기 학부생과 지도교수님 만남의 주간",
+      "title": "학부생과 지도교수와의 만남의 주간",
       "summary": "가을학기 학부생과 지도교수와의 만남의 주간 행사로, 기계공학동 뒷편 BBQ PIT 또는 잔디밭에서 그룹별로 점심을 먹으며 진행됩니다. 당일 점심 도시락이 제공됩니다.",
       "startAt": "2026-10-29T12:00:00+09:00",
       "endAt": "2026-10-29T13:00:00+09:00",
@@ -57,7 +23,7 @@
         "description": "점심 도시락",
         "source": "text"
       },
-      "organizer": "기계공학과 행정팀",
+      "organizer": "기계공학과",
       "eligibility": "",
       "registration": {
         "required": "true",
@@ -75,30 +41,30 @@
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
       "title": "자연과학과 함께하는 토크 콘서트",
-      "summary": "학사과정 학생을 대상으로 물리학과, 수리과학과, 화학과, 생명과학과 교수들이 강연과 토크를 진행합니다. 11월 2일부터 5일까지 샌드위치가, 11월 6일에는 쉐이크쉑 버거가 제공되며 경품 추첨이 있습니다.",
+      "summary": "자연과학대학이 학사과정 학생을 대상으로 물리학과, 수리과학과, 화학과, 생명과학과 교수들의 강연과 토크를 진행합니다. 11월 2일부터 5일까지는 샌드위치, 11월 6일에는 쉐이크쉑 버거가 제공되며 경품 추첨이 있습니다.",
       "startAt": "2026-11-02T12:00:00+09:00",
       "endAt": "2026-11-06T19:30:00+09:00",
-      "dateText": "November 2 – 5 (Mon. – Thu.); November 6 (Fri.)",
-      "timeText": "12:00–12:50; 16:00–19:30",
+      "dateText": "November 2 – 5 (Mon. – Thu.) / November 6 (Fri.)",
+      "timeText": "12:00–12:50 / 16:00–19:30",
       "location": {
-        "name": "Natural Science Building, Common Lecture Hall (Room 1501, E6-1); KI Building, Fusion Hall (Room C101, E4)",
-        "building": "E6-1; E4",
-        "room": "1501; C101"
+        "name": "Natural Science Building, Common Lecture Hall (Room 1501, E6-1) / KI Building, Fusion Hall (Room C101, E4)",
+        "building": "E6-1 / E4",
+        "room": "1501 / C101"
       },
       "food": {
         "provided": "true",
         "type": "meal",
-        "description": "Sandwiches; Shake Shack burgers",
+        "description": "Sandwiches will be provided to the first 130 attendees. Shake Shack burgers will be provided to the first 250 attendees.",
         "source": "text"
       },
-      "organizer": "College of Natural Sciences; KAIST 자연과학대학/ KAI-X",
+      "organizer": "자연과학대학",
       "eligibility": "",
       "registration": {
         "required": "unknown",
         "deadline": null,
         "url": ""
       },
-      "confidence": 0.98,
+      "confidence": 0.99,
       "sources": [
         {
           "type": "dooray",
@@ -113,7 +79,7 @@
     {
       "id": "7131af6e-f266-4ad2-8597-22a67a9bbd24",
       "title": "업비트 디지털 자산 특강",
-      "summary": "디지털 자산과 미래 금융 인사이트 강연 및 업비트 현직자·KAIST 동문 선배들의 커리어패스 토크가 진행됩니다. 참석자 전원에게 웰컴 키트와 간식이 제공되며 럭키드로우 및 경품 증정이 있습니다.",
+      "summary": "디지털 자산과 미래 금융 인사이트 강연 및 업비트 현직자와 KAIST 동문 선배들의 커리어패스 토크가 진행됩니다. 참석자 전원에게 웰컴 키트와 간식이 제공되며 럭키드로우를 통해 경품이 증정됩니다.",
       "startAt": "2026-11-02T14:00:00+09:00",
       "endAt": "2026-11-02T16:00:00+09:00",
       "dateText": "2026년 11월 2일(월)",
@@ -150,15 +116,15 @@
     },
     {
       "id": "ed473c75-3ff6-4b6c-afd8-ab08649b4f35",
-      "title": "KAIST 문지책방 제7권 <벌거벗은 동물사> 행사",
-      "summary": "저자 강연과 저자와의 티타임으로 진행되는 문지책방 행사입니다. 사전등록자 중 추첨을 통해 주제 도서를 증정합니다.",
+      "title": "KAIST 문지책방 제7권 <벌거벗은 동물사>",
+      "summary": "저자 이종식의 강연과 저자와의 티타임으로 구성된 행사입니다. 사전등록자 중 추첨을 통해 주제 도서를 증정합니다.",
       "startAt": "2026-11-11T15:00:00+09:00",
       "endAt": "2026-11-11T17:00:00+09:00",
       "dateText": "2026. 11. 11. (수)",
       "timeText": "15:00 ~ 17:00",
       "location": {
         "name": "KAIST 문지캠퍼스, 강의동 L507호",
-        "building": "",
+        "building": "L507호",
         "room": "L507호"
       },
       "food": {
@@ -166,14 +132,14 @@
         "type": "unknown",
         "description": ""
       },
-      "organizer": "의과학대학원",
+      "organizer": "의과학대학원 주최 및 독서문위위원회 후원",
       "eligibility": "",
       "registration": {
         "required": "true",
         "deadline": "2026-11-03T23:59:00+09:00",
         "url": "https://forms.gle/ZDVNCnpe1QRPhe2dA"
       },
-      "confidence": 0.99,
+      "confidence": 0.98,
       "sources": [
         {
           "type": "dooray",

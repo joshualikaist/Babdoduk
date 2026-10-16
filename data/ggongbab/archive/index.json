@@ -1,10 +1,38 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-15T18:29:20+09:00",
+  "generatedAt": "2026-10-17T00:03:31+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 3,
+  "count": 4,
   "events": [
+    {
+      "id": "35ea43d7-f095-4541-ac2c-877c3c11c651",
+      "title": "2026 가을학기 중간고사 ME PIZZA DAY",
+      "summary": "기계공학과 전체 학부 학생을 대상으로 2026년 가을학기 중간고사 PIZZA DAY를 진행합니다. 피자와 음료 등이 제공됩니다.",
+      "startAt": "2026-10-16T18:00:00+09:00",
+      "endAt": null,
+      "dateText": "2026.10.16.(금)",
+      "timeText": "18:00~",
+      "location": {
+        "name": "기계공학동(N7) 야외 BBQ PIT",
+        "building": "N7",
+        "room": "야외 BBQ PIT"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "피자 + 음료 등",
+        "source": "text"
+      },
+      "organizer": "기계공학과행정팀",
+      "eligibility": "기계공학과 전체 학부 학생",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "3f1c34c3-a144-444f-bc56-a8734b778298",
       "title": "KAIST 기후테크 세미나 #5",
@@ -36,7 +64,7 @@
     {
       "id": "2774195c-d3d7-467d-bb9d-c138dc031c16",
       "title": "카카오벤처스 Temp Seoul Meetup",
-      "summary": "카카오벤처스가 초기 빌더와 팀을 바라보는 관점 및 /tmp Seoul을 소개하는 세션입니다. 40분 세션, 20분 Q&A 및 네트워킹으로 진행되며 참석자들에게 식사가 준비됩니다.",
+      "summary": "카카오벤처스가 /tmp Seoul과 초기 빌더 및 팀을 바라보는 관점을 소개하는 세션을 진행합니다. 40분 세션, 20분 Q&A 및 네트워킹으로 구성되며 참석자들에게 식사가 준비됩니다.",
       "startAt": "2026-10-07T17:00:00+09:00",
       "endAt": null,
       "dateText": "10월 7일(수)",
