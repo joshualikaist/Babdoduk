@@ -167,11 +167,14 @@ class Report:
 
 # ---- browser plumbing ---------------------------------------------------------------------------------
 
-def make_context(browser, rep: Report, lang: str, size: tuple[int, int], signals: dict):
-    context = browser.new_context(
+def make_context(browser, rep: Report, lang: str, size: tuple[int, int], signals: dict, extra: dict | None = None):
+    """`extra` overrides the context options (e2e_browsers.py passes a device descriptor)."""
+    options = dict(
         viewport={"width": size[0], "height": size[1]}, locale="ko-KR" if lang == "ko" else "en-US",
         timezone_id="Asia/Seoul", service_workers="block", accept_downloads=False,
         has_touch=size[0] < 600, is_mobile=False)
+    options.update(extra or {})
+    context = browser.new_context(**options)
     context.add_init_script(
         "try{localStorage.setItem('babdoduk-lang','%s');sessionStorage.setItem('babdoduk-welcome-seen','1');}catch(e){}" % lang)
 
