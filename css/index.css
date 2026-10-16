@@ -48,6 +48,16 @@
   display: none;
 }
 
+/* Until js/worldcup-gate.js has decided (it sets html[data-wc-phase] in the same step as it shows the
+   band), the band keeps its place, invisible, so the copy and the calendar below do not jump when it
+   appears (owner 2026-10-16, layout shift). Without scripting it stays out, as before. */
+@media (scripting: enabled) {
+  html:not([data-wc-phase]) .home-wc[hidden] {
+    display: grid;
+    visibility: hidden;
+  }
+}
+
 .home-wc::before {                        /* a soft light in the corner, behind the photos */
   content: "";
   position: absolute;
@@ -142,21 +152,32 @@ html[data-wc-phase="soon"] .home-wc-photo {
   display: none;                          /* a phone keeps just "D-2" */
 }
 
+/* The link is a 44 px tap target (owner 2026-10-16); the white pill inside it (.home-wc-pill) stays 36 px
+   on a phone, and the negative margin keeps the band as slim as the pill. The whole band is the link
+   as well (::after). */
 .home-wc-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 36px;                       /* the whole band is the link (::after), so 44 px of target remain */
-  padding: 0 12px;
-  border-radius: 999px;
-  background: #fff;
+  min-height: 44px;
+  margin: -4px 0;
   color: #9d174d;
   font-size: 0.88rem;
   text-decoration: none;
   white-space: nowrap;
-  box-shadow: 0 3px 0 rgba(30, 27, 75, 0.35), 0 6px 12px rgba(30, 27, 75, 0.2);
   transition: transform 160ms ease;
+}
+
+.home-wc-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 0 rgba(30, 27, 75, 0.35), 0 6px 12px rgba(30, 27, 75, 0.2);
 }
 
 .home-wc-cta::after {                     /* the whole band is the link */
@@ -194,7 +215,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
     border-color: CanvasText;
   }
 
-  .home-wc-cta {
+  .home-wc-pill {
     border: 1px solid ButtonText;
   }
 }
@@ -203,9 +224,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
    title keeps to one line next to it. */
 @media (max-width: 440px) {
   .home-wc-cta--soon {
+    font-size: 0.82rem;
+  }
+
+  .home-wc-cta--soon .home-wc-pill {
     gap: 4px;
     padding: 0 10px;
-    font-size: 0.82rem;
   }
 }
 
@@ -213,6 +237,11 @@ html[data-wc-phase="soon"] .home-wc-photo {
    stays a single slim row. */
 @media (max-width: 379px) {
   .home-wc-cta {
+    width: 44px;
+    margin: -4px -2px;                    /* a 40 px button in a 44 px target */
+  }
+
+  .home-wc-cta .home-wc-pill {
     padding: 0;
     width: 40px;
   }
@@ -268,9 +297,14 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 
   .home-wc-cta {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .home-wc-pill,
+  .home-wc-cta--soon .home-wc-pill {
     min-height: 44px;
     padding: 0 16px;
-    font-size: 1rem;
   }
 }
 
@@ -284,6 +318,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
 
   .home-top:has(.home-wc:not([hidden])) .home-hero {
     padding-bottom: 0;
+  }
+}
+
+@media (min-width: 721px) and (scripting: enabled) {
+  html:not([data-wc-phase]) .home-top:has(.home-wc) .home-hero {
+    padding-bottom: 0;                    /* the band's reserved place, as above */
   }
 }
 
@@ -504,6 +544,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .home-cal-month {
   grid-area: month;
   min-width: 0;
+}
+
+/* Before js/home-calendar.js draws the month: the height of a five-week month (header, weekday row and
+   five 48 px rows), so the page below does not jump when it does. */
+.home-cal-month:empty {
+  min-height: 304px;
 }
 
 .home-cal-day {

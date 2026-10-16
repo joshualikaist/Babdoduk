@@ -286,7 +286,7 @@
     var menuPart;
     if (menuSnap.status === 'loading' || state.menu.status === 'loading') menuPart = t('gg.metric.menuLoading', '학식 확인 중');
     else if (menuSnap.status === 'error' || state.menu.status === 'error') menuPart = t('gg.metric.menuError', '학식 불러오기 실패');
-    else if (menuSnap.stale) menuPart = t('gg.metric.menuStale', '학식 업데이트 중');
+    else if (menuSnap.stale) menuPart = menuSnap.weekend ? t('gg.metric.menuWeekend', '주말엔 학식 없음') : t('gg.metric.menuStale', '학식 업데이트 중');
     else menuPart = t('gg.metric.menu', '학식 {n}곳').replace('{n}', String(menuSnap.restaurantCount || 0));
     var freePart = state.free.status === 'ready'
       ? t('gg.metric.free', '오늘 꽁밥 {n}개').replace('{n}', String(freeN))
@@ -403,7 +403,8 @@
   function freePaneHtml(now) {
     var html = '';
     if (state.free.status === 'ready') html += radarHtml(now);
-    else if (state.free.status === 'loading') html += '<div class="gg-skeleton" style="height:160px"></div>';
+    // The radar's own height (238 px in both languages at every width), so it does not push the list when it lands.
+    else if (state.free.status === 'loading') html += '<div class="gg-skeleton" style="height:238px;margin-bottom:14px"></div>';
     // The live list and its sticky filters share one box, so the filters stop at the archive.
     html += '<div class="gg-live">';
     html += filtersHtml();
