@@ -112,7 +112,7 @@
         </header>
 
         <div class="mg-top">
-          <article class="mg-hero" id="featured" hidden>
+          <article class="mg-hero" id="featured" hidden data-pending>
             <div class="mg-hero-copy">
               <span class="mg-hero-label" id="mgHeroLabel" data-i18n="mg.hero.pick">오늘의 추천 글</span>
               <a class="mg-hero-title-link" id="mgHeroLink" href="#featured">
@@ -262,6 +262,7 @@
         'kaist.staleNote': '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.',
         'kaist.title': '오늘 KAIST 학식',
         'kaist.toHub': '모든 식당 보기 →',
+        'kaist.weekendNote': '{date} 메뉴예요. 주말엔 학식이 없어요.',
         'km.breakfast': '아침',
         'km.collapse': '메뉴 접기 ↑',
         'km.count': '{meal} 메뉴 {n}곳',
@@ -287,6 +288,7 @@
         'km.toFree': '꽁밥 보러가기 →',
         'km.today': '오늘',
         'km.unfav': '즐겨찾기 해제',
+        'km.weekendTitle': '주말엔 학식이 없어요.',
         'mg.board.title': '오늘의 밥 이야기',
         'mg.cal.open': '날짜 보기',
         'mg.cat.habit': '식습관',
@@ -389,6 +391,7 @@
         'kaist.staleNote': 'Menu for {date}. Today’s menu is not posted yet.',
         'kaist.title': 'Today\'s KAIST cafeteria',
         'kaist.toHub': 'All cafeterias →',
+        'kaist.weekendNote': 'Menu for {date}. No cafeteria meals on weekends.',
         'km.breakfast': 'Breakfast',
         'km.collapse': 'Show less ↑',
         'km.count': '{meal}: {n} cafeterias',
@@ -414,6 +417,7 @@
         'km.toFree': 'See free food →',
         'km.today': 'Today',
         'km.unfav': 'Remove favorite',
+        'km.weekendTitle': 'No cafeteria meals on weekends.',
         'mg.board.title': 'Today\'s rice stories',
         'mg.cal.open': 'Pick a date',
         'mg.cat.habit': 'How we eat',
@@ -654,7 +658,10 @@
         viewMonth = parseInt(parts[1], 10) - 1;
         var featured = ed.featured && ed.featured.url && ed.featured.title ? ed.featured : null;
         var heroEl = document.getElementById('featured');
-        if (heroEl) heroEl.hidden = !featured;
+        if (heroEl) {
+          heroEl.hidden = !featured;
+          heroEl.removeAttribute('data-pending');   // its reserved place (css/magazine.css) is no longer needed
+        }
         featured = featured || {};
         var titleEl = document.getElementById('mgHeroTitle');
         var descEl = document.getElementById('mgHeroDesc');
@@ -804,6 +811,8 @@
           return loadEdition(wanted);
         })
         .catch(function () {
+          var pendingHero = document.getElementById('featured');
+          if (pendingHero) pendingHero.removeAttribute('data-pending');
           // No edition: say so, show no edition date and no stories (never stand-in text).
           document.querySelectorAll('[data-lane-items]').forEach(function (box) {
             box.innerHTML = '<p class="mg-lane-empty">' + escapeHtml(t('mg.laneEmpty', '오늘은 이 갈래에 올릴 새 이야기가 없어요.')) + '</p>';

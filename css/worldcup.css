@@ -56,6 +56,18 @@
   color: var(--color-ink-muted);
 }
 
+/* The start screen's height while js/worldcup.js loads (755 px on a phone, 915 px from 561 px), so the
+   photo note and the footer below do not jump when it replaces this (owner 2026-10-16, layout shift). */
+.wc-page .wc-loading {
+  min-height: 755px;
+}
+
+@media (min-width: 561px) {
+  .wc-page .wc-loading {
+    min-height: 915px;
+  }
+}
+
 .wc-error {
   color: var(--color-accent);
   font-weight: 600;
@@ -535,6 +547,17 @@
 .wc-btn--share:hover {
   border-color: transparent;
   background: linear-gradient(115deg, #be185d, #86198f 48%, #4338ca);
+}
+
+.wc-btn--kakao {
+  border-color: #f2d800;
+  background: #fee500;
+  color: #191600;
+}
+
+.wc-btn--kakao:hover {
+  border-color: #e6cc00;
+  background: #f5dc00;
 }
 
 .wc-btn-icon {

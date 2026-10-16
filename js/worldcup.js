@@ -100,6 +100,16 @@
     link.href = photo.source;
     link.textContent = fill(t('wc.photoCredit', '사진 {author} · {license}'), { author: photo.author, license: photo.license });
   }
+  // The small WebP copies (scripts/make_thumbnails.py) next to the 720 px JPG, for a photo shown at
+  // `sizes` (its slot's width; a square crop of the 4:3 photo needs 4/3 of its side). The JPG stays the
+  // `src`, the large views and the story card use it alone.
+  function thumbs(img, photo, sizes) {
+    var m = /^images\/worldcup\/([\w-]+)\.jpg$/.exec(photo && photo.image || '');
+    if (!m) return;
+    img.sizes = sizes;
+    img.srcset = 'images/worldcup/thumb/' + m[1] + '-160.webp 160w, images/worldcup/thumb/' + m[1] + '-320.webp 320w, ' +
+      photo.image + ' 720w';
+  }
   // A dish's photo: its entry in the pool, or (the news page's data) the shared path pattern.
   function photoOf(id) {
     var photo = (cup.photos || {})[id];
@@ -256,6 +266,7 @@
         img.alt = name(id);
         img.setAttribute('data-id', id);
         img.onerror = function () { item.hidden = true; };
+        thumbs(img, photo, '(max-width: 480px) 24vw, 116px');
         img.src = photo.image;
       }
       if (animate && moving()) {
@@ -347,7 +358,10 @@
       img.decoding = 'async';
       img.hidden = !photo;
       img.onerror = function () { img.hidden = true; };
-      if (photo && !locked()) img.src = photo.image;               // before the launch a blurred placeholder, no request
+      if (photo && !locked()) {                                    // before the launch a blurred placeholder, no request
+        thumbs(img, photo, '(max-width: 720px) 100px, 176px');
+        img.src = photo.image;
+      }
     });
   }
   // On arrival the photos pop out and bob twice and the big button breathes three times; a new
@@ -424,6 +438,7 @@
     $('wcWinnerFigure').hidden = $('wcWinnerImg').hidden;
     renderCredits();
     prepareStory();                            // the story card is made now, so a tap can hand it over at once
+    showKakao();                               // the Kakao SDK is fetched only now, on the result screen
     if (focus) {
       $('wcWinner').focus();
       announce(fill(t('wc.announceWinner', '우승 메뉴: {dish}'), { dish: name(result.id) }));
@@ -1283,7 +1298,10 @@
     var photo = photoOf(id);
     img.alt = '';
     img.decoding = 'async';
-    if (photo) img.src = photo.image;
+    if (photo) {
+      thumbs(img, photo, Math.round(px * 4 / 3) + 'px');
+      img.src = photo.image;
+    }
     node('i', 'wc-cap-shell', inner).style.setProperty('--c', color);
     cap.style.setProperty('--cap', px + 'px');
     return cap;
@@ -1409,7 +1427,10 @@
                                [go + 420, { transform: pose(0, ty, sign * 360) }]]);
         var card = node('figure', 'wc-duelist', stage), photo = photoOf(ids[side]), img = node('img', '', card);
         img.alt = '';
-        if (photo) img.src = photo.image;
+        if (photo) {
+          thumbs(img, photo, Math.round(fw) + 'px');
+          img.src = photo.image;
+        }
         card.style.cssText = 'left:' + cx + 'px;top:' + cy + 'px;width:' + fw + 'px;height:' + fh + 'px;margin:' + -fh / 2 + 'px 0 0 ' + -fw / 2 + 'px';
         var r = photos[side], rest = pose(sign * seat, 0, sign * 3);
         var to = r.width ? pose(r.left + r.width / 2 - cx, r.top + r.height / 2 - cy, 0, r.width / fw, r.height / fh) : rest;
@@ -1986,25 +2007,75 @@
     if (canShareFile(file)) data.files = [file];
     navigator.share(data).catch(function (e) { if (!e || e.name !== 'AbortError') copyLink(url); });
   }
-  // The KakaoTalk hook (docs/WORLDCUP_SHARE.md): no SDK is loaded until the owner has an app key. Once
-  // the Kakao JS SDK is on the page and Kakao.init(<key>) has run, a 카카오톡 button can call
-  // Kakao.Share.sendDefault(window.BabdodukWorldcupShare.kakaoFeed()) for a feed card.
-  window.BabdodukWorldcupShare = {
-    kakaoFeed: function () {
-      if (!result) return null;
-      var url = shareUrl(), photo = photoOf(result.id);
-      return {
-        objectType: 'feed',
-        content: {
-          title: fill(t('wc.shareText', '나의 먹방 월드컵({cat}) 우승 메뉴는 {dish}!'), { cat: catName(result.category), dish: name(result.id) }),
-          description: t('wc.story.cta', '너의 최애는?'),
-          imageUrl: photo ? new URL(photo.image, location.href).href : new URL('images/worldcup/og-worldcup.jpg', location.href).href,
-          link: { mobileWebUrl: url, webUrl: url }
-        },
-        buttons: [{ title: t('wc.friendCta', '나도 해보기'), link: { mobileWebUrl: url, webUrl: url } }]
-      };
-    }
+  // ---- KakaoTalk share card (docs/WORLDCUP_SHARE.md) --------------------------------------------------
+  // The one place a third-party script is loaded: the official Kakao JS SDK, pinned to a version with
+  // its SRI hash (computed from the file and checked against Kakao's download page), fetched only when
+  // the result screen appears, never on another page and never before a winner exists. The JavaScript
+  // key is a public, domain-restricted value (the owner registered babdoduk.vercel.app and
+  // babdoduk-lab.vercel.app in Kakao Developers); it is the only copy and belongs in this constant.
+  var KAKAO_JS_KEY = '92860c2f30dc6829c664d36be75e0b3d';
+  var KAKAO_SDK = {
+    src: 'https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js',
+    integrity: 'sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy'
   };
+  var kakaoLoad = null;                         // resolves true once Kakao.Share is ready, false for good if not
+  function kakaoReady() {
+    try {
+      if (!window.Kakao) return false;
+      if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_JS_KEY);
+      return !!(window.Kakao.isInitialized() && window.Kakao.Share && window.Kakao.Share.sendDefault);
+    } catch (e) { return false; }
+  }
+  function loadKakao() {
+    if (kakaoLoad) return kakaoLoad;
+    kakaoLoad = new Promise(function (resolve) {
+      if (window.Kakao) { resolve(kakaoReady()); return; }
+      var tag = document.createElement('script'), done = false;
+      function finish(ok) { if (done) return; done = true; clearTimeout(timer); resolve(ok); }
+      var timer = setTimeout(function () { finish(false); }, 8000);
+      tag.src = KAKAO_SDK.src;
+      tag.integrity = KAKAO_SDK.integrity;
+      tag.crossOrigin = 'anonymous';
+      tag.async = true;
+      tag.onload = function () { finish(kakaoReady()); };
+      tag.onerror = function () { finish(false); };
+      try { document.head.appendChild(tag); } catch (e) { finish(false); }
+    });
+    return kakaoLoad;
+  }
+  // The 💬 카카오톡 button stays hidden until the SDK is loaded and initialised; if that fails the page
+  // simply keeps its other share buttons.
+  function showKakao() {
+    var button = $('wcKakao');
+    if (!button || embedded) return;
+    loadKakao().then(function (ok) { button.hidden = !ok || !result; });
+  }
+  function kakaoFeed() {
+    if (!result) return null;
+    var url = shareUrl(), photo = photoOf(result.id), cta = t('wc.kakao.cta', '너도 해보기');
+    return {
+      objectType: 'feed',
+      content: {
+        title: fill(t('wc.kakao.title', '친구의 우승 메뉴는 {dish}! 🏆'), { dish: name(result.id) }),
+        description: fill(t('wc.kakao.desc', '{game} · 너의 최애는?'), { game: gameLabel(result.category) }),
+        imageUrl: new URL(photo && photo.image ? photo.image : 'images/worldcup/og-worldcup.jpg', location.href).href,
+        link: { mobileWebUrl: url, webUrl: url }
+      },
+      buttons: [{ title: cta, link: { mobileWebUrl: url, webUrl: url } }]
+    };
+  }
+  function shareKakao() {
+    var feed = kakaoFeed();
+    if (!feed) return;
+    try {
+      if (!kakaoReady()) throw new Error('kakao unavailable');
+      window.Kakao.Share.sendDefault(feed);
+    } catch (e) {
+      $('wcKakao').hidden = true;               // the SDK is not usable after all: the existing share flow instead
+      share();
+    }
+  }
+  window.BabdodukWorldcupShare = { kakaoFeed: kakaoFeed };
   function undo() {
     if (!game || !game.stack.length || busy) return;
     var previous = game.stack.pop();
@@ -2071,6 +2142,7 @@
     img.hidden = locked() || !photo;                              // before the launch no photo is requested
     if (!img.hidden && img.getAttribute('src') !== photo.image) {
       img.onerror = function () { img.hidden = true; };
+      thumbs(img, photo, '54px');
       img.src = photo.image;
     }
   }
@@ -2137,6 +2209,7 @@
     $('wcRestart').addEventListener('click', function () { if (!busy) start(game ? game.category : category, true); });
     $('wcAgain').addEventListener('click', function () { start(result ? result.category : category, true); });
     $('wcShare').addEventListener('click', share);
+    $('wcKakao').addEventListener('click', shareKakao);
     $('wcSaveImage').addEventListener('click', saveStory);
     $('wcHistoryClear').addEventListener('click', clearHistory);
   }

@@ -81,7 +81,8 @@
     var now = F.nowKst();
     var date = isoDateLabel(s.data.date);
     if (M.isStale(s.data, now)) {
-      return setStatus(menuEl, 'stale', t('home.menu.stale', '오늘 메뉴는 아직 올라오지 않았어요'),
+      var weekend = M.isWeekend && M.isWeekend(now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'));
+      return setStatus(menuEl, 'stale', weekend ? t('home.menu.weekend', '주말엔 학식이 없어요') : t('home.menu.stale', '오늘 메뉴는 아직 올라오지 않았어요'),
         s.data.date ? t('home.menu.last', '마지막으로 올라온 메뉴: {date}').replace('{date}', date) : '');
     }
     var n = M.restaurantsWithMenus(s.data).length;

@@ -46,7 +46,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
   margin-bottom: 8px;
 }
 
@@ -80,14 +80,14 @@ body.mg-body .site-footer {
 }
 
 .mg-index-nav a:hover {
-  color: #f45e45;
+  color: #c8402a;
 }
 
 .mg-index-num {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #777168;
+  color: #6b655d;
   font-variant-numeric: tabular-nums;
 }
 
@@ -96,7 +96,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-index-date {
@@ -111,7 +111,7 @@ body.mg-body .site-footer {
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-cal {
@@ -156,7 +156,7 @@ body.mg-body .site-footer {
 .mg-cal-week span {
   font-size: 9px;
   letter-spacing: 0.06em;
-  color: #777168;
+  color: #6b655d;
   text-transform: uppercase;
 }
 
@@ -193,7 +193,7 @@ body.mg-body .site-footer {
   margin-top: 8px;
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-story-src b {
@@ -264,7 +264,7 @@ body.mg-body .site-footer {
 }
 
 .mg-hero a.mg-hero-title-link:hover h2 {
-  color: #f45e45;
+  color: #c8402a;
 }
 
 .mg-mobile-edition {
@@ -308,7 +308,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #777168;
+  color: #6b655d;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -339,7 +339,7 @@ body.mg-body .site-footer {
   max-width: min(36rem, 100%);
   font-size: 16px;
   line-height: 1.65;
-  color: #777168;
+  color: #6b655d;
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -358,7 +358,7 @@ body.mg-body .site-footer {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #f45e45;
+  color: #c8402a;
   margin-bottom: 12px;
 }
 
@@ -385,7 +385,7 @@ body.mg-body .site-footer {
   font-size: 13px;
   font-weight: 650;
   letter-spacing: -0.02em;
-  color: #c45a3a;
+  color: #a94a2e;
   line-height: 1.45;
 }
 
@@ -393,7 +393,7 @@ body.mg-body .site-footer {
   margin-top: 16px;
   font-size: 12px;
   letter-spacing: 0.04em;
-  color: #777168;
+  color: #6b655d;
 }
 
 .mg-hero-visual {
@@ -458,27 +458,27 @@ body.mg-body .site-footer {
 }
 
 @container mg-main (min-width: 820px) {
-  .mg-top:not(:has(> .mg-hero[hidden])) {
+  .mg-top:not(:has(> .mg-hero[hidden]:not([data-pending]))) {
     grid-template-columns: minmax(0, 1fr) clamp(320px, 36%, 360px);
     gap: 28px 32px;
     align-items: start;
   }
 
-  .mg-top:not(:has(> .mg-hero[hidden])) .mg-hero {
+  .mg-top:not(:has(> .mg-hero[hidden]:not([data-pending]))) .mg-hero {
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
     align-items: start;
   }
 
-  .mg-top:not(:has(> .mg-hero[hidden])) .mg-hero-visual {
+  .mg-top:not(:has(> .mg-hero[hidden]:not([data-pending]))) .mg-hero-visual {
     order: -1;
   }
 
-  .mg-top:not(:has(> .mg-hero[hidden])) .mg-hero h2 {
+  .mg-top:not(:has(> .mg-hero[hidden]:not([data-pending]))) .mg-hero h2 {
     font-size: clamp(28px, 3vw, 38px);
   }
 
-  .mg-top:not(:has(> .mg-hero[hidden])) .eat {
+  .mg-top:not(:has(> .mg-hero[hidden]:not([data-pending]))) .eat {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
@@ -503,7 +503,7 @@ body.mg-body .site-footer {
 
 .mg-board-head span {
   font-size: 12px;
-  color: #777168;
+  color: #6b655d;
   letter-spacing: 0.04em;
 }
 
@@ -531,8 +531,8 @@ body.mg-body .site-footer {
   background: currentColor;
 }
 
-.mg-lane--tips { color: #f45e45; }
-.mg-lane--trend { color: #c48412; }
+.mg-lane--tips { color: #c8402a; }
+.mg-lane--trend { color: #8a5a00; }
 .mg-lane--health { color: #6b6a3a; }
 .mg-lane--habit { color: #7a5c46; }
 
@@ -585,14 +585,14 @@ body.mg-body .site-footer {
 }
 
 .mg-story:hover h4 {
-  color: #f45e45;
+  color: #c8402a;
 }
 
 .mg-story p {
   margin-top: 6px;
   font-size: 13px;
   line-height: 1.6;
-  color: #777168;
+  color: #6b655d;
   overflow-wrap: break-word;
   word-break: break-word;
 }
@@ -609,7 +609,7 @@ body.mg-body .site-footer {
   font-size: 12px;
   font-weight: 650;
   letter-spacing: -0.02em;
-  color: #c45a3a;
+  color: #a94a2e;
   line-height: 1.45;
 }
 
@@ -641,8 +641,8 @@ body.mg-body .site-footer {
 }
 
 .mg-mobile-cats a:hover {
-  border-bottom-color: #f45e45;
-  color: #f45e45;
+  border-bottom-color: #c8402a;
+  color: #c8402a;
 }
 
 body.mg-body .nav-mega-link.is-current {
@@ -733,6 +733,23 @@ body.mg-body .nav-mega-link.is-current {
 /* Source-backed only: a hero without its own image is text-only (no placeholder picture),
    and an empty lane says so quietly. */
 .mg-hero[hidden], .mg-hero-visual[hidden] { display: none; }   /* author display rules beat [hidden] */
+
+/* Until the edition has loaded (data-pending, removed by the page script) the featured story keeps an
+   invisible place of about its height, so the picker and the board below do not jump when it appears
+   (owner 2026-10-16, layout shift). Without scripting nothing ever fills it, and it stays out. */
+@media (scripting: enabled) {
+  .mg-hero[hidden][data-pending] {
+    display: grid;
+    visibility: hidden;
+    min-height: 540px;
+  }
+}
+
+@container mg-main (min-width: 820px) {
+  .mg-hero[hidden][data-pending] {
+    min-height: 660px;
+  }
+}
 .mg-hero.mg-hero--text { grid-template-columns: minmax(0, 1fr); }
 .mg-hero.mg-hero--text .mg-hero-copy { max-width: 760px; }
 .mg-lane-empty { margin: 4px 0 0; font-size: 13px; line-height: 20px; color: var(--color-ink-muted, #6e6e73); }

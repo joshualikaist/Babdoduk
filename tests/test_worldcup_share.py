@@ -85,17 +85,46 @@ def test_link_previews_show_the_world_cup_teaser():
                       "twitter:description": og["og:description"], "twitter:image": OG_URL}, name
 
 
-def test_no_kakao_sdk_and_no_external_script():
-    for name in ("worldcup.html", "event.html"):
-        html = (ROOT / name).read_text(encoding="utf-8")
+KAKAO_SRC = "https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js"
+KAKAO_INTEGRITY = "sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy"
+KAKAO_KEY = "92860c2f30dc6829c664d36be75e0b3d"
+
+
+def test_the_one_external_script_is_the_pinned_kakao_sdk_loaded_by_the_result_screen():
+    """No page carries an external script tag; js/worldcup.js alone may load the pinned Kakao SDK, with its
+    integrity, and only from renderResult (the result screen)."""
+    for path in sorted(ROOT.glob("*.html")):
+        html = path.read_text(encoding="utf-8")
         for src in re.findall(r'<script[^>]*\bsrc="([^"]+)"', html):
-            assert not re.match(r"(https?:)?//", src), (name, src)
-        assert not re.search(r"kakao[\w./-]*\.js", html, re.I) and "Kakao.init" not in html, name
-    assert "createElement('script')" not in SCRIPT and 'createElement("script")' not in SCRIPT
-    assert "kakaocdn" not in SCRIPT and "developers.kakao.com" not in SCRIPT
-    # The documented hook for later: a feed template, used once the owner adds the SDK and an app key.
-    assert "window.BabdodukWorldcupShare = {" in SCRIPT and "objectType: 'feed'" in SCRIPT
-    assert "Kakao" in (ROOT / "docs/WORLDCUP_SHARE.md").read_text(encoding="utf-8")
+            assert not re.match(r"(https?:)?//", src), (path.name, src)
+        assert not re.search(r"kakao[\w./-]*\.js", html, re.I) and "Kakao.init" not in html, path.name
+    for path in sorted((ROOT / "js").glob("*.js")):
+        text = path.read_text(encoding="utf-8")
+        if path.name == "worldcup.js":
+            continue
+        assert "kakaocdn" not in text and "Kakao" not in text and KAKAO_KEY not in text, path.name
+    assert SCRIPT.count("createElement('script')") == 1 and SCRIPT.count("kakaocdn") == 1
+    assert f"src: '{KAKAO_SRC}'," in SCRIPT and f"integrity: '{KAKAO_INTEGRITY}'" in SCRIPT
+    assert "tag.crossOrigin = 'anonymous';" in SCRIPT and "tag.integrity = KAKAO_SDK.integrity;" in SCRIPT
+    assert SCRIPT.count(KAKAO_KEY) == 1 and "var KAKAO_JS_KEY = '" + KAKAO_KEY + "';" in SCRIPT
+    assert "isInitialized()" in SCRIPT and "Kakao.init(KAKAO_JS_KEY)" in SCRIPT.replace("window.Kakao.init", "Kakao.init")
+    # Loaded lazily: the only caller of loadKakao() is showKakao(), and renderResult() is the only caller of that.
+    assert len(re.findall(r"\bloadKakao\(\)", SCRIPT)) == 2         # its definition and showKakao()
+    assert len(re.findall(r"\bshowKakao\(\)", SCRIPT)) == 2         # its definition and renderResult()
+    result_fn = SCRIPT[SCRIPT.index("function renderResult("):SCRIPT.index("function renderCredits")]
+    assert "showKakao();" in result_fn
+    # The button starts hidden and the feed template is the documented hook.
+    assert re.search(r'<button[^>]*id="wcKakao"[^>]*\bhidden\b', (ROOT / "worldcup.html").read_text(encoding="utf-8"))
+    assert "window.BabdodukWorldcupShare = { kakaoFeed: kakaoFeed };" in SCRIPT and "objectType: 'feed'" in SCRIPT
+    docs = (ROOT / "docs/WORLDCUP_SHARE.md").read_text(encoding="utf-8")
+    assert "Kakao" in docs and KAKAO_SRC in docs and KAKAO_INTEGRITY in docs
+
+
+def test_the_kakao_texts_are_in_both_languages():
+    for lang in ("ko", "en"):
+        table = json.loads((ROOT / f"i18n/{lang}.json").read_text(encoding="utf-8"))
+        for key in ("wc.kakao", "wc.kakao.cta", "wc.kakao.desc", "wc.kakao.title"):
+            assert table.get(key), (lang, key)
 
 
 def test_the_card_carries_one_credit_line_and_the_page_lists_the_names():
