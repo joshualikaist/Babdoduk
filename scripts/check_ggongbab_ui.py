@@ -831,7 +831,10 @@ def weekend_and_holiday_menu(browser, base, report):
             text = status.inner_text()
             assert ("Fri, Oct 16" if en else "10월 16일 금요일") in text, text
             assert ("No cafeteria meals on weekends" if en else "주말엔 학식이 없어요") in text and "불러오지 못" not in text and "couldn" not in text.lower(), text
-            missing = [path for path in requests if path.endswith(("/2026-10-17.json", "/2026-10-18.json"))]
+            # Weekend menu days are never fetched. Only menu paths: the home page also loads that day's
+            # magazine (data/magazine/2026-10-17.json), which exists once the content bot publishes it.
+            missing = [path for path in requests if "/data/kaist-menu/" in path
+                       and path.endswith(("/2026-10-17.json", "/2026-10-18.json"))]
             assert missing == [], missing
             assert problems == [], problems
             report["checks"] += 14
