@@ -4,6 +4,11 @@ State of the project and of the owner's PC at the end of the 2026-10-16/17 sessi
 machine needs. It contains no secrets. It sits on a task branch (`agent/claude/new-pc-handoff`) and is
 not merged into `lab` or `main`.
 
+**Plan as of 2026-10-17 (owner):** the new machine is a Linux desktop with a display. It becomes the
+only development machine, the ops workers are ported to Linux (section 7), and once the Linux workers
+are proven the Windows PC is wiped (section 8). Until that cutover the Windows PC keeps running the
+workers. Section 3 describes the Windows install and applies to Linux only after the port.
+
 ## 1. What is already in git (nothing to copy)
 
 All code, tests, docs and data are on `origin`. At the end of this session:
@@ -105,3 +110,75 @@ Handy facts from this machine's Windows shell setup (they may differ on the new 
   stronger model for design, review and debugging.
 - Baselines (`docs/VISUAL_BASELINES.md`) change only with the owner's explicit approval.
 - Lab first, then `main`; local tests passing is not lab approval.
+
+## 7. Porting the ops workers to Linux (owner-authorized 2026-10-17)
+
+The owner chose to port the Dooray Radar and the Portal LIST worker to the Linux desktop and then retire
+the Windows PC. This authorizes a task that targets the Windows scheduled workers and their launch,
+process and notification layer. It does not change what the collectors may read: Portal LIST-only, no
+Portal notice detail GET, Dooray body access only behind the verified read-state guard, no
+authentication replay, manual SSO/MFA, loopback-only CDP. Those rules and their tests stay as they are.
+
+Do it on the Linux machine, where a real Chrome and the SSO logins can be tested, on a task branch from
+the latest `origin/lab` (the workers run `lab`, so the port does not need `main`).
+
+What is Windows-only today (`git grep` on `origin/lab`, 2026-10-17):
+
+| File | Windows-only part | Likely Linux equivalent |
+| --- | --- | --- |
+| `scripts/windows/ggongbab_workers.py` | refuses to run unless `os.name == "nt"` | allow `posix`, keep the `lab` branch check |
+| `scripts/windows/*.ps1`, `*.cmd` | Task Scheduler install/start/stop/remove, launchers | `systemd --user` units (Restart=on-failure, after the graphical session) and small shell scripts |
+| `scripts/ggongbab/windows_portal_host.py` | process ownership via PowerShell `Win32_Process`, `ctypes.windll` argv split | `/proc/<pid>/cmdline` (or `psutil`) |
+| `scripts/ggongbab/resident_ops.py` | `CREATE_NO_WINDOW` launches, Windows toast | plain `subprocess`, `notify-send` |
+| `scripts/ggongbab/notify.py` | Windows toast and its PowerShell/`windll` helper (around line 172) | `notify-send`; Telegram/ntfy push is already portable |
+| `scripts/ggongbab/portal_session.py`, `web/resident.py`, `dispatch.py` | `os.name != "nt"` guards, a PowerShell process query | the same `/proc` inventory |
+| `scripts/ggongbab/portal_list_state.py` | already has `msvcrt` and `fcntl` branches | check that the `fcntl` path is tested |
+| Ops Chrome start | `chrome.exe` path, `STARTUPINFO` minimized start | `google-chrome` with the same `--user-data-dir` and `--remote-debugging-address=127.0.0.1 --remote-debugging-port=9224` |
+| `scripts/check_site_ui.py` | baseline set chosen by OS and `BABDODUK_BROWSER` | run the gate in the pinned CI image (`docs/VISUAL_BASELINES.md`) or get an owner-approved Linux set |
+
+Cutover, in this order:
+1. On Linux: clone, `git checkout lab`, `.venv`, `pip install -r requirements-ggongbab.txt`, the `.env`
+   from the transfer zip. Run the full synthetic suite.
+2. Implement the port. Rehearse with `ggongbab_workers.py radar-once --dry-run` (it lists once and
+   registers nothing) while the Windows workers still run. Do not Start the Linux workers yet.
+3. On Windows: stop the workers (`scripts\windows\stop_ggongbab_workers.cmd`,
+   `powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Stop`) and check that both locks
+   are released.
+4. Copy the current state files from `C:\Users\joshu\Babdoduk-ops\.local\` (`ggongbab-mail-state.json`,
+   `portal-list-state.json`, `dooray-ui.json`, `portal-ui.json`). Copy them again at this moment: the
+   copies in the 2026-10-17 transfer zip are already stale.
+5. On Linux: open the Ops Chrome, log in by hand (Portal; Dooray, then 메일 → 받은메일함), start the
+   workers, and watch scans, heartbeats and alerts for 10-15 minutes.
+6. Only then retire the Windows PC (section 8). Until step 6 the rollback is to start the Windows workers
+   again.
+
+## 8. Retiring the Windows PC (only after section 7 step 5 is healthy)
+
+1. Remove the tasks from `C:\Users\joshu\Babdoduk-ops`:
+   `powershell -NoProfile -File scripts\windows\remove_ggongbab_tasks.ps1` and
+   `powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Remove`. Check in Task Scheduler
+   that `Babdoduk-Portal-Worker` and `Babdoduk-Dooray-Radar` are gone.
+2. Close the Ops Chrome window.
+3. Delete the folders:
+   - `C:\Users\joshu\Babdoduk-ops` (1.5 GB: `.env`, logins, browser profiles, `.venv`);
+   - `C:\Users\joshu\Babdoduk` (929 MB: the old clone, with the current checkout `Babdoduk\Babdoduk`
+     inside it);
+   - `C:\Users\joshu\Babdoduk-wt` (the old clone's worktrees and logs);
+   - `C:\Users\joshu\Babdoduk-transfer` (transfer zip and backup bundles), after they are on Linux.
+4. Delete the three desktop shortcuts (`밥도둑 Ops Chrome 열기`, `밥도둑 Ops Chrome 복구`,
+   `밥도둑 상태 확인`) and `Downloads\Babdoduk_Claude_Development_Handoff_2026-10-12.md`.
+5. Delete Claude Code's project data: `C:\Users\joshu\.claude\projects\c--Users-joshu-Babdoduk*`
+   (three folders).
+6. Optional: remove the GitHub entries from Windows Credential Manager if this PC no longer uses
+   GitHub, and rotate the keys in `.env` (Supabase secret, OpenAI, Dooray token) because the file has
+   been copied between machines.
+
+Nothing else on this PC belongs to Babdoduk: no user environment variables, no startup entries and no
+other scheduled tasks matched on 2026-10-17.
+
+Backup made before the wipe (2026-10-17), in `C:\Users\joshu\Babdoduk-transfer\backup\`:
+`old-clone-Babdoduk.bundle` (every ref of the old clone, its stash included) and
+`ops-clone-Babdoduk-ops.bundle` (every ref of the ops clone), both `git bundle verify`-ed, plus `notes\`
+(untracked notes and the old clone's uncommitted diff). Every local branch of the old clone was already
+contained in `origin/lab`; the ops clone held two superseded drafts. Restore with
+`git clone old-clone-Babdoduk.bundle` or `git fetch <bundle> 'refs/*:refs/backup/*'`.
