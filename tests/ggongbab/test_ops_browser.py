@@ -735,6 +735,25 @@ def test_the_proof_dooray_scan_is_a_dry_run_with_no_writer():
         assert forbidden not in source
 
 
+def test_the_proof_scan_call_binds_to_scan_once_and_opens_no_mail():
+    """scan_once gained a required `opener` (2026-10-14) and the proof's call was not updated, so
+    every proof's Dooray step failed with a TypeError. Bind the call's arguments to the signature."""
+    import ast
+    import inspect
+    from ggongbab import dooray_radar
+    from ggongbab.web.mail_detail import MailUnavailable
+    tree = ast.parse((ROOT / "scripts/ggongbab/ops_browser_proof.py").read_text(encoding="utf-8"))
+    calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+             and n.func.attr == "scan_once"]
+    assert len(calls) == 1
+    call = calls[0]
+    inspect.signature(dooray_radar.scan_once).bind(*[None] * len(call.args),
+                                                   **{k.arg: None for k in call.keywords})
+    with pytest.raises(MailUnavailable):
+        proof.ListOnlyOpener().open(None, None)
+    assert proof.ListOnlyOpener().images(None, None) == []
+
+
 # --- operator scripts -----------------------------------------------------------------------
 def test_ops_browser_scripts_are_thin_wrappers():
     windows = ROOT / "scripts/windows"

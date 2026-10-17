@@ -128,6 +128,18 @@ def portal_job(slot, mail_host="", wake=None):
     return job
 
 
+class ListOnlyOpener:
+    """Keeps the proof list-level: it never opens a mail. scan_once counts a new mail it would
+    have opened as `unavailable`; the Radar itself (run_radar) uses the real MailOpener."""
+
+    def open(self, session, header):
+        from .web.mail_detail import MailUnavailable
+        raise MailUnavailable()
+
+    def images(self, session, mail):
+        return []
+
+
 def dooray_job(slot, root, contract, mail_host, now):
     """One dry-run Radar scan of the Dooray tab: no task, state, flash, dispatch or latch."""
     def job(barrier):
@@ -162,7 +174,8 @@ def dooray_job(slot, root, contract, mail_host, now):
             with guard.watching():
                 result = radar.scan_once(session, AgentState.load(files.mail_state), None, list_mails=listing,
                                          now=now, since=now - timedelta(seconds=radar.FIRST_WINDOW_SECONDS),
-                                         allow_unread=files.unread_allowed(), dry_run=True, guard=guard)
+                                         allow_unread=files.unread_allowed(), dry_run=True, guard=guard,
+                                         opener=ListOnlyOpener())
             violations = len(guard.violations)
         marks["detached"] = time.monotonic()
         return {"ok": True, "counts": result.counts(), "guard_violations": violations, **marks,
