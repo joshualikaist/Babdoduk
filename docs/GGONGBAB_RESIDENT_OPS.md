@@ -531,6 +531,11 @@ Linux-specific behavior:
 * The units use `KillMode=process`: systemd stops only the supervisor, never the Ops Chrome or a
   worker child, the same as a Task Scheduler restart. Workers stop through their control files
   (`stop`, `radar-stop`). Restarts are `Restart=on-failure`, at most 3 within 10 minutes.
+* The Radar unit waits 120 seconds before its first scan (`ExecStartPre`), at login and on
+  `radar-start`: the Radar never opens Chrome, and at login the Portal worker opens the Ops Chrome
+  about a minute after the session starts (the Windows tasks used 30 s and 60 s logon delays for
+  the same reason). Started together, the Radar's first scan found no browser and backed off for
+  6 minutes (measured 2026-10-18).
 * Chrome rewrites its own process title on Linux, the browser process included (Chrome 146,
   2026-10-17): `cmdline` is one space-joined string. It is split on spaces, so a profile path
   with a space fails closed; zombies are ignored because they hold neither a port nor a profile.

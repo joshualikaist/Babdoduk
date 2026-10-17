@@ -219,3 +219,20 @@ def test_ops_script_is_valid_bash():
     text = script.read_text(encoding="utf-8")
     assert "vercel" not in text and "--force" not in text
     assert "KillMode=process" in text
+    # The Radar starts after the Portal worker has opened the Ops Chrome at login (measured
+    # 2026-10-18: a simultaneous start meant DOORAY_BROWSER_ABSENT and a 6-minute backoff).
+    assert "RADAR_START_DELAY=120" in text and "ExecStartPre=/bin/sleep" in text
+    assert "TimeoutStartSec=300" in text and 'start --no-block "$RADAR_UNIT"' in text
+
+
+def test_only_the_radar_unit_waits_for_the_ops_chrome(tmp_path):
+    script = ROOT / "scripts" / "linux" / "ops.sh"
+    if not __import__("shutil").which("bash"):
+        pytest.skip("bash not available")
+    text = script.read_text(encoding="utf-8")
+    body = text[text.index("unit_text() {"):text.index("\nEOF\n}", text.index("unit_text() {")) + 6]
+    run = lambda *a: subprocess.run(["bash", "-c", body + '\nROOT=/r; RUNNER=/r/w.py; unit_text "$@"', "_", *a],
+                                    capture_output=True, text=True, check=True).stdout
+    radar, portal = run("radar", "Dooray Radar", "/py", "120"), run("watch", "Portal worker", "/py")
+    assert "ExecStartPre=/bin/sleep 120\nExecStart=/py /r/w.py radar\n" in radar
+    assert "ExecStartPre" not in portal and "ExecStart=/py /r/w.py watch\n" in portal
