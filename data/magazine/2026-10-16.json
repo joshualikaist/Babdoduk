@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "‘제로 식품’ 일본서도 새로운 성장 기회 열리나",
-    "summary": "설탕과 칼로리를 줄이면서도 기존의 맛을 유지한 ‘제로(Zero)’ 식품이 한국 식품시장의 주요 소비 트렌드로 자리 잡은 가운데, 일본에서도 새로운 성장 가능성이 나타나고 있다.",
     "source": "식품음료신문",
-    "sourceId": "news-thinkfood",
-    "candidateId": "c_072d19717c23453f",
     "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201397",
     "medium": "news",
-    "discoveredAt": "2026-10-16T14:43:54+09:00",
-    "publishedAt": "2026-10-16T10:01:09+09:00",
     "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201397_201957_5620.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-16T10:01:09+09:00",
+    "discoveredAt": "2026-10-16T14:43:54+09:00",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_072d19717c23453f",
     "imageSource": "feed_html",
+    "summary": "설탕과 칼로리를 줄이면서도 기존의 맛을 유지한 ‘제로(Zero)’ 식품이 한국 식품시장의 주요 소비 트렌드로 자리 잡은 가운데, 일본에서도 새로운 성장 가능성이 나타나고 있다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "농심, 뉴욕 맨해튼 중심서 ‘신라면’ 헤리티지 전파",
-          "summary": "농심이 뉴욕 맨해튼 플랫아이언(Flatiron) 지역에서 열리는 K-스타트업 페스티벌 ‘KOOM(꿈) Week 2026’에 참가해 신라면 40주년을 알리기에 나섰다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_4e0be2b6acee01c2",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201421",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T10:05:25+09:00",
           "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201421_201999_522.jpg",
+          "publishedAt": "2026-10-16T10:05:25+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_4e0be2b6acee01c2",
           "imageSource": "feed_html",
+          "summary": "농심이 뉴욕 맨해튼 플랫아이언(Flatiron) 지역에서 열리는 K-스타트업 페스티벌 ‘KOOM(꿈) Week 2026’에 참가해 신라면 40주년을 알리기에 나섰다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -45,16 +45,16 @@
         },
         {
           "title": "하나씩 까먹는 치즈 ‘까요까요’, 10년간 1700만 봉지 팔렸다",
-          "summary": "서울우유협동조합의 어린이 치즈 ‘까요까요’가 출시 10주년을 맞아 누적 판매량 1700만 봉지를 돌파했다.동글납작한 알 모양과 하나씩 까먹는 개별 포장, 캐릭터 스티커를 모으는 재미를 결합해 기존 슬라이스 치즈와…",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_734eabe16a7ae42e",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35681",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-14T22:42:28+09:00",
           "image": "http://www.foodicon.co.kr/news/photo/202610/35681_54317_4222.jpg",
+          "publishedAt": "2026-10-14T22:42:28+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_734eabe16a7ae42e",
           "imageSource": "source_page_og",
+          "summary": "서울우유협동조합의 어린이 치즈 ‘까요까요’가 출시 10주년을 맞아 누적 판매량 1700만 봉지를 돌파했다.동글납작한 알 모양과 하나씩 까먹는 개별 포장, 캐릭터 스티커를 모으는 재미를 결합해 기존 슬라이스 치즈와…",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -62,14 +62,14 @@
         },
         {
           "title": "당 낮추고 선택지 넓히고…식품업계 '저당' 경쟁 확산",
-          "summary": "컨슈머타임스=안솔지 기자 | 식품업계의 '저당' 제품 경쟁이 과자·간식에서 한 끼 식사와 소스로 확대되고 있다.",
           "source": "컨슈머타임스(Consumertimes)",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_848b246485f5adfc",
           "url": "https://www.cstimes.com/news/articleView.html?idxno=723954",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
           "publishedAt": "2026-10-15T08:18:42+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_848b246485f5adfc",
+          "summary": "컨슈머타임스=안솔지 기자 | 식품업계의 '저당' 제품 경쟁이 과자·간식에서 한 끼 식사와 소스로 확대되고 있다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -77,28 +77,28 @@
         },
         {
           "title": "한솥도시락, ‘치킨마요 콤보’ 2종 출시",
-          "summary": "한솥도시락은 대표 메뉴 ‘치킨마요’에 인기 반찬들을 더한 실속형 메뉴 ‘치킨마요 콤보’ 2종을 출시한다고 15일 밝혔다.치킨마요는 바삭한 치킨에 한솥덮밥소스와 마요드레싱을 더한 감칠맛 있는 조합으로 오랜 사랑을…",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_b8bad84190d403b6",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68656",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
           "publishedAt": "2026-10-16T03:28:31+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_b8bad84190d403b6",
+          "summary": "한솥도시락은 대표 메뉴 ‘치킨마요’에 인기 반찬들을 더한 실속형 메뉴 ‘치킨마요 콤보’ 2종을 출시한다고 15일 밝혔다.치킨마요는 바삭한 치킨에 한솥덮밥소스와 마요드레싱을 더한 감칠맛 있는 조합으로 오랜 사랑을…",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "['26 aT 국감] 브라질산 계란 1464원에 들여와 143원에 유통…수입비용 도마에",
-          "summary": "브라질산 계란을 개당 1464원에 들여와 국내에 143원으로 유통한 사실이 국정감사에서 도마에 올랐다.국민의힘 김용태 의원은 수입선 다변화를 위한 시범사업이라도 구입 단가의 약 10분의 1 가격에 유통한 것은…",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_8578a49f11399290",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35679",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
           "publishedAt": "2026-10-14T21:25:43+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_8578a49f11399290",
+          "summary": "브라질산 계란을 개당 1464원에 들여와 국내에 143원으로 유통한 사실이 국정감사에서 도마에 올랐다.국민의힘 김용태 의원은 수입선 다변화를 위한 시범사업이라도 구입 단가의 약 10분의 1 가격에 유통한 것은…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -110,60 +110,60 @@
       "items": [
         {
           "title": "오트밀 초코 그래놀라 만들기 수제 그래놀라 오트밀 요리 레시피",
-          "summary": "오트밀로 다이어트 주전부리 간식을 만들었습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_f10c43ba904f5b94",
           "url": "https://twins0807.tistory.com/entry/%EC%98%A4%ED%8A%B8%EB%B0%80-%EC%B4%88%EC%BD%94-%EA%B7%B8%EB%9E%98%EB%86%80%EB%9D%BC-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%88%98%EC%A0%9C-%EA%B7%B8%EB%9E%98%EB%86%80%EB%9D%BC-%EC%98%A4%ED%8A%B8%EB%B0%80-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-15T19:55:03+09:00",
           "image": "https://blog.kakaocdn.net/dn/eiEvaZ/dJMcafogZRs/c0QUEwKnXHX6K6cDGIuDG1/img.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-15T19:55:03+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_f10c43ba904f5b94",
+          "imageSource": "feed_html",
+          "summary": "오트밀로 다이어트 주전부리 간식을 만들었습니다."
         },
         {
           "title": "브로콜리 두부전 만들기｜밀가루 없이 만드는 담백한 저염 반찬 레시피",
-          "summary": "건강한 식단을 생각하면 밀가루나 소금을 적게 사용하면서도 맛있게 먹을 수 있는 반찬을 찾게 됩니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_09d7374405514c7d",
           "url": "https://cultureagora.tistory.com/379",
           "medium": "blog",
+          "publishedAt": "2026-10-12T17:00:07+09:00",
           "discoveredAt": "2026-10-13T16:36:20+09:00",
-          "publishedAt": "2026-10-12T17:00:07+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_09d7374405514c7d",
+          "summary": "건강한 식단을 생각하면 밀가루나 소금을 적게 사용하면서도 맛있게 먹을 수 있는 반찬을 찾게 됩니다."
         },
         {
           "title": "양배추 오코노미야키 만들기｜밀가루 줄이고 두부로 촉촉하게 만드는 일본식 양배추전",
-          "summary": "양배추 한 통을 사두면 쪄먹고, 볶아먹고, 샐러드로 먹고도 남을 때가 많죠.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_9fe6de7822ab52e1",
           "url": "https://cultureagora.tistory.com/389",
           "medium": "blog",
+          "publishedAt": "2026-10-16T08:30:50+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T08:30:50+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_9fe6de7822ab52e1",
+          "summary": "양배추 한 통을 사두면 쪄먹고, 볶아먹고, 샐러드로 먹고도 남을 때가 많죠."
         },
         {
           "title": "신상출시 편스토랑 안성훈의 마늘종소고기멸치주먹밥 만드는 법",
-          "summary": "341회 신상출시 편스토랑에서 요식업에 종사했던 트로트 가수 안성훈은 3가지 주먹밥 레시피를 공개했는데요.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_07933b18aff4182e",
           "url": "https://seon1982.tistory.com/4128",
           "medium": "blog",
+          "publishedAt": "2026-10-16T00:00:47+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T00:00:47+09:00"
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_07933b18aff4182e",
+          "summary": "341회 신상출시 편스토랑에서 요식업에 종사했던 트로트 가수 안성훈은 3가지 주먹밥 레시피를 공개했는데요."
         },
         {
           "title": "돼지고기 된장불백, 구수한 된장 양념으로 만드는 밥도둑",
-          "summary": "돼지고기 된장불백, 구수한 된장 양념으로 만드는 밥도둑 매일 먹는 집밥, 오늘은 돼지고기에 구수한 된장을 넣어 볶아보았습니다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_e1f192955e5142ba",
           "url": "https://heysukim114.tistory.com/entry/%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0%EB%90%9C%EC%9E%A5%EB%B6%88%EA%B3%A0%EA%B8%B0-1",
           "medium": "blog",
+          "publishedAt": "2026-10-16T00:00:45+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T00:00:45+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_e1f192955e5142ba",
+          "summary": "돼지고기 된장불백, 구수한 된장 양념으로 만드는 밥도둑 매일 먹는 집밥, 오늘은 돼지고기에 구수한 된장을 넣어 볶아보았습니다."
         }
       ]
     },
@@ -172,64 +172,64 @@
       "items": [
         {
           "title": "샐러드 먹다 혈당 오를 수도? 혈당 관리 도와주는 드레싱 3가지",
-          "summary": "식초에 올리브오일과 후추를 섞은 비네그레트는 설탕을 따로 넣지 않고도 샐러드에 새콤한 맛을 더할 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_6d9538095345b001",
           "url": "https://kormedi.com/2883675/",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T00:05:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/image-157-edited.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-16T00:05:00+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6d9538095345b001",
+          "imageSource": "feed_media",
+          "summary": "식초에 올리브오일과 후추를 섞은 비네그레트는 설탕을 따로 넣지 않고도 샐러드에 새콤한 맛을 더할 수 있다."
         },
         {
           "title": "밥 한 공기에 감자조림 자주 먹었더니…혈당, 체중에 변화가?",
-          "summary": "채소와 단백질 음식이 잘 구성된 식사를 하면 혈당 관리에 도움이 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_386cbcdd4e112fe6",
           "url": "https://kormedi.com/2885457/",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-15T19:01:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2024/10/gettyimages-a10974666-1024x683.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-15T19:01:00+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_386cbcdd4e112fe6",
+          "imageSource": "feed_media",
+          "summary": "채소와 단백질 음식이 잘 구성된 식사를 하면 혈당 관리에 도움이 된다."
         },
         {
           "title": "“변비만 문제 아니다”… 식이섬유 부족하면 나타나는 6가지 증상",
-          "summary": "식이섬유는 장 건강뿐 아니라 혈당과 콜레스테롤 조절, 체중 관리에도 중요한 역할을 한다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_cd349b19576b4b24",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/14/2026101403157.html",
           "medium": "news",
-          "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-14T20:30:00+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/10/14/2026101403152_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-14T20:30:00+09:00",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_cd349b19576b4b24",
+          "imageSource": "source_page_og",
+          "summary": "식이섬유는 장 건강뿐 아니라 혈당과 콜레스테롤 조절, 체중 관리에도 중요한 역할을 한다."
         },
         {
           "title": "뮤지컬로 배우는 편식 예방",
-          "summary": "어린이들이 뮤지컬을 통해 편식 예방과 균형 잡힌 식생활의 중요성을 배우는 체험형 영양교육이 마련됐다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_8a7ebd40495b9011",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62401",
           "medium": "news",
+          "publishedAt": "2026-10-16T18:44:44+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T18:44:44+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_8a7ebd40495b9011",
+          "summary": "어린이들이 뮤지컬을 통해 편식 예방과 균형 잡힌 식생활의 중요성을 배우는 체험형 영양교육이 마련됐다."
         },
         {
           "title": "“밤마다 커지는 식탐 잡는다”… 혈당 안정시키는 ‘오후 간식’ 넷",
-          "summary": "혈당 관리는 당뇨병 등 대사질환을 예방하고 건강을 유지하는 데 중요하다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_918a51936d8765e0",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/14/2026101401852.html",
           "medium": "news",
+          "publishedAt": "2026-10-14T17:00:00+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-14T17:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_918a51936d8765e0",
+          "summary": "혈당 관리는 당뇨병 등 대사질환을 예방하고 건강을 유지하는 데 중요하다."
         }
       ]
     },
@@ -238,60 +238,60 @@
       "items": [
         {
           "title": "“비행기 놓쳐도 차분” 일 꼬여도 흔들리지 않는 사람…‘이 습관’ 다르다고?",
-          "summary": "상황에 맞춰 생각과 감정, 행동을 조정하는 능력은 아침 식사와 운동, 수면 같은 일상 습관과도 관련이 있다는 연구 결과가 나왔다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_4ae9fd75f56541f6",
           "url": "https://kormedi.com/2884048/",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-15T17:03:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/unnamed-file-123.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-15T17:03:00+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_4ae9fd75f56541f6",
+          "imageSource": "feed_media",
+          "summary": "상황에 맞춰 생각과 감정, 행동을 조정하는 능력은 아침 식사와 운동, 수면 같은 일상 습관과도 관련이 있다는 연구 결과가 나왔다."
         },
         {
           "title": "CJ ‘The더건강한 닭가슴살’, 건강한 식생활 트렌드 정조준",
-          "summary": "CJ제일제당의 육가공 브랜드 ‘The더건강한’이 고단백 설계·저당 레시피로 건강한 식생활 트렌드 정조준에 나섰다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_2e41f052ed8d2e36",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201418",
           "medium": "news",
+          "publishedAt": "2026-10-16T09:39:58+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T09:39:58+09:00"
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_2e41f052ed8d2e36",
+          "summary": "CJ제일제당의 육가공 브랜드 ‘The더건강한’이 고단백 설계·저당 레시피로 건강한 식생활 트렌드 정조준에 나섰다."
         },
         {
           "title": "“저칼로리라 살 안 찌는 줄”⋯‘이것’ 볶음밥·젤리로 바뀌니, 뜻밖의 함정이?",
-          "summary": "곤약 볶음밥, 곤약젤리 등 다양한 ‘곤약’ 음식은 열량과 영양을 판단하기가 어렵다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_53a6455a810a05b0",
           "url": "https://kormedi.com/2884923/",
           "medium": "news",
+          "publishedAt": "2026-10-16T08:04:00+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T08:04:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_53a6455a810a05b0",
+          "summary": "곤약 볶음밥, 곤약젤리 등 다양한 ‘곤약’ 음식은 열량과 영양을 판단하기가 어렵다."
         },
         {
           "title": "“매일 먹으면 몸속 염증 확 줄어든다”… 간식으로도 좋은 ‘이 식품’",
-          "summary": "호두를 꾸준히 섭취하면 전반적인 식단의 질이 높아지고 염증을 유발하는 식습관을 개선하는 데 도움이 될 수 있다는 연구 결과가 나왔다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_b0f20b8bfc82b751",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/16/2026101601172.html",
           "medium": "news",
+          "publishedAt": "2026-10-16T13:30:00+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T13:30:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b0f20b8bfc82b751",
+          "summary": "호두를 꾸준히 섭취하면 전반적인 식단의 질이 높아지고 염증을 유발하는 식습관을 개선하는 데 도움이 될 수 있다는 연구 결과가 나왔다."
         },
         {
           "title": "성인 | 식생활지침 | 영양",
-          "summary": "",
           "source": "yeonje.go.kr",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_b91fbf9227ce5741",
           "url": "https://yeonje.go.kr/health/contents.do?mId=0403020100",
           "medium": "research",
+          "publishedAt": "2026-09-01T12:00:00+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-09-01T12:00:00+09:00"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_b91fbf9227ce5741",
+          "summary": ""
         }
       ]
     }
