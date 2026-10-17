@@ -2,104 +2,104 @@
   "version": 1,
   "sources": {
     "blog-irisblossomlife": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2024-10-07T08:00:48+09:00",
       "status": "STALE"
     },
     "blog-koreanbapsang": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 10,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2025-03-22T02:34:09+09:00",
       "status": "STALE"
     },
     "blog-mykoreankitchen": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 25,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-09-26T19:00:22+09:00",
+      "newestItemAt": "2026-10-16T19:00:45+09:00",
       "status": "ACTIVE"
     },
     "blog-beyondkimchee": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2026-10-06T21:07:00+09:00",
       "status": "ACTIVE"
     },
     "blog-seonkyounglongest": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 25,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2026-09-10T16:04:04+09:00",
       "status": "ACTIVE"
     },
     "blog-budgetbytes": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-14T22:30:00+09:00",
+      "newestItemAt": "2026-10-16T22:30:00+09:00",
       "status": "ACTIVE"
     },
     "blog-justonecookbook": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 40,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2026-10-12T21:00:00+09:00",
       "status": "ACTIVE"
     },
     "yt-jachwiyorisin": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastFailureCode": null,
       "lastItemCount": 6,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
-      "newestItemAt": "2026-10-14T19:57:13+09:00",
+      "newestItemAt": "2026-10-16T19:34:23+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00"
     },
     "yt-cookingtree": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastFailureCode": null,
       "lastItemCount": 6,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
-      "newestItemAt": "2026-10-14T20:00:03+09:00",
+      "newestItemAt": "2026-10-16T20:00:38+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00"
     },
     "yt-haruhankki": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastFailureCode": null,
       "lastItemCount": 6,
       "status": "STALE",
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "newestItemAt": "2026-03-03T22:58:09+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00"
     },
     "yt-hamzy": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastFailureCode": null,
       "lastItemCount": 6,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "newestItemAt": "2026-10-13T22:30:12+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00"
@@ -111,7 +111,7 @@
       "lastSuccessAt": "2026-10-01T15:40:29+09:00",
       "failureCount": 11,
       "lastFailureCode": "LOCAL_INBOX_STALE",
-      "newestItemAt": "2026-09-25T00:00:00+09:00",
+      "newestItemAt": "2026-09-22T00:00:00+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00"
     },
     "web-exa": {
@@ -124,39 +124,39 @@
       "status": "DISABLED"
     },
     "news-thinkfood": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T11:33:21+09:00",
+      "newestItemAt": "2026-10-16T16:33:41+09:00",
       "status": "ACTIVE"
     },
     "news-foodnews": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T20:34:38+09:00",
+      "newestItemAt": "2026-10-17T00:09:46+09:00",
       "status": "ACTIVE"
     },
     "news-foodbank": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T03:45:47+09:00",
+      "newestItemAt": "2026-10-17T03:22:29+09:00",
       "status": "ACTIVE"
     },
     "news-fsnews": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T18:48:42+09:00",
+      "newestItemAt": "2026-10-17T22:00:42+09:00",
       "status": "ACTIVE"
     },
     "news-yna-industry": {
@@ -178,32 +178,32 @@
       "status": "DISABLED"
     },
     "news-kormedi": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T14:38:52+09:00",
+      "newestItemAt": "2026-10-17T14:07:00+09:00",
       "status": "ACTIVE"
     },
     "web-exa-trend": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
-      "lastItemCount": 43,
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
+      "lastItemCount": 41,
       "lastFailureAt": "2026-09-29T15:15:07+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T12:00:00+09:00",
+      "newestItemAt": "2026-10-17T12:00:00+09:00",
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00"
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00"
     },
     "web-exa-habit": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
-      "lastItemCount": 52,
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
+      "lastItemCount": 53,
       "lastFailureAt": "2026-09-29T15:15:07+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "newestItemAt": "2026-10-15T08:18:42+09:00"
     },
     "web-naver-trend": {
@@ -217,12 +217,12 @@
       "newestItemAt": "2026-10-04T15:50:10+09:00"
     },
     "news-newsis-health": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
-      "lastItemCount": 100,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
+      "lastItemCount": 79,
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T14:41:48+09:00",
+      "newestItemAt": "2026-10-17T14:00:00+09:00",
       "status": "ACTIVE"
     },
     "news-donga-health": {
@@ -244,75 +244,75 @@
       "status": "DISABLED"
     },
     "blog-cultureagora": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 10,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T08:30:50+09:00",
+      "newestItemAt": "2026-10-17T08:30:33+09:00",
       "status": "ACTIVE"
     },
     "blog-twins0807": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 10,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2026-10-15T19:55:03+09:00",
       "status": "ACTIVE"
     },
     "blog-seon1982": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 5,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T00:00:47+09:00",
+      "newestItemAt": "2026-10-17T00:00:12+09:00",
       "status": "ACTIVE"
     },
     "blog-dalsoonlife": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 15,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2026-10-15T10:42:36+09:00",
       "status": "ACTIVE"
     },
     "blog-heysukim114": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T13:00:22+09:00",
+      "newestItemAt": "2026-10-17T00:00:22+09:00",
       "status": "ACTIVE"
     },
     "news-hidoc-healthylife": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 20,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T16:00:00+09:00",
+      "newestItemAt": "2026-10-17T17:00:00+09:00",
       "status": "ACTIVE"
     },
     "news-ikunkang-life": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 20,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
       "newestItemAt": "2026-10-12T17:00:00+09:00",
       "status": "ACTIVE"
     },
     "news-healthchosun": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T14:30:00+09:00",
+      "newestItemAt": "2026-10-17T14:02:00+09:00",
       "status": "ACTIVE"
     },
     "news-ladykhan-living": {
@@ -334,12 +334,12 @@
       "status": "DISABLED"
     },
     "news-foodicon": {
-      "lastAttemptAt": "2026-10-16T14:43:54+09:00",
+      "lastAttemptAt": "2026-10-17T14:29:03+09:00",
       "lastItemCount": 50,
-      "lastSuccessAt": "2026-10-16T14:43:54+09:00",
+      "lastSuccessAt": "2026-10-17T14:29:03+09:00",
       "failureCount": 0,
       "lastFailureCode": null,
-      "newestItemAt": "2026-10-16T22:52:10+09:00",
+      "newestItemAt": "2026-10-17T08:35:14+09:00",
       "status": "ACTIVE"
     }
   }
