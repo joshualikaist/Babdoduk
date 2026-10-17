@@ -11,3 +11,6 @@ playwright>=1.45
 # the text of PDF and HWP attachments, and a PDF poster's first page as an image.
 pypdfium2>=4.30
 olefile>=0.47
+# The poster image: pypdfium2's to_pil() and normalize_image() need Pillow. Also the WebP thumbnails
+# (scripts/make_thumbnails.py) and their test.
+pillow>=11.0
