@@ -51,6 +51,24 @@ RADAR_NOW = datetime.fromisoformat(FIXTURE_NOW)
 EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG = {};"
 
 
+def offline_fonts(browser):
+    """Every context of this browser answers the Google Fonts stylesheet with an empty one, so no
+    font file is fetched: on a cold machine the stylesheet and font files took 25 s (measured
+    2026-10-18 on the Linux ops PC) and `load` sometimes passed the 30 s navigation limit. An empty
+    answer instead of an abort keeps the console free of load errors that checks assert on. A
+    context that routes the fonts itself (campus_food_news) keeps its own, newer route."""
+    new_context = browser.new_context
+
+    def offline_context(**kwargs):
+        context = new_context(**kwargs)
+        context.route("https://fonts.googleapis.com/**",
+                      lambda route: route.fulfill(status=200, content_type="text/css", body=""))
+        return context
+
+    browser.new_context = offline_context
+    return browser
+
+
 def neutralize_public_config(context):
     context.route("**/js/ggongbab-public-config.js", lambda route: route.fulfill(
         content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG))
@@ -1248,7 +1266,7 @@ def run_checks(preview=False):
     OUT.mkdir(parents=True, exist_ok=True)
     report = {"fixture": {}, "preview": {}, "production": {}, "checks": 0}
     with local_server() as base, sync_playwright() as pw:
-        browser = pw.chromium.launch(channel="chrome", headless=True)
+        browser = offline_fonts(pw.chromium.launch(channel="chrome", headless=True))
         context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
         neutralize_public_config(context)
         page = context.new_page()
