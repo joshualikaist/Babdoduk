@@ -1,4 +1,4 @@
-# Phase 2C-OPS: Windows resident operations (lab)
+# Phase 2C-OPS: Windows resident operations (lab; Linux in section 15)
 
 ## 0. Babdoduk Ops Chrome: the one browser to keep open
 
@@ -490,6 +490,60 @@ The opt-in real-browser test `tests/ggongbab/test_ops_browser_real_chrome.py`
 profile, port and local pages. It covers one window with two tabs, two overlapping CDP clients,
 no closed, navigated or added tab or window, and a PID-bound close. It never contacts
 Portal/Dooray.
+
+## 15. Linux operations host
+
+Since 2026-10-17 (owner-authorized) the same two workers also run on a Linux desktop (Ubuntu,
+X11/Wayland session, systemd). Everything above about what the workers read, the latches, the
+locks, the alerts and the unified Ops Chrome is the same. Only the launch, process and
+notification layer differs:
+
+| Windows | Linux |
+| --- | --- |
+| Task Scheduler logon tasks `Babdoduk-Portal-Worker`, `Babdoduk-Dooray-Radar` | `systemd --user` services `babdoduk-portal-worker.service`, `babdoduk-dooray-radar.service`, started with the graphical session |
+| `*.cmd` / `*.ps1` in `scripts\windows\` | `scripts/linux/ops.sh <action>` |
+| `Get-NetTCPConnection` / `Win32_Process` owner check | `/proc/net/tcp{,6}`, `/proc/<pid>/fd`, `/proc/<pid>/cmdline` and `stat` (`scripts/ggongbab/linux_proc.py`) |
+| `chrome.exe` under Program Files | `/usr/bin/google-chrome-stable` (the launcher execs `/opt/google/chrome/chrome` with the same arguments) |
+| Windows toast | `notify-send` (the desktop notification service), same Korean text with the Linux commands |
+| Credential Manager (refresh dispatch token) | not ported: `request_refresh` finds no token and the dispatch stays off, as it is today |
+
+Install (normal user, no sudo), in a checkout whose path has no spaces, for example
+`~/Babdoduk-ops` on `lab`:
+
+```bash
+python3 -m venv .venv && .venv/bin/python -m pip install -r requirements-ggongbab.txt
+scripts/linux/ops.sh install        # check, units, .local/ops-python.txt, unified mode; starts nothing
+scripts/linux/ops.sh browser-start  # the Ops Chrome; log in by hand: Portal, then Dooray -> 메일 -> 받은메일함
+scripts/linux/ops.sh start          # the Portal worker
+scripts/linux/ops.sh radar-start    # the Dooray Radar
+scripts/linux/ops.sh status         # or radar-status (status + alerts)
+```
+
+Unlike the Windows installer, `install` leaves both control files disabled, so a reboot before the
+first `start` never starts a second set of workers next to another PC's. The other actions are
+`stop`, `radar-stop`, `recover`, `browser-status`, `browser-recover`, `remove` (stops both, removes
+both units, keeps state, profile and logs) and `run <worker action>`, for example
+`scripts/linux/ops.sh run radar-once --dry-run`. `start`, `radar-start` and `remove` refuse a unit
+whose content is not exactly the one this checkout generates (`TASK_OWNER_UNVERIFIED`).
+
+Linux-specific behavior:
+
+* The units use `KillMode=process`: systemd stops only the supervisor, never the Ops Chrome or a
+  worker child, the same as a Task Scheduler restart. Workers stop through their control files
+  (`stop`, `radar-stop`). Restarts are `Restart=on-failure`, at most 3 within 10 minutes.
+* Chrome rewrites its own process title on Linux, the browser process included (Chrome 146,
+  2026-10-17): `cmdline` is one space-joined string. It is split on spaces, so a profile path
+  with a space fails closed; zombies are ignored because they hold neither a port nor a profile.
+  A listener whose socket belongs to another user's process has no visible owner and is
+  unverified.
+* The recovery's stop sends SIGTERM (Chrome saves its session) and, only if the same process (pid,
+  start time, command line) is still alive after 5 seconds, SIGKILL.
+* Chrome is started in its own session (`start_new_session`), so closing the terminal that ran
+  `browser-start` does not close it. A worker-started Chrome is not minimized on Linux.
+
+Moving the workers between PCs follows section 13: stop the old workers, copy the four approved
+state files with a SHA-256 manifest, log in by hand on the new PC, start, and observe 10-15 minutes
+before removing the old tasks. Never run both PCs' workers at the same time.
 
 ## Dooray and cloud responsibility audit
 

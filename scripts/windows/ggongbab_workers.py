@@ -17,6 +17,13 @@ from ggongbab.portal_list_state import ListStateError
 from ggongbab.resident_ops import Files, run_worker, status_lines, watch
 from ggongbab.windows_portal_host import PortalHost
 
+LINUX = sys.platform.startswith("linux")
+# The operator's commands for this OS (Windows .cmd/.ps1, or scripts/linux/ops.sh).
+START_WORKERS = "scripts/linux/ops.sh start" if LINUX else "start_ggongbab_workers.cmd"
+START_WORKERS_ALL = (("  scripts/linux/ops.sh start", "  scripts/linux/ops.sh radar-start") if LINUX else
+                     (r"  scripts\windows\start_ggongbab_workers.cmd",
+                      r"  powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start"))
+
 
 def wait_stopped(files, timeout=60, *, sleep=time.sleep, monotonic=time.monotonic):
     deadline = monotonic() + timeout
@@ -41,7 +48,7 @@ def recover(files, *, host=None, run=subprocess.run):
     host.ensure(recover_stale=stale)
     print("Dedicated Portal browser ready. Complete SSO manually only if prompted.", flush=True)
     result = run([sys.executable, str(files.root / "scripts/portal_web_agent.py"), "--setup", "--cdp"], cwd=files.root)
-    print("After successful setup, run start_ggongbab_workers.cmd to resume polling.")
+    print(f"After successful setup, run {START_WORKERS} to resume polling.")
     return result.returncode
 
 
@@ -52,8 +59,8 @@ def ops_browser_recover(files):
     print("Babdoduk Ops Chrome ready. Complete SSO in its Portal or Dooray tab only if that tab asks.")
     if paused:
         print("Both workers were paused for the recovery. Resume them with:")
-        print(r"  scripts\windows\start_ggongbab_workers.cmd")
-        print(r"  powershell -NoProfile -File scripts\windows\radar_tasks.ps1 -Action Start")
+        for line in START_WORKERS_ALL:
+            print(line)
     return 0
 
 
@@ -261,7 +268,7 @@ class SafeLogContext:
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Babdoduk Windows resident operations")
+    parser = argparse.ArgumentParser(description="Babdoduk resident operations (Windows or Linux)")
     parser.add_argument("action", choices=("watch", "worker", "enable", "stop", "status", "recover", "dooray-once", "check",
                                            "radar", "radar-once", "radar-recheck", "radar-enable", "radar-disable",
                                            "radar-allow-unread", "radar-dispatch-on", "radar-dispatch-off", "mail-lookup",
@@ -285,7 +292,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     files = Files(ROOT)
     try:
-        if os.name != "nt":
+        if os.name != "nt" and not LINUX:
             raise OpsError("OPS_CONFIGURATION_REQUIRED")
         if args.action == "check":
             import requests

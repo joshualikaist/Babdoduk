@@ -10,6 +10,7 @@ import json
 import math
 import os
 import subprocess
+import sys
 import time
 from email.utils import parsedate_to_datetime
 from http.cookiejar import DefaultCookiePolicy
@@ -164,34 +165,21 @@ class PortalListClient:
 
 
 def verify_resident_owner(profile_dir: Path, port: int):
-    """Verify the loopback listener belongs to the expected Windows Chrome profile.
+    """Verify the loopback listener belongs to the expected Chrome profile (Windows or Linux).
 
     OS process metadata stays in memory and is never included in errors/logs.
     Other platforms fail closed until an equivalent owner check is implemented.
     """
-    if os.name != "nt" or type(port) is not int or not 1 <= port <= 65535:
+    if type(port) is not int or not 1 <= port <= 65535:
         raise AuthRequired("PORTAL_RESIDENT_OWNER_UNVERIFIED")
-    script = (f"$c = @(Get-NetTCPConnection -State Listen -LocalPort {port} -ErrorAction Stop); "
-              "if ($c.Count -ne 1 -or $c[0].LocalAddress -ne '127.0.0.1') { exit 1 }; "
-              "$p = Get-CimInstance Win32_Process -Filter ('ProcessId=' + $c[0].OwningProcess); "
-              "if ($p.Name -ne 'chrome.exe') { exit 1 }; $p.CommandLine")
     try:
-        result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                                capture_output=True, text=True, timeout=10, check=True,
-                                creationflags=subprocess.CREATE_NO_WINDOW)
-        count = ctypes.c_int()
-        split = ctypes.windll.shell32.CommandLineToArgvW
-        split.argtypes = [ctypes.c_wchar_p, ctypes.POINTER(ctypes.c_int)]
-        split.restype = ctypes.POINTER(ctypes.c_wchar_p)
-        argv = split(result.stdout.strip(), ctypes.byref(count))
-        if not argv:
+        if os.name == "nt":
+            args = _windows_owner_command(port)
+        elif sys.platform.startswith("linux"):
+            from .linux_proc import owner_command
+            args = owner_command(port)
+        else:
             raise ValueError()
-        try:
-            args = [argv[i] for i in range(count.value)]
-        finally:
-            free = ctypes.windll.kernel32.LocalFree
-            free.argtypes = [ctypes.c_void_p]
-            free(argv)
         profiles = [a.split("=", 1)[1] for a in args if a.startswith("--user-data-dir=")]
         if (len(profiles) != 1 or Path(profiles[0]).resolve() != profile_dir.resolve()
                 or f"--remote-debugging-port={port}" not in args
@@ -199,6 +187,29 @@ def verify_resident_owner(profile_dir: Path, port: int):
             raise ValueError()
     except Exception:
         raise AuthRequired("PORTAL_RESIDENT_OWNER_UNVERIFIED") from None
+
+
+def _windows_owner_command(port: int):
+    script = (f"$c = @(Get-NetTCPConnection -State Listen -LocalPort {port} -ErrorAction Stop); "
+              "if ($c.Count -ne 1 -or $c[0].LocalAddress -ne '127.0.0.1') { exit 1 }; "
+              "$p = Get-CimInstance Win32_Process -Filter ('ProcessId=' + $c[0].OwningProcess); "
+              "if ($p.Name -ne 'chrome.exe') { exit 1 }; $p.CommandLine")
+    result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+                            capture_output=True, text=True, timeout=10, check=True,
+                            creationflags=subprocess.CREATE_NO_WINDOW)
+    count = ctypes.c_int()
+    split = ctypes.windll.shell32.CommandLineToArgvW
+    split.argtypes = [ctypes.c_wchar_p, ctypes.POINTER(ctypes.c_int)]
+    split.restype = ctypes.POINTER(ctypes.c_wchar_p)
+    argv = split(result.stdout.strip(), ctypes.byref(count))
+    if not argv:
+        raise ValueError()
+    try:
+        return [argv[i] for i in range(count.value)]
+    finally:
+        free = ctypes.windll.kernel32.LocalFree
+        free.argtypes = [ctypes.c_void_p]
+        free(argv)
 
 
 def _eligible_cookie(cookies, now):

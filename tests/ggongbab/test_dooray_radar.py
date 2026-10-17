@@ -347,7 +347,8 @@ def _workers(tmp_path, monkeypatch):
     return module
 
 
-@pytest.mark.skipif(__import__("os").name != "nt", reason="the operator entry point is Windows-only")
+@pytest.mark.skipif(__import__("os").name != "nt" and not __import__("sys").platform.startswith("linux"),
+                    reason="the operator entry point runs on Windows and Linux")
 def test_enable_disable_allow_unread_and_alerts_commands(tmp_path, monkeypatch, capsys):
     workers = _workers(tmp_path, monkeypatch)
     files = radar.RadarFiles(tmp_path)
@@ -431,7 +432,8 @@ def test_enable_and_dispatch_switches_do_not_overwrite_each_other(tmp_path):
     assert not files.dispatch_enabled() and not files.enabled()
 
 
-@pytest.mark.skipif(__import__("os").name != "nt", reason="the operator entry point is Windows-only")
+@pytest.mark.skipif(__import__("os").name != "nt" and not __import__("sys").platform.startswith("linux"),
+                    reason="the operator entry point runs on Windows and Linux")
 def test_a_start_that_fails_before_the_first_scan_is_recorded_for_status_and_alerts(tmp_path, monkeypatch):
     from ggongbab import alerts
     workers = _workers(tmp_path, monkeypatch)

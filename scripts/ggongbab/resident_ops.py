@@ -202,7 +202,8 @@ def launch_worker(files, recover_stale):
     if recover_stale:
         command.append("--recover-stale")
     return subprocess.Popen(command, cwd=files.root, stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 class Watchdog:

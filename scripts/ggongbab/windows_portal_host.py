@@ -1,9 +1,10 @@
-"""Windows-only dedicated Chrome inspection/recovery. Values never leave memory.
+"""Dedicated Chrome inspection/recovery (Windows; Linux through /proc). Values never leave memory.
 
 One `ResidentHost` describes one dedicated browser (`ops_browser.BrowserSlot`): the unified
 Ops Chrome shared by the Portal worker and the Dooray Radar, or - in `separate` mode, the
 rollback - one of the two legacy browsers. The port reaches PowerShell as stdin JSON, never
 by interpolation, and every check below is per slot: profile, port and loopback address.
+On Linux the same two queries are answered from /proc (`linux_proc`), with argv from `cmdline`.
 """
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import time
 
 from .ops_browser import (PORTAL_START, START_LOCK, dooray_host, dooray_start_url, slot_for,
@@ -71,6 +73,36 @@ def powershell(script, payload=None):
         raise OpsError("PORTAL_RESIDENT_OWNER_UNVERIFIED") from None
 
 
+def linux_run(script, payload=None):
+    """The Linux answer to INVENTORY_SCRIPT / STOP_SCRIPT, with the same fail-closed code."""
+    from . import linux_proc
+    try:
+        if script is INVENTORY_SCRIPT:
+            return json.dumps(linux_proc.inventory(int(payload["port"])))
+        if script is STOP_SCRIPT:
+            linux_proc.stop_verified(payload)
+            return ""
+    except Exception:
+        raise OpsError("PORTAL_RESIDENT_OWNER_UNVERIFIED") from None
+    raise OpsError("PORTAL_RESIDENT_OWNER_UNVERIFIED")
+
+
+def linux_split(command):
+    """/proc argv is already split; anything else cannot be trusted."""
+    if not isinstance(command, list) or not all(isinstance(a, str) for a in command):
+        raise OpsError("PORTAL_RESIDENT_OWNER_UNVERIFIED")
+    return list(command)
+
+
+def platform_tools():
+    """(run, split) for this OS. Any OS other than Windows or Linux fails closed in run()."""
+    if os.name == "nt":
+        return powershell, split_command
+    if sys.platform.startswith("linux"):
+        return linux_run, linux_split
+    return powershell, split_command
+
+
 def split_command(command):
     count = ctypes.c_int()
     split = ctypes.windll.shell32.CommandLineToArgvW
@@ -108,13 +140,15 @@ def start_lock(path, *, timeout=60, sleep=time.sleep):
 
 
 class ResidentHost:
-    def __init__(self, root, *, role="portal", slot=None, run=powershell, split=split_command,
+    def __init__(self, root, *, role="portal", slot=None, run=None, split=None,
                  start=start_chrome, verify=verify_resident_owner, sleep=time.sleep, wake=wake_tabs):
         self.root = Path(root).resolve()
         self.role = role
         slot = slot or slot_for(self.root, role)
         self.profile, self.port, self.unified = slot.profile, slot.port, slot.unified
         self.owner_code = OWNER_CODES[role]
+        default_run, default_split = platform_tools()
+        run, split = run or default_run, split or default_split
         self.run, self.split, self.start, self.verify, self.sleep = run, split, start, verify, sleep
         self.wake = wake
 

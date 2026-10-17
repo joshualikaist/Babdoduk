@@ -175,9 +175,36 @@ def test_the_toast_runs_hidden_powershell_and_reports_fixed_codes():
 
 def test_the_toast_is_on_by_default_on_windows_and_can_be_turned_off(tmp_path):
     assert isinstance(notify.local_toast(tmp_path, windows=True), notify.WindowsToastNotifier)
-    assert notify.local_toast(tmp_path, windows=False) is None
+    assert notify.local_toast(tmp_path, windows=False, linux=False) is None
     (tmp_path / notify.TOAST_CONFIG).write_text(json.dumps({"enabled": False}), encoding="utf-8")
     assert notify.local_toast(tmp_path, windows=True) is None
+    assert notify.local_toast(tmp_path, windows=False, linux=True) is None
+
+
+def test_linux_uses_notify_send_with_fixed_text_and_linux_commands(tmp_path):
+    assert isinstance(notify.local_toast(tmp_path, windows=False, linux=True), notify.NotifySendNotifier)
+    calls = []
+
+    class Run:
+        def __init__(self, code=0, error=None):
+            self.code, self.error = code, error
+
+        def __call__(self, command, **kwargs):
+            calls.append((command, kwargs))
+            if self.error:
+                raise self.error
+            return type("Done", (), {"returncode": self.code})()
+
+    sender = notify.NotifySendNotifier(run=Run())
+    alert = notify.Alert("portal", "critical", "WORKER_NOT_RUNNING", None, 0.0, "restart_worker")
+    title, body = sender.render([alert], [])
+    assert sender.send((title, body)) == notify.SENT
+    command, kwargs = calls[-1]
+    assert command[0] == "notify-send" and "--" in command and command[-2:] == [title, body]
+    assert "--urgency=critical" in command and "shell" not in kwargs
+    assert "scripts/linux/ops.sh start" in body and ".cmd" not in body
+    assert notify.NotifySendNotifier(run=Run(code=1)).send(("t", "b")) == notify.TRANSPORT_FAILED
+    assert notify.NotifySendNotifier(run=Run(error=OSError("x"))).send(("t", "b")) == notify.TRANSPORT_FAILED
 
 
 def test_the_toast_waits_out_a_brief_critical_and_keeps_its_own_state(tmp_path):

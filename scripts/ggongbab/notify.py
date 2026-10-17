@@ -240,6 +240,12 @@ TOAST_ACTION = {
     "check_actions": "GitHub Actions에서 실패한 ggongbab-refresh 실행을 확인하세요.",
     "fix_config": "운영 사본 설정을 고친 뒤 다시 시작하세요.",
 }
+# The same actions in the Linux operations checkout's commands (scripts/linux/ops.sh).
+LINUX_TOAST_ACTION = dict(TOAST_ACTION,
+    restart_worker="상태를 확인한 뒤 scripts/linux/ops.sh start를 실행하세요.",
+    open_browser="scripts/linux/ops.sh browser-start로 운영 Chrome을 여세요.",
+    investigate="scripts/linux/ops.sh status로 상태를 확인하세요.",
+)
 TOAST_SCRIPT = r"""$ErrorActionPreference = 'Stop'
 $enc = [Text.Encoding]::UTF8
 $title = [Security.SecurityElement]::Escape($enc.GetString([Convert]::FromBase64String('@TITLE@')))
@@ -253,8 +259,10 @@ $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
 """
 
 
-def format_toast(changes: Iterable[Alert], recovered: Iterable[str] = ()) -> tuple[str, str]:
+def format_toast(changes: Iterable[Alert], recovered: Iterable[str] = (), *,
+                 actions: Optional[dict] = None) -> tuple[str, str]:
     """(title, body) in Korean from fixed fields only."""
+    actions = TOAST_ACTION if actions is None else actions
     changes = list(changes)
     if any(a.severity == "critical" for a in changes):
         title = "밥도둑 운영: 조치가 필요합니다"
@@ -265,7 +273,7 @@ def format_toast(changes: Iterable[Alert], recovered: Iterable[str] = ()) -> tup
     lines = []
     for a in changes:
         lines.append(f"{TOAST_COMPONENT.get(a.component, a.component)} · {TOAST_REASON.get(a.reason, a.reason)}")
-        lines.append(TOAST_ACTION.get(a.action, ACTIONS.get(a.action, a.action)))
+        lines.append(actions.get(a.action, ACTIONS.get(a.action, a.action)))
     lines += [f"{TOAST_COMPONENT.get(c, c)} · 다시 정상" for c in recovered]
     return title, "\n".join(lines)
 
@@ -297,10 +305,43 @@ class WindowsToastNotifier:
         return SENT if done.returncode == 0 else TRANSPORT_FAILED
 
 
-def local_toast(local: Path, *, windows: Optional[bool] = None):
-    """The Windows toast on this PC unless `.local/alert-toast.json` says {"enabled": false}."""
+class NotifySendNotifier:
+    """A desktop notification on this Linux PC (`notify-send`, the freedesktop notification service)."""
+
+    def __init__(self, run: Optional[Callable] = None, executable: str = "notify-send"):
+        self._run = run
+        self._executable = executable
+
+    @staticmethod
+    def render(changes, recovered) -> tuple[str, str]:
+        return format_toast(changes, recovered, actions=LINUX_TOAST_ACTION)
+
+    def send(self, message) -> str:
+        import subprocess
+        title, body = message if isinstance(message, tuple) else ("밥도둑 운영", str(message))
+        urgency = "critical" if "조치가 필요합니다" in title else "normal"
+        command = [self._executable, "--app-name=밥도둑 운영", f"--urgency={urgency}", "--",
+                   title[:120], body[:600]]
+        try:
+            done = (self._run or subprocess.run)(command, capture_output=True, timeout=30)
+        except (OSError, subprocess.SubprocessError):
+            return TRANSPORT_FAILED
+        return SENT if done.returncode == 0 else TRANSPORT_FAILED
+
+
+def local_toast(local: Path, *, windows: Optional[bool] = None, linux: Optional[bool] = None):
+    """The desktop notification of this PC (Windows toast, or `notify-send` on Linux) unless
+    `.local/alert-toast.json` says {"enabled": false}."""
     import os
+    import shutil
+    import sys
     windows = os.name == "nt" if windows is None else windows
-    if not windows or read_json(Path(local) / TOAST_CONFIG, {}).get("enabled", True) is False:
+    if linux is None:
+        linux = sys.platform.startswith("linux") and shutil.which("notify-send") is not None
+    if read_json(Path(local) / TOAST_CONFIG, {}).get("enabled", True) is False:
         return None
-    return WindowsToastNotifier()
+    if windows:
+        return WindowsToastNotifier()
+    if linux:
+        return NotifySendNotifier()
+    return None

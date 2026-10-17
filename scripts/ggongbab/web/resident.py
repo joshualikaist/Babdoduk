@@ -25,7 +25,9 @@ user's own Chrome profile is never opened.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -46,6 +48,13 @@ START_TIMEOUT_SECONDS = 30
 WINDOWS_CHROME_PATHS = (
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+)
+# The distribution's launcher (it sets Chrome's environment, then execs /opt/google/chrome/chrome
+# with the same arguments, so the browser process keeps the command line stop_chrome matches).
+LINUX_CHROME_PATHS = (
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/google-chrome",
+    "/opt/google/chrome/chrome",
 )
 
 
@@ -162,6 +171,9 @@ def chrome_executable() -> str:
     local = Path.home() / "AppData/Local/Google/Chrome/Application/chrome.exe"
     if local.exists():
         return str(local)
+    for candidate in LINUX_CHROME_PATHS:
+        if Path(candidate).exists():
+            return candidate
     raise ResidentError("Google Chrome was not found",
                         hint="install Google Chrome, or run setup without --cdp")
 
@@ -205,8 +217,10 @@ def start_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, start_url: s
     log(f"Browser engine : Google Chrome (resident, debug port {port} on {DEBUG_HOST})")
     log(f"  executable   : {Path(executable).parent.name}/{Path(executable).name}")
     startup = minimized_startup() if minimized else None
-    process = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                               **({"startupinfo": startup} if startup is not None else {}))
+    # POSIX: its own session, so closing the operator's terminal never takes Chrome with it.
+    process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                               **({"startupinfo": startup} if startup is not None else {}),
+                               **({"start_new_session": True} if os.name == "posix" else {}))
     deadline = time.time() + START_TIMEOUT_SECONDS
     while time.time() < deadline:
         if is_running(port):
@@ -289,6 +303,8 @@ def stop_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, log=print) ->
         log("no resident Chrome is listening")
         return False
     marker = str(Path(profile_dir).resolve())
+    if sys.platform.startswith("linux"):
+        return _stop_chrome_linux(marker, port, log)
     query = (
         "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | "
         f"Where-Object {{ $_.CommandLine -like '*{marker}*' }} | "
@@ -300,6 +316,24 @@ def stop_chrome(profile_dir: Path, port: int = DEFAULT_DEBUG_PORT, log=print) ->
     except (OSError, subprocess.SubprocessError) as exc:
         log(f"could not stop Chrome automatically ({exc.__class__.__name__}); close the window")
         return False
+    time.sleep(1.5)
+    still = bool(is_running(port))
+    log("resident Chrome closed" if not still else "Chrome is still listening; close the window")
+    return not still
+
+
+def _stop_chrome_linux(marker: str, port: int, log) -> bool:
+    """Linux stop_chrome: SIGTERM only browser processes whose argv names exactly this profile."""
+    import signal
+    from ..linux_proc import chrome_processes
+    flag = f"--user-data-dir={marker}"
+    targets = [p["pid"] for p in chrome_processes()
+               if flag in p["command"] and not any(a.startswith("--type=") for a in p["command"])]
+    for pid in targets:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except OSError:
+            pass
     time.sleep(1.5)
     still = bool(is_running(port))
     log("resident Chrome closed" if not still else "Chrome is still listening; close the window")

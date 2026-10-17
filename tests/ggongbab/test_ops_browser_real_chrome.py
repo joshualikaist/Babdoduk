@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Opt-in real-browser check of the shared Ops Chrome layer (BABDODUK_REAL_CHROME=1, Windows).
+"""Opt-in real-browser check of the shared Ops Chrome layer (BABDODUK_REAL_CHROME=1, Windows or Linux).
 
 Uses the installed Google Chrome with a THROWAWAY profile under pytest's tmp_path, a throwaway
 loopback port and two local pages on two hostnames (127.0.0.1 and localhost). No Portal, Dooray,
@@ -19,14 +19,16 @@ from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import os
 import socket
+import sys
 import threading
 import time
 from urllib.parse import urlsplit
 
 import pytest
 
-pytestmark = pytest.mark.skipif(os.environ.get("BABDODUK_REAL_CHROME") != "1" or os.name != "nt",
-                                reason="opt-in: set BABDODUK_REAL_CHROME=1 on Windows with Google Chrome")
+pytestmark = pytest.mark.skipif(os.environ.get("BABDODUK_REAL_CHROME") != "1"
+                                or not (os.name == "nt" or sys.platform.startswith("linux")),
+                                reason="opt-in: set BABDODUK_REAL_CHROME=1 on Windows or Linux with Google Chrome")
 
 
 class Pages(BaseHTTPRequestHandler):

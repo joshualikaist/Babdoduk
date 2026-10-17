@@ -1903,6 +1903,7 @@ def test_chrome_executable_fails_closed_when_absent(monkeypatch, tmp_path):
     from ggongbab.web.resident import ResidentError
 
     monkeypatch.setattr(resident, "WINDOWS_CHROME_PATHS", (str(tmp_path / "nope.exe"),))
+    monkeypatch.setattr(resident, "LINUX_CHROME_PATHS", (str(tmp_path / "nope"),))
     monkeypatch.setattr(resident.Path, "home", staticmethod(lambda: tmp_path))
     with pytest.raises(ResidentError, match="not found"):
         resident.chrome_executable()
