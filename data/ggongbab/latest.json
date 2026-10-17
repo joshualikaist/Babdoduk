@@ -1,9 +1,77 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-17T00:03:31+09:00",
+  "generatedAt": "2026-10-17T22:16:12+09:00",
   "timezone": "Asia/Seoul",
-  "count": 4,
+  "count": 7,
   "events": [
+    {
+      "id": "afa5f6d3-0c94-4c3a-a461-e63d07b2f5d1",
+      "title": "Adapting AI for Diverse Populations and Health Systems(다양한 인구집단 및 보건의료시스템에 맞춘 인공지능 적용)",
+      "summary": "Prof. Sanjay Kinra 초청 세미나로, 다양한 인구집단과 보건의료시스템에 맞춘 AI 적용 사례를 소개한다. 참석자에게 가벼운 다과와 핑거푸드가 제공된다.",
+      "startAt": "2026-10-19T12:00:00+09:00",
+      "endAt": "2026-10-19T13:00:00+09:00",
+      "dateText": "October 19 (Mon)",
+      "timeText": "12:00–13:00",
+      "location": {
+        "name": "Lecture Room Red (B501), 5th Floor, KI Building (E4)",
+        "building": "E4",
+        "room": "B501"
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "Light refreshments and finger foods",
+        "source": "text"
+      },
+      "organizer": "AI미래학과 김형준교수님 연구실",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSeUfKRw7wMKQVexBFvhhtYQlUsj2NtTy0EIaF53ynWsHFnPDw/viewform?usp=preview"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "cc3f1d61-4287-400e-a5a7-a0b76104b398",
+      "title": "올바른 피임과 성병의 예방 교육",
+      "summary": "KAIST 재학생을 대상으로 올바른 피임과 성병 예방 교육을 진행합니다. 사전 예약자 중 참석자에게 강연 후 노브랜드버거 교환권과 음료를 제공합니다.",
+      "startAt": "2026-10-27T12:00:00+09:00",
+      "endAt": "2026-10-27T13:00:00+09:00",
+      "dateText": "2026. 10. 27. (Tue.)",
+      "timeText": "12:00 ~ 13:00 p.m.",
+      "location": {
+        "name": "Matrix Hall, 2F, KI Building(E4)",
+        "building": "KI Building(E4)",
+        "room": "Matrix Hall, 2F"
+      },
+      "food": {
+        "provided": "true",
+        "type": "coupon",
+        "description": "노브랜드버거 교환권과 음료",
+        "source": "text"
+      },
+      "organizer": "KAIST Clinic",
+      "eligibility": "KAIST 재학생 (Currently Enrolled KAIST Students)",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/GtfQiYPQGXNHKwYNA"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "5ec8c23a-86a6-4455-b85d-d508a3049307",
       "title": "학부생과 지도교수와의 만남의 주간",
@@ -150,6 +218,40 @@
         "provided": "true",
         "description": "주제 도서"
       }
+    },
+    {
+      "id": "bb00bae1-7076-4ccd-b53c-32e9bf4c4f47",
+      "title": "2026 노벨상 수상 업적 해설 강연",
+      "summary": "2026년 노벨 생리의학상·물리학상·화학상 수상자들의 주요 연구 업적을 소개하는 강연입니다. 강연은 한국어로 진행되며 Zoom을 통해 동시통역이 제공됩니다.",
+      "startAt": "2026-11-12T11:50:00+09:00",
+      "endAt": "2026-11-12T12:50:00+09:00",
+      "dateText": "Thursday, November 12, 2026",
+      "timeText": "11:50-12:50",
+      "location": {
+        "name": "창의학습관 1층 터만홀(E11, 1F Turman Hall)",
+        "building": "창의학습관",
+        "room": "터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "쉑쉑버거와 음료",
+        "source": "text"
+      },
+      "organizer": "자연과학대학교학팀",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://kaist.zoom.us/j/89487469591"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
     }
   ]
 }
