@@ -688,6 +688,94 @@ def weekly_cafeteria(browser, base, report):
         context.close()
 
 
+def sessions_and_audience(browser, base, report):
+    """A multi-day event is one row per session day on the home calendar, and the audience is a small
+    line of its own (2026-10-18). The poster of 자연과학과 함께하는 토크 콘서트: Mon-Thu 12:00-12:50 in
+    one hall, Friday 16:00-19:30 in another, with different food; the page used to show only Monday."""
+    kst = timezone(timedelta(hours=9))
+    hall = {"name": "자연과학관 공통강의실", "building": "E6-1", "room": "1501"}
+    fusion = {"name": "KI빌딩 퓨전홀", "building": "E4", "room": "C101"}
+
+    def day(d, start, end, place, food):
+        return {"startAt": f"2026-11-{d:02d}T{start}:00+09:00", "endAt": f"2026-11-{d:02d}T{end}:00+09:00",
+                "location": place, "foodDescription": food}
+
+    concert = {"id": "cc", "title": "자연과학과 함께하는 토크 콘서트", "startAt": "2026-11-02T12:00:00+09:00",
+               "endAt": "2026-11-06T19:30:00+09:00", "location": hall, "sources": [{"type": "dooray"}],
+               "food": {"provided": "true", "type": "meal", "description": "샌드위치 / 버거"},
+               "audience": {"text": "자연과학대학 학사과정 학생", "basis": "stated"},
+               "sessions": [day(d, "12:00", "12:50", hall, "샌드위치") for d in (2, 3, 4, 5)]
+               + [day(6, "16:00", "19:30", fusion, "쉐이크쉑 버거")]}
+    advising = {"id": "ad", "title": "학부생과 지도교수와의 만남의 주간", "startAt": "2026-11-03T12:00:00+09:00",
+                "endAt": "2026-11-03T13:00:00+09:00", "location": {"name": "기계공학동 뒷편", "building": "", "room": ""},
+                "food": {"provided": "true", "type": "lunchbox", "description": "점심 도시락"},
+                "audience": {"text": "기계공학과 학부생", "basis": "inferred"}, "sources": [{"type": "dooray"}]}
+    plain = {"id": "pl", "title": "대상 없는 행사", "startAt": "2026-11-09T12:00:00+09:00", "endAt": "2026-11-09T13:00:00+09:00",
+             "food": {"provided": "true", "type": "snack", "description": "간식"}, "sources": [{"type": "dooray"}],
+             "eligibility": "KAIST 재학생"}
+    payload = {"schemaVersion": 1, "generatedAt": "2026-10-17T22:16:00+09:00", "timezone": "Asia/Seoul", "count": 3,
+               "events": [concert, advising, plain]}
+
+    for lang in ("ko", "en"):
+        en = lang == "en"
+        context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce",
+                                      viewport={"width": 1280, "height": 900})
+        neutralize_public_config(context)
+        # The fonts are not part of this check: an empty stylesheet keeps a cold font fetch from stalling the load.
+        context.route("https://fonts.googleapis.com/**", lambda route: route.fulfill(status=200, content_type="text/css", body=""))
+        context.clock.set_fixed_time(datetime(2026, 10, 18, 10, 0, tzinfo=kst))
+        page = context.new_page()
+        problems = []
+        page.on("pageerror", lambda error: problems.append(str(error)))
+        page.on("console", lambda message: problems.append(message.text) if message.type == "error" else None)
+        page.add_init_script(f"localStorage.setItem('babdoduk-lang', '{lang}');")
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=payload))
+        page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json={
+            "schemaVersion": 1, "generatedAt": "2026-10-17T22:16:00+09:00", "timezone": "Asia/Seoul",
+            "windowDays": 30, "count": 0, "events": []}))
+        try:
+            page.goto(base + "/index.html")
+            page.locator("#homeCalDay .hc-ev").first.wait_for()
+            # The default day is the first with food: Monday 2 November, the concert's first session.
+            rows = page.locator("#homeCalDay .hc-ev")
+            assert rows.count() == 1, rows.count()
+            first = rows.first.inner_text()
+            assert "자연과학과 함께하는 토크 콘서트" in first and "12:00" in first, first
+            assert ("Session 1/5" if en else "1/5회차") in first, first
+            assert "E6-1 1501" in first, first                     # that day's own place, not both halls
+            who = page.locator("#homeCalDay .hc-ev-who")
+            assert who.count() == 1 and who.first.inner_text().strip() == (
+                "Open to: 자연과학대학 학사과정 학생" if en else "대상 · 자연과학대학 학사과정 학생"), who.all_inner_texts()
+            # The upcoming list holds the next session days, one row each.
+            upcoming = page.locator("#homeCalNext .hc-next-row")
+            assert upcoming.count() == 4, upcoming.all_inner_texts()
+            names = [t for t in upcoming.all_inner_texts()]
+            assert sum("자연과학과 함께하는 토크 콘서트" in n for n in names) == 3, names      # Tue, Wed, Thu
+            # November: a dot on each session day (two on Tuesday, with the advising week), the Friday time and place.
+            page.locator('[data-hc-step="1"]').click()
+            for iso, dots in (("02", 1), ("03", 2), ("04", 1), ("05", 1), ("06", 1), ("07", 0), ("09", 1)):
+                cell = page.locator(f'td[data-date="2026-11-{iso}"] .hc-dot')
+                assert cell.count() == dots, (iso, cell.count())
+            page.locator('td[data-date="2026-11-06"]').click()
+            friday = page.locator("#homeCalDay .hc-ev").first.inner_text()
+            assert "16:00" in friday and "E4 C101" in friday and ("Session 5/5" if en else "5/5회차") in friday, friday
+            assert "쉐이크쉑 버거" in friday or en, friday          # Friday's own food
+            # Tuesday: two rows. The advising week's audience is a guess and says so; Monday's was stated.
+            page.locator('td[data-date="2026-11-03"]').click()
+            texts = page.locator("#homeCalDay .hc-ev-who").all_inner_texts()
+            assert ("Open to: 기계공학과 학부생 (estimated)" if en else "대상 · 기계공학과 학부생 (추정)") in [x.strip() for x in texts], texts
+            # An event with only a stated eligibility keeps it in the details, not on the collapsed row.
+            page.locator('td[data-date="2026-11-09"]').click()
+            assert page.locator("#homeCalDay .hc-ev-who").count() == 0
+            page.locator("#homeCalDay .hc-ev-btn").first.click()
+            detail = page.locator("#homeCalDay .hc-ev-detail:not([hidden])").inner_text()
+            assert ("Open to: KAIST 재학생" if en else "대상 · KAIST 재학생") in detail, detail
+            assert problems == [], problems
+            report["checks"] += 17
+        finally:
+            context.close()
+
+
 def weekend_and_holiday_menu(browser, base, report):
     """Days with no cafeteria menu (stage 5 date scenarios), under fixed page clocks and synthetic data.
     A Saturday the collector has not published (week.json lists it as NOT_PUBLISHED_YET, no dated file):
@@ -1362,6 +1450,7 @@ def run_checks(preview=False):
         past_listings(browser, base, report)
         weekly_cafeteria(browser, base, report)
         weekend_and_holiday_menu(browser, base, report)
+        sessions_and_audience(browser, base, report)
         midnight_dated_menu(browser, base, report)
         new_week_before_its_menu(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")

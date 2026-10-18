@@ -45,6 +45,15 @@ beside the copy on the paper band and the calendar splits into the day (left) an
   `경품 · {description}`, and a deadline-only giveaway (`startAt` equals `registration.deadline`) reads
   `신청 마감 23:59` where a time would be. A row with food and a gift is free food, with `🎁 경품` after
   its food.
+* **Multi-day events** (2026-10-18): an event with `sessions` is one row per session day
+  (`BabdodukFreeFood.occurrences`: id `<id>#<n>`, that session's start, end, place and food, every
+  other field of the event). Each day gets its own dot, its row in the day panel, its place in
+  다가오는 꽁밥 and its own end ("종료" when that day is over), and the row's first line ends with
+  `{n}/{total}회차` (EN `Session n/total`). Sessions that do not hold together (fewer than 2 or more than 14,
+  out of order, bad times) leave the event as one row, as before. The hub uses the same expansion.
+* **Audience** (2026-10-18): an event with `audience` shows `대상 · {text}` in small text on its collapsed
+  row, and in its details; an inferred one reads `{text} (추정)`, because a guess from the content is not
+  a statement. A plain `eligibility` stays in the details only (and is the details' fallback).
 * **KST**: dates are computed from `toKst`/`ymd` and whole-day arithmetic in UTC, so the browser's
   time zone never changes "today".
 * **Retained window**: the archive's `windowDays` (30) before today. Older days are inert (not
