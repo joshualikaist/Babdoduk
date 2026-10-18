@@ -801,6 +801,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
 | `docs/HOME_CALENDAR.md` | 홈 꽁밥 달력(표시·기본 선택·데이터 규칙, 선착순 공개 계약 대기) |
 | `docs/KAIST_MENU.md` | 이번 주 학식 수집·파일·화면 규칙 |
+| `docs/INSTAGRAM_SOURCES.md` | 학과 인스타그램 계정 팔로우 조사: 오픈소스·공식 API 비교(2026-10-18 확인), 위험, 파이프라인에 붙이는 설계(구현 전) |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
