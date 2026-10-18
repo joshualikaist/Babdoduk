@@ -48,9 +48,27 @@ fixed list become `NO_SUCCESS_RECORDED`.
 state file (`.local/alert-toast-state.json`). PowerShell shows it through the Windows toast API under
 PowerShell's app id, hidden and without taking focus. The wording is fixed Korean text per
 component, reason and action (`notify.format_toast`): never a subject, title, id or URL. A
-critical alert must last 3 minutes before it shows, so a scan that is only late right after the
-PC wakes stays quiet; warnings wait 10 minutes as above. It is on by default on Windows;
-`{"enabled": false}` in `.local/alert-toast.json` turns it off.
+critical alert must last 5 minutes before it shows, so a scan that is only late right after the
+PC wakes, a login or a restart stays quiet; warnings wait 10 minutes as above. It is on by default
+on Windows and Linux; `{"enabled": false}` in `.local/alert-toast.json` turns it off.
+
+**Linux desktop notification (`notify.NotifySendNotifier`):** the same text and policy, sent through
+the freedesktop `Notify` call (`gdbus`; plain `notify-send` is the fallback). It uses ONE slot: the id
+of the last toast is kept in `.local/alert-toast-id.json` and every new toast replaces it, so the
+recovery message ("다시 정상입니다", transient, it leaves nothing in the list) takes the place of an
+old "조치가 필요합니다" instead of standing beside it. Only a critical alert that a person must act on
+(login, contract, browser, configuration) is sticky; anything else expires after 20 seconds. Each
+toast ends with the time it was evaluated ("(14:08 기준)").
+
+**What counts as "no success" (corrected 2026-10-18 after three false alarms):**
+* The age of the last success is judged from the later of that success and the current start of
+  the running worker. A worker that was just started or resumed (for example after a login) has had
+  no time yet to prove itself, and its previous success may be hours old. The age shown to the
+  operator is still the true age of the last success.
+* A Portal worker that is running and whose latest code is a network error (a transport error, a
+  timeout, a failed heartbeat write) retries by itself and nothing can be done about it: it stays a
+  warning, `NETWORK_UNSTABLE` ("네트워크 불안정"), until 30 minutes without a success, then
+  becomes the critical `SCAN_STALE`. A real login expiry (`AUTH_EXPIRED`) is never softened.
 
 **Cloud:** there is no state between runs, so a problem is repeated on every scheduled run until it
 is fixed. When the PC is deliberately off for days, set the repository variable

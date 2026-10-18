@@ -11,6 +11,16 @@ Health targets (owner, 2026-09-28):
   Portal LIST       expected ~60 s   warning > 3 min    critical > 10 min without a success
   Dooray Radar      expected 2-5 min warning > 10 min   critical > 30 min without a success
   Flash candidate   discovered but no cloud dispatch progress for > 10 min -> warning
+
+Two corrections after false alarms on 2026-10-18 (a critical "action needed" toast popped right
+after the owner had logged in again, and another during a Wi-Fi blip that healed by itself):
+  * "without a success" is counted from the later of the last success and the CURRENT start of
+    the running worker. A worker that was just started or resumed has had no time yet to prove
+    itself, and its previous success may be hours old (the first scan after the login took 3.5
+    minutes). The age shown to the operator is still the true age of the last success.
+  * A Portal worker that is running and whose latest code is a network error (transport error,
+    timeout, heartbeat write failure) retries by itself and nothing can be done by a person
+    about it: it stays a warning, NETWORK_UNSTABLE, until 30 minutes without a success.
 """
 from __future__ import annotations
 
@@ -22,6 +32,13 @@ from typing import Iterable, Optional
 
 from .ops_storage import atomic_json, read_json
 
+NETWORK_STALE_SECONDS = 1800    # Portal: a network-only outage becomes critical after 30 minutes
+# The worker's own codes for "the network failed" (ops_policy.TRANSIENT without WORKER_EXITED).
+NETWORK_REASONS = frozenset({
+    "PORTAL_LIST_CONNECT_TIMEOUT", "PORTAL_LIST_READ_TIMEOUT", "PORTAL_LIST_CONNECTION_ERROR",
+    "PORTAL_LIST_TLS_ERROR", "PORTAL_LIST_CHUNK_READ_ERROR", "PORTAL_LIST_TRANSPORT_UNAVAILABLE",
+    "PORTAL_HEARTBEAT_WRITE_FAILED",
+})
 SLO = {
     "portal": {"expected": 60, "warning": 180, "critical": 600},
     "dooray_radar": {"expected": 180, "warning": 600, "critical": 1800},
@@ -31,6 +48,7 @@ SEVERITIES = ("healthy", "warning", "critical")
 ACTIONS = {
     "none": "no action",
     "wait": "transient; the collector retries on its own",
+    "check_network": "check this PC's network connection (Wi-Fi or cable); the collector retries on its own",
     "restart_worker": "run start_ggongbab_workers.cmd after checking the status",
     "login": "complete SSO/MFA in the Ops Chrome; the collector resumes on its own once the login page closes",
     "review_contract": "the list/UI contract changed; re-run calibration before resuming",
@@ -45,6 +63,7 @@ REASONS = {
     "OK": ("healthy", "none"),
     "SCAN_DELAYED": ("warning", "wait"),
     "SCAN_STALE": ("critical", "restart_worker"),
+    "NETWORK_UNSTABLE": ("warning", "check_network"),
     "NO_SUCCESS_RECORDED": ("critical", "investigate"),
     "WORKER_NOT_RUNNING": ("critical", "restart_worker"),
     "AUTH_EXPIRED": ("critical", "login"),
@@ -82,6 +101,16 @@ def _age(last_success, now) -> Optional[int]:
     return max(0, int(now - last_success)) if isinstance(last_success, (int, float)) and last_success else None
 
 
+def _fresh_since(runtime: dict, running: bool) -> Optional[float]:
+    """The instant the staleness clock counts from: the later of the last success and, while the
+    worker is running, its current start."""
+    last = runtime.get("last_success")
+    started = runtime.get("started")
+    last = last if isinstance(last, (int, float)) and last else 0
+    started = started if running and isinstance(started, (int, float)) and started else 0
+    return max(last, started) or None
+
+
 def staleness(component: str, age: Optional[int]) -> tuple[str, str]:
     slo = SLO[component]
     if age is None:
@@ -102,13 +131,17 @@ PORTAL_HUMAN = {"PORTAL_LIST_AUTH_REQUIRED": "AUTH_EXPIRED", "PORTAL_LIST_REDIRE
 
 
 def portal_alert(runtime: dict, *, running: bool, enabled: bool, now: float) -> Alert:
-    age = _age(runtime.get("last_success"), now)
-    severity, code = staleness("portal", age)
+    age = _age(runtime.get("last_success"), now)                       # what the operator reads
+    judged = _age(_fresh_since(runtime, running), now)                 # what the severity rests on
+    severity, code = staleness("portal", judged)
     human = PORTAL_HUMAN.get(runtime.get("manual_reason") or "")
     if human:
         return Alert.of("portal", human, age, now)
     if enabled and not running and severity != "healthy":
         return Alert.of("portal", "WORKER_NOT_RUNNING", age, now)
+    if (code == "SCAN_STALE" and running and judged is not None and judged <= NETWORK_STALE_SECONDS
+            and (runtime.get("reason") or "") in NETWORK_REASONS):
+        return Alert.of("portal", "NETWORK_UNSTABLE", age, now)
     return Alert.of("portal", code, age, now, severity)
 
 
@@ -119,7 +152,7 @@ RADAR_HUMAN = {"DOORAY_AUTH_REQUIRED": "AUTH_EXPIRED", "DOORAY_CONTRACT_CHANGED"
 
 def radar_alert(runtime: dict, *, running: bool, enabled: bool, unread_disabled: bool, now: float) -> Alert:
     age = _age(runtime.get("last_success"), now)
-    severity, code = staleness("dooray_radar", age)
+    severity, code = staleness("dooray_radar", _age(_fresh_since(runtime, running), now))
     if unread_disabled:
         return Alert.of("dooray_radar", "UNREAD_RADAR_DISABLED", age, now)
     human = RADAR_HUMAN.get(runtime.get("reason") or "")

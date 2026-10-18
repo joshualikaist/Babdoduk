@@ -546,6 +546,11 @@ Linux-specific behavior:
 * Chrome is started in its own session (`start_new_session`), so closing the terminal that ran
   `browser-start` does not close it. A worker-started Chrome is not minimized on Linux.
 
+* Notifications use one replaceable slot (`docs/GGONGBAB_ALERTS.md`, "Linux desktop notification").
+  Nothing runs while nobody is logged in to the desktop (the units are user services and the Ops
+  Chrome needs the display): after a reboot or a power cut, turn on automatic login (Settings >
+  System > Users) or the workers stay off until someone logs in (2026-10-17: 71 minutes).
+
 Moving the workers between PCs follows section 13: stop the old workers, copy the four approved
 state files with a SHA-256 manifest, log in by hand on the new PC, start, and observe 10-15 minutes
 before removing the old tasks. Never run both PCs' workers at the same time.

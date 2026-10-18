@@ -127,3 +127,63 @@ def test_a_closed_browser_escalates_to_critical_once_scans_are_stale():
                                enabled=True, unread_disabled=False, now=NOW)
     assert (fresh.reason, fresh.severity) == ("BROWSER_ABSENT", "warning")
     assert (stale.reason, stale.severity, stale.action) == ("BROWSER_ABSENT", "critical", "open_browser")
+
+
+# --- false alarms of 2026-10-18 -------------------------------------------------------------
+def test_a_just_started_worker_is_judged_from_its_start_not_from_an_old_success():
+    """The owner logged in at 14:04; the watchdog resumed and restarted the Portal worker, whose last
+    success was 5.6 hours old. The first scan took 3.5 minutes, and for those minutes the alert was a
+    critical SCAN_STALE that popped a toast after the login had worked."""
+    runtime = {"last_success": NOW - 20389, "started": NOW - 15, "manual_reason": "", "reason": "WORKER_STARTING"}
+    a = alerts.portal_alert(runtime, running=True, enabled=True, now=NOW)
+    assert (a.severity, a.reason) == ("healthy", "OK") and a.last_success_age_seconds == 20389   # true age shown
+    late = alerts.portal_alert(dict(runtime, started=NOW - 250), running=True, enabled=True, now=NOW)
+    assert (late.severity, late.reason) == ("warning", "SCAN_DELAYED")
+    stuck = alerts.portal_alert(dict(runtime, started=NOW - 700), running=True, enabled=True, now=NOW)
+    assert (stuck.severity, stuck.reason) == ("critical", "SCAN_STALE")        # still no success: a real alarm
+    radar = alerts.radar_alert({"last_success": NOW - 9000, "started": NOW - 30, "reason": "DOORAY_RADAR_RUNNING"},
+                               running=True, enabled=True, unread_disabled=False, now=NOW)
+    assert radar.severity == "healthy"
+
+
+def test_a_start_time_never_hides_a_worker_that_is_not_running():
+    runtime = {"last_success": NOW - 700, "started": NOW - 10, "manual_reason": ""}
+    a = alerts.portal_alert(runtime, running=False, enabled=True, now=NOW)
+    assert (a.severity, a.reason) == ("critical", "WORKER_NOT_RUNNING")
+    a = alerts.portal_alert({"last_success": None, "started": NOW - 5, "manual_reason": ""}, running=True,
+                            enabled=True, now=NOW)
+    assert (a.severity, a.reason) == ("healthy", "OK")        # first start: its first scan is not yet due
+    a = alerts.portal_alert({"last_success": None, "started": NOW - 5, "manual_reason": ""}, running=False,
+                            enabled=True, now=NOW)
+    assert (a.severity, a.reason) == ("critical", "WORKER_NOT_RUNNING")      # a dead worker's start is no proof
+
+
+@pytest.mark.parametrize("code", sorted(alerts.NETWORK_REASONS))
+def test_a_network_outage_that_heals_by_itself_is_only_a_warning_for_thirty_minutes(code):
+    """2026-10-18 01:38-01:57: Wi-Fi/Supabase errors left the Portal LIST 19 minutes without a success; the
+    worker retried and recovered alone, but the alert was critical (and a toast) after 10 minutes."""
+    runtime = {"last_success": NOW - 1200, "started": NOW - 5000, "manual_reason": "", "reason": code}
+    a = alerts.portal_alert(runtime, running=True, enabled=True, now=NOW)
+    assert (a.severity, a.reason, a.action) == ("warning", "NETWORK_UNSTABLE", "check_network")
+    long = alerts.portal_alert(dict(runtime, last_success=NOW - 1801), running=True, enabled=True, now=NOW)
+    assert (long.severity, long.reason) == ("critical", "SCAN_STALE")
+
+
+def test_only_network_codes_get_the_network_grace_and_a_dead_worker_never_does():
+    base = {"last_success": NOW - 1200, "started": NOW - 5000, "manual_reason": ""}
+    for reason in ("WORKER_RUNNING", "WORKER_STARTING", "PORTAL_LIST_SESSION_REBUILT", ""):
+        a = alerts.portal_alert(dict(base, reason=reason), running=True, enabled=True, now=NOW)
+        assert (a.severity, a.reason) == ("critical", "SCAN_STALE"), reason
+    dead = alerts.portal_alert(dict(base, reason="PORTAL_LIST_CONNECTION_ERROR"), running=False, enabled=True, now=NOW)
+    assert dead.reason == "WORKER_NOT_RUNNING"
+    login = alerts.portal_alert(dict(base, reason="PORTAL_LIST_CONNECTION_ERROR",
+                                     manual_reason="PORTAL_LIST_AUTH_REQUIRED"), running=True, enabled=True, now=NOW)
+    assert login.reason == "AUTH_EXPIRED"                    # a real expiry is never softened
+
+
+def test_network_unstable_is_a_known_reason_with_text_in_every_channel():
+    from ggongbab import notify
+    assert alerts.REASONS["NETWORK_UNSTABLE"] == ("warning", "check_network")
+    assert "check_network" in alerts.ACTIONS
+    title, body = notify.format_toast([alerts.Alert.of("portal", "NETWORK_UNSTABLE", 1200, NOW)])
+    assert "네트워크 불안정" in body and "Wi-Fi" in body and title == "밥도둑 운영: 확인이 필요합니다"

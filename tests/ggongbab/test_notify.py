@@ -181,35 +181,102 @@ def test_the_toast_is_on_by_default_on_windows_and_can_be_turned_off(tmp_path):
     assert notify.local_toast(tmp_path, windows=False, linux=True) is None
 
 
-def test_linux_uses_notify_send_with_fixed_text_and_linux_commands(tmp_path):
+class DBus:
+    """Fake subprocess.run for the Linux notifier: gdbus answers "(uint32 N,)"; every call is kept."""
+
+    def __init__(self, ids=(41, 42, 43), gdbus_code=0, send_code=0, error=None):
+        self.calls, self.ids, self.gdbus_code, self.send_code, self.error = [], list(ids), gdbus_code, send_code, error
+
+    def __call__(self, command, **kwargs):
+        self.calls.append((command, kwargs))
+        if self.error:
+            raise self.error
+        if command[0] == "gdbus":
+            out = f"(uint32 {self.ids.pop(0)},)\n" if self.gdbus_code == 0 else ""
+            return type("Done", (), {"returncode": self.gdbus_code, "stdout": out})()
+        return type("Done", (), {"returncode": self.send_code, "stdout": ""})()
+
+
+def stuck(action="restart_worker", severity="critical", reason="SCAN_STALE"):
+    return Alert.of("portal", reason, 900, NOW, severity) if action is None else Alert("portal", severity, reason, 900, NOW, action)
+
+
+def test_linux_toast_is_in_one_slot_and_replaces_the_previous_one(tmp_path):
     assert isinstance(notify.local_toast(tmp_path, windows=False, linux=True), notify.NotifySendNotifier)
-    calls = []
+    run = DBus()
+    sender = notify.NotifySendNotifier(run=run, state=tmp_path / "toast-id.json", clock=lambda: NOW)
+    title, body = sender.render([stuck()], [])
+    assert sender.send(sender.render([stuck()], [])) == notify.SENT
+    command, kwargs = run.calls[0]
+    assert command[:3] == ["gdbus", "call", "--session"] and "org.freedesktop.Notifications.Notify" in command
+    assert command[command.index("org.freedesktop.Notifications.Notify") + 1:][:3] == ["밥도둑 운영", "0", ""]   # first: no id
+    assert "shell" not in kwargs and kwargs["timeout"] == 15
+    # The recovery message goes out with the id of the first one: same slot, transient, normal urgency.
+    assert sender.send(sender.render([], ["portal"])) == notify.SENT
+    command, _ = run.calls[1]
+    tail = command[command.index("org.freedesktop.Notifications.Notify") + 1:]
+    assert tail[:2] == ["밥도둑 운영", "41"]                       # replaces_id of the earlier toast
+    assert "'transient': <true>" in tail[-2] and "<byte 1>" in tail[-2] and tail[-1] == "6000"
+    assert json.loads((tmp_path / "toast-id.json").read_text(encoding="utf-8"))["id"] == 42
 
-    class Run:
-        def __init__(self, code=0, error=None):
-            self.code, self.error = code, error
 
-        def __call__(self, command, **kwargs):
-            calls.append((command, kwargs))
-            if self.error:
-                raise self.error
-            return type("Done", (), {"returncode": self.code})()
+def test_only_an_alert_that_needs_a_person_is_sticky_and_every_toast_says_when(tmp_path):
+    run = DBus()
+    sender = notify.NotifySendNotifier(run=run, clock=lambda: NOW)
+    login = sender.render([stuck("login", reason="AUTH_EXPIRED")], [])
+    assert login.sticky and login.level == "critical"
+    network = sender.render([stuck("check_network", "warning", "NETWORK_UNSTABLE")], [])
+    stale = sender.render([stuck()], [])
+    recovered = sender.render([], ["portal"])
+    assert not network.sticky and not stale.sticky and recovered.level == "recovered" and not recovered.sticky
+    sender.send(login)
+    sender.send(stale)
+    first, second = (c[0][c[0].index("org.freedesktop.Notifications.Notify") + 1:] for c in run.calls)
+    assert "<byte 2>" in first[-2] and first[-1] == "0"           # critical urgency, never auto-expires
+    assert "<byte 1>" in second[-2] and second[-1] == "20000"      # the same critical title, but it expires
+    from datetime import datetime
+    stamp = datetime.fromtimestamp(NOW, notify.KST).strftime("%H:%M")
+    assert first[4].endswith(f"({stamp} 기준)'") and "로그인" in first[3 + 1]      # title [3], body [4]
 
-    sender = notify.NotifySendNotifier(run=Run())
-    alert = notify.Alert("portal", "critical", "WORKER_NOT_RUNNING", None, 0.0, "restart_worker")
-    title, body = sender.render([alert], [])
-    assert sender.send((title, body)) == notify.SENT
-    command, kwargs = calls[-1]
-    assert command[0] == "notify-send" and "--" in command and command[-2:] == [title, body]
-    assert "--urgency=critical" in command and "shell" not in kwargs
+
+def test_linux_toast_text_is_escaped_for_gvariant_and_stays_fixed_korean(tmp_path):
+    assert notify._gv_string("a'b\\c\nd") == "'a\\'b\\\\c\\nd'"
+    assert notify._gv_string("x\x00y\x07z") == "'xyz'"
+    sender = notify.NotifySendNotifier(run=DBus(), clock=lambda: NOW)
+    _, body = sender.render([stuck("login", reason="AUTH_EXPIRED")], [])
+    assert "scripts/linux/ops.sh" not in body and "로그인" in body
+    _, body = sender.render([stuck()], [])
     assert "scripts/linux/ops.sh start" in body and ".cmd" not in body
-    assert notify.NotifySendNotifier(run=Run(code=1)).send(("t", "b")) == notify.TRANSPORT_FAILED
-    assert notify.NotifySendNotifier(run=Run(error=OSError("x"))).send(("t", "b")) == notify.TRANSPORT_FAILED
+
+
+def test_linux_toast_falls_back_to_notify_send_and_reports_fixed_codes(tmp_path):
+    run = DBus(gdbus_code=1)
+    sender = notify.NotifySendNotifier(run=run, clock=lambda: NOW, state=tmp_path / "id.json")
+    assert sender.send(sender.render([stuck("login", reason="AUTH_EXPIRED")], [])) == notify.SENT
+    command, kwargs = run.calls[-1]
+    assert command[0] == "notify-send" and "--urgency=critical" in command and "--expire-time=0" in command
+    assert "--" in command and kwargs["timeout"] == 30 and not (tmp_path / "id.json").exists()
+    assert sender.send(sender.render([], ["portal"])) == notify.SENT
+    assert "--hint=byte:transient:1" in run.calls[-1][0] and "--urgency=normal" in run.calls[-1][0]
+    assert notify.NotifySendNotifier(run=DBus(gdbus_code=1, send_code=1)).send(("t", "b")) == notify.TRANSPORT_FAILED
+    assert notify.NotifySendNotifier(run=DBus(error=OSError("x"))).send(("t", "b")) == notify.TRANSPORT_FAILED
+
+
+def test_an_old_or_unreadable_toast_id_is_not_reused(tmp_path):
+    state = tmp_path / "id.json"
+    run = DBus()
+    sender = notify.NotifySendNotifier(run=run, state=state, clock=lambda: NOW)
+    state.write_text(json.dumps({"id": 9, "at": NOW - 2 * 86400}), encoding="utf-8")
+    sender.send(("t", "b"))
+    assert run.calls[0][0][run.calls[0][0].index("org.freedesktop.Notifications.Notify") + 2] == "0"
+    state.write_text("not json", encoding="utf-8")
+    sender.send(("t", "b"))
+    assert run.calls[1][0][run.calls[1][0].index("org.freedesktop.Notifications.Notify") + 2] == "0"
 
 
 def test_the_toast_waits_out_a_brief_critical_and_keeps_its_own_state(tmp_path):
     """Right after the PC wakes, a scan is late until the workers catch up; that should not pop a
-    toast. A critical that lasts 3 minutes does, once, with its own state file."""
+    toast. A critical that lasts 5 minutes does, once, with its own state file."""
     toast = Recorder()
     assert notify.push_local(tmp_path, [crit()], now=NOW, notifier=None, toast=toast) == notify.NOT_CONFIGURED
     assert toast.messages == []
