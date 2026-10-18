@@ -770,8 +770,27 @@ def sessions_and_audience(browser, base, report):
             page.locator("#homeCalDay .hc-ev-btn").first.click()
             detail = page.locator("#homeCalDay .hc-ev-detail:not([hidden])").inner_text()
             assert ("Open to: KAIST 재학생" if en else "대상 · KAIST 재학생") in detail, detail
+            # The hub shows the same days: one card per session day, each with the audience line.
+            page.add_init_script("localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({when: 'all', food: 'all'}));")
+            page.goto(base + "/ggongbab.html#free")
+            page.locator("article.gg-card").first.wait_for()
+            ids = page.locator("article.gg-card").evaluate_all("cards => cards.map(card => card.dataset.id)")
+            assert [i for i in ids if i.startswith("cc#")] == [f"cc#{n}" for n in range(1, 6)], ids
+            assert "ad" in ids and "pl" in ids and "cc" not in ids, ids
+            label = "Eligibility" if en else "대상"
+
+            def who_of(card_id):
+                return page.locator(f'article.gg-card[data-id="{card_id}"] .gg-eligibility').inner_text().strip()
+
+            assert who_of("cc#5") == f"{label} · 자연과학대학 학사과정 학생", who_of("cc#5")
+            assert who_of("ad") == f"{label} · 기계공학과 학부생 ({'estimated' if en else '추정'})", who_of("ad")
+            assert who_of("pl") == f"{label} · KAIST 재학생", who_of("pl")
+            friday_card = page.locator('article.gg-card[data-id="cc#5"]').inner_text()
+            monday_card = page.locator('article.gg-card[data-id="cc#1"]').inner_text()
+            assert "C101" in friday_card and "C101" not in monday_card, (friday_card, monday_card)   # each day's own place
+            assert "1501" in monday_card and "1501" not in friday_card, (friday_card, monday_card)
             assert problems == [], problems
-            report["checks"] += 17
+            report["checks"] += 24
         finally:
             context.close()
 
