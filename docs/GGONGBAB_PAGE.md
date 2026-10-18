@@ -141,7 +141,7 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 * Fallback(Terra) 은 **모든 메일에 호출하지 않는다.** `validator.fallback_reasons()` 가 다음 중 하나를 감지할 때만 한 번 더 호출한다.
   `low_confidence`(threshold `GGONGBAB_AI_CONFIDENCE_THRESHOLD`, 기본 0.75) · `date_conflict` · `food_ambiguous` · `rule_conflict` ·
   `missing_essential` · `ai_flagged` · `poster_conflict`. 두 결과 중 검증 문제가 적은 쪽을 택한다(`pick_better`).
-* Prompt version: `ggongbab-extract-v6` (`config.PROMPT_VERSION`; v6 = 2026-10-18, 날짜별 `sessions` 와 `audience`, 아래 "여러 날 행사와 대상" 절). `ai_parse_runs.prompt_version` 에 저장되고 **캐시 키의 일부**다.
+* Prompt version: `ggongbab-extract-v7` (`config.PROMPT_VERSION`; v6 = 2026-10-18 날짜별 `sessions` 와 `audience`, v7 = 같은 날 오너 규칙: 음식·경품이 나오는 날만 세션, 아래 "여러 날 행사와 대상" 절). `ai_parse_runs.prompt_version` 에 저장되고 **캐시 키의 일부**다.
   프롬프트 의미를 바꾸면 이 값을 올린다. 그러면 저장된 항목이 옛 추출 결과에 고정되지 않고 다음 실행에서 다시 파싱된다.
 * System prompt 핵심: 본문/포스터에 **쓰여 있지 않은** 날짜 · 장소 · 음식 · 마감 · URL 을 만들지 말 것, `null`/`unknown` 을 적극 사용할 것,
   `food_provided="true"` 면 `evidence.food` 에 제공 문장을 그대로 인용할 것, `registration_required` 와 `eligibility` 도 명시 근거가 있을 때만 채울 것(8절).
@@ -254,7 +254,7 @@ AI 가 정확히 읽었다(`dateText`/`timeText`/장소/음식에 모두 들어 
 
 **`sessions`.** 여러 날이거나 세션마다 시간·장소가 다르면 AI 가 `sessions` 에 하루씩(범위는 하루씩 풀어서) 적는다: `start`·`end`(명시된
 날짜와 시각, `+09:00`)와, 그 날만 다르다고 쓰여 있을 때의 `location_name`/`building`/`room`/`food_description`. 한 번뿐인 행사,
-날짜·시각을 모두 줄 수 없는 경우, 14개를 넘는 경우는 `null`. `event_start`/`event_end` 와 이벤트 수준의 장소·음식은 그대로다.
+날짜·시각을 모두 줄 수 없는 경우, 14개를 넘는 경우는 `null`. **음식이나 경품이 일부 날에만 나온다고 쓰여 있으면 그 날들만 적는다**(프로그램만 있는 날은 세션이 아니며 `event_start`/`event_end` 도 적은 날들만 감싼다); 음식이 하루뿐이면 `null` 이고 그 하루가 이벤트다. `event_start`/`event_end` 와 이벤트 수준의 장소·음식은 그대로다.
 
 **`audience`.** `{text, basis}`. `stated` 는 본문·포스터가 대상을 말할 때(`evidence.audience` 에 인용), `inferred` 는 아무 데도 대상이 없지만
 내용이 한 학과의 구성원 활동임이 분명할 때만(지도교수 면담, 학과 학생회 활동 등). 학과가 주최한 강연·공연·경품 행사는 추정하지 않는다

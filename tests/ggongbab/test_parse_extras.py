@@ -359,8 +359,8 @@ def test_the_extraction_schema_is_strict_with_the_new_fields_and_an_old_parse_st
 
 def test_the_prompt_asks_for_sessions_and_a_strict_audience_and_the_version_moved():
     from ggongbab.parsers.ai_parser import SYSTEM_PROMPT
-    assert PROMPT_VERSION == "ggongbab-extract-v6"
+    assert PROMPT_VERSION == "ggongbab-extract-v7"
     for needle in ("4a. sessions", "one item per day", "sessions = null", "6c. audience", 'basis = "inferred" ONLY',
-                   "is NOT inferred", "event_start and event_end stay the"):
+                   "is NOT inferred", "event_start and event_end stay the", "list ONLY those days"):
         assert needle in SYSTEM_PROMPT, needle
     assert "ONE event" in SYSTEM_PROMPT       # still one event; sessions only describe its days
