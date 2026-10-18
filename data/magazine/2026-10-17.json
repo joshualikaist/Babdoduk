@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "견과류가 몸에 좋은 이유…꼭 챙겨 먹어야 할 7가지",
-    "summary": "아몬드, 호두, 캐슈넛 등 견과류에는 불포화 지방과 섬유질, 단백질, 비타민 등의 영양소가 풍부해 건강에 여러 가지 이점이 있다.",
     "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_39c918b91d92bc18",
     "url": "https://kormedi.com/2886567/",
     "medium": "news",
-    "discoveredAt": "2026-10-17T14:29:03+09:00",
-    "publishedAt": "2026-10-17T10:05:00+09:00",
     "image": "https://kormedi.com/wp-content/uploads/2026/10/twi001t2012071-l.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-17T10:05:00+09:00",
+    "discoveredAt": "2026-10-17T14:29:03+09:00",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_39c918b91d92bc18",
     "imageSource": "feed_media",
+    "summary": "아몬드, 호두, 캐슈넛 등 견과류에는 불포화 지방과 섬유질, 단백질, 비타민 등의 영양소가 풍부해 건강에 여러 가지 이점이 있다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,70 +28,70 @@
       "items": [
         {
           "title": "“볶음밥 먹고 날벼락”… 건강한 20대 ‘간 이식 직전’까지 몰고 간 범인은?",
-          "summary": "전날 만들어 실온에 둔 볶음밥 요리를 다시 데워 먹은 20대 남성이 급성 간부전으로 응급 간 이식을 받기 직전까지 갔던 사례가 보고됐다.학술지 ‘영국의학저널 증례보고(BMJ Case Reports)’에 따르면…",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_585b1a047a59312b",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/15/2026101503321.html",
           "medium": "news",
-          "discoveredAt": "2026-10-17T14:29:03+09:00",
           "publishedAt": "2026-10-17T03:00:00+09:00",
+          "discoveredAt": "2026-10-17T14:29:03+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_585b1a047a59312b",
+          "summary": "전날 만들어 실온에 둔 볶음밥 요리를 다시 데워 먹은 20대 남성이 급성 간부전으로 응급 간 이식을 받기 직전까지 갔던 사례가 보고됐다.학술지 ‘영국의학저널 증례보고(BMJ Case Reports)’에 따르면…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "대장 절제해도 또 생기는 용종⋯먹는 시험약에 크기 줄어",
-          "summary": "가족성 선종성 용종증 치료용 먹는 시험약 REC-4881을 개발 중인 미국 리커전 파마슈티컬스의 연구실 모습.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_c23e5edff4ab39c4",
           "url": "https://kormedi.com/2886074/",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
           "publishedAt": "2026-10-16T11:31:28+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_c23e5edff4ab39c4",
+          "summary": "가족성 선종성 용종증 치료용 먹는 시험약 REC-4881을 개발 중인 미국 리커전 파마슈티컬스의 연구실 모습.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“커피는 가볍게, 치즈는 두툼하게”… 남양유업, ‘소비 목적별 세분화’ 승부수",
-          "summary": "소비자들의 취식 목적과 식습관 라이프스타일이 점차 파편화되는 흐름에 발맞춰 남양유업이 제품의 규격과 영양 성분을 세밀하게 쪼개는 ‘핀셋 다변화’ 전략을 가속화하고 있다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_a0712cd003e5dcca",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201424",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
           "publishedAt": "2026-10-16T10:23:43+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_a0712cd003e5dcca",
+          "summary": "소비자들의 취식 목적과 식습관 라이프스타일이 점차 파편화되는 흐름에 발맞춰 남양유업이 제품의 규격과 영양 성분을 세밀하게 쪼개는 ‘핀셋 다변화’ 전략을 가속화하고 있다.",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "유럽 초콜릿업계, 코코아 의존도 낮추는 원료 전략 주목",
-          "summary": "코코아 가격 변동성과 공급 불확실성이 지속되면서 원료 다변화와 대체 배합 기술이 유럽 초콜릿업계의 새로운 경쟁 요소로 부상하고 있다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_cd3f132f08e6f3fc",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201396",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
           "publishedAt": "2026-10-16T09:56:24+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_cd3f132f08e6f3fc",
+          "summary": "코코아 가격 변동성과 공급 불확실성이 지속되면서 원료 다변화와 대체 배합 기술이 유럽 초콜릿업계의 새로운 경쟁 요소로 부상하고 있다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "이런 흔한 음식이 불로초?…연구를 통해 입증된 장수 식품",
-          "summary": "사과와 브로콜리는 건강하게 오래 사는 데 도움이 되는 식품으로 꼽힌다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_06ddb60910c64003",
           "url": "https://kormedi.com/2885891/",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
           "publishedAt": "2026-10-16T09:25:00+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_06ddb60910c64003",
+          "summary": "사과와 브로콜리는 건강하게 오래 사는 데 도움이 되는 식품으로 꼽힌다.",
           "trendEvidence": [
             "explicit_source_claim"
           ]
@@ -103,62 +103,62 @@
       "items": [
         {
           "title": "두부조림 만들기｜굽지 않고 15분, 국물 자박한 매콤 두부조림 레시피",
-          "summary": "두부조림은 간단한 재료로 만들 수 있는 대표적인 집밥 반찬입니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_da79826e455c85ca",
           "url": "https://cultureagora.tistory.com/392",
           "medium": "blog",
-          "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-17T08:30:33+09:00",
           "image": "https://blog.kakaocdn.net/dn/BnTEJ/dJMcajxq3D2/3Ho2DZXNvIpGEjzhYWaKy0/tfile.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-17T08:30:33+09:00",
+          "discoveredAt": "2026-10-17T14:29:03+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_da79826e455c85ca",
+          "imageSource": "feed_html",
+          "summary": "두부조림은 간단한 재료로 만들 수 있는 대표적인 집밥 반찬입니다."
         },
         {
           "title": "신상출시 편스토랑 안성훈의 참치마요날치알주먹밥 만드는 법",
-          "summary": "341회 신상출시 편스토랑에서 요식업에 종사했던 트로트 가수 안성훈은 3가지 주먹밥 레시피를 공개했는데요.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_2b0dcf5045da6627",
           "url": "https://seon1982.tistory.com/4129",
           "medium": "blog",
-          "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-17T00:00:12+09:00",
           "image": "https://blog.kakaocdn.net/dn/OVS03/dJMcacdR7O2/IXConNOtjOc20ql9ISrXFK/img.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-10-17T00:00:12+09:00",
+          "discoveredAt": "2026-10-17T14:29:03+09:00",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_2b0dcf5045da6627",
+          "imageSource": "feed_html",
+          "summary": "341회 신상출시 편스토랑에서 요식업에 종사했던 트로트 가수 안성훈은 3가지 주먹밥 레시피를 공개했는데요."
         },
         {
           "title": "치킨 차오멘 만들기｜에그누들로 만드는 미국식 중화 볶음면 레시피",
-          "summary": "미국 영화나 드라마를 보다 보면 종이 테이크아웃 박스에 담긴 볶음면을 젓가락으로 먹는 장면이 종종 등장하죠.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_53336ba4f683db64",
           "url": "https://cultureagora.tistory.com/383",
           "medium": "blog",
+          "publishedAt": "2026-10-16T16:00:27+09:00",
           "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-16T16:00:27+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_53336ba4f683db64",
+          "summary": "미국 영화나 드라마를 보다 보면 종이 테이크아웃 박스에 담긴 볶음면을 젓가락으로 먹는 장면이 종종 등장하죠."
         },
         {
           "title": "전자레인지 짜파게티 라면 끓이는 법 4분 30초 만에 끝내는 초간단 레시피",
-          "summary": "전자레인지와 무선주전자만 있으면 냄비 없이 4분 30초 만에 완벽한 짜파게티 라면을 끓일 수 있어요.",
           "source": "달순생활",
-          "sourceId": "blog-dalsoonlife",
-          "candidateId": "c_c6c7698f2e76588a",
           "url": "https://dalsoonlife.tistory.com/229",
           "medium": "blog",
+          "publishedAt": "2026-09-13T13:38:42+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-09-13T13:38:42+09:00"
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_c6c7698f2e76588a",
+          "summary": "전자레인지와 무선주전자만 있으면 냄비 없이 4분 30초 만에 완벽한 짜파게티 라면을 끓일 수 있어요."
         },
         {
           "title": "아직 알려지지 않은 대존맛 조합",
-          "summary": "불닭크림곰탕을 만들어 보자 [재료] 불닭볶음면, 사리곰탕, 우삼겹, 양파, 체다치즈 [만드는 법] 1. 팬에 우삼겹 300g과 양파 반개를 넣고 노릇하게 볶는다.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_f1eaaf167b15d16d",
           "url": "https://www.youtube.com/watch?v=JjP0qd26R78",
           "medium": "youtube",
+          "publishedAt": "2026-10-14T19:57:13+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2026-10-14T19:57:13+09:00"
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_f1eaaf167b15d16d",
+          "summary": "불닭크림곰탕을 만들어 보자 [재료] 불닭볶음면, 사리곰탕, 우삼겹, 양파, 체다치즈 [만드는 법] 1. 팬에 우삼겹 300g과 양파 반개를 넣고 노릇하게 볶는다."
         }
       ]
     },
@@ -167,58 +167,58 @@
       "items": [
         {
           "title": "상추, 쌈으로만 먹지 말고 데쳐라… 어떤 효과?",
-          "summary": "주로 쌈 채소로 활용하거나 샐러드에 넣어 먹는 상추.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_84d768c75b885fa6",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/16/2026101601911.html",
           "medium": "news",
+          "publishedAt": "2026-10-17T08:03:00+09:00",
           "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-17T08:03:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_84d768c75b885fa6",
+          "summary": "주로 쌈 채소로 활용하거나 샐러드에 넣어 먹는 상추."
         },
         {
           "title": "“폐경 전이라 생리 불규칙?”⋯폐경이행기 놓치기 쉬운 자궁 관련 질환은 / 박지윤, “다이어트하는 딸, 든든히 먹이고 싶어”⋯아침 ‘고단백 식단’ 봤더니? / 강대희 “아시아 경제 급성장에도 의료 인프라는 못 따라가⋯해법은 원격의료”",
-          "summary": "“폐경 전이라 생리 불규칙?”⋯폐경이행기 놓치기 쉬운 자궁 관련 질환은 40~50대 여성은 폐경을 앞두고 다양한 신체 변화를 겪는다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_a75e1f571e4818c9",
           "url": "https://kormedi.com/2886539/",
           "medium": "news",
+          "publishedAt": "2026-10-17T06:00:00+09:00",
           "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-17T06:00:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a75e1f571e4818c9",
+          "summary": "“폐경 전이라 생리 불규칙?”⋯폐경이행기 놓치기 쉬운 자궁 관련 질환은 40~50대 여성은 폐경을 앞두고 다양한 신체 변화를 겪는다."
         },
         {
           "title": "“콜레스테롤 높아서 피했는데”⋯탱글탱글 제철 ‘이것’, 알고 보니 고단백·저지방? / 대장 용종 제거? “또 화장실, 너무 힘들어”… 대장내시경 주의할 사람은? / 김희선도 하루 ‘2만 보’ 걷는다… 살 빼려면 걸음 수보다 ‘이것’ 중요하다는데?",
-          "summary": "“콜레스테롤 높아서 피했는데”⋯탱글탱글 제철 ‘이것’, 알고 보니 고단백·저지방?",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_d997b909ee0b7ef4",
           "url": "https://kormedi.com/2885750/",
           "medium": "news",
+          "publishedAt": "2026-10-16T06:00:00+09:00",
           "discoveredAt": "2026-10-16T14:43:54+09:00",
-          "publishedAt": "2026-10-16T06:00:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_d997b909ee0b7ef4",
+          "summary": "“콜레스테롤 높아서 피했는데”⋯탱글탱글 제철 ‘이것’, 알고 보니 고단백·저지방?"
         },
         {
           "title": "매일 먹는 달걀, 이왕이면 ‘잘 까지게’ 삶자… 방법은?",
-          "summary": "달걀은 단백질, 비타민, 철분, 셀레늄 등 영양이 풍부하고 활용 범위가 넓어 식탁에 자주 오른다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_26cc9efaccde5587",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/16/2026101602182.html",
           "medium": "news",
+          "publishedAt": "2026-10-17T05:01:00+09:00",
           "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-17T05:01:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_26cc9efaccde5587",
+          "summary": "달걀은 단백질, 비타민, 철분, 셀레늄 등 영양이 풍부하고 활용 범위가 넓어 식탁에 자주 오른다."
         },
         {
           "title": "커피, 근육 건강에 도움될까?… 연구 54편 모아보니 ‘가능성 있다’",
-          "summary": "커피가 단순히 잠을 깨우는 음료를 넘어 근육 건강에도 긍정적인 영향을 미칠 가능성이 있다는 연구 결과가 나왔다.커피에 든 카페인ㆍ폴리페놀ㆍ트리고넬린 등 다양한 성분이 근육세포의 에너지 생산과 혈당ㆍ지방 대사, 염증…",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_983084e82f04470c",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68659",
           "medium": "news",
+          "publishedAt": "2026-10-17T03:22:29+09:00",
           "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-17T03:22:29+09:00"
+          "sourceId": "news-foodbank",
+          "candidateId": "c_983084e82f04470c",
+          "summary": "커피가 단순히 잠을 깨우는 음료를 넘어 근육 건강에도 긍정적인 영향을 미칠 가능성이 있다는 연구 결과가 나왔다.커피에 든 카페인ㆍ폴리페놀ㆍ트리고넬린 등 다양한 성분이 근육세포의 에너지 생산과 혈당ㆍ지방 대사, 염증…"
         }
       ]
     },
@@ -227,60 +227,60 @@
       "items": [
         {
           "title": "“똑같은 음식인데 왜”⋯혼밥 vs 다같이 식사, 혈당 덜 올리는 식사법은",
-          "summary": "혼밥은 타인에게 일정을 맞추지 않고 혼자 먹고 싶은 메뉴를 골라 편하게 식사할 수 있다는 장점이 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_bab770ad6b6127d2",
           "url": "https://kormedi.com/2886461/",
           "medium": "news",
-          "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-16T23:03:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/aaas-28.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-16T23:03:00+09:00",
+          "discoveredAt": "2026-10-17T14:29:03+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_bab770ad6b6127d2",
+          "imageSource": "feed_media",
+          "summary": "혼밥은 타인에게 일정을 맞추지 않고 혼자 먹고 싶은 메뉴를 골라 편하게 식사할 수 있다는 장점이 있다."
         },
         {
           "title": "“저녁 먹고 또?”⋯야식 습관, 간 건강 해칠 수 있다",
-          "summary": "야식을 먹는 습관은 간 건강에 해로울 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_2470e9f625dc3fc6",
           "url": "https://kormedi.com/2886369/",
           "medium": "news",
+          "publishedAt": "2026-10-16T16:43:58+09:00",
           "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-16T16:43:58+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2470e9f625dc3fc6",
+          "summary": "야식을 먹는 습관은 간 건강에 해로울 수 있다."
         },
         {
           "title": "“뱃살만 문제 아녔다”… ‘이 음식’ 즐겨 먹은 중년, 뇌혈관 손상 위험",
-          "summary": "초가공식품을 많이 먹는 중년 성인은 체지방과 내장지방이 많고, 뇌 MRI에서 무증상 혈관성 손상이 발견될 가능성도 높다는 연구 결과가 나왔다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_36a0c4103d4708c0",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/16/2026101602306.html",
           "medium": "news",
+          "publishedAt": "2026-10-17T12:02:00+09:00",
           "discoveredAt": "2026-10-17T14:29:03+09:00",
-          "publishedAt": "2026-10-17T12:02:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_36a0c4103d4708c0",
+          "summary": "초가공식품을 많이 먹는 중년 성인은 체지방과 내장지방이 많고, 뇌 MRI에서 무증상 혈관성 손상이 발견될 가능성도 높다는 연구 결과가 나왔다."
         },
         {
           "title": "Composite Meal-Related Behaviors and Health Indicators: Insight from Large-Scale Nationwide Data on Korean Adults",
-          "summary": "Objectives: Multidimensional dietary patterns provide a more comprehensive assessment of meal-related behavior than…",
           "source": "pmc.ncbi.nlm.nih.gov",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_86eff47a708a8e86",
           "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472365/",
           "medium": "research",
+          "publishedAt": "2025-09-17T09:00:00+09:00",
           "discoveredAt": "2026-10-15T14:46:41+09:00",
-          "publishedAt": "2025-09-17T09:00:00+09:00"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_86eff47a708a8e86",
+          "summary": "Objectives: Multidimensional dietary patterns provide a more comprehensive assessment of meal-related behavior than…"
         },
         {
           "title": "만성 피로 줄이려면?…더 먹어야 할 음식 vs 줄여야 할 음식",
-          "summary": "아연이 풍부한 새우 등의 식품은 만성 피로를 완화하는 데 도움이 되는 식품으로 꼽힌다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_880a90fe1f675fc1",
           "url": "https://kormedi.com/2883158/",
           "medium": "news",
+          "publishedAt": "2026-10-13T10:15:00+09:00",
           "discoveredAt": "2026-10-13T16:36:20+09:00",
-          "publishedAt": "2026-10-13T10:15:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_880a90fe1f675fc1",
+          "summary": "아연이 풍부한 새우 등의 식품은 만성 피로를 완화하는 데 도움이 되는 식품으로 꼽힌다."
         }
       ]
     }
