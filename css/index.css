@@ -854,6 +854,11 @@ html[data-wc-phase="soon"] .home-wc-photo {
   overflow-wrap: anywhere;
 }
 
+.hc-ev-who {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .hc-ev-time {
   font-weight: 700;
   color: var(--color-ink);

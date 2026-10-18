@@ -257,8 +257,9 @@
     var now = F.nowKst();
     state.todayIso = F.ymd(now);
     state.windowStart = addDays(state.todayIso, -state.windowDays);
-    var liveEvents = state.status === 'ready' ? state.live.events : [];
-    var archiveEvents = state.archiveStatus === 'ready' && state.archive ? state.archive.events : [];
+    // A multi-day event is one row per session day (js/ggongbab-select.js occurrences).
+    var liveEvents = state.status === 'ready' ? F.occurrences(state.live.events) : [];
+    var archiveEvents = state.archiveStatus === 'ready' && state.archive ? F.occurrences(state.archive.events) : [];
     state.days = state.status === 'error' ? {} : buildIndex(liveEvents, archiveEvents, now, state.windowStart);
     var todayMonth = monthOf(state.todayIso);
     var last = Object.keys(state.days).sort().pop() || state.todayIso;
@@ -372,17 +373,29 @@
     if (cell) cell.focus();
   }
 
+  // The audience in small text: an inferred one carries "(추정)", so a guess never reads as a statement.
+  function whoText(ev) {
+    return F.audienceOf(ev, function (who) { return fill(t('home.cal.ev.estimated', '{who} (추정)'), { who: who }); });
+  }
+  function sessionText(ev) {
+    return ev.session ? fill(t('home.cal.ev.session', '{n}/{total}회차'), { n: ev.session.n, total: ev.session.total }) : '';
+  }
   function metaLines(item) {
     var ev = item.ev;
     var start = F.toKst(ev.startAt);
     var when = '<span class="hc-ev-time">' + esc(timeText(ev, start)) + '</span>';
     var place = shortPlace(ev.location);
-    var first = (item.active ? '' : esc(t('home.cal.ev.ended', '종료')) + ' · ') + when + (place ? ' · ' + esc(place) : '');
+    var part = sessionText(ev);
+    var first = (item.active ? '' : esc(t('home.cal.ev.ended', '종료')) + ' · ') + when + (place ? ' · ' + esc(place) : '') +
+      (part ? ' · ' + esc(part) : '');
     // A giveaway-only row names no food at all; a row with both shows both.
     var second = item.food ? [esc(foodText(ev))] : [];
     if (F.hasGiveaway(ev)) second.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
     if (item.active && F.tri((ev.registration || {}).required) === 'true') second.push(esc(t('home.cal.ev.reg', '사전 신청')));
-    return '<span class="hc-ev-meta">' + first + '</span><span class="hc-ev-meta">' + second.join(' · ') + '</span>';
+    // Only an extracted audience gets a line of its own on the collapsed row; a plain eligibility stays in the details.
+    var who = ev.audience ? whoText(ev) : '';
+    return '<span class="hc-ev-meta">' + first + '</span><span class="hc-ev-meta">' + second.join(' · ') + '</span>' +
+      (who ? '<span class="hc-ev-meta hc-ev-who">' + esc(fill(t('home.cal.ev.who', '대상 · {who}'), { who: who })) + '</span>' : '');
   }
   function detailHtml(item) {
     var ev = item.ev;
@@ -396,7 +409,8 @@
     if (line) rows.push('<p class="hc-ev-line">' + esc(line) + '</p>');
     var gift = giftText(ev);
     if (gift) rows.push('<p class="hc-ev-line">' + esc(fill(t('home.cal.ev.giftDetail', '경품 · {gift}'), { gift: gift })) + '</p>');
-    if (ev.eligibility) rows.push('<p class="hc-ev-line">' + esc(fill(t('home.cal.ev.who', '대상 · {who}'), { who: ev.eligibility })) + '</p>');
+    var who = whoText(ev);
+    if (who) rows.push('<p class="hc-ev-line">' + esc(fill(t('home.cal.ev.who', '대상 · {who}'), { who: who })) + '</p>');
     var reg = ev.registration || {};
     var deadline = F.toKst(reg.deadline);
     var closed = !item.active || (deadline && deadline < F.nowKst());
