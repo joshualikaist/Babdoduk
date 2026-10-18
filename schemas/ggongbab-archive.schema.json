@@ -77,6 +77,40 @@
               "url": {"$ref": "#/$defs/urlOrEmpty"}
             }
           }
+        },
+        "sessions": {
+          "description": "Optional. Every day or session of a multi-day event, in order, 2 to 14 items; the first starts at startAt and none ends after endAt (2026-10-18). Read back from the stored AI parse (scripts/ggongbab/parse_extras.py).",
+          "type": "array", "minItems": 2, "maxItems": 14,
+          "items": {
+            "type": "object",
+            "required": ["startAt", "endAt"],
+            "additionalProperties": false,
+            "properties": {
+              "startAt": {"$ref": "#/$defs/kstTime"},
+              "endAt": {"$ref": "#/$defs/kstTimeOrNull"},
+              "location": {
+                "type": "object",
+                "required": ["name", "building", "room"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {"type": "string"},
+                  "building": {"type": "string"},
+                  "room": {"type": "string"}
+                }
+              },
+              "foodDescription": {"type": "string"}
+            }
+          }
+        },
+        "audience": {
+          "description": "Optional. Who the event is for. basis 'stated': the source says so; 'inferred': only under the strict rule of the extraction prompt, shown with an 'estimated' mark (2026-10-18).",
+          "type": "object",
+          "required": ["text", "basis"],
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string", "minLength": 1, "maxLength": 60},
+            "basis": {"enum": ["stated", "inferred"]}
+          }
         }
       }
     }

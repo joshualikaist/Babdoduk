@@ -369,6 +369,11 @@ GG_EVENT_SCHEMA = {
     "registration": {"required": GG_ENUM, "deadline": GG_TIME, "url": GG_URL},
     "confidence": GG_NUMBER,
     "sources": [{"type": GG_ENUM, "name": GG_TEXT, "url": GG_URL}],
+    # Every day of a multi-day event with its own time (and its own venue or food when the source says so),
+    # and who the event is for (2026-10-18). Both are optional and read back from the stored AI parse.
+    "sessions": [{"startAt": GG_TIME, "endAt": GG_TIME,
+                  "location": {"name": GG_TEXT, "building": GG_TEXT, "room": GG_TEXT}, "foodDescription": GG_TEXT}],
+    "audience": {"text": GG_TEXT, "basis": GG_ENUM},
 }
 # Top-level keys; `_preview` holds only the local preview's numeric diagnostics.
 GG_LIVE_TOP_LEVEL = {"schemaVersion", "generatedAt", "timezone", "count", "events", "_preview"}
@@ -394,6 +399,54 @@ def gg_listing_basis_errors(tag: str, ev: dict) -> list[str]:
         errors.append(f"{tag} food.source is text/poster and only with food.provided true")
     if food.get("provided") != "true" and not (isinstance(giveaway, dict) and giveaway.get("provided") == "true"):
         errors.append(f"{tag} food.provided must be true unless the listing is a giveaway")
+    return errors
+
+
+GG_MAX_SESSIONS = 14
+GG_AUDIENCE_MAX_CHARS = 60
+GG_AUDIENCE_BASES = ("stated", "inferred")
+
+
+def gg_extras_errors(tag: str, ev: dict) -> list[str]:
+    """The optional sessions[] and audience of an event: shape, order and fit with the event itself."""
+    errors: list[str] = []
+    sessions = ev.get("sessions")
+    if sessions is not None:
+        if not isinstance(sessions, list) or not 2 <= len(sessions) <= GG_MAX_SESSIONS:
+            errors.append(f"{tag} sessions must hold 2 to {GG_MAX_SESSIONS} items")
+        else:
+            previous = first = last = None
+            for idx, item in enumerate(sessions):
+                where = f"{tag}.sessions[{idx}]"
+                if not isinstance(item, dict):
+                    errors.append(f"{where} not an object")
+                    continue
+                s_at = _iso(item.get("startAt"))
+                e_at = _iso(item.get("endAt")) if item.get("endAt") else None
+                if s_at is None or s_at.utcoffset() != KST_OFFSET:
+                    errors.append(f"{where}.startAt missing or not ISO +09:00")
+                    continue
+                if item.get("endAt") and (e_at is None or e_at.utcoffset() != KST_OFFSET):
+                    errors.append(f"{where}.endAt not ISO +09:00")
+                    continue
+                if e_at is not None and (e_at < s_at or e_at - s_at > timedelta(hours=24)):
+                    errors.append(f"{where} ends before it starts or runs longer than a day")
+                if previous is not None and s_at <= previous:
+                    errors.append(f"{where} is not after the previous session")
+                previous = s_at
+                first = first or s_at
+                last = e_at or s_at
+            start, end = _iso(ev.get("startAt")), _iso(ev.get("endAt")) if ev.get("endAt") else None
+            if first is not None and start is not None and first != start:
+                errors.append(f"{tag} first session does not start at startAt")
+            if last is not None and end is not None and last > end:
+                errors.append(f"{tag} a session ends after endAt")
+    audience = ev.get("audience")
+    if audience is not None:
+        text = audience.get("text") if isinstance(audience, dict) else None
+        if (not isinstance(text, str) or not text.strip() or len(text) > GG_AUDIENCE_MAX_CHARS
+                or audience.get("basis") not in GG_AUDIENCE_BASES):
+            errors.append(f"{tag} audience needs short text and basis stated/inferred")
     return errors
 
 
@@ -587,6 +640,7 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
             errors.append(f"{tag} not an object")
             continue
         errors += gg_public_field_errors("ggongbab export", tag, ev)
+        errors += gg_extras_errors(tag, ev)
         eid = ev.get("id")
         if not eid or not isinstance(eid, str):
             errors.append(f"{tag} missing id")
@@ -702,6 +756,7 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
             errors.append(f"{tag} not an object")
             continue
         errors += gg_public_field_errors("ggongbab archive", tag, ev)
+        errors += gg_extras_errors(tag, ev)
         eid = ev.get("id")
         if not eid or not isinstance(eid, str):
             errors.append(f"{tag} missing id")
