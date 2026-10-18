@@ -251,19 +251,50 @@ def test_an_internal_source_never_carries_a_url(kind, source_type):
 # Changing this list is a privacy decision. Review the new field, then update both lists.
 EXPECTED_TEXT_FIELDS = ("title", "summary", "dateText", "timeText", "organizer", "eligibility",
                         "location.name", "location.building", "location.room", "food.description",
-                        "giveaway.description", "sources[].name")
+                        "giveaway.description", "sources[].name",
+                        # 2026-10-18: each day of a multi-day event, and who the event is for. Reviewed: free text
+                        # of the same kind as the venue, food and eligibility above, scanned like them.
+                        "sessions[].location.name", "sessions[].location.building", "sessions[].location.room",
+                        "sessions[].foodDescription", "audience.text")
 
 
 def test_the_privacy_scanned_text_fields_are_an_explicit_reviewed_list():
     assert vc.GG_PUBLIC_TEXT_FIELDS == EXPECTED_TEXT_FIELDS
 
 
+def two_sessions():
+    day = NOW + timedelta(days=2)
+    place = {"name": "KI빌딩 퓨전홀", "building": "E4", "room": "C101"}
+    return [{"startAt": day.isoformat(), "endAt": (day + timedelta(minutes=30)).isoformat(), "location": place,
+             "foodDescription": "샌드위치"},
+            {"startAt": (day + timedelta(minutes=30)).isoformat(), "endAt": (day + timedelta(hours=1)).isoformat(),
+             "location": place, "foodDescription": "버거"}]
+
+
+def scanned_paths(ev):
+    """Every allowlisted text field of `ev`, a list field once per item present."""
+    paths = []
+    for field in EXPECTED_TEXT_FIELDS:
+        head, bracket, tail = field.partition("[]")
+        if not bracket:
+            paths.append(f"events[0].{field}")
+            continue
+        node = ev
+        for part in head.split("."):
+            node = node[part]
+        paths += [f"events[0].{head}[{i}]{tail}" for i in range(len(node))]
+    return paths
+
+
 def test_privacy_patterns_run_only_on_the_allowlisted_text_fields(monkeypatch):
     scanned = []
     real = vc.gg_text_errors
     monkeypatch.setattr(vc, "gg_text_errors", lambda prefix, where, text: scanned.append(where) or real(prefix, where, text))
-    assert validate_ggongbab_payload(live(event(id=PHONE_LIKE_UUID, giveaway={"provided": "true", "description": "경품"})), NOW) == []
-    assert sorted(scanned) == sorted(f"events[0].{field.replace('[]', '[0]')}" for field in EXPECTED_TEXT_FIELDS)
+    sample = event(id=PHONE_LIKE_UUID, giveaway={"provided": "true", "description": "경품"}, sessions=two_sessions(),
+                   audience={"text": "기계공학과 학부생", "basis": "stated"})
+    assert validate_ggongbab_payload(live(sample), NOW) == []
+    assert sorted(scanned) == sorted(scanned_paths(sample))
+    assert any(path.startswith("events[0].sessions[1].") for path in scanned) and "events[0].audience.text" in scanned
 
 
 def schema_kind(path):
@@ -295,7 +326,12 @@ def full_row():
             "food_provided": "true", "food_type": "meal", "food_description": "f", "organizer": "o",
             "eligibility": "e", "registration_required": "true",
             "registration_deadline": "2026-09-30T03:00:00+00:00", "registration_url": "https://forms.gle/AbC",
-            "confidence": 0.9, "_sources": [{"type": "kaist_public", "name": "KAIST 공지", "url": NOTICE_URL}]}
+            "confidence": 0.9, "_sources": [{"type": "kaist_public", "name": "KAIST 공지", "url": NOTICE_URL}],
+            # What parse_extras attaches: two sessions inside the event's 12:00-13:00 and its audience.
+            "_extras": {"sessions": [{"start": "2026-10-01T12:00:00+09:00", "end": "2026-10-01T12:20:00+09:00",
+                                      "location_name": "n", "building": "b", "room": "r", "food_description": "f"},
+                                     {"start": "2026-10-01T12:30:00+09:00", "end": "2026-10-01T13:00:00+09:00"}],
+                        "audience": {"text": "a", "basis": "inferred"}}}
 
 
 @pytest.mark.parametrize("export", [public_event, archived_event])
