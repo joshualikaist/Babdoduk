@@ -14,6 +14,7 @@ from typing import Any, Optional, Protocol
 import content_labels
 
 from ..config import KST, PROMPT_VERSION
+from ..parse_extras import RUN_BATCH, attach_extras
 from ..models import RawAttachment, RawItem
 from .supabase_client import SupabaseClient
 
@@ -196,7 +197,26 @@ class SupabaseRepository:
             })
         for event in events:
             event["_sources"] = by_event.get(event["id"], [])
+        raw_by_event: dict[str, list[str]] = {}
+        for link in links:
+            raw_by_event.setdefault(link["event_id"], []).append(link["raw_item_id"])
+        self._attach_extras(events, raw_by_event)
         return events
+
+    def _attach_extras(self, events: list[dict[str, Any]], raw_ids_by_event: dict[str, list[str]]) -> None:
+        """Sessions and audience come from the stored parses (ai_parse_runs.parsed_json: `events` has no
+        column for them). Any failure leaves the events as they were: they simply have no extras."""
+        try:
+            raw_ids = sorted({raw for ids in raw_ids_by_event.values() for raw in ids})
+            runs: list[dict[str, Any]] = []
+            for i in range(0, len(raw_ids), RUN_BATCH):
+                runs += self.client.select_all("ai_parse_runs", {
+                    "raw_item_id": f"in.({','.join(raw_ids[i:i + RUN_BATCH])})",
+                    "prompt_version": f"eq.{PROMPT_VERSION}", "status": "eq.ok", "role": "eq.primary",
+                    "select": "id,raw_item_id,parsed_json,created_at", "order": "id.asc"})
+            attach_extras(events, raw_ids_by_event, runs)
+        except Exception:  # noqa: BLE001 - optional detail must never stop an export
+            return
 
     def publishable_events(self) -> list[dict[str, Any]]:
         rows = self.client.select_all("events", {
@@ -386,6 +406,13 @@ class MemoryRepository:
                 stype = type_by_source.get(raw.get("source_id"), "unknown")
                 srcs.append({"type": stype, "name": SOURCE_NAMES.get(stype, stype), "url": raw.get("source_url") or ""})
             event["_sources"] = srcs
+        raw_by_event: dict[str, list[str]] = {}
+        for (e, r) in self.event_sources:
+            raw_by_event.setdefault(e, []).append(r)
+        runs = [run for run in self.ai_runs
+                if run.get("prompt_version") == PROMPT_VERSION and run.get("status") == "ok"
+                and run.get("role", "primary") == "primary" and run.get("parsed_json")]
+        attach_extras(events, raw_by_event, runs)
         return events
 
     def publishable_events(self) -> list[dict[str, Any]]:

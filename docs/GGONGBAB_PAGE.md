@@ -141,7 +141,7 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 * Fallback(Terra) 은 **모든 메일에 호출하지 않는다.** `validator.fallback_reasons()` 가 다음 중 하나를 감지할 때만 한 번 더 호출한다.
   `low_confidence`(threshold `GGONGBAB_AI_CONFIDENCE_THRESHOLD`, 기본 0.75) · `date_conflict` · `food_ambiguous` · `rule_conflict` ·
   `missing_essential` · `ai_flagged` · `poster_conflict`. 두 결과 중 검증 문제가 적은 쪽을 택한다(`pick_better`).
-* Prompt version: `ggongbab-extract-v2` (`config.PROMPT_VERSION`). `ai_parse_runs.prompt_version` 에 저장되고 **캐시 키의 일부**다.
+* Prompt version: `ggongbab-extract-v6` (`config.PROMPT_VERSION`; v6 = 2026-10-18, 날짜별 `sessions` 와 `audience`, 아래 "여러 날 행사와 대상" 절). `ai_parse_runs.prompt_version` 에 저장되고 **캐시 키의 일부**다.
   프롬프트 의미를 바꾸면 이 값을 올린다. 그러면 저장된 항목이 옛 추출 결과에 고정되지 않고 다음 실행에서 다시 파싱된다.
 * System prompt 핵심: 본문/포스터에 **쓰여 있지 않은** 날짜 · 장소 · 음식 · 마감 · URL 을 만들지 말 것, `null`/`unknown` 을 적극 사용할 것,
   `food_provided="true"` 면 `evidence.food` 에 제공 문장을 그대로 인용할 것, `registration_required` 와 `eligibility` 도 명시 근거가 있을 때만 채울 것(8절).
@@ -245,6 +245,30 @@ validator 가 review 없이 `unknown` 으로 고친다. 그 밖의 근거 없는
 “선착순, 소진 시 종료”, “선착순 배부” 같은 **수량 제한**도 자격이 아니다(`선착순 50명` 은 그대로 인원 제한으로 본다).
 (첫 실제 실행에서 “참석자에게 점심 도시락을 제공합니다”가 `eligibility="참석자"` 로 저장된 회귀. `rule_parser.is_real_eligibility()` 가 막는다.)
 본문에 없는 자격 문구도 버린다.
+
+### 여러 날 행사와 대상 (`sessions`, `audience`; 2026-10-18)
+
+**배경.** 「자연과학과 함께하는 토크 콘서트」 포스터(월~목 12:00–12:50 자연과학관, 금 16:00–19:30 KI빌딩 퓨전홀, 음식도 다름)는
+AI 가 정확히 읽었다(`dateText`/`timeText`/장소/음식에 모두 들어 있었다). 그러나 이벤트에는 시작·끝이 하나뿐이라(프롬프트 4번:
+여러 날 행사는 하나의 이벤트, `event_start` = 첫 세션 시작, `event_end` = 마지막 세션 끝) 홈 달력에는 첫날 12:00 만 보였다.
+
+**`sessions`.** 여러 날이거나 세션마다 시간·장소가 다르면 AI 가 `sessions` 에 하루씩(범위는 하루씩 풀어서) 적는다: `start`·`end`(명시된
+날짜와 시각, `+09:00`)와, 그 날만 다르다고 쓰여 있을 때의 `location_name`/`building`/`room`/`food_description`. 한 번뿐인 행사,
+날짜·시각을 모두 줄 수 없는 경우, 14개를 넘는 경우는 `null`. `event_start`/`event_end` 와 이벤트 수준의 장소·음식은 그대로다.
+
+**`audience`.** `{text, basis}`. `stated` 는 본문·포스터가 대상을 말할 때(`evidence.audience` 에 인용), `inferred` 는 아무 데도 대상이 없지만
+내용이 한 학과의 구성원 활동임이 분명할 때만(지도교수 면담, 학과 학생회 활동 등). 학과가 주최한 강연·공연·경품 행사는 추정하지 않는다
+(오는 사람 누구나). 추정은 화면에 "(추정)"이 붙는다. 메일 수신자(받는사람/참조)는 지금 모델에 전달되지 않는다. 학과 단위로만
+발송된 메일의 대상은 그 정보 없이는 알 수 없으므로, 수신자 캡처는 두레이 상세 JSON 의 필드를 실제로 확인한 뒤 별도로 한다.
+
+**저장과 공개.** `events` 표에는 컬럼이 없다(마이그레이션은 보호 대상). 두 값은 이미 통째로 저장되는 `ai_parse_runs.parsed_json` 에
+들어 있고, 내보낼 때 `repository._with_sources` 가 그 이벤트의 시작과 같은 시작을 가진 최신 성공 파싱(현재 프롬프트 버전)을 읽어
+`_extras` 로 붙인다(`parse_extras.py`). 어긋나는 `sessions`(개수, 순서, 첫 세션 ≠ 시작, 끝 이후)는 통째로 버리고 이벤트는 그대로
+낸다. 읽기가 실패해도 이벤트는 그대로 나간다. 공개 JSON 의 선택 키 `sessions`(`startAt`, `endAt`, 선택 `location`, `foodDescription`)와
+`audience`(`text`, `basis`)는 두 스키마(`ggongbab-feed`, `ggongbab-archive`)와 `validate_content.GG_EVENT_SCHEMA` 에 있다.
+Supabase 공개 투영(lab 의 DB 피드)에는 실리지 않는다: 행에 새 키를 넣으면 `ggongbab_replace_public_feed` 가 거부하므로
+`public_row` 는 그대로 두었고, 그 경로의 이벤트는 한 줄로 보인다(이어서 하려면 마이그레이션 + 투영 확장이 별도 과제다).
+`PROMPT_VERSION` 을 올렸으므로 클라우드(main 코드로 돈다)가 다음 실행에서 기간 안의 메일을 새 프롬프트로 다시 파싱한다.
 
 회귀 fixture (`tests/ggongbab/conftest.py`):
 “9월 25일 12시 N1에서 기업 설명회를 진행합니다. 참석자에게 점심 도시락을 제공합니다.” → 9/25 12:00, N1, `true`, `lunchbox`.
@@ -378,7 +402,7 @@ live 피드는 “지금·앞으로 참여할 수 있는 꽁밥”, 아카이브
 (단, live 의 60일 horizon 밖 미래 행사는 원래 어디에도 없다).
 
 **공개 계약.** 기록은 `public_event` 의 공개 필드에서 `registration`·`confidence` 를 뺀 것이다: `id`, `title`, `summary`,
-`startAt`, `endAt`, `dateText`, `timeText`, `location`, `food`, `organizer`, `eligibility`, `sources`. 출처는 live 와 같이
+`startAt`, `endAt`, `dateText`, `timeText`, `location`, `food`, `organizer`, `eligibility`, `sources`(그리고 있으면 `sessions`, `audience`). 출처는 live 와 같이
 공개 라벨만 두고, URL 은 `kaist_public`·`manual` 의 http(s) 공개 공지만 남긴다. Dooray id·task 링크·메일 원문·발신자·
 review 사유·AI 입력/출력은 절대 들어가지 않는다. 파일 머리: `generatedAt`(KST), `timezone`, `windowDays`(30), `count`.
 정렬은 최근에 끝난 것부터, 같으면 id 순.

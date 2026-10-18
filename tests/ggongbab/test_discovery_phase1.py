@@ -96,7 +96,7 @@ def test_an_unsupported_registration_claim_without_supply_wording_still_goes_to_
 
 # --- prompt -------------------------------------------------------------------------
 def test_prompt_separates_first_come_supply_from_registration():
-    assert PROMPT_VERSION == "ggongbab-extract-v5"
+    assert PROMPT_VERSION == "ggongbab-extract-v6"
     rule_6a = SYSTEM_PROMPT[SYSTEM_PROMPT.index("6a."):SYSTEM_PROMPT.index("6b.")]
     assert "선착순 신청/모집/접수/마감" in rule_6a and "SUPPLY" in rule_6a and "NOT registration" in rule_6a
     assert "(사전 신청, 신청 필수, 등록 필요,\n   선착순, RSVP" not in SYSTEM_PROMPT
