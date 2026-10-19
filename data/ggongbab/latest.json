@@ -1,34 +1,34 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-17T22:16:12+09:00",
+  "generatedAt": "2026-10-19T20:18:04+09:00",
   "timezone": "Asia/Seoul",
   "count": 7,
   "events": [
     {
-      "id": "afa5f6d3-0c94-4c3a-a461-e63d07b2f5d1",
-      "title": "Adapting AI for Diverse Populations and Health Systems(다양한 인구집단 및 보건의료시스템에 맞춘 인공지능 적용)",
-      "summary": "Prof. Sanjay Kinra 초청 세미나로, 다양한 인구집단과 보건의료시스템에 맞춘 AI 적용 사례를 소개한다. 참석자에게 가벼운 다과와 핑거푸드가 제공된다.",
-      "startAt": "2026-10-19T12:00:00+09:00",
-      "endAt": "2026-10-19T13:00:00+09:00",
-      "dateText": "October 19 (Mon)",
-      "timeText": "12:00–13:00",
+      "id": "3eb2e2a6-96ea-4952-a032-2282ad920f67",
+      "title": "IDIS-KAIST 실리콘밸리 프런티어 해외인턴십 제4기 사업 설명회",
+      "summary": "IDIS-KAIST 실리콘밸리 프런티어 해외인턴십 제4기 사업 설명회입니다. 제3기 참여학생 성과공유, 제4기 프로그램 소개 및 Q&A, 실리콘밸리 업무 문화와 커리어 관련 강연이 진행됩니다.",
+      "startAt": "2026-10-26T15:00:00+09:00",
+      "endAt": "2026-10-26T16:00:00+09:00",
+      "dateText": "2026년 10월 26일(월)",
+      "timeText": "15:00-16:00",
       "location": {
-        "name": "Lecture Room Red (B501), 5th Floor, KI Building (E4)",
-        "building": "E4",
-        "room": "B501"
+        "name": "KI빌딩 1층 로비 강연무대",
+        "building": "KI빌딩",
+        "room": "1층 로비 강연무대"
       },
       "food": {
         "provided": "true",
-        "type": "snack",
-        "description": "Light refreshments and finger foods",
+        "type": "meal",
+        "description": "매드버거 세트",
         "source": "text"
       },
-      "organizer": "AI미래학과 김형준교수님 연구실",
+      "organizer": "창업원운영팀",
       "eligibility": "",
       "registration": {
-        "required": "true",
+        "required": "unknown",
         "deadline": null,
-        "url": "https://docs.google.com/forms/d/e/1FAIpQLSeUfKRw7wMKQVexBFvhhtYQlUsj2NtTy0EIaF53ynWsHFnPDw/viewform?usp=preview"
+        "url": ""
       },
       "confidence": 0.99,
       "sources": [
