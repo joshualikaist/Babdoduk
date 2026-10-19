@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-19",
+  "generatedAt": "2026-10-19T14:58:38+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "수능 D-30, 수험생 컨디션 관리 돕는 ‘우유 한 잔’",
+    "summary": "대학수학능력시험이 한 달 앞으로 다가왔다.",
+    "source": "코메디닷컴",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_be4ea64e6a6b62e5",
+    "url": "https://kormedi.com/2886544/",
+    "medium": "news",
+    "discoveredAt": "2026-10-19T14:58:38+09:00",
+    "publishedAt": "2026-10-19T09:25:00+09:00",
+    "image": "https://kormedi.com/wp-content/uploads/2026/10/kakaotalk-20261016-174924842-edited.jpg",
+    "imageSource": "feed_media",
+    "category": "habit",
+    "heroKind": "pick"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "\"외식비 어디까지 오르나\" 서울 비빔밥 1.2만원·김밥 4000원 '목전'",
+          "summary": "서울에서 김밥 한 줄의 평균 가격이 4000원에 근접하고 비빔밥 한 그릇은 1만2000원에 도달하는 등 외식비 상승세가 이어지고 있다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_c0717d5ba4defb9b",
+          "url": "https://www.newsis.com/view/NISX20261019_0003830760",
+          "medium": "news",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T12:05:37+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        },
+        {
+          "title": "비만 치료제(GLP-1) 투약자, 단백질 ‘초정밀 관리’하지만 “먹는 양 부담” 호소",
+          "summary": "GLP-1 비만 치료제 투약자가 단백질 시장의 핵심 소비층으로 부상하고 있다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_c1cc68922055808f",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201384",
+          "medium": "news",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T11:00:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "검사엔 이상 없다는데 왜 배가 아플까⋯아이의 일상까지 살핀다",
+          "summary": "소아청소년과 최연호 교수가 소아청소년 소화기·영양 심층진료를 진행하고 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_cdb4f2f98694403d",
+          "url": "https://kormedi.com/2886937/",
+          "medium": "news",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T08:22:01+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "[기자수첩] 신약 개발하라면서⋯연구개발 제약사 옥죄는 약가인하",
+          "summary": "정부가 제약산업 구조를 개선하기 위해 제네릭(복제약) 약가제도 개편에 나섰다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_cb4b9df3e473f333",
+          "url": "https://kormedi.com/2885501/",
+          "medium": "news",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T07:00:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "식약처 ‘희귀질환 어린이 식사 지침’, 정부혁신 왕중왕전 본선 올라",
+          "summary": "식품의약품안전처(처장 오유경)가 마련한 ‘희귀질환 어린이 식사안전관리 지침’이 행정안전부가 주관하는 ‘2026 정부혁신 왕중왕전’ 본선에 진출했다.정부혁신 왕중왕전은 중앙행정기관과 지방자치단체가 추진한 우수 혁신…",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_2d39a1eb37d92134",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120572",
+          "medium": "news",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T19:07:56+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "연근샐러드 레시피: 아삭함 살리는 데치기와 들깨가루 양념법",
+          "summary": "연근은 보통 조림이나 전으로 많이 드시지만, 살짝 데쳐서 샐러드로 만들면 특유의 아삭아삭한 식감을 제대로 즐길 수 있다는 것 알고 계시나요?",
+          "source": "달순생활",
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_60e2e160dfc06c87",
+          "url": "https://dalsoonlife.tistory.com/245",
+          "medium": "blog",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T12:19:11+09:00",
+          "image": "https://blog.kakaocdn.net/dn/8lFFj/dJMcagm04vU/Si5wUFQkdq2EDTNgnsPuY1/tfile.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "감자샐러드 만들기｜일본 이자카야 스타일 포테이토 사라다 레시피",
+          "summary": "일본 여행 중 이자카야에 가면 자주 만날 수 있는 메뉴 중 하나가 일본식 감자 샐러드, 포테토 사라다(ポテトサラダ)입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_3fb49675fe965aad",
+          "url": "https://cultureagora.tistory.com/399",
+          "medium": "blog",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T08:30:34+09:00"
+        },
+        {
+          "title": "발사믹 버섯볶음 샌드위치 만들기｜치아바타로 만드는 홈카페 브런치 레시피",
+          "summary": "오늘 소개할 요리는 발사믹 버섯볶음 샌드위치 입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_40caba7664cae986",
+          "url": "https://cultureagora.tistory.com/382",
+          "medium": "blog",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "publishedAt": "2026-10-15T15:30:13+09:00"
+        },
+        {
+          "title": "신상출시 편스토랑 이정현의 밥새우계란말이 밥새우달걀말이 만드는 법",
+          "summary": "341회 신상출시 편스토랑에서 부드러운 일식집 고급 계란말이 스타일로 밥새우와 새우가루를 넣어 감칠맛을 더한 밥새우계란말이 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_81483562edb0ece5",
+          "url": "https://seon1982.tistory.com/4126",
+          "medium": "blog",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T00:00:16+09:00"
+        },
+        {
+          "title": "혼밥, 초간단 김밥과 된장찌개로 든든한 한 끼",
+          "summary": "초간단 김밥과 된장찌개로 든든한 한 끼 언제나 한 식탁에 앉아 밥을 먹는 우리 부부입니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_6f58a0474f4279c1",
+          "url": "https://heysukim114.tistory.com/entry/%ED%98%BC%EB%B0%A5-%EC%B4%88%EA%B0%84%EB%8B%A8-%EA%B9%80%EB%B0%A5%EA%B3%BC-%EB%90%9C%EC%9E%A5%EC%B0%8C%EA%B0%9C",
+          "medium": "blog",
+          "discoveredAt": "2026-10-13T16:36:20+09:00",
+          "publishedAt": "2026-10-13T00:00:45+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "오메가3 풍부한 고등어 효능 5가지… \"뇌 건강 챙기려면 고등어부터?\"",
+          "summary": "고등어는 가을부터 살이 오르고 기름기가 돌아 맛이 좋아지는 대표 등푸른생선이다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_20ad20cd78f8b750",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68658",
+          "medium": "news",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "publishedAt": "2026-10-16T16:00:00+09:00"
+        },
+        {
+          "title": "‘바다의 우유’ 굴의 건강 효과…남성은 에너지 얻고, 여성은 피부에 좋아",
+          "summary": "굴에는 비타민과 미네랄 등 각종 영양소가 풍부해 건강에 여러 가지 이점이 있는 식품으로 꼽힌다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_5105e882b6485636",
+          "url": "https://kormedi.com/2886664/",
+          "medium": "news",
+          "discoveredAt": "2026-10-18T14:42:07+09:00",
+          "publishedAt": "2026-10-18T10:05:00+09:00"
+        },
+        {
+          "title": "\"아, 단 게 당긴다!\"… 스트레스받은 날 먹기 좋은 건강한 음식 5가지",
+          "summary": "스트레스를 받으면 평소보다 달거나 기름진 음식이 생각날 때가 있다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_297b35dff9be9f3a",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68779",
+          "medium": "news",
+          "discoveredAt": "2026-10-18T14:42:07+09:00",
+          "publishedAt": "2026-10-18T05:00:00+09:00"
+        },
+        {
+          "title": "아침에 사과, 브로콜리 함께 먹었더니…따로 보관하는 이유?",
+          "summary": "항산화 영양소가 많고 장 건강에 도움을 주는 식품에 사과, 브로콜리 등이 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_d0946e5e748f326c",
+          "url": "https://kormedi.com/2884532/",
+          "medium": "news",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "publishedAt": "2026-10-14T19:01:00+09:00"
+        },
+        {
+          "title": "“횟집에서 나오는 최악의 메뉴”… 의사가 경고한 ‘열량 폭탄’ 음식은?",
+          "summary": "다이어트 중 회를 즐겨 먹는 사람이 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_0108cc2918a70d11",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/16/2026101601596.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-17T14:29:03+09:00",
+          "publishedAt": "2026-10-16T17:30:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "초가공식품 많이 먹으면 뇌혈관 손상 위험…이런 음식 줄이는 방법은?",
+          "summary": "중년기에 초가공식품을 많이 섭취하면 뇌 손상을 유발하는 무증상 뇌졸중 위험이 증가한다는 연구 결과가 나왔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ada22356399eeb3d",
+          "url": "https://kormedi.com/2886932/",
+          "medium": "news",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T09:15:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/10/gettyimages-943855232.jpg",
+          "imageSource": "feed_media"
+        }
+      ]
+    }
+  }
+}
