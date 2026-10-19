@@ -1,10 +1,38 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-17T22:16:12+09:00",
+  "generatedAt": "2026-10-19T20:18:04+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 4,
+  "count": 5,
   "events": [
+    {
+      "id": "afa5f6d3-0c94-4c3a-a461-e63d07b2f5d1",
+      "title": "Adapting AI for Diverse Populations and Health Systems(다양한 인구집단 및 보건의료시스템에 맞춘 인공지능 적용)",
+      "summary": "Prof. Sanjay Kinra 초청 세미나로, 다양한 인구집단과 보건의료시스템에 맞춘 AI 적용 사례를 소개한다. 참석자에게 가벼운 다과와 핑거푸드가 제공된다.",
+      "startAt": "2026-10-19T12:00:00+09:00",
+      "endAt": "2026-10-19T13:00:00+09:00",
+      "dateText": "October 19 (Mon)",
+      "timeText": "12:00–13:00",
+      "location": {
+        "name": "Lecture Room Red (B501), 5th Floor, KI Building (E4)",
+        "building": "E4",
+        "room": "B501"
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "Light refreshments and finger foods",
+        "source": "text"
+      },
+      "organizer": "AI미래학과 김형준교수님 연구실",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "35ea43d7-f095-4541-ac2c-877c3c11c651",
       "title": "2026 가을학기 중간고사 ME PIZZA DAY",
