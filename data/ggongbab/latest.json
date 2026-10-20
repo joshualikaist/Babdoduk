@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-19T20:18:04+09:00",
+  "generatedAt": "2026-10-20T15:41:00+09:00",
   "timezone": "Asia/Seoul",
-  "count": 7,
+  "count": 8,
   "events": [
     {
       "id": "3eb2e2a6-96ea-4952-a032-2282ad920f67",
@@ -252,6 +252,43 @@
           "name": "Dooray"
         }
       ]
+    },
+    {
+      "id": "cce0b2e8-355c-4ec7-903b-80825f801b8e",
+      "title": "제288회 NAEK Forum",
+      "summary": "공과대학 학사과정 재학생을 대상으로 중국의 부상과 우리의 대응을 주제로 포럼을 개최한다. 추천 희망자는 참가신청서와 개인정보수집이용동의서를 기한 내 이메일로 제출해야 한다.",
+      "startAt": "2026-11-23T17:00:00+09:00",
+      "endAt": "2026-11-23T20:00:00+09:00",
+      "dateText": "2026년 11월 23일(월)",
+      "timeText": "17:00~20:00",
+      "location": {
+        "name": "양재 엘타워 5층 '오르체홀'",
+        "building": "",
+        "room": "5층 오르체홀"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "한국공학한림원",
+      "eligibility": "공과대학 학사과정 재학생(4학년 제외)",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-10-30T23:59:00+09:00",
+        "url": "https://portal.kaist.ac.kr/kaist/portal/board/ntc/1020"
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "‘NAEK 인증서’ 증정"
+      }
     }
   ]
 }
