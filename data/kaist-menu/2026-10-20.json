@@ -2,18 +2,14 @@
   "schemaVersion": 1,
   "date": "2026-10-20",
   "dateLabel": "10월 20일",
-  "fetchedAt": "2026-10-20T15:05:02+09:00",
+  "fetchedAt": "2026-10-20T17:39:29+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "status": "AVAILABLE",
   "coverage": {
     "requested": 8,
-    "fetched": 7,
-    "failed": [
-      "hawam"
-    ],
-    "carried": [
-      "hawam"
-    ]
+    "fetched": 8,
+    "failed": [],
+    "carried": []
   },
   "restaurants": [
     {
