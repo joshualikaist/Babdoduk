@@ -2,14 +2,18 @@
   "schemaVersion": 1,
   "date": "2026-10-20",
   "dateLabel": "10월 20일",
-  "fetchedAt": "2026-10-19T18:01:29+09:00",
+  "fetchedAt": "2026-10-20T15:05:02+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "status": "AVAILABLE",
   "coverage": {
     "requested": 8,
-    "fetched": 8,
-    "failed": [],
-    "carried": []
+    "fetched": 7,
+    "failed": [
+      "hawam"
+    ],
+    "carried": [
+      "hawam"
+    ]
   },
   "restaurants": [
     {
@@ -48,7 +52,7 @@
           "미니어묵우동(1,5,6)",
           "야채샐러드&드레싱(1,2,5,6)",
           "(1124Kcal)",
-          "B코너(6,000원)",
+          "B코너(6,000원) - 품절",
           "직화]쫄데기김치찌개"
         ],
         "price": "5,500원",
