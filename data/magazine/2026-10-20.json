@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-20",
+  "generatedAt": "2026-10-20T14:52:40+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "들깨 버섯탕 만들기 버섯 들깨탕 요리 레시피",
+    "summary": "가을이면 들깨가루 넣고 구수하면서 시원한 국물요리 들깨 버섯탕이 생각나서 마트에서 버섯을 종류대로 사 왔습니다.",
+    "source": "배고픈맘의 행복레시피",
+    "sourceId": "blog-twins0807",
+    "candidateId": "c_4396734972ee70a6",
+    "url": "https://twins0807.tistory.com/entry/%EB%93%A4%EA%B9%A8-%EB%B2%84%EC%84%AF%ED%83%95-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%B2%84%EC%84%AF-%EB%93%A4%EA%B9%A8%ED%83%95-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+    "medium": "blog",
+    "discoveredAt": "2026-10-20T14:52:40+09:00",
+    "publishedAt": "2026-10-19T17:40:43+09:00",
+    "image": "https://blog.kakaocdn.net/dn/bWYlmi/dJMcacdUAym/Foo5b4VorOdK2cjFrC72O1/img.jpg",
+    "imageSource": "feed_html",
+    "category": "tips",
+    "heroKind": "pick"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "코스트코 궁 왕갈비탕 솔직 후기: 가격부터 조리법까지",
+          "summary": "코스트코 냉장 간편식 코너를 지나다 보면 항상 장바구니에 하나씩 들어가 있는 베스트셀러 제품이 있어요.",
+          "source": "달순생활",
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_b95d965550560e1a",
+          "url": "https://dalsoonlife.tistory.com/246",
+          "medium": "blog",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T14:17:31+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "식중독, 계절 안따진다…5건중 1건 가을에 발생",
+          "summary": "야외 활동이 늘어나는 가을철인 만큼 외부에서 식사하는 경우도 많아진다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_2a9c3442f7445baf",
+          "url": "https://www.newsis.com/view/NISX20261019_0003831091",
+          "medium": "news",
+          "discoveredAt": "2026-10-19T14:58:38+09:00",
+          "publishedAt": "2026-10-19T10:30:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "CJ웰케어, 출시 한 달 ‘맥플랜’ 100만개 판매 돌파",
+          "summary": "CJ웰케어는 ‘맥플랜 데일리 프로틴 쉐이크’ 3종을 비롯한 ‘맥플랜(MACPLAN)’ 브랜드 제품군이 출시 한 달 만에 누적 판매량 100만 개를 돌파했다고 20일 밝혔다.이번 흥행은 미국 등 해외 MZ세대…",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_251883bfb06b1ab1",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120598",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T19:51:36+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        },
+        {
+          "title": "영주 학교급식 관계자 69명 현장연수",
+          "summary": "경북 영주지역 학교급식 관계자들이 문화유적 탐방과 현장체험을 통해 업무로 지친 심신을 재충전하고, 학교급식 운영 경험과 애로사항을 공유하며 소통과 협력을 강화하는 시간을 가졌다.경상북도영주교육지원청(교육장 이용택…",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_a6b49dad1b02553c",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62456",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T23:18:49+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "가격 약세 농산물, 급식 소비 늘린다",
+          "summary": "작황 호조와 출하량 증가로 가격이 크게 떨어진 파프리카와 샤인머스캣, 오이, 애호박 등의 소비를 늘리기 위한 대책이 추진된다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_9c4ff296a50f3329",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62445",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T20:25:03+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "차돌박이 숙주찜 만들기｜아삭한 숙주와 겨자간장소스 레시피",
+          "summary": "차돌박이와 숙주는 간단한 조리법으로도 맛있게 즐길 수 있는 조합입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_8384f938363b691f",
+          "url": "https://cultureagora.tistory.com/401",
+          "medium": "blog",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T14:30:19+09:00"
+        },
+        {
+          "title": "신상출시 편스토랑 이정현의 부추무침 부추겉절이 만드는 법",
+          "summary": "341회 신상출시 편스토랑에서 이정현은 닭갈비와 잘 어울리는 매콤 달콤한 부추무침 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_eba6a0c9f3eb377e",
+          "url": "https://seon1982.tistory.com/4127",
+          "medium": "blog",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T00:00:52+09:00"
+        },
+        {
+          "title": "딸아이 이사 날, 엄마가 준비한 정성 가득 도시락",
+          "summary": "딸아이 이사 날, 엄마가 준비한 정성 가득 도시락 딸아이 아파트 입주가 늦어져 당분간 단기 투룸에서 지내게 되었습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_6475e6a3066aa589",
+          "url": "https://heysukim114.tistory.com/entry/%EB%94%B8%EC%95%84%EC%9D%B4-%EC%9D%B4%EC%82%AC-%EB%82%A0-%EC%97%84%EB%A7%88%EA%B0%80-%EC%A4%80%EB%B9%84%ED%95%9C-%EC%A0%95%EC%84%B1-%EA%B0%80%EB%93%9D-%EB%8F%84%EC%8B%9C%EB%9D%BD",
+          "medium": "blog",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T00:00:26+09:00"
+        },
+        {
+          "title": "소고기 알배추찜 만들기｜담백한 소고기 배추찜과 2가지 소스 레시피",
+          "summary": "오늘 소개할 요리는 소고기 알배추찜입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_1fcbde712c01849b",
+          "url": "https://cultureagora.tistory.com/388",
+          "medium": "blog",
+          "discoveredAt": "2026-10-15T14:46:41+09:00",
+          "publishedAt": "2026-10-15T08:45:03+09:00"
+        },
+        {
+          "title": "나물 김치볶음밥 나물볶음밥 만들기 요리 레시피",
+          "summary": "명절 차례는 안 지내기로 했지만아이들 오면 먹어야 하고 추석에 어머님 댁에 반찬으로 가져가고휴일 끝나고 돌아가는 아이들 손에도 반찬 좀 싸 줄까 하는 마음에나물 네 가지 하고, 탕국 끓이고소고기, 오징어, 전복으로…",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_56cd7a6a83a102be",
+          "url": "https://twins0807.tistory.com/entry/%EB%82%98%EB%AC%BC-%EA%B9%80%EC%B9%98%EB%B3%B6%EC%9D%8C%EB%B0%A5-%EB%82%98%EB%AC%BC%EB%B3%B6%EC%9D%8C%EB%B0%A5-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-09-26T19:07:35+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“채 썰어 밥 위에 얹어라”… 제철 무, 보약 안 부럽게 먹는 법",
+          "summary": "무는 아삭한 식감과 시원한 맛이 특징인 채소로 비타민C, 식이섬유 등 영양소가 풍부해 영양 보충에 도움이 된다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_063d05f20298275d",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/19/2026101902811.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T08:00:00+09:00"
+        },
+        {
+          "title": "\"닭가슴살 샐러드에 '이것' 꼭 넣으세요\"… 영양 꽉 채우는 4가지 비법",
+          "summary": "닭가슴살 샐러드는 단백질이 풍부한 닭가슴살과 채소를 함께 섭취할 수 있는 음식이다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_b704aa2d8f78dbc1",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68844",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T05:00:00+09:00"
+        },
+        {
+          "title": "우리 농산물로 담그는 저염된장",
+          "summary": "제주 도평초등학교(교장 양미지, 이하 도평초)는 지난 15일 학교 급식실에서 학부모를 대상으로 ‘로컬식재료 활용 전통장(저염된장) 만들기’ 체험 프로그램을 운영했다.이번 행사는 2026학년도 학교급식 정책 선도…",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_98a1541340786b6f",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62457",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T23:39:47+09:00"
+        },
+        {
+          "title": "놀이로 배우는 위생·영양교육",
+          "summary": "대전 유성구어린이·사회복지급식관리지원센터(센터장 육홍선, 이하 유성구센터)는 지난 17일 유성종합스포츠센터에서 등록급식소 어린이와 보호자 약 500명이 참여한 가운데 ‘냠냠!",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_c94d3585c1fd4b8d",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62453",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T20:47:35+09:00"
+        },
+        {
+          "title": "이영자가 만든 ‘단백질 한 그릇’… 카레에 듬뿍 넣은 ‘의외의 재료’",
+          "summary": "콩은 단백질뿐 아니라 식이섬유도 함께 섭취할 수 있는 식품이다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_f8da1b2b650ab728",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/20/2026102001139.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T10:38:38+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "냉동해도 찰기 유지… 급식용 쌀 ‘미호’ 주목",
+          "summary": "냉동·해동 후에도 밥알의 찰기와 식감을 유지하는 쌀 품종 ‘미호’가 단체급식과 가정간편식(HMR) 시장에서 활용 범위를 넓히고 있다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_7377a04e390ef73d",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62446",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T20:36:33+09:00",
+          "image": "http://www.fsnews.co.kr/news/thumbnail/202610/62446_53327_352_v150.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“살 빼야 하는데 식욕이 문제”…식전 ‘이것’ 두 잔, 다이어트 성공 돕는다",
+          "summary": "다이어트를 할 때 포만감을 높이는 식품 위주로 가짓수를 줄여서 먹으면 식욕을 억제하는 데 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_5ee645d324613cbf",
+          "url": "https://kormedi.com/2887746/",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-20T10:06:00+09:00"
+        },
+        {
+          "title": "“주문할 땐 좋았는데”⋯배달음식 먹고 후회하는 美 Z세대, 우리나라는?",
+          "summary": "배달음식은 시간과 체력을 아낄 수 있다는 뚜렷한 장점이 있지만, 열량이나 나트륨 등 과다 섭취로 이어질 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8101a12da033b4c6",
+          "url": "https://kormedi.com/2887452/",
+          "medium": "news",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "publishedAt": "2026-10-19T18:03:00+09:00"
+        }
+      ]
+    }
+  }
+}
