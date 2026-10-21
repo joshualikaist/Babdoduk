@@ -2,14 +2,18 @@
   "schemaVersion": 1,
   "date": "2026-10-23",
   "dateLabel": "10월 23일",
-  "fetchedAt": "2026-10-21T08:27:36+09:00",
+  "fetchedAt": "2026-10-21T15:37:22+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "status": "AVAILABLE",
   "coverage": {
     "requested": 8,
-    "fetched": 8,
-    "failed": [],
-    "carried": []
+    "fetched": 7,
+    "failed": [
+      "east2"
+    ],
+    "carried": [
+      "east2"
+    ]
   },
   "restaurants": [
     {
@@ -76,7 +80,7 @@
         "hours": "",
         "items": [
           "백미밥",
-          "얼갈이된장국(5,6)",
+          "매콤해물순두부국(1,5,9,10,17,18,21)",
           "두부구이&스팸구이 (5, 10)",
           "콩나물무침(5)",
           "도시락김(5,6)",
