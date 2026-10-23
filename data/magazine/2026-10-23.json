@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "generatedAt": "2026-10-23T14:54:39+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "혼밥 이어 '혼크닉' 뜬다…혼자 돗자리 펴는 2030",
+    "summary": "김혜경 기자, 정승혜 인턴기자 = 혼자 공원이나 한강에서 돗자리를 펴고 피크닉을 즐기는 이른바 ‘혼크닉’(혼자+피크닉)이 2030세대 사이에서 유행하고 있다.",
+    "source": "뉴시스",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_0d174d15d951392c",
+    "url": "https://www.newsis.com/view/NISX20261020_0003833068",
+    "medium": "news",
+    "discoveredAt": "2026-10-23T14:54:39+09:00",
+    "publishedAt": "2026-10-21T05:00:00+09:00",
+    "image": "https://img1.newsis.com/2026/10/20/NISI20261020_0002268236_web.jpg",
+    "imageSource": "source_page_og",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "“아침마다 베이컨 먹는다”… 107세 여성이 꼽은 ‘뜻밖의 장수 음식’",
+          "summary": "107세 여성이 매일 아침 베이컨과 달걀을 먹는 것을 자신의 장수 비결로 꼽아 화제다.지난 21일(현지시간) 영국 사우스웨스트뉴스서비스(SWNS)에 따르면, 영국 햄프셔주의 한 요양시설에 거주하는 도로시…",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_ff1d4d264a777008",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/22/2026102201936.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T16:30:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/10/22/2026102201930_0.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "췌장암 1년 만에 완치? “아닙니다”…5년 이상 몸 살펴야, 어떻게 일찍 발견할까? / ‘9kg 감량’ 조혜련 “49kg 한 번 찍어보려고”⋯과자 끊고 챙긴 ‘이것’은? / “아침 기온 5도까지 뚝”⋯갑자기 추워진 날 ‘혈압 스파이크’ 주의",
+          "summary": "“아닙니다”…5년 이상 몸 살펴야, 어떻게 일찍 발견할까?",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_633eb5e69026a32f",
+          "url": "https://kormedi.com/2890123/",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T06:00:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "오사카 무신사 팝업서 갓 끓인 ‘신라면 툼바’ 맛본다",
+          "summary": "농심은 일본 오사카 중심가에서 K-패션과 K-푸드를 결합한 이색 컬래버레이션으로 현지 젊은 층 공략에 나선다.농심은 이달 23일부터 11월 8일까지 오사카 우메다 ‘VS’에서 열리는 ‘무신사 오사카 팝업스토어…",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_be976e2a09a77b2b",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120649",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T18:55:12+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "완도군센터, 급식 지원체계 개선 논의",
+          "summary": "전남 완도군어린이·사회복지급식관리지원센터(센터장 김정옥, 이하 완도군센터)는 20일 완도청년센터 완생 대회의실에서 ‘2026년 제2차 운영위원회’를 개최했다.이날 회의에는 김정옥 센터장을 비롯해 완도군…",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_a41a596300929475",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62468",
+          "medium": "news",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "publishedAt": "2026-10-22T21:07:13+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "“야식 욕구 줄어든다”… 전문가 추천 ‘간단 해결책’ 3가지",
+          "summary": "저녁을 충분히 먹었는데도 잠들기 전 자극적인 음식이 당길 때가 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_f072d43f1327105e",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/21/2026102102774.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "publishedAt": "2026-10-21T21:00:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "신상출시 편스토랑 도경완의 꼬시래기골뱅이무침 만드는 법",
+          "summary": "342회 신상출시 편스토랑에서 도경완은 소면 대신 꼬시래기를 활용한 매콤 새콤한 꼬시래기골뱅이무침 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_af2eb65a4e62940e",
+          "url": "https://seon1982.tistory.com/4134",
+          "medium": "blog",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T00:00:32+09:00",
+          "image": "https://blog.kakaocdn.net/dn/b01pG7/dJMcaaHm5j7/EdR1BWbT3MLiQKSya8w2s1/img.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "맛있는 가을 사과로 만드는 모짜렐라 토스트 만들기 Delicious Autumn Apple & Fresh Mozzarella Toast Recipe",
+          "summary": "사과와 후레쉬 모짜렐라로 토스트를 만들어 봤어요~ 버터에 구운 사워도우 위에 모짜렐라와 꿀을 넣어 구운 사과를 올렸어요.",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_f30b254d2642deb3",
+          "url": "https://www.youtube.com/watch?v=9VyAs9M5jrs",
+          "medium": "youtube",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T20:00:20+09:00",
+          "image": "https://i.ytimg.com/vi/9VyAs9M5jrs/hqdefault.jpg",
+          "imageSource": "youtube_thumbnail"
+        },
+        {
+          "title": "자취할 때 최고의 가성비 1등",
+          "summary": "팽이버섯덮밥을 만들어 보자 [재료] 팽이버섯, 양파, 계란 [만드는 법] 1. 팬에 식용유를 두르고 계란 프라이를 만든 뒤 빼둔다.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_5994d06b618e2118",
+          "url": "https://www.youtube.com/watch?v=UBEeIA1LfM8",
+          "medium": "youtube",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T19:33:16+09:00"
+        },
+        {
+          "title": "양배추 계란 크로와상 샌드위치 만들기 계란 샌드위치 요리 레시피",
+          "summary": "크로와상 샌드위치는 다이어트할 때 빵이 먹고프면 가끔 만들어 먹는 샌드위치입니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_d0b6be8c294fe6d0",
+          "url": "https://twins0807.tistory.com/entry/%EC%96%91%EB%B0%B0%EC%B6%94-%EA%B3%84%EB%9E%80-%ED%81%AC%EB%A1%9C%EC%99%80%EC%83%81-%EC%83%8C%EB%93%9C%EC%9C%84%EC%B9%98-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EA%B3%84%EB%9E%80-%EC%83%8C%EB%93%9C%EC%9C%84%EC%B9%98-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T18:35:11+09:00"
+        },
+        {
+          "title": "새우 타코 만들기｜단감 살사와 미니 로메인으로 완성하는 가을 홈브런치",
+          "summary": "가을 제철 과일인 단감으로 조금 특별한 새우 타코를 만들어 보겠습니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_b408bfe74ebfbe27",
+          "url": "https://cultureagora.tistory.com/396",
+          "medium": "blog",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T17:30:38+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“식이섬유, 많이 먹을수록 좋을까?”⋯장 건강 지키려면 ‘이렇게’",
+          "summary": "식이섬유는 현미와 귀리, 통밀 등 통곡물과 채소, 과일, 콩류, 견과류, 씨앗류 등 식물성 식품에 풍부하다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_f822af377f2c2a4e",
+          "url": "https://kormedi.com/2889975/",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T22:04:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/10/aaas-41.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "치료받아 살 뺀 60대女⋯영양제도 먹었는데, 왜 정신혼란·발열?",
+          "summary": "여성이 다이어트를 위해 운동을 본격적으로 시작하기에 앞서 스트레칭을 하고 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1f60fbe3c96dd81a",
+          "url": "https://kormedi.com/2889754/",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T18:01:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/10/gettyimages-2062720774-edited.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“18kg 뺐다”… 45세 가희, ‘선명한 복근’ 비결로 꼽은 한 가지",
+          "summary": "임신과 출산 후 몸매를 회복하려면 신체 대사량을 올리고 혈당을 안정시키는 관리 전략이 필요하다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b8133866575116d9",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/22/2026102201957.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T17:00:00+09:00"
+        },
+        {
+          "title": "“혈관 망가지는 지름길” 심장 보는 의사, 절대 안 먹는다는 간식",
+          "summary": "심혈관 건강을 위해선 짜거나 포화지방이 많은 간식은 피하는 게 좋다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_a35fafd8dd9d22df",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/23/2026102301297.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T12:30:00+09:00"
+        },
+        {
+          "title": "\"현미밥, 혈당만 낮추는 게 아니네\"… 현미의 놀라운 효능 4가지",
+          "summary": "﻿같은 쌀로 지은 밥이라도 도정 정도에 따라 영양 성분이 달라진다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_207376f3d5527ccf",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69065",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T05:00:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“우리 농산물 100% 전통식품 먹으니 맛있고 건강해져요”",
+          "summary": "​ 학생들이 전통식품 품질인증 된장·고추장·김치 등을 활용한 점심식사를 하고 있다.(제공=농관원) 국립농산물품질관리원(원장 김철)은 성장기 학생들에게 우수한 우리 전통식품의 가치를 알리고 건강한 식습관 형성을…",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_52b85c4062ffe181",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201462",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-22T11:00:00+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201462_202063_4137.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "홈 >암예방과 검진>예방>식이>건강한 식생활",
+          "summary": "",
+          "source": "cancer.go.kr",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_ea715c3c4ac8be77",
+          "url": "https://cancer.go.kr/lay1/S1T226C229/contents.do",
+          "medium": "research",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2025-09-29T12:00:00+09:00"
+        }
+      ]
+    }
+  }
+}
