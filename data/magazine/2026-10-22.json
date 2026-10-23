@@ -5,17 +5,17 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "초가공식품 많이 먹으면 대장암?…46만 명 추적했더니 뜻밖의 결과 나왔다",
-    "summary": "초가공식품을 많이 먹는 사람도 적게 먹는 사람에 비해 대장암 위험이 높지 않다는 대규모 연구 결과가 나왔다.",
     "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_2d5aaea58df72cd4",
     "url": "https://kormedi.com/2887058/",
     "medium": "news",
-    "discoveredAt": "2026-10-22T14:57:31+09:00",
-    "publishedAt": "2026-10-21T17:26:45+09:00",
     "image": "https://kormedi.com/wp-content/uploads/2026/10/unnamed-file-177-edited.jpg",
-    "imageSource": "feed_media",
     "category": "habit",
+    "publishedAt": "2026-10-21T17:26:45+09:00",
+    "discoveredAt": "2026-10-22T14:57:31+09:00",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_2d5aaea58df72cd4",
+    "imageSource": "feed_media",
+    "summary": "초가공식품을 많이 먹는 사람도 적게 먹는 사람에 비해 대장암 위험이 높지 않다는 대규모 연구 결과가 나왔다.",
     "heroKind": "pick"
   },
   "lanes": {
@@ -24,14 +24,14 @@
       "items": [
         {
           "title": "“고기 먹기 싫은데”⋯ 간단히 챙길 수 있는 단백질 식품 3가지",
-          "summary": "단백질은 근육을 유지하고 면역 기능을 돕는 필수 영양소다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_3474223a5b4adb70",
           "url": "https://kormedi.com/2883931/",
           "medium": "news",
-          "discoveredAt": "2026-10-14T14:59:52+09:00",
           "publishedAt": "2026-10-14T00:02:00+09:00",
+          "discoveredAt": "2026-10-14T14:59:52+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_3474223a5b4adb70",
+          "summary": "단백질은 근육을 유지하고 면역 기능을 돕는 필수 영양소다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -39,14 +39,14 @@
         },
         {
           "title": "무인매장 커피서 세균 기준치 14배 검출… 식중독 위험은 없을까",
-          "summary": "무인매장에서 판매하는 커피에서 세균수가 허용 기준의 약 14배에 달하는 사례가 확인됐다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_ca92837d9403ebd1",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/15/2026101502905.html",
           "medium": "news",
-          "discoveredAt": "2026-10-16T14:43:54+09:00",
           "publishedAt": "2026-10-15T17:09:32+09:00",
+          "discoveredAt": "2026-10-16T14:43:54+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_ca92837d9403ebd1",
+          "summary": "무인매장에서 판매하는 커피에서 세균수가 허용 기준의 약 14배에 달하는 사례가 확인됐다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -54,42 +54,42 @@
         },
         {
           "title": "수능 앞두고 졸음 쫓으려 '이 음료'…응급실 갈라",
-          "summary": "2027학년도 대학수학능력시험(11월 19일)이 한 달 앞으로 다가왔다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_a06a223d4578dd8a",
           "url": "https://www.newsis.com/view/NISX20261020_0003832686",
           "medium": "news",
-          "discoveredAt": "2026-10-20T14:52:40+09:00",
           "publishedAt": "2026-10-20T09:09:38+09:00",
+          "discoveredAt": "2026-10-20T14:52:40+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_a06a223d4578dd8a",
+          "summary": "2027학년도 대학수학능력시험(11월 19일)이 한 달 앞으로 다가왔다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "빼빼로부터 기능껌까지…롯데웰푸드, 파리서 K-푸드 매력 입증",
-          "summary": "롯데웰푸드가 프랑스 파리에서 열린 세계 최대 규모 식품 박람회 ‘시알 파리(SIAL Paris) 2026’ 참가를 성공적으로 마쳤다.이달 17일부터 21일까지 열린 이번 박람회에는 전 세계 130여 개국…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_3262c81400d6d609",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120632",
           "medium": "news",
-          "discoveredAt": "2026-10-22T14:57:31+09:00",
           "publishedAt": "2026-10-22T19:14:10+09:00",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_3262c81400d6d609",
+          "summary": "롯데웰푸드가 프랑스 파리에서 열린 세계 최대 규모 식품 박람회 ‘시알 파리(SIAL Paris) 2026’ 참가를 성공적으로 마쳤다.이달 17일부터 21일까지 열린 이번 박람회에는 전 세계 130여 개국…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "냉동 야식 한 팩, 넘치는 ‘콜레스테롤’",
-          "summary": "냉동 야식 한 팩에 콜레스테롤 ‘과다’ 소비자원, 매운맛 닭발·막창 11개 제품 시험·평가 일부 제품 1일 기준치 초과… 영양성분 표시도 부적합매운맛 냉동 야식 일부 제품은 한 팩만 먹어도 콜레스테롤 섭취량이 1일…",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_783d5e6c70502944",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62458",
           "medium": "news",
-          "discoveredAt": "2026-10-22T14:57:31+09:00",
           "publishedAt": "2026-10-22T19:40:37+09:00",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_783d5e6c70502944",
+          "summary": "냉동 야식 한 팩에 콜레스테롤 ‘과다’ 소비자원, 매운맛 닭발·막창 11개 제품 시험·평가 일부 제품 1일 기준치 초과… 영양성분 표시도 부적합매운맛 냉동 야식 일부 제품은 한 팩만 먹어도 콜레스테롤 섭취량이 1일…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -101,58 +101,58 @@
       "items": [
         {
           "title": "굴전 만들기｜겉은 바삭 속은 촉촉한 굴전 레시피와 유자 간장소스",
-          "summary": "찬 바람이 불기 시작하면 생각나는 제철 식재료 중 하나가 바로 굴이에요.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_fefc71cc8de21148",
           "url": "https://cultureagora.tistory.com/402",
           "medium": "blog",
+          "publishedAt": "2026-10-21T22:30:22+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-21T22:30:22+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_fefc71cc8de21148",
+          "summary": "찬 바람이 불기 시작하면 생각나는 제철 식재료 중 하나가 바로 굴이에요."
         },
         {
           "title": "닭가슴살 버섯볶음 만들기｜단백질 듬뿍 저염 채소볶음 레시피",
-          "summary": "건강한 식단을 준비할 때 자주 찾는 재료 중 하나가 닭가슴살입니다.단백질이 풍부하고 지방이 비교적 적어 가벼운 식사를 만들기 좋지만, 잘못 조리하면 퍽퍽하고 맛이 심심하게 느껴질 수 있습니다.오늘 소개할 요리는…",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_b3cb3f34ea5077aa",
           "url": "https://cultureagora.tistory.com/380",
           "medium": "blog",
+          "publishedAt": "2026-10-13T17:00:10+09:00",
           "discoveredAt": "2026-10-14T14:59:52+09:00",
-          "publishedAt": "2026-10-13T17:00:10+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_b3cb3f34ea5077aa",
+          "summary": "건강한 식단을 준비할 때 자주 찾는 재료 중 하나가 닭가슴살입니다.단백질이 풍부하고 지방이 비교적 적어 가벼운 식사를 만들기 좋지만, 잘못 조리하면 퍽퍽하고 맛이 심심하게 느껴질 수 있습니다.오늘 소개할 요리는…"
         },
         {
           "title": "손녀 보러 가며 싸 간 먹거리, 엄마의 반찬 7가지",
-          "summary": "손녀 보러 가며 싸 간 먹거리, 엄마의 반찬 7가지 며느리가 서울로 취직하게 되면서 아들네는 집도 구하고 새로운 생활을 준비하느라 많이 바빠졌습니다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_09434fab90b0757f",
           "url": "https://heysukim114.tistory.com/entry/%EC%86%90%EB%85%80-%EB%B3%B4%EB%9F%AC-%EA%B0%80%EB%A9%B0-%EC%8B%B8-%EA%B0%84-%EB%A8%B9%EA%B1%B0%EB%A6%AC-%EC%97%84%EB%A7%88%EC%9D%98-%EB%B0%98%EC%B0%AC-7%EA%B0%80%EC%A7%80",
           "medium": "blog",
+          "publishedAt": "2026-10-22T04:22:32+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T04:22:32+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_09434fab90b0757f",
+          "summary": "손녀 보러 가며 싸 간 먹거리, 엄마의 반찬 7가지 며느리가 서울로 취직하게 되면서 아들네는 집도 구하고 새로운 생활을 준비하느라 많이 바빠졌습니다."
         },
         {
           "title": "브라운버터 초코칩 쿠키로 꽃 케이크 만들기 Brown Butter Chocolate Chip Cookie Flower Cake",
-          "summary": "Watch the full recipe on YouTube @Cooking_tree",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_35e5255f98e698f8",
           "url": "https://www.youtube.com/watch?v=YyLHcmx68Y4",
           "medium": "youtube",
+          "publishedAt": "2026-10-21T20:00:11+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-21T20:00:11+09:00"
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_35e5255f98e698f8",
+          "summary": "Watch the full recipe on YouTube @Cooking_tree"
         },
         {
           "title": "압력솥으로 진한 대추고 대추차 만들기 요리 레시피",
-          "summary": "텃밭 대추나무에 대추가 무진장 많이 열렸습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_245616bf9e0ed258",
           "url": "https://twins0807.tistory.com/entry/%EC%95%95%EB%A0%A5%EC%86%A5%EC%9C%BC%EB%A1%9C-%EC%A7%84%ED%95%9C-%EB%8C%80%EC%B6%94%EA%B3%A0-%EB%8C%80%EC%B6%94%EC%B0%A8-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-10-07T20:03:14+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-07T20:03:14+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_245616bf9e0ed258",
+          "summary": "텃밭 대추나무에 대추가 무진장 많이 열렸습니다."
         }
       ]
     },
@@ -161,60 +161,60 @@
       "items": [
         {
           "title": "“노화 방지하고 암 예방”…달달한 고구마의 건강 효과 4가지",
-          "summary": "고구마는 영양소와 식이섬유를 함께 섭취할 수 있는 건강 간식이다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_0d3338a8ae14e778",
           "url": "https://kormedi.com/2888182/",
           "medium": "news",
-          "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T12:05:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/untitled-2.jpeg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-22T12:05:00+09:00",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_0d3338a8ae14e778",
+          "imageSource": "feed_media",
+          "summary": "고구마는 영양소와 식이섬유를 함께 섭취할 수 있는 건강 간식이다."
         },
         {
           "title": "탄수화물보다 단백질 많이 섭취했더니…몸에 어떤 일이?",
-          "summary": "달걀 등의 식품을 통해 단백질을 잘 섭취하면 체중과 혈당 조절에 이점이 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_00cd0d2fa2002718",
           "url": "https://kormedi.com/2889451/",
           "medium": "news",
+          "publishedAt": "2026-10-22T09:17:00+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T09:17:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_00cd0d2fa2002718",
+          "summary": "달걀 등의 식품을 통해 단백질을 잘 섭취하면 체중과 혈당 조절에 이점이 있다."
         },
         {
           "title": "다이어트 콜라, 물보다 살 더 빠졌다?…2년 연구의 반전",
-          "summary": "장인혜 인턴 기자 = 과체중·비만 성인을 2년간 추적한 영국 연구에서 다이어트 음료를 마신 그룹이 물을 마신 그룹보다 평균 1.1㎏ 더 감량한 것으로 나타났다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_af7321d14fbd8703",
           "url": "https://www.newsis.com/view/NISX20261021_0003834785",
           "medium": "news",
+          "publishedAt": "2026-10-22T07:30:00+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T07:30:00+09:00"
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_af7321d14fbd8703",
+          "summary": "장인혜 인턴 기자 = 과체중·비만 성인을 2년간 추적한 영국 연구에서 다이어트 음료를 마신 그룹이 물을 마신 그룹보다 평균 1.1㎏ 더 감량한 것으로 나타났다."
         },
         {
           "title": "다이어트 때 먹는 닭가슴살 소시지, ‘장점’ 있지만 ‘함정’도 있어",
-          "summary": "평소 돼지고기가 듬뿍 든 소시지를 고집했더라도 일단 다이어트를 시작하면 닭가슴살 소시지를 먹는다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_0461942fc48e6f96",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/21/2026102103313.html",
           "medium": "news",
+          "publishedAt": "2026-10-22T04:30:00+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T04:30:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_0461942fc48e6f96",
+          "summary": "평소 돼지고기가 듬뿍 든 소시지를 고집했더라도 일단 다이어트를 시작하면 닭가슴살 소시지를 먹는다."
         },
         {
           "title": "\"베이글보다 많다\"… 주의해야 할 탄수화물 많은 식품 5가지",
-          "summary": "탄수화물은 단백질·지방과 함께 3대 영양소로 꼽히며, 우리 몸의 주요 에너지원으로 쓰인다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_8271ec7dfb0642ab",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=68930",
           "medium": "news",
+          "publishedAt": "2026-10-22T05:00:00+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T05:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_8271ec7dfb0642ab",
+          "summary": "탄수화물은 단백질·지방과 함께 3대 영양소로 꼽히며, 우리 몸의 주요 에너지원으로 쓰인다."
         }
       ]
     },
@@ -223,49 +223,49 @@
       "items": [
         {
           "title": "“피부 시술 받아도 소용없어”… 62세 백지연이 노화 주범으로 꼽은 ‘이것’",
-          "summary": "백지연은 노화의 주범이 단 디저트들이라면서 이를 먹지 말라고 강조했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_7457f7f76358c6cf",
           "url": "https://kormedi.com/2887966/",
           "medium": "news",
-          "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T13:00:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/2026-10-20-102317-edited.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-22T13:00:00+09:00",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_7457f7f76358c6cf",
+          "imageSource": "feed_media",
+          "summary": "백지연은 노화의 주범이 단 디저트들이라면서 이를 먹지 말라고 강조했다."
         },
         {
           "title": "“추워지니 손발부터 꽁꽁”…혈액순환 돕는 음식 3가지",
-          "summary": "비트에 풍부한 질산염은 체내에서 산화질소로 전환돼 혈관을 이완시키고 원활한 혈액 흐름을 돕는다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_6eb74a51201ed9c4",
           "url": "https://kormedi.com/2888698/",
           "medium": "news",
+          "publishedAt": "2026-10-21T16:18:00+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-21T16:18:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6eb74a51201ed9c4",
+          "summary": "비트에 풍부한 질산염은 체내에서 산화질소로 전환돼 혈관을 이완시키고 원활한 혈액 흐름을 돕는다."
         },
         {
           "title": "전통식품 학교급식, 학생 91% 호응",
-          "summary": "우리 농산물로 만든 전통식품을 학교급식에 활용한 결과, 학생 10명 중 9명 이상이 긍정적인 반응을 보인 것으로 나타났다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_f87a3cac083ff692",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62474",
           "medium": "news",
+          "publishedAt": "2026-10-22T22:49:00+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T22:49:00+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_f87a3cac083ff692",
+          "summary": "우리 농산물로 만든 전통식품을 학교급식에 활용한 결과, 학생 10명 중 9명 이상이 긍정적인 반응을 보인 것으로 나타났다."
         },
         {
           "title": "커피, 당 많은 식생활서 과당 과다섭취로 인한 대사 이상 완화 시키나",
-          "summary": "설탕이 많이 든 음료를 자주 마시면 과당 섭취가 늘면서 인슐린 저항성ㆍ지방간ㆍ고지혈증ㆍ염증 등 대사 이상 위험이 커질 수 있다.",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_6e30899038802608",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68677",
           "medium": "news",
+          "publishedAt": "2026-10-22T04:10:46+09:00",
           "discoveredAt": "2026-10-22T14:57:31+09:00",
-          "publishedAt": "2026-10-22T04:10:46+09:00"
+          "sourceId": "news-foodbank",
+          "candidateId": "c_6e30899038802608",
+          "summary": "설탕이 많이 든 음료를 자주 마시면 과당 섭취가 늘면서 인슐린 저항성ㆍ지방간ㆍ고지혈증ㆍ염증 등 대사 이상 위험이 커질 수 있다."
         }
       ]
     }
