@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-24",
+  "generatedAt": "2026-10-24T14:38:43+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "'누가 사 먹나 싶었는데'…편의점 매출 '2배' 폭발한 간식",
+    "summary": "전통 간식으로 여겨졌던 떡이 편의점 디저트 시장의 새로운 주인공으로 떠오르고 있다.찹쌀떡에 초콜릿과 크림, 과일 등을 결합한 이색 상품이 2030세대 사이에서 큰 인기를 끈 데 따른 것이다.디저트 시장에서 시의..",
+    "source": "한국경제TV",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_1a22df831703857e",
+    "url": "https://www.wowtv.co.kr/NewsCenter/News/Read?articleId=A202610210100",
+    "medium": "news",
+    "discoveredAt": "2026-10-24T14:38:43+09:00",
+    "publishedAt": "2026-10-21T15:46:04+09:00",
+    "image": "https://img.wowtv.co.kr/nrcs/production/images/20260903/20260903_a65664e199574fefa0ae3aa3dbdd91c6.jpg",
+    "imageSource": "source_page_og",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "‘20kg 감량’ 강소라 “키스신 땐 더 철저히”⋯날렵한 턱선 위해 먹은 ‘이것’은?",
+          "summary": "제작진이 멜로 연기 때는 관리가 더 엄격해지는지 묻자, 강소라는 “키스신이 있으면 턱선이 잘 나오니까”라고 답했다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_7442bb5b6e25a3f2",
+          "url": "https://kormedi.com/2887505/",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T23:05:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/10/image-234.png",
+          "imageSource": "feed_media",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "북미 웰니스 새 트렌드…붙이는 건강, 씹는 즐거움 등 자연스런 관리",
+          "summary": "북미 웰니스 시장의 경쟁 구도가 달라지고 있다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_4c975b7634d32640",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201439",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T17:26:57+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201439_202026_3347.jpg",
+          "imageSource": "feed_html",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "이번 주 음식 신상 10월 3주차, 카이막 아이스밀크부터 트러플 버거까지",
+          "summary": "2026년 10월 3주차 음식 신상 정리.",
+          "source": "수맵로그",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_ef16260d6588b6a9",
+          "url": "https://sumaplog.com/food-weekly/weekly-food-2026-w43/",
+          "medium": "blog",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-22T00:04:38+09:00",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data"
+          ]
+        },
+        {
+          "title": "“막힌 혈관 뻥 뚫어줘요”…뇌혈관 젊게 하는 치매 예방 음식 7가지",
+          "summary": "고등어는 오메가3지방산을 섭취하기 좋은 대표적인 등푸른 생선이다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_7ce9f3dc25529ec4",
+          "url": "https://kormedi.com/2888941/",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T22:05:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "메탄올 초과 검출 '일반증류주' 회수…\"판매 중단\"",
+          "summary": "메탄올이 초과 검출된 일반증류주가 판매 중단 및 회수 조치된다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_a3bb9469cfa1fd63",
+          "url": "https://www.newsis.com/view/NISX20261023_0003839219",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T18:43:13+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "뚝딱요리, 반찬 없을 때 5분 만에 만드는 양파덮밥 레시피",
+          "summary": "뚝딱요리, 반찬 없을 때 5분 만에 만드는 양파덮밥 레시피 아들네에서 며칠을 지내고 집에 돌아오니 마땅히 먹을 반찬이 없습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_ef4885ed92cc8f56",
+          "url": "https://heysukim114.tistory.com/entry/%EC%96%91%ED%8C%8C%EB%8D%AE%EB%B0%A5-1",
+          "medium": "blog",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-24T00:00:19+09:00",
+          "image": "https://blog.kakaocdn.net/dn/E43Vx/dJMcaiLVqhW/QuKi36KEBXZ32kLreikJTk/img.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "바삭한 스매시드 포테이토 만들기｜알감자로 만드는 갈릭버터 감자구이 레시피",
+          "summary": "작은 알감자가 많이 있다면 바삭한 스매시드 포테이토를 만들어 보세요.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_1d361649443d4933",
+          "url": "https://cultureagora.tistory.com/397",
+          "medium": "blog",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T15:30:08+09:00"
+        },
+        {
+          "title": "부산식 물떡 어묵탕 만들기｜가래떡 넣은 뜨끈한 오뎅탕 레시피",
+          "summary": "날씨가 쌀쌀해지면 생각나는 음식 중 하나가 뜨끈한 어묵탕이죠.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_80b8835139e39c02",
+          "url": "https://cultureagora.tistory.com/407",
+          "medium": "blog",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-24T09:00:49+09:00"
+        },
+        {
+          "title": "부드러운 우유크림에 사과가 콕콕! 애플 크럼블 커스터드 케이크 만들기 | 사과 디저트 | Apple Crumble Custard Cake Recipe | Apple Dessert",
+          "summary": "바삭한 크럼블 속에 부드러운 바닐라 우유크림과 사과를 가득 채워 구운 애플 크럼블 케이크예요.",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_c2c1aafc95516e2d",
+          "url": "https://www.youtube.com/watch?v=RJESPrEqGFE",
+          "medium": "youtube",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T20:00:21+09:00"
+        },
+        {
+          "title": "아들 며느리가 먹고 싶다는 닭도리탕, 엄마표 닭봉 요리",
+          "summary": "아들 며느리가 먹고 싶다는 닭도리탕, 엄마표 닭봉 요리 오랜만에 며느리가 먹고 싶다며 닭도리탕을 만들어 달라고 합니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_25c1ef38cc64ef20",
+          "url": "https://heysukim114.tistory.com/entry/%EC%95%84%EB%93%A4-%EB%A9%B0%EB%8A%90%EB%A6%AC%EA%B0%80-%EB%A8%B9%EA%B3%A0-%EC%8B%B6%EB%8B%A4%EB%8A%94-%EB%8B%AD%EB%8F%84%EB%A6%AC%ED%83%95",
+          "medium": "blog",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T00:00:59+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“공들여 화장했는데”…피부 들뜨고 각질 부각될 때 챙겨야 할 음식 4가지",
+          "summary": "화장할 때마다 피부가 들뜨고 각질이 부각된다면 평소 식단도 살펴볼 필요가 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_549bc749627e87dd",
+          "url": "https://kormedi.com/2887879/",
+          "medium": "news",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "publishedAt": "2026-10-22T07:04:00+09:00"
+        },
+        {
+          "title": "\"쌀밥보다 칼로리 높다고?\"... 의외로 열량 높은 식품 5가지",
+          "summary": "다이어트를 시작하면 가장 먼저 식탁에서 줄이는 음식 중 하나가 흰쌀밥이다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_b8afaac7fd9faa07",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69011",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-24T17:00:00+09:00"
+        },
+        {
+          "title": "WHO, 아동·청소년 비만 통합관리 권고",
+          "summary": "세계보건기구(WHO)가 아동·청소년 비만 관리에서 식생활 개선과 신체활동, 행동변화를 결합한 통합관리를 강력 권고했다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_ed4f8363fe1d766f",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62486",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-24T05:18:22+09:00"
+        },
+        {
+          "title": "“장 건강 생각하면 치즈도 골라 먹어라”… 확인해야 할 ‘숫자’",
+          "summary": "치즈는 칼슘과 단백질이 풍부한 유제품이다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_52e0061beaa22d4c",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/22/2026102202719.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T10:00:00+09:00"
+        },
+        {
+          "title": "“30대 접어들면 반드시 끊어라”… 영양사가 꼽은 ‘몸 망치는 음식’",
+          "summary": "나이가 들수록 같은 음식을 먹어도 몸이 다르게 반응할 수 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_017241bec766fe43",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/22/2026102202751.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T03:30:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“몸 천천히 늙는 법?”…이 건강 식단 10가지, 생물학적 노화 느리게 한다",
+          "summary": "저속노화, 즉 천천히 늙고 싶다면 어떤 식단을 골라야 할까.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2b11303e121633d0",
+          "url": "https://kormedi.com/2889339/",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-24T08:03:00+09:00"
+        },
+        {
+          "title": "아침 공복에 사과, 달걀 먹어도 괜찮을까…동시에 먹으면 어떤 효과가?",
+          "summary": "사과는 잘 씻어서 껍질째 먹어야 식이섬유를 지킬 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_648fd507db21ac19",
+          "url": "https://kormedi.com/2890676/",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T19:01:00+09:00"
+        },
+        {
+          "title": "“매일 30분”… ‘47kg 감량’ 40대 남성이 실천한 ‘한 가지 운동’",
+          "summary": "매일 맥주를 즐겨 마시던 영국의 한 40대 남성이 실내 자전거를 30분씩 타며 다이어트에 성공한 사연이 공개됐다.최근 외신 매체 ‘더 미러’에 따르면, 농구 코치로 일하는 닉 드레인(45)은 한때 체중이 약…",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_f07f1ec644b79327",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/23/2026102302098.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-24T02:00:00+09:00"
+        },
+        {
+          "title": "‘65kg 감량’ 50대 남성, 비만주사 대신 선택한 전략… 가장 먼저 실천한 것은?",
+          "summary": "다이어트 중에는 단백질을 충분히 섭취해야 한다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_9d4772bc46cf5e0e",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/23/2026102302359.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-24T00:01:00+09:00"
+        }
+      ]
+    }
+  }
+}
