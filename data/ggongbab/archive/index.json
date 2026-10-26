@@ -1,10 +1,38 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-20T21:11:20+09:00",
+  "generatedAt": "2026-10-27T00:12:14+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 5,
+  "count": 6,
   "events": [
+    {
+      "id": "3eb2e2a6-96ea-4952-a032-2282ad920f67",
+      "title": "IDIS-KAIST 실리콘밸리 프런티어 해외인턴십 제4기 사업 설명회",
+      "summary": "IDIS-KAIST 실리콘밸리 프런티어 해외인턴십 제4기 사업 설명회입니다. 제3기 참여학생 성과공유, 제4기 프로그램 소개 및 Q&A, 실리콘밸리 업무 문화와 커리어 관련 강연이 진행됩니다.",
+      "startAt": "2026-10-26T15:00:00+09:00",
+      "endAt": "2026-10-26T16:00:00+09:00",
+      "dateText": "2026년 10월 26일(월)",
+      "timeText": "15:00-16:00",
+      "location": {
+        "name": "KI빌딩 1층 로비 강연무대",
+        "building": "KI빌딩",
+        "room": "1층 로비 강연무대"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "매드버거 세트",
+        "source": "text"
+      },
+      "organizer": "창업원운영팀",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "afa5f6d3-0c94-4c3a-a461-e63d07b2f5d1",
       "title": "Adapting AI for Diverse Populations and Health Systems(다양한 인구집단 및 보건의료시스템에 맞춘 인공지능 적용)",
