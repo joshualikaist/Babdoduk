@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "“매일 10분 건강 루틴”… 정식품, 크리에이터 연유샘 손잡고 ‘단백질 챌린지’",
-    "summary": "정식품이 연말을 앞두고 바쁜 일상 속 현대인들이 간편하게 영양을 챙기고 신체 활력을 되찾을 수 있도록 돕는 참여형 웰니스 캠페인을 펼친다.",
     "source": "식품음료신문",
-    "sourceId": "news-thinkfood",
-    "candidateId": "c_ce67eecde2bebce6",
     "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201486",
     "medium": "news",
-    "discoveredAt": "2026-10-26T14:57:58+09:00",
-    "publishedAt": "2026-10-26T10:05:41+09:00",
     "image": "https://cdn.thinkfood.co.kr/news/photo/202610/201486_202098_532.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-26T10:05:41+09:00",
+    "discoveredAt": "2026-10-26T14:57:58+09:00",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_ce67eecde2bebce6",
     "imageSource": "feed_html",
+    "summary": "정식품이 연말을 앞두고 바쁜 일상 속 현대인들이 간편하게 영양을 챙기고 신체 활력을 되찾을 수 있도록 돕는 참여형 웰니스 캠페인을 펼친다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "편의점 10월 신상 2026: CU 피자절편 3,800원, GS25 피스타치오 찹쌀떡 3,900원",
-          "summary": "2026년 10월 편의점 신상을 출시일 순서로 정리했어요.",
           "source": "잘살림",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_076e3aea86cff2ab",
           "url": "https://jalsalim.com/convenience-store-new-oct-2026/",
           "medium": "blog",
-          "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T05:56:00+09:00",
           "image": "https://jalsalim.com/_astro/og.DMROvAxw_Z2pHwDW.jpeg",
+          "publishedAt": "2026-10-26T05:56:00+09:00",
+          "discoveredAt": "2026-10-26T14:57:58+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_076e3aea86cff2ab",
           "imageSource": "source_page_og",
+          "summary": "2026년 10월 편의점 신상을 출시일 순서로 정리했어요.",
           "trendEvidence": [
             "explicit_source_claim",
             "corroborated"
@@ -45,56 +45,56 @@
         },
         {
           "title": "‘30kg 감량’ 하원미 “무조건 굶는 건 바보 같은 짓”⋯운동 후 꼭 챙긴 ‘이것’은?",
-          "summary": "하원미는 “운동하고 나서는 단백질을 잘 챙겨 먹어야 한다”며 운동 후 식사의 중요성을 강조했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_8e414bc693756ba9",
           "url": "https://kormedi.com/2888445/",
           "medium": "news",
-          "discoveredAt": "2026-10-26T14:57:58+09:00",
           "publishedAt": "2026-10-25T18:02:00+09:00",
+          "discoveredAt": "2026-10-26T14:57:58+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8e414bc693756ba9",
+          "summary": "하원미는 “운동하고 나서는 단백질을 잘 챙겨 먹어야 한다”며 운동 후 식사의 중요성을 강조했다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "위고비·마운자로·에페…비만약 '삼국지' 시작된다",
-          "summary": "국내에서 개발된 첫 GLP-1 계열 비만치료제가 출시를 앞둔 가운데, 위고비와 마운자로가 주도했던 비만치료제 시장 '양대 산맥' 구도가 흔들릴 것으로 보인다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_d3756adf5914d28b",
           "url": "https://www.newsis.com/view/NISX20261023_0003839270",
           "medium": "news",
-          "discoveredAt": "2026-10-25T14:53:31+09:00",
           "publishedAt": "2026-10-25T06:01:00+09:00",
+          "discoveredAt": "2026-10-25T14:53:31+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_d3756adf5914d28b",
+          "summary": "국내에서 개발된 첫 GLP-1 계열 비만치료제가 출시를 앞둔 가운데, 위고비와 마운자로가 주도했던 비만치료제 시장 '양대 산맥' 구도가 흔들릴 것으로 보인다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "[제442호 레시피] 집게다리튀김&양배추샐러드",
-          "summary": "겹겹이 쌓인 건강한 초록빛 ‘양배추’양배추는 둥글고 단단하게 뭉친 잎이 특징으로, 샐러드와 볶음, 찜 등 다양한 요리에 활용된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_baaa786dd9a20f71",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62496",
           "medium": "news",
-          "discoveredAt": "2026-10-26T14:57:58+09:00",
           "publishedAt": "2026-10-26T03:08:47+09:00",
+          "discoveredAt": "2026-10-26T14:57:58+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_baaa786dd9a20f71",
+          "summary": "겹겹이 쌓인 건강한 초록빛 ‘양배추’양배추는 둥글고 단단하게 뭉친 잎이 특징으로, 샐러드와 볶음, 찜 등 다양한 요리에 활용된다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“대장암 세 번, 대장 모두 잘라냈다”… 40대 여성이 ‘처음 겪은 증상’",
-          "summary": "유전 질환으로 인해 대장암이 발병할 수 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_4875c9345f05e738",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/23/2026102302652.html",
           "medium": "news",
-          "discoveredAt": "2026-10-26T14:57:58+09:00",
           "publishedAt": "2026-10-25T16:00:00+09:00",
+          "discoveredAt": "2026-10-26T14:57:58+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_4875c9345f05e738",
+          "summary": "유전 질환으로 인해 대장암이 발병할 수 있다.",
           "trendEvidence": [
             "corroborated"
           ]
@@ -106,58 +106,58 @@
       "items": [
         {
           "title": "김치 퀘사디아 만들기｜버터에 볶은 신김치와 더블치즈로 만드는 초간단 요리",
-          "summary": "냉장고에 신김치가 많이 남았다면 조금 색다른 요리로 활용해 보세요.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_69a5c5645565f1f1",
           "url": "https://cultureagora.tistory.com/398",
           "medium": "blog",
+          "publishedAt": "2026-10-26T08:00:33+09:00",
           "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T08:00:33+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_69a5c5645565f1f1",
+          "summary": "냉장고에 신김치가 많이 남았다면 조금 색다른 요리로 활용해 보세요."
         },
         {
           "title": "신상출시 편스토랑 도경완의 개조개탕 만드는 법",
-          "summary": "342회 신상출시 편스토랑에서 도경완은 조개의 왕 개조개를 활용한 술안주 만드는 법을 공개했는데요.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_ee8b4a6af016aa5a",
           "url": "https://seon1982.tistory.com/4135",
           "medium": "blog",
+          "publishedAt": "2026-10-26T00:00:42+09:00",
           "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T00:00:42+09:00"
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_ee8b4a6af016aa5a",
+          "summary": "342회 신상출시 편스토랑에서 도경완은 조개의 왕 개조개를 활용한 술안주 만드는 법을 공개했는데요."
         },
         {
           "title": "참치 양배추 비빔밥 만들기｜팔도 저칼로리 비빔장 활용한 간단한 다이어트 한 그릇",
-          "summary": "냉장고에 양배추가 남아 있을 때 간단하게 만들어 먹기 좋은 메뉴가 참치 양배추 비빔밥입니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_c06e5c3e52c569d5",
           "url": "https://cultureagora.tistory.com/412",
           "medium": "blog",
+          "publishedAt": "2026-10-25T05:00:23+09:00",
           "discoveredAt": "2026-10-25T14:53:31+09:00",
-          "publishedAt": "2026-10-25T05:00:23+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_c06e5c3e52c569d5",
+          "summary": "냉장고에 양배추가 남아 있을 때 간단하게 만들어 먹기 좋은 메뉴가 참치 양배추 비빔밥입니다."
         },
         {
           "title": "기름 없이 10분 완성! 감칠맛 가득한 건강 두부조림 만드는 법",
-          "summary": "기름 없이 10분 만에 뚝딱 완성하는 건강하고 맛있는 두부조림 레시피를 찾으시나요?",
           "source": "달순생활",
-          "sourceId": "blog-dalsoonlife",
-          "candidateId": "c_1fcde247e233355d",
           "url": "https://dalsoonlife.tistory.com/230",
           "medium": "blog",
+          "publishedAt": "2026-09-14T12:55:04+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-09-14T12:55:04+09:00"
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_1fcde247e233355d",
+          "summary": "기름 없이 10분 만에 뚝딱 완성하는 건강하고 맛있는 두부조림 레시피를 찾으시나요?"
         },
         {
           "title": "마늘 보관법부터 마늘 제육볶음까지, 알뜰하게 먹는 방법",
-          "summary": "마늘 보관법부터 마늘 제육볶음까지, 알뜰하게 먹는 방법 남편 친구가 직접 농사지어 보내준 마늘이 한가득 들어왔습니다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_5e5199aca9c92051",
           "url": "https://heysukim114.tistory.com/entry/%EB%A7%88%EB%8A%98-%EC%A0%9C%EC%9C%A1%EB%B3%B6%EC%9D%8C",
           "medium": "blog",
+          "publishedAt": "2026-10-06T00:00:04+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-06T00:00:04+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_5e5199aca9c92051",
+          "summary": "마늘 보관법부터 마늘 제육볶음까지, 알뜰하게 먹는 방법 남편 친구가 직접 농사지어 보내준 마늘이 한가득 들어왔습니다."
         }
       ]
     },
@@ -166,62 +166,62 @@
       "items": [
         {
           "title": "“주스 마시면 혈당 치솟는다?”… KCA 주스 마시고 직접 쟀더니 뜻밖의 결과, 어땠길래?",
-          "summary": "사진=클립아트코리아 요즘 건강한 아침 식단을 이야기할 때 빠지지 않는 것이 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_8d710a55e499a1c0",
           "url": "https://kormedi.com/2890496/",
           "medium": "news",
-          "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T09:05:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/10/tcp010t000602-edited.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-26T09:05:00+09:00",
+          "discoveredAt": "2026-10-26T14:57:58+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8d710a55e499a1c0",
+          "imageSource": "feed_media",
+          "summary": "사진=클립아트코리아 요즘 건강한 아침 식단을 이야기할 때 빠지지 않는 것이 있다."
         },
         {
           "title": "‘뼈말라’ 되려다 뼈 건강 잃을라… 젊은 여성도 골다공증 주의",
-          "summary": "SNS에서 뼈가 도드라질 정도로 마른 체형을 뜻하는 ‘뼈말라’에 대한 관심이 이어지는 가운데, 무리한 체중 감량이 젊은 여성의 뼈 건강을 해칠 수 있어 주의해야 한다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_51c6b5ad7c7fac9c",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/26/2026102601137.html",
           "medium": "news",
-          "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T11:06:20+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/10/26/2026102601136_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-26T11:06:20+09:00",
+          "discoveredAt": "2026-10-26T14:57:58+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_51c6b5ad7c7fac9c",
+          "imageSource": "source_page_og",
+          "summary": "SNS에서 뼈가 도드라질 정도로 마른 체형을 뜻하는 ‘뼈말라’에 대한 관심이 이어지는 가운데, 무리한 체중 감량이 젊은 여성의 뼈 건강을 해칠 수 있어 주의해야 한다."
         },
         {
           "title": "감미료 쓴 저당 식품, 2028년부터 ‘혈당 기능성’ 표시 못한다",
-          "summary": "2028년 1월 1일부터 감미료를 사용해 저당 기준을 충족한 식품은 식후 혈당 상승 억제 기능성 원료 또는 성분이 들어있다는 표시가 금지된다.식품의약품안전처(처장 오유경)는 이같은 내용으로 ‘부당한 표시 또는…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_00cc6864e600dcff",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120668",
           "medium": "news",
+          "publishedAt": "2026-10-26T19:06:47+09:00",
           "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T19:06:47+09:00"
+          "sourceId": "news-foodnews",
+          "candidateId": "c_00cc6864e600dcff",
+          "summary": "2028년 1월 1일부터 감미료를 사용해 저당 기준을 충족한 식품은 식후 혈당 상승 억제 기능성 원료 또는 성분이 들어있다는 표시가 금지된다.식품의약품안전처(처장 오유경)는 이같은 내용으로 ‘부당한 표시 또는…"
         },
         {
           "title": "“치즈가 당뇨병 위험 낮춘다고?”... 연구로 살펴본 뜻밖의 치즈 건강 효능 5가지",
-          "summary": "피자에는 쭉 늘어나는 모차렐라, 떡볶이에는 고소하게 녹아내리는 체다, 파스타에는 한 숟갈 솔솔 뿌린 파르메산.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_b85ec9f48517695b",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69125",
           "medium": "news",
+          "publishedAt": "2026-10-26T15:00:00+09:00",
           "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T15:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_b85ec9f48517695b",
+          "summary": "피자에는 쭉 늘어나는 모차렐라, 떡볶이에는 고소하게 녹아내리는 체다, 파스타에는 한 숟갈 솔솔 뿌린 파르메산."
         },
         {
           "title": "매일 ‘두부’ 먹었더니… 몸에 나타나는 놀라운 변화 4가지",
-          "summary": "﻿두부는 콩으로 만든 식물성 단백질 식품으로, 찌개나 부침 등 다양한 요리에 활용된다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_724abe859d0c5767",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69127",
           "medium": "news",
+          "publishedAt": "2026-10-26T05:00:00+09:00",
           "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T05:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_724abe859d0c5767",
+          "summary": "﻿두부는 콩으로 만든 식물성 단백질 식품으로, 찌개나 부침 등 다양한 요리에 활용된다."
         }
       ]
     },
@@ -230,49 +230,49 @@
       "items": [
         {
           "title": "“김장 귀찮아, 김치 사 먹어?”… ‘그 김치’ 너무 달아, 혈당 관리 어쩌나",
-          "summary": "김치에도 설탕을 넣는 제품이 있어 혈당 관리 중인 사람을 곤혹스럽게 한다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_8e2098c1888b9aed",
           "url": "https://kormedi.com/2891332/",
           "medium": "news",
-          "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-25T19:01:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2024/12/gettyimages-a11200652.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-10-25T19:01:00+09:00",
+          "discoveredAt": "2026-10-26T14:57:58+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8e2098c1888b9aed",
+          "imageSource": "feed_media",
+          "summary": "김치에도 설탕을 넣는 제품이 있어 혈당 관리 중인 사람을 곤혹스럽게 한다."
         },
         {
           "title": "내년 산단 근로자 ‘천원의 아침밥’ 90만 식 지원",
-          "summary": "농림축산식품부는 산업단지 근로자의 건강한 식습관 형성과 쌀 소비 촉진을 위해 ‘2027년도 산단 근로자 천원의 아침밥 사업’ 참여 신청을 이달 26일부터 11월 10일까지 받는다.이번 사업은 대학생을 대상으로…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_f51eba962d321642",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120662",
           "medium": "news",
+          "publishedAt": "2026-10-26T18:18:11+09:00",
           "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-26T18:18:11+09:00"
+          "sourceId": "news-foodnews",
+          "candidateId": "c_f51eba962d321642",
+          "summary": "농림축산식품부는 산업단지 근로자의 건강한 식습관 형성과 쌀 소비 촉진을 위해 ‘2027년도 산단 근로자 천원의 아침밥 사업’ 참여 신청을 이달 26일부터 11월 10일까지 받는다.이번 사업은 대학생을 대상으로…"
         },
         {
           "title": "약보다 과일·채소?⋯만성콩팥병 환자, 입원·응급실행 ‘뚝’",
-          "summary": "만성 콩팥병 환자가 과일과 채소로 ‘식이 산’ 섭취를 줄이면 입원, 응급실 방문, 투석 위험을 낮출 수 있다는 연구 결과가 나왔다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_400bb4e1c44e24fb",
           "url": "https://kormedi.com/2891111/",
           "medium": "news",
+          "publishedAt": "2026-10-24T15:01:00+09:00",
           "discoveredAt": "2026-10-25T14:53:31+09:00",
-          "publishedAt": "2026-10-24T15:01:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_400bb4e1c44e24fb",
+          "summary": "만성 콩팥병 환자가 과일과 채소로 ‘식이 산’ 섭취를 줄이면 입원, 응급실 방문, 투석 위험을 낮출 수 있다는 연구 결과가 나왔다."
         },
         {
           "title": "갱년기 전후로 “피가 끈적끈적”…사과, 여성에 좋은 이유 3가지",
-          "summary": "사과의 껍질 부위에 많은 식이섬유는 혈당 스파이크 억제, 나쁜 콜레스테롤 배출, 장 건강에 도움이 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_101a05893b8b4216",
           "url": "https://kormedi.com/2887235/",
           "medium": "news",
+          "publishedAt": "2026-10-19T19:01:00+09:00",
           "discoveredAt": "2026-10-20T14:52:40+09:00",
-          "publishedAt": "2026-10-19T19:01:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_101a05893b8b4216",
+          "summary": "사과의 껍질 부위에 많은 식이섬유는 혈당 스파이크 억제, 나쁜 콜레스테롤 배출, 장 건강에 도움이 된다."
         }
       ]
     }
