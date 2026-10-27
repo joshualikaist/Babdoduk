@@ -1,43 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-27T00:12:14+09:00",
+  "generatedAt": "2026-10-27T20:00:13+09:00",
   "timezone": "Asia/Seoul",
-  "count": 8,
+  "count": 7,
   "events": [
-    {
-      "id": "cc3f1d61-4287-400e-a5a7-a0b76104b398",
-      "title": "올바른 피임과 성병의 예방 교육",
-      "summary": "KAIST 재학생을 대상으로 올바른 피임과 성병 예방 교육을 진행합니다. 사전 예약자 중 참석자에게 강연 후 노브랜드버거 교환권과 음료를 제공합니다.",
-      "startAt": "2026-10-27T12:00:00+09:00",
-      "endAt": "2026-10-27T13:00:00+09:00",
-      "dateText": "2026. 10. 27. (Tue.)",
-      "timeText": "12:00 ~ 13:00 p.m.",
-      "location": {
-        "name": "Matrix Hall, 2F, KI Building(E4)",
-        "building": "KI Building(E4)",
-        "room": "Matrix Hall, 2F"
-      },
-      "food": {
-        "provided": "true",
-        "type": "coupon",
-        "description": "노브랜드버거 교환권과 음료",
-        "source": "text"
-      },
-      "organizer": "KAIST Clinic",
-      "eligibility": "KAIST 재학생 (Currently Enrolled KAIST Students)",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/GtfQiYPQGXNHKwYNA"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
     {
       "id": "5ec8c23a-86a6-4455-b85d-d508a3049307",
       "title": "학부생과 지도교수와의 만남의 주간",
