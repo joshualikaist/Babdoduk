@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 import ssl
 import urllib.error
 import urllib.parse
@@ -75,8 +76,17 @@ class PortalPayload:
     private_source: bool = True
 
 
+# A GET that fails on the network (timeout, reset, DNS) is tried again after these pauses; a write
+# (POST/PUT) never is, and an HTTP error answer never is. 2026-10-28: the duplicate-task index reads
+# ~130 posts one by one; on this PC's network one of them timed out on every attempt, so every Radar
+# scan failed with DOORAY_WRITE_FAILED although each post answered in about a second on its own.
+GET_RETRY_PAUSES = (2.0, 5.0)
+
+
 class TaskWriter:
-    def __init__(self, settings: Settings, project_name: str = DEFAULT_PROJECT_NAME, timeout: int = 25):
+    def __init__(self, settings: Settings, project_name: str = DEFAULT_PROJECT_NAME, timeout: int = 25,
+                 sleep=time.sleep):
+        self._sleep = sleep
         self.settings = settings
         self.project_name = project_name
         self.timeout = timeout
@@ -97,14 +107,20 @@ class TaskWriter:
             "Content-Type": "application/json",
             "User-Agent": UA,
         })
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout, context=self._ctx) as res:
-                raw = res.read()
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", "replace")[:300]
-            raise ProjectNotFound(f"{method} {path}: HTTP {exc.code} {detail}") from exc
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            raise ProjectNotFound(f"{method} {path}: {exc.__class__.__name__}") from exc
+        pauses = GET_RETRY_PAUSES if method == "GET" else ()
+        for attempt in range(len(pauses) + 1):
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout, context=self._ctx) as res:
+                    raw = res.read()
+                break
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", "replace")[:300]
+                raise ProjectNotFound(f"{method} {path}: HTTP {exc.code} {detail}") from exc
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                if attempt < len(pauses):
+                    self._sleep(pauses[attempt])
+                    continue
+                raise ProjectNotFound(f"{method} {path}: {exc.__class__.__name__}") from exc
         payload = json.loads(raw.decode("utf-8")) if raw else {}
         header = payload.get("header") or {}
         if header and header.get("isSuccessful") is False:
