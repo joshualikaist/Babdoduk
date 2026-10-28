@@ -1,0 +1,8 @@
+{
+  "_comment": "Instagram accounts the radar follows through the official Business Discovery API (docs/INSTAGRAM_RADAR.md). Public professional (business/creator) accounts only. interval_minutes: 60-120 for busy accounts, 180-360 otherwise.",
+  "accounts": [
+    {"username": "shoutoutto.ee", "display_name": "KAIST 전기및전자공학부", "interval_minutes": 120, "active": true},
+    {"username": "in.cs.tagram", "display_name": "KAIST 전산학부 학생회", "interval_minutes": 180, "active": true},
+    {"username": "kaistua_grit", "display_name": "KAIST 학부 총학생회", "interval_minutes": 120, "active": true}
+  ]
+}

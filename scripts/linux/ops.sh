@@ -10,6 +10,7 @@
 #   remove         stop both workers and remove both units (state, profile and logs are kept)
 #   run <args>     ggongbab_workers.py <args>, e.g. `run radar-once --dry-run`
 #   alert <args>   scripts/alert_push.py <args>: Telegram push to the phone, e.g. `alert --status`
+#   ig-install | ig-start | ig-stop | ig-status | ig-check | ig-once [--dry-run]   the Instagram radar
 #
 # Same model as the Windows tasks: the operator's own session, no stored password, no sudo, no
 # wake timer. Workers stop through their control files; systemd stops only the supervisor
@@ -21,6 +22,7 @@ RUNNER="$ROOT/scripts/windows/ggongbab_workers.py"
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 PORTAL_UNIT="babdoduk-portal-worker.service"
 RADAR_UNIT="babdoduk-dooray-radar.service"
+IG_UNIT="babdoduk-ig-radar.service"
 RADAR_STOP_WAIT=90   # seconds radar-stop waits for the Radar process to exit
 PYTHON_FILE="$ROOT/.local/ops-python.txt"
 RADAR_START_DELAY=120
@@ -74,6 +76,8 @@ expected_unit() {   # expected_unit <unit file name>
         # The Radar never opens Chrome: it starts after the Portal worker has opened the Ops Chrome
         # at login (about a minute), as the Windows tasks' 30 s / 60 s logon delays did.
         "$RADAR_UNIT") unit_text radar "Dooray Radar" "$py" "$RADAR_START_DELAY" ;;
+        # The Instagram radar needs no browser: the official Graph API only (docs/INSTAGRAM_RADAR.md).
+        "$IG_UNIT") unit_text ig-radar "Instagram radar" "$py" ;;
     esac
 }
 
@@ -157,7 +161,26 @@ case "$action" in
         echo "Services removed. Ops Chrome, profile, state and logs retained." ;;
     run) runner "$@" ;;
     alert) "$(python_path)" "$ROOT/scripts/alert_push.py" "$@" ;;
+    ig-install)
+        [[ -e "$UNIT_DIR/$IG_UNIT" ]] && fail "TASK_ALREADY_EXISTS_REMOVE_FIRST"
+        mkdir -p "$UNIT_DIR"
+        expected_unit "$IG_UNIT" > "$UNIT_DIR/$IG_UNIT"
+        systemctl --user daemon-reload
+        systemctl --user enable "$IG_UNIT" >/dev/null
+        echo "Instagram radar installed (not started). Check with ig-check, then ig-start." ;;
+    ig-start)
+        verify_unit "$IG_UNIT"
+        runner ig-check >/dev/null || fail "CONFIGURATION_REQUIRED"
+        systemctl --user reset-failed "$IG_UNIT" 2>/dev/null || true
+        systemctl --user start "$IG_UNIT"
+        echo "Instagram radar started. Use ops.sh ig-status." ;;
+    ig-stop) systemctl --user stop "$IG_UNIT"; echo "Instagram radar stopped." ;;
+    ig-status)
+        echo "Service       : $(systemctl --user is-active "$IG_UNIT" 2>/dev/null || true)"
+        "$(python_path)" -c 'import json,sys,time; d=json.load(open(sys.argv[1])); print("Last cycle    :", d.get("reason"), time.strftime("%m-%d %H:%M", time.localtime(d.get("observed", 0)))); print("Counts        :", json.dumps(d.get("counts", {}), ensure_ascii=False))' "$ROOT/.local/ops-ig-radar.json" 2>/dev/null || echo "Last cycle    : none yet" ;;
+    ig-check) runner ig-check ;;
+    ig-once) runner ig-radar-once "$@" ;;
     *)
-        sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
         exit 2 ;;
 esac

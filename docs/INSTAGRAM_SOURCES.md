@@ -1,5 +1,7 @@
 # Following department Instagram accounts (research, 2026-10-18)
 
+> **2026-10-29:** the owner set up the official route (Meta app, Business Discovery). The radar that uses it is `docs/INSTAGRAM_RADAR.md`; anonymous scraping was tried once the same day (instaloader 4.16 and the embed page) and is blocked (HTTP 429 / error page).
+
 Why: some events are announced only on a department's or a student council's Instagram account, or only to
 one department. The pipeline reads Dooray mail; it cannot see those. This note records what was found, with
 the dates it was checked, so the owner can decide. **Nothing here has been built or run against Instagram.**

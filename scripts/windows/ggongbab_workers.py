@@ -272,7 +272,8 @@ def main(argv=None):
     parser.add_argument("action", choices=("watch", "worker", "enable", "stop", "status", "recover", "dooray-once", "check",
                                            "radar", "radar-once", "radar-recheck", "radar-enable", "radar-disable",
                                            "radar-allow-unread", "radar-dispatch-on", "radar-dispatch-off", "mail-lookup",
-                                           "alerts", "easy-login", *OPS_BROWSER_ACTIONS))
+                                           "alerts", "easy-login", "ig-check", "ig-radar", "ig-radar-once",
+                                           *OPS_BROWSER_ACTIONS))
     parser.add_argument("--recover-stale", action="store_true")
     parser.add_argument("--dry-run", action="store_true",
                         help="radar-once/radar-recheck: detect only; no task, state or dispatch")
@@ -345,6 +346,14 @@ def main(argv=None):
             print("Opening unread mail re-enabled after operator review.")
         elif args.action == "alerts":
             return alerts_command(files)
+        elif args.action in ("ig-check", "ig-radar", "ig-radar-once"):
+            # The Instagram radar (docs/INSTAGRAM_RADAR.md): official Graph API only.
+            from ggongbab.instagram import cli as ig
+            if args.action == "ig-check":
+                return ig.check(ROOT)
+            if args.action == "ig-radar-once":
+                return ig.once(ROOT, dry_run=args.dry_run)
+            return ig.loop(ROOT)
         elif args.action == "easy-login":
             # One Easy Login attempt (docs/PORTAL_EASY_LOGIN_ASSIST.md); the watchdog launches it.
             from ggongbab.easy_login import run_assist
