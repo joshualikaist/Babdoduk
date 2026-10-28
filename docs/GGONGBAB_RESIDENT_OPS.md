@@ -551,6 +551,15 @@ Linux-specific behavior:
   Chrome needs the display): after a reboot or a power cut, turn on automatic login (Settings >
   System > Users) or the workers stay off until someone logs in (2026-10-17: 71 minutes).
 
+* The watchdog opens a missing Ops Chrome by itself (owner request, 2026-10-28), at most once every
+  30 minutes, while the workers are enabled: as a normal window when a login latch holds (a person must
+  log in; the latch then resumes on its own as in section 7), otherwise as the usual unattended start.
+  It only starts the dedicated profile on 127.0.0.1:9224 (a stale or unverified process is never
+  touched) and never types, clicks or logs in. Why: from 10-19 the Portal worker waited at a login latch,
+  which starts no browser, and after a reboot on 10-23 nothing opened one, so the Radar had none either
+  and both collectors stood still for nine days. A deliberately closed Ops Chrome therefore comes back;
+  stop the workers (`stop`, `radar-stop`) to keep it closed.
+
 Moving the workers between PCs follows section 13: stop the old workers, copy the four approved
 state files with a SHA-256 manifest, log in by hand on the new PC, start, and observe 10-15 minutes
 before removing the old tasks. Never run both PCs' workers at the same time.

@@ -172,6 +172,7 @@ def run_worker(files, *, recover_stale=False, host=None, settings=None, now=time
 RESUME_GAP_SECONDS = 120
 RESUME_GRACE_SECONDS = 600
 QUICK_RETRY_SECONDS = 120     # Watchdog.may_resume: one retry of a login latch when the tabs look right
+REOPEN_BROWSER_SECONDS = 1800  # Watchdog.reopen_browser: at most one automatic open per 30 minutes
 
 
 def emit_alerts(files, now, *, portal_running, toast=None):
@@ -228,9 +229,33 @@ class Watchdog:
         # then gets a grace window to report before it can be judged unresponsive.
         self.last_tick = None
         self.resumed_at = 0.0
+        # In memory only: when this process last opened a missing Ops Chrome by itself.
+        self.browser_opened_at = -float(REOPEN_BROWSER_SECONDS)
 
     def save(self):
         atomic_json(self.files.watch, self.state)
+
+    def reopen_browser(self, now):
+        """Open the Ops Chrome when it is missing, so a person sees it and can log in (owner request,
+        2026-10-28). From 10-19 the Portal worker waited at a login latch, which never starts a
+        browser; after a reboot on 10-23 nothing opened one, so the Radar (which never starts Chrome)
+        had none either, and both collectors stood still for days behind a toast.
+
+        Only the dedicated profile on its loopback port is started (host.ensure: a stale or
+        unverified process is never touched). While a login latch holds it opens as a normal window,
+        because a person must log in; otherwise it is the usual unattended start. Nothing is typed,
+        clicked or logged in. At most once per REOPEN_BROWSER_SECONDS; a failure only waits for the
+        next attempt. Workers that are stopped (control disabled) never get here."""
+        if now - self.browser_opened_at < REOPEN_BROWSER_SECONDS:
+            return False
+        self.browser_opened_at = now
+        try:
+            self.host.ensure(log=self.log, minimized=self.state["latched"] not in LOGIN)
+        except Exception:  # noqa: BLE001 - the next attempt is the recovery
+            self.log("OPS_BROWSER_AUTO_OPEN_FAILED")
+            return False
+        self.log("OPS_BROWSER_AUTO_OPENED")
+        return True
 
     def may_resume(self, browser_state, now):
         """Whether a login latch may be acknowledged now: "login", "retry" or None. Never a login.
@@ -291,6 +316,8 @@ class Watchdog:
         if runtime["observed"] < control["resume"] and not self.state["latched"]:
             code = "WORKER_STARTING"
         browser_state, _ = self.host.inspect()
+        if browser_state == "absent" and self.reopen_browser(now):
+            browser_state, _ = self.host.inspect()
         alert_code = code
         if not held and code in {"WORKER_RUNNING", "WORKER_STARTING"} and self.state["launched_at"]:
             alert_code = "WORKER_EXITED"

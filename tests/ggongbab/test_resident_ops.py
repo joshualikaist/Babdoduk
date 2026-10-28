@@ -690,3 +690,67 @@ def test_the_final_owner_check_is_also_reread_before_it_fails(tmp_path):
     with pytest.raises(AuthRequired):
         host.ensure()
     assert always.call_count == 4 and slept == [5, 5, 5]
+
+
+# --- the watchdog opens a missing Ops Chrome (owner request, 2026-10-28) ------------------------------
+def test_a_missing_browser_is_opened_for_a_login_and_at_most_every_thirty_minutes(files):
+    """10-19 to 10-28: a login latch never starts a browser, and after a reboot nothing opened one, so
+    both collectors stood still for days behind a toast. The watchdog now opens it, for a person to log in."""
+    clock = Clock()
+    wd, launch = watchdog(files, clock)
+    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)   # latched after the last operator start
+    wd.save()
+    wd.host.inspect.return_value = ("absent", None)
+    assert wd.tick() is True
+    wd.host.ensure.assert_called_once()
+    assert wd.host.ensure.call_args.kwargs["minimized"] is False      # a person must see the login page
+    clock.value += 15
+    wd.tick()
+    assert wd.host.ensure.call_count == 1                             # not on every 15 s tick
+    clock.value += ops.REOPEN_BROWSER_SECONDS
+    wd.tick()
+    assert wd.host.ensure.call_count == 2
+    assert "OPS_BROWSER_AUTO_OPENED" in (files.local / "ops-watchdog.log").read_text(encoding="utf-8")
+    launch.assert_not_called()                                        # the latch still launches no worker
+    assert wd.state["latched"] == "PORTAL_LIST_AUTH_REQUIRED"          # opening is not a login
+
+
+def test_without_a_login_latch_the_browser_opens_as_an_unattended_start(files):
+    clock = Clock()
+    wd, _ = watchdog(files, clock)
+    wd.host.inspect.side_effect = [("absent", None), ("verified", None)] + [("verified", None)] * 10
+    wd.tick()
+    wd.host.ensure.assert_called_once()
+    assert wd.host.ensure.call_args.kwargs["minimized"] is True
+
+
+def test_a_failed_open_is_logged_and_waits_for_the_next_attempt(files):
+    clock = Clock()
+    wd, _ = watchdog(files, clock)
+    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)   # latched after the last operator start
+    wd.host.inspect.return_value = ("absent", None)
+    wd.host.ensure.side_effect = OpsError("PORTAL_RESIDENT_OWNER_UNVERIFIED")
+    assert wd.tick() is True
+    assert "OPS_BROWSER_AUTO_OPEN_FAILED" in (files.local / "ops-watchdog.log").read_text(encoding="utf-8")
+    clock.value += 60
+    wd.tick()
+    assert wd.host.ensure.call_count == 1
+
+
+@pytest.mark.parametrize("state", ["verified", "stale", "unverified"])
+def test_only_an_absent_browser_is_opened(files, state):
+    clock = Clock()
+    wd, _ = watchdog(files, clock)
+    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)   # latched after the last operator start
+    wd.host.inspect.return_value = (state, None)
+    wd.tick()
+    wd.host.ensure.assert_not_called()                                # a stale or unknown process is never touched
+
+
+def test_stopped_workers_never_open_the_browser(files):
+    clock = Clock()
+    files.set_enabled(False, 1001)
+    wd, _ = watchdog(files, clock)
+    wd.host.inspect.return_value = ("absent", None)
+    assert wd.tick() is False
+    wd.host.ensure.assert_not_called()
