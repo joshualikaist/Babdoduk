@@ -272,7 +272,7 @@ def main(argv=None):
     parser.add_argument("action", choices=("watch", "worker", "enable", "stop", "status", "recover", "dooray-once", "check",
                                            "radar", "radar-once", "radar-recheck", "radar-enable", "radar-disable",
                                            "radar-allow-unread", "radar-dispatch-on", "radar-dispatch-off", "mail-lookup",
-                                           "alerts", *OPS_BROWSER_ACTIONS))
+                                           "alerts", "easy-login", *OPS_BROWSER_ACTIONS))
     parser.add_argument("--recover-stale", action="store_true")
     parser.add_argument("--dry-run", action="store_true",
                         help="radar-once/radar-recheck: detect only; no task, state or dispatch")
@@ -345,6 +345,10 @@ def main(argv=None):
             print("Opening unread mail re-enabled after operator review.")
         elif args.action == "alerts":
             return alerts_command(files)
+        elif args.action == "easy-login":
+            # One Easy Login attempt (docs/PORTAL_EASY_LOGIN_ASSIST.md); the watchdog launches it.
+            from ggongbab.easy_login import run_assist
+            return run_assist(ROOT)
         elif args.action in OPS_BROWSER_ACTIONS:
             if args.action.startswith("legacy-") and args.role is None:
                 raise OpsError("OPS_CONFIGURATION_REQUIRED")

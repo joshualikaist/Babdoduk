@@ -1,7 +1,8 @@
 # Easy Login assist (owner decision 2026-10-29)
 
-**Lab-only / not promoted to production in the current main baseline.** Status: **rule approved,
-not implemented.** Until the implementation lands with its tests, a login is still started by hand.
+**Lab-only / not promoted to production in the current main baseline.** Status: **implemented
+(`scripts/ggongbab/easy_login.py`, synthetic tests `tests/ggongbab/test_easy_login.py`); off until
+the owner enables it on the operations PC, and not yet proven on a live login.**
 
 ## Why
 
@@ -45,9 +46,44 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
   turns into a stream of approval requests that someone answers by habit.
 * An approval request that arrives **without** a matching Telegram message is not ours: reject it.
 
+## How it runs
+
+* The watchdog (`resident_ops.Watchdog.start_easy_login`) looks at a login wait at most every 5
+  minutes: the Portal worker at a login latch (after its one quick retry has had 150 s), or the
+  Radar reporting `DOORAY_AUTH_REQUIRED`. If the limits allow, it launches one attempt as its own
+  process (`ggongbab_workers.py easy-login`, lock `.local/easy-login.lock`), so it never waits on a
+  page itself.
+* The attempt reads the page list, starts from an open SSO login page or the portal login page
+  (never from an open verification page, which is a login already in progress), and attaches to
+  that one tab. A page probe returns fixed facts only; the owner's ID is compared inside the page.
+  Each click must reach the next page within 20 s; an unanswered page (for example an `alert()`
+  dialog) stops it.
+* After the code is sent, the attempt ends. The owner approves on the phone; the SSO page closes
+  and the watchdog's existing resume path (`may_resume`) restarts the worker.
+* State `.local/easy-login-state.json`: attempt times, the time of the last code, the unanswered
+  count. Log `.local/ops-easy-login.log`: fixed codes only (`EASY_LOGIN_*`).
+* Known gap: a verification page that expired without an answer stays open in the tab. The assist
+  never touches an open verification page, so after that a person starts the next login (the
+  ordinary "로그인 만료" alert keeps reminding).
+
+## Enable or disable (owner, on the operations PC)
+
+```
+# on (the ID is the one Remember ID shows; it is compared, never typed):
+printf '{"enabled": true, "expected_id": "<KAIST ID>"}\n' > ~/Babdoduk-ops/.local/easy-login.json
+# one attempt by hand, for example the live acceptance run (it sends a real approval request):
+~/Babdoduk-ops/scripts/linux/ops.sh run easy-login
+# off:
+rm ~/Babdoduk-ops/.local/easy-login.json
+```
+
+Telegram must be configured first (`ops.sh alert --status`).
+
 ## Tests required before it is enabled
 
 Synthetic page fixtures only (no live SSO in tests): the three pages in order; an empty ID field;
 the ID/PW tab selected; an unknown page; a CAPTCHA or error text; an expired code; the rate limits;
-no Telegram configured; the code absent from every log line and state file. Then one live acceptance
-run with the owner present.
+no Telegram configured; the code absent from every log line and state file. All of these are in
+`tests/ggongbab/test_easy_login.py`. Still open: one live acceptance run with the owner present
+(the verification page's markup was never seen by the code; the digit reading is the part most
+likely to need a fix).

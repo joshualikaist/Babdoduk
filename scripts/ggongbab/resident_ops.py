@@ -173,6 +173,7 @@ RESUME_GAP_SECONDS = 120
 RESUME_GRACE_SECONDS = 600
 QUICK_RETRY_SECONDS = 120     # Watchdog.may_resume: one retry of a login latch when the tabs look right
 REOPEN_BROWSER_SECONDS = 1800  # Watchdog.reopen_browser: at most one automatic open per 30 minutes
+EASY_LOGIN_CHECK_SECONDS = 300  # Watchdog.start_easy_login: how often a login wait is looked at again
 
 
 def emit_alerts(files, now, *, portal_running, toast=None):
@@ -207,11 +208,20 @@ def launch_worker(files, recover_stale):
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
+def launch_easy_login(files):
+    """One Easy Login attempt in its own process (easy_login.run_assist), so the watchdog never
+    waits on a page."""
+    return subprocess.Popen([sys.executable, str(files.root / "scripts/windows/ggongbab_workers.py"), "easy-login"],
+        cwd=files.root, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+
+
 class Watchdog:
     """Persistent bounded restart budget. Only a held child handle may be terminated."""
-    def __init__(self, files, *, launch=launch_worker, host=None, now=time.time, targets=page_targets, toast=None):
+    def __init__(self, files, *, launch=launch_worker, host=None, now=time.time, targets=page_targets, toast=None,
+                 launch_easy=launch_easy_login):
         self.files, self.launch, self.host, self.now = files, launch, host or PortalHost(files.root), now
-        self.targets, self.toast = targets, toast
+        self.targets, self.toast, self.launch_easy = targets, toast, launch_easy
         # In memory only: whether a KAIST SSO page was seen open since the current login latch,
         # when this process first saw that latch, and whether its one quick retry is spent.
         self.sso_for, self.sso_seen, self.latch_seen_at, self.quick_retry_used = "", False, 0.0, False
@@ -231,6 +241,8 @@ class Watchdog:
         self.resumed_at = 0.0
         # In memory only: when this process last opened a missing Ops Chrome by itself.
         self.browser_opened_at = -float(REOPEN_BROWSER_SECONDS)
+        # In memory only: the running Easy Login attempt and when a login wait was last looked at.
+        self.easy_child, self.easy_checked_at = None, -float(EASY_LOGIN_CHECK_SECONDS)
 
     def save(self):
         atomic_json(self.files.watch, self.state)
@@ -255,6 +267,34 @@ class Watchdog:
             self.log("OPS_BROWSER_AUTO_OPEN_FAILED")
             return False
         self.log("OPS_BROWSER_AUTO_OPENED")
+        return True
+
+    def login_needed(self, now):
+        """A collector waits for a KAIST login: the Portal worker at a login latch (after its one
+        quick retry has had its chance), or the Dooray Radar reporting DOORAY_AUTH_REQUIRED."""
+        if self.state["latched"] in LOGIN and now - self.latch_seen_at >= QUICK_RETRY_SECONDS + 30:
+            return True
+        return read_json(self.files.local / "ops-radar.json", {}).get("reason") == "DOORAY_AUTH_REQUIRED"
+
+    def start_easy_login(self, now):
+        """Launch one Easy Login attempt (owner decision 2026-10-29, docs/PORTAL_EASY_LOGIN_ASSIST.md):
+        it clicks the portal's login and Easy Login's Login, and sends the verification code to the
+        owner's Telegram; the owner approves on their phone. Off unless `.local/easy-login.json`
+        enables it. The attempt's own limits (30 minutes, 4 a day, a pause after 2 unanswered
+        codes) are checked here before a process starts and again inside it."""
+        if self.easy_child is not None and self.easy_child.poll() is None:
+            return False
+        if now - self.easy_checked_at < EASY_LOGIN_CHECK_SECONDS:
+            return False
+        self.easy_checked_at = now
+        try:
+            from .easy_login import may_start
+            if not may_start(self.files.local, now):
+                return False
+            self.easy_child = self.launch_easy(self.files)
+        except Exception:  # noqa: BLE001 - the next check is the recovery
+            return False
+        self.log("EASY_LOGIN_STARTED")
         return True
 
     def may_resume(self, browser_state, now):
@@ -338,6 +378,8 @@ class Watchdog:
             self.files.set_enabled(True, now)
             self.log("OPS_AUTO_RESUMED")
             return True
+        if browser_state == "verified" and self.login_needed(now):
+            self.start_easy_login(now)
         if self.state["latched"]:
             return True
         if self.child is not None and self.child.poll() is None:

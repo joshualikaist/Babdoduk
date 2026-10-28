@@ -320,7 +320,7 @@ external notifier is connected; picking one is an owner decision.
 * Cookies, session tokens, SSO material, addresses, private URLs and mail ids never go to Git,
   Actions artifacts, Supabase public tables, public JSON or logs.
 * SSO/MFA is human work. A login challenge, CAPTCHA or rate limit stops a collector; it is never
-  bypassed. The one exception (owner decision 2026-10-29, lab-only, not yet implemented) starts an
+  bypassed. The one exception (owner decision 2026-10-29, lab-only, off unless enabled) starts an
   Easy Login and relays its two-digit code to the owner's Telegram; the owner still approves on
   their phone (`PORTAL_EASY_LOGIN_ASSIST.md`).
 

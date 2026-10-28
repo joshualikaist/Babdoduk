@@ -7,6 +7,8 @@ Portal tab, `document.wasDiscarded === true`) makes every client wait until it t
 This client talks to the browser target and attaches to one page at a time, so a dead tab
 cannot block it. It connects only to 127.0.0.1, never reads cookies, page content or titles,
 and is used for: page liveness, tab restore (activate), window ids, process ids and close.
+The one exception is the Easy Login assist (easy_login.py), which reads fixed facts of the KAIST
+SSO login pages and clicks two known buttons there (docs/PORTAL_EASY_LOGIN_ASSIST.md).
 """
 from __future__ import annotations
 
