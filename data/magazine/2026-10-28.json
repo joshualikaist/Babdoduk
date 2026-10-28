@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-28",
+  "generatedAt": "2026-10-28T15:47:07+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "알토란 개그맨 김수용의 대파제육볶음 만드는 법",
+    "summary": "알토란 616회에서는 추억의 몸보신 밥상 편이 방송되었습니다.",
+    "source": "알고 보면 (방송 레시피)",
+    "sourceId": "blog-seon1982",
+    "candidateId": "c_a60354176f0b9ade",
+    "url": "https://seon1982.tistory.com/4138",
+    "medium": "blog",
+    "discoveredAt": "2026-10-28T15:47:07+09:00",
+    "publishedAt": "2026-10-28T00:00:51+09:00",
+    "image": "https://blog.kakaocdn.net/dn/bQTEX5/dJMcafu02PS/Ok63nbqB8eShRcObRqCf91/img.png",
+    "imageSource": "feed_html",
+    "category": "tips",
+    "heroKind": "pick"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "2027년 미국 식품시장 전망",
+          "summary": "최근 미국 식품산업 전문 매체 푸드 인스티튜트(The Food Institute)는 2027년 주목할 주요 식품 트렌드와 소비자 수요를 전망했다.",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_208c4b2bc2ce23b6",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120711",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T22:48:05+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "식품진흥원-보람바이오, 차즈기추출물 식약처 개별인정형 원료 인정",
+          "summary": "한국식품산업클러스터진흥원(이사장 김덕호)은 보람바이오(대표 김성규)와 공동 연구를 진행한 결과 차즈기추출물(소엽추출물)이 식품의약품안전처로부터 개별인정형 기능성 원료로 최종 인정(제2026-28호) 받았다고 밝혔다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_fa808236488cc60f",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201506",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T14:00:21+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "\"제로 과자로 따뜻한 응원\" 롯데웰푸드, 1형당뇨병 환우모임 후원",
+          "summary": "롯데웰푸드가 1형당뇨병 환우와 가족들을 위한 행사에 무설탕 디저트 브랜드 '제로(ZERO)' 제품 3028개를 후원했다고 28일 밝혔다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_5004c38864b9da15",
+          "url": "https://www.newsis.com/view/NISX20261028_0003844021",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T09:06:57+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "26년간 역류성 식도염으로 치료받았는데…음식 안 넘어간 진짜 이유 따로 있었다",
+          "summary": "음식을 삼키기 어려운 증상으로 26년간 위식도 역류질환 치료를 받았던 70세 남성이 뒤늦게 식도이완불능증을 진단받았다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a4b9a41255c59c01",
+          "url": "https://kormedi.com/2892327/",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T06:03:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "공복에 ‘이 영양제’ 너무 많이 먹었더니…입원-치료 받을 수도",
+          "summary": "공장에서 만든 영양제는 과잉 섭취 시 부작용이 생길 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_71c222d422af0b03",
+          "url": "https://kormedi.com/2892741/",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-27T19:01:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "월동초 겨울초 무침 겉절이 양념 만들기",
+          "summary": "텃밭에 겨울초를 잘라 들고 온 애들 아빠가 이것저것 요구를 합니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_efedbdfd34f6a0f1",
+          "url": "https://twins0807.tistory.com/entry/%EC%9B%94%EB%8F%99%EC%B4%88-%EA%B2%A8%EC%9A%B8%EC%B4%88-%EB%AC%B4%EC%B9%A8-%EA%B2%89%EC%A0%88%EC%9D%B4-%EC%96%91%EB%85%90-%EB%A7%8C%EB%93%A4%EA%B8%B0",
+          "medium": "blog",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-27T18:09:03+09:00",
+          "image": "https://blog.kakaocdn.net/dn/YGkLu/dJMcadjQlIY/oP4u3CsQPhkvHUAQkZU7tk/img.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "감자채 치즈계란전 만들기｜겉은 바삭, 속은 고소한 감자채전 레시피",
+          "summary": "감자만 부쳐 먹어도 맛있는 감자채전에 계란과 치즈를 더해봤어요.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_60f7065a16b912b2",
+          "url": "https://cultureagora.tistory.com/404",
+          "medium": "blog",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T09:30:17+09:00"
+        },
+        {
+          "title": "겨울초 나물 무침 요리 레시피",
+          "summary": "아직은 시금치나물 보다 맛있는 겨울초 나물 무침을 했습니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_9a338b663dd2fc6d",
+          "url": "https://twins0807.tistory.com/entry/%EA%B2%A8%EC%9A%B8%EC%B4%88-%EB%82%98%EB%AC%BC-%EB%AC%B4%EC%B9%A8-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T09:00:35+09:00"
+        },
+        {
+          "title": "매콤 소고기 숙주버섯덮밥 만들기｜아삭하고 든든한 한그릇 요리",
+          "summary": "소고기에 숙주와 버섯을 넉넉히 넣어 매콤한 덮밥을 만들어보세요.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_a2710dd0491f4602",
+          "url": "https://cultureagora.tistory.com/414",
+          "medium": "blog",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-27T20:00:23+09:00"
+        },
+        {
+          "title": "먼 길 떠나며 싸 간 주먹밥 도시락, 주먹밥과 계란국으로 든든한 아침",
+          "summary": "먼 길 떠나며 싸 간 주먹밥 도시락, 주먹밥과 계란국으로 든든한 아침 딸아이 아파트 입주가 늦어져 단기 투룸으로 이사한 지 일주일째.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_aa753ca6af84a21a",
+          "url": "https://heysukim114.tistory.com/entry/%EB%A8%BC-%EA%B8%B8-%EB%96%A0%EB%82%98%EB%A9%B0-%EC%8B%B8-%EA%B0%84-%EC%A3%BC%EB%A8%B9%EB%B0%A5-%EB%8F%84%EC%8B%9C%EB%9D%BD-%EC%A3%BC%EB%A8%B9%EB%B0%A5%EA%B3%BC-%EA%B3%84%EB%9E%80%EA%B5%AD%EC%9C%BC%EB%A1%9C-%EB%93%A0%EB%93%A0%ED%95%9C-%EC%95%84%EC%B9%A8",
+          "medium": "blog",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T00:00:19+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“찬바람만 불면 골골?”⋯늦가을 건강 지키는 제철 식재료 ‘7가지’",
+          "summary": "찬바람이 깊어지는 가을에는 몸이 움츠러들고 피로감도 빨리 쌓인다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_83b7d279a296335f",
+          "url": "https://kormedi.com/2891110/",
+          "medium": "news",
+          "discoveredAt": "2026-10-27T15:09:29+09:00",
+          "publishedAt": "2026-10-27T13:04:00+09:00"
+        },
+        {
+          "title": "“위에 좋다길래 ‘이것’ 갈아 마셨는데?”… 속 편해지는 가을 보약, 뭐길래?",
+          "summary": "가을이면 땅속에서 영양분을 저장하며 자란 마가 수확기를 맞는다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_90222d8e0e44d3b4",
+          "url": "https://kormedi.com/2891892/",
+          "medium": "news",
+          "discoveredAt": "2026-10-27T15:09:29+09:00",
+          "publishedAt": "2026-10-26T18:16:37+09:00"
+        },
+        {
+          "title": "“땅콩보다 많다”… 의외로 단백질 풍부한 식품 5가지",
+          "summary": "땅콩은 고소한 맛 덕분에 간식이나 술안주, 반찬으로 두루 즐겨 먹는 식품이다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_ba385090901fc35a",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69151",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T16:00:00+09:00"
+        },
+        {
+          "title": "“공복혈당 낮추는 효과”… 영양사 추천 ‘향신료’ 4가지",
+          "summary": "혈당이 걱정된다면 평소 먹는 음식에 향신료를 곁들여 보자.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_48d476824fe1c0af",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/27/2026102702686.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T04:00:00+09:00"
+        },
+        {
+          "title": "하루 한 줌의 호두, 젊은 성인의 정서적 건강 향상에 도움",
+          "summary": "국제학술지 ‘식품과 기능(Food & Function)’에 게재된 새로운 연구에 따르면 건강한 젊은 성인이 매일 호두 한 줌을 섭취할 경우 전반적인 정서적 건강 개선에 도움이 될 수 있는 것으로 나타났다고…",
+          "source": "식품외식경제",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_1f89a3481a848c5e",
+          "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68705",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T02:20:11+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "감정 잘 다스리는 청소년, 체중도 적정 수준으로 유지한다",
+          "summary": "청소년에게 감정을 잘 관리하는 방법을 가르치면 건강한 체중을 유지하는 데 도움이 될 수 있다는 연구 결과가 나왔다.미국 캘리포니아대 샌디에이고 캠퍼스 소아과·정신의학 케리 부텔 교수 연구팀은 과체중 또는 비만인…",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_8f8995668436a7f0",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/28/2026102801657.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T11:39:19+09:00"
+        },
+        {
+          "title": "‘김준호♥’ 김지민, 임신 전 보다 잘 먹는 이유⋯ ‘이것’ 때문?",
+          "summary": "김지민은 임신 후 먹덧이 생기면서 평소보다 훨씬 잘 먹게 됐다고 밝혔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_f49691fd26c43e63",
+          "url": "https://kormedi.com/2889177/",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-27T23:34:31+09:00"
+        },
+        {
+          "title": "“자칫하다간 열량 폭탄”… 박준형, ‘안 먹어본 사람 없다’며 반가워 한 반전 음식",
+          "summary": "아침 식사로 간편하게 먹는 시리얼은 종류에 따라 상당한 양의 당류가 들어 있을 수 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_e529c9f3970c4761",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/28/2026102801681.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T11:43:33+09:00"
+        },
+        {
+          "title": "[특집] 급식 현안의 해법, 부산서 만난다",
+          "summary": "지난 4월 서울에서 열린 ‘2026 우수급식·외식산업전’의 열기를 이어갈 하반기 ‘2026 우수급식·외식산업전-부산(이하 부산 급식전)’이 28일부터 30일까지 부산 벡스코에서 개최된다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_8675d3fb78bbae92",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62521",
+          "medium": "news",
+          "discoveredAt": "2026-10-28T15:47:07+09:00",
+          "publishedAt": "2026-10-28T05:24:00+09:00"
+        }
+      ]
+    }
+  }
+}

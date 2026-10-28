@@ -41,22 +41,6 @@
           ]
         },
         {
-          "title": "유행음식으로 인싸 체험하기",
-          "source": "침착맨",
-          "url": "https://www.youtube.com/watch?v=vO6-xnZwKc4",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/vO6-xnZwKc4/hqdefault.jpg",
-          "publishedAt": "2026-09-22T00:00:00+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-search",
-          "candidateId": "c_9ac7692badb389ca",
-          "imageSource": "youtube_thumbnail",
-          "summary": "",
-          "trendEvidence": [
-            "engagement"
-          ]
-        },
-        {
           "title": "[기획] 봄동비빔밥에서 생새우까지…올해 음식 트렌드 장악한 '이것'은?",
           "source": "위키트리",
           "url": "https://www.wikitree.co.kr/articles/1162174",
@@ -69,65 +53,12 @@
           "trendEvidence": [
             "explicit_source_claim"
           ]
-        },
-        {
-          "title": "틱톡에서 유행하는 음식의 진실ㅣ해파리 먹방",
-          "source": "FoodieAlley_Mukbang_ASMR",
-          "url": "https://www.youtube.com/watch?v=EQtw53dMxs0",
-          "medium": "youtube",
-          "publishedAt": "2026-09-11T00:00:00+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-search",
-          "candidateId": "c_fb803e13dbe09234",
-          "summary": "",
-          "trendEvidence": [
-            "engagement"
-          ]
         }
       ]
     },
     "tips": {
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
-        {
-          "title": "이게 바로 개쉬운 자취요리지.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=AePO9VDfO3g",
-          "medium": "youtube",
-          "image": "https://i.ytimg.com/vi/AePO9VDfO3g/hqdefault.jpg",
-          "publishedAt": "2026-09-18T00:00:00+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_3ebc0506bd69418e",
-          "imageSource": "youtube_thumbnail",
-          "summary": "치즈비엔나볶음밥을 만들어 보자 [재료] 비엔나소시지 한 줌, 모차렐라 치즈 [만드는 법] 1. 비엔나소시지를 먹기 좋게 자른 뒤 식용유에 노릇하게 볶는다. 2."
-        },
-        {
-          "title": "바삭한 크럼블 미니 사과 파이 만들기 | 쉽게 만드는 애플 파이 | Easy Mini Crumble Apple Pie Recipe | Crispy & Full of Apples",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=xaLO1bDy_E8",
-          "medium": "youtube",
-          "image": "https://i1.ytimg.com/vi/xaLO1bDy_E8/hqdefault.jpg",
-          "publishedAt": "2026-09-22T20:00:01+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_9605de3e92cfc75c",
-          "imageSource": "youtube_thumbnail",
-          "summary": "바삭한 버터 크럼블과 촉촉한 사과 필링을 가득 채운, 쉽게 만드는 미니 애플 크럼블 파이예요. Easy mini apple crumble pies with a flaky butter crust, juicy…"
-        },
-        {
-          "title": "5가지 재료로 만드는 무화과 브리치즈 구이 5-Ingredient Baked Figs with Brie cheese",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/shorts/voZfW6h5huw",
-          "medium": "youtube",
-          "image": "https://i3.ytimg.com/vi/voZfW6h5huw/hqdefault.jpg",
-          "publishedAt": "2026-09-28T20:00:02+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_cad6fa6637db3502",
-          "imageSource": "youtube_thumbnail",
-          "summary": "무화과를 조금 다르게 즐기고 싶을 때 이렇게 한번 구워보세요. 십자로 칼집을 낸 무화과에 브리치즈와 호두를 올리고 꿀을 살짝 뿌려 오븐에 넣으면 돼요."
-        },
         {
           "title": "Yukhoe Kimbap",
           "source": "Seonkyoung Longest",
@@ -153,17 +84,6 @@
           "candidateId": "c_0a0a95222fce0f69",
           "imageSource": "feed_media",
           "summary": "If you’ve got a $5 bill and a couple of quarters burning a hole in your pocket this pumpkin spice season, boy do I have…"
-        },
-        {
-          "title": "너무 맛있어서 지금 당장 팔아도 됩니다.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=bBcyBIrQ6Wc",
-          "medium": "youtube",
-          "publishedAt": "2026-09-26T00:00:00+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_bb328a9ebf65ce3e",
-          "summary": "사천 짜계치볶이를 만들어 보자 [재료] 사천짜파게티, 떡볶이 떡, 체다 치즈, 청양고추 [만드는 법] 1. 물 450ml를 끓이고 면, 떡 한줌, 건더기 스프, 분말 스프를 넣는다. 2."
         }
       ]
     },
