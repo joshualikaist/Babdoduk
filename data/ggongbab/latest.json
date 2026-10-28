@@ -1,43 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-27T20:00:13+09:00",
+  "generatedAt": "2026-10-29T04:24:19+09:00",
   "timezone": "Asia/Seoul",
-  "count": 7,
+  "count": 10,
   "events": [
-    {
-      "id": "5ec8c23a-86a6-4455-b85d-d508a3049307",
-      "title": "학부생과 지도교수와의 만남의 주간",
-      "summary": "가을학기 학부생과 지도교수와의 만남의 주간 행사로, 기계공학동 뒷편 BBQ PIT 또는 잔디밭에서 그룹별로 점심을 먹으며 진행됩니다. 당일 점심 도시락이 제공됩니다.",
-      "startAt": "2026-10-29T12:00:00+09:00",
-      "endAt": "2026-10-29T13:00:00+09:00",
-      "dateText": "10/29(목)",
-      "timeText": "12:00~13:00",
-      "location": {
-        "name": "기계공학동 뒷편 BBQ PIT 또는 잔디밭",
-        "building": "기계공학동",
-        "room": ""
-      },
-      "food": {
-        "provided": "true",
-        "type": "lunchbox",
-        "description": "점심 도시락",
-        "source": "text"
-      },
-      "organizer": "기계공학과",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/BEkdTcjbZyCqPJWZA"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
-    },
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
       "title": "자연과학과 함께하는 토크 콘서트",
@@ -74,33 +40,136 @@
       "giveaway": {
         "provided": "true",
         "description": "Galaxy Z Flip8 (1EA), Galaxy Watch (1EA), Apple Watch (1EA), Galaxy Buds4 (3EA)"
+      },
+      "sessions": [
+        {
+          "startAt": "2026-11-02T12:00:00+09:00",
+          "endAt": "2026-11-02T12:50:00+09:00",
+          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
+        },
+        {
+          "startAt": "2026-11-03T12:00:00+09:00",
+          "endAt": "2026-11-03T12:50:00+09:00",
+          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
+        },
+        {
+          "startAt": "2026-11-04T12:00:00+09:00",
+          "endAt": "2026-11-04T12:50:00+09:00",
+          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
+        },
+        {
+          "startAt": "2026-11-05T12:00:00+09:00",
+          "endAt": "2026-11-05T12:50:00+09:00",
+          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
+        },
+        {
+          "startAt": "2026-11-06T16:00:00+09:00",
+          "endAt": "2026-11-06T19:30:00+09:00",
+          "foodDescription": "Shake Shack burgers will be provided to the first 250 attendees."
+        }
+      ],
+      "audience": {
+        "text": "학사과정 학생",
+        "basis": "stated"
       }
     },
     {
-      "id": "7131af6e-f266-4ad2-8597-22a67a9bbd24",
-      "title": "업비트 디지털 자산 특강",
-      "summary": "디지털 자산과 미래 금융 인사이트 강연 및 업비트 현직자와 KAIST 동문 선배들의 커리어패스 토크가 진행됩니다. 참석자 전원에게 웰컴 키트와 간식이 제공되며 럭키드로우를 통해 경품이 증정됩니다.",
-      "startAt": "2026-11-02T14:00:00+09:00",
-      "endAt": "2026-11-02T16:00:00+09:00",
-      "dateText": "2026년 11월 2일(월)",
-      "timeText": "14:00 ~ 16:00",
+      "id": "b8e9d163-c224-4f72-b03a-0a8925048fae",
+      "title": "제2회 교무처 & 학사과정생 간담회",
+      "summary": "교무처가 학사과정생의 수업 및 학사제도에 대한 의견을 듣고 PNR 성적표기 제도와 개편 방향을 논의하는 간담회입니다. 사전 등록 후 참석 확정 안내를 받은 참석자에게 간단한 점심식사가 제공됩니다.",
+      "startAt": "2026-11-04T12:00:00+09:00",
+      "endAt": "2026-11-04T13:00:00+09:00",
+      "dateText": "2026.11.04.(수)",
+      "timeText": "오후 12시~1시",
       "location": {
-        "name": "KI빌딩(E4) 1층 퓨전홀",
-        "building": "KI빌딩(E4)",
-        "room": "1층 퓨전홀"
+        "name": "창의학습관",
+        "building": "E11",
+        "room": "1층 102호"
       },
       "food": {
         "provided": "true",
-        "type": "snack",
-        "description": "웰컴 키트 및 간식",
+        "type": "meal",
+        "description": "간단한 점심식사",
         "source": "text"
       },
-      "organizer": "기술경영전문대학원",
+      "organizer": "교무처",
+      "eligibility": "KAIST에 재학중인 학사과정생",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/4mqssm6HMi2WDXKG6"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 학사과정생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "b44efecd-e2cb-4800-9aed-0137f4d86df6",
+      "title": "2026 노벨 수상자(문학상·경제학상·평화상) 수상 업적 해설 강연회",
+      "summary": "2026년 노벨상 문학상·경제학상·평화상 수상 업적을 해설하는 강연회입니다. 우리말로 진행되며 Google Docs를 통해 영어 번역이 제공됩니다.",
+      "startAt": "2026-11-05T12:00:00+09:00",
+      "endAt": "2026-11-05T13:30:00+09:00",
+      "dateText": "11.05(목)",
+      "timeText": "12:00~13:30",
+      "location": {
+        "name": "학술문화관(E9) 2층 양승택오디토리움",
+        "building": "E9",
+        "room": "양승택오디토리움"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "현장 참석자 샌드위치 제공",
+        "source": "text"
+      },
+      "organizer": "인문사회융합과학대학",
       "eligibility": "",
       "registration": {
         "required": "true",
         "deadline": null,
-        "url": "https://event-us.kr/upclasscampus2026/event/136383"
+        "url": "https://kaist.zoom.us/j/84468206787"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "38eff22c-27a5-48ac-828e-5398814301d8",
+      "title": "STAR-MOOC 공동 온오프라인 특강[ 코딩, 게임, 그리고 열역학 : AI의 새로운 법칙을 묻다 ]",
+      "summary": "6개 기관이 공동으로 개최하는 온오프라인 특강으로, 오프라인 행사와 실시간 온라인 중계가 함께 진행됩니다. 오프라인 참석자에게 도시락, 다과, 기념품 등이 준비되어 있습니다.",
+      "startAt": "2026-11-06T11:30:00+09:00",
+      "endAt": "2026-11-06T13:30:00+09:00",
+      "dateText": "2026년 11월 6일(금)",
+      "timeText": "11:30-13:30",
+      "location": {
+        "name": "터만홀",
+        "building": "창의학습관(E11)",
+        "room": "1층 터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "도시락, 다과",
+        "source": "text"
+      },
+      "organizer": "KAIST, GIST, DGIST, UNIST, POSTECH, UST",
+      "eligibility": "참여대학 재학생, 일반 학습자, STAR-MOOC 강좌 관심있는 누구나",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://onoffmix.com/event/350385"
       },
       "confidence": 1.0,
       "sources": [
@@ -109,21 +178,59 @@
           "name": "Dooray"
         }
       ],
-      "giveaway": {
+      "audience": {
+        "text": "참여대학 재학생, 일반 학습자, STAR-MOOC 강좌 관심있는 누구나",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "8e6293b7-9414-44ed-99a9-6a686c5b2271",
+      "title": "논문은 Accept, 세상도 Accept할까?",
+      "summary": "토스 공동창업자이자 베이스벤처스 대표인 이태양 대표가 토스의 시작과 창업 과정, 연구실 기술과 아이디어의 사업화에 대해 이야기하는 창업 토크입니다. 사전 신청자에게 점심이 제공됩니다.",
+      "startAt": "2026-11-06T12:00:00+09:00",
+      "endAt": "2026-11-06T13:30:00+09:00",
+      "dateText": "11월 6일(금)",
+      "timeText": "12:00~13:30 (11:45부터 등록 및 입장)",
+      "location": {
+        "name": "KAIST",
+        "building": "W8",
+        "room": "3층 컨퍼런스홀"
+      },
+      "food": {
         "provided": "true",
-        "description": "럭키드로우 이벤트 및 다양한 경품 증정 (에어팟 5세대, 고급 장우산, 트래블 파우치 세트, 비트코인 기프트카드, 네이버페이 상품권 등)"
+        "type": "meal",
+        "description": "사전 신청자 점심 제공",
+        "source": "text"
+      },
+      "organizer": "KAIST 창업원",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://event.bass.vc/lab-to-startup/kaist"
+      },
+      "confidence": 1.0,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "자신의 연구가 세상에서 어떤 가치를 만들 수 있을지 궁금한 분",
+        "basis": "stated"
       }
     },
     {
       "id": "b6d9f0d8-fece-4b38-90ce-4dbc073f1915",
       "title": "Chill & Relax 그룹 프로그램 \"HUG IN HUG\"",
-      "summary": "KAIST 마인드 케어 & 성장센터 상담사와 소그룹 활동을 진행하는 프로그램입니다. 프로그램 종료 시 참여자에게 기념품과 간식이 제공됩니다.",
+      "summary": "KAIST 마인드 케어 & 성장센터 상담사와 함께 소그룹 활동을 진행하는 프로그램입니다. 프로그램 종료 시 참여자에게 기념품과 간식이 제공됩니다.",
       "startAt": "2026-11-06T13:30:00+09:00",
       "endAt": "2026-11-06T15:30:00+09:00",
       "dateText": "11월 6일 금요일",
       "timeText": "13:30-15:30",
       "location": {
-        "name": "N1 117호 김병호 다목적홀",
+        "name": "김병호 다목적홀",
         "building": "N1",
         "room": "117호"
       },
@@ -153,16 +260,58 @@
       }
     },
     {
+      "id": "67b8523c-83f2-4c7f-a8ba-b097b4673cb5",
+      "title": "현재 진행형의 실패, 미래로부터의 질문",
+      "summary": "AI 시대 인간과 사회에 실패가 갖는 의미를 살펴보는 KAIST 실패세미나입니다. 실패 에세이 대담과 미래와 실패 특강으로 진행됩니다.",
+      "startAt": "2026-11-06T15:00:00+09:00",
+      "endAt": "2026-11-06T17:00:00+09:00",
+      "dateText": "2026년 11월 6일(금)",
+      "timeText": "15:00–17:00",
+      "location": {
+        "name": "KAIST 대전 본원 학술문화관(E9) 2층 양승택오디토리움",
+        "building": "E9",
+        "room": "양승택오디토리움"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "샌드위치+음료 박스",
+        "source": "text"
+      },
+      "organizer": "KAIST 실패연구소",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://moaform.com/q/HibpON"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "도서 선물 추첨"
+      },
+      "audience": {
+        "text": "관심 있는 누구나",
+        "basis": "stated"
+      }
+    },
+    {
       "id": "ed473c75-3ff6-4b6c-afd8-ab08649b4f35",
-      "title": "KAIST 문지책방 제7권 <벌거벗은 동물사>",
-      "summary": "저자 이종식의 강연과 저자와의 티타임으로 구성된 행사입니다. 사전등록자 중 추첨을 통해 주제 도서를 증정합니다.",
+      "title": "KAIST 문지책방 제7권 <벌거벗은 동물사> 행사",
+      "summary": "저자 강연과 저자와의 티타임으로 진행되는 KAIST 문지책방 행사입니다. 사전등록자 중 추첨을 통해 주제 도서를 증정합니다.",
       "startAt": "2026-11-11T15:00:00+09:00",
       "endAt": "2026-11-11T17:00:00+09:00",
       "dateText": "2026. 11. 11. (수)",
       "timeText": "15:00 ~ 17:00",
       "location": {
         "name": "KAIST 문지캠퍼스, 강의동 L507호",
-        "building": "L507호",
+        "building": "",
         "room": "L507호"
       },
       "food": {
@@ -170,14 +319,14 @@
         "type": "unknown",
         "description": ""
       },
-      "organizer": "의과학대학원 주최 및 독서문위위원회 후원",
+      "organizer": "의과학대학원",
       "eligibility": "",
       "registration": {
         "required": "true",
         "deadline": "2026-11-03T23:59:00+09:00",
         "url": "https://forms.gle/ZDVNCnpe1QRPhe2dA"
       },
-      "confidence": 0.98,
+      "confidence": 0.99,
       "sources": [
         {
           "type": "dooray",
@@ -192,15 +341,15 @@
     {
       "id": "bb00bae1-7076-4ccd-b53c-32e9bf4c4f47",
       "title": "2026 노벨상 수상 업적 해설 강연",
-      "summary": "2026년 노벨 생리의학상·물리학상·화학상 수상자들의 주요 연구 업적을 소개하는 강연입니다. 강연은 한국어로 진행되며 Zoom을 통해 동시통역이 제공됩니다.",
+      "summary": "2026년 노벨 생리의학상·물리학상·화학상 수상자들의 주요 연구 업적을 소개하는 해설 강연입니다. 강연은 한국어로 진행되며 Zoom을 통해 영어 동시통역이 제공됩니다.",
       "startAt": "2026-11-12T11:50:00+09:00",
       "endAt": "2026-11-12T12:50:00+09:00",
       "dateText": "Thursday, November 12, 2026",
       "timeText": "11:50-12:50",
       "location": {
-        "name": "창의학습관 1층 터만홀(E11, 1F Turman Hall)",
-        "building": "창의학습관",
-        "room": "터만홀"
+        "name": "창의학습관 1층 터만홀",
+        "building": "E11",
+        "room": "1F Turman Hall"
       },
       "food": {
         "provided": "true",
@@ -208,7 +357,7 @@
         "description": "쉑쉑버거와 음료",
         "source": "text"
       },
-      "organizer": "자연과학대학교학팀",
+      "organizer": "자연과학대학 교학팀",
       "eligibility": "",
       "registration": {
         "required": "true",
@@ -221,20 +370,24 @@
           "type": "dooray",
           "name": "Dooray"
         }
-      ]
+      ],
+      "audience": {
+        "text": "관심 있는 분들",
+        "basis": "stated"
+      }
     },
     {
       "id": "cce0b2e8-355c-4ec7-903b-80825f801b8e",
       "title": "제288회 NAEK Forum",
-      "summary": "공과대학 학사과정 재학생을 대상으로 중국의 부상과 우리의 대응을 주제로 포럼을 개최한다. 추천 희망자는 참가신청서와 개인정보수집이용동의서를 기한 내 이메일로 제출해야 한다.",
+      "summary": "공과대학 학사과정 재학생을 대상으로 중국의 부상과 우리의 대응을 주제로 포럼과 패널토론을 개최한다. 추천 희망자는 참가신청서와 개인정보수집이용동의서를 제출해야 한다.",
       "startAt": "2026-11-23T17:00:00+09:00",
       "endAt": "2026-11-23T20:00:00+09:00",
-      "dateText": "2026년 11월 23일(월)",
+      "dateText": "2026. 11. 23.(월)",
       "timeText": "17:00~20:00",
       "location": {
         "name": "양재 엘타워 5층 '오르체홀'",
         "building": "",
-        "room": "5층 오르체홀"
+        "room": "오르체홀"
       },
       "food": {
         "provided": "unknown",
@@ -258,6 +411,10 @@
       "giveaway": {
         "provided": "true",
         "description": "‘NAEK 인증서’ 증정"
+      },
+      "audience": {
+        "text": "공과대학 학사과정 재학생(4학년 제외)",
+        "basis": "stated"
       }
     }
   ]
