@@ -9,6 +9,7 @@
 #   browser-start | browser-status | browser-recover   the Babdoduk Ops Chrome
 #   remove         stop both workers and remove both units (state, profile and logs are kept)
 #   run <args>     ggongbab_workers.py <args>, e.g. `run radar-once --dry-run`
+#   alert <args>   scripts/alert_push.py <args>: Telegram push to the phone, e.g. `alert --status`
 #
 # Same model as the Windows tasks: the operator's own session, no stored password, no sudo, no
 # wake timer. Workers stop through their control files; systemd stops only the supervisor
@@ -146,7 +147,8 @@ case "$action" in
         systemctl --user daemon-reload
         echo "Services removed. Ops Chrome, profile, state and logs retained." ;;
     run) runner "$@" ;;
+    alert) "$(python_path)" "$ROOT/scripts/alert_push.py" "$@" ;;
     *)
-        sed -n '2,13p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        sed -n '2,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
         exit 2 ;;
 esac

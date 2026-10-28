@@ -7,7 +7,8 @@ last-success age, timestamp, recommended action) - never a subject, preview, ide
 URL. Two senders use it:
 
 * the local watchdog (fast, while this PC is on), with the bot token in Windows Credential
-  Manager and the chat id in `.local/alert-push.json`;
+  Manager or, on Linux, in a file only this user can read (ops_credentials.py), and the chat id
+  in `.local/alert-push.json`;
 * the cloud monitor step of the refresh workflow (`cloud_watch.py`), which runs on GitHub
   from the `ggongbab-production` environment and therefore still alerts when this PC is off.
 
@@ -18,6 +19,7 @@ never written to logs, state files or the repository; a failed send returns a fi
 from __future__ import annotations
 
 import json
+import os
 import time
 import urllib.error
 import urllib.request
@@ -89,6 +91,16 @@ class TelegramNotifier:
                                          headers={"Content-Type": "application/json", "User-Agent": UA})
         return _post(request, self._opener)
 
+
+
+class LocalTelegramNotifier(TelegramNotifier):
+    """This PC's Telegram push (2026-10-29): the same fixed Korean wording as its desktop toast, so
+    the phone says what to do (for a login: connect to this PC and log in in the Ops Chrome)."""
+
+    @staticmethod
+    def render(changes, recovered) -> str:
+        title, body = format_toast(changes, recovered, actions=TOAST_ACTION if os.name == "nt" else LINUX_TOAST_ACTION)
+        return f"{title}\n\n{body}\n\n{datetime.now(KST).strftime('%m-%d %H:%M')} · 운영 PC"
 
 class NtfyNotifier:
     """Authenticated ntfy (access token), e.g. a reserved topic on ntfy.sh or a self-hosted server."""
@@ -183,14 +195,15 @@ def push(alerts: Iterable[Alert], notifier, policy: PushPolicy, *, source: str,
 
 # --- local configuration (this PC) ------------------------------------------------------
 def local_notifier(local: Path, *, read_credential: Optional[Callable[[str], Optional[str]]] = None):
-    """Telegram (or ntfy) from `.local/alert-push.json` plus a Credential Manager token, or None."""
+    """Telegram (or ntfy) from `.local/alert-push.json` plus a token from this PC's credential store
+    (ops_credentials.py), or None."""
     config = read_json(Path(local) / "alert-push.json", {})
     if read_credential is None:
-        from .dispatch import read_windows_credential as read_credential  # noqa: N813
+        from .ops_credentials import read_credential
     provider = config.get("provider")
     if provider == "telegram" and config.get("chat_id"):
         token = read_credential(TOKEN_TARGET)
-        return TelegramNotifier(token, config["chat_id"]) if token else None
+        return LocalTelegramNotifier(token, config["chat_id"]) if token else None
     if provider == "ntfy" and config.get("server") and config.get("topic"):
         token = read_credential(NTFY_TOKEN_TARGET)
         return NtfyNotifier(config["server"], config["topic"], token) if token else None
@@ -200,10 +213,13 @@ def local_notifier(local: Path, *, read_credential: Optional[Callable[[str], Opt
 def push_local(local: Path, alerts: Iterable[Alert], *, now: Optional[float] = None,
                notifier=None, toast=None) -> str:
     """The external push (if configured) and, when the watchdog passes one, the Windows toast,
-    each with its own state file. Returns the external push's result."""
+    each with its own state file. Returns the external push's result. Since 2026-10-29 the phone,
+    like the toast, waits out a critical that heals within TOAST_CRITICAL_AFTER_SECONDS."""
     alerts = list(alerts)
     notifier = notifier if notifier is not None else local_notifier(local)
-    result = push(alerts, notifier, PushPolicy(Path(local) / "alert-push-state.json"), source="local PC", now=now)
+    result = push(alerts, notifier, PushPolicy(Path(local) / "alert-push-state.json",
+                                               critical_after_seconds=TOAST_CRITICAL_AFTER_SECONDS),
+                  source="local PC", now=now)
     if toast is not None:
         push(alerts, toast, PushPolicy(Path(local) / TOAST_STATE, critical_after_seconds=TOAST_CRITICAL_AFTER_SECONDS),
              source="local PC", now=now)
@@ -244,6 +260,8 @@ TOAST_ACTION = {
 }
 # The same actions in the Linux operations checkout's commands (scripts/linux/ops.sh).
 LINUX_TOAST_ACTION = dict(TOAST_ACTION,
+    login="원격 데스크톱으로 이 PC에 접속해 운영 Chrome에서 직접 로그인하세요. Chrome이 없으면 저절로 열립니다. "
+          "로그인 화면이 닫히면 저절로 다시 시작합니다.",
     restart_worker="상태를 확인한 뒤 scripts/linux/ops.sh start를 실행하세요.",
     open_browser="scripts/linux/ops.sh browser-start로 운영 Chrome을 여세요.",
     investigate="scripts/linux/ops.sh status로 상태를 확인하세요.",

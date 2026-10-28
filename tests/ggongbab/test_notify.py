@@ -133,6 +133,32 @@ def test_local_notifier_needs_both_config_and_a_stored_token(tmp_path):
     assert TOKEN not in (tmp_path / "alert-push.json").read_text(encoding="utf-8")
 
 
+
+def test_the_local_telegram_push_says_in_korean_what_to_do(tmp_path, monkeypatch):
+    """2026-10-29: the phone gets the toast's fixed Korean wording; on Linux the login line says how."""
+    monkeypatch.setattr(notify.os, "name", "posix")
+    (tmp_path / "alert-push.json").write_text(json.dumps({"provider": "telegram", "chat_id": "42"}), encoding="utf-8")
+    opener = Opener()
+    notifier = notify.local_notifier(tmp_path, read_credential=lambda t: TOKEN)
+    assert isinstance(notifier, notify.LocalTelegramNotifier)
+    notifier._opener = opener
+    login = Alert.of("portal", "AUTH_EXPIRED", 900, NOW)
+    assert notify.push([login], notifier, notify.PushPolicy(tmp_path / "s.json"), source="local PC", now=NOW) == notify.SENT
+    text = json.loads(opener.requests[0]["body"])["text"]
+    assert text.startswith("밥도둑 운영: 조치가 필요합니다\n\nPortal 공지 수집 · 로그인 만료")
+    assert "원격 데스크톱으로 이 PC에 접속해 운영 Chrome에서 직접 로그인하세요" in text
+    assert TOKEN not in text and PRIVATE not in text and "운영 PC" in text
+
+
+def test_the_phone_waits_out_a_brief_critical_like_the_toast(tmp_path):
+    sink = Recorder()
+    assert notify.push_local(tmp_path, [crit()], now=NOW, notifier=sink) == notify.NOTHING
+    assert notify.push_local(tmp_path, [ok()], now=NOW + 60, notifier=sink) == notify.NOTHING      # healed: quiet
+    notify.push_local(tmp_path, [crit()], now=NOW + 120, notifier=sink)
+    assert notify.push_local(tmp_path, [crit()], now=NOW + 120 + notify.TOAST_CRITICAL_AFTER_SECONDS,
+                             notifier=sink) == notify.SENT
+    assert len(sink.messages) == 1
+
 # --- Windows toast on the operations PC --------------------------------------------------------
 class Run:
     def __init__(self, code=0, error=None):

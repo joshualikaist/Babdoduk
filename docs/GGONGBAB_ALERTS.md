@@ -37,12 +37,18 @@ fixed list become `NO_SUCCESS_RECORDED`.
 ## When it pushes
 
 **Local:**
-* Critical: at once, then a reminder every 6 hours while it lasts.
+* Critical: after it has lasted 5 minutes (since 2026-10-29, the same wait as the toast, so a scan
+  that is only late right after a wake, a login or a restart never reaches the phone), then a
+  reminder every 6 hours while it lasts.
 * Warning: only after it has lasted 10 minutes, so a scan that is briefly late (for example after
   sleep) stays quiet.
 * Recovery: pushed only for something that was pushed.
 * A failed push waits 5 minutes before retrying.
 * State: `.local/alert-push-state.json`.
+* Wording (since 2026-10-29, `notify.LocalTelegramNotifier`): the toast's fixed Korean title and
+  lines (`notify.format_toast`, with the Linux actions on Linux) plus the time. For a login it says
+  to connect to this PC by remote desktop and log in in the Ops Chrome; the watchdog opens that
+  Chrome if it is missing. The cloud monitor keeps the English fixed-field message above.
 
 **Windows toast (this PC):** the watchdog passes `notify.local_toast` to the same push, with its own
 state file (`.local/alert-toast-state.json`). PowerShell shows it through the Windows toast API under
@@ -81,7 +87,8 @@ failed-run e-mail still covers a job that fails before the watch step.
 
 | Where | Token | Chat id / topic |
 |---|---|---|
-| This PC | Windows Credential Manager, target `babdoduk/alert-telegram` (ntfy: `babdoduk/alert-ntfy`) | `.local/alert-push.json` (not a secret) |
+| This PC (Windows) | Windows Credential Manager, target `babdoduk/alert-telegram` (ntfy: `babdoduk/alert-ntfy`) | `.local/alert-push.json` (not a secret) |
+| This PC (Linux) | `~/.config/babdoduk/credentials/babdoduk_alert-telegram`, outside every checkout: directory 0700, file 0600; a file others can read is refused (`ops_credentials.py`) | `.local/alert-push.json` (not a secret) |
 | GitHub | environment secret `TELEGRAM_BOT_TOKEN` in `ggongbab-production` (main only) | environment secret `TELEGRAM_CHAT_ID` |
 
 A token is never stored in the repository, `.env`, logs, Supabase, browser storage or state JSON.
@@ -105,6 +112,11 @@ code there at the owner checkpoint before using the commands below.
    python scripts\alert_push.py --use-telegram --chat-id <id>
    python scripts\alert_push.py --test
    ```
+
+   On the Linux operations PC the same commands are `scripts/linux/ops.sh alert --store-telegram-token`,
+   `alert --find-telegram-chat`, `alert --use-telegram --chat-id <id>` and `alert --test`
+   (`alert --status` shows what is configured, never the token). The running watchdog reads the
+   configuration on each evaluation, so no restart is needed.
 
    * `--store-telegram-token` prompts without echo.
    * `--find-telegram-chat` prints your chat id.

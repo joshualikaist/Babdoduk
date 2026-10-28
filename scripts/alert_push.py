@@ -8,8 +8,9 @@
     python scripts/alert_push.py --test                         # one test message
     python scripts/alert_push.py --remove                       # forget token and config
 
-The bot token lives only in Windows Credential Manager (target babdoduk/alert-telegram); the
-chat id, which is not a secret, lives in .local/alert-push.json. --store-telegram-token and
+The bot token lives only in this PC's credential store (target babdoduk/alert-telegram): Windows
+Credential Manager, or on Linux a 0600 file under ~/.config/babdoduk/credentials/ (ops_credentials.py).
+The chat id, which is not a secret, lives in .local/alert-push.json. --store-telegram-token and
 --test are activation steps and need the owner's approval first.
 """
 from __future__ import annotations
@@ -25,7 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from ggongbab import dispatch, notify  # noqa: E402
+from ggongbab import notify, ops_credentials  # noqa: E402
 from ggongbab.alerts import Alert  # noqa: E402
 from ggongbab.ops_storage import atomic_json, read_json  # noqa: E402
 
@@ -56,9 +57,9 @@ def main(argv=None) -> int:
     config = read_json(CONFIG, {})
     if args.status:
         state = read_json(LOCAL / "alert-push-state.json", {})
-        token = dispatch.read_windows_credential(notify.TOKEN_TARGET)
+        token = ops_credentials.read_credential(notify.TOKEN_TARGET)
         print(f"provider         : {config.get('provider') or '-'}")
-        print(f"telegram token   : {'stored' if token else 'not stored'} ({notify.TOKEN_TARGET})")
+        print(f"telegram token   : {'stored' if token else 'not stored'} ({notify.TOKEN_TARGET}, {ops_credentials.where()})")
         print(f"chat configured  : {'yes' if config.get('chat_id') else 'no'}")
         print(f"last push result : {state.get('last_result') or '-'}")
         return 0
@@ -67,13 +68,13 @@ def main(argv=None) -> int:
         if not BOT_TOKEN_SHAPE.match(token):
             print("That does not look like a Telegram bot token; nothing was stored.")
             return 1
-        ok = dispatch.write_windows_credential(token, notify.TOKEN_TARGET, comment="Babdoduk ops alert bot",
-                                               user="telegram-bot")
+        ok = ops_credentials.write_credential(token, notify.TOKEN_TARGET, comment="Babdoduk ops alert bot",
+                                              user="telegram-bot")
         del token
-        print("stored in Windows Credential Manager" if ok else "could not store the token")
+        print(f"stored in {ops_credentials.where()}" if ok else "could not store the token")
         return 0 if ok else 1
     if args.find_telegram_chat:
-        token = dispatch.read_windows_credential(notify.TOKEN_TARGET)
+        token = ops_credentials.read_credential(notify.TOKEN_TARGET)
         if not token:
             print("no token stored; run --store-telegram-token first")
             return 1
@@ -103,7 +104,7 @@ def main(argv=None) -> int:
         result = notifier.send(notify.CONNECTION_TEST_MESSAGE)
         print(result)
         return 0 if result == notify.SENT else 1
-    removed = dispatch.delete_windows_credential(notify.TOKEN_TARGET)
+    removed = ops_credentials.delete_credential(notify.TOKEN_TARGET)
     if CONFIG.exists():
         CONFIG.unlink()
     print("removed" if removed else "no stored token; config cleared")
