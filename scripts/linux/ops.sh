@@ -21,6 +21,7 @@ RUNNER="$ROOT/scripts/windows/ggongbab_workers.py"
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 PORTAL_UNIT="babdoduk-portal-worker.service"
 RADAR_UNIT="babdoduk-dooray-radar.service"
+RADAR_STOP_WAIT=90   # seconds radar-stop waits for the Radar process to exit
 PYTHON_FILE="$ROOT/.local/ops-python.txt"
 RADAR_START_DELAY=120
 
@@ -131,7 +132,15 @@ case "$action" in
         systemctl --user reset-failed "$RADAR_UNIT" 2>/dev/null || true
         systemctl --user start --no-block "$RADAR_UNIT"
         echo "Radar start requested; its first scan follows in about $RADAR_START_DELAY s. Use ops.sh radar-status." ;;
-    radar-stop) runner radar-disable; echo "Radar disabled; it stops within a few seconds." ;;
+    radar-stop)
+        # Wait for the process to leave: a radar-start right after a stop that has not finished
+        # finds the old process still active, starts nothing, and the Radar stays off (2026-10-29).
+        runner radar-disable
+        for _ in $(seq 1 "$RADAR_STOP_WAIT"); do
+            systemctl --user is-active --quiet "$RADAR_UNIT" 2>/dev/null || { echo "Radar stopped."; exit 0; }
+            sleep 1
+        done
+        echo "Radar disabled but still finishing a scan; run radar-start only after radar-status shows it stopped." ;;
     radar-status) runner status || true; runner alerts || true ;;
     browser-start) runner ops-browser-start ;;
     browser-status) runner ops-browser-status ;;
