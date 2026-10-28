@@ -2508,6 +2508,15 @@ def worldcup_share(page):
 
 
 KAKAO_SDK_URL = "https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js"
+
+
+def is_kakao_sdk_host(host):
+    """The hosts the KakaoTalk share feature talks to: the SDK's CDN and Kakao's own domains. A magazine
+    photo hot-linked from Kakao's blog CDN (blog.kakaocdn.net) is content, not the SDK: on 2026-10-18 the
+    featured image of that day's edition came from there, the home page requested it, and this check
+    failed on generated data that had nothing to do with sharing."""
+    host = host or ""
+    return host == "t1.kakaocdn.net" or host == "kakao.com" or host.endswith(".kakao.com")
 KAKAO_SDK_INTEGRITY = "sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy"
 KAKAO_JS_KEY = "92860c2f30dc6829c664d36be75e0b3d"
 # A fulfilled response cannot match the real file's SRI hash, so this spy records the integrity and
@@ -2550,7 +2559,7 @@ def worldcup_kakao(page):
     view = page.context.new_page()
     errors, kakao_requests = [], []
     view.on("pageerror", lambda error: errors.append(str(error)))
-    view.on("request", lambda req: kakao_requests.append(req.url) if "kakao" in (urlparse(req.url).hostname or "") else None)
+    view.on("request", lambda req: kakao_requests.append(req.url) if is_kakao_sdk_host(urlparse(req.url).hostname) else None)
     view.add_init_script(KAKAO_SPY)
     view.clock.set_fixed_time(WC_RUNNING)
     view.set_viewport_size({"width": 1280, "height": 900})

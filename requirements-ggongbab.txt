@@ -6,3 +6,5 @@ requests>=2.32,<3
 # Only needed for the unattended mailbox agent (scripts/dooray_web_agent.py).
 # After installing: python -m playwright install chromium
 playwright>=1.45
+# The WebP thumbnails (scripts/make_thumbnails.py) and their test; on lab also the Radar's poster image.
+pillow>=11.0

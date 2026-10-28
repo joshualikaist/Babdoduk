@@ -5,6 +5,10 @@ Only status=published, needs_review=false, confidence >= threshold and not
 expired events are written to the live feed. The payload contains no sender
 addresses, raw text/HTML, Dooray ids, prompts or private attachment links.
 
+Since 2026-10-18 an event may also carry `sessions` (each day of a multi-day event with its own time,
+and its own venue or food when the source says so) and `audience` (who it is for, "stated" or
+"inferred"); see parse_extras.py.
+
 The ggongbab feed lists explicit free food, and since 2026-10-14 (owner decision) also events with
 a prize draw or giveaway for participants: such an event carries `giveaway`, and the page marks
 it 🎁 and keeps it out of the free-food counts. `food.source` says where the food evidence was
@@ -26,6 +30,7 @@ from typing import Any, Optional
 import content_labels
 
 from .config import DATA_DIR, KST, Settings
+from .parse_extras import public_audience, public_sessions
 from .parsers.validator import parse_iso
 
 # The name each source type carries in the public data: the shared labels (data/content/labels.json).
@@ -135,6 +140,15 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
     }
     if tri_state(row.get("giveaway")) == "true":
         event["giveaway"] = {"provided": "true", "description": row.get("giveaway_description") or ""}
+    # 2026-10-18: every day of a multi-day event and who it is for. Both come from the stored AI parse
+    # (parse_extras), are optional, and are dropped whole when they do not fit the event.
+    extras = row.get("_extras")
+    sessions = public_sessions(extras, row.get("event_start"), row.get("event_end"))
+    if sessions:
+        event["sessions"] = sessions
+    audience = public_audience(extras)
+    if audience:
+        event["audience"] = audience
     return event
 
 

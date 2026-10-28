@@ -61,7 +61,32 @@
             "description": {"type": "string"}
           }
         },
-        "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}}
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+        "sessions": {
+          "description": "Optional. Every day or session of a multi-day event, in order, 2 to 14 items; the first starts at startAt and none ends after endAt (2026-10-18). Read back from the stored AI parse (scripts/ggongbab/parse_extras.py).",
+          "type": "array", "minItems": 2, "maxItems": 14, "items": {"$ref": "#/$defs/session"}
+        },
+        "audience": {
+          "description": "Optional. Who the event is for. basis 'stated': the source says so; 'inferred': only under the strict rule of the extraction prompt, shown with an 'estimated' mark (2026-10-18).",
+          "type": "object",
+          "required": ["text", "basis"],
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string", "minLength": 1, "maxLength": 60},
+            "basis": {"enum": ["stated", "inferred"]}
+          }
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "required": ["startAt", "endAt"],
+      "additionalProperties": false,
+      "properties": {
+        "startAt": {"$ref": "#/$defs/kstTime"},
+        "endAt": {"$ref": "#/$defs/kstTimeOrNull"},
+        "location": {"$ref": "#/$defs/location"},
+        "foodDescription": {"type": "string"}
       }
     },
     "location": {

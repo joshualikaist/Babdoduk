@@ -76,6 +76,58 @@
     }).sort(byStart);
   }
 
+  // ---- Sessions (2026-10-18) ----
+  // An event that runs over several days carries `sessions`: each with its own start, end and, when the
+  // source said so, its own place and food. `occurrences` turns such an event into one row per session
+  // day (id "<id>#<n>", that session's times, place and food, every other field of the event), so the
+  // counts, dots, day panel and upcoming list all work per day without knowing about sessions. An event
+  // without sessions, or whose sessions do not hold together, stays one row exactly as before.
+  var MAX_SESSIONS = 14;
+  function validSessions(ev) {
+    var list = ev && ev.sessions;
+    if (!Array.isArray(list) || list.length < 2 || list.length > MAX_SESSIONS) return null;
+    var previous = null;
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      var start = s && typeof s === 'object' ? toKst(s.startAt) : null;
+      var end = s && s.endAt ? toKst(s.endAt) : null;
+      if (!start || (s.endAt && !end) || (end && end < start) || (previous && start <= previous)) return null;
+      previous = start;
+    }
+    return list;
+  }
+  function occurrences(events) {
+    var out = [];
+    (events || []).forEach(function (ev) {
+      var list = validSessions(ev);
+      if (!list) { out.push(ev); return; }
+      list.forEach(function (s, i) {
+        var copy = {};
+        Object.keys(ev).forEach(function (key) { if (key !== 'sessions') copy[key] = ev[key]; });
+        copy.id = ev.id + '#' + (i + 1);
+        copy.startAt = s.startAt;
+        copy.endAt = s.endAt || null;
+        copy.session = { n: i + 1, total: list.length };
+        var place = s.location;
+        if (place && (place.name || place.building || place.room)) copy.location = place;
+        if (s.foodDescription) copy.food = Object.assign({}, ev.food, { description: s.foodDescription });
+        out.push(copy);
+      });
+    });
+    return out;
+  }
+  // Who an event is for, as a short line, or ''. The extracted audience wins (an inferred one is
+  // marked, because it is a guess from the content, not a statement); the stated eligibility is the
+  // fallback. `mark` formats an inferred audience, e.g. "{who} (추정)".
+  function audienceOf(ev, mark) {
+    var a = ev && ev.audience;
+    if (a && typeof a.text === 'string' && a.text.trim()) {
+      var who = a.text.trim();
+      return a.basis === 'inferred' && typeof mark === 'function' ? mark(who) : who;
+    }
+    return ev && ev.eligibility ? String(ev.eligibility) : '';
+  }
+
   global.BabdodukFreeFood = {
     toKst: toKst,
     nowKst: nowKst,
@@ -90,6 +142,8 @@
     eventEnd: eventEnd,
     isUpcoming: isUpcoming,
     todayUpcoming: todayUpcoming,
-    futurePublic: futurePublic
+    futurePublic: futurePublic,
+    occurrences: occurrences,
+    audienceOf: audienceOf
   };
 })(window);

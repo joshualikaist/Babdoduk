@@ -217,7 +217,8 @@
     if (map) html += ' · <a href="' + esc(map) + '" target="_blank" rel="noopener">' + esc(t('gg.map','지도')) + '</a>';
     html += '</p>';
     if (giftText) html += '<p class="gg-giveaway">' + esc(t('gg.giveaway.label', '경품')) + ' · ' + esc(giftText) + '</p>';
-    if (ev.eligibility) html += '<p class="gg-eligibility">' + esc(t('gg.eligibility','대상')) + ' · ' + esc(ev.eligibility) + '</p>';
+    var who = F.audienceOf(ev, function (name) { return t('gg.audience.estimated', '{who} (추정)').replace('{who}', name); });
+    if (who) html += '<p class="gg-eligibility">' + esc(t('gg.eligibility','대상')) + ' · ' + esc(who) + '</p>';
     if (ev.organizer) html += '<p class="gg-organizer">' + esc(t('gg.organizer', '주최')) + ' · ' + esc(ev.organizer) + '</p>';
     if (!deadlineOnly) html += deadlineHtml(ev, now);   // a deadline-only giveaway already leads with it
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
@@ -545,6 +546,7 @@
   function acceptFree(data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad payload');
     var firstLoad = !state.free.data;
+    data = Object.assign({}, data, { events: F.occurrences(data.events) });   // one row per session day
     state.free.data = data;
     state.free.status = 'ready';
     if (firstLoad && !savedFilter && !visibleEvents(nowKst()).length && data.events.some(function (ev) {
@@ -566,6 +568,7 @@
   }
   function acceptArchive(data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad archive');
+    data = Object.assign({}, data, { events: F.occurrences(data.events) });
     state.archive.data = data;
     state.archive.status = 'ready';
     render();

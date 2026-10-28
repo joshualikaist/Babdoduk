@@ -13,7 +13,8 @@ from pydantic import BaseModel, Field
 SourceType = Literal["dooray", "dooray_mailbox", "kaist_public", "manual", "portal"]
 Tri = Literal["true", "false", "unknown"]
 FoodType = Literal["meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"]
-EvidenceField = Literal["event_time", "location", "food", "registration", "giveaway"]
+EvidenceField = Literal["event_time", "location", "food", "registration", "giveaway", "audience"]
+AudienceBasis = Literal["stated", "inferred"]
 
 
 # ---------------------------------------------------------------------------
@@ -90,9 +91,26 @@ class Evidence(BaseModel):
     # v4 fields default to null so an older parse (or a test) without them still validates; the
     # SDK still lists every property as required in the strict schema and drops null defaults.
     giveaway: Optional[str] = Field(default=None, description="Verbatim quote that states a prize draw or giveaway for participants, or null.")
+    audience: Optional[str] = Field(default=None, description="Verbatim quote that states who the event is for, or null.")
     from_poster: Optional[list[EvidenceField]] = Field(
         default=None,
         description="Which of the quotes above were read from an attached image (a poster) rather than from the text.")
+
+
+class SessionExtraction(BaseModel):
+    """One day or session of an event that runs over several days or has different times or venues."""
+    start: str = Field(description="ISO 8601 with +09:00 offset; both the date and the clock time of THIS session are explicit.")
+    end: Optional[str] = Field(default=None, description="ISO 8601 with +09:00 when this session's end time is written; else null.")
+    location_name: Optional[str] = Field(default=None, description="Venue of THIS session only when it differs from the event's own venue; else null.")
+    building: Optional[str] = Field(default=None, description="Building code of THIS session only when it differs; else null.")
+    room: Optional[str] = Field(default=None, description="Room of THIS session only when it differs; else null.")
+    food_description: Optional[str] = Field(default=None, description="Food provided at THIS session only when it differs from the event's own food; else null.")
+
+
+class AudienceExtraction(BaseModel):
+    """Who the event is meant for, e.g. '기계공학과 학부생'."""
+    text: str = Field(description="The audience in a few words, in the language of the source.")
+    basis: AudienceBasis = Field(description="'stated' when the source says who it is for; 'inferred' only under the strict rule of the prompt.")
 
 
 class EventExtraction(BaseModel):
@@ -120,6 +138,14 @@ class EventExtraction(BaseModel):
     evidence: Evidence
     needs_review: bool
     review_reason: Optional[str]
+    # v6 fields (2026-10-18) default to null so an older cached parse still validates. They are not
+    # columns of `events`: they live in ai_parse_runs.parsed_json and the exporter reads them back.
+    sessions: Optional[list[SessionExtraction]] = Field(
+        default=None,
+        description="Every day or session when the event runs over several days or has different times or venues, in order; null for a single session.")
+    audience: Optional[AudienceExtraction] = Field(
+        default=None,
+        description="Who the event is for when the source says so (or under the strict inference rule); null otherwise.")
 
 
 # ---------------------------------------------------------------------------

@@ -34,7 +34,10 @@ def test_ai_schema_is_strict_friendly():
     schema = to_strict_json_schema(EventExtraction)
     assert set(schema["required"]) == set(schema["properties"].keys())
     assert set(schema["$defs"]["Evidence"]["required"]) == {"event_time", "location", "food", "registration",
-                                                             "giveaway", "from_poster"}
+                                                             "giveaway", "from_poster", "audience"}
+    # v6 (2026-10-18): the per-day sessions and the audience are nested objects with every field required.
+    assert set(schema["$defs"]["SessionExtraction"]["required"]) == set(schema["$defs"]["SessionExtraction"]["properties"])
+    assert set(schema["$defs"]["AudienceExtraction"]["required"]) == {"text", "basis"}
     assert '"default"' not in json.dumps(schema)
 
 

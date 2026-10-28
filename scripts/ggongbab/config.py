@@ -22,7 +22,10 @@ KST = timezone(timedelta(hours=9), name="Asia/Seoul")
 # so a new version re-parses stored items instead of reusing older extractions.
 # v2: explicit-evidence rules for registration_required and eligibility.
 # v4 (2026-10-14): giveaway fields, and evidence read from a poster image named in from_poster.
-PROMPT_VERSION = "ggongbab-extract-v5"
+# v6 (2026-10-18): sessions[] for an event that runs over several days (one item per day, with its own
+# time and, when the source says so, venue and food) and audience {text, basis}; see parse_extras.py.
+# v7 (2026-10-18): only the days that give food or a prize are sessions.
+PROMPT_VERSION = "ggongbab-extract-v7"
 
 # Supabase backend key, in priority order. SUPABASE_SECRET_KEY is the current name;
 # SUPABASE_SERVICE_ROLE_KEY is the legacy name and is read only as a fallback.
