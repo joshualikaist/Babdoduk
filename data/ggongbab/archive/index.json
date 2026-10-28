@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-27T20:00:13+09:00",
+  "generatedAt": "2026-10-29T04:24:19+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 7,
+  "count": 6,
   "events": [
     {
       "id": "cc3f1d61-4287-400e-a5a7-a0b76104b398",
@@ -31,7 +31,11 @@
           "type": "dooray",
           "name": "Dooray"
         }
-      ]
+      ],
+      "audience": {
+        "text": "KAIST 재학생",
+        "basis": "stated"
+      }
     },
     {
       "id": "3eb2e2a6-96ea-4952-a032-2282ad920f67",
@@ -53,24 +57,28 @@
         "source": "text"
       },
       "organizer": "창업원운영팀",
-      "eligibility": "",
+      "eligibility": "선착순 100명",
       "sources": [
         {
           "type": "dooray",
           "name": "Dooray"
         }
-      ]
+      ],
+      "audience": {
+        "text": "KAIST 학생",
+        "basis": "stated"
+      }
     },
     {
       "id": "afa5f6d3-0c94-4c3a-a461-e63d07b2f5d1",
-      "title": "Adapting AI for Diverse Populations and Health Systems(다양한 인구집단 및 보건의료시스템에 맞춘 인공지능 적용)",
-      "summary": "Prof. Sanjay Kinra 초청 세미나로, 다양한 인구집단과 보건의료시스템에 맞춘 AI 적용 사례를 소개한다. 참석자에게 가벼운 다과와 핑거푸드가 제공된다.",
+      "title": "Adapting AI for Diverse Populations and Health Systems",
+      "summary": "Prof. Sanjay Kinra 초청 세미나로, 다양한 인구집단 및 보건의료시스템에 맞춘 인공지능 적용을 다룬다. 참석자에게 가벼운 다과와 핑거푸드를 제공한다.",
       "startAt": "2026-10-19T12:00:00+09:00",
       "endAt": "2026-10-19T13:00:00+09:00",
       "dateText": "October 19 (Mon)",
       "timeText": "12:00–13:00",
       "location": {
-        "name": "Lecture Room Red (B501), 5th Floor, KI Building (E4)",
+        "name": "Lecture Room Red (B501), 5th Floor, KI Building",
         "building": "E4",
         "room": "B501"
       },
@@ -115,7 +123,11 @@
           "type": "dooray",
           "name": "Dooray"
         }
-      ]
+      ],
+      "audience": {
+        "text": "기계공학과 전체 학부 학생",
+        "basis": "stated"
+      }
     },
     {
       "id": "3f1c34c3-a144-444f-bc56-a8734b778298",
@@ -143,12 +155,16 @@
           "type": "dooray",
           "name": "Dooray"
         }
-      ]
+      ],
+      "audience": {
+        "text": "KAIST 학생·연구원·창업팀",
+        "basis": "stated"
+      }
     },
     {
       "id": "2774195c-d3d7-467d-bb9d-c138dc031c16",
       "title": "카카오벤처스 Temp Seoul Meetup",
-      "summary": "카카오벤처스가 /tmp Seoul과 초기 빌더 및 팀을 바라보는 관점을 소개하는 세션을 진행합니다. 40분 세션, 20분 Q&A 및 네트워킹으로 구성되며 참석자들에게 식사가 준비됩니다.",
+      "summary": "카카오벤처스가 초기 빌더와 팀을 바라보는 관점 및 솔로 파운더를 위한 공간 /tmp Seoul을 소개하는 세션입니다. 40분 세션, 20분 Q&A 및 네트워킹으로 진행되며 참석자에게 식사가 준비됩니다.",
       "startAt": "2026-10-07T17:00:00+09:00",
       "endAt": null,
       "dateText": "10월 7일(수)",
@@ -171,35 +187,11 @@
           "type": "dooray",
           "name": "Dooray"
         }
-      ]
-    },
-    {
-      "id": "6b4d7b25-954b-45e6-910b-749116cc9611",
-      "title": "학사과정생 간담회",
-      "summary": "교무처가 수업 및 학사제도에 대한 학사과정생의 의견을 듣기 위해 개최하는 간담회입니다. 사전 등록한 참석자에게 간단한 점심식사가 제공됩니다.",
-      "startAt": "2026-09-30T12:00:00+09:00",
-      "endAt": "2026-09-30T13:00:00+09:00",
-      "dateText": "2026.09.30.(수)",
-      "timeText": "오후 12시~1시",
-      "location": {
-        "name": "창의학습관(E11), 1층 102호",
-        "building": "창의학습관(E11)",
-        "room": "102호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "간단한 점심식사",
-        "source": "text"
-      },
-      "organizer": "교무처",
-      "eligibility": "KAIST에 재학중인 학사과정생",
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
+      ],
+      "audience": {
+        "text": "창업에 관심있는 분들",
+        "basis": "stated"
+      }
     }
   ]
 }
