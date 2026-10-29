@@ -5,7 +5,9 @@ model, then the review model when unsure, then the owner on Telegram (docs/INSTA
 Decision (decide()):
   * primary confidence >= 0.8: its verdict stands;
   * otherwise the review model: >= 0.75 and the same verdict, or >= 0.75 on its own -> its verdict;
-  * anything else (both unsure, or they disagree without a confident review) -> ask the owner.
+  * anything else (both unsure, or they disagree without a confident review) -> ask the owner;
+  * a confirmation without a start or end time -> ask the owner (undated(): whether such an event is
+    still ahead cannot be read, and on 2026-10-29 a past orientation recap and a voucher draw slipped through).
 A question is never shown on the site before the owner answers.
 """
 from __future__ import annotations
@@ -52,7 +54,10 @@ class Judgement(BaseModel):
 SYSTEM = """You judge whether an Instagram post by a KAIST student council or department account announces a
 꽁밥: an event where students can get food or drinks for free (snacks, meals, coffee, a food giveaway, food at a
 talk or study session). Not a 꽁밥: paid sales, a restaurant or cafe promotion, a general notice that only
-mentions food, recruiting, open labs, results announcements.
+mentions food, recruiting, open labs, results announcements, a prize draw or gift voucher (a coffee coupon for
+sharing a post is a prize, not food served at an event), a recap of an event that already took place (photos
+of food that was served), an event only for graduate students or incoming graduate students (the site is for
+undergraduates).
 
 Rules:
 - Read the caption and every image (posters often carry the date, time, place and food).
@@ -135,6 +140,10 @@ def decide(primary: Judgement, review: Optional[Judgement]) -> tuple[str, str]:
     if review.confidence >= REVIEW_CONFIRM:
         return ("confirm" if review.is_free_food_event else "reject"), "review"
     return "ask", ""
+
+
+def undated(judgement: Judgement) -> bool:
+    return not (judgement.start_at or judgement.end_at)
 
 
 def _norm(value) -> str:

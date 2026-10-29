@@ -471,6 +471,47 @@ def test_events_that_are_over_are_neither_asked_about_nor_handed_over(root):
     assert r.store.candidate("NEW")["status"] == "expired" and len(writer.tasks) == 1
 
 
+def test_a_confident_confirmation_without_a_time_goes_to_the_owner(root):
+    """2026-10-29: a voucher draw and a past orientation recap, both without a time, were confirmed."""
+    posts = [media("UND", "[UND] 공유 이벤트 커피 쿠폰"), media("DAT", "[DAT] 간식 이벤트")]
+    judge = Judge({"[UND]": {"gpt-6-luna": judgement(True, 0.95, start_at=None, end_at=None)},
+                   "[DAT]": {"gpt-6-luna": judgement(True, 0.95)}})
+    bot, writer = Bot(), Writer()
+    r, _ = radar(root, Graph({"shoutoutto.ee": posts}), judge, bot=bot, writer=writer)
+    r.collect()
+    r.analyze()
+    assert r.store.candidate("UND")["status"] == "pending_human" and r.store.candidate("DAT")["status"] == "auto_confirmed"
+    r.review()
+    r.bridge()
+    assert [m for m, _, _ in bot.asked] == ["UND"] and [t.mail_id for t in writer.tasks] == ["instagram-DAT"]
+
+
+def test_the_bridge_rereads_each_candidate_before_handing_it_over(root):
+    """A status changed while an earlier task was being written (2026-10-29) is respected."""
+    posts = [media("ONE", "[ONE] 간식 이벤트", ts="2026-10-05T08:30:00+0000"),
+             media("TWO", "[TWO] 피자 이벤트", ts="2026-10-05T09:30:00+0000", color=(1, 2, 3))]
+    judge = Judge({"[ONE]": {"gpt-6-luna": judgement(True, 0.95)},
+                   "[TWO]": {"gpt-6-luna": judgement(True, 0.95, start_at="2026-10-09T12:00+09:00",
+                                                     location="창의학습관", food_items=["피자"])}})
+
+    class Interrupted(Writer):
+        def create_task(self, mail):
+            r.store.update_candidate("TWO", status="pending_human")
+            return super().create_task(mail)
+
+    writer = Interrupted()
+    r, _ = radar(root, Graph({"shoutoutto.ee": posts}), judge, writer=writer)
+    r.collect()
+    r.analyze()
+    assert {r.store.candidate(m)["status"] for m in ("ONE", "TWO")} == {"auto_confirmed"}
+    r.bridge()
+    assert [t.mail_id for t in writer.tasks] == ["instagram-ONE"] and not r.store.candidate("TWO")["dooray_post_id"]
+
+
+def test_the_prompt_rules_out_prizes_recaps_and_graduate_only_events():
+    assert all(word in an.SYSTEM for word in ("gift voucher", "recap", "graduate students"))
+
+
 @pytest.mark.parametrize("extraction, posted, past", [
     ({"start_at": "2026-10-07T07:00+09:00"}, "2026-10-01T00:00:00+0000", False),   # started 2 h ago
     ({"start_at": "2026-10-07T05:00+09:00"}, "2026-10-01T00:00:00+0000", True),    # 4 h ago, no end

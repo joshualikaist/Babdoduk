@@ -91,6 +91,12 @@ retried; fix or remove it in the file.
 * `gpt-6-luna` with the caption, the post time and up to 6 images, Structured Outputs (the fields of
   `analyze.Judgement`). Confidence >= 0.8 decides.
 * Otherwise `gpt-6.1-terra` on the same input: >= 0.75 decides (its verdict wins over luna's).
+* A confirmation without a start or end time goes to the owner (`analyze.undated`): whether it is still
+  ahead cannot be read. The prompt also rules out prize draws and vouchers, recaps of events that
+  already took place, and events only for graduate students. On the first live run (2026-10-29) a
+  coffee-voucher draw and a past graduate orientation recap, both undated, were confirmed and handed over.
+* The bridge rereads each candidate just before writing its task, so a status changed meanwhile (an
+  answer, a correction) is respected.
 * Otherwise the owner: a Telegram message with the poster, the summary, both verdicts and the
   permalink, and ✅ / ❌ / ✏️ (✏️ asks for "필드: 값" lines in a reply). Nothing is handed over before
   the answer. More than 5 questions a day wait for a digest at 09:00 or 18:00 KST. The owner's latest
@@ -126,8 +132,8 @@ retried; fix or remove it in the file.
 3. Golden posts (`Dd-1fg2j4Nf` confirmed with correct fields, `Dd-1k-tD9Iw` merged into it,
    `DeG1R4Njz4m` not a candidate): **live, 2026-10-29**, confidence 0.99 each; start 10-06 17:30,
    GOPIZZA set, the paid-fee EE eligibility.
-4. An unsure post asks on Telegram and the button changes the state: synthetic test passes; live
-   check with the owner after the token.
+4. An unsure post asks on Telegram and the button changes the state: **live, 2026-10-29** (first
+   run of the service, 32 accounts, 21 posts since 10-26, 2 questions answered by the owner).
 5. Usage headers recorded, backoff unit-tested: done.
 6. No secret in logs or commits: tested on every file the radar writes.
 

@@ -261,6 +261,8 @@ class Radar:
                     continue
                 verdict, by = an.decide(primary, review)
             chosen = review if by == "review" or (verdict == "ask" and review is not None) else primary
+            if verdict == "confirm" and an.undated(chosen):
+                verdict, by = "ask", ""
             extraction = chosen.model_dump() | {"_verdicts": self.verdicts(primary, review)}
             status = {"confirm": "auto_confirmed", "reject": "auto_rejected", "ask": "pending_human"}[verdict]
             if status != "auto_rejected" and an.is_past(extraction, post["timestamp"], self.now_kst()):
@@ -407,6 +409,9 @@ class Radar:
         from ..web.task_writer import MailPayload
         for row in self.store.candidates("auto_confirmed", "human_confirmed"):
             if row["dooray_post_id"] or self.expire(row):
+                continue
+            current = self.store.candidate(row["media_id"])     # the owner may have answered meanwhile
+            if current is None or current["status"] not in ("auto_confirmed", "human_confirmed") or current["dooray_post_id"]:
                 continue
             members = self.store.group_members(row["merge_group"])
             leader = next((m for m in members if m["dooray_post_id"] and not m["dooray_post_id"].startswith("merged:")), None)
