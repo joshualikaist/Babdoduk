@@ -603,6 +603,58 @@ def test_an_unresponsive_latch_clears_itself_once_the_worker_scans_again(files, 
         dog.close()
 
 
+def test_a_worker_waking_from_its_own_backoff_is_not_called_unresponsive(files):
+    """2026-10-29: the worker slept its 900 s backoff and was latched in the seconds it took to
+    rebuild its session after waking."""
+    clock = Clock()
+    dog, _ = watchdog(files, clock)
+    try:
+        dog.tick()
+        record(files, "PORTAL_LIST_CONNECTION_ERROR", clock, retry_not_before=clock.value + 900)
+        for _ in range(61):                      # 915 s: the backoff is over, the worker is rebuilding
+            clock.value += 15
+            dog.tick()
+        assert dog.state["latched"] == ""
+    finally:
+        dog.close()
+
+
+@pytest.mark.parametrize("restarted", [False, True])
+def test_an_unresponsive_latch_is_released_once_the_worker_has_exited(files, restarted):
+    """Nothing can be writing once the child is gone and the lock is free: the restart budget
+    decides again (after a watchdog restart there is no child handle at all)."""
+    clock = Clock()
+    dog, launch = watchdog(files, clock)
+    try:
+        dog.tick()
+        record(files, "PORTAL_LIST_CONNECTION_ERROR", clock)
+        dog.state["latched"] = "OPS_WORKER_UNRESPONSIVE"
+        if restarted:
+            dog.child = None
+        else:
+            dog.child.poll.return_value = 1
+        dog.tick()
+        assert dog.state["latched"] == "" and dog.state["retry_at"] == clock.value + 60
+        clock.value += 60
+        dog.tick()
+        assert launch.call_count == 2
+    finally:
+        dog.close()
+
+
+def test_an_unresponsive_latch_holds_while_the_worker_is_alive(files):
+    clock = Clock()
+    dog, launch = watchdog(files, clock)
+    try:
+        dog.tick()
+        dog.state["latched"] = "OPS_WORKER_UNRESPONSIVE"
+        clock.value += 3600
+        dog.tick()
+        assert dog.state["latched"] == "OPS_WORKER_UNRESPONSIVE" and launch.call_count == 1
+    finally:
+        dog.close()
+
+
 def test_the_watchdog_writes_combined_alerts_every_tick(files):
     clock = Clock()
     dog, _ = watchdog(files, clock)

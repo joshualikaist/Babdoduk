@@ -53,6 +53,11 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
   Radar reporting `DOORAY_AUTH_REQUIRED`. If the limits allow, it launches one attempt as its own
   process (`ggongbab_workers.py easy-login`, lock `.local/easy-login.lock`), so it never waits on a
   page itself.
+* A Portal tab on the Portal's own login page (`/common/login/login.do`) is itself a login wait
+  when the worker is not running and has not scanned for 3 minutes: the watchdog latches
+  `PORTAL_LIST_AUTH_REQUIRED` instead of restarting the worker, and skips the quick retry. After the
+  Portal's dawn outage on 2026-10-29 the LIST answered a logged-out session with a 5xx, which the
+  worker can only report as a transport failure, so no login latch and no attempt came.
 * The attempt reads the page list, starts from an open SSO login page or the portal login page
   (never from an open verification page, which is a login already in progress), and attaches to
   that one tab. A page probe returns fixed facts only; the owner's ID is compared inside the page.
