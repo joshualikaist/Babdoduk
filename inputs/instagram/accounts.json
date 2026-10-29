@@ -1,34 +1,34 @@
 {
-  "_comment": "Instagram accounts the radar follows through the official Business Discovery API (docs/INSTAGRAM_RADAR.md). Public professional (business/creator) accounts only. interval_minutes: 60-120 for busy accounts, 180-360 otherwise. collect_since: posts before this KST date are never collected or analyzed.",
+  "_comment": "Instagram accounts the radar follows through the official Business Discovery API (docs/INSTAGRAM_RADAR.md). Undergraduate departments, student councils and campus-wide bodies only; graduate accounts are never listed (owner decision 2026-10-29, docs/INSTAGRAM_SOURCES.md). Public professional (business/creator) accounts only. interval_minutes by priority: A 180, B 240, C 360. collect_since: posts before this KST date are never collected or analyzed.",
   "collect_since": "2026-10-26",
   "accounts": [
     {
       "username": "shoutoutto.ee",
       "display_name": "KAIST 전기및전자공학부 학생회",
-      "interval_minutes": 120,
+      "interval_minutes": 180,
       "active": true
     },
     {
       "username": "in.cs.tagram",
       "display_name": "KAIST 전산학부 학생회",
-      "interval_minutes": 120,
-      "active": true
-    },
-    {
-      "username": "kaistua_grit",
-      "display_name": "KAIST 학부 총학생회",
-      "interval_minutes": 120,
-      "active": true
-    },
-    {
-      "username": "kaist_cbe",
-      "display_name": "KAIST 생명화학공학과 학생회",
       "interval_minutes": 180,
       "active": true
     },
     {
-      "username": "idkaist_student",
-      "display_name": "KAIST 산업디자인학과 학생회",
+      "username": "kaistua_grit",
+      "display_name": "KAIST 제37대 학부 총학생회 GRIT",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "i_love_mesc",
+      "display_name": "KAIST 기계공학과 학생회",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "kaist_physics",
+      "display_name": "KAIST 물리학과",
       "interval_minutes": 180,
       "active": true
     },
@@ -51,32 +51,38 @@
       "active": true
     },
     {
-      "username": "kaist_gsa",
-      "display_name": "KAIST 대학원 총학생회",
+      "username": "idkaist_student",
+      "display_name": "KAIST 산업디자인학과 학생회",
       "interval_minutes": 180,
       "active": true
     },
     {
-      "username": "kisakaist",
-      "display_name": "KAIST 국제학생회 KISA",
-      "interval_minutes": 240,
+      "username": "isyse_kaist",
+      "display_name": "KAIST 산업및시스템공학과 (아이조아)",
+      "interval_minutes": 180,
       "active": true
     },
     {
-      "username": "kaist.ina",
-      "display_name": "KAIST 인도네시아 학생회",
-      "interval_minutes": 360,
+      "username": "kaist_cbe",
+      "display_name": "KAIST 생명화학공학과 학생회",
+      "interval_minutes": 180,
       "active": true
     },
     {
-      "username": "sparcs.kaist",
-      "display_name": "SPARCS",
-      "interval_minutes": 360,
+      "username": "kaist_freshman",
+      "display_name": "KAIST 새내기학생회",
+      "interval_minutes": 180,
       "active": true
     },
     {
-      "username": "kaist_me",
-      "display_name": "KAIST 기계공학과",
+      "username": "imgeffect.kaist",
+      "display_name": "KAIST 행사준비위원회 상상효과",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "kaistbio_official",
+      "display_name": "KAIST 생명과학과",
       "interval_minutes": 240,
       "active": true
     },
@@ -87,27 +93,81 @@
       "active": true
     },
     {
-      "username": "kaist_cee",
-      "display_name": "KAIST 건설및환경공학과",
+      "username": "ts_kaist",
+      "display_name": "KAIST 융합인재학부",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "green_in_kaist",
+      "display_name": "KAIST 환경자치단체 G-inK",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kisakaist",
+      "display_name": "KAIST 국제학생회 KISA",
       "interval_minutes": 240,
       "active": true
     },
     {
       "username": "kaist_bcs",
       "display_name": "KAIST 뇌인지과학과",
-      "interval_minutes": 240,
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kaist_cee",
+      "display_name": "KAIST 건설및환경공학과",
+      "interval_minutes": 360,
       "active": true
     },
     {
       "username": "kaist_id",
       "display_name": "KAIST 산업디자인학과",
-      "interval_minutes": 240,
+      "interval_minutes": 360,
       "active": true
     },
     {
-      "username": "kaistbio_official",
-      "display_name": "KAIST 생명과학과",
-      "interval_minutes": 240,
+      "username": "kaist_me",
+      "display_name": "KAIST 기계공학과",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kaist_nqe",
+      "display_name": "KAIST 원자력및양자공학과",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "sparcs.kaist",
+      "display_name": "SPARCS",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "vok_kaist",
+      "display_name": "KAIST 교육방송국 VOK",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kaist_elka",
+      "display_name": "KAIST 응원단 ELKA",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kainuri_official",
+      "display_name": "KAIST 학생홍보대사 카이누리",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "official_kaist",
+      "display_name": "KAIST 공식",
+      "interval_minutes": 360,
       "active": true
     },
     {
@@ -117,21 +177,9 @@
       "active": true
     },
     {
-      "username": "kaist_dhcss",
-      "display_name": "KAIST 디지털인문사회과학부 대학원",
-      "interval_minutes": 360,
-      "active": true
-    },
-    {
-      "username": "kaist_stp",
-      "display_name": "KAIST 과학기술정책대학원",
-      "interval_minutes": 360,
-      "active": true
-    },
-    {
       "username": "kaist_isss",
       "display_name": "KAIST 국제학생지원 ISSS",
-      "interval_minutes": 240,
+      "interval_minutes": 360,
       "active": true
     },
     {
@@ -141,8 +189,8 @@
       "active": true
     },
     {
-      "username": "official_kaist",
-      "display_name": "KAIST 공식",
+      "username": "kaist.ina",
+      "display_name": "KAIST 인도네시아 학생회",
       "interval_minutes": 360,
       "active": true
     }

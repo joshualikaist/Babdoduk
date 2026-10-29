@@ -4,19 +4,84 @@
 
 ## Account check, 2026-10-29 (Business Discovery, one GET each)
 
-36 handles found on department sites, linktr.ee pages and search results were checked through the
-radar's own token. **Readable (professional accounts)**, now in `inputs/instagram/accounts.json` (24):
-shoutoutto.ee, in.cs.tagram, kaistua_grit, kaist_cbe, idkaist_student, thurithuri_mathuri, kaist_chem,
-bbe_kaist, kaist_gsa, kisakaist, kaist.ina, sparcs.kaist, kaist_me, kaist_ae, kaist_cee, kaist_bcs, kaist_id,
-kaistbio_official, kaist_engineering, kaist_dhcss, kaist_stp, kaist_isss, kaist_library, official_kaist.
-Readable but left out: kaistbiz (Seoul campus), startupkaist (4 posts), kaistua_partnership (last post
-2026-03), kaist_studyabroad (last post 2024-05).
-**Not readable (personal accounts, error 110):** kaist.mse (신소재 학생회), kaist_aerospace (항공 학생회),
-kaist_gsis, kaist_future, kaistua_glow and kaistua_kind (past councils), kaist._.welfare, gdsc.kaist,
-vlab.kaist. They can be read once their owners switch to a professional account (free).
-**No Instagram handle found:** the student councils of 기계공학과, 물리학과, 생명과학과, 기술경영학부,
-산업및시스템공학과, 원자력및양자공학과, 반도체시스템공학과, 융합인재학부, the 새내기학생회, 동아리연합회
-and 생활관자치회 (Facebook pages or e-mail only).
+Owner decision 2026-10-29: **undergraduate accounts only**, never a graduate one; an address is never
+guessed (NOT_FOUND is recorded instead); a past council account is kept apart from the current one. 38
+handles found on department and council sites, linktr.ee pages and search results were checked through
+the radar's own token (profile, followers, last post, posts in 30 days, every image and carousel child of
+the last 10 posts, food words in those 10 captions). Every readable account returned all its image URLs.
+The owner approved the list below the same day; it is `inputs/instagram/accounts.json`. Priority sets the
+interval: A 3 h, B 4 h, C 6 h (about 190 calls a day).
+
+### Undergraduate departments (22, plus 반도체시스템공학과)
+
+| Department | Account | Type | Last post | API | Priority |
+| --- | --- | --- | --- | --- | --- |
+| 물리학과 | kaist_physics | department ("카이스트 물리학과"; council or not unknown) | 10-12 | readable, food 5/10 | A |
+| 수리과학과 | thurithuri_mathuri | student-run (likely) | 10-13 | readable, 6/10 | A |
+| 화학과 | kaist_chem | student council | 09-28 | readable, 7/10 | A |
+| 생명과학과 | kaistbio_official | department (council: Facebook only) | 10-08 | readable, 4/10 | B |
+| 뇌인지과학과 | kaist_bcs (council NOT_FOUND) | department | 10-26 | readable, 0/10 | C |
+| 기계공학과 | i_love_mesc / kaist_me | student council ("카이스트 기계공학과 학생회", given by the owner) / department | 10-27 / 07-22 | readable, 6/10 / 2/10 | A / C |
+| 항공우주공학과 | kaist_aerospace / kaist_ae | undergraduate council / department | - / 10-29 | **personal (110)** / readable, 0/10 | - / B |
+| 전기및전자공학부 | shoutoutto.ee | student council | 10-05 | readable, 6/10 | A |
+| 전산학부 | in.cs.tagram | student council | 09-29 | readable, 5/10 | A |
+| 건설및환경공학과 | kaist_cee (council NOT_FOUND) | department | 10-26 | readable, 0/10 | C |
+| 바이오및뇌공학과 | bbe_kaist | department (council or not unknown) | 10-18 | readable, 7/10 | A |
+| 산업디자인학과 | idkaist_student / kaist_id | student council / department | 10-07 / 10-26 | readable, 5/10 / 1/10 | A / C |
+| 산업및시스템공학과 | isyse_kaist | student-run (likely; "아이조아") | 10-09 | readable, 9/10 | A |
+| 생명화학공학과 | kaist_cbe | student council | 10-13 | readable, 3/10 | A |
+| 신소재공학과 | kaist.mse | student council (department site footer) | ~13 posts | **personal (110)** | - |
+| 원자력및양자공학과 | kaist_nqe | department ("NQe Official") | 06-19 | readable, 4/10 | C |
+| AI컴퓨팅학과 | NOT_FOUND | | | | |
+| AI시스템학과 | NOT_FOUND | | | | |
+| AX학과 | NOT_FOUND | | | | |
+| AI미래학과 | NOT_FOUND | | | | |
+| 기술경영학부 | kaist_btm | department | **2025-11-04 (dormant)** | readable | held |
+| 융합인재학부 | ts_kaist | department ("KAIST 융합인재학부") | 10-09 | readable, 2/10 | B |
+| 반도체시스템공학과 | NOT_FOUND | | | | |
+
+AI대학 (approved 2025-12-11, undergraduate courses since spring 2026; org chart
+https://www.kaist.ac.kr/kr/html/kaist/0106.html): the college and its four department sites carry no SNS
+link. 반도체시스템공학과 is `sse.kaist.ac.kr`; `semicon.kaist.ac.kr` is the graduate 반도체공학대학원 and
+is excluded. No web page names kaist_physics, isyse_kaist, kaist_nqe, kaist_btm, ts_kaist or
+kaist_freshman: their affiliation rests on the profile name returned by the API.
+
+### Student councils and campus bodies
+
+| Body | Account | Type | Last post | API | Priority |
+| --- | --- | --- | --- | --- | --- |
+| 제37대 학부 총학생회 GRIT (term from 2026-01-01) | kaistua_grit | undergraduate council | 10-28 | readable, 4/10 | A |
+| 새내기학생회 | kaist_freshman | student body | 10-05 | readable, 4/10 | A |
+| 행사준비위원회 상상효과 | imgeffect.kaist | student body | 10-27 | readable, 7/10 | A |
+| 학생복지위원회 | kaist._.welfare | student body | - | **personal (110)** | - |
+| 학생문화공간위원회 | scspace_kaist | student body | - | **personal (110)** | - |
+| 환경자치단체 G-inK | green_in_kaist | student body | 10-28 | readable, 5/10 | B |
+| SPARCS | sparcs.kaist | student group | 10-23 | readable, 0/10 | C |
+| 교육방송국 VOK | vok_kaist | student group | 10-01 | readable, 1/10 | C |
+| 응원단 ELKA | kaist_elka | student group | 10-08 | readable, 1/10 | C |
+| 카이누리 | kainuri_official | student ambassadors | 10-08 | readable, 0/10 | C |
+| KAIST | official_kaist | university | 10-28 | readable, 1/10 | C |
+| 동아리연합회, 생활관자치회 | NOT_FOUND | | | | |
+
+Also followed (readable): kisakaist (국제학생회, B), kaist_engineering (공과대학, C), kaist_isss (C),
+kaist_library (C), kaist.ina (인도네시아 학생회, C).
+
+### Not followed
+
+* **Graduate (excluded by rule):** kaist_gsa (대학원 총학생회), kaist_dhcss, kaist_stp, kaistbiz (Seoul
+  campus business school), kaist_gsis, kaist_future.
+* **Past councils:** kaistua_glow (35th) and kaistua_kind (34th), personal (110); kaistua_partnership
+  (last post 2026-03).
+* **Personal (110), not readable:** kaist_aerospace, kaist.mse, kaist._.welfare, scspace_kaist,
+  gdsc.kaist, vlab.kaist. Readable once the owner of the account switches it to a professional account
+  (free); then add it to the file.
+* **Readable but left out:** kaist_btm (dormant since 2025-11), startupkaist (4 posts), kaist_studyabroad
+  (last post 2024-05).
+* **Not checked:** the 92 club handles of the club directory and AE clubs (icarus_kaist, kaist_thrust,
+  cfdkaist, kaisthealthae), kaisttimes.
+
+When the owner finds a missing account (a NOT_FOUND council, an AI대학 department), check it with one
+Business Discovery GET, add it here and to the file.
 
 Why: some events are announced only on a department's or a student council's Instagram account, or only to
 one department. The pipeline reads Dooray mail; it cannot see those. This note records what was found, with

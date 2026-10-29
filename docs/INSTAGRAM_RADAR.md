@@ -81,8 +81,9 @@ retried; fix or remove it in the file.
   `inputs/instagram/accounts.json` (a KST date; owner decision 2026-10-29: 2026-10-26, that week's
   Monday) are never collected or analyzed; a first check takes at most 30 posts. Later runs stop at
   the first known post (10 per call); a known or older post is skipped, not a stop, within a page,
-  because a pinned post can sit above newer ones. With ~30 accounts at 1-6 h the target is
-  200-300 calls a day.
+  because a pinned post can sit above newer ones. 32 undergraduate accounts at 3, 4 or 6 h by
+  priority (owner-approved 2026-10-29; graduate accounts never, `docs/INSTAGRAM_SOURCES.md`) make
+  about 190 calls a day.
 
 ## Analysis
 

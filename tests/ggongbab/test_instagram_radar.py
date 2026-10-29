@@ -523,6 +523,8 @@ def test_the_accounts_file_lists_valid_unique_accounts_with_sane_intervals():
     assert all(USERNAME.fullmatch(n) and n == n.lower() for n in names)
     assert all(60 <= row["interval_minutes"] <= 360 and row["display_name"] for row in rows)
     assert sum(1440 / row["interval_minutes"] for row in rows) <= 300     # the daily call target
+    graduate = {"kaist_gsa", "kaist_dhcss", "kaist_stp", "kaistbiz", "kaist_gsis", "kaist_future"}
+    assert not graduate & set(names)      # undergraduate accounts only (docs/INSTAGRAM_SOURCES.md)
 
 
 def test_every_logged_code_is_declared():
