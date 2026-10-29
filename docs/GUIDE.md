@@ -801,7 +801,8 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
 | `docs/HOME_CALENDAR.md` | 홈 꽁밥 달력(표시·기본 선택·데이터 규칙, 선착순 공개 계약 대기) |
 | `docs/KAIST_MENU.md` | 이번 주 학식 수집·파일·화면 규칙 |
-| `docs/INSTAGRAM_SOURCES.md` | 학과 인스타그램 계정 팔로우 조사: 오픈소스·공식 API 비교(2026-10-18 확인), 위험, 파이프라인에 붙이는 설계(구현 전) |
+| `docs/INSTAGRAM_SOURCES.md` | 학부 인스타그램 계정 조사: 22개 학과·학생 단체별 계정, API 조회 결과, 미확인·제외 계정(2026-10-29 확인), 공식 API 비교 |
+| `docs/INSTAGRAM_RADAR.md` | 인스타 레이더(lab 전용): Business Discovery 수집, 판정, 텔레그램 확인, 두레이 수집함으로 넘기기 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
@@ -811,7 +812,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
-`GGONGBAB_RESIDENT_OPS.md`(Windows 상주 worker). 해당 기능이 main에 승격될 때 함께 옮깁니다.
+`GGONGBAB_RESIDENT_OPS.md`(운영 PC 상주 worker, 2026-10-17부터 리눅스), `INSTAGRAM_RADAR.md`(인스타 레이더). 해당 기능이 main에 승격될 때 함께 옮깁니다.
 
 ## 15. 라이선스
 
