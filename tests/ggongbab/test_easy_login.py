@@ -298,3 +298,35 @@ def test_a_dooray_login_wait_also_starts_it(tmp_path):
 
 def test_every_reason_it_logs_is_a_declared_fixed_code():
     assert el.CODES | {"EASY_LOGIN_STARTED"} <= REASONS
+
+
+def logged_out(tmp_path, last_success=None):
+    """The worker exits at once (2026-10-29: the LIST answered a 5xx after the Portal's dawn outage)
+    while the Portal tab sits on the Portal's login page."""
+    wd, easy, clock, files = dog(tmp_path)
+    wd.state.update(latched="", launches=1, launched_at=1000)
+    wd.save()
+    wd.targets = lambda port: [{"id": "t", "url": URL["portal"]}]
+    row = files.runtime_state()
+    row.update(started=1000, observed=clock["t"], reason="PORTAL_LIST_TRANSPORT_UNAVAILABLE", running=False,
+               last_success=last_success)
+    atomic_json(files.runtime, row)
+    return wd, easy, clock, files
+
+
+def test_a_logged_out_portal_page_becomes_a_login_wait_that_starts_it(tmp_path):
+    wd, easy, clock, files = logged_out(tmp_path)
+    wd.tick()
+    assert wd.state["latched"] == "PORTAL_LIST_AUTH_REQUIRED"
+    wd.launch.assert_not_called()                                 # no more restarts against a dead session
+    clock["t"] += ops.QUICK_RETRY_SECONDS + 30
+    wd.tick()
+    assert files.control_state()["resume"] == 1000                # no quick retry on a login page
+    assert easy.call_count == 1
+
+
+def test_a_healthy_worker_is_not_stopped_by_a_stray_login_page(tmp_path):
+    wd, easy, clock, files = logged_out(tmp_path, last_success=1000.0 - 30)
+    wd.tick()
+    assert wd.state["latched"] == ""
+    easy.assert_not_called()

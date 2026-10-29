@@ -9,6 +9,7 @@ import subprocess
 import sys
 import time
 
+from .easy_login import page_kind
 from .heartbeat import HeartbeatWriter
 from .ops_browser import dooray_host, page_targets, read_mode, slot_for, tab_roles
 from .ops_policy import HUMAN, LOGIN, REASONS, WARNING_SECONDS, alert_state, reason, restart_action
@@ -171,6 +172,7 @@ def run_worker(files, *, recover_stale=False, host=None, settings=None, now=time
 
 RESUME_GAP_SECONDS = 120
 RESUME_GRACE_SECONDS = 600
+UNRESPONSIVE_GRACE_SECONDS = 120  # Watchdog.tick: time past the worker's own retry before it is unresponsive
 QUICK_RETRY_SECONDS = 120     # Watchdog.may_resume: one retry of a login latch when the tabs look right
 REOPEN_BROWSER_SECONDS = 1800  # Watchdog.reopen_browser: at most one automatic open per 30 minutes
 EASY_LOGIN_CHECK_SECONDS = 300  # Watchdog.start_easy_login: how often a login wait is looked at again
@@ -316,7 +318,8 @@ class Watchdog:
         if browser_state != "verified":
             return None
         try:
-            counts = tab_roles(self.targets(self.host.port), dooray_host(self.files.local / "dooray-ui.json"))
+            pages = self.targets(self.host.port)
+            counts = tab_roles(pages, dooray_host(self.files.local / "dooray-ui.json"))
         except Exception:
             return None     # an unreadable page list never resumes anything
         if counts["sso"]:
@@ -327,10 +330,19 @@ class Watchdog:
         if self.sso_seen:
             self.sso_seen = False
             return "login"
-        if not self.quick_retry_used and now - self.latch_seen_at >= QUICK_RETRY_SECONDS:
+        if (not self.quick_retry_used and now - self.latch_seen_at >= QUICK_RETRY_SECONDS
+                and not any(page_kind(t["url"]) == "portal_login" for t in pages)):
             self.quick_retry_used = True
             return "retry"
         return None
+
+    def portal_login_open(self):
+        """Whether the verified browser shows the Portal's own login page, where the Portal sends
+        its tab once the session is gone. Host and path of each page, in memory only."""
+        try:
+            return any(page_kind(t["url"]) == "portal_login" for t in self.targets(self.host.port))
+        except Exception:
+            return False
 
     def tick(self):
         now = self.now()
@@ -351,6 +363,15 @@ class Watchdog:
             self.state["latched"] = ""
             self.save()
             self.log("WORKER_RUNNING")
+        if (self.state["latched"] == "OPS_WORKER_UNRESPONSIVE" and not held
+                and (self.child is None or self.child.poll() is not None)):
+            # The latch protects a live poller that might still be writing. Once the worker has
+            # exited and released its lock nothing can be writing, so the ordinary restart budget
+            # decides again. On 2026-10-29 a worker exited by itself 16 s after the latch and
+            # collection stood still for 3.5 hours behind it.
+            self.state["latched"] = ""
+            self.save()
+            self.log("WORKER_EXITED")
         code = self.state["latched"] or runtime["manual_reason"] or runtime["reason"]
         # An explicit operator resume acknowledges an older terminal observation.
         if runtime["observed"] < control["resume"] and not self.state["latched"]:
@@ -372,6 +393,16 @@ class Watchdog:
         emit_alerts(self.files, now, portal_running=held, toast=self.toast)
         if self.quick_retry_used and runtime["last_success"] and runtime["last_success"] > self.state["resume"]:
             self.quick_retry_used = False     # a scan succeeded since the last resume
+        if (not self.state["latched"] and browser_state == "verified" and not held
+                and (self.child is None or self.child.poll() is not None)
+                and not (runtime["last_success"] and now - runtime["last_success"] <= WARNING_SECONDS)
+                and self.portal_login_open()):
+            # The session is gone whatever the LIST answered: on 2026-10-29, after the Portal's
+            # dawn outage, it answered a 5xx and the worker was restarted in vain. Wait for a login
+            # like any login latch, so Easy Login and the automatic resume apply.
+            self.state["latched"] = "PORTAL_LIST_AUTH_REQUIRED"
+            self.save()
+            self.log("PORTAL_LIST_AUTH_REQUIRED")
         if self.state["latched"] in LOGIN and self.may_resume(browser_state, now):
             # The same acknowledgement an operator's start writes; the next tick clears the
             # latch and launches the worker against the browser's current login.
@@ -388,7 +419,9 @@ class Watchdog:
             if runtime["last_success"] and now - runtime["started"] >= 600 and now - runtime["last_success"] <= 180:
                 self.state.update(launches=1, recoveries=0)
                 self.save()
-            if (now - max(runtime["observed"], self.state["launched_at"]) > 600 and now > runtime["retry_not_before"]
+            # A worker waking from its own backoff needs a moment to rebuild its session and report.
+            if (now - max(runtime["observed"], self.state["launched_at"]) > 600
+                    and now > runtime["retry_not_before"] + UNRESPONSIVE_GRACE_SECONDS
                     and now - self.resumed_at > RESUME_GRACE_SECONDS):
                 self.state["latched"] = "OPS_WORKER_UNRESPONSIVE"
                 self.save()  # require human review; do not kill a maybe-writing poller

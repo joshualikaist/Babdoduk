@@ -308,7 +308,11 @@ worker time with a recent successful scan replenishes the restart budget.
 Exhaustion requires operator Start; there is no unlimited restart loop.
 
 After a resume the watchdog gives the worker 10 minutes before it can latch
-`OPS_WORKER_UNRESPONSIVE`. If that latch was set and scans later succeed again, it clears itself.
+`OPS_WORKER_UNRESPONSIVE`, and a worker sleeping its own backoff (`retry_not_before`) gets two more
+minutes after that wait to rebuild its session and report. If the latch was set and scans later succeed
+again, it clears itself; if the worker exits and releases its lock, the latch is released and the
+ordinary restart budget decides again, because nothing can still be writing (2026-10-29: a worker
+latched 16 s before it exited by itself after five connection errors left collection stopped for 3.5 hours).
 
 Observed recovery (`new=4`, one candidate, pending increasing from 1 to 2) is evidence
 of **bounded** catch-up only. Pagination and the saved overlap window cannot
@@ -340,7 +344,8 @@ or older Dooray tasks; review those separately in Task Scheduler.
 | PORTAL_LIST_STATE_UNAVAILABLE / OPS_STATE_UNAVAILABLE | Stop; inspect storage, never reset the baseline |
 | PORTAL_LIST_SCAN_INCOMPLETE | Stop for catch-up/window review; never advance an incomplete checkpoint |
 | OPS_CONFIGURATION_REQUIRED | Fix backend configuration/Python/repository, then Start |
-| OPS_RETRY_EXHAUSTED / OPS_WORKER_UNRESPONSIVE | Operator intervention; never a tight retry/kill loop |
+| OPS_RETRY_EXHAUSTED | Operator intervention; never a tight retry/kill loop |
+| OPS_WORKER_UNRESPONSIVE | Operator review while the worker is alive (never killed); released by itself once the worker exits |
 | PORTAL_LIST_SESSION_REBUILT | Informational: a stale LIST transport was replaced by a fresh session from the same login |
 | DOORAY_AUTH_REQUIRED | The Radar keeps running and retries the list at most every 10 minutes (`AUTH_RETRY_MAX`); complete SSO in the Ops Chrome's Dooray tab and the next scan resumes by itself |
 | OPS_AUTO_RESUMED | Informational: the watchdog saw a person finish an SSO login and acknowledged a login latch, as Start would |
