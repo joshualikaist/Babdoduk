@@ -2336,9 +2336,15 @@ def worldcup_stats(page):
     page.locator("#wcRanking").wait_for()
     check(page.locator("#wcRankingList li").count() == 10 and "1,234" in page.locator("#wcRankingTotal").inner_text(),
           "the intro shows everyone's top ten and the number of games")
+    # Measured once the match has settled (its count shown, its photos decoded): right after the
+    # click the layout can still move, and the check then failed now and then (2026-10-30).
+    settled = ("n => document.getElementById('wcCount').textContent.startsWith(n + ' /')"
+               " && [...document.querySelectorAll('.wc-card img')].every(i => i.complete)")
     page.locator("#wcStart").click()
+    page.wait_for_function(settled, arg=1)
     top = page.locator(".wc-card").first.bounding_box()["y"]
     page.keyboard.press("Enter")
+    page.wait_for_function(settled, arg=2)
     check(page.locator("#wcLastPick").is_visible() and "%" in page.locator("#wcLastPick").inner_text(),
           "after a pick, the last pick's win rates")
     check(abs(page.locator(".wc-card").first.bounding_box()["y"] - top) < 1,
