@@ -1,8 +1,149 @@
 {
   "_comment": "Instagram accounts the radar follows through the official Business Discovery API (docs/INSTAGRAM_RADAR.md). Public professional (business/creator) accounts only. interval_minutes: 60-120 for busy accounts, 180-360 otherwise.",
   "accounts": [
-    {"username": "shoutoutto.ee", "display_name": "KAIST 전기및전자공학부", "interval_minutes": 120, "active": true},
-    {"username": "in.cs.tagram", "display_name": "KAIST 전산학부 학생회", "interval_minutes": 180, "active": true},
-    {"username": "kaistua_grit", "display_name": "KAIST 학부 총학생회", "interval_minutes": 120, "active": true}
+    {
+      "username": "shoutoutto.ee",
+      "display_name": "KAIST 전기및전자공학부 학생회",
+      "interval_minutes": 120,
+      "active": true
+    },
+    {
+      "username": "in.cs.tagram",
+      "display_name": "KAIST 전산학부 학생회",
+      "interval_minutes": 120,
+      "active": true
+    },
+    {
+      "username": "kaistua_grit",
+      "display_name": "KAIST 학부 총학생회",
+      "interval_minutes": 120,
+      "active": true
+    },
+    {
+      "username": "kaist_cbe",
+      "display_name": "KAIST 생명화학공학과 학생회",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "idkaist_student",
+      "display_name": "KAIST 산업디자인학과 학생회",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "thurithuri_mathuri",
+      "display_name": "KAIST 수리과학과 (수리수리 마수리)",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "kaist_chem",
+      "display_name": "KAIST 화학과 학생회",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "bbe_kaist",
+      "display_name": "KAIST 바이오및뇌공학과",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "kaist_gsa",
+      "display_name": "KAIST 대학원 총학생회",
+      "interval_minutes": 180,
+      "active": true
+    },
+    {
+      "username": "kisakaist",
+      "display_name": "KAIST 국제학생회 KISA",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaist.ina",
+      "display_name": "KAIST 인도네시아 학생회",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "sparcs.kaist",
+      "display_name": "SPARCS",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kaist_me",
+      "display_name": "KAIST 기계공학과",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaist_ae",
+      "display_name": "KAIST 항공우주공학과",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaist_cee",
+      "display_name": "KAIST 건설및환경공학과",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaist_bcs",
+      "display_name": "KAIST 뇌인지과학과",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaist_id",
+      "display_name": "KAIST 산업디자인학과",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaistbio_official",
+      "display_name": "KAIST 생명과학과",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaist_engineering",
+      "display_name": "KAIST 공과대학",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kaist_dhcss",
+      "display_name": "KAIST 디지털인문사회과학부 대학원",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kaist_stp",
+      "display_name": "KAIST 과학기술정책대학원",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "kaist_isss",
+      "display_name": "KAIST 국제학생지원 ISSS",
+      "interval_minutes": 240,
+      "active": true
+    },
+    {
+      "username": "kaist_library",
+      "display_name": "KAIST 도서관",
+      "interval_minutes": 360,
+      "active": true
+    },
+    {
+      "username": "official_kaist",
+      "display_name": "KAIST 공식",
+      "interval_minutes": 360,
+      "active": true
+    }
   ]
 }

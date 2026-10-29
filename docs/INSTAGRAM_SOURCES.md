@@ -2,6 +2,22 @@
 
 > **2026-10-29:** the owner set up the official route (Meta app, Business Discovery). The radar that uses it is `docs/INSTAGRAM_RADAR.md`; anonymous scraping was tried once the same day (instaloader 4.16 and the embed page) and is blocked (HTTP 429 / error page).
 
+## Account check, 2026-10-29 (Business Discovery, one GET each)
+
+36 handles found on department sites, linktr.ee pages and search results were checked through the
+radar's own token. **Readable (professional accounts)**, now in `inputs/instagram/accounts.json` (24):
+shoutoutto.ee, in.cs.tagram, kaistua_grit, kaist_cbe, idkaist_student, thurithuri_mathuri, kaist_chem,
+bbe_kaist, kaist_gsa, kisakaist, kaist.ina, sparcs.kaist, kaist_me, kaist_ae, kaist_cee, kaist_bcs, kaist_id,
+kaistbio_official, kaist_engineering, kaist_dhcss, kaist_stp, kaist_isss, kaist_library, official_kaist.
+Readable but left out: kaistbiz (Seoul campus), startupkaist (4 posts), kaistua_partnership (last post
+2026-03), kaist_studyabroad (last post 2024-05).
+**Not readable (personal accounts, error 110):** kaist.mse (신소재 학생회), kaist_aerospace (항공 학생회),
+kaist_gsis, kaist_future, kaistua_glow and kaistua_kind (past councils), kaist._.welfare, gdsc.kaist,
+vlab.kaist. They can be read once their owners switch to a professional account (free).
+**No Instagram handle found:** the student councils of 기계공학과, 물리학과, 생명과학과, 기술경영학부,
+산업및시스템공학과, 원자력및양자공학과, 반도체시스템공학과, 융합인재학부, the 새내기학생회, 동아리연합회
+and 생활관자치회 (Facebook pages or e-mail only).
+
 Why: some events are announced only on a department's or a student council's Instagram account, or only to
 one department. The pipeline reads Dooray mail; it cannot see those. This note records what was found, with
 the dates it was checked, so the owner can decide. **Nothing here has been built or run against Instagram.**

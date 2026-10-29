@@ -496,10 +496,16 @@ def test_no_secret_reaches_the_database_the_state_or_the_log(root):
             assert TOKEN.encode() not in path.read_bytes() and SECRET.encode() not in path.read_bytes()
 
 
-def test_the_accounts_file_lists_the_three_starting_accounts():
+def test_the_accounts_file_lists_valid_unique_accounts_with_sane_intervals():
     from pathlib import Path
+    from ggongbab.instagram.meta_graph import USERNAME
     root = Path(__file__).resolve().parents[2]
-    assert [row["username"] for row in load_accounts(root)] == ["shoutoutto.ee", "in.cs.tagram", "kaistua_grit"]
+    rows = load_accounts(root)
+    names = [row["username"] for row in rows]
+    assert names[:3] == ["shoutoutto.ee", "in.cs.tagram", "kaistua_grit"] and len(set(names)) == len(names)
+    assert all(USERNAME.fullmatch(n) and n == n.lower() for n in names)
+    assert all(60 <= row["interval_minutes"] <= 360 and row["display_name"] for row in rows)
+    assert sum(1440 / row["interval_minutes"] for row in rows) <= 300     # the daily call target
 
 
 def test_every_logged_code_is_declared():
