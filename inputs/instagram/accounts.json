@@ -1,5 +1,6 @@
 {
-  "_comment": "Instagram accounts the radar follows through the official Business Discovery API (docs/INSTAGRAM_RADAR.md). Public professional (business/creator) accounts only. interval_minutes: 60-120 for busy accounts, 180-360 otherwise.",
+  "_comment": "Instagram accounts the radar follows through the official Business Discovery API (docs/INSTAGRAM_RADAR.md). Public professional (business/creator) accounts only. interval_minutes: 60-120 for busy accounts, 180-360 otherwise. collect_since: posts before this KST date are never collected or analyzed.",
+  "collect_since": "2026-10-26",
   "accounts": [
     {
       "username": "shoutoutto.ee",

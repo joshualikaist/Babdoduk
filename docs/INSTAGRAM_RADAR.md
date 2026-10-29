@@ -77,8 +77,11 @@ retried; fix or remove it in the file.
 * Every answer's `X-App-Usage` and `X-Business-Use-Case-Usage` go to `api_usage_log`. Above 80 % every
   interval doubles (Telegram notice); below 50 % it returns. A rate-limit error (codes 4, 17, 32, 613,
   800xx or HTTP 429) stops the round and backs off 15 min, doubling up to 6 h.
-* Accounts are read one after another with a pause; a first run backfills 30 posts per account,
-  later runs stop at the first known post (10 per call). With ~30 accounts at 1-6 h the target is
+* Accounts are read one after another with a pause. Posts before `collect_since` in
+  `inputs/instagram/accounts.json` (a KST date; owner decision 2026-10-29: 2026-10-26, that week's
+  Monday) are never collected or analyzed; a first check takes at most 30 posts. Later runs stop at
+  the first known post (10 per call); a known or older post is skipped, not a stop, within a page,
+  because a pinned post can sit above newer ones. With ~30 accounts at 1-6 h the target is
   200-300 calls a day.
 
 ## Analysis

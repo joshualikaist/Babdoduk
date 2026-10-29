@@ -228,6 +228,23 @@ def test_first_run_backfills_thirty_then_only_new_posts_and_images_are_stored_on
     assert r.store.has_post("9999")
 
 
+def test_posts_before_collect_since_are_never_collected_and_a_pinned_post_does_not_stop_it(root):
+    """Owner decision 2026-10-29: start from that week's Monday, not 30 posts per account."""
+    (root / "inputs/instagram").mkdir(parents=True)
+    (root / "inputs/instagram/accounts.json").write_text(json.dumps({"collect_since": "2026-10-05", "accounts": []}))
+    pinned = media("PIN", "고정 공지", ts="2026-09-01T00:00:00+0000")
+    recent = [media(f"R{n}", f"글 {n}", ts=f"2026-10-0{6 - n}T03:00:00+0000") for n in range(2)]   # 10-06, 10-05 KST
+    older = [media(f"O{n}", f"옛 글 {n}", ts=f"2026-10-0{4 - n}T03:00:00+0000") for n in range(3)]
+    graph = Graph({"shoutoutto.ee": [pinned] + recent + older + [media(f"X{n}", "x", ts="2026-09-01T00:00:00+0000") for n in range(10)]})
+    r, clock = radar(root, graph)
+    assert r.collect() == 2 and [c[1] for c in graph.calls if c[0] == "shoutoutto.ee"] == [""]   # one page
+    assert r.store.has_post("R0") and r.store.has_post("R1") and not r.store.has_post("PIN") and not r.store.has_post("O0")
+    assert r.store.account("shoutoutto.ee")["last_media_id"] == "R0"
+    graph.posts["shoutoutto.ee"] = [pinned, media("NEW", "새 글", ts="2026-10-07T00:00:00+0000")] + recent + older
+    clock["t"] += 3 * 3600
+    assert r.collect() == 1 and r.store.has_post("NEW")
+
+
 def test_a_video_keeps_its_thumbnail_and_an_image_its_media_url(root):
     graph = Graph({"shoutoutto.ee": [media("1", "v", kind="VIDEO"), media("2", "i", kind="IMAGE")]})
     r, _ = radar(root, graph)

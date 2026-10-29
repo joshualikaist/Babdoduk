@@ -28,7 +28,7 @@ STATE = "ops-ig-radar.json"
 LOG = "ops-ig-radar.log"
 LOCK = "ig-radar.lock"
 PAGE = 10
-FIRST_BACKFILL = 30
+FIRST_BACKFILL = 30           # most posts one first check takes, even within collect_since
 SLOW_ABOVE = 80.0
 RELAX_BELOW = 50.0
 BACKOFF_BASE = 900            # 15 minutes, doubled per consecutive rate limit, up to 6 hours
@@ -64,6 +64,7 @@ class Radar:
         self.log = log or (lambda code: None)
         self.now, self.sleep, self.dry_run = now, sleep, dry_run
         self.counts: dict = {}
+        self.since = collect_since(self.root)
 
     # --- alerts -------------------------------------------------------------------------------
     def alert(self, key: str, text: str, every: float = 24 * 3600) -> None:
@@ -173,25 +174,30 @@ class Radar:
             found, headers = self.graph.discover(username, limit=PAGE, after=after)
             self.record_usage("business_discovery", "ok", headers)
             media = (found.get("media") or {})
-            known = False
+            known = old = False
             for item in media.get("data") or []:
+                # Skipped, not a stop: a pinned post can sit above newer ones.
                 if self.store.has_post(str(item["id"])):
                     known = True
-                    break
+                    continue
+                if an.posted_kst(item["timestamp"]).timestamp() < self.since:
+                    old = True
+                    continue
                 new.append(item)
                 if len(new) >= cap:
                     break
             after = ((media.get("paging") or {}).get("cursors") or {}).get("after") or ""
-            # One page is the usual case. Keep paging only while every post was new (a first backfill
-            # or a busy account), up to FIRST_BACKFILL, and only if there is a next page.
-            if known or len(new) >= cap or not after or len(media.get("data") or []) < PAGE:
+            # One page is the usual case. Keep paging only while every post was new and recent enough
+            # (a first check or a busy account), up to FIRST_BACKFILL, and only if there is a next page.
+            if known or old or len(new) >= cap or not after or len(media.get("data") or []) < PAGE:
                 break
             self.sleep(ACCOUNT_PAUSE)
-        for item in reversed(new):              # oldest first
+        newest = max(new, key=lambda item: item["timestamp"]) if new else None
+        for item in sorted(new, key=lambda item: item["timestamp"]):   # oldest first
             self.store.add_post(username, item, self.now())
             self.save_images(item)
-        if new:
-            self.store.update_account(username, last_media_id=str(new[0]["id"]))
+        if newest:
+            self.store.update_account(username, last_media_id=str(newest["id"]))
         self.store.update_account(username, status="ok", last_checked=self.now(), last_success=self.now())
         self.counts["collected"] = self.counts.get("collected", 0) + len(new)
         if first:
@@ -452,6 +458,18 @@ class Radar:
         self.cost_check()
         self.log("IG_RADAR_CYCLE_OK")
         return "IG_RADAR_CYCLE_OK"
+
+
+def collect_since(root: Path) -> float:
+    """`collect_since` of the accounts file (a KST date): posts before it are never collected or
+    analyzed (owner decision 2026-10-29: start from that week's Monday). 0 without one."""
+    try:
+        value = json.loads((Path(root) / ACCOUNTS_FILE).read_text(encoding="utf-8")).get("collect_since")
+    except (OSError, ValueError):
+        return 0.0
+    if not value:
+        return 0.0
+    return datetime.strptime(str(value), "%Y-%m-%d").replace(tzinfo=an.KST).timestamp()
 
 
 def load_accounts(root: Path) -> list[dict]:
