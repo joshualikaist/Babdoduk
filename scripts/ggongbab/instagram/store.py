@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS api_usage_log (
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 """
 STATUSES = frozenset({"auto_confirmed", "auto_rejected", "pending_human", "queued_digest", "human_confirmed",
-                      "human_rejected"})
+                      "human_rejected", "expired"})   # expired: the event was over (analyze.is_past)
 
 
 class Store:

@@ -22,6 +22,8 @@ PRIMARY_CONFIRM = 0.8
 REVIEW_CONFIRM = 0.75
 MAX_IMAGES = 6
 MERGE_WINDOW = timedelta(hours=48)
+EVENT_HOURS = timedelta(hours=3)     # is_past: an event without an end lasts this long
+UNDATED_FOR = timedelta(days=14)     # is_past: an event without a readable time, by its post's age
 KEYWORDS = ("간식", "피자", "치킨", "도시락", "커피", "음료", "무료", "선착순", "배부", "나눔", "증정", "샌드위치",
             "햄버거", "떡", "과자", "빵", "식사", "밥", "음식", "디저트", "아이스크림", "snack", "free", "food",
             "pizza", "coffee", "drink", "lunch", "dinner", "giveaway")
@@ -108,6 +110,22 @@ class Judge:
         return parsed, int(getattr(usage, "input_tokens", 0) or 0), int(getattr(usage, "output_tokens", 0) or 0)
 
 
+def is_past(extraction: dict, timestamp: str, now: datetime) -> bool:
+    """Whether the event is over, so it is neither asked about nor handed over: its end, or its start
+    plus EVENT_HOURS, before now; without a readable time, a post older than UNDATED_FOR. A first
+    run backfills months of posts, and their events must not reach the site or the owner's phone."""
+    for key, extra in (("end_at", timedelta(0)), ("start_at", EVENT_HOURS)):
+        value = extraction.get(key)
+        if not value:
+            continue
+        try:
+            at = datetime.fromisoformat(str(value))
+        except ValueError:
+            continue
+        return (at if at.tzinfo else at.replace(tzinfo=KST)) + extra < now
+    return posted_kst(timestamp) + UNDATED_FOR < now
+
+
 def decide(primary: Judgement, review: Optional[Judgement]) -> tuple[str, str]:
     """("confirm" | "reject" | "ask", decided_by)."""
     if primary.confidence >= PRIMARY_CONFIRM:
@@ -129,10 +147,12 @@ def same_event(a: dict, b: dict) -> bool:
     """Same event (the caller already limits it to one account and 48 hours): the same start time,
     and, in one language, the same place and food. A Korean and an English post of one event name
     the place and the food in two languages, so across languages the start time decides, unless both
-    give a different head count."""
+    give a different head count. A "mixed" post is read the same way: the models call a Korean post
+    with English names mixed, and its twin may be the same (on 2026-10-29 two such pairs of the
+    School of Computing stayed apart)."""
     if not a.get("start_at") or a.get("start_at") != b.get("start_at"):
         return False
-    if a.get("language") != b.get("language"):
+    if a.get("language") != b.get("language") or "mixed" in (a.get("language"), b.get("language")):
         qa, qb = _digits(a.get("quantity_limit")), _digits(b.get("quantity_limit"))
         return not (qa and qb and qa != qb)
     return _norm(a.get("location")) == _norm(b.get("location")) and _norm(a.get("food_items")) == _norm(b.get("food_items"))

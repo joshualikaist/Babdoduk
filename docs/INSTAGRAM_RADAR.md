@@ -1,9 +1,8 @@
 # Instagram 꽁밥 radar (owner request 2026-10-29)
 
 **Lab-only / not promoted to production in the current main baseline.** It runs on the operations PC
-from the lab checkout, like the Dooray Radar. Status: **implemented with synthetic tests
-(`tests/ggongbab/test_instagram_radar.py`); waiting for the owner's server token, so no live Graph
-API call has been made by this code yet.**
+from the lab checkout, like the Dooray Radar. Status: **token in place since 2026-10-29; `ig-check` and one live
+dry run passed (below); the resident service and the Telegram question are not live yet.**
 
 ## What it does
 
@@ -92,9 +91,12 @@ retried; fix or remove it in the file.
   permalink, and ✅ / ❌ / ✏️ (✏️ asks for "필드: 값" lines in a reply). Nothing is handed over before
   the answer. More than 5 questions a day wait for a digest at 09:00 or 18:00 KST. The owner's latest
   verdicts are few-shot examples in later prompts.
+* Events that are over (`analyze.is_past`: the end, or the start plus 3 h, before now; without a
+  readable time, a post older than 14 days) become `expired`: never asked about, never handed over.
+  A first run backfills months of posts; on 2026-10-29 all 31 confirmed posts were past events.
 * Merging: posts of one account within 48 h with the same start time are one event when they are in
-  two languages (a Korean and an English post name place and food differently); in one language the
-  place and food must match too. The first confirmed post creates the task with every permalink.
+  two languages or either is `mixed` (a Korean and an English post name place and food differently),
+  unless their head counts differ; in one language the place and food must match too. The first confirmed post creates the task with every permalink.
 * Models are configuration. Each day the radar checks that both exist and accept an image; if not it
   stops and says so on Telegram (it never swaps a model). Every call's tokens and estimated cost are
   recorded; a month above $5 is announced. Estimated cost: about $1 a month.
@@ -112,12 +114,14 @@ retried; fix or remove it in the file.
 
 ## Acceptance (docs requirement -> status)
 
-1. `ig-check` confirms the four scopes: code done; needs the token.
-2. Three accounts collected, images saved, no duplicates on a rerun: synthetic test passes; live run
-   needs the token.
+1. `ig-check` confirms the four scopes: **live, 2026-10-29**: token valid, never expires, all four
+   scopes and no other.
+2. Three accounts collected, images saved, no duplicates on a rerun: **live dry run 2026-10-29**: 90
+   posts (30 per account), 1 image download failed, 2 prefiltered, 57 rejected, 31 confirmed (23
+   events), $0.10. Rerun without duplicates: synthetic test.
 3. Golden posts (`Dd-1fg2j4Nf` confirmed with correct fields, `Dd-1k-tD9Iw` merged into it,
-   `DeG1R4Njz4m` not a candidate): synthetic copies pass; the real posts are checked on the first
-   live run.
+   `DeG1R4Njz4m` not a candidate): **live, 2026-10-29**, confidence 0.99 each; start 10-06 17:30,
+   GOPIZZA set, the paid-fee EE eligibility.
 4. An unsure post asks on Telegram and the button changes the state: synthetic test passes; live
    check with the owner after the token.
 5. Usage headers recorded, backoff unit-tested: done.

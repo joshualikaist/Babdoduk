@@ -65,7 +65,7 @@ class Graph:
 
 def judgement(food, confidence, **extra):
     base = dict(is_free_food_event=food, confidence=confidence, event_title="중간고사 간식 이벤트" if food else "오픈랩 공지",
-                food_items=["고피자 세트"] if food else [], start_at="2026-10-06T17:30+09:00" if food else None,
+                food_items=["고피자 세트"] if food else [], start_at="2026-10-08T17:30+09:00" if food else None,
                 end_at=None, location="스포츠 컴플렉스와 잔디구장 사이" if food else "", language="ko",
                 eligibility="과비 납부한 전자과 주/복/부전공 학부생" if food else "", quantity_limit="선착순 100명" if food else None,
                 requirements="학생증" if food else None, registration=None, evidence=["고피자"], reason="test")
@@ -310,7 +310,7 @@ def test_golden_food_post_is_confirmed_its_english_twin_merged_and_the_open_lab_
     ko, en, lab = (r.store.candidate(m["id"]) for m in GOLDEN)
     assert ko["status"] == en["status"] == "auto_confirmed" and en["merge_group"] == ko["merge_group"] == "Dd1fg2j4Nf"
     extraction = json.loads(ko["extraction_json"])
-    assert extraction["start_at"] == "2026-10-06T17:30+09:00" and extraction["quantity_limit"] == "선착순 100명"
+    assert extraction["start_at"] == "2026-10-08T17:30+09:00" and extraction["quantity_limit"] == "선착순 100명"
     assert lab["status"] == "auto_rejected" and lab["decided_by"] == "prefilter"   # no food word, one image
     assert all(call[0] == "gpt-6-luna" for call in judge.calls) and all(call[2] == 2 for call in judge.calls)
     r.bridge()
@@ -429,6 +429,50 @@ def test_more_than_five_questions_a_day_wait_for_a_digest(root):
     assert len(digest) == 2 and not r.store.candidates("queued_digest")
     r.review()
     assert len(bot.digests) == 1                                # once per digest slot
+
+
+def test_events_that_are_over_are_neither_asked_about_nor_handed_over(root):
+    """A first run backfills months of posts (2026-10-29: 31 confirmed, all past events)."""
+    posts = [media("OLD", "[OLD] 간식 이벤트", ts="2026-09-01T08:00:00+0000"),
+             media("ASK", "[ASK] 간식 나눔?", ts="2026-09-01T09:00:00+0000"),
+             media("NEW", "[NEW] 간식 이벤트", ts="2026-10-06T08:00:00+0000")]
+    judge = Judge({"[OLD]": {"gpt-6-luna": judgement(True, 0.95, start_at="2026-09-03T17:30+09:00")},
+                   "[ASK]": {"gpt-6-luna": judgement(True, 0.5, start_at=None),
+                             "gpt-6.1-terra": judgement(True, 0.5, start_at=None)},
+                   "[NEW]": {"gpt-6-luna": judgement(True, 0.95)}})
+    bot, writer = Bot(), Writer()
+    r, clock = radar(root, Graph({"shoutoutto.ee": posts}), judge, bot=bot, writer=writer)
+    r.collect()
+    r.analyze()
+    assert [r.store.candidate(m)["status"] for m in ("OLD", "ASK", "NEW")] == ["expired", "expired", "auto_confirmed"]
+    r.review()
+    r.bridge()
+    assert bot.asked == [] and [t.mail_id for t in writer.tasks] == ["instagram-NEW"]
+    r.store.update_candidate("NEW", status="auto_confirmed", dooray_post_id=None)
+    clock["t"] = datetime(2026, 10, 8, 21, 0, tzinfo=an.KST).timestamp()   # confirmed, but the event passed
+    r.bridge()
+    assert r.store.candidate("NEW")["status"] == "expired" and len(writer.tasks) == 1
+
+
+@pytest.mark.parametrize("extraction, posted, past", [
+    ({"start_at": "2026-10-07T07:00+09:00"}, "2026-10-01T00:00:00+0000", False),   # started 2 h ago
+    ({"start_at": "2026-10-07T05:00+09:00"}, "2026-10-01T00:00:00+0000", True),    # 4 h ago, no end
+    ({"start_at": "2026-10-06T10:00+09:00", "end_at": "2026-10-09T18:00+09:00"}, "2026-10-01T00:00:00+0000", False),
+    ({"start_at": None}, "2026-09-30T00:00:00+0000", False),                       # undated, 7 days old
+    ({"start_at": None}, "2026-09-20T00:00:00+0000", True),                        # undated, 17 days old
+    ({"start_at": "곧"}, "2026-10-06T00:00:00+0000", False),
+])
+def test_an_event_is_over_after_its_end_or_three_hours_after_its_start(extraction, posted, past):
+    assert an.is_past(extraction, posted, datetime.fromtimestamp(NOW, an.KST)) is past
+
+
+def test_mixed_language_twins_are_merged_by_their_start_time():
+    ko = {"start_at": "2026-10-08T18:00+09:00", "language": "mixed", "location": "N1 로비", "food_items": ["싸이버거"],
+          "quantity_limit": "사전 신청 선착순 80명"}
+    en = ko | {"location": "N1 lobby", "food_items": ["Thigh burger"], "quantity_limit": "First 80 people"}
+    assert an.same_event(ko, en)
+    assert not an.same_event(ko, en | {"quantity_limit": "First 50 people"})
+    assert not an.same_event(ko | {"language": "ko"}, en | {"language": "ko"})
 
 
 def test_a_dry_run_sends_nothing_and_writes_no_task(root):

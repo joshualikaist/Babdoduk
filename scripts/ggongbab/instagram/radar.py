@@ -257,6 +257,8 @@ class Radar:
             chosen = review if by == "review" or (verdict == "ask" and review is not None) else primary
             extraction = chosen.model_dump() | {"_verdicts": self.verdicts(primary, review)}
             status = {"confirm": "auto_confirmed", "reject": "auto_rejected", "ask": "pending_human"}[verdict]
+            if status != "auto_rejected" and an.is_past(extraction, post["timestamp"], self.now_kst()):
+                status = "expired"
             group = self.merge_group(post, extraction) if verdict != "reject" else post["media_id"]
             self.store.upsert_candidate(post["media_id"], status, group, extraction, decided_by=by, now=self.now())
             self.counts[status] = self.counts.get(status, 0) + 1
@@ -299,11 +301,23 @@ class Radar:
         except RuntimeError:
             self.log("IG_TELEGRAM_FAILED")
 
+    def now_kst(self) -> datetime:
+        return datetime.fromtimestamp(self.now(), an.KST)
+
+    def expire(self, row) -> bool:
+        """An event that is over stays here as `expired` and is never asked about or handed over."""
+        post = self.store.post(row["media_id"])
+        if not an.is_past(json.loads(row["extraction_json"]), post["timestamp"], self.now_kst()):
+            return False
+        self.store.update_candidate(row["media_id"], status="expired", updated_at=self.now())
+        self.counts["expired"] = self.counts.get("expired", 0) + 1
+        return True
+
     def ask_pending(self) -> None:
         today = datetime.fromtimestamp(self.now(), an.KST).strftime("%Y-%m-%d")
         sent = self.store.get(f"asked:{today}", 0)
         for row in self.store.candidates("pending_human"):
-            if row["question_sent"]:
+            if row["question_sent"] or self.expire(row):
                 continue
             if sent >= QUESTIONS_PER_DAY:
                 self.store.update_candidate(row["media_id"], status="queued_digest", updated_at=self.now())
@@ -320,7 +334,7 @@ class Radar:
             self.store.put(f"asked:{today}", sent)
         hour = datetime.fromtimestamp(self.now(), an.KST)
         slot = hour.strftime("%Y-%m-%d") + f"@{hour.hour}"
-        queued = self.store.candidates("queued_digest")
+        queued = [row for row in self.store.candidates("queued_digest") if not self.expire(row)]
         if queued and hour.hour in DIGEST_HOURS and self.store.get("digest_slot") != slot:
             items = []
             for row in queued:
@@ -386,7 +400,7 @@ class Radar:
             return
         from ..web.task_writer import MailPayload
         for row in self.store.candidates("auto_confirmed", "human_confirmed"):
-            if row["dooray_post_id"]:
+            if row["dooray_post_id"] or self.expire(row):
                 continue
             members = self.store.group_members(row["merge_group"])
             leader = next((m for m in members if m["dooray_post_id"] and not m["dooray_post_id"].startswith("merged:")), None)
