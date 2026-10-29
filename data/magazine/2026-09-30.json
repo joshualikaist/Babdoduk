@@ -65,32 +65,6 @@
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
         {
-          "title": "지금까지 만든 것 중 최고! 촉촉한 미니 마틸다 초콜릿 케이크 만들기 | The Best Moist & Fudge Mini Matilda Chocolate Cake Recipe",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=JozYGH2UkV4",
-          "medium": "youtube",
-          "image": "https://i3.ytimg.com/vi/JozYGH2UkV4/hqdefault.jpg",
-          "publishedAt": "2026-09-25T20:00:34+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_ad84f4e640ea4f8c",
-          "imageSource": "youtube_thumbnail",
-          "summary": "지금까지 만들어본 것 중 가장 마음에 들었던, 정말 촉촉한 미니 마틸다 초콜릿 케이크예요. My favorite Mini Matilda Chocolate Cake so far, with ultra-moist…"
-        },
-        {
-          "title": "요즘 줄 서서 먹는다는 피자설기, 집에서 만들기 Korean Rice Cake Pizza?! Pizza Seolgi",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/shorts/YEenFmMR5pU",
-          "medium": "youtube",
-          "image": "https://i2.ytimg.com/vi/YEenFmMR5pU/hqdefault.jpg",
-          "publishedAt": "2026-09-13T19:50:45+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_62d294fffe7b9ca7",
-          "imageSource": "youtube_thumbnail",
-          "summary": "요즘 줄 서서 먹는다는 피자설기를 집에서 만들어봤어요. 포슬포슬하고 촉촉한 백설기에 토마토 페이스트, 모짜렐라치즈, 햄, 옥수수, 양파, 청피망, 올리브를 올려 따뜻할 때 치즈 쭉쭉 늘려 먹으면 더 맛있어요."
-        },
-        {
           "title": "Easy Potato Recipes",
           "source": "Budget Bytes",
           "url": "https://www.budgetbytes.com/potato-recipes/",
@@ -115,17 +89,6 @@
           "candidateId": "c_8cb2f7af44a67691",
           "imageSource": "feed_media",
           "summary": "Some recipes just feel like home, and Classic Potato Soup is one of them for me."
-        },
-        {
-          "title": "제발 대패삼겹살은 절대 굽지 마세요.",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=rKfz2fOrn9E",
-          "medium": "youtube",
-          "publishedAt": "2026-09-20T00:00:00+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_73abbfd49c334eb4",
-          "summary": "대패양배추찜을 만들어 보자 [재료] 대패삼겹살 300g, 양배추 1/4통, 청양고추, 폰즈 소스 또는 참소스 [간장 소스] 진간장 2스푼 식초 1스푼 설탕 1/2스푼 고춧가루 1/2스푼 [만드는 법] 1."
         },
         {
           "title": "Salmon Fried Rice with Egg and Cabbage",
