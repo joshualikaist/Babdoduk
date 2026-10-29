@@ -192,11 +192,13 @@ class Store:
         self.db.commit()
 
     def recent_labels(self, limit: int = 4) -> list[dict[str, Any]]:
-        """The owner's latest verdicts with their posts, for few-shot examples."""
+        """The owner's latest verdicts with their posts, for few-shot examples: one per post, its latest
+        verdict (a button tapped three times, or a corrected tap, is one example, not three)."""
         rows = self.db.execute(
             "SELECT r.action, r.media_id, p.caption, c.extraction_json FROM human_reviews r "
             "JOIN ig_posts p ON p.media_id=r.media_id JOIN food_event_candidates c ON c.media_id=r.media_id "
-            "WHERE r.action IN ('confirm','reject','edit') ORDER BY r.id DESC LIMIT ?", (limit,)).fetchall()
+            "WHERE r.id IN (SELECT max(id) FROM human_reviews WHERE action IN ('confirm','reject','edit') "
+            "GROUP BY media_id) ORDER BY r.id DESC LIMIT ?", (limit,)).fetchall()
         return [dict(r) for r in rows]
 
     def log_usage(self, endpoint: str, outcome: str, headers: Optional[dict], percent: float, now: float) -> None:

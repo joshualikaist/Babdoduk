@@ -508,6 +508,21 @@ def test_the_bridge_rereads_each_candidate_before_handing_it_over(root):
     assert [t.mail_id for t in writer.tasks] == ["instagram-ONE"] and not r.store.candidate("TWO")["dooray_post_id"]
 
 
+def test_few_shot_examples_take_each_post_once_with_its_latest_verdict(root):
+    """2026-10-29: one reject tapped three times filled three of the four example slots."""
+    posts = [media(m, f"[{m}] 간식 이벤트", color=(i, 9, 9)) for i, m in enumerate(("P1", "P2", "P3"))]
+    judge = Judge({f"[{m}]": {"gpt-6-luna": judgement(True, 0.5), "gpt-6.1-terra": judgement(True, 0.5)}
+                   for m in ("P1", "P2", "P3")})
+    r, _ = radar(root, Graph({"shoutoutto.ee": posts}), judge)
+    r.collect()
+    r.analyze()
+    for media_id, action in (("P1", "reject"), ("P2", "confirm"), ("P2", "reject"), ("P3", "reject"),
+                             ("P3", "reject"), ("P3", "reject")):
+        r.store.add_review(media_id, action, now=NOW)
+    labels = r.store.recent_labels()
+    assert [(row["media_id"], row["action"]) for row in labels] == [("P3", "reject"), ("P2", "reject"), ("P1", "reject")]
+
+
 def test_the_prompt_rules_out_prizes_recaps_and_graduate_only_events():
     assert all(word in an.SYSTEM for word in ("gift voucher", "recap", "graduate students"))
 
