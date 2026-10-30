@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-30",
+  "generatedAt": "2026-10-30T15:58:37+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "한식의 진짜 세계화, ‘식문화 생태계’ 구축에 달렸다",
+    "summary": "전 세계적으로 불고 있는 K-푸드 열풍이 일시적 유행을 넘어 일식, 중식, 이탈리안 요리와 같은 글로벌 주류 식문화로 안착하기 위해서는 식품·외식업계 전체가 연대해 ‘지속 가능한 식문화 생태계’를 구축해야 한다는…",
+    "source": "식품음료신문",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_c3d1e74b5572ee06",
+    "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201479",
+    "medium": "news",
+    "discoveredAt": "2026-10-30T15:58:37+09:00",
+    "publishedAt": "2026-10-30T10:41:46+09:00",
+    "image": "https://www.thinkfood.co.kr/news/photo/202610/201479_202090_3842.jpg",
+    "imageSource": "feed_html",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data",
+      "corroborated"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "“매일 걷는데 뱃살은 왜 그대로?”⋯ 중년 나잇살 쏙 빼주는 ‘이 운동’ / AI가 보여주는 ‘환각’에 속지 않으려면? / “양치 중요하게 생각”⋯김지원, 촬영장에 챙겨가는 ‘필수템’ 2가지",
+          "summary": "“매일 걷는데 뱃살은 왜 그대로?”⋯ 중년 나잇살 쏙 빼주는 ‘이 운동’ 매일 걸어도 뱃살이 그대로라면 운동 시간뿐 아니라 강도를 살펴보자.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a83b95994369034a",
+          "url": "https://kormedi.com/2895011/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T06:00:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "\"소식과 운동, 원칙을 지켜야\"…명의가 밝힌 뇌졸중·심혈관 질환 예방책",
+          "summary": "이준형 인턴 기자 = 혈관 건강을 지키고 심뇌혈관 질환을 예방하는 핵심은 고가의 영양제나 특이한 비법이 아닌 검증된 기본 생활 습관 실천에 있다는 지적이 나왔다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_ff96eaa6f57b1b6e",
+          "url": "https://www.newsis.com/view/NISX20261029_0003845812",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-29T18:00:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "식품진흥원, 11월 3일 ‘국가식품클러스터 일자리 채용 한마당’",
+          "summary": "한국식품산업클러스터진흥원(이사장 김덕호)은 오는 11월 3일 식품진흥원 본관에서 ‘2026년 국가식품클러스터 일자리 채용 한마당’을 개최한다.이번 행사는 국가식품클러스터 입주기업의 인력난을 해소하고 식품산업 분야…",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_b8e2a8104692d7cd",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120750",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T20:46:38+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "\"AI와 의약품 결합하면?\"…'원스톱 통합심사' 마련",
+          "summary": "인공지능(AI) 등 디지털 기술을 접목한 의료기기와 의약품을 결합한 '디지털융합의약품'의 허가 심사 절차가 마련됐다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_698ec17c333f2c17",
+          "url": "https://www.newsis.com/view/NISX20261030_0003848676",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T15:54:03+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "식약처, 환자경험자료 활용 가이드라인 제정⋯유형·개념 등 정리",
+          "summary": "의약품 허가 심사에서 활용되는 ‘환자경험자료’의 유형과 개념 등을 정리한 가이드라인이 제정됐다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8711d28c1cc677e5",
+          "url": "https://kormedi.com/2895678/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T14:48:17+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "표고버섯 감자 들깨탕 만들기 요리 레시피",
+          "summary": "냉장고에 남은 표고버섯과 사다 놓은 지 시간이 꽤나 지난 감자로 구수하고 진한 버섯 감자 들깨탕을 끓였습니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_2430f6f91ba0e21f",
+          "url": "https://twins0807.tistory.com/entry/%ED%91%9C%EA%B3%A0%EB%B2%84%EC%84%AF-%EA%B0%90%EC%9E%90-%EB%93%A4%EA%B9%A8%ED%83%95-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T11:26:40+09:00"
+        },
+        {
+          "title": "시금치 계란말이 만들기｜치즈 넣어 고소하고 촉촉한 건강한 반찬 레시피",
+          "summary": "시금치가 맛있어지는 계절에는 시금치나물뿐 아니라 계란말이도 만들어보세요.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_8f6ef1ed37b44b8c",
+          "url": "https://cultureagora.tistory.com/415",
+          "medium": "blog",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T08:00:58+09:00"
+        },
+        {
+          "title": "가리비 치즈구이 만들기｜제철 홍가리비로 만드는 일본식 미소버터구이",
+          "summary": "찬 바람이 불기 시작하면 생각나는 해산물 중 하나가 바로 가리비예요.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_4aa84b156e08e7eb",
+          "url": "https://cultureagora.tistory.com/406",
+          "medium": "blog",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-29T16:00:03+09:00"
+        },
+        {
+          "title": "신상출시 편스토랑 도경완의 탱글잔치국수 청포묵잔치국수 만드는 법",
+          "summary": "343회 신상출시 편스토랑에서 도경완은 소면 대신 청포묵을 활용해 칼로리 걱정 없이 만들어 먹기 좋은 잔치국수 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_0c6ebd7652c300c6",
+          "url": "https://seon1982.tistory.com/4142",
+          "medium": "blog",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T00:00:22+09:00"
+        },
+        {
+          "title": "아들, 며느리가 좋아하는 김밥 레시피, 참치·명란·묵은지 김밥",
+          "summary": "아들, 며느리가 좋아하는 김밥 레시피, 참치·명란·묵은지 김밥 손녀를 돌보러 아들 집에 다녀왔습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_82940620e1d75bdf",
+          "url": "https://heysukim114.tistory.com/entry/%EC%95%84%EB%93%A4-%EB%A9%B0%EB%8A%90%EB%A6%AC%EA%B0%80-%EC%A2%8B%EC%95%84%ED%95%98%EB%8A%94-%EA%B9%80%EB%B0%A5",
+          "medium": "blog",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T00:00:40+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“밥 먹기 전에 먹으면 살 쏙 빠져요”⋯ 과식 줄이는 음식 3가지",
+          "summary": "샐러드를 충분히 씹어 먹으면 식사 속도를 늦추는 데도 도움이 될 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_0c57ff0d27c415cd",
+          "url": "https://kormedi.com/2892931/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T00:06:25+09:00",
+          "image": "https://cdn.kormedi.com/wp-content/uploads/2026/10/gettyimages-2209035533.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“질병 없이 오래 살고 싶다면?”… ‘로우코어 뉴트리션’이 제안하는 건강 습관",
+          "summary": "조진아 충남대 식품영양학과 교수가 로우코어 뉴트리션의 개념에 대해 설명하고 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ede8e80297328779",
+          "url": "https://kormedi.com/2895271/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-29T23:50:33+09:00",
+          "image": "https://cdn.kormedi.com/wp-content/uploads/2026/10/unnamed-file-88-edited.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“포만감 오래가고 혈당도 천천히”… 메밀의 놀라운 건강 효능 4가지",
+          "summary": "국수, 전, 차까지 다양한 방법으로 즐길 수 있는 메밀은 다이어트 식품으로도 주목받는다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_1615c5a1b85aa074",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69302",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T16:00:00+09:00"
+        },
+        {
+          "title": "“피곤하고 어지럽다면?”... 빈혈 관리에 필요한 영양소 5가지",
+          "summary": "빈혈은 혈액 속 적혈구나 적혈구 안의 혈색소(헤모글로빈)가 부족해 몸 곳곳에 산소가 제대로 전달되지 않는 상태다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_90835a6c1765ef9a",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69309",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T17:00:00+09:00"
+        },
+        {
+          "title": "“콜레스테롤 관리 때 좋아”… 차예련·주상욱 먹는 ‘밀가루 안 든’ 국수 요리",
+          "summary": "국수를 먹고 싶지만 탄수화물 섭취가 부담된다면 면의 종류를 바꾸는 것도 방법이다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_e147d90571f6aee5",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103001377.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T12:00:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "‘청·바·지’…청춘을 위해 바나나와 과일을 지원하다",
+          "summary": "글로벌 청과기업 델몬트가 대학생들의 건강한 식습관을 응원하기 위해 캠퍼스를 찾았다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_92b6855043bd5827",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201532",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T12:15:39+09:00",
+          "image": "https://www.thinkfood.co.kr/news/photo/202610/201532_202162_1528.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "“덜 먹고, 혼자 먹고, 더 건강하게…” 2027년 식생활 트렌드 ‘감식사회(減食社會)ʼ",
+          "summary": "인구 구조 변화와 1인 가구 증가, 건강과 아름다움을 추구하는 웰니스 생활방식의 확산이 식품 소비의 기준을 바꾸고 있다.",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_46daa4f788588591",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120741",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T20:15:31+09:00",
+          "image": "https://cdn.foodnews.co.kr/news/thumbnail/202610/120741_87233_5252_v150.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "이유 모를 짜증, 아까 먹은 ‘이것’ 때문?⋯기분 망치는 음식 3가지",
+          "summary": "특별한 사건이 벌어지지 않았음에도 오후 내내 예민하고 처진다면 직전에 먹은 메뉴를 떠올려 볼 필요가 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_9661fccdeb8fbc14",
+          "url": "https://kormedi.com/2895097/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T13:02:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/10/aaas-52.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“밥보다 디저트” 장원영의 디저트 사랑⋯건강엔 괜찮을까",
+          "summary": "장원영이 밥보다 달달한 디저트를 주로 먹는다고 밝혔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_eb56b59ef8f965c9",
+          "url": "https://kormedi.com/2891125/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T15:01:00+09:00"
+        },
+        {
+          "title": "SNS 인기 ‘과일 찹살떡’ 위생 관리 집중 점검한다",
+          "summary": "식품의약품안전처(처장 오유경)가 최근 선풍적인 인기를 끌고 있는 과일 찹쌀떡·샌드위치 등을 조리·판매하는 배달음식점과 무인카페 등 4000여 곳을 대상으로 30일부터 11월 13일까지 16개 지방정부와 함께 집중…",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_c16ad1b0dfa3f120",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201527",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T09:24:12+09:00"
+        }
+      ]
+    }
+  }
+}

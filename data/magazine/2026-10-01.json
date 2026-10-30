@@ -132,19 +132,6 @@
       "lead": "밥이 더 맛있어지는 작은 조리 팁",
       "items": [
         {
-          "title": "요즘 핫한 요거트 찹쌀떡 직접 만들기 | 쫀득한 모찌 속에 요거트 아이스크림 | Fresh Fruit Yogurt Ice Cream Rice Cake (Mochi) Recipe",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/watch?v=o7baQU9RDKI",
-          "medium": "youtube",
-          "image": "https://i4.ytimg.com/vi/o7baQU9RDKI/hqdefault.jpg",
-          "publishedAt": "2026-09-18T20:00:33+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_9c0e3b5648023241",
-          "imageSource": "youtube_thumbnail",
-          "summary": "생과일을 쏙 끼워 먹는 쫀득한 요거트 찹쌀떡, 속에는 상큼하고 부드러운 요거트 아이스크림을 가득 채웠어요. Chewy fresh fruit yogurt mochi filled with creamy yogurt…"
-        },
-        {
           "title": "Sheet Pan Chicken Thighs",
           "source": "Budget Bytes",
           "url": "https://www.budgetbytes.com/sheet-pan-chicken-thighs/",
@@ -182,28 +169,6 @@
           "candidateId": "c_3575c6c7745c4f57",
           "imageSource": "feed_html",
           "summary": "My homemade Yuzu Kosho recipe inspired this 3-ingredient snack."
-        },
-        {
-          "title": "쿠킹트리의 베이킹 촬영하는 날의 하루 A Baking Filming Day at Cooking Tree",
-          "source": "쿠킹트리 Cooking tree",
-          "url": "https://www.youtube.com/shorts/NRQg-w5Vk1g",
-          "medium": "youtube",
-          "publishedAt": "2026-09-16T19:02:01+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_3704cbcc8fd34ec0",
-          "summary": "평소 영상에서는 잘 보이지 않았던 쿠킹트리의 하루를 가볍게 함께 담아봤어요 댓글을 확인하고 레시피를 정리한 뒤, 오늘 디저트에 어울리는 그릇과 실바니안도 고르고 하나씩 재료를 준비해 촬영해요."
-        },
-        {
-          "title": "카레에 이걸 넣으면 진심 대박 맛도리",
-          "source": "자취요리신",
-          "url": "https://www.youtube.com/watch?v=uygyE4foDpo",
-          "medium": "youtube",
-          "publishedAt": "2026-09-24T00:00:00+09:00",
-          "discoveredAt": "2026-09-29T15:09:50+09:00",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_baa24371a58a2ec5",
-          "summary": "만두카레를 만들어 보자 [재료] 냉동 만두, 양파, 고형 카레 [만드는 법] 1. 팬에 식용유와 버터를 두르고 양파와 냉동 만두를 볶는다. 2. 만두가 노릇해지면 먹기 좋게 자른다. 3."
         }
       ]
     },
