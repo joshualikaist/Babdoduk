@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-29T04:24:19+09:00",
+  "generatedAt": "2026-10-31T00:25:59+09:00",
   "timezone": "Asia/Seoul",
-  "count": 10,
+  "count": 11,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -109,6 +109,44 @@
       "audience": {
         "text": "KAIST 학사과정생",
         "basis": "stated"
+      }
+    },
+    {
+      "id": "8c44e83f-2a71-4ff5-8082-9ecd477b4a01",
+      "title": "2026 KAIST Model UN Science, Technology & Innovation Summit (KAI-MUN)",
+      "summary": "학생들이 의장단과 대표단으로 참여해 책임 있는 AI 거버넌스를 논의하는 모의 국제회의입니다.",
+      "startAt": "2026-11-04T16:00:00+09:00",
+      "endAt": "2026-11-04T19:00:00+09:00",
+      "dateText": "2026년 11월 4일(수)",
+      "timeText": "16:00–19:00",
+      "location": {
+        "name": "KAIST Auditorium",
+        "building": "E15",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "Refreshments will be provided to those who register in advance. / 다과는 사전등록하신 분들께 제공될 예정 입니다.",
+        "source": "text"
+      },
+      "organizer": "과학기술과 글로벌발전 연구센터 (G-CODEs, Global Center for Development and Strategy)",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-03T23:59:00+09:00",
+        "url": "https://forms.gle/s4jGKNLdxV8epDQb9"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "lucky draw / 행운의 뽑기(Lucky Draw)"
       }
     },
     {
