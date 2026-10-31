@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 """
 STATUSES = frozenset({"auto_confirmed", "auto_rejected", "pending_human", "queued_digest", "human_confirmed",
                       "human_rejected", "expired"})   # expired: the event was over (analyze.is_past)
+DONE = ("auto_rejected", "expired", "human_rejected")
+IMAGE_KEEP_SECONDS = 14 * 86400     # owner 2026-10-31: images of finished posts are kept 14 days
 
 
 class Store:
@@ -131,6 +133,29 @@ class Store:
 
     def images(self, media_id: str) -> list[sqlite3.Row]:
         return self.db.execute("SELECT * FROM ig_post_images WHERE media_id=? ORDER BY position", (media_id,)).fetchall()
+
+    def purge_images(self, now: float, keep: float = IMAGE_KEEP_SECONDS) -> int:
+        """Delete the images of finished posts 14 days on: rejected, expired or prefiltered out. The
+        post, its permalink and its verdict stay; a file still used by another post stays too."""
+        cutoff = now - keep
+        rows = self.db.execute(
+            "SELECT i.media_id, i.sha256, i.path FROM ig_post_images i JOIN ig_posts p ON p.media_id=i.media_id "
+            "LEFT JOIN food_event_candidates c ON c.media_id=i.media_id "
+            f"WHERE (c.media_id IS NULL AND p.prefilter!='' AND p.fetched_at<?) "
+            f"OR (c.status IN ({','.join('?' * len(DONE))}) AND c.updated_at<?)", (cutoff, *DONE, cutoff)).fetchall()
+        if not rows:
+            return 0
+        self.db.executemany("DELETE FROM ig_post_images WHERE media_id=?", {(r["media_id"],) for r in rows})
+        removed = 0
+        for sha, path in {(r["sha256"], r["path"]) for r in rows}:
+            if self.db.execute("SELECT 1 FROM ig_post_images WHERE sha256=?", (sha,)).fetchone():
+                continue
+            target = Path(path)
+            if target.parent == self.media and target.exists():
+                target.unlink()
+                removed += 1
+        self.db.commit()
+        return removed
 
     # --- analysis, candidates, reviews ------------------------------------------------------------
     def add_run(self, media_id: str, stage: str, model: str, *, input_tokens=0, output_tokens=0, cost=0.0,

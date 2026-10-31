@@ -1,8 +1,8 @@
 # Instagram 꽁밥 radar (owner request 2026-10-29)
 
 **Lab-only / not promoted to production in the current main baseline.** It runs on the operations PC
-from the lab checkout, like the Dooray Radar. Status: **token in place since 2026-10-29; `ig-check` and one live
-dry run passed (below); the resident service and the Telegram question are not live yet.**
+from the lab checkout, like the Dooray Radar. Status: **resident service live since 2026-10-29 (32 accounts);
+Telegram questions answered by the owner since that evening.**
 
 ## What it does
 
@@ -88,13 +88,18 @@ retried; fix or remove it in the file.
 ## Analysis
 
 * Prefilter (free): no food word in the caption and at most one image -> not a candidate, no model call.
+  Since 2026-10-31 the words include 다과, 경품, 기념품, 굿즈, 추첨 and 설명회: department information
+  sessions often announce their snacks and prizes on a single poster.
 * `gpt-6-luna` with the caption, the post time and up to 6 images, Structured Outputs (the fields of
   `analyze.Judgement`). Confidence >= 0.8 decides.
 * Otherwise `gpt-6.1-terra` on the same input: >= 0.75 decides (its verdict wins over luna's).
 * A confirmation without a start or end time goes to the owner (`analyze.undated`): whether it is still
-  ahead cannot be read. The prompt also rules out prize draws and vouchers, recaps of events that
-  already took place, and events only for graduate students. On the first live run (2026-10-29) a
-  coffee-voucher draw and a past graduate orientation recap, both undated, were confirmed and handed over.
+  ahead cannot be read. The prompt rules out online-only prize draws (follow, share or comment to enter),
+  recaps of events that already took place, and events only for graduate students. On the first live
+  run (2026-10-29) a coffee-voucher draw and a past graduate orientation recap, both undated, were
+  confirmed and handed over. An in-person event that hands out food or giveaways to those who come,
+  such as a 학과설명회 with prizes, is a 꽁밥 (owner, 2026-10-31); its giveaways go in `food_items`, a
+  sign-up form or deadline in `registration`, conditions in `requirements`.
 * The bridge rereads each candidate just before writing its task, so a status changed meanwhile (an
   answer, a correction) is respected.
 * Otherwise the owner: a Telegram message with the poster, the summary, both verdicts and the
@@ -110,6 +115,28 @@ retried; fix or remove it in the file.
 * Models are configuration. Each day the radar checks that both exist and accept an image; if not it
   stops and says so on Telegram (it never swaps a model). Every call's tokens and estimated cost are
   recorded; a month above $5 is announced. Estimated cost: about $1 a month.
+
+## Images
+
+Posters are downloaded at once (the CDN links expire) and kept content-addressed in `.local/ig-media`.
+14 days after a post is finished - rejected (by the models or the owner), expired, or prefiltered out -
+its images are deleted (owner, 2026-10-31; `Store.purge_images`, every cycle). The post, its permalink
+and its verdict stay, and a file another post still uses stays too. Images of confirmed and pending
+posts are kept: the Telegram question and the Dooray task attach them.
+
+## The owner's notes on Telegram
+
+Whatever the owner writes to the bot that answers no question (not a button, not a reply to a ✏️
+prompt), and any photo such as a screenshot of an alert, is kept for Claude: `.local/telegram-inbox.jsonl`
+(the latest 300, readable by this user only) and `.local/telegram-inbox/` (the latest 50 photos).
+Token-like strings are masked before they are kept. The bot answers "📝 메모로 저장했습니다". Read
+them with `scripts/linux/ops.sh notes`; an agent reads the files directly (owner, 2026-10-31: "텔레그램에서
+내가 친 내용을 너가 다시 볼 수 있게"). Nothing is sent anywhere else.
+
+## Reader tips
+
+The same bot asks the owner about reader tips from the tip page (`scripts/ggongbab/tips.py`,
+`docs/GGONGBAB_TIPS.md`), because one bot has one `getUpdates` reader: ✅ 게시판에 올리기 / ❌ 올리지 않음.
 
 ## Rules
 
@@ -137,5 +164,6 @@ retried; fix or remove it in the file.
 5. Usage headers recorded, backoff unit-tested: done.
 6. No secret in logs or commits: tested on every file the radar writes.
 
-Open: the published event's source label is the mail source (the task path), not "Instagram"; a
-source label of its own is a pipeline change for a later task.
+Open: the published event's source label is the mail source (the task path), not "Instagram". The
+owner approved a source label of its own with the original link on 2026-10-31; it is its own task
+(public contract, pipeline and lab projection).

@@ -11,6 +11,7 @@
 #   run <args>     ggongbab_workers.py <args>, e.g. `run radar-once --dry-run`
 #   alert <args>   scripts/alert_push.py <args>: Telegram push to the phone, e.g. `alert --status`
 #   ig-install | ig-start | ig-stop | ig-status | ig-check | ig-once [--dry-run]   the Instagram radar
+#   notes          the owner's latest Telegram notes to the bot (the Instagram radar keeps them)
 #
 # Same model as the Windows tasks: the operator's own session, no stored password, no sudo, no
 # wake timer. Workers stop through their control files; systemd stops only the supervisor
@@ -180,7 +181,8 @@ case "$action" in
         "$(python_path)" -c 'import json,sys,time; d=json.load(open(sys.argv[1])); print("Last cycle    :", d.get("reason"), time.strftime("%m-%d %H:%M", time.localtime(d.get("observed", 0)))); print("Counts        :", json.dumps(d.get("counts", {}), ensure_ascii=False))' "$ROOT/.local/ops-ig-radar.json" 2>/dev/null || echo "Last cycle    : none yet" ;;
     ig-check) runner ig-check ;;
     ig-once) runner ig-radar-once "$@" ;;
+    notes) runner telegram-notes ;;
     *)
-        sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        sed -n '2,16p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
         exit 2 ;;
 esac

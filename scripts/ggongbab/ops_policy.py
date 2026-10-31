@@ -48,6 +48,8 @@ REASONS = SAFE_REASON_CODES | TRANSIENT | HUMAN | frozenset({
     "IG_RADAR_RUNNING", "IG_RADAR_CYCLE_OK", "IG_RADAR_CYCLE_FAILED", "IG_TOKEN_INVALID", "IG_SCOPE_MISSING",
     "IG_RATE_LIMITED", "IG_SLOWED_DOWN", "IG_ACCOUNT_UNSUPPORTED", "IG_ACCOUNT_ERROR", "IG_MODEL_UNAVAILABLE",
     "IG_OPENAI_ERRORS", "IG_TELEGRAM_FAILED", "IG_DOORAY_FAILED",
+    # Reader tips, reviewed through the Instagram radar's bot (scripts/ggongbab/tips.py, docs/GGONGBAB_TIPS.md)
+    "TIP_REVIEW_NOT_READY", "TIP_REVIEW_FAILED", "TIP_DOORAY_FAILED",
 })
 # The latches a person clears by logging in again in the dedicated browser. The watchdog resumes
 # on its own once it sees that login finish (resident_ops.Watchdog.login_completed); the others

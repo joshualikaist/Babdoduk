@@ -65,6 +65,7 @@ class Radar:
         self.now, self.sleep, self.dry_run = now, sleep, dry_run
         self.counts: dict = {}
         self.since = collect_since(self.root)
+        self.tips = None        # ggongbab.tips.Tips: reader tips share this bot (cli.build)
 
     # --- alerts -------------------------------------------------------------------------------
     def alert(self, key: str, text: str, every: float = 24 * 3600) -> None:
@@ -305,6 +306,8 @@ class Radar:
             return
         try:
             self.ask_pending()
+            if self.tips is not None:
+                self.tips.poll()
             self.handle_updates(wait)
         except RuntimeError:
             self.log("IG_TELEGRAM_FAILED")
@@ -362,7 +365,15 @@ class Radar:
         if updates:
             self.store.put("telegram_offset", max(int(u.get("update_id", 0)) for u in updates) + 1)
         for event in self.bot.events(updates):
-            if event[0] == "button":
+            if event[0] == "tip":
+                _, action, tip_id, callback = event
+                if self.tips is None:
+                    self.bot.answer(callback, "제보 검토가 아직 켜져 있지 않습니다")
+                else:
+                    self.tips.decide(action, tip_id, callback)
+            elif event[0] == "photo":
+                self.note(event[2], event[1])
+            elif event[0] == "button":
                 _, action, media_id, callback = event
                 row = self.store.candidate(media_id)
                 if row is None:
@@ -388,6 +399,7 @@ class Radar:
                 _, text, reply_to = event
                 media_id = self.store.get(f"edit:{reply_to}") if reply_to else None
                 if not media_id or self.store.candidate(media_id) is None:
+                    self.note(text)
                     continue
                 changes = {k: v for k, v in parse_edit(text).items() if k in EDITABLE}
                 if not changes:
@@ -399,6 +411,18 @@ class Radar:
                                             extraction_json=json.dumps(extraction, ensure_ascii=False))
                 self.store.add_review(media_id, "edit", json.dumps(changes, ensure_ascii=False), now=self.now())
                 self.bot.say("✏️ 고친 내용으로 꽁밥 등록합니다: " + ", ".join(changes))
+
+    def note(self, text: str, photo: str = "") -> None:
+        """Anything the owner writes that answers no question is kept for Claude (keep_note)."""
+        from .telegram_review import keep_note
+        data = None
+        if photo:
+            try:
+                data = self.bot.download(photo)
+            except RuntimeError:
+                self.log("IG_TELEGRAM_FAILED")
+        keep_note(self.local, text, self.now(), photo=data)
+        self.bot.say("📝 메모로 저장했습니다. 다음에 Claude와 작업할 때 \"텔레그램 메모 확인해 줘\"라고 하시면 읽어 봅니다.")
 
     # --- hand over to the pipeline ----------------------------------------------------------------
     def bridge(self) -> None:
@@ -461,6 +485,9 @@ class Radar:
         self.review()
         self.bridge()
         self.cost_check()
+        purged = self.store.purge_images(self.now())
+        if purged:
+            self.counts["images_purged"] = purged
         self.log("IG_RADAR_CYCLE_OK")
         return "IG_RADAR_CYCLE_OK"
 

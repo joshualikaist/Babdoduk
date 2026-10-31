@@ -8,7 +8,8 @@ Decision (decide()):
   * anything else (both unsure, or they disagree without a confident review) -> ask the owner;
   * a confirmation without a start or end time -> ask the owner (undated(): whether such an event is
     still ahead cannot be read, and on 2026-10-29 a past orientation recap and a voucher draw slipped through).
-A question is never shown on the site before the owner answers.
+An in-person event with giveaways for attendees (a 학과설명회 with prizes) is a 꽁밥; an online-only draw
+is not (owner, 2026-10-31). A question is never shown on the site before the owner answers.
 """
 from __future__ import annotations
 
@@ -28,7 +29,9 @@ EVENT_HOURS = timedelta(hours=3)     # is_past: an event without an end lasts th
 UNDATED_FOR = timedelta(days=14)     # is_past: an event without a readable time, by its post's age
 KEYWORDS = ("간식", "피자", "치킨", "도시락", "커피", "음료", "무료", "선착순", "배부", "나눔", "증정", "샌드위치",
             "햄버거", "떡", "과자", "빵", "식사", "밥", "음식", "디저트", "아이스크림", "snack", "free", "food",
-            "pizza", "coffee", "drink", "lunch", "dinner", "giveaway")
+            "pizza", "coffee", "drink", "lunch", "dinner", "giveaway",
+            # 2026-10-31: department info sessions hand out snacks and prizes, often only on a single poster.
+            "다과", "경품", "기념품", "굿즈", "추첨", "설명회")
 # USD per 1M tokens (input, output); a model missing here is costed with the review model's price.
 PRICES = {"gpt-6-luna": (0.10, 0.50), "gpt-6.1-terra": (1.00, 5.00)}
 
@@ -53,17 +56,21 @@ class Judgement(BaseModel):
 
 SYSTEM = """You judge whether an Instagram post by a KAIST student council or department account announces a
 꽁밥: an event where students can get food or drinks for free (snacks, meals, coffee, a food giveaway, food at a
-talk or study session). Not a 꽁밥: paid sales, a restaurant or cafe promotion, a general notice that only
-mentions food, recruiting, open labs, results announcements, a prize draw or gift voucher (a coffee coupon for
-sharing a post is a prize, not food served at an event), a recap of an event that already took place (photos
-of food that was served), an event only for graduate students or incoming graduate students (the site is for
-undergraduates).
+talk or study session), or an in-person event that hands out food, drinks or giveaways (경품, 기념품, 굿즈)
+to the students who come - for example a department or major information session (학과설명회, 전공설명회)
+with snacks or prizes for attendees. Not a 꽁밥: paid sales, a restaurant or cafe promotion, a general notice
+that only mentions food, recruiting, open labs, results announcements, an online-only prize draw (follow,
+share or comment to enter a draw for a coupon or voucher, with nothing handed out in person), a recap of an
+event that already took place (photos of food that was served), an event only for graduate students or
+incoming graduate students (the site is for undergraduates).
 
 Rules:
 - Read the caption and every image (posters often carry the date, time, place and food).
 - Dates without a year: take the nearest date on or after the post time (Asia/Seoul). Write times as
   YYYY-MM-DDTHH:MM+09:00. Unknown values are null or "" - never guess a value the post does not support.
 - eligibility: who may come, as written (for example "과비 납부한 전자과 주/복/부전공 학부생").
+- Giveaways go in food_items next to the food (for example "경품 추첨: 에어팟"); a sign-up form, link or
+  deadline goes in registration; conditions such as "설문 참여" or "사전 신청자 한정" go in requirements.
 - evidence: short quotes from the caption or poster that support the verdict.
 - confidence: how sure you are of is_free_food_event, 0 to 1.
 - language: ko, en or mixed (the caption's language)."""

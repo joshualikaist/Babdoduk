@@ -120,6 +120,11 @@ class Bot:
         self.sent.append((method, payload))
         return {"message_id": 900}
 
+    def download(self, file_id):
+        if file_id == "broken":
+            raise RuntimeError("TELEGRAM_TRANSPORT_FAILED")
+        return jpeg()
+
 
 class Writer:
     def __init__(self):
@@ -436,6 +441,70 @@ def test_an_edit_reply_updates_the_fields_and_confirms(root):
     assert extraction["food_items"] == ["샌드위치", "커피"]
 
 
+def test_the_owners_own_messages_and_photos_are_kept_for_claude_with_secrets_masked(root):
+    from ggongbab.instagram.telegram_review import read_notes
+    r, bot, _, _ = unsure(root)
+    r.review()
+    bot.pending = [
+        {"update_id": 7, "message": {"chat": {"id": 42}, "text": "레이더 오류 났어 sk-proj-abcdefghijklmnopqrstuvwxyz"}},
+        {"update_id": 8, "message": {"chat": {"id": 42}, "photo": [{"file_id": "small"}, {"file_id": "big"}],
+                                     "caption": "이 경고 화면"}},
+        {"update_id": 9, "message": {"chat": {"id": 999}, "text": "someone else"}},
+        {"update_id": 10, "message": {"chat": {"id": 42}, "photo": [{"file_id": "broken"}]}},
+    ]
+    r.review()
+    notes = read_notes(root / ".local")
+    assert [n["text"] for n in notes] == ["레이더 오류 났어 [가림]", "이 경고 화면", ""]
+    photo = root / ".local" / notes[1]["photo"].split("/.local/", 1)[1]
+    assert photo.read_bytes()[:2] == b"\xff\xd8" and oct(photo.stat().st_mode)[-3:] == "600"
+    assert "photo" not in notes[2]                              # the download failed: the note stays
+    assert oct((root / ".local/telegram-inbox.jsonl").stat().st_mode)[-3:] == "600"
+    assert sum("메모로 저장했습니다" in t for t in bot.said) == 3
+    assert r.store.candidate("Q0")["status"] == "pending_human"   # a note never answers a question
+
+
+def test_an_edit_reply_is_not_kept_as_a_note(root):
+    from ggongbab.instagram.telegram_review import read_notes
+    r, bot, _, _ = unsure(root)
+    r.review()
+    bot.pending = [button("edit", "Q0")]
+    r.review()
+    bot.pending = [{"update_id": 5, "message": {"chat": {"id": 42}, "text": "장소: 창의학습관",
+                                                "reply_to_message": {"message_id": 900}}}]
+    r.review()
+    assert read_notes(root / ".local") == []
+
+
+def test_the_inbox_keeps_only_the_latest_notes_and_photos(root, monkeypatch):
+    from ggongbab.instagram import telegram_review as tr
+    monkeypatch.setattr(tr, "INBOX_KEEP", 3)
+    monkeypatch.setattr(tr, "PHOTO_KEEP", 2)
+    for i in range(5):
+        tr.keep_note(root / ".local", f"n{i}", NOW + i, photo=jpeg())
+    assert [n["text"] for n in tr.read_notes(root / ".local")] == ["n2", "n3", "n4"]
+    assert len(list((root / ".local" / tr.INBOX_PHOTOS).iterdir())) == 2
+
+
+def test_images_of_finished_posts_are_deleted_after_fourteen_days_and_shared_files_stay(root):
+    posts = [media("KEEP", "[KEEP] 간식 나눔", images=1), media("DROP", "[DROP] 오픈랩", images=1),
+             media("SKIP", "동아리 소개", kind="IMAGE")]
+    posts[0]["children"]["data"][0]["media_url"] = "https://scontent.cdninstagram.com/same-a.jpg"
+    posts[1]["children"]["data"][0]["media_url"] = "https://scontent.cdninstagram.com/same-b.jpg"
+    judge = Judge({"[KEEP]": {"gpt-6-luna": judgement(True, 0.95)}, "[DROP]": {"gpt-6-luna": judgement(False, 0.95)}})
+    r, clock = radar(root, Graph({"shoutoutto.ee": posts}), judge, writer=Writer())
+    r.collect()
+    r.analyze()
+    assert r.store.post("SKIP")["prefilter"] == "skip"
+    files = {p.name for p in (root / ".local/ig-media").iterdir()}
+    assert len(files) == 2                                     # KEEP and DROP share one file
+    assert r.store.purge_images(clock["t"] + 13 * 86400) == 0
+    removed = r.store.purge_images(clock["t"] + 15 * 86400)
+    assert removed == 1                                        # SKIP's own file; the shared one is KEEP's too
+    assert r.store.images("DROP") == [] and r.store.images("SKIP") == [] and len(r.store.images("KEEP")) == 1
+    assert {p.name for p in (root / ".local/ig-media").iterdir()} <= files and r.load_images("KEEP")
+    assert r.store.post("DROP")["permalink"] and r.store.candidate("DROP")["status"] == "auto_rejected"
+
+
 def test_more_than_five_questions_a_day_wait_for_a_digest(root):
     r, bot, _, clock = unsure(root, n=7, clock={"t": datetime(2026, 10, 7, 10, 0, tzinfo=an.KST).timestamp()})
     r.review()
@@ -523,8 +592,16 @@ def test_few_shot_examples_take_each_post_once_with_its_latest_verdict(root):
     assert [(row["media_id"], row["action"]) for row in labels] == [("P3", "reject"), ("P2", "reject"), ("P1", "reject")]
 
 
-def test_the_prompt_rules_out_prizes_recaps_and_graduate_only_events():
-    assert all(word in an.SYSTEM for word in ("gift voucher", "recap", "graduate students"))
+def test_the_prompt_takes_info_session_giveaways_but_not_online_draws_recaps_or_graduate_events():
+    """2026-10-31: a 학과설명회 with prizes for attendees is a 꽁밥; a share-to-enter voucher draw is not."""
+    assert all(word in an.SYSTEM for word in ("학과설명회", "online-only prize draw", "recap", "graduate students"))
+    assert "registration" in an.SYSTEM and "경품" in an.SYSTEM
+
+
+def test_a_single_poster_about_an_info_session_or_giveaway_reaches_the_model():
+    assert an.prefilter("2027 전기 학과설명회 안내", 1)
+    assert an.prefilter("참석자 경품 추첨!", 1)
+    assert not an.prefilter("동아리 신입 부원 모집", 1)
 
 
 @pytest.mark.parametrize("extraction, posted, past", [

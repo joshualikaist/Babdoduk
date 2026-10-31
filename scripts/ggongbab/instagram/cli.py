@@ -4,6 +4,7 @@
   ig-check              configuration, token scopes and expiry, models, accounts, Telegram (no values)
   ig-radar-once         one cycle; --dry-run collects and analyzes but sends nothing and writes no task
   ig-radar              the resident loop: a cycle every LOOP_SECONDS, Telegram answers in between
+  telegram-notes        the owner's latest notes to the bot (what Claude reads; .local/telegram-inbox.jsonl)
 """
 from __future__ import annotations
 
@@ -40,7 +41,19 @@ def build(root: Path, *, dry_run: bool) -> Radar:
     radar = Radar(root, config=config, graph=graph, judge=an.Judge(_openai()), bot=Bot(token, chat) if token and chat else None,
                   writer=writer, log=SafeLog(local / LOG), dry_run=dry_run)
     radar.store.sync_accounts(load_accounts(root))
+    if not dry_run:
+        from ..config import load_settings
+        from ..tips import build as tips
+        radar.tips = tips(load_settings(), radar.bot, writer, store=radar.store, now=time.time, log=radar.log)
     return radar
+
+
+def notes(root: Path, limit: int = 20) -> int:
+    """The owner's latest Telegram notes (telegram_review.keep_note), oldest first."""
+    from .telegram_review import read_notes
+    for entry in read_notes(Path(root) / ".local", limit):
+        print(entry.get("at", ""), entry.get("text", ""), f"[사진 {entry['photo']}]" if entry.get("photo") else "")
+    return 0
 
 
 def models_ready(radar: Radar) -> bool:
