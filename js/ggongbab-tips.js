@@ -1,7 +1,7 @@
 /* 꽁밥 제보 (tip.html, lab only; docs/GGONGBAB_TIPS.md).
 
    A visitor sends a tip through the checking function ggongbab_submit_tip (supabase/migrations/
-   007_ggongbab_tips.sql), which returns the tip's id; up to three photos then go to the private
+   008_ggongbab_tips.sql), which returns the tip's id; up to three photos then go to the private
    bucket under that id. The board lists only the tips the owner confirmed (ggongbab_tip_board:
    title, place, date, time and food). Nothing is read back from the tips or the photos.
 
