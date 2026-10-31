@@ -86,7 +86,7 @@ class Opener:
 
 def run(tmp_path, headers, *, requests=(), writer=None, dispatch=None, opener=None, **kw):
     files = radar.RadarFiles(tmp_path)
-    files.set_enabled(True, T0)
+    files.set_enabled(kw.pop("enabled", True), T0)
     if kw.pop("dispatch_on", True):
         files.set_dispatch(True, T0)
     context = Context(requests)
@@ -209,6 +209,17 @@ def test_a_recheck_reads_older_mail_the_previous_rules_dismissed(tmp_path):
     assert [p.mail_id for p in writer.payloads] == ["old"]
     with pytest.raises(ValueError):
         run(tmp_path, [], recheck_days=15)
+
+
+def test_a_recheck_runs_while_the_resident_radar_is_disabled(tmp_path):
+    """The procedure stops the resident Radar first (it holds the lock); on 2026-10-31 the recheck
+    then returned at once without scanning, because it read the disabled switch as a stop."""
+    opener = Opener({"m1": {"body": "10월 16일 18:00 창의학습관, 저녁 도시락 제공"}})
+    mail = hdr("m1", "학과설명회 안내", "많은 참여 바랍니다.", minutes_ago=2 * 1440)
+    code, files, writer, *_ = run(tmp_path, [mail], opener=opener, enabled=False)
+    assert writer.payloads == []                                    # the resident loop still stops
+    code, files, writer, *_ = run(tmp_path, [mail], opener=opener, enabled=False, recheck_days=3)
+    assert [p.mail_id for p in writer.payloads] == ["m1"] and not files.enabled()
 
 
 @pytest.mark.parametrize("requests", [[("GET", "/v2/wapi/mails/1234567890")], [("POST", "/v2/wapi/mails/read")],

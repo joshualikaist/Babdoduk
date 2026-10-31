@@ -292,7 +292,9 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
     save()
     try:
         while True:
-            if not files.enabled() and not dry_run:
+            # The switch stops the resident loop. A recheck is an operator's one-off run made while
+            # the resident Radar is switched off (it needs the lock), so it does not read it.
+            if not files.enabled() and not dry_run and not recheck_days:
                 return 0
             now_ts = clock()
             now = datetime.fromtimestamp(now_ts, KST)
