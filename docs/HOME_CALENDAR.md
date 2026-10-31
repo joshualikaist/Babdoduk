@@ -67,8 +67,9 @@ beside the copy on the paper band and the calendar splits into the day (left) an
   per day, never a count, title or icon. The marker slot is always reserved. The 🎁 of a giveaway-only
   listing is the one exception to "no icon" and sits outside that slot (see Giveaways).
 * **Links**: a sign-up link while the event is open (not ended, deadline not passed); an original
-  post only for public web sources (`kaist_public`, `manual`). Mail and other internal sources are
-  named in plain text (`출처 · KAIST 메일`). Mail-system hosts are never linked.
+  post only for public web sources (`kaist_public`, `manual`), else an Instagram post's canonical
+  permalink (`인스타그램 원문 보기`, 2026-10-31). Mail, reader tips and other internal sources are
+  named in plain text (`출처 · KAIST 메일`, `출처 · 제보`). Mail-system hosts are never linked.
 * **Loading and errors**: the grid renders at once; dots appear when data arrives. If the live
   snapshot fails the module says `꽁밥 일정을 불러오지 못했어요` and links to the hub; it never shows an
   empty-day message for data it could not read. If only the archive fails, past days say

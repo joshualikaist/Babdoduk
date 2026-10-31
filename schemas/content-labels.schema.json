@@ -16,7 +16,7 @@
     },
     "sources": {
       "type": "object",
-      "required": ["dooray", "dooray_mailbox", "kaist_public", "manual", "portal"],
+      "required": ["dooray", "dooray_mailbox", "kaist_public", "manual", "portal", "instagram", "tip"],
       "additionalProperties": false,
       "patternProperties": {
         "^[a-z_]+$": {
@@ -26,14 +26,14 @@
           "properties": {
             "dataName": {"type": "string", "minLength": 1},
             "newsName": {"type": "string", "minLength": 1},
-            "shownAs": {"enum": ["mail", "portal", "public", "manual"]}
+            "shownAs": {"enum": ["mail", "portal", "public", "manual", "instagram", "tip"]}
           }
         }
       }
     },
     "sourceLabels": {
       "type": "object",
-      "required": ["mail", "portal", "public", "manual"],
+      "required": ["mail", "portal", "public", "manual", "instagram", "tip"],
       "additionalProperties": false,
       "patternProperties": {"^[a-z]+$": {"$ref": "#/$defs/pair"}}
     },

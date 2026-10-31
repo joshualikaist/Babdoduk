@@ -72,8 +72,8 @@
             "required": ["type", "name"],
             "additionalProperties": false,
             "properties": {
-              "type": {"enum": ["dooray", "dooray_mailbox", "kaist_public", "manual", "portal"]},
-              "name": {"enum": ["Dooray", "Dooray 메일함", "KAIST 공지", "Manual", "KAIST Portal"]},
+              "type": {"enum": ["dooray", "dooray_mailbox", "kaist_public", "manual", "portal", "instagram", "tip"]},
+              "name": {"enum": ["Dooray", "Dooray 메일함", "KAIST 공지", "Manual", "KAIST Portal", "Instagram", "제보"]},
               "url": {"$ref": "#/$defs/urlOrEmpty"}
             }
           }

@@ -9,6 +9,8 @@ from uuid import UUID
 
 from .config import KST
 from .exporter import PUBLIC_SOURCE_NAMES, build_payload, kst_iso
+from .public_sanitizer import public_url
+from .source_origin import ORIGINS, instagram_post_url
 
 PUBLIC_FIELDS = (
     "id", "title", "summary", "start_at", "end_at", "date_text", "time_text",
@@ -18,7 +20,11 @@ PUBLIC_FIELDS = (
     # Migration 006 (2026-10-14): a giveaway listing and where the food evidence was read.
     "food_source", "giveaway", "giveaway_description",
 )
-PUBLIC_COLUMNS = PUBLIC_FIELDS + ("content_revision", "updated_at")
+# Migration 007 (2026-10-31): the public links the snapshot's sources carry, and the `instagram`
+# and `tip` source types. A projection without it keeps the 006 shape: no links, and those two
+# origins written as the Dooray items they were collected as (prepare_public_feed asks the database).
+LINK_FIELDS = ("source_links",)
+PUBLIC_COLUMNS = PUBLIC_FIELDS + LINK_FIELDS + ("content_revision", "updated_at")
 
 
 class PublicFeedError(Exception):
@@ -26,13 +32,14 @@ class PublicFeedError(Exception):
 
 
 def content_revision(row):
-    canonical = json.dumps({key: row[key] for key in PUBLIC_FIELDS}, sort_keys=True,
+    canonical = json.dumps({key: row[key] for key in PUBLIC_FIELDS + LINK_FIELDS if key in row}, sort_keys=True,
                            ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def public_row(event):
-    """Flatten the selected/sanitized snapshot shape; no dictionary expansion."""
+def public_row(event, *, links=True):
+    """Flatten the selected/sanitized snapshot shape; no dictionary expansion. `links=False` is the
+    shape of a projection that migration 007 has not reached yet."""
     event_id = str(UUID(event["id"]))  # canonical UUID, never a Portal/Dooray ID
     row = {
         "id": event_id, "title": event["title"], "summary": event["summary"],
@@ -45,12 +52,14 @@ def public_row(event):
         "registration_required": event["registration"]["required"],
         "registration_deadline": event["registration"]["deadline"],
         "registration_url": event["registration"]["url"],
-        "source_types": sorted({s["type"] for s in event["sources"]}),
+        "source_types": sorted({s["type"] if links or s["type"] not in ORIGINS else "dooray" for s in event["sources"]}),
         "confidence": event["confidence"],
         "food_source": event["food"].get("source", ""),
         "giveaway": (event.get("giveaway") or {}).get("provided", "false"),
         "giveaway_description": (event.get("giveaway") or {}).get("description", ""),
     }
+    if links:
+        row["source_links"] = [{"type": s["type"], "url": s["url"]} for s in event["sources"] if s.get("url")]
     row["content_revision"] = content_revision(row)
     return row
 
@@ -70,11 +79,22 @@ def to_snapshot_event(row):
         "registration": {"required": row["registration_required"],
                          "deadline": kst_iso(row["registration_deadline"]), "url": row["registration_url"]},
         "confidence": row["confidence"],
-        "sources": [{"type": kind, "name": PUBLIC_SOURCE_NAMES[kind]} for kind in row["source_types"]],
+        "sources": [_snapshot_source(kind, row.get("source_links")) for kind in row["source_types"]],
     }
     if row.get("giveaway") == "true":
         event["giveaway"] = {"provided": "true", "description": row.get("giveaway_description") or ""}
     return event
+
+
+def _snapshot_source(kind, links):
+    source = {"type": kind, "name": PUBLIC_SOURCE_NAMES[kind]}
+    for link in links if isinstance(links, list) else []:
+        if isinstance(link, dict) and link.get("type") == kind and kind in ("kaist_public", "manual", "instagram"):
+            url = instagram_post_url(link.get("url")) if kind == "instagram" else public_url(link.get("url"))
+            if url:
+                source["url"] = url
+                break
+    return source
 
 
 @dataclass
@@ -94,7 +114,8 @@ def prepare_public_feed(repo, settings, now=None):
         payload = build_payload(repo.publishable_events(), settings, now, food_only=True)
         if validate_ggongbab_payload(payload, now):
             raise ValueError()
-        rows = [public_row(event) for event in payload["events"]]
+        links = repo.public_feed_has_links()
+        rows = [public_row(event, links=links) for event in payload["events"]]
         return PreparedFeed(generation, payload, rows)
     except Exception:
         raise PublicFeedError("PUBLIC_FEED_PREPARATION_FAILED") from None

@@ -141,18 +141,15 @@
       return u.href;
     } catch (e) { return ''; }
   }
-  // Only public web notices (KAIST notices, Babdoduk's own entries) are linked; internal sources never are.
-  function publicSourceUrl(ev) {
-    return (ev.sources || []).filter(function (src) { return src && (src.type === 'kaist_public' || src.type === 'manual'); })
-      .map(function (src) { return safeHref(src.url); }).filter(Boolean)[0] || '';
+  // Only public web pages (KAIST notices, Babdoduk's own entries, an Instagram post) are linked;
+  // internal sources never are. {type, url} or null.
+  function publicSource(ev) {
+    var link = F.sourceLink(ev), url = link ? safeHref(link.url) : '';
+    return url ? { type: link.type, url: url } : null;
   }
   function sourceKey(ev) {
-    var types = (ev.sources || []).map(function (src) { return src && src.type; });
-    if (types.indexOf('dooray') >= 0 || types.indexOf('dooray_mailbox') >= 0) return 'home.cal.src.mail';
-    if (types.indexOf('portal') >= 0) return 'home.cal.src.portal';
-    if (types.indexOf('kaist_public') >= 0) return 'home.cal.src.public';
-    if (types.indexOf('manual') >= 0) return 'home.cal.src.manual';
-    return '';
+    var group = F.sourceGroup(ev);
+    return group ? 'home.cal.src.' + group : '';
   }
 
   // ---- Copy ----
@@ -425,10 +422,11 @@
       actions.push('<a class="btn btn-primary hc-ev-apply" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' +
         esc(t('home.cal.ev.apply', '신청하기')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
     }
-    var source = publicSourceUrl(ev);
+    var source = publicSource(ev);
     if (source) {
-      actions.push('<a class="hc-ev-link" href="' + esc(source) + '" target="_blank" rel="noopener">' +
-        esc(t('home.cal.ev.original', '원문 보기')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
+      actions.push('<a class="hc-ev-link" href="' + esc(source.url) + '" target="_blank" rel="noopener">' +
+        esc(source.type === 'instagram' ? t('home.cal.ev.instagram', '인스타그램 원문 보기') : t('home.cal.ev.original', '원문 보기')) +
+        ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
     }
     if (actions.length) rows.push('<p class="hc-ev-actions">' + actions.join('') + '</p>');
     var via = sourceKey(ev);
@@ -649,7 +647,7 @@
       answerFor: answerFor,
       shortPlace: shortPlace,
       fullPlace: fullPlace,
-      publicSourceUrl: publicSourceUrl
+      publicSource: publicSource
     };
   }
   window.BabdodukHomeCalendar = api();

@@ -6,10 +6,14 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   var TABLE = 'ggongbab_public_events';
-  var COLUMNS = 'id,title,summary,start_at,end_at,date_text,time_text,location_name,building,room,food_provided,food_type,food_description,organizer,eligibility,registration_required,registration_deadline,registration_url,source_types,confidence,food_source,giveaway,giveaway_description,content_revision,updated_at';
+  var COLUMNS = 'id,title,summary,start_at,end_at,date_text,time_text,location_name,building,room,food_provided,food_type,food_description,organizer,eligibility,registration_required,registration_deadline,registration_url,source_types,confidence,food_source,giveaway,giveaway_description,source_links,content_revision,updated_at';
+  // Migration 007 (2026-10-31) added source_links; a projection it has not reached is read without it.
+  var LEGACY_COLUMNS = COLUMNS.replace(',source_links', '');
+  var LINKED = Object.freeze({ kaist_public: true, manual: true, instagram: true });
+  var INSTAGRAM_POST = /^https:\/\/www\.instagram\.com\/(?:p|reel)\/[A-Za-z0-9_-]{5,20}\/$/;
   // The sources' public names (data/content/labels.json; written by scripts/sync_site_chrome.py).
   // @labels:source-names
-  var NAMES = Object.freeze({"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal"});
+  var NAMES = Object.freeze({"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal", "instagram": "Instagram", "tip": "제보"});
   // @end labels
   var SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js';
   var sdkPromise;
@@ -19,6 +23,17 @@
     var date = new Date(value);
     if (!Number.isFinite(date.getTime())) return null;
     return new Date(date.getTime() + 9 * 3600000).toISOString().slice(0, 19) + '+09:00';
+  }
+  // The public link of one source: an https page for a notice or own entry, the canonical permalink
+  // for an Instagram post; nothing for any other source.
+  function linkFor(kind, links) {
+    if (!LINKED[kind] || !Array.isArray(links)) return '';
+    for (var i = 0; i < links.length; i++) {
+      var link = links[i];
+      if (!link || link.type !== kind || typeof link.url !== 'string' || !/^https:\/\/[^\s<>"\\]+$/.test(link.url)) continue;
+      if (kind !== 'instagram' || INSTAGRAM_POST.test(link.url)) return link.url;
+    }
+    return '';
   }
   function mapRow(row) {
     var food = { provided: row.food_provided, type: row.food_type, description: row.food_description };
@@ -34,7 +49,11 @@
       confidence: row.confidence,
       sources: (row.source_types || []).filter(function (kind) {
         return Object.prototype.hasOwnProperty.call(NAMES, kind);
-      }).map(function (kind) { return { type: kind, name: NAMES[kind] }; })
+      }).map(function (kind) {
+        var source = { type: kind, name: NAMES[kind] }, url = linkFor(kind, row.source_links);
+        if (url) source.url = url;
+        return source;
+      })
     };
     // Migration 006: a giveaway listing (a prize draw or gift for participants).
     if (row.giveaway === 'true') event.giveaway = { provided: 'true', description: row.giveaway_description || '' };
@@ -100,7 +119,7 @@
     var hasData = false, dbData = false, active = false, epoch = 0, attempt = 0;
     var client = null, channel = null, cleanup = Promise.resolve();
     var retryTimer, deadlineTimer, refreshTimer, abort, snapshotAbort, snapshotTimer;
-    var reconciling = false, dirty = false;
+    var reconciling = false, dirty = false, columns = COLUMNS;
 
     function current(token) { return active && token === epoch; }
     function emit() {
@@ -182,9 +201,13 @@
       // Continue to an EMPTY page, not a short page: server limits may be lower
       // than our requested range. Deadline bounds pathological/huge responses.
       while (current(token)) {
-        var response = await client.from(TABLE).select(COLUMNS)
+        var response = await client.from(TABLE).select(columns)
           .order('start_at', { ascending: true }).order('id', { ascending: true })
           .range(offset, offset + 499).abortSignal(abort.signal);
+        if (response.error && response.error.code === '42703' && columns === COLUMNS && !rows.length) {
+          columns = LEGACY_COLUMNS;     // undefined column: migration 007 is not applied yet
+          continue;
+        }
         if (response.error || !Array.isArray(response.data)) throw new Error('public select unavailable');
         if (!response.data.length) return rows;
         rows = rows.concat(response.data); offset += response.data.length;
@@ -261,5 +284,5 @@
       retry: function () { if (active) connect(); else start(); },
       status: function () { return state; } };
   }
-  return { create: create, mapRow: mapRow, columns: COLUMNS, publicConfig: publicConfig, retryDelay: retryDelay };
+  return { create: create, mapRow: mapRow, columns: COLUMNS, legacyColumns: LEGACY_COLUMNS, publicConfig: publicConfig, retryDelay: retryDelay };
 });

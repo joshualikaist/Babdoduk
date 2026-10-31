@@ -87,13 +87,51 @@ test('mapping discards unrecognized sources and extra fields', () => {
   assert.deepEqual(event.sources, [{ type: 'portal', name: 'KAIST Portal' }]);
   assert.equal(JSON.stringify(event).includes('PRIVATE'), false);
 });
-test('exact 25-column select (22 + migration 006) and ordered paginated public table only', async () => {
+test('exact 26-column select (22 + migrations 006, 007) and ordered paginated public table only', async () => {
   const h = harness(); await h.live();
-  assert.equal(feed.columns.split(',').length, 25);
+  assert.equal(feed.columns.split(',').length, 26);
+  assert.deepEqual(feed.legacyColumns.split(','), feed.columns.split(',').filter(c => c !== 'source_links'));
   assert.deepEqual(h.calls.map(c => c.table), ['ggongbab_public_events', 'ggongbab_public_events']);
   assert.ok(h.calls.every(c => c.columns === feed.columns && c.signal instanceof AbortSignal));
   assert.deepEqual(h.calls[0].order, [['start_at', { ascending: true }], ['id', { ascending: true }]]);
   assert.deepEqual(h.calls.map(c => c.range), [[0, 499], [1, 500]]);
+});
+test('a projection without migration 007 is read with the 006 columns, once, from the first page', async () => {
+  const h = harness({});
+  h.select = call => (call.columns === feed.columns
+    ? { error: { code: '42703', message: 'column does not exist' }, data: null }
+    : { data: h.rows.slice(call.range[0], call.range[1] + 1) });
+  await h.live();
+  assert.deepEqual(h.calls.map(c => c.columns), [feed.columns, feed.legacyColumns, feed.legacyColumns]);
+  assert.equal(h.ctl.status(), 'db-live');
+  assert.deepEqual(h.latest().events.map(e => e.id), ['a']);
+});
+test('any other select error still fails over to the snapshot', async () => {
+  const h = harness();
+  h.select = () => ({ error: { code: '42501', message: 'permission denied' }, data: null });
+  await h.live();
+  assert.deepEqual(h.calls.map(c => c.columns), [feed.columns]);
+  assert.equal(h.ctl.status(), 'snapshot-fallback');
+});
+test('source links: a notice or own entry over https, an Instagram post only as its canonical permalink', () => {
+  const links = [
+    { type: 'instagram', url: 'https://www.instagram.com/p/Abc_12-x/' },
+    { type: 'kaist_public', url: 'https://www.kaist.ac.kr/kr/html/campus/053001.html?mode=V&mng_no=1' },
+    { type: 'tip', url: 'https://example.com/tip' },
+    { type: 'dooray', url: 'https://kaist.dooray.com/project/1' }];
+  const event = feed.mapRow({ ...row(), source_types: ['dooray', 'instagram', 'kaist_public', 'tip'], source_links: links });
+  assert.deepEqual(event.sources, [
+    { type: 'dooray', name: 'Dooray' },
+    { type: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/p/Abc_12-x/' },
+    { type: 'kaist_public', name: 'KAIST 공지', url: 'https://www.kaist.ac.kr/kr/html/campus/053001.html?mode=V&mng_no=1' },
+    { type: 'tip', name: '제보' }]);
+  for (const url of ['https://instagram.com/p/Abc_12-x/', 'https://www.instagram.com/p/Abc_12-x', 'http://www.instagram.com/p/Abc_12-x/',
+                     'https://www.instagram.com/p/Abc_12-x/?igsh=1', 'https://www.instagram.com/stories/x/1/', 'javascript:alert(1)']) {
+    const forged = feed.mapRow({ ...row(), source_types: ['instagram'], source_links: [{ type: 'instagram', url }] });
+    assert.deepEqual(forged.sources, [{ type: 'instagram', name: 'Instagram' }], url);
+  }
+  const legacy = feed.mapRow({ ...row(), source_types: ['kaist_public'] });
+  assert.deepEqual(legacy.sources, [{ type: 'kaist_public', name: 'KAIST 공지' }]);
 });
 test('no select before confirmed subscription; exact channel scope', async () => {
   const h = harness(); await h.start(); assert.equal(h.calls.length, 0);

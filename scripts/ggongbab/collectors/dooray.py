@@ -28,6 +28,7 @@ from ..ingest_marker import parse_ingest_marker, parse_timing, strip_ingest_mark
 from ..models import RawAttachment, RawItem
 from ..parsers.dooray_mail import parse_original_message
 from ..parsers.html_text import html_to_text, inline_file_ids
+from ..source_origin import task_origin
 from .base import Collector, CollectorError
 
 UA = "BabdodukGgongbab/1.0 (+https://github.com/joshualikaist/Babdoduk)"
@@ -292,6 +293,9 @@ class DoorayCollector(Collector):
                 attachments=attachments,
             )
 
+        # An Instagram post or a reader tip handed over as an agent task (source_origin.py).
+        origin = task_origin(subject, original.body, sender_email=original.sender_email,
+                             header_found=original.found)
         return RawItem(
             source_type="dooray",
             external_id=post_id,
@@ -300,7 +304,7 @@ class DoorayCollector(Collector):
             sender_email=original.sender_email,
             raw_text=original.body if original.found else text,
             raw_html=raw_html,
-            source_url="",
+            source_url=origin.url if origin else "",
             source_created_at=sent,
             source_updated_at=updated,
             metadata={
@@ -314,7 +318,7 @@ class DoorayCollector(Collector):
                 # Private latency metadata (raw_items only; never exported).
                 "mail_received_at": original.sent_at.isoformat() if original.sent_at else None,
                 "discovered_at": timing.get("discovered_at"),
-            },
+            } | ({"origin": origin.kind} if origin else {}),
             attachments=attachments,
         )
 

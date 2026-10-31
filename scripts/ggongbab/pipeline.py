@@ -167,7 +167,10 @@ class Pipeline:
             cached = self.repo.cached_parse(existing["id"], content_hash)
             linked = self.repo.events_linked_to(existing["id"])
             if cached is not None and (linked or not _is_event(cached)):
-                self.repo.touch_raw_item(existing["id"])
+                if (existing.get("metadata") or {}).get("origin") != item.metadata.get("origin"):
+                    self.repo.upsert_raw_item(item)     # an origin read after the item was stored
+                else:
+                    self.repo.touch_raw_item(existing["id"])
                 self.stats.ai_skipped += 1
                 return ParseOutcome(candidate=None, skipped_cached=True)
         row = self.repo.upsert_raw_item(item)

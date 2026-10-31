@@ -18,7 +18,7 @@ from ggongbab.db.repository import MemoryRepository, SupabaseRepository
 from ggongbab.exporter import build_archive, build_payload
 from ggongbab.models import AudienceExtraction, Evidence, EventExtraction, SessionExtraction
 from ggongbab.pipeline import Pipeline
-from ggongbab.public_feed import PUBLIC_FIELDS, prepare_public_feed
+from ggongbab.public_feed import LINK_FIELDS, PUBLIC_FIELDS, prepare_public_feed
 
 from .conftest import TEST_NOW, FakeExtractor, make_extraction
 from .test_export_contract import row
@@ -305,13 +305,13 @@ def test_a_failing_supabase_read_leaves_the_events_untouched():
 
 
 def test_the_database_projection_prepares_with_the_new_keys_and_never_carries_them(settings):
-    """ggongbab_replace_public_feed refuses a row key outside its allowlist (migrations 004/006), and the
+    """ggongbab_replace_public_feed refuses a row key outside its allowlist (migrations 004/006/007), and the
     snapshot is validated before it is projected: the new keys must pass the validator and stay out of the rows."""
     prepared = prepare_public_feed(memory_with_run(), settings, TEST_NOW)
     [event] = prepared.payload["events"]
     assert len(event["sessions"]) == 5 and event["audience"]["basis"] == "stated"
     [public] = prepared.rows
-    assert set(public) == set(PUBLIC_FIELDS) | {"content_revision"}
+    assert set(public) == set(PUBLIC_FIELDS) | set(LINK_FIELDS) | {"content_revision"}
     assert "sessions" not in public and "audience" not in public
 
 

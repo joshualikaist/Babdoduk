@@ -9,6 +9,10 @@ Since 2026-10-18 an event may also carry `sessions` (each day of a multi-day eve
 and its own venue or food when the source says so) and `audience` (who it is for, "stated" or
 "inferred"); see parse_extras.py.
 
+Since 2026-10-31 (owner decision) a source may be `instagram`, with the post's own link, or `tip`
+(a reader tip), when the Dooray collection task was handed over by the Instagram radar or the tip
+board with its full marker (source_origin.py).
+
 The ggongbab feed lists explicit free food, and since 2026-10-14 (owner decision) also events with
 a prize draw or giveaway for participants: such an event carries `giveaway`, and the page marks
 it 🎁 and keeps it out of the free-food counts. `food.source` says where the food evidence was
@@ -34,6 +38,7 @@ from .config import DATA_DIR, KST, Settings
 from .parse_extras import public_audience, public_sessions
 from .parsers.validator import parse_iso
 from .public_sanitizer import public_text, public_url
+from .source_origin import instagram_post_url
 
 # The name each source type carries in the public data: the shared labels (data/content/labels.json).
 PUBLIC_SOURCE_NAMES = content_labels.source_data_names()
@@ -110,9 +115,11 @@ def public_event(row: dict[str, Any]) -> dict[str, Any]:
             continue
         seen.add(stype)
         entry = {"type": stype, "name": PUBLIC_SOURCE_NAMES[stype]}
-        url = public_url(src.get("url"))
-        if stype in {"kaist_public", "manual"} and url:
-            entry["url"] = url  # only public web links; Dooray/task links are never exported
+        # Only public web links: a notice, Babdoduk's own entry, or the Instagram post itself (its
+        # canonical permalink). Dooray/task links are never exported, and a reader tip has no link.
+        url = instagram_post_url(src.get("url")) if stype == "instagram" else public_url(src.get("url"))
+        if stype in {"kaist_public", "manual", "instagram"} and url:
+            entry["url"] = url
         sources.append(entry)
     food_provided = tri_state(row.get("food_provided"))
     food = {

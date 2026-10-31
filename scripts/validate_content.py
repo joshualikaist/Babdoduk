@@ -337,14 +337,16 @@ GG_PRIVATE_KEYS = {
     "metadata", "review_reason",
 }
 GG_FOOD_TYPES = {"meal", "lunchbox", "snack", "refreshment", "beverage", "coupon", "other", "unknown"}
-GG_SOURCE_TYPES = {"dooray", "dooray_mailbox", "kaist_public", "manual", "portal"}
+GG_SOURCE_TYPES = {"dooray", "dooray_mailbox", "kaist_public", "manual", "portal", "instagram", "tip"}
 GG_TRI = {"true", "false", "unknown"}
 KST_OFFSET = timedelta(hours=9)
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 PHONE_RE = re.compile(r"(?<!\d)(?:\+?82[-\s.]?)?0?1[016789][-\s.]?\d{3,4}[-\s.]?\d{4}(?!\d)")
 SECRET_RE = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}|dooray-api\s+\S+)")
 DOORAY_LINK_RE = re.compile(r"dooray\.com|/files/[A-Za-z0-9]{8,}", re.I)
-GG_PUBLIC_URL_SOURCES = {"kaist_public", "manual"}
+GG_PUBLIC_URL_SOURCES = {"kaist_public", "manual", "instagram"}
+# An Instagram source links the post itself, in the canonical form the exporter rebuilds (2026-10-31).
+GG_INSTAGRAM_POST_RE = re.compile(r"https://www\.instagram\.com/(?:p|reel)/[A-Za-z0-9_-]{5,20}/")
 
 # ---------------------------------------------------------------------------
 # Public event schema and the structure-aware privacy scan (latest.json and the archive)
@@ -559,6 +561,9 @@ def gg_public_field_errors(prefix: str, tag: str, event: dict) -> list[str]:
     for src in event.get("sources") if isinstance(event.get("sources"), list) else []:
         if isinstance(src, dict) and src.get("url") and src.get("type") not in GG_PUBLIC_URL_SOURCES:
             errors.append(f"{tag} exposes a {src.get('type')} source URL; only public notice links may be kept")
+        elif (isinstance(src, dict) and src.get("type") == "instagram" and src.get("url")
+              and not (isinstance(src["url"], str) and GG_INSTAGRAM_POST_RE.fullmatch(src["url"]))):
+            errors.append(f"{tag} instagram source URL is not a canonical post link")
     return errors
 
 

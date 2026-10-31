@@ -72,6 +72,17 @@ organizer, eligibility, registration_required, registration_deadline,
 registration_url, source_types, confidence, content_revision, updated_at
 ```
 
+Later migrations add, each with a default so older writers keep working:
+
+- 006 (2026-10-14): `food_source`, `giveaway`, `giveaway_description` (a giveaway listing).
+- 007 (2026-10-31): `source_links`, a JSON array of `{type, url}`, the public links the snapshot's
+  sources already carry (`kaist_public`, `manual`, and an `instagram` post as its canonical
+  `https://www.instagram.com/p|reel/<code>/` permalink, checked by
+  `ggongbab_public_source_links_ok`), and the `instagram` and `tip` source types. A projection
+  without 007 is written in the 006 shape, with those two origins as `dooray`
+  (`public_feed_has_links`), and the lab page then reads the 006 columns; either order of applying
+  007 and deploying the code is safe.
+
 `id` is the canonical event UUID, never a raw/source/Portal/Dooray identifier.
 `start_at` is required; `end_at` and `registration_deadline` are nullable
 timestamptz values. Other strings are non-null (empty means unstated).
@@ -79,10 +90,11 @@ timestamptz values. Other strings are non-null (empty means unstated).
 `registration_required` is `"true"`, `"false"`, or `"unknown"`, never a boolean.
 `confidence` is numeric, rounded as in the snapshot. `source_types` is a sorted,
 deduplicated text array restricted to `dooray`, `dooray_mailbox`, `kaist_public`,
-`manual`, `portal`. Labels come from a fixed mapping, not source-table names.
+`manual`, `portal` (and since 007 `instagram`, `tip`; scripts/ggongbab/source_origin.py). Labels
+come from a fixed mapping, not source-table names.
 
 There are no foreign keys, private identifiers, arbitrary JSON/metadata, raw
-text/HTML, sender/attachment data, source URLs, cookies or conflict details.
+text/HTML, sender/attachment data, private source URLs, cookies or conflict details.
 Text fields strip HTML markup, addresses, known secret/ID patterns and embedded
 web links. Only separately checked URL fields may retain links. URL publication
 is stricter for both paths: HTTPS only, no userinfo/port/query/fragment/encoding;
@@ -99,13 +111,13 @@ this feature does not declare all Portal titles public.
 snake_case time fields map to `startAt`/`endAt` (converted to KST); location and
 food fields become their existing nested objects; registration fields become
 `registration`; source types become fixed `{type, name}` objects. The remaining
-card properties keep their existing names. Source URLs are intentionally omitted.
+card properties keep their existing names. A source's public URL comes only from `source_links`.
 No private lookup is required. Render strings as text, not HTML.
 
 ## Revisions and synchronization
 
-`content_revision` is lowercase SHA-256 of UTF-8 canonical JSON of the 20
-allowlisted public content fields. Keys are sorted, separators are `,` and `:`,
+`content_revision` is lowercase SHA-256 of UTF-8 canonical JSON of the
+allowlisted public content fields (`PUBLIC_FIELDS`, plus `source_links` when written). Keys are sorted, separators are `,` and `:`,
 Unicode is unescaped and nonfinite numbers are rejected. Dates are normalized
 to KST and source types sorted before hashing. `updated_at`, generation, raw
 metadata, ingest timestamps and source ordering do not participate.

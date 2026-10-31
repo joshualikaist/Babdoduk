@@ -16,6 +16,7 @@ import content_labels
 from ..config import KST, PROMPT_VERSION
 from ..parse_extras import RUN_BATCH, attach_extras
 from ..models import RawAttachment, RawItem
+from ..source_origin import public_type
 from .supabase_client import SupabaseClient
 
 SOURCE_NAMES = content_labels.source_data_names()   # data/content/labels.json
@@ -45,6 +46,7 @@ class Repository(Protocol):
     def publishable_events(self) -> list[dict[str, Any]]: ...
     def recent_published_events(self, days: int) -> list[dict[str, Any]]: ...
     def public_feed_generation(self) -> int: ...
+    def public_feed_has_links(self) -> bool: ...
     def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int: ...
     def review_events(self) -> list[dict[str, Any]]: ...
     def start_ingest_run(self, source_type: str) -> str: ...
@@ -182,7 +184,7 @@ class SupabaseRepository:
         links = self.client.select_all("event_sources", {"event_id": f"in.({ids})", "select": "event_id,raw_item_id",
                                                         "order": "event_id.asc,raw_item_id.asc"})
         raw_ids = ",".join(sorted({l["raw_item_id"] for l in links})) if links else ""
-        raw_rows = self.client.select_all("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url",
+        raw_rows = self.client.select_all("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url,metadata",
                                                        "order": "id.asc"}) if raw_ids else []
         sources = {s["id"]: s for s in self.client.select_all("sources", {"select": "id,type,name", "order": "id.asc"})}
         raw_map = {r["id"]: r for r in raw_rows}
@@ -190,10 +192,11 @@ class SupabaseRepository:
         for link in links:
             raw = raw_map.get(link["raw_item_id"]) or {}
             src = sources.get(raw.get("source_id"), {})
+            stype, url = public_type(src.get("type", "unknown"), raw.get("metadata"), raw.get("source_url") or "")
             by_event.setdefault(link["event_id"], []).append({
-                "type": src.get("type", "unknown"),
-                "name": src.get("name", ""),
-                "url": raw.get("source_url") or "",
+                "type": stype,
+                "name": SOURCE_NAMES.get(stype, src.get("name", "")) if stype != src.get("type") else src.get("name", ""),
+                "url": url,
             })
         for event in events:
             event["_sources"] = by_event.get(event["id"], [])
@@ -233,6 +236,18 @@ class SupabaseRepository:
             from .supabase_client import SupabaseError
             raise SupabaseError("PUBLIC_FEED_GENERATION_INVALID")
         return rows[0]["generation"]
+
+    def public_feed_has_links(self) -> bool:
+        """Whether migration 007 is applied (the projection has `source_links`): a missing column is
+        PostgREST's 42703; any other failure is raised."""
+        from .supabase_client import SupabaseError
+        try:
+            self.client.select("ggongbab_public_events", {"select": "source_links", "limit": 0})
+        except SupabaseError as exc:
+            if "42703" in str(exc):
+                return False
+            raise
+        return True
 
     def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int:
         return self.client.rpc("ggongbab_replace_public_feed", {"p_generation": generation, "p_rows": rows},
@@ -278,9 +293,13 @@ class MemoryRepository:
         self.ingest_runs: dict[str, dict[str, Any]] = {}
         self.public_events: dict[str, dict[str, Any]] = {}
         self._public_generation = 0
+        self.public_feed_links = True       # False: a projection that migration 007 has not reached
 
     def public_feed_generation(self) -> int:
         return self._public_generation
+
+    def public_feed_has_links(self) -> bool:
+        return self.public_feed_links
 
     def replace_public_feed(self, generation: int, rows: list[dict[str, Any]]) -> int:
         if generation != self._public_generation:
@@ -403,8 +422,9 @@ class MemoryRepository:
                 if e != event["id"]:
                     continue
                 raw = self.raw_items.get(r, {})
-                stype = type_by_source.get(raw.get("source_id"), "unknown")
-                srcs.append({"type": stype, "name": SOURCE_NAMES.get(stype, stype), "url": raw.get("source_url") or ""})
+                stype, url = public_type(type_by_source.get(raw.get("source_id"), "unknown"), raw.get("metadata"),
+                                         raw.get("source_url") or "")
+                srcs.append({"type": stype, "name": SOURCE_NAMES.get(stype, stype), "url": url})
             event["_sources"] = srcs
         raw_by_event: dict[str, list[str]] = {}
         for (e, r) in self.event_sources:

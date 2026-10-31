@@ -168,7 +168,7 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 
 | 테이블 | 공개 여부 | 내용 |
 |--------|-----------|------|
-| `sources` | private | dooray / kaist_public / manual / portal, priority |
+| `sources` | private | dooray / kaist_public / manual / portal, priority (인스타·제보 업무는 dooray 로 저장, 출처는 raw_items.metadata.origin) |
 | `raw_items` | private | 수집 원본. `UNIQUE(source_id, external_id)`, `content_hash` index. 발신자 · 원문 · HTML 포함 |
 | `attachments` | private | 첨부 메타(`sha256`, `parse_status`). 파일 본체는 저장하지 않음 |
 | `ai_parse_runs` | private | 호출마다 model · prompt_version · role(primary/fallback) · parsed_json · 토큰 사용량 · status |
@@ -364,7 +364,7 @@ DB 의 `timestamptz` 는 UTC 로 조회되지만(`2026-09-25T03:00:00+00:00`), �
 `validate_content.validate_ggongbab()` 가 이를 정규식 · 키 이름으로 검사하고 실패하면 publish 를 막는다. 검증 항목: JSON · generatedAt · 고유 ID ·
 ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음 · URL 형식 · **tri-state 문자열**(boolean 이면 실패) ·
 `food.type` 과 `food.provided` 정합성 · private 필드 없음 · 이메일/전화/토큰 패턴 없음 · 같은 날 유사 제목 중복.
-`sources[].url` 은 `kaist_public` / `manual` 의 공개 웹 링크만 내보낸다.
+`sources[].url` 은 `kaist_public` / `manual` 의 공개 웹 링크와 `instagram` 게시물의 표준 주소(`https://www.instagram.com/p|reel/<code>/`)만 내보낸다. 2026-10-31부터 인스타 레이더와 제보 게시판이 두레이 수집함에 넘긴 업무는 표식이 온전할 때만 출처 `instagram`(인스타그램, 게시물 링크) · `tip`(제보, 링크 없음)으로 공개된다(`scripts/ggongbab/source_origin.py`).
 
 ### 끝난 행사 (현재 동작)
 
@@ -403,7 +403,7 @@ live 피드는 “지금·앞으로 참여할 수 있는 꽁밥”, 아카이브
 
 **공개 계약.** 기록은 `public_event` 의 공개 필드에서 `registration`·`confidence` 를 뺀 것이다: `id`, `title`, `summary`,
 `startAt`, `endAt`, `dateText`, `timeText`, `location`, `food`, `organizer`, `eligibility`, `sources`(그리고 있으면 `sessions`, `audience`). 출처는 live 와 같이
-공개 라벨만 두고, URL 은 `kaist_public`·`manual` 의 http(s) 공개 공지만 남긴다. Dooray id·task 링크·메일 원문·발신자·
+공개 라벨만 두고, URL 은 `kaist_public`·`manual` 의 http(s) 공개 공지와 `instagram` 게시물의 표준 주소만 남긴다. Dooray id·task 링크·메일 원문·발신자·
 review 사유·AI 입력/출력은 절대 들어가지 않는다. 파일 머리: `generatedAt`(KST), `timezone`, `windowDays`(30), `count`.
 정렬은 최근에 끝난 것부터, 같으면 id 순.
 
@@ -456,7 +456,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
   `ggongbab-select.js` 의 같은 규칙(`isPublic`, `isUpcoming`)으로 나누므로 한 행이 양쪽에 동시에 나오지 않는다.
   - 기록 카드: 「종료」 배지 · 날짜/시각 · 제목 · 장소 · 음식 · “당시 공개된 꽁밥 안내 기록 · 출처 라벨”. 흐린 바탕, 그림자·강조색·
     음식 색 배지 없음. 신청하기·마감·사전 신청 배지는 데이터에 남아 있어도 그리지 않는다.
-  - 링크는 공개 공지 URL(`kaist_public`/`manual`, http(s))이 있을 때만 “당시 공지 보기 ↗”. 내부 출처는 링크가 없다.
+  - 링크는 공개 공지 URL(`kaist_public`/`manual`, http(s))이 있을 때 “당시 공지 보기 ↗”, 없고 인스타 게시물 표준 주소가 있을 때 “당시 인스타그램 게시물 보기 ↗”. 내부 출처와 제보는 링크가 없다.
   - 최근에 끝난 것부터 5개, 나머지는 “지난 기록 N개 더 보기” 버튼(`aria-expanded`). 화면에서도 30일 창을 다시 적용한다.
   - 파일이 없으면(404, 첫 export 전) 빈 상태 “최근 30일 기록 없음”, 읽기 실패면 아카이브 영역에만
     “지난 기록을 불러오지 못했어요.”를 보이고 live 목록·개수·레이더는 그대로다. live 가 실패해도 아카이브는 읽힌다.

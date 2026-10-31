@@ -192,3 +192,29 @@ test('the audience is the extracted one, marked when inferred, with the stated e
   assert.equal(F.audienceOf({ audience: null, eligibility: '' }, mark), '');
   assert.equal(F.audienceOf(null, mark), '');
 });
+
+test('source link: a notice or own entry first, else only a canonical Instagram post; tips and mail never', () => {
+  const post = 'https://www.instagram.com/p/DfCRCEskwzw/';
+  const of = sources => JSON.parse(JSON.stringify(F.sourceLink({ sources })));
+  assert.deepEqual(of([{ type: 'dooray' }, { type: 'instagram', url: post }]), { type: 'instagram', url: post });
+  assert.deepEqual(of([{ type: 'instagram', url: post }, { type: 'kaist_public', url: 'https://www.kaist.ac.kr/kr/html/x' }]),
+    { type: 'kaist_public', url: 'https://www.kaist.ac.kr/kr/html/x' });
+  for (const url of [post + '?igsh=1', 'https://instagram.com/p/DfCRCEskwzw/', 'https://www.instagram.com/p/DfCRCEskwzw',
+                     'https://www.instagram.com/stories/a/1/', 'javascript:alert(1)']) {
+    assert.equal(F.sourceLink({ sources: [{ type: 'instagram', url }] }), null, url);
+  }
+  assert.equal(F.sourceLink({ sources: [{ type: 'tip', url: 'https://example.com/x' }, { type: 'dooray', url: 'https://kaist.dooray.com/x' }] }), null);
+  assert.equal(F.sourceLink({}), null);
+});
+
+test('source group: an Instagram post or a reader tip is credited before mail; the existing order otherwise', () => {
+  const group = (...types) => F.sourceGroup({ sources: types.map(type => ({ type })) });
+  assert.equal(group('dooray', 'instagram'), 'instagram');
+  assert.equal(group('dooray', 'tip'), 'tip');
+  assert.equal(group('kaist_public', 'dooray_mailbox'), 'mail');
+  assert.equal(group('manual', 'portal'), 'portal');
+  assert.equal(group('manual', 'kaist_public'), 'public');
+  assert.equal(group('manual'), 'manual');
+  assert.equal(group('unknown'), '');
+  assert.equal(F.sourceGroup({}), '');
+});

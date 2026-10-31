@@ -238,6 +238,9 @@ class StubRepo:
     def public_feed_generation(self):
         return len(self.projected)
 
+    def public_feed_has_links(self):
+        return True
+
     def replace_public_feed(self, generation, rows):
         self.projected.append([row["id"] for row in rows])
         return generation + 1

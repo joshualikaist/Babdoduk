@@ -15,13 +15,17 @@
     "dooray_mailbox": {"dataName": "Dooray 메일함", "shownAs": "mail"},
     "kaist_public": {"dataName": "KAIST 공지", "newsName": "KAIST 공지", "shownAs": "public"},
     "manual": {"dataName": "Manual", "shownAs": "manual"},
-    "portal": {"dataName": "KAIST Portal", "newsName": "KAIST 포탈", "shownAs": "portal"}
+    "portal": {"dataName": "KAIST Portal", "newsName": "KAIST 포탈", "shownAs": "portal"},
+    "instagram": {"dataName": "Instagram", "shownAs": "instagram"},
+    "tip": {"dataName": "제보", "shownAs": "tip"}
   },
   "sourceLabels": {
     "mail": {"ko": "KAIST 메일", "en": "KAIST mail"},
     "portal": {"ko": "KAIST 포탈", "en": "KAIST Portal"},
     "public": {"ko": "KAIST 공식 공지", "en": "KAIST notice"},
-    "manual": {"ko": "밥도둑 등록", "en": "Added by Babdoduk"}
+    "manual": {"ko": "밥도둑 등록", "en": "Added by Babdoduk"},
+    "instagram": {"ko": "인스타그램", "en": "Instagram"},
+    "tip": {"ko": "제보", "en": "Reader tip"}
   },
   "restaurants": [
     {"id": "fclt", "name": "카이마루 N11", "building": "N11"},

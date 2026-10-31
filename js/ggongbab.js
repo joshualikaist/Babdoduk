@@ -149,12 +149,8 @@
     return 'https://maps.google.com/maps?q=' + encodeURIComponent('KAIST ' + q);
   }
   function sourceLabel(ev) {
-    var types = (ev.sources || []).map(function (src) { return src.type; });
-    if (types.indexOf('dooray') >= 0 || types.indexOf('dooray_mailbox') >= 0) return t('gg.source.mail', '');
-    if (types.indexOf('portal') >= 0) return t('gg.source.portal', '');
-    if (types.indexOf('kaist_public') >= 0) return t('gg.source.public', '');
-    if (types.indexOf('manual') >= 0) return t('gg.source.manual', '');
-    return '';
+    var group = F.sourceGroup(ev);
+    return group ? t('gg.source.' + group, '') : '';
   }
   function deadlineHtml(ev, now) {
     var d = toKst((ev.registration || {}).deadline);
@@ -195,10 +191,11 @@
   function signUpByText(s) {
     return t('gg.giveaway.signUpBy', '신청 마감 {date}').replace('{date}', dayLabel(s) + ' ' + hm(s));
   }
-  // Only public web notices (KAIST notices, Babdoduk's own entries) have a link; internal sources never do.
-  function publicSourceUrl(ev) {
-    return (ev.sources || []).filter(function (src) { return src.type === 'kaist_public' || src.type === 'manual'; })
-      .map(function (src) { return safeHref(src.url); }).filter(Boolean)[0] || '';
+  // Only public web pages (KAIST notices, Babdoduk's own entries, an Instagram post) are linked;
+  // internal sources never are. {type, url} or null.
+  function publicSource(ev) {
+    var link = F.sourceLink(ev), url = link ? safeHref(link.url) : '';
+    return url ? { type: link.type, url: url } : null;
   }
   function cardHtml(ev, now, featured) {
     var s = toKst(ev.startAt);
@@ -227,11 +224,12 @@
     if (!deadlineOnly) html += deadlineHtml(ev, now);   // a deadline-only giveaway already leads with it
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
     var regUrl = closed ? '' : safeHref(reg.url);
-    var source = publicSourceUrl(ev);
+    var source = publicSource(ev);
     if (regUrl || source) {
       html += '<div class="gg-actions">';
       if (regUrl) html += '<a class="gg-btn gg-btn--primary" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' + esc(t('gg.register','신청하기')) + '</a>';
-      if (source) html += '<a class="gg-btn" href="' + esc(source) + '" target="_blank" rel="noopener">' + esc(t('gg.officialNotice', '공식 공지')) + '</a>';
+      if (source) html += '<a class="gg-btn" href="' + esc(source.url) + '" target="_blank" rel="noopener">' +
+        esc(source.type === 'instagram' ? t('gg.instagramPost', '인스타그램 원문') : t('gg.officialNotice', '공식 공지')) + '</a>';
       html += '</div>';
     }
     var via = sourceLabel(ev);
@@ -363,7 +361,7 @@
     var gift = hasGiveaway(ev);
     var meta = [placeLabel(ev), foodLabelOf(ev), giveawayText(ev)].filter(Boolean).join(' · ');
     var via = sourceLabel(ev);
-    var source = publicSourceUrl(ev);
+    var source = publicSource(ev);
     var record = hasFood(ev) ? t('gg.archive.record', '당시 공개된 꽁밥 안내 기록') : t('gg.archive.recordGiveaway', '당시 공개된 경품 안내 기록');
     var html = '<li class="gg-past" data-past-id="' + esc(ev.id) + '">';
     html += '<p class="gg-past-top"><span class="gg-past-badge">' + esc(t('gg.archive.ended', '종료')) + '</span>' +
@@ -373,8 +371,9 @@
     if (meta) html += '<p class="gg-past-meta">' + esc(meta) + '</p>';
     html += '<p class="gg-past-note">' + esc(record + (via ? ' · ' + via : '')) + '</p>';
     if (source) {
-      html += '<a class="gg-past-link" href="' + esc(source) + '" target="_blank" rel="noopener">' +
-        esc(t('gg.archive.source', '당시 공지 보기')) + ' <span aria-hidden="true">↗</span>' +
+      html += '<a class="gg-past-link" href="' + esc(source.url) + '" target="_blank" rel="noopener">' +
+        esc(source.type === 'instagram' ? t('gg.archive.sourceInstagram', '당시 인스타그램 게시물 보기') : t('gg.archive.source', '당시 공지 보기')) +
+        ' <span aria-hidden="true">↗</span>' +
         '<span class="gg-sr">' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
     }
     return html + '</li>';

@@ -128,6 +128,29 @@
     return ev && ev.eligibility ? String(ev.eligibility) : '';
   }
 
+  // The source a listing links to, or null: a KAIST notice or Babdoduk's own entry, else the
+  // Instagram post itself, and only in its canonical permalink form (2026-10-31). Mail, the Portal
+  // and reader tips never link. Pages still pass the URL through their own safeHref.
+  var INSTAGRAM_POST = /^https:\/\/www\.instagram\.com\/(?:p|reel)\/[A-Za-z0-9_-]{5,20}\/$/;
+  function sourceLink(ev) {
+    var sources = ((ev && ev.sources) || []).filter(function (src) { return src && typeof src.url === 'string' && src.url; });
+    var notice = sources.filter(function (src) { return src.type === 'kaist_public' || src.type === 'manual'; })[0];
+    var post = sources.filter(function (src) { return src.type === 'instagram' && INSTAGRAM_POST.test(src.url); })[0];
+    var link = notice || post;
+    return link ? { type: link.type, url: link.url } : null;
+  }
+  // The one group a listing is credited to (data/content/labels.json sourceLabels): where it was
+  // found when that is public (an Instagram post, a reader tip), else the existing order.
+  var SOURCE_GROUPS = [['instagram', 'instagram'], ['tip', 'tip'], ['dooray', 'mail'], ['dooray_mailbox', 'mail'],
+    ['portal', 'portal'], ['kaist_public', 'public'], ['manual', 'manual']];
+  function sourceGroup(ev) {
+    var types = ((ev && ev.sources) || []).map(function (src) { return src && src.type; });
+    for (var i = 0; i < SOURCE_GROUPS.length; i++) {
+      if (types.indexOf(SOURCE_GROUPS[i][0]) >= 0) return SOURCE_GROUPS[i][1];
+    }
+    return '';
+  }
+
   global.BabdodukFreeFood = {
     toKst: toKst,
     nowKst: nowKst,
@@ -144,6 +167,8 @@
     todayUpcoming: todayUpcoming,
     futurePublic: futurePublic,
     occurrences: occurrences,
-    audienceOf: audienceOf
+    audienceOf: audienceOf,
+    sourceLink: sourceLink,
+    sourceGroup: sourceGroup
   };
 })(window);
