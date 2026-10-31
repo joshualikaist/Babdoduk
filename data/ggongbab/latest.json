@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-31T14:36:57+09:00",
+  "generatedAt": "2026-10-31T20:21:46+09:00",
   "timezone": "Asia/Seoul",
-  "count": 13,
+  "count": 14,
   "events": [
     {
       "id": "ef9595e6-fc91-447c-b6f9-706f86f02198",
@@ -374,6 +374,44 @@
       },
       "audience": {
         "text": "관심 있는 누구나",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "bf2e698c-390e-4bfa-acba-96e0af1f1190",
+      "title": "2026 학과설명회 일정",
+      "summary": "새내기 학생들을 위한 KAIST 학과 설명회 일정이다. 학과 설명회에서 각 학과 정보와 식사 및 경품이 준비되어 있다고 안내한다.",
+      "startAt": "2026-11-09T16:20:00+09:00",
+      "endAt": "2026-11-25T20:00:00+09:00",
+      "dateText": "11월 9일~25일",
+      "timeText": "4:20-6:00, 5:30-7:00, 5:30-7:00, 4:30-7:30, 6:30-8:30, 4:30-6:00, 5:00-6:30, 5:30-7:00, 6:00-7:00, 4:30-6:00, 6:30-8:30, 6:30-8:00, 6:00-7:00, 5:00-6:30, 5:30-7:00, 5:00-7:00, 6:00-7:30, 6:00-7:00, 5:00-8:00, 6:30-8:30, 6:00-7:00",
+      "location": {
+        "name": "",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "맛있는 식사",
+        "source": "text"
+      },
+      "organizer": "KAIST 공식 학생홍보대사 카이누리",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.96,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "새내기 학생",
         "basis": "stated"
       }
     },
