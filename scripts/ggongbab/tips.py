@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Reader tips, reviewed by the owner on Telegram (docs/GGONGBAB_TIPS.md).
 
-The tip page stores a tip through `ggongbab_submit_tip` (supabase/migrations/007_ggongbab_tips.sql)
+The tip page stores a tip through `ggongbab_submit_tip` (supabase/migrations/008_ggongbab_tips.sql)
 and up to three photos in the private `ggongbab-tip-images` bucket (`<tip id>/<n>.<ext>`). Here, on
 the operations PC, with the backend key and the Instagram radar's bot (one getUpdates reader per bot):
 

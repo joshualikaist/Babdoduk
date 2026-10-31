@@ -1,11 +1,11 @@
-"""꽁밥 제보 (lab, docs/GGONGBAB_TIPS.md): the rights and limits in supabase/migrations/007_ggongbab_tips.sql
+"""꽁밥 제보 (lab, docs/GGONGBAB_TIPS.md): the rights and limits in supabase/migrations/008_ggongbab_tips.sql
 and the browser contract of js/ggongbab-tips.js. Static reading only; never a live database.
 scripts/check_site_ui.py tip_board plays the page against a fake client."""
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SQL = (ROOT / "supabase/migrations/007_ggongbab_tips.sql").read_text(encoding="utf-8")
+SQL = (ROOT / "supabase/migrations/008_ggongbab_tips.sql").read_text(encoding="utf-8")
 JS = (ROOT / "js/ggongbab-tips.js").read_text(encoding="utf-8")
 PAGE = (ROOT / "tip.html").read_text(encoding="utf-8")
 TABLES = ("ggongbab_tips", "ggongbab_tip_board", "ggongbab_tip_secret", "ggongbab_tip_rate")

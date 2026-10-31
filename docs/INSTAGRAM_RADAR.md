@@ -164,6 +164,8 @@ The same bot asks the owner about reader tips from the tip page (`scripts/ggongb
 5. Usage headers recorded, backoff unit-tested: done.
 6. No secret in logs or commits: tested on every file the radar writes.
 
-Open: the published event's source label is the mail source (the task path), not "Instagram". The
-owner approved a source label of its own with the original link on 2026-10-31; it is its own task
-(public contract, pipeline and lab projection).
+Source label (owner, 2026-10-31): a handed-over post is published as source "인스타그램" / "Instagram"
+with a link to the original post. The collector trusts only the radar's own task: the agent marker, a
+`[인스타 @<handle>]` subject whose handle is in `inputs/instagram/accounts.json`, and the `원본:` permalink
+lines (`scripts/ggongbab/source_origin.py`). Production needs that commit and `inputs/instagram/` on
+main (the refresh runs there); the lab DB path needs migration 007.
