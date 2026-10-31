@@ -203,7 +203,7 @@ def summary(row: dict, photos: int, reading: Optional[Reading] = None) -> str:
     if reading is not None:
         lines.append(f"판단: {'꽁밥 같음' if reading.is_free_food else '꽁밥 아닌 듯'} ({reading.confidence:.2f})"
                      + (f" · {reading.doubt.strip()[:200]}" if reading.doubt.strip() else ""))
-    elif report:
+    elif report and not row.get("classified_at"):
         lines.append("판단: 자동 정리를 하지 못했습니다. ✏️로 채워 주세요.")
     if not report and row.get("details"):
         lines.append(f"내용: {row['details'][:400]}")
@@ -228,6 +228,10 @@ def task_body(row: dict, reviewed: datetime) -> str:
 
 
 class Tips:
+    """`db` is a SupabaseClient: select takes PostgREST filters ("eq.<id>"), update a plain match
+    ({"id": <id>}) that it turns into eq. filters itself (2026-11-01: an "eq." here became "eq.eq."
+    and the first real tip's review failed)."""
+
     def __init__(self, db, storage, bot, writer, *, store, now: Callable, log: Callable,
                  classify: Optional[Callable] = None):
         self.db, self.storage, self.bot, self.writer = db, storage, bot, writer
@@ -275,14 +279,14 @@ class Tips:
                 if row.get("title") is None and not row.get("classified_at"):
                     if not (row.get("details") or "").strip() and not count:
                         # Neither words nor a photo (the photos never arrived): nothing to ask about.
-                        self.db.update("ggongbab_tips", {"id": f"eq.{row['id']}"},
+                        self.db.update("ggongbab_tips", {"id": row["id"]},
                                        {"status": "rejected", "notified_at": iso(self.now()), "reviewed_at": iso(self.now())})
                         self.log("TIP_EMPTY_DROPPED")
                         continue
                     reading = self.read(row)
                 photos = self.photos(row["id"], 1)
                 self.bot.ask_tip(summary(row, count, reading), row["id"], photos[0] if photos else None)
-                self.db.update("ggongbab_tips", {"id": f"eq.{row['id']}"}, {"notified_at": iso(self.now())})
+                self.db.update("ggongbab_tips", {"id": row["id"]}, {"notified_at": iso(self.now())})
             self.hand_over()
             self.purge()
         except SupabaseError as exc:
@@ -303,7 +307,7 @@ class Tips:
                   "event_date": read_date(reading.event_date, today),
                   "time_text": clamp("time_text", reading.time_text) or "", "food": clamp("food", reading.food) or ""}
         fields["classified_at"] = iso(self.now())
-        self.db.update("ggongbab_tips", {"id": f"eq.{row['id']}"}, fields)
+        self.db.update("ggongbab_tips", {"id": row["id"]}, fields)
         row.update(fields)
         return reading
 
@@ -318,7 +322,7 @@ class Tips:
                 self.bot.answer(callback, "이미 올렸습니다" if row["status"] == "accepted" else "이미 올리지 않기로 했습니다")
                 return
             if action == "no":
-                self.db.update("ggongbab_tips", {"id": f"eq.{tip_id}"}, {"status": "rejected", "reviewed_at": iso(self.now())})
+                self.db.update("ggongbab_tips", {"id": tip_id}, {"status": "rejected", "reviewed_at": iso(self.now())})
                 self.bot.answer(callback, "❌ 올리지 않습니다")
                 return
             if action == "edit":
@@ -338,7 +342,7 @@ class Tips:
         # The board first: a second ✅ after a failure finds the tip still new and writes it again.
         self.db.upsert("ggongbab_tip_board", {k: row.get(k) or "" for k in ("id", "title", "place", "time_text", "food")}
                        | {"event_date": row["event_date"]}, on_conflict="id")
-        self.db.update("ggongbab_tips", {"id": f"eq.{row['id']}"}, {"status": "accepted", "reviewed_at": iso(self.now())})
+        self.db.update("ggongbab_tips", {"id": row["id"]}, {"status": "accepted", "reviewed_at": iso(self.now())})
         self.hand_over()
 
     def edit(self, tip_id: str, text: str) -> None:
@@ -362,7 +366,7 @@ class Tips:
             if not rows or rows[0]["status"] != "new":
                 self.bot.say("이미 처리한 제보입니다.")
                 return
-            self.db.update("ggongbab_tips", {"id": f"eq.{tip_id}"}, changes)
+            self.db.update("ggongbab_tips", {"id": tip_id}, changes)
             row = rows[0] | changes
             if not complete(row):
                 missing = [name for name, field in (("제목", "title"), ("장소", "place"), ("날짜", "event_date"))
@@ -395,7 +399,7 @@ class Tips:
             except Exception:  # noqa: BLE001 - retried on the next poll
                 self.log("TIP_DOORAY_FAILED")
                 continue
-            self.db.update("ggongbab_tips", {"id": f"eq.{row['id']}"}, {"dooray_post_id": str(post_id)})
+            self.db.update("ggongbab_tips", {"id": row["id"]}, {"dooray_post_id": str(post_id)})
 
     def purge(self) -> None:
         """Photos of tips answered more than 14 days ago; once a day, from where the last pass ended."""

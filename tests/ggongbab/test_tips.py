@@ -14,6 +14,7 @@ from ggongbab.config import KST
 from ggongbab.db.supabase_client import SupabaseError
 from ggongbab.instagram.store import Store
 from ggongbab.instagram.telegram_review import Bot as RealBot
+from ggongbab.tips import TIP
 
 NOW = datetime(2026, 11, 2, 12, 0, tzinfo=KST).timestamp()
 TIP_A = "0b6f4c3e-1d2a-4f5b-8c9d-0123456789ab"
@@ -68,8 +69,11 @@ class DB:
         return [dict(r) for r in self.rows.values() if self._match(r, params)]
 
     def update(self, table, match, values):
+        # SupabaseClient.update writes "eq." itself: a match that already carries it would reach the
+        # server as eq.eq.<id> and fail (the first real tip, 2026-11-01).
+        assert set(match) == {"id"} and TIP.fullmatch(match["id"]), match
         self.calls.append(("update", table, match, values))
-        self.rows[match["id"].split(".", 1)[1]].update(values)
+        self.rows[match["id"]].update(values)
         return []
 
     def upsert(self, table, rows, on_conflict):
@@ -427,3 +431,23 @@ def test_the_classifier_uses_the_given_model_and_counts_its_cost(tmp_path):
     with pytest.raises(TimeoutError):
         classify(TIP_A, "x", [], datetime(2026, 11, 2).date())
     assert store.db.execute("SELECT error FROM analysis_runs ORDER BY rowid DESC").fetchone()[0] == "TimeoutError"
+
+
+def test_the_backend_client_gets_a_plain_id_to_match(monkeypatch):
+    """The real SupabaseClient.update: its match values become eq. filters."""
+    from ggongbab.db.supabase_client import SupabaseClient
+    sent = []
+    client = SupabaseClient.__new__(SupabaseClient)
+    monkeypatch.setattr(client, "_request", lambda method, table, params=None, body=None, prefer=None:
+                        sent.append((method, table, params, body)) or [], raising=False)
+    monkeypatch.setattr(client, "select", lambda table, params: [row(TIP_A)], raising=False)
+    t = tips.Tips(client, Storage(), Bot(), None, store=None, now=lambda: NOW, log=lambda c: None)
+    t.decide("no", TIP_A, "cb")
+    (patch,) = [call for call in sent if call[0] == "PATCH"]
+    assert patch[2] == {"id": f"eq.{TIP_A}"} and patch[3]["status"] == "rejected"
+
+
+def test_a_tip_asked_again_after_its_reading_does_not_claim_the_reading_failed():
+    text = tips.summary(report(TIP_A, title="학과 설명회 피자", place="E3-1", event_date="2026-11-03",
+                               classified_at="2026-11-02T03:00:00Z"), 1)
+    assert "자동 정리를 하지 못했습니다" not in text and "🤖 자동 정리" in text
