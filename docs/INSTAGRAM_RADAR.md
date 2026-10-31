@@ -129,9 +129,12 @@ posts are kept: the Telegram question and the Dooray task attach them.
 Whatever the owner writes to the bot that answers no question (not a button, not a reply to a ✏️
 prompt), and any photo such as a screenshot of an alert, is kept for Claude: `.local/telegram-inbox.jsonl`
 (the latest 300, readable by this user only) and `.local/telegram-inbox/` (the latest 50 photos).
-Token-like strings are masked before they are kept. The bot answers "📝 메모로 저장했습니다". Read
-them with `scripts/linux/ops.sh notes`; an agent reads the files directly (owner, 2026-10-31: "텔레그램에서
-내가 친 내용을 너가 다시 볼 수 있게"). Nothing is sent anywhere else.
+Token-like strings are masked before they are kept. Read them with `scripts/linux/ops.sh notes`; an
+agent reads the files directly (owner, 2026-10-31: "텔레그램에서 내가 친 내용을 너가 다시 볼 수 있게").
+While the ops agent is on (`docs/OPS_AGENT.md`), the bot answers "📝 받았습니다…" and the agent replies a
+few minutes later; it sends the message, its photo and a masked state summary to OpenAI with the
+radar's own model. While it is off, the bot answers "📝 메모로 저장했습니다" and nothing is sent anywhere.
+The agent's ✅/❌ questions (`agent:ok` / `agent:no`) come back through this bot as well.
 
 ## Reader tips
 

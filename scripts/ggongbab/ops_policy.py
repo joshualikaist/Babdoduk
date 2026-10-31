@@ -50,6 +50,9 @@ REASONS = SAFE_REASON_CODES | TRANSIENT | HUMAN | frozenset({
     "IG_OPENAI_ERRORS", "IG_TELEGRAM_FAILED", "IG_DOORAY_FAILED",
     # Reader tips, reviewed through the Instagram radar's bot (scripts/ggongbab/tips.py, docs/GGONGBAB_TIPS.md)
     "TIP_REVIEW_NOT_READY", "TIP_REVIEW_FAILED", "TIP_DOORAY_FAILED",
+    # The owner's Telegram messages answered on the ops PC (scripts/ggongbab/ops_agent.py, docs/OPS_AGENT.md)
+    "OPS_AGENT_ANSWERED", "OPS_AGENT_FAILED", "OPS_AGENT_LIMIT", "OPS_AGENT_RESTART", "OPS_AGENT_RECHECK",
+    "OPS_AGENT_UNREAD_ALLOWED", "OPS_AGENT_TELEGRAM_FAILED",
 })
 # The latches a person clears by logging in again in the dedicated browser. The watchdog resumes
 # on its own once it sees that login finish (resident_ops.Watchdog.login_completed); the others

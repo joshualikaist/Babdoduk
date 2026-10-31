@@ -5,7 +5,8 @@ A question is the representative poster with a summary, both models' verdicts an
 and three buttons: ✅ 꽁밥 맞음 / ❌ 아님 / ✏️ 정보 수정. ✏️ asks for "필드: 값" lines in a reply.
 The same bot asks about reader tips (ggongbab/tips.py: tip:ok / tip:no). Anything else the owner
 writes or sends as a photo is kept for Claude to read (keep_note, owner 2026-10-31: "텔레그램에서 내가
-친 내용을 너가 다시 볼 수 있게"). Only the allowed chat is ever read; anything else is ignored. Long polling (getUpdates), because
+친 내용을 너가 다시 볼 수 있게") and, while the ops agent is on, answered by it (ggongbab/ops_agent.py),
+whose questions come back as agent:ok / agent:no. Only the allowed chat is ever read; anything else is ignored. Long polling (getUpdates), because
 the operations PC has no public address. The bot is the existing Babdoduk ops bot unless
 TELEGRAM_BOT_TOKEN / TELEGRAM_ALLOWED_CHAT_ID are set.
 """
@@ -28,6 +29,7 @@ EDITABLE = ("event_title", "food_items", "start_at", "end_at", "location", "elig
 FIELD_NAMES = {"제목": "event_title", "음식": "food_items", "시작": "start_at", "종료": "end_at", "장소": "location",
                "대상": "eligibility", "인원": "quantity_limit", "준비물": "requirements", "신청": "registration"}
 TIP_ID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+ASK_ID = r"[0-9a-f]{12}"                # an ops agent question (ops_agent.Agent.act)
 INBOX = "telegram-inbox.jsonl"          # .local/: the owner's notes, newest last
 INBOX_PHOTOS = "telegram-inbox"         # .local/telegram-inbox/<time>.<ext>
 INBOX_KEEP, PHOTO_KEEP = 300, 50
@@ -158,6 +160,11 @@ class Bot:
                                        {"text": "❌ 올리지 않음", "callback_data": f"tip:no:{tip_id}"}]]}
         return self._question(text, markup, image)
 
+    def ask_agent(self, text: str, ask_id: str) -> int:
+        markup = {"inline_keyboard": [[{"text": "✅ 풀기", "callback_data": f"agent:ok:{ask_id}"},
+                                       {"text": "❌ 그대로 두기", "callback_data": f"agent:no:{ask_id}"}]]}
+        return self._question(text, markup, None)
+
     def _question(self, text: str, markup: dict, image: Optional[tuple[str, bytes]]) -> int:
         if image:
             mime, data = image
@@ -205,7 +212,8 @@ class Bot:
 
     def events(self, updates: list[dict]) -> list[tuple]:
         """("button", action, media_id, callback_id), ("tip", action, tip_id, callback_id),
-        ("text", text, reply_to_message_id) and ("photo", file_id, caption), from the allowed chat only."""
+        ("agent", action, ask_id, callback_id), ("text", text, reply_to_message_id) and
+        ("photo", file_id, caption), from the allowed chat only."""
         out = []
         for update in updates:
             callback = update.get("callback_query")
@@ -214,10 +222,13 @@ class Bot:
                 data = str(callback.get("data") or "")
                 match = re.fullmatch(r"ig:(ok|no|edit):([A-Za-z0-9_]{1,40})", data)
                 tip = re.fullmatch(rf"tip:(ok|no):({TIP_ID})", data)
+                agent = re.fullmatch(rf"agent:(ok|no):({ASK_ID})", data)
                 if str(chat) == self.chat_id and match:
                     out.append(("button", match.group(1), match.group(2), callback.get("id")))
                 elif str(chat) == self.chat_id and tip:
                     out.append(("tip", tip.group(1), tip.group(2), callback.get("id")))
+                elif str(chat) == self.chat_id and agent:
+                    out.append(("agent", agent.group(1), agent.group(2), callback.get("id")))
                 continue
             message = update.get("message") or {}
             if str((message.get("chat") or {}).get("id")) != self.chat_id:

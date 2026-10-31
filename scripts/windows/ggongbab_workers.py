@@ -273,7 +273,8 @@ def main(argv=None):
                                            "radar", "radar-once", "radar-recheck", "radar-enable", "radar-disable",
                                            "radar-allow-unread", "radar-dispatch-on", "radar-dispatch-off", "mail-lookup",
                                            "alerts", "easy-login", "ig-check", "ig-radar", "ig-radar-once",
-                                           "telegram-notes", *OPS_BROWSER_ACTIONS))
+                                           "telegram-notes", "ops-agent", "ops-agent-enable", "ops-agent-disable",
+                                           "ops-agent-status", *OPS_BROWSER_ACTIONS))
     parser.add_argument("--recover-stale", action="store_true")
     parser.add_argument("--dry-run", action="store_true",
                         help="radar-once/radar-recheck: detect only; no task, state or dispatch")
@@ -356,6 +357,14 @@ def main(argv=None):
             if args.action == "ig-radar-once":
                 return ig.once(ROOT, dry_run=args.dry_run)
             return ig.loop(ROOT)
+        elif args.action in ("ops-agent", "ops-agent-enable", "ops-agent-disable", "ops-agent-status"):
+            # The owner's Telegram messages answered on this PC (docs/OPS_AGENT.md); the path unit runs ops-agent.
+            from ggongbab import ops_agent
+            if args.action == "ops-agent":
+                return ops_agent.run(ROOT)
+            if args.action == "ops-agent-status":
+                return ops_agent.status(ROOT)
+            ops_agent.set_enabled(ROOT, args.action == "ops-agent-enable", time.time())
         elif args.action == "easy-login":
             # One Easy Login attempt (docs/PORTAL_EASY_LOGIN_ASSIST.md); the watchdog launches it.
             from ggongbab.easy_login import run_assist

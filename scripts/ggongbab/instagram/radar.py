@@ -371,6 +371,11 @@ class Radar:
                     self.bot.answer(callback, "제보 검토가 아직 켜져 있지 않습니다")
                 else:
                     self.tips.decide(action, tip_id, callback)
+            elif event[0] == "agent":
+                from ..ops_agent import record_answer
+                _, action, ask_id, callback = event
+                record_answer(self.local, action, ask_id, self.now())
+                self.bot.answer(callback, "확인했습니다. 곧 처리합니다")
             elif event[0] == "photo":
                 self.note(event[2], event[1])
             elif event[0] == "button":
@@ -413,7 +418,9 @@ class Radar:
                 self.bot.say("✏️ 고친 내용으로 꽁밥 등록합니다: " + ", ".join(changes))
 
     def note(self, text: str, photo: str = "") -> None:
-        """Anything the owner writes that answers no question is kept for Claude (keep_note)."""
+        """Anything the owner writes that answers no question is kept for Claude (keep_note) and, while
+        the ops agent is on, answered by it a few minutes later (ops_agent: the inbox starts it)."""
+        from ..ops_agent import enabled
         from .telegram_review import keep_note
         data = None
         if photo:
@@ -422,7 +429,10 @@ class Radar:
             except RuntimeError:
                 self.log("IG_TELEGRAM_FAILED")
         keep_note(self.local, text, self.now(), photo=data)
-        self.bot.say("📝 메모로 저장했습니다. 다음에 Claude와 작업할 때 \"텔레그램 메모 확인해 줘\"라고 하시면 읽어 봅니다.")
+        if enabled(self.local):
+            self.bot.say("📝 받았습니다. 상태를 확인하고 몇 분 안에 답할게요.")
+        else:
+            self.bot.say("📝 메모로 저장했습니다. 다음에 Claude와 작업할 때 \"텔레그램 메모 확인해 줘\"라고 하시면 읽어 봅니다.")
 
     # --- hand over to the pipeline ----------------------------------------------------------------
     def bridge(self) -> None:

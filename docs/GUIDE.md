@@ -805,6 +805,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/INSTAGRAM_SOURCES.md` | 학부 인스타그램 계정 조사: 22개 학과·학생 단체별 계정, API 조회 결과, 미확인·제외 계정(2026-10-29 확인), 공식 API 비교 |
 | `docs/INSTAGRAM_RADAR.md` | 인스타 레이더(lab 전용): Business Discovery 수집, 판정, 텔레그램 확인, 두레이 수집함으로 넘기기 |
 | `docs/GGONGBAB_TIPS.md` | 꽁밥 제보 게시판(lab 전용): 제보·사진을 받는 함수와 비공개 버킷, 남용 제한, 확인된 제보만 싣는 게시판, 적용 순서 |
+| `docs/OPS_AGENT.md` | 운영 자동 점검(lab 전용): 소유자의 텔레그램 메시지를 인스타 레이더의 분류 모델이 운영 상태와 함께 읽고 답한다. 허용된 조치(재시작·메일 다시 읽기)만 실행하고 잠금 해제는 버튼으로 묻는다 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
@@ -815,7 +816,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
 `GGONGBAB_RESIDENT_OPS.md`(운영 PC 상주 worker, 2026-10-17부터 리눅스), `INSTAGRAM_RADAR.md`(인스타 레이더),
-`GGONGBAB_TIPS.md`(꽁밥 제보 게시판). 해당 기능이 main에 승격될 때 함께 옮깁니다.
+`GGONGBAB_TIPS.md`(꽁밥 제보 게시판), `OPS_AGENT.md`(운영 자동 점검). 해당 기능이 main에 승격될 때 함께 옮깁니다.
 
 ## 15. 라이선스
 
