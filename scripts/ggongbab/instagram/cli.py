@@ -44,7 +44,11 @@ def build(root: Path, *, dry_run: bool) -> Radar:
     if not dry_run:
         from ..config import load_settings
         from ..tips import build as tips
-        radar.tips = tips(load_settings(), radar.bot, writer, store=radar.store, now=time.time, log=radar.log)
+        from ..tips import report_classifier
+        # Reports are read by the radar's own primary model and client (docs/GGONGBAB_TIPS.md).
+        classify = report_classifier(radar.judge.client, config.primary, radar.store, time.time)
+        radar.tips = tips(load_settings(), radar.bot, writer, store=radar.store, now=time.time, log=radar.log,
+                          classify=classify)
     return radar
 
 

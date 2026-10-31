@@ -3,7 +3,7 @@
 
 A question is the representative poster with a summary, both models' verdicts and the permalink,
 and three buttons: ✅ 꽁밥 맞음 / ❌ 아님 / ✏️ 정보 수정. ✏️ asks for "필드: 값" lines in a reply.
-The same bot asks about reader tips (ggongbab/tips.py: tip:ok / tip:no). Anything else the owner
+The same bot asks about reader tips (ggongbab/tips.py: tip:ok / tip:no / tip:edit). Anything else the owner
 writes or sends as a photo is kept for Claude to read (keep_note, owner 2026-10-31: "텔레그램에서 내가
 친 내용을 너가 다시 볼 수 있게") and, while the ops agent is on, answered by it (ggongbab/ops_agent.py),
 whose questions come back as agent:ok / agent:no. The 🔑 button under a login alert or code (login:go) and
@@ -160,8 +160,14 @@ class Bot:
 
     def ask_tip(self, text: str, tip_id: str, image: Optional[tuple[str, bytes]] = None) -> int:
         markup = {"inline_keyboard": [[{"text": "✅ 게시판에 올리기", "callback_data": f"tip:ok:{tip_id}"},
-                                       {"text": "❌ 올리지 않음", "callback_data": f"tip:no:{tip_id}"}]]}
+                                       {"text": "❌ 올리지 않음", "callback_data": f"tip:no:{tip_id}"}],
+                                      [{"text": "✏️ 고쳐서 올리기", "callback_data": f"tip:edit:{tip_id}"}]]}
         return self._question(text, markup, image)
+
+    def prompt(self, text: str) -> int:
+        """A message the owner answers by replying to it (force_reply); its id."""
+        result = self._call("sendMessage", {"chat_id": self.chat_id, "text": text[:4000], "reply_markup": {"force_reply": True}})
+        return int(result.get("message_id") or 0)
 
     def ask_agent(self, text: str, ask_id: str) -> int:
         markup = {"inline_keyboard": [[{"text": "✅ 풀기", "callback_data": f"agent:ok:{ask_id}"},
@@ -224,7 +230,7 @@ class Bot:
                 chat = ((callback.get("message") or {}).get("chat") or {}).get("id")
                 data = str(callback.get("data") or "")
                 match = re.fullmatch(r"ig:(ok|no|edit):([A-Za-z0-9_]{1,40})", data)
-                tip = re.fullmatch(rf"tip:(ok|no):({TIP_ID})", data)
+                tip = re.fullmatch(rf"tip:(ok|no|edit):({TIP_ID})", data)
                 agent = re.fullmatch(rf"agent:(ok|no):({ASK_ID})", data)
                 if str(chat) == self.chat_id and match:
                     out.append(("button", match.group(1), match.group(2), callback.get("id")))

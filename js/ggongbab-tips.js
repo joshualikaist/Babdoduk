@@ -1,8 +1,10 @@
 /* 꽁밥 제보 (tip.html, lab only; docs/GGONGBAB_TIPS.md).
 
-   A visitor sends a tip through the checking function ggongbab_submit_tip (supabase/migrations/
-   008_ggongbab_tips.sql), which returns the tip's id; up to three photos then go to the private
-   bucket under that id. The board lists only the tips the owner confirmed (ggongbab_tip_board:
+   A visitor writes what they saw in their own words, with up to three photos (owner 2026-11-01: "사용자는
+   제보하는거고, 우리는 그거를 분류하는 사람이 되어야"), and sends it through the checking function
+   ggongbab_submit_report (supabase/migrations/009_ggongbab_tip_reports.sql), which returns the tip's
+   id; the photos then go to the private bucket under that id. The operations PC sorts the report into
+   an event and the owner confirms it; the board lists only the confirmed tips (ggongbab_tip_board:
    title, place, date, time and food). Nothing is read back from the tips or the photos.
 
    The public URL and publishable key come from js/ggongbab-public-config.js, as for the public feed
@@ -13,7 +15,7 @@
 
   var SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js';
   var SDK_INTEGRITY = 'sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP';
-  var SUBMIT = 'ggongbab_submit_tip';
+  var SUBMIT = 'ggongbab_submit_report';
   var BOARD = 'ggongbab_tip_board';
   var BOARD_COLUMNS = 'id,title,place,event_date,time_text,food,accepted_at';
   var BUCKET = 'ggongbab-tip-images';
@@ -22,14 +24,9 @@
   var MAX_BYTES = 5 * 1024 * 1024;
   var MAX_SIDE = 2000;
   var TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
-  // [min, max] characters after trimming; the function checks the same.
-  var FIELDS = {
-    title: { input: 'tipTitleInput', error: 'tipTitleError', min: 2, max: 80, message: 'tip.err.title' },
-    place: { input: 'tipPlaceInput', error: 'tipPlaceError', min: 1, max: 80, message: 'tip.err.place' },
-    time_text: { input: 'tipTimeInput', error: 'tipTimeError', min: 0, max: 40, message: 'tip.err.time' },
-    food: { input: 'tipFoodInput', error: 'tipFoodError', min: 0, max: 120, message: 'tip.err.food' },
-    details: { input: 'tipDetailsInput', error: 'tipDetailsError', min: 0, max: 1000, message: 'tip.err.details' }
-  };
+  // Characters after trimming; the function checks the same: words (at least MIN_TEXT) or a photo.
+  var MIN_TEXT = 2;
+  var MAX_TEXT = 1000;
 
   var $ = function (id) { return document.getElementById(id); };
   var form = $('tipForm');
@@ -114,9 +111,9 @@
     });
   }
   function counter() {
-    var value = $('tipDetailsInput').value, el = $('tipDetailsCount');
-    el.textContent = t('tip.f.count', { n: value.trim().length, max: FIELDS.details.max });
-    el.setAttribute('data-over', String(value.trim().length > FIELDS.details.max));
+    var value = $('tipTextInput').value, el = $('tipTextCount');
+    el.textContent = t('tip.f.count', { n: value.trim().length, max: MAX_TEXT });
+    el.setAttribute('data-over', String(value.trim().length > MAX_TEXT));
   }
 
   // ---- validation --------------------------------------------------------------------------------
@@ -130,26 +127,14 @@
     }
   }
   function values() {
-    var out = {};
-    Object.keys(FIELDS).forEach(function (name) { out[name] = $(FIELDS[name].input).value.trim(); });
-    out.event_date = $('tipDateInput').value;
-    out.link = $('tipLinkInput').value.trim();
-    out.hp = $('tipHp').value;
-    return out;
+    return { text: $('tipTextInput').value.trim(), hp: $('tipHp').value };
   }
+  // The id of the field to fix, or null.
   function validate(v) {
-    var first = null;
-    function fail(input, error, key) { showError(input, error, key); if (key && !first) first = input; }
-    Object.keys(FIELDS).forEach(function (name) {
-      var f = FIELDS[name], n = v[name].length;
-      fail(f.input, f.error, n < f.min || n > f.max ? f.message : '');
-    });
-    var today = todayKst();
-    var dateOk = validDate(v.event_date) && v.event_date >= addDays(today, -1) && v.event_date <= addDays(today, 60);
-    fail('tipDateInput', 'tipDateError', dateOk ? '' : 'tip.err.date');
-    var linkOk = !v.link || (v.link.length <= 300 && /^https?:\/\/\S+$/i.test(v.link));
-    fail('tipLinkInput', 'tipLinkError', linkOk ? '' : 'tip.err.link');
-    return first;
+    var n = v.text.length;
+    var key = n > MAX_TEXT ? 'tip.err.text' : n < MIN_TEXT && !photos.length ? 'tip.err.empty' : '';
+    showError('tipTextInput', 'tipTextError', key);
+    return key ? 'tipTextInput' : null;
   }
 
   // ---- photos --------------------------------------------------------------------------------------
@@ -254,9 +239,10 @@
     if (text.indexOf('TIP_INVALID') !== -1) return 'tip.status.invalid';
     return 'tip.status.failed';
   }
-  function showDone(failedPhotos, total) {
+  function showDone(failedPhotos, total, words) {
     form.hidden = true;
-    doneWarnKey = !failedPhotos ? '' : failedPhotos >= total ? 'tip.done.photosFailed' : 'tip.done.somePhotosFailed';
+    doneWarnKey = !failedPhotos ? '' : failedPhotos < total ? 'tip.done.somePhotosFailed'
+      : words ? 'tip.done.photosFailed' : 'tip.done.emptyFailed';
     $('tipDoneWarn').textContent = doneWarnKey ? t(doneWarnKey) : '';
     $('tipDoneWarn').hidden = !doneWarnKey;
     $('tipDone').hidden = false;
@@ -265,13 +251,10 @@
   }
   function reset() {
     form.reset();
-    $('tipDateInput').value = todayKst();
     photos.forEach(function (photo) { URL.revokeObjectURL(photo.url); });
     photos = [];
     renderPhotos();
-    Object.keys(FIELDS).forEach(function (name) { showError(FIELDS[name].input, FIELDS[name].error, ''); });
-    showError('tipDateInput', 'tipDateError', '');
-    showError('tipLinkInput', 'tipLinkError', '');
+    showError('tipTextInput', 'tipTextError', '');
     showError(null, 'tipPhotosError', '');
     counter();
     doneWarnKey = '';
@@ -279,7 +262,7 @@
     $('tipDone').hidden = true;
     form.hidden = false;
     setStatus('', '');
-    $('tipTitleInput').focus();
+    $('tipTextInput').focus();
   }
   function submit(event) {
     event.preventDefault();
@@ -294,10 +277,7 @@
     busy(true);
     setStatus('tip.status.sending', 'info');
     getClient().then(function (c) {
-      return c.rpc(SUBMIT, {
-        p_title: v.title, p_place: v.place, p_event_date: v.event_date, p_time_text: v.time_text,
-        p_food: v.food, p_details: v.details, p_link: v.link, p_hp: v.hp
-      });
+      return c.rpc(SUBMIT, { p_text: v.text, p_photos: photos.length, p_hp: v.hp });
     }).then(function (res) {
       if (!res || res.error || typeof res.data !== 'string') {
         busy(false);
@@ -307,7 +287,7 @@
       var total = photos.length;
       return (total ? uploadPhotos(res.data) : Promise.resolve(0)).then(function (failed) {
         busy(false);
-        showDone(failed, total);
+        showDone(failed, total, v.text.length >= MIN_TEXT);
       });
     }).catch(function () {
       busy(false);
@@ -447,8 +427,7 @@
     if (statusKey) setStatus(statusKey, statusTone);
     if (doneWarnKey) $('tipDoneWarn').textContent = t(doneWarnKey);
     if (!$('tipSubmit').disabled) $('tipSubmit').textContent = t('tip.submit');
-    ['tipTitleError', 'tipPlaceError', 'tipDateError', 'tipTimeError', 'tipFoodError', 'tipDetailsError', 'tipLinkError',
-     'tipPhotosError'].forEach(function (id) {
+    ['tipTextError', 'tipPhotosError'].forEach(function (id) {
       var key = $(id).getAttribute('data-key');
       if (key) $(id).textContent = t(key);
     });
@@ -456,23 +435,20 @@
     renderBoard();
   }
 
-  var today = todayKst();
-  $('tipDateInput').min = addDays(today, -1);
-  $('tipDateInput').max = addDays(today, 60);
-  $('tipDateInput').value = today;
   placeholders();
   counter();
   form.addEventListener('submit', submit);
-  // After a first try, each correction updates the marks at once.
-  form.addEventListener('input', function () {
+  // After a first try, each correction (words or a photo) updates the mark at once.
+  function recheck() {
     if (!checked) return;
     if (!validate(values()) && statusKey === 'tip.status.invalid') setStatus('', '');
-  });
+  }
+  form.addEventListener('input', recheck);
   $('tipAgain').addEventListener('click', reset);
-  $('tipDetailsInput').addEventListener('input', counter);
+  $('tipTextInput').addEventListener('input', counter);
   $('tipPhotos').addEventListener('change', function (event) {
     var input = event.target;
-    addPhotos(input.files).then(function () { input.value = ''; });
+    addPhotos(input.files).then(function () { input.value = ''; recheck(); });
   });
   var drop = $('tipDrop');
   ['dragenter', 'dragover'].forEach(function (name) {

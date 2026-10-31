@@ -1,11 +1,13 @@
 """꽁밥 제보 (lab, docs/GGONGBAB_TIPS.md): the rights and limits in supabase/migrations/008_ggongbab_tips.sql
-and the browser contract of js/ggongbab-tips.js. Static reading only; never a live database.
+and 009_ggongbab_tip_reports.sql, and the browser contract of js/ggongbab-tips.js. Static reading only;
+never a live database.
 scripts/check_site_ui.py tip_board plays the page against a fake client."""
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SQL = (ROOT / "supabase/migrations/008_ggongbab_tips.sql").read_text(encoding="utf-8")
+REPORTS = (ROOT / "supabase/migrations/009_ggongbab_tip_reports.sql").read_text(encoding="utf-8")
 JS = (ROOT / "js/ggongbab-tips.js").read_text(encoding="utf-8")
 PAGE = (ROOT / "tip.html").read_text(encoding="utf-8")
 TABLES = ("ggongbab_tips", "ggongbab_tip_board", "ggongbab_tip_secret", "ggongbab_tip_rate")
@@ -95,7 +97,7 @@ def test_the_page_script_uses_only_the_public_paths():
         assert forbidden not in JS, forbidden
     assert re.findall(r"storage\.from\(BUCKET\)\.(\w+)\(", JS) == ["upload"]     # never read, list or remove photos
     assert re.findall(r"var (SUBMIT|BOARD|BUCKET) = '([^']+)'", JS) == [
-        ("SUBMIT", "ggongbab_submit_tip"), ("BOARD", "ggongbab_tip_board"), ("BUCKET", "ggongbab-tip-images")]
+        ("SUBMIT", "ggongbab_submit_report"), ("BOARD", "ggongbab_tip_board"), ("BUCKET", "ggongbab-tip-images")]
     assert re.findall(r"\.rpc\(([^,]+),", JS) == ["SUBMIT"]
     assert re.findall(r"\.from\(([A-Z]+)\)", JS) == ["BUCKET", "BOARD"]
     assert not re.search(r"\.(insert|update|upsert|delete)\s*\(", JS)
@@ -106,9 +108,9 @@ def test_the_page_script_uses_only_the_public_paths():
     feed = (ROOT / "js/ggongbab-public-feed.js").read_text(encoding="utf-8")
     assert re.search(r"var SDK_URL = '([^']+)'", JS)[1] == re.search(r"var SDK_URL = '([^']+)'", feed)[1]
     assert re.search(r"var SDK_INTEGRITY = '(sha384-[^']+)'", JS)[1] == re.search(r"script\.integrity = '(sha384-[^']+)'", feed)[1]
-    # The page limits match the function's.
-    for name, low, high in (("title", 2, 80), ("place", 1, 80), ("time_text", 0, 40), ("food", 0, 120), ("details", 0, 1000)):
-        assert re.search(rf"{name}: \{{ input: '\w+', error: '\w+', min: {low}, max: {high},", JS), name
+    # The page limits match the report function's: words (2-1000 characters) or a photo, at most three.
+    assert "var MIN_TEXT = 2;" in JS and "var MAX_TEXT = 1000;" in JS
+    assert "c.rpc(SUBMIT, { p_text: v.text, p_photos: photos.length, p_hp: v.hp })" in JS
     assert "var MAX_PHOTOS = 3;" in JS and "var MAX_BYTES = 5 * 1024 * 1024;" in JS
 
 
@@ -120,3 +122,36 @@ def test_the_page_is_lab_only_and_never_republishes_photos():
     # The board renders text facts only: no image element is ever built from a row.
     assert "createElement('img')" in JS and JS.count("createElement('img')") == 1     # the local preview only
     assert "img.src = photo.url;" in JS
+
+
+def test_reports_widen_nothing_for_browsers_and_keep_every_limit():
+    """009 (owner 2026-11-01): the visitor reports in their own words; the operations PC fills the fields."""
+    assert REPORTS.lstrip("-").count("begin;") == 1 and REPORTS.rstrip().endswith("commit;")
+    for column in ("title", "place", "event_date"):
+        assert f"alter table public.ggongbab_tips alter column {column} drop not null;" in REPORTS
+    assert "alter table public.ggongbab_tips add column if not exists classified_at timestamptz;" in REPORTS
+    # No grant, policy or table for browsers beyond the one checking function.
+    assert not re.search(r"grant [^;]* on table", REPORTS) and "create policy" not in REPORTS
+    assert "create table" not in REPORTS and "drop function" not in REPORTS          # 008's function stays
+    assert re.findall(r"create or replace function public\.(\w+)\(", REPORTS) == ["ggongbab_submit_report"]
+    assert "returns uuid language plpgsql security definer set search_path = pg_catalog, public" in REPORTS
+    assert "revoke all on function public.ggongbab_submit_report(text, integer, text) from public;" in REPORTS
+    assert ("grant execute on function public.ggongbab_submit_report(text, integer, text) "
+            "to anon, authenticated, service_role;") in REPORTS
+    body = REPORTS[REPORTS.index("create or replace function"):REPORTS.index("revoke all on function")]
+    honeypot = body.index("if btrim(coalesce(p_hp, '')) <> '' then\n    return gen_random_uuid();")
+    assert honeypot < body.index("raise exception 'TIP_INVALID'") < body.index("insert into public.ggongbab_tip_rate")
+    assert ("if char_length(v_text) > 1000 or p_photos is null or p_photos not between 0 and 3\n"
+            "     or (char_length(v_text) < 2 and p_photos < 1) then") in body
+    # The same address digest and limits as ggongbab_submit_tip, word for word.
+    limits = SQL[SQL.index("  forwarded := btrim("):SQL.index("  insert into public.ggongbab_tips (title")]
+    assert limits in body
+    assert "insert into public.ggongbab_tips (details, client_hash)\n    values (v_text, client)" in body
+    assert body.rstrip().endswith("return tip_id;\nend;\n$$;")
+
+
+def test_the_page_asks_for_words_and_photos_only():
+    form = PAGE[PAGE.index('<form class="tip-form"'):PAGE.index("</form>")]
+    assert re.findall(r"<textarea[^>]* id=\"(\w+)\"", form) == ["tipTextInput"]
+    assert re.findall(r"<input[^>]* id=\"(\w+)\"", form) == ["tipPhotos", "tipHp"]
+    assert 'maxlength="1000"' in form and "<select" not in form

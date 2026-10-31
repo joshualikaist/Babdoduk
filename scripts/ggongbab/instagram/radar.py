@@ -411,6 +411,10 @@ class Radar:
                     self.store.put(f"edit:{prompt.get('message_id')}", media_id)
             else:
                 _, text, reply_to = event
+                tip_id = self.store.get(f"tipedit:{reply_to}") if reply_to else None
+                if tip_id and self.tips is not None:
+                    self.tips.edit(tip_id, text)          # a reply to a tip's ✏️ prompt (ggongbab/tips.py)
+                    continue
                 media_id = self.store.get(f"edit:{reply_to}") if reply_to else None
                 if not media_id or self.store.candidate(media_id) is None:
                     from ..easy_login import is_request

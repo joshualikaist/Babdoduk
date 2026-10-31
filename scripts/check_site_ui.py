@@ -2521,9 +2521,11 @@ TIP_BIG_PHOTO = """async () => {
 
 
 def tip_board(browser):
-    """The tip page sends a checked tip, then its photos under the returned id, says honestly when the
-    photos or the whole tip did not go through, keeps the form when it fails, and lists only confirmed
-    tips (coming up first, then the past two weeks). With an empty configuration it makes no request."""
+    """The tip page (owner 2026-11-01: the visitor reports, the operator sorts) sends the visitor's words
+    and the number of photos, then the photos under the returned id; it needs words or a photo, says
+    honestly when the photos or the whole tip did not go through, keeps the form when it fails, and lists
+    only confirmed tips (coming up first, then the past two weeks). With an empty configuration it
+    makes no request."""
     count = 0
 
     def check(ok, detail):
@@ -2544,11 +2546,14 @@ def tip_board(browser):
     page.clock.set_fixed_time(TIP_NOW)
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/tip.html", wait_until="networkidle")
-    check(page.locator("#tipSubmit").is_disabled() and page.locator("#tipTitleInput").is_disabled()
+    check(page.locator("#tipSubmit").is_disabled() and page.locator("#tipTextInput").is_disabled()
           and page.locator("#tipStatus").inner_text() == "지금은 제보를 받을 수 없어요."
           and page.locator("#tipBoard").get_attribute("data-state") == "off",
           "with no configuration the form is closed and the board says it could not load")
     check(not requests, ("an empty configuration makes no request", requests[:3]))
+    check(page.locator("#tipForm input:not([type=file]):not(#tipHp), #tipForm select").count() == 0
+          and page.locator("#tipForm textarea").count() == 1,
+          "the form asks for one text and photos only: no event fields")
     context.close()
 
     rows = [{"id": "p1", "title": "지난 붕어빵", "place": "카이마루 앞", "event_date": day(-3), "time_text": "15:00", "food": "붕어빵"},
@@ -2578,24 +2583,18 @@ def tip_board(browser):
           ("coming up first (soonest first, today marked), then the past two weeks; text stays text", groups))
     check(page.locator(".tip-item.is-today time").get_attribute("datetime") == day(0)
           and page.locator(".tip-board img").count() == 0, "today's tip carries its date; no markup from the data runs")
-    check(page.locator("#tipDateInput").input_value() == day(0) and page.locator("#tipDateInput").get_attribute("min") == day(-1)
-          and page.locator("#tipDateInput").get_attribute("max") == day(60), "the date starts today, from yesterday to 60 days ahead")
 
-    # An incomplete tip is not sent: the fields say what is wrong and focus goes to the first one.
-    page.locator("#tipTitleInput").fill("a")
-    page.locator("#tipLinkInput").fill("ftp://x")
+    # Nothing written and no photo: not sent; the field says why and takes focus.
     page.locator("#tipSubmit").click()
-    check(page.evaluate("window.__tip.rpc.length") == 0 and page.locator("#tipTitleInput").get_attribute("aria-invalid") == "true"
-          and page.locator("#tipPlaceInput").get_attribute("aria-invalid") == "true"
-          and page.locator("#tipLinkInput").get_attribute("aria-invalid") == "true"
-          and page.evaluate("document.activeElement.id") == "tipTitleInput"
+    check(page.evaluate("window.__tip.rpc.length") == 0 and page.locator("#tipTextInput").get_attribute("aria-invalid") == "true"
+          and page.locator("#tipTextError").inner_text() == "본 내용을 적거나 사진을 한 장 이상 올려 주세요."
+          and page.evaluate("document.activeElement.id") == "tipTextInput"
           and page.locator("#tipStatus").inner_text() == "표시한 칸을 확인해 주세요.",
-          "an invalid tip is not sent; each field says why and focus moves to the first")
-    page.locator("#tipTitleInput").fill("  학과 설명회 간식  ")
-    page.locator("#tipPlaceInput").fill("E3-1 로비")
-    page.locator("#tipLinkInput").fill("")
-    check(page.locator("#tipTitleInput").get_attribute("aria-invalid") is None and page.locator("#tipStatus").inner_text() == "",
-          "a correction clears its mark and the status at once")
+          "an empty tip is not sent; the field says why and takes focus")
+    page.locator("#tipTextInput").fill("  내일 저녁 E3-1 로비에서 설명회 끝나고 피자 준대요  ")
+    check(page.locator("#tipTextInput").get_attribute("aria-invalid") is None and page.locator("#tipStatus").inner_text() == ""
+          and page.locator("#tipTextCount").inner_text() == "30 / 1000",
+          "writing clears the mark and the status at once; the counter counts trimmed characters")
 
     # Photos: a wrong type is refused, at most three are kept, one can be removed again.
     page.set_input_files("#tipPhotos", [{"name": "a.gif", "mimeType": "image/gif", "buffer": b"GIF89a"}])
@@ -2621,19 +2620,18 @@ def tip_board(browser):
     page.locator("#tipSubmit").click()
     page.wait_for_function("document.getElementById('tipStatus').dataset.tone === 'error'")
     check(page.locator("#tipStatus").inner_text().startswith("제보가 많이 몰렸어요") and page.locator("#tipForm").is_visible()
-          and page.locator("#tipTitleInput").input_value().strip() == "학과 설명회 간식"
+          and page.locator("#tipTextInput").input_value().strip().startswith("내일 저녁")
           and page.locator("#tipSubmit").is_enabled() and page.evaluate("window.__tip.uploads.length") == 0,
           "a rate-limited tip keeps the form, says why, and sends no photo")
 
-    # Sent: one call with the trimmed fields and an empty honeypot, then the photos under the new id.
+    # Sent: one call with the trimmed words, the photo count and an empty honeypot, then the photos.
     page.evaluate("window.__tip.mode = 'ok'; window.__tip.rpc = []")
     page.locator("#tipSubmit").click()
     page.locator("#tipDone:not([hidden])").wait_for()
     call = page.evaluate("window.__tip.rpc")
-    check(len(call) == 1 and call[0]["name"] == "ggongbab_submit_tip" and call[0]["args"] == {
-              "p_title": "학과 설명회 간식", "p_place": "E3-1 로비", "p_event_date": day(0), "p_time_text": "",
-              "p_food": "", "p_details": "", "p_link": "", "p_hp": ""},
-          ("the tip is sent once, trimmed, with the honeypot empty", call))
+    check(len(call) == 1 and call[0]["name"] == "ggongbab_submit_report" and call[0]["args"] == {
+              "p_text": "내일 저녁 E3-1 로비에서 설명회 끝나고 피자 준대요", "p_photos": 2, "p_hp": ""},
+          ("the report is sent once: trimmed words, the photo count, the honeypot empty", call))
     uploads = page.evaluate("window.__tip.uploads")
     check([(u["bucket"], u["path"], u["type"], u["upsert"]) for u in uploads] == [
               ("ggongbab-tip-images", f"{TIP_ID}/1.png", "image/png", False),
@@ -2643,31 +2641,40 @@ def tip_board(browser):
     check(page.locator("#tipDoneWarn").is_hidden() and page.evaluate("document.activeElement.id") == "tipDoneTitle"
           and page.locator("#tipForm").is_hidden(), "the confirmation takes focus; no warning when every photo went through")
 
-    # Another tip whose photos fail: the tip still counts, and the page says the photos did not go through.
+    # A photo alone is a tip too.
     page.locator("#tipAgain").click()
-    check(page.locator("#tipForm").is_visible() and page.locator("#tipTitleInput").input_value() == ""
-          and page.locator(".tip-preview").count() == 0 and page.evaluate("document.activeElement.id") == "tipTitleInput",
+    check(page.locator("#tipForm").is_visible() and page.locator("#tipTextInput").input_value() == ""
+          and page.locator(".tip-preview").count() == 0 and page.evaluate("document.activeElement.id") == "tipTextInput",
           "'send another' starts an empty form")
-    page.evaluate("window.__tip.upload = 'fail'")
-    page.locator("#tipTitleInput").fill("도서관 커피차")
-    page.locator("#tipPlaceInput").fill("학술문화관 앞")
-    page.set_input_files("#tipPhotos", [{"name": "a.png", "mimeType": "image/png", "buffer": PNG_1PX}])
+    page.evaluate("window.__tip.rpc = []; window.__tip.uploads = []")
+    page.set_input_files("#tipPhotos", [{"name": "poster.png", "mimeType": "image/png", "buffer": PNG_1PX}])
     page.wait_for_function("document.querySelectorAll('.tip-preview').length === 1")
     page.locator("#tipSubmit").click()
     page.locator("#tipDone:not([hidden])").wait_for()
-    check(page.locator("#tipDoneWarn").inner_text() == "사진은 올라가지 않았어요. 제보는 접수됐어요.",
-          "a failed photo upload is said plainly; the tip itself was received")
+    check(page.evaluate("window.__tip.rpc[0].args") == {"p_text": "", "p_photos": 1, "p_hp": ""}
+          and len(page.evaluate("window.__tip.uploads")) == 1, "a poster photo without words is sent as a tip")
+
+    # Photos that fail: with words the tip still counts; a photo-only tip that lost its photo is empty.
+    page.evaluate("window.__tip.upload = 'fail'")
+    for words, warning in (("도서관 앞 커피차", "사진은 올라가지 않았어요. 제보는 접수됐어요."),
+                           ("", "사진이 올라가지 않아 제보가 비어 있어요. 사진을 다시 올리거나 내용을 적어 다시 보내 주세요.")):
+        page.locator("#tipAgain").click()
+        page.locator("#tipTextInput").fill(words)
+        page.set_input_files("#tipPhotos", [{"name": "a.png", "mimeType": "image/png", "buffer": PNG_1PX}])
+        page.wait_for_function("document.querySelectorAll('.tip-preview').length === 1")
+        page.locator("#tipSubmit").click()
+        page.locator("#tipDone:not([hidden])").wait_for()
+        check(page.locator("#tipDoneWarn").inner_text() == warning, ("a failed photo upload is said plainly", words, warning))
 
     # A failing server: the form stays with the reason. English, too.
     page.locator("#tipAgain").click()
     page.evaluate("window.__tip.mode = 'fail'")
-    page.locator("#tipTitleInput").fill("붕어빵")
-    page.locator("#tipPlaceInput").fill("카이마루")
+    page.locator("#tipTextInput").fill("카이마루 앞 붕어빵")
     page.locator("#langToggle").click()
     page.locator("#tipSubmit").click()
     page.wait_for_function("document.getElementById('tipStatus').dataset.tone === 'error'")
     check(page.locator("#tipStatus").inner_text() == "Couldn't send it. Please try again shortly."
-          and page.locator("#tipTitleInput").get_attribute("placeholder").startswith("e.g.")
+          and page.locator("#tipTextInput").get_attribute("placeholder").startswith("e.g.")
           and page.locator(".tip-group-title").first.inner_text() == "Coming up",
           "a failure keeps the form; status, hints and board follow the language")
     page.locator("#langToggle").click()
