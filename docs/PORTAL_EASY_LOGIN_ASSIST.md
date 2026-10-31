@@ -1,8 +1,11 @@
 # Easy Login assist (owner decision 2026-10-29)
 
 **Lab-only / not promoted to production in the current main baseline.** Status: **implemented
-(`scripts/ggongbab/easy_login.py`, synthetic tests `tests/ggongbab/test_easy_login.py`); off until
-the owner enables it on the operations PC, and not yet proven on a live login.**
+(`scripts/ggongbab/easy_login.py`, synthetic tests `tests/ggongbab/test_easy_login.py`) and enabled
+on the operations PC. A manual run passed live on 2026-10-29 (the owner approved, the Portal logged
+in). On 2026-10-31 at 17:51 the watchdog's own attempt sent a code that went unanswered, and the tab
+stayed on an SSO page the automatic attempt does not start from; the owner's request (below) was
+added for that case and has not run live yet.**
 
 ## Why
 
@@ -32,6 +35,9 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
 
 * Type into any field, store or read a password, choose **ID/PW Login**, or use the browser's
   password manager. An empty ID field stops the assist.
+* Open any address except the Portal's login page (`PORTAL_LOGIN_URL`,
+  `https://portal.kaist.ac.kr/common/login/login.do`). It opens that page only on the owner's request
+  (below).
 * Approve, extend or answer the MFA push, read an OTP, or replay a cookie, token or session.
 * Log, store, screenshot or put the code anywhere but the one Telegram message. The log keeps only
   fixed reason codes (for example `EASY_LOGIN_CODE_SENT`, `EASY_LOGIN_STOPPED_UNEXPECTED_PAGE`).
@@ -45,6 +51,10 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
 * After two unanswered attempts in a row it stops until a person logs in by hand, so the phone never
   turns into a stream of approval requests that someone answers by habit.
 * An approval request that arrives **without** a matching Telegram message is not ours: reject it.
+* The owner's own requests (below) skip these limits: the owner is there and asked. They have their own
+  limits instead: at most one a minute (a double tap counts once) and ten a day. A request also restarts
+  the 30 minutes before the next automatic attempt. It does not lift the pause after two unanswered
+  codes; only a successful login does that.
 
 ## How it runs
 
@@ -67,9 +77,41 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
   and the watchdog's existing resume path (`may_resume`) restarts the worker.
 * State `.local/easy-login-state.json`: attempt times, the time of the last code, the unanswered
   count. Log `.local/ops-easy-login.log`: fixed codes only (`EASY_LOGIN_*`).
-* Known gap: a verification page that expired without an answer stays open in the tab. The assist
-  never touches an open verification page, so after that a person starts the next login (the
-  ordinary "로그인 만료" alert keeps reminding).
+* A verification page that expired without an answer stays in the tab, and on 2026-10-31 the tab
+  then showed `sso.kaist.ac.kr/auth/user/login/view`. The automatic attempt starts from neither page,
+  so it logs `EASY_LOGIN_NO_LOGIN_PAGE` until a person acts. That person is the owner's request
+  (below), from the 🔑 button that every code message and every login alert carries.
+
+## On the owner's request (owner decision 2026-10-31)
+
+The owner cannot always approve at once. The owner asked: "내가 로그인 다시 할게. 아니면 로그인이라고 말하거나,
+로그인 버튼이 있으면 누를게. 그러면 다시 너가 승인 요청하도록까지 창 만들어줘". So when the owner is ready:
+
+1. They tap **🔑 로그인 요청** under a login alert (`notify.LocalTelegramNotifier`, while Easy Login is
+   enabled), or **🔁 새 승인 번호 받기** under a code message. Or they send a message that is only the request:
+   "로그인", "다시 로그인", "로그인 해줘", "로그인 다시 할게" or "/login" (`easy_login.is_request`). A question
+   such as "로그인 됐어?" is not a request: it goes to the ops agent (`docs/OPS_AGENT.md`), which may start a
+   request only when the owner's message asks for a login.
+2. The Instagram radar, which reads the bot, starts `ggongbab_workers.py easy-login --requested` at once in
+   its own process (`launch_request`) and says so. The owner tells it apart from the code message.
+3. The attempt picks the page to start from (`request_target`), from the host and path of each tab:
+   * an open SSO page while the Portal has no tab of its own (the Dooray tab is open), whether an
+     expired verification page, `/auth/user/login/view` or an older login page. It goes back to the
+     Portal's login page (`Page.navigate`, that one URL) and starts afresh;
+   * the Portal's login page as it is, or another Portal page while the watchdog holds a login latch
+     (sent to the login page first);
+   * Dooray's own SSO login page (the Portal tab is open, the Dooray tab is not), as it is;
+   * no Portal tab at all while the Portal waits for a login: a background tab is opened at the login page.
+
+   Any other set of tabs is `EASY_LOGIN_STOPPED_TABS_UNCLEAR` and nothing is touched. With no SSO page,
+   no Portal login page and no login wait, it is `EASY_LOGIN_NOT_NEEDED`.
+4. From there it runs the same steps as above (two clicks, the code to Telegram, every stop rule). A code
+   that is still waiting is replaced by the new one.
+5. A request that ends without a code tells the owner why in fixed words (`easy_login.OUTCOME`), with
+   🔑 다시 요청 when pressing again could help. An automatic attempt still reports nothing.
+
+The watchdog does not count the Portal's login page appearing after an SSO page as a finished login
+(`Watchdog.may_resume`), so the request's first step never resumes the worker early.
 
 ## Enable or disable (owner, on the operations PC)
 
@@ -78,6 +120,8 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
 printf '{"enabled": true, "expected_id": "<KAIST ID>"}\n' > ~/Babdoduk-ops/.local/easy-login.json
 # one attempt by hand, for example the live acceptance run (it sends a real approval request):
 ~/Babdoduk-ops/scripts/linux/ops.sh run easy-login
+# the owner's request, as the 🔑 button runs it (reopens the login page; reports its outcome):
+~/Babdoduk-ops/scripts/linux/ops.sh login
 # off:
 rm ~/Babdoduk-ops/.local/easy-login.json
 ```

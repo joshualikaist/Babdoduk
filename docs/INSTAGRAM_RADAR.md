@@ -136,6 +136,10 @@ few minutes later; it sends the message, its photo and a masked state summary to
 radar's own model. While it is off, the bot answers "📝 메모로 저장했습니다" and nothing is sent anywhere.
 The agent's ✅/❌ questions (`agent:ok` / `agent:no`) come back through this bot as well.
 
+A message that is only a login request ("로그인", "다시 로그인", "/login") and the 🔑 button under a login
+alert or an approval code (`login:go`) are not notes: the bot starts the Easy Login request at once
+(`Radar.request_login`, `docs/PORTAL_EASY_LOGIN_ASSIST.md`).
+
 ## Reader tips
 
 The same bot asks the owner about reader tips from the tip page (`scripts/ggongbab/tips.py`,

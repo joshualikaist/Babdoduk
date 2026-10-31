@@ -12,6 +12,8 @@
 #   alert <args>   scripts/alert_push.py <args>: Telegram push to the phone, e.g. `alert --status`
 #   ig-install | ig-start | ig-stop | ig-status | ig-check | ig-once [--dry-run]   the Instagram radar
 #   notes          the owner's latest Telegram notes to the bot (the Instagram radar keeps them)
+#   login          open the KAIST login page again and send a new Easy Login code to Telegram, as the
+#                  owner's 🔑 button does (docs/PORTAL_EASY_LOGIN_ASSIST.md)
 #   agent-install | agent-on | agent-off | agent-status | agent-remove   the ops agent that answers
 #                  those notes (docs/OPS_AGENT.md): a path unit starts a one-shot run per message
 #
@@ -220,12 +222,14 @@ case "$action" in
     ig-check) runner ig-check ;;
     ig-once) runner ig-radar-once "$@" ;;
     notes) runner telegram-notes ;;
+    login) runner easy-login --requested ;;
     agent-install)
         runner check || fail "CONFIGURATION_REQUIRED"
         mkdir -p "$ROOT/.local/ops-agent" "$UNIT_DIR"
         chmod 700 "$ROOT/.local" "$ROOT/.local/ops-agent"
         for watched in "$ROOT/.local/telegram-inbox.jsonl" "$ROOT/.local/ops-agent/answers.jsonl"; do
-            [[ -e "$watched" ]] || install -m 600 /dev/null "$watched"
+            # Not coreutils install here: install() above is this script's service installer.
+            [[ -e "$watched" ]] || (umask 077; : > "$watched")
         done
         expected_unit "$AGENT_UNIT" > "$UNIT_DIR/$AGENT_UNIT"
         expected_unit "$AGENT_PATH" > "$UNIT_DIR/$AGENT_PATH"

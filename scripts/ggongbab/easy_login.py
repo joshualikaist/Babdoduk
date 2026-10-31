@@ -20,6 +20,13 @@ not expect. The page probe returns fixed facts only (booleans, the two digits, t
 the code goes into the one Telegram message and nowhere else: logs hold fixed reason codes and
 the state file holds timestamps and counts.
 
+On the owner's request (owner 2026-10-31: "로그인이라고 말하거나, 로그인 버튼이 있으면 누를게. 그러면 다시
+너가 승인 요청하도록까지 창 만들어줘"): the Telegram button 🔑 or a message such as "로그인" starts one attempt
+at once (run_assist(requested=True)). It has its own limits instead of the automatic ones, and when no
+login page is open it first sends the Portal's tab back to the Portal's login page (one fixed URL,
+PORTAL_LOGIN_URL), for example from a verification page that expired unanswered. It tells the owner
+the outcome either way.
+
 Opt-in per PC: `.local/easy-login.json` = {"enabled": true, "expected_id": "<the owner's KAIST ID>"}.
 Without it, or without a configured Telegram push (notify.local_notifier), nothing runs.
 """
@@ -46,10 +53,13 @@ CODE_LIFETIME_SECONDS = 300   # the page offers 3 minutes (extendable); past thi
 STEP_WAIT_SECONDS = 20        # how long one click may take to reach the next page
 MAX_STEPS = 4
 ID_SETTLE_SECONDS = 3      # Remember ID fills the field just after the SSO page loads
+REQUEST_GAP_SECONDS = 60      # the owner's own request: a double tap is one request ...
+REQUEST_DAILY_MAX = 10        # ... and at most ten a day
 
 PORTAL_LOGIN = ("portal.kaist.ac.kr", "/common/login/login.do")
 SSO_VIEW = ("sso.kaist.ac.kr", "/auth/kaist/user/login/view")
 SSO_MFA = ("sso.kaist.ac.kr", "/auth/twofactor/mfa/login2Factor")
+PORTAL_LOGIN_URL = "https://portal.kaist.ac.kr/common/login/login.do"   # the only address it ever opens
 PORTAL_BUTTON = "#btn-sso-login"
 EASY_LOGIN_BUTTON = "#loginTab01 a.btn_login"
 CLICKABLE = frozenset({PORTAL_BUTTON, EASY_LOGIN_BUTTON})
@@ -61,7 +71,24 @@ CODES = frozenset({
     "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE", "EASY_LOGIN_STOPPED_NOT_EASY_LOGIN", "EASY_LOGIN_STOPPED_ID_EMPTY",
     "EASY_LOGIN_STOPPED_ID_MISMATCH", "EASY_LOGIN_STOPPED_SSO_ERROR", "EASY_LOGIN_STOPPED_CAPTCHA",
     "EASY_LOGIN_STOPPED_UNRESPONSIVE", "EASY_LOGIN_STOPPED_NO_PROGRESS",
+    "EASY_LOGIN_REQUESTED", "EASY_LOGIN_REQUEST_NOT_STARTED", "EASY_LOGIN_REQUEST_TOO_SOON",
+    "EASY_LOGIN_REQUEST_DAILY_MAX", "EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_STOPPED_TABS_UNCLEAR",
 })
+
+# The owner's request: this button (telegram_review.Bot.events -> ("login", callback)) or a short
+# message that is only the request ("로그인", "다시 로그인", "로그인 해줘", "/login"; never a question).
+REQUEST_CALLBACK = "login:go"
+REQUEST_WORDS = re.compile(r"(다시)?(로그인|login)(다시)?(할게|할께|해|해줘|해주세요|해줄래|하자|요청|시작|부탁해?)?요?",
+                           re.IGNORECASE)
+
+
+def is_request(text: str) -> bool:
+    compact = re.sub(r"\s+", "", text or "").rstrip(".!~ㅎㅋ").lstrip("/")
+    return bool(REQUEST_WORDS.fullmatch(compact))
+
+
+def request_markup(label: str = "🔑 로그인 요청") -> dict:
+    return {"inline_keyboard": [[{"text": label, "callback_data": REQUEST_CALLBACK}]]}
 
 # The probe reads only fixed facts. `expected` is compared inside the page so the ID never
 # leaves it; the digits are the only page text returned.
@@ -139,7 +166,35 @@ def message(code: str, seconds: Optional[int]) -> str:
     left = f"남은 시간: 약 {seconds // 60}분 {seconds % 60:02d}초\n" if seconds else ""
     return ("🔐 밥도둑 운영: KAIST 로그인 승인 요청\n\n"
             f"휴대폰 KAIST 인증 앱 알림에서 {code} 을(를) 선택하세요.\n{left}\n"
-            "이 메시지 없이 온 승인 요청은 밥도둑이 보낸 것이 아니니 거절하세요.")
+            "이 메시지 없이 온 승인 요청은 밥도둑이 보낸 것이 아니니 거절하세요.\n"
+            "시간 안에 못 하셨으면 아래 버튼을 누르거나 \"로그인\"이라고 보내 주세요. 새 번호를 보냅니다.")
+
+
+# What the owner is told when their own request ends without a code. Fixed wording per reason.
+REMOTE = "원격 데스크톱으로 이 PC의 운영 Chrome에서 직접 로그인해 주세요."
+OUTCOME = {
+    "EASY_LOGIN_NOT_NEEDED": "✅ 지금은 로그인이 필요하지 않습니다. 포털과 메일 수집 모두 로그인을 기다리지 않습니다.",
+    "EASY_LOGIN_REQUEST_TOO_SOON": "⏳ 방금 요청을 처리했습니다. 1분 뒤에 다시 눌러 주세요.",
+    "EASY_LOGIN_REQUEST_DAILY_MAX": f"⛔ 오늘 로그인 요청을 {REQUEST_DAILY_MAX}번 다 썼습니다. " + REMOTE,
+    "EASY_LOGIN_BUSY": "⏳ 다른 로그인 시도가 진행 중입니다. 잠시 뒤 다시 눌러 주세요.",
+    "EASY_LOGIN_BROWSER_UNAVAILABLE": "⚠️ 운영 Chrome에 연결하지 못했습니다. 몇 분 뒤 다시 누르거나, " + REMOTE,
+    "EASY_LOGIN_PUSH_FAILED": "⚠️ 승인 번호를 텔레그램으로 보내지 못했습니다. 다시 눌러 주세요.",
+    "EASY_LOGIN_STOPPED_TABS_UNCLEAR": "⚠️ 운영 Chrome의 탭이 예상과 달라 손대지 않았습니다. " + REMOTE,
+    "EASY_LOGIN_STOPPED_ID_EMPTY": "⚠️ 로그인 화면의 아이디 칸이 비어 있습니다(아이디 기억이 풀림). 한 번은 " + REMOTE,
+    "EASY_LOGIN_STOPPED_ID_MISMATCH": "⚠️ 로그인 화면에 다른 아이디가 들어 있어 멈췄습니다. " + REMOTE,
+    "EASY_LOGIN_STOPPED_NOT_EASY_LOGIN": "⚠️ 로그인 화면이 간편 로그인(Easy Login) 탭이 아니어서 멈췄습니다. " + REMOTE,
+    "EASY_LOGIN_STOPPED_CAPTCHA": "⚠️ 로그인 화면에 보안 문자가 나와 멈췄습니다. " + REMOTE,
+    "EASY_LOGIN_STOPPED_SSO_ERROR": "⚠️ 로그인 화면에 오류 문구가 있어 멈췄습니다. 잠시 뒤 다시 누르거나, " + REMOTE,
+}
+STOPPED = "⚠️ 로그인 화면이 예상대로 넘어가지 않아 멈췄습니다. 잠시 뒤 다시 누르거나, " + REMOTE
+
+
+def outcome(code: str) -> tuple[str, Optional[dict]]:
+    """The message for an owner's request that ended without a code, and its button (none when
+    pressing again would not help yet)."""
+    text = OUTCOME.get(code, STOPPED)
+    quiet = {"EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_REQUEST_TOO_SOON", "EASY_LOGIN_REQUEST_DAILY_MAX"}
+    return text, None if code in quiet else request_markup("🔑 다시 요청")
 
 
 # --- the limits ------------------------------------------------------------------------------
@@ -148,6 +203,7 @@ def normalize(state: dict, now: float, last_success: Optional[float]) -> dict:
     unanswered once its lifetime passed. A successful scan after the last unanswered code means a
     person has logged in, which lifts the pause."""
     state = {"attempts": [float(t) for t in state.get("attempts") or [] if now - float(t) < 86400],
+             "requests": [float(t) for t in state.get("requests") or [] if now - float(t) < 86400],
              "last_sent": state.get("last_sent"), "unanswered": int(state.get("unanswered") or 0),
              "last_unanswered": state.get("last_unanswered")}
     sent = state["last_sent"]
@@ -168,11 +224,32 @@ def gate(state: dict, now: float) -> Optional[str]:
     if state["last_sent"] is not None:
         return "EASY_LOGIN_RATE_LIMITED"          # a code is still waiting for the owner
     attempts = state["attempts"]
-    if attempts and now - max(attempts) < MIN_GAP_SECONDS:
+    started = attempts + state["requests"]          # an owner's request also restarts the 30 minutes
+    if started and now - max(started) < MIN_GAP_SECONDS:
         return "EASY_LOGIN_RATE_LIMITED"
     if len(attempts) >= DAILY_MAX:
         return "EASY_LOGIN_RATE_LIMITED"
     return None
+
+
+def request_gate(state: dict, now: float) -> Optional[str]:
+    """The owner's own request: none of the automatic limits (the owner is there and asked), only
+    REQUEST_GAP_SECONDS and REQUEST_DAILY_MAX."""
+    requests = state["requests"]
+    if requests and now - max(requests) < REQUEST_GAP_SECONDS:
+        return "EASY_LOGIN_REQUEST_TOO_SOON"
+    if len(requests) >= REQUEST_DAILY_MAX:
+        return "EASY_LOGIN_REQUEST_DAILY_MAX"
+    return None
+
+
+def login_waits(local: Path) -> dict:
+    """Which collector reports that it waits for a login: the Portal (the watchdog's login latch)
+    and the Dooray Radar (DOORAY_AUTH_REQUIRED). For request_target."""
+    from .ops_policy import LOGIN
+    local = Path(local)
+    return {"portal_wait": read_json(local / "ops-watchdog.json", {}).get("latched") in LOGIN,
+            "mail_wait": read_json(local / "ops-radar.json", {}).get("reason") == "DOORAY_AUTH_REQUIRED"}
 
 
 def last_success(local: Path) -> Optional[float]:
@@ -210,6 +287,11 @@ class Page:
             raise OpsError("EASY_LOGIN_BROWSER_UNAVAILABLE")
         self.session = attached["sessionId"]
 
+    def navigate(self, url: str) -> None:
+        if url != PORTAL_LOGIN_URL:
+            raise OpsError("EASY_LOGIN_STOPPED_UNEXPECTED_PAGE")
+        self.client.call("Page.navigate", {"url": url}, session=self.session, timeout=10)
+
     def evaluate(self, expression: str, timeout: float = 5):
         """The value, or None when the page did not answer (an open dialog, a navigation)."""
         try:
@@ -235,10 +317,43 @@ def choose_target(targets: list[dict]) -> tuple[Optional[dict], Optional[str]]:
     return None, "EASY_LOGIN_NO_LOGIN_PAGE"
 
 
+def request_target(targets: list[dict], *, mail_host: str, mail_tab: bool, portal_wait: bool,
+                   mail_wait: bool) -> tuple[Optional[dict], str]:
+    """Where the owner's request starts: (page, "here") on a login page to use as it is; (page,
+    "reset") for the Portal's tab, sent back to the Portal's login page first; (None, "open") when
+    the Portal has no tab at all; or (None, REASON). `mail_tab`: the Dooray tab lives in this
+    browser too (unified mode), so a lone SSO page is the Portal's only while the Dooray tab is open.
+    `portal_wait` / `mail_wait`: the watchdog's login latch / the Radar's DOORAY_AUTH_REQUIRED."""
+    from .ops_browser import role_of
+    roles = {"portal": [], "sso": [], "dooray": []}
+    for target in targets:
+        role = role_of(target.get("url", ""), mail_host)
+        if role in roles:
+            roles[role].append(target)
+    portal, sso, dooray = roles["portal"], roles["sso"], roles["dooray"]
+    portal_login = any(page_kind(t.get("url", "")) == "portal_login" for t in portal)
+    if not (sso or portal_login or portal_wait or mail_wait):
+        return None, "EASY_LOGIN_NOT_NEEDED"
+    if len(sso) == 1 and not portal and (dooray or not mail_tab):
+        # The Portal's login on an SSO page, perhaps a verification page that expired unanswered
+        # (2026-10-31) or a stale login page: start it afresh from the Portal's login page.
+        return sso[0], "reset"
+    if (len(sso) == 1 and len(portal) == 1 and mail_tab and not dooray
+            and page_kind(sso[0].get("url", "")) == "sso_view"):
+        return sso[0], "here"       # Dooray's own SSO login page, as the automatic attempt takes it
+    if len(portal) == 1 and not sso and (portal_login or portal_wait):
+        return portal[0], ("here" if portal_login else "reset")
+    if not portal and not sso and portal_wait:
+        return None, "open"
+    return None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR"
+
+
 def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sleep=time.sleep,
-            clock=time.monotonic) -> str:
+            clock=time.monotonic, requested: bool = False, mail_host: str = "", mail_tab: bool = True,
+            portal_wait: bool = False, mail_wait: bool = False) -> str:
     """One bounded attempt. Returns a reason code; the code itself never leaves this function
-    except inside the Telegram message."""
+    except inside the Telegram message. `requested`: the owner asked for it (request_gate,
+    request_target), whose other arguments describe the browser for that case."""
     local = Path(local)
     is_on, expected = enabled(local)
     if not is_on:
@@ -246,7 +361,7 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
     if notifier is None:
         return "EASY_LOGIN_NO_PUSH"
     state = normalize(read_json(local / STATE, {}), now(), last_success(local))
-    blocked = gate(state, now())
+    blocked = request_gate(state, now()) if requested else gate(state, now())
     if blocked:
         atomic_json(local / STATE, state)
         return blocked
@@ -254,17 +369,35 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
         pages = targets(port)
     except OpsError:
         return "EASY_LOGIN_BROWSER_UNAVAILABLE"
-    target, reason = choose_target(pages)
-    if target is None:
-        return reason
+    if requested:
+        target, how = request_target(pages, mail_host=mail_host, mail_tab=mail_tab, portal_wait=portal_wait,
+                                     mail_wait=mail_wait)
+        if target is None and how != "open":
+            return how
+        # A code still waiting is replaced: the owner asked for a new one.
+        state["requests"].append(now())
+        state["last_sent"] = None
+    else:
+        target, reason = choose_target(pages)
+        if target is None:
+            return reason
+        how = "here"
+        state["attempts"].append(now())
     # The attempt counts from here, whatever happens next.
-    state["attempts"].append(now())
     atomic_json(local / STATE, state)
     probe_js = PROBE % json.dumps(expected)
     try:
         with cdp(port) as client:
-            page = Page(client, target["id"])
             last_kind = None
+            if how == "open":
+                created = client.call("Target.createTarget", {"url": PORTAL_LOGIN_URL, "background": True})
+                if not (created or {}).get("targetId"):
+                    return "EASY_LOGIN_BROWSER_UNAVAILABLE"
+                target, last_kind = {"id": created["targetId"], "url": ""}, ""
+            page = Page(client, target["id"])
+            if how == "reset":
+                page.navigate(PORTAL_LOGIN_URL)
+                last_kind = page_kind(target.get("url", ""))    # wait until the page has left it
             for _ in range(MAX_STEPS):
                 probe = _wait_for_next_page(page, probe_js, last_kind, sleep=sleep, clock=clock)
                 if probe is None:
@@ -273,7 +406,7 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
                 if action[0] == "stop":
                     return action[1]
                 if action[0] == "code":
-                    result = notifier.send(message(action[1], action[2]))
+                    result = notifier.send(message(action[1], action[2]), markup=request_markup("🔁 새 승인 번호 받기"))
                     if result != "PUSH_SENT":
                         return "EASY_LOGIN_PUSH_FAILED"
                     state["last_sent"] = now()
@@ -315,24 +448,48 @@ def _wait_for_next_page(page, probe_js, last_kind, *, sleep, clock):
         sleep(1)
 
 
-def run_assist(root: Path) -> int:
-    """The `easy-login` worker action: one attempt under its own lock, logged as a fixed code."""
+def run_assist(root: Path, *, requested: bool = False) -> int:
+    """The `easy-login` worker action: one attempt under its own lock, logged as a fixed code. The
+    watchdog launches it; `requested` (`easy-login --requested`) is the owner's request from
+    Telegram (launch_request), whose outcome the owner is told even when no code was sent."""
     from .cdp_lite import LoopbackCdp
     from .notify import local_notifier
-    from .ops_browser import page_targets, slot_for
+    from .ops_browser import dooray_host, page_targets, read_mode, slot_for
     from .portal_list_state import ListStateError, poller_lock
 
     local = Path(root).resolve() / ".local"
     log = SafeLog(local / LOG)
+    notifier = None
     try:
+        notifier = local_notifier(local)
+        if requested:
+            log("EASY_LOGIN_REQUESTED")
+            where = dict(mail_host=dooray_host(local / "dooray-ui.json"), mail_tab=read_mode(local) == "unified",
+                         **login_waits(local))
+        else:
+            where = {}
         with poller_lock(local / LOCK):
-            code = attempt(local, slot_for(root, "portal").port, notifier=local_notifier(local),
-                           targets=page_targets, cdp=LoopbackCdp)
+            code = attempt(local, slot_for(root, "portal").port, notifier=notifier,
+                           targets=page_targets, cdp=LoopbackCdp, requested=requested, **where)
     except ListStateError:
         code = "EASY_LOGIN_BUSY"
     except OpsError:
         code = "EASY_LOGIN_BROWSER_UNAVAILABLE"
     log(code)
     log.close()
+    if requested and code != "EASY_LOGIN_CODE_SENT" and notifier is not None:
+        text, markup = outcome(code)
+        notifier.send(text, markup=markup)
     print(code)
     return 0 if code == "EASY_LOGIN_CODE_SENT" else 1
+
+
+def launch_request(root: Path):
+    """The owner's request from Telegram (the radar's bot or the ops agent): one attempt at once, in
+    its own process, so the bot never waits on a page."""
+    import subprocess
+    import sys
+    root = Path(root).resolve()
+    return subprocess.Popen([sys.executable, str(root / "scripts/windows/ggongbab_workers.py"), "easy-login", "--requested"],
+                            cwd=root, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                            start_new_session=True)

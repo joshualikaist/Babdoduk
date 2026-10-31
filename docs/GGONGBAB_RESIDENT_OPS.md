@@ -338,7 +338,7 @@ or older Dooray tasks; review those separately in Task Scheduler.
 | PORTAL_HEARTBEAT_WRITE_FAILED | Separate heartbeat failure; bounded restart, no false healthy confirmation |
 | PORTAL_CDP_ATTACH_TIMEOUT | One bounded retry with verified dedicated-browser recovery, then manual |
 | PORTAL_RESIDENT_OWNER_UNVERIFIED | Inspect absence vs stale vs ambiguous ownership; no automatic kill of an unverified process. Before it latches, the worker re-reads the process snapshot and the owner check 3 times, 5 s apart: one unreadable read right after a resume (a Chrome process mid-exit, a slow query) latched the worker from 2026-10-01 to 10-12 |
-| PORTAL_LIST_AUTH_REQUIRED / REDIRECT_REQUIRES_MANUAL_REVIEW | Log in by hand in the Ops Chrome's Portal tab; the watchdog resumes after the SSO page closes. No automatic login |
+| PORTAL_LIST_AUTH_REQUIRED / REDIRECT_REQUIRES_MANUAL_REVIEW | Approve the Easy Login code sent to Telegram, or tap 🔑 로그인 요청 (or send "로그인") for a new one (`docs/PORTAL_EASY_LOGIN_ASSIST.md`); or log in by hand in the Ops Chrome's Portal tab. The watchdog resumes after the SSO page closes. Nothing approves a login automatically |
 | PORTAL_SESSION_COOKIE_MISSING_OR_AMBIGUOUS / COOKIE_UNUSABLE / CONTEXT_MISSING_OR_AMBIGUOUS / SESSION_HANDOFF_FAILED | The Portal tab holds no usable login (for example it sits on the SSO page after sleep) or there are two Portal tabs: log in by hand or close the extra tab; the watchdog resumes once it has seen the login finish |
 | PORTAL_UI_CHANGED | Stop for contract review; detail access remains blocked |
 | PORTAL_LIST_STATE_UNAVAILABLE / OPS_STATE_UNAVAILABLE | Stop; inspect storage, never reset the baseline |

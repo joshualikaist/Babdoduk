@@ -10,7 +10,7 @@ import pytest
 
 from ggongbab import easy_login as el
 from ggongbab.ops_policy import REASONS
-from ggongbab.ops_storage import atomic_json
+from ggongbab.ops_storage import OpsError, atomic_json
 from ggongbab.resident_ops import Files, Watchdog
 import ggongbab.resident_ops as ops
 
@@ -23,7 +23,12 @@ MFA = {"host": "sso.kaist.ac.kr", "path": "/auth/twofactor/mfa/login2Factor", "d
 URL = {"portal": "https://portal.kaist.ac.kr/common/login/login.do",
        "view": "https://sso.kaist.ac.kr/auth/kaist/user/login/view?agt_id=kaist-prod-portal",
        "mfa": "https://sso.kaist.ac.kr/auth/twofactor/mfa/login2Factor",
-       "dooray": "https://kaist.gov-dooray.com/mail/systems/inbox"}
+       "dooray": "https://kaist.gov-dooray.com/mail/systems/inbox",
+       "stuck": "https://sso.kaist.ac.kr/auth/user/login/view",          # where an expired verification ended
+       "main": "https://portal.kaist.ac.kr/index.html"}
+STUCK = {"host": "sso.kaist.ac.kr", "path": "/auth/user/login/view"}
+BLANK = {"host": "", "path": "blank"}
+DOORAY_HOST = "kaist.gov-dooray.com"
 
 
 class Browser:
@@ -31,6 +36,7 @@ class Browser:
 
     def __init__(self, *pages, clicks_to=None, stall=False, answer=True):
         self.pages, self.index, self.clicks, self.expressions = list(pages), 0, [], []
+        self.navigations, self.created = [], []
         self.clicks_to = clicks_to or {el.PORTAL_BUTTON: "portal", el.EASY_LOGIN_BUTTON: "view"}
         self.stall, self.answer, self.closed = stall, answer, False
 
@@ -48,6 +54,14 @@ class Browser:
         if method == "Target.attachToTarget":
             assert params["flatten"] is True
             return {"sessionId": "s1"}
+        if method in ("Page.navigate", "Target.createTarget"):   # both lead to the next page
+            if method == "Page.navigate":
+                assert session == "s1"
+                self.navigations.append(params["url"])
+            else:
+                self.created.append(params)
+            self.index = min(self.index + 1, len(self.pages) - 1)
+            return {"frameId": "f1", "targetId": "t-new"}
         assert method == "Runtime.evaluate" and session == "s1"
         expression = params["expression"]
         self.expressions.append(expression)
@@ -65,10 +79,11 @@ class Browser:
 
 class Telegram:
     def __init__(self, result="PUSH_SENT"):
-        self.result, self.messages = result, []
+        self.result, self.messages, self.markups = result, [], []
 
-    def send(self, text):
+    def send(self, text, markup=None):
         self.messages.append(text)
+        self.markups.append(markup)
         return self.result
 
 
@@ -108,6 +123,7 @@ def test_two_clicks_then_the_code_goes_to_telegram_and_nowhere_else(local):
     assert browser.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON] and browser.closed
     (text,) = telegram.messages
     assert "67" in text and "2분 59초" in text and "거절하세요" in text
+    assert telegram.markups[0]["inline_keyboard"][0][0]["callback_data"] == el.REQUEST_CALLBACK   # a new code later
     state = (local / el.STATE).read_text(encoding="utf-8")
     assert "67" not in state and OWNER_ID not in state
     assert json.loads(state)["last_sent"] == NOW and json.loads(state)["attempts"] == [NOW]
@@ -330,3 +346,207 @@ def test_a_healthy_worker_is_not_stopped_by_a_stray_login_page(tmp_path):
     wd.tick()
     assert wd.state["latched"] == ""
     easy.assert_not_called()
+
+
+# --- the owner's request from Telegram (owner 2026-10-31) -------------------------------------------
+def ask(local, browser, *pages, telegram=None, now=NOW, mail_tab=True, **waits):
+    clock = Clock()
+    targets = [{"id": f"t{i}", "url": URL[k]} for i, k in enumerate(pages)]
+    telegram = Telegram() if telegram is None else telegram
+    code = el.attempt(local, 9224, notifier=telegram, targets=lambda port: targets, cdp=browser, now=lambda: now,
+                      sleep=clock.sleep, clock=clock, requested=True, mail_host=DOORAY_HOST, mail_tab=mail_tab,
+                      **({"portal_wait": False, "mail_wait": False} | waits))
+    return code, telegram
+
+
+def test_on_request_an_expired_login_goes_back_to_the_portal_login_page_and_a_new_code_follows(local):
+    """The live case of 2026-10-31: the code expired unanswered and the Portal's tab stayed on an SSO
+    page the automatic attempt does not start from (EASY_LOGIN_NO_LOGIN_PAGE every 5 minutes)."""
+    atomic_json(local / el.STATE, {"attempts": [NOW - 600], "last_sent": None, "unanswered": 2,
+                                   "last_unanswered": NOW - 600})
+    browser = Browser(STUCK, PORTAL, VIEW, MFA)
+    code, telegram = ask(local, browser, "dooray", "stuck", portal_wait=True)
+    assert code == "EASY_LOGIN_CODE_SENT"
+    assert browser.navigations == [el.PORTAL_LOGIN_URL] and browser.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON]
+    (text,), (markup,) = telegram.messages, telegram.markups
+    assert "67" in text and markup == el.request_markup("🔁 새 승인 번호 받기")
+    state = json.loads((local / el.STATE).read_text(encoding="utf-8"))
+    assert state["requests"] == [NOW] and state["attempts"] == [NOW - 600] and state["last_sent"] == NOW
+    assert state["unanswered"] == 2               # the automatic pause still waits for a real login
+    assert el.may_start(local, NOW + el.MIN_GAP_SECONDS) is False
+
+
+def test_on_request_only_the_probe_the_two_clicks_and_the_one_fixed_address_ever_run(local):
+    browser = Browser(STUCK, PORTAL, VIEW, MFA)
+    ask(local, browser, "dooray", "stuck", portal_wait=True)
+    probe = el.PROBE % json.dumps(OWNER_ID)
+    assert all(e == probe or any(json.dumps(s) in e for s in el.CLICKABLE) for e in browser.expressions)
+    assert browser.navigations == [el.PORTAL_LOGIN_URL] and el.page_kind(el.PORTAL_LOGIN_URL) == "portal_login"
+    page = el.Page.__new__(el.Page)
+    page.client, page.session = Mock(), "s1"
+    with pytest.raises(OpsError):
+        page.navigate("https://sso.kaist.ac.kr/auth/kaist/user/login/view")
+    page.client.call.assert_not_called()
+
+
+def test_a_missing_portal_tab_is_opened_in_the_background_at_the_login_page(local):
+    browser = Browser(BLANK, PORTAL, VIEW, MFA)
+    code, _ = ask(local, browser, "dooray", portal_wait=True)
+    assert code == "EASY_LOGIN_CODE_SENT"
+    assert browser.created == [{"url": el.PORTAL_LOGIN_URL, "background": True}] and browser.navigations == []
+
+
+@pytest.mark.parametrize("pages, extra, expected", [
+    (("dooray", "stuck"), {}, ("t1", "reset")),          # the Portal's login on an expired page
+    (("dooray", "mfa"), {}, ("t1", "reset")),            # an open verification page: the owner wants a new code
+    (("dooray", "view"), {}, ("t1", "reset")),           # even a login page starts afresh (it may be stale)
+    (("dooray", "portal"), {}, ("t1", "here")),
+    (("dooray", "main"), {"portal_wait": True}, ("t1", "reset")),
+    (("dooray", "main"), {}, (None, "EASY_LOGIN_NOT_NEEDED")),
+    (("dooray", "main"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
+    (("dooray",), {"portal_wait": True}, (None, "open")),
+    (("main", "view"), {"mail_wait": True}, ("t1", "here")),   # Dooray's own SSO login page
+    (("main", "stuck"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
+    (("stuck", "view"), {"portal_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
+    (("stuck",), {"portal_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),   # whose SSO page is it?
+    (("stuck",), {"portal_wait": True, "mail_tab": False}, ("t0", "reset")),          # separate browsers
+])
+def test_where_an_owner_request_starts(pages, extra, expected):
+    targets = [{"id": f"t{i}", "url": URL[k]} for i, k in enumerate(pages)]
+    options = {"portal_wait": False, "mail_wait": False, "mail_tab": True} | extra
+    target, how = el.request_target(targets, mail_host=DOORAY_HOST, **options)
+    assert ((target or {}).get("id"), how) == expected
+
+
+def test_nothing_is_touched_when_no_login_is_needed(local):
+    browser = Browser(PORTAL)
+    code, telegram = ask(local, browser, "dooray", "main")
+    assert code == "EASY_LOGIN_NOT_NEEDED" and browser.expressions == [] and browser.navigations == []
+    assert telegram.messages == [] and not (local / el.STATE).exists()
+
+
+def test_the_owners_requests_have_their_own_limits_instead_of_the_automatic_ones(local):
+    for i in range(el.REQUEST_DAILY_MAX):
+        now = NOW + i * el.REQUEST_GAP_SECONDS
+        assert ask(local, Browser(PORTAL, VIEW, MFA), "portal", now=now)[0] == "EASY_LOGIN_CODE_SENT"
+    assert ask(local, Browser(PORTAL, VIEW, MFA), "portal", now=now + 30)[0] == "EASY_LOGIN_REQUEST_TOO_SOON"
+    later = now + el.REQUEST_GAP_SECONDS
+    assert ask(local, Browser(PORTAL, VIEW, MFA), "portal", now=later)[0] == "EASY_LOGIN_REQUEST_DAILY_MAX"
+    assert ask(local, Browser(PORTAL, VIEW, MFA), "portal", now=NOW + 86400 + 1)[0] == "EASY_LOGIN_CODE_SENT"
+
+
+def test_an_owner_request_also_restarts_the_automatic_thirty_minutes(local):
+    assert ask(local, Browser(PORTAL, VIEW, MFA), "portal")[0] == "EASY_LOGIN_CODE_SENT"
+    atomic_json(local / "ops-portal.json", {"last_success": NOW + 60})            # the owner approved
+    assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + 600)[0] == "EASY_LOGIN_RATE_LIMITED"
+    assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + el.MIN_GAP_SECONDS)[0] == "EASY_LOGIN_CODE_SENT"
+
+
+def test_the_owner_is_told_every_outcome_in_fixed_words():
+    for code in el.CODES - {"EASY_LOGIN_CODE_SENT", "EASY_LOGIN_REQUESTED"}:
+        text, markup = el.outcome(code)
+        assert text and markup in (None, el.request_markup("🔑 다시 요청"))
+    for quiet in ("EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_REQUEST_TOO_SOON", "EASY_LOGIN_REQUEST_DAILY_MAX"):
+        assert el.outcome(quiet)[1] is None                  # pressing again would not help yet
+    assert "아이디 칸이 비어" in el.outcome("EASY_LOGIN_STOPPED_ID_EMPTY")[0]
+
+
+def test_a_request_reports_its_outcome_on_telegram_and_an_automatic_run_does_not(tmp_path, monkeypatch):
+    from ggongbab import notify, ops_browser
+    local = tmp_path / ".local"
+    local.mkdir()
+    atomic_json(local / el.CONFIG, {"enabled": True, "expected_id": OWNER_ID})
+    telegram = Telegram()
+    monkeypatch.setattr(notify, "local_notifier", lambda path: telegram)
+    monkeypatch.setattr(ops_browser, "page_targets",
+                        lambda port, **kw: [{"id": "d", "url": URL["dooray"]}, {"id": "p", "url": URL["main"]}])
+    monkeypatch.setattr(ops_browser, "slot_for", lambda root, role: Mock(port=9224))
+    monkeypatch.setattr(ops_browser, "read_mode", lambda path: "unified")
+    monkeypatch.setattr(ops_browser, "dooray_host", lambda path: DOORAY_HOST)
+    assert el.run_assist(tmp_path, requested=True) == 1
+    assert telegram.messages == [el.OUTCOME["EASY_LOGIN_NOT_NEEDED"]] and telegram.markups == [None]
+    log = (local / el.LOG).read_text(encoding="utf-8")
+    assert "EASY_LOGIN_REQUESTED" in log and "EASY_LOGIN_NOT_NEEDED" in log
+    assert el.run_assist(tmp_path) == 1 and len(telegram.messages) == 1      # EASY_LOGIN_NO_LOGIN_PAGE, quietly
+
+
+@pytest.mark.parametrize("text, wanted", [
+    ("로그인", True), ("로그인 다시 할게", True), ("다시 로그인", True), ("로그인 해줘", True), ("/login", True),
+    ("로그인할게요", True), ("로그인!", True), ("Login", True), ("로그인 요청", True),
+    ("로그인?", False), ("로그인 됐어?", False), ("왜 로그인 풀렸어", False), ("포털 로그인 상태 알려줘", False), ("", False),
+])
+def test_only_a_message_that_is_just_the_request_counts(text, wanted):
+    assert el.is_request(text) is wanted
+
+
+def test_the_bot_starts_a_request_on_the_button_or_on_login_and_keeps_questions_for_the_agent(tmp_path):
+    from ggongbab.instagram import telegram_review as tr
+    from ggongbab.instagram.radar import Config, Radar
+
+    class RadarBot:
+        chat_id = "42"
+
+        def __init__(self):
+            self.pending, self.said, self.answered = [], [], []
+
+        def updates(self, offset, wait=25):
+            out, self.pending = self.pending, []
+            return out
+
+        def events(self, updates):
+            return tr.Bot("x", self.chat_id).events(updates)
+
+        def say(self, text):
+            self.said.append(text)
+
+        def answer(self, callback, text):
+            self.answered.append(text)
+
+    local = tmp_path / ".local"
+    local.mkdir()
+    bot = RadarBot()
+    config = Config(version="v26.0", ig_user_id="1", token="t", primary="gpt-6-luna", review="gpt-6.1-terra")
+    radar = Radar(tmp_path, config=config, graph=None, judge=None, bot=bot, now=lambda: NOW, sleep=lambda s: None)
+    launched = []
+    radar.launch_login = lambda root: launched.append(root) or Mock(poll=Mock(return_value=None))
+
+    def message(uid, text):
+        return {"update_id": uid, "message": {"chat": {"id": 42}, "text": text}}
+
+    def tap(uid, chat=42):
+        return {"update_id": uid, "callback_query": {"id": f"c{uid}", "data": el.REQUEST_CALLBACK,
+                                                      "message": {"chat": {"id": chat}}}}
+    assert tr.LOGIN_CALLBACK == el.REQUEST_CALLBACK
+    bot.pending = [message(1, "로그인")]
+    radar.handle_updates(0)
+    assert launched == [] and "꺼져 있습니다" in bot.said[-1]          # Easy Login is off on this PC
+    atomic_json(local / el.CONFIG, {"enabled": True, "expected_id": OWNER_ID})
+    bot.pending = [tap(2, chat=99)]                                    # another chat: ignored
+    radar.handle_updates(0)
+    assert launched == [] and bot.answered == []
+    bot.pending = [tap(3)]
+    radar.handle_updates(0)
+    assert launched == [tmp_path] and bot.answered[-1].startswith("🔑")
+    bot.pending = [message(4, "로그인 다시 할게")]                    # the first one still runs
+    radar.handle_updates(0)
+    assert len(launched) == 1 and "여는 중" in bot.said[-1]
+    radar.login_child.poll.return_value = 0
+    bot.pending = [message(5, "다시 로그인")]
+    radar.handle_updates(0)
+    assert len(launched) == 2 and not (local / tr.INBOX).exists()      # a request is not a note
+    bot.pending = [message(6, "로그인 왜 풀렸어?")]
+    radar.handle_updates(0)
+    assert len(launched) == 2 and "왜 풀렸어" in (local / tr.INBOX).read_text(encoding="utf-8")
+
+
+def test_no_automatic_resume_while_the_portal_tab_is_back_on_its_login_page(tmp_path):
+    """The request's first step shows the Portal's login page after an SSO page: that is not a login."""
+    wd, _, clock, _ = dog(tmp_path)
+    tabs = {"now": [{"id": "d", "url": URL["dooray"]}, {"id": "s", "url": URL["stuck"]}]}
+    wd.targets = lambda port: tabs["now"]
+    assert wd.may_resume("verified", clock["t"]) is None and wd.sso_seen
+    for step in ("portal", "view", "mfa"):
+        tabs["now"] = [{"id": "d", "url": URL["dooray"]}, {"id": "s", "url": URL[step]}]
+        assert wd.may_resume("verified", clock["t"]) is None
+    tabs["now"] = [{"id": "d", "url": URL["dooray"]}, {"id": "s", "url": URL["main"]}]    # approved
+    assert wd.may_resume("verified", clock["t"]) == "login"

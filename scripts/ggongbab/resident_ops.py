@@ -327,11 +327,16 @@ class Watchdog:
             return None
         if counts["portal"] != 1:
             return None
+        on_login_page = any(page_kind(t["url"]) == "portal_login" for t in pages)
         if self.sso_seen:
+            if on_login_page:
+                # The Portal's tab is back on its login page, not logged in: for example the owner's
+                # Easy Login request sending an expired verification page back there (2026-10-31).
+                return None
             self.sso_seen = False
             return "login"
         if (not self.quick_retry_used and now - self.latch_seen_at >= QUICK_RETRY_SECONDS
-                and not any(page_kind(t["url"]) == "portal_login" for t in pages)):
+                and not on_login_page):
             self.quick_retry_used = True
             return "retry"
         return None

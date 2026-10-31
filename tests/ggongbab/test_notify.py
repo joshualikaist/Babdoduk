@@ -150,6 +150,31 @@ def test_the_local_telegram_push_says_in_korean_what_to_do(tmp_path, monkeypatch
     assert TOKEN not in text and PRIVATE not in text and "운영 PC" in text
 
 
+def test_a_login_alert_brings_the_login_button_while_easy_login_is_on(tmp_path, monkeypatch):
+    """Owner 2026-10-31: "로그인 버튼이 있으면 누를게" - the 🔑 button asks the PC for a new code."""
+    monkeypatch.setattr(notify.os, "name", "posix")
+    (tmp_path / "alert-push.json").write_text(json.dumps({"provider": "telegram", "chat_id": "42"}), encoding="utf-8")
+    (tmp_path / "easy-login.json").write_text(json.dumps({"enabled": True, "expected_id": "x"}), encoding="utf-8")
+    sent = []
+    for alert in (Alert.of("portal", "AUTH_EXPIRED", 900, NOW), crit()):
+        notifier = notify.local_notifier(tmp_path, read_credential=lambda t: TOKEN)
+        notifier._opener = opener = Opener()
+        assert notify.push([alert], notifier, notify.PushPolicy(tmp_path / f"{len(sent)}.json"), source="local PC",
+                           now=NOW) == notify.SENT
+        sent.append(json.loads(opener.requests[0]["body"]))
+    login, stale = sent
+    assert login["reply_markup"] == {"inline_keyboard": [[{"text": "🔑 로그인 요청", "callback_data": "login:go"}]]}
+    assert notify.LOGIN_BUTTON_LINE in login["text"]
+    assert "reply_markup" not in stale and notify.LOGIN_BUTTON_LINE not in stale["text"]
+    (tmp_path / "easy-login.json").unlink()                       # off: the old wording, no button
+    notifier = notify.local_notifier(tmp_path, read_credential=lambda t: TOKEN)
+    notifier._opener = opener = Opener()
+    notify.push([Alert.of("portal", "AUTH_EXPIRED", 900, NOW)], notifier, notify.PushPolicy(tmp_path / "off.json"),
+                source="local PC", now=NOW)
+    body = json.loads(opener.requests[0]["body"])
+    assert "reply_markup" not in body and notify.LOGIN_BUTTON_LINE not in body["text"]
+
+
 def test_the_phone_waits_out_a_brief_critical_like_the_toast(tmp_path):
     sink = Recorder()
     assert notify.push_local(tmp_path, [crit()], now=NOW, notifier=sink) == notify.NOTHING

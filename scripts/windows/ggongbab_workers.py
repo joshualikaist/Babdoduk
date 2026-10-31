@@ -280,6 +280,8 @@ def main(argv=None):
                         help="radar-once/radar-recheck: detect only; no task, state or dispatch")
     parser.add_argument("--days", type=int, default=7, help="radar-recheck: days of mail to read again (1-14)")
     parser.add_argument("--subject", help="mail-lookup: the exact subject to look up")
+    parser.add_argument("--requested", action="store_true",
+                        help="easy-login: the owner asked on Telegram (its own limits; reopens the Portal's login page)")
     parser.add_argument("--interval", type=int, help="radar: seconds between scans (120-300, default 180); "
                                                      "ops-browser-verify: seconds between cycles (default 60)")
     parser.add_argument("--to", choices=("unified", "separate"), help="ops-browser-mode: switch the workers' browser")
@@ -366,9 +368,10 @@ def main(argv=None):
                 return ops_agent.status(ROOT)
             ops_agent.set_enabled(ROOT, args.action == "ops-agent-enable", time.time())
         elif args.action == "easy-login":
-            # One Easy Login attempt (docs/PORTAL_EASY_LOGIN_ASSIST.md); the watchdog launches it.
+            # One Easy Login attempt (docs/PORTAL_EASY_LOGIN_ASSIST.md); the watchdog launches it, and
+            # the Telegram bot with --requested when the owner asks (🔑 or "로그인").
             from ggongbab.easy_login import run_assist
-            return run_assist(ROOT)
+            return run_assist(ROOT, requested=args.requested)
         elif args.action in OPS_BROWSER_ACTIONS:
             if args.action.startswith("legacy-") and args.role is None:
                 raise OpsError("OPS_CONFIGURATION_REQUIRED")

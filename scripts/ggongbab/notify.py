@@ -85,8 +85,12 @@ class TelegramNotifier:
     def __init__(self, token: str, chat_id: str, opener: Callable = urllib.request.urlopen):
         self._token, self.chat_id, self._opener = token, str(chat_id), opener
 
-    def send(self, text: str) -> str:
-        body = json.dumps({"chat_id": self.chat_id, "text": text[:4000], "disable_web_page_preview": True}).encode()
+    def send(self, text: str, markup: Optional[dict] = None) -> str:
+        """`markup`: Telegram buttons (reply_markup), for example easy_login.request_markup."""
+        payload = {"chat_id": self.chat_id, "text": text[:4000], "disable_web_page_preview": True}
+        if markup:
+            payload["reply_markup"] = markup
+        body = json.dumps(payload).encode()
         request = urllib.request.Request(f"{TELEGRAM_API}/bot{self._token}/sendMessage", data=body, method="POST",
                                          headers={"Content-Type": "application/json", "User-Agent": UA})
         return _post(request, self._opener)
@@ -95,12 +99,30 @@ class TelegramNotifier:
 
 class LocalTelegramNotifier(TelegramNotifier):
     """This PC's Telegram push (2026-10-29): the same fixed Korean wording as its desktop toast, so
-    the phone says what to do (for a login: connect to this PC and log in in the Ops Chrome)."""
+    the phone says what to do (for a login: connect to this PC and log in in the Ops Chrome).
 
-    @staticmethod
-    def render(changes, recovered) -> str:
+    `login_button` (Easy Login is enabled on this PC, easy_login.enabled): a login alert also gets
+    the 🔑 button, which asks this PC to open the login page again and send a new code (owner
+    2026-10-31: "로그인 버튼이 있으면 누를게")."""
+
+    def __init__(self, token: str, chat_id: str, opener: Callable = urllib.request.urlopen, *, login_button: bool = False):
+        super().__init__(token, chat_id, opener)
+        self.login_button = login_button
+
+    def _login(self, changes) -> bool:
+        return self.login_button and any(a.action == "login" for a in changes)
+
+    def render(self, changes, recovered) -> str:
         title, body = format_toast(changes, recovered, actions=TOAST_ACTION if os.name == "nt" else LINUX_TOAST_ACTION)
+        if self._login(changes):
+            body += "\n\n" + LOGIN_BUTTON_LINE
         return f"{title}\n\n{body}\n\n{datetime.now(KST).strftime('%m-%d %H:%M')} · 운영 PC"
+
+    def markup(self, changes) -> Optional[dict]:
+        if not self._login(changes):
+            return None
+        from .easy_login import request_markup
+        return request_markup()
 
 class NtfyNotifier:
     """Authenticated ntfy (access token), e.g. a reserved topic on ntfy.sh or a self-hosted server."""
@@ -108,8 +130,8 @@ class NtfyNotifier:
     def __init__(self, server: str, topic: str, token: str, opener: Callable = urllib.request.urlopen):
         self.url, self._token, self._opener = server.rstrip("/") + "/" + topic, token, opener
 
-    def send(self, text: str) -> str:
-        critical = "CRITICAL" in text
+    def send(self, text: str, markup: Optional[dict] = None) -> str:
+        critical = "CRITICAL" in text      # ntfy has no Telegram buttons: `markup` is ignored
         request = urllib.request.Request(self.url, data=text.encode("utf-8"), method="POST", headers={
             "Authorization": f"Bearer {self._token}", "Title": "Babdoduk ops", "User-Agent": UA,
             "Priority": "urgent" if critical else "default", "Tags": "rotating_light" if critical else "warning"})
@@ -184,7 +206,10 @@ def push(alerts: Iterable[Alert], notifier, policy: PushPolicy, *, source: str,
         policy.commit(next_state, last.get("last_result") or NOTHING, float(last.get("last_attempt") or 0))
         return NOTHING
     render = getattr(notifier, "render", None)
-    result = notifier.send(render(changes, recovered) if render else format_message(changes, source=source, recovered=recovered))
+    text = render(changes, recovered) if render else format_message(changes, source=source, recovered=recovered)
+    markup = getattr(notifier, "markup", None)
+    buttons = markup(changes) if markup else None
+    result = notifier.send(text, markup=buttons) if buttons else notifier.send(text)
     if result == SENT:
         policy.commit(next_state, result, now)
     else:
@@ -203,7 +228,10 @@ def local_notifier(local: Path, *, read_credential: Optional[Callable[[str], Opt
     provider = config.get("provider")
     if provider == "telegram" and config.get("chat_id"):
         token = read_credential(TOKEN_TARGET)
-        return LocalTelegramNotifier(token, config["chat_id"]) if token else None
+        if not token:
+            return None
+        from .easy_login import enabled
+        return LocalTelegramNotifier(token, config["chat_id"], login_button=enabled(Path(local))[0])
     if provider == "ntfy" and config.get("server") and config.get("topic"):
         token = read_credential(NTFY_TOKEN_TARGET)
         return NtfyNotifier(config["server"], config["topic"], token) if token else None
@@ -262,6 +290,9 @@ TOAST_ACTION = {
     "fix_config": "운영 사본 설정을 고친 뒤 다시 시작하세요.",
     "check_network": "이 PC의 인터넷 연결(Wi-Fi나 유선)을 확인하세요. 수집기는 저절로 다시 시도합니다.",
 }
+# Added under a login alert's text when the 🔑 button comes with it (LocalTelegramNotifier.login_button).
+LOGIN_BUTTON_LINE = ("🔑 지금 로그인할 수 있으면 아래 '로그인 요청'을 누르거나 \"로그인\"이라고 보내 주세요. "
+                     "운영 PC가 로그인 화면을 다시 열고 승인 번호를 보냅니다.")
 # The same actions in the Linux operations checkout's commands (scripts/linux/ops.sh).
 LINUX_TOAST_ACTION = dict(TOAST_ACTION,
     login="원격 데스크톱으로 이 PC에 접속해 운영 Chrome에서 직접 로그인하세요. Chrome이 없으면 저절로 열립니다. "

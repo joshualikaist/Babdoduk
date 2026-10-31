@@ -366,6 +366,33 @@ def test_the_radar_hands_a_tap_to_the_agent_and_says_who_answers_a_note(tmp_path
     assert json.loads(line) | {"at": 0} == {"action": "ok", "id": "0123456789ab", "at": 0}
 
 
+def test_a_login_the_owner_asks_for_starts_after_the_reply_and_never_on_the_models_own(ops):
+    root, build = ops
+    oa.set_enabled(root, True, NOW)
+    (root / ".local" / "easy-login.json").write_text(json.dumps({"enabled": True, "expected_id": "x"}))
+    run = Run()
+    agent, bot, _, _, _ = build([answer("승인 요청을 다시 보냅니다.", [{"do": "login"}])], run=run)
+    note(root, "지금은 로그인할 수 있어, 승인 요청 보내줘", NOW + 60)
+    agent.cycle()
+    assert "🔑 로그인 화면을 다시 열고 승인 번호를 곧 보냅니다." in bot.said[-1]
+    (call,) = [c for c in run.calls if "easy-login" in c]
+    assert call[-2:] == ["easy-login", "--requested"] and call[-3].endswith("ggongbab_workers.py")
+    run = Run()
+    agent, bot, _, _, _ = build([answer("로그인이 필요해 보입니다.", [{"do": "login"}])], run=run)
+    note(root, "메일 레이더 괜찮아?", NOW + 120)
+    agent.cycle()                                                  # not asked: nothing starts
+    assert not any("easy-login" in c for c in run.calls) and "🔑" not in bot.said[-1]
+
+
+def test_ops_sh_never_calls_its_own_installer_for_a_file():
+    """2026-10-31: `install -m 600 /dev/null <file>` in agent-install ran ops.sh's install() (the service
+    installer, which stopped at TASK_ALREADY_EXISTS_REMOVE_FIRST) instead of coreutils install."""
+    import re
+    from pathlib import Path
+    text = (Path(oa.__file__).resolve().parents[2] / "scripts" / "linux" / "ops.sh").read_text(encoding="utf-8")
+    assert "install() {" in text and not re.search(r"\binstall -[a-z]", text)
+
+
 def test_every_code_the_agent_logs_is_an_allowed_reason():
     import re
     from pathlib import Path

@@ -27,6 +27,7 @@ import base64
 import hashlib
 import json
 import math
+import re
 import subprocess
 import sys
 import time
@@ -60,7 +61,7 @@ LATCH = "radar-unread-disabled.json"
 
 class Action(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    do: Literal["restart", "recheck", "allow_unread"]
+    do: Literal["restart", "recheck", "allow_unread", "login"]
     unit: Optional[Literal["portal-worker", "dooray-radar", "ig-radar"]]
     days: Optional[int]
     why: str
@@ -93,13 +94,22 @@ in one line and propose nothing. Never repeat tokens, passwords, IDs or cookies.
 
 Actions, run by the program with its own limits; propose one only when the state shows the need:
   restart (unit): the worker is meant to run (its control is enabled) but its service is not active, or
-    its log shows it stuck.
+    its log shows it stuck. Never for a login wait (a login latch in ops-watchdog.json such as
+    PORTAL_LIST_AUTH_REQUIRED, or DOORAY_AUTH_REQUIRED): a restart does not log in.
   recheck (days 1-3): Dooray mail was missed (the radar was stopped or failed, or skipped unread mail)
     and must be read again.
   allow_unread: the unread latch is set. The program asks the owner first, with buttons. Explain in `why`
     what tripped it (its requests) and whether it looks like the owner opening a mail in the Ops Chrome's
     Dooray tab or something else.
-Nothing else can be done here. A Portal or Dooray login (the owner, in the Ops Chrome over remote desktop),
+  login: the owner asks in this message for a KAIST login now (they can approve on their phone). The PC
+    opens the login page again and sends a new approval number to Telegram (Easy Login). Not when they
+    report that they approved or logged in, and never on your own initiative: when a login is needed but
+    not asked for, tell them to tap 🔑 로그인 요청 or send "로그인".
+    How a login ends: once the owner approves on the phone the SSO page closes and the watchdog restarts
+    the Portal worker by itself (OPS_AUTO_RESUMED in its log); nothing else is needed. If the owner says
+    they approved but the login wait is still there, the approval did not go through (easy-login-state.json
+    "last_sent" is the last code's time; a code lasts about 3 minutes): suggest 🔑 or "로그인" for a new code.
+Nothing else can be done here. The approval itself (the owner's phone), a login by hand over remote desktop,
 a code or site fix, a deployment, a database change or a Meta/Instagram setting is for the owner or the
 next Claude session: say so, and put a short task description in for_next_session. That field is only
 for work a developer must do (a fault you cannot explain counts); leave it empty otherwise, and never use
@@ -181,6 +191,7 @@ class Agent:
         self.local = self.root / ".local"
         self.home = self.local / HOME
         self.bot, self.ask, self.now, self.run, self.log = bot, ask, now, run, log
+        self.asked_login = self.login_wanted = False   # handle(): the owner asked for a login
 
     # --- commands ---------------------------------------------------------------------------------
     def _run(self, argv: list[str], timeout: int) -> tuple[int, str]:
@@ -280,6 +291,8 @@ class Agent:
             self.log("OPS_AGENT_LIMIT")
             return
         state["runs"] = runs + [now]
+        self.asked_login = any(re.search(r"로그인|login", str(n.get("text") or ""), re.IGNORECASE) for n in notes)
+        self.login_wanted = False
         try:
             answer = self.ask(self.content(state, notes))
         except Exception:  # noqa: BLE001 - the message stays in the inbox for the next Claude session
@@ -305,6 +318,11 @@ class Agent:
                 self.log("OPS_AGENT_TELEGRAM_FAILED")
         self.remember(notes, answer, lines)
         self.log("OPS_AGENT_ANSWERED")
+        if self.login_wanted:
+            # Waited for here: this one-shot service's processes end with it. The attempt tells the
+            # owner its outcome itself (easy_login.run_assist(requested=True)).
+            self._run([sys.executable, str(self.root / "scripts" / "windows" / "ggongbab_workers.py"),
+                       "easy-login", "--requested"], 300)
 
     def remember(self, notes: list[dict], answer: Answer, lines: list[str]) -> None:
         path = self.home / HISTORY
@@ -395,6 +413,14 @@ class Agent:
             return (f"🔄 {label}: 다시 시작했습니다." if code == 0 else f"⚠️ {label}: 다시 시작하지 못했습니다."), None
         if action.do == "recheck":
             return self.recheck(state, action.days if action.days in (1, 2, 3) else 1), None
+        if action.do == "login":
+            from .easy_login import enabled as easy_login_on
+            if not self.asked_login:
+                return "", None             # only when the owner's own message asks for a login
+            if not easy_login_on(self.local)[0]:
+                return "🔑 간편 로그인 도우미가 꺼져 있어 로그인 요청을 보내지 않았습니다.", None
+            self.login_wanted = True        # started after the reply (handle), so it comes first
+            return "🔑 로그인 화면을 다시 열고 승인 번호를 곧 보냅니다.", None
         if action.do == "allow_unread":
             if not (self.local / LATCH).exists():
                 return "🔓 읽지 않은 메일 잠금은 이미 풀려 있습니다.", None

@@ -55,6 +55,11 @@ class Config:
                 if not value]
 
 
+def launch_login(root: Path):
+    from ..easy_login import launch_request
+    return launch_request(root)
+
+
 class Radar:
     def __init__(self, root: Path, *, config: Config, graph, judge, bot=None, writer=None, log=None,
                  now: Callable = time.time, sleep: Callable = time.sleep, dry_run: bool = False):
@@ -66,6 +71,8 @@ class Radar:
         self.counts: dict = {}
         self.since = collect_since(self.root)
         self.tips = None        # ggongbab.tips.Tips: reader tips share this bot (cli.build)
+        self.login_child = None     # the Easy Login attempt the owner asked for (request_login)
+        self.launch_login = launch_login
 
     # --- alerts -------------------------------------------------------------------------------
     def alert(self, key: str, text: str, every: float = 24 * 3600) -> None:
@@ -371,6 +378,8 @@ class Radar:
                     self.bot.answer(callback, "제보 검토가 아직 켜져 있지 않습니다")
                 else:
                     self.tips.decide(action, tip_id, callback)
+            elif event[0] == "login":
+                self.request_login(event[1])
             elif event[0] == "agent":
                 from ..ops_agent import record_answer
                 _, action, ask_id, callback = event
@@ -404,7 +413,11 @@ class Radar:
                 _, text, reply_to = event
                 media_id = self.store.get(f"edit:{reply_to}") if reply_to else None
                 if not media_id or self.store.candidate(media_id) is None:
-                    self.note(text)
+                    from ..easy_login import is_request
+                    if is_request(text):
+                        self.request_login()
+                    else:
+                        self.note(text)
                     continue
                 changes = {k: v for k, v in parse_edit(text).items() if k in EDITABLE}
                 if not changes:
@@ -416,6 +429,28 @@ class Radar:
                                             extraction_json=json.dumps(extraction, ensure_ascii=False))
                 self.store.add_review(media_id, "edit", json.dumps(changes, ensure_ascii=False), now=self.now())
                 self.bot.say("✏️ 고친 내용으로 꽁밥 등록합니다: " + ", ".join(changes))
+
+    def request_login(self, callback: Optional[str] = None) -> None:
+        """The owner asks for a KAIST login now: the 🔑 button or a message that is only "로그인" (owner
+        2026-10-31: "로그인이라고 말하거나, 로그인 버튼이 있으면 누를게. 그러면 다시 너가 승인 요청하도록까지
+        창 만들어줘"). One Easy Login attempt starts at once in its own process, which opens the login
+        page again and sends the new code or says why not (easy_login.run_assist(requested=True))."""
+        from ..easy_login import enabled as easy_login_on
+        if not easy_login_on(self.local)[0]:
+            text = "간편 로그인 도우미가 이 PC에서 꺼져 있습니다. 원격 데스크톱으로 운영 Chrome에서 직접 로그인해 주세요."
+        elif self.login_child is not None and self.login_child.poll() is None:
+            text = "⏳ 로그인 화면을 여는 중입니다. 승인 번호가 곧 옵니다."
+        else:
+            try:
+                self.login_child = self.launch_login(self.root)
+                text = "🔑 로그인 화면을 다시 열고 승인 번호를 보내겠습니다. 30초쯤 걸립니다."
+            except OSError:
+                self.log("EASY_LOGIN_REQUEST_NOT_STARTED")
+                text = "⚠️ 로그인 요청을 시작하지 못했습니다. 원격 데스크톱으로 직접 로그인해 주세요."
+        if callback:
+            self.bot.answer(callback, text)
+        else:
+            self.bot.say(text)
 
     def note(self, text: str, photo: str = "") -> None:
         """Anything the owner writes that answers no question is kept for Claude (keep_note) and, while

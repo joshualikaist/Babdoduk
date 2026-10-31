@@ -6,7 +6,9 @@ and three buttons: ✅ 꽁밥 맞음 / ❌ 아님 / ✏️ 정보 수정. ✏️
 The same bot asks about reader tips (ggongbab/tips.py: tip:ok / tip:no). Anything else the owner
 writes or sends as a photo is kept for Claude to read (keep_note, owner 2026-10-31: "텔레그램에서 내가
 친 내용을 너가 다시 볼 수 있게") and, while the ops agent is on, answered by it (ggongbab/ops_agent.py),
-whose questions come back as agent:ok / agent:no. Only the allowed chat is ever read; anything else is ignored. Long polling (getUpdates), because
+whose questions come back as agent:ok / agent:no. The 🔑 button under a login alert or code (login:go) and
+a message that is only "로그인" ask for a new KAIST login (ggongbab/easy_login.py, owner 2026-10-31).
+Only the allowed chat is ever read; anything else is ignored. Long polling (getUpdates), because
 the operations PC has no public address. The bot is the existing Babdoduk ops bot unless
 TELEGRAM_BOT_TOKEN / TELEGRAM_ALLOWED_CHAT_ID are set.
 """
@@ -30,6 +32,7 @@ FIELD_NAMES = {"제목": "event_title", "음식": "food_items", "시작": "start
                "대상": "eligibility", "인원": "quantity_limit", "준비물": "requirements", "신청": "registration"}
 TIP_ID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 ASK_ID = r"[0-9a-f]{12}"                # an ops agent question (ops_agent.Agent.act)
+LOGIN_CALLBACK = "login:go"             # easy_login.REQUEST_CALLBACK: the owner asks for a login
 INBOX = "telegram-inbox.jsonl"          # .local/: the owner's notes, newest last
 INBOX_PHOTOS = "telegram-inbox"         # .local/telegram-inbox/<time>.<ext>
 INBOX_KEEP, PHOTO_KEEP = 300, 50
@@ -212,8 +215,8 @@ class Bot:
 
     def events(self, updates: list[dict]) -> list[tuple]:
         """("button", action, media_id, callback_id), ("tip", action, tip_id, callback_id),
-        ("agent", action, ask_id, callback_id), ("text", text, reply_to_message_id) and
-        ("photo", file_id, caption), from the allowed chat only."""
+        ("agent", action, ask_id, callback_id), ("login", callback_id), ("text", text,
+        reply_to_message_id) and ("photo", file_id, caption), from the allowed chat only."""
         out = []
         for update in updates:
             callback = update.get("callback_query")
@@ -229,6 +232,8 @@ class Bot:
                     out.append(("tip", tip.group(1), tip.group(2), callback.get("id")))
                 elif str(chat) == self.chat_id and agent:
                     out.append(("agent", agent.group(1), agent.group(2), callback.get("id")))
+                elif str(chat) == self.chat_id and data == LOGIN_CALLBACK:
+                    out.append(("login", callback.get("id")))
                 continue
             message = update.get("message") or {}
             if str((message.get("chat") or {}).get("id")) != self.chat_id:

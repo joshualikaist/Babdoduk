@@ -38,9 +38,10 @@ second run waits on `.local/ops-agent/run.lock`.
 | `restart` (portal-worker, dooray-radar, ig-radar) | `systemctl --user reset-failed` and `restart --no-block` | Only a worker whose control file is switched on (the owner's stop is respected); once an hour per worker |
 | `recheck` (1-3 days) | `ops.sh radar-stop`, `ggongbab_workers.py radar-recheck --days N`, `ops.sh radar-start` | Once every six hours. A radar the owner left off is only rechecked, never started. A radar still finishing its scan is left running and the recheck is put off |
 | `allow_unread` | Nothing at first: a Telegram question with ✅ 풀기 / ❌ 그대로 두기 | Only ✅ runs `radar-allow-unread`, then rereads the days the latch skipped (1-3). A question expires after a day |
+| `login` | After the reply: `ggongbab_workers.py easy-login --requested`, which reopens the KAIST login page and sends a new approval code (`docs/PORTAL_EASY_LOGIN_ASSIST.md`) | Only when the owner's message mentions a login (로그인 or login) and Easy Login is enabled; the request's own limits apply. A message that is only "로그인" never reaches the agent: the bot starts the request itself |
 
-Everything else is refused, because the model's answer can only name these three. That includes a login,
-a code or site fix, a deployment, a database change and a Meta setting. The reply says what the owner can
+Everything else is refused, because the model's answer can only name these four. That includes approving
+a login, a code or site fix, a deployment, a database change and a Meta setting. The reply says what the owner can
 do. Developer work goes in `for_next_session`; the next Claude session reads it with
 `ops.sh agent-status` or `.local/ops-agent/history.jsonl`.
 
