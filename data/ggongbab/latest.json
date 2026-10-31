@@ -1,9 +1,47 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-31T00:25:59+09:00",
+  "generatedAt": "2026-10-31T14:36:57+09:00",
   "timezone": "Asia/Seoul",
-  "count": 11,
+  "count": 13,
   "events": [
+    {
+      "id": "ef9595e6-fc91-447c-b6f9-706f86f02198",
+      "title": "Towards Cross-Context Studies of Ethical, Legal, and Social Issues Unique to New Alternative Methods in Biomedical Research",
+      "summary": "KAIST와 미시간주립대학교가 공동 개최하는 과학철학 워크숍으로, 생의학 연구의 새로운 대안적 방법(NAMs)의 윤리적·법적·사회적 쟁점을 논의한다. 현장 및 온라인(Zoom)으로 참여할 수 있다.",
+      "startAt": "2026-11-02T09:00:00+09:00",
+      "endAt": "2026-11-02T17:15:00+09:00",
+      "dateText": "2026년 11월 2일(월)",
+      "timeText": "09:00–17:15",
+      "location": {
+        "name": "KAIST 본원",
+        "building": "N4",
+        "room": "국제세미나실(1433호)"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "다과",
+        "source": "text"
+      },
+      "organizer": "KAIST 디지털인문사회과학부, KAIST 디지털인문사회과학센터, KAIST AI철학 연구센터, 미시간주립대학교 철학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "과학자, 정책입안자, 학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
       "title": "자연과학과 함께하는 토크 콘서트",
@@ -411,6 +449,44 @@
       ],
       "audience": {
         "text": "관심 있는 분들",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "eb885de3-e21c-4dba-9017-13ddc5dba2da",
+      "title": "특강: 벤처캐피탈리스트, 창업 & 커리어 스토리",
+      "summary": "KAIST 경영대학 동문 차민석 SJ투자파트너스 부사장이 벤처캐피탈리스트, 창업 및 커리어 스토리에 대해 강연합니다. 온·오프라인으로 진행되며 오프라인 참여자에게 간단한 다과가 제공됩니다.",
+      "startAt": "2026-11-18T16:00:00+09:00",
+      "endAt": "2026-11-18T17:20:00+09:00",
+      "dateText": "11월 18일(수)",
+      "timeText": "16시~17시 20분",
+      "location": {
+        "name": "KAIST 경영대학 서울캠퍼스, 수펙스경영관 103호 강의실",
+        "building": "",
+        "room": "수펙스경영관 103호 강의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "간단한 다과",
+        "source": "text"
+      },
+      "organizer": "KAIST 경영공학부 마케팅·취업지원실",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-16T23:59:00+09:00",
+        "url": "https://forms.gle/PDoJYPX9VznfNnw87"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "스타트업, 그리고 벤처캐피탈리스트에 관심 있는 분들",
         "basis": "stated"
       }
     },
