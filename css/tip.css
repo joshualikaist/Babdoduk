@@ -1,0 +1,639 @@
+/* 꽁밥 제보 (tip.html, lab only; docs/GGONGBAB_TIPS.md). Navigation and footer are owned by
+   site.css; colors come from its semantic tokens. */
+.tip-page {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-16);
+  color: var(--color-ink);
+}
+
+.tip-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- hero ------------------------------------------------------------------------------------ */
+.tip-hero {
+  position: relative;
+  display: grid;
+  gap: var(--space-6);
+  padding: 28px 22px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 100% 0%, var(--color-accent-wash) 0, transparent 46%),
+    var(--color-surface);
+  overflow: hidden;
+}
+
+.tip-hero-copy { min-width: 0; }
+
+.tip-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--space-3);
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.tip-title.page-title {
+  display: block;
+  font-size: clamp(1.85rem, 6.4vw, 2.75rem);
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.tip-lead {
+  margin: var(--space-3) 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.tip-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip-meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--color-divider);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.tip-meta-icon { font-size: 13px; color: var(--color-accent); }
+
+/* The example ticket: a campus food stamp with a perforated edge and a round "confirmed" stamp. */
+.tip-ticket {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 300px);
+  padding: 18px 20px 20px;
+  border: 1px solid var(--color-divider);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  transform: rotate(-2.5deg);
+}
+
+.tip-ticket-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted);
+}
+
+.tip-ticket-title {
+  margin: 4px -6px 14px;
+  padding: 0 6px 14px;
+  border-bottom: 2px dashed var(--color-divider);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+
+.tip-ticket-rows { display: grid; gap: 8px; margin: 0; padding-right: 70px; }
+.tip-ticket-rows div { display: flex; gap: 10px; align-items: baseline; }
+.tip-ticket-rows dt { flex: 0 0 auto; font-size: 14px; }
+.tip-ticket-rows dd { margin: 0; font-size: 14px; font-weight: 600; color: #3a3631; overflow-wrap: anywhere; }
+
+.tip-ticket-stamp {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 76px;
+  height: 76px;
+  border: 2.5px solid var(--color-accent);
+  border-radius: 50%;
+  color: var(--color-accent);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-align: center;
+  line-height: 1.1;
+  transform: rotate(-14deg);
+  opacity: 0.88;
+  box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 5.5px var(--color-accent);
+}
+
+.tip-ticket-stamp b { font-size: 20px; line-height: 1; }
+
+/* ---- steps ----------------------------------------------------------------------------------- */
+.tip-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip-steps li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.tip-steps small {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.tip-step-num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tip-steps li:last-child .tip-step-num { background: var(--color-accent); }
+
+/* ---- guide and form -------------------------------------------------------------------------- */
+.tip-layout {
+  display: grid;
+  grid-template-areas: "guide" "form";
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.tip-guide { grid-area: guide; min-width: 0; padding: 20px; border-radius: var(--radius-lg); background: var(--color-surface-muted); }
+.tip-card { grid-area: form; min-width: 0; }
+
+.tip-guide-title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.tip-guide-title--no { margin-top: var(--space-4); }
+
+.tip-guide-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip-guide-list li {
+  position: relative;
+  padding-left: 28px;
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.tip-guide-list li::before {
+  position: absolute;
+  left: 0;
+  top: 1px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.tip-guide-list--yes li::before { content: '✓'; background: #e3f1e6; color: #1f6f3a; }
+.tip-guide-list--no li::before { content: '✕'; background: #f4e3e1; color: #a1302a; }
+.tip-guide-list--no li { color: #4a453e; }
+
+.tip-card {
+  position: relative;
+  padding: 22px 18px 18px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.tip-card-title {
+  margin: 0 0 var(--space-4);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+.tip-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.tip-fieldset:disabled { opacity: 0.6; }
+
+.tip-field { position: relative; min-width: 0; margin-bottom: var(--space-4); }
+
+.tip-row { display: grid; gap: 0 var(--space-3); }
+
+.tip-label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.tip-optional {
+  margin-left: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.tip-input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid #cfc6b8;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.45;
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+
+.tip-input::placeholder { color: #8b8378; }
+.tip-input:hover { border-color: #a99f90; }
+.tip-input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-wash); outline: none; }
+.tip-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.tip-input[aria-invalid="true"] { border-color: #b42318; background: #fffafa; }
+.tip-textarea { min-height: 120px; resize: vertical; }
+
+input[type="date"].tip-input { appearance: none; -webkit-appearance: none; }
+
+.tip-count {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-count[data-over="true"] { color: #b42318; font-weight: 700; }
+
+.tip-error {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #b42318;
+}
+
+.tip-error::before { content: '!'; flex: 0 0 auto; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #b42318; color: #fff; font-size: 11px; font-weight: 900; }
+.tip-error[hidden] { display: none; }
+
+/* Photos: the real file input covers the drop zone, so a click or a tap anywhere opens the picker
+   and keyboard focus lands on it (shown on the zone). */
+.tip-drop {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 18px 14px;
+  border: 1.5px dashed #cdbfae;
+  border-radius: var(--radius-md);
+  background: #fffaf3;
+  text-align: center;
+  transition: border-color var(--ease), background var(--ease);
+}
+
+.tip-drop:hover,
+.tip-drop.is-over { border-color: var(--color-accent); background: #fff5fa; }
+.tip-drop:focus-within { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.tip-drop[data-full="true"] { opacity: 0.55; }
+
+.tip-file {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.tip-file:disabled { cursor: not-allowed; }
+.tip-drop-icon { font-size: 22px; }
+.tip-drop-text { font-size: 14px; font-weight: 800; }
+.tip-drop-hint { font-size: 12px; color: var(--color-ink-muted); }
+
+.tip-previews {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip-previews[hidden] { display: none; }
+
+.tip-preview {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid var(--color-divider);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+.tip-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.tip-preview-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(30, 29, 26, 0.78);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tip-preview-remove:hover { background: var(--color-ink); }
+.tip-preview-remove:focus-visible { outline: 2px solid #fff; outline-offset: -4px; box-shadow: 0 0 0 2px var(--color-ink); }
+
+.tip-hp {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 160px;
+  overflow: hidden;
+}
+
+.tip-hp input { width: 160px; height: 32px; }
+
+.tip-submit {
+  width: 100%;
+  height: 52px;
+  margin-top: var(--space-2);
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tip-submit[aria-busy="true"] { cursor: progress; }
+
+.tip-privacy {
+  margin: var(--space-3) 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+}
+
+.tip-status {
+  margin: var(--space-3) 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.tip-status:empty { display: none; }
+.tip-status[data-tone="error"] { padding: 10px 14px; border-radius: 12px; background: #fdecea; color: #8f1d14; }
+.tip-status[data-tone="info"] { color: var(--color-ink-muted); }
+.tip-status[data-tone="success"] { color: #1f6f3a; }
+
+.tip-done {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: var(--space-6) var(--space-2) var(--space-2);
+  text-align: center;
+}
+
+.tip-done[hidden] { display: none; }
+
+.tip-done-mark {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 900;
+  box-shadow: 0 0 0 8px var(--color-accent-wash);
+}
+
+.tip-done-title { margin: var(--space-3) 0 0; font-size: 22px; font-weight: 900; letter-spacing: -0.035em; }
+.tip-done-title:focus { outline: none; }
+.tip-done-title:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+.tip-done-text { margin: 0; font-size: 15px; color: var(--color-ink-muted); word-break: keep-all; }
+.tip-done-warn { margin: 4px 0 0; padding: 8px 12px; border-radius: 10px; background: #fff4e5; color: #7a4a00; font-size: 13px; font-weight: 700; }
+.tip-done-warn[hidden] { display: none; }
+.tip-again { margin-top: var(--space-3); cursor: pointer; }
+
+/* ---- board ----------------------------------------------------------------------------------- */
+.tip-board { margin-top: var(--space-12); }
+
+.tip-board-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.tip-board-title.page-section-title { flex: 1 1 240px; margin: 0; font-size: 20px; }
+.tip-board-meta { margin: 0; font-size: 13px; font-weight: 600; color: var(--color-ink-muted); }
+
+.tip-board-state {
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+  border: 1px dashed var(--color-divider);
+  border-radius: var(--radius-lg);
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.tip-group + .tip-group { margin-top: var(--space-6); }
+
+.tip-group-title {
+  margin: 0 0 var(--space-3);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+}
+
+.tip-group--past .tip-group-title { color: var(--color-ink-muted); }
+
+.tip-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip-item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+  padding: 16px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.tip-date {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px 0 10px;
+  border-radius: 14px;
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
+  text-align: center;
+  line-height: 1;
+}
+
+.tip-date-month { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; }
+.tip-date-day { font-size: 26px; font-weight: 900; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.tip-date-week { font-size: 12px; font-weight: 700; }
+
+.tip-item.is-today .tip-date { background: var(--color-accent); color: #fff; }
+
+.tip-item-body { min-width: 0; }
+
+.tip-item-title {
+  margin: 2px 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.tip-today {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-right: 6px;
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 11px;
+  font-weight: 800;
+  vertical-align: 2px;
+}
+
+.tip-facts { display: grid; gap: 4px; margin: 0; }
+.tip-facts div { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.tip-facts dt { flex: 0 0 auto; font-size: 13px; }
+.tip-facts dd { margin: 0; min-width: 0; font-size: 14px; line-height: 1.5; color: #3a3631; overflow-wrap: anywhere; }
+
+.tip-group--past .tip-item { background: transparent; }
+.tip-group--past .tip-date { background: var(--color-surface-muted); color: var(--color-ink-muted); }
+.tip-group--past .tip-item-title { color: #4a453e; }
+
+/* ---- wider screens --------------------------------------------------------------------------- */
+@media (min-width: 560px) {
+  .tip-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .tip-card { padding: 26px 24px 22px; }
+  .tip-submit { width: auto; min-width: 200px; padding: 0 28px; }
+}
+
+@media (min-width: 720px) {
+  .tip-page { padding: var(--space-8) var(--space-6) var(--space-16); }
+  .tip-hero { grid-template-columns: minmax(0, 1fr) 280px; align-items: center; padding: 40px 40px 40px 36px; }
+  .tip-steps li { flex-direction: row; justify-content: center; gap: 10px; padding: 14px 12px; font-size: 14px; text-align: left; }
+  .tip-steps small { display: inline; margin-left: 4px; }
+  .tip-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 960px) {
+  .tip-layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-areas: "form guide";
+    align-items: start;
+    gap: var(--space-6);
+  }
+  .tip-guide { position: sticky; top: calc(var(--nav-h) + 28px); padding: 24px; }
+  .tip-card { padding: 30px 30px 26px; }
+  .tip-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 719px) {
+  .tip-ticket { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tip-input,
+  .tip-drop { transition: none; }
+}

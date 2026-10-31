@@ -17,7 +17,7 @@
 - [ ] `main` 에서 시작했다면, 소유자가 lab 우회를 **명시적으로** 허락한 경우(긴급 hotfix, main 에서만 가능한 인프라 복구, 저장소 긴급 수정)이며 그 허락을 기록했다
 - [ ] 드리프트 확인이 비어 있다: `git log --format='%h %an %s' origin/lab..origin/main` 에 bot 이 아닌 커밋이 없다
 - [ ] 생성 데이터(`data/magazine/**`, `data/kaist-menu/**`, `data/ggongbab/latest.json`, `data/ggongbab/archive/**`)는 bot 이 lab·main 에 직접 푸시한다. 이 JSON 커밋을 기능 커밋과 섞지 않았다
-- [ ] `lab.html` / `lab-ggongbab.html` / `food.html` 은 두 브랜치에 있어도 되지만, 홈 내비에는 실험 링크를 걸지 않는다. production 에서는 `vercel.json` 이 404 로 막는다(babdoduk-lab 에서만 열림)
+- [ ] `lab.html` / `lab-ggongbab.html` / `food.html` / `tip.html` 은 두 브랜치에 있어도 되지만, 홈 내비에는 실험 링크를 걸지 않는다. production 에서는 `vercel.json` 이 404 로 막는다(babdoduk-lab 에서만 열림)
 
 ---
 

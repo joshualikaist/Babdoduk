@@ -22,7 +22,7 @@
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `event.html` 안에 직접 작성 |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 
-먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
+먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 꽁밥 제보 `tip.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
 
 홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`mukbang.html#what`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
 학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에 01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식을 둡니다. `history.html` 은 밥도둑이 걸어온 길입니다.
@@ -107,6 +107,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`worldcup.html`** | 밥도둑 먹방 월드컵 — 밥도둑 소식의 활동에서 여는 놀이. `data/content/worldcup.json` 의 메뉴 700여 개(음식 사전 id, 같은 요리는 5개까지 — `scripts/page_content.py` `SAME_DISH`) 중 매 판 32개를 뽑아 둘씩 고르고(시작 화면: 카드 둘레에 떠 있는 음식 사진, "오늘의 32강, 뭐가 나올까?", 이모지 카테고리 타일 8개와 🙈 아무거나, 다음 판에 실제로 나오는 메뉴 사진 다섯 장, 숨 쉬는 🎰 시작 버튼 — 시작하면 약 5초 캡슐 뽑기 장면, 이어하기에는 없음, 탭이나 키로 건너뜀; 고른 카드에 효과, 8강부터 새 라운드마다 검은 화면에 라운드 이름이 찍히는 장면 — 결승은 두 메뉴가 부딪히는 VS 장면, 탭이나 키로 건너뜀, 동작 줄이기면 없음 — 우승 때 폭죽과 인스타 스토리 카드 저장·공유, 친구 도전 링크 — `docs/WORLDCUP_SHARE.md`), 진행과 우승 기록은 이 브라우저(localStorage `babdoduk-worldcup`)에만 남는다. lab 에서는 끝난 판을 익명 합계로 모아 '모두의 랭킹'과 직전 경기 승률을 보여 준다(`docs/WORLDCUP_STATS.md`). 메뉴마다 위키미디어 공용의 자유 이용 사진(`images/worldcup/`, 작가·라이선스를 사진 아래 표시). 경품 없음 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
+| **`tip.html`** | 꽁밥 제보 게시판 — **실험실 전용**(`noindex, nofollow`, `vercel.json` 이 lab 밖에서 404, `lab.html`·`lab-ggongbab.html`·실험 페이지 더보기에서 진입). 방문자가 모르는 오프라인 꽁밥을 사진과 함께 보내고, 소유자가 하루 한 번 확인한 제보만 게시판에 올라간다(`docs/GGONGBAB_TIPS.md`) |
 
 상단 내비: 오늘의 꽁밥(꽁밥·학식) · 밥도둑 매거진(메뉴 고르기 포함) · 소식·이벤트(2026-10-13 소유자 결정으로 더보기에서 꺼냄) · 더보기(역사·지도·SNS) · 언어(EN/한국어). 푸터: 오늘의 꽁밥 · 밥도둑 매거진 · 소식·이벤트 · 역사. 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
 실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
@@ -803,6 +804,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/KAIST_MENU.md` | 이번 주 학식 수집·파일·화면 규칙 |
 | `docs/INSTAGRAM_SOURCES.md` | 학부 인스타그램 계정 조사: 22개 학과·학생 단체별 계정, API 조회 결과, 미확인·제외 계정(2026-10-29 확인), 공식 API 비교 |
 | `docs/INSTAGRAM_RADAR.md` | 인스타 레이더(lab 전용): Business Discovery 수집, 판정, 텔레그램 확인, 두레이 수집함으로 넘기기 |
+| `docs/GGONGBAB_TIPS.md` | 꽁밥 제보 게시판(lab 전용): 제보·사진을 받는 함수와 비공개 버킷, 남용 제한, 확인된 제보만 싣는 게시판, 적용 순서 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
@@ -812,7 +814,8 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
-`GGONGBAB_RESIDENT_OPS.md`(운영 PC 상주 worker, 2026-10-17부터 리눅스), `INSTAGRAM_RADAR.md`(인스타 레이더). 해당 기능이 main에 승격될 때 함께 옮깁니다.
+`GGONGBAB_RESIDENT_OPS.md`(운영 PC 상주 worker, 2026-10-17부터 리눅스), `INSTAGRAM_RADAR.md`(인스타 레이더),
+`GGONGBAB_TIPS.md`(꽁밥 제보 게시판). 해당 기능이 main에 승격될 때 함께 옮깁니다.
 
 ## 15. 라이선스
 

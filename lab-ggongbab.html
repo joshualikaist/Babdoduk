@@ -40,6 +40,30 @@
       text-decoration: underline;
       text-underline-offset: 2px;
     }
+    /* The way to the lab-only tip board (tip.html); the feed below is rendered by js/ggongbab.js. */
+    .gg-tip-entry {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      margin: 0 0 6px;
+      padding: 0 14px;
+      border: 1px solid #f5c2dc;
+      border-radius: 999px;
+      background: var(--color-accent-wash, #fce7f3);
+      color: var(--color-accent, #be185d);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .gg-tip-entry:hover { background: #fbd5e8; }
+    .gg-tip-entry:focus-visible { outline: 2px solid var(--color-focus, #1e1d1a); outline-offset: 2px; }
+    @media (min-width: 560px) {
+      .gg-tip-entry { position: absolute; top: 18px; right: 16px; margin: 0; z-index: 1; }
+    }
+    @media (min-width: 720px) {
+      .gg-tip-entry { right: 24px; }
+    }
 
   </style>
   <link rel="stylesheet" href="css/site.css" />
@@ -68,6 +92,7 @@
             <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
             <a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>
             <a class="nav-mega-link is-current" href="lab-ggongbab.html" aria-current="page" data-i18n="nav.labFeed">꽁밥 실험</a>
+            <a class="nav-mega-link" href="tip.html" data-i18n="nav.labTip">꽁밥 제보</a>
           </div>
         </div>
       </div>
@@ -76,6 +101,7 @@
   </header>
 
   <main class="ggongbab-page-wrap">
+    <a class="gg-tip-entry" href="tip.html"><span aria-hidden="true">📣</span> <span data-i18n="ggongbab.tipEntry">꽁밥 제보하기</span></a>
     <div id="ggongbabFeed" aria-live="polite">
       <header class="gg-hero">
         <h1 data-i18n="ggongbab.title">오늘의 꽁밥</h1>
@@ -216,6 +242,7 @@
         'gg.tomorrow': '내일',
         'gg.upcoming': '전체 예정',
         'gg.updated': '마지막 변경',
+        'ggongbab.tipEntry': '꽁밥 제보하기',
         'ggongbab.title': '오늘의 꽁밥',
         'km.breakfast': '아침',
         'km.collapse': '메뉴 접기 ↑',
@@ -251,6 +278,7 @@
         'nav.instagram': '인스타그램',
         'nav.lab': '실험실',
         'nav.labFeed': '꽁밥 실험',
+        'nav.labTip': '꽁밥 제보',
         'nav.langAria': '영어로 전환',
         'nav.langBtn': '언어 (EN)',
         'nav.magazine': '밥도둑 매거진',
@@ -359,6 +387,7 @@
         'gg.tomorrow': 'Tomorrow',
         'gg.upcoming': 'All upcoming',
         'gg.updated': 'Last changed',
+        'ggongbab.tipEntry': 'Tip us off',
         'ggongbab.title': 'Today\'s free food',
         'km.breakfast': 'Breakfast',
         'km.collapse': 'Show less ↑',
@@ -394,6 +423,7 @@
         'nav.instagram': 'Instagram',
         'nav.lab': 'Lab',
         'nav.labFeed': 'Ggongbab lab',
+        'nav.labTip': 'Free food tips',
         'nav.langAria': 'Switch to Korean',
         'nav.langBtn': '한국어',
         'nav.magazine': 'Magazine',

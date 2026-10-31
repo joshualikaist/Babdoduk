@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Lab only (vercel.json answers 404 on every other host); docs/GGONGBAB_TIPS.md. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>꽁밥 제보 · 밥도둑 Babdoduk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/site.css" />
+  <link rel="stylesheet" href="css/tip.css" />
+</head>
+<body class="tip-body">
+  <header class="site-nav" role="banner">
+    <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    </div>
+    <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="홈으로">Babdoduk</a>
+      <div class="nav-mega-row">
+        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
+        <a class="site-nav-direct" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
+        <a class="site-nav-direct" href="event.html"><span class="nav-label-long" data-i18n="nav.event">소식·이벤트</span><span class="nav-label-short" data-i18n="nav.eventShort">소식</span></a>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
+          <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
+            <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+            <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
+            <a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>
+            <a class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.labFeed">꽁밥 실험</a>
+            <a class="nav-mega-link is-current" href="tip.html" aria-current="page" data-i18n="nav.labTip">꽁밥 제보</a>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
+    </div>
+  </header>
+  <main class="tip-page">
+    <section class="tip-hero" aria-labelledby="tipTitle">
+      <div class="tip-hero-copy">
+        <p class="tip-kicker"><span aria-hidden="true">📣</span> <span data-i18n="tip.kicker">꽁밥 제보</span></p>
+        <h1 class="page-title tip-title" id="tipTitle" data-i18n="tip.title">모르는 꽁밥, 알려 주세요</h1>
+        <p class="tip-lead" data-i18n="tip.lead">캠퍼스에서 직접 본 오프라인 꽁밥을 제보해 주세요.</p>
+        <ul class="tip-meta">
+          <li><span class="tip-meta-icon" aria-hidden="true">🕘</span><span data-i18n="tip.meta.daily">확인은 하루 한 번</span></li>
+          <li><span class="tip-meta-icon" aria-hidden="true">✓</span><span data-i18n="tip.meta.confirmed">확인된 제보만 공개</span></li>
+          <li><span class="tip-meta-icon" aria-hidden="true">🔒</span><span data-i18n="tip.meta.private">사진·세부 내용은 비공개</span></li>
+        </ul>
+      </div>
+      <!-- A campus food stamp, as an example of what a tip carries (decorative). -->
+      <div class="tip-ticket" aria-hidden="true">
+        <p class="tip-ticket-label" data-i18n="tip.sample.label">제보 예시</p>
+        <p class="tip-ticket-title" data-i18n="tip.sample.title">학과 설명회 간식</p>
+        <dl class="tip-ticket-rows">
+          <div><dt>📍</dt><dd data-i18n="tip.sample.place">E3-1 1층 로비</dd></div>
+          <div><dt>🕕</dt><dd data-i18n="tip.sample.time">11.05 수 · 18:00</dd></div>
+          <div><dt>🍕</dt><dd data-i18n="tip.sample.food">피자 · 음료</dd></div>
+        </dl>
+        <span class="tip-ticket-stamp"><b>✓</b><span data-i18n="tip.sample.stamp">확인됨</span></span>
+      </div>
+    </section>
+
+    <ol class="tip-steps" aria-label="제보가 올라가는 순서" data-i18n-aria-key="tip.steps.aria">
+      <li><span class="tip-step-num" aria-hidden="true">1</span><span data-i18n="tip.step1">제보</span></li>
+      <li><span class="tip-step-num" aria-hidden="true">2</span><span><span data-i18n="tip.step2">운영자 확인</span> <small data-i18n="tip.step2.note">하루 한 번</small></span></li>
+      <li><span class="tip-step-num" aria-hidden="true">3</span><span data-i18n="tip.step3">게시판 공개</span></li>
+    </ol>
+
+    <div class="tip-layout">
+      <aside class="tip-guide" aria-labelledby="tipGuideTitle">
+        <h2 class="tip-guide-title" id="tipGuideTitle" data-i18n="tip.guide.title">이런 제보를 받아요</h2>
+        <ul class="tip-guide-list tip-guide-list--yes">
+          <li data-i18n="tip.guide.yes1">누구나 받을 수 있는 무료 음식·간식 나눔</li>
+          <li data-i18n="tip.guide.yes2">학과 설명회·행사의 간식과 현장 경품</li>
+          <li data-i18n="tip.guide.yes3">날짜와 장소가 정해진 오프라인 행사</li>
+        </ul>
+        <h3 class="tip-guide-title tip-guide-title--no" data-i18n="tip.guide.noTitle">이건 빼 주세요</h3>
+        <ul class="tip-guide-list tip-guide-list--no">
+          <li data-i18n="tip.guide.no1">연락처·학번 같은 개인정보</li>
+          <li data-i18n="tip.guide.no2">대학원생만 받는 행사</li>
+          <li data-i18n="tip.guide.no3">온라인 참여만 하는 추첨</li>
+          <li data-i18n="tip.guide.no4">판매·할인 행사</li>
+        </ul>
+      </aside>
+
+      <section class="tip-card" aria-labelledby="tipFormTitle">
+        <h2 class="tip-card-title" id="tipFormTitle" data-i18n="tip.form.title">제보하기</h2>
+        <form class="tip-form" id="tipForm" novalidate>
+          <fieldset class="tip-fieldset" id="tipFieldset">
+            <legend class="tip-sr" data-i18n="tip.form.title">제보하기</legend>
+            <div class="tip-field">
+              <label class="tip-label" for="tipTitleInput" data-i18n="tip.f.title">행사 이름</label>
+              <input class="tip-input" id="tipTitleInput" name="title" type="text" maxlength="80" required
+                     autocomplete="off" aria-describedby="tipTitleError" data-tip-ph="tip.f.titlePh" placeholder="예: 학과 설명회 간식 나눔" />
+              <p class="tip-error" id="tipTitleError" hidden></p>
+            </div>
+            <div class="tip-field">
+              <label class="tip-label" for="tipPlaceInput" data-i18n="tip.f.place">장소</label>
+              <input class="tip-input" id="tipPlaceInput" name="place" type="text" maxlength="80" required
+                     autocomplete="off" aria-describedby="tipPlaceError" data-tip-ph="tip.f.placePh" placeholder="예: N1 102호 앞" />
+              <p class="tip-error" id="tipPlaceError" hidden></p>
+            </div>
+            <div class="tip-row">
+              <div class="tip-field">
+                <label class="tip-label" for="tipDateInput" data-i18n="tip.f.date">날짜</label>
+                <input class="tip-input" id="tipDateInput" name="event_date" type="date" required aria-describedby="tipDateError" />
+                <p class="tip-error" id="tipDateError" hidden></p>
+              </div>
+              <div class="tip-field">
+                <label class="tip-label" for="tipTimeInput"><span data-i18n="tip.f.time">시간</span> <span class="tip-optional" data-i18n="tip.optional">선택</span></label>
+                <input class="tip-input" id="tipTimeInput" name="time_text" type="text" maxlength="40"
+                       autocomplete="off" aria-describedby="tipTimeError" data-tip-ph="tip.f.timePh" placeholder="예: 18:00부터, 소진 시 종료" />
+                <p class="tip-error" id="tipTimeError" hidden></p>
+              </div>
+            </div>
+            <div class="tip-field">
+              <label class="tip-label" for="tipFoodInput"><span data-i18n="tip.f.food">음식·경품</span> <span class="tip-optional" data-i18n="tip.optional">선택</span></label>
+              <input class="tip-input" id="tipFoodInput" name="food" type="text" maxlength="120"
+                     autocomplete="off" aria-describedby="tipFoodError" data-tip-ph="tip.f.foodPh" placeholder="예: 피자, 음료" />
+              <p class="tip-error" id="tipFoodError" hidden></p>
+            </div>
+            <div class="tip-field">
+              <label class="tip-label" for="tipDetailsInput"><span data-i18n="tip.f.details">자세히</span> <span class="tip-optional" data-i18n="tip.optional">선택</span></label>
+              <textarea class="tip-input tip-textarea" id="tipDetailsInput" name="details" rows="4" maxlength="1000"
+                        aria-describedby="tipDetailsCount tipDetailsError" data-tip-ph="tip.f.detailsPh" placeholder="대상, 신청 방법, 수량 등 아는 만큼"></textarea>
+              <p class="tip-count" id="tipDetailsCount" aria-live="off">0 / 1000</p>
+              <p class="tip-error" id="tipDetailsError" hidden></p>
+            </div>
+            <div class="tip-field">
+              <label class="tip-label" for="tipLinkInput"><span data-i18n="tip.f.link">관련 링크</span> <span class="tip-optional" data-i18n="tip.optional">선택</span></label>
+              <input class="tip-input" id="tipLinkInput" name="link" type="url" maxlength="300" inputmode="url"
+                     autocomplete="off" aria-describedby="tipLinkError" data-tip-ph="tip.f.linkPh" placeholder="https://" />
+              <p class="tip-error" id="tipLinkError" hidden></p>
+            </div>
+            <div class="tip-field">
+              <p class="tip-label" id="tipPhotosLabel"><span data-i18n="tip.f.photos">사진</span> <span class="tip-optional" data-i18n="tip.optional">선택</span></p>
+              <div class="tip-drop" id="tipDrop">
+                <input class="tip-file" id="tipPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple
+                       aria-labelledby="tipPhotosLabel tipPhotosAdd" aria-describedby="tipPhotosHint tipPhotosError" />
+                <span class="tip-drop-icon" aria-hidden="true">📷</span>
+                <span class="tip-drop-text" id="tipPhotosAdd" data-i18n="tip.f.photosAdd">포스터나 현장 사진 추가</span>
+                <span class="tip-drop-hint" id="tipPhotosHint" data-i18n="tip.f.photosHint">최대 3장 · JPG, PNG, WebP · 5MB까지</span>
+              </div>
+              <ul class="tip-previews" id="tipPreviews" hidden></ul>
+              <p class="tip-error" id="tipPhotosError" hidden></p>
+            </div>
+            <!-- A honeypot: people never see or reach this field; a bot that fills it is ignored. -->
+            <div class="tip-hp" aria-hidden="true">
+              <label for="tipHp" data-i18n="tip.f.hp">웹사이트 (비워 두세요)</label>
+              <input id="tipHp" name="website" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+            <button type="submit" class="btn btn-primary tip-submit" id="tipSubmit" data-i18n="tip.submit">제보 보내기</button>
+            <p class="tip-privacy" data-i18n="tip.privacy">제보와 사진은 운영자만 봅니다. 게시판에는 행사 이름·장소·날짜·시간·음식만 올라가요.</p>
+          </fieldset>
+        </form>
+        <div class="tip-done" id="tipDone" hidden>
+          <span class="tip-done-mark" aria-hidden="true">✓</span>
+          <h3 class="tip-done-title" id="tipDoneTitle" tabindex="-1" data-i18n="tip.done.title">제보가 접수됐어요</h3>
+          <p class="tip-done-text" data-i18n="tip.done.text">확인되면 아래 게시판에 올라가요.</p>
+          <p class="tip-done-warn" id="tipDoneWarn" hidden></p>
+          <button type="button" class="btn btn-secondary tip-again" id="tipAgain" data-i18n="tip.done.again">하나 더 제보하기</button>
+        </div>
+        <p class="tip-status" id="tipStatus" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section class="tip-board" aria-labelledby="tipBoardTitle">
+      <div class="tip-board-head">
+        <h2 class="page-section-title tip-board-title" id="tipBoardTitle" data-i18n="tip.board.title">확인된 제보</h2>
+        <p class="tip-board-meta" data-i18n="tip.board.meta">하루 한 번 업데이트</p>
+      </div>
+      <div class="tip-board-body" id="tipBoard" aria-live="polite" data-state="loading">
+        <p class="tip-board-state" data-i18n="tip.board.loading">게시판을 불러오는 중</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer-inner">
+      <hr class="footer-apple-hr" />
+      <div class="footer-apple-main">
+        <div class="footer-apple-col footer-apple-col--left">
+          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true"> : </span>joshualiuniv@gmail.com</span>
+        </div>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
+        </nav>
+        <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
+      </div>
+      <p class="footer-apple-fine" data-i18n="footer.fine">본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.</p>
+    </div>
+  </footer>
+
+  <!-- @i18n:strings -->
+  <script>
+    // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.
+    window.BABDODUK_STR = {
+      ko: {
+        docTitle: '꽁밥 제보 · 밥도둑 Babdoduk',
+        'a11y.scrollProgress': '페이지 스크롤 진행',
+        'footer.contact': '문의',
+        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.country': '대한민국',
+        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.navAria': '사이트 바로가기',
+        'nav.event': '소식·이벤트',
+        'nav.event.open': '소식·이벤트',
+        'nav.eventShort': '소식',
+        'nav.history': '역사',
+        'nav.homeAria': '홈으로',
+        'nav.instagram': '인스타그램',
+        'nav.lab': '실험실',
+        'nav.labFeed': '꽁밥 실험',
+        'nav.labTip': '꽁밥 제보',
+        'nav.langAria': '영어로 전환',
+        'nav.langBtn': '언어 (EN)',
+        'nav.magazine': '밥도둑 매거진',
+        'nav.map': '맛집 지도',
+        'nav.more': '더보기',
+        'nav.navAria': '주요 메뉴',
+        'nav.today': '오늘의 꽁밥',
+        'nav.topAria': '맨 위로',
+        'tip.board.empty': '아직 확인된 제보가 없어요.',
+        'tip.board.food': '음식',
+        'tip.board.loading': '게시판을 불러오는 중',
+        'tip.board.meta': '하루 한 번 업데이트',
+        'tip.board.off': '게시판을 불러오지 못했어요.',
+        'tip.board.past': '지난 제보 · 최근 2주',
+        'tip.board.place': '장소',
+        'tip.board.time': '시간',
+        'tip.board.title': '확인된 제보',
+        'tip.board.today': '오늘',
+        'tip.board.upcoming': '다가오는 꽁밥',
+        'tip.done.again': '하나 더 제보하기',
+        'tip.done.photosFailed': '사진은 올라가지 않았어요. 제보는 접수됐어요.',
+        'tip.done.somePhotosFailed': '사진 일부가 올라가지 않았어요. 제보는 접수됐어요.',
+        'tip.done.text': '확인되면 아래 게시판에 올라가요.',
+        'tip.done.title': '제보가 접수됐어요',
+        'tip.err.date': '어제부터 60일 안의 날짜를 골라 주세요.',
+        'tip.err.details': '1000자까지 적을 수 있어요.',
+        'tip.err.food': '120자까지 적을 수 있어요.',
+        'tip.err.link': 'http:// 또는 https:// 로 시작하는 주소를 300자 안으로 적어 주세요.',
+        'tip.err.photoMax': '사진은 3장까지예요.',
+        'tip.err.photoSize': '5MB 안의 사진만 올릴 수 있어요.',
+        'tip.err.photoType': 'JPG, PNG, WebP 사진만 올릴 수 있어요.',
+        'tip.err.place': '장소를 80자 안으로 적어 주세요.',
+        'tip.err.time': '40자까지 적을 수 있어요.',
+        'tip.err.title': '2~80자로 적어 주세요.',
+        'tip.f.count': '{n} / {max}',
+        'tip.f.date': '날짜',
+        'tip.f.details': '자세히',
+        'tip.f.detailsPh': '대상, 신청 방법, 수량 등 아는 만큼',
+        'tip.f.food': '음식·경품',
+        'tip.f.foodPh': '예: 피자, 음료',
+        'tip.f.hp': '웹사이트 (비워 두세요)',
+        'tip.f.link': '관련 링크',
+        'tip.f.linkPh': 'https://',
+        'tip.f.photoAlt': '첨부한 사진 {n}',
+        'tip.f.photoRemove': '사진 {n} 빼기',
+        'tip.f.photos': '사진',
+        'tip.f.photosAdd': '포스터나 현장 사진 추가',
+        'tip.f.photosHint': '최대 3장 · JPG, PNG, WebP · 5MB까지',
+        'tip.f.place': '장소',
+        'tip.f.placePh': '예: N1 102호 앞',
+        'tip.f.time': '시간',
+        'tip.f.timePh': '예: 18:00부터, 소진 시 종료',
+        'tip.f.title': '행사 이름',
+        'tip.f.titlePh': '예: 학과 설명회 간식 나눔',
+        'tip.form.title': '제보하기',
+        'tip.guide.no1': '연락처·학번 같은 개인정보',
+        'tip.guide.no2': '대학원생만 받는 행사',
+        'tip.guide.no3': '온라인 참여만 하는 추첨',
+        'tip.guide.no4': '판매·할인 행사',
+        'tip.guide.noTitle': '이건 빼 주세요',
+        'tip.guide.title': '이런 제보를 받아요',
+        'tip.guide.yes1': '누구나 받을 수 있는 무료 음식·간식 나눔',
+        'tip.guide.yes2': '학과 설명회·행사의 간식과 현장 경품',
+        'tip.guide.yes3': '날짜와 장소가 정해진 오프라인 행사',
+        'tip.kicker': '꽁밥 제보',
+        'tip.lead': '캠퍼스에서 직접 본 오프라인 꽁밥을 제보해 주세요.',
+        'tip.meta.confirmed': '확인된 제보만 공개',
+        'tip.meta.daily': '확인은 하루 한 번',
+        'tip.meta.private': '사진·세부 내용은 비공개',
+        'tip.optional': '선택',
+        'tip.privacy': '제보와 사진은 운영자만 봅니다. 게시판에는 행사 이름·장소·날짜·시간·음식만 올라가요.',
+        'tip.sample.aria': '제보 예시',
+        'tip.sample.food': '피자 · 음료',
+        'tip.sample.label': '제보 예시',
+        'tip.sample.place': 'E3-1 1층 로비',
+        'tip.sample.stamp': '확인됨',
+        'tip.sample.time': '11.05 수 · 18:00',
+        'tip.sample.title': '학과 설명회 간식',
+        'tip.sending': '보내는 중…',
+        'tip.status.failed': '보내지 못했어요. 잠시 뒤 다시 시도해 주세요.',
+        'tip.status.invalid': '표시한 칸을 확인해 주세요.',
+        'tip.status.off': '지금은 제보를 받을 수 없어요.',
+        'tip.status.rate': '제보가 많이 몰렸어요. 한 시간쯤 뒤 다시 보내 주세요.',
+        'tip.status.sending': '제보를 보내는 중',
+        'tip.step1': '제보',
+        'tip.step2': '운영자 확인',
+        'tip.step2.note': '하루 한 번',
+        'tip.step3': '게시판 공개',
+        'tip.steps.aria': '제보가 올라가는 순서',
+        'tip.submit': '제보 보내기',
+        'tip.title': '모르는 꽁밥, 알려 주세요',
+      },
+      en: {
+        docTitle: 'Free food tips · Babdoduk',
+        'a11y.scrollProgress': 'Page scroll progress',
+        'footer.contact': 'Contact',
+        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.country': 'South Korea',
+        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.navAria': 'Site links',
+        'nav.event': 'News & events',
+        'nav.event.open': 'News & events',
+        'nav.eventShort': 'News',
+        'nav.history': 'History',
+        'nav.homeAria': 'Home',
+        'nav.instagram': 'Instagram',
+        'nav.lab': 'Lab',
+        'nav.labFeed': 'Ggongbab lab',
+        'nav.labTip': 'Free food tips',
+        'nav.langAria': 'Switch to Korean',
+        'nav.langBtn': '한국어',
+        'nav.magazine': 'Magazine',
+        'nav.map': 'Food map',
+        'nav.more': 'More',
+        'nav.navAria': 'Main menu',
+        'nav.today': 'Today\'s free food',
+        'nav.topAria': 'Back to top',
+        'tip.board.empty': 'No confirmed tips yet.',
+        'tip.board.food': 'Food',
+        'tip.board.loading': 'Loading the board',
+        'tip.board.meta': 'Updated once a day',
+        'tip.board.off': 'Couldn\'t load the board.',
+        'tip.board.past': 'Past two weeks',
+        'tip.board.place': 'Place',
+        'tip.board.time': 'Time',
+        'tip.board.title': 'Confirmed tips',
+        'tip.board.today': 'Today',
+        'tip.board.upcoming': 'Coming up',
+        'tip.done.again': 'Send another',
+        'tip.done.photosFailed': 'The photos didn\'t go through, but your tip did.',
+        'tip.done.somePhotosFailed': 'Some photos didn\'t go through, but your tip did.',
+        'tip.done.text': 'Once it\'s confirmed, it shows up on the board below.',
+        'tip.done.title': 'Tip received',
+        'tip.err.date': 'Pick a date from yesterday to 60 days ahead.',
+        'tip.err.details': 'Up to 1000 characters.',
+        'tip.err.food': 'Up to 120 characters.',
+        'tip.err.link': 'Use an address starting with http:// or https://, up to 300 characters.',
+        'tip.err.photoMax': 'Up to 3 photos.',
+        'tip.err.photoSize': 'Each photo must be 5 MB or less.',
+        'tip.err.photoType': 'Only JPG, PNG or WebP images.',
+        'tip.err.place': 'Add a place, up to 80 characters.',
+        'tip.err.time': 'Up to 40 characters.',
+        'tip.err.title': 'Use 2–80 characters.',
+        'tip.f.count': '{n} / {max}',
+        'tip.f.date': 'Date',
+        'tip.f.details': 'Details',
+        'tip.f.detailsPh': 'Who can come, how to sign up, how many — whatever you know',
+        'tip.f.food': 'Food or giveaway',
+        'tip.f.foodPh': 'e.g. pizza, drinks',
+        'tip.f.hp': 'Website (leave empty)',
+        'tip.f.link': 'Link',
+        'tip.f.linkPh': 'https://',
+        'tip.f.photoAlt': 'Attached photo {n}',
+        'tip.f.photoRemove': 'Remove photo {n}',
+        'tip.f.photos': 'Photos',
+        'tip.f.photosAdd': 'Add a poster or a photo',
+        'tip.f.photosHint': 'Up to 3 · JPG, PNG, WebP · 5 MB each',
+        'tip.f.place': 'Place',
+        'tip.f.placePh': 'e.g. outside N1 room 102',
+        'tip.f.time': 'Time',
+        'tip.f.timePh': 'e.g. from 6 pm, while it lasts',
+        'tip.f.title': 'Event',
+        'tip.f.titlePh': 'e.g. Snacks at the CS info session',
+        'tip.form.title': 'Send a tip',
+        'tip.guide.no1': 'Personal details like phone numbers or student IDs',
+        'tip.guide.no2': 'Graduate-only events',
+        'tip.guide.no3': 'Online-only prize draws',
+        'tip.guide.no4': 'Sales and discounts',
+        'tip.guide.noTitle': 'Please leave out',
+        'tip.guide.title': 'What to send',
+        'tip.guide.yes1': 'Free food or snacks anyone can get',
+        'tip.guide.yes2': 'Snacks and on-site giveaways at info sessions and events',
+        'tip.guide.yes3': 'Offline events with a date and a place',
+        'tip.kicker': 'Free food tips',
+        'tip.lead': 'Seen free food on campus that we missed? Send it in.',
+        'tip.meta.confirmed': 'Only confirmed tips go up',
+        'tip.meta.daily': 'Checked once a day',
+        'tip.meta.private': 'Photos and details stay private',
+        'tip.optional': 'optional',
+        'tip.privacy': 'Only the Babdoduk team sees your tip and photos. The board shows just the event, place, date, time and food.',
+        'tip.sample.aria': 'Example tip',
+        'tip.sample.food': 'Pizza · drinks',
+        'tip.sample.label': 'Example',
+        'tip.sample.place': 'E3-1, 1F lobby',
+        'tip.sample.stamp': 'Checked',
+        'tip.sample.time': 'Wed 11.05 · 6 pm',
+        'tip.sample.title': 'Department info session snacks',
+        'tip.sending': 'Sending…',
+        'tip.status.failed': 'Couldn\'t send it. Please try again shortly.',
+        'tip.status.invalid': 'Check the marked fields.',
+        'tip.status.off': 'Tips are closed for now.',
+        'tip.status.rate': 'Too many tips right now. Try again in about an hour.',
+        'tip.status.sending': 'Sending your tip',
+        'tip.step1': 'You send it',
+        'tip.step2': 'We check it',
+        'tip.step2.note': 'once a day',
+        'tip.step3': 'It goes on the board',
+        'tip.steps.aria': 'How a tip goes up',
+        'tip.submit': 'Send tip',
+        'tip.title': 'Spotted free food? Tell us.',
+      }
+    };
+  </script>
+  <script src="js/site.js"></script>
+  <!-- @end i18n -->
+  <script src="js/ggongbab-public-config.js"></script>
+  <script src="js/ggongbab-tips.js"></script>
+</body>
+</html>
