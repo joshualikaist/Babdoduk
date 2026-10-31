@@ -5,7 +5,11 @@
 on the operations PC. A manual run passed live on 2026-10-29 (the owner approved, the Portal logged
 in). On 2026-10-31 at 17:51 the watchdog's own attempt sent a code that went unanswered, and the tab
 stayed on an SSO page the automatic attempt does not start from; the owner's request (below) was
-added for that case and has not run live yet.**
+added for that case. Its first live run (2026-11-01 02:14) sent the tab back to the Portal's login
+page, then clicked before the page's script had bound the button and stopped with
+`EASY_LOGIN_STOPPED_NO_PROGRESS`; since then a page is clicked only once it has loaded and settled.
+The owner's second request (02:23, from that loaded page) sent the code in 4 s; the owner approved and
+the watchdog resumed the worker at 02:23:39 (first scan 02:24:05).**
 
 ## Why
 
@@ -71,8 +75,10 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
 * The attempt reads the page list, starts from an open SSO login page or the portal login page
   (never from an open verification page, which is a login already in progress), and attaches to
   that one tab. A page probe returns fixed facts only; the owner's ID is compared inside the page.
-  Each click must reach the next page within 20 s; an unanswered page (for example an `alert()`
-  dialog) stops it.
+  A page is clicked only once its load has completed (`document.readyState`) and
+  `READY_SETTLE_SECONDS` (2 s) have passed: the Portal's login button is a bare link whose handler the
+  page's script binds. Each click must reach the next page within 20 s; an unanswered page (for
+  example an `alert()` dialog) stops it.
 * After the code is sent, the attempt ends. The owner approves on the phone; the SSO page closes
   and the watchdog's existing resume path (`may_resume`) restarts the worker.
 * State `.local/easy-login-state.json`: attempt times, the time of the last code, the unanswered

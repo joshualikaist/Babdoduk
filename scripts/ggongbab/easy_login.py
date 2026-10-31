@@ -53,6 +53,7 @@ CODE_LIFETIME_SECONDS = 300   # the page offers 3 minutes (extendable); past thi
 STEP_WAIT_SECONDS = 20        # how long one click may take to reach the next page
 MAX_STEPS = 4
 ID_SETTLE_SECONDS = 3      # Remember ID fills the field just after the SSO page loads
+READY_SETTLE_SECONDS = 2   # a page to click in: this long after its load completes (its scripts bind the buttons)
 REQUEST_GAP_SECONDS = 60      # the owner's own request: a double tap is one request ...
 REQUEST_DAILY_MAX = 10        # ... and at most ten a day
 
@@ -96,7 +97,7 @@ PROBE = r"""(() => {
   const expected = %s;
   const q = (s) => document.querySelector(s);
   const visible = (e) => !!(e && (e.offsetWidth || e.offsetHeight || e.getClientRects().length));
-  const out = {host: location.hostname, path: location.pathname};
+  const out = {host: location.hostname, path: location.pathname, ready: document.readyState === 'complete'};
   out.portal_button = visible(q('#btn-sso-login'));
   const on = q('.login_tab li.on');
   out.tab = on ? on.id : '';
@@ -427,7 +428,7 @@ def _wait_for_next_page(page, probe_js, last_kind, *, sleep, clock):
     """The probe of the page once it is no longer `last_kind` (the first call takes the current
     page), or None if nothing answered or nothing moved within STEP_WAIT_SECONDS."""
     deadline = clock() + STEP_WAIT_SECONDS
-    seen_at = {}
+    seen_at, ready_at = {}, {}
     while True:
         probe = page.evaluate(probe_js)
         if isinstance(probe, dict):
@@ -441,6 +442,15 @@ def _wait_for_next_page(page, probe_js, last_kind, *, sleep, clock):
                 settled = len(probe.get("digits") or []) >= 2
             else:
                 settled = True
+            # A page it clicks in must have finished loading a moment ago: the Portal's login button
+            # is a bare <a> whose handler jQuery binds, and on 2026-11-01 a click right after the
+            # owner's request had opened the page did nothing (EASY_LOGIN_STOPPED_NO_PROGRESS).
+            if kind in ("portal_login", "sso_view"):
+                if probe.get("ready") is False:
+                    ready_at.pop(kind, None)
+                    settled = False
+                elif clock() - ready_at.setdefault(kind, clock()) < READY_SETTLE_SECONDS:
+                    settled = False
             if (last_kind is None or kind != last_kind) and settled:
                 return probe
         if clock() >= deadline:

@@ -389,6 +389,26 @@ def test_on_request_only_the_probe_the_two_clicks_and_the_one_fixed_address_ever
     page.client.call.assert_not_called()
 
 
+def test_it_clicks_only_once_the_page_has_loaded_and_settled(local):
+    """2026-11-01, live: the request opened the Portal's login page and clicked at once; the button's
+    handler (bound by the page's script) was not there yet, so nothing happened."""
+    clicks_at, clock = [], Clock()
+    loading = iter([dict(PORTAL, ready=False)] * 3)
+
+    class Watched(Browser):
+        def call(self, method, params=None, *, session=None, timeout=5):
+            if method == "Runtime.evaluate" and ".click()" in params["expression"]:
+                clicks_at.append(clock.t)
+            return super().call(method, params, session=session, timeout=timeout)
+    browser = Watched(STUCK, lambda: next(loading, dict(PORTAL, ready=True)), VIEW, MFA)
+    targets = [{"id": "t0", "url": URL["dooray"]}, {"id": "t1", "url": URL["stuck"]}]
+    code = el.attempt(local, 9224, notifier=Telegram(), targets=lambda port: targets, cdp=browser, now=lambda: NOW,
+                      sleep=clock.sleep, clock=clock, requested=True, mail_host=DOORAY_HOST, portal_wait=True)
+    assert code == "EASY_LOGIN_CODE_SENT"
+    assert clicks_at[0] >= 3 + el.READY_SETTLE_SECONDS          # three probes still loading, then the settle
+    assert "ready: document.readyState === 'complete'" in el.PROBE
+
+
 def test_a_missing_portal_tab_is_opened_in_the_background_at_the_login_page(local):
     browser = Browser(BLANK, PORTAL, VIEW, MFA)
     code, _ = ask(local, browser, "dooray", portal_wait=True)
