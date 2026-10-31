@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "generatedAt": "2026-10-31T15:52:48+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "참치김치짜글이 만드는 법｜두부 넣고 자작하게 끓이는 밥도둑 레시피",
+    "summary": "잘 익은 신김치와 참치 통조림, 두부만 있으면 간단하게 만들 수 있는 참치김치짜글이 입니다.",
+    "source": "기록하는 인간 (요리)",
+    "sourceId": "blog-cultureagora",
+    "candidateId": "c_5dbec5d1d20d9523",
+    "url": "https://cultureagora.tistory.com/422",
+    "medium": "blog",
+    "discoveredAt": "2026-10-31T15:52:48+09:00",
+    "publishedAt": "2026-10-31T06:30:32+09:00",
+    "image": "https://blog.kakaocdn.net/dn/b0k6Am/dJMcahGqaCo/sgKM8vyqzuee26lpr9pYj0/tfile.jpg",
+    "imageSource": "feed_html",
+    "category": "tips",
+    "heroKind": "pick"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "[EZ 트렌드] 제로 탄산 다음은 ‘제로 일상식’···식품업계, 당류 저감 전선 넓힌다",
+          "summary": "식품업계에 당류 저감 바람이 불고 있다.",
+          "source": "이지경제",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_22eb9c8efd8573be",
+          "url": "https://www.ezyeconomy.com/news/articleView.html?idxno=241335",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-29T14:06:08+09:00",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "'국산' 에페, 본격 처방…위고비·마운자로와 3파전[비만약 삼국지①]",
+          "summary": "한미약품의 '에페'(성분명 에페글레나타이드)가 본격적으로 시장에 진입하면서 위고비·마운자로가 주도했던 국내 비만치료제 시장에 삼파전 구도가 형성됐다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_1c529aa31fda59d6",
+          "url": "https://www.newsis.com/view/NISX20261029_0003846391",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T13:01:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "\"자고 나면 또 유출 문자\"…'사과문만 복붙'에 체념하는 국민들[해킹 팬데믹 上]",
+          "summary": "윤정민 박은비 기자 = 직장인 A(29)씨는 미용의료 플랫폼 B사로부터 개인정보 유출 사고 알림 문자를 받고 가슴이 철렁했다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_88bc81b242fa5291",
+          "url": "https://www.newsis.com/view/NISX20261030_0003848868",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T13:00:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "“관절 아파 먹는 약…독감 바이러스에 더 취약해진다?”",
+          "summary": "염증을 줄이기 위해 쓰는 관절염 약이 독감이나 코로나19 같은 바이러스 감염에 더 취약하게 만들 수 있다는 연구 결과가 나왔다 사진=AI생성 염증을 줄이기 위해 쓰는 관절염 약이 독감이나 코로나19 같은 바이러스…",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_b6c7921d57de4ec3",
+          "url": "https://kormedi.com/2894314/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T12:01:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "삼성바이오에피스, 키트루다 바이오시밀러 美 허가 신청",
+          "summary": "사진=삼성바이오에피스 삼성바이오에피스가 미국 식품의약국(FDA)에 키트루다 바이오시밀러 후보물질 SB27(성분명 펨브롤리주맙)의 품목허가를 신청했다고 30일 밝혔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8fdab6dd3a90adcc",
+          "url": "https://kormedi.com/2895912/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-30T18:15:25+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "신상출시 편스토랑 도경완의 저당콘치즈 만드는 법",
+          "summary": "343회 신상출시 편스토랑에서 도경완은 저당 양념으로 칼로리를 낮추고 순두부와 달걀로 단백질을 더해 다이어트 요리로 만들어 먹기 좋은 저당콘치즈 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_56eabd23f7bab443",
+          "url": "https://seon1982.tistory.com/4143",
+          "medium": "blog",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T00:00:24+09:00"
+        },
+        {
+          "title": "생초콜릿 식감! 마시멜로 가득 딥 퍼지 스모어 브라우니 타르트 만들기 | Fudgy Like Pavé Chocolate! Deep Fudgy S'mores Brownie Tart",
+          "summary": "진한 다크 초콜릿 퍼지 브라우니와 바삭한 카카오 사브레를 함께 구워낸 스모어 타르트입니다.",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_6ed82be02478759e",
+          "url": "https://www.youtube.com/watch?v=Pfy5boH_hnY",
+          "medium": "youtube",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T06:54:13+09:00"
+        },
+        {
+          "title": "아들 며느리와 함께 먹은 집밥 한 상, 사랑담은 저녁밥상",
+          "summary": "아들 며느리와 함께 먹은 집밥 한 상, 사랑담은 저녁밥상 11월이면 며느리가 취직해 서울에서 지내게 되었습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_d8e018faa24a8e37",
+          "url": "https://heysukim114.tistory.com/entry/%EC%95%84%EB%93%A4-%EB%A9%B0%EB%8A%90%EB%A6%AC%EC%99%80-%ED%95%A8%EA%BB%98-%EB%A8%B9%EC%9D%80-%EC%A7%91%EB%B0%A5-%ED%95%9C-%EC%83%81",
+          "medium": "blog",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T00:00:04+09:00"
+        },
+        {
+          "title": "당근라페 샌드위치 만들기｜햄과 치즈 넣은 상큼한 브런치 레시피",
+          "summary": "새콤하게 무친 당근라페는 샌드위치에 넣었을 때 특히 잘 어울립니다.아삭한 당근의 식감과 머스터드의 산미가 햄과 치즈의 짭짤한 맛을 가볍게 잡아줘서 재료는 단순하지만 맛은 균형감이 좋습니다.이번에는 미리 만들어둔…",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_9053f8bde0e40440",
+          "url": "https://cultureagora.tistory.com/370",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-09T20:51:25+09:00"
+        },
+        {
+          "title": "클럽 샌드위치 만들기｜카페 스타일 소스와 3단 샌드위치 쌓는 순서",
+          "summary": "클럽샌드위치는 바삭하게 구운 식빵 사이에 계란, 햄이나 닭고기, 베이컨, 토마토와 채소를 차곡차곡 쌓아 만드는 대표적인 브런치 메뉴입니다.보통 식빵 세 장을 사용하는 3단 샌드위치라 단면이 풍성하고, 한 조각만…",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_ee9d35d1f084e78f",
+          "url": "https://cultureagora.tistory.com/369",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-09T16:24:56+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“밥 먹기 전에 먹으면 살 쏙 빠져요”⋯ 과식 줄이는 음식 3가지 / 김정화, 남편 뇌종양 진단 3년째⋯“수술하면 위험해 지켜보는 중” / “가짜니까 괜찮다고요?”… 딥페이크가 남기는 ‘진짜 트라우마’",
+          "summary": "“밥 먹기 전에 먹으면 살 쏙 빠져요”⋯ 과식 줄이는 음식 3가지 배가 고픈 상태에서 식사를 시작하면 허겁지겁 먹거나 평소보다 많은 양을 먹기 쉽다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_fcddd413d9df6ebb",
+          "url": "https://kormedi.com/2895855/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T06:38:00+09:00",
+          "image": "https://cdn.kormedi.com/wp-content/uploads/2023/06/thumb-kakaonewsletter04.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "단백질 보충제에 우유를 더하면 달라지는 영양",
+          "summary": "우유자조금관리위원회(위원장 이승호)는 근력 운동과 체중 관리에 대한 관심이 높아지면서 단백질 보충제를 찾는 사람들이 늘어나는 가운데, 운동 후 단백질 보충 시 물 대신 국산 우유를 활용해 단백질과 다양한 영양소를…",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_6917e853dc033acd",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35965",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T03:33:28+09:00"
+        },
+        {
+          "title": "“자칫하다간 신장에 독”… 의사가 ‘조심히 섭취하라’는 세 가지 영양소",
+          "summary": "신장은 음식 섭취의 영향을 직·간접적으로 받는 장기다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_6f2fde0cab42afb2",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103002836.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-30T23:00:00+09:00"
+        },
+        {
+          "title": "“피부 건강 넘어 눈 건강까지”… 유니베라, 창립 50주년 ‘심포지엄’서 비전 제시",
+          "summary": "사진=유니베라 알로에의 가능성은 어디까지 확장될 수 있을까.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_f498fefa8a37d75e",
+          "url": "https://kormedi.com/2895926/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-30T19:28:04+09:00"
+        },
+        {
+          "title": "“콜레스테롤 걱정돼 달걀 못 먹겠어요”… 이럴 때 좋은 ‘단백질 식품 3가지’",
+          "summary": "달걀은 양질의 단백질과 여러 영양소를 공급한다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_28ab95e8c1e70795",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103002748.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T10:00:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“뼈말라 몸매 부럽다고?”⋯중년 몸 망치는 ‘이 다이어트’는 피해야",
+          "summary": "하루 800㎉ 미만의 초저열량 식사는 변비·피로·탈모 등을 일으킬 수 있고, 감량 뒤 체중이 다시 늘어나는 요요를 부를 가능성도 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_83cb5c9ef56a3838",
+          "url": "https://kormedi.com/2895792/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T14:17:07+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/10/unnamed-file-91.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“머리 지끈거릴 때 드세요”⋯두통에 도움 되는 음식 3가지",
+          "summary": "편두통 관리에는 식습관과 규칙적인 수면이 중요하다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6c9770285888fb11",
+          "url": "https://kormedi.com/2894874/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T07:05:00+09:00"
+        },
+        {
+          "title": "아워홈, 연구 결과 국제학술지 게재…\"맞춤 식단 섭취군 인지점수 상승\"",
+          "summary": "아워홈은 경도인지장애 노인을 대상으로 한 맞춤형 식단 연구에서 인지기능과 영양 상태가 개선된 결과를 확인했다고 30일 밝혔다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_fab22e9d24060dad",
+          "url": "https://www.newsis.com/view/NISX20261030_0003847668",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T09:06:40+09:00"
+        },
+        {
+          "title": "\"과일 찹쌀떡·샌드위치 괜찮나\"…4000여곳 점검",
+          "summary": "대학수학능력시험을 앞두고 수험생 선물이나 간식으로 인기를 끌고 있는 과일 찹쌀떡과 샌드위치 등을 판매하는 음식점에 대한 위생점검이 실시된다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_feba67296cf3d588",
+          "url": "https://www.newsis.com/view/NISX20261030_0003847612",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T08:30:14+09:00"
+        },
+        {
+          "title": "대상, 식품영양과학회서 ‘알룰로스’ 시장 동향부터 대사 건강 관련 연구성과 공유",
+          "summary": "대상은 10월 28일부터 30일까지 제주국제컨벤션센터에서 개최된 ‘2026 한국식품영양과학회 국제학술대회’에서 차세대 대체 감미료인 ‘알룰로스’의 시장 동향과 식품 적용 기술, 대사 건강 관련 연구 성과를…",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_6b69adb3cd08759a",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120743",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T20:15:52+09:00"
+        }
+      ]
+    }
+  }
+}
