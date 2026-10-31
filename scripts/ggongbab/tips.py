@@ -196,7 +196,7 @@ class Tips:
             reviewed = datetime.fromtimestamp(self.now(), KST)
             try:
                 post_id = self.writer.create_task(MailPayload(
-                    mail_id=f"tip-{row['id']}", subject=f"[꽁밥 제보] {row.get('title') or ''}"[:200],
+                    mail_id=f"tip-{row['id']}", subject=f"[꽁밥 제보] {(row.get('title') or '').strip() or '제목 없는 제보'}"[:200],
                     body=task_body(row, reviewed), received_at=created, discovered_at=reviewed,
                     images=self.photos(row["id"])))
             except Exception:  # noqa: BLE001 - retried on the next poll

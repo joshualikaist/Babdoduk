@@ -169,6 +169,13 @@ def test_rejecting_only_marks_the_tip(make):
     assert db.rows[TIP_A]["status"] == "rejected" and db.board == {} and writer.tasks == []
 
 
+def test_a_tip_without_a_title_still_carries_the_marker_subject(make):
+    writer = Writer()
+    t, _, _, _, _, _ = make([row(TIP_A, title="  ")], writer=writer)
+    t.decide("ok", TIP_A, "cb")
+    assert writer.tasks[0].subject == "[꽁밥 제보] 제목 없는 제보"     # the source check needs a title
+
+
 def test_a_past_tip_goes_on_the_board_but_not_to_the_collection_project(make):
     writer = Writer()
     t, db, _, _, _, _ = make([row(TIP_A, event_date="2026-11-01")], writer=writer)
