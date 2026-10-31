@@ -217,6 +217,10 @@ def test_a_detail_or_write_request_during_a_scan_disables_unread_analysis_before
     code, files, writer, beats, logs = run(tmp_path, [hdr("m1", "커피차 홍보 행사", "커피 제공", unread=True)], requests=requests)
     assert writer.payloads == [] and not files.unread_allowed()
     assert files.runtime_state()["reason"] == radar.INVARIANT and radar.INVARIANT in logs
+    # The latch says which request it was (2026-10-31), with ids masked.
+    latch = json.loads(files.unread_latch.read_text())
+    assert [m for m, _ in latch["requests"]] == [requests[0][0]]
+    assert "1234567890" not in json.dumps(latch)
 
 
 def test_the_apps_own_list_and_settings_gets_are_allowed(tmp_path):

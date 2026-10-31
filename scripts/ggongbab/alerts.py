@@ -52,6 +52,9 @@ ACTIONS = {
     "restart_worker": "run start_ggongbab_workers.cmd after checking the status",
     "login": "complete SSO/MFA in the Ops Chrome; the collector resumes on its own once the login page closes",
     "review_contract": "the list/UI contract changed; re-run calibration before resuming",
+    "review_unread": ("the Ops Chrome's Dooray tab itself sent a mail request during a scan (a person opened a mail "
+                      "there, or Dooray did); unread mail is skipped, read mail is still collected; "
+                      "run radar-allow-unread after checking"),
     "open_browser": "open the dedicated browser for this collector (keep it minimized)",
     "check_dispatch": "check the dispatch token and GitHub Actions; the schedule still runs",
     "investigate": "check the collector status and logs (codes only)",
@@ -68,7 +71,7 @@ REASONS = {
     "WORKER_NOT_RUNNING": ("critical", "restart_worker"),
     "AUTH_EXPIRED": ("critical", "login"),
     "CONTRACT_CHANGED": ("critical", "review_contract"),
-    "UNREAD_RADAR_DISABLED": ("critical", "review_contract"),
+    "UNREAD_RADAR_DISABLED": ("critical", "review_unread"),
     "BROWSER_ABSENT": ("warning", "open_browser"),
     "RETRY_EXHAUSTED": ("critical", "restart_worker"),
     "DISPATCH_FAILED": ("warning", "check_dispatch"),

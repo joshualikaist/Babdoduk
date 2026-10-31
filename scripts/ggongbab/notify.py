@@ -252,6 +252,10 @@ TOAST_ACTION = {
     "restart_worker": "상태를 확인한 뒤 start_ggongbab_workers.cmd를 실행하세요.",
     "open_browser": "start_ops_browser.cmd로 운영 Chrome을 여세요.",
     "review_contract": "화면 구조가 바뀌었습니다. 보정한 뒤 다시 시작하세요.",
+    # 2026-10-31: the owner saw "화면 구조가 바뀌었습니다" for this latch, which was not the cause.
+    "review_unread": ("운영 Chrome의 Dooray 탭에서 수집 중에 메일 요청이 나가 안 읽은 메일 읽기를 멈췄습니다"
+                      "(그 탭에서 메일을 직접 열면 생깁니다). 읽은 메일은 계속 수집합니다. "
+                      "확인한 뒤 radar-allow-unread를 실행하세요."),
     "investigate": "status_ggongbab_workers.cmd로 상태를 확인하세요.",
     "check_dispatch": "GitHub Actions와 갱신 요청 설정을 확인하세요.",
     "check_actions": "GitHub Actions에서 실패한 ggongbab-refresh 실행을 확인하세요.",
@@ -265,6 +269,9 @@ LINUX_TOAST_ACTION = dict(TOAST_ACTION,
     restart_worker="상태를 확인한 뒤 scripts/linux/ops.sh start를 실행하세요.",
     open_browser="scripts/linux/ops.sh browser-start로 운영 Chrome을 여세요.",
     investigate="scripts/linux/ops.sh status로 상태를 확인하세요.",
+    review_unread=("운영 Chrome의 Dooray 탭에서 수집 중에 메일 요청이 나가 안 읽은 메일 읽기를 멈췄습니다"
+                   "(그 탭에서 메일을 직접 열면 생깁니다). 읽은 메일은 계속 수집합니다. "
+                   "확인한 뒤 scripts/linux/ops.sh run radar-allow-unread를 실행하세요."),
 )
 TOAST_SCRIPT = r"""$ErrorActionPreference = 'Stop'
 $enc = [Text.Encoding]::UTF8
@@ -336,7 +343,7 @@ class Toast(tuple):
         return item
 
 
-STICKY_ACTIONS = frozenset({"login", "review_contract", "fix_config", "open_browser"})
+STICKY_ACTIONS = frozenset({"login", "review_contract", "review_unread", "fix_config", "open_browser"})
 _GDBUS_NOTIFY = ("gdbus", "call", "--session", "--dest", "org.freedesktop.Notifications",
                  "--object-path", "/org/freedesktop/Notifications", "--method", "org.freedesktop.Notifications.Notify")
 

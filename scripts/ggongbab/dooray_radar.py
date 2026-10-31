@@ -132,8 +132,11 @@ class RadarFiles:
     def unread_allowed(self) -> bool:
         return not self.unread_latch.exists()
 
-    def disable_unread(self, code: str, now: float) -> None:
-        atomic_json(self.unread_latch, {"reason": code if code in REASONS else INVARIANT, "at": now})
+    def disable_unread(self, code: str, now: float, requests=()) -> None:
+        """`requests`: the browser's own (method, path) pairs that broke the invariant, ids masked, so
+        an operator can see what happened (2026-10-31: the latch of 10-29 recorded no cause)."""
+        seen = [[str(m)[:10], re.sub(r"\d{4,}", "<id>", str(p))[:120]] for m, p in list(requests)[:5]]
+        atomic_json(self.unread_latch, {"reason": code if code in REASONS else INVARIANT, "at": now, "requests": seen})
 
     def runtime_state(self) -> dict:
         return read_json(self.runtime, {"started": 0, "observed": 0, "last_scan": None, "last_success": None,
@@ -196,7 +199,7 @@ def scan_once(session, state: AgentState, writer, *, list_mails, now: datetime, 
     if any(h.unread is None for h in headers):
         raise UiContractError(CONTRACT)
     if guard.violations:
-        raise UnreadInvariantBroken()
+        raise UnreadInvariantBroken(list(guard.violations))
     for header in headers:
         stamp = header.received_at
         if (stamp is not None and stamp < since) or (stamp is None and header.received and header.received < since.date()):
@@ -244,7 +247,7 @@ def scan_once(session, state: AgentState, writer, *, list_mails, now: datetime, 
         except MailUnavailable:
             result.unavailable += 1     # not recorded: the next scan tries again
     if guard.violations:
-        raise UnreadInvariantBroken()
+        raise UnreadInvariantBroken(list(guard.violations))
     return result
 
 
@@ -355,8 +358,8 @@ def run_radar(files: RadarFiles, *, session_factory: Callable, writer, list_mail
                 heartbeat("ui_changed", now, None, "20")
                 log(CONTRACT)
                 return 20
-            except UnreadInvariantBroken:
-                files.disable_unread(INVARIANT, now_ts)
+            except UnreadInvariantBroken as exc:
+                files.disable_unread(INVARIANT, now_ts, exc.args[0] if exc.args else ())
                 save(last_scan=now_ts, reason=INVARIANT)
                 heartbeat("collector_error", now, None, INVARIANT)
                 log(INVARIANT)
