@@ -410,6 +410,39 @@ def release_contracts(page):
     return count
 
 
+def lab_menu(page):
+    """Owner 2026-11-01: on babdoduk-lab, and only there, the "more" menu of every page lists the lab's
+    own pages (js/site.js LAB_LINKS), in both languages and once; production and any other host never do."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"lab menu: {detail}"
+        count += 1
+
+    labs = ["lab.html", "lab-ggongbab.html", "tip.html"]
+    names = {"ko": ["실험실", "꽁밥 실험", "꽁밥 제보"], "en": ["Lab", "Ggongbab lab", "Free food tips"]}
+    more = "() => [...document.querySelectorAll('#navMorePanel a')].map(a => [a.getAttribute('href'), a.textContent.trim()])"
+    page.set_viewport_size({"width": 1440, "height": 900})
+    for lang in ("ko", "en"):
+        for host in ("babdoduk-lab.vercel.app", "babdoduk.vercel.app", SITE_HOST):
+            for name in GUARD_PAGES + ["lab.html", "tip.html"]:
+                gate_page(page, host, "index.html")
+                page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
+                gate_page(page, host, name)
+                links = page.evaluate(more)
+                lab = [pair for pair in links if pair[0] in labs]
+                if name in ("lab.html", "tip.html"):
+                    check([h for h, _ in lab] == labs, (host, name, lang, "a lab page lists each lab link once", lab))
+                elif host == "babdoduk-lab.vercel.app":
+                    check(lab == [list(pair) for pair in zip(labs, names[lang])], (host, name, lang, "the lab menu", lab))
+                    check([h for h, _ in links[:len(NAV_MORE)]] == NAV_MORE, (host, name, "the public links come first"))
+                else:
+                    check(lab == [], (host, name, lang, "no lab link off babdoduk-lab", lab))
+    page.evaluate("localStorage.setItem('babdoduk-lang', 'ko')")
+    return count
+
+
 def magazine_sparse(page):
     """Sparse editions look intentional: an empty lane says so quietly, a hero without its own
     image is text-only (no BABDODUK placeholder), no featured story hides the hero, no filler.
@@ -3390,6 +3423,7 @@ def run_checks(screenshots=False):
         report["checks"] += magazine_sparse(page)
         report["checks"] += magazine_edition_time(page)
         report["checks"] += release_contracts(page)
+        report["checks"] += lab_menu(page)
         # The home page's checks own a page whose clock is fixed (home_page), so the world cup promo's
         # state and the calendar do not depend on today.
         home = home_page(browser, api_attempts)

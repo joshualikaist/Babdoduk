@@ -44,6 +44,25 @@
   window.babdodukGetLang = function () {
     return document.documentElement.lang === 'en' ? 'en' : 'ko';
   };
+  // The lab's own pages answer 404 on every host but babdoduk-lab (vercel.json), so the public pages
+  // carry no link to them. On babdoduk-lab, and only there, the "more" menu of every page lists them
+  // too, so the lab is reachable from its home page (owner 2026-11-01). The pages' HTML is the same on
+  // both branches; the lab pages already carry these links (scripts/sync_site_chrome.py LAB_LINKS).
+  var LAB_HOST = 'babdoduk-lab.vercel.app';
+  var LAB_LINKS = [['lab.html', 'nav.lab', '실험실'], ['lab-ggongbab.html', 'nav.labFeed', '꽁밥 실험'],
+                   ['tip.html', 'nav.labTip', '꽁밥 제보']];
+  var morePanel = document.getElementById('navMorePanel');
+  if (location.hostname === LAB_HOST && morePanel && !morePanel.querySelector('a[href="lab.html"]')) {
+    LAB_LINKS.forEach(function (link) {
+      var a = document.createElement('a');
+      a.className = 'nav-mega-link';
+      a.href = link[0];
+      a.setAttribute('data-i18n', link[1]);
+      a.textContent = link[2];
+      morePanel.appendChild(a);
+    });
+  }
+
   var saved = 'ko';
   try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
   applyLang(saved === 'en' ? 'en' : 'ko');
