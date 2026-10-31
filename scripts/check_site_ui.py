@@ -2349,6 +2349,17 @@ def worldcup_stats(page):
           "after a pick, the last pick's win rates")
     check(abs(page.locator(".wc-card").first.bounding_box()["y"] - top) < 1,
           "the win-rate line keeps its place, so the cards do not jump when it fills")
+    # Which dishes meet is random, so the longest names of the pool are put in the line too: on
+    # phones two long names wrapped and moved the cards, and the check above failed only now and
+    # then (2026-10-31).
+    items = [i for pack in (ROOT / "data/foods/packs").glob("*.json")
+             for i in json.loads(pack.read_text(encoding="utf-8"))["items"] if i["id"] in set(pool)]
+    longest = {lang: sorted((i[key] or "" for i in items), key=len)[-2:] for lang, key in (("ko", "nameKo"), ("en", "nameEn"))}
+    for text in (f"모두의 승률 {longest['ko'][1]} 71% · {longest['ko'][0]} 64%",
+                 f"Everyone's win rate {longest['en'][1]} 71% · {longest['en'][0]} 64%", ""):
+        page.evaluate("t => { document.getElementById('wcLastPick').textContent = t; }", text)
+        check(abs(page.locator(".wc-card").first.bounding_box()["y"] - top) < 1,
+              f"the win-rate line keeps its place with the longest names too ({text[:24] or 'empty'})")
     for _ in range(size - 2):
         page.locator(".wc-card").first.focus()
         page.keyboard.press("Enter")

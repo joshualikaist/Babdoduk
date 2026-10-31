@@ -547,6 +547,7 @@
     line.hidden = !statsApi;
     line.textContent = a === null || b === null ? ''
       : fill(t('wc.last', '모두의 승률 {a} {pa}% · {b} {pb}%'), { a: name(lastPick.w), pa: a, b: name(lastPick.l), pb: b });
+    line.title = line.textContent;   // the whole line, when two very long names are cut at two lines
   }
   function renderRanking() {
     if (embedded) return;

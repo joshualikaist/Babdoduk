@@ -986,7 +986,15 @@
 
 /* Everyone's picks (lab, stage 2): the last pick's win rates and the ranking. */
 .wc-last {
-  min-height: 1.5em;                     /* the line keeps its place while empty: no jump */
+  /* Two lines kept whether empty, short or long, and never more: two long dish names wrapped to a
+     second (Korean) or third (English) line on phones and pushed the cards down (2026-10-31). */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  min-height: 3em;
   margin-top: var(--space-2);
   font-size: 13px;
   font-weight: 600;
