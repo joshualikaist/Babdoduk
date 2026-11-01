@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-01",
+  "generatedAt": "2026-11-01T16:20:36+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "닭볶음탕 황금레시피｜감자까지 맛있는 닭볶음탕 양념 비율과 맛있게 만드는 법",
+    "summary": "찬 바람이 불기 시작하면 매콤한 국물 요리가 생각나죠.",
+    "source": "기록하는 인간 (요리)",
+    "sourceId": "blog-cultureagora",
+    "candidateId": "c_0eb1762de7ff8a74",
+    "url": "https://cultureagora.tistory.com/428",
+    "medium": "blog",
+    "discoveredAt": "2026-11-01T16:20:36+09:00",
+    "publishedAt": "2026-10-31T17:00:03+09:00",
+    "image": "https://blog.kakaocdn.net/dn/ekAsjB/dJMcag8xlgf/Z0AKhVkD6yN8f9eFBQnEL1/tfile.png",
+    "imageSource": "feed_html",
+    "category": "tips",
+    "heroKind": "pick"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "건선 앓는데 관절까지 붓고 아프다면?⋯'일루미야' 관절염에도 쓴다",
+          "summary": "건선 치료제 '일루미야(성분명 틸드라키주맙)' 주사기.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_dd3bba57e7c1ec28",
+          "url": "https://kormedi.com/2896049/",
+          "medium": "news",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-11-01T07:55:33+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "[편의점 Event] 2026년 11월 GS25 편의점 행사 정보",
+          "summary": "편의점의 다양한 할인 또는 증정 행사들 중에서 GS25 편의점에서 이번 달에 진행하는 것들을 모아보았습니다.",
+          "source": "혜택과 할인 정리",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_a969381d80f25972",
+          "url": "https://vyomakesa.com/gs25-convenience-store-event/",
+          "medium": "blog",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-11-01T05:00:55+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        },
+        {
+          "title": "삼성에피스 \"키트루다 시밀러 미국 허가 신청\"",
+          "summary": "삼성바이오에피스가 국내에 이어 미국에도 면역항암제 ‘키트루다’(성분명 펨브롤리주맙) 바이오시밀러 품목 허가 신청에 나섰다.삼성바이오에피스는 미국 식품의약국(FDA)에 키트루다 바이오시밀러 후보물질 'SB27'의…",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_9a959540191d8557",
+          "url": "https://www.newsis.com/view/NISX20261030_0003848848",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-30T17:03:47+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "시작 전에는 채소보다 과일을…운동 전후 먹어야 할 음식 vs 피해야 할 음식",
+          "summary": "운동 전에는 아주 가볍게 먹거나 아예 먹지 않는 것이 기본.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_4fad47c801fe600a",
+          "url": "https://kormedi.com/2895435/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T10:04:41+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "GC녹십자 \"뇌실투여형 헌터증후군 치료제 허가\"",
+          "summary": "GC녹십자가 국내 최초로 신경병증성 헌터증후군 치료제를 허가 받았다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_c6b2c0eaae96cdcd",
+          "url": "https://www.newsis.com/view/NISX20261030_0003847958",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-30T10:08:53+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "부대찌개 황금레시피｜사골곰탕 1팩으로 진하고 맛있게 끓이는 법",
+          "summary": "쌀쌀한 날씨에는 보글보글 끓여 먹는 부대찌개만큼 든든한 메뉴도 없죠.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_35831bfda653f23e",
+          "url": "https://cultureagora.tistory.com/430",
+          "medium": "blog",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-11-01T14:14:13+09:00"
+        },
+        {
+          "title": "일요일엔 짜계치｜계란 치즈 조합으로 짜파게티 맛있게 끓이는 법",
+          "summary": "늦잠 자고 일어난 일요일, 밥하기는 귀찮고 그렇다고 대충 먹기는 아쉽고.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_e17f4bc17a688d69",
+          "url": "https://cultureagora.tistory.com/435",
+          "medium": "blog",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-11-01T06:38:50+09:00"
+        },
+        {
+          "title": "이연복 셰프의 토마토계란볶음, 편스토랑 초간단 토달볶 레시피",
+          "summary": "이연복 셰프의 토마토계란볶음, 편스토랑 초간단 토달볶 레시피 아침 식사로 무엇을 해 먹을까 고민하다가냉장고 속 토마토와 계란으로 간단한 요리를 만들어 보았습니다.편스토랑에서 소개된 이연복 셰프의 초간단 토달볶…",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_d864a64c9da79cd5",
+          "url": "https://heysukim114.tistory.com/entry/%EC%9D%B4%EC%97%B0%EB%B3%B5-%EC%85%B0%ED%94%84%EC%9D%98-%EB%B6%80%EB%93%9C%EB%9F%AC%EC%9A%B4-%ED%86%A0%EB%8B%AC%EB%B3%B6%EC%9D%8C",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-09-11T00:00:08+09:00"
+        },
+        {
+          "title": "60살 넘어 얼굴과 인생이 확 피는 사람의 특징 4가지",
+          "summary": "60살 넘어 얼굴과 인생이 확 피는 사람의 특징 4가지 60살을 넘기면 같은 나이라도 분위기가 완전히 달라집니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_32fb7b1a4ba36569",
+          "url": "https://heysukim114.tistory.com/entry/60%EC%82%B4-%EB%84%98%EC%96%B4-%EC%96%BC%EA%B5%B4%EA%B3%BC-%EC%9D%B8%EC%83%9D%EC%9D%B4-%ED%99%95-%ED%94%BC%EB%8A%94-%EC%82%AC%EB%9E%8C%EC%9D%98-%ED%8A%B9%EC%A7%95-4%EA%B0%80%EC%A7%80",
+          "medium": "blog",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-11-01T00:00:42+09:00"
+        },
+        {
+          "title": "밀가루 버터 없는 다이어트빵 초코칩 바나나 계란빵 만들기 요리 레시피",
+          "summary": "우울해서 빵 만들었습니다.남아 있는 베이킹 재료 초코칩과 코코아가루그리고 계란, 바나나 딱 요 재료로 달달한 다이어트 간식 만들었습니다.버터도 밀가루도 베이킹 파우더도 없이 만들어오븐 안에서는 빵빵하게 부풀어…",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_43574f276a44200c",
+          "url": "https://twins0807.tistory.com/entry/%EB%B0%80%EA%B0%80%EB%A3%A8-%EB%B2%84%ED%84%B0-%EC%97%86%EB%8A%94-%EB%8B%A4%EC%9D%B4%EC%96%B4%ED%8A%B8%EB%B9%B5-%EC%B4%88%EC%BD%94%EC%B9%A9-%EB%B0%94%EB%82%98%EB%82%98-%EA%B3%84%EB%9E%80%EB%B9%B5-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-02T18:40:47+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "삼겹살, 상추 말고 ‘여기’에 싸 먹어 보세요… 좋은 영양분 쫙쫙 흡수됩니다",
+          "summary": "고소하고 감칠맛 짙은 고기에 쌈채소, 쌈장, 밥 정도만 있으면 별다른 밑반찬 없이도 진수성찬이 완성된다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_117c355c125789a4",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103002081.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-10-31T17:00:00+09:00"
+        },
+        {
+          "title": "“갑상선에 좋은 음식 따로 있다?”... 꼭 챙겨야 할 영양소와 식품 5가지",
+          "summary": "갑상선은 목 앞쪽에 자리한 작은 기관이지만 체온과 에너지 소비 속도를 조절해, 문제가 생기면 몸 전체가 영향을 받는다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_1a56c34c15e8af78",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69384",
+          "medium": "news",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-11-01T18:00:00+09:00"
+        },
+        {
+          "title": "아침에 사과 꾸준히 먹으면 염증에 변화…어떻게 먹는 게 가장 좋을까?",
+          "summary": "사과의 식이섬유는 혈당 조절, 혈중 콜레스테롤 감소에 기여한다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2ab5ab26ef0a9606",
+          "url": "https://kormedi.com/2895660/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-30T19:01:00+09:00"
+        },
+        {
+          "title": "“배추 겉잎 버리지 마세요”… 속보다 항산화성분 풍부",
+          "summary": "수분과 식이섬유가 풍부하고 열량이 낮아 체중 관리에도 좋은 채소다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_6ba36150c019d7e1",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103002969.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-11-01T09:30:00+09:00"
+        },
+        {
+          "title": "비싼 영양제 먹었는데 “효과 왜 이래?”… 커피, 언제 마셔야 하나?",
+          "summary": "영양제를 과잉 섭취하면 여러 부작용이 생길 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ca344b875a78c543",
+          "url": "https://kormedi.com/2894801/",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-10-29T19:01:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "\"아침 공복에 커피·토스트는 독…착즙 주스로 '이것' 채워야\"",
+          "summary": "이준형 인턴 기자 = 진정한 건강을 위해서는 탄수화물·단백질·지방 위주의 식단에서 벗어나 비타민·미네랄·섬유질·균을 뜻하는 이른바 '비밀섬균'을 채워야 한다는 전문가의 진단이 나왔다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_1d2130c87172b055",
+          "url": "https://www.newsis.com/view/NISX20261029_0003846211",
+          "medium": "news",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-10-31T18:00:00+09:00"
+        },
+        {
+          "title": "“술 안 마시는데 지방간이라고?”…간 건강 위해 줄여야 할 음식 4가지",
+          "summary": "튀김류는 조리 과정에서 기름을 많이 흡수해 열량이 높아지기 쉽다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8472c37bf1a8a9d0",
+          "url": "https://kormedi.com/2894556/",
+          "medium": "news",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2026-10-31T16:01:00+09:00"
+        },
+        {
+          "title": "내장 지방 줄이는 데 도움…뱃살 빼는 데 좋은 채소들",
+          "summary": "당근에는 루테인이라는 식물성 화합물이 풍부해 복부 지방을 제거하는 데 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_79d05e113fce31bc",
+          "url": "https://kormedi.com/2895976/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T10:15:00+09:00"
+        },
+        {
+          "title": "한끼 때우는 간편식?…\"내 입맛대로\" 달라진 트렌드",
+          "summary": "물가 탓에 휴일에 가족끼리 외식 한 번도 망설여지는 요즘, 조금이라도 저렴하게, 다양한 요리를 즐길 수 있는 간편식들이 인기를 끌고 있습니다.",
+          "source": "SBS",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_80500c5c519d8414",
+          "url": "https://news.sbs.co.kr/news/endPage.do?news_id=N1008707674",
+          "medium": "news",
+          "discoveredAt": "2026-10-30T15:58:37+09:00",
+          "publishedAt": "2026-08-16T20:40:38+09:00"
+        },
+        {
+          "title": "KREI Repository: 2025 식품소비행태조사 기초분석보고서",
+          "summary": "",
+          "source": "repository.krei.re.kr",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_0345b03f1eb22e70",
+          "url": "https://repository.krei.re.kr/handle/2018.oak/33313?mode=simple",
+          "medium": "research",
+          "discoveredAt": "2026-11-01T16:20:36+09:00",
+          "publishedAt": "2025-12-30T12:00:00+09:00"
+        }
+      ]
+    }
+  }
+}
