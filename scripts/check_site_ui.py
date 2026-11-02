@@ -145,13 +145,66 @@ def inspect_page(page, name, size, screenshot_dir=None):
           "the picker is not presented as a separate product in navigation")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
-    nav_items = page.locator("#navHome, .site-nav-direct, .nav-mega-trigger, #langToggle").evaluate_all(
-        """els => els.map(el => { const r = el.getBoundingClientRect(); return {left:r.left,right:r.right,
-          height:r.height,font:parseFloat(getComputedStyle(el).fontSize)}; }).sort((a,b) => a.left-b.left)""")
-    check(all(nav_items[i]["right"] <= nav_items[i + 1]["left"] + 1
-              for i in range(len(nav_items) - 1)), "navigation controls do not overlap")
+    # Only what is on screen counts: the phone menu panel and the More menu are hidden until opened.
+    nav_items = page.locator("#navDrawerToggle, #navHome, .site-nav-direct, .nav-mega-trigger, .nav-mega-link, #langToggle").evaluate_all(
+        """els => els.map(el => { const r = el.getBoundingClientRect(); const st = getComputedStyle(el);
+          if (!r.width || !r.height || st.visibility !== 'visible' || st.display === 'none') return null;
+          return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height,
+            font:parseFloat(st.fontSize)}; }).filter(Boolean).sort((a,b) => a.left-b.left)""")
+    check(not any(a["left"] < b["right"] - 1 and b["left"] < a["right"] - 1
+                  and a["top"] < b["bottom"] - 1 and b["top"] < a["bottom"] - 1
+                  for i, a in enumerate(nav_items) for b in nav_items[i + 1:]), ("navigation controls do not overlap", nav_items))
     check(all(item["font"] >= 12 and item["height"] >= 44 for item in nav_items),
           ("navigation text >= 12px with 44px targets", nav_items))
+    phone = size[0] <= 520
+    toggle = page.locator("#navDrawerToggle")
+    drawer_js = """() => { const d = document.getElementById('siteNavLinks'), r = d.getBoundingClientRect();
+      const links = [...d.querySelectorAll('a')].filter(a => getComputedStyle(a).display !== 'none')
+        .map(a => { const b = a.getBoundingClientRect(); return {href:a.getAttribute('href'), h:b.height,
+          font:parseFloat(getComputedStyle(a).fontSize), visible:getComputedStyle(a).visibility}; });
+      const back = document.querySelector('.nav-drawer-backdrop');
+      return {position:getComputedStyle(d).position, visible:getComputedStyle(d).visibility, left:r.left,
+        right:r.right, top:r.top, bottom:r.bottom, links, active:document.activeElement.getAttribute('href'),
+        activeId:document.activeElement.id, current:(d.querySelector('[aria-current="page"]') || {}).getAttribute?.('href') || null,
+        backdrop:!!back && !back.hidden, bar:document.querySelector('.site-nav-inner').getBoundingClientRect().bottom}; }"""
+    if phone:
+        # Owner 2026-11-02 ("버튼이 다닥다닥 붙어있거든", "어떤 버튼을 누르면 이렇게 왼쪽에 탭이 뜨도록"): the
+        # bar holds the menu button, the wordmark and the language switch; the button opens every
+        # destination, the More links included, as a list in a panel from the left under the bar.
+        box = toggle.bounding_box()
+        check(box and box["width"] >= 44 and box["height"] >= 44 and toggle.get_attribute("aria-expanded") == "false",
+              ("phone menu button, 44px, closed", box))
+        closed = page.evaluate(drawer_js)
+        check(closed["visible"] == "hidden" and not closed["backdrop"]
+              and page.locator(".site-nav-direct").first.evaluate("el => getComputedStyle(el).visibility") == "hidden",
+              ("the panel starts hidden and out of the tab order", closed))
+        row = page.locator(".site-nav-inner").evaluate("el => el.getBoundingClientRect().height")
+        check(row <= 64, ("the bar stays one slim row", row))
+        toggle.click()
+        page.wait_for_timeout(300)                 # the panel slides in (0.22s)
+        opened = page.evaluate(drawer_js)
+        hrefs = [link["href"] for link in opened["links"]]
+        check(toggle.get_attribute("aria-expanded") == "true" and opened["visible"] == "visible" and opened["backdrop"],
+              ("the button opens the panel over a backdrop", opened))
+        check(opened["position"] == "fixed" and abs(opened["left"]) <= 1 and opened["right"] <= size[0] * 0.85
+              and opened["top"] >= opened["bar"] - 1 and abs(opened["bottom"] - page.viewport_size["height"]) <= 1,
+              ("a panel from the left, under the bar, to the bottom", opened))
+        check(hrefs[:3] == ["ggongbab.html", "mukbang.html", "event.html"] and {"history.html", "tip.html"} <= set(hrefs)
+              and all(link["h"] >= 48 and link["font"] >= 16 and link["visible"] == "visible" for link in opened["links"]),
+              ("every destination, 16px text in 48px rows", opened["links"]))
+        check(opened["active"] == (opened["current"] or "ggongbab.html"), ("focus moves to the current page's link", opened))
+        page.keyboard.press("Escape")
+        check(toggle.get_attribute("aria-expanded") == "false" and page.evaluate(drawer_js)["activeId"] == "navDrawerToggle",
+              "Escape closes the panel and gives focus back to the button")
+        toggle.click()
+        page.mouse.click(size[0] - 10, size[1] // 2)
+        check(toggle.get_attribute("aria-expanded") == "false" and not page.evaluate(drawer_js)["backdrop"],
+              "a tap on the backdrop closes the panel")
+    else:
+        check(toggle.evaluate("el => getComputedStyle(el).display") == "none"
+              and page.evaluate(drawer_js)["position"] != "fixed"
+              and page.locator(".nav-mega-trigger").evaluate("el => getComputedStyle(el).display") != "none",
+              "wider screens keep the row and its More menu, without the phone menu button")
     brand = page.locator("#navHome").evaluate("""el => { const s = getComputedStyle(el);
       return [s.backgroundImage, s.webkitTextFillColor, s.animationName]; }""")
     check("linear-gradient" in brand[0] and "99, 102, 241" in brand[0] and brand[1] == "rgba(0, 0, 0, 0)"
@@ -164,21 +217,30 @@ def inspect_page(page, name, size, screenshot_dir=None):
     check(footer_links and all(href and href != "#" and (ROOT / href.split("#")[0]).is_file()
                                for href in footer_links if not href.startswith(("mailto:", "https:"))),
           ("footer links resolve to real pages", footer_links))
-    check(direct.nth(0).inner_text() == "오늘의 꽁밥"
-          and direct.nth(1).inner_text() == "밥도둑 매거진", "Korean primary labels")
+    # Every width shows the full names; on phones they are read with the menu panel open.
+    def labels():
+        if phone:
+            toggle.click()
+        shown = [direct.nth(i).inner_text() for i in range(3)]
+        if phone:
+            page.keyboard.press("Escape")
+        return shown
+    korean = labels()
+    check(korean == ["오늘의 꽁밥", "밥도둑 매거진", "소식·이벤트"], ("Korean primary labels", korean))
     page.locator("#langToggle").click()
-    english = [direct.nth(i).inner_text() for i in range(2)]
-    check(english == ["Today's free food", "Magazine"], ("English primary labels", english,
-          page.evaluate("document.documentElement.lang")))
+    english = labels()
+    check(english == ["Today's free food", "Magazine", "News & events"],
+          ("English primary labels", english, page.evaluate("document.documentElement.lang")))
     page.locator("#langToggle").click()
-    nav = page.locator(".nav-mega-trigger").first
-    nav.click()
-    check(nav.get_attribute("aria-expanded") == "true", "navigation opens")
-    panel = page.locator("#navMorePanel").bounding_box()
-    check(panel is not None and panel["x"] >= -1 and panel["x"] + panel["width"] <= metrics["rootWidth"] + 1,
-          "More menu remains inside viewport")
-    page.keyboard.press("Escape")
-    check(nav.get_attribute("aria-expanded") == "false", "navigation Escape closes")
+    if not phone:      # on phones the More links are in the menu panel, without a menu of their own
+        nav = page.locator(".nav-mega-trigger").first
+        nav.click()
+        check(nav.get_attribute("aria-expanded") == "true", "navigation opens")
+        panel = page.locator("#navMorePanel").bounding_box()
+        check(panel is not None and panel["x"] >= -1 and panel["x"] + panel["width"] <= metrics["rootWidth"] + 1,
+              "More menu remains inside viewport")
+        page.keyboard.press("Escape")
+        check(nav.get_attribute("aria-expanded") == "false", "navigation Escape closes")
 
     if name == "mukbang.html":
         check(metrics["track"] == "rgb(247, 244, 238)", "magazine paper color")
