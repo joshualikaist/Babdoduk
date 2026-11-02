@@ -2342,7 +2342,7 @@ FRIEND_SNAP = """() => { const q = s => document.querySelector(s), shown = e => 
 
 
 # ---------------------------------------------------------------------------------------------------
-# 꽁밥 제보 (tip.html, lab only; docs/GGONGBAB_TIPS.md): a fake Supabase client stands in for the
+# 꽁밥 제보 (tip.html, public since 2026-11-02; docs/GGONGBAB_TIPS.md): a fake Supabase client stands in for the
 # project, so no check reaches a database. The page clock is fixed and the board's rows derive from it.
 # ---------------------------------------------------------------------------------------------------
 TIP_NOW = "2026-11-03T10:00:00+09:00"
@@ -3026,7 +3026,7 @@ def structure_and_failures(page):
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
 NAV_DIRECT = ["ggongbab.html", "mukbang.html", "event.html"]
-NAV_MORE = ["history.html",
+NAV_MORE = ["history.html", "tip.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
 FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
