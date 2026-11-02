@@ -50,7 +50,7 @@
   // both branches; the lab pages already carry these links (scripts/sync_site_chrome.py LAB_LINKS).
   var LAB_HOST = 'babdoduk-lab.vercel.app';
   var LAB_LINKS = [['lab.html', 'nav.lab', '실험실'], ['lab-ggongbab.html', 'nav.labFeed', '꽁밥 실험'],
-                   ['tip.html', 'nav.labTip', '꽁밥 제보']];
+                   ['tip.html', 'nav.labTip', '꽁밥 제보'], ['cardnews.html', 'nav.labCards', '카드뉴스']];
   var morePanel = document.getElementById('navMorePanel');
   if (location.hostname === LAB_HOST && morePanel && !morePanel.querySelector('a[href="lab.html"]')) {
     LAB_LINKS.forEach(function (link) {

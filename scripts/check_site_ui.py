@@ -420,19 +420,19 @@ def lab_menu(page):
         assert ok, f"lab menu: {detail}"
         count += 1
 
-    labs = ["lab.html", "lab-ggongbab.html", "tip.html"]
-    names = {"ko": ["실험실", "꽁밥 실험", "꽁밥 제보"], "en": ["Lab", "Ggongbab lab", "Free food tips"]}
+    labs = ["lab.html", "lab-ggongbab.html", "tip.html", "cardnews.html"]
+    names = {"ko": ["실험실", "꽁밥 실험", "꽁밥 제보", "카드뉴스"], "en": ["Lab", "Ggongbab lab", "Free food tips", "Card news"]}
     more = "() => [...document.querySelectorAll('#navMorePanel a')].map(a => [a.getAttribute('href'), a.textContent.trim()])"
     page.set_viewport_size({"width": 1440, "height": 900})
     for lang in ("ko", "en"):
         for host in ("babdoduk-lab.vercel.app", "babdoduk.vercel.app", SITE_HOST):
-            for name in GUARD_PAGES + ["lab.html", "tip.html"]:
+            for name in GUARD_PAGES + ["lab.html", "tip.html", "cardnews.html"]:
                 gate_page(page, host, "index.html")
                 page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
                 gate_page(page, host, name)
                 links = page.evaluate(more)
                 lab = [pair for pair in links if pair[0] in labs]
-                if name in ("lab.html", "tip.html"):
+                if name in ("lab.html", "tip.html", "cardnews.html"):
                     check([h for h, _ in lab] == labs, (host, name, lang, "a lab page lists each lab link once", lab))
                 elif host == "babdoduk-lab.vercel.app":
                     check(lab == [list(pair) for pair in zip(labs, names[lang])], (host, name, lang, "the lab menu", lab))

@@ -108,6 +108,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 | **`tip.html`** | 꽁밥 제보 게시판 — **실험실 전용**(`noindex, nofollow`, `vercel.json` 이 lab 밖에서 404, `lab.html`·`lab-ggongbab.html`·실험 페이지 더보기에서 진입). 방문자가 모르는 오프라인 꽁밥을 사진과 함께 보내고, 소유자가 하루 한 번 확인한 제보만 게시판에 올라간다(`docs/GGONGBAB_TIPS.md`) |
+| **`cardnews.html`** | 주간 꽁밥 카드뉴스 시안 — **실험실 전용**(`noindex, nofollow`, `vercel.json` 이 lab 밖에서 404, lab 주소의 더보기 "카드뉴스"에서 진입). `scripts/render_cardnews.py` 가 꽁밥 목록으로 그린 표지+월~금 6장(1080×1350)을 보여 준다(`docs/CARDNEWS.md`) |
 
 상단 내비: 오늘의 꽁밥(꽁밥·학식) · 밥도둑 매거진(메뉴 고르기 포함) · 소식·이벤트(2026-10-13 소유자 결정으로 더보기에서 꺼냄) · 더보기(역사·지도·SNS) · 언어(EN/한국어). 푸터: 오늘의 꽁밥 · 밥도둑 매거진 · 소식·이벤트 · 역사. 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
 실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
@@ -805,6 +806,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/INSTAGRAM_SOURCES.md` | 학부 인스타그램 계정 조사: 22개 학과·학생 단체별 계정, API 조회 결과, 미확인·제외 계정(2026-10-29 확인), 공식 API 비교 |
 | `docs/INSTAGRAM_RADAR.md` | 인스타 레이더(lab 전용): Business Discovery 수집, 판정, 텔레그램 확인, 두레이 수집함으로 넘기기 |
 | `docs/GGONGBAB_TIPS.md` | 꽁밥 제보 게시판(lab 전용): 제보·사진을 받는 함수와 비공개 버킷, 남용 제한, 확인된 제보만 싣는 게시판, 적용 순서 |
+| `docs/CARDNEWS.md` | 주간 꽁밥 카드뉴스(lab 전용): 카드 규칙, 그리는 스크립트와 `data/cardnews/`, 시안 페이지, 텔레그램·인스타 다음 단계 |
 | `docs/OPS_AGENT.md` | 운영 자동 점검(lab 전용): 소유자의 텔레그램 메시지를 인스타 레이더의 분류 모델이 운영 상태와 함께 읽고 답한다. 허용된 조치(재시작·메일 다시 읽기)만 실행하고 잠금 해제는 버튼으로 묻는다 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
@@ -816,7 +818,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
 `GGONGBAB_RESIDENT_OPS.md`(운영 PC 상주 worker, 2026-10-17부터 리눅스), `INSTAGRAM_RADAR.md`(인스타 레이더),
-`GGONGBAB_TIPS.md`(꽁밥 제보 게시판), `OPS_AGENT.md`(운영 자동 점검). 해당 기능이 main에 승격될 때 함께 옮깁니다.
+`GGONGBAB_TIPS.md`(꽁밥 제보 게시판), `OPS_AGENT.md`(운영 자동 점검), `CARDNEWS.md`(주간 꽁밥 카드뉴스). 해당 기능이 main에 승격될 때 함께 옮깁니다.
 
 ## 15. 라이선스
 

@@ -1,0 +1,19 @@
+/* 꽁밥 카드뉴스 (cardnews.html, lab only; docs/CARDNEWS.md): the week's six cards, read top to bottom. */
+/* Above the fixed body::before canvas of css/site.css, as every page's main is. */
+.cn-page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: var(--space-6, 24px) var(--space-4, 16px) var(--space-16, 64px); display: grid; gap: 32px; }
+.cn-hero { display: grid; gap: 10px; max-width: 760px; }
+.cn-kicker { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .08em; color: var(--color-ink-muted, #625d54); }
+.cn-title { margin: 0; text-wrap: balance; overflow-wrap: anywhere; }
+.cn-lead { margin: 0; font-size: 17px; line-height: 1.6; color: var(--color-ink, #1e1d1a); }
+.cn-meta { margin: 0; font-size: 15px; font-weight: 700; color: var(--color-accent, #be185d); font-variant-numeric: tabular-nums; }
+.cn-meta:empty { display: none; }
+.cn-note { margin: 0; font-size: 14px; color: var(--color-ink-muted, #625d54); }
+.cn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px; }
+.cn-card { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.cn-card a { display: block; border-radius: 16px; }
+.cn-card a:focus-visible { outline: 3px solid var(--color-accent, #be185d); outline-offset: 3px; }
+.cn-card img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; border-radius: 16px; border: 1px solid var(--border, #e6e0d4);
+  background: var(--color-surface, #fffdf8); }
+.cn-card figcaption { font-size: 14px; color: var(--color-ink-muted, #625d54); }
+.cn-card figcaption b { color: var(--color-ink, #1e1d1a); margin-right: 6px; font-variant-numeric: tabular-nums; }
+.cn-state { margin: 0; padding: 32px 0; font-size: 16px; color: var(--color-ink-muted, #625d54); }

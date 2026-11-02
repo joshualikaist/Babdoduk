@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "weeks": [
+    {
+      "week": "2026-11-02",
+      "renderedAt": "2026-11-02T14:07:56+09:00",
+      "feedGeneratedAt": "2026-10-31T20:21:46+09:00",
+      "counts": [
+        2,
+        0,
+        2,
+        1,
+        4
+      ],
+      "total": 9,
+      "images": [
+        "data/cardnews/2026-11-02/1.png",
+        "data/cardnews/2026-11-02/2.png",
+        "data/cardnews/2026-11-02/3.png",
+        "data/cardnews/2026-11-02/4.png",
+        "data/cardnews/2026-11-02/5.png",
+        "data/cardnews/2026-11-02/6.png"
+      ]
+    }
+  ]
+}

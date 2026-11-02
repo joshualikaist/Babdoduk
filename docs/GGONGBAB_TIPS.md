@@ -54,7 +54,7 @@
 - 글도 사진도 없으면 보내지 않고 이유를 적은 뒤(`aria-invalid`) 그 칸으로 초점을 옮깁니다. 상태는 `role="status"` 로 읽힙니다. 글을 쓰거나 사진을 붙이면 표시가 바로 사라집니다. 사진만 보낸 제보에서 사진이 하나도 안 올라가면 "제보가 비어 있어요"라고 알려 다시 보내게 합니다.
 - 공개 설정(`js/ggongbab-public-config.js`)이 비었거나 클라이언트를 불러오지 못하면 제보 칸이 닫히고 "지금은 제보를 받을 수 없어요", 게시판은 "게시판을 불러오지 못했어요"라고 말합니다. 이때 페이지는 아무 요청도 하지 않습니다.
 - Supabase 클라이언트는 공개 피드와 같은 고정 버전(`@supabase/supabase-js@2.116.0`, integrity 포함)입니다.
-- 진입: `lab.html` 의 버튼, `lab-ggongbab.html` 의 "꽁밥 제보하기", 실험 페이지 더보기의 "꽁밥 제보". 공개 페이지(`ggongbab.html` 등)의 HTML 은 lab 전용 페이지에 링크하지 않습니다(`tests/test_deploy_config.py`). 다만 babdoduk-lab.vercel.app 에서 열렸을 때만 `js/site.js` 가 모든 페이지의 더보기에 실험실·꽁밥 실험·꽁밥 제보를 덧붙입니다(소유자 2026-11-01, `check_site_ui.py` `lab_menu`). 운영 주소와 다른 주소에서는 붙이지 않습니다. 승격할 때 `ggongbab.html` 진입점을 함께 넣습니다.
+- 진입: `lab.html` 의 버튼, `lab-ggongbab.html` 의 "꽁밥 제보하기", 실험 페이지 더보기의 "꽁밥 제보". 공개 페이지(`ggongbab.html` 등)의 HTML 은 lab 전용 페이지에 링크하지 않습니다(`tests/test_deploy_config.py`). 다만 babdoduk-lab.vercel.app 에서 열렸을 때만 `js/site.js` 가 모든 페이지의 더보기에 실험실·꽁밥 실험·꽁밥 제보·카드뉴스를 덧붙입니다(소유자 2026-11-01, `check_site_ui.py` `lab_menu`). 운영 주소와 다른 주소에서는 붙이지 않습니다. 승격할 때 `ggongbab.html` 진입점을 함께 넣습니다.
 
 ## 운영 규칙
 

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Lab only (vercel.json answers 404 on every other host); docs/CARDNEWS.md. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>꽁밥 카드뉴스 · 밥도둑 Babdoduk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/site.css" />
+  <link rel="stylesheet" href="css/cardnews.css" />
+</head>
+<body class="cn-body">
+  <header class="site-nav" role="banner">
+    <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    </div>
+    <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
+      <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="홈으로">Babdoduk</a>
+      <div class="nav-mega-row">
+        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
+        <a class="site-nav-direct" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
+        <a class="site-nav-direct" href="event.html"><span class="nav-label-long" data-i18n="nav.event">소식·이벤트</span><span class="nav-label-short" data-i18n="nav.eventShort">소식</span></a>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
+          <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
+            <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+            <a class="nav-mega-link" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="nav.instagram">인스타그램</a>
+            <a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>
+            <a class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.labFeed">꽁밥 실험</a>
+            <a class="nav-mega-link" href="tip.html" data-i18n="nav.labTip">꽁밥 제보</a>
+            <a class="nav-mega-link is-current" href="cardnews.html" aria-current="page" data-i18n="nav.labCards">카드뉴스</a>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
+    </div>
+  </header>
+  <main class="cn-page">
+    <section class="cn-hero" aria-labelledby="cnTitle">
+      <p class="cn-kicker" data-i18n="cardnews.kicker">주간 꽁밥 카드뉴스</p>
+      <h1 class="page-title cn-title" id="cnTitle" data-i18n="cardnews.title">이번 주 꽁밥 카드</h1>
+      <p class="cn-lead" data-i18n="cardnews.lead">인스타그램과 텔레그램에 올릴 카드 6장이에요. 표지 한 장과 월요일부터 금요일까지 하루 한 장.</p>
+      <p class="cn-meta" id="cnMeta"></p>
+      <p class="cn-note" data-i18n="cardnews.note">카드 속 글은 사이트에 공개된 꽁밥 목록에서 그대로 가져와요.</p>
+    </section>
+    <div class="cn-grid" id="cnGrid" aria-live="polite" data-state="loading">
+      <p class="cn-state" data-i18n="cardnews.loading">카드를 불러오는 중</p>
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer-inner">
+      <hr class="footer-apple-hr" />
+      <div class="footer-apple-main">
+        <div class="footer-apple-col footer-apple-col--left">
+          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true"> : </span>joshualiuniv@gmail.com</span>
+        </div>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
+        </nav>
+        <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
+      </div>
+      <p class="footer-apple-fine" data-i18n="footer.fine">본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.</p>
+    </div>
+  </footer>
+
+  <!-- @i18n:strings -->
+  <script>
+    // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.
+    window.BABDODUK_STR = {
+      ko: {
+        docTitle: '꽁밥 카드뉴스 · 밥도둑 Babdoduk',
+        'a11y.scrollProgress': '페이지 스크롤 진행',
+        'cardnews.alt.cover': '표지: {range}, 이번 주 꽁밥 {total}개',
+        'cardnews.alt.day': '{date} {day} 카드: 꽁밥 {n}개',
+        'cardnews.alt.none': '{date} {day} 카드: 아직 알려진 꽁밥 없음',
+        'cardnews.cap.cover': '표지',
+        'cardnews.day.0': '월요일',
+        'cardnews.day.1': '화요일',
+        'cardnews.day.2': '수요일',
+        'cardnews.day.3': '목요일',
+        'cardnews.day.4': '금요일',
+        'cardnews.empty': '아직 만든 카드가 없어요.',
+        'cardnews.kicker': '주간 꽁밥 카드뉴스',
+        'cardnews.lead': '인스타그램과 텔레그램에 올릴 카드 6장이에요. 표지 한 장과 월요일부터 금요일까지 하루 한 장.',
+        'cardnews.loading': '카드를 불러오는 중',
+        'cardnews.meta': '{range} · 꽁밥 {total}개 · 꽁밥 목록 {updated} 기준',
+        'cardnews.note': '카드 속 글은 사이트에 공개된 꽁밥 목록에서 그대로 가져와요. 카드를 누르면 크게 볼 수 있어요.',
+        'cardnews.off': '카드를 불러오지 못했어요.',
+        'cardnews.open': '{label} (크게 보기)',
+        'cardnews.title': '이번 주 꽁밥 카드',
+        'footer.contact': '문의',
+        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.country': '대한민국',
+        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.navAria': '사이트 바로가기',
+        'nav.event': '소식·이벤트',
+        'nav.event.open': '소식·이벤트',
+        'nav.eventShort': '소식',
+        'nav.history': '역사',
+        'nav.homeAria': '홈으로',
+        'nav.instagram': '인스타그램',
+        'nav.lab': '실험실',
+        'nav.labCards': '카드뉴스',
+        'nav.labFeed': '꽁밥 실험',
+        'nav.labTip': '꽁밥 제보',
+        'nav.langAria': '영어로 전환',
+        'nav.langBtn': '언어 (EN)',
+        'nav.magazine': '밥도둑 매거진',
+        'nav.map': '맛집 지도',
+        'nav.more': '더보기',
+        'nav.navAria': '주요 메뉴',
+        'nav.today': '오늘의 꽁밥',
+        'nav.topAria': '맨 위로',
+      },
+      en: {
+        docTitle: 'Free food cards · Babdoduk',
+        'a11y.scrollProgress': 'Page scroll progress',
+        'cardnews.alt.cover': 'Cover: {range}, {total} free food events this week',
+        'cardnews.alt.day': '{day} {date} card: {n} events',
+        'cardnews.alt.none': '{day} {date} card: no events known yet',
+        'cardnews.cap.cover': 'Cover',
+        'cardnews.day.0': 'Monday',
+        'cardnews.day.1': 'Tuesday',
+        'cardnews.day.2': 'Wednesday',
+        'cardnews.day.3': 'Thursday',
+        'cardnews.day.4': 'Friday',
+        'cardnews.empty': 'No cards yet.',
+        'cardnews.kicker': 'Weekly free food cards',
+        'cardnews.lead': 'Six cards for Instagram and Telegram: a cover, then one card for each day from Monday to Friday.',
+        'cardnews.loading': 'Loading the cards',
+        'cardnews.meta': '{range} · {total} events · list as of {updated}',
+        'cardnews.note': 'The cards are in Korean and use the free food list published on the site. Select a card to see it full size.',
+        'cardnews.off': 'Couldn\'t load the cards.',
+        'cardnews.open': '{label} (full size)',
+        'cardnews.title': 'This week\'s free food cards',
+        'footer.contact': 'Contact',
+        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.country': 'South Korea',
+        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.navAria': 'Site links',
+        'nav.event': 'News & events',
+        'nav.event.open': 'News & events',
+        'nav.eventShort': 'News',
+        'nav.history': 'History',
+        'nav.homeAria': 'Home',
+        'nav.instagram': 'Instagram',
+        'nav.lab': 'Lab',
+        'nav.labCards': 'Card news',
+        'nav.labFeed': 'Ggongbab lab',
+        'nav.labTip': 'Free food tips',
+        'nav.langAria': 'Switch to Korean',
+        'nav.langBtn': '한국어',
+        'nav.magazine': 'Magazine',
+        'nav.map': 'Food map',
+        'nav.more': 'More',
+        'nav.navAria': 'Main menu',
+        'nav.today': 'Today\'s free food',
+        'nav.topAria': 'Back to top',
+      }
+    };
+  </script>
+  <script src="js/site.js"></script>
+  <!-- @end i18n -->
+  <script src="js/cardnews.js"></script>
+</body>
+</html>
