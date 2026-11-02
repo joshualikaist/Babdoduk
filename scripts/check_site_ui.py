@@ -420,8 +420,8 @@ def lab_menu(page):
         assert ok, f"lab menu: {detail}"
         count += 1
 
-    labs = ["lab.html", "lab-ggongbab.html", "tip.html", "cardnews.html"]
-    names = {"ko": ["실험실", "꽁밥 실험", "꽁밥 제보", "카드뉴스"], "en": ["Lab", "Ggongbab lab", "Free food tips", "Card news"]}
+    labs = ["lab.html", "lab-ggongbab.html", "cardnews.html"]
+    names = {"ko": ["실험실", "꽁밥 실험", "카드뉴스"], "en": ["Lab", "Ggongbab lab", "Card news"]}
     more = "() => [...document.querySelectorAll('#navMorePanel a')].map(a => [a.getAttribute('href'), a.textContent.trim()])"
     page.set_viewport_size({"width": 1440, "height": 900})
     for lang in ("ko", "en"):
@@ -432,7 +432,7 @@ def lab_menu(page):
                 gate_page(page, host, name)
                 links = page.evaluate(more)
                 lab = [pair for pair in links if pair[0] in labs]
-                if name in ("lab.html", "tip.html", "cardnews.html"):
+                if name in ("lab.html", "cardnews.html"):
                     check([h for h, _ in lab] == labs, (host, name, lang, "a lab page lists each lab link once", lab))
                 elif host == "babdoduk-lab.vercel.app":
                     check(lab == [list(pair) for pair in zip(labs, names[lang])], (host, name, lang, "the lab menu", lab))
@@ -2475,7 +2475,7 @@ FRIEND_SNAP = """() => { const q = s => document.querySelector(s), shown = e => 
 
 
 # ---------------------------------------------------------------------------------------------------
-# 꽁밥 제보 (tip.html, lab only; docs/GGONGBAB_TIPS.md): a fake Supabase client stands in for the
+# 꽁밥 제보 (tip.html, public since 2026-11-02; docs/GGONGBAB_TIPS.md): a fake Supabase client stands in for the
 # project, so no check reaches a database. The page clock is fixed and the board's rows derive from it.
 # ---------------------------------------------------------------------------------------------------
 TIP_NOW = "2026-11-03T10:00:00+09:00"
@@ -3159,7 +3159,7 @@ def structure_and_failures(page):
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
 NAV_DIRECT = ["ggongbab.html", "mukbang.html", "event.html"]
-NAV_MORE = ["history.html",
+NAV_MORE = ["history.html", "tip.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
 FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {

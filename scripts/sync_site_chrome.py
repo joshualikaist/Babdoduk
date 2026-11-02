@@ -51,7 +51,6 @@ HOME_FOOD_TYPES = ("meal", "lunchbox", "snack", "refreshment", "beverage", "coup
 LAB_LINKS = [
     '<a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>',
     '<a class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.labFeed">꽁밥 실험</a>',
-    '<a class="nav-mega-link" href="tip.html" data-i18n="nav.labTip">꽁밥 제보</a>',
     '<a class="nav-mega-link" href="cardnews.html" data-i18n="nav.labCards">카드뉴스</a>',
 ]
 LAB_RIBBON = [
@@ -76,8 +75,9 @@ PAGES = {
     "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
     "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
                           "strings": ("gg", "ggongbab", "km")},
-    # The free-food tip board is lab-only (docs/GGONGBAB_TIPS.md): reached from the lab pages only.
-    "tip.html": {"current": "tip.html", "lab": True, "strings": ("tip",)},
+    # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
+    # page's "more" menu.
+    "tip.html": {"current": "tip.html", "strings": ("tip",)},
     # The weekly card news preview is lab-only (docs/CARDNEWS.md), the images that go to Telegram.
     "cardnews.html": {"current": "cardnews.html", "lab": True, "strings": ("cardnews",)},
 }

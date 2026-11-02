@@ -114,7 +114,7 @@ def test_the_page_script_uses_only_the_public_paths():
     assert "var MAX_PHOTOS = 3;" in JS and "var MAX_BYTES = 5 * 1024 * 1024;" in JS
 
 
-def test_the_page_is_lab_only_and_never_republishes_photos():
+def test_the_page_is_not_indexed_and_never_republishes_photos():
     assert '<meta name="robots" content="noindex, nofollow" />' in PAGE
     assert PAGE.index('<script src="js/ggongbab-public-config.js"></script>') < PAGE.index('<script src="js/ggongbab-tips.js"></script>')
     assert 'id="tipHp"' in PAGE and 'tabindex="-1"' in PAGE
