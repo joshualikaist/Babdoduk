@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from urllib.parse import parse_qsl, urlsplit
 from datetime import datetime
 from difflib import SequenceMatcher
 from typing import Any, Optional
@@ -137,6 +138,50 @@ def _same(a: Any, b: Any) -> bool:
     return _norm(str(a)) == _norm(str(b))
 
 
+_BUILDING_CODE = re.compile(r"\b([A-Z]{1,2}\d{1,2}(?:-\d)?)\b", re.I)
+_TRACKING = re.compile(r"^(utm_\w+|pk|fbclid|gclid|igsh|igshid|si|ref|ref_src|mc_cid|mc_eid)$", re.I)
+
+
+def same_building(a: Any, b: Any) -> bool:
+    """One building written two ways: "KI빌딩" and "KI빌딩(E4)", "E11" and "창의학습관(E11)".
+    Two building codes must be the same code ("E1" is not "E11"); otherwise the names without
+    their codes and brackets must be equal (2026-11-02: 업비트 특강 was held over KI빌딩 vs KI빌딩(E4))."""
+    text_a, text_b = str(a or ""), str(b or "")
+    codes_a = {c.upper() for c in _BUILDING_CODE.findall(text_a)}
+    codes_b = {c.upper() for c in _BUILDING_CODE.findall(text_b)}
+    if codes_a and codes_b:
+        return codes_a == codes_b
+    name_a = _place(_BUILDING_CODE.sub("", re.sub(r"[()（）]", " ", text_a)))
+    name_b = _place(_BUILDING_CODE.sub("", re.sub(r"[()（）]", " ", text_b)))
+    return bool(name_a) and name_a == name_b
+
+
+def same_url(a: Any, b: Any) -> bool:
+    """One link written two ways: the same address whose query differs only by tracking or referral
+    keys (?pk=, utm_*), or by a trailing slash or the host's case (2026-11-02: NAVER D2SF 토크 was held
+    over https://luma.com/viqcul3g?pk=g vs https://luma.com/viqcul3g). Any other query difference stays
+    a conflict: on a board link the query is often the post id."""
+    try:
+        one, two = urlsplit(str(a or "").strip()), urlsplit(str(b or "").strip())
+    except ValueError:
+        return False
+    if not one.netloc or not two.netloc:
+        return _norm(str(a)) == _norm(str(b))
+    def kept(parts):
+        return sorted((k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if not _TRACKING.match(k))
+    return (one.scheme.lower() in ("http", "https") and two.scheme.lower() in ("http", "https")
+            and one.netloc.lower().removeprefix("www.") == two.netloc.lower().removeprefix("www.")
+            and one.path.rstrip("/") == two.path.rstrip("/") and kept(one) == kept(two))
+
+
+def same_field(key: str, a: Any, b: Any) -> bool:
+    if key == "building":
+        return _same(a, b) or same_building(a, b)
+    if key == "registration_url":
+        return _same(a, b) or same_url(a, b)
+    return _same(a, b)
+
+
 def keep_published_version(existing: dict[str, Any], updated: dict[str, Any],
                            reasons: list[str]) -> tuple[dict[str, Any], list[str]]:
     """Keep a safe public event when a second source disagrees.
@@ -169,8 +214,11 @@ def merge_into(existing: dict[str, Any], cand: EventCandidate) -> tuple[dict[str
         empty_new = new_val in (None, "", "unknown")
         if empty_old and not empty_new:
             updated[key] = new_val
-        elif not empty_old and not empty_new and key in ESSENTIAL_CONFLICT_FIELDS and not _same(old_val, new_val):
+        elif not empty_old and not empty_new and key in ESSENTIAL_CONFLICT_FIELDS and not same_field(key, old_val, new_val):
             reasons.append(f"병합 충돌 {key}: {str(old_val)[:30]} vs {str(new_val)[:30]}")
+        elif (key == "building" and not empty_old and not empty_new and not _BUILDING_CODE.search(str(old_val))
+              and _BUILDING_CODE.search(str(new_val))):
+            updated[key] = new_val                     # the same building, now with its code
     old_food = existing.get("food_provided") or "unknown"
     new_food = new.get("food_provided") or "unknown"
     if old_food == "unknown" and new_food != "unknown":

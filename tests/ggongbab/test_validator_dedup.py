@@ -6,7 +6,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from ggongbab.dedup import find_match, merge_into, score_pair
+from ggongbab.dedup import find_match, merge_into, same_building, same_url, score_pair
 from ggongbab.models import EventCandidate, EventExtraction, Evidence
 from ggongbab.parsers.rule_parser import analyze
 from ggongbab.parsers.validator import fallback_reasons, parse_iso, validate
@@ -146,3 +146,38 @@ def test_merge_fills_missing_and_flags_conflicts():
     assert updated2["building"] == "N1"  # never overwritten
     assert updated2["needs_review"] and updated2["status"] == "review"
     assert any("building" in r for r in reasons2) and any("food_provided" in r for r in reasons2)
+
+
+def test_merge_treats_one_building_or_link_written_two_ways_as_the_same():
+    """2026-11-02: 업비트 특강 (KI빌딩 vs KI빌딩(E4)) and NAVER D2SF 토크 (a link with and without
+    ?pk=g) were held from the site as merge conflicts although both mails said the same thing."""
+    existing = {"title": "업비트 디지털 자산 특강", "event_start": "2026-09-25T14:00:00+09:00", "building": "KI빌딩",
+                "registration_url": "https://luma.com/viqcul3g?pk=g", "food_provided": "true", "food_type": "snack",
+                "confidence": 1.0, "needs_review": False, "review_reason": None, "status": "published", "summary": ""}
+    cand = _cand("업비트 디지털 자산 특강", start="2026-09-25T14:00:00+09:00", building="KI빌딩(E4)",
+                 registration_url="https://luma.com/viqcul3g", food_provided="true", food_type="snack")
+    updated, reasons = merge_into(existing, cand)
+    assert reasons == [] and not updated["needs_review"] and updated["status"] == "published"
+    assert updated["building"] == "KI빌딩(E4)" and updated["registration_url"] == "https://luma.com/viqcul3g?pk=g"
+
+
+@pytest.mark.parametrize("a, b, same", [
+    ("KI빌딩", "KI빌딩(E4)", True), ("E11", "창의학습관(E11)", True), ("창의학습관 (E11)", "창의학습관(E11)", True),
+    ("E1", "E11", False), ("E4", "E6-1", False), ("KI빌딩(E4)", "N1", False), ("학생회관", "응용공학동", False),
+    ("KI빌딩", "", False),
+])
+def test_same_building(a, b, same):
+    assert same_building(a, b) is same and same_building(b, a) is same
+
+
+@pytest.mark.parametrize("a, b, same", [
+    ("https://luma.com/viqcul3g?pk=g", "https://luma.com/viqcul3g", True),
+    ("https://forms.gle/abc/", "https://Forms.gle/abc", True),
+    ("https://www.example.com/x?utm_source=insta&id=3", "https://example.com/x?id=3", True),
+    ("https://board.kaist.ac.kr/view?id=3", "https://board.kaist.ac.kr/view?id=4", False),
+    ("https://forms.gle/abc", "https://forms.gle/abd", False),
+    ("https://forms.gle/abc", "http://evil.example/abc", False),
+    ("javascript:alert(1)", "https://forms.gle/abc", False),
+])
+def test_same_url(a, b, same):
+    assert same_url(a, b) is same and same_url(b, a) is same
