@@ -107,6 +107,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`worldcup.html`** | 밥도둑 먹방 월드컵 — 밥도둑 소식의 활동에서 여는 놀이. `data/content/worldcup.json` 의 메뉴 700여 개(음식 사전 id, 같은 요리는 5개까지 — `scripts/page_content.py` `SAME_DISH`) 중 매 판 32개를 뽑아 둘씩 고르고(시작 화면: 카드 둘레에 떠 있는 음식 사진, "오늘의 32강, 뭐가 나올까?", 이모지 카테고리 타일 8개와 🙈 아무거나, 다음 판에 실제로 나오는 메뉴 사진 다섯 장, 숨 쉬는 🎰 시작 버튼 — 시작하면 약 5초 캡슐 뽑기 장면, 이어하기에는 없음, 탭이나 키로 건너뜀; 고른 카드에 효과, 8강부터 새 라운드마다 검은 화면에 라운드 이름이 찍히는 장면 — 결승은 두 메뉴가 부딪히는 VS 장면, 탭이나 키로 건너뜀, 동작 줄이기면 없음 — 우승 때 폭죽과 인스타 스토리 카드 저장·공유, 친구 도전 링크 — `docs/WORLDCUP_SHARE.md`), 진행과 우승 기록은 이 브라우저(localStorage `babdoduk-worldcup`)에만 남는다. 메뉴마다 위키미디어 공용의 자유 이용 사진(`images/worldcup/`, 작가·라이선스를 사진 아래 표시). 경품 없음 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
+| **`tip.html`** | 꽁밥 제보 게시판 — 2026-11-02 부터 공개 페이지(모든 페이지 더보기의 "꽁밥 제보"에서 진입, `noindex, nofollow`). 방문자가 모르는 오프라인 꽁밥을 사진과 함께 보내고, 소유자가 하루 한 번 확인한 제보만 게시판에 올라간다(`docs/GGONGBAB_TIPS.md`) |
 
 상단 내비: 오늘의 꽁밥(꽁밥·학식) · 밥도둑 매거진(메뉴 고르기 포함) · 소식·이벤트(2026-10-13 소유자 결정으로 더보기에서 꺼냄) · 더보기(역사·지도·SNS) · 언어(EN/한국어). 푸터: 오늘의 꽁밥 · 밥도둑 매거진 · 소식·이벤트 · 역사. 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
 실험 페이지의 더보기에서만 lab 화면으로 이동할 수 있습니다.
@@ -801,6 +802,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/EVENT_DETAIL_FIELDS.md` | 이벤트 상세 필드 |
 | `docs/HOME_CALENDAR.md` | 홈 꽁밥 달력(표시·기본 선택·데이터 규칙, 선착순 공개 계약 대기) |
 | `docs/KAIST_MENU.md` | 이번 주 학식 수집·파일·화면 규칙 |
+| `docs/GGONGBAB_TIPS.md` | 꽁밥 제보 게시판: 제보·사진을 받는 함수와 비공개 버킷, 남용 제한, 확인된 제보만 싣는 게시판, 적용 순서 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |

@@ -53,6 +53,9 @@ def contrast(a, b):
     return (light + .05) / (dark + .05)
 
 
+EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABASE_URL:'',SUPABASE_PUBLISHABLE_KEY:''});"
+
+
 SITE_HOST = "site-ui.invalid"
 # Hosts the launch gate tells apart (js/worldcup-gate.js): production, lab and localhost are served from
 # the same files here, so a check can load a page "as" each; every other host is refused.
@@ -65,6 +68,10 @@ def offline_route(route):
     path = unquote(url.path).lstrip("/")
     if url.hostname not in SERVED_HOSTS:
         route.abort()  # no external fonts, SDKs, DBs, APIs, or image hosts
+    elif path == "js/ggongbab-public-config.js":
+        # The file carries the public project values for the tip board; the static checks run with
+        # none, so no page reaches a database (tip_board tests the page against a fake client).
+        route.fulfill(content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG)
     elif path == "data/ggongbab/latest.json":
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
         route.fulfill(json={"events": [{"id": "ui-synthetic", "title": LONG_TITLE, "summary": LONG_TITLE,
@@ -2341,6 +2348,214 @@ FRIEND_SNAP = """() => { const q = s => document.querySelector(s), shown = e => 
     query: location.search, overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
 
 
+# ---------------------------------------------------------------------------------------------------
+# 꽁밥 제보 (tip.html, public since 2026-11-02; docs/GGONGBAB_TIPS.md): a fake Supabase client stands in for the
+# project, so no check reaches a database. The page clock is fixed and the board's rows derive from it.
+# ---------------------------------------------------------------------------------------------------
+TIP_NOW = "2026-11-03T10:00:00+09:00"
+TIP_ID = "0b6f3c2e-7d4a-4f8e-9a21-5c3d2e1f0a9b"
+TIP_FAKE_CLIENT = """(() => {
+  const t = window.__tip = {rows: [], rpc: [], uploads: [], selects: [], mode: 'ok', upload: 'ok', creates: 0};
+  window.supabase = {createClient(url, key, options) {
+    t.creates++; t.options = options;
+    return {
+      rpc(name, args) {
+        t.rpc.push({name, args});
+        const answer = t.mode === 'rate' ? {data: null, error: {message: 'TIP_RATE_LIMITED'}}
+          : t.mode === 'fail' ? {data: null, error: {message: 'boom'}} : {data: 'TIP_ID', error: null};
+        return Promise.resolve(answer);
+      },
+      from(table) {
+        const call = {table, filters: []}; t.selects.push(call);
+        const builder = {
+          select(columns) { call.columns = columns; return builder; },
+          gte(field, value) { call.filters.push(['gte', field, value]); return builder; },
+          order(field, opts) { call.order = [field, opts && opts.ascending]; return builder; },
+          limit(n) { call.limit = n; return builder; },
+          then(ok, bad) { return Promise.resolve(t.board === 'fail' ? {data: null, error: {message: 'x'}} : {data: t.rows, error: null}).then(ok, bad); }
+        };
+        return builder;
+      },
+      storage: {from(bucket) { return {upload(path, blob, opts) {
+        t.uploads.push({bucket, path, type: opts.contentType, upsert: opts.upsert, size: blob.size});
+        return Promise.resolve(t.upload === 'fail' ? {data: null, error: {message: 'denied'}} : {data: {path}, error: null});
+      }}; }}
+    };
+  }};
+})();""".replace("TIP_ID", TIP_ID)
+# A large photo made in the page (no image library needed): 2400x1600, which the page scales down.
+TIP_BIG_PHOTO = """async () => {
+  const canvas = document.createElement('canvas'); canvas.width = 2400; canvas.height = 1600;
+  const ctx = canvas.getContext('2d'); ctx.fillStyle = '#c0392b'; ctx.fillRect(0, 0, 2400, 1600);
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  const data = new DataTransfer(); data.items.add(new File([blob], 'poster.png', {type: 'image/png'}));
+  const input = document.getElementById('tipPhotos'); input.files = data.files;
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+}"""
+
+
+def tip_board(browser):
+    """The tip page (owner 2026-11-01: the visitor reports, the operator sorts) sends the visitor's words
+    and the number of photos, then the photos under the returned id; it needs words or a photo, says
+    honestly when the photos or the whole tip did not go through, keeps the form when it fails, and lists
+    only confirmed tips (coming up first, then the past two weeks). With an empty configuration it
+    makes no request."""
+    count = 0
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"tip.html: {detail}"
+        count += 1
+
+    def day(offset):
+        return (datetime.fromisoformat(TIP_NOW) + timedelta(days=offset)).date().isoformat()
+
+    # Empty configuration (the static checks' default): closed form, no board, no request at all.
+    context = new_context(browser)
+    requests = []
+    fonts = ("fonts.googleapis.com", "fonts.gstatic.com")       # the page's stylesheet link, refused offline
+    context.on("request", lambda req: requests.append(req.url)
+               if urlparse(req.url).hostname not in {*SERVED_HOSTS, *fonts} else None)
+    page = context.new_page()
+    page.clock.set_fixed_time(TIP_NOW)
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/tip.html", wait_until="networkidle")
+    check(page.locator("#tipSubmit").is_disabled() and page.locator("#tipTextInput").is_disabled()
+          and page.locator("#tipStatus").inner_text() == "지금은 제보를 받을 수 없어요."
+          and page.locator("#tipBoard").get_attribute("data-state") == "off",
+          "with no configuration the form is closed and the board says it could not load")
+    check(not requests, ("an empty configuration makes no request", requests[:3]))
+    check(page.locator("#tipForm input:not([type=file]):not(#tipHp), #tipForm select").count() == 0
+          and page.locator("#tipForm textarea").count() == 1,
+          "the form asks for one text and photos only: no event fields")
+    context.close()
+
+    rows = [{"id": "p1", "title": "지난 붕어빵", "place": "카이마루 앞", "event_date": day(-3), "time_text": "15:00", "food": "붕어빵"},
+            {"id": "u2", "title": "모레 설명회", "place": "N7", "event_date": day(2), "time_text": "", "food": "샌드위치"},
+            {"id": "u1", "title": "<img src=x onerror=alert(1)> 오늘 간식", "place": "E3-1", "event_date": day(0),
+             "time_text": "18:00", "food": "피자"},
+            {"id": "old", "title": "너무 지난 행사", "place": "N1", "event_date": day(-20), "time_text": "", "food": ""}]
+    context = new_context(browser)
+    context.add_init_script(TIP_FAKE_CLIENT.replace("rows: []", "rows: " + json.dumps(rows, ensure_ascii=False)))
+    page = context.new_page()
+    page.clock.set_fixed_time(TIP_NOW)
+    config = ("window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABASE_URL:'https://site-ui.invalid',"
+              "SUPABASE_PUBLISHABLE_KEY:'sb_publishable_SYNTHETIC'});")
+    page.route("**/js/ggongbab-public-config.js",
+               lambda route: route.fulfill(content_type="application/javascript", body=config))
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("https://site-ui.invalid/tip.html", wait_until="networkidle")
+    page.locator('#tipBoard[data-state="ready"]').wait_for()
+    select = page.evaluate("window.__tip.selects[0]")
+    check(select["table"] == "ggongbab_tip_board" and select["columns"] == "id,title,place,event_date,time_text,food,accepted_at"
+          and select["filters"] == [["gte", "event_date", day(-14)]],
+          ("the board reads only the confirmed board's public columns, from two weeks back", select))
+    groups = page.locator(".tip-group").evaluate_all(
+        "gs => gs.map(g => [g.className, [...g.querySelectorAll('.tip-item-title')].map(h => h.textContent)])")
+    check([g[1] for g in groups] == [["오늘<img src=x onerror=alert(1)> 오늘 간식", "모레 설명회"], ["지난 붕어빵"]]
+          and "tip-group--upcoming" in groups[0][0] and "tip-group--past" in groups[1][0],
+          ("coming up first (soonest first, today marked), then the past two weeks; text stays text", groups))
+    check(page.locator(".tip-item.is-today time").get_attribute("datetime") == day(0)
+          and page.locator(".tip-board img").count() == 0, "today's tip carries its date; no markup from the data runs")
+
+    # Nothing written and no photo: not sent; the field says why and takes focus.
+    page.locator("#tipSubmit").click()
+    check(page.evaluate("window.__tip.rpc.length") == 0 and page.locator("#tipTextInput").get_attribute("aria-invalid") == "true"
+          and page.locator("#tipTextError").inner_text() == "본 내용을 적거나 사진을 한 장 이상 올려 주세요."
+          and page.evaluate("document.activeElement.id") == "tipTextInput"
+          and page.locator("#tipStatus").inner_text() == "표시한 칸을 확인해 주세요.",
+          "an empty tip is not sent; the field says why and takes focus")
+    page.locator("#tipTextInput").fill("  내일 저녁 E3-1 로비에서 설명회 끝나고 피자 준대요  ")
+    check(page.locator("#tipTextInput").get_attribute("aria-invalid") is None and page.locator("#tipStatus").inner_text() == ""
+          and page.locator("#tipTextCount").inner_text() == "30 / 1000",
+          "writing clears the mark and the status at once; the counter counts trimmed characters")
+
+    # Photos: a wrong type is refused, at most three are kept, one can be removed again.
+    page.set_input_files("#tipPhotos", [{"name": "a.gif", "mimeType": "image/gif", "buffer": b"GIF89a"}])
+    page.locator("#tipPhotosError:not([hidden])").wait_for()
+    check(page.locator(".tip-preview").count() == 0 and "JPG" in page.locator("#tipPhotosError").inner_text(),
+          "a GIF is refused with a reason")
+    four = [{"name": f"{n}.png", "mimeType": "image/png", "buffer": PNG_1PX} for n in range(4)]
+    page.set_input_files("#tipPhotos", four)
+    page.wait_for_function("document.querySelectorAll('.tip-preview').length === 3")
+    check(page.locator("#tipPhotosError").inner_text() == "사진은 3장까지예요." and page.locator("#tipPhotos").is_disabled()
+          and page.locator(".tip-preview img").first.get_attribute("alt") == "첨부한 사진 1",
+          "four photos: three kept, the fourth refused, the picker closes")
+    page.locator(".tip-preview-remove").nth(2).click()
+    check(page.locator(".tip-preview").count() == 2 and not page.locator("#tipPhotos").is_disabled()
+          and page.evaluate("document.activeElement.className") == "tip-preview-remove",
+          "a photo can be removed, and focus stays in the photo list")
+    page.locator(".tip-preview-remove").nth(1).click()
+    page.evaluate(TIP_BIG_PHOTO)
+    page.wait_for_function("document.querySelectorAll('.tip-preview').length === 2")
+
+    # Rate limited: the form stays as it was, with the reason.
+    page.evaluate("window.__tip.mode = 'rate'")
+    page.locator("#tipSubmit").click()
+    page.wait_for_function("document.getElementById('tipStatus').dataset.tone === 'error'")
+    check(page.locator("#tipStatus").inner_text().startswith("제보가 많이 몰렸어요") and page.locator("#tipForm").is_visible()
+          and page.locator("#tipTextInput").input_value().strip().startswith("내일 저녁")
+          and page.locator("#tipSubmit").is_enabled() and page.evaluate("window.__tip.uploads.length") == 0,
+          "a rate-limited tip keeps the form, says why, and sends no photo")
+
+    # Sent: one call with the trimmed words, the photo count and an empty honeypot, then the photos.
+    page.evaluate("window.__tip.mode = 'ok'; window.__tip.rpc = []")
+    page.locator("#tipSubmit").click()
+    page.locator("#tipDone:not([hidden])").wait_for()
+    call = page.evaluate("window.__tip.rpc")
+    check(len(call) == 1 and call[0]["name"] == "ggongbab_submit_report" and call[0]["args"] == {
+              "p_text": "내일 저녁 E3-1 로비에서 설명회 끝나고 피자 준대요", "p_photos": 2, "p_hp": ""},
+          ("the report is sent once: trimmed words, the photo count, the honeypot empty", call))
+    uploads = page.evaluate("window.__tip.uploads")
+    check([(u["bucket"], u["path"], u["type"], u["upsert"]) for u in uploads] == [
+              ("ggongbab-tip-images", f"{TIP_ID}/1.png", "image/png", False),
+              ("ggongbab-tip-images", f"{TIP_ID}/2.jpg", "image/jpeg", False)]
+          and 0 < uploads[1]["size"] <= 5 * 1024 * 1024,
+          ("photos go under the tip's id, in order, never overwriting; a large one as a scaled JPEG", uploads))
+    check(page.locator("#tipDoneWarn").is_hidden() and page.evaluate("document.activeElement.id") == "tipDoneTitle"
+          and page.locator("#tipForm").is_hidden(), "the confirmation takes focus; no warning when every photo went through")
+
+    # A photo alone is a tip too.
+    page.locator("#tipAgain").click()
+    check(page.locator("#tipForm").is_visible() and page.locator("#tipTextInput").input_value() == ""
+          and page.locator(".tip-preview").count() == 0 and page.evaluate("document.activeElement.id") == "tipTextInput",
+          "'send another' starts an empty form")
+    page.evaluate("window.__tip.rpc = []; window.__tip.uploads = []")
+    page.set_input_files("#tipPhotos", [{"name": "poster.png", "mimeType": "image/png", "buffer": PNG_1PX}])
+    page.wait_for_function("document.querySelectorAll('.tip-preview').length === 1")
+    page.locator("#tipSubmit").click()
+    page.locator("#tipDone:not([hidden])").wait_for()
+    check(page.evaluate("window.__tip.rpc[0].args") == {"p_text": "", "p_photos": 1, "p_hp": ""}
+          and len(page.evaluate("window.__tip.uploads")) == 1, "a poster photo without words is sent as a tip")
+
+    # Photos that fail: with words the tip still counts; a photo-only tip that lost its photo is empty.
+    page.evaluate("window.__tip.upload = 'fail'")
+    for words, warning in (("도서관 앞 커피차", "사진은 올라가지 않았어요. 제보는 접수됐어요."),
+                           ("", "사진이 올라가지 않아 제보가 비어 있어요. 사진을 다시 올리거나 내용을 적어 다시 보내 주세요.")):
+        page.locator("#tipAgain").click()
+        page.locator("#tipTextInput").fill(words)
+        page.set_input_files("#tipPhotos", [{"name": "a.png", "mimeType": "image/png", "buffer": PNG_1PX}])
+        page.wait_for_function("document.querySelectorAll('.tip-preview').length === 1")
+        page.locator("#tipSubmit").click()
+        page.locator("#tipDone:not([hidden])").wait_for()
+        check(page.locator("#tipDoneWarn").inner_text() == warning, ("a failed photo upload is said plainly", words, warning))
+
+    # A failing server: the form stays with the reason. English, too.
+    page.locator("#tipAgain").click()
+    page.evaluate("window.__tip.mode = 'fail'")
+    page.locator("#tipTextInput").fill("카이마루 앞 붕어빵")
+    page.locator("#langToggle").click()
+    page.locator("#tipSubmit").click()
+    page.wait_for_function("document.getElementById('tipStatus').dataset.tone === 'error'")
+    check(page.locator("#tipStatus").inner_text() == "Couldn't send it. Please try again shortly."
+          and page.locator("#tipTextInput").get_attribute("placeholder").startswith("e.g.")
+          and page.locator(".tip-group-title").first.inner_text() == "Coming up",
+          "a failure keeps the form; status, hints and board follow the language")
+    page.locator("#langToggle").click()
+    context.close()
+    return count
+
+
 def worldcup_share(page):
     """The world cup's sharing (owner 2026-10-14, docs/WORLDCUP_SHARE.md): the winner's 1080x1920 story
     card is drawn at once and previewed (an untainted canvas); 스토리 이미지 저장 downloads the PNG on a
@@ -2818,7 +3033,7 @@ def structure_and_failures(page):
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
 NAV_DIRECT = ["ggongbab.html", "mukbang.html", "event.html"]
-NAV_MORE = ["history.html",
+NAV_MORE = ["history.html", "tip.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
 FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
@@ -3118,6 +3333,7 @@ def run_checks(screenshots=False):
         report["checks"] += worldcup_boundaries(cup_page)
         report["checks"] += home_wc_promo(cup_page)
         cup_context.close()
+        report["checks"] += tip_board(browser)
         report["checks"] += history_archive(page)
         report["checks"] += food_provenance(page)
         report["checks"] += structure_and_failures(page)

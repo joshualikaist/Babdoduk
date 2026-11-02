@@ -74,6 +74,9 @@ PAGES = {
     "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
     "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
                           "strings": ("gg", "ggongbab", "km")},
+    # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
+    # page's "more" menu.
+    "tip.html": {"current": "tip.html", "strings": ("tip",)},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),
