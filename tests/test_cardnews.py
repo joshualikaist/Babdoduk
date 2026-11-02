@@ -283,3 +283,47 @@ def test_cards_are_kept_a_month_then_their_files_are_deleted(tmp_path):
     (tmp_path / "notes").mkdir()                                  # only week folders are ever removed
     rc.write_index(tmp_path, rc.entry(feed, date(2026, 11, 9), now))
     assert not (tmp_path / "2026-10-05").exists() and (tmp_path / "notes").exists()
+
+
+def test_the_self_check_reads_the_drawn_cards_back_against_the_list():
+    """Owner 2026-11-03: before sending, a plain-code check (no model) that nothing of the week is off."""
+    series = event("2026-11-02T12:00:00+09:00", "토크 & 콘서트", end="2026-11-06T19:30:00+09:00")
+    series["sessions"] = [{"startAt": f"2026-11-0{d}T12:00:00+09:00"} for d in (2, 3, 4, 5, 6)]
+    span = event("2026-11-04T10:00:00+09:00", "사흘 축제", end="2026-11-06T18:00:00+09:00")
+    tip = event("2026-11-03T12:00:00+09:00", "제보만", sources=("tip",))
+    friday = [event(f"2026-11-06T{9 + i:02d}:00:00+09:00", f"금 {i}") for i in range(5)]
+    feed = {"events": [series, span, tip, *friday]}
+    tpl = rc.template()
+    found = rc.check(feed, MONDAY, rc.build(feed, MONDAY, NAMES, tpl), tpl["rules"])
+    assert found["missing"] == [] and found["events"] == 7
+    assert found["firstDayOnly"] == ["11-04~11-06 사흘 축제"]
+    tpl["rules"]["splitBusyDays"] = False                               # a hidden event is caught
+    found = rc.check(feed, MONDAY, rc.build(feed, MONDAY, NAMES, tpl), tpl["rules"])
+    assert found["missing"] == ["11-06 금 3", "11-06 금 4"]
+    text = rc.report(found, ["11-02 업비트 디지털 자산 특강 (병합 충돌 building)"])
+    assert "❗ 카드에 빠진 행사 2개" in text and "· 11-06 금 4" in text and "사흘 축제" in text
+    assert "검토 대기라 사이트·카드에 없는 행사 1개" in text and "업비트" in text
+    assert "✅ 모두 카드에 있어요" in rc.report({"events": 1, "missing": [], "firstDayOnly": []}, [])
+    assert "읽지 못했어요" in rc.report({"events": 1, "missing": [], "firstDayOnly": []}, None)
+
+
+def test_held_events_are_read_from_the_store_for_the_week_only():
+    asked = []
+
+    class Store:
+        def select_all(self, table, params):
+            asked.append((table, params))
+            return [{"title": "업비트 디지털 자산 특강", "event_start": "2026-11-02T05:00:00+00:00",
+                     "review_reason": "병합 충돌 building: KI빌딩 vs KI빌딩(E4); 다른 이유"}]
+
+    assert rc.held(MONDAY, Store()) == ["11-02 업비트 디지털 자산 특강 (병합 충돌 building: KI빌딩 vs KI빌딩(E4))"]
+    ((table, params),) = asked
+    assert table == "events" and params["status"] == "eq.review" and params["food_provided"] == "eq.true"
+    assert params["and"] == "(event_start.gte.2026-11-02T00:00:00+09:00,event_start.lt.2026-11-07T00:00:00+09:00)"
+
+
+def test_the_check_goes_to_telegram_as_text_without_the_token_in_the_result():
+    opener = Opener()
+    assert rc.send_text("🔎 점검", "123:SECRET", "42", opener) == "PUSH_SENT"
+    (request,) = opener.requests
+    assert request.full_url.endswith("/sendMessage") and json.loads(request.data) == {"chat_id": "42", "text": "🔎 점검"}

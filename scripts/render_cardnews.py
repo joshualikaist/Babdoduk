@@ -334,6 +334,91 @@ def send_album(paths: list[Path], caption: str, token: str, chat_id: str, opener
     return "PUSH_SENT" if ok else "PUSH_REJECTED"
 
 
+def check(feed: dict, monday: date, document: str, rules: dict) -> dict:
+    """The self-check before sending (owner 2026-11-03), plain code and no model: every event the list
+    has on a weekday of this week must be on that day's card, read back from the drawn cards. An event
+    spanning several days without sessions in the list is named too: it is only on its first day."""
+    week = [(monday + timedelta(days=i)).isoformat() for i in range(5)]
+    on_card: dict[int, list[str]] = {i: [] for i in range(5)}
+    for section in re.findall(r'<section class="card[^"]*">.*?</section>', document, re.S):
+        kicker = re.search(r'<p class="kicker">([^<]*)</p>', section)
+        day = next((i for i in range(5) if kicker and f"· {DAYS[i]}" in kicker.group(1)), None)
+        if day is not None:
+            on_card[day] += [html.unescape(t) for t in re.findall(r"<h2>(.*?)</h2>", section, re.S)]
+    missing, first_day_only, expected = [], [], set()
+    for event in feed.get("events") or []:
+        if rules.get("skipTipOnly", True) and tip_only(event):
+            continue
+        title = event.get("title") or ""
+        sessions = [s.get("startAt") for s in event.get("sessions") or [] if isinstance(s, dict) and s.get("startAt")]
+        for day in sorted({kst_day(start) for start in (sessions or [event.get("startAt") or ""])} & set(week)):
+            expected.add(event.get("id") or title)
+            if title not in on_card[week.index(day)]:
+                missing.append(f"{day[5:]} {title}")
+        start, end = kst_day(event.get("startAt") or ""), kst_day(event.get("endAt") or "")
+        if not sessions and start and end and end > start and start <= week[-1] and end >= week[0]:
+            first_day_only.append(f"{start[5:]}~{end[5:]} {title}")
+    return {"events": len(expected), "missing": missing, "firstDayOnly": first_day_only}
+
+
+def held(monday: date, client) -> list[str]:
+    """Events of this week that the 꽁밥 store holds for review although food is confirmed: they are
+    on neither the site nor the cards. Read only, from the operations PC's private store; the titles go
+    to the owner's Telegram and never into the public index."""
+    begin = datetime.combine(monday, datetime.min.time(), KST)
+    rows = client.select_all("events", {
+        "select": "id,title,event_start,review_reason", "status": "eq.review", "needs_review": "eq.true",
+        "food_provided": "eq.true", "and": f"(event_start.gte.{begin.isoformat()},event_start.lt.{(begin + timedelta(days=5)).isoformat()})",
+        "order": "event_start.asc,id.asc"})
+    return [f"{kst_day(r.get('event_start') or '')[5:]} {r.get('title') or ''} ({(r.get('review_reason') or '').split('; ')[0][:60]})"
+            for r in rows]
+
+
+def report(found: dict, waiting: list[str] | None) -> str:
+    """The text that follows the cards on Telegram."""
+    lines = [f"🔎 카드뉴스 점검 · 목록의 이번 주 꽁밥 {found['events']}개"]
+    lines.append("✅ 모두 카드에 있어요" if not found["missing"] else f"❗ 카드에 빠진 행사 {len(found['missing'])}개")
+    lines += [f"  · {m}" for m in found["missing"]]
+    if found["firstDayOnly"]:
+        lines.append(f"ℹ️ 여러 날이지만 회차가 없어 첫날에만 실은 행사 {len(found['firstDayOnly'])}개")
+        lines += [f"  · {m}" for m in found["firstDayOnly"]]
+    if waiting is None:
+        lines.append("⚠️ 검토 대기 목록은 읽지 못했어요")
+    elif waiting:
+        lines.append(f"⏸ 음식은 확인됐지만 검토 대기라 사이트·카드에 없는 행사 {len(waiting)}개")
+        lines += [f"  · {w}" for w in waiting]
+    else:
+        lines.append("✅ 검토 대기 중인 꽁밥 없음")
+    return "\n".join(lines)[:4000]
+
+
+def send_text(text: str, token: str, chat_id: str, opener: Callable = urllib.request.urlopen) -> str:
+    request = urllib.request.Request(f"{TELEGRAM_API}/bot{token}/sendMessage", method="POST",
+                                     data=json.dumps({"chat_id": str(chat_id), "text": text}).encode("utf-8"),
+                                     headers={"Content-Type": "application/json"})
+    try:
+        with opener(request, timeout=30) as response:
+            ok = json.loads(response.read().decode("utf-8")).get("ok") is True
+    except urllib.error.HTTPError:
+        return "PUSH_REJECTED"
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        return "PUSH_TRANSPORT_FAILED"
+    return "PUSH_SENT" if ok else "PUSH_REJECTED"
+
+
+def waiting_events(monday: date) -> list[str] | None:
+    """held() through the operations PC's Supabase settings; None when they are missing or the read fails."""
+    try:
+        from ggongbab.config import Settings
+        from ggongbab.db.supabase_client import SupabaseClient
+        settings = Settings()
+        if not (settings.supabase_url and settings.supabase_secret_key):
+            return None
+        return held(monday, SupabaseClient(settings.supabase_url, settings.supabase_secret_key))
+    except Exception:          # the check reports it could not read; it never stops the cards
+        return None
+
+
 def load_feed(source: str, opener: Callable = urllib.request.urlopen) -> dict:
     """The list from the live site (the default) or a file. A checkout's own copy can be days old: the
     2026-11-02 cards were drawn from a 2026-10-31 copy."""
@@ -368,10 +453,16 @@ def main(argv=None) -> int:
     feed = load_feed(str(args.feed))
     if stale(feed, now) and not args.allow_stale:
         raise SystemExit(f"FEED_STALE: the list was made at {feed.get('generatedAt')}")
-    paths = render(build(feed, monday, tpl=tpl), args.out / monday.isoformat())
+    document = build(feed, monday, tpl=tpl)
+    found = check(feed, monday, document, tpl["rules"])
+    paths = render(document, args.out / monday.isoformat())
     item = entry(feed, monday, now, tpl)
     write_index(args.out, item)
-    result = {"week": item["week"], "counts": item["counts"], "days": item["days"], "images": [str(p) for p in paths]}
+    result = {"week": item["week"], "counts": item["counts"], "days": item["days"], "images": [str(p) for p in paths],
+              "check": {"events": found["events"], "missing": len(found["missing"]), "firstDayOnly": len(found["firstDayOnly"])}}
+    waiting = waiting_events(monday)
+    result["check"]["held"] = None if waiting is None else len(waiting)
+    print(report(found, waiting), file=sys.stderr)
     if args.send:
         from ggongbab.instagram.telegram_review import credentials
         token, chat = credentials(args.local)
@@ -379,6 +470,8 @@ def main(argv=None) -> int:
             raise SystemExit("TELEGRAM_NOT_CONFIGURED")
         caption = fill(tpl["telegram"]["caption"], range=week_range(monday), total=item["total"], page=PAGE)
         result["telegram"] = send(paths, caption, token, chat)
+        if result["telegram"] == "PUSH_SENT":
+            result["telegram"] = send_text(report(found, waiting), token, chat)
     print(json.dumps(result, ensure_ascii=False))
     return 0 if result.get("telegram", "PUSH_SENT") == "PUSH_SENT" else 1
 
