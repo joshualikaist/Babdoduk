@@ -451,10 +451,11 @@ def test_phones_put_the_calendar_first_without_overflow(browser, width, height):
     context, page, _ = open_home(browser, size=(width, height))
     box = page.evaluate("""() => { const r = s => document.querySelector(s).getBoundingClientRect();
       return {overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-              cal: r('#homeCal').top, collage: r('.home-collage').top, menu: r('.home-menu-line').top,
+              cal: r('#homeCal').top, collage: r('.home-collage').height, menu: r('.home-menu-line').top,
               grid: r('#homeCalGrid .hc-grid'), cell: r('#homeCalGrid td[data-date]'), hero: r('.home-hero').bottom}; }""")
     assert box["overflow"] <= 0
-    assert box["hero"] <= box["cal"] < box["menu"] < box["collage"]      # copy, calendar, cafeteria, collage
+    assert box["hero"] <= box["cal"] < box["menu"]      # copy, calendar, cafeteria
+    assert box["collage"] == 0                          # owner 2026-11-03: no decorative photos on phones
     # 44 px targets at phone width; at 320 px (small phones, 400% zoom) still well above WCAG's 24 px.
     assert box["grid"]["right"] <= width and box["cell"]["width"] >= (44 if width >= 390 else 36)
     if width >= 360:

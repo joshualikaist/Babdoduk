@@ -1,51 +1,16 @@
-/* Banner shelf. Native horizontal scrolling does the work (swipe, trackpad,
-   wheel, keyboard focus); the buttons only scroll by about one view, and
-   nothing ever moves on its own. */
-(function () {
-  var track = document.getElementById('homeShelf');
-  var nav = document.querySelector('[data-shelf-nav]');
-  if (!track || !nav) return;
-  var buttons = Array.prototype.slice.call(nav.querySelectorAll('[data-shelf-dir]'));
-  function still() {
-    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  }
-  // aria-disabled rather than disabled, so a keyboard user's focus stays put at either end.
-  function update() {
-    var max = track.scrollWidth - track.clientWidth;
-    nav.hidden = max <= 1;
-    buttons.forEach(function (btn) {
-      var back = btn.getAttribute('data-shelf-dir') === '-1';
-      btn.setAttribute('aria-disabled', String(back ? track.scrollLeft <= 1 : track.scrollLeft >= max - 1));
-    });
-  }
-  buttons.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      if (btn.getAttribute('aria-disabled') === 'true') return;
-      var step = Math.max(240, Math.round(track.clientWidth * 0.7));
-      track.scrollBy({ left: Number(btn.getAttribute('data-shelf-dir')) * step, behavior: still() ? 'auto' : 'smooth' });
-    });
-  });
-  track.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', update);
-  window.addEventListener('load', update);
-  update();
-})();
-
-/* Home summary: the cafeteria line and the magazine pick. Reads the same generated public data
-   as the food hub and the magazine, with their freshness rules, and links to them for detail. It
-   never states more than the payload supports. Free food is the calendar's (js/home-calendar.js). */
+/* Home summary: the cafeteria line. Reads the same generated public data as the food hub, with its
+   freshness rules, and links to it for detail. It never states more than the payload supports. Free
+   food is the calendar's (js/home-calendar.js). The banner shelf, the magazine pick and the news
+   group below the hero are gone (owner 2026-11-02). */
 (function () {
   var M = window.BabdodukKaistMenu;
   var F = window.BabdodukFreeFood;
   var menuEl = document.getElementById('homeMenuStatus');
-  var featureEl = document.getElementById('homeFeature');
   if (!M || !F || !menuEl) return;
 
   var state = {
-    menu: { status: 'loading', data: null },
-    magazine: null
+    menu: { status: 'loading', data: null }
   };
-  var DESK = { tips: 'home.desk.tips', trend: 'home.desk.trend', health: 'home.desk.health', habit: 'home.desk.habit' };
 
   function t(key, fallback) {
     var lang = window.babdodukGetLang ? window.babdodukGetLang() : 'ko';
@@ -91,21 +56,8 @@
     setStatus(menuEl, 'ready', t('home.menu.today', '오늘 {n}곳 메뉴가 올라왔어요').replace('{n}', String(n)), source);
   }
 
-  function renderFeature() {
-    var ed = state.magazine;
-    var featured = ed && ed.featured;
-    if (!featureEl || !featured || !featured.title) return;
-    var meta = [t(DESK[featured.category] || DESK[featured.lane] || '', ''), featured.source,
-      t('home.mag.edition', '{date}자').replace('{date}', isoDateLabel(ed.date))].filter(Boolean).join(' · ');
-    featureEl.querySelector('[data-home-feature-meta]').textContent = meta;
-    featureEl.querySelector('[data-home-feature-title]').textContent = featured.title;
-    featureEl.querySelector('[data-home-feature-summary]').textContent = String(featured.summary || '').split('\n')[0];
-    featureEl.hidden = false;
-  }
-
   function render() {
     renderMenu();
-    renderFeature();
   }
 
   function getJson(url) {
@@ -122,10 +74,5 @@
   }).catch(function () {
     state.menu = { status: 'error', data: null };
   }).then(render);
-  getJson('data/magazine/index.json').then(function (index) {
-    return getJson('data/magazine/' + encodeURIComponent(index.latest) + '.json');
-  }).then(function (edition) {
-    state.magazine = edition;
-  }).catch(function () {}).then(render);
   document.addEventListener('babdoduk-lang', render);
 })();

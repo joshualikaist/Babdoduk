@@ -140,133 +140,6 @@
       </div>
 
     </div>
-
-    <!-- Below the hero: three groups with distinct jobs, in this order: act, read, catch up. -->
-    <section class="home-group home-shelf" aria-labelledby="homeShelfTitle">
-      <div class="home-group-head">
-        <div class="home-group-copy">
-          <h2 id="homeShelfTitle"><span class="home-group-num" aria-hidden="true">01</span> <span data-i18n="home.shelf.title">오늘 먹기</span></h2>
-        </div>
-        <div class="home-shelf-nav" data-shelf-nav hidden>
-          <button type="button" class="home-shelf-btn" data-shelf-dir="-1" aria-controls="homeShelf" aria-label="이전 배너" data-i18n-aria-key="home.shelf.prev">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <button type="button" class="home-shelf-btn" data-shelf-dir="1" aria-controls="homeShelf" aria-label="다음 배너" data-i18n-aria-key="home.shelf.next">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-      </div>
-      <!-- Native horizontal scroll: swipe, trackpad, wheel or the buttons. Nothing moves on its own. -->
-      <ul class="home-shelf-track" id="homeShelf" role="list">
-        <li class="home-banner home-banner--pick home-banner--primary" data-banner="pick">
-          <a class="home-banner-link" href="mukbang.html#what">
-            <span class="home-banner-media" aria-hidden="true">
-              <img src="images/home/food-gimbap-640.jpg" srcset="images/home/food-gimbap-640-240.webp 240w, images/home/food-gimbap-640-400.webp 400w, images/home/food-gimbap-640-520.webp 520w, images/home/food-gimbap-640.jpg 640w" sizes="(max-width: 760px) 204px, 300px" alt="" width="640" height="640" loading="lazy" decoding="async" />
-            </span>
-            <span class="home-banner-label">PICK</span>
-            <h3 class="home-banner-title" data-i18n="home.banner.pick.title">못 정했다면, 한 번 돌려 봐요</h3>
-            <span class="home-banner-cta"><span data-i18n="home.banner.pick.cta">메뉴 고르기</span> <span aria-hidden="true">→</span></span>
-          </a>
-        </li>
-        <li class="home-banner home-banner--map" data-banner="map">
-          <a class="home-banner-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener">
-            <span class="home-banner-media home-banner-media--map" aria-hidden="true">
-              <svg viewBox="0 0 280 120" preserveAspectRatio="xMidYMid slice" focusable="false">
-                <rect width="280" height="120" fill="#e8d7b1"/>
-                <path d="M0 70h280" stroke="#cbb892" stroke-width="9"/>
-                <path d="M0 34h280" stroke="#d8c49a" stroke-width="5"/>
-                <path d="M70 0v120" stroke="#cbb892" stroke-width="7"/>
-                <path d="M170 0v120" stroke="#d8c49a" stroke-width="5"/>
-                <rect x="16" y="10" width="40" height="18" rx="4" fill="#67745d" opacity=".28"/>
-                <rect x="190" y="82" width="56" height="26" rx="4" fill="#67745d" opacity=".22"/>
-                <circle cx="120" cy="52" r="7" fill="#db2777"/>
-                <circle cx="120" cy="52" r="3" fill="#fcfaf5"/>
-                <circle cx="214" cy="92" r="6" fill="#db2777"/>
-                <circle cx="214" cy="92" r="2.5" fill="#fcfaf5"/>
-              </svg>
-            </span>
-            <span class="home-banner-label">MAP <span aria-hidden="true">↗</span></span>
-            <h3 class="home-banner-title" data-i18n="home.banner.map.title">발로 찍은 맛집 지도</h3>
-            <span class="home-banner-cta"><span data-i18n="home.banner.map.cta">네이버 지도 열기</span> <span aria-hidden="true">↗</span><span class="home-sr-only" data-i18n="home.banner.newTab">(새 창에서 열림)</span></span>
-          </a>
-        </li>
-      </ul>
-    </section>
-
-    <section class="home-group home-read" aria-labelledby="homeReadTitle">
-      <div class="home-group-head">
-        <div class="home-group-copy">
-          <h2 id="homeReadTitle"><span class="home-group-num" aria-hidden="true">02</span> <span data-i18n="home.read.title">읽어보기</span></h2>
-        </div>
-        <a class="home-more" href="mukbang.html" data-i18n="home.mag.more">매거진 전체 보기 →</a>
-      </div>
-      <div class="home-read-grid">
-        <a class="home-feature" id="homeFeature" href="mukbang.html#featured" hidden>
-          <span class="home-feature-kicker" data-i18n="home.read.featured">매거진 추천 글</span>
-          <span class="home-feature-meta" data-home-feature-meta></span>
-          <strong class="home-feature-title" data-home-feature-title></strong>
-          <span class="home-feature-summary" data-home-feature-summary></span>
-        </a>
-        <div class="home-desks-block">
-          <h3 class="home-read-sub" data-i18n="home.read.desks">매거진 데스크</h3>
-          <ol class="home-desks">
-            <li><a href="mukbang.html#lane-tips"><span class="home-desk-num">01</span><span data-i18n="home.desk.tips">요리 비법</span></a></li>
-            <li><a href="mukbang.html#lane-trend"><span class="home-desk-num">02</span><span data-i18n="home.desk.trend">요즘 먹방 유행</span></a></li>
-            <li><a href="mukbang.html#lane-health"><span class="home-desk-num">03</span><span data-i18n="home.desk.health">건강한 한 끼</span></a></li>
-            <li><a href="mukbang.html#lane-habit"><span class="home-desk-num">04</span><span data-i18n="home.desk.habit">식습관</span></a></li>
-          </ol>
-        </div>
-          <a class="explore-card explore-card--insta" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener">
-            <span class="explore-badge" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#191714" stroke-width="1.7"/><circle cx="12" cy="12" r="4" stroke="#191714" stroke-width="1.7"/><circle cx="17.2" cy="6.8" r="1" fill="#db2777"/></svg>
-            </span>
-            <div class="explore-media explore-collage" aria-hidden="true">
-              <img src="images/home/food-jjigae-720.jpg" srcset="images/home/food-jjigae-720-240.webp 240w, images/home/food-jjigae-720-400.webp 400w, images/home/food-jjigae-720-520.webp 520w, images/home/food-jjigae-720.jpg 720w" sizes="(max-width: 720px) 52vw, (max-width: 1023px) 55vw, 260px" alt="" width="720" height="960" loading="lazy" decoding="async" />
-              <img src="images/home/food-egg-560.jpg" srcset="images/home/food-egg-560-240.webp 240w, images/home/food-egg-560-400.webp 400w, images/home/food-egg-560-520.webp 520w, images/home/food-egg-560.jpg 560w" sizes="(max-width: 1023px) 73vw, 345px" alt="" width="560" height="560" loading="lazy" decoding="async" />
-              <img src="images/home/food-ramen-640.jpg" srcset="images/home/food-ramen-640-240.webp 240w, images/home/food-ramen-640-400.webp 400w, images/home/food-ramen-640-520.webp 520w, images/home/food-ramen-640.jpg 640w" sizes="(max-width: 1023px) 55vw, 260px" alt="" width="640" height="480" loading="lazy" decoding="async" />
-              <img src="images/home/food-gimbap-640.jpg" srcset="images/home/food-gimbap-640-240.webp 240w, images/home/food-gimbap-640-400.webp 400w, images/home/food-gimbap-640-520.webp 520w, images/home/food-gimbap-640.jpg 640w" sizes="(max-width: 1023px) 41vw, 195px" alt="" width="640" height="640" loading="lazy" decoding="async" />
-            </div>
-            <div class="explore-copy">
-              <h3 data-i18n="explore.insta.title">점심이 남긴 자국</h3>
-              <span class="explore-cta"><span data-i18n="explore.insta.cta">인스타그램에서 보기</span> <span class="arr" aria-hidden="true">↗</span></span>
-            </div>
-          </a>
-      </div>
-    </section>
-
-    <!-- News, not an archive: current information leads; the past is a quiet record with one link. -->
-    <section class="home-group home-news" aria-labelledby="homeNewsTitle">
-      <div class="home-group-head">
-        <div class="home-group-copy">
-          <h2 id="homeNewsTitle"><span class="home-group-num" aria-hidden="true">03</span> <span data-i18n="home.news.title">밥도둑 소식</span></h2>
-        </div>
-      </div>
-      <div class="home-news-grid">
-        <div class="home-news-about">
-          <h3 class="home-news-name" data-i18n-html="profile.titleHtml">밥도둑 <span class="title-en">Babdoduk</span></h3>
-          <p class="home-news-sub" data-i18n="profile.subtitle">카이스트 기계과 먹방1티어 학생의 먹방일기</p>
-          <a class="home-news-story" href="history.html"><span data-i18n="home.news.story.title">밥도둑이 걸어온 길</span> <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="home-news-feed">
-          <!-- Current: notices and upcoming activities. -->
-          <div class="home-news-block home-news-block--current" data-news="current">
-            <h3 class="home-news-kicker" data-i18n="home.news.current.title">지금</h3>
-            <a class="home-news-row home-news-row--current" href="event.html#now">
-              <span class="home-news-text" data-i18n="home.news.notice.title">공지·예정 활동</span>
-              <span class="home-news-arrow" aria-hidden="true">→</span>
-            </a>
-          </div>
-          <!-- Record: Babdoduk's past activities, kept as announced. One link, never the lead. -->
-          <div class="home-news-block home-news-block--record" data-news="record">
-            <h3 class="home-news-kicker" data-i18n="home.news.record.title">지난 활동</h3>
-            <a class="home-news-row home-news-row--record" href="event.html#archive">
-              <span class="home-news-text" data-i18n="home.news.record.cta">활동 기록 보기</span>
-              <span class="home-news-arrow" aria-hidden="true">→</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -300,18 +173,12 @@
       ko: {
         docTitle: '밥도둑 Babdoduk',
         'a11y.scrollProgress': '페이지 스크롤 진행',
-        'explore.insta.cta': '인스타그램에서 보기',
-        'explore.insta.title': '점심이 남긴 자국',
         'footer.contact': '문의',
         'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
         'footer.country': '대한민국',
         'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
         'footer.navAria': '사이트 바로가기',
-        'home.banner.map.cta': '네이버 지도 열기',
-        'home.banner.map.title': '발로 찍은 맛집 지도',
         'home.banner.newTab': '(새 창에서 열림)',
-        'home.banner.pick.cta': '메뉴 고르기',
-        'home.banner.pick.title': '못 정했다면, 한 번 돌려 봐요',
         'home.cal.all': '전체 일정 →',
         'home.cal.answer.ended': '오늘 일정은 끝났어요',
         'home.cal.answer.endedNext': '오늘 일정은 끝났어요 · 다음 {date}',
@@ -367,8 +234,6 @@
         'home.free.error': '꽁밥 일정을 불러오지 못했어요',
         'home.free.loading': '꽁밥 일정 확인 중',
         'home.kicker': 'BABDODUK · KAIST FOOD',
-        'home.mag.edition': '{date}자',
-        'home.mag.more': '매거진 전체 보기 →',
         'home.menu.cta': '학식 보기 →',
         'home.menu.error': '학식 메뉴를 불러오지 못했어요',
         'home.menu.label': '학식',
@@ -380,18 +245,6 @@
         'home.menu.stale': '오늘 메뉴는 아직 올라오지 않았어요',
         'home.menu.today': '오늘 {n}곳 메뉴가 올라왔어요',
         'home.menu.weekend': '주말엔 학식이 없어요',
-        'home.news.current.title': '지금',
-        'home.news.notice.title': '공지·예정 활동',
-        'home.news.record.cta': '활동 기록 보기',
-        'home.news.record.title': '지난 활동',
-        'home.news.story.title': '밥도둑이 걸어온 길',
-        'home.news.title': '밥도둑 소식',
-        'home.read.desks': '매거진 데스크',
-        'home.read.featured': '매거진 추천 글',
-        'home.read.title': '읽어보기',
-        'home.shelf.next': '다음 배너',
-        'home.shelf.prev': '이전 배너',
-        'home.shelf.title': '오늘 먹기',
         'home.title': 'KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span>',
         'home.wc.cta.live': '지금 하기',
         'home.wc.cta.soon': '자세히 보기',
@@ -417,8 +270,6 @@
         'nav.tip': '꽁밥 제보',
         'nav.today': '오늘의 꽁밥',
         'nav.topAria': '맨 위로',
-        'profile.subtitle': '카이스트 기계과 먹방1티어 학생의 먹방일기',
-        'profile.titleHtml': '밥도둑 <span class="title-en">Babdoduk</span>',
         'wc.countdown.d': 'D-{n}',
         'wc.countdown.hours': '{h}시간 {m}분 남음',
         'wc.countdown.long': '{d}일 {h}시간 남음',
@@ -430,18 +281,12 @@
       en: {
         docTitle: 'Babdoduk',
         'a11y.scrollProgress': 'Page scroll progress',
-        'explore.insta.cta': 'See on Instagram',
-        'explore.insta.title': 'Traces of lunch',
         'footer.contact': 'Contact',
         'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
         'footer.country': 'South Korea',
         'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
         'footer.navAria': 'Site links',
-        'home.banner.map.cta': 'Open Naver Map',
-        'home.banner.map.title': 'Our food map',
         'home.banner.newTab': '(opens in a new tab)',
-        'home.banner.pick.cta': 'Choose a dish',
-        'home.banner.pick.title': 'Can\'t decide? Give it a spin',
         'home.cal.all': 'All events →',
         'home.cal.answer.ended': 'Today’s are over',
         'home.cal.answer.endedNext': 'Today’s are over · next {date}',
@@ -497,8 +342,6 @@
         'home.free.error': 'Could not load free-food events',
         'home.free.loading': 'Checking free food',
         'home.kicker': 'BABDODUK · KAIST FOOD',
-        'home.mag.edition': '{date} edition',
-        'home.mag.more': 'Open the magazine →',
         'home.menu.cta': 'See cafeteria →',
         'home.menu.error': 'Could not load cafeteria menus',
         'home.menu.label': 'Menu',
@@ -510,18 +353,6 @@
         'home.menu.stale': 'Today’s menu is not posted yet',
         'home.menu.today': '{n} cafeterias posted today',
         'home.menu.weekend': 'No cafeteria meals on weekends',
-        'home.news.current.title': 'Now',
-        'home.news.notice.title': 'Notices and upcoming',
-        'home.news.record.cta': 'See the activity record',
-        'home.news.record.title': 'Past activities',
-        'home.news.story.title': 'How Babdoduk got here',
-        'home.news.title': 'Babdoduk news',
-        'home.read.desks': 'Magazine desks',
-        'home.read.featured': 'Featured story',
-        'home.read.title': 'Read',
-        'home.shelf.next': 'Next cards',
-        'home.shelf.prev': 'Previous cards',
-        'home.shelf.title': 'Eat today',
         'home.title': 'What should we eat<br /><span class="home-title-mark">at KAIST today?</span>',
         'home.wc.cta.live': 'Play now',
         'home.wc.cta.soon': 'Preview',
@@ -547,8 +378,6 @@
         'nav.tip': 'Free food tips',
         'nav.today': 'Today\'s free food',
         'nav.topAria': 'Back to top',
-        'profile.subtitle': 'Food diary of a KAIST Mechanical Engineering student (mukbang tier 1).',
-        'profile.titleHtml': '<span class="title-en">Babdoduk</span>',
         'wc.countdown.d': 'D-{n}',
         'wc.countdown.hours': '{h}h {m}m left',
         'wc.countdown.long': '{d}d {h}h left',
