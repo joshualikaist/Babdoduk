@@ -1,7 +1,7 @@
 /* 꽁밥 카드뉴스 (cardnews.html, lab only; docs/CARDNEWS.md).
 
    Shows the newest week of data/cardnews/index.json, written by scripts/render_cardnews.py: a cover
-   and one card per weekday, the same images that go to Telegram and Instagram. Each card opens at
+   and one card for each weekday with events, the same images that go to Telegram and Instagram. Each card opens at
    full size. The cards themselves are Korean; the page around them follows the language switch. */
 (function () {
   'use strict';
@@ -37,9 +37,11 @@
       timeZone: 'Asia/Seoul', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
     }).format(when);
   }
+  // The cover, then one card for each shown weekday (`days`, 0 = Monday): a day without events has none.
   function valid(item) {
-    return item && /^\d{4}-\d{2}-\d{2}$/.test(item.week) && Array.isArray(item.images) && item.images.length === 6
-      && Array.isArray(item.counts) && item.counts.length === 5
+    return item && /^\d{4}-\d{2}-\d{2}$/.test(item.week) && Array.isArray(item.counts) && item.counts.length === 5
+      && Array.isArray(item.days) && item.days.every(function (d) { return d >= 0 && d <= 4; })
+      && Array.isArray(item.images) && item.images.length === item.days.length + 1
       && item.images.every(function (src) { return /^data\/cardnews\/\d{4}-\d{2}-\d{2}\/[1-6]\.png$/.test(src); });
   }
 
@@ -83,12 +85,12 @@
     meta.textContent = t('cardnews.meta', { range: range(week.week), total: week.total, updated: stamp(week.feedGeneratedAt) });
     grid.appendChild(figure(week.images[0], 1, t('cardnews.cap.cover'),
       t('cardnews.alt.cover', { range: range(week.week), total: week.total })));
-    for (var i = 0; i < 5; i++) {
+    week.days.forEach(function (i, n) {
       var name = t('cardnews.day.' + i);
       var date = format(day(week.week, i), { month: 'short', day: 'numeric' });
-      grid.appendChild(figure(week.images[i + 1], i + 2, name,
+      grid.appendChild(figure(week.images[n + 1], n + 2, name,
         t(week.counts[i] ? 'cardnews.alt.day' : 'cardnews.alt.none', { day: name, date: date, n: week.counts[i] })));
-    }
+    });
   }
 
   document.addEventListener('babdoduk-lang', render);

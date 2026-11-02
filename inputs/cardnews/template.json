@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "about": "주간 꽁밥 카드뉴스의 기본 양식(docs/CARDNEWS.md). 글귀·색·규칙을 여기서 바꾸면 다음에 그리는 카드부터 반영됩니다. 배치와 글자 크기는 card.css에 있습니다.",
+  "colors": {
+    "canvas": "#f7f4ee",
+    "paper": "#fffdf8",
+    "ink": "#1e1d1a",
+    "muted": "#6f6a60",
+    "line": "#e6e0d4",
+    "accent": "#be185d",
+    "accentWash": "#fce7f3",
+    "accentText": "#9d174d",
+    "away": "#1d4ed8",
+    "awayWash": "#e0ecff"
+  },
+  "cover": {
+    "kicker": "BABDODUK · KAIST FOOD",
+    "headline": "이번 주",
+    "headlineMark": "꽁밥",
+    "total": "이번 주 꽁밥 {n}개",
+    "swipe": "넘겨서 요일별로 확인하세요 →"
+  },
+  "day": {
+    "kicker": "이번 주 꽁밥 · {day}",
+    "count": "꽁밥 {n}개",
+    "more": "외 {n}개 더 · 사이트에서 확인하세요",
+    "audience": "대상 · {text}",
+    "away": "서울"
+  },
+  "empty": {
+    "title": "아직 알려진 꽁밥이 없어요",
+    "sub": "새로 올라오면 사이트의 오늘의 꽁밥에 바로 떠요.",
+    "tip": "꽁밥을 봤다면 제보해 주세요"
+  },
+  "footer": {
+    "brand": "밥도둑 Babdoduk",
+    "site": "babdoduk.vercel.app",
+    "note": "일정은 바뀔 수 있어요. 자세한 내용은 사이트에서 확인하세요."
+  },
+  "telegram": {
+    "caption": "📅 이번 주 꽁밥 카드뉴스 · {range} · 꽁밥 {total}개\n{page}"
+  },
+  "rules": {
+    "perCard": 4,
+    "denseFrom": 3,
+    "skipEmptyDays": true,
+    "skipTipOnly": true
+  }
+}
