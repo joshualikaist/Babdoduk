@@ -66,6 +66,17 @@
   var saved = 'ko';
   try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
   applyLang(saved === 'en' ? 'en' : 'ko');
+
+  // Phones: the bar's links sit in one strip that scrolls sideways (css/site.css). Start with the
+  // current page's link in view, so a page reached from the far end (history, tips) shows where it is.
+  var navStrip = document.querySelector('.nav-mega-row');
+  var navCurrent = navStrip && navStrip.querySelector('[aria-current="page"]');
+  if (navCurrent && navStrip.scrollWidth > navStrip.clientWidth) {
+    var stripBox = navStrip.getBoundingClientRect(), linkBox = navCurrent.getBoundingClientRect();
+    if (linkBox.right > stripBox.right - 28 || linkBox.left < stripBox.left) {
+      navStrip.scrollLeft += linkBox.left - stripBox.left - 20;
+    }
+  }
   var langBtnEl = document.getElementById('langToggle');
   if (langBtnEl) {
     langBtnEl.addEventListener('click', function () {

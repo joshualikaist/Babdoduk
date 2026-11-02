@@ -454,76 +454,88 @@ body::after {
   display: none;
 }
 
+/* Phones (owner 2026-11-02: "버튼이 다닥다닥 붙어있거든", then "옆으로 스크롤 되면 뜨는 방식"): the bar
+   stays one row, the wordmark and the language switch at the ends, and between them every destination,
+   the More links included, sits in one strip that scrolls sideways, 14px labels with room between them.
+   The strip fades at its edges so a cut-off label says there is more; js/site.js scrolls the current
+   page's link into view. There is no More button on phones: its links are in the strip. */
 @media (max-width: 520px) {
-  .nav-label-long {
-    display: none;
-  }
-
-  .nav-label-short {
-    display: inline;
-  }
-
   .site-nav-inner {
     grid-template-columns: auto minmax(0, 1fr) auto;
     column-gap: 2px;
-    padding-left: max(6px, env(safe-area-inset-left));
-    padding-right: max(6px, env(safe-area-inset-right));
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(4px, env(safe-area-inset-right));
   }
 
   .site-nav-wordmark,
   .site-nav-item.site-nav-lang {
-    padding-left: 2px;
-    padding-right: 2px;
-    font-size: 0.75rem;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 0.8125rem;
   }
 
   .nav-mega-row {
+    justify-self: stretch;
+    justify-content: flex-start;
     flex-wrap: nowrap;
-    column-gap: 0;
+    column-gap: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: 20px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 28px), transparent 100%);
+    padding-left: 10px;
+    padding-right: 24px;
   }
 
-  .site-nav-direct,
+  .nav-mega {
+    display: contents;
+  }
+
   .nav-mega-trigger {
-    min-height: 44px;
-    padding-left: 4px;
-    padding-right: 4px;
-    font-size: 0.75rem;
+    display: none;
   }
 
-  /* More now sits right of three direct links: its panel opens toward the left edge. */
   .nav-mega-panel {
-    left: auto;
-    right: 0;
-    transform: translateY(-4px);
+    display: contents;
+    visibility: visible;
+    pointer-events: auto;
   }
 
-  .nav-mega.is-open .nav-mega-panel {
-    transform: translateY(0);
-  }
-}
-
-/* The narrowest phones (under 380px): three direct links, More and the language switch still fit
-   on one row without touching. */
-@media (max-width: 379px) {
-  .site-nav-wordmark,
-  .site-nav-item.site-nav-lang,
   .site-nav-direct,
-  .nav-mega-trigger {
-    padding-left: 2px;
-    padding-right: 2px;
-    letter-spacing: -0.05em;     /* the text stays 12px (site guardian) */
+  .nav-mega-link {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 11px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    color: var(--color-ink);
+    background: none;
+    border-radius: 0;
   }
-}
 
-@media (max-width: 339px) {
-  .site-nav-wordmark,
-  .site-nav-item.site-nav-lang {
-    padding-left: 0;
-    padding-right: 0;
+  .nav-mega-link {
+    font-weight: 600;
+    color: var(--color-ink-muted);
   }
 
-  .nav-mega-trigger::after {
-    margin-left: 2px;
+  .site-nav-direct.is-current,
+  .nav-mega-link.is-current {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+  }
+
+  .site-nav-direct:focus-visible,
+  .nav-mega-link:focus-visible {
+    outline-offset: -3px;
   }
 }
 

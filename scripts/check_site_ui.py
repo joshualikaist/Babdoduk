@@ -145,13 +145,50 @@ def inspect_page(page, name, size, screenshot_dir=None):
           "the picker is not presented as a separate product in navigation")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
-    nav_items = page.locator("#navHome, .site-nav-direct, .nav-mega-trigger, #langToggle").evaluate_all(
-        """els => els.map(el => { const r = el.getBoundingClientRect(); return {left:r.left,right:r.right,
-          height:r.height,font:parseFloat(getComputedStyle(el).fontSize)}; }).sort((a,b) => a.left-b.left)""")
-    check(all(nav_items[i]["right"] <= nav_items[i + 1]["left"] + 1
-              for i in range(len(nav_items) - 1)), "navigation controls do not overlap")
+    # On phones the destinations scroll sideways in a strip between the wordmark and the language switch:
+    # a link is measured where the strip shows it (the part scrolled out of view is not on screen), and
+    # the More button gives way to the More links in the strip.
+    nav_items = page.locator("#navHome, .site-nav-direct, .nav-mega-trigger, .nav-mega-link, #langToggle").evaluate_all(
+        """els => els.map(el => { let r = el.getBoundingClientRect(); const strip = el.closest('.nav-mega-row');
+          const panel = el.closest('.nav-mega-panel');
+          if (panel && getComputedStyle(panel).display !== 'contents') return null;     // inside the More menu
+          if (!r.width || !r.height) return null;
+          let left = r.left, right = r.right;
+          if (strip) { const s = strip.getBoundingClientRect(); left = Math.max(left, s.left); right = Math.min(right, s.right); }
+          if (right - left < 1) return null;
+          return {left, right, top:r.top, bottom:r.bottom, width:r.width, height:r.height,
+            font:parseFloat(getComputedStyle(el).fontSize)}; }).filter(Boolean).sort((a,b) => a.left-b.left)""")
+    check(not any(a["left"] < b["right"] - 1 and b["left"] < a["right"] - 1
+                  and a["top"] < b["bottom"] - 1 and b["top"] < a["bottom"] - 1
+                  for i, a in enumerate(nav_items) for b in nav_items[i + 1:]), ("navigation controls do not overlap", nav_items))
     check(all(item["font"] >= 12 and item["height"] >= 44 for item in nav_items),
           ("navigation text >= 12px with 44px targets", nav_items))
+    phone = size[0] <= 520
+    strip = page.locator(".nav-mega-row").evaluate("""el => { const r = el.getBoundingClientRect();
+      const links = [...el.querySelectorAll('a')].filter(a => getComputedStyle(a).display !== 'none')
+        .map(a => { const b = a.getBoundingClientRect(); return {href:a.getAttribute('href'), w:b.width, h:b.height,
+          font:parseFloat(getComputedStyle(a).fontSize), visible:getComputedStyle(a).visibility}; });
+      return {overflow:getComputedStyle(el).overflowX, scroll:el.scrollWidth, client:el.clientWidth,
+        top:r.top, bottom:r.bottom, links,
+        trigger:getComputedStyle(el.querySelector('.nav-mega-trigger')).display}; }""")
+    if phone:
+        # Owner 2026-11-02 ("버튼이 다닥다닥 붙어있거든", "옆으로 스크롤 되면 뜨는 방식"): one slim bar; every
+        # destination, the More links included, in one strip that scrolls sideways, 14px labels and
+        # 44px targets with room between them.
+        hrefs = [link["href"] for link in strip["links"]]
+        check(strip["overflow"] == "auto" and strip["trigger"] == "none"
+              and hrefs[:3] == ["ggongbab.html", "mukbang.html", "event.html"]
+              and {"history.html", "tip.html"} <= set(hrefs), ("phone strip holds every destination", strip))
+        check(all(link["font"] >= 14 and link["h"] >= 44 and link["w"] >= 44 and link["visible"] == "visible"
+                  for link in strip["links"]), ("phone strip links: 14px text, 44px targets", strip["links"]))
+        row = page.locator(".site-nav-inner").evaluate("el => el.getBoundingClientRect().height")
+        check(row <= 76, ("the bar stays one slim row (a classic scrollbar under the strip included)", row))
+        current = page.evaluate("""() => { const s = document.querySelector('.nav-mega-row'), c = s.querySelector('[aria-current="page"]');
+          if (!c) return true; const a = s.getBoundingClientRect(), b = c.getBoundingClientRect();
+          return b.left >= a.left - 1 && b.right <= a.right + 1; }""")
+        check(current, "the current page's link starts in view")
+    else:
+        check(strip["overflow"] == "visible" and strip["trigger"] != "none", ("wider screens keep the More menu", strip))
     brand = page.locator("#navHome").evaluate("""el => { const s = getComputedStyle(el);
       return [s.backgroundImage, s.webkitTextFillColor, s.animationName]; }""")
     check("linear-gradient" in brand[0] and "99, 102, 241" in brand[0] and brand[1] == "rgba(0, 0, 0, 0)"
@@ -164,21 +201,23 @@ def inspect_page(page, name, size, screenshot_dir=None):
     check(footer_links and all(href and href != "#" and (ROOT / href.split("#")[0]).is_file()
                                for href in footer_links if not href.startswith(("mailto:", "https:"))),
           ("footer links resolve to real pages", footer_links))
-    check(direct.nth(0).inner_text() == "오늘의 꽁밥"
-          and direct.nth(1).inner_text() == "밥도둑 매거진", "Korean primary labels")
+    # Every width shows the full names (the phone strip has room for them).
+    korean = [direct.nth(i).inner_text() for i in range(3)]
+    check(korean == ["오늘의 꽁밥", "밥도둑 매거진", "소식·이벤트"], ("Korean primary labels", korean))
     page.locator("#langToggle").click()
-    english = [direct.nth(i).inner_text() for i in range(2)]
-    check(english == ["Today's free food", "Magazine"], ("English primary labels", english,
-          page.evaluate("document.documentElement.lang")))
+    english = [direct.nth(i).inner_text() for i in range(3)]
+    check(english == ["Today's free food", "Magazine", "News & events"],
+          ("English primary labels", english, page.evaluate("document.documentElement.lang")))
     page.locator("#langToggle").click()
-    nav = page.locator(".nav-mega-trigger").first
-    nav.click()
-    check(nav.get_attribute("aria-expanded") == "true", "navigation opens")
-    panel = page.locator("#navMorePanel").bounding_box()
-    check(panel is not None and panel["x"] >= -1 and panel["x"] + panel["width"] <= metrics["rootWidth"] + 1,
-          "More menu remains inside viewport")
-    page.keyboard.press("Escape")
-    check(nav.get_attribute("aria-expanded") == "false", "navigation Escape closes")
+    if not phone:      # on phones the More links are in the strip, without a menu to open
+        nav = page.locator(".nav-mega-trigger").first
+        nav.click()
+        check(nav.get_attribute("aria-expanded") == "true", "navigation opens")
+        panel = page.locator("#navMorePanel").bounding_box()
+        check(panel is not None and panel["x"] >= -1 and panel["x"] + panel["width"] <= metrics["rootWidth"] + 1,
+              "More menu remains inside viewport")
+        page.keyboard.press("Escape")
+        check(nav.get_attribute("aria-expanded") == "false", "navigation Escape closes")
 
     if name == "mukbang.html":
         check(metrics["track"] == "rgb(247, 244, 238)", "magazine paper color")
