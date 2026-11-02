@@ -62,7 +62,7 @@ LAB_RIBBON = [
 # scrolls to the top instead of linking to itself), and the i18n/ key families its
 # translation table carries besides COMMON_STRINGS (`strings`).
 PAGES = {
-    "index.html": {"current": None, "home": "#", "strings": ("home", "explore", "profile")},
+    "index.html": {"current": None, "home": "#", "strings": ("home",)},
     "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km")},
     "mukbang.html": {"current": "mukbang.html", "strings": ("eat", "kaist", "km", "mg")},
     "event.html": {"current": "event.html", "strings": ("event",)},
