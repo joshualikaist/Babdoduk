@@ -211,22 +211,19 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert 'href="mukbang.html#what"' in index           # the home call to action reaches the picker
 
 
-# Food Log is unreleased (lab only): no home banner. Free food is the calendar above the shelf.
-SHELF_ORDER = ["pick", "map"]
-SHELF_HREFS = ["mukbang.html#what", "https://naver.me/5NeqUPzI"]
+# Food Log is unreleased (lab only): no home link. Since 2026-11-02 (owner) the home page is its hero
+# alone: the eat (banner shelf), read and news groups below it are gone.
 
 
-def test_home_top_is_one_hero_and_a_manual_banner_shelf():
+def test_home_is_one_hero_and_nothing_below_it():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    top = html.split('<section class="home-group home-read"')[0]
+    top = html[html.index("<main"):html.index("</main>")]
     assert top.count("<h1") == 1
     assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "mukbang.html#what"]
-    assert 'href="food.html"' not in html and 'data-banner="log"' not in html
-    banners = re.findall(r'data-banner="(\w+)">\s*<a class="home-banner-link" href="([^"]+)"([^>]*)>', top)
-    assert [name for name, _, _ in banners] == SHELF_ORDER
-    assert [href for _, href, _ in banners] == SHELF_HREFS
-    assert 'target="_blank" rel="noopener"' in banners[SHELF_ORDER.index("map")][2]
-    assert '<ul class="home-shelf-track" id="homeShelf" role="list">' in top
+    assert 'href="food.html"' not in html and 'data-banner=' not in html
+    for gone in ("home-group", "homeShelf", "homeFeature", "home-news", "explore-card", "data-shelf", "home-read"):
+        assert gone not in top, gone
+    assert re.findall(r'<section class="(home-[\w-]+)"', top) == ["home-wc", "home-hero", "home-cal"]
     collage = top.split('<div class="home-collage" aria-hidden="true">')[1].split("</div>\n\n")[0]
     photos = re.findall(r"<img [^>]+>", collage)
     assert len(photos) == 3 and all('alt=""' in img and "width=" in img and "height=" in img for img in photos)
@@ -237,6 +234,7 @@ def test_home_top_is_one_hero_and_a_manual_banner_shelf():
         assert (ROOT / src).stat().st_size < 200_000, src
     home_js = (ROOT / "js/home.js").read_text(encoding="utf-8")
     assert "setInterval" not in home_js and "setTimeout" not in home_js and "autoplay" not in home_js.lower()
+    assert "data/magazine" not in home_js and "homeShelf" not in home_js     # no magazine request, no shelf
 
 
 def test_home_strings_exist_in_both_languages():
@@ -248,16 +246,7 @@ def test_home_strings_exist_in_both_languages():
     assert used <= keys["ko"], sorted(used - keys["ko"])
 
 
-def test_home_groups_brand_and_hub_name():
-    html = (ROOT / "index.html").read_text(encoding="utf-8")
-    groups = re.findall(r'<section class="home-group [^"]+" aria-labelledby="(\w+)">', html)
-    assert groups == ["homeShelfTitle", "homeReadTitle", "homeNewsTitle"]
-    assert re.findall(r'class="home-news-row[^"]*" href="([^"]+)"', html) == ["event.html#now", "event.html#archive"]
-    assert "home-group-purpose" not in html and "home-banner-copy" not in html  # numbered titles need no leads
-    assert re.findall(r'data-news="(\w+)"', html) == ["current", "record"]
-    record = html.split('data-news="record"')[1].split("</div>")[0]
-    assert re.findall(r'href="([^"]+)"', record) == ["event.html#archive"]  # the past is one link
-    assert 'class="home-news-story" href="history.html"' in html
+def test_brand_and_hub_name():
     event = (ROOT / "event.html").read_text(encoding="utf-8")
     assert event.index('id="now"') < event.index('id="archive"')
     # No invented notices: the list the sync writes from data/content/events.json is empty.
