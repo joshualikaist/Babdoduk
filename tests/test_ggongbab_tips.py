@@ -11,6 +11,9 @@ REPORTS = (ROOT / "supabase/migrations/009_ggongbab_tip_reports.sql").read_text(
 JS = (ROOT / "js/ggongbab-tips.js").read_text(encoding="utf-8")
 PAGE = (ROOT / "tip.html").read_text(encoding="utf-8")
 TABLES = ("ggongbab_tips", "ggongbab_tip_board", "ggongbab_tip_secret", "ggongbab_tip_rate")
+# The Supabase client build the tip page loads (the public feed on lab pins the same one).
+SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"
+SDK_INTEGRITY = "sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP"
 
 
 def statement(pattern):
@@ -104,10 +107,14 @@ def test_the_page_script_uses_only_the_public_paths():
     assert "upsert: false" in JS
     board = re.search(r"var BOARD_COLUMNS = '([^']+)'", JS)[1].split(",")
     assert board == columns()["ggongbab_tip_board"]
-    # The same pinned client build as the public feed, with its integrity hash.
-    feed = (ROOT / "js/ggongbab-public-feed.js").read_text(encoding="utf-8")
-    assert re.search(r"var SDK_URL = '([^']+)'", JS)[1] == re.search(r"var SDK_URL = '([^']+)'", feed)[1]
-    assert re.search(r"var SDK_INTEGRITY = '(sha384-[^']+)'", JS)[1] == re.search(r"script\.integrity = '(sha384-[^']+)'", feed)[1]
+    # A pinned client build with its integrity hash; where the public feed exists (lab), the same build.
+    assert re.search(r"var SDK_URL = '([^']+)'", JS)[1] == SDK_URL
+    assert re.search(r"var SDK_INTEGRITY = '(sha384-[^']+)'", JS)[1] == SDK_INTEGRITY
+    feed = ROOT / "js/ggongbab-public-feed.js"
+    if feed.is_file():
+        feed = feed.read_text(encoding="utf-8")
+        assert re.search(r"var SDK_URL = '([^']+)'", feed)[1] == SDK_URL
+        assert re.search(r"script\.integrity = '(sha384-[^']+)'", feed)[1] == SDK_INTEGRITY
     # The page limits match the report function's: words (2-1000 characters) or a photo, at most three.
     assert "var MIN_TEXT = 2;" in JS and "var MAX_TEXT = 1000;" in JS
     assert "c.rpc(SUBMIT, { p_text: v.text, p_photos: photos.length, p_hp: v.hp })" in JS

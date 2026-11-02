@@ -53,6 +53,9 @@ def contrast(a, b):
     return (light + .05) / (dark + .05)
 
 
+EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABASE_URL:'',SUPABASE_PUBLISHABLE_KEY:''});"
+
+
 SITE_HOST = "site-ui.invalid"
 # Hosts the launch gate tells apart (js/worldcup-gate.js): production, lab and localhost are served from
 # the same files here, so a check can load a page "as" each; every other host is refused.
@@ -65,6 +68,10 @@ def offline_route(route):
     path = unquote(url.path).lstrip("/")
     if url.hostname not in SERVED_HOSTS:
         route.abort()  # no external fonts, SDKs, DBs, APIs, or image hosts
+    elif path == "js/ggongbab-public-config.js":
+        # The file carries the public project values for the tip board; the static checks run with
+        # none, so no page reaches a database (tip_board tests the page against a fake client).
+        route.fulfill(content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG)
     elif path == "data/ggongbab/latest.json":
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
         route.fulfill(json={"events": [{"id": "ui-synthetic", "title": LONG_TITLE, "summary": LONG_TITLE,
