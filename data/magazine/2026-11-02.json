@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-02",
+  "generatedAt": "2026-11-02T16:33:43+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "“이틀 연속 사 먹었다” 일본인 사이 난리라는 초코 츄러스… 혈당 주의",
+    "summary": "최근 SPC그룹의 베이커리 브랜드 파리바게뜨가 출시한 ‘초코 쫀득 츄러스’가 인기를 끌고 있다.",
+    "source": "헬스조선",
+    "sourceId": "news-healthchosun",
+    "candidateId": "c_b3e93b5a64a5c808",
+    "url": "https://health.chosun.com/site/data/html_dir/2026/11/02/2026110202025.html",
+    "medium": "news",
+    "discoveredAt": "2026-11-02T16:33:43+09:00",
+    "publishedAt": "2026-11-02T16:00:00+09:00",
+    "image": "https://health.chosun.com/site/data/img_dir/2026/11/02/2026110202023_0.jpg",
+    "imageSource": "source_page_og",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "[기획] 한식 세계화의 다음 과제…\"고유한 맛 지키고 일상으로 들어가야\"",
+          "summary": "한식의 세계화를 지속 가능한 성장으로 연결하려면 고유한 맛과 문화를 지키면서 누구나 쉽게 접하고 즐길 수 있도록 해야 한다는 방향이 제시됐다.",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_e972d61ecd94966d",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35922",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T22:30:44+09:00",
+          "image": "http://www.foodicon.co.kr/news/photo/202611/35922_54796_2316.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "\"젊은 아이디어로 저당 브랜드 알린다\" 해태제과, '로슈단' 출범",
+          "summary": "해태제과는 첫 저당 브랜드 '로슈(Roshu)'의 홍보 콘텐츠를 제작할 대학생 서포터즈 '로슈단' 20명을 선발하고 젊은 소비자와의 접점을 확대한다고 2일 밝혔다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_762dd86f99d3905e",
+          "url": "https://www.newsis.com/view/NISX20261102_0003850525",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T10:10:04+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "큐리언트 \"모카시클립 소아 뇌종양 美IND 승인\"",
+          "summary": "큐리언트의 항암제에 대한 소아 뇌종양 연구자 임상시험계획(IND)이 미국에서 승인됐다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_9ab49c7eb5f039fa",
+          "url": "https://www.newsis.com/view/NISX20261102_0003850262",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T08:53:06+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "세계 최대 제과ㆍ스낵 전시회 ISM 2027 내년 1월 31일 개막",
+          "summary": "세계 최대 제과ㆍ스낵 산업 전시회 ISM이 2027년 1월 31일부터 2월 3일까지 독일 쾰른에서 열린다.",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_6e4bbd4be8dcd0f8",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120657",
+          "medium": "news",
+          "discoveredAt": "2026-10-23T14:54:39+09:00",
+          "publishedAt": "2026-10-23T22:40:41+09:00",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "농심, 美 월마트서 ‘신라면 푸드트럭’ 씽씽",
+          "summary": "농심이 미국 최대 유통 채널인 월마트(Walmart)와 손잡고 글로벌 소비자 공략에 나선다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_2712f66df9b5605b",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201535",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T10:05:46+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "기름 안 튀는 들기름 두부구이 만드는 법: 수분 제거 노하우와 양념간장 레시피",
+          "summary": "노릇하게 구운 들기름 두부구이는 언제 먹어도 반가운 밑반찬이죠.",
+          "source": "달순생활",
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_88fcdccab67e7415",
+          "url": "https://dalsoonlife.tistory.com/248",
+          "medium": "blog",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T15:33:33+09:00",
+          "image": "https://blog.kakaocdn.net/dn/dJ9f8A/dJMcabNdqm2/hk1ENSOL8Khbt5ZLoy9TP1/img.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "감자 오믈렛 만들기｜계란과 치즈로 만드는 스페인식 브런치 요리",
+          "summary": "포슬포슬한 감자에 부드러운 계란, 고소하게 녹아드는 치즈까지 더한 감자 오믈렛입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_5e04c00c070c9b5e",
+          "url": "https://cultureagora.tistory.com/444",
+          "medium": "blog",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T07:00:28+09:00"
+        },
+        {
+          "title": "신상출시 편스토랑 오윤아의 들기름묵은지지짐 들기름묵은지미역지짐 만드는 법",
+          "summary": "343회 신상출시 편스토랑에서 오윤아는 묵은지의 매콤함과 미역의 짭조름함 거기에 들기름과 들깻가루의 고소함을 더한 들기름묵은지지짐 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_f32f0fc933a4cbf3",
+          "url": "https://seon1982.tistory.com/4141",
+          "medium": "blog",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T00:00:03+09:00"
+        },
+        {
+          "title": "이렇게 만들면 라면 보다 쉽습니다.",
+          "summary": "삼겹살 고기국수를 만들어 보자 [재료] 삼겹살 2줄, 소면, 사골곰탕 1팩(500g) [만드는 법] 1. 삼겹살에 소금 간을 하고 노릇하게 구운 뒤, 나온 기름은 키친타월로 닦아낸다.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_9f4cf1fcce2f01f1",
+          "url": "https://www.youtube.com/watch?v=_WbyJgxW6PM",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-01T20:30:23+09:00"
+        },
+        {
+          "title": "추석 전요리, 뚝딱 만드는 어묵깻잎전｜가성비 좋은 명절전",
+          "summary": "",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_ce16bbce76367977",
+          "url": "https://heysukim114.tistory.com/entry/%EC%B6%94%EC%84%9D%EC%A0%84-%EB%9A%9D%EB%94%B1%EB%A7%8C%EB%93%9C%EB%8A%94-%EC%96%B4%EB%AC%B5%EA%B9%BB%EC%9E%8E%EC%A0%84-%EC%96%B4%EB%96%A4%EA%B0%80%EC%9A%94",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-09-12T00:00:59+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "갱년기 전-후 “식생활 이렇게 바꿔야”… 최악의 식습관은?",
+          "summary": "채소와 단백질 음식이 잘 구성된 식사를 하면 혈당 관리에 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ccf37922321ca4d4",
+          "url": "https://kormedi.com/2896320/",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T14:01:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2024/10/gettyimages-a10974666-1024x683.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "‘천천히 드세요’의 함정… 뱃살 덜 붙지만 근육도 줄어든다",
+          "summary": "“밥 먹을 때 천천히 먹어라” 살면서 자주 들어온 말이다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_4f546753a56269e5",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/02/2026110201245.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T12:30:00+09:00"
+        },
+        {
+          "title": "“비싼 보양식 필요 없다”… 노년층 기력 채우는 ‘가성비 음식’ 3가지",
+          "summary": "나이가 들면 미각과 후각이 둔해지고 소화 기능이 저하하면서 식욕이 떨어지기 쉽다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_3239ec34f2a50186",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103003077.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T04:00:00+09:00"
+        },
+        {
+          "title": "‘30kg 감량’ 이수현 “‘뼈말라’는 칭찬 아냐”⋯마른 몸 대신 택한 ‘이 운동’은?",
+          "summary": "이수현은 “내 추구미는 절대로 뼈말라가 아니다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_b44ff1e34b56c045",
+          "url": "https://kormedi.com/2896131/",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T15:05:00+09:00"
+        },
+        {
+          "title": "마늘 의외의 효능 5가지… 혈압·지방간·감기 증상 관리까지",
+          "summary": "마늘은 김치와 나물, 찌개, 고기 요리까지 한식 대부분에 빠지지 않는 식재료다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_aaf3969db5b2cac5",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69347",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T16:00:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“아침에 눈뜨자마자 커피 한 잔”…공복 커피 마셨더니 몸에 어떤 변화가?",
+          "summary": "아침에 눈을 뜨자마자 커피부터 찾는 사람이 많다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_b7666c086066901f",
+          "url": "https://kormedi.com/2895958/",
+          "medium": "news",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "publishedAt": "2026-10-31T06:30:23+09:00"
+        },
+        {
+          "title": "노인급식, 영양 불균형 개선 시급",
+          "summary": "소규모 노인급식소 이용자 10명 중 9명 이상이 점심과 간식에서 나트륨을 기준보다 많이 섭취하는 반면, 비타민과 칼슘 등 필수 영양소는 충분히 섭취하지 못하는 것으로 나타났다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_d07845ac5fcc2297",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62542",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-03T00:08:09+09:00"
+        },
+        {
+          "title": "“100일 만에 45kg 감량”… 다이어트 시작 때 먹은 ‘한 가지 음식’",
+          "summary": "지난 23일 외신 매체 ‘맨즈 저널(MEN’S JOURNAL)’이 식단을 바꿔 45kg를 감량한 남성의 사연을 소개했다.미국 라디오 진행자인 펜 질레트(71)는 2014년경 몸무게가 150kg까지 늘어났다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_d6e50b9c2bb26e1b",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103002378.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T00:01:00+09:00"
+        },
+        {
+          "title": "야식 습관, 간 질환 위험 최대 30%↑…간경변 위험도 28% 높아",
+          "summary": "장인혜 인턴 기자 = 저녁 식사 후나 잠자리에 들 무렵 야식을 먹는 사람은 지방간 질환 위험이 31%, 간경변 위험이 28% 높다는 연구 결과가 나왔다.지난 19일(현지 시간) 뉴욕포스트에 따르면, 미국…",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_8245d9219cbea54c",
+          "url": "https://www.newsis.com/view/NISX20261020_0003833100",
+          "medium": "news",
+          "discoveredAt": "2026-10-21T14:53:33+09:00",
+          "publishedAt": "2026-10-20T18:00:00+09:00"
+        }
+      ]
+    }
+  }
+}
