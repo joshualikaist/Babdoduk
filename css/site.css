@@ -454,39 +454,134 @@ body::after {
   display: none;
 }
 
-/* Phones (owner 2026-11-02: "버튼이 다닥다닥 붙어있거든", then "옆으로 스크롤 되면 뜨는 방식"): the bar
-   stays one row, the wordmark and the language switch at the ends, and between them every destination,
-   the More links included, sits in one strip that scrolls sideways, 14px labels with room between them.
-   The strip fades at its edges so a cut-off label says there is more; js/site.js scrolls the current
-   page's link into view. There is no More button on phones: its links are in the strip. */
+/* The menu button exists for phones only. */
+.nav-drawer-toggle,
+.nav-drawer-backdrop {
+  display: none;
+}
+
+/* Phones (owner 2026-11-02: "버튼이 다닥다닥 붙어있거든", then "어떤 버튼을 누르면 이렇게 왼쪽에 탭이
+   뜨도록"): the bar keeps the menu button, the wordmark and the language switch. The button opens every
+   destination, the More links included, as a list in a panel from the left under the bar, 16px labels
+   in 52px rows, the current page marked; a dimmed backdrop, Escape or a link closes it (js/site.js).
+   The same .nav-mega-row is the panel: there is no second copy of the links. */
 @media (max-width: 520px) {
   .site-nav-inner {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    column-gap: 2px;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    column-gap: 0;
     padding-left: max(4px, env(safe-area-inset-left));
     padding-right: max(4px, env(safe-area-inset-right));
   }
 
+  .nav-drawer-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--color-ink);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-drawer-toggle:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+  }
+
+  /* Three bars that turn into a cross while the panel is open. */
+  .nav-drawer-icon,
+  .nav-drawer-icon::before,
+  .nav-drawer-icon::after {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .nav-drawer-icon {
+    position: relative;
+  }
+
+  .nav-drawer-icon::before,
+  .nav-drawer-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+
+  .nav-drawer-icon::before { top: -6px; }
+  .nav-drawer-icon::after { top: 6px; }
+
+  .nav-drawer-toggle[aria-expanded="true"] .nav-drawer-icon { background-color: transparent; }
+  .nav-drawer-toggle[aria-expanded="true"] .nav-drawer-icon::before { transform: translateY(6px) rotate(45deg); }
+  .nav-drawer-toggle[aria-expanded="true"] .nav-drawer-icon::after { transform: translateY(-6px) rotate(-45deg); }
+
   .site-nav-wordmark,
   .site-nav-item.site-nav-lang {
-    padding-left: 8px;
+    padding-left: 6px;
     padding-right: 8px;
     font-size: 0.8125rem;
   }
 
+  .site-nav-item.site-nav-lang {
+    grid-column: 4;
+  }
+
   .nav-mega-row {
-    justify-self: stretch;
-    justify-content: flex-start;
+    position: fixed;
+    top: var(--nav-drawer-top, 52px);
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    justify-self: stretch;       /* the top row's centring would shrink a fixed box to its content */
+    align-self: stretch;
+    width: min(78vw, 300px);
+    max-width: none;
+    display: flex;
+    flex-direction: column;
     flex-wrap: nowrap;
-    column-gap: 2px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-padding-inline: 20px;
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 28px), transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0, #000 14px, #000 calc(100% - 28px), transparent 100%);
-    padding-left: 10px;
-    padding-right: 24px;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 8px 0 calc(16px + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-divider);
+    box-shadow: 8px 0 24px rgba(17, 24, 39, 0.12);
+    transform: translateX(-102%);
+    visibility: hidden;
+    transition: transform 0.22s ease, visibility 0s linear 0.22s;   /* hidden only once it has slid out */
+  }
+
+  html.nav-drawer-open .nav-mega-row {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.22s ease, visibility 0s;                /* visible at once, so focus can enter */
+  }
+
+  html.nav-drawer-open {
+    overflow: hidden;            /* the page under the panel does not scroll with it */
+  }
+
+  .nav-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: var(--nav-drawer-top, 52px) 0 0 0;
+    z-index: 10000;
+    background: rgba(17, 24, 39, 0.38);
+  }
+
+  .nav-drawer-backdrop[hidden] {
+    display: none;
   }
 
   .nav-mega {
@@ -499,43 +594,66 @@ body::after {
 
   .nav-mega-panel {
     display: contents;
-    visibility: visible;
+    visibility: inherit;
     pointer-events: auto;
+    transition: none;            /* its links follow the panel at once */
   }
 
   .site-nav-direct,
   .nav-mega-link {
-    flex: 0 0 auto;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    min-height: 44px;
-    padding: 0 11px;
-    font-size: 0.875rem;
+    justify-content: flex-start;
+    min-height: 52px;
+    padding: 0 22px;
+    font-size: 1rem;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.3;
     letter-spacing: -0.02em;
-    white-space: nowrap;
+    white-space: normal;
     color: var(--color-ink);
     background: none;
     border-radius: 0;
+    text-decoration: none;
   }
 
   .nav-mega-link {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-ink-muted);
+  }
+
+  /* The More links follow under a rule. */
+  .nav-mega-panel > .nav-mega-link:first-child {
+    margin-top: 8px;
+    border-top: 1px solid var(--color-divider);
+  }
+
+  .site-nav-direct:hover,
+  .nav-mega-link:hover {
+    background: var(--color-accent-wash);
+    text-decoration: none;
   }
 
   .site-nav-direct.is-current,
   .nav-mega-link.is-current {
     color: var(--color-accent);
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 6px;
+    background: var(--color-accent-wash);
+    box-shadow: inset 4px 0 0 var(--color-accent);
+    text-decoration: none;
   }
 
   .site-nav-direct:focus-visible,
   .nav-mega-link:focus-visible {
     outline-offset: -3px;
+  }
+}
+
+@media (max-width: 520px) and (prefers-reduced-motion: reduce) {
+  .nav-mega-row,
+  .nav-drawer-icon,
+  .nav-drawer-icon::before,
+  .nav-drawer-icon::after {
+    transition: none;
   }
 }
 

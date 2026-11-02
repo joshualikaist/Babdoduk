@@ -67,14 +67,54 @@
   try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
   applyLang(saved === 'en' ? 'en' : 'ko');
 
-  // Phones: the bar's links sit in one strip that scrolls sideways (css/site.css). Start with the
-  // current page's link in view, so a page reached from the far end (history, tips) shows where it is.
-  var navStrip = document.querySelector('.nav-mega-row');
-  var navCurrent = navStrip && navStrip.querySelector('[aria-current="page"]');
-  if (navCurrent && navStrip.scrollWidth > navStrip.clientWidth) {
-    var stripBox = navStrip.getBoundingClientRect(), linkBox = navCurrent.getBoundingClientRect();
-    if (linkBox.right > stripBox.right - 28 || linkBox.left < stripBox.left) {
-      navStrip.scrollLeft += linkBox.left - stripBox.left - 20;
+  // Phones: the menu button opens the links as a panel from the left, under the bar (css/site.css).
+  // A dimmed backdrop, Escape, a link or focus leaving the panel closes it; Escape and the backdrop
+  // give focus back to the button.
+  var drawerBtn = document.getElementById('navDrawerToggle');
+  var drawer = document.getElementById('siteNavLinks');
+  if (drawerBtn && drawer) {
+    var backdrop = document.createElement('div');
+    backdrop.className = 'nav-drawer-backdrop';
+    backdrop.hidden = true;
+    document.body.appendChild(backdrop);
+    var isOpen = function () { return drawerBtn.getAttribute('aria-expanded') === 'true'; };
+    var setDrawer = function (open, focusBack) {
+      var nav = document.querySelector('.site-nav');
+      if (open && nav) {
+        var top = Math.round(nav.querySelector('.site-nav-inner').getBoundingClientRect().bottom);
+        document.documentElement.style.setProperty('--nav-drawer-top', top + 'px');
+      }
+      document.documentElement.classList.toggle('nav-drawer-open', open);
+      backdrop.hidden = !open;
+      drawerBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      var key = open ? 'nav.menuClose' : 'nav.menuOpen';
+      drawerBtn.setAttribute('data-i18n-aria-key', key);
+      var label = (STR[window.babdodukGetLang()] || {})[key];
+      if (label) drawerBtn.setAttribute('aria-label', label);
+      if (open) {
+        var first = drawer.querySelector('[aria-current="page"]') || drawer.querySelector('a');
+        if (first) first.focus();
+      } else if (focusBack) {
+        drawerBtn.focus();
+      }
+    };
+    drawerBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setDrawer(!isOpen());
+    });
+    backdrop.addEventListener('click', function () { setDrawer(false, true); });
+    drawer.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('a')) setDrawer(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen()) setDrawer(false, true);
+    });
+    document.addEventListener('focusin', function (e) {
+      if (isOpen() && !drawer.contains(e.target) && e.target !== drawerBtn) setDrawer(false);
+    });
+    var phone = window.matchMedia ? window.matchMedia('(max-width: 520px)') : null;
+    if (phone && phone.addEventListener) {
+      phone.addEventListener('change', function () { if (!phone.matches && isOpen()) setDrawer(false); });
     }
   }
   var langBtnEl = document.getElementById('langToggle');
