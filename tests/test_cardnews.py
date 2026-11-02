@@ -181,3 +181,19 @@ def test_a_failed_send_returns_a_fixed_code_without_the_token(tmp_path):
     for opener, code in ((Opener(ok=False), "PUSH_REJECTED"), (Opener(error=urllib.error.URLError("down")), "PUSH_TRANSPORT_FAILED")):
         result = rc.send([path, path], "c", "123:SECRET", "42", opener)
         assert result == code and "SECRET" not in result
+
+
+def test_cards_are_kept_a_month_then_their_files_are_deleted(tmp_path):
+    """Owner 2026-11-02: keep the card news a month."""
+    feed = {"generatedAt": "2026-11-01T00:00:00+09:00", "events": []}
+    now = datetime(2026, 11, 2, 14, 0)
+    weeks = [date(2026, 9, 28), date(2026, 10, 5), date(2026, 10, 12), date(2026, 10, 19), date(2026, 10, 26), MONDAY]
+    for monday in weeks:
+        (tmp_path / monday.isoformat()).mkdir()
+        (tmp_path / monday.isoformat() / "1.png").write_bytes(b"x")
+        index = rc.write_index(tmp_path, rc.entry(feed, monday, now))
+    assert [w["week"] for w in index["weeks"]] == ["2026-11-02", "2026-10-26", "2026-10-19", "2026-10-12", "2026-10-05"]
+    assert not (tmp_path / "2026-09-28").exists() and (tmp_path / "2026-10-05" / "1.png").exists()
+    (tmp_path / "notes").mkdir()                                  # only week folders are ever removed
+    rc.write_index(tmp_path, rc.entry(feed, date(2026, 11, 9), now))
+    assert not (tmp_path / "2026-10-05").exists() and (tmp_path / "notes").exists()

@@ -20,6 +20,8 @@ import argparse
 import html
 import json
 import os
+import re
+import shutil
 import sys
 import urllib.error
 import urllib.request
@@ -41,7 +43,7 @@ KST = timezone(timedelta(hours=9))
 WIDTH, HEIGHT = 1080, 1350
 DAYS = ("월", "화", "수", "목", "금")
 DAY_NAMES = ("월요일", "화요일", "수요일", "목요일", "금요일")
-KEEP_WEEKS = 26
+KEEP_DAYS = 31        # a week's cards are kept a month (owner 2026-11-02), then deleted
 TELEGRAM_API = "https://api.telegram.org"
 
 esc = html.escape
@@ -234,13 +236,20 @@ def entry(feed: dict, monday: date, now: datetime, tpl: dict | None = None) -> d
 
 
 def write_index(out: Path, item: dict) -> dict:
-    """The week first, replacing an earlier run of the same week; at most KEEP_WEEKS weeks."""
+    """The week first, replacing an earlier run of the same week. Weeks that started more than
+    KEEP_DAYS before the newest one leave the index, and their folders of cards are deleted."""
     path = out / "index.json"
     weeks = json.loads(path.read_text(encoding="utf-8")).get("weeks", []) if path.exists() else []
     weeks = [item] + [w for w in weeks if w.get("week") != item["week"]]
     weeks.sort(key=lambda w: w["week"], reverse=True)
-    index = {"schemaVersion": 1, "weeks": weeks[:KEEP_WEEKS]}
+    oldest = (date.fromisoformat(weeks[0]["week"]) - timedelta(days=KEEP_DAYS)).isoformat()
+    kept = [w for w in weeks if w["week"] > oldest]
+    index = {"schemaVersion": 1, "weeks": kept}
     path.write_text(json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    names = {w["week"] for w in kept}
+    for folder in out.iterdir():
+        if folder.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", folder.name) and folder.name not in names:
+            shutil.rmtree(folder)
     return index
 
 

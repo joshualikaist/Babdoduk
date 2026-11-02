@@ -32,7 +32,7 @@ python scripts/render_cardnews.py                    # 이번 주(토요일부�
 python scripts/render_cardnews.py --week 2026-11-02  # 그 월요일부터의 주
 ```
 
-`data/cardnews/<월요일>/1.png`, `2.png`, … 를 쓰고(다시 그리면 그 주의 옛 카드를 먼저 지움), `data/cardnews/index.json` 맨 앞에 그 주를 넣습니다(같은 주를 다시 그리면 바꿔 넣고, 최근 26주까지 남김). 각 주는 `counts`(월~금 개수), `total`, `days`(카드가 있는 요일, 0 = 월), `feedGeneratedAt`(그린 목록의 시각), `renderedAt`, `images` 를 가집니다.
+`data/cardnews/<월요일>/1.png`, `2.png`, … 를 쓰고(다시 그리면 그 주의 옛 카드를 먼저 지움), `data/cardnews/index.json` 맨 앞에 그 주를 넣습니다(같은 주를 다시 그리면 바꿔 넣음). 카드는 한 달만 보관합니다(소유자 2026-11-02): 가장 최근 주보다 31일 넘게 앞선 주는 목록에서 빠지고 그 주의 카드 폴더도 지웁니다. 각 주는 `counts`(월~금 개수), `total`, `days`(카드가 있는 요일, 0 = 월), `feedGeneratedAt`(그린 목록의 시각), `renderedAt`, `images` 를 가집니다.
 
 `--send` 는 그린 카드를 소유자 텔레그램으로 보냅니다(운영 PC 의 봇, `--local ~/Babdoduk-ops/.local`): 2장 이상이면 앨범 하나(`sendMediaGroup`, 첫 장에 `template.json` 의 텔레그램 설명), 표지뿐이면 사진 한 장. 결과는 `PUSH_SENT` 같은 고정 코드이고 토큰은 남기지 않습니다. 이번 주(2026-11-02) 5장은 2026-11-02 소유자 확인 뒤 이렇게 보냈습니다.
 
