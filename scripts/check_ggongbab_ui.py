@@ -283,8 +283,8 @@ def todays_events_and_grace(browser, base, report):
             assert page.locator('.gg-card[data-id="gift-running"] .gg-gift-badge').count() == 1
             assert page.locator('.gg-past[data-past-id="gift-ended-2h-ago"] .gg-past-gift').count() == 1
             assert page.locator(".gg-archive").locator(".gg-btn, .gg-reg-badge").count() == 0
-            # Today's filter keeps the three counted rows and the giveaway, and not tomorrow's.
-            page.locator('[data-group="when"][data-value="today"]').click()
+            # Today's tile keeps the three counted rows and the giveaway, and not tomorrow's.
+            page.locator(f'[data-group="when"][data-value="{now.date().isoformat()}"]').click()
             today = page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
             assert sorted(today) == sorted(["running-now", "later-today", "ends-right-now", "gift-running"]), today
             page.locator('[data-group="when"][data-value="all"]').click()
@@ -1173,6 +1173,99 @@ class LocalServer(ThreadingHTTPServer):
     daemon_threads = True
 
 
+def day_tiles(browser, base, report):
+    """The days as tiles (owner 2026-11-03, like the cafeteria strip): this week and next week, Monday to
+    Sunday, with "전체 예정" first. A past day is disabled; today says 오늘; a day shows how many listings
+    choosing it would show (each session day of a multi-day event counts on its own day, the food filter
+    applies). Choosing a day shows that day; choosing it again goes back to everything upcoming. Fixed page
+    clock (Tuesday 2026-11-03 09:00 KST), synthetic data only."""
+    kst = timezone(timedelta(hours=9))
+    now = datetime(2026, 11, 3, 9, 0, tzinfo=kst)
+
+    def row(event_id, start, end, food="meal", sessions=None):
+        ev = {"id": event_id, "title": event_id, "startAt": start, "endAt": end,
+              "location": {"building": "E6-1", "room": "1501", "name": ""}, "sources": [{"type": "dooray"}],
+              "food": {"provided": "true", "type": food, "description": ""}}
+        if sessions:
+            ev["sessions"] = [{"startAt": f"2026-11-0{d}T12:00:00+09:00", "endAt": f"2026-11-0{d}T12:50:00+09:00"} for d in sessions]
+        return ev
+
+    feed = {"generatedAt": now.isoformat(), "events": [
+        row("concert", "2026-11-02T12:00:00+09:00", "2026-11-06T12:50:00+09:00", sessions=(2, 3, 4, 5, 6)),
+        row("wed-snack", "2026-11-04T15:00:00+09:00", "2026-11-04T16:00:00+09:00", food="snack"),
+        row("next-tue", "2026-11-10T18:00:00+09:00", "2026-11-10T19:00:00+09:00"),
+        row("later", "2026-11-20T12:00:00+09:00", "2026-11-20T13:00:00+09:00")]}
+    for lang in ("ko", "en"):
+        context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+        neutralize_public_config(context)
+        try:
+            context.clock.set_fixed_time(now)
+            page = context.new_page()
+            errors = []
+            page.on("pageerror", lambda error: errors.append(type(error).__name__))
+            page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=feed))
+            page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
+            if lang == "en":
+                page.add_init_script("localStorage.setItem('babdoduk-lang', 'en')")
+            for width in (360, 390, 768, 1440):
+                page.set_viewport_size({"width": width, "height": 900})
+                page.goto(base + "/ggongbab.html")
+                page.locator(".gg-when-day").first.wait_for()
+                tiles = page.locator(".gg-when-day")
+                values = tiles.evaluate_all("els => els.map(el => el.dataset.value)")
+                assert values == [f"2026-11-{d:02d}" for d in range(2, 16)], values
+                assert tiles.evaluate_all("els => els.map(el => el.disabled)") == [True] + [False] * 13
+                feet = tiles.evaluate_all("els => els.map(el => (el.querySelector('.gg-when-foot') || {}).textContent || '')")
+                today, count = ("Today", "{n}") if lang == "en" else ("오늘", "{n}개")
+                c = lambda n: count.replace("{n}", str(n))
+                assert feet == ["", today + " 1", c(2), c(1), c(1), "", "", "", c(1), "", "", "", "", ""], feet
+                assert page.locator('.gg-when-day[aria-current="date"]').get_attribute("data-value") == "2026-11-03"
+                label = page.locator('.gg-when-day[data-value="2026-11-04"]').get_attribute("aria-label")
+                assert ("2 listings" if lang == "en" else "꽁밥 2개") in label, label
+                assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "true"
+                assert page.evaluate("document.documentElement.scrollWidth") <= width
+                box = page.locator('.gg-when-day[data-value="2026-11-08"]').bounding_box()
+                assert box["x"] + box["width"] <= width and box["height"] >= 44, box
+                # A day: only its rows, the tile pressed; again: everything upcoming.
+                page.locator('.gg-when-day[data-value="2026-11-04"]').click()
+                ids = page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
+                assert ids == ["concert#3", "wed-snack"], ids
+                assert page.locator('.gg-when-day[data-value="2026-11-04"]').get_attribute("aria-pressed") == "true"
+                assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "false"
+                page.locator('.gg-when-day[data-value="2026-11-04"]').click()
+                ids = page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
+                assert ids == ["concert#2", "concert#3", "wed-snack", "concert#4", "concert#5", "next-tue", "later"], ids
+                # Next week's tile; the food filter changes the counts to what it would show.
+                page.locator('.gg-when-day[data-value="2026-11-10"]').click()
+                assert page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)") == ["next-tue"]
+                page.locator('.gg-chip[data-group="food"][data-value="snack"]').click()
+                feet = tiles.evaluate_all("els => els.map(el => (el.querySelector('.gg-when-foot') || {}).textContent || '')")
+                assert feet[2] == c(1) and feet[3] == "" and feet[1] == today, feet
+                page.locator('.gg-chip[data-group="food"][data-value="all"]').click()
+                page.locator('[data-group="when"][data-value="all"]').click()
+                page.evaluate("localStorage.removeItem('babdoduk-ggongbab-filter')")
+                report["checks"] += 16
+            assert not errors, errors
+        finally:
+            context.close()
+    # A day saved yesterday that is now past falls back to everything upcoming.
+    context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+    neutralize_public_config(context)
+    try:
+        context.clock.set_fixed_time(now)
+        page = context.new_page()
+        page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=feed))
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
+        page.add_init_script("localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({when: '2026-11-02', food: 'all'}))")
+        page.goto(base + "/ggongbab.html")
+        page.locator(".gg-when-day").first.wait_for()
+        assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "true"
+        assert page.locator(".gg-card").count() == 7
+        report["checks"] += 2
+    finally:
+        context.close()
+
+
 @contextmanager
 def local_server(port=0):
     server = LocalServer(("127.0.0.1", port), partial(LocalHandler, directory=str(ROOT)))
@@ -1301,8 +1394,11 @@ def run_checks(preview=False):
             page.locator(".gg-radar").wait_for()
             assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "true"
             assert page.locator(".gg-card").count() == 10
-            assert page.locator('[data-group="when"]').evaluate_all(
-                "els => els.map(el => el.dataset.value)") == ["today", "tomorrow", "week", "all"]
+            # "전체 예정", then the day tiles (owner 2026-11-03): this week and next, Monday to Sunday.
+            when = page.locator('[data-group="when"]').evaluate_all("els => els.map(el => el.dataset.value)")
+            days = [datetime.fromisoformat(value) for value in when[1:]]
+            assert when[0] == "all" and len(days) == 14 and days[0].weekday() == 0, when
+            assert all(later - earlier == timedelta(days=1) for earlier, later in zip(days, days[1:])), when
             report["checks"] += 3
             # The list is labelled only by when the feed last changed: no lifecycle paragraph, no
             # freshness claim (an unchanged refresh is not committed, so its stamp is the last change).
@@ -1411,10 +1507,11 @@ def run_checks(preview=False):
         assert "N1 · 101호 · N1" not in page.locator('.gg-place').inner_text()
         assert not errors, errors
         report["checks"] += 8
+        # A filter saved before the day tiles stays readable: 오늘 is today's tile.
         page.evaluate("localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({when:'today',food:'all'}))")
         page.reload()
         page.locator('#foodHubFree .gg-state').first.wait_for()
-        assert page.locator('[data-group="when"][data-value="today"]').get_attribute("aria-pressed") == "true"
+        assert page.locator('[data-group="when"][aria-current="date"]').get_attribute("aria-pressed") == "true"
         page.evaluate("localStorage.removeItem('babdoduk-ggongbab-filter')")
         report["checks"] += 1
         # Preview diagnostics only render allowlisted numeric counters, even if
@@ -1480,6 +1577,7 @@ def run_checks(preview=False):
         weekly_cafeteria(browser, base, report)
         weekend_and_holiday_menu(browser, base, report)
         sessions_and_audience(browser, base, report)
+        day_tiles(browser, base, report)
         midnight_dated_menu(browser, base, report)
         new_week_before_its_menu(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")
@@ -1524,9 +1622,12 @@ def run_checks(preview=False):
         page.goto(base + "/ggongbab.html")
         page.locator(".gg-card").first.wait_for()
         assert page.locator(".gg-choose-link").get_attribute("href") == "mukbang.html#what"   # the one picker
-        page.locator('[data-group="when"][data-value="today"]').focus()
+        today_tile = page.locator('[data-group="when"][aria-current="date"]')
+        today_value = today_tile.get_attribute("data-value")
+        today_tile.focus()
         page.keyboard.press("Enter")
-        assert page.evaluate("document.activeElement.dataset.value") == "today"
+        assert page.evaluate("document.activeElement.dataset.value") == today_value
+        assert today_tile.get_attribute("aria-pressed") == "true"
         page.keyboard.press("Tab")
         page.keyboard.press("Shift+Tab")
         page.locator('[data-group="when"][data-value="all"]').focus()
@@ -1567,10 +1668,11 @@ def run_checks(preview=False):
         assert page.locator('[data-group="when"][data-value="all"]').get_attribute("aria-pressed") == "true"
         assert page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)") == [
             "future-early", "future-late"]
-        page.locator('[data-group="when"][data-value="week"]').click()
+        # A chosen day is kept across a reload; today has nothing left (its one row has ended).
+        page.locator('[data-group="when"][aria-current="date"]').click()
         page.reload()
         page.locator("#foodHubFree .gg-state").first.wait_for()
-        assert page.locator('[data-group="when"][data-value="week"]').get_attribute("aria-pressed") == "true"
+        assert page.locator('[data-group="when"][aria-current="date"]').get_attribute("aria-pressed") == "true"
         assert page.locator(".gg-card").count() == 0
         report["checks"] += 5
         assert not errors, errors

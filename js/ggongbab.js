@@ -82,9 +82,21 @@
     if (dayKey === ymd(addDays(today, 1))) return t('gg.tomorrow', '내일');
     return '';
   }
-  function endOfWeek(today) {
+  // The day tiles (owner 2026-11-03, like the cafeteria strip): this week and next week, Monday to Sunday.
+  function mondayOf(today) {
     var dow = today.getDay();
-    return addDays(today, 7 - (dow === 0 ? 7 : dow));
+    return addDays(new Date(today.getFullYear(), today.getMonth(), today.getDate()), dow === 0 ? -6 : 1 - dow);
+  }
+  function tileDays(today) {
+    var monday = mondayOf(today), days = [];
+    for (var i = 0; i < 14; i++) days.push(addDays(monday, i));
+    return days;
+  }
+  // A chosen day stays chosen while it is a tile and not yet past; otherwise the list is "전체 예정".
+  function whenOf(today) {
+    var key = state.when;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || key < ymd(today)) return 'all';
+    return tileDays(today).some(function (d) { return ymd(d) === key; }) ? key : 'all';
   }
   function foodBucket(ev) {
     var f = ev.food || {};
@@ -95,19 +107,12 @@
     if (type === 'refreshment' || type === 'beverage') return 'refreshment';
     return 'meal';
   }
+  // Rows are one per session day already (F.occurrences), so a day matches on the row's own start.
   function inWhen(ev, today) {
     var s = toKst(ev.startAt);
     if (!s) return false;
-    var key = ymd(s);
-    if (state.when === 'today') return key === ymd(today);
-    if (state.when === 'tomorrow') return key === ymd(addDays(today, 1));
-    if (state.when === 'week') {
-      var dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      var weekEnd = endOfWeek(today);
-      weekEnd.setHours(23, 59, 59, 999);
-      return s >= dayStart && s <= weekEnd;
-    }
-    return ymd(s) >= ymd(today);
+    var when = whenOf(today);
+    return when === 'all' ? ymd(s) >= ymd(today) : ymd(s) === when;
   }
   // A food chip matches only rows with explicit food (a giveaway-only row is in no food bucket);
   // the giveaway chip matches every giveaway, with or without food.
@@ -240,14 +245,46 @@
   function chip(group, value, label, pressed, icon) {
     return '<button type="button" class="gg-chip" data-group="' + group + '" data-value="' + value + '" aria-pressed="' + (pressed ? 'true' : 'false') + '">' + (icon || '') + esc(label) + '</button>';
   }
+  // How many listings a day tile counts: what choosing it would show (upcoming, the food filter applied).
+  function countOn(key, now) {
+    return publicList().filter(function (ev) {
+      var s = toKst(ev.startAt);
+      return s && ymd(s) === key && isUpcoming(ev, now) && inFood(ev);
+    }).length;
+  }
+  function dayTile(d, now, when) {
+    var key = ymd(d), todayKey = ymd(now);
+    var isToday = key === todayKey, past = key < todayKey, n = past ? 0 : countOn(key, now);
+    var lang = window.babdodukGetLang ? window.babdodukGetLang() : 'ko';
+    var dow = (lang === 'en' ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['일', '월', '화', '수', '목', '금', '토'])[d.getDay()];
+    var foot = isToday ? t('gg.today', '오늘') + (n ? ' ' + n : '') : n ? t('gg.when.count', '{n}개').replace('{n}', String(n)) : '';
+    var aria = [dayLabel(d), isToday ? t('gg.today', '오늘') : '', past ? t('gg.when.past', '지난 날')
+      : t('gg.when.countAria', '꽁밥 {n}개').replace('{n}', String(n))].filter(Boolean).join(' · ');
+    return '<button type="button" class="gg-when-day' + (isToday ? ' is-today' : '') + (past ? ' is-past' : '') + (n ? ' has-events' : '') +
+      '" data-group="when" data-value="' + key + '" aria-pressed="' + (when === key) + '"' + (isToday ? ' aria-current="date"' : '') +
+      (past ? ' disabled' : '') + ' aria-label="' + esc(aria) + '">' +
+      '<span class="gg-when-dow" aria-hidden="true">' + esc(dow) + '</span>' +
+      '<span class="gg-when-num" aria-hidden="true">' + d.getDate() + '</span>' +
+      (foot ? '<span class="gg-when-foot" aria-hidden="true">' + esc(foot) + '</span>' : '') + '</button>';
+  }
+  // The days (owner 2026-11-03): "전체 예정", then this week's and next week's tiles. Choosing a tile
+  // shows that day; choosing it again, or "전체 예정", shows everything upcoming again.
+  function whenHtml(now) {
+    var when = whenOf(now), days = tileDays(now);
+    var h = '<section class="gg-when" aria-labelledby="ggWhenTitle"><div class="gg-when-head">' +
+      '<h2 class="gg-when-title" id="ggWhenTitle">' + esc(t('gg.when.title', '날짜별 꽁밥')) + '</h2>' +
+      chip('when', 'all', t('gg.upcoming', '전체 예정'), when === 'all') + '</div>';
+    [['ggWeekThis', t('gg.thisWeek', '이번 주'), 0], ['ggWeekNext', t('gg.when.nextWeek', '다음 주'), 7]].forEach(function (week) {
+      h += '<p class="gg-when-week" id="' + week[0] + '">' + esc(week[1]) + '</p>';
+      h += '<div class="gg-when-days" role="group" aria-labelledby="' + week[0] + '">';
+      days.slice(week[2], week[2] + 7).forEach(function (d) { h += dayTile(d, now, when); });
+      h += '</div>';
+    });
+    return h + '</section>';
+  }
   function filtersHtml() {
-    var h = '<div class="gg-filters" role="group" aria-label="' + esc(t('gg.filtersAria', '기간, 음식 종류와 경품 필터')) + '">';
+    var h = '<div class="gg-filters" role="group" aria-label="' + esc(t('gg.filtersAria', '음식 종류와 경품 필터')) + '">';
     h += '<div class="gg-filter-row">';
-    h += chip('when', 'today', t('gg.today', '오늘'), state.when === 'today');
-    h += chip('when', 'tomorrow', t('gg.tomorrow', '내일'), state.when === 'tomorrow');
-    h += chip('when', 'week', t('gg.thisWeek', '이번 주'), state.when === 'week');
-    h += chip('when', 'all', t('gg.upcoming', '전체 예정'), state.when === 'all');
-    h += '</div><div class="gg-filter-row">';
     h += chip('food', 'all', t('gg.filter.all', '전체'), state.food === 'all');
     h += chip('food', 'meal', t('gg.filter.meal', '식사'), state.food === 'meal');
     h += chip('food', 'snack', t('gg.filter.snack', '간식'), state.food === 'snack');
@@ -406,6 +443,7 @@
     // The radar's own height (238 px in both languages at every width), so it does not push the list when it lands.
     else if (state.free.status === 'loading') html += '<div class="gg-skeleton" style="height:238px;margin-bottom:14px"></div>';
     // The live list and its sticky filters share one box, so the filters stop at the archive.
+    if (state.free.status === 'ready') html += whenHtml(now);
     html += '<div class="gg-live">';
     html += filtersHtml();
     html += '<div class="gg-feed">';
@@ -661,11 +699,12 @@
       setTab(tabEl.getAttribute('data-hub-tab'));
       return;
     }
-    var chipEl = e.target.closest('.gg-chip');
-    if (chipEl) {
+    var chipEl = e.target.closest('.gg-chip, .gg-when-day');
+    if (chipEl && !chipEl.disabled) {
       var group = chipEl.getAttribute('data-group');
       var value = chipEl.getAttribute('data-value');
-      if (group === 'when') state.when = value;
+      // A chosen day chosen again goes back to everything upcoming.
+      if (group === 'when') state.when = value !== 'all' && whenOf(nowKst()) === value ? 'all' : value;
       if (group === 'food') state.food = value;
       try { localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({ when: state.when, food: state.food })); } catch (err) {}
       render();
@@ -725,7 +764,14 @@
 
   try {
     var saved = JSON.parse(localStorage.getItem('babdoduk-ggongbab-filter') || 'null');
-    if (saved && ['today', 'tomorrow', 'week', 'all'].indexOf(saved.when) >= 0) { state.when = saved.when; savedFilter = true; }
+    // Days are saved as dates; the earlier choices stay readable: 오늘/내일 become those dates, 이번 주 is everything.
+    var savedWhen = saved && saved.when;
+    if (savedWhen === 'today') savedWhen = ymd(nowKst());
+    else if (savedWhen === 'tomorrow') savedWhen = ymd(addDays(nowKst(), 1));
+    else if (savedWhen === 'week') savedWhen = 'all';
+    if (savedWhen === 'all' || (typeof savedWhen === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(savedWhen))) {
+      state.when = savedWhen; savedFilter = true;
+    }
     if (saved && FOOD_FILTERS.indexOf(saved.food) >= 0) state.food = saved.food;   // anything else stays 'all'
   } catch (err) {}
   try {
