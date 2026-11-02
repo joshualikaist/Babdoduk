@@ -34,7 +34,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from content_labels import labels  # noqa: E402
 
-FEED = ROOT / "data" / "ggongbab" / "latest.json"
+LIVE_FEED = "https://babdoduk.vercel.app/data/ggongbab/latest.json"
+MAX_FEED_AGE = timedelta(hours=36)   # the list is refreshed several times a day; older means a stale copy
 OUT = ROOT / "data" / "cardnews"
 TEMPLATE = ROOT / "inputs" / "cardnews" / "template.json"
 CARD_CSS = ROOT / "inputs" / "cardnews" / "card.css"
@@ -77,21 +78,54 @@ def tip_only(event: dict) -> bool:
     return kinds == {"tip"}
 
 
+def occurrences(event: dict) -> list[tuple[str, str]]:
+    """When the event happens: each of its sessions when the list has them, else the event itself.
+    A talk series held every day of the week (자연과학 토크 콘서트, 2026-11-02 to 11-06) is on every
+    one of those days' cards, not only on the first (owner 2026-11-03)."""
+    sessions = [s for s in event.get("sessions") or [] if isinstance(s, dict) and s.get("startAt")]
+    if sessions:
+        return [(s["startAt"], s.get("endAt") or "") for s in sessions]
+    return [(event.get("startAt") or "", event.get("endAt") or "")]
+
+
 def days(feed: dict, monday: date, rules: dict) -> list[list[dict]]:
-    """The list's events by the Korean day they start on, Monday to Friday, each day by start time."""
+    """The list's events by the Korean day they happen on, Monday to Friday, each day by start time.
+    An entry is the event with that day's session times in startAt/endAt."""
     out = [[] for _ in range(5)]
-    for event in sorted(feed.get("events") or [], key=lambda e: e.get("startAt") or ""):
+    week = [(monday + timedelta(days=i)).isoformat() for i in range(5)]
+    for event in feed.get("events") or []:
         if rules.get("skipTipOnly", True) and tip_only(event):
             continue
-        day = kst_day(event.get("startAt") or "")
-        for i in range(5):
-            if day == (monday + timedelta(days=i)).isoformat():
-                out[i].append(event)
+        for start, end in occurrences(event):
+            day = kst_day(start)
+            if day in week:
+                out[week.index(day)].append({**event, "startAt": start, "endAt": end, "_event": event.get("id") or id(event)})
+    for entries in out:
+        entries.sort(key=lambda e: e.get("startAt") or "")
     return out
+
+
+def distinct(by_day: list[list[dict]]) -> int:
+    """How many events the week has: an event on several days counts once."""
+    return len({e["_event"] for d in by_day for e in d})
 
 
 def shown_days(by_day: list[list[dict]], rules: dict) -> list[int]:
     return [i for i in range(5) if by_day[i] or not rules.get("skipEmptyDays", True)]
+
+
+def pages(by_day: list[list[dict]], rules: dict) -> list[tuple[int, list[dict], int, int]]:
+    """The day cards as (weekday, its events on this card, part, parts). A day with more events than
+    fit on one card goes on as many cards as it needs (owner 2026-11-03: no event is left off), unless
+    the template turns splitBusyDays off; then the card says how many more."""
+    per_card = int(rules.get("perCard", 4))
+    out = []
+    for i in shown_days(by_day, rules):
+        events = by_day[i]
+        chunks = ([events[k:k + per_card] for k in range(0, len(events), per_card)]
+                  if rules.get("splitBusyDays", True) and len(events) > per_card else [events])
+        out += [(i, chunk, n + 1, len(chunks)) for n, chunk in enumerate(chunks)]
+    return out
 
 
 def place(event: dict) -> str:
@@ -147,7 +181,7 @@ def cover(tpl: dict, monday: date, by_day: list[list[dict]], total_cards: int) -
         f'<div class="day{"" if by_day[i] else " zero"}"><div class="w">{DAYS[i]}</div>'
         f'<div class="d">{(monday + timedelta(days=i)).month}.{(monday + timedelta(days=i)).day}</div>'
         f'<div class="n">{len(by_day[i]) or "–"}</div></div>' for i in range(5))
-    total = sum(len(d) for d in by_day)
+    total = distinct(by_day)
     count = esc(fill(c["total"], n=total)).replace(f"{total}개", f"<em>{total}개</em>", 1)
     return (f'<section class="card cover"><div class="band"></div><p class="kicker">{esc(c["kicker"])}</p>'
             f'<h1>{esc(c["headline"])}<br /><span>{esc(c["headlineMark"])}</span></h1>'
@@ -155,11 +189,14 @@ def cover(tpl: dict, monday: date, by_day: list[list[dict]], total_cards: int) -
             f'<p class="total">{count}</p><p class="swipe">{esc(c["swipe"])}</p>{foot(tpl, 1, total_cards)}</section>')
 
 
-def day_card(tpl: dict, i: int, day: date, events: list[dict], names: dict, n: int, total_cards: int) -> str:
+def day_card(tpl: dict, i: int, day: date, events: list[dict], names: dict, n: int, total_cards: int,
+             day_total: int | None = None, part: int = 1, parts: int = 1) -> str:
     d, rules = tpl["day"], tpl["rules"]
     per_card, dense_from = int(rules.get("perCard", 4)), int(rules.get("denseFrom", 3))
+    day_total = len(events) if day_total is None else day_total
     head = (f'<div class="head"><span class="date">{day.month}.{day.day}</span><span class="name">{DAY_NAMES[i]}</span>'
-            + (f'<span class="count">{esc(fill(d["count"], n=len(events)))}</span>' if events else "") + "</div>")
+            + (f'<span class="count">{esc(fill(d["count"], n=day_total))}</span>' if events else "") + "</div>")
+    kicker = fill(d["kicker"], day=DAYS[i]) + (f" · {part}/{parts}" if parts > 1 else "")
     if not events:
         e = tpl["empty"]
         body = (f'<div class="empty"><p class="big">{esc(e["title"])}</p><p class="sub">{esc(e["sub"])}</p>'
@@ -183,7 +220,7 @@ def day_card(tpl: dict, i: int, day: date, events: list[dict], names: dict, n: i
         if len(events) > per_card:
             body += f'<p class="more">{esc(fill(d["more"], n=len(events) - per_card))}</p>'
     dense = " dense" if len(events) >= dense_from else ""
-    return (f'<section class="card{dense}"><div class="band"></div><p class="kicker">{esc(fill(d["kicker"], day=DAYS[i]))}</p>'
+    return (f'<section class="card{dense}"><div class="band"></div><p class="kicker">{esc(kicker)}</p>'
             f'{head}{body}{foot(tpl, n, total_cards)}</section>')
 
 
@@ -199,10 +236,11 @@ def build(feed: dict, monday: date, names: dict | None = None, tpl: dict | None 
     tpl = tpl or template()
     names = names if names is not None else {k: v["ko"] for k, v in labels()["freeFood"].items()}
     by_day = days(feed, monday, tpl["rules"])
-    shown = shown_days(by_day, tpl["rules"])
+    shown = pages(by_day, tpl["rules"])
     total = 1 + len(shown)
     cards = [cover(tpl, monday, by_day, total)]
-    cards += [day_card(tpl, i, monday + timedelta(days=i), by_day[i], names, n + 2, total) for n, i in enumerate(shown)]
+    cards += [day_card(tpl, i, monday + timedelta(days=i), chunk, names, n + 2, total, len(by_day[i]), part, parts)
+              for n, (i, chunk, part, parts) in enumerate(shown)]
     return f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>{style(tpl)}</style></head><body>{"".join(cards)}</body></html>'
 
 
@@ -228,10 +266,10 @@ def render(document: str, folder: Path) -> list[Path]:
 def entry(feed: dict, monday: date, now: datetime, tpl: dict | None = None) -> dict:
     tpl = tpl or template()
     by_day = days(feed, monday, tpl["rules"])
-    shown = shown_days(by_day, tpl["rules"])
+    shown = [i for i, *_ in pages(by_day, tpl["rules"])]     # one entry per day card: a busy day repeats
     return {"week": monday.isoformat(), "renderedAt": now.isoformat(timespec="seconds"),
             "feedGeneratedAt": feed.get("generatedAt"), "counts": [len(d) for d in by_day],
-            "total": sum(len(d) for d in by_day), "days": shown,
+            "total": distinct(by_day), "days": shown,
             "images": [f"data/cardnews/{monday.isoformat()}/{n}.png" for n in range(1, len(shown) + 2)]}
 
 
@@ -254,17 +292,26 @@ def write_index(out: Path, item: dict) -> dict:
 
 
 def send(paths: list[Path], caption: str, token: str, chat_id: str, opener: Callable = urllib.request.urlopen) -> str:
-    """The cards to the owner's Telegram: one album (sendMediaGroup, 2-10 photos; the caption on the
-    first), or one photo when only the cover was drawn. Returns PUSH_SENT or a fixed failure code;
-    the token is in the URL only, never in what is returned."""
+    """The cards to the owner's Telegram: albums of at most ten (Telegram's limit; a busy week can have
+    more cards), the caption on the very first card. Returns PUSH_SENT or the first failure's code."""
+    for start in range(0, len(paths), 10):
+        result = send_album(paths[start:start + 10], caption if start == 0 else "", token, chat_id, opener)
+        if result != "PUSH_SENT":
+            return result
+    return "PUSH_SENT"
+
+
+def send_album(paths: list[Path], caption: str, token: str, chat_id: str, opener: Callable) -> str:
+    """One album (sendMediaGroup, 2-10 photos; the caption on the first), or one photo. Returns PUSH_SENT
+    or a fixed failure code; the token is in the URL only, never in what is returned."""
     boundary = uuid.uuid4().hex
     parts, media = [], []
     for n, path in enumerate(paths):
         name = f"card{n + 1}"
-        media.append({"type": "photo", "media": f"attach://{name}", **({"caption": caption[:1024]} if n == 0 else {})})
+        media.append({"type": "photo", "media": f"attach://{name}", **({"caption": caption[:1024]} if n == 0 and caption else {})})
         parts.append((name, path.name, path.read_bytes()))
     if len(paths) == 1:
-        method, fields = "sendPhoto", {"chat_id": str(chat_id), "caption": caption[:1024]}
+        method, fields = "sendPhoto", {"chat_id": str(chat_id), **({"caption": caption[:1024]} if caption else {})}
         files = [("photo", parts[0][1], parts[0][2])]
     else:
         method, fields, files = "sendMediaGroup", {"chat_id": str(chat_id), "media": json.dumps(media, ensure_ascii=False)}, parts
@@ -287,10 +334,28 @@ def send(paths: list[Path], caption: str, token: str, chat_id: str, opener: Call
     return "PUSH_SENT" if ok else "PUSH_REJECTED"
 
 
+def load_feed(source: str, opener: Callable = urllib.request.urlopen) -> dict:
+    """The list from the live site (the default) or a file. A checkout's own copy can be days old: the
+    2026-11-02 cards were drawn from a 2026-10-31 copy."""
+    if source.startswith("https://"):
+        with opener(urllib.request.Request(source, headers={"Cache-Control": "no-cache"}), timeout=30) as response:
+            return json.loads(response.read().decode("utf-8"))
+    return json.loads(Path(source).read_text(encoding="utf-8"))
+
+
+def stale(feed: dict, now: datetime) -> bool:
+    try:
+        made = datetime.fromisoformat(feed.get("generatedAt") or "")
+    except (TypeError, ValueError):
+        return True
+    return now - made > MAX_FEED_AGE
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--week", type=date.fromisoformat, help="the Monday of the week (default: this or the coming week)")
-    parser.add_argument("--feed", type=Path, default=FEED)
+    parser.add_argument("--feed", default=LIVE_FEED, help="the published list: its URL (default) or a file")
+    parser.add_argument("--allow-stale", action="store_true", help="draw from a list older than 36 hours")
     parser.add_argument("--out", type=Path, default=OUT)
     parser.add_argument("--send", action="store_true", help="send the cards to the owner's Telegram afterwards")
     parser.add_argument("--local", type=Path, default=ROOT / ".local", help="--send: the operations checkout's .local")
@@ -300,7 +365,9 @@ def main(argv=None) -> int:
     if monday.weekday() != 0:
         raise SystemExit("--week must be a Monday")
     tpl = template()
-    feed = json.loads(args.feed.read_text(encoding="utf-8"))
+    feed = load_feed(str(args.feed))
+    if stale(feed, now) and not args.allow_stale:
+        raise SystemExit(f"FEED_STALE: the list was made at {feed.get('generatedAt')}")
     paths = render(build(feed, monday, tpl=tpl), args.out / monday.isoformat())
     item = entry(feed, monday, now, tpl)
     write_index(args.out, item)

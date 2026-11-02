@@ -44,6 +44,7 @@
     "perCard": 4,
     "denseFrom": 3,
     "skipEmptyDays": true,
-    "skipTipOnly": true
+    "skipTipOnly": true,
+    "splitBusyDays": true
   }
 }

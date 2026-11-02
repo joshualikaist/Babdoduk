@@ -41,6 +41,61 @@ def test_a_cover_and_a_card_only_for_each_weekday_with_events_by_korean_day():
     assert [re.search(r'class="page">(\d) / (\d)<', c).groups() for c in found] == [(str(n), "4") for n in range(1, 5)]
 
 
+def test_an_event_held_on_several_days_is_on_each_of_those_days():
+    """Owner 2026-11-03: the 자연과학 토크 콘서트 ran every weekday but was only on Monday's card."""
+    series = event("2026-11-02T12:00:00+09:00", "자연과학과 함께하는 토크 콘서트", end="2026-11-06T19:30:00+09:00")
+    series["id"] = "talk"
+    series["sessions"] = [{"startAt": f"2026-11-0{d}T12:00:00+09:00", "endAt": f"2026-11-0{d}T12:50:00+09:00"} for d in (2, 3, 4, 5)]
+    series["sessions"].append({"startAt": "2026-11-06T16:00:00+09:00", "endAt": "2026-11-06T19:30:00+09:00"})
+    other = event("2026-11-04T09:00:00+09:00", "수요일 아침")
+    found = cards([series, other])
+    assert len(found) == 6
+    for day in found[1:]:
+        assert "토크 콘서트" in day
+    assert ">12:00<small>~ 12:50</small>" in found[2] and ">16:00<small>~ 19:30</small>" in found[5]
+    assert found[3].index("수요일 아침") < found[3].index("토크 콘서트")          # each day by that day's time
+    assert re.findall(r'<div class="n">([^<]+)</div>', found[0]) == ["1", "1", "2", "1", "1"]
+    assert "이번 주 꽁밥 <em>2개</em>" in found[0]                                  # an event counts once
+    item = rc.entry({"events": [series, other]}, MONDAY, datetime(2026, 11, 1, 18, 0, tzinfo=rc.KST))
+    assert item["counts"] == [1, 1, 2, 1, 1] and item["total"] == 2 and item["days"] == [0, 1, 2, 3, 4]
+
+
+def test_sessions_outside_the_week_and_an_event_without_sessions():
+    started_last_week = event("2026-10-30T12:00:00+09:00", "지난주부터", end="2026-11-03T13:00:00+09:00")
+    started_last_week["sessions"] = [{"startAt": "2026-10-30T12:00:00+09:00"}, {"startAt": "2026-11-03T12:00:00+09:00"}]
+    long_span = event("2026-11-02T16:00:00+09:00", "설명회 일정", end="2026-11-25T20:00:00+09:00")
+    found = cards([started_last_week, long_span])
+    assert len(found) == 3 and "설명회 일정" in found[1] and "지난주부터" in found[2]
+    assert "지난주부터" not in found[1] and "설명회 일정" not in found[2]   # no sessions: the day it starts
+
+
+def test_the_cards_are_drawn_from_the_live_list_and_never_from_a_stale_copy(tmp_path):
+    now = datetime(2026, 11, 8, 18, 0, tzinfo=rc.KST)
+    assert rc.LIVE_FEED.startswith("https://") and rc.LIVE_FEED.endswith("/data/ggongbab/latest.json")
+    assert not rc.stale({"generatedAt": "2026-11-08T09:00:00+09:00"}, now)
+    assert rc.stale({"generatedAt": "2026-10-31T20:21:46+09:00"}, now)          # the copy behind the 11-02 cards
+    assert rc.stale({}, now) and rc.stale({"generatedAt": "어제"}, now)
+    copy = tmp_path / "latest.json"
+    copy.write_text(json.dumps({"generatedAt": "2026-11-08T09:00:00+09:00", "events": []}), encoding="utf-8")
+    assert rc.load_feed(str(copy))["events"] == []
+    asked = []
+
+    class Live:
+        def __init__(self, request, timeout):
+            asked.append((request.full_url, timeout))
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def read(self):
+            return b'{"generatedAt": "2026-11-08T09:00:00+09:00", "events": [1]}'
+
+    assert rc.load_feed(rc.LIVE_FEED, opener=Live)["events"] == [1] and asked == [(rc.LIVE_FEED, 30)]
+
+
 def test_a_day_card_shows_time_title_food_place_and_a_stated_audience():
     (_, monday, *_) = cards([event("2026-11-02T12:00:00+09:00", "토크 콘서트", end="2026-11-02T13:30:00+09:00",
                                    building="E6-1", room="1501호", audience="학사과정 학생")])
@@ -56,13 +111,32 @@ def test_what_the_list_does_not_have_is_left_out():
     assert '<div class="t">12:00</div>' in monday      # an end on another day is not shown as a time
 
 
-def test_a_busy_day_is_dense_shows_four_and_says_how_many_more():
+def test_without_splitting_a_busy_day_is_dense_shows_four_and_says_how_many_more():
     busy = [event(f"2026-11-06T{9 + i:02d}:00:00+09:00", f"행사 {i}", audience="누구나") for i in range(6)]
-    friday = cards(busy)[-1]
+    tpl = rc.template()
+    tpl["rules"]["splitBusyDays"] = False
+    friday = cards(busy, tpl)[-1]
     assert friday.startswith('<section class="card dense">') and friday.count('<article class="ev">') == 4
     assert "외 2개 더 · 사이트에서 확인하세요" in friday and "대상 ·" not in friday    # no room for the audience line
     three = cards(busy[:3])[-1]
     assert three.startswith('<section class="card dense">') and "외" not in three and "대상 · 누구나" in three
+
+
+def test_a_day_with_more_than_a_card_holds_goes_on_to_a_second_card():
+    """Owner 2026-11-03: no event is left off the card news. Friday 11-06 had five; the fifth, the
+    talk concert's Shake Shack evening, was hidden behind "외 1개 더"."""
+    busy = [event(f"2026-11-06T{9 + i:02d}:00:00+09:00", f"행사 {i}", audience="누구나") for i in range(6)]
+    found = cards(busy)
+    assert len(found) == 3
+    first, second = found[1], found[2]
+    assert first.count('<article class="ev">') == 4 and second.count('<article class="ev">') == 2
+    assert "외 " not in first + second and "행사 5" in second
+    assert "이번 주 꽁밥 · 금 · 1/2" in first and "이번 주 꽁밥 · 금 · 2/2" in second
+    assert "꽁밥 6개" in first and "꽁밥 6개" in second                     # the day's count on both
+    assert re.findall(r'<div class="n">([^<]+)</div>', found[0])[4] == "6"
+    assert [re.search(r'class="page">(\d) / (\d)<', c).groups() for c in found] == [(str(n), "3") for n in range(1, 4)]
+    item = rc.entry({"events": busy}, MONDAY, datetime(2026, 11, 1, 18, 0, tzinfo=rc.KST))
+    assert item["days"] == [4, 4] and len(item["images"]) == 3 and item["counts"][4] == 6
 
 
 def test_a_week_without_events_is_the_cover_alone_unless_the_template_keeps_empty_days():
@@ -88,7 +162,7 @@ def test_the_wording_and_colors_come_from_the_template():
     document = rc.build({"events": [event("2026-11-02T12:00:00+09:00")]}, MONDAY, NAMES, tpl)
     assert "<h1>다음 주<br />" in document and '<span class="count">1건</span>' in document and "바뀔 수 있음" in document
     assert "--accent: #123456;" in document and "var(--accent)" in document
-    assert set(tpl["rules"]) == {"perCard", "denseFrom", "skipEmptyDays", "skipTipOnly"}
+    assert set(tpl["rules"]) == {"perCard", "denseFrom", "skipEmptyDays", "skipTipOnly", "splitBusyDays"}
 
 
 def test_events_away_from_daejeon_carry_a_seoul_mark():
@@ -125,8 +199,9 @@ def test_the_published_week_matches_its_images():
     root = Path(rc.ROOT)
     index = json.loads((root / "data/cardnews/index.json").read_text(encoding="utf-8"))
     for week in index["weeks"]:
-        assert len(week["counts"]) == 5 and week["total"] == sum(week["counts"])
-        assert week["days"] == [i for i in range(5) if week["counts"][i]] and len(week["images"]) == len(week["days"]) + 1
+        assert len(week["counts"]) == 5 and max(week["counts"]) <= week["total"] <= sum(week["counts"])
+        assert sorted(set(week["days"])) == [i for i in range(5) if week["counts"][i]] and week["days"] == sorted(week["days"])
+        assert len(week["images"]) == len(week["days"]) + 1
         folder = sorted((root / "data/cardnews" / week["week"]).glob("*.png"))
         assert [f"data/cardnews/{week['week']}/{p.name}" for p in folder] == week["images"]     # no stale card left
         for src in week["images"]:
@@ -172,6 +247,17 @@ def test_the_cards_go_to_telegram_as_one_album_with_the_caption_on_the_first(tmp
     single = Opener()
     assert rc.send(paths[:1], "표지만", "123:SECRET", "42", single) == "PUSH_SENT"
     assert single.requests[0].full_url.endswith("/sendPhoto")
+    many = []
+    for n in range(1, 12):
+        path = tmp_path / f"m{n}.png"
+        path.write_bytes(b"\x89PNG fake " + bytes([n]))
+        many.append(path)
+    batched = Opener()
+    assert rc.send(many, "📅 이번 주 꽁밥", "123:SECRET", "42", batched) == "PUSH_SENT"
+    assert [r.full_url.rsplit("/", 1)[1] for r in batched.requests] == ["sendMediaGroup", "sendPhoto"]   # 10 + 1
+    first = batched.requests[0].data.decode("utf-8", "replace")
+    assert first.count('filename="') == 10 and "📅 이번 주 꽁밥" in first
+    assert 'name="caption"' not in batched.requests[1].data.decode("utf-8", "replace")
 
 
 def test_a_failed_send_returns_a_fixed_code_without_the_token(tmp_path):

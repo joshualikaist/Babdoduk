@@ -37,12 +37,12 @@
       timeZone: 'Asia/Seoul', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
     }).format(when);
   }
-  // The cover, then one card for each shown weekday (`days`, 0 = Monday): a day without events has none.
+  // The cover, then one card for each entry of `days` (0 = Monday): a day without events has none, a busy day may have two.
   function valid(item) {
     return item && /^\d{4}-\d{2}-\d{2}$/.test(item.week) && Array.isArray(item.counts) && item.counts.length === 5
       && Array.isArray(item.days) && item.days.every(function (d) { return d >= 0 && d <= 4; })
       && Array.isArray(item.images) && item.images.length === item.days.length + 1
-      && item.images.every(function (src) { return /^data\/cardnews\/\d{4}-\d{2}-\d{2}\/[1-6]\.png$/.test(src); });
+      && item.images.every(function (src) { return /^data\/cardnews\/\d{4}-\d{2}-\d{2}\/[1-9]\d?\.png$/.test(src); });
   }
 
   function figure(src, number, caption, alt) {
