@@ -763,9 +763,8 @@ def home_hero(page):
               (where, "primary CTA inside the first screen", top["cta"]))
         check(top["grid"]["bottom"] <= height and top["grid"]["h"] > 0,
               (where, "the calendar grid is in the first screen", top["grid"]))
-        if width <= 720:
-            check(top["cal"]["y"] < top["collage"]["y"],
-                  (where, "phones: the calendar comes before the decorative collage", top["cal"], top["collage"]))
+        if width <= 720:     # owner 2026-11-03: no decorative photos at the bottom on phones
+            check(top["collage"]["h"] == 0, (where, "phones: no photo collage", top["collage"]))
         check(top["below"] == [] and top["removed"] == 0, (where, "nothing below the hero", top["below"], top["removed"]))
         check(top["magazine"] == 0, (where, "the home page reads no magazine edition"))
         check("지난 이벤트" not in top["mainText"] and "오늘의 한 끼" not in top["mainText"]
@@ -854,7 +853,7 @@ def home_first_screen(page):
                     check(0 < shot["grid"]["bottom"] <= height,
                           (where, "the calendar grid is in the first screen", shot["grid"], shot["answer"]))
                 if width <= 720:
-                    check(shot["cal"]["top"] < shot["collage"]["top"], (where, "phones: the calendar comes before the collage", shot))
+                    check(shot["collage"]["height"] == 0, (where, "phones: no photo collage", shot["collage"]))
                 if shot["shown"]:
                     if width <= 440:
                         check(shot["promo"]["height"] <= 56 and shot["cta"]["height"] <= 40,

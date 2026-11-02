@@ -34,7 +34,7 @@ Review rendered pages, not only CSS or DOM numbers. Take the screenshots and loo
 - One editorial hero, with its primary and secondary actions in the first mobile screen:
   - primary: `오늘의 꽁밥 보기` → `ggongbab.html`;
   - secondary: `메뉴 고르기` → `mukbang.html#what`.
-- The collage is decorative (`aria-hidden`, no visible label and no dish names); it never implies today's menu.
+- The collage is decorative (`aria-hidden`, no visible label and no dish names); it never implies today's menu. At 720px and below it is not shown (owner 2026-11-03).
 - The today strip keeps the `#homeMenuStatus` and `#homeFreeStatus` states and the "마지막 변경 {time}" wording. It makes no "latest", "real-time" or "live" claims.
 - Nothing below the hero (owner 2026-11-02): the former groups 01 오늘 먹기, 02 읽어보기 and 03 밥도둑 소식 are gone; the map, Instagram and history stay in the More menu, the magazine and news in the top bar.
 - The wordmark keeps the original holographic gradient.

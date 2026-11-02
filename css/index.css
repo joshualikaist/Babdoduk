@@ -1241,8 +1241,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
       "promo"
       "hero"
       "cal"
-      "menu"
-      "collage";
+      "menu";
   }
 
   .home-top::before {
@@ -1261,9 +1260,9 @@ html[data-wc-phase="soon"] .home-wc-photo {
     border: 1px solid rgba(30, 29, 26, 0.08);
   }
 
+  /* Owner 2026-11-03: on phones the decorative photos only sat at the bottom; they are left out. */
   .home-collage {
-    height: 250px;
-    margin: var(--space-6) 0 0;
+    display: none;
   }
 }
 
@@ -1302,10 +1301,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
     flex: 1 1 auto;
     min-height: 48px;
     padding: 10px 14px;
-  }
-
-  .home-collage {
-    height: 196px;
   }
 
   .home-photo {
