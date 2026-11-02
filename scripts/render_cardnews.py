@@ -374,7 +374,22 @@ def held(monday: date, client) -> list[str]:
             for r in rows]
 
 
-def report(found: dict, waiting: list[str] | None) -> str:
+def tips_not_listed(feed: dict, monday: date, client) -> list[str]:
+    """Reader tips the owner confirmed (✅, status accepted) for a weekday of this week that the list
+    does not have yet (owner 2026-11-03: a confirmed tip belongs in the 꽁밥 schedule). The list takes
+    them in on its next refresh; until then they are named here. Read only, titles to Telegram only."""
+    rows = client.select_all("ggongbab_tips", {
+        "select": "id,title,event_date", "status": "eq.accepted",
+        "and": f"(event_date.gte.{monday.isoformat()},event_date.lte.{(monday + timedelta(days=4)).isoformat()})",
+        "order": "event_date.asc,id.asc"})
+    listed = {e.get("title") for e in feed.get("events") or []}
+    tip_ids = {str(s.get("id")) for e in feed.get("events") or [] for s in e.get("sources") or []
+               if isinstance(s, dict) and s.get("type") == "tip" and s.get("id")}
+    return [f"{(r.get('event_date') or '')[5:]} {r.get('title') or ''}" for r in rows
+            if r.get("title") not in listed and str(r.get("id")) not in tip_ids]
+
+
+def report(found: dict, waiting: list[str] | None, tips: list[str] | None = None) -> str:
     """The text that follows the cards on Telegram."""
     lines = [f"🔎 카드뉴스 점검 · 목록의 이번 주 꽁밥 {found['events']}개"]
     lines.append("✅ 모두 카드에 있어요" if not found["missing"] else f"❗ 카드에 빠진 행사 {len(found['missing'])}개")
@@ -389,6 +404,9 @@ def report(found: dict, waiting: list[str] | None) -> str:
         lines += [f"  · {w}" for w in waiting]
     else:
         lines.append("✅ 검토 대기 중인 꽁밥 없음")
+    if tips:
+        lines.append(f"📮 확인한 제보인데 아직 목록에 없는 행사 {len(tips)}개 (다음 목록 갱신 때 들어가요)")
+        lines += [f"  · {t}" for t in tips]
     return "\n".join(lines)[:4000]
 
 
@@ -406,17 +424,25 @@ def send_text(text: str, token: str, chat_id: str, opener: Callable = urllib.req
     return "PUSH_SENT" if ok else "PUSH_REJECTED"
 
 
-def waiting_events(monday: date) -> list[str] | None:
-    """held() through the operations PC's Supabase settings; None when they are missing or the read fails."""
+def store_checks(feed: dict, monday: date) -> tuple[list[str] | None, list[str] | None]:
+    """held() and tips_not_listed() through the operations PC's Supabase settings; None for a part
+    whose settings are missing or whose read fails (the check says so; it never stops the cards)."""
     try:
         from ggongbab.config import Settings
         from ggongbab.db.supabase_client import SupabaseClient
         settings = Settings()
         if not (settings.supabase_url and settings.supabase_secret_key):
-            return None
-        return held(monday, SupabaseClient(settings.supabase_url, settings.supabase_secret_key))
-    except Exception:          # the check reports it could not read; it never stops the cards
-        return None
+            return None, None
+        client = SupabaseClient(settings.supabase_url, settings.supabase_secret_key)
+    except Exception:
+        return None, None
+    out = []
+    for part in (lambda: held(monday, client), lambda: tips_not_listed(feed, monday, client)):
+        try:
+            out.append(part())
+        except Exception:
+            out.append(None)
+    return out[0], out[1]
 
 
 def load_feed(source: str, opener: Callable = urllib.request.urlopen) -> dict:
@@ -460,9 +486,10 @@ def main(argv=None) -> int:
     write_index(args.out, item)
     result = {"week": item["week"], "counts": item["counts"], "days": item["days"], "images": [str(p) for p in paths],
               "check": {"events": found["events"], "missing": len(found["missing"]), "firstDayOnly": len(found["firstDayOnly"])}}
-    waiting = waiting_events(monday)
+    waiting, tips = store_checks(feed, monday)
     result["check"]["held"] = None if waiting is None else len(waiting)
-    print(report(found, waiting), file=sys.stderr)
+    result["check"]["tipsNotListed"] = None if tips is None else len(tips)
+    print(report(found, waiting, tips), file=sys.stderr)
     if args.send:
         from ggongbab.instagram.telegram_review import credentials
         token, chat = credentials(args.local)
@@ -471,7 +498,7 @@ def main(argv=None) -> int:
         caption = fill(tpl["telegram"]["caption"], range=week_range(monday), total=item["total"], page=PAGE)
         result["telegram"] = send(paths, caption, token, chat)
         if result["telegram"] == "PUSH_SENT":
-            result["telegram"] = send_text(report(found, waiting), token, chat)
+            result["telegram"] = send_text(report(found, waiting, tips), token, chat)
     print(json.dumps(result, ensure_ascii=False))
     return 0 if result.get("telegram", "PUSH_SENT") == "PUSH_SENT" else 1
 

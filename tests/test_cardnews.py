@@ -327,3 +327,21 @@ def test_the_check_goes_to_telegram_as_text_without_the_token_in_the_result():
     assert rc.send_text("🔎 점검", "123:SECRET", "42", opener) == "PUSH_SENT"
     (request,) = opener.requests
     assert request.full_url.endswith("/sendMessage") and json.loads(request.data) == {"chat_id": "42", "text": "🔎 점검"}
+
+
+def test_a_confirmed_tip_not_yet_in_the_list_is_named():
+    """Owner 2026-11-03: a tip the owner confirmed belongs in the schedule; until the list has it, say so."""
+    class Store:
+        def select_all(self, table, params):
+            assert table == "ggongbab_tips" and params["status"] == "eq.accepted"
+            assert params["and"] == "(event_date.gte.2026-11-02,event_date.lte.2026-11-06)"
+            return [{"id": "t1", "title": "Codex 워크숍 다과", "event_date": "2026-11-04"},
+                    {"id": "t2", "title": "목록에 있는 제보", "event_date": "2026-11-05"},
+                    {"id": "t3", "title": "이름이 바뀐 제보", "event_date": "2026-11-06"}]
+
+    feed = {"events": [event("2026-11-05T12:00:00+09:00", "목록에 있는 제보", sources=("tip",)),
+                       {**event("2026-11-06T12:00:00+09:00", "다른 이름"), "sources": [{"type": "tip", "id": "t3"}]}]}
+    assert rc.tips_not_listed(feed, MONDAY, Store()) == ["11-04 Codex 워크숍 다과"]
+    text = rc.report({"events": 2, "missing": [], "firstDayOnly": []}, [], ["11-04 Codex 워크숍 다과"])
+    assert "📮 확인한 제보인데 아직 목록에 없는 행사 1개" in text and "Codex 워크숍 다과" in text
+    assert "📮" not in rc.report({"events": 2, "missing": [], "firstDayOnly": []}, [], [])
