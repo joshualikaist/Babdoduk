@@ -1,10 +1,42 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-02T18:28:30+09:00",
+  "generatedAt": "2026-11-03T03:48:11+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 6,
+  "count": 7,
   "events": [
+    {
+      "id": "ef9595e6-fc91-447c-b6f9-706f86f02198",
+      "title": "Towards Cross-Context Studies of Ethical, Legal, and Social Issues Unique to New Alternative Methods in Biomedical Research",
+      "summary": "KAIST와 미시간주립대학교가 공동 개최하는 과학철학 워크숍으로, 생의학 연구의 새로운 대안적 방법(NAMs)의 윤리적·법적·사회적 쟁점을 논의한다. 현장 및 온라인(Zoom)으로 참여할 수 있다.",
+      "startAt": "2026-11-02T09:00:00+09:00",
+      "endAt": "2026-11-02T17:15:00+09:00",
+      "dateText": "2026년 11월 2일(월)",
+      "timeText": "09:00–17:15",
+      "location": {
+        "name": "KAIST 본원",
+        "building": "N4",
+        "room": "국제세미나실(1433호)"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "다과",
+        "source": "text"
+      },
+      "organizer": "KAIST 디지털인문사회과학부, KAIST 디지털인문사회과학센터, KAIST AI철학 연구센터, 미시간주립대학교 철학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "과학자, 정책입안자, 학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "cc3f1d61-4287-400e-a5a7-a0b76104b398",
       "title": "올바른 피임과 성병의 예방 교육",

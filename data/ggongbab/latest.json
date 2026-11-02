@@ -1,47 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-02T18:28:30+09:00",
+  "generatedAt": "2026-11-03T03:48:11+09:00",
   "timezone": "Asia/Seoul",
-  "count": 15,
+  "count": 20,
   "events": [
-    {
-      "id": "ef9595e6-fc91-447c-b6f9-706f86f02198",
-      "title": "Towards Cross-Context Studies of Ethical, Legal, and Social Issues Unique to New Alternative Methods in Biomedical Research",
-      "summary": "KAIST와 미시간주립대학교가 공동 개최하는 과학철학 워크숍으로, 생의학 연구의 새로운 대안적 방법(NAMs)의 윤리적·법적·사회적 쟁점을 논의한다. 현장 및 온라인(Zoom)으로 참여할 수 있다.",
-      "startAt": "2026-11-02T09:00:00+09:00",
-      "endAt": "2026-11-02T17:15:00+09:00",
-      "dateText": "2026년 11월 2일(월)",
-      "timeText": "09:00–17:15",
-      "location": {
-        "name": "KAIST 본원",
-        "building": "N4",
-        "room": "국제세미나실(1433호)"
-      },
-      "food": {
-        "provided": "true",
-        "type": "refreshment",
-        "description": "다과",
-        "source": "text"
-      },
-      "organizer": "KAIST 디지털인문사회과학부, KAIST 디지털인문사회과학센터, KAIST AI철학 연구센터, 미시간주립대학교 철학과",
-      "eligibility": "",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "과학자, 정책입안자, 학생",
-        "basis": "stated"
-      }
-    },
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
       "title": "자연과학과 함께하는 토크 콘서트",
@@ -62,7 +24,7 @@
         "source": "text"
       },
       "organizer": "자연과학대학",
-      "eligibility": "",
+      "eligibility": "undergraduate students",
       "registration": {
         "required": "unknown",
         "deadline": null,
@@ -378,6 +340,80 @@
       }
     },
     {
+      "id": "2f3efe56-92c0-4fb7-8932-e42508ac1766",
+      "title": "에코페스티벌",
+      "summary": "‘보이지 않는 환경비용’을 주제로 5개의 부스를 운영하는 페스티벌입니다. 게임과 체험 활동을 통해 상품을 받을 수 있습니다.",
+      "startAt": "2026-11-09T10:30:00+09:00",
+      "endAt": "2026-11-09T18:00:00+09:00",
+      "dateText": "11월 9일 월요일",
+      "timeText": "10:30 ~ 18:00",
+      "location": {
+        "name": "신학관 오픈스페이스(N13-1) 뒤 족구장",
+        "building": "N13-1",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "Green in KAIST, G-inK",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "상품"
+      }
+    },
+    {
+      "id": "09c87b50-4a0b-427d-893d-0af5c27f7c1a",
+      "title": "스승 류경채를 말하다 — 《류경채: 마음의 시》 연계 특강",
+      "summary": "KAIST 미술관에서 개최 중인 《류경채: 마음의 시》와 연계하여 류경채의 삶과 예술세계를 조명하는 특강입니다. 김복기 대표가 강연하며, 강의는 한국어로 진행됩니다.",
+      "startAt": "2026-11-09T16:00:00+09:00",
+      "endAt": null,
+      "dateText": "2026년 11월 9일 월요일",
+      "timeText": "16:00",
+      "location": {
+        "name": "KAIST 미술관",
+        "building": "E9-1",
+        "room": "2F 제2전시실"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "KAIST 미술관",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "아트인컬처 최신호"
+      }
+    },
+    {
       "id": "bf2e698c-390e-4bfa-acba-96e0af1f1190",
       "title": "2026 학과설명회 일정",
       "summary": "새내기 학생들을 위한 KAIST 학과 설명회 일정이다. 학과 설명회에서 각 학과 정보와 식사 및 경품이 준비되어 있다고 안내한다.",
@@ -414,6 +450,40 @@
         "text": "새내기 학생",
         "basis": "stated"
       }
+    },
+    {
+      "id": "5f85f0d8-28b1-4cdc-90a4-5cd4d389a5b1",
+      "title": "2026년 11월 첫수융합포럼: AI in Neuroscience",
+      "summary": "생명과학과와 전기및전자공학부가 공동 개최하는 영어 포럼으로, AI in Neuroscience를 주제로 진행됩니다. 간단한 간식이 제공됩니다.",
+      "startAt": "2026-11-11T12:00:00+09:00",
+      "endAt": "2026-11-11T13:00:00+09:00",
+      "dateText": "2026년 11월 11일(수)",
+      "timeText": "12:00~13:00",
+      "location": {
+        "name": "창의학습관",
+        "building": "E11",
+        "room": "102호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "간단한 간식",
+        "source": "text"
+      },
+      "organizer": "생명과학과와 전기및전자공학부",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
     },
     {
       "id": "ed473c75-3ff6-4b6c-afd8-ab08649b4f35",
@@ -487,6 +557,44 @@
       ],
       "audience": {
         "text": "관심 있는 분들",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "536a0459-e98b-4965-acca-b199d74f567d",
+      "title": "KAIST 기후테크 세미나 #6 — 기후 위기와 촉매 기술의 역할",
+      "summary": "강신현 대표가 기후 위기 대응에서 촉매 기술의 역할과 연구실 기술의 창업·사업화 경험을 소개하는 세미나입니다. 현장 참석자에게 햄버거가 제공되며 Zoom으로도 동시 진행됩니다.",
+      "startAt": "2026-11-18T13:00:00+09:00",
+      "endAt": "2026-11-18T14:00:00+09:00",
+      "dateText": "2026년 11월 18일(수)",
+      "timeText": "13:00–14:00",
+      "location": {
+        "name": "KAIST 교육지원동",
+        "building": "W8",
+        "room": "1층 K-Space"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "햄버거",
+        "source": "text"
+      },
+      "organizer": "KAIST 녹색성장지속가능대학원",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://url.kr/gkowab"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "관심 있는 모든 KAIST 구성원",
         "basis": "stated"
       }
     },
@@ -567,6 +675,86 @@
       },
       "audience": {
         "text": "융합인재학부에 관심있는 새내기과정학부생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "473910da-dd78-477b-a172-f36b38767ca6",
+      "title": "2026 생명과학과 학과설명회",
+      "summary": "생명과학과 학과 소개, 수업·졸업 후 진로, 학과 행사 및 Q&A·Kahoot 퀴즈를 진행하는 설명회입니다. 참석자에게 선착순 초밥세트를 제공하고 경품을 제공합니다.",
+      "startAt": "2026-11-18T18:30:00+09:00",
+      "endAt": "2026-11-18T20:00:00+09:00",
+      "dateText": "2026. 11. 18 (수)",
+      "timeText": "18:30 ~ 20:00",
+      "location": {
+        "name": "터만홀",
+        "building": "창의학습관(E11)",
+        "room": "터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "선착순 초밥세트 증정",
+        "source": "text"
+      },
+      "organizer": "생명과학과 학생회",
+      "eligibility": "생명과학과를 꿈꾸는 모든 새내기",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "전기자전거, 에어팟5, 노브랜드버거 세트 쿠폰; 추첨을 통해 노브랜드버거 세트 쿠폰 5명 증정"
+      },
+      "audience": {
+        "text": "생명과학과를 꿈꾸는 모든 새내기",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "cf3bec49-11ec-4223-afa2-cf008e401ffa",
+      "title": "2026 XR·AI 윈터스쿨 & 현장 해커톤",
+      "summary": "스마트안경·XR 기기 핸즈온 실습과 강의, 1박 2일 프로토타입 해커톤으로 구성된 행사입니다. 학부생 및 대학원생이 참여할 수 있으며, 전 일정 식사·간식이 제공됩니다.",
+      "startAt": "2026-11-21T00:00:00+09:00",
+      "endAt": "2026-11-22T00:00:00+09:00",
+      "dateText": "2026. 11. 21.(토) ~ 11. 22.(일) (2일간)",
+      "timeText": "",
+      "location": {
+        "name": "대전 본원",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "전 일정 식사·간식 제공",
+        "source": "text"
+      },
+      "organizer": "KI-ITAIC 증강현실연구센터(ARRC) · 메타버스대학원(GSMV) · 국립목포대학교 AI부트캠프사업단 · KISTI Open XR 융합연구단 · 가천대학교",
+      "eligibility": "XR·AI 및 스마트안경 연구·개발에 관심 있는 학부생 및 대학원생",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-06T23:59:00+09:00",
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLScTuntOfnmoQhCeSIaXAVggEzbCuVe4nyfC_mJRGF1Tr7hpqg/viewform"
+      },
+      "confidence": 0.97,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "XR·AI 및 스마트안경 연구·개발에 관심 있는 학부생 및 대학원생",
         "basis": "stated"
       }
     },
