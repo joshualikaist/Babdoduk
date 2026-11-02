@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-31T20:21:46+09:00",
+  "generatedAt": "2026-11-02T18:28:30+09:00",
   "timezone": "Asia/Seoul",
-  "count": 14,
+  "count": 15,
   "events": [
     {
       "id": "ef9595e6-fc91-447c-b6f9-706f86f02198",
@@ -525,6 +525,48 @@
       ],
       "audience": {
         "text": "스타트업, 그리고 벤처캐피탈리스트에 관심 있는 분들",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "7cddf274-8623-4b7f-8aa1-f725035c65c7",
+      "title": "융합인재학부 학과설명회",
+      "summary": "융합인재학부에 관심 있는 새내기과정학부생을 위한 학과설명회입니다. 설명회 후 희망자에 한해 팀웍룸 투어가 진행되며, 참석자에게 석식 케이터링이 제공됩니다.",
+      "startAt": "2026-11-18T16:30:00+09:00",
+      "endAt": "2026-11-18T18:00:00+09:00",
+      "dateText": "2026. 11. 18.(수)",
+      "timeText": "16:30~18:00",
+      "location": {
+        "name": "KAIST 대강당 대세미나실",
+        "building": "E15",
+        "room": "대세미나실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "석식 케이터링",
+        "source": "poster"
+      },
+      "organizer": "KAIST 융합인재학부",
+      "eligibility": "융합인재학부에 관심있는 새내기과정학부생 110인 내외(선착순)",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-17T14:00:00+09:00",
+        "url": "https://www.instagram.com/p/DfOWQNfn8zY/"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "Sony 마크6 헤드셋(WH-1000XM6) 1명, Apple Watch SE 3 2명, 신세계백화점 상품권(10만원권) 5명, 학과 기념품 세트 10명; 1·2등 당첨자에게 학과 티셔츠와 넙죽이 인형 제공"
+      },
+      "audience": {
+        "text": "융합인재학부에 관심있는 새내기과정학부생",
         "basis": "stated"
       }
     },
