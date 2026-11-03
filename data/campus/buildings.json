@@ -1,0 +1,1108 @@
+{
+ "schemaVersion": 1,
+ "attribution": "Map data from OpenStreetMap (ODbL)",
+ "origin": {
+  "lat": 36.3706219,
+  "lon": 127.3621023
+ },
+ "buildings": [
+  {
+   "code": "E1",
+   "name": "KAIST 정문 경비실",
+   "nameEn": "KAIST Main Gate Guard Post",
+   "aliases": [],
+   "at": [
+    153.8,
+    -503.3
+   ],
+   "top": 4.6
+  },
+  {
+   "code": "E2",
+   "name": "산업경영학동",
+   "nameEn": "E2",
+   "aliases": [],
+   "at": [
+    201.3,
+    -362.5
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "E2-1",
+   "name": "지식서비스공학과",
+   "nameEn": "E2-1",
+   "aliases": [],
+   "at": [
+    227.9,
+    -374.3
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E2-2",
+   "name": "산업및시스템공학과",
+   "nameEn": "Dept. of Industrial & Systems Engineering",
+   "aliases": [],
+   "at": [
+    173.3,
+    -352.8
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E3",
+   "name": "정보전자공학동",
+   "nameEn": "Information ELECTRINICS B/D",
+   "aliases": [],
+   "at": [
+    242.0,
+    -259.5
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E3-3",
+   "name": "미래융합소자동",
+   "nameEn": "Device Innovation Facility",
+   "aliases": [],
+   "at": [
+    397.9,
+    -185.1
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E3-4",
+   "name": "새늘동",
+   "nameEn": "Saeneul Dong",
+   "aliases": [],
+   "at": [
+    376.1,
+    -147.6
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E3-5",
+   "name": "크래프톤SoC빌딩",
+   "nameEn": "Krafton SoC Building",
+   "aliases": [],
+   "at": [
+    271.6,
+    -314.6
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E4",
+   "name": "홍&박 KI빌딩",
+   "nameEn": "Hong & Park KI Building",
+   "aliases": [
+    "KI빌딩"
+   ],
+   "at": [
+    158.5,
+    -270.1
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E5",
+   "name": "교직원회관",
+   "nameEn": "Faculty Hall",
+   "aliases": [
+    "동측식당"
+   ],
+   "at": [
+    132.1,
+    -152.2
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E6",
+   "name": "자연과학동",
+   "nameEn": "Natural Science Bldg.",
+   "aliases": [],
+   "at": [
+    219.9,
+    -76.0
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E6-1",
+   "name": "수리과학과",
+   "nameEn": "Dept. of Mathematical Sciences",
+   "aliases": [],
+   "at": [
+    209.3,
+    -128.1
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E6-2",
+   "name": "물리학과",
+   "nameEn": "Dept. of Physics",
+   "aliases": [],
+   "at": [
+    179.3,
+    -82.8
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E6-3",
+   "name": "생명과학과",
+   "nameEn": "Dept. of Biological Sciences",
+   "aliases": [],
+   "at": [
+    262.4,
+    -73.1
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E6-4",
+   "name": "화학과",
+   "nameEn": "Dept. of Chemistry",
+   "aliases": [],
+   "at": [
+    205.4,
+    -18.3
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E6-5",
+   "name": "궁리실험관",
+   "nameEn": "GoongNi Laboratory Bldg.",
+   "aliases": [],
+   "at": [
+    139.7,
+    -33.9
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E6-6",
+   "name": "기초과학동",
+   "nameEn": "Basic Science Bldg.",
+   "aliases": [],
+   "at": [
+    259.1,
+    19.7
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E7",
+   "name": "의과학연구센터",
+   "nameEn": "Biomedical Research Center",
+   "aliases": [],
+   "at": [
+    302.4,
+    -34.2
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E8",
+   "name": "세종관",
+   "nameEn": "Sejong Hall",
+   "aliases": [],
+   "at": [
+    413.2,
+    63.8
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E9",
+   "name": "학술문화관",
+   "nameEn": "Academic Cultural Complex",
+   "aliases": [
+    "KAIST 과학도서관",
+    "과학도서관"
+   ],
+   "at": [
+    54.0,
+    -140.0
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E10",
+   "name": "중앙창고",
+   "nameEn": "Storehouse",
+   "aliases": [],
+   "at": [
+    290.3,
+    74.8
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E11",
+   "name": "창의학습관",
+   "nameEn": "Creative Learning Bldg.",
+   "aliases": [
+    "창의관"
+   ],
+   "at": [
+    40.2,
+    -26.2
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E12",
+   "name": "중앙기계실",
+   "nameEn": "Energy Plant",
+   "aliases": [],
+   "at": [
+    214.5,
+    73.5
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "E13",
+   "name": "인공위성연구센터",
+   "nameEn": "Satellite Technology Research Center",
+   "aliases": [],
+   "at": [
+    373.8,
+    213.8
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E14",
+   "name": "본관",
+   "nameEn": "Main Administration Bldg.",
+   "aliases": [
+    "KAIST 행정본관"
+   ],
+   "at": [
+    -75.0,
+    -8.8
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "E15",
+   "name": "대강당",
+   "nameEn": "Auditorium",
+   "aliases": [],
+   "at": [
+    83.2,
+    158.7
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E16",
+   "name": "정문술빌딩",
+   "nameEn": "ChungMoonSoul Bldg.",
+   "aliases": [],
+   "at": [
+    -15.9,
+    106.8
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E16-1",
+   "name": "양분순빌딩",
+   "nameEn": "YANG Bun Soon Building",
+   "aliases": [],
+   "at": [
+    22.2,
+    57.7
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E18",
+   "name": "대전질환모델동물센터",
+   "nameEn": "Daejeon Disease-model Animal Center",
+   "aliases": [],
+   "at": [
+    540.2,
+    -249.4
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "E19",
+   "name": "나노종합기술원",
+   "nameEn": "National Nano Fab Center",
+   "aliases": [],
+   "at": [
+    421.3,
+    -260.4
+   ],
+   "top": 22.6
+  },
+  {
+   "code": "E20",
+   "name": "계룡관",
+   "nameEn": "Kyeryong Hall",
+   "aliases": [],
+   "at": [
+    441.7,
+    215.9
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "E21",
+   "name": "KAIST 클리닉",
+   "nameEn": "KAIST Clinic",
+   "aliases": [
+    "파팔라도 센터"
+   ],
+   "at": [
+    682.0,
+    -136.1
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "E22",
+   "name": "기초과학연구원 KAIST 캠퍼스",
+   "nameEn": "IBS KAIST Campus",
+   "aliases": [],
+   "at": [
+    450.4,
+    -112.6
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "W1",
+   "name": "응용공학동",
+   "nameEn": "Applied Engineering Bldg.",
+   "aliases": [],
+   "at": [
+    -72.8,
+    -533.5
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "W1-1",
+   "name": "신소재공학과",
+   "nameEn": "Dept. of Matarials Science & Engineering",
+   "aliases": [],
+   "at": [
+    -89.5,
+    -584.6
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "W1-2",
+   "name": "건설 및 환경공학과",
+   "nameEn": "Dept. of Civil & Environmental Engineering",
+   "aliases": [],
+   "at": [
+    -38.8,
+    -536.0
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "W1-3",
+   "name": "생명화학공학과",
+   "nameEn": "Dept. of Chemical & Biomolecular Engineering",
+   "aliases": [],
+   "at": [
+    -57.1,
+    -477.5
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "W2",
+   "name": "학생회관 #1",
+   "nameEn": "Student Center #1",
+   "aliases": [
+    "서측식당",
+    "학생회관 1"
+   ],
+   "at": [
+    -122.5,
+    -387.8
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "W2-1",
+   "name": "인터내셔널센터",
+   "nameEn": "International Center",
+   "aliases": [],
+   "at": [
+    -156.3,
+    -341.9
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "W3",
+   "name": "갈릴레이관",
+   "nameEn": "Galilei Hall",
+   "aliases": [],
+   "at": [
+    -360.7,
+    -346.2
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "W4-1",
+   "name": "여울관",
+   "nameEn": "Yeoul Hall",
+   "aliases": [],
+   "at": [
+    -396.2,
+    -425.1
+   ],
+   "top": 22.6
+  },
+  {
+   "code": "W4-2",
+   "name": "나들관",
+   "nameEn": "Nadl Hall",
+   "aliases": [],
+   "at": [
+    -433.1,
+    -386.1
+   ],
+   "top": 29.8
+  },
+  {
+   "code": "W4-3",
+   "name": "다솜관",
+   "nameEn": "Dasom Hall",
+   "aliases": [],
+   "at": [
+    -441.1,
+    -271.1
+   ],
+   "top": 55.0
+  },
+  {
+   "code": "W4-4",
+   "name": "희망관",
+   "nameEn": "Heemang Hall",
+   "aliases": [],
+   "at": [
+    -480.6,
+    -239.2
+   ],
+   "top": 55.0
+  },
+  {
+   "code": "W5-1",
+   "name": "기혼자 기숙사",
+   "nameEn": "Married Students Housing",
+   "aliases": [],
+   "at": [
+    -487.7,
+    -166.2
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "W5-2",
+   "name": "기혼자 기숙사",
+   "nameEn": "Married Students Housing",
+   "aliases": [],
+   "at": [
+    -548.8,
+    -157.8
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "W5-3",
+   "name": "인터내셔널빌리지 C",
+   "nameEn": "International Village C",
+   "aliases": [],
+   "at": [
+    -510.0,
+    -122.2
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "W5-4",
+   "name": "인터내셔널빌리지 A",
+   "nameEn": "International Village A",
+   "aliases": [],
+   "at": [
+    -579.1,
+    -98.7
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "W5-5",
+   "name": "인터내셔널빌리지 B",
+   "nameEn": "International Village B",
+   "aliases": [],
+   "at": [
+    -545.2,
+    -68.4
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "W6",
+   "name": "미르관",
+   "nameEn": "Mir Hall",
+   "aliases": [
+    "신신축"
+   ],
+   "at": [
+    -596.5,
+    -22.3
+   ],
+   "top": 55.0
+  },
+  {
+   "code": "W7",
+   "name": "나눔관",
+   "nameEn": "Nanum Hall",
+   "aliases": [],
+   "at": [
+    -563.4,
+    52.4
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "W8",
+   "name": "교육지원동",
+   "nameEn": "Educational Support Bldg.",
+   "aliases": [],
+   "at": [
+    -212.1,
+    -76.2
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "W8-1",
+   "name": "중앙분석센터",
+   "nameEn": "Analysis Center for Research Advancement",
+   "aliases": [],
+   "at": [
+    -244.3,
+    0.1
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "W9",
+   "name": "노천극장",
+   "nameEn": "Outdoor Theater",
+   "aliases": [],
+   "at": [
+    -371.5,
+    18.6
+   ],
+   "top": 4.6
+  },
+  {
+   "code": "W10",
+   "name": "풍동실험실",
+   "nameEn": "Wind Tunnel Laboratory",
+   "aliases": [],
+   "at": [
+    -467.8,
+    89.8
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "W11",
+   "name": "외국인교수아파트",
+   "nameEn": "International Faculty Apartment",
+   "aliases": [],
+   "at": [
+    -533.7,
+    144.3
+   ],
+   "top": 47.8
+  },
+  {
+   "code": "W12",
+   "name": "서측기계실",
+   "nameEn": "West Energe Plant",
+   "aliases": [],
+   "at": [
+    -440.4,
+    -212.9
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "W16",
+   "name": "지오센트리퓨지 실험동",
+   "nameEn": "Geotechnical Centrifuge Testing Center",
+   "aliases": [],
+   "at": [
+    28.1,
+    -562.5
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "N0",
+   "name": "동문 경비실",
+   "nameEn": "East Gate Guard Post",
+   "aliases": [],
+   "at": [
+    403.7,
+    330.4
+   ],
+   "top": 4.6
+  },
+  {
+   "code": "N1",
+   "name": "김병호·김삼열 IT융합 빌딩",
+   "nameEn": "Kim Beang-Ho & Kim Sam-Youl ITC Building",
+   "aliases": [],
+   "at": [
+    323.9,
+    395.1
+   ],
+   "top": 33.4
+  },
+  {
+   "code": "N2",
+   "name": "행정분관",
+   "nameEn": "Branch Administration Bldg.",
+   "aliases": [],
+   "at": [
+    141.0,
+    261.8
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "N3",
+   "name": "류근철 스포츠 컴플렉스",
+   "nameEn": "Sports Complex",
+   "aliases": [
+    "스컴",
+    "스포츠 컴플렉스",
+    "스포츠컴플렉스"
+   ],
+   "at": [
+    -50.8,
+    206.0
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "N4",
+   "name": "디지털인문사회과학부동",
+   "nameEn": "School of Digital Humanities & Social Science Bldg.",
+   "aliases": [],
+   "at": [
+    49.4,
+    290.6
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N5",
+   "name": "기초실험연구동",
+   "nameEn": "Basic Experiment Research Bldg.",
+   "aliases": [],
+   "at": [
+    135.3,
+    375.7
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "N6",
+   "name": "교수회관",
+   "nameEn": "Faculty Club",
+   "aliases": [],
+   "at": [
+    240.8,
+    444.5
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "N7",
+   "name": "기계공학동",
+   "nameEn": "Mechanical Engineering Bldg.",
+   "aliases": [
+    "기계동"
+   ],
+   "at": [
+    -313.1,
+    203.7
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N7-1",
+   "name": "원자력 및 양자공학과",
+   "nameEn": "Dept. of Nuclear & Quantum Engineering",
+   "aliases": [],
+   "at": [
+    -280.0,
+    145.8
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N7-2",
+   "name": "항공우주공학과",
+   "nameEn": "Dept. of Aerospace Engineering",
+   "aliases": [],
+   "at": [
+    -339.2,
+    167.4
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N7-3",
+   "name": "기계공학과",
+   "nameEn": "Dept. of Mechanical Engineering",
+   "aliases": [],
+   "at": [
+    -271.5,
+    239.1
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N7-4",
+   "name": "기계공학과",
+   "nameEn": "Dept. of Mechanical Engineering",
+   "aliases": [],
+   "at": [
+    -369.0,
+    237.3
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N7-5",
+   "name": "자동차기술대학원 실험동",
+   "nameEn": "Automobile Technology Laboratory",
+   "aliases": [],
+   "at": [
+    -392.8,
+    283.4
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N9",
+   "name": "실습동",
+   "nameEn": "Practice Bldg.",
+   "aliases": [],
+   "at": [
+    -41.7,
+    395.1
+   ],
+   "top": 4.6
+  },
+  {
+   "code": "N10",
+   "name": "교양분관",
+   "nameEn": "Undergraduate Branch Library",
+   "aliases": [],
+   "at": [
+    -153.3,
+    393.6
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "N11",
+   "name": "학생식당",
+   "nameEn": "Student Cafeteria",
+   "aliases": [],
+   "at": [
+    -246.1,
+    358.2
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N12",
+   "name": "학생회관 #2",
+   "nameEn": "Student Center #2",
+   "aliases": [
+    "학생회관"
+   ],
+   "at": [
+    -204.7,
+    397.4
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "N12-1",
+   "name": "생활지원관 북축",
+   "nameEn": "North Dormitory Support Center",
+   "aliases": [],
+   "at": [
+    -224.0,
+    392.7
+   ],
+   "top": 4.6
+  },
+  {
+   "code": "N13",
+   "name": "태울관",
+   "nameEn": "Tae Wul Gwan",
+   "aliases": [],
+   "at": [
+    -187.4,
+    280.3
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N13-1",
+   "name": "장영신 학생회관",
+   "nameEn": "Chang Young Shin Student Center",
+   "aliases": [
+    "신학관"
+   ],
+   "at": [
+    -138.0,
+    277.5
+   ],
+   "top": 11.8
+  },
+  {
+   "code": "N14",
+   "name": "사랑관",
+   "nameEn": "Sarang Hall",
+   "aliases": [
+    "가동"
+   ],
+   "at": [
+    -336.2,
+    348.7
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "N15",
+   "name": "교직원 숙소",
+   "nameEn": "Staff Accommodation",
+   "aliases": [],
+   "at": [
+    -202.3,
+    471.5
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "N16",
+   "name": "소망관",
+   "nameEn": "Somang Hall",
+   "aliases": [
+    "나동"
+   ],
+   "at": [
+    -411.7,
+    353.4
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "N17",
+   "name": "성실관",
+   "nameEn": "Seongsil Hall",
+   "aliases": [
+    "다동"
+   ],
+   "at": [
+    -287.3,
+    410.2
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "N18",
+   "name": "진리관",
+   "nameEn": "Jilli Hall",
+   "aliases": [
+    "라동"
+   ],
+   "at": [
+    -264.3,
+    453.7
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "N19",
+   "name": "아름관",
+   "nameEn": "Areum Hall",
+   "aliases": [],
+   "at": [
+    -484.0,
+    367.8
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N20",
+   "name": "신뢰관",
+   "nameEn": "Silloe Hall",
+   "aliases": [
+    "마동"
+   ],
+   "at": [
+    -283.1,
+    510.3
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "N21",
+   "name": "지혜관",
+   "nameEn": "Jihye Hall",
+   "aliases": [
+    "바동"
+   ],
+   "at": [
+    -315.4,
+    581.8
+   ],
+   "top": 19.0
+  },
+  {
+   "code": "N22",
+   "name": "동문창업관",
+   "nameEn": "Alumni Venture Hall",
+   "aliases": [],
+   "at": [
+    196.1,
+    464.5
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N23",
+   "name": "fMRI 센터",
+   "nameEn": "fMRI Center",
+   "aliases": [],
+   "at": [
+    175.9,
+    532.5
+   ],
+   "top": 8.2
+  },
+  {
+   "code": "N24",
+   "name": "LG세미콘홀",
+   "nameEn": "LG Semicon Hall",
+   "aliases": [],
+   "at": [
+    124.9,
+    527.7
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N25",
+   "name": "산업디자인학과동",
+   "nameEn": "Dept. of Industrial Design Bldg.",
+   "aliases": [
+    "산디동"
+   ],
+   "at": [
+    13.0,
+    361.4
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N25-1",
+   "name": "LOTTE-KAIST 디자인센터",
+   "nameEn": "LOTTE-KAIST Design Center",
+   "aliases": [],
+   "at": [
+    -70.5,
+    343.6
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N26",
+   "name": "고성능집적시스템연구센터",
+   "nameEn": "Center for High-performance Integrated Systems",
+   "aliases": [],
+   "at": [
+    -45.1,
+    533.9
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N27",
+   "name": "유레카관",
+   "nameEn": "Eureka Hall",
+   "aliases": [],
+   "at": [
+    -125.4,
+    541.0
+   ],
+   "top": 15.4
+  },
+  {
+   "code": "N28",
+   "name": "에너지환경연구센터",
+   "nameEn": "Energy & Environment Research Center",
+   "aliases": [],
+   "at": [
+    38.1,
+    532.9
+   ],
+   "top": 15.4
+  }
+ ],
+ "unplaced": [
+  {
+   "code": "E9-1",
+   "name": "KAIST 미술관",
+   "nameEn": "KAIST Art Museum",
+   "aliases": [
+    "KAIST 미술관"
+   ]
+  },
+  {
+   "code": "W13",
+   "name": "W13",
+   "nameEn": "W13",
+   "aliases": []
+  },
+  {
+   "code": "E3-1",
+   "name": "E3-1",
+   "nameEn": "E3-1",
+   "aliases": []
+  }
+ ]
+}

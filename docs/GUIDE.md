@@ -813,6 +813,8 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
 | `docs/CAMPUS_FOOD_NEWS.md` | 먹거리 소식(꽁밥과 분리된 뉴스) |
+| `docs/CAMPUS_MAP.md` | 3D 캠퍼스 지도(진행 중): 결정, 단계, 건물 표와 행사 위치 찾기 |
+| `docs/PUBLIC_EXPOSURE.md` | 공개 범위와 권리 표시: LICENSE, 데이터 허용 사이트, robots.txt, 공개 칸 |
 | `docs/GGONGBAB_DISCOVERY.md` | 꽁밥 레이더·근거·평가 |
 | `docs/GGONGBAB_TRIGGER.md` | 저지연 새로고침 트리거(Option A, 미활성) |
 

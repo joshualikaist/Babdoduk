@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "comment": "Written by a person: what OpenStreetMap lacks. Buildings our events name that OSM has no outline or code for stay unplaced (the map lists them as 위치 미정) until their position is confirmed; aliases add names events use for a placed building.",
+  "aliases": {
+    "E11": [
+      "창의관"
+    ],
+    "E14": [
+      "본관"
+    ],
+    "E15": [
+      "대강당"
+    ],
+    "E4": [
+      "KI빌딩"
+    ],
+    "E9": [
+      "과학도서관"
+    ],
+    "N13": [
+      "태울관"
+    ],
+    "N13-1": [
+      "장영신 학생회관"
+    ],
+    "N3": [
+      "스포츠 컴플렉스",
+      "스포츠컴플렉스"
+    ],
+    "W2": [
+      "학생회관 1"
+    ]
+  },
+  "unplaced": [
+    {
+      "code": "E9-1",
+      "name": "KAIST 미술관",
+      "nameEn": "KAIST Art Museum",
+      "aliases": [
+        "KAIST 미술관"
+      ]
+    },
+    {
+      "code": "W13",
+      "name": "W13",
+      "nameEn": "W13",
+      "aliases": []
+    },
+    {
+      "code": "E3-1",
+      "name": "E3-1",
+      "nameEn": "E3-1",
+      "aliases": []
+    }
+  ]
+}

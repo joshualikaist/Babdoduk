@@ -75,6 +75,7 @@ VALID = {
                                                  "items": [{"meal": "저녁", "label": "돈까스", "amount": 9200}]}]},
 }
 VALID["magazine-sources"] = json.loads((sc.ROOT / "scripts/discovery/sources.json").read_text(encoding="utf-8"))
+VALID["campus-buildings"] = json.loads((sc.ROOT / "data/campus/buildings.json").read_text(encoding="utf-8"))
 for _name in ("labels", "events", "history", "worldcup"):
     VALID[f"content-{_name}"] = json.loads((sc.ROOT / f"data/content/{_name}.json").read_text(encoding="utf-8"))
 COMPACT = {"compact": True, "candidateId": "c_0123456789abcdef", "sourceUrl": "https://a.example/onion",
@@ -163,6 +164,11 @@ BREAKS = {
                          ("a photo under a non-commercial license", _set("photos.kr-bulgogi.license", "CC BY-NC 2.0")),
                          ("a photo from outside Commons", _set("photos.kr-bulgogi.source", "https://a.example/x.jpg")),
                          ("a photo without its author", _set("photos.kr-bulgogi.author", _set.DELETE))],
+    "campus-buildings": [("a code outside the campus scheme", _set("buildings.0.code", "X1")),
+                         ("a building without its anchor", _set("buildings.0.at", _set.DELETE)),
+                         ("an anchor off the campus", _set("buildings.0.at", [5000, 0])),
+                         ("another attribution", _set("attribution", "© somebody")),
+                         ("an unplaced building with a position", _set("unplaced.0.at", [0, 0]))],
     "content-history": [("a picture from outside images/", _set("milestones.0.picture.image", "https://a.example/x.png")),
                         ("a milestone without a date", _set("milestones.0.date", _set.DELETE)),
                         ("a mark too long to be a mark", _set("milestones.1.picture.mark", "Babdoduk version two")),
