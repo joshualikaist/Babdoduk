@@ -8,11 +8,14 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
+import pytest
+
 import refresh_ggongbab as refresh
 from ggongbab.config import KST
 from ggongbab.db.repository import MemoryRepository
+from ggongbab.db.supabase_client import SupabaseError
 from ggongbab.exporter import build_payload
-from ggongbab.models import EventCandidate
+from ggongbab.models import EventCandidate, RawItem
 from ggongbab.pipeline import Pipeline
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -105,3 +108,42 @@ def test_partial_run_is_visible_in_the_job_summary(tmp_path, monkeypatch):
     text = summary.read_text(encoding="utf-8")
     assert "partial: ai_errors=2" in text
     assert "subject" not in text
+
+
+def test_conflict_log_failure_keeps_the_public_event_and_fails_the_run(settings):
+    class Boom(MemoryRepository):
+        def record_conflict(self, event_id, raw_item_id, reasons):
+            raise SupabaseError("conflict log")
+
+    repo = Boom()
+    pipe = Pipeline(settings, repo, None, [])
+    start = datetime(2026, 9, 25, 12, 0, tzinfo=KST)
+    event_id = pipe.store_candidate(_candidate("기업 설명회", start, building="N1"), "raw-a")
+    with pytest.raises(SupabaseError):
+        pipe.store_candidate(_candidate("기업 설명회", start, building="E5", food_provided="false"), "raw-b")
+    row = repo.get_event(event_id)
+    assert row["status"] == "published" and row["needs_review"] is False
+    assert row["building"] == "N1" and row["food_provided"] == "true"
+    assert pipe.stats.events_updated == 0
+    payload = build_payload(repo.publishable_events(), settings, now=datetime(2026, 9, 20, tzinfo=KST),
+                            food_only=True)
+    assert payload["count"] == 1 and payload["events"][0]["id"] == event_id
+
+    class Exploding(Pipeline):
+        def process_item(self, item):
+            raise SupabaseError("conflict log")
+
+    class OneItem:
+        source_type = "manual"
+
+        def enabled(self):
+            return True
+
+        def collect(self):
+            return [RawItem(source_type="manual", external_id="1", subject="s", raw_text="body")]
+
+    run_repo = MemoryRepository()
+    with pytest.raises(SupabaseError):
+        Exploding(settings, run_repo, None, [OneItem()]).run()
+    recorded = next(iter(run_repo.ingest_runs.values()))
+    assert recorded["status"] == "failed" and recorded["error_message"] == "supabase"
