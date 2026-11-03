@@ -80,6 +80,7 @@ GitHub Actions (`babdoduk-content-bot`, via `scripts/publish_generated.py`) push
 - Keep localStorage keys and existing user data readable. Do not silently replace user-selected filters or food records.
 - Distinguish verified facts, inferred states, authored material, generated fallback and suggestions in copy and metadata.
 - Do not log or commit passwords, API tokens, JSESSIONID, browser profiles, unredacted mail, raw Portal IDs or private source URLs.
+- Public exposure is fixed in `docs/PUBLIC_EXPOSURE.md`: the code, content and published data are all rights reserved (`LICENSE`), `/data/` answers other sites' browsers only for https://www.babdodukms.com, `robots.txt` refuses AI crawlers and keeps every crawler out of `/data/`, and a public JSON carries only the fields its schema allows. Widening any of these (a new public file or field, a wider `Access-Control-Allow-Origin`, a looser `robots.txt` or a different license) needs an owner decision.
 
 ## Protected boundaries and explicit authorization
 

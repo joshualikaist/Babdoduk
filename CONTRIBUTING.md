@@ -102,7 +102,9 @@ We ask for no proof of ownership.
 
 ### License
 
-- Code contributions are accepted under the [MIT License](LICENSE).
+- Babdoduk is all rights reserved ([LICENSE](LICENSE), since 2026-11-04; earlier commits were published
+  under MIT). By contributing code or text you grant the owner (joshualikaist) a perpetual, worldwide,
+  royalty-free licence to use, modify and distribute it as part of Babdoduk.
 - Contributions to the source registry (`scripts/discovery/sources.json`) are accepted under
   [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 

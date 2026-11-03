@@ -104,6 +104,6 @@ git log --format='%h %an %s' origin/lab..origin/main | grep -v babdoduk-content-
 
 ## 라이선스
 
-코드는 [MIT](LICENSE), 매거진 자료원 등록부(`scripts/discovery/sources.json`)는 CC0 1.0이에요.
+코드, 글, 디자인과 사이트가 공개하는 데이터는 모두 권리가 보호돼요(All rights reserved, [LICENSE](LICENSE)). 허락 없이 복제하거나 자동으로 수집할 수 없어요. 2026-11-04 이전 커밋은 MIT 고지로 공개됐어요. 매거진 자료원 등록부(`scripts/discovery/sources.json`)는 CC0 1.0이에요. 무엇을 공개하고 어떻게 표시하는지는 [docs/PUBLIC_EXPOSURE.md](docs/PUBLIC_EXPOSURE.md)에 있어요.
 밥도둑 이름과 로고, `images/`의 사진·캐릭터, `data/`의 생성 데이터는 각 권리자의 것이에요.
 먹방 월드컵 사진은 위키미디어 공용의 자유 이용 사진으로, 작가와 라이선스를 사진마다 표시해요.
