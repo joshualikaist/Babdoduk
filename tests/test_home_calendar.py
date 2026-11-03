@@ -680,3 +680,18 @@ def test_a_meeting_link_is_join_online_not_a_sign_up(browser):
     assert "신청하기" in form.inner_text() and "온라인 참여" not in form.inner_text()
     assert not errors
     context.close()
+
+
+def test_an_ended_meeting_keeps_no_join_button(browser):
+    zoom = "https://kaist.zoom.us/j/89487469591"
+    ended = ev("ended-lecture", "2026-09-29T12:00:00+09:00", "2026-09-29T13:00:00+09:00", title="지난 강연",
+               registration={"required": "true", "deadline": None, "url": zoom})
+    context, page, errors = open_home(browser, archive={"generatedAt": LIVE["generatedAt"], "windowDays": 30, "events": [ended]})
+    cell(page, "2026-09-29").click()
+    row = page.locator(".hc-ev-btn", has_text="지난 강연")
+    assert "종료" in row.inner_text()
+    row.click()
+    detail = page.locator("#" + row.get_attribute("aria-controls"))
+    assert detail.locator("a.hc-ev-apply").count() == 0 and "온라인 참여" not in detail.inner_text()
+    assert not errors
+    context.close()

@@ -156,9 +156,15 @@
   // split the registration into {required, url} for a real sign-up and {join} for a meeting link.
   // A sign-up is only claimed with a form link or a deadline; "false" is kept as it is.
   var MEETING_HOST = /(^|\.)(zoom\.us|zoom\.com|zoomgov\.com|meet\.google\.com|teams\.microsoft\.com|teams\.live\.com|webex\.com)$/i;
+  // The browser's own URL parser decides the host (backslashes, user@ prefixes, a trailing dot), so a
+  // look-alike such as https://evil.com\.zoom.us/ is not taken for Zoom. A registration page on those
+  // hosts (/webinar/register/...) is a real sign-up and stays one.
   function isMeetingLink(url) {
-    var m = /^https?:\/\/([^\/?#:]+)/i.exec(String(url || '').trim());
-    return !!m && MEETING_HOST.test(m[1]);
+    var u;
+    try { u = new URL(String(url || '').trim()); } catch (err) { return false; }
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+    if (/\/register(\/|$)/i.test(u.pathname)) return false;
+    return MEETING_HOST.test(u.hostname.replace(/\.$/, ''));
   }
   function signUp(ev) {
     var reg = (ev && ev.registration) || {};

@@ -419,7 +419,7 @@
     var actions = [];
     var sign = F.signUp(ev);
     var regUrl = closed ? '' : safeHref(sign.url);
-    var joinUrl = safeHref(sign.join);
+    var joinUrl = item.active ? safeHref(sign.join) : '';   // an ended meeting is a record, not an invitation
     if (joinUrl) {
       actions.push('<a class="btn ' + (regUrl ? 'btn-secondary' : 'btn-primary') + ' hc-ev-apply" href="' + esc(joinUrl) + '" target="_blank" rel="noopener">' +
         esc(t('home.cal.ev.join', '온라인 참여')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
