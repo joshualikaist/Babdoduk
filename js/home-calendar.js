@@ -391,7 +391,7 @@
     // A giveaway-only row names no food at all; a row with both shows both.
     var second = item.food ? [esc(foodText(ev))] : [];
     if (F.hasGiveaway(ev)) second.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
-    if (item.active && F.tri((ev.registration || {}).required) === 'true') second.push(esc(t('home.cal.ev.reg', '사전 신청')));
+    if (item.active && F.signUp(ev).required === 'true') second.push(esc(t('home.cal.ev.reg', '사전 신청')));
     // Only an extracted audience gets a line of its own on the collapsed row; a plain eligibility stays in the details.
     var who = ev.audience ? whoText(ev) : '';
     return '<span class="hc-ev-meta">' + first + '</span><span class="hc-ev-meta">' + second.join(' · ') + '</span>' +
@@ -420,7 +420,13 @@
     }
     var newTab = '<span class="home-sr-only">' + esc(t('home.banner.newTab', '(새 창에서 열림)')) + '</span>';
     var actions = [];
-    var regUrl = closed ? '' : safeHref(reg.url);
+    var sign = F.signUp(ev);
+    var regUrl = closed ? '' : safeHref(sign.url);
+    var joinUrl = item.active ? safeHref(sign.join) : '';   // an ended meeting is a record, not an invitation
+    if (joinUrl) {
+      actions.push('<a class="btn ' + (regUrl ? 'btn-secondary' : 'btn-primary') + ' hc-ev-apply" href="' + esc(joinUrl) + '" target="_blank" rel="noopener">' +
+        esc(t('home.cal.ev.join', '온라인 참여')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
+    }
     if (regUrl) {
       actions.push('<a class="btn btn-primary hc-ev-apply" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' +
         esc(t('home.cal.ev.apply', '신청하기')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');

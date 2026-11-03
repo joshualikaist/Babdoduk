@@ -128,6 +128,29 @@
     return ev && ev.eligibility ? String(ev.eligibility) : '';
   }
 
+  // A Zoom/Meet/Teams/Webex address is how to attend online, never a sign-up form. The parser
+  // sometimes reads one as "register here" (and then marks sign-up as required), so the pages
+  // split the registration into {required, url} for a real sign-up and {join} for a meeting link.
+  // A sign-up is only claimed with a form link or a deadline; "false" is kept as it is.
+  var MEETING_HOST = /(^|\.)(zoom\.us|zoom\.com|zoomgov\.com|meet\.google\.com|teams\.microsoft\.com|teams\.live\.com|webex\.com)$/i;
+  // The browser's own URL parser decides the host (backslashes, user@ prefixes, a trailing dot), so a
+  // look-alike such as https://evil.com\.zoom.us/ is not taken for Zoom. A registration page on those
+  // hosts (/webinar/register/...) is a real sign-up and stays one.
+  function isMeetingLink(url) {
+    var u;
+    try { u = new URL(String(url || '').trim()); } catch (err) { return false; }
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+    if (/\/register(\/|$)/i.test(u.pathname)) return false;
+    return MEETING_HOST.test(u.hostname.replace(/\.$/, ''));
+  }
+  function signUp(ev) {
+    var reg = (ev && ev.registration) || {};
+    var url = String(reg.url || '').trim();
+    var required = tri(reg.required);
+    if (!isMeetingLink(url)) return { required: required, url: url, join: '' };
+    return { required: required === 'true' && !reg.deadline ? 'unknown' : required, url: '', join: url };
+  }
+
   global.BabdodukFreeFood = {
     toKst: toKst,
     nowKst: nowKst,
@@ -144,6 +167,7 @@
     todayUpcoming: todayUpcoming,
     futurePublic: futurePublic,
     occurrences: occurrences,
-    audienceOf: audienceOf
+    audienceOf: audienceOf,
+    signUp: signUp
   };
 })(window);
