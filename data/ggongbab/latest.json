@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T19:41:24+09:00",
+  "generatedAt": "2026-11-04T01:54:59+09:00",
   "timezone": "Asia/Seoul",
   "count": 45,
   "events": [
@@ -283,9 +283,9 @@
       "organizer": "OpenAI Student Collective, Include",
       "eligibility": "",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://luma.com/dxbwdnuo"
       },
       "confidence": 0.9,
       "sources": [
@@ -294,6 +294,10 @@
           "name": "Dooray"
         }
       ],
+      "giveaway": {
+        "provided": "true",
+        "description": "ChatGPT Plus 1개월 무료"
+      },
       "audience": {
         "text": "학생",
         "basis": "stated"
