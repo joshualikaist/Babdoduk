@@ -15,7 +15,8 @@ from typing import Any, Optional
 from .collectors.base import Collector, CollectorError
 from .config import KST, PROMPT_VERSION, Settings
 from .db.repository import SOURCE_PRIORITY, Repository
-from .dedup import find_match, merge_into
+from .db.supabase_client import SupabaseError
+from .dedup import find_match, keep_published_version, merge_into
 from .models import EventCandidate, EventExtraction, ParseOutcome, RawItem
 from .parsers.ai_errors import is_fatal
 from .parsers.ai_parser import AIResult, Extractor, build_user_text
@@ -116,6 +117,13 @@ class Pipeline:
                     break
                 try:
                     self.process_item(item)
+                except SupabaseError:
+                    self.stats.ai_errors += 1
+                    print(f"[error] {collector.source_type} database write failed")
+                    delta = _delta(before, self.stats)
+                    fields = {k: v for k, v in delta.items() if k != "ai_errors"}
+                    self.repo.finish_ingest_run(run_id, status="failed", error_message="supabase", **fields)
+                    raise
                 except Exception as exc:  # noqa: BLE001 - one bad item must not stop the run
                     self.stats.ai_errors += 1
                     # No identifier, not even a prefix: these logs reach GitHub
@@ -124,8 +132,16 @@ class Pipeline:
                     print(f"[warn] {collector.source_type} item processing failed: "
                           f"{exc.__class__.__name__}")
             delta = _delta(before, self.stats)
-            status = "partial" if delta["ai_errors"] else "ok"
-            self.repo.finish_ingest_run(run_id, status=status, **{k: v for k, v in delta.items() if k != "ai_errors"})
+            if self.stats.fatal_category:
+                status = "failed"
+            elif delta["ai_errors"]:
+                status = "partial"
+            else:
+                status = "ok"
+            fields = {k: v for k, v in delta.items() if k != "ai_errors"}
+            if self.stats.fatal_category:
+                fields["error_message"] = self.stats.fatal_category
+            self.repo.finish_ingest_run(run_id, status=status, **fields)
         return self.stats
 
     # ------------------------------------------------------------------
@@ -279,29 +295,65 @@ class Pipeline:
 
     # ------------------------------------------------------------------
     def store_candidate(self, cand: EventCandidate, raw_item_id: str) -> str:
+        linked = [event_id for event_id in self.repo.events_linked_to(raw_item_id) if event_id]
+        if linked:
+            # Same raw item: keep this event even when the extracted time changes.
+            # Title/date similarity is only for a different source item.
+            return self._update_linked(cand, raw_item_id, linked[0])
         existing = self.repo.candidate_events(cand.event_start)
         match = find_match(cand, existing, self.settings.dedup_threshold)
         if match:
-            event_id = match.event["id"]
-            own = event_id in self.repo.events_linked_to(raw_item_id)
-            if own and self.repo.event_source_count(event_id) <= 1:
-                # Re-parsing the only source behind this event: the new extraction
-                # replaces the old one, so corrections (a dropped eligibility, a
-                # downgraded registration flag) actually take effect.
-                updated = cand.to_db_row()
-            else:
-                updated, _reasons = merge_into(match.event, cand)
-            self.repo.update_event(event_id, updated)
-            self.repo.link_event_source(event_id, raw_item_id, match.score)
-            self.stats.events_updated += 1
-            if updated.get("needs_review"):
-                self.stats.events_review += 1
-            return event_id
+            return self._merge_other_source(cand, raw_item_id, match)
         row = cand.to_db_row()
         event_id = self.repo.insert_event(row)
         self.repo.link_event_source(event_id, raw_item_id, 1.0)
         self.stats.events_created += 1
         if cand.needs_review:
+            self.stats.events_review += 1
+        return event_id
+
+    def _update_linked(self, cand: EventCandidate, raw_item_id: str, event_id: str) -> str:
+        current = self.repo.get_event(event_id)
+        if current is None:
+            row = cand.to_db_row()
+            event_id = self.repo.insert_event(row)
+            self.repo.link_event_source(event_id, raw_item_id, 1.0)
+            self.stats.events_created += 1
+            return event_id
+        if self.repo.event_source_count(event_id) <= 1:
+            # The only source behind this event: the new extraction replaces it.
+            updated = cand.to_db_row()
+            notes: list[str] = []
+        else:
+            updated, notes = self._merge_preserving_public(current, cand)
+        return self._commit_public_merge(event_id, raw_item_id, updated, notes, 1.0)
+
+    def _merge_other_source(self, cand: EventCandidate, raw_item_id: str, match) -> str:
+        updated, notes = self._merge_preserving_public(match.event, cand)
+        return self._commit_public_merge(match.event["id"], raw_item_id, updated, notes, match.score)
+
+    def _merge_preserving_public(self, current: dict[str, Any], cand: EventCandidate) -> tuple[dict[str, Any], list[str]]:
+        was_public = current.get("status") == "published" and not current.get("needs_review")
+        updated, reasons = merge_into(current, cand)
+        notes = list(reasons)
+        if was_public and cand.needs_review and not notes:
+            notes.append("secondary source withheld")
+        updated, _reasons = keep_published_version(current, updated, notes)
+        return updated, notes if was_public else []
+
+    def _commit_public_merge(self, event_id: str, raw_item_id: str, updated: dict[str, Any],
+                             notes: list[str], score: float) -> str:
+        """Write the safe public row before the conflict log.
+
+        A conflict-log failure must not roll the event back to review, and it
+        must surface instead of being counted as a clean update.
+        """
+        self.repo.update_event(event_id, updated)
+        if notes:
+            self.repo.record_conflict(event_id, raw_item_id, notes)
+        self.repo.link_event_source(event_id, raw_item_id, score)
+        self.stats.events_updated += 1
+        if updated.get("needs_review"):
             self.stats.events_review += 1
         return event_id
 

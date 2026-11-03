@@ -40,6 +40,8 @@ class Repository(Protocol):
     def insert_event(self, row: dict[str, Any]) -> str: ...
     def update_event(self, event_id: str, row: dict[str, Any]) -> None: ...
     def link_event_source(self, event_id: str, raw_item_id: str, score: float) -> None: ...
+    def get_event(self, event_id: str) -> Optional[dict[str, Any]]: ...
+    def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None: ...
     def publishable_events(self) -> list[dict[str, Any]]: ...
     def recent_published_events(self, days: int) -> list[dict[str, Any]]: ...
     def public_feed_generation(self) -> int: ...
@@ -159,14 +161,30 @@ class SupabaseRepository:
         self.client.upsert("event_sources", {"event_id": event_id, "raw_item_id": raw_item_id, "match_score": score},
                            on_conflict="event_id,raw_item_id", ignore_duplicates=True)
 
+    def get_event(self, event_id: str) -> Optional[dict[str, Any]]:
+        rows = self.client.select("events", {"id": f"eq.{event_id}", "limit": 1})
+        return rows[0] if rows else None
+
+    def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None:
+        summary = "; ".join(reason for reason in reasons if reason)[:500]
+        if not summary:
+            return
+        self.client.insert("event_conflicts", {
+            "event_id": event_id,
+            "raw_item_id": raw_item_id,
+            "summary": summary,
+        })
+
     def _with_sources(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if not events:
             return events
         ids = ",".join(e["id"] for e in events)
-        links = self.client.select("event_sources", {"event_id": f"in.({ids})", "select": "event_id,raw_item_id"})
+        links = self.client.select_all("event_sources", {"event_id": f"in.({ids})", "select": "event_id,raw_item_id",
+                                                        "order": "event_id.asc,raw_item_id.asc"})
         raw_ids = ",".join(sorted({l["raw_item_id"] for l in links})) if links else ""
-        raw_rows = self.client.select("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url"}) if raw_ids else []
-        sources = {s["id"]: s for s in self.client.select("sources", {"select": "id,type,name"})}
+        raw_rows = self.client.select_all("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url",
+                                                       "order": "id.asc"}) if raw_ids else []
+        sources = {s["id"]: s for s in self.client.select_all("sources", {"select": "id,type,name", "order": "id.asc"})}
         raw_map = {r["id"]: r for r in raw_rows}
         by_event: dict[str, list[dict[str, Any]]] = {}
         for link in links:
@@ -201,12 +219,13 @@ class SupabaseRepository:
             return
 
     def publishable_events(self) -> list[dict[str, Any]]:
-        since = (datetime.now(KST) - timedelta(days=2)).isoformat()
-        rows = self.client.select("events", {
+        rows = self.client.select_all("events", {
             "status": "eq.published", "needs_review": "eq.false",
-            "event_start": f"gte.{since}", "order": "event_start.asc", "limit": 500,
+            "order": "id.asc",
         })
-        return self._with_sources(rows)
+        # Bound relationship URL sizes; selection (including long-running events)
+        # belongs to exporter policy, not a separate fixed two-day/500-row cutoff.
+        return [row for i in range(0, len(rows), 100) for row in self._with_sources(rows[i:i + 100])]
 
     def public_feed_generation(self) -> int:
         rows = self.client.select_all("ggongbab_public_feed_state", {"select": "generation", "order": "singleton.asc"})
@@ -253,6 +272,7 @@ class MemoryRepository:
         self.ai_runs: list[dict[str, Any]] = []
         self.events: dict[str, dict[str, Any]] = {}
         self.event_sources: dict[tuple[str, str], float] = {}
+        self.conflicts: list[dict[str, Any]] = []
         self.ingest_runs: dict[str, dict[str, Any]] = {}
         self.public_events: dict[str, dict[str, Any]] = {}
         self._public_generation = 0
@@ -342,6 +362,19 @@ class MemoryRepository:
 
     def link_event_source(self, event_id: str, raw_item_id: str, score: float) -> None:
         self.event_sources.setdefault((event_id, raw_item_id), score)
+
+    def get_event(self, event_id: str) -> Optional[dict[str, Any]]:
+        row = self.events.get(event_id)
+        return dict(row) if row else None
+
+    def record_conflict(self, event_id: str, raw_item_id: str, reasons: list[str]) -> None:
+        summary = "; ".join(reason for reason in reasons if reason)[:500]
+        if summary:
+            self.conflicts.append({
+                "event_id": event_id,
+                "raw_item_id": raw_item_id,
+                "summary": summary,
+            })
 
     def _with_sources(self, events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         type_by_source = {v: k for k, v in self.sources.items()}
