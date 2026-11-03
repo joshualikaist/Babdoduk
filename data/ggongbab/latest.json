@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T09:16:36+09:00",
+  "generatedAt": "2026-11-03T11:24:18+09:00",
   "timezone": "Asia/Seoul",
-  "count": 22,
+  "count": 40,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -602,6 +602,132 @@
       }
     },
     {
+      "id": "95d1f0d9-d992-4e74-941b-f2079a11e1e1",
+      "title": "2026 뇌인지과학과 학과설명회",
+      "summary": "뇌인지과학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-11T16:30:00+09:00",
+      "endAt": "2026-11-11T17:30:00+09:00",
+      "dateText": "2026년 11월 11일(수)",
+      "timeText": "16:30~17:30",
+      "location": {
+        "name": "W13 컨퍼런스룸",
+        "building": "W13",
+        "room": "컨퍼런스룸"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "뇌인지과학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "a7bcdfc2-9ff9-48d0-8151-d1b764d56d2d",
+      "title": "2026 산업및시스템공학과 학과설명회",
+      "summary": "산업및시스템공학과 학과설명회에서 학과 정보 안내와 식사가 제공되며 경품이 준비되어 있습니다.",
+      "startAt": "2026-11-11T17:30:00+09:00",
+      "endAt": "2026-11-11T19:00:00+09:00",
+      "dateText": "2026년 11월 11일(수)",
+      "timeText": "17:30~19:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "산업및시스템공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "3052200c-49e1-4dff-909d-b48cda51624d",
+      "title": "2026 기술경영학부 학과설명회",
+      "summary": "기술경영학부 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다. 경품이 준비되어 있습니다.",
+      "startAt": "2026-11-11T18:30:00+09:00",
+      "endAt": "2026-11-11T20:30:00+09:00",
+      "dateText": "2026년 11월 11일(수)",
+      "timeText": "18:30~20:30",
+      "location": {
+        "name": "터만홀",
+        "building": "창의학습관(E11)",
+        "room": "터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "기술경영학부",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
       "id": "bb00bae1-7076-4ccd-b53c-32e9bf4c4f47",
       "title": "2026 노벨상 수상 업적 해설 강연",
       "summary": "2026년 노벨 생리의학상·물리학상·화학상 수상자들의 주요 연구 업적을 소개하는 해설 강연입니다. 강연은 한국어로 진행되며 Zoom을 통해 영어 동시통역이 제공됩니다.",
@@ -636,6 +762,174 @@
       ],
       "audience": {
         "text": "관심 있는 분들",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "743f4ca3-c005-45f0-92d4-b850fdf122c1",
+      "title": "2026 전기및전자공학부 학과설명회",
+      "summary": "전기및전자공학부 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 행사가 진행됩니다.",
+      "startAt": "2026-11-16T16:30:00+09:00",
+      "endAt": "2026-11-16T18:00:00+09:00",
+      "dateText": "2026년 11월 16일(월)",
+      "timeText": "16:30~18:00",
+      "location": {
+        "name": "E15 대강당",
+        "building": "E15",
+        "room": "대강당"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "41b597af-7551-4468-b72f-80d953bb23c3",
+      "title": "2026 바이오및뇌공학과 학과설명회",
+      "summary": "바이오및뇌공학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 준비가 이루어집니다.",
+      "startAt": "2026-11-16T17:00:00+09:00",
+      "endAt": "2026-11-16T18:30:00+09:00",
+      "dateText": "2026년 11월 16일(월)",
+      "timeText": "17:00~18:30",
+      "location": {
+        "name": "",
+        "building": "E16-1",
+        "room": "207호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "바이오및뇌공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "2b13d94c-bd5b-47a2-80c0-bf1250a2dc8f",
+      "title": "2026 산업디자인학과 학과설명회",
+      "summary": "산업디자인학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 추첨이 진행됩니다.",
+      "startAt": "2026-11-16T17:30:00+09:00",
+      "endAt": "2026-11-16T19:00:00+09:00",
+      "dateText": "2026년 11월 16일(월)",
+      "timeText": "17:30~19:00",
+      "location": {
+        "name": "",
+        "building": "N4",
+        "room": "시청각실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "산업디자인학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "c66d6b78-f077-4534-afc8-972674114e94",
+      "title": "2026 AX학과 학과설명회",
+      "summary": "AX학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-17T18:00:00+09:00",
+      "endAt": "2026-11-17T19:00:00+09:00",
+      "dateText": "2026년 11월 17일(화)",
+      "timeText": "18:00~19:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
         "basis": "stated"
       }
     },
@@ -758,6 +1052,48 @@
       }
     },
     {
+      "id": "714defe6-f795-4c42-bdcc-11e06d5f4513",
+      "title": "2026 AI컴퓨팅학과 학과설명회",
+      "summary": "AI컴퓨팅학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-18T18:00:00+09:00",
+      "endAt": "2026-11-18T19:00:00+09:00",
+      "dateText": "2026년 11월 18일(수)",
+      "timeText": "18:00~19:00",
+      "location": {
+        "name": "",
+        "building": "E7",
+        "room": "1111호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
       "id": "473910da-dd78-477b-a172-f36b38767ca6",
       "title": "2026 생명과학과 학과설명회",
       "summary": "생명과학과 학과 소개, 수업·졸업 후 진로, 학과 행사 및 Q&A·Kahoot 퀴즈를 진행하는 설명회입니다. 참석자에게 선착순 초밥세트를 제공하고 경품을 제공합니다.",
@@ -800,6 +1136,128 @@
       }
     },
     {
+      "id": "233f1198-dde3-4e4d-8b1e-76c63787b579",
+      "title": "2026 신소재공학과 학과설명회",
+      "summary": "신소재공학과 학과설명회에서 학과 정보와 식사를 제공하며 경품이 준비되어 있다.",
+      "startAt": "2026-11-18T18:30:00+09:00",
+      "endAt": "2026-11-18T20:00:00+09:00",
+      "dateText": "2026년 11월 18일(수)",
+      "timeText": "18:30~20:00",
+      "location": {
+        "name": "",
+        "building": "W1-1",
+        "room": "영상강의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "신소재공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "135dc464-d460-4837-a3f4-255548f22218",
+      "title": "2026 생명화학공학과 학과설명회",
+      "summary": "생명화학공학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 추첨이 진행됩니다.",
+      "startAt": "2026-11-19T17:00:00+09:00",
+      "endAt": "2026-11-19T18:30:00+09:00",
+      "dateText": "2026년 11월 19일(목)",
+      "timeText": "17:00~18:30",
+      "location": {
+        "name": "",
+        "building": "N4",
+        "room": "시청각실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "생명화학공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "1f338e46-0c42-46eb-81a1-3d06a8b9835e",
+      "title": "2026 항공우주공학과 학과설명회",
+      "summary": "항공우주공학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-19T17:30:00+09:00",
+      "endAt": "2026-11-19T19:10:00+09:00",
+      "dateText": "2026년 11월 19일(목)",
+      "timeText": "17:30~19:10",
+      "location": {
+        "name": "N7 대회의실",
+        "building": "N7",
+        "room": "대회의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "참석자에게 식사를 제공합니다.",
+        "source": "text"
+      },
+      "organizer": "항공우주공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
       "id": "cf3bec49-11ec-4223-afa2-cf008e401ffa",
       "title": "2026 XR·AI 윈터스쿨 & 현장 해커톤",
       "summary": "스마트안경·XR 기기 핸즈온 실습과 강의, 1박 2일 프로토타입 해커톤으로 구성된 행사입니다. 학부생 및 대학원생이 참여할 수 있으며, 전 일정 식사·간식이 제공됩니다.",
@@ -834,6 +1292,48 @@
       ],
       "audience": {
         "text": "XR·AI 및 스마트안경 연구·개발에 관심 있는 학부생 및 대학원생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "161ab539-6556-4ce1-a2ba-e60b5143cb69",
+      "title": "2026 수리과학과 학과설명회",
+      "summary": "수리과학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사와 경품을 제공합니다.",
+      "startAt": "2026-11-23T17:00:00+09:00",
+      "endAt": "2026-11-23T19:00:00+09:00",
+      "dateText": "2026년 11월 23일(월)",
+      "timeText": "17:00~19:00",
+      "location": {
+        "name": "E6-1 공동강의실",
+        "building": "E6-1",
+        "room": "공동강의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "수리과학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
         "basis": "stated"
       }
     },
@@ -875,6 +1375,258 @@
       },
       "audience": {
         "text": "공과대학 학사과정 재학생(4학년 제외)",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "f20700a5-0242-4a21-98ae-c5e6a29b9695",
+      "title": "2026 AI미래학과 학과설명회",
+      "summary": "AI미래학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다. 경품이 준비되어 있습니다.",
+      "startAt": "2026-11-23T18:00:00+09:00",
+      "endAt": "2026-11-23T19:00:00+09:00",
+      "dateText": "2026년 11월 23일(월)",
+      "timeText": "18:00~19:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층 Fusion Hall"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "5bdb46c4-a089-41fa-aed2-5f753286166d",
+      "title": "2026 건설및환경공학과 학과설명회",
+      "summary": "건설및환경공학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 준비가 진행됩니다.",
+      "startAt": "2026-11-23T18:00:00+09:00",
+      "endAt": "2026-11-23T19:30:00+09:00",
+      "dateText": "2026년 11월 23일(월)",
+      "timeText": "18:00~19:30",
+      "location": {
+        "name": "창의학습관",
+        "building": "E11",
+        "room": "304호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "건설및환경공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "ebb77702-4221-40b2-9ad5-cd7c8f14f3be",
+      "title": "2026 원자력및양자공학과 학과설명회",
+      "summary": "원자력및양자공학과 학과설명회에서 학과 정보 안내와 식사를 제공합니다. 참석자를 대상으로 경품이 준비되어 있습니다.",
+      "startAt": "2026-11-23T18:00:00+09:00",
+      "endAt": "2026-11-23T19:30:00+09:00",
+      "dateText": "2026년 11월 23일(월)",
+      "timeText": "18:00~19:30",
+      "location": {
+        "name": "",
+        "building": "N7",
+        "room": "1501호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사를 제공합니다",
+        "source": "text"
+      },
+      "organizer": "원자력및양자공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "3298fd48-5107-499a-98b5-88a76e312e7b",
+      "title": "2026 물리학과 학과설명회",
+      "summary": "물리학과 학과설명회에서 학과 정보와 식사를 제공하며 경품이 준비되어 있다.",
+      "startAt": "2026-11-24T17:00:00+09:00",
+      "endAt": "2026-11-24T20:00:00+09:00",
+      "dateText": "2026년 11월 24일(화)",
+      "timeText": "17:00~20:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층 Fusion Hall"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "물리학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "4c958c32-9932-4b7d-a041-67e37018bc7b",
+      "title": "2026 화학과 학과설명회",
+      "summary": "화학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-24T18:30:00+09:00",
+      "endAt": "2026-11-24T20:30:00+09:00",
+      "dateText": "2026년 11월 24일(화)",
+      "timeText": "18:30~20:30",
+      "location": {
+        "name": "E6 공동강의실",
+        "building": "E6",
+        "room": "공동강의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "화학과",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "4c25d47a-f84d-49ac-9c0a-d273dcfa63fd",
+      "title": "2026 AI시스템학과 학과설명회",
+      "summary": "AI시스템학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-25T18:00:00+09:00",
+      "endAt": "2026-11-25T19:00:00+09:00",
+      "dateText": "2026년 11월 25일(수)",
+      "timeText": "18:00~19:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
         "basis": "stated"
       }
     }
