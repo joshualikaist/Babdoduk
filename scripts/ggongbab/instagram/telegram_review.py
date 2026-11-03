@@ -177,9 +177,11 @@ class Bot:
         result = self._call("sendMessage", {"chat_id": self.chat_id, "text": text[:4000], "reply_markup": {"force_reply": True}})
         return int(result.get("message_id") or 0)
 
-    def ask_held(self, text: str, event_id: str) -> int:
-        markup = {"inline_keyboard": [[{"text": "✅ 공개", "callback_data": f"held:ok:{event_id}"},
-                                       {"text": "❌ 버림", "callback_data": f"held:no:{event_id}"}]]}
+    def ask_held(self, text: str, event_id: str, duplicate: bool = False) -> int:
+        """A likely duplicate puts ❌ first and words ✅ as an exception (2026-11-03: a duplicate was ✅'d)."""
+        ok = {"text": "✅ 그래도 공개" if duplicate else "✅ 공개", "callback_data": f"held:ok:{event_id}"}
+        no = {"text": "❌ 중복이라 버림" if duplicate else "❌ 버림", "callback_data": f"held:no:{event_id}"}
+        markup = {"inline_keyboard": [[no, ok] if duplicate else [ok, no]]}
         return self._question(text, markup, None)
 
     def ask_agent(self, text: str, ask_id: str) -> int:

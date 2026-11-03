@@ -57,8 +57,9 @@ class Bot:
     def __init__(self):
         self.asked, self.answered = [], []
 
-    def ask_held(self, text, event_id):
+    def ask_held(self, text, event_id, duplicate=False):
         self.asked.append((event_id, text))
+        self.duplicates = getattr(self, "duplicates", []) + [duplicate]
         return 1
 
     def answer(self, callback, text):
@@ -144,6 +145,18 @@ def test_a_held_copy_of_a_published_event_carries_a_duplicate_warning():
     h.poll()
     [(_, text)] = bot.asked
     assert "⚠️ 이미 공개된 비슷한 행사: 2026 기계공학과 학과설명회 (11/09(월) 16:10)" in text and "전산학부" not in text
+    assert bot.duplicates == [True]
+
+
+def test_a_duplicate_question_puts_reject_first():
+    from ggongbab.instagram.telegram_review import Bot as Real
+    sent = []
+    real = Real("x", "42")
+    real._question = lambda text, markup, image: sent.append(markup) or 1
+    real.ask_held("t", BURGER, duplicate=True)
+    real.ask_held("t", BURGER)
+    assert [b["text"] for b in sent[0]["inline_keyboard"][0]] == ["❌ 중복이라 버림", "✅ 그래도 공개"]
+    assert [b["text"] for b in sent[1]["inline_keyboard"][0]] == ["✅ 공개", "❌ 버림"]
 
 
 def test_titles_written_twice_are_the_same_event_but_two_departments_are_not():

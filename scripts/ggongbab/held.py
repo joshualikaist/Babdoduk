@@ -71,7 +71,7 @@ def message(row: dict, similar: tuple = ()) -> str:
         rows.append(f"경품: {row.get('giveaway_description') or '있음'}")
     rows.append(f"사유: {str(row.get('review_reason') or '-')[:300]}")
     for other in similar:
-        rows.append(f"⚠️ 이미 공개된 비슷한 행사: {other.get('title')} ({kst(other.get('event_start'))}). 같은 행사면 ❌")
+        rows.append(f"⚠️ 이미 공개된 비슷한 행사: {other.get('title')} ({kst(other.get('event_start'))}). 같은 행사면 ❌ 중복이라 버림")
     rows += ["", "✅ 공개하면 10~15분 뒤 사이트에 나옵니다."]
     return "\n".join(rows)[:1000]
 
@@ -107,7 +107,8 @@ class Held:
                 continue
             if asked >= PER_POLL:
                 break
-            self.bot.ask_held(message(row, self.similar(row)), row["id"])
+            similar = self.similar(row)
+            self.bot.ask_held(message(row, similar), row["id"], duplicate=bool(similar))
             self.store.put(key, row.get("updated_at"))
             asked += 1
         if asked:
