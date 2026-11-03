@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T17:22:05+09:00",
+  "generatedAt": "2026-11-03T18:30:30+09:00",
   "timezone": "Asia/Seoul",
   "count": 46,
   "events": [
@@ -967,13 +967,13 @@
     {
       "id": "41b597af-7551-4468-b72f-80d953bb23c3",
       "title": "2026 바이오및뇌공학과 학과설명회",
-      "summary": "바이오및뇌공학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 준비가 이루어집니다.",
+      "summary": "바이오및뇌공학과 학과설명회가 진행되며, 사전 신청자에 한해 설명회 후 교수님·선배님들과의 저녁 식사가 제공됩니다. 참가자 경품 추첨이 있습니다.",
       "startAt": "2026-11-16T17:00:00+09:00",
       "endAt": "2026-11-16T18:30:00+09:00",
       "dateText": "2026년 11월 16일(월)",
       "timeText": "17:00~18:30",
       "location": {
-        "name": "",
+        "name": "양분순 빌딩",
         "building": "E16-1",
         "room": "207호"
       },
@@ -986,7 +986,7 @@
       "organizer": "바이오및뇌공학과",
       "eligibility": "",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
         "url": ""
       },
@@ -995,6 +995,10 @@
         {
           "type": "manual",
           "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
         }
       ],
       "giveaway": {
