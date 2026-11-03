@@ -14,9 +14,9 @@ Gov-Dooray has no mail REST API, so the archive is what the mail client exports:
     python scripts/refresh_ggongbab.py --backfill-mail-archive "C:\\mail-export" \\
         --mail-from 2026-09-01 --mail-to 2026-09-19 --event-until 2026-09-30 --dry-run
 
-Exit codes: 0 ok · 2 nothing safe to publish (previous JSON kept, workflow stays green)
-· 20 every collector failed · 21 Supabase unreachable · 22 AI auth/quota fatal
-· 23 publication write failed. 20–23 fail the GitHub Actions job.
+Exit codes: 0 ok · 2 nothing safe to publish (export or campus-news validation failed; previous
+JSON kept) · 20 every collector failed · 21 Supabase unreachable · 22 AI auth/quota fatal
+· 23 publication write failed. Every non-zero exit, 2 included, fails the GitHub Actions job.
 Nothing private (mail text, addresses, tokens) is printed.
 """
 from __future__ import annotations
@@ -58,9 +58,10 @@ def classify_refresh_exit(*, supabase_error: bool = False, collectors_all_failed
                           publish_error: bool = False, export_code: int = 0, fatal: str = "") -> int:
     """Map a refresh outcome to a process exit.
 
-    Exit 2 is the only non-zero code the workflow turns into a green job:
-    validation rejected the new snapshot, so the previous file stays.
-    Database, collector, quota/auth, and publication failures stay non-zero.
+    Exit 2 is the keep-snapshot status that export() still returns when the new
+    snapshot or the campus news does not validate (the previous files stay). The
+    workflow fails it like every other non-zero exit. Database, collector,
+    quota/auth, and publication failures stay non-zero.
     """
     if supabase_error:
         return EXIT_SUPABASE
@@ -76,8 +77,8 @@ def classify_refresh_exit(*, supabase_error: bool = False, collectors_all_failed
 
 
 def workflow_stays_green(code: int) -> bool:
-    """True only for success and the intentional keep-previous-snapshot exit."""
-    return code in (EXIT_OK, EXIT_KEEP_SNAPSHOT)
+    """True only for success: a refresh that published nothing fails the job."""
+    return code == EXIT_OK
 
 
 def run_notice(stats) -> list[str]:

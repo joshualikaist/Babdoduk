@@ -83,7 +83,9 @@ def test_refresh_exit_classes_and_workflow():
     assert refresh.classify_refresh_exit(fatal="quota_exhausted", export_code=0) == 22
     assert refresh.classify_refresh_exit(fatal="auth", export_code=2) == 22
     assert refresh.classify_refresh_exit(publish_error=True) == 23
-    for code in (20, 21, 22, 23):
+    # A refresh that published nothing is red: 2 (export or news validation failed) as
+    # much as 20-23.
+    for code in (2, 20, 21, 22, 23):
         assert refresh.workflow_stays_green(code) is False
     # The workflow on main fails every non-zero exit: 2 ends with exit 1 and any other
     # non-zero code ends with that code; neither branch reaches a green exit 0.
