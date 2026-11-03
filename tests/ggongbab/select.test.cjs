@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 function load() {
-  const context = { window: {}, Date };
+  const context = { window: {}, Date, URL };
   vm.createContext(context);
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../../js/ggongbab-select.js'), 'utf8'), context);
   return context.window.BabdodukFreeFood;
@@ -191,4 +191,40 @@ test('the audience is the extracted one, marked when inferred, with the stated e
   assert.equal(F.audienceOf({ eligibility: 'KAIST 재학생' }, mark), 'KAIST 재학생');
   assert.equal(F.audienceOf({ audience: null, eligibility: '' }, mark), '');
   assert.equal(F.audienceOf(null, mark), '');
+});
+
+test('sign-up: a Zoom/Meet/Teams/Webex address is a way to join, never a sign-up form', () => {
+  const of = registration => JSON.parse(JSON.stringify(F.signUp({ registration })));
+  const zoom = 'https://kaist.zoom.us/j/84468206787';
+  // The parser read the Zoom address as "register here": no form button and no "required" claim.
+  assert.deepEqual(of({ required: 'true', url: zoom, deadline: null }), { required: 'unknown', url: '', join: zoom });
+  assert.deepEqual(of({ required: 'unknown', url: zoom }), { required: 'unknown', url: '', join: zoom });
+  // A real deadline still backs "required"; an explicit "no sign-up" is kept.
+  assert.deepEqual(of({ required: 'true', url: zoom, deadline: '2026-11-04T18:00:00+09:00' }), { required: 'true', url: '', join: zoom });
+  assert.deepEqual(of({ required: 'false', url: zoom }), { required: 'false', url: '', join: zoom });
+  for (const url of ['https://meet.google.com/abc-defg-hij', 'https://teams.microsoft.com/l/meetup-join/x', 'https://kaist.webex.com/meet/x']) {
+    assert.equal(F.signUp({ registration: { required: 'true', url } }).url, '', url);
+  }
+  // Forms and look-alike hosts stay sign-ups.
+  const form = 'https://docs.google.com/forms/d/e/abc/viewform';
+  assert.deepEqual(of({ required: 'true', url: form }), { required: 'true', url: form, join: '' });
+  assert.equal(F.signUp({ registration: { required: 'true', url: 'https://notzoom.us.example.com/j/1' } }).join, '');
+  assert.deepEqual(JSON.parse(JSON.stringify(F.signUp({}))), { required: 'unknown', url: '', join: '' });
+});
+
+test('sign-up: the host comes from the URL parser, and a registration page on a meeting host stays a sign-up', () => {
+  const kind = url => F.signUp({ registration: { required: 'true', url } });
+  // Look-alikes are not meeting links, however the address is spelled.
+  assert.equal(kind('https://evil.com\\.zoom.us/x').join, '');
+  assert.equal(kind('https://zoom.us.evil.com/j/1').join, '');
+  assert.equal(kind('javascript:alert(1)//zoom.us').join, '');
+  // Real Zoom hosts in other spellings still are.
+  assert.equal(kind('https://kaist.zoom.us./j/1').join, 'https://kaist.zoom.us./j/1');
+  assert.equal(kind('https://user@kaist.zoom.us/j/1').join, 'https://user@kaist.zoom.us/j/1');
+  assert.equal(kind('HTTPS://KAIST.ZOOM.US/j/1').url, '');
+  // Zoom/Webex registration pages are real sign-ups.
+  for (const url of ['https://kaist.zoom.us/webinar/register/WN_abc', 'https://kaist.zoom.us/meeting/register/tJ1', 'https://kaist.webex.com/webappng/sites/kaist/webinar/register']) {
+    const sign = JSON.parse(JSON.stringify(kind(url)));
+    assert.deepEqual(sign, { required: 'true', url, join: '' }, url);
+  }
 });

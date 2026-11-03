@@ -656,3 +656,42 @@ def test_a_deadline_only_draw_on_the_last_day_is_live_until_its_deadline(browser
     assert page.locator(".hc-month-title").inner_text() == "10월"
     assert cell(page, "2026-10-31").get_attribute("aria-current") == "date"
     context.close()
+
+
+def test_a_meeting_link_is_join_online_not_a_sign_up(browser):
+    # The parser read a lecture's Zoom address as "register here" and marked sign-up required.
+    zoom = "https://kaist.zoom.us/j/89487469591"
+    lecture = ev("lecture", "2026-10-07T12:00:00+09:00", "2026-10-07T13:00:00+09:00", title="노벨상 강연",
+                 registration={"required": "true", "deadline": None, "url": zoom})
+    context, page, errors = open_home(browser, live={"generatedAt": LIVE["generatedAt"], "events": [lecture, FORUM]})
+    cell(page, "2026-10-07").click()
+    # Both start at 12:00, so pick the rows by title, not by position.
+    lecture_row = page.locator(".hc-ev-btn", has_text="노벨상 강연")
+    form_row = page.locator(".hc-ev-btn", has_text="첫수융합포럼")
+    lecture_row.click()
+    detail = page.locator("#" + lecture_row.get_attribute("aria-controls"))
+    assert detail.locator("a.hc-ev-apply").count() == 1
+    assert detail.locator("a.hc-ev-apply").get_attribute("href") == zoom
+    assert "온라인 참여" in detail.inner_text() and "신청하기" not in detail.inner_text()
+    assert "사전 신청" not in lecture_row.inner_text()
+    # A real form stays a sign-up.
+    form_row.click()
+    form = page.locator("#" + form_row.get_attribute("aria-controls"))
+    assert "신청하기" in form.inner_text() and "온라인 참여" not in form.inner_text()
+    assert not errors
+    context.close()
+
+
+def test_an_ended_meeting_keeps_no_join_button(browser):
+    zoom = "https://kaist.zoom.us/j/89487469591"
+    ended = ev("ended-lecture", "2026-09-29T12:00:00+09:00", "2026-09-29T13:00:00+09:00", title="지난 강연",
+               registration={"required": "true", "deadline": None, "url": zoom})
+    context, page, errors = open_home(browser, archive={"generatedAt": LIVE["generatedAt"], "windowDays": 30, "events": [ended]})
+    cell(page, "2026-09-29").click()
+    row = page.locator(".hc-ev-btn", has_text="지난 강연")
+    assert "종료" in row.inner_text()
+    row.click()
+    detail = page.locator("#" + row.get_attribute("aria-controls"))
+    assert detail.locator("a.hc-ev-apply").count() == 0 and "온라인 참여" not in detail.inner_text()
+    assert not errors
+    context.close()
