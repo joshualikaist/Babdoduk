@@ -179,10 +179,12 @@ class SupabaseRepository:
         if not events:
             return events
         ids = ",".join(e["id"] for e in events)
-        links = self.client.select("event_sources", {"event_id": f"in.({ids})", "select": "event_id,raw_item_id"})
+        links = self.client.select_all("event_sources", {"event_id": f"in.({ids})", "select": "event_id,raw_item_id",
+                                                        "order": "event_id.asc,raw_item_id.asc"})
         raw_ids = ",".join(sorted({l["raw_item_id"] for l in links})) if links else ""
-        raw_rows = self.client.select("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url"}) if raw_ids else []
-        sources = {s["id"]: s for s in self.client.select("sources", {"select": "id,type,name"})}
+        raw_rows = self.client.select_all("raw_items", {"id": f"in.({raw_ids})", "select": "id,source_id,source_url",
+                                                       "order": "id.asc"}) if raw_ids else []
+        sources = {s["id"]: s for s in self.client.select_all("sources", {"select": "id,type,name", "order": "id.asc"})}
         raw_map = {r["id"]: r for r in raw_rows}
         by_event: dict[str, list[dict[str, Any]]] = {}
         for link in links:
@@ -217,12 +219,13 @@ class SupabaseRepository:
             return
 
     def publishable_events(self) -> list[dict[str, Any]]:
-        since = (datetime.now(KST) - timedelta(days=2)).isoformat()
-        rows = self.client.select("events", {
+        rows = self.client.select_all("events", {
             "status": "eq.published", "needs_review": "eq.false",
-            "event_start": f"gte.{since}", "order": "event_start.asc", "limit": 500,
+            "order": "id.asc",
         })
-        return self._with_sources(rows)
+        # Bound relationship URL sizes; selection (including long-running events)
+        # belongs to exporter policy, not a separate fixed two-day/500-row cutoff.
+        return [row for i in range(0, len(rows), 100) for row in self._with_sources(rows[i:i + 100])]
 
     def public_feed_generation(self) -> int:
         rows = self.client.select_all("ggongbab_public_feed_state", {"select": "generation", "order": "singleton.asc"})
