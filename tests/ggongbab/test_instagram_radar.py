@@ -677,3 +677,67 @@ def test_only_get_is_ever_used_in_the_graph_module():
     source = (Path(__file__).resolve().parents[2] / "scripts/ggongbab/instagram/meta_graph.py").read_text(encoding="utf-8")
     assert 'method="GET"' in source and "POST" not in source and "DELETE" not in source
     assert "manage_comments" not in source
+
+
+# --- asking the cloud refresh to take in what was handed over (2026-11-03) -----------------------
+def test_a_handover_asks_for_a_refresh_and_a_quiet_cycle_only_flushes(root):
+    writer, calls = Writer(), []
+    r, _ = radar(root, Graph({"shoutoutto.ee": list(reversed(GOLDEN))}), golden_judge(), writer=writer)
+    r.dispatch = lambda new: calls.append(new) or ("DISPATCHED" if new else "DISPATCH_NOTHING_NEW")
+    logs = []
+    r.log = logs.append
+    r.collect()
+    r.analyze()
+    r.bridge()
+    assert len(writer.tasks) == 1 and calls == [True] and "DISPATCHED" in logs and r.counts["dispatch"] == "DISPATCHED"
+    r.counts = {}
+    r.bridge()                                                  # nothing new: a debounced request may still go
+    assert calls == [True, False] and logs.count("DISPATCHED") == 1
+
+
+def test_a_dry_run_never_dispatches_and_a_failing_dispatch_never_stops_the_radar(root):
+    calls = []
+    r, _ = radar(root, Graph({}), dry_run=True)
+    r.dispatch = lambda new: calls.append(new) or "DISPATCHED"
+    r.request_refresh(True)
+    assert calls == []
+    r, _ = radar(root, Graph({}))
+    logs = []
+    r.log = logs.append
+
+    def broken(new):
+        raise OSError("network")
+    r.dispatch = broken
+    r.request_refresh(True)
+    assert logs == ["DISPATCH_FAILED"]
+
+
+def test_a_tip_handed_over_between_cycles_is_dispatched_at_once(root):
+    class Tips:
+        handed = 0
+
+        def poll(self):
+            self.handed += 1                                    # the owner's ✅ handed one over
+
+    class QuietBot(Bot):
+        def updates(self, offset, wait):
+            return []
+    calls = []
+    r, _ = radar(root, Graph({}), bot=QuietBot())
+    r.tips = Tips()
+    r.dispatch = lambda new: calls.append(new) or "DISPATCHED"
+    r.review(wait=0)
+    assert calls == [True] and r.tips.handed == 0
+    r.tips.poll = lambda: None
+    r.review(wait=0)
+    assert calls == [True, False]
+
+
+def test_the_radar_dispatcher_obeys_the_operator_switch(root, monkeypatch):
+    from ggongbab.dooray_radar import RadarFiles
+    from ggongbab.instagram.cli import dispatcher
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(root / "config"))
+    send = dispatcher(root)
+    assert send(True) == "DISPATCH_OFF" and not (root / ".local" / "dispatch-state.json").exists()
+    RadarFiles(root).set_dispatch(True, NOW)
+    assert send(True) == "DISPATCH_NOT_CONFIGURED"             # switched on, but no token stored here

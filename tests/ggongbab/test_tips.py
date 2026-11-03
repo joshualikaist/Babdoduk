@@ -192,8 +192,9 @@ def test_accepting_puts_public_fields_on_the_board_and_hands_the_tip_over(make):
     assert task.subject == "[꽁밥 제보] 학과설명회 피자" and task.mail_id == f"tip-{TIP_A}"
     assert re.search(rf"^제보 ID: {TIP_A}$", task.body, re.M) and "https://example.org/form" in task.body
     assert len(task.images) == 1 and db.rows[TIP_A]["dooray_post_id"] == "task-1"
+    assert t.handed == 1                                        # the radar asks for a refresh
     t.decide("ok", TIP_A, "cb")                                 # a second tap changes nothing
-    assert len(writer.tasks) == 1 and bot.answered[-1] == "이미 올렸습니다"
+    assert len(writer.tasks) == 1 and bot.answered[-1] == "이미 올렸습니다" and t.handed == 1
 
 
 def test_rejecting_only_marks_the_tip(make):
@@ -222,10 +223,10 @@ def test_a_failed_handover_is_retried_on_the_next_poll(make):
     t, db, _, _, logs, clock = make([row(TIP_A, notified_at="x")], writer=writer)
     t.decide("ok", TIP_A, "cb")
     assert db.rows[TIP_A]["status"] == "accepted" and db.rows[TIP_A]["dooray_post_id"] is None
-    assert "TIP_DOORAY_FAILED" in logs
+    assert "TIP_DOORAY_FAILED" in logs and t.handed == 0       # nothing handed over, nothing to refresh
     writer.fail = False
     t.poll()
-    assert len(writer.tasks) == 1 and db.rows[TIP_A]["dooray_post_id"] == "task-1"
+    assert len(writer.tasks) == 1 and db.rows[TIP_A]["dooray_post_id"] == "task-1" and t.handed == 1
 
 
 def test_photos_are_deleted_fourteen_days_after_the_answer(make):

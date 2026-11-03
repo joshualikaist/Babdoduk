@@ -119,3 +119,47 @@ def test_the_mailbox_agent_refuses_two_writers():
     args = agent.build_parser().parse_args(["--run", "--dispatch-refresh", "--run-pipeline"])
     with pytest.raises(UiContractError):
         agent.cmd_run(args)
+
+
+# --- the token store on the Linux operations PC (2026-11-03) ------------------------------------
+posix_only = pytest.mark.skipif(__import__("os").name == "nt", reason="the Windows store is Credential Manager")
+
+
+@posix_only
+def test_the_default_token_comes_from_the_operators_0600_file(tmp_path, monkeypatch):
+    import os
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    opener = Opener()
+    state = tmp_path / "dispatch-state.json"
+    assert dispatch.request_refresh(state, new_candidates=True, now=T0, opener=opener) == dispatch.NOT_CONFIGURED
+    assert opener.requests == []
+    from ggongbab import ops_credentials
+    assert ops_credentials.write_credential(TOKEN, dispatch.CREDENTIAL_TARGET)
+    stored = ops_credentials.store_dir() / dispatch.CREDENTIAL_TARGET.replace("/", "_")
+    assert stored.stat().st_mode & 0o777 == 0o600
+    assert dispatch.request_refresh(state, new_candidates=False, now=T0 + 1, opener=opener) == dispatch.DISPATCHED
+    assert opener.requests[0]["auth"] == f"Bearer {TOKEN}" and TOKEN not in state.read_text()
+    os.chmod(stored, 0o644)                                   # readable by others: refused, as if absent
+    assert dispatch.read_token() is None
+
+
+@posix_only
+def test_the_operator_command_stores_reports_and_removes_without_printing_the_token(tmp_path, monkeypatch, capsys):
+    import importlib.util
+    from pathlib import Path
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    path = Path(__file__).resolve().parents[2] / "scripts" / "dispatch_ggongbab_refresh.py"
+    spec = importlib.util.spec_from_file_location("dispatch_cli_under_test", path)
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    monkeypatch.setattr(cli, "STATE_FILE", tmp_path / "state.json")
+    monkeypatch.setattr(cli.getpass, "getpass", lambda prompt="": TOKEN)
+    assert cli.main(["--status"]) == 0 and "token stored     : no" in capsys.readouterr().out
+    assert cli.main(["--store-token"]) == 0
+    assert cli.main(["--status"]) == 0
+    out = capsys.readouterr().out
+    assert "token stored     : yes" in out and TOKEN not in out and str(tmp_path / "config") in out
+    monkeypatch.setattr(cli.getpass, "getpass", lambda prompt="": "not-a-token")
+    assert cli.main(["--store-token"]) == 1 and dispatch.read_token() == TOKEN   # a bad paste changes nothing
+    assert cli.main(["--remove-token"]) == 0 and dispatch.read_token() is None
+    assert TOKEN not in capsys.readouterr().out

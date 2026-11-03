@@ -1,10 +1,23 @@
-# Low-latency refresh trigger (Option A; code on lab only, not activated)
+# Low-latency refresh trigger (Option A)
 
 Owner decision 2026-09-28: **local radar → GitHub `workflow_dispatch` → the existing cloud
 pipeline**. The 30-minute schedule stays as the safety net, dispatches are debounced, and the job
 runs only from main. **Issuing the credential and activating it in production need one more
 owner approval.** The code (`scripts/ggongbab/dispatch.py`, the workflow guard, the agent flag)
 stays on lab until activation is approved.
+
+**2026-11-03: the owner approved activation on the Linux operations PC** ("자동 갱신 작업 시작하자"),
+after scheduled runs left 4–9 h gaps and a confirmed tip waited half a day. The main-only guard and the
+`source` input were already on main. Three senders share one switch and one debounce state
+(`.local/dispatch-state.json`):
+
+| Sender | When it asks | Code |
+| --- | --- | --- |
+| Dooray Radar | a cycle registered a new candidate task | `scripts/windows/ggongbab_workers.py radar` |
+| Instagram radar | a cycle handed a confirmed post over (`bridge`) | `ggongbab/instagram/radar.py` |
+| Reader tips | the owner's ✅ handed a tip over (checked every ~25 s between cycles) | `ggongbab/tips.py` → the radar |
+
+A quiet call (`new_candidates=False`) only sends a request that the 5-minute debounce held back.
 
 ## Why
 
@@ -50,12 +63,17 @@ radar registers a new candidate task
 * **Kind:** a fine-grained personal access token limited to the repository `joshualikaist/Babdoduk`.
 * **Permission:** Actions: Read and write. Metadata: read is automatic. Nothing else.
 * **Expiry:** 90 days or less, then rotated.
-* **Storage:** Windows Credential Manager, generic credential `babdoduk/ggongbab-refresh-dispatch`
-  (DPAPI, this Windows user), via
-  `python scripts/dispatch_ggongbab_refresh.py --store-token`. That prompts without echo and
-  checks the token's shape.
-* **Where it never goes:** `.env`, the repository, logs, GitHub secrets or command lines. Avoid
-  `cmdkey /pass:`, which exposes it in the process list.
+* **Storage:** the operator's credential store, target `babdoduk/ggongbab-refresh-dispatch`
+  (`scripts/ggongbab/ops_credentials.py`):
+  * Linux (the operations PC since 2026-10-17): one file under `~/.config/babdoduk/credentials/`
+    (directory 0700, file 0600, outside every checkout). A file others could read is refused, as if
+    nothing were stored.
+  * Windows: Credential Manager, generic credential (DPAPI, this Windows user).
+
+  The owner stores it with `python scripts/dispatch_ggongbab_refresh.py --store-token`, which prompts
+  without echo and checks the token's shape. Agents never ask for, read or print it.
+* **Where it never goes:** `.env`, the repository, logs, state files, GitHub secrets or command lines.
+  Avoid `cmdkey /pass:` on Windows, which exposes it in the process list.
 
 What the token can do if it leaks:
 * start, re-run, cancel or disable workflows;
@@ -112,10 +130,14 @@ touched. Dispatching needs a credential with Actions write access.
 4. `python scripts/dispatch_ggongbab_refresh.py --store-token`, then `--status` shows `token stored: yes`.
 5. `python scripts/dispatch_ggongbab_refresh.py --request` once, then confirm a `workflow_dispatch`
    run on main that logs `trigger: manual` and completes.
-6. Only after step 5 succeeds, turn on the Radar's trigger:
-   `python scripts\windows\ggongbab_workers.py radar-dispatch-on`.
-   Until then the scheduled Radar records `DISPATCH_OFF`.
+6. Only after step 5 succeeds, turn on the trigger for the Dooray Radar, the Instagram radar and the
+   tips at once: `python scripts/windows/ggongbab_workers.py radar-dispatch-on`.
+   Until then the radars record `DISPATCH_OFF`.
    `radar-dispatch-off` turns the trigger off again without touching the token.
+
+On the Linux operations PC the commands run from `~/Babdoduk-ops` with `.venv/bin/python`, and the
+Instagram radar picks the switch up on its next request (no restart). The radars must run code that
+contains this sender (`systemctl --user restart babdoduk-ig-radar.service` after an update).
 
 **Rollback.** Run `--remove-token` and revoke the token on GitHub; the schedule keeps running.
 

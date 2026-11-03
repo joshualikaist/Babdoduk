@@ -71,6 +71,9 @@ class Radar:
         self.counts: dict = {}
         self.since = collect_since(self.root)
         self.tips = None        # ggongbab.tips.Tips: reader tips share this bot (cli.build)
+        # Asks the cloud refresh to take in what was handed over (ggongbab.dispatch.request_refresh
+        # behind the operator switch; cli.build). Called with False to send a debounced request.
+        self.dispatch: Optional[Callable[[bool], str]] = None
         self.login_child = None     # the Easy Login attempt the owner asked for (request_login)
         self.launch_login = launch_login
 
@@ -316,6 +319,9 @@ class Radar:
             if self.tips is not None:
                 self.tips.poll()
             self.handle_updates(wait)
+            if self.tips is not None:
+                handed, self.tips.handed = getattr(self.tips, "handed", 0), 0
+                self.request_refresh(handed > 0)   # a ✅ is handed over at once; the refresh follows
         except RuntimeError:
             self.log("IG_TELEGRAM_FAILED")
 
@@ -510,6 +516,20 @@ class Radar:
                 continue
             self.store.update_candidate(row["media_id"], dooray_post_id=str(post_id))
             self.counts["handed_over"] = self.counts.get("handed_over", 0) + 1
+        self.request_refresh(self.counts.get("handed_over", 0) > 0)
+
+    def request_refresh(self, new: bool) -> None:
+        """Ask the cloud refresh to run now (debounced in dispatch.py). A failure is a fixed code in
+        the log: it never stops the radar, and the schedule remains the safety net."""
+        if self.dispatch is None or self.dry_run:
+            return
+        try:
+            code = self.dispatch(new)
+        except Exception:  # noqa: BLE001
+            code = "DISPATCH_FAILED"
+        if code not in ("DISPATCH_NOTHING_NEW", "DISPATCH_OFF"):
+            self.log(code)
+        self.counts["dispatch"] = code
 
     # --- costs and one cycle ------------------------------------------------------------------------
     def cost_check(self) -> None:

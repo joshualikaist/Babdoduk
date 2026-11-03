@@ -236,6 +236,7 @@ class Tips:
                  classify: Optional[Callable] = None):
         self.db, self.storage, self.bot, self.writer = db, storage, bot, writer
         self.store, self.now, self.log, self.classify = store, now, log, classify
+        self.handed = 0             # handovers since the radar last asked for a refresh
 
     def today(self) -> str:
         return datetime.fromtimestamp(self.now(), KST).strftime("%Y-%m-%d")
@@ -400,6 +401,7 @@ class Tips:
                 self.log("TIP_DOORAY_FAILED")
                 continue
             self.db.update("ggongbab_tips", {"id": row["id"]}, {"dooray_post_id": str(post_id)})
+            self.handed += 1        # the radar asks the cloud refresh to take it in (instagram/radar.py)
 
     def purge(self) -> None:
         """Photos of tips answered more than 14 days ago; once a day, from where the last pass ended."""

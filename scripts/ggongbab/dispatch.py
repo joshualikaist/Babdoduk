@@ -8,8 +8,9 @@ single writer (collection -> AI -> validation -> Supabase -> latest.json), and t
 
 Safety properties, each covered by tests:
   * the ref is always main (not a parameter), and the workflow itself refuses any other ref;
-  * the token is read from Windows Credential Manager at call time and never logged,
-    returned or written to disk; without a stored token nothing is sent (NOT_CONFIGURED);
+  * the token is read at call time from the operator's credential store (Windows Credential
+    Manager, or on Linux a 0600 file under ~/.config/babdoduk/credentials, ops_credentials.py)
+    and never logged, returned or written elsewhere; without one nothing is sent (NOT_CONFIGURED);
   * debounce: at most one dispatch per MIN_INTERVAL_SECONDS. A candidate that arrives
     inside the window sets `pending`, and the next radar cycle dispatches it, so nothing
     waits for the schedule; at most DAILY_CAP dispatches per KST day;
@@ -148,10 +149,16 @@ def delete_windows_credential(target: str = CREDENTIAL_TARGET) -> bool:
     return bool(advapi.CredDeleteW(target, 1, 0))
 
 
+def read_token() -> Optional[str]:
+    """The stored dispatch token, from the same per-OS store as the operator's other secrets."""
+    from .ops_credentials import read_credential   # imported here: ops_credentials imports this module
+    return read_credential(CREDENTIAL_TARGET)
+
+
 # --- request ----------------------------------------------------------------------
 def request_refresh(state_path: Path, *, new_candidates: bool, source: str = "radar",
                     now: Optional[float] = None,
-                    token_provider: Callable[[], Optional[str]] = read_windows_credential,
+                    token_provider: Optional[Callable[[], Optional[str]]] = None,
                     opener: Callable = urllib.request.urlopen) -> str:
     """Dispatch the cloud refresh when something new is waiting. Returns a fixed code."""
     if source not in SOURCES:
@@ -173,7 +180,7 @@ def request_refresh(state_path: Path, *, new_candidates: bool, source: str = "ra
         state.last_result = DAILY_LIMIT
         state.save(state_path)
         return DAILY_LIMIT
-    token = token_provider()
+    token = (token_provider or read_token)()
     if not token:
         state.last_result = NOT_CONFIGURED
         state.save(state_path)

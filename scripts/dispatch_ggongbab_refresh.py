@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from ggongbab import dispatch  # noqa: E402
+from ggongbab import dispatch, ops_credentials  # noqa: E402
 
 STATE_FILE = ROOT / ".local" / "dispatch-state.json"
 TOKEN_SHAPE = re.compile(r"^(?:github_pat_[A-Za-z0-9_]{40,}|ghp_[A-Za-z0-9]{30,})$")
@@ -36,9 +36,9 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if args.status:
         state = dispatch.DispatchState.load(STATE_FILE)
-        configured = bool(dispatch.read_windows_credential())
+        configured = bool(dispatch.read_token())
         age = f"{int(time.time() - state.last_dispatch_at)} s ago" if state.last_dispatch_at else "never"
-        print(f"token stored     : {'yes' if configured else 'no'} ({dispatch.CREDENTIAL_TARGET})")
+        print(f"token stored     : {'yes' if configured else 'no'} ({dispatch.CREDENTIAL_TARGET} in {ops_credentials.where()})")
         print(f"target           : {dispatch.REPOSITORY} {dispatch.WORKFLOW} on {dispatch.REF}")
         print(f"last dispatch    : {age}; today {state.count}/{dispatch.DAILY_CAP}; pending {state.pending}")
         print(f"last result      : {state.last_result or '-'}")
@@ -48,12 +48,13 @@ def main(argv=None) -> int:
         if not TOKEN_SHAPE.match(token):
             print("That does not look like a GitHub token; nothing was stored.")
             return 1
-        ok = dispatch.write_windows_credential(token)
+        ok = ops_credentials.write_credential(token, dispatch.CREDENTIAL_TARGET,
+                                              comment="Babdoduk ggongbab-refresh dispatch", user="github")
         del token
-        print("stored in Windows Credential Manager" if ok else "could not store the token")
+        print(f"stored in {ops_credentials.where()}" if ok else "could not store the token")
         return 0 if ok else 1
     if args.remove_token:
-        print("removed" if dispatch.delete_windows_credential() else "no stored token")
+        print("removed" if ops_credentials.delete_credential(dispatch.CREDENTIAL_TARGET) else "no stored token")
         return 0
     code = dispatch.request_refresh(STATE_FILE, new_candidates=True, source="manual")
     print(code)
