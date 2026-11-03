@@ -19,6 +19,22 @@ after scheduled runs left 4–9 h gaps and a confirmed tip waited half a day. Th
 
 A quiet call (`new_candidates=False`) only sends a request that the 5-minute debounce held back.
 
+**2026-11-03 audit ("지금 많은 부분을 서로서로 놓치고 있는거 같아"; owner approved the fixes):**
+
+* **Keep-alive.** GitHub still ran the schedule only 4–6 times a day, and nothing asked for a run after an
+  owner SQL edit, a manual.json change or a held event. The Instagram radar's quiet call (every ~25 s)
+  now passes `keepalive=True`: when no dispatch went out for 30 min (`KEEPALIVE_SECONDS`) it asks for one.
+  `DAILY_CAP` is 96 (48 keep-alive runs plus candidates).
+* **"갱신" on Telegram.** A message that is only 갱신 (새로고침, refresh) asks for a run at once and the bot
+  says what happened (requested, debounced, switch off, cap).
+* **No skipped requests.** The quiet call runs in a `finally`, so a Telegram failure no longer skips a
+  debounced request or a ✅ tip. A request that cannot go out (token rejected, not configured, cap, or
+  20 transport failures in a row) is told to the owner through the bot, at most every 6 h per cause.
+* **Held events.** Each radar cycle asks the owner about upcoming free-food events that the pipeline
+  holds for review (`ggongbab/held.py`); ✅ publishes the row and asks for a refresh, ❌ rejects it.
+* Measured 2026-11-03: a whole run takes 9–13 min (collection re-reads up to 500 Dooray tasks), not the
+  3.5 min of 2026-09-28 below.
+
 ## Why
 
 The cloud refresh was scheduled `*/30 * * * *`, but GitHub started it far less often. Since 2026-10-12 it
@@ -47,7 +63,7 @@ radar registers a new candidate task
   dispatches fold into the pending one.
 * **Debounce.** At most one dispatch per 5 min (`MIN_INTERVAL_SECONDS`). A candidate that arrives
   inside the window sets `pending`, and the next radar cycle sends it, so it never waits for the
-  schedule. At most 60 dispatches per KST day. Network failures stay pending and are retried.
+  schedule. At most 96 dispatches per KST day (60 until 2026-11-03). Network failures stay pending and are retried.
 * **Main only, twice.**
   * `REF` is a constant, not a parameter.
   * The workflow's job has `if: github.ref == 'refs/heads/main'`, so a dispatch aimed at any other

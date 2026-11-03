@@ -285,6 +285,9 @@ def test_the_storage_client_lists_only_tip_photos_and_never_leaks_the_key():
 def test_the_task_body_carries_the_marker_line_the_pipeline_trusts():
     body = tips.task_body(row(TIP_A), datetime(2026, 11, 2, 12, 0, tzinfo=KST))
     assert body.splitlines()[-1] == f"제보 ID: {TIP_A}"
+    from ggongbab.parsers.rule_parser import explicit_food_evidence
+    assert explicit_food_evidence(body)                           # the validator finds the provision phrase
+    assert not explicit_food_evidence(tips.task_body(row(TIP_A, food=None), datetime(2026, 11, 2, 12, 0, tzinfo=KST)))
     assert datetime.fromisoformat(row(TIP_A)["created_at"].replace("Z", "+00:00")).tzinfo == timezone.utc
 
 

@@ -50,13 +50,17 @@ def build(root: Path, *, dry_run: bool) -> Radar:
         radar.tips = tips(load_settings(), radar.bot, writer, store=radar.store, now=time.time, log=radar.log,
                           classify=classify)
         radar.dispatch = dispatcher(root)
+        from ..held import build as held
+        radar.held = held(load_settings(), radar.bot, store=radar.store, now=time.time, log=radar.log,
+                          on_publish=lambda: radar.request_refresh(True))
     return radar
 
 
 def dispatcher(root: Path):
     """The cloud-refresh request for what the radar and the tips hand over. It shares the Dooray Radar's
     operator switch (radar-dispatch-on / -off) and its debounce state, so the two radars together still
-    send at most one request per 5 minutes and 60 a day (docs/GGONGBAB_TRIGGER.md)."""
+    send at most one request per 5 minutes and DAILY_CAP a day (docs/GGONGBAB_TRIGGER.md). Every call is
+    also the keep-alive: the radar calls this every ~25 s, so a run goes out when none went for 30 minutes."""
     from ..dispatch import request_refresh
     from ..dooray_radar import RadarFiles
     files = RadarFiles(root)
@@ -64,7 +68,7 @@ def dispatcher(root: Path):
     def send(new: bool) -> str:
         if not files.dispatch_enabled():
             return "DISPATCH_OFF"
-        return request_refresh(files.dispatch, new_candidates=new)
+        return request_refresh(files.dispatch, new_candidates=new, keepalive=True)
     return send
 
 

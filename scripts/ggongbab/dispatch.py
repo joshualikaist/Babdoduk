@@ -14,6 +14,9 @@ Safety properties, each covered by tests:
   * debounce: at most one dispatch per MIN_INTERVAL_SECONDS. A candidate that arrives
     inside the window sets `pending`, and the next radar cycle dispatches it, so nothing
     waits for the schedule; at most DAILY_CAP dispatches per KST day;
+  * keep-alive: GitHub runs the 30-minute schedule only 4-6 times a day (measured 2026-11-03),
+    so a caller may ask for a run when none was sent for KEEPALIVE_SECONDS. That carries owner
+    SQL edits, manual.json and retries to the site without waiting for a new candidate;
   * results are fixed codes only.
 """
 from __future__ import annotations
@@ -37,7 +40,8 @@ REF = "main"
 DISPATCH_URL = f"https://api.github.com/repos/{REPOSITORY}/actions/workflows/{WORKFLOW}/dispatches"
 CREDENTIAL_TARGET = "babdoduk/ggongbab-refresh-dispatch"
 MIN_INTERVAL_SECONDS = 300
-DAILY_CAP = 60
+DAILY_CAP = 96                # 48 keep-alive runs plus candidates (owner 2026-11-03: near real time)
+KEEPALIVE_SECONDS = 1800
 SOURCES = ("radar", "manual")
 UA = "BabdodukGgongbabRadar/1.0 (+https://github.com/joshualikaist/Babdoduk)"
 
@@ -157,7 +161,7 @@ def read_token() -> Optional[str]:
 
 # --- request ----------------------------------------------------------------------
 def request_refresh(state_path: Path, *, new_candidates: bool, source: str = "radar",
-                    now: Optional[float] = None,
+                    now: Optional[float] = None, keepalive: bool = False,
                     token_provider: Optional[Callable[[], Optional[str]]] = None,
                     opener: Callable = urllib.request.urlopen) -> str:
     """Dispatch the cloud refresh when something new is waiting. Returns a fixed code."""
@@ -170,6 +174,8 @@ def request_refresh(state_path: Path, *, new_candidates: bool, source: str = "ra
         state.day, state.count = today, 0
     if new_candidates:
         state.pending = True
+    elif keepalive and now - state.last_dispatch_at >= KEEPALIVE_SECONDS:
+        state.pending = True      # nothing new for half an hour: refresh anyway (the schedule is starved)
     if not state.pending:
         return NOTHING_NEW
     if state.last_dispatch_at and now - state.last_dispatch_at < MIN_INTERVAL_SECONDS:

@@ -163,3 +163,19 @@ def test_the_operator_command_stores_reports_and_removes_without_printing_the_to
     assert cli.main(["--store-token"]) == 1 and dispatch.read_token() == TOKEN   # a bad paste changes nothing
     assert cli.main(["--remove-token"]) == 0 and dispatch.read_token() is None
     assert TOKEN not in capsys.readouterr().out
+
+
+def test_keepalive_refreshes_after_half_an_hour_without_a_dispatch(tmp_path):
+    """GitHub runs the 30-minute schedule only a few times a day (2026-11-03), so a quiet radar call
+    asks for a run itself when none went out for KEEPALIVE_SECONDS."""
+    opener, state = Opener(), tmp_path / "dispatch-state.json"
+
+    def quiet(now, keepalive=True):
+        return dispatch.request_refresh(state, new_candidates=False, now=now, keepalive=keepalive,
+                                        token_provider=lambda: TOKEN, opener=opener)
+    assert quiet(T0) == dispatch.DISPATCHED                       # never dispatched before
+    assert quiet(T0 + 60) == dispatch.NOTHING_NEW
+    assert quiet(T0 + dispatch.KEEPALIVE_SECONDS - 1) == dispatch.NOTHING_NEW
+    assert quiet(T0 + dispatch.KEEPALIVE_SECONDS, keepalive=False) == dispatch.NOTHING_NEW
+    assert quiet(T0 + dispatch.KEEPALIVE_SECONDS) == dispatch.DISPATCHED
+    assert len(opener.requests) == 2 and all(r["body"]["inputs"]["mode"] == "full" for r in opener.requests)

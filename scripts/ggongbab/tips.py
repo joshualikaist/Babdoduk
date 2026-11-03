@@ -219,6 +219,10 @@ def task_body(row: dict, reviewed: datetime) -> str:
     lines = [row.get("title") or "", f"장소: {row.get('place') or '-'}",
              f"날짜: {row.get('event_date') or '-'} {row.get('time_text') or ''}".rstrip(),
              f"음식·경품: {row.get('food') or '-'}"]
+    if row.get("food"):
+        # The validator wants a provision phrase ("음식 ... 제공"); "음식·경품: 피자" alone held the
+        # owner-confirmed tip of 2026-11-03 as "식사 제공 근거 없음".
+        lines.append("위 음식·경품을 참석자에게 무료로 제공합니다 (운영자 확인).")
     if row.get("details"):
         lines.append(f"내용: {row['details']}")
     if row.get("link"):

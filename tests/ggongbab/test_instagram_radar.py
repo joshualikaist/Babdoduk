@@ -741,3 +741,81 @@ def test_the_radar_dispatcher_obeys_the_operator_switch(root, monkeypatch):
     assert send(True) == "DISPATCH_OFF" and not (root / ".local" / "dispatch-state.json").exists()
     RadarFiles(root).set_dispatch(True, NOW)
     assert send(True) == "DISPATCH_NOT_CONFIGURED"             # switched on, but no token stored here
+
+
+# --- the 2026-11-03 audit: nothing waits for an unrelated trigger --------------------------------
+def test_a_telegram_failure_still_sends_the_refresh_and_a_handed_tip(root):
+    class Tips:
+        handed = 1
+
+        def poll(self):
+            pass
+
+    class DownBot(Bot):
+        def updates(self, offset, wait):
+            raise RuntimeError("TELEGRAM_TRANSPORT_FAILED")
+    calls, logs = [], []
+    r, _ = radar(root, Graph({}), bot=DownBot())
+    r.tips, r.log = Tips(), logs.append
+    r.dispatch = lambda new: calls.append(new) or "DISPATCHED"
+    r.review(wait=0)
+    assert calls == [True] and r.tips.handed == 0 and logs == ["IG_TELEGRAM_FAILED", "DISPATCHED"]
+
+
+def test_the_owner_writes_refresh_and_hears_what_happened(root):
+    bot = Bot()
+    r, _ = radar(root, Graph({}), bot=bot)
+    codes = iter(["DISPATCHED", "DISPATCH_DEBOUNCED", "DISPATCH_NOTHING_NEW"])
+    calls = []
+    r.dispatch = lambda new: calls.append(new) or next(codes)
+    bot.pending = [{"update_id": 1, "message": {"chat": {"id": 42}, "text": "갱신"}}]
+    r.handle_updates(0)
+    bot.pending = [{"update_id": 2, "message": {"chat": {"id": 42}, "text": " 새로고침! "}}]
+    r.handle_updates(0)
+    assert calls == [True, True]
+    assert bot.said[0].startswith("🔄") and bot.said[1].startswith("⏳")
+    assert not (root / ".local" / "telegram-inbox.jsonl").exists()      # a command, not a note
+
+
+def test_held_buttons_reach_the_held_checker_and_a_cycle_asks_about_held_events(root):
+    class Held:
+        def __init__(self):
+            self.decided, self.polls = [], 0
+
+        def decide(self, action, event_id, callback):
+            self.decided.append((action, event_id))
+
+        def poll(self):
+            self.polls += 1
+            return 1
+    bot = Bot()
+    r, _ = radar(root, Graph({}), bot=bot)
+    r.held = Held()
+    event_id = "8f65a362-a09c-4577-bc5c-d39338c5b7c1"
+    bot.pending = [{"update_id": 3, "callback_query": {"id": "c1", "data": f"held:ok:{event_id}",
+                                                       "message": {"chat": {"id": 42}}}}]
+    r.handle_updates(0)
+    assert r.held.decided == [("ok", event_id)]
+    r.check_held()
+    assert r.held.polls == 1 and r.counts["held_asked"] == 1
+
+    def broken():
+        raise RuntimeError("supabase down")
+    r.held.poll, logs = broken, []
+    r.log = logs.append
+    r.check_held()
+    assert logs == ["HELD_CHECK_FAILED"]
+
+
+def test_a_blocked_dispatch_is_told_to_the_owner_once(root):
+    bot = Bot()
+    r, _ = radar(root, Graph({}), bot=bot)
+    r.dispatch = lambda new: "DISPATCH_AUTH_FAILED"
+    r.request_refresh(True)
+    r.request_refresh(False)
+    assert len(bot.said) == 1 and "DISPATCH_AUTH_FAILED" in bot.said[0]
+    r.dispatch = lambda new: "DISPATCH_TRANSPORT_FAILED"
+    from ggongbab.instagram.radar import TRANSPORT_ALERT_AFTER
+    for _ in range(TRANSPORT_ALERT_AFTER + 5):
+        r.request_refresh(False)
+    assert len(bot.said) == 2 and "네트워크" in bot.said[1]

@@ -39,6 +39,14 @@ DIGEST_HOURS = (9, 18)        # KST
 COST_ALERT_USD = 5.0
 ACCOUNT_PAUSE = 2.0           # seconds between accounts: sequential, never a burst
 LOOP_SECONDS = 300
+DISPATCH_BROKEN = ("DISPATCH_AUTH_FAILED", "DISPATCH_REJECTED", "DISPATCH_NOT_CONFIGURED", "DISPATCH_DAILY_CAP")
+TRANSPORT_ALERT_AFTER = 20    # consecutive transport failures (~8 minutes of review calls)
+REFRESH_REPLIES = {
+    "DISPATCHED": "🔄 갱신을 요청했습니다. 10~15분 뒤 사이트에 반영됩니다.",
+    "DISPATCH_DEBOUNCED": "⏳ 5분 안에 이미 요청한 갱신이 있어, 5분이 지나면 이어서 요청합니다.",
+    "DISPATCH_OFF": "자동 갱신 스위치가 꺼져 있습니다 (radar-dispatch-on으로 켭니다).",
+    "DISPATCH_DAILY_CAP": "오늘 갱신 요청 한도를 다 썼습니다. 예약 실행을 기다립니다.",
+}
 
 
 @dataclass
@@ -71,6 +79,8 @@ class Radar:
         self.counts: dict = {}
         self.since = collect_since(self.root)
         self.tips = None        # ggongbab.tips.Tips: reader tips share this bot (cli.build)
+        self.held = None        # ggongbab.held.Held: events the pipeline holds for review (cli.build)
+        self.transport_failures = 0
         # Asks the cloud refresh to take in what was handed over (ggongbab.dispatch.request_refresh
         # behind the operator switch; cli.build). Called with False to send a debounced request.
         self.dispatch: Optional[Callable[[bool], str]] = None
@@ -319,11 +329,15 @@ class Radar:
             if self.tips is not None:
                 self.tips.poll()
             self.handle_updates(wait)
-            if self.tips is not None:
-                handed, self.tips.handed = getattr(self.tips, "handed", 0), 0
-                self.request_refresh(handed > 0)   # a ✅ is handed over at once; the refresh follows
         except RuntimeError:
             self.log("IG_TELEGRAM_FAILED")
+        finally:
+            # Even after a Telegram failure: a ✅ already handed over, a debounced request and the
+            # keep-alive must not wait for the next quiet call (2026-11-03 audit).
+            handed = 0
+            if self.tips is not None:
+                handed, self.tips.handed = getattr(self.tips, "handed", 0), 0
+            self.request_refresh(handed > 0)   # a ✅ is handed over at once; the refresh follows
 
     def now_kst(self) -> datetime:
         return datetime.fromtimestamp(self.now(), an.KST)
@@ -386,6 +400,12 @@ class Radar:
                     self.tips.decide(action, tip_id, callback)
             elif event[0] == "login":
                 self.request_login(event[1])
+            elif event[0] == "held":
+                _, action, event_id, callback = event
+                if self.held is None:
+                    self.bot.answer(callback, "검토 대기 알림이 아직 켜져 있지 않습니다")
+                else:
+                    self.held.decide(action, event_id, callback)
             elif event[0] == "agent":
                 from ..ops_agent import record_answer
                 _, action, ask_id, callback = event
@@ -424,7 +444,10 @@ class Radar:
                 media_id = self.store.get(f"edit:{reply_to}") if reply_to else None
                 if not media_id or self.store.candidate(media_id) is None:
                     from ..easy_login import is_request
-                    if is_request(text):
+                    from .telegram_review import is_refresh_request
+                    if is_refresh_request(text):
+                        self.refresh_now()
+                    elif is_request(text):
                         self.request_login()
                     else:
                         self.note(text)
@@ -518,11 +541,12 @@ class Radar:
             self.counts["handed_over"] = self.counts.get("handed_over", 0) + 1
         self.request_refresh(self.counts.get("handed_over", 0) > 0)
 
-    def request_refresh(self, new: bool) -> None:
+    def request_refresh(self, new: bool) -> str:
         """Ask the cloud refresh to run now (debounced in dispatch.py). A failure is a fixed code in
-        the log: it never stops the radar, and the schedule remains the safety net."""
+        the log: it never stops the radar, and the schedule remains the safety net. A request that
+        cannot go out (bad token, cap, network for minutes) is told to the owner (2026-11-03 audit)."""
         if self.dispatch is None or self.dry_run:
-            return
+            return ""
         try:
             code = self.dispatch(new)
         except Exception:  # noqa: BLE001
@@ -530,6 +554,28 @@ class Radar:
         if code not in ("DISPATCH_NOTHING_NEW", "DISPATCH_OFF"):
             self.log(code)
         self.counts["dispatch"] = code
+        self.transport_failures = self.transport_failures + 1 if code in ("DISPATCH_TRANSPORT_FAILED", "DISPATCH_FAILED") else 0
+        if code in DISPATCH_BROKEN:
+            self.alert(f"dispatch:{code}", f"자동 갱신 요청이 막혔습니다 ({code}). 사이트 반영이 예약 실행까지 늦어집니다.",
+                       every=6 * 3600)
+        elif self.transport_failures == TRANSPORT_ALERT_AFTER:
+            self.alert("dispatch:transport", "자동 갱신 요청이 몇 분째 GitHub에 닿지 않습니다. 네트워크를 확인해 주세요.",
+                       every=6 * 3600)
+        return code
+
+    def refresh_now(self) -> None:
+        """The owner wrote "갱신": ask for the cloud refresh now and say what happened."""
+        code = self.request_refresh(True)
+        self.bot.say(REFRESH_REPLIES.get(code, f"갱신 요청이 실패했습니다 ({code or '설정 없음'})."))
+
+    def check_held(self) -> None:
+        """Tell the owner about held free-food events (ggongbab/held.py); never stops a cycle."""
+        if self.held is None or self.dry_run:
+            return
+        try:
+            self.counts["held_asked"] = self.held.poll()
+        except Exception:  # noqa: BLE001 - Supabase or Telegram down: the next cycle asks again
+            self.log("HELD_CHECK_FAILED")
 
     # --- costs and one cycle ------------------------------------------------------------------------
     def cost_check(self) -> None:
@@ -553,6 +599,7 @@ class Radar:
         self.analyze()
         self.review()
         self.bridge()
+        self.check_held()
         self.cost_check()
         purged = self.store.purge_images(self.now())
         if purged:
