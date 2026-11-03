@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T16:28:38+09:00",
+  "generatedAt": "2026-11-03T17:22:05+09:00",
   "timezone": "Asia/Seoul",
-  "count": 43,
+  "count": 46,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -184,7 +184,7 @@
     {
       "id": "8c44e83f-2a71-4ff5-8082-9ecd477b4a01",
       "title": "2026 KAIST Model UN Science, Technology & Innovation Summit (KAI-MUN)",
-      "summary": "학생들이 의장단과 대표단으로 참여해 책임 있는 AI 거버넌스를 논의하는 모의 국제회의입니다.",
+      "summary": "학생들이 의장단과 대표단으로 참여해 ‘AI 격차 해소: 국가와 세대를 아우르는 책임 있는 AI 거버넌스’를 논의하는 모의 국제회의이다. 관람객 사전등록자에게 다과가 제공되며 행사 당일 행운의 뽑기가 진행된다.",
       "startAt": "2026-11-04T16:00:00+09:00",
       "endAt": "2026-11-04T19:00:00+09:00",
       "dateText": "2026년 11월 4일(수)",
@@ -610,6 +610,43 @@
       }
     },
     {
+      "id": "7c724625-6b93-42d4-9e31-a3c78d5c6ee8",
+      "title": "기계공학과 학과설명회",
+      "summary": "기계공학과 학과설명회 후 소고기 BBQ 파티와 가챠 이벤트가 진행됩니다.",
+      "startAt": "2026-11-09T16:10:00+09:00",
+      "endAt": "2026-11-09T19:00:00+09:00",
+      "dateText": "11월 9일(월)",
+      "timeText": "오후 4시 10분 ~7시",
+      "location": {
+        "name": "기계공학동",
+        "building": "N7",
+        "room": "1층 대회의실(Rm. 1601)"
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "소고기 BBQ 파티"
+      },
+      "organizer": "KAIST 기계공학과 학생회",
+      "eligibility": "선착순 120명",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/hDfLJT7eRVtYZ9sW9"
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "새내기",
+        "basis": "stated"
+      }
+    },
+    {
       "id": "1d5a7de7-1ecd-4641-b465-8c3f12e852f2",
       "title": "2026 전산학부 학과설명회",
       "summary": "26학번 새내기를 대상으로 전산학부 소개와 학과 사업 소개, 학부장 연설 및 교수님과의 Q&A를 진행합니다. 사전 신청자 선착순 190명에게 상무초밥 세트를 증정합니다.",
@@ -1012,6 +1049,47 @@
       }
     },
     {
+      "id": "2f507eea-eb2d-4881-8cd9-50df4fc11de9",
+      "title": "제10회 INNOVATE KOREA",
+      "summary": "헤럴드가 주최하는 제10회 INNOVATE KOREA 공연으로, 국내 뮤지컬 배우들이 출연합니다. KAIST 재학생과 교수 및 임직원은 무료 사전 티켓팅을 우선 신청할 수 있습니다.",
+      "startAt": "2026-11-17T14:00:00+09:00",
+      "endAt": "2026-11-17T18:00:00+09:00",
+      "dateText": "11월 17일",
+      "timeText": "14:00 - 18:00",
+      "location": {
+        "name": "KAIST 류근철 스포츠컴플렉스",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "헤럴드",
+      "eligibility": "카이스트 재학생과 교수 및 임직원",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-10-18T23:59:00+09:00",
+        "url": "https://itforum.heraldcorp.com/2026/"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "아이패드 1명, 에어팟 1명"
+      },
+      "audience": {
+        "text": "카이스트 재학생과 교수 및 임직원",
+        "basis": "stated"
+      }
+    },
+    {
       "id": "c66d6b78-f077-4534-afc8-972674114e94",
       "title": "2026 AX학과 학과설명회",
       "summary": "AX학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
@@ -1374,6 +1452,47 @@
       ],
       "audience": {
         "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "5e65e3b8-c36f-4cc1-a629-ff3e0ccd8080",
+      "title": "NVIDIA Robotics Day",
+      "summary": "NVIDIA와 KAIST가 함께하는 행사로, 로보틱스 기술 세미나, 연구 발표, Physical AI 실습, 커리어톡 및 NVIDIA 연구 지원 프로그램 소개가 진행됩니다. 점심 도시락이 지원되며 NVIDIA Jetson Thor 개발자 키트 경품 추첨이 있습니다.",
+      "startAt": "2026-11-20T10:00:00+09:00",
+      "endAt": "2026-11-20T16:00:00+09:00",
+      "dateText": "2026년 11월 20일(금)",
+      "timeText": "오전 10시~오후 4시 (오전 9시 30분 부터 입장 시작)",
+      "location": {
+        "name": "KAIST 서울 홍릉캠퍼스 1호관 대강당",
+        "building": "1호관",
+        "room": "대강당"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": "점심 도시락 지원"
+      },
+      "organizer": "NVIDIA와 KAIST",
+      "eligibility": "로보틱스와 Physical AI에 관심 있는 대학원생과 연구자",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "NVIDIA Jetson Thor 개발자 키트 경품 추첨"
+      },
+      "audience": {
+        "text": "로보틱스와 Physical AI에 관심 있는 대학원생과 연구자",
         "basis": "stated"
       }
     },
