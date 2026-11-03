@@ -941,6 +941,14 @@ def validate_authored(root: Path = ROOT) -> list[str]:
     # The page content of data/content/ (events, history): what its contracts cannot say.
     from page_content import content_errors
     errors += content_errors(root)
+    # The campus building table is generated from its two inputs: it must agree with them.
+    table = root / "data" / "campus" / "buildings.json"
+    if table.exists() and (root / "inputs" / "campus3d" / "campus.json").exists():
+        from campus3d import buildings as campus
+        fresh = campus.render(campus.build(load(root / "inputs" / "campus3d" / "campus.json"),
+                                           load(root / "inputs" / "campus3d" / "buildings-extra.json")))
+        if table.read_text(encoding="utf-8") != fresh:
+            errors.append("data/campus/buildings.json is out of date: run python scripts/campus3d/buildings.py")
     return errors
 
 

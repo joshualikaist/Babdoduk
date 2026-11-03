@@ -27,7 +27,7 @@
 
 - 배포되는 것은 페이지, `css/`, `js/`, `images/`, `data/`, `manifest.json`, `robots.txt`, `LICENSE` 뿐이다. 코드, 테스트, 문서, 입력, 스키마, `data/content/` 는 `.vercelignore` 가 뺀다(`tests/test_deploy_config.py`).
 - `data/` 의 공개 JSON 은 각 스키마(`schemas/*.schema.json`, 목록은 `docs/DATA.md`)가 허용한 칸만 담는다. 스키마는 정해 두지 않은 칸을 거절하고(`additionalProperties: false`), `scripts/validate_content.py` 가 스키마를 통과하지 못한 파일을 잡는다.
-- 새 공개 칸이나 파일은 스키마 변경이며, 보호 경계(`AGENTS.md`)라 소유자가 따로 승인한다. 메일 원문, 주소, 토큰, 포털 ID, 비공개 원본 주소는 어떤 공개 파일에도 들어가지 않는다.
+- 새 공개 칸이나 파일은 스키마 변경이며, 보호 경계(`AGENTS.md`)라 소유자가 따로 승인한다. 2026-11-04 승인: 3D 캠퍼스 지도의 `data/campus/`(건물 표 `buildings.json`, 이후 모델과 정지 이미지). OpenStreetMap 의 공개 건물 위치와 이름뿐이다(`docs/CAMPUS_MAP.md`). 메일 원문, 주소, 토큰, 포털 ID, 비공개 원본 주소는 어떤 공개 파일에도 들어가지 않는다.
 - 제보 게시판(`tip.html`)이 쓰는 Supabase 공개 주소와 publishable key, 함수 이름은 원래 공개용이다. 브라우저는 검사하는 함수와 게시판 보기만 부를 수 있다(`docs/GGONGBAB_TIPS.md`).
 
 ## 브라우저로 보이는 것의 한계
