@@ -23,6 +23,8 @@ shared
 .github
 *.md
 *.txt
+# robots.txt is a site resource: the crawler rules and the rights notice (docs/PUBLIC_EXPOSURE.md).
+!robots.txt
 *.ini
 .env.example
 .gitattributes

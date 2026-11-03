@@ -1,21 +1,58 @@
-MIT License
+밥도둑 (Babdoduk) 권리 고지
+Copyright © 2026 joshualikaist · 밥도둑 (Babdoduk). All rights reserved.
 
-Copyright (c) 2026 joshualikaist and Babdoduk contributors
+이 고지는 2026-11-04부터 이 저장소와 https://www.babdodukms.com (babdoduk.vercel.app,
+babdoduk-lab.vercel.app 포함)에 적용됩니다.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. 보호 대상
+   이 저장소의 소스 코드, 문서, 디자인, 글, 이미지와 캐릭터, 그리고 사이트가 공개하는 데이터
+   (꽁밥 일정, 학식, 매거진 등 data/ 아래의 파일과 그 편집물)는 저작권법으로 보호됩니다.
+   밥도둑 이름과 로고도 소유자의 것입니다.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. 허락 없이 할 수 없는 일
+   소유자의 사전 서면 허락 없이 다음을 할 수 없습니다.
+   - 복제, 수정, 배포, 공중송신, 2차적저작물 작성
+   - 상업적 이용
+   - 자동화된 수집: 스크래핑, 크롤링, 데이터 주소의 반복 호출, AI 학습·분석·역분석을 위한 수집
+   - 이 사이트의 데이터를 다른 사이트나 서비스에 실시간으로 불러와 보여 주는 일
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. 허락되는 일
+   - 사이트를 브라우저로 보고 개인적으로 이용하는 일
+   - 출처(밥도둑, https://www.babdodukms.com)를 밝힌 짧은 인용과 링크 공유
+   - GitHub 이용약관이 공개 저장소에 허용하는 범위에서 GitHub 안에서 보기와 포크
+
+4. 제3자 자료
+   사진, 글꼴, 행사 원문 등 제3자 자료는 각 권리자의 조건을 따릅니다. 먹방 월드컵 사진은
+   위키미디어 공용의 자유 이용 사진으로 사진마다 작가와 라이선스를 표시합니다. 매거진 자료원
+   등록부(scripts/discovery/sources.json)는 CC0 1.0입니다.
+
+5. 문의
+   허락이 필요하면 joshualisky@kaist.ac.kr 로 연락해 주세요.
+
+---
+
+Babdoduk rights notice
+Copyright © 2026 joshualikaist · Babdoduk. All rights reserved.
+
+This notice applies from 2026-11-04 to this repository and to https://www.babdodukms.com
+(including babdoduk.vercel.app and babdoduk-lab.vercel.app).
+
+1. The source code, documentation, design, text, images and characters in this repository, and the
+   data the site publishes (the free-food schedule, cafeteria menus, magazine and every other file
+   under data/, and their compilation), are protected by copyright. The Babdoduk name and logo
+   belong to the owner.
+
+2. Without the owner's prior written permission you may not copy, modify, distribute, transmit or
+   adapt them, use them commercially, collect them by automated means (scraping, crawling, repeated
+   calls to the data URLs, collection for AI training, analysis or reverse engineering), or display
+   the site's data live on another site or service.
+
+3. You may view and use the site in a browser for personal use, quote short passages and share links
+   with attribution (Babdoduk, https://www.babdodukms.com), and view and fork this repository on
+   GitHub to the extent GitHub's Terms of Service allow for public repositories.
+
+4. Third-party material (photos, fonts, original event announcements) remains under its owners'
+   terms. The menu world cup photos are freely licensed Wikimedia Commons images, credited one by one.
+   The magazine source registry (scripts/discovery/sources.json) is CC0 1.0.
+
+5. For permission, write to joshualisky@kaist.ac.kr.
