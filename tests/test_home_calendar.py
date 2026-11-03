@@ -665,16 +665,18 @@ def test_a_meeting_link_is_join_online_not_a_sign_up(browser):
                  registration={"required": "true", "deadline": None, "url": zoom})
     context, page, errors = open_home(browser, live={"generatedAt": LIVE["generatedAt"], "events": [lecture, FORUM]})
     cell(page, "2026-10-07").click()
-    rows = page.locator(".hc-ev-btn")
-    rows.nth(0).click()
-    detail = page.locator(".hc-ev-detail")
+    # Both start at 12:00, so pick the rows by title, not by position.
+    lecture_row = page.locator(".hc-ev-btn", has_text="노벨상 강연")
+    form_row = page.locator(".hc-ev-btn", has_text="첫수융합포럼")
+    lecture_row.click()
+    detail = page.locator("#" + lecture_row.get_attribute("aria-controls"))
     assert detail.locator("a.hc-ev-apply").count() == 1
     assert detail.locator("a.hc-ev-apply").get_attribute("href") == zoom
     assert "온라인 참여" in detail.inner_text() and "신청하기" not in detail.inner_text()
-    assert "사전 신청" not in page.locator(".hc-ev-meta").nth(1).inner_text()
+    assert "사전 신청" not in lecture_row.inner_text()
     # A real form stays a sign-up.
-    rows.nth(1).click()
-    form = page.locator(".hc-ev-detail").last
+    form_row.click()
+    form = page.locator("#" + form_row.get_attribute("aria-controls"))
     assert "신청하기" in form.inner_text() and "온라인 참여" not in form.inner_text()
     assert not errors
     context.close()
