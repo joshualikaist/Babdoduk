@@ -36,6 +36,7 @@ from typing import Callable, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from . import qr
 from .config import KST
 from .db.supabase_client import SupabaseError
 
@@ -185,7 +186,7 @@ def complete(row: dict) -> bool:
                 and read_date(row.get("event_date"), date.min))
 
 
-def summary(row: dict, photos: int, reading: Optional[Reading] = None) -> str:
+def summary(row: dict, photos: int, reading: Optional[Reading] = None, codes: tuple = ()) -> str:
     """The question. A report shows the visitor's words first and the fields as the model read them."""
     created = row.get("created_at") or ""
     try:
@@ -209,6 +210,8 @@ def summary(row: dict, photos: int, reading: Optional[Reading] = None) -> str:
         lines.append(f"내용: {row['details'][:400]}")
     if row.get("link"):
         lines.append(f"링크: {row['link']}")
+    if codes:
+        lines.append("사진 속 QR: " + " · ".join(codes))
     lines += [f"사진: {photos}장 · 받은 시각 {created}", ""]
     lines.append("✅ 게시판에 올리고 수집함에 넘깁니다. ✏️ 고친 뒤 올립니다." if complete(row)
                  else "제목·장소·날짜가 다 있어야 올릴 수 있어요. ✏️로 채워 주세요.")
@@ -267,6 +270,24 @@ class Tips:
                 out.append(normalize_image(mime, data))
         return out
 
+    def qr_codes(self, row: dict) -> list[str]:
+        """Links in the photos' QR codes (full-size photos: a shrunk one may lose a small code). The
+        first sign-up link becomes the tip's link when the visitor gave none, so the collection task
+        carries it and the pipeline sees a sign-up link (it changes `row` too)."""
+        raw = []
+        for name in self.storage.names(row["id"])[:MAX_PHOTOS]:
+            try:
+                raw.append(self.storage.get(name))
+            except SupabaseError:
+                continue
+        codes = qr.decode(raw)
+        link = qr.sign_up(codes)
+        if link and not row.get("link"):
+            self.db.update("ggongbab_tips", {"id": row["id"]}, {"link": link})
+            row["link"] = link
+            self.log("TIP_QR_LINK")
+        return codes
+
     # --- the resident loop ----------------------------------------------------------------------
     def poll(self) -> None:
         if self.now() - float(self.store.get("tips_polled", 0)) < POLL_SECONDS:
@@ -289,8 +310,9 @@ class Tips:
                         self.log("TIP_EMPTY_DROPPED")
                         continue
                     reading = self.read(row)
+                codes = self.qr_codes(row) if count else []
                 photos = self.photos(row["id"], 1)
-                self.bot.ask_tip(summary(row, count, reading), row["id"], photos[0] if photos else None)
+                self.bot.ask_tip(summary(row, count, reading, tuple(codes)), row["id"], photos[0] if photos else None)
                 self.db.update("ggongbab_tips", {"id": row["id"]}, {"notified_at": iso(self.now())})
             self.hand_over()
             self.purge()

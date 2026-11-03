@@ -14,3 +14,6 @@ olefile>=0.47
 # The poster image: pypdfium2's to_pil() and normalize_image() need Pillow. Also the WebP thumbnails
 # (scripts/make_thumbnails.py) and their test.
 pillow>=11.0
+# Only needed on the ops PC: the links of QR codes in tip photos (scripts/ggongbab/qr.py); without it
+# no QR code is read and the tip review goes on as before.
+zxing-cpp>=2.2

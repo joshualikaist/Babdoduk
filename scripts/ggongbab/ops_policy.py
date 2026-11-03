@@ -52,7 +52,7 @@ REASONS = SAFE_REASON_CODES | TRANSIENT | HUMAN | frozenset({
     "IG_RATE_LIMITED", "IG_SLOWED_DOWN", "IG_ACCOUNT_UNSUPPORTED", "IG_ACCOUNT_ERROR", "IG_MODEL_UNAVAILABLE",
     "IG_OPENAI_ERRORS", "IG_TELEGRAM_FAILED", "IG_DOORAY_FAILED",
     # Reader tips, reviewed through the Instagram radar's bot (scripts/ggongbab/tips.py, docs/GGONGBAB_TIPS.md)
-    "TIP_REVIEW_NOT_READY", "TIP_REVIEW_FAILED", "TIP_DOORAY_FAILED", "TIP_CLASSIFY_FAILED", "TIP_EMPTY_DROPPED",
+    "TIP_REVIEW_NOT_READY", "TIP_REVIEW_FAILED", "TIP_DOORAY_FAILED", "TIP_CLASSIFY_FAILED", "TIP_EMPTY_DROPPED", "TIP_QR_LINK",
     # Held free-food events asked on the same bot (scripts/ggongbab/held.py, docs/GGONGBAB_TRIGGER.md)
     "HELD_EVENTS_ASKED", "HELD_EVENT_PUBLISHED", "HELD_EVENT_REJECTED", "HELD_CHECK_FAILED",
     # The owner's Telegram messages answered on the ops PC (scripts/ggongbab/ops_agent.py, docs/OPS_AGENT.md)
