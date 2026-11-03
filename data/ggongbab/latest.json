@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T03:48:11+09:00",
+  "generatedAt": "2026-11-03T09:16:36+09:00",
   "timezone": "Asia/Seoul",
-  "count": 20,
+  "count": 22,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -147,6 +147,44 @@
       "giveaway": {
         "provided": "true",
         "description": "lucky draw / 행운의 뽑기(Lucky Draw)"
+      }
+    },
+    {
+      "id": "e4932594-e8d6-4c3d-b22a-6baaacebba0d",
+      "title": "Codex 워크숍 다과",
+      "summary": "Codex 워크숍에서 학생 연사 발표와 직접 만드는 실습이 진행되며, 선착순 다과와 ChatGPT Plus 1개월 무료 제공이 있습니다.",
+      "startAt": "2026-11-04T19:00:00+09:00",
+      "endAt": "2026-11-04T21:00:00+09:00",
+      "dateText": "2026-11-04",
+      "timeText": "19:00~21:00",
+      "location": {
+        "name": "터만홀",
+        "building": "E11",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "다과(선착순)",
+        "source": "text"
+      },
+      "organizer": "OpenAI Student Collective, Include",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "학생",
+        "basis": "stated"
       }
     },
     {
@@ -448,6 +486,47 @@
       ],
       "audience": {
         "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "1d5a7de7-1ecd-4641-b465-8c3f12e852f2",
+      "title": "2026 전산학부 학과설명회",
+      "summary": "26학번 새내기를 대상으로 전산학부 소개와 학과 사업 소개, 학부장 연설 및 교수님과의 Q&A를 진행합니다. 사전 신청자 선착순 190명에게 상무초밥 세트를 증정합니다.",
+      "startAt": "2026-11-10T17:30:00+09:00",
+      "endAt": null,
+      "dateText": "11월 10일 화요일",
+      "timeText": "오후 5시 30분",
+      "location": {
+        "name": "KAIST 본원 창의학습관 터만홀",
+        "building": "E11",
+        "room": "터만홀"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": "상무초밥 세트"
+      },
+      "organizer": "전산학부 집행위원회 <TREE>",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://docs.google.com/forms/d/e/1FAIpQLSd9PMZgzg8SGtfovnqfRkiVnvZsNn9gG-I9wMZT9z_G_QOMMg/viewform?usp=header"
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "배달의 민족 기프티콘 5명 추첨"
+      },
+      "audience": {
+        "text": "26학번 새내기",
         "basis": "stated"
       }
     },
