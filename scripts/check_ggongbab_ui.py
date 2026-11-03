@@ -1266,6 +1266,52 @@ def day_tiles(browser, base, report):
         context.close()
 
 
+def meeting_links(browser, base, report):
+    """A Zoom/Meet/Teams/Webex address is how to join online, never a sign-up form (owner 2026-11-03: the
+    Nobel lectures' "신청하기" opened Zoom). It shows as "온라인 참여" with no "사전 신청" claim unless a
+    deadline backs one; a real form stays "신청하기". Fixed clock, synthetic data only."""
+    kst = timezone(timedelta(hours=9))
+    now = datetime(2026, 11, 3, 9, 0, tzinfo=kst)
+
+    def row(event_id, start, registration):
+        return {"id": event_id, "title": event_id, "startAt": start, "endAt": None,
+                "location": {"building": "E11", "room": "1F", "name": ""}, "sources": [{"type": "dooray"}],
+                "food": {"provided": "true", "type": "meal", "description": ""}, "registration": registration}
+
+    zoom = "https://kaist.zoom.us/j/89487469591"
+    feed = {"generatedAt": now.isoformat(), "events": [
+        row("zoom-only", "2026-11-12T11:50:00+09:00", {"required": "true", "deadline": None, "url": zoom}),
+        row("zoom-deadline", "2026-11-12T13:00:00+09:00", {"required": "true", "deadline": "2026-11-11T18:00:00+09:00", "url": zoom}),
+        row("real-form", "2026-11-12T15:00:00+09:00", {"required": "true", "deadline": None, "url": "https://forms.gle/example"})]}
+    for lang in ("ko", "en"):
+        context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
+        neutralize_public_config(context)
+        try:
+            context.clock.set_fixed_time(now)
+            page = context.new_page()
+            errors = []
+            page.on("pageerror", lambda error: errors.append(type(error).__name__))
+            page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=feed))
+            page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(status=404, body=""))
+            if lang == "en":
+                page.add_init_script("localStorage.setItem('babdoduk-lang', 'en')")
+            page.goto(base + "/ggongbab.html")
+            page.locator(".gg-card").first.wait_for()
+            join, register, required = ("Join online", "Register", "Registration required") if lang == "en" else ("온라인 참여", "신청하기", "사전 신청")
+            only = page.locator('[data-id="zoom-only"]')
+            assert only.locator(".gg-btn", has_text=join).get_attribute("href") == zoom
+            assert only.locator(".gg-btn", has_text=register).count() == 0 and only.locator(".gg-reg-badge").count() == 0
+            dated = page.locator('[data-id="zoom-deadline"]')
+            assert dated.locator(".gg-btn", has_text=join).count() == 1 and dated.locator(".gg-reg-badge").inner_text() == required
+            form = page.locator('[data-id="real-form"]')
+            assert form.locator(".gg-btn", has_text=register).get_attribute("href") == "https://forms.gle/example"
+            assert form.locator(".gg-btn", has_text=join).count() == 0 and form.locator(".gg-reg-badge").inner_text() == required
+            assert not errors, errors
+            report["checks"] += 7
+        finally:
+            context.close()
+
+
 @contextmanager
 def local_server(port=0):
     server = LocalServer(("127.0.0.1", port), partial(LocalHandler, directory=str(ROOT)))
@@ -1578,6 +1624,7 @@ def run_checks(preview=False):
         weekend_and_holiday_menu(browser, base, report)
         sessions_and_audience(browser, base, report)
         day_tiles(browser, base, report)
+        meeting_links(browser, base, report)
         midnight_dated_menu(browser, base, report)
         new_week_before_its_menu(browser, base, report)
         page.unroute("**/data/ggongbab/latest.json")

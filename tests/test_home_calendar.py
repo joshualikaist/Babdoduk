@@ -656,3 +656,25 @@ def test_a_deadline_only_draw_on_the_last_day_is_live_until_its_deadline(browser
     assert page.locator(".hc-month-title").inner_text() == "10월"
     assert cell(page, "2026-10-31").get_attribute("aria-current") == "date"
     context.close()
+
+
+def test_a_meeting_link_is_join_online_not_a_sign_up(browser):
+    # The parser read a lecture's Zoom address as "register here" and marked sign-up required.
+    zoom = "https://kaist.zoom.us/j/89487469591"
+    lecture = ev("lecture", "2026-10-07T12:00:00+09:00", "2026-10-07T13:00:00+09:00", title="노벨상 강연",
+                 registration={"required": "true", "deadline": None, "url": zoom})
+    context, page, errors = open_home(browser, live={"generatedAt": LIVE["generatedAt"], "events": [lecture, FORUM]})
+    cell(page, "2026-10-07").click()
+    rows = page.locator(".hc-ev-btn")
+    rows.nth(0).click()
+    detail = page.locator(".hc-ev-detail")
+    assert detail.locator("a.hc-ev-apply").count() == 1
+    assert detail.locator("a.hc-ev-apply").get_attribute("href") == zoom
+    assert "온라인 참여" in detail.inner_text() and "신청하기" not in detail.inner_text()
+    assert "사전 신청" not in page.locator(".hc-ev-meta").nth(1).inner_text()
+    # A real form stays a sign-up.
+    rows.nth(1).click()
+    form = page.locator(".hc-ev-detail").last
+    assert "신청하기" in form.inner_text() and "온라인 참여" not in form.inner_text()
+    assert not errors
+    context.close()

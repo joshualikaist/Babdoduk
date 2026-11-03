@@ -204,7 +204,7 @@
   }
   function cardHtml(ev, now, featured) {
     var s = toKst(ev.startAt);
-    var reg = ev.registration || {};
+    var reg = ev.registration || {}, sign = F.signUp(ev);
     var place = placeLabel(ev), map = mapLink(ev);
     var gift = hasGiveaway(ev), giftText = giveawayText(ev);
     var deadlineOnly = isDeadlineOnly(ev);
@@ -216,8 +216,8 @@
     else html += '<time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
     html += '<div class="gg-card-badges">' + foodBadgeHtml(ev);
     if (gift) html += '<span class="gg-gift-badge">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>';
-    if (tri(reg.required) === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
-    if (tri(reg.required) === 'false') html += '<span class="gg-reg-badge is-free">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</span>';
+    if (sign.required === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
+    if (sign.required === 'false') html += '<span class="gg-reg-badge is-free">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</span>';
     html += '</div></div><h3 class="gg-title">' + esc(ev.title) + '</h3>';
     html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || t('gg.placeTbd', '장소 미정'));
     if (map) html += ' · <a href="' + esc(map) + '" target="_blank" rel="noopener">' + esc(t('gg.map','지도')) + '</a>';
@@ -228,11 +228,13 @@
     if (ev.organizer) html += '<p class="gg-organizer">' + esc(t('gg.organizer', '주최')) + ' · ' + esc(ev.organizer) + '</p>';
     if (!deadlineOnly) html += deadlineHtml(ev, now);   // a deadline-only giveaway already leads with it
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
-    var regUrl = closed ? '' : safeHref(reg.url);
+    var regUrl = closed ? '' : safeHref(sign.url);
+    var joinUrl = safeHref(sign.join);
     var source = publicSource(ev);
-    if (regUrl || source) {
+    if (regUrl || joinUrl || source) {
       html += '<div class="gg-actions">';
       if (regUrl) html += '<a class="gg-btn gg-btn--primary" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' + esc(t('gg.register','신청하기')) + '</a>';
+      if (joinUrl) html += '<a class="gg-btn' + (regUrl ? '' : ' gg-btn--primary') + '" href="' + esc(joinUrl) + '" target="_blank" rel="noopener">' + esc(t('gg.join','온라인 참여')) + '</a>';
       if (source) html += '<a class="gg-btn" href="' + esc(source.url) + '" target="_blank" rel="noopener">' +
         esc(source.type === 'instagram' ? t('gg.instagramPost', '인스타그램 원문') : t('gg.officialNotice', '공식 공지')) + '</a>';
       html += '</div>';

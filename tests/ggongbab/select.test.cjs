@@ -218,3 +218,22 @@ test('source group: an Instagram post or a reader tip is credited before mail; t
   assert.equal(group('unknown'), '');
   assert.equal(F.sourceGroup({}), '');
 });
+
+test('sign-up: a Zoom/Meet/Teams/Webex address is a way to join, never a sign-up form', () => {
+  const of = registration => JSON.parse(JSON.stringify(F.signUp({ registration })));
+  const zoom = 'https://kaist.zoom.us/j/84468206787';
+  // The parser read the Zoom address as "register here": no form button and no "required" claim.
+  assert.deepEqual(of({ required: 'true', url: zoom, deadline: null }), { required: 'unknown', url: '', join: zoom });
+  assert.deepEqual(of({ required: 'unknown', url: zoom }), { required: 'unknown', url: '', join: zoom });
+  // A real deadline still backs "required"; an explicit "no sign-up" is kept.
+  assert.deepEqual(of({ required: 'true', url: zoom, deadline: '2026-11-04T18:00:00+09:00' }), { required: 'true', url: '', join: zoom });
+  assert.deepEqual(of({ required: 'false', url: zoom }), { required: 'false', url: '', join: zoom });
+  for (const url of ['https://meet.google.com/abc-defg-hij', 'https://teams.microsoft.com/l/meetup-join/x', 'https://kaist.webex.com/meet/x']) {
+    assert.equal(F.signUp({ registration: { required: 'true', url } }).url, '', url);
+  }
+  // Forms and look-alike hosts stay sign-ups.
+  const form = 'https://docs.google.com/forms/d/e/abc/viewform';
+  assert.deepEqual(of({ required: 'true', url: form }), { required: 'true', url: form, join: '' });
+  assert.equal(F.signUp({ registration: { required: 'true', url: 'https://notzoom.us.example.com/j/1' } }).join, '');
+  assert.deepEqual(JSON.parse(JSON.stringify(F.signUp({}))), { required: 'unknown', url: '', join: '' });
+});

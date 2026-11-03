@@ -151,6 +151,23 @@
     return '';
   }
 
+  // A Zoom/Meet/Teams/Webex address is how to attend online, never a sign-up form. The parser
+  // sometimes reads one as "register here" (and then marks sign-up as required), so the pages
+  // split the registration into {required, url} for a real sign-up and {join} for a meeting link.
+  // A sign-up is only claimed with a form link or a deadline; "false" is kept as it is.
+  var MEETING_HOST = /(^|\.)(zoom\.us|zoom\.com|zoomgov\.com|meet\.google\.com|teams\.microsoft\.com|teams\.live\.com|webex\.com)$/i;
+  function isMeetingLink(url) {
+    var m = /^https?:\/\/([^\/?#:]+)/i.exec(String(url || '').trim());
+    return !!m && MEETING_HOST.test(m[1]);
+  }
+  function signUp(ev) {
+    var reg = (ev && ev.registration) || {};
+    var url = String(reg.url || '').trim();
+    var required = tri(reg.required);
+    if (!isMeetingLink(url)) return { required: required, url: url, join: '' };
+    return { required: required === 'true' && !reg.deadline ? 'unknown' : required, url: '', join: url };
+  }
+
   global.BabdodukFreeFood = {
     toKst: toKst,
     nowKst: nowKst,
@@ -169,6 +186,7 @@
     occurrences: occurrences,
     audienceOf: audienceOf,
     sourceLink: sourceLink,
-    sourceGroup: sourceGroup
+    sourceGroup: sourceGroup,
+    signUp: signUp
   };
 })(window);
