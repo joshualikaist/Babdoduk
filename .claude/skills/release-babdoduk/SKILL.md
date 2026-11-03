@@ -77,7 +77,7 @@ On a clean release HEAD, run all five gates from `/verify-babdoduk` one at a tim
 - Record `BACK_SYNC_LAB_SHA`.
 
 ## 9. Rollback boundary
-- Keep the release branch after merging.
+- The release's marker is an annotated tag on the main merge commit, not the branch: `git tag -a release-YYYY-MM-DD-<slug> <merge-sha> -m "<summary> (release/<name>, cherry-pick of <lab-sha...>)"`, pushed by the owner (`docs/REPOSITORY_HYGIENE.md` section 8). Once the tag is on origin and the back-sync is done, the release branch and its worktree are cleanup candidates; delete them only with the owner's approval.
 - For a severe regression, revert the merge (`git revert -m 1 <merge-sha>` in a worktree, then a normal push). Never reset `main`. Generated-data commits made after the merge stay. Back-sync the revert into `lab` too.
 
 ## Report
@@ -89,4 +89,5 @@ On a clean release HEAD, run all five gates from `/verify-babdoduk` one at a tim
 - The merge SHA and the push result.
 - Smoke results and what was not tested.
 - `BACK_SYNC_LAB_SHA`, its babdoduk-lab deployment status and the empty drift check.
+- The release tag name and SHA (or the tag command left for the owner).
 - The verdict, naming any blocker.
