@@ -205,6 +205,8 @@
     var typeLabel = type ? t('home.cal.food.' + type, '') : '';
     if (lang() === 'en') return typeLabel || t('home.cal.foodFallback', 'Food');
     var desc = food.description && String(food.description).length <= 22 ? food.description : typeLabel || t('home.cal.foodFallback', '음식');
+    // "현장 참석자 샌드위치 제공" already says it: no second 제공 (2026-11-04).
+    if (/제공\s*$/.test(desc)) return desc;
     return fill(t('home.cal.ev.food', '{food} 제공'), { food: desc });
   }
   // The giveaway mark: the emoji is decoration, the word says it (owner decision 2026-10-14).
