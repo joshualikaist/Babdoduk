@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T14:22:18+09:00",
+  "generatedAt": "2026-11-03T15:22:30+09:00",
   "timezone": "Asia/Seoul",
-  "count": 42,
+  "count": 41,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -1562,48 +1562,6 @@
         "url": ""
       },
       "confidence": 0.98,
-      "sources": [
-        {
-          "type": "manual",
-          "name": "Manual"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품"
-      },
-      "audience": {
-        "text": "새내기 학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "ebb77702-4221-40b2-9ad5-cd7c8f14f3be",
-      "title": "2026 원자력및양자공학과 학과설명회",
-      "summary": "원자력및양자공학과 학과설명회에서 학과 정보 안내와 식사를 제공합니다. 참석자를 대상으로 경품이 준비되어 있습니다.",
-      "startAt": "2026-11-23T18:00:00+09:00",
-      "endAt": "2026-11-23T19:30:00+09:00",
-      "dateText": "2026년 11월 23일(월)",
-      "timeText": "18:00~19:30",
-      "location": {
-        "name": "",
-        "building": "N7",
-        "room": "1501호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사를 제공합니다",
-        "source": "text"
-      },
-      "organizer": "원자력및양자공학과",
-      "eligibility": "",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
       "sources": [
         {
           "type": "manual",
