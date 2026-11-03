@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T18:30:30+09:00",
+  "generatedAt": "2026-11-03T19:41:24+09:00",
   "timezone": "Asia/Seoul",
-  "count": 46,
+  "count": 45,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -257,7 +257,7 @@
         "description": "경품 추첨: 에어팟 프로 3, 신세계 백화점 10만원 상품권, 배달의 민족 5만원 기프티콘, 과자 및 망고젤리, 망고젤리"
       },
       "audience": {
-        "text": "KAIST 학생 개인 또는 2~3인 팀",
+        "text": "실패와 성공, 경품에 관심이 있으신 분 누구나",
         "basis": "stated"
       }
     },
@@ -610,43 +610,6 @@
       }
     },
     {
-      "id": "7c724625-6b93-42d4-9e31-a3c78d5c6ee8",
-      "title": "기계공학과 학과설명회",
-      "summary": "기계공학과 학과설명회 후 소고기 BBQ 파티와 가챠 이벤트가 진행됩니다.",
-      "startAt": "2026-11-09T16:10:00+09:00",
-      "endAt": "2026-11-09T19:00:00+09:00",
-      "dateText": "11월 9일(월)",
-      "timeText": "오후 4시 10분 ~7시",
-      "location": {
-        "name": "기계공학동",
-        "building": "N7",
-        "room": "1층 대회의실(Rm. 1601)"
-      },
-      "food": {
-        "provided": "true",
-        "type": "unknown",
-        "description": "소고기 BBQ 파티"
-      },
-      "organizer": "KAIST 기계공학과 학생회",
-      "eligibility": "선착순 120명",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/hDfLJT7eRVtYZ9sW9"
-      },
-      "confidence": 0.9,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "새내기",
-        "basis": "stated"
-      }
-    },
-    {
       "id": "1d5a7de7-1ecd-4641-b465-8c3f12e852f2",
       "title": "2026 전산학부 학과설명회",
       "summary": "26학번 새내기를 대상으로 전산학부 소개와 학과 사업 소개, 학부장 연설 및 교수님과의 Q&A를 진행합니다. 사전 신청자 선착순 190명에게 상무초밥 세트를 증정합니다.",
@@ -918,7 +881,7 @@
         }
       ],
       "audience": {
-        "text": "관심 있는 분들",
+        "text": "모든 관심 있는 사람",
         "basis": "stated"
       }
     },
@@ -1771,12 +1734,12 @@
       "confidence": 0.99,
       "sources": [
         {
-          "type": "manual",
-          "name": "Manual"
-        },
-        {
           "type": "dooray",
           "name": "Dooray"
+        },
+        {
+          "type": "manual",
+          "name": "Manual"
         }
       ],
       "giveaway": {
@@ -1784,7 +1747,7 @@
         "description": "경품"
       },
       "audience": {
-        "text": "새내기 학생",
+        "text": "원자력및양자공학과에 관심 있는 여러분",
         "basis": "stated"
       }
     },
