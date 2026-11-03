@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-03T19:28:38+09:00",
+  "generatedAt": "2026-11-03T19:41:24+09:00",
   "timezone": "Asia/Seoul",
   "count": 45,
   "events": [
@@ -257,7 +257,7 @@
         "description": "경품 추첨: 에어팟 프로 3, 신세계 백화점 10만원 상품권, 배달의 민족 5만원 기프티콘, 과자 및 망고젤리, 망고젤리"
       },
       "audience": {
-        "text": "KAIST 학생 개인 또는 2~3인 팀",
+        "text": "실패와 성공, 경품에 관심이 있으신 분 누구나",
         "basis": "stated"
       }
     },
@@ -881,7 +881,7 @@
         }
       ],
       "audience": {
-        "text": "관심 있는 분들",
+        "text": "모든 관심 있는 사람",
         "basis": "stated"
       }
     },
@@ -1734,12 +1734,12 @@
       "confidence": 0.99,
       "sources": [
         {
-          "type": "manual",
-          "name": "Manual"
-        },
-        {
           "type": "dooray",
           "name": "Dooray"
+        },
+        {
+          "type": "manual",
+          "name": "Manual"
         }
       ],
       "giveaway": {
@@ -1747,7 +1747,7 @@
         "description": "경품"
       },
       "audience": {
-        "text": "새내기 학생",
+        "text": "원자력및양자공학과에 관심 있는 여러분",
         "basis": "stated"
       }
     },
