@@ -56,3 +56,21 @@ def test_an_event_is_placed_by_its_code_or_a_name_and_never_guessed(location, ex
 
 def test_a_code_the_table_does_not_know_is_not_placed():
     assert cb.place({"building": "S9", "name": ""}, TABLE) == {"code": None, "placed": False, "others": 0}
+
+
+def test_the_web_model_stays_within_its_budget_and_describes_its_view():
+    """docs/CAMPUS_MAP.md: the model, its baked ground light and the poster are built by
+    scripts/campus3d/export_web.py; the home page must not grow by more than these."""
+    folder = cb.TABLE.parent
+    budget = {"campus.glb": 1_500_000, "ground-light.webp": 500_000, "poster.webp": 160_000, "model.json": 80_000}
+    for name, limit in budget.items():
+        assert (folder / name).stat().st_size <= limit, name
+    assert (folder / "campus.glb").read_bytes()[:4] == b"glTF"
+    model = json.loads((folder / "model.json").read_text(encoding="utf-8"))
+    assert model["attribution"] == TABLE["attribution"]
+    assert set(model) == {"attribution", "palette", "sun", "camera", "light", "trees"}
+    assert len(model["camera"]["position"]) == 3 and model["camera"]["position"][1] > 1000   # above the island
+    assert model["light"]["span"] > 1000 and 500 < len(model["trees"]) < 5000
+    assert all(len(t) == 5 and t[4] in (0, 1, 2) for t in model["trees"])
+    for key in ("grass", "path", "wall", "roof", "water", "highlight"):
+        assert len(model["palette"][key]) == 3, key

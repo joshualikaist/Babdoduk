@@ -17,6 +17,7 @@ from mathutils import Vector
 argv = sys.argv[sys.argv.index("--") + 1:]
 SRC, STYLE, OUT = argv[0], argv[1], argv[2]
 SAMPLES = int(argv[3]) if len(argv) > 3 else 96
+WEB = "--web" in argv                 # export_web.py follows: no sample pins, no render here
 data = json.load(open(SRC))
 random.seed(7)
 
@@ -321,7 +322,7 @@ pin_spots = {}
 footprints = []
 for i, b in enumerate(data["buildings"]):
     h = height(b)
-    mat = MAT["highlight"] if b.get("code") in PINS else MAT["building"]
+    mat = MAT["highlight"] if not WEB and b.get("code") in PINS else MAT["building"]
     ob = slab(f"b{i}_{b.get('code') or ''}", [b["pts"], *b.get("holes", [])], 0.4, 0.4 + h, mat, bevel=0.55)
     finish_roof(ob, b, h)
     xs = [p[0] for p in b["pts"]]; ys = [p[1] for p in b["pts"]]
@@ -382,18 +383,21 @@ for a in data["wood"]:
     spots += scatter(a["pts"], a.get("holes", []), 9.0, 400)
 for a in data["grass"]:
     spots += scatter(a["pts"], a.get("holes", []), 26.0, 25)
+trees = []
 for i, (x, y) in enumerate(spots[:3500]):
     e = bpy.data.objects.new(f"t{i}", None)
     e.instance_type = "COLLECTION"
-    e.instance_collection = random.choice(inst_cols)
+    kind = random.randrange(len(inst_cols))
+    e.instance_collection = inst_cols[kind]
     e.location = (x, y, 0.38)
     s = random.uniform(0.75, 1.35)
     e.scale = (s, s, s * random.uniform(0.9, 1.2))
     e.rotation_euler.z = random.uniform(0, math.tau)
     tree_col.objects.link(e)
+    trees.append((x, y, s, e.rotation_euler.z, kind))
 
 # --- pins for the mockup ---------------------------------------------------------------------------
-for code, ((x, y), h, _) in pin_spots.items():
+for code, ((x, y), h, _) in ({} if WEB else pin_spots).items():
     top = 0.4 + h
     bpy.ops.mesh.primitive_cone_add(vertices=24, radius1=8.0, radius2=0.0, depth=26, location=(x, y, top + 15),
                                     rotation=(math.pi, 0, 0))
@@ -457,7 +461,13 @@ scene.render.film_transparent = True
 scene.render.resolution_x, scene.render.resolution_y = 1600, 1200
 scene.view_settings.view_transform = "AgX"
 scene.view_settings.look = "AgX - Medium High Contrast" if STYLE != "paper" else "AgX - Base Contrast"
-scene.render.filepath = OUT
-bpy.ops.render.render(write_still=True)
-bpy.ops.wm.save_as_mainfile(filepath=OUT.replace(".png", ".blend"))
-print("RENDERED", OUT, "trees", len(spots[:3500]), "pins", list(pin_spots))
+sun_vec = sun.rotation_euler.to_matrix() @ Vector((0, 0, 1))
+bpy.app.driver_namespace["campus"] = {
+    "palette": {k: (list(v) if isinstance(v[0], float) else [list(c) for c in v])
+                for k, v in S.items() if isinstance(v, tuple)},
+    "trees": trees, "sun": tuple(sun_vec), "sun_color": tuple(S["sun"]), "target": tuple(target)}
+if not WEB:
+    scene.render.filepath = OUT
+    bpy.ops.render.render(write_still=True)
+    bpy.ops.wm.save_as_mainfile(filepath=OUT.replace(".png", ".blend"))
+    print("RENDERED", OUT, "trees", len(trees), "pins", list(pin_spots))
