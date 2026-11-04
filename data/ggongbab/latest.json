@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T12:29:51+09:00",
+  "generatedAt": "2026-11-04T16:25:35+09:00",
   "timezone": "Asia/Seoul",
-  "count": 46,
+  "count": 45,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -140,44 +140,6 @@
       ],
       "audience": {
         "text": "학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "b8e9d163-c224-4f72-b03a-0a8925048fae",
-      "title": "제2회 교무처 & 학사과정생 간담회",
-      "summary": "교무처가 학사과정생의 수업 및 학사제도에 대한 의견을 듣고 PNR 성적표기 제도와 개편 방향을 논의하는 간담회입니다. 사전 등록 후 참석 확정 안내를 받은 참석자에게 간단한 점심식사가 제공됩니다.",
-      "startAt": "2026-11-04T12:00:00+09:00",
-      "endAt": "2026-11-04T13:00:00+09:00",
-      "dateText": "2026.11.04.(수)",
-      "timeText": "오후 12시~1시",
-      "location": {
-        "name": "창의학습관",
-        "building": "E11",
-        "room": "1층 102호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "간단한 점심식사",
-        "source": "text"
-      },
-      "organizer": "교무처",
-      "eligibility": "KAIST에 재학중인 학사과정생",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/4mqssm6HMi2WDXKG6"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "KAIST 학사과정생",
         "basis": "stated"
       }
     },
@@ -808,7 +770,7 @@
     {
       "id": "a7bcdfc2-9ff9-48d0-8151-d1b764d56d2d",
       "title": "2026 산업및시스템공학과 학과설명회",
-      "summary": "산업및시스템공학과 학과설명회에서 학과 정보 안내와 식사가 제공되며 경품이 준비되어 있습니다.",
+      "summary": "KAIST 산업및시스템공학과 학과설명회입니다. 사전 신청자 선착순 200명에게 샌드팩토리 도시락과 빼빼로를 제공하며, 현장 경품 추첨이 진행됩니다.",
       "startAt": "2026-11-11T17:30:00+09:00",
       "endAt": "2026-11-11T19:00:00+09:00",
       "dateText": "2026년 11월 11일(수)",
@@ -825,17 +787,21 @@
         "source": "text"
       },
       "organizer": "산업및시스템공학과",
-      "eligibility": "",
+      "eligibility": "새내기 학부생",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://forms.gle/nDpmhYXvfYfPxfQx7"
       },
-      "confidence": 0.98,
+      "confidence": 0.99,
       "sources": [
         {
           "type": "manual",
           "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
         }
       ],
       "giveaway": {
