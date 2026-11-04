@@ -456,9 +456,20 @@ html[data-wc-phase="soon"] .home-wc-photo {
   transition: opacity 400ms ease;
 }
 
+/* The map can be dragged off centre: its edges fade into the paper instead of cutting the island. */
+.home-map-poster,
+.home-map-canvas {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent),
+    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent),
+    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
+  mask-composite: intersect;
+}
+
 .home-map-canvas {
   opacity: 0;
-  cursor: grab;
+  cursor: move;
   touch-action: pan-y;
   transition: opacity 400ms ease;
 }
@@ -691,7 +702,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .home-map-hint {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 10px;
   z-index: 2;
   margin: 0;
   padding: 8px 14px;
@@ -700,8 +711,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
   color: #fff;
   font-size: 13px;
   font-weight: 700;
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
   pointer-events: none;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
 }
 
 .home-map-hint[hidden] {
