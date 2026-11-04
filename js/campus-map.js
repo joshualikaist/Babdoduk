@@ -257,9 +257,16 @@ export function mount(stage, options) {
     if (fullButton) fullButton.hidden = full || !opts.onFull;
   }
   // Wherever it is dragged, the point the camera looks at stays on the island.
+  // How far the view may drift from the hero view's centre grows with the zoom: at the hero distance the
+  // island hardly moves (80 m), close up up to 450 m (owner 2026-11-04: "맵이 너무 안
+  // 벗어나게"). Measured from the hero target, so the island stays in sight.
   function keepOnIsland() {
-    const t = controls.target, lim = 640;
-    const cx = THREE.MathUtils.clamp(t.x, -lim, lim), cz = THREE.MathUtils.clamp(t.z, -lim, lim);
+    const t = controls.target, home = state.model.camera.target;
+    const ratio = camera.position.distanceTo(t) / state.homeDist;
+    const lim = THREE.MathUtils.clamp(80 + 520 * (1 - ratio), 80, 450);
+    // ...and never closer than 180 m to the island's edge (its outline spans x -625…715, z -607…716).
+    const cx = THREE.MathUtils.clamp(THREE.MathUtils.clamp(t.x, home[0] - lim, home[0] + lim), -445, 535);
+    const cz = THREE.MathUtils.clamp(THREE.MathUtils.clamp(t.z, home[2] - lim, home[2] + lim), -427, 536);
     if (cx !== t.x || cz !== t.z || t.y !== 0) {
       const shift = new THREE.Vector3(cx - t.x, -t.y, cz - t.z);
       t.add(shift);
