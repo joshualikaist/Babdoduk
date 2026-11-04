@@ -451,11 +451,12 @@ def test_phones_put_the_calendar_first_without_overflow(browser, width, height):
     context, page, _ = open_home(browser, size=(width, height))
     box = page.evaluate("""() => { const r = s => document.querySelector(s).getBoundingClientRect();
       return {overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-              cal: r('#homeCal').top, collage: r('.home-collage').height, menu: r('.home-menu-line').top,
+              cal: r('#homeCal').top, map: r('.home-map').height, open: r('#homeMapOpen').height,
+              menu: r('.home-menu-line').top,
               grid: r('#homeCalGrid .hc-grid'), cell: r('#homeCalGrid td[data-date]'), hero: r('.home-hero').bottom}; }""")
     assert box["overflow"] <= 0
     assert box["hero"] <= box["cal"] < box["menu"]      # copy, calendar, cafeteria
-    assert box["collage"] == 0                          # owner 2026-11-03: no decorative photos on phones
+    assert box["map"] == 0 and box["open"] >= 44        # owner 2026-11-04: phones get the 지도 보기 button only
     # 44 px targets at phone width; at 320 px (small phones, 400% zoom) still well above WCAG's 24 px.
     assert box["grid"]["right"] <= width and box["cell"]["width"] >= (44 if width >= 390 else 36)
     if width >= 360:
@@ -469,11 +470,13 @@ def test_desktop_split_keeps_the_grid_compact(browser):
     context, page, _ = open_home(browser, size=(1440, 900))
     box = page.evaluate("""() => { const r = s => document.querySelector(s).getBoundingClientRect();
       const month = document.querySelector('#homeCalGrid');
-      return {grid: r('#homeCalGrid .hc-grid'), day: r('#homeCalDay'), collage: r('.home-collage'), cal: r('#homeCal'),
+      return {grid: r('#homeCalGrid .hc-grid'), day: r('#homeCalDay'), map: r('.home-map'), cal: r('#homeCal'),
+              open: r('#homeMapOpen'),
               hero: r('.home-hero'), divider: getComputedStyle(month).borderLeftStyle}; }""")
     assert 320 <= box["grid"]["width"] <= 340
     assert box["grid"]["left"] > box["day"]["right"] and box["divider"] == "solid"
-    assert box["collage"]["top"] < box["cal"]["top"] and abs(box["collage"]["top"] - box["hero"]["top"]) < 200
+    assert box["map"]["top"] < box["cal"]["top"] and abs(box["map"]["top"] - box["hero"]["top"]) < 200
+    assert box["map"]["height"] > 200 and box["open"]["height"] == 0       # the map beside the copy, no button
     assert box["grid"]["bottom"] <= 900
     context.close()
 

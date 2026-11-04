@@ -441,6 +441,13 @@
     if (via && !source) rows.push('<p class="hc-ev-src">' + esc(fill(t('home.cal.ev.source', '출처 · {source}'), { source: t(via, '') })) + '</p>');
     return rows.join('');
   }
+  // The 3D campus map (js/home-map.js, docs/CAMPUS_MAP.md) pins the day shown here: it hears each
+  // drawn day, and asks for an event with babdoduk:show when a person picks "일정에서 보기" on a pin.
+  function emitDay() {
+    var detail = { day: state.selected, today: state.todayIso, items: (state.days[state.selected] || []).slice() };
+    window.babdodukCalendarDay = detail;
+    document.dispatchEvent(new CustomEvent('babdoduk:day', { detail: detail }));
+  }
   function renderDay() {
     if (state.status !== 'ready') {
       els.day.hidden = true;
@@ -529,6 +536,7 @@
     renderGrid();
     renderDay();
     renderNext();
+    if (state.status === 'ready') emitDay();
   }
 
   function announce(iso) {
@@ -550,6 +558,7 @@
     renderGrid();
     renderDay();
     renderNext();
+    emitDay();
     if (focus) focusCell(iso);
     announce(iso);
   }
@@ -579,7 +588,22 @@
     renderGrid();
     renderDay();
     renderNext();
+    emitDay();
     focusCell(state.focus);
+  }
+  // A pin's "일정에서 보기": that event, open, in view and focused.
+  function showEvent(id) {
+    var day = Object.keys(state.days).filter(function (d) {
+      return state.days[d].some(function (item) { return item.ev.id === id; });
+    })[0];
+    if (!day) return;
+    if (day !== state.selected) select(day, false);
+    var button = els.day.querySelector('.hc-ev-btn[data-hc-ev="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+    if (!button) return;
+    if (button.getAttribute('aria-expanded') !== 'true') toggle(button);
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    button.scrollIntoView({ block: 'center', behavior: still ? 'auto' : 'smooth' });
+    button.focus({ preventScroll: true });
   }
   function toggle(button) {
     var open = button.getAttribute('aria-expanded') !== 'true';
@@ -681,6 +705,7 @@
   root.addEventListener('click', onClick);
   els.month.addEventListener('keydown', onKey);
   document.addEventListener('babdoduk-lang', render);
+  document.addEventListener('babdoduk:show', function (e) { if (e.detail && e.detail.id) showEvent(e.detail.id); });
   // Coming back to the tab after midnight (KST) starts again from the new today. No timers.
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible' || state.status === 'loading') return;

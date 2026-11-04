@@ -434,8 +434,8 @@ cam_data = bpy.data.cameras.new("cam")
 cam_data.lens = 85
 cam_data.clip_start = 50; cam_data.clip_end = 20000
 cam = bpy.data.objects.new("cam", cam_data); col.objects.link(cam)
-target = Vector((20, 10, 0))
-elev, azim, dist = math.radians(46), math.radians(-28), 3750
+target = Vector((30, -10, 0))
+elev, azim, dist = math.radians(46), math.radians(-28), 3950
 if len(argv) > 6:                       # close-up: target x, y and distance
     target = Vector((float(argv[4]), float(argv[5]), 0)); dist = float(argv[6]); elev = math.radians(42)
 cam.location = target + Vector((math.sin(azim) * math.cos(elev) * dist, -math.cos(azim) * math.cos(elev) * dist,

@@ -102,6 +102,8 @@
         <div class="home-cal-head">
           <h2 class="home-cal-title" id="homeCalTitle"><span data-i18n="home.cal.title">오늘의 꽁밥</span> <span class="home-cal-date" id="homeCalToday"></span></h2>
           <p class="home-cal-answer" id="homeCalAnswer" data-i18n="home.free.loading">꽁밥 일정 확인 중</p>
+          <!-- Phones: the campus map opens from here (owner 2026-11-04); wider screens show it beside the copy. -->
+          <button type="button" class="home-map-open" id="homeMapOpen" aria-haspopup="dialog" aria-controls="homeMapDialog" aria-label="지도 보기" data-i18n-aria-key="home.map.show" data-i18n="home.map.showShort" hidden>지도</button>
         </div>
         <div class="home-cal-body">
           <div class="home-cal-month" id="homeCalGrid"></div>
@@ -126,18 +128,29 @@
         </a>
       </div>
 
-      <!-- Decorative crops only. No dish names: these are not a menu. -->
-      <div class="home-collage" aria-hidden="true">
-        <div class="home-photo home-photo--main">
-          <img src="images/home/food-jjigae-720.jpg" srcset="images/home/food-jjigae-720-240.webp 240w, images/home/food-jjigae-720-400.webp 400w, images/home/food-jjigae-720-520.webp 520w, images/home/food-jjigae-720.jpg 720w" sizes="(max-width: 720px) 54vw, 320px" alt="" width="720" height="960" decoding="async" fetchpriority="high" />
+      <!-- The 3D campus map (docs/CAMPUS_MAP.md, owner 2026-11-04): the clay miniature of the campus, a pin
+           on the building of each free-food event of the day the calendar shows. js/home-map.js wakes it
+           when it is on screen; phones see only the 지도 보기 button, which opens it in the dialog below.
+           The poster is the same view rendered, so the pins sit right before the live model loads. -->
+      <section class="home-map" id="homeMap" aria-labelledby="homeMapTitle">
+        <h2 class="home-sr-only" id="homeMapTitle" data-i18n="home.map.title">꽁밥 지도</h2>
+        <div class="home-map-frame" id="homeMapFrame">
+          <div class="home-map-stage" data-state="poster">
+            <img class="home-map-poster" src="data/campus/poster.webp" alt="" width="1200" height="750" loading="lazy" decoding="async" />
+            <canvas class="home-map-canvas" aria-hidden="true"></canvas>
+            <div class="home-map-pins"></div>
+            <div class="home-map-card" id="homeMapCard" hidden></div>
+          </div>
+          <p class="home-map-note"></p>
         </div>
-        <div class="home-photo home-photo--side">
-          <img src="images/home/food-egg-560.jpg" srcset="images/home/food-egg-560-240.webp 240w, images/home/food-egg-560-400.webp 400w, images/home/food-egg-560-520.webp 520w, images/home/food-egg-560.jpg 560w" sizes="(max-width: 720px) 38vw, 120px" alt="" width="560" height="560" decoding="async" />
+      </section>
+      <dialog class="home-map-dialog" id="homeMapDialog" aria-labelledby="homeMapTitle">
+        <div class="home-map-dialog-head">
+          <p class="home-map-dialog-title" data-i18n="home.map.title">꽁밥 지도</p>
+          <button type="button" class="home-map-dialog-close" data-i18n="home.map.close">닫기</button>
         </div>
-        <div class="home-photo home-photo--low">
-          <img src="images/home/food-ramen-640.jpg" srcset="images/home/food-ramen-640-240.webp 240w, images/home/food-ramen-640-400.webp 400w, images/home/food-ramen-640-520.webp 520w, images/home/food-ramen-640.jpg 640w" sizes="(max-width: 720px) 46vw, 240px" alt="" width="640" height="480" decoding="async" />
-        </div>
-      </div>
+        <div class="home-map-dialog-body"></div>
+      </dialog>
 
     </div>
   </main>
@@ -238,6 +251,16 @@
         'home.free.error': '꽁밥 일정을 불러오지 못했어요',
         'home.free.loading': '꽁밥 일정 확인 중',
         'home.kicker': 'BABDODUK · KAIST FOOD',
+        'home.map.attribution': '지도 데이터: OpenStreetMap',
+        'home.map.close': '닫기',
+        'home.map.more': '외 {n}개',
+        'home.map.open': '일정에서 보기',
+        'home.map.otherPlaces': '외 {n}곳',
+        'home.map.register': '신청하기',
+        'home.map.show': '지도 보기',
+        'home.map.showShort': '지도',
+        'home.map.title': '꽁밥 지도',
+        'home.map.unplaced': '위치 미정 {n}개',
         'home.menu.cta': '학식 보기 →',
         'home.menu.error': '학식 메뉴를 불러오지 못했어요',
         'home.menu.label': '학식',
@@ -351,6 +374,16 @@
         'home.free.error': 'Could not load free-food events',
         'home.free.loading': 'Checking free food',
         'home.kicker': 'BABDODUK · KAIST FOOD',
+        'home.map.attribution': 'Map data: OpenStreetMap',
+        'home.map.close': 'Close',
+        'home.map.more': '+{n} more',
+        'home.map.open': 'See in the schedule',
+        'home.map.otherPlaces': '+{n} more places',
+        'home.map.register': 'Register',
+        'home.map.show': 'Open the map',
+        'home.map.showShort': 'Map',
+        'home.map.title': 'Free-food map',
+        'home.map.unplaced': '{n} without a place',
         'home.menu.cta': 'See cafeteria →',
         'home.menu.error': 'Could not load cafeteria menus',
         'home.menu.label': 'Menu',
@@ -405,5 +438,7 @@
   <script src="js/ggongbab-select.js"></script>
   <script src="js/home-calendar.js"></script>
   <script src="js/home.js"></script>
+  <script type="importmap">{"imports": {"three": "./js/vendor/three-0.186.1/three.module.js"}}</script>
+  <script type="module" src="js/home-map.js"></script>
 </body>
 </html>

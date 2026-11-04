@@ -195,6 +195,11 @@ for mat in bpy.data.materials:                   # the browser colours by materi
     if mat.node_tree:
         for n in [n for n in mat.node_tree.nodes if n.type == "TEX_IMAGE"]:
             mat.node_tree.nodes.remove(n)
+# Only the ground's light UV leaves Blender (curves and primitives brought their own; the browser
+# would read the first one).
+for ob in [ground, sides, buildings, units, *protos]:
+    for layer in [l for l in ob.data.uv_layers if not (ob is ground and l.name == "light")]:
+        ob.data.uv_layers.remove(layer)
 bpy.ops.object.select_all(action="DESELECT")
 for ob in [ground, sides, buildings, units, cam, *protos]:
     ob.select_set(True)

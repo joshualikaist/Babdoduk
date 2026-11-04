@@ -1,6 +1,8 @@
 """The 3D campus map's building table and event placement (scripts/campus3d/buildings.py,
 docs/CAMPUS_MAP.md). No network: the OpenStreetMap shapes are the committed inputs/campus3d/campus.json."""
 import json
+import shutil
+import subprocess
 
 import pytest
 
@@ -33,7 +35,7 @@ def test_no_alias_is_shared_and_none_is_a_code():
             seen[alias] = row["code"]
 
 
-@pytest.mark.parametrize("location, expected", [
+CASES = [
     ({"building": "E11", "name": "창의학습관 터만홀"}, {"code": "E11", "placed": True, "others": 0}),
     ({"building": "창의학습관(E11)", "name": ""}, {"code": "E11", "placed": True, "others": 0}),
     # Two buildings in one event: the first gets the pin, the map says "외 1곳".
@@ -49,9 +51,25 @@ def test_no_alias_is_shared_and_none_is_a_code():
     ({"building": "", "name": "KAIST 문지캠퍼스, 강의동 L507호"}, {"code": None, "placed": False, "others": 0}),
     ({"building": "대전 본원", "name": ""}, {"code": None, "placed": False, "others": 0}),
     (None, {"code": None, "placed": False, "others": 0}),
-])
+]
+CASES = [pytest.param(*case) for case in CASES]
+
+
+@pytest.mark.parametrize("location, expected", CASES)
 def test_an_event_is_placed_by_its_code_or_a_name_and_never_guessed(location, expected):
     assert cb.place(location, TABLE) == expected
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+def test_the_browser_places_events_exactly_like_the_pipeline():
+    """js/campus-place.js (the map's pins) and buildings.place() agree on every case above."""
+    cases = [case.values[0] for case in CASES]
+    script = ("import { place } from './js/campus-place.js';"
+              "import { readFileSync } from 'node:fs';"
+              "const table = JSON.parse(readFileSync('data/campus/buildings.json', 'utf8'));"
+              f"console.log(JSON.stringify({json.dumps(cases)}.map((loc) => place(loc, table))));")
+    out = subprocess.run(["node", "--input-type=module", "-e", script], cwd=cb.ROOT, capture_output=True, text=True, check=True)
+    assert json.loads(out.stdout) == [cb.place(loc, TABLE) for loc in cases]
 
 
 def test_a_code_the_table_does_not_know_is_not_placed():
