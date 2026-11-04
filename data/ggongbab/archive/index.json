@@ -1,10 +1,46 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T23:01:26+09:00",
+  "generatedAt": "2026-11-05T00:07:34+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 10,
+  "count": 11,
   "events": [
+    {
+      "id": "e4932594-e8d6-4c3d-b22a-6baaacebba0d",
+      "title": "Codex 워크숍 다과",
+      "summary": "Codex 워크숍에서 학생 연사 발표와 직접 만드는 실습이 진행되며, 선착순 다과와 ChatGPT Plus 1개월 무료 제공이 있습니다.",
+      "startAt": "2026-11-04T19:00:00+09:00",
+      "endAt": "2026-11-04T21:00:00+09:00",
+      "dateText": "2026-11-04",
+      "timeText": "19:00~21:00",
+      "location": {
+        "name": "터만홀",
+        "building": "E11",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "다과(선착순)",
+        "source": "text"
+      },
+      "organizer": "OpenAI Student Collective, Include",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "ChatGPT Plus 1개월 무료"
+      },
+      "audience": {
+        "text": "학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "8f65a362-a09c-4577-bc5c-d39338c5b7c1",
       "title": "2026 망한과제 자랑대회",
