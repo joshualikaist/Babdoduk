@@ -408,13 +408,13 @@ export function mount(stage, options) {
     const spots = state.groups.map((g) => {
       const r = row(g.code);
       v.set(r.at[0], r.top + PIN_LIFT, -r.at[1]).project(cam);
-      return { g, x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h };
+      return { g, x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h, front: v.z < 1 };
     });
     const clusters = [];
     spots.forEach((s) => {
       const near = clusters.find((c) => Math.abs(c.x - s.x) < NEAR_X && Math.abs(c.y - s.y) < NEAR_Y);
       if (near) near.members.push(s.g);
-      else clusters.push({ x: s.x, y: s.y, members: [s.g] });
+      else clusters.push({ x: s.x, y: s.y, front: s.front, members: [s.g] });
     });
     const sig = clusters.map((c) => c.members.map((g) => g.code).join(',')).join('|') + '/' + opts.lang();
     if (sig !== state.sig) {
@@ -434,10 +434,15 @@ export function mount(stage, options) {
       const back = focused && pinsLayer.querySelector('[data-codes^="' + focused.split(',')[0] + '"]');
       if (back) back.focus({ preventScroll: true });
     }
+    // A building dragged off the map (or behind the camera) takes its pin with it: hidden, out of the
+    // tab order, and its card closed (owner 2026-11-04: pins ran out over the calendar).
     clusters.forEach((c, i) => {
       const pin = pinsLayer.children[i];
+      const inside = c.front && c.x >= 8 && c.x <= w - 8 && c.y >= 30 && c.y <= h - 4;
+      pin.hidden = !inside;
       pin.style.setProperty('--x', c.x.toFixed(1) + 'px');
       pin.style.setProperty('--y', c.y.toFixed(1) + 'px');
+      if (!inside && pin.getAttribute('data-codes') === state.selected) select('');
     });
     if (state.selected) placeCard();
   }
