@@ -1,5 +1,5 @@
 {
-  "approval": "Owner approved index-ko-390-footer and index-ko-390-footer-context (AskUserQuestion 2026-10-14: \"승인 (추천)\"; 1 px footer offset from the compact promo); CI render from ui-guardian run 38590752253 for the 1 changed image, the other 59 unchanged",
+  "approval": "Owner approved 2026-11-05 (\"승인했어\", after the campus map and roulette release reached production 26efe9c): nav - 오늘 뭐 먹지 replaces 밥도둑 매거진 (11-04) and the phone menu button (11-02); footer - contact joshualisky@kaist.ac.kr (11-02, 1 px taller at 390); index footer-context - the home is its hero only (11-02). CI renders from ui-guardian run 41821687597 (lab ba6c3c1) for the 53 changed images, the other 7 unchanged",
   "platform": "linux-chromium",
   "source": "adopted from ci-full",
   "images": 60,
