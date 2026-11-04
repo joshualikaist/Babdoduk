@@ -261,7 +261,7 @@ def test_live_and_archive_rows_are_deduplicated(browser):
     assert dots(page, "2026-09-30") == ["past"]
     cell(page, "2026-09-30").click()
     assert page.locator(".hc-ev-title").all_inner_texts() == ["중복 없는 행사"]   # once, the live copy
-    assert "종료" in page.locator(".hc-ev-head").first.inner_text()
+    assert "종료" in page.locator(".hc-ev-clock").first.inner_text()
     context.close()
 
 
@@ -300,7 +300,8 @@ def test_selected_future_and_past_days(browser):
     assert page.locator(".hc-empty").inner_text() == "기록 없음"
     cell(page, "2026-09-29").click()
     assert page.locator(".hc-ev-title").all_inner_texts() == ["지난 세미나"]
-    assert page.locator(".hc-ev-head").first.inner_text().startswith("종료 · 12:00")
+    clock = page.locator(".hc-ev-clock").first.inner_text().split()
+    assert clock == ["12:00", "종료"], clock                         # the time column says it ended
     context.close()
 
 
@@ -438,13 +439,14 @@ def test_english_strings(browser):
     assert titles == ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     assert page.locator(".hc-month-title").inner_text() == "October"
     assert day_title(page) == "Oct 7 (Wed)"
-    assert page.locator(".hc-ev-head").first.inner_text() == "12:00 Refreshments"
-    assert page.locator(".hc-ev-meta").first.inner_text() == "E11 101호 · Sign-up required"
+    assert page.locator(".hc-ev-time").first.inner_text() == "12:00"
+    assert page.locator(".hc-ev-head").first.inner_text() == "Refreshments"
+    assert page.locator(".hc-ev-sub").first.inner_text() == "첫수융합포럼 · E11 101호 · Sign-up required"
     assert page.locator("#homeCalAll").inner_text() == "All events →"
     assert page.locator("#homeCalPublished").inner_text().startswith("Last changed Oct 1 (Thu)")
     page.locator("#langToggle").click()
     assert answer(page) == "오늘은 없어요 · 다음 10월 7일 (수)"
-    assert page.locator(".hc-ev-head").first.inner_text() == "12:00 다과"
+    assert page.locator(".hc-ev-head").first.inner_text() == "다과"
     context.close()
 
 
@@ -549,19 +551,21 @@ def test_giveaway_rows_name_no_food_and_lead_with_a_deadline(browser):
     cell(page, "2026-10-01").click()
     assert page.locator("#homeCalLive").inner_text() == "10월 1일 목요일 · 경품 1개"
     assert page.locator(".hc-ev-title").all_inner_texts() == ["창업 엑스포"]
-    assert page.locator(".hc-ev-head").all_inner_texts() == ["14:00"]     # a giveaway names no dish
-    assert page.locator(".hc-ev-meta").all_inner_texts() == ["E11 101호 · 🎁 경품"]
+    assert page.locator(".hc-ev-time").all_inner_texts() == ["14:00"]
+    assert page.locator(".hc-ev-head").all_inner_texts() == ["🎁 경품"]   # a giveaway names no dish
+    assert page.locator(".hc-ev-sub").all_inner_texts() == ["창업 엑스포 · E11 101호"]
     assert "제공" not in page.locator("#homeCalDay").inner_text() and "음식" not in page.locator("#homeCalDay").inner_text()
     page.locator(".hc-ev-btn").click()
     assert "경품 · 경품 추첨 (에어팟)" in page.locator(".hc-ev-detail").inner_text()
     # Food and a gift: both, in that order.
     cell(page, "2026-10-07").click()
-    assert page.locator(".hc-ev-head").all_inner_texts()[-1].endswith("샌드위치")
+    assert page.locator(".hc-ev-head").all_inner_texts()[-1] == "샌드위치"
     assert page.locator(".hc-ev-meta").all_inner_texts()[-1].endswith("🎁 경품")
     # A deadline-only giveaway: its time is the sign-up deadline, never an event time, said once.
     cell(page, "2026-10-09").click()
+    assert page.locator(".hc-ev-time").all_inner_texts() == [""]        # no event time, the deadline leads
     assert page.locator(".hc-ev-head").all_inner_texts() == ["신청 마감 23:59"]
-    assert page.locator(".hc-ev-meta").all_inner_texts() == ["E11 101호 · 🎁 경품 · 사전 신청"]
+    assert [m.lstrip(" ·") for m in page.locator(".hc-ev-meta").all_inner_texts()] == ["E11 101호 · 🎁 경품 · 사전 신청"]
     page.locator(".hc-ev-btn").click()
     detail = page.locator(".hc-ev-detail").inner_text()
     assert detail.startswith("신청 마감 23:59 · 창의학습관(E11) 101호") and "신청 마감 · " not in detail
@@ -591,7 +595,7 @@ def test_giveaway_english_strings(browser):
     assert cell(page, "2026-10-01").get_attribute("aria-label") == "Thursday, October 1, giveaways: 1"
     cell(page, "2026-10-09").click()
     assert page.locator(".hc-ev-head").all_inner_texts() == ["Sign up by 23:59"]
-    assert page.locator(".hc-ev-meta").all_inner_texts() == ["E11 101호 · 🎁 Giveaway · Sign-up required"]
+    assert [m.lstrip(" ·") for m in page.locator(".hc-ev-meta").all_inner_texts()] == ["E11 101호 · 🎁 Giveaway · Sign-up required"]
     page.locator(".hc-ev-btn").click()
     assert "Giveaway: 커피 쿠폰" in page.locator(".hc-ev-detail").inner_text()
     cell(page, "2026-10-07").click()
@@ -655,7 +659,8 @@ def test_a_deadline_only_draw_on_the_last_day_is_live_until_its_deadline(browser
     assert gift(page, "2026-10-31").get_attribute("class") == "hc-gift"                 # not yet past
     assert answer(page).startswith("오늘 일정은 끝났어요")                                # the draw is never counted
     cell(page, "2026-10-31").click()
-    heads, meta = page.locator(".hc-ev-head").all_inner_texts(), page.locator(".hc-ev-meta").all_inner_texts()
+    heads = page.locator(".hc-ev-head").all_inner_texts()
+    meta = [m.lstrip(" ·") for m in page.locator(".hc-ev-meta").all_inner_texts()]
     assert "신청 마감 23:59" in heads and "E11 101호 · 🎁 경품 · 사전 신청" in meta, (heads, meta)
     # Navigating into the next month and back keeps today marked on the last day.
     page.locator("[data-hc-step='1']").click()
@@ -675,14 +680,15 @@ def test_a_meeting_link_is_join_online_not_a_sign_up(browser):
     context, page, errors = open_home(browser, live={"generatedAt": LIVE["generatedAt"], "events": [lecture, FORUM]})
     cell(page, "2026-10-07").click()
     # Both start at 12:00, so pick the rows by title, not by position.
-    lecture_row = page.locator(".hc-ev-btn", has_text="노벨상 강연")
-    form_row = page.locator(".hc-ev-btn", has_text="첫수융합포럼")
+    # The row's button carries no text (it covers the row and is named by the title): find the row.
+    lecture_item = page.locator(".hc-ev", has_text="노벨상 강연")
+    lecture_row, form_row = lecture_item.locator(".hc-ev-btn"), page.locator(".hc-ev", has_text="첫수융합포럼").locator(".hc-ev-btn")
     lecture_row.click()
     detail = page.locator("#" + lecture_row.get_attribute("aria-controls"))
     assert detail.locator("a.hc-ev-apply").count() == 1
     assert detail.locator("a.hc-ev-apply").get_attribute("href") == zoom
     assert "온라인 참여" in detail.inner_text() and "신청하기" not in detail.inner_text()
-    assert "사전 신청" not in lecture_row.inner_text()
+    assert "사전 신청" not in lecture_item.locator(".hc-ev-row").inner_text()
     # A real form stays a sign-up.
     form_row.click()
     form = page.locator("#" + form_row.get_attribute("aria-controls"))
@@ -697,8 +703,9 @@ def test_an_ended_meeting_keeps_no_join_button(browser):
                registration={"required": "true", "deadline": None, "url": zoom})
     context, page, errors = open_home(browser, archive={"generatedAt": LIVE["generatedAt"], "windowDays": 30, "events": [ended]})
     cell(page, "2026-09-29").click()
-    row = page.locator(".hc-ev-btn", has_text="지난 강연")
-    assert "종료" in row.inner_text()
+    item = page.locator(".hc-ev", has_text="지난 강연")
+    row = item.locator(".hc-ev-btn")
+    assert "종료" in item.locator(".hc-ev-row").inner_text()
     row.click()
     detail = page.locator("#" + row.get_attribute("aria-controls"))
     assert detail.locator("a.hc-ev-apply").count() == 0 and "온라인 참여" not in detail.inner_text()

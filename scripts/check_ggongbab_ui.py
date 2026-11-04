@@ -434,10 +434,9 @@ def giveaway_listings(browser, base, report):
                 assert word not in expo.inner_text(), word
             # Food and a giveaway: both marks; the food was read only from the poster, and says so.
             talk = card("both-talk")
-            # The dish in a word, its emoji only decoration (2026-11-05), and the poster note.
+            # The dish in a word (2026-11-05), and the poster note.
             assert squash(talk.locator(".gg-food-primary").text_content()) == (
-                "🥪Sandwiches · per poster" if en else "🥪샌드위치 · 포스터 기준")
-            assert talk.locator(".gg-food-primary .gg-dish-emoji").get_attribute("aria-hidden") == "true"
+                "Sandwiches · per poster" if en else "샌드위치 · 포스터 기준")
             assert squash(talk.locator(".gg-gift-badge").text_content()) == badge
             assert talk.locator(".gg-giveaway").inner_text().endswith("기념품 증정")
             # Text evidence and plain food carry neither mark.
@@ -1487,7 +1486,7 @@ def run_checks(preview=False):
             report["checks"] += 6
             # A listing is a row (2026-11-05): the title is one clamped line, the details start closed,
             # and a plain row stays short.
-            assert page.locator(".gg-card-toggle").first.evaluate("el => getComputedStyle(el).overflow") == "hidden"
+            assert page.locator(".gg-sub").first.evaluate("el => getComputedStyle(el).overflow") == "hidden"
             assert page.locator(".gg-detail").first.is_hidden()
             row = page.locator(".gg-card:not(.is-featured)").first.bounding_box()
             assert row["height"] <= 112, row
@@ -1503,8 +1502,9 @@ def run_checks(preview=False):
             report["checks"] += 1
             page.locator('[data-group="when"][data-value="all"]').click()
             assert page.locator(".gg-card").count() == 10
-            assert page.locator('[data-id="fixture-7"] .gg-card-toggle').evaluate(
-                "el => el.scrollHeight > el.clientHeight && el.clientHeight <= 24")
+            # The muted line (title · place) stops at two lines.
+            assert page.locator('[data-id="fixture-7"] .gg-sub').evaluate(
+                "el => el.scrollHeight > el.clientHeight && el.clientHeight <= 40")
             # Opened, a listing reads whole: the title unclamped, the summary in full.
             toggle = page.locator('[data-id="fixture-8"] .gg-card-toggle')
             toggle.click()

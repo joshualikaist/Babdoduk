@@ -209,8 +209,7 @@
   // stated only in an attached poster.
   function foodBadgeHtml(ev) {
     if (!hasFood(ev)) return '';
-    var html = '<span class="gg-food-primary is-' + esc(foodBucket(ev)) + '"><span class="gg-dish-emoji" aria-hidden="true">' +
-      esc(F.dishEmoji(ev)) + '</span><span>' + esc(F.dishLabel(ev, t)) + '</span>';
+    var html = '<span class="gg-food-primary is-' + esc(foodBucket(ev)) + '"><span>' + esc(F.dishLabel(ev, t)) + '</span>';
     if ((ev.food || {}).source === 'poster') html += '<span class="gg-food-source"> · ' + esc(t('gg.foodSource.poster', '포스터 기준')) + '</span>';
     return html + '</span>';
   }
@@ -226,9 +225,11 @@
     return (ev.sources || []).filter(function (src) { return src.type === 'kaist_public' || src.type === 'manual'; })
       .map(function (src) { return safeHref(src.url); }).filter(Boolean)[0] || '';
   }
-  // One listing (owner 2026-11-05, "시간과 메뉴가 더 중요"): a row of the time, the dish, the title and
-  // the place, with a sign-up link when there is one; the title opens the rest (food in full, the
-  // whole place and map, giveaway, audience, organizer, deadline, summary, links, source).
+  // One listing (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in bold):
+  //   12:00   샌드위치 (🎁 경품)                         신청
+  //           2026 노벨 … 강연회 · E9 양승택오디토리움      (small, muted, two lines at most)
+  // A transparent button covers the row (not the opened details) and opens the rest (food in full, the whole place and map,
+  // giveaway, audience, organizer, deadline, summary, links, source); links sit above it.
   var cardSeq = 0;
   function cardHtml(ev, now, featured) {
     var s = toKst(ev.startAt);
@@ -239,23 +240,26 @@
     var deadline = toKst(reg.deadline), closed = deadline && deadline < now;
     var regUrl = closed ? '' : safeHref(sign.url);
     var open = !!state.open[ev.id];
-    var detailId = 'ggCard' + (++cardSeq);
+    var n = ++cardSeq, detailId = 'ggCard' + n, titleId = 'ggCardTitle' + n;
     var html = '<article class="gg-card' + (featured ? ' is-featured' : '') + (open ? ' is-open' : '') + '" data-id="' + esc(ev.id) + '"' + (featured ? ' data-featured="1"' : '') + '>';
-    if (featured) html += '<p class="gg-featured-label">' + esc(t('gg.next', '다음 꽁밥')) + '</p>';
-    html += '<div class="gg-card-top' + (deadlineOnly ? ' is-deadline' : '') + '">';
+    html += '<div class="gg-card-top' + (deadlineOnly ? ' is-deadline' : '') + '">' +
+      '<button type="button" class="gg-card-toggle" data-gg-open="' + esc(ev.id) + '" aria-expanded="' + open +
+      '" aria-controls="' + detailId + '" aria-labelledby="' + titleId + '"></button><div class="gg-clock">';
+    if (!deadlineOnly) html += '<time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
+    html += '</div><div class="gg-card-main">';
+    // A deadline-only giveaway leads with its sign-up deadline, not an event time.
     if (deadlineOnly) html += '<p class="gg-time is-deadline' + (closed ? ' is-closed' : '') + '">' + esc(signUpByText(s)) + '</p>';
-    else html += '<time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
-    html += '<div class="gg-card-badges">' + foodBadgeHtml(ev);
+    html += '<p class="gg-card-badges">' + foodBadgeHtml(ev);
     if (gift) html += '<span class="gg-gift-badge">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>';
-    html += '</div>';
+    if (featured) html += '<span class="gg-featured-label">' + esc(t('gg.next', '다음 꽁밥')) + '</span>';
+    html += '</p><p class="gg-sub"><span class="gg-title" id="' + titleId + '" role="heading" aria-level="3">' + esc(ev.title) + '</span>' +
+      '<span class="gg-where' + (where ? '' : ' is-unknown') + '"> · ' + esc(where || t('gg.placeTbd', '장소 미정')) + '</span></p></div>';
     // The row's link says when signing up is required ("사전 신청"), so no second badge is needed.
     if (regUrl) html += '<a class="gg-row-reg" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' +
       esc(sign.required === 'true' ? t('gg.registerRequiredShort', '사전 신청') : t('gg.registerShort', '신청')) +
       '<span class="gg-sr"> ' + esc(ev.title) + ' ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
     else if (sign.required === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
-    html += '</div><h3 class="gg-title"><button type="button" class="gg-card-toggle" data-gg-open="' + esc(ev.id) + '" aria-expanded="' + open +
-      '" aria-controls="' + detailId + '">' + esc(ev.title) + '</button></h3>';
-    html += '<p class="gg-where' + (where ? '' : ' is-unknown') + '">' + esc(where || t('gg.placeTbd', '장소 미정')) + '</p>';
+    html += '</div>';
     html += '<div class="gg-detail" id="' + detailId + '"' + (open ? '' : ' hidden') + '>';
     var foodText = foodDetailOf(ev);
     if (foodText) html += '<p class="gg-food-line">' + esc(t('gg.foodLine', '음식 · {food}').replace('{food}', foodText)) + '</p>';
@@ -351,9 +355,9 @@
       var s = toKst(next.startAt);
       var place = (next.location || {}).building || shortPlace(next);
       html += '<button type="button" class="gg-radar-cta" data-gg-scroll="' + esc(next.id) + '">' +
-        '<span class="gg-radar-next">' + esc(t('gg.radar.next', '다음 꽁밥')) + '</span>' +
-        esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' <span aria-hidden="true">' + esc(F.dishEmoji(next)) + '</span>' +
-        esc(F.dishLabel(next, t) + (place ? ' · ' + place : '')) + ' <span aria-hidden="true">→</span></button>';
+        '<span class="gg-radar-next">' + esc(t('gg.radar.next', '다음 꽁밥')) + '</span> ' +
+        esc((s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' ' + F.dishLabel(next, t) + (place ? ' · ' + place : '')) +
+        ' <span aria-hidden="true">→</span></button>';
     }
     return html + '</section>';
   }
@@ -502,12 +506,15 @@
           var s = toKst(ev.startAt);
           var key = ymd(s);
           if (key !== lastDay) {
+            if (lastDay) html += '</div>';
             lastDay = key;
             var rel = relDay(key, now);
             html += '<h2 class="gg-day">' + (rel ? '<span class="gg-day-rel' + (rel === t('gg.today', '오늘') ? ' is-today' : '') + '">' + esc(rel) + '</span>' : '') + '<span class="gg-day-date">' + esc(dayLabel(s)) + '</span></h2>';
+            html += '<div class="gg-day-list">';
           }
           html += cardHtml(ev, now, ev.id === featuredId);
         });
+        if (lastDay) html += '</div>';
       }
     }
     return html + '</div></div>' + newsHtml() + archiveHtml(now);

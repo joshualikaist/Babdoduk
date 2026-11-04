@@ -1073,8 +1073,8 @@ html[data-wc-phase="soon"] .home-wc-photo {
     background: rgba(30, 29, 26, 0.06);
   }
 
-  .hc-ev-btn:hover .hc-ev-title,
-  .hc-next-row:hover .hc-next-name {
+  .hc-ev-btn:hover + .hc-ev-row .hc-ev-title,
+  .hc-next-row:hover .hc-next-title {
     text-decoration: underline;
     text-underline-offset: 4px;
   }
@@ -1171,88 +1171,84 @@ html[data-wc-phase="soon"] .home-wc-photo {
   border-top: 1px solid var(--color-divider);
 }
 
+/* A row, as the hub's (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in bold):
+   the time in its own column, the dish in bold, then the title and place in one small muted line.
+   The button covers the row, so a tap anywhere opens it; the row itself only shows text. */
 .hc-ev-btn {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 100%;
-  min-height: 72px;
-  padding: 12px 36px 12px 0;
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  padding: 0;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
   cursor: pointer;
 }
 
-/* A row leads with the time and the dish (owner 2026-11-05: "시간과 메뉴가 더 중요"); the title follows
-   in a quieter weight, then one line of place, session, giveaway and sign-up. */
-.hc-ev-head {
-  display: block;
-  font-size: 16px;
+.hc-ev-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: baseline;
+  min-height: 56px;
+  padding: 12px 0;
+  pointer-events: none;
+}
+
+.hc-ev-clock {
+  display: flex;
+  flex-direction: column;
+}
+
+.hc-ev-time {
+  font-size: 15px;
   font-weight: 800;
-  line-height: 1.4;
+  line-height: 22px;
   letter-spacing: -0.02em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .hc-ev-ended {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
+  line-height: 16px;
   color: var(--color-ink-muted);
 }
 
-.hc-ev-dish {
-  margin-left: 4px;
+.hc-ev-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hc-ev-head {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 22px;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
 
-.hc-ev-title {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
-  letter-spacing: -0.015em;
-  color: var(--color-ink);
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-}
-
-.hc-ev-meta {
+.hc-ev-sub {
+  margin-top: 2px;
   font-size: 13px;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 19px;
   color: var(--color-ink-muted);
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
 
 .hc-ev-who {
+  margin-top: 1px;
   font-size: 12px;
-  line-height: 1.45;
-}
-
-.hc-ev-time {
-  font-weight: 700;
-  color: var(--color-ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.hc-ev-chev {
-  position: absolute;
-  top: 15px;
-  right: 6px;
-  width: 18px;
-  height: 18px;
+  line-height: 18px;
   color: var(--color-ink-muted);
-  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.hc-ev-btn[aria-expanded="true"] .hc-ev-chev {
-  transform: rotate(180deg);
 }
 
 .hc-ev-btn:focus-visible,
@@ -1261,14 +1257,14 @@ html[data-wc-phase="soon"] .home-wc-photo {
   outline-offset: 2px;
 }
 
-.hc-ev.is-past .hc-ev-title,
 .hc-ev.is-past .hc-ev-time,
-.hc-ev.is-past .hc-ev-dish {
+.hc-ev.is-past .hc-ev-head {
   color: var(--color-ink-muted);
 }
 
+/* Aligned with the text column. */
 .hc-ev-detail {
-  padding: 0 0 14px;
+  padding: 0 0 14px 56px;
 }
 
 .hc-ev-detail[hidden] {
@@ -1366,6 +1362,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
   overflow: hidden;
   font-size: 14px;
   font-weight: 500;
+  color: var(--color-ink-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1373,6 +1370,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .hc-next-dish {
   margin-right: 6px;
   font-weight: 800;
+  color: var(--color-ink);
 }
 
 .home-cal-foot {

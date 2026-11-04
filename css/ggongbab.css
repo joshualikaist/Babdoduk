@@ -17,8 +17,6 @@
 .gg-radar-next { margin-right:6px; color:var(--color-ink-muted); }
 .gg-radar-cta [aria-hidden] { margin:0 1px; }
 .gg-skeleton.gg-radar-skeleton { height:87px; margin-bottom:12px; }
-.gg-card.is-featured { border:1px solid #e3b9a8; background:#fff; box-shadow:0 6px 18px rgba(180,61,39,.07); }
-.gg-featured-label { display:inline-flex; height:20px; padding:0 7px; margin-bottom:6px; border-radius:6px; background:var(--color-accent-wash); color:var(--color-accent); font-size:11px; font-weight:800; letter-spacing:.04em; align-items:center; }
 .food-hub-menu { padding-top:2px; }
 .km-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; margin:4px 0 10px; }
 .km-head h2 { font-size:20px; font-weight:900; line-height:26px; letter-spacing:-.03em; color:#1d1d1f; }
@@ -86,40 +84,43 @@
 .gg-day { display:flex; align-items:center; gap:8px; margin:18px 0 10px; font-size:14px; font-weight:700; line-height:20px; color:#3a3a3c; scroll-margin-top:calc(var(--gg-nav-offset, 0px) + 110px); }
 .gg-day-rel { display:inline-flex; align-items:center; height:22px; padding:0 7px; border-radius:6px; font-size:12px; font-weight:700; background:var(--color-ink); color:var(--color-surface); }
 .gg-day-rel.is-today { background:var(--color-accent); }
-/* One listing (owner 2026-11-05, "시간과 메뉴가 더 중요"): the time and the dish lead, the title and
-   place follow in one quiet line each, and the title opens the details. The title's button covers the
-   row (its ::after), so a tap anywhere on the row opens it; links and the details sit above it. */
-.gg-card { position:relative; width:100%; padding:12px 14px; margin-bottom:8px; border:1px solid #e8e8ed; border-radius:14px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:box-shadow 160ms ease; }
-.gg-card-top { display:flex; align-items:center; gap:8px; min-height:26px; }
-.gg-time { flex-shrink:0; font-size:15px; font-weight:900; line-height:20px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:#1d1d1f; }
-.gg-time.is-unknown { font-size:12px; font-weight:600; color:#86868b; }
-/* A deadline-only giveaway leads with its sign-up deadline instead of an event time; its badges
-   move to their own line rather than squeeze the longer date. */
-.gg-card-top.is-deadline { flex-wrap:wrap; row-gap:6px; }
-.gg-time.is-deadline { flex-shrink:1; min-width:0; font-size:13px; font-weight:800; line-height:18px; letter-spacing:-.01em; color:#9f1239; word-break:keep-all; overflow-wrap:anywhere; }
+/* One listing (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in bold): a time
+   column, the dish in bold, then the title and place in one small muted line (two at most), and the
+   sign-up link on the right. A day's rows share one white list with hairlines between them. The
+   transparent toggle covers the row; links and the opened details sit above it. */
+.gg-day-list { overflow:hidden; border:1px solid #ececf0; border-radius:16px; background:#fff; }
+.gg-card { position:relative; width:100%; padding:12px 14px; border-bottom:1px solid #f0f0f2; }
+.gg-card:last-child { border-bottom:0; }
+.gg-card-toggle { position:absolute; inset:-12px -14px; z-index:0; padding:0; border:0; background:transparent; cursor:pointer; pointer-events:auto; }
+.gg-card-toggle:focus-visible { outline:2px solid var(--color-focus); outline-offset:-2px; border-radius:12px; }
+.gg-card-top { position:relative; display:grid; grid-template-columns:44px minmax(0,1fr) auto; column-gap:12px; align-items:baseline; pointer-events:none; }
+.gg-card-top a { pointer-events:auto; }
+.gg-clock { grid-column:1; }
+.gg-card-main { grid-column:2; min-width:0; }
+.gg-time { font-size:15px; font-weight:800; line-height:22px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:#1d1d1f; white-space:nowrap; }
+.gg-time.is-unknown { font-size:11px; font-weight:600; line-height:16px; white-space:normal; color:#86868b; }
+.gg-card.is-featured .gg-time { color:var(--color-accent); }
+/* A deadline-only giveaway leads with its sign-up deadline in the main column instead of a time. */
+.gg-time.is-deadline { margin-bottom:2px; font-size:13px; line-height:18px; letter-spacing:-.01em; color:#9f1239; white-space:normal; word-break:keep-all; overflow-wrap:anywhere; }
 .gg-time.is-deadline.is-closed { color:#86868b; }
-.gg-card-badges { flex:1; min-width:0; display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; }
-/* The dish is the row's headline: plain bold text, the emoji only decoration. */
-.gg-food-primary { display:inline-flex; align-items:center; gap:5px; min-width:0; max-width:100%; font-size:16px; font-weight:800; line-height:22px; letter-spacing:-.02em; color:#1d1d1f; }
+.gg-card-badges { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; min-height:22px; }
+/* The dish is the row's bold line. */
+.gg-food-primary { display:inline-flex; align-items:baseline; min-width:0; max-width:100%; font-size:16px; font-weight:800; line-height:22px; letter-spacing:-.02em; color:#1d1d1f; }
 .gg-food-primary span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.gg-food-primary .gg-dish-emoji { flex-shrink:0; overflow:visible; font-size:16px; }
 /* Food stated only in an attached poster: a quieter part of the same label, never ellipsized. */
-.gg-food-primary .gg-food-source { flex-shrink:0; overflow:visible; font-size:12px; font-weight:600; color:#86868b; }
+.gg-food-primary .gg-food-source { flex-shrink:0; overflow:visible; margin-left:4px; font-size:12px; font-weight:600; color:#86868b; }
 /* A giveaway (prize draw or gift): its own hue, apart from every food colour, and always labelled. */
 .gg-gift-badge { display:inline-flex; align-items:center; gap:2px; height:22px; padding:0 7px; border-radius:999px; border:1px solid #ddd6fe; background:#f5f3ff; color:#6d28d9; font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
-.gg-reg-badge { flex-shrink:0; display:inline-flex; align-items:center; height:22px; padding:0 7px; border-radius:999px; border:1px solid var(--color-divider); background:#f3f0ea; color:var(--color-ink); font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
-/* The row's sign-up link: a 44 px target that does not make the row taller. */
-.gg-row-reg { position:relative; z-index:1; flex-shrink:0; display:inline-flex; align-items:center; min-height:44px; margin:-10px -6px -10px 0; padding:0 6px; font-size:13px; font-weight:800; color:var(--color-accent); text-decoration:none; white-space:nowrap; }
-.gg-row-reg:hover { text-decoration:underline; text-underline-offset:3px; }
-.gg-title { margin-top:4px; font-size:14px; font-weight:600; line-height:20px; letter-spacing:-.015em; color:#3a3a3c; overflow:hidden; }
-.gg-card-toggle { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; width:100%; min-height:24px; margin:-2px 0; padding:2px 20px 2px 0; box-sizing:border-box; border:0; background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9.5 6 6 6-6' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right center / 16px; font:inherit; color:inherit; text-align:left; word-break:keep-all; overflow-wrap:anywhere; cursor:pointer; }
-.gg-card-toggle::after { content:""; position:absolute; inset:0; border-radius:inherit; }
-.gg-card-toggle:focus-visible { outline:none; }
-.gg-card:has(.gg-card-toggle:focus-visible) { outline:2px solid var(--color-focus); outline-offset:2px; }
-.gg-card.is-open .gg-card-toggle { display:block; -webkit-line-clamp:unset; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 14.5 6-6 6 6' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position:right top 2px; }
-.gg-where { margin-top:1px; font-size:13px; font-weight:500; line-height:19px; color:#6e6e73; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gg-sub { margin-top:2px; font-size:13px; font-weight:500; line-height:19px; color:#6e6e73; word-break:keep-all; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.gg-title { font:inherit; color:inherit; }
 .gg-where.is-unknown { color:#86868b; }
-.gg-detail { position:relative; z-index:1; margin-top:10px; padding-top:10px; border-top:1px solid #f0f0f2; cursor:auto; }
+.gg-card.is-open .gg-sub { display:block; -webkit-line-clamp:unset; }
+.gg-reg-badge { grid-column:3; display:inline-flex; align-items:center; height:22px; padding:0 7px; border-radius:999px; border:1px solid var(--color-divider); background:#f3f0ea; color:var(--color-ink); font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
+/* The row's sign-up link: a 44 px target that does not make the row taller. */
+.gg-row-reg { grid-column:3; position:relative; z-index:1; display:inline-flex; align-items:center; min-height:44px; margin:-11px -6px; padding:0 6px; font-size:13px; font-weight:800; line-height:22px; color:var(--color-accent); text-decoration:none; white-space:nowrap; }
+.gg-row-reg:hover { text-decoration:underline; text-underline-offset:3px; }
+.gg-card .gg-featured-label { display:inline-flex; align-items:center; height:20px; margin:0; padding:0 6px; border-radius:6px; background:var(--color-accent-wash); color:var(--color-accent); font-size:11px; font-weight:800; line-height:18px; letter-spacing:.02em; }
+.gg-detail { position:relative; z-index:1; margin:10px 0 0 56px; padding-top:10px; border-top:1px solid #f0f0f2; cursor:auto; }
 .gg-food-line { font-size:13px; font-weight:600; line-height:19px; color:#1d1d1f; word-break:keep-all; overflow-wrap:anywhere; }
 .gg-place { margin-top:5px; font-size:13px; font-weight:500; line-height:20px; color:#515154; overflow-wrap:anywhere; }
 .gg-detail > .gg-place:first-child { margin-top:0; }
@@ -180,9 +181,8 @@
 .gg-choose-link:hover { text-decoration:underline; text-underline-offset:4px; }
 .gg-layout-grid { pointer-events:none; position:fixed; inset:0; z-index:19000; background-image:linear-gradient(#6366f10b 1px,transparent 1px),linear-gradient(90deg,#6366f10b 1px,transparent 1px); background-size:8px 8px; }
 @media(min-width:720px) { .ggongbab-page-wrap { padding-left:24px; padding-right:24px; } .gg-filters { margin-left:-24px; margin-right:-24px; padding-left:24px; padding-right:24px; } .gg-hero h1 { font-size:36px; line-height:43px; } .km-grid { grid-template-columns:1fr 1fr; } }
-@media(hover:hover) and (min-width:720px) { .gg-card:hover { box-shadow:0 2px 4px rgba(0,0,0,.04),0 8px 22px rgba(28,25,23,.06); } }
-@media(max-width:320px) { .gg-btn { width:100%; } .gg-chip { padding:0 9px; } .gg-card-top { align-items:flex-start; } }
-@media(prefers-reduced-motion:reduce) { .gg-skeleton { animation:none; } .gg-card { transition:none; } .gg-card:hover { transform:none; } html { scroll-behavior:auto; } }
+@media(max-width:320px) { .gg-btn { width:100%; } .gg-chip { padding:0 9px; } .gg-detail { margin-left:0; } }
+@media(prefers-reduced-motion:reduce) { .gg-skeleton { animation:none; } html { scroll-behavior:auto; } }
 /* Campus food news follows live opportunities; plain rows, independent of cards. */
 .gg-news { margin: 2rem 0; padding-top: 1.5rem; border-top: 1px solid var(--color-divider); }
 .gg-news h2 { margin: 0 0 1rem; font-size: 1.15rem; }
@@ -194,3 +194,4 @@
 .gg-news-facts p { margin: .25rem 0; font-size: .9rem; line-height: 1.6; }
 .gg-news-source { display: inline-block; margin-top: .3rem; }
 @media (max-width: 600px) { .gg-news-row { grid-template-columns: minmax(0, 1fr); gap: .4rem; } }
+@media(hover:hover) { .gg-card:hover { background:#fafafb; } }

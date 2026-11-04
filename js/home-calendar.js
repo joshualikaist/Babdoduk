@@ -324,8 +324,7 @@
 
   var CHEVRON = {
     prev: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    next: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    down: '<svg class="hc-ev-chev" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9.5 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    next: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   // The month header is built once, so its buttons keep keyboard focus across month changes.
@@ -377,28 +376,39 @@
   function sessionText(ev) {
     return ev.session ? fill(t('home.cal.ev.session', '{n}/{total}회차'), { n: ev.session.n, total: ev.session.total }) : '';
   }
-  // A collapsed row (owner 2026-11-05): the time and the dish lead, then the title, then one quiet
-  // line of place, session, giveaway and sign-up. A giveaway-only row names no food at all.
-  function headLine(item) {
+  // A collapsed row, as the hub's (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in
+  // bold): the time in its own column; the dish in bold (a giveaway-only row: 🎁 경품; a deadline-only
+  // one: its deadline); then the title, place, session, giveaway and sign-up in one small muted line.
+  function timeCol(item) {
     var ev = item.ev;
     var start = F.toKst(ev.startAt);
-    var dish = item.food ? dishHtml(ev, 'hc-ev-dish') : '';
-    return '<span class="hc-ev-head">' + (item.active ? '' : '<span class="hc-ev-ended">' + esc(t('home.cal.ev.ended', '종료')) + ' · </span>') +
-      '<span class="hc-ev-time">' + esc(timeText(ev, start)) + '</span>' + (dish ? ' ' + dish : '') + '</span>';
+    var time = F.isDeadlineOnly(ev) ? '' : (start ? hm(start) : t('home.cal.ev.timeTbd', '시간 미정'));
+    return '<span class="hc-ev-clock"><span class="hc-ev-time">' + esc(time) + '</span>' +
+      (item.active ? '' : '<span class="hc-ev-ended">' + esc(t('home.cal.ev.ended', '종료')) + '</span>') + '</span>';
   }
-  function metaLines(item) {
+  function headLine(item) {
+    var ev = item.ev;
+    var head;
+    if (F.isDeadlineOnly(ev)) head = esc(timeText(ev, F.toKst(ev.startAt)));
+    else if (item.food) head = dishHtml(ev, 'hc-ev-dish');
+    else head = '<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>';
+    return '<span class="hc-ev-head">' + head + '</span>';
+  }
+  function metaLines(item, i) {
     var ev = item.ev;
     var place = shortPlace(ev.location);
     var part = sessionText(ev);
     var meta = [];
     if (place) meta.push(esc(place));
     if (part) meta.push(esc(part));
-    if (F.hasGiveaway(ev)) meta.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
+    // The gift mark joins the muted line when the bold line is a dish or a deadline.
+    if (F.hasGiveaway(ev) && (item.food || F.isDeadlineOnly(ev))) meta.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
     if (item.active && F.signUp(ev).required === 'true') meta.push(esc(t('home.cal.ev.reg', '사전 신청')));
     // Only an extracted audience gets a line of its own on the collapsed row; a plain eligibility stays in the details.
     var who = ev.audience ? whoText(ev) : '';
-    return (meta.length ? '<span class="hc-ev-meta">' + meta.join(' · ') + '</span>' : '') +
-      (who ? '<span class="hc-ev-meta hc-ev-who">' + esc(fill(t('home.cal.ev.who', '대상 · {who}'), { who: who })) + '</span>' : '');
+    return '<span class="hc-ev-sub"><span class="hc-ev-title" id="homeCalEvTitle' + i + '">' + esc(ev.title) + '</span>' +
+      (meta.length ? '<span class="hc-ev-meta"> · ' + meta.join(' · ') + '</span>' : '') + '</span>' +
+      (who ? '<span class="hc-ev-who">' + esc(fill(t('home.cal.ev.who', '대상 · {who}'), { who: who })) + '</span>' : '');
   }
   function detailHtml(item) {
     var ev = item.ev;
@@ -473,10 +483,10 @@
     } else {
       html += '<ul class="hc-events">' + list.map(function (item, i) {
         var open = state.open === item.ev.id;
-        return '<li class="hc-ev' + (item.active ? '' : ' is-past') + '">' +
-          '<button type="button" class="hc-ev-btn" data-hc-ev="' + esc(item.ev.id) + '" aria-expanded="' + open +
-          '" aria-controls="homeCalEv' + i + '">' + headLine(item) + '<span class="hc-ev-title">' + esc(item.ev.title) + '</span>' +
-          metaLines(item) + CHEVRON.down + '</button>' +
+        // The button covers the row (a tap anywhere on it opens it; not the opened details) and is named by the title.
+        return '<li class="hc-ev' + (item.active ? '' : ' is-past') + (open ? ' is-open' : '') + '">' +
+          '<div class="hc-ev-row"><button type="button" class="hc-ev-btn" data-hc-ev="' + esc(item.ev.id) + '" aria-expanded="' + open +
+          '" aria-controls="homeCalEv' + i + '" aria-labelledby="homeCalEvTitle' + i + '"></button>' + timeCol(item) + '<span class="hc-ev-body">' + headLine(item) + metaLines(item, i) + '</span></div>' +
           '<div class="hc-ev-detail" id="homeCalEv' + i + '"' + (open ? '' : ' hidden') + '>' + detailHtml(item) + '</div></li>';
       }).join('') + '</ul>';
     }
@@ -616,6 +626,8 @@
     });
     button.setAttribute('aria-expanded', String(open));
     document.getElementById(button.getAttribute('aria-controls')).hidden = !open;
+    Array.prototype.forEach.call(els.day.querySelectorAll('.hc-ev.is-open'), function (li) { li.classList.remove('is-open'); });
+    if (open) button.closest('.hc-ev').classList.add('is-open');
     state.open = open ? button.getAttribute('data-hc-ev') : '';
   }
 
