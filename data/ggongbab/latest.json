@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T12:29:51+09:00",
+  "generatedAt": "2026-11-04T15:55:09+09:00",
   "timezone": "Asia/Seoul",
   "count": 46,
   "events": [
@@ -808,7 +808,7 @@
     {
       "id": "a7bcdfc2-9ff9-48d0-8151-d1b764d56d2d",
       "title": "2026 산업및시스템공학과 학과설명회",
-      "summary": "산업및시스템공학과 학과설명회에서 학과 정보 안내와 식사가 제공되며 경품이 준비되어 있습니다.",
+      "summary": "KAIST 산업및시스템공학과 학과설명회입니다. 사전 신청자 선착순 200명에게 샌드팩토리 도시락과 빼빼로를 제공하며, 현장 경품 추첨이 진행됩니다.",
       "startAt": "2026-11-11T17:30:00+09:00",
       "endAt": "2026-11-11T19:00:00+09:00",
       "dateText": "2026년 11월 11일(수)",
@@ -825,17 +825,21 @@
         "source": "text"
       },
       "organizer": "산업및시스템공학과",
-      "eligibility": "",
+      "eligibility": "새내기 학부생",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://forms.gle/nDpmhYXvfYfPxfQx7"
       },
-      "confidence": 0.98,
+      "confidence": 0.99,
       "sources": [
         {
           "type": "manual",
           "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
         }
       ],
       "giveaway": {
