@@ -1,10 +1,42 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T15:55:09+09:00",
+  "generatedAt": "2026-11-04T16:25:35+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 7,
+  "count": 8,
   "events": [
+    {
+      "id": "b8e9d163-c224-4f72-b03a-0a8925048fae",
+      "title": "제2회 교무처 & 학사과정생 간담회",
+      "summary": "교무처가 학사과정생의 수업 및 학사제도에 대한 의견을 듣고 PNR 성적표기 제도와 개편 방향을 논의하는 간담회입니다. 사전 등록 후 참석 확정 안내를 받은 참석자에게 간단한 점심식사가 제공됩니다.",
+      "startAt": "2026-11-04T12:00:00+09:00",
+      "endAt": "2026-11-04T13:00:00+09:00",
+      "dateText": "2026.11.04.(수)",
+      "timeText": "오후 12시~1시",
+      "location": {
+        "name": "창의학습관",
+        "building": "E11",
+        "room": "1층 102호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "간단한 점심식사",
+        "source": "text"
+      },
+      "organizer": "교무처",
+      "eligibility": "KAIST에 재학중인 학사과정생",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 학사과정생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "ef9595e6-fc91-447c-b6f9-706f86f02198",
       "title": "Towards Cross-Context Studies of Ethical, Legal, and Social Issues Unique to New Alternative Methods in Biomedical Research",
