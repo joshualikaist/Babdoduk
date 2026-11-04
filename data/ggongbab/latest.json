@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T22:01:35+09:00",
+  "generatedAt": "2026-11-04T23:01:26+09:00",
   "timezone": "Asia/Seoul",
-  "count": 44,
+  "count": 43,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -140,48 +140,6 @@
       ],
       "audience": {
         "text": "학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "8f65a362-a09c-4577-bc5c-d39338c5b7c1",
-      "title": "2026 망한과제 자랑대회",
-      "summary": "‘망함의 아름다움’에 관한 KAIST 학생들의 이야기를 부스 발표 형식으로 공유하는 행사입니다. 싸이버거와 콜라를 선착순 100명에게 제공하며, 조건을 충족한 관람객을 대상으로 경품 추첨을 진행합니다.",
-      "startAt": "2026-11-04T18:00:00+09:00",
-      "endAt": "2026-11-04T20:00:00+09:00",
-      "dateText": "2026년 11월 4일(수)",
-      "timeText": "18:00–20:00",
-      "location": {
-        "name": "KAIST 본원 학술문화관 존해너홀",
-        "building": "E9",
-        "room": "5층 존해너홀"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "선착순 100명 싸이버거 제공",
-        "source": "text"
-      },
-      "organizer": "실패연구소와 ICISTS",
-      "eligibility": "",
-      "registration": {
-        "required": "false",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품 추첨: 에어팟 프로 3, 신세계 백화점 10만원 상품권, 배달의 민족 5만원 기프티콘, 과자 및 망고젤리, 망고젤리"
-      },
-      "audience": {
-        "text": "실패와 성공, 경품에 관심이 있으신 분 누구나",
         "basis": "stated"
       }
     },
