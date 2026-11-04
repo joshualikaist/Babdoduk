@@ -1,0 +1,348 @@
+/* 오늘 뭐 먹지 (choose.html, js/pick.js): three big choices, the world cup's roulette tiles (the light runs
+   through them and lands with a pop) and the result card; the slot reel comes from css/choose.css. */
+
+.pick-page {
+  width: min(960px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: calc(var(--nav-h, 56px) + 32px) 0 72px;
+}
+
+.pick-head {
+  position: relative;
+  padding-right: 96px;
+}
+
+.pick-title {
+  margin: 0;
+}
+
+.pick-lead {
+  margin: 8px 0 0;
+  color: var(--color-ink-muted, #5a534a);
+  font-size: 16px;
+}
+
+.pick-sound {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(30, 29, 26, 0.16);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pick-sound[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.pick-step {
+  margin: 32px 0 12px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.pick-modes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pick-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 132px;
+  padding: 14px 8px;
+  border: 2px solid #efe6d6;
+  border-radius: 24px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  text-align: center;
+  box-shadow: 0 4px 0 #eadfcb;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.pick-mode:hover {
+  transform: translateY(-2px);
+}
+
+.pick-mode[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-wash, #fce7f3);
+  box-shadow: 0 4px 0 #f5b8d4;
+}
+
+.pick-mode--any {
+  border-style: dashed;
+}
+
+.pick-mode-emoji {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.pick-mode-label {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.pick-mode-sub {
+  font-size: 13px;
+  color: var(--color-ink-muted, #5a534a);
+}
+
+.pick-mode:focus-visible,
+.pick-tile:focus-visible,
+.pick-btn:focus-visible,
+.pick-sound:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+.pick-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pick-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 96px;
+  padding: 10px 6px;
+  border: 2px solid #ece6f6;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--color-ink);
+  font: inherit;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow: 0 3px 0 #e6def3;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
+}
+
+.pick-tile-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.pick-tile-label {
+  font-size: 15px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.pick-tile-sub {
+  font-size: 12px;
+  color: var(--color-ink-muted, #5a534a);
+}
+
+/* The light running through the tiles (as js/worldcup.js 아무거나), then where it landed. */
+.pick-tile.is-spin {
+  border-color: #6366f1;
+  background: #eef2ff;
+  transform: scale(1.07);
+}
+
+.pick-tile.is-landed {
+  border-color: var(--color-accent);
+  background: var(--color-accent-wash, #fce7f3);
+  box-shadow: 0 3px 0 #f5b8d4;
+}
+
+.pick-result {
+  margin-top: 24px;
+  padding: 22px 22px 18px;
+  border: 1px solid rgba(30, 29, 26, 0.1);
+  border-radius: 24px;
+  background: var(--color-surface);
+  box-shadow: 0 14px 30px rgba(30, 29, 26, 0.08);
+}
+
+.pick-result-kicker {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink-muted, #5a534a);
+}
+
+.pick-result-title {
+  margin: 6px 0 0;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+
+.pick-result-title:focus {
+  outline: none;
+}
+
+.pick-reel {
+  margin: 12px 0 4px;
+}
+
+.pick-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pick-menu li {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f6f1e7;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.pick-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.pick-facts span {
+  color: var(--color-ink-muted, #5a534a);
+  font-weight: 700;
+}
+
+.pick-note {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--color-ink-muted, #5a534a);
+}
+
+.pick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pick-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(30, 29, 26, 0.16);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pick-btn--main {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: #fff;
+}
+
+.pick-btn--quiet {
+  border-color: transparent;
+  background: transparent;
+}
+
+.pick-scope {
+  margin: 28px 0 0;
+  font-size: 13px;
+  color: var(--color-ink-muted, #5a534a);
+}
+
+.pick-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .pick-page {
+    width: calc(100% - 32px);
+    padding-top: calc(var(--nav-h, 56px) + 20px);
+  }
+
+  .pick-head {
+    padding-right: 84px;
+  }
+
+  .pick-modes {
+    gap: 8px;
+  }
+
+  .pick-mode {
+    min-height: 112px;
+    border-radius: 20px;
+  }
+
+  .pick-mode-emoji {
+    font-size: 32px;
+  }
+
+  .pick-mode-label {
+    font-size: 17px;
+  }
+
+  .pick-mode-sub {
+    font-size: 12px;
+  }
+
+  .pick-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pick-result {
+    padding: 18px 16px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pick-mode,
+  .pick-tile {
+    transition: none;
+  }
+
+  .pick-mode:hover {
+    transform: none;
+  }
+}

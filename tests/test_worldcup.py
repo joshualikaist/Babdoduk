@@ -86,7 +86,7 @@ def test_undo_and_restart_are_an_icon_and_a_short_label():
     ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
     en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
     assert (ko["wc.undo"], en["wc.undo"]) == ("되돌리기", "Undo")
-    assert (ko["wc.restart"], en["wc.restart"]) == (ko["eat.reset"], en["eat.reset"])   # the picker's word
+    assert (ko["wc.restart"], en["wc.restart"]) == (ko["pick.restart"], en["pick.restart"])   # the picker's word
     css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
     assert ".wc-tool:focus-visible" in css and "min-height: 44px" in css.split(".wc-tool {", 1)[1].split("}", 1)[0]
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")

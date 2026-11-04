@@ -18,13 +18,13 @@
 | **오늘의 꽁밥** | `ggongbab.html` (꽁밥 탭, `#free`) | 지금·곧 참여할 수 있는 KAIST 무료 음식 일정은? | `data/ggongbab/latest.json` (생성) |
 | **KAIST 학식** | `ggongbab.html#menu` (학식 탭) | 이번 주 학식 메뉴는? (월–일, 날짜를 골라 봄) | `data/kaist-menu/` 날짜별 파일·`week.json`·`latest.json`(오늘) (생성, AI 없음) |
 | **밥도둑 매거진** | `mukbang.html` | 요리 비법·유행·건강·식습관 네 갈래의 원문 출처 이야기. 유행은 근거(원문 주장·여러 매체·조회수·판매 수치)가 있을 때만, 식습관은 날짜가 있는 조사·기사·연구만 | `data/magazine/` (생성, 원문 링크가 있는 글만) |
-| **메뉴 고르기** (매거진 안) | `mukbang.html#what` | 뭘 먹을지 못 정했을 때 무엇을 고를까? | `data/foods/` 카탈로그 제안 (판매 여부 확인이 아님). 옛 `choose.html` 은 여기로 이동 |
+| **오늘 뭐 먹지** (상단 메뉴, 2026-11-04) | `choose.html` | 학식일까 배달일까, 뭘 먹을까? 룰렛이 골라 준다 | 오늘 학식 `data/kaist-menu/`, 배달 종류와 메뉴는 `data/foods/` 카탈로그 제안(판매 여부 확인이 아님). 옛 `mukbang.html#what` 은 여기로 이동. [docs/PICK.md](PICK.md) |
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `event.html` 안에 직접 작성 |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 
 먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
 
-홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`mukbang.html#what`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
+홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`choose.html`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
 학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에는 아무것도 두지 않습니다(01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식은 소유자 결정으로 2026-11-02 에 없앴습니다). `history.html` 은 밥도둑이 걸어온 길입니다.
 
 ### 섞지 않는 두 가지
@@ -101,7 +101,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`food.html`** | 먹방 가계부 — **공개 전, 실험실 전용**(`noindex, nofollow`, 공개 링크 없음, `lab.html` 에서 진입). 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 기록 주체는 소유자 결정 대기 |
 | **`event.html`** | 밥도둑 소식 — **지금**(작성된 공지와 진행 중·예정 활동, 없으면 “예정된 활동 없음”)과 **지난 활동**(날짜·제목·짧은 상태·당시 게시물). Instagram 링크는 목록 아래 한 줄로 따로 있다. 날짜 구간과 확인 상태는 따로 계산하고, 날짜가 지났다고 진행됐다고 하지 않는다. 당시 안내 전문은 “자세히” 안에 (`css/event.css`, `docs/EVENT_DETAIL_FIELDS.md`) |
 | **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리. **원문 출처가 있는 글만** 싣고(‘밥도둑 데스크’ 대체 글 없음), 갈래마다 5건을 싣는다(새 글 먼저, 모자라면 아직 싣지 않은 예전 글). 그래도 모자란 갈래는 있는 만큼 싣고 수집 보고(`research/magazine/health.json`)에 경고로 남긴다. 대표 글은 근거가 있는 요즘 유행 글이면 “지금 뜨는 먹거리”, 아니면 “오늘의 추천 글”로 표시하고, 자기 이미지가 없으면 글만 있는 히어로. YouTube 는 운영 PC 의 로컬 수집(`scripts/magazine_local_discovery.py`, 수집만 하고 발행하지 않음)으로 들어온다. 첫 화면의 대표 글 옆(좁은 화면에서는 바로 아래) `#what` 에 **메뉴 고르기**(“오늘 뭐 먹지?” 슬롯, 카탈로그 제안), 네 갈래 아래에 날짜가 붙은 오늘 학식 요약(`#kaistToday`). 수집·선정 방식은 `docs/MAGAZINE_DISCOVERY.md` |
-| **`choose.html`** | 호환용 이동 페이지 — `mukbang.html#what` 으로 바로 이동(`noindex`). 별도 추천기 제품이 아님 |
+| **`choose.html`** | 오늘 뭐 먹지 — 학식·배달·아무거나 룰렛(`js/pick.js`). 추천기는 이것 하나 |
 | **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 변경 시각을 표시. 목록 아래에 흐린 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)을 따로 표시. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 (`data/content/history.json` 에서 동기화) |
 | **`worldcup.html`** | 밥도둑 먹방 월드컵 — 밥도둑 소식의 활동에서 여는 놀이. `data/content/worldcup.json` 의 메뉴 700여 개(음식 사전 id, 같은 요리는 5개까지 — `scripts/page_content.py` `SAME_DISH`) 중 매 판 32개를 뽑아 둘씩 고르고(시작 화면: 카드 둘레에 떠 있는 음식 사진, "오늘의 32강, 뭐가 나올까?", 이모지 카테고리 타일 8개와 🙈 아무거나, 다음 판에 실제로 나오는 메뉴 사진 다섯 장, 숨 쉬는 🎰 시작 버튼 — 시작하면 약 5초 캡슐 뽑기 장면, 이어하기에는 없음, 탭이나 키로 건너뜀; 고른 카드에 효과, 8강부터 새 라운드마다 검은 화면에 라운드 이름이 찍히는 장면 — 결승은 두 메뉴가 부딪히는 VS 장면, 탭이나 키로 건너뜀, 동작 줄이기면 없음 — 우승 때 폭죽과 인스타 스토리 카드 저장·공유, 친구 도전 링크 — `docs/WORLDCUP_SHARE.md`), 진행과 우승 기록은 이 브라우저(localStorage `babdoduk-worldcup`)에만 남는다. 메뉴마다 위키미디어 공용의 자유 이용 사진(`images/worldcup/`, 작가·라이선스를 사진 아래 표시). 경품 없음 |
@@ -668,7 +668,7 @@ python scripts/check_ggongbab_ui.py
 
 `check_site_ui.py` 는 9개 페이지 × 5개 폭(1920·1440·768·390·360)의 가로 넘침, Windows 스크롤바,
 공통 내비·푸터 계약과 함께 다음을 확인합니다: 홈 요약의 날짜·공개 조건, 매거진 학식 요약(`#kaistToday`)의 stale 표시와
-이스케이프, 메뉴 고르기의 이유·범위 안내·"먹었어요"와 선택의 분리, 추천기가 하나뿐이고 `choose.html` 이 그리로 이동하는지,
+이스케이프, 메뉴 고르기의 이유·범위 안내·"먹었어요"와 선택의 분리, 추천기가 `choose.html` 하나뿐이고 옛 `mukbang.html#what` 이 그리로 이동하는지,
 매거진이 원문 출처 글만 보여 주는지(빈 갈래·글만 있는 히어로·편집본 실패), 가계부가 공개 페이지에 링크되지 않고 noindex 인지,
 홈 소식의 현재 정보/지난 기록 구분, 이벤트 날짜 구간과 확인 상태·지난 일정 링크와 참여 방법 표시, 가계부 출처 표시,
 한·영 양쪽의 랜드마크·이름·터치 크기, 데이터가 모두 실패할 때의 안내.
@@ -808,6 +808,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
 | `docs/CAMPUS_FOOD_NEWS.md` | 먹거리 소식(꽁밥과 분리된 뉴스) |
+| `docs/PICK.md` | 오늘 뭐 먹지: 학식·배달 룰렛 |
 | `docs/CAMPUS_MAP.md` | 3D 캠퍼스 지도(진행 중): 결정, 단계, 건물 표와 행사 위치 찾기 |
 | `docs/PUBLIC_EXPOSURE.md` | 공개 범위와 권리 표시: LICENSE, 데이터 허용 사이트, robots.txt, 공개 칸 |
 | `docs/GGONGBAB_DISCOVERY.md` | 꽁밥 레이더·근거·평가 |

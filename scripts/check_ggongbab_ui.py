@@ -1658,7 +1658,7 @@ def run_checks(preview=False):
         reset_storage(page)
         page.goto(base + "/ggongbab.html")
         page.locator(".gg-card").first.wait_for()
-        assert page.locator(".gg-choose-link").get_attribute("href") == "mukbang.html#what"   # the one picker
+        assert page.locator(".gg-choose-link").get_attribute("href") == "choose.html"   # the one picker
         today_tile = page.locator('[data-group="when"][aria-current="date"]')
         today_value = today_tile.get_attribute("data-value")
         today_tile.focus()

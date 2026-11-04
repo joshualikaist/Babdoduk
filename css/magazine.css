@@ -753,3 +753,48 @@ body.mg-body .nav-mega-link.is-current {
 .mg-hero.mg-hero--text { grid-template-columns: minmax(0, 1fr); }
 .mg-hero.mg-hero--text .mg-hero-copy { max-width: 760px; }
 .mg-lane-empty { margin: 4px 0 0; font-size: 13px; line-height: 20px; color: var(--color-ink-muted, #6e6e73); }
+
+/* 오늘 뭐 먹지 moved to choose.html (2026-11-04): the card in its old place points there. */
+.mg-pick-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px 22px;
+  border: 2px dashed #f5b8d4;
+  border-radius: 24px;
+  background: var(--color-accent-wash, #fce7f3);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.mg-pick-link:hover .mg-pick-cta {
+  text-decoration: underline;
+}
+
+.mg-pick-link:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+.mg-pick-emoji {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.mg-pick-title {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.mg-pick-lead {
+  font-size: 15px;
+  color: var(--hero-ink-soft, #5a534a);
+}
+
+.mg-pick-cta {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-accent);
+}

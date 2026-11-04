@@ -383,7 +383,7 @@ def keyboard_nav(q: Quality, page, scope: str):
     kb = Keyboard(q, page, scope, "index.html")
     goto(q, page, "index.html")
     kb.reach("nav wordmark", "a#navHome")
-    for href in ("ggongbab.html", "mukbang.html", "event.html"):
+    for href in ("ggongbab.html", "choose.html", "event.html"):   # the direct destinations since 2026-11-04
         kb.reach(f"nav link {href}", f'a.site-nav-direct[href="{href}"]', from_start=True)
     lang0 = page.evaluate("document.documentElement.lang")
     info = kb.reach("language toggle", "#langToggle")

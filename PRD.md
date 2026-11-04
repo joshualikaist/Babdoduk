@@ -35,7 +35,7 @@ These are hypotheses from the current features, not measured audience segments.
 | Tier | Experience | Present implementation |
 | --- | --- | --- |
 | Core | **Check today's food**: KAIST cafeteria, publishable upcoming free food | `ggongbab.html`, `js/ggongbab.js`, `js/kaist-menu.js` |
-| Core | **Choose a dish**: a quick, explainable suggestion | inside the magazine at `mukbang.html#what` with `js/food-engine.js`, `js/food-picker.js`, `js/eat-slot.js`; `choose.html` only redirects there |
+| Core | **Choose a dish** (오늘 뭐 먹지): the roulette picks today's KAIST cafeteria meal or a kind of delivery food, then a dish | `choose.html` with `js/pick.js`, `js/food-engine.js`, `js/eat-slot.js` (owner 2026-11-04; docs/PICK.md) |
 | Secondary | Explore: the source-backed magazine, curated restaurant map, history and social channels | `mukbang.html` (`docs/MAGAZINE_DISCOVERY.md`), `history.html`, external links |
 | Secondary | Participate: verified events and collaborations | `event.html` |
 | Unreleased (lab only) | Food expense and meal log: personal, creator-authored or explicitly separated modes; owner decision open | `food.html` (noindex, nofollow; linked only from `lab.html`), `data/food-log.json`, browser localStorage |
@@ -58,15 +58,15 @@ The home page should show the service definition, primary check action, secondar
 | --- | --- | --- | --- |
 | `index.html` | Orient and start the two core tasks | Today's food, picker, then editorial/events | Equal-weight directory of all features |
 | `ggongbab.html` | Answer what is available through free-food and cafeteria tabs | Approved registration or the dish picker | Treat catalog suggestions as live inventory |
-| `mukbang.html` | Publish four source-backed lanes (tips, trends, health, habits), and host the one dish picker at `#what` with the dated cafeteria summary | Original story; a reasoned dish suggestion; the hub for every cafeteria | Fabricated or unsourced stories; treating catalog suggestions as live inventory |
-| `choose.html` | Compatibility redirect to `mukbang.html#what` (noindex) | — | A second picker |
+| `mukbang.html` | Publish four source-backed lanes (tips, trends, health, habits) with the dated cafeteria summary; a card at `#what` points to 오늘 뭐 먹지 | Original story; the hub for every cafeteria | Fabricated or unsourced stories |
+| `choose.html` | 오늘 뭐 먹지: the one dish picker, a direct navigation destination (owner 2026-11-04) | Today's cafeteria meal or a delivery dish | Treating catalog suggestions as live inventory; a second picker |
 | `food.html` | Unreleased, lab only: record/review food and expenses once ownership is decided | `lab.html` | Any public navigation link; unlabelled mixture of personal and creator records |
 | `event.html` | Show now, coming up and past activity with verified status | Confirmed participation instructions | Past dates described as upcoming |
 | `history.html` | Explain Babdoduk's story and provenance | Relevant content and activities | Duplicate the live food dashboard |
 | `worldcup.html` | A light activity: pick a favorite dish from a 32-dish bracket drawn from a pool of more than 700 dishes (at most five variants of the same dish), with pick effects, round banners, confetti and a saveable result image (owner P4, 2026-10-13) | Catalog dish names and flavours; results kept in the visitor's browser | Prizes or rankings nobody announced; treating catalog dishes as what a shop sells |
 | `lab.html`, `lab-ggongbab.html` | Isolated experiments and tests | Development documentation | Public core navigation or private preview exposure; served on babdoduk-lab only (`vercel.json` answers 404 elsewhere) |
 
-Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **밥도둑 매거진** for the magazine, which carries the picker (owner decision, 2026-09-29: one picker product, not a separate navigation destination). The home call to action may still read **메뉴 고르기** and points to `mukbang.html#what`. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. Since 2026-10-13 (owner decision) **소식·이벤트** is a direct top-bar destination beside the two above; the More menu keeps history, the map and social links. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs keep resolving: `choose.html` redirects to `mukbang.html#what`.
+Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **오늘 뭐 먹지** for the one picker, a direct destination since 2026-11-04 (owner: "밥도둑 매거진을 더보기로 넣고, 오늘 뭐 먹지를 위로"); **밥도둑 매거진** moved into the More menu. The home call to action reads **메뉴 고르기** and points to `choose.html`. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. Since 2026-10-13 (owner decision) **소식·이벤트** is a direct top-bar destination beside the two above; the More menu keeps history, the map and social links. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs keep resolving: `mukbang.html#what` sends the visitor to `choose.html`.
 
 ## Functional requirements
 
