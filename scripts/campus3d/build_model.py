@@ -19,9 +19,12 @@ SRC, STYLE, OUT = argv[0], argv[1], argv[2]
 SAMPLES = int(argv[3]) if len(argv) > 3 else 96
 WEB = "--web" in argv                 # export_web.py follows: no sample pins, no render here
 data = json.load(open(SRC))
+EXTRA = json.load(open(SRC.rsplit("/", 1)[0] + "/buildings-extra.json")) if "/" in SRC else {}
+STYLE_OF = EXTRA.get("styles", {})
+STYLE_ID = {"glass": 1, "brick": 2, "sports": 3}
 random.seed(7)
 
-PINS = ("E11", "E9", "N13")          # sample "today" events for the mockup
+PINS = () if "--nopins" in sys.argv else ("E11", "E9", "N13")   # sample "today" events for the mockup
 
 STYLES = {
     "clay": dict(base_top=(0.93, 0.89, 0.80), base_side=(0.62, 0.45, 0.33), grass=(0.55, 0.72, 0.42),
@@ -31,6 +34,9 @@ STYLES = {
                  wall=(0.97, 0.94, 0.88), roof=(0.90, 0.84, 0.76), glass=(0.62, 0.72, 0.80),
                  crown=((0.38, 0.62, 0.32), (0.50, 0.70, 0.36), (0.30, 0.54, 0.30)), trunk=(0.45, 0.32, 0.22),
                  highlight=(0.99, 0.80, 0.88), world=(0.96, 0.92, 0.86), world_strength=0.9,
+                 glass_strong=(0.52, 0.68, 0.78), brick_wall=(0.72, 0.42, 0.33), brick_roof=(0.38, 0.27, 0.22),
+                 metal_wall=(0.83, 0.86, 0.89), metal_roof=(0.90, 0.92, 0.94), stone=(0.90, 0.87, 0.82),
+                 car_red=(0.86, 0.22, 0.22), car_blue=(0.22, 0.38, 0.82), car_green=(0.26, 0.66, 0.38), jet=(0.97, 0.99, 1.0),
                  sun=(1.0, 0.95, 0.88), sun_strength=3.2, sun_elev=30, sun_azim=225, sun_angle=4.0,
                  emission=0.0),
     "paper": dict(base_top=(0.96, 0.95, 0.92), base_side=(0.86, 0.83, 0.78), grass=(0.86, 0.90, 0.80),
@@ -101,8 +107,9 @@ def math_node(tree, op, a, b=None, value=None):
     return n.outputs[0]
 
 
-def building_material(name, wall, roof, glass, emission):
-    """Walls with floor bands of windows and mullions; roofs by normal; dusk windows glow."""
+def building_material(name, wall, roof, glass, emission, band=(0.38, 0.78), mullion=0.22):
+    """Walls with floor bands of windows and mullions; roofs by normal; dusk windows glow. A landmark's
+    style widens the band (glass) or changes the walls and roof (brick, metal)."""
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     t = m.node_tree
@@ -113,10 +120,10 @@ def building_material(name, wall, roof, glass, emission):
     nz = math_node(t, "ABSOLUTE", sep_n.outputs[2])
     wall_f = math_node(t, "LESS_THAN", nz, 0.35)
     roof_f = math_node(t, "GREATER_THAN", nz, 0.8)
-    band = math_node(t, "FRACT", math_node(t, "DIVIDE", math_node(t, "SUBTRACT", sep_p.outputs[2], 0.4), LEVEL))
-    win_v = math_node(t, "MULTIPLY", math_node(t, "GREATER_THAN", band, 0.38), math_node(t, "LESS_THAN", band, 0.78))
+    band_v = math_node(t, "FRACT", math_node(t, "DIVIDE", math_node(t, "SUBTRACT", sep_p.outputs[2], 0.4), LEVEL))
+    win_v = math_node(t, "MULTIPLY", math_node(t, "GREATER_THAN", band_v, band[0]), math_node(t, "LESS_THAN", band_v, band[1]))
     along = math_node(t, "ADD", sep_p.outputs[0], sep_p.outputs[1])
-    col_f = math_node(t, "GREATER_THAN", math_node(t, "FRACT", math_node(t, "DIVIDE", along, 3.2)), 0.22)
+    col_f = math_node(t, "GREATER_THAN", math_node(t, "FRACT", math_node(t, "DIVIDE", along, 3.2)), mullion)
     above = math_node(t, "GREATER_THAN", sep_p.outputs[2], 2.2)
     window = math_node(t, "MULTIPLY", math_node(t, "MULTIPLY", wall_f, win_v), math_node(t, "MULTIPLY", col_f, above))
     mix_roof = t.nodes.new("ShaderNodeMix"); mix_roof.data_type = "RGBA"
@@ -159,6 +166,13 @@ MAT["water"] = material("water", S["water"], rough=0.06, spec=0.6)
 MAT["base"] = base_material()
 MAT["building"] = building_material("building", S["wall"], S["roof"], S["glass"], S["emission"])
 MAT["highlight"] = building_material("highlight", S["highlight"], S["highlight"], S["glass"], S["emission"])
+STYLE_MAT = {
+    "glass": building_material("building_glass", S["wall"], S["roof"], S.get("glass_strong", S["glass"]), S["emission"], (0.14, 0.9), 0.08),
+    "brick": building_material("building_brick", S.get("brick_wall", S["wall"]), S.get("brick_roof", S["roof"]), S["glass"], S["emission"], (0.42, 0.74), 0.3),
+    "sports": building_material("building_sports", S.get("metal_wall", S["wall"]), S.get("metal_roof", S["roof"]), S.get("glass_strong", S["glass"]), S["emission"], (0.2, 0.85), 0.1),
+}
+for key in ("stone", "car_red", "car_blue", "car_green", "jet"):
+    MAT[key] = material(key, S.get(key, S["wall"]), rough=0.5 if key.startswith("car") else 0.8)
 MAT["trunk"] = material("trunk", S["trunk"], rough=0.9)
 MAT["crowns"] = [material(f"crown{i}", c, rough=0.85) for i, c in enumerate(S["crown"])]
 MAT["pin"] = material("pin", (0.75, 0.09, 0.36), rough=0.35, spec=0.5, emission=(0.93, 0.28, 0.55), strength=0.4)
@@ -257,8 +271,9 @@ ribbons("paths", clipped(p["pts"] for p in data["paths"]), 2.6, 0.46, MAT["path"
 
 
 def height(b):
-    if b.get("levels"):
-        return b["levels"] * LEVEL + 1.0
+    floors = EXTRA.get("levels", {}).get(b.get("code")) or b.get("levels")
+    if floors:
+        return floors * LEVEL + 1.0
     a = b.get("area") or 0
     return (1 if a < 150 else 2 if a < 600 else 4) * LEVEL + 1.0
 
@@ -288,6 +303,14 @@ def finish_roof(ob, b, h):
             bm.free(); bm = before
         else:
             before.free()
+    if STYLE_OF.get(b.get("code")) == "sports":
+        # The sports complex's roof slants up across its long side (photo, 2019).
+        xs1 = [v.co.x for v in bm.verts]; ys1 = [v.co.y for v in bm.verts]
+        axis = 0 if max(xs1) - min(xs1) >= max(ys1) - min(ys1) else 1
+        lo, hi = (min(xs1), max(xs1)) if axis == 0 else (min(ys1), max(ys1))
+        for v in bm.verts:
+            if v.co.z > zmax - 1.2:
+                v.co.z += 13.0 * (v.co[axis] - lo) / max(1.0, hi - lo)
     bm.to_mesh(me); bm.free()
     area = poly_area(b["pts"])
     if area < 1200:
@@ -323,8 +346,13 @@ footprints = []
 for i, b in enumerate(data["buildings"]):
     h = height(b)
     mat = MAT["highlight"] if not WEB and b.get("code") in PINS else MAT["building"]
+    style = STYLE_OF.get(b.get("code"))
+    if style and mat is MAT["building"]:
+        mat = STYLE_MAT[style]
     ob = slab(f"b{i}_{b.get('code') or ''}", [b["pts"], *b.get("holes", [])], 0.4, 0.4 + h, mat, bevel=0.55)
     finish_roof(ob, b, h)
+    attr = ob.data.attributes.new("_style", "FLOAT", "POINT")
+    attr.data.foreach_set("value", [float(STYLE_ID.get(style, 0))] * len(ob.data.vertices))
     xs = [p[0] for p in b["pts"]]; ys = [p[1] for p in b["pts"]]
     footprints.append((min(xs), min(ys), max(xs), max(ys), b["pts"]))
     if b.get("code") in PINS and (b["code"] not in pin_spots or b["area"] > pin_spots[b["code"]][2]):
@@ -333,6 +361,62 @@ for i, b in enumerate(data["buildings"]):
 
 def in_building(x, y):
     return any(a - 2 <= x <= c + 2 and b - 2 <= y <= d + 2 and inside(x, y, pts) for a, b, c, d, pts in footprints)
+
+
+# --- landmarks: the main gate's pillars, the carillon on the pond (석림의 종), fountains --------------
+def box(name, x, y, z0, sx, sy, sz, mat, rot=0.0, tilt=0.0):
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, y, z0 + sz / 2), rotation=(tilt, 0, rot))
+    ob = bpy.context.active_object
+    ob.name = name
+    ob.scale = (sx, sy, sz)
+    ob.data.materials.append(mat)
+    mod = ob.modifiers.new("round", "BEVEL"); mod.width = 0.12; mod.segments = 1
+    return ob
+
+
+LM = data.get("landmarks", {})
+
+
+def onto_island(x, y, margin=4.0):
+    """OSM puts the gate on the road at the campus edge: step it toward the campus until it stands on
+    the island, `margin` meters in."""
+    for k in range(80):
+        f = 1 - k * 0.004
+        if inside(x * f, y * f, data["boundary"]) and inside(x * f * (1 - margin / max(1, math.hypot(x, y))), y * f * (1 - margin / max(1, math.hypot(x, y))), data["boundary"]):
+            return x * f, y * f
+    return x, y
+
+
+gate = [list(onto_island(x, y)) for x, y in LM.get("gate", [])]
+for k, (x, y) in enumerate(gate):
+    box(f"lm_gate{k}", x, y, 0.4, 2.6, 2.6, 16.0, MAT["stone"])
+    box(f"lm_gatecap{k}", x, y, 16.4, 3.1, 3.1, 0.8, MAT["stone"])
+for a, b2 in zip(gate[0::2], gate[1::2]):           # each pair carries a beam (photo: the gate frame)
+    mx, my = (a[0] + b2[0]) / 2, (a[1] + b2[1]) / 2
+    span = math.hypot(b2[0] - a[0], b2[1] - a[1])
+    box("lm_gatebeam", mx, my, 13.6, span, 1.8, 1.6, MAT["stone"], rot=math.atan2(b2[1] - a[1], b2[0] - a[0]))
+for (cx, cy) in LM.get("carillon", [])[:1]:
+    for j, (dx, mat) in enumerate(((-1.1, MAT["car_red"]), (0.0, MAT["car_blue"]), (1.1, MAT["car_green"]))):
+        for step in range(7):                         # three ribbons zigzagging up, a little taller than life
+            off = 1.3 if (step + j) % 2 else -1.3
+            box(f"lm_car{j}_{step}", cx + dx * 1.4 + off * 0.6, cy, 0.4 + step * 3.0, 0.8, 0.8, 3.3, mat,
+                tilt=0.0, rot=0.0).rotation_euler.y = 0.35 * (1 if (step + j) % 2 else -1)
+    water = next((w["pts"] for w in data.get("water", []) if inside(cx, cy, w["pts"]) or
+                  min(math.hypot(px - cx, py - cy) for px, py in w["pts"]) < 80), None)
+    jets, spots = 0, []
+    for radius in (18, 26, 34, 42):                   # three fountains on the water around the island
+        for k in range(16):
+            ang = k * math.tau / 16
+            jx, jy = cx + radius * math.cos(ang), cy + radius * math.sin(ang)
+            if water and inside(jx, jy, water) and all(math.hypot(jx - a, jy - b) > 25 for a, b in spots):
+                spots.append((jx, jy))
+    for jx, jy in spots[:3]:
+        if True:
+            bpy.ops.mesh.primitive_cone_add(vertices=12, radius1=1.4, radius2=0.2, depth=5.5, location=(jx, jy, 0.12 + 2.75))
+            jet = bpy.context.active_object
+            jet.name = f"lm_jet{jets}"
+            jet.data.materials.append(MAT["jet"])
+            jets += 1
 
 
 # --- trees: low-poly lollipops, instanced ----------------------------------------------------------

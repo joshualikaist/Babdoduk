@@ -52,5 +52,21 @@
       "nameEn": "E3-1",
       "aliases": []
     }
-  ]
+  ],
+  "levels": {
+    "E4": 5,
+    "N1": 10
+  },
+  "levelsSource": {
+    "E4": "KI빌딩 지상 5층 (KAIST 소개, 2011)",
+    "N1": "IT융합빌딩 지상 10층 (2013-02 준공 보도)"
+  },
+  "styles": {
+    "E9": "glass",
+    "E11": "glass",
+    "N1": "glass",
+    "N4": "brick",
+    "N3": "sports"
+  },
+  "stylesSource": "Wikimedia Commons photos of KAIST (2019): 학술문화관 glass curtain wall, 창의학습관 green glass, 인문사회과학부동 red brick with brown eaves, 스포츠 컴플렉스 slanted metal roof"
 }

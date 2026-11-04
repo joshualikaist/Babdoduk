@@ -28,10 +28,12 @@ CODE = re.compile(r"(?<![A-Za-z0-9])([EWNS]\d{1,2}(?:-\d)?)(?![0-9])")
 SUFFIX = re.compile(r"\s*\(\s*[EWNS]\d{1,2}(?:-\d)?\s*\)\s*$")
 
 
-def height(b: dict) -> float:
-    """Roof height in meters: OSM floors, else a guess from the footprint area."""
-    if b.get("levels"):
-        return b["levels"] * LEVEL + 1.0
+def height(b: dict, levels: dict | None = None) -> float:
+    """Roof height in meters: floors from buildings-extra.json `levels` (a checked source), else OSM's,
+    else a guess from the footprint area."""
+    floors = (levels or {}).get(b.get("code")) or b.get("levels")
+    if floors:
+        return floors * LEVEL + 1.0
     area = b.get("area") or 0
     return (1 if area < 150 else 2 if area < 600 else 4) * LEVEL + 1.0
 
@@ -78,7 +80,8 @@ def build(campus: dict, extra: dict) -> dict:
         rows.append({"code": code, "name": name, "nameEn": clean(named.get("name_en"), code),
                      "aliases": sorted({a.strip() for a in aliases
                                         if len(a.strip()) >= 2 and a.strip() != name and not CODE.fullmatch(a.strip())}),
-                     "at": [round(x, 1), round(y, 1)], "top": round(max(height(b) for b in parts), 1)})
+                     "at": [round(x, 1), round(y, 1)],
+                     "top": round(max(height(b, extra.get("levels")) for b in parts), 1)})
     placed = {r["code"] for r in rows}
     unplaced = [u for u in extra.get("unplaced", []) if u["code"] not in placed]
     # An alias two buildings share would place an event on a guess: it is dropped from both.

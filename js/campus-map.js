@@ -57,35 +57,49 @@ function buildingMaterial(palette) {
   const uniforms = {
     uWall: { value: srgb(palette.wall) }, uRoof: { value: srgb(palette.roof) }, uGlass: { value: srgb(palette.glass) },
     uHi: { value: srgb(palette.highlight) }, uPick: { value: srgb([0.93, 0.28, 0.55]) },
+    uGlassStrong: { value: srgb(palette.glass_strong || palette.glass) },
+    uBrickWall: { value: srgb(palette.brick_wall || palette.wall) }, uBrickRoof: { value: srgb(palette.brick_roof || palette.roof) },
+    uMetalWall: { value: srgb(palette.metal_wall || palette.wall) }, uMetalRoof: { value: srgb(palette.metal_roof || palette.roof) },
     uIds: { value: new Float32Array(16) }, uSel: { value: 0 },
   };
   mat.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute float _bid;\nvarying float vBid;\nvarying vec3 vWorld;\nvarying vec3 vNormalW;')
-      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvBid = _bid;\nvWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvNormalW = normalize(mat3(modelMatrix) * objectNormal);');
+      .replace('#include <common>', '#include <common>\nattribute float _bid;\nattribute float _style;\nvarying float vBid;\nvarying float vStyle;\nvarying vec3 vWorld;\nvarying vec3 vNormalW;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvBid = _bid;\nvStyle = _style;\nvWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvNormalW = normalize(mat3(modelMatrix) * objectNormal);');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
 uniform vec3 uWall; uniform vec3 uRoof; uniform vec3 uGlass; uniform vec3 uHi; uniform vec3 uPick;
+uniform vec3 uGlassStrong; uniform vec3 uBrickWall; uniform vec3 uBrickRoof; uniform vec3 uMetalWall; uniform vec3 uMetalRoof;
 uniform float uIds[16]; uniform float uSel;
-varying float vBid; varying vec3 vWorld; varying vec3 vNormalW;`)
+varying float vBid; varying float vStyle; varying vec3 vWorld; varying vec3 vNormalW;`)
       .replace('vec4 diffuseColor = vec4( diffuse, opacity );', `
 float ny = abs(vNormalW.y);
 float roof = step(0.8, ny);
 float wall = 1.0 - step(0.35, ny);
+// Landmark styles (buildings-extra.json): 1 glass curtain, 2 red brick with a brown roof, 3 metal.
+float glassy = step(0.5, vStyle) * (1.0 - step(1.5, vStyle));
+float brick = step(1.5, vStyle) * (1.0 - step(2.5, vStyle));
+float metal = step(2.5, vStyle);
 float band = fract((vWorld.y - 0.4) / 3.6);
 float along = vWorld.x - vWorld.z;
-float win = wall * step(0.38, band) * (1.0 - step(0.78, band)) * step(0.22, fract(along / 3.2)) * step(2.2, vWorld.y);
+float lo = 0.38 - 0.24 * glassy + 0.04 * brick - 0.18 * metal;
+float hi = 0.78 + 0.12 * glassy - 0.04 * brick + 0.07 * metal;
+float mull = 0.22 - 0.14 * glassy + 0.08 * brick - 0.12 * metal;
+float win = wall * step(lo, band) * (1.0 - step(hi, band)) * step(mull, fract(along / 3.2)) * step(2.2, vWorld.y);
 float hot = 0.0;
 for (int i = 0; i < 16; i++) { if (uIds[i] > 0.5 && abs(uIds[i] - vBid) < 0.5) hot = 1.0; }
 float sel = (uSel > 0.5 && abs(uSel - vBid) < 0.5) ? 1.0 : 0.0;
-vec3 base = mix(uWall, uRoof, roof);
+vec3 wallC = mix(mix(uWall, uBrickWall, brick), uMetalWall, metal);
+vec3 roofC = mix(mix(uRoof, uBrickRoof, brick), uMetalRoof, metal);
+vec3 glassC = mix(uGlass, uGlassStrong, max(glassy, metal));
+vec3 base = mix(wallC, roofC, roof);
 base = mix(base, uHi, hot * 0.85);
 base = mix(base, uPick, sel * 0.55);
 // Windows smaller than a pixel would shimmer: they fade into the wall's average tone.
 float px = length(fwidth(vWorld));
 float fine = 1.0 - smoothstep(0.35, 0.9, px);
-base = mix(base, uGlass, mix(wall * 0.18, win, fine) * (1.0 - sel * 0.6));
+base = mix(base, glassC, mix(wall * (0.18 + 0.3 * glassy), win, fine) * (1.0 - sel * 0.6));
 base *= mix(0.84, 1.0, smoothstep(0.4, 6.0, vWorld.y));
 vec4 diffuseColor = vec4( base, opacity );`);
   };
@@ -100,7 +114,7 @@ export function mount(stage, options) {
   const card = stage.querySelector('.home-map-card');
   const note = stage.parentElement.querySelector('.home-map-note');
   const state = { table: null, model: null, day: null, items: [], groups: [], selected: '', ready: false };
-  let renderer = null, scene = null, camera = null, controls = null, buildings = null, frame = 0, visible = true;
+  let renderer = null, scene = null, camera = null, controls = null, buildings = null, buildingMat = null, frame = 0, visible = true;
   let destroyed = false;
 
   const tables = Promise.all([
@@ -195,9 +209,17 @@ export function mount(stage, options) {
           o.material = new THREE.MeshBasicMaterial({ color: srgb(color), map: lightTex });
         } else if (/^island_sides/.test(name)) {
           o.material = new THREE.MeshLambertMaterial({ color: srgb(pal.base_side) });
-        } else if (/^buildings/.test(name)) {
-          o.material = buildingMaterial(pal);
+        } else if (/^buildings/.test(name) || (o.parent && /^buildings/.test(o.parent.name))) {
+          // One shader for every part of the buildings mesh (landmark styles split it by material):
+          // the day's highlight reaches all of them.
+          buildingMat = buildingMat || buildingMaterial(pal);
+          o.material = buildingMat;
           buildings = o;
+        } else if (/^landmarks/.test(name) || (o.parent && /^landmarks/.test(o.parent.name))) {
+          // The gate (stone), the carillon's three ribbons and the fountains, by material name.
+          const key = ((o.material && o.material.name) || 'stone').replace(/\.\d+$/, '');
+          o.material = new THREE.MeshLambertMaterial({ color: srgb(pal[key] || pal.stone || pal.wall),
+                                                       emissive: key === 'jet' ? srgb([0.35, 0.4, 0.45]) : 0x000000 });
         } else if (/^units/.test(name)) {
           o.material = new THREE.MeshLambertMaterial({ color: srgb(pal.unit) });
         } else if (/^tree\d/.test(name) || (o.parent && /^tree\d/.test(o.parent.name))) {
