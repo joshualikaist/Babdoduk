@@ -151,7 +151,7 @@ def campus_food_news(browser, base, report):
             assert page.locator("#ggNewsTitle").inner_text() == ("Campus food news" if lang == "en" else "먹거리 소식")
             assert page.locator(".gg-news-row").count() == 2
             assert page.locator(".gg-card").count() == 1
-            assert page.locator(".gg-past").count() == 0
+            assert page.locator(".gg-past").count() == 0 and page.locator("[data-gg-archive-more]").count() == 0
             assert page.locator(".gg-card").first.get_attribute("data-id") == "one"
             assert page.locator(".gg-radar-count").inner_text() == ("1 today" if lang == "en" else "오늘 1개")
             assert page.locator(".gg-news [href]").count() == 0
@@ -207,6 +207,7 @@ def open_ended_hand_out(browser, base, report):
             return page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
 
         assert live_ids() == ["open-running"], live_ids()
+        open_past(page)
         assert page.locator('.gg-past[data-past-id="open-over"]').count() == 1
         assert page.locator('.gg-past[data-past-id="open-running"]').count() == 0
         assert "사전 신청" not in page.locator(".gg-card").first.inner_text()
@@ -267,12 +268,10 @@ def todays_events_and_grace(browser, base, report):
             page.set_viewport_size({"width": width, "height": height})
             page.goto(base + "/ggongbab.html")
             page.locator(".gg-card").first.wait_for()
-            page.locator(".gg-past").first.wait_for()
+            open_past(page)
             page.locator('[data-group="when"][data-value="all"]').click()
             cards = page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
             assert sorted(cards) == sorted(live_now), cards
-            assert page.locator(".gg-past").count() == 5       # five at a time; the rest behind the toggle
-            page.locator("[data-gg-archive-more]").click()
             past = page.locator(".gg-past").evaluate_all("els => els.map(el => el.dataset.pastId)")
             assert sorted(past) == sorted(["ended-1s-ago", "ended-2h-ago", "ended-4h-ago", "gift-ended-2h-ago",
                                            "archived-yesterday", "archived-gift"]), past
@@ -295,6 +294,7 @@ def todays_events_and_grace(browser, base, report):
         page.goto(base + "/ggongbab.html")
         page.locator(".gg-card").first.wait_for()
         page.locator('[data-group="when"][data-value="all"]').click()
+        open_past(page)
         cards = page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
         assert "ends-right-now" not in cards and page.locator('.gg-past[data-past-id="ends-right-now"]').count() == 1, cards
         assert page.locator(".gg-radar-count").inner_text() == "오늘 2개", page.locator(".gg-radar-count").inner_text()
@@ -358,6 +358,15 @@ def squash(text):
     return " ".join((text or "").split())
 
 
+def open_past(page):
+    """Past listings stay closed until asked for (2026-11-05): open them, then wait for a row."""
+    toggle = page.locator("[data-gg-archive-more]")
+    toggle.wait_for()
+    if toggle.get_attribute("aria-expanded") != "true":
+        toggle.click()
+    page.locator(".gg-past").first.wait_for()
+
+
 def giveaway_listings(browser, base, report):
     """Giveaways on the public hub (owner decisions 2026-10-14): a 🎁 badge and no food label on a
     giveaway-only card, both marks on a card with food and a gift, a poster note on food read only
@@ -401,6 +410,8 @@ def giveaway_listings(browser, base, report):
             page.evaluate("""lang => { localStorage.setItem('babdoduk-lang', lang);
               localStorage.removeItem('babdoduk-ggongbab-filter'); }""", lang)
             page.reload()
+            settled("[data-gg-archive-more]", f"open-{lang}")
+            page.locator("[data-gg-archive-more]").click()
             settled(".gg-past", f"open-{lang}")
 
         for width, lang in ((390, "ko"), (1280, "ko"), (390, "en"), (1280, "en")):
@@ -426,8 +437,10 @@ def giveaway_listings(browser, base, report):
                 assert word not in expo.inner_text(), word
             # Food and a giveaway: both marks; the food was read only from the poster, and says so.
             talk = card("both-talk")
+            # The dish in a word, its emoji only decoration (2026-11-05), and the poster note.
             assert squash(talk.locator(".gg-food-primary").text_content()) == (
-                "샌드위치 · per poster" if en else "샌드위치 · 포스터 기준")
+                "🥪Sandwiches · per poster" if en else "🥪샌드위치 · 포스터 기준")
+            assert talk.locator(".gg-food-primary .gg-dish-emoji").get_attribute("aria-hidden") == "true"
             assert squash(talk.locator(".gg-gift-badge").text_content()) == badge
             assert talk.locator(".gg-giveaway").inner_text().endswith("기념품 증정")
             # Text evidence and plain food carry neither mark.
@@ -764,7 +777,8 @@ def sessions_and_audience(browser, base, report):
             page.locator('td[data-date="2026-11-06"]').click()
             friday = page.locator("#homeCalDay .hc-ev").first.inner_text()
             assert "16:00" in friday and "E4 C101" in friday and ("Session 5/5" if en else "5/5회차") in friday, friday
-            assert "쉐이크쉑 버거" in friday or en, friday          # Friday's own food
+            # Friday's own food, as its dish in the page's language (2026-11-05), not Monday's sandwiches.
+            assert ("Burgers" if en else "버거") in friday and ("Sandwiches" if en else "샌드위치") not in friday, friday
             # Tuesday: two rows. The advising week's audience is a guess and says so; Monday's was stated.
             page.locator('td[data-date="2026-11-03"]').click()
             texts = page.locator("#homeCalDay .hc-ev-who").all_inner_texts()
@@ -1062,7 +1076,7 @@ def past_listings(browser, base, report):
         for width, height in ((390, 844), (1440, 900)):
             page.set_viewport_size({"width": width, "height": height})
             page.goto(base + "/ggongbab.html")
-            page.locator(".gg-past").first.wait_for()
+            open_past(page)
             assert ids(".gg-card", "id") == ["live-upcoming"]
             assert ids(".gg-past", "pastId") == visible_past
             archive = page.locator(".gg-archive")
@@ -1089,15 +1103,16 @@ def past_listings(browser, base, report):
         page.locator("#langToggle").click()
         report["checks"] += 4
 
-        # More than five: the rest stay behind a labelled toggle that keeps keyboard focus.
+        # Closed until asked for (2026-11-05): one labelled toggle, counting them, that keeps keyboard focus.
         many = dict(past, events=[event(f"past-{i}", now - timedelta(days=i + 1, hours=1), now - timedelta(days=i + 1))
                                   for i in range(7)])
         page.unroute("**/data/ggongbab/archive/index.json")
         page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=many))
         page.goto(base + "/ggongbab.html")
-        page.locator(".gg-past").first.wait_for()
         more = page.locator("[data-gg-archive-more]")
-        assert page.locator(".gg-past").count() == 5 and more.get_attribute("aria-expanded") == "false"
+        more.wait_for()
+        assert page.locator(".gg-past").count() == 0 and more.get_attribute("aria-expanded") == "false"
+        assert more.inner_text() == "지난 꽁밥 기록 8개 보기", more.inner_text()
         more.focus()
         page.keyboard.press("Enter")
         assert page.locator(".gg-past").count() == 8 and more.get_attribute("aria-expanded") == "true"
@@ -1116,7 +1131,7 @@ def past_listings(browser, base, report):
             page.unroute("**/data/ggongbab/archive/index.json")
             page.route("**/data/ggongbab/archive/index.json", handler)
             page.goto(base + "/ggongbab.html")
-            page.locator(".gg-past").first.wait_for()
+            open_past(page)
             assert ids(".gg-card", "id") == ["live-upcoming"], label
             assert ids(".gg-past", "pastId") == ["live-just-ended"], label
             state = page.locator(".gg-archive-state")
@@ -1140,7 +1155,7 @@ def past_listings(browser, base, report):
         page.unroute("**/data/ggongbab/archive/index.json")
         page.route("**/data/ggongbab/archive/index.json", lambda route: route.fulfill(json=past))
         page.goto(base + "/ggongbab.html")
-        page.locator(".gg-past").first.wait_for()
+        open_past(page)
         assert page.locator("[data-gg-retry]").count() == 1
         assert ids(".gg-past", "pastId") == ["past-notice", "past-mail", "past-script"]
         assert not errors, errors
@@ -1305,9 +1320,14 @@ def meeting_links(browser, base, report):
             assert dated.locator(".gg-btn", has_text=join).count() == 1 and dated.locator(".gg-reg-badge").inner_text() == required
             form = page.locator('[data-id="real-form"]')
             assert form.locator(".gg-btn", has_text=register).get_attribute("href") == "https://forms.gle/example"
-            assert form.locator(".gg-btn", has_text=join).count() == 0 and form.locator(".gg-reg-badge").inner_text() == required
+            assert form.locator(".gg-btn", has_text=join).count() == 0
+            # The row's own link (2026-11-05) says the sign-up is required; no second badge.
+            row_link = form.locator(".gg-row-reg")
+            assert row_link.get_attribute("href") == "https://forms.gle/example" and form.locator(".gg-reg-badge").count() == 0
+            assert row_link.inner_text().startswith("Sign up" if lang == "en" else "사전 신청"), row_link.inner_text()
+            assert only.locator(".gg-row-reg").count() == 0                  # a meeting link is not a sign-up
             assert not errors, errors
-            report["checks"] += 7
+            report["checks"] += 9
         finally:
             context.close()
 
@@ -1472,9 +1492,13 @@ def run_checks(preview=False):
                 near(r["card"]["w"], 672)
             assert page.evaluate("document.documentElement.scrollWidth") <= width
             report["checks"] += 6
-            for selector in (".gg-title", ".gg-summary"):
-                assert page.locator(selector).first.evaluate("el => getComputedStyle(el).overflow") == "hidden"
-                report["checks"] += 1
+            # A listing is a row (2026-11-05): the title is one clamped line, the details start closed,
+            # and a plain row stays short.
+            assert page.locator(".gg-card-toggle").first.evaluate("el => getComputedStyle(el).overflow") == "hidden"
+            assert page.locator(".gg-detail").first.is_hidden()
+            row = page.locator(".gg-card:not(.is-featured)").first.bounding_box()
+            assert row["height"] <= 112, row
+            report["checks"] += 3
             page.screenshot(path=str(OUT / f"ggongbab-{width}x{height}.png"))
             report["fixture"][f"{width}x{height}"] = r
             # Scroll past the filter's own resting place so the check does not
@@ -1486,10 +1510,17 @@ def run_checks(preview=False):
             report["checks"] += 1
             page.locator('[data-group="when"][data-value="all"]').click()
             assert page.locator(".gg-card").count() == 10
-            assert page.locator('[data-id="fixture-7"] .gg-title').evaluate(
-                "el => el.scrollHeight > el.clientHeight && el.clientHeight <= 48")
-            assert page.locator('[data-id="fixture-8"] .gg-summary').evaluate(
-                "el => el.scrollHeight > el.clientHeight && el.clientHeight <= 42")
+            assert page.locator('[data-id="fixture-7"] .gg-card-toggle').evaluate(
+                "el => el.scrollHeight > el.clientHeight && el.clientHeight <= 24")
+            # Opened, a listing reads whole: the title unclamped, the summary in full.
+            toggle = page.locator('[data-id="fixture-8"] .gg-card-toggle')
+            toggle.click()
+            assert toggle.get_attribute("aria-expanded") == "true" and page.locator('[data-id="fixture-8"] .gg-detail').is_visible()
+            assert page.locator('[data-id="fixture-8"] .gg-summary').evaluate("el => el.scrollHeight <= el.clientHeight + 1")
+            toggle.click()
+            assert page.locator('[data-id="fixture-8"] .gg-detail').is_hidden()
+            # Every listing opened: its buttons stay inside its card.
+            page.locator(".gg-card-toggle").evaluate_all("els => els.forEach(el => el.click())")
             assert not page.locator('[data-id="fixture-5"] .gg-btn--primary').count()
             assert page.evaluate("document.documentElement.scrollWidth") <= width
             assert page.locator('.gg-actions').evaluate_all("els => els.every(el => [...el.children].every(btn => btn.getBoundingClientRect().right <= el.closest('.gg-card').getBoundingClientRect().right))")

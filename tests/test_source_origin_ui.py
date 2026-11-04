@@ -97,6 +97,7 @@ def test_the_food_hub_credits_and_links_an_instagram_post_and_credits_a_tip(brow
     assert card(page, "tip").locator(".gg-source").inner_text() == "제보"
     assert links(card(page, "tip")) == []                          # a tip never links, whatever the data holds
     assert card(page, "mail").locator(".gg-source").inner_text() == "KAIST 메일"
+    page.locator("[data-gg-archive-more]").click()                # past listings stay closed until asked for
     past = page.locator('.gg-past[data-past-id="past"]')
     past.wait_for()
     assert past.locator("a").get_attribute("href") == POST

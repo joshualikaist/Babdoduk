@@ -7,15 +7,18 @@
 .food-hub-tab { flex:1; height:36px; border:0; border-radius:12px; background:transparent; color:var(--color-ink-muted); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
 .food-hub-tab[aria-selected="true"] { background:var(--color-ink); color:var(--color-surface); }
 .food-hub-tab:focus-visible,.gg-radar-cta:focus-visible,.km-day:focus-visible,.gg-when-day:focus-visible,.km-meal:focus-visible,.km-fav:focus-visible,.km-expand:focus-visible,.km-cta:focus-visible,.km-stale-toggle:focus-visible,.gg-choose-link:focus-visible,.gg-card:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
-.gg-radar { width:100%; padding:18px; margin:0 0 14px; border-radius:24px; background:var(--color-surface); border:1px solid var(--color-divider); box-shadow:inset 4px 0 0 var(--color-accent); }
-.gg-radar-label { font-size:12px; font-weight:700; line-height:16px; color:var(--color-ink-muted); }
-.gg-radar-title { margin-top:6px; font-size:20px; font-weight:900; line-height:28px; letter-spacing:-.035em; color:#1d1d1f; }
-.gg-radar-count { margin-top:8px; font-size:32px; font-weight:900; line-height:36px; letter-spacing:-.04em; color:#1d1d1f; font-variant-numeric:tabular-nums; }
-.gg-radar-next { margin-top:8px; font-size:13px; font-weight:500; line-height:20px; color:#3a3a3c; }
-.gg-radar-next strong { display:block; font-size:12px; font-weight:700; color:#6e6e73; margin-bottom:2px; }
-.gg-radar-cta { margin-top:12px; display:inline-flex; align-items:center; min-height:44px; padding:0 2px; border:0; background:transparent; font:700 13px/16px inherit; color:var(--color-accent); cursor:pointer; }
-.gg-card.is-featured { border:1px solid #e3b9a8; background:#fff; box-shadow:0 10px 28px rgba(180,61,39,.08); }
-.gg-featured-label { display:inline-flex; height:20px; padding:0 7px; margin-bottom:8px; border-radius:6px; background:var(--color-accent-wash); color:var(--color-accent); font-size:11px; font-weight:800; letter-spacing:.04em; align-items:center; }
+/* The radar (2026-11-05): one slim line, the day's mood and count, then the next free meal as a
+   button to its row. It was a tall box repeating the hero's count and the first card. */
+.gg-radar { width:100%; padding:10px 14px 0; margin:0 0 12px; border-radius:14px; background:var(--color-surface); border:1px solid var(--color-divider); box-shadow:inset 3px 0 0 var(--color-accent); }
+.gg-radar-line { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+.gg-radar-title { min-width:0; font-size:15px; font-weight:800; line-height:22px; letter-spacing:-.025em; color:#1d1d1f; }
+.gg-radar-count { flex-shrink:0; font-size:15px; font-weight:900; line-height:22px; color:#1d1d1f; font-variant-numeric:tabular-nums; }
+.gg-radar-cta { display:block; width:100%; min-height:44px; padding:12px 0; border:0; background:transparent; font:700 13px/20px inherit; color:var(--color-accent); text-align:left; cursor:pointer; overflow-wrap:anywhere; }
+.gg-radar-next { margin-right:6px; color:var(--color-ink-muted); }
+.gg-radar-cta [aria-hidden] { margin:0 1px; }
+.gg-skeleton.gg-radar-skeleton { height:87px; margin-bottom:12px; }
+.gg-card.is-featured { border:1px solid #e3b9a8; background:#fff; box-shadow:0 6px 18px rgba(180,61,39,.07); }
+.gg-featured-label { display:inline-flex; height:20px; padding:0 7px; margin-bottom:6px; border-radius:6px; background:var(--color-accent-wash); color:var(--color-accent); font-size:11px; font-weight:800; letter-spacing:.04em; align-items:center; }
 .food-hub-menu { padding-top:2px; }
 .km-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 12px; margin:4px 0 10px; }
 .km-head h2 { font-size:20px; font-weight:900; line-height:26px; letter-spacing:-.03em; color:#1d1d1f; }
@@ -78,44 +81,58 @@
 .gg-chip:hover { box-shadow:inset 0 0 0 1px rgba(30,29,26,.38); }
 .gg-chip:focus-visible { outline:2px solid var(--color-focus); outline-offset:-3px; }
 @media (forced-colors: active) { .gg-chip { outline:1px solid ButtonText; outline-offset:-6px; } }
-.gg-btn:focus-visible,.gg-diagnostic-toggle:focus-visible,.gg-place a:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
+.gg-btn:focus-visible,.gg-diagnostic-toggle:focus-visible,.gg-place a:focus-visible,.gg-row-reg:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
 .gg-feed { padding-top:9px; }
 .gg-day { display:flex; align-items:center; gap:8px; margin:18px 0 10px; font-size:14px; font-weight:700; line-height:20px; color:#3a3a3c; scroll-margin-top:calc(var(--gg-nav-offset, 0px) + 110px); }
 .gg-day-rel { display:inline-flex; align-items:center; height:22px; padding:0 7px; border-radius:6px; font-size:12px; font-weight:700; background:var(--color-ink); color:var(--color-surface); }
 .gg-day-rel.is-today { background:var(--color-accent); }
-.gg-card { width:100%; padding:16px; margin-bottom:12px; border:1px solid #e8e8ed; border-radius:18px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.03),0 8px 24px rgba(28,25,23,.04); transition:transform 160ms ease,box-shadow 160ms ease; }
-.gg-card-top { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:28px; }
-.gg-time { flex-shrink:0; font-size:16px; font-weight:900; line-height:20px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:#1d1d1f; }
+/* One listing (owner 2026-11-05, "시간과 메뉴가 더 중요"): the time and the dish lead, the title and
+   place follow in one quiet line each, and the title opens the details. The title's button covers the
+   row (its ::after), so a tap anywhere on the row opens it; links and the details sit above it. */
+.gg-card { position:relative; width:100%; padding:12px 14px; margin-bottom:8px; border:1px solid #e8e8ed; border-radius:14px; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:box-shadow 160ms ease; }
+.gg-card-top { display:flex; align-items:center; gap:8px; min-height:26px; }
+.gg-time { flex-shrink:0; font-size:15px; font-weight:900; line-height:20px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:#1d1d1f; }
 .gg-time.is-unknown { font-size:12px; font-weight:600; color:#86868b; }
 /* A deadline-only giveaway leads with its sign-up deadline instead of an event time; its badges
    move to their own line rather than squeeze the longer date. */
 .gg-card-top.is-deadline { flex-wrap:wrap; row-gap:6px; }
-.gg-card-top.is-deadline .gg-card-badges { margin-left:auto; }
 .gg-time.is-deadline { flex-shrink:1; min-width:0; font-size:13px; font-weight:800; line-height:18px; letter-spacing:-.01em; color:#9f1239; word-break:keep-all; overflow-wrap:anywhere; }
 .gg-time.is-deadline.is-closed { color:#86868b; }
-.gg-card-badges { min-width:0; display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:6px; }
-.gg-food-primary,.gg-reg-badge { display:inline-flex; align-items:center; height:28px; padding:0 9px; border-radius:999px; border:1px solid; font-size:12px; font-weight:700; line-height:16px; max-width:100%; }
-.gg-food-primary { background:#fff1f2; border-color:#fecdd3; color:#be123c; }
-.gg-food-primary span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:22em; }
-.gg-food-primary.is-snack { background:#fff7ed; border-color:#fed7aa; color:#c2410c; }
-.gg-food-primary.is-refreshment { background:#ecfdf5; border-color:#a7f3d0; color:#047857; }
-/* Food stated only in an attached poster: a quieter part of the same badge, never ellipsized. */
-.gg-food-primary .gg-food-source { flex-shrink:0; max-width:none; overflow:visible; margin-left:4px; font-weight:500; }
+.gg-card-badges { flex:1; min-width:0; display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; }
+/* The dish is the row's headline: plain bold text, the emoji only decoration. */
+.gg-food-primary { display:inline-flex; align-items:center; gap:5px; min-width:0; max-width:100%; font-size:16px; font-weight:800; line-height:22px; letter-spacing:-.02em; color:#1d1d1f; }
+.gg-food-primary span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.gg-food-primary .gg-dish-emoji { flex-shrink:0; overflow:visible; font-size:16px; }
+/* Food stated only in an attached poster: a quieter part of the same label, never ellipsized. */
+.gg-food-primary .gg-food-source { flex-shrink:0; overflow:visible; font-size:12px; font-weight:600; color:#86868b; }
 /* A giveaway (prize draw or gift): its own hue, apart from every food colour, and always labelled. */
-.gg-gift-badge { display:inline-flex; align-items:center; gap:2px; height:28px; padding:0 9px; border-radius:999px; border:1px solid #ddd6fe; background:#f5f3ff; color:#6d28d9; font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
-.gg-reg-badge { background:#f3f0ea; border-color:var(--color-divider); color:var(--color-ink); }
-.gg-reg-badge.is-free { background:#f0fdf4; border-color:#bbf7d0; color:#166534; }
-.gg-title { margin-top:10px; font-size:17px; font-weight:700; line-height:24px; letter-spacing:-.025em; color:#1d1d1f; word-break:keep-all; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.gg-gift-badge { display:inline-flex; align-items:center; gap:2px; height:22px; padding:0 7px; border-radius:999px; border:1px solid #ddd6fe; background:#f5f3ff; color:#6d28d9; font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
+.gg-reg-badge { flex-shrink:0; display:inline-flex; align-items:center; height:22px; padding:0 7px; border-radius:999px; border:1px solid var(--color-divider); background:#f3f0ea; color:var(--color-ink); font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
+/* The row's sign-up link: a 44 px target that does not make the row taller. */
+.gg-row-reg { position:relative; z-index:1; flex-shrink:0; display:inline-flex; align-items:center; min-height:44px; margin:-10px -6px -10px 0; padding:0 6px; font-size:13px; font-weight:800; color:var(--color-accent); text-decoration:none; white-space:nowrap; }
+.gg-row-reg:hover { text-decoration:underline; text-underline-offset:3px; }
+.gg-title { margin-top:4px; font-size:14px; font-weight:600; line-height:20px; letter-spacing:-.015em; color:#3a3a3c; overflow:hidden; }
+.gg-card-toggle { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; width:100%; min-height:24px; margin:-2px 0; padding:2px 20px 2px 0; box-sizing:border-box; border:0; background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9.5 6 6 6-6' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right center / 16px; font:inherit; color:inherit; text-align:left; word-break:keep-all; overflow-wrap:anywhere; cursor:pointer; }
+.gg-card-toggle::after { content:""; position:absolute; inset:0; border-radius:inherit; }
+.gg-card-toggle:focus-visible { outline:none; }
+.gg-card:has(.gg-card-toggle:focus-visible) { outline:2px solid var(--color-focus); outline-offset:2px; }
+.gg-card.is-open .gg-card-toggle { display:block; -webkit-line-clamp:unset; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 14.5 6-6 6 6' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position:right top 2px; }
+.gg-where { margin-top:1px; font-size:13px; font-weight:500; line-height:19px; color:#6e6e73; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gg-where.is-unknown { color:#86868b; }
+.gg-detail { position:relative; z-index:1; margin-top:10px; padding-top:10px; border-top:1px solid #f0f0f2; cursor:auto; }
+.gg-food-line { font-size:13px; font-weight:600; line-height:19px; color:#1d1d1f; word-break:keep-all; overflow-wrap:anywhere; }
 .gg-place { margin-top:5px; font-size:13px; font-weight:500; line-height:20px; color:#515154; overflow-wrap:anywhere; }
+.gg-detail > .gg-place:first-child { margin-top:0; }
 .gg-place.is-unknown { color:#86868b; }
 .gg-place a { color:var(--color-accent); font-size:12px; font-weight:600; text-decoration:none; white-space:nowrap; }
 .gg-place a:hover { text-decoration:underline; }
 .gg-giveaway { margin-top:7px; font-size:13px; font-weight:600; line-height:19px; color:#5b21b6; word-break:keep-all; overflow-wrap:anywhere; }
-.gg-eligibility,.gg-organizer { margin-top:7px; font-size:12px; font-weight:500; line-height:18px; color:#6e6e73; overflow-wrap:anywhere; }
+.gg-eligibility,.gg-organizer,.gg-reg-note { margin-top:7px; font-size:12px; font-weight:500; line-height:18px; color:#6e6e73; overflow-wrap:anywhere; }
+.gg-reg-note { color:#166534; font-weight:700; }
 .gg-deadline { margin-top:8px; font-size:13px; font-weight:700; line-height:18px; color:#9f1239; }
 .gg-deadline.is-urgent,.gg-deadline.is-soft { display:inline-flex; padding:6px 8px; border-radius:8px; background:#fef2f2; color:#b91c1c; }
 .gg-deadline.is-soft { background:#f5f5f7; color:#86868b; }
-.gg-summary { margin-top:9px; font-size:13.5px; font-weight:400; line-height:21px; letter-spacing:-.01em; color:#3a3a3c; word-break:keep-all; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.gg-summary { margin-top:9px; font-size:13.5px; font-weight:400; line-height:21px; letter-spacing:-.01em; color:#3a3a3c; word-break:keep-all; overflow-wrap:anywhere; }
 .gg-actions { margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; }
 .gg-btn { height:40px; display:inline-flex; align-items:center; justify-content:center; padding:0 13px; border-radius:10px; font-size:13px; font-weight:700; text-decoration:none; background:#fff; border:1px solid #d2d2d7; color:#1d1d1f; }
 .gg-btn--primary { background:#1d1d1f; border-color:#1d1d1f; color:#fff; }
@@ -130,7 +147,7 @@
 .gg-skeleton { height:128px; border-radius:18px; margin-bottom:12px; background:linear-gradient(90deg,#f2f2f7,#fafafa,#f2f2f7); background-size:200% 100%; animation:gg-shimmer 1.4s ease infinite; }
 @keyframes gg-shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
 /* What the list holds and when it was published: quiet source metadata, not a status badge. */
-.gg-feed-note { margin:6px 0 2px; padding:10px 12px; border-radius:12px; background:var(--color-surface-muted); border:1px solid var(--color-divider); font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
+.gg-feed-note { margin:4px 0 0; font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
 .gg-updated { margin-top:2px; font-weight:700; font-variant-numeric:tabular-nums; }
 .gg-diagnostic-toggle { position:fixed; right:12px; bottom:12px; z-index:20000; font:700 11px/16px 'Noto Sans KR',sans-serif; padding:6px 9px; border:0; border-radius:999px; background:#111827; color:#fff; cursor:pointer; }
 .gg-diagnostic-toggle.is-fixture { background:#7c3aed; }
@@ -163,7 +180,7 @@
 .gg-choose-link:hover { text-decoration:underline; text-underline-offset:4px; }
 .gg-layout-grid { pointer-events:none; position:fixed; inset:0; z-index:19000; background-image:linear-gradient(#6366f10b 1px,transparent 1px),linear-gradient(90deg,#6366f10b 1px,transparent 1px); background-size:8px 8px; }
 @media(min-width:720px) { .ggongbab-page-wrap { padding-left:24px; padding-right:24px; } .gg-filters { margin-left:-24px; margin-right:-24px; padding-left:24px; padding-right:24px; } .gg-hero h1 { font-size:36px; line-height:43px; } .km-grid { grid-template-columns:1fr 1fr; } }
-@media(hover:hover) and (min-width:720px) { .gg-card:hover { transform:translateY(-1px); box-shadow:0 2px 4px rgba(0,0,0,.04),0 10px 30px rgba(28,25,23,.065); } }
+@media(hover:hover) and (min-width:720px) { .gg-card:hover { box-shadow:0 2px 4px rgba(0,0,0,.04),0 8px 22px rgba(28,25,23,.06); } }
 @media(max-width:320px) { .gg-btn { width:100%; } .gg-chip { padding:0 9px; } .gg-card-top { align-items:flex-start; } }
 @media(prefers-reduced-motion:reduce) { .gg-skeleton { animation:none; } .gg-card { transition:none; } .gg-card:hover { transform:none; } html { scroll-behavior:auto; } }
 /* Campus food news follows live opportunities; plain rows, independent of cards. */

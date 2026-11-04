@@ -26,13 +26,13 @@
   // Past listings: a separate static file, loaded on its own so a failure never touches the live feed.
   var ARCHIVE_URL = 'data/ggongbab/archive/index.json';
   var ARCHIVE_WINDOW_DAYS = 30;
-  var ARCHIVE_PREVIEW = 5;
   var state = {
     activeSection: 'free',
     free: { status: 'loading', data: null },
     menu: { status: 'loading' },
     archive: { status: 'loading', data: null, expanded: false },
     news: { status: 'loading', items: [] },
+    open: {},                 // the listings opened to their details (2026-11-05)
     when: 'all',
     food: 'all'
   };
@@ -167,14 +167,29 @@
       : t('gg.deadlineAt', '마감 · {date}').replace('{date}', dayLabel(d) + ' ' + hm(d));
     return '<p class="gg-deadline' + (past ? ' is-soft' : urgent ? ' is-urgent' : '') + '">' + esc(label) + '</p>';
   }
-  function placeLabel(ev) {
+  function pageLang() { return window.babdodukGetLang ? window.babdodukGetLang() : 'ko'; }
+  function placePieces(ev) {
     var loc = ev.location || {};
-    var pieces = [loc.building, loc.room].filter(function (value, index, values) {
+    return [loc.building, loc.room].filter(function (value, index, values) {
       return value && values.indexOf(value) === index;
     });
+  }
+  // The full place, for the details. The written-out name joins only when it adds something and is
+  // in the page's language: a bilingual mail's English building names stayed on the Korean page
+  // ("E6-1 / E4 · 1501 / C101 · Natural Science Building, …", 2026-11-05).
+  function placeLabel(ev) {
+    var loc = ev.location || {};
+    var pieces = placePieces(ev);
     var compactPlace = pieces.join('').replace(/[\s·]/g, '');
-    if (loc.name && loc.name.replace(/[\s·]/g, '') !== compactPlace && pieces.indexOf(loc.name) < 0) pieces.push(loc.name);
+    var held = pieces.some(function (piece) { return piece.indexOf(loc.name) >= 0; });
+    if (loc.name && loc.name.replace(/[\s·]/g, '') !== compactPlace && !held &&
+        (!pieces.length || F.inLang(loc.name, pageLang()))) pieces.push(loc.name);
     return pieces.join(' · ');
+  }
+  // The row's place: the building and room only (the name when there is nothing else).
+  function shortPlace(ev) {
+    var pieces = placePieces(ev);
+    return pieces.length ? pieces.join(' · ') : String((ev.location || {}).name || '');
   }
   // Only for explicit food: a giveaway-only listing never gets a food label or the "음식 제공" fallback.
   function foodLabelOf(ev) {
@@ -182,10 +197,20 @@
     var food = ev.food || {};
     return food.description && food.description.length <= 22 ? food.description : foodTypeLabel(food.type) || t('gg.foodFallback', '음식 제공');
   }
-  // The food badge, with an honest note when the food was stated only in an attached poster.
+  // The stated food in full, for the details: only in the page's language and only when it says more
+  // than the dish on the row ("현장 참석자 샌드위치 제공" says who gets it; "샌드위치" does not).
+  function foodDetailOf(ev) {
+    var text = String((ev.food || {}).description || '').trim();
+    if (!hasFood(ev) || !text || !F.inLang(text, pageLang())) return '';
+    var bare = function (value) { return value.replace(/제공|및|그리고|\band\b|[\s·,+&/()와과]/gi, '').toLowerCase(); };
+    return bare(text) === bare(F.dishLabel(ev, t)) ? '' : text;
+  }
+  // The food badge: the dish in a word or two (F.dishes), with an honest note when the food was
+  // stated only in an attached poster.
   function foodBadgeHtml(ev) {
     if (!hasFood(ev)) return '';
-    var html = '<span class="gg-food-primary is-' + esc(foodBucket(ev)) + '"><span>' + esc(foodLabelOf(ev)) + '</span>';
+    var html = '<span class="gg-food-primary is-' + esc(foodBucket(ev)) + '"><span class="gg-dish-emoji" aria-hidden="true">' +
+      esc(F.dishEmoji(ev)) + '</span><span>' + esc(F.dishLabel(ev, t)) + '</span>';
     if ((ev.food || {}).source === 'poster') html += '<span class="gg-food-source"> · ' + esc(t('gg.foodSource.poster', '포스터 기준')) + '</span>';
     return html + '</span>';
   }
@@ -202,23 +227,39 @@
     var link = F.sourceLink(ev), url = link ? safeHref(link.url) : '';
     return url ? { type: link.type, url: url } : null;
   }
+  // One listing (owner 2026-11-05, "시간과 메뉴가 더 중요"): a row of the time, the dish, the title and
+  // the place, with a sign-up link when there is one; the title opens the rest (food in full, the
+  // whole place and map, giveaway, audience, organizer, deadline, summary, links, source).
+  var cardSeq = 0;
   function cardHtml(ev, now, featured) {
     var s = toKst(ev.startAt);
     var reg = ev.registration || {}, sign = F.signUp(ev);
-    var place = placeLabel(ev), map = mapLink(ev);
+    var place = placeLabel(ev), map = mapLink(ev), where = shortPlace(ev);
     var gift = hasGiveaway(ev), giftText = giveawayText(ev);
     var deadlineOnly = isDeadlineOnly(ev);
     var deadline = toKst(reg.deadline), closed = deadline && deadline < now;
-    var html = '<article class="gg-card' + (featured ? ' is-featured' : '') + '" data-id="' + esc(ev.id) + '"' + (featured ? ' data-featured="1"' : '') + '>';
+    var regUrl = closed ? '' : safeHref(sign.url);
+    var open = !!state.open[ev.id];
+    var detailId = 'ggCard' + (++cardSeq);
+    var html = '<article class="gg-card' + (featured ? ' is-featured' : '') + (open ? ' is-open' : '') + '" data-id="' + esc(ev.id) + '"' + (featured ? ' data-featured="1"' : '') + '>';
     if (featured) html += '<p class="gg-featured-label">' + esc(t('gg.next', '다음 꽁밥')) + '</p>';
     html += '<div class="gg-card-top' + (deadlineOnly ? ' is-deadline' : '') + '">';
     if (deadlineOnly) html += '<p class="gg-time is-deadline' + (closed ? ' is-closed' : '') + '">' + esc(signUpByText(s)) + '</p>';
     else html += '<time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
     html += '<div class="gg-card-badges">' + foodBadgeHtml(ev);
     if (gift) html += '<span class="gg-gift-badge">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>';
-    if (sign.required === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
-    if (sign.required === 'false') html += '<span class="gg-reg-badge is-free">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</span>';
-    html += '</div></div><h3 class="gg-title">' + esc(ev.title) + '</h3>';
+    html += '</div>';
+    // The row's link says when signing up is required ("사전 신청"), so no second badge is needed.
+    if (regUrl) html += '<a class="gg-row-reg" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' +
+      esc(sign.required === 'true' ? t('gg.registerRequiredShort', '사전 신청') : t('gg.registerShort', '신청')) +
+      '<span class="gg-sr"> ' + esc(ev.title) + ' ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
+    else if (sign.required === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
+    html += '</div><h3 class="gg-title"><button type="button" class="gg-card-toggle" data-gg-open="' + esc(ev.id) + '" aria-expanded="' + open +
+      '" aria-controls="' + detailId + '">' + esc(ev.title) + '</button></h3>';
+    html += '<p class="gg-where' + (where ? '' : ' is-unknown') + '">' + esc(where || t('gg.placeTbd', '장소 미정')) + '</p>';
+    html += '<div class="gg-detail" id="' + detailId + '"' + (open ? '' : ' hidden') + '>';
+    var foodText = foodDetailOf(ev);
+    if (foodText) html += '<p class="gg-food-line">' + esc(t('gg.foodLine', '음식 · {food}').replace('{food}', foodText)) + '</p>';
     html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || t('gg.placeTbd', '장소 미정'));
     if (map) html += ' · <a href="' + esc(map) + '" target="_blank" rel="noopener">' + esc(t('gg.map','지도')) + '</a>';
     html += '</p>';
@@ -226,9 +267,9 @@
     var who = F.audienceOf(ev, function (name) { return t('gg.audience.estimated', '{who} (추정)').replace('{who}', name); });
     if (who) html += '<p class="gg-eligibility">' + esc(t('gg.eligibility','대상')) + ' · ' + esc(who) + '</p>';
     if (ev.organizer) html += '<p class="gg-organizer">' + esc(t('gg.organizer', '주최')) + ' · ' + esc(ev.organizer) + '</p>';
+    if (sign.required === 'false') html += '<p class="gg-reg-note">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</p>';
     if (!deadlineOnly) html += deadlineHtml(ev, now);   // a deadline-only giveaway already leads with it
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
-    var regUrl = closed ? '' : safeHref(sign.url);
     var joinUrl = safeHref(sign.join);
     var source = publicSource(ev);
     if (regUrl || joinUrl || source) {
@@ -241,7 +282,7 @@
     }
     var via = sourceLabel(ev);
     if (via) html += '<p class="gg-source">' + esc(via) + '</p>';
-    return html + '</article>';
+    return html + '</div></article>';
   }
   // `icon` is decorative markup: the label alone names the chip.
   function chip(group, value, label, pressed, icon) {
@@ -300,21 +341,21 @@
     if (count <= 2) return t('gg.radar.some', '🍙 한 끼는 건질 수 있어요');
     return t('gg.radar.many', '🔥 오늘 꽁밥 풍년');
   }
+  // The radar (2026-11-05): one slim line, the day's mood and count, and the next free meal as a
+  // button to its row. It was a 258 px box that repeated the hero's count and the first card.
   function radarHtml(now) {
     var today = todayUpcoming(now);
     var next = earliestToday(now);
     var html = '<section class="gg-radar" aria-label="' + esc(t('gg.radar.label', '오늘의 꽁밥 레이더')) + '">';
-    html += '<p class="gg-radar-label">' + esc(t('gg.radar.label', '오늘의 꽁밥 레이더')) + '</p>';
-    html += '<h2 class="gg-radar-title">' + esc(radarCopy(today.length)) + '</h2>';
-    html += '<p class="gg-radar-count">' + esc(t('gg.radar.count', '오늘 {n}개').replace('{n}', String(today.length))) + '</p>';
+    html += '<p class="gg-radar-line"><span class="gg-radar-title">' + esc(radarCopy(today.length)) + '</span>' +
+      '<span class="gg-radar-count">' + esc(t('gg.radar.count', '오늘 {n}개').replace('{n}', String(today.length))) + '</span></p>';
     if (next) {
       var s = toKst(next.startAt);
-      var food = (next.food || {}).description || foodTypeLabel((next.food || {}).type) || t('gg.foodProvided', '식사 제공');
-      var loc = next.location || {};
-      var place = loc.building || loc.name || '';
-      html += '<p class="gg-radar-next"><strong>' + esc(t('gg.radar.next', '가장 빠른 꽁밥')) + '</strong>' +
-        esc((s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' · ' + food + (place ? ' · ' + place : '')) + '</p>';
-      html += '<button type="button" class="gg-radar-cta" data-gg-scroll="' + esc(next.id) + '">' + esc(t('gg.radar.cta', '자세히 보기 →')) + '</button>';
+      var place = (next.location || {}).building || shortPlace(next);
+      html += '<button type="button" class="gg-radar-cta" data-gg-scroll="' + esc(next.id) + '">' +
+        '<span class="gg-radar-next">' + esc(t('gg.radar.next', '다음 꽁밥')) + '</span>' +
+        esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' <span aria-hidden="true">' + esc(F.dishEmoji(next)) + '</span>' +
+        esc(F.dishLabel(next, t) + (place ? ' · ' + place : '')) + ' <span aria-hidden="true">→</span></button>';
     }
     return html + '</section>';
   }
@@ -368,10 +409,9 @@
   // leave it) and when the snapshot was published. It makes no freshness claim
   // beyond that time.
   function feedNoteHtml() {
-    var html = '<div class="gg-feed-note">';
     var g = state.free.data && toKst(state.free.data.generatedAt);
-    if (g) html += '<p class="gg-updated">' + esc(t('gg.updated', '마지막 변경')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>';
-    return html + '</div>';
+    if (!g) return '';
+    return '<div class="gg-feed-note"><p class="gg-updated">' + esc(t('gg.updated', '마지막 변경')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p></div>';
   }
   // Past listings: public rows that have ended, from the archive file plus any live-feed row
   // whose end has already passed (it leaves the live list at once; the next export archives it).
@@ -427,23 +467,22 @@
     if (status === 'loading') html += '<p class="gg-archive-state">' + esc(t('gg.archive.loading', '지난 꽁밥 기록을 확인하고 있어요.')) + '</p>';
     else if (status === 'error') html += '<p class="gg-archive-state" data-archive-state="error">' + esc(t('gg.archive.error', '지난 기록을 불러오지 못했어요.')) + '</p>';
     else if (!list.length) html += '<p class="gg-archive-state" data-archive-state="empty">' + esc(t('gg.archive.empty', '최근 30일 기록 없음')) + '</p>';
+    // Closed until asked for (2026-11-05): one button, then the whole list.
     if (list.length) {
       var expanded = state.archive.expanded;
-      html += '<ol class="gg-past-list" id="ggPastList">';
-      (expanded ? list : list.slice(0, ARCHIVE_PREVIEW)).forEach(function (ev) { html += pastHtml(ev); });
+      html += '<button type="button" class="gg-archive-more" data-gg-archive-more aria-controls="ggPastList" aria-expanded="' + expanded + '">' +
+        esc(expanded ? t('gg.archive.less', '지난 기록 접기') : t('gg.archive.more', '지난 꽁밥 기록 {n}개 보기').replace('{n}', String(list.length))) + '</button>';
+      html += '<ol class="gg-past-list" id="ggPastList"' + (expanded ? '' : ' hidden') + '>';
+      if (expanded) list.forEach(function (ev) { html += pastHtml(ev); });
       html += '</ol>';
-      if (list.length > ARCHIVE_PREVIEW) {
-        html += '<button type="button" class="gg-archive-more" data-gg-archive-more aria-controls="ggPastList" aria-expanded="' + expanded + '">' +
-          esc(expanded ? t('gg.archive.less', '지난 기록 접기') : t('gg.archive.more', '지난 기록 {n}개 더 보기').replace('{n}', String(list.length - ARCHIVE_PREVIEW))) + '</button>';
-      }
     }
     return html + '</section>';
   }
   function freePaneHtml(now) {
     var html = '';
     if (state.free.status === 'ready') html += radarHtml(now);
-    // The radar's own height (238 px in both languages at every width), so it does not push the list when it lands.
-    else if (state.free.status === 'loading') html += '<div class="gg-skeleton" style="height:238px;margin-bottom:14px"></div>';
+    // The radar's own height, so it does not push the list when it lands.
+    else if (state.free.status === 'loading') html += '<div class="gg-skeleton gg-radar-skeleton"></div>';
     // The live list and its sticky filters share one box, so the filters stop at the archive.
     if (state.free.status === 'ready') html += whenHtml(now);
     html += '<div class="gg-live">';
@@ -480,9 +519,9 @@
     if (state.news.status === 'off') return '';
     var html = '<section class="gg-news" aria-labelledby="ggNewsTitle"><h2 id="ggNewsTitle">' +
       esc(t('gg.news.title', '먹거리 소식')) + '</h2>';
-    if (state.news.status === 'loading') return html + '<p class="gg-news-state">' + esc(t('gg.news.loading', '소식을 확인하고 있어요.')) + '</p></section>';
+    // Nothing while loading or when there is no news (2026-11-05: an empty section is not news).
+    if (state.news.status === 'loading' || (state.news.status === 'ready' && !state.news.items.length)) return '';
     if (state.news.status === 'error') return html + '<p class="gg-news-state">' + esc(t('gg.news.error', '소식을 불러오지 못했어요.')) + '</p></section>';
-    if (!state.news.items.length) return html + '<p class="gg-news-state">' + esc(t('gg.news.empty', '최근 30일 등록된 소식 없음')) + '</p></section>';
     html += '<ul class="gg-news-list">';
     state.news.items.forEach(function (item) {
       var day = toKst(item.noticeDate + 'T12:00:00+09:00');
@@ -526,6 +565,7 @@
   }
   function render() {
     var now = nowKst();
+    cardSeq = 0;
     var focus = focusSelector();
     var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1>';
     html += metricHtml(now);
@@ -710,6 +750,16 @@
       if (group === 'food') state.food = value;
       try { localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({ when: state.when, food: state.food })); } catch (err) {}
       render();
+      return;
+    }
+    var openBtn = e.target.closest('[data-gg-open]');
+    if (openBtn) {
+      var id = openBtn.getAttribute('data-gg-open');
+      if (state.open[id]) delete state.open[id]; else state.open[id] = true;
+      var card = openBtn.closest('.gg-card'), detail = card && card.querySelector('.gg-detail');
+      openBtn.setAttribute('aria-expanded', String(!!state.open[id]));
+      if (card) card.classList.toggle('is-open', !!state.open[id]);
+      if (detail) detail.hidden = !state.open[id];
       return;
     }
     if (e.target.closest('[data-gg-archive-more]')) {

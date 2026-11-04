@@ -42,7 +42,6 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     assert chrome.main(["--check"]) == 1
     assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0
     assert "'gg.food.lunchbox': 'Packed lunch'," in (tmp_path / "ggongbab.html").read_text(encoding="utf-8")
-    assert "'home.cal.food.lunchbox': 'Packed lunch'," in (tmp_path / "index.html").read_text(encoding="utf-8")
     assert '"mexican": "멕시칸"' in (tmp_path / "js/eat-slot.js").read_text(encoding="utf-8")
     capsys.readouterr()
     page = tmp_path / "event.html"

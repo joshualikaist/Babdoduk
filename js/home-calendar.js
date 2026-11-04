@@ -160,7 +160,6 @@
   var MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var MON_EN_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
     'October', 'November', 'December'];
-  var FOOD_TYPES = ['meal', 'lunchbox', 'snack', 'refreshment', 'beverage', 'coupon'];
 
   function lang() { return window.babdodukGetLang ? window.babdodukGetLang() : 'ko'; }
   function t(key, fallback) {
@@ -196,15 +195,11 @@
   function fill(template, values) {
     return String(template).replace(/\{(\w+)\}/g, function (all, name) { return values[name] != null ? values[name] : all; });
   }
-  function foodText(ev) {
-    var food = ev.food || {};
-    var type = FOOD_TYPES.indexOf(food.type) >= 0 ? food.type : '';
-    var typeLabel = type ? t('home.cal.food.' + type, '') : '';
-    if (lang() === 'en') return typeLabel || t('home.cal.foodFallback', 'Food');
-    var desc = food.description && String(food.description).length <= 22 ? food.description : typeLabel || t('home.cal.foodFallback', '음식');
-    // "현장 참석자 샌드위치 제공" already says it: no second 제공 (2026-11-04).
-    if (/제공\s*$/.test(desc)) return desc;
-    return fill(t('home.cal.ev.food', '{food} 제공'), { food: desc });
+  // The dish in a word or two (F.dishes, owner 2026-11-05: the time and the food first); '' for a
+  // giveaway-only listing. Words only: the calendar module carries no emoji but the giveaway mark.
+  function dishHtml(ev, cls) {
+    if (!F.hasFood(ev)) return '';
+    return '<span class="' + cls + '">' + esc(F.dishLabel(ev, t)) + '</span>';
   }
   // The giveaway mark: the emoji is decoration, the word says it (owner decision 2026-10-14).
   var GIFT = '<span aria-hidden="true">🎁</span> ';
@@ -379,21 +374,27 @@
   function sessionText(ev) {
     return ev.session ? fill(t('home.cal.ev.session', '{n}/{total}회차'), { n: ev.session.n, total: ev.session.total }) : '';
   }
-  function metaLines(item) {
+  // A collapsed row (owner 2026-11-05): the time and the dish lead, then the title, then one quiet
+  // line of place, session, giveaway and sign-up. A giveaway-only row names no food at all.
+  function headLine(item) {
     var ev = item.ev;
     var start = F.toKst(ev.startAt);
-    var when = '<span class="hc-ev-time">' + esc(timeText(ev, start)) + '</span>';
+    var dish = item.food ? dishHtml(ev, 'hc-ev-dish') : '';
+    return '<span class="hc-ev-head">' + (item.active ? '' : '<span class="hc-ev-ended">' + esc(t('home.cal.ev.ended', '종료')) + ' · </span>') +
+      '<span class="hc-ev-time">' + esc(timeText(ev, start)) + '</span>' + (dish ? ' ' + dish : '') + '</span>';
+  }
+  function metaLines(item) {
+    var ev = item.ev;
     var place = shortPlace(ev.location);
     var part = sessionText(ev);
-    var first = (item.active ? '' : esc(t('home.cal.ev.ended', '종료')) + ' · ') + when + (place ? ' · ' + esc(place) : '') +
-      (part ? ' · ' + esc(part) : '');
-    // A giveaway-only row names no food at all; a row with both shows both.
-    var second = item.food ? [esc(foodText(ev))] : [];
-    if (F.hasGiveaway(ev)) second.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
-    if (item.active && F.signUp(ev).required === 'true') second.push(esc(t('home.cal.ev.reg', '사전 신청')));
+    var meta = [];
+    if (place) meta.push(esc(place));
+    if (part) meta.push(esc(part));
+    if (F.hasGiveaway(ev)) meta.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
+    if (item.active && F.signUp(ev).required === 'true') meta.push(esc(t('home.cal.ev.reg', '사전 신청')));
     // Only an extracted audience gets a line of its own on the collapsed row; a plain eligibility stays in the details.
     var who = ev.audience ? whoText(ev) : '';
-    return '<span class="hc-ev-meta">' + first + '</span><span class="hc-ev-meta">' + second.join(' · ') + '</span>' +
+    return (meta.length ? '<span class="hc-ev-meta">' + meta.join(' · ') + '</span>' : '') +
       (who ? '<span class="hc-ev-meta hc-ev-who">' + esc(fill(t('home.cal.ev.who', '대상 · {who}'), { who: who })) + '</span>' : '');
   }
   function detailHtml(item) {
@@ -472,7 +473,7 @@
         var open = state.open === item.ev.id;
         return '<li class="hc-ev' + (item.active ? '' : ' is-past') + '">' +
           '<button type="button" class="hc-ev-btn" data-hc-ev="' + esc(item.ev.id) + '" aria-expanded="' + open +
-          '" aria-controls="homeCalEv' + i + '"><span class="hc-ev-title">' + esc(item.ev.title) + '</span>' +
+          '" aria-controls="homeCalEv' + i + '">' + headLine(item) + '<span class="hc-ev-title">' + esc(item.ev.title) + '</span>' +
           metaLines(item) + CHEVRON.down + '</button>' +
           '<div class="hc-ev-detail" id="homeCalEv' + i + '"' + (open ? '' : ' hidden') + '>' + detailHtml(item) + '</div></li>';
       }).join('') + '</ul>';
@@ -506,7 +507,7 @@
         '<span class="hc-next-date"' + (first ? '' : ' aria-hidden="true"') + '>' + (first ? esc(dateLabel(row.day)) : '') + '</span>' +
         (first ? '' : '<span class="home-sr-only">' + esc(dateLabel(row.day)) + '</span>') +
         '<span class="hc-next-time">' + esc(start ? hm(start) : t('home.cal.ev.timeTbd', '시간 미정')) + '</span>' +
-        '<span class="hc-next-name">' + esc(row.item.ev.title) + '</span></button></li>';
+        '<span class="hc-next-name">' + dishHtml(row.item.ev, 'hc-next-dish') + ' <span class="hc-next-title">' + esc(row.item.ev.title) + '</span></span></button></li>';
     });
     els.next.innerHTML = html + '</ul>';
     els.next.hidden = false;
