@@ -12,6 +12,7 @@
      options.t(key, fallback) a translated string
      options.onOpen(eventId)  "일정에서 보기": open that event in the calendar
      options.base             where data/campus/ is, from the page (default 'data/campus/')
+     options.onFull()         "크게 보기": open the map full screen (beside the copy only)
 */
 import * as THREE from './vendor/three-0.186.1/three.module.js';
 import { GLTFLoader } from './vendor/three-0.186.1/addons/loaders/GLTFLoader.js';
@@ -94,7 +95,7 @@ vec4 diffuseColor = vec4( base, opacity );`);
 }
 
 export function mount(stage, options) {
-  const opts = Object.assign({ lang: () => 'ko', t: (k, f) => f, onOpen: () => {}, base: 'data/campus/' }, options || {});
+  const opts = Object.assign({ lang: () => 'ko', t: (k, f) => f, onOpen: () => {}, onFull: null, base: 'data/campus/' }, options || {});
   const BASE = opts.base;
   const pinsLayer = stage.querySelector('.home-map-pins');
   const card = stage.querySelector('.home-map-card');
@@ -154,9 +155,16 @@ export function mount(stage, options) {
     controls.maxAzimuthAngle = sph.theta + TURN;
     controls.minPolarAngle = sph.phi - 0.12;
     controls.maxPolarAngle = sph.phi + 0.06;
-    controls.addEventListener('change', requestRender);
+    controls.addEventListener('change', () => { keepOnIsland(); requestRender(); });
     controls.update();
     interaction();
+    // Beside the copy a plain wheel scrolls the page: Ctrl/⌘ + wheel (and a trackpad pinch) zooms.
+    canvas.addEventListener('wheel', (e) => {
+      if (stage.closest('dialog') || e.ctrlKey || e.metaKey) return;
+      e.stopImmediatePropagation();
+      hint();
+    }, { capture: true });
+    tools();
 
     const draco = new DRACOLoader().setDecoderPath(new URL('./vendor/three-0.186.1/addons/libs/draco/', import.meta.url).href);
     const loader = new GLTFLoader().setDRACOLoader(draco);
@@ -230,12 +238,80 @@ export function mount(stage, options) {
   function interaction() {
     if (!controls) return;
     const full = !!stage.closest('dialog');
-    controls.enableZoom = full;
-    controls.enablePan = full;
+    controls.enableZoom = true;
     controls.screenSpacePanning = false;
-    controls.minDistance = 700;
+    controls.minDistance = 450;
     controls.maxDistance = state.homeDist * (full ? 1.15 : 1);
     fit(full);
+    panWhenClose();
+    const fullButton = stage.querySelector('[data-map-act="full"]');
+    if (fullButton) fullButton.hidden = full || !opts.onFull;
+  }
+  // Dragging pans once the view is closer than the hero view; the target never leaves the island.
+  function panWhenClose() {
+    controls.enablePan = camera.position.distanceTo(controls.target) < state.homeDist * 0.9;
+  }
+  function keepOnIsland() {
+    const t = controls.target, lim = 640;
+    const cx = THREE.MathUtils.clamp(t.x, -lim, lim), cz = THREE.MathUtils.clamp(t.z, -lim, lim);
+    if (cx !== t.x || cz !== t.z || t.y !== 0) {
+      const shift = new THREE.Vector3(cx - t.x, -t.y, cz - t.z);
+      t.add(shift);
+      camera.position.add(shift);
+    }
+    panWhenClose();
+  }
+  // ＋ / − / ⟲: the camera glides along its line to the target (at once with reduced motion).
+  let glide = 0;
+  function moveTo(position, target) {
+    cancelAnimationFrame(glide);
+    const p0 = camera.position.clone(), t0 = controls.target.clone(), start = performance.now();
+    const step = (now) => {
+      const k = reduceMotion() ? 1 : Math.min(1, (now - start) / 260);
+      const e = 1 - Math.pow(1 - k, 3);
+      camera.position.lerpVectors(p0, position, e);
+      controls.target.lerpVectors(t0, target, e);
+      controls.update();
+      requestRender();
+      if (k < 1) glide = requestAnimationFrame(step);
+    };
+    glide = requestAnimationFrame(step);
+  }
+  function zoomBy(factor) {
+    if (!controls) return;
+    const dir = camera.position.clone().sub(controls.target);
+    const d = THREE.MathUtils.clamp(dir.length() * factor, controls.minDistance, controls.maxDistance);
+    moveTo(controls.target.clone().add(dir.setLength(d)), controls.target.clone());
+  }
+  function home() {
+    state.fitted = false;
+    moveTo(new THREE.Vector3().fromArray(state.model.camera.position), new THREE.Vector3().fromArray(state.model.camera.target));
+  }
+  function tools() {
+    if (stage.querySelector('.home-map-tools')) return;
+    const box = document.createElement('div');
+    box.className = 'home-map-tools';
+    box.innerHTML = [['in', 'home.map.zoomIn', '확대', '＋'], ['out', 'home.map.zoomOut', '축소', '−'],
+      ['home', 'home.map.reset', '처음 위치', '⟲'], ['full', 'home.map.full', '크게 보기', '⤢']]
+      .map(([act, key, fallback, glyph]) => '<button type="button" class="home-map-tool" data-map-act="' + act +
+        '" data-key="' + key + '" aria-label="' + esc(opts.t(key, fallback)) + '" title="' + esc(opts.t(key, fallback)) +
+        '"><span aria-hidden="true">' + glyph + '</span></button>').join('');
+    const tip = document.createElement('p');
+    tip.className = 'home-map-hint';
+    tip.setAttribute('aria-hidden', 'true');
+    tip.hidden = true;
+    stage.append(box, tip);
+    interaction();
+  }
+  let hintTimer = 0;
+  function hint() {
+    const tip = stage.querySelector('.home-map-hint');
+    if (!tip) return;
+    const mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+    tip.textContent = mac ? opts.t('home.map.wheelHintMac', '⌘ + 스크롤로 확대해요') : opts.t('home.map.wheelHint', 'Ctrl + 스크롤로 확대해요');
+    tip.hidden = false;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => { tip.hidden = true; }, 1400);
   }
   // The dialog starts close to the day's pins (a phone's tall screen shows the whole island small);
   // back beside the copy, the hero view returns.
@@ -434,7 +510,14 @@ export function mount(stage, options) {
     if (pin) return select(pin.getAttribute('data-codes') === state.selected ? '' : pin.getAttribute('data-codes'), false);
     if (e.target.closest('.home-map-card-close')) return closeAndReturn();
     const open = e.target.closest('.home-map-card-open');
-    if (open) opts.onOpen(open.getAttribute('data-ev'));
+    if (open) return opts.onOpen(open.getAttribute('data-ev'));
+    const tool = e.target.closest('[data-map-act]');
+    if (!tool) return;
+    const act = tool.getAttribute('data-map-act');
+    if (act === 'in') zoomBy(0.65);
+    else if (act === 'out') zoomBy(1 / 0.65);
+    else if (act === 'home') home();
+    else if (act === 'full' && opts.onFull) opts.onFull();
   }
   function closeAndReturn() {
     const key = state.selected;
@@ -474,6 +557,11 @@ export function mount(stage, options) {
     },
     relabel() {
       if (!state.ready) return;
+      stage.querySelectorAll('[data-map-act]').forEach((b) => {
+        const label = opts.t(b.getAttribute('data-key'), b.getAttribute('aria-label'));
+        b.setAttribute('aria-label', label);
+        b.setAttribute('title', label);
+      });
       const key = state.selected;
       renderPins();
       if (key) select(key, false);

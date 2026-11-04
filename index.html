@@ -89,7 +89,12 @@
             <img src="images/profile-instagram.jpg" alt="" width="32" height="32" decoding="async" />
             <span data-i18n="home.kicker">BABDODUK · KAIST FOOD</span>
           </p>
-          <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span></h1>
+          <div class="home-title-row">
+            <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span></h1>
+            <!-- Phones: the campus map opens from here, beside the headline's first line (owner 2026-11-04,
+                 "꽁밥 지도"); wider screens show the map beside the copy. -->
+            <button type="button" class="home-map-open" id="homeMapOpen" aria-haspopup="dialog" aria-controls="homeMapDialog" data-i18n="home.map.show" hidden>꽁밥 지도</button>
+          </div>
           <div class="home-actions">
             <a class="btn btn-primary" href="ggongbab.html" data-i18n="home.ctaToday">오늘의 꽁밥 보기</a>
             <a class="btn btn-secondary" href="mukbang.html#what" data-i18n="home.ctaChoose">메뉴 고르기</a>
@@ -102,8 +107,6 @@
         <div class="home-cal-head">
           <h2 class="home-cal-title" id="homeCalTitle"><span data-i18n="home.cal.title">오늘의 꽁밥</span> <span class="home-cal-date" id="homeCalToday"></span></h2>
           <p class="home-cal-answer" id="homeCalAnswer" data-i18n="home.free.loading">꽁밥 일정 확인 중</p>
-          <!-- Phones: the campus map opens from here (owner 2026-11-04); wider screens show it beside the copy. -->
-          <button type="button" class="home-map-open" id="homeMapOpen" aria-haspopup="dialog" aria-controls="homeMapDialog" aria-label="지도 보기" data-i18n-aria-key="home.map.show" data-i18n="home.map.showShort" hidden>지도</button>
         </div>
         <div class="home-cal-body">
           <div class="home-cal-month" id="homeCalGrid"></div>
@@ -253,14 +256,19 @@
         'home.kicker': 'BABDODUK · KAIST FOOD',
         'home.map.attribution': '지도 데이터: OpenStreetMap',
         'home.map.close': '닫기',
+        'home.map.full': '크게 보기',
         'home.map.more': '외 {n}개',
         'home.map.open': '일정에서 보기',
         'home.map.otherPlaces': '외 {n}곳',
         'home.map.register': '신청하기',
-        'home.map.show': '지도 보기',
-        'home.map.showShort': '지도',
+        'home.map.reset': '처음 위치',
+        'home.map.show': '꽁밥 지도',
         'home.map.title': '꽁밥 지도',
         'home.map.unplaced': '위치 미정 {n}개',
+        'home.map.wheelHint': 'Ctrl + 스크롤로 확대해요',
+        'home.map.wheelHintMac': '⌘ + 스크롤로 확대해요',
+        'home.map.zoomIn': '확대',
+        'home.map.zoomOut': '축소',
         'home.menu.cta': '학식 보기 →',
         'home.menu.error': '학식 메뉴를 불러오지 못했어요',
         'home.menu.label': '학식',
@@ -376,14 +384,19 @@
         'home.kicker': 'BABDODUK · KAIST FOOD',
         'home.map.attribution': 'Map data: OpenStreetMap',
         'home.map.close': 'Close',
+        'home.map.full': 'Full screen',
         'home.map.more': '+{n} more',
         'home.map.open': 'See in the schedule',
         'home.map.otherPlaces': '+{n} more places',
         'home.map.register': 'Register',
-        'home.map.show': 'Open the map',
-        'home.map.showShort': 'Map',
+        'home.map.reset': 'Reset view',
+        'home.map.show': 'Food map',
         'home.map.title': 'Free-food map',
         'home.map.unplaced': '{n} without a place',
+        'home.map.wheelHint': 'Ctrl + scroll to zoom',
+        'home.map.wheelHintMac': '⌘ + scroll to zoom',
+        'home.map.zoomIn': 'Zoom in',
+        'home.map.zoomOut': 'Zoom out',
         'home.menu.cta': 'See cafeteria →',
         'home.menu.error': 'Could not load cafeteria menus',
         'home.menu.label': 'Menu',
