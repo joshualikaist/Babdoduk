@@ -489,7 +489,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .home-map-pins {
   position: absolute;
   inset: 0;
+  overflow: hidden;           /* a pin never leaves the map, whatever the camera does */
   pointer-events: none;
+}
+
+.home-map-pin[hidden] {
+  display: none;
 }
 
 /* A pin's tip points at its building: the JS gives the point as --x / --y. */
