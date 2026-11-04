@@ -1658,6 +1658,22 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
+/* 메뉴 고르기(룰렛) is longer (owner 2026-11-04): on 360px phones both buttons still share one row in
+   the fallback font too, so the month stays in the first screen; 320px stacks them as before. */
+@media (min-width: 340px) and (max-width: 380px) {
+  .home-actions {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .home-actions .btn {
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 14px;
+    text-align: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-map-poster,
   .home-map-canvas,
