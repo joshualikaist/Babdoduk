@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "\"아침부터 저녁까지 가성비\" 간편식 넘어 식사 시장 키우는 편의점[끼니전쟁③]",
-    "summary": "편의점이 간식과 간편식을 구매하는 공간을 넘어 하루 세 끼 식사를 해결하는 곳으로 진화하고 있다.",
     "source": "뉴시스",
-    "sourceId": "web-exa-habit",
-    "candidateId": "c_5c46cd9a09bad207",
     "url": "https://www.newsis.com/view/NISX20261030_0003848609",
     "medium": "news",
-    "discoveredAt": "2026-11-03T16:52:44+09:00",
-    "publishedAt": "2026-10-31T12:00:00+09:00",
     "image": "https://img1.newsis.com/2023/03/16/NISI20230316_0019825472_web.jpg",
+    "category": "trend",
+    "publishedAt": "2026-10-31T12:00:00+09:00",
+    "discoveredAt": "2026-11-03T16:52:44+09:00",
+    "sourceId": "web-exa-habit",
+    "candidateId": "c_5c46cd9a09bad207",
     "imageSource": "source_page_og",
+    "summary": "편의점이 간식과 간편식을 구매하는 공간을 넘어 하루 세 끼 식사를 해결하는 곳으로 진화하고 있다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "LG생활건강, 3분기 음료 매출 4974억…전년 동기보다 3.1% 감소",
-          "summary": "LG생활건강의 올 3분기 음료 사업 매출과 영업이익이 지난해 같은 기간보다 각각 3.1%, 19.9% 감소한 것으로 나타났다.LG생활건강은 2026년 3분기 전체 매출이 1조5774억원으로 지난해 같은 기간보다…",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_55603039de76f219",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120809",
           "medium": "news",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-04T01:08:37+09:00",
           "image": "https://cdn.foodnews.co.kr/news/thumbnail/202611/120809_87298_819_v150.jpg",
+          "publishedAt": "2026-11-04T01:08:37+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_55603039de76f219",
           "imageSource": "source_page_og",
+          "summary": "LG생활건강의 올 3분기 음료 사업 매출과 영업이익이 지난해 같은 기간보다 각각 3.1%, 19.9% 감소한 것으로 나타났다.LG생활건강은 2026년 3분기 전체 매출이 1조5774억원으로 지난해 같은 기간보다…",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -45,16 +45,16 @@
         },
         {
           "title": "프랑스 버터, 한국 미식 시장서 ‘건강한 즐거움’ 트렌드 주도",
-          "summary": "프랑스산 버터가 국내 베이커리 업계와 미식 시장에서 존재감을 넓혀 나가고 있다.",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_ec0cc2992056684e",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68746",
           "medium": "news",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T23:51:59+09:00",
           "image": "http://www.foodbank.co.kr/news/thumbnail/202611/68746_30409_3929_v150.jpg",
+          "publishedAt": "2026-11-03T23:51:59+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_ec0cc2992056684e",
           "imageSource": "source_page_og",
+          "summary": "프랑스산 버터가 국내 베이커리 업계와 미식 시장에서 존재감을 넓혀 나가고 있다.",
           "trendEvidence": [
             "explicit_source_claim",
             "corroborated"
@@ -62,42 +62,42 @@
         },
         {
           "title": "델몬트, ‘청바지 프로젝트’ 6개 대학서 진행…대학생 건강한 식습관 응원",
-          "summary": "135년 전통의 글로벌 청과기업 델몬트가 지난달 19일부터 28일까지 서울대 등 국내 6개 대학에서 신선 과일을 지원하는 ‘청바지 프로젝트’를 진행했다.",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_273c966d646cdda8",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68741",
           "medium": "news",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
           "publishedAt": "2026-11-03T01:42:00+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_273c966d646cdda8",
+          "summary": "135년 전통의 글로벌 청과기업 델몬트가 지난달 19일부터 28일까지 서울대 등 국내 6개 대학에서 신선 과일을 지원하는 ‘청바지 프로젝트’를 진행했다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "세계 의약품 규제기관 수장 서울 집결⋯AI·동물실험 대체 방안 논의",
-          "summary": "세계 주요 의약품 규제기관 대표들이 서울에 모여 인공지능(AI)과 동물실험 대체기술 등 차세대 의약품 규제 방향을 논의한다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_1354bec42716612d",
           "url": "https://kormedi.com/2897819/",
           "medium": "news",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
           "publishedAt": "2026-11-03T16:36:04+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1354bec42716612d",
+          "summary": "세계 주요 의약품 규제기관 대표들이 서울에 모여 인공지능(AI)과 동물실험 대체기술 등 차세대 의약품 규제 방향을 논의한다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "mRNA 다음은 '이것'?…美, 'DNA 의약품' 첫 승인",
-          "summary": "· DNA를 활용한 의약품이 미국 식품의약국(FDA)의 문턱을 처음으로 넘었다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_6c68a9447777ae7f",
           "url": "https://www.newsis.com/view/NISX20261103_0003852381",
           "medium": "news",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
           "publishedAt": "2026-11-03T10:27:14+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_6c68a9447777ae7f",
+          "summary": "· DNA를 활용한 의약품이 미국 식품의약국(FDA)의 문턱을 처음으로 넘었다.",
           "trendEvidence": [
             "corroborated"
           ]
@@ -109,62 +109,62 @@
       "items": [
         {
           "title": "감자조림 황금레시피｜백반집처럼 윤기 나고 부서지지 않게 만드는 법",
-          "summary": "백반집에서 밑반찬으로 나오는 감자조림은 달짝지근하면서 짭조름한 양념과 먹음직스러운 윤기가 특징입니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_23aba336355c345b",
           "url": "https://cultureagora.tistory.com/419",
           "medium": "blog",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T11:00:55+09:00",
           "image": "https://blog.kakaocdn.net/dn/bIe9U4/dJMcahmhQX4/4tYWlKUPiUoJFqCx9DI5U1/tfile.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-03T11:00:55+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_23aba336355c345b",
+          "imageSource": "feed_html",
+          "summary": "백반집에서 밑반찬으로 나오는 감자조림은 달짝지근하면서 짭조름한 양념과 먹음직스러운 윤기가 특징입니다."
         },
         {
           "title": "신상출시 편스토랑 오윤아의 묵은지새우젓찌개 만드는 법",
-          "summary": "343회 신상출시 편스토랑에서 오윤아는 묵은지, 새우젓, 채수를 활용해 국물만 먹어도 시원함이 폭발하는 묵은지새우젓찌개 만드는 법을 공개했는데요.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_01e149a9d17dbefb",
           "url": "https://seon1982.tistory.com/4140",
           "medium": "blog",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T00:00:43+09:00",
           "image": "https://blog.kakaocdn.net/dn/6BYzJ/dJMcaf9xo5G/RYfDLFHLkLhLoKyWpjonuk/img.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-03T00:00:43+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_01e149a9d17dbefb",
+          "imageSource": "feed_html",
+          "summary": "343회 신상출시 편스토랑에서 오윤아는 묵은지, 새우젓, 채수를 활용해 국물만 먹어도 시원함이 폭발하는 묵은지새우젓찌개 만드는 법을 공개했는데요."
         },
         {
           "title": "단호박 요리 추천, 꿀과 간장으로 만드는 단호박 꿀찜 레시피",
-          "summary": "단호박 요리 추천, 꿀과 간장으로 만드는 단호박 꿀찜 레시피 단호박은 쪄서 먹어도 맛있지만 양념을 더해 조리하면 색다른 밑반찬으로 즐길 수 있습니다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_2b0247d1cc2191fc",
           "url": "https://heysukim114.tistory.com/entry/%EB%8B%A8%ED%98%B8%EB%B0%95-%EA%BF%80%EC%B0%9C",
           "medium": "blog",
+          "publishedAt": "2026-11-03T00:00:50+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T00:00:50+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_2b0247d1cc2191fc",
+          "summary": "단호박 요리 추천, 꿀과 간장으로 만드는 단호박 꿀찜 레시피 단호박은 쪄서 먹어도 맛있지만 양념을 더해 조리하면 색다른 밑반찬으로 즐길 수 있습니다."
         },
         {
           "title": "돼지갈비찜 황금레시피｜식당처럼 부드럽고 윤기 나는 간장 양념",
-          "summary": "오늘은 달콤 짭짤한 간장 양념이 고기에 쏙 배어든 돼지갈비찜 레시피 입니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_8a67020d2e6098a4",
           "url": "https://cultureagora.tistory.com/450",
           "medium": "blog",
+          "publishedAt": "2026-11-02T22:05:07+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-02T22:05:07+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_8a67020d2e6098a4",
+          "summary": "오늘은 달콤 짭짤한 간장 양념이 고기에 쏙 배어든 돼지갈비찜 레시피 입니다."
         },
         {
           "title": "수육 자숙문어 삼합 만들기 돼지 앞다리살 수육 요리 레시피",
-          "summary": "김장전 묵은 김치 소비를 위해 묵은지 씻어 잘라 주고 돼지 앞다리살 수육을 하고 냉동실에 있던 자숙 문어를 썰고 요렇게 수육 자숙문어 묵은지로 삼합을 했습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_10c0f832254890d9",
           "url": "https://twins0807.tistory.com/entry/%EC%88%98%EC%9C%A1-%EC%9E%90%EC%88%99%EB%AC%B8%EC%96%B4-%EC%82%BC%ED%95%A9-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%8F%BC%EC%A7%80-%EC%95%9E%EB%8B%A4%EB%A6%AC%EC%82%B4-%EC%88%98%EC%9C%A1-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-11-02T18:38:40+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-02T18:38:40+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_10c0f832254890d9",
+          "summary": "김장전 묵은 김치 소비를 위해 묵은지 씻어 잘라 주고 돼지 앞다리살 수육을 하고 냉동실에 있던 자숙 문어를 썰고 요렇게 수육 자숙문어 묵은지로 삼합을 했습니다."
         }
       ]
     },
@@ -173,60 +173,60 @@
       "items": [
         {
           "title": "“잘 자면 살도 잘 빠진다는데⋯” 비만 치료에도 영향 미칠까?",
-          "summary": "수면은 호르몬 분비와 대사 균형에 핵심적인 역할을 한다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_c6a72bf07c85ee15",
           "url": "https://kormedi.com/2896908/",
           "medium": "news",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T07:00:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/11/gettyimages-a14523645-edited.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-11-03T07:00:00+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_c6a72bf07c85ee15",
+          "imageSource": "feed_media",
+          "summary": "수면은 호르몬 분비와 대사 균형에 핵심적인 역할을 한다."
         },
         {
           "title": "“소고기 늘 웰던으로 먹었는데”… 전문가들 추천하는 ‘익힘 정도’",
-          "summary": "소고기는 어떤 부위와 조리법을 선택하느냐에 따라 섭취 가능한 영양소가 크게 달라질 수 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_54306cf9d9a8bed0",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/02/2026110202703.html",
           "medium": "news",
+          "publishedAt": "2026-11-03T07:00:00+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T07:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_54306cf9d9a8bed0",
+          "summary": "소고기는 어떤 부위와 조리법을 선택하느냐에 따라 섭취 가능한 영양소가 크게 달라질 수 있다."
         },
         {
           "title": "“혈압 낮추고 혈관 건강까지?”…지금 제철 ‘이 음식’, 중년 밥상에 올려볼까?",
-          "summary": "11월 제철을 맞은 시금치와 배추, 늙은호박, 사과에는 혈압 조절에 관여하는 칼륨과 식이섬유 등이 들어 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_5dca33b9ca8dcb5d",
           "url": "https://kormedi.com/2896647/",
           "medium": "news",
+          "publishedAt": "2026-11-03T07:05:00+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T07:05:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_5dca33b9ca8dcb5d",
+          "summary": "11월 제철을 맞은 시금치와 배추, 늙은호박, 사과에는 혈압 조절에 관여하는 칼륨과 식이섬유 등이 들어 있다."
         },
         {
           "title": "식품연, 기능성 소재·마이크로바이옴·정밀영양 연구 한자리에",
-          "summary": "한국식품연구원(원장 백현동)은 10월 28일부터 30일까지 제주국제컨벤션센터(ICC)에서 열린 2026 한국식품영양과학회 국제학술대회에서 3개 세션을 주관했다고 밝혔다.",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_2b7e903b435e0872",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36011",
           "medium": "news",
+          "publishedAt": "2026-11-03T19:23:00+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T19:23:00+09:00"
+          "sourceId": "news-foodicon",
+          "candidateId": "c_2b7e903b435e0872",
+          "summary": "한국식품연구원(원장 백현동)은 10월 28일부터 30일까지 제주국제컨벤션센터(ICC)에서 열린 2026 한국식품영양과학회 국제학술대회에서 3개 세션을 주관했다고 밝혔다."
         },
         {
           "title": "“쫄깃한 식감에 단백질 풍부”… 이창섭 반한 돼지 자궁 ‘암뽕’, 반전 영양",
-          "summary": "소나 돼지의 내장은 특유의 쫄깃한 식감과 고소한 맛으로 인기가 많다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_ab1fbf855aef7223",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/02/2026110201674.html",
           "medium": "news",
+          "publishedAt": "2026-11-02T15:00:00+09:00",
           "discoveredAt": "2026-11-02T16:33:43+09:00",
-          "publishedAt": "2026-11-02T15:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_ab1fbf855aef7223",
+          "summary": "소나 돼지의 내장은 특유의 쫄깃한 식감과 고소한 맛으로 인기가 많다."
         }
       ]
     },
@@ -235,60 +235,60 @@
       "items": [
         {
           "title": "평소엔 만원짜리 배달시키더니…'20만원 오마카세' 줄서는 혼밥족 [박상경의 영수증 리뷰]",
-          "summary": "스시 오마카세부터 1인 식사에 이르기까지 외식 소비 시장 전반이 저가 실속형과 초고가 하이엔드로 갈라지는 'K자형 양극화'를 보이고 있다.성장세가 꺾였다는 평가를 받던 스시 오마카세 시장은 2024년의 짧은 정체..",
           "source": "한국경제TV",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_cef5d8553bb3f6fd",
           "url": "https://www.wowtv.co.kr/NewsCenter/News/Read?articleId=202610239913g",
           "medium": "news",
-          "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-10-25T11:00:05+09:00",
           "image": "https://img.hankyung.com/photo/202610/99.32871733.1.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-10-25T11:00:05+09:00",
+          "discoveredAt": "2026-11-03T16:52:44+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cef5d8553bb3f6fd",
+          "imageSource": "source_page_og",
+          "summary": "스시 오마카세부터 1인 식사에 이르기까지 외식 소비 시장 전반이 저가 실속형과 초고가 하이엔드로 갈라지는 'K자형 양극화'를 보이고 있다.성장세가 꺾였다는 평가를 받던 스시 오마카세 시장은 2024년의 짧은 정체.."
         },
         {
           "title": "저당·웰니스 넘어 '습관'으로…식품업계, 건강 마케팅 진화",
-          "summary": "건강관리가 일상 속 습관으로 자리 잡으면서 식품업계가 소비자의 생활 방식과 시간대에 맞춘 마케팅을 확대하고 있다.31일 업계에 따르면 식품의약품안전처가 지난해 7월 발표한 국민건강영양조사 분석 결과, 2023년…",
           "source": "데일리안",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_3e4e4dc2e79e78a0",
           "url": "https://www.dailian.co.kr/news/view/1708804/%EC%A0%80%EB%8B%B9%EC%9B%B0%EB%8B%88%EC%8A%A4-%EB%84%98%EC%96%B4-%EC%8A%B5%EA%B4%80%EC%9C%BC%EB%A1%9C%EC%8B%9D%ED%92%88%EC%97%85%EA%B3%84-%EA%B1%B4%EA%B0%95-2026",
           "medium": "news",
+          "publishedAt": "2026-10-31T09:00:00+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-10-31T09:00:00+09:00"
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_3e4e4dc2e79e78a0",
+          "summary": "건강관리가 일상 속 습관으로 자리 잡으면서 식품업계가 소비자의 생활 방식과 시간대에 맞춘 마케팅을 확대하고 있다.31일 업계에 따르면 식품의약품안전처가 지난해 7월 발표한 국민건강영양조사 분석 결과, 2023년…"
         },
         {
           "title": "“출출할 때 과자 먹지마세요”⋯건강하게 포만감 채워주는 음식 4가지",
-          "summary": "같은 열량을 먹어도 음식의 수분과 식이섬유 함량, 조리 방식에 따라 배부른 정도가 달라질 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_2b6d1651e74103e7",
           "url": "https://kormedi.com/2897260/",
           "medium": "news",
+          "publishedAt": "2026-11-03T16:00:00+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T16:00:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2b6d1651e74103e7",
+          "summary": "같은 열량을 먹어도 음식의 수분과 식이섬유 함량, 조리 방식에 따라 배부른 정도가 달라질 수 있다."
         },
         {
           "title": "우유 한 잔 넘어 일상 속으로…락토프리 시장 확장세",
-          "summary": "국내 식품·유업계가 락토프리 적용 범위를 흰 우유에서 요거트와 단백질 음료, 균형영양식 등으로 확대하며 소비자들의 다양한 영양 수요 공략에 나서고 있다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_16a85df2c1a75853",
           "url": "https://www.newsis.com/view/NISX20261103_0003851880",
           "medium": "news",
+          "publishedAt": "2026-11-03T15:03:48+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T15:03:48+09:00"
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_16a85df2c1a75853",
+          "summary": "국내 식품·유업계가 락토프리 적용 범위를 흰 우유에서 요거트와 단백질 음료, 균형영양식 등으로 확대하며 소비자들의 다양한 영양 수요 공략에 나서고 있다."
         },
         {
           "title": "내년 식음료 시장은 “소비자가 원하는 결과 중심으로 재편”",
-          "summary": "“AI 기반 정보와 추천이 확대되고 기후 위기와 지정학적 위협이 커지는 한편 인플루언서와 웨어러블 기기로 인한 정보 과부하도 심화되고 있습니다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_27f293a8fa0f4375",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201490",
           "medium": "news",
+          "publishedAt": "2026-11-03T07:57:00+09:00",
           "discoveredAt": "2026-11-03T16:52:44+09:00",
-          "publishedAt": "2026-11-03T07:57:00+09:00"
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_27f293a8fa0f4375",
+          "summary": "“AI 기반 정보와 추천이 확대되고 기후 위기와 지정학적 위협이 커지는 한편 인플루언서와 웨어러블 기기로 인한 정보 과부하도 심화되고 있습니다."
         }
       ]
     }
