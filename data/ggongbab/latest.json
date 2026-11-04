@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T16:25:35+09:00",
+  "generatedAt": "2026-11-05T00:07:34+09:00",
   "timezone": "Asia/Seoul",
-  "count": 45,
+  "count": 42,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -138,128 +138,6 @@
           }
         }
       ],
-      "audience": {
-        "text": "학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "8c44e83f-2a71-4ff5-8082-9ecd477b4a01",
-      "title": "2026 KAIST Model UN Science, Technology & Innovation Summit (KAI-MUN)",
-      "summary": "학생들이 의장단과 대표단으로 참여해 ‘AI 격차 해소: 국가와 세대를 아우르는 책임 있는 AI 거버넌스’를 논의하는 모의 국제회의이다. 관람객 사전등록자에게 다과가 제공되며 행사 당일 행운의 뽑기가 진행된다.",
-      "startAt": "2026-11-04T16:00:00+09:00",
-      "endAt": "2026-11-04T19:00:00+09:00",
-      "dateText": "2026년 11월 4일(수)",
-      "timeText": "16:00–19:00",
-      "location": {
-        "name": "KAIST Auditorium",
-        "building": "E15",
-        "room": ""
-      },
-      "food": {
-        "provided": "true",
-        "type": "refreshment",
-        "description": "Refreshments will be provided to those who register in advance. / 다과는 사전등록하신 분들께 제공될 예정 입니다.",
-        "source": "text"
-      },
-      "organizer": "과학기술과 글로벌발전 연구센터 (G-CODEs, Global Center for Development and Strategy)",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-11-03T23:59:00+09:00",
-        "url": "https://forms.gle/s4jGKNLdxV8epDQb9"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "lucky draw / 행운의 뽑기(Lucky Draw)"
-      }
-    },
-    {
-      "id": "8f65a362-a09c-4577-bc5c-d39338c5b7c1",
-      "title": "2026 망한과제 자랑대회",
-      "summary": "‘망함의 아름다움’에 관한 KAIST 학생들의 이야기를 부스 발표 형식으로 공유하는 행사입니다. 싸이버거와 콜라를 선착순 100명에게 제공하며, 조건을 충족한 관람객을 대상으로 경품 추첨을 진행합니다.",
-      "startAt": "2026-11-04T18:00:00+09:00",
-      "endAt": "2026-11-04T20:00:00+09:00",
-      "dateText": "2026년 11월 4일(수)",
-      "timeText": "18:00–20:00",
-      "location": {
-        "name": "KAIST 본원 학술문화관 존해너홀",
-        "building": "E9",
-        "room": "5층 존해너홀"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "선착순 100명 싸이버거 제공",
-        "source": "text"
-      },
-      "organizer": "실패연구소와 ICISTS",
-      "eligibility": "",
-      "registration": {
-        "required": "false",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품 추첨: 에어팟 프로 3, 신세계 백화점 10만원 상품권, 배달의 민족 5만원 기프티콘, 과자 및 망고젤리, 망고젤리"
-      },
-      "audience": {
-        "text": "실패와 성공, 경품에 관심이 있으신 분 누구나",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "e4932594-e8d6-4c3d-b22a-6baaacebba0d",
-      "title": "Codex 워크숍 다과",
-      "summary": "Codex 워크숍에서 학생 연사 발표와 직접 만드는 실습이 진행되며, 선착순 다과와 ChatGPT Plus 1개월 무료 제공이 있습니다.",
-      "startAt": "2026-11-04T19:00:00+09:00",
-      "endAt": "2026-11-04T21:00:00+09:00",
-      "dateText": "2026-11-04",
-      "timeText": "19:00~21:00",
-      "location": {
-        "name": "터만홀",
-        "building": "E11",
-        "room": ""
-      },
-      "food": {
-        "provided": "true",
-        "type": "refreshment",
-        "description": "다과(선착순)",
-        "source": "text"
-      },
-      "organizer": "OpenAI Student Collective, Include",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://luma.com/dxbwdnuo"
-      },
-      "confidence": 0.9,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "ChatGPT Plus 1개월 무료"
-      },
       "audience": {
         "text": "학생",
         "basis": "stated"
@@ -1359,7 +1237,7 @@
       "dateText": "2026년 11월 19일(목)",
       "timeText": "17:00~18:30",
       "location": {
-        "name": "",
+        "name": "인문사회과학부동",
         "building": "N4",
         "room": "시청각실"
       },
@@ -1372,15 +1250,19 @@
       "organizer": "생명화학공학과",
       "eligibility": "",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://forms.gle/dNXRxi6ziBjXErvKA"
       },
-      "confidence": 0.98,
+      "confidence": 1.0,
       "sources": [
         {
           "type": "manual",
           "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
         }
       ],
       "giveaway": {
