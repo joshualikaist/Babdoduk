@@ -175,58 +175,51 @@
   }
 
   // What is handed out, in one or two words (owner 2026-11-05: the time and the food first, the rest on
-  // a tap): the dishes the food description names, as i18n keys `dish.<key>` with a decorative emoji.
+  // a tap): the dishes the food description names, as i18n keys `dish.<key>` (words only).
   // Only the description is read, never the title. Named dishes come first (at most two); a general
   // word (점심, 식사) stands alone or leads only light food ("식사 · 간식"); without either, the type.
   var DISHES = [
-    ['burger', '🍔', /버거|burger/i],
-    ['pizza', '🍕', /피자|pizza/i],
-    ['chicken', '🍗', /치킨|chicken/i],
-    ['sushi', '🍣', /초밥|스시|sushi/i],
-    ['sandwich', '🥪', /샌드위치|sandwich/i],
-    ['lunchbox', '🍱', /도시락|lunch ?box|bento/i],
-    ['bbq', '🍖', /바비큐|바베큐|소고기|삼겹|BBQ|barbecue/i],
-    ['kimbap', '🍙', /김밥|주먹밥|kimbap/i],
-    ['bread', '🥐', /빵|베이커리|bakery|bread|pastr/i],
-    ['cake', '🍰', /케이크|cake/i],
-    ['coffee', '☕', /커피|coffee/i],
-    ['drink', '🥤', /음료|드링크|주스|콜라|사이다|drinks?\b|beverage|juice/i],
-    ['snack', '🍪', /간식|과자|스낵|snacks?\b/i],
-    ['refreshment', '🍪', /다과|refreshments?/i],
-    ['coupon', '🎟️', /쿠폰|기프티콘|coupon|voucher/i]
+    ['burger', /버거|burger/i],
+    ['pizza', /피자|pizza/i],
+    ['chicken', /치킨|chicken/i],
+    ['sushi', /초밥|스시|sushi/i],
+    ['sandwich', /샌드위치|sandwich/i],
+    ['lunchbox', /도시락|lunch ?box|bento/i],
+    ['bbq', /바비큐|바베큐|소고기|삼겹|BBQ|barbecue/i],
+    ['kimbap', /김밥|주먹밥|kimbap/i],
+    ['bread', /빵|베이커리|bakery|bread|pastr/i],
+    ['cake', /케이크|cake/i],
+    ['coffee', /커피|coffee/i],
+    ['drink', /음료|드링크|주스|콜라|사이다|drinks?\b|beverage|juice/i],
+    ['snack', /간식|과자|스낵|snacks?\b/i],
+    ['refreshment', /다과|refreshments?/i],
+    ['coupon', /쿠폰|기프티콘|coupon|voucher/i]
   ];
   var LIGHT = { coffee: 1, drink: 1, snack: 1, refreshment: 1 };
   var GENERAL = [
-    ['dinner', '🍽️', /석식|저녁|dinner/i],
-    ['lunch', '🍽️', /점심|중식|lunch/i],
-    ['catering', '🍽️', /케이터링|뷔페|catering|buffet/i],
-    ['meal', '🍽️', /식사|meals?\b/i]
+    ['dinner', /석식|저녁|dinner/i],
+    ['lunch', /점심|중식|lunch/i],
+    ['catering', /케이터링|뷔페|catering|buffet/i],
+    ['meal', /식사|meals?\b/i]
   ];
   var TYPE_DISH = { meal: 'meal', lunchbox: 'lunchbox', snack: 'snack', refreshment: 'refreshment',
     beverage: 'drink', coupon: 'coupon' };
-  var DISH_EMOJI = {};
-  DISHES.concat(GENERAL).forEach(function (row) { DISH_EMOJI[row[0]] = row[1]; });
-  DISH_EMOJI.food = '🍽️';
   function dishes(ev) {
     if (!hasFood(ev)) return [];
     var food = ev.food || {};
     var text = String(food.description || '');
-    var found = DISHES.filter(function (row) { return row[2].test(text); }).map(function (row) { return row[0]; });
+    var found = DISHES.filter(function (row) { return row[1].test(text); }).map(function (row) { return row[0]; });
     // "BBQ 황금올리브 치킨" is a chicken brand, not a barbecue.
     if (found.indexOf('chicken') >= 0) found = found.filter(function (key) { return key !== 'bbq'; });
     found = found.slice(0, 2);
-    var general = GENERAL.filter(function (row) { return row[2].test(text); }).map(function (row) { return row[0]; })[0];
+    var general = GENERAL.filter(function (row) { return row[1].test(text); }).map(function (row) { return row[0]; })[0];
     if (general && (!found.length || (found.length === 1 && LIGHT[found[0]]))) found.unshift(general);
     if (!found.length) found.push(TYPE_DISH[food.type] || 'food');
-    return found.map(function (key) { return { key: key, emoji: DISH_EMOJI[key] }; });
+    return found.map(function (key) { return { key: key }; });
   }
   // One label for a row: "샌드위치", "도시락 · 다과". `t(key, fallback)` is the page's translation lookup.
   function dishLabel(ev, t) {
     return dishes(ev).map(function (d) { return t('dish.' + d.key, d.key); }).join(' · ');
-  }
-  function dishEmoji(ev) {
-    var list = dishes(ev);
-    return list.length ? list[0].emoji : '';
   }
   // Whether a free text is in the page's language: Korean text on the Korean page, text without
   // Hangul on the English page. Source text in the other language stays out of the page's lines.
@@ -238,7 +231,6 @@
   global.BabdodukFreeFood = {
     dishes: dishes,
     dishLabel: dishLabel,
-    dishEmoji: dishEmoji,
     inLang: inLang,
     toKst: toKst,
     nowKst: nowKst,
