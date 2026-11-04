@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T00:07:34+09:00",
+  "generatedAt": "2026-11-05T04:11:46+09:00",
   "timezone": "Asia/Seoul",
   "count": 42,
   "events": [
@@ -1703,17 +1703,21 @@
         "source": "text"
       },
       "organizer": "화학과",
-      "eligibility": "",
+      "eligibility": "새내기과정학부 학생",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://forms.gle/5k2T2rJ3Q5eeyqXX8"
       },
-      "confidence": 0.98,
+      "confidence": 1.0,
       "sources": [
         {
           "type": "manual",
           "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
         }
       ],
       "giveaway": {
