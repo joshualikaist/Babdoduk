@@ -100,7 +100,19 @@ for rel in r.iter("relation"):
     holes = [ring(h) for h in stitch(inners)]
     for o in stitch(outers):
         if o[0] == o[-1]: add_area(kind, ring(o), t, holes)
-data = {"origin": {"lat": lat0, "lon": lon0}, "boundary": boundary, **features,
+# Landmarks as points: the main gate's pillars and the carillon on the pond (석림의 종).
+def node_xy(n):
+    lat, lon = float(n.get("lat")), float(n.get("lon"))
+    return [round((lon - lon0) * 111320 * K, 2), round((lat - lat0) * 110540, 2)]
+landmarks = {"gate": [], "carillon": []}
+for n in r.iter("node"):
+    t = tags_of(n)
+    if t.get("name") == "KAIST 정문" and t.get("barrier") == "entrance":
+        landmarks["gate"].append(node_xy(n))
+    elif t.get("tourism") == "artwork" and t.get("name") == "석림의 종":
+        landmarks["carillon"].append(node_xy(n))
+landmarks["gate"].sort()
+data = {"origin": {"lat": lat0, "lon": lon0}, "boundary": boundary, **features, "landmarks": landmarks,
         "attribution": "Map data from OpenStreetMap (ODbL)"}
 json.dump(data, open(out, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 xs = [p[0] for p in boundary]; ys = [p[1] for p in boundary]

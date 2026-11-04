@@ -24,6 +24,8 @@ def test_the_buildings_our_events_use_most_are_placed_with_their_names():
         assert rows[code]["nameEn"] and len(rows[code]["at"]) == 2 and rows[code]["top"] >= 4
     # The 9-floor IT building stands taller than a 3-floor one.
     assert rows["N1"]["top"] > rows["E11"]["top"]
+    # Floors from a checked source (buildings-extra.json `levels`) win over OSM's: KI빌딩 5, IT융합빌딩 10.
+    assert rows["E4"]["top"] == 5 * cb.LEVEL + 1.0 and rows["N1"]["top"] == 10 * cb.LEVEL + 1.0
 
 
 def test_no_alias_is_shared_and_none_is_a_code():
@@ -90,5 +92,6 @@ def test_the_web_model_stays_within_its_budget_and_describes_its_view():
     assert len(model["camera"]["position"]) == 3 and model["camera"]["position"][1] > 1000   # above the island
     assert model["light"]["span"] > 1000 and 500 < len(model["trees"]) < 5000
     assert all(len(t) == 5 and t[4] in (0, 1, 2) for t in model["trees"])
-    for key in ("grass", "path", "wall", "roof", "water", "highlight"):
+    for key in ("grass", "path", "wall", "roof", "water", "highlight", "brick_wall", "metal_wall", "glass_strong",
+                "stone", "car_red", "car_blue", "car_green", "jet"):
         assert len(model["palette"][key]) == 3, key

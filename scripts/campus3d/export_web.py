@@ -7,7 +7,9 @@ Blender session:
 
 Writes into the --web folder:
   campus.glb        ground (one mesh, a material per surface), island sides, buildings (one mesh;
-                    vertex attribute _bid = 1 + the building's row in buildings.json, 0 without a code),
+                    vertex attributes _bid = 1 + the building's row in buildings.json, 0 without a code,
+                    and _style = 0 plain, 1 glass, 2 brick, 3 metal from buildings-extra.json `styles`),
+                    landmarks (the gate, the carillon, fountains; a material per colour),
                     rooftop plant, three tree shapes and the hero camera; Draco-compressed
   ground-light.webp the light on the ground, baked top-down (sun shadows of buildings and trees, sky
                     occlusion): the browser multiplies the ground colours by it and needs no shadows
@@ -95,6 +97,7 @@ for ob in scene.objects:
         attr.data.foreach_set("value", [float(BID.get(code, 0))] * len(ob.data.vertices))
 buildings = join(["b"], "buildings")
 units = join(["Cube"], "units")
+landmarks = join(["lm_"], "landmarks")
 ground = join(["base", "parking", "track", "pitch", "grass", "wood", "water", "roads", "paths"], "ground")
 
 # The island's sides leave the ground mesh: they take no top-down light.
@@ -182,7 +185,7 @@ out.save_render(str(OUT / "ground-light.webp"), scene=scene)
 
 # --- 4. export ---------------------------------------------------------------------------------------------
 for ob in list(scene.objects):
-    keep = ob.name in ("ground", "island_sides", "buildings", "units") or ob is cam or ob.name.startswith("tree")
+    keep = ob.name in ("ground", "island_sides", "buildings", "units", "landmarks") or ob is cam or ob.name.startswith("tree")
     keep = keep and ob.name != "light_card"
     if not keep or ob.type == "EMPTY":
         bpy.data.objects.remove(ob, do_unlink=True)
@@ -197,11 +200,11 @@ for mat in bpy.data.materials:                   # the browser colours by materi
             mat.node_tree.nodes.remove(n)
 # Only the ground's light UV leaves Blender (curves and primitives brought their own; the browser
 # would read the first one).
-for ob in [ground, sides, buildings, units, *protos]:
+for ob in [ground, sides, buildings, units, landmarks, *protos]:
     for layer in [l for l in ob.data.uv_layers if not (ob is ground and l.name == "light")]:
         ob.data.uv_layers.remove(layer)
 bpy.ops.object.select_all(action="DESELECT")
-for ob in [ground, sides, buildings, units, cam, *protos]:
+for ob in [ground, sides, buildings, units, landmarks, cam, *protos]:
     ob.select_set(True)
 bpy.ops.export_scene.gltf(filepath=str(OUT / "campus.glb"), export_format="GLB", use_selection=True,
                           export_apply=True, export_yup=True, export_cameras=True, export_lights=False,
