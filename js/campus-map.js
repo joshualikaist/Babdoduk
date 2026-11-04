@@ -23,7 +23,6 @@ import { place } from './campus-place.js';
 export { place };
 
 const PIN_LIFT = 14;                 // meters above the roof where a pin's tip points
-const TURN = THREE.MathUtils.degToRad(25);
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function webgl() {
@@ -149,16 +148,26 @@ export function mount(stage, options) {
     controls.enablePan = false;
     controls.enableZoom = false;
     controls.enableDamping = !reduceMotion();
+    // Like a map (owner 2026-11-04: "가운데에 고정되어 있다는 점"): drag moves, the right button or
+    // Shift + drag turns all the way round and tilts from almost straight down to a low angle, and
+    // Ctrl/⌘ + wheel zooms toward the pointer. Phones: one finger moves, two fingers zoom and turn.
+    controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+    controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+    controls.screenSpacePanning = false;
+    controls.zoomToCursor = true;
     controls.rotateSpeed = 0.5;
-    const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
-    controls.minAzimuthAngle = sph.theta - TURN;
-    controls.maxAzimuthAngle = sph.theta + TURN;
-    controls.minPolarAngle = sph.phi - 0.12;
-    controls.maxPolarAngle = sph.phi + 0.06;
+    controls.minPolarAngle = 0.22;
+    controls.maxPolarAngle = 1.12;
     controls.addEventListener('change', () => { keepOnIsland(); requestRender(); });
     controls.update();
     interaction();
     // Beside the copy a plain wheel scrolls the page: Ctrl/⌘ + wheel (and a trackpad pinch) zooms.
+    canvas.addEventListener('pointerenter', (e) => {
+      if (state.taught || e.pointerType !== 'mouse') return;
+      state.taught = true;
+      hint(opts.t('home.map.dragHint', '끌어서 이동 · 오른쪽 끌기로 회전 · Ctrl + 스크롤로 확대'), 2600);
+    });
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     canvas.addEventListener('wheel', (e) => {
       if (stage.closest('dialog') || e.ctrlKey || e.metaKey) return;
       e.stopImmediatePropagation();
@@ -240,17 +249,14 @@ export function mount(stage, options) {
     const full = !!stage.closest('dialog');
     controls.enableZoom = true;
     controls.screenSpacePanning = false;
-    controls.minDistance = 450;
-    controls.maxDistance = state.homeDist * (full ? 1.15 : 1);
+    controls.minDistance = 400;
+    controls.maxDistance = state.homeDist * (full ? 1.4 : 1.25);
+    controls.enablePan = true;
     fit(full);
-    panWhenClose();
     const fullButton = stage.querySelector('[data-map-act="full"]');
     if (fullButton) fullButton.hidden = full || !opts.onFull;
   }
-  // Dragging pans once the view is closer than the hero view; the target never leaves the island.
-  function panWhenClose() {
-    controls.enablePan = camera.position.distanceTo(controls.target) < state.homeDist * 0.9;
-  }
+  // Wherever it is dragged, the point the camera looks at stays on the island.
   function keepOnIsland() {
     const t = controls.target, lim = 640;
     const cx = THREE.MathUtils.clamp(t.x, -lim, lim), cz = THREE.MathUtils.clamp(t.z, -lim, lim);
@@ -259,7 +265,6 @@ export function mount(stage, options) {
       t.add(shift);
       camera.position.add(shift);
     }
-    panWhenClose();
   }
   // ＋ / − / ⟲: the camera glides along its line to the target (at once with reduced motion).
   let glide = 0;
@@ -304,14 +309,15 @@ export function mount(stage, options) {
     interaction();
   }
   let hintTimer = 0;
-  function hint() {
+  function hint(text, ms) {
     const tip = stage.querySelector('.home-map-hint');
     if (!tip) return;
     const mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-    tip.textContent = mac ? opts.t('home.map.wheelHintMac', '⌘ + 스크롤로 확대해요') : opts.t('home.map.wheelHint', 'Ctrl + 스크롤로 확대해요');
+    tip.textContent = (text || (mac ? opts.t('home.map.wheelHintMac', '⌘ + 스크롤로 확대해요')
+      : opts.t('home.map.wheelHint', 'Ctrl + 스크롤로 확대해요'))).replace('Ctrl', mac ? '⌘' : 'Ctrl');
     tip.hidden = false;
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => { tip.hidden = true; }, 1400);
+    hintTimer = setTimeout(() => { tip.hidden = true; }, ms || 1400);
   }
   // The dialog starts close to the day's pins (a phone's tall screen shows the whole island small);
   // back beside the copy, the hero view returns.
@@ -385,15 +391,12 @@ export function mount(stage, options) {
   }
   function renderPins() {
     if (!state.ready || !state.day) return;
-    const { groups, unplaced } = group(state.items);
+    const { groups } = group(state.items);
     state.groups = groups;
     state.sig = '';
-    if (note) {
-      const parts = [];
-      if (unplaced.length) parts.push(opts.t('home.map.unplaced', '위치 미정 {n}개').replace('{n}', unplaced.length));
-      parts.push(opts.t('home.map.attribution', '지도 데이터: OpenStreetMap'));
-      note.textContent = parts.join(' · ');
-    }
+    // Only the map data credit (ODbL); events without a place stay in the calendar (owner 2026-11-04:
+    // "위치 미정 1개 이거 제거해줘").
+    if (note) note.textContent = opts.t('home.map.attribution', '지도 데이터: OpenStreetMap');
     if (!groups.length) pinsLayer.innerHTML = '';
     highlight();
     layoutPins();
