@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T01:54:59+09:00",
+  "generatedAt": "2026-11-04T11:45:44+09:00",
   "timezone": "Asia/Seoul",
-  "count": 45,
+  "count": 46,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -528,6 +528,44 @@
       "giveaway": {
         "provided": "true",
         "description": "상품"
+      }
+    },
+    {
+      "id": "40d22634-1630-455c-bc33-59ef69c64baa",
+      "title": "KAIST 국가전략기술포럼: K-문샷 프로젝트 (제2차)",
+      "summary": "피지컬 AI, 휴머노이드, 소재, AI 신약, 뇌-컴퓨터 인터페이스(BCI), AI 과학자 분야의 전략 로드맵과 향후 R&D 추진계획을 공유하고 지정토론 및 질의응답을 진행하는 포럼이다. 커피 및 다과가 제공된다.",
+      "startAt": "2026-11-09T14:30:00+09:00",
+      "endAt": "2026-11-09T17:00:00+09:00",
+      "dateText": "2026년 11월 9일 (월)",
+      "timeText": "14:30 ~ 17:00",
+      "location": {
+        "name": "KAIST 학술문화관 2층 양승택오디토리움",
+        "building": "E9",
+        "room": "양승택오디토리움"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "커피 및 다과",
+        "source": "text"
+      },
+      "organizer": "KAIST 국가미래전략기술 정책연구소",
+      "eligibility": "KAIST 교수 및 대학원생",
+      "registration": {
+        "required": "false",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 1.0,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 교수 및 대학원생",
+        "basis": "stated"
       }
     },
     {
