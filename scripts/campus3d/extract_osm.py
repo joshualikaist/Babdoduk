@@ -31,6 +31,15 @@ def inside(p, poly):
         if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1: c = not c
     return c
 def ring(refs): return [xy(n) for n in refs if n in nodes]
+EDGE_SLACK = 25.0   # meters a ground shape may reach past the campus outline
+def edge_distance(p):
+    best = float("inf")
+    for i in range(len(boundary)):
+        (x1, y1), (x2, y2) = boundary[i - 1], boundary[i]
+        dx, dy = x2 - x1, y2 - y1
+        t = 0.0 if dx == dy == 0 else max(0.0, min(1.0, ((p[0] - x1) * dx + (p[1] - y1) * dy) / (dx * dx + dy * dy)))
+        best = min(best, math.hypot(p[0] - x1 - t * dx, p[1] - y1 - t * dy))
+    return best
 def centroid(pts): return [sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)]
 def area(pts): return abs(sum(pts[i][0] * pts[i - 1][1] - pts[i - 1][0] * pts[i][1] for i in range(len(pts)))) / 2
 code = re.compile(r"(?<![A-Za-z0-9])([EWNS]\d{1,2}(?:-\d)?)(?![0-9])")
@@ -45,10 +54,14 @@ def stitch(member_refs):
             else: break
         rings.append(cur)
     return rings
-features = {"buildings": [], "grass": [], "water": [], "wood": [], "pitch": [], "parking": [], "paths": [], "roads": []}
+features = {"buildings": [], "grass": [], "water": [], "wood": [], "pitch": [], "track": [], "parking": [], "paths": [], "roads": []}
 def add_area(kind, pts, t, holes=()):
     if len(pts) < 4 or not inside(centroid(pts), boundary): return
+    # Ground shapes stay on the island: one that runs past the campus edge (a verge strip along an
+    # outside road) would hang off the model; one that only grazes the edge is kept.
+    if kind != "buildings" and not all(inside(p, boundary) or edge_distance(p) < EDGE_SLACK for p in pts): return
     item = {"pts": pts}
+    if kind == "pitch" and t.get("sport"): item["sport"] = t["sport"].split(";")[0]
     if holes: item["holes"] = [h for h in holes if len(h) >= 4]
     if kind == "buildings":
         txt = " ".join(t.get(k, "") for k in ("ref", "name", "name:ko"))
@@ -63,7 +76,8 @@ def classify(t):
     if t.get("natural") == "water" or t.get("water"): return "water"
     if t.get("landuse") in ("grass", "meadow", "village_green") or t.get("leisure") in ("park", "garden"): return "grass"
     if t.get("natural") in ("wood", "scrub", "shrubbery") or t.get("landuse") == "forest": return "wood"
-    if t.get("leisure") in ("pitch", "track", "sports_centre"): return "pitch"
+    if t.get("leisure") == "pitch": return "pitch"
+    if t.get("leisure") == "track": return "track"
     if t.get("amenity") == "parking": return "parking"
     return None
 for wid, (refs, t) in ways.items():
