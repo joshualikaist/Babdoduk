@@ -93,8 +93,6 @@ def test_the_public_contracts_name_the_sources_as_the_labels_do():
 def test_the_pages_carry_the_labels_and_name_them_once():
     # Written by scripts/sync_site_chrome.py: the committed pages and scripts are what it writes.
     assert sync_site_chrome.main(["--check"]) == 0
-    home_types = re.search(r"var FOOD_TYPES = \[([^\]]*)\]", (ROOT / "js/home-calendar.js").read_text(encoding="utf-8"))
-    assert tuple(re.findall(r"'([a-z]+)'", home_types.group(1))) == sync_site_chrome.HOME_FOOD_TYPES
     # No second copy of a type or source label in the hub's script (its filter chips are another
     # vocabulary: buckets of several types).
     hub = (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")

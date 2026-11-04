@@ -44,9 +44,6 @@ LABELS = ROOT / "data" / "content" / "labels.json"
 I18N = ROOT / "i18n"
 # The key families every page's table carries; PAGES `strings` adds the page's own.
 COMMON_STRINGS = ("a11y", "nav", "footer")
-# The food types the home calendar names (js/home-calendar.js FOOD_TYPES); any other type reads
-# home.cal.foodFallback there.
-HOME_FOOD_TYPES = ("meal", "lunchbox", "snack", "refreshment", "beverage", "coupon")
 
 LAB_LINKS = [
     '<a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>',
@@ -62,8 +59,8 @@ LAB_RIBBON = [
 # scrolls to the top instead of linking to itself), and the i18n/ key families its
 # translation table carries besides COMMON_STRINGS (`strings`).
 PAGES = {
-    "index.html": {"current": None, "home": "#", "strings": ("home",)},
-    "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km")},
+    "index.html": {"current": None, "home": "#", "strings": ("home", "dish")},
+    "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km", "dish")},
     "mukbang.html": {"current": "mukbang.html", "strings": ("kaist", "km", "mg")},
     # 오늘 뭐 먹지 (owner 2026-11-04): the one menu picker, a direct destination; the roulette (js/pick.js).
     "choose.html": {"current": "choose.html", "strings": ("pick",)},
@@ -75,7 +72,7 @@ PAGES = {
     "worldcup.html": {"current": None, "strings": ("wc",)},
     "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
     "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
-                          "strings": ("gg", "ggongbab", "km")},
+                          "strings": ("gg", "ggongbab", "km", "dish")},
     # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
     # page's "more" menu.
     "tip.html": {"current": "tip.html", "strings": ("tip",)},
@@ -163,7 +160,6 @@ def label_strings(page: str) -> dict[str, dict[str, str]]:
         out.update({f"gg.food.{kind}": pair for kind, pair in data["freeFood"].items()})
         out.update({f"gg.source.{group}": pair for group, pair in data["sourceLabels"].items()})
     if page == "index.html":
-        out.update({f"home.cal.food.{kind}": data["freeFood"][kind] for kind in HOME_FOOD_TYPES})
         out.update({f"home.cal.src.{group}": pair for group, pair in data["sourceLabels"].items()})
         out.update({f"home.desk.{lane}": spec["name"] for lane, spec in data["magazineLanes"].items()})
     if page == "mukbang.html":

@@ -490,8 +490,13 @@ export function mount(stage, options) {
   // ---- the card ------------------------------------------------------------------------------------
   function eventHtml(item) {
     const ev = item.ev;
-    const food = (ev.food && ev.food.description) || '';
-    const reg = ev.registration && ev.registration.url;
+    // The dish in a word or two, in the page's language (2026-11-05: the raw description put a
+    // bilingual mail's English sentence on the Korean card), and the sign-up link by the shared rule
+    // (a meeting link is not a sign-up), http(s) only.
+    const F = window.BabdodukFreeFood;
+    const food = F && F.hasFood(ev) ? F.dishLabel(ev, opts.t) : '';
+    const url = F ? F.signUp(ev).url : '';
+    const reg = /^https?:\/\//i.test(url) ? url : '';
     return '<li class="home-map-card-ev">' +
       '<p class="home-map-card-title">' + esc(ev.title) + '</p>' +
       '<p class="home-map-card-meta">' + esc(hm(ev.startAt)) + (ev.location && ev.location.room ? ' · ' + esc(ev.location.room) : '') +

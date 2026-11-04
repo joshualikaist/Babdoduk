@@ -1188,11 +1188,35 @@ html[data-wc-phase="soon"] .home-wc-photo {
   cursor: pointer;
 }
 
-.hc-ev-title {
+/* A row leads with the time and the dish (owner 2026-11-05: "시간과 메뉴가 더 중요"); the title follows
+   in a quieter weight, then one line of place, session, giveaway and sign-up. */
+.hc-ev-head {
+  display: block;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.4;
   letter-spacing: -0.02em;
+}
+
+.hc-ev-ended {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.hc-ev-dish {
+  margin-left: 4px;
+  color: var(--color-ink);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.hc-ev-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
@@ -1238,7 +1262,8 @@ html[data-wc-phase="soon"] .home-wc-photo {
 }
 
 .hc-ev.is-past .hc-ev-title,
-.hc-ev.is-past .hc-ev-time {
+.hc-ev.is-past .hc-ev-time,
+.hc-ev.is-past .hc-ev-dish {
   color: var(--color-ink-muted);
 }
 
@@ -1343,6 +1368,11 @@ html[data-wc-phase="soon"] .home-wc-photo {
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.hc-next-dish {
+  margin-right: 6px;
+  font-weight: 800;
 }
 
 .home-cal-foot {

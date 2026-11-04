@@ -199,7 +199,8 @@ def test_today_with_events_is_selected_and_counted(browser):
     assert style[0] == ACCENT                               # today + selected: accent disc
     assert day_title(page) == "10월 1일 (목) 오늘"
     assert page.locator(".hc-ev-title").all_inner_texts() == ["점심 간담회", "티타임"]
-    assert page.locator(".hc-next-row .hc-next-name").all_inner_texts() == ["첫수융합포럼"]
+    assert page.locator(".hc-next-row .hc-next-title").all_inner_texts() == ["첫수융합포럼"]
+    assert page.locator(".hc-next-row .hc-next-dish").all_inner_texts() == ["다과"]   # the dish leads (2026-11-05)
     cell(page, "2026-10-07").click()
     selected = cell(page, "2026-10-07").locator(".hc-num").evaluate("el => getComputedStyle(el).backgroundColor")
     ring = today.locator(".hc-num").evaluate("el => [getComputedStyle(el).backgroundColor, getComputedStyle(el).borderTopColor]")
@@ -260,7 +261,7 @@ def test_live_and_archive_rows_are_deduplicated(browser):
     assert dots(page, "2026-09-30") == ["past"]
     cell(page, "2026-09-30").click()
     assert page.locator(".hc-ev-title").all_inner_texts() == ["중복 없는 행사"]   # once, the live copy
-    assert "종료" in page.locator(".hc-ev-meta").first.inner_text()
+    assert "종료" in page.locator(".hc-ev-head").first.inner_text()
     context.close()
 
 
@@ -299,7 +300,7 @@ def test_selected_future_and_past_days(browser):
     assert page.locator(".hc-empty").inner_text() == "기록 없음"
     cell(page, "2026-09-29").click()
     assert page.locator(".hc-ev-title").all_inner_texts() == ["지난 세미나"]
-    assert page.locator(".hc-ev-meta").first.inner_text().startswith("종료 · 12:00")
+    assert page.locator(".hc-ev-head").first.inner_text().startswith("종료 · 12:00")
     context.close()
 
 
@@ -437,12 +438,13 @@ def test_english_strings(browser):
     assert titles == ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     assert page.locator(".hc-month-title").inner_text() == "October"
     assert day_title(page) == "Oct 7 (Wed)"
-    assert page.locator(".hc-ev-meta").nth(1).inner_text() == "Refreshments · Sign-up required"
+    assert page.locator(".hc-ev-head").first.inner_text() == "12:00 Refreshments"
+    assert page.locator(".hc-ev-meta").first.inner_text() == "E11 101호 · Sign-up required"
     assert page.locator("#homeCalAll").inner_text() == "All events →"
     assert page.locator("#homeCalPublished").inner_text().startswith("Last changed Oct 1 (Thu)")
     page.locator("#langToggle").click()
     assert answer(page) == "오늘은 없어요 · 다음 10월 7일 (수)"
-    assert page.locator(".hc-ev-meta").nth(1).inner_text() == "간단한 다과 제공 · 사전 신청"
+    assert page.locator(".hc-ev-head").first.inner_text() == "12:00 다과"
     context.close()
 
 
@@ -547,17 +549,19 @@ def test_giveaway_rows_name_no_food_and_lead_with_a_deadline(browser):
     cell(page, "2026-10-01").click()
     assert page.locator("#homeCalLive").inner_text() == "10월 1일 목요일 · 경품 1개"
     assert page.locator(".hc-ev-title").all_inner_texts() == ["창업 엑스포"]
-    meta = page.locator(".hc-ev-meta").all_inner_texts()
-    assert meta == ["14:00 · E11 101호", "🎁 경품"]
+    assert page.locator(".hc-ev-head").all_inner_texts() == ["14:00"]     # a giveaway names no dish
+    assert page.locator(".hc-ev-meta").all_inner_texts() == ["E11 101호 · 🎁 경품"]
     assert "제공" not in page.locator("#homeCalDay").inner_text() and "음식" not in page.locator("#homeCalDay").inner_text()
     page.locator(".hc-ev-btn").click()
     assert "경품 · 경품 추첨 (에어팟)" in page.locator(".hc-ev-detail").inner_text()
     # Food and a gift: both, in that order.
     cell(page, "2026-10-07").click()
-    assert page.locator(".hc-ev-meta").all_inner_texts()[-1] == "샌드위치 제공 · 🎁 경품"
+    assert page.locator(".hc-ev-head").all_inner_texts()[-1].endswith("샌드위치")
+    assert page.locator(".hc-ev-meta").all_inner_texts()[-1].endswith("🎁 경품")
     # A deadline-only giveaway: its time is the sign-up deadline, never an event time, said once.
     cell(page, "2026-10-09").click()
-    assert page.locator(".hc-ev-meta").all_inner_texts() == ["신청 마감 23:59 · E11 101호", "🎁 경품 · 사전 신청"]
+    assert page.locator(".hc-ev-head").all_inner_texts() == ["신청 마감 23:59"]
+    assert page.locator(".hc-ev-meta").all_inner_texts() == ["E11 101호 · 🎁 경품 · 사전 신청"]
     page.locator(".hc-ev-btn").click()
     detail = page.locator(".hc-ev-detail").inner_text()
     assert detail.startswith("신청 마감 23:59 · 창의학습관(E11) 101호") and "신청 마감 · " not in detail
@@ -586,11 +590,13 @@ def test_giveaway_english_strings(browser):
     context, page, _ = open_home(browser, live=GIFT_LIVE, archive=GIFT_ARCHIVE, lang="en")
     assert cell(page, "2026-10-01").get_attribute("aria-label") == "Thursday, October 1, giveaways: 1"
     cell(page, "2026-10-09").click()
-    assert page.locator(".hc-ev-meta").all_inner_texts() == ["Sign up by 23:59 · E11 101호", "🎁 Giveaway · Sign-up required"]
+    assert page.locator(".hc-ev-head").all_inner_texts() == ["Sign up by 23:59"]
+    assert page.locator(".hc-ev-meta").all_inner_texts() == ["E11 101호 · 🎁 Giveaway · Sign-up required"]
     page.locator(".hc-ev-btn").click()
     assert "Giveaway: 커피 쿠폰" in page.locator(".hc-ev-detail").inner_text()
     cell(page, "2026-10-07").click()
-    assert page.locator(".hc-ev-meta").all_inner_texts()[-1] == "Snack · 🎁 Giveaway"
+    assert page.locator(".hc-ev-head").all_inner_texts()[-1].endswith("Sandwiches")   # the dish, in English too
+    assert page.locator(".hc-ev-meta").all_inner_texts()[-1].endswith("🎁 Giveaway")
     context.close()
 
 
@@ -649,8 +655,8 @@ def test_a_deadline_only_draw_on_the_last_day_is_live_until_its_deadline(browser
     assert gift(page, "2026-10-31").get_attribute("class") == "hc-gift"                 # not yet past
     assert answer(page).startswith("오늘 일정은 끝났어요")                                # the draw is never counted
     cell(page, "2026-10-31").click()
-    meta = page.locator(".hc-ev-meta").all_inner_texts()
-    assert "신청 마감 23:59 · E11 101호" in meta and "🎁 경품 · 사전 신청" in meta, meta
+    heads, meta = page.locator(".hc-ev-head").all_inner_texts(), page.locator(".hc-ev-meta").all_inner_texts()
+    assert "신청 마감 23:59" in heads and "E11 101호 · 🎁 경품 · 사전 신청" in meta, (heads, meta)
     # Navigating into the next month and back keeps today marked on the last day.
     page.locator("[data-hc-step='1']").click()
     assert page.locator(".hc-month-title").inner_text() == "11월"

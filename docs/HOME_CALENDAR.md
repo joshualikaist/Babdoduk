@@ -14,10 +14,12 @@ One surface (`section#homeCal`), right below the hero copy:
 * **Month grid**: seven columns, Sunday first (일 월 화 수 목 금 토; EN Sun … Sat), as on a
   wall calendar (owner decision, 2026-10-01). The cafeteria week and the hub's "이번 주" keep their
   own Monday–Sunday logic. 4–6 rows; other-month days are muted.
-* **Selected day**: that date's events, one row each (title / time · place / food · 사전 신청).
+* **Selected day**: that date's events, one row each (2026-11-05, owner "시간과 메뉴가 더 중요"):
+  time and dish first (`12:00 샌드위치`, the dish from `BabdodukFreeFood.dishLabel`, words only), then the
+  title, then one line of place · session · 🎁 경품 · 사전 신청.
   A row opens inline (one at a time) for the full time and place, eligibility, the sign-up deadline,
   the sign-up link and a public original post. There is no modal.
-* **다가오는 꽁밥**: up to four upcoming free-food events on dates after the selected day (or after today
+* **다가오는 꽁밥**: up to four upcoming free-food events (time, dish, title) on dates after the selected day (or after today
   when a past day is selected). Hidden when there are none, never an empty heading. A giveaway-only
   listing is not one of them; its date carries the 🎁 marker instead.
 * **Footer**: `전체 일정 →` (the hub, `ggongbab.html#free`) and `마지막 변경 {time}` (the feed's
@@ -41,10 +43,10 @@ beside the copy on the paper band and the calendar splits into the day (left) an
   but never counted as free food. It adds no dot, no count to the answer line or a cell's `꽁밥 N개`,
   is never the default date and never a 다가오는 꽁밥 row. Its date gets one 🎁 in the cell's upper
   right (muted when every such listing that day has ended), outside the reserved dot slot, and the
-  cell's label adds `경품 N개`. Its row says `🎁 경품` instead of a food, its details add
+  cell's label adds `경품 N개`. Its row names no dish and shows `🎁 경품` on its place line, its details add
   `경품 · {description}`, and a deadline-only giveaway (`startAt` equals `registration.deadline`) reads
-  `신청 마감 23:59` where a time would be. A row with food and a gift is free food, with `🎁 경품` after
-  its food.
+  `신청 마감 23:59` where a time would be. A row with food and a gift is free food: its dish leads, and
+  `🎁 경품` is on its place line.
 * **Multi-day events** (2026-10-18): an event with `sessions` is one row per session day
   (`BabdodukFreeFood.occurrences`: id `<id>#<n>`, that session's start, end, place and food, every
   other field of the event). Each day gets its own dot, its row in the day panel, its place in
