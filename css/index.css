@@ -312,7 +312,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 /* Side by side (above 720 px): under the copy in the paper band, in line with it; the copy gives up the
    bottom padding the promo now provides. */
 @media (min-width: 721px) {
-  .home-cal-head .home-map-open {
+  .home-title-row .home-map-open {
     display: none;
   }
 
@@ -649,6 +649,70 @@ html[data-wc-phase="soon"] .home-wc-photo {
   color: var(--color-ink);
 }
 
+/* ＋ − ⟲ ⤢ in the map's lower right corner, once the live model is there. */
+.home-map-tools {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  z-index: 2;
+  display: none;
+  gap: 6px;
+}
+
+.home-map-stage[data-state="live"] .home-map-tools {
+  display: flex;
+}
+
+.home-map-tool {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(30, 29, 26, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.94);
+  color: var(--color-ink);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(30, 29, 26, 0.1);
+}
+
+.home-map-tool[hidden] {
+  display: none;
+}
+
+.home-map-tool:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.home-map-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(30, 29, 26, 0.78);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.home-map-hint[hidden] {
+  display: none;
+}
+
+.home-map-dialog .home-map-tool {
+  width: 44px;
+  height: 44px;
+}
+
 .home-map-note {
   margin: 4px 0 0;
   font-size: 12px;
@@ -727,17 +791,21 @@ html[data-wc-phase="soon"] .home-wc-photo {
 }
 
 .home-cal-head {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: var(--space-4);
 }
 
-/* Phones: 지도 보기 sits over the head's top right corner, so the month keeps its first-screen place. */
+/* Phones: 꽁밥 지도 sits beside the headline's first line ("KAIST에서" leaves 100 px or more down to 320 px),
+   so the hero keeps its height and the month its first-screen place. */
+.home-title-row {
+  position: relative;
+}
+
 .home-map-open {
   position: absolute;
-  top: -8px;
+  top: -2px;
   right: 0;
   display: inline-flex;
   align-items: center;
@@ -1526,8 +1594,9 @@ html[data-wc-phase="soon"] .home-wc-photo {
     display: none;
   }
 
-  .home-cal-head:has(.home-map-open:not([hidden])) .home-cal-title {
-    padding-right: 64px;
+  /* The English headline's first line is long: it wraps before the button instead of running under it. */
+  :root[lang="en"] .home-title-row:has(.home-map-open:not([hidden])) .home-title {
+    padding-right: 104px;
   }
 }
 

@@ -210,8 +210,8 @@ def test_home_is_one_hero_and_nothing_below_it():
     assert len(photos) == 1 and 'src="data/campus/poster.webp"' in photos[0] and 'alt=""' in photos[0]
     assert 'width="1200"' in photos[0] and 'height="750"' in photos[0] and 'loading="lazy"' in photos[0]
     assert '<canvas class="home-map-canvas" aria-hidden="true">' in section
-    head = top.split('<div class="home-cal-head">')[1].split("</div>")[0]
-    assert re.search(r'<button type="button" class="home-map-open" id="homeMapOpen"[^>]*\bhidden>', head)
+    row = top.split('<div class="home-title-row">')[1].split("</div>")[0]
+    assert re.search(r'<button type="button" class="home-map-open" id="homeMapOpen"[^>]*\bhidden>꽁밥 지도</button>', row)
     assert '<script type="importmap">' in html and '<script type="module" src="js/home-map.js"></script>' in html
     home_js = (ROOT / "js/home.js").read_text(encoding="utf-8")
     assert "setInterval" not in home_js and "setTimeout" not in home_js and "autoplay" not in home_js.lower()

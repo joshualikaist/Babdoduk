@@ -19,6 +19,11 @@ function t(key, fallback) {
 }
 
 let map = null;
+function openDialog() {
+  dialog.querySelector('.home-map-dialog-body').appendChild(frame);
+  dialog.showModal();
+  ensure();
+}
 function ensure() {
   if (map || !stage) return map;
   map = mount(stage, {
@@ -27,6 +32,7 @@ function ensure() {
       if (dialog && dialog.open) dialog.close();
       document.dispatchEvent(new CustomEvent('babdoduk:show', { detail: { id } }));
     },
+    onFull: dialog && typeof dialog.showModal === 'function' ? openDialog : null,
   });
   if (window.babdodukCalendarDay) map.show(window.babdodukCalendarDay);
   return map;
@@ -45,19 +51,20 @@ if (stage) {
   });
   io.observe(section);
 
-  // Phones: the button opens the map in a dialog; closing puts it back.
+  // Phones: the button opens the map in a dialog; wider screens open the same dialog with 크게 보기.
+  // Closing puts the map back.
   if (openButton && dialog && typeof dialog.showModal === 'function') {
     openButton.hidden = false;
-    openButton.addEventListener('click', () => {
-      dialog.querySelector('.home-map-dialog-body').appendChild(frame);
-      dialog.showModal();
-      ensure();
-    });
+    openButton.addEventListener('click', openDialog);
     dialog.addEventListener('close', () => {
       section.appendChild(frame);
-      // "일정에서 보기" has already moved focus to the calendar; otherwise back to the button.
+      // "일정에서 보기" has already moved focus to the calendar; otherwise back to what opened it.
       const now = document.activeElement;
-      if (!now || now === document.body || dialog.contains(now)) openButton.focus();
+      const back = phone.matches ? openButton : stage.querySelector('[data-map-act="full"]');
+      if ((!now || now === document.body || dialog.contains(now)) && back) {
+        back.hidden = false;            // the map hides 크게 보기 while it is full screen
+        back.focus();
+      }
     });
     dialog.querySelector('.home-map-dialog-close').addEventListener('click', () => dialog.close());
   }
