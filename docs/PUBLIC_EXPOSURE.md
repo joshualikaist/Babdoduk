@@ -6,7 +6,7 @@
 
 - `LICENSE`: 코드, 문서, 디자인, 글, 이미지, 그리고 `data/` 아래 공개 데이터와 그 편집물은 모두 권리가 보호된다(All rights reserved). 복제, 수정, 배포, 상업적 이용, 자동 수집(스크래핑, 크롤링, AI 학습·분석·역분석), 다른 사이트에 데이터를 실시간으로 띄우는 일은 사전 서면 허락이 필요하다.
 - 허락되는 일: 브라우저로 보기, 출처를 밝힌 짧은 인용과 링크 공유, GitHub 이용약관이 공개 저장소에 허용하는 보기와 포크.
-- 제3자 자료(먹방 월드컵 사진, 글꼴, 행사 원문)는 각 권리자의 조건을 따른다. 매거진 자료원 등록부 `scripts/discovery/sources.json` 은 CC0 1.0.
+- 제3자 자료(먹방 월드컵 사진, 글꼴, 행사 원문, `js/vendor/three-0.186.1/` 의 Three.js MIT 라이선스)는 각 권리자의 조건을 따른다. 매거진 자료원 등록부 `scripts/discovery/sources.json` 은 CC0 1.0.
 - 2026-11-04 이전 커밋은 MIT 고지로 공개됐다. 그때 받아 간 사본의 MIT 허락은 되돌릴 수 없고, 이 고지는 그 뒤의 모든 버전에 적용된다.
 - 사이트 하단의 "Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유."(`shared/footer.html`, `footer.copyright`)가 같은 고지를 화면에 보인다.
 - `LICENSE` 는 사이트에도 배포되어 `/LICENSE` 에서 글자로 열린다(`vercel.json` 이 `text/plain; charset=utf-8` 로 보낸다).

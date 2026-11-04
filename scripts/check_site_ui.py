@@ -79,7 +79,8 @@ def offline_route(route):
     else:
         file = (ROOT / path).resolve()
         if (file.is_file() and ROOT in file.parents and not any(p.startswith(".") for p in Path(path).parts)
-                and file.suffix in (".html", ".css", ".js", ".json", ".png", ".jpg", ".svg", ".webp", ".woff2")):
+                and file.suffix in (".html", ".css", ".js", ".json", ".png", ".jpg", ".svg", ".webp", ".woff2",
+                                    ".glb", ".wasm")):    # the campus map's model and Draco decoder
             route.fulfill(path=str(file))
         else:
             route.fulfill(status=404, body="")
@@ -726,14 +727,13 @@ HOME_TOP = """() => {
     body: document.body.scrollWidth - document.body.clientWidth,
     hero: box(q('.home-hero')), title: q('.home-hero h1').textContent,
     cta: {href: q('.home-actions .btn-primary').getAttribute('href'), box: box(q('.home-actions .btn-primary'))},
-    collageHidden: q('.home-collage').getAttribute('aria-hidden'),
-    photos: [...document.querySelectorAll('.home-collage img')].map(img => ({alt: img.getAttribute('alt'),
-      loading: img.getAttribute('loading'), width: img.getAttribute('width'), height: img.getAttribute('height'),
-      priority: img.getAttribute('fetchpriority')})),
+    poster: (img => ({alt: img.getAttribute('alt'), loading: img.getAttribute('loading'),
+      width: img.getAttribute('width'), height: img.getAttribute('height')}))(q('.home-map-poster')),
+    open: box(q('#homeMapOpen')),
     headings: [...document.querySelectorAll('main h1, main h2, main h3')].filter(h => !h.closest('[hidden]'))
       .map(h => Number(h.tagName[1])),
     states: [q('#homeMenuStatus').dataset.state, q('#homeCal').dataset.state],
-    cal: box(q('#homeCal')), grid: box(q('#homeCal .hc-grid')), collage: box(q('.home-collage')),
+    cal: box(q('#homeCal')), grid: box(q('#homeCal .hc-grid')), map: box(q('.home-map')),
     below: [...q('main').children].filter(el => !el.classList.contains('home-top')).map(el => el.className || el.tagName),
     removed: document.querySelectorAll('.home-group, #homeShelf, #homeFeature, .home-news-row, .explore-card').length,
     magazine: performance.getEntriesByType('resource').filter(e => e.name.includes('/data/magazine/')).length,
@@ -763,16 +763,16 @@ def home_hero(page):
               (where, "primary CTA inside the first screen", top["cta"]))
         check(top["grid"]["bottom"] <= height and top["grid"]["h"] > 0,
               (where, "the calendar grid is in the first screen", top["grid"]))
-        if width <= 720:     # owner 2026-11-03: no decorative photos at the bottom on phones
-            check(top["collage"]["h"] == 0, (where, "phones: no photo collage", top["collage"]))
+        if width <= 720:     # owner 2026-11-04: phones get the 지도 보기 button only (docs/CAMPUS_MAP.md)
+            check(top["map"]["h"] == 0 and top["open"]["h"] >= 44, (where, "phones: the map behind its button", top["map"], top["open"]))
+        else:
+            check(top["map"]["h"] > 150 and top["open"]["h"] == 0, (where, "the map beside the copy", top["map"], top["open"]))
         check(top["below"] == [] and top["removed"] == 0, (where, "nothing below the hero", top["below"], top["removed"]))
         check(top["magazine"] == 0, (where, "the home page reads no magazine edition"))
         check("지난 이벤트" not in top["mainText"] and "오늘의 한 끼" not in top["mainText"]
               and top["mainText"].count("오늘의 꽁밥") >= 2, (where, "no archive-first or stale hub labels"))
-        check(top["collageHidden"] == "true" and top["photos"] and all(
-            ph["alt"] == "" and ph["width"] and ph["height"] for ph in top["photos"]), (where, "decorative collage", top["photos"]))
-        check(top["photos"][0]["loading"] is None and top["photos"][0]["priority"] == "high",
-              (where, "above-the-fold hero photo is not lazy"))
+        check(top["poster"]["alt"] == "" and top["poster"]["width"] and top["poster"]["height"]
+              and top["poster"]["loading"] == "lazy", (where, "the map's poster is decorative, sized and lazy", top["poster"]))
         levels = top["headings"]
         check(levels[0] == 1 and all(b <= a + 1 for a, b in zip(levels, levels[1:])), (where, "heading order", levels))
         page.locator("#langToggle").click()
@@ -811,7 +811,7 @@ HOME_FIRST_SCREEN = """() => { const q = s => document.querySelector(s);
   return {phase: document.documentElement.getAttribute('data-wc-phase'), shown, promo: shown ? box(promo) : null,
     cta: cta.length === 1 ? box(cta[0].querySelector('.home-wc-pill')) : cta.length,
     target: cta.length === 1 ? box(cta[0]) : null, preview: window.BabdodukWorldcup.preview(),
-    grid: box(q('#homeCal .hc-grid')), cal: box(q('#homeCal')), collage: box(q('.home-collage')),
+    grid: box(q('#homeCal .hc-grid')), cal: box(q('#homeCal')), map: box(q('.home-map')),
     hero: box(q('.home-hero')), answer: q('#homeCalAnswer').textContent.trim(),
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
 
@@ -853,7 +853,7 @@ def home_first_screen(page):
                     check(0 < shot["grid"]["bottom"] <= height,
                           (where, "the calendar grid is in the first screen", shot["grid"], shot["answer"]))
                 if width <= 720:
-                    check(shot["collage"]["height"] == 0, (where, "phones: no photo collage", shot["collage"]))
+                    check(shot["map"]["height"] == 0, (where, "phones: the map behind its button", shot["map"]))
                 if shot["shown"]:
                     if width <= 440:
                         check(shot["promo"]["height"] <= 56 and shot["cta"]["height"] <= 40,

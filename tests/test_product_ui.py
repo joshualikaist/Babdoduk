@@ -201,15 +201,18 @@ def test_home_is_one_hero_and_nothing_below_it():
     assert 'href="food.html"' not in html and 'data-banner=' not in html
     for gone in ("home-group", "homeShelf", "homeFeature", "home-news", "explore-card", "data-shelf", "home-read"):
         assert gone not in top, gone
-    assert re.findall(r'<section class="(home-[\w-]+)"', top) == ["home-wc", "home-hero", "home-cal"]
-    collage = top.split('<div class="home-collage" aria-hidden="true">')[1].split("</div>\n\n")[0]
-    photos = re.findall(r"<img [^>]+>", collage)
-    assert len(photos) == 3 and all('alt=""' in img and "width=" in img and "height=" in img for img in photos)
-    assert 'loading="lazy"' not in photos[0] and 'fetchpriority="high"' in photos[0]
-    assert "오늘 학식 메뉴가 아니에요" not in collage and "home-photo-tag" not in collage
-    assert not re.search(r">0[123]<", collage)
-    for src in set(re.findall(r'src="(images/home/[^"]+)"', html)):
-        assert (ROOT / src).stat().st_size < 200_000, src
+    assert re.findall(r'<section class="(home-[\w-]+)"', top) == ["home-wc", "home-hero", "home-cal", "home-map"]
+    # Owner 2026-11-04: the 3D campus map took the food photo collage's place (docs/CAMPUS_MAP.md). Its
+    # poster is decorative (the pins are the buttons), sized, and lazy: phones open the map on request.
+    assert "home-collage" not in html and "images/home/" not in html
+    section = top.split('<section class="home-map"')[1].split("</section>")[0]
+    photos = re.findall(r"<img [^>]+>", section)
+    assert len(photos) == 1 and 'src="data/campus/poster.webp"' in photos[0] and 'alt=""' in photos[0]
+    assert 'width="1200"' in photos[0] and 'height="750"' in photos[0] and 'loading="lazy"' in photos[0]
+    assert '<canvas class="home-map-canvas" aria-hidden="true">' in section
+    head = top.split('<div class="home-cal-head">')[1].split("</div>")[0]
+    assert re.search(r'<button type="button" class="home-map-open" id="homeMapOpen"[^>]*\bhidden>', head)
+    assert '<script type="importmap">' in html and '<script type="module" src="js/home-map.js"></script>' in html
     home_js = (ROOT / "js/home.js").read_text(encoding="utf-8")
     assert "setInterval" not in home_js and "setTimeout" not in home_js and "autoplay" not in home_js.lower()
     assert "data/magazine" not in home_js and "homeShelf" not in home_js     # no magazine request, no shelf

@@ -312,6 +312,10 @@ html[data-wc-phase="soon"] .home-wc-photo {
 /* Side by side (above 720 px): under the copy in the paper band, in line with it; the copy gives up the
    bottom padding the promo now provides. */
 @media (min-width: 721px) {
+  .home-cal-head .home-map-open {
+    display: none;
+  }
+
   .home-wc {
     margin: 0 0 20px 40px;
     align-self: start;
@@ -328,8 +332,8 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* ── Top: who we are, the free-food calendar, the cafeteria line, then the collage. On wide
-   screens a paper band sits behind the copy and the collage; the calendar has its own surface. ── */
+/* ── Top: who we are, the free-food calendar, the cafeteria line, and the campus map. On wide
+   screens a paper band sits behind the copy and the map; the calendar has its own surface. ── */
 .home-top {
   --hero-paper: #eee3cf;
   --hero-ink-soft: #5a534a;
@@ -337,8 +341,8 @@ html[data-wc-phase="soon"] .home-wc-photo {
   display: grid;
   grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
   grid-template-areas:
-    "hero collage"
-    "promo collage"
+    "hero map"
+    "promo map"
     "cal cal"
     "menu menu";
   column-gap: var(--space-12);
@@ -423,58 +427,290 @@ html[data-wc-phase="soon"] .home-wc-photo {
   border-color: rgba(30, 29, 26, 0.24);
 }
 
-/* Atmosphere collage: framed crops, no dish labels. */
-.home-collage {
-  grid-area: collage;
+/* The campus map (docs/CAMPUS_MAP.md): the clay island floats on the hero paper. The poster is the
+   same view rendered, the live model fades in over it; pins and the card are buttons above both. */
+.home-map {
+  grid-area: map;
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: repeat(10, minmax(0, 1fr));
-  height: 300px;
+  align-self: center;
   min-width: 0;
-  margin: var(--space-8) 40px var(--space-8) 0;
+  margin: var(--space-4) var(--space-6) var(--space-4) 0;
 }
 
-.home-photo {
+.home-map-stage {
   position: relative;
-  container-type: inline-size;
-  min-width: 0;
-  min-height: 0;
-  padding: 6px;
-  border-radius: 20px;
-  background: var(--color-surface);
-  border: 1px solid rgba(30, 29, 26, 0.1);
+  aspect-ratio: 16 / 10;
 }
 
-.home-photo img {
+.home-map-poster,
+.home-map-canvas {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 14px;
 }
 
-.home-photo--main {
-  grid-column: 3 / 11;
-  grid-row: 1 / 11;
+.home-map-poster {
+  object-fit: contain;
+  transition: opacity 400ms ease;
 }
 
-.home-photo--side,
-.home-photo--low {
-  z-index: 2;
-  box-shadow: 0 10px 24px rgba(30, 29, 26, 0.14);
+.home-map-canvas {
+  opacity: 0;
+  cursor: grab;
+  touch-action: pan-y;
+  transition: opacity 400ms ease;
 }
 
-.home-photo--side {
-  grid-column: 10 / 13;
-  grid-row: 2 / 5;
-  transform: rotate(2.5deg);
+.home-map-canvas:active {
+  cursor: grabbing;
 }
 
-.home-photo--low {
-  grid-column: 1 / 7;
-  grid-row: 7 / 11;
-  transform: rotate(-2deg);
+.home-map-stage[data-state="live"] .home-map-canvas {
+  opacity: 1;
+}
+
+.home-map-stage[data-state="live"] .home-map-poster {
+  opacity: 0;
+}
+
+.home-map-pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A pin's tip points at its building: the JS gives the point as --x / --y. */
+.home-map-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 48px;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font: 800 13px/1 inherit;
+  font-variant-numeric: tabular-nums;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(190, 24, 93, 0.32);
+  transform: translate(calc(var(--x, -999px) - 50%), calc(var(--y, -999px) - 100% - 9px));
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.home-map-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.home-map-pin.is-past {
+  background: #8a8178;
+  box-shadow: none;
+}
+
+.home-map-pin[aria-expanded="true"] {
+  background: #9d174d;
+  box-shadow: 0 0 0 4px rgba(190, 24, 93, 0.22), 0 8px 18px rgba(157, 23, 77, 0.35);
+}
+
+.home-map-pin:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+.home-map-pin-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-accent);
+  font-size: 11px;
+}
+
+.home-map-card {
+  position: absolute;
+  z-index: 3;
+  width: min(290px, calc(100% - 12px));
+  max-height: calc(100% - 12px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 14px;
+  border: 1px solid rgba(30, 29, 26, 0.1);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: 0 14px 30px rgba(30, 29, 26, 0.18);
+}
+
+.home-map-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.home-map-card-place {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--hero-ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.home-map-card-code {
+  color: var(--color-accent);
+}
+
+.home-map-card-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(30, 29, 26, 0.06);
+  color: var(--color-ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.home-map-card-list {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-map-card-ev + .home-map-card-ev {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(30, 29, 26, 0.08);
+}
+
+.home-map-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.home-map-card-meta {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--hero-ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.home-map-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+
+.home-map-card-link,
+.home-map-card-open {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.home-map-card-link {
+  background: var(--color-ink);
+  color: #fff;
+}
+
+.home-map-card-open {
+  border: 1px solid rgba(30, 29, 26, 0.16);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.home-map-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--hero-ink-soft);
+  text-align: right;
+}
+
+.home-map-open[hidden] {
+  display: none;
+}
+
+/* Phones: the map opens full screen. */
+.home-map-dialog {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--hero-paper, #eee3cf);
+}
+
+.home-map-dialog::backdrop {
+  background: rgba(30, 29, 26, 0.4);
+}
+
+.home-map-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+.home-map-dialog-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.home-map-dialog-close {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(30, 29, 26, 0.16);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.home-map-dialog-body {
+  padding: 0 8px 12px;
+}
+
+.home-map-dialog .home-map-stage {
+  aspect-ratio: auto;
+  height: calc(100dvh - 104px);
+}
+
+.home-map-dialog .home-map-canvas {
+  touch-action: none;
 }
 
 /* ── 오늘의 꽁밥: one restrained surface. Answer line, month grid, the selected day and what
@@ -491,10 +727,37 @@ html[data-wc-phase="soon"] .home-wc-photo {
 }
 
 .home-cal-head {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: var(--space-4);
+}
+
+/* Phones: 지도 보기 sits over the head's top right corner, so the month keeps its first-screen place. */
+.home-map-open {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(30, 29, 26, 0.16);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.home-map-open:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
 }
 
 .home-cal-title {
@@ -1210,9 +1473,8 @@ html[data-wc-phase="soon"] .home-wc-photo {
     padding: 28px 0 28px 28px;
   }
 
-  .home-collage {
-    height: 280px;
-    margin: 28px 28px 28px 0;
+  .home-map {
+    margin: 20px 20px 20px 0;
   }
 }
 
@@ -1225,15 +1487,14 @@ html[data-wc-phase="soon"] .home-wc-photo {
     margin-left: 24px;
   }
 
-  .home-collage {
-    height: 260px;
-    margin: 28px 24px 28px 0;
+  .home-map {
+    margin: 20px 16px 20px 0;
   }
 }
 
-/* One task-first column once the copy and the collage no longer fit side by side. */
-/* Phones and narrow tablets: copy on its own paper, then the calendar, the cafeteria line and,
-   last, the decorative collage. The schedule is never behind the pictures. */
+/* One task-first column once the copy and the map no longer fit side by side. */
+/* Phones and narrow tablets: copy on its own paper, then the calendar and the cafeteria line. The map
+   is behind the 지도 보기 button (owner 2026-11-04): the schedule is never behind a picture. */
 @media (max-width: 720px) {
   .home-top {
     grid-template-columns: minmax(0, 1fr);
@@ -1260,9 +1521,13 @@ html[data-wc-phase="soon"] .home-wc-photo {
     border: 1px solid rgba(30, 29, 26, 0.08);
   }
 
-  /* Owner 2026-11-03: on phones the decorative photos only sat at the bottom; they are left out. */
-  .home-collage {
+  /* Owner 2026-11-04: phones get the 지도 보기 button only; the map opens in a dialog. */
+  .home-map {
     display: none;
+  }
+
+  .home-cal-head:has(.home-map-open:not([hidden])) .home-cal-title {
+    padding-right: 64px;
   }
 }
 
@@ -1302,35 +1567,15 @@ html[data-wc-phase="soon"] .home-wc-photo {
     min-height: 48px;
     padding: 10px 14px;
   }
-
-  .home-photo {
-    padding: 4px;
-    border-radius: 16px;
-  }
-
-  .home-photo img {
-    border-radius: 12px;
-  }
-
-  .home-photo--main {
-    grid-column: 1 / 8;
-    grid-row: 1 / 11;
-  }
-
-  .home-photo--side {
-    grid-column: 8 / 13;
-    grid-row: 1 / 6;
-    transform: rotate(2deg);
-  }
-
-  .home-photo--low {
-    grid-column: 7 / 13;
-    grid-row: 6 / 11;
-    transform: rotate(-1.5deg);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-map-poster,
+  .home-map-canvas,
+  .home-map-pin {
+    transition: none;
+  }
+
   .hc-num,
   .hc-nav,
   .hc-today,
