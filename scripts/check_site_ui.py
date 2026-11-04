@@ -139,11 +139,12 @@ def inspect_page(page, name, size, screenshot_dir=None):
 
     direct = page.locator(".nav-mega-row > .site-nav-direct")
     check(direct.count() == 3, "three direct destinations in navigation")
-    check([direct.nth(i).get_attribute("href") for i in range(3)] == ["ggongbab.html", "mukbang.html", "event.html"],
-          "today's food, the magazine (which carries the picker) and the news are the direct destinations "
-          "(owner, 2026-10-13: news left the More menu)")
-    check(not page.locator('.site-nav a[href="mukbang.html#what"], .site-nav a[href="choose.html"]').count(),
-          "the picker is not presented as a separate product in navigation")
+    check([direct.nth(i).get_attribute("href") for i in range(3)] == ["ggongbab.html", "choose.html", "event.html"],
+          "today's food, 오늘 뭐 먹지 and the news are the direct destinations (owner 2026-11-04: the picker "
+          "came up, the magazine went into the More menu; 2026-10-13: news left the More menu)")
+    check(page.locator('.nav-mega-panel a[href="mukbang.html"]').count() == 1
+          and not page.locator('.site-nav a[href="mukbang.html#what"]').count(),
+          "the magazine is in the More menu and no link aims at its old picker anchor")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
     # Only what is on screen counts: the phone menu panel and the More menu are hidden until opened.
@@ -190,7 +191,7 @@ def inspect_page(page, name, size, screenshot_dir=None):
         check(opened["position"] == "fixed" and abs(opened["left"]) <= 1 and opened["right"] <= size[0] * 0.85
               and opened["top"] >= opened["bar"] - 1 and abs(opened["bottom"] - page.viewport_size["height"]) <= 1,
               ("a panel from the left, under the bar, to the bottom", opened))
-        check(hrefs[:3] == ["ggongbab.html", "mukbang.html", "event.html"] and {"history.html", "tip.html"} <= set(hrefs)
+        check(hrefs[:3] == ["ggongbab.html", "choose.html", "event.html"] and {"mukbang.html", "history.html", "tip.html"} <= set(hrefs)
               and all(link["h"] >= 48 and link["font"] >= 16 and link["visible"] == "visible" for link in opened["links"]),
               ("every destination, 16px text in 48px rows", opened["links"]))
         check(opened["active"] == (opened["current"] or "ggongbab.html"), ("focus moves to the current page's link", opened))
@@ -227,10 +228,10 @@ def inspect_page(page, name, size, screenshot_dir=None):
             page.keyboard.press("Escape")
         return shown
     korean = labels()
-    check(korean == ["오늘의 꽁밥", "밥도둑 매거진", "소식·이벤트"], ("Korean primary labels", korean))
+    check(korean == ["오늘의 꽁밥", "오늘 뭐 먹지", "소식·이벤트"], ("Korean primary labels", korean))
     page.locator("#langToggle").click()
     english = labels()
-    check(english == ["Today's free food", "Magazine", "News & events"],
+    check(english == ["Today's free food", "What to eat", "News & events"],
           ("English primary labels", english, page.evaluate("document.documentElement.lang")))
     page.locator("#langToggle").click()
     if not phone:      # on phones the More links are in the menu panel, without a menu of their own
@@ -288,13 +289,14 @@ def inspect_page(page, name, size, screenshot_dir=None):
 
 
 def magazine_tools(page):
-    """One picker: mukbang.html#what (synthetic data, phone width); choose.html only redirects there.
+    """The magazine's cafeteria summary (synthetic data, phone width) and its card to 오늘 뭐 먹지, the one
+    picker since 2026-11-04 (choose.html, pick_tools); an old mukbang.html#what link lands there.
     Magazine provenance: only source-backed stories render, never desk filler."""
     count = 0
 
     def check(ok, detail):
         nonlocal count
-        assert ok, f"mukbang.html#what / magazine: {detail}"
+        assert ok, f"mukbang.html / magazine: {detail}"
         count += 1
 
     yesterday = (datetime.now(timezone(timedelta(hours=9))) - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -307,9 +309,7 @@ def magazine_tools(page):
         "days": [{"date": today, "available": False, "status": "NOT_PUBLISHED_YET"}]}))
     page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(status=404, body=""))
     page.set_viewport_size({"width": 390, "height": 844})
-    page.goto("https://site-ui.invalid/mukbang.html#what", wait_until="networkidle")
-    page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
-    page.reload(wait_until="networkidle")
+    page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
     tools = page.locator("#kaistToday")
     title = page.locator("#kaistTitle").inner_text()
     check("오늘" not in title and tools.locator(".kaist-date.is-stale").count() == 1,
@@ -318,40 +318,24 @@ def magazine_tools(page):
     check(tools.locator("[role=tablist]").count() == 0 and tools.locator(".kaist-meal[aria-pressed]").count() == 3,
           "meal and restaurant controls are pressed toggles, not partial tabs")
     check(tools.locator(".kaist-to-hub").get_attribute("href") == "ggongbab.html#menu"
-          and not tools.locator(".kaist-to-slot").count(), "summary links to the hub; the picker is on this page")
+          and not tools.locator(".kaist-to-slot").count(), "summary links to the hub, not to a picker")
     tools.locator('.kaist-meal[data-kaist-meal="dinner"]').focus()
     page.keyboard.press("Enter")
     check(page.evaluate("document.activeElement.dataset.kaistMeal") == "dinner", "focus survives re-render")
 
-    page.locator(".eat-spinbtn").wait_for()
-    check(page.locator('.eat-hunger[role="group"] [aria-pressed]').count() == 3, "hunger options are pressed toggles")
-    page.locator(".eat-spinbtn").click()
-    page.locator(".eat-hero h3").wait_for()
-    check("MATCH" not in page.locator("#eatPanel").inner_text() and not page.locator(".eat-match").count(),
-          "internal score is not shown as a probability")
-    check(page.locator(".eat-reasons li").count() >= 1 and page.locator(".eat-scope").is_visible(),
-          "reason and suggestion scope are visible")
-    check(page.evaluate("document.activeElement.matches('.eat-hero h3')"), "focus moves to the result")
-    check(page.locator("#eatStatus").inner_text().strip() != "", "result is announced")
-    dish = page.locator('[data-eat="take"]').get_attribute("data-id")
-    page.locator('[data-eat="take"]').click()
-    prefs = page.evaluate("JSON.parse(localStorage.getItem('babdoduk-food-preferences'))")
-    check(dish in prefs["likes"] and dish not in prefs["eaten"], "choosing a dish is not recorded as eaten")
-    page.evaluate("localStorage.removeItem('babdoduk-food-preferences')")
     page.unroute("**/data/kaist-menu/latest.json")
     page.unroute("**/data/kaist-menu/week.json")
     page.unroute(f"**/data/kaist-menu/{today}.json")
 
-    # One picker product: it lives at mukbang.html#what; choose.html is only a compatibility redirect.
+    # One picker product: 오늘 뭐 먹지 at choose.html since 2026-11-04 (owner); the magazine keeps a card
+    # pointing there, and an old mukbang.html#what link lands on it.
     page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
-    check(page.locator("#what #eatApp").count() == 1 and page.locator("#eatApp").count() == 1,
-          "exactly one picker, inside the magazine at #what")
-    page.goto("https://site-ui.invalid/choose.html", wait_until="networkidle")
-    page.wait_for_function("location.pathname.endsWith('/mukbang.html') && location.hash === '#what'", timeout=10000)
-    page.locator("#eatApp").wait_for()
-    landed = urlparse(page.url)          # the magazine adds ?d=<edition> itself
-    check(landed.path.endswith("/mukbang.html") and landed.fragment == "what" and page.locator("#eatApp").count() == 1,
-          ("choose.html redirects to the one picker", page.url))
+    check(page.locator("#eatApp, #pickApp").count() == 0 and page.locator('#what a[href="choose.html"]').count() == 1,
+          "no picker in the magazine, a card pointing to 오늘 뭐 먹지")
+    page.goto("https://site-ui.invalid/mukbang.html#what", wait_until="domcontentloaded")
+    page.wait_for_function("location.pathname.endsWith('/choose.html')", timeout=10000)
+    page.locator("#pickApp").wait_for()
+    check(page.locator("#pickApp").count() == 1, ("an old #what link lands on 오늘 뭐 먹지", page.url))
 
     # Edition provenance: only source-backed stories render (a desk item or a non-http URL is
     # dropped, never shown as a note), an empty lane says so, and an older edition is labelled.
@@ -437,8 +421,76 @@ def magazine_edition_time(page):
     return count
 
 
+def pick_tools(browser):
+    """오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-04): three pressed choices; the cafeteria board is
+    today's main-campus meals still being served (a 문지 cafeteria and a finished meal stay out) and its card
+    reads the menu without allergen numbers or the calorie line; delivery spins to a kind and the slot to a
+    dish (no delivery-app link yet); any tile can be picked by hand; 처음부터 resets; sound starts off. Its own context
+    has a fixed clock (12:00 KST on a day the synthetic menu is for) and reduced motion, which lands every
+    spin at once: nothing here waits on an animation, today's real menu or the time of day."""
+    count = 0
+    context = new_context(browser)
+    page = context.new_page()
+    page.clock.set_fixed_time("2026-10-14T12:00:00+09:00")
+
+    def check(ok, detail):
+        nonlocal count
+        assert ok, f"choose.html / 오늘 뭐 먹지: {detail}"
+        count += 1
+
+    today = "2026-10-14"
+    menu = {"date": today, "restaurants": [
+        {"id": "r1", "name": "카이마루 N11", "building": "N11",
+         "breakfast": {"items": ["아침"], "hours": "07:30~09:00"},
+         "lunch": {"items": ["백미밥", "제육볶음(5,6,10)", "[칼로리:890kcal]"], "hours": "11:30~13:30", "price": "5,000원"},
+         "dinner": {"items": []}},
+        {"id": "r2", "name": "문지캠퍼스", "building": "문지", "lunch": {"items": ["비빔밥"], "hours": "11:30~13:30"}}]}
+    page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
+    page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json={"days": [{"date": today, "available": True}]}))
+    page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(json=menu))
+    page.emulate_media(reduced_motion="reduce")
+    page.set_viewport_size({"width": 360, "height": 800})
+    page.goto("https://site-ui.invalid/index.html", wait_until="domcontentloaded")
+    page.evaluate("localStorage.removeItem('babdoduk-pick-sound')")
+    page.goto("https://site-ui.invalid/choose.html", wait_until="networkidle")
+    check(page.locator("h1").inner_text().strip() == "오늘 뭐 먹지?", "one h1")
+    check(page.locator('.site-nav a[href="choose.html"][aria-current="page"]').count() == 1, "the nav marks 오늘 뭐 먹지")
+    check(page.locator('[data-mode][aria-pressed="false"]').count() == 3, "three pressed toggles, none pressed")
+    check(page.locator("#pickSound").get_attribute("aria-pressed") == "false", "sound starts off")
+    check(page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth") <= 0,
+          "no horizontal overflow at 360 px")
+
+    page.locator('[data-mode="cafeteria"]').click()
+    page.locator(".pick-result:not([hidden]) .pick-menu").wait_for()
+    tiles = page.locator("#pickTiles .pick-tile").evaluate_all("els => els.map(e => e.innerText.replace(/\\s+/g, ' ').trim())")
+    check(tiles == ["🍱 카이마루 N11 점심"], ("main-campus meals still served, nothing else", tiles))
+    items = page.locator(".pick-menu li").evaluate_all("els => els.map(e => e.textContent)")
+    check(items == ["백미밥", "제육볶음"], ("the menu reads clean", items))
+    check(page.locator('.pick-result a[href="ggongbab.html#menu"]').count() == 1, "the card leads to all cafeteria menus")
+    check(page.evaluate("document.activeElement.matches('.pick-result-title')"), "focus moves to the result")
+    check("당첨" in page.locator("#pickStatus").inner_text(), "the landing is announced")
+
+    page.locator('[data-mode="delivery"]').click()
+    page.locator(".pick-after:not([hidden])").wait_for()
+    kinds = page.locator("#pickTiles .pick-tile").count()
+    check(kinds >= 8, ("kinds of delivery food", kinds))
+    check(page.locator(".pick-result-title").inner_text().strip() != "" and page.locator('[data-pick="kind"]').count() == 1
+          and not page.locator('[data-pick="baemin"], a[href^="baemin:"]').count(),
+          "a dish and 같은 종류로 다시; no delivery-app link yet (owner 2026-11-04: later)")
+    page.locator('#pickTiles .pick-tile[data-tile="pizza"]').click()
+    page.locator(".pick-after:not([hidden])").wait_for()
+    check("피자" in page.locator(".pick-result-kicker").inner_text(), "a tile picked by hand opens that kind")
+    page.locator('[data-pick="restart"]').click()
+    check(page.locator("#pickBoard").is_hidden() and page.locator("#pickResult").is_hidden()
+          and page.evaluate("document.activeElement.dataset.mode") == "cafeteria", "처음부터 resets and focuses the first choice")
+    page.locator("#pickSound").click()
+    check(page.locator("#pickSound").get_attribute("aria-pressed") == "true", "sound turns on when asked")
+    context.close()
+    return count
+
+
 def release_contracts(page):
-    """Product roles that changed: choose.html only redirects, food.html is lab-only (noindex,
+    """Product roles that changed: choose.html is 오늘 뭐 먹지 (2026-11-04), food.html is lab-only (noindex,
     nofollow, reachable from lab.html, linked from no public page in either language), and the
     event that did not happen appears nowhere."""
     count = 0
@@ -449,9 +501,8 @@ def release_contracts(page):
         count += 1
 
     choose = (ROOT / "choose.html").read_text(encoding="utf-8")
-    check('name="robots" content="noindex"' in choose and "mukbang.html#what" in choose
-          and 'id="eatApp"' not in choose and "food-picker.js" not in choose,
-          "choose.html is a noindex redirect with no picker of its own")
+    check("noindex" not in choose and "location.replace" not in choose and 'id="pickApp"' in choose
+          and "food-picker.js" not in choose, "choose.html is the indexed 오늘 뭐 먹지 page with the roulette")
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/food.html", wait_until="networkidle")
     robots = page.locator('meta[name="robots"]').get_attribute("content") or ""
@@ -661,7 +712,7 @@ def home_summary(page):
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/index.html", wait_until="networkidle")
     actions = page.locator(".home-actions a").evaluate_all("els => els.map(el => el.getAttribute('href'))")
-    check(actions == ["ggongbab.html", "mukbang.html#what"], ("primary actions", actions))
+    check(actions == ["ggongbab.html", "choose.html"], ("primary actions", actions))
     check(page.locator(".home-actions a").first.bounding_box()["y"] < 844, "primary action in first mobile screen")
     check(page.locator('a[href="#"]').count() == 1 and page.locator("#navHome").get_attribute("href") == "#",
           "no placeholder links except back-to-top")
@@ -3116,11 +3167,12 @@ def structure_and_failures(page):
 # Site guardian: the shared chrome is identical on every public page (structure, destinations, computed
 # footer styles and the transition into the footer), in both languages and at desktop and phone widths.
 # ---------------------------------------------------------------------------------------------------
-# choose.html is a redirect to mukbang.html#what and food.html is lab-only, so neither is a guarded public page.
+# food.html is lab-only. choose.html (오늘 뭐 먹지, 2026-11-04) has no approved chrome baselines yet; pick_tools
+# and release_contracts check it until the owner approves its renders (docs/VISUAL_BASELINES.md).
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
-NAV_DIRECT = ["ggongbab.html", "mukbang.html", "event.html"]
-NAV_MORE = ["history.html", "tip.html",
+NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
+NAV_MORE = ["mukbang.html", "history.html", "tip.html",
             "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
 FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
@@ -3388,6 +3440,7 @@ def run_checks(screenshots=False):
                 report["results"][f"{name}:{size[0]}x{size[1]}"] = result
                 report["checks"] += result["checks"]
         report["checks"] += magazine_tools(page)
+        report["checks"] += pick_tools(browser)
         report["checks"] += magazine_sparse(page)
         report["checks"] += magazine_edition_time(page)
         report["checks"] += release_contracts(page)

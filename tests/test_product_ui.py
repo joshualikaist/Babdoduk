@@ -194,21 +194,22 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert "event-elsewhere" not in html and "event-num" not in html and 'class="page-num"' not in html
     assert 'class="event-instagram"' in html and "@babdodukms" in html
     assert 'id="eventEmpty"' in html and "event.emptyLink" not in html
-    # One picker product: it lives in the magazine at #what; choose.html only redirects there.
+    # One picker product: 오늘 뭐 먹지 at choose.html (owner 2026-11-04), its roulette js/pick.js; the
+    # magazine keeps a card pointing there and sends an old #what link on.
     for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
-        assert 'href="choose.html"' not in page, name
-        if name != "mukbang.html":
-            assert 'id="eatApp"' not in page and "js/food-picker.js" not in page, name   # no second picker
+        assert 'id="pickApp"' not in page and "js/pick.js" not in page and 'id="eatApp"' not in page, name
+    assert not (ROOT / "js/food-picker.js").exists()
     choose = (ROOT / "choose.html").read_text(encoding="utf-8")
-    assert 'content="noindex"' in choose and "location.replace('mukbang.html#what')" in choose
-    assert 'url=mukbang.html#what' in choose and 'id="eatApp"' not in choose and "food-picker.js" not in choose
+    assert "noindex" not in choose and "location.replace" not in choose and choose.count('id="pickApp"') == 1
+    assert choose.count('<script src="js/pick.js"></script>') == 1 and '<script src="js/eat-slot.js"></script>' in choose
+    assert len(re.findall(r'<button type="button" class="pick-mode[^"]*" data-mode="(cafeteria|delivery|any)" aria-pressed="false">', choose)) == 3
     magazine = (ROOT / "mukbang.html").read_text(encoding="utf-8")
-    assert magazine.count('id="eatApp"') == 1 and magazine.count('id="kaistToday"') == 1
-    assert magazine.count("js/food-picker.js") == 1 and 'id="what"' in magazine
-    assert "location.replace('choose.html')" not in magazine
+    assert 'id="eatApp"' not in magazine and magazine.count('id="kaistToday"') == 1 and 'id="what"' in magazine
+    assert '<a class="mg-pick-link" href="choose.html">' in magazine
+    assert "if (location.hash === '#what') location.replace('choose.html');" in magazine
     index = (ROOT / "index.html").read_text(encoding="utf-8")
-    assert 'href="mukbang.html#what"' in index           # the home call to action reaches the picker
+    assert 'href="choose.html" data-i18n="home.ctaChoose"' in index   # the home call to action reaches the picker
 
 
 # Food Log is unreleased (lab only): no home link. Since 2026-11-02 (owner) the home page is its hero
@@ -219,7 +220,7 @@ def test_home_is_one_hero_and_nothing_below_it():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     top = html[html.index("<main"):html.index("</main>")]
     assert top.count("<h1") == 1
-    assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "mukbang.html#what"]
+    assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "choose.html"]
     assert 'href="food.html"' not in html and 'data-banner=' not in html
     for gone in ("home-group", "homeShelf", "homeFeature", "home-news", "explore-card", "data-shelf", "home-read"):
         assert gone not in top, gone
@@ -255,10 +256,10 @@ def test_brand_and_hub_name():
     # No invented notices: the list the sync writes from data/content/events.json is empty.
     assert re.search(r'<ul class="event-notices" id="eventNotices" role="list">\s*<!-- @content:notices -->'
                      r'\s*<!-- @end content -->\s*</ul>', event)
-    for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html", "lab.html"):
+    for name in ("index.html", "ggongbab.html", "mukbang.html", "choose.html", "event.html", "food.html", "history.html", "lab.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
         assert 'data-i18n="nav.today">오늘의 꽁밥</a>' in page and "'nav.today': '오늘의 꽁밥'" in page, name
-    assert "site-nav" not in (ROOT / "choose.html").read_text(encoding="utf-8")   # a redirect, no chrome
+        assert 'data-i18n="nav.choose">오늘 뭐 먹지</a>' in page and "'nav.choose': '오늘 뭐 먹지'" in page, name
     site = (ROOT / "css/site.css").read_text(encoding="utf-8")
     wordmark = site[site.index(".site-nav-wordmark {"):site.index(".site-nav-wordmark::before")]
     assert "#6366f1 0%" in wordmark and "#db2777 100%" in wordmark and "wordmark-holo" in wordmark

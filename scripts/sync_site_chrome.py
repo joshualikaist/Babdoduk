@@ -65,7 +65,9 @@ LAB_RIBBON = [
 PAGES = {
     "index.html": {"current": None, "home": "#", "strings": ("home",)},
     "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km")},
-    "mukbang.html": {"current": "mukbang.html", "strings": ("eat", "kaist", "km", "mg")},
+    "mukbang.html": {"current": "mukbang.html", "strings": ("kaist", "km", "mg")},
+    # 오늘 뭐 먹지 (owner 2026-11-04): the one menu picker, a direct destination; the roulette (js/pick.js).
+    "choose.html": {"current": "choose.html", "strings": ("pick",)},
     "event.html": {"current": "event.html", "strings": ("event",)},
     # Food Log is lab-only: no public nav/footer link points at it; it carries the lab links.
     "food.html": {"current": None, "lab": True, "strings": ("cal", "food")},

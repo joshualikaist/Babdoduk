@@ -60,9 +60,11 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
         html = (ROOT / page).read_text(encoding="utf-8")
         nav = html[html.index('<header class="site-nav"'):html.index("</header>")]
         footer = html[html.index('<footer class="site-footer"'):html.index("</footer>")]
-        # One magazine product (it carries the picker); no separate picker, no Food Log in the chrome.
-        assert 'href="mukbang.html"' in nav and 'href="mukbang.html"' in footer, page
-        for gone in ('href="choose.html"', "mukbang.html#what", 'href="food.html"'):
+        # 오늘 뭐 먹지 is a direct destination and the magazine sits in the More menu (owner 2026-11-04);
+        # no Food Log in the chrome.
+        assert 'href="choose.html"' in nav and 'href="mukbang.html"' in nav and 'href="mukbang.html"' in footer, page
+        assert nav.index('href="choose.html"') < nav.index('id="navMorePanel"') < nav.index('href="mukbang.html"'), page
+        for gone in ("mukbang.html#what", 'href="food.html"'):
             assert gone not in nav and gone not in footer, (page, gone)
         current = re.findall(r'href="([^"]+)" aria-current="page"', nav)
         assert current == ([config["current"]] if config["current"] else []), (page, current)

@@ -1,0 +1,54 @@
+"""오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-04): the roulette's choices, run in Node on the real
+dish catalog. The page itself is checked by scripts/check_site_ui.py pick_tools."""
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+
+
+def run(expr: str):
+    script = ("globalThis.window = {}; globalThis.document = { getElementById: () => null };"
+              "const fs = require('fs'); eval(fs.readFileSync('js/pick.js', 'utf8'));"
+              "const P = window.BabdodukPick;"
+              "const foods = JSON.parse(fs.readFileSync('data/foods/catalog.json', 'utf8')).packs"
+              "  .flatMap(p => JSON.parse(fs.readFileSync(p.src, 'utf8')).items);"
+              f"console.log(JSON.stringify({expr}));")
+    out = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True, check=True)
+    return json.loads(out.stdout)
+
+
+def test_every_kind_of_delivery_food_has_dishes_and_each_dish_one_kind():
+    kinds = run("Object.fromEntries(Object.entries(P.categorize(foods)).map(([k, v]) => [k, v.map(f => f.nameKo)]))")
+    assert set(kinds) == {"chicken", "pizza", "burger", "jokbal", "chinese", "bunsik", "japanese", "asian", "western", "korean"}
+    assert all(len(names) >= 3 for names in kinds.values()), {k: len(v) for k, v in kinds.items()}
+    every = [name for names in kinds.values() for name in names]
+    assert len(every) == len(set(every))                                   # one kind each
+    assert "족발" in kinds["jokbal"] and "짜장면" in kinds["chinese"] and "떡볶이" in kinds["bunsik"]
+    assert "마르게리타 피자" in kinds["pizza"] and "치즈버거" in kinds["burger"]
+    assert "치킨버거" not in kinds["chicken"] and "치킨버거" in kinds["burger"]   # a chicken burger is a burger
+    assert not set(kinds["chicken"]) & {"치킨반미", "하이난치킨라이스"}
+    only_delivery = run("P.categorize(foods.map(f => Object.assign({}, f, {diningMode: ['restaurant']})))")
+    assert only_delivery == {}                                             # dishes nobody delivers stay out
+
+
+def test_only_main_campus_meals_still_being_served_are_offered():
+    day = {"restaurants": [
+        {"id": "a", "name": "카이마루", "building": "N11", "breakfast": {"items": ["죽"], "hours": "08:00~09:00"},
+         "lunch": {"items": ["밥"], "hours": "11:30~13:30"}, "dinner": {"items": ["국수"]}},
+        {"id": "b", "name": "서맛골", "building": "W2", "lunch": {"items": []}},
+        {"id": "c", "name": "문지캠퍼스", "building": "문지", "lunch": {"items": ["밥"], "hours": "11:30~13:30"}},
+        {"id": "d", "name": "서울캠퍼스", "building": "서울", "dinner": {"items": ["밥"]}}]}
+    noon = run(f"P.servingMeals({json.dumps(day)}, 12 * 60).map(s => s.resto.id + ':' + s.meal)")
+    assert noon == ["a:lunch", "a:dinner"]                                  # breakfast over; no hours: usual end
+    evening = run(f"P.servingMeals({json.dumps(day)}, 19 * 60 + 5).map(s => s.resto.id + ':' + s.meal)")
+    assert evening == []
+
+
+def test_a_menu_line_reads_without_allergen_numbers_or_the_calorie_line():
+    assert run("P.cleanItems(['백미밥', '제육볶음(5,6,10)', '알감자조림(5,6*)', '[칼로리:890kcal]', '배추김치'])") == [
+        "백미밥", "제육볶음", "알감자조림", "배추김치"]
