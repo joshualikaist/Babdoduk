@@ -292,7 +292,9 @@
   function radarHtml(now) {
     var today = todayUpcoming(now);
     var next = earliestToday(now);
-    var html = '<section class="gg-radar" aria-label="' + esc(t('gg.radar.label', '오늘의 꽁밥 레이더')) + '">';
+    // Without a next meal there is no button under the line: the box keeps its own bottom padding
+    // (2026-11-05: "오늘은 꽁밥 가뭄" sat on the box's bottom edge and looked cut off).
+    var html = '<section class="gg-radar' + (next ? '' : ' is-quiet') + '" aria-label="' + esc(t('gg.radar.label', '오늘의 꽁밥 레이더')) + '">';
     html += '<p class="gg-radar-line"><span class="gg-radar-title">' + esc(radarCopy(today.length)) + '</span>' +
       '<span class="gg-radar-count">' + esc(t('gg.radar.count', '오늘 {n}개').replace('{n}', String(today.length))) + '</span></p>';
     if (next) {
