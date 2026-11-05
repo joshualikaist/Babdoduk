@@ -98,7 +98,9 @@
 
   function loadCatalog() {
     if (loadPromise) return loadPromise;
-    loadPromise = fetch('data/foods/catalog.json', { cache: 'no-store' })
+    // The catalog changes only with a commit: 'no-cache' asks the server each time but takes a 304
+    // (no body) when nothing changed, where 'no-store' downloaded all ~900 KB on every visit.
+    loadPromise = fetch('data/foods/catalog.json', { cache: 'no-cache' })
       .then(function (res) {
         if (!res.ok) throw new Error('catalog missing');
         return res.json();
@@ -106,7 +108,7 @@
       .then(function (payload) {
         weights = payload.scoreWeights || DEFAULT_WEIGHTS;
         return Promise.all((payload.packs || []).map(function (pack) {
-          return fetch(pack.src, { cache: 'no-store' }).then(function (res) {
+          return fetch(pack.src, { cache: 'no-cache' }).then(function (res) {
             if (!res.ok) throw new Error('pack missing ' + pack.id);
             return res.json();
           });

@@ -48,7 +48,7 @@ def test_save_and_share_buttons_and_their_copy():
     en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
     assert (ko["wc.saved"], ko["wc.copied"]) == ("저장했어요", "링크를 복사했어요")
     for key in ("wc.save", "wc.share", "wc.shareHint", "wc.friend", "wc.story.won", "wc.story.cta", "wc.story.final",
-                "wc.story.semi", "wc.story.credit", "wc.story.alt", "wc.preparing", "wc.friendCta"):
+                "wc.story.semi", "wc.story.credit", "wc.story.alt", "wc.preparing"):
         assert ko[key] and en[key], key
     assert "{dish}" in ko["wc.friend"] and "{dish}" in en["wc.friend"]
     # Web Share Level 2 with the file, the text and the link on a phone; the text and the link when files

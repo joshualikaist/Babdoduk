@@ -13,7 +13,7 @@ The current product started as a personal food and social hub. The recurring cam
 Visitors currently need to discover the food tools through navigation, and “오늘 뭐 먹지?” refers both to available food and to a dish recommendation embedded in the magazine. The two questions are different:
 
 - **What is available?** A dated KAIST menu or a publishable free-food event. This is information, subject to source freshness and participation conditions.
-- **What should I choose?** A dish idea from the local food catalog, with a reason and alternatives. This is a suggestion, not confirmation that a venue sells it today.
+- **What should I choose?** One drawn idea: a cafeteria meal serving now or a popular delivery dish from the local food catalog. This is a suggestion, not confirmation that a venue sells it today.
 
 Principles: solve the meal task before decoration; distinguish facts, suggestions and unknowns; show one clear next action; keep editorial curiosity without turning every article into promotion; use playfulness only where it helps choosing; keep public data within approved publication boundaries.
 
@@ -42,12 +42,12 @@ These are hypotheses from the current features, not measured audience segments.
 | Experimental | Isolated layout, fixture and preview work | `lab.html`, `lab-ggongbab.html` |
 | Operational | Collection, validation, publication, session recovery and monitoring | `scripts/`, `supabase/`, workflows; never a public navigation destination |
 
-The slot animation is an optional presentation of a selected result, not an availability source or a separate product pillar.
+The capsule machine's animation only presents the drawn result; it is not an availability source or a separate product pillar.
 
 ## Primary journeys
 
 1. **Check**: Home or direct visit → today's food → cafeteria or free food → date, location and conditions → approved next action or finish.
-2. **Choose**: Home or direct visit → dish picker → minimal inputs → dish with plain-language reasons and alternatives → choose, retry or finish.
+2. **Choose**: Home or direct visit → 오늘 뭐 먹지 → one button → one dish or cafeteria meal → draw again or finish (no inputs, owner 2026-11-05).
 3. **Explore and participate**: An optional continuation from either journey to a related article, map or confirmed event. Do not require this continuation for task success.
 
 The home page should show the service definition, primary check action, secondary choose action, a small freshness-aware summary when available, then confirmed activity and editorial content. Do not make unfinished social channels compete with the two primary actions.
@@ -66,7 +66,7 @@ The home page should show the service definition, primary check action, secondar
 | `worldcup.html` | A light activity: pick a favorite dish from a 32-dish bracket drawn from a pool of more than 700 dishes (at most five variants of the same dish), with pick effects, round banners, confetti and a saveable result image (owner P4, 2026-10-13) | Catalog dish names and flavours; results kept in the visitor's browser | Prizes or rankings nobody announced; treating catalog dishes as what a shop sells |
 | `lab.html`, `lab-ggongbab.html` | Isolated experiments and tests | Development documentation | Public core navigation or private preview exposure; served on babdoduk-lab only (`vercel.json` answers 404 elsewhere) |
 
-Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **오늘 뭐 먹지** for the one picker, a direct destination since 2026-11-04 (owner: "밥도둑 매거진을 더보기로 넣고, 오늘 뭐 먹지를 위로"); **밥도둑 매거진** moved into the More menu. The home call to action reads **메뉴 고르기** and points to `choose.html`. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. Since 2026-10-13 (owner decision) **소식·이벤트** is a direct top-bar destination beside the two above; the More menu keeps history, the map and social links. “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs keep resolving: `mukbang.html#what` sends the visitor to `choose.html`.
+Navigation labels are **오늘의 꽁밥** for the availability hub (owner decision, 2026-09-24; it replaced the earlier proposal 오늘의 한 끼) and **오늘 뭐 먹지** for the one picker, a direct destination since 2026-11-04 (owner: "밥도둑 매거진을 더보기로 넣고, 오늘 뭐 먹지를 위로"); **밥도둑 매거진** moved into the More menu. The home call to action reads **메뉴 뽑기** and points to `choose.html`. The events page is framed as **밥도둑 소식**: notices and upcoming activities first, the past record below. Since 2026-10-13 (owner decision) **소식·이벤트** is a direct top-bar destination beside the two above; the More menu holds 밥도둑 매거진, history, the tip board and the map, and Instagram is a logo beside the wordmark (2026-11-05). “오늘 뭐 먹지?” may remain as supporting copy. Existing URLs keep resolving: `mukbang.html#what` sends the visitor to `choose.html`.
 
 ## Functional requirements
 
@@ -74,7 +74,7 @@ Navigation labels are **오늘의 꽁밥** for the availability hub (owner decis
 
 - Free-food publication requires explicit `food.provided == "true"`, approved/published state, `needs_review == false`, confidence and date/horizon checks. The UI must hide ended events, preserve ascending date order, filters, Radar and featured next event. Initial period is **전체 예정**; a previously saved filter takes precedence. Unknown food is not a negative or a positive assertion.
 - Cafeteria menus must carry their actual date/source. A stale payload must not be presented as today's confirmed menu. Restaurant, meal, favourites and retry behavior should be consistent wherever the menu appears.
-- Dish recommendations must identify the result as a catalog suggestion, show an intelligible reason and alternatives, preserve local feedback, and never claim live availability, validated health/allergen safety or a measured probability. A “choose” action does not prove the user ate the dish.
+- Dish recommendations must identify the result as a suggestion (a cafeteria meal with its place and time, or a catalog dish), and never claim live availability, validated health/allergen safety or a measured probability. A draw does not prove the user ate the dish.
 - Magazine stories are source-backed only: a real source, URL and title, and a short excerpt of retrieved source text. There is no authored fallback (no Babdoduk Desk). A lane may be sparse or empty. The trend lane shows only recent items with recorded evidence that something is actually happening (demand figures, stockouts, strong engagement, independent reporting), never a product launch, a round-up of launches or a recipe on its own; tips must teach, health needs the source's own health framing, habit excludes celebrity diet stories and company promotion; the habit lane shows dated behavior reporting or research from credible sources; ranking weighs Korean/KAIST audience relevance; the hero is labelled 오늘의 추천 글 unless it is a qualified trend. A story runs once. The daily JSON is publication output; the research layer (registry, candidates, health) is separate (`docs/MAGAZINE_DISCOVERY.md`). Each category remains a vertical reading flow.
 - Events must be classified as NOW / COMING UP / PAST by dates and separately report whether occurrence was confirmed, tentative, cancelled or unknown. Past dates do not prove an event happened. Collaborations appear only when supported by authored facts. Existing four detail fields and index/date contract remain until an approved replacement.
 - The food log must explain whether an entry is personal, creator-authored or both before changing storage or merging behavior. Existing local entries must remain readable through any later redesign.

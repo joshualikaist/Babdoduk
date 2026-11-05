@@ -44,7 +44,9 @@
 
 ## 라이선스
 
-- 코드 기여는 [MIT 라이선스](LICENSE)로 받습니다.
+- 밥도둑은 2026-11-04부터 모든 권리가 보호됩니다([LICENSE](LICENSE), 그 전 커밋은 MIT 고지로 공개).
+  코드나 글을 기여하면 소유자(joshualikaist)에게 그것을 밥도둑의 일부로 쓰고 고치고 배포할 수 있는
+  영구적·전 세계적·무상의 이용 허락을 주는 것으로 봅니다.
 - 자료원 등록부(`scripts/discovery/sources.json`) 기여는 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)으로 받습니다.
 
 기여하면 이 조건에 동의하는 것으로 봅니다.

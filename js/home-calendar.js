@@ -507,7 +507,13 @@
     for (var i = 0; i < SCROLL_FROM - 1 && i < rows.length; i++) height += rows[i].offsetHeight + 1;   // + the divider
     box.style.maxHeight = (height + SCROLL_PEEK) + 'px';
   }
-  window.addEventListener('resize', fitScroll);
+  // Phones fire resize when the address bar shows or hides: measure once a frame at most.
+  var fitQueued = false;
+  window.addEventListener('resize', function () {
+    if (fitQueued) return;
+    fitQueued = true;
+    requestAnimationFrame(function () { fitQueued = false; fitScroll(); });
+  });
   // Only dates after the selected day (or after today, when a past day is selected); never the selected day again.
   // Free food only, like its title: a giveaway-only listing is found by its 🎁 date.
   function renderNext() {
@@ -736,12 +742,21 @@
   els.month.addEventListener('keydown', onKey);
   document.addEventListener('babdoduk-lang', render);
   document.addEventListener('babdoduk:show', function (e) { if (e.detail && e.detail.id) showEvent(e.detail.id); });
-  // Coming back to the tab after midnight (KST) starts again from the new today. No timers.
+  // Which listings are on and which are over, per day: what a return to the tab can change.
+  function listingKey() {
+    return state.todayIso + '|' + Object.keys(state.days).sort().map(function (day) {
+      return day + ':' + state.days[day].map(function (item) { return item.ev.id + (item.active ? '+' : '-'); }).join(',');
+    }).join('|');
+  }
+  // Coming back to the tab after midnight (KST) starts again from the new today; a listing that ended
+  // meanwhile is redrawn as over. Otherwise nothing is redrawn, so an opened row, the focus and the
+  // map's open card stay as they were. No timers.
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible' || state.status === 'loading') return;
-    var before = state.todayIso;
+    var before = state.todayIso, key = listingKey();
     refreshIndex();
     if (state.todayIso !== before) resetView();
+    else if (listingKey() === key) return;
     render();
   });
 

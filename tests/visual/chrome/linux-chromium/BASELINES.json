@@ -1,7 +1,7 @@
 {
-  "approval": "Owner approved 2026-11-05 (\"이거 지금 잘된거 같아. 굿굿\", after checking lab 7157a8d; \"같이 바꿔줘\" for the history footer): nav - the Instagram logo beside the Babdoduk wordmark, Instagram removed from the More menu; history 390 footer and footer-context - the footer sits about 20 px higher after the ver2.x milestones (release dedea32), the footer itself unchanged. CI renders from ui-guardian run 42010257273 (lab 7157a8d) for the 23 changed images, the other 37 unchanged",
+  "approval": "Owner approved deployed lab and baseline replacement in chat (승인할게), 2026-11-05 KST; lab 56e2c2c; CI run 42026466354; 33 footer/footer-context images changed, nav unchanged.",
   "platform": "linux-chromium",
-  "source": "adopted from ci-all-full2",
+  "source": "adopted from approved-ci-42026466354",
   "images": 60,
   "fixed_now": "2026-09-28T10:00:00+09:00",
   "sizes": [

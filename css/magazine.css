@@ -201,10 +201,6 @@ body.mg-body .site-footer {
   color: #1e1d1a;
 }
 
-.mg-story--desk .mg-story-src b {
-  color: #6d665e;
-}
-
 .mg-story-out {
   color: var(--color-accent);
   font-weight: 700;
@@ -341,7 +337,7 @@ body.mg-body .site-footer {
   line-height: 1.65;
   color: #6b655d;
   overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: keep-all;
 }
 
 .mg-hero {
@@ -363,6 +359,7 @@ body.mg-body .site-footer {
 }
 
 .mg-hero h2 {
+  word-break: keep-all;
   font-size: clamp(28px, 4vw, 44px);
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -377,7 +374,7 @@ body.mg-body .site-footer {
   color: #5c5850;
   max-width: 34rem;
   overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: keep-all;
 }
 
 .mg-hero-tags {
@@ -549,6 +546,7 @@ body.mg-body .site-footer {
 }
 
 .mg-lane-lead {
+  word-break: keep-all;
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -576,6 +574,7 @@ body.mg-body .site-footer {
 }
 
 .mg-story h4 {
+  word-break: keep-all;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -594,7 +593,7 @@ body.mg-body .site-footer {
   line-height: 1.6;
   color: #6b655d;
   overflow-wrap: break-word;
-  word-break: break-word;
+  word-break: keep-all;
 }
 
 .mg-story-sum {

@@ -14,7 +14,7 @@
 .gg-radar-line { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
 .gg-radar-title { min-width:0; font-size:15px; font-weight:800; line-height:22px; letter-spacing:-.025em; color:#1d1d1f; }
 .gg-radar-count { flex-shrink:0; font-size:15px; font-weight:900; line-height:22px; color:#1d1d1f; font-variant-numeric:tabular-nums; }
-.gg-radar-cta { display:block; width:100%; min-height:44px; padding:12px 0; border:0; background:transparent; font:700 13px/20px inherit; color:var(--color-accent); text-align:left; cursor:pointer; overflow-wrap:anywhere; }
+.gg-radar-cta { display:block; width:100%; min-height:44px; padding:12px 0; border:0; background:transparent; font-family:inherit; font-weight:700; font-size:13px; line-height:20px; color:var(--color-accent); text-align:left; cursor:pointer; overflow-wrap:anywhere; }
 .gg-radar-next { margin-right:6px; color:var(--color-ink-muted); }
 .gg-radar-cta [aria-hidden] { margin:0 1px; }
 .gg-skeleton.gg-radar-skeleton { height:87px; margin-bottom:12px; }
@@ -49,12 +49,12 @@
 .km-items { margin:10px 0 0; padding:0; list-style:none; }
 .km-items li { font-size:14px; font-weight:500; line-height:22px; color:#3a3a3c; }
 .km-items li + li { margin-top:3px; }
-.km-expand { margin-top:4px; min-height:36px; border:0; background:transparent; padding:0; font:700 12px/18px inherit; color:var(--color-accent); cursor:pointer; }
+.km-expand { margin-top:4px; min-height:36px; border:0; background:transparent; padding:0; font-family:inherit; font-weight:700; font-size:12px; line-height:18px; color:var(--color-accent); cursor:pointer; }
 .km-meta { display:flex; justify-content:space-between; gap:10px; margin-top:12px; padding-top:10px; border-top:1px solid #f0f0f2; font-size:12px; font-weight:700; }
 .km-price { color:#1d1d1f; }
 .km-kcal { color:#86868b; }
 .km-warn { margin:0 0 12px; padding:12px 14px; border-radius:14px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; font-size:13px; line-height:20px; }
-.km-stale-toggle,.km-cta { margin-top:8px; height:36px; padding:0 12px; border:0; border-radius:10px; background:#1d1d1f; color:#fff; font:700 13px/16px inherit; cursor:pointer; }
+.km-stale-toggle,.km-cta { margin-top:8px; height:36px; padding:0 12px; border:0; border-radius:10px; background:#1d1d1f; color:#fff; font-family:inherit; font-weight:700; font-size:13px; line-height:16px; cursor:pointer; }
 .km-cta.is-ghost { background:#fff; color:#1d1d1f; border:1px solid #d2d2d7; }
 .gg-card { scroll-margin-top:calc(var(--gg-nav-offset, 0px) + 16px); }
 /* The days (owner 2026-11-03): this week's and next week's tiles, styled as the cafeteria strip (.km-day). */
@@ -97,7 +97,8 @@
 .gg-card-badges { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; min-height:22px; }
 /* The dish is the row's bold line. */
 .gg-food-primary { display:inline-flex; align-items:baseline; min-width:0; max-width:100%; font-size:16px; font-weight:800; line-height:22px; letter-spacing:-.02em; color:#1d1d1f; }
-.gg-food-primary span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+/* The dish wraps to a second line rather than being cut ("Lunch boxes · Refreshm…" at 390, 2026-11-05). */
+.gg-food-primary span { min-width:0; word-break:keep-all; overflow-wrap:anywhere; }
 /* Food stated only in an attached poster: a quieter part of the same label, never ellipsized. */
 .gg-food-primary .gg-food-source { flex-shrink:0; overflow:visible; margin-left:4px; font-size:12px; font-weight:600; color:#86868b; }
 /* A giveaway (prize draw or gift): its own hue, apart from every food colour, and always labelled. */

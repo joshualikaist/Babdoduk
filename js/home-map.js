@@ -2,8 +2,9 @@
    photo collage was, with a pin on each event of the day the calendar shows (babdoduk:day from
    js/home-calendar.js). Wider than 720 px it sits beside the copy and wakes when it is on screen;
    on phones only the "지도 보기" button shows, and the map opens in a full-screen dialog.
-   "일정에서 보기" on a pin's card asks the calendar to open that event (babdoduk:show). */
-import { mount } from './campus-map.js';
+   "일정에서 보기" on a pin's card asks the calendar to open that event (babdoduk:show).
+   js/campus-map.js and the Three.js files under it (about 2.4 MB) are imported only when the map
+   wakes, so a phone that never opens the map does not download them. Until then the poster shows. */
 
 const section = document.getElementById('homeMap');
 const frame = document.getElementById('homeMapFrame');
@@ -19,23 +20,26 @@ function t(key, fallback) {
 }
 
 let map = null;
+let loading = null;
 function openDialog() {
   dialog.querySelector('.home-map-dialog-body').appendChild(frame);
   dialog.showModal();
   ensure();
 }
 function ensure() {
-  if (map || !stage) return map;
-  map = mount(stage, {
-    lang, t,
-    onOpen(id) {
-      if (dialog && dialog.open) dialog.close();
-      document.dispatchEvent(new CustomEvent('babdoduk:show', { detail: { id } }));
-    },
-    onFull: dialog && typeof dialog.showModal === 'function' ? openDialog : null,
-  });
-  if (window.babdodukCalendarDay) map.show(window.babdodukCalendarDay);
-  return map;
+  if (map || loading || !stage) return;
+  loading = import('./campus-map.js').then(({ mount }) => {
+    map = mount(stage, {
+      lang, t,
+      onOpen(id) {
+        if (dialog && dialog.open) dialog.close();
+        document.dispatchEvent(new CustomEvent('babdoduk:show', { detail: { id } }));
+      },
+      onFull: dialog && typeof dialog.showModal === 'function' ? openDialog : null,
+    });
+    // Days the calendar announced while the module loaded are in babdodukCalendarDay.
+    if (window.babdodukCalendarDay) map.show(window.babdodukCalendarDay);
+  }).catch(() => { loading = null; });   // the poster stays; the next wake tries again
 }
 
 if (stage) {

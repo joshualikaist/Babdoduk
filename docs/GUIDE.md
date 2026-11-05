@@ -5,7 +5,7 @@
 **KAIST 중심의 음식 플랫폼입니다.** 오늘 캠퍼스에서 먹을 수 있는 것(학식·무료 음식 일정)을 확인하고,
 못 정했다면 메뉴를 고르고, 음식 이야기와 밥도둑의 활동을 읽는 사이트입니다.
 
-공개 사이트: **https://babdoduk.vercel.app** (`main` 브랜치)
+공개 사이트: **https://www.babdodukms.com** (`main` 브랜치, 2026-11-02부터; 예전 주소 https://babdoduk.vercel.app 도 열림)
 
 무료 일정 아래 **먹거리 소식**을 별도 `news.json`으로 표시합니다(2026-09-30부터 production). 식당 개점·영업 변경은 무료 음식 수에 포함하지 않습니다. [출처 검증과 운영](CAMPUS_FOOD_NEWS.md).
 
@@ -19,12 +19,12 @@
 | **KAIST 학식** | `ggongbab.html#menu` (학식 탭) | 이번 주 학식 메뉴는? (월–일, 날짜를 골라 봄) | `data/kaist-menu/` 날짜별 파일·`week.json`·`latest.json`(오늘) (생성, AI 없음) |
 | **밥도둑 매거진** | `mukbang.html` | 요리 비법·유행·건강·식습관 네 갈래의 원문 출처 이야기. 유행은 근거(원문 주장·여러 매체·조회수·판매 수치)가 있을 때만, 식습관은 날짜가 있는 조사·기사·연구만 | `data/magazine/` (생성, 원문 링크가 있는 글만) |
 | **오늘 뭐 먹지** (상단 메뉴, 2026-11-04) | `choose.html` | 고르기 귀찮을 땐 버튼 하나: 먹방 월드컵의 뽑기 기계가 학식이나 배달 메뉴 하나를 뽑아 준다 (2026-11-05) | 오늘 학식 `data/kaist-menu/`, 배달 종류와 메뉴는 `data/foods/` 카탈로그 제안(판매 여부 확인이 아님). 옛 `mukbang.html#what` 은 여기로 이동. [docs/PICK.md](PICK.md) |
-| **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `event.html` 안에 직접 작성 |
+| **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `data/content/events.json` (sync 가 `event.html` 에 씀) |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 
 먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
 
-홈(`index.html`)은 오늘의 꽁밥과 메뉴 고르기(`choose.html`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
+홈(`index.html`)은 오늘의 꽁밥과 메뉴 뽑기(`choose.html`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
 학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에는 아무것도 두지 않습니다(01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식은 소유자 결정으로 2026-11-02 에 없앴습니다). `history.html` 은 밥도둑이 걸어온 길입니다.
 
 ### 섞지 않는 두 가지
@@ -51,6 +51,7 @@
 
 - 화면은 정적 HTML·CSS·JS 이고 빌드 단계가 없습니다. 공통 내비·푸터·토큰은 `css/site.css` 가 맡습니다.
 - 브라우저는 같은 사이트의 정적 파일만 읽습니다. DB 접속·API 키·백엔드 호출이 없습니다.
+  예외는 꽁밥 제보(`tip.html`) 하나로, 공개 키로 검사하는 함수만 부릅니다(AGENTS.md, `docs/GGONGBAB_TIPS.md`).
 - `main` 에 push(merge)하면 Vercel Git 연동이 production 을 배포합니다. `lab` 은 본편 기준선에 lab 전용 실험을 더한
   스테이징이며, **제품 변경은 반드시 lab 을 거쳐 본편에 갑니다**(§11).
 
@@ -97,20 +98,20 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 
 | 파일 | 역할 |
 |------|------|
-| **`index.html`** | 홈 — 에디토리얼 히어로(오늘의 꽁밥·메뉴 고르기, 넓은 화면에서만 옆에 분위기 사진: 720px 이하 휴대폰에서는 2026-11-03 소유자 결정으로 뺌) 바로 아래 **오늘의 꽁밥 달력**(오늘 한 줄 요약, 일요일 시작 KST 월 달력, 고른 날의 일정, 다가오는 꽁밥; `js/home-calendar.js`, `docs/HOME_CALENDAR.md`)과 학식 한 줄. 그 아래는 없다(01 오늘 먹기·02 읽어보기·03 밥도둑 소식은 2026-11-02 소유자 결정으로 없앰; 맛집 지도·역사는 더보기에, 매거진과 소식은 위 메뉴에 그대로 있다. 인스타그램은 2026-11-05부터 더보기 대신 맨 위 왼쪽 Babdoduk 옆의 로고 링크다) |
+| **`index.html`** | 홈 — 에디토리얼 히어로(오늘의 꽁밥·오늘 뭐 먹지 버튼; 넓은 화면에서는 옆에 **3D 꽁밥 지도**, 720px 이하 휴대폰은 '꽁밥 지도' 버튼이 지도를 창으로 연다: `js/home-map.js`, `js/campus-map.js`, `docs/CAMPUS_MAP.md`) 바로 아래 **오늘의 꽁밥 달력**(오늘 한 줄 요약, 일요일 시작 KST 월 달력, 고른 날의 일정, 다가오는 꽁밥; `js/home-calendar.js`, `docs/HOME_CALENDAR.md`)과 학식 한 줄. 고른 날의 꽁밥이 4개 이상이면 그 목록이 세 줄 높이에서 안쪽으로 스크롤된다(2026-11-05). 그 아래는 없다(01 오늘 먹기·02 읽어보기·03 밥도둑 소식은 2026-11-02 소유자 결정으로 없앰; 매거진·역사·맛집 지도는 더보기에, 소식은 위 메뉴에 있다. 인스타그램은 2026-11-05부터 더보기 대신 맨 위 왼쪽 Babdoduk 옆의 로고 링크다) |
 | **`food.html`** | 먹방 가계부 — **공개 전, 실험실 전용**(`noindex, nofollow`, 공개 링크 없음, `lab.html` 에서 진입). 밥도둑 공개 기록(`data/food-log.json`)과 이 브라우저 기록(`localStorage` `babdoduk-food-local`)을 합쳐 월/주 합계·달력으로 표시. 기록 주체는 소유자 결정 대기 |
 | **`event.html`** | 밥도둑 소식 — **지금**(작성된 공지와 진행 중·예정 활동, 없으면 “예정된 활동 없음”)과 **지난 활동**(날짜·제목·짧은 상태·당시 게시물). Instagram 링크는 목록 아래 한 줄로 따로 있다. 날짜 구간과 확인 상태는 따로 계산하고, 날짜가 지났다고 진행됐다고 하지 않는다. 당시 안내 전문은 “자세히” 안에 (`css/event.css`, `docs/EVENT_DETAIL_FIELDS.md`) |
-| **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리. **원문 출처가 있는 글만** 싣고(‘밥도둑 데스크’ 대체 글 없음), 갈래마다 5건을 싣는다(새 글 먼저, 모자라면 아직 싣지 않은 예전 글). 그래도 모자란 갈래는 있는 만큼 싣고 수집 보고(`research/magazine/health.json`)에 경고로 남긴다. 대표 글은 근거가 있는 요즘 유행 글이면 “지금 뜨는 먹거리”, 아니면 “오늘의 추천 글”로 표시하고, 자기 이미지가 없으면 글만 있는 히어로. YouTube 는 운영 PC 의 로컬 수집(`scripts/magazine_local_discovery.py`, 수집만 하고 발행하지 않음)으로 들어온다. 첫 화면의 대표 글 옆(좁은 화면에서는 바로 아래) `#what` 에 **메뉴 고르기**(“오늘 뭐 먹지?” 슬롯, 카탈로그 제안), 네 갈래 아래에 날짜가 붙은 오늘 학식 요약(`#kaistToday`). 수집·선정 방식은 `docs/MAGAZINE_DISCOVERY.md` |
+| **`mukbang.html`** | 02 밥도둑 매거진 — `data/magazine/`의 네 세로 카테고리. **원문 출처가 있는 글만** 싣고(‘밥도둑 데스크’ 대체 글 없음), 갈래마다 5건을 싣는다(새 글 먼저, 모자라면 아직 싣지 않은 예전 글). 그래도 모자란 갈래는 있는 만큼 싣고 수집 보고(`research/magazine/health.json`)에 경고로 남긴다. 대표 글은 근거가 있는 요즘 유행 글이면 “지금 뜨는 먹거리”, 아니면 “오늘의 추천 글”로 표시하고, 자기 이미지가 없으면 글만 있는 히어로. YouTube 는 운영 PC 의 로컬 수집(`scripts/magazine_local_discovery.py`, 수집만 하고 발행하지 않음)으로 들어온다. 첫 화면의 대표 글 옆(좁은 화면에서는 바로 아래) `#what` 은 오늘 뭐 먹지(`choose.html`)로 가는 카드이고 옛 `#what` 주소는 그리로 이동, 네 갈래 아래에 날짜가 붙은 오늘 학식 요약(`#kaistToday`). 수집·선정 방식은 `docs/MAGAZINE_DISCOVERY.md` |
 | **`choose.html`** | 오늘 뭐 먹지 — 버튼 하나와 캡슐 뽑기 기계(`js/pick.js`), 학식 또는 배달 메뉴. 추천기는 이것 하나 |
-| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 행사는 "시각 · 음식 · 제목 · 장소" 한 줄이고 누르면 펼쳐짐(2026-11-05). 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 변경 시각을 표시. 목록 아래 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)은 버튼 하나로 접혀 있음. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
+| **`ggongbab.html`** | **오늘의 꽁밥** — 공개된 현재·예정 꽁밥 피드 + KAIST 학식. 날짜 칸 없이 오늘부터 예정된 전체를 날짜 제목 아래 보여 주고, 행사는 "시간 칸 | 음식(굵게) / 제목·장소(작게)"이며 누르면 펼쳐짐(2026-11-05). 끝난 일정은 목록에서 자동으로 빠지며, 목록 위에 마지막 변경 시각을 표시. 목록 아래 “지난 꽁밥 기록”(최근 30일, 신청 링크 없음)은 버튼 하나로 접혀 있음. `#menu`/`#free`로 탭을 바로 열 수 있음 (`css/ggongbab.css`, `js/ggongbab.js`, `js/kaist-menu.js`) |
 | **`history.html`** | 밥도둑의 역사 — 연도별 타임라인 (`data/content/history.json` 에서 동기화) |
 | **`worldcup.html`** | 밥도둑 먹방 월드컵 — 밥도둑 소식의 활동에서 여는 놀이. `data/content/worldcup.json` 의 메뉴 700여 개(음식 사전 id, 같은 요리는 5개까지 — `scripts/page_content.py` `SAME_DISH`) 중 매 판 32개를 뽑아 둘씩 고르고(시작 화면: 카드 둘레에 떠 있는 음식 사진, "오늘의 32강, 뭐가 나올까?", 이모지 카테고리 타일 8개와 🙈 아무거나, 다음 판에 실제로 나오는 메뉴 사진 다섯 장, 숨 쉬는 🎰 시작 버튼 — 시작하면 약 5초 캡슐 뽑기 장면, 이어하기에는 없음, 탭이나 키로 건너뜀; 고른 카드에 효과, 8강부터 새 라운드마다 검은 화면에 라운드 이름이 찍히는 장면 — 결승은 두 메뉴가 부딪히는 VS 장면, 탭이나 키로 건너뜀, 동작 줄이기면 없음 — 우승 때 폭죽과 인스타 스토리 카드 저장·공유, 친구 도전 링크 — `docs/WORLDCUP_SHARE.md`), 진행과 우승 기록은 이 브라우저(localStorage `babdoduk-worldcup`)에만 남는다. 메뉴마다 위키미디어 공용의 자유 이용 사진(`images/worldcup/`, 작가·라이선스를 사진 아래 표시). 경품 없음 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 | **`tip.html`** | 꽁밥 제보 게시판 — 2026-11-02 부터 공개 페이지(모든 페이지 더보기의 "꽁밥 제보"에서 진입, `noindex, nofollow`). 방문자가 모르는 오프라인 꽁밥을 사진과 함께 보내고, 소유자가 하루 한 번 확인한 제보만 게시판에 올라간다(`docs/GGONGBAB_TIPS.md`) |
 
-상단 내비: 오늘의 꽁밥(꽁밥·학식) · 밥도둑 매거진(메뉴 고르기 포함) · 소식·이벤트(2026-10-13 소유자 결정으로 더보기에서 꺼냄) · 더보기(역사·꽁밥 제보·지도·SNS) · 언어(EN/한국어). 푸터: 오늘의 꽁밥 · 밥도둑 매거진 · 소식·이벤트 · 역사. 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
-휴대폰(폭 520px 이하)에서는 위 줄에 ☰ 메뉴 버튼 · 워드마크 · 언어만 둡니다. ☰ 를 누르면 왼쪽에서 메뉴 판이 열려 오늘의 꽁밥 · 밥도둑 매거진 · 소식·이벤트, 그 아래 줄을 그어 역사 · 꽁밥 제보 · 지도 · 인스타그램이 한 줄씩(글씨 16px, 칸 높이 52px) 나오고, 지금 페이지는 강조색으로 표시됩니다. 나머지 화면은 어두워지고, 그곳을 누르거나 Esc, 메뉴를 고르면 닫힙니다(2026-11-02 소유자 결정, "버튼이 다닥다닥 붙어있거든", "어떤 버튼을 누르면 이렇게 왼쪽에 탭이 뜨도록").
+상단 내비: Babdoduk 워드마크와 바로 옆 인스타그램 로고(새 창, 2026-11-05) · 오늘의 꽁밥(꽁밥·학식) · 오늘 뭐 먹지(2026-11-04) · 소식·이벤트(2026-10-13 소유자 결정으로 더보기에서 꺼냄) · 더보기(밥도둑 매거진·역사·꽁밥 제보·맛집 지도) · 언어(EN/한국어). 푸터: 오늘의 꽁밥 · 밥도둑 매거진 · 소식·이벤트 · 역사. 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
+휴대폰(폭 520px 이하)에서는 위 줄에 ☰ 메뉴 버튼 · 워드마크와 인스타그램 로고 · 언어만 둡니다. ☰ 를 누르면 왼쪽에서 메뉴 판이 열려 오늘의 꽁밥 · 오늘 뭐 먹지 · 소식·이벤트, 그 아래 줄을 그어 밥도둑 매거진 · 역사 · 꽁밥 제보 · 맛집 지도가 한 줄씩(글씨 16px, 칸 높이 52px) 나오고, 지금 페이지는 강조색으로 표시됩니다. 나머지 화면은 어두워지고, 그곳을 누르거나 Esc, 메뉴를 고르면 닫힙니다(2026-11-02 소유자 결정, "버튼이 다닥다닥 붙어있거든", "어떤 버튼을 누르면 이렇게 왼쪽에 탭이 뜨도록").
 babdoduk-lab 주소에서만 모든 페이지의 더보기에 실험실 · 꽁밥 실험 · 카드뉴스가 붙습니다(`js/site.js`).
 언어는 `localStorage` 키 `babdoduk-lang`(`ko`/`en`)으로 모든 페이지가 공유합니다.
 홈은 첫 방문 환영 팝업을 띄우지 않습니다(핵심 과업을 가리지 않기 위해). 기존 `babdoduk-welcome-snooze-until` 값은 남아 있어도 무해합니다.
@@ -139,13 +140,15 @@ babdoduk-lab 주소에서만 모든 페이지의 더보기에 실험실 · 꽁�
 | `data/ggongbab/latest.json` | 꽁밥 파이프라인 | 공개 피드(현재·예정). 아래 §3 참고 |
 | `data/ggongbab/archive/index.json` | 꽁밥 파이프라인 | 지난 꽁밥 기록: 공개됐다가 끝난 행사, 최근 30일. 첫 export 뒤에 생김 |
 
+음식 카탈로그(`data/foods/`), 공용 라벨·소식·역사(`data/content/`), 캠퍼스 지도(`data/campus/`), 번역(`i18n/`)까지 전체 계약은 [docs/DATA.md](DATA.md)에 있습니다.
+
 생성 JSON은 Action이 lab·main에 **같은 파일만** 푸시합니다. 기능 브랜치를 매일 merge하지 않습니다.
 
 ---
 
 ## 3. 오늘의 꽁밥 파이프라인
 
-KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(메뉴 고르기)은 이 페이지의 가용 정보와 섞지 않고 `mukbang.html#what`으로 연결만 합니다.
+KAIST 학식 메뉴와 공개 조건을 통과한 꽁밥 행사를 한 페이지(`ggongbab.html`)에 모읍니다. 음식 추천(오늘 뭐 먹지)은 이 페이지의 가용 정보와 섞지 않고 `choose.html` 로 연결만 합니다.
 
 - **꽁밥** — 무료 식사·간식·다과가 명시된 교내 행사
 - **KAIST 학식** — 공식 학식 JSON (`data/kaist-menu/latest.json`). AI를 쓰지 않습니다.
@@ -235,8 +238,8 @@ fallback을 켜면 `fallbackAttempted` / `fallbackImproved` / `fallbackSame` / `
 종료 후 6시간이 넘은 행을 거부합니다. 지난 행사를 `latest.json` 에 다시 넣지 않습니다(`docs/GGONGBAB_PAGE.md` 11절).
 끝난 행사는 같은 export 가 `data/ggongbab/archive/index.json` 에 따로 씁니다. 같은 공개 자격·같은 종료 규칙·같은 시각을 쓰고,
 직전에 공개 파일에 실렸던 행만, 최근 30일만 넣으며, 신청 정보는 뺍니다. Supabase 스키마는 그대로입니다.
-main의 공개 화면은 정적 `data/ggongbab/latest.json` 만 읽습니다. 공개 DB projection과
-브라우저 Realtime은 **Lab-only / main 미반영**이며, 그 운영 기록(2026-09-23)은 lab 브랜치의
+main의 공개 화면은 정적 `data/ggongbab/latest.json` 만 읽습니다. 공개 DB projection 동기화(`scripts/sync_public_feed.py`)는
+2026-10-13부터 main 의 ggongbab-refresh 에서도 돌지만, 그것을 읽는 브라우저 Realtime은 **Lab-only / main 미반영**이며, 그 운영 기록(2026-09-23)은 lab 브랜치의
 `docs/GGONGBAB_PUBLIC_FEED.md` 에 있습니다. 현재 화면 상태는 발행 산출물과 실제 배포 환경에서 확인합니다.
 
 ---
@@ -627,7 +630,7 @@ python scripts\check_ggongbab_ui.py --serve     # 127.0.0.1 로만 연다
 ```powershell
 python scripts\check_ggongbab_ui.py            # fixture + 본편 검사
 python scripts\check_ggongbab_ui.py --preview  # preview 데이터까지 포함
-python scripts\check_site_ui.py                # 9개 HTML의 scrollbar·overflow·nav 검사, 공통 chrome 가디언·시각 기준
+python scripts\check_site_ui.py                # 추적되는 모든 공개 HTML의 scrollbar·overflow·nav 검사, 공통 chrome 가디언·시각 기준
 ```
 
 390 / 430 / 1440 세 뷰포트에서 좌표·가로 스크롤·말줄임·sticky 필터를 확인하고,
@@ -666,18 +669,18 @@ python scripts/check_site_ui.py      # --screenshots 로 .local/site-ui-shots/ �
 python scripts/check_ggongbab_ui.py
 ```
 
-`check_site_ui.py` 는 9개 페이지 × 5개 폭(1920·1440·768·390·360)의 가로 넘침, Windows 스크롤바,
+`check_site_ui.py` 는 추적되는 모든 공개 페이지(lab 12, main 11) × 5개 폭(1920·1440·768·390·360)의 가로 넘침, Windows 스크롤바,
 공통 내비·푸터 계약과 함께 다음을 확인합니다: 홈 요약의 날짜·공개 조건, 매거진 학식 요약(`#kaistToday`)의 stale 표시와
-이스케이프, 메뉴 고르기의 이유·범위 안내·"먹었어요"와 선택의 분리, 추천기가 `choose.html` 하나뿐이고 옛 `mukbang.html#what` 이 그리로 이동하는지,
+이스케이프, 오늘 뭐 먹지의 뽑기 기계(버튼 하나, 결과가 메뉴 이름을 말하는지), 추천기가 `choose.html` 하나뿐이고 옛 `mukbang.html#what` 이 그리로 이동하는지,
 매거진이 원문 출처 글만 보여 주는지(빈 갈래·글만 있는 히어로·편집본 실패), 가계부가 공개 페이지에 링크되지 않고 noindex 인지,
-홈 소식의 현재 정보/지난 기록 구분, 이벤트 날짜 구간과 확인 상태·지난 일정 링크와 참여 방법 표시, 가계부 출처 표시,
+홈에 예전 소식 묶음이 없는지, 꽁밥 제보 게시판, 먹방 월드컵, 역사, 이벤트 날짜 구간과 확인 상태·지난 일정 링크와 참여 방법 표시, 가계부 출처 표시,
 한·영 양쪽의 랜드마크·이름·터치 크기, 데이터가 모두 실패할 때의 안내.
 
 이 검사들은 결과가 매번 같도록 오프라인이며 웹 폰트를 막습니다. 그래서 실제 폰트에서만 생기는 가로 넘침
 (예: 2026-09 영어 필터 칩, 390·360px)은 따로 확인합니다.
 
 ```powershell
-python scripts/check_real_fonts.py   # 7개 페이지(choose 이동·실험실 전용 food 포함) × 한·영 × 390·360·1440, Google Fonts 만 허용
+python scripts/check_real_fonts.py   # 7개 페이지(choose·실험실 전용 food 포함) × 한·영 × 390·360·1440, Google Fonts 만 허용
 ```
 
 폰트가 실제로 로드된 캡처만 인정합니다. 넘침이나 페이지 오류가 있으면 FAIL(종료 코드 1), 폰트를 못 받았으면 결과를
@@ -809,18 +812,21 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `CONTRIBUTING.md` | 기여 안내(자료원 제안, `scripts/check_source.py`) |
 | `docs/CAMPUS_FOOD_NEWS.md` | 먹거리 소식(꽁밥과 분리된 뉴스) |
 | `docs/PICK.md` | 오늘 뭐 먹지: 메뉴 뽑기(캡슐 기계) |
-| `docs/CAMPUS_MAP.md` | 3D 캠퍼스 지도(진행 중): 결정, 단계, 건물 표와 행사 위치 찾기 |
+| `docs/CAMPUS_MAP.md` | 3D 캠퍼스 지도(홈, 2026-11-05 main): 결정, 단계, 건물 표와 행사 위치 찾기 |
 | `docs/PUBLIC_EXPOSURE.md` | 공개 범위와 권리 표시: LICENSE, 데이터 허용 사이트, robots.txt, 공개 칸 |
 | `docs/GGONGBAB_DISCOVERY.md` | 꽁밥 레이더·근거·평가 |
 | `docs/GGONGBAB_TRIGGER.md` | 저지연 새로고침 트리거(Option A, 미활성) |
 
 lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 projection),
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
-`GGONGBAB_RESIDENT_OPS.md`(Windows 상주 worker). 해당 기능이 main에 승격될 때 함께 옮깁니다.
+`GGONGBAB_RESIDENT_OPS.md`(운영 PC 상주 worker, 2026-10-17부터 리눅스), `INSTAGRAM_RADAR.md`(인스타 레이더),
+`GGONGBAB_ALERTS.md`(운영 알림), `PORTAL_EASY_LOGIN_ASSIST.md`(간편 로그인 도움), `INSTAGRAM_SOURCES.md`(인스타 계정 목록),
+`WORLDCUP_STATS.md`(월드컵 모두의 랭킹), `PICK_STATS.md`(오늘 뭐 먹지 모두의 취향), `OPS_AGENT.md`(운영 자동 점검), `CARDNEWS.md`(주간 꽁밥 카드뉴스). 해당 기능이 main에 승격될 때 함께 옮깁니다.
 
 ## 15. 라이선스
 
-- **코드:** 이 저장소의 소스 코드는 [MIT 라이선스](../LICENSE)입니다.
+- **권리 고지:** 2026-11-04부터 코드·문서·디자인·글과 사이트가 공개하는 데이터는 모두 권리가 보호됩니다
+  (All rights reserved, [LICENSE](../LICENSE)). 그 전 커밋은 MIT 고지로 공개됐습니다. 공개 범위는 `docs/PUBLIC_EXPOSURE.md`.
 - **매거진 자료원 등록부** `scripts/discovery/sources.json`: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)입니다.
   누구나 출처 표시 없이 다시 쓸 수 있습니다.
 - **라이선스가 주어지지 않는 것:** 다음은 각 권리자에게 있습니다.
@@ -830,4 +836,4 @@ lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 pr
     밥도둑은 링크와 한 문장만 싣습니다.
   - 다른 곳에서 가져온 글꼴·라이브러리. 각자의 라이선스를 따릅니다.
 
-기여는 같은 조건으로 받습니다(`CONTRIBUTING.md`).
+기여 조건은 `CONTRIBUTING.md` 에 있습니다(코드·글 기여는 밥도둑에서 쓸 수 있는 이용 허락, 자료원 등록부는 CC0).
