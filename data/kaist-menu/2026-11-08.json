@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "date": "2026-11-08",
   "dateLabel": "11월 8일",
-  "fetchedAt": "2026-11-05T00:24:23+09:00",
+  "fetchedAt": "2026-11-05T17:10:09+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "status": "AVAILABLE",
   "coverage": {
@@ -27,7 +27,7 @@
           "도시락김/숭늉",
           "(672Kcal)"
         ],
-        "price": "",
+        "price": "3,500원",
         "kcal": ""
       },
       "lunch": {

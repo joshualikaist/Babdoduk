@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T16:26:12+09:00",
+  "generatedAt": "2026-11-05T16:51:26+09:00",
   "adapters": {
     "blog-irisblossomlife": {
       "type": "rss",
@@ -7,7 +7,7 @@
       "code": null,
       "items": 50,
       "status": "STALE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2024-10-07T08:00:48+09:00"
@@ -18,7 +18,7 @@
       "code": null,
       "items": 10,
       "status": "STALE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2025-03-22T02:34:09+09:00"
@@ -29,7 +29,7 @@
       "code": null,
       "items": 25,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2026-10-16T19:00:45+09:00"
@@ -40,7 +40,7 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2026-10-27T20:41:00+09:00"
@@ -51,7 +51,7 @@
       "code": null,
       "items": 25,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2026-09-10T16:04:04+09:00"
@@ -62,10 +62,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-02T23:30:00+09:00"
+      "newestItemAt": "2026-11-04T23:30:00+09:00"
     },
     "blog-justonecookbook": {
       "type": "rss",
@@ -73,7 +73,7 @@
       "code": null,
       "items": 40,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2026-11-02T22:00:00+09:00"
@@ -84,10 +84,10 @@
       "code": null,
       "items": 10,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T07:00:20+09:00"
+      "newestItemAt": "2026-11-05T07:00:30+09:00"
     },
     "blog-twins0807": {
       "type": "rss",
@@ -95,10 +95,10 @@
       "code": null,
       "items": 10,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-03T19:37:36+09:00"
+      "newestItemAt": "2026-11-04T20:20:29+09:00"
     },
     "blog-seon1982": {
       "type": "rss",
@@ -106,10 +106,10 @@
       "code": null,
       "items": 5,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T00:00:58+09:00"
+      "newestItemAt": "2026-11-05T00:00:58+09:00"
     },
     "blog-dalsoonlife": {
       "type": "rss",
@@ -117,7 +117,7 @@
       "code": null,
       "items": 15,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2026-11-02T15:33:33+09:00"
@@ -128,10 +128,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T00:00:32+09:00"
+      "newestItemAt": "2026-11-05T00:00:56+09:00"
     },
     "news-thinkfood": {
       "type": "rss",
@@ -139,10 +139,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T07:55:00+09:00"
+      "newestItemAt": "2026-11-05T14:13:22+09:00"
     },
     "news-foodnews": {
       "type": "rss",
@@ -150,10 +150,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-05T00:49:59+09:00"
+      "newestItemAt": "2026-11-06T01:23:23+09:00"
     },
     "news-foodbank": {
       "type": "rss",
@@ -161,10 +161,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-03T23:51:59+09:00"
+      "newestItemAt": "2026-11-06T01:41:09+09:00"
     },
     "news-fsnews": {
       "type": "rss",
@@ -172,10 +172,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-05T01:08:04+09:00"
+      "newestItemAt": "2026-11-05T06:41:00+09:00"
     },
     "news-yna-industry": {
       "type": "rss",
@@ -205,10 +205,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T16:04:00+09:00"
+      "newestItemAt": "2026-11-05T16:37:58+09:00"
     },
     "news-newsis-health": {
       "type": "rss",
@@ -216,10 +216,10 @@
       "code": null,
       "items": 100,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T16:26:00+09:00"
+      "newestItemAt": "2026-11-05T16:47:19+09:00"
     },
     "news-donga-health": {
       "type": "rss",
@@ -249,10 +249,10 @@
       "code": null,
       "items": 20,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T17:00:00+09:00"
+      "newestItemAt": "2026-11-05T17:00:00+09:00"
     },
     "news-ikunkang-life": {
       "type": "rss",
@@ -260,7 +260,7 @@
       "code": null,
       "items": 20,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
       "newestItemAt": "2026-11-04T17:00:00+09:00"
@@ -271,10 +271,10 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T16:00:00+09:00"
+      "newestItemAt": "2026-11-05T16:31:13+09:00"
     },
     "news-ladykhan-living": {
       "type": "rss",
@@ -304,29 +304,29 @@
       "code": null,
       "items": 50,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": null,
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T23:00:00+09:00"
+      "newestItemAt": "2026-11-05T20:00:00+09:00"
     },
     "web-exa-trend": {
       "type": "web_search",
       "adapter": "OK",
       "code": null,
-      "items": 39,
+      "items": 41,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": "2026-09-29T15:15:07+09:00",
       "failureCount": 0,
-      "newestItemAt": "2026-11-04T15:57:00+09:00"
+      "newestItemAt": "2026-11-05T12:00:00+09:00"
     },
     "web-exa-habit": {
       "type": "web_search",
       "adapter": "OK",
       "code": null,
-      "items": 52,
+      "items": 47,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": "2026-09-29T15:15:07+09:00",
       "failureCount": 0,
       "newestItemAt": "2026-10-31T12:00:00+09:00"
@@ -359,7 +359,7 @@
       "code": null,
       "items": 6,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00",
       "failureCount": 0,
       "newestItemAt": "2026-11-03T19:22:59+09:00"
@@ -370,10 +370,10 @@
       "code": null,
       "items": 6,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00",
       "failureCount": 0,
-      "newestItemAt": "2026-11-03T20:00:14+09:00"
+      "newestItemAt": "2026-11-05T10:00:13+09:00"
     },
     "yt-haruhankki": {
       "type": "youtube_channel",
@@ -381,7 +381,7 @@
       "code": null,
       "items": 6,
       "status": "STALE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00",
       "failureCount": 0,
       "newestItemAt": "2026-03-03T22:58:09+09:00"
@@ -392,10 +392,10 @@
       "code": null,
       "items": 6,
       "status": "ACTIVE",
-      "lastSuccessAt": "2026-11-04T16:26:12+09:00",
+      "lastSuccessAt": "2026-11-05T16:51:26+09:00",
       "lastFailureAt": "2026-10-12T15:44:20+09:00",
       "failureCount": 0,
-      "newestItemAt": "2026-10-24T20:36:08+09:00"
+      "newestItemAt": "2026-11-04T22:00:03+09:00"
     },
     "instagram-opencli": {
       "type": "instagram",
@@ -465,13 +465,13 @@
         "yt-search"
       ]
     },
-    "duplicates": 14,
-    "rejected": 2266,
-    "new": 279,
-    "candidates": 3484,
+    "duplicates": 16,
+    "rejected": 2263,
+    "new": 294,
+    "candidates": 3510,
     "page_lookups": 2,
-    "validated": 4,
-    "pruned": 268,
+    "validated": 6,
+    "pruned": 218,
     "selected": 20,
     "fabricated": 0,
     "staleSources": [
@@ -491,54 +491,54 @@
   },
   "lanes": {
     "trend": {
-      "qualifying": 516,
-      "discoveredForLane": 151,
+      "qualifying": 535,
+      "discoveredForLane": 153,
       "notQualifying": {
         "AD_OR_SPONSORED": 1,
-        "ASSIGNED_HABIT": 3,
+        "ASSIGNED_HABIT": 4,
         "ASSIGNED_TIPS": 3,
+        "BUSINESS_NEWS": 1,
         "COMMERCE_PAGE": 2,
         "DUPLICATE": 2,
-        "NOT_FOOD": 9,
-        "NO_DATE": 26,
-        "NO_QUALIFYING_LANE": 31,
+        "NOT_FOOD": 8,
+        "NO_DATE": 30,
+        "NO_QUALIFYING_LANE": 30,
         "NO_SOURCE_TEXT": 2,
         "NO_TITLE": 2,
         "NO_TREND_EVIDENCE": 9,
         "PROMOTION": 7,
-        "TOO_OLD": 10,
-        "TOO_OLD_FOR_TREND": 10,
+        "TOO_OLD": 8,
+        "TOO_OLD_FOR_TREND": 11,
         "WEAK_TIER_C": 1
       }
     },
     "tips": {
-      "qualifying": 350,
+      "qualifying": 354,
       "discoveredForLane": 0,
       "notQualifying": {}
     },
     "health": {
-      "qualifying": 233,
+      "qualifying": 234,
       "discoveredForLane": 0,
       "notQualifying": {}
     },
     "habit": {
-      "qualifying": 105,
-      "discoveredForLane": 105,
+      "qualifying": 108,
+      "discoveredForLane": 109,
       "notQualifying": {
-        "ASSIGNED_TIPS": 1,
         "BUSINESS_NEWS": 1,
         "COMMERCE_PAGE": 1,
         "DUPLICATE": 1,
-        "NOT_BEHAVIOR_SOURCE": 9,
+        "NOT_BEHAVIOR_SOURCE": 8,
         "NOT_FOOD": 7,
         "NO_BEHAVIOR_EVIDENCE": 2,
-        "NO_DATE": 24,
-        "NO_QUALIFYING_LANE": 9,
-        "NO_TITLE": 4,
+        "NO_DATE": 27,
+        "NO_QUALIFYING_LANE": 10,
+        "NO_TITLE": 3,
         "OPINION_COLUMN": 1,
-        "PRODUCT_ANNOUNCEMENT_ONLY": 2,
-        "TOO_OLD": 34,
-        "TOO_OLD_FOR_HABIT": 1
+        "PRODUCT_ANNOUNCEMENT_ONLY": 3,
+        "TOO_OLD": 35,
+        "TOO_OLD_FOR_HABIT": 2
       }
     }
   },
