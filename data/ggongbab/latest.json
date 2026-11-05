@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T16:30:02+09:00",
+  "generatedAt": "2026-11-05T18:01:29+09:00",
   "timezone": "Asia/Seoul",
-  "count": 43,
+  "count": 44,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -1352,6 +1352,53 @@
         "text": "로보틱스와 Physical AI에 관심 있는 대학원생과 연구자",
         "basis": "stated"
       }
+    },
+    {
+      "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
+      "title": "ChatGPT를 윤리적으로 활용한 영어 과학논문 작성(1),(2) 및 국제학술지 투고 전략",
+      "summary": "ChatGPT를 연구윤리에 따라 활용한 영어 과학논문 작성과 국제학술지 투고 전략을 다루는 온라인 특강입니다. 5차와 6차로 나누어 진행되며 수강자 전원에게 제작자료를 제공합니다.",
+      "startAt": "2026-11-20T14:00:00+09:00",
+      "endAt": "2026-11-27T16:00:00+09:00",
+      "dateText": "2026. 11. 20.(금), 2026. 11. 27.(금)",
+      "timeText": "14:00~16:00",
+      "location": {
+        "name": "온라인(Zoom)",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "KAIST 교수학습혁신센터",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/L3Z1pM8hgFR9aECe8"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "김준석 강사님 제작 자료"
+      },
+      "sessions": [
+        {
+          "startAt": "2026-11-20T14:00:00+09:00",
+          "endAt": "2026-11-20T16:00:00+09:00"
+        },
+        {
+          "startAt": "2026-11-27T14:00:00+09:00",
+          "endAt": "2026-11-27T16:00:00+09:00"
+        }
+      ]
     },
     {
       "id": "cf3bec49-11ec-4223-afa2-cf008e401ffa",
