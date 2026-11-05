@@ -201,10 +201,6 @@ body.mg-body .site-footer {
   color: #1e1d1a;
 }
 
-.mg-story--desk .mg-story-src b {
-  color: #6d665e;
-}
-
 .mg-story-out {
   color: var(--color-accent);
   font-weight: 700;
