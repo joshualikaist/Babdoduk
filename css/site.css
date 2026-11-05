@@ -836,6 +836,7 @@ body::after {
 }
 
 .footer-apple-fine {
+  word-break: keep-all;
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--color-divider);
@@ -859,6 +860,9 @@ body::after {
   }
 
   .footer-apple-col--left { order: 1; }
+  /* Narrow: the copyright and the contact are two centred lines, without a pipe left hanging. */
+  .footer-apple-col--left { flex-direction: column; }
+  .footer-apple-col--left .footer-apple-pipe { display: none; }
   .footer-apple-col--center { order: 2; }
   .footer-apple-col--right { order: 3; }
 }
@@ -870,6 +874,7 @@ body::after {
   height: 44px;
   padding: 0 18px;
   border-radius: 12px;
+  font-family: inherit;   /* a <button class="btn"> otherwise takes the browser's button font */
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.02em;

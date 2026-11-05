@@ -441,7 +441,7 @@ def test_english_strings(browser):
     assert day_title(page) == "Oct 7 (Wed)"
     assert page.locator(".hc-ev-time").first.inner_text() == "12:00"
     assert page.locator(".hc-ev-head").first.inner_text() == "Refreshments"
-    assert page.locator(".hc-ev-sub").first.inner_text() == "첫수융합포럼 · E11 101호 · Sign-up required"
+    assert page.locator(".hc-ev-sub").first.inner_text() == "첫수융합포럼 · E11 101호 · Sign-up needed"
     assert page.locator("#homeCalAll").inner_text() == "All events →"
     assert page.locator("#homeCalPublished").inner_text().startswith("Last changed Oct 1 (Thu)")
     page.locator("#langToggle").click()
@@ -595,7 +595,7 @@ def test_giveaway_english_strings(browser):
     assert cell(page, "2026-10-01").get_attribute("aria-label") == "Thursday, October 1, giveaways: 1"
     cell(page, "2026-10-09").click()
     assert page.locator(".hc-ev-head").all_inner_texts() == ["Sign up by 23:59"]
-    assert [m.lstrip(" ·") for m in page.locator(".hc-ev-meta").all_inner_texts()] == ["E11 101호 · 🎁 Giveaway · Sign-up required"]
+    assert [m.lstrip(" ·") for m in page.locator(".hc-ev-meta").all_inner_texts()] == ["E11 101호 · 🎁 Giveaway · Sign-up needed"]
     page.locator(".hc-ev-btn").click()
     assert "Giveaway: 커피 쿠폰" in page.locator(".hc-ev-detail").inner_text()
     cell(page, "2026-10-07").click()
