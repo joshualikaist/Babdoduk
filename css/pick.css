@@ -1,8 +1,9 @@
-/* 오늘 뭐 먹지 (choose.html, js/pick.js): three big choices, the world cup's roulette tiles (the light runs
-   through them and lands with a pop) and the result card; the slot reel comes from css/choose.css. */
+/* 오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-05): one button and the world cup's capsule machine
+   (css/worldcup.css .wc-gacha, the start gacha) on its night stage, then the card that names the pick.
+   The machine is 220 x 330 at --k = 1, as on the world cup; only transform and opacity move. */
 
 .pick-page {
-  width: min(960px, calc(100% - 48px));
+  width: min(640px, calc(100% - 32px));
   margin: 0 auto;
   padding: calc(var(--nav-h, 56px) + 32px) 0 72px;
 }
@@ -20,6 +21,7 @@
   margin: 8px 0 0;
   color: var(--color-ink-muted, #5a534a);
   font-size: 16px;
+  word-break: keep-all;
 }
 
 .pick-sound {
@@ -46,138 +48,255 @@
   color: var(--color-accent);
 }
 
-.pick-step {
-  margin: 32px 0 12px;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+/* The night stage (the world cup's start gacha, in the page instead of a popover). */
+.pick-stage {
+  position: relative;
+  height: 320px;
+  margin-top: 20px;
+  overflow: hidden;
+  border-radius: 28px;
+  background: radial-gradient(70% 60% at 50% 40%, #2b1755, #130d24 74%);
+  isolation: isolate;
 }
 
-.pick-modes {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+.pick-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 45% at 50% 58%, rgba(168, 85, 247, 0.36), rgba(236, 72, 153, 0.14) 55%, transparent 75%);
 }
 
-.pick-mode {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-height: 132px;
-  padding: 14px 8px;
-  border: 2px solid #efe6d6;
-  border-radius: 24px;
-  background: var(--color-surface);
-  color: var(--color-ink);
-  font: inherit;
+.pk-gacha {
+  --k: 0.82;
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  width: 220px;
+  height: 330px;
+  margin-left: -110px;
+  scale: var(--k);
+  transform-origin: 50% 100%;
+}
+
+.pk-dome {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.5) 0 9%, rgba(255, 255, 255, 0.07) 10% 60%, rgba(99, 102, 241, 0.22) 100%);
+}
+
+.pk-ball {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.75) 0 14%, transparent 15%), linear-gradient(var(--c) 0 50%, #fffdf8 50%);
+  box-shadow: inset 0 -3px 0 rgba(30, 29, 26, 0.18);
+}
+
+.pk-ball:nth-child(1) { --c: #ec4899; left: 22px; top: 120px; }
+.pk-ball:nth-child(2) { --c: #06b6d4; left: 70px; top: 134px; rotate: 20deg; }
+.pk-ball:nth-child(3) { --c: #a855f7; left: 118px; top: 124px; rotate: -15deg; }
+.pk-ball:nth-child(4) { --c: #6366f1; left: 40px; top: 76px; rotate: 40deg; }
+.pk-ball:nth-child(5) { --c: #fde047; left: 88px; top: 86px; }
+.pk-ball:nth-child(6) { --c: #ec4899; left: 134px; top: 78px; rotate: -30deg; }
+.pk-ball:nth-child(7) { --c: #06b6d4; left: 66px; top: 38px; rotate: 60deg; }
+
+.pk-body {
+  position: absolute;
+  left: 0;
+  top: 168px;
+  width: 220px;
+  height: 150px;
+  border-radius: 30px 30px 24px 24px;
+  background: linear-gradient(120deg, #ec4899, #a855f7 45%, #6366f1 80%);
+  box-shadow: inset 0 6px 0 rgba(255, 255, 255, 0.28), inset 0 -8px 0 rgba(30, 29, 26, 0.22);
+}
+
+.pk-body::before,
+.pk-body::after {                        /* feet */
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 30px;
+  height: 14px;
+  border-radius: 8px;
+  background: #0f0e0c;
+}
+
+.pk-body::before { left: 34px; }
+.pk-body::after { right: 34px; }
+
+/* The screen runs through food while the crank turns and stops on the pick's. */
+.pk-screen {
+  position: absolute;
+  left: 20px;
+  top: 16px;
+  width: 72px;
+  height: 38px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #0f0e0c;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.pk-strip {
+  display: block;
+  font-size: 24px;
+  line-height: 38px;
   text-align: center;
-  box-shadow: 0 4px 0 #eadfcb;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  white-space: pre;
 }
 
-.pick-mode:hover {
-  transform: translateY(-2px);
+.pk-crank {
+  position: absolute;
+  right: 22px;
+  top: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #fffdf8;
+  box-shadow: inset 0 -3px 0 rgba(30, 29, 26, 0.15), 0 0 0 3px rgba(30, 29, 26, 0.25);
 }
 
-.pick-mode[aria-pressed="true"] {
-  border-color: var(--color-accent);
-  background: var(--color-accent-wash, #fce7f3);
-  box-shadow: 0 4px 0 #f5b8d4;
+.pk-crank::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 50%;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 5px;
+  background: #4f46e5;
 }
 
-.pick-mode--any {
-  border-style: dashed;
+.pk-eye {
+  position: absolute;
+  top: 66px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 58% 58%, #0f0e0c 0 32%, #fff 34%);
+  box-shadow: 0 0 0 2px #0f0e0c;
 }
 
-.pick-mode-emoji {
-  font-size: 40px;
+.pk-eye--l { left: 62px; }
+.pk-eye--r { right: 62px; }
+
+.pk-mouth {                              /* the chute: the capsule comes out of it */
+  position: absolute;
+  left: 50%;
+  top: 100px;
+  width: 66px;
+  height: 32px;
+  margin-left: -33px;
+  border-radius: 12px 12px 18px 18px;
+  background: #0f0e0c;
+  transform-origin: 50% 0;
+}
+
+/* The pick: a capsule that lands above the machine and opens on the dish (a photo, or an emoji for
+   a cafeteria meal or a dish without one). It rests at its CSS place, so a resize keeps it there. */
+.pk-cap {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 128px;
+  height: 128px;
+  margin: -64px 0 0 -64px;
+}
+
+.pk-cap-y {
+  position: absolute;
+  inset: 0;
+}
+
+.pk-cap-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #fce7f3;
+  box-shadow: 0 0 0 3px #0f0e0c, 0 14px 30px rgba(0, 0, 0, 0.35);
+  font-size: 60px;
   line-height: 1;
 }
 
-.pick-mode-label {
+.pk-cap-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pk-cap-shell {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  clip-path: inset(0 0 50% 0);
+  background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.75) 0 12%, transparent 13%), var(--c, #ec4899);
+  box-shadow: inset 0 0 0 3px #0f0e0c;
+}
+
+/* After a draw the machine steps back so the capsule reads. */
+.pick-stage.is-done .pk-gacha {
+  opacity: 0.32;
+}
+
+.pick-stage.is-done .pk-cap-shell {
+  opacity: 0;
+}
+
+.pick-go {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 60px;
+  margin-top: 14px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #be185d, #7e22ce 55%, #4338ca);
+  color: #fff;
+  font: inherit;
   font-size: 20px;
   font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 0 #312e81;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
-.pick-mode-sub {
-  font-size: 13px;
-  color: var(--color-ink-muted, #5a534a);
+.pick-go:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #312e81;
 }
 
-.pick-mode:focus-visible,
-.pick-tile:focus-visible,
+.pick-go[aria-busy="true"] {
+  opacity: 0.85;
+}
+
+.pick-go:focus-visible,
 .pick-btn:focus-visible,
-.pick-sound:focus-visible {
+.pick-sound:focus-visible,
+.pick-credit a:focus-visible {
   outline: 3px solid var(--color-ink);
   outline-offset: 3px;
 }
 
-.pick-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pick-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 100%;
-  min-height: 96px;
-  padding: 10px 6px;
-  border: 2px solid #ece6f6;
-  border-radius: 20px;
-  background: #fff;
-  color: var(--color-ink);
-  font: inherit;
-  line-height: 1.25;
-  text-align: center;
-  box-shadow: 0 3px 0 #e6def3;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease;
-}
-
-.pick-tile-emoji {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.pick-tile-label {
-  font-size: 15px;
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-
-.pick-tile-sub {
-  font-size: 12px;
-  color: var(--color-ink-muted, #5a534a);
-}
-
-/* The light running through the tiles (as js/worldcup.js 아무거나), then where it landed. */
-.pick-tile.is-spin {
-  border-color: #6366f1;
-  background: #eef2ff;
-  transform: scale(1.07);
-}
-
-.pick-tile.is-landed {
-  border-color: var(--color-accent);
-  background: var(--color-accent-wash, #fce7f3);
-  box-shadow: 0 3px 0 #f5b8d4;
-}
-
 .pick-result {
-  margin-top: 24px;
+  margin-top: 20px;
   padding: 22px 22px 18px;
   border: 1px solid rgba(30, 29, 26, 0.1);
   border-radius: 24px;
@@ -202,10 +321,6 @@
 
 .pick-result-title:focus {
   outline: none;
-}
-
-.pick-reel {
-  margin: 12px 0 4px;
 }
 
 .pick-menu {
@@ -259,26 +374,25 @@
   justify-content: center;
   min-height: 44px;
   padding: 0 18px;
-  border: 1px solid rgba(30, 29, 26, 0.16);
+  border: 1px solid var(--color-ink);
   border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-ink);
+  background: var(--color-ink);
+  color: #fff;
   font: inherit;
   font-size: 15px;
   font-weight: 700;
   text-decoration: none;
-  cursor: pointer;
 }
 
-.pick-btn--main {
-  border-color: var(--color-ink);
-  background: var(--color-ink);
-  color: #fff;
+.pick-credit {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--color-ink-muted, #5a534a);
+  overflow-wrap: anywhere;
 }
 
-.pick-btn--quiet {
-  border-color: transparent;
-  background: transparent;
+.pick-credit a {
+  color: inherit;
 }
 
 .pick-scope {
@@ -298,7 +412,6 @@
 
 @media (max-width: 640px) {
   .pick-page {
-    width: calc(100% - 32px);
     padding-top: calc(var(--nav-h, 56px) + 20px);
   }
 
@@ -306,29 +419,18 @@
     padding-right: 84px;
   }
 
-  .pick-modes {
-    gap: 8px;
+  .pick-stage {
+    height: 290px;
   }
 
-  .pick-mode {
-    min-height: 112px;
-    border-radius: 20px;
+  .pk-gacha {
+    --k: 0.74;
   }
 
-  .pick-mode-emoji {
-    font-size: 32px;
-  }
-
-  .pick-mode-label {
-    font-size: 17px;
-  }
-
-  .pick-mode-sub {
-    font-size: 12px;
-  }
-
-  .pick-tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .pk-cap {
+    width: 112px;
+    height: 112px;
+    margin: -56px 0 0 -56px;
   }
 
   .pick-result {
@@ -337,12 +439,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pick-mode,
-  .pick-tile {
+  .pick-go {
     transition: none;
   }
 
-  .pick-mode:hover {
+  .pick-go:active {
     transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .pick-stage {
+    border: 1px solid CanvasText;
   }
 }

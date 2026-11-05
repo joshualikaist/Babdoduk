@@ -1,19 +1,23 @@
-/* 오늘 뭐 먹지 (choose.html, owner 2026-11-04: "메뉴 고르기 할때 그거를 우리 월드컵때 했던 뽑기 룰렛 같은거",
-   "배달의 민족 앱 or 카이스트 학식에서 학생들이 고르도록 유도").
+/* 오늘 뭐 먹지 (choose.html). Owner 2026-11-05: the slot roulette and its three steps are gone ("이 룰렛은
+   폐기해줘", "사람들이 선택하는거 귀찮으니까 룰렛 돌리는거 아니야"); in their place the world cup's capsule
+   machine ("월드컵 때 썼던 … 그거", js/worldcup.js showGacha), one button and no choices.
 
-   First "어디서 먹을까?": 🍱 학식 (today's KAIST cafeteria meals that are not over yet), 🛵 배달 (kinds of
-   delivery food, from the dish catalog's delivery dishes) or 🙈 아무거나 (the roulette picks one of the
-   two first). Then the world cup's roulette: a light runs through the tiles, slowing down like a slot
-   machine, and lands with a ding; a second tap lands it at once, reduced motion lands it straight away.
-   A cafeteria tile opens its menu; a kind of delivery food spins the slot reel (js/eat-slot.js) to one
-   dish of that kind. Any tile can also be picked by hand. (Opening a delivery app waits for the owner,
+   메뉴 뽑기: the machine cranks three times while its screen runs through food, squashes, and drops one
+   capsule that flies up and pops open on the pick; the card under the button names it. The pick is a
+   KAIST cafeteria meal still being served today (main campus) or a delivery dish, a photographed one
+   when the photos load; while a cafeteria meal is being served, about four draws in ten are one. A
+   press during a draw lands it at once; reduced motion, forced colours or no Web Animations show the
+   pick straight away. Only transform and opacity move. (Opening a delivery app waits for the owner,
    2026-11-04: "이거는 나중에 구현".)
 
-   Public helpers (tests, tests/test_pick.py): window.BabdodukPick.{CATEGORIES, categorize, servingMeals}. */
+   Public helpers (tests/test_pick.py): window.BabdodukPick.{CATEGORIES, categorize, servingMeals,
+   cleanItems, kindOf, draw}. */
 (function () {
   var MEALS = ['breakfast', 'lunch', 'dinner'];
   // When a cafeteria lists no hours: the usual KAIST windows.
   var MEAL_END = { breakfast: '09:30', lunch: '13:30', dinner: '19:00' };
+  // While a cafeteria meal is being served, the share of draws that pick one.
+  var CAFETERIA_SHARE = 0.4;
   // Kinds of delivery food, as the delivery apps group them. A dish takes the first kind it fits, so the
   // specific kinds come before the broad ones (한식 last).
   var CATEGORIES = [
@@ -36,15 +40,21 @@
     { id: 'korean', emoji: '🍚', test: function (f) { return f.cuisineGroup === 'korean'; } },
   ];
 
+  // The kind of a delivery dish, or null (not delivered, a dessert or a drink, or no kind fits).
+  function kindOf(f) {
+    if (!f || (f.diningMode || []).indexOf('delivery') < 0 || f.category === 'dessert' || f.category === 'drink') return null;
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      if (CATEGORIES[i].test(f)) return CATEGORIES[i];
+    }
+    return null;
+  }
   // Delivery dishes by kind; a kind with fewer than three dishes is left out.
   function categorize(foods) {
     var out = {};
     CATEGORIES.forEach(function (c) { out[c.id] = []; });
     (foods || []).forEach(function (f) {
-      if (!f || (f.diningMode || []).indexOf('delivery') < 0 || f.category === 'dessert' || f.category === 'drink') return;
-      for (var i = 0; i < CATEGORIES.length; i++) {
-        if (CATEGORIES[i].test(f)) { out[CATEGORIES[i].id].push(f); return; }
-      }
+      var kind = kindOf(f);
+      if (kind) out[kind.id].push(f);
     });
     Object.keys(out).forEach(function (id) { if (out[id].length < 3) delete out[id]; });
     return out;
@@ -80,22 +90,38 @@
       .filter(function (item) { return item && !/^\[?\s*칼로리/.test(item) && !/kcal\]?$/i.test(item); });
   }
 
-  window.BabdodukPick = { CATEGORIES: CATEGORIES, categorize: categorize, servingMeals: servingMeals, cleanItems: cleanItems };
+  // One pick from `meals` (servingMeals) and `dishes` (delivery dishes), `rand` a [0, 1) source:
+  // {meal} about CAFETERIA_SHARE of the time while there is one, else {dish}, weighted by popularity.
+  function draw(meals, dishes, rand) {
+    rand = rand || Math.random;
+    meals = meals || [];
+    dishes = dishes || [];
+    if (meals.length && (!dishes.length || rand() < CAFETERIA_SHARE)) {
+      return { meal: meals[Math.floor(rand() * meals.length)] };
+    }
+    if (!dishes.length) return null;
+    var weights = dishes.map(function (f) { return Math.max(1, Number(f.popularity) || 3); });
+    var total = weights.reduce(function (a, b) { return a + b; }, 0), r = rand() * total;
+    for (var i = 0; i < dishes.length; i++) { r -= weights[i]; if (r < 0) return { dish: dishes[i] }; }
+    return { dish: dishes[dishes.length - 1] };
+  }
+
+  window.BabdodukPick = { CATEGORIES: CATEGORIES, categorize: categorize, servingMeals: servingMeals,
+    cleanItems: cleanItems, kindOf: kindOf, draw: draw };
 
   var app = document.getElementById('pickApp');
   if (!app) return;
-  var Foods = window.BabdodukFoods, Slot = window.BabdodukSlot, Menu = window.BabdodukKaistMenu;
+  var Foods = window.BabdodukFoods, Menu = window.BabdodukKaistMenu;
   var els = {
-    modes: document.getElementById('pickModes'),
-    board: document.getElementById('pickBoard'),
-    tiles: document.getElementById('pickTiles'),
-    boardTitle: document.getElementById('pickBoardTitle'),
+    stage: document.getElementById('pickStage'),
+    machine: document.getElementById('pickMachine'),
+    go: document.getElementById('pickGo'),
+    goLabel: document.getElementById('pickGoLabel'),
     result: document.getElementById('pickResult'),
     status: document.getElementById('pickStatus'),
     sound: document.getElementById('pickSound'),
   };
-  var state = { mode: '', tiles: [], spin: null, cafeteria: null, menuState: 'loading', kinds: null, foodsState: 'loading',
-                slot: null, landed: null, dish: null };
+  var state = { cafeteria: null, dishes: null, run: null, drawn: 0, last: null };
 
   function lang() { return window.babdodukGetLang ? window.babdodukGetLang() : 'ko'; }
   function t(key, fallback) {
@@ -108,7 +134,19 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
     });
   }
-  function moving() { return !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function safeHref(url) {
+    if (!url) return '';
+    try {
+      var u = new URL(url, location.href);
+      return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : '';
+    } catch (e) { return ''; }
+  }
+  var reducedQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var forcedQuery = window.matchMedia ? window.matchMedia('(forced-colors: active)') : null;
+  function canAnimate() {
+    return !(reducedQuery && reducedQuery.matches) && !(forcedQuery && forcedQuery.matches) && !document.hidden &&
+      typeof els.stage.animate === 'function';
+  }
   function kstNow() {
     var d = new Date(Date.now() + 9 * 3600 * 1000);
     return { iso: d.toISOString().slice(0, 10), minutes: d.getUTCHours() * 60 + d.getUTCMinutes() };
@@ -117,8 +155,9 @@
     return fetch(url, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(url); return r.json(); });
   }
   function dishName(f) { return lang() === 'en' ? (f.nameEn || f.nameKo) : f.nameKo; }
+  function mealName(meal) { return t('pick.meal.' + meal, { breakfast: '아침', lunch: '점심', dinner: '저녁' }[meal]); }
 
-  // ---- sound: a tick per step and a ding on landing, off until a person turns it on ----------------
+  // ---- sound: a click per turn of the crank and a ding when the capsule opens, off until turned on ----
   var sound = (function () {
     var ctx = null, on = false;
     try { on = localStorage.getItem('babdoduk-pick-sound') === 'on'; } catch (e) {}
@@ -139,14 +178,14 @@
         try { localStorage.setItem('babdoduk-pick-sound', on ? 'on' : 'off'); } catch (e) {}
         return on;
       },
-      fx: function (name) {
+      fx: function (name, delay) {
         if (!on) return;
         var AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return;
         ctx = ctx || new AC();
-        var now = ctx.currentTime;
-        if (name === 'tick') tone(1650, now, 0.04, 0.05);
-        else { tone(880, now, 0.18, 0.09); tone(1320, now + 0.09, 0.32, 0.08); }
+        var at = ctx.currentTime + (delay || 0) / 1000;
+        if (name === 'tick') tone(1650, at, 0.04, 0.05);
+        else { tone(880, at, 0.18, 0.09); tone(1320, at + 0.09, 0.32, 0.08); }
       },
     };
   })();
@@ -157,220 +196,234 @@
 
   // ---- data ------------------------------------------------------------------------------------------
   var menuReady = (Menu && Menu.loadTodayMenu ? Menu.loadTodayMenu(getJson) : getJson('data/kaist-menu/latest.json'))
-    .then(function (data) {
-      state.cafeteria = data;
-      state.menuState = 'ready';
-    }, function () { state.menuState = 'error'; });
-  var foodsReady = (Foods && Foods.load ? Foods.load() : Promise.reject(new Error('no catalog')))
-    .then(function (foods) {
-      state.kinds = categorize(foods);
-      state.foodsState = 'ready';
-    }, function () { state.foodsState = 'error'; });
+    .then(function (data) { state.cafeteria = data; }, function () {});
+  // The world cup's photos with their credits (js/pick-photos.js, written from data/content/worldcup.json):
+  // only photographed dishes are drawn, each capsule opening on its photo. Without them every delivery
+  // dish stays in, on its kind's emoji.
+  var PHOTOS = window.BABDODUK_PICK_PHOTOS || { links: [], photos: {} };
+  function photoOf(id) {
+    var p = PHOTOS.photos[id];
+    return p ? { author: p[0], license: p[1], source: p[2], licenseUrl: PHOTOS.links[p[3]] || '',
+                 thumb: 'images/worldcup/thumb/' + id } : null;
+  }
+  var foodsReady = (Foods && Foods.load ? Foods.load() : Promise.reject(new Error('no catalog'))).then(function (foods) {
+    var all = foods.filter(function (f) { return kindOf(f); });
+    var shot = all.filter(function (f) { return photoOf(f.id); });
+    state.dishes = shot.length >= 30 ? shot : all;
+  }, function () { state.dishes = []; });
 
-  function cafeteriaTiles() {
+  function servingNow() {
     var now = kstNow();
     if (!state.cafeteria || state.cafeteria.date !== now.iso) return [];
-    return servingMeals(state.cafeteria, now.minutes).map(function (s) {
-      return { id: s.resto.id + ':' + s.meal, emoji: '🍱', label: s.resto.name,
-               sub: t('pick.meal.' + s.meal, { breakfast: '아침', lunch: '점심', dinner: '저녁' }[s.meal]), serving: s };
-    });
-  }
-  function deliveryTiles() {
-    return CATEGORIES.filter(function (c) { return state.kinds && state.kinds[c.id]; }).map(function (c) {
-      return { id: c.id, emoji: c.emoji, label: t('pick.cat.' + c.id, c.id), sub: '', kind: c.id };
-    });
-  }
-  function modeTiles() {
-    return [{ id: 'cafeteria', emoji: '🍱', label: t('pick.mode.cafeteria', '학식'), sub: '' },
-            { id: 'delivery', emoji: '🛵', label: t('pick.mode.delivery', '배달'), sub: '' }];
+    return servingMeals(state.cafeteria, now.minutes);
   }
 
-  // ---- the board -----------------------------------------------------------------------------------------
-  function renderBoard(title, tiles) {
-    state.tiles = tiles;
-    els.board.hidden = false;
-    els.boardTitle.textContent = title;
-    els.tiles.innerHTML = tiles.map(function (tile) {
-      return '<li><button type="button" class="pick-tile" data-tile="' + esc(tile.id) + '">' +
-        '<span class="pick-tile-emoji" aria-hidden="true">' + tile.emoji + '</span>' +
-        '<span class="pick-tile-label">' + esc(tile.label) + '</span>' +
-        (tile.sub ? '<span class="pick-tile-sub">' + esc(tile.sub) + '</span>' : '') + '</button></li>';
-    }).join('');
+  // ---- the machine -----------------------------------------------------------------------------------
+  var EASE = { out: 'cubic-bezier(0, 0, 0.15, 1)', io: 'cubic-bezier(0.35, 0, 0.35, 1)',
+               bouncy: 'cubic-bezier(0.34, 1.56, 0.64, 1)', arc: 'cubic-bezier(0.2, 0.6, 0.35, 1)' };
+  var SHELLS = ['#ec4899', '#06b6d4', '#a855f7', '#fde047', '#6366f1'];
+  var SCREEN = ['🍗', '🍕', '🍔', '🍱', '🍜', '🍣', '🥟', '🍝', '🍢', '🍚'];
+  var CRANK = 260, CRANKS = 3;
+  function node(tag, cls, parent) {
+    var el = document.createElement(tag);
+    el.className = cls;
+    if (parent) parent.appendChild(el);
+    return el;
   }
-  // The world cup's 아무거나 (js/worldcup.js spinTiles): a full lap and on to the target, slowing down.
-  function spin(onLand) {
-    stopSpin(false);
-    var count = state.tiles.length;
-    if (!count) return;
-    var target = Math.floor(Math.random() * count);
-    if (!moving()) { land(target, onLand); return; }
-    var steps = count * (count < 4 ? 3 : 1) + target, i = 0, lit = null;
-    state.spin = { target: target, timer: 0, onLand: onLand };
-    els.tiles.classList.add('is-spinning');
-    (function step() {
-      if (!state.spin) return;
-      if (lit) lit.classList.remove('is-spin');
-      lit = els.tiles.querySelectorAll('.pick-tile')[i % count];
-      lit.classList.add('is-spin');
-      sound.fx('tick');
-      i++;
-      state.spin.timer = i > steps ? setTimeout(function () { stopSpin(true); }, 240)
-        : setTimeout(step, 45 + 230 * Math.pow(i / steps, 2.4));
-    })();
+  function pose(x, y, r, sx, sy) {
+    sx = sx == null ? 1 : sx;
+    return 'translate(' + x + 'px, ' + y + 'px) rotate(' + (r || 0) + 'deg) scale(' + sx + ', ' + (sy == null ? sx : sy) + ')';
   }
-  function stopSpin(landIt) {
-    if (!state.spin) return;
-    var s = state.spin;
-    state.spin = null;
-    clearTimeout(s.timer);
-    els.tiles.classList.remove('is-spinning');
-    [].forEach.call(els.tiles.querySelectorAll('.is-spin'), function (tile) { tile.classList.remove('is-spin'); });
-    if (landIt) land(s.target, s.onLand);
+  // One element's part as [ms, keyframe, easing onward] steps: a single animation, filled both ways.
+  function track(run, el, steps) {
+    var from = steps[0][0], span = steps[steps.length - 1][0] - from;
+    var frames = steps.map(function (step) {
+      var frame = { offset: (step[0] - from) / span };
+      for (var k in step[1]) frame[k] = step[1][k];
+      if (step[2]) frame.easing = step[2];
+      return frame;
+    });
+    var a = el.animate(frames, { delay: from, duration: span, fill: 'both' });
+    run.anims.push(a);
+    return a;
   }
-  function land(index, onLand) {
-    var tile = state.tiles[index];
-    var button = els.tiles.querySelectorAll('.pick-tile')[index];
-    [].forEach.call(els.tiles.querySelectorAll('.is-landed'), function (b) { b.classList.remove('is-landed'); });
-    if (button) {
-      button.classList.add('is-landed');
-      if (moving()) button.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }],
-        { duration: 420, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  function q(sel) { return els.machine.querySelector(sel); }
+  function pickEmoji(pick) { return pick.meal ? '🍱' : pick.kind.emoji; }
+
+  // The capsule of a pick: its face (the photo or an emoji) under half a coloured shell.
+  function capsule(pick) {
+    var cap = node('div', 'pk-cap', els.stage), y = node('div', 'pk-cap-y', cap), face = node('div', 'pk-cap-face', y);
+    var photo = pick.dish && photoOf(pick.dish.id);
+    if (photo) {
+      var img = node('img', '', face);
+      img.alt = '';
+      img.decoding = 'async';
+      img.width = 128;
+      img.height = 128;
+      img.sizes = '128px';
+      img.srcset = photo.thumb + '-160.webp 160w, ' + photo.thumb + '-320.webp 320w';
+      img.src = photo.thumb + '-320.webp';
+    } else {
+      face.textContent = pickEmoji(pick);
     }
-    sound.fx('ding');
-    els.status.textContent = fill(t('pick.landed', '{name} 당첨!'), { name: tile.label + (tile.sub ? ' ' + tile.sub : '') });
-    onLand(tile);
+    node('i', 'pk-cap-shell', y).style.setProperty('--c', SHELLS[state.drawn % SHELLS.length]);
+    return cap;
   }
 
-  // ---- modes ---------------------------------------------------------------------------------------------
-  function choose(mode) {
-    stopSpin(false);
-    state.mode = mode;
-    [].forEach.call(els.modes.querySelectorAll('[data-mode]'), function (b) {
-      b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === mode));
-    });
-    els.result.hidden = true;
-    if (mode === 'any') {
-      renderBoard(t('pick.board.any', '학식일까, 배달일까?'), modeTiles());
-      spin(function (tile) { setTimeout(function () { start(tile.id, true); }, moving() ? 650 : 0); });
-      return;
-    }
-    start(mode, false);
+  function clearStage() {
+    if (state.run) state.run.anims.forEach(function (a) { a.cancel(); });
+    state.run = null;
+    [].forEach.call(els.stage.querySelectorAll('.pk-cap'), function (c) { c.remove(); });
+    els.stage.classList.remove('is-done');
   }
-  function start(mode, fromAny) {
-    var ready = mode === 'cafeteria' ? menuReady : foodsReady;
-    els.boardTitle.textContent = t('pick.loading', '메뉴 불러오는 중');
-    ready.then(function () {
-      if (state.mode !== mode && !(fromAny && state.mode === 'any')) return;
-      var tiles = mode === 'cafeteria' ? cafeteriaTiles() : deliveryTiles();
-      if (!tiles.length) {
-        if (mode === 'cafeteria') return empty(t('pick.noMenu', '지금 먹을 수 있는 학식이 없어요. 배달은 어때요?'), 'delivery');
-        return empty(t('pick.error', '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.'), '');
+
+  function play(pick) {
+    clearStage();
+    state.drawn++;
+    var cap = capsule(pick);
+    var finalEmoji = pickEmoji(pick);
+    var strip = SCREEN.filter(function (e) { return e !== finalEmoji; }).slice(0, 7).concat([finalEmoji]);
+    q('.pk-strip').textContent = strip.join('\n');
+    if (!canAnimate()) { finish(pick); return; }
+
+    var run = { anims: [], pick: pick, done: false };
+    state.run = run;
+    els.go.setAttribute('aria-busy', 'true');
+    els.goLabel.textContent = t('pick.drawing', '뽑는 중…');
+    var tP = CRANKS * CRANK, from = tP + 80, tOpen = from + 640, tEnd = tOpen + 300;
+    // 가샤: each turn of the crank jiggles the balls, shakes the body and makes the machine squint.
+    var crank = [], shake = [], eyes = [], balls = [[], [], [], [], [], [], []];
+    for (var c = 0; c < CRANKS; c++) {
+      var at = c * CRANK, amp = [0.6, 0.8, 1][c];
+      crank.push([at, { transform: 'rotate(' + c * 180 + 'deg)' }, EASE.io], [at + 200, { transform: 'rotate(' + (c + 1) * 180 + 'deg)' }]);
+      [0, 3, -3, 2, -1, 0].forEach(function (x, i) { shake.push([at + i * 48, { transform: 'translateX(' + x * amp + 'px)' }]); });
+      eyes.push([at, { transform: 'scaleY(1)' }], [at + 88, { transform: 'scaleY(0.25)' }], [at + 220, { transform: 'scaleY(1)' }]);
+      balls.forEach(function (steps, i) {
+        var d = (i % 2 ? 1 : -1) * amp, b = at + i * 10;
+        steps.push([b, { transform: 'none' }, 'ease-in-out'], [b + 60, { transform: pose(7 * d, -6 * amp, 14 * d) }, 'ease-in-out'],
+                   [b + 120, { transform: pose(-5 * d, 3 * amp, -10 * d) }, 'ease-in-out'],
+                   [b + 180, { transform: pose(3 * d, -2 * amp, 5 * d) }, 'ease-in-out'], [b + 240, { transform: 'none' }]);
+      });
+      sound.fx('tick', at + 100);
+    }
+    track(run, q('.pk-crank'), crank);
+    track(run, q('.pk-body'), shake);
+    [].forEach.call(els.machine.querySelectorAll('.pk-eye'), function (eye) { track(run, eye, eyes); });
+    [].forEach.call(els.machine.querySelectorAll('.pk-ball'), function (ball, i) { track(run, ball, balls[i]); });
+    track(run, q('.pk-strip'), [[0, { transform: 'translateY(0px)' }, 'steps(' + (strip.length - 1) + ', end)'],
+                                [tP, { transform: 'translateY(' + -(strip.length - 1) * 38 + 'px)' }]]);
+    track(run, q('.pk-screen'), [[tP, { transform: 'scale(1)' }, EASE.out], [tP + 96, { transform: 'scale(1.25)' }],
+                                 [tP + 320, { transform: 'scale(1)' }]]);
+    // 퐁: the machine squashes as the mouth opens, then steps back when the capsule opens.
+    track(run, els.machine, [[tP, { transform: pose(0, 0), opacity: 1 }, 'ease-in'], [tP + 110, { transform: pose(0, 0, 0, 1.08, 0.88), opacity: 1 }],
+                             [tP + 144, { transform: pose(0, 0, 0, 0.94, 1.1), opacity: 1 }, EASE.bouncy], [tP + 480, { transform: pose(0, 0), opacity: 1 }],
+                             [tOpen, { transform: pose(0, 0), opacity: 1 }, EASE.io], [tEnd, { transform: pose(0, 0), opacity: 0.32 }]]);
+    track(run, q('.pk-mouth'), [[tP, { transform: 'scaleY(1)' }], [tP + 76, { transform: 'scaleY(1.35)' }],
+                                [tP + 560, { transform: 'scaleY(1.35)' }], [tP + 640, { transform: 'scaleY(1)' }]]);
+    // The capsule: out of the mouth, up in an arc to its place above the machine, a bounce, then its
+    // shell flies off. Measured once; it moves from the mouth to its own CSS place.
+    var mouth = q('.pk-mouth').getBoundingClientRect(), home = cap.getBoundingClientRect();
+    var dx = mouth.left + mouth.width / 2 - (home.left + home.width / 2);
+    var dy = mouth.top + mouth.height / 2 - (home.top + home.height / 2);
+    var small = 0.36, turn = state.drawn % 2 ? 360 : -360;
+    track(run, cap, [[from, { opacity: 0 }], [from + 40, { opacity: 1 }], [tEnd, { opacity: 1 }]]);
+    track(run, cap.firstChild, [[from, { transform: pose(dx, dy, 0, small) }, EASE.arc],
+                                [from + 300, { transform: pose(dx * 0.4, Math.min(dy, 0) - 40, turn / 2, 0.7) }, 'cubic-bezier(0.55, 0, 0.85, 0.35)'],
+                                [from + 520, { transform: pose(0, 0, turn, 1) }], [from + 560, { transform: pose(0, 0, turn, 1.1, 0.9) }],
+                                [from + 600, { transform: pose(0, -8, turn, 0.97, 1.03) }], [tOpen, { transform: pose(0, 0, turn, 1) }]]);
+    track(run, cap.firstChild.lastChild, [[tOpen, { transform: 'none', opacity: 1 }, EASE.out],
+                                          [tEnd, { transform: pose(turn > 0 ? 20 : -20, -34, turn > 0 ? 40 : -40), opacity: 0 }]]);
+    sound.fx('ding', tOpen);
+    var last = run.anims[run.anims.length - 1];
+    last.finished.then(function () { if (state.run === run) finish(pick); }, function () {});
+  }
+  // A press during a draw lands it at once.
+  function landNow() {
+    var run = state.run;
+    if (!run) return;
+    run.anims.forEach(function (a) { try { a.finish(); } catch (e) {} });
+    finish(run.pick);
+  }
+  function finish(pick) {
+    if (state.run) state.run.anims.forEach(function (a) { a.cancel(); });
+    state.run = null;
+    els.stage.classList.add('is-done');
+    q('.pk-strip').textContent = pickEmoji(pick);      // the screen keeps the pick's food
+    els.go.removeAttribute('aria-busy');
+    els.goLabel.textContent = t('pick.again', '다시 뽑기');
+    state.last = pick;
+    showResult(pick);
+  }
+
+  // ---- the card ---------------------------------------------------------------------------------------
+  // `relabel`: the language changed; the card is rewritten in place, focus and scroll stay.
+  function showResult(pick, relabel) {
+    var html, name;
+    if (pick.meal) {
+      var s = pick.meal, info = s.info, rows = [];
+      name = s.resto.name;
+      if (info.hours) rows.push('<li><span>' + esc(t('pick.hours', '시간')) + '</span> ' + esc(info.hours) + '</li>');
+      if (info.price) rows.push('<li><span>' + esc(t('pick.price', '가격')) + '</span> ' + esc(info.price) + '</li>');
+      if (s.resto.building) rows.push('<li><span>' + esc(t('pick.building', '건물')) + '</span> ' + esc(s.resto.building) + '</li>');
+      html = '<p class="pick-result-kicker">🍱 ' + esc(t('pick.kind.cafeteria', '학식')) + ' · ' + esc(mealName(s.meal)) + '</p>' +
+        '<h2 class="pick-result-title" tabindex="-1">' + esc(name) + '</h2>' +
+        '<ul class="pick-menu">' + cleanItems(info.items).slice(0, 8).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul>' +
+        (rows.length ? '<ul class="pick-facts">' + rows.join('') + '</ul>' : '') +
+        '<div class="pick-actions"><a class="pick-btn" href="ggongbab.html#menu">' + esc(t('pick.toMenu', '학식 전체 보기')) + ' →</a></div>';
+    } else {
+      var dish = pick.dish, photo = photoOf(dish.id), credit = '';
+      name = dishName(dish);
+      if (photo && photo.author && photo.license) {
+        var source = safeHref(photo.source), licence = safeHref(photo.licenseUrl);
+        credit = '<p class="pick-credit">' + esc(t('pick.photo', '사진')) + ' · ' +
+          (source ? '<a href="' + esc(source) + '" target="_blank" rel="noopener noreferrer">' + esc(photo.author) + '</a>' : esc(photo.author)) + ' · ' +
+          (licence ? '<a href="' + esc(licence) + '" target="_blank" rel="noopener noreferrer">' + esc(photo.license) + '</a>' : esc(photo.license)) + '</p>';
       }
-      renderBoard(mode === 'cafeteria' ? t('pick.board.cafeteria', '오늘 학식, 어디로 갈까?')
-        : t('pick.board.delivery', '오늘은 뭘 시켜 먹을까?'), tiles);
-      spin(mode === 'cafeteria' ? showMeal : showKind);
-    });
-  }
-  function empty(text, next) {
-    els.board.hidden = false;
-    els.boardTitle.textContent = text;
-    els.tiles.innerHTML = next ? '<li><button type="button" class="pick-tile" data-switch="' + next + '"><span class="pick-tile-emoji" aria-hidden="true">🛵</span>' +
-      '<span class="pick-tile-label">' + esc(t('pick.mode.delivery', '배달')) + '</span></button></li>' : '';
-    state.tiles = [];
-    els.status.textContent = text;
+      html = '<p class="pick-result-kicker">🛵 ' + esc(t('pick.kind.delivery', '배달')) + ' · ' + pick.kind.emoji + ' ' +
+        esc(t('pick.cat.' + pick.kind.id, pick.kind.id)) + '</p>' +
+        '<h2 class="pick-result-title" tabindex="-1">' + esc(name) + '</h2>' +
+        '<p class="pick-note">' + esc(t('pick.shopNote', '가게와 가격은 배달앱에서 골라요.')) + '</p>' + credit;
+    }
+    els.result.innerHTML = html;
+    els.result.hidden = false;
+    if (relabel) return;
+    els.status.textContent = fill(t('pick.landed', '오늘은 {name}!'), { name: name });
+    var title = els.result.querySelector('.pick-result-title');
+    title.focus({ preventScroll: true });
+    var box = els.result.getBoundingClientRect();
+    if (box.bottom > window.innerHeight) els.result.scrollIntoView({ block: 'nearest', behavior: canAnimate() ? 'smooth' : 'auto' });
   }
 
-  // ---- results -------------------------------------------------------------------------------------------
-  function actions(html) {
-    return '<div class="pick-actions">' + html +
-      '<button type="button" class="pick-btn" data-pick="again">' + esc(t('pick.again', '다시 돌리기')) + '</button>' +
-      '<button type="button" class="pick-btn pick-btn--quiet" data-pick="restart">' + esc(t('pick.restart', '처음부터')) + '</button></div>';
-  }
-  function showMeal(tile) {
-    var s = tile.serving, info = s.info;
-    var rows = [];
-    if (info.hours) rows.push('<li><span>' + esc(t('pick.hours', '시간')) + '</span> ' + esc(info.hours) + '</li>');
-    if (info.price) rows.push('<li><span>' + esc(t('pick.price', '가격')) + '</span> ' + esc(info.price) + '</li>');
-    if (info.kcal) rows.push('<li><span>' + esc(t('pick.kcal', '열량')) + '</span> ' + esc(info.kcal) + '</li>');
-    if (s.resto.building) rows.push('<li><span>' + esc(t('pick.building', '건물')) + '</span> ' + esc(s.resto.building) + '</li>');
-    els.result.innerHTML = '<p class="pick-result-kicker">🍱 ' + esc(tile.sub) + '</p>' +
-      '<h2 class="pick-result-title" tabindex="-1">' + esc(s.resto.name) + '</h2>' +
-      '<ul class="pick-menu">' + cleanItems(info.items).slice(0, 8).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul>' +
-      (rows.length ? '<ul class="pick-facts">' + rows.join('') + '</ul>' : '') +
-      actions('<a class="pick-btn pick-btn--main" href="ggongbab.html#menu">' + esc(t('pick.toMenu', '학식 전체 보기')) + ' →</a>');
-    reveal();
-  }
-  function showKind(tile) {
-    var foods = state.kinds[tile.kind].slice();
-    var weights = foods.map(function (f) { return Math.max(1, Number(f.popularity) || 3); });
-    var total = weights.reduce(function (a, b) { return a + b; }, 0), r = Math.random() * total, dish = foods[0];
-    for (var i = 0; i < foods.length; i++) { r -= weights[i]; if (r <= 0) { dish = foods[i]; break; } }
-    state.dish = dish;
-    els.result.innerHTML = '<p class="pick-result-kicker">' + tile.emoji + ' ' + esc(tile.label) + '</p>' +
-      '<div class="pick-reel" id="pickReel"></div>' +
-      '<h2 class="pick-result-title" tabindex="-1" hidden></h2>' +
-      '<div class="pick-after" hidden></div>';
-    els.result.hidden = false;
-    if (state.slot) state.slot.destroy();
-    state.slot = Slot ? Slot.create({ host: document.getElementById('pickReel'), foods: foods.slice(0, 24), reducedMotion: !moving(),
-      aria: t('pick.reelAria', '메뉴를 뽑는 슬롯'), onSettle: function () { dishLanded(tile); } }) : null;
-    if (state.slot) state.slot.spin(dish, foods.slice(0, 24));
-    else dishLanded(tile);
-  }
-  function dishLanded(tile) {
-    var dish = state.dish;
-    var title = els.result.querySelector('.pick-result-title');
-    title.textContent = dishName(dish);
-    title.hidden = false;
-    var after = els.result.querySelector('.pick-after');
-    after.innerHTML = '<p class="pick-note">' + esc(t('pick.shopNote', '가게와 가격은 배달앱에서 골라요.')) + '</p>' +
-      actions('<button type="button" class="pick-btn pick-btn--main" data-pick="kind">' + esc(t('pick.otherDish', '같은 종류로 다시')) + '</button>');
-    after.hidden = false;
-    els.status.textContent = fill(t('pick.dishLanded', '오늘은 {name}!'), { name: dishName(dish) });
-    sound.fx('ding');
-    title.focus({ preventScroll: true });
-  }
-  function reveal() {
-    els.result.hidden = false;
-    var title = els.result.querySelector('.pick-result-title');
-    title.focus({ preventScroll: true });
-    els.result.scrollIntoView({ block: 'nearest', behavior: moving() ? 'smooth' : 'auto' });
-  }
-  // ---- events --------------------------------------------------------------------------------------------
-  app.addEventListener('click', function (e) {
-    var mode = e.target.closest('[data-mode]');
-    if (mode) return choose(mode.getAttribute('data-mode'));
-    var sw = e.target.closest('[data-switch]');
-    if (sw) return choose(sw.getAttribute('data-switch'));
-    var tileButton = e.target.closest('.pick-tile[data-tile]');
-    if (tileButton) {
-      if (state.spin) return stopSpin(true);               // a second tap lands it at once
-      var index = state.tiles.findIndex(function (x) { return x.id === tileButton.getAttribute('data-tile'); });
-      if (index < 0) return;
-      if (state.mode === 'any' && (state.tiles[index].id === 'cafeteria' || state.tiles[index].id === 'delivery')) {
-        land(index, function (tile) { start(tile.id, true); });
+  function go() {
+    if (state.run) { landNow(); return; }
+    els.go.setAttribute('aria-busy', 'true');
+    els.goLabel.textContent = t('pick.loading', '메뉴 불러오는 중');
+    Promise.all([menuReady, foodsReady]).then(function () {
+      var pick = draw(servingNow(), state.dishes);
+      if (pick && pick.dish) pick.kind = kindOf(pick.dish);
+      if (!pick) {
+        els.go.removeAttribute('aria-busy');
+        els.goLabel.textContent = t('pick.go', '메뉴 뽑기');
+        els.result.innerHTML = '<p class="pick-note">' + esc(t('pick.error', '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.')) + '</p>';
+        els.result.hidden = false;
+        els.status.textContent = t('pick.error', '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.');
         return;
       }
-      land(index, state.mode === 'cafeteria' || (state.mode === 'any' && state.tiles[index].serving) ? showMeal : showKind);
-      return;
-    }
-    var act = e.target.closest('[data-pick]');
-    if (!act) return;
-    var what = act.getAttribute('data-pick');
-    if (what === 'again') choose(state.mode);
-    else if (what === 'restart') {
-      stopSpin(false);
-      state.mode = '';
-      els.board.hidden = true;
-      els.result.hidden = true;
-      [].forEach.call(els.modes.querySelectorAll('[data-mode]'), function (b) { b.setAttribute('aria-pressed', 'false'); });
-      els.modes.querySelector('[data-mode]').focus();
-    } else if (what === 'kind') {
-      var landed = els.tiles.querySelector('.is-landed');
-      var tile = landed && state.tiles.find(function (x) { return x.id === landed.getAttribute('data-tile'); });
-      if (tile && tile.kind) showKind(tile);
-    }
-  });
+      play(pick);
+    });
+  }
+
+  els.go.addEventListener('click', go);
   els.sound.addEventListener('click', function () { sound.toggle(); paintSound(); });
+  // The button says what it does now (its label has no data-i18n: it changes with the draw); a language
+  // change also rewrites the card in the new language.
+  function labelGo() {
+    els.goLabel.textContent = state.run ? t('pick.drawing', '뽑는 중…') : state.last ? t('pick.again', '다시 뽑기') : t('pick.go', '메뉴 뽑기');
+  }
+  document.addEventListener('babdoduk-lang', function () {
+    labelGo();
+    if (state.last && !state.run) showResult(state.last, true);
+  });
+  labelGo();
   paintSound();
 })();

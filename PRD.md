@@ -35,7 +35,7 @@ These are hypotheses from the current features, not measured audience segments.
 | Tier | Experience | Present implementation |
 | --- | --- | --- |
 | Core | **Check today's food**: KAIST cafeteria, publishable upcoming free food | `ggongbab.html`, `js/ggongbab.js`, `js/kaist-menu.js` |
-| Core | **Choose a dish** (오늘 뭐 먹지): the roulette picks today's KAIST cafeteria meal or a kind of delivery food, then a dish | `choose.html` with `js/pick.js`, `js/food-engine.js`, `js/eat-slot.js` (owner 2026-11-04; docs/PICK.md) |
+| Core | **Choose a dish** (오늘 뭐 먹지): one button and the world cup's capsule machine draw today's KAIST cafeteria meal or a delivery dish, no choices to make | `choose.html` with `js/pick.js`, `js/food-engine.js` (owner 2026-11-04, the machine 2026-11-05; docs/PICK.md) |
 | Secondary | Explore: the source-backed magazine, curated restaurant map, history and social channels | `mukbang.html` (`docs/MAGAZINE_DISCOVERY.md`), `history.html`, external links |
 | Secondary | Participate: verified events and collaborations | `event.html` |
 | Unreleased (lab only) | Food expense and meal log: personal, creator-authored or explicitly separated modes; owner decision open | `food.html` (noindex, nofollow; linked only from `lab.html`), `data/food-log.json`, browser localStorage |

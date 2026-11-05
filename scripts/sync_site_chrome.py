@@ -216,6 +216,7 @@ CONTENT_BLOCKS = {
 CONTENT_SCRIPTS = {
     "js/worldcup-entry-data.js": page_content.worldcup_entry_data_blocks,
     "js/worldcup-gate.js": page_content.worldcup_gate_blocks,
+    "js/pick-photos.js": page_content.pick_photo_blocks,
 }
 # The single keys (not whole families) a page's table carries besides its PAGES `strings`.
 PAGE_KEYS = {

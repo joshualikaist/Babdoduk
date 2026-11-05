@@ -417,6 +417,33 @@ def catalog_names(root: Path = ROOT) -> dict[str, list[str]]:
     return names
 
 
+def pick_photo_blocks(data: dict | None = None, root: Path = ROOT) -> dict[str, list[str]]:
+    """The world cup's photo credits for the dishes 오늘 뭐 먹지 can draw (choose.html, js/pick.js,
+    docs/PICK.md): catalog dishes that are delivered and are not a dessert or a drink. Each dish is
+    [author, licence, source, the index of its licence link in `links`]: the links are written once.
+    The photo itself is images/worldcup/thumb/<id>-320.webp. Written into js/pick-photos.js
+    (data/content/ is never deployed)."""
+    data = load("worldcup") if data is None else data
+    foods = {}
+    catalog = json.loads((root / "data" / "foods" / "catalog.json").read_text(encoding="utf-8"))
+    for pack in catalog.get("packs") or []:
+        for item in json.loads((root / pack["src"]).read_text(encoding="utf-8")).get("items") or []:
+            foods[item["id"]] = item
+    links, photos = [], {}
+    for dish, photo in sorted((data.get("photos") or {}).items()):
+        food = foods.get(dish) or {}
+        if "delivery" not in (food.get("diningMode") or []) or food.get("category") in ("dessert", "drink"):
+            continue
+        if not (photo.get("author") and photo.get("license") and photo.get("source")):
+            continue
+        link = photo.get("licenseUrl") or ""
+        if link not in links:
+            links.append(link)
+        photos[dish] = [photo["author"], photo["license"], photo["source"], links.index(link)]
+    payload = json.dumps({"links": links, "photos": photos}, ensure_ascii=False, separators=(",", ":"))
+    return {"pick-photos": ["window.BABDODUK_PICK_PHOTOS = " + payload.replace("<", "\\u003c") + ";"]}
+
+
 def worldcup_entry_data_blocks(data: dict | None = None) -> dict[str, list[str]]:
     """What the start screen needs on the event page, without the catalog's 1.3 MB and the photo
     credits: the game size, each dish's Korean and English name and category, and where the photos are. Written into
