@@ -202,9 +202,43 @@ body::after {
   box-shadow: none;
 }
 
-.site-nav-wordmark {
+/* The wordmark and, beside it, Babdoduk on Instagram (owner 2026-11-05: "맨 위 왼쪽 Babdoduk 옆에 인스타그램
+   로고"; it left the More menu) hold the bar's first place together. */
+.site-nav-brand {
   justify-self: start;
   align-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.site-nav-insta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.site-nav-insta svg {
+  width: 22px;
+  height: 22px;
+}
+
+.site-nav-insta:hover {
+  color: #c13584;
+}
+
+.site-nav-insta:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -4px;
+}
+
+.site-nav-wordmark {
   display: inline-flex;
   align-items: center;
   gap: 0;
