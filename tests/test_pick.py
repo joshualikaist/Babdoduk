@@ -1,5 +1,5 @@
-"""오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-04): the roulette's choices, run in Node on the real
-dish catalog. The page itself is checked by scripts/check_site_ui.py pick_tools."""
+"""오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-05): what the capsule machine draws from and how, run
+in Node on the real dish catalog. The page itself is checked by scripts/check_site_ui.py pick_tools."""
 import json
 import shutil
 import subprocess
@@ -52,3 +52,40 @@ def test_only_main_campus_meals_still_being_served_are_offered():
 def test_a_menu_line_reads_without_allergen_numbers_or_the_calorie_line():
     assert run("P.cleanItems(['백미밥', '제육볶음(5,6,10)', '알감자조림(5,6*)', '[칼로리:890kcal]', '배추김치'])") == [
         "백미밥", "제육볶음", "알감자조림", "배추김치"]
+
+
+def test_a_draw_is_a_cafeteria_meal_about_four_in_ten_while_one_is_served_else_a_delivery_dish():
+    meals = [{"resto": {"id": "a"}, "meal": "lunch"}, {"resto": {"id": "b"}, "meal": "lunch"}]
+    dishes = [{"id": "x", "popularity": 1}, {"id": "y", "popularity": 3}]
+
+    def draw(meals_, dishes_, values):
+        seq = json.dumps(values)
+        return run(f"(() => {{ const v = {seq}; let i = 0; const r = P.draw({json.dumps(meals_)}, {json.dumps(dishes_)}, () => v[i++]);"
+                   " return r && (r.meal ? 'meal:' + r.meal.resto.id : 'dish:' + r.dish.id); })()")
+
+    assert draw(meals, dishes, [0.39, 0.6]) == "meal:b"          # under the cafeteria share, then which meal
+    assert draw(meals, dishes, [0.4, 0.2]) == "dish:x"           # weights 1 and 3: the first quarter is x
+    assert draw(meals, dishes, [0.4, 0.3]) == "dish:y"
+    assert draw([], dishes, [0.1]) == "dish:x"                   # no meal being served: always a dish
+    assert draw(meals, [], [0.1]) == "meal:a"                    # no dishes: always a meal, no share drawn
+    assert draw([], [], [0.5]) is None
+
+
+def test_every_dish_the_machine_can_draw_has_a_kind():
+    kinds = run("foods.filter(f => P.kindOf(f)).map(f => P.kindOf(f).id)")
+    assert len(kinds) > 400 and set(kinds) <= {"chicken", "pizza", "burger", "jokbal", "chinese", "bunsik",
+                                                "japanese", "asian", "western", "korean"}
+
+
+def test_the_photo_credits_the_page_carries_are_the_world_cups_and_cover_every_drawable_photo():
+    script = ("globalThis.window = globalThis; require('./js/pick-photos.js');"
+              "console.log(JSON.stringify(window.BABDODUK_PICK_PHOTOS));")
+    carried = json.loads(subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True, check=True).stdout)
+    cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))["photos"]
+    drawn = set(run("foods.filter(f => P.kindOf(f)).map(f => f.id)"))
+    assert drawn & set(cup) <= set(carried["photos"])           # every photographed dish the machine can draw
+    assert len(carried["photos"]) >= 30
+    for dish_id, (author, licence, source, link) in carried["photos"].items():
+        photo = cup[dish_id]
+        assert (author, licence, source, carried["links"][link]) == (photo["author"], photo["license"], photo["source"], photo.get("licenseUrl", ""))
+        assert (ROOT / "images/worldcup/thumb" / f"{dish_id}-320.webp").exists(), dish_id

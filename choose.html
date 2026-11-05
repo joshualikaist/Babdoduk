@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="학식일까 배달일까, 룰렛이 오늘 메뉴를 골라 줘요. KAIST 오늘 학식과 배달 메뉴 뽑기." />
+  <meta name="description" content="고르기 귀찮을 땐 뽑기 한 번. KAIST 오늘 학식이나 배달 메뉴 하나를 뽑아 줘요." />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
   <link rel="manifest" href="/manifest.json" />
@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css" />
-  <link rel="stylesheet" href="css/choose.css" />
   <link rel="stylesheet" href="css/pick.css" />
 </head>
 <body class="pick-body">
@@ -41,29 +40,26 @@
       <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
     </div>
   </header>
-  <!-- 오늘 뭐 먹지 (owner 2026-11-04): the one menu picker, a direct destination in the navigation. The
-       roulette (js/pick.js) picks from today's KAIST cafeteria meals or from kinds of delivery food;
-       the slot reel (js/eat-slot.js) then picks the dish. -->
+  <!-- 오늘 뭐 먹지 (owner 2026-11-05): one button and the world cup's capsule machine (js/pick.js) pick a
+       KAIST cafeteria meal being served today or a delivery dish. The machine is decoration only: the
+       button and the card below say everything. -->
   <main class="page-fill pick-page" id="main">
     <section class="pick" id="pickApp" aria-labelledby="pickTitle">
       <div class="pick-head">
         <h1 class="page-title pick-title" id="pickTitle" data-i18n="pick.title">오늘 뭐 먹지?</h1>
-        <p class="pick-lead" data-i18n="pick.lead">학식이든 배달이든, 룰렛이 골라 줄게요.</p>
+        <p class="pick-lead" data-i18n="pick.lead">고르기 귀찮을 땐 뽑기 한 번. 학식이든 배달이든 하나 골라 줄게요.</p>
         <button type="button" class="pick-sound" id="pickSound" aria-pressed="false" data-i18n-aria-key="pick.soundAria" aria-label="효과음"><span data-pick-sound-icon aria-hidden="true">🔈</span> <span data-i18n="pick.sound">소리</span></button>
       </div>
-      <h2 class="pick-step" data-i18n="pick.where">어디서 먹을까?</h2>
-      <div class="pick-modes" id="pickModes" role="group" aria-labelledby="pickTitle">
-        <button type="button" class="pick-mode" data-mode="cafeteria" aria-pressed="false"><span class="pick-mode-emoji" aria-hidden="true">🍱</span><span class="pick-mode-label" data-i18n="pick.mode.cafeteria">학식</span><span class="pick-mode-sub" data-i18n="pick.mode.cafeteriaSub">오늘 KAIST 학식</span></button>
-        <button type="button" class="pick-mode" data-mode="delivery" aria-pressed="false"><span class="pick-mode-emoji" aria-hidden="true">🛵</span><span class="pick-mode-label" data-i18n="pick.mode.delivery">배달</span><span class="pick-mode-sub" data-i18n="pick.mode.deliverySub">배달앱에서 시켜 먹기</span></button>
-        <button type="button" class="pick-mode pick-mode--any" data-mode="any" aria-pressed="false"><span class="pick-mode-emoji" aria-hidden="true">🙈</span><span class="pick-mode-label" data-i18n="pick.mode.any">아무거나</span><span class="pick-mode-sub" data-i18n="pick.mode.anySub">룰렛이 다 정해 줘요</span></button>
+      <div class="pick-stage" id="pickStage" aria-hidden="true">
+        <div class="pk-gacha" id="pickMachine">
+          <div class="pk-dome"><i class="pk-ball"></i><i class="pk-ball"></i><i class="pk-ball"></i><i class="pk-ball"></i><i class="pk-ball"></i><i class="pk-ball"></i><i class="pk-ball"></i></div>
+          <div class="pk-body"><span class="pk-screen"><span class="pk-strip">🍽️</span></span><span class="pk-crank"></span><span class="pk-eye pk-eye--l"></span><span class="pk-eye pk-eye--r"></span><span class="pk-mouth"></span></div>
+        </div>
       </div>
-      <div class="pick-board" id="pickBoard" hidden>
-        <h2 class="pick-step" id="pickBoardTitle"></h2>
-        <ul class="pick-tiles" id="pickTiles" aria-labelledby="pickBoardTitle"></ul>
-      </div>
+      <button type="button" class="pick-go" id="pickGo"><span aria-hidden="true">🎰</span> <span id="pickGoLabel">메뉴 뽑기</span></button>
       <div class="pick-result" id="pickResult" hidden></div>
       <p class="pick-sr" id="pickStatus" aria-live="polite"></p>
-      <p class="pick-scope" data-i18n="pick.scope">학식은 KAIST가 올린 오늘 메뉴, 배달은 메뉴 종류만 골라요. 판매 여부·가격·알레르기는 가게에서 확인해 주세요.</p>
+      <p class="pick-scope" data-i18n="pick.scope">학식은 KAIST가 올린 오늘 메뉴, 배달은 메뉴만 골라요. 판매 여부·가격·알레르기는 가게에서 확인해 주세요.</p>
     </section>
   </main>
 
@@ -123,10 +119,7 @@
         'nav.tip': '꽁밥 제보',
         'nav.today': '오늘의 꽁밥',
         'nav.topAria': '맨 위로',
-        'pick.again': '다시 돌리기',
-        'pick.board.any': '학식일까, 배달일까?',
-        'pick.board.cafeteria': '오늘 학식, 어디로 갈까?',
-        'pick.board.delivery': '오늘은 뭘 시켜 먹을까?',
+        'pick.again': '다시 뽑기',
         'pick.building': '건물',
         'pick.cat.asian': '아시안',
         'pick.cat.bunsik': '분식',
@@ -138,34 +131,26 @@
         'pick.cat.korean': '한식',
         'pick.cat.pizza': '피자',
         'pick.cat.western': '양식',
-        'pick.dishLanded': '오늘은 {name}!',
+        'pick.drawing': '뽑는 중…',
         'pick.error': '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.',
+        'pick.go': '메뉴 뽑기',
         'pick.hours': '시간',
-        'pick.kcal': '열량',
-        'pick.landed': '{name} 당첨!',
-        'pick.lead': '학식이든 배달이든, 룰렛이 골라 줄게요.',
+        'pick.kind.cafeteria': '학식',
+        'pick.kind.delivery': '배달',
+        'pick.landed': '오늘은 {name}!',
+        'pick.lead': '고르기 귀찮을 땐 뽑기 한 번. 학식이든 배달이든 하나 골라 줄게요.',
         'pick.loading': '메뉴 불러오는 중',
         'pick.meal.breakfast': '아침',
         'pick.meal.dinner': '저녁',
         'pick.meal.lunch': '점심',
-        'pick.mode.any': '아무거나',
-        'pick.mode.anySub': '룰렛이 다 정해 줘요',
-        'pick.mode.cafeteria': '학식',
-        'pick.mode.cafeteriaSub': '오늘 KAIST 학식',
-        'pick.mode.delivery': '배달',
-        'pick.mode.deliverySub': '배달앱에서 시켜 먹기',
-        'pick.noMenu': '지금 먹을 수 있는 학식이 없어요. 배달은 어때요?',
-        'pick.otherDish': '같은 종류로 다시',
+        'pick.photo': '사진',
         'pick.price': '가격',
-        'pick.reelAria': '메뉴를 뽑는 슬롯',
-        'pick.restart': '처음부터',
-        'pick.scope': '학식은 KAIST가 올린 오늘 메뉴, 배달은 메뉴 종류만 골라요. 판매 여부·가격·알레르기는 가게에서 확인해 주세요.',
+        'pick.scope': '학식은 KAIST가 올린 오늘 메뉴, 배달은 메뉴만 골라요. 판매 여부·가격·알레르기는 가게에서 확인해 주세요.',
         'pick.shopNote': '가게와 가격은 배달앱에서 골라요.',
         'pick.sound': '소리',
         'pick.soundAria': '효과음 켜기/끄기',
         'pick.title': '오늘 뭐 먹지?',
         'pick.toMenu': '학식 전체 보기',
-        'pick.where': '어디서 먹을까?',
       },
       en: {
         docTitle: 'What to eat · Babdoduk',
@@ -195,10 +180,7 @@
         'nav.tip': 'Free food tips',
         'nav.today': 'Today\'s free food',
         'nav.topAria': 'Back to top',
-        'pick.again': 'Spin again',
-        'pick.board.any': 'Cafeteria or delivery?',
-        'pick.board.cafeteria': 'Which cafeteria today?',
-        'pick.board.delivery': 'What shall we order?',
+        'pick.again': 'Draw again',
         'pick.building': 'Building',
         'pick.cat.asian': 'Asian',
         'pick.cat.bunsik': 'Bunsik',
@@ -210,42 +192,34 @@
         'pick.cat.korean': 'Korean',
         'pick.cat.pizza': 'Pizza',
         'pick.cat.western': 'Western',
-        'pick.dishLanded': 'Today: {name}!',
+        'pick.drawing': 'Drawing…',
         'pick.error': 'Could not load the menus. Please try again soon.',
+        'pick.go': 'Draw a menu',
         'pick.hours': 'Hours',
-        'pick.kcal': 'Energy',
-        'pick.landed': '{name}!',
-        'pick.lead': 'Cafeteria or delivery, the roulette picks for you.',
+        'pick.kind.cafeteria': 'Cafeteria',
+        'pick.kind.delivery': 'Delivery',
+        'pick.landed': 'Today: {name}!',
+        'pick.lead': 'Too lazy to choose? One pull picks a cafeteria meal or something to order.',
         'pick.loading': 'Loading menus',
         'pick.meal.breakfast': 'Breakfast',
         'pick.meal.dinner': 'Dinner',
         'pick.meal.lunch': 'Lunch',
-        'pick.mode.any': 'Anything',
-        'pick.mode.anySub': 'Let the roulette decide',
-        'pick.mode.cafeteria': 'Cafeteria',
-        'pick.mode.cafeteriaSub': 'Today at KAIST',
-        'pick.mode.delivery': 'Delivery',
-        'pick.mode.deliverySub': 'Order in a delivery app',
-        'pick.noMenu': 'No cafeteria meal is still being served. How about delivery?',
-        'pick.otherDish': 'Another of this kind',
+        'pick.photo': 'Photo',
         'pick.price': 'Price',
-        'pick.reelAria': 'Slot picking a dish',
-        'pick.restart': 'Start over',
-        'pick.scope': 'Cafeteria meals are KAIST\'s menu for today; delivery picks only a kind of food. Check availability, prices and allergens with the shop.',
+        'pick.scope': 'Cafeteria meals are KAIST\'s menu for today; delivery picks only a dish. Check availability, prices and allergens with the shop.',
         'pick.shopNote': 'Choose the shop and price in a delivery app.',
         'pick.sound': 'Sound',
         'pick.soundAria': 'Sound effects on/off',
         'pick.title': 'What should we eat?',
         'pick.toMenu': 'All cafeteria menus',
-        'pick.where': 'Where shall we eat?',
       }
     };
   </script>
   <script src="js/site.js"></script>
   <!-- @end i18n -->
   <script src="js/food-engine.js"></script>
-  <script src="js/eat-slot.js"></script>
   <script src="js/kaist-menu.js"></script>
+  <script src="js/pick-photos.js"></script>
   <script src="js/pick.js"></script>
 </body>
 </html>

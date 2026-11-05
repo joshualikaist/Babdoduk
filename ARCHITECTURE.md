@@ -30,7 +30,7 @@ Python collectors → private raw item and attachments → PII sanitizer → rul
                                                 └─> index.html (home summary, live only)
 
 LOCAL FRONTEND STATE
-data/foods/catalog.json + 7 packs → food engine → 오늘 뭐 먹지 roulette (choose.html, js/pick.js; with data/kaist-menu/ for the cafeteria) → slot animation
+data/foods/catalog.json + 7 packs → food engine → 오늘 뭐 먹지 capsule machine (choose.html, js/pick.js; with data/kaist-menu/ for the cafeteria and data/content/worldcup.json photos)
 food.html (unreleased, lab only) + authored data/food-log.json + browser-local entries/preferences/filters
 
 OPERATIONS

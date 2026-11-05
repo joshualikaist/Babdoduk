@@ -172,16 +172,18 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert "event-elsewhere" not in html and "event-num" not in html and 'class="page-num"' not in html
     assert 'class="event-instagram"' in html and "@babdodukms" in html
     assert 'id="eventEmpty"' in html and "event.emptyLink" not in html
-    # One picker product: 오늘 뭐 먹지 at choose.html (owner 2026-11-04), its roulette js/pick.js; the
-    # magazine keeps a card pointing there and sends an old #what link on.
+    # One picker product: 오늘 뭐 먹지 at choose.html (owner 2026-11-04), js/pick.js; since 2026-11-05 one
+    # button and the world cup's capsule machine, no choices and no slot reel. The magazine keeps a card
+    # pointing there and sends an old #what link on.
     for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
         assert 'id="pickApp"' not in page and "js/pick.js" not in page and 'id="eatApp"' not in page, name
     assert not (ROOT / "js/food-picker.js").exists()
     choose = (ROOT / "choose.html").read_text(encoding="utf-8")
     assert "noindex" not in choose and "location.replace" not in choose and choose.count('id="pickApp"') == 1
-    assert choose.count('<script src="js/pick.js"></script>') == 1 and '<script src="js/eat-slot.js"></script>' in choose
-    assert len(re.findall(r'<button type="button" class="pick-mode[^"]*" data-mode="(cafeteria|delivery|any)" aria-pressed="false">', choose)) == 3
+    assert choose.count('<script src="js/pick.js"></script>') == 1 and "eat-slot.js" not in choose
+    assert choose.count('<button type="button" class="pick-go" id="pickGo">') == 1 and 'class="pk-gacha"' in choose
+    assert "data-mode=" not in choose and 'id="pickTiles"' not in choose
     magazine = (ROOT / "mukbang.html").read_text(encoding="utf-8")
     assert 'id="eatApp"' not in magazine and magazine.count('id="kaistToday"') == 1 and 'id="what"' in magazine
     assert '<a class="mg-pick-link" href="choose.html">' in magazine

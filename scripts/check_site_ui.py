@@ -422,16 +422,14 @@ def magazine_edition_time(page):
 
 
 def pick_tools(browser):
-    """오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-04): three pressed choices; the cafeteria board is
-    today's main-campus meals still being served (a 문지 cafeteria and a finished meal stay out) and its card
-    reads the menu without allergen numbers or the calorie line; delivery spins to a kind and the slot to a
-    dish (no delivery-app link yet); any tile can be picked by hand; 처음부터 resets; sound starts off. Its own context
-    has a fixed clock (12:00 KST on a day the synthetic menu is for) and reduced motion, which lands every
-    spin at once: nothing here waits on an animation, today's real menu or the time of day."""
+    """오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-05): one button and the world cup's capsule machine,
+    no choices. A draw is a main-campus cafeteria meal still being served (its card reads the menu without
+    allergen numbers or the calorie line and leads to all cafeteria menus) or a delivery dish (its kind,
+    the shop note, the photo's credit, no delivery-app link yet). The button then says 다시 뽑기; a press
+    during a draw lands it at once; the machine is decoration only; sound starts off. Its contexts have a
+    fixed clock (12:00 KST on a day the synthetic menu is for) and a fixed Math.random, so nothing here
+    waits on chance, today's real menu or the time of day; one context keeps motion on to see the draw."""
     count = 0
-    context = new_context(browser)
-    page = context.new_page()
-    page.clock.set_fixed_time("2026-10-14T12:00:00+09:00")
 
     def check(ok, detail):
         nonlocal count
@@ -445,46 +443,86 @@ def pick_tools(browser):
          "lunch": {"items": ["백미밥", "제육볶음(5,6,10)", "[칼로리:890kcal]"], "hours": "11:30~13:30", "price": "5,000원"},
          "dinner": {"items": []}},
         {"id": "r2", "name": "문지캠퍼스", "building": "문지", "lunch": {"items": ["비빔밥"], "hours": "11:30~13:30"}}]}
-    page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
-    page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json={"days": [{"date": today, "available": True}]}))
-    page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(json=menu))
-    page.emulate_media(reduced_motion="reduce")
-    page.set_viewport_size({"width": 360, "height": 800})
-    page.goto("https://site-ui.invalid/index.html", wait_until="domcontentloaded")
-    page.evaluate("localStorage.removeItem('babdoduk-pick-sound')")
-    page.goto("https://site-ui.invalid/choose.html", wait_until="networkidle")
+
+    def open_page(reduced, lang="ko"):
+        context = new_context(browser)
+        page = context.new_page()
+        page.clock.set_fixed_time("2026-10-14T12:00:00+09:00")
+        page.add_init_script("window.__rand = 0.1; Math.random = () => window.__rand;")
+        page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
+        page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json={"days": [{"date": today, "available": True}]}))
+        page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(json=menu))
+        page.emulate_media(reduced_motion="reduce" if reduced else "no-preference")
+        page.set_viewport_size({"width": 360, "height": 800})
+        page.goto("https://site-ui.invalid/index.html", wait_until="domcontentloaded")
+        page.evaluate("lang => { localStorage.removeItem('babdoduk-pick-sound'); localStorage.setItem('babdoduk-lang', lang); }", lang)
+        page.goto("https://site-ui.invalid/choose.html", wait_until="networkidle")
+        return context, page
+
+    context, page = open_page(True)
     check(page.locator("h1").inner_text().strip() == "오늘 뭐 먹지?", "one h1")
     check(page.locator('.site-nav a[href="choose.html"][aria-current="page"]').count() == 1, "the nav marks 오늘 뭐 먹지")
-    check(page.locator('[data-mode][aria-pressed="false"]').count() == 3, "three pressed toggles, none pressed")
+    check(page.locator("#pickGo").inner_text().strip().endswith("메뉴 뽑기") and page.locator("#pickApp button").count() == 2
+          and page.locator("[data-mode], .pick-tile").count() == 0, "one button to draw (and the sound toggle), no choices")
+    check(page.locator("#pickStage").get_attribute("aria-hidden") == "true", "the machine is decoration only")
     check(page.locator("#pickSound").get_attribute("aria-pressed") == "false", "sound starts off")
     check(page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth") <= 0,
           "no horizontal overflow at 360 px")
+    stage, machine = page.locator("#pickStage").bounding_box(), page.locator("#pickMachine").bounding_box()
+    check(machine["y"] >= stage["y"] and machine["y"] + machine["height"] * 0.74 <= stage["y"] + stage["height"],
+          ("the machine fits its stage", stage, machine))
 
-    page.locator('[data-mode="cafeteria"]').click()
+    # 0.1: a cafeteria meal (one is being served), the first one.
+    page.locator("#pickGo").click()
     page.locator(".pick-result:not([hidden]) .pick-menu").wait_for()
-    tiles = page.locator("#pickTiles .pick-tile").evaluate_all("els => els.map(e => e.innerText.replace(/\\s+/g, ' ').trim())")
-    check(tiles == ["🍱 카이마루 N11 점심"], ("main-campus meals still served, nothing else", tiles))
+    check(page.locator(".pick-result-title").inner_text().strip() == "카이마루 N11", "main-campus meals still served only")
     items = page.locator(".pick-menu li").evaluate_all("els => els.map(e => e.textContent)")
     check(items == ["백미밥", "제육볶음"], ("the menu reads clean", items))
+    check("점심" in page.locator(".pick-result-kicker").inner_text(), "the card says which meal")
     check(page.locator('.pick-result a[href="ggongbab.html#menu"]').count() == 1, "the card leads to all cafeteria menus")
     check(page.evaluate("document.activeElement.matches('.pick-result-title')"), "focus moves to the result")
-    check("당첨" in page.locator("#pickStatus").inner_text(), "the landing is announced")
+    check("오늘은 카이마루 N11" in page.locator("#pickStatus").inner_text(), "the pick is announced")
+    check(page.locator("#pickGoLabel").inner_text() == "다시 뽑기", "the button says 다시 뽑기")
+    check(page.locator(".pk-cap").count() == 1 and page.locator(".pk-strip").inner_text() == "🍱", "one capsule; the screen shows the pick")
 
-    page.locator('[data-mode="delivery"]').click()
-    page.locator(".pick-after:not([hidden])").wait_for()
-    kinds = page.locator("#pickTiles .pick-tile").count()
-    check(kinds >= 8, ("kinds of delivery food", kinds))
-    check(page.locator(".pick-result-title").inner_text().strip() != "" and page.locator('[data-pick="kind"]').count() == 1
-          and not page.locator('[data-pick="baemin"], a[href^="baemin:"]').count(),
-          "a dish and 같은 종류로 다시; no delivery-app link yet (owner 2026-11-04: later)")
-    page.locator('#pickTiles .pick-tile[data-tile="pizza"]').click()
-    page.locator(".pick-after:not([hidden])").wait_for()
-    check("피자" in page.locator(".pick-result-kicker").inner_text(), "a tile picked by hand opens that kind")
-    page.locator('[data-pick="restart"]').click()
-    check(page.locator("#pickBoard").is_hidden() and page.locator("#pickResult").is_hidden()
-          and page.evaluate("document.activeElement.dataset.mode") == "cafeteria", "처음부터 resets and focuses the first choice")
+    # 0.9: a delivery dish, with its photo and the photo's credit.
+    page.evaluate("window.__rand = 0.9")
+    page.locator("#pickGo").click()
+    page.locator(".pick-result:not([hidden]) .pick-note").wait_for()
+    check("배달" in page.locator(".pick-result-kicker").inner_text() and page.locator(".pick-result-title").inner_text().strip() != "",
+          "a delivery dish and its kind")
+    check(page.locator(".pick-credit a").count() == 2 and page.locator(".pk-cap img").count() == 1,
+          "the capsule opens on the dish's photo, credited")
+    check(page.locator('a[href^="baemin:"], a[href*="baemin"], [data-pick="baemin"]').count() == 0,
+          "no delivery-app link yet (owner 2026-11-04: later)")
+    check(page.locator(".pk-cap").count() == 1, "one capsule at a time")
     page.locator("#pickSound").click()
     check(page.locator("#pickSound").get_attribute("aria-pressed") == "true", "sound turns on when asked")
+    context.close()
+
+    # With motion: the draw plays (the button is busy), lands by itself, and a press during it lands at once.
+    context, page = open_page(False)
+    page.locator("#pickGo").click()
+    page.wait_for_function("document.getElementById('pickGo').getAttribute('aria-busy') === 'true' && "
+                           "document.getElementById('pickGoLabel').textContent === '뽑는 중…'", timeout=5000)
+    check(page.locator("#pickResult").is_hidden(), "the card waits for the capsule")
+    page.locator("#pickResult:not([hidden])").wait_for(timeout=5000)
+    check(page.locator("#pickGo").get_attribute("aria-busy") is None, "the draw lands by itself")
+    page.locator("#pickGo").click()
+    page.wait_for_timeout(120)
+    page.locator("#pickGo").click()
+    page.wait_for_timeout(60)
+    check(page.locator("#pickGoLabel").inner_text() == "다시 뽑기" and page.locator("#pickResult").is_visible()
+          and page.locator(".pick-stage.is-done").count() == 1, "a press during a draw lands it at once")
+    context.close()
+
+    # English.
+    context, page = open_page(True, "en")
+    check(page.locator("#pickGoLabel").inner_text() == "Draw a menu", "the button in English")
+    page.locator("#pickGo").click()
+    page.locator(".pick-result:not([hidden]) .pick-menu").wait_for()
+    check(page.locator(".pick-result-kicker").inner_text().startswith("🍱 Cafeteria · Lunch")
+          and page.locator("#pickGoLabel").inner_text() == "Draw again", "the card and button in English")
     context.close()
     return count
 
@@ -502,7 +540,7 @@ def release_contracts(page):
 
     choose = (ROOT / "choose.html").read_text(encoding="utf-8")
     check("noindex" not in choose and "location.replace" not in choose and 'id="pickApp"' in choose
-          and "food-picker.js" not in choose, "choose.html is the indexed 오늘 뭐 먹지 page with the roulette")
+          and "food-picker.js" not in choose, "choose.html is the indexed 오늘 뭐 먹지 page with the capsule machine")
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/food.html", wait_until="networkidle")
     robots = page.locator('meta[name="robots"]').get_attribute("content") or ""
