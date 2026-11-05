@@ -12,10 +12,10 @@ and status checks, the lab-only pages answering 404 on production, and page load
 STRICTLY read-only:
   * No form is submitted and the script never sends a POST of its own.
   * Every request that is not GET/HEAD/OPTIONS is aborted in the browser before it leaves, whichever
-    host it targets (the world cup's stats RPC on lab included: finishing a game on lab *tries* to
-    record it, and that attempt is aborted and noted, never delivered).
-  * On production a single attempted non-GET request is a failure; on lab only the world cup
-    record RPC is tolerated.
+    host it targets (the stats RPCs on lab included: finishing a world cup game or a 오늘 뭐 먹지 draw
+    on lab *tries* to record it, and that attempt is aborted and noted, never delivered).
+  * On production a single attempted non-GET request is a failure; on lab only the world cup's
+    and 오늘 뭐 먹지's record RPCs are tolerated.
   * Requests to Dooray, the Portal or any admin system are aborted and reported as failures.
 
 Output: <out>/e2e-<host tag>.json (full report), a readable summary on stdout (and in
@@ -46,7 +46,8 @@ LINK_CAP = 60
 LAB_ONLY = ["lab.html", "food.html", "lab-ggongbab.html", "data/food-log.json", "calendar.ics"]
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 FORBIDDEN_HOST = re.compile(r"dooray|portal\.kaist|admin\.", re.I)
-RECORD_RPC = "rpc/worldcup_record_game"
+# Lab's own anonymous counters (docs/WORLDCUP_STATS.md, docs/PICK_STATS.md): tried, aborted, tolerated there.
+RECORD_RPCS = ("rpc/worldcup_record_game", "rpc/pick_record")
 
 
 # ---- pure helpers (tested in tests/test_e2e_live.py) ---------------------------------------------------
@@ -120,11 +121,11 @@ def host_tag(base: str) -> str:
 
 
 def post_violations(posts: list[dict], is_lab: bool) -> list[dict]:
-    """The attempted non-GET requests that are not allowed: any on production, anything but the world
-    cup record RPC on lab."""
+    """The attempted non-GET requests that are not allowed: any on production, anything but the record
+    RPCs (RECORD_RPCS) on lab."""
     if not is_lab:
         return list(posts)
-    return [p for p in posts if not (p["host"].endswith(".supabase.co") and p["path"].endswith(RECORD_RPC))]
+    return [p for p in posts if not (p["host"].endswith(".supabase.co") and p["path"].endswith(RECORD_RPCS))]
 
 
 # ---- recording -----------------------------------------------------------------------------------------
@@ -401,6 +402,29 @@ def journey_simple(rep: Report, page, context, path: str, main_sel: str, heading
     page_checks(rep, page, context, path)
 
 
+def journey_choose(rep: Report, page, context):
+    """오늘 뭐 먹지 (docs/PICK.md): since 2026-11-05 one button and the capsule machine, a page with little
+    text, so instead of a text-length check a draw must name a menu. The roulette before it (production
+    until that release) keeps the text check. Signals to the taste counts are POSTs, which this run
+    aborts, so a draw here never counts."""
+    goto(rep, page, "choose.html", lambda: settle(page))
+    rep.check("choose.html: heading visible", page.locator("h1").first.is_visible())
+    go = page.locator("#pickGo")
+    if go.count():
+        rep.check("choose.html: the draw button is visible", go.is_visible())
+        go.click()
+        go.click()                                            # a second press lands the draw at once
+        result = page.locator("#pickResult:not([hidden])")
+        result.wait_for(timeout=15000)
+        title = result.locator(".pick-result-title")
+        name = title.inner_text().strip() if title.count() else ""
+        rep.check("choose.html: a draw names a menu", bool(name), result.inner_text()[:80])
+    else:
+        body = page.locator("main").first.inner_text() if page.locator("main").count() else ""
+        rep.check("choose.html: main content present", len(body.strip()) > 150, f"{len(body.strip())} chars")
+    page_checks(rep, page, context, "choose.html")
+
+
 def tap_splash(page, size):
     page.mouse.click(size[0] / 2, size[1] / 2)
     page.wait_for_timeout(250)
@@ -500,7 +524,6 @@ PAGES = [
     ("mukbang.html", "main", "h1"),
     ("event.html", "main", "h1"),
     ("history.html", "main", "h1"),
-    ("choose.html", "main", "h1, h2"),
 ]
 
 
@@ -533,6 +556,8 @@ def run(base: str, out: Path) -> Report:
                     ] + [
                         (p.split(".")[0], (lambda p=p, m=m, h=h: journey_simple(rep, page, context, p, m, h)))
                         for p, m, h in PAGES
+                    ] + [
+                        ("choose", lambda: journey_choose(rep, page, context)),
                     ] + [
                         ("worldcup", lambda: journey_worldcup(rep, page, context, phase, size, friend_id, category_id)),
                     ]
