@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T04:11:46+09:00",
+  "generatedAt": "2026-11-05T16:05:00+09:00",
   "timezone": "Asia/Seoul",
-  "count": 42,
+  "count": 44,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -214,6 +214,40 @@
         "text": "참여대학 재학생, 일반 학습자, STAR-MOOC 강좌 관심있는 누구나",
         "basis": "stated"
       }
+    },
+    {
+      "id": "6902baab-5162-498f-855d-78213bfcf44c",
+      "title": "KAIST 점심 & 창업 토크",
+      "summary": "베이스벤처스가 주최하는 창업 토크로, 버기즈 버거가 무료로 제공됩니다.",
+      "startAt": "2026-11-06T12:00:00+09:00",
+      "endAt": "2026-11-06T13:30:00+09:00",
+      "dateText": "11/6(금)",
+      "timeText": "오후 12:00 ~ 오후 1:30",
+      "location": {
+        "name": "KAIST",
+        "building": "W8",
+        "room": "3층 컨퍼런스홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "버기즈 버거 무료 제공",
+        "source": "text"
+      },
+      "organizer": "베이스벤처스",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
     },
     {
       "id": "8e6293b7-9414-44ed-99a9-6a686c5b2271",
@@ -1768,6 +1802,47 @@
       },
       "audience": {
         "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "4959510d-f83c-405a-807f-e8b854558879",
+      "title": "2026년 충청권역 Pre-TeX Corps(프리텍스코어)",
+      "summary": "충청권역 대학 소속 학생 및 박사후 연구원 등을 대상으로 실험실 창업탐색 교육과 사업신청서 작성 등을 진행하는 프로그램입니다. 전체교육 후 후속 멘토링과 발표평가가 이어집니다.",
+      "startAt": "2026-11-27T10:00:00+09:00",
+      "endAt": "2026-11-28T14:00:00+09:00",
+      "dateText": "26. 11. 27.(금) 10:00~11. 28.(토) 14:00",
+      "timeText": "10:00~11. 28.(토) 14:00",
+      "location": {
+        "name": "세종 코드야드호텔 2F 그랜드볼룸",
+        "building": "",
+        "room": "2F 그랜드볼룸"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "KAIST 실험실창업혁신단",
+      "eligibility": "충청권역 대학 소속 1인 이상의 실험실 창업에 관심이 있는 학생(학사과정~박사과정) 및 박사후 연구원 등",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-22T23:59:00+09:00",
+        "url": "https://forms.gle/M5GmDi8KpydeoxTx5"
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "소정의 기념품"
+      },
+      "audience": {
+        "text": "충청권역 대학 소속 학생(학사과정~박사과정) 및 박사후 연구원",
         "basis": "stated"
       }
     }
