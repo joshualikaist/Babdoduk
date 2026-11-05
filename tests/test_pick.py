@@ -82,10 +82,17 @@ def test_the_photo_credits_the_page_carries_are_the_world_cups_and_cover_every_d
               "console.log(JSON.stringify(window.BABDODUK_PICK_PHOTOS));")
     carried = json.loads(subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True, check=True).stdout)
     cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))["photos"]
-    drawn = set(run("foods.filter(f => P.kindOf(f)).map(f => f.id)"))
-    assert drawn & set(cup) <= set(carried["photos"])           # every photographed dish the machine can draw
-    assert len(carried["photos"]) >= 30
+    drawn = set(run("foods.filter(f => P.kindOf(f) && f.popularity >= P.MIN_POPULARITY).map(f => f.id)"))
+    assert drawn & set(cup) == set(carried["photos"])           # exactly the photographed dishes it can draw
+    assert len(carried["photos"]) >= 20
     for dish_id, (author, licence, source, link) in carried["photos"].items():
         photo = cup[dish_id]
         assert (author, licence, source, carried["links"][link]) == (photo["author"], photo["license"], photo["source"], photo.get("licenseUrl", ""))
         assert (ROOT / "images/worldcup/thumb" / f"{dish_id}-320.webp").exists(), dish_id
+
+
+def test_the_machine_draws_the_delivery_staples_not_the_catalogs_rarities():
+    """Owner 2026-11-05: "배달음식이 너무나도 한국 정서와 조금 다른 것 같다". Only dishes rated 4 or 5."""
+    names = set(run("foods.filter(f => P.kindOf(f) && f.popularity >= P.MIN_POPULARITY).map(f => f.nameKo)"))
+    assert {"후라이드 치킨", "양념치킨", "짜장면", "짬뽕", "떡볶이", "마라탕", "족발", "보쌈", "김치찌개", "돈카츠"} <= names
+    assert not names & {"루면", "비앙비앙면", "량피", "깨죽", "게국지", "홍어찜", "감자수프"}

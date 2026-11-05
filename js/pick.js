@@ -4,8 +4,8 @@
 
    메뉴 뽑기: the machine cranks three times while its screen runs through food, squashes, and drops one
    capsule that flies up and pops open on the pick; the card under the button names it. The pick is a
-   KAIST cafeteria meal still being served today (main campus) or a delivery dish, a photographed one
-   when the photos load; while a cafeteria meal is being served, about four draws in ten are one. A
+   KAIST cafeteria meal still being served today (main campus) or a popular delivery dish (MIN_POPULARITY),
+   a photographed one; while a cafeteria meal is being served, about four draws in ten are one. A
    press during a draw lands it at once; reduced motion, forced colours or no Web Animations show the
    pick straight away. Only transform and opacity move. (Opening a delivery app waits for the owner,
    2026-11-04: "이거는 나중에 구현".)
@@ -18,6 +18,11 @@
   var MEAL_END = { breakfast: '09:30', lunch: '13:30', dinner: '19:00' };
   // While a cafeteria meal is being served, the share of draws that pick one.
   var CAFETERIA_SHARE = 0.4;
+  // Only dishes the catalog rates 4 or 5 for popularity: the delivery-app staples (치킨, 짜장면, 떡볶이,
+  // 마라탕 …). Owner 2026-11-05: "배달음식이 너무나도 한국 정서와 조금 다른 것 같다"; at 3 and below the
+  // pool was 354 dishes such as 루면 or 비앙비앙면 and drew four times in five. scripts/page_content.py
+  // pick_photo_blocks carries the photo credits of the same dishes.
+  var MIN_POPULARITY = 4;
   // Kinds of delivery food, as the delivery apps group them. A dish takes the first kind it fits, so the
   // specific kinds come before the broad ones (한식 last).
   var CATEGORIES = [
@@ -107,7 +112,7 @@
   }
 
   window.BabdodukPick = { CATEGORIES: CATEGORIES, categorize: categorize, servingMeals: servingMeals,
-    cleanItems: cleanItems, kindOf: kindOf, draw: draw };
+    cleanItems: cleanItems, kindOf: kindOf, draw: draw, MIN_POPULARITY: MIN_POPULARITY };
 
   var app = document.getElementById('pickApp');
   if (!app) return;
@@ -207,9 +212,9 @@
                  thumb: 'images/worldcup/thumb/' + id } : null;
   }
   var foodsReady = (Foods && Foods.load ? Foods.load() : Promise.reject(new Error('no catalog'))).then(function (foods) {
-    var all = foods.filter(function (f) { return kindOf(f); });
+    var all = foods.filter(function (f) { return kindOf(f) && Number(f.popularity) >= MIN_POPULARITY; });
     var shot = all.filter(function (f) { return photoOf(f.id); });
-    state.dishes = shot.length >= 30 ? shot : all;
+    state.dishes = shot.length >= 20 ? shot : all;
   }, function () { state.dishes = []; });
 
   function servingNow() {

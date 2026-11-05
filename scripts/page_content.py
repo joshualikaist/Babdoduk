@@ -417,9 +417,14 @@ def catalog_names(root: Path = ROOT) -> dict[str, list[str]]:
     return names
 
 
+# js/pick.js MIN_POPULARITY: 오늘 뭐 먹지 draws only the delivery staples (owner 2026-11-05).
+PICK_MIN_POPULARITY = 4
+
+
 def pick_photo_blocks(data: dict | None = None, root: Path = ROOT) -> dict[str, list[str]]:
     """The world cup's photo credits for the dishes 오늘 뭐 먹지 can draw (choose.html, js/pick.js,
-    docs/PICK.md): catalog dishes that are delivered and are not a dessert or a drink. Each dish is
+    docs/PICK.md): catalog dishes that are delivered, are not a dessert or a drink and are popular
+    (PICK_MIN_POPULARITY). Each dish is
     [author, licence, source, the index of its licence link in `links`]: the links are written once.
     The photo itself is images/worldcup/thumb/<id>-320.webp. Written into js/pick-photos.js
     (data/content/ is never deployed)."""
@@ -433,6 +438,8 @@ def pick_photo_blocks(data: dict | None = None, root: Path = ROOT) -> dict[str, 
     for dish, photo in sorted((data.get("photos") or {}).items()):
         food = foods.get(dish) or {}
         if "delivery" not in (food.get("diningMode") or []) or food.get("category") in ("dessert", "drink"):
+            continue
+        if (food.get("popularity") or 0) < PICK_MIN_POPULARITY:
             continue
         if not (photo.get("author") and photo.get("license") and photo.get("source")):
             continue
