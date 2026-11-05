@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T09:57:25+09:00",
+  "generatedAt": "2026-11-05T16:05:00+09:00",
   "timezone": "Asia/Seoul",
-  "count": 43,
+  "count": 44,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -214,6 +214,40 @@
         "text": "참여대학 재학생, 일반 학습자, STAR-MOOC 강좌 관심있는 누구나",
         "basis": "stated"
       }
+    },
+    {
+      "id": "6902baab-5162-498f-855d-78213bfcf44c",
+      "title": "KAIST 점심 & 창업 토크",
+      "summary": "베이스벤처스가 주최하는 창업 토크로, 버기즈 버거가 무료로 제공됩니다.",
+      "startAt": "2026-11-06T12:00:00+09:00",
+      "endAt": "2026-11-06T13:30:00+09:00",
+      "dateText": "11/6(금)",
+      "timeText": "오후 12:00 ~ 오후 1:30",
+      "location": {
+        "name": "KAIST",
+        "building": "W8",
+        "room": "3층 컨퍼런스홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "버기즈 버거 무료 제공",
+        "source": "text"
+      },
+      "organizer": "베이스벤처스",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
     },
     {
       "id": "8e6293b7-9414-44ed-99a9-6a686c5b2271",
