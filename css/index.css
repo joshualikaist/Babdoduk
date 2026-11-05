@@ -1195,6 +1195,20 @@ html[data-wc-phase="soon"] .home-wc-photo {
   border-top: 1px solid var(--color-divider);
 }
 
+/* Four or more listings (js/home-calendar.js fitScroll): the list scrolls inside its box, three rows
+   and the top of the fourth in view, with the site's scrollbar. Soft shadows at the top and bottom
+   show there is more (covers move with the content, shadows stay with the box). */
+.hc-events-scroll {
+  position: relative;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background:
+    linear-gradient(var(--color-surface) 30%, rgba(255, 253, 248, 0)) top / 100% 24px no-repeat local,
+    linear-gradient(rgba(255, 253, 248, 0), var(--color-surface) 70%) bottom / 100% 24px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(30, 29, 26, 0.16), transparent) top / 100% 8px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(30, 29, 26, 0.16), transparent) bottom / 100% 8px no-repeat scroll;
+}
+
 /* A row, as the hub's (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in bold):
    the time in its own column, the dish in bold, then the title and place in one small muted line.
    The button covers the row, so a tap anywhere opens it; the row itself only shows text. */

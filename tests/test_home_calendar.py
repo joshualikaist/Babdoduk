@@ -711,3 +711,32 @@ def test_an_ended_meeting_keeps_no_join_button(browser):
     assert detail.locator("a.hc-ev-apply").count() == 0 and "온라인 참여" not in detail.inner_text()
     assert not errors
     context.close()
+
+
+def test_four_or_more_listings_scroll_inside_the_day(browser):
+    """Owner 2026-11-05: "4개 이상부터는 스크롤바 … 밑으로 내리도록". Three rows and the top of the fourth
+    show; the rest scrolls inside the day; an opened row keeps the box's height; three rows never scroll."""
+    rows = [ev(f"talk{i}", f"2026-10-01T{10 + i}:00:00+09:00", f"2026-10-01T{10 + i}:50:00+09:00", title=f"세미나 {i}")
+            for i in range(5)]
+    for size in ((390, 844), (1440, 900)):
+        context, page, errors = open_home(browser, live={"generatedAt": LIVE["generatedAt"], "events": rows}, size=size)
+        box = page.locator("#homeCalDay .hc-events-scroll")
+        assert box.count() == 1
+        m = box.evaluate("""b => { const r = b.getBoundingClientRect(), rows = [...b.querySelectorAll('.hc-ev')];
+          const top = i => rows[i].getBoundingClientRect().top - r.top, bottom = i => rows[i].getBoundingClientRect().bottom - r.top;
+          return {client: b.clientHeight, scroll: b.scrollHeight, overflow: getComputedStyle(b).overflowY,
+                  third: bottom(2), fourthTop: top(3), fourthBottom: bottom(3), n: rows.length}; }""")
+        assert m["n"] == 5 and m["overflow"] == "auto" and m["scroll"] > m["client"], m
+        assert m["third"] <= m["client"] + 1 and m["fourthTop"] < m["client"] < m["fourthBottom"], m   # a peek of the fourth
+        before = m["client"]
+        page.locator(".hc-ev-btn").first.click()                       # an opened row scrolls inside
+        assert box.evaluate("b => b.clientHeight") == before
+        box.evaluate("b => b.scrollTop = b.scrollHeight")
+        assert page.locator(".hc-ev").nth(4).is_visible()
+        # (the harness answers the cafeteria and map data with an empty 404, which other modules report)
+        assert not [e for e in errors if "fitScroll" in e or "maxHeight" in e], errors
+        context.close()
+    three = {"generatedAt": LIVE["generatedAt"], "events": rows[:3]}
+    context, page, _ = open_home(browser, live=three)
+    assert page.locator("#homeCalDay .hc-events-scroll").count() == 0 and page.locator(".hc-ev").count() == 3
+    context.close()

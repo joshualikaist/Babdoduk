@@ -481,18 +481,33 @@
       else text = t('home.cal.noRecord', '기록 없음');
       html += text ? '<p class="hc-empty">' + esc(text) + '</p>' : '';
     } else {
-      html += '<ul class="hc-events">' + list.map(function (item, i) {
+      // Four or more listings scroll inside the day (fitScroll).
+      html += (list.length >= SCROLL_FROM ? '<div class="hc-events-scroll">' : '') + '<ul class="hc-events">' + list.map(function (item, i) {
         var open = state.open === item.ev.id;
         // The button covers the row (a tap anywhere on it opens it; not the opened details) and is named by the title.
         return '<li class="hc-ev' + (item.active ? '' : ' is-past') + (open ? ' is-open' : '') + '">' +
           '<div class="hc-ev-row"><button type="button" class="hc-ev-btn" data-hc-ev="' + esc(item.ev.id) + '" aria-expanded="' + open +
           '" aria-controls="homeCalEv' + i + '" aria-labelledby="homeCalEvTitle' + i + '"></button>' + timeCol(item) + '<span class="hc-ev-body">' + headLine(item) + metaLines(item, i) + '</span></div>' +
           '<div class="hc-ev-detail" id="homeCalEv' + i + '"' + (open ? '' : ' hidden') + '>' + detailHtml(item) + '</div></li>';
-      }).join('') + '</ul>';
+      }).join('') + '</ul>' + (list.length >= SCROLL_FROM ? '</div>' : '');
     }
     els.day.innerHTML = html;
     els.day.hidden = false;
+    fitScroll();
   }
+  // Owner 2026-11-05: "이벤트나 꽁밥이 4개 이상부터는 스크롤바 설치해줘. 밑으로 내리도록". From the fourth
+  // listing on, the day's list scrolls in a box that shows three rows and the top of the fourth, so it
+  // reads as more below. Measured on the closed rows (an opened row's details scroll inside, the box
+  // keeps its height); again on a resize, where the rows rewrap.
+  var SCROLL_FROM = 4, SCROLL_PEEK = 40;
+  function fitScroll() {
+    var box = els.day.querySelector('.hc-events-scroll');
+    if (!box) return;
+    var rows = box.querySelectorAll('.hc-ev-row'), height = 0;
+    for (var i = 0; i < SCROLL_FROM - 1 && i < rows.length; i++) height += rows[i].offsetHeight + 1;   // + the divider
+    box.style.maxHeight = (height + SCROLL_PEEK) + 'px';
+  }
+  window.addEventListener('resize', fitScroll);
   // Only dates after the selected day (or after today, when a past day is selected); never the selected day again.
   // Free food only, like its title: a giveaway-only listing is found by its 🎁 date.
   function renderNext() {
