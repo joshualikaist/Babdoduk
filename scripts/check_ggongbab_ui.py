@@ -1659,7 +1659,12 @@ def run_checks(preview=False):
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
                 assert page.locator(".gg-updated").is_visible()
                 assert page.locator(".gg-archive").count() == 1
-                report["checks"] += 13
+                # Nothing left today: no next-meal button, and the radar keeps its own bottom padding, so
+                # "오늘은 꽁밥 가뭄" does not sit on the box's edge (2026-11-05: it looked cut off).
+                gap = page.evaluate("(r => r.getBoundingClientRect().bottom - r.querySelector('.gg-radar-line').getBoundingClientRect().bottom)"
+                                    "(document.querySelector('.gg-radar'))")
+                assert page.locator(".gg-radar.is-quiet").count() == 1 and page.locator(".gg-radar-cta").count() == 0 and gap >= 8, gap
+                report["checks"] += 14
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
         # Keyboard users keep their place through re-renders; tabs follow the

@@ -10,6 +10,7 @@
 /* The radar (2026-11-05): one slim line, the day's mood and count, then the next free meal as a
    button to its row. It was a tall box repeating the hero's count and the first card. */
 .gg-radar { width:100%; padding:10px 14px 0; margin:0 0 12px; border-radius:14px; background:var(--color-surface); border:1px solid var(--color-divider); box-shadow:inset 3px 0 0 var(--color-accent); }
+.gg-radar.is-quiet { padding-bottom:10px; }
 .gg-radar-line { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
 .gg-radar-title { min-width:0; font-size:15px; font-weight:800; line-height:22px; letter-spacing:-.025em; color:#1d1d1f; }
 .gg-radar-count { flex-shrink:0; font-size:15px; font-weight:900; line-height:22px; color:#1d1d1f; font-variant-numeric:tabular-nums; }
