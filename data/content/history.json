@@ -56,6 +56,96 @@
           "en": "Babdoduk ver2"
         }
       }
+    },
+    {
+      "date": "2026-10-04",
+      "title": {
+        "ko": "ver2.1 꽁밥 달력",
+        "en": "ver2.1 Free-food calendar"
+      },
+      "text": {
+        "ko": "홈에서 한눈에 보는 꽁밥 일정",
+        "en": "Free food at a glance on the home page"
+      },
+      "picture": {
+        "mark": "ver2.1",
+        "alt": {
+          "ko": "Babdoduk ver2.1",
+          "en": "Babdoduk ver2.1"
+        }
+      }
+    },
+    {
+      "date": "2026-10-14",
+      "title": {
+        "ko": "ver2.2 먹방 월드컵",
+        "en": "ver2.2 Mukbang World Cup"
+      },
+      "text": {
+        "ko": "메뉴 32강 월드컵, 경품 꽁밥 표시",
+        "en": "A round of 32 dishes, and giveaways marked"
+      },
+      "picture": {
+        "mark": "ver2.2",
+        "alt": {
+          "ko": "Babdoduk ver2.2",
+          "en": "Babdoduk ver2.2"
+        }
+      }
+    },
+    {
+      "date": "2026-11-02",
+      "title": {
+        "ko": "ver2.3 꽁밥 제보",
+        "en": "ver2.3 Free-food tips"
+      },
+      "text": {
+        "ko": "놓친 꽁밥을 누구나 제보",
+        "en": "Anyone can report free food we missed"
+      },
+      "picture": {
+        "mark": "ver2.3",
+        "alt": {
+          "ko": "Babdoduk ver2.3",
+          "en": "Babdoduk ver2.3"
+        }
+      }
+    },
+    {
+      "date": "2026-11-04",
+      "title": {
+        "ko": "ver2.4 꽁밥 지도",
+        "en": "ver2.4 Free-food map"
+      },
+      "text": {
+        "ko": "캠퍼스 지도에서 꽁밥 찾기",
+        "en": "Find free food on the campus map"
+      },
+      "picture": {
+        "mark": "ver2.4",
+        "alt": {
+          "ko": "Babdoduk ver2.4",
+          "en": "Babdoduk ver2.4"
+        }
+      }
+    },
+    {
+      "date": "2026-11-05",
+      "title": {
+        "ko": "ver2.5 메뉴 뽑기",
+        "en": "ver2.5 Menu draw"
+      },
+      "text": {
+        "ko": "버튼 하나로 오늘 메뉴",
+        "en": "Today's menu in one tap"
+      },
+      "picture": {
+        "mark": "ver2.5",
+        "alt": {
+          "ko": "Babdoduk ver2.5",
+          "en": "Babdoduk ver2.5"
+        }
+      }
     }
   ],
   "roadmap": {
