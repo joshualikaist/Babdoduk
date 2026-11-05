@@ -3175,6 +3175,11 @@ STRUCTURE = r"""() => {
   document.querySelectorAll('[id]').forEach(el => { ids[el.id] = (ids[el.id] || 0) + 1; });
   Object.keys(ids).forEach(id => { if (ids[id] > 1) issues.push('duplicate id ' + id); });
   document.querySelectorAll('a[target=_blank]').forEach(a => { if (!/noopener/.test(a.rel)) issues.push('noopener ' + a.href); });
+  // A `hidden` element stays out of sight: a component's own `display` must not undo it (2026-11-05, the
+  // closed map card's display:flex showed an empty white bar over the map).
+  document.querySelectorAll('[hidden]').forEach(el => {
+    if (getComputedStyle(el).display !== 'none') issues.push('hidden but shown ' + el.tagName + '#' + el.id + '.' + el.className);
+  });
   return issues;
 }"""
 
