@@ -524,6 +524,60 @@ def pick_tools(browser):
     check(page.locator(".pick-result-kicker").inner_text().startswith("🍱 Cafeteria · Lunch")
           and page.locator("#pickGoLabel").inner_text() == "Draw again", "the card and button in English")
     context.close()
+
+    # Everyone's taste (owner 2026-11-05, 방법 A; lab, docs/PICK_STATS.md): with the public project values
+    # the page reads the counts, offers 👍 이거 먹을래요 on a delivery dish, and sends one signal at a time
+    # (draw, like, reroll past an unliked dish); a failing server changes nothing. A fake server on the
+    # site's own host; no live database. Without the values (every check above) there is no 👍 button.
+    pool = re.findall(r'"([a-z0-9]+(?:-[a-z0-9]+)*)":\[', (ROOT / "js/pick-photos.js").read_text(encoding="utf-8"))
+    rows = [{"dish_id": d, "likes": 5, "rerolls": 1} for d in pool]
+    recorded, failing = [], {"on": False}
+
+    def server(route):
+        path = urlparse(route.request.url).path
+        if route.request.method == "POST" and path == "/rest/v1/rpc/pick_record":
+            recorded.append(json.loads(route.request.post_data or "{}"))
+            return route.fulfill(status=500, body="") if failing["on"] else route.fulfill(status=204, body="")
+        if path == "/rest/v1/pick_dish_stats":
+            return route.fulfill(status=500, body="") if failing["on"] else route.fulfill(json=rows)
+        return route.fulfill(status=404, body="")
+
+    config = ("window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABASE_URL:'https://site-ui.invalid',"
+              "SUPABASE_PUBLISHABLE_KEY:'sb_publishable_SYNTHETIC'});")
+    for fails in (False, True):
+        failing["on"] = fails
+        recorded.clear()
+        context, page = open_page(True)
+        page.route("**/js/ggongbab-public-config.js",
+                   lambda route: route.fulfill(content_type="application/javascript", body=config))
+        page.route("**/rest/v1/**", server)
+        page.evaluate("window.__rand = 0.9")
+        page.reload(wait_until="networkidle")
+        page.evaluate("window.__rand = 0.9")
+        page.locator("#pickGo").click()
+        page.locator(".pick-result:not([hidden]) .pick-like").wait_for()
+        first = recorded[0]["p_dish"] if recorded else None
+        if not fails:
+            check(recorded == [{"p_dish": first, "p_signal": "draw"}] and first in pool, ("a draw is sent once", recorded))
+            check(page.locator(".pick-votes").inner_text().startswith("👍 5"), "everyone's likes show on the card")
+        page.locator(".pick-like").click()
+        check(page.locator(".pick-like").is_disabled() and "반영" in page.locator(".pick-like").inner_text()
+              and page.locator("#pickStatus").inner_text() == page.locator(".pick-like").inner_text(), "👍 once, announced")
+        page.locator("#pickGo").click()                        # liked: no reroll for it
+        page.locator(".pick-result:not([hidden]) .pick-like:not([disabled])").wait_for()
+        page.wait_for_timeout(100)
+        second = recorded[-1]["p_dish"] if recorded else None
+        page.locator("#pickGo").click()                        # not liked: a reroll for it
+        page.locator(".pick-result:not([hidden]) .pick-like").wait_for()
+        page.wait_for_timeout(100)
+        signals = [r["p_signal"] for r in recorded]
+        if not fails:
+            check(signals == ["draw", "like", "draw", "reroll", "draw"] and recorded[3]["p_dish"] == second,
+                  ("draw, like, draw, reroll past the unliked dish, draw", recorded))
+        else:
+            check(page.locator(".pick-result-title").inner_text().strip() != "" and len(signals) == 5,
+                  ("a failing server: the page still draws and the signals are only tried", signals))
+        context.close()
     return count
 
 

@@ -421,20 +421,18 @@ def catalog_names(root: Path = ROOT) -> dict[str, list[str]]:
 PICK_MIN_POPULARITY = 4
 
 
-def pick_photo_blocks(data: dict | None = None, root: Path = ROOT) -> dict[str, list[str]]:
-    """The world cup's photo credits for the dishes 오늘 뭐 먹지 can draw (choose.html, js/pick.js,
-    docs/PICK.md): catalog dishes that are delivered, are not a dessert or a drink and are popular
-    (PICK_MIN_POPULARITY). Each dish is
-    [author, licence, source, the index of its licence link in `links`]: the links are written once.
-    The photo itself is images/worldcup/thumb/<id>-320.webp. Written into js/pick-photos.js
-    (data/content/ is never deployed)."""
+def pick_pool(data: dict | None = None, root: Path = ROOT) -> dict[str, dict]:
+    """The dishes 오늘 뭐 먹지 can draw with a photo (choose.html, js/pick.js, docs/PICK.md): catalog dishes
+    that are delivered, are not a dessert or a drink, are popular (PICK_MIN_POPULARITY) and have a
+    credited world cup photo. {dish id: its photo entry}, sorted by id. js/pick-photos.js carries their
+    credits and scripts/pick_stats.py seeds their counts (supabase/migrations/010_pick_stats.sql)."""
     data = load("worldcup") if data is None else data
     foods = {}
     catalog = json.loads((root / "data" / "foods" / "catalog.json").read_text(encoding="utf-8"))
     for pack in catalog.get("packs") or []:
         for item in json.loads((root / pack["src"]).read_text(encoding="utf-8")).get("items") or []:
             foods[item["id"]] = item
-    links, photos = [], {}
+    pool = {}
     for dish, photo in sorted((data.get("photos") or {}).items()):
         food = foods.get(dish) or {}
         if "delivery" not in (food.get("diningMode") or []) or food.get("category") in ("dessert", "drink"):
@@ -443,6 +441,16 @@ def pick_photo_blocks(data: dict | None = None, root: Path = ROOT) -> dict[str, 
             continue
         if not (photo.get("author") and photo.get("license") and photo.get("source")):
             continue
+        pool[dish] = photo
+    return pool
+
+
+def pick_photo_blocks(data: dict | None = None, root: Path = ROOT) -> dict[str, list[str]]:
+    """The photo credits of pick_pool: each dish [author, licence, source, the index of its licence link
+    in `links`], the links written once. The photo itself is images/worldcup/thumb/<id>-320.webp.
+    Written into js/pick-photos.js (data/content/ is never deployed)."""
+    links, photos = [], {}
+    for dish, photo in pick_pool(data, root).items():
         link = photo.get("licenseUrl") or ""
         if link not in links:
             links.append(link)

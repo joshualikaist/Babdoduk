@@ -96,3 +96,13 @@ def test_the_machine_draws_the_delivery_staples_not_the_catalogs_rarities():
     names = set(run("foods.filter(f => P.kindOf(f) && f.popularity >= P.MIN_POPULARITY).map(f => f.nameKo)"))
     assert {"후라이드 치킨", "양념치킨", "짜장면", "짬뽕", "떡볶이", "마라탕", "족발", "보쌈", "김치찌개", "돈카츠"} <= names
     assert not names & {"루면", "비앙비앙면", "량피", "깨죽", "게국지", "홍어찜", "감자수프"}
+
+
+def test_taste_is_one_without_votes_and_moves_slowly_towards_two_or_zero():
+    """Everyone's taste (owner 2026-11-05, 방법 A): popularity times taste(likes, rerolls)."""
+    values = run("[[0,0],[2,0],[10,0],[100,0],[0,2],[0,10],[0,100],[5,5]].map(([l, r]) => Math.round(P.taste(l, r) * 100))")
+    assert values == [100, 133, 171, 196, 67, 29, 4, 100]
+    dishes = [{"id": "x", "popularity": 4}, {"id": "y", "popularity": 4}]
+    votes = {"x": {"likes": 0, "rerolls": 100}}                   # x: weight 4 * 0.04 (3.7% of draws), y: 4
+    picked = run(f"[0.01, 0.05, 0.5, 0.99].map(v => P.draw([], {json.dumps(dishes)}, () => v, {json.dumps(votes)}).dish.id)")
+    assert picked == ["x", "y", "y", "y"]

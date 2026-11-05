@@ -95,24 +95,38 @@
       .filter(function (item) { return item && !/^\[?\s*칼로리/.test(item) && !/kcal\]?$/i.test(item); });
   }
 
+  // Everyone's taste (owner 2026-11-05, 방법 A; supabase/migrations/010_pick_stats.sql, docs/PICK_STATS.md):
+  // a dish's weight is its popularity times taste(likes, rerolls). With no votes it is 1; it rises
+  // towards 2 as people press 👍 이거 먹을래요 and falls towards 0 as they draw again past the dish.
+  // The +2/+4 is a prior of two likes and two rerolls, so a few votes move it only a little.
+  function taste(likes, rerolls) {
+    likes = Math.max(0, Number(likes) || 0);
+    rerolls = Math.max(0, Number(rerolls) || 0);
+    return 2 * (likes + 2) / (likes + rerolls + 4);
+  }
   // One pick from `meals` (servingMeals) and `dishes` (delivery dishes), `rand` a [0, 1) source:
-  // {meal} about CAFETERIA_SHARE of the time while there is one, else {dish}, weighted by popularity.
-  function draw(meals, dishes, rand) {
+  // {meal} about CAFETERIA_SHARE of the time while there is one, else {dish}, weighted by popularity
+  // times taste (`votes`: {dish id: {likes, rerolls}}, optional).
+  function draw(meals, dishes, rand, votes) {
     rand = rand || Math.random;
     meals = meals || [];
     dishes = dishes || [];
+    votes = votes || {};
     if (meals.length && (!dishes.length || rand() < CAFETERIA_SHARE)) {
       return { meal: meals[Math.floor(rand() * meals.length)] };
     }
     if (!dishes.length) return null;
-    var weights = dishes.map(function (f) { return Math.max(1, Number(f.popularity) || 3); });
+    var weights = dishes.map(function (f) {
+      var v = votes[f.id] || {};
+      return Math.max(1, Number(f.popularity) || 3) * taste(v.likes, v.rerolls);
+    });
     var total = weights.reduce(function (a, b) { return a + b; }, 0), r = rand() * total;
     for (var i = 0; i < dishes.length; i++) { r -= weights[i]; if (r < 0) return { dish: dishes[i] }; }
     return { dish: dishes[dishes.length - 1] };
   }
 
   window.BabdodukPick = { CATEGORIES: CATEGORIES, categorize: categorize, servingMeals: servingMeals,
-    cleanItems: cleanItems, kindOf: kindOf, draw: draw, MIN_POPULARITY: MIN_POPULARITY };
+    cleanItems: cleanItems, kindOf: kindOf, draw: draw, taste: taste, MIN_POPULARITY: MIN_POPULARITY };
 
   var app = document.getElementById('pickApp');
   if (!app) return;
@@ -126,7 +140,7 @@
     status: document.getElementById('pickStatus'),
     sound: document.getElementById('pickSound'),
   };
-  var state = { cafeteria: null, dishes: null, run: null, drawn: 0, last: null };
+  var state = { cafeteria: null, dishes: null, run: null, drawn: 0, last: null, votes: {} };
 
   function lang() { return window.babdodukGetLang ? window.babdodukGetLang() : 'ko'; }
   function t(key, fallback) {
@@ -216,6 +230,41 @@
     var shot = all.filter(function (f) { return photoOf(f.id); });
     state.dishes = shot.length >= 20 ? shot : all;
   }, function () { state.dishes = []; });
+
+  // ---- everyone's taste: read the counts, send one signal at a time ----------------------------------
+  // Only with the browser-public project values (js/ggongbab-public-config.js, lab); without them, or
+  // when the server fails, the page draws by popularity alone and shows no 👍 button.
+  var statsApi = (function () {
+    var c = window.BABDODUK_PUBLIC_FEED_CONFIG;
+    try {
+      var url = new URL(c.SUPABASE_URL), key = c.SUPABASE_PUBLISHABLE_KEY;
+      if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash || url.username) return null;
+      if (!/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) return null;
+      return { base: url.origin + '/rest/v1/', key: key };
+    } catch (e) { return null; }
+  })();
+  function api(path, body) {
+    var headers = { apikey: statsApi.key, Authorization: 'Bearer ' + statsApi.key, Accept: 'application/json' };
+    if (body) headers['Content-Type'] = 'application/json';
+    return fetch(statsApi.base + path, { method: body ? 'POST' : 'GET', headers: headers,
+                                         body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('unavailable');
+        return r.status === 204 ? null : r.json();
+      });
+  }
+  if (statsApi) {
+    api('pick_dish_stats?select=dish_id,likes,rerolls').then(function (rows) {
+      (rows || []).forEach(function (row) {
+        if (row && typeof row.dish_id === 'string') state.votes[row.dish_id] = { likes: Number(row.likes) || 0, rerolls: Number(row.rerolls) || 0 };
+      });
+    }, function () {});
+  }
+  // 'draw', 'like' or 'reroll' for a delivery dish; nothing else is ever sent.
+  function record(signal, dish) {
+    if (!statsApi || !dish) return;
+    api('rpc/pick_record', { p_dish: dish.id, p_signal: signal }).catch(function () {});
+  }
 
   function servingNow() {
     var now = kstNow();
@@ -384,9 +433,16 @@
           (source ? '<a href="' + esc(source) + '" target="_blank" rel="noopener noreferrer">' + esc(photo.author) + '</a>' : esc(photo.author)) + ' · ' +
           (licence ? '<a href="' + esc(licence) + '" target="_blank" rel="noopener noreferrer">' + esc(photo.license) + '</a>' : esc(photo.license)) + '</p>';
       }
+      var votes = state.votes[dish.id] || {}, like = '';
+      if (statsApi) {
+        like = '<div class="pick-actions">' + (pick.liked
+          ? '<button type="button" class="pick-like" data-pick-like disabled>' + esc(t('pick.liked', '👍 좋아요! 다음 뽑기에 반영할게요')) + '</button>'
+          : '<button type="button" class="pick-like" data-pick-like>' + esc(t('pick.like', '👍 이거 먹을래요')) + '</button>') + '</div>';
+        if (votes.likes >= 3) like += '<p class="pick-votes">' + esc(fill(t('pick.votes', '👍 {n}명이 이걸 골랐어요'), { n: votes.likes })) + '</p>';
+      }
       html = '<p class="pick-result-kicker">🛵 ' + esc(t('pick.kind.delivery', '배달')) + ' · ' + pick.kind.emoji + ' ' +
         esc(t('pick.cat.' + pick.kind.id, pick.kind.id)) + '</p>' +
-        '<h2 class="pick-result-title" tabindex="-1">' + esc(name) + '</h2>' +
+        '<h2 class="pick-result-title" tabindex="-1">' + esc(name) + '</h2>' + like +
         '<p class="pick-note">' + esc(t('pick.shopNote', '가게와 가격은 배달앱에서 골라요.')) + '</p>' + credit;
     }
     els.result.innerHTML = html;
@@ -401,10 +457,15 @@
 
   function go() {
     if (state.run) { landNow(); return; }
+    // Drawing again past a dish with no 👍 counts against it, once.
+    if (state.last && state.last.dish && !state.last.liked && !state.last.passed) {
+      state.last.passed = true;
+      record('reroll', state.last.dish);
+    }
     els.go.setAttribute('aria-busy', 'true');
     els.goLabel.textContent = t('pick.loading', '메뉴 불러오는 중');
     Promise.all([menuReady, foodsReady]).then(function () {
-      var pick = draw(servingNow(), state.dishes);
+      var pick = draw(servingNow(), state.dishes, null, state.votes);
       if (pick && pick.dish) pick.kind = kindOf(pick.dish);
       if (!pick) {
         els.go.removeAttribute('aria-busy');
@@ -414,11 +475,22 @@
         els.status.textContent = t('pick.error', '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.');
         return;
       }
+      if (pick.dish) record('draw', pick.dish);
       play(pick);
     });
   }
 
   els.go.addEventListener('click', go);
+  els.result.addEventListener('click', function (e) {
+    var button = e.target.closest('[data-pick-like]');
+    var pick = state.last;
+    if (!button || button.disabled || !pick || !pick.dish || pick.liked) return;
+    pick.liked = true;
+    record('like', pick.dish);
+    button.disabled = true;
+    button.textContent = t('pick.liked', '👍 좋아요! 다음 뽑기에 반영할게요');
+    els.status.textContent = button.textContent;
+  });
   els.sound.addEventListener('click', function () { sound.toggle(); paintSound(); });
   // The button says what it does now (its label has no data-i18n: it changes with the draw); a language
   // change also rewrites the card in the new language.
