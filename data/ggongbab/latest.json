@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T18:01:29+09:00",
+  "generatedAt": "2026-11-05T22:24:32+09:00",
   "timezone": "Asia/Seoul",
-  "count": 44,
+  "count": 45,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -1815,6 +1815,44 @@
       },
       "audience": {
         "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "313b704f-6461-4c76-b4bb-8f79a75407da",
+      "title": "2026 전산학부 기업체탐방",
+      "summary": "전산학부 주전공·복수전공·부전공 학생을 대상으로 리벨리온·네이버 또는 프렌들리에이아이·채널톡을 방문하는 기업체 탐방이다. 코스 1에서는 리벨리온에서 중식이 제공된다.",
+      "startAt": "2026-11-26T10:00:00+09:00",
+      "endAt": "2026-11-26T16:00:00+09:00",
+      "dateText": "11월 26일(목)",
+      "timeText": "코스 1: 오전 10시 ~ 오후 1시(리벨리온), 오후 2시 ~ 4시(네이버) / 코스 2: 오전 10시 ~ 12시(프렌들리에이아이), 오후 2시 ~ 4시(채널톡)",
+      "location": {
+        "name": "리벨리온, 네이버, 프렌들리에이아이, 채널톡",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "중식은 리벨리온에서 제공됩니다.",
+        "source": "text"
+      },
+      "organizer": "KAIST 전산학부 집행위원회",
+      "eligibility": "전산학부 주전공, 복수전공, 부전공에 해당하는 학생",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://stuco.cs.kaist.ac.kr/survey/04301c7f-b7ca-4a08-9739-4accd63bed00"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "전산학부 주전공·복수전공·부전공 학생",
         "basis": "stated"
       }
     },
