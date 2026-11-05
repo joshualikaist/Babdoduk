@@ -148,7 +148,7 @@ def inspect_page(page, name, size, screenshot_dir=None):
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
     # Only what is on screen counts: the phone menu panel and the More menu are hidden until opened.
-    nav_items = page.locator("#navDrawerToggle, #navHome, .site-nav-direct, .nav-mega-trigger, .nav-mega-link, #langToggle").evaluate_all(
+    nav_items = page.locator("#navDrawerToggle, #navHome, #navInstagram, .site-nav-direct, .nav-mega-trigger, .nav-mega-link, #langToggle").evaluate_all(
         """els => els.map(el => { const r = el.getBoundingClientRect(); const st = getComputedStyle(el);
           if (!r.width || !r.height || st.visibility !== 'visible' || st.display === 'none') return null;
           return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height,
@@ -3269,8 +3269,9 @@ def structure_and_failures(page):
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
 NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
-NAV_MORE = ["mukbang.html", "history.html", "tip.html",
-            "https://naver.me/5NeqUPzI", "https://www.instagram.com/babdodukms/"]
+# Instagram left the More menu for a logo beside the wordmark (owner 2026-11-05; INSTAGRAM below).
+NAV_MORE = ["mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
+INSTAGRAM = "https://www.instagram.com/babdodukms/"
 FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html"]
 CHROME = r"""() => {
   const pick = (el, props) => { const s = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, s.getPropertyValue(p)])); };
@@ -3281,6 +3282,10 @@ CHROME = r"""() => {
     more: [...document.querySelectorAll('#navMorePanel > a')].map(a => a.getAttribute('href')),
     current: [...document.querySelectorAll('.site-nav [aria-current="page"]')].map(a => a.getAttribute('href')),
     home: document.getElementById('navHome').getAttribute('href'),
+    instagram: (i => i && [i.getAttribute('href'), i.target, i.rel, i.getAttribute('aria-label') || '',
+                           Math.round(i.getBoundingClientRect().width), Math.round(i.getBoundingClientRect().height),
+                           Math.round(i.getBoundingClientRect().left - document.getElementById('navHome').getBoundingClientRect().right),
+                           i.parentElement === document.getElementById('navHome').parentElement])(document.getElementById('navInstagram')),
     footerLinks: [...footer.querySelectorAll('a')].map(a => a.getAttribute('href')),
     footerText: footer.innerText.replace(/\s+/g, ' ').trim(),
     styles: {
@@ -3330,6 +3335,10 @@ def site_guardian(page):
                     chrome = page.evaluate(CHROME)
                     where = f"{name} {lang} {width}x{height}"
                     check(chrome["direct"] == NAV_DIRECT and chrome["more"] == NAV_MORE, (where, "nav structure and destinations", chrome["direct"], chrome["more"]))
+                    insta = chrome["instagram"]
+                    check(insta and insta[0] == INSTAGRAM and insta[1] == "_blank" and "noopener" in insta[2] and insta[3]
+                          and insta[4] >= 44 and insta[5] >= 44 and -6 <= insta[6] <= 8 and insta[7],
+                          (where, "Babdoduk on Instagram: a named 44 px link right beside the wordmark", insta))
                     check(chrome["current"] == ([] if name == "index.html" else [name]), (where, "one current-page marker", chrome["current"]))
                     check(chrome["home"] == ("#" if name == "index.html" else "index.html"), (where, "wordmark destination"))
                     check(chrome["footerLinks"] == FOOTER_LINKS, (where, "footer destinations", chrome["footerLinks"]))
