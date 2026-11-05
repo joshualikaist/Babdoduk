@@ -1749,8 +1749,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 
   .hc-num,
   .hc-nav,
-  .hc-today,
-  .hc-ev-chev {
+  .hc-today {
     transition: none;
   }
 }
