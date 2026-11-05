@@ -1,8 +1,8 @@
 # Home free-food calendar
 
 Owner decisions, 2026-10-01: the home answers one question first, "what free food is on today
-or soon?". The Phase 1 layout (variant A) and the Phase 2 visual spec are approved; this is the lab
-prototype. It replaces the old dated status strip and the shelf's TODAY tile.
+or soon?". The Phase 1 layout (variant A) and the Phase 2 visual spec are approved, and the calendar is on
+main. It replaced the old dated status strip and the shelf's TODAY tile.
 
 ## What it shows
 
@@ -19,6 +19,9 @@ One surface (`section#homeCal`), right below the hero copy:
   dish in bold (`BabdodukFreeFood.dishLabel`, words only; a giveaway-only row reads `🎁 경품`, a
   deadline-only one its deadline), then one small muted line of title · place · session · 🎁 경품 · 사전 신청.
   A transparent button covers the row and is named by the title.
+  From four listings on (2026-11-05, owner "4개 이상부터는 스크롤바 설치해줘"), the list scrolls inside a
+  box as tall as three closed rows plus 40 px of the fourth, so more below shows (`SCROLL_FROM`,
+  `fitScroll` in `js/home-calendar.js`, measured again on resize).
   A row opens inline (one at a time) for the full time and place, eligibility, the sign-up deadline,
   the sign-up link and a public original post. There is no modal.
 * **다가오는 꽁밥**: up to four upcoming free-food events (time, dish, title) on dates after the selected day (or after today
@@ -27,9 +30,10 @@ One surface (`section#homeCal`), right below the hero copy:
 * **Footer**: `전체 일정 →` (the hub, `ggongbab.html#free`) and `마지막 변경 {time}` (the feed's
   `generatedAt`: an export that changes nothing is not committed, so it is the last change).
 
-On phones the order is copy, calendar, cafeteria line, collage. On wide screens the collage stays
-beside the copy on the paper band and the calendar splits into the day (left) and the month (right,
-336 px).
+On phones the order is copy (with the "꽁밥 지도" button that opens the campus map in a dialog),
+calendar, cafeteria line. On wide screens the 3D campus map stays beside the copy on the paper band
+(`docs/CAMPUS_MAP.md`; it replaced the photo collage on 2026-11-04) and the calendar splits into the
+day (left) and the month (right, 336 px).
 
 ## Data and rules
 
@@ -111,4 +115,4 @@ data; a structured count would let English say "First 100" without parsing Korea
 
 `tests/test_home_calendar.py` (month math, KST, states, markers, default selection, disclosure,
 errors, keyboard, strings and layout) and the home checks in `scripts/check_site_ui.py`
-(`home_summary`, `home_hero_shelf`, `structure_and_failures`).
+(`home_summary`, `home_first_screen`, `structure_and_failures`).
