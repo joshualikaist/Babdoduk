@@ -1,10 +1,38 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T16:05:00+09:00",
+  "generatedAt": "2026-11-05T16:30:02+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 11,
+  "count": 12,
   "events": [
+    {
+      "id": "b44efecd-e2cb-4800-9aed-0137f4d86df6",
+      "title": "2026 노벨 수상자(문학상·경제학상·평화상) 수상 업적 해설 강연회",
+      "summary": "2026년 노벨상 문학상·경제학상·평화상 수상 업적을 해설하는 강연회입니다. 우리말로 진행되며 Google Docs를 통해 영어 번역이 제공됩니다.",
+      "startAt": "2026-11-05T12:00:00+09:00",
+      "endAt": "2026-11-05T13:30:00+09:00",
+      "dateText": "11.05(목)",
+      "timeText": "12:00~13:30",
+      "location": {
+        "name": "학술문화관(E9) 2층 양승택오디토리움",
+        "building": "E9",
+        "room": "양승택오디토리움"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "현장 참석자 샌드위치 제공",
+        "source": "text"
+      },
+      "organizer": "인문사회융합과학대학",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "e4932594-e8d6-4c3d-b22a-6baaacebba0d",
       "title": "Codex 워크숍 다과",
