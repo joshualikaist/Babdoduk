@@ -197,6 +197,10 @@
   color: var(--color-accent);
 }
 
+.event-link > [aria-hidden] {
+  text-decoration: none;   /* one underline under the words, not a second piece under the arrow */
+}
+
 .event-link {
   justify-self: start;
   display: inline-flex;

@@ -1282,7 +1282,7 @@ def meeting_links(browser, base, report):
                 page.add_init_script("localStorage.setItem('babdoduk-lang', 'en')")
             page.goto(base + "/ggongbab.html")
             page.locator(".gg-card").first.wait_for()
-            join, register, required = ("Join online", "Register", "Registration required") if lang == "en" else ("온라인 참여", "신청하기", "사전 신청")
+            join, register, required = ("Join online", "Register", "Sign-up needed") if lang == "en" else ("온라인 참여", "신청하기", "사전 신청")
             only = page.locator('[data-id="zoom-only"]')
             assert only.locator(".gg-btn", has_text=join).get_attribute("href") == zoom
             assert only.locator(".gg-btn", has_text=register).count() == 0 and only.locator(".gg-reg-badge").count() == 0

@@ -400,6 +400,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
   overflow-wrap: anywhere;
 }
 
+/* Latin letters at -0.055em and 900 crowd; the English line is also longer (owner check 2026-11-05). */
+:root[lang="en"] .home-title {
+  font-size: clamp(2rem, 4.5vw, 4rem);
+  letter-spacing: -0.035em;
+}
+
 /* A marker stroke under the question, not a gradient on the letters. */
 .home-title-mark {
   background: linear-gradient(transparent 66%, rgba(236, 72, 153, 0.26) 66%, rgba(236, 72, 153, 0.26) 90%, transparent 90%);
@@ -512,7 +518,10 @@ html[data-wc-phase="soon"] .home-wc-photo {
   border-radius: 999px;
   background: var(--color-accent);
   color: #fff;
-  font: 800 13px/1 inherit;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   pointer-events: auto;
   cursor: pointer;
@@ -798,6 +807,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 }
 
 .home-map-dialog-close {
+  font-family: inherit;
   min-height: 44px;
   padding: 0 18px;
   border: 1px solid rgba(30, 29, 26, 0.16);
