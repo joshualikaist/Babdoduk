@@ -127,17 +127,25 @@
   // Scroll progress.
   var bar = document.getElementById('scrollProgressBar');
   var wrap = bar && bar.parentElement;
-  function onScroll() {
-    if (!bar) return;
+  // At most once a frame however many scroll events arrive; the attribute only when its number changes.
+  var queued = false, shownPct = -1;
+  function update() {
+    queued = false;
     var el = document.documentElement;
     var total = el.scrollHeight - el.clientHeight;
     var pct = total <= 0 ? 0 : (el.scrollTop / total) * 100;
     bar.style.width = pct + '%';
-    if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(pct)));
+    var rounded = Math.round(pct);
+    if (wrap && rounded !== shownPct) { wrap.setAttribute('aria-valuenow', String(rounded)); shownPct = rounded; }
+  }
+  function onScroll() {
+    if (!bar || queued) return;
+    queued = true;
+    requestAnimationFrame(update);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
-  onScroll();
+  if (bar) update();
 
   // On the home page the wordmark links to "#": it scrolls back to the top.
   var navHome = document.getElementById('navHome');
