@@ -198,12 +198,10 @@ def test_browser_insert_update_revision_and_delete_recalculates_ui(ui):
 def test_browser_filters_language_tab_and_cafeteria_survive_updates(ui):
     page = ui["open"]()
     page.locator(".gg-card").wait_for()
-    page.locator('[data-group="when"][data-value="2026-09-24"]').click()
-    page.locator('[data-group="food"][data-value="snack"]').click()
+    page.locator('[data-group="food"][data-value="snack"]').click()   # (the day tiles went on 2026-11-05)
     page.locator("#langToggle").click()
     page.locator("#foodHubTabMenu").click()
     emit(page, "INSERT", row(2))
-    assert page.locator('[data-group="when"][data-value="2026-09-24"]').get_attribute("aria-pressed") == "true"
     assert page.locator('[data-group="food"][data-value="snack"]').get_attribute("aria-pressed") == "true"
     assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
     assert page.locator("#foodHubFree").is_hidden()
