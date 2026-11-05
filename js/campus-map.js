@@ -509,10 +509,15 @@ export function mount(stage, options) {
     return '<p class="home-map-card-place"><span class="home-map-card-code">' + esc(g.code) + '</span> ' + esc(buildingName(g.code)) +
       (g.others ? ' <span class="home-map-card-more">' + esc(opts.t('home.map.otherPlaces', '외 {n}곳').replace('{n}', g.others)) + '</span>' : '') + '</p>';
   }
+  // The head (the first place and ×) stays put; below it every listing is set off by a line and the
+  // body scrolls when there are many (owner 2026-11-05: "이벤트끼리 분리해서 보이기 쉽게 … 한줄정도 선으로
+  // 표시하거나 많으면 밑으로 스크롤"). A further place starts its own group under the same kind of line.
   function cardHtml(members) {
     const close = '<button type="button" class="home-map-card-close" aria-label="' + esc(opts.t('home.map.close', '닫기')) + '">×</button>';
     return '<div class="home-map-card-head">' + placeHtml(members[0]) + close + '</div>' +
-      members.map((g, i) => (i ? placeHtml(g) : '') + '<ul class="home-map-card-list">' + g.items.map(eventHtml).join('') + '</ul>').join('');
+      '<div class="home-map-card-body">' +
+      members.map((g, i) => '<div class="home-map-card-group">' + (i ? placeHtml(g) : '') +
+        '<ul class="home-map-card-list">' + g.items.map(eventHtml).join('') + '</ul></div>').join('') + '</div>';
   }
   // Above its pin, or below it near the top edge; never past the map's sides.
   function placeCard() {
