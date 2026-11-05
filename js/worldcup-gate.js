@@ -126,7 +126,14 @@ window.BABDODUK_WC_WINDOW = {"start": "2026-10-16", "end": "2026-10-23"};
     preview: function () { return startDate() !== win.start; }
   };
   refresh();
-  setInterval(refresh, 30000);
+  // The countdown ticks while the tab shows. After the last day the phase cannot change again, so the
+  // timer stops (a language switch or a return to the tab still redraws).
+  var timer = setInterval(function () {
+    if (document.hidden) return;
+    refresh();
+    if (last === 'ended') clearInterval(timer);
+  }, 30000);
+  if (last === 'ended') clearInterval(timer);
   document.addEventListener('babdoduk-lang', refresh);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
 })();
