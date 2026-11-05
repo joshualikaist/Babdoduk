@@ -561,14 +561,18 @@ html[data-wc-phase="soon"] .home-wc-photo {
   font-size: 11px;
 }
 
+/* The card (js/campus-map.js cardHtml): the head stays, the body scrolls past about three listings,
+   and a line sets off every listing (owner 2026-11-05). The body's soft shadows show there is more
+   above or below (covers move with the content, shadows stay with the box). */
 .home-map-card {
   position: absolute;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
   width: min(290px, calc(100% - 12px));
-  max-height: calc(100% - 12px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 12px 14px;
+  max-height: min(340px, calc(100% - 12px));
+  overflow: hidden;
+  padding: 12px 0 0;
   border: 1px solid rgba(30, 29, 26, 0.1);
   border-radius: 16px;
   background: var(--color-surface);
@@ -577,9 +581,30 @@ html[data-wc-phase="soon"] .home-wc-photo {
 
 .home-map-card-head {
   display: flex;
+  flex: none;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+  padding: 0 14px 2px;
+}
+
+.home-map-card-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 14px 12px;
+  background:
+    linear-gradient(var(--color-surface) 30%, rgba(255, 253, 248, 0)) top / 100% 24px no-repeat local,
+    linear-gradient(rgba(255, 253, 248, 0), var(--color-surface) 70%) bottom / 100% 24px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(30, 29, 26, 0.16), transparent) top / 100% 8px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(30, 29, 26, 0.16), transparent) bottom / 100% 8px no-repeat scroll;
+}
+
+.home-map-card-group + .home-map-card-group,
+.home-map-card-ev + .home-map-card-ev {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(30, 29, 26, 0.14);
 }
 
 .home-map-card-place {
@@ -611,12 +636,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   margin: 6px 0 0;
   padding: 0;
   list-style: none;
-}
-
-.home-map-card-ev + .home-map-card-ev {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(30, 29, 26, 0.08);
 }
 
 .home-map-card-title {
