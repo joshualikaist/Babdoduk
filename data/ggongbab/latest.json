@@ -1,78 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T20:13:15+09:00",
+  "generatedAt": "2026-11-06T22:47:44+09:00",
   "timezone": "Asia/Seoul",
-  "count": 41,
+  "count": 40,
   "events": [
-    {
-      "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
-      "title": "자연과학과 함께하는 토크 콘서트",
-      "summary": "자연과학대학이 학사과정 학생을 대상으로 물리학과, 수리과학과, 화학과, 생명과학과 교수들의 강연과 토크를 진행합니다. 11월 2일부터 5일까지는 샌드위치, 11월 6일에는 쉐이크쉑 버거가 제공되며 경품 추첨이 있습니다.",
-      "startAt": "2026-11-02T12:00:00+09:00",
-      "endAt": "2026-11-06T19:30:00+09:00",
-      "dateText": "November 2 – 5 (Mon. – Thu.) / November 6 (Fri.)",
-      "timeText": "12:00–12:50 / 16:00–19:30",
-      "location": {
-        "name": "Natural Science Building, Common Lecture Hall (Room 1501, E6-1) / KI Building, Fusion Hall (Room C101, E4)",
-        "building": "E6-1 / E4",
-        "room": "1501 / C101"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "Sandwiches will be provided to the first 130 attendees. Shake Shack burgers will be provided to the first 250 attendees.",
-        "source": "text"
-      },
-      "organizer": "자연과학대학",
-      "eligibility": "undergraduate students",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "Galaxy Z Flip8 (1EA), Galaxy Watch (1EA), Apple Watch (1EA), Galaxy Buds4 (3EA)"
-      },
-      "sessions": [
-        {
-          "startAt": "2026-11-02T12:00:00+09:00",
-          "endAt": "2026-11-02T12:50:00+09:00",
-          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
-        },
-        {
-          "startAt": "2026-11-03T12:00:00+09:00",
-          "endAt": "2026-11-03T12:50:00+09:00",
-          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
-        },
-        {
-          "startAt": "2026-11-04T12:00:00+09:00",
-          "endAt": "2026-11-04T12:50:00+09:00",
-          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
-        },
-        {
-          "startAt": "2026-11-05T12:00:00+09:00",
-          "endAt": "2026-11-05T12:50:00+09:00",
-          "foodDescription": "Sandwiches will be provided to the first 130 attendees."
-        },
-        {
-          "startAt": "2026-11-06T16:00:00+09:00",
-          "endAt": "2026-11-06T19:30:00+09:00",
-          "foodDescription": "Shake Shack burgers will be provided to the first 250 attendees."
-        }
-      ],
-      "audience": {
-        "text": "학사과정 학생",
-        "basis": "stated"
-      }
-    },
     {
       "id": "2f3efe56-92c0-4fb7-8932-e42508ac1766",
       "title": "에코페스티벌",
