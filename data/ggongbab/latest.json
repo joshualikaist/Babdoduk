@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T18:39:23+09:00",
+  "generatedAt": "2026-11-06T20:13:15+09:00",
   "timezone": "Asia/Seoul",
-  "count": 42,
+  "count": 41,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -70,48 +70,6 @@
       ],
       "audience": {
         "text": "학사과정 학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "67b8523c-83f2-4c7f-a8ba-b097b4673cb5",
-      "title": "현재 진행형의 실패, 미래로부터의 질문",
-      "summary": "AI 시대 인간과 사회에 실패가 갖는 의미를 살펴보는 KAIST 실패세미나입니다. 실패 에세이 대담과 미래와 실패 특강으로 진행됩니다.",
-      "startAt": "2026-11-06T15:00:00+09:00",
-      "endAt": "2026-11-06T17:00:00+09:00",
-      "dateText": "2026년 11월 6일(금)",
-      "timeText": "15:00–17:00",
-      "location": {
-        "name": "KAIST 대전 본원 학술문화관(E9) 2층 양승택오디토리움",
-        "building": "E9",
-        "room": "양승택오디토리움"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "샌드위치+음료 박스",
-        "source": "text"
-      },
-      "organizer": "KAIST 실패연구소",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://moaform.com/q/HibpON"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "도서 선물 추첨"
-      },
-      "audience": {
-        "text": "관심 있는 누구나",
         "basis": "stated"
       }
     },
