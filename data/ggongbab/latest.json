@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T17:35:47+09:00",
+  "generatedAt": "2026-11-06T18:14:04+09:00",
   "timezone": "Asia/Seoul",
-  "count": 44,
+  "count": 43,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -70,76 +70,6 @@
       ],
       "audience": {
         "text": "학사과정 학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "c17d7bea-0505-41f3-8769-1e2ec5776d05",
-      "title": "11월 Exchange Webinar",
-      "summary": "해외 파견대학 교환학생 프로그램 웨비나로, Stony Brook University, National University of Singapore, ETS TOEFL Information Session 등 3개 세션이 진행됩니다. 참여 후 인증을 완료한 학생에게 넙죽이 키링이 제공되며, 3개 세션 모두 참여하면 추가 경품 추첨에 참여할 수 있습니다.",
-      "startAt": "2026-11-03T23:00:00+09:00",
-      "endAt": "2026-11-06T15:00:00+09:00",
-      "dateText": "11월 3일(화), 11월 4일(수), 11월 6일(금)",
-      "timeText": "오후 11시, 오후 3시, 오후 3시",
-      "location": {
-        "name": "온라인",
-        "building": "W2-1",
-        "room": ""
-      },
-      "food": {
-        "provided": "unknown",
-        "type": "unknown",
-        "description": ""
-      },
-      "organizer": "국제협력팀",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-11-09T10:00:00+09:00",
-        "url": "https://kaist.zoom.us/meeting/register/rWmZsRqJQlOGI_Cza3f5qA"
-      },
-      "confidence": 0.98,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "넙죽이 키링 1개 및 추가 경품 추첨(담요, 텀블러, 여행용 파우치 등)"
-      },
-      "sessions": [
-        {
-          "startAt": "2026-11-03T23:00:00+09:00",
-          "endAt": null,
-          "location": {
-            "name": "온라인",
-            "building": "",
-            "room": ""
-          }
-        },
-        {
-          "startAt": "2026-11-04T15:00:00+09:00",
-          "endAt": null,
-          "location": {
-            "name": "온라인",
-            "building": "",
-            "room": ""
-          }
-        },
-        {
-          "startAt": "2026-11-06T15:00:00+09:00",
-          "endAt": null,
-          "location": {
-            "name": "온라인",
-            "building": "",
-            "room": ""
-          }
-        }
-      ],
-      "audience": {
-        "text": "학생",
         "basis": "stated"
       }
     },
