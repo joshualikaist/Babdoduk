@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "K-푸드와 첨단 푸드테크의 만남…‘푸드위크 코리아 2026’ 개막",
-    "summary": "전 세계를 매료시킨 K-푸드와 신기술이 접목돼 현재와 미래를 만나는 국내 최대 규모의 식품산업 박람회 ‘푸드위크 코리아 2026’이 4일 삼성동 코엑스에서 막을 올렸다.",
     "source": "식품음료신문",
-    "sourceId": "news-thinkfood",
-    "candidateId": "c_2c3acc9423ef989b",
     "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201571",
     "medium": "news",
-    "discoveredAt": "2026-11-05T16:51:26+09:00",
-    "publishedAt": "2026-11-05T10:10:32+09:00",
     "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201571_202214_2533.jpg",
+    "category": "trend",
+    "publishedAt": "2026-11-05T10:10:32+09:00",
+    "discoveredAt": "2026-11-05T16:51:26+09:00",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_2c3acc9423ef989b",
     "imageSource": "feed_html",
+    "summary": "전 세계를 매료시킨 K-푸드와 신기술이 접목돼 현재와 미래를 만나는 국내 최대 규모의 식품산업 박람회 ‘푸드위크 코리아 2026’이 4일 삼성동 코엑스에서 막을 올렸다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "[현장]\"신약 기술이 화장품으로\" 바이오기업, 뷰티서 새 먹거리 찾는다",
-          "summary": "아토피 피부염 신약 후보물질이 스킨케어 제품으로, 희귀 근육질환 치료제 기술이 스킨부스터로 변신했다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_48d3b229cc27e4cf",
           "url": "https://www.newsis.com/view/NISX20261105_0003856394",
           "medium": "news",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T14:32:00+09:00",
           "image": "https://image.newsis.com/2026/11/05/NISI20261105_0002284003_web.jpg?rnd=20261105140536",
+          "publishedAt": "2026-11-05T14:32:00+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_48d3b229cc27e4cf",
           "imageSource": "feed_html",
+          "summary": "아토피 피부염 신약 후보물질이 스킨케어 제품으로, 희귀 근육질환 치료제 기술이 스킨부스터로 변신했다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -45,16 +45,16 @@
         },
         {
           "title": "CJ프레시웨이, 3분기 매출 9614억…전년 동기보다 6.7% 증가",
-          "summary": "CJ프레시웨이는 올 3분기 매출 9614억원, 영업이익 238억원을 거뒀다고 5일 밝혔다.",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_ca77e15a015c278a",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120858",
           "medium": "news",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T23:14:05+09:00",
           "image": "https://cdn.foodnews.co.kr/news/thumbnail/202611/120858_87365_1359_v150.jpg",
+          "publishedAt": "2026-11-05T23:14:05+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_ca77e15a015c278a",
           "imageSource": "source_page_og",
+          "summary": "CJ프레시웨이는 올 3분기 매출 9614억원, 영업이익 238억원을 거뒀다고 5일 밝혔다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -62,28 +62,28 @@
         },
         {
           "title": "초코빵에도 베이글에도…편의점이 단백질 더하는 이유",
-          "summary": "편의점 단백질 상품이 음료와 바를 넘어 초콜릿 맛 빵과 피자·치즈 맛 베이글 등 일상 간식으로 확대되고 있다.",
           "source": "지디넷코리아",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_97733d538f7473a6",
           "url": "https://zdnet.co.kr/view/?no=20261102164738",
           "medium": "news",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
           "publishedAt": "2026-11-02T17:23:11+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_97733d538f7473a6",
+          "summary": "편의점 단백질 상품이 음료와 바를 넘어 초콜릿 맛 빵과 피자·치즈 맛 베이글 등 일상 간식으로 확대되고 있다.",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "다음 유행은 고디바 모찌? 편의점 신상 디저트 출시 경쟁 '가속'",
-          "summary": "사회관계망서비스(SNS)를 중심으로 디저트 유행이 빠르게 바뀌면서 편의점 업계의 신상품 경쟁도 한층 치열해지고 있다.두바이쫀득쿠키(두쫀쿠)와 상하이 버터떡에 이어 최근에는 피자설기와 속을 채운 찹쌀떡이 새로운 인기…",
           "source": "스트레이트뉴스",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_d0983b0320d57178",
           "url": "https://www.straightnews.co.kr/news/articleView.html?idxno=314306",
           "medium": "news",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
           "publishedAt": "2026-10-31T09:00:00+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_d0983b0320d57178",
+          "summary": "사회관계망서비스(SNS)를 중심으로 디저트 유행이 빠르게 바뀌면서 편의점 업계의 신상품 경쟁도 한층 치열해지고 있다.두바이쫀득쿠키(두쫀쿠)와 상하이 버터떡에 이어 최근에는 피자설기와 속을 채운 찹쌀떡이 새로운 인기…",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -91,14 +91,14 @@
         },
         {
           "title": "본격 성수기 앞둔 ‘삼립호빵’, 편의점 매출 44% 껑충",
-          "summary": "삼립의 겨울철 대표 제품 ‘삼립호빵’이 본격적인 성수기를 앞두고 초반 판매 호조를 보이고 있다.삼립은 이번 시즌 삼립호빵은 출시 후 첫 3주간 편의점 채널 매출이 전년 동기보다 약 44% 증가했다고 5일 밝혔다.",
           "source": "식품저널",
-          "sourceId": "news-foodnews",
-          "candidateId": "c_8a4b50795a76ecd0",
           "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120844",
           "medium": "news",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
           "publishedAt": "2026-11-05T19:12:44+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_8a4b50795a76ecd0",
+          "summary": "삼립의 겨울철 대표 제품 ‘삼립호빵’이 본격적인 성수기를 앞두고 초반 판매 호조를 보이고 있다.삼립은 이번 시즌 삼립호빵은 출시 후 첫 3주간 편의점 채널 매출이 전년 동기보다 약 44% 증가했다고 5일 밝혔다.",
           "trendEvidence": [
             "sales_data"
           ]
@@ -110,60 +110,60 @@
       "items": [
         {
           "title": "제육볶음 황금레시피｜양념에 미리 재워 더욱 맛있게 만드는 법",
-          "summary": "매콤달콤한 제육볶음은 언제 먹어도 맛있는 대표적인 집밥 메뉴죠.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_ce105ed4dbb14f75",
           "url": "https://cultureagora.tistory.com/433",
           "medium": "blog",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T07:00:30+09:00",
           "image": "https://blog.kakaocdn.net/dn/Iu5iB/dJMcailaRrC/kNeYoxGovRqH3AGadL95Kk/tfile.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-05T07:00:30+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_ce105ed4dbb14f75",
+          "imageSource": "feed_html",
+          "summary": "매콤달콤한 제육볶음은 언제 먹어도 맛있는 대표적인 집밥 메뉴죠."
         },
         {
           "title": "얼큰한 황태 콩나물국 끓이는 법 요리 레시피",
-          "summary": "뜨끈한 국이 없으면 안 되는 계절입니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_bf339aee5b86fb08",
           "url": "https://twins0807.tistory.com/entry/%EC%96%BC%ED%81%B0%ED%95%9C-%ED%99%A9%ED%83%9C-%EC%BD%A9%EB%82%98%EB%AC%BC%EA%B5%AD-%EB%81%93%EC%9D%B4%EB%8A%94-%EB%B2%95-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-11-04T20:20:29+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-04T20:20:29+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_bf339aee5b86fb08",
+          "summary": "뜨끈한 국이 없으면 안 되는 계절입니다."
         },
         {
           "title": "냉장고 털어 만든 혼밥, 간단한 베이컨 김밥 레시피",
-          "summary": "냉장고 털어 만든 혼밥, 간단한 베이컨 김밥 레시피 남편은 볼일이 있어 외출하고 혼자 점심을 먹게 된 날입니다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_db195ccef2f62fb2",
           "url": "https://heysukim114.tistory.com/entry/%EB%83%89%EC%9E%A5%EA%B3%A0-%ED%84%B8%EC%96%B4-%EB%A7%8C%EB%93%A0-%ED%98%BC%EB%B0%A5-%EB%B2%A0%EC%9D%B4%EC%BB%A8-%EA%B9%80%EB%B0%A5",
           "medium": "blog",
+          "publishedAt": "2026-11-05T00:00:56+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T00:00:56+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_db195ccef2f62fb2",
+          "summary": "냉장고 털어 만든 혼밥, 간단한 베이컨 김밥 레시피 남편은 볼일이 있어 외출하고 혼자 점심을 먹게 된 날입니다."
         },
         {
           "title": "중독성 강한 맵달 소스! 팔도 왕뚜껑 국물라볶이 뒤늦게 먹어본 내돈내산 후기",
-          "summary": "페이커가 출연한 광고를 보고 팔도 왕뚜껑 국물라볶이가 출시된 걸 이제야 알았습니다.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_96321d64cf2b3ec6",
           "url": "https://seon1982.tistory.com/4139",
           "medium": "blog",
+          "publishedAt": "2026-11-05T00:00:58+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T00:00:58+09:00"
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_96321d64cf2b3ec6",
+          "summary": "페이커가 출연한 광고를 보고 팔도 왕뚜껑 국물라볶이가 출시된 걸 이제야 알았습니다."
         },
         {
           "title": "숙주나물무침 삶지 말고 찌세요! 물 안 생기고 아삭한 황금레시피",
-          "summary": "여러분은 평소에 숙주나물무침을 만들 때 어떻게 조리하시나요?",
           "source": "달순생활",
-          "sourceId": "blog-dalsoonlife",
-          "candidateId": "c_0157935d4758478d",
           "url": "https://dalsoonlife.tistory.com/234",
           "medium": "blog",
+          "publishedAt": "2026-09-21T10:55:04+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-09-21T10:55:04+09:00"
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_0157935d4758478d",
+          "summary": "여러분은 평소에 숙주나물무침을 만들 때 어떻게 조리하시나요?"
         }
       ]
     },
@@ -172,60 +172,60 @@
       "items": [
         {
           "title": "혈당, 체중 관리 중인데… 과일 먹어도 될까?",
-          "summary": "과일은 혈당 관리를 위해 한 번에 먹는 양을 지키는 것이 좋다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_a0a4fe18d5dcea95",
           "url": "https://kormedi.com/2899056/",
           "medium": "news",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T14:01:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2023/06/tk.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-11-05T14:01:00+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a0a4fe18d5dcea95",
+          "imageSource": "feed_media",
+          "summary": "과일은 혈당 관리를 위해 한 번에 먹는 양을 지키는 것이 좋다."
         },
         {
           "title": "“염증 싹 사라진다”… 과메기 ‘이 조합’으로 먹으면 영양 폭발",
-          "summary": "겨울철 별미로 꼽히는 과메기는 맛뿐 아니라 건강에도 좋은 다양한 영양소를 함유하고 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_f573d6bb543136d0",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/05/2026110501467.html",
           "medium": "news",
+          "publishedAt": "2026-11-05T13:00:00+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T13:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_f573d6bb543136d0",
+          "summary": "겨울철 별미로 꼽히는 과메기는 맛뿐 아니라 건강에도 좋은 다양한 영양소를 함유하고 있다."
         },
         {
           "title": "“단백질 많고 피도 맑게 해준다”… 선우용여가 극찬한 ‘조림 요리’",
-          "summary": "나이가 들수록 건강한 음식을 챙겨 먹는 게 중요하다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_d32378fa12bdc07e",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103001972.html",
           "medium": "news",
+          "publishedAt": "2026-11-01T04:00:00+09:00",
           "discoveredAt": "2026-11-01T16:20:36+09:00",
-          "publishedAt": "2026-11-01T04:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_d32378fa12bdc07e",
+          "summary": "나이가 들수록 건강한 음식을 챙겨 먹는 게 중요하다."
         },
         {
           "title": "헤이즐넛 의외의 효능 5가지… \"비타민E 보충하고, 식후 혈당 상승 늦춰\"",
-          "summary": "헤이즐넛은 서양개암나무의 열매로, 초콜릿 스프레드나 커피 향으로 익숙하지만 열매 자체의 영양 구성도 눈여겨볼 만하다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_522d1a21082607ee",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69554",
           "medium": "news",
+          "publishedAt": "2026-11-05T17:00:00+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T17:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_522d1a21082607ee",
+          "summary": "헤이즐넛은 서양개암나무의 열매로, 초콜릿 스프레드나 커피 향으로 익숙하지만 열매 자체의 영양 구성도 눈여겨볼 만하다."
         },
         {
           "title": "\"기억력 지키려면 고기 드세요\"…신경과 의사가 강조한 식단",
-          "summary": "허준희 인턴 기자 = 나이가 들수록 고기 섭취를 줄이고 채소 위주로 식사하는 습관이 근육 감소로 이어질 수 있다는 신경과 전문의의 조언이 나왔다.지난 23일 유튜브 채널 '굿데이닥의 도파민리부트'에 출연한…",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_7e637d5a8a519f79",
           "url": "https://www.newsis.com/view/NISX20261025_0003840058",
           "medium": "news",
+          "publishedAt": "2026-10-25T16:37:00+09:00",
           "discoveredAt": "2026-10-26T14:57:58+09:00",
-          "publishedAt": "2026-10-25T16:37:00+09:00"
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_7e637d5a8a519f79",
+          "summary": "허준희 인턴 기자 = 나이가 들수록 고기 섭취를 줄이고 채소 위주로 식사하는 습관이 근육 감소로 이어질 수 있다는 신경과 전문의의 조언이 나왔다.지난 23일 유튜브 채널 '굿데이닥의 도파민리부트'에 출연한…"
         }
       ]
     },
@@ -234,49 +234,49 @@
       "items": [
         {
           "title": "1000원의 든든한 한 끼…대학가 아침 풍경 바꾼 천원의 아침밥",
-          "summary": "1000원으로 해결하는 든든한 아침식사가 대학생들의 일상을 바꾸고 있다.",
           "source": "데일리안",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_372fd058cb85fb8f",
           "url": "https://www.dailian.co.kr/news/view/1710787/1000%EC%9B%90-%EB%93%A0%EB%93%A0%ED%95%9C-%ED%95%9C-%EB%81%BC%EB%8C%80%ED%95%99%EA%B0%80-%EC%95%84%EC%B9%A8-2026",
           "medium": "news",
-          "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T06:00:00+09:00",
           "image": "https://cdnimage.dailian.co.kr/news/202611/news_1793781624425_1710787_m_1.png",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-11-05T06:00:00+09:00",
+          "discoveredAt": "2026-11-05T16:51:26+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_372fd058cb85fb8f",
+          "imageSource": "source_page_og",
+          "summary": "1000원으로 해결하는 든든한 아침식사가 대학생들의 일상을 바꾸고 있다."
         },
         {
           "title": "“배가 더부룩하고 가스 찬다면?”…중년 장 건강 돕는 ‘이 음식’ 뭘까?",
-          "summary": "중년 이후 배가 자주 더부룩하거나 배변 활동이 원활하지 않다면 평소 식습관을 살펴볼 필요가 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_77fd2ebffd270084",
           "url": "https://kormedi.com/2899552/",
           "medium": "news",
+          "publishedAt": "2026-11-05T16:19:10+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T16:19:10+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_77fd2ebffd270084",
+          "summary": "중년 이후 배가 자주 더부룩하거나 배변 활동이 원활하지 않다면 평소 식습관을 살펴볼 필요가 있다."
         },
         {
           "title": "많다던 ‘100억 마리 유산균’은 대장까지 살아 도착했을까⋯유산균 보충제의 현실",
-          "summary": "세계적인 연구기관인 와이즈만과학연구소가 2018년 학술지 〈셀(Cell)〉에 발표한 연구 결과처럼, 프로바이오틱스(유산균)는 생각보다 장 건강에 별로 도움이 되지 않는다[1].",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_711100d5cc947a1b",
           "url": "https://kormedi.com/2898043/",
           "medium": "news",
+          "publishedAt": "2026-11-05T16:00:00+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-05T16:00:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_711100d5cc947a1b",
+          "summary": "세계적인 연구기관인 와이즈만과학연구소가 2018년 학술지 〈셀(Cell)〉에 발표한 연구 결과처럼, 프로바이오틱스(유산균)는 생각보다 장 건강에 별로 도움이 되지 않는다[1]."
         },
         {
           "title": "“이래서 살 안 찌나?”… 악뮤 이찬혁, 아침은 ‘이것’ 먹고 끝",
-          "summary": "악동뮤지션 이찬혁이 집 테라스에서 달걀 2개로 만든 스크램블을 먹으며 아침 식사를 마무리했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_405f0eea771a976c",
           "url": "https://kormedi.com/2897462/",
           "medium": "news",
+          "publishedAt": "2026-11-04T23:01:00+09:00",
           "discoveredAt": "2026-11-05T16:51:26+09:00",
-          "publishedAt": "2026-11-04T23:01:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_405f0eea771a976c",
+          "summary": "악동뮤지션 이찬혁이 집 테라스에서 달걀 2개로 만든 스크램블을 먹으며 아침 식사를 마무리했다."
         }
       ]
     }
