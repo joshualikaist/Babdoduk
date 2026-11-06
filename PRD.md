@@ -39,7 +39,7 @@ These are hypotheses from the current features, not measured audience segments.
 | Secondary | Explore: the source-backed magazine, curated restaurant map, history and social channels | `mukbang.html` (`docs/MAGAZINE_DISCOVERY.md`), `history.html`, external links |
 | Secondary | Participate: verified events and collaborations | `event.html` |
 | Unreleased (lab only) | Food expense and meal log: personal, creator-authored or explicitly separated modes; owner decision open | `food.html` (noindex, nofollow; linked only from `lab.html`), `data/food-log.json`, browser localStorage |
-| Experimental | Isolated layout, fixture and preview work | `lab.html`, `lab-ggongbab.html` |
+| Operational publishing (owner 2026-11-06) | Lab previews production and provides authenticated bilingual news/event drafts and scheduled publication; experiment pages leave navigation | `lab.html`, `docs/EDITORIAL_SCHEDULER.md` |
 | Operational | Collection, validation, publication, session recovery and monitoring | `scripts/`, `supabase/`, workflows; never a public navigation destination |
 
 The capsule machine's animation only presents the drawn result; it is not an availability source or a separate product pillar.
@@ -94,3 +94,11 @@ Open owner decisions: positioning of the creator brand relative to the campus ut
 ## Out of scope and future possibilities
 
 This product definition does not authorize credential or MFA automation, Portal detail GET, new Supabase tables, migrations, account profiles, push notifications, a framework migration or a new backend. After the core journeys work, investigate optional editorial links and local-only personalization using measured user need and explicit privacy decisions.
+
+## Editorial publication (owner request 2026-11-06)
+
+Lab adds one publishing desk instead of the experiment menu. The owner writes bilingual news or
+events, checks the preview, and schedules publication in Korean time. Saving a draft does not
+publish it; confirming a schedule approves only that post for automatic main publication after
+checks and deployment. Exact minute timing is not guaranteed. Initial code release still needs
+lab acceptance. See `docs/EDITORIAL_SCHEDULER.md`.

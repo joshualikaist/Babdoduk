@@ -158,3 +158,10 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 - YouTube 소스 5개는 2026-10-12부터 꺼져 있다(운영 PC 사이드카가 9/29 이후 입력을 보내지 않음). 화면의 가로 매거진 레일은 제거되었다
 - 꽁밥 파이프라인(Dooray → OpenAI → Supabase → JSON)은 `docs/GGONGBAB_PAGE.md` 참고. 과거 메일 일괄 수집은 같은 문서 16절(메일함 backfill, 수동 1회 실행이며 cron 대상이 아님). Secrets: `DOORAY_API_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`(옛 이름 `SUPABASE_SERVICE_ROLE_KEY` 는 fallback), `OPENAI_API_KEY`
 - 이 액션은 기능 HTML/JS를 main에 실어 보내지 않는다. 슬롯·학식 UI 같은 코드는 기존처럼 lab에서 시험한 뒤 공개 반영할 때만 `main`에 merge한다
+
+## 소식·이벤트 예약 게시 (소유자 2026-11-06 요청)
+
+초기 구현은 일반 lab-first 절차로 승인·출시한다. 그 뒤 인증된 관리자가 lab 게시 관리에서
+예약 확정한 **해당 원고만** 자동 게시할 수 있다. 일반 기능 코드의 lab 전체 병합이나
+자동 승격은 허용하지 않는다. 게시 작업은 검사한 main/lab 후보를 정상 atomic push하여
+역동기화까지 함께 반영한다. 설정과 동작은 `docs/EDITORIAL_SCHEDULER.md`에 따른다.

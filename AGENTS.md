@@ -31,6 +31,21 @@ Record the owner's bypass authorization in the task report. A bypass change is b
 
 **Lab never trails production.** If `origin/main` has a source commit that `origin/lab` lacks (generated-data bot commits aside), staging no longer previews production: back-sync it before starting product work. A release is not operationally complete until that back-sync is pushed and deployed to babdoduk-lab. The procedures are `session-start` (the drift check), `release-babdoduk` (the lab acceptance gate, selective promotion and back-sync) and `handoff`.
 
+## Scheduled editorial publication (owner request 2026-11-06)
+
+Lab's navigation has one publishing desk (`lab.html`), replacing the experiment-menu links.
+The initial scheduler implementation still follows lab deployment, verification, owner approval
+and selective production promotion. Its presence on a task branch does not activate publishing.
+After that initial release and secret configuration, an authenticated administrator's **Approve
+preview & schedule** action approves only that bilingual news/event payload for automatic
+publication after its KST time. `editorial-publish` may then update only
+`data/content/events.json`, its generated `event.html`, and `inputs/editorial/published.json` on
+main, after checking exact main/lab candidates. It atomically pushes main plus the normal lab
+back-sync; it never promotes lab source code. Any source-code release keeps the ordinary
+lab-first lifecycle and owner approval. No new collector, DB or generated-feed authorization
+is implied. Unpublished content is encrypted because this repository is public. See
+`docs/EDITORIAL_SCHEDULER.md` for login, key setup, cancellation, gates and timing limitations.
+
 ## Before starting
 
 1. Read the documents the task needs: `PRD.md` for product scope, `DESIGN_SYSTEM.md` for visual work, `ARCHITECTURE.md` for system boundaries, `docs/GUIDE.md` (pages, data, pipelines and operations; `README.md` is only the short overview) and the `docs/` file governing the feature. Inspect the implementation and tests before planning a replacement.

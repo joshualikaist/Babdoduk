@@ -123,3 +123,15 @@ No tracked Web Push/service worker implementation exists. Do not add browser not
 | Promoting a lab-only system | Dedicated release plan with migrations, backend and frontend together | Bundling it into a UI release |
 
 The Portal notice detail endpoint `/wz/api/board/recents/{post_id}` remains blocked because past observation found a potential view-count side effect. New Ara's use of that endpoint is not evidence of safety here. Authentication replay, credential and OTP/MFA automation are outside this architecture.
+
+## Editorial scheduling (2026-11-06 task; inactive until initial release and configuration)
+
+The static public site remains unchanged in architecture. The lab publishing desk (`lab.html`)
+calls a host-restricted Vercel Node function (`api/editorial.js`) using GitHub OAuth and an
+encrypted HttpOnly session. Only allowlisted repository administrators may write the encrypted
+queue in `inputs/editorial/schedule.json` on lab. It is encrypted in the public Git repository,
+not only excluded from deployment. A main-only workflow reads that queue, appends due approved
+entries to authored events, generates event.html, checks both isolated candidates and atomically
+pushes main plus a normal lab back-sync. No lab source is promoted. Supabase, collectors, feeds
+and local agents are outside this feature. `lib/` is server code, blocked from static serving.
+Setup, exact allowlist and lifecycle: `docs/EDITORIAL_SCHEDULER.md`.

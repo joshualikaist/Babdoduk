@@ -1,0 +1,94 @@
+name: editorial-publish
+
+# Activated only after the lab-approved scheduler is selectively released to main.
+# Scheduling in the admin screen authorizes only that entry, never lab source promotion.
+on:
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  statuses: read
+
+concurrency:
+  group: babdoduk-editorial-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      BABDODUK_BROWSER: chromium
+      # Each candidate also runs the normal functional guardians. Pixel comparison uses the
+      # pinned ui-guardian workflow; this runner has no approved platform baseline.
+      BABDODUK_CHROME_VISUAL: skip
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Check for due posts without installing browser dependencies
+        id: probe
+        env:
+          GIT_TERMINAL_PROMPT: 0
+          EDITORIAL_QUEUE_KEY: ${{ secrets.EDITORIAL_QUEUE_KEY }}
+        run: python scripts/publish_editorial.py probe
+      - name: Install validation dependencies
+        if: steps.probe.outputs.due == 'true'
+        run: |
+          python -m pip install -r requirements-dev.txt numpy
+          python -m playwright install --with-deps chromium
+      - name: Prepare due content on latest main and back-sync candidate
+        id: prepare
+        if: steps.probe.outputs.due == 'true'
+        env:
+          GIT_TERMINAL_PROMPT: 0
+          EDITORIAL_QUEUE_KEY: ${{ secrets.EDITORIAL_QUEUE_KEY }}
+        run: python scripts/publish_editorial.py prepare
+      - name: Validate exact main and lab candidates
+        if: steps.prepare.outputs.due == 'true'
+        env:
+          MAIN_DIR: ${{ steps.prepare.outputs.main_dir }}
+          LAB_DIR: ${{ steps.prepare.outputs.lab_dir }}
+        run: |
+          set -e
+          for candidate in "$MAIN_DIR" "$LAB_DIR"; do
+            cd "$candidate"
+            python -m pytest tests -q -o addopts=""
+            python scripts/validate_content.py
+            python scripts/sync_site_chrome.py --check
+            python scripts/check_site_ui.py
+            python scripts/check_ggongbab_ui.py
+            python scripts/check_real_fonts.py
+          done
+      - name: Publish checked candidates atomically
+        if: steps.prepare.outputs.due == 'true'
+        env:
+          GIT_TERMINAL_PROMPT: 0
+        run: python scripts/publish_editorial.py finish
+      - name: Confirm production and lab Vercel deployments
+        if: steps.prepare.outputs.due == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAIN_SHA: ${{ steps.prepare.outputs.main_sha }}
+          LAB_SHA: ${{ steps.prepare.outputs.lab_sha }}
+          MAIN_DIR: ${{ steps.prepare.outputs.main_dir }}
+          LAB_DIR: ${{ steps.prepare.outputs.lab_dir }}
+        run: python scripts/check_editorial_deployments.py
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: editorial-failure-${{ github.run_id }}
+          path: .local/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14

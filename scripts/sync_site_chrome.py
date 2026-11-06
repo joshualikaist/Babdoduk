@@ -46,13 +46,11 @@ I18N = ROOT / "i18n"
 COMMON_STRINGS = ("a11y", "nav", "footer")
 
 LAB_LINKS = [
-    '<a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>',
-    '<a class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.labFeed">꽁밥 실험</a>',
-    '<a class="nav-mega-link" href="cardnews.html" data-i18n="nav.labCards">카드뉴스</a>',
+    '<a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">게시 관리</a>',
 ]
 LAB_RIBBON = [
     '<div class="lab-fork-ribbon">',
-    '  실험용 오늘의 꽁밥 — <a href="lab.html">실험실</a> / 본편 <a href="ggongbab.html">오늘의 꽁밥</a>',
+    '  검사용 오늘의 꽁밥 — <a href="lab.html">게시 관리</a> / 본편 <a href="ggongbab.html">오늘의 꽁밥</a>',
     '</div>',
 ]
 
@@ -71,14 +69,14 @@ PAGES = {
     "history.html": {"current": "history.html", "strings": ("history",)},
     # The menu world cup opens from an activity on event.html; no nav link points at it.
     "worldcup.html": {"current": None, "strings": ("wc",)},
-    "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
-    "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
+    "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab", "editor")},
+    "lab-ggongbab.html": {"current": None, "lab": True, "ribbon": True,
                           "strings": ("gg", "ggongbab", "km", "dish")},
     # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
     # page's "more" menu.
     "tip.html": {"current": "tip.html", "strings": ("tip",)},
     # The weekly card news preview is lab-only (docs/CARDNEWS.md), the images that go to Telegram.
-    "cardnews.html": {"current": "cardnews.html", "lab": True, "strings": ("cardnews",)},
+    "cardnews.html": {"current": None, "lab": True, "strings": ("cardnews",)},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),

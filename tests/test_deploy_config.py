@@ -23,7 +23,7 @@ def routes():
 
 
 def test_lab_only_experiments_answer_404_on_every_host_but_the_lab():
-    [route] = [r for r in routes() if "status" in r]
+    [route] = [r for r in routes() if "status" in r and "missing" in r]
     assert route["status"] == 404 and route["missing"] == [{"type": "host", "value": LAB_HOST}]
     assert set(route) == {"src", "missing", "status"}          # no destination: nothing else is served
     pattern = re.compile(route["src"])
@@ -113,3 +113,8 @@ def test_the_license_reserves_every_right_and_robots_refuses_ai_crawlers_and_the
     for bot in ("GPTBot", "ClaudeBot", "CCBot", "Google-Extended", "PerplexityBot", "Bytespider"):
         assert rules[bot] == [("disallow", "/")], bot
     assert rules["*"] == [("disallow", "/data/")]
+
+
+def test_editorial_server_library_is_never_a_public_static_resource():
+    [route] = [r for r in routes() if re.fullmatch(r["src"], "/lib/editorial.cjs")]
+    assert route == {"src": "/lib/(.*)", "status": 404}

@@ -17,6 +17,10 @@
       "continue": true
     },
     {
+      "src": "/lib/(.*)",
+      "status": 404
+    },
+    {
       "src": "/(food\\.html|lab\\.html|lab-ggongbab\\.html|cardnews\\.html|data/cardnews/.+|calendar\\.ics|data/food-log\\.json)",
       "missing": [
         {

@@ -583,7 +583,7 @@ def pick_tools(browser):
 
 def release_contracts(page):
     """Product roles that changed: choose.html is 오늘 뭐 먹지 (2026-11-04), food.html is lab-only (noindex,
-    nofollow, reachable from lab.html, linked from no public page in either language), and the
+    nofollow, kept as an unlinked fixture, linked from no public page in either language), and the
     event that did not happen appears nowhere."""
     count = 0
 
@@ -601,7 +601,7 @@ def release_contracts(page):
     check("noindex" in robots and "nofollow" in robots, ("food.html is noindex, nofollow", robots))
     check(page.locator("#foodSourceLegend").count() == 1, "the Food Log implementation is kept")
     page.goto("https://site-ui.invalid/lab.html", wait_until="networkidle")
-    check(page.locator('main a[href="food.html"]').count() == 1, "the lab links the Food Log (lab-only access)")
+    check(page.locator("#editorForm").count() == 1 and page.locator('main a[href="food.html"]').count() == 0, "lab is the publishing editor, without experiment links")
     for lang in ("ko", "en"):
         for name in GUARD_PAGES + ["choose.html"]:
             page.goto("https://site-ui.invalid/index.html", wait_until="domcontentloaded")
@@ -626,8 +626,8 @@ def lab_menu(page):
         assert ok, f"lab menu: {detail}"
         count += 1
 
-    labs = ["lab.html", "lab-ggongbab.html", "cardnews.html"]
-    names = {"ko": ["실험실", "꽁밥 실험", "카드뉴스"], "en": ["Lab", "Ggongbab lab", "Card news"]}
+    labs = ["lab.html"]
+    names = {"ko": ["게시 관리"], "en": ["Publishing"]}
     more = "() => [...document.querySelectorAll('#navMorePanel a')].map(a => [a.getAttribute('href'), a.textContent.trim()])"
     page.set_viewport_size({"width": 1440, "height": 900})
     for lang in ("ko", "en"):
