@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-06",
+  "generatedAt": "2026-11-06T16:51:07+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "CJ프레시웨이 3분기 매출 9614억…전년동기比 6.7% 증가",
+    "summary": "CJ프레시웨이는 3분기 매출이 9614억 원으로 전년 동기 대비 6.7% 증가했다고 밝혔다.",
+    "source": "식품음료신문",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_13bfa52e4dba906b",
+    "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201575",
+    "medium": "news",
+    "discoveredAt": "2026-11-06T16:51:07+09:00",
+    "publishedAt": "2026-11-05T16:01:37+09:00",
+    "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201575_202223_134.jpg",
+    "imageSource": "feed_html",
+    "trendEvidence": [
+      "sales_data",
+      "corroborated"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "‘2026 푸드위크 코리아’, K-푸드의 현장 속으로",
+          "summary": "′2026 푸드위크 코리아’가 11월 4일 서울 삼성동 코엑스에서 막을 올렸다.",
+          "source": "쿡앤셰프(Cook&Chef)",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cb3583e82da0c64b",
+          "url": "https://cooknchefnews.com/news/view/1065585767828837",
+          "medium": "blog",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-05T15:06:46+09:00",
+          "image": "https://cooknchefnews.com/news/data/2026/11/05/p1065585767828837_555_thum.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "농심, 14억 인구 대국 인도에 ‘매운맛’ 전파",
+          "summary": "농심이 ‘신라면’을 앞세워 14억 인구 대국 인도 시장 공략에 나선다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_fcd3a31506de1dda",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201582",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T14:44:03+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201582_202237_4359.jpg",
+          "imageSource": "feed_html",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "식품·유통업계, 저당·저염 식품 확대…'맛·건강' 함께 잡는다",
+          "summary": "식품·유통업계는 저당·저염 제품군을 빠르게 넓히고 있다.",
+          "source": "신아일보",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_fc52aee3624a74a0",
+          "url": "https://www.shinailbo.co.kr/news/articleView.html?idxno=5080326",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-05T16:19:30+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        },
+        {
+          "title": "신상 트렌드·유행 먹거리·재료별 신상 — 2026년 11월",
+          "summary": "2026년 11월 요즘 유행하는 먹거리, 뜨는 재료·맛, 반응 좋은 신상과 브랜드를 사진으로 모았습니다.",
+          "source": "신메뉴",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_f9a5384f29089f90",
+          "url": "https://shinmenu.com/trend/",
+          "medium": "blog",
+          "discoveredAt": "2026-11-04T16:26:12+09:00",
+          "publishedAt": "2026-11-06T12:00:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "‘나혼산 자연인’ 김민, 샐러리에 ‘이것’ 찍어 와그작⋯어떤 효과?",
+          "summary": "김민이 아침으로 샐러리를 먹는 모습이 화제가 됐다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_67e3b68b15979feb",
+          "url": "https://kormedi.com/2896007/",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T11:05:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "수육 맛있게 삶는 법｜앞다리살 부드럽게 삶는 시간과 잡내 제거 비법",
+          "summary": "돼지고기 수육은 김장철은 물론 평소에도 즐기기 좋은 집밥 메뉴입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_f31c87f5937c0f70",
+          "url": "https://cultureagora.tistory.com/418",
+          "medium": "blog",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T06:30:12+09:00",
+          "image": "https://blog.kakaocdn.net/dn/pe1vc/dJMcai6f1tc/KWfqsbh6vmOcF6gwXnCM8K/tfile.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "신상출시 편스토랑 오윤아의 초간단 3분컷 콩물단팥죽 만드는 법",
+          "summary": "344회 신상출시 편스토랑에서 오윤아는 진한 콩물을 활용해 초간단 단팥죽 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_fd3eb8a1dfbef090",
+          "url": "https://seon1982.tistory.com/4148",
+          "medium": "blog",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T00:00:24+09:00"
+        },
+        {
+          "title": "냉장고 속재료로 만든 우리 집 소소한 주말 밥상",
+          "summary": "냉장고 속재료로 만든 우리 집 소소한 주말 밥상 아들네에서 손녀를 보고 2주 만에 집으로 돌아왔습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_89d95553ddb7c269",
+          "url": "https://heysukim114.tistory.com/entry/%EC%9A%B0%EB%A6%AC-%EC%A7%91-%EC%86%8C%EC%86%8C%ED%95%9C-%EC%A3%BC%EB%A7%90-%EB%B0%A5%EC%83%81-%EB%8F%84%EB%AF%B8%EC%B0%8C%EA%B0%9C%EC%99%80-%EC%83%A4%EC%9D%B8%EB%A8%B8%EC%8A%A4%EC%BC%93%EB%AC%B4%EC%B9%A8",
+          "medium": "blog",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T00:00:52+09:00"
+        },
+        {
+          "title": "집에 우삼겹 있으면 무조건 이렇게 드세요.",
+          "summary": "우삼겹애호박덮밥을 만들어 보자 [재료] 우삼겹, 애호박 [만드는 법] 1. 팬에 우삼겹 200g을 올리고 80% 정도 익을 때까지 볶는다.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_2f2c87e438767ac0",
+          "url": "https://www.youtube.com/watch?v=eHKd3Ec4oRY",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-05T20:02:46+09:00"
+        },
+        {
+          "title": "아들 며느리를 위한 밑반찬 11가지, 냉장고 가득 채워주고 온 엄마의 집밥",
+          "summary": "아들 며느리를 위한 밑반찬 11가지, 냉장고 가득 채워주고 온 엄마의 집밥 며느리가 친정에서 몸조리를 마치고집으로 돌아왔습니다.마침 딸아이의 상견례도 같은 곳에서 있어아들네 집을 다녀오게 되었습니다.하루가 다르게…",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_bc6e07a33d586938",
+          "url": "https://heysukim114.tistory.com/entry/%EC%95%84%EB%93%A4-%EB%A9%B0%EB%8A%90%EB%A6%AC%EB%A5%BC-%EC%9C%84%ED%95%9C-%EB%B0%91%EB%B0%98%EC%B0%AC",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-09-20T15:48:12+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“술집 기본 안주로 먹었는데”… 알고 보니 ‘단백질 폭발하는’ 아침 메뉴",
+          "summary": "술집에서 생맥주와 곁들여 먹는 안주 중 종종 함께 나오는 초록색 콩이 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_d39a1d5b41bf64a5",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/05/2026110503005.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T07:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/05/2026110503002_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "가지의 변신은 무죄! 겉바속촉 ‘가지 커틀렛’",
+          "summary": "가지의 물렁물렁한 식감을 싫어하던 사람도 튀김옷 입힌 ‘가지 커틀렛’은 거부하기 힘들걸요?",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_c40dd95216bdd055",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/04/2026110402161.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T09:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/04/2026110402152_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "무조건 줄인다고 다이어트 성공?…살 빼는 데 오히려 득 되는 탄수화물 식품",
+          "summary": "살을 빼려고 할 때 탄수화물 식품을 무조건 피하는 것은 좋지 않다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_20c96fe0ffe610f9",
+          "url": "https://kormedi.com/2899848/",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T10:13:00+09:00"
+        },
+        {
+          "title": "“기름진 생선이라 피했는데”⋯제철 ‘이 생선’, 다이어트에도 좋다고?",
+          "summary": "삼치는 가을부터 살에 지방이 차오르는 생선이다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_98826620ba29454f",
+          "url": "https://kormedi.com/2899268/",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T08:05:00+09:00"
+        },
+        {
+          "title": "이영자·박세리도 즐긴 꽃게, 껍데기까지 먹어도 될까? [1분 Q&A]",
+          "summary": "최근 '남겨서 뭐하게'에서 이영자 씨와 박세리 씨가 제철 꽃게찜을 아주 맛있게 먹는 모습을 봤습니다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_c48717210fad876e",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69715",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T06:00:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "아내, 자녀와 함께 집밥 자주 먹었더니…남편의 혈당에 어떤 변화가?",
+          "summary": "집밥은 가족의 건강 상태에 따라 적절한 식재료, 양념을 활용할 수 있는 장점이 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_51172a2ed6b9ad05",
+          "url": "https://kormedi.com/2899980/",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T14:01:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2022/09/ec8b9dec82ac.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“떨어진 거 주워 먹으면 맹장 터져”⋯전현무의 말은 사실일까 [메디:팩트]",
+          "summary": "10월 30일 방송된 MBC 예능 프로그램 ‘나 혼자 산다’에서 오징어 반찬을 바닥에 떨어뜨린 기안84의 영상을 본 김대호가 “빨리 주워먹어라”고 조언하자, 박지현이 “3초가 지나서 안 된다”며 경고하고 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1ce86b285a85b748",
+          "url": "https://kormedi.com/2899532/",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T11:06:17+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/11/clean-table-scene-with-korean-captions-edited.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "‘나트륨·당류 저감 표시’ 모든 가공식품으로 확대",
+          "summary": "앞으로 소스·과자·떡볶이 등 모든 가공식품에 나트륨·당류 저감 표시가 가능해진다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_ef55d96063dc1d4a",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201581",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T14:35:26+09:00"
+        },
+        {
+          "title": "“소금만 바꿨을 뿐인데”⋯심장병·뇌졸중 사망 연 300만명 막을 수 있다",
+          "summary": "high blood pressure image, salt and sphygmomanometer 매일 먹는 소금의 성분만 바꿔도 전 세계에서 연간 약 300만명의 사망을 예방할 수 있다는 연구 결과가 나왔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_fcdad0a030d86a8b",
+          "url": "https://kormedi.com/2899172/",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T07:00:00+09:00"
+        },
+        {
+          "title": "“뇌혈관 망가진다”… 중년층은 꼭 줄여야 할 음식 4가지",
+          "summary": "라면은 나트륨 함량이 높은 식품으로, 국물까지 모두 마시면 나트륨을 과도하게 섭취할 수 있어 주의해야 한다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_9ffdb9aa76ca8cda",
+          "url": "https://kormedi.com/2898269/",
+          "medium": "news",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "publishedAt": "2026-11-06T16:05:00+09:00"
+        }
+      ]
+    }
+  }
+}
