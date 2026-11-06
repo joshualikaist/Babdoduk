@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T22:24:32+09:00",
+  "generatedAt": "2026-11-06T13:26:16+09:00",
   "timezone": "Asia/Seoul",
-  "count": 45,
+  "count": 46,
   "events": [
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
@@ -768,6 +768,44 @@
       ],
       "audience": {
         "text": "모든 관심 있는 사람",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "1d69dec0-2314-4ef9-9b9c-9e6d0aa431fa",
+      "title": "기계과 MEET 5회차 프로배구 경기 관람",
+      "summary": "기계공학과 학생회가 학과 학우들과 함께 프로배구 경기를 관람하는 MEET 5회차 행사입니다. 경기 티켓 및 간식이 제공됩니다.",
+      "startAt": "2026-11-12T19:00:00+09:00",
+      "endAt": null,
+      "dateText": "11월 12일(목)",
+      "timeText": "19:00 (경기 시작)",
+      "location": {
+        "name": "대전충무체육관",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "간식 제공",
+        "source": "text"
+      },
+      "organizer": "기계공학과 학생회",
+      "eligibility": "기계공학과 학부생 중 과비 납부자 (신입생은 한 학기 과비 납부 후 참여 가능)",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-07T23:59:00+09:00",
+        "url": "https://mesc-website.vercel.app/apply/2026-5th-meet"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "기계공학과 학부생 중 과비 납부자",
         "basis": "stated"
       }
     },
