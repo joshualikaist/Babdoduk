@@ -1,10 +1,102 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T13:26:16+09:00",
+  "generatedAt": "2026-11-06T16:47:40+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 12,
+  "count": 15,
   "events": [
+    {
+      "id": "38eff22c-27a5-48ac-828e-5398814301d8",
+      "title": "STAR-MOOC 공동 온오프라인 특강[ 코딩, 게임, 그리고 열역학 : AI의 새로운 법칙을 묻다 ]",
+      "summary": "6개 기관이 공동으로 개최하는 온오프라인 특강으로, 오프라인 행사와 실시간 온라인 중계가 함께 진행됩니다. 오프라인 참석자에게 도시락, 다과, 기념품 등이 준비되어 있습니다.",
+      "startAt": "2026-11-06T11:30:00+09:00",
+      "endAt": "2026-11-06T13:30:00+09:00",
+      "dateText": "2026년 11월 6일(금)",
+      "timeText": "11:30-13:30",
+      "location": {
+        "name": "터만홀",
+        "building": "창의학습관(E11)",
+        "room": "1층 터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "도시락, 다과",
+        "source": "text"
+      },
+      "organizer": "KAIST, GIST, DGIST, UNIST, POSTECH, UST",
+      "eligibility": "참여대학 재학생, 일반 학습자, STAR-MOOC 강좌 관심있는 누구나",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "참여대학 재학생, 일반 학습자, STAR-MOOC 강좌 관심있는 누구나",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "6902baab-5162-498f-855d-78213bfcf44c",
+      "title": "KAIST 점심 & 창업 토크",
+      "summary": "베이스벤처스가 주최하는 창업 토크로, 버기즈 버거가 무료로 제공됩니다.",
+      "startAt": "2026-11-06T12:00:00+09:00",
+      "endAt": "2026-11-06T13:30:00+09:00",
+      "dateText": "11/6(금)",
+      "timeText": "오후 12:00 ~ 오후 1:30",
+      "location": {
+        "name": "KAIST",
+        "building": "W8",
+        "room": "3층 컨퍼런스홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "버기즈 버거 무료 제공",
+        "source": "text"
+      },
+      "organizer": "베이스벤처스",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
+    {
+      "id": "8e6293b7-9414-44ed-99a9-6a686c5b2271",
+      "title": "논문은 Accept, 세상도 Accept할까?",
+      "summary": "토스 공동창업자이자 베이스벤처스 대표인 이태양 대표가 토스의 시작과 창업 과정, 연구실 기술과 아이디어의 사업화에 대해 이야기하는 창업 토크입니다. 사전 신청자에게 점심이 제공됩니다.",
+      "startAt": "2026-11-06T12:00:00+09:00",
+      "endAt": "2026-11-06T13:30:00+09:00",
+      "dateText": "11월 6일(금)",
+      "timeText": "12:00~13:30 (11:45부터 등록 및 입장)",
+      "location": {
+        "name": "KAIST",
+        "building": "W8",
+        "room": "3층 컨퍼런스홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "사전 신청자 점심 제공",
+        "source": "text"
+      },
+      "organizer": "KAIST 창업원",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "자신의 연구가 세상에서 어떤 가치를 만들 수 있을지 궁금한 분",
+        "basis": "stated"
+      }
+    },
     {
       "id": "b44efecd-e2cb-4800-9aed-0137f4d86df6",
       "title": "2026 노벨 수상자(문학상·경제학상·평화상) 수상 업적 해설 강연회",
