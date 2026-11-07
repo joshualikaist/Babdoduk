@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "weekStart": "2026-11-02",
   "weekEnd": "2026-11-08",
-  "generatedAt": "2026-11-07T00:00:04+09:00",
+  "generatedAt": "2026-11-07T16:18:58+09:00",
   "timezone": "Asia/Seoul",
   "days": [
     {
@@ -45,14 +45,14 @@
       "available": true,
       "restaurantCount": 5,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-07T00:00:04+09:00"
+      "fetchedAt": "2026-11-07T16:18:58+09:00"
     },
     {
       "date": "2026-11-08",
       "available": true,
       "restaurantCount": 5,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-07T00:00:04+09:00"
+      "fetchedAt": "2026-11-07T16:18:58+09:00"
     }
   ]
 }
