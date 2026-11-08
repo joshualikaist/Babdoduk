@@ -46,6 +46,13 @@ def test_fixture_clock_is_scoped_before_date_replacement():
         assert FIXTURE_CLOCK_SCRIPT.index(guard) < replacement
 
 
+# 마이 밥도둑 (docs/MY_BABDODUK.md; on production since owner 2026-11-11): the optional account store on
+# the hub. It loads the sign-in client only for someone already signed in on this browser and only on the
+# hosts js/babdoduk-auth-config.js lists (tests/test_my_babdoduk.py); the renderer never talks to a database,
+# and the lab-only Realtime feed (js/ggongbab-public-feed.js) never reaches main.
+ACCOUNT_SCRIPTS = ("js/ggongbab-public-config.js", "js/babdoduk-auth-config.js", "js/babdoduk-account.js")
+
+
 @pytest.mark.parametrize("name", ["index.html", "ggongbab.html", "lab-ggongbab.html"])
 def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     """main publishes the free-food feed as a static snapshot only (no Realtime client)."""
@@ -53,9 +60,18 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     scripts = re.findall(r'<script\s+src="([^"]+)"', html)
     renderer = "js/home.js" if name == "index.html" else "js/ggongbab.js"
     assert scripts.index("js/ggongbab-select.js") < scripts.index(renderer)
-    assert "ggongbab-public-feed.js" not in html and "ggongbab-public-config.js" not in html
+    assert "ggongbab-public-feed.js" not in html
+    hub = name != "index.html"
+    if hub:
+        assert scripts[-4:] == [*ACCOUNT_SCRIPTS, "js/ggongbab.js"], scripts
+        config = (ROOT / "js/ggongbab-public-config.js").read_text(encoding="utf-8")
+        assert not re.search(r"sb_secret_|service_role|SUPABASE_SECRET", config)
+    else:
+        assert "ggongbab-public-config.js" not in html and "babdoduk-account.js" not in html
     for script in scripts:
         assert not script.startswith(("http:", "https:", "//"))
+        if hub and script in ACCOUNT_SCRIPTS:
+            continue  # the account store: tests/test_my_babdoduk.py
         source = (ROOT / script.split("?")[0]).read_text(encoding="utf-8")
         for forbidden in ("BabdodukPublicFeed", "BABDODUK_PUBLIC_FEED_CONFIG", "supabase",
                           "createClient(", "WebSocket(", "EventSource("):
