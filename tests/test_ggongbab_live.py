@@ -416,6 +416,8 @@ def test_calendar_one_listing_at_a_time(browser):
     open_card(page, "lunch")
     cal_button = card(page, "lunch").locator("[data-gg-cal]")
     assert cal_button.get_attribute("aria-expanded") == "false"
+    assert not card(page, "lunch").locator(".gg-cal").is_visible()          # closed until asked for
+    assert card(page, "lunch").locator(".gg-cal a").count() == 0
     cal_button.click()
     panel = card(page, "lunch").locator(".gg-cal")
     assert panel.is_visible() and cal_button.get_attribute("aria-expanded") == "true"
@@ -444,6 +446,9 @@ def test_calendar_one_listing_at_a_time(browser):
 
 def test_new_feature_note_closes_for_good(browser):
     context, page, errors = open_hub(browser, notice_seen=False)
+    page.locator("[data-gg-more]").click()
+    page.locator("[data-gg-more]").click()
+    assert not page.locator(".gg-more-panel").is_visible()
     note = page.locator(".gg-new")
     assert "저장 · 공유 · 캘린더" in note.inner_text()
     # It sits in the page head, above the list, and covers nothing.
