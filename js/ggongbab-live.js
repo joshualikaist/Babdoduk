@@ -296,8 +296,9 @@
     u.searchParams.set('week', monday);
     return u.href;
   }
-  function inKakaoTalk(ua) { return /KAKAOTALK/i.test(ua == null ? (global.navigator || {}).userAgent || '' : ua); }
-  // KakaoTalk's documented scheme for leaving its in-app browser.
+  // The kakaotalk in-app browser (its user agent says so); downloads may not work there.
+  function inTalkApp(ua) { return /kakaotalk/i.test(ua == null ? (global.navigator || {}).userAgent || '' : ua); }
+  // The kakaotalk app's scheme for leaving its in-app browser.
   function openExternalUrl(url) { return 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); }
   // Resolves 'shared' | 'copied' | 'manual' | 'cancelled'. 'manual' means the caller shows the text to copy.
   function share(payload) {
@@ -338,7 +339,7 @@
     icsFileName: icsFileName,
     eventLink: eventLink,
     weekLink: weekLink,
-    inKakaoTalk: inKakaoTalk,
+    inTalkApp: inTalkApp,
     openExternalUrl: openExternalUrl,
     share: share
   };

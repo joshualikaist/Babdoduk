@@ -347,19 +347,21 @@
     if (calOk) html += '<button type="button" class="gg-btn gg-tool" data-gg-cal="' + esc(ev.id) + '" aria-expanded="' + !!state.calOpen[ev.id] +
       '" aria-controls="' + calId + '">' + esc(t('gg.live.calendar', '캘린더에 추가')) + '</button>';
     html += '</div>';
-    if (calOk) {
-      html += '<div class="gg-cal" id="' + calId + '"' + (state.calOpen[ev.id] ? '' : ' hidden') + '>';
+    // Closed, the calendar box holds nothing (no hidden links in the listing's link list).
+    if (calOk && !state.calOpen[ev.id]) html += '<div class="gg-cal" id="' + calId + '" hidden></div>';
+    else if (calOk) {
+      html += '<div class="gg-cal" id="' + calId + '">';
       html += '<a class="gg-btn" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
         esc(t('gg.live.calGoogle', 'Google 캘린더')) + '<span class="gg-sr"> ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
       html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calFile', '캘린더 파일 (.ics)')) + '</button>';
       if (!ev.endAt) html += '<p class="gg-cal-note">' + esc(t('gg.live.calNoEnd', '끝나는 시간은 공지에 없어요')) + '</p>';
-      if (L.inKakaoTalk()) html += kakaoNoteHtml();
+      if (L.inTalkApp()) html += talkAppNoteHtml();
       html += '</div>';
     }
     if (state.copy && state.copy.key === ev.id) html += copyBoxHtml();
     return html;
   }
-  function kakaoNoteHtml() {
+  function talkAppNoteHtml() {
     return '<p class="gg-cal-note">' + esc(t('gg.live.kakaoNote', '카카오톡 안에서는 파일 받기가 안 될 수 있어요')) +
       ' · <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('gg.live.openBrowser', '기본 브라우저로 열기')) + '</a></p>';
   }
