@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "삼양식품 2026년 3분기 매출 7918억, 영업익 1962억",
-    "summary": "삼양식품은 3분기 연결 기준 매출 7,918억원, 영업이익 1,962억원을 기록했다고 6일 공시했다.",
     "source": "푸드아이콘",
-    "sourceId": "news-foodicon",
-    "candidateId": "c_caa87a8e2c634f9c",
     "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36079",
     "medium": "news",
-    "discoveredAt": "2026-11-07T15:59:56+09:00",
-    "publishedAt": "2026-11-07T06:28:04+09:00",
     "image": "http://www.foodicon.co.kr/news/photo/202611/36079_54935_2757.jpg",
+    "category": "trend",
+    "publishedAt": "2026-11-07T06:28:04+09:00",
+    "discoveredAt": "2026-11-07T15:59:56+09:00",
+    "sourceId": "news-foodicon",
+    "candidateId": "c_caa87a8e2c634f9c",
     "imageSource": "source_page_og",
+    "summary": "삼양식품은 3분기 연결 기준 매출 7,918억원, 영업이익 1,962억원을 기록했다고 6일 공시했다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "sales_data",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,30 +28,30 @@
       "items": [
         {
           "title": "신라면 푸드트럭, 인도 북동부 20곳 달린다…시식에서 구매까지",
-          "summary": "농심이 매운맛과 면 요리에 친숙한 인도 북동부 소비자를 찾아 신라면 푸드트럭을 띄웠다.",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_996a6d74b8c07d7c",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36062",
           "medium": "news",
-          "discoveredAt": "2026-11-06T16:51:07+09:00",
-          "publishedAt": "2026-11-06T18:08:00+09:00",
           "image": "http://www.foodicon.co.kr/news/photo/202611/36062_54909_753.jpg",
+          "publishedAt": "2026-11-06T18:08:00+09:00",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_996a6d74b8c07d7c",
           "imageSource": "source_page_og",
+          "summary": "농심이 매운맛과 면 요리에 친숙한 인도 북동부 소비자를 찾아 신라면 푸드트럭을 띄웠다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "[가보니] 푸드위크, 라면 4사의 변신은 무죄…'국물라볶이'부터 '누들핏'까지",
-          "summary": "농심의 대표 제품인 '육개장 사발면'이 누들핏으로 나왔고, 분식집에서 맛볼 수 있는 라볶이가 팔도의 대표 제품 '왕뚜껑'에 입혀졌다.",
           "source": "뉴스웍스",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_cb874a010d518377",
           "url": "https://www.newsworks.co.kr/news/articleView.html?idxno=902264",
           "medium": "news",
-          "discoveredAt": "2026-11-07T15:59:56+09:00",
           "publishedAt": "2026-11-06T18:08:03+09:00",
+          "discoveredAt": "2026-11-07T15:59:56+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cb874a010d518377",
+          "summary": "농심의 대표 제품인 '육개장 사발면'이 누들핏으로 나왔고, 분식집에서 맛볼 수 있는 라볶이가 팔도의 대표 제품 '왕뚜껑'에 입혀졌다.",
           "trendEvidence": [
             "explicit_source_claim",
             "corroborated"
@@ -59,14 +59,14 @@
         },
         {
           "title": "삼성바이오에피스, ‘키트루다’ 바이오시밀러 美 허가 신청",
-          "summary": "삼성바이오에피스는 미국 식품의약국(FDA)에 ‘키트루다’ 바이오시밀러 후보물질 ‘SB27(성분명 펨브롤리주맙)’의 품목 허가를 신청했다고 30일 밝혔다.키트루다는 MSD가 개발한 ..",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_ce8f74296e549597",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/30/2026103002752.html",
           "medium": "news",
-          "discoveredAt": "2026-10-31T15:52:48+09:00",
           "publishedAt": "2026-10-30T17:38:41+09:00",
+          "discoveredAt": "2026-10-31T15:52:48+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_ce8f74296e549597",
+          "summary": "삼성바이오에피스는 미국 식품의약국(FDA)에 ‘키트루다’ 바이오시밀러 후보물질 ‘SB27(성분명 펨브롤리주맙)’의 품목 허가를 신청했다고 30일 밝혔다.키트루다는 MSD가 개발한 ..",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -74,28 +74,28 @@
         },
         {
           "title": "오메가3 영양제 챙겨 먹어야 할까?…전문가가 설명한 효과와 부작용",
-          "summary": "오메가3 영양제를 누구나 챙겨 먹을 필요는 없으며, 생선을 적게 먹고 심혈관질환 위험이 높은 사람은 복용을 고려해볼 수 있다는 조언이 나왔다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_bac199759768450c",
           "url": "https://www.newsis.com/view/NISX20261105_0003856186",
           "medium": "news",
-          "discoveredAt": "2026-11-06T16:51:07+09:00",
           "publishedAt": "2026-11-06T04:30:00+09:00",
+          "discoveredAt": "2026-11-06T16:51:07+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_bac199759768450c",
+          "summary": "오메가3 영양제를 누구나 챙겨 먹을 필요는 없으며, 생선을 적게 먹고 심혈관질환 위험이 높은 사람은 복용을 고려해볼 수 있다는 조언이 나왔다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "학교급식 조리로봇 안전 '도마 위'",
-          "summary": "학교급식 조리환경 개선을 위해 도입한 조리로봇 시설에서 화재가 발생하면서 안전관리 체계를 재점검해야 한다는 지적이 나왔다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_b2f876ca9411ac1f",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62597",
           "medium": "news",
-          "discoveredAt": "2026-11-07T15:59:56+09:00",
           "publishedAt": "2026-11-07T03:11:26+09:00",
+          "discoveredAt": "2026-11-07T15:59:56+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_b2f876ca9411ac1f",
+          "summary": "학교급식 조리환경 개선을 위해 도입한 조리로봇 시설에서 화재가 발생하면서 안전관리 체계를 재점검해야 한다는 지적이 나왔다.",
           "trendEvidence": [
             "corroborated"
           ]
@@ -107,60 +107,60 @@
       "items": [
         {
           "title": "신상출시 편스토랑 오윤아의 초간단 건강식 들기름콩국수 만드는 법",
-          "summary": "344회 신상출시 편스토랑에서 오윤아는 저칼로리에 고단백 관리식으로 최고인 콩물을 활용한 초간단 들기름콩국수 만드는 법을 공개했는데요.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_bccf9648c815a2e8",
           "url": "https://seon1982.tistory.com/4147",
           "medium": "blog",
-          "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T00:00:50+09:00",
           "image": "https://blog.kakaocdn.net/dn/lIBdd/dJMcabe4rBJ/vcBSqlVlnAQqFtkhdixxK1/img.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-07T00:00:50+09:00",
+          "discoveredAt": "2026-11-07T15:59:56+09:00",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_bccf9648c815a2e8",
+          "imageSource": "feed_html",
+          "summary": "344회 신상출시 편스토랑에서 오윤아는 저칼로리에 고단백 관리식으로 최고인 콩물을 활용한 초간단 들기름콩국수 만드는 법을 공개했는데요."
         },
         {
           "title": "고추장 수제비 황금레시피｜얼큰하고 칼칼한 감자 수제비 끓이는 법",
-          "summary": "갑자기 쌀쌀해진 날씨에는 뜨끈하고 얼큰한 국물 요리가 생각나죠.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_2c7dc66b20384e18",
           "url": "https://cultureagora.tistory.com/453",
           "medium": "blog",
+          "publishedAt": "2026-11-07T07:00:55+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T07:00:55+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_2c7dc66b20384e18",
+          "summary": "갑자기 쌀쌀해진 날씨에는 뜨끈하고 얼큰한 국물 요리가 생각나죠."
         },
         {
           "title": "쿠키 안에 치즈케이크가 통째로! 치즈케이크 초콜릿칩 쿠키 만들기 | Cheesecake-Stuffed Chocolate Chip Cookies | Thick Cookies",
-          "summary": "바닐라 치즈케이크를 통째로 감싸 구운 두툼한 치즈케이크 초코칩 쿠키를 만들었어요.",
           "source": "쿠킹트리 Cooking tree",
-          "sourceId": "yt-cookingtree",
-          "candidateId": "c_102cc02dadfb5ec0",
           "url": "https://www.youtube.com/watch?v=hq9DRkRXoDs",
           "medium": "youtube",
+          "publishedAt": "2026-11-06T20:00:16+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-06T20:00:16+09:00"
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_102cc02dadfb5ec0",
+          "summary": "바닐라 치즈케이크를 통째로 감싸 구운 두툼한 치즈케이크 초코칩 쿠키를 만들었어요."
         },
         {
           "title": "아들 집 가면서 만들어 간 국물요리 2가지",
-          "summary": "아들 집 가면서 만들어 간 국물요리 2가지 며느리가 서울로 취업하면서 이제 6개월이 되어가는 손녀를 제가 돌보게 되었습니다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_42856b9f4a7d812c",
           "url": "https://heysukim114.tistory.com/entry/%EC%95%84%EB%93%A4-%EC%A7%91-%EA%B0%80%EB%A9%B4%EC%84%9C-%EB%A7%8C%EB%93%A4%EC%96%B4-%EA%B0%84-%EA%B5%AD%EB%AC%BC%EC%9A%94%EB%A6%AC-2%EA%B0%80%EC%A7%80",
           "medium": "blog",
+          "publishedAt": "2026-11-07T00:00:17+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T00:00:17+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_42856b9f4a7d812c",
+          "summary": "아들 집 가면서 만들어 간 국물요리 2가지 며느리가 서울로 취업하면서 이제 6개월이 되어가는 손녀를 제가 돌보게 되었습니다."
         },
         {
           "title": "Ponytail Kimchi (Chonggak Kimchi)",
-          "summary": "If you love the crunch of Korean radish kimchi, I think you’ll really enjoy chonggak kimchi (총각김치), also known as…",
           "source": "My Korean Kitchen",
-          "sourceId": "blog-mykoreankitchen",
-          "candidateId": "c_36a8f3547d1df8d3",
           "url": "https://mykoreankitchen.com/ponytail-kimchi/",
           "medium": "blog",
+          "publishedAt": "2026-11-06T19:00:50+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-06T19:00:50+09:00"
+          "sourceId": "blog-mykoreankitchen",
+          "candidateId": "c_36a8f3547d1df8d3",
+          "summary": "If you love the crunch of Korean radish kimchi, I think you’ll really enjoy chonggak kimchi (총각김치), also known as…"
         }
       ]
     },
@@ -169,58 +169,58 @@
       "items": [
         {
           "title": "건강한 식습관, 학생 스스로 만든다",
-          "summary": "학생들이 스스로 식습관 개선 목표를 정하고 일주일 동안 실천하는 영양 캠페인이 대구지역 한 중학교에서 진행됐다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_55a3a53aa76fea7f",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62587",
           "medium": "news",
+          "publishedAt": "2026-11-07T02:33:54+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T02:33:54+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_55a3a53aa76fea7f",
+          "summary": "학생들이 스스로 식습관 개선 목표를 정하고 일주일 동안 실천하는 영양 캠페인이 대구지역 한 중학교에서 진행됐다."
         },
         {
           "title": "당뇨 환자 단백질 1위는 '콩'…햄·소시지는 최하위",
-          "summary": "장인혜 인턴 기자 = 당뇨 환자에게는 콩·두부 등 식물성 단백질이 가장 유리하고 햄·소시지 같은 가공육은 피하는 편이 좋다는 의사의 분석이 나왔다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_860b2a1795530dca",
           "url": "https://www.newsis.com/view/NISX20261106_0003857576",
           "medium": "news",
+          "publishedAt": "2026-11-06T18:00:00+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-06T18:00:00+09:00"
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_860b2a1795530dca",
+          "summary": "장인혜 인턴 기자 = 당뇨 환자에게는 콩·두부 등 식물성 단백질이 가장 유리하고 햄·소시지 같은 가공육은 피하는 편이 좋다는 의사의 분석이 나왔다."
         },
         {
           "title": "“잠 못 드는 밤 피로는 쌓이고”… 당신의 숙면을 도와줄 영양소 5가지",
-          "summary": "밤에 쉽게 잠들지 못하거나 자다가 자주 깨고, 충분히 자도 개운하지 않은 날이 반복된다면 수면장애를 의심해 볼 수 있다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_d1f3a1d3f4232dc1",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69660",
           "medium": "news",
+          "publishedAt": "2026-11-07T17:00:00+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T17:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_d1f3a1d3f4232dc1",
+          "summary": "밤에 쉽게 잠들지 못하거나 자다가 자주 깨고, 충분히 자도 개운하지 않은 날이 반복된다면 수면장애를 의심해 볼 수 있다."
         },
         {
           "title": "“빵에 버터 대신 아보카도 바르세요”… 혈관 염증 막는 ‘똑똑한 지방 섭취법’",
-          "summary": "콜레스테롤 수치가 높으면 혈관에 지방이 쌓여 심근경색이나 뇌졸중 위험이 커질 수 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_fcc126fc076f9b51",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/06/2026110602256.html",
           "medium": "news",
+          "publishedAt": "2026-11-07T07:00:00+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T07:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_fcc126fc076f9b51",
+          "summary": "콜레스테롤 수치가 높으면 혈관에 지방이 쌓여 심근경색이나 뇌졸중 위험이 커질 수 있다."
         },
         {
           "title": "“과일 그냥 먹지 말고 ‘이 식품’ 곁들여보세요”… 위 배출 속도 늦춰 혈당 막는 비결",
-          "summary": "과일은 비타민, 미네랄, 식이섬유를 함유하고 있지만, 섭취 후 혈당 수치가 높아질 수 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_204c2a09a92ad57f",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/06/2026110601686.html",
           "medium": "news",
+          "publishedAt": "2026-11-06T14:25:31+09:00",
           "discoveredAt": "2026-11-06T16:51:07+09:00",
-          "publishedAt": "2026-11-06T14:25:31+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_204c2a09a92ad57f",
+          "summary": "과일은 비타민, 미네랄, 식이섬유를 함유하고 있지만, 섭취 후 혈당 수치가 높아질 수 있다."
         }
       ]
     },
@@ -229,38 +229,38 @@
       "items": [
         {
           "title": "빠르게 나오고 너무 맛있지만…패스트푸드 많이 먹으면 몸에서 일어나는 나쁜 일",
-          "summary": "패스트푸드가 모두 나쁜 건 아니지만 열량이 높고, 나트륨과 포화 지방 등의 함량이 높은 종류는 혈압과 혈당 수치를 높이는 등 몸에 악영향을 미칠 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_c438a08d99ec702e",
           "url": "https://kormedi.com/2900790/",
           "medium": "news",
-          "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T11:05:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/11/tip101t010482-l.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-11-07T11:05:00+09:00",
+          "discoveredAt": "2026-11-07T15:59:56+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_c438a08d99ec702e",
+          "imageSource": "feed_media",
+          "summary": "패스트푸드가 모두 나쁜 건 아니지만 열량이 높고, 나트륨과 포화 지방 등의 함량이 높은 종류는 혈압과 혈당 수치를 높이는 등 몸에 악영향을 미칠 수 있다."
         },
         {
           "title": "우유 대신 마시는 음료, 칼슘만 확인?…‘이 영양소’도 살펴야",
-          "summary": "우유 대신 두유나 귀리, 아몬드 음료를 마시는 사람이라면 칼슘뿐 아니라 아이오딘도 함께 살펴야겠다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_ac5e37496fb5fc71",
           "url": "https://kormedi.com/2899929/",
           "medium": "news",
+          "publishedAt": "2026-11-07T13:01:00+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T13:01:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ac5e37496fb5fc71",
+          "summary": "우유 대신 두유나 귀리, 아몬드 음료를 마시는 사람이라면 칼슘뿐 아니라 아이오딘도 함께 살펴야겠다."
         },
         {
           "title": "생선 섭취가 건강에 미치는 영향…과학이 입증한 이점",
-          "summary": "생선에는 각종 영양소가 풍부해 심장과 뇌 건강을 증진하고 우울증 증상을 완화하는 등 여러 가지 건강상 이점이 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_6959d423d3528bcd",
           "url": "https://kormedi.com/2899837/",
           "medium": "news",
+          "publishedAt": "2026-11-06T09:15:00+09:00",
           "discoveredAt": "2026-11-06T16:51:07+09:00",
-          "publishedAt": "2026-11-06T09:15:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6959d423d3528bcd",
+          "summary": "생선에는 각종 영양소가 풍부해 심장과 뇌 건강을 증진하고 우울증 증상을 완화하는 등 여러 가지 건강상 이점이 있다."
         }
       ]
     }
