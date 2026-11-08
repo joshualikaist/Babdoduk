@@ -39,7 +39,9 @@ FEED = {"schemaVersion": 1, "updatedAt": "2026-11-08",
 @pytest.fixture(scope="module")
 def browser():
     with sync_playwright() as pw:
-        chrome = pw.chromium.launch(channel="chrome", headless=True)
+        # Real classic scrollbars, as the site checker runs: a 360px window leaves 344px for the page.
+        chrome = pw.chromium.launch(channel="chrome", headless=True, ignore_default_args=["--hide-scrollbars"],
+                                    args=["--disable-features=OverlayScrollbar,FluentOverlayScrollbar"])
         yield chrome
         chrome.close()
 
