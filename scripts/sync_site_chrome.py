@@ -76,6 +76,9 @@ PAGES = {
     # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
     # page's "more" menu.
     "tip.html": {"current": "tip.html", "strings": ("tip",)},
+    # 개인정보처리방침 (owner 2026-11-08): public on every host, because Google's sign-in consent screen
+    # needs its address on the site's own domain; no nav item.
+    "privacy.html": {"current": None, "strings": ("privacy",)},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),
