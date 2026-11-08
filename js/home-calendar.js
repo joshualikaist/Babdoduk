@@ -367,6 +367,25 @@
   }
 
   // The audience in small text: an inferred one carries "(추정)", so a guess never reads as a statement.
+  // 꽁밥 LIVE on the home calendar (owner 2026-11-08: "캘린더에도 누르면 저장되도록"): the same browser
+  // store as the hub's ☆ (js/ggongbab-live.js, docs/GGONGBAB_LIVE.md), so a listing saved here shows in
+  // 저장한 꽁밥 on ggongbab.html; and a share of the listing's hub link. Only listings still to come.
+  var L = window.BabdodukLive;
+  var savedStore = L ? L.createStore() : null;
+  var liveNote = { id: '', text: '', copy: '' };
+  function saveButton(item, i) {
+    if (!savedStore || !item.active) return '';
+    var on = savedStore.has(item.ev.id);
+    return '<button type="button" class="hc-save" data-hc-save="' + esc(item.ev.id) + '" aria-pressed="' + on + '" aria-label="' +
+      esc(fill(t('home.cal.ev.saveAria', '{title} 저장'), { title: item.ev.title })) + '"><span aria-hidden="true">' + (on ? '★' : '☆') + '</span></button>';
+  }
+  function shareText(ev) {
+    var start = F.toKst(ev.startAt);
+    var place = shortPlace(ev.location);
+    var dish = F.isDeadlineOnly(ev) || !F.hasFood(ev) ? '' : F.dishLabel(ev, t);
+    var when = start ? dateLabel(F.ymd(start)) + (F.isDeadlineOnly(ev) ? '' : ' ' + hm(start)) : '';
+    return (dish ? dish + ' · ' : '') + ev.title + '\n' + [when, place].filter(Boolean).join(' · ');
+  }
   function whoText(ev) {
     return F.audienceOf(ev, function (who) { return fill(t('home.cal.ev.estimated', '{who} (추정)'), { who: who }); });
   }
@@ -447,7 +466,16 @@
         esc(source.type === 'instagram' ? t('home.cal.ev.instagram', '인스타그램 원문 보기') : t('home.cal.ev.original', '원문 보기')) +
         ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
     }
+    if (L && item.active) {
+      actions.push('<button type="button" class="btn btn-secondary hc-ev-share" data-hc-share="' + esc(ev.id) + '">' +
+        '<span aria-hidden="true">↗</span> ' + esc(t('home.cal.ev.share', '공유')) + '</button>');
+    }
     if (actions.length) rows.push('<p class="hc-ev-actions">' + actions.join('') + '</p>');
+    if (liveNote.id === ev.id && liveNote.text) rows.push('<p class="hc-ev-note" role="status">' + esc(liveNote.text) + '</p>');
+    if (liveNote.id === ev.id && liveNote.copy) {
+      rows.push('<label class="hc-ev-copy">' + esc(t('home.cal.ev.copyHint', '길게 눌러 복사하세요')) +
+        '<textarea readonly rows="3">' + esc(liveNote.copy) + '</textarea></label>');
+    }
     var via = sourceKey(ev);
     if (via && !source) rows.push('<p class="hc-ev-src">' + esc(fill(t('home.cal.ev.source', '출처 · {source}'), { source: t(via, '') })) + '</p>');
     return rows.join('');
@@ -484,8 +512,8 @@
         var open = state.open === item.ev.id;
         // The button covers the row (a tap anywhere on it opens it; not the opened details) and is named by the title.
         return '<li class="hc-ev' + (item.active ? '' : ' is-past') + (open ? ' is-open' : '') + '">' +
-          '<div class="hc-ev-row"><button type="button" class="hc-ev-btn" data-hc-ev="' + esc(item.ev.id) + '" aria-expanded="' + open +
-          '" aria-controls="homeCalEv' + i + '" aria-labelledby="homeCalEvTitle' + i + '"></button>' + timeCol(item) + '<span class="hc-ev-body">' + headLine(item) + metaLines(item, i) + '</span></div>' +
+          '<div class="hc-ev-row' + (savedStore && item.active ? ' has-save' : '') + '"><button type="button" class="hc-ev-btn" data-hc-ev="' + esc(item.ev.id) + '" aria-expanded="' + open +
+          '" aria-controls="homeCalEv' + i + '" aria-labelledby="homeCalEvTitle' + i + '"></button>' + timeCol(item) + '<span class="hc-ev-body">' + headLine(item) + metaLines(item, i) + '</span>' + saveButton(item, i) + '</div>' +
           '<div class="hc-ev-detail" id="homeCalEv' + i + '"' + (open ? '' : ' hidden') + '>' + detailHtml(item) + '</div></li>';
       }).join('') + '</ul>' + (list.length >= SCROLL_FROM ? '</div>' : '');
     }
@@ -650,6 +678,44 @@
     state.open = open ? button.getAttribute('data-hc-ev') : '';
   }
 
+  function findItem(id) {
+    var list = state.days[state.selected] || [];
+    for (var i = 0; i < list.length; i++) if (list[i].ev.id === id) return list[i];
+    return null;
+  }
+  function refocus(selector) {
+    var el = els.day.querySelector(selector);
+    if (el) el.focus({ preventScroll: true });
+  }
+  function toggleSave(id) {
+    var item = findItem(id);
+    if (!savedStore || !item) return;
+    savedStore.reload();   // another tab may have saved or removed it since
+    var message;
+    if (savedStore.has(id)) message = savedStore.remove(id) ? t('home.cal.ev.unsaved', '저장을 지웠어요') : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
+    else message = savedStore.add(item.ev) ? t('home.cal.ev.saved', '저장했어요 · 오늘의 꽁밥의 저장한 꽁밥에서 볼 수 있어요') : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
+    var scroll = els.day.querySelector('.hc-events-scroll');
+    var top = scroll ? scroll.scrollTop : 0;
+    renderDay();
+    scroll = els.day.querySelector('.hc-events-scroll');
+    if (scroll) scroll.scrollTop = top;
+    els.live.textContent = message;
+    refocus('[data-hc-save="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+  }
+  function shareListing(id) {
+    var item = findItem(id);
+    if (!L || !item) return;
+    var payload = { title: item.ev.title, text: shareText(item.ev), url: L.eventLink(id) };
+    L.share(payload).then(function (result) {
+      if (result !== 'copied' && result !== 'manual') return;   // shared through the sheet, or cancelled
+      liveNote = { id: id, text: '', copy: '' };
+      if (result === 'copied') liveNote.text = t('home.cal.ev.copied', '링크를 복사했어요');
+      else liveNote.copy = payload.text + '\n' + payload.url;
+      els.live.textContent = liveNote.text || t('home.cal.ev.copyHint', '길게 눌러 복사하세요');
+      renderDay();
+      refocus('[data-hc-share="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+    });
+  }
   function onClick(e) {
     var target = e.target;
     var cell = target.closest('td[data-date]');
@@ -660,6 +726,10 @@
       return;
     }
     if (target.closest('[data-hc-today]')) return goToday();
+    var star = target.closest('[data-hc-save]');
+    if (star) return toggleSave(star.getAttribute('data-hc-save'));
+    var share = target.closest('[data-hc-share]');
+    if (share) return shareListing(share.getAttribute('data-hc-share'));
     var row = target.closest('.hc-ev-btn');
     if (row) return toggle(row);
     var go = target.closest('[data-hc-go]');
