@@ -32,8 +32,22 @@
     archive: { status: 'loading', data: null, expanded: false },
     news: { status: 'loading', items: [] },
     open: {},                 // the listings opened to their details (2026-11-05)
-    food: 'all'
+    food: 'all',
+    // 꽁밥 LIVE (docs/GGONGBAB_LIVE.md): the optional filters, never saved (the date is relative to
+    // today; the saved filter object keeps its {when, food} shape), the saved listings and the share link.
+    day: 'all', who: 'all', area: 'all',
+    moreFilters: false,
+    savedOpen: false,
+    calOpen: {},              // the listings whose calendar choices are open
+    copy: null,               // {key, text}: what to copy by hand when sharing and copying both failed
+    entry: { id: '', week: '', done: false, notice: null }
   };
+  var L = window.BabdodukLive;
+  var savedStore = L ? L.createStore() : null;
+  var NOTICE_KEY = 'babdoduk-notice-ggongbab-live';
+  var DAY_FILTERS = ['all', 'today', 'week', 'next'];
+  var WHO_FILTERS = ['all', 'fresh', 'undergrad', 'grad', 'open', 'check'];
+  var AREA_FILTERS = ['all', 'north', 'east', 'west', 'unknown'];
   var menuCtl = null;
 
   function t(key, fallback) {
@@ -113,8 +127,20 @@
     });
     return upcoming[0] || null;
   }
+  // The optional filters: date (KST), who the source says it is for, campus area by building number.
+  function inMore(ev, now) {
+    if (!L) return true;
+    if (state.day !== 'all' && !L.inDays(ev, state.day, now)) return false;
+    if (state.who !== 'all' && L.whoOf(ev).indexOf(state.who) < 0) return false;
+    if (state.area !== 'all' && L.areaOf(ev) !== state.area) return false;
+    return true;
+  }
+  function moreCount() {
+    return (state.day !== 'all') + (state.who !== 'all') + (state.area !== 'all');
+  }
+  function filtersActive() { return state.food !== 'all' || moreCount() > 0; }
   function visibleEvents(today) {
-    return publicList().filter(function (ev) { return fromToday(ev, today) && isUpcoming(ev, today) && inFood(ev); }).sort(function (a, b) {
+    return publicList().filter(function (ev) { return fromToday(ev, today) && isUpcoming(ev, today) && inFood(ev) && inMore(ev, today); }).sort(function (a, b) {
       return String(a.startAt || '').localeCompare(String(b.startAt || ''));
     });
   }
@@ -233,6 +259,9 @@
     html += '<p class="gg-card-badges">' + foodBadgeHtml(ev);
     if (gift) html += '<span class="gg-gift-badge">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>';
     if (featured) html += '<span class="gg-featured-label">' + esc(t('gg.next', '다음 꽁밥')) + '</span>';
+    if (L && L.phaseOf(ev, now) === 'now') html += '<span class="gg-now-label">' + esc(t('gg.live.now', '진행 중')) + '</span>';
+    var changed = savedChanges(ev);
+    if (changed.length) html += '<span class="gg-changed-label">' + esc(t('gg.live.changed', '변경됨')) + '</span>';
     html += '</p><p class="gg-sub"><span class="gg-title" id="' + titleId + '" role="heading" aria-level="3">' + esc(ev.title) + '</span>' +
       '<span class="gg-where' + (where ? '' : ' is-unknown') + '"> · ' + esc(where || t('gg.placeTbd', '장소 미정')) + '</span></p></div>';
     // The row's link says when signing up is required ("사전 신청"), so no second badge is needed.
@@ -240,8 +269,10 @@
       esc(sign.required === 'true' ? t('gg.registerRequiredShort', '사전 신청') : t('gg.registerShort', '신청')) +
       '<span class="gg-sr"> ' + esc(ev.title) + ' ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
     else if (sign.required === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
+    html += saveButtonHtml(ev);
     html += '</div>';
     html += '<div class="gg-detail" id="' + detailId + '"' + (open ? '' : ' hidden') + '>';
+    html += changesHtml(ev, changed);
     var foodText = foodDetailOf(ev);
     if (foodText) html += '<p class="gg-food-line">' + esc(t('gg.foodLine', '음식 · {food}').replace('{food}', foodText)) + '</p>';
     html += '<p class="gg-place' + (place ? '' : ' is-unknown') + '">' + esc(place || t('gg.placeTbd', '장소 미정'));
@@ -265,23 +296,130 @@
     }
     var via = sourceLabel(ev);
     if (via) html += '<p class="gg-source">' + esc(via) + '</p>';
+    html += toolsHtml(ev, now, n);
     return html + '</div></article>';
+  }
+  // ---- 꽁밥 LIVE: save, share, calendar (js/ggongbab-live.js) ----
+  function savedChanges(ev) {
+    return savedStore && savedStore.has(ev.id) ? L.changes(savedStore.get(ev.id), ev) : [];
+  }
+  function whenText(startAt, endAt) {
+    var s = toKst(startAt), e = toKst(endAt);
+    if (!s) return t('gg.timeTbd', '시간 미정');
+    var text = dayLabel(s) + ' ' + hm(s);
+    if (e && e > s) text += '–' + (ymd(e) === ymd(s) ? '' : dayLabel(e) + ' ') + hm(e);
+    return text;
+  }
+  // The row's star: a toggle named by the listing, so a screen reader hears what it saves.
+  function saveButtonHtml(ev) {
+    if (!savedStore) return '';
+    var on = savedStore.has(ev.id);
+    return '<button type="button" class="gg-save" data-gg-save="' + esc(ev.id) + '" aria-pressed="' + on + '" aria-label="' +
+      esc(t('gg.live.saveAria', '{title} 저장').replace('{title}', ev.title || '')) + '"><span aria-hidden="true">' + (on ? '★' : '☆') + '</span></button>';
+  }
+  // What changed since the visitor saved it: their own earlier copy against the newest one. Nothing is
+  // compared when the feed itself carries no earlier state.
+  function changesHtml(ev, changed) {
+    if (!changed.length) return '';
+    var html = '<div class="gg-changes">';
+    changed.forEach(function (c) {
+      var before = c.field === 'time' ? whenText(c.before.startAt, c.before.endAt) : c.before;
+      var after = c.field === 'time' ? whenText(c.after.startAt, c.after.endAt) : c.after;
+      html += '<p class="gg-change">' + esc(t('gg.live.change.' + c.field, c.field === 'time' ? '시간 변경' : '장소 변경')) + ' · ' +
+        '<span class="gg-change-before">' + esc(t('gg.live.change.before', '저장할 때 {v}').replace('{v}', before)) + '</span> → ' +
+        '<strong>' + esc(t('gg.live.change.after', '지금 {v}').replace('{v}', after)) + '</strong></p>';
+    });
+    return html + '<button type="button" class="gg-btn gg-ack" data-gg-ack="' + esc(ev.id) + '">' + esc(t('gg.live.ack', '확인했어요')) + '</button></div>';
+  }
+  function toolsHtml(ev, now, n) {
+    if (!L) return '';
+    var html = '<div class="gg-tools">';
+    if (savedStore) {
+      var on = savedStore.has(ev.id);
+      html += '<button type="button" class="gg-btn gg-tool" data-gg-save="' + esc(ev.id) + '" aria-pressed="' + on + '">' +
+        '<span aria-hidden="true">' + (on ? '★' : '☆') + '</span> ' + esc(on ? t('gg.live.saved', '저장됨') : t('gg.live.save', '저장')) + '</button>';
+    }
+    html += '<button type="button" class="gg-btn gg-tool" data-gg-share="' + esc(ev.id) + '">' + esc(t('gg.live.share', '공유')) + '</button>';
+    var calOk = L.canCalendar(ev, now);
+    var calId = 'ggCal' + n;
+    if (calOk) html += '<button type="button" class="gg-btn gg-tool" data-gg-cal="' + esc(ev.id) + '" aria-expanded="' + !!state.calOpen[ev.id] +
+      '" aria-controls="' + calId + '">' + esc(t('gg.live.calendar', '캘린더에 추가')) + '</button>';
+    html += '</div>';
+    if (calOk) {
+      html += '<div class="gg-cal" id="' + calId + '"' + (state.calOpen[ev.id] ? '' : ' hidden') + '>';
+      html += '<a class="gg-btn" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
+        esc(t('gg.live.calGoogle', 'Google 캘린더')) + '<span class="gg-sr"> ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
+      html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calFile', '캘린더 파일 (.ics)')) + '</button>';
+      if (!ev.endAt) html += '<p class="gg-cal-note">' + esc(t('gg.live.calNoEnd', '끝나는 시간은 공지에 없어요')) + '</p>';
+      if (L.inKakaoTalk()) html += kakaoNoteHtml();
+      html += '</div>';
+    }
+    if (state.copy && state.copy.key === ev.id) html += copyBoxHtml();
+    return html;
+  }
+  function kakaoNoteHtml() {
+    return '<p class="gg-cal-note">' + esc(t('gg.live.kakaoNote', '카카오톡 안에서는 파일 받기가 안 될 수 있어요')) +
+      ' · <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('gg.live.openBrowser', '기본 브라우저로 열기')) + '</a></p>';
+  }
+  function copyBoxHtml() {
+    return '<label class="gg-copy"><span>' + esc(t('gg.live.copyHint', '아래 내용을 길게 눌러 복사하세요')) + '</span>' +
+      '<textarea readonly rows="3">' + esc(state.copy.text) + '</textarea></label>';
+  }
+  function calendarDetails(ev) {
+    var lines = [];
+    var dish = hasFood(ev) ? F.dishLabel(ev, t) : '';
+    if (dish) lines.push(t('gg.live.calFood', '꽁밥 · {food}').replace('{food}', dish));
+    lines.push(t('gg.live.calCheck', '참여 조건과 변경 사항은 밥도둑에서 확인하세요.'));
+    lines.push(L.eventLink(ev.id));
+    return lines.join('\n');
   }
   // `icon` is decorative markup: the label alone names the chip.
   function chip(group, value, label, pressed, icon) {
     return '<button type="button" class="gg-chip" data-group="' + group + '" data-value="' + value + '" aria-pressed="' + (pressed ? 'true' : 'false') + '">' + (icon || '') + esc(label) + '</button>';
   }
   function filtersHtml() {
-    var h = '<div class="gg-filters" role="group" aria-label="' + esc(t('gg.filtersAria', '음식 종류와 경품 필터')) + '">';
+    var h = '<div class="gg-filters' + (state.moreFilters ? ' is-expanded' : '') + '" role="group" aria-label="' + esc(t('gg.filtersAria', '음식 종류와 경품 필터')) + '">';
     h += '<div class="gg-filter-row">';
     h += chip('food', 'all', t('gg.filter.all', '전체'), state.food === 'all');
     h += chip('food', 'meal', t('gg.filter.meal', '식사'), state.food === 'meal');
     h += chip('food', 'snack', t('gg.filter.snack', '간식'), state.food === 'snack');
     h += chip('food', 'refreshment', t('gg.filter.refreshment', '다과'), state.food === 'refreshment');
     h += chip('food', 'giveaway', t('gg.filter.giveaway', '경품'), state.food === 'giveaway', GIFT);
-    h += '</div></div>';
+    h += '</div>';
+    if (L) h += moreFiltersHtml();
+    h += '</div>';
     return h;
   }
+  // Date, who and where: behind one button, so the phone's first screen keeps the list.
+  function moreFiltersHtml() {
+    var n = moreCount();
+    var h = '<button type="button" class="gg-more" data-gg-more aria-expanded="' + state.moreFilters + '" aria-controls="ggMoreFilters">' +
+      esc(t('gg.live.more', '날짜·대상·위치')) + (n ? ' <span class="gg-more-count">' + n + '</span>' : '') +
+      '<span aria-hidden="true" class="gg-more-caret">' + (state.moreFilters ? '▴' : '▾') + '</span></button>';
+    h += '<div class="gg-more-panel" id="ggMoreFilters"' + (state.moreFilters ? '' : ' hidden') + '>';
+    // Closed, the panel holds nothing: no hidden chips for a tab order or a tap-size audit to meet.
+    if (!state.moreFilters) return h + '</div>';
+    var days = DAY_FILTERS.slice();
+    if (/^w:/.test(state.day)) days.push(state.day);
+    h += filterGroup('day', t('gg.live.f.day', '날짜'), days.map(function (v) {
+      return [v, /^w:/.test(v) ? weekLabel(v.slice(2)) : t('gg.live.day.' + v, v)];
+    }));
+    h += filterGroup('who', t('gg.live.f.who', '대상'), WHO_FILTERS.map(function (v) { return [v, t('gg.live.who.' + v, v)]; }));
+    h += filterGroup('area', t('gg.live.f.area', '위치'), AREA_FILTERS.map(function (v) { return [v, t('gg.live.area.' + v, v)]; }));
+    h += '<p class="gg-more-note">' + esc(t('gg.live.whoNote', '대상은 공지에 적힌 대로 · 학과·인원 조건은 자세히에서')) + '</p>';
+    if (filtersActive()) h += '<button type="button" class="gg-btn gg-reset" data-gg-reset>' + esc(t('gg.live.reset', '필터 초기화')) + '</button>';
+    return h + '</div>';
+  }
+  function filterGroup(group, label, values) {
+    var h = '<div class="gg-filter-row gg-filter-more" role="group" aria-label="' + esc(label) + '"><span class="gg-filter-label" aria-hidden="true">' + esc(label) + '</span>';
+    values.forEach(function (pair) { h += chip(group, pair[0], pair[1], state[group] === pair[0]); });
+    return h + '</div>';
+  }
+  function shortDate(key) {
+    var d = toKst(key + 'T12:00:00+09:00');
+    return d ? dayLabel(d).replace(/\s*\(.*\)$/, '') : key;
+  }
+  function weekLabel(monday) { return t('gg.live.weekOf', '{date} 주').replace('{date}', shortDate(monday)); }
   function radarCopy(count) {
     if (count <= 0) return t('gg.radar.zero', '🌵 오늘은 꽁밥 가뭄');
     if (count <= 2) return t('gg.radar.some', '🍙 한 끼는 건질 수 있어요');
@@ -356,10 +494,187 @@
   // What this list is (the public current and upcoming rows only; ended rows
   // leave it) and when the snapshot was published. It makes no freshness claim
   // beyond that time.
-  function feedNoteHtml() {
+  function feedNoteHtml(now) {
     var g = state.free.data && toKst(state.free.data.generatedAt);
     if (!g) return '';
-    return '<div class="gg-feed-note"><p class="gg-updated">' + esc(t('gg.updated', '마지막 변경')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p></div>';
+    var week = L && weekRows(now).length ? '<button type="button" class="gg-week-share" data-gg-share-week>' +
+      esc(/^w:/.test(state.day) ? t('gg.live.shareThisWeek', '이 주 일정 공유') : t('gg.live.shareWeek', '이번 주 꽁밥 공유')) + '</button>' : '';
+    var box = state.copy && state.copy.key === 'week' ? copyBoxHtml() : '';
+    return '<div class="gg-feed-note"><p class="gg-updated">' + esc(t('gg.updated', '마지막 변경')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>' + week + box + '</div>';
+  }
+  // ---- 꽁밥 LIVE: the week to share, saved listings, the shared-link entry, the new-feature note ----
+  function byStartAt(a, b) { return String(a.startAt || '').localeCompare(String(b.startAt || '')); }
+  // The week a share covers: the week a shared link opened, else from today to Sunday.
+  function shareRange(now) {
+    return /^w:/.test(state.day) ? L.dayRange(state.day, now) : L.dayRange('week', now);
+  }
+  function weekRows(now) {
+    if (!L || state.free.status !== 'ready') return [];
+    var range = shareRange(now);
+    return publicList().filter(function (ev) {
+      var s = toKst(ev.startAt);
+      return s && isUpcoming(ev, now) && ymd(s) >= range[0] && ymd(s) <= range[1];
+    }).sort(byStartAt);
+  }
+  function rowWhat(ev) {
+    return hasFood(ev) ? F.dishLabel(ev, t) : '🎁 ' + t('gg.giveaway.label', '경품');
+  }
+  function weekShare(now) {
+    var rows = weekRows(now), range = shareRange(now);
+    var lines = rows.slice(0, 12).map(function (ev) {
+      var s = toKst(ev.startAt);
+      return dayLabel(s) + ' ' + (isDeadlineOnly(ev) ? signUpByText(s) : hm(s)) + ' ' + rowWhat(ev) + ' · ' + ev.title;
+    });
+    if (rows.length > 12) lines.push(t('gg.live.more12', '외 {n}개').replace('{n}', String(rows.length - 12)));
+    var title = t('gg.live.weekTitle', '밥도둑 꽁밥 · {date} 주').replace('{date}', shortDate(L.mondayOf(range[0])));
+    return { title: title, text: title + '\n' + lines.join('\n'), url: L.weekLink(L.mondayOf(range[0])) };
+  }
+  function eventShare(ev) {
+    var where = shortPlace(ev);
+    var text = rowWhat(ev) + ' · ' + ev.title + '\n' + (isDeadlineOnly(ev) ? signUpByText(toKst(ev.startAt)) : whenText(ev.startAt, ev.endAt)) + (where ? ' · ' + where : '');
+    return { title: ev.title, text: text, url: L.eventLink(ev.id) };
+  }
+  function rowById(id) {
+    var list = (state.free.data && state.free.data.events) || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id && isPublic(list[i])) return list[i];
+    return null;
+  }
+  function archivedById(id) {
+    var list = (state.archive.data && state.archive.data.events) || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id && isPublic(list[i])) return list[i];
+    return null;
+  }
+  // Each saved listing against the newest data: upcoming (with changes), ended (from the feed, the
+  // archive, or, once both have loaded, the visitor's own copy), missing (no longer published and not
+  // over: never called cancelled, the feed does not say so), or still being checked.
+  function savedGroups(now) {
+    var out = { upcoming: [], ended: [], missing: [], checking: [] };
+    savedStore.list().forEach(function (item) {
+      var live = state.free.status === 'ready' ? rowById(item.id) : null;
+      if (live && isUpcoming(live, now)) { out.upcoming.push({ item: item, ev: live, changes: L.changes(item, live) }); return; }
+      var past = live || archivedById(item.id);
+      if (past) { out.ended.push({ item: item, ev: past }); return; }
+      if (state.free.status === 'loading' || state.archive.status === 'loading') { out.checking.push({ item: item }); return; }
+      var mine = { id: item.id, title: item.seen.title, startAt: item.seen.startAt, endAt: item.seen.endAt || null };
+      var end = F.eventEnd(mine);
+      if (end && end < now) out.ended.push({ item: item, ev: mine, own: true });
+      else out.missing.push({ item: item, ev: mine });
+    });
+    out.upcoming.sort(function (a, b) { return byStartAt(a.ev, b.ev); });
+    out.ended.sort(function (a, b) { return byStartAt(b.ev, a.ev); });
+    return out;
+  }
+  function savedRowHtml(row, kind, now) {
+    var ev = row.ev || { title: row.item.seen.title, startAt: row.item.seen.startAt, endAt: row.item.seen.endAt };
+    var title = ev.title || row.item.seen.title || '';
+    var when = esc(whenText(ev.startAt, ev.endAt));
+    var html = '<li class="gg-saved-row is-' + kind + '" data-saved-id="' + esc(row.item.id) + '">';
+    if (kind === 'upcoming') {
+      html += '<button type="button" class="gg-saved-open" data-gg-goto="' + esc(row.item.id) + '"><span class="gg-saved-when">' + when +
+        '</span><span class="gg-saved-title">' + esc(title) + '</span></button>';
+    } else {
+      html += '<p class="gg-saved-open is-static"><span class="gg-saved-when">' + when + '</span><span class="gg-saved-title">' + esc(title) + '</span></p>';
+    }
+    var tags = [];
+    if (kind === 'upcoming' && L.phaseOf(row.ev, now) === 'now') tags.push(['now', t('gg.live.now', '진행 중')]);
+    if (kind === 'upcoming' && row.changes.length) tags.push(['changed', t('gg.live.changed', '변경됨')]);
+    if (kind === 'ended') tags.push(['ended', t('gg.archive.ended', '종료')]);
+    if (kind === 'missing') tags.push(['missing', t('gg.live.missing', '목록에서 빠짐')]);
+    if (kind === 'checking') tags.push(['checking', t('gg.live.checking', '확인 중')]);
+    html += '<span class="gg-saved-tags">' + tags.map(function (tag) {
+      return '<span class="gg-saved-tag is-' + tag[0] + '">' + esc(tag[1]) + '</span>';
+    }).join('') + '</span>';
+    html += '<button type="button" class="gg-unsave" data-gg-unsave="' + esc(row.item.id) + '" aria-label="' +
+      esc(t('gg.live.unsaveAria', '{title} 저장 지우기').replace('{title}', title)) + '"><span aria-hidden="true">×</span></button>';
+    if (kind === 'missing') html += '<p class="gg-saved-note">' + esc(t('gg.live.missingNote', '공개 목록에서 빠졌어요. 취소됐거나 내용이 바뀌었을 수 있으니 공지를 확인하세요.')) + '</p>';
+    return html + '</li>';
+  }
+  function savedHtml(now) {
+    if (!savedStore) return '';
+    var all = savedStore.list();
+    var recovered = savedStore.recovered();
+    if (!all.length && !recovered) return '';
+    var g = savedGroups(now);
+    var changedN = g.upcoming.filter(function (row) { return row.changes.length; }).length;
+    var open = state.savedOpen;
+    var html = '<section class="gg-saved" id="ggSaved" aria-labelledby="ggSavedTitle">';
+    html += '<h2 class="gg-saved-head"><button type="button" class="gg-saved-toggle" id="ggSavedTitle" data-gg-saved aria-expanded="' + open + '" aria-controls="ggSavedBody">' +
+      '<span aria-hidden="true">★</span> ' + esc(t('gg.live.savedTitle', '저장한 꽁밥')) + ' <span class="gg-saved-n">' + all.length + '</span>' +
+      (changedN ? ' <span class="gg-changed-label">' + esc(t('gg.live.changedN', '변경 {n}').replace('{n}', String(changedN))) + '</span>' : '') +
+      '<span aria-hidden="true" class="gg-more-caret">' + (open ? '▴' : '▾') + '</span></button></h2>';
+    html += '<div class="gg-saved-body" id="ggSavedBody"' + (open ? '' : ' hidden') + '>';
+    if (recovered) html += '<p class="gg-saved-note">' + esc(t('gg.live.recovered', '저장 기록을 읽을 수 없어 새로 시작했어요.')) + '</p>';
+    var active = g.upcoming.map(function (r) { return savedRowHtml(r, 'upcoming', now); })
+      .concat(g.checking.map(function (r) { return savedRowHtml(r, 'checking', now); }))
+      .concat(g.missing.map(function (r) { return savedRowHtml(r, 'missing', now); }));
+    if (active.length) html += '<ol class="gg-saved-list">' + active.join('') + '</ol>';
+    else if (all.length) html += '<p class="gg-saved-note">' + esc(t('gg.live.noUpcoming', '다가오는 저장 꽁밥 없음')) + '</p>';
+    if (g.ended.length) {
+      html += '<h3 class="gg-saved-sub">' + esc(t('gg.live.pastTitle', '지난 꽁밥')) + '</h3>';
+      html += '<p class="gg-saved-note">' + esc(t('gg.live.pastNote', '끝난 일정이에요. 저장했다고 참석한 것으로 기록하지 않아요.')) + '</p>';
+      html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
+    }
+    html += '<p class="gg-saved-foot">' + esc(t('gg.live.localOnly', '이 브라우저에만 저장돼요 · 사이트 기록을 지우면 사라져요')) + '</p>';
+    return html + '</div></section>';
+  }
+  // A shared link (?e=<id>, ?week=<Monday>) resolves once the data it needs has loaded.
+  function processEntry(now) {
+    var en = state.entry;
+    if (en.done || !L) return;
+    if (en.week) {
+      state.day = 'w:' + en.week;
+      en.notice = { kind: 'week', monday: en.week };
+      en.week = '';
+    }
+    if (!en.id) { en.done = true; return; }
+    if (state.free.status !== 'ready') { if (state.free.status === 'error') en.done = true; return; }
+    var matches = function (ev) { return ev.id === en.id || ev.id.indexOf(en.id + '#') === 0; };
+    var rows = ((state.free.data && state.free.data.events) || []).filter(isPublic).filter(matches).sort(byStartAt);
+    var live = rows.filter(function (ev) { return isUpcoming(ev, now); })[0];
+    if (live) {
+      state.food = 'all'; state.day = 'all'; state.who = 'all'; state.area = 'all';   // shown, not saved
+      state.activeSection = 'free';
+      state.open[live.id] = true;
+      en.focus = live.id;
+      en.done = true;
+      return;
+    }
+    if (state.archive.status === 'loading') return;
+    var past = rows[0] || ((state.archive.data && state.archive.data.events) || []).filter(function (ev) { return isPublic(ev) && matches(ev); })[0];
+    en.notice = past ? { kind: 'ended', ev: past } : { kind: 'missing' };
+    state.activeSection = 'free';
+    en.done = true;
+  }
+  function entryNoticeHtml() {
+    var n = state.entry.notice;
+    if (!n) return '';
+    var text = n.kind === 'week' ? t('gg.live.entryWeek', '공유받은 {week} 꽁밥 일정').replace('{week}', weekLabel(n.monday))
+      : n.kind === 'ended' ? t('gg.live.entryEnded', '공유받은 꽁밥은 끝났어요 · {when} {title}')
+        .replace('{when}', whenText(n.ev.startAt, n.ev.endAt)).replace('{title}', n.ev.title || '')
+      : t('gg.live.entryMissing', '공유받은 꽁밥을 찾지 못했어요. 끝났거나 공개 목록에서 빠졌을 수 있어요.');
+    var html = '<div class="gg-entry" role="status"><p>' + esc(text) + '</p>';
+    if (n.kind === 'week') html += '<button type="button" class="gg-btn" data-gg-reset>' + esc(t('gg.live.showAll', '전체 일정 보기')) + '</button>';
+    return html + '<button type="button" class="gg-entry-close" data-gg-entry-close aria-label="' + esc(t('gg.live.close', '닫기')) + '"><span aria-hidden="true">×</span></button></div>';
+  }
+  function noticeDismissed() {
+    try { return localStorage.getItem(NOTICE_KEY) === '1'; } catch (err) { return true; }
+  }
+  // One line, under the page title, closed for good with ×; it never covers the list.
+  function newNoticeHtml() {
+    if (!L || noticeDismissed()) return '';
+    return '<div class="gg-new" role="note"><span class="gg-new-tag">NEW</span><p>' +
+      esc(t('gg.live.newNote', '☆ 저장 · 공유 · 캘린더 추가가 생겼어요. 꽁밥을 눌러 보세요.')) + '</p>' +
+      '<button type="button" class="gg-new-close" data-gg-new-close aria-label="' + esc(t('gg.live.newClose', '새 기능 안내 닫기')) + '"><span aria-hidden="true">×</span></button></div>';
+  }
+  function filteredEmptyHtml() {
+    var parts = [];
+    if (state.food !== 'all') parts.push(t('gg.filter.' + state.food, state.food));
+    if (state.day !== 'all') parts.push(/^w:/.test(state.day) ? weekLabel(state.day.slice(2)) : t('gg.live.day.' + state.day, state.day));
+    if (state.who !== 'all') parts.push(t('gg.live.who.' + state.who, state.who));
+    if (state.area !== 'all') parts.push(t('gg.live.area.' + state.area, state.area));
+    return '<div class="gg-state" data-gg-empty="filtered"><strong>' + esc(t('gg.live.emptyFiltered', '고른 조건에 맞는 꽁밥이 없어요')) + '</strong>' +
+      esc(t('gg.live.emptyWhy', '조건 · {list}').replace('{list}', parts.join(' · '))) +
+      '<br><button type="button" class="gg-btn gg-reset" data-gg-reset>' + esc(t('gg.live.reset', '필터 초기화')) + '</button></div>';
   }
   // Past listings: public rows that have ended, from the archive file plus any live-feed row
   // whose end has already passed (it leaves the live list at once; the next export archives it).
@@ -426,7 +741,7 @@
     return html + '</section>';
   }
   function freePaneHtml(now) {
-    var html = '';
+    var html = entryNoticeHtml() + savedHtml(now);
     if (state.free.status === 'ready') html += radarHtml(now);
     // The radar's own height, so it does not push the list when it lands.
     else if (state.free.status === 'loading') html += '<div class="gg-skeleton gg-radar-skeleton"></div>';
@@ -437,13 +752,14 @@
     if (state.free.status === 'loading') html += stateHtml('loading');
     else if (state.free.status === 'error' || state.free.status === 'blocked') html += stateHtml(state.free.status);
     else {
-      html += feedNoteHtml();
+      html += feedNoteHtml(now);
       var events = visibleEvents(now);
       // The featured "다음 꽁밥" is the radar's next free meal: always a food row (one that also has a
       // giveaway may be it), never a giveaway-only row, which the radar does not count.
       var featuredId = (earliestToday(now) || {}).id;
       if (!events.length) {
-        if (!todayUpcoming(now).length) html += emptyFreeHtml(now);
+        if (L && filtersActive()) html += filteredEmptyHtml();
+        else if (!todayUpcoming(now).length) html += emptyFreeHtml(now);
         else html += stateHtml('empty');
       } else {
         var lastDay = '';
@@ -515,9 +831,11 @@
   function render() {
     var now = nowKst();
     cardSeq = 0;
+    processEntry(now);
     var focus = focusSelector();
     var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1>';
     html += metricHtml(now);
+    html += newNoticeHtml();
     html += '</header>';
     html += tabsHtml();
     html += '<div id="foodHubFree" class="food-hub-free" role="tabpanel" aria-labelledby="foodHubTabFree"' + (state.activeSection === 'free' ? '' : ' hidden') + '>';
@@ -532,6 +850,11 @@
       if (again) again.focus({ preventScroll: true });
     }
     bindMenu(now);
+    if (state.entry.focus) {
+      var target = state.entry.focus;
+      state.entry.focus = '';
+      requestAnimationFrame(function () { focusCard(target); });
+    }
     renderDiagnostics();
     if (debugLayout) requestAnimationFrame(reportLayout);
   }
@@ -666,7 +989,128 @@
   if (window.ResizeObserver && document.querySelector('.site-nav')) new ResizeObserver(measureNav).observe(document.querySelector('.site-nav'));
   measureNav();
 
+  function focusCard(id) {
+    var target = root.querySelector('.gg-card[data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+    if (!target) return;
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+    target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+  }
+  // One polite status line for save, copy and share results (outside the re-rendered feed).
+  var toast = null, toastTimer = null;
+  function announce(message) {
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'gg-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('is-on'); }, 2600);
+  }
+  function shareOut(key, payload) {
+    state.copy = null;
+    L.share(payload).then(function (result) {
+      if (result === 'copied') announce(t('gg.live.copied', '링크를 복사했어요'));
+      else if (result === 'manual') { state.copy = { key: key, text: payload.text + '\n' + payload.url }; render(); }
+    });
+  }
+  function downloadIcs(ev) {
+    var text = L.icsText(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) });
+    try {
+      var blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = L.icsFileName(ev);
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      announce(t('gg.live.icsDone', '캘린더 파일을 받았어요'));
+    } catch (err) {
+      announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
+    }
+  }
+  function liveClick(e) {
+    var el;
+    if ((el = e.target.closest('[data-gg-save]'))) {
+      var id = el.getAttribute('data-gg-save'), ev = rowById(id);
+      if (savedStore.has(id)) {
+        if (savedStore.remove(id)) announce(t('gg.live.unsavedMsg', '저장을 지웠어요'));
+      } else if (ev && savedStore.add(ev)) {
+        announce(t('gg.live.savedMsg', '저장했어요 · 이 브라우저에만 저장돼요'));
+      } else {
+        announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
+      }
+      render();
+      return true;
+    }
+    if ((el = e.target.closest('[data-gg-unsave]'))) {
+      if (savedStore.remove(el.getAttribute('data-gg-unsave'))) announce(t('gg.live.unsavedMsg', '저장을 지웠어요'));
+      render();
+      var head = root.querySelector('[data-gg-saved]');
+      if (head) head.focus({ preventScroll: true });
+      return true;
+    }
+    if ((el = e.target.closest('[data-gg-ack]'))) {
+      var acked = rowById(el.getAttribute('data-gg-ack'));
+      if (acked) savedStore.acknowledge(acked);
+      render();
+      return true;
+    }
+    if ((el = e.target.closest('[data-gg-share]'))) {
+      var shared = rowById(el.getAttribute('data-gg-share'));
+      if (shared) shareOut(shared.id, eventShare(shared));
+      return true;
+    }
+    if (e.target.closest('[data-gg-share-week]')) { shareOut('week', weekShare(nowKst())); return true; }
+    if ((el = e.target.closest('[data-gg-cal]'))) {
+      var calId = el.getAttribute('data-gg-cal');
+      if (state.calOpen[calId]) delete state.calOpen[calId]; else state.calOpen[calId] = true;
+      render();
+      return true;
+    }
+    if ((el = e.target.closest('[data-gg-ics]'))) {
+      var calEv = rowById(el.getAttribute('data-gg-ics'));
+      if (calEv && L.canCalendar(calEv, nowKst())) downloadIcs(calEv);
+      return true;
+    }
+    if (e.target.closest('[data-gg-more]')) { state.moreFilters = !state.moreFilters; render(); return true; }
+    if (e.target.closest('[data-gg-reset]')) {
+      state.food = 'all'; state.day = 'all'; state.who = 'all'; state.area = 'all';
+      if (state.entry.notice && state.entry.notice.kind === 'week') state.entry.notice = null;
+      try { localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({ when: 'all', food: 'all' })); } catch (err) {}
+      render();
+      var first = root.querySelector('.gg-chip[data-group="food"][data-value="all"]');
+      if (first) first.focus({ preventScroll: true });
+      announce(t('gg.live.resetDone', '필터를 초기화했어요'));
+      return true;
+    }
+    if (e.target.closest('[data-gg-saved]')) { state.savedOpen = !state.savedOpen; render(); return true; }
+    if ((el = e.target.closest('[data-gg-goto]'))) {
+      var goId = el.getAttribute('data-gg-goto');
+      var goEv = rowById(goId);
+      if (goEv && visibleEvents(nowKst()).indexOf(goEv) < 0) { state.food = 'all'; state.day = 'all'; state.who = 'all'; state.area = 'all'; }
+      state.open[goId] = true;
+      render();
+      focusCard(goId);
+      return true;
+    }
+    if (e.target.closest('[data-gg-new-close]')) {
+      try { localStorage.setItem(NOTICE_KEY, '1'); } catch (err) {}
+      render();
+      var title = root.querySelector('.gg-hero h1');
+      if (title) { title.setAttribute('tabindex', '-1'); title.focus({ preventScroll: true }); }
+      return true;
+    }
+    if (e.target.closest('[data-gg-entry-close]')) { state.entry.notice = null; render(); return true; }
+    return false;
+  }
   root.addEventListener('click', function (e) {
+    if (L && liveClick(e)) return;
     var tabEl = e.target.closest('[data-hub-tab]');
     if (tabEl) {
       setTab(tabEl.getAttribute('data-hub-tab'));
@@ -676,6 +1120,11 @@
     if (chipEl && !chipEl.disabled) {
       var group = chipEl.getAttribute('data-group');
       var value = chipEl.getAttribute('data-value');
+      if (group === 'day' || group === 'who' || group === 'area') {
+        state[group] = value;                      // the optional filters are not saved
+        render();
+        return;
+      }
       if (group === 'food') state.food = value;
       // `when` stays in the saved value, always 'all', so a page from before the change still reads it.
       try { localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({ when: 'all', food: state.food })); } catch (err) {}
@@ -699,13 +1148,7 @@
     }
     var scrollBtn = e.target.closest('[data-gg-scroll]');
     if (scrollBtn) {
-      var target = document.querySelector('[data-id="' + scrollBtn.getAttribute('data-gg-scroll') + '"]');
-      if (target) {
-        var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        target.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
-        target.setAttribute('tabindex', '-1');
-        target.focus({ preventScroll: true });
-      }
+      focusCard(scrollBtn.getAttribute('data-gg-scroll'));
       return;
     }
     if (e.target.closest('[data-gg-retry]')) loadFree();
@@ -736,6 +1179,15 @@
     if (tabSaved === 'menu' || tabSaved === 'free') state.activeSection = tabSaved;
   } catch (err) {}
   if (location.hash === '#menu' || location.hash === '#free') state.activeSection = location.hash.slice(1);
+  // 꽁밥 LIVE share links: ?e=<listing id> and ?week=<a date in the week, read as its Monday>; #saved opens the saved list.
+  if (L) {
+    var entryId = query.get('e') || '';
+    if (/^[A-Za-z0-9_-]{1,80}(#[0-9]{1,2})?$/.test(entryId)) state.entry.id = entryId;
+    var entryWeek = query.get('week') || '';
+    if (L.isYmd(entryWeek)) state.entry.week = L.mondayOf(entryWeek);
+    if (state.entry.id || state.entry.week) state.activeSection = 'free';
+    if (location.hash === '#saved') state.savedOpen = true;
+  }
   window.addEventListener('hashchange', function () {
     if (location.hash === '#menu' || location.hash === '#free') setTab(location.hash.slice(1));
   });
