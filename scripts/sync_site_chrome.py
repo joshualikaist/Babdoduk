@@ -82,6 +82,8 @@ PAGES = {
     # 밥약 메이커 (밥도둑 2.0 phase 3, docs/BOBYAK.md) is lab-only until the owner approves it: reachable from
     # lab.html, no nav link (the nav rename to the four 2.0 destinations awaits the owner).
     "bobyak.html": {"current": None, "lab": True, "strings": ("bob",)},
+    # 마이 밥도둑 (밥도둑 2.0 Phase 2, docs/MY_BABDODUK.md): optional sign-in, lab-only until released.
+    "my.html": {"current": None, "lab": True, "strings": ("my",)},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),

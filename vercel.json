@@ -17,7 +17,7 @@
       "continue": true
     },
     {
-      "src": "/(food\\.html|lab\\.html|lab-ggongbab\\.html|cardnews\\.html|data/cardnews/.+|bobyak\\.html|data/places/.+|calendar\\.ics|data/food-log\\.json)",
+      "src": "/(food\\.html|lab\\.html|lab-ggongbab\\.html|cardnews\\.html|my\\.html|data/cardnews/.+|bobyak\\.html|data/places/.+|calendar\\.ics|data/food-log\\.json)",
       "missing": [
         {
           "type": "host",
