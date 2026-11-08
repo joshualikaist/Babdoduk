@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T22:47:44+09:00",
+  "generatedAt": "2026-11-08T11:29:23+09:00",
   "timezone": "Asia/Seoul",
   "count": 40,
   "events": [
@@ -75,7 +75,7 @@
         }
       ],
       "audience": {
-        "text": "KAIST 교수 및 대학원생",
+        "text": "KAIST 교수, 연구자 및 학생",
         "basis": "stated"
       }
     },
