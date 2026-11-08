@@ -79,6 +79,8 @@ PAGES = {
     # 개인정보처리방침 (owner 2026-11-08): public on every host, because Google's sign-in consent screen
     # needs its address on the site's own domain; no nav item.
     "privacy.html": {"current": None, "strings": ("privacy",)},
+    # 마이 밥도둑 (밥도둑 2.0 Phase 2, docs/MY_BABDODUK.md): optional sign-in; public since owner 2026-11-11.
+    "my.html": {"current": None, "strings": ("my",)},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),

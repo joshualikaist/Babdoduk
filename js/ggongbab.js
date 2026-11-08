@@ -44,6 +44,17 @@
   };
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
+  // 마이 밥도둑 (docs/MY_BABDODUK.md): someone signed in on this browser sees and edits the account's
+  // list instead; guests never load the sign-in client. The guest list in this browser stays as it is.
+  var accountMode = '';
+  if (L && window.BabdodukAccount) {
+    window.BabdodukAccount.attachSavedStore(function (store, failed) {
+      if (store) { savedStore = store; accountMode = 'account'; } else if (failed) accountMode = 'failed';
+      render();
+    }, function (kind) {
+      if (kind === 'failed') { announce(t('gg.live.syncFail', '저장하지 못했어요. 다시 시도해 주세요.')); render(); }
+    });
+  }
   var NOTICE_KEY = 'babdoduk-notice-ggongbab-live';
   var DAY_FILTERS = ['all', 'today', 'week', 'next'];
   var WHO_FILTERS = ['all', 'fresh', 'undergrad', 'grad', 'open', 'check'];
@@ -617,7 +628,13 @@
       html += '<p class="gg-saved-note">' + esc(t('gg.live.pastNote', '끝난 일정이에요. 저장했다고 참석한 것으로 기록하지 않아요.')) + '</p>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
-    html += '<p class="gg-saved-foot">' + esc(t('gg.live.localOnly', '이 브라우저에만 저장돼요 · 사이트 기록을 지우면 사라져요')) + '</p>';
+    if (accountMode === 'account') {
+      html += '<p class="gg-saved-foot">' + esc(t('gg.live.accountFoot', '계정에 저장돼요 · 다른 기기에서도 보여요')) +
+        ' · <a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
+    } else {
+      if (accountMode === 'failed') html += '<p class="gg-saved-note">' + esc(t('gg.live.accountFail', '계정 목록을 불러오지 못해 이 브라우저 목록을 보여 줘요')) + '</p>';
+      html += '<p class="gg-saved-foot">' + esc(t('gg.live.localOnly', '이 브라우저에만 저장돼요 · 사이트 기록을 지우면 사라져요')) + '</p>';
+    }
     return html + '</div></section>';
   }
   // A shared link (?e=<id>, ?week=<Monday>) resolves once the data it needs has loaded.
@@ -1044,7 +1061,7 @@
       if (savedStore.has(id)) {
         if (savedStore.remove(id)) announce(t('gg.live.unsavedMsg', '저장을 지웠어요'));
       } else if (ev && savedStore.add(ev)) {
-        announce(t('gg.live.savedMsg', '저장했어요 · 이 브라우저에만 저장돼요'));
+        announce(savedStore.remote ? t('gg.live.savedAccountMsg', '저장했어요 · 계정에 저장돼요') : t('gg.live.savedMsg', '저장했어요 · 이 브라우저에만 저장돼요'));
       } else {
         announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
       }
