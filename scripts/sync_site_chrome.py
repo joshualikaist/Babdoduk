@@ -79,6 +79,9 @@ PAGES = {
     "tip.html": {"current": "tip.html", "strings": ("tip",)},
     # The weekly card news preview is lab-only (docs/CARDNEWS.md), the images that go to Telegram.
     "cardnews.html": {"current": "cardnews.html", "lab": True, "strings": ("cardnews",)},
+    # 밥약 메이커 (밥도둑 2.0 phase 3, docs/BOBYAK.md) is lab-only until the owner approves it: reachable from
+    # lab.html, no nav link (the nav rename to the four 2.0 destinations awaits the owner).
+    "bobyak.html": {"current": None, "lab": True, "strings": ("bob",)},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),

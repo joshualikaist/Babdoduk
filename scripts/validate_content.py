@@ -943,6 +943,11 @@ def validate_authored(root: Path = ROOT) -> list[str]:
                 errors.append(f"inputs/ggongbab/food-news.json: item {index} fails the public news check (values suppressed)")
         if len({item.get("id") for item in items if isinstance(item, dict)}) != len(items):
             errors.append("inputs/ggongbab/food-news.json: an id is used twice")
+    # 밥약 메이커 places (docs/BOBYAK.md): unique ids and stores, verified dates, facts with a source.
+    places = root / "data" / "places" / "latest.json"
+    if places.exists():
+        from places.semas import feed_rule_errors
+        errors += feed_rule_errors(load(places))
     # The page content of data/content/ (events, history): what its contracts cannot say.
     from page_content import content_errors
     errors += content_errors(root)

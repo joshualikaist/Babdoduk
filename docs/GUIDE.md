@@ -22,7 +22,7 @@
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `data/content/events.json` (sync 가 `event.html` 에 씀) |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 
-먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`, `data/cardnews/`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
+먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`, 밥약 메이커 `bobyak.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`, `data/cardnews/`, `data/places/`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
 
 홈(`index.html`)은 오늘의 꽁밥과 메뉴 뽑기(`choose.html`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
 학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에는 아무것도 두지 않습니다(01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식은 소유자 결정으로 2026-11-02 에 없앴습니다). `history.html` 은 밥도둑이 걸어온 길입니다.
@@ -88,7 +88,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | UI 검증 · 테스트 | §8 · §9 |
 | 자동화 · 브랜치 · 배포 | §10 · §11, `docs/DEPLOYMENT_AND_BRANCHES.md` |
 | 소식·이벤트 쓰는 법 (`data/content/events.json`) | `docs/EVENT_DETAIL_FIELDS.md` |
-| 밥도둑 2.0 (꽁밥 LIVE, 로그인·식당 계획) | `docs/GGONGBAB_LIVE.md`, `docs/BABDODUK_2_PLAN.md` |
+| 밥도둑 2.0 (꽁밥 LIVE, 로그인·식당 계획, 밥약 메이커) | `docs/GGONGBAB_LIVE.md`, `docs/BABDODUK_2_PLAN.md`, `docs/BOBYAK.md` |
 | 보안 원칙 | §12 |
 
 아래 운영 기록 중 날짜가 있는 상태 설명은 현재 상태 보장이 아니며, 실행 전 코드·데이터·배포 브랜치를 확인합니다.
@@ -111,6 +111,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
 | **`tip.html`** | 꽁밥 제보 게시판 — 2026-11-02 부터 공개 페이지(모든 페이지 더보기의 "꽁밥 제보"에서 진입, `noindex, nofollow`). 방문자가 모르는 오프라인 꽁밥을 사진과 함께 보내고, 소유자가 하루 한 번 확인한 제보만 게시판에 올라간다(`docs/GGONGBAB_TIPS.md`) |
 | **`cardnews.html`** | 주간 꽁밥 카드뉴스 시안 — **실험실 전용**(`noindex, nofollow`, `vercel.json` 이 lab 밖에서 404, lab 주소의 더보기 "카드뉴스"에서 진입). `scripts/render_cardnews.py` 가 꽁밥 목록으로 그린 표지+월~금 6장(1080×1350)을 보여 준다(`docs/CARDNEWS.md`) |
+| **`bobyak.html`** | 밥약 메이커(2.0 3단계) — **실험실 전용**(`noindex, nofollow`, `vercel.json` 이 lab 밖에서 404, `lab.html` 버튼으로 진입). 식당 뽑기(확인된 식당 먼저, 후보는 동의 뒤), 식당 카드(확인된 사실만, 네이버·카카오 지도 검색 링크, `?p=` 공유), 먹킷리스트(이 브라우저만), 정산(1/N·한턱·제외·직접 금액, 합이 늘 총액). 식당은 `data/places/latest.json`(처음엔 비어 있음, 운영자 승인으로만 채움, `docs/BOBYAK.md`) |
 
 상단 내비: Babdoduk 워드마크와 바로 옆 인스타그램 로고(새 창, 2026-11-05) · 오늘의 꽁밥(꽁밥·학식) · 오늘 뭐 먹지(2026-11-04) · 소식·이벤트(2026-10-13 소유자 결정으로 더보기에서 꺼냄) · 더보기(밥도둑 매거진·역사·꽁밥 제보·맛집 지도) · 언어(EN/한국어). 푸터: 오늘의 꽁밥 · 밥도둑 매거진 · 소식·이벤트 · 역사. 워드마크는 원래의 홀로그램 그라데이션을 유지합니다.
 휴대폰(폭 520px 이하)에서는 위 줄에 ☰ 메뉴 버튼 · 워드마크와 인스타그램 로고 · 언어만 둡니다. ☰ 를 누르면 왼쪽에서 메뉴 판이 열려 오늘의 꽁밥 · 오늘 뭐 먹지 · 소식·이벤트, 그 아래 줄을 그어 밥도둑 매거진 · 역사 · 꽁밥 제보 · 맛집 지도가 한 줄씩(글씨 16px, 칸 높이 52px) 나오고, 지금 페이지는 강조색으로 표시됩니다. 나머지 화면은 어두워지고, 그곳을 누르거나 Esc, 메뉴를 고르면 닫힙니다(2026-11-02 소유자 결정, "버튼이 다닥다닥 붙어있거든", "어떤 버튼을 누르면 이렇게 왼쪽에 탭이 뜨도록").
@@ -141,6 +142,7 @@ babdoduk-lab 주소에서만 모든 페이지의 더보기에 실험실 · 꽁�
 | `data/kaist-menu/` | `scripts/refresh_kaist_menu.py` | GitHub Action |
 | `data/ggongbab/latest.json` | 꽁밥 파이프라인 | 공개 피드(현재·예정). 아래 §3 참고 |
 | `data/ggongbab/archive/index.json` | 꽁밥 파이프라인 | 지난 꽁밥 기록: 공개됐다가 끝난 행사, 최근 30일. 첫 export 뒤에 생김 |
+| `data/places/latest.json` | 운영자 승인 → `scripts/places/semas.py publish` | 밥약 메이커 식당(lab 전용). 공공데이터 후보는 `inputs/places/`(배포 안 됨) |
 
 음식 카탈로그(`data/foods/`), 공용 라벨·소식·역사(`data/content/`), 캠퍼스 지도(`data/campus/`), 번역(`i18n/`)까지 전체 계약은 [docs/DATA.md](DATA.md)에 있습니다.
 
@@ -812,6 +814,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/INSTAGRAM_RADAR.md` | 인스타 레이더(lab 전용): Business Discovery 수집, 판정, 텔레그램 확인, 두레이 수집함으로 넘기기 |
 | `docs/GGONGBAB_TIPS.md` | 꽁밥 제보 게시판: 제보·사진을 받는 함수와 비공개 버킷, 남용 제한, 확인된 제보만 싣는 게시판, 적용 순서 |
 | `docs/CARDNEWS.md` | 주간 꽁밥 카드뉴스(lab 전용): 카드 규칙, 그리는 스크립트와 `data/cardnews/`, 시안 페이지, 텔레그램·인스타 다음 단계 |
+| `docs/BOBYAK.md` | 밥약 메이커(lab 전용, 2.0 3단계): 뽑기·카드·먹킷리스트·정산 규칙, `data/places/` 계약, 공공데이터 이용 조건, 운영자 승인 절차, 제보 마이그레이션 012(초안) |
 | `docs/OPS_AGENT.md` | 운영 자동 점검(lab 전용): 소유자의 텔레그램 메시지를 인스타 레이더의 분류 모델이 운영 상태와 함께 읽고 답한다. 허용된 조치(재시작·메일 다시 읽기)만 실행하고 잠금 해제는 버튼으로 묻는다 |
 | `docs/MAGAZINE_DISCOVERY.md` | 매거진 수집·선정·발행 |
 | `docs/MAGAZINE_SOURCES.md` | 매거진 자료원 기준: 무엇을 모으고 보여 주는지, 제안·빠지기 |
@@ -828,7 +831,7 @@ lab 브랜치 전용 문서(main 미반영): `GGONGBAB_PUBLIC_FEED.md`(공개 pr
 `GGONGBAB_REALTIME.md`(브라우저 Realtime), `PORTAL_LIST_POLLER.md`(Portal LIST poller),
 `GGONGBAB_RESIDENT_OPS.md`(운영 PC 상주 worker, 2026-10-17부터 리눅스), `INSTAGRAM_RADAR.md`(인스타 레이더),
 `GGONGBAB_ALERTS.md`(운영 알림), `PORTAL_EASY_LOGIN_ASSIST.md`(간편 로그인 도움), `INSTAGRAM_SOURCES.md`(인스타 계정 목록),
-`WORLDCUP_STATS.md`(월드컵 모두의 랭킹), `PICK_STATS.md`(오늘 뭐 먹지 모두의 취향), `OPS_AGENT.md`(운영 자동 점검), `CARDNEWS.md`(주간 꽁밥 카드뉴스). 해당 기능이 main에 승격될 때 함께 옮깁니다.
+`WORLDCUP_STATS.md`(월드컵 모두의 랭킹), `PICK_STATS.md`(오늘 뭐 먹지 모두의 취향), `OPS_AGENT.md`(운영 자동 점검), `CARDNEWS.md`(주간 꽁밥 카드뉴스), `BOBYAK.md`(밥약 메이커). 해당 기능이 main에 승격될 때 함께 옮깁니다.
 
 ## 15. 라이선스
 

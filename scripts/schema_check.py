@@ -46,6 +46,7 @@ CONTRACTS = (
     ("data/content/history.json", "content-history", "authored", False),
     ("data/content/worldcup.json", "content-worldcup", "authored", False),
     ("data/campus/buildings.json", "campus-buildings", "authored", False),
+    ("data/places/latest.json", "places-feed", "authored", False),
 )
 ANNOTATIONS = {"$schema", "$id", "$comment", "title", "description", "examples"}
 KEYWORDS = ANNOTATIONS | {"$defs", "$ref", "type", "enum", "const", "properties", "required",

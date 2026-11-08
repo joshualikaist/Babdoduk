@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": null,
+  "source": {
+    "name": "소상공인시장진흥공단 상가(상권)정보",
+    "url": "https://www.data.go.kr/data/15012005/openapi.do",
+    "terms": "공공데이터포털 표시: 이용허락범위 제한 없음, 무료"
+  },
+  "places": []
+}

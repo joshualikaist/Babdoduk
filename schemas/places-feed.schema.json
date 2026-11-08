@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joshualikaist/Babdoduk/schemas/places-feed.schema.json",
+  "title": "밥약 메이커 places: data/places/latest.json",
+  "description": "Written only by scripts/places/semas.py publish from the operator's approvals (inputs/places/approvals.json); read by bobyak.html (docs/BOBYAK.md). A place's id is the site's own and never changes; the public-data store number is kept in sources. Facts are only what was confirmed, each with who confirmed it and when: menus, prices and hours are never generated.",
+  "type": "object",
+  "required": ["schemaVersion", "updatedAt", "source", "places"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "updatedAt": {"anyOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]},
+    "source": {
+      "type": "object",
+      "required": ["name", "url", "terms"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"const": "소상공인시장진흥공단 상가(상권)정보"},
+        "url": {"const": "https://www.data.go.kr/data/15012005/openapi.do"},
+        "terms": {"type": "string", "minLength": 2, "maxLength": 200}
+      }
+    },
+    "places": {"type": "array", "maxItems": 2000, "items": {"$ref": "#/$defs/place"}}
+  },
+  "$defs": {
+    "date": {"type": "string", "pattern": "^20[0-9]{2}-[01][0-9]-[0-3][0-9]$"},
+    "text": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^<>]*$"},
+    "place": {
+      "type": "object",
+      "required": ["id", "name", "area", "address", "cuisine", "status", "verifiedAt", "facts", "sources", "updatedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^p-[0-9a-z]{4,24}$"},
+        "name": {"type": "string", "minLength": 1, "maxLength": 80, "pattern": "^[^<>]*$"},
+        "branch": {"type": "string", "minLength": 1, "maxLength": 40, "pattern": "^[^<>]*$"},
+        "nameEn": {"type": "string", "minLength": 1, "maxLength": 120, "pattern": "^[^<>]*$"},
+        "area": {"enum": ["kaist", "eoeun", "gung"]},
+        "address": {"type": "string", "minLength": 4, "maxLength": 160, "pattern": "^[^<>]*$"},
+        "lat": {"type": "number", "minimum": 36.33, "maximum": 36.40},
+        "lng": {"type": "number", "minimum": 127.32, "maximum": 127.40},
+        "cuisine": {"enum": ["korean", "chinese", "japanese", "western", "asian", "snack", "fastfood", "cafe", "bakery", "pub", "other"]},
+        "status": {"enum": ["verified", "candidate", "stale", "closed"]},
+        "verifiedAt": {"anyOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]},
+        "facts": {"type": "array", "maxItems": 12, "items": {"$ref": "#/$defs/fact"}},
+        "sources": {"type": "array", "minItems": 1, "maxItems": 4, "items": {"$ref": "#/$defs/source"}},
+        "updatedAt": {"$ref": "#/$defs/date"}
+      }
+    },
+    "fact": {
+      "type": "object",
+      "required": ["kind", "text", "source", "checkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"enum": ["budget", "menu", "hours", "closedDay", "phone", "note"]},
+        "text": {"$ref": "#/$defs/text"},
+        "textEn": {"$ref": "#/$defs/text"},
+        "band": {"enum": ["under10k", "10to15k", "over15k"]},
+        "source": {"enum": ["operator", "official", "public-data", "tip"]},
+        "url": {"type": "string", "maxLength": 300, "pattern": "^https://"},
+        "checkedAt": {"$ref": "#/$defs/date"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["kind", "ref", "checkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"enum": ["semas", "operator"]},
+        "ref": {"type": "string", "minLength": 1, "maxLength": 40, "pattern": "^[A-Za-z0-9_-]+$"},
+        "checkedAt": {"$ref": "#/$defs/date"}
+      }
+    }
+  }
+}

@@ -78,6 +78,14 @@ VALID["magazine-sources"] = json.loads((sc.ROOT / "scripts/discovery/sources.jso
 VALID["campus-buildings"] = json.loads((sc.ROOT / "data/campus/buildings.json").read_text(encoding="utf-8"))
 for _name in ("labels", "events", "history", "worldcup"):
     VALID[f"content-{_name}"] = json.loads((sc.ROOT / f"data/content/{_name}.json").read_text(encoding="utf-8"))
+PLACE = {"id": "p-0001", "name": "시험 식당", "area": "eoeun", "address": "대전 유성구 대학로 1", "cuisine": "korean",
+         "status": "verified", "verifiedAt": "2026-11-07",
+         "facts": [{"kind": "budget", "band": "under10k", "text": "국밥 9,000원", "source": "operator", "checkedAt": "2026-11-07"}],
+         "sources": [{"kind": "semas", "ref": "MA0101", "checkedAt": "2026-11-08"}], "updatedAt": "2026-11-08"}
+VALID["places-feed"] = {"schemaVersion": 1, "updatedAt": "2026-11-08",
+                        "source": {"name": "소상공인시장진흥공단 상가(상권)정보",
+                                   "url": "https://www.data.go.kr/data/15012005/openapi.do", "terms": "제한 없음"},
+                        "places": [PLACE]}
 COMPACT = {"compact": True, "candidateId": "c_0123456789abcdef", "sourceUrl": "https://a.example/onion",
            "rejectionReason": "NOT_FOOD", "discoveredSeq": 7}
 
@@ -169,6 +177,15 @@ BREAKS = {
                          ("an anchor off the campus", _set("buildings.0.at", [5000, 0])),
                          ("another attribution", _set("attribution", "© somebody")),
                          ("an unplaced building with a position", _set("unplaced.0.at", [0, 0]))],
+    "places-feed": [("an area outside the three", _set("places.0.area", "seoul")),
+                    ("a site id that is the public-data number", _set("places.0.id", "MA0101")),
+                    ("a status nobody defined", _set("places.0.status", "popular")),
+                    ("a fact without its source", _set("places.0.facts.0.source", _set.DELETE)),
+                    ("a fact without its date", _set("places.0.facts.0.checkedAt", _set.DELETE)),
+                    ("a place without a source", _set("places.0.sources", [])),
+                    ("a rating", _set("places.0.rating", 4.5)),
+                    ("markup in a name", _set("places.0.name", "<b>x</b>")),
+                    ("a position off the area", _set("places.0.lat", 37.5))],
     "content-history": [("a picture from outside images/", _set("milestones.0.picture.image", "https://a.example/x.png")),
                         ("a milestone without a date", _set("milestones.0.date", _set.DELETE)),
                         ("a mark too long to be a mark", _set("milestones.1.picture.mark", "Babdoduk version two")),

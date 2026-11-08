@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Lab only (vercel.json answers 404 on every other host); docs/BOBYAK.md. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="식당 뽑기, 먹킷리스트, 정산. 밥도둑 밥약 메이커." />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="/images/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>밥약 메이커 · 밥도둑 Babdoduk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/site.css" />
+  <link rel="stylesheet" href="css/bobyak.css" />
+</head>
+<body class="bob-body">
+  <header class="site-nav" role="banner">
+    <div class="scroll-progress-wrap" role="progressbar" id="scrollProgressWrap" aria-label="페이지 스크롤 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    </div>
+    <div class="site-nav-inner" role="navigation" id="siteNavInner" aria-label="주요 메뉴">
+      <button type="button" class="nav-drawer-toggle" id="navDrawerToggle" aria-expanded="false" aria-controls="siteNavLinks" data-i18n-aria-key="nav.menuOpen" aria-label="메뉴 열기"><span class="nav-drawer-icon" aria-hidden="true"></span></button>
+      <div class="site-nav-brand">
+        <a href="index.html" id="navHome" class="site-nav-wordmark" data-i18n-aria-key="nav.homeAria" aria-label="홈으로">Babdoduk</a>
+        <a class="site-nav-insta" id="navInstagram" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n-aria-key="nav.instagramAria" aria-label="밥도둑 인스타그램 (새 창)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r=".6" fill="currentColor"/></svg></a>
+      </div>
+      <div class="nav-mega-row" id="siteNavLinks">
+        <a class="site-nav-direct" href="ggongbab.html" data-i18n="nav.today">오늘의 꽁밥</a>
+        <a class="site-nav-direct" href="choose.html" data-i18n="nav.choose">오늘 뭐 먹지</a>
+        <a class="site-nav-direct" href="event.html"><span class="nav-label-long" data-i18n="nav.event">소식·이벤트</span><span class="nav-label-short" data-i18n="nav.eventShort">소식</span></a>
+        <div class="nav-mega" data-mega>
+          <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
+          <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
+            <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
+            <a class="nav-mega-link" href="tip.html" data-i18n="nav.tip">꽁밥 제보</a>
+            <a class="nav-mega-link" href="https://naver.me/5NeqUPzI" target="_blank" rel="noopener" data-i18n="nav.map">맛집 지도</a>
+            <a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>
+            <a class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.labFeed">꽁밥 실험</a>
+            <a class="nav-mega-link" href="cardnews.html" data-i18n="nav.labCards">카드뉴스</a>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="site-nav-item site-nav-lang" id="langToggle" data-i18n="nav.langBtn" data-i18n-aria-key="nav.langAria" aria-label="Switch to English">English</button>
+    </div>
+  </header>
+  <main class="bob-page" id="bobApp">
+    <section class="bob-hero" aria-labelledby="bobTitle">
+      <p class="bob-kicker" data-i18n="bob.kicker">밥약 메이커 · 실험실</p>
+      <h1 class="page-title bob-title" id="bobTitle" data-i18n="bob.title">밥약 메이커</h1>
+      <p class="bob-lead" data-i18n="bob.lead">어디 갈지 한 번에 뽑고, 다 먹으면 정산까지.</p>
+      <nav class="bob-jump" aria-label="밥약 메이커 바로가기" data-i18n-aria-key="bob.jumpAria">
+        <a href="#bobPick" data-i18n="bob.jump.pick">식당 뽑기</a>
+        <a href="#bobList" data-i18n="bob.jump.list">먹킷리스트</a>
+        <a href="#bobSettle" data-i18n="bob.jump.settle">정산</a>
+      </nav>
+    </section>
+
+    <section class="bob-section" id="bobPick" aria-labelledby="bobPickTitle">
+      <h2 class="bob-h2" id="bobPickTitle" data-i18n="bob.pick.title">식당 뽑기</h2>
+      <p class="bob-note" id="bobDataNote" data-i18n="bob.pick.loading">식당 목록을 불러오는 중</p>
+      <div class="bob-pick-row">
+        <button type="button" class="bob-btn bob-btn--primary" id="bobSpin" data-i18n="bob.pick.spin">식당 뽑기</button>
+        <button type="button" class="bob-btn" id="bobFiltersToggle" aria-expanded="false" aria-controls="bobFilters" data-i18n="bob.pick.filters">조건 고르기</button>
+      </div>
+      <div class="bob-filters" id="bobFilters" hidden></div>
+      <div class="bob-result" id="bobResult" aria-live="polite"></div>
+    </section>
+
+    <section class="bob-section" id="bobList" aria-labelledby="bobListTitle">
+      <h2 class="bob-h2" id="bobListTitle" data-i18n="bob.list.title">먹킷리스트</h2>
+      <p class="bob-note" data-i18n="bob.list.note">이 브라우저에만 저장돼요.</p>
+      <div class="bob-list" id="bobListBody"></div>
+    </section>
+
+    <section class="bob-section" id="bobSettle" aria-labelledby="bobSettleTitle">
+      <h2 class="bob-h2" id="bobSettleTitle" data-i18n="bob.settle.title">정산</h2>
+      <p class="bob-note" data-i18n="bob.settle.lead">금액은 이 화면에서만 계산하고 어디에도 보내지 않아요.</p>
+      <div class="bob-settle" id="bobSettleForm"></div>
+      <div class="bob-settle-result" id="bobSettleResult" aria-live="polite"></div>
+    </section>
+
+    <p class="bob-tips" data-i18n="bob.tips">식당 정보 수정·제보는 준비 중이에요.</p>
+    <div class="bob-copy" id="bobCopy" hidden></div>
+    <p class="bob-toast" id="bobToast" role="status" aria-live="polite"></p>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="site-footer-inner">
+      <hr class="footer-apple-hr" />
+      <div class="footer-apple-main">
+        <div class="footer-apple-col footer-apple-col--left">
+          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</span>
+        </div>
+        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+          <span class="footer-apple-pipe" aria-hidden="true">|</span>
+          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
+        </nav>
+        <div class="footer-apple-col footer-apple-col--right" data-i18n="footer.country">대한민국</div>
+      </div>
+      <p class="footer-apple-fine" data-i18n="footer.fine">본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.</p>
+    </div>
+  </footer>
+
+  <!-- @i18n:strings -->
+  <script>
+    // Written by scripts/sync_site_chrome.py from i18n/ and data/content/; edit those, not this table.
+    window.BABDODUK_STR = {
+      ko: {
+        docTitle: '밥약 메이커 · 밥도둑 Babdoduk',
+        'a11y.scrollProgress': '페이지 스크롤 진행',
+        'bob.area.eoeun': '어은동',
+        'bob.area.gung': '궁동',
+        'bob.area.kaist': 'KAIST 교내',
+        'bob.budget.10to15k': '1만~1만5천 원',
+        'bob.budget.over15k': '1만5천 원 이상',
+        'bob.budget.under10k': '1만 원 이하',
+        'bob.card.area': '지역',
+        'bob.card.close': '닫기',
+        'bob.card.cuisine': '음식',
+        'bob.card.kakao': '카카오맵',
+        'bob.card.kicker': '식당 정보',
+        'bob.card.mapAria': '{map}에서 {name} 찾기 (새 창)',
+        'bob.card.mapNote': '지도는 이름과 주소로 검색해요. 같은 이름의 다른 가게가 아닌지 주소를 확인해 주세요.',
+        'bob.card.naver': '네이버 지도',
+        'bob.card.notFound': '이 식당을 찾지 못했어요. 목록에서 빠졌거나 링크가 잘못됐을 수 있어요.',
+        'bob.card.share': '공유',
+        'bob.card.shareAria': '{name} 공유',
+        'bob.card.source': '출처: {source} · {date} 확인',
+        'bob.card.sourceSemas': '소상공인시장진흥공단 상가(상권)정보',
+        'bob.card.unknown': '확인 안 됨',
+        'bob.cuisine.asian': '아시아 음식',
+        'bob.cuisine.bakery': '빵·디저트',
+        'bob.cuisine.cafe': '카페',
+        'bob.cuisine.chinese': '중식',
+        'bob.cuisine.fastfood': '패스트푸드',
+        'bob.cuisine.japanese': '일식',
+        'bob.cuisine.korean': '한식',
+        'bob.cuisine.other': '기타',
+        'bob.cuisine.pub': '술집',
+        'bob.cuisine.snack': '분식',
+        'bob.cuisine.western': '양식',
+        'bob.fact.budget': '예산 (1인)',
+        'bob.fact.closedDay': '쉬는 날',
+        'bob.fact.hours': '영업시간',
+        'bob.fact.menu': '메뉴',
+        'bob.fact.note': '참고',
+        'bob.fact.phone': '전화',
+        'bob.factMeta': '{source} · {date}',
+        'bob.factSource.official': '가게 공식 안내',
+        'bob.factSource.operator': '밥도둑 확인',
+        'bob.factSource.public-data': '공공데이터',
+        'bob.factSource.tip': '제보 확인',
+        'bob.filter.all': '전체',
+        'bob.filter.area': '지역',
+        'bob.filter.budget': '예산 (1인)',
+        'bob.filter.budgetNote': '예산은 가격이 확인된 곳만 골라요.',
+        'bob.filter.cuisine': '음식',
+        'bob.filter.groupAria': '{name} 고르기',
+        'bob.filter.saved': '먹킷리스트에서만 뽑기',
+        'bob.jump.list': '먹킷리스트',
+        'bob.jump.pick': '식당 뽑기',
+        'bob.jump.settle': '정산',
+        'bob.jumpAria': '밥약 메이커 바로가기',
+        'bob.kicker': '밥약 메이커 · 실험실',
+        'bob.lead': '어디 갈지 한 번에 뽑고, 다 먹으면 정산까지. 약속 잡는 이야기는 원래 쓰던 카카오톡 방에서 하면 돼요.',
+        'bob.list.added': '{status}에 담았어요.',
+        'bob.list.again': '또 갈래',
+        'bob.list.been': '가봤어',
+        'bob.list.cannotSave': '이 브라우저에서는 저장할 수 없어요.',
+        'bob.list.count': '{n}곳',
+        'bob.list.empty': '아직 담은 식당이 없어요. 식당 정보에서 가고 싶어·가봤어·또 갈래를 눌러 담아요.',
+        'bob.list.groupAria': '먹킷리스트에 담기',
+        'bob.list.memo': '나만 보는 메모',
+        'bob.list.memoSave': '메모 저장',
+        'bob.list.memoSaved': '메모를 저장했어요.',
+        'bob.list.missing': '목록에서 빠진 식당',
+        'bob.list.missingNote': '지금 식당 목록에 없어요. 폐업했거나 정보가 바뀌었을 수 있어요.',
+        'bob.list.note': '이 브라우저에만 저장돼요. 메모는 나만 보고, 공유할 때도 들어가지 않아요.',
+        'bob.list.open': '보기',
+        'bob.list.openAria': '{name} 정보 보기',
+        'bob.list.readOnly': '새 버전에서 저장한 목록이라 여기서는 보기만 할 수 있어요.',
+        'bob.list.recovered': '저장된 목록을 읽을 수 없어서 새로 시작했어요.',
+        'bob.list.remove': '먹킷리스트에서 빼기',
+        'bob.list.removeAria': '{name} 먹킷리스트에서 빼기',
+        'bob.list.removed': '먹킷리스트에서 뺐어요.',
+        'bob.list.title': '먹킷리스트',
+        'bob.list.want': '가고 싶어',
+        'bob.pick.again': '다시 뽑기',
+        'bob.pick.consentBody': '공공데이터에만 있는 확인 안 된 후보 {n}곳도 넣을까요? 지금 영업하는지, 정보가 맞는지 밥도둑이 확인하지 않은 곳이에요.',
+        'bob.pick.consentNo': '조건 바꾸기',
+        'bob.pick.consentOff': '후보 빼기',
+        'bob.pick.consentOn': '확인 안 된 후보도 넣는 중',
+        'bob.pick.consentTitle': '확인된 식당 중에는 맞는 곳이 없어요',
+        'bob.pick.consentYes': '후보도 넣어서 뽑기',
+        'bob.pick.dataNote': '확인된 식당 {verified}곳 · 확인 안 된 후보 {candidate}곳 · {date} 기준',
+        'bob.pick.dataNoteNoDate': '확인된 식당 {verified}곳 · 확인 안 된 후보 {candidate}곳',
+        'bob.pick.emptyData': '아직 올라온 식당이 없어요. 밥도둑이 직접 확인한 식당부터 차례로 올라와요.',
+        'bob.pick.emptyFilters': '이 조건에 맞는 식당이 없어요.',
+        'bob.pick.emptySaved': '먹킷리스트에서 뽑을 수 있는 식당이 없어요. 아래 먹킷리스트에 식당을 담아 보세요.',
+        'bob.pick.filters': '조건 고르기',
+        'bob.pick.filtersOn': '조건 고르기 · {n}개',
+        'bob.pick.fromCandidates': '확인 안 된 후보 중에서 뽑았어요.',
+        'bob.pick.loadError': '식당 목록을 불러오지 못했어요.',
+        'bob.pick.loading': '식당 목록을 불러오는 중',
+        'bob.pick.reset': '조건 초기화',
+        'bob.pick.resultKicker': '오늘의 밥약',
+        'bob.pick.retry': '다시 불러오기',
+        'bob.pick.spin': '식당 뽑기',
+        'bob.pick.title': '식당 뽑기',
+        'bob.settle.add': '참가자 추가',
+        'bob.settle.err.fixedInvalid': '직접 정한 금액은 0 이상의 숫자로 넣어 주세요.',
+        'bob.settle.err.fixedOver': '직접 정한 금액의 합({sum})이 총액보다 커요.',
+        'bob.settle.err.fixedShort': '모두 금액을 직접 정했는데 합({sum})이 총액과 달라요. 한 명은 \'자동\'으로 두거나 금액을 맞춰 주세요.',
+        'bob.settle.err.nobody': '정산할 사람이 없어요. 제외하지 않은 참가자가 한 명은 있어야 해요.',
+        'bob.settle.err.payer': '전부 계산할 사람을 골라 주세요.',
+        'bob.settle.err.tooMany': '참가자는 30명까지예요.',
+        'bob.settle.err.total': '총액을 0원부터 1억 원 사이의 숫자로 넣어 주세요.',
+        'bob.settle.err.unit': '끝자리 단위를 다시 골라 주세요.',
+        'bob.settle.exclude': '제외',
+        'bob.settle.excludeAria': '{name} 정산에서 제외',
+        'bob.settle.fixed': '직접 정한 금액',
+        'bob.settle.fixedAria': '{name} 금액 직접 정하기',
+        'bob.settle.fixedPlaceholder': '자동',
+        'bob.settle.hint': '총액을 넣으면 바로 계산돼요.',
+        'bob.settle.lead': '금액은 이 화면에서만 계산하고 어디에도 보내지 않아요. 송금은 각자 쓰는 앱으로 해 주세요.',
+        'bob.settle.mode': '정산 방식',
+        'bob.settle.modeSplit': '나눠 내기',
+        'bob.settle.modeTreat': '한 사람이 전부 (한턱)',
+        'bob.settle.nameAria': '참가자 {n} 이름',
+        'bob.settle.payer': '계산',
+        'bob.settle.payerAria': '{name} 혼자 전부 계산',
+        'bob.settle.people': '참가자',
+        'bob.settle.person': '참가자 {n}',
+        'bob.settle.remove': '빼기',
+        'bob.settle.removeAria': '{name} 지우기',
+        'bob.settle.resultTitle': '한 사람당',
+        'bob.settle.rule': '나누어떨어지지 않으면 목록 위쪽 사람부터 {unit}씩 더 내요.',
+        'bob.settle.share': '정산 결과 공유',
+        'bob.settle.shareFoot': '밥도둑 밥약 메이커로 계산했어요',
+        'bob.settle.shareHead': '밥약 정산 · 총 {total}',
+        'bob.settle.sum': '합계 {sum} · 총액과 같아요',
+        'bob.settle.tagExcluded': '제외',
+        'bob.settle.tagFixed': '직접 정함',
+        'bob.settle.tagTreat': '한턱',
+        'bob.settle.title': '정산',
+        'bob.settle.total': '총액',
+        'bob.settle.totalPlaceholder': '예: 45000',
+        'bob.settle.unit': '끝자리 맞추기',
+        'bob.settle.unit1': '1원 단위',
+        'bob.settle.unit10': '10원 단위',
+        'bob.settle.unit100': '100원 단위',
+        'bob.settle.unit1000': '1,000원 단위',
+        'bob.settle.won': '원',
+        'bob.share.close': '닫기',
+        'bob.share.copied': '링크를 복사했어요.',
+        'bob.share.copiedText': '내용을 복사했어요.',
+        'bob.share.manual': '아래 글을 길게 눌러 복사해 주세요.',
+        'bob.share.manualAria': '공유할 글',
+        'bob.share.placeText': '{name} · {area} — 밥약 메이커',
+        'bob.status.candidate': '확인 안 된 후보',
+        'bob.status.closed': '폐업',
+        'bob.status.stale': '정보 확인 필요',
+        'bob.status.verified': '밥도둑 확인',
+        'bob.statusNote.candidate': '공공데이터에만 있는 후보예요. 영업하는지, 정보가 맞는지 직접 확인해 주세요.',
+        'bob.statusNote.closed': '폐업한 곳이에요. 뽑기에는 나오지 않아요.',
+        'bob.statusNote.stale': '폐업했거나 이름·주소가 바뀌었을 수 있어요. 가기 전에 확인해 주세요.',
+        'bob.statusNote.verified': '밥도둑이 {date}에 직접 확인한 곳이에요. 그 뒤에 바뀌었을 수 있어요.',
+        'bob.statusNote.verifiedNoDate': '밥도둑이 직접 확인한 곳이에요. 그 뒤에 바뀌었을 수 있어요.',
+        'bob.tips': '식당 정보 수정·제보는 준비 중이에요. 그동안은 인스타그램 @babdodukms DM으로 알려 주세요.',
+        'bob.title': '밥약 메이커',
+        'footer.contact': '문의',
+        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.country': '대한민국',
+        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.navAria': '사이트 바로가기',
+        'nav.choose': '오늘 뭐 먹지',
+        'nav.event': '소식·이벤트',
+        'nav.eventShort': '소식',
+        'nav.history': '역사',
+        'nav.homeAria': '홈으로',
+        'nav.instagramAria': '밥도둑 인스타그램 (새 창)',
+        'nav.lab': '실험실',
+        'nav.labCards': '카드뉴스',
+        'nav.labFeed': '꽁밥 실험',
+        'nav.langAria': '영어로 전환',
+        'nav.langBtn': '언어 (EN)',
+        'nav.magazine': '밥도둑 매거진',
+        'nav.map': '맛집 지도',
+        'nav.menuClose': '메뉴 닫기',
+        'nav.menuOpen': '메뉴 열기',
+        'nav.more': '더보기',
+        'nav.navAria': '주요 메뉴',
+        'nav.tip': '꽁밥 제보',
+        'nav.today': '오늘의 꽁밥',
+        'nav.topAria': '맨 위로',
+      },
+      en: {
+        docTitle: 'Meal plan maker · Babdoduk',
+        'a11y.scrollProgress': 'Page scroll progress',
+        'bob.area.eoeun': 'Eoeun-dong',
+        'bob.area.gung': 'Gung-dong',
+        'bob.area.kaist': 'KAIST campus',
+        'bob.budget.10to15k': '₩10,000–15,000',
+        'bob.budget.over15k': '₩15,000 and up',
+        'bob.budget.under10k': 'Up to ₩10,000',
+        'bob.card.area': 'Area',
+        'bob.card.close': 'Close',
+        'bob.card.cuisine': 'Food',
+        'bob.card.kakao': 'Kakao Map',
+        'bob.card.kicker': 'Place',
+        'bob.card.mapAria': 'Find {name} on {map} (opens in a new tab)',
+        'bob.card.mapNote': 'The maps search by name and address. Check the address so you don\'t end up at a same-name shop.',
+        'bob.card.naver': 'Naver Map',
+        'bob.card.notFound': 'Couldn\'t find this place. It may have left the list, or the link may be wrong.',
+        'bob.card.share': 'Share',
+        'bob.card.shareAria': 'Share {name}',
+        'bob.card.source': 'Source: {source} · checked {date}',
+        'bob.card.sourceSemas': 'SEMAS store data (Korean public data)',
+        'bob.card.unknown': 'Not checked',
+        'bob.cuisine.asian': 'Asian',
+        'bob.cuisine.bakery': 'Bakery & dessert',
+        'bob.cuisine.cafe': 'Café',
+        'bob.cuisine.chinese': 'Chinese',
+        'bob.cuisine.fastfood': 'Fast food',
+        'bob.cuisine.japanese': 'Japanese',
+        'bob.cuisine.korean': 'Korean',
+        'bob.cuisine.other': 'Other',
+        'bob.cuisine.pub': 'Bar',
+        'bob.cuisine.snack': 'Snacks (bunsik)',
+        'bob.cuisine.western': 'Western',
+        'bob.fact.budget': 'Budget (per person)',
+        'bob.fact.closedDay': 'Closed on',
+        'bob.fact.hours': 'Hours',
+        'bob.fact.menu': 'Menu',
+        'bob.fact.note': 'Note',
+        'bob.fact.phone': 'Phone',
+        'bob.factMeta': '{source} · {date}',
+        'bob.factSource.official': 'The shop\'s own notice',
+        'bob.factSource.operator': 'Checked by Babdoduk',
+        'bob.factSource.public-data': 'Public data',
+        'bob.factSource.tip': 'Confirmed tip',
+        'bob.filter.all': 'Any',
+        'bob.filter.area': 'Area',
+        'bob.filter.budget': 'Budget (per person)',
+        'bob.filter.budgetNote': 'A budget only matches places whose prices were checked.',
+        'bob.filter.cuisine': 'Food',
+        'bob.filter.groupAria': 'Choose {name}',
+        'bob.filter.saved': 'Only from my food list',
+        'bob.jump.list': 'My food list',
+        'bob.jump.pick': 'Pick a place',
+        'bob.jump.settle': 'Split the bill',
+        'bob.jumpAria': 'Jump to a section',
+        'bob.kicker': 'Meal plan maker · Lab',
+        'bob.lead': 'Pick a place in one tap, then split the bill. Keep planning in the KakaoTalk chat you already use.',
+        'bob.list.added': 'Added to {status}.',
+        'bob.list.again': 'Going again',
+        'bob.list.been': 'Been there',
+        'bob.list.cannotSave': 'This browser can\'t save.',
+        'bob.list.count': '{n}',
+        'bob.list.empty': 'Nothing here yet. Use Want to go, Been there or Going again on a place to add it.',
+        'bob.list.groupAria': 'Add to my food list',
+        'bob.list.memo': 'Private memo',
+        'bob.list.memoSave': 'Save memo',
+        'bob.list.memoSaved': 'Memo saved.',
+        'bob.list.missing': 'No longer listed',
+        'bob.list.missingNote': 'Not in the current list. It may have closed or changed.',
+        'bob.list.note': 'Saved in this browser only. Memos are private and never go into a share.',
+        'bob.list.open': 'View',
+        'bob.list.openAria': 'View {name}',
+        'bob.list.readOnly': 'This list was saved by a newer version, so it\'s read-only here.',
+        'bob.list.recovered': 'Your saved list couldn\'t be read, so it started fresh.',
+        'bob.list.remove': 'Remove from my food list',
+        'bob.list.removeAria': 'Remove {name} from my food list',
+        'bob.list.removed': 'Removed from your food list.',
+        'bob.list.title': 'My food list',
+        'bob.list.want': 'Want to go',
+        'bob.pick.again': 'Pick again',
+        'bob.pick.consentBody': 'Include {n} unchecked candidates from public data? Babdoduk hasn\'t checked whether they\'re open or whether their details are right.',
+        'bob.pick.consentNo': 'Change filters',
+        'bob.pick.consentOff': 'Leave them out',
+        'bob.pick.consentOn': 'Including unchecked candidates',
+        'bob.pick.consentTitle': 'No checked place matches',
+        'bob.pick.consentYes': 'Include candidates and pick',
+        'bob.pick.dataNote': '{verified} checked places · {candidate} unchecked candidates · as of {date}',
+        'bob.pick.dataNoteNoDate': '{verified} checked places · {candidate} unchecked candidates',
+        'bob.pick.emptyData': 'No places yet. Places Babdoduk has checked will be added one by one.',
+        'bob.pick.emptyFilters': 'No place matches these filters.',
+        'bob.pick.emptySaved': 'There\'s nothing in your food list to pick from yet. Add places to your food list below.',
+        'bob.pick.filters': 'Choose filters',
+        'bob.pick.filtersOn': 'Choose filters · {n}',
+        'bob.pick.fromCandidates': 'Picked from unchecked candidates.',
+        'bob.pick.loadError': 'Couldn\'t load the places.',
+        'bob.pick.loading': 'Loading places',
+        'bob.pick.reset': 'Clear filters',
+        'bob.pick.resultKicker': 'Today\'s pick',
+        'bob.pick.retry': 'Try again',
+        'bob.pick.spin': 'Pick a place',
+        'bob.pick.title': 'Pick a place',
+        'bob.settle.add': 'Add a person',
+        'bob.settle.err.fixedInvalid': 'A set amount must be a number of 0 or more.',
+        'bob.settle.err.fixedOver': 'The set amounts ({sum}) are more than the total.',
+        'bob.settle.err.fixedShort': 'Everyone has a set amount, but they add up to {sum}, not the total. Leave one person on Auto or fix the amounts.',
+        'bob.settle.err.nobody': 'There\'s nobody to split with. At least one person must not be skipped.',
+        'bob.settle.err.payer': 'Choose who pays everything.',
+        'bob.settle.err.tooMany': 'Up to 30 people.',
+        'bob.settle.err.total': 'Enter a total between ₩0 and ₩100,000,000 in numbers.',
+        'bob.settle.err.unit': 'Choose the rounding again.',
+        'bob.settle.exclude': 'Skip',
+        'bob.settle.excludeAria': 'Leave {name} out of the split',
+        'bob.settle.fixed': 'Set amount',
+        'bob.settle.fixedAria': 'Set {name}\'s amount',
+        'bob.settle.fixedPlaceholder': 'Auto',
+        'bob.settle.hint': 'Enter the total to see the split.',
+        'bob.settle.lead': 'Amounts are worked out on this screen only and never sent anywhere. Send money with the app you already use.',
+        'bob.settle.mode': 'How to split',
+        'bob.settle.modeSplit': 'Split',
+        'bob.settle.modeTreat': 'One person pays (treat)',
+        'bob.settle.nameAria': 'Person {n} name',
+        'bob.settle.payer': 'Pays',
+        'bob.settle.payerAria': '{name} pays everything',
+        'bob.settle.people': 'People',
+        'bob.settle.person': 'Person {n}',
+        'bob.settle.remove': 'Remove',
+        'bob.settle.removeAria': 'Remove {name}',
+        'bob.settle.resultTitle': 'Per person',
+        'bob.settle.rule': 'When it doesn\'t divide evenly, people at the top of the list pay {unit} more each.',
+        'bob.settle.share': 'Share the result',
+        'bob.settle.shareFoot': 'Worked out with Babdoduk\'s meal plan maker',
+        'bob.settle.shareHead': 'Bill split · total {total}',
+        'bob.settle.sum': 'Sum {sum} · matches the total',
+        'bob.settle.tagExcluded': 'skipped',
+        'bob.settle.tagFixed': 'set',
+        'bob.settle.tagTreat': 'treat',
+        'bob.settle.title': 'Split the bill',
+        'bob.settle.total': 'Total',
+        'bob.settle.totalPlaceholder': 'e.g. 45000',
+        'bob.settle.unit': 'Round to',
+        'bob.settle.unit1': '₩1',
+        'bob.settle.unit10': '₩10',
+        'bob.settle.unit100': '₩100',
+        'bob.settle.unit1000': '₩1,000',
+        'bob.settle.won': 'won',
+        'bob.share.close': 'Close',
+        'bob.share.copied': 'Link copied.',
+        'bob.share.copiedText': 'Copied.',
+        'bob.share.manual': 'Press and hold the text below to copy it.',
+        'bob.share.manualAria': 'Text to share',
+        'bob.share.placeText': '{name} · {area} — meal plan maker',
+        'bob.status.candidate': 'Unchecked candidate',
+        'bob.status.closed': 'Closed',
+        'bob.status.stale': 'Needs checking',
+        'bob.status.verified': 'Checked by Babdoduk',
+        'bob.statusNote.candidate': 'A candidate from public data only. Please check that it\'s open and the details are right.',
+        'bob.statusNote.closed': 'This place has closed. It won\'t come up in the picker.',
+        'bob.statusNote.stale': 'It may have closed or changed its name or address. Please check before you go.',
+        'bob.statusNote.verified': 'Babdoduk checked this place on {date}. It may have changed since.',
+        'bob.statusNote.verifiedNoDate': 'Babdoduk checked this place. It may have changed since.',
+        'bob.tips': 'Corrections and tips about places are coming soon. Meanwhile, DM @babdodukms on Instagram.',
+        'bob.title': 'Meal plan maker',
+        'footer.contact': 'Contact',
+        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.country': 'South Korea',
+        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.navAria': 'Site links',
+        'nav.choose': 'What to eat',
+        'nav.event': 'News & events',
+        'nav.eventShort': 'News',
+        'nav.history': 'History',
+        'nav.homeAria': 'Home',
+        'nav.instagramAria': 'Babdoduk on Instagram (opens in a new tab)',
+        'nav.lab': 'Lab',
+        'nav.labCards': 'Card news',
+        'nav.labFeed': 'Ggongbab lab',
+        'nav.langAria': 'Switch to Korean',
+        'nav.langBtn': '한국어',
+        'nav.magazine': 'Magazine',
+        'nav.map': 'Food map',
+        'nav.menuClose': 'Close menu',
+        'nav.menuOpen': 'Open menu',
+        'nav.more': 'More',
+        'nav.navAria': 'Main menu',
+        'nav.tip': 'Free food tips',
+        'nav.today': 'Today\'s free food',
+        'nav.topAria': 'Back to top',
+      }
+    };
+  </script>
+  <script src="js/site.js"></script>
+  <!-- @end i18n -->
+  <script src="js/ggongbab-select.js"></script>
+  <script src="js/ggongbab-live.js"></script>
+  <script src="js/bob-settle.js"></script>
+  <script src="js/bob-places.js"></script>
+  <script src="js/bobyak.js"></script>
+</body>
+</html>

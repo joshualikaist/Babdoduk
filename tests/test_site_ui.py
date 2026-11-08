@@ -6,7 +6,7 @@ def test_public_page_inventory_and_shared_styles():
     pages = public_pages()
     assert set(pages) == {"index.html", "history.html", "food.html", "mukbang.html", "choose.html",
                           "ggongbab.html", "lab-ggongbab.html", "event.html", "lab.html", "worldcup.html", "tip.html",
-                          "cardnews.html"}
+                          "cardnews.html", "bobyak.html"}
     for name in pages:
         html = (ROOT / name).read_text(encoding="utf-8")
         assert 'href="css/site.css"' in html
@@ -34,7 +34,7 @@ def test_scrollbar_css_contract_and_no_trend_carousel():
 
 def test_all_public_pages_windows_scrollbars_and_overflow():
     report = run_checks()
-    # twelve pages (worldcup.html since 2026-10-13, tip.html since 2026-10-31 and the lab-only
-    # cardnews.html since 2026-11-02) x five widths
-    assert len(report["results"]) == 60
+    # thirteen pages (worldcup.html since 2026-10-13, tip.html since 2026-10-31, the lab-only
+    # cardnews.html since 2026-11-02 and the lab-only bobyak.html since 2026-11-08) x five widths
+    assert len(report["results"]) == 65
     assert all(result["overflow"] == 0 for result in report["results"].values())
