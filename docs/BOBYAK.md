@@ -95,7 +95,7 @@
 
 ## 운영 절차 (`scripts/places/semas.py`)
 
-키는 환경변수 `DATA_GO_KR_KEY`, 또는 `~/.config/babdoduk/credentials`의 `DATA_GO_KR_KEY=` 줄에서 읽습니다. 화면, 로그, 파일 어디에도 키를 출력하지 않습니다. `key` 명령은 "set" 또는 "not set"만 알려 줍니다.
+키는 환경변수 `DATA_GO_KR_KEY`, 또는 `~/.config/babdoduk/credentials`에서 읽습니다. 이것이 파일이면 그 안의 `DATA_GO_KR_KEY=` 줄을, 운영 PC처럼 폴더이면 그 안의 `data-go-kr` 파일(키 한 줄, 또는 `DATA_GO_KR_KEY=` 줄)을 읽습니다. 화면, 로그, 파일 어디에도 키를 출력하지 않습니다. `key` 명령은 "set" 또는 "not set"만 알려 줍니다.
 
 ```
 python scripts/places/semas.py key       # 키가 있는지만
@@ -176,7 +176,7 @@ python scripts/places/semas.py publish   # 결정만 반영 → data/places/late
 
 ## 남은 일 (승인 또는 소유자 손 필요)
 
-* **공공데이터 키**: data.go.kr에서 15012005 활용신청을 하고, 키를 이 PC의 `~/.config/babdoduk/credentials`에 `DATA_GO_KR_KEY=`로 넣습니다(소유자가 직접 넣음). 그 뒤 fetch → review → 결정 → publish 순서로 합니다.
+* **공공데이터 키**: data.go.kr에서 15012005 활용신청을 하고, 키를 이 PC의 `~/.config/babdoduk/credentials/data-go-kr` 파일에 한 줄로 넣습니다(소유자가 직접 넣음). 그 뒤 fetch → review → 결정 → publish 순서로 합니다.
 * **확인할 식당 고르기**: 첫 공개 전에, 후보 가운데 실제로 가 본·확인한 곳을 `verified`로 정하고 확인한 사실만 적습니다. 후보 전체를 `candidate`로 공개할지도 소유자가 정합니다(공개하면 뽑기에서 동의 뒤 나옴).
 * **마이그레이션 012 적용**과 제보 양식(별도 작업).
 * **먹킷리스트 로그인 동기화**: 2단계(마이그레이션 011)에서 합니다.

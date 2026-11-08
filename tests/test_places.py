@@ -66,6 +66,25 @@ def test_the_key_is_read_from_the_environment_or_the_credentials_file_and_never_
     assert "DATA_GO_KR_KEY: set" in out.out and "abc" not in out.out + out.err
 
 
+def test_a_credentials_folder_holds_the_key_in_its_own_file(tmp_path, capsys, monkeypatch):
+    folder = tmp_path / "credentials"
+    folder.mkdir()
+    (folder / "babdoduk_alert-telegram").write_text("DATA_GO_KR_KEY=wrong-file\n", encoding="utf-8")
+    assert semas.read_key({}, folder) is None, "only credentials/data-go-kr is read"
+    (folder / "data-go-kr").write_text("\n  abc+def/==  \n", encoding="utf-8")
+    assert semas.read_key({}, folder) == "abc+def/==", "the key pasted alone"
+    (folder / "data-go-kr").write_text("DATA_GO_KR_KEY=xyz\n", encoding="utf-8")
+    assert semas.read_key({}, folder) == "xyz"
+    (folder / "data-go-kr").write_text("one\ntwo\n", encoding="utf-8")
+    assert semas.read_key({}, folder) is None, "two bare lines are not a key"
+    (folder / "data-go-kr").write_text("abc+def/==\n", encoding="utf-8")
+    monkeypatch.setattr(semas, "CREDENTIALS", folder)
+    monkeypatch.delenv("DATA_GO_KR_KEY", raising=False)
+    assert semas.main(["key"]) == 0
+    out = capsys.readouterr()
+    assert "DATA_GO_KR_KEY: set" in out.out and "abc" not in out.out + out.err
+
+
 def test_fetch_without_a_key_makes_no_request(tmp_path, capsys, monkeypatch):
     monkeypatch.setattr(semas, "CREDENTIALS", tmp_path / "none")
     monkeypatch.delenv("DATA_GO_KR_KEY", raising=False)

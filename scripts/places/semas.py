@@ -14,7 +14,8 @@ agrees) or "verified" (the operator checked it, with the facts they confirmed), 
 public data becomes "stale" or "closed" only when the operator says so. Menus, prices and hours are
 never generated: a fact exists only when the operator wrote it, with its source and date.
 
-The key comes from the environment (DATA_GO_KR_KEY) or ~/.config/babdoduk/credentials and is never
+The key comes from the environment (DATA_GO_KR_KEY) or ~/.config/babdoduk/credentials (a file of
+NAME=value lines, or, when that is a folder as on the ops PC, its file data-go-kr) and is never
 printed, logged or written anywhere.
 """
 from __future__ import annotations
@@ -40,6 +41,7 @@ APPROVALS = ROOT / "inputs" / "places" / "approvals.json"
 PUBLISHED = ROOT / "data" / "places" / "latest.json"
 CREDENTIALS = Path.home() / ".config" / "babdoduk" / "credentials"
 KEY_NAME = "DATA_GO_KR_KEY"
+KEY_FILE = "data-go-kr"     # the file inside the credentials folder, when credentials is a folder
 
 API = "https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRectangle"
 SOURCE = {"name": "소상공인시장진흥공단 상가(상권)정보", "url": "https://www.data.go.kr/data/15012005/openapi.do",
@@ -82,18 +84,24 @@ def read_key(environ=None, credentials: Path | None = None) -> str | None:
     if value:
         return value
     path = CREDENTIALS if credentials is None else credentials
+    # On the ops PC ~/.config/babdoduk/credentials is a folder with one file per secret, so the key lives
+    # in credentials/data-go-kr, written either as DATA_GO_KR_KEY=... or as the key alone on one line.
+    alone = path.is_dir()
+    if alone:
+        path = path / KEY_FILE
     try:
-        lines = path.read_text(encoding="utf-8").splitlines()
+        lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     except OSError:
         return None
     for line in lines:
-        line = line.strip()
         if line.startswith("export "):
             line = line[len("export "):].strip()
         name, sep, rest = line.partition("=")
         if sep and name.strip() == KEY_NAME:
             rest = rest.strip().strip('"').strip("'")
             return rest or None
+    if alone and len(lines) == 1 and not lines[0].startswith("#"):
+        return lines[0].strip('"').strip("'") or None
     return None
 
 
