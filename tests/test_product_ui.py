@@ -51,6 +51,10 @@ def test_fixture_clock_is_scoped_before_date_replacement():
 # static-only contract below always applies.
 LIVE_FEED_MODULE = ROOT / "js/ggongbab-public-feed.js"
 LIVE_FEED_SCRIPTS = ("js/ggongbab-public-config.js", "js/ggongbab-public-feed.js")
+# 마이 밥도둑 (Phase 2, lab; docs/MY_BABDODUK.md): the optional account store on the hub. It loads the
+# sign-in client only for someone already signed in on this browser and only on the hosts that
+# js/babdoduk-auth-config.js enables (tests/test_my_babdoduk.py); the renderer still never talks to a database.
+ACCOUNT_SCRIPTS = ("js/babdoduk-auth-config.js", "js/babdoduk-account.js")
 
 
 @pytest.mark.parametrize("name", ["index.html", "ggongbab.html", "lab-ggongbab.html"])
@@ -67,7 +71,9 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     assert scripts.index("js/ggongbab-select.js") < scripts.index(renderer)
     live = LIVE_FEED_MODULE.exists() and name != "index.html"
     if live:
-        assert scripts[-3:] == [*LIVE_FEED_SCRIPTS, "js/ggongbab.js"], scripts
+        assert scripts[-5:] == [*LIVE_FEED_SCRIPTS, *ACCOUNT_SCRIPTS, "js/ggongbab.js"], scripts
+        auth = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
+        assert re.search(r"enabled:\s*false", auth) and "babdodukms.com" not in auth
         config = (ROOT / "js/ggongbab-public-config.js").read_text(encoding="utf-8")
         assert not re.search(r"sb_secret_|service_role|SUPABASE_SECRET", config)
     else:
@@ -76,6 +82,8 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
         assert not script.startswith(("http:", "https:", "//"))
         if live and script in LIVE_FEED_SCRIPTS:
             continue  # the experiment itself: tests/ggongbab/test_frontend_public_feed.py
+        if live and script in ACCOUNT_SCRIPTS:
+            continue  # the account store: tests/test_my_babdoduk.py
         source = (ROOT / script.split("?")[0]).read_text(encoding="utf-8")
         forbidden = ("supabase", "createClient(", "WebSocket(", "EventSource(")
         if not (live and script == "js/ggongbab.js"):

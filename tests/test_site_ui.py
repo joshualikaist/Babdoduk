@@ -6,7 +6,7 @@ def test_public_page_inventory_and_shared_styles():
     pages = public_pages()
     assert set(pages) == {"index.html", "history.html", "food.html", "mukbang.html", "choose.html",
                           "ggongbab.html", "lab-ggongbab.html", "event.html", "lab.html", "worldcup.html", "tip.html",
-                          "cardnews.html"}
+                          "cardnews.html", "my.html"}
     for name in pages:
         html = (ROOT / name).read_text(encoding="utf-8")
         assert 'href="css/site.css"' in html

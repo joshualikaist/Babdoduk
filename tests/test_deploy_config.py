@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LAB_HOST = "babdoduk-lab.vercel.app"
-LAB_ONLY = ("food.html", "lab.html", "lab-ggongbab.html", "cardnews.html", "data/cardnews/index.json",
+LAB_ONLY = ("food.html", "lab.html", "lab-ggongbab.html", "cardnews.html", "my.html", "data/cardnews/index.json",
             "data/cardnews/2026-11-02/1.png", "calendar.ics", "data/food-log.json")
 SITE = ("index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html", "choose.html", "tip.html",
         "manifest.json", "css/site.css", "js/home.js", "images/kakao-loopy.jpg", "data/ggongbab/latest.json",

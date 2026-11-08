@@ -22,7 +22,7 @@
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `data/content/events.json` (sync 가 `event.html` 에 씀) |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 
-먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`, `data/cardnews/`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
+먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`, 마이 밥도둑 `my.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`, `data/cardnews/`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
 
 홈(`index.html`)은 오늘의 꽁밥과 메뉴 뽑기(`choose.html`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
 학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에는 아무것도 두지 않습니다(01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식은 소유자 결정으로 2026-11-02 에 없앴습니다). `history.html` 은 밥도둑이 걸어온 길입니다.
@@ -88,7 +88,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | UI 검증 · 테스트 | §8 · §9 |
 | 자동화 · 브랜치 · 배포 | §10 · §11, `docs/DEPLOYMENT_AND_BRANCHES.md` |
 | 소식·이벤트 쓰는 법 (`data/content/events.json`) | `docs/EVENT_DETAIL_FIELDS.md` |
-| 밥도둑 2.0 (꽁밥 LIVE, 로그인·식당 계획) | `docs/GGONGBAB_LIVE.md`, `docs/BABDODUK_2_PLAN.md` |
+| 밥도둑 2.0 (꽁밥 LIVE, 마이 밥도둑·로그인, 식당 계획) | `docs/GGONGBAB_LIVE.md`, `docs/MY_BABDODUK.md`, `docs/BABDODUK_2_PLAN.md` |
 | 보안 원칙 | §12 |
 
 아래 운영 기록 중 날짜가 있는 상태 설명은 현재 상태 보장이 아니며, 실행 전 코드·데이터·배포 브랜치를 확인합니다.
@@ -109,6 +109,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | **`worldcup.html`** | 밥도둑 먹방 월드컵 — 밥도둑 소식의 활동에서 여는 놀이. `data/content/worldcup.json` 의 메뉴 700여 개(음식 사전 id, 같은 요리는 5개까지 — `scripts/page_content.py` `SAME_DISH`) 중 매 판 32개를 뽑아 둘씩 고르고(시작 화면: 카드 둘레에 떠 있는 음식 사진, "오늘의 32강, 뭐가 나올까?", 이모지 카테고리 타일 8개와 🙈 아무거나, 다음 판에 실제로 나오는 메뉴 사진 다섯 장, 숨 쉬는 🎰 시작 버튼 — 시작하면 약 5초 캡슐 뽑기 장면, 이어하기에는 없음, 탭이나 키로 건너뜀; 고른 카드에 효과, 8강부터 새 라운드마다 검은 화면에 라운드 이름이 찍히는 장면 — 결승은 두 메뉴가 부딪히는 VS 장면, 탭이나 키로 건너뜀, 동작 줄이기면 없음 — 우승 때 폭죽과 인스타 스토리 카드 저장·공유, 친구 도전 링크 — `docs/WORLDCUP_SHARE.md`), 진행과 우승 기록은 이 브라우저(localStorage `babdoduk-worldcup`)에만 남는다. lab 에서는 끝난 판을 익명 합계로 모아 '모두의 랭킹'과 직전 경기 승률을 보여 준다(`docs/WORLDCUP_STATS.md`). 메뉴마다 위키미디어 공용의 자유 이용 사진(`images/worldcup/`, 작가·라이선스를 사진 아래 표시). 경품 없음 |
 | **`lab-ggongbab.html`** | 같은 꽁밥 렌더러를 쓰는 실험 페이지. fixture·localhost preview 모드가 여기에만 있다. `noindex` |
 | **`lab.html`** | 실험실 — 본편과 분리해 시험. `noindex`. 홈에 링크 없음 |
+| **`my.html`** | 마이 밥도둑 — **실험실 전용**(2.0 2단계). 선택 로그인(Google·카카오), 계정에 저장한 꽁밥·먹킷리스트 수, 비공개 표시 이름, 로그아웃, 데이터 지우기·탈퇴. `js/babdoduk-auth-config.js`가 켜기 전까지 "준비 중"만 보여 주고 로그인 모듈을 불러오지 않음 ([MY_BABDODUK.md](MY_BABDODUK.md)) |
 | **`tip.html`** | 꽁밥 제보 게시판 — 2026-11-02 부터 공개 페이지(모든 페이지 더보기의 "꽁밥 제보"에서 진입, `noindex, nofollow`). 방문자가 모르는 오프라인 꽁밥을 사진과 함께 보내고, 소유자가 하루 한 번 확인한 제보만 게시판에 올라간다(`docs/GGONGBAB_TIPS.md`) |
 | **`cardnews.html`** | 주간 꽁밥 카드뉴스 시안 — **실험실 전용**(`noindex, nofollow`, `vercel.json` 이 lab 밖에서 404, lab 주소의 더보기 "카드뉴스"에서 진입). `scripts/render_cardnews.py` 가 꽁밥 목록으로 그린 표지+월~금 6장(1080×1350)을 보여 준다(`docs/CARDNEWS.md`) |
 
