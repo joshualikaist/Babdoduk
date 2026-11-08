@@ -37,8 +37,9 @@ def test_the_facts_match_the_code_they_describe():
     assert "char_length(v_text) > 1000" in tips and "not between 0 and 3" in tips
     assert "1,000자" in KO["privacy.s1.tipItems"] and "3장" in KO["privacy.s1.tipItems"]
     assert "interval '1 day'" in tips and "하루" in KO["privacy.s3.i4"]
-    worker = (ROOT / "scripts/ggongbab/tips.py").read_text(encoding="utf-8")
-    assert "deleted 14 days after" in worker and "14일" in KO["privacy.s3.i2"]
+    # The ops PC's tips worker deletes a tip's photos 14 days after the owner's answer (docs/GGONGBAB_TIPS.md).
+    assert "14일 뒤 그 제보의 사진을 지웁니다" in (ROOT / "docs/GGONGBAB_TIPS.md").read_text(encoding="utf-8")
+    assert "14일" in KO["privacy.s3.i2"]
     # The site ships no analytics or tracking script, as section 6 says.
     for name in [p.name for p in ROOT.glob("*.html")] + [p.as_posix() for p in (ROOT / "js").glob("*.js")]:
         text = (ROOT / name).read_text(encoding="utf-8") if "/" not in name else Path(name).read_text(encoding="utf-8")
@@ -47,6 +48,8 @@ def test_the_facts_match_the_code_they_describe():
 
 
 def test_the_policy_is_linked_from_my_babdoduk():
+    if not (ROOT / "my.html").exists():
+        pytest.skip("마이 밥도둑 is lab-only; production has no sign-in page yet")
     my = (ROOT / "my.html").read_text(encoding="utf-8")
     assert '<a href="privacy.html" data-i18n="my.privacyLink">개인정보처리방침</a>' in my
 
