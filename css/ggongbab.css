@@ -203,7 +203,7 @@
 .gg-cal { margin-top:8px; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#faf8f4; border:1px solid var(--color-divider); }
 .gg-cal .gg-btn { font-family:inherit; cursor:pointer; min-height:44px; }
 .gg-cal[hidden],.gg-more-panel[hidden],.gg-saved-body[hidden] { display:none; }
-.gg-cal-note { flex-basis:100%; margin:0; font-size:12px; line-height:18px; color:var(--color-ink-muted); }
+.gg-cal-note,.gg-cal-sync { flex-basis:100%; margin:0; font-size:12px; line-height:18px; color:var(--color-ink-muted); }
 .gg-cal-note a { color:var(--color-accent); font-weight:700; }
 .gg-changes { margin:10px 0 0; padding:10px 12px; border-radius:12px; background:#fffaf0; border:1px solid #f0dcb0; }
 .gg-change { margin:0 0 6px; font-size:13px; line-height:20px; color:var(--color-ink); overflow-wrap:anywhere; }

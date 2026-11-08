@@ -373,11 +373,54 @@
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
   var liveNote = { id: '', text: '', copy: '' };
+  // The star is a drawn icon, not a text character: this module shows no emoji or symbol glyphs.
+  var STAR = '<svg class="hc-save-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
+    '<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+  function calendarDetails(ev) {
+    var lines = [];
+    if (F.hasFood(ev) && !F.isDeadlineOnly(ev)) lines.push(fill(t('home.cal.ev.calFood', '꽁밥 · {food}'), { food: F.dishLabel(ev, t) }));
+    lines.push(t('home.cal.ev.calCheck', '참여 조건과 변경 사항은 밥도둑에서 확인하세요.'));
+    lines.push(L.eventLink(ev.id));
+    return lines.join('\n');
+  }
+  // Closed, the calendar choice holds nothing, so an opened listing's links stay its public source only.
+  var calOpen = '';
+  function calendarToggle(ev) {
+    if (!L || !L.canCalendar(ev, F.nowKst())) return '';
+    return '<button type="button" class="btn btn-secondary hc-ev-cal" data-hc-cal="' + esc(ev.id) + '" aria-expanded="' + (calOpen === ev.id) + '">' +
+      esc(t('home.cal.ev.calendar', '캘린더에 추가')) + '</button>';
+  }
+  function calendarHtml(ev) {
+    if (!L || !L.canCalendar(ev, F.nowKst())) return '';
+    var open = calOpen === ev.id;
+    if (!open) return '';
+    var html = '<a class="btn btn-secondary hc-ev-cal" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) +
+      '" target="_blank" rel="noopener">' + esc(t('home.cal.ev.calGoogle', 'Google 캘린더')) +
+      '<span class="home-sr-only"> ' + esc(t('home.banner.newTab', '(새 창에서 열림)')) + '</span></a>';
+    html += '<button type="button" class="btn btn-secondary hc-ev-cal" data-hc-ics="' + esc(ev.id) + '">' + esc(t('home.cal.ev.calFile', '캘린더 파일 (.ics)')) + '</button>';
+    return html;
+  }
+  function downloadIcs(id) {
+    var item = findItem(id);
+    if (!L || !item) return;
+    try {
+      var blob = new Blob([L.icsText(item.ev, { details: calendarDetails(item.ev), url: L.eventLink(id) })], { type: 'text/calendar;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = L.icsFileName(item.ev);
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      els.live.textContent = t('home.cal.ev.icsDone', '캘린더 파일을 받았어요');
+    } catch (err) {
+      els.live.textContent = t('home.cal.ev.icsFail', '이 브라우저에서는 파일을 받을 수 없어요');
+    }
+  }
   function saveButton(item, i) {
     if (!savedStore || !item.active) return '';
     var on = savedStore.has(item.ev.id);
     return '<button type="button" class="hc-save" data-hc-save="' + esc(item.ev.id) + '" aria-pressed="' + on + '" aria-label="' +
-      esc(fill(t('home.cal.ev.saveAria', '{title} 저장'), { title: item.ev.title })) + '"><span aria-hidden="true">' + (on ? '★' : '☆') + '</span></button>';
+      esc(fill(t('home.cal.ev.saveAria', '{title} 저장'), { title: item.ev.title })) + '">' + STAR + '</button>';
   }
   function shareText(ev) {
     var start = F.toKst(ev.startAt);
@@ -469,8 +512,16 @@
     if (L && item.active) {
       actions.push('<button type="button" class="btn btn-secondary hc-ev-share" data-hc-share="' + esc(ev.id) + '">' +
         '<span aria-hidden="true">↗</span> ' + esc(t('home.cal.ev.share', '공유')) + '</button>');
+      var toggleCal = calendarToggle(ev);
+      if (toggleCal) actions.push(toggleCal);
     }
     if (actions.length) rows.push('<p class="hc-ev-actions">' + actions.join('') + '</p>');
+    var cal = item.active ? calendarHtml(ev) : '';
+    if (cal) {
+      rows.push('<p class="hc-ev-actions hc-ev-cals">' + cal + '</p>');
+      rows.push('<p class="hc-ev-calnote">' + esc(t('home.cal.ev.calSync', '아이폰·Google 캘린더에 넣으면 연결된 앱(minical 등)에도 보여요')) +
+        (ev.endAt ? '' : ' · ' + esc(t('home.cal.ev.calNoEnd', '끝나는 시간은 공지에 없어요'))) + '</p>');
+    }
     if (liveNote.id === ev.id && liveNote.text) rows.push('<p class="hc-ev-note" role="status">' + esc(liveNote.text) + '</p>');
     if (liveNote.id === ev.id && liveNote.copy) {
       rows.push('<label class="hc-ev-copy">' + esc(t('home.cal.ev.copyHint', '길게 눌러 복사하세요')) +
@@ -728,6 +779,16 @@
     if (target.closest('[data-hc-today]')) return goToday();
     var star = target.closest('[data-hc-save]');
     if (star) return toggleSave(star.getAttribute('data-hc-save'));
+    var calBtn = target.closest('[data-hc-cal]');
+    if (calBtn) {
+      var cid = calBtn.getAttribute('data-hc-cal');
+      calOpen = calOpen === cid ? '' : cid;
+      renderDay();
+      refocus('[data-hc-cal="' + (window.CSS && CSS.escape ? CSS.escape(cid) : cid) + '"]');
+      return;
+    }
+    var ics = target.closest('[data-hc-ics]');
+    if (ics) return downloadIcs(ics.getAttribute('data-hc-ics'));
     var share = target.closest('[data-hc-share]');
     if (share) return shareListing(share.getAttribute('data-hc-share'));
     var row = target.closest('.hc-ev-btn');
