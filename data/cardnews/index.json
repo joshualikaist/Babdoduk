@@ -2,6 +2,34 @@
   "schemaVersion": 1,
   "weeks": [
     {
+      "week": "2026-11-09",
+      "renderedAt": "2026-11-08T20:00:26+09:00",
+      "feedGeneratedAt": "2026-11-08T16:52:23+09:00",
+      "counts": [
+        4,
+        2,
+        6,
+        3,
+        0
+      ],
+      "total": 14,
+      "days": [
+        0,
+        1,
+        2,
+        2,
+        3
+      ],
+      "images": [
+        "data/cardnews/2026-11-09/1.png",
+        "data/cardnews/2026-11-09/2.png",
+        "data/cardnews/2026-11-09/3.png",
+        "data/cardnews/2026-11-09/4.png",
+        "data/cardnews/2026-11-09/5.png",
+        "data/cardnews/2026-11-09/6.png"
+      ]
+    },
+    {
       "week": "2026-11-02",
       "renderedAt": "2026-11-03T01:25:26+09:00",
       "feedGeneratedAt": "2026-11-02T18:28:30+09:00",

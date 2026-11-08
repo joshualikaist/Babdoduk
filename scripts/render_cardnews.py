@@ -17,6 +17,7 @@ through Playwright (BABDODUK_BROWSER).
 from __future__ import annotations
 
 import argparse
+import base64
 import html
 import json
 import os
@@ -78,28 +79,37 @@ def tip_only(event: dict) -> bool:
     return kinds == {"tip"}
 
 
-def occurrences(event: dict) -> list[tuple[str, str]]:
-    """When the event happens: each of its sessions when the list has them, else the event itself.
+def occurrences(event: dict) -> list[dict]:
+    """When and where the event happens: each of its sessions when the list has them, else the event itself.
     A talk series held every day of the week (자연과학 토크 콘서트, 2026-11-02 to 11-06) is on every
-    one of those days' cards, not only on the first (owner 2026-11-03)."""
+    one of those days' cards, not only on the first (owner 2026-11-03). A session's own place wins: the
+    2026 KPF 학술 세미나 was in E6 3438호 on Tuesday and E11 203호 on Wednesday, so the event itself has
+    no single place and the 2026-11-08 cards showed none (owner 2026-11-08)."""
     sessions = [s for s in event.get("sessions") or [] if isinstance(s, dict) and s.get("startAt")]
-    if sessions:
-        return [(s["startAt"], s.get("endAt") or "") for s in sessions]
-    return [(event.get("startAt") or "", event.get("endAt") or "")]
+    if not sessions:
+        return [{"startAt": event.get("startAt") or "", "endAt": event.get("endAt") or ""}]
+    out = []
+    for session in sessions:
+        item = {"startAt": session["startAt"], "endAt": session.get("endAt") or ""}
+        where = session.get("location")
+        if isinstance(where, dict) and any(str(where.get(k) or "").strip() for k in ("name", "building", "room")):
+            item["location"] = where
+        out.append(item)
+    return out
 
 
 def days(feed: dict, monday: date, rules: dict) -> list[list[dict]]:
     """The list's events by the Korean day they happen on, Monday to Friday, each day by start time.
-    An entry is the event with that day's session times in startAt/endAt."""
+    An entry is the event with that day's session times (and place, when the session has one)."""
     out = [[] for _ in range(5)]
     week = [(monday + timedelta(days=i)).isoformat() for i in range(5)]
     for event in feed.get("events") or []:
         if rules.get("skipTipOnly", True) and tip_only(event):
             continue
-        for start, end in occurrences(event):
-            day = kst_day(start)
+        for when in occurrences(event):
+            day = kst_day(when["startAt"])
             if day in week:
-                out[week.index(day)].append({**event, "startAt": start, "endAt": end, "_event": event.get("id") or id(event)})
+                out[week.index(day)].append({**event, **when, "_event": event.get("id") or id(event)})
     for entries in out:
         entries.sort(key=lambda e: e.get("startAt") or "")
     return out
@@ -169,10 +179,50 @@ def week_range(monday: date) -> str:
     return f"{monday.month}월 {monday.day}일(월) – {friday.month}월 {friday.day}일(금)"
 
 
+# Hand-drawn strokes in the accent color, as in the 'KAIST에서 오늘 뭐 먹지?' series (owner 2026-11-08).
+SCRIBBLE = ('<svg class="scribble" viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true">'
+            '<path d="M6 26 C 70 12, 130 34, 200 22 S 330 10, 394 20" /><path d="M40 34 C 120 26, 240 36, 360 28" /></svg>')
+SPARK = ('<svg class="spark" viewBox="0 0 80 80" aria-hidden="true"><path d="M40 6 L40 26" /><path d="M66 18 L52 32" />'
+         '<path d="M74 46 L54 44" /></svg>')
+ARROW = ('<svg class="arrow" viewBox="0 0 120 50" aria-hidden="true"><path d="M6 30 C 36 10, 70 44, 108 22" />'
+         '<path d="M90 12 L110 21 L96 38" /></svg>')
+LINK = ('<svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" />'
+        '<path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" /></svg>')
+
+
+def avatar_css(tpl: dict) -> str:
+    """The Instagram account's profile picture, inlined once in the style (the cards are drawn from a
+    string, so a file path would not load)."""
+    path = ROOT / (tpl.get("brand") or {}).get("avatar", "")
+    if not (tpl.get("brand") or {}).get("avatar") or not path.is_file():
+        return ""
+    kind = "png" if path.suffix.lower() == ".png" else "jpeg"
+    return f'.brand .avatar {{ background-image: url("data:image/{kind};base64,{base64.b64encode(path.read_bytes()).decode()}") }}\n'
+
+
+def avatar(tpl: dict) -> str:
+    return '<span class="avatar"></span>' if avatar_css(tpl) else ""
+
+
+def chrome(tpl: dict, tag: str = "") -> str:
+    """Decoration and the brand row every card shares: the two pink circles and the profile header."""
+    brand = (tpl.get("brand") or {}).get("name") or tpl["cover"]["kicker"]
+    return (f'<div class="blob b1"></div><div class="blob b2"></div>'
+            f'<header class="brand">{avatar(tpl)}<span>{esc(brand)}</span>{tag}</header>')
+
+
+def window(tpl: dict, inner: str, extra: str = "") -> str:
+    """The main information sits in a rounded white browser window."""
+    where = (tpl.get("brand") or {}).get("window") or tpl["footer"]["site"]
+    return (f'<div class="window{extra}"><div class="bar"><i></i><i></i><i></i><span class="url">{esc(where)}</span></div>'
+            f'<div class="pane">{inner}</div></div>')
+
+
 def foot(tpl: dict, n: int, total: int) -> str:
     f = tpl["footer"]
-    return (f'<div class="foot"><div><b>{esc(f["brand"])}</b> · {esc(f["site"])}<small>{esc(f["note"])}</small></div>'
-            f'<div class="page">{n} / {total}</div></div>')
+    dots = "".join(f'<i class="{"on" if k == n else ""}"></i>' for k in range(1, total + 1))
+    return (f'<div class="foot"><small>{esc(f["note"])}</small><div class="row"><span class="link">{LINK}<b>{esc(f["site"])}</b></span>'
+            f'<span class="dots" aria-hidden="true">{dots}</span><div class="page">{n} / {total}</div></div></div>')
 
 
 def cover(tpl: dict, monday: date, by_day: list[list[dict]], total_cards: int) -> str:
@@ -183,10 +233,11 @@ def cover(tpl: dict, monday: date, by_day: list[list[dict]], total_cards: int) -
         f'<div class="n">{len(by_day[i]) or "–"}</div></div>' for i in range(5))
     total = distinct(by_day)
     count = esc(fill(c["total"], n=total)).replace(f"{total}개", f"<em>{total}개</em>", 1)
-    return (f'<section class="card cover"><div class="band"></div><p class="kicker">{esc(c["kicker"])}</p>'
-            f'<h1>{esc(c["headline"])}<br /><span>{esc(c["headlineMark"])}</span></h1>'
-            f'<p class="range">{week_range(monday)}</p><div class="strip">{strip}</div>'
-            f'<p class="total">{count}</p><p class="swipe">{esc(c["swipe"])}</p>{foot(tpl, 1, total_cards)}</section>')
+    return (f'<section class="card cover">{chrome(tpl)}<p class="kicker">{esc(c["kicker"])}</p>'
+            f'<h1>{esc(c["headline"])}<br /><span class="mark">{esc(c["headlineMark"])}{SCRIBBLE}</span>{SPARK}</h1>'
+            f'<p class="range">{week_range(monday)}</p>'
+            + window(tpl, f'<div class="strip">{strip}</div>')
+            + f'<p class="total">{count}</p><p class="swipe">{esc(c["swipe"])}{ARROW}</p>{foot(tpl, 1, total_cards)}</section>')
 
 
 def day_card(tpl: dict, i: int, day: date, events: list[dict], names: dict, n: int, total_cards: int,
@@ -194,7 +245,7 @@ def day_card(tpl: dict, i: int, day: date, events: list[dict], names: dict, n: i
     d, rules = tpl["day"], tpl["rules"]
     per_card, dense_from = int(rules.get("perCard", 4)), int(rules.get("denseFrom", 3))
     day_total = len(events) if day_total is None else day_total
-    head = (f'<div class="head"><span class="date">{day.month}.{day.day}</span><span class="name">{DAY_NAMES[i]}</span>'
+    head = (f'<div class="head"><span class="date">{day.month}.{day.day}</span><span class="name">{DAY_NAMES[i]}{SCRIBBLE}</span>'
             + (f'<span class="count">{esc(fill(d["count"], n=day_total))}</span>' if events else "") + "</div>")
     kicker = fill(d["kicker"], day=DAYS[i]) + (f" · {part}/{parts}" if parts > 1 else "")
     if not events:
@@ -219,16 +270,19 @@ def day_card(tpl: dict, i: int, day: date, events: list[dict], names: dict, n: i
         body = '<div class="list">' + "".join(rows) + "</div>"
         if len(events) > per_card:
             body += f'<p class="more">{esc(fill(d["more"], n=len(events) - per_card))}</p>'
+    if events and d.get("hint"):
+        body += f'<p class="hint">{esc(d["hint"])}{ARROW}</p>'
     dense = " dense" if len(events) >= dense_from else ""
-    return (f'<section class="card{dense}"><div class="band"></div><p class="kicker">{esc(kicker)}</p>'
-            f'{head}{body}{foot(tpl, n, total_cards)}</section>')
+    return (f'<section class="card{dense}">{chrome(tpl)}<p class="kicker">{esc(kicker)}</p>'
+            f'{head}{window(tpl, body)}{foot(tpl, n, total_cards)}</section>')
 
 
 def style(tpl: dict) -> str:
-    names = {"canvas": "canvas", "paper": "paper", "ink": "ink", "muted": "muted", "line": "line", "accent": "accent",
-             "accentWash": "accent-wash", "accentText": "accent-text", "away": "away", "awayWash": "away-wash"}
-    tokens = "".join(f"--{css}: {tpl['colors'][key]}; " for key, css in names.items())
-    return f":root {{ {tokens}}}\n" + CARD_CSS.read_text(encoding="utf-8")
+    names = {"canvas": "canvas", "canvasEnd": "canvas-end", "paper": "paper", "ink": "ink", "muted": "muted", "line": "line",
+             "accent": "accent", "accentWash": "accent-wash", "accentText": "accent-text", "highlight": "highlight",
+             "blob": "blob", "away": "away", "awayWash": "away-wash"}
+    tokens = "".join(f"--{css}: {tpl['colors'][key]}; " for key, css in names.items() if key in tpl["colors"])
+    return f":root {{ {tokens}}}\n" + CARD_CSS.read_text(encoding="utf-8") + avatar_css(tpl)
 
 
 def build(feed: dict, monday: date, names: dict | None = None, tpl: dict | None = None) -> str:
@@ -244,7 +298,15 @@ def build(feed: dict, monday: date, names: dict | None = None, tpl: dict | None 
     return f'<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>{style(tpl)}</style></head><body>{"".join(cards)}</body></html>'
 
 
-def render(document: str, folder: Path) -> list[Path]:
+CLIPPED = """(card) => [...card.querySelectorAll('.ev h2, .ev .t')].some((el) => {
+    const box = el.getBoundingClientRect(), pane = el.closest('.window').getBoundingClientRect();
+    return box.bottom > pane.bottom - 4 || box.right > pane.right + 1;
+})"""
+
+
+def render(document: str, folder: Path, clipped: list[int] | None = None) -> list[Path]:
+    """Draws each card to a PNG. A card whose event title or time runs past its window (a title too long
+    for the layout) is added to `clipped` by its number, so the check before sending can name it."""
     from playwright.sync_api import sync_playwright
     folder.mkdir(parents=True, exist_ok=True)
     for old in folder.glob("*.png"):
@@ -257,8 +319,10 @@ def render(document: str, folder: Path) -> list[Path]:
         page.evaluate("document.fonts.ready")
         cards = page.locator(".card").all()
         paths = [folder / f"{n}.png" for n in range(1, len(cards) + 1)]
-        for card, path in zip(cards, paths):
+        for number, (card, path) in enumerate(zip(cards, paths), start=1):
             card.screenshot(path=str(path))
+            if clipped is not None and card.evaluate(CLIPPED):
+                clipped.append(number)
         browser.close()
     return paths
 
@@ -462,6 +526,29 @@ def stale(feed: dict, now: datetime) -> bool:
     return now - made > MAX_FEED_AGE
 
 
+def send_drawn(args, monday: date, tpl: dict) -> int:
+    """The weekly schedule (owner 2026-11-08): the cards are drawn from the list as it is at 17:30 and sent
+    at 18:00. This sends what the 17:30 run drew, with its check text; nothing is redrawn."""
+    path = args.out / "index.json"
+    index = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+    item = next((w for w in index.get("weeks", []) if w.get("week") == monday.isoformat()), None)
+    folder = args.out / monday.isoformat()
+    paths = [folder / f"{n}.png" for n in range(1, len(item["images"]) + 1)] if item else []
+    if not paths or not all(p.is_file() for p in paths):
+        raise SystemExit(f"NOT_DRAWN: no cards for {monday.isoformat()} in {args.out}")
+    from ggongbab.instagram.telegram_review import credentials
+    token, chat = credentials(args.local)
+    if not (token and chat):
+        raise SystemExit("TELEGRAM_NOT_CONFIGURED")
+    caption = fill(tpl["telegram"]["caption"], range=week_range(monday), total=item["total"], page=PAGE)
+    result = {"week": item["week"], "renderedAt": item.get("renderedAt"), "feedGeneratedAt": item.get("feedGeneratedAt"),
+              "images": [str(p) for p in paths], "telegram": send(paths, caption, token, chat)}
+    if result["telegram"] == "PUSH_SENT" and args.report and args.report.is_file():
+        result["telegram"] = send_text(args.report.read_text(encoding="utf-8"), token, chat)
+    print(json.dumps(result, ensure_ascii=False))
+    return 0 if result["telegram"] == "PUSH_SENT" else 1
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--week", type=date.fromisoformat, help="the Monday of the week (default: this or the coming week)")
@@ -470,18 +557,24 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, default=OUT)
     parser.add_argument("--send", action="store_true", help="send the cards to the owner's Telegram afterwards")
     parser.add_argument("--local", type=Path, default=ROOT / ".local", help="--send: the operations checkout's .local")
+    parser.add_argument("--report", type=Path, help="also write the check's text here (private: it can name held events)")
+    parser.add_argument("--send-drawn", action="store_true",
+                        help="send the week's cards already drawn in --out, with the check text of --report, without redrawing")
     args = parser.parse_args(argv)
     now = datetime.now(KST)
     monday = args.week or monday_of(now.date())
     if monday.weekday() != 0:
         raise SystemExit("--week must be a Monday")
     tpl = template()
+    if args.send_drawn:
+        return send_drawn(args, monday, tpl)
     feed = load_feed(str(args.feed))
     if stale(feed, now) and not args.allow_stale:
         raise SystemExit(f"FEED_STALE: the list was made at {feed.get('generatedAt')}")
     document = build(feed, monday, tpl=tpl)
     found = check(feed, monday, document, tpl["rules"])
-    paths = render(document, args.out / monday.isoformat())
+    clipped: list[int] = []
+    paths = render(document, args.out / monday.isoformat(), clipped)
     item = entry(feed, monday, now, tpl)
     write_index(args.out, item)
     result = {"week": item["week"], "counts": item["counts"], "days": item["days"], "images": [str(p) for p in paths],
@@ -489,7 +582,12 @@ def main(argv=None) -> int:
     waiting, tips = store_checks(feed, monday)
     result["check"]["held"] = None if waiting is None else len(waiting)
     result["check"]["tipsNotListed"] = None if tips is None else len(tips)
-    print(report(found, waiting, tips), file=sys.stderr)
+    result["check"]["clipped"] = clipped
+    text = report(found, waiting, tips) + "".join(f"\n⚠️ {n}번 카드의 글이 창 밖으로 넘쳐요" for n in clipped)
+    print(text, file=sys.stderr)
+    if args.report:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(text, encoding="utf-8")
     if args.send:
         from ggongbab.instagram.telegram_review import credentials
         token, chat = credentials(args.local)
@@ -498,7 +596,7 @@ def main(argv=None) -> int:
         caption = fill(tpl["telegram"]["caption"], range=week_range(monday), total=item["total"], page=PAGE)
         result["telegram"] = send(paths, caption, token, chat)
         if result["telegram"] == "PUSH_SENT":
-            result["telegram"] = send_text(report(found, waiting, tips), token, chat)
+            result["telegram"] = send_text(text, token, chat)
     print(json.dumps(result, ensure_ascii=False))
     return 0 if result.get("telegram", "PUSH_SENT") == "PUSH_SENT" else 1
 

@@ -1,31 +1,35 @@
 {
   "schemaVersion": 1,
-  "about": "주간 꽁밥 카드뉴스의 기본 양식(docs/CARDNEWS.md). 글귀·색·규칙을 여기서 바꾸면 다음에 그리는 카드부터 반영됩니다. 배치와 글자 크기는 card.css에 있습니다.",
+  "about": "주간 꽁밥 카드뉴스의 기본 양식(docs/CARDNEWS.md). 'KAIST에서 오늘 뭐 먹지?' 카드뉴스와 같은 시리즈 디자인(2026-11-08): 크림 바탕, 연분홍 원, 형광펜 제목, 마젠타 손그림 선, 브라우저 창, 링크 캡슐. 글귀·색·규칙을 여기서 바꾸면 다음에 그리는 카드부터 반영됩니다. 배치와 글자 크기는 card.css에 있습니다.",
   "colors": {
-    "canvas": "#f7f4ee",
-    "paper": "#fffdf8",
-    "ink": "#1e1d1a",
+    "canvas": "#fdf8f0",
+    "canvasEnd": "#f8eee2",
+    "paper": "#ffffff",
+    "ink": "#141210",
     "muted": "#6f6a60",
-    "line": "#e6e0d4",
-    "accent": "#be185d",
-    "accentWash": "#fce7f3",
-    "accentText": "#9d174d",
+    "line": "#f0e6dc",
+    "accent": "#d6246e",
+    "accentWash": "#fde4ef",
+    "accentText": "#b0185a",
+    "highlight": "rgba(247, 120, 172, 0.42)",
+    "blob": "#f8b3d0",
     "away": "#1d4ed8",
     "awayWash": "#e0ecff"
   },
   "cover": {
-    "kicker": "BABDODUK · KAIST FOOD",
-    "headline": "이번 주",
-    "headlineMark": "꽁밥",
+    "kicker": "WEEKLY 꽁밥 CALENDAR",
+    "headline": "이번 주 KAIST",
+    "headlineMark": "꽁밥 캘린더",
     "total": "이번 주 꽁밥 {n}개",
-    "swipe": "넘겨서 요일별로 확인하세요 →"
+    "swipe": "넘겨서 요일별로 확인하세요"
   },
   "day": {
     "kicker": "이번 주 꽁밥 · {day}",
     "count": "꽁밥 {n}개",
     "more": "외 {n}개 더 · 사이트에서 확인하세요",
     "audience": "대상 · {text}",
-    "away": "서울"
+    "away": "서울",
+    "hint": "위치·신청 방법은 사이트의 오늘의 꽁밥에서"
   },
   "empty": {
     "title": "아직 알려진 꽁밥이 없어요",
@@ -34,7 +38,7 @@
   },
   "footer": {
     "brand": "밥도둑 Babdoduk",
-    "site": "babdoduk.vercel.app",
+    "site": "babdodukms.com",
     "note": "일정은 바뀔 수 있어요. 자세한 내용은 사이트에서 확인하세요."
   },
   "telegram": {
@@ -46,5 +50,10 @@
     "skipEmptyDays": true,
     "skipTipOnly": true,
     "splitBusyDays": true
+  },
+  "brand": {
+    "name": "BABDODUK · KAIST FOOD",
+    "avatar": "images/profile-instagram.jpg",
+    "window": "babdodukms.com/ggongbab"
   }
 }

@@ -345,3 +345,66 @@ def test_a_confirmed_tip_not_yet_in_the_list_is_named():
     text = rc.report({"events": 2, "missing": [], "firstDayOnly": []}, [], ["11-04 Codex 워크숍 다과"])
     assert "📮 확인한 제보인데 아직 목록에 없는 행사 1개" in text and "Codex 워크숍 다과" in text
     assert "📮" not in rc.report({"events": 2, "missing": [], "firstDayOnly": []}, [], [])
+
+
+def test_every_card_is_drawn_in_the_series_design():
+    """Owner 2026-11-08: the same series as the 'KAIST에서 오늘 뭐 먹지?' cards: the profile header, the two pink
+    circles, a highlighted title with a hand-drawn line, the information in a browser window, and a link capsule
+    with page dots at the bottom."""
+    events = [event("2026-11-02T12:00:00+09:00", "월요일 점심"), event("2026-11-04T12:00:00+09:00", "수요일 점심")]
+    document = rc.build({"events": events}, MONDAY, NAMES)
+    found = re.findall(r'<section class="card[^"]*">.*?</section>', document, re.S)
+    assert len(found) == 3
+    for n, card in enumerate(found, start=1):
+        assert card.count('<div class="blob ') == 2 and '<span class="avatar"></span>' in card
+        assert "BABDODUK · KAIST FOOD" in card and card.count('<div class="window">') == 1
+        assert '<span class="link">' in card and "<b>babdodukms.com</b>" in card
+        dots = re.search(r'<span class="dots"[^>]*>(.*?)</span>', card).group(1)
+        assert dots.count("<i") == 3 and re.findall(r'<i class="(on)?">', dots).index("on") == n - 1
+        assert 'class="scribble"' in card
+    assert '<span class="mark">꽁밥 캘린더' in found[0] and "<h1>이번 주 KAIST<br />" in found[0]
+    assert "사이트의 오늘의 꽁밥에서" in found[1]
+    assert re.search(r'\.brand \.avatar \{ background-image: url\("data:image/jpeg;base64,', document)
+
+
+def test_the_cards_drawn_at_1730_are_sent_at_1800_without_redrawing(tmp_path, monkeypatch):
+    """Owner 2026-11-08: the cards are made from the list as it is at 17:30 and sent at 18:00."""
+    import ggongbab.instagram.telegram_review as review
+    out, report = tmp_path / "out", tmp_path / "private" / "check.txt"
+    monkeypatch.setattr(review, "credentials", lambda local: ("123:SECRET", "42"))
+    sent, texts = [], []
+    monkeypatch.setattr(rc, "send", lambda paths, caption, token, chat: sent.append((paths, caption)) or "PUSH_SENT")
+    monkeypatch.setattr(rc, "send_text", lambda text, token, chat: texts.append(text) or "PUSH_SENT")
+    monkeypatch.setattr(rc, "render", lambda document, folder: pytest.fail("the 18:00 send does not draw"))
+    with pytest.raises(SystemExit, match="NOT_DRAWN"):
+        rc.main(["--week", "2026-11-02", "--out", str(out), "--send-drawn", "--report", str(report)])
+    (out / "2026-11-02").mkdir(parents=True)
+    for n in (1, 2):
+        (out / "2026-11-02" / f"{n}.png").write_bytes(b"\x89PNG")
+    item = rc.entry({"events": [event("2026-11-02T12:00:00+09:00")], "generatedAt": "2026-11-01T17:20:00+09:00"},
+                    MONDAY, datetime(2026, 11, 1, 17, 30, tzinfo=rc.KST))
+    rc.write_index(out, item)
+    report.parent.mkdir()
+    report.write_text("🔎 카드뉴스 점검\n✅ 모두 카드에 있어요", encoding="utf-8")
+    assert rc.main(["--week", "2026-11-02", "--out", str(out), "--send-drawn", "--report", str(report)]) == 0
+    ((paths, caption),) = sent
+    assert [p.name for p in paths] == ["1.png", "2.png"] and "꽁밥 1개" in caption and "11월 2일(월)" in caption
+    assert texts == ["🔎 카드뉴스 점검\n✅ 모두 카드에 있어요"]
+
+
+def test_a_session_held_somewhere_else_each_day_shows_that_days_place():
+    """Owner 2026-11-08: the 2026 KPF 학술 세미나 mail gave E6 3438호 for Tuesday and E11 203호 for Wednesday,
+    the list kept them on its sessions, and the cards showed no place on either day."""
+    kpf = event("2026-11-03T18:00:00+09:00", "2026 KPF 학술 세미나", end="2026-11-04T20:00:00+09:00", building="", room="")
+    kpf["id"] = "kpf"
+    kpf["sessions"] = [
+        {"startAt": "2026-11-03T18:00:00+09:00", "endAt": "2026-11-03T20:00:00+09:00",
+         "location": {"name": "", "building": "E6", "room": "3438호"}},
+        {"startAt": "2026-11-04T18:00:00+09:00", "endAt": "2026-11-04T20:00:00+09:00",
+         "location": {"name": "", "building": "E11", "room": "203호"}},
+        {"startAt": "2026-11-05T18:00:00+09:00", "endAt": "2026-11-05T20:00:00+09:00", "location": {"name": "", "building": "", "room": ""}}]
+    kpf["location"] = {"name": "", "building": "N1", "room": ""}
+    (_, tuesday, wednesday, thursday) = cards([kpf])
+    assert "📍 E6 3438호" in tuesday and "E11" not in tuesday
+    assert "📍 E11 203호" in wednesday and "E6" not in wednesday
+    assert "📍 N1" in thursday          # a session without a place falls back to the event's
