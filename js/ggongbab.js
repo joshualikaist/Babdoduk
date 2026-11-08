@@ -353,6 +353,7 @@
         esc(t('gg.live.calGoogle', 'Google 캘린더')) + '<span class="gg-sr"> ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
       html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calFile', '캘린더 파일 (.ics)')) + '</button>';
       if (!ev.endAt) html += '<p class="gg-cal-note">' + esc(t('gg.live.calNoEnd', '끝나는 시간은 공지에 없어요')) + '</p>';
+      html += '<p class="gg-cal-sync">' + esc(t('gg.live.calSync', '아이폰·Google 캘린더에 넣으면 연결된 앱(minical 등)에도 보여요')) + '</p>';
       if (L.inTalkApp()) html += talkAppNoteHtml();
       html += '</div>';
     }

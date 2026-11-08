@@ -22,7 +22,8 @@ def browser():
 
 
 def open_home(browser, share=None, clipboard="ok", lang="ko", width=390):
-    context = browser.new_context(viewport={"width": width, "height": 900}, timezone_id="Asia/Seoul", service_workers="block")
+    context = browser.new_context(viewport={"width": width, "height": 900}, timezone_id="Asia/Seoul", service_workers="block",
+                                  accept_downloads=True)
     init = [f"localStorage.setItem('babdoduk-lang', '{lang}');", "localStorage.setItem('babdoduk-notice-ggongbab-live', '1');",
             "window.__shared = []; window.__copied = [];"]
     if share == "native":
@@ -141,5 +142,30 @@ def test_the_star_fits_at_every_width(browser, width):
     star = page.locator('[data-hc-save="lunch"]').bounding_box()
     row = page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-row').bounding_box()
     assert star["x"] + star["width"] <= row["x"] + row["width"] + 8
+    assert errors == []
+    context.close()
+
+
+def test_an_opened_listing_adds_itself_to_a_calendar(browser):
+    context = None
+    context, page, errors = open_home(browser)
+    page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
+    assert page.locator('.hc-ev.is-open a.hc-ev-cal').count() == 0, "closed, the choice holds no link"
+    toggle = page.locator('[data-hc-cal="lunch"]')
+    assert toggle.get_attribute("aria-expanded") == "false"
+    toggle.click()
+    assert page.locator('[data-hc-cal="lunch"]').get_attribute("aria-expanded") == "true"
+    assert page.evaluate("document.activeElement.getAttribute('data-hc-cal')") == "lunch"
+    google = page.locator('.hc-ev.is-open a.hc-ev-cal')
+    href = google.get_attribute("href")
+    assert href.startswith("https://calendar.google.com/calendar/render?") and "action=TEMPLATE" in href
+    assert "ctz=Asia%2FSeoul" in href and "20261109T030000Z%2F20261109T040000Z" in href
+    assert "minical" in page.locator(".hc-ev.is-open .hc-ev-calnote").inner_text()
+    with page.expect_download() as info:
+        page.locator('[data-hc-ics="lunch"]').click()
+    download = info.value
+    assert download.suggested_filename == "babdoduk-2026-11-09.ics"
+    text = open(download.path(), encoding="utf-8").read()
+    assert "DTSTART:20261109T030000Z" in text and "ggongbab.html?e=lunch" in text.replace("\r\n ", "")
     assert errors == []
     context.close()
