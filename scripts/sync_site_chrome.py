@@ -84,6 +84,9 @@ PAGES = {
     "bobyak.html": {"current": None, "lab": True, "strings": ("bob",)},
     # 마이 밥도둑 (밥도둑 2.0 Phase 2, docs/MY_BABDODUK.md): optional sign-in, lab-only until released.
     "my.html": {"current": None, "lab": True, "strings": ("my",)},
+    # 개인정보처리방침 (owner 2026-11-08): public on every host, because Google's sign-in consent screen
+    # needs its address on the site's own domain; linked from 마이 밥도둑, no nav item.
+    "privacy.html": {"current": None, "strings": ("privacy",)},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),
