@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-08T16:52:23+09:00",
+  "generatedAt": "2026-11-09T11:33:30+09:00",
   "timezone": "Asia/Seoul",
   "count": 41,
   "events": [
@@ -289,7 +289,7 @@
         "deadline": null,
         "url": ""
       },
-      "confidence": 0.99,
+      "confidence": 1.0,
       "sources": [
         {
           "type": "dooray",
