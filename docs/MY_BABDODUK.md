@@ -12,15 +12,9 @@ This phase adds:
 
 Phase 1 (save, share, calendar) is described in [GGONGBAB_LIVE.md](GGONGBAB_LIVE.md); the overall plan is in [BABDODUK_2_PLAN.md](BABDODUK_2_PLAN.md).
 
-**Status:** the work is on the lab task branch `agent/claude/my-babdoduk`.
+**Status:** on, on babdoduk-lab only, since 2026-11-10. The owner turned on Google and Kakao under Supabase Authentication and applied migration 011, then `enabled` in `js/babdoduk-auth-config.js` became `true`.
 
-**It is off until the owner does three things:**
-
-1. turns on Google and Kakao under Supabase Authentication;
-2. applies migration 011;
-3. changes `enabled` in `js/babdoduk-auth-config.js` to `true`.
-
-Until then, `my.html` shows "로그인은 준비 중이에요", and no page loads the login client.
+With the switch off, `my.html` shows "로그인은 준비 중이에요", and no page loads the login client.
 
 Production is not affected. `my.html` returns 404 everywhere except babdoduk-lab (`vercel.json`). The configuration's `hosts` list does not include the production domain, so even with `enabled: true` the login client never loads on production.
 
@@ -82,7 +76,7 @@ Policies:
 
 ## Code
 
-* `js/babdoduk-auth-config.js`: on/off switch and allowed hosts (`enabled: false`).
+* `js/babdoduk-auth-config.js`: on/off switch and allowed hosts (`enabled: true` since 2026-11-10; lab hosts only).
 * `js/babdoduk-account.js` (`window.BabdodukAccount`): login and logout, provider linking, guest merge and undo, the account store (same interface as Phase 1's `createStore`: change on screen first, undo if the server refuses), profile, clearing and leaving.
   - It loads the same pinned Supabase SDK as the tip board (version and SRI).
   - Options: `flowType: 'pkce'`, `persistSession`, `detectSessionInUrl`.

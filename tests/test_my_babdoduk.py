@@ -24,6 +24,7 @@ TOKEN_KEY = "sb-myjglfynhnptlclawlcc-auth-token"
 UID = "11111111-1111-4111-8111-111111111111"
 CONFIG = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
 ON = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}']}};"
+OFF = f"window.BABDODUK_AUTH_CONFIG = {{enabled: false, hosts: ['{HOST}']}};"
 
 
 def ev(event_id, start, end, title=None):
@@ -197,8 +198,8 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
             return route.fulfill(json=LIVE)
         if name == "data/ggongbab/archive/index.json":
             return route.fulfill(json=ARCHIVE)
-        if name == "js/babdoduk-auth-config.js" and enabled:
-            return route.fulfill(content_type="application/javascript", body=ON)
+        if name == "js/babdoduk-auth-config.js":
+            return route.fulfill(content_type="application/javascript", body=ON if enabled else OFF)
         if name == "js/ggongbab-public-feed.js":
             return route.fulfill(content_type="application/javascript", body="")
         if name.startswith("data/"):
@@ -229,8 +230,9 @@ def wait_view(page, text):
     page.wait_for_function("t => document.getElementById('myApp').innerText.includes(t)", arg=text)
 
 
-def test_off_by_default_and_never_on_production():
-    assert re.search(r"enabled:\s*false", CONFIG)
+def test_on_for_lab_only_and_never_on_production():
+    # On since 2026-11-10 (owner: providers set up, 011 applied); production hosts are never listed.
+    assert re.search(r"enabled:\s*true", CONFIG)
     hosts = re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", CONFIG).group(1)
     for host in ("babdodukms.com", "babdoduk.vercel.app"):
         assert host not in hosts
