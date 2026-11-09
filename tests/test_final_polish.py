@@ -1,6 +1,7 @@
 """Contracts for the lab polish: midnight menu choice, quiet home, event list, history, link preview."""
 from pathlib import Path
 import re
+import subprocess
 
 from playwright.sync_api import sync_playwright
 
@@ -28,7 +29,10 @@ def test_home_and_event_drop_the_noisy_chrome():
     assert 'class="event-instagram"' in event and "@babdodukms" in event
 
 
-LOOPY = "https://babdoduk.vercel.app/images/kakao-loopy.jpg"
+PREVIEW = "https://babdoduk.vercel.app/images/og-babdoduk.png"
+# The character pictures used before (a preview card and the home kicker's avatar) were not ours to use;
+# the Babdoduk wordmark replaced them (owner 2026-11-10), under new file names so cached previews refresh.
+GONE = ("kakao-loopy", "profile-instagram")
 
 
 def head_meta(html: str) -> dict:
@@ -36,35 +40,48 @@ def head_meta(html: str) -> dict:
     return dict(re.findall(r'<meta property="(og:[\w:]+)" content="([^"]*)"', head))
 
 
-def jpeg_size(data: bytes) -> tuple[int, int]:
-    assert data[:2] == b"\xff\xd8", "not a JPEG"
-    i = 2
-    while i < len(data):
-        marker, length = data[i + 1], int.from_bytes(data[i + 2:i + 4], "big")
-        if marker in (0xC0, 0xC1, 0xC2):
-            return int.from_bytes(data[i + 7:i + 9], "big"), int.from_bytes(data[i + 5:i + 7], "big")
-        i += 2 + length
-    raise AssertionError("no frame header")
+def png_size(data: bytes) -> tuple[int, int]:
+    assert data[:8] == b"\x89PNG\r\n\x1a\n", "not a PNG"
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
 
 
-def test_home_link_preview_is_the_loopy_card():
+def test_home_link_preview_is_the_babdoduk_wordmark():
     # Kakao once showed the first food photo (kimchi-jjigae) because the page had no preview image.
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     meta = head_meta(html)
     assert meta["og:title"] == "밥도둑 Babdoduk"
     assert meta["og:description"] == "KAIST 꽁밥 일정"
-    assert meta["og:image"] == LOOPY
-    assert f'<link rel="image_src" href="{LOOPY}" />' in html
-    width, height = jpeg_size((ROOT / "images/kakao-loopy.jpg").read_bytes())
-    assert (meta["og:image:width"], meta["og:image:height"]) == (str(width), str(height))
+    assert meta["og:image"] == PREVIEW and meta["og:image:alt"] == "밥도둑 로고"
+    assert f'<link rel="image_src" href="{PREVIEW}" />' in html
+    width, height = png_size((ROOT / "images/og-babdoduk.png").read_bytes())
+    assert (meta["og:image:width"], meta["og:image:height"]) == (str(width), str(height)) == ("1200", "1200")
     body = html.split("<body", 1)[1]
-    assert re.search(r'<img src="([^"]+)"', body).group(1) == "images/kakao-loopy.jpg"  # first image a scraper sees
-    for page in ("ggongbab.html", "mukbang.html", "history.html"):
-        assert head_meta((ROOT / page).read_text(encoding="utf-8"))["og:image"] == LOOPY, page
+    assert re.search(r'<img src="([^"]+)"', body).group(1) == "images/og-babdoduk.png"  # first image a scraper sees
+    kicker = body.split('class="home-kicker"', 1)[1].split("</p>", 1)[0]
+    assert '<img src="images/avatar-babdoduk.png" alt=""' in kicker
+    assert png_size((ROOT / "images/avatar-babdoduk.png").read_bytes()) == (256, 256)
+    for page in ("ggongbab.html", "mukbang.html", "history.html", "privacy.html"):
+        page_html = (ROOT / page).read_text(encoding="utf-8")
+        assert head_meta(page_html)["og:image"] == PREVIEW, page
+        assert f'<link rel="image_src" href="{PREVIEW}" />' in page_html, page
     # The news page and the world cup show the world cup's teaser instead (owner 2026-10-14,
     # tests/test_worldcup_share.py).
     for page in ("event.html", "worldcup.html"):
         assert head_meta((ROOT / page).read_text(encoding="utf-8"))["og:image"].endswith("/images/worldcup/og-worldcup.jpg"), page
+
+
+def test_the_old_character_pictures_are_gone_everywhere():
+    for name in GONE:
+        assert not list((ROOT / "images").glob(f"{name}.*")), name
+    tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.split()
+    for path in tracked:
+        if path.startswith("data/") or not path.endswith((".html", ".js", ".css", ".json", ".md", ".py")):
+            continue
+        if path == "tests/test_final_polish.py":
+            continue
+        text = (ROOT / path).read_text(encoding="utf-8")
+        for name in GONE:
+            assert name not in text, (path, name)
 
 
 def test_footer_contact_uses_the_copyright_color():
