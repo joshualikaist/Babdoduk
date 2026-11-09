@@ -1,10 +1,144 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T12:11:43+09:00",
+  "generatedAt": "2026-11-09T22:41:46+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 18,
+  "count": 22,
   "events": [
+    {
+      "id": "2df9f199-088f-4765-a708-492ce8112556",
+      "title": "2026 기계공학과 학과설명회",
+      "summary": "기계공학과의 학업, 연구 분야, 진로, 학생회 및 학과 복지를 소개하는 학과 설명회입니다. 학생회 Q&A, 카훗, BBQ 등이 진행될 예정입니다.",
+      "startAt": "2026-11-09T16:10:00+09:00",
+      "endAt": "2026-11-09T19:30:00+09:00",
+      "dateText": "11/9",
+      "timeText": "16:10~19:30",
+      "location": {
+        "name": "기계공학동(N7) 1층 대회의실",
+        "building": "N7",
+        "room": "1층 대회의실(Rm. 1601)"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "소고기 BBQ 식사",
+        "source": "text"
+      },
+      "organizer": "기계공학과 학생회 및 학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        },
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "가챠 이벤트 경품"
+      },
+      "audience": {
+        "text": "기계공학과 학생",
+        "basis": "inferred"
+      }
+    },
+    {
+      "id": "2f3efe56-92c0-4fb7-8932-e42508ac1766",
+      "title": "에코페스티벌",
+      "summary": "‘보이지 않는 환경비용’을 주제로 5개의 부스를 운영하는 페스티벌입니다. 게임과 체험 활동을 통해 상품을 받을 수 있습니다.",
+      "startAt": "2026-11-09T10:30:00+09:00",
+      "endAt": "2026-11-09T18:00:00+09:00",
+      "dateText": "11월 9일 월요일",
+      "timeText": "10:30 ~ 18:00",
+      "location": {
+        "name": "신학관 오픈스페이스(N13-1) 뒤 족구장",
+        "building": "N13-1",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "Green in KAIST, G-inK",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "상품"
+      }
+    },
+    {
+      "id": "40d22634-1630-455c-bc33-59ef69c64baa",
+      "title": "KAIST 국가전략기술포럼: K-문샷 프로젝트 (제2차)",
+      "summary": "피지컬 AI, 휴머노이드, 소재, AI 신약, 뇌-컴퓨터 인터페이스(BCI), AI 과학자 분야의 전략 로드맵과 향후 R&D 추진계획을 공유하고 지정토론 및 질의응답을 진행하는 포럼이다. 커피 및 다과가 제공된다.",
+      "startAt": "2026-11-09T14:30:00+09:00",
+      "endAt": "2026-11-09T17:00:00+09:00",
+      "dateText": "2026년 11월 9일 (월)",
+      "timeText": "14:30 ~ 17:00",
+      "location": {
+        "name": "KAIST 학술문화관 2층 양승택오디토리움",
+        "building": "E9",
+        "room": "양승택오디토리움"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "커피 및 다과",
+        "source": "text"
+      },
+      "organizer": "KAIST 국가미래전략기술 정책연구소",
+      "eligibility": "KAIST 교수 및 대학원생",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 교수, 연구자 및 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "09c87b50-4a0b-427d-893d-0af5c27f7c1a",
+      "title": "스승 류경채를 말하다 — 《류경채: 마음의 시》 연계 특강",
+      "summary": "KAIST 미술관에서 개최 중인 《류경채: 마음의 시》와 연계하여 류경채의 삶과 예술세계를 조명하는 특강입니다. 김복기 대표가 강연하며, 강의는 한국어로 진행됩니다.",
+      "startAt": "2026-11-09T16:00:00+09:00",
+      "endAt": null,
+      "dateText": "2026년 11월 9일 월요일",
+      "timeText": "16:00",
+      "location": {
+        "name": "KAIST 미술관",
+        "building": "E9-1",
+        "room": "2F 제2전시실"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "KAIST 미술관",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "아트인컬처 최신호"
+      }
+    },
     {
       "id": "e3a34159-17cf-4e71-8b4f-c5be745a64e3",
       "title": "자연과학과 함께하는 토크 콘서트",
