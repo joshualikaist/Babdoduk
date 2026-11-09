@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T12:11:43+09:00",
+  "generatedAt": "2026-11-09T15:04:26+09:00",
   "timezone": "Asia/Seoul",
   "count": 41,
   "events": [
@@ -577,7 +577,7 @@
     {
       "id": "743f4ca3-c005-45f0-92d4-b850fdf122c1",
       "title": "2026 전기및전자공학부 학과설명회",
-      "summary": "전기및전자공학부 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 행사가 진행됩니다.",
+      "summary": "전기및전자공학부 학과설명회와 김정호 교수님의 강연 및 Q&A가 진행됩니다. 참가자 전원에게 KAIST EE 우산과 버거즈 햄버거가 제공되며, 다양한 경품 추첨과 현장 퀴즈 이벤트가 있습니다.",
       "startAt": "2026-11-16T16:30:00+09:00",
       "endAt": "2026-11-16T18:00:00+09:00",
       "dateText": "2026년 11월 16일(월)",
@@ -593,18 +593,22 @@
         "description": "식사",
         "source": "text"
       },
-      "organizer": "",
+      "organizer": "전기및전자공학부",
       "eligibility": "",
       "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
+        "required": "true",
+        "deadline": "2026-11-14T23:59:00+09:00",
+        "url": "https://forms.gle/zYBq5XJTgNMFaUn67"
       },
       "confidence": 0.99,
       "sources": [
         {
           "type": "manual",
           "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
         }
       ],
       "giveaway": {
