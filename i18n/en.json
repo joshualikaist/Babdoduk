@@ -454,7 +454,7 @@
   "privacy.s5.openaiItems": "Tip text and tip photos",
   "privacy.s5.openaiWhat": "Reading tip text and photos to draft the event name, place, time and so on",
   "privacy.s5.refuse": "If you do not sign in or send a tip, none of your personal information goes to these providers; you just cannot use sign-in or tips.",
-  "privacy.s5.supabase": "Supabase Inc. (USA)",
+  "privacy.s5.supabase": "Supabase Inc. (US company; servers in Seoul, Korea)",
   "privacy.s5.supabaseItems": "Sign-in information, saved items, tips, abuse-prevention values and security logs from section 1",
   "privacy.s5.supabaseWhat": "Sign-in, database, storage of tip photos",
   "privacy.s5.telegram": "Telegram (UAE)",
