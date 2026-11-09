@@ -1,10 +1,41 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T20:07:57+09:00",
+  "generatedAt": "2026-11-09T21:11:42+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 20,
+  "count": 21,
   "events": [
+    {
+      "id": "2f3efe56-92c0-4fb7-8932-e42508ac1766",
+      "title": "에코페스티벌",
+      "summary": "‘보이지 않는 환경비용’을 주제로 5개의 부스를 운영하는 페스티벌입니다. 게임과 체험 활동을 통해 상품을 받을 수 있습니다.",
+      "startAt": "2026-11-09T10:30:00+09:00",
+      "endAt": "2026-11-09T18:00:00+09:00",
+      "dateText": "11월 9일 월요일",
+      "timeText": "10:30 ~ 18:00",
+      "location": {
+        "name": "신학관 오픈스페이스(N13-1) 뒤 족구장",
+        "building": "N13-1",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "Green in KAIST, G-inK",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "상품"
+      }
+    },
     {
       "id": "40d22634-1630-455c-bc33-59ef69c64baa",
       "title": "KAIST 국가전략기술포럼: K-문샷 프로젝트 (제2차)",
