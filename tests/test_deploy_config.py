@@ -15,7 +15,7 @@ LAB_ONLY = ("food.html", "lab.html", "lab-ggongbab.html", "cardnews.html", "my.h
             "data/cardnews/2026-11-02/1.png", "bobyak.html", "data/places/latest.json", "calendar.ics",
             "data/food-log.json")
 SITE = ("index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html", "choose.html", "tip.html", "privacy.html",
-        "manifest.json", "css/site.css", "js/home.js", "images/kakao-loopy.jpg", "data/ggongbab/latest.json",
+        "manifest.json", "css/site.css", "js/home.js", "images/og-babdoduk.png", "data/ggongbab/latest.json",
         "data/kaist-menu/week.json", "data/magazine/index.json")
 
 

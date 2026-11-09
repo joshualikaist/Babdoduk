@@ -364,7 +364,7 @@ def test_every_card_is_drawn_in_the_series_design():
         assert 'class="scribble"' in card
     assert '<span class="mark">꽁밥 캘린더' in found[0] and "<h1>이번 주 KAIST<br />" in found[0]
     assert "사이트의 오늘의 꽁밥에서" in found[1]
-    assert re.search(r'\.brand \.avatar \{ background-image: url\("data:image/jpeg;base64,', document)
+    assert re.search(r'\.brand \.avatar \{ background-image: url\("data:image/png;base64,', document)
 
 
 def test_the_cards_drawn_at_1730_are_sent_at_1800_without_redrawing(tmp_path, monkeypatch):
