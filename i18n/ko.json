@@ -821,7 +821,7 @@
   "privacy.s5.openaiItems": "제보 글, 제보 사진",
   "privacy.s5.openaiWhat": "제보 글과 사진을 읽고 행사 이름·장소·시간 등으로 정리",
   "privacy.s5.refuse": "로그인이나 제보를 하지 않으면 위 업체로 개인정보가 옮겨지지 않습니다. 다만 그 경우 로그인 기능과 제보 기능은 쓸 수 없습니다.",
-  "privacy.s5.supabase": "Supabase Inc.(미국)",
+  "privacy.s5.supabase": "Supabase Inc.(미국 회사, 서버는 대한민국 서울)",
   "privacy.s5.supabaseItems": "1번의 로그인 정보, 저장한 내용, 제보, 남용 방지 값, 보안 기록",
   "privacy.s5.supabaseWhat": "로그인, 데이터베이스, 제보 사진 보관",
   "privacy.s5.telegram": "Telegram(아랍에미리트)",
