@@ -1,58 +1,58 @@
 {
   "schemaVersion": 1,
-  "weekStart": "2026-11-02",
-  "weekEnd": "2026-11-08",
-  "generatedAt": "2026-11-08T16:27:45+09:00",
+  "weekStart": "2026-11-09",
+  "weekEnd": "2026-11-15",
+  "generatedAt": "2026-11-09T09:02:04+09:00",
   "timezone": "Asia/Seoul",
   "days": [
     {
-      "date": "2026-11-02",
+      "date": "2026-11-09",
       "available": true,
-      "restaurantCount": 8,
+      "restaurantCount": 7,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-02T16:44:52+09:00"
+      "fetchedAt": "2026-11-09T09:02:04+09:00"
     },
     {
-      "date": "2026-11-03",
+      "date": "2026-11-10",
       "available": true,
-      "restaurantCount": 8,
+      "restaurantCount": 7,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-03T17:11:03+09:00"
+      "fetchedAt": "2026-11-09T09:02:04+09:00"
     },
     {
-      "date": "2026-11-04",
+      "date": "2026-11-11",
       "available": true,
-      "restaurantCount": 8,
+      "restaurantCount": 7,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-04T16:44:36+09:00"
+      "fetchedAt": "2026-11-09T09:02:04+09:00"
     },
     {
-      "date": "2026-11-05",
+      "date": "2026-11-12",
       "available": true,
-      "restaurantCount": 8,
+      "restaurantCount": 6,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-05T20:05:54+09:00"
+      "fetchedAt": "2026-11-09T09:02:04+09:00"
     },
     {
-      "date": "2026-11-06",
+      "date": "2026-11-13",
       "available": true,
-      "restaurantCount": 8,
+      "restaurantCount": 6,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-06T17:10:43+09:00"
+      "fetchedAt": "2026-11-09T09:02:04+09:00"
     },
     {
-      "date": "2026-11-07",
+      "date": "2026-11-14",
       "available": true,
-      "restaurantCount": 5,
+      "restaurantCount": 3,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-07T16:18:58+09:00"
+      "fetchedAt": "2026-11-09T09:02:04+09:00"
     },
     {
-      "date": "2026-11-08",
+      "date": "2026-11-15",
       "available": true,
-      "restaurantCount": 5,
+      "restaurantCount": 4,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-08T16:27:45+09:00"
+      "fetchedAt": "2026-11-09T09:02:04+09:00"
     }
   ]
 }

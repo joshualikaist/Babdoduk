@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-08T16:52:23+09:00",
+  "generatedAt": "2026-11-09T12:11:43+09:00",
   "timezone": "Asia/Seoul",
   "count": 41,
   "events": [
@@ -289,7 +289,7 @@
         "deadline": null,
         "url": ""
       },
-      "confidence": 0.99,
+      "confidence": 1.0,
       "sources": [
         {
           "type": "dooray",
@@ -1125,18 +1125,19 @@
         "room": "대강당"
       },
       "food": {
-        "provided": "unknown",
-        "type": "unknown",
-        "description": "점심 도시락 지원"
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "점심 도시락 지원",
+        "source": "text"
       },
       "organizer": "NVIDIA와 KAIST",
       "eligibility": "로보틱스와 Physical AI에 관심 있는 대학원생과 연구자",
       "registration": {
         "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://events.nvidia.com/NVIDIA-Robotics-Day-at-KAIST"
       },
-      "confidence": 0.9,
+      "confidence": 0.99,
       "sources": [
         {
           "type": "dooray",
