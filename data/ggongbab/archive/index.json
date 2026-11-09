@@ -1,10 +1,50 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T21:11:42+09:00",
+  "generatedAt": "2026-11-09T22:41:46+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 21,
+  "count": 22,
   "events": [
+    {
+      "id": "2df9f199-088f-4765-a708-492ce8112556",
+      "title": "2026 기계공학과 학과설명회",
+      "summary": "기계공학과의 학업, 연구 분야, 진로, 학생회 및 학과 복지를 소개하는 학과 설명회입니다. 학생회 Q&A, 카훗, BBQ 등이 진행될 예정입니다.",
+      "startAt": "2026-11-09T16:10:00+09:00",
+      "endAt": "2026-11-09T19:30:00+09:00",
+      "dateText": "11/9",
+      "timeText": "16:10~19:30",
+      "location": {
+        "name": "기계공학동(N7) 1층 대회의실",
+        "building": "N7",
+        "room": "1층 대회의실(Rm. 1601)"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "소고기 BBQ 식사",
+        "source": "text"
+      },
+      "organizer": "기계공학과 학생회 및 학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        },
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "가챠 이벤트 경품"
+      },
+      "audience": {
+        "text": "기계공학과 학생",
+        "basis": "inferred"
+      }
+    },
     {
       "id": "2f3efe56-92c0-4fb7-8932-e42508ac1766",
       "title": "에코페스티벌",
