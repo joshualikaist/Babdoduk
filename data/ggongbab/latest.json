@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T01:36:38+09:00",
+  "generatedAt": "2026-11-10T11:43:29+09:00",
   "timezone": "Asia/Seoul",
-  "count": 38,
+  "count": 39,
   "events": [
     {
       "id": "1d5a7de7-1ecd-4641-b465-8c3f12e852f2",
@@ -1573,6 +1573,43 @@
       },
       "audience": {
         "text": "충청권역 대학 소속 학생(학사과정~박사과정) 및 박사후 연구원",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "1fbfee27-ae35-4bee-a72a-2a128685e817",
+      "title": "ME Career Day",
+      "summary": "KAIST 기계공학과 졸업생 5명이 진로 선택과 경험에 대해 이야기하고 재학생들의 질문에 답하는 행사입니다. 세미나 종료 후 연사들과 다과 타임이 진행됩니다.",
+      "startAt": "2026-11-30T15:00:00+09:00",
+      "endAt": "2026-11-30T17:00:00+09:00",
+      "dateText": "2026.11.30(월)",
+      "timeText": "15:00~17:00",
+      "location": {
+        "name": "기계공학동 2층 해동정보실",
+        "building": "N7",
+        "room": "Rm.2602"
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "다과 타임"
+      },
+      "organizer": "기계공학과",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://mesc-website.vercel.app/apply/2026mecareerday"
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "진로를 고민하고 있는 학생",
         "basis": "stated"
       }
     }
