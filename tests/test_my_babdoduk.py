@@ -231,18 +231,17 @@ def wait_view(page, text):
     page.wait_for_function("t => document.getElementById('myApp').innerText.includes(t)", arg=text)
 
 
-def test_on_for_lab_only_and_never_on_production():
-    # On since 2026-11-10 (owner: providers set up, 011 applied); production hosts are never listed.
+def test_on_for_lab_and_production():
+    # On since 2026-11-10 on lab (owner: providers set up, 011 applied) and on production since 2026-11-11
+    # (owner: "로그인은 푸시 및 배포가 안된거임? 이거까지 했어야지").
     assert re.search(r"enabled:\s*true", CONFIG)
-    hosts = re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", CONFIG).group(1)
-    for host in ("babdodukms.com", "babdoduk.vercel.app"):
-        assert host not in hosts
-    assert "babdoduk-lab.vercel.app" in hosts
+    hosts = re.findall(r"'([^']+)'", re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", CONFIG).group(1))
+    assert {"www.babdodukms.com", "babdodukms.com", "babdoduk.vercel.app", "babdoduk-lab.vercel.app"} <= set(hosts)
     for name in ("js/babdoduk-account.js", "js/babdoduk-auth-config.js", "js/my.js"):
         text = (ROOT / name).read_text(encoding="utf-8")
         assert "sb_secret_" not in text and "service_role" not in text, name
     vercel = (ROOT / "vercel.json").read_text(encoding="utf-8")
-    assert "my\\\\.html" in vercel, "my.html answers 404 off babdoduk-lab"
+    assert "my\\\\.html" not in vercel, "my.html is served on every host"
 
 
 def test_turned_off_the_pages_load_no_sign_in_client(browser):
@@ -411,8 +410,10 @@ def test_the_account_list_shows_upcoming_past_and_missing_without_calling_anythi
     assert "수요 간담회" not in app_text(page), "another user's row never shows"
     assert "취소" not in rows[1][1]
     assert page.locator(".my-row.is-upcoming a").get_attribute("href") == f"https://{HOST}/ggongbab.html?e=lunch"
-    counts = page.locator(".my-counts").inner_text()
-    assert re.search(r"가고 싶어\s*1", counts) and re.search(r"또 갈래\s*1", counts)
+    # The restaurant list belongs to 밥약 메이커, which is lab-only: production shows no counts card
+    # and never asks for them.
+    assert page.locator(".my-counts").count() == 0 and "먹킷리스트" not in app_text(page)
+    assert not [c for c in fakedb(page)["calls"] if "saved_places" in json.dumps(c) and "select" in json.dumps(c)]
     assert "비밀" not in page.content(), "memos stay out of this page"
     assert "도둑님, 반가워요" in app_text(page)
     assert errors == []

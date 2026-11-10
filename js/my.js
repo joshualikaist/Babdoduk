@@ -1,4 +1,4 @@
-/* 마이 밥도둑 (my.html, lab only; docs/MY_BABDODUK.md). Optional sign-in, the account's saved free-food
+/* 마이 밥도둑 (my.html, public since owner 2026-11-11; docs/MY_BABDODUK.md). Optional sign-in, the account's saved free-food
  * list and restaurant list counts, the private profile name, signing out, clearing saved data and
  * leaving. Login is never forced: a guest sees what this browser saved and what signing in adds.
  */
@@ -11,6 +11,9 @@
   var app = document.getElementById('myApp');
   var toast = document.getElementById('myToast');
   if (!app || !A) return;
+  // The restaurant list (먹킷리스트) comes from 밥약 메이커 (bobyak.html), which is lab-only: on production
+  // the page shows no restaurant card and asks for no counts. Lab sets this to true.
+  var SHOW_PLACES = false;
 
   var state = {
     view: 'loading',          // off | out | in | error | left
@@ -183,6 +186,7 @@
     return html + '</section>';
   }
   function placesHtml() {
+    if (!SHOW_PLACES) return '';
     var p = state.places;
     var html = '<section class="my-card" aria-labelledby="myPlacesTitle">';
     html += '<h2 class="my-h2" id="myPlacesTitle"><span aria-hidden="true">🍜</span> ' + esc(t('my.places.title', '먹킷리스트')) + '</h2>';
@@ -307,7 +311,7 @@
         return Promise.all([
           store.reload().then(function (s) { state.store = s; state.events = s.list(); }),
           A.loadProfile(c, uid).then(function (p) { state.profile = p; }),
-          A.placeCounts(c).then(function (p) { state.places = p; }, function () { state.places = null; })
+          SHOW_PLACES ? A.placeCounts(c).then(function (p) { state.places = p; }, function () { state.places = null; }) : null
         ]);
       }).then(function () {
         if (!state.profile) {
