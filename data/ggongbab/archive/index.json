@@ -1,10 +1,45 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T15:25:11+09:00",
+  "generatedAt": "2026-11-10T22:00:54+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 22,
+  "count": 23,
   "events": [
+    {
+      "id": "1d5a7de7-1ecd-4641-b465-8c3f12e852f2",
+      "title": "2026 전산학부 학과설명회",
+      "summary": "26학번 새내기를 대상으로 전산학부 소개와 학과 사업 소개, 학부장 연설 및 교수님과의 Q&A를 진행합니다. 사전 신청자 선착순 190명에게 상무초밥 세트를 증정합니다.",
+      "startAt": "2026-11-10T17:30:00+09:00",
+      "endAt": "2026-11-10T19:00:00+09:00",
+      "dateText": "11월 10일 화요일",
+      "timeText": "17:30~19:00",
+      "location": {
+        "name": "KAIST 본원 창의학습관 터만홀",
+        "building": "E11",
+        "room": "터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "상무초밥 세트 (사전 신청자 선착순 190명)"
+      },
+      "organizer": "전산학부 집행위원회 <TREE>",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "배달의 민족 기프티콘 5명 추첨"
+      },
+      "audience": {
+        "text": "26학번 새내기",
+        "basis": "stated"
+      }
+    },
     {
       "id": "2df9f199-088f-4765-a708-492ce8112556",
       "title": "2026 기계공학과 학과설명회",
