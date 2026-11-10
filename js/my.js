@@ -330,7 +330,7 @@
       return Promise.all([loadAccount(), loadFeed()]).then(function () {
         state.view = 'in';
         if (state.next === 'leave') state.panel = 'leave';
-        if (state.next === 'linked') announce(t('my.account.linked', '로그인 방법을 연결했어요'));
+        if (state.next === 'linked') announce(state.loginError ? t('my.account.linkFail', '지금은 로그인 방법을 연결할 수 없어요') : t('my.account.linked', '로그인 방법을 연결했어요'));
         if (state.next) history.replaceState(null, '', location.pathname);
         render();
       });
