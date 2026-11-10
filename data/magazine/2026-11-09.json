@@ -5,17 +5,17 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "‘주스’로 채소 먹어도 될까?⋯“20대 10명 중 9명이 섭취 부족”",
-    "summary": "조진아 충남대 식품영양학과 교수가 한국인의 과채 섭취가 크게 부족하다고 지적하고 있다.",
     "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_d00da0bead36c560",
     "url": "https://kormedi.com/2901152/",
     "medium": "news",
-    "discoveredAt": "2026-11-09T16:51:14+09:00",
-    "publishedAt": "2026-11-09T14:01:00+09:00",
     "image": "https://kormedi.com/wp-content/uploads/2026/11/2026-11-09-105720.png",
-    "imageSource": "feed_media",
     "category": "habit",
+    "publishedAt": "2026-11-09T14:01:00+09:00",
+    "discoveredAt": "2026-11-09T16:51:14+09:00",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_d00da0bead36c560",
+    "imageSource": "feed_media",
+    "summary": "조진아 충남대 식품영양학과 교수가 한국인의 과채 섭취가 크게 부족하다고 지적하고 있다.",
     "heroKind": "pick"
   },
   "lanes": {
@@ -24,14 +24,14 @@
       "items": [
         {
           "title": "저당·저염 표시 대상 10배로 확대 추진… 식품업계, 제품 개발 늘리나",
-          "summary": "저당·저염 제품군을 넓히는 식품업계에 새로운 개발 기회가 열릴 전망이다.",
           "source": "THE Biz(더비즈)",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_514040b322b03001",
           "url": "https://www.the-biz.co.kr/news/articleView.html?idxno=730939",
           "medium": "news",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
           "publishedAt": "2026-11-09T10:13:05+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_514040b322b03001",
+          "summary": "저당·저염 제품군을 넓히는 식품업계에 새로운 개발 기회가 열릴 전망이다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -39,14 +39,14 @@
         },
         {
           "title": "[K-Food Trends] The 5 Hottest Restaurant Keywords Right Now: From Yellowtail Sashimi to Bread Pilgrimages",
-          "summary": "Discover the top 5 K-food trends captivating Korea, from seasonal Bang-eo Hoe and TV-featured seafood to Baemin's…",
           "source": "Kagit",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_dd0fc7813964882f",
           "url": "https://kagit.kr/en/posts/k-food-trends-hottest-keywords",
           "medium": "blog",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
           "publishedAt": "2026-11-09T05:49:00+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_dd0fc7813964882f",
+          "summary": "Discover the top 5 K-food trends captivating Korea, from seasonal Bang-eo Hoe and TV-featured seafood to Baemin's…",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data",
@@ -55,42 +55,42 @@
         },
         {
           "title": "식약처, 의약품 AI 심사 보조 시스템 내달 공개 전망",
-          "summary": "식품의약품안전처가 의약품 허가 신청 전에 제출자료의 누락이나 미흡한 부분을 점검할 수 있는 인공지능(AI) 서비스를 내달 초 공개한다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_4ab7cf95374095b8",
           "url": "https://kormedi.com/2901221/",
           "medium": "news",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
           "publishedAt": "2026-11-09T16:52:32+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_4ab7cf95374095b8",
+          "summary": "식품의약품안전처가 의약품 허가 신청 전에 제출자료의 누락이나 미흡한 부분을 점검할 수 있는 인공지능(AI) 서비스를 내달 초 공개한다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "독일 ‘아누가 푸드텍 2027’, 내년 2월 쾰른서 팡파르 \"스마트·친환경 제조 공정 총집결\"",
-          "summary": "전 세계 식음료 제조 공정의 스마트화와 친환경 기술 혁신을 한자리에서 조망하는 글로벌 식음료 가공·포장 기술 전시회 ‘아누가 푸드텍(Anuga FoodTec) 2027’이 내년 2월 23일부터 26일까지 나흘간…",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_3c31839fb57912bf",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201598",
           "medium": "news",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
           "publishedAt": "2026-11-09T13:14:09+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_3c31839fb57912bf",
+          "summary": "전 세계 식음료 제조 공정의 스마트화와 친환경 기술 혁신을 한자리에서 조망하는 글로벌 식음료 가공·포장 기술 전시회 ‘아누가 푸드텍(Anuga FoodTec) 2027’이 내년 2월 23일부터 26일까지 나흘간…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "\"통관 거부·비관세 장벽 뚫는다\" 식품안전정보원, 14개국 식품법령 API 전면 개방",
-          "summary": "식품안전정보원이 전 세계적인 K-푸드 열풍 속에서 국내 수출기업들이 직면한 비관세 규제와 통관 리스크를 해소할 수 있도록 해외 14개국의 법령 정보와 통관 부적합 데이터를 기업 시스템에 실시간으로 연결하는 데이터…",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_6c84c8da0faacb4b",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201590",
           "medium": "news",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
           "publishedAt": "2026-11-09T09:40:07+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_6c84c8da0faacb4b",
+          "summary": "식품안전정보원이 전 세계적인 K-푸드 열풍 속에서 국내 수출기업들이 직면한 비관세 규제와 통관 리스크를 해소할 수 있도록 해외 14개국의 법령 정보와 통관 부적합 데이터를 기업 시스템에 실시간으로 연결하는 데이터…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -102,60 +102,60 @@
       "items": [
         {
           "title": "신상출시 편스토랑 오윤아 시어머니표 오양치무침 노각무침 만드는 법",
-          "summary": "344회 신상출시 편스토랑에서 오윤아는 시어머니에게 전수받은 시어머니표 반찬 만드는 법을 공개했는데요.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_1aab397ae9f4c5aa",
           "url": "https://seon1982.tistory.com/4150",
           "medium": "blog",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T00:00:50+09:00",
           "image": "https://blog.kakaocdn.net/dn/lSYvl/dJMcaf2VUcb/sTYD12Opv9dFKGIWwkbKtk/img.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-09T00:00:50+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_1aab397ae9f4c5aa",
+          "imageSource": "feed_html",
+          "summary": "344회 신상출시 편스토랑에서 오윤아는 시어머니에게 전수받은 시어머니표 반찬 만드는 법을 공개했는데요."
         },
         {
           "title": "버섯볶음 황금레시피｜설탕 없이 감칠맛 살리는 당뇨 반찬",
-          "summary": "새송이버섯의 쫄깃한 식감과 표고버섯의 깊은 향이 잘 어울리는 버섯볶음입니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_1ea96c3c536ca0f4",
           "url": "https://cultureagora.tistory.com/456",
           "medium": "blog",
+          "publishedAt": "2026-11-09T06:30:51+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T06:30:51+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_1ea96c3c536ca0f4",
+          "summary": "새송이버섯의 쫄깃한 식감과 표고버섯의 깊은 향이 잘 어울리는 버섯볶음입니다."
         },
         {
           "title": "김치 메밀전 메밀 김치전 김치부침개 만들기 메밀가루 요리 레시피",
-          "summary": "냉장고 채소칸 구석에 긴 시간 자리 잡고 있던 메밀가루와 감자가루를 꺼냈습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_3a0d509a1476b582",
           "url": "https://twins0807.tistory.com/entry/%EA%B9%80%EC%B9%98-%EB%A9%94%EB%B0%80%EC%A0%84-%EB%A9%94%EB%B0%80-%EA%B9%80%EC%B9%98%EC%A0%84-%EA%B9%80%EC%B9%98%EB%B6%80%EC%B9%A8%EA%B0%9C-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%A9%94%EB%B0%80%EA%B0%80%EB%A3%A8-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-11-09T09:25:40+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T09:25:40+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_3a0d509a1476b582",
+          "summary": "냉장고 채소칸 구석에 긴 시간 자리 잡고 있던 메밀가루와 감자가루를 꺼냈습니다."
         },
         {
           "title": "간단하게 끓이는 육개장 얼큰 소고기국 끓이는 법 요리 레시피",
-          "summary": "나물한다고 고사리 양을 좀 넉넉하게 불리고 삶아 남은 건 냉동해두었었습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_46b42c2e7973a347",
           "url": "https://twins0807.tistory.com/entry/%EA%B0%84%EB%8B%A8%ED%95%98%EA%B2%8C-%EB%81%93%EC%9D%B4%EB%8A%94-%EC%9C%A1%EA%B0%9C%EC%9E%A5-%EC%96%BC%ED%81%B0-%EC%86%8C%EA%B3%A0%EA%B8%B0%EA%B5%AD-%EB%81%93%EC%9D%B4%EB%8A%94-%EB%B2%95-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-11-06T20:40:13+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-06T20:40:13+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_46b42c2e7973a347",
+          "summary": "나물한다고 고사리 양을 좀 넉넉하게 불리고 삶아 남은 건 냉동해두었었습니다."
         },
         {
           "title": "Kimchi Fried Rice (Kimchi Bokkeum Bap)",
-          "summary": "This easy kimchi fried rice recipe teaches you the basic techniques for making delicious fried rice.",
           "source": "Korean Bapsang",
-          "sourceId": "blog-koreanbapsang",
-          "candidateId": "c_56e118507024e4a4",
           "url": "https://www.koreanbapsang.com/kimchi-fried-rice-kimchi-bokkeum-bap/",
           "medium": "blog",
+          "publishedAt": "2026-11-09T14:16:00+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T14:16:00+09:00"
+          "sourceId": "blog-koreanbapsang",
+          "candidateId": "c_56e118507024e4a4",
+          "summary": "This easy kimchi fried rice recipe teaches you the basic techniques for making delicious fried rice."
         }
       ]
     },
@@ -164,60 +164,60 @@
       "items": [
         {
           "title": "“알고 보니 나트륨 폭탄”… 늘 먹던 건강식의 배신",
-          "summary": "흔히 나트륨이 많은 음식이라고 하면 라면, 햄, 소시지, 젓갈부터 먼저 떠올린다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_fb9a41f516ce05b1",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/06/2026110602915.html",
           "medium": "news",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-08T21:00:00+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/11/06/2026110602911_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-11-08T21:00:00+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_fb9a41f516ce05b1",
+          "imageSource": "source_page_og",
+          "summary": "흔히 나트륨이 많은 음식이라고 하면 라면, 햄, 소시지, 젓갈부터 먼저 떠올린다."
         },
         {
           "title": "잘 먹는 시대, 아이들 영양은 불균형",
-          "summary": "아이들의 먹거리는 풍족해졌으나 영양 상태는 불균형해지고 있다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_85d5cf456b40ffb8",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62600",
           "medium": "news",
+          "publishedAt": "2026-11-09T06:02:01+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T06:02:01+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_85d5cf456b40ffb8",
+          "summary": "아이들의 먹거리는 풍족해졌으나 영양 상태는 불균형해지고 있다."
         },
         {
           "title": "“초딩 입맛 현주엽도 반했다”… 혈압 낮추는 반찬 ‘연근’",
-          "summary": "아삭한 식감이 특징인 연근에는 식이섬유, 칼륨, 비타민C 등 여러 영양소가 들어 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_0ed246a45fb2ff73",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/06/2026110601339.html",
           "medium": "news",
+          "publishedAt": "2026-11-06T13:30:00+09:00",
           "discoveredAt": "2026-11-06T16:51:07+09:00",
-          "publishedAt": "2026-11-06T13:30:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_0ed246a45fb2ff73",
+          "summary": "아삭한 식감이 특징인 연근에는 식이섬유, 칼륨, 비타민C 등 여러 영양소가 들어 있다."
         },
         {
           "title": "공복에 꼭 피해야 할 것들… 위 점막, 혈당에 어떤 변화가?",
-          "summary": "비타민 영양제는 과잉 섭취의 가능성이 있으므로 주의가 필요하다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_1e8b396e0dc969cb",
           "url": "https://kormedi.com/2900811/",
           "medium": "news",
+          "publishedAt": "2026-11-07T14:15:00+09:00",
           "discoveredAt": "2026-11-07T15:59:56+09:00",
-          "publishedAt": "2026-11-07T14:15:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1e8b396e0dc969cb",
+          "summary": "비타민 영양제는 과잉 섭취의 가능성이 있으므로 주의가 필요하다."
         },
         {
           "title": "“혈압 낮추고 배변도 돕는다?”… 연구로 알아본 '아마씨' 효능 5가지",
-          "summary": "아마씨는 아마(亞麻)라는 식물의 씨앗으로, 껍질 색에 따라 갈색과 황금색으로 나뉜다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_ed5e765111ec2985",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69767",
           "medium": "news",
+          "publishedAt": "2026-11-09T20:00:00+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T20:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_ed5e765111ec2985",
+          "summary": "아마씨는 아마(亞麻)라는 식물의 씨앗으로, 껍질 색에 따라 갈색과 황금색으로 나뉜다."
         }
       ]
     },
@@ -226,62 +226,62 @@
       "items": [
         {
           "title": "[기획] 2027 식품트렌드는 ‘감식사회(減食社會)’…끼니는 줄고 국밥은 늘었다",
-          "summary": "한국인의 식탁에서 1인당 연간 끼니가 약 25회 줄었다.",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_d513d61ef6277bd6",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36086",
           "medium": "news",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T15:00:00+09:00",
           "image": "http://www.foodicon.co.kr/news/photo/202611/36086_54948_5036.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-11-09T15:00:00+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_d513d61ef6277bd6",
+          "imageSource": "source_page_og",
+          "summary": "한국인의 식탁에서 1인당 연간 끼니가 약 25회 줄었다."
         },
         {
           "title": "\"치솟는 외식비에 집에서 한 끼\" 양식 간편식 선택지 넓어진다",
-          "summary": "외식 물가 상승세가 이어지는 가운데 식품업계가 파스타와 연어 스테이크, 피자 등 양식 메뉴를 집에서도 손쉽게 즐길 수 있는 간편식 제품을 다양화하고 있다.8일 업계에 따르면 면사랑과 CJ제일제당, 오뚜기 등 주요…",
           "source": "뉴시스",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_b0221367909a2e93",
           "url": "https://www.newsis.com/view/NISX20261108_0003859233",
           "medium": "news",
-          "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-08T15:07:24+09:00",
           "image": "https://img1.newsis.com/2026/11/04/NISI20261104_0021518703_web.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-11-08T15:07:24+09:00",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_b0221367909a2e93",
+          "imageSource": "source_page_og",
+          "summary": "외식 물가 상승세가 이어지는 가운데 식품업계가 파스타와 연어 스테이크, 피자 등 양식 메뉴를 집에서도 손쉽게 즐길 수 있는 간편식 제품을 다양화하고 있다.8일 업계에 따르면 면사랑과 CJ제일제당, 오뚜기 등 주요…"
         },
         {
           "title": "영양제보다 채소·과일 그대로가 건강 유리…‘로우코어 뉴트리션’ 주목",
-          "summary": "영양제를 따로 챙겨 먹는 것보다 채소·과일을 그대로 즐기는 것이 건강에 더 유리할 수 있다는 주장이 제기됐다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_1129eb0ceb644c01",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201594",
           "medium": "news",
+          "publishedAt": "2026-11-09T10:13:56+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T10:13:56+09:00"
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_1129eb0ceb644c01",
+          "summary": "영양제를 따로 챙겨 먹는 것보다 채소·과일을 그대로 즐기는 것이 건강에 더 유리할 수 있다는 주장이 제기됐다."
         },
         {
           "title": "심호흡만 잘해도…혈압 낮게 유지하는 데 도움 되는 방법",
-          "summary": "채소를 풍부하게 먹는 식습관은 혈압을 낮추는 데 도움이 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_e8acc2f09158a70f",
           "url": "https://kormedi.com/2901060/",
           "medium": "news",
+          "publishedAt": "2026-11-09T10:03:00+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-09T10:03:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_e8acc2f09158a70f",
+          "summary": "채소를 풍부하게 먹는 식습관은 혈압을 낮추는 데 도움이 된다."
         },
         {
           "title": "중년 여성의 허리가 두툼해진 이유…일상에서 살 빼는 생활 습관은?",
-          "summary": "오이 등 열량이 낮고 식이섬유 많은 음식을 먹으면 포만감이 커서 저녁을 덜 먹을 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_37dc320914825252",
           "url": "https://kormedi.com/2900969/",
           "medium": "news",
+          "publishedAt": "2026-11-08T19:05:00+09:00",
           "discoveredAt": "2026-11-09T16:51:14+09:00",
-          "publishedAt": "2026-11-08T19:05:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_37dc320914825252",
+          "summary": "오이 등 열량이 낮고 식이섬유 많은 음식을 먹으면 포만감이 커서 저녁을 덜 먹을 수 있다."
         }
       ]
     }
