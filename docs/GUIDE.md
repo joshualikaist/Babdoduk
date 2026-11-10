@@ -18,7 +18,7 @@
 | **오늘의 꽁밥** | `ggongbab.html` (꽁밥 탭, `#free`) | 지금·곧 참여할 수 있는 KAIST 무료 음식 일정은? | `data/ggongbab/latest.json` (생성) |
 | **KAIST 학식** | `ggongbab.html#menu` (학식 탭) | 이번 주 학식 메뉴는? (월–일, 날짜를 골라 봄) | `data/kaist-menu/` 날짜별 파일·`week.json`·`latest.json`(오늘) (생성, AI 없음) |
 | **밥도둑 매거진** | `mukbang.html` | 요리 비법·유행·건강·식습관 네 갈래의 원문 출처 이야기. 유행은 근거(원문 주장·여러 매체·조회수·판매 수치)가 있을 때만, 식습관은 날짜가 있는 조사·기사·연구만 | `data/magazine/` (생성, 원문 링크가 있는 글만) |
-| **오늘 뭐 먹지** (상단 메뉴, 2026-11-04) | `choose.html` | 고르기 귀찮을 땐 버튼 하나: 먹방 월드컵의 뽑기 기계가 학식이나 배달 메뉴 하나를 뽑아 준다 (2026-11-05) | 오늘 학식 `data/kaist-menu/`, 배달 종류와 메뉴는 `data/foods/` 카탈로그 제안(판매 여부 확인이 아님). 옛 `mukbang.html#what` 은 여기로 이동. [docs/PICK.md](PICK.md) |
+| **오늘 뭐 먹지** (상단 메뉴, 2026-11-04) | `choose.html` | 버튼 하나로 학식·교내 식당·배달 메뉴 하나를 뽑는다 | 오늘 학식 `data/kaist-menu/`, 촬영 메뉴판의 교내 식당 메뉴 `data/foods/campus-kiosk.json`, 배달 음식 사전 `data/foods/`. 교내 식당과 배달은 현재 판매 여부 확인이 아닌 제안이다. 옛 `mukbang.html#what` 은 여기로 이동. [docs/PICK.md](PICK.md) |
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `data/content/events.json` (sync 가 `event.html` 에 씀) |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 

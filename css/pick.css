@@ -316,6 +316,7 @@
   font-size: clamp(26px, 4vw, 34px);
   font-weight: 900;
   letter-spacing: -0.03em;
+  word-break: keep-all;
   overflow-wrap: anywhere;
 }
 
@@ -359,6 +360,8 @@
   margin: 10px 0 0;
   font-size: 14px;
   color: var(--color-ink-muted, #5a534a);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .pick-actions {
@@ -399,6 +402,8 @@
   margin: 28px 0 0;
   font-size: 13px;
   color: var(--color-ink-muted, #5a534a);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .pick-sr {

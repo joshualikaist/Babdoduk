@@ -443,6 +443,9 @@ def pick_tools(browser):
          "lunch": {"items": ["백미밥", "제육볶음(5,6,10)", "[칼로리:890kcal]"], "hours": "11:30~13:30", "price": "5,000원"},
          "dinner": {"items": []}},
         {"id": "r2", "name": "문지캠퍼스", "building": "문지", "lunch": {"items": ["비빔밥"], "hours": "11:30~13:30"}}]}
+    campus = {"items": [{"store": "별리달리", "name": "알밥+치킨+음료세트", "priceWon": 7600, "photoStatus": "품절", "drawable": True},
+                         {"store": "역전우동", "name": "우동", "priceWon": None, "drawable": True},
+                         {"store": "별리달리", "name": "공기밥 추가", "priceWon": 1000, "drawable": False}]}
 
     def open_page(reduced, lang="ko"):
         context = new_context(browser)
@@ -450,6 +453,7 @@ def pick_tools(browser):
         page.clock.set_fixed_time("2026-10-14T12:00:00+09:00")
         page.add_init_script("window.__rand = 0.1; Math.random = () => window.__rand;")
         page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json=menu))
+        page.route("**/data/foods/campus-kiosk.json", lambda route: route.fulfill(json=campus))
         page.route("**/data/kaist-menu/week.json", lambda route: route.fulfill(json={"days": [{"date": today, "available": True}]}))
         page.route(f"**/data/kaist-menu/{today}.json", lambda route: route.fulfill(json=menu))
         page.emulate_media(reduced_motion="reduce" if reduced else "no-preference")
@@ -484,6 +488,24 @@ def pick_tools(browser):
     check("오늘은 카이마루 N11" in page.locator("#pickStatus").inner_text(), "the pick is announced")
     check(page.locator("#pickGoLabel").inner_text() == "다시 뽑기", "the button says 다시 뽑기")
     check(page.locator(".pk-cap").count() == 1 and page.locator(".pk-strip").inner_text() == "🍱", "one capsule; the screen shows the pick")
+
+    # 0.41: a campus restaurant; the original set name and photographed price survive.
+    page.evaluate("window.__rand = 0.41")
+    page.locator("#pickGo").click()
+    page.wait_for_function("document.querySelector('.pick-result-kicker').textContent.includes('교내 식당')")
+    check(page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "the set stays one menu")
+    check("별리달리" in page.locator("#pickResult").inner_text() and "7,600" in page.locator("#pickResult").inner_text(),
+          "the card shows the restaurant and photographed price")
+    check("촬영 당시 품절" in page.locator("#pickResult").inner_text()
+          and "판매 여부" in page.locator("#pickResult").inner_text() and page.locator('.pick-like').count() == 0,
+          "the menu is identified as a photo snapshot, without delivery votes")
+    page.locator("#langToggle").click()
+    check("Campus restaurant" in page.locator(".pick-result-kicker").inner_text()
+          and "Sold out when photographed" in page.locator("#pickResult").inner_text()
+          and "Check prices and availability" in page.locator("#pickResult").inner_text()
+          and page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "English labels preserve the original menu name")
+    page.locator("#langToggle").click()
+    check(page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), "campus result fits a phone")
 
     # 0.9: a delivery dish, with its photo and the photo's credit.
     page.evaluate("window.__rand = 0.9")

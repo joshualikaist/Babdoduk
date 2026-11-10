@@ -1,0 +1,4219 @@
+{
+  "source": "owner-provided kiosk photo transcription; photo dates unknown",
+  "items": [
+    {
+      "id": "fedf52d012bbcfd5",
+      "store": "별리달리",
+      "category": "찌개",
+      "name": "별리달리 포케",
+      "priceWon": 6500,
+      "photoStatus": "화면별 상이",
+      "drawable": true,
+      "note": "신메뉴. 찌개·알밥 화면에는 6,500원, 덮밥 화면에는 품절로 표시"
+    },
+    {
+      "id": "e8fc2fc1adc60f4e",
+      "store": "별리달리",
+      "category": "찌개",
+      "name": "차돌순두부찌개+공기밥",
+      "priceWon": 6600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "21b5a13ecd66ccea",
+      "store": "별리달리",
+      "category": "찌개",
+      "name": "차돌된장찌개+공기밥",
+      "priceWon": 6600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "5dde330822fb6e3e",
+      "store": "별리달리",
+      "category": "찌개",
+      "name": "김치찌개+공기밥",
+      "priceWon": 4900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "24fcc9aadbcf77bc",
+      "store": "별리달리",
+      "category": "찌개",
+      "name": "대왕스팸 차돌순두부찌개+공기밥",
+      "priceWon": 8200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a5f84f01d5911e5d",
+      "store": "별리달리",
+      "category": "찌개",
+      "name": "대왕스팸김치찌개+공기밥",
+      "priceWon": 6600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "44f57571c5d7b7b2",
+      "store": "별리달리",
+      "category": "찌개",
+      "name": "차돌 플러스 김치찌개+공기밥",
+      "priceWon": 6600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a4e8b5297f3d837a",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "별리달리 버터 알밥",
+      "priceWon": 5000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4b271782c908cc92",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "자연산 100프로 참치 플러스 알밥",
+      "priceWon": 6200,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천 표시"
+    },
+    {
+      "id": "090f5e85e1737283",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "날치알 플러스 알밥",
+      "priceWon": 6100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3a662f6223a1a7ce",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "돼지불고기 플러스 알밥",
+      "priceWon": 6100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "fe8de2da3b413362",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "스페셜모듬 알밥",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "91d65f7964bdc7d2",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "별리달리버터알밥+치킨+음료세트",
+      "priceWon": 7600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b5d0a4f55f85fb90",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "별리달리버터알밥+바나나+생수+김",
+      "priceWon": 6200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b46fba5b3531cc9f",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "별리달리버터알밥+김치찌개1/2 세트",
+      "priceWon": 7300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "751d570d95c2bf73",
+      "store": "별리달리",
+      "category": "알밥",
+      "name": "제육플러스 알밥",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천 표시"
+    },
+    {
+      "id": "818f506edd585dd2",
+      "store": "별리달리",
+      "category": "비빔밥",
+      "name": "돌솥비빔밥",
+      "priceWon": 7300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "신메뉴 표시"
+    },
+    {
+      "id": "9be700d2f8a54fe6",
+      "store": "별리달리",
+      "category": "덮밥",
+      "name": "뚝배기 돼지갈비맛 덮밥",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9f1100e6a6944995",
+      "store": "별리달리",
+      "category": "덮밥",
+      "name": "돼지갈비맛덮밥+치킨가라아게+음료세트",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "51a4487aa17fd665",
+      "store": "별리달리",
+      "category": "덮밥",
+      "name": "뚝배기 버터제육덮밥",
+      "priceWon": 6300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d29cd5d7c9f53145",
+      "store": "별리달리",
+      "category": "덮밥",
+      "name": "치킨 가라아게 마요 덮밥",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3e26fbc11264ce8b",
+      "store": "별리달리",
+      "category": "덮밥",
+      "name": "스팸소세지 마요덮밥",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "신메뉴 표시"
+    },
+    {
+      "id": "6811dfcd248459e4",
+      "store": "별리달리",
+      "category": "덮밥",
+      "name": "버터 김치 플러스 떡갈비 덮밥",
+      "priceWon": 6600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9066d897b7c293c0",
+      "store": "별리달리",
+      "category": "덮밥",
+      "name": "뚝배기 닭갈비 덮밥",
+      "priceWon": 5000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "83205d76a37f247b",
+      "store": "별리달리",
+      "category": "비빔밥",
+      "name": "함의 이벤트 비빔밥",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "메뉴명 사진 기준 전사(표기 확인 권장)"
+    },
+    {
+      "id": "c51ed6b473bad861",
+      "store": "별리달리",
+      "category": "비빔밥",
+      "name": "비빔밥+찌개세트",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "711d55d1d5ecb903",
+      "store": "별리달리",
+      "category": "도시락",
+      "name": "추억의 도시락",
+      "priceWon": 5000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "신메뉴 표시"
+    },
+    {
+      "id": "5730c108696b8c56",
+      "store": "별리달리",
+      "category": "도시락",
+      "name": "추억의 도시락+김치찌개1/2 세트",
+      "priceWon": 7800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3b0e0b1b22a95ea1",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "공기밥 추가",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "02f4d1072cd02650",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "구운계란",
+      "priceWon": 500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "6e47b6f7d8532ca0",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "소면사리",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "d821e688a6df6ee7",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "치킨 가라아게(소)",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "72ca7a2d508a1ae8",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "김",
+      "priceWon": 400,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "c534b035e2ef0c53",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "날계란",
+      "priceWon": 400,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "3b213191970c53c2",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "바나나",
+      "priceWon": 500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "2e16b3641ee3f0c1",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "감자튀김",
+      "priceWon": null,
+      "photoStatus": "품절",
+      "drawable": false,
+      "note": "품절 화면에서 가격 확인 불가"
+    },
+    {
+      "id": "d02d6cce37bd6216",
+      "store": "별리달리",
+      "category": "추가/사이드",
+      "name": "계란찜",
+      "priceWon": null,
+      "photoStatus": "품절",
+      "drawable": false,
+      "note": "품절 화면에서 가격 확인 불가"
+    },
+    {
+      "id": "bbd5607c56c4b9b7",
+      "store": "별리달리",
+      "category": "계절/기타",
+      "name": "살얼음 김치말이냉모밀",
+      "priceWon": null,
+      "photoStatus": "품절",
+      "drawable": true,
+      "note": "품절 화면에서 가격 확인 불가"
+    },
+    {
+      "id": "7fa55cf8a256b026",
+      "store": "별리달리",
+      "category": "계절/기타",
+      "name": "살얼음 가쓰오냉모밀",
+      "priceWon": null,
+      "photoStatus": "품절",
+      "drawable": true,
+      "note": "품절 화면에서 가격 확인 불가"
+    },
+    {
+      "id": "25a0700672b2365d",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "참치 샐러드김밥",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b9d2dacab337386a",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "치즈김밥",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "ac6471058b159694",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "계란김밥",
+      "priceWon": 3500,
+      "photoStatus": "품절",
+      "drawable": true,
+      "note": "품절 오버레이 뒤 가격이 흐리게 표시됨"
+    },
+    {
+      "id": "934db3dea5ddcf4e",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "더큰김밥",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1d47e0aa4a806f0a",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "마제컵밥",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a3f8176bf74c16d4",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "제육컵밥",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d023f4296c40905a",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "참치마요컵밥",
+      "priceWon": 3200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "192654c1cf84838a",
+      "store": "더큰식탁",
+      "category": "김밥/컵밥",
+      "name": "볶음김치컵밥",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "86bf955ef8f3eda0",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "마제소바",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8359ed2b4cef92c0",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "페스토 오일 소바",
+      "priceWon": 7000,
+      "photoStatus": "품절",
+      "drawable": true,
+      "note": "계절메뉴. 품절 오버레이 뒤 가격이 흐리게 표시됨"
+    },
+    {
+      "id": "3f6f4afca762bb48",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "새우튀김우동",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "계절메뉴"
+    },
+    {
+      "id": "cac9d3e15a3a3a22",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "튀김김치우동",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "계절메뉴"
+    },
+    {
+      "id": "95ad43271254f21a",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "꼬치어묵우동",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "계절메뉴"
+    },
+    {
+      "id": "12cfb4d15ba7eb18",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "새우카레우동",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6510f309051330ad",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "치킨카레우동",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a371170ecb93d587",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "냉소바",
+      "priceWon": 6000,
+      "photoStatus": "품절",
+      "drawable": true,
+      "note": "계절메뉴. 품절 오버레이 뒤 가격이 흐리게 표시됨"
+    },
+    {
+      "id": "2d5b08c23ce1175d",
+      "store": "더큰식탁",
+      "category": "우동/소바",
+      "name": "비빔소바",
+      "priceWon": 7000,
+      "photoStatus": "품절",
+      "drawable": true,
+      "note": "품절 오버레이 뒤 가격이 흐리게 표시됨"
+    },
+    {
+      "id": "88570d5ef19d14e0",
+      "store": "더큰식탁",
+      "category": "덮밥",
+      "name": "소불고기덮밥",
+      "priceWon": 7800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d224c6f23fba7eea",
+      "store": "더큰식탁",
+      "category": "덮밥",
+      "name": "제육볶음덮밥",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "fc86423c44f052f2",
+      "store": "더큰식탁",
+      "category": "덮밥",
+      "name": "돈까스카레덮밥",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e83320c68191c0c2",
+      "store": "더큰식탁",
+      "category": "덮밥",
+      "name": "새우카레덮밥",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7945c781adff3374",
+      "store": "더큰식탁",
+      "category": "덮밥",
+      "name": "치킨카레덮밥",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7f74a7e7716d57a8",
+      "store": "더큰식탁",
+      "category": "덮밥",
+      "name": "참치김치덮밥",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "df6640156e776b40",
+      "store": "더큰식탁",
+      "category": "돈까스",
+      "name": "유린기돈까스",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "HOT 표시"
+    },
+    {
+      "id": "7d1b4c3d258e6c5d",
+      "store": "더큰식탁",
+      "category": "돈까스",
+      "name": "파송송돈까스",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1a625a6dc6c1f7ea",
+      "store": "더큰식탁",
+      "category": "돈까스",
+      "name": "떡볶이돈까스",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "79c16b5f9a859aef",
+      "store": "더큰식탁",
+      "category": "돈까스",
+      "name": "왕돈까스",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "063947e86c9a6c0f",
+      "store": "더큰식탁",
+      "category": "돈까스",
+      "name": "반개돈까스",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "127649a5b7b9dbe5",
+      "store": "더큰식탁",
+      "category": "라면/국",
+      "name": "얼큰해물라면",
+      "priceWon": 4200,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매운맛 표시"
+    },
+    {
+      "id": "ec9040c6ee2bdeb1",
+      "store": "더큰식탁",
+      "category": "라면/국",
+      "name": "만두라면",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "98ad3e0dd96d18b8",
+      "store": "더큰식탁",
+      "category": "라면/국",
+      "name": "떡라면",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d226de627a3c17b9",
+      "store": "더큰식탁",
+      "category": "라면/국",
+      "name": "치즈라면",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "61d392e45d910dea",
+      "store": "더큰식탁",
+      "category": "라면/국",
+      "name": "더큰라면",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9bf67511e97f6212",
+      "store": "더큰식탁",
+      "category": "라면/국",
+      "name": "떡만둣국",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "계절메뉴"
+    },
+    {
+      "id": "bfe810f03c0f366c",
+      "store": "더큰식탁",
+      "category": "라면/국",
+      "name": "스팸라면",
+      "priceWon": 4500,
+      "photoStatus": "품절",
+      "drawable": true,
+      "note": "품절 오버레이 뒤 가격이 흐리게 표시됨"
+    },
+    {
+      "id": "cbfc41e445a2044e",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "톰얌쌀국수",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e0e811c741e40d95",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "양지힘줄쌀국수",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "43877352a2a0343f",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "왕갈비쌀국수",
+      "priceWon": 10500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "00ab4bc582573181",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "아롱사태쌀국수",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2cde2210f3dd7951",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "양지쌀국수",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "65f3e710eb11c674",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "매운양지쌀국수",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "68b990c1d61bebc0",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "닭쌀국수",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8b642a4e61dd6044",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "매운닭쌀국수",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6726af2f782f2755",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "완자쌀국수",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e418afaf06f42f0f",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "매운완자쌀국수",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a162030e9c13d00d",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "마라쌀국수",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8866547558666fe7",
+      "store": "리틀하노이",
+      "category": "쌀국수",
+      "name": "마라국밥",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d6a14e70f71cb325",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)양지쌀국수",
+      "priceWon": 7200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0718034cb066d179",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)매운양지쌀국수",
+      "priceWon": 7700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "33c9c1b94ad0ca1e",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)닭쌀국수",
+      "priceWon": 7700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "80d2e5d762e7b163",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)매운닭쌀국수",
+      "priceWon": 7700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "cc7e54dc5f67c522",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)완자쌀국수",
+      "priceWon": 8200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "966d290ee98a1306",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)매운완자쌀국수",
+      "priceWon": 8200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6e1f0ac856804a19",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)마라쌀국수",
+      "priceWon": 9200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6141ccace5e833a4",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)쌀국수",
+      "priceWon": 5700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c92f97ef2dc146f6",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)아롱사태쌀국수",
+      "priceWon": 10700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "37307497d1d2a86b",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)톰얌쌀국수",
+      "priceWon": 10200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "34c1badf284bee56",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)양지힘줄쌀국수",
+      "priceWon": 10700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6c776364526f588f",
+      "store": "리틀하노이",
+      "category": "생면쌀국수",
+      "name": "(생면)왕갈비쌀국수",
+      "priceWon": 11700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2e8ceec68a01ee86",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트1 쌀국수+쌀호떡만두1/2",
+      "priceWon": 6700,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "716b2c0462c95fc5",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트2 쌀국수+크림양파새우링1/2",
+      "priceWon": 7800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "2ddcc6237bb9219f",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트3 쌀국수+크림양파치킨1/2",
+      "priceWon": 7700,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "619f90d5b31ffe66",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트4 쌀국수+크림양파텐더1/2",
+      "priceWon": 8400,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "1dd8421fb28f6278",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트5 볶음밥+쌀호떡만두1/2",
+      "priceWon": 8300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "a492e127a08320d9",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트6 볶음밥+크림양파새우링1/2",
+      "priceWon": 9200,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "749a6024a84a84f1",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트7 볶음밥+크림양파치킨1/2",
+      "priceWon": 9300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "ba273eaa384fa93d",
+      "store": "리틀하노이",
+      "category": "세트메뉴",
+      "name": "세트8 볶음밥+크림양파텐더1/2",
+      "priceWon": 9900,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "세트 구성 사이드 1/2인분"
+    },
+    {
+      "id": "ed0552b61c3906a5",
+      "store": "리틀하노이",
+      "category": "돈까스/볶음밥/볶음면",
+      "name": "왕돈까스",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3ddcf304ffee6ba1",
+      "store": "리틀하노이",
+      "category": "돈까스/볶음밥/볶음면",
+      "name": "더블왕돈까스",
+      "priceWon": 12000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d095ff4f1e97b22d",
+      "store": "리틀하노이",
+      "category": "돈까스/볶음밥/볶음면",
+      "name": "파인애플볶음밥",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d16690c2129b0245",
+      "store": "리틀하노이",
+      "category": "돈까스/볶음밥/볶음면",
+      "name": "숯불고기볶음밥",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e270c53ba855e4f9",
+      "store": "리틀하노이",
+      "category": "돈까스/볶음밥/볶음면",
+      "name": "숯불고기덮밥",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "497927e587c59e69",
+      "store": "리틀하노이",
+      "category": "돈까스/볶음밥/볶음면",
+      "name": "(매콤)하노이볶음면",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매콤 표기"
+    },
+    {
+      "id": "203e22ccd4d8d361",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "1/2 크림양파새우링",
+      "priceWon": 3300,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "2bad263a373a5717",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "1/2 크림양파통살치킨",
+      "priceWon": 3200,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "d40f899331d4d8f0",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "1/2 크림양파치킨텐더(3P)",
+      "priceWon": 3900,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "8b0add0234e1035e",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "1/2 수제쌀호떡만두",
+      "priceWon": 2200,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "fbe4131157430d02",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "짜조",
+      "priceWon": 5400,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "ae420d7fcbb33117",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "크림양파새우링",
+      "priceWon": 5400,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "a685ceef186f7811",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "크림양파통살치킨",
+      "priceWon": 6400,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "d9d01dd733202d69",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "크림양파버팔로윙",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "1c3e36c1d69130db",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "수제쌀호떡만두",
+      "priceWon": 4400,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "5f491e77a63693fa",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "버팔로윙",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "a69d44595a0a7c29",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "크림양파치킨텐더",
+      "priceWon": 6400,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "d44e7d6e9265caae",
+      "store": "리틀하노이",
+      "category": "사이드",
+      "name": "반미샌드위치T/O",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "사진상 T/O(테이크아웃) 표기"
+    },
+    {
+      "id": "8e4be3240335e341",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "초계냉쌀국수",
+      "priceWon": 7400,
+      "photoStatus": "일시품절",
+      "drawable": true,
+      "note": "사진에 '일시품절' 표시"
+    },
+    {
+      "id": "edaaa2f92365dd47",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "돈불고기냉쌀국수",
+      "priceWon": 7400,
+      "photoStatus": "일시품절",
+      "drawable": true,
+      "note": "사진에 '일시품절' 표시"
+    },
+    {
+      "id": "b1147c1b66b257ca",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "돈불고기비빔쌀국수",
+      "priceWon": 7400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "65d6a0ee6f906d89",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "하노이분짜",
+      "priceWon": 9400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "5d49ea7fbf100f37",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "분팃사오",
+      "priceWon": 7400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "cb2b795e22cd5a08",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "면추가",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "f4cee1166c4aafb7",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "양지추가",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "4b486f9d9eb1657e",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "닭고기추가",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "d050c9b8bf290644",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "고수추가",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "e058e98e09725dd8",
+      "store": "리틀하노이",
+      "category": "여름메뉴/토핑추가",
+      "name": "숙주추가",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "61c26f0058569614",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "에그잉글리쉬머핀 콤보",
+      "priceWon": 3000,
+      "photoStatus": "품절",
+      "drawable": true
+    },
+    {
+      "id": "7fd4f82a095a1f2e",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "에그토스트 콤보",
+      "priceWon": 3800,
+      "photoStatus": "품절",
+      "drawable": true
+    },
+    {
+      "id": "91328d8be42021b6",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "에그베이컨토스트 콤보",
+      "priceWon": 4700,
+      "photoStatus": "품절",
+      "drawable": true
+    },
+    {
+      "id": "ded9e924615d9fb1",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "야채토스트 콤보",
+      "priceWon": 4000,
+      "photoStatus": "품절",
+      "drawable": true
+    },
+    {
+      "id": "7e0d88624ca858f1",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "햄치즈토스트 콤보",
+      "priceWon": 4500,
+      "photoStatus": "품절",
+      "drawable": true
+    },
+    {
+      "id": "d7931013da72409e",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "햄치즈토스트 세트",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4be427dc16b1b7e0",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "에그토스트 세트",
+      "priceWon": 5300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건세트"
+    },
+    {
+      "id": "5d3f011c18c1ef0c",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "햄에그토스트 세트",
+      "priceWon": 5800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e6a58368a196271d",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "에그베이컨토스트 세트",
+      "priceWon": 6200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3f8d41615a8dc731",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "베이글로얄 세트",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "634004bcafbdb9cc",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "베이글야채 세트",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건세트"
+    },
+    {
+      "id": "6d53bdeb0405a6cb",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "베이글햄치즈 세트",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "11e391ebdbdf80ef",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "야채토스트 세트",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건세트"
+    },
+    {
+      "id": "29f6e08de64c8107",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "햄야채토스트 세트",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "54af1cbcc88fe2fd",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "베이컨야채토스트 세트",
+      "priceWon": 6400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c59e49193fc0ca27",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "베이컨로얄토스트 세트",
+      "priceWon": 7300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8657723ee93287e2",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "베이컨감자토스트 세트",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "490f261befca074f",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "고구마토스트 세트",
+      "priceWon": 6300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건세트"
+    },
+    {
+      "id": "1aa9c8a742308fce",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "치즈감자토스트 세트",
+      "priceWon": 7100,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건세트"
+    },
+    {
+      "id": "7ccbf6c6e32f71ff",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "로얄갈비토스트 세트",
+      "priceWon": 7100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c30063252953436b",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "로얄갈비감자토스트 세트",
+      "priceWon": 7600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6883a748a51bfbfd",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "로얄감자토스트 세트",
+      "priceWon": 7100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2d7e7fd63766c83d",
+      "store": "캠토",
+      "category": "달콤토스트 세트",
+      "name": "로얄토스트 세트",
+      "priceWon": 6600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "cfed85e9624bf663",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "돈까스토스트 세트",
+      "priceWon": 7300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9d4d9115fa44cef6",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "핫베이컨토스트 세트",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0b97600f068c65e8",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "핫불갈비토스트 세트",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "34268a63fe46fab4",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "핫치킨토스트 세트",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d6f1c1726020afa7",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "베이글참숯불고기 세트",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "52a4f2271849ccc9",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "참숯불고기토스트 세트",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "78bbcd42c521c63c",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "불고기피자토스트 세트",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "afa8cef0e8a830df",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "피자토스트 세트",
+      "priceWon": 6700,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "5681d4fb79e279dc",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "골드피자토스트 세트",
+      "priceWon": 7200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c18c1624a199febc",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "쉬림프토스트 세트",
+      "priceWon": 7800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b4746c05fe1ba686",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "소세지토스트 세트",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "adade53079de03a0",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "핫로얄토스트 세트",
+      "priceWon": 6900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a45076ec0c3b5ad7",
+      "store": "캠토",
+      "category": "매콤·피자토스트 세트",
+      "name": "통살치킨토스트 세트",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "dc6e89afb996fe64",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "치즈에그토스트 세트",
+      "priceWon": 5800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "b76eca8c08a22f6d",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "쉬림프토스트(spicy) 세트",
+      "priceWon": 7800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "710bf8bc0b3545b6",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "치즈야채토스트 세트",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "f73438e0458c93dc",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "감자토스트 세트",
+      "priceWon": 6600,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "b54cd7ec5c399648",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "쉬림프컵밥 세트",
+      "priceWon": 7200,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "ea949a9cfa127326",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "포테이토컵밥 세트",
+      "priceWon": 6300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "e27c0e67c2842cbc",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "참치컵밥 세트",
+      "priceWon": 6300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "ff52ee8986186774",
+      "store": "캠토",
+      "category": "비건세트",
+      "name": "닭갈비컵밥 세트",
+      "priceWon": 6700,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건세트' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "5ac0b6146a705570",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "쉬림프컵밥",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "88116b682a547697",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "불삼겹컵밥",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b5bd12dca3973fe6",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "소불고기컵밥",
+      "priceWon": 4800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c297bea6d1572d81",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "소세지컵밥",
+      "priceWon": 4800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8944b41cbe79325b",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "참숯불고기컵밥",
+      "priceWon": 4800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0970064896c23ed5",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "스팸컵밥",
+      "priceWon": 4600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a2b30f020f117d8a",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "핫치킨컵밥",
+      "priceWon": 4800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4f4628c0fcb27404",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "포테이토컵밥",
+      "priceWon": 4600,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "eae50b30a2f0694c",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "치킨컵밥",
+      "priceWon": 4600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6372668ce20387d7",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "돈까스컵밥",
+      "priceWon": 4600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "21e631f42eb88261",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "참치컵밥",
+      "priceWon": 4600,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "d2234ce05bfaf53f",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "갈비컵밥",
+      "priceWon": 4800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "68fc7f52e3848df3",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "불닭컵밥",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "ad5d628a5d064056",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "제육컵밥",
+      "priceWon": 4800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8ba5865b808b1fd4",
+      "store": "캠토",
+      "category": "컵밥",
+      "name": "닭갈비컵밥",
+      "priceWon": 5000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "55a4665e994c32f3",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "즉석떡볶이",
+      "priceWon": 3800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1ee3c48607dc6f09",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "떡볶이세트",
+      "priceWon": 5800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e345162e530c9cd0",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "로제떡볶이",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "083f1d6afdf9ef9b",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "로제떡볶이세트",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "22f71e5e5cee4461",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "팝-만두",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "89e260a3bd8cad53",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "모듬튀김",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "747ecf9fe4bce24e",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "감자튀김",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "e5ef8ace03669c88",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "김말이",
+      "priceWon": 500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "dc7872a72dd1b090",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "오징어튀김 2EA",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "b295b1dfe701e3a1",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "츄러스 4EA",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "b2db25995a1bc75c",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "초코머핀",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "9a69aa7e2bd1f043",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "쿠키",
+      "priceWon": 1500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "fabadba4f0602775",
+      "store": "캠토",
+      "category": "떡볶이·디저트",
+      "name": "해쉬브라운",
+      "priceWon": 1500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "b5d5a406b82d7df5",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "에그잉글리쉬머핀",
+      "priceWon": 2300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1ac7f9b5f1e4f42d",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "베이글야채",
+      "priceWon": 3800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "cf2ffffc88137b58",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "베이글햄치즈",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0c66152d161705a3",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "베이글로얄",
+      "priceWon": 4500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b8475aea4255ced0",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "에그토스트",
+      "priceWon": 2300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "7ba741377f2d551e",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "햄에그토스트",
+      "priceWon": 2800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "766c227b8a29a957",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "치즈에그토스트",
+      "priceWon": 2800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "a65fbcb17692e048",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "햄치즈토스트",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "53e6aede244a75c0",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "에그베이컨토스트",
+      "priceWon": 3200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1d39aeda4557354c",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "야채토스트",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "422fb3253352d59f",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "햄야채토스트",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "73090bb064640a46",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "치즈야채토스트",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "cd14e16d28694798",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "베이컨야채토스트",
+      "priceWon": 3400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7964300bb0beb055",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "감자토스트",
+      "priceWon": 3600,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "52555525ee264f97",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "치즈감자토스트",
+      "priceWon": 4100,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음 · 다른 탭에도 표시: 비건단품"
+    },
+    {
+      "id": "c9add308633bf234",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "베이컨감자토스트",
+      "priceWon": 4500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6d482f39f0ce571e",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "베이컨로얄토스트",
+      "priceWon": 4300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2db0eb0dcb279c44",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "로얄토스트",
+      "priceWon": 3600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e4e1a769206a73be",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "로얄갈비토스트",
+      "priceWon": 4100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9a0c02df4c2661b9",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "로얄감자토스트",
+      "priceWon": 4100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7d3f5d3d16e2c9af",
+      "store": "캠토",
+      "category": "달콤토스트 단품",
+      "name": "로얄갈비감자토스트",
+      "priceWon": 4600,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "fffcc5cfc7dae2d5",
+      "store": "캠토",
+      "category": "비건단품",
+      "name": "쉬림프토스트(spicy)",
+      "priceWon": 4800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "06e0f16df29e9cfc",
+      "store": "캠토",
+      "category": "비건단품",
+      "name": "고구마토스트",
+      "priceWon": 3300,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 '비건단품' 탭 표기이며 실제 비건 여부는 확인되지 않음"
+    },
+    {
+      "id": "0610f327db4aa97f",
+      "store": "웰차이",
+      "category": "요일메뉴",
+      "name": "요일메뉴(월~금)",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "월~금 운영 표기. 요일별 상세 구성은 사진에서 확인되지 않음"
+    },
+    {
+      "id": "ee807cc2c5b631d4",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "고기짜장",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "57b17aa4f3f2c10e",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "고기짬뽕",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c804ee82226fe104",
+      "store": "웰차이",
+      "category": "밥류",
+      "name": "고기짬뽕밥",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "be7a2419617cd45a",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "짜장면",
+      "priceWon": 5000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "bcce003e98b3521b",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "간짜장",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2d5fb40ce0e4f3b5",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "짬뽕",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "878f796bad19ef20",
+      "store": "웰차이",
+      "category": "밥류",
+      "name": "짬뽕밥",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "821f93d0a73c45f6",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "짜장면곱배기",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "사진 표기 그대로 '곱배기' 사용"
+    },
+    {
+      "id": "251fe44db7699237",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "간짜장곱배기",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "사진 표기 그대로 '곱배기' 사용"
+    },
+    {
+      "id": "dad8c2e1f8e157da",
+      "store": "웰차이",
+      "category": "면류",
+      "name": "짬뽕곱배기",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "사진 표기 그대로 '곱배기' 사용"
+    },
+    {
+      "id": "33f4ac9bab99b5c7",
+      "store": "웰차이",
+      "category": "볶음밥",
+      "name": "해물볶음밥",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "bd49aea18deeec96",
+      "store": "웰차이",
+      "category": "만두/사이드",
+      "name": "군만두7p",
+      "priceWon": 5000,
+      "photoStatus": "표시",
+      "drawable": false,
+      "note": "7개"
+    },
+    {
+      "id": "909290a5bfeed8ed",
+      "store": "웰차이",
+      "category": "요리",
+      "name": "미니탕수육",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1b871fa19f35fafb",
+      "store": "웰차이",
+      "category": "요리",
+      "name": "탕수육",
+      "priceWon": 10000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c06f14cbf135929d",
+      "store": "웰차이",
+      "category": "추가메뉴",
+      "name": "공기밥",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "d5b425b81f33b2b4",
+      "store": "웰차이",
+      "category": "요리",
+      "name": "미니수제깐풍치킨",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "83ae3092a49e995e",
+      "store": "웰차이",
+      "category": "요리",
+      "name": "수제깐풍치킨",
+      "priceWon": 11000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6d07e7e629efe53f",
+      "store": "웰차이",
+      "category": "포장",
+      "name": "깐풍치킨(포장)",
+      "priceWon": 11000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "포장 전용 표기"
+    },
+    {
+      "id": "031773c036677187",
+      "store": "웰차이",
+      "category": "세트메뉴",
+      "name": "짬짜면",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "짬뽕+짜장면"
+    },
+    {
+      "id": "dac61729d5568bd6",
+      "store": "웰차이",
+      "category": "세트메뉴",
+      "name": "볶짜면",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "볶음밥+짜장면"
+    },
+    {
+      "id": "3f839f595c88f8e5",
+      "store": "웰차이",
+      "category": "세트메뉴",
+      "name": "볶짬면",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "볶음밥+짬뽕"
+    },
+    {
+      "id": "ed82e919ced9bc1b",
+      "store": "웰차이",
+      "category": "세트메뉴",
+      "name": "탕짬면",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "탕수육+짬뽕"
+    },
+    {
+      "id": "c90eea3948e6f22f",
+      "store": "웰차이",
+      "category": "세트메뉴",
+      "name": "탕짜면",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "탕수육+짜장면"
+    },
+    {
+      "id": "93283ce934883cd5",
+      "store": "웰차이",
+      "category": "세트메뉴",
+      "name": "탕볶밥",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "탕수육+볶음밥"
+    },
+    {
+      "id": "ebdb93b102f77c1e",
+      "store": "웰차이",
+      "category": "세트메뉴",
+      "name": "탕짬밥",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "탕수육+짬뽕밥"
+    },
+    {
+      "id": "e8e473eba8216b8e",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉모밀",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "991177dd9c789f4e",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉모밀+후리가케",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "b3296f0e711fdfb7",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉모밀+돈가스(100g)",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "45205bae052fd4aa",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉모밀+돈가스(100g)+후리가케",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "f1b07cdf19f1d16a",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉우동",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "3915778bc532e3c1",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉우동+후리가케",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "7f924e9d51f74c62",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉우동+돈가스(100g)",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "9c0ae871ee030396",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉우동+돈가스(100g)+후리가케",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "72c0e0a16b4b3490",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔모밀",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "8d5dce01858e422f",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔모밀+후리가케",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "c3f1d71ce8be3b77",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔모밀+돈가스(100g)",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "461608e18fa2303e",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔모밀+돈가스(100g)+후리가케",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "25db0c6a820724be",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔우동",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "03f547948f6768b5",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔우동+후리가케",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "8ea5b19443c3a02f",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔우동+돈가스(100g)",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "155f94a9a266ed86",
+      "store": "오니기리와 이규동",
+      "category": "여름메뉴",
+      "name": "냉비빔우동+돈가스(100g)+후리가케",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "여름메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "e803f8cb61a4b4b7",
+      "store": "오니기리와 이규동",
+      "category": "겨울메뉴",
+      "name": "화끈차돌우동",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "겨울메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "a80652f94d543cab",
+      "store": "오니기리와 이규동",
+      "category": "겨울메뉴",
+      "name": "화끈차돌우동+후리가케",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "겨울메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "e5b12737922ee7a0",
+      "store": "오니기리와 이규동",
+      "category": "겨울메뉴",
+      "name": "화끈차돌우동+돈가스(100g)",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "겨울메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "911ca9ece52d8205",
+      "store": "오니기리와 이규동",
+      "category": "겨울메뉴",
+      "name": "화끈차돌우동+돈가스(100g)+후리가케",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "겨울메뉴 탭에 표시; 계절별 판매 여부는 확인 필요"
+    },
+    {
+      "id": "f9bd0835088592b7",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "칠리다마고",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c0f1a9a1d460a0d8",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "칠리새우",
+      "priceWon": 2300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "cd34c58e2c2887e7",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "허니치킨",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8e7499a9eb1fdc2b",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "후리가케",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "f89918b42872147d",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "참치샐러드",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4dcb904bb9d8b315",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "보쌈김치",
+      "priceWon": 1500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "dde93e4529c1f0ca",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "김치참치",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7f4ecbb0d038b295",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "김치알밥",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d229266fe285007e",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "달콤숯닭",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "f43b86b030b4b518",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "떡갈비",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "96f641cc142e7452",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "훈제핫닭",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "57c1924e8c646ba4",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "구운스팸",
+      "priceWon": 2300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b6e8dd4da90dd39a",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "매운스팸",
+      "priceWon": 2300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6e52a038b341b8c5",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 단품",
+      "name": "게살샐러드",
+      "priceWon": 2000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a9c369c696a09ba3",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "칠리다마고+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "30d116cf9369b860",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "칠리새우+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c8b0670738a81a16",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "허니치킨 SET",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "키오스크 메뉴명은 '허니치킨 SET'; 반우동 포함 여부는 사진상 문구에 명시되지 않음"
+    },
+    {
+      "id": "fd6734c8399420bc",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "후리가케+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "943f5b93bc6e4d14",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "보쌈김치+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3a6d088d16623119",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "참치샐러드+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9d1d144a7d1ca35c",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "김치참치+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c1c9f637cd0ba0da",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "김치알밥+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9a2e404335818a35",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "떡갈비+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a58db78d59c76b88",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "달콤숯닭+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2db7d49b32806b97",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "훈제핫닭+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "cd6e4eda2911f73b",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "구운스팸+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "97b30f5acffb66b5",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "매운스팸+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "77782e7278d95a05",
+      "store": "오니기리와 이규동",
+      "category": "오니기리 세트",
+      "name": "게살샐러드+반우동",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "fbd8bb4d68229ff7",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "규동",
+      "priceWon": 5800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0c70c4e452cf536a",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "계란규동",
+      "priceWon": 6300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0ebbfdb1f04923af",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "보쌈愛규동",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2df2aa385ba8d863",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "갈릭규동",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "33dae1490e1b5d8c",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "규카레동",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8e35a9c7e23a1815",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "화끈규동(매운맛)",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4f89292c2ac20664",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "트리플치즈규동",
+      "priceWon": 6800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "897fac0fe132c689",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "가츠동",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1f33c2c3d9ebafd5",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "치킨마요동",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "db200540825c154b",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "스팸마요동",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c1bdb511829c9a2c",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "부타마요동(매운맛)",
+      "priceWon": 5500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "63fd59fcc7410ffa",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "해물돈부리",
+      "priceWon": 5900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d4199b07e590ef20",
+      "store": "오니기리와 이규동",
+      "category": "덮밥",
+      "name": "새우튀김덮밥",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1f5a0795bddbdce9",
+      "store": "롤링파스타",
+      "category": "스페셜",
+      "name": "찹스테이크",
+      "priceWon": 13900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "58a8814a707fc3fd",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "알리오올리오",
+      "priceWon": 6900,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매콤 표시"
+    },
+    {
+      "id": "6f6c31029ba38ed4",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "봉골레파스타",
+      "priceWon": 7900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3bd243011568c513",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "청양 불고기 파스타",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3d9d37d2f0aba169",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "까르보나라",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8f3424149291292e",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "로제크림쉬림프파스타",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0ca8754b323e6fdb",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "매운크림파스타",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매콤 표시"
+    },
+    {
+      "id": "b475011a9ec3e257",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "불고기 크림 파스타",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "bc4292b9506e4fa1",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "해물크림파스타",
+      "priceWon": 8900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4a92b744949ffb18",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "스테이크크림파스타",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6bb6708d3f4d54c7",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "토마토파스타",
+      "priceWon": 6900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1cfde5c0fa382e83",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "매운우삼겹토마토파스타",
+      "priceWon": 8900,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매콤 표시"
+    },
+    {
+      "id": "f088cb6c88c43dcf",
+      "store": "롤링파스타",
+      "category": "파스타",
+      "name": "빠쉐파스타",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "신상 표시; 메뉴 이름 사진 판독 참고"
+    },
+    {
+      "id": "90602b55a98e0ce6",
+      "store": "롤링파스타",
+      "category": "라이스",
+      "name": "우삼겹도리아",
+      "priceWon": 8100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9f3e738f62a85a87",
+      "store": "롤링파스타",
+      "category": "라이스",
+      "name": "베이컨 김치 도리아",
+      "priceWon": 8100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e197807d56c66761",
+      "store": "롤링파스타",
+      "category": "라이스",
+      "name": "우삼겹필라프",
+      "priceWon": 8100,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "일부 메뉴명·가격이 장바구니 아이콘에 가림. 이름은 일부 글자와 외부 메뉴 자료를 참고한 추정; 사진의 가격도 일부 가려짐."
+    },
+    {
+      "id": "04b2a467363faf49",
+      "store": "롤링파스타",
+      "category": "라이스",
+      "name": "쉬림프필라프",
+      "priceWon": 8100,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "신상 표시"
+    },
+    {
+      "id": "9f1806b3066bd64f",
+      "store": "롤링파스타",
+      "category": "라이스",
+      "name": "스테이크필라프",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c717e01c78adcf78",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "고르곤졸라피자S",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매장 주문"
+    },
+    {
+      "id": "0b73f99d4007e4ea",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "고르곤졸라피자M",
+      "priceWon": 8400,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매장 주문"
+    },
+    {
+      "id": "575d13e082750373",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "마르게리따피자S",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매장 주문"
+    },
+    {
+      "id": "86dc99f5b6232f93",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "마르게리따피자M",
+      "priceWon": 7900,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "매장 주문"
+    },
+    {
+      "id": "031193eed5d772d6",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "(포장)고르곤졸라피자S",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "포장 전용 가격"
+    },
+    {
+      "id": "f816c1b115ec2523",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "(포장)고르곤졸라피자M",
+      "priceWon": 8900,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "포장 전용 가격"
+    },
+    {
+      "id": "3a4ac147e92f585c",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "(포장)마르게리따피자S",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "포장 전용 가격"
+    },
+    {
+      "id": "f34ba4207f88e4ad",
+      "store": "롤링파스타",
+      "category": "피자",
+      "name": "(포장)마르게리따피자M",
+      "priceWon": 8400,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "포장 전용 가격"
+    },
+    {
+      "id": "f193d4dfecac6d36",
+      "store": "롤링파스타",
+      "category": "샐러드/사이드",
+      "name": "그린샐러드",
+      "priceWon": 5000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "fb630a6616be70f0",
+      "store": "롤링파스타",
+      "category": "샐러드/사이드",
+      "name": "리코타치즈샐러드",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "70388cc1a8f6ac23",
+      "store": "롤링파스타",
+      "category": "샐러드/사이드",
+      "name": "머쉬룸 스프",
+      "priceWon": 3200,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "5301bcb6cbbe8f24",
+      "store": "롤링파스타",
+      "category": "샐러드/사이드",
+      "name": "콘 스프",
+      "priceWon": 3200,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "8637b842e88fdc35",
+      "store": "롤링파스타",
+      "category": "샐러드/사이드",
+      "name": "올리브 브레드",
+      "priceWon": 1500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "8c5c30605983447b",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "제육볶음 찌개한상(공기밥포함)",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0c67cede46cdfd4b",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "돼지불백 찌개한상(공기밥포함)",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "37e011d616976182",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "오징어제육볶음 찌개한상(공기밥포함)",
+      "priceWon": 9900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "43b9ba4c0e1256b3",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "제육볶음(공기밥포함)",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3d236a8715aee054",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "돼지불백(공기밥포함)",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "f983345231d6e289",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "오징어제육볶음(공기밥포함)",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "6f8fd8e112a530f9",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "제육볶음추가(고기만)",
+      "priceWon": 5300,
+      "photoStatus": "표시",
+      "drawable": false,
+      "note": "밥·반찬 없는 고기만 추가"
+    },
+    {
+      "id": "17e175854354e4a4",
+      "store": "제순식당",
+      "category": "볶음&찌개한상",
+      "name": "돼지불백추가(고기만)",
+      "priceWon": 5300,
+      "photoStatus": "표시",
+      "drawable": false,
+      "note": "밥·반찬 없는 고기만 추가"
+    },
+    {
+      "id": "217c479a2d41a1d1",
+      "store": "제순식당",
+      "category": "찌개",
+      "name": "얼큰순두부(공기밥포함)",
+      "priceWon": 6900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d221b5e867479000",
+      "store": "제순식당",
+      "category": "찌개",
+      "name": "맑은순두부(공기밥포함)",
+      "priceWon": 6900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "2daef1787fedcd18",
+      "store": "제순식당",
+      "category": "찌개",
+      "name": "얼큰순두부라면(공기밥별도)",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "공기밥 별도"
+    },
+    {
+      "id": "066be59326be2ebe",
+      "store": "제순식당",
+      "category": "찌개",
+      "name": "부대순두부(공기밥포함)",
+      "priceWon": 7900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "be0e476bec29e897",
+      "store": "제순식당",
+      "category": "찌개",
+      "name": "짬뽕순두부(공기밥포함)",
+      "priceWon": 8200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9b391611339d58ed",
+      "store": "제순식당",
+      "category": "찌개",
+      "name": "고기듬뿍된장찌개(공기밥포함)",
+      "priceWon": 7200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1d3dfde9db0bd283",
+      "store": "제순식당",
+      "category": "사이드",
+      "name": "비엔나소시지",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "1574a2cc29f44752",
+      "store": "제순식당",
+      "category": "사이드",
+      "name": "공기밥",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "1668d74a653fb99a",
+      "store": "제순식당",
+      "category": "사이드",
+      "name": "계란후라이",
+      "priceWon": 800,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "cf31df0c81cf8107",
+      "store": "제순식당",
+      "category": "사이드",
+      "name": "조미김",
+      "priceWon": 500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "781a266744c5cabe",
+      "store": "인생설렁탕",
+      "category": "식사류",
+      "name": "설렁탕(공기밥포함)",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "49bdaa4389ebc480",
+      "store": "인생설렁탕",
+      "category": "식사류",
+      "name": "스지설렁탕(공기밥포함)",
+      "priceWon": 10000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d054768a39b730b4",
+      "store": "인생설렁탕",
+      "category": "식사류",
+      "name": "순대국(공기밥포함)",
+      "priceWon": 7900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "25de912db475619a",
+      "store": "인생설렁탕",
+      "category": "식사류",
+      "name": "육개장(공기밥포함)",
+      "priceWon": 8400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4c2cc9860ab60215",
+      "store": "인생설렁탕",
+      "category": "식사류",
+      "name": "얼큰해장국(공기밥포함)",
+      "priceWon": 8400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "98e571c7201ac051",
+      "store": "인생설렁탕",
+      "category": "식사류",
+      "name": "차돌양지곰탕",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "공기밥 포함 여부 미표기"
+    },
+    {
+      "id": "99395d103cc1502d",
+      "store": "인생설렁탕",
+      "category": "식사류",
+      "name": "떡국설렁탕",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "ad0d4e1ecf58d182",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "떡국설렁탕+만두세트",
+      "priceWon": 10000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "46e193bad50750b3",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "설렁탕+만두세트",
+      "priceWon": 10000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c0eff835cfa16992",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "스지설렁탕+만두세트",
+      "priceWon": 12000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "04f941d0832bde26",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "순대국+만두세트",
+      "priceWon": 9900,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "30d1403ca9154b98",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "육개장+만두세트",
+      "priceWon": 10400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "3296bcbc4df1ccbb",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "얼큰해장국+만두세트",
+      "priceWon": 10400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1226649c37e759b6",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "차돌양지곰탕+만두세트",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c91a06f978805658",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "물냉면+만두세트",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "501483bf6161adc1",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "비빔냉면+만두세트",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "5f4f426c9c5af3ac",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "물냉면 곱빼기+만두세트",
+      "priceWon": 10000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "4c8532bb3682c008",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "비빔냉면 곱빼기+만두세트",
+      "priceWon": 10000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0fc62111f0dffaf2",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "사골칼국수+만두세트",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "575bef2f194462dd",
+      "store": "인생설렁탕",
+      "category": "세트류",
+      "name": "얼큰사골칼국수+만두세트",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7a4a8dd96b2e2fdb",
+      "store": "인생설렁탕",
+      "category": "면류",
+      "name": "물냉면",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a8f0074236a75f25",
+      "store": "인생설렁탕",
+      "category": "면류",
+      "name": "비빔냉면",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "fa4ec29d277db086",
+      "store": "인생설렁탕",
+      "category": "면류",
+      "name": "물냉면 곱빼기",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "f18a0e8c8ba19ea1",
+      "store": "인생설렁탕",
+      "category": "면류",
+      "name": "비빔냉면 곱빼기",
+      "priceWon": 8000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "97a6b04005d9f9a6",
+      "store": "인생설렁탕",
+      "category": "면류",
+      "name": "사골칼국수",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8f1ebd9ef72d0562",
+      "store": "인생설렁탕",
+      "category": "면류",
+      "name": "얼큰사골칼국수",
+      "priceWon": 7500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8409a0a7bb4ce9f5",
+      "store": "인생설렁탕",
+      "category": "사이드",
+      "name": "고기왕만두",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "4de9fdc3f3e49f73",
+      "store": "인생설렁탕",
+      "category": "사이드",
+      "name": "갈비만두",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "327452b3d3911cf5",
+      "store": "인생설렁탕",
+      "category": "사이드",
+      "name": "계란후라이",
+      "priceWon": 800,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "c1d352c9b93e7975",
+      "store": "인생설렁탕",
+      "category": "사이드",
+      "name": "공기밥",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "a7e81306ea229289",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "꼬치어묵우동 미니덮밥세트",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "2e42d643ca05d586",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "꼬치어묵우동 사이드돈까스세트",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "3b062410768b9ec0",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "꼬치어묵우동 양파마요치킨세트",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "d66f903ed9320fbf",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "옛날우동 롤김밥세트",
+      "priceWon": 7700,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "9b1b08c5119064fe",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "우볶이 롤김밥세트",
+      "priceWon": 9500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "717b9aad9da3b2d5",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "김치우동 롤김밥세트",
+      "priceWon": 8600,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "266c4a02c8cdf430",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "치킨가라아게 정식 불오뎅세트",
+      "priceWon": 11000,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "44407d30d4610925",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "열탄제육덮밥 양파마요치킨세트",
+      "priceWon": 10900,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "d5d6d19fab14e9c4",
+      "store": "역전우동",
+      "category": "추천세트",
+      "name": "열탄제육덮밥 사이드돈까스세트",
+      "priceWon": 10900,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면"
+    },
+    {
+      "id": "be70fab79f1674b9",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "우삼겹마늘후추우동",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1833b427c703ba8c",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "꼬치어묵우동",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "00d6688a0d2e1bd7",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "옛날우동",
+      "priceWon": 4200,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "350477c2d82a6a0f",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "야채튀김우동",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "a98aead5354332fb",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "새우튀김우동",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "67413a7158316c7a",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "김치우동",
+      "priceWon": 5100,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c81e5e488154087c",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "우볶이",
+      "priceWon": 6000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "5f44a92d786dc4cd",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "냉모밀",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "133bd516f2137870",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "판모밀",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8ddd714b6e54a921",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "역전비빔면",
+      "priceWon": 6500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "dfb07f59906d4475",
+      "store": "역전우동",
+      "category": "면류",
+      "name": "(추가)판모밀전용 육수 고명",
+      "priceWon": 1500,
+      "photoStatus": "표시",
+      "drawable": false,
+      "note": "추가 옵션으로 표시"
+    },
+    {
+      "id": "207c04b88c278ca0",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "돈까스덮밥 미니면세트",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "5762832e92555e91",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "매콤치킨마요덮밥 미니면세트",
+      "priceWon": 9000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7eeb6e5e60c475a0",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "우삼겹볶음김치덮밥 미니면세트",
+      "priceWon": 9400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d83cc642eeff65bf",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "열탄제육덮밥 미니면세트",
+      "priceWon": 9400,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면에도 표시"
+    },
+    {
+      "id": "482b75fbd6c86258",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "우삼겹볶음김치덮밥",
+      "priceWon": 7400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "7636e235b3111d69",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "열탄제육덮밥",
+      "priceWon": 7400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "d3da99ee2c651d04",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "돈까스덮밥",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0e8c408e40a92a2e",
+      "store": "역전우동",
+      "category": "덮밥류",
+      "name": "매콤치킨마요덮밥",
+      "priceWon": 7000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8e18265122c90169",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "치킨가라아게 정식 미니면세트",
+      "priceWon": 10500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면에도 표시"
+    },
+    {
+      "id": "2d1cc635d98cf563",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "치킨가라아게 정식",
+      "priceWon": 8500,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면에도 표시"
+    },
+    {
+      "id": "652f2bef50337f71",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "모듬까스 미니면세트",
+      "priceWon": 11300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "0233f3e6b1f22b6e",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "역전돈까스 미니면세트",
+      "priceWon": 10400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "8a2d190959b830d5",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "더블치즈돈까스 미니면세트",
+      "priceWon": 10800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면에도 표시"
+    },
+    {
+      "id": "f09bd627b7d8a882",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "유린기돈까스 미니면세트",
+      "priceWon": 10800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면에도 표시"
+    },
+    {
+      "id": "e49e388196836894",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "제육돈까스 미니면세트",
+      "priceWon": 10800,
+      "photoStatus": "표시",
+      "drawable": true,
+      "note": "추천메뉴 화면에도 표시"
+    },
+    {
+      "id": "705e3db5b98732a9",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "역전돈까스",
+      "priceWon": 8400,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "9647ef235f2eac4f",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "유린기돈까스",
+      "priceWon": 8800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "02668bf785e8a4a2",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "더블치즈돈까스",
+      "priceWon": 8800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "cc0a88786389221c",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "제육돈까스",
+      "priceWon": 8800,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "91d3c85d9350bd24",
+      "store": "역전우동",
+      "category": "돈까스&치킨",
+      "name": "모듬까스",
+      "priceWon": 9300,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "b2f3c6e8842db5f2",
+      "store": "역전우동",
+      "category": "롤김밥류(곁들임)",
+      "name": "데리마요롤",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "f541c86917056fd4",
+      "store": "역전우동",
+      "category": "롤김밥류(곁들임)",
+      "name": "타르타르롤",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "00985106389ea795",
+      "store": "역전우동",
+      "category": "롤김밥류(곁들임)",
+      "name": "참치마요롤",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "ebcb429bf2a91e98",
+      "store": "역전우동",
+      "category": "롤김밥류(곁들임)",
+      "name": "명란마요롤",
+      "priceWon": 4000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "c0056f231338fe3e",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "미니오코노미야키",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "5fe08a3b89473469",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "새우튀김",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "9cac3191b2483ea6",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "야채튀김",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "5b065295b8101fe9",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "불오뎅",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "cbd3c30214a1c843",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "매콤김말이",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "8a00ff4e2483a0cb",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "왕만두튀김",
+      "priceWon": 2500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "4e47a4998d43ba3c",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "사이드돈까스",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "2447b4292c80d544",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "양파마요치킨",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "a47bab7c46aeecf7",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "명란미니덮밥",
+      "priceWon": 3000,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "1894a559833b5eee",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "치킨미니덮밥",
+      "priceWon": 3500,
+      "photoStatus": "표시",
+      "drawable": true
+    },
+    {
+      "id": "e2c9c5ef511a6f09",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "공기밥",
+      "priceWon": 1000,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "a7a8bcb1b7f972b3",
+      "store": "역전우동",
+      "category": "사이드",
+      "name": "계란후라이",
+      "priceWon": 800,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "6a3d51c5d43aa3a3",
+      "store": "역전우동",
+      "category": "소스 추가",
+      "name": "돈까스 소스(30g)",
+      "priceWon": 500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "e57a1978be46164d",
+      "store": "역전우동",
+      "category": "소스 추가",
+      "name": "타르타르 소스(30g)",
+      "priceWon": 500,
+      "photoStatus": "표시",
+      "drawable": false
+    },
+    {
+      "id": "23022dcc24eae0a9",
+      "store": "역전우동",
+      "category": "소스 추가",
+      "name": "매콤소스(30g)",
+      "priceWon": 500,
+      "photoStatus": "표시",
+      "drawable": false
+    }
+  ]
+}

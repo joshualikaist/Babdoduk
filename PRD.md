@@ -13,7 +13,7 @@ The current product started as a personal food and social hub. The recurring cam
 Visitors currently need to discover the food tools through navigation, and “오늘 뭐 먹지?” refers both to available food and to a dish recommendation embedded in the magazine. The two questions are different:
 
 - **What is available?** A dated KAIST menu or a publishable free-food event. This is information, subject to source freshness and participation conditions.
-- **What should I choose?** One drawn idea: a cafeteria meal serving now or a popular delivery dish from the local food catalog. This is a suggestion, not confirmation that a venue sells it today.
+- **What should I choose?** One drawn idea: a cafeteria meal serving now, a campus restaurant menu transcribed from a photographed menu, or a popular delivery dish from the local food catalog. Restaurant and delivery picks are suggestions, not confirmation that a venue sells them today.
 
 Principles: solve the meal task before decoration; distinguish facts, suggestions and unknowns; show one clear next action; keep editorial curiosity without turning every article into promotion; use playfulness only where it helps choosing; keep public data within approved publication boundaries.
 
@@ -35,7 +35,7 @@ These are hypotheses from the current features, not measured audience segments.
 | Tier | Experience | Present implementation |
 | --- | --- | --- |
 | Core | **Check today's food**: KAIST cafeteria, publishable upcoming free food | `ggongbab.html`, `js/ggongbab.js`, `js/kaist-menu.js` |
-| Core | **Choose a dish** (오늘 뭐 먹지): one button and the world cup's capsule machine draw today's KAIST cafeteria meal or a delivery dish, no choices to make | `choose.html` with `js/pick.js`, `js/food-engine.js` (owner 2026-11-04, the machine 2026-11-05; docs/PICK.md) |
+| Core | **Choose a dish** (오늘 뭐 먹지): one button and the world cup's capsule machine draw a KAIST cafeteria meal, a campus restaurant menu or a delivery dish, no choices to make | `choose.html` with `js/pick.js`, `js/food-engine.js` (owner 2026-11-04, the machine 2026-11-05; docs/PICK.md) |
 | Secondary | Explore: the source-backed magazine, curated restaurant map, history and social channels | `mukbang.html` (`docs/MAGAZINE_DISCOVERY.md`), `history.html`, external links |
 | Secondary | Participate: verified events and collaborations | `event.html` |
 | Unreleased (lab only) | Food expense and meal log: personal, creator-authored or explicitly separated modes; owner decision open | `food.html` (noindex, nofollow; linked only from `lab.html`), `data/food-log.json`, browser localStorage |

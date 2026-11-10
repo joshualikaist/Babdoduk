@@ -4,8 +4,8 @@
 
    메뉴 뽑기: the machine cranks three times while its screen runs through food, squashes, and drops one
    capsule that flies up and pops open on the pick; the card under the button names it. The pick is a
-   KAIST cafeteria meal still being served today (main campus) or a popular delivery dish (MIN_POPULARITY),
-   a photographed one; while a cafeteria meal is being served, about four draws in ten are one. A
+   KAIST cafeteria meal still being served today, a campus restaurant menu transcribed from photos, or a
+   popular delivery dish (MIN_POPULARITY). While a cafeteria meal is being served, about four draws in ten are one. A
    press during a draw lands it at once; reduced motion, forced colours or no Web Animations show the
    pick straight away. Only transform and opacity move. (Opening a delivery app waits for the owner,
    2026-11-04: "이거는 나중에 구현".)
@@ -95,14 +95,23 @@
       .filter(function (item) { return item && !/^\[?\s*칼로리/.test(item) && !/kcal\]?$/i.test(item); });
   }
 
-  // One pick from `meals` (servingMeals) and `dishes` (delivery dishes), `rand` a [0, 1) source:
-  // {meal} about CAFETERIA_SHARE of the time while there is one, else {dish}, weighted by popularity.
-  function draw(meals, dishes, rand) {
+  // A daily cafeteria meal, a photographed campus restaurant menu, or a delivery dish.
+  // Cafeteria keeps its 40% share when available; the remaining share is split between campus
+  // restaurants and delivery when both are available. Delivery dishes are weighted by popularity.
+  function draw(meals, dishes, rand, campus) {
     rand = rand || Math.random;
     meals = meals || [];
     dishes = dishes || [];
-    if (meals.length && (!dishes.length || rand() < CAFETERIA_SHARE)) {
+    campus = campus || [];
+    if (meals.length && (!(dishes.length || campus.length) || rand() < CAFETERIA_SHARE)) {
       return { meal: meals[Math.floor(rand() * meals.length)] };
+    }
+    // Select a store first so larger menus do not drown out smaller restaurants.
+    if (campus.length && (!dishes.length || rand() < 0.5)) {
+      var stores = Array.from(new Set(campus.map(function (item) { return item.store; })));
+      var store = stores[Math.floor(rand() * stores.length)];
+      var choices = campus.filter(function (item) { return item.store === store; });
+      return { campus: choices[Math.floor(rand() * choices.length)] };
     }
     if (!dishes.length) return null;
     var weights = dishes.map(function (f) { return Math.max(1, Number(f.popularity) || 3); });
@@ -126,7 +135,7 @@
     status: document.getElementById('pickStatus'),
     sound: document.getElementById('pickSound'),
   };
-  var state = { cafeteria: null, dishes: null, run: null, drawn: 0, last: null };
+  var state = { cafeteria: null, dishes: null, campus: [], run: null, drawn: 0, last: null };
 
   function lang() { return window.babdodukGetLang ? window.babdodukGetLang() : 'ko'; }
   function t(key, fallback) {
@@ -202,6 +211,12 @@
   // ---- data ------------------------------------------------------------------------------------------
   var menuReady = (Menu && Menu.loadTodayMenu ? Menu.loadTodayMenu(getJson) : getJson('data/kaist-menu/latest.json'))
     .then(function (data) { state.cafeteria = data; }, function () {});
+  var campusReady = getJson('data/foods/campus-kiosk.json').then(function (data) {
+    state.campus = data && Array.isArray(data.items) ? data.items.filter(function (item) {
+      return item && item.drawable === true && typeof item.store === 'string' && item.store &&
+        typeof item.name === 'string' && item.name;
+    }) : [];
+  }, function () { state.campus = []; });
   // The world cup's photos with their credits (js/pick-photos.js, written from data/content/worldcup.json):
   // only photographed dishes are drawn, each capsule opening on its photo. Without them every delivery
   // dish stays in, on its kind's emoji.
@@ -253,7 +268,7 @@
     return a;
   }
   function q(sel) { return els.machine.querySelector(sel); }
-  function pickEmoji(pick) { return pick.meal ? '🍱' : pick.kind.emoji; }
+  function pickEmoji(pick) { return pick.meal ? '🍱' : pick.campus ? '🍽️' : pick.kind.emoji; }
 
   // The capsule of a pick: its face (the photo or an emoji) under half a coloured shell.
   function capsule(pick) {
@@ -375,6 +390,22 @@
         '<ul class="pick-menu">' + cleanItems(info.items).slice(0, 8).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul>' +
         (rows.length ? '<ul class="pick-facts">' + rows.join('') + '</ul>' : '') +
         '<div class="pick-actions"><a class="pick-btn" href="ggongbab.html#menu">' + esc(t('pick.toMenu', '학식 전체 보기')) + ' →</a></div>';
+    } else if (pick.campus) {
+      var campus = pick.campus;
+      name = campus.name;
+      var price = Number.isInteger(campus.priceWon) && campus.priceWon >= 0
+        ? '<li><span>' + esc(t('pick.price', '가격')) + '</span> ₩' + campus.priceWon.toLocaleString('en-US') + '</li>' : '';
+      var status = campus.photoStatus === '품절' || campus.photoStatus === '일시품절'
+        ? t('pick.photoSoldOut', '촬영 당시 품절로 표시')
+        : campus.photoStatus === '화면별 상이' ? t('pick.photoMixed', '촬영 화면마다 판매 표시가 달랐어요') : '';
+      var seasonal = typeof campus.category === 'string' && /여름|겨울|계절/.test(campus.category)
+        ? t('pick.seasonal', '계절 메뉴 · 판매 기간 확인') : '';
+      html = '<p class="pick-result-kicker">🍽️ ' + esc(t('pick.kind.campus', '교내 식당')) + '</p>' +
+        '<h2 class="pick-result-title" tabindex="-1">' + esc(name) + '</h2>' +
+        '<ul class="pick-facts"><li><span>' + esc(t('pick.restaurant', '식당')) + '</span> ' + esc(campus.store) + '</li>' + price + '</ul>' +
+        (status ? '<p class="pick-note">' + esc(status) + '</p>' : '') +
+        (seasonal ? '<p class="pick-note">' + esc(seasonal) + '</p>' : '') +
+        '<p class="pick-note">' + esc(t('pick.campusNote', '촬영한 메뉴판 기준이에요. 가격과 판매 여부는 매장에서 확인해 주세요.')) + '</p>';
     } else {
       var dish = pick.dish, photo = photoOf(dish.id), credit = '';
       name = dishName(dish);
@@ -403,8 +434,8 @@
     if (state.run) { landNow(); return; }
     els.go.setAttribute('aria-busy', 'true');
     els.goLabel.textContent = t('pick.loading', '메뉴 불러오는 중');
-    Promise.all([menuReady, foodsReady]).then(function () {
-      var pick = draw(servingNow(), state.dishes);
+    Promise.all([menuReady, foodsReady, campusReady]).then(function () {
+      var pick = draw(servingNow(), state.dishes, null, state.campus);
       if (pick && pick.dish) pick.kind = kindOf(pick.dish);
       if (!pick) {
         els.go.removeAttribute('aria-busy');
