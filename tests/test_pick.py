@@ -54,7 +54,7 @@ def test_a_menu_line_reads_without_allergen_numbers_or_the_calorie_line():
         "백미밥", "제육볶음", "알감자조림", "배추김치"]
 
 
-def test_a_draw_is_a_cafeteria_meal_about_four_in_ten_while_one_is_served_else_a_delivery_dish():
+def test_a_draw_stays_on_campus_seven_in_ten_and_is_a_delivery_dish_otherwise():
     meals = [{"resto": {"id": "a"}, "meal": "lunch"}, {"resto": {"id": "b"}, "meal": "lunch"}]
     dishes = [{"id": "x", "popularity": 1}, {"id": "y", "popularity": 3}]
 
@@ -63,9 +63,9 @@ def test_a_draw_is_a_cafeteria_meal_about_four_in_ten_while_one_is_served_else_a
         return run(f"(() => {{ const v = {seq}; let i = 0; const r = P.draw({json.dumps(meals_)}, {json.dumps(dishes_)}, () => v[i++]);"
                    " return r && (r.meal ? 'meal:' + r.meal.resto.id : 'dish:' + r.dish.id); })()")
 
-    assert draw(meals, dishes, [0.39, 0.6]) == "meal:b"          # under the cafeteria share, then which meal
-    assert draw(meals, dishes, [0.4, 0.2]) == "dish:x"           # weights 1 and 3: the first quarter is x
-    assert draw(meals, dishes, [0.4, 0.3]) == "dish:y"
+    assert draw(meals, dishes, [0.69, 0.6]) == "meal:b"          # on campus, no campus menus: the cafeteria, then which meal
+    assert draw(meals, dishes, [0.7, 0.2]) == "dish:x"           # delivery 3 in 10; weights 1 and 3: the first quarter is x
+    assert draw(meals, dishes, [0.7, 0.3]) == "dish:y"
     assert draw([], dishes, [0.1]) == "dish:x"                   # no meal being served: always a dish
     assert draw(meals, [], [0.1]) == "meal:a"                    # no dishes: always a meal, no share drawn
     assert draw([], [], [0.5]) is None
@@ -132,3 +132,8 @@ def test_campus_pick_is_balanced_by_store_and_falls_back_when_sources_are_empty(
     assert draw([], [{"id": "d"}], [0.8, 0.2])["dish"]["id"] == "d"
     assert draw([], [], [0.9, 0.1])["campus"]["name"] == "b1"
     assert draw([{"meal": "lunch"}], [], [0.1, 0.5])["meal"]["meal"] == "lunch"
+    # Owner 2026-11-10: cafeteria and campus restaurants 7 in 10 together, delivery 3; cafeteria 4 of the 7.
+    lunch, dish = [{"meal": "lunch"}], [{"id": "d"}]
+    assert draw(lunch, dish, [0.69, 0.5, 0.0])["meal"]["meal"] == "lunch"      # 0.5 < 4/7
+    assert draw(lunch, dish, [0.69, 0.6, 0.9, 0.0])["campus"]["name"] == "b1"  # 0.6 >= 4/7
+    assert draw(lunch, dish, [0.7, 0.0])["dish"]["id"] == "d"

@@ -16,7 +16,10 @@
   var MEALS = ['breakfast', 'lunch', 'dinner'];
   // When a cafeteria lists no hours: the usual KAIST windows.
   var MEAL_END = { breakfast: '09:30', lunch: '13:30', dinner: '19:00' };
-  // While a cafeteria meal is being served, the share of draws that pick one.
+  // Owner 2026-11-10: cafeteria meals and campus restaurants together take 7 draws in 10, delivery 3.
+  // While a cafeteria meal is being served, it takes CAFETERIA_SHARE of all draws and the campus
+  // restaurants the rest of the 7; with no meal served, the campus restaurants take all 7.
+  var LOCAL_SHARE = 0.7;
   var CAFETERIA_SHARE = 0.4;
   // Only dishes the catalog rates 4 or 5 for popularity: the delivery-app staples (치킨, 짜장면, 떡볶이,
   // 마라탕 …). Owner 2026-11-05: "배달음식이 너무나도 한국 정서와 조금 다른 것 같다"; at 3 and below the
@@ -105,19 +108,19 @@
     return 2 * (likes + 2) / (likes + rerolls + 4);
   }
   // A daily cafeteria meal, a photographed campus restaurant menu, or a delivery dish.
-  // Cafeteria keeps its 40% share when available; the remaining share is split between campus
-  // restaurants and delivery when both are available. Delivery weights and taste stay unchanged.
+  // On campus (cafeteria or campus restaurant) LOCAL_SHARE of the time, else delivery; when one side
+  // has nothing to draw, the other side takes every draw. Delivery weights and taste stay unchanged.
   function draw(meals, dishes, rand, votes, campus) {
     rand = rand || Math.random;
     meals = meals || [];
     dishes = dishes || [];
     votes = votes || {};
     campus = campus || [];
-    if (meals.length && (!(dishes.length || campus.length) || rand() < CAFETERIA_SHARE)) {
-      return { meal: meals[Math.floor(rand() * meals.length)] };
-    }
-    // Select a store first so larger menus do not drown out smaller restaurants.
-    if (campus.length && (!dishes.length || rand() < 0.5)) {
+    if ((meals.length || campus.length) && (!dishes.length || rand() < LOCAL_SHARE)) {
+      if (meals.length && (!campus.length || rand() < CAFETERIA_SHARE / LOCAL_SHARE)) {
+        return { meal: meals[Math.floor(rand() * meals.length)] };
+      }
+      // Select a store first so larger menus do not drown out smaller restaurants.
       var stores = Array.from(new Set(campus.map(function (item) { return item.store; })));
       var store = stores[Math.floor(rand() * stores.length)];
       var choices = campus.filter(function (item) { return item.store === store; });
