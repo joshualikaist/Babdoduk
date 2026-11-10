@@ -447,6 +447,7 @@
   "my.account.edit": "바꾸기",
   "my.account.link": "{p} 로그인도 연결",
   "my.account.linkFail": "지금은 로그인 방법을 연결할 수 없어요",
+  "my.account.linkGoogleTalk": "Google 연결은 카카오톡 안에서 막혀 있어요. 기본 브라우저에서 카카오로 로그인한 뒤 연결해 주세요.",
   "my.account.linkNote": "같은 사람이 두 방법으로 따로 가입하면 저장 목록이 나뉘어요. 연결하면 한 계정이 돼요.",
   "my.account.linked": "로그인 방법을 연결했어요",
   "my.account.name": "표시 이름",

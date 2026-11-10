@@ -51,7 +51,7 @@ Policies:
   - The browser's own copy is never rewritten.
   - The time each user's data was merged on this browser is recorded in `babdoduk-account-merged` `{v:1, users:{<uid>: iso}}`, at most 10 users. On later logins only items saved after that time are merged. This stops an item deleted on another device from coming back from an old browser copy.
 * **Shared computers.** Logging out leaves the browser's guest list alone, and the account list is never written into the browser. A guest's list on a shared PC can therefore join the account. The page tells the person right away and offers 되돌리기 ("내 것이 아니면 되돌릴 수 있어요").
-* **Two providers.** Supabase links accounts automatically only when both providers give the same verified email. Kakao may provide no email, in which case the two logins become separate accounts. The page explains this and offers **{p} 로그인도 연결** (`linkIdentity`). That requires Supabase's Manual Linking setting; when it is off, the page says "지금은 로그인 방법을 연결할 수 없어요".
+* **Two providers.** Supabase links accounts automatically only when both providers give the same verified email. Kakao may provide no email, in which case the two logins become separate accounts. The page explains this and offers **{p} 로그인도 연결** (`linkIdentity`). That requires Supabase's Manual Linking setting; when it is off, the page says "지금은 로그인 방법을 연결할 수 없어요". Inside KakaoTalk's in-app browser Google refuses the sign-in, and the default browser opens without this session, so the page shows no Google link button there: it says "Google 연결은 카카오톡 안에서 막혀 있어요. 기본 브라우저에서 카카오로 로그인한 뒤 연결해 주세요." with **기본 브라우저로 열기** (`kakaotalk://web/openExternal`). Linking Kakao stays a button inside the app.
 * **Display name.** On the first login, the name the provider gives (`full_name`, `name` or `nickname`) is stored as a private `profiles.display_name`, which the person can change or clear. It is never shown anywhere public.
 
 ## Data (supabase/migrations/011_accounts.sql)
@@ -133,7 +133,7 @@ Policies:
 3. Supabase Authentication:
    - Enter the keys under Providers for Google and Kakao. For Kakao, turn on the option that allows users without an email.
    - URL Configuration: Site URL `https://www.babdodukms.com`; Redirect URLs `https://babdoduk-lab.vercel.app/**`, `https://www.babdodukms.com/**` and `http://localhost:8000/**`.
-   - (Optional) Turn on Manual Linking.
+   - Turn on Manual Linking (needed for **{p} 로그인도 연결**; it is off by default).
 4. Apply `011_accounts.sql` in the SQL editor.
 5. Change `enabled: true` in `js/babdoduk-auth-config.js` (lab commit), then test with a real phone on babdoduk-lab.
 

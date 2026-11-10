@@ -223,11 +223,21 @@
     html += '</dl>';
     html += '<p class="my-fine">' + esc(t('my.account.privateNote', '프로필은 공개되지 않아요. 이메일은 받지 않거나 받아도 화면에 쓰지 않아요.')) + '</p>';
     var missing = A.PROVIDERS.filter(function (p) { return linked.indexOf(p) === -1; });
+    // Google refuses the talk app's own browser, and the default browser opens without this session, so
+    // linking Google there starts with signing in again outside the app.
+    var inTalk = L && L.inTalkApp && L.inTalkApp(navigator.userAgent);
+    var linkable = missing.filter(function (p) { return !(inTalk && p === 'google'); });
     if (missing.length) {
-      html += '<div class="my-row-actions">' + missing.map(function (p) {
-        return '<button type="button" class="btn btn-secondary my-small" data-my-link="' + p + '">' +
-          esc(t('my.account.link', '{p} 로그인도 연결', { p: providerLabel(p) })) + '</button>';
-      }).join('') + '</div>';
+      if (linkable.length) {
+        html += '<div class="my-row-actions">' + linkable.map(function (p) {
+          return '<button type="button" class="btn btn-secondary my-small" data-my-link="' + p + '">' +
+            esc(t('my.account.link', '{p} 로그인도 연결', { p: providerLabel(p) })) + '</button>';
+        }).join('') + '</div>';
+      }
+      if (linkable.length < missing.length) {
+        html += '<p class="my-note">' + esc(t('my.account.linkGoogleTalk', 'Google 연결은 카카오톡 안에서 막혀 있어요. 기본 브라우저에서 카카오로 로그인한 뒤 연결해 주세요.')) +
+          ' <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('my.out.openExternal', '기본 브라우저로 열기')) + '</a></p>';
+      }
       html += '<p class="my-fine">' + esc(t('my.account.linkNote', '같은 사람이 두 방법으로 따로 가입하면 저장 목록이 나뉘어요. 연결하면 한 계정이 돼요.')) + '</p>';
     }
     html += '<div class="my-row-actions"><button type="button" class="btn btn-secondary" data-my-signout>' + esc(t('my.account.signout', '로그아웃')) + '</button></div>';

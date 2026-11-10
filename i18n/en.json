@@ -447,6 +447,7 @@
   "my.account.edit": "Change",
   "my.account.link": "Also sign in with {p}",
   "my.account.linkFail": "Can't link a sign-in method right now",
+  "my.account.linkGoogleTalk": "Google blocks linking inside KakaoTalk. Open this page in your default browser, sign in with Kakao there, then link Google.",
   "my.account.linkNote": "If you sign up twice with different methods, your saved lists are split. Linking makes them one account.",
   "my.account.linked": "Sign-in method linked",
   "my.account.name": "Display name",
