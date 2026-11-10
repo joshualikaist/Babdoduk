@@ -238,6 +238,12 @@ body::after {
   outline-offset: -4px;
 }
 
+/* The sign-in icon js/site.js adds beside Instagram (마이 밥도둑). */
+.site-nav-my:hover,
+.site-nav-my[aria-current="page"] {
+  color: var(--color-accent);
+}
+
 .site-nav-wordmark {
   display: inline-flex;
   align-items: center;

@@ -44,6 +44,29 @@
   window.babdodukGetLang = function () {
     return document.documentElement.lang === 'en' ? 'en' : 'ko';
   };
+  // 마이 밥도둑 (my.html, docs/MY_BABDODUK.md): every page gets a person icon beside Instagram that opens it
+  // (owner 2026-11-10: no way in otherwise; on production since owner 2026-11-11), named 로그인, or
+  // 마이 밥도둑 once this browser holds a sign-in.
+  var insta = document.getElementById('navInstagram');
+  if (insta && !document.getElementById('navMy')) {
+    var signedIn = false;
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        if (/^sb-[a-z0-9]+-auth-token$/.test(localStorage.key(i) || '')) signedIn = true;
+      }
+    } catch (e) {}
+    var my = document.createElement('a');
+    my.id = 'navMy';
+    my.className = 'site-nav-insta site-nav-my';
+    my.href = 'my.html';
+    my.setAttribute('data-i18n-aria-key', signedIn ? 'nav.myAria' : 'nav.loginAria');
+    my.setAttribute('aria-label', signedIn ? '마이 밥도둑' : '로그인');
+    if (/\/my\.html$/.test(location.pathname)) my.setAttribute('aria-current', 'page');
+    my.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
+      '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg>';
+    insta.insertAdjacentElement('afterend', my);
+  }
+
   var saved = 'ko';
   try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
   applyLang(saved === 'en' ? 'en' : 'ko');
