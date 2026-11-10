@@ -794,6 +794,16 @@ body::after {
   text-align: right;
   color: var(--color-ink-muted);
   font-weight: 500;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0;
+}
+
+/* The privacy policy is the one legal link every page carries; bold so it is easy to find. */
+.footer-apple-privacy {
+  font-weight: 700;
 }
 
 .footer-apple-copy {
