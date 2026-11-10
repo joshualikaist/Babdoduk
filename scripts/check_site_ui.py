@@ -443,8 +443,8 @@ def pick_tools(browser):
          "lunch": {"items": ["백미밥", "제육볶음(5,6,10)", "[칼로리:890kcal]"], "hours": "11:30~13:30", "price": "5,000원"},
          "dinner": {"items": []}},
         {"id": "r2", "name": "문지캠퍼스", "building": "문지", "lunch": {"items": ["비빔밥"], "hours": "11:30~13:30"}}]}
-    campus = {"items": [{"store": "별리달리", "name": "알밥+치킨+음료세트", "priceWon": 7600, "photoStatus": "품절", "drawable": True},
-                         {"store": "역전우동", "name": "우동", "priceWon": None, "drawable": True},
+    campus = {"items": [{"store": "역전우동", "name": "우동", "priceWon": None, "drawable": True},
+                         {"store": "별리달리", "name": "알밥+치킨+음료세트", "priceWon": 7600, "photoStatus": "품절", "drawable": True},
                          {"store": "별리달리", "name": "공기밥 추가", "priceWon": 1000, "drawable": False}]}
 
     def open_page(reduced, lang="ko"):
@@ -489,8 +489,9 @@ def pick_tools(browser):
     check(page.locator("#pickGoLabel").inner_text() == "다시 뽑기", "the button says 다시 뽑기")
     check(page.locator(".pk-cap").count() == 1 and page.locator(".pk-strip").inner_text() == "🍱", "one capsule; the screen shows the pick")
 
-    # 0.41: a campus restaurant; the original set name and photographed price survive.
-    page.evaluate("window.__rand = 0.41")
+    # 0.65: on campus (< 0.7) but past the cafeteria's 4 in 7, so a campus restaurant (the second
+    # store, 별리달리); the original set name and photographed price survive.
+    page.evaluate("window.__rand = 0.65")
     page.locator("#pickGo").click()
     page.wait_for_function("document.querySelector('.pick-result-kicker').textContent.includes('교내 식당')")
     check(page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "the set stays one menu")
