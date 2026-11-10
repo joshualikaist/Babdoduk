@@ -338,6 +338,21 @@ def test_linking_the_other_login_and_what_the_talk_app_shows_instead(browser):
     context.close()
 
 
+def test_a_link_that_came_back_with_an_error_is_not_called_a_success(browser):
+    context, page, errors, _ = open_page(browser, db={"user": user()})
+    page.goto(f"https://{HOST}/my.html?next=linked&error=server_error&error_code=identity_already_exists", wait_until="networkidle")
+    page.wait_for_function("() => document.getElementById('myToast').textContent.length > 0")
+    toast = page.locator("#myToast").inner_text()
+    assert "연결할 수 없어요" in toast and "연결했어요" not in toast
+    context.close()
+    context, page, errors, _ = open_page(browser, db={"user": user()})
+    page.goto(f"https://{HOST}/my.html?next=linked", wait_until="networkidle")
+    page.wait_for_function("() => document.getElementById('myToast').textContent.length > 0")
+    assert "연결했어요" in page.locator("#myToast").inner_text()
+    assert errors == []
+    context.close()
+
+
 def test_a_failed_login_says_so(browser):
     context, page, errors, _ = open_page(browser)
     page.goto(f"https://{HOST}/my.html?error=access_denied&error_description=x", wait_until="networkidle")
