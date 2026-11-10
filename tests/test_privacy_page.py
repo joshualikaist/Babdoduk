@@ -117,3 +117,15 @@ def test_english_and_the_table_of_contents(browser):
     assert not [r for r in requests if "supabase" in r]
     assert errors == []
     context.close()
+
+
+def test_every_page_footer_links_the_policy():
+    footer = (ROOT / "shared/footer.html").read_text(encoding="utf-8")
+    link = '<a href="privacy.html" class="footer-apple-a footer-apple-privacy" data-i18n="footer.privacy">개인정보처리방침</a>'
+    assert link in footer
+    pages = [p for p in ROOT.glob("*.html") if 'class="site-footer"' in p.read_text(encoding="utf-8")]
+    assert len(pages) >= 10
+    for page in pages:
+        assert link in page.read_text(encoding="utf-8"), page.name
+    assert KO["footer.privacy"] == "개인정보처리방침"
+    assert EN["footer.privacy"] == "Privacy Policy"
