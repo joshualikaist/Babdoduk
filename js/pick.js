@@ -17,10 +17,10 @@
   // When a cafeteria lists no hours: the usual KAIST windows.
   var MEAL_END = { breakfast: '09:30', lunch: '13:30', dinner: '19:00' };
   // Owner 2026-11-10: cafeteria meals and campus restaurants together take 7 draws in 10, delivery 3.
-  // While a cafeteria meal is being served, it takes CAFETERIA_SHARE of all draws and the campus
-  // restaurants the rest of the 7; with no meal served, the campus restaurants take all 7.
+  // While a cafeteria meal is being served, it takes 2 of the 10 draws and the campus restaurants 5
+  // (owner 2026-11-10: 학식 2, 교내 식당 5, 배달 3); with no meal served, the campus restaurants take all 7.
   var LOCAL_SHARE = 0.7;
-  var CAFETERIA_SHARE = 0.4;
+  var CAFETERIA_SHARE = 0.2;
   // Only dishes the catalog rates 4 or 5 for popularity: the delivery-app staples (치킨, 짜장면, 떡볶이,
   // 마라탕 …). Owner 2026-11-05: "배달음식이 너무나도 한국 정서와 조금 다른 것 같다"; at 3 and below the
   // pool was 354 dishes such as 루면 or 비앙비앙면 and drew four times in five. scripts/page_content.py

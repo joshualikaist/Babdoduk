@@ -132,8 +132,8 @@ def test_campus_pick_is_balanced_by_store_and_falls_back_when_sources_are_empty(
     assert draw([], [{"id": "d"}], [0.8, 0.2])["dish"]["id"] == "d"
     assert draw([], [], [0.9, 0.1])["campus"]["name"] == "b1"
     assert draw([{"meal": "lunch"}], [], [0.1, 0.5])["meal"]["meal"] == "lunch"
-    # Owner 2026-11-10: cafeteria and campus restaurants 7 in 10 together, delivery 3; cafeteria 4 of the 7.
+    # Owner 2026-11-10: cafeteria and campus restaurants 7 in 10 together, delivery 3; cafeteria 2 of the 10, campus 5.
     lunch, dish = [{"meal": "lunch"}], [{"id": "d"}]
-    assert draw(lunch, dish, [0.69, 0.5, 0.0])["meal"]["meal"] == "lunch"      # 0.5 < 4/7
-    assert draw(lunch, dish, [0.69, 0.6, 0.9, 0.0])["campus"]["name"] == "b1"  # 0.6 >= 4/7
+    assert draw(lunch, dish, [0.69, 0.28, 0.0])["meal"]["meal"] == "lunch"     # 0.28 < 2/7
+    assert draw(lunch, dish, [0.69, 0.29, 0.9, 0.0])["campus"]["name"] == "b1" # 0.29 >= 2/7
     assert draw(lunch, dish, [0.7, 0.0])["dish"]["id"] == "d"
