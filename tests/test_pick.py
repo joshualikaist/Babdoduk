@@ -106,3 +106,29 @@ def test_taste_is_one_without_votes_and_moves_slowly_towards_two_or_zero():
     votes = {"x": {"likes": 0, "rerolls": 100}}                   # x: weight 4 * 0.04 (3.7% of draws), y: 4
     picked = run(f"[0.01, 0.05, 0.5, 0.99].map(v => P.draw([], {json.dumps(dishes)}, () => v, {json.dumps(votes)}).dish.id)")
     assert picked == ["x", "y", "y", "y"]
+
+
+def test_campus_menu_source_keeps_stores_sets_and_uncertain_prices():
+    items = json.loads((ROOT / "data/foods/campus-kiosk.json").read_text(encoding="utf-8"))["items"]
+    assert len(items) == 454 and len({i["id"] for i in items}) == 454
+    assert len({i["store"] for i in items}) == 10
+    assert all(i["name"] and i["category"] and isinstance(i["drawable"], bool) for i in items)
+    assert all(i["priceWon"] is None or isinstance(i["priceWon"], int) and i["priceWon"] >= 0 for i in items)
+    assert sum(i["priceWon"] is None for i in items) == 4
+    assert any(i["name"] == "별리달리버터알밥+치킨+음료세트" and i["drawable"] for i in items)
+    assert all(not i["drawable"] for i in items if i["name"] in {"공기밥", "공기밥 추가", "계란후라이", "돈까스 소스(30g)"})
+    assert all(not i["drawable"] for i in items if i["name"] in {"김말이", "쿠키", "올리브 브레드", "군만두7p",
+        "제육볶음추가(고기만)", "돼지불백추가(고기만)", "(추가)판모밀전용 육수 고명"})
+    assert all(i["drawable"] for i in items if i["name"] in {"반미샌드위치T/O", "명란미니덮밥", "리코타치즈샐러드"})
+
+
+def test_campus_pick_is_balanced_by_store_and_falls_back_when_sources_are_empty():
+    campus = [{"store": "A", "name": "a1"}, {"store": "A", "name": "a2"}, {"store": "B", "name": "b1"}]
+    items = json.dumps(campus)
+    def draw(meals, dishes, numbers):
+        return run(f"(() => {{let i=0, v={json.dumps(numbers)}; return P.draw({json.dumps(meals)}, {json.dumps(dishes)}, () => v[i++], {{}}, {items});}})()")
+    assert draw([], [{"id": "d"}], [0.2, 0.1, 0.9])["campus"]["name"] == "a2"
+    assert draw([], [{"id": "d"}], [0.2, 0.9, 0.1])["campus"]["name"] == "b1"
+    assert draw([], [{"id": "d"}], [0.8, 0.2])["dish"]["id"] == "d"
+    assert draw([], [], [0.9, 0.1])["campus"]["name"] == "b1"
+    assert draw([{"meal": "lunch"}], [], [0.1, 0.5])["meal"]["meal"] == "lunch"

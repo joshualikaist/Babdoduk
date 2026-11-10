@@ -917,6 +917,30 @@ def validate_authored(root: Path = ROOT) -> list[str]:
         for path in sorted((root / "data" / "foods" / "packs").glob("*.json")):
             if path.relative_to(root).as_posix() not in listed:
                 errors.append(f"foods pack {path.name} is not in the catalog")
+    kiosk = root / "data" / "foods" / "campus-kiosk.json"
+    if kiosk.exists():
+        data = load(kiosk)
+        items = data.get("items") if isinstance(data, dict) else None
+        if not isinstance(items, list) or not items:
+            errors.append("campus-kiosk: items must be a nonempty list")
+        else:
+            ids = set()
+            for item in items:
+                if not isinstance(item, dict):
+                    errors.append("campus-kiosk: item must be an object")
+                    continue
+                ident = item.get("id")
+                if not isinstance(ident, str) or not re.fullmatch(r"[0-9a-f]{16}", ident) or ident in ids:
+                    errors.append("campus-kiosk: item id must be unique and valid")
+                if isinstance(ident, str):
+                    ids.add(ident)
+                if any(not isinstance(item.get(k), str) or not item[k].strip() for k in ("store", "category", "name", "photoStatus")):
+                    errors.append("campus-kiosk: store, category, name and photo status are required")
+                price = item.get("priceWon")
+                if price is not None and (type(price) is not int or price < 0):
+                    errors.append("campus-kiosk: price must be a nonnegative integer or unknown")
+                if type(item.get("drawable")) is not bool:
+                    errors.append("campus-kiosk: drawable must be boolean")
     log_path = root / "data" / "food-log.json"
     if log_path.exists():
         dates = set()

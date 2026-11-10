@@ -30,7 +30,7 @@ Python collectors → private raw item and attachments → PII sanitizer → rul
                                                 └─> index.html (home summary, live only)
 
 LOCAL FRONTEND STATE
-data/foods/catalog.json + 7 packs → food engine → 오늘 뭐 먹지 capsule machine (choose.html, js/pick.js; with data/kaist-menu/ for the cafeteria and data/content/worldcup.json photos)
+data/foods/catalog.json + 7 packs → food engine → 오늘 뭐 먹지 capsule machine (choose.html, js/pick.js; with data/kaist-menu/ for the cafeteria, data/foods/campus-kiosk.json for photographed campus restaurant menus, and data/content/worldcup.json photos)
 food.html (unreleased, lab only) + authored data/food-log.json + browser-local entries/preferences/filters
 
 OPERATIONS
@@ -74,6 +74,7 @@ Twelve HTML files are the route entry points (eleven on main, where `cardnews.ht
 | `data/ggongbab/latest.json` | Approved export in `scripts/refresh_ggongbab.py` | Hub and home; validation precedes the final write and a failure keeps the previous file |
 | `data/ggongbab/archive/index.json` | Same export, same clock (past listings, 30 days) | Hub only, fetched separately; a failed archive keeps the previous file without blocking `latest.json`, and a failed fetch leaves the live feed untouched |
 | `data/foods/catalog.json`, 7 packs | Human-authored; the packs are the source (the Python generators retired 2026-10-12) and `validate_content.py --only authored` keeps their rules | Browser-only dish suggestion catalog, not restaurant inventory |
+| `data/foods/campus-kiosk.json` | Human-authored from owner-provided photographed menus; `validate_content.py --only authored` checks IDs and fields | Restaurant menu suggestions, with photographed prices and status; current sales and opening hours are unverified |
 | `data/content/labels.json` | Human-authored shared labels | The pipeline (`scripts/content_labels.py`) and, through `scripts/sync_site_chrome.py`, the pages; never fetched or deployed |
 | `data/content/events.json`, `history.json` | Human-authored news, events and timeline (`docs/EVENT_DETAIL_FIELDS.md`) | `event.html` and `history.html`, through `scripts/sync_site_chrome.py`; never fetched or deployed |
 | `data/food-log.json` | Human-authored | `food.html` combines it with browser-local entries by date and labels each day's source |
