@@ -489,7 +489,7 @@ def pick_tools(browser):
     check(page.locator("#pickGoLabel").inner_text() == "다시 뽑기", "the button says 다시 뽑기")
     check(page.locator(".pk-cap").count() == 1 and page.locator(".pk-strip").inner_text() == "🍱", "one capsule; the screen shows the pick")
 
-    # 0.65: on campus (< 0.7) but past the cafeteria's 4 in 7, so a campus restaurant (the second
+    # 0.65: on campus (< 0.7) but past the cafeteria's 2 in 7, so a campus restaurant (the second
     # store, 별리달리); the original set name and photographed price survive.
     page.evaluate("window.__rand = 0.65")
     page.locator("#pickGo").click()
