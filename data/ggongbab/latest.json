@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T11:43:29+09:00",
+  "generatedAt": "2026-11-10T11:55:07+09:00",
   "timezone": "Asia/Seoul",
-  "count": 39,
+  "count": 40,
   "events": [
     {
       "id": "1d5a7de7-1ecd-4641-b465-8c3f12e852f2",
@@ -1494,6 +1494,44 @@
       },
       "audience": {
         "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "58780475-64ae-41b3-bb27-b1874a265c02",
+      "title": "2026 산업디자인학과 학과설명회",
+      "summary": "새내기들을 위한 산업디자인학과 학과설명회입니다. 참여자에게 싸이버거세트 및 과일요거트모찌를 제공합니다.",
+      "startAt": "2026-11-25T18:00:00+09:00",
+      "endAt": "2026-11-25T19:30:00+09:00",
+      "dateText": "11월 25일 (수)",
+      "timeText": "18:00~19:30",
+      "location": {
+        "name": "디지털인문사회과학부동",
+        "building": "N4",
+        "room": "시청각실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "싸이버거세트 및 과일요커트모찌",
+        "source": "text"
+      },
+      "organizer": "산업디자인학과 학생회",
+      "eligibility": "선착순 70명의 사전신청자",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-18T23:59:00+09:00",
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "새내기",
         "basis": "stated"
       }
     },
