@@ -11,7 +11,7 @@ are checked by hand on a phone (NOT TESTED here).
 import json
 import re
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import quote, unquote, urlparse
 
 import pytest
 from playwright.sync_api import sync_playwright
@@ -146,7 +146,8 @@ FAKE = r"""
       return Promise.resolve({ data: { session: db.user ? { user: db.user } : null }, error: null });
     },
     signInWithOAuth(o) { const db = load(); db.calls.push(['oauth', o.provider, o.options.redirectTo]); save(db); return Promise.resolve({ data: {}, error: null }); },
-    linkIdentity(o) { const db = load(); db.calls.push(['link', o.provider, o.options.redirectTo]); save(db); return Promise.resolve({ data: {}, error: null }); },
+    linkIdentity(o) { const db = load(); db.calls.push(['link', o.provider, o.options.redirectTo]); save(db);
+      return Promise.resolve(db.fail.link ? { data: null, error: { message: 'Manual linking is disabled' } } : { data: {}, error: null }); },
     signOut(o) { const db = load(); db.calls.push(['signout', o && o.scope]); db.user = null; save(db); localStorage.removeItem('""" + TOKEN_KEY + r"""'); return Promise.resolve({ error: null }); }
   };
   window.supabase = { createClient(url, key, opts) {
@@ -297,6 +298,42 @@ def test_inside_the_talk_app_google_becomes_open_in_the_default_browser(browser)
     assert page.get_by_role("button", name="Google로 계속하기").count() == 0
     link = page.get_by_role("link", name="기본 브라우저로 열기")
     assert link.get_attribute("href").startswith("kakaotalk://web/openExternal?url=")
+    assert errors == []
+    context.close()
+
+
+TALK_UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36 KAKAOTALK 10.4.0"
+
+
+def test_linking_the_other_login_and_what_the_talk_app_shows_instead(browser):
+    # A normal browser: the missing provider is offered, with a full-page redirect back to my.html.
+    context, page, errors, _ = open_page(browser, db={"user": user()})
+    wait_view(page, "Google 로그인도 연결")
+    page.get_by_role("button", name="Google 로그인도 연결").click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'link')")
+    assert [c for c in fakedb(page)["calls"] if c[0] == "link"] == [["link", "google", f"https://{HOST}/my.html?next=linked"]]
+    assert errors == []
+    context.close()
+    # Supabase's manual linking turned off: the refusal is said, not swallowed.
+    context, page, errors, _ = open_page(browser, db={"user": user(), "fail": {"link": True}})
+    wait_view(page, "Google 로그인도 연결")
+    page.get_by_role("button", name="Google 로그인도 연결").click()
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('연결할 수 없어요')")
+    assert errors == []
+    context.close()
+    # Inside the talk app Google is refused, so the button gives way to the default-browser link.
+    context, page, errors, _ = open_page(browser, db={"user": user()}, ua=TALK_UA)
+    wait_view(page, "기본 브라우저에서 카카오로 로그인한 뒤")
+    assert page.get_by_role("button", name="Google 로그인도 연결").count() == 0
+    link = page.get_by_role("link", name="기본 브라우저로 열기")
+    assert link.count() == 1
+    assert link.get_attribute("href") == "kakaotalk://web/openExternal?url=" + quote(f"https://{HOST}/my.html", safe="")
+    assert errors == []
+    context.close()
+    # Signed in with Google inside the talk app: linking kakao still works there, so it stays a button.
+    context, page, errors, _ = open_page(browser, db={"user": user(providers=("google",))}, ua=TALK_UA)
+    wait_view(page, "카카오 로그인도 연결")
+    assert page.get_by_role("link", name="기본 브라우저로 열기").count() == 0
     assert errors == []
     context.close()
 
