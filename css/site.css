@@ -238,6 +238,12 @@ body::after {
   outline-offset: -4px;
 }
 
+/* Lab only: the sign-in icon js/site.js adds beside Instagram on babdoduk-lab. */
+.site-nav-my:hover,
+.site-nav-my[aria-current="page"] {
+  color: var(--color-accent);
+}
+
 .site-nav-wordmark {
   display: inline-flex;
   align-items: center;

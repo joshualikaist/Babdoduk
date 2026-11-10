@@ -430,7 +430,9 @@ def test_the_event_page_loads_the_world_cup_only_for_its_running_card():
     assert re.findall(r'<script[^>]+src="(js/worldcup[^"]*)"', html) == ["js/worldcup-gate.js"] and "BABDODUK_WORLDCUP" not in html
     assert "['js/worldcup-entry-data.js', 'js/worldcup.js']" in html and "script.async = false;" in html
     assert '.event-item:not([data-band="past"]) [data-wc-embed]' in html
-    assert len(html.encode("utf-8")) < 40_000                 # no pool inlined: the page stays light
+    # No pool inlined: the page stays light (the slim pool alone is ~47 KB; 42 KB leaves room for the
+    # shared footer, which grew by the privacy link on 2026-11-10).
+    assert len(html.encode("utf-8")) < 42_000
     # The slim data: names, categories and the photo path; no photo credits, no 1.3 MB catalog.
     data = (ROOT / "js/worldcup-entry-data.js").read_text(encoding="utf-8")
     slim = json.loads(re.search(r"window.BABDODUK_WORLDCUP = (\{.*\});", data).group(1))
