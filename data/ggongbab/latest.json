@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T16:18:19+09:00",
+  "generatedAt": "2026-11-11T18:49:03+09:00",
   "timezone": "Asia/Seoul",
   "count": 41,
   "events": [
@@ -1165,7 +1165,7 @@
     {
       "id": "161ab539-6556-4ce1-a2ba-e60b5143cb69",
       "title": "2026 수리과학과 학과설명회",
-      "summary": "수리과학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사와 경품을 제공합니다.",
+      "summary": "수리과학과에 관심 있는 새내기를 위한 학과설명회입니다. 사전신청자 대상으로 설명회 후 교수님들과 치킨과 피자를 함께 먹는 시간이 있습니다.",
       "startAt": "2026-11-23T17:00:00+09:00",
       "endAt": "2026-11-23T19:00:00+09:00",
       "dateText": "2026년 11월 23일(월)",
@@ -1184,12 +1184,16 @@
       "organizer": "수리과학과",
       "eligibility": "",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://forms.gle/9w6SYbnethAj5hiz6"
       },
       "confidence": 0.99,
       "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        },
         {
           "type": "manual",
           "name": "Manual"
