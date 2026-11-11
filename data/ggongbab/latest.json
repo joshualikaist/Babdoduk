@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T12:10:45+09:00",
+  "generatedAt": "2026-11-11T12:20:45+09:00",
   "timezone": "Asia/Seoul",
-  "count": 40,
+  "count": 41,
   "events": [
     {
       "id": "49fb2b25-b601-4d98-a71d-3c6b99c770b9",
@@ -1041,6 +1041,43 @@
           "endAt": "2026-11-27T16:00:00+09:00"
         }
       ]
+    },
+    {
+      "id": "a570f9bc-fc63-426d-8189-e02561959379",
+      "title": "KAIST 건강달리기 대회",
+      "summary": "KAIST 구성원을 대상으로 건강달리기 대회를 개최합니다. 완주 후 간식과 상품이 제공됩니다.",
+      "startAt": "2026-11-20T15:00:00+09:00",
+      "endAt": null,
+      "dateText": "2026. 11. 20 금요일",
+      "timeText": "오후 3시 (오후 2시 30분까지 북측 운동장에 집결)",
+      "location": {
+        "name": "북측 운동장",
+        "building": "스포츠컴플렉스",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "간식"
+      },
+      "organizer": "디지털인문사회과학부",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://sports.kaist.ac.kr/healthy_run_schedule/lists"
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 구성원",
+        "basis": "stated"
+      }
     },
     {
       "id": "fa5de66b-c66a-40e1-9264-ef354501f0a2",
