@@ -1,10 +1,82 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T21:22:44+09:00",
+  "generatedAt": "2026-11-11T22:54:22+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 27,
+  "count": 29,
   "events": [
+    {
+      "id": "95d1f0d9-d992-4e74-941b-f2079a11e1e1",
+      "title": "2026 뇌인지과학과 학과설명회",
+      "summary": "뇌인지과학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-11T17:30:00+09:00",
+      "endAt": "2026-11-11T19:30:00+09:00",
+      "dateText": "2026년 11월 11일(수)",
+      "timeText": "17:30~19:30",
+      "location": {
+        "name": "메타융합관",
+        "building": "W13",
+        "room": "컨퍼런스룸"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "뇌인지과학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      }
+    },
+    {
+      "id": "a7bcdfc2-9ff9-48d0-8151-d1b764d56d2d",
+      "title": "2026 산업및시스템공학과 학과설명회",
+      "summary": "KAIST 산업및시스템공학과 학과설명회입니다. 사전 신청자 선착순 200명에게 샌드팩토리 도시락과 빼빼로를 제공하며, 현장 경품 추첨이 진행됩니다.",
+      "startAt": "2026-11-11T17:30:00+09:00",
+      "endAt": "2026-11-11T19:30:00+09:00",
+      "dateText": "2026년 11월 11일(수)",
+      "timeText": "17:30~19:30",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "산업및시스템공학과",
+      "eligibility": "새내기 학부생",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "eaefae7c-e530-46f7-b3e3-06e90ffcc216",
       "title": "<Work Station: 학생주도 문제해결형 선도연구프로그램> 성과발표회",
