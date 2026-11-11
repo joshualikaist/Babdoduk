@@ -1,10 +1,41 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T18:49:03+09:00",
+  "generatedAt": "2026-11-11T20:24:19+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 25,
+  "count": 26,
   "events": [
+    {
+      "id": "ed473c75-3ff6-4b6c-afd8-ab08649b4f35",
+      "title": "KAIST 문지책방 제7권 <벌거벗은 동물사> 행사",
+      "summary": "저자 강연과 저자와의 티타임으로 진행되는 KAIST 문지책방 행사입니다. 사전등록자 중 추첨을 통해 주제 도서를 증정합니다.",
+      "startAt": "2026-11-11T15:00:00+09:00",
+      "endAt": "2026-11-11T17:00:00+09:00",
+      "dateText": "2026. 11. 11. (수)",
+      "timeText": "15:00 ~ 17:00",
+      "location": {
+        "name": "KAIST 문지캠퍼스, 강의동 L507호",
+        "building": "",
+        "room": "L507호"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "의과학대학원",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "주제 도서"
+      }
+    },
     {
       "id": "5f85f0d8-28b1-4cdc-90a4-5cd4d389a5b1",
       "title": "2026년 11월 첫수융합포럼: AI in Neuroscience",

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T18:49:03+09:00",
+  "generatedAt": "2026-11-11T20:24:19+09:00",
   "timezone": "Asia/Seoul",
-  "count": 41,
+  "count": 40,
   "events": [
     {
       "id": "49fb2b25-b601-4d98-a71d-3c6b99c770b9",
@@ -104,43 +104,6 @@
       "audience": {
         "text": "KAIST 소속 학부생",
         "basis": "stated"
-      }
-    },
-    {
-      "id": "ed473c75-3ff6-4b6c-afd8-ab08649b4f35",
-      "title": "KAIST 문지책방 제7권 <벌거벗은 동물사> 행사",
-      "summary": "저자 강연과 저자와의 티타임으로 진행되는 KAIST 문지책방 행사입니다. 사전등록자 중 추첨을 통해 주제 도서를 증정합니다.",
-      "startAt": "2026-11-11T15:00:00+09:00",
-      "endAt": "2026-11-11T17:00:00+09:00",
-      "dateText": "2026. 11. 11. (수)",
-      "timeText": "15:00 ~ 17:00",
-      "location": {
-        "name": "KAIST 문지캠퍼스, 강의동 L507호",
-        "building": "",
-        "room": "L507호"
-      },
-      "food": {
-        "provided": "unknown",
-        "type": "unknown",
-        "description": ""
-      },
-      "organizer": "의과학대학원",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-11-03T23:59:00+09:00",
-        "url": "https://forms.gle/ZDVNCnpe1QRPhe2dA"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "주제 도서"
       }
     },
     {
