@@ -74,7 +74,8 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
         assert scripts[-5:] == [*LIVE_FEED_SCRIPTS, *ACCOUNT_SCRIPTS, "js/ggongbab.js"], scripts
         auth = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
         hosts = re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", auth).group(1)
-        assert "babdodukms.com" not in hosts and "babdoduk.vercel.app" not in hosts  # on for lab only
+        # On for lab and, since owner 2026-11-11, production as well (tests/test_my_babdoduk.py).
+        assert "babdoduk-lab.vercel.app" in hosts and "www.babdodukms.com" in hosts
         config = (ROOT / "js/ggongbab-public-config.js").read_text(encoding="utf-8")
         assert not re.search(r"sb_secret_|service_role|SUPABASE_SECRET", config)
     else:

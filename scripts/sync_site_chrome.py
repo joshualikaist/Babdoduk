@@ -82,8 +82,8 @@ PAGES = {
     # 밥약 메이커 (밥도둑 2.0 phase 3, docs/BOBYAK.md) is lab-only until the owner approves it: reachable from
     # lab.html, no nav link (the nav rename to the four 2.0 destinations awaits the owner).
     "bobyak.html": {"current": None, "lab": True, "strings": ("bob",)},
-    # 마이 밥도둑 (밥도둑 2.0 Phase 2, docs/MY_BABDODUK.md): optional sign-in, lab-only until released.
-    "my.html": {"current": None, "lab": True, "strings": ("my",)},
+    # 마이 밥도둑 (밥도둑 2.0 Phase 2, docs/MY_BABDODUK.md): optional sign-in; public since owner 2026-11-11.
+    "my.html": {"current": None, "strings": ("my",)},
     # 개인정보처리방침 (owner 2026-11-08): public on every host, because Google's sign-in consent screen
     # needs its address on the site's own domain; linked from 마이 밥도둑, no nav item.
     "privacy.html": {"current": None, "strings": ("privacy",)},
