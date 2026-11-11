@@ -1,10 +1,41 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T14:18:13+09:00",
+  "generatedAt": "2026-11-11T15:18:06+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 23,
+  "count": 24,
   "events": [
+    {
+      "id": "daea1eaa-67f2-4773-a22f-096fa68ba17a",
+      "title": "창업원 연말 보물찾기 이벤트",
+      "summary": "창업원 건물에 숨겨진 쪽지를 찾아 경품으로 교환하는 보물찾기 이벤트입니다. 경품 소진 시 마감됩니다.",
+      "startAt": "2026-11-11T12:00:00+09:00",
+      "endAt": null,
+      "dateText": "11월 11일(화)",
+      "timeText": "12시부터 시작! (경품 소진 시 마감)",
+      "location": {
+        "name": "W8 Garage",
+        "building": "W8",
+        "room": "3층"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "KAIST 창업원",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "고급 키보드, 자연분해 타투 스티커, 빼빼로(맛 랜덤), NFC 전자명함, 레이저 마우스, AI 서비스 제휴들"
+      }
+    },
     {
       "id": "1d5a7de7-1ecd-4641-b465-8c3f12e852f2",
       "title": "2026 전산학부 학과설명회",
