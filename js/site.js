@@ -62,11 +62,11 @@
       morePanel.appendChild(a);
     });
   }
-  // 마이 밥도둑 (my.html) and its sign-in are lab-only as well (js/babdoduk-auth-config.js). On babdoduk-lab
-  // every page gets a person icon beside Instagram that opens it (owner 2026-11-10: no way in otherwise),
-  // named 로그인, or 마이 밥도둑 once this browser holds a sign-in.
+  // 마이 밥도둑 (my.html): every page gets a person icon beside Instagram that opens it (owner 2026-11-10:
+  // no way in otherwise; on every host since 2026-11-11), named 로그인, or 마이 밥도둑 once this browser
+  // holds a sign-in.
   var insta = document.getElementById('navInstagram');
-  if (location.hostname === LAB_HOST && insta && !document.getElementById('navMy')) {
+  if (insta && !document.getElementById('navMy')) {
     var signedIn = false;
     try {
       for (var i = 0; i < localStorage.length; i++) {

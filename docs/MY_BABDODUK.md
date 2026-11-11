@@ -12,11 +12,11 @@ This phase adds:
 
 Phase 1 (save, share, calendar) is described in [GGONGBAB_LIVE.md](GGONGBAB_LIVE.md); the overall plan is in [BABDODUK_2_PLAN.md](BABDODUK_2_PLAN.md).
 
-**Status:** on, on babdoduk-lab only, since 2026-11-10. The owner turned on Google and Kakao under Supabase Authentication and applied migration 011, then `enabled` in `js/babdoduk-auth-config.js` became `true`.
+**Status:** on babdoduk-lab since 2026-11-10, and on production (www.babdodukms.com) since 2026-11-11 (owner: "로그인은 푸시 및 배포가 안된거임? 이거까지 했어야지"). The owner turned on Google and Kakao under Supabase Authentication and applied migration 011, then `enabled` in `js/babdoduk-auth-config.js` became `true`.
 
 With the switch off, `my.html` shows "로그인은 준비 중이에요", and no page loads the login client.
 
-Production is not affected. `my.html` returns 404 everywhere except babdoduk-lab (`vercel.json`). The configuration's `hosts` list does not include the production domain, so even with `enabled: true` the login client never loads on production.
+`my.html` is served on every host, and every page's top bar has a person icon beside Instagram that opens it (`js/site.js`). The configuration's `hosts` list names www.babdodukms.com, babdodukms.com, babdoduk.vercel.app and babdoduk-lab.vercel.app. Lab still shows the 먹킷리스트 counts; production's `js/my.js` hides them (`SHOW_PLACES = false` on `main`) because 밥약 메이커 is lab-only.
 
 ## What visitors see
 

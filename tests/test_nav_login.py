@@ -1,7 +1,7 @@
-"""The sign-in entry (owner 2026-11-10): on babdoduk-lab, and only there, every page's top bar carries a
-person icon beside Instagram that opens my.html (lab-only, like the sign-in itself). It is a named 44 px
-link in both languages, says 마이 밥도둑 once this browser holds a sign-in, and fits a phone. Offline: the
-pages are served from this checkout under the lab host name; every other request is refused."""
+"""The sign-in entry (owner 2026-11-10; on production since owner 2026-11-11): every page's top bar
+carries a person icon beside Instagram that opens my.html, on every host. It is a named 44 px link in both
+languages, says 마이 밥도둑 once this browser holds a sign-in, and fits a phone. Offline: the pages are
+served from this checkout under the tested host name; every other request is refused."""
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -44,10 +44,14 @@ def open_page(browser, host, path, width=390, lang="ko", signed_in=False):
     return context, page, errors
 
 
+HOSTS = [LAB, "www.babdodukms.com"]
+
+
 @pytest.mark.parametrize("path", ["index.html", "ggongbab.html", "event.html", "privacy.html"])
 @pytest.mark.parametrize("width", [360, 1440])
-def test_the_lab_bar_opens_the_sign_in_page(browser, path, width):
-    context, page, errors = open_page(browser, LAB, path, width)
+@pytest.mark.parametrize("host", HOSTS)
+def test_the_bar_opens_the_sign_in_page(browser, host, path, width):
+    context, page, errors = open_page(browser, host, path, width)
     icon = page.locator("#navMy")
     assert icon.count() == 1 and icon.get_attribute("href") == "my.html"
     assert icon.get_attribute("aria-label") == "로그인"
@@ -61,7 +65,7 @@ def test_the_lab_bar_opens_the_sign_in_page(browser, path, width):
         const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
         return document.getElementById('navMy').contains(el); }""")
     icon.click()
-    page.wait_for_url(f"https://{LAB}/my.html")
+    page.wait_for_url(f"https://{host}/my.html")
     assert page.locator("#navMy").get_attribute("aria-current") == "page"
     assert errors == []
     context.close()
@@ -80,9 +84,10 @@ def test_english_and_signed_in_names(browser):
 
 
 @pytest.mark.parametrize("host", ["www.babdodukms.com", "babdoduk.vercel.app"])
-def test_production_has_no_sign_in_entry(browser, host):
+def test_production_hosts_carry_the_sign_in_entry(browser, host):
     context, page, errors = open_page(browser, host, "index.html")
-    assert page.locator("#navMy").count() == 0
+    assert page.locator("#navMy").count() == 1 and page.locator("#navMy").get_attribute("href") == "my.html"
+    # The shared nav HTML itself is unchanged: js/site.js adds the icon, so the chrome baselines stay.
     assert 'href="my.html"' not in (ROOT / "shared/nav.html").read_text(encoding="utf-8")
     assert errors == []
     context.close()

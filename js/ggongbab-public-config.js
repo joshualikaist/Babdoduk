@@ -1,7 +1,8 @@
 /* Browser-public values ONLY: the project URL and the publishable key, never a secret key.
- * On main only the tip board loads this file (tip.html, js/ggongbab-tips.js): it calls the checking
+ * On main the tip board loads this file (tip.html, js/ggongbab-tips.js): it calls the checking
  * functions, uploads a tip's photos and reads ggongbab_tip_board (AGENTS.md, docs/GGONGBAB_TIPS.md;
- * owner 2026-11-02). Lab's public feed reads the same values.
+ * owner 2026-11-02). Since 2026-11-11 the optional sign-in uses it too (my.html, ggongbab.html;
+ * js/babdoduk-account.js, docs/MY_BABDODUK.md). Lab's public feed reads the same values.
  * Empty values close the tip form ("지금은 제보를 받을 수 없어요"); no other page depends on them.
  * No environment-file loading or implicit environment-variable expansion.
  */

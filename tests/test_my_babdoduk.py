@@ -231,18 +231,17 @@ def wait_view(page, text):
     page.wait_for_function("t => document.getElementById('myApp').innerText.includes(t)", arg=text)
 
 
-def test_on_for_lab_only_and_never_on_production():
-    # On since 2026-11-10 (owner: providers set up, 011 applied); production hosts are never listed.
+def test_on_for_lab_and_production():
+    # On since 2026-11-10 on lab (owner: providers set up, 011 applied) and on production since 2026-11-11
+    # (owner: "로그인은 푸시 및 배포가 안된거임? 이거까지 했어야지").
     assert re.search(r"enabled:\s*true", CONFIG)
-    hosts = re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", CONFIG).group(1)
-    for host in ("babdodukms.com", "babdoduk.vercel.app"):
-        assert host not in hosts
-    assert "babdoduk-lab.vercel.app" in hosts
+    hosts = re.findall(r"'([^']+)'", re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", CONFIG).group(1))
+    assert {"www.babdodukms.com", "babdodukms.com", "babdoduk.vercel.app", "babdoduk-lab.vercel.app"} <= set(hosts)
     for name in ("js/babdoduk-account.js", "js/babdoduk-auth-config.js", "js/my.js"):
         text = (ROOT / name).read_text(encoding="utf-8")
         assert "sb_secret_" not in text and "service_role" not in text, name
     vercel = (ROOT / "vercel.json").read_text(encoding="utf-8")
-    assert "my\\\\.html" in vercel, "my.html answers 404 off babdoduk-lab"
+    assert "my\\\\.html" not in vercel, "my.html is served on every host"
 
 
 def test_turned_off_the_pages_load_no_sign_in_client(browser):
