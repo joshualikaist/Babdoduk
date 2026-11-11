@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-11",
+  "generatedAt": "2026-11-11T16:44:37+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "\"맛있게 먹고 건강도 챙기고\" 신세계푸드, 샐러드·건강빵 인기",
+    "summary": "신세계푸드는 프리미엄 델리 브랜드 '베키아에누보 가스트로'에서 지난달 선보인 '구운 닭다리살 샐러드'가 출시 한 달 만에 전체 메뉴 판매 1위를 기록했다고 11일 밝혔다.",
+    "source": "뉴시스",
+    "sourceId": "news-newsis-health",
+    "candidateId": "c_fdbade94715f2636",
+    "url": "https://www.newsis.com/view/NISX20261111_0003863091",
+    "medium": "news",
+    "discoveredAt": "2026-11-11T16:44:37+09:00",
+    "publishedAt": "2026-11-11T08:54:31+09:00",
+    "image": "https://image.newsis.com/2026/11/11/NISI20261111_0002288469_web.jpg?rnd=20261111082724",
+    "imageSource": "feed_html",
+    "trendEvidence": [
+      "sales_data",
+      "corroborated"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "편의점 식품 매대 달라진다…소용량 간편식·고단백 제품 확대",
+          "summary": "매일일보 = 강소슬 기자 | 편의점 업계가 소용량 간편식과 고단백 식품을 앞세워 먹거리 상품군을 재편하고 있다.",
+          "source": "매일일보",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_6352f8645f565c3b",
+          "url": "https://www.m-i.kr/news/articleView.html?idxno=2014974",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-05T15:08:40+09:00",
+          "image": "https://cdn.m-i.kr/news/photo/202611/2014974_2015379_2647.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "“날 추워지면 섭취 열량 늘어나”… 겨울 폭식 막는 ‘착한 간식’ 먹어라",
+          "summary": "날씨가 추워지면서 유독 식욕이 왕성해지는 사람이 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_bb0c1a268cff025b",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/10/2026111002356.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T02:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/10/2026111002352_0.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "CJ제일제당, 3분기 식품 매출 2조5744억…전년 동기보다 3.8% 증가",
+          "summary": "CJ제일제당은 올 3분기 라이프스타일 식품사업 부문 매출이 2조5744억원으로 전년 동기보다 3.8% 증가했다고 10일 밝혔다.",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_f8ad0f7dbd2924bc",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=120915",
+          "medium": "news",
+          "discoveredAt": "2026-11-10T17:15:11+09:00",
+          "publishedAt": "2026-11-10T18:26:59+09:00",
+          "image": "https://cdn.foodnews.co.kr/news/thumbnail/202611/120915_87446_2638_v150.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "sales_data",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "[FI 창간9주년 특집Ⅱ-2027소비트렌드 전망] ⑤ 지불할 만한 가치｜아끼는 소비자도 ‘돈 쓸 이유’엔 지갑 연다",
+          "summary": "소비자는 지출을 줄이면서도 자신에게 중요한 분야에는 더 쓰고 있다.",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_63cde1545fd52320",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=35967",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T15:00:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "커지는 에너지 음료 시장, 원료도 다변화 중",
+          "summary": "에너지 음료는 이제 일부 젊은 층이 찾는 음료를 넘어 여러 연령대가 일상에서 마시는 음료가 됐다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b359b3cf2eafc710",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/11/2026111101867.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T14:30:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "김치볶음밥 황금레시피｜베이컨 넣고 고슬고슬 맛있게 만드는 법",
+          "summary": "냉장고에 신김치와 베이컨만 있다면 간단하면서도 맛있는 김치볶음밥을 만들 수 있어요.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_84ec82e48fa189f5",
+          "url": "https://cultureagora.tistory.com/432",
+          "medium": "blog",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T07:30:12+09:00",
+          "image": "https://blog.kakaocdn.net/dn/tQTio/dJMcacZtGaC/VBUIHjyJQ7nqdRvTR1teB1/tfile.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "알토란 이모카세 김미령 셰프의 짜박두부 만드는 법",
+          "summary": "알토란 618회에서는 소울푸드 한 상 편이 방송되었습니다.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_600d4f47cdc43231",
+          "url": "https://seon1982.tistory.com/4152",
+          "medium": "blog",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T00:00:34+09:00"
+        },
+        {
+          "title": "아들집 가면서 만들어간 나물반찬 4가지",
+          "summary": "아들집 가면서 만들어간 나물반찬 4가지 며느리가 서울로 취업해 떠나고 6개월 된 손녀를 돌보는 일이 이제 제 몫이 되었습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_e7b20e8c0320d881",
+          "url": "https://heysukim114.tistory.com/entry/%EB%82%98%EB%AC%BC%EB%B0%98%EC%B0%AC-4%EA%B0%80%EC%A7%80-4",
+          "medium": "blog",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T00:00:07+09:00"
+        },
+        {
+          "title": "눅눅해진 김 살리는 법, 전자레인지 10초면 바삭하게!",
+          "summary": "눅눅해진 김 살리는 법, 전자레인지 10초면 바삭하게!",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_87df6b118a9c7f90",
+          "url": "https://heysukim114.tistory.com/entry/%EB%88%85%EB%88%85%ED%95%B4%EC%A7%84-%EA%B9%80-%EC%82%B4%EB%A6%AC%EB%8A%94-%EB%B2%95-%EC%A0%84%EC%9E%90%EB%A0%88%EC%9D%B8%EC%A7%80-10%EC%B4%88%EB%A9%B4-%EB%B0%94%EC%82%AD%ED%95%98%EA%B2%8C",
+          "medium": "blog",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "publishedAt": "2026-11-09T00:00:02+09:00"
+        },
+        {
+          "title": "밤·꿀·호박 고구마 품종 추천! 찌는 시간부터 상하지 않는 보관법까지",
+          "summary": "맛있는 고구마를 즐기는 가장 확실한 비결은 내 취향에 맞는 '품종'을 고르고, 그에 맞는 '조리 시간'과 '보관법'을 적용하는 것이에요.",
+          "source": "달순생활",
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_a57fc7aed288ca81",
+          "url": "https://dalsoonlife.tistory.com/236",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-09-23T17:20:22+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“달걀찜에 ‘순두부’ 넣어보세요”… 부드럽고 든든한 한 끼 식사 됩니다",
+          "summary": "달걀찜은 담백한 맛과 부드러운 식감으로 남녀노소 즐겨 먹는 음식이다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_59a2c1ac53cfb37a",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/11/2026111101450.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T13:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/11/2026111101448_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "저염식만으로 충분할까? 혈압 관리에 함께 챙기면 좋은 영양 성분 5가지",
+          "summary": "혈압은 별다른 증상이 없어 신경 쓰지 않으면 놓치기 쉬운 건강 지표다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_00f4752cd8dcd0f0",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69630",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T06:00:00+09:00"
+        },
+        {
+          "title": "“당 떨어져서 자주 먹는데?”…달콤한 ‘이 간식’, 살찌고 충치 위험도 높인다?",
+          "summary": "실제 저혈당이 아닌데도 단 간식이나 젤리를 반복해서 먹으면 당류와 열량 섭취가 늘어나 체중 관리에 부담이 될 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8f2a3083e86b4a58",
+          "url": "https://kormedi.com/2902556/",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-10T22:02:00+09:00"
+        },
+        {
+          "title": "\"11월 11일, 가래떡데이 vs 빼빼로데이\"… 가래떡이 건강에 더 낫다?",
+          "summary": "11월 11일은 막대과자를 주고받는 날로 잘 알려져 있지만, 법정기념일인 '농업인의 날'이자 '가래떡데이'이기도 하다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_f84cce2ccb4dc9a7",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69925",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T20:30:00+09:00"
+        },
+        {
+          "title": "“식사량 조절해준다”… 손예진도 먹는 ‘혈당 방어 그릭 요거트’",
+          "summary": "아침을 건강하게 먹어야 한다는 사실은 알지만, 무엇을 먹어야 할지 고민이라면 단백질이 풍부한 식품부터 챙겨보자.최근 배우 손예진이 자신의 인스타그램에 “오늘도 활기차게 시작하는 아침”이라는 멘트와 함께 사진 한…",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b75dba6004b88264",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/10/2026111002559.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T03:30:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“콜레스테롤 수직 상승”… 오윤아 아침 습관, ‘식사 대신 커피’가 위험한 이유",
+          "summary": "바쁜 아침 커피 한 잔이나 간단한 음식으로 끼니를 대신하는 사람이 많다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b6f1046b16322df1",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/10/2026111002535.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T06:00:00+09:00"
+        },
+        {
+          "title": "“22만 명 식습관 분석했더니”… 치매 위험 18% 낮춘 ‘이 채소’",
+          "summary": "채소와 과일을 꾸준히 먹는 습관은 뇌 건강에 중요하다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_445b83976bbd6d38",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/09/2026110901161.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-09T16:51:14+09:00",
+          "publishedAt": "2026-11-09T10:58:23+09:00"
+        },
+        {
+          "title": "“밥 지을 때 ‘이 콩’ 한 줌 섞었더니?”…중년 혈당, 콜레스테롤에 변화가?",
+          "summary": "혈당이나 콜레스테롤이 걱정된다면 매일 먹는 밥부터 살펴보자.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6725f3747c5ccb9b",
+          "url": "https://kormedi.com/2902371/",
+          "medium": "news",
+          "discoveredAt": "2026-11-10T17:15:11+09:00",
+          "publishedAt": "2026-11-10T17:01:00+09:00"
+        },
+        {
+          "title": "“초가공식품 먹더라도”… 대장암 발생률 2% 낮추는 조리법",
+          "summary": "초가공식품 전체 섭취량은 대장암 발생률과 연관성이 없지만, 식품 종류에 따라 차이가 있다는 연구 결과가 나왔다.미국 국립암연구소(NCI) 연구진은 1995~1996년 식이·건강 연..",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_5d6310b7086f3f5f",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/10/21/2026102103155.html",
+          "medium": "news",
+          "discoveredAt": "2026-10-22T14:57:31+09:00",
+          "publishedAt": "2026-10-22T00:30:00+09:00"
+        }
+      ]
+    }
+  }
+}
