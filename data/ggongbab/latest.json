@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T12:46:14+09:00",
+  "generatedAt": "2026-11-11T14:18:13+09:00",
   "timezone": "Asia/Seoul",
-  "count": 42,
+  "count": 43,
   "events": [
     {
       "id": "49fb2b25-b601-4d98-a71d-3c6b99c770b9",
@@ -1690,6 +1690,58 @@
       },
       "audience": {
         "text": "충청권역 대학 소속 학생(학사과정~박사과정) 및 박사후 연구원",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "0e0b6800-1e93-44a1-b5e2-b96ff10fcbe8",
+      "title": "2026 KAIST’s Got Talent: Winter Masquerade",
+      "summary": "KAIST 구성원들이 참여하는 장기자랑 공연과 문화 체험 부스 행사입니다. 공연 후 무료 저녁 뷔페가 제공되며 경품 추첨이 진행됩니다.",
+      "startAt": "2026-11-27T16:00:00+09:00",
+      "endAt": null,
+      "dateText": "2026년 11월 27일(금)",
+      "timeText": "16:00 문화 체험 부스 운영 시작; 17:00 본 공연 시작",
+      "location": {
+        "name": "KAIST Auditorium",
+        "building": "E15",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "무료 저녁 뷔페",
+        "source": "text"
+      },
+      "organizer": "International Scholar & Student Services Team (ISSS)",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "다양한 경품 및 추첨 이벤트"
+      },
+      "sessions": [
+        {
+          "startAt": "2026-11-27T16:00:00+09:00",
+          "endAt": null
+        },
+        {
+          "startAt": "2026-11-27T17:00:00+09:00",
+          "endAt": null
+        }
+      ],
+      "audience": {
+        "text": "국내·외 학생 및 교직원 등 KAIST 구성원",
         "basis": "stated"
       }
     },
