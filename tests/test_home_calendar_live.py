@@ -21,11 +21,14 @@ def browser():
         chrome.close()
 
 
-def open_home(browser, share=None, clipboard="ok", lang="ko", width=390):
+def open_home(browser, share=None, clipboard="ok", lang="ko", width=390, user_agent=None, storage=None):
+    extra = {"user_agent": user_agent} if user_agent else {}
     context = browser.new_context(viewport={"width": width, "height": 900}, timezone_id="Asia/Seoul", service_workers="block",
-                                  accept_downloads=True)
+                                  accept_downloads=True, **extra)
     init = [f"localStorage.setItem('babdoduk-lang', '{lang}');", "localStorage.setItem('babdoduk-notice-ggongbab-live', '1');",
             "window.__shared = []; window.__copied = [];"]
+    for key, value in (storage or {}).items():
+        init.append(f"localStorage.setItem({json.dumps(key)}, {json.dumps(value)});")
     if share == "native":
         init.append("navigator.share = (d) => { window.__shared.push(d); return Promise.resolve(); };")
     else:
@@ -78,6 +81,11 @@ def test_the_star_saves_without_opening_and_the_hub_shows_it(browser):
     star.click()
     assert page.locator('[data-hc-save="lunch"]').get_attribute("aria-pressed") == "true"
     assert lunch.locator(".hc-ev-btn").get_attribute("aria-expanded") == "false", "the star does not open the row"
+    # The first star asks once whether stars should also add to the calendar (tests/test_star_calendar.py);
+    # closing the question with Escape answers nothing and gives the focus back to the star.
+    page.locator("#starCalAsk").wait_for()
+    page.keyboard.press("Escape")
+    assert page.locator("#starCalAsk").count() == 0
     assert page.evaluate("document.activeElement.getAttribute('data-hc-save')") == "lunch"
     assert "저장했어요" in page.locator("#homeCalLive").inner_text()
     assert [i["id"] for i in stored(page)["items"]] == ["lunch"]

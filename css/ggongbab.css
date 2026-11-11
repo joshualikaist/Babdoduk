@@ -253,6 +253,10 @@
 .gg-saved-note { flex-basis:100%; margin:4px 0; font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
 .gg-saved-sub { margin:12px 0 2px; font-size:13px; font-weight:800; color:var(--color-ink-muted); }
 .gg-saved-foot { margin:10px 0 0; font-size:12px; line-height:18px; color:var(--color-ink-muted); }
+.gg-starcal-line { margin:12px 0 0; }
+.gg-starcal { min-height:44px; height:auto; white-space:normal; text-align:left; }
+.gg-starcal strong { margin-left:4px; color:var(--color-accent); }
+.gg-starcal[aria-pressed="false"] strong { color:var(--color-ink-muted); }
 .gg-toast { position:fixed; left:50%; bottom:max(16px, env(safe-area-inset-bottom)); z-index:50; max-width:calc(100vw - 32px); padding:10px 16px; border-radius:12px; background:#1d1d1f; color:#fff; font-size:14px; line-height:20px; transform:translate(-50%, 20px); opacity:0; pointer-events:none; transition:opacity .16s, transform .16s; }
 .gg-toast.is-on { opacity:1; transform:translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .gg-toast { transition:none; } }

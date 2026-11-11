@@ -59,9 +59,10 @@ def browser():
 
 
 def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=None, clipboard="ok",
-             notice_seen=True):
+             notice_seen=True, user_agent=None):
+    extra = {"user_agent": user_agent} if user_agent else {}
     context = browser.new_context(viewport={"width": size[0], "height": size[1]}, timezone_id="Asia/Seoul",
-                                  service_workers="block", accept_downloads=True)
+                                  service_workers="block", accept_downloads=True, **extra)
     init = [f"localStorage.setItem('babdoduk-lang', '{lang}');"]
     if notice_seen:
         init.append("localStorage.setItem('babdoduk-notice-ggongbab-live', '1');")
