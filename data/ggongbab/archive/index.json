@@ -1,10 +1,38 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T15:18:06+09:00",
+  "generatedAt": "2026-11-11T16:18:19+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 24,
+  "count": 25,
   "events": [
+    {
+      "id": "5f85f0d8-28b1-4cdc-90a4-5cd4d389a5b1",
+      "title": "2026년 11월 첫수융합포럼: AI in Neuroscience",
+      "summary": "생명과학과와 전기및전자공학부가 공동 개최하는 영어 포럼으로, AI in Neuroscience를 주제로 진행됩니다. 간단한 간식이 제공됩니다.",
+      "startAt": "2026-11-11T12:00:00+09:00",
+      "endAt": "2026-11-11T13:00:00+09:00",
+      "dateText": "2026년 11월 11일(수)",
+      "timeText": "12:00~13:00",
+      "location": {
+        "name": "창의학습관",
+        "building": "E11",
+        "room": "102호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "간단한 간식",
+        "source": "text"
+      },
+      "organizer": "생명과학과와 전기및전자공학부",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "daea1eaa-67f2-4773-a22f-096fa68ba17a",
       "title": "창업원 연말 보물찾기 이벤트",
