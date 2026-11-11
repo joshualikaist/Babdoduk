@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-10T22:00:54+09:00",
+  "generatedAt": "2026-11-11T11:36:29+09:00",
   "timezone": "Asia/Seoul",
-  "count": 39,
+  "count": 40,
   "events": [
     {
       "id": "49fb2b25-b601-4d98-a71d-3c6b99c770b9",
@@ -1041,6 +1041,43 @@
           "endAt": "2026-11-27T16:00:00+09:00"
         }
       ]
+    },
+    {
+      "id": "fa5de66b-c66a-40e1-9264-ef354501f0a2",
+      "title": "2026년 하반기 교내 입주업체 만족도조사",
+      "summary": "교내 식당, 카페 및 생활편의시설에 대한 만족도 온라인 설문조사입니다. 성실히 참여한 사람 중 4명을 추첨해 신세계 상품권 10만원권을 제공합니다.",
+      "startAt": "2026-11-20T23:59:00+09:00",
+      "endAt": null,
+      "dateText": "11월 20일(금) 23:59까지",
+      "timeText": "",
+      "location": {
+        "name": "",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "입주업체모니터링위원회",
+      "eligibility": "졸업생 및 외부인은 본 설문에 참여하실 수 없습니다.",
+      "registration": {
+        "required": "true",
+        "deadline": "2026-11-20T23:59:00+09:00",
+        "url": "https://forms.gle/cesJ2jKFAbwuhfbU8"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "신세계 상품권 10만원권 (4명 추첨)"
+      }
     },
     {
       "id": "cf3bec49-11ec-4223-afa2-cf008e401ffa",
