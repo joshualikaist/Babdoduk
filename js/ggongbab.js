@@ -628,6 +628,7 @@
       html += '<p class="gg-saved-note">' + esc(t('gg.live.pastNote', '끝난 일정이에요. 저장했다고 참석한 것으로 기록하지 않아요.')) + '</p>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
+    html += starCalendarToggleHtml();
     if (accountMode === 'account') {
       html += '<p class="gg-saved-foot">' + esc(t('gg.live.accountFoot', '계정에 저장돼요 · 다른 기기에서도 보여요')) +
         ' · <a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
@@ -1040,19 +1041,50 @@
     });
   }
   function downloadIcs(ev) {
-    var text = L.icsText(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) });
-    try {
-      var blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = L.icsFileName(ev);
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-      announce(t('gg.live.icsDone', '캘린더 파일을 받았어요'));
-    } catch (err) {
-      announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
-    }
+    if (L.downloadIcs(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) })) announce(t('gg.live.icsDone', '캘린더 파일을 받았어요'));
+    else announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
+  }
+  // The star also opens the calendar's add screen (owner 2026-11-11), for visitors who said yes once.
+  function starCalendarText() {
+    return {
+      title: t('starcal.ask.title', '별 누를 때 내 캘린더에도 넣을까요?'),
+      body: t('starcal.ask.body', '별을 누르면 캘린더 추가 화면이 열려요. 추가하면 시작 30분 전에 알림이 와요.'),
+      yes: t('starcal.ask.yes', '넣을게요'),
+      no: t('starcal.ask.no', '괜찮아요'),
+      later: t('starcal.ask.later', '오늘의 꽁밥의 저장한 꽁밥에서 언제든 바꿀 수 있어요')
+    };
+  }
+  function starCalendarMessage(result) {
+    if (result === 'ics') return t('starcal.done.ics', '캘린더 추가 화면을 열었어요 · 추가를 눌러 주세요');
+    if (result === 'google') return t('starcal.done.google', '구글 캘린더를 새 창에 열었어요 · 저장을 눌러 주세요');
+    if (result === 'manual') return t('starcal.done.manual', '카카오톡 안에서는 바로 넣을 수 없어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
+    return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
+  }
+  function refocusStar(id) {
+    var esc2 = window.CSS && CSS.escape ? CSS.escape(id) : id;
+    var star = root.querySelector('.gg-save[data-gg-save="' + esc2 + '"]') || root.querySelector('[data-gg-save="' + esc2 + '"]');
+    if (star) star.focus({ preventScroll: true });
+  }
+  function afterStar(ev, savedMessage) {
+    if (!L.canCalendar(ev, nowKst())) return announce(savedMessage);
+    var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
+    var pref = L.starCalendar();
+    if (pref === 'on') return announce(savedMessage + ' · ' + starCalendarMessage(L.addToCalendar(ev, details)));
+    if (pref === 'off') return announce(savedMessage);
+    announce(savedMessage);
+    L.askStarCalendar(starCalendarText(), function (yes) {
+      if (yes) announce(starCalendarMessage(L.addToCalendar(ev, details)));
+      else if (yes === false) announce(t('starcal.done.no', '캘린더에는 넣지 않을게요 · 저장한 꽁밥에서 바꿀 수 있어요'));
+      render();
+      refocusStar(ev.id);
+    });
+  }
+  function starCalendarToggleHtml() {
+    if (!L) return '';
+    var on = L.starCalendar() === 'on';
+    return '<p class="gg-starcal-line"><button type="button" class="gg-btn gg-starcal" data-gg-starcal aria-pressed="' + on + '">' +
+      esc(t('starcal.toggle', '별 누를 때 캘린더에도 넣기 · 30분 전 알림')) + ' <strong>' +
+      esc(on ? t('starcal.on', '켜짐') : t('starcal.off', '꺼짐')) + '</strong></button></p>';
   }
   function liveClick(e) {
     var el;
@@ -1061,11 +1093,22 @@
       if (savedStore.has(id)) {
         if (savedStore.remove(id)) announce(t('gg.live.unsavedMsg', '저장을 지웠어요'));
       } else if (ev && savedStore.add(ev)) {
-        announce(savedStore.remote ? t('gg.live.savedAccountMsg', '저장했어요 · 계정에 저장돼요') : t('gg.live.savedMsg', '저장했어요 · 이 브라우저에만 저장돼요'));
+        render();
+        afterStar(ev, savedStore.remote ? t('gg.live.savedAccountMsg', '저장했어요 · 계정에 저장돼요') : t('gg.live.savedMsg', '저장했어요 · 이 브라우저에만 저장돼요'));
+        return true;
       } else {
         announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
       }
       render();
+      return true;
+    }
+    if (e.target.closest('[data-gg-starcal]')) {
+      var turnOn = L.starCalendar() !== 'on';
+      if (L.setStarCalendar(turnOn)) announce(turnOn ? t('starcal.nowOn', '이제 별 누를 때 캘린더 추가 화면이 열려요') : t('starcal.nowOff', '이제 별을 눌러도 캘린더는 열리지 않아요'));
+      else announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
+      render();
+      var sw = root.querySelector('[data-gg-starcal]');
+      if (sw) sw.focus({ preventScroll: true });
       return true;
     }
     if ((el = e.target.closest('[data-gg-unsave]'))) {
