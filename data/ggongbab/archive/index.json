@@ -1,10 +1,46 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T20:24:19+09:00",
+  "generatedAt": "2026-11-11T21:22:44+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 26,
+  "count": 27,
   "events": [
+    {
+      "id": "eaefae7c-e530-46f7-b3e3-06e90ffcc216",
+      "title": "<Work Station: 학생주도 문제해결형 선도연구프로그램> 성과발표회",
+      "summary": "학부생들이 진행한 연구 성과를 공유하는 발표회입니다. 연구 성과물 전시 및 평가, 우수팀 시상과 경품 추첨이 진행되며 성심당 간식과 참석자 선착순 기념품이 제공됩니다.",
+      "startAt": "2026-11-11T15:00:00+09:00",
+      "endAt": "2026-11-11T18:00:00+09:00",
+      "dateText": "11월 11일(수)",
+      "timeText": "오후 3시 ~ 오후 6시",
+      "location": {
+        "name": "KI빌딩",
+        "building": "E4",
+        "room": "1층 로비"
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "성심당 간식 제공",
+        "source": "text"
+      },
+      "organizer": "제37대 KAIST 학부 총학생회 <GRIT>",
+      "eligibility": "KAIST 소속 학부생 누구나",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "참석자 선착순 300명 기념품( KAIST 브랜드샵 넙죽이 수건 1매), 아이패드 A16, 갤럭시 탭 S10 Lite, 갤럭시 버즈3 FE, 배달의민족 30,000원권, 배달의민족 10,000원권"
+      },
+      "audience": {
+        "text": "KAIST 소속 학부생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "ed473c75-3ff6-4b6c-afd8-ab08649b4f35",
       "title": "KAIST 문지책방 제7권 <벌거벗은 동물사> 행사",
