@@ -1,69 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T22:54:22+09:00",
+  "generatedAt": "2026-11-11T23:25:03+09:00",
   "timezone": "Asia/Seoul",
-  "count": 37,
+  "count": 36,
   "events": [
-    {
-      "id": "49fb2b25-b601-4d98-a71d-3c6b99c770b9",
-      "title": "2026 KPF 학술 세미나",
-      "summary": "KPF가 양자정보, 동역학, 기하해석학, 이론통계학을 주제로 4개 강연을 진행합니다. 사전 신청자 대상 피자가 제공됩니다.",
-      "startAt": "2026-11-10T18:00:00+09:00",
-      "endAt": "2026-11-11T20:00:00+09:00",
-      "dateText": "11월 10일(화), 11일(수)",
-      "timeText": "18:00 - 20:00",
-      "location": {
-        "name": "",
-        "building": "",
-        "room": ""
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "피자 제공",
-        "source": "text"
-      },
-      "organizer": "KPF (KAIST Presidential Fellowship)",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/SPCauoiePsEkpKGz9"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "sessions": [
-        {
-          "startAt": "2026-11-10T18:00:00+09:00",
-          "endAt": "2026-11-10T20:00:00+09:00",
-          "location": {
-            "name": "",
-            "building": "E6",
-            "room": "3438호"
-          },
-          "foodDescription": "사전 신청자 대상 피자 제공"
-        },
-        {
-          "startAt": "2026-11-11T18:00:00+09:00",
-          "endAt": "2026-11-11T20:00:00+09:00",
-          "location": {
-            "name": "",
-            "building": "E11",
-            "room": "203호"
-          },
-          "foodDescription": "사전 신청자 대상 피자 제공"
-        }
-      ],
-      "audience": {
-        "text": "관심 있는 학우분들",
-        "basis": "stated"
-      }
-    },
     {
       "id": "3052200c-49e1-4dff-909d-b48cda51624d",
       "title": "2026 기술경영학부 학과설명회",
