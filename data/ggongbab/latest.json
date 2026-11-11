@@ -1,51 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T23:25:03+09:00",
+  "generatedAt": "2026-11-11T23:55:23+09:00",
   "timezone": "Asia/Seoul",
-  "count": 36,
+  "count": 35,
   "events": [
-    {
-      "id": "3052200c-49e1-4dff-909d-b48cda51624d",
-      "title": "2026 기술경영학부 학과설명회",
-      "summary": "기술경영학부 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다. 경품이 준비되어 있습니다.",
-      "startAt": "2026-11-11T18:30:00+09:00",
-      "endAt": "2026-11-11T20:30:00+09:00",
-      "dateText": "2026년 11월 11일(수)",
-      "timeText": "18:30~20:30",
-      "location": {
-        "name": "터만홀",
-        "building": "창의학습관(E11)",
-        "room": "터만홀"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사",
-        "source": "text"
-      },
-      "organizer": "기술경영학부",
-      "eligibility": "",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.98,
-      "sources": [
-        {
-          "type": "manual",
-          "name": "Manual"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품"
-      },
-      "audience": {
-        "text": "새내기 학생",
-        "basis": "stated"
-      }
-    },
     {
       "id": "bb00bae1-7076-4ccd-b53c-32e9bf4c4f47",
       "title": "2026 노벨상 수상 업적 해설 강연",
