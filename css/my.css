@@ -221,6 +221,23 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 
 .my-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
+/* The filled star removes a saved event on this page (owner 2026-11-12). */
+.my-unstar {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-accent);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.my-unstar:hover { background: var(--color-accent-wash); }
+.my-unstar:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
 .my-tag {
   padding: 2px 8px;
   border-radius: 999px;
