@@ -273,9 +273,10 @@ def test_a_guest_on_the_hub_never_loads_the_client_even_when_turned_on(browser):
 
 def test_signed_out_offers_both_providers_with_a_full_page_redirect(browser):
     context, page, errors, _ = open_page(browser)
-    wait_view(page, "로그인하면 이렇게 돼요")
+    wait_view(page, "카카오로 계속하기")
     text = app_text(page)
-    assert "KAIST 인증은 필요 없어요" in text and "참여 조건은 행사마다 달라요" in text
+    # Owner 2026-11-12: "필요없는 글 다 삭제해줘": the sign-in card holds the buttons, little else.
+    assert "KAIST" not in text and "이렇게 돼요" not in text and "저장한 꽁밥이 없어요" not in text
     client = [c for c in fakedb(page)["calls"] if c[0] == "client"][0]
     assert client[1] == "https://myjglfynhnptlclawlcc.supabase.co" and client[2].startswith("sb_publishable_")
     assert client[3]["auth"]["flowType"] == "pkce" and client[3]["auth"]["persistSession"] is True
@@ -478,7 +479,7 @@ def test_the_private_name_can_be_changed_and_signing_out_keeps_this_browser_list
     wait_view(page, "새 이름님, 반가워요")
     assert fakedb(page)["tables"]["profiles"] == [{"user_id": UID, "display_name": "새 이름"}]
     page.get_by_role("button", name="로그아웃").first.click()
-    wait_view(page, "로그인하면 이렇게 돼요")
+    wait_view(page, "카카오로 계속하기")
     assert ["signout", "local"] in fakedb(page)["calls"]
     assert page.evaluate(f"localStorage.getItem('{SAVED_KEY}')") == guest
     assert errors == []
