@@ -458,6 +458,8 @@
       }, 0);
       return savedMessage;
     }
+    // Signed in: the calendar subscription on 마이 밥도둑 takes the stars, so no calendar screen opens here.
+    if (window.BabdodukPush && window.BabdodukPush.signedIn()) return savedMessage;
     var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
     var pref = L.starCalendar();
     if (pref === 'on') return savedMessage + ' · ' + starCalendarMessage(L.addToCalendar(ev, details));

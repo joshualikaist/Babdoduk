@@ -402,6 +402,8 @@ def test_the_account_list_shows_upcoming_past_and_missing_without_calling_anythi
         {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": dict(seen(LUNCH), place="N1 다른 곳")},
         {"user_id": UID, "event_id": "oldone", "saved_at": "2026-11-04T12:00:00Z", "seen": seen(OLD)},
         {"user_id": UID, "event_id": "ghost", "saved_at": "2026-11-08T12:00:00Z", "seen": ghost},
+        {"user_id": UID, "event_id": "morning", "saved_at": "2026-11-08T12:00:00Z",
+         "seen": {"title": "아침 행사", "startAt": "2026-11-09T07:00:00+09:00", "endAt": "2026-11-09T08:00:00+09:00", "place": "N1"}},
         {"user_id": "someone-else", "event_id": "wed", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(WED)}],
         "saved_places": [{"user_id": UID, "place_id": "p1", "status": "want", "memo": "비밀"},
                          {"user_id": UID, "place_id": "p2", "status": "again", "memo": ""}],
@@ -410,7 +412,9 @@ def test_the_account_list_shows_upcoming_past_and_missing_without_calling_anythi
     wait_view(page, "저장한 꽁밥")
     rows = page.locator(".my-row").evaluate_all("els => els.map(el => [el.className, el.innerText])")
     assert [r[0] for r in rows] == ["my-row is-upcoming", "my-row is-missing", "my-row is-ended"]
-    assert "변경됨" in rows[0][1] and "목록에서 빠짐" in rows[1][1] and "지난 꽁밥" in rows[2][1]
+    assert "변경됨" in rows[0][1] and "목록에서 빠짐" in rows[1][1] and "지난 꽁밥" in rows[2][1] and "아침 행사" in rows[2][1]
+    # Owner 2026-11-12: from the day after its event a star leaves the list; the row stays for the calendar.
+    assert "지난 세미나" not in app_text(page)
     assert "수요 간담회" not in app_text(page), "another user's row never shows"
     assert "취소" not in rows[1][1]
     assert page.locator(".my-row.is-upcoming a").get_attribute("href") == f"https://{HOST}/ggongbab.html?e=lunch"
@@ -532,7 +536,7 @@ def test_a_saved_event_is_removed_right_here_and_comes_back_if_the_server_refuse
     """Owner 2026-11-12: the filled star on 마이 밥도둑 removes a saved event without going to 오늘의 꽁밥."""
     tables = {"saved_events": [
         {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(LUNCH)},
-        {"user_id": UID, "event_id": "oldone", "saved_at": "2026-11-04T12:00:00Z", "seen": seen(OLD)}],
+        {"user_id": UID, "event_id": "wed", "saved_at": "2026-11-04T12:00:00Z", "seen": seen(WED)}],
         "saved_places": [], "profiles": []}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables})
     wait_view(page, "저장한 꽁밥")
@@ -541,9 +545,9 @@ def test_a_saved_event_is_removed_right_here_and_comes_back_if_the_server_refuse
     assert stars.first.get_attribute("aria-label").startswith("저장 취소: ")
     stars.first.click()
     page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.length === 1")
-    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["oldone"]
+    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["wed"]
     assert page.locator(".my-row").count() == 1 and "저장한 꽁밥 1" in page.locator("#mySavedTitle").inner_text()
-    assert page.evaluate("document.activeElement.getAttribute('data-my-unstar')") == "oldone"
+    assert page.evaluate("document.activeElement.getAttribute('data-my-unstar')") == "wed"
     page.wait_for_function("() => document.getElementById('myToast').textContent === '저장을 취소했어요'")
     # The server refuses: the row comes back and the page says so.
     page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb')); db.fail['saved_events:delete'] = true;
@@ -551,7 +555,7 @@ def test_a_saved_event_is_removed_right_here_and_comes_back_if_the_server_refuse
     page.locator("[data-my-unstar]").click()
     page.wait_for_function("() => document.querySelectorAll('.my-row').length === 1")
     page.wait_for_function("() => document.getElementById('myToast').textContent.includes('저장하지 못했어요')")
-    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["oldone"]
+    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["wed"]
     assert page.locator(".my-fine a[href='ggongbab.html']").inner_text() == "오늘의 꽁밥에서 더 저장하기"
     assert errors == []
     context.close()

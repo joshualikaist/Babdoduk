@@ -544,3 +544,25 @@ def test_a_star_on_the_home_calendar_asks_and_updates_the_alert_list(browser):
     page.wait_for_timeout(800)
     assert rpcs == [] and page.locator("#pushAsk").count() == 0 and errors == []
     context.close()
+
+
+def test_signed_in_a_star_saves_to_the_account_and_opens_no_calendar_file(browser):
+    # Owner 2026-11-12 (iPhone Chrome screenshot): the star started an .ics download, which cut off the
+    # account save ("저장하지 못했어요"). The subscribed calendar on 마이 밥도둑 takes the stars instead.
+    from tests.test_my_babdoduk import user
+    context, page, errors, rpcs = open_site(browser, path="ggongbab.html#saved", account=user(), push=False, standalone=False,
+                                            storage={"babdoduk-star-calendar": "on"})
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some((c) => c[0] === 'saved_events')")
+    page.wait_for_timeout(300)
+    downloads = []
+    page.on("download", lambda d: downloads.append(d))
+    page.locator('.gg-card[data-id="lunch"] .gg-save').click()
+    page.wait_for_function("() => document.querySelector('.gg-toast') && document.querySelector('.gg-toast').innerText.includes('계정에 저장돼요')")
+    page.wait_for_timeout(500)
+    assert downloads == [] and page.locator("#starCalAsk").count() == 0
+    rows = page.evaluate("JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events")
+    assert [r["event_id"] for r in rows] == ["lunch"]
+    body = page.locator(".gg-saved-body").inner_text()
+    assert "마이 밥도둑에서 한 번만 연결하면" in body and page.locator("[data-gg-starcal]").count() == 0
+    assert "저장하지 못했어요" not in page.locator(".gg-toast").inner_text() and errors == []
+    context.close()

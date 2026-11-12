@@ -246,7 +246,8 @@ def test_changes_since_saving_ended_and_missing(browser):
         item("wed", "2026-11-11T17:00:00+09:00", "2026-11-11T18:00:00+09:00", place="W8 · 101호 · W8 강의실"),
         item("oldone", "2026-11-05T12:00:00+09:00", "2026-11-05T13:00:00+09:00", title="지난 세미나"),
         item("gone", "2026-11-20T12:00:00+09:00", "2026-11-20T13:00:00+09:00", title="사라진 행사"),
-        item("gonepast", "2026-11-01T12:00:00+09:00", "2026-11-01T13:00:00+09:00", title="끝난 행사"))
+        item("gonepast", "2026-11-01T12:00:00+09:00", "2026-11-01T13:00:00+09:00", title="끝난 행사"),
+        item("morning", "2026-11-09T07:00:00+09:00", "2026-11-09T08:00:00+09:00", title="아침 행사"))
     context, page, errors = open_hub(browser, storage=storage)
     # The changed listing says so on its row and, opened, says what changed against the visitor's own copy.
     assert card(page, "lunch").locator(".gg-changed-label").inner_text() == "변경됨"
@@ -264,19 +265,23 @@ def test_changes_since_saving_ended_and_missing(browser):
                     rows.locator(".gg-saved-tags").all_inner_texts()))
     assert tags["lunch"] == "변경됨" and tags["wed"] == ""
     assert tags["gone"] == "목록에서 빠짐"
-    assert tags["oldone"] == "종료" and tags["gonepast"] == "종료"
+    # Owner 2026-11-12: from the day after its event a star leaves the list by itself; the saved row stays,
+    # so the subscribed calendar keeps the event. One that ended earlier today is still shown as ended.
+    assert tags["morning"] == "종료" and "oldone" not in tags and "gonepast" not in tags
+    assert {"oldone", "gonepast"} <= {i["id"] for i in stored(page)["items"]}
+    assert page.locator(".gg-saved-n").inner_text() == "4"
     body = page.locator(".gg-saved-body").inner_text()
     assert "취소됐" in body and "취소됨" not in body and "취소 확정" not in body   # never asserted as cancelled
     assert "참석한 것으로 기록하지 않아요" in body
-    assert page.locator('.gg-saved-row[data-saved-id="oldone"] [data-gg-goto]').count() == 0
+    assert page.locator('.gg-saved-row[data-saved-id="morning"] [data-gg-goto]').count() == 0
     # "확인했어요" makes the newest copy the visitor's, and the marks go.
     card(page, "lunch").locator("[data-gg-ack]").click()
     assert card(page, "lunch").locator(".gg-changed-label").count() == 0
     seen = [i for i in stored(page)["items"] if i["id"] == "lunch"][0]["seen"]
     assert seen["startAt"] == LUNCH["startAt"]
     # Removing a past one.
-    page.locator('[data-gg-unsave="oldone"]').click()
-    assert "oldone" not in [i["id"] for i in stored(page)["items"]]
+    page.locator('[data-gg-unsave="morning"]').click()
+    assert "morning" not in [i["id"] for i in stored(page)["items"]]
     assert not errors, errors
     context.close()
 

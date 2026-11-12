@@ -149,3 +149,11 @@ def test_the_address_routes_to_the_function_with_the_site_code_bundled():
         assert name in files
     source = (ROOT / "api/cal.js").read_text(encoding="utf-8")
     assert "SUPABASE_PUBLISHABLE_KEY" in source and not re.search(r"sb_secret_|service_role", source)
+
+
+def test_a_past_star_stays_in_the_calendar():
+    # Owner 2026-11-12: after its day a star leaves the saved lists, but the calendar keeps the event.
+    saved = [{"event_id": "lastweek", "saved_at": "2026-11-01T00:00:00Z",
+              "seen": {"title": "지난주 세미나", "startAt": "2026-11-03T12:00:00+09:00", "endAt": "2026-11-03T13:00:00+09:00", "place": "E11"}}]
+    body = run(saved, {"events": []})["body"]
+    assert "SUMMARY:지난주 세미나" in body and body.count("BEGIN:VEVENT") == 1

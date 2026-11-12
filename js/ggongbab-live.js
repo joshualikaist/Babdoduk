@@ -133,6 +133,14 @@
     return out;
   }
 
+  // A saved listing whose day is over (owner 2026-11-12: "행사 당일이 지나면 별은 알아서 지워지는"): from the
+  // next KST day it leaves the saved lists. The saved row itself stays, so the subscribed calendar keeps the
+  // event (docs/CALENDAR_FEED.md); only taking the star away removes it there. `nowKst` is F.nowKst().
+  function dayPassed(ev, nowKst) {
+    var last = F.toKst(ev && ev.endAt) || F.toKst(ev && ev.startAt);
+    return !!(last && nowKst && F.ymd(last) < F.ymd(nowKst));
+  }
+
   // ---------- Filters ----------
   // A KAIST building number starts with its campus area: N (north), E (east), W (west).
   var AREA_CODE = /(?:^|[^A-Za-z0-9])([NEW])(\d{1,2})(?:-\d{1,2})?(?![0-9])/;
@@ -320,9 +328,12 @@
   // Apple devices (iPadOS says Macintosh) open an .ics file in an "add to calendar" screen that keeps
   // the file's 30-minute alert; elsewhere Google Calendar's add page opens, with the visitor's own
   // default reminder. The kakaotalk in-app browser does neither reliably, so it is sent to the buttons.
+  // Chrome, Firefox, Edge and Opera on iPhone save an .ics file as a download instead of opening the add
+  // screen (owner 2026-11-12, iPhone Chrome screenshot), so they get Google Calendar's add page too.
   function calendarRoute(ua) {
     ua = ua == null ? (global.navigator || {}).userAgent || '' : ua;
     if (inTalkApp(ua)) return 'manual';
+    if (/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)) return 'google';
     return /iPhone|iPad|iPod|Macintosh/i.test(ua) ? 'ics' : 'google';
   }
   // Must run inside the click that asked for it, or the browser blocks the new window or download.
@@ -419,6 +430,7 @@
     readStore: readStore,
     seenOf: seenOf,
     changes: changes,
+    dayPassed: dayPassed,
     placeText: placeText,
     areaOf: areaOf,
     whoOf: whoOf,
