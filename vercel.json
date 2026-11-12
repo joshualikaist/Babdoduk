@@ -17,6 +17,10 @@
       "continue": true
     },
     {
+      "src": "/cal/([A-Za-z0-9_-]{43})\\.ics",
+      "dest": "/api/cal?t=$1"
+    },
+    {
       "src": "/(food\\.html|lab\\.html|lab-ggongbab\\.html|cardnews\\.html|data/cardnews/.+|bobyak\\.html|data/places/.+|calendar\\.ics|data/food-log\\.json)",
       "missing": [
         {
@@ -26,5 +30,11 @@
       ],
       "status": 404
     }
-  ]
+  ],
+  "functions": {
+    "api/cal.js": {
+      "includeFiles": "{js/ggongbab-select.js,js/ggongbab-live.js,js/ggongbab-public-config.js}",
+      "maxDuration": 10
+    }
+  }
 }

@@ -324,6 +324,13 @@
       return out;
     });
   }
+  // The private calendar subscription token (supabase/migrations/013_calendar_feed.sql); renew replaces it.
+  function calendarFeed(c, renew) {
+    return c.rpc('my_calendar_feed', { p_new: !!renew }).then(function (res) {
+      if (res.error) throw res.error;
+      return typeof res.data === 'string' && /^[A-Za-z0-9_-]{43}$/.test(res.data) ? res.data : '';
+    });
+  }
   function clearSavedData(c) {
     return c.rpc('delete_my_saved_data').then(function (res) { if (res.error) throw res.error; });
   }
@@ -364,6 +371,7 @@
     loadProfile: loadProfile,
     saveProfile: saveProfile,
     placeCounts: placeCounts,
+    calendarFeed: calendarFeed,
     clearSavedData: clearSavedData,
     clearBrowserCopy: clearBrowserCopy,
     deleteAccount: deleteAccount

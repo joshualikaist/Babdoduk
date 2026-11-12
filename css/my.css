@@ -351,3 +351,6 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 .my-privacy { margin: 28px 0 0; text-align: center; font-size: 0.9rem; }
 .my-privacy a { display: inline-block; padding: 10px 6px; color: #6e6e73; text-decoration: underline; text-underline-offset: 3px; }
 .my-privacy a:hover { color: #1d1d1f; }
+
+/* 내 캘린더에 연결 (docs/CALENDAR_FEED.md): one full-width button. */
+.my-cal-btn { display: flex; width: 100%; min-height: 48px; margin: var(--space-3) 0 var(--space-2); }
