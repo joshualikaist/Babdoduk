@@ -3295,7 +3295,8 @@ NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
 # Instagram left the More menu for a logo beside the wordmark (owner 2026-11-05; INSTAGRAM below).
 NAV_MORE = ["mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
 INSTAGRAM = "https://www.instagram.com/babdodukms/"
-FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html", "privacy.html"]
+# The footer's site links are the top menu's three direct ones (owner 2026-11-12), then the privacy policy.
+FOOTER_LINKS = ["ggongbab.html", "choose.html", "event.html", "privacy.html"]
 CHROME = r"""() => {
   const pick = (el, props) => { const s = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, s.getPropertyValue(p)])); };
   const root = document.documentElement, body = document.body, footer = document.querySelector('.site-footer');
