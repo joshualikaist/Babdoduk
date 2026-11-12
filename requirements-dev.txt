@@ -3,3 +3,7 @@
 # Tests only: the reference JSON Schema implementation tests/test_schemas.py checks the built-in
 # contract checker (scripts/schema_check.py) against. Nothing at run time needs it.
 jsonschema==4.26.0
+
+# Parallel test workers for scripts/check_all.py (owner 2026-11-12: checks took too long). Optional: without
+# it the same tests run one after another.
+pytest-xdist==3.6.1

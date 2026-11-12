@@ -1,47 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-12T13:17:02+09:00",
+  "generatedAt": "2026-11-12T15:58:27+09:00",
   "timezone": "Asia/Seoul",
   "count": 36,
   "events": [
-    {
-      "id": "bb00bae1-7076-4ccd-b53c-32e9bf4c4f47",
-      "title": "2026 노벨상 수상 업적 해설 강연",
-      "summary": "2026년 노벨 생리의학상·물리학상·화학상 수상자들의 주요 연구 업적을 소개하는 해설 강연입니다. 강연은 한국어로 진행되며 Zoom을 통해 영어 동시통역이 제공됩니다.",
-      "startAt": "2026-11-12T11:50:00+09:00",
-      "endAt": "2026-11-12T12:50:00+09:00",
-      "dateText": "Thursday, November 12, 2026",
-      "timeText": "11:50-12:50",
-      "location": {
-        "name": "창의학습관 1층 터만홀",
-        "building": "E11",
-        "room": "1F Turman Hall"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "쉑쉑버거와 음료",
-        "source": "text"
-      },
-      "organizer": "자연과학대학 교학팀",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://kaist.zoom.us/j/89487469591"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "모든 관심 있는 사람",
-        "basis": "stated"
-      }
-    },
     {
       "id": "1d69dec0-2314-4ef9-9b9c-9e6d0aa431fa",
       "title": "기계과 MEET 5회차 프로배구 경기 관람",
@@ -370,6 +332,44 @@
       ],
       "audience": {
         "text": "관심 있는 모든 KAIST 구성원",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "78b6aeba-c538-4043-b232-da92b45c95a9",
+      "title": "2026 KAIST 꿈나무 과학멘토 기초과학 강연 시리즈 '물리, 어디까지 확대해봤니?'",
+      "summary": "물리학과에서 유성구 지역 초·중학생들을 초청하여 진행하는 물리학 대중강연입니다. 양용수 교수의 '원자를 눈으로 볼 수 있을까' 강연이 진행됩니다.",
+      "startAt": "2026-11-18T14:30:00+09:00",
+      "endAt": "2026-11-18T16:00:00+09:00",
+      "dateText": "2026. 11. 18.(수)",
+      "timeText": "14:30~16:00",
+      "location": {
+        "name": "KAIST 자연과학동 공동강의실",
+        "building": "E6-1",
+        "room": "1501호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "간단한 간식",
+        "source": "text"
+      },
+      "organizer": "KAIST 물리학과",
+      "eligibility": "",
+      "registration": {
+        "required": "false",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "유성구 지역 초·중학생",
         "basis": "stated"
       }
     },
