@@ -87,7 +87,9 @@ def test_english_and_signed_in_names(browser):
 def test_production_hosts_carry_the_sign_in_entry(browser, host):
     context, page, errors = open_page(browser, host, "index.html")
     assert page.locator("#navMy").count() == 1 and page.locator("#navMy").get_attribute("href") == "my.html"
-    # The shared nav HTML itself is unchanged: js/site.js adds the icon, so the chrome baselines stay.
-    assert 'href="my.html"' not in (ROOT / "shared/nav.html").read_text(encoding="utf-8")
+    # js/site.js adds the icon; since owner 2026-11-12 the shared nav also lists 마이 밥도둑 once, first in
+    # 더보기 (the phone menu panel's second group), so the chrome baselines need the owner's approval again.
+    nav = (ROOT / "shared/nav.html").read_text(encoding="utf-8")
+    assert nav.count('href="my.html"') == 1 and nav.index('href="my.html"') < nav.index('href="mukbang.html"')
     assert errors == []
     context.close()
