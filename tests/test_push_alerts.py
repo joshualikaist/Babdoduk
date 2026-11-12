@@ -519,3 +519,28 @@ def test_my_babdoduk_turns_alerts_on_and_off_for_this_phone(browser):
     page.wait_for_function("() => document.querySelector('[data-my-push]').getAttribute('aria-pressed') === 'false'")
     assert rpcs[1][0] == "push_device_remove" and errors == []
     context.close()
+
+
+def test_a_star_on_the_home_calendar_asks_and_updates_the_alert_list(browser):
+    # Owner 2026-11-12: "첫 화면에서도 바로 들어가게 해줄 수 있으면 짱이지".
+    context, page, errors, rpcs = open_site(browser, path="index.html")
+    page.locator('[data-hc-save="lunch"]').click()
+    page.locator("#pushAsk").wait_for()
+    assert page.locator("#starCalAsk").count() == 0
+    page.locator("#pushAsk .starcal-yes").click()
+    wait_rpc(page, rpcs, 1)
+    assert rpcs[0][0] == "push_device_save" and rpcs[0][1]["p_events"] == ["lunch"]
+    page.wait_for_function("() => document.getElementById('homeCalLive').innerText.includes('30분 전에 알림이 와요')")
+    page.locator('[data-hc-save="lunch"]').click()
+    wait_rpc(page, rpcs, 2)
+    assert rpcs[1][1]["p_events"] == []
+    assert errors == []
+    context.close()
+    # Someone signed in: the home page's guest list never replaces the account's alert list.
+    from tests.test_my_babdoduk import TOKEN_KEY
+    context, page, errors, rpcs = open_site(browser, path="index.html", subscribed=True, permission="granted",
+                                            storage={TOKEN_KEY: "{}"})
+    page.locator('[data-hc-save="lunch"]').click()
+    page.wait_for_timeout(800)
+    assert rpcs == [] and page.locator("#pushAsk").count() == 0 and errors == []
+    context.close()

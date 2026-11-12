@@ -373,6 +373,18 @@
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
   var liveNote = { id: '', text: '', copy: '' };
+  // 별 누른 꽁밥 30분 전 알림 (owner 2026-11-12: "첫 화면에서도 바로 들어가게"; docs/PUSH_ALERTS.md).
+  // This page keeps the browser's guest list, so someone signed in is left to ggongbab.html and my.html.
+  var P = L && window.BabdodukPush && !window.BabdodukPush.signedIn() ? window.BabdodukPush : null;
+  var pushOn = false;
+  function savedIds() { return savedStore ? savedStore.list().map(function (item) { return item.id; }) : []; }
+  function langCode() { return lang() === 'en' ? 'en' : 'ko'; }
+  if (P) {
+    P.status().then(function (s) {
+      pushOn = s === 'on';
+      if (pushOn) P.sync(savedIds(), langCode());
+    });
+  }
   // The star is a drawn icon, not a text character: this module shows no emoji or symbol glyphs.
   var STAR = '<svg class="hc-save-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
     '<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
@@ -414,11 +426,42 @@
     if (result === 'manual') return t('starcal.done.manual', '카카오톡 안에서는 바로 넣을 수 없어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
     return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
   }
+  function pushMessage(result) {
+    if (result === 'on') return t('push.nowOn', '이제 별 누른 꽁밥 30분 전에 알림이 와요');
+    if (result === 'denied') return t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.');
+    return t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+  }
   function afterStar(ev, savedMessage) {
     if (!L.canCalendar(ev, F.nowKst())) return savedMessage;
+    var starSel = '[data-hc-save="' + (window.CSS && CSS.escape ? CSS.escape(ev.id) : ev.id) + '"]';
+    // In the site opened from the home screen, the first star offers the phone's own alert instead.
+    if (P && P.standalone() && P.shouldAsk()) {
+      setTimeout(function () {
+        P.ask({
+          title: t('push.ask.title', '별 누른 꽁밥, 30분 전에 알려 드릴까요?'),
+          body: t('push.ask.body', '시작 30분 전에 휴대폰 알림이 와요. 다음 창에서 허용을 눌러 주세요.'),
+          yes: t('push.ask.yes', '알림 받을게요'),
+          no: t('push.ask.no', '괜찮아요'),
+          later: t('push.ask.later', '저장한 꽁밥에서 언제든 끄고 켤 수 있어요')
+        }, function (yes) {
+          if (yes) {
+            P.enable(savedIds(), langCode()).then(function (result) {
+              if (result === 'on') pushOn = true;
+              els.live.textContent = pushMessage(result);
+              refocus(starSel);
+            });
+            return;
+          }
+          if (yes === false) els.live.textContent = t('push.no', '알림은 켜지 않을게요 · 저장한 꽁밥에서 켤 수 있어요');
+          refocus(starSel);
+        });
+      }, 0);
+      return savedMessage;
+    }
     var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
     var pref = L.starCalendar();
     if (pref === 'on') return savedMessage + ' · ' + starCalendarMessage(L.addToCalendar(ev, details));
+    if (pushOn) return savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요');
     if (pref === 'off') return savedMessage;
     var text = {
       title: t('starcal.ask.title', '별 누를 때 내 캘린더에도 넣을까요?'),
@@ -766,6 +809,7 @@
     var message;
     if (savedStore.has(id)) message = savedStore.remove(id) ? t('home.cal.ev.unsaved', '저장을 지웠어요') : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
     else message = savedStore.add(item.ev) ? afterStar(item.ev, t('home.cal.ev.saved', '저장했어요 · 오늘의 꽁밥의 저장한 꽁밥에서 볼 수 있어요')) : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
+    if (P && pushOn) P.changed(savedIds(), langCode());
     var scroll = els.day.querySelector('.hc-events-scroll');
     var top = scroll ? scroll.scrollTop : 0;
     renderDay();

@@ -60,7 +60,7 @@ LAB_RIBBON = [
 # scrolls to the top instead of linking to itself), and the i18n/ key families its
 # translation table carries besides COMMON_STRINGS (`strings`).
 PAGES = {
-    "index.html": {"current": None, "home": "#", "strings": ("home", "dish", "starcal")},
+    "index.html": {"current": None, "home": "#", "strings": ("home", "dish", "starcal", "push")},
     "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km", "dish", "starcal", "push")},
     "mukbang.html": {"current": "mukbang.html", "strings": ("kaist", "km", "mg")},
     # 오늘 뭐 먹지 (owner 2026-11-04): the one menu picker, a direct destination; the capsule machine (js/pick.js, 2026-11-05).

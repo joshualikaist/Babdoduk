@@ -83,15 +83,23 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
         config = (ROOT / "js/ggongbab-public-config.js").read_text(encoding="utf-8")
         assert not re.search(r"sb_secret_|service_role|SUPABASE_SECRET", config)
     else:
-        assert "ggongbab-public-feed.js" not in html and "ggongbab-public-config.js" not in html
+        assert "ggongbab-public-feed.js" not in html
+        if name == "index.html":
+            # Owner 2026-11-12 ("첫 화면에서도 바로 들어가게 해줄 수 있으면 짱이지"): the home calendar's star
+            # sends the alert list itself, so the home page loads the public config for the alert module only,
+            # right before the calendar. Nothing on it reads the feed from a database.
+            assert scripts[scripts.index("js/home-calendar.js") - 2:scripts.index("js/home-calendar.js")] == [
+                "js/ggongbab-public-config.js", *PUSH_SCRIPTS]
+        else:
+            assert "ggongbab-public-config.js" not in html
     for script in scripts:
         assert not script.startswith(("http:", "https:", "//"))
         if live and script in LIVE_FEED_SCRIPTS:
             continue  # the experiment itself: tests/ggongbab/test_frontend_public_feed.py
         if live and script in ACCOUNT_SCRIPTS:
             continue  # the account store: tests/test_my_babdoduk.py
-        if live and script in PUSH_SCRIPTS:
-            continue  # the 30-minute alert: tests/test_push_alerts.py
+        if script in PUSH_SCRIPTS or (name == "index.html" and script == "js/ggongbab-public-config.js"):
+            continue  # the 30-minute alert and its public config: tests/test_push_alerts.py
         source = (ROOT / script.split("?")[0]).read_text(encoding="utf-8")
         forbidden = ("supabase", "createClient(", "WebSocket(", "EventSource(")
         if not (live and script == "js/ggongbab.js"):

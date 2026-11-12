@@ -14,7 +14,7 @@
   'use strict';
 
   // The public half of the push key pair (scripts/push/keygen.js prints it). Public by design.
-  var VAPID_PUBLIC_KEY = '';
+  var VAPID_PUBLIC_KEY = 'BEfX71XgdO8TANAExCRNO-a4XUUTlSnN3TwuOOvUxepyCwajiYW-1JUoobGNies2RRsRBjUTvNj1H4IoDEtQc38';
   var HOSTS = ['babdoduk-lab.vercel.app'];
   var EVENT_ID = /^[A-Za-z0-9_-]{1,80}(#[0-9]{1,2})?$/;
   var SYNC_KEY = 'babdoduk-push-synced';   // what was last sent, so an unchanged list is not sent again
@@ -53,6 +53,15 @@
     try { return !!(global.matchMedia && global.matchMedia('(display-mode: standalone)').matches); } catch (e) { return false; }
   }
 
+  // Someone signed in on this browser: their list is the account's, which ggongbab.html and my.html send.
+  // The home page holds only this browser's guest list, so it leaves the alert list to those pages.
+  function signedIn() {
+    var s = store();
+    try {
+      for (var i = 0; s && i < s.length; i++) if (/^sb-[a-z0-9]+-auth-token$/.test(s.key(i) || '')) return true;
+    } catch (e) { return false; }
+    return false;
+  }
   function subscription() {
     return nav().serviceWorker.getRegistration('/').then(function (reg) { return reg ? reg.pushManager.getSubscription() : null; });
   }
@@ -208,6 +217,7 @@
     status: status,
     shouldAsk: shouldAsk,
     standalone: standalone,
+    signedIn: signedIn,
     enable: enable,
     disable: disable,
     sync: sync,
