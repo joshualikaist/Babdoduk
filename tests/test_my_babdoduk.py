@@ -526,6 +526,35 @@ def test_leaving_needs_a_fresh_sign_in_and_a_tick(browser):
     context.close()
 
 
+def test_a_saved_event_is_removed_right_here_and_comes_back_if_the_server_refuses(browser):
+    """Owner 2026-11-12: the filled star on 마이 밥도둑 removes a saved event without going to 오늘의 꽁밥."""
+    tables = {"saved_events": [
+        {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(LUNCH)},
+        {"user_id": UID, "event_id": "oldone", "saved_at": "2026-11-04T12:00:00Z", "seen": seen(OLD)}],
+        "saved_places": [], "profiles": []}
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables})
+    wait_view(page, "저장한 꽁밥")
+    stars = page.locator("[data-my-unstar]")
+    assert stars.count() == 2 and stars.first.get_attribute("aria-pressed") == "true"
+    assert stars.first.get_attribute("aria-label").startswith("저장 취소: ")
+    stars.first.click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.length === 1")
+    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["oldone"]
+    assert page.locator(".my-row").count() == 1 and "저장한 꽁밥 1" in page.locator("#mySavedTitle").inner_text()
+    assert page.evaluate("document.activeElement.getAttribute('data-my-unstar')") == "oldone"
+    page.wait_for_function("() => document.getElementById('myToast').textContent === '저장을 취소했어요'")
+    # The server refuses: the row comes back and the page says so.
+    page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb')); db.fail['saved_events:delete'] = true;
+                             localStorage.setItem('__fakedb', JSON.stringify(db)); }""")
+    page.locator("[data-my-unstar]").click()
+    page.wait_for_function("() => document.querySelectorAll('.my-row').length === 1")
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('저장하지 못했어요')")
+    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["oldone"]
+    assert page.locator(".my-fine a[href='ggongbab.html']").inner_text() == "오늘의 꽁밥에서 더 저장하기"
+    assert errors == []
+    context.close()
+
+
 @pytest.mark.parametrize("width", [360, 390, 768, 1440])
 def test_english_and_widths(browser, width):
     tables = {"saved_events": [{"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(LUNCH)}],
