@@ -197,25 +197,21 @@
     return html + '</section>';
   }
   // 내 캘린더에 연결 (owner 2026-11-12; docs/CALENDAR_FEED.md): subscribe once, and every later star shows
-  // up in the phone's calendar by itself, with an alert 30 minutes before. iPhone and Mac open webcal:// in
-  // their own calendar ("구독"); elsewhere Google Calendar's add-by-address page.
+  // up in the iPhone calendar by itself. iPhone and iPad only (owner: a laptop needs no calendar link; Android's
+  // Google Calendar fetches a subscription only every few hours, so Android gets the 30-minute alert instead).
+  // No address talk on the card (owner: "사람들이 주소 관련해서 무슨 말인지 이해 못할게 뻔해").
   function calFeedUrl() { return location.host + '/cal/' + state.calToken + '.ics'; }
+  function isIos() {
+    var ua = navigator.userAgent || '';
+    return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  }
   function calendarHtml() {
-    if (!state.calToken) return '';
-    var apple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+    if (!state.calToken || !isIos()) return '';
     var html = '<section class="my-card" aria-labelledby="myCalTitle">';
-    html += '<h2 class="my-h2" id="myCalTitle"><span aria-hidden="true">📅</span> ' + esc(t('my.cal.title', '내 캘린더에 연결')) + '</h2>';
-    html += '<p class="my-text">' + esc(t('my.cal.body', '한 번만 연결하면 별을 누를 때마다 휴대폰 캘린더에 저절로 들어가요. 시작 30분 전에 알림이 와요.')) + '</p>';
-    if (apple) {
-      html += '<a class="btn btn-primary my-cal-btn" data-my-cal href="webcal://' + esc(calFeedUrl()) + '">' + esc(t('my.cal.apple', '아이폰 캘린더에 연결')) + '</a>';
-      html += '<p class="my-fine">' + esc(t('my.cal.appleHow', '누른 다음 "구독"을 누르면 끝이에요. 새 별은 보통 몇 분 안에 캘린더에 보여요.')) + '</p>';
-    } else {
-      html += '<a class="btn btn-primary my-cal-btn" data-my-cal target="_blank" rel="noopener" href="https://calendar.google.com/calendar/render?cid=' +
-        esc(encodeURIComponent('webcal://' + calFeedUrl())) + '">' + esc(t('my.cal.google', '구글 캘린더에 연결')) + '</a>';
-      html += '<p class="my-fine">' + esc(t('my.cal.googleHow', '"추가"를 누르면 끝이에요. 구글 캘린더는 새 별을 몇 시간에 한 번 가져와서 늦게 보일 수 있어요.')) + '</p>';
-    }
-    html += '<p class="my-fine">' + esc(t('my.cal.private', '연결 주소를 아는 사람은 내가 저장한 꽁밥을 볼 수 있어요. 새 주소를 만들면 예전 주소는 멈춰요.')) +
-      ' <button type="button" class="my-link-btn" data-my-cal-renew>' + esc(t('my.cal.renew', '새 주소 만들기')) + '</button></p>';
+    html += '<h2 class="my-h2" id="myCalTitle"><span aria-hidden="true">📅</span> ' + esc(t('my.cal.title', '아이폰 캘린더에 넣기')) + '</h2>';
+    html += '<p class="my-text">' + esc(t('my.cal.body', '한 번 연결하면 별 누른 꽁밥이 캘린더에 들어가요.')) + '</p>';
+    html += '<a class="btn btn-primary my-cal-btn" data-my-cal href="webcal://' + esc(calFeedUrl()) + '">' + esc(t('my.cal.apple', '아이폰 캘린더에 연결')) + '</a>';
+    html += '<p class="my-fine">' + esc(t('my.cal.appleHow', '누른 뒤 "구독"을 눌러 주세요.')) + '</p>';
     return html + '</section>';
   }
   function pushIds() { return (state.store ? state.store.list() : state.events).map(function (item) { return item.id; }); }
@@ -464,16 +460,6 @@
         var btn = app.querySelector('[data-my-push]') || document.getElementById('myPushTitle');
         if (btn) { if (!btn.matches('button')) btn.setAttribute('tabindex', '-1'); btn.focus(); }
       });
-      return;
-    }
-    if (e.target.closest('[data-my-cal-renew]')) {
-      busy(true);
-      A.calendarFeed(state.client, true).then(function (tk) {
-        state.calToken = tk; busy(false); render();
-        announce(t('my.cal.renewed', '새 주소를 만들었어요 · 예전 연결은 멈췄어요. 다시 연결해 주세요'));
-        var btn = app.querySelector('[data-my-cal]');
-        if (btn) btn.focus();
-      }, function () { busy(false); announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); });
       return;
     }
     if (e.target.closest('[data-my-retry]')) { start(); return; }
