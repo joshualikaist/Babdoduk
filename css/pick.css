@@ -398,14 +398,6 @@
   color: inherit;
 }
 
-.pick-scope {
-  margin: 28px 0 0;
-  font-size: 13px;
-  color: var(--color-ink-muted, #5a534a);
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-}
-
 .pick-sr {
   position: absolute;
   width: 1px;

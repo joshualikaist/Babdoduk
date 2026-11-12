@@ -425,11 +425,10 @@ def giveaway_listings(browser, base, report):
             assert expo.locator(".gg-giveaway").inner_text() == ("Giveaway · " if en else "경품 · ") + "경품 추첨 (에어팟)"
             for word in ("음식 제공", "식사 제공", "Food provided"):
                 assert word not in expo.inner_text(), word
-            # Food and a giveaway: both marks; the food was read only from the poster, and says so.
+            # Food and a giveaway: both marks. Copy cleanup, owner 2026-11-12: no "포스터 기준" note any more.
             talk = card("both-talk")
-            # The dish in a word (2026-11-05), and the poster note.
-            assert squash(talk.locator(".gg-food-primary").text_content()) == (
-                "Sandwiches · per poster" if en else "샌드위치 · 포스터 기준")
+            # The dish in a word (2026-11-05).
+            assert squash(talk.locator(".gg-food-primary").text_content()) == ("Sandwiches" if en else "샌드위치")
             assert squash(talk.locator(".gg-gift-badge").text_content()) == badge
             assert talk.locator(".gg-giveaway").inner_text().endswith("기념품 증정")
             # Text evidence and plain food carry neither mark.
@@ -448,7 +447,7 @@ def giveaway_listings(browser, base, report):
             past = page.locator('.gg-past[data-past-id="past-gift"]')
             assert squash(past.locator(".gg-past-gift").text_content()) == badge
             assert past.locator(".gg-past-note").inner_text().startswith(
-                "Previously published giveaway listing" if en else "당시 공개된 경품 안내 기록")
+                "Past giveaway listing" if en else "지난 경품 안내")  # copy cleanup, owner 2026-11-12
             assert "음식 제공" not in past.inner_text() and "Food provided" not in past.inner_text()
             assert page.locator('.gg-past[data-past-id="past-food"] .gg-past-gift').count() == 0
             assert page.locator('.gg-past[data-past-id="gift-closed"] .gg-past-gift').count() == 1
@@ -852,7 +851,7 @@ def weekend_and_holiday_menu(browser, base, report):
             assert ("still updating" not in stale) and ("업데이트 중" not in stale), stale
             assert ("Oct 16" if en else "10월 16일") in stale, stale
             assert page.locator(".km-card").count() == 0
-            assert ("No cafeteria on weekends" if en else "주말엔 학식 없음") in page.locator(".gg-counts").inner_text()
+            assert ("No cafeteria on weekends" if en else "주말 학식 없음") in page.locator(".gg-counts").inner_text()  # copy cleanup, owner 2026-11-12
             # Sunday: nothing posted, said in one sentence; Friday still opens.
             page.locator('[data-km-date="2026-10-18"]').click()
             page.locator('[data-km-day-state="none"]').wait_for()
@@ -893,7 +892,7 @@ def weekend_and_holiday_menu(browser, base, report):
             page.goto(base + "/ggongbab.html#menu")
             page.locator("[data-km-stale]").wait_for()
             stale = page.locator("[data-km-stale]").inner_text()
-            assert ("Today’s menu is still updating." if en else "오늘 메뉴 업데이트 중이에요.") in stale, stale
+            assert ("Today’s menu isn’t up yet." if en else "오늘 메뉴가 아직 안 올라왔어요.") in stale, stale  # copy cleanup, owner 2026-11-12
             assert ("Cafeteria updating" if en else "학식 업데이트 중") in page.locator(".gg-counts").inner_text()
             page.goto(base + "/index.html")
             status = page.locator("#homeMenuStatus[data-state='stale']")
@@ -921,14 +920,14 @@ def weekend_and_holiday_menu(browser, base, report):
         page.goto(base + "/ggongbab.html#menu")
         page.locator("#foodHubMenu .gg-state").wait_for()
         text = page.locator("#foodHubMenu").inner_text()
-        assert "오늘 이 시간대에 공개된 메뉴가 없어요." in text, text
+        assert "오늘 이 시간대 메뉴가 없어요." in text, text  # copy cleanup, owner 2026-11-12
         assert page.locator(".km-card").count() == 0 and "[object" not in text and "undefined" not in text
         assert page.locator('#foodHubMenu [data-hub-tab="free"]').count() == 1
         assert page.locator(".gg-counts").inner_text() == "오늘 꽁밥 0개 · 학식 0곳", page.locator(".gg-counts").inner_text()
         page.goto(base + "/index.html")
         page.locator("#homeMenuStatus:not([data-state='loading'])").wait_for()
         status = page.locator("#homeMenuStatus").inner_text()
-        assert "오늘 올라온 메뉴가 아직 없어요" in status and "불러오지 못" not in status, status
+        assert "오늘 메뉴가 아직 없어요" in status and "불러오지 못" not in status, status  # copy cleanup, owner 2026-11-12
         assert problems == [], problems
         report["checks"] += 7
     finally:
@@ -1071,8 +1070,9 @@ def past_listings(browser, base, report):
             assert archive.locator(".gg-past-badge").all_inner_texts() == ["종료"] * len(visible_past)
             links = archive.locator("a").evaluate_all(
                 "els => els.map(a => [a.closest('.gg-past').dataset.pastId, a.getAttribute('href'), a.target, a.rel, a.textContent])")
-            assert links == [["past-notice", "https://example.org/notice", "_blank", "noopener", "당시 공지 보기 ↗(새 창)"]], links
-            assert all("당시 공개된 꽁밥 안내 기록" in text for text in archive.locator(".gg-past-note").all_inner_texts())
+            # copy cleanup, owner 2026-11-12: shorter link and record labels.
+            assert links == [["past-notice", "https://example.org/notice", "_blank", "noopener", "공지 보기 ↗(새 창)"]], links
+            assert all("지난 꽁밥 안내" in text for text in archive.locator(".gg-past-note").all_inner_texts())
             # Secondary: below the live list, flat, and out of reach of the sticky live filters.
             archive.scroll_into_view_if_needed()
             box, filters = archive.bounding_box(), page.locator(".gg-filters").bounding_box()
@@ -1083,9 +1083,9 @@ def past_listings(browser, base, report):
             report["checks"] += 12
         page.locator("#langToggle").click()
         assert page.locator("#ggArchiveTitle").inner_text() == "Past free-food listings"
-        assert page.locator(".gg-past-link").inner_text().startswith("View original notice")
+        assert page.locator(".gg-past-link").inner_text().startswith("View notice")  # copy cleanup, owner 2026-11-12
         assert page.locator(".gg-past-badge").first.inner_text() == "Ended"
-        assert "Previously published free-food listing" in page.locator(".gg-past-note").first.inner_text()
+        assert "Past free-food listing" in page.locator(".gg-past-note").first.inner_text()  # copy cleanup, owner 2026-11-12
         page.locator("#langToggle").click()
         report["checks"] += 4
 
@@ -1584,7 +1584,7 @@ def run_checks(preview=False):
         page.locator("#foodHubTabMenu").click()
         page.locator("[data-km-stale]").wait_for()
         # The fixture clock (FIXTURE_NOW) is a Sunday: a missing menu then reads as the weekend, not "updating".
-        assert "주말엔 학식 없음" in page.locator(".gg-counts").inner_text()
+        assert "주말 학식 없음" in page.locator(".gg-counts").inner_text()  # copy cleanup, owner 2026-11-12
         assert "주말엔 학식이 없어요." in page.locator("[data-km-stale]").inner_text()
         assert page.locator("#foodHubMenu h2").count() == 0 or "오늘" not in page.locator("#foodHubMenu h2").inner_text()
         page.locator("[data-km-stale-toggle]").click()

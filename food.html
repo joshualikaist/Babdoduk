@@ -566,7 +566,7 @@
           <button type="button" class="food-input-reset" id="foodInputReset" data-i18n="food.input.reset">초기화</button>
           <button type="button" class="food-input-save" id="foodInputSave" data-i18n="food.input.save">저장하기</button>
         </div>
-        <p class="food-input-hint" data-i18n-html="food.input.hint">이 브라우저에만 저장돼요. 같은 날짜는 덮어쓰고, 브라우저 데이터를 지우면 함께 지워져요.</p>
+        <p class="food-input-hint" data-i18n-html="food.input.hint">같은 날짜에 저장하면 덮어써요.</p>
       </div>
         </div>
         <div class="food-tracker-col food-tracker-col--dashboard">
@@ -587,7 +587,7 @@
           <div class="sub" id="foodMonthLabel">—</div>
         </div>
         <div class="food-sum-card">
-          <div class="lbl" data-i18n="food.cardWeekPick">주 합계 (ISO)</div>
+          <div class="lbl" data-i18n="food.cardWeekPick">주 합계</div>
           <div class="food-sum-picks">
             <label>
               <span data-i18n="food.pickYear">연도</span>
@@ -623,7 +623,7 @@
       <hr class="footer-apple-hr" />
       <div class="footer-apple-main">
         <div class="footer-apple-col footer-apple-col--left">
-          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-copy" data-i18n="footer.copyright">© 2026 밥도둑</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</span>
         </div>
@@ -640,7 +640,7 @@
           <span data-i18n="footer.country">대한민국</span>
         </div>
       </div>
-      <p class="footer-apple-fine" data-i18n="footer.fine">본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.</p>
+      <p class="footer-apple-fine" data-i18n="footer.fine">개인이 운영하는 사이트예요. 문의는 이메일로 주세요.</p>
     </div>
   </footer>
 
@@ -661,34 +661,33 @@
         'food.calNext': '다음 달',
         'food.calPrev': '이전 달',
         'food.cardMonthPick': '월 합계',
-        'food.cardWeekPick': '주 합계 (ISO)',
+        'food.cardWeekPick': '주 합계',
         'food.fetchErr': '가계부 데이터를 불러오지 못했어요.',
         'food.heading': '먹방 가계부',
         'food.input.addRow': '더 입력하기',
         'food.input.colMeal': '식사 종류',
         'food.input.colPrice': '가격 (원)',
         'food.input.dateLabel': '날짜',
-        'food.input.errEmpty': '식사 종류 또는 가격·총액을 입력하세요.',
-        'food.input.errNoDate': '날짜를 선택하세요.',
-        'food.input.hint': '이 브라우저에만 저장돼요. 같은 날짜는 덮어쓰고, 브라우저 데이터를 지우면 함께 지워져요.',
+        'food.input.errEmpty': '식사 종류나 가격을 적어 주세요.',
+        'food.input.errNoDate': '날짜를 골라 주세요.',
+        'food.input.hint': '같은 날짜에 저장하면 덮어써요.',
         'food.input.reset': '초기화',
         'food.input.rowMeal': '{n}번째 식사 종류',
         'food.input.rowPrice': '{n}번째 가격 (원)',
         'food.input.save': '저장하기',
-        'food.input.saved': '저장했습니다. 집계와 달력을 확인하세요.',
+        'food.input.saved': '저장했어요.',
         'food.input.sectionTitle': '오늘 지출 입력',
         'food.input.totalLabel': '총액 (원)',
         'food.legend': '● 이 브라우저에 저장한 날 · 공개 기록 {shared}일 · 이 브라우저 {browser}일',
         'food.pickMonth': '월',
         'food.pickWeek': '주차',
         'food.pickYear': '연도',
-        'food.src.browser': '이 브라우저에 저장한 기록',
-        'food.src.replaces': '같은 날짜의 공개 기록 대신 보여요',
+        'food.src.browser': '내 기록',
         'food.src.shared': '밥도둑 공개 기록',
         'footer.contact': '문의',
-        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.copyright': '© 2026 밥도둑',
         'footer.country': '대한민국',
-        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.fine': '개인이 운영하는 사이트예요. 문의는 이메일로 주세요.',
         'footer.navAria': '사이트 바로가기',
         'footer.privacy': '개인정보처리방침',
         'nav.choose': '오늘 뭐 먹지',
@@ -727,34 +726,33 @@
         'food.calNext': 'Next month',
         'food.calPrev': 'Previous month',
         'food.cardMonthPick': 'Month total',
-        'food.cardWeekPick': 'Week total (ISO)',
+        'food.cardWeekPick': 'Week total',
         'food.fetchErr': 'Couldn\'t load the food log.',
         'food.heading': 'Food expense log',
         'food.input.addRow': 'Add row',
         'food.input.colMeal': 'Meal',
         'food.input.colPrice': 'Amount (₩)',
         'food.input.dateLabel': 'Date',
-        'food.input.errEmpty': 'Enter at least one meal/amount or a total.',
+        'food.input.errEmpty': 'Enter a meal or an amount.',
         'food.input.errNoDate': 'Pick a date.',
-        'food.input.hint': 'Saved in this browser only. A date saved again is overwritten, and clearing browser data deletes it.',
+        'food.input.hint': 'Saving the same date again overwrites it.',
         'food.input.reset': 'Reset',
         'food.input.rowMeal': 'Meal, row {n}',
         'food.input.rowPrice': 'Amount (₩), row {n}',
         'food.input.save': 'Save',
-        'food.input.saved': 'Saved. Check the summaries and calendar.',
+        'food.input.saved': 'Saved.',
         'food.input.sectionTitle': 'Add spending',
         'food.input.totalLabel': 'Total (₩)',
         'food.legend': '● marks days saved in this browser · published {shared} days · this browser {browser} days',
         'food.pickMonth': 'Month',
         'food.pickWeek': 'Week',
         'food.pickYear': 'Year',
-        'food.src.browser': 'Saved in this browser',
-        'food.src.replaces': 'shown instead of the published entry for this date',
+        'food.src.browser': 'My entry',
         'food.src.shared': 'Babdoduk’s published log',
         'footer.contact': 'Contact',
-        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.copyright': '© 2026 Babdoduk',
         'footer.country': 'South Korea',
-        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.fine': 'Run by an individual. Questions by email, please.',
         'footer.navAria': 'Site links',
         'footer.privacy': 'Privacy Policy',
         'nav.choose': 'What to eat',
@@ -907,10 +905,7 @@
         for (i = 0; i < localList.length; i++) {
           e = localList[i];
           if (e && e.date) {
-            m[e.date] = Object.assign({}, e, {
-              _source: 'browser',
-              _replacesShared: !!(m[e.date] && m[e.date]._source === 'shared')
-            });
+            m[e.date] = Object.assign({}, e, { _source: 'browser' });
           }
         }
         return Object.keys(m)
@@ -1172,8 +1167,7 @@
       }
 
       function sourceText(entry) {
-        var text = entry._source === 'browser' ? tr('food.src.browser', '이 브라우저에 저장한 기록') : tr('food.src.shared', '밥도둑 공개 기록');
-        if (entry._replacesShared) text += ' · ' + tr('food.src.replaces', '같은 날짜의 공개 기록 대신 보여요');
+        var text = entry._source === 'browser' ? tr('food.src.browser', '내 기록') : tr('food.src.shared', '밥도둑 공개 기록');
         return text;
       }
 

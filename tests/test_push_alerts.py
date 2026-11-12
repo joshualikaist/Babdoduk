@@ -422,7 +422,7 @@ def test_the_home_screen_app_asks_after_the_first_star_and_keeps_the_list_curren
     assert name == "push_device_save" and body["p_events"] == ["lunch"] and body["p_lang"] == "ko"
     assert body["p_site"] == "https://babdoduk-lab.vercel.app" and body["p_endpoint"] == "https://web.push.apple.com/QFAKE"
     assert headers["apikey"].startswith("sb_publishable_")
-    page.wait_for_function("() => document.querySelector('.gg-toast').innerText.includes('30분 전에 알림이 와요')")
+    page.wait_for_function("() => document.querySelector('.gg-toast').innerText.includes('30분 전 알림을 켰어요')")  # copy cleanup, owner 2026-11-12
     toggle = page.locator("[data-gg-push]")
     toggle.wait_for()
     assert toggle.get_attribute("aria-pressed") == "true" and "켜짐" in toggle.inner_text()
@@ -456,7 +456,7 @@ def test_no_to_the_question_or_a_refused_permission_never_subscribes(browser):
     page.locator("#pushAsk .starcal-yes").click()
     page.wait_for_function("() => document.querySelector('.gg-toast').innerText.includes('알림이 막혀 있어요')")
     assert calls(page) == [["permission"]] and rpcs == []
-    assert "휴대폰 설정의 알림" in page.locator(".gg-saved-body").inner_text()
+    assert "휴대폰 설정에서 허용" in page.locator(".gg-saved-body").inner_text()  # copy cleanup, owner 2026-11-12
     assert errors == []
     context.close()
 
@@ -477,7 +477,7 @@ def test_iphone_safari_points_to_the_home_screen_and_other_hosts_show_nothing(br
     context, page, errors, rpcs = open_site(browser, push=False, standalone=False, storage=saved)
     body = page.locator(".gg-saved-body")
     body.wait_for()
-    assert "홈 화면에 추가한 밥도둑으로 열면" in body.inner_text() and page.locator("[data-gg-push]").count() == 0
+    assert "홈 화면에 추가한 밥도둑에서" in body.inner_text() and page.locator("[data-gg-push]").count() == 0  # copy cleanup, owner 2026-11-12
     page.locator('.gg-card[data-id="wed"] .gg-save').click()
     assert page.locator("#pushAsk").count() == 0, "Safari gets the calendar question as before"
     context.close()
@@ -508,7 +508,7 @@ def test_my_babdoduk_turns_alerts_on_and_off_for_this_phone(browser):
     context, page, errors, rpcs = open_site(browser, path="my.html", account=user())
     card = page.locator("section[aria-labelledby='myPushTitle']")
     card.wait_for()
-    assert "별 누른 꽁밥이 시작하기 30분 전에" in card.inner_text()
+    assert "30분 전 알림" in card.inner_text()  # copy cleanup, owner 2026-11-12: the card's explanation is gone, the title stays
     card.locator("[data-my-push]").click()
     wait_rpc(page, rpcs, 1)
     assert rpcs[0][0] == "push_device_save"
@@ -530,7 +530,7 @@ def test_a_star_on_the_home_calendar_asks_and_updates_the_alert_list(browser):
     page.locator("#pushAsk .starcal-yes").click()
     wait_rpc(page, rpcs, 1)
     assert rpcs[0][0] == "push_device_save" and rpcs[0][1]["p_events"] == ["lunch"]
-    page.wait_for_function("() => document.getElementById('homeCalLive').innerText.includes('30분 전에 알림이 와요')")
+    page.wait_for_function("() => document.getElementById('homeCalLive').innerText.includes('30분 전 알림을 켰어요')")  # copy cleanup, owner 2026-11-12
     page.locator('[data-hc-save="lunch"]').click()
     wait_rpc(page, rpcs, 2)
     assert rpcs[1][1]["p_events"] == []
@@ -557,12 +557,12 @@ def test_signed_in_a_star_saves_to_the_account_and_opens_no_calendar_file(browse
     downloads = []
     page.on("download", lambda d: downloads.append(d))
     page.locator('.gg-card[data-id="lunch"] .gg-save').click()
-    page.wait_for_function("() => document.querySelector('.gg-toast') && document.querySelector('.gg-toast').innerText.includes('계정에 저장돼요')")
+    page.wait_for_function("() => document.querySelector('.gg-toast') && document.querySelector('.gg-toast').innerText.includes('저장했어요')")  # copy cleanup, owner 2026-11-12
     page.wait_for_timeout(500)
     assert downloads == [] and page.locator("#starCalAsk").count() == 0
     rows = page.evaluate("JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events")
     assert [r["event_id"] for r in rows] == ["lunch"]
     body = page.locator(".gg-saved-body").inner_text()
-    assert "마이 밥도둑에서 한 번만 연결하면" in body and page.locator("[data-gg-starcal]").count() == 0
+    assert "마이 밥도둑에서 캘린더를 연결해 보세요" in body and page.locator("[data-gg-starcal]").count() == 0  # copy cleanup, owner 2026-11-12
     assert "저장하지 못했어요" not in page.locator(".gg-toast").inner_text() and errors == []
     context.close()

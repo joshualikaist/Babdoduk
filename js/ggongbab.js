@@ -238,12 +238,10 @@
     var bare = function (value) { return value.replace(/제공|및|그리고|\band\b|[\s·,+&/()와과]/gi, '').toLowerCase(); };
     return bare(text) === bare(F.dishLabel(ev, t)) ? '' : text;
   }
-  // The food badge: the dish in a word or two (F.dishes), with an honest note when the food was
-  // stated only in an attached poster.
+  // The food badge: the dish in a word or two (F.dishes).
   function foodBadgeHtml(ev) {
     if (!hasFood(ev)) return '';
     var html = '<span class="gg-food-primary is-' + esc(foodBucket(ev)) + '"><span>' + esc(F.dishLabel(ev, t)) + '</span>';
-    if ((ev.food || {}).source === 'poster') html += '<span class="gg-food-source"> · ' + esc(t('gg.foodSource.poster', '포스터 기준')) + '</span>';
     return html + '</span>';
   }
   function giveawayText(ev) {
@@ -378,8 +376,6 @@
       html += '<a class="gg-btn" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
         esc(t('gg.live.calGoogle', 'Google 캘린더')) + '<span class="gg-sr"> ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
       html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calFile', '캘린더 파일 (.ics)')) + '</button>';
-      if (!ev.endAt) html += '<p class="gg-cal-note">' + esc(t('gg.live.calNoEnd', '끝나는 시간은 공지에 없어요')) + '</p>';
-      html += '<p class="gg-cal-sync">' + esc(t('gg.live.calSync', '아이폰·Google 캘린더에 넣으면 연결된 앱(minical 등)에도 보여요')) + '</p>';
       if (L.inTalkApp()) html += talkAppNoteHtml();
       html += '</div>';
     }
@@ -391,14 +387,13 @@
       ' · <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('gg.live.openBrowser', '기본 브라우저로 열기')) + '</a></p>';
   }
   function copyBoxHtml() {
-    return '<label class="gg-copy"><span>' + esc(t('gg.live.copyHint', '아래 내용을 길게 눌러 복사하세요')) + '</span>' +
+    return '<label class="gg-copy"><span>' + esc(t('gg.live.copyHint', '길게 눌러 복사하세요')) + '</span>' +
       '<textarea readonly rows="3">' + esc(state.copy.text) + '</textarea></label>';
   }
   function calendarDetails(ev) {
     var lines = [];
     var dish = hasFood(ev) ? F.dishLabel(ev, t) : '';
     if (dish) lines.push(t('gg.live.calFood', '꽁밥 · {food}').replace('{food}', dish));
-    lines.push(t('gg.live.calCheck', '참여 조건과 변경 사항은 밥도둑에서 확인하세요.'));
     lines.push(L.eventLink(ev.id));
     return lines.join('\n');
   }
@@ -435,7 +430,6 @@
     }));
     h += filterGroup('who', t('gg.live.f.who', '대상'), WHO_FILTERS.map(function (v) { return [v, t('gg.live.who.' + v, v)]; }));
     h += filterGroup('area', t('gg.live.f.area', '위치'), AREA_FILTERS.map(function (v) { return [v, t('gg.live.area.' + v, v)]; }));
-    h += '<p class="gg-more-note">' + esc(t('gg.live.whoNote', '대상은 공지에 적힌 대로 · 학과·인원 조건은 자세히에서')) + '</p>';
     if (filtersActive()) h += '<button type="button" class="gg-btn gg-reset" data-gg-reset>' + esc(t('gg.live.reset', '필터 초기화')) + '</button>';
     return h + '</div>';
   }
@@ -480,7 +474,7 @@
     var menuPart;
     if (menuSnap.status === 'loading' || state.menu.status === 'loading') menuPart = t('gg.metric.menuLoading', '학식 확인 중');
     else if (menuSnap.status === 'error' || state.menu.status === 'error') menuPart = t('gg.metric.menuError', '학식 불러오기 실패');
-    else if (menuSnap.stale) menuPart = menuSnap.weekend ? t('gg.metric.menuWeekend', '주말엔 학식 없음') : t('gg.metric.menuStale', '학식 업데이트 중');
+    else if (menuSnap.stale) menuPart = menuSnap.weekend ? t('gg.metric.menuWeekend', '주말 학식 없음') : t('gg.metric.menuStale', '학식 업데이트 중');
     else menuPart = t('gg.metric.menu', '학식 {n}곳').replace('{n}', String(menuSnap.restaurantCount || 0));
     var freePart = state.free.status === 'ready'
       ? t('gg.metric.free', '오늘 꽁밥 {n}개').replace('{n}', String(freeN))
@@ -504,7 +498,7 @@
     html += esc(t('gg.emptyTodayBody', '오늘 학식 {n}곳').replace('{n}', String(menuN)));
     html += '<br><button type="button" class="km-cta" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기 →')) + '</button></div>';
     if (!futurePublic(now).length) {
-      html += '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + '</div>';
+      html += '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '맞는 꽁밥이 없어요')) + '</strong>' + '</div>';
     }
     return html;
   }
@@ -518,7 +512,7 @@
       html += '<button type="button" class="km-cta is-ghost" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기 →')) + '</button></div>';
       return html;
     }
-    return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '이번 조건에 맞는 꽁밥이 아직 없어요.')) + '</strong>' + '</div>';
+    return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '맞는 꽁밥이 없어요')) + '</strong>' + '</div>';
   }
   // What this list is (the public current and upcoming rows only; ended rows
   // leave it) and when the snapshot was published. It makes no freshness claim
@@ -617,7 +611,7 @@
     }).join('') + '</span>';
     html += '<button type="button" class="gg-unsave" data-gg-unsave="' + esc(row.item.id) + '" aria-label="' +
       esc(t('gg.live.unsaveAria', '{title} 저장 지우기').replace('{title}', title)) + '"><span aria-hidden="true">×</span></button>';
-    if (kind === 'missing') html += '<p class="gg-saved-note">' + esc(t('gg.live.missingNote', '공개 목록에서 빠졌어요. 취소됐거나 내용이 바뀌었을 수 있으니 공지를 확인하세요.')) + '</p>';
+    if (kind === 'missing') html += '<p class="gg-saved-note">' + esc(t('gg.live.missingNote', '취소됐을 수 있어요. 공지를 확인하세요.')) + '</p>';
     return html + '</li>';
   }
   function savedHtml(now) {
@@ -643,19 +637,16 @@
     else if (all.length) html += '<p class="gg-saved-note">' + esc(t('gg.live.noUpcoming', '다가오는 저장 꽁밥 없음')) + '</p>';
     if (g.ended.length) {
       html += '<h3 class="gg-saved-sub">' + esc(t('gg.live.pastTitle', '지난 꽁밥')) + '</h3>';
-      html += '<p class="gg-saved-note">' + esc(t('gg.live.pastNote', '끝난 일정이에요. 저장했다고 참석한 것으로 기록하지 않아요.')) + '</p>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
     // Signed in, the calendar is the subscription on 마이 밥도둑, offered on iPhone and iPad only.
     var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
     html += pushToggleHtml() + (accountMode !== 'account' ? starCalendarToggleHtml() : ios ?
-      '<p class="gg-saved-note">' + esc(t('gg.live.calOnMy', '캘린더는 마이 밥도둑에서 한 번만 연결하면 별이 저절로 들어가요')) + '</p>' : '');
+      '<p class="gg-saved-note">' + esc(t('gg.live.calOnMy', '마이 밥도둑에서 캘린더를 연결해 보세요')) + '</p>' : '');
     if (accountMode === 'account') {
-      html += '<p class="gg-saved-foot">' + esc(t('gg.live.accountFoot', '계정에 저장돼요 · 다른 기기에서도 보여요')) +
-        ' · <a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
-    } else {
-      if (accountMode === 'failed') html += '<p class="gg-saved-note">' + esc(t('gg.live.accountFail', '계정 목록을 불러오지 못해 이 브라우저 목록을 보여 줘요')) + '</p>';
-      html += '<p class="gg-saved-foot">' + esc(t('gg.live.localOnly', '이 브라우저에만 저장돼요 · 사이트 기록을 지우면 사라져요')) + '</p>';
+      html += '<p class="gg-saved-foot"><a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
+    } else if (accountMode === 'failed') {
+      html += '<p class="gg-saved-note">' + esc(t('gg.live.accountFail', '계정 목록을 불러오지 못했어요')) + '</p>';
     }
     return html + '</div></section>';
   }
@@ -693,7 +684,7 @@
     var text = n.kind === 'week' ? t('gg.live.entryWeek', '공유받은 {week} 꽁밥 일정').replace('{week}', weekLabel(n.monday))
       : n.kind === 'ended' ? t('gg.live.entryEnded', '공유받은 꽁밥은 끝났어요 · {when} {title}')
         .replace('{when}', whenText(n.ev.startAt, n.ev.endAt)).replace('{title}', n.ev.title || '')
-      : t('gg.live.entryMissing', '공유받은 꽁밥을 찾지 못했어요. 끝났거나 공개 목록에서 빠졌을 수 있어요.');
+      : t('gg.live.entryMissing', '공유받은 꽁밥을 찾지 못했어요');
     var html = '<div class="gg-entry" role="status"><p>' + esc(text) + '</p>';
     if (n.kind === 'week') html += '<button type="button" class="gg-btn" data-gg-reset>' + esc(t('gg.live.showAll', '전체 일정 보기')) + '</button>';
     return html + '<button type="button" class="gg-entry-close" data-gg-entry-close aria-label="' + esc(t('gg.live.close', '닫기')) + '"><span aria-hidden="true">×</span></button></div>';
@@ -705,7 +696,7 @@
   function newNoticeHtml() {
     if (!L || noticeDismissed()) return '';
     return '<div class="gg-new" role="note"><span class="gg-new-tag">NEW</span><p>' +
-      esc(t('gg.live.newNote', '☆ 저장 · 공유 · 캘린더 추가가 생겼어요. 꽁밥을 눌러 보세요.')) + '</p>' +
+      esc(t('gg.live.newNote', '☆ 저장·공유·캘린더 추가가 생겼어요')) + '</p>' +
       '<button type="button" class="gg-new-close" data-gg-new-close aria-label="' + esc(t('gg.live.newClose', '새 기능 안내 닫기')) + '"><span aria-hidden="true">×</span></button></div>';
   }
   function filteredEmptyHtml() {
@@ -746,7 +737,7 @@
     var meta = [placeLabel(ev), foodLabelOf(ev), giveawayText(ev)].filter(Boolean).join(' · ');
     var via = sourceLabel(ev);
     var source = publicSourceUrl(ev);
-    var record = hasFood(ev) ? t('gg.archive.record', '당시 공개된 꽁밥 안내 기록') : t('gg.archive.recordGiveaway', '당시 공개된 경품 안내 기록');
+    var record = hasFood(ev) ? t('gg.archive.record', '지난 꽁밥 안내') : t('gg.archive.recordGiveaway', '지난 경품 안내');
     var html = '<li class="gg-past" data-past-id="' + esc(ev.id) + '">';
     html += '<p class="gg-past-top"><span class="gg-past-badge">' + esc(t('gg.archive.ended', '종료')) + '</span>' +
       (gift ? '<span class="gg-past-gift">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>' : '') +
@@ -756,7 +747,7 @@
     html += '<p class="gg-past-note">' + esc(record + (via ? ' · ' + via : '')) + '</p>';
     if (source) {
       html += '<a class="gg-past-link" href="' + esc(source) + '" target="_blank" rel="noopener">' +
-        esc(t('gg.archive.source', '당시 공지 보기')) + ' <span aria-hidden="true">↗</span>' +
+        esc(t('gg.archive.source', '공지 보기')) + ' <span aria-hidden="true">↗</span>' +
         '<span class="gg-sr">' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
     }
     return html + '</li>';
@@ -766,9 +757,9 @@
     if (status === 'off') return '';
     var html = '<section class="gg-archive" aria-labelledby="ggArchiveTitle">';
     html += '<h2 class="gg-archive-title" id="ggArchiveTitle">' + esc(t('gg.archive.title', '지난 꽁밥 기록')) + '</h2>';
-    html += '<p class="gg-archive-lead">' + esc(t('gg.archive.lead', '최근 30일 · 종료된 일정')) + '</p>';
+    html += '<p class="gg-archive-lead">' + esc(t('gg.archive.lead', '최근 30일')) + '</p>';
     var list = status === 'loading' ? [] : pastListings(now);
-    if (status === 'loading') html += '<p class="gg-archive-state">' + esc(t('gg.archive.loading', '지난 꽁밥 기록을 확인하고 있어요.')) + '</p>';
+    if (status === 'loading') html += '<p class="gg-archive-state">' + esc(t('gg.archive.loading', '불러오는 중')) + '</p>';
     else if (status === 'error') html += '<p class="gg-archive-state" data-archive-state="error">' + esc(t('gg.archive.error', '지난 기록을 불러오지 못했어요.')) + '</p>';
     else if (!list.length) html += '<p class="gg-archive-state" data-archive-state="empty">' + esc(t('gg.archive.empty', '최근 30일 기록 없음')) + '</p>';
     // Closed until asked for (2026-11-05): one button, then the whole list.
@@ -1069,17 +1060,16 @@
   function starCalendarText() {
     return {
       title: t('starcal.ask.title', '별 누를 때 내 캘린더에도 넣을까요?'),
-      body: t('starcal.ask.body', '별을 누르면 캘린더 추가 화면이 열려요. 추가하면 시작 30분 전에 알림이 와요.'),
+      body: t('starcal.ask.body', '넣으면 시작 30분 전에 알림이 와요.'),
       yes: t('starcal.ask.yes', '넣을게요'),
-      no: t('starcal.ask.no', '괜찮아요'),
-      later: t('starcal.ask.later', '오늘의 꽁밥의 저장한 꽁밥에서 언제든 바꿀 수 있어요')
+      no: t('starcal.ask.no', '괜찮아요')
     };
   }
   function starCalendarMessage(result) {
-    if (result === 'ics') return t('starcal.done.ics', '캘린더 추가 화면을 열었어요 · 추가를 눌러 주세요');
-    if (result === 'google') return t('starcal.done.google', '구글 캘린더를 새 창에 열었어요 · 저장을 눌러 주세요');
-    if (result === 'manual') return t('starcal.done.manual', '카카오톡 안에서는 바로 넣을 수 없어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
-    return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
+    if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
+    if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
+    if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
+    return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요');
   }
   function refocusStar(id) {
     var esc2 = window.CSS && CSS.escape ? CSS.escape(id) : id;
@@ -1089,16 +1079,15 @@
   function pushAskText() {
     return {
       title: t('push.ask.title', '별 누른 꽁밥, 30분 전에 알려 드릴까요?'),
-      body: t('push.ask.body', '시작 30분 전에 휴대폰 알림이 와요. 다음 창에서 허용을 눌러 주세요.'),
+      body: t('push.ask.body', '다음 창에서 "허용"을 눌러 주세요.'),
       yes: t('push.ask.yes', '알림 받을게요'),
-      no: t('push.ask.no', '괜찮아요'),
-      later: t('push.ask.later', '저장한 꽁밥에서 언제든 끄고 켤 수 있어요')
+      no: t('push.ask.no', '괜찮아요')
     };
   }
   function pushDone(result) {
-    if (result === 'on') { pushState = 'on'; announce(t('push.nowOn', '이제 별 누른 꽁밥 30분 전에 알림이 와요')); }
-    else if (result === 'denied') { pushState = 'denied'; announce(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')); }
-    else announce(t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+    if (result === 'on') { pushState = 'on'; announce(t('push.nowOn', '30분 전 알림을 켰어요')); }
+    else if (result === 'denied') { pushState = 'denied'; announce(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.')); }
+    else announce(t('push.fail', '알림을 켜지 못했어요. 다시 시도해 주세요.'));
     render();
   }
   function afterStar(ev, savedMessage) {
@@ -1112,7 +1101,7 @@
           P.enable(savedIds(), langCode()).then(function (result) { pushDone(result); refocusStar(ev.id); });
           return;
         }
-        if (yes === false) announce(t('push.no', '알림은 켜지 않을게요 · 저장한 꽁밥에서 켤 수 있어요'));
+        if (yes === false) announce(t('push.no', '알림은 켜지 않을게요'));
         render();
         refocusStar(ev.id);
       });
@@ -1129,7 +1118,7 @@
     announce(savedMessage);
     L.askStarCalendar(starCalendarText(), function (yes) {
       if (yes) announce(starCalendarMessage(L.addToCalendar(ev, details)));
-      else if (yes === false) announce(t('starcal.done.no', '캘린더에는 넣지 않을게요 · 저장한 꽁밥에서 바꿀 수 있어요'));
+      else if (yes === false) announce(t('starcal.done.no', '캘린더에는 넣지 않을게요'));
       render();
       refocusStar(ev.id);
     });
@@ -1141,15 +1130,15 @@
       return '<p class="gg-starcal-line"><button type="button" class="gg-btn gg-starcal" data-gg-push aria-pressed="' + on + '">' +
         esc(t('push.toggle', '별 누른 꽁밥 30분 전 알림')) + ' <strong>' + esc(on ? t('push.on', '켜짐') : t('push.off', '꺼짐')) + '</strong></button></p>';
     }
-    if (pushState === 'home') return '<p class="gg-saved-note">' + esc(t('push.home', '홈 화면에 추가한 밥도둑으로 열면, 별 누른 꽁밥 30분 전에 알림을 받을 수 있어요.')) + '</p>';
-    if (pushState === 'denied') return '<p class="gg-saved-note">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')) + '</p>';
+    if (pushState === 'home') return '<p class="gg-saved-note">' + esc(t('push.home', '홈 화면에 추가한 밥도둑에서 알림을 켤 수 있어요.')) + '</p>';
+    if (pushState === 'denied') return '<p class="gg-saved-note">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.')) + '</p>';
     return '';
   }
   function starCalendarToggleHtml() {
     if (!L) return '';
     var on = L.starCalendar() === 'on';
     return '<p class="gg-starcal-line"><button type="button" class="gg-btn gg-starcal" data-gg-starcal aria-pressed="' + on + '">' +
-      esc(t('starcal.toggle', '별 누를 때 캘린더에도 넣기 · 30분 전 알림')) + ' <strong>' +
+      esc(t('starcal.toggle', '별 누를 때 캘린더에도 넣기')) + ' <strong>' +
       esc(on ? t('starcal.on', '켜짐') : t('starcal.off', '꺼짐')) + '</strong></button></p>';
   }
   function liveClick(e) {
@@ -1160,7 +1149,7 @@
         if (savedStore.remove(id)) { announce(t('gg.live.unsavedMsg', '저장을 지웠어요')); pushChanged(); }
       } else if (ev && savedStore.add(ev)) {
         render();
-        afterStar(ev, savedStore.remote ? t('gg.live.savedAccountMsg', '저장했어요 · 계정에 저장돼요') : t('gg.live.savedMsg', '저장했어요 · 이 브라우저에만 저장돼요'));
+        afterStar(ev, savedStore.remote ? t('gg.live.savedAccountMsg', '저장했어요') : t('gg.live.savedMsg', '저장했어요'));
         return true;
       } else {
         announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
@@ -1175,7 +1164,7 @@
         if (turningOn) pushDone(result);
         else {
           if (result === 'off') { pushState = 'off'; announce(t('push.nowOff', '30분 전 알림을 껐어요')); }
-          else announce(t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+          else announce(t('push.fail', '알림을 켜지 못했어요. 다시 시도해 주세요.'));
           render();
         }
         var toggle = root.querySelector('[data-gg-push]');
@@ -1185,7 +1174,7 @@
     }
     if (e.target.closest('[data-gg-starcal]')) {
       var turnOn = L.starCalendar() !== 'on';
-      if (L.setStarCalendar(turnOn)) announce(turnOn ? t('starcal.nowOn', '이제 별 누를 때 캘린더 추가 화면이 열려요') : t('starcal.nowOff', '이제 별을 눌러도 캘린더는 열리지 않아요'));
+      if (L.setStarCalendar(turnOn)) announce(turnOn ? t('starcal.nowOn', '캘린더 넣기를 켰어요') : t('starcal.nowOff', '캘린더 넣기를 껐어요'));
       else announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
       render();
       var sw = root.querySelector('[data-gg-starcal]');

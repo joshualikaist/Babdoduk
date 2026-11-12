@@ -42,18 +42,18 @@
   function renderMenu() {
     var s = state.menu;
     if (s.status === 'loading') return setStatus(menuEl, 'loading', t('home.menu.loading', '학식 메뉴 확인 중'), '');
-    if (s.status === 'error') return setStatus(menuEl, 'error', t('home.menu.error', '학식 메뉴를 불러오지 못했어요'), t('home.menu.retry', ''));
+    if (s.status === 'error') return setStatus(menuEl, 'error', t('home.menu.error', '학식 메뉴를 불러오지 못했어요'), '');
     var now = F.nowKst();
     var date = isoDateLabel(s.data.date);
     if (M.isStale(s.data, now)) {
       var weekend = M.isWeekend && M.isWeekend(now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'));
       return setStatus(menuEl, 'stale', weekend ? t('home.menu.weekend', '주말엔 학식이 없어요') : t('home.menu.stale', '오늘 메뉴는 아직 올라오지 않았어요'),
-        s.data.date ? t('home.menu.last', '마지막으로 올라온 메뉴: {date}').replace('{date}', date) : '');
+        s.data.date ? t('home.menu.last', '{date} 메뉴').replace('{date}', date) : '');
     }
     var n = M.restaurantsWithMenus(s.data).length;
     var source = t('home.menu.source', '{date} · KAIST 공식 식단').replace('{date}', date);
-    if (!n) return setStatus(menuEl, 'empty', t('home.menu.none', '오늘 올라온 메뉴가 아직 없어요'), source);
-    setStatus(menuEl, 'ready', t('home.menu.today', '오늘 {n}곳 메뉴가 올라왔어요').replace('{n}', String(n)), source);
+    if (!n) return setStatus(menuEl, 'empty', t('home.menu.none', '오늘 메뉴가 아직 없어요'), source);
+    setStatus(menuEl, 'ready', t('home.menu.today', '오늘 {n}곳').replace('{n}', String(n)), source);
   }
 
   function render() {

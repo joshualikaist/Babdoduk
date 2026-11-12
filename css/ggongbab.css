@@ -100,7 +100,6 @@
 /* The dish wraps to a second line rather than being cut ("Lunch boxes · Refreshm…" at 390, 2026-11-05). */
 .gg-food-primary span { min-width:0; word-break:keep-all; overflow-wrap:anywhere; }
 /* Food stated only in an attached poster: a quieter part of the same label, never ellipsized. */
-.gg-food-primary .gg-food-source { flex-shrink:0; overflow:visible; margin-left:4px; font-size:12px; font-weight:600; color:#86868b; }
 /* A giveaway (prize draw or gift): its own hue, apart from every food colour, and always labelled. */
 .gg-gift-badge { display:inline-flex; align-items:center; gap:2px; height:22px; padding:0 7px; border-radius:999px; border:1px solid #ddd6fe; background:#f5f3ff; color:#6d28d9; font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
 .gg-sub { margin-top:2px; font-size:13px; font-weight:500; line-height:19px; color:#6e6e73; word-break:keep-all; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -203,7 +202,7 @@
 .gg-cal { margin-top:8px; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px; border-radius:12px; background:#faf8f4; border:1px solid var(--color-divider); }
 .gg-cal .gg-btn { font-family:inherit; cursor:pointer; min-height:44px; }
 .gg-cal[hidden],.gg-more-panel[hidden],.gg-saved-body[hidden] { display:none; }
-.gg-cal-note,.gg-cal-sync { flex-basis:100%; margin:0; font-size:12px; line-height:18px; color:var(--color-ink-muted); }
+.gg-cal-note { flex-basis:100%; margin:0; font-size:12px; line-height:18px; color:var(--color-ink-muted); }
 .gg-cal-note a { color:var(--color-accent); font-weight:700; }
 .gg-changes { margin:10px 0 0; padding:10px 12px; border-radius:12px; background:#fffaf0; border:1px solid #f0dcb0; }
 .gg-change { margin:0 0 6px; font-size:13px; line-height:20px; color:var(--color-ink); overflow-wrap:anywhere; }
@@ -217,7 +216,6 @@
 .gg-more-panel { padding-top:4px; }
 .gg-filter-more { align-items:center; }
 .gg-filter-label { flex-basis:100%; margin:4px 0 -2px; font-size:12px; font-weight:700; color:var(--color-ink-muted); }
-.gg-more-note { margin:8px 0 0; font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; }
 .gg-reset { margin-top:10px; font-family:inherit; cursor:pointer; min-height:44px; }
 .gg-filters.is-expanded { position:static; }
 .gg-week-share { appearance:none; min-height:44px; margin:2px 0 0; padding:0; border:0; background:transparent; color:var(--color-accent); font-family:inherit; font-size:13px; font-weight:800; cursor:pointer; }

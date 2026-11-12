@@ -65,7 +65,7 @@ def test_yes_opens_the_calendar_now_and_on_every_later_star(browser):  # noqa: F
     assert q["text"] == ["lunch 행사"] and q["dates"] == ["20261109T030000Z/20261109T040000Z"]
     info.value.close()
     assert pref(page) == "on" and page.locator("#starCalAsk").count() == 0
-    assert page.locator(".gg-toast").inner_text() == "구글 캘린더를 새 창에 열었어요 · 저장을 눌러 주세요"
+    assert page.locator(".gg-toast").inner_text() == "새 창에서 저장을 눌러 주세요"  # copy cleanup, owner 2026-11-12
     assert page.evaluate("document.activeElement.getAttribute('data-gg-save')") == "lunch"
     # Later stars open it straight away, without asking again.
     with context.expect_page() as info:
@@ -106,7 +106,7 @@ def test_no_escape_and_listings_without_a_time(browser):  # noqa: F811
     card(page, "wed").locator(".gg-save").click()
     page.locator("#starCalAsk .starcal-no").click()
     assert pref(page) == "off" and len(context.pages) == pages
-    assert page.locator(".gg-toast").inner_text() == "캘린더에는 넣지 않을게요 · 저장한 꽁밥에서 바꿀 수 있어요"
+    assert page.locator(".gg-toast").inner_text() == "캘린더에는 넣지 않을게요"  # copy cleanup, owner 2026-11-12
     card(page, "noend").locator(".gg-save").click()
     assert page.locator("#starCalAsk").count() == 0
     assert errors == []
@@ -120,7 +120,7 @@ def test_an_iphone_gets_the_file_and_kakaotalk_gets_the_buttons(browser):  # noq
     text = Path(info.value.path()).read_text(encoding="utf-8")
     assert info.value.suggested_filename == "babdoduk-2026-11-09.ics"
     assert "DTSTART:20261109T030000Z" in text and "TRIGGER:-PT30M" in text
-    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 이 브라우저에만 저장돼요 · 캘린더 추가 화면을 열었어요 · 추가를 눌러 주세요"
+    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 추가를 눌러 주세요"  # copy cleanup, owner 2026-11-12
     assert errors == []
     context.close()
 
@@ -128,7 +128,7 @@ def test_an_iphone_gets_the_file_and_kakaotalk_gets_the_buttons(browser):  # noq
     pages = len(context.pages)
     card(page, "lunch").locator(".gg-save").click()
     assert len(context.pages) == pages
-    assert "카카오톡 안에서는 바로 넣을 수 없어요" in page.locator(".gg-toast").inner_text()
+    assert "카카오톡에선 바로 안 돼요" in page.locator(".gg-toast").inner_text()  # copy cleanup, owner 2026-11-12
     assert errors == []
     context.close()
 
@@ -143,7 +143,7 @@ def test_the_home_calendar_star_asks_and_adds_too(browser):  # noqa: F811
         ask.locator(".starcal-yes").click()
     assert "TRIGGER:-PT30M" in Path(info.value.path()).read_text(encoding="utf-8")
     assert pref(page) == "on"
-    assert page.locator("#homeCalLive").inner_text() == "캘린더 추가 화면을 열었어요 · 추가를 눌러 주세요"
+    assert page.locator("#homeCalLive").inner_text() == "추가를 눌러 주세요"  # copy cleanup, owner 2026-11-12
     assert page.evaluate("document.activeElement.getAttribute('data-hc-save')") == "lunch"
     # Saved on the home calendar, the answer holds on the hub too: its next star opens the file at once.
     page.goto(page.url.replace("index.html", "ggongbab.html"), wait_until="networkidle")

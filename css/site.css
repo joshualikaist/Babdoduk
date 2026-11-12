@@ -981,4 +981,3 @@ body::after {
 .starcal-yes { border: 1px solid var(--color-accent); background: var(--color-accent); color: #fff; }
 .starcal-no { border: 1px solid var(--color-divider); background: var(--color-surface); color: var(--color-ink); }
 .starcal-actions button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
-.starcal-later { margin: var(--space-2) 0 0; font-size: 12px; line-height: 18px; color: var(--color-ink-muted); }

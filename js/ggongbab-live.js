@@ -348,7 +348,7 @@
     return 'google';
   }
   // The one-time question: a small panel at the bottom of the screen that covers nothing it needs.
-  // `text` holds the page's strings (title, body, yes, no, later). `answer(choice)` gets true, false,
+  // `text` holds the page's strings (title, body, yes, no). `answer(choice)` gets true, false,
   // or null (closed with Escape: ask again next time) and runs inside the click, so a yes can still
   // open the calendar.
   function askStarCalendar(text, answer) {
@@ -363,12 +363,11 @@
     box.setAttribute('aria-describedby', 'starCalAskBody');
     box.innerHTML = '<p class="starcal-title" id="starCalAskTitle"></p><p class="starcal-body" id="starCalAskBody"></p>' +
       '<div class="starcal-actions"><button type="button" class="starcal-yes" data-starcal="yes"></button>' +
-      '<button type="button" class="starcal-no" data-starcal="no"></button></div><p class="starcal-later"></p>';
+      '<button type="button" class="starcal-no" data-starcal="no"></button></div>';
     box.querySelector('.starcal-title').textContent = text.title;
     box.querySelector('.starcal-body').textContent = text.body;
     box.querySelector('.starcal-yes').textContent = text.yes;
     box.querySelector('.starcal-no').textContent = text.no;
-    box.querySelector('.starcal-later').textContent = text.later;
     function close(choice) {
       box.remove();
       doc.removeEventListener('keydown', onKey, true);
