@@ -13,7 +13,12 @@ in the Supabase SQL editor. Until it is applied, the card stays hidden and `/cal
 2. On 마이 밥도둑 (`my.html`), taps **아이폰 캘린더에 연결** (iPhone, iPad, Mac: `webcal://`), then 구독.
    Elsewhere the button is **구글 캘린더에 연결** (Google Calendar's add-by-address page).
 3. From then on every star shows up in that calendar by itself, with an alert 30 minutes before; taking a
-   star away takes it out at the next refresh.
+   star away takes it out at the next refresh. A star whose event day is over leaves the saved lists by
+   itself but stays saved, so the calendar keeps the event (owner 2026-11-12).
+
+Signed in, the star no longer opens a calendar add screen or file (the subscription takes it; on iPhone
+Chrome a file download also cut off the account save). iPhone Chrome, Firefox and Edge get Google
+Calendar's add page instead of an .ics download for guests.
 
 ## How it works
 

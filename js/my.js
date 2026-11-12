@@ -82,6 +82,7 @@
   }
   // Each saved event against the newest public data: upcoming, ended or missing (never "cancelled").
   function savedRows(now) {
+    var today = F ? F.nowKst() : null;
     return state.events.map(function (item) {
       var live = find(state.feed, item.id);
       var past = find(state.archive, item.id);
@@ -95,6 +96,9 @@
       else kind = 'missing';
       var changed = kind === 'upcoming' && L ? L.changes(item, live).length > 0 : false;
       return { item: item, ev: ev, kind: kind, changed: changed };
+    }).filter(function (row) {
+      // From the day after the event it leaves the list; the saved row stays for the subscribed calendar.
+      return !(row.kind === 'ended' && L && L.dayPassed(row.ev, today));
     }).sort(function (a, b) {
       var order = { upcoming: 0, checking: 1, missing: 2, ended: 3 };
       if (order[a.kind] !== order[b.kind]) return order[a.kind] - order[b.kind];

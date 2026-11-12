@@ -577,16 +577,18 @@
   // archive, or, once both have loaded, the visitor's own copy), missing (no longer published and not
   // over: never called cancelled, the feed does not say so), or still being checked.
   function savedGroups(now) {
-    var out = { upcoming: [], ended: [], missing: [], checking: [] };
+    var out = { upcoming: [], ended: [], missing: [], checking: [], gone: [] };
     savedStore.list().forEach(function (item) {
       var live = state.free.status === 'ready' ? rowById(item.id) : null;
       if (live && isUpcoming(live, now)) { out.upcoming.push({ item: item, ev: live, changes: L.changes(item, live) }); return; }
       var past = live || archivedById(item.id);
+      if (past && L.dayPassed(past, F.nowKst())) { out.gone.push(item); return; }
       if (past) { out.ended.push({ item: item, ev: past }); return; }
       if (state.free.status === 'loading' || state.archive.status === 'loading') { out.checking.push({ item: item }); return; }
       var mine = { id: item.id, title: item.seen.title, startAt: item.seen.startAt, endAt: item.seen.endAt || null };
       var end = F.eventEnd(mine);
-      if (end && end < now) out.ended.push({ item: item, ev: mine, own: true });
+      if (L.dayPassed(mine, F.nowKst())) out.gone.push(item);
+      else if (end && end < now) out.ended.push({ item: item, ev: mine, own: true });
       else out.missing.push({ item: item, ev: mine });
     });
     out.upcoming.sort(function (a, b) { return byStartAt(a.ev, b.ev); });
@@ -620,10 +622,11 @@
   }
   function savedHtml(now) {
     if (!savedStore) return '';
-    var all = savedStore.list();
+    var g = savedGroups(now);
+    // A listing whose day is over is not shown or counted (L.dayPassed); its saved row stays for the calendar.
+    var all = savedStore.list().filter(function (item) { return g.gone.indexOf(item) < 0; });
     var recovered = savedStore.recovered();
     if (!all.length && !recovered) return '';
-    var g = savedGroups(now);
     var changedN = g.upcoming.filter(function (row) { return row.changes.length; }).length;
     var open = state.savedOpen;
     var html = '<section class="gg-saved" id="ggSaved" aria-labelledby="ggSavedTitle">';
@@ -643,7 +646,9 @@
       html += '<p class="gg-saved-note">' + esc(t('gg.live.pastNote', '끝난 일정이에요. 저장했다고 참석한 것으로 기록하지 않아요.')) + '</p>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
-    html += pushToggleHtml() + starCalendarToggleHtml();
+    html += pushToggleHtml() + (accountMode === 'account' ?
+      '<p class="gg-saved-note">' + esc(t('gg.live.calOnMy', '캘린더는 마이 밥도둑에서 한 번만 연결하면 별이 저절로 들어가요')) + '</p>' :
+      starCalendarToggleHtml());
     if (accountMode === 'account') {
       html += '<p class="gg-saved-foot">' + esc(t('gg.live.accountFoot', '계정에 저장돼요 · 다른 기기에서도 보여요')) +
         ' · <a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
@@ -1112,6 +1117,9 @@
       });
       return;
     }
+    // Signed in: the subscribed calendar on 마이 밥도둑 takes every star by itself (docs/CALENDAR_FEED.md), so the
+    // star opens no calendar screen; a file download here can also cut off the account save (owner 2026-11-12).
+    if (savedStore.remote) return announce(pushState === 'on' ? savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요') : savedMessage);
     var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
     var pref = L.starCalendar();
     if (pref === 'on') return announce(savedMessage + ' · ' + starCalendarMessage(L.addToCalendar(ev, details)));

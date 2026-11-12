@@ -36,12 +36,13 @@ def test_the_file_carries_a_30_minute_alert_and_the_route_follows_the_device(bro
       return {ics: L.icsText(ev, {stamp: '2026-11-09T00:00:00Z'}),
               routes: uas.map((ua) => L.calendarRoute(ua))};
     }""", [IPHONE, ANDROID, KAKAO, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15",
-           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0"])
+           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0",
+           IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")])
     ics = out["ics"]
     alarm = ics[ics.index("BEGIN:VALARM"):ics.index("END:VALARM")]
     assert "TRIGGER:-PT30M" in alarm and "ACTION:DISPLAY" in alarm and "DESCRIPTION:점심" in alarm
     assert ics.index("END:VALARM") < ics.index("END:VEVENT")
-    assert out["routes"] == ["ics", "google", "manual", "ics", "google"]
+    assert out["routes"] == ["ics", "google", "manual", "ics", "google", "google"], "iPhone Chrome downloads .ics files"
     assert errors == []
     context.close()
 
