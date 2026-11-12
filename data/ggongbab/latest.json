@@ -1,47 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-12T22:04:19+09:00",
+  "generatedAt": "2026-11-13T02:42:40+09:00",
   "timezone": "Asia/Seoul",
-  "count": 35,
+  "count": 34,
   "events": [
-    {
-      "id": "47f87060-fce6-4cb8-af91-3a2553b5a637",
-      "title": "제38대 KAIST 학부 총학생회 총선거 후보자토론회",
-      "summary": "총학생회장단 선거운동본부의 기조와 공약에 대해 이야기하고 질문과 제안을 나누는 후보자토론회입니다. 참석자에게 싸이버거가 제공되며, 현장 질의 시 엔젤리너스 상품권이 증정됩니다.",
-      "startAt": "2026-11-12T21:30:00+09:00",
-      "endAt": "2026-11-12T23:30:00+09:00",
-      "dateText": "11/12(목)",
-      "timeText": "21:30 ~ 23:30",
-      "location": {
-        "name": "인문사회과학부동",
-        "building": "N4",
-        "room": "1층 시청각실"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "싸이버거 제공",
-        "source": "text"
-      },
-      "organizer": "제38대 KAIST 학부 총학생회 총선거 중앙선거관리위원회",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-11-10T18:00:00+09:00",
-        "url": "https://forms.gle/4TGD1tVSY3wVjsX68"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "엔젤리너스 상품권"
-      }
-    },
     {
       "id": "743f4ca3-c005-45f0-92d4-b850fdf122c1",
       "title": "2026 전기및전자공학부 학과설명회",
