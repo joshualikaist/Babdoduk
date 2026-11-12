@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-11T23:55:23+09:00",
+  "generatedAt": "2026-11-12T13:17:02+09:00",
   "timezone": "Asia/Seoul",
-  "count": 35,
+  "count": 36,
   "events": [
     {
       "id": "bb00bae1-7076-4ccd-b53c-32e9bf4c4f47",
@@ -1447,6 +1447,43 @@
       ],
       "audience": {
         "text": "진로를 고민하고 있는 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "717b7127-b70c-4dbd-9408-2d16362318e9",
+      "title": "KAIST 제조AI 커넥트 데이",
+      "summary": "제조AX 및 AI 팩토리 전환에 관심 있는 기업·기관 관계자를 위한 제조 AI 관련 강연과 산업계 전문가 세션입니다.",
+      "startAt": "2026-12-02T13:30:00+09:00",
+      "endAt": "2026-12-02T17:30:00+09:00",
+      "dateText": "2026. 12. 2(수)",
+      "timeText": "13:30 – 17:30",
+      "location": {
+        "name": "코엑스 컨퍼런스룸(남)",
+        "building": "",
+        "room": "3F 317호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "Coffee Break & Networking"
+      },
+      "organizer": "KAIST (제조AI 솔루션 개발 지원센터)",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/quDFkFaKxdtg8UYa6"
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "제조AX 및 AI팩토리에 관심있는 기업/기관 관계자",
         "basis": "stated"
       }
     }
