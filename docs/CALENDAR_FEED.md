@@ -2,7 +2,7 @@
 
 Owner 2026-11-12: a starred 꽁밥 should reach the phone's calendar without a file or an add screen each
 time ("사람들은 ics 파일 이런거 다운 못받아"). The owner chose the subscription first ("1번부터 가도 돼
-허락!"); a home-screen push alert 30 minutes before is the planned second step.
+허락!"); a home-screen push alert 30 minutes before is the second step (`docs/PUSH_ALERTS.md`).
 
 **Status:** lab only. Needs migration `supabase/migrations/013_calendar_feed.sql`, which the owner applies
 in the Supabase SQL editor. Until it is applied, the card stays hidden and `/cal/…` answers 503.

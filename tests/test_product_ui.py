@@ -55,6 +55,9 @@ LIVE_FEED_SCRIPTS = ("js/ggongbab-public-config.js", "js/ggongbab-public-feed.js
 # sign-in client only for someone already signed in on this browser and only on the hosts that
 # js/babdoduk-auth-config.js enables (tests/test_my_babdoduk.py); the renderer still never talks to a database.
 ACCOUNT_SCRIPTS = ("js/babdoduk-auth-config.js", "js/babdoduk-account.js")
+# 별 누른 꽁밥 30분 전 알림 (lab; docs/PUSH_ALERTS.md): two checking functions only, called only for a browser
+# that turned the alert on, and only on the hosts js/ggongbab-push.js lists (tests/test_push_alerts.py).
+PUSH_SCRIPTS = ("js/ggongbab-push.js",)
 
 
 @pytest.mark.parametrize("name", ["index.html", "ggongbab.html", "lab-ggongbab.html"])
@@ -71,7 +74,8 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     assert scripts.index("js/ggongbab-select.js") < scripts.index(renderer)
     live = LIVE_FEED_MODULE.exists() and name != "index.html"
     if live:
-        assert scripts[-5:] == [*LIVE_FEED_SCRIPTS, *ACCOUNT_SCRIPTS, "js/ggongbab.js"], scripts
+        tail = [*LIVE_FEED_SCRIPTS, *ACCOUNT_SCRIPTS, *(PUSH_SCRIPTS if name == "ggongbab.html" else ()), "js/ggongbab.js"]
+        assert scripts[-len(tail):] == tail, scripts
         auth = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
         hosts = re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", auth).group(1)
         # On for lab and, since owner 2026-11-11, production as well (tests/test_my_babdoduk.py).
@@ -86,6 +90,8 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
             continue  # the experiment itself: tests/ggongbab/test_frontend_public_feed.py
         if live and script in ACCOUNT_SCRIPTS:
             continue  # the account store: tests/test_my_babdoduk.py
+        if live and script in PUSH_SCRIPTS:
+            continue  # the 30-minute alert: tests/test_push_alerts.py
         source = (ROOT / script.split("?")[0]).read_text(encoding="utf-8")
         forbidden = ("supabase", "createClient(", "WebSocket(", "EventSource(")
         if not (live and script == "js/ggongbab.js"):
