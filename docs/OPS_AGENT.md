@@ -22,8 +22,10 @@ Lab-only, on the operations PC. Owner, 2026-10-31: "너가 받아서 확인한 �
 4. It asks the radar's primary model (`OPENAI_MODEL_PRIMARY`, `gpt-6-luna`; never swapped here). The
    request carries the system prompt, the message, at most three photos from the inbox folder, the last
    three exchanges and the summary. The prompt includes every alert action of `alerts.ACTIONS` with the
-   instruction the owner gets (`notify.LINUX_TOAST_ACTION`). The model returns structured output: a
-   Korean `reply`, at most three `actions` and `for_next_session`. It has no tools: it reads only what it
+   instruction the owner gets (`notify.LINUX_TOAST_ACTION`, and the phone alert's 할 일 line,
+   `notify.PHONE_TODO`). Since 2026-11-12 it is told to write for a non-developer: no English words, codes,
+   file names or commands, and to explain an alert in everyday words when asked. The model returns structured
+   output: a Korean `reply`, at most three `actions` and `for_next_session`. It has no tools: it reads only what it
    is sent and changes nothing.
 5. The program sends the reply ("🤖 자동 점검"), carries out the actions it allows (below) and appends
    the exchange to `.local/ops-agent/history.jsonl` (the latest 200).
@@ -37,7 +39,7 @@ second run waits on `.local/ops-agent/run.lock`.
 | --- | --- | --- |
 | `restart` (portal-worker, dooray-radar, ig-radar) | `systemctl --user reset-failed` and `restart --no-block` | Only a worker whose control file is switched on (the owner's stop is respected); once an hour per worker |
 | `recheck` (1-3 days) | `ops.sh radar-stop`, `ggongbab_workers.py radar-recheck --days N`, `ops.sh radar-start` | Once every six hours. A radar the owner left off is only rechecked, never started. A radar still finishing its scan is left running and the recheck is put off |
-| `allow_unread` | Nothing at first: a Telegram question with ✅ 풀기 / ❌ 그대로 두기 | Only ✅ runs `radar-allow-unread`, then rereads the days the latch skipped (1-3). A question expires after a day |
+| `allow_unread` | Nothing at first: a Telegram question with ✅ 풀기 / ❌ 그대로 두기 | Only ✅ runs `radar-allow-unread`, then rereads the days the latch skipped (1-3). A question expires after a day. The 🔓 풀기 button of an unread-latch alert (`docs/GGONGBAB_ALERTS.md`) does the same, only while the latch it was sent for is still set |
 | `login` | After the reply: `ggongbab_workers.py easy-login --requested`, which reopens the KAIST login page and sends a new approval code (`docs/PORTAL_EASY_LOGIN_ASSIST.md`) | Only when the owner's message mentions a login (로그인 or login) and Easy Login is enabled; the request's own limits apply. A message that is only "로그인" never reaches the agent: the bot starts the request itself |
 
 Everything else is refused, because the model's answer can only name these four. That includes approving

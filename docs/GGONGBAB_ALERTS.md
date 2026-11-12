@@ -45,10 +45,15 @@ fixed list become `NO_SUCCESS_RECORDED`.
 * Recovery: pushed only for something that was pushed.
 * A failed push waits 5 minutes before retrying.
 * State: `.local/alert-push-state.json`.
-* Wording (since 2026-10-29, `notify.LocalTelegramNotifier`): the toast's fixed Korean title and
-  lines (`notify.format_toast`, with the Linux actions on Linux) plus the time. For a login it says
-  to connect to this PC by remote desktop and log in in the Ops Chrome; the watchdog opens that
-  Chrome if it is missing. The cloud monitor keeps the English fixed-field message above.
+* Wording (since 2026-11-12, `notify.format_phone`; the owner found the toast wording hard to follow):
+  short plain Korean for a non-developer, with no English word, command, file name or reason code. Each
+  alert is three lines: what happened, marked 🔴 (the owner can act), 🟡 (nothing to do) or 🟠 (a
+  developer must fix it); what it means for the site; and 👉 what to tap or send. Recovery is one ✅ line.
+  The message ends with an invitation to ask the ops agent (`docs/OPS_AGENT.md`) and the
+  time. A login alert gets the 🔑 button while Easy Login is on; an unread-latch alert gets 🔓 풀기
+  (`notify.unread_button_id`: `agent:ok:u<second the latch was set>`), which the ops agent carries out
+  like its ✅ answer, and only for the latch that is still set. The cloud monitor sends the same wording
+  to Telegram (source 클라우드 감시); ntfy keeps the English fixed-field message above.
 
 **Windows toast (this PC):** the watchdog passes `notify.local_toast` to the same push, with its own
 state file (`.local/alert-toast-state.json`). PowerShell shows it through the Windows toast API under

@@ -261,6 +261,39 @@ def test_the_unread_latch_is_cleared_only_after_the_owner_taps_ok(ops):
     assert bot.said[-1].startswith("🔓 안 읽은 메일도 다시 수집합니다.") and "OPS_AGENT_UNREAD_ALLOWED" in logs
 
 
+def test_the_unlock_button_on_an_unread_alert_clears_only_the_latch_it_was_sent_for(ops):
+    """Owner 2026-11-12: the unread alert carries 🔓 풀기 (notify.unread_button_id); a tap clears that latch
+    like ✅, an old alert's button never clears a newer latch, and ❌ is never offered or acted on."""
+    root, build = ops
+    local = root / ".local"
+    (local / oa.LATCH).write_text(json.dumps({"reason": "DOORAY_UNREAD_INVARIANT_BROKEN", "at": NOW - 600}))
+    oa.set_enabled(root, True, NOW)
+    run = Run()
+    agent, bot, seen, logs, clock = build(run=run)
+    oa.record_answer(local, "ok", f"u{int(NOW - 7200)}", NOW)          # an older latch's button
+    agent.cycle()
+    assert "예전 알림의 버튼" in bot.said[-1] and not run.did("radar-allow-unread")
+    oa.record_answer(local, "no", f"u{int(NOW - 600)}", NOW + 1)
+    agent.cycle()
+    assert len(bot.said) == 1 and not run.did("radar-allow-unread")
+    oa.record_answer(local, "ok", f"u{int(NOW - 600)}", NOW + 2)
+    agent.cycle()
+    assert run.did("radar-allow-unread") and run.did("radar-recheck", "--days", "1") and seen == []
+    assert bot.said[-1].startswith("🔓 안 읽은 메일도 다시 수집합니다.") and "OPS_AGENT_UNREAD_ALLOWED" in logs
+    (local / oa.LATCH).unlink()
+    oa.record_answer(local, "ok", f"u{int(NOW - 600)}", NOW + 3)
+    agent.cycle()
+    assert bot.said[-1] == "🔓 안 읽은 메일 잠금은 이미 풀려 있어요."
+    events = tr.Bot("t", "42").events([{"callback_query": {"id": "c", "data": "agent:ok:u1794447945",
+                                                           "message": {"chat": {"id": 42}}}}])
+    assert events == [("agent", "ok", "u1794447945", "c")]
+
+
+def test_the_agent_is_told_to_answer_without_jargon():
+    prompt = oa.system_prompt()
+    assert "no English words" in prompt and "휴대폰 알림의 할 일" in prompt and "🔓 풀기" in prompt
+
+
 def test_a_question_older_than_a_day_is_not_carried_out(ops):
     root, build = ops
     (root / ".local" / oa.LATCH).write_text(json.dumps({"reason": "X", "at": NOW}))

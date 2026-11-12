@@ -98,31 +98,37 @@ class TelegramNotifier:
 
 
 class LocalTelegramNotifier(TelegramNotifier):
-    """This PC's Telegram push (2026-10-29): the same fixed Korean wording as its desktop toast, so
-    the phone says what to do (for a login: connect to this PC and log in in the Ops Chrome).
+    """This PC's Telegram push (2026-10-29). Since 2026-11-12 it has its own plain wording (format_phone):
+    the owner found the toast wording hard to follow ("이렇게 오는 말들 중에서 조금 이해하기 어려운 것들이
+    많아"), so the phone says what happened, what it means for the site and what to do, without commands.
+
+    An unread-latch alert also gets a 🔓 button (unread_button_id), carried out by the ops agent like its
+    own ✅ question (ops_agent.Agent.apply).
 
     `login_button` (Easy Login is enabled on this PC, easy_login.enabled): a login alert also gets
     the 🔑 button, which asks this PC to open the login page again and send a new code (owner
     2026-10-31: "로그인 버튼이 있으면 누를게")."""
 
-    def __init__(self, token: str, chat_id: str, opener: Callable = urllib.request.urlopen, *, login_button: bool = False):
+    def __init__(self, token: str, chat_id: str, opener: Callable = urllib.request.urlopen, *, login_button: bool = False,
+                 local: Optional[Path] = None):
         super().__init__(token, chat_id, opener)
-        self.login_button = login_button
+        self.login_button, self.local = login_button, (Path(local) if local is not None else None)
 
     def _login(self, changes) -> bool:
         return self.login_button and any(a.action == "login" for a in changes)
 
     def render(self, changes, recovered) -> str:
-        title, body = format_toast(changes, recovered, actions=TOAST_ACTION if os.name == "nt" else LINUX_TOAST_ACTION)
-        if self._login(changes):
-            body += "\n\n" + LOGIN_BUTTON_LINE
-        return f"{title}\n\n{body}\n\n{datetime.now(KST).strftime('%m-%d %H:%M')} · 운영 PC"
+        return format_phone(changes, recovered, login_button=self._login(changes))
 
     def markup(self, changes) -> Optional[dict]:
-        if not self._login(changes):
-            return None
-        from .easy_login import request_markup
-        return request_markup()
+        rows = []
+        if self._login(changes):
+            from .easy_login import request_markup
+            rows += request_markup()["inline_keyboard"]
+        unread = unread_button_id(self.local) if self.local is not None else None
+        if unread and any(a.action == "review_unread" for a in changes):
+            rows.append([{"text": "🔓 풀기", "callback_data": f"agent:ok:{unread}"}])
+        return {"inline_keyboard": rows} if rows else None
 
 class NtfyNotifier:
     """Authenticated ntfy (access token), e.g. a reserved topic on ntfy.sh or a self-hosted server."""
@@ -231,7 +237,7 @@ def local_notifier(local: Path, *, read_credential: Optional[Callable[[str], Opt
         if not token:
             return None
         from .easy_login import enabled
-        return LocalTelegramNotifier(token, config["chat_id"], login_button=enabled(Path(local))[0])
+        return LocalTelegramNotifier(token, config["chat_id"], login_button=enabled(Path(local))[0], local=Path(local))
     if provider == "ntfy" and config.get("server") and config.get("topic"):
         token = read_credential(NTFY_TOKEN_TARGET)
         return NtfyNotifier(config["server"], config["topic"], token) if token else None
@@ -252,6 +258,74 @@ def push_local(local: Path, alerts: Iterable[Alert], *, now: Optional[float] = N
         push(alerts, toast, PushPolicy(Path(local) / TOAST_STATE, critical_after_seconds=TOAST_CRITICAL_AFTER_SECONDS),
              source="local PC", now=now)
     return result
+
+
+# --- the owner's phone (owner 2026-11-12) -------------------------------------------------
+# Short plain Korean for a non-developer: what happened, what it means for the site, what to do. No commands,
+# file names, reason codes or English product names; the owner can ask the ops agent about anything.
+PHONE_COMPONENT = {"portal": "포털", "dooray_radar": "두레이 메일", "dispatch": "사이트 올리기 요청",
+                   "flash_candidate": "새 꽁밥 후보", "cloud_refresh": "사이트 자동 갱신"}
+PHONE_WHAT = {
+    "AUTH_EXPIRED": "로그인이 풀렸어요", "WORKER_NOT_RUNNING": "수집이 꺼져 있어요",
+    "SCAN_STALE": "한동안 새 글을 못 가져왔어요", "SCAN_DELAYED": "조금 늦어지고 있어요",
+    "NO_SUCCESS_RECORDED": "제대로 가져온 기록이 없어요", "BROWSER_ABSENT": "운영 컴퓨터 크롬이 꺼졌어요",
+    "BROWSER_UNVERIFIED": "운영 컴퓨터 크롬을 확인하지 못했어요", "RETRY_EXHAUSTED": "계속 실패하고 있어요",
+    "CONTRACT_CHANGED": "화면이 바뀌어 읽지 못해요", "UNREAD_RADAR_DISABLED": "메일이 열려서 안 읽은 메일은 잠시 멈췄어요",
+    "CONFIGURATION_REQUIRED": "설정이 빠져 있어요", "DISPATCH_FAILED": "요청이 실패했어요",
+    "DISPATCH_AUTH_FAILED": "요청이 거절됐어요", "CANDIDATE_WAITING": "사이트에 올라가길 기다려요",
+    "REFRESH_FAILED": "실패했어요", "NETWORK_UNSTABLE": "인터넷이 불안정해요",
+}
+PHONE_SITE = {"UNREAD_RADAR_DISABLED": "읽은 메일은 계속 가져와요."}
+PHONE_SITE_DEFAULT = "새 꽁밥만 늦어지고, 사이트는 그대로예요."
+PHONE_TODO = {
+    "login": "운영 컴퓨터에 원격 접속해 크롬에서 로그인",
+    "wait": "없어요. 저절로 다시 해요",
+    "check_network": "없어요. 오래가면 운영 컴퓨터 인터넷 확인",
+    "restart_worker": "\"다시 켜 줘\"라고 보내기",
+    "open_browser": "클로드에게 \"크롬 꺼졌대\"라고 알리기",
+    "review_contract": "클로드에게 \"화면 바뀌었대\"라고 알리기",
+    "review_unread": "직접 메일을 열었다면 아래 「🔓 풀기」, 아니면 \"왜 멈췄어?\"라고 보내기",
+    "investigate": "\"무슨 일이야?\"라고 보내기",
+    "check_dispatch": "없어요. 계속되면 클로드에게 알리기",
+    "check_actions": "클로드에게 알리기",
+    "fix_config": "클로드에게 \"설정 빠졌대\"라고 알리기",
+}
+PHONE_LOGIN_TODO = "아래 「🔑 로그인 요청」 누르고 휴대폰에서 승인"
+OWNER_ACTIONS = frozenset({"login", "review_unread", "restart_worker", "investigate"})
+QUIET_ACTIONS = frozenset({"wait", "check_network", "none"})
+PHONE_ASK = "모르는 건 그냥 물어보세요"
+
+
+def format_phone(changes: Iterable[Alert], recovered: Iterable[str] = (), *, login_button: bool = False,
+                 source: str = "운영 컴퓨터", now: Optional[float] = None) -> str:
+    """The Telegram text, from the fixed alert fields only: per alert one line of what happened (🔴 the
+    owner can act, 🟡 nothing to do, 🟠 a developer must fix it), one of what it means for the site and
+    one 👉 of what to do (owner 2026-11-12: "조금 긴거 같아서 간추려")."""
+    changes, recovered = list(changes), list(recovered)
+    blocks = []
+    for a in changes:
+        mark = "🔴" if a.action in OWNER_ACTIONS else ("🟡" if a.action in QUIET_ACTIONS else "🟠")
+        todo = PHONE_LOGIN_TODO if a.action == "login" and login_button else PHONE_TODO.get(a.action, PHONE_TODO["investigate"])
+        blocks.append(f"{mark} {PHONE_COMPONENT.get(a.component, a.component)}: "
+                      f"{PHONE_WHAT.get(a.reason, PHONE_WHAT['NO_SUCCESS_RECORDED'])}\n"
+                      f"{PHONE_SITE.get(a.reason, PHONE_SITE_DEFAULT)}\n👉 할 일: {todo}")
+    blocks += [f"✅ {PHONE_COMPONENT.get(c, c)}: 다시 괜찮아요" for c in recovered]
+    stamp = datetime.fromtimestamp(time.time() if now is None else now, KST).strftime("%m-%d %H:%M")
+    tail = (PHONE_ASK + " · " if changes else "") + f"{stamp} {source}"
+    return "\n\n".join(blocks) + "\n\n" + tail
+
+
+UNREAD_LATCH = "radar-unread-disabled.json"
+
+
+def unread_button_id(local: Path) -> Optional[str]:
+    """The 🔓 button's id for the unread latch that is set now ("u" + the second it was set), so a tap on
+    an old alert's button never clears a later latch. None when no latch is set."""
+    try:
+        at = read_json(Path(local) / UNREAD_LATCH, {}).get("at")
+    except Exception:  # noqa: BLE001 - an unreadable latch gets no button
+        return None
+    return f"u{int(at)}" if isinstance(at, (int, float)) and at > 0 else None
 
 
 # --- Windows toast on this PC (owner decision 2026-10-12) ---------------------------------
@@ -290,9 +364,6 @@ TOAST_ACTION = {
     "fix_config": "운영 사본 설정을 고친 뒤 다시 시작하세요.",
     "check_network": "이 PC의 인터넷 연결(Wi-Fi나 유선)을 확인하세요. 수집기는 저절로 다시 시도합니다.",
 }
-# Added under a login alert's text when the 🔑 button comes with it (LocalTelegramNotifier.login_button).
-LOGIN_BUTTON_LINE = ("🔑 지금 로그인할 수 있으면 아래 '로그인 요청'을 누르거나 \"로그인\"이라고 보내 주세요. "
-                     "운영 PC가 로그인 화면을 다시 열고 승인 번호를 보냅니다.")
 # The same actions in the Linux operations checkout's commands (scripts/linux/ops.sh).
 LINUX_TOAST_ACTION = dict(TOAST_ACTION,
     login="원격 데스크톱으로 이 PC에 접속해 운영 Chrome에서 직접 로그인하세요. Chrome이 없으면 저절로 열립니다. "

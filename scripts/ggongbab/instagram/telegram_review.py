@@ -33,7 +33,8 @@ EDITABLE = ("event_title", "food_items", "start_at", "end_at", "location", "elig
 FIELD_NAMES = {"제목": "event_title", "음식": "food_items", "시작": "start_at", "종료": "end_at", "장소": "location",
                "대상": "eligibility", "인원": "quantity_limit", "준비물": "requirements", "신청": "registration"}
 TIP_ID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-ASK_ID = r"[0-9a-f]{12}"                # an ops agent question (ops_agent.Agent.act)
+ASK_ID = r"[0-9a-f]{12}|u[0-9]{9,11}"    # an ops agent question (ops_agent.Agent.act), or the 🔓 button of an
+                                         # unread-latch alert (notify.unread_button_id)
 REFRESH_WORDS = ("갱신", "새로고침", "refresh")
 LOGIN_CALLBACK = "login:go"             # easy_login.REQUEST_CALLBACK: the owner asks for a login
 INBOX = "telegram-inbox.jsonl"          # .local/: the owner's notes, newest last

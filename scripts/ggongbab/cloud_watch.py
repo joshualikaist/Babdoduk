@@ -18,7 +18,7 @@ from datetime import date, datetime
 from typing import Optional
 
 from .alerts import Alert, render, staleness
-from .notify import NOT_CONFIGURED, NtfyNotifier, TelegramNotifier, format_message
+from .notify import NOT_CONFIGURED, NtfyNotifier, TelegramNotifier, format_message, format_phone
 
 # Heartbeat agent ids and the alert component they map to. The legacy "dooray-resident"
 # mail bridge is retired and not watched.
@@ -93,7 +93,10 @@ def run(*, rows: Optional[list[dict]], outcome: str, notifier, now: Optional[flo
     if notifier is None:
         log(f"cloud watch: {NOT_CONFIGURED}")
         return NOT_CONFIGURED
-    result = notifier.send(format_message(bad, source="cloud monitor"))
+    # The owner's Telegram gets the plain phone wording (2026-11-12); ntfy keeps the code line it ranks by.
+    text = (format_phone(bad, source="클라우드 감시", now=now) if isinstance(notifier, TelegramNotifier)
+            else format_message(bad, source="cloud monitor"))
+    result = notifier.send(text)
     log(f"cloud watch: {result}")
     return result
 

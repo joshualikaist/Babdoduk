@@ -135,7 +135,9 @@ def test_local_notifier_needs_both_config_and_a_stored_token(tmp_path):
 
 
 def test_the_local_telegram_push_says_in_korean_what_to_do(tmp_path, monkeypatch):
-    """2026-10-29: the phone gets the toast's fixed Korean wording; on Linux the login line says how."""
+    """Owner 2026-11-12 ("이해하기 어려운 것들이 많아"): the phone says what happened, what it means for the site
+    and what to do, in plain Korean with no English word, command or reason code."""
+    import re
     monkeypatch.setattr(notify.os, "name", "posix")
     (tmp_path / "alert-push.json").write_text(json.dumps({"provider": "telegram", "chat_id": "42"}), encoding="utf-8")
     opener = Opener()
@@ -145,9 +147,49 @@ def test_the_local_telegram_push_says_in_korean_what_to_do(tmp_path, monkeypatch
     login = Alert.of("portal", "AUTH_EXPIRED", 900, NOW)
     assert notify.push([login], notifier, notify.PushPolicy(tmp_path / "s.json"), source="local PC", now=NOW) == notify.SENT
     text = json.loads(opener.requests[0]["body"])["text"]
-    assert text.startswith("밥도둑 운영: 조치가 필요합니다\n\nPortal 공지 수집 · 로그인 만료")
-    assert "원격 데스크톱으로 이 PC에 접속해 운영 Chrome에서 직접 로그인하세요" in text
-    assert TOKEN not in text and PRIVATE not in text and "운영 PC" in text
+    assert text.startswith("🔴 포털: 로그인이 풀렸어요\n새 꽁밥만 늦어지고, 사이트는 그대로예요.\n"
+                           "👉 할 일: 운영 컴퓨터에 원격 접속해 크롬에서 로그인\n\n모르는 건 그냥 물어보세요 · ")
+    assert text.endswith(" 운영 컴퓨터") and len(text.splitlines()) == 5
+    assert TOKEN not in text and PRIVATE not in text
+
+
+def test_every_phone_alert_is_plain_korean_with_a_site_line_and_a_to_do():
+    import re
+    from ggongbab.alerts import REASONS
+    for component in notify.PHONE_COMPONENT:
+        for reason in REASONS:
+            if reason == "OK":
+                continue
+            alert = Alert.of(component, reason, 900, NOW)
+            for button in (False, True):
+                text = notify.format_phone([alert], login_button=button, now=NOW)
+                assert re.search(r"[A-Za-z_]", text) is None, text
+                assert text.startswith(("🔴", "🟡", "🟠")) and "\n👉 할 일: " in text and len(text.splitlines()) == 5
+    quiet = notify.format_phone([Alert.of("portal", "SCAN_DELAYED", 900, NOW)], now=NOW)
+    assert quiet.startswith("🟡 포털: 조금 늦어지고 있어요") and "👉 할 일: 없어요." in quiet
+    unread = notify.format_phone([Alert.of("dooray_radar", "UNREAD_RADAR_DISABLED", 60, NOW)], now=NOW)
+    assert unread.startswith("🔴 두레이 메일:") and "「🔓 풀기」" in unread and "읽은 메일은 계속 가져와요" in unread
+    fixed = notify.format_phone([Alert.of("portal", "CONTRACT_CHANGED", 900, NOW)], now=NOW)
+    assert fixed.startswith("🟠 포털: 화면이 바뀌어 읽지 못해요") and "클로드" in fixed
+    back = notify.format_phone([], ["portal"], now=NOW)
+    assert back.startswith("✅ 포털: 다시 괜찮아요\n\n")
+    assert notify.PHONE_ASK not in back
+
+
+def test_an_unread_alert_brings_the_unlock_button_for_the_latch_set_now(tmp_path):
+    (tmp_path / "alert-push.json").write_text(json.dumps({"provider": "telegram", "chat_id": "42"}), encoding="utf-8")
+    alert = Alert.of("dooray_radar", "UNREAD_RADAR_DISABLED", 60, NOW)
+    notifier = notify.local_notifier(tmp_path, read_credential=lambda t: TOKEN)
+    assert notifier.markup([alert]) is None                         # no latch file: no button
+    (tmp_path / notify.UNREAD_LATCH).write_text(json.dumps({"reason": "X", "at": 1794447945.82}), encoding="utf-8")
+    assert notify.unread_button_id(tmp_path) == "u1794447945"
+    notifier._opener = opener = Opener()
+    assert notify.push([alert], notifier, notify.PushPolicy(tmp_path / "s.json"), source="local PC", now=NOW) == notify.SENT
+    body = json.loads(opener.requests[0]["body"])
+    assert body["reply_markup"] == {"inline_keyboard": [[{"text": "🔓 풀기", "callback_data": "agent:ok:u1794447945"}]]}
+    assert notifier.markup([crit()]) is None
+    (tmp_path / notify.UNREAD_LATCH).write_text("not json", encoding="utf-8")
+    assert notify.unread_button_id(tmp_path) is None
 
 
 def test_a_login_alert_brings_the_login_button_while_easy_login_is_on(tmp_path, monkeypatch):
@@ -164,15 +206,15 @@ def test_a_login_alert_brings_the_login_button_while_easy_login_is_on(tmp_path, 
         sent.append(json.loads(opener.requests[0]["body"]))
     login, stale = sent
     assert login["reply_markup"] == {"inline_keyboard": [[{"text": "🔑 로그인 요청", "callback_data": "login:go"}]]}
-    assert notify.LOGIN_BUTTON_LINE in login["text"]
-    assert "reply_markup" not in stale and notify.LOGIN_BUTTON_LINE not in stale["text"]
+    assert notify.PHONE_LOGIN_TODO in login["text"]
+    assert "reply_markup" not in stale and notify.PHONE_LOGIN_TODO not in stale["text"]
     (tmp_path / "easy-login.json").unlink()                       # off: the old wording, no button
     notifier = notify.local_notifier(tmp_path, read_credential=lambda t: TOKEN)
     notifier._opener = opener = Opener()
     notify.push([Alert.of("portal", "AUTH_EXPIRED", 900, NOW)], notifier, notify.PushPolicy(tmp_path / "off.json"),
                 source="local PC", now=NOW)
     body = json.loads(opener.requests[0]["body"])
-    assert "reply_markup" not in body and notify.LOGIN_BUTTON_LINE not in body["text"]
+    assert "reply_markup" not in body and notify.PHONE_LOGIN_TODO not in body["text"]
 
 
 def test_the_phone_waits_out_a_brief_critical_like_the_toast(tmp_path):
@@ -402,3 +444,13 @@ def test_owner_connection_test_uses_only_the_approved_safe_message(tmp_path, mon
     monkeypatch.setattr(notify, "local_notifier", lambda _: sink)
     assert alert_push.main(["--test"]) == 0
     assert sink.messages == ["✅ Babdoduk monitoring connected\n\ncomponent: operations\nstatus: healthy"]
+
+
+def test_cloud_watch_tells_the_owners_telegram_in_plain_korean():
+    rows = [{"agent_id": "dooray-radar", "status": "auth_required", "last_success_at": iso(60)}]
+    opener = Opener()
+    sink = notify.TelegramNotifier(TOKEN, "42", opener=opener)
+    assert cloud_watch.run(rows=rows, outcome="success", notifier=sink, now=NOW, log=lambda _: None) == notify.SENT
+    text = json.loads(opener.requests[0]["body"])["text"]
+    assert text.startswith("🔴 두레이 메일: 로그인이 풀렸어요")
+    assert "AUTH_EXPIRED" not in text and text.endswith(" 클라우드 감시")

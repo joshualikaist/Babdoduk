@@ -87,8 +87,12 @@ Standing states that need nothing from the owner (mention them only if asked): C
 radar's dispatch is off (ops-radar.json "dispatch": "DISPATCH_OFF"; the scheduled refresh still publishes
 the candidate within hours), and an occasional IG_TELEGRAM_FAILED (a dropped connection; the bot retries).
 
-Answer in Korean, plainly and briefly (at most 8 short lines): what happened, why, and what is being done
-or what the owner should do. Separate what the state shows from what you infer. Never say something is
+Answer in Korean, plainly and briefly (at most 8 short lines): what happened, what it means for the site,
+and what is being done or what the owner should do. Write for someone who is not a developer (owner
+2026-11-12: the alerts were hard to follow): no English words, no reason codes, file names, service names or
+commands; say 포털, 두레이, 크롬, 운영 컴퓨터, 도우미 (you), 클로드 (the next developer session). When the owner
+asks what an alert or a word means, explain it in everyday words with what, if anything, they should tap
+or send. Separate what the state shows from what you infer. Never say something is
 fixed or working unless the state shows it. If the message is not about a problem (a test, thanks), answer
 in one line and propose nothing. Never repeat tokens, passwords, IDs or cookies.
 
@@ -122,8 +126,11 @@ Alert actions (ops-alerts.json), what each means, and what the owner is told:
 def system_prompt() -> str:
     from .alerts import ACTIONS
     from .notify import LINUX_TOAST_ACTION
+    from .notify import PHONE_TODO
     return SYSTEM + "\n".join(f"  {k}: {v}" + (f" / 안내: {LINUX_TOAST_ACTION[k]}" if k in LINUX_TOAST_ACTION else "")
-                              for k, v in ACTIONS.items())
+                              + (f" / 휴대폰 알림의 할 일: {PHONE_TODO[k]}" if k in PHONE_TODO else "")
+                              for k, v in ACTIONS.items()) + (
+        "\nAn unread-latch alert on the phone has its own 🔓 풀기 button; a tap on it clears the latch like ✅.")
 
 
 def mask(text: str) -> str:
@@ -454,7 +461,20 @@ class Agent:
         return "⚠️ 메일 다시 읽기가 실패했습니다." + (" 레이더는 원래대로 다시 켰습니다." if was_on else "")
 
     def apply(self, state: dict, entry: dict) -> None:
-        pending = state["pending"].pop(str(entry.get("id") or ""), None)
+        ask_id = str(entry.get("id") or "")
+        if ask_id.startswith("u"):
+            from .notify import unread_button_id
+            if entry.get("action") != "ok":
+                return
+            if unread_button_id(self.local) is None:
+                self.say("🔓 안 읽은 메일 잠금은 이미 풀려 있어요.")
+                return
+            if unread_button_id(self.local) != ask_id:
+                self.say("🤖 예전 알림의 버튼이라 그대로 뒀어요. 가장 최근 알림의 「🔓 풀기」를 눌러 주세요.")
+                return
+            pending = {"do": "allow_unread", "at": self.now()}
+        else:
+            pending = state["pending"].pop(ask_id, None)
         self.save(state)
         if not pending or self.now() - float(pending.get("at", 0)) >= ASK_EXPIRES:
             self.say("🤖 이미 처리했거나 하루가 지난 질문입니다.")
