@@ -130,12 +130,17 @@
   word-break: keep-all;
 }
 
-.my-login { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
+.my-login { display: grid; gap: 14px; margin-top: var(--space-4); }
 
+/* Raised buttons (owner 2026-11-12: "조금 더 입체감 있게"): a darker bottom edge and a soft shadow that the
+   button sinks into when pressed. */
 .my-login-btn {
+  --login-edge: rgba(0, 0, 0, 0.18);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   width: 100%;
   min-height: 52px;
   padding: 0 16px;
@@ -144,10 +149,29 @@
   font-size: 16px;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 3px 0 var(--login-edge), 0 8px 18px rgba(20, 20, 20, 0.14);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
+.my-login-icon { width: 22px; height: 22px; flex: none; }
 
-.my-login-btn.is-kakao { border: 1px solid #e6cf00; background: #fee500; color: #191600; }
-.my-login-btn.is-google { border: 1px solid var(--color-divider); background: #fff; color: #1f1f1f; }
+.my-login-btn.is-kakao {
+  --login-edge: #c4ad00;
+  border: 1px solid #e6cf00;
+  background: linear-gradient(180deg, #fff069 0%, #fee500 48%, #f4d800 100%);
+  color: #191600;
+}
+.my-login-btn.is-google {
+  --login-edge: #c3c7ce;
+  border: 1px solid #d5d8dd;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f5f7 100%);
+  color: #1f1f1f;
+}
+.my-login-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--login-edge), 0 12px 22px rgba(20, 20, 20, 0.16); }
+.my-login-btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--login-edge), 0 2px 6px rgba(20, 20, 20, 0.14); }
+@media (prefers-reduced-motion: reduce) {
+  .my-login-btn { transition: none; }
+  .my-login-btn:hover { transform: none; }
+}
 
 .my-login-btn:focus-visible,
 .my-close:focus-visible,

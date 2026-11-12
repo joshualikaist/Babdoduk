@@ -16,7 +16,7 @@ Phase 1 (save, share, calendar) is described in [GGONGBAB_LIVE.md](GGONGBAB_LIVE
 
 With the switch off, `my.html` shows "로그인은 준비 중이에요", and no page loads the login client.
 
-`my.html` is served on every host, and every page's top bar has a person icon beside Instagram that opens it (`js/site.js`). The configuration's `hosts` list names www.babdodukms.com, babdodukms.com, babdoduk.vercel.app and babdoduk-lab.vercel.app. On production the restaurant list card (먹킷리스트) is hidden (`SHOW_PLACES` in `js/my.js`), because 밥약 메이커 (`bobyak.html`) is lab-only. Supabase's redirect allowlist must contain `https://www.babdodukms.com/my.html` (and the other hosts' `/my.html`), or the provider returns people to the Site URL instead.
+`my.html` is served on every host, and every page's top bar has a person icon beside Instagram that opens it (`js/site.js`); since 2026-11-12 (owner) 마이 밥도둑 also heads the 더보기 group, which is the second group of the phone menu panel (`shared/nav.html`). The sign-in buttons are raised, with each provider's mark. The configuration's `hosts` list names www.babdodukms.com, babdodukms.com, babdoduk.vercel.app and babdoduk-lab.vercel.app. On production the restaurant list card (먹킷리스트) is hidden (`SHOW_PLACES` in `js/my.js`), because 밥약 메이커 (`bobyak.html`) is lab-only. Supabase's redirect allowlist must contain `https://www.babdodukms.com/my.html` (and the other hosts' `/my.html`), or the provider returns people to the Site URL instead.
 
 ## What visitors see
 

@@ -3113,7 +3113,8 @@ GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "his
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
 NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
 # Instagram left the More menu for a logo beside the wordmark (owner 2026-11-05; INSTAGRAM below).
-NAV_MORE = ["mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
+# 마이 밥도둑 heads the 더보기 group and the phone menu panel (owner 2026-11-12), beside the person icon.
+NAV_MORE = ["my.html", "mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
 INSTAGRAM = "https://www.instagram.com/babdodukms/"
 # The footer's site links are the top menu's three direct ones (owner 2026-11-12), then the privacy policy.
 FOOTER_LINKS = ["ggongbab.html", "choose.html", "event.html", "privacy.html"]
