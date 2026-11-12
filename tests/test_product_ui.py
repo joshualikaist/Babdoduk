@@ -52,6 +52,9 @@ def test_fixture_clock_is_scoped_before_date_replacement():
 # hosts js/babdoduk-auth-config.js lists (tests/test_my_babdoduk.py); the renderer never talks to a database,
 # and the lab-only Realtime feed (js/ggongbab-public-feed.js) never reaches main.
 ACCOUNT_SCRIPTS = ("js/ggongbab-public-config.js", "js/babdoduk-auth-config.js", "js/babdoduk-account.js")
+# 별 누른 꽁밥 30분 전 알림 (owner 2026-11-12; docs/PUSH_ALERTS.md): two checking functions only, called only for a
+# browser that turned the alert on (tests/test_push_alerts.py).
+PUSH_SCRIPTS = ("js/ggongbab-push.js",)
 
 
 @pytest.mark.parametrize("name", ["index.html", "ggongbab.html", "lab-ggongbab.html"])
@@ -64,11 +67,15 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     assert "ggongbab-public-feed.js" not in html
     hub = name != "index.html"
     if hub:
-        assert scripts[-4:] == [*ACCOUNT_SCRIPTS, "js/ggongbab.js"], scripts
+        tail = [*ACCOUNT_SCRIPTS, *(PUSH_SCRIPTS if name == "ggongbab.html" else ()), "js/ggongbab.js"]
+        assert scripts[-len(tail):] == tail, scripts
         config = (ROOT / "js/ggongbab-public-config.js").read_text(encoding="utf-8")
         assert not re.search(r"sb_secret_|service_role|SUPABASE_SECRET", config)
     else:
-        assert "ggongbab-public-config.js" not in html and "babdoduk-account.js" not in html
+        # Owner 2026-11-12: the home calendar's star keeps the 30-minute alert list, so the home page loads the
+        # public config for the alert module only, right before the calendar; no account script, no client.
+        i = scripts.index("js/home-calendar.js")
+        assert scripts[i - 2:i] == ["js/ggongbab-public-config.js", *PUSH_SCRIPTS] and "babdoduk-account.js" not in html
     for script in scripts:
         assert not script.startswith(("http:", "https:", "//"))
         if hub and script in ACCOUNT_SCRIPTS:

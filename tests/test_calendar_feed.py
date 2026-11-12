@@ -18,7 +18,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SQL = (ROOT / "supabase/migrations/013_calendar_feed.sql").read_text(encoding="utf-8")
-ACCOUNTS = (ROOT / "supabase/migrations/011_accounts.sql").read_text(encoding="utf-8")
+# The accounts migration (011) is kept on lab; main applies it but does not carry the file, so the database
+# tests below run where it exists and skip elsewhere.
+ACCOUNTS_FILE = ROOT / "supabase/migrations/011_accounts.sql"
 
 
 def test_the_table_is_closed_and_only_two_functions_are_open():
@@ -42,6 +44,9 @@ def test_the_table_is_closed_and_only_two_functions_are_open():
 def db():
     pgserver = pytest.importorskip("pgserver")
     psycopg = pytest.importorskip("psycopg")
+    if not ACCOUNTS_FILE.is_file():
+        pytest.skip("supabase/migrations/011_accounts.sql is not on this branch")
+    ACCOUNTS = ACCOUNTS_FILE.read_text(encoding="utf-8")
     from tests.test_accounts_db import PGCRYPTO, SHIM
     server = pgserver.get_server(tempfile.mkdtemp(prefix="babdoduk-calfeed-"), cleanup_mode="delete")
     uri = server.get_uri()
