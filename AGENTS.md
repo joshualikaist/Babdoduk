@@ -96,7 +96,7 @@ On `main`, public pages read only the validated static snapshot `data/ggongbab/l
 
 ## Verification by change type
 
-Run focused tests first, then the relevant full gate before completion. Do not use a live Dooray/Portal account or Supabase project as a synthetic test fixture.
+Run focused tests first, then the relevant full gate before completion. Since 2026-11-12 (owner, to cut a ~20 minute check after every change): before a push to `lab`, `python scripts/check_all.py --quick` plus the commit's GitHub checks after the push (`python scripts/ci_status.py <commit> --wait`); before a production release, all gates with `python scripts/check_all.py` (procedure: `verify-babdoduk`). Do not use a live Dooray/Portal account or Supabase project as a synthetic test fixture.
 
 | Change | Required checks |
 | --- | --- |
