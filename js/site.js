@@ -49,10 +49,10 @@
   // too, so the lab is reachable from its home page (owner 2026-11-01). The pages' HTML is the same on
   // both branches; the lab pages already carry these links (scripts/sync_site_chrome.py LAB_LINKS).
   var LAB_HOST = 'babdoduk-lab.vercel.app';
-  var LAB_LINKS = [['lab.html', 'nav.lab', '실험실'], ['lab-ggongbab.html', 'nav.labFeed', '꽁밥 실험'],
-                   ['cardnews.html', 'nav.labCards', '카드뉴스']];
+  // Owner 2026-11-12: 실험실 and 꽁밥 실험 left the menu (the pages stay, reachable by address).
+  var LAB_LINKS = [['cardnews.html', 'nav.labCards', '카드뉴스']];
   var morePanel = document.getElementById('navMorePanel');
-  if (location.hostname === LAB_HOST && morePanel && !morePanel.querySelector('a[href="lab.html"]')) {
+  if (location.hostname === LAB_HOST && morePanel && !morePanel.querySelector('a[href="cardnews.html"]')) {
     LAB_LINKS.forEach(function (link) {
       var a = document.createElement('a');
       a.className = 'nav-mega-link';

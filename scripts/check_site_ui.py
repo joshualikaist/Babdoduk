@@ -651,8 +651,10 @@ def lab_menu(page):
         assert ok, f"lab menu: {detail}"
         count += 1
 
-    labs = ["lab.html", "lab-ggongbab.html", "cardnews.html"]
-    names = {"ko": ["실험실", "꽁밥 실험", "카드뉴스"], "en": ["Lab", "Ggongbab lab", "Card news"]}
+    # Owner 2026-11-12: only 카드뉴스 is left; 실험실 and 꽁밥 실험 must not come back by accident.
+    labs = ["cardnews.html"]
+    names = {"ko": ["카드뉴스"], "en": ["Card news"]}
+    gone = ["lab.html", "lab-ggongbab.html"]
     more = "() => [...document.querySelectorAll('#navMorePanel a')].map(a => [a.getAttribute('href'), a.textContent.trim()])"
     page.set_viewport_size({"width": 1440, "height": 900})
     for lang in ("ko", "en"):
@@ -662,6 +664,7 @@ def lab_menu(page):
                 page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
                 gate_page(page, host, name)
                 links = page.evaluate(more)
+                check(not [h for h, _ in links if h in gone], (host, name, lang, "no 실험실 or 꽁밥 실험 link", links))
                 lab = [pair for pair in links if pair[0] in labs]
                 if name in ("lab.html", "cardnews.html"):
                     check([h for h, _ in lab] == labs, (host, name, lang, "a lab page lists each lab link once", lab))

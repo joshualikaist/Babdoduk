@@ -45,9 +45,8 @@ I18N = ROOT / "i18n"
 # The key families every page's table carries; PAGES `strings` adds the page's own.
 COMMON_STRINGS = ("a11y", "nav", "footer")
 
+# Owner 2026-11-12: 실험실 and 꽁밥 실험 left the menu; their pages stay, reachable by address.
 LAB_LINKS = [
-    '<a class="nav-mega-link" href="lab.html" data-i18n="nav.lab">실험실</a>',
-    '<a class="nav-mega-link" href="lab-ggongbab.html" data-i18n="nav.labFeed">꽁밥 실험</a>',
     '<a class="nav-mega-link" href="cardnews.html" data-i18n="nav.labCards">카드뉴스</a>',
 ]
 LAB_RIBBON = [
@@ -71,8 +70,8 @@ PAGES = {
     "history.html": {"current": "history.html", "strings": ("history",)},
     # The menu world cup opens from an activity on event.html; no nav link points at it.
     "worldcup.html": {"current": None, "strings": ("wc",)},
-    "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
-    "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
+    "lab.html": {"current": None, "lab": True, "strings": ("lab",)},
+    "lab-ggongbab.html": {"current": None, "lab": True, "ribbon": True,
                           "strings": ("gg", "ggongbab", "km", "dish", "starcal")},
     # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
     # page's "more" menu.
