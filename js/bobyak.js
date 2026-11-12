@@ -132,7 +132,6 @@
     return filterGroup('area', T('bob.filter.area'), P.AREAS)
       + filterGroup('cuisine', T('bob.filter.cuisine'), cuisines)
       + filterGroup('budget', T('bob.filter.budget'), P.BUDGETS)
-      + '<p class="bob-filter-note">' + esc(T('bob.filter.budgetNote')) + '</p>'
       + '<div class="bob-filter-foot">'
       + '<button type="button" class="bob-chip" data-bob="saved-only" aria-pressed="' + (state.savedOnly ? 'true' : 'false') + '">'
       + esc(T('bob.filter.saved')) + '</button>'
@@ -223,7 +222,7 @@
   }
   function statusNote(place) {
     if (place.status === 'verified') {
-      return place.verifiedAt ? T('bob.statusNote.verified', { date: place.verifiedAt }) : T('bob.statusNote.verifiedNoDate');
+      return place.verifiedAt ? T('bob.statusNote.verified', { date: place.verifiedAt }) : '';
     }
     return T('bob.statusNote.' + place.status);
   }
@@ -269,7 +268,7 @@
       + '<h3 class="bob-card-name" id="bobCardName">' + esc(name) + '</h3>'
       + (place.nameEn ? '<p class="bob-card-en" lang="en">' + esc(place.nameEn) + '</p>' : '')
       + '<p class="bob-badge bob-badge--' + esc(place.status) + '">' + esc(T('bob.status.' + place.status)) + '</p>'
-      + '<p class="bob-card-note">' + esc(statusNote(place)) + '</p>'
+      + (statusNote(place) ? '<p class="bob-card-note">' + esc(statusNote(place)) + '</p>' : '')
       + (shown.pool === 'candidate' ? '<p class="bob-card-note">' + esc(T('bob.pick.fromCandidates')) + '</p>' : '')
       + '<dl class="bob-facts">' + rows + '</dl>'
       + (semas ? '<p class="bob-source">' + esc(T('bob.card.source', { source: T('bob.card.sourceSemas'), date: semas.checkedAt })) + '</p>' : '')
@@ -284,7 +283,6 @@
       + esc(T('bob.card.mapAria', { map: T('bob.card.kakao'), name: name })) + '">' + esc(T('bob.card.kakao')) + '</a>'
       + (shown.from === 'pick' ? '<button type="button" class="bob-btn bob-btn--primary" data-bob="spin">' + esc(T('bob.pick.again')) + '</button>' : '')
       + '</div>'
-      + '<p class="bob-map-note">' + esc(T('bob.card.mapNote')) + '</p>'
       + '</article>';
     return html;
   }

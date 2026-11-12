@@ -399,7 +399,7 @@ def magazine_edition_time(page):
         check(issue == "2026.01.02 · 최신 호", ("yesterday's newest edition is the latest one", issue))
         stamps = [view.locator(sel).text_content().strip() for sel in ("#mgSchedule", "#mgBoardWeek")]
         check(stamps == ["15:36 발행", "2026.01.02 · 15:36 발행"], ("the edition's own build time", stamps))
-        claims = view.locator(".mg-method, #mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()
+        claims = view.locator("#mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()  # copy cleanup, owner 2026-11-12: .mg-method is gone
         check(not any("10:00" in text for text in claims), ("no fixed schedule is claimed", claims))
         view.locator("#langToggle").click()
         # The magazine redraws its masthead in a task after the switch (mukbang.html's setTimeout), so
@@ -497,12 +497,13 @@ def pick_tools(browser):
     check(page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "the set stays one menu")
     check("별리달리" in page.locator("#pickResult").inner_text() and "7,600" in page.locator("#pickResult").inner_text(),
           "the card shows the restaurant and photographed price")
-    check("촬영 당시 품절" in page.locator("#pickResult").inner_text()
+    # copy cleanup, owner 2026-11-12: shorter sold-out and campus notes.
+    check("품절 표시가 있었어요" in page.locator("#pickResult").inner_text()
           and "판매 여부" in page.locator("#pickResult").inner_text() and page.locator('.pick-like').count() == 0,
-          "the menu is identified as a photo snapshot, without delivery votes")
+          "the sold-out mark and the check-at-the-shop note are shown, without delivery votes")
     page.locator("#langToggle").click()
     check("Campus restaurant" in page.locator(".pick-result-kicker").inner_text()
-          and "Sold out when photographed" in page.locator("#pickResult").inner_text()
+          and "Marked sold out" in page.locator("#pickResult").inner_text()  # copy cleanup, owner 2026-11-12
           and "Check prices and availability" in page.locator("#pickResult").inner_text()
           and page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "English labels preserve the original menu name")
     page.locator("#langToggle").click()
@@ -584,7 +585,8 @@ def pick_tools(browser):
             check(recorded == [{"p_dish": first, "p_signal": "draw"}] and first in pool, ("a draw is sent once", recorded))
             check(page.locator(".pick-votes").inner_text().startswith("👍 5"), "everyone's likes show on the card")
         page.locator(".pick-like").click()
-        check(page.locator(".pick-like").is_disabled() and "반영" in page.locator(".pick-like").inner_text()
+        # copy cleanup, owner 2026-11-12: the liked label is "👍 좋아요!" alone.
+        check(page.locator(".pick-like").is_disabled() and "좋아요!" in page.locator(".pick-like").inner_text()
               and page.locator("#pickStatus").inner_text() == page.locator(".pick-like").inner_text(), "👍 once, announced")
         page.locator("#pickGo").click()                        # liked: no reroll for it
         page.locator(".pick-result:not([hidden]) .pick-like:not([disabled])").wait_for()
@@ -734,12 +736,8 @@ def magazine_sparse(page):
                 qualified = featured.get("heroKind") == "trend" and featured.get("trendEvidence")
                 label = page.inner_text("#mgHeroLabel").strip()
                 check(label == ("지금 뜨는 먹거리" if qualified else "오늘의 추천 글"), (where, "hero label", label))
-                tags = page.inner_text("#mgHeroTags").strip()
-                check(("유행 근거" in tags and "여러 매체가 다룸" in tags) if qualified else tags == "",
-                      (where, "a trend hero lists its evidence; any other hero lists none"))
-                cards = page.locator('[data-lane-items="trend"] .mg-story-tags')
-                check(cards.count() == sum(1 for s in items["trend"] if s.get("trendEvidence")),
-                      (where, "trend cards show their evidence"))
+                # copy cleanup, owner 2026-11-12: the "유행 근거" evidence lines are gone from the hero and the cards.
+                check(page.locator("#mgHeroTags, .mg-story-tags").count() == 0, (where, "no evidence lines"))
                 visual = page.locator("#mgHeroVisual")
                 if featured.get("image"):
                     page.wait_for_function("document.getElementById('mgHeroVisual').classList.contains('has-photo')")
@@ -1089,13 +1087,16 @@ def event_bands(page):
 
     def cta(row, lang="ko"):
         """An original post is a record once past; an activity on a page of this site opens it."""
-        words = {"ko": (("페이지 보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
-                 "en": (("Open the page", "Open the page"), ("View post", "Original post"))}[lang]
+        # copy cleanup, owner 2026-11-12: a past post link reads 게시물 보기 / View post too.
+        words = {"ko": (("페이지 보기", "페이지 보기"), ("게시물 보기", "게시물 보기")),
+                 "en": (("Open the page", "Open the page"), ("View post", "View post"))}[lang]
         return words[0 if row["onSite"] else 1][row["band"] == "past"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
-    check(len(rows) == 3, ("three authored activities", rows))
+    # One row per authored activity (data/content/events.json): 2026-11-12 the 꽁밥 인증샷 event made it four.
+    authored = len(json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))["activities"])
+    check(len(rows) == authored, ("one row per authored activity", authored, rows))
     check([row["title"] for row in rows if row["onSite"]] == ["먹방 월드컵 32강"]
           and page.locator(".event-link[data-event-page][target]").count() == 0,
           ("the menu world cup opens its page in place", rows))
@@ -1107,7 +1108,7 @@ def event_bands(page):
         check("(예정)" not in row["title"], ("tentative state is a status, not a title suffix", row))
         check("진행됨" not in row["chip"] or row["conf"] == "held", ("only a confirmed event says it took place", row))
         if row["band"] == "past":
-            expected_chip = {"announced": "", "tentative": "진행 여부 미확인"}.get(row["conf"])
+            expected_chip = {"announced": "", "tentative": "미확정"}.get(row["conf"])  # copy cleanup, owner 2026-11-12
             if expected_chip is not None:
                 check(row["chip"] == expected_chip and row["chipShown"] == bool(expected_chip),
                       ("a past date is not reported as held; an unconfirmed plan says so briefly", row))
@@ -1139,22 +1140,22 @@ def event_bands(page):
             check(field["fields"] == 1 and field["historical"] == past and field["tags"] == ([lang_tag] if past else []),
                   ("past participation instructions are marked historical, once", field))
 
-    participation("당시 안내 · 지금은 참여할 수 없어요")
+    participation("종료")  # copy cleanup, owner 2026-11-12
     check(page.locator(".event-elsewhere").count() == 0, "free food stays in navigation, not in the news title")
     # Full context is one keyboard action away.
     tentative = page.locator('.event-item[data-confirmation="tentative"]')
     tentative.locator("details.event-more summary").focus()
     page.keyboard.press("Enter")
-    note = tentative.locator("[data-event-note]")
-    check(tentative.locator("details.event-more").evaluate("d => d.open") and note.is_visible()
-          and "진행 여부" in note.inner_text(), ("자세히 opens the full state explanation", note.inner_text()))
+    # copy cleanup, owner 2026-11-12: the state explanation behind 자세히 is gone; the details still open.
+    check(tentative.locator("details.event-more").evaluate("d => d.open")
+          and tentative.locator("[data-event-note]").count() == 0, "자세히 opens from the keyboard")
     page.locator("#langToggle").click()
     english = page.locator("[data-event-cta]").all_text_contents()
     check(english == [cta(row, "en") for row in rows],
           ("English CTA follows the band", english))
-    participation("Original instructions · no longer open")
+    participation("Ended")  # copy cleanup, owner 2026-11-12
     page.locator("#langToggle").click()
-    participation("당시 안내 · 지금은 참여할 수 없어요")
+    participation("종료")  # copy cleanup, owner 2026-11-12
     live = sum(row["band"] != "past" for row in rows)
     check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty state only when nothing is current")
     check(page.locator("#eventEmpty a").count() == 0, "Instagram is not part of the empty state")
@@ -1535,7 +1536,7 @@ def worldcup_gate(page):
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED)
     check(shot["phase"] == "ended" and shot["start"] and shot["ended"] and not shot["locked"], ("after the end: playable with a note", shot))
     mystery_open(page.evaluate(MYSTERY_SNAP), ("worldcup.html", "ended"))
-    check("이벤트 종료" in page.locator(".wc-ended").inner_text(), "the note says the event is over")
+    check("이벤트는 끝났지만" in page.locator(".wc-ended").inner_text(), "the note says the event is over")  # copy cleanup, owner 2026-11-12
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED, "?cat=korean&go=1")
     check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", "after the end go=1 still plays")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
@@ -1650,7 +1651,7 @@ def worldcup_boundaries(page):
                   (where, "tiles unblurred and the dish photos present", mystery))
             check(page.evaluate("[...document.querySelectorAll('#wcPreviewPhotos img')].every(i => i.complete && i.naturalWidth > 0)"),
                   (where, "the preview photos load"))
-            check(shot["ended"] == (phase == "ended") and (phase != "ended" or "이벤트 종료" in page.locator(".wc-ended").inner_text()),
+            check(shot["ended"] == (phase == "ended") and (phase != "ended" or "이벤트는 끝났지만" in page.locator(".wc-ended").inner_text()),  # copy cleanup, owner 2026-11-12
                   (where, "the end note only after the end"))
         # go=1
         visit(host, "worldcup.html", now, "?cat=korean&go=1")
@@ -2718,7 +2719,7 @@ def tip_board(browser):
     # Nothing written and no photo: not sent; the field says why and takes focus.
     page.locator("#tipSubmit").click()
     check(page.evaluate("window.__tip.rpc.length") == 0 and page.locator("#tipTextInput").get_attribute("aria-invalid") == "true"
-          and page.locator("#tipTextError").inner_text() == "본 내용을 적거나 사진을 한 장 이상 올려 주세요."
+          and page.locator("#tipTextError").inner_text() == "내용을 적거나 사진을 올려 주세요."  # copy cleanup, owner 2026-11-12
           and page.evaluate("document.activeElement.id") == "tipTextInput"
           and page.locator("#tipStatus").inner_text() == "표시한 칸을 확인해 주세요.",
           "an empty tip is not sent; the field says why and takes focus")
@@ -2788,7 +2789,7 @@ def tip_board(browser):
     # Photos that fail: with words the tip still counts; a photo-only tip that lost its photo is empty.
     page.evaluate("window.__tip.upload = 'fail'")
     for words, warning in (("도서관 앞 커피차", "사진은 올라가지 않았어요. 제보는 접수됐어요."),
-                           ("", "사진이 올라가지 않아 제보가 비어 있어요. 사진을 다시 올리거나 내용을 적어 다시 보내 주세요.")):
+                           ("", "사진이 올라가지 않았어요. 다시 보내 주세요.")):  # copy cleanup, owner 2026-11-12
         page.locator("#tipAgain").click()
         page.locator("#tipTextInput").fill(words)
         page.set_input_files("#tipPhotos", [{"name": "a.png", "mimeType": "image/png", "buffer": PNG_1PX}])
@@ -3160,7 +3161,9 @@ def food_provenance(page):
     cells = page.locator(".food-cal-cell.has-data").evaluate_all(
         "els => els.map(el => ({local: el.classList.contains('is-local'), label: el.getAttribute('aria-label')}))")
     check([c["local"] for c in cells] == [False, True, True], ("browser entries are marked", cells))
-    check("공개 기록" in cells[0]["label"] and "대신" in cells[1]["label"], ("source named in labels", cells))
+    # copy cleanup, owner 2026-11-12: a browser entry reads 내 기록, without the "replaces" note.
+    check("공개 기록" in cells[0]["label"] and "내 기록" in cells[1]["label"] and "대신" not in cells[1]["label"],
+          ("source named in labels", cells))
     check("공개 기록 1일" in page.locator("#foodSourceLegend").inner_text()
           and "이 브라우저 2일" in page.locator("#foodSourceLegend").inner_text(), "legend counts each source")
     check(page.evaluate("localStorage.getItem('babdoduk-food-local')").find("_source") < 0,

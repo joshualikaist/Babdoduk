@@ -447,16 +447,16 @@
       var price = Number.isInteger(campus.priceWon) && campus.priceWon >= 0
         ? '<li><span>' + esc(t('pick.price', '가격')) + '</span> ₩' + campus.priceWon.toLocaleString('en-US') + '</li>' : '';
       var status = campus.photoStatus === '품절' || campus.photoStatus === '일시품절'
-        ? t('pick.photoSoldOut', '촬영 당시 품절로 표시')
-        : campus.photoStatus === '화면별 상이' ? t('pick.photoMixed', '촬영 화면마다 판매 표시가 달랐어요') : '';
+        ? t('pick.photoSoldOut', '품절 표시가 있었어요')
+        : campus.photoStatus === '화면별 상이' ? t('pick.photoMixed', '품절일 수 있어요') : '';
       var seasonal = typeof campus.category === 'string' && /여름|겨울|계절/.test(campus.category)
-        ? t('pick.seasonal', '계절 메뉴 · 판매 기간 확인') : '';
+        ? t('pick.seasonal', '계절 메뉴') : '';
       html = '<p class="pick-result-kicker">🍽️ ' + esc(t('pick.kind.campus', '교내 식당')) + '</p>' +
         '<h2 class="pick-result-title" tabindex="-1">' + esc(name) + '</h2>' +
         '<ul class="pick-facts"><li><span>' + esc(t('pick.restaurant', '식당')) + '</span> ' + esc(campus.store) + '</li>' + price + '</ul>' +
         (status ? '<p class="pick-note">' + esc(status) + '</p>' : '') +
         (seasonal ? '<p class="pick-note">' + esc(seasonal) + '</p>' : '') +
-        '<p class="pick-note">' + esc(t('pick.campusNote', '촬영한 메뉴판 기준이에요. 가격과 판매 여부는 매장에서 확인해 주세요.')) + '</p>';
+        '<p class="pick-note">' + esc(t('pick.campusNote', '가격·판매 여부는 매장에서 확인해 주세요.')) + '</p>';
     } else {
       var dish = pick.dish, photo = photoOf(dish.id), credit = '';
       name = dishName(dish);
@@ -469,7 +469,7 @@
       var votes = state.votes[dish.id] || {}, like = '';
       if (statsApi) {
         like = '<div class="pick-actions">' + (pick.liked
-          ? '<button type="button" class="pick-like" data-pick-like disabled>' + esc(t('pick.liked', '👍 좋아요! 다음 뽑기에 반영할게요')) + '</button>'
+          ? '<button type="button" class="pick-like" data-pick-like disabled>' + esc(t('pick.liked', '👍 좋아요!')) + '</button>'
           : '<button type="button" class="pick-like" data-pick-like>' + esc(t('pick.like', '👍 이거 먹을래요')) + '</button>') + '</div>';
         if (votes.likes >= 3) like += '<p class="pick-votes">' + esc(fill(t('pick.votes', '👍 {n}명이 이걸 골랐어요'), { n: votes.likes })) + '</p>';
       }
@@ -503,9 +503,9 @@
       if (!pick) {
         els.go.removeAttribute('aria-busy');
         els.goLabel.textContent = t('pick.go', '메뉴 뽑기');
-        els.result.innerHTML = '<p class="pick-note">' + esc(t('pick.error', '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.')) + '</p>';
+        els.result.innerHTML = '<p class="pick-note">' + esc(t('pick.error', '메뉴를 불러오지 못했어요.')) + '</p>';
         els.result.hidden = false;
-        els.status.textContent = t('pick.error', '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.');
+        els.status.textContent = t('pick.error', '메뉴를 불러오지 못했어요.');
         return;
       }
       if (pick.dish) record('draw', pick.dish);
@@ -521,7 +521,7 @@
     pick.liked = true;
     record('like', pick.dish);
     button.disabled = true;
-    button.textContent = t('pick.liked', '👍 좋아요! 다음 뽑기에 반영할게요');
+    button.textContent = t('pick.liked', '👍 좋아요!');
     els.status.textContent = button.textContent;
   });
   els.sound.addEventListener('click', function () { sound.toggle(); paintSound(); });

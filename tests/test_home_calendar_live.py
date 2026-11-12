@@ -168,7 +168,7 @@ def test_an_opened_listing_adds_itself_to_a_calendar(browser):
     href = google.get_attribute("href")
     assert href.startswith("https://calendar.google.com/calendar/render?") and "action=TEMPLATE" in href
     assert "ctz=Asia%2FSeoul" in href and "20261109T030000Z%2F20261109T040000Z" in href
-    assert "minical" in page.locator(".hc-ev.is-open .hc-ev-calnote").inner_text()
+    assert page.locator(".hc-ev.is-open .hc-ev-calnote").count() == 0  # copy cleanup, owner 2026-11-12: the minical line is gone
     with page.expect_download() as info:
         page.locator('[data-hc-ics="lunch"]').click()
     download = info.value

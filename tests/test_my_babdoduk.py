@@ -266,7 +266,7 @@ def test_a_guest_on_the_hub_never_loads_the_client_even_when_turned_on(browser):
     assert not [c for c in fakedb(page)["calls"] if c[0] == "client"] and not sdk
     page.locator('.gg-card[data-id="lunch"] .gg-save').click()
     assert json.loads(page.evaluate(f"localStorage.getItem('{SAVED_KEY}')"))["items"][0]["id"] == "lunch"
-    assert "이 브라우저에만 저장돼요" in page.locator("#ggSaved").inner_text() or page.locator("#ggSaved").count() == 1
+    assert page.locator("#ggSaved").count() == 1  # copy cleanup, owner 2026-11-12: no "this browser only" line
     assert errors == []
     context.close()
 
@@ -327,7 +327,7 @@ def test_linking_the_other_login_and_what_the_talk_app_shows_instead(browser):
     context.close()
     # Inside the talk app Google is refused, so the button gives way to the default-browser link.
     context, page, errors, _ = open_page(browser, db={"user": user()}, ua=TALK_UA)
-    wait_view(page, "기본 브라우저에서 카카오로 로그인한 뒤")
+    wait_view(page, "카카오톡에선 Google 연결이 안 돼요")  # copy cleanup, owner 2026-11-12
     assert page.get_by_role("button", name="Google 로그인도 연결").count() == 0
     link = page.get_by_role("link", name="기본 브라우저로 열기")
     assert link.count() == 1
@@ -437,12 +437,12 @@ def test_the_hub_saves_to_the_account_and_leaves_the_browser_list_alone(browser)
     page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.length === 1")
     assert page.locator("#ggSaved").count() == 1
     page.locator("[data-gg-saved]").click()
-    assert "계정에 저장돼요" in page.locator("#ggSaved").inner_text()
+    assert "마이 밥도둑" in page.locator("#ggSaved").inner_text()  # copy cleanup, owner 2026-11-12: the account line is only the link now
     assert page.locator('#ggSaved a[href="my.html"]').count() == 1
     assert page.evaluate(f"localStorage.getItem('{SAVED_KEY}')") == guest
     toast = page.locator(".gg-toast")
     toast.wait_for(state="attached")
-    page.wait_for_function("() => (document.querySelector('.gg-toast') || {}).textContent.includes('계정에 저장돼요')")
+    page.wait_for_function("() => (document.querySelector('.gg-toast') || {}).textContent.includes('저장했어요')")  # copy cleanup, owner 2026-11-12
     # A refused write is undone on screen and said out loud.
     page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb')); db.fail['saved_events:insert'] = true;
         localStorage.setItem('__fakedb', JSON.stringify(db)); }""")
@@ -461,7 +461,7 @@ def test_when_the_account_cannot_load_the_hub_keeps_the_browser_list_and_says_so
     page.locator(".gg-card").first.wait_for()
     page.wait_for_function("() => !!document.querySelector('#ggSaved')")
     page.locator("[data-gg-saved]").click()
-    page.wait_for_function("() => document.querySelector('#ggSaved').innerText.includes('계정 목록을 불러오지 못해')")
+    page.wait_for_function("() => document.querySelector('#ggSaved').innerText.includes('계정 목록을 불러오지 못했어요')")  # copy cleanup, owner 2026-11-12
     assert page.locator('.gg-card[data-id="lunch"] .gg-save').get_attribute("aria-pressed") == "true"
     assert errors == []
     context.close()

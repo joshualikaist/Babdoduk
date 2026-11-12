@@ -101,14 +101,14 @@ def test_the_food_hub_credits_and_links_an_instagram_post_and_credits_a_tip(brow
     past = page.locator('.gg-past[data-past-id="past"]')
     past.wait_for()
     assert past.locator("a").get_attribute("href") == POST
-    assert past.locator("a").inner_text().startswith("당시 인스타그램 게시물 보기")
+    assert past.locator("a").inner_text().startswith("인스타그램 보기")  # copy cleanup, owner 2026-11-12
     assert "인스타그램" in past.locator(".gg-past-note").inner_text()
 
     page.locator("#langToggle").click()
     assert card(page, "insta").locator(".gg-source").inner_text() == "Instagram"
     assert card(page, "insta").locator("a.gg-btn").inner_text() == "Instagram post"
     assert card(page, "tip").locator(".gg-source").inner_text() == "Reader tip"
-    assert past.locator("a").inner_text().startswith("View the Instagram post")
+    assert past.locator("a").inner_text().startswith("View on Instagram")  # copy cleanup, owner 2026-11-12
     assert not errors
     context.close()
 

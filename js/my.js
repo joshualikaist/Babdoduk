@@ -118,14 +118,14 @@
   function guestNoteHtml() {
     var n = guestCount();
     return '<p class="my-note">' + esc(n
-      ? t('my.guest.count', '이 브라우저에 저장한 꽁밥 {n}개가 있어요.', { n: n })
-      : t('my.guest.none', '아직 이 브라우저에 저장한 꽁밥이 없어요.')) +
+      ? t('my.guest.count', '저장한 꽁밥 {n}개', { n: n })
+      : t('my.guest.none', '저장한 꽁밥이 없어요')) +
       ' <a href="ggongbab.html#saved">' + esc(t('my.guest.open', '저장한 꽁밥 보기')) + '</a></p>';
   }
   function offHtml() {
     return '<section class="my-card" aria-labelledby="myOffTitle">' +
       '<h2 class="my-h2" id="myOffTitle">' + esc(t('my.off.title', '로그인은 준비 중이에요')) + '</h2>' +
-      '<p class="my-text">' + esc(t('my.off.body', '지금은 저장한 꽁밥이 이 브라우저에만 남아요. 로그인이 열리면 여기서 알려 드릴게요.')) + '</p>' +
+      '<p class="my-text">' + esc(t('my.off.body', '로그인이 열리면 알려 드릴게요.')) + '</p>' +
       guestNoteHtml() + '</section>';
   }
   function outHtml() {
@@ -137,7 +137,7 @@
     html += '<div class="my-login">';
     html += '<button type="button" class="my-login-btn is-kakao" data-my-login="kakao">' + KAKAO_MARK + '<span>' + esc(t('my.out.kakao', '카카오로 계속하기')) + '</span></button>';
     if (inTalk) {
-      html += '<p class="my-note">' + esc(t('my.out.googleTalk', 'Google 로그인은 카카오톡 안에서 막혀 있어요. 기본 브라우저에서 열어 주세요.')) +
+      html += '<p class="my-note">' + esc(t('my.out.googleTalk', '카카오톡에선 Google 로그인이 안 돼요.')) +
         ' <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('my.out.openExternal', '기본 브라우저로 열기')) + '</a></p>';
     } else {
       html += '<button type="button" class="my-login-btn is-google" data-my-login="google">' + GOOGLE_MARK + '<span>' + esc(t('my.out.google', 'Google로 계속하기')) + '</span></button>';
@@ -154,12 +154,11 @@
     if (m.places) parts.push(t('my.merge.places', '식당 {n}곳', { n: m.places }));
     var html = '<div class="my-merge" role="status">';
     if (parts.length) {
-      html += '<p>' + esc(t('my.merge.done', '이 브라우저에 저장한 {what}을 계정에 합쳤어요.', { what: parts.join(', ') })) + '</p>';
-      html += '<p class="my-fine">' + esc(t('my.merge.hint', '내 것이 아니면 되돌릴 수 있어요. 이 브라우저의 목록은 그대로 남아요.')) + '</p>';
+      html += '<p>' + esc(t('my.merge.done', '{what}을 계정에 합쳤어요.', { what: parts.join(', ') })) + '</p>';
       html += '<button type="button" class="btn btn-secondary my-small" data-my-undo>' + esc(t('my.merge.undo', '되돌리기')) + '</button>';
     }
     if ((m.conflicts || []).length) {
-      html += '<p class="my-fine">' + esc(t('my.merge.conflicts', '메모가 서로 다른 식당 {n}곳은 계정 메모를 그대로 두었어요.', { n: m.conflicts.length })) + '</p>';
+      html += '<p class="my-fine">' + esc(t('my.merge.conflicts', '식당 {n}곳은 계정 메모를 그대로 뒀어요.', { n: m.conflicts.length })) + '</p>';
     }
     return html + '<button type="button" class="my-close" data-my-merge-close aria-label="' + esc(t('my.close', '닫기')) + '"><span aria-hidden="true">×</span></button></div>';
   }
@@ -187,7 +186,7 @@
         return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + unstar + '</li>';
       }).join('') + '</ol>';
       if (rows.some(function (r) { return r.kind === 'missing'; })) {
-        html += '<p class="my-fine">' + esc(t('my.saved.missingNote', '목록에서 빠진 꽁밥은 취소됐거나 내용이 바뀌었을 수 있어요. 공지를 확인하세요.')) + '</p>';
+        html += '<p class="my-fine">' + esc(t('my.saved.missingNote', '취소됐을 수 있어요. 공지를 확인하세요.')) + '</p>';
       }
     }
     html += '<p class="my-fine"><a href="ggongbab.html">' + esc(t('my.saved.manage', '오늘의 꽁밥에서 저장·삭제하기')) + '</a></p>';
@@ -217,16 +216,15 @@
     if (s !== 'on' && s !== 'off' && s !== 'home' && s !== 'denied') return '';
     var html = '<section class="my-card" aria-labelledby="myPushTitle">';
     html += '<h2 class="my-h2" id="myPushTitle"><span aria-hidden="true">🔔</span> ' + esc(t('push.title', '30분 전 알림')) + '</h2>';
-    html += '<p class="my-text">' + esc(t('push.body', '별 누른 꽁밥이 시작하기 30분 전에 이 휴대폰으로 알려 드려요.')) + '</p>';
     if (s === 'on' || s === 'off') {
       var on = s === 'on';
       html += '<button type="button" class="btn ' + (on ? 'btn-secondary' : 'btn-primary') + ' my-cal-btn" data-my-push aria-pressed="' + on + '">' +
         esc(on ? t('push.turnOff', '알림 끄기') : t('push.turnOn', '알림 켜기')) + '</button>';
-      html += '<p class="my-fine">' + esc(on ? t('push.isOn', '켜져 있어요 · 이 기기에만 적용돼요') : t('push.device', '이 기기에만 적용돼요')) + '</p>';
+      if (on) html += '<p class="my-fine">' + esc(t('push.isOn', '켜져 있어요')) + '</p>';
     } else if (s === 'home') {
-      html += '<p class="my-fine">' + esc(t('push.home', '홈 화면에 추가한 밥도둑으로 열면, 별 누른 꽁밥 30분 전에 알림을 받을 수 있어요.')) + '</p>';
+      html += '<p class="my-fine">' + esc(t('push.home', '홈 화면에 추가한 밥도둑에서 알림을 켤 수 있어요.')) + '</p>';
     } else {
-      html += '<p class="my-fine">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')) + '</p>';
+      html += '<p class="my-fine">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.')) + '</p>';
     }
     return html + '</section>';
   }
@@ -237,15 +235,14 @@
     if (!p) {
       html += '<p class="my-text">' + esc(t('my.places.off', '먹킷리스트를 불러오지 못했어요.')) + '</p>';
     } else if (!p.want && !p.been && !p.again) {
-      html += '<p class="my-text">' + esc(t('my.places.empty', '아직 저장한 식당이 없어요. 밥약 메이커에서 식당을 저장할 수 있어요.')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.places.empty', '아직 저장한 식당이 없어요.')) + '</p>';
     } else {
       html += '<ul class="my-counts">' +
         '<li><span>' + esc(t('my.places.want', '가고 싶어')) + '</span><b>' + p.want + '</b></li>' +
         '<li><span>' + esc(t('my.places.been', '가봤어')) + '</span><b>' + p.been + '</b></li>' +
         '<li><span>' + esc(t('my.places.again', '또 갈래')) + '</span><b>' + p.again + '</b></li></ul>';
     }
-    html += '<p class="my-fine"><a href="bobyak.html">' + esc(t('my.places.open', '밥약 메이커 열기')) + '</a> · ' +
-      esc(t('my.places.private', '메모는 나만 봐요')) + '</p>';
+    html += '<p class="my-fine"><a href="bobyak.html">' + esc(t('my.places.open', '밥약 메이커 열기')) + '</a></p>';
     return html + '</section>';
   }
   function accountHtml() {
@@ -269,7 +266,6 @@
     html += '<dt>' + esc(t('my.account.with', '로그인 방법')) + '</dt><dd>' +
       (linked.length ? linked.map(function (p) { return '<span class="my-chip">' + esc(providerLabel(p)) + '</span>'; }).join(' ') : '—') + '</dd>';
     html += '</dl>';
-    html += '<p class="my-fine">' + esc(t('my.account.privateNote', '프로필은 공개되지 않아요. 이메일은 받지 않거나 받아도 화면에 쓰지 않아요.')) + '</p>';
     var missing = A.PROVIDERS.filter(function (p) { return linked.indexOf(p) === -1; });
     // Google refuses the talk app's own browser, and the default browser opens without this session, so
     // linking Google there starts with signing in again outside the app.
@@ -283,13 +279,11 @@
         }).join('') + '</div>';
       }
       if (linkable.length < missing.length) {
-        html += '<p class="my-note">' + esc(t('my.account.linkGoogleTalk', 'Google 연결은 카카오톡 안에서 막혀 있어요. 기본 브라우저에서 카카오로 로그인한 뒤 연결해 주세요.')) +
+        html += '<p class="my-note">' + esc(t('my.account.linkGoogleTalk', '카카오톡에선 Google 연결이 안 돼요. 기본 브라우저에서 해 주세요.')) +
           ' <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('my.out.openExternal', '기본 브라우저로 열기')) + '</a></p>';
       }
-      html += '<p class="my-fine">' + esc(t('my.account.linkNote', '같은 사람이 두 방법으로 따로 가입하면 저장 목록이 나뉘어요. 연결하면 한 계정이 돼요.')) + '</p>';
     }
     html += '<div class="my-row-actions"><button type="button" class="btn btn-secondary" data-my-signout>' + esc(t('my.account.signout', '로그아웃')) + '</button></div>';
-    html += '<p class="my-fine">' + esc(t('my.account.signoutNote', '이 기기에서만 로그아웃해요. 이 브라우저에 따로 저장한 목록은 그대로 남아요.')) + '</p>';
     return html + '</section>';
   }
   function dangerHtml(now) {
@@ -304,8 +298,7 @@
     } else if (state.panel === 'leave') {
       var fresh = A.signedInRecently(state.user, now);
       html += '<div class="my-confirm" role="group" aria-labelledby="myLeaveQ"><p id="myLeaveQ" class="my-text">' +
-        esc(t('my.leave.q', '탈퇴하면 계정과 저장한 꽁밥, 먹킷리스트, 메모, 공유 리스트가 모두 지워지고 되돌릴 수 없어요.')) + '</p>' +
-        '<p class="my-fine">' + esc(t('my.leave.keep', '결제·주문 정보를 받지 않아 법으로 따로 보관하는 개인정보는 없어요. Google·카카오 쪽 연결 기록은 각 계정 설정에서 지울 수 있어요.')) + '</p>';
+        esc(t('my.leave.q', '탈퇴하면 계정과 저장한 모든 것이 지워지고 되돌릴 수 없어요.')) + '</p>';
       if (!fresh) {
         html += '<p class="my-text">' + esc(t('my.leave.reauth', '본인 확인을 위해 한 번 더 로그인해 주세요.')) + '</p>' +
           '<div class="my-row-actions">' + A.providersOf(state.user).map(function (p) {
@@ -332,9 +325,9 @@
     else if (state.view === 'off') html = offHtml();
     else if (state.view === 'out') html = outHtml();
     else if (state.view === 'left') html = '<section class="my-card"><h2 class="my-h2">' + esc(t('my.left.title', '탈퇴했어요')) + '</h2><p class="my-text">' +
-      esc(t('my.left.body', '계정과 저장한 데이터를 모두 지웠어요. 그동안 고마웠어요.')) + '</p><p class="my-fine"><a href="index.html">' + esc(t('my.left.home', '홈으로')) + '</a></p></section>';
+      esc(t('my.left.body', '그동안 고마웠어요.')) + '</p><p class="my-fine"><a href="index.html">' + esc(t('my.left.home', '홈으로')) + '</a></p></section>';
     else if (state.view === 'error') html = '<section class="my-card"><h2 class="my-h2">' + esc(t('my.error.title', '계정 정보를 불러오지 못했어요')) + '</h2>' +
-      '<p class="my-text">' + esc(t('my.error.body', '잠시 뒤 다시 시도해 주세요. 저장한 꽁밥은 이 브라우저에서 계속 쓸 수 있어요.')) + '</p>' +
+      '<p class="my-text">' + esc(t('my.error.body', '잠시 뒤 다시 시도해 주세요.')) + '</p>' +
       '<div class="my-row-actions"><button type="button" class="btn btn-primary my-small" data-my-retry>' + esc(t('my.retry', '다시 시도')) + '</button>' +
       (state.user ? '<button type="button" class="btn btn-secondary my-small" data-my-signout>' + esc(t('my.account.signout', '로그아웃')) + '</button>' : '') + '</div></section>';
     else {
@@ -448,10 +441,10 @@
       busy(true);
       (turningOn ? P.enable(pushIds(), lang()) : P.disable()).then(function (result) {
         busy(false);
-        if (result === 'on') { state.push = 'on'; announce(t('push.nowOn', '이제 별 누른 꽁밥 30분 전에 알림이 와요')); }
+        if (result === 'on') { state.push = 'on'; announce(t('push.nowOn', '30분 전 알림을 켰어요')); }
         else if (result === 'off') { state.push = 'off'; announce(t('push.nowOff', '30분 전 알림을 껐어요')); }
-        else if (result === 'denied') { state.push = 'denied'; announce(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')); }
-        else announce(t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+        else if (result === 'denied') { state.push = 'denied'; announce(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.')); }
+        else announce(t('push.fail', '알림을 켜지 못했어요. 다시 시도해 주세요.'));
         render();
         var btn = app.querySelector('[data-my-push]') || document.getElementById('myPushTitle');
         if (btn) { if (!btn.matches('button')) btn.setAttribute('tabindex', '-1'); btn.focus(); }

@@ -647,9 +647,10 @@ def check_page(report: Report, rows: dict, published: dict, reference: datetime,
                     row.card += " 🎁"
                     report.check(card.locator(".gg-giveaway").count() == 1, f"{key}: giveaway line missing")
                 if expect.food == "poster":
-                    note = " ".join(card.locator(".gg-food-primary").inner_text().split())
-                    report.check("포스터 기준" in note, f"{key}: food line {note!r} has no 포스터 기준")
-                    row.card += " 포스터 기준"
+                    # copy cleanup, owner 2026-11-12: the "포스터 기준" note is gone; the food line stays.
+                    report.check(card.locator(".gg-food-primary").count() == 1 and card.locator(".gg-food-source").count() == 0,
+                                 f"{key}: poster-sourced food shows no food line, or a poster note")
+                    row.card += " 음식(포스터)"
                 elif expect.food:
                     report.check(card.locator(".gg-food-primary").count() == 1 and card.locator(".gg-food-source").count() == 0,
                                  f"{key}: text-sourced food shows a poster note or none")

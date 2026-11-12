@@ -58,7 +58,6 @@
 .bob-filters[hidden], .bob-copy[hidden] { display: none; }
 .bob-filter-group { display: grid; gap: 2px; min-width: 0; }
 .bob-filter-title { margin: 0; font-size: 13px; font-weight: 700; color: var(--color-ink-muted); }
-.bob-filter-note { margin: 0; font-size: 13px; color: var(--color-ink-muted); }
 .bob-filter-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-left: 5px; }
 .bob-result { display: grid; gap: 12px; min-width: 0; }
 .bob-result:empty { display: none; }
@@ -91,7 +90,7 @@
 .bob-fact dd { margin: 0; min-width: 0; }
 .bob-fact-meta { display: inline-block; font-size: 12px; color: var(--color-ink-muted); }
 .bob-unknown { color: var(--color-ink-muted); }
-.bob-source, .bob-map-note { margin: 0; font-size: 12px; line-height: 1.5; color: var(--color-ink-muted); }
+.bob-source { margin: 0; font-size: 12px; line-height: 1.5; color: var(--color-ink-muted); }
 .bob-list-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 5px; }
 .bob-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .bob-memo { display: grid; gap: 6px; }

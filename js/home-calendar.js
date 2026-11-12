@@ -391,7 +391,6 @@
   function calendarDetails(ev) {
     var lines = [];
     if (F.hasFood(ev) && !F.isDeadlineOnly(ev)) lines.push(fill(t('home.cal.ev.calFood', '꽁밥 · {food}'), { food: F.dishLabel(ev, t) }));
-    lines.push(t('home.cal.ev.calCheck', '참여 조건과 변경 사항은 밥도둑에서 확인하세요.'));
     lines.push(L.eventLink(ev.id));
     return lines.join('\n');
   }
@@ -421,15 +420,15 @@
   // The star also opens the calendar's add screen (owner 2026-11-11), for visitors who said yes once;
   // the same answer as on ggongbab.html (js/ggongbab-live.js).
   function starCalendarMessage(result) {
-    if (result === 'ics') return t('starcal.done.ics', '캘린더 추가 화면을 열었어요 · 추가를 눌러 주세요');
-    if (result === 'google') return t('starcal.done.google', '구글 캘린더를 새 창에 열었어요 · 저장을 눌러 주세요');
-    if (result === 'manual') return t('starcal.done.manual', '카카오톡 안에서는 바로 넣을 수 없어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
-    return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
+    if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
+    if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
+    if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
+    return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요');
   }
   function pushMessage(result) {
-    if (result === 'on') return t('push.nowOn', '이제 별 누른 꽁밥 30분 전에 알림이 와요');
-    if (result === 'denied') return t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.');
-    return t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+    if (result === 'on') return t('push.nowOn', '30분 전 알림을 켰어요');
+    if (result === 'denied') return t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.');
+    return t('push.fail', '알림을 켜지 못했어요. 다시 시도해 주세요.');
   }
   function afterStar(ev, savedMessage) {
     if (!L.canCalendar(ev, F.nowKst())) return savedMessage;
@@ -439,10 +438,9 @@
       setTimeout(function () {
         P.ask({
           title: t('push.ask.title', '별 누른 꽁밥, 30분 전에 알려 드릴까요?'),
-          body: t('push.ask.body', '시작 30분 전에 휴대폰 알림이 와요. 다음 창에서 허용을 눌러 주세요.'),
+          body: t('push.ask.body', '다음 창에서 "허용"을 눌러 주세요.'),
           yes: t('push.ask.yes', '알림 받을게요'),
-          no: t('push.ask.no', '괜찮아요'),
-          later: t('push.ask.later', '저장한 꽁밥에서 언제든 끄고 켤 수 있어요')
+          no: t('push.ask.no', '괜찮아요')
         }, function (yes) {
           if (yes) {
             P.enable(savedIds(), langCode()).then(function (result) {
@@ -452,7 +450,7 @@
             });
             return;
           }
-          if (yes === false) els.live.textContent = t('push.no', '알림은 켜지 않을게요 · 저장한 꽁밥에서 켤 수 있어요');
+          if (yes === false) els.live.textContent = t('push.no', '알림은 켜지 않을게요');
           refocus(starSel);
         });
       }, 0);
@@ -467,16 +465,15 @@
     if (pref === 'off') return savedMessage;
     var text = {
       title: t('starcal.ask.title', '별 누를 때 내 캘린더에도 넣을까요?'),
-      body: t('starcal.ask.body', '별을 누르면 캘린더 추가 화면이 열려요. 추가하면 시작 30분 전에 알림이 와요.'),
+      body: t('starcal.ask.body', '넣으면 시작 30분 전에 알림이 와요.'),
       yes: t('starcal.ask.yes', '넣을게요'),
-      no: t('starcal.ask.no', '괜찮아요'),
-      later: t('starcal.ask.later', '오늘의 꽁밥의 저장한 꽁밥에서 언제든 바꿀 수 있어요')
+      no: t('starcal.ask.no', '괜찮아요')
     };
     // Asked after this click's own focus and message are settled (toggleSave refocuses the star).
     setTimeout(function () {
       L.askStarCalendar(text, function (yes) {
         if (yes) els.live.textContent = starCalendarMessage(L.addToCalendar(ev, details));
-        else if (yes === false) els.live.textContent = t('starcal.done.no', '캘린더에는 넣지 않을게요 · 저장한 꽁밥에서 바꿀 수 있어요');
+        else if (yes === false) els.live.textContent = t('starcal.done.no', '캘린더에는 넣지 않을게요');
         refocus('[data-hc-save="' + (window.CSS && CSS.escape ? CSS.escape(ev.id) : ev.id) + '"]');
       });
     }, 0);
@@ -583,11 +580,7 @@
     }
     if (actions.length) rows.push('<p class="hc-ev-actions">' + actions.join('') + '</p>');
     var cal = item.active ? calendarHtml(ev) : '';
-    if (cal) {
-      rows.push('<p class="hc-ev-actions hc-ev-cals">' + cal + '</p>');
-      rows.push('<p class="hc-ev-calnote">' + esc(t('home.cal.ev.calSync', '아이폰·Google 캘린더에 넣으면 연결된 앱(minical 등)에도 보여요')) +
-        (ev.endAt ? '' : ' · ' + esc(t('home.cal.ev.calNoEnd', '끝나는 시간은 공지에 없어요'))) + '</p>');
-    }
+    if (cal) rows.push('<p class="hc-ev-actions hc-ev-cals">' + cal + '</p>');
     if (liveNote.id === ev.id && liveNote.text) rows.push('<p class="hc-ev-note" role="status">' + esc(liveNote.text) + '</p>');
     if (liveNote.id === ev.id && liveNote.copy) {
       rows.push('<label class="hc-ev-copy">' + esc(t('home.cal.ev.copyHint', '길게 눌러 복사하세요')) +
@@ -810,7 +803,7 @@
     savedStore.reload();   // another tab may have saved or removed it since
     var message;
     if (savedStore.has(id)) message = savedStore.remove(id) ? t('home.cal.ev.unsaved', '저장을 지웠어요') : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
-    else message = savedStore.add(item.ev) ? afterStar(item.ev, t('home.cal.ev.saved', '저장했어요 · 오늘의 꽁밥의 저장한 꽁밥에서 볼 수 있어요')) : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
+    else message = savedStore.add(item.ev) ? afterStar(item.ev, t('home.cal.ev.saved', '저장했어요')) : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
     if (P && pushOn) P.changed(savedIds(), langCode());
     var scroll = els.day.querySelector('.hc-events-scroll');
     var top = scroll ? scroll.scrollTop : 0;

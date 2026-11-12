@@ -333,7 +333,9 @@ def test_browser_giveaway_rows_render_the_same_from_both_paths(ui):
     page = ui["page"]
     assert page.locator(f'[data-id="{gift["id"]}"] .gg-food-primary').count() == 0
     assert page.locator(f'[data-id="{gift["id"]}"] .gg-gift-badge').count() == 1
-    assert page.locator(f'[data-id="{talk["id"]}"] .gg-food-source').count() == 1
+    # copy cleanup, owner 2026-11-12: the "포스터 기준" note is gone; the poster-only food is still shown.
+    assert page.locator(f'[data-id="{talk["id"]}"] .gg-food-primary').count() == 1
+    assert page.locator(f'[data-id="{talk["id"]}"] .gg-food-source').count() == 0
     assert page.locator(f'[data-id="{draw["id"]}"] .gg-time.is-deadline').inner_text() == "신청 마감 9월 25일 (금) 23:59"
     # The static snapshot of the same rows; the draw's deadline is spelled in UTC there, the same instant.
     snapshot = [to_snapshot_event(item) for item in rows]

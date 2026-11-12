@@ -298,18 +298,6 @@
   content: '−';
 }
 
-.event-note {
-  margin: var(--space-2) 0 var(--space-3);
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--color-ink-muted);
-  word-break: keep-all;
-}
-
-.event-note:empty {
-  display: none;
-}
-
 .event-detail {
   font-size: 15px;
   line-height: 1.6;

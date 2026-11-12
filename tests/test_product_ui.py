@@ -134,10 +134,11 @@ def test_hub_feed_note_names_the_last_change_and_claims_no_live_data(name):
 
 PAST_KEYS = ("gg.archive.title", "gg.archive.lead", "gg.archive.ended", "gg.archive.record", "gg.archive.source",
              "gg.archive.empty", "gg.archive.error", "gg.archive.loading", "gg.archive.more", "gg.archive.less", "gg.newTab")
-PAST_KO = {"gg.archive.title": "지난 꽁밥 기록", "gg.archive.ended": "종료", "gg.archive.record": "당시 공개된 꽁밥 안내 기록",
-           "gg.archive.source": "당시 공지 보기", "gg.archive.empty": "최근 30일 기록 없음"}
+# copy cleanup, owner 2026-11-12: shorter record and source labels.
+PAST_KO = {"gg.archive.title": "지난 꽁밥 기록", "gg.archive.ended": "종료", "gg.archive.record": "지난 꽁밥 안내",
+           "gg.archive.source": "공지 보기", "gg.archive.empty": "최근 30일 기록 없음"}
 PAST_EN = {"gg.archive.title": "Past free-food listings", "gg.archive.ended": "Ended",
-           "gg.archive.record": "Previously published free-food listing", "gg.archive.source": "View original notice"}
+           "gg.archive.record": "Past free-food listing", "gg.archive.source": "View notice"}
 
 
 @pytest.mark.parametrize("name", ["ggongbab.html", "lab-ggongbab.html"])
@@ -148,7 +149,8 @@ def test_past_listing_copy_is_bilingual_and_never_claims_an_outcome(name):
     assert all(len(values) == 2 and all(values) for values in strings.values()), strings
     assert {key: strings[key][0] for key in PAST_KO} == PAST_KO
     assert {key: strings[key][1] for key in PAST_EN} == PAST_EN
-    assert "종료" in strings["gg.archive.lead"][0] and "ended" in strings["gg.archive.lead"][1]  # ended: no longer open
+    # copy cleanup, owner 2026-11-12: the lead is the window only; the title and the 종료 badge say "ended".
+    assert strings["gg.archive.lead"] == ["최근 30일", "Last 30 days"]
     text = " ".join(value for values in strings.values() for value in values).lower()
     for claim in ("진행됨", "진행된", "완료", "성공", "held", "completed", "successful", "took place", "happened"):
         assert claim not in text, claim
@@ -204,18 +206,20 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     # The third row is the site's own menu world cup (2026-10-13), held on worldcup.html.
     assert "'event.e2.summary': '먹방 월드컵 32강'" in html and 'href="worldcup.html" data-event-page>' in html
     assert all(confirmation in ("announced", "tentative") for *_, confirmation in rows)
-    assert "'event.state.tentative.past': '진행 여부 미확인'" in html
+    assert "'event.state.tentative.past': '미확정'" in html  # copy cleanup, owner 2026-11-12
     assert "'event.state.announced.past'" not in html  # an unrecorded outcome claims nothing, visibly
     assert "'event.state.held.past'" in html  # only an explicit "held" state may say it took place
-    assert "'event.note.announced.past': '결과는 이 페이지에 기록되지 않았어요." in html  # full context behind 자세히
+    # copy cleanup, owner 2026-11-12: the status notes behind 자세히 are gone; the state chip stays.
+    assert "'event.note." not in html and "data-event-note" not in html
     # Each row's link is labelled by the page script from its date band; a past row links to
     # the original post as a record, and each authored instruction block can be marked historical.
     assert html.count("<span data-event-cta>") == n and "event.openPageBtn" not in html
     # An activity held on a page of this site opens it in place; an original post opens a new tab.
     assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == n - on_site
     assert "'event.cta.page'" not in html and "'event.cta.pagePast': 'Open the page'" in html   # no 지금 해보기 button: the start screen is in the card
-    assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
-    assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
+    # copy cleanup, owner 2026-11-12: a past row's link reads the same as a live one's.
+    assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '게시물 보기'" in html
+    assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'View post'" in html
     assert html.count('<details class="event-more">') == n and "event-tab" not in html
     # Every activity, in the Korean markup and in the ko and en tables (data/content/events.json).
     assert html.count('<div class="event-detail-row" data-detail="participation">') == 3 * n

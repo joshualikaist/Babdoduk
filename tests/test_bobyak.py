@@ -207,7 +207,7 @@ def test_roulette_rules(browser):
 
 def test_one_tap_pick_then_consent_for_candidates(browser):
     context, page, errors, _ = open_page(browser)
-    assert "확인된 식당 2곳 · 확인 안 된 후보 1곳 · 2026-11-08 기준" in page.locator("#bobDataNote").inner_text()
+    assert page.locator("#bobDataNote").inner_text() == "식당 2곳 · 후보 1곳"  # copy cleanup, owner 2026-11-12
     page.locator("#bobSpin").click()
     card = page.locator(".bob-card")
     assert card.count() == 1 and card.locator(".bob-badge").inner_text() == "밥도둑 확인"
@@ -219,12 +219,12 @@ def test_one_tap_pick_then_consent_for_candidates(browser):
     assert "1개" in page.locator("#bobFiltersToggle").inner_text()
     page.locator("#bobSpin").click()
     assert page.locator(".bob-consent").count() == 1 and page.locator(".bob-card").count() == 0
-    assert "후보 1곳" in page.locator(".bob-consent").inner_text()
+    assert "확인하지 않은 식당 1곳" in page.locator(".bob-consent").inner_text()  # copy cleanup, owner 2026-11-12
     page.locator('[data-bob="consent"]').click()
     card = page.locator(".bob-card")
     assert card.locator(".bob-card-name").inner_text() == "궁동 떡볶이"
     assert card.locator(".bob-badge").inner_text() == "확인 안 된 후보"
-    assert "확인 안 된 후보 중에서 뽑았어요" in card.inner_text()
+    assert "확인 안 된 식당이에요" in card.inner_text()  # copy cleanup, owner 2026-11-12
     assert "확인 안 됨" in card.inner_text()                                   # menu, price, hours are not invented
     assert page.locator(".bob-consent-on").count() == 1
     page.locator('[data-bob="consent-off"]').click()
@@ -259,7 +259,7 @@ def test_card_shows_only_confirmed_facts_with_their_source(browser):
     context.close()
     context, page, errors2, _ = open_page(browser, "?p=p-0004")
     assert page.locator(".bob-badge").first.inner_text() == "정보 확인 필요"
-    assert "폐업했거나" in page.locator(".bob-card").inner_text()
+    assert "정보가 바뀌었을 수 있어요" in page.locator(".bob-card").inner_text()  # copy cleanup, owner 2026-11-12
     context.close()
     context, page, errors3, _ = open_page(browser, "?p=p-9999")
     assert "이 식당을 찾지 못했어요" in page.locator("#bobResult").inner_text()
@@ -271,7 +271,7 @@ def test_empty_data_and_failed_load_are_told_apart(browser):
     empty = dict(FEED, places=[], updatedAt=None)
     context, page, errors, _ = open_page(browser, feed=empty)
     assert "아직 올라온 식당이 없어요" in page.locator("#bobResult").inner_text()
-    assert page.locator("#bobDataNote").inner_text() == "확인된 식당 0곳 · 확인 안 된 후보 0곳"
+    assert page.locator("#bobDataNote").inner_text() == "식당 0곳 · 후보 0곳"  # copy cleanup, owner 2026-11-12
     page.locator("#bobSpin").click()
     assert "아직 올라온 식당이 없어요" in page.locator("#bobResult").inner_text()
     context.close()
@@ -290,7 +290,7 @@ def test_food_list_saves_moves_removes_and_feeds_the_roulette(browser):
     page.locator("#bobFiltersToggle").click()
     page.locator('[data-bob="saved-only"]').click()
     page.locator("#bobSpin").click()
-    assert "먹킷리스트에서 뽑을 수 있는 식당이 없어요" in page.locator("#bobResult").inner_text()
+    assert "먹킷리스트에 담은 식당이 없어요" in page.locator("#bobResult").inner_text()  # copy cleanup, owner 2026-11-12
     page.goto(f"https://{HOST}/bobyak.html?p=p-0002", wait_until="networkidle")
     page.locator('[data-bob="list-set"][data-status="want"]').click()
     data = stored(page)
