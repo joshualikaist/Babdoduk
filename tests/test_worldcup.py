@@ -432,7 +432,9 @@ def test_the_event_page_loads_the_world_cup_only_for_its_running_card():
     assert '.event-item:not([data-band="past"]) [data-wc-embed]' in html
     # No pool inlined: the page stays light (the slim pool alone is ~47 KB; 42 KB leaves room for the
     # shared footer, which grew by the privacy link on 2026-11-10).
-    assert len(html.encode("utf-8")) < 42_000
+    # 52 KB since 2026-11-12: the authored event cards grow the page (the 꽁밥 인증샷 card took it past 42 KB);
+    # an inlined pool would still add ~47 KB and fail this.
+    assert len(html.encode("utf-8")) < 52_000
     # The slim data: names, categories and the photo path; no photo credits, no 1.3 MB catalog.
     data = (ROOT / "js/worldcup-entry-data.js").read_text(encoding="utf-8")
     slim = json.loads(re.search(r"window.BABDODUK_WORLDCUP = (\{.*\});", data).group(1))

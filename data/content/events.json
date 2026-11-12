@@ -91,6 +91,34 @@
       },
       "entry": "worldcup",
       "previewFrom": "2026-10-13"
+    },
+    {
+      "start": "2026-11-09",
+      "end": "2026-11-25",
+      "confirmation": "announced",
+      "link": "https://www.instagram.com/p/DfgbqrvGDW3/",
+      "title": {
+        "ko": "꽁밥 인증샷 이벤트",
+        "en": "Free-food photo event"
+      },
+      "details": {
+        "summary": {
+          "ko": "KAIST에서 받은 꽁밥 인증샷으로 스타벅스 아메리카노를 받아 가세요.",
+          "en": "Share a photo of free food you got at KAIST and win a Starbucks Americano."
+        },
+        "duration": {
+          "ko": "2026년 11월 9일(월) ~ 2026년 11월 25일(수) · 당첨자 발표 11월 27일(금)",
+          "en": "Monday, November 9 through Wednesday, November 25, 2026. Winners announced Friday, November 27."
+        },
+        "prizes": {
+          "ko": "스타벅스 아메리카노 Tall을 추첨으로 <strong>5명</strong>에게 드려요.",
+          "en": "A Starbucks Americano (Tall) for <strong>5 winners</strong>, drawn at random."
+        },
+        "participation": {
+          "ko": "꽁밥 인증샷을 인스타그램 스토리에 올리고 <strong>@babdodukms</strong>를 태그해 주세요.",
+          "en": "Post your free-food photo to your Instagram story and tag <strong>@babdodukms</strong>."
+        }
+      }
     }
   ]
 }
