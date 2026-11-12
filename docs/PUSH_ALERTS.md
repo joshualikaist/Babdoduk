@@ -21,6 +21,8 @@ Replacing the key pair silently stops every phone that already turned alerts on,
   Web push works only in that home-screen app (iOS 16.4 and later); in a Safari tab the saved list says so.
   The first star in the home-screen app asks **별 누른 꽁밥, 30분 전에 알려 드릴까요?**; yes shows the
   phone's own permission question.
+- **Home page:** a star on the home calendar does the same (the question in the home-screen app, then
+  the list kept current).
 - **Android and computers:** the switch **별 누른 꽁밥 30분 전 알림** in 저장한 꽁밥 (`ggongbab.html`).
 - **Signed in:** the card **30분 전 알림** on 마이 밥도둑 (`my.html`) turns it on or off for this device.
 
@@ -41,8 +43,9 @@ be sent (device hashes only) and sends nothing. The log is `journalctl --user -u
 
 ## Limits
 
-- Stars made on the home page calendar (`index.html`) reach the alert list the next time the visitor opens
-  오늘의 꽁밥 or 마이 밥도둑: the home page does not load the database address (`tests/test_product_ui.py`).
+- The home page calendar (`index.html`) asks and updates the alert list too (owner 2026-11-12, "첫 화면에서도
+  바로 들어가게"); it loads the public config for this module only. It keeps the browser's guest list, so for
+  someone signed in it leaves the alert list to 오늘의 꽁밥 and 마이 밥도둑, which hold the account's list.
 - For someone signed in, each device keeps the list it last sent; a star made on another device counts
   once this device opens 오늘의 꽁밥 or 마이 밥도둑.
 - The alert depends on the ops computer being on and online.
