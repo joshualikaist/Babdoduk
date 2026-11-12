@@ -131,11 +131,8 @@
   function outHtml() {
     var inTalk = L && L.inTalkApp && L.inTalkApp(navigator.userAgent);
     var html = '<section class="my-card" aria-labelledby="myOutTitle">';
-    html += '<h2 class="my-h2" id="myOutTitle">' + esc(t('my.out.title', '로그인하면 이렇게 돼요')) + '</h2>';
-    html += '<ul class="my-benefits">' +
-      '<li>' + esc(t('my.out.b1', '저장한 꽁밥과 먹킷리스트를 휴대폰과 컴퓨터에서 함께 봐요')) + '</li>' +
-      '<li>' + esc(t('my.out.b2', '이 브라우저에 저장한 것은 로그인할 때 계정에 합쳐져요')) + '</li>' +
-      '<li>' + esc(t('my.out.b3', '프로필과 메모는 나만 봐요')) + '</li></ul>';
+    // Only the buttons (owner 2026-11-12: "필요없는 글 다 삭제해줘").
+    html += '<h2 class="my-h2" id="myOutTitle">' + esc(t('my.out.title', '로그인')) + '</h2>';
     if (state.loginError) html += '<p class="my-alert" role="alert">' + esc(t('my.out.failed', '로그인하지 못했어요. 다시 시도해 주세요.')) + '</p>';
     html += '<div class="my-login">';
     html += '<button type="button" class="my-login-btn is-kakao" data-my-login="kakao">' + KAKAO_MARK + '<span>' + esc(t('my.out.kakao', '카카오로 계속하기')) + '</span></button>';
@@ -146,8 +143,7 @@
       html += '<button type="button" class="my-login-btn is-google" data-my-login="google">' + GOOGLE_MARK + '<span>' + esc(t('my.out.google', 'Google로 계속하기')) + '</span></button>';
     }
     html += '</div>';
-    html += '<p class="my-fine">' + esc(t('my.out.fine', 'KAIST 인증은 필요 없어요. 로그인했다고 모든 꽁밥에 참여할 수 있는 건 아니에요: 참여 조건은 행사마다 달라요.')) + '</p>';
-    html += guestNoteHtml();
+    if (guestCount()) html += guestNoteHtml();
     return html + '</section>';
   }
   function mergeHtml() {

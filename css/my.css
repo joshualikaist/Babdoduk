@@ -120,15 +120,6 @@
   font-weight: 700;
 }
 
-.my-benefits {
-  margin: 0;
-  padding-left: 1.2em;
-  display: grid;
-  gap: 6px;
-  font-size: 15px;
-  line-height: 1.55;
-  word-break: keep-all;
-}
 
 .my-login { display: grid; gap: 14px; margin-top: var(--space-4); }
 
