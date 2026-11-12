@@ -1,10 +1,42 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-12T13:17:02+09:00",
+  "generatedAt": "2026-11-12T15:58:27+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 31,
+  "count": 32,
   "events": [
+    {
+      "id": "bb00bae1-7076-4ccd-b53c-32e9bf4c4f47",
+      "title": "2026 노벨상 수상 업적 해설 강연",
+      "summary": "2026년 노벨 생리의학상·물리학상·화학상 수상자들의 주요 연구 업적을 소개하는 해설 강연입니다. 강연은 한국어로 진행되며 Zoom을 통해 영어 동시통역이 제공됩니다.",
+      "startAt": "2026-11-12T11:50:00+09:00",
+      "endAt": "2026-11-12T12:50:00+09:00",
+      "dateText": "Thursday, November 12, 2026",
+      "timeText": "11:50-12:50",
+      "location": {
+        "name": "창의학습관 1층 터만홀",
+        "building": "E11",
+        "room": "1F Turman Hall"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "쉑쉑버거와 음료",
+        "source": "text"
+      },
+      "organizer": "자연과학대학 교학팀",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "모든 관심 있는 사람",
+        "basis": "stated"
+      }
+    },
     {
       "id": "3052200c-49e1-4dff-909d-b48cda51624d",
       "title": "2026 기술경영학부 학과설명회",
