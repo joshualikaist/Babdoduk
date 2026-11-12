@@ -45,8 +45,8 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     assert '"mexican": "멕시칸"' in (tmp_path / "js/eat-slot.js").read_text(encoding="utf-8")
     capsys.readouterr()
     page = tmp_path / "event.html"
-    drifted = page.read_text(encoding="utf-8").replace('href="mukbang.html" class="footer-apple-a"',
-                                                        'href="choose.html" class="footer-apple-a"')
+    drifted = page.read_text(encoding="utf-8").replace('href="event.html" class="footer-apple-a"',
+                                                        'href="history.html" class="footer-apple-a"')
     assert drifted != page.read_text(encoding="utf-8")
     page.write_text(drifted, encoding="utf-8")
     assert chrome.main(["--check"]) == 1
@@ -61,7 +61,11 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
         footer = html[html.index('<footer class="site-footer"'):html.index("</footer>")]
         # 오늘 뭐 먹지 is a direct destination and the magazine sits in the More menu (owner 2026-11-04);
         # no Food Log in the chrome.
-        assert 'href="choose.html"' in nav and 'href="mukbang.html"' in nav and 'href="mukbang.html"' in footer, page
+        assert 'href="choose.html"' in nav and 'href="mukbang.html"' in nav, page
+        # The footer's site links are the top menu's three direct ones, in its order (owner 2026-11-12:
+        # "3개만 넣어달라는거야").
+        direct = re.findall(r'class="site-nav-direct[^"]*" href="([^"]+)"', nav)
+        assert re.findall(r'<a href="([^"]+)" class="footer-apple-a" data-i18n="nav', footer) == direct, page
         assert nav.index('href="choose.html"') < nav.index('id="navMorePanel"') < nav.index('href="mukbang.html"'), page
         for gone in ("mukbang.html#what", 'href="food.html"'):
             assert gone not in nav and gone not in footer, (page, gone)
