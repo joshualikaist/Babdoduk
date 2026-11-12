@@ -3373,78 +3373,169 @@ def chrome_visual(page, update=False, approval=None):
     return count
 
 
-def run_checks(screenshots=False):
-    report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
-    with sync_playwright() as pw:
-        browser = launch(pw)
-        context = new_context(browser)
-        api_attempts = []
-        context.on("request", lambda req: api_attempts.append(req.url)
+class _Run:
+    """One browser's share of the checks: its pages record every live request a page attempts."""
+
+    def __init__(self, browser):
+        self.browser, self.api_attempts = browser, []
+
+    def watch(self, context):
+        context.on("request", lambda req: self.api_attempts.append(req.url)
                    if req.resource_type in ("fetch", "xhr", "eventsource")
                    and urlparse(req.url).hostname not in SERVED_HOSTS else None)
-        page = context.new_page()
+        return context
+
+    def page(self, clock=None):
+        page = self.watch(new_context(self.browser)).new_page()
         # WebSockets bypass routing and emit no request event; record every attempt.
-        page.on("websocket", lambda ws: api_attempts.append(ws.url))
-        for size in SIZES:
-            for name in report["pages"]:
-                result = inspect_page(page, name, size, ROOT / ".local/site-ui-shots" if screenshots else None)
-                report["results"][f"{name}:{size[0]}x{size[1]}"] = result
-                report["checks"] += result["checks"]
-        report["checks"] += magazine_tools(page)
-        report["checks"] += pick_tools(browser)
-        report["checks"] += magazine_sparse(page)
-        report["checks"] += magazine_edition_time(page)
-        report["checks"] += release_contracts(page)
-        # The home page's checks own a page whose clock is fixed (home_page), so the world cup promo's
-        # state and the calendar do not depend on today.
-        home = home_page(browser, api_attempts)
-        report["checks"] += home_summary(home)
-        report["checks"] += home_hero(home)
-        report["checks"] += home_first_screen(home)
-        home.context.close()
-        report["checks"] += event_bands(page)
-        # The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a context whose page
-        # clock is fixed (inside the window unless a check sets another), so nothing depends on today.
-        cup_context = new_context(browser)
-        cup_context.on("request", lambda req: api_attempts.append(req.url)
-                       if req.resource_type in ("fetch", "xhr", "eventsource")
-                       and urlparse(req.url).hostname not in SERVED_HOSTS else None)
-        cup_page = cup_context.new_page()
-        cup_page.on("websocket", lambda ws: api_attempts.append(ws.url))
-        cup_page.clock.set_fixed_time(WC_RUNNING)
-        report["checks"] += event_entry(cup_page)
-        report["checks"] += worldcup_play(cup_page)
-        report["checks"] += worldcup_categories(cup_page)
-        report["checks"] += worldcup_splash(cup_page)
-        report["checks"] += worldcup_gacha(cup_page)
-        report["checks"] += worldcup_sound(cup_page)
-        report["checks"] += worldcup_share(cup_page)
-        report["checks"] += worldcup_kakao(cup_page)
-        report["checks"] += worldcup_gate(cup_page)
-        report["checks"] += worldcup_boundaries(cup_page)
-        report["checks"] += home_wc_promo(cup_page)
-        cup_context.close()
-        report["checks"] += tip_board(browser)
-        report["checks"] += history_archive(page)
-        report["checks"] += food_provenance(page)
-        report["checks"] += structure_and_failures(page)
-        report["checks"] += site_guardian(page)
-        # High contrast must defer to the system; custom colors/widths must not
-        # leak from either the standards or WebKit rule sets.
-        page.emulate_media(forced_colors="active")
-        check = page.evaluate(MEASURE)
-        assert check["scrollbarColor"] == "auto"
-        assert check["width"] == "auto"
-        report["checks"] += 2
-        assert not api_attempts, ("static pages attempted a live API request", api_attempts[:5])
+        page.on("websocket", lambda ws: self.api_attempts.append(ws.url))
+        if clock:
+            page.clock.set_fixed_time(clock)
+        return page
+
+
+def _matrix(size):
+    def run(r, report, screenshots):
+        page = r.page()
+        for name in report["pages"]:
+            result = inspect_page(page, name, size, ROOT / ".local/site-ui-shots" if screenshots else None)
+            report["results"][f"{name}:{size[0]}x{size[1]}"] = result
+            report["checks"] += result["checks"]
+    return run
+
+
+def _features(r, report, screenshots):
+    page = r.page()
+    report["checks"] += magazine_tools(page)
+    report["checks"] += pick_tools(r.browser)
+    report["checks"] += magazine_sparse(page)
+    report["checks"] += magazine_edition_time(page)
+    report["checks"] += release_contracts(page)
+    # The home page's checks own a page whose clock is fixed (home_page), so the world cup promo's
+    # state and the calendar do not depend on today.
+    home = home_page(r.browser, r.api_attempts)
+    report["checks"] += home_summary(home)
+    report["checks"] += home_hero(home)
+    report["checks"] += home_first_screen(home)
+    home.context.close()
+    report["checks"] += event_bands(page)
+    report["checks"] += tip_board(r.browser)
+    report["checks"] += history_archive(page)
+    report["checks"] += food_provenance(page)
+
+
+def _structure(r, report, screenshots):
+    page = r.page()
+    report["checks"] += structure_and_failures(page)
+    report["checks"] += site_guardian(page)
+    # High contrast must defer to the system; custom colors/widths must not
+    # leak from either the standards or WebKit rule sets.
+    page.emulate_media(forced_colors="active")
+    check = page.evaluate(MEASURE)
+    assert check["scrollbarColor"] == "auto"
+    assert check["width"] == "auto"
+    report["checks"] += 2
+
+
+# The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a page whose clock is fixed
+# (inside the window unless a check sets another), so nothing depends on today. Two pages, each in order.
+def _worldcup_play(r, report, screenshots):
+    cup = r.page(WC_RUNNING)
+    for check in (event_entry, worldcup_play, worldcup_categories, worldcup_splash, worldcup_gacha, worldcup_sound):
+        report["checks"] += check(cup)
+
+
+def _worldcup_rest(r, report, screenshots):
+    cup = r.page(WC_RUNNING)
+    for check in (worldcup_share, worldcup_kakao, worldcup_gate, worldcup_boundaries, home_wc_promo):
+        report["checks"] += check(cup)
+
+
+def _visual(r, report, screenshots):
+    # It fixes the page clock and data for deterministic screenshots. Its baselines exist per OS and
+    # browser build (baseline_platform); the tests workflow, which has none, skips it explicitly, and
+    # ui-guardian compares them in the container they were rendered in.
+    report["checks"] += chrome_visual(r.page())
+
+
+# Independent groups: each runs in its own browser, so --jobs N runs them side by side (owner 2026-11-12:
+# the checks took too long one after another). Within a group the order is the old sequential order.
+GROUPS = {f"matrix-{w}": _matrix((w, h)) for w, h in SIZES}
+GROUPS.update({"features": _features, "structure": _structure,
+               "worldcup-play": _worldcup_play, "worldcup-rest": _worldcup_rest})
+
+
+def group_names():
+    names = list(GROUPS)
+    if os.environ.get("BABDODUK_CHROME_VISUAL") != "skip":
+        names.append("visual")
+    return names
+
+
+def run_group(name, screenshots=False, browser=None):
+    report = {"pages": public_pages(), "results": {}, "checks": 0}
+    run = _visual if name == "visual" else GROUPS[name]
+    with (sync_playwright() if browser is None else _nullcontext()) as pw:
+        own = browser is None
+        r = _Run(launch(pw) if own else browser)
+        run(r, report, screenshots)
+        assert not r.api_attempts, ("static pages attempted a live API request", name, r.api_attempts[:5])
         report["checks"] += 1
-        # Last: it fixes the page clock and data for deterministic screenshots. Its baselines exist
-        # per OS and browser build (baseline_platform); the tests workflow, which has none, skips
-        # it explicitly, and ui-guardian compares them in the container they were rendered in.
-        page.emulate_media(forced_colors="none")
-        if os.environ.get("BABDODUK_CHROME_VISUAL") != "skip":
-            report["checks"] += chrome_visual(page)
-        browser.close()
+        if own:
+            r.browser.close()
+    return report
+
+
+class _nullcontext:
+    def __enter__(self):
+        return None
+
+    def __exit__(self, *exc):
+        return False
+
+
+def default_jobs():
+    try:
+        return max(1, int(os.environ.get("BABDODUK_SITE_UI_JOBS", "") or min(6, max(1, (os.cpu_count() or 2) // 2))))
+    except ValueError:
+        return 1
+
+
+def run_checks(screenshots=False, jobs=None):
+    """Every group; with jobs > 1, each group in its own process, then one merged report."""
+    jobs = default_jobs() if jobs is None else jobs
+    report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0, "groups": {}}
+    names = group_names()
+
+    def merge(name, part):
+        report["results"].update(part["results"])
+        report["checks"] += part["checks"]
+        report["groups"][name] = part["checks"]
+
+    if jobs <= 1:
+        with sync_playwright() as pw:
+            browser = launch(pw)
+            for name in names:
+                merge(name, run_group(name, screenshots, browser))
+            browser.close()
+        return report
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(name):
+        cmd = [sys.executable, str(Path(__file__).resolve()), "--group", name] + (["--screenshots"] if screenshots else [])
+        out = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+        return name, out
+
+    failed = []
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        for name, out in pool.map(one, names):
+            if out.returncode:
+                failed.append((name, out.stderr.strip().splitlines()[-12:]))
+            else:
+                merge(name, json.loads(out.stdout))
+    if failed:
+        raise AssertionError("site UI groups failed: " + "; ".join(n for n, _ in failed),
+                             "\n".join(f"--- {n}\n" + "\n".join(lines) for n, lines in failed))
     return report
 
 
@@ -3537,6 +3628,8 @@ if __name__ == "__main__":
     parser.add_argument("--chrome-only", action="store_true", help="run only the site guardian and the visual check (CI)")
     parser.add_argument("--adopt-chrome-baselines", metavar="DIR", help="install renders from DIR as approved baselines")
     parser.add_argument("--platform", help="baseline set for --adopt-chrome-baselines, e.g. linux-chromium")
+    parser.add_argument("--group", help="run one group of checks (see GROUPS) and print its report")
+    parser.add_argument("--jobs", type=int, help="groups run side by side (default: half the CPUs, at most 6; 1 = one after another)")
     args = parser.parse_args()
     if args.update_chrome_baselines:
         print(f"wrote {update_chrome_baselines(args.approval)} baseline images for {baseline_platform()}")
@@ -3546,5 +3639,7 @@ if __name__ == "__main__":
         print(f"adopted {adopt_chrome_baselines(args.adopt_chrome_baselines, args.platform, args.approval)} images as {args.platform}")
     elif args.chrome_only:
         print(json.dumps(run_chrome_checks(), ensure_ascii=False, indent=2))
+    elif args.group:
+        print(json.dumps(run_group(args.group, args.screenshots), ensure_ascii=False))
     else:
-        print(json.dumps(run_checks(args.screenshots), ensure_ascii=False, indent=2))
+        print(json.dumps(run_checks(args.screenshots, args.jobs), ensure_ascii=False, indent=2))
