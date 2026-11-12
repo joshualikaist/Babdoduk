@@ -49,12 +49,27 @@
   var accountMode = '';
   if (L && window.BabdodukAccount) {
     window.BabdodukAccount.attachSavedStore(function (store, failed) {
-      if (store) { savedStore = store; accountMode = 'account'; } else if (failed) accountMode = 'failed';
+      if (store) { savedStore = store; accountMode = 'account'; pushChanged(); } else if (failed) accountMode = 'failed';
       render();
     }, function (kind) {
       if (kind === 'failed') { announce(t('gg.live.syncFail', '저장하지 못했어요. 다시 시도해 주세요.')); render(); }
     });
   }
+  // 별 누른 꽁밥 30분 전 알림 (docs/PUSH_ALERTS.md): 'hidden' until the browser says otherwise.
+  var P = L ? window.BabdodukPush || null : null;
+  var pushState = 'hidden';
+  function langCode() { return window.babdodukGetLang && window.babdodukGetLang() === 'en' ? 'en' : 'ko'; }
+  function savedIds() { return savedStore ? savedStore.list().map(function (item) { return item.id; }) : []; }
+  function pushRefresh() {
+    if (!P) return;
+    P.status().then(function (s) {
+      var was = pushState;
+      pushState = s;
+      if (s === 'on') P.sync(savedIds(), langCode());
+      if (was !== s) render();
+    });
+  }
+  function pushChanged() { if (P && pushState === 'on') P.changed(savedIds(), langCode()); }
   var NOTICE_KEY = 'babdoduk-notice-ggongbab-live';
   var DAY_FILTERS = ['all', 'today', 'week', 'next'];
   var WHO_FILTERS = ['all', 'fresh', 'undergrad', 'grad', 'open', 'check'];
@@ -628,7 +643,7 @@
       html += '<p class="gg-saved-note">' + esc(t('gg.live.pastNote', '끝난 일정이에요. 저장했다고 참석한 것으로 기록하지 않아요.')) + '</p>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
-    html += starCalendarToggleHtml();
+    html += pushToggleHtml() + starCalendarToggleHtml();
     if (accountMode === 'account') {
       html += '<p class="gg-saved-foot">' + esc(t('gg.live.accountFoot', '계정에 저장돼요 · 다른 기기에서도 보여요')) +
         ' · <a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
@@ -1065,11 +1080,42 @@
     var star = root.querySelector('.gg-save[data-gg-save="' + esc2 + '"]') || root.querySelector('[data-gg-save="' + esc2 + '"]');
     if (star) star.focus({ preventScroll: true });
   }
+  function pushAskText() {
+    return {
+      title: t('push.ask.title', '별 누른 꽁밥, 30분 전에 알려 드릴까요?'),
+      body: t('push.ask.body', '시작 30분 전에 휴대폰 알림이 와요. 다음 창에서 허용을 눌러 주세요.'),
+      yes: t('push.ask.yes', '알림 받을게요'),
+      no: t('push.ask.no', '괜찮아요'),
+      later: t('push.ask.later', '저장한 꽁밥에서 언제든 끄고 켤 수 있어요')
+    };
+  }
+  function pushDone(result) {
+    if (result === 'on') { pushState = 'on'; announce(t('push.nowOn', '이제 별 누른 꽁밥 30분 전에 알림이 와요')); }
+    else if (result === 'denied') { pushState = 'denied'; announce(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')); }
+    else announce(t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+    render();
+  }
   function afterStar(ev, savedMessage) {
+    pushChanged();
     if (!L.canCalendar(ev, nowKst())) return announce(savedMessage);
+    // In the site opened from the home screen, the first star offers the phone's own alert instead.
+    if (P && P.standalone() && P.shouldAsk()) {
+      announce(savedMessage);
+      P.ask(pushAskText(), function (yes) {
+        if (yes) {
+          P.enable(savedIds(), langCode()).then(function (result) { pushDone(result); refocusStar(ev.id); });
+          return;
+        }
+        if (yes === false) announce(t('push.no', '알림은 켜지 않을게요 · 저장한 꽁밥에서 켤 수 있어요'));
+        render();
+        refocusStar(ev.id);
+      });
+      return;
+    }
     var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
     var pref = L.starCalendar();
     if (pref === 'on') return announce(savedMessage + ' · ' + starCalendarMessage(L.addToCalendar(ev, details)));
+    if (pushState === 'on') return announce(savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요'));
     if (pref === 'off') return announce(savedMessage);
     announce(savedMessage);
     L.askStarCalendar(starCalendarText(), function (yes) {
@@ -1078,6 +1124,17 @@
       render();
       refocusStar(ev.id);
     });
+  }
+  function pushToggleHtml() {
+    if (!P) return '';
+    if (pushState === 'on' || pushState === 'off') {
+      var on = pushState === 'on';
+      return '<p class="gg-starcal-line"><button type="button" class="gg-btn gg-starcal" data-gg-push aria-pressed="' + on + '">' +
+        esc(t('push.toggle', '별 누른 꽁밥 30분 전 알림')) + ' <strong>' + esc(on ? t('push.on', '켜짐') : t('push.off', '꺼짐')) + '</strong></button></p>';
+    }
+    if (pushState === 'home') return '<p class="gg-saved-note">' + esc(t('push.home', '홈 화면에 추가한 밥도둑으로 열면, 별 누른 꽁밥 30분 전에 알림을 받을 수 있어요.')) + '</p>';
+    if (pushState === 'denied') return '<p class="gg-saved-note">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')) + '</p>';
+    return '';
   }
   function starCalendarToggleHtml() {
     if (!L) return '';
@@ -1091,7 +1148,7 @@
     if ((el = e.target.closest('[data-gg-save]'))) {
       var id = el.getAttribute('data-gg-save'), ev = rowById(id);
       if (savedStore.has(id)) {
-        if (savedStore.remove(id)) announce(t('gg.live.unsavedMsg', '저장을 지웠어요'));
+        if (savedStore.remove(id)) { announce(t('gg.live.unsavedMsg', '저장을 지웠어요')); pushChanged(); }
       } else if (ev && savedStore.add(ev)) {
         render();
         afterStar(ev, savedStore.remote ? t('gg.live.savedAccountMsg', '저장했어요 · 계정에 저장돼요') : t('gg.live.savedMsg', '저장했어요 · 이 브라우저에만 저장돼요'));
@@ -1100,6 +1157,21 @@
         announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
       }
       render();
+      return true;
+    }
+    if (P && e.target.closest('[data-gg-push]')) {
+      // Inside the click: turning on asks the phone's permission question right here.
+      var turningOn = pushState !== 'on';
+      (turningOn ? P.enable(savedIds(), langCode()) : P.disable()).then(function (result) {
+        if (turningOn) pushDone(result);
+        else {
+          if (result === 'off') { pushState = 'off'; announce(t('push.nowOff', '30분 전 알림을 껐어요')); }
+          else announce(t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+          render();
+        }
+        var toggle = root.querySelector('[data-gg-push]');
+        if (toggle) toggle.focus({ preventScroll: true });
+      });
       return true;
     }
     if (e.target.closest('[data-gg-starcal]')) {
@@ -1112,7 +1184,7 @@
       return true;
     }
     if ((el = e.target.closest('[data-gg-unsave]'))) {
-      if (savedStore.remove(el.getAttribute('data-gg-unsave'))) announce(t('gg.live.unsavedMsg', '저장을 지웠어요'));
+      if (savedStore.remove(el.getAttribute('data-gg-unsave'))) { announce(t('gg.live.unsavedMsg', '저장을 지웠어요')); pushChanged(); }
       render();
       var head = root.querySelector('[data-gg-saved]');
       if (head) head.focus({ preventScroll: true });
@@ -1231,6 +1303,7 @@
     tabs[next].focus();
   });
   document.addEventListener('babdoduk-lang', render);
+  document.addEventListener('babdoduk-lang', pushChanged);
 
   try {
     var saved = JSON.parse(localStorage.getItem('babdoduk-ggongbab-filter') || 'null');
@@ -1255,6 +1328,7 @@
     if (location.hash === '#menu' || location.hash === '#free') setTab(location.hash.slice(1));
   });
   function start() {
+    pushRefresh();
     loadFree();
     loadArchive();
     loadNews();

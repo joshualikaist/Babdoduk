@@ -1,0 +1,9 @@
+[Unit]
+Description=Every 2 minutes: send the 30-minute alerts for starred free-food events
+
+[Timer]
+OnCalendar=*:0/2
+AccuracySec=10s
+
+[Install]
+WantedBy=timers.target

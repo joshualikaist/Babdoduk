@@ -72,6 +72,8 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
         assert not script.startswith(("http:", "https:", "//"))
         if hub and script in ACCOUNT_SCRIPTS:
             continue  # the account store: tests/test_my_babdoduk.py
+        if live and script in PUSH_SCRIPTS:
+            continue  # the 30-minute alert: tests/test_push_alerts.py
         source = (ROOT / script.split("?")[0]).read_text(encoding="utf-8")
         for forbidden in ("BabdodukPublicFeed", "BABDODUK_PUBLIC_FEED_CONFIG", "supabase",
                           "createClient(", "WebSocket(", "EventSource("):

@@ -17,6 +17,13 @@
       "continue": true
     },
     {
+      "src": "/sw\\.js",
+      "headers": {
+        "Cache-Control": "no-cache"
+      },
+      "continue": true
+    },
+    {
       "src": "/cal/([A-Za-z0-9_-]{43})\\.ics",
       "dest": "/api/cal?t=$1"
     },

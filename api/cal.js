@@ -112,3 +112,5 @@ module.exports = handler;
 module.exports.entries = entries;
 module.exports.calendar = calendar;
 module.exports.eventBlock = eventBlock;
+// The site's own free-food code in Node, also used by the push alert sender (scripts/push/send.js).
+module.exports.siteCode = siteCode;

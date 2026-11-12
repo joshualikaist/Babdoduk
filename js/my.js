@@ -6,6 +6,7 @@
   'use strict';
 
   var A = window.BabdodukAccount;
+  var P = window.BabdodukPush || null;   // 30분 전 알림 (docs/PUSH_ALERTS.md)
   var L = window.BabdodukLive;
   var F = window.BabdodukFreeFood;
   var app = document.getElementById('myApp');
@@ -22,6 +23,7 @@
     events: [],               // account rows: {id, savedAt, seen}
     places: null,             // {want, been, again} or null when unavailable
     calToken: '',             // the calendar subscription token, '' while unknown or unavailable
+    push: 'hidden',           // this browser's 30-minute alert: hidden | home | unsupported | denied | off | on
     profile: null,
     merge: null,              // the last merge result, for its notice and 되돌리기
     feed: null,               // public events (occurrences) once loaded
@@ -212,6 +214,25 @@
       ' <button type="button" class="my-link-btn" data-my-cal-renew>' + esc(t('my.cal.renew', '새 주소 만들기')) + '</button></p>';
     return html + '</section>';
   }
+  function pushIds() { return (state.store ? state.store.list() : state.events).map(function (item) { return item.id; }); }
+  function pushHtml() {
+    var s = state.push;
+    if (s !== 'on' && s !== 'off' && s !== 'home' && s !== 'denied') return '';
+    var html = '<section class="my-card" aria-labelledby="myPushTitle">';
+    html += '<h2 class="my-h2" id="myPushTitle"><span aria-hidden="true">🔔</span> ' + esc(t('push.title', '30분 전 알림')) + '</h2>';
+    html += '<p class="my-text">' + esc(t('push.body', '별 누른 꽁밥이 시작하기 30분 전에 이 휴대폰으로 알려 드려요.')) + '</p>';
+    if (s === 'on' || s === 'off') {
+      var on = s === 'on';
+      html += '<button type="button" class="btn ' + (on ? 'btn-secondary' : 'btn-primary') + ' my-cal-btn" data-my-push aria-pressed="' + on + '">' +
+        esc(on ? t('push.turnOff', '알림 끄기') : t('push.turnOn', '알림 켜기')) + '</button>';
+      html += '<p class="my-fine">' + esc(on ? t('push.isOn', '켜져 있어요 · 이 기기에만 적용돼요') : t('push.device', '이 기기에만 적용돼요')) + '</p>';
+    } else if (s === 'home') {
+      html += '<p class="my-fine">' + esc(t('push.home', '홈 화면에 추가한 밥도둑으로 열면, 별 누른 꽁밥 30분 전에 알림을 받을 수 있어요.')) + '</p>';
+    } else {
+      html += '<p class="my-fine">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')) + '</p>';
+    }
+    return html + '</section>';
+  }
   function placesHtml() {
     if (!SHOW_PLACES) return '';
     var p = state.places;
@@ -323,7 +344,7 @@
     else {
       var name = (state.profile && state.profile.display_name) || '';
       html = '<p class="my-hello">' + esc(name ? t('my.hello', '{name}님, 반가워요', { name: name }) : t('my.helloNoName', '로그인했어요')) + '</p>' +
-        mergeHtml() + savedHtml(now) + calendarHtml() + placesHtml() + accountHtml() + dangerHtml(now);
+        mergeHtml() + savedHtml(now) + pushHtml() + calendarHtml() + placesHtml() + accountHtml() + dangerHtml(now);
     }
     app.setAttribute('aria-busy', state.busy ? 'true' : 'false');
     app.innerHTML = html;
@@ -364,8 +385,10 @@
     }).then(function (user) {
       state.user = user;
       if (!user) { state.view = 'out'; render(); return; }
-      return Promise.all([loadAccount(), loadFeed()]).then(function () {
+      var pushKnown = P ? P.status().then(function (s) { state.push = s; }, function () { state.push = 'hidden'; }) : null;
+      return Promise.all([loadAccount(), loadFeed(), pushKnown]).then(function () {
         state.view = 'in';
+        if (P && state.push === 'on') P.sync(pushIds(), lang());
         if (state.next === 'leave') state.panel = 'leave';
         if (state.next === 'linked') announce(state.loginError ? t('my.account.linkFail', '지금은 로그인 방법을 연결할 수 없어요') : t('my.account.linked', '로그인 방법을 연결했어요'));
         if (state.next) history.replaceState(null, '', location.pathname);
@@ -413,6 +436,7 @@
       var at = shown.indexOf(id);
       if (!state.store || !state.store.remove(id)) { announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); return; }
       state.events = state.store.list();
+      if (P && state.push === 'on') P.changed(pushIds(), lang());
       render();
       announce(t('my.saved.removed', '저장을 취소했어요'));
       // Focus stays in the list: the star now in the removed row's place, the last one, or the heading.
@@ -420,6 +444,22 @@
       var heading = document.getElementById('mySavedTitle');
       if (stars.length) stars[Math.min(at, stars.length - 1)].focus();
       else if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+      return;
+    }
+    if (P && e.target.closest('[data-my-push]')) {
+      // Inside the click: turning on asks the phone's permission question right here.
+      var turningOn = state.push !== 'on';
+      busy(true);
+      (turningOn ? P.enable(pushIds(), lang()) : P.disable()).then(function (result) {
+        busy(false);
+        if (result === 'on') { state.push = 'on'; announce(t('push.nowOn', '이제 별 누른 꽁밥 30분 전에 알림이 와요')); }
+        else if (result === 'off') { state.push = 'off'; announce(t('push.nowOff', '30분 전 알림을 껐어요')); }
+        else if (result === 'denied') { state.push = 'denied'; announce(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정의 알림에서 밥도둑을 허용해 주세요.')); }
+        else announce(t('push.fail', '알림을 켜지 못했어요. 잠시 뒤 다시 시도해 주세요.'));
+        render();
+        var btn = app.querySelector('[data-my-push]') || document.getElementById('myPushTitle');
+        if (btn) { if (!btn.matches('button')) btn.setAttribute('tabindex', '-1'); btn.focus(); }
+      });
       return;
     }
     if (e.target.closest('[data-my-cal-renew]')) {
