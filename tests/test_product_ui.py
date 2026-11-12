@@ -1,5 +1,6 @@
 """Production-scoped UI contracts for the static main site; no accounts, network or data writes."""
 from datetime import datetime, timedelta, timezone
+import json
 import re
 
 import pytest
@@ -167,7 +168,10 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     html = (ROOT / "event.html").read_text(encoding="utf-8")
     rows = re.findall(r'data-start="(\d{4}-\d{2}-\d{2})"\s+data-end="(\d{4}-\d{2}-\d{2})"\s+'
                       r'data-confirmation="([^"]+)"', html)
-    assert len(rows) == 3
+    # One row per authored activity (data/content/events.json); the owner adds events over time.
+    activities = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))["activities"]
+    n, on_site = len(activities), sum(1 for a in activities if not a["link"].startswith("http"))
+    assert len(rows) == n >= 4
     assert "STROKE" not in html and "언빌리버블" not in html   # it did not happen
     # The third row is the site's own menu world cup (2026-10-13), held on worldcup.html.
     assert "'event.e2.summary': '먹방 월드컵 32강'" in html and 'href="worldcup.html" data-event-page>' in html
@@ -178,15 +182,15 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert "'event.note.announced.past': '결과는 이 페이지에 기록되지 않았어요." in html  # full context behind 자세히
     # Each row's link is labelled by the page script from its date band; a past row links to
     # the original post as a record, and each authored instruction block can be marked historical.
-    assert html.count("<span data-event-cta>") == 3 and "event.openPageBtn" not in html
+    assert html.count("<span data-event-cta>") == n and "event.openPageBtn" not in html
     # An activity held on a page of this site opens it in place; an original post opens a new tab.
-    assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == 2
+    assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == n - on_site
     assert "'event.cta.page'" not in html and "'event.cta.pagePast': 'Open the page'" in html   # no 지금 해보기 button: the start screen is in the card
     assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
     assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
-    assert html.count('<details class="event-more">') == 3 and "event-tab" not in html
-    # Three activities, each in the Korean markup and in the ko and en tables (data/content/events.json).
-    assert html.count('<div class="event-detail-row" data-detail="participation">') == 9
+    assert html.count('<details class="event-more">') == n and "event-tab" not in html
+    # Every activity, in the Korean markup and in the ko and en tables (data/content/events.json).
+    assert html.count('<div class="event-detail-row" data-detail="participation">') == 3 * n
     assert "event-elsewhere" not in html and "event-num" not in html and 'class="page-num"' not in html
     assert 'class="event-instagram"' in html and "@babdodukms" in html
     assert 'id="eventEmpty"' in html and "event.emptyLink" not in html
