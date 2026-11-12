@@ -566,30 +566,27 @@ IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/60
           "Version/18.0 Mobile/15E148 Safari/604.1")
 
 
-def test_the_calendar_card_subscribes_the_phone_and_can_make_a_new_address(browser):
-    """Owner 2026-11-12: connect once, then every star shows in the phone's calendar (docs/CALENDAR_FEED.md)."""
+def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(browser):
+    """Owner 2026-11-12: connect once, then every star shows in the iPhone calendar (docs/CALENDAR_FEED.md).
+    A laptop needs no calendar link and Android gets the 30-minute alert; no talk about addresses."""
     tables = {"saved_events": [], "saved_places": [], "profiles": []}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=IPHONE)
-    wait_view(page, "내 캘린더에 연결")
+    wait_view(page, "아이폰 캘린더에 넣기")
     link = page.locator("[data-my-cal]")
     assert link.inner_text() == "아이폰 캘린더에 연결"
     assert link.get_attribute("href") == f"webcal://{HOST}/cal/{'T' * 43}.ics"
     assert link.bounding_box()["height"] >= 44
-    page.locator("[data-my-cal-renew]").click()
-    page.wait_for_function("() => document.querySelector('[data-my-cal]').href.includes('NNNN')")
-    assert page.evaluate("document.activeElement.hasAttribute('data-my-cal')")
-    assert ["rpc", "my_calendar_feed", {"p_new": True}] in fakedb(page)["calls"]
+    card = page.locator("section[aria-labelledby='myCalTitle']").inner_text()
+    assert "주소" not in card and "구글" not in card and '"구독"' in card
     assert errors == []
     context.close()
-    # Elsewhere: Google Calendar's add-by-address page, which says it is slower.
-    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables})
-    wait_view(page, "구글 캘린더에 연결")
-    href = page.locator("[data-my-cal]").get_attribute("href")
-    assert href.startswith("https://calendar.google.com/calendar/render?cid=webcal%3A%2F%2F")
-    assert "늦게 보일 수 있어요" in app_text(page)
-    context.close()
+    for ua in (None, "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"):
+        context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=ua)
+        wait_view(page, "저장한 꽁밥")
+        assert page.locator("[data-my-cal]").count() == 0 and "캘린더" not in app_text(page) and errors == []
+        context.close()
     # Before the database has the function (013 not applied), the card stays away.
-    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "fail": {"rpc:my_calendar_feed": True}})
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "fail": {"rpc:my_calendar_feed": True}}, ua=IPHONE)
     wait_view(page, "저장한 꽁밥")
     assert page.locator("[data-my-cal]").count() == 0 and errors == []
     context.close()

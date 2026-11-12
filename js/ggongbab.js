@@ -648,9 +648,10 @@
       html += '<p class="gg-saved-note">' + esc(t('gg.live.pastNote', '끝난 일정이에요. 저장했다고 참석한 것으로 기록하지 않아요.')) + '</p>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
-    html += pushToggleHtml() + (accountMode === 'account' ?
-      '<p class="gg-saved-note">' + esc(t('gg.live.calOnMy', '캘린더는 마이 밥도둑에서 한 번만 연결하면 별이 저절로 들어가요')) + '</p>' :
-      starCalendarToggleHtml());
+    // Signed in, the calendar is the subscription on 마이 밥도둑, offered on iPhone and iPad only.
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+    html += pushToggleHtml() + (accountMode !== 'account' ? starCalendarToggleHtml() : ios ?
+      '<p class="gg-saved-note">' + esc(t('gg.live.calOnMy', '캘린더는 마이 밥도둑에서 한 번만 연결하면 별이 저절로 들어가요')) + '</p>' : '');
     if (accountMode === 'account') {
       html += '<p class="gg-saved-foot">' + esc(t('gg.live.accountFoot', '계정에 저장돼요 · 다른 기기에서도 보여요')) +
         ' · <a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
