@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-12T15:58:27+09:00",
+  "generatedAt": "2026-11-12T17:01:28+09:00",
   "timezone": "Asia/Seoul",
   "count": 36,
   "events": [
@@ -1446,7 +1446,7 @@
         }
       ],
       "audience": {
-        "text": "진로를 고민하고 있는 학생",
+        "text": "기계공학과 재학생",
         "basis": "stated"
       }
     },
