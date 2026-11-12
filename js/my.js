@@ -173,7 +173,11 @@
         var main = row.kind === 'upcoming'
           ? '<a class="my-row-link" href="' + esc(L ? L.eventLink(row.item.id) : 'ggongbab.html') + '">' + body + '</a>'
           : '<p class="my-row-link is-static">' + body + '</p>';
-        return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + '</li>';
+        // Owner 2026-11-12: a saved event can be removed right here, without going to 오늘의 꽁밥.
+        var unstar = '<button type="button" class="my-unstar" data-my-unstar="' + esc(row.item.id) + '" aria-pressed="true" aria-label="' +
+          esc(t('my.saved.remove', '저장 취소: {title}', { title: row.ev.title || (row.item.seen || {}).title || '' })) +
+          '"><span aria-hidden="true">★</span></button>';
+        return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + unstar + '</li>';
       }).join('') + '</ol>';
       if (rows.some(function (r) { return r.kind === 'missing'; })) {
         html += '<p class="my-fine">' + esc(t('my.saved.missingNote', '목록에서 빠진 꽁밥은 취소됐거나 내용이 바뀌었을 수 있어요. 공지를 확인하세요.')) + '</p>';
@@ -317,7 +321,12 @@
         }
       });
   }
-  function onStoreChange(kind) { if (kind === 'failed') announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); }
+  function onStoreChange(kind) {
+    if (kind !== 'failed') return;
+    // A removal the server refused is put back by the store: show the list as it really is.
+    if (state.store && state.view === 'in') { state.events = state.store.list(); render(); }
+    announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.'));
+  }
   function start() {
     if (!A.available()) { state.view = 'off'; render(); return; }
     state.view = 'loading'; render();
@@ -368,6 +377,21 @@
         busy(false); state.user = null; state.view = 'out'; render();
         announce(t('my.account.signedOut', '로그아웃했어요'));
       }, function () { busy(false); announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); });
+      return;
+    }
+    if ((el = e.target.closest('[data-my-unstar]'))) {
+      var id = el.getAttribute('data-my-unstar');
+      var shown = Array.prototype.map.call(app.querySelectorAll('[data-my-unstar]'), function (b) { return b.getAttribute('data-my-unstar'); });
+      var at = shown.indexOf(id);
+      if (!state.store || !state.store.remove(id)) { announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); return; }
+      state.events = state.store.list();
+      render();
+      announce(t('my.saved.removed', '저장을 취소했어요'));
+      // Focus stays in the list: the star now in the removed row's place, the last one, or the heading.
+      var stars = app.querySelectorAll('[data-my-unstar]');
+      var heading = document.getElementById('mySavedTitle');
+      if (stars.length) stars[Math.min(at, stars.length - 1)].focus();
+      else if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
       return;
     }
     if (e.target.closest('[data-my-retry]')) { start(); return; }
