@@ -639,3 +639,62 @@ console.log(JSON.stringify({ bad: short }));
 def test_a_private_key_with_a_leading_zero_byte_still_signs():
     # Audit 2026-11-13: about 1 key in 256 came out 31 bytes long and every alert signature failed.
     assert node(SHORT_KEY) == {"bad": 0}
+
+
+PAGED = r"""
+const send = require('./scripts/push/send.js');
+const feed = JSON.parse(process.argv[1]);
+const result = {};
+(async () => {
+  for (const total of [2500, 2000, 999]) {
+    const all = Array.from({ length: total }, (_, i) => ({ endpoint: 'https://fcm.googleapis.com/fcm/send/d' + String(i).padStart(5, '0'),
+      p256dh: 'B' + 'A'.repeat(86), auth: 'A'.repeat(22), events: ['soon'], lang: 'ko', site: 'https://www.babdodukms.com', failures: 0 }));
+    const reads = [];
+    const fakeFetch = async (url) => {
+      if (url.endsWith('/latest.json')) return { ok: true, status: 200, json: async () => feed };
+      const q = new URL(url).searchParams;
+      reads.push([q.get('order'), q.get('limit'), q.get('offset')]);
+      // PostgREST: at most max-rows (1000) a request, whatever limit asks for.
+      const limit = Math.min(Number(q.get('limit') || 1e9), 1000), offset = Number(q.get('offset') || 0);
+      return { ok: true, status: 200, json: async () => all.slice(offset, offset + limit) };
+    };
+    const seen = new Set();
+    const summary = await send.run({ nowMs: Date.parse('2026-11-12T11:31:00+09:00'), fetchImpl: fakeFetch, dryRun: true,
+      env: { SUPABASE_URL: 'https://p.supabase.co', SUPABASE_SECRET_KEY: 'sb_secret_TEST' }, keys: {}, sentFile: '/nonexistent/sent.json',
+      feeds: ['https://site/data/ggongbab/latest.json'], log: (line) => seen.add(line.split(' ')[3]) });
+    result[total] = { devices: summary.devices, logged: seen.size, reads };
+  }
+  console.log(JSON.stringify(result));
+})().catch((err) => { console.error(err); process.exit(1); });
+"""
+
+
+def test_the_sender_reads_every_device_past_the_databases_page_size():
+    # security audit 2026-11-13: one request returned at most 1000 rows, so device 1001 onwards never got an alert.
+    out = node(PAGED, json.dumps(FEED))
+    assert out["2500"]["devices"] == 2500 and out["2500"]["logged"] == 2500, "every device once, none twice"
+    assert out["2500"]["reads"] == [["endpoint.asc", "1000", "0"], ["endpoint.asc", "1000", "1000"], ["endpoint.asc", "1000", "2000"]]
+    assert out["2000"]["devices"] == 2000 and [r[2] for r in out["2000"]["reads"]] == ["0", "1000", "2000"], "a full last page reads once more"
+    assert out["999"]["devices"] == 999 and len(out["999"]["reads"]) == 1
+
+
+def test_the_key_folder_is_private_even_when_it_already_existed_and_the_unit_is_hardened(tmp_path):
+    # security audit 2026-11-13: mkdir's mode applies only to a folder it makes, so an existing credentials
+    # folder kept its looser rights; the timer's service now runs without privilege gain and with a private umask.
+    nodebin = shutil.which("node")
+    if not nodebin:
+        pytest.skip("node is not installed")
+    folder = tmp_path / "credentials"
+    folder.mkdir(mode=0o755)
+    folder.chmod(0o755)
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "BABDODUK_PUSH_KEYS": str(folder / "babdoduk_push-vapid"),
+           "BABDODUK_PUSH_PUBLIC": str(tmp_path / "public.txt")}
+    for _ in range(2):   # made, then kept: both runs leave the folder private
+        out = subprocess.run([nodebin, "scripts/push/keygen.js"], capture_output=True, text=True, cwd=ROOT, env=env, timeout=30)
+        assert out.returncode == 0, out.stderr
+        assert oct(folder.stat().st_mode & 0o777) == "0o700"
+        folder.chmod(0o755)
+    unit = (ROOT / "scripts/push/babdoduk-push.service").read_text(encoding="utf-8")
+    service = unit.split("[Service]", 1)[1]
+    for line in ("NoNewPrivileges=yes", "UMask=0077", "PrivateTmp=yes"):
+        assert re.search(rf"^{line}$", service, re.M), line
