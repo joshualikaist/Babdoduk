@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 import sync_site_chrome as chrome
+from deploy_headers import response_headers
 
 ROOT = Path(__file__).resolve().parents[1]
 LAB_HOST = "babdoduk-lab.vercel.app"
@@ -87,15 +88,24 @@ def test_only_our_domain_may_read_the_data_from_another_site_and_the_rights_noti
     """docs/PUBLIC_EXPOSURE.md: Vercel's default `*` let a copy site show our feed live; the rights
     notice is linked from every data response and served as text."""
     header_routes = [r for r in routes() if "headers" in r]
-    assert all(r.get("continue") is True and set(r) == {"src", "headers", "continue"} for r in header_routes)
-    data = [r for r in header_routes if re.fullmatch(r["src"], "/data/ggongbab/latest.json")]
+    for route in header_routes:
+        assert route.get("continue") is True
+        if "has" in route:
+            assert set(route) == {"src", "headers", "continue", "has"}
+            assert route["has"] == [{"type": "query", "key": "v", "value": "[0-9a-f]{10}"}]
+            assert route["headers"] == {"Cache-Control": "public, max-age=31536000, immutable"}
+        else:
+            assert set(route) == {"src", "headers", "continue"}
+    data = [r for r in header_routes if "Access-Control-Allow-Origin" in r["headers"]]
     assert len(data) == 1
+    assert re.fullmatch(data[0]["src"], "/data/ggongbab/latest.json")
     assert data[0]["headers"] == {"Access-Control-Allow-Origin": "https://www.babdodukms.com",
                                   "Link": '</LICENSE>; rel="license"'}
     for path in SITE:
         if not path.startswith("data/"):
             assert not re.fullmatch(data[0]["src"], "/" + path), path
-    [notice] = [r for r in header_routes if re.fullmatch(r["src"], "/LICENSE")]
+    [notice] = [r for r in header_routes if "Content-Type" in r["headers"]]
+    assert re.fullmatch(notice["src"], "/LICENSE")
     assert notice["headers"] == {"Content-Type": "text/plain; charset=utf-8"}
     # Header routes come first: the lab-only 404 still answers after them.
     assert "status" in routes()[-1]
@@ -160,3 +170,47 @@ def test_every_local_script_and_stylesheet_is_addressed_by_its_content():
     for name in re.findall(r"js/[a-z-]+\.js", config["functions"]["api/cal.js"]["includeFiles"]):
         assert (ROOT / name).is_file(), name
     assert "register('/sw.js'" in (ROOT / "js/ggongbab-push.js").read_text(encoding="utf-8")
+
+
+def test_security_headers_cover_pages_assets_functions_and_errors():
+    for path in ("/", "/index.html", "/my.html", "/js/site.js", "/data/ggongbab/latest.json",
+                 "/cal/" + "A" * 43 + ".ics", "/missing"):
+        headers = response_headers(path)
+        assert headers["X-Content-Type-Options"] == "nosniff"
+        assert headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
+        assert headers["X-Frame-Options"] == "SAMEORIGIN"
+        assert "frame-ancestors 'self'" in headers["Content-Security-Policy"]
+        assert headers["Permissions-Policy"] == "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+
+def test_only_stamped_assets_and_versioned_vendor_files_are_immutable():
+    for path in ("/", "/ggongbab.html", "/data/ggongbab/latest.json", "/js/site.js", "/css/site.css",
+                 "/js/site.js?v=wrong", "/css/site.css?v=1234"):
+        headers = response_headers(path)
+        assert headers["Cache-Control"] == "public, max-age=0, must-revalidate"
+    for path in ("/js/site.js?v=0123456789", "/css/site.css?v=abcdef0123",
+                 "/js/vendor/three-0.186.1/three.module.js"):
+        assert response_headers(path)["Cache-Control"] == "public, max-age=31536000, immutable"
+    assert response_headers("/sw.js")["Cache-Control"] == "no-cache"
+    assert response_headers("/sw.js?v=0123456789")["Cache-Control"] == "no-cache"
+
+
+def test_html_policy_keeps_the_existing_script_font_and_map_sources():
+    for page in chrome.PAGES:
+        policy = response_headers("/" + page)["Content-Security-Policy"]
+        directives = dict((part.strip().split(None, 1) + [""])[:2] for part in policy.split(";"))
+        assert directives["default-src"] == "'self'"
+        assert directives["object-src"] == "'none'"
+        assert directives["base-uri"] == "'self'"
+        assert "'unsafe-eval'" not in policy
+        assert "'wasm-unsafe-eval'" in directives["script-src"]
+        for script in ("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js",
+                       "https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js"):
+            assert script in directives["script-src"].split()
+        assert "https://fonts.googleapis.com" in directives["style-src"].split()
+        assert "https://fonts.gstatic.com" in directives["font-src"].split()
+        assert "https://myjglfynhnptlclawlcc.supabase.co" in directives["connect-src"].split()
+        assert "wss://myjglfynhnptlclawlcc.supabase.co" in directives["connect-src"].split()
+        assert directives["worker-src"] == "'self' blob:"
+        # Magazine photos come from changing article/image hosts, never executable code.
+        assert "https:" in directives["img-src"].split()

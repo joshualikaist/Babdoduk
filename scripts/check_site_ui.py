@@ -15,6 +15,8 @@ from urllib.parse import parse_qs, unquote, urlparse
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
+from deploy_headers import response_headers
+
 ROOT = Path(__file__).resolve().parents[1]
 SIZES = [(1920, 1080), (1440, 900), (768, 1024), (390, 844), (360, 800)]
 # The browser the checks drive: the installed Chrome locally (Windows classic scrollbars), or the
@@ -3614,6 +3616,59 @@ def _menus(r, report, screenshots):
     report["checks"] += lab_menu(r.page())
 
 
+def _security_policy(r, report, screenshots):
+    """Enforce the real response policy on every public page, offline, in both languages.
+
+    Routing still refuses every external request, so no live login, database or
+    collector is used. CSP checks happen before routing and are captured separately
+    from aborted requests. A deliberately forbidden script proves the listener works.
+    """
+    context = r.watch(new_context(r.browser))
+
+    def policy_route(route):
+        url = urlparse(route.request.url)
+        name = unquote(url.path).lstrip("/")
+        if url.hostname in SERVED_HOSTS and name in report["pages"]:
+            route.fulfill(path=str(ROOT / name), headers=response_headers(route.request.url))
+        else:
+            offline_route(route)
+
+    context.route("**/*", policy_route)
+    context.add_init_script("""window.__babdodukCsp = [];
+      document.addEventListener('securitypolicyviolation', e => {
+        window.__babdodukCsp.push({directive: e.effectiveDirective, blocked: e.blockedURI});
+      });""")
+    page = context.new_page()
+    page.clock.set_fixed_time(FIXED_NOW)
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)[:200]))
+    try:
+        for lang in ("ko", "en"):
+            page.goto("https://site-ui.invalid/index.html", wait_until="load")
+            page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
+            for width, height in ((1440, 900), (390, 844), (360, 800)):
+                page.set_viewport_size({"width": width, "height": height})
+                for name in report["pages"]:
+                    errors.clear()
+                    page.goto("https://site-ui.invalid/" + name, wait_until="load")
+                    page.evaluate("document.fonts.ready")
+                    if name == "index.html":
+                        if width <= 720:
+                            page.locator("#homeMapOpen").click()
+                        page.wait_for_function("() => document.querySelector('.home-map-stage').dataset.state !== 'poster' && document.querySelector('.home-map-stage').dataset.state !== 'loading'")
+                    page.wait_for_timeout(30)  # dispatch the policy events from the completed loads
+                    violations = page.evaluate("window.__babdodukCsp")
+                    assert not violations and not errors, (name, lang, width, violations, errors)
+                    report["checks"] += 1
+        page.evaluate("""() => { const s = document.createElement('script');
+          s.src = 'https://policy-blocked.invalid/blocked.js'; document.head.appendChild(s); }""")
+        page.wait_for_function("() => window.__babdodukCsp.length === 1")
+        assert page.evaluate("window.__babdodukCsp[0].directive") == "script-src-elem"
+        report["checks"] += 1
+    finally:
+        context.close()
+
+
 def _structure(r, report, screenshots):
     page = r.page()
     report["checks"] += structure_and_failures(page)
@@ -3652,7 +3707,8 @@ def _visual(r, report, screenshots):
 # the checks took too long one after another). Within a group the order is the old sequential order.
 GROUPS = {f"matrix-{w}": _matrix((w, h)) for w, h in SIZES}
 GROUPS.update({"features": _features, "menus": _menus, "structure": _structure,
-               "worldcup-play": _worldcup_play, "worldcup-rest": _worldcup_rest})
+               "worldcup-play": _worldcup_play, "worldcup-rest": _worldcup_rest,
+               "security-policy": _security_policy})
 
 
 def group_names():
