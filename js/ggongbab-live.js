@@ -249,8 +249,10 @@
     if (opts && opts.details) params.set('details', opts.details);
     return 'https://calendar.google.com/calendar/render?' + params.toString();
   }
+  // Every line break (CRLF, a lone CR or LF) becomes the text \n: a lone CR must never end a content line,
+  // or a title could add its own calendar properties (security audit 2026-11-13).
   function icsEscape(text) {
-    return String(text == null ? '' : text).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+    return String(text == null ? '' : text).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
   }
   // RFC 5545 folds content lines at 75 octets; count UTF-8 bytes, never split a character.
   function fold(line) {

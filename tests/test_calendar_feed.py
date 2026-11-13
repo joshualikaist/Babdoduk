@@ -188,3 +188,26 @@ def test_an_empty_list_fetches_no_feed():
     out = run([], {"events": []})
     assert out["status"] == 200 and out["body"].count("BEGIN:VEVENT") == 0
     assert [c[0] for c in out["calls"] if "rpc" not in c[0]] == []
+
+
+def test_a_lone_carriage_return_never_ends_a_calendar_line():
+    # security audit 2026-11-13: icsEscape turns CRLF, a lone CR and a lone LF alike into the text \n, so a
+    # title, place or note can never start a property of its own (here a forged ATTACH or a second event).
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    script = r"""
+const { L } = require(process.argv[1]).siteCode();
+const ev = { id: 'cr', title: 'a\rATTACH:https://evil.example/x\r\nb\nc', startAt: '2026-11-20T12:00:00+09:00',
+             endAt: null, location: { name: 'N1\rEND:VEVENT\rBEGIN:VEVENT' }, food: { provided: 'true' } };
+console.log(JSON.stringify(L.icsText(ev, { details: 'd\re', stamp: '2026-11-13T00:00:00Z' })));
+"""
+    out = subprocess.run(["node", "-e", script, str(ROOT / "api/cal.js")], capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    ics = json.loads(out.stdout)
+    body = ics[:-2]                                         # the file ends with one CRLF
+    assert "\r" not in body.replace("\r\n", "") and "\n" not in body.replace("\r\n", ""), "only CRLF ends a line"
+    lines = ics.replace("\r\n ", "").split("\r\n")
+    assert not any(line.startswith("ATTACH") for line in lines)
+    assert lines.count("BEGIN:VEVENT") == 1 and lines.count("END:VEVENT") == 1
+    assert "SUMMARY:a\\nATTACH:https://evil.example/x\\nb\\nc" in lines
+    assert "LOCATION:N1\\nEND:VEVENT\\nBEGIN:VEVENT" in lines and "DESCRIPTION:d\\ne" in lines
