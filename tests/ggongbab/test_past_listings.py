@@ -280,9 +280,6 @@ class StubRepo:
         return generation + 1
 
 
-HAS_PROJECTION = hasattr(refresh_ggongbab, "commit_public_feed")
-
-
 @pytest.fixture
 def data_dir(tmp_path, monkeypatch):
     folder = tmp_path / "data" / "ggongbab"
@@ -317,8 +314,9 @@ def test_export_archives_what_the_previous_feed_listed(settings, data_dir, capsy
     assert refresh_ggongbab.export(settings, repo, dry_run=False) == 0
     assert ids(_read(data_dir / "latest.json")) == [uid("upcoming")]
     assert ids(_read(data_dir / "archive" / "index.json")) == [uid("listed")]
-    if HAS_PROJECTION:  # the public DB projection mirrors the live snapshot, never the archive
-        assert repo.projected == [[uid("upcoming")]]
+    # audit 2026-11-13: the export no longer writes the public DB projection; the workflow's
+    # sync step does, after publication (it mirrors the live snapshot, never the archive).
+    assert repo.projected == []
     assert not (data_dir / ".staging").exists()
     assert "events=1 archive=1" in capsys.readouterr().out
 

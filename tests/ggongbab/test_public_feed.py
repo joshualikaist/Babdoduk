@@ -291,6 +291,10 @@ def test_export_writes_snapshot_and_syncs_same_ids(settings, monkeypatch, tmp_pa
     monkeypatch.setattr(refresh, "DATA_DIR", tmp_path / "data")
     assert refresh.export(settings, repo, False) == 0
     payload = json.loads((tmp_path / "data/latest.json").read_text(encoding="utf-8"))
+    # audit 2026-11-13: export() writes the snapshot only; the workflow's later step
+    # (scripts/sync_public_feed.py) synchronizes the projection, and it selects the same ids.
+    assert not repo.public_events
+    sync_public_feed(repo, settings)
     assert {e["id"] for e in payload["events"]} == set(repo.public_events)
     news = json.loads((tmp_path / "data/news.json").read_text(encoding="utf-8"))
     assert news["items"] == [] and news["count"] == 0
@@ -310,18 +314,35 @@ def test_invalid_free_snapshot_does_not_replace_news(settings, monkeypatch, tmp_
 
 
 def test_refresh_sync_failure_is_non_green_and_snapshot_survives(settings, monkeypatch, tmp_path, capsys, reviewed_news_input):
+    """audit 2026-11-13: the refresh used to commit the projection itself and exit 23 when that
+    failed, so the workflow never published the fresh latest.json it had just written. Now the
+    refresh never touches the projection and stays green; the workflow's later sync step is the
+    one that turns red, after the snapshot is published."""
+    import sync_public_feed as sync_script
+
     repo = Repo([event(event_start=(datetime.now(KST) + timedelta(days=1)).isoformat())])
     monkeypatch.setattr(refresh, "ROOT", tmp_path)
     monkeypatch.setattr(refresh, "DATA_DIR", tmp_path / "data")
     monkeypatch.setattr(refresh, "load_settings", lambda: settings)
     monkeypatch.setattr(refresh, "build_repo", lambda *args: repo)
-    monkeypatch.setattr(repo, "replace_public_feed", Mock(side_effect=SupabaseError("PRIVATE")))
+    replace = Mock(side_effect=SupabaseError("PRIVATE"))
+    monkeypatch.setattr(repo, "replace_public_feed", replace)
     monkeypatch.setattr("sys.argv", ["refresh_ggongbab.py", "--export-only"])
     code = refresh.main()
-    assert code == 23 and not refresh.workflow_stays_green(code)
+    assert code == 0 and refresh.workflow_stays_green(code)
+    replace.assert_not_called()
     assert (tmp_path / "data/latest.json").exists()
+    sync_code = sync_script.main(settings=settings, repo=repo)
+    assert sync_code == 23 and not refresh.workflow_stays_green(sync_code)
     assert len(repo.events) == 1
     assert "PRIVATE" not in capsys.readouterr().out
+
+
+def test_the_refresh_workflow_syncs_the_projection_after_publishing():
+    """The step export() no longer performs must exist in the workflow, after the publisher."""
+    workflow = (ROOT / ".github/workflows/ggongbab-refresh.yml").read_text(encoding="utf-8")
+    assert workflow.index("python scripts/publish_generated.py --paths data/ggongbab") \
+        < workflow.index("run: python scripts/sync_public_feed.py")
 
 
 def test_migration_allowlist_privileges_and_atomicity():

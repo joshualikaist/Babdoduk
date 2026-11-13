@@ -25,16 +25,17 @@ any of this pipeline's private tables. Review the existing publication manually
 in that case; do not broadly enable replication or expose private tables.
 
 After manual application, a separately authorized backend run of
-`python scripts/refresh_ggongbab.py --export-only` reconciles both outputs without
-collectors or AI. It needs the backend Supabase key; never put it in the browser.
+`python scripts/refresh_ggongbab.py --export-only` followed by
+`python scripts/sync_public_feed.py` reconciles both outputs without
+collectors or AI (since 2026-11-13 the export no longer writes the projection itself). It needs the backend Supabase key; never put it in the browser.
 This command is documented for the operator, not run during implementation.
 
-Before 004 exists, lab publication runs fail non-green at public-feed preparation.
-The previously written static snapshot remains available. There is no silent
+Before 004 exists, the synchronizer fails non-green at public-feed preparation.
+The static snapshot is published regardless. There is no silent
 optional-sync flag that would falsely claim the public projection was published.
 Missing backend configuration also fails instead of silently substituting an
-in-memory successful publication. Snapshot validation failures now exit 23 in
-this combined publication path; they cannot masquerade as a successful sync.
+in-memory successful publication. Snapshot validation failures exit 23; they
+cannot masquerade as a successful publication.
 Main/default-branch cron still runs its own code until a separate promotion;
 pushing lab alone does not activate this feature in that production job.
 
@@ -148,11 +149,15 @@ not claim the two sinks are current. Preparation failures keep the previous file
 
 ## All publication paths
 
-`refresh_ggongbab.export` prepares both representations together and commits the
-projection after snapshot validation/write. This covers the normal collector run,
-`--export-only`, successful archive backfill, and the resident Dooray agent's
-`--run-pipeline` subprocess. Sync failure exits 23 (`public_feed_sync`); the resident
-wrapper maps it to pipeline failure, so it cannot emit a successful publish heartbeat.
+Until 2026-11-13 `refresh_ggongbab.export` also committed the projection after the
+snapshot write, and a sync failure exited 23, so the workflow skipped publishing the fresh
+`latest.json` it had just written (audit 2026-11-13). Since then `export` writes the
+snapshot only, for the normal collector run, `--export-only`, archive backfill and the
+resident Dooray agent's `--run-pipeline` subprocess alike; the projection is written by
+`scripts/sync_public_feed.py` alone, which the scheduled workflow runs after publication
+(next section). A local resident run therefore reaches the projection at the next
+workflow run, or when an operator runs the synchronizer. Both use the same
+`build_payload` + `drop_invalid_events` selection.
 Dry-run and local preview retain their in-memory/nonpublishing behavior.
 
 If ingestion/backfill fails after partial canonical changes, the run is already
