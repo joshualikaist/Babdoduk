@@ -155,6 +155,24 @@ def test_re_parse_of_the_only_source_keeps_the_owners_approval(settings):
     assert repo.conflicts and "애매함" in repo.conflicts[0]["summary"]
 
 
+def test_a_doubtful_re_parse_does_not_empty_an_approved_event(settings):
+    """A re-parse that could not confirm the start (date conflict -> no start) must not leave the
+    owner's published event without one, which would silently drop it from the feed."""
+    repo = MemoryRepository()
+    pipe = Pipeline(settings, repo, None, [])
+    start = datetime(2026, 11, 20, 12, 0, tzinfo=KST)
+    event_id = pipe.store_candidate(_candidate("학과 간담회", start), "raw-1")
+    doubtful = _candidate("학과 간담회", None, building=None, needs_review=True,
+                          review_reasons=["날짜 충돌: AI 2026-11-21 vs 본문 2026-11-20"])
+    pipe.store_candidate(doubtful, "raw-1")
+    row = repo.get_event(event_id)
+    assert row["status"] == "published" and row["needs_review"] is False
+    assert row["event_start"].startswith("2026-11-20T12:00") and row["building"] == "N1"
+    assert "날짜 충돌" in repo.conflicts[0]["summary"]
+    assert build_payload(repo.publishable_events(), settings, now=datetime(2026, 11, 13, tzinfo=KST),
+                         food_only=True)["count"] == 1
+
+
 def test_different_source_on_another_day_stays_a_separate_event(settings):
     repo = MemoryRepository()
     pipe = Pipeline(settings, repo, None, [])

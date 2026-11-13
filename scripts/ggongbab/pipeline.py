@@ -338,6 +338,13 @@ class Pipeline:
                 notes = list(cand.review_reasons)
                 if cand.needs_review and not notes:
                     notes.append("re-parse withheld")
+                if notes:
+                    # A doubtful re-parse may have dropped a fact (a start it could not
+                    # confirm); the public row keeps the value it was approved with.
+                    for key, value in current.items():
+                        if key in updated and updated[key] in (None, "", "unknown") \
+                                and value not in (None, "", "unknown"):
+                            updated[key] = value
                 updated, _reasons = keep_published_version(current, updated, notes)
         else:
             updated, notes = self._merge_preserving_public(current, cand)
