@@ -125,6 +125,9 @@ async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRu
   const devices = await store.devicesFor(due.map((ev) => ev.id));
   summary.devices = devices.length;
   const sent = readSent(sentFile);
+  // The record is saved however the run ends: a database hiccup after a delivered alert must never make the
+  // next run (two minutes later) send it again (audit 2026-11-13).
+  try {
   for (const device of devices) {
     const wanted = new Set(device.events || []);
     for (const ev of due) {
@@ -138,21 +141,28 @@ async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRu
         sent[sentKey(device, ev)] = new Date(nowMs).toISOString();
         summary.sent++;
       } else if (status === 404 || status === 410) {
-        await store.forget(device.endpoint);
+        await quietly(() => store.forget(device.endpoint));   // still there next run: it answers 410 again
         summary.gone++;
         break;
       } else if (status === 400 || status === 403 || status === 413) {
         // Refused for good (a bad key or message): do not retry this one, count it against the device.
         sent[sentKey(device, ev)] = new Date(nowMs).toISOString();
-        await store.refused(device);
+        await quietly(() => store.refused(device));
         summary.refused++;
       } else {
         summary.later++;   // busy or unreachable: the next run tries again while it is still before the start
       }
     }
   }
-  if (!dryRun) writeSent(sentFile, sent, nowMs);
+  } finally {
+    if (!dryRun) writeSent(sentFile, sent, nowMs);
+  }
   return summary;
+}
+
+// A bookkeeping call to the database that may fail without stopping the run.
+async function quietly(fn) {
+  try { await fn(); return true; } catch (err) { return false; }
 }
 
 // ---- the ops computer's setup -----------------------------------------------------------------------------

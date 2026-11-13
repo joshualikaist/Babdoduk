@@ -566,3 +566,39 @@ def test_signed_in_a_star_saves_to_the_account_and_opens_no_calendar_file(browse
     assert "마이 밥도둑에서 캘린더를 연결해 보세요" in body and page.locator("[data-gg-starcal]").count() == 0  # copy cleanup, owner 2026-11-12
     assert "저장하지 못했어요" not in page.locator(".gg-toast").inner_text() and errors == []
     context.close()
+
+
+FLAKY_DB = r"""
+const send = require('./scripts/push/send.js');
+const fs = require('fs');
+const sentFile = process.argv[1];
+const feed = { events: [{ id: 'e1', title: '점심', startAt: '2026-11-20T12:00:00+09:00', endAt: null,
+  location: { building: 'E11' }, food: { provided: 'true', type: 'meal' }, sources: [{ type: 'dooray' }] }] };
+const rfc = 'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4';
+const dev = (e) => ({ endpoint: 'https://fcm.googleapis.com/fcm/send/' + e, p256dh: rfc, auth: 'BTBZMqHH6r4Tts7J_aSIgg',
+  events: ['e1'], failures: 0, lang: 'ko', site: 'https://babdoduk-lab.vercel.app' });
+let delivered = 0;
+async function fetchImpl(url, init) {
+  if (url.endsWith('latest.json')) return { ok: true, json: async () => feed };
+  if (url.includes('/rest/v1/push_devices?select')) return { ok: true, json: async () => [dev('a'), dev('b')] };
+  if (url.endsWith('/send/a')) { delivered++; return { status: 201 }; }
+  if (url.endsWith('/send/b')) return { status: 410 };
+  if (init && init.method === 'DELETE') throw new Error('network down');   // forgetting device b fails
+  throw new Error('unexpected ' + url);
+}
+(async () => {
+  const keys = require('./scripts/push/webpush.js').generateKeys();
+  for (let i = 0; i < 3; i++) {
+    await send.run({ nowMs: Date.parse('2026-11-20T11:45:00+09:00') + i * 120000, fetchImpl, keys, sentFile,
+      env: { SUPABASE_URL: 'https://db', SUPABASE_SECRET_KEY: 'k' }, feeds: ['https://f/latest.json'], log: () => {} });
+  }
+  console.log(JSON.stringify({ delivered, saved: Object.keys(JSON.parse(fs.readFileSync(sentFile, 'utf8'))).length }));
+})().catch((err) => { console.error(err); process.exit(1); });
+"""
+
+
+def test_a_database_hiccup_after_a_delivered_alert_never_sends_it_again(tmp_path):
+    # Audit 2026-11-13: forgetting a gone device threw, the run stopped before saving what went out, and the
+    # same alert went out again every two minutes.
+    out = node(FLAKY_DB, str(tmp_path / "sent.json"))
+    assert out == {"delivered": 1, "saved": 1}
