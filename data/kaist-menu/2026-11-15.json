@@ -2,13 +2,15 @@
   "schemaVersion": 1,
   "date": "2026-11-15",
   "dateLabel": "11월 15일",
-  "fetchedAt": "2026-11-13T17:05:10+09:00",
+  "fetchedAt": "2026-11-13T20:09:33+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "status": "AVAILABLE",
   "coverage": {
     "requested": 8,
-    "fetched": 8,
-    "failed": [],
+    "fetched": 7,
+    "failed": [
+      "seoul"
+    ],
     "carried": []
   },
   "restaurants": [
