@@ -7,3 +7,7 @@ Type=oneshot
 WorkingDirectory=%h/Babdoduk-ops
 ExecStart=%h/.local/bin/node %h/Babdoduk-ops/scripts/push/send.js
 TimeoutStartSec=90
+# Hardening (security audit 2026-11-13): no privilege gain, files it writes are this user's only, and its own /tmp.
+NoNewPrivileges=yes
+UMask=0077
+PrivateTmp=yes
