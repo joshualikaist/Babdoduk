@@ -5,9 +5,9 @@
   z-index: 1;
   flex: 1 0 auto;
   width: 100%;
-  max-width: 1040px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-16);
+  padding: var(--space-8) var(--space-4) var(--space-16);
   color: var(--color-ink);
 }
 
@@ -24,42 +24,12 @@
 }
 
 /* ---- hero ------------------------------------------------------------------------------------ */
-.tip-hero {
-  position: relative;
-  display: grid;
-  gap: var(--space-6);
-  padding: 28px 22px;
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at 100% 0%, var(--color-accent-wash) 0, transparent 46%),
-    var(--color-surface);
-  overflow: hidden;
-}
-
+/* A plain page head like every content page (owner 2026-11-13): no card, no label, no sample ticket. */
+.tip-hero { padding: 0 0 var(--space-2); }
 .tip-hero-copy { min-width: 0; }
 
-.tip-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 var(--space-3);
-  padding: 4px 11px;
-  border-radius: 999px;
-  background: var(--color-accent-wash);
-  color: var(--color-accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
 
-.tip-title.page-title {
-  display: block;
-  font-size: clamp(1.85rem, 6.4vw, 2.75rem);
-  line-height: 1.18;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
+.tip-title.page-title { display: block; overflow-wrap: anywhere; text-wrap: balance; }
 
 .tip-lead {
   margin: var(--space-3) 0 0;
@@ -70,67 +40,11 @@
   overflow-wrap: anywhere;
 }
 
-/* The example ticket: a campus food stamp with a perforated edge and a round "confirmed" stamp. */
-.tip-ticket {
-  position: relative;
-  justify-self: center;
-  width: min(100%, 300px);
-  padding: 18px 20px 20px;
-  border: 1px solid var(--color-divider);
-  border-radius: 18px;
-  background: #fff;
-  box-shadow: var(--shadow-md);
-  transform: rotate(-2.5deg);
-}
 
-.tip-ticket-label {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: var(--color-ink-muted);
-}
 
-.tip-ticket-title {
-  margin: 4px -6px 14px;
-  padding: 0 6px 14px;
-  border-bottom: 2px dashed var(--color-divider);
-  font-size: 17px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  overflow-wrap: anywhere;
-}
 
-.tip-ticket-rows { display: grid; gap: 8px; margin: 0; padding-right: 70px; }
-.tip-ticket-rows div { display: flex; gap: 10px; align-items: baseline; }
-.tip-ticket-rows dt { flex: 0 0 auto; font-size: 14px; }
-.tip-ticket-rows dd { margin: 0; font-size: 14px; font-weight: 600; color: #3a3631; overflow-wrap: anywhere; }
 
-.tip-ticket-stamp {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  width: 76px;
-  height: 76px;
-  border: 2.5px solid var(--color-accent);
-  border-radius: 50%;
-  color: var(--color-accent);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  text-align: center;
-  line-height: 1.1;
-  transform: rotate(-14deg);
-  opacity: 0.88;
-  box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 5.5px var(--color-accent);
-}
 
-.tip-ticket-stamp b { font-size: 20px; line-height: 1; }
 
 /* ---- steps ----------------------------------------------------------------------------------- */
 .tip-steps {
@@ -591,8 +505,6 @@ input[type="date"].tip-input { appearance: none; -webkit-appearance: none; }
 }
 
 @media (min-width: 720px) {
-  .tip-page { padding: var(--space-8) var(--space-6) var(--space-16); }
-  .tip-hero { grid-template-columns: minmax(0, 1fr) 280px; align-items: center; padding: 40px 40px 40px 36px; }
   .tip-steps li { flex-direction: row; justify-content: center; gap: 10px; padding: 14px 12px; font-size: 14px; text-align: left; }
   .tip-steps small { display: inline; margin-left: 4px; }
   .tip-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -611,7 +523,6 @@ input[type="date"].tip-input { appearance: none; -webkit-appearance: none; }
 }
 
 @media (max-width: 719px) {
-  .tip-ticket { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -852,6 +852,8 @@ body::after {
 }
 
 .footer-apple-fine {
+  /* Centred like every other footer line (owner 2026-11-13: alignment). */
+  text-align: center;
   word-break: keep-all;
   margin-top: 14px;
   padding-top: 12px;
