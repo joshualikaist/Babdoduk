@@ -71,7 +71,9 @@ def summary(post, extraction: dict, verdicts: str, kst_time: str) -> str:
 def keep_note(local: Path, text: str, now: float, photo: Optional[bytes] = None) -> dict:
     """Keep one message of the owner's for Claude: a line of .local/telegram-inbox.jsonl (at most
     INBOX_KEEP, oldest dropped) and its photo under .local/telegram-inbox/ (at most PHOTO_KEEP).
-    Token-like strings are masked first; the files are readable by this user only."""
+    Token-like strings are masked first; the files are readable by this user only, and each is
+    replaced in one step (ops_storage.atomic_private), so a crash never leaves a truncated inbox."""
+    from ..ops_storage import atomic_private
     local = Path(local)
     entry = {"at": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now)), "text": SECRETISH.sub("[가림]", text or "")[:4000]}
     if photo:
@@ -81,16 +83,14 @@ def keep_note(local: Path, text: str, now: float, photo: Optional[bytes] = None)
             folder = local / INBOX_PHOTOS
             folder.mkdir(mode=0o700, exist_ok=True)
             path = folder / f"{time.strftime('%Y%m%d-%H%M%S', time.localtime(now))}-{uuid.uuid4().hex[:6]}.{ext}"
-            path.write_bytes(photo)
-            os.chmod(path, 0o600)
+            atomic_private(path, photo)
             entry["photo"] = str(path)
             for old in sorted(folder.iterdir())[:-PHOTO_KEEP]:
                 old.unlink()
     inbox = local / INBOX
     lines = inbox.read_text(encoding="utf-8").splitlines() if inbox.exists() else []
     lines = (lines + [json.dumps(entry, ensure_ascii=False)])[-INBOX_KEEP:]
-    inbox.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    os.chmod(inbox, 0o600)
+    atomic_private(inbox, "\n".join(lines) + "\n")
     return entry
 
 

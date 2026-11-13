@@ -21,6 +21,9 @@ ALLOWED = {
 }
 # Files inside an allowed path that are hand-edited inputs, never generated output.
 SKIP_NAMES = {"manual.json", ".staging"}
+# A writer's half-written temporary file (latest.json.tmp, an atomic writer's .x.tmp) is never
+# published, even when a crash left it behind (audit 2026-11-13).
+SKIP_SUFFIXES = (".tmp",)
 # Top-level keys rewritten on every run without changing what the page shows. A file
 # whose only difference is in these keys is not worth a commit (and two deployments).
 VOLATILE_KEYS = {
@@ -68,6 +71,8 @@ def copy_allowed(src_root: Path, dest_root: Path, paths: list[str]) -> None:
         wanted = set()
         for file in src.rglob("*"):
             if any(part in SKIP_NAMES for part in file.relative_to(src).parts):
+                continue
+            if file.is_file() and file.name.endswith(SKIP_SUFFIXES):
                 continue
             target = dest / file.relative_to(src)
             wanted.add(target)

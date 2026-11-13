@@ -449,3 +449,44 @@ def test_the_agent_units_watch_the_inbox_and_run_once_per_message():
     assert "Type=oneshot\n" in service and "ExecStart=/py /r/w.py ops-agent\n" in service and "Restart" not in service
     assert "PathChanged=/r/.local/telegram-inbox.jsonl\n" in path and "PathChanged=/r/.local/ops-agent/answers.jsonl\n" in path
     assert "Unit=a.service\n" in path
+
+
+def test_inbox_answers_and_history_are_replaced_atomically_and_private(ops, monkeypatch):
+    """Audit 2026-11-13: keep_note, record_answer and remember rewrote their files in place
+    (write_text, then chmod), so a crash left a truncated file and the new file was briefly
+    readable by others. Each now goes through a 0600 temporary file and os.replace."""
+    import os
+    import stat
+    from ggongbab import ops_storage
+
+    root, build = ops
+    oa.set_enabled(root, True, NOW)
+    replaced = []
+    real_replace = os.replace
+
+    def spy(src, dst):
+        replaced.append((os.path.basename(dst), stat.S_IMODE(os.stat(src).st_mode)))
+        real_replace(src, dst)
+    monkeypatch.setattr(ops_storage.os, "replace", spy)
+    note(root, "포털 오류", photo=jpeg())
+    oa.record_answer(root / ".local", "ok", "abcdef123456", NOW)
+    agent, _, _, _, _ = build([answer("확인했습니다")])
+    agent.cycle()
+    names = {name for name, _mode in replaced}
+    assert {tr.INBOX, oa.ANSWERS, oa.HISTORY} <= names and any(n.endswith(".jpg") for n in names)
+    assert all(mode == 0o600 for _name, mode in replaced)
+    for path in (root / ".local").rglob("*"):
+        assert not path.name.endswith(".tmp")
+        if path.is_file() and path.name in (tr.INBOX, oa.ANSWERS, oa.HISTORY):
+            assert stat.S_IMODE(path.stat().st_mode) == 0o600
+
+    # A failed write leaves the previous inbox whole and no temporary file behind.
+    before = (root / ".local" / tr.INBOX).read_text(encoding="utf-8")
+
+    def broken(src, dst):
+        raise OSError("disk full")
+    monkeypatch.setattr(ops_storage.os, "replace", broken)
+    with pytest.raises(OSError):
+        note(root, "두 번째")
+    assert (root / ".local" / tr.INBOX).read_text(encoding="utf-8") == before
+    assert not [p for p in (root / ".local").rglob("*.tmp")]

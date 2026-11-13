@@ -443,7 +443,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 * 기능 코드(`lab-ggongbab.html`, `css/ggongbab.css`, `js/ggongbab.js`, `scripts/**`)는 **lab 에서만** 개발하고, 공개 반영은 `AGENTS.md` 의 lab-first 절차(승인된 lab 커밋을 `origin/main` 기반 release 브랜치로 옮겨 검증한 뒤 merge)를 따른다.
 * `.github/workflows/ggongbab-refresh.yml` 이 `7,37 * * * *` 로 돈다(30분마다, 예약이 몰리는 정각·30분을 피함. 정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
   `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
-* `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
+* `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다. 쓰다 남은 `*.tmp` 파일은 복사하지 않는다(2026-11-13).
   브랜치마다 비교해서 `generatedAt` 말고 달라진 것이 없으면 커밋하지 않는다(`VOLATILE_KEYS`, 두 파일 모두).
 * 종료 코드 2 = “안전하게 내보낼 것이 없음”(Supabase 불통, 모든 collector 실패, export 검증 실패). 이때 이전 `latest.json` 을 유지하고 publish 단계를 건너뛴다.
 * 발행 다음 단계 **Sync the public DB feed** (소유자 승인 2026-10-13): `python scripts/sync_public_feed.py` 가 같은 선택(`build_payload`)으로

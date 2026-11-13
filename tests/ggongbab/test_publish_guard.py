@@ -133,6 +133,23 @@ def test_manual_json_is_never_copied_or_deleted(tmp_path):
     assert not (dest / "data/ggongbab/.staging").exists()
 
 
+def test_temporary_files_are_never_copied(tmp_path):
+    """Audit 2026-11-13: a writer's leftover latest.json.tmp (a crash between write and replace)
+    was mirrored onto lab and main like any generated file."""
+    src, dest = tmp_path / "src", tmp_path / "dest"
+    (src / "data/ggongbab/archive").mkdir(parents=True)
+    (src / "data/ggongbab/latest.json").write_text(_dump(FEED), encoding="utf-8")
+    (src / "data/ggongbab/latest.json.tmp").write_text('{"half": ', encoding="utf-8")
+    (src / "data/ggongbab/archive/index.json.tmp").write_text("{", encoding="utf-8")
+    (dest / "data/ggongbab").mkdir(parents=True)
+    (dest / "data/ggongbab/latest.json.tmp").write_text("{", encoding="utf-8")   # left on a branch earlier
+
+    publish_generated.copy_allowed(src, dest, ["data/ggongbab"])
+
+    assert (dest / FEED_PATH).read_text(encoding="utf-8") == _dump(FEED)
+    assert sorted(p.name for p in (dest / "data/ggongbab").rglob("*.tmp")) == []
+
+
 @pytest.mark.parametrize("path", ["data", "js", "data/ggongbab/../../js", "supabase", ".github/workflows"])
 def test_paths_outside_the_generated_allowlist_are_refused(monkeypatch, path):
     monkeypatch.setattr(sys, "argv", ["publish_generated.py", "--paths", path, "--message", MESSAGE])

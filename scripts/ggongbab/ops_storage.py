@@ -48,6 +48,26 @@ def atomic_json(path, data):
             os.unlink(temporary)  # only our newly created temporary operational file
 
 
+def atomic_private(path, data) -> None:
+    """Replace a file under .local in one step, readable by this user only from the first byte.
+
+    mkstemp creates the temporary file with mode 0600 next to the target, and os.replace swaps
+    it in, so a crash or a concurrent reader never sees a half-written file (audit 2026-11-13).
+    Errors propagate unchanged; the temporary file is removed on failure."""
+    path = Path(path)
+    fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data.encode("utf-8") if isinstance(data, str) else data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+        temporary = None
+    finally:
+        if temporary and os.path.exists(temporary):
+            os.unlink(temporary)  # only our newly created temporary file
+
+
 def lock_held(path):
     try:
         with poller_lock(path):

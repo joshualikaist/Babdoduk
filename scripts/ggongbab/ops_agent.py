@@ -37,7 +37,7 @@ from typing import Callable, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from .ops_storage import atomic_json, read_json
+from .ops_storage import atomic_json, atomic_private, read_json
 
 HOME = "ops-agent"                      # .local/ops-agent/
 CONTROL = "ops-agent.json"              # .local/ops-agent.json: {"enabled": bool}
@@ -169,8 +169,7 @@ def record_answer(local: Path, action: str, ask_id: str, now: float) -> None:
     path = Path(local) / HOME / ANSWERS
     path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     line = json.dumps({"action": action, "id": ask_id, "at": round(now, 3)})
-    path.write_text("\n".join((_lines(path) + [line])[-ANSWERS_KEEP:]) + "\n", encoding="utf-8")
-    path.chmod(0o600)
+    atomic_private(path, "\n".join((_lines(path) + [line])[-ANSWERS_KEEP:]) + "\n")
 
 
 def baseline(local: Path) -> dict:
@@ -337,9 +336,7 @@ class Agent:
                  "notes": [mask(str(n.get("text") or ""))[:500] + (" [사진]" if n.get("photo") else "") for n in notes],
                  "reply": mask(answer.reply)[:REPLY_MAX], "actions": [a.model_dump() for a in answer.actions[:3]],
                  "results": [l for l in lines if l], "for_next_session": mask(answer.for_next_session)[:2000]}
-        path.write_text("\n".join((_lines(path) + [json.dumps(entry, ensure_ascii=False)])[-HISTORY_KEEP:]) + "\n",
-                        encoding="utf-8")
-        path.chmod(0o600)
+        atomic_private(path, "\n".join((_lines(path) + [json.dumps(entry, ensure_ascii=False)])[-HISTORY_KEEP:]) + "\n")
 
     def history(self, limit: int) -> list[dict]:
         out = []
