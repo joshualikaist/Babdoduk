@@ -15,6 +15,19 @@ people who add the site to their home screen ("오케이 너무 좋다 그러면
 
 Replacing the key pair silently stops every phone that already turned alerts on, so the key is kept.
 
+**To apply (owner, by hand): `supabase/migrations/015_push_hardening.sql`** (security audit 2026-11-13), in the
+Supabase SQL editor on top of 014 (it also needs 008's salt table, which production has). It is idempotent.
+Until it is applied, the looser 014 checks and the global caps alone stay in force. It:
+
+- keeps only real browser key shapes: `p256dh` exactly 87 base64url characters starting with `B` (an
+  uncompressed P-256 point), `auth` exactly 22 (16 bytes). Stored rows of any other shape are deleted first;
+  a real phone whose row went stores itself again with its next daily resend;
+- limits new devices per visitor: at most **5 an hour and 20 a Korean day**, the visitor being the salted
+  hash of the first forwarded address and the Korean date (as for tips, 008, and place reports, 012), counted
+  in `push_device_rate`, which no API role can read or write. Over the limit the save answers
+  `PUSH_DEVICE_RATE_LIMITED` and the browser shows alerts as off. The global caps (500 new a day, 50 000 in
+  all) stay. Updating a device that is already stored is never limited.
+
 ## What a visitor does
 
 - **iPhone:** add the site to the home screen (Safari share button → 홈 화면에 추가) and open it from there.
@@ -35,11 +48,17 @@ minutes, so 28 to 30 minutes). A tap opens the listing on the site.
 |---|---|
 | Browser | `js/ggongbab-push.js` (`BabdodukPush`): asks permission inside the tap, installs `sw.js`, subscribes with the public key, and sends the push address, the starred ids, the language and the site with the anon function `push_device_save`. After any star change, and once a day at most when nothing changed, it sends the list again; turning off unsubscribes and calls `push_device_remove`. A browser the server refused is unsubscribed again, so "켜짐" is never shown without a working row. |
 | Service worker | `sw.js` at the site root: shows the alert and opens the listing on our own site. No caching, no fetch handler. `vercel.json` serves it `no-cache`. |
-| Database | `push_devices`: endpoint (Apple, Google, Mozilla or Windows push services only), the two browser keys, up to 300 listing ids, `ko`/`en`, one of our three sites. No account, name, email or address. Closed to browsers; the backend key reads, counts failures and deletes. At most 500 new devices a day, 50 000 in all. |
-| Sender | `scripts/push/send.js` (Node, no packages; `scripts/push/webpush.js` is the RFC 8291 encryption and RFC 8292 VAPID signature). Every 2 minutes it reads the public feed (www.babdodukms.com, else lab); only when a listing starts within 30 minutes does it read the devices that starred it, then sends each one message once. The time and place always come from the newest feed, so a moved or withdrawn listing never alerts at the old time. A 404/410 forgets the device; ten refusals in a row too; a busy service is retried while it is still before the start. What went out is kept in `~/Babdoduk-ops/.local/push/sent.json` as hashes for two days. |
+| Database | `push_devices`: endpoint (Apple, Google, Mozilla or Windows push services only), the two browser keys, up to 300 listing ids, `ko`/`en`, one of our three sites. No account, name, email or address. Closed to browsers; the backend key reads, counts failures and deletes. At most 500 new devices a day, 50 000 in all, and (015) 5 new devices an hour and 20 a day per visitor; the keys must have a real browser key's shape (015). |
+| Sender | `scripts/push/send.js` (Node, no packages; `scripts/push/webpush.js` is the RFC 8291 encryption and RFC 8292 VAPID signature). Every 2 minutes it reads the public feed (www.babdodukms.com, else lab); only when a listing starts within 30 minutes does it read the devices that starred it (page by page, 1000 rows a request, until a short page: the database never answers more than 1000 rows at once), then sends each one message once. The time and place always come from the newest feed, so a moved or withdrawn listing never alerts at the old time. A 404/410 forgets the device; ten refusals in a row too; a busy service is retried while it is still before the start. What went out is kept in `~/Babdoduk-ops/.local/push/sent.json` as hashes for two days. |
 
 Check by hand on the ops computer: `node ~/Babdoduk-ops/scripts/push/send.js --dry-run` prints what would
 be sent (device hashes only) and sends nothing. The log is `journalctl --user -u babdoduk-push`.
+
+The service runs with `NoNewPrivileges=yes`, `UMask=0077` and `PrivateTmp=yes` (security audit 2026-11-13);
+on this PC's systemd 249 the user manager starts it fine but does not give a user unit its own `/tmp` (the
+sender writes nothing there). `keygen.js` keeps the credentials folder at 0700 even when it already existed.
+After pulling, `bash ~/Babdoduk-ops/scripts/push/setup.sh` (or copying the unit and `systemctl --user
+daemon-reload`) puts the new unit in place.
 
 ## Limits
 
@@ -56,7 +75,7 @@ be sent (device hashes only) and sends nothing. The log is `journalctl --user -u
 `tests/test_push_alerts.py`: the migration statically and, with `pgserver` and `psycopg`, on a throwaway
 PostgreSQL; the encryption against RFC 8291's worked example and decrypted the way a browser does; the VAPID
 signature verified; the sender with a fake clock, network and files (due window, once only, moved listings,
-gone and busy services, no database read when nothing is due, no secret printed); and the pages in Chrome
+gone and busy services, no database read when nothing is due, no secret printed, more than 1000 devices read page by page); 015 statically and on the throwaway PostgreSQL (key shapes, old rows deleted, 5 an hour and 20 a day per visitor, updates never limited, the rate table closed); the key folder's rights and the unit's hardening; and the pages in Chrome
 with a stand-in push service (the question, permission refused, server refused, Safari outside the
 home-screen app, other hosts, the daily resend, 마이 밥도둑). A real phone receiving a real alert is checked
 by hand.
