@@ -383,8 +383,8 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 | 단계 | 규칙 | 위치 |
 |------|------|------|
 | 브라우저 | 종료 시각이 지나면 카드·개수·레이더에서 바로 숨김. 종료 시각이 없으면(“11:30 ~ 소진 시까지”) 시작 후 3시간까지 보여 준다 — export 유예(`GGONGBAB_EXPIRED_GRACE_HOURS`)와 같은 창이다(MISS-001, 2026-09-28 승인). 행사일 없이 신청 마감만 있는 경품 행사는 마감 시각까지만 보여 준다(유예 없음) | `js/ggongbab-select.js` `eventEnd` · `isUpcoming` |
-| export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외 | `exporter.is_expired` |
-| 검증 | 종료 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
+| export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외. 종료 시각이 없고 `sessions` 가 있는 여러 날 행사는 **마지막 세션**의 종료(없으면 시작)가 기준이다(2026-11-13; 전에는 첫 세션 + 3시간에 사라졌다) | `exporter.last_moment` · `is_expired` |
+| 검증 | 종료(없으면 마지막 세션, 그것도 없으면 시작) 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
 
 화면에는 스냅숏의 **마지막 변경** 시각(`generatedAt`, KST)만 목록 맨 위에 보여 준다. 행사 내용이 같고 `generatedAt` 만 바뀐 export 는 커밋하지 않으므로(`publish_generated.py`) 이 시각은 마지막으로 확인한 때가 아니라 목록이 마지막으로 바뀐 때다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
 끝난 행사를 `latest.json` 에 다시 넣거나 위 검증 규칙을 느슨하게 하지 않는다.
@@ -401,7 +401,7 @@ live 피드는 “지금·앞으로 참여할 수 있는 꽁밥”, 아카이브
 | 조건 | 규칙 | 위치 |
 |------|------|------|
 | 공개 자격 | live 피드와 같은 함수: 음식 명시(`food.provided == "true"`) 또는 경품(`giveaway`), `status='published'`, `needs_review=false`, confidence ≥ 기준 | `exporter.publication_eligible` |
-| 끝남 | live 피드가 버리는 바로 그 규칙: 종료(없으면 시작) + 유예 3시간 < `now` | `exporter.is_expired` |
+| 끝남 | live 피드가 버리는 바로 그 규칙: 종료(없으면 마지막 세션, 그것도 없으면 시작) + 유예 3시간 < `now` | `exporter.is_expired` |
 | 공개된 적 있음 | 이 export 직전의 `latest.json` 또는 `archive/index.json` 에 실렸던 id 만 | `exporter.previously_listed_ids` |
 | 공개 기간 | 종료(없으면 시작)가 `now` 기준 30일 안 | `ARCHIVE_WINDOW_DAYS` |
 | 조회 | 최근 60일 안에 시작한 published 행을 읽기만 함(여러 날 행사 포함) | `repository.recent_published_events` |

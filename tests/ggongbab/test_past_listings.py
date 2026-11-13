@@ -91,6 +91,40 @@ def test_a_listed_eligible_row_is_live_or_archived_never_both_or_neither(setting
         assert sorted(live + past) == ["x"]
 
 
+def multi_day(first_day_offset_hours):
+    """Three daily noon hand-outs with no event_end, the first `first_day_offset_hours` before NOW."""
+    first = NOW - timedelta(hours=first_day_offset_hours)
+    days = [first + timedelta(days=d) for d in range(3)]
+    return row("multi", event_start=first.isoformat(), event_end=None,
+               _extras={"sessions": [{"start": d.isoformat(), "end": None} for d in days]})
+
+
+@pytest.mark.parametrize("first_day_offset_hours", [1, 21, 24 + 21])
+def test_a_multi_day_event_stays_live_until_its_last_session(settings, first_day_offset_hours):
+    """Audit 2026-11-13: with sessions and no event_end the event expired three hours after the
+    first session, so days two and three vanished from the feed and went to the archive."""
+    rows = [multi_day(first_day_offset_hours)]
+    live = build_payload(rows, settings, NOW, food_only=True)
+    assert ids(live) == ["multi"] and len(live["events"][0]["sessions"]) == 3
+    assert ids(archive(rows, settings)) == []
+    assert validate_ggongbab_payload(live, now=NOW) == []
+
+
+def test_a_multi_day_event_is_archived_after_its_last_session(settings):
+    rows = [multi_day(48 + settings.expired_grace_hours + 1)]
+    assert ids(build_payload(rows, settings, NOW, food_only=True)) == []
+    past = archive(rows, settings)
+    assert ids(past) == ["multi"]
+    assert validate_ggongbab_archive_payload(past, set()) == []
+
+
+def test_sessions_that_do_not_fit_do_not_extend_an_event(settings):
+    """Only sessions the feed would show count; a broken list keeps the old start + grace rule."""
+    broken = multi_day(21)
+    broken["_extras"]["sessions"].reverse()
+    assert ids(build_payload([broken], settings, NOW, food_only=True)) == []
+
+
 @pytest.mark.parametrize("over", [
     {"needs_review": True}, {"food_provided": "false"}, {"food_provided": "unknown"}, {"food_provided": None},
     {"status": "draft"}, {"status": "review"}, {"status": "rejected"}, {"status": "archived"},
