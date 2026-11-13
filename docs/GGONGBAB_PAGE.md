@@ -192,6 +192,9 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 7. **dedup / merge** — `dedup.find_match()` 로 기존 event 와 대조. 매치되면 `merge_into()` 로 빈 값만 채우고 충돌은 `needs_review`. `event_sources` 에 연결.
    같은 raw 항목이 다시 파싱되면(두레이 업무 수정, `PROMPT_VERSION` 변경) 그 항목뿐인 event 는 새 추출로 필드를 바꾸되 오너의 결정은 유지한다(2026-11-13): `rejected` · `archived` 는 그대로, 공개 중인 행은 공개를 유지하고 새 검토 사유는 `event_conflicts` 에 남긴다(`pipeline._update_linked`).
 8. **export** — `exporter.build_payload()` → staging 파일 → `validate_content.validate_ggongbab()` 통과 시에만 `latest.json` 교체.
+   그 전에 `exporter.drop_invalid_events()` 가 행사마다 따로 검증해 통과하지 못한 행사만 빼고 개수만 로그에 남긴다(2026-11-13;
+   전에는 행사 하나 때문에 export 전체가 실패해 모든 목록이 낡았다). 같은 날 닮은 제목 · 중복 id 는 뒤의 행사를 뺀다. 공개 텍스트의
+   `public_sanitizer.public_text()` 는 진짜 태그만 지운다: “<2026 가을 축제 푸드트럭>” 같은 제목은 그대로 둔다(페이지가 값을 escape 해서 보여 준다).
 
 로그에는 카운트만 찍는다. 메일 본문 · 주소 · 토큰은 출력하지 않는다.
 

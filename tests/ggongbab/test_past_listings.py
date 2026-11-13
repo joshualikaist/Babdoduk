@@ -347,6 +347,35 @@ def test_a_failing_archive_query_never_costs_the_live_feed_a_refresh(settings, d
     assert not (data_dir / ".staging").exists()
 
 
+def test_one_failing_event_is_left_out_instead_of_blocking_the_export(settings, data_dir, capsys):
+    """Audit 2026-11-13: one event the validator refused failed the whole export (exit 23), so
+    every other listing went stale. Now it alone is left out, with a value-free count."""
+    rows = [_fresh_row("good", ended_hours_ago=-48),
+            _fresh_row("empty-title", ended_hours_ago=-48, title="<br>"),            # nothing left after markup
+            _fresh_row("twin-a", ended_hours_ago=-30, title="공학관 피자 나눔"),
+            _fresh_row("twin-b", ended_hours_ago=-30, title="공학관 피자 나눔")]       # same-day look-alike
+    assert refresh_ggongbab.export(settings, StubRepo(rows), dry_run=False) == 0
+    listed = ids(_read(data_dir / "latest.json"))
+    assert uid("good") in listed and uid("empty-title") not in listed
+    assert len([i for i in listed if i in (uid("twin-a"), uid("twin-b"))]) == 1
+    assert validate_ggongbab_payload(_read(data_dir / "latest.json")) == []
+    out = capsys.readouterr().out
+    assert "2 event(s) failed public validation" in out
+    assert uid("empty-title") not in out and "피자" not in out      # Actions logs are public
+
+
+def test_a_bracketed_title_is_kept_and_real_markup_is_removed():
+    """Audit 2026-11-13: every <...> span was stripped, so "<2026 가을 축제 푸드트럭>" became an empty title."""
+    from ggongbab.public_sanitizer import public_text
+    assert public_text("<2026 가을 축제 푸드트럭>") == "<2026 가을 축제 푸드트럭>"
+    assert public_text("<KAIST 창업원> 점심 특강") == "<KAIST 창업원> 점심 특강"
+    assert public_text("점심 특강 <선착순 50명>") == "점심 특강 <선착순 50명>"
+    assert public_text("<b>피자</b> 제공<br/>") == "피자 제공"
+    assert public_text('<img alt="사진" src=x>점심') == "점심"
+    assert public_text("&lt;script&gt;x&lt;/script&gt;<!-- note -->") == "x"
+    assert public_text("문의 010-1234-5678") == "문의 [phone]"           # masking still runs before validation
+
+
 def test_dry_run_writes_neither_file(settings, data_dir, capsys):
     assert refresh_ggongbab.export(settings, StubRepo([_fresh_row("x")]), dry_run=True) == 0
     assert not (data_dir / "latest.json").exists() and not (data_dir / "archive").exists()

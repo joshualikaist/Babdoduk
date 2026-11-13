@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
@@ -213,6 +214,32 @@ def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[
         "count": len(events),
         "events": events,
     }
+
+
+_EVENT_TAG = re.compile(r"events\[(\d+)\]")
+
+
+def drop_invalid_events(payload: dict[str, Any], now: datetime) -> tuple[dict[str, Any], int]:
+    """The payload without the events that fail the public validator, and how many were dropped.
+
+    One bad event used to fail the whole export, so every other listing went stale with it
+    (audit 2026-11-13). Each event is validated on its own first; the cross-event rules
+    (duplicate id, same-day look-alike title) then drop the later event they name. A file-level
+    error cannot be fixed by dropping events and is left for the caller's full validation.
+    """
+    from validate_content import validate_ggongbab_payload  # scripts/ is on the path of every caller
+
+    def check(events: list[dict[str, Any]]) -> list[str]:
+        return validate_ggongbab_payload({**payload, "count": len(events), "events": events}, now)
+
+    events = payload.get("events") or []
+    kept = [event for event in events if not check([event])]
+    for _ in range(len(kept)):
+        bad = {int(m.group(1)) for error in check(kept) for m in [_EVENT_TAG.match(error)] if m}
+        if not bad:
+            break
+        kept = [event for index, event in enumerate(kept) if index not in bad]
+    return {**payload, "count": len(kept), "events": kept}, len(events) - len(kept)
 
 
 def write_payload(payload: dict[str, Any], out_dir: Path = DATA_DIR) -> Path:
