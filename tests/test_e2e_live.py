@@ -1,5 +1,8 @@
 """Pure helpers of scripts/e2e_live.py: the world cup phase and the link de-duplication."""
 import datetime as dt
+from types import SimpleNamespace
+
+import pytest
 
 import e2e_live as e2e
 
@@ -56,3 +59,18 @@ def test_post_violations_production_vs_lab():
 def test_parse_wc_window_reads_the_served_gate_script():
     text = 'x\nwindow.BABDODUK_WC_WINDOW = {"start": "2026-10-16", "end": "2026-10-23"};\n(function(){})();'
     assert e2e.parse_wc_window(text) == {"start": "2026-10-16", "end": "2026-10-23"}
+
+
+@pytest.mark.parametrize("host", [e2e.LAB_HOST, e2e.PROD_HOST])
+@pytest.mark.parametrize("removed_status", [200, 404])
+def test_deleted_calendar_must_stay_absent_on_both_sites(tmp_path, host, removed_status):
+    rep = e2e.Report("https://" + host, tmp_path)
+
+    def get(url, **_kwargs):
+        path = url.split(host + "/", 1)[1]
+        return SimpleNamespace(status=removed_status if path in e2e.REMOVED_PATHS
+                               else 200 if host == e2e.LAB_HOST else 404)
+
+    e2e.lab_only_checks(rep, SimpleNamespace(request=SimpleNamespace(get=get)))
+    assert len(rep.failures) == (2 if removed_status == 200 else 0)
+    assert {"calendar.ics", "calendar%2eics"} <= set(e2e.REMOVED_PATHS)
