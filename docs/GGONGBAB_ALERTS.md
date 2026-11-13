@@ -124,7 +124,9 @@ code there at the owner checkpoint before using the commands below.
    configuration on each evaluation, so no restart is needed.
 
    * `--store-telegram-token` prompts without echo.
-   * `--find-telegram-chat` prints your chat id.
+   * `--find-telegram-chat` prints your chat id: only a private chat whose sender is the chat itself.
+     `--use-telegram` refuses a group's (negative) id, and the bot reads only messages and buttons whose
+     sender is that private chat's owner (security audit 2026-11-13, `docs/INSTAGRAM_RADAR.md`).
    * `--test` sends exactly the safe connection message below. It does not assert
      that Portal/Radar are healthy and contains no source content.
 4. On GitHub, add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` as secrets of the

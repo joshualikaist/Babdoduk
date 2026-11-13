@@ -285,7 +285,7 @@ def test_the_unlock_button_on_an_unread_alert_clears_only_the_latch_it_was_sent_
     agent.cycle()
     assert bot.said[-1] == "🔓 안 읽은 메일 잠금은 이미 풀려 있어요."
     events = tr.Bot("t", "42").events([{"callback_query": {"id": "c", "data": "agent:ok:u1794447945",
-                                                           "message": {"chat": {"id": 42}}}}])
+                                                           "from": {"id": 42}, "message": {"chat": {"id": 42}}}}])
     assert events == [("agent", "ok", "u1794447945", "c")]
 
 
@@ -357,7 +357,7 @@ def test_agent_buttons_are_read_only_from_the_owners_chat():
     bot = tr.Bot("x", "42")
 
     def cb(data, chat=42):
-        return {"update_id": 1, "callback_query": {"id": "c", "data": data, "message": {"chat": {"id": chat}}}}
+        return {"update_id": 1, "callback_query": {"id": "c", "data": data, "from": {"id": chat}, "message": {"chat": {"id": chat}}}}
     events = bot.events([cb("agent:ok:0123456789ab"), cb("agent:no:0123456789ab", chat=7), cb("agent:ok:../../x"),
                          cb("agent:run:0123456789ab")])
     assert events == [("agent", "ok", "0123456789ab", "c")]
@@ -385,13 +385,13 @@ def test_the_radar_hands_a_tap_to_the_agent_and_says_who_answers_a_note(tmp_path
     bot = RadarBot()
     config = Config(version="v26.0", ig_user_id="1", token="t", primary="gpt-6-luna", review="gpt-6.1-terra")
     radar = Radar(tmp_path, config=config, graph=None, judge=None, bot=bot, now=lambda: NOW, sleep=lambda s: None)
-    bot.pending = [{"update_id": 1, "message": {"chat": {"id": 42}, "text": "첫 메모"}}]
+    bot.pending = [{"update_id": 1, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": "첫 메모"}}]
     radar.handle_updates(0)
     assert "메모로 저장했습니다" in bot.said[-1]
     oa.set_enabled(tmp_path, True, NOW)
-    bot.pending = [{"update_id": 2, "message": {"chat": {"id": 42}, "text": "둘째 메모"}},
+    bot.pending = [{"update_id": 2, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": "둘째 메모"}},
                    {"update_id": 3, "callback_query": {"id": "c9", "data": "agent:ok:0123456789ab",
-                                                       "message": {"chat": {"id": 42}}}}]
+                                                       "from": {"id": 42}, "message": {"chat": {"id": 42}}}}]
     radar.handle_updates(0)
     assert bot.said[-1] == "📝 받았습니다. 상태를 확인하고 몇 분 안에 답할게요."
     assert bot.answered == ["확인했습니다. 곧 처리합니다"]

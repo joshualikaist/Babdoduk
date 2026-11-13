@@ -255,7 +255,7 @@ def test_before_the_migration_the_review_is_one_quiet_line_a_day(make):
 def test_tip_buttons_are_read_only_from_the_owners_chat_and_only_with_a_uuid():
     bot = RealBot("x", "42")
     def cb(data, chat=42):
-        return {"update_id": 1, "callback_query": {"id": "c", "data": data, "message": {"chat": {"id": chat}}}}
+        return {"update_id": 1, "callback_query": {"id": "c", "data": data, "from": {"id": chat}, "message": {"chat": {"id": chat}}}}
     events = bot.events([cb(f"tip:ok:{TIP_A}"), cb(f"tip:no:{TIP_A}", chat=7), cb("tip:ok:../../etc"),
                          cb(f"tip:delete:{TIP_A}")])
     assert events == [("tip", "ok", TIP_A, "c")]
@@ -371,7 +371,7 @@ def test_the_edit_button_and_a_reply_to_its_prompt_reach_the_tip(tmp_path):
     from ggongbab.instagram.radar import Config, Radar
     bot = RealBot("x", "42")
     def cb(data, chat=42):
-        return {"update_id": 1, "callback_query": {"id": "c", "data": data, "message": {"chat": {"id": chat}}}}
+        return {"update_id": 1, "callback_query": {"id": "c", "data": data, "from": {"id": chat}, "message": {"chat": {"id": chat}}}}
     assert bot.events([cb(f"tip:edit:{TIP_A}"), cb(f"tip:edit:{TIP_A}", chat=7)]) == [("tip", "edit", TIP_A, "c")]
 
     class RadarBot(RealBot):
@@ -398,7 +398,7 @@ def test_the_edit_button_and_a_reply_to_its_prompt_reach_the_tip(tmp_path):
     radar = Radar(tmp_path, config=config, graph=None, judge=None, bot=RadarBot(), now=lambda: NOW, sleep=lambda s: None)
     radar.tips = FakeTips()
     radar.store.put("tipedit:701", TIP_A)
-    radar.bot.pending = [{"update_id": 5, "message": {"chat": {"id": 42}, "text": "날짜: 11-05",
+    radar.bot.pending = [{"update_id": 5, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": "날짜: 11-05",
                                                       "reply_to_message": {"message_id": 701}}}]
     radar.handle_updates(0)
     assert radar.tips.edits == [(TIP_A, "날짜: 11-05")] and radar.bot.said == []

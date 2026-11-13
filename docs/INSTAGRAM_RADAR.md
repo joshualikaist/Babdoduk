@@ -136,6 +136,13 @@ few minutes later; it sends the message, its photo and a masked state summary to
 radar's own model. While it is off, the bot answers "📝 메모로 저장했습니다" and nothing is sent anywhere.
 The agent's ✅/❌ questions (`agent:ok` / `agent:no`) come back through this bot as well.
 
+Who is listened to (security audit 2026-11-13): an update counts only when it comes from the configured
+chat **and** its sender (`from.id`) is that same id, which is true only in the owner's own private chat
+with the bot (`telegram_review.Bot.from_owner`). Anything posted in a group the bot was added to (negative
+chat id), by another person, or without a sender is dropped before it can become a button press, a note, a
+login request or a refresh. `alert_push.py --use-telegram` therefore takes only a positive (private) chat
+id, and `--find-telegram-chat` lists only private chats whose sender is the chat itself.
+
 A message that is only a login request ("로그인", "다시 로그인", "/login") and the 🔑 button under a login
 alert or an approval code (`login:go`) are not notes: the bot starts the Easy Login request at once
 (`Radar.request_login`, `docs/PORTAL_EASY_LOGIN_ASSIST.md`).
