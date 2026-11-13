@@ -87,8 +87,8 @@ def score_pair(cand: EventCandidate, row: dict[str, Any]) -> float:
     if depts1 and depts2 and not depts1 & depts2:
         # "2026 AI컴퓨팅학과 학과설명회" vs "2026 AI시스템학과 학과설명회": the titles name two
         # different departments, which is an organizer conflict even when no organizer was extracted.
-        org_conflict = True
-        score -= 0.10
+        # A shared room/start must not override explicit, different department names.
+        return 0.0
     building_conflict = bool(b1 and b2) and b1 != b2 and not same_building(cand.building, row.get("building"))
     if (title_sim >= 0.92 and d1 == d2 and (not both_timed or c1 == c2)
             and not org_conflict and not building_conflict):

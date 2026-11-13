@@ -282,6 +282,14 @@ def test_same_title_same_day_but_hours_apart_is_two_events():
     assert find_match(_cand("AI 세미나", start="2026-11-20T15:00:00+09:00"), [same], 0.72) is None
 
 
+def test_different_departments_in_the_same_room_at_the_same_time_stay_separate():
+    start = "2026-11-23T18:00:00+09:00"
+    one = _cand("2026 AI컴퓨팅학과 학과설명회", start=start, building="N1", room="101호")
+    two = _cand("2026 AI시스템학과 학과설명회", start=start, building="N1", room="101호")
+    assert find_match(one, [two.to_db_row()], 0.72) is None
+    assert find_match(two, [one.to_db_row()], 0.72) is None
+
+
 @pytest.mark.parametrize("existing, incoming", [
     # one session, two mails: brackets, 안내/설명회 and spacing differ
     ({"title": "[전산학부] 학과 설명회", "event_start": "2026-11-23T18:00:00+09:00", "building": "E3"},

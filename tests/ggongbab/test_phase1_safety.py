@@ -173,6 +173,33 @@ def test_a_doubtful_re_parse_does_not_empty_an_approved_event(settings):
                          food_only=True)["count"] == 1
 
 
+@pytest.mark.parametrize("changes", [
+    {"confidence": 0.2},
+    {"food_provided": "false"},
+    {"event_start": datetime(2026, 11, 21, 17, 30, tzinfo=KST)},
+])
+def test_a_doubtful_re_parse_keeps_approved_nonempty_facts(settings, changes):
+    repo = MemoryRepository()
+    pipe = Pipeline(settings, repo, None, [])
+    start = datetime(2026, 11, 20, 12, tzinfo=KST)
+    approved = _candidate("학과 간담회", start)
+    event_id = pipe.store_candidate(approved, "raw-1")
+    before = repo.get_event(event_id).copy()
+    doubtful = _candidate("학과 간담회", start, room="102호", needs_review=True,
+                          review_reasons=["AI 검토 요청: 애매함"])
+    for key, value in changes.items():
+        setattr(doubtful, key, value)
+    pipe.store_candidate(doubtful, "raw-1")
+    row = repo.get_event(event_id)
+    for key in ("confidence", "food_provided", "event_start"):
+        assert row[key] == before[key]
+    assert row["status"] == "published" and row["needs_review"] is False
+    assert row["room"] == "102호"
+    assert repo.conflicts and "애매함" in repo.conflicts[0]["summary"]
+    assert build_payload(repo.publishable_events(), settings,
+                         now=datetime(2026, 11, 13, tzinfo=KST), food_only=True)["count"] == 1
+
+
 def test_different_source_on_another_day_stays_a_separate_event(settings):
     repo = MemoryRepository()
     pipe = Pipeline(settings, repo, None, [])

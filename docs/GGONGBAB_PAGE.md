@@ -190,7 +190,7 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 5. **AI** — Luna 호출 → `validator.fallback_reasons()` → 필요 시 Terra.
 6. **validate** — `validator.validate()` 가 AI 결과를 규칙과 대조한다(아래 8절).
 7. **dedup / merge** — `dedup.find_match()` 로 기존 event 와 대조. 매치되면 `merge_into()` 로 빈 값만 채우고 충돌은 `needs_review`. `event_sources` 에 연결.
-   같은 raw 항목이 다시 파싱되면(두레이 업무 수정, `PROMPT_VERSION` 변경) 그 항목뿐인 event 는 새 추출로 필드를 바꾸되 오너의 결정은 유지한다(2026-11-13): `rejected` · `archived` 는 그대로, 공개 중인 행은 공개를 유지하고 새 검토 사유는 `event_conflicts` 에 남긴다(`pipeline._update_linked`).
+   같은 raw 항목이 다시 파싱되면(두레이 업무 수정, `PROMPT_VERSION` 변경) 그 항목뿐인 event 는 새 추출로 필드를 바꾸되 오너의 결정은 유지한다(2026-11-13): `rejected` · `archived` 는 그대로, 공개 중인 행은 공개를 유지하고 새 검토 사유는 `event_conflicts` 에 남긴다(`pipeline._update_linked`). 의심스러운 재분석은 승인된 기존 값(날짜·음식 제공 여부·확신도 등)을 바꾸지 않고, 이전에 비어 있던 칸만 채운다. 검토 사유가 없는 정상 재분석은 변경된 시간 등을 계속 반영한다.
 8. **export** — `exporter.build_payload()` → staging 파일 → `validate_content.validate_ggongbab()` 통과 시에만 `latest.json` 교체.
    그 전에 `exporter.drop_invalid_events()` 가 행사마다 따로 검증해 통과하지 못한 행사만 빼고 개수만 로그에 남긴다(2026-11-13;
    전에는 행사 하나 때문에 export 전체가 실패해 모든 목록이 낡았다). 같은 날 닮은 제목 · 중복 id 는 뒤의 행사를 뺀다. 공개 텍스트의
@@ -294,7 +294,7 @@ Supabase 공개 투영(lab 의 DB 피드)에는 실리지 않는다: 행에 새 
 | 주최 유사 | +0.10 |
 | 같은 건물 / 다른 건물 | +0.10 / −0.10 |
 | 같은 날, 두 시작 시각이 1시간 넘게 차이 | −0.25 |
-| 두 제목이 서로 다른 학과·학부 이름을 담음 (`전산학부` vs `기계공학과`) | −0.10, 주최 충돌로 본다 |
+| 두 제목이 서로 다른 학과·학부 이름을 담음 (`전산학부` vs `기계공학과`) | 같은 시간·장소여도 별개 행사로 유지(점수 0) |
 
 정규화 제목(`normalize_title`)은 `[...]` · `(...)` 안의 글자를 지우지 않는다(괄호만 지운다). 영어 불용어(the, of, and, for, a)는
 낱말 단위로만 지운다(“AI” 가 “i” 가 되지 않게). 같은 날 제목이 0.92 이상 닮으면 0.9 로 끌어올리는 규칙은 두 시작 시각이
