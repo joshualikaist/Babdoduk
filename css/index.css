@@ -1588,13 +1588,17 @@ html[data-wc-phase="soon"] .home-wc-photo {
   margin-top: var(--space-3);
 }
 
+/* A card like the calendar above it, edge to edge with it (owner 2026-11-13: the 학식 line floated outside
+   any card, its parts scattered over two lines). */
 .home-status {
   display: flex;
   gap: 12px;
   align-items: center;
   min-width: 0;
-  padding: 8px 4px;
-  border-radius: var(--radius-sm);
+  padding: 14px 28px 14px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid rgba(30, 29, 26, 0.1);
   color: inherit;
   text-decoration: none;
 }
@@ -1649,6 +1653,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 
 .home-status-cta {
   margin-left: auto;
+  white-space: nowrap;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-accent);

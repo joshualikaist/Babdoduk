@@ -1372,12 +1372,14 @@ def hub_layout(page, width, report):
         near(r["tabs"]["x"], 16)
         near(r["tabs"]["w"], width - 32)
     else:
-        near(r["page"]["x"], 360)
-        near(r["page"]["w"], 720)
-        near(r["radar"]["x"], 384)
-        near(r["radar"]["w"], 672)
-        near(r["tabs"]["x"], 384)
-        near(r["tabs"]["w"], 672)
+        # One content column on every page since owner 2026-11-13 ("글씨 정렬"): 760 wide, 16 gutter.
+        left = (page.evaluate("document.documentElement.clientWidth") - 760) / 2   # without the scrollbar
+        near(r["page"]["x"], left)
+        near(r["page"]["w"], 760)
+        near(r["radar"]["x"], left + 16)
+        near(r["radar"]["w"], 728)
+        near(r["tabs"]["x"], left + 16)
+        near(r["tabs"]["w"], 728)
     assert page.locator(".food-hub-tab").count() == 2
     assert "풍년" in page.locator(".gg-radar-title").inner_text()
     assert page.locator("[data-featured]").count() == 1
@@ -1407,8 +1409,8 @@ def hub_menu_flow(page, width, report):
     if width >= 720:
         boxes = page.locator(".km-card").evaluate_all(
             "els => els.slice(0,2).map(el => { const r = el.getBoundingClientRect(); return {x:r.x,w:r.width}; })")
-        near(round(boxes[0]["w"]), 330)
-        near(round(boxes[1]["w"]), 330)
+        near(round(boxes[0]["w"]), 358)   # (728 - 12) / 2 in the shared 760 column (owner 2026-11-13)
+        near(round(boxes[1]["w"]), 358)
         near(round(boxes[0]["x"] + boxes[0]["w"] + 12), round(boxes[1]["x"]))
         report["checks"] += 3
     page.locator("#foodHubTabFree").click()
@@ -1457,11 +1459,12 @@ def run_checks(preview=False):
                 near(r["filter"]["x"], 0)
                 near(r["filter"]["w"], width)
             else:
-                near(r["page"]["x"], 360)
-                near(r["filter"]["x"], 360)
-                near(r["filter"]["w"], 720)
-                near(r["card"]["x"], 384)
-                near(r["card"]["w"], 672)
+                left = (page.evaluate("document.documentElement.clientWidth") - 760) / 2   # the shared 760 column since owner 2026-11-13
+                near(r["page"]["x"], left)
+                near(r["filter"]["x"], left)
+                near(r["filter"]["w"], 760)
+                near(r["card"]["x"], left + 16)
+                near(r["card"]["w"], 728)
             assert page.evaluate("document.documentElement.scrollWidth") <= width
             report["checks"] += 6
             # A listing is a row (2026-11-05): the title is one clamped line, the details start closed,

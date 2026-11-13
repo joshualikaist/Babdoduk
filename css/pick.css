@@ -2,10 +2,12 @@
    (css/worldcup.css .wc-gacha, the start gacha) on its night stage, then the card that names the pick.
    The machine is 220 x 330 at --k = 1, as on the world cup; only transform and opacity move. */
 
+/* Page head like every content page (owner 2026-11-13, "글씨 정렬"): 760 column, 16 gutter, 32 above the title, .page-title size. */
 .pick-page {
-  width: min(640px, calc(100% - 32px));
+  width: 100%;
+  max-width: 760px;
   margin: 0 auto;
-  padding: calc(var(--nav-h, 56px) + 32px) 0 72px;
+  padding: var(--space-8) 16px 72px;
 }
 
 .pick-head {
@@ -441,10 +443,6 @@
 }
 
 @media (max-width: 640px) {
-  .pick-page {
-    padding-top: calc(var(--nav-h, 56px) + 20px);
-  }
-
   .pick-head {
     padding-right: 84px;
   }

@@ -53,7 +53,8 @@ def test_the_policy_is_linked_from_my_babdoduk():
     if not (ROOT / "my.html").exists():
         pytest.skip("마이 밥도둑 is lab-only; production has no sign-in page yet")
     my = (ROOT / "my.html").read_text(encoding="utf-8")
-    assert '<a href="privacy.html" data-i18n="my.privacyLink">개인정보처리방침</a>' in my
+    # Owner 2026-11-13: the footer's link is the one on 마이 밥도둑 (a second link above it was a duplicate).
+    assert 'href="privacy.html" class="footer-apple-a footer-apple-privacy"' in my
 
 
 @pytest.fixture(scope="module")

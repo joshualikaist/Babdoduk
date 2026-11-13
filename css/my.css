@@ -7,7 +7,7 @@
   width: 100%;
   max-width: 760px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-16);
+  padding: var(--space-8) var(--space-4) var(--space-16);
   color: var(--color-ink);
 }
 
@@ -23,21 +23,8 @@
   border: 0;
 }
 
-.my-hero {
-  padding: 24px 20px;
-  border: 1px solid var(--color-divider);
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at 100% 0%, var(--color-accent-wash) 0, transparent 50%),
-    var(--color-surface);
-}
-
-.my-kicker {
-  margin: 0 0 var(--space-2);
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--color-accent);
-}
+/* A plain page head like every content page (owner 2026-11-13): no card, no label. */
+.my-hero { padding: 0 0 var(--space-2); }
 
 .my-title { margin: 0; word-break: keep-all; overflow-wrap: anywhere; }
 
@@ -372,17 +359,12 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 .my-toast:not(:empty) { padding: 10px 18px; }
 
 @media (min-width: 768px) {
-  .my-page { padding-top: var(--space-8); }
-  .my-hero { padding: 32px 28px; }
   .my-card { padding: 24px; }
   .my-login { grid-template-columns: 1fr 1fr; }
   .my-login .my-note { grid-column: 1 / -1; }
 }
 
 /* 개인정보처리방침 링크 (privacy.html): the page's last line, quiet but easy to tap */
-.my-privacy { margin: 28px 0 0; text-align: center; font-size: 0.9rem; }
-.my-privacy a { display: inline-block; padding: 10px 6px; color: #6e6e73; text-decoration: underline; text-underline-offset: 3px; }
-.my-privacy a:hover { color: #1d1d1f; }
 
 /* 내 캘린더에 연결 (docs/CALENDAR_FEED.md): one full-width button. */
 .my-cal-btn { display: flex; width: 100%; min-height: 48px; margin: var(--space-3) 0 var(--space-2); }
