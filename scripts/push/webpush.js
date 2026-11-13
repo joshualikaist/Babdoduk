@@ -47,18 +47,22 @@ function encrypt(plaintext, p256dh, auth, opts = {}) {
 }
 
 // A new key pair, as kept in the credential file: {publicKey, privateKey} in base64url (65 and 32 bytes).
+// Node drops leading zero bytes of the private number (about 1 key in 256 is shorter than 32 bytes), so it is
+// padded back; a key file written before this fix is padded when read (signingKey).
+function pad32(buf) { return buf.length >= 32 ? buf : Buffer.concat([Buffer.alloc(32 - buf.length), buf]); }
 function generateKeys() {
   const ecdh = crypto.createECDH('prime256v1');
   ecdh.generateKeys();
-  return { publicKey: b64u(ecdh.getPublicKey()), privateKey: b64u(ecdh.getPrivateKey()) };
+  return { publicKey: b64u(ecdh.getPublicKey()), privateKey: b64u(pad32(ecdh.getPrivateKey())) };
 }
 
 function signingKey(keys) {
   const pub = unb64u(keys.publicKey);
-  if (pub.length !== 65 || pub[0] !== 4 || unb64u(keys.privateKey).length !== 32) throw new Error('bad key file');
+  const d = unb64u(keys.privateKey);
+  if (pub.length !== 65 || pub[0] !== 4 || d.length < 1 || d.length > 32) throw new Error('bad key file');
   return crypto.createPrivateKey({
     format: 'jwk',
-    key: { kty: 'EC', crv: 'P-256', d: keys.privateKey, x: b64u(pub.subarray(1, 33)), y: b64u(pub.subarray(33)) }
+    key: { kty: 'EC', crv: 'P-256', d: b64u(pad32(d)), x: b64u(pub.subarray(1, 33)), y: b64u(pub.subarray(33)) }
   });
 }
 

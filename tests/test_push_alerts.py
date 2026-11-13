@@ -602,3 +602,40 @@ def test_a_database_hiccup_after_a_delivered_alert_never_sends_it_again(tmp_path
     # same alert went out again every two minutes.
     out = node(FLAKY_DB, str(tmp_path / "sent.json"))
     assert out == {"delivered": 1, "saved": 1}
+
+
+BAD_KEY_ROW = FLAKY_DB.replace("[dev('a'), dev('b')]", "[dev('a'), Object.assign(dev('bad'), { p256dh: 'BA' + 'A'.repeat(85) }), dev('c')]").replace(
+    "if (url.endsWith('/send/a')) { delivered++; return { status: 201 }; }",
+    "if (url.endsWith('/send/a') || url.endsWith('/send/c')) { delivered++; return { status: 201 }; }\n  if (init && init.method === 'PATCH') return { ok: true, status: 204 };")
+
+
+def test_a_stored_row_that_cannot_encrypt_never_stops_the_phones_after_it(tmp_path):
+    # Security audit 2026-11-13: anyone can store keys of the right length that are not a curve point; the
+    # sender threw on that row and every later phone lost its alert, run after run.
+    out = node(BAD_KEY_ROW, str(tmp_path / "sent.json"))
+    assert out == {"delivered": 2, "saved": 3}, "both good phones once; the bad row is marked and never retried"
+
+
+SHORT_KEY = r"""
+const w = require('./scripts/push/webpush.js');
+const crypto = require('crypto');
+let made = 0, short = 0;
+while (made < 3) {   // a private number with a leading zero byte: Node gives 31 bytes
+  const e = crypto.createECDH('prime256v1'); e.generateKeys();
+  if (e.getPrivateKey().length === 32) continue;
+  made++;
+  const keys = { publicKey: w.b64u(e.getPublicKey()), privateKey: w.b64u(e.getPrivateKey()) };
+  const h = w.vapidAuthorization('https://web.push.apple.com/x', keys, 'https://www.babdodukms.com', 0);
+  const m = h.match(/^vapid t=([^.]+)\.([^.]+)\.([^,]+), k=/);
+  const pub = w.unb64u(keys.publicKey);
+  const key = crypto.createPublicKey({ format: 'jwk', key: { kty: 'EC', crv: 'P-256', x: w.b64u(pub.subarray(1, 33)), y: w.b64u(pub.subarray(33)) } });
+  if (!crypto.verify('sha256', Buffer.from(m[1] + '.' + m[2]), { key, dsaEncoding: 'ieee-p1363' }, w.unb64u(m[3]))) short++;
+}
+for (let i = 0; i < 2000; i++) if (w.unb64u(w.generateKeys().privateKey).length !== 32) short++;
+console.log(JSON.stringify({ bad: short }));
+"""
+
+
+def test_a_private_key_with_a_leading_zero_byte_still_signs():
+    # Audit 2026-11-13: about 1 key in 256 came out 31 bytes long and every alert signature failed.
+    assert node(SHORT_KEY) == {"bad": 0}

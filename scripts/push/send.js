@@ -134,9 +134,16 @@ async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRu
       if (!wanted.has(ev.id) || sent[sentKey(device, ev)]) continue;
       const msg = message(ev, device, nowMs);
       if (dryRun) { log('push (dry run): ' + hashOf(device.endpoint).slice(0, 8) + ' ← ' + msg.title + ' / ' + msg.body); continue; }
-      const req = webpush.pushRequest(device, msg, keys, SUBJECT, { ttl: (Date.parse(ev.startAt) - nowMs) / 1000, now: nowMs });
-      let status = 0;
-      try { status = (await fetchImpl(req.url, req.init)).status; } catch (err) { status = 0; }
+      // A row whose keys cannot encrypt (anyone can store one) counts as refused for good, so it never stops the
+      // phones after it (security audit 2026-11-13); a push service that hangs is given 10 seconds.
+      let req = null;
+      try { req = webpush.pushRequest(device, msg, keys, SUBJECT, { ttl: (Date.parse(ev.startAt) - nowMs) / 1000, now: nowMs }); }
+      catch (err) { req = null; }
+      let status = 400;
+      if (req) {
+        try { status = (await fetchImpl(req.url, Object.assign({ signal: AbortSignal.timeout(10000) }, req.init))).status; }
+        catch (err) { status = 0; }
+      }
       if (status >= 200 && status < 300) {
         sent[sentKey(device, ev)] = new Date(nowMs).toISOString();
         summary.sent++;
