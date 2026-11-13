@@ -127,6 +127,46 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 
 ---
 
+### 응답 보안과 파일 보관 (2026-11-13)
+
+`vercel.json`의 응답 설정은 모든 경로(자료·달력 함수·오류 응답 포함)에 파일 형식 추측 금지,
+다른 사이트로 넘어갈 때 출처 주소 제한, 같은 사이트에서만 화면 안에 넣기, 쓰지 않는 카메라·마이크·위치·결제·외부 장치 기능 끄기를 적용한다.
+페이지에는 추가로 `Content-Security-Policy`를 적용한다. 주소 기준은 같은 사이트이며,
+외부 실행 파일은 기존 무결성 검사값이 있는 수파베이스·카카오의 정확한 버전 주소만 허용한다.
+구글 글꼴 주소와 글꼴 설정은 바꾸지 않는다. 페이지 안 번역표와 기존 스타일 때문에 `'unsafe-inline'`을 유지하며,
+지도 압축 해제에 필요한 `'wasm-unsafe-eval'`과 `blob:` 작업자만 허용한다. 일반 `'unsafe-eval'`은 허용하지 않는다.
+매거진 사진은 매일 달라지는 원문 사이트에서 오므로 안전한 연결의 사진(`img-src https:`)을 허용한다.
+이 예외로 외부 실행 파일이나 외부 서버 연결이 허용되는 것은 아니다.
+자료 서버는 현재 공개 수파베이스 주소와 실험 사이트의 실시간 연결 주소,
+카카오 공유 검증 서버만 허용한다. 카카오 공유의 창·앱 연결과 전송 대상도 별도로 명시한다.
+
+파일을 오래 보관하는 범위는 다음과 같다.
+
+| 대상 | 응답 설정 |
+|---|---|
+| 페이지·자료 파일·내용 표시가 없는 실행 파일과 스타일 | `public, max-age=0, must-revalidate` |
+| 내용 표시 `?v=<10자리 16진수>`가 붙은 실행 파일·스타일 | `public, max-age=31536000, immutable` |
+| 버전 폴더 `js/vendor/three-0.186.1/` | `public, max-age=31536000, immutable` |
+| `/sw.js` | 기존 `no-cache` 유지 |
+| 개인 달력 응답 | 함수의 기존 `private, no-store` 유지 |
+
+`python scripts/sync_site_chrome.py`가 실행 파일·스타일 내용의 `sha256` 앞 10자리를 주소에 붙인다.
+지도처럼 모듈을 이어 읽는 경우에는 안쪽 모듈부터 계산해 가져오는 모듈과 페이지의 주소도 바꾼다.
+`--check`는 빠지거나 낡은 표시를 거부한다. 외부 실행 파일의 무결성 검사와 개인 달력 함수의
+`includeFiles`는 그대로이며, 달력 함수가 읽는 파일 이름에는 내용 표시를 붙이지 않는다.
+
+`tests/test_deploy_config.py`가 응답 범위·허용 대상·보관 기간을 검사한다.
+`scripts/check_site_ui.py`의 `security-policy` 묶음은 같은 설정을 실제 응답 머리말로 넣어
+모든 공개 페이지를 두 언어와 1440·390·360 너비로 열고, 지도 압축 해제까지 확인한다.
+실제 계정·자료 서버 요청은 차단하고, 보안 설정 때문에 막힌 요청은 별도로 기록해 하나라도 있으면 실패한다.
+금지된 외부 실행 파일을 넣어 기록 장치가 작동하는지도 확인한다.
+실험 사이트 배포 뒤에는 휴대폰·컴퓨터에서 로그인·별 저장·알림·메뉴 뽑기·지도·매거진을 다시 확인한다.
+문제가 생기면 응답 설정을 넣은 변경만 되돌리고, 검사나 화면 기준 사진은 약화하지 않는다.
+
+설정 근거: [배포 설정 공식 문서](https://vercel.com/docs/project-configuration/vercel-json),
+[화면 보안 정책 설명](https://developer.mozilla.org/ko/docs/Web/HTTP/Guides/CSP),
+[지도 압축 실행 허용의 범위](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/script-src).
+
 ## 5. 다른 호스팅 (참고)
 
 - **GitHub Pages / Netlify** … 게시 브랜치를 **`main`** 으로 두고, 실험은 다른 브랜치 + 프리뷰로 검증하는 패턴이 동일합니다.

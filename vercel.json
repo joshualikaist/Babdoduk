@@ -2,6 +2,60 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "routes": [
     {
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "X-Frame-Options": "SAMEORIGIN",
+        "Content-Security-Policy": "frame-ancestors 'self'",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+      },
+      "continue": true
+    },
+    {
+      "src": "/(?:|.*\\.html)",
+      "headers": {
+        "Content-Security-Policy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' blob: https://myjglfynhnptlclawlcc.supabase.co wss://myjglfynhnptlclawlcc.supabase.co https://kapi.kakao.com; worker-src 'self' blob:; frame-src 'self' https://kauth.kakao.com https://sharer.kakao.com kakaolink: kakaotalk:; form-action 'self' https://sharer.kakao.com; media-src 'self' blob:; manifest-src 'self'",
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      },
+      "continue": true
+    },
+    {
+      "src": "/data/.*\\.json",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      },
+      "continue": true
+    },
+    {
+      "src": "/(?:js|css)/.*\\.(?:js|css)",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      },
+      "continue": true
+    },
+    {
+      "src": "/(?:js|css)/.*\\.(?:js|css)",
+      "has": [
+        {
+          "type": "query",
+          "key": "v",
+          "value": "[0-9a-f]{10}"
+        }
+      ],
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      },
+      "continue": true
+    },
+    {
+      "src": "/js/vendor/three-0\\.186\\.1/(.*)",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      },
+      "continue": true
+    },
+    {
       "src": "/data/(.*)",
       "headers": {
         "Access-Control-Allow-Origin": "https://www.babdodukms.com",
