@@ -324,9 +324,21 @@ class Pipeline:
             self.stats.events_created += 1
             return event_id
         if self.repo.event_source_count(event_id) <= 1:
-            # The only source behind this event: the new extraction replaces it.
+            # The only source behind this event: the new extraction replaces its
+            # fields, but never the owner's decision (audit 2026-11-13). A rejected
+            # or archived event stays so, and a published one stays public while the
+            # re-parse's doubts go to the conflict log, as for a second source.
             updated = cand.to_db_row()
             notes: list[str] = []
+            status = current.get("status")
+            if status in ("rejected", "archived"):
+                for key in ("status", "needs_review", "review_reason"):
+                    updated[key] = current.get(key)
+            elif status == "published" and not current.get("needs_review"):
+                notes = list(cand.review_reasons)
+                if cand.needs_review and not notes:
+                    notes.append("re-parse withheld")
+                updated, _reasons = keep_published_version(current, updated, notes)
         else:
             updated, notes = self._merge_preserving_public(current, cand)
         return self._commit_public_merge(event_id, raw_item_id, updated, notes, 1.0)

@@ -190,6 +190,7 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 5. **AI** — Luna 호출 → `validator.fallback_reasons()` → 필요 시 Terra.
 6. **validate** — `validator.validate()` 가 AI 결과를 규칙과 대조한다(아래 8절).
 7. **dedup / merge** — `dedup.find_match()` 로 기존 event 와 대조. 매치되면 `merge_into()` 로 빈 값만 채우고 충돌은 `needs_review`. `event_sources` 에 연결.
+   같은 raw 항목이 다시 파싱되면(두레이 업무 수정, `PROMPT_VERSION` 변경) 그 항목뿐인 event 는 새 추출로 필드를 바꾸되 오너의 결정은 유지한다(2026-11-13): `rejected` · `archived` 는 그대로, 공개 중인 행은 공개를 유지하고 새 검토 사유는 `event_conflicts` 에 남긴다(`pipeline._update_linked`).
 8. **export** — `exporter.build_payload()` → staging 파일 → `validate_content.validate_ggongbab()` 통과 시에만 `latest.json` 교체.
 
 로그에는 카운트만 찍는다. 메일 본문 · 주소 · 토큰은 출력하지 않는다.

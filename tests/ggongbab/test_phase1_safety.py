@@ -120,6 +120,41 @@ def test_same_raw_item_keeps_one_event_when_the_start_changes(settings):
     assert repo.events[event_id]["event_start"].startswith("2026-10-02T18:00:00")
 
 
+@pytest.mark.parametrize("decision", ["rejected", "archived"])
+def test_re_parse_of_the_only_source_keeps_the_owners_rejection(settings, decision):
+    """Audit 2026-11-13: an edited Dooray task (or a PROMPT_VERSION bump) re-parses the one raw
+    item behind an event; the owner's ❌ must survive instead of coming back published."""
+    repo = MemoryRepository()
+    pipe = Pipeline(settings, repo, None, [])
+    start = datetime(2026, 11, 20, 12, 0, tzinfo=KST)
+    event_id = pipe.store_candidate(_candidate("학과 간담회", start), "raw-1")
+    repo.events[event_id].update(status=decision, needs_review=False, review_reason=None)
+    pipe.store_candidate(_candidate("학과 간담회", start, room="102호"), "raw-1")
+    row = repo.get_event(event_id)
+    assert row["status"] == decision and row["needs_review"] is False
+    assert row["room"] == "102호"
+    assert build_payload(repo.publishable_events(), settings, now=datetime(2026, 11, 13, tzinfo=KST),
+                         food_only=True)["count"] == 0
+
+
+def test_re_parse_of_the_only_source_keeps_the_owners_approval(settings):
+    """Audit 2026-11-13: the owner's ✅ on a held event must not drop back to review when the same
+    item is parsed again with the same doubt; the doubt goes to the conflict log instead."""
+    repo = MemoryRepository()
+    pipe = Pipeline(settings, repo, None, [])
+    start = datetime(2026, 11, 20, 12, 0, tzinfo=KST)
+    held = _candidate("학과 간담회", start, needs_review=True, review_reasons=["AI 검토 요청: 애매함"])
+    event_id = pipe.store_candidate(held, "raw-1")
+    assert repo.events[event_id]["status"] == "review"
+    repo.events[event_id].update(status="published", needs_review=False, review_reason=None)
+    again = _candidate("학과 간담회", start, room="102호", needs_review=True, review_reasons=["AI 검토 요청: 애매함"])
+    pipe.store_candidate(again, "raw-1")
+    row = repo.get_event(event_id)
+    assert row["status"] == "published" and row["needs_review"] is False and row["review_reason"] is None
+    assert row["room"] == "102호"
+    assert repo.conflicts and "애매함" in repo.conflicts[0]["summary"]
+
+
 def test_different_source_on_another_day_stays_a_separate_event(settings):
     repo = MemoryRepository()
     pipe = Pipeline(settings, repo, None, [])
