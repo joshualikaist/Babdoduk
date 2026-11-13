@@ -394,7 +394,7 @@ def unsure(root, n=1, **kw):
 
 def button(action, media_id, chat=42, update_id=1):
     return {"update_id": update_id, "callback_query": {"id": "cb", "data": f"ig:{action}:{media_id}",
-                                                       "message": {"chat": {"id": chat}}}}
+                                                       "from": {"id": chat}, "message": {"chat": {"id": chat}}}}
 
 
 def test_an_unsure_post_becomes_a_question_and_the_owners_button_decides(root):
@@ -432,7 +432,7 @@ def test_an_edit_reply_updates_the_fields_and_confirms(root):
     bot.pending = [button("edit", "Q0")]
     r.review()
     assert bot.sent and bot.sent[-1][1]["reply_markup"] == {"force_reply": True}
-    bot.pending = [{"update_id": 5, "message": {"chat": {"id": 42}, "text": "시작: 2026-10-08T12:00+09:00\n음식: 샌드위치, 커피",
+    bot.pending = [{"update_id": 5, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": "시작: 2026-10-08T12:00+09:00\n음식: 샌드위치, 커피",
                                                 "reply_to_message": {"message_id": 900}}}]
     r.review()
     row = r.store.candidate("Q0")
@@ -446,11 +446,11 @@ def test_the_owners_own_messages_and_photos_are_kept_for_claude_with_secrets_mas
     r, bot, _, _ = unsure(root)
     r.review()
     bot.pending = [
-        {"update_id": 7, "message": {"chat": {"id": 42}, "text": "레이더 오류 났어 sk-proj-abcdefghijklmnopqrstuvwxyz"}},
-        {"update_id": 8, "message": {"chat": {"id": 42}, "photo": [{"file_id": "small"}, {"file_id": "big"}],
+        {"update_id": 7, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": "레이더 오류 났어 sk-proj-abcdefghijklmnopqrstuvwxyz"}},
+        {"update_id": 8, "message": {"chat": {"id": 42}, "from": {"id": 42}, "photo": [{"file_id": "small"}, {"file_id": "big"}],
                                      "caption": "이 경고 화면"}},
-        {"update_id": 9, "message": {"chat": {"id": 999}, "text": "someone else"}},
-        {"update_id": 10, "message": {"chat": {"id": 42}, "photo": [{"file_id": "broken"}]}},
+        {"update_id": 9, "message": {"chat": {"id": 999}, "from": {"id": 999}, "text": "someone else"}},
+        {"update_id": 10, "message": {"chat": {"id": 42}, "from": {"id": 42}, "photo": [{"file_id": "broken"}]}},
     ]
     r.review()
     notes = read_notes(root / ".local")
@@ -469,7 +469,7 @@ def test_an_edit_reply_is_not_kept_as_a_note(root):
     r.review()
     bot.pending = [button("edit", "Q0")]
     r.review()
-    bot.pending = [{"update_id": 5, "message": {"chat": {"id": 42}, "text": "장소: 창의학습관",
+    bot.pending = [{"update_id": 5, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": "장소: 창의학습관",
                                                 "reply_to_message": {"message_id": 900}}}]
     r.review()
     assert read_notes(root / ".local") == []
@@ -483,6 +483,47 @@ def test_the_inbox_keeps_only_the_latest_notes_and_photos(root, monkeypatch):
         tr.keep_note(root / ".local", f"n{i}", NOW + i, photo=jpeg())
     assert [n["text"] for n in tr.read_notes(root / ".local")] == ["n2", "n3", "n4"]
     assert len(list((root / ".local" / tr.INBOX_PHOTOS).iterdir())) == 2
+
+
+def test_only_the_owners_own_private_chat_is_read_never_a_group_or_another_sender():
+    # security audit 2026-11-13: the chat id alone is not enough; the sender must be that private chat's owner.
+    from ggongbab.instagram.telegram_review import Bot as Real
+    bot = Real("t", "42")
+
+    def msg(chat, sender, text="로그인"):
+        out = {"update_id": 1, "message": {"chat": {"id": chat}, "text": text}}
+        if sender is not None:
+            out["message"]["from"] = {"id": sender}
+        return out
+
+    def tap(chat, sender, data="login:go"):
+        out = {"update_id": 1, "callback_query": {"id": "c", "data": data, "message": {"chat": {"id": chat}}}}
+        if sender is not None:
+            out["callback_query"]["from"] = {"id": sender}
+        return out
+
+    assert bot.events([msg(42, 42), tap(42, 42)]) == [("text", "로그인", None), ("login", "c")]
+    for chat, sender in ((42, 7), (42, None), (-1001234567890, 42), (-42, 42), (7, 7), (7, 42)):
+        assert bot.events([msg(chat, sender), tap(chat, sender), tap(chat, sender, "agent:ok:0123456789ab")]) == [], (chat, sender)
+    # A group configured as the allowed chat reads nothing: no sender's id is a negative group id.
+    group = Real("t", "-1001234567890")
+    assert group.events([msg(-1001234567890, -1001234567890), tap(-1001234567890, 42)]) == []
+
+
+def test_the_chat_finder_lists_only_private_chats_whose_sender_is_the_chat(tmp_path, monkeypatch):
+    import alert_push
+
+    def opener(url, timeout=None):
+        updates = [{"message": {"chat": {"id": 4242, "type": "private", "first_name": "A"}, "from": {"id": 4242}}},
+                   {"message": {"chat": {"id": -1009, "type": "group"}, "from": {"id": 4242}}},
+                   {"message": {"chat": {"id": 7777, "type": "private", "first_name": "B"}, "from": {"id": 7778}}},
+                   {"message": {"chat": {"id": 8888, "type": "private", "first_name": "C"}}}]
+        return io.BytesIO(json.dumps({"ok": True, "result": updates}).encode())
+
+    assert alert_push.telegram_chats("t", opener=opener) == [("4242", "A")]
+    monkeypatch.setattr(alert_push, "CONFIG", tmp_path / "alert-push.json")
+    assert alert_push.main(["--use-telegram", "--chat-id", "-1001234567890"]) == 1   # a group id is refused
+    assert not (tmp_path / "alert-push.json").exists()
 
 
 def test_images_of_finished_posts_are_deleted_after_fourteen_days_and_shared_files_stay(root):
@@ -768,9 +809,9 @@ def test_the_owner_writes_refresh_and_hears_what_happened(root):
     codes = iter(["DISPATCHED", "DISPATCH_DEBOUNCED", "DISPATCH_NOTHING_NEW"])
     calls = []
     r.dispatch = lambda new: calls.append(new) or next(codes)
-    bot.pending = [{"update_id": 1, "message": {"chat": {"id": 42}, "text": "갱신"}}]
+    bot.pending = [{"update_id": 1, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": "갱신"}}]
     r.handle_updates(0)
-    bot.pending = [{"update_id": 2, "message": {"chat": {"id": 42}, "text": " 새로고침! "}}]
+    bot.pending = [{"update_id": 2, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": " 새로고침! "}}]
     r.handle_updates(0)
     assert calls == [True, True]
     assert bot.said[0].startswith("🔄") and bot.said[1].startswith("⏳")
@@ -793,7 +834,7 @@ def test_held_buttons_reach_the_held_checker_and_a_cycle_asks_about_held_events(
     r.held = Held()
     event_id = "8f65a362-a09c-4577-bc5c-d39338c5b7c1"
     bot.pending = [{"update_id": 3, "callback_query": {"id": "c1", "data": f"held:ok:{event_id}",
-                                                       "message": {"chat": {"id": 42}}}}]
+                                                       "from": {"id": 42}, "message": {"chat": {"id": 42}}}}]
     r.handle_updates(0)
     assert r.held.decided == [("ok", event_id)]
     r.check_held()

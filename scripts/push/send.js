@@ -24,6 +24,8 @@ const ROOT = path.join(__dirname, '..', '..');
 const LEAD_MS = 30 * 60 * 1000;
 const KEEP_MS = 2 * 24 * 3600 * 1000;
 const DROP_AFTER = 10;   // consecutive refusals before a device is forgotten
+const PAGE = 1000;       // rows per database read: Supabase's default max rows
+const MAX_PAGES = 100;   // 100 000 rows, twice the database's own cap of 50 000 devices
 const SUBJECT = 'https://www.babdodukms.com';
 const FEEDS = ['https://www.babdodukms.com/data/ggongbab/latest.json', 'https://babdoduk-lab.vercel.app/data/ggongbab/latest.json'];
 
@@ -84,11 +86,23 @@ function db(env, fetchImpl) {
   const headers = { apikey: env.SUPABASE_SECRET_KEY, Authorization: 'Bearer ' + env.SUPABASE_SECRET_KEY };
   const where = (endpoint) => '?endpoint=eq.' + encodeURIComponent(endpoint);
   return {
+    // Every device that starred one of the ids, page by page: the database answers at most PAGE rows a
+    // request (Supabase's max rows), so one request alone silently dropped every device after the first
+    // thousand (security audit 2026-11-13). A stable order, and a short page ends the reading.
     async devicesFor(ids) {
       const list = '{' + ids.map((id) => '"' + id + '"').join(',') + '}';
-      const res = await fetchImpl(base + '?select=endpoint,p256dh,auth,events,lang,site,failures&events=ov.' + encodeURIComponent(list), { headers });
-      if (!res.ok) throw new Error('devices: HTTP ' + res.status);
-      return res.json();
+      const query = base + '?select=endpoint,p256dh,auth,events,lang,site,failures&events=ov.' + encodeURIComponent(list) +
+        '&order=endpoint.asc&limit=' + PAGE + '&offset=';
+      const out = [];
+      for (let pages = 0; pages < MAX_PAGES; pages++) {
+        const res = await fetchImpl(query + out.length, { headers });
+        if (!res.ok) throw new Error('devices: HTTP ' + res.status);
+        const page = await res.json();
+        if (!Array.isArray(page)) throw new Error('devices: not a list');
+        out.push(...page);
+        if (page.length < PAGE) return out;
+      }
+      throw new Error('devices: more than ' + PAGE * MAX_PAGES + ' rows');
     },
     async forget(endpoint) {
       await fetchImpl(base + where(endpoint), { method: 'DELETE', headers });
@@ -212,4 +226,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { dueEvents, message, run, readEnv, sentKey, LEAD_MS };
+module.exports = { dueEvents, message, run, readEnv, sentKey, LEAD_MS, PAGE };

@@ -17,6 +17,17 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 const KST = 'Asia/Seoul';
+// Our own sites only. The request's host decides which of them the calendar reads its feed from and links
+// to; any other host (a preview address, or a forged x-forwarded-host) gets the production site, so the
+// server never fetches from, or writes links to, an address a request names (security audit 2026-11-13).
+const ORIGINS = new Set(['www.babdodukms.com', 'babdodukms.com', 'babdoduk.vercel.app', 'babdoduk-lab.vercel.app']);
+const DEFAULT_ORIGIN = 'https://www.babdodukms.com';
+
+function siteOrigin(headers) {
+  const h = headers || {};
+  const host = String(h['x-forwarded-host'] || h.host || '').split(',')[0].trim().toLowerCase();
+  return ORIGINS.has(host) ? 'https://' + host : DEFAULT_ORIGIN;
+}
 
 function publicConfig() {
   const text = fs.readFileSync(path.join(ROOT, 'js/ggongbab-public-config.js'), 'utf8');
@@ -85,10 +96,10 @@ function entries(saved, feed, archive) {
 }
 
 async function handler(req, res) {
-  const url = new URL(req.url, 'https://' + (req.headers.host || 'localhost'));
+  const url = new URL(req.url, DEFAULT_ORIGIN);
   const token = url.searchParams.get('t') || '';
   if (!TOKEN.test(token)) { res.statusCode = 404; res.end('not found'); return; }
-  const origin = 'https://' + (req.headers['x-forwarded-host'] || req.headers.host);
+  const origin = siteOrigin(req.headers);
   const { url: base, key } = publicConfig();
   const saved = await getJson(base + '/rest/v1/rpc/calendar_feed_events', {
     method: 'POST',
@@ -96,10 +107,11 @@ async function handler(req, res) {
     body: JSON.stringify({ p_token: token })
   });
   if (!Array.isArray(saved)) { res.statusCode = 503; res.setHeader('Retry-After', '300'); res.end('try again later'); return; }
-  const [feed, archive] = await Promise.all([
+  // An empty list (or an unknown token) needs no feed: nothing is fetched for it.
+  const [feed, archive] = saved.length ? await Promise.all([
     getJson(origin + '/data/ggongbab/latest.json'),
     getJson(origin + '/data/ggongbab/archive/index.json')
-  ]);
+  ]) : [null, null];
   const blocks = entries(saved, feed, archive).map((ev) => eventBlock(ev, origin));
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
@@ -112,5 +124,6 @@ module.exports = handler;
 module.exports.entries = entries;
 module.exports.calendar = calendar;
 module.exports.eventBlock = eventBlock;
+module.exports.siteOrigin = siteOrigin;
 // The site's own free-food code in Node, also used by the push alert sender (scripts/push/send.js).
 module.exports.siteCode = siteCode;

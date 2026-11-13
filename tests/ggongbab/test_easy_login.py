@@ -531,11 +531,11 @@ def test_the_bot_starts_a_request_on_the_button_or_on_login_and_keeps_questions_
     radar.launch_login = lambda root: launched.append(root) or Mock(poll=Mock(return_value=None))
 
     def message(uid, text):
-        return {"update_id": uid, "message": {"chat": {"id": 42}, "text": text}}
+        return {"update_id": uid, "message": {"chat": {"id": 42}, "from": {"id": 42}, "text": text}}
 
     def tap(uid, chat=42):
         return {"update_id": uid, "callback_query": {"id": f"c{uid}", "data": el.REQUEST_CALLBACK,
-                                                      "message": {"chat": {"id": chat}}}}
+                                                      "from": {"id": chat}, "message": {"chat": {"id": chat}}}}
     assert tr.LOGIN_CALLBACK == el.REQUEST_CALLBACK
     bot.pending = [message(1, "로그인")]
     radar.handle_updates(0)
