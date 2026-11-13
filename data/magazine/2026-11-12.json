@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "혈당 잡고 비만 막으려면?…췌장 건강 지키는 음식 6가지",
-    "summary": "마늘은 황 화합물을 비롯해 항산화 및 항염증 작용과 관련된 영양소가 풍부해 췌장 건강을 돕는 식품으로 꼽힌다.",
     "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_e921c4359ec6b2de",
     "url": "https://kormedi.com/2901989/",
     "medium": "news",
-    "discoveredAt": "2026-11-10T17:15:11+09:00",
-    "publishedAt": "2026-11-10T10:04:00+09:00",
     "image": "https://kormedi.com/wp-content/uploads/2026/11/tis101e15030067-l.jpg",
+    "category": "trend",
+    "publishedAt": "2026-11-10T10:04:00+09:00",
+    "discoveredAt": "2026-11-10T17:15:11+09:00",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_e921c4359ec6b2de",
     "imageSource": "feed_media",
+    "summary": "마늘은 황 화합물을 비롯해 항산화 및 항염증 작용과 관련된 영양소가 풍부해 췌장 건강을 돕는 식품으로 꼽힌다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "CJ제일제당 3분기 영업익 2030억 원, 6.9%↑…핵심소재가 이익 성장 견인",
-          "summary": "CJ제일제당이 올해 3분기 CJ대한통운을 제외하고 매출 4조2300억 원, 영업이익 2030억 원을 기록했다.",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_0e52b35bbfe6c174",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36118",
           "medium": "news",
-          "discoveredAt": "2026-11-10T17:15:11+09:00",
-          "publishedAt": "2026-11-10T18:29:00+09:00",
           "image": "http://www.foodicon.co.kr/news/photo/202611/36118_55056_2938.jpg",
+          "publishedAt": "2026-11-10T18:29:00+09:00",
+          "discoveredAt": "2026-11-10T17:15:11+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_0e52b35bbfe6c174",
           "imageSource": "source_page_og",
+          "summary": "CJ제일제당이 올해 3분기 CJ대한통운을 제외하고 매출 4조2300억 원, 영업이익 2030억 원을 기록했다.",
           "trendEvidence": [
             "sales_data",
             "corroborated"
@@ -45,56 +45,56 @@
         },
         {
           "title": "한우 사육기간 줄여 가격 낮춘다",
-          "summary": "사육기간을 줄여 생산비를 낮춘 단기비육 한우고기가 전국 642개 유통매장에서 순차 판매된다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_56ffdbd6de75e296",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62640",
           "medium": "news",
-          "discoveredAt": "2026-11-12T17:10:03+09:00",
           "publishedAt": "2026-11-12T06:07:06+09:00",
+          "discoveredAt": "2026-11-12T17:10:03+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_56ffdbd6de75e296",
+          "summary": "사육기간을 줄여 생산비를 낮춘 단기비육 한우고기가 전국 642개 유통매장에서 순차 판매된다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "케이크 만들며 친환경 먹거리 배운다",
-          "summary": "초등학생들이 친환경농산물의 가치를 배우고 직접 케이크를 만들며 건강한 먹거리와 환경의 소중함을 알아보는 시간을 가졌다.제주 동홍초등학교(교장 오현화, 이하 동홍초)는 지난 5일부터 6일까지 2학년 학생들을 대상으로…",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_424aa742550b9b34",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62636",
           "medium": "news",
-          "discoveredAt": "2026-11-12T17:10:03+09:00",
           "publishedAt": "2026-11-12T04:26:46+09:00",
+          "discoveredAt": "2026-11-12T17:10:03+09:00",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_424aa742550b9b34",
+          "summary": "초등학생들이 친환경농산물의 가치를 배우고 직접 케이크를 만들며 건강한 먹거리와 환경의 소중함을 알아보는 시간을 가졌다.제주 동홍초등학교(교장 오현화, 이하 동홍초)는 지난 5일부터 6일까지 2학년 학생들을 대상으로…",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“노릇노릇 군고구마 굽기 전 ‘이것’에 15분 담갔더니”… 발암 물질 90% 싹 날아갔다",
-          "summary": "가을을 넘어 겨울로 가는 시기엔 따끈한 고구마가 더 자주 생각난다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_b967392ee04d50e8",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/11/2026111101203.html",
           "medium": "news",
-          "discoveredAt": "2026-11-11T16:44:37+09:00",
           "publishedAt": "2026-11-11T10:40:09+09:00",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b967392ee04d50e8",
+          "summary": "가을을 넘어 겨울로 가는 시기엔 따끈한 고구마가 더 자주 생각난다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "\"더 이상 급식기업 아니다\" 현대그린푸드, 외식·헬스케어 성장동력 확대",
-          "summary": "현대그린푸드가 단체급식과 식자재유통을 기반으로 외식과 케어푸드, 헬스케어 서비스까지 사업 영역을 넓히며 새로운 성장동력 확보에 속도를 내고 있다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_8244649adc3c225f",
           "url": "https://www.newsis.com/view/NISX20261112_0003865423",
           "medium": "news",
-          "discoveredAt": "2026-11-12T17:10:03+09:00",
           "publishedAt": "2026-11-12T15:34:33+09:00",
+          "discoveredAt": "2026-11-12T17:10:03+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_8244649adc3c225f",
+          "summary": "현대그린푸드가 단체급식과 식자재유통을 기반으로 외식과 케어푸드, 헬스케어 서비스까지 사업 영역을 넓히며 새로운 성장동력 확보에 속도를 내고 있다.",
           "trendEvidence": [
             "sales_data"
           ]
@@ -106,58 +106,58 @@
       "items": [
         {
           "title": "창동 할머니 토스트 만들기｜양배추 듬뿍 넣은 옛날 길거리 토스트 레시피",
-          "summary": "양배추를 듬뿍 넣어 두툼하게 부친 달걀에 설탕과 케첩, 머스터드를 곁들이는 창동 할머니 토스트.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_1c322c63af45149b",
           "url": "https://cultureagora.tistory.com/413",
           "medium": "blog",
+          "publishedAt": "2026-11-12T06:00:59+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T06:00:59+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_1c322c63af45149b",
+          "summary": "양배추를 듬뿍 넣어 두툼하게 부친 달걀에 설탕과 케첩, 머스터드를 곁들이는 창동 할머니 토스트."
         },
         {
           "title": "사랑스러운 며느리의 생일밥, 오랜만에 차린 따뜻한 집밥 한 상",
-          "summary": "사랑스러운 며느리의 생일밥, 오랜만에 차린 따뜻한 집밥 한 상 며느리가 취직해 서울로 떠난 뒤 일주일 만에 집에 왔다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_df8625a081a3e9e9",
           "url": "https://heysukim114.tistory.com/entry/%EC%82%AC%EB%9E%91%EC%8A%A4%EB%9F%AC%EC%9A%B4-%EB%A9%B0%EB%8A%90%EB%A6%AC%EC%9D%98-%EC%83%9D%EC%9D%BC%EB%B0%A5-%EC%98%A4%EB%9E%9C%EB%A7%8C%EC%97%90-%EC%B0%A8%EB%A6%B0-%EB%94%B0%EB%9C%BB%ED%95%9C-%EC%A7%91%EB%B0%A5-%ED%95%9C-%EC%83%81",
           "medium": "blog",
+          "publishedAt": "2026-11-12T00:00:43+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T00:00:43+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_df8625a081a3e9e9",
+          "summary": "사랑스러운 며느리의 생일밥, 오랜만에 차린 따뜻한 집밥 한 상 며느리가 취직해 서울로 떠난 뒤 일주일 만에 집에 왔다."
         },
         {
           "title": "불닭에 미역국 부은 놈은 진짜 제정신이냐?",
-          "summary": "치즈 불닭볶음탕죽을 만들어 보자 [재료] 불닭볶음탕면, 소고기 미역국, 밥, 모차렐라 치즈 [만드는 법] 1. 불닭볶음탕면의 면을 잘게 부순다.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_7a1ffeff98e274fb",
           "url": "https://www.youtube.com/watch?v=hPPF0f39Kxc",
           "medium": "youtube",
+          "publishedAt": "2026-11-11T19:48:33+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-11T19:48:33+09:00"
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_7a1ffeff98e274fb",
+          "summary": "치즈 불닭볶음탕죽을 만들어 보자 [재료] 불닭볶음탕면, 소고기 미역국, 밥, 모차렐라 치즈 [만드는 법] 1. 불닭볶음탕면의 면을 잘게 부순다."
         },
         {
           "title": "연세유업 세브란스 A2그릭요거트 무가당플레인 내돈내산 후기",
-          "summary": "그릭요거트가 먹고 싶어 여기저기 둘러보다 연세유업 세브란스 A2 그릭요거트를 주문했습니다.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_a234af3aefd4c9ad",
           "url": "https://seon1982.tistory.com/4145",
           "medium": "blog",
+          "publishedAt": "2026-11-12T00:00:33+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T00:00:33+09:00"
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_a234af3aefd4c9ad",
+          "summary": "그릭요거트가 먹고 싶어 여기저기 둘러보다 연세유업 세브란스 A2 그릭요거트를 주문했습니다."
         },
         {
           "title": "반찬 만드는 날, 우리 집 식탁을 채운 볶음나물 4가지",
-          "summary": "",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_9edbdb303aac31b8",
           "url": "https://heysukim114.tistory.com/entry/%EB%B0%98%EC%B0%AC%EB%A7%8C%EB%93%9C%EB%8A%94-%EB%82%A0-%EB%B3%B6%EC%9D%8C%EB%82%98%EB%AC%BC-4%EA%B0%80%EC%A7%80",
           "medium": "blog",
+          "publishedAt": "2026-09-05T00:00:33+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-09-05T00:00:33+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_9edbdb303aac31b8",
+          "summary": ""
         }
       ]
     },
@@ -166,60 +166,60 @@
       "items": [
         {
           "title": "아침 달걀 요리에 ‘이 음식’ 넣었더니…몸에 어떤 변화가?",
-          "summary": "아침에 먹는 달걀에 토마토를 더하면 라이코펜 성분이 활성화되어 몸에 잘 흡수된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_c9b290d84ee1abbd",
           "url": "https://kormedi.com/2903131/",
           "medium": "news",
-          "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-11T19:01:00+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2022/11/ck-cm080817768-l.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-11-11T19:01:00+09:00",
+          "discoveredAt": "2026-11-12T17:10:03+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_c9b290d84ee1abbd",
+          "imageSource": "feed_media",
+          "summary": "아침에 먹는 달걀에 토마토를 더하면 라이코펜 성분이 활성화되어 몸에 잘 흡수된다."
         },
         {
           "title": "“단백질·철분 풍부하다”… 이혜정이 시장서 사 먹은 ‘추억의 간식’ 번데기",
-          "summary": "대표적인 길거리 간식 중 하나인 번데기는 단백질과 철분 등 다양한 영양소가 풍부한 식품이다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_bb7fa26fe47c5a61",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/12/2026111202336.html",
           "medium": "news",
+          "publishedAt": "2026-11-12T15:30:00+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T15:30:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_bb7fa26fe47c5a61",
+          "summary": "대표적인 길거리 간식 중 하나인 번데기는 단백질과 철분 등 다양한 영양소가 풍부한 식품이다."
         },
         {
           "title": "“닭 가슴살만 고집할 필요 없었네요”… 단백질 풍부한 의외의 부위 ‘똥집’",
-          "summary": "술안주로 익숙한 닭똥집(근위)에도 소고기 못지않게 단백질이 많이 들어 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_35d594073f7ae8ae",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/12/2026111202255.html",
           "medium": "news",
+          "publishedAt": "2026-11-12T15:00:00+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T15:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_35d594073f7ae8ae",
+          "summary": "술안주로 익숙한 닭똥집(근위)에도 소고기 못지않게 단백질이 많이 들어 있다."
         },
         {
           "title": "깜빡하는 일 잦아졌다면… '뇌 건강' 위해 챙길 영양소 5가지",
-          "summary": "기억력과 집중력은 뇌세포가 서로 신호를 주고받으며 만들어 내는 기능이다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_e2eeeadb9d98f6e3",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69835",
           "medium": "news",
+          "publishedAt": "2026-11-11T16:00:00+09:00",
           "discoveredAt": "2026-11-11T16:44:37+09:00",
-          "publishedAt": "2026-11-11T16:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_e2eeeadb9d98f6e3",
+          "summary": "기억력과 집중력은 뇌세포가 서로 신호를 주고받으며 만들어 내는 기능이다."
         },
         {
           "title": "“입 마를 때마다 사탕 하나씩 먹었는데?”…중년 구강 건강에 어떤 영향이?",
-          "summary": "입이 마를 때 사탕을 먹으면 침 분비가 늘어나 일시적으로 건조함이 완화될 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_3562056a03c26418",
           "url": "https://kormedi.com/2903198/",
           "medium": "news",
+          "publishedAt": "2026-11-12T07:04:00+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T07:04:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_3562056a03c26418",
+          "summary": "입이 마를 때 사탕을 먹으면 침 분비가 늘어나 일시적으로 건조함이 완화될 수 있다."
         }
       ]
     },
@@ -228,27 +228,27 @@
       "items": [
         {
           "title": "“함께 먹던 건기식, 이제 각자 챙긴다” 건기식 시장 6조 1280억 ‘개인화 소비’ 가속",
-          "summary": "국내 건강기능식품 시장이 가족 구성원이 함께 섭취하던 형태에서 연령과 건강 상태에 맞춰 개별 제품을 소비하는 ‘개인 맞춤형’ 패턴으로 빠르게 재편되면서, 가구당 평균 지출액은 소폭 감소했으나 제품을 한 번이라도…",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_5725f2f8e20418f8",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201627",
           "medium": "news",
-          "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T11:32:05+09:00",
           "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201627_202293_3151.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-12T11:32:05+09:00",
+          "discoveredAt": "2026-11-12T17:10:03+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_5725f2f8e20418f8",
+          "imageSource": "feed_html",
+          "summary": "국내 건강기능식품 시장이 가족 구성원이 함께 섭취하던 형태에서 연령과 건강 상태에 맞춰 개별 제품을 소비하는 ‘개인 맞춤형’ 패턴으로 빠르게 재편되면서, 가구당 평균 지출액은 소폭 감소했으나 제품을 한 번이라도…"
         },
         {
           "title": "양배추 꾸준히 먹으면…우리 몸에서 어떤 일이 일어날까?",
-          "summary": "양배추를 적절하게 규칙적으로 섭취하면 건강 체중을 유지하고 혈압을 개선하는 등 여러 가지 건강상 이점을 얻을 수 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_f8a55abe23ef3508",
           "url": "https://kormedi.com/2903789/",
           "medium": "news",
+          "publishedAt": "2026-11-12T09:15:00+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-12T09:15:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_f8a55abe23ef3508",
+          "summary": "양배추를 적절하게 규칙적으로 섭취하면 건강 체중을 유지하고 혈압을 개선하는 등 여러 가지 건강상 이점을 얻을 수 있다."
         }
       ]
     }
