@@ -18,7 +18,10 @@ from .config import KST
 from .models import EventCandidate
 from .parsers.validator import parse_iso
 
-_STOP = re.compile(r"\[[^\]]*\]|\([^)]*\)|안내|공지|알림|재공지|re:|fw:|fwd:|전달|모집|참가|참여|신청|설명회|세미나|행사|개최|the|of|and|for|a", re.I)
+# Bracketed text is kept (audit 2026-11-13): "[전산학부]" or "(대학원생)" is often the one word that
+# tells two same-day events apart. English stop words are whole words only, so "AI" stays "ai".
+_STOP = re.compile(r"재공지|안내|공지|알림|\bre:|\bfwd?:|전달|모집|참가|참여|신청|설명회|세미나|행사|개최"
+                   r"|\b(?:the|of|and|for|a)\b", re.I)
 _PUNCT = re.compile(r"[^\w가-힣]+")
 
 
@@ -73,7 +76,22 @@ def score_pair(cand: EventCandidate, row: dict[str, Any]) -> float:
     b1, b2 = _norm(cand.building), _norm(row.get("building"))
     if b1 and b2:
         score += 0.10 if b1 == b2 else -0.10
-    if title_sim >= 0.92 and d1 == d2:
+    c1, c2 = _clock_of(cand.event_start), _clock_of(row.get("event_start"))
+    both_timed = d1 == d2 and c1 is not None and c2 is not None
+    if both_timed and abs(c1 - c2) > 60:
+        # Same day, starts more than an hour apart: two sessions, not two mails about one
+        # (audit 2026-11-13: department info sessions on one evening merged into one).
+        score -= 0.25
+    org_conflict = bool(org1 and org2) and similarity(org1, org2) < 0.8
+    depts1, depts2 = _departments(cand.title), _departments(row.get("title") or "")
+    if depts1 and depts2 and not depts1 & depts2:
+        # "2026 AI컴퓨팅학과 학과설명회" vs "2026 AI시스템학과 학과설명회": the titles name two
+        # different departments, which is an organizer conflict even when no organizer was extracted.
+        org_conflict = True
+        score -= 0.10
+    building_conflict = bool(b1 and b2) and b1 != b2 and not same_building(cand.building, row.get("building"))
+    if (title_sim >= 0.92 and d1 == d2 and (not both_timed or c1 == c2)
+            and not org_conflict and not building_conflict):
         score = max(score, 0.9)
     if same_slot(cand, row) and (title_sim >= 0.5 or (org1 and org2 and similarity(org1, org2) >= 0.8)
                                  or _explicitly_equivalent(cand, row)):
@@ -85,6 +103,24 @@ def score_pair(cand: EventCandidate, row: dict[str, Any]) -> float:
 
 def _place(value: Optional[str]) -> str:
     return _PUNCT.sub("", (value or "")).lower()
+
+
+_DEPARTMENT = re.compile(r"^[\w가-힣]+(?:학과|학부)$")
+
+
+def _departments(title: str) -> set[str]:
+    """Department names in a title ("전산학부", "AI컴퓨팅학과"), not the bare word "학과"."""
+    return {t for t in normalize_title(title).split() if len(t) > 2 and _DEPARTMENT.match(t)}
+
+
+def _clock_of(value: Any) -> Optional[int]:
+    """Minutes after midnight in KST, or None when there is no start or it is a bare date (00:00)."""
+    dt = value if isinstance(value, datetime) else (parse_iso(value) if isinstance(value, str) else None)
+    if dt is None or dt.tzinfo is None:
+        return None
+    local = dt.astimezone(KST)
+    minutes = local.hour * 60 + local.minute
+    return minutes or None
 
 
 def _minute_of(value: Any) -> Optional[str]:

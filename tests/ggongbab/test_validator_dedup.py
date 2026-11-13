@@ -181,3 +181,92 @@ def test_same_building(a, b, same):
 ])
 def test_same_url(a, b, same):
     assert same_url(a, b) is same and same_url(b, a) is same
+
+
+# --- dedup: same-day sessions (audit 2026-11-13) -------------------------------
+# The real title shapes of the 2026 department info sessions (inputs/ggongbab/manual.json and a
+# Dooray mail shape). On one day they used to merge: the same-title floor ignored the start time,
+# building and organizer, and normalization dropped "[전산학부]" and turned "AI" into "i".
+INFO_SESSION_TITLES = [
+    "2026 기계공학과 학과설명회", "2026 산업및시스템공학과 학과설명회", "2026 뇌인지과학과 학과설명회",
+    "2026 기술경영학부 학과설명회", "2026 전기및전자공학부 학과설명회", "2026 바이오및뇌공학과 학과설명회",
+    "2026 산업디자인학과 학과설명회", "2026 AX학과 학과설명회", "2026 신소재공학과 학과설명회",
+    "2026 AI컴퓨팅학과 학과설명회", "2026 생명화학공학과 학과설명회", "2026 항공우주공학과 학과설명회",
+    "2026 수리과학과 학과설명회", "2026 건설및환경공학과 학과설명회", "2026 원자력및양자공학과 학과설명회",
+    "2026 AI미래학과 학과설명회", "2026 물리학과 학과설명회", "2026 화학과 학과설명회",
+    "2026 AI시스템학과 학과설명회", "2026 생명과학과 학과설명회", "융합인재학부 학과설명회",
+    "[전산학부] 학과 설명회",
+]
+DEPARTMENTS = [t.split()[-2] if t.startswith("2026") else t.split()[0].strip("[]") for t in INFO_SESSION_TITLES]
+BRACKET_TITLES = [f"[{d}] 학과 설명회" for d in DEPARTMENTS]          # the Dooray mail shape for every department
+BUILDINGS = ["N7", "E2", "E4", "E5", "E6", "E7", "N1", "N3", "N4", "N5", "W1", "W2", "W3", "W4", "W5", "W6",
+             "W7", "W8", "W9", "W10", "E15", "E3"]
+
+
+def _session(i, title, building=True):
+    start = f"2026-11-23T{9 + i // 2:02d}:{30 * (i % 2):02d}:00+09:00"     # 09:00, 09:30, ... 19:30
+    return _cand(title, start=start, building=BUILDINGS[i] if building else None,
+                 food_provided="true", food_type="meal")
+
+
+@pytest.mark.parametrize("titles", [INFO_SESSION_TITLES, BRACKET_TITLES], ids=["manual", "bracket"])
+def test_department_info_sessions_on_one_day_stay_separate(settings, titles):
+    assert len(titles) == len(set(DEPARTMENTS)) == 22
+    from ggongbab.db.repository import MemoryRepository
+    from ggongbab.pipeline import Pipeline
+    repo = MemoryRepository()
+    pipe = Pipeline(settings, repo, None, [])
+    for i, title in enumerate(titles):
+        pipe.store_candidate(_session(i, title), f"raw-{i}")
+    assert len(repo.events) == 22
+    assert sorted(row["title"] for row in repo.events.values()) == sorted(titles)
+
+
+@pytest.mark.parametrize("titles", [INFO_SESSION_TITLES, BRACKET_TITLES], ids=["manual", "bracket"])
+@pytest.mark.parametrize("building", [True, False])
+def test_no_two_department_info_sessions_score_as_one(building, titles):
+    sessions = [_session(i, t, building) for i, t in enumerate(titles)]
+    for i, a in enumerate(sessions):
+        for b in sessions[i + 1:]:
+            row = b.to_db_row()
+            assert score_pair(a, row) < 0.72, (a.title, b.title, score_pair(a, row))
+            # Even at the very same minute without a building, the department names keep them apart.
+            same_time = _cand(a.title, start=row["event_start"])
+            assert score_pair(same_time, {**row, "building": None}) < 0.72, (a.title, b.title)
+
+
+def test_same_title_same_day_but_hours_apart_is_two_events():
+    row = {"id": "e1", "title": "기계공학과 간담회 (학부생)", "event_start": "2026-11-20T12:00:00+09:00"}
+    assert find_match(_cand("기계공학과 간담회 (대학원생)", start="2026-11-20T18:00:00+09:00"), [row], 0.72) is None
+    same = {"id": "e1", "title": "AI 세미나", "event_start": "2026-11-20T12:00:00+09:00"}
+    assert find_match(_cand("AI 세미나", start="2026-11-20T15:00:00+09:00"), [same], 0.72) is None
+
+
+@pytest.mark.parametrize("existing, incoming", [
+    # one session, two mails: brackets, 안내/설명회 and spacing differ
+    ({"title": "[전산학부] 학과 설명회", "event_start": "2026-11-23T18:00:00+09:00", "building": "E3"},
+     {"title": "전산학부 학과설명회 안내", "start": "2026-11-23T18:00:00+09:00", "building": "E3"}),
+    # the same title, one source gives only the date
+    ({"title": "2026 수리과학과 학과설명회", "event_start": "2026-11-23T00:00:00+09:00", "building": None},
+     {"title": "2026 수리과학과 학과설명회", "start": "2026-11-23T17:00:00+09:00", "building": "E6-1"}),
+    # the same title and minute, the building written two ways
+    ({"title": "2026 생명과학과 학과설명회", "event_start": "2026-11-18T18:30:00+09:00", "building": "창의학습관(E11)"},
+     {"title": "2026 생명과학과 학과설명회", "start": "2026-11-18T18:30:00+09:00", "building": "E11"}),
+    # the same title and minute, the KST and UTC spellings of one instant
+    ({"title": "삼성전자 Tech Lunch Talk", "event_start": "2026-09-25T03:00:00+00:00", "building": "N1"},
+     {"title": "[안내] 삼성전자 Tech Lunch Talk", "start": "2026-09-25T12:00:00+09:00", "building": "N1"}),
+])
+def test_true_duplicates_still_merge(existing, incoming):
+    row = {"id": "e1", **existing}
+    cand = _cand(incoming["title"], start=incoming["start"], building=incoming["building"])
+    match = find_match(cand, [row], 0.72)
+    assert match is not None and match.event["id"] == "e1", score_pair(cand, row)
+
+
+def test_normalize_title_keeps_brackets_and_ai():
+    from ggongbab.dedup import normalize_title
+    assert normalize_title("[전산학부] 학과 설명회") == "전산학부 학과"
+    assert normalize_title("기계공학과 간담회 (대학원생)") == "기계공학과 간담회 대학원생"
+    assert normalize_title("2026 AI미래학과 학과설명회") == "2026 ai미래학과 학과"
+    assert normalize_title("The Future of AI and Data") == "future ai data"
+    assert normalize_title("Fwd: RE: 점심 특강 안내") == "점심 특강"
