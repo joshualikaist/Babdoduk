@@ -30,6 +30,11 @@ def test_lab_only_experiments_answer_404_on_every_host_but_the_lab():
     pattern = re.compile(route["src"])
     for path in LAB_ONLY:
         assert pattern.fullmatch("/" + path), path
+        if path == "calendar.ics":
+            # Owner 2026-11-13: the KAIST Portal export is deleted (production served it under an encoded
+            # path despite the 404 rule); the rule stays so a copy put back is still kept off production.
+            assert not (ROOT / path).exists(), path
+            continue
         assert (ROOT / path).exists(), path                     # kept in git: the lab still serves it
     for path in SITE + ("data/food-log.json.bak", "lab-ggongbab.html/x", "data/cardnews", "cardnews.html.bak",
                         "bobyak.html.bak", "data/places"):
