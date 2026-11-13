@@ -67,7 +67,7 @@ def test_every_page_reads_its_text_in_both_languages():
 
 def test_one_language_switch_for_every_page():
     for page in chrome.PAGES:
-        html = (ROOT / page).read_text(encoding="utf-8")
+        html = chrome.unstamped((ROOT / page).read_text(encoding="utf-8"))
         block = html[html.index("<!-- @i18n:strings -->"):html.index("<!-- @end i18n -->")]
         assert block.rstrip().endswith('<script src="js/site.js"></script>'), page
         # The table and site.js come before every other script of the page.

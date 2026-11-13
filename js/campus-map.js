@@ -18,7 +18,7 @@ import * as THREE from './vendor/three-0.186.1/three.module.js';
 import { GLTFLoader } from './vendor/three-0.186.1/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from './vendor/three-0.186.1/addons/loaders/DRACOLoader.js';
 import { OrbitControls } from './vendor/three-0.186.1/addons/controls/OrbitControls.js';
-import { place } from './campus-place.js';
+import { place } from './campus-place.js?v=e846d51cd2';
 
 export { place };
 

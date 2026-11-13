@@ -5,11 +5,13 @@ scripts/check_site_ui.py tip_board plays the page against a fake client."""
 import re
 from pathlib import Path
 
+from sync_site_chrome import unstamped
+
 ROOT = Path(__file__).resolve().parents[1]
 SQL = (ROOT / "supabase/migrations/008_ggongbab_tips.sql").read_text(encoding="utf-8")
 REPORTS = (ROOT / "supabase/migrations/009_ggongbab_tip_reports.sql").read_text(encoding="utf-8")
 JS = (ROOT / "js/ggongbab-tips.js").read_text(encoding="utf-8")
-PAGE = (ROOT / "tip.html").read_text(encoding="utf-8")
+PAGE = unstamped((ROOT / "tip.html").read_text(encoding="utf-8"))   # without its ?v= content stamps
 TABLES = ("ggongbab_tips", "ggongbab_tip_board", "ggongbab_tip_secret", "ggongbab_tip_rate")
 # The Supabase client build the tip page loads (the public feed on lab pins the same one).
 SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"

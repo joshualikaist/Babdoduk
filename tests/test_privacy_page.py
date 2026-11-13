@@ -10,9 +10,11 @@ from urllib.parse import unquote, urlparse
 import pytest
 from playwright.sync_api import sync_playwright
 
+from sync_site_chrome import unstamped
+
 ROOT = Path(__file__).resolve().parents[1]
 HOST = "privacy.invalid"
-PAGE = (ROOT / "privacy.html").read_text(encoding="utf-8")
+PAGE = unstamped((ROOT / "privacy.html").read_text(encoding="utf-8"))   # without its ?v= content stamps
 KO = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
 EN = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
 

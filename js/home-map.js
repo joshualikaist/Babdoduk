@@ -28,7 +28,7 @@ function openDialog() {
 }
 function ensure() {
   if (map || loading || !stage) return;
-  loading = import('./campus-map.js').then(({ mount }) => {
+  loading = import('./campus-map.js?v=665f0f69e7').then(({ mount }) => {
     map = mount(stage, {
       lang, t,
       onOpen(id) {
