@@ -1,5 +1,5 @@
-"""별 누른 꽁밥 30분 전 알림 (docs/PUSH_ALERTS.md): supabase/migrations/014_push_alerts.sql, the sender
-(scripts/push/send.js, scripts/push/webpush.js), the service worker (sw.js) and the browser half
+"""별 누른 꽁밥 30분 전 알림 (docs/PUSH_ALERTS.md): supabase/migrations/014_push_alerts.sql and
+015_push_hardening.sql, the sender (scripts/push/send.js, scripts/push/webpush.js), the service worker (sw.js) and the browser half
 (js/ggongbab-push.js with js/ggongbab.js and js/my.js).
 
 The SQL is read statically and, where the optional `pgserver` and `psycopg` packages are installed, applied to
@@ -22,6 +22,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SQL = (ROOT / "supabase/migrations/014_push_alerts.sql").read_text(encoding="utf-8")
+SQL_015 = (ROOT / "supabase/migrations/015_push_hardening.sql").read_text(encoding="utf-8")
+TIPS_SQL = (ROOT / "supabase/migrations/008_ggongbab_tips.sql").read_text(encoding="utf-8")
 PUSH_JS = (ROOT / "js/ggongbab-push.js").read_text(encoding="utf-8")
 ENDPOINT = "https://web.push.apple.com/QF" + "x" * 60
 P256DH = "B" + "A" * 86
@@ -52,6 +54,31 @@ def test_browsers_get_two_checking_functions_and_the_sender_reads_with_the_backe
     assert not re.search(r"sb_secret_|eyJ[A-Za-z0-9_-]{20,}", SQL)
 
 
+def test_015_tightens_the_keys_and_limits_new_devices_per_visitor_in_a_closed_table():
+    # security audit 2026-11-13: applied by hand on top of 014 (docs/PUSH_ALERTS.md).
+    assert SQL_015.lstrip().startswith("--") and "APPLY MANUALLY" in SQL_015 and "after 008 and 014" in SQL_015
+    body = SQL_015.split("begin;", 1)[1]
+    assert body.rstrip().endswith("commit;")
+    for name, pattern in (("p256dh", "^B[A-Za-z0-9_-]{86}$"), ("auth", "^[A-Za-z0-9_-]{22}$")):
+        assert f"drop constraint if exists push_devices_{name}_check;" in body
+        assert f"add constraint push_devices_{name}_check check ({name} ~ '{pattern}');" in body
+        # rows that do not fit are deleted before the check goes on
+        assert body.index(f"{name} !~ '{pattern}'") < body.index(f"add constraint push_devices_{name}_check")
+    assert "alter table public.push_device_rate enable row level security;" in body
+    assert "revoke all on table public.push_device_rate from public, anon, authenticated, service_role;" in body
+    assert not re.search(r"grant [a-z, ]+ on table public\.push_device_rate", body)
+    fn = body.split("create or replace function public.push_device_save(", 1)[1].split("$$;", 1)[0]
+    assert "security definer" in fn and "set search_path = ''" in fn
+    assert "extensions.digest((select salt from public.ggongbab_tip_secret) || today::text || forwarded, 'sha256')" in fn
+    assert "hourly > 5 or daily > 20" in fn and ">= 500" in fn and ">= 50000" in fn, "per visitor, and the global caps stay"
+    # the limits apply only inside the branch for a new endpoint
+    new_branch = fn.split("if not exists (select 1 from public.push_devices where endpoint = p_endpoint) then", 1)[1].split("end if;\n  insert", 1)[0]
+    assert "push_device_rate" in new_branch and "PUSH_DEVICE_RATE_LIMITED" in new_branch
+    granted = re.findall(r"grant execute on function public\.([a-z_]+)\([^)]*\) to ([a-z, ]+);", body)
+    assert granted == [("push_device_save", "anon, authenticated")]
+    assert not re.search(r"sb_secret_|eyJ[A-Za-z0-9_-]{20,}", SQL_015)
+
+
 @pytest.fixture(scope="module")
 def db():
     pgserver = pytest.importorskip("pgserver")
@@ -65,8 +92,23 @@ def db():
                       "create role service_role nologin; end if; end $$;")
         admin.execute(SQL)
         admin.execute(SQL)  # applying twice is harmless
+        admin.execute(STAND_INS)
+        admin.execute(SQL_015)
+        admin.execute(SQL_015)  # so is 015, on top of 014 as production has it
     yield psycopg, uri
     server.cleanup()
+
+
+# 015 reuses 008's salt and pgcrypto's digest. 008 itself needs Supabase storage, so its salt table is taken
+# from the migration's own text; pgserver ships without pgcrypto, so digest is a stand-in with the same result.
+SECRET_TABLE = ("create table if not exists public.ggongbab_tip_secret ("
+                + TIPS_SQL.split("create table if not exists public.ggongbab_tip_secret (", 1)[1].split(
+                    "revoke all on table public.ggongbab_tip_secret", 1)[0]
+                + "revoke all on table public.ggongbab_tip_secret from public, anon, authenticated, service_role;")
+STAND_INS = """
+create or replace function extensions.digest(data text, kind text) returns bytea language sql immutable as
+  $f$ select sha256(convert_to(data, 'UTF8')) $f$;
+""" + SECRET_TABLE
 
 
 def test_a_device_turns_on_updates_its_list_and_turns_off(db):
@@ -108,6 +150,106 @@ def test_new_devices_are_capped_but_a_known_one_can_always_update(db):
     assert anon.q(save, ("https://fcm.googleapis.com/fcm/send/n7", P256DH, AUTH, ["a"])) == [(True,)]
     anon.close()
     with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("delete from public.push_devices")
+
+
+def visitor(psycopg, uri, address):
+    from tests.test_accounts_db import As
+    conn = As(psycopg, uri)
+    conn.q("select set_config('request.headers', %s, false)", (json.dumps({"x-forwarded-for": f"{address}, 10.0.0.1"}),))
+    return conn
+
+
+def test_015_one_visitor_adds_at_most_5_devices_an_hour_and_20_a_day_and_updates_are_never_limited(db):
+    # security audit 2026-11-13: one visitor could fill the 500-a-day global cap and lock everyone out.
+    psycopg, uri = db
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("delete from public.push_devices")
+        admin.execute("delete from public.push_device_rate")
+    save = "select public.push_device_save(%s, %s, %s, %s, 'ko', 'https://www.babdodukms.com')"
+    a, b = visitor(psycopg, uri, "203.0.113.7"), visitor(psycopg, uri, "198.51.100.9")
+    endpoint = "https://fcm.googleapis.com/fcm/send/rate-{}".format
+    for i in range(5):
+        assert a.q(save, (endpoint(i), P256DH, AUTH, ["x"])) == [(True,)]
+    assert a.fails(save, (endpoint(5), P256DH, AUTH, ["x"])), "the sixth new device in an hour"
+    for _ in range(3):   # a known device updates as often as it likes
+        assert a.q(save, (endpoint(0), P256DH, AUTH, ["y"])) == [(True,)]
+    assert b.q(save, (endpoint("b"), P256DH, AUTH, ["x"])) == [(True,)], "another visitor is not affected"
+    with psycopg.connect(uri, autocommit=True) as admin:
+        assert admin.execute("select count(*) from public.push_devices").fetchone() == (6,)
+        rows = admin.execute("select client_hash, devices from public.push_device_rate").fetchall()
+        assert sorted(n for _, n in rows) == [1, 5], "a refused attempt is not counted"
+        assert all(re.fullmatch(r"[0-9a-f]{64}", h) and "203.0.113.7" not in h for h, _ in rows), "a hash, never the address"
+    assert a.q(save, (endpoint(1), P256DH, AUTH, ["z"])) == [(True,)], "updating stays open after the limit"
+    # The day: 18 new devices earlier today (a row two hours back under the same hash: the hash holds the
+    # Korean date, so whatever the hour, it is the same day's). Two more pass, the 21st does not.
+    c = visitor(psycopg, uri, "203.0.113.50")
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("insert into public.push_device_rate (client_hash, window_start, devices) values ("
+                      "encode(extensions.digest((select salt from public.ggongbab_tip_secret) || "
+                      "((now() at time zone 'Asia/Seoul')::date)::text || '203.0.113.50', 'sha256'), 'hex'), "
+                      "date_trunc('hour', now()) - interval '2 hours', 18)")
+    assert c.q(save, (endpoint("c1"), P256DH, AUTH, ["x"])) == [(True,)]
+    assert c.q(save, (endpoint("c2"), P256DH, AUTH, ["x"])) == [(True,)]
+    assert c.fails(save, (endpoint("c3"), P256DH, AUTH, ["x"])), "the 21st new device of the day, the 3rd of the hour"
+    # Rate rows older than a day go; a visitor with a fresh slate adds again.
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("update public.push_device_rate set window_start = window_start - interval '25 hours'")
+    assert a.q(save, (endpoint(6), P256DH, AUTH, ["x"])) == [(True,)]
+    with psycopg.connect(uri, autocommit=True) as admin:
+        assert admin.execute("select count(*) from public.push_device_rate").fetchone() == (1,), "old rows were removed"
+    c.close()
+    for conn in (a, b):
+        conn.close()
+    assert anon_fails_on_rate_table(psycopg, uri)
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("delete from public.push_devices")
+        admin.execute("delete from public.push_device_rate")
+
+
+def anon_fails_on_rate_table(psycopg, uri):
+    from tests.test_accounts_db import As
+    anon = As(psycopg, uri)
+    try:
+        return all(anon.fails(q) for q in ("select * from public.push_device_rate",
+                                            "delete from public.push_device_rate",
+                                            "insert into public.push_device_rate values ('x', now(), 0)"))
+    finally:
+        anon.close()
+
+
+def test_015_only_real_browser_key_shapes_are_kept(db):
+    psycopg, uri = db
+    with psycopg.connect(uri, autocommit=True) as admin:
+        names = {r[0] for r in admin.execute("select conname from pg_constraint where conrelid = 'public.push_devices'::regclass "
+                                             "and contype = 'c'").fetchall()}
+        assert {"push_devices_p256dh_check", "push_devices_auth_check"} <= names
+        assert len([n for n in names if "p256dh" in n]) == 1 and len([n for n in names if "auth" in n]) == 1, "no old check left"
+        admin.execute("delete from public.push_device_rate")
+    a = visitor(psycopg, uri, "192.0.2.1")
+    save = "select public.push_device_save(%s, %s, %s, %s, 'ko', 'https://www.babdodukms.com')"
+    for p256dh, auth in (("A" * 87, AUTH), ("B" + "A" * 85, AUTH), ("B" + "A" * 87, AUTH), ("B" + "A" * 86, "A" * 21),
+                         ("B" + "A" * 86, "A" * 24), ("B" + "A" * 85 + "=", AUTH)):
+        assert a.fails(save, ("https://fcm.googleapis.com/fcm/send/shape", p256dh, auth, ["x"])), (len(p256dh), len(auth))
+    assert a.q(save, ("https://fcm.googleapis.com/fcm/send/shape", P256DH, AUTH, ["x"])) == [(True,)]
+    a.close()
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("delete from public.push_devices")
+        admin.execute("delete from public.push_device_rate")
+
+
+def test_015_deletes_stored_rows_of_the_old_looser_shape(db, tmp_path):
+    psycopg, uri = db
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("delete from public.push_devices")
+        # As 014 allowed them: drop 015's checks for a moment, store an 88/24-character row and a good one.
+        admin.execute("alter table public.push_devices drop constraint push_devices_p256dh_check, drop constraint push_devices_auth_check")
+        admin.execute("insert into public.push_devices (endpoint, p256dh, auth, site) values "
+                      "('https://fcm.googleapis.com/fcm/send/old', %s, %s, 'https://www.babdodukms.com'), "
+                      "('https://fcm.googleapis.com/fcm/send/good', %s, %s, 'https://www.babdodukms.com')",
+                      ("A" * 88, "A" * 24, P256DH, AUTH))
+        admin.execute(SQL_015)
+        assert admin.execute("select endpoint from public.push_devices").fetchall() == [("https://fcm.googleapis.com/fcm/send/good",)]
         admin.execute("delete from public.push_devices")
 
 
@@ -639,3 +781,62 @@ console.log(JSON.stringify({ bad: short }));
 def test_a_private_key_with_a_leading_zero_byte_still_signs():
     # Audit 2026-11-13: about 1 key in 256 came out 31 bytes long and every alert signature failed.
     assert node(SHORT_KEY) == {"bad": 0}
+
+
+PAGED = r"""
+const send = require('./scripts/push/send.js');
+const feed = JSON.parse(process.argv[1]);
+const result = {};
+(async () => {
+  for (const total of [2500, 2000, 999]) {
+    const all = Array.from({ length: total }, (_, i) => ({ endpoint: 'https://fcm.googleapis.com/fcm/send/d' + String(i).padStart(5, '0'),
+      p256dh: 'B' + 'A'.repeat(86), auth: 'A'.repeat(22), events: ['soon'], lang: 'ko', site: 'https://www.babdodukms.com', failures: 0 }));
+    const reads = [];
+    const fakeFetch = async (url) => {
+      if (url.endsWith('/latest.json')) return { ok: true, status: 200, json: async () => feed };
+      const q = new URL(url).searchParams;
+      reads.push([q.get('order'), q.get('limit'), q.get('offset')]);
+      // PostgREST: at most max-rows (1000) a request, whatever limit asks for.
+      const limit = Math.min(Number(q.get('limit') || 1e9), 1000), offset = Number(q.get('offset') || 0);
+      return { ok: true, status: 200, json: async () => all.slice(offset, offset + limit) };
+    };
+    const seen = new Set();
+    const summary = await send.run({ nowMs: Date.parse('2026-11-12T11:31:00+09:00'), fetchImpl: fakeFetch, dryRun: true,
+      env: { SUPABASE_URL: 'https://p.supabase.co', SUPABASE_SECRET_KEY: 'sb_secret_TEST' }, keys: {}, sentFile: '/nonexistent/sent.json',
+      feeds: ['https://site/data/ggongbab/latest.json'], log: (line) => seen.add(line.split(' ')[3]) });
+    result[total] = { devices: summary.devices, logged: seen.size, reads };
+  }
+  console.log(JSON.stringify(result));
+})().catch((err) => { console.error(err); process.exit(1); });
+"""
+
+
+def test_the_sender_reads_every_device_past_the_databases_page_size():
+    # security audit 2026-11-13: one request returned at most 1000 rows, so device 1001 onwards never got an alert.
+    out = node(PAGED, json.dumps(FEED))
+    assert out["2500"]["devices"] == 2500 and out["2500"]["logged"] == 2500, "every device once, none twice"
+    assert out["2500"]["reads"] == [["endpoint.asc", "1000", "0"], ["endpoint.asc", "1000", "1000"], ["endpoint.asc", "1000", "2000"]]
+    assert out["2000"]["devices"] == 2000 and [r[2] for r in out["2000"]["reads"]] == ["0", "1000", "2000"], "a full last page reads once more"
+    assert out["999"]["devices"] == 999 and len(out["999"]["reads"]) == 1
+
+
+def test_the_key_folder_is_private_even_when_it_already_existed_and_the_unit_is_hardened(tmp_path):
+    # security audit 2026-11-13: mkdir's mode applies only to a folder it makes, so an existing credentials
+    # folder kept its looser rights; the timer's service now runs without privilege gain and with a private umask.
+    nodebin = shutil.which("node")
+    if not nodebin:
+        pytest.skip("node is not installed")
+    folder = tmp_path / "credentials"
+    folder.mkdir(mode=0o755)
+    folder.chmod(0o755)
+    env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "BABDODUK_PUSH_KEYS": str(folder / "babdoduk_push-vapid"),
+           "BABDODUK_PUSH_PUBLIC": str(tmp_path / "public.txt")}
+    for _ in range(2):   # made, then kept: both runs leave the folder private
+        out = subprocess.run([nodebin, "scripts/push/keygen.js"], capture_output=True, text=True, cwd=ROOT, env=env, timeout=30)
+        assert out.returncode == 0, out.stderr
+        assert oct(folder.stat().st_mode & 0o777) == "0o700"
+        folder.chmod(0o755)
+    unit = (ROOT / "scripts/push/babdoduk-push.service").read_text(encoding="utf-8")
+    service = unit.split("[Service]", 1)[1]
+    for line in ("NoNewPrivileges=yes", "UMask=0077", "PrivateTmp=yes"):
+        assert re.search(rf"^{line}$", service, re.M), line

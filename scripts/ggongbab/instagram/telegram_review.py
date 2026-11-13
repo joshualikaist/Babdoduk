@@ -10,8 +10,9 @@ whose questions come back as agent:ok / agent:no. The 🔑 button under a login 
 a message that is only "로그인" ask for a new KAIST login (ggongbab/easy_login.py, owner 2026-10-31).
 Events the cloud pipeline holds for review come as held:ok / held:no (ggongbab/held.py), and a message
 that is only "갱신" asks for the cloud refresh now (owner 2026-11-03).
-Only the allowed chat is ever read; anything else is ignored. Long polling (getUpdates), because
-the operations PC has no public address. The bot is the existing Babdoduk ops bot unless
+Only the allowed chat is ever read, and only what its owner sent (from.id equal to that private chat's id;
+security audit 2026-11-13): a group the bot is added to, or anyone else, is ignored. Long polling
+(getUpdates), because the operations PC has no public address. The bot is the existing Babdoduk ops bot unless
 TELEGRAM_BOT_TOKEN / TELEGRAM_ALLOWED_CHAT_ID are set.
 """
 from __future__ import annotations
@@ -235,6 +236,15 @@ class Bot:
         except RuntimeError:
             pass
 
+    def from_owner(self, chat: Optional[dict], sender: Optional[dict]) -> bool:
+        """The owner's own private chat with the bot: the configured chat AND a sender whose id is that chat id
+        (security audit 2026-11-13). In a private chat Telegram gives both the same positive id, so a group the
+        bot was added to (negative id) or anyone else in a chat the bot can see is never read."""
+        chat_id = str((chat or {}).get("id", ""))
+        sender_id = str((sender or {}).get("id", ""))
+        return bool(self.chat_id) and chat_id == self.chat_id and sender_id == self.chat_id \
+            and re.fullmatch(r"[1-9][0-9]{0,19}", self.chat_id) is not None
+
     def events(self, updates: list[dict]) -> list[tuple]:
         """("button", action, media_id, callback_id), ("tip", action, tip_id, callback_id),
         ("agent", action, ask_id, callback_id), ("held", action, event_id, callback_id), ("login", callback_id), ("text", text,
@@ -243,25 +253,26 @@ class Bot:
         for update in updates:
             callback = update.get("callback_query")
             if callback:
-                chat = ((callback.get("message") or {}).get("chat") or {}).get("id")
+                if not self.from_owner((callback.get("message") or {}).get("chat"), callback.get("from")):
+                    continue
                 data = str(callback.get("data") or "")
                 match = re.fullmatch(r"ig:(ok|no|edit):([A-Za-z0-9_]{1,40})", data)
                 tip = re.fullmatch(rf"tip:(ok|no|edit):({TIP_ID})", data)
                 agent = re.fullmatch(rf"agent:(ok|no):({ASK_ID})", data)
                 held = re.fullmatch(rf"held:(ok|no):({TIP_ID})", data)
-                if str(chat) == self.chat_id and match:
+                if match:
                     out.append(("button", match.group(1), match.group(2), callback.get("id")))
-                elif str(chat) == self.chat_id and tip:
+                elif tip:
                     out.append(("tip", tip.group(1), tip.group(2), callback.get("id")))
-                elif str(chat) == self.chat_id and agent:
+                elif agent:
                     out.append(("agent", agent.group(1), agent.group(2), callback.get("id")))
-                elif str(chat) == self.chat_id and held:
+                elif held:
                     out.append(("held", held.group(1), held.group(2), callback.get("id")))
-                elif str(chat) == self.chat_id and data == LOGIN_CALLBACK:
+                elif data == LOGIN_CALLBACK:
                     out.append(("login", callback.get("id")))
                 continue
             message = update.get("message") or {}
-            if str((message.get("chat") or {}).get("id")) != self.chat_id:
+            if not self.from_owner(message.get("chat"), message.get("from")):
                 continue
             if message.get("text"):
                 reply = (message.get("reply_to_message") or {}).get("message_id")
