@@ -6,6 +6,7 @@
   'use strict';
 
   var A = window.BabdodukAccount;
+  var P = window.BabdodukPush || null;   // 30분 전 알림 (docs/PUSH_ALERTS.md)
   var L = window.BabdodukLive;
   var F = window.BabdodukFreeFood;
   var app = document.getElementById('myApp');
@@ -21,6 +22,8 @@
     client: null,
     events: [],               // account rows: {id, savedAt, seen}
     places: null,             // {want, been, again} or null when unavailable
+    calToken: '',             // the calendar subscription token, '' while unknown or unavailable
+    push: 'hidden',           // this browser's 30-minute alert: hidden | home | unsupported | denied | off | on
     profile: null,
     merge: null,              // the last merge result, for its notice and 되돌리기
     feed: null,               // public events (occurrences) once loaded
@@ -31,6 +34,10 @@
     loginError: /[?&#]error(=|_description=)/.test(location.search + location.hash),
     next: (location.search.match(/[?&]next=([a-z-]{1,20})/) || [])[1] || ''
   };
+
+  // The sign-in buttons carry each provider's own mark (decorative; the label says the provider).
+  var KAKAO_MARK = '<svg class="my-login-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#191600" d="M12 3C6.48 3 2 6.58 2 11c0 2.86 1.88 5.37 4.7 6.78-.2.74-.74 2.7-.85 3.12-.13.52.19.51.4.37.17-.11 2.62-1.78 3.68-2.5.67.1 1.36.15 2.07.15 5.52 0 10-3.58 10-8S17.52 3 12 3z"/></svg>';
+  var GOOGLE_MARK = '<svg class="my-login-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
 
   // ---- text --------------------------------------------------------------------------------------
   function lang() { return document.documentElement.lang === 'en' ? 'en' : 'ko'; }
@@ -79,6 +86,7 @@
   }
   // Each saved event against the newest public data: upcoming, ended or missing (never "cancelled").
   function savedRows(now) {
+    var today = F ? F.nowKst() : null;
     return state.events.map(function (item) {
       var live = find(state.feed, item.id);
       var past = find(state.archive, item.id);
@@ -92,6 +100,9 @@
       else kind = 'missing';
       var changed = kind === 'upcoming' && L ? L.changes(item, live).length > 0 : false;
       return { item: item, ev: ev, kind: kind, changed: changed };
+    }).filter(function (row) {
+      // From the day after the event it leaves the list; the saved row stays for the subscribed calendar.
+      return !(row.kind === 'ended' && L && L.dayPassed(row.ev, today));
     }).sort(function (a, b) {
       var order = { upcoming: 0, checking: 1, missing: 2, ended: 3 };
       if (order[a.kind] !== order[b.kind]) return order[a.kind] - order[b.kind];
@@ -110,36 +121,32 @@
   function guestNoteHtml() {
     var n = guestCount();
     return '<p class="my-note">' + esc(n
-      ? t('my.guest.count', '이 브라우저에 저장한 꽁밥 {n}개가 있어요.', { n: n })
-      : t('my.guest.none', '아직 이 브라우저에 저장한 꽁밥이 없어요.')) +
+      ? t('my.guest.count', '저장한 꽁밥 {n}개', { n: n })
+      : t('my.guest.none', '저장한 꽁밥이 없어요')) +
       ' <a href="ggongbab.html#saved">' + esc(t('my.guest.open', '저장한 꽁밥 보기')) + '</a></p>';
   }
   function offHtml() {
     return '<section class="my-card" aria-labelledby="myOffTitle">' +
       '<h2 class="my-h2" id="myOffTitle">' + esc(t('my.off.title', '로그인은 준비 중이에요')) + '</h2>' +
-      '<p class="my-text">' + esc(t('my.off.body', '지금은 저장한 꽁밥이 이 브라우저에만 남아요. 로그인이 열리면 여기서 알려 드릴게요.')) + '</p>' +
+      '<p class="my-text">' + esc(t('my.off.body', '로그인이 열리면 알려 드릴게요.')) + '</p>' +
       guestNoteHtml() + '</section>';
   }
   function outHtml() {
     var inTalk = L && L.inTalkApp && L.inTalkApp(navigator.userAgent);
     var html = '<section class="my-card" aria-labelledby="myOutTitle">';
-    html += '<h2 class="my-h2" id="myOutTitle">' + esc(t('my.out.title', '로그인하면 이렇게 돼요')) + '</h2>';
-    html += '<ul class="my-benefits">' +
-      '<li>' + esc(t('my.out.b1', '저장한 꽁밥과 먹킷리스트를 휴대폰과 컴퓨터에서 함께 봐요')) + '</li>' +
-      '<li>' + esc(t('my.out.b2', '이 브라우저에 저장한 것은 로그인할 때 계정에 합쳐져요')) + '</li>' +
-      '<li>' + esc(t('my.out.b3', '프로필과 메모는 나만 봐요')) + '</li></ul>';
+    // Only the buttons (owner 2026-11-12: "필요없는 글 다 삭제해줘").
+    html += '<h2 class="my-h2" id="myOutTitle">' + esc(t('my.out.title', '로그인')) + '</h2>';
     if (state.loginError) html += '<p class="my-alert" role="alert">' + esc(t('my.out.failed', '로그인하지 못했어요. 다시 시도해 주세요.')) + '</p>';
     html += '<div class="my-login">';
-    html += '<button type="button" class="my-login-btn is-kakao" data-my-login="kakao">' + esc(t('my.out.kakao', '카카오로 계속하기')) + '</button>';
+    html += '<button type="button" class="my-login-btn is-kakao" data-my-login="kakao">' + KAKAO_MARK + '<span>' + esc(t('my.out.kakao', '카카오로 계속하기')) + '</span></button>';
     if (inTalk) {
-      html += '<p class="my-note">' + esc(t('my.out.googleTalk', 'Google 로그인은 카카오톡 안에서 막혀 있어요. 기본 브라우저에서 열어 주세요.')) +
+      html += '<p class="my-note">' + esc(t('my.out.googleTalk', '카카오톡에선 Google 로그인이 안 돼요.')) +
         ' <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('my.out.openExternal', '기본 브라우저로 열기')) + '</a></p>';
     } else {
-      html += '<button type="button" class="my-login-btn is-google" data-my-login="google">' + esc(t('my.out.google', 'Google로 계속하기')) + '</button>';
+      html += '<button type="button" class="my-login-btn is-google" data-my-login="google">' + GOOGLE_MARK + '<span>' + esc(t('my.out.google', 'Google로 계속하기')) + '</span></button>';
     }
     html += '</div>';
-    html += '<p class="my-fine">' + esc(t('my.out.fine', 'KAIST 인증은 필요 없어요. 로그인했다고 모든 꽁밥에 참여할 수 있는 건 아니에요: 참여 조건은 행사마다 달라요.')) + '</p>';
-    html += guestNoteHtml();
+    if (guestCount()) html += guestNoteHtml();
     return html + '</section>';
   }
   function mergeHtml() {
@@ -150,12 +157,11 @@
     if (m.places) parts.push(t('my.merge.places', '식당 {n}곳', { n: m.places }));
     var html = '<div class="my-merge" role="status">';
     if (parts.length) {
-      html += '<p>' + esc(t('my.merge.done', '이 브라우저에 저장한 {what}을 계정에 합쳤어요.', { what: parts.join(', ') })) + '</p>';
-      html += '<p class="my-fine">' + esc(t('my.merge.hint', '내 것이 아니면 되돌릴 수 있어요. 이 브라우저의 목록은 그대로 남아요.')) + '</p>';
+      html += '<p>' + esc(t('my.merge.done', '{what}을 계정에 합쳤어요.', { what: parts.join(', ') })) + '</p>';
       html += '<button type="button" class="btn btn-secondary my-small" data-my-undo>' + esc(t('my.merge.undo', '되돌리기')) + '</button>';
     }
     if ((m.conflicts || []).length) {
-      html += '<p class="my-fine">' + esc(t('my.merge.conflicts', '메모가 서로 다른 식당 {n}곳은 계정 메모를 그대로 두었어요.', { n: m.conflicts.length })) + '</p>';
+      html += '<p class="my-fine">' + esc(t('my.merge.conflicts', '식당 {n}곳은 계정 메모를 그대로 뒀어요.', { n: m.conflicts.length })) + '</p>';
     }
     return html + '<button type="button" class="my-close" data-my-merge-close aria-label="' + esc(t('my.close', '닫기')) + '"><span aria-hidden="true">×</span></button></div>';
   }
@@ -176,13 +182,53 @@
         var main = row.kind === 'upcoming'
           ? '<a class="my-row-link" href="' + esc(L ? L.eventLink(row.item.id) : 'ggongbab.html') + '">' + body + '</a>'
           : '<p class="my-row-link is-static">' + body + '</p>';
-        return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + '</li>';
+        // Owner 2026-11-12: a saved event can be removed right here, without going to 오늘의 꽁밥.
+        var unstar = '<button type="button" class="my-unstar" data-my-unstar="' + esc(row.item.id) + '" aria-pressed="true" aria-label="' +
+          esc(t('my.saved.remove', '저장 취소: {title}', { title: row.ev.title || (row.item.seen || {}).title || '' })) +
+          '"><span aria-hidden="true">★</span></button>';
+        return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + unstar + '</li>';
       }).join('') + '</ol>';
       if (rows.some(function (r) { return r.kind === 'missing'; })) {
-        html += '<p class="my-fine">' + esc(t('my.saved.missingNote', '목록에서 빠진 꽁밥은 취소됐거나 내용이 바뀌었을 수 있어요. 공지를 확인하세요.')) + '</p>';
+        html += '<p class="my-fine">' + esc(t('my.saved.missingNote', '취소됐을 수 있어요. 공지를 확인하세요.')) + '</p>';
       }
     }
     html += '<p class="my-fine"><a href="ggongbab.html">' + esc(t('my.saved.manage', '오늘의 꽁밥에서 저장·삭제하기')) + '</a></p>';
+    return html + '</section>';
+  }
+  // 내 캘린더에 연결 (owner 2026-11-12; docs/CALENDAR_FEED.md): subscribe once, and every later star shows
+  // up in the iPhone calendar by itself. iPhone and iPad only (owner: a laptop needs no calendar link; Android's
+  // Google Calendar fetches a subscription only every few hours, so Android gets the 30-minute alert instead).
+  // No address talk on the card (owner: "사람들이 주소 관련해서 무슨 말인지 이해 못할게 뻔해").
+  function calFeedUrl() { return location.host + '/cal/' + state.calToken + '.ics'; }
+  function isIos() {
+    var ua = navigator.userAgent || '';
+    return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  }
+  function calendarHtml() {
+    if (!state.calToken || !isIos()) return '';
+    var html = '<section class="my-card" aria-labelledby="myCalTitle">';
+    html += '<h2 class="my-h2" id="myCalTitle"><span aria-hidden="true">📅</span> ' + esc(t('my.cal.title', '아이폰 캘린더에 넣기')) + '</h2>';
+    html += '<p class="my-text">' + esc(t('my.cal.body', '한 번 연결하면 별 누른 꽁밥이 캘린더에 들어가요.')) + '</p>';
+    html += '<a class="btn btn-primary my-cal-btn" data-my-cal href="webcal://' + esc(calFeedUrl()) + '">' + esc(t('my.cal.apple', '아이폰 캘린더에 연결')) + '</a>';
+    html += '<p class="my-fine">' + esc(t('my.cal.appleHow', '누른 뒤 "구독"을 눌러 주세요.')) + '</p>';
+    return html + '</section>';
+  }
+  function pushIds() { return (state.store ? state.store.list() : state.events).map(function (item) { return item.id; }); }
+  function pushHtml() {
+    var s = state.push;
+    if (s !== 'on' && s !== 'off' && s !== 'home' && s !== 'denied') return '';
+    var html = '<section class="my-card" aria-labelledby="myPushTitle">';
+    html += '<h2 class="my-h2" id="myPushTitle"><span aria-hidden="true">🔔</span> ' + esc(t('push.title', '30분 전 알림')) + '</h2>';
+    if (s === 'on' || s === 'off') {
+      var on = s === 'on';
+      html += '<button type="button" class="btn ' + (on ? 'btn-secondary' : 'btn-primary') + ' my-cal-btn" data-my-push aria-pressed="' + on + '">' +
+        esc(on ? t('push.turnOff', '알림 끄기') : t('push.turnOn', '알림 켜기')) + '</button>';
+      if (on) html += '<p class="my-fine">' + esc(t('push.isOn', '켜져 있어요')) + '</p>';
+    } else if (s === 'home') {
+      html += '<p class="my-fine">' + esc(t('push.home', '홈 화면에 추가한 밥도둑에서 알림을 켤 수 있어요.')) + '</p>';
+    } else {
+      html += '<p class="my-fine">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.')) + '</p>';
+    }
     return html + '</section>';
   }
   function placesHtml() {
@@ -193,15 +239,14 @@
     if (!p) {
       html += '<p class="my-text">' + esc(t('my.places.off', '먹킷리스트를 불러오지 못했어요.')) + '</p>';
     } else if (!p.want && !p.been && !p.again) {
-      html += '<p class="my-text">' + esc(t('my.places.empty', '아직 저장한 식당이 없어요. 밥약 메이커에서 식당을 저장할 수 있어요.')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.places.empty', '아직 저장한 식당이 없어요.')) + '</p>';
     } else {
       html += '<ul class="my-counts">' +
         '<li><span>' + esc(t('my.places.want', '가고 싶어')) + '</span><b>' + p.want + '</b></li>' +
         '<li><span>' + esc(t('my.places.been', '가봤어')) + '</span><b>' + p.been + '</b></li>' +
         '<li><span>' + esc(t('my.places.again', '또 갈래')) + '</span><b>' + p.again + '</b></li></ul>';
     }
-    html += '<p class="my-fine"><a href="bobyak.html">' + esc(t('my.places.open', '밥약 메이커 열기')) + '</a> · ' +
-      esc(t('my.places.private', '메모는 나만 봐요')) + '</p>';
+    html += '<p class="my-fine"><a href="bobyak.html">' + esc(t('my.places.open', '밥약 메이커 열기')) + '</a></p>';
     return html + '</section>';
   }
   function accountHtml() {
@@ -225,7 +270,6 @@
     html += '<dt>' + esc(t('my.account.with', '로그인 방법')) + '</dt><dd>' +
       (linked.length ? linked.map(function (p) { return '<span class="my-chip">' + esc(providerLabel(p)) + '</span>'; }).join(' ') : '—') + '</dd>';
     html += '</dl>';
-    html += '<p class="my-fine">' + esc(t('my.account.privateNote', '프로필은 공개되지 않아요. 이메일은 받지 않거나 받아도 화면에 쓰지 않아요.')) + '</p>';
     var missing = A.PROVIDERS.filter(function (p) { return linked.indexOf(p) === -1; });
     // Google refuses the talk app's own browser, and the default browser opens without this session, so
     // linking Google there starts with signing in again outside the app.
@@ -239,13 +283,11 @@
         }).join('') + '</div>';
       }
       if (linkable.length < missing.length) {
-        html += '<p class="my-note">' + esc(t('my.account.linkGoogleTalk', 'Google 연결은 카카오톡 안에서 막혀 있어요. 기본 브라우저에서 카카오로 로그인한 뒤 연결해 주세요.')) +
+        html += '<p class="my-note">' + esc(t('my.account.linkGoogleTalk', '카카오톡에선 Google 연결이 안 돼요. 기본 브라우저에서 해 주세요.')) +
           ' <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('my.out.openExternal', '기본 브라우저로 열기')) + '</a></p>';
       }
-      html += '<p class="my-fine">' + esc(t('my.account.linkNote', '같은 사람이 두 방법으로 따로 가입하면 저장 목록이 나뉘어요. 연결하면 한 계정이 돼요.')) + '</p>';
     }
     html += '<div class="my-row-actions"><button type="button" class="btn btn-secondary" data-my-signout>' + esc(t('my.account.signout', '로그아웃')) + '</button></div>';
-    html += '<p class="my-fine">' + esc(t('my.account.signoutNote', '이 기기에서만 로그아웃해요. 이 브라우저에 따로 저장한 목록은 그대로 남아요.')) + '</p>';
     return html + '</section>';
   }
   function dangerHtml(now) {
@@ -260,8 +302,7 @@
     } else if (state.panel === 'leave') {
       var fresh = A.signedInRecently(state.user, now);
       html += '<div class="my-confirm" role="group" aria-labelledby="myLeaveQ"><p id="myLeaveQ" class="my-text">' +
-        esc(t('my.leave.q', '탈퇴하면 계정과 저장한 꽁밥, 먹킷리스트, 메모, 공유 리스트가 모두 지워지고 되돌릴 수 없어요.')) + '</p>' +
-        '<p class="my-fine">' + esc(t('my.leave.keep', '결제·주문 정보를 받지 않아 법으로 따로 보관하는 개인정보는 없어요. Google·카카오 쪽 연결 기록은 각 계정 설정에서 지울 수 있어요.')) + '</p>';
+        esc(t('my.leave.q', '탈퇴하면 계정과 저장한 모든 것이 지워지고 되돌릴 수 없어요.')) + '</p>';
       if (!fresh) {
         html += '<p class="my-text">' + esc(t('my.leave.reauth', '본인 확인을 위해 한 번 더 로그인해 주세요.')) + '</p>' +
           '<div class="my-row-actions">' + A.providersOf(state.user).map(function (p) {
@@ -288,15 +329,15 @@
     else if (state.view === 'off') html = offHtml();
     else if (state.view === 'out') html = outHtml();
     else if (state.view === 'left') html = '<section class="my-card"><h2 class="my-h2">' + esc(t('my.left.title', '탈퇴했어요')) + '</h2><p class="my-text">' +
-      esc(t('my.left.body', '계정과 저장한 데이터를 모두 지웠어요. 그동안 고마웠어요.')) + '</p><p class="my-fine"><a href="index.html">' + esc(t('my.left.home', '홈으로')) + '</a></p></section>';
+      esc(t('my.left.body', '그동안 고마웠어요.')) + '</p><p class="my-fine"><a href="index.html">' + esc(t('my.left.home', '홈으로')) + '</a></p></section>';
     else if (state.view === 'error') html = '<section class="my-card"><h2 class="my-h2">' + esc(t('my.error.title', '계정 정보를 불러오지 못했어요')) + '</h2>' +
-      '<p class="my-text">' + esc(t('my.error.body', '잠시 뒤 다시 시도해 주세요. 저장한 꽁밥은 이 브라우저에서 계속 쓸 수 있어요.')) + '</p>' +
+      '<p class="my-text">' + esc(t('my.error.body', '잠시 뒤 다시 시도해 주세요.')) + '</p>' +
       '<div class="my-row-actions"><button type="button" class="btn btn-primary my-small" data-my-retry>' + esc(t('my.retry', '다시 시도')) + '</button>' +
       (state.user ? '<button type="button" class="btn btn-secondary my-small" data-my-signout>' + esc(t('my.account.signout', '로그아웃')) + '</button>' : '') + '</div></section>';
     else {
       var name = (state.profile && state.profile.display_name) || '';
       html = '<p class="my-hello">' + esc(name ? t('my.hello', '{name}님, 반가워요', { name: name }) : t('my.helloNoName', '로그인했어요')) + '</p>' +
-        mergeHtml() + savedHtml(now) + placesHtml() + accountHtml() + dangerHtml(now);
+        mergeHtml() + savedHtml(now) + pushHtml() + calendarHtml() + placesHtml() + accountHtml() + dangerHtml(now);
     }
     app.setAttribute('aria-busy', state.busy ? 'true' : 'false');
     app.innerHTML = html;
@@ -311,7 +352,8 @@
         return Promise.all([
           store.reload().then(function (s) { state.store = s; state.events = s.list(); }),
           A.loadProfile(c, uid).then(function (p) { state.profile = p; }),
-          SHOW_PLACES ? A.placeCounts(c).then(function (p) { state.places = p; }, function () { state.places = null; }) : null
+          SHOW_PLACES ? A.placeCounts(c).then(function (p) { state.places = p; }, function () { state.places = null; }) : null,
+          A.calendarFeed(c).then(function (tk) { state.calToken = tk; }, function () { state.calToken = ''; })
         ]);
       }).then(function () {
         if (!state.profile) {
@@ -321,7 +363,12 @@
         }
       });
   }
-  function onStoreChange(kind) { if (kind === 'failed') announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); }
+  function onStoreChange(kind) {
+    if (kind !== 'failed') return;
+    // A removal the server refused is put back by the store: show the list as it really is.
+    if (state.store && state.view === 'in') { state.events = state.store.list(); render(); }
+    announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.'));
+  }
   function start() {
     if (!A.available()) { state.view = 'off'; render(); return; }
     state.view = 'loading'; render();
@@ -331,8 +378,10 @@
     }).then(function (user) {
       state.user = user;
       if (!user) { state.view = 'out'; render(); return; }
-      return Promise.all([loadAccount(), loadFeed()]).then(function () {
+      var pushKnown = P ? P.status().then(function (s) { state.push = s; }, function () { state.push = 'hidden'; }) : null;
+      return Promise.all([loadAccount(), loadFeed(), pushKnown]).then(function () {
         state.view = 'in';
+        if (P && state.push === 'on') P.sync(pushIds(), lang());
         if (state.next === 'leave') state.panel = 'leave';
         if (state.next === 'linked') announce(state.loginError ? t('my.account.linkFail', '지금은 로그인 방법을 연결할 수 없어요') : t('my.account.linked', '로그인 방법을 연결했어요'));
         if (state.next) history.replaceState(null, '', location.pathname);
@@ -372,6 +421,38 @@
         busy(false); state.user = null; state.view = 'out'; render();
         announce(t('my.account.signedOut', '로그아웃했어요'));
       }, function () { busy(false); announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); });
+      return;
+    }
+    if ((el = e.target.closest('[data-my-unstar]'))) {
+      var id = el.getAttribute('data-my-unstar');
+      var shown = Array.prototype.map.call(app.querySelectorAll('[data-my-unstar]'), function (b) { return b.getAttribute('data-my-unstar'); });
+      var at = shown.indexOf(id);
+      if (!state.store || !state.store.remove(id)) { announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); return; }
+      state.events = state.store.list();
+      if (P && state.push === 'on') P.changed(pushIds(), lang());
+      render();
+      announce(t('my.saved.removed', '저장을 취소했어요'));
+      // Focus stays in the list: the star now in the removed row's place, the last one, or the heading.
+      var stars = app.querySelectorAll('[data-my-unstar]');
+      var heading = document.getElementById('mySavedTitle');
+      if (stars.length) stars[Math.min(at, stars.length - 1)].focus();
+      else if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+      return;
+    }
+    if (P && e.target.closest('[data-my-push]')) {
+      // Inside the click: turning on asks the phone's permission question right here.
+      var turningOn = state.push !== 'on';
+      busy(true);
+      (turningOn ? P.enable(pushIds(), lang()) : P.disable()).then(function (result) {
+        busy(false);
+        if (result === 'on') { state.push = 'on'; announce(t('push.nowOn', '30분 전 알림을 켰어요')); }
+        else if (result === 'off') { state.push = 'off'; announce(t('push.nowOff', '30분 전 알림을 껐어요')); }
+        else if (result === 'denied') { state.push = 'denied'; announce(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.')); }
+        else announce(t('push.fail', '알림을 켜지 못했어요. 다시 시도해 주세요.'));
+        render();
+        var btn = app.querySelector('[data-my-push]') || document.getElementById('myPushTitle');
+        if (btn) { if (!btn.matches('button')) btn.setAttribute('tabindex', '-1'); btn.focus(); }
+      });
       return;
     }
     if (e.target.closest('[data-my-retry]')) { start(); return; }

@@ -946,3 +946,38 @@ body::after {
     transition: none !important;
   }
 }
+
+/* The one-time "star also adds to the calendar" question (js/ggongbab-live.js askStarCalendar,
+   owner 2026-11-11), shown on the home calendar and the food hub: a small panel above the bottom
+   edge that covers no control it asks about. */
+.starcal {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 60;
+  width: min(420px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  padding: var(--space-4);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 12px 32px rgba(20, 20, 20, 0.18);
+  overflow-wrap: anywhere;
+}
+.starcal-title { margin: 0; font-size: 16px; line-height: 24px; font-weight: 800; }
+.starcal-body { margin: var(--space-1) 0 0; font-size: 14px; line-height: 21px; color: var(--color-ink-muted); }
+.starcal-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.starcal-actions button {
+  flex: 1 1 0;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.starcal-yes { border: 1px solid var(--color-accent); background: var(--color-accent); color: #fff; }
+.starcal-no { border: 1px solid var(--color-divider); background: var(--color-surface); color: var(--color-ink); }
+.starcal-actions button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }

@@ -1,5 +1,6 @@
 """Production-scoped UI contracts for the static main site; no accounts, network or data writes."""
 from datetime import datetime, timedelta, timezone
+import json
 import re
 
 import pytest
@@ -51,6 +52,9 @@ def test_fixture_clock_is_scoped_before_date_replacement():
 # hosts js/babdoduk-auth-config.js lists (tests/test_my_babdoduk.py); the renderer never talks to a database,
 # and the lab-only Realtime feed (js/ggongbab-public-feed.js) never reaches main.
 ACCOUNT_SCRIPTS = ("js/ggongbab-public-config.js", "js/babdoduk-auth-config.js", "js/babdoduk-account.js")
+# 별 누른 꽁밥 30분 전 알림 (owner 2026-11-12; docs/PUSH_ALERTS.md): two checking functions only, called only for a
+# browser that turned the alert on (tests/test_push_alerts.py).
+PUSH_SCRIPTS = ("js/ggongbab-push.js",)
 
 
 @pytest.mark.parametrize("name", ["index.html", "ggongbab.html", "lab-ggongbab.html"])
@@ -63,15 +67,21 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     assert "ggongbab-public-feed.js" not in html
     hub = name != "index.html"
     if hub:
-        assert scripts[-4:] == [*ACCOUNT_SCRIPTS, "js/ggongbab.js"], scripts
+        tail = [*ACCOUNT_SCRIPTS, *(PUSH_SCRIPTS if name == "ggongbab.html" else ()), "js/ggongbab.js"]
+        assert scripts[-len(tail):] == tail, scripts
         config = (ROOT / "js/ggongbab-public-config.js").read_text(encoding="utf-8")
         assert not re.search(r"sb_secret_|service_role|SUPABASE_SECRET", config)
     else:
-        assert "ggongbab-public-config.js" not in html and "babdoduk-account.js" not in html
+        # Owner 2026-11-12: the home calendar's star keeps the 30-minute alert list, so the home page loads the
+        # public config for the alert module only, right before the calendar; no account script, no client.
+        i = scripts.index("js/home-calendar.js")
+        assert scripts[i - 2:i] == ["js/ggongbab-public-config.js", *PUSH_SCRIPTS] and "babdoduk-account.js" not in html
     for script in scripts:
         assert not script.startswith(("http:", "https:", "//"))
         if hub and script in ACCOUNT_SCRIPTS:
             continue  # the account store: tests/test_my_babdoduk.py
+        if script in PUSH_SCRIPTS or (name == "index.html" and script == "js/ggongbab-public-config.js"):
+            continue  # the 30-minute alert and its public config: tests/test_push_alerts.py
         source = (ROOT / script.split("?")[0]).read_text(encoding="utf-8")
         for forbidden in ("BabdodukPublicFeed", "BABDODUK_PUBLIC_FEED_CONFIG", "supabase",
                           "createClient(", "WebSocket(", "EventSource("):
@@ -103,10 +113,11 @@ def test_hub_feed_note_names_the_last_change_and_claims_no_live_data(name):
 
 PAST_KEYS = ("gg.archive.title", "gg.archive.lead", "gg.archive.ended", "gg.archive.record", "gg.archive.source",
              "gg.archive.empty", "gg.archive.error", "gg.archive.loading", "gg.archive.more", "gg.archive.less", "gg.newTab")
-PAST_KO = {"gg.archive.title": "지난 꽁밥 기록", "gg.archive.ended": "종료", "gg.archive.record": "당시 공개된 꽁밥 안내 기록",
-           "gg.archive.source": "당시 공지 보기", "gg.archive.empty": "최근 30일 기록 없음"}
+# copy cleanup, owner 2026-11-12: shorter record and source labels.
+PAST_KO = {"gg.archive.title": "지난 꽁밥 기록", "gg.archive.ended": "종료", "gg.archive.record": "지난 꽁밥 안내",
+           "gg.archive.source": "공지 보기", "gg.archive.empty": "최근 30일 기록 없음"}
 PAST_EN = {"gg.archive.title": "Past free-food listings", "gg.archive.ended": "Ended",
-           "gg.archive.record": "Previously published free-food listing", "gg.archive.source": "View original notice"}
+           "gg.archive.record": "Past free-food listing", "gg.archive.source": "View notice"}
 
 
 @pytest.mark.parametrize("name", ["ggongbab.html", "lab-ggongbab.html"])
@@ -117,7 +128,8 @@ def test_past_listing_copy_is_bilingual_and_never_claims_an_outcome(name):
     assert all(len(values) == 2 and all(values) for values in strings.values()), strings
     assert {key: strings[key][0] for key in PAST_KO} == PAST_KO
     assert {key: strings[key][1] for key in PAST_EN} == PAST_EN
-    assert "종료" in strings["gg.archive.lead"][0] and "ended" in strings["gg.archive.lead"][1]  # ended: no longer open
+    # copy cleanup, owner 2026-11-12: the lead is the window only; the title and the 종료 badge say "ended".
+    assert strings["gg.archive.lead"] == ["최근 30일", "Last 30 days"]
     text = " ".join(value for values in strings.values() for value in values).lower()
     for claim in ("진행됨", "진행된", "완료", "성공", "held", "completed", "successful", "took place", "happened"):
         assert claim not in text, claim
@@ -165,26 +177,31 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     html = (ROOT / "event.html").read_text(encoding="utf-8")
     rows = re.findall(r'data-start="(\d{4}-\d{2}-\d{2})"\s+data-end="(\d{4}-\d{2}-\d{2})"\s+'
                       r'data-confirmation="([^"]+)"', html)
-    assert len(rows) == 3
+    # One row per authored activity (data/content/events.json); the owner adds events over time.
+    activities = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))["activities"]
+    n, on_site = len(activities), sum(1 for a in activities if not a["link"].startswith("http"))
+    assert len(rows) == n >= 4
     assert "STROKE" not in html and "언빌리버블" not in html   # it did not happen
     # The third row is the site's own menu world cup (2026-10-13), held on worldcup.html.
     assert "'event.e2.summary': '먹방 월드컵 32강'" in html and 'href="worldcup.html" data-event-page>' in html
     assert all(confirmation in ("announced", "tentative") for *_, confirmation in rows)
-    assert "'event.state.tentative.past': '진행 여부 미확인'" in html
+    assert "'event.state.tentative.past': '미확정'" in html  # copy cleanup, owner 2026-11-12
     assert "'event.state.announced.past'" not in html  # an unrecorded outcome claims nothing, visibly
     assert "'event.state.held.past'" in html  # only an explicit "held" state may say it took place
-    assert "'event.note.announced.past': '결과는 이 페이지에 기록되지 않았어요." in html  # full context behind 자세히
+    # copy cleanup, owner 2026-11-12: the status notes behind 자세히 are gone; the state chip stays.
+    assert "'event.note." not in html and "data-event-note" not in html
     # Each row's link is labelled by the page script from its date band; a past row links to
     # the original post as a record, and each authored instruction block can be marked historical.
-    assert html.count("<span data-event-cta>") == 3 and "event.openPageBtn" not in html
+    assert html.count("<span data-event-cta>") == n and "event.openPageBtn" not in html
     # An activity held on a page of this site opens it in place; an original post opens a new tab.
-    assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == 2
+    assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == n - on_site
     assert "'event.cta.page'" not in html and "'event.cta.pagePast': 'Open the page'" in html   # no 지금 해보기 button: the start screen is in the card
-    assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '당시 게시물'" in html
-    assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'Original post'" in html
-    assert html.count('<details class="event-more">') == 3 and "event-tab" not in html
-    # Three activities, each in the Korean markup and in the ko and en tables (data/content/events.json).
-    assert html.count('<div class="event-detail-row" data-detail="participation">') == 9
+    # copy cleanup, owner 2026-11-12: a past row's link reads the same as a live one's.
+    assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '게시물 보기'" in html
+    assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'View post'" in html
+    assert html.count('<details class="event-more">') == n and "event-tab" not in html
+    # Every activity, in the Korean markup and in the ko and en tables (data/content/events.json).
+    assert html.count('<div class="event-detail-row" data-detail="participation">') == 3 * n
     assert "event-elsewhere" not in html and "event-num" not in html and 'class="page-num"' not in html
     assert 'class="event-instagram"' in html and "@babdodukms" in html
     assert 'id="eventEmpty"' in html and "event.emptyLink" not in html

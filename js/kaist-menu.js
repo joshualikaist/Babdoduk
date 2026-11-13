@@ -277,8 +277,8 @@
       return html + '</article>';
     }
     function emptyHtml(data, todayStale) {
-      var title = todayStale ? t('km.staleEmpty', '최근 메뉴를 보려면 아래를 눌러 주세요.')
-        : (selectedToday() ? t('km.emptyTitle', '오늘 이 시간대에 공개된 메뉴가 없어요.') : t('km.emptyMeal', '이 시간대에 공개된 메뉴가 없어요.'));
+      var title = todayStale ? t('km.staleEmpty', '오늘 메뉴가 아직 없어요.')
+        : (selectedToday() ? t('km.emptyTitle', '오늘 이 시간대 메뉴가 없어요.') : t('km.emptyMeal', '이 시간대 메뉴가 없어요.'));
       var html = '<div class="gg-state"><strong>' + esc(title) + '</strong>';
       MEALS.forEach(function (meal) {
         if (meal === state.meal) return;
@@ -339,9 +339,9 @@
         return subHtml(dateHeading(state.selected), visibleRestaurants(state.data).length) + menuHtml(state.data, false);
       }
       // latest.json still holds an earlier day: today's menu is not published yet.
-      var staleTitle = isWeekend(state.selected) ? t('km.weekendTitle', '주말엔 학식이 없어요.') : t('km.staleTitle', '오늘 메뉴 업데이트 중이에요.');
+      var staleTitle = isWeekend(state.selected) ? t('km.weekendTitle', '주말엔 학식이 없어요.') : t('km.staleTitle', '오늘 메뉴가 아직 안 올라왔어요.');
       var html = '<div class="km-warn" data-km-stale="1"><strong>' + esc(staleTitle) + '</strong><br>' +
-        esc(t('km.staleSaved', '최근 저장된 메뉴:')) + ' ' + esc(dateHeading(state.data && state.data.date)) +
+        esc(t('km.staleSaved', '최근 메뉴:')) + ' ' + esc(dateHeading(state.data && state.data.date)) +
         '<br><button type="button" class="km-stale-toggle" data-km-stale-toggle>' +
         esc(state.showStale ? t('km.hideStale', '최근 메뉴 숨기기') : t('km.showStale', '최근 메뉴 보기')) + '</button></div>';
       if (!state.showStale) return subHtml(dateHeading(state.selected)) + html + mealsHtml() + emptyHtml(state.data, true);
@@ -594,7 +594,7 @@
     var title = stale && restos.length ? t('kaist.recentTitle', '최근에 올라온 KAIST 학식') : t('kaist.title', '오늘 KAIST 학식');
     var html = '<header class="kaist-head"><h2 id="kaistTitle">' + esc(title) + '</h2>';
     if (mukState.status === 'loading') {
-      summary.innerHTML = html + '</header><p class="kaist-empty" role="status">' + esc(t('kaist.loading', '학식 메뉴를 불러오는 중이에요.')) + '</p>';
+      summary.innerHTML = html + '</header><p class="kaist-empty" role="status">' + esc(t('kaist.loading', '학식 메뉴 불러오는 중')) + '</p>';
       return;
     }
     if (!restos.length) {

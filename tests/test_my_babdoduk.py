@@ -128,6 +128,10 @@ FAKE = r"""
           added += 1;
         });
         data = { added, conflicts };
+      } else if (name === 'my_calendar_feed') {
+        db.feeds = db.feeds || {};
+        if (!db.feeds[uid] || args.p_new) db.feeds[uid] = (args.p_new ? 'N' : 'T').repeat(43);
+        data = db.feeds[uid];
       } else if (name === 'delete_my_saved_data') {
         ['saved_events', 'saved_places'].forEach(t => { db.tables[t] = db.tables[t].filter(r => r.user_id !== uid); });
       } else if (name === 'delete_my_account') {
@@ -262,16 +266,17 @@ def test_a_guest_on_the_hub_never_loads_the_client_even_when_turned_on(browser):
     assert not [c for c in fakedb(page)["calls"] if c[0] == "client"] and not sdk
     page.locator('.gg-card[data-id="lunch"] .gg-save').click()
     assert json.loads(page.evaluate(f"localStorage.getItem('{SAVED_KEY}')"))["items"][0]["id"] == "lunch"
-    assert "이 브라우저에만 저장돼요" in page.locator("#ggSaved").inner_text() or page.locator("#ggSaved").count() == 1
+    assert page.locator("#ggSaved").count() == 1  # copy cleanup, owner 2026-11-12: no "this browser only" line
     assert errors == []
     context.close()
 
 
 def test_signed_out_offers_both_providers_with_a_full_page_redirect(browser):
     context, page, errors, _ = open_page(browser)
-    wait_view(page, "로그인하면 이렇게 돼요")
+    wait_view(page, "카카오로 계속하기")
     text = app_text(page)
-    assert "KAIST 인증은 필요 없어요" in text and "참여 조건은 행사마다 달라요" in text
+    # Owner 2026-11-12: "필요없는 글 다 삭제해줘": the sign-in card holds the buttons, little else.
+    assert "KAIST" not in text and "이렇게 돼요" not in text and "저장한 꽁밥이 없어요" not in text
     client = [c for c in fakedb(page)["calls"] if c[0] == "client"][0]
     assert client[1] == "https://myjglfynhnptlclawlcc.supabase.co" and client[2].startswith("sb_publishable_")
     assert client[3]["auth"]["flowType"] == "pkce" and client[3]["auth"]["persistSession"] is True
@@ -322,7 +327,7 @@ def test_linking_the_other_login_and_what_the_talk_app_shows_instead(browser):
     context.close()
     # Inside the talk app Google is refused, so the button gives way to the default-browser link.
     context, page, errors, _ = open_page(browser, db={"user": user()}, ua=TALK_UA)
-    wait_view(page, "기본 브라우저에서 카카오로 로그인한 뒤")
+    wait_view(page, "카카오톡에선 Google 연결이 안 돼요")  # copy cleanup, owner 2026-11-12
     assert page.get_by_role("button", name="Google 로그인도 연결").count() == 0
     link = page.get_by_role("link", name="기본 브라우저로 열기")
     assert link.count() == 1
@@ -398,6 +403,8 @@ def test_the_account_list_shows_upcoming_past_and_missing_without_calling_anythi
         {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": dict(seen(LUNCH), place="N1 다른 곳")},
         {"user_id": UID, "event_id": "oldone", "saved_at": "2026-11-04T12:00:00Z", "seen": seen(OLD)},
         {"user_id": UID, "event_id": "ghost", "saved_at": "2026-11-08T12:00:00Z", "seen": ghost},
+        {"user_id": UID, "event_id": "morning", "saved_at": "2026-11-08T12:00:00Z",
+         "seen": {"title": "아침 행사", "startAt": "2026-11-09T07:00:00+09:00", "endAt": "2026-11-09T08:00:00+09:00", "place": "N1"}},
         {"user_id": "someone-else", "event_id": "wed", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(WED)}],
         "saved_places": [{"user_id": UID, "place_id": "p1", "status": "want", "memo": "비밀"},
                          {"user_id": UID, "place_id": "p2", "status": "again", "memo": ""}],
@@ -406,7 +413,9 @@ def test_the_account_list_shows_upcoming_past_and_missing_without_calling_anythi
     wait_view(page, "저장한 꽁밥")
     rows = page.locator(".my-row").evaluate_all("els => els.map(el => [el.className, el.innerText])")
     assert [r[0] for r in rows] == ["my-row is-upcoming", "my-row is-missing", "my-row is-ended"]
-    assert "변경됨" in rows[0][1] and "목록에서 빠짐" in rows[1][1] and "지난 꽁밥" in rows[2][1]
+    assert "변경됨" in rows[0][1] and "목록에서 빠짐" in rows[1][1] and "지난 꽁밥" in rows[2][1] and "아침 행사" in rows[2][1]
+    # Owner 2026-11-12: from the day after its event a star leaves the list; the row stays for the calendar.
+    assert "지난 세미나" not in app_text(page)
     assert "수요 간담회" not in app_text(page), "another user's row never shows"
     assert "취소" not in rows[1][1]
     assert page.locator(".my-row.is-upcoming a").get_attribute("href") == f"https://{HOST}/ggongbab.html?e=lunch"
@@ -430,12 +439,12 @@ def test_the_hub_saves_to_the_account_and_leaves_the_browser_list_alone(browser)
     page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.length === 1")
     assert page.locator("#ggSaved").count() == 1
     page.locator("[data-gg-saved]").click()
-    assert "계정에 저장돼요" in page.locator("#ggSaved").inner_text()
+    assert "마이 밥도둑" in page.locator("#ggSaved").inner_text()  # copy cleanup, owner 2026-11-12: the account line is only the link now
     assert page.locator('#ggSaved a[href="my.html"]').count() == 1
     assert page.evaluate(f"localStorage.getItem('{SAVED_KEY}')") == guest
     toast = page.locator(".gg-toast")
     toast.wait_for(state="attached")
-    page.wait_for_function("() => (document.querySelector('.gg-toast') || {}).textContent.includes('계정에 저장돼요')")
+    page.wait_for_function("() => (document.querySelector('.gg-toast') || {}).textContent.includes('저장했어요')")  # copy cleanup, owner 2026-11-12
     # A refused write is undone on screen and said out loud.
     page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb')); db.fail['saved_events:insert'] = true;
         localStorage.setItem('__fakedb', JSON.stringify(db)); }""")
@@ -454,7 +463,7 @@ def test_when_the_account_cannot_load_the_hub_keeps_the_browser_list_and_says_so
     page.locator(".gg-card").first.wait_for()
     page.wait_for_function("() => !!document.querySelector('#ggSaved')")
     page.locator("[data-gg-saved]").click()
-    page.wait_for_function("() => document.querySelector('#ggSaved').innerText.includes('계정 목록을 불러오지 못해')")
+    page.wait_for_function("() => document.querySelector('#ggSaved').innerText.includes('계정 목록을 불러오지 못했어요')")  # copy cleanup, owner 2026-11-12
     assert page.locator('.gg-card[data-id="lunch"] .gg-save').get_attribute("aria-pressed") == "true"
     assert errors == []
     context.close()
@@ -470,7 +479,7 @@ def test_the_private_name_can_be_changed_and_signing_out_keeps_this_browser_list
     wait_view(page, "새 이름님, 반가워요")
     assert fakedb(page)["tables"]["profiles"] == [{"user_id": UID, "display_name": "새 이름"}]
     page.get_by_role("button", name="로그아웃").first.click()
-    wait_view(page, "로그인하면 이렇게 돼요")
+    wait_view(page, "카카오로 계속하기")
     assert ["signout", "local"] in fakedb(page)["calls"]
     assert page.evaluate(f"localStorage.getItem('{SAVED_KEY}')") == guest
     assert errors == []
@@ -523,6 +532,65 @@ def test_leaving_needs_a_fresh_sign_in_and_a_tick(browser):
     assert db.get("deleted") == UID and db["tables"]["saved_events"] == []
     assert page.evaluate(f"localStorage.getItem('{TOKEN_KEY}')") is None
     assert errors == []
+    context.close()
+
+
+def test_a_saved_event_is_removed_right_here_and_comes_back_if_the_server_refuses(browser):
+    """Owner 2026-11-12: the filled star on 마이 밥도둑 removes a saved event without going to 오늘의 꽁밥."""
+    tables = {"saved_events": [
+        {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(LUNCH)},
+        {"user_id": UID, "event_id": "wed", "saved_at": "2026-11-04T12:00:00Z", "seen": seen(WED)}],
+        "saved_places": [], "profiles": []}
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables})
+    wait_view(page, "저장한 꽁밥")
+    stars = page.locator("[data-my-unstar]")
+    assert stars.count() == 2 and stars.first.get_attribute("aria-pressed") == "true"
+    assert stars.first.get_attribute("aria-label").startswith("저장 취소: ")
+    stars.first.click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.length === 1")
+    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["wed"]
+    assert page.locator(".my-row").count() == 1 and "저장한 꽁밥 1" in page.locator("#mySavedTitle").inner_text()
+    assert page.evaluate("document.activeElement.getAttribute('data-my-unstar')") == "wed"
+    page.wait_for_function("() => document.getElementById('myToast').textContent === '저장을 취소했어요'")
+    # The server refuses: the row comes back and the page says so.
+    page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb')); db.fail['saved_events:delete'] = true;
+                             localStorage.setItem('__fakedb', JSON.stringify(db)); }""")
+    page.locator("[data-my-unstar]").click()
+    page.wait_for_function("() => document.querySelectorAll('.my-row').length === 1")
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('저장하지 못했어요')")
+    assert [r["event_id"] for r in fakedb(page)["tables"]["saved_events"]] == ["wed"]
+    assert page.locator(".my-fine a[href='ggongbab.html']").inner_text() == "오늘의 꽁밥에서 더 저장하기"
+    assert errors == []
+    context.close()
+
+
+IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
+          "Version/18.0 Mobile/15E148 Safari/604.1")
+
+
+def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(browser):
+    """Owner 2026-11-12: connect once, then every star shows in the iPhone calendar (docs/CALENDAR_FEED.md).
+    A laptop needs no calendar link and Android gets the 30-minute alert; no talk about addresses."""
+    tables = {"saved_events": [], "saved_places": [], "profiles": []}
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=IPHONE)
+    wait_view(page, "아이폰 캘린더에 넣기")
+    link = page.locator("[data-my-cal]")
+    assert link.inner_text() == "아이폰 캘린더에 연결"
+    assert link.get_attribute("href") == f"webcal://{HOST}/cal/{'T' * 43}.ics"
+    assert link.bounding_box()["height"] >= 44
+    card = page.locator("section[aria-labelledby='myCalTitle']").inner_text()
+    assert "주소" not in card and "구글" not in card and '"구독"' in card
+    assert errors == []
+    context.close()
+    for ua in (None, "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"):
+        context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=ua)
+        wait_view(page, "저장한 꽁밥")
+        assert page.locator("[data-my-cal]").count() == 0 and "캘린더" not in app_text(page) and errors == []
+        context.close()
+    # Before the database has the function (013 not applied), the card stays away.
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "fail": {"rpc:my_calendar_feed": True}}, ua=IPHONE)
+    wait_view(page, "저장한 꽁밥")
+    assert page.locator("[data-my-cal]").count() == 0 and errors == []
     context.close()
 
 

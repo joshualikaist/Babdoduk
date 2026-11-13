@@ -142,7 +142,6 @@ def event_blocks(data: dict | None = None) -> dict[str, list[str]]:
             event_link(item["link"]),
             '  <details class="event-more">',
             '    <summary data-i18n="event.more">자세히</summary>',
-            '    <p class="event-note" data-event-note></p>',
             f'    <div class="event-detail" data-i18n-html="event.{key}.detail">'
             f'{"".join(detail_sheet(item["details"], "ko"))}</div>',
             '  </details>',
@@ -303,7 +302,7 @@ def worldcup_entry(data: dict | None = None) -> list[str]:
         f'  <h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">{size}강</span>, 뭐가 나올까?</h3>',
         '  <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>',
         '  <p class="wc-ended" data-wc-show="ended" hidden><span aria-hidden="true">🏁</span> '
-        '<span data-i18n="wc.ended">이벤트 종료 · 그래도 계속 즐길 수 있어요</span></p>',
+        '<span data-i18n="wc.ended">이벤트는 끝났지만 계속 할 수 있어요</span></p>',
         # The tiles and the preview are one mystery box before the launch (owner 2026-10-14: blurred, nothing
         # revealed): js/worldcup.js makes the body inert and hidden from assistive tech while the gate says
         # `soon`, css/worldcup-entry.css blurs it, and the lock over it (data-wc-show) says when it opens.

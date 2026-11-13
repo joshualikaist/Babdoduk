@@ -399,7 +399,7 @@ def magazine_edition_time(page):
         check(issue == "2026.01.02 · 최신 호", ("yesterday's newest edition is the latest one", issue))
         stamps = [view.locator(sel).text_content().strip() for sel in ("#mgSchedule", "#mgBoardWeek")]
         check(stamps == ["15:36 발행", "2026.01.02 · 15:36 발행"], ("the edition's own build time", stamps))
-        claims = view.locator(".mg-method, #mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()
+        claims = view.locator("#mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()  # copy cleanup, owner 2026-11-12: .mg-method is gone
         check(not any("10:00" in text for text in claims), ("no fixed schedule is claimed", claims))
         view.locator("#langToggle").click()
         # The magazine redraws its masthead in a task after the switch (mukbang.html's setTimeout), so
@@ -497,12 +497,13 @@ def pick_tools(browser):
     check(page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "the set stays one menu")
     check("별리달리" in page.locator("#pickResult").inner_text() and "7,600" in page.locator("#pickResult").inner_text(),
           "the card shows the restaurant and photographed price")
-    check("촬영 당시 품절" in page.locator("#pickResult").inner_text()
+    # copy cleanup, owner 2026-11-12: shorter sold-out and campus notes.
+    check("품절 표시가 있었어요" in page.locator("#pickResult").inner_text()
           and "판매 여부" in page.locator("#pickResult").inner_text() and page.locator('.pick-like').count() == 0,
-          "the menu is identified as a photo snapshot, without delivery votes")
+          "the sold-out mark and the check-at-the-shop note are shown, without delivery votes")
     page.locator("#langToggle").click()
     check("Campus restaurant" in page.locator(".pick-result-kicker").inner_text()
-          and "Sold out when photographed" in page.locator("#pickResult").inner_text()
+          and "Marked sold out" in page.locator("#pickResult").inner_text()  # copy cleanup, owner 2026-11-12
           and "Check prices and availability" in page.locator("#pickResult").inner_text()
           and page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "English labels preserve the original menu name")
     page.locator("#langToggle").click()
@@ -647,12 +648,8 @@ def magazine_sparse(page):
                 qualified = featured.get("heroKind") == "trend" and featured.get("trendEvidence")
                 label = page.inner_text("#mgHeroLabel").strip()
                 check(label == ("지금 뜨는 먹거리" if qualified else "오늘의 추천 글"), (where, "hero label", label))
-                tags = page.inner_text("#mgHeroTags").strip()
-                check(("유행 근거" in tags and "여러 매체가 다룸" in tags) if qualified else tags == "",
-                      (where, "a trend hero lists its evidence; any other hero lists none"))
-                cards = page.locator('[data-lane-items="trend"] .mg-story-tags')
-                check(cards.count() == sum(1 for s in items["trend"] if s.get("trendEvidence")),
-                      (where, "trend cards show their evidence"))
+                # copy cleanup, owner 2026-11-12: the "유행 근거" evidence lines are gone from the hero and the cards.
+                check(page.locator("#mgHeroTags, .mg-story-tags").count() == 0, (where, "no evidence lines"))
                 visual = page.locator("#mgHeroVisual")
                 if featured.get("image"):
                     page.wait_for_function("document.getElementById('mgHeroVisual').classList.contains('has-photo')")
@@ -1002,13 +999,16 @@ def event_bands(page):
 
     def cta(row, lang="ko"):
         """An original post is a record once past; an activity on a page of this site opens it."""
-        words = {"ko": (("페이지 보기", "페이지 보기"), ("게시물 보기", "당시 게시물")),
-                 "en": (("Open the page", "Open the page"), ("View post", "Original post"))}[lang]
+        # copy cleanup, owner 2026-11-12: a past post link reads 게시물 보기 / View post too.
+        words = {"ko": (("페이지 보기", "페이지 보기"), ("게시물 보기", "게시물 보기")),
+                 "en": (("Open the page", "Open the page"), ("View post", "View post"))}[lang]
         return words[0 if row["onSite"] else 1][row["band"] == "past"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
-    check(len(rows) == 3, ("three authored activities", rows))
+    # One row per authored activity (data/content/events.json): 2026-11-12 the 꽁밥 인증샷 event made it four.
+    authored = len(json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))["activities"])
+    check(len(rows) == authored, ("one row per authored activity", authored, rows))
     check([row["title"] for row in rows if row["onSite"]] == ["먹방 월드컵 32강"]
           and page.locator(".event-link[data-event-page][target]").count() == 0,
           ("the menu world cup opens its page in place", rows))
@@ -1020,7 +1020,7 @@ def event_bands(page):
         check("(예정)" not in row["title"], ("tentative state is a status, not a title suffix", row))
         check("진행됨" not in row["chip"] or row["conf"] == "held", ("only a confirmed event says it took place", row))
         if row["band"] == "past":
-            expected_chip = {"announced": "", "tentative": "진행 여부 미확인"}.get(row["conf"])
+            expected_chip = {"announced": "", "tentative": "미확정"}.get(row["conf"])  # copy cleanup, owner 2026-11-12
             if expected_chip is not None:
                 check(row["chip"] == expected_chip and row["chipShown"] == bool(expected_chip),
                       ("a past date is not reported as held; an unconfirmed plan says so briefly", row))
@@ -1052,22 +1052,22 @@ def event_bands(page):
             check(field["fields"] == 1 and field["historical"] == past and field["tags"] == ([lang_tag] if past else []),
                   ("past participation instructions are marked historical, once", field))
 
-    participation("당시 안내 · 지금은 참여할 수 없어요")
+    participation("종료")  # copy cleanup, owner 2026-11-12
     check(page.locator(".event-elsewhere").count() == 0, "free food stays in navigation, not in the news title")
     # Full context is one keyboard action away.
     tentative = page.locator('.event-item[data-confirmation="tentative"]')
     tentative.locator("details.event-more summary").focus()
     page.keyboard.press("Enter")
-    note = tentative.locator("[data-event-note]")
-    check(tentative.locator("details.event-more").evaluate("d => d.open") and note.is_visible()
-          and "진행 여부" in note.inner_text(), ("자세히 opens the full state explanation", note.inner_text()))
+    # copy cleanup, owner 2026-11-12: the state explanation behind 자세히 is gone; the details still open.
+    check(tentative.locator("details.event-more").evaluate("d => d.open")
+          and tentative.locator("[data-event-note]").count() == 0, "자세히 opens from the keyboard")
     page.locator("#langToggle").click()
     english = page.locator("[data-event-cta]").all_text_contents()
     check(english == [cta(row, "en") for row in rows],
           ("English CTA follows the band", english))
-    participation("Original instructions · no longer open")
+    participation("Ended")  # copy cleanup, owner 2026-11-12
     page.locator("#langToggle").click()
-    participation("당시 안내 · 지금은 참여할 수 없어요")
+    participation("종료")  # copy cleanup, owner 2026-11-12
     live = sum(row["band"] != "past" for row in rows)
     check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty state only when nothing is current")
     check(page.locator("#eventEmpty a").count() == 0, "Instagram is not part of the empty state")
@@ -1448,7 +1448,7 @@ def worldcup_gate(page):
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED)
     check(shot["phase"] == "ended" and shot["start"] and shot["ended"] and not shot["locked"], ("after the end: playable with a note", shot))
     mystery_open(page.evaluate(MYSTERY_SNAP), ("worldcup.html", "ended"))
-    check("이벤트 종료" in page.locator(".wc-ended").inner_text(), "the note says the event is over")
+    check("이벤트는 끝났지만" in page.locator(".wc-ended").inner_text(), "the note says the event is over")  # copy cleanup, owner 2026-11-12
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED, "?cat=korean&go=1")
     check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", "after the end go=1 still plays")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
@@ -1563,7 +1563,7 @@ def worldcup_boundaries(page):
                   (where, "tiles unblurred and the dish photos present", mystery))
             check(page.evaluate("[...document.querySelectorAll('#wcPreviewPhotos img')].every(i => i.complete && i.naturalWidth > 0)"),
                   (where, "the preview photos load"))
-            check(shot["ended"] == (phase == "ended") and (phase != "ended" or "이벤트 종료" in page.locator(".wc-ended").inner_text()),
+            check(shot["ended"] == (phase == "ended") and (phase != "ended" or "이벤트는 끝났지만" in page.locator(".wc-ended").inner_text()),  # copy cleanup, owner 2026-11-12
                   (where, "the end note only after the end"))
         # go=1
         visit(host, "worldcup.html", now, "?cat=korean&go=1")
@@ -2538,7 +2538,7 @@ def tip_board(browser):
     # Nothing written and no photo: not sent; the field says why and takes focus.
     page.locator("#tipSubmit").click()
     check(page.evaluate("window.__tip.rpc.length") == 0 and page.locator("#tipTextInput").get_attribute("aria-invalid") == "true"
-          and page.locator("#tipTextError").inner_text() == "본 내용을 적거나 사진을 한 장 이상 올려 주세요."
+          and page.locator("#tipTextError").inner_text() == "내용을 적거나 사진을 올려 주세요."  # copy cleanup, owner 2026-11-12
           and page.evaluate("document.activeElement.id") == "tipTextInput"
           and page.locator("#tipStatus").inner_text() == "표시한 칸을 확인해 주세요.",
           "an empty tip is not sent; the field says why and takes focus")
@@ -2608,7 +2608,7 @@ def tip_board(browser):
     # Photos that fail: with words the tip still counts; a photo-only tip that lost its photo is empty.
     page.evaluate("window.__tip.upload = 'fail'")
     for words, warning in (("도서관 앞 커피차", "사진은 올라가지 않았어요. 제보는 접수됐어요."),
-                           ("", "사진이 올라가지 않아 제보가 비어 있어요. 사진을 다시 올리거나 내용을 적어 다시 보내 주세요.")):
+                           ("", "사진이 올라가지 않았어요. 다시 보내 주세요.")):  # copy cleanup, owner 2026-11-12
         page.locator("#tipAgain").click()
         page.locator("#tipTextInput").fill(words)
         page.set_input_files("#tipPhotos", [{"name": "a.png", "mimeType": "image/png", "buffer": PNG_1PX}])
@@ -2980,7 +2980,9 @@ def food_provenance(page):
     cells = page.locator(".food-cal-cell.has-data").evaluate_all(
         "els => els.map(el => ({local: el.classList.contains('is-local'), label: el.getAttribute('aria-label')}))")
     check([c["local"] for c in cells] == [False, True, True], ("browser entries are marked", cells))
-    check("공개 기록" in cells[0]["label"] and "대신" in cells[1]["label"], ("source named in labels", cells))
+    # copy cleanup, owner 2026-11-12: a browser entry reads 내 기록, without the "replaces" note.
+    check("공개 기록" in cells[0]["label"] and "내 기록" in cells[1]["label"] and "대신" not in cells[1]["label"],
+          ("source named in labels", cells))
     check("공개 기록 1일" in page.locator("#foodSourceLegend").inner_text()
           and "이 브라우저 2일" in page.locator("#foodSourceLegend").inner_text(), "legend counts each source")
     check(page.evaluate("localStorage.getItem('babdoduk-food-local')").find("_source") < 0,
@@ -3113,9 +3115,11 @@ GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "his
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
 NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
 # Instagram left the More menu for a logo beside the wordmark (owner 2026-11-05; INSTAGRAM below).
-NAV_MORE = ["mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
+# 마이 밥도둑 heads the 더보기 group and the phone menu panel (owner 2026-11-12), beside the person icon.
+NAV_MORE = ["my.html", "mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
 INSTAGRAM = "https://www.instagram.com/babdodukms/"
-FOOTER_LINKS = ["ggongbab.html", "mukbang.html", "event.html", "history.html", "privacy.html"]
+# The footer's site links are the top menu's three direct ones (owner 2026-11-12), then the privacy policy.
+FOOTER_LINKS = ["ggongbab.html", "choose.html", "event.html", "privacy.html"]
 CHROME = r"""() => {
   const pick = (el, props) => { const s = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, s.getPropertyValue(p)])); };
   const root = document.documentElement, body = document.body, footer = document.querySelector('.site-footer');
@@ -3371,78 +3375,169 @@ def chrome_visual(page, update=False, approval=None):
     return count
 
 
-def run_checks(screenshots=False):
-    report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0}
-    with sync_playwright() as pw:
-        browser = launch(pw)
-        context = new_context(browser)
-        api_attempts = []
-        context.on("request", lambda req: api_attempts.append(req.url)
+class _Run:
+    """One browser's share of the checks: its pages record every live request a page attempts."""
+
+    def __init__(self, browser):
+        self.browser, self.api_attempts = browser, []
+
+    def watch(self, context):
+        context.on("request", lambda req: self.api_attempts.append(req.url)
                    if req.resource_type in ("fetch", "xhr", "eventsource")
                    and urlparse(req.url).hostname not in SERVED_HOSTS else None)
-        page = context.new_page()
+        return context
+
+    def page(self, clock=None):
+        page = self.watch(new_context(self.browser)).new_page()
         # WebSockets bypass routing and emit no request event; record every attempt.
-        page.on("websocket", lambda ws: api_attempts.append(ws.url))
-        for size in SIZES:
-            for name in report["pages"]:
-                result = inspect_page(page, name, size, ROOT / ".local/site-ui-shots" if screenshots else None)
-                report["results"][f"{name}:{size[0]}x{size[1]}"] = result
-                report["checks"] += result["checks"]
-        report["checks"] += magazine_tools(page)
-        report["checks"] += pick_tools(browser)
-        report["checks"] += magazine_sparse(page)
-        report["checks"] += magazine_edition_time(page)
-        report["checks"] += release_contracts(page)
-        # The home page's checks own a page whose clock is fixed (home_page), so the world cup promo's
-        # state and the calendar do not depend on today.
-        home = home_page(browser, api_attempts)
-        report["checks"] += home_summary(home)
-        report["checks"] += home_hero(home)
-        report["checks"] += home_first_screen(home)
-        home.context.close()
-        report["checks"] += event_bands(page)
-        # The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a context whose page
-        # clock is fixed (inside the window unless a check sets another), so nothing depends on today.
-        cup_context = new_context(browser)
-        cup_context.on("request", lambda req: api_attempts.append(req.url)
-                       if req.resource_type in ("fetch", "xhr", "eventsource")
-                       and urlparse(req.url).hostname not in SERVED_HOSTS else None)
-        cup_page = cup_context.new_page()
-        cup_page.on("websocket", lambda ws: api_attempts.append(ws.url))
-        cup_page.clock.set_fixed_time(WC_RUNNING)
-        report["checks"] += event_entry(cup_page)
-        report["checks"] += worldcup_play(cup_page)
-        report["checks"] += worldcup_categories(cup_page)
-        report["checks"] += worldcup_splash(cup_page)
-        report["checks"] += worldcup_gacha(cup_page)
-        report["checks"] += worldcup_sound(cup_page)
-        report["checks"] += worldcup_share(cup_page)
-        report["checks"] += worldcup_kakao(cup_page)
-        report["checks"] += worldcup_gate(cup_page)
-        report["checks"] += worldcup_boundaries(cup_page)
-        report["checks"] += home_wc_promo(cup_page)
-        cup_context.close()
-        report["checks"] += tip_board(browser)
-        report["checks"] += history_archive(page)
-        report["checks"] += food_provenance(page)
-        report["checks"] += structure_and_failures(page)
-        report["checks"] += site_guardian(page)
-        # High contrast must defer to the system; custom colors/widths must not
-        # leak from either the standards or WebKit rule sets.
-        page.emulate_media(forced_colors="active")
-        check = page.evaluate(MEASURE)
-        assert check["scrollbarColor"] == "auto"
-        assert check["width"] == "auto"
-        report["checks"] += 2
-        assert not api_attempts, ("static pages attempted a live API request", api_attempts[:5])
+        page.on("websocket", lambda ws: self.api_attempts.append(ws.url))
+        if clock:
+            page.clock.set_fixed_time(clock)
+        return page
+
+
+def _matrix(size):
+    def run(r, report, screenshots):
+        page = r.page()
+        for name in report["pages"]:
+            result = inspect_page(page, name, size, ROOT / ".local/site-ui-shots" if screenshots else None)
+            report["results"][f"{name}:{size[0]}x{size[1]}"] = result
+            report["checks"] += result["checks"]
+    return run
+
+
+def _features(r, report, screenshots):
+    page = r.page()
+    report["checks"] += magazine_tools(page)
+    report["checks"] += pick_tools(r.browser)
+    report["checks"] += magazine_sparse(page)
+    report["checks"] += magazine_edition_time(page)
+    report["checks"] += release_contracts(page)
+    # The home page's checks own a page whose clock is fixed (home_page), so the world cup promo's
+    # state and the calendar do not depend on today.
+    home = home_page(r.browser, r.api_attempts)
+    report["checks"] += home_summary(home)
+    report["checks"] += home_hero(home)
+    report["checks"] += home_first_screen(home)
+    home.context.close()
+    report["checks"] += event_bands(page)
+    report["checks"] += tip_board(r.browser)
+    report["checks"] += history_archive(page)
+    report["checks"] += food_provenance(page)
+
+
+def _structure(r, report, screenshots):
+    page = r.page()
+    report["checks"] += structure_and_failures(page)
+    report["checks"] += site_guardian(page)
+    # High contrast must defer to the system; custom colors/widths must not
+    # leak from either the standards or WebKit rule sets.
+    page.emulate_media(forced_colors="active")
+    check = page.evaluate(MEASURE)
+    assert check["scrollbarColor"] == "auto"
+    assert check["width"] == "auto"
+    report["checks"] += 2
+
+
+# The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a page whose clock is fixed
+# (inside the window unless a check sets another), so nothing depends on today. Two pages, each in order.
+def _worldcup_play(r, report, screenshots):
+    cup = r.page(WC_RUNNING)
+    for check in (event_entry, worldcup_play, worldcup_categories, worldcup_splash, worldcup_gacha, worldcup_sound):
+        report["checks"] += check(cup)
+
+
+def _worldcup_rest(r, report, screenshots):
+    cup = r.page(WC_RUNNING)
+    for check in (worldcup_share, worldcup_kakao, worldcup_gate, worldcup_boundaries, home_wc_promo):
+        report["checks"] += check(cup)
+
+
+def _visual(r, report, screenshots):
+    # It fixes the page clock and data for deterministic screenshots. Its baselines exist per OS and
+    # browser build (baseline_platform); the tests workflow, which has none, skips it explicitly, and
+    # ui-guardian compares them in the container they were rendered in.
+    report["checks"] += chrome_visual(r.page())
+
+
+# Independent groups: each runs in its own browser, so --jobs N runs them side by side (owner 2026-11-12:
+# the checks took too long one after another). Within a group the order is the old sequential order.
+GROUPS = {f"matrix-{w}": _matrix((w, h)) for w, h in SIZES}
+GROUPS.update({"features": _features, "structure": _structure,
+               "worldcup-play": _worldcup_play, "worldcup-rest": _worldcup_rest})
+
+
+def group_names():
+    names = list(GROUPS)
+    if os.environ.get("BABDODUK_CHROME_VISUAL") != "skip":
+        names.append("visual")
+    return names
+
+
+def run_group(name, screenshots=False, browser=None):
+    report = {"pages": public_pages(), "results": {}, "checks": 0}
+    run = _visual if name == "visual" else GROUPS[name]
+    with (sync_playwright() if browser is None else _nullcontext()) as pw:
+        own = browser is None
+        r = _Run(launch(pw) if own else browser)
+        run(r, report, screenshots)
+        assert not r.api_attempts, ("static pages attempted a live API request", name, r.api_attempts[:5])
         report["checks"] += 1
-        # Last: it fixes the page clock and data for deterministic screenshots. Its baselines exist
-        # per OS and browser build (baseline_platform); the tests workflow, which has none, skips
-        # it explicitly, and ui-guardian compares them in the container they were rendered in.
-        page.emulate_media(forced_colors="none")
-        if os.environ.get("BABDODUK_CHROME_VISUAL") != "skip":
-            report["checks"] += chrome_visual(page)
-        browser.close()
+        if own:
+            r.browser.close()
+    return report
+
+
+class _nullcontext:
+    def __enter__(self):
+        return None
+
+    def __exit__(self, *exc):
+        return False
+
+
+def default_jobs():
+    try:
+        return max(1, int(os.environ.get("BABDODUK_SITE_UI_JOBS", "") or min(6, max(1, (os.cpu_count() or 2) // 2))))
+    except ValueError:
+        return 1
+
+
+def run_checks(screenshots=False, jobs=None):
+    """Every group; with jobs > 1, each group in its own process, then one merged report."""
+    jobs = default_jobs() if jobs is None else jobs
+    report = {"pages": public_pages(), "sizes": SIZES, "results": {}, "checks": 0, "groups": {}}
+    names = group_names()
+
+    def merge(name, part):
+        report["results"].update(part["results"])
+        report["checks"] += part["checks"]
+        report["groups"][name] = part["checks"]
+
+    if jobs <= 1:
+        with sync_playwright() as pw:
+            browser = launch(pw)
+            for name in names:
+                merge(name, run_group(name, screenshots, browser))
+            browser.close()
+        return report
+    from concurrent.futures import ThreadPoolExecutor
+
+    def one(name):
+        cmd = [sys.executable, str(Path(__file__).resolve()), "--group", name] + (["--screenshots"] if screenshots else [])
+        out = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+        return name, out
+
+    failed = []
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        for name, out in pool.map(one, names):
+            if out.returncode:
+                failed.append((name, out.stderr.strip().splitlines()[-12:]))
+            else:
+                merge(name, json.loads(out.stdout))
+    if failed:
+        raise AssertionError("site UI groups failed: " + "; ".join(n for n, _ in failed),
+                             "\n".join(f"--- {n}\n" + "\n".join(lines) for n, lines in failed))
     return report
 
 
@@ -3535,6 +3630,8 @@ if __name__ == "__main__":
     parser.add_argument("--chrome-only", action="store_true", help="run only the site guardian and the visual check (CI)")
     parser.add_argument("--adopt-chrome-baselines", metavar="DIR", help="install renders from DIR as approved baselines")
     parser.add_argument("--platform", help="baseline set for --adopt-chrome-baselines, e.g. linux-chromium")
+    parser.add_argument("--group", help="run one group of checks (see GROUPS) and print its report")
+    parser.add_argument("--jobs", type=int, help="groups run side by side (default: half the CPUs, at most 6; 1 = one after another)")
     args = parser.parse_args()
     if args.update_chrome_baselines:
         print(f"wrote {update_chrome_baselines(args.approval)} baseline images for {baseline_platform()}")
@@ -3544,5 +3641,7 @@ if __name__ == "__main__":
         print(f"adopted {adopt_chrome_baselines(args.adopt_chrome_baselines, args.platform, args.approval)} images as {args.platform}")
     elif args.chrome_only:
         print(json.dumps(run_chrome_checks(), ensure_ascii=False, indent=2))
+    elif args.group:
+        print(json.dumps(run_group(args.group, args.screenshots), ensure_ascii=False))
     else:
-        print(json.dumps(run_checks(args.screenshots), ensure_ascii=False, indent=2))
+        print(json.dumps(run_checks(args.screenshots, args.jobs), ensure_ascii=False, indent=2))

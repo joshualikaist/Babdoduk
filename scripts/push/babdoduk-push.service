@@ -1,0 +1,9 @@
+[Unit]
+Description=Babdoduk: send the 30-minute alerts for starred free-food events (docs/PUSH_ALERTS.md)
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/Babdoduk-ops
+ExecStart=%h/.local/bin/node %h/Babdoduk-ops/scripts/push/send.js
+TimeoutStartSec=90

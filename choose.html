@@ -32,6 +32,7 @@
         <div class="nav-mega" data-mega>
           <button type="button" class="nav-mega-trigger" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
           <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="my.html" data-i18n="nav.my">마이 밥도둑</a>
             <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
             <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
             <a class="nav-mega-link" href="tip.html" data-i18n="nav.tip">꽁밥 제보</a>
@@ -49,7 +50,7 @@
     <section class="pick" id="pickApp" aria-labelledby="pickTitle">
       <div class="pick-head">
         <h1 class="page-title pick-title" id="pickTitle" data-i18n="pick.title">오늘 뭐 먹지?</h1>
-        <p class="pick-lead" data-i18n="pick.lead">고르기 귀찮을 땐 뽑기 한 번. 학식이든 배달이든 하나 골라 줄게요.</p>
+        <p class="pick-lead" data-i18n="pick.lead">고르기 귀찮을 땐 뽑기 한 번.</p>
         <button type="button" class="pick-sound" id="pickSound" aria-pressed="false" data-i18n-aria-key="pick.soundAria" aria-label="효과음"><span data-pick-sound-icon aria-hidden="true">🔈</span> <span data-i18n="pick.sound">소리</span></button>
       </div>
       <div class="pick-stage" id="pickStage" aria-hidden="true">
@@ -61,7 +62,6 @@
       <button type="button" class="pick-go" id="pickGo"><span aria-hidden="true">🎰</span> <span id="pickGoLabel">메뉴 뽑기</span></button>
       <div class="pick-result" id="pickResult" hidden></div>
       <p class="pick-sr" id="pickStatus" aria-live="polite"></p>
-      <p class="pick-scope" data-i18n="pick.scope">학식은 KAIST가 올린 오늘 메뉴, 배달은 메뉴만 골라요. 판매 여부·가격·알레르기는 가게에서 확인해 주세요.</p>
     </section>
   </main>
 
@@ -70,18 +70,16 @@
       <hr class="footer-apple-hr" />
       <div class="footer-apple-main">
         <div class="footer-apple-col footer-apple-col--left">
-          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-copy" data-i18n="footer.copyright">© 2026 밥도둑</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</span>
         </div>
         <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
           <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
+          <a href="choose.html" class="footer-apple-a" data-i18n="nav.choose">오늘 뭐 먹지</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
         </nav>
         <div class="footer-apple-col footer-apple-col--right">
           <a href="privacy.html" class="footer-apple-a footer-apple-privacy" data-i18n="footer.privacy">개인정보처리방침</a>
@@ -89,7 +87,7 @@
           <span data-i18n="footer.country">대한민국</span>
         </div>
       </div>
-      <p class="footer-apple-fine" data-i18n="footer.fine">본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.</p>
+      <p class="footer-apple-fine" data-i18n="footer.fine">개인이 운영하는 사이트예요. 문의는 이메일로 주세요.</p>
     </div>
   </footer>
 
@@ -101,9 +99,9 @@
         docTitle: '오늘 뭐 먹지 · 밥도둑 Babdoduk',
         'a11y.scrollProgress': '페이지 스크롤 진행',
         'footer.contact': '문의',
-        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.copyright': '© 2026 밥도둑',
         'footer.country': '대한민국',
-        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.fine': '개인이 운영하는 사이트예요. 문의는 이메일로 주세요.',
         'footer.navAria': '사이트 바로가기',
         'footer.privacy': '개인정보처리방침',
         'nav.choose': '오늘 뭐 먹지',
@@ -122,6 +120,7 @@
         'nav.menuClose': '메뉴 닫기',
         'nav.menuOpen': '메뉴 열기',
         'nav.more': '더보기',
+        'nav.my': '마이 밥도둑',
         'nav.myAria': '마이 밥도둑',
         'nav.navAria': '주요 메뉴',
         'nav.tip': '꽁밥 제보',
@@ -129,7 +128,7 @@
         'nav.topAria': '맨 위로',
         'pick.again': '다시 뽑기',
         'pick.building': '건물',
-        'pick.campusNote': '촬영한 메뉴판 기준이에요. 가격과 판매 여부는 매장에서 확인해 주세요.',
+        'pick.campusNote': '가격·판매 여부는 매장에서 확인해 주세요.',
         'pick.cat.asian': '아시안',
         'pick.cat.bunsik': '분식',
         'pick.cat.burger': '버거',
@@ -141,25 +140,24 @@
         'pick.cat.pizza': '피자',
         'pick.cat.western': '양식',
         'pick.drawing': '뽑는 중…',
-        'pick.error': '메뉴를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.',
+        'pick.error': '메뉴를 불러오지 못했어요.',
         'pick.go': '메뉴 뽑기',
         'pick.hours': '시간',
         'pick.kind.cafeteria': '학식',
         'pick.kind.campus': '교내 식당',
         'pick.kind.delivery': '배달',
         'pick.landed': '오늘은 {name}!',
-        'pick.lead': '고르기 귀찮을 땐 뽑기 한 번. 학식, 교내 식당, 배달 메뉴 중 하나를 골라요.',
+        'pick.lead': '고르기 귀찮을 땐 뽑기 한 번.',
         'pick.loading': '메뉴 불러오는 중',
         'pick.meal.breakfast': '아침',
         'pick.meal.dinner': '저녁',
         'pick.meal.lunch': '점심',
         'pick.photo': '사진',
-        'pick.photoMixed': '촬영 화면마다 판매 표시가 달랐어요',
-        'pick.photoSoldOut': '촬영 당시 품절로 표시',
+        'pick.photoMixed': '품절일 수 있어요',
+        'pick.photoSoldOut': '품절 표시가 있었어요',
         'pick.price': '가격',
         'pick.restaurant': '식당',
-        'pick.scope': '학식은 오늘 메뉴, 교내 식당은 촬영한 메뉴판, 배달은 메뉴 제안이에요. 가격·판매 여부·알레르기는 매장에서 확인해 주세요.',
-        'pick.seasonal': '계절 메뉴 · 판매 기간 확인',
+        'pick.seasonal': '계절 메뉴',
         'pick.shopNote': '가게와 가격은 배달앱에서 골라요.',
         'pick.sound': '소리',
         'pick.soundAria': '효과음 켜기/끄기',
@@ -170,9 +168,9 @@
         docTitle: 'What to eat · Babdoduk',
         'a11y.scrollProgress': 'Page scroll progress',
         'footer.contact': 'Contact',
-        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.copyright': '© 2026 Babdoduk',
         'footer.country': 'South Korea',
-        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.fine': 'Run by an individual. Questions by email, please.',
         'footer.navAria': 'Site links',
         'footer.privacy': 'Privacy Policy',
         'nav.choose': 'What to eat',
@@ -191,6 +189,7 @@
         'nav.menuClose': 'Close menu',
         'nav.menuOpen': 'Open menu',
         'nav.more': 'More',
+        'nav.my': 'My Babdoduk',
         'nav.myAria': 'My Babdoduk',
         'nav.navAria': 'Main menu',
         'nav.tip': 'Free food tips',
@@ -198,7 +197,7 @@
         'nav.topAria': 'Back to top',
         'pick.again': 'Draw again',
         'pick.building': 'Building',
-        'pick.campusNote': 'From a photographed menu. Check prices and availability at the restaurant. Menu names are shown as listed.',
+        'pick.campusNote': 'Check prices and availability at the restaurant.',
         'pick.cat.asian': 'Asian',
         'pick.cat.bunsik': 'Bunsik',
         'pick.cat.burger': 'Burgers',
@@ -210,25 +209,24 @@
         'pick.cat.pizza': 'Pizza',
         'pick.cat.western': 'Western',
         'pick.drawing': 'Drawing…',
-        'pick.error': 'Could not load the menus. Please try again soon.',
+        'pick.error': 'Could not load the menus.',
         'pick.go': 'Draw a menu',
         'pick.hours': 'Hours',
         'pick.kind.cafeteria': 'Cafeteria',
         'pick.kind.campus': 'Campus restaurant',
         'pick.kind.delivery': 'Delivery',
         'pick.landed': 'Today: {name}!',
-        'pick.lead': 'One pull picks a cafeteria meal, a campus restaurant menu or a delivery dish.',
+        'pick.lead': 'Can\'t decide? Pull once.',
         'pick.loading': 'Loading menus',
         'pick.meal.breakfast': 'Breakfast',
         'pick.meal.dinner': 'Dinner',
         'pick.meal.lunch': 'Lunch',
         'pick.photo': 'Photo',
-        'pick.photoMixed': 'Availability differed between photographed screens',
-        'pick.photoSoldOut': 'Sold out when photographed',
+        'pick.photoMixed': 'May be sold out',
+        'pick.photoSoldOut': 'Marked sold out',
         'pick.price': 'Price',
         'pick.restaurant': 'Restaurant',
-        'pick.scope': 'Cafeteria meals are today’s menus; campus restaurant menus are from photos; delivery dishes are suggestions. Check prices, availability and allergens with the shop.',
-        'pick.seasonal': 'Seasonal menu · check its availability',
+        'pick.seasonal': 'Seasonal menu',
         'pick.shopNote': 'Choose the shop and price in a delivery app.',
         'pick.sound': 'Sound',
         'pick.soundAria': 'Sound effects on/off',

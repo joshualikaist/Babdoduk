@@ -230,18 +230,6 @@ body.mg-body .site-footer {
   display: none;
 }
 
-.mg-lede .mg-method {
-  margin-top: 12px;
-  max-width: min(40rem, 100%);
-  padding-left: 12px;
-  border-left: 3px solid #d9c9b5;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #5c5850;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-}
-
 .mg-story:focus-visible,
 .mg-mobile-cats a:focus-visible,
 .mg-index-nav a:focus-visible,
@@ -375,15 +363,6 @@ body.mg-body .site-footer {
   max-width: 34rem;
   overflow-wrap: break-word;
   word-break: keep-all;
-}
-
-.mg-hero-tags {
-  margin-top: 12px;
-  font-size: 13px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: #a94a2e;
-  line-height: 1.45;
 }
 
 .mg-hero-meta {
@@ -601,15 +580,6 @@ body.mg-body .site-footer {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
-}
-
-.mg-story p.mg-story-tags {
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: #a94a2e;
-  line-height: 1.45;
 }
 
 

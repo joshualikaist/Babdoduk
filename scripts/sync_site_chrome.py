@@ -59,8 +59,8 @@ LAB_RIBBON = [
 # scrolls to the top instead of linking to itself), and the i18n/ key families its
 # translation table carries besides COMMON_STRINGS (`strings`).
 PAGES = {
-    "index.html": {"current": None, "home": "#", "strings": ("home", "dish")},
-    "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km", "dish")},
+    "index.html": {"current": None, "home": "#", "strings": ("home", "dish", "starcal", "push")},
+    "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km", "dish", "starcal", "push")},
     "mukbang.html": {"current": "mukbang.html", "strings": ("kaist", "km", "mg")},
     # 오늘 뭐 먹지 (owner 2026-11-04): the one menu picker, a direct destination; the capsule machine (js/pick.js, 2026-11-05).
     "choose.html": {"current": "choose.html", "strings": ("pick",)},
@@ -72,7 +72,7 @@ PAGES = {
     "worldcup.html": {"current": None, "strings": ("wc",)},
     "lab.html": {"current": "lab.html", "lab": True, "strings": ("lab",)},
     "lab-ggongbab.html": {"current": "lab-ggongbab.html", "lab": True, "ribbon": True,
-                          "strings": ("gg", "ggongbab", "km", "dish")},
+                          "strings": ("gg", "ggongbab", "km", "dish", "starcal")},
     # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
     # page's "more" menu.
     "tip.html": {"current": "tip.html", "strings": ("tip",)},
@@ -80,7 +80,7 @@ PAGES = {
     # needs its address on the site's own domain; no nav item.
     "privacy.html": {"current": None, "strings": ("privacy",)},
     # 마이 밥도둑 (밥도둑 2.0 Phase 2, docs/MY_BABDODUK.md): optional sign-in; public since owner 2026-11-11.
-    "my.html": {"current": None, "strings": ("my",)},
+    "my.html": {"current": None, "strings": ("my", "push")},
 }
 
 BLOCKS = (("nav", '<header class="site-nav"', "</header>"),

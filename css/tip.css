@@ -70,31 +70,6 @@
   overflow-wrap: anywhere;
 }
 
-.tip-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: var(--space-4) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tip-meta li {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 4px 12px;
-  border: 1px solid var(--color-divider);
-  border-radius: 999px;
-  background: var(--color-surface);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-.tip-meta-icon { font-size: 13px; color: var(--color-accent); }
-
 /* The example ticket: a campus food stamp with a perforated edge and a round "confirmed" stamp. */
 .tip-ticket {
   position: relative;
@@ -515,7 +490,6 @@ input[type="date"].tip-input { appearance: none; -webkit-appearance: none; }
 }
 
 .tip-board-title.page-section-title { flex: 1 1 240px; margin: 0; font-size: 20px; }
-.tip-board-meta { margin: 0; font-size: 13px; font-weight: 600; color: var(--color-ink-muted); }
 
 .tip-board-state {
   margin: 0;

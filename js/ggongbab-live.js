@@ -5,7 +5,8 @@
      there to say what changed since.
    - Filters read only what the data states: the audience as written (an inferred one is "확인 필요"),
      the campus area from a KAIST building number (N/E/W), the KST date.
-   - One listing to a calendar (a Google Calendar link or an .ics file), never the whole feed.
+   - One listing to a calendar (a Google Calendar link or an .ics file with a 30-minute alert), never the
+     whole feed; and, for visitors who said yes once, the calendar's add screen right after a star.
    - Share links: ggongbab.html?e=<id> for one listing, ?week=<Monday> for a week.
    No network calls, no accounts, no analytics. Needs js/ggongbab-select.js (BabdodukFreeFood). */
 (function (global) {
@@ -132,6 +133,14 @@
     return out;
   }
 
+  // A saved listing whose day is over (owner 2026-11-12: "행사 당일이 지나면 별은 알아서 지워지는"): from the
+  // next KST day it leaves the saved lists. The saved row itself stays, so the subscribed calendar keeps the
+  // event (docs/CALENDAR_FEED.md); only taking the star away removes it there. `nowKst` is F.nowKst().
+  function dayPassed(ev, nowKst) {
+    var last = F.toKst(ev && ev.endAt) || F.toKst(ev && ev.startAt);
+    return !!(last && nowKst && F.ymd(last) < F.ymd(nowKst));
+  }
+
   // ---------- Filters ----------
   // A KAIST building number starts with its campus area: N (north), E (east), W (west).
   var AREA_CODE = /(?:^|[^A-Za-z0-9])([NEW])(\d{1,2})(?:-\d{1,2})?(?![0-9])/;
@@ -209,6 +218,7 @@
   }
 
   // ---------- Calendar ----------
+  var ALARM_MINUTES = 30;
   function utcStamp(iso) {
     if (!iso || typeof iso !== 'string') return '';        // new Date(null) would be 1970
     var d = new Date(iso);
@@ -272,12 +282,107 @@
     if (place) lines.push('LOCATION:' + icsEscape(place));
     if (opts && opts.details) lines.push('DESCRIPTION:' + icsEscape(opts.details));
     if (opts && opts.url) lines.push('URL:' + icsEscape(opts.url));
+    // The reminder rides in the file (owner 2026-11-11: an alert 30 minutes before the start).
+    lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(ev.title), 'TRIGGER:-PT' + ALARM_MINUTES + 'M', 'END:VALARM');
     lines.push('END:VEVENT', 'END:VCALENDAR');
     return lines.map(fold).join('\r\n') + '\r\n';
   }
   function icsFileName(ev) {
     var s = F.toKst(ev.startAt);
     return 'babdoduk-' + (s ? F.ymd(s) : 'event') + '.ics';
+  }
+
+  function downloadIcs(ev, opts) {
+    var doc = global.document;
+    try {
+      var blob = new Blob([icsText(ev, opts)], { type: 'text/calendar;charset=utf-8' });
+      var a = doc.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = icsFileName(ev);
+      doc.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // ---------- The star also adds to the calendar (owner 2026-11-11) ----------
+  // A web page cannot write into a phone's calendar on its own. The closest is to open the calendar's
+  // own add screen right after a star, for visitors who said yes once. The answer is kept in this
+  // browser: 'on' or 'off'; nothing stored means not asked yet. Without storage the question is never
+  // asked, since the answer could not be kept.
+  var STAR_CAL_KEY = 'babdoduk-star-calendar';
+  function starCalendar() {
+    try {
+      var value = global.localStorage.getItem(STAR_CAL_KEY);
+      return value === 'on' || value === 'off' ? value : '';
+    } catch (err) {
+      return 'off';
+    }
+  }
+  function setStarCalendar(on) {
+    try { global.localStorage.setItem(STAR_CAL_KEY, on ? 'on' : 'off'); return true; } catch (err) { return false; }
+  }
+  // Apple devices (iPadOS says Macintosh) open an .ics file in an "add to calendar" screen that keeps
+  // the file's 30-minute alert; elsewhere Google Calendar's add page opens, with the visitor's own
+  // default reminder. The kakaotalk in-app browser does neither reliably, so it is sent to the buttons.
+  // Chrome, Firefox, Edge and Opera on iPhone save an .ics file as a download instead of opening the add
+  // screen (owner 2026-11-12, iPhone Chrome screenshot), so they get Google Calendar's add page too.
+  function calendarRoute(ua) {
+    ua = ua == null ? (global.navigator || {}).userAgent || '' : ua;
+    if (inTalkApp(ua)) return 'manual';
+    if (/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)) return 'google';
+    return /iPhone|iPad|iPod|Macintosh/i.test(ua) ? 'ics' : 'google';
+  }
+  // Must run inside the click that asked for it, or the browser blocks the new window or download.
+  // Resolves to 'ics' | 'google' | 'blocked' | 'manual'.
+  function addToCalendar(ev, opts, ua) {
+    var route = calendarRoute(ua);
+    if (route === 'manual') return 'manual';
+    if (route === 'ics') return downloadIcs(ev, opts) ? 'ics' : 'blocked';
+    var win = global.open(googleCalendarUrl(ev, opts), '_blank');
+    if (!win) return 'blocked';
+    try { win.opener = null; } catch (err) {}
+    return 'google';
+  }
+  // The one-time question: a small panel at the bottom of the screen that covers nothing it needs.
+  // `text` holds the page's strings (title, body, yes, no). `answer(choice)` gets true, false,
+  // or null (closed with Escape: ask again next time) and runs inside the click, so a yes can still
+  // open the calendar.
+  function askStarCalendar(text, answer) {
+    var doc = global.document;
+    var old = doc.getElementById('starCalAsk');
+    if (old) old.remove();
+    var box = doc.createElement('div');
+    box.id = 'starCalAsk';
+    box.className = 'starcal';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-labelledby', 'starCalAskTitle');
+    box.setAttribute('aria-describedby', 'starCalAskBody');
+    box.innerHTML = '<p class="starcal-title" id="starCalAskTitle"></p><p class="starcal-body" id="starCalAskBody"></p>' +
+      '<div class="starcal-actions"><button type="button" class="starcal-yes" data-starcal="yes"></button>' +
+      '<button type="button" class="starcal-no" data-starcal="no"></button></div>';
+    box.querySelector('.starcal-title').textContent = text.title;
+    box.querySelector('.starcal-body').textContent = text.body;
+    box.querySelector('.starcal-yes').textContent = text.yes;
+    box.querySelector('.starcal-no').textContent = text.no;
+    function close(choice) {
+      box.remove();
+      doc.removeEventListener('keydown', onKey, true);
+      if (choice !== null) setStarCalendar(choice);
+      answer(choice);
+    }
+    function onKey(e) { if (e.key === 'Escape' && box.isConnected) { e.preventDefault(); close(null); } }
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-starcal]');
+      if (b) close(b.getAttribute('data-starcal') === 'yes');
+    });
+    doc.addEventListener('keydown', onKey, true);
+    doc.body.appendChild(box);
+    box.querySelector('.starcal-yes').focus({ preventScroll: true });
+    return box;
   }
 
   // ---------- Share ----------
@@ -324,6 +429,7 @@
     readStore: readStore,
     seenOf: seenOf,
     changes: changes,
+    dayPassed: dayPassed,
     placeText: placeText,
     areaOf: areaOf,
     whoOf: whoOf,
@@ -337,6 +443,14 @@
     googleCalendarUrl: googleCalendarUrl,
     icsText: icsText,
     icsFileName: icsFileName,
+    downloadIcs: downloadIcs,
+    ALARM_MINUTES: ALARM_MINUTES,
+    STAR_CAL_KEY: STAR_CAL_KEY,
+    starCalendar: starCalendar,
+    setStarCalendar: setStarCalendar,
+    calendarRoute: calendarRoute,
+    addToCalendar: addToCalendar,
+    askStarCalendar: askStarCalendar,
     eventLink: eventLink,
     weekLink: weekLink,
     inTalkApp: inTalkApp,

@@ -102,23 +102,6 @@
     }
     .lab-list li { margin-bottom: 8px; }
     .lab-list li:last-child { margin-bottom: 0; }
-    .lab-note {
-      margin-top: 16px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(99, 102, 241, 0.06);
-      border: 1px solid rgba(99, 102, 241, 0.18);
-      font-size: 0.8rem;
-      line-height: 1.55;
-      color: #4338ca;
-    }
-    .lab-note code {
-      font-size: 0.78em;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(99, 102, 241, 0.22);
-    }
     .lab-actions {
       margin-top: 20px;
       display: flex;
@@ -157,12 +140,6 @@
     .lab-lead--tight {
       margin-top: 0;
       font-size: 0.82rem;
-    }
-    .lab-ics-hint {
-      margin-top: 8px;
-      font-size: 0.72rem;
-      line-height: 1.55;
-      color: #6e6e73;
     }
     .lab-ics-toolbar {
       margin-top: 14px;
@@ -276,12 +253,6 @@
       line-height: 1.35;
       color: #1d1d1f;
     }
-    .lab-gb-draft-foot {
-      margin: 10px 0 0;
-      font-size: 0.72rem;
-      line-height: 1.5;
-      color: #86868b;
-    }
     .lab-gb-draft-placeholder {
       margin: 0;
       padding: 12px 14px;
@@ -320,6 +291,7 @@
         <div class="nav-mega" data-mega>
           <button type="button" class="nav-mega-trigger is-current" aria-expanded="false" aria-controls="navMorePanel" data-i18n="nav.more">더보기</button>
           <div class="nav-mega-panel" id="navMorePanel">
+            <a class="nav-mega-link" href="my.html" data-i18n="nav.my">마이 밥도둑</a>
             <a class="nav-mega-link" href="mukbang.html" data-i18n="nav.magazine">밥도둑 매거진</a>
             <a class="nav-mega-link" href="history.html" data-i18n="nav.history">역사</a>
             <a class="nav-mega-link" href="tip.html" data-i18n="nav.tip">꽁밥 제보</a>
@@ -337,27 +309,17 @@
     <div class="lab-ribbon" data-i18n="lab.ribbon">실험 구역 — 공식 메인과 별도</div>
     <h1 class="lab-title" data-i18n="lab.title">실험실</h1>
     <p class="lab-kicker" data-i18n="lab.kicker">Beta / draft</p>
-    <p class="lab-lead" data-i18n="lab.lead">
-      로그인·서버 저장·가계부 동기화처럼 부담 큰 기능은 여기서만 먼저 시험합니다. 배포 URL은 같아도 이 페이지는 검색에 잘 노출되지 않게 막아 두었습니다.
-    </p>
-    <p class="lab-note" data-i18n-html="lab.indexClarify"></p>
+    <p class="lab-lead" data-i18n="lab.lead">정식 서비스와 따로 시험하는 곳이에요.</p>
     <section class="lab-panel" aria-labelledby="lab-how-heading">
       <h2 id="lab-how-heading" data-i18n="lab.panelUseTitle">이 페이지 쓰는 법</h2>
       <ul class="lab-list">
         <li data-i18n-html="lab.bullet1"></li>
-        <li data-i18n-html="lab.bullet2"></li>
-        <li data-i18n-html="lab.bullet3"></li>
-        <li data-i18n-html="lab.bullet4"></li>
-        <li data-i18n-html="lab.bullet5"></li>
       </ul>
-      <p class="lab-note" data-i18n-html="lab.pathNote"></p>
     </section>
     <section class="lab-panel" aria-labelledby="lab-next-heading">
       <h2 id="lab-next-heading" data-i18n="lab.panelNextTitle">다음에 붙일 수 있는 것</h2>
       <ul class="lab-list">
         <li data-i18n="lab.next1"></li>
-        <li data-i18n="lab.next2"></li>
-        <li data-i18n="lab.next3"></li>
       </ul>
     </section>
     <section class="lab-panel lab-panel--ics" aria-labelledby="lab-ics-heading">
@@ -365,7 +327,6 @@
       <p class="lab-lead lab-lead--tight" data-i18n="lab.icsLead">
         프로젝트 루트의 calendar.ics를 불러와 제목 키워드로 걸러 봅니다.
       </p>
-      <p class="lab-ics-hint" data-i18n="lab.icsKeywordsHint"></p>
       <div class="lab-ics-toolbar">
         <button type="button" class="lab-btn" id="labIcsLoadBtn">
           <span data-i18n="lab.icsBtn">calendar.ics 불러오기</span>
@@ -387,9 +348,9 @@
       <div id="labGbDraftList" class="lab-gb-draft-list"></div>
     </section>
     <div class="lab-actions">
-      <a href="food.html" class="lab-btn" data-i18n="lab.btnFoodlog">먹방 가계부 (실험실 전용)</a>
-      <a href="tip.html" class="lab-btn" data-i18n="lab.btnTip">꽁밥 제보 (실험실 전용)</a>
-      <a href="my.html" class="lab-btn" data-i18n="lab.btnMy">마이 밥도둑 (실험실 전용)</a>
+      <a href="food.html" class="lab-btn" data-i18n="lab.btnFoodlog">먹방 가계부</a>
+      <a href="tip.html" class="lab-btn" data-i18n="lab.btnTip">꽁밥 제보</a>
+      <a href="my.html" class="lab-btn" data-i18n="lab.btnMy">마이 밥도둑</a>
       <a href="index.html" class="lab-btn lab-btn--ghost" data-i18n="lab.btnHome">홈으로</a>
     </div>
   </main>
@@ -399,18 +360,16 @@
       <hr class="footer-apple-hr" />
       <div class="footer-apple-main">
         <div class="footer-apple-col footer-apple-col--left">
-          <span class="footer-apple-copy" data-i18n="footer.copyright">Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.</span>
+          <span class="footer-apple-copy" data-i18n="footer.copyright">© 2026 밥도둑</span>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</span>
         </div>
         <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
           <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="mukbang.html" class="footer-apple-a" data-i18n="nav.magazine">밥도둑 매거진</a>
+          <a href="choose.html" class="footer-apple-a" data-i18n="nav.choose">오늘 뭐 먹지</a>
           <span class="footer-apple-pipe" aria-hidden="true">|</span>
           <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="history.html" class="footer-apple-a" data-i18n="nav.history">역사</a>
         </nav>
         <div class="footer-apple-col footer-apple-col--right">
           <a href="privacy.html" class="footer-apple-a footer-apple-privacy" data-i18n="footer.privacy">개인정보처리방침</a>
@@ -418,7 +377,7 @@
           <span data-i18n="footer.country">대한민국</span>
         </div>
       </div>
-      <p class="footer-apple-fine" data-i18n="footer.fine">본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.</p>
+      <p class="footer-apple-fine" data-i18n="footer.fine">개인이 운영하는 사이트예요. 문의는 이메일로 주세요.</p>
     </div>
   </footer>
 
@@ -430,24 +389,19 @@
         docTitle: '실험실 · 밥도둑 Babdoduk',
         'a11y.scrollProgress': '페이지 스크롤 진행',
         'footer.contact': '문의',
-        'footer.copyright': 'Copyright © 2026 밥도둑 · Babdoduk. 모든 권리 보유.',
+        'footer.copyright': '© 2026 밥도둑',
         'footer.country': '대한민국',
-        'footer.fine': '본 사이트는 개인 콘텐츠 목적의 페이지입니다. 사업자 정보·법적 문의가 필요하면 이메일로 연락해 주세요.',
+        'footer.fine': '개인이 운영하는 사이트예요. 문의는 이메일로 주세요.',
         'footer.navAria': '사이트 바로가기',
         'footer.privacy': '개인정보처리방침',
-        'lab.btnFoodlog': '먹방 가계부 (실험실 전용)',
+        'lab.btnFoodlog': '먹방 가계부',
         'lab.btnHome': '홈으로',
-        'lab.btnMy': '마이 밥도둑 (실험실 전용)',
-        'lab.btnTip': '꽁밥 제보 (실험실 전용)',
+        'lab.btnMy': '마이 밥도둑',
+        'lab.btnTip': '꽁밥 제보',
         'lab.bullet1': '<strong>같은 사이트</strong> 안에서만 먼저 됩니다. 배포 주소 끝에 <code>/lab.html</code>만 붙여 직접 열면 됩니다.',
-        'lab.bullet2': '실험 커밋은 <code>lab</code> 브랜치에 둡니다. <code>lab</code> 전체를 <code>main</code>에 합치는 것이 기본값이 아니며, 반영할 변경을 골라 따로 승인받습니다.',
-        'lab.bullet3': '여기서 동작이 안정되면 본편(<code>ggongbab.html</code>·<code>food.html</code> 등)으로 옮기되, 공개 데이터 계약과 검사를 함께 지킵니다.',
-        'lab.bullet4': '코드가 <code>lab</code>에 있다는 것과 <code>main</code>에 반영됐다는 것, 실제 배포에서 동작한다는 것은 서로 다른 사실입니다.',
-        'lab.bullet5': '<code>lab-ggongbab.html</code>은 <code>ggongbab.html</code>과 같은 렌더러로 fixture·localhost preview를 확인하는 곳이에요. 방문자용 본편은 <code>ggongbab.html</code>입니다.',
         'lab.gbApplyEmpty': '(일정 파일에 없음 — 공지 URL을 ggongbab에 수동 입력)',
-        'lab.gbContentNote': '제목만 반영됨. 상세·혜택은 포털 본문·현장 안내를 확인하세요.',
+        'lab.gbContentNote': '제목만 들어가요. 자세한 건 원문을 보세요.',
         'lab.gbDraftEmpty': '먼저 위에서 calendar.ics 불러오기를 실행해 주세요.',
-        'lab.gbDraftFoot': '실험용 미리보기예요. 공개 꽁밥은 검증된 공개 피드로만 발행되며, 이 초안을 본편에 직접 옮기지 않아요.',
         'lab.gbDraftLead': '위에서 불러온 <code>calendar.ics</code> 중 키워드 일치 일정을 <code>ggongbab.html</code>과 같은 <strong>4행 시트</strong>(일정·위치·내용·신청) 형태로 미리 봅니다. 장소·링크는 .ics에 없으므로 본편에는 반드시 수동으로 채워 넣어야 합니다.',
         'lab.gbDraftNoMatch': '키워드에 맞는 일정이 없어 초안 카드를 만들 수 없습니다.',
         'lab.gbDraftTitle': '꽁밥 안내 스타일 초안 (포털 캘린더)',
@@ -458,24 +412,19 @@
         'lab.gbLocPlaceholder': '(포털 .ics에는 없음 — ggongbab에서 주소·장소 수동 입력)',
         'lab.icsBtn': 'calendar.ics 불러오기',
         'lab.icsEmpty': '키워드에 맞는 일정이 없습니다. 키워드를 넓히거나 포털에서 새 calendar.ics로 갈아 끼워 보세요.',
-        'lab.icsErrFetch': '불러오기 실패. 같은 호스트의 /calendar.ics인지 확인하세요. 로컬은 file://이 아니라 npx serve 등으로 열어야 합니다.',
+        'lab.icsErrFetch': '불러오지 못했어요.',
         'lab.icsErrParse': 'ICS 형식을 해석하지 못했습니다.',
-        'lab.icsKeywordsHint': '기본 키워드: 꽁밥, 런치, 점심, 싸이버거, 식사, 버거, 다과, 간식, 삼성SDI, KSBP, OverEdge, cyber, meal, lunch, burger, pizza, brunch 등. 목록은 lab.html 하단 스크립트의 PORTAL_ICS_KEYWORDS 배열에서 바꿀 수 있습니다.',
         'lab.icsLead': '저장소 루트의 calendar.ics를 브라우저에서 불러와, 제목에 food/꽁밥 관련 키워드가 들어간 일정만 골라 봅니다. (본편 ggongbab 연동 전 단계)',
         'lab.icsLoading': '불러오는 중…',
         'lab.icsMatchTitle': '키워드 매칭',
         'lab.icsStatusTpl': '파싱 {total}건 · 키워드 일치 {match}건 · 오늘·이후 {future}건',
         'lab.icsTitle': '포털 캘린더 (.ics) 실험',
         'lab.icsUpcomingSummary': '앞으로 예정 30건 (필터 없음 · 디버그)',
-        'lab.indexClarify': '<strong>홈</strong>은 <code>index.html</code>입니다. 실험은 <code>lab</code> 브랜치에서 진행하고, <code>main</code>(공개 기준)에는 소유자가 명시적으로 승인한 변경만 따로 반영합니다. 자세한 규칙은 <code>docs/DEPLOYMENT_AND_BRANCHES.md</code>에 있어요.',
         'lab.kicker': 'Beta / draft',
-        'lab.lead': '정식 서비스와 분리해 시험하는 곳이에요. 여기 있는 기능과 데이터는 공개 서비스로 자동 승격되지 않아요. 이 페이지의 noindex는 검색 제외 신호일 뿐 접근 제한은 아니에요.',
+        'lab.lead': '정식 서비스와 따로 시험하는 곳이에요.',
         'lab.next1': '먹방 가계부 기록 내보내기·가져오기(JSON) — 서버 없이 브라우저 기록을 백업',
-        'lab.next2': '로그인·서버 저장·사용자 프로필은 PRD의 비범위예요. 필요하면 소유자 승인과 개인정보 검토 후 따로 설계합니다.',
-        'lab.next3': '아래 .ics 실험은 꽁밥 수집 파이프라인과 별개예요. 유지할지 정리할지는 쓰임새를 정한 뒤 결정합니다.',
         'lab.panelNextTitle': '다음에 붙일 수 있는 것',
         'lab.panelUseTitle': '이 페이지 쓰는 법',
-        'lab.pathNote': '예: <code>https://…vercel.app/lab.html</code> · 홈이나 기본 내비에는 링크하지 않아요(북마크·직접 입력).',
         'lab.ribbon': '실험 구역 — 공식 메인과 별도',
         'lab.title': '실험실',
         'nav.choose': '오늘 뭐 먹지',
@@ -494,6 +443,7 @@
         'nav.menuClose': '메뉴 닫기',
         'nav.menuOpen': '메뉴 열기',
         'nav.more': '더보기',
+        'nav.my': '마이 밥도둑',
         'nav.myAria': '마이 밥도둑',
         'nav.navAria': '주요 메뉴',
         'nav.tip': '꽁밥 제보',
@@ -504,24 +454,19 @@
         docTitle: 'Lab · Babdoduk',
         'a11y.scrollProgress': 'Page scroll progress',
         'footer.contact': 'Contact',
-        'footer.copyright': 'Copyright © 2026 Babdoduk. All rights reserved.',
+        'footer.copyright': '© 2026 Babdoduk',
         'footer.country': 'South Korea',
-        'footer.fine': 'Independent content site. For business registration or legal matters, please reach out by email.',
+        'footer.fine': 'Run by an individual. Questions by email, please.',
         'footer.navAria': 'Site links',
         'footer.privacy': 'Privacy Policy',
-        'lab.btnFoodlog': 'Food log (lab only)',
+        'lab.btnFoodlog': 'Food log',
         'lab.btnHome': 'Home',
-        'lab.btnMy': 'My Babdoduk (lab only)',
-        'lab.btnTip': 'Free food tips (lab only)',
+        'lab.btnMy': 'My Babdoduk',
+        'lab.btnTip': 'Free food tips',
         'lab.bullet1': '<strong>Same deployment</strong>: append <code>/lab.html</code> to your site URL and bookmark it.',
-        'lab.bullet2': 'Keep experimental commits on <code>lab</code>. Merging all of <code>lab</code> into <code>main</code> is not the default; pick and approve the changes to promote.',
-        'lab.bullet3': 'When a feature is stable, move it into production pages (e.g. <code>ggongbab.html</code>, <code>food.html</code>) while keeping the public data contract and checks.',
-        'lab.bullet4': 'Code existing on <code>lab</code>, being merged to <code>main</code>, and working in production are three different facts.',
-        'lab.bullet5': '<code>lab-ggongbab.html</code> uses the same renderer as <code>ggongbab.html</code> to check fixture and localhost preview modes. Visitors use <code>ggongbab.html</code>.',
         'lab.gbApplyEmpty': '(Not in calendar file — paste notice URL in ggongbab)',
-        'lab.gbContentNote': 'Only the title is auto-filled. Check the portal post for full details.',
+        'lab.gbContentNote': 'Only the title is filled in. See the original for details.',
         'lab.gbDraftEmpty': 'Load <code>calendar.ics</code> with the button above first.',
-        'lab.gbDraftFoot': 'A lab preview only. Public free-food events are published only through the validated public feed; do not copy these drafts into production pages.',
         'lab.gbDraftLead': 'Matched events from <code>calendar.ics</code> are shown in the same <strong>four-row sheet</strong> shape as <code>ggongbab.html</code> (schedule, location, details, signup). ICS exports usually lack venue and URLs—fill those manually on the real page.',
         'lab.gbDraftNoMatch': 'No keyword matches, so no draft cards were generated.',
         'lab.gbDraftTitle': 'Ggongbab-style draft (portal calendar)',
@@ -532,24 +477,19 @@
         'lab.gbLocPlaceholder': '(Not in portal .ics — add in ggongbab manually)',
         'lab.icsBtn': 'Load calendar.ics',
         'lab.icsEmpty': 'No events matched. Widen keywords or replace calendar.ics with a fresh export.',
-        'lab.icsErrFetch': 'Could not fetch the file. Use http(s) (e.g. npx serve), not file://, and keep calendar.ics next to lab.html.',
+        'lab.icsErrFetch': 'Couldn\'t load it.',
         'lab.icsErrParse': 'Could not parse ICS data.',
-        'lab.icsKeywordsHint': 'Default keywords: 꽁밥, 런치, lunch, meal, burger, pizza, brunch, 삼성SDI, KSBP, OverEdge, 싸이버거, etc. Edit the PORTAL_ICS_KEYWORDS array in the script at the bottom of this file.',
         'lab.icsLead': 'Fetches /calendar.ics from this site and lists events whose titles match food / free-meal style keywords (prototype before wiring ggongbab).',
         'lab.icsLoading': 'Loading…',
         'lab.icsMatchTitle': 'Keyword matches',
         'lab.icsStatusTpl': 'Parsed {total} · keyword matches {match} · from today onward {future}',
         'lab.icsTitle': 'Portal calendar (.ics) experiment',
         'lab.icsUpcomingSummary': 'Next 30 events (unfiltered · debug)',
-        'lab.indexClarify': 'The <strong>home page</strong> is <code>index.html</code>. Experiments happen on the <code>lab</code> branch; only changes the owner explicitly approves are promoted to <code>main</code> (the public reference). See <code>docs/DEPLOYMENT_AND_BRANCHES.md</code>.',
         'lab.kicker': 'Beta / draft',
-        'lab.lead': 'A place to try things apart from the public service. Nothing here is promoted automatically. This page’s noindex tag only discourages search indexing; it is not access control.',
+        'lab.lead': 'A place to try things apart from the public service.',
         'lab.next1': 'Food-log export/import (JSON) to back up browser entries without a server',
-        'lab.next2': 'Login, server storage and user profiles are out of scope in the PRD; they need owner approval and a privacy review first.',
-        'lab.next3': 'The .ics experiment below is separate from the free-food pipeline; keep or retire it once its purpose is decided.',
         'lab.panelNextTitle': 'What you can add next',
         'lab.panelUseTitle': 'How to use this page',
-        'lab.pathNote': 'Example: <code>https://….vercel.app/lab.html</code> · Not linked from the home page or main navigation (bookmark or type it).',
         'lab.ribbon': 'Experimental — not the public main',
         'lab.title': 'Lab',
         'nav.choose': 'What to eat',
@@ -568,6 +508,7 @@
         'nav.menuClose': 'Close menu',
         'nav.menuOpen': 'Open menu',
         'nav.more': 'More',
+        'nav.my': 'My Babdoduk',
         'nav.myAria': 'My Babdoduk',
         'nav.navAria': 'Main menu',
         'nav.tip': 'Free food tips',
@@ -789,10 +730,6 @@
           addRow('lab.gbFieldContent', tt['lab.gbContentNote'] || '');
           addRow('lab.gbFieldApply', tt['lab.gbApplyEmpty'] || '');
           art.appendChild(sheet);
-          var foot = document.createElement('p');
-          foot.className = 'lab-gb-draft-foot';
-          foot.textContent = tt['lab.gbDraftFoot'] || '';
-          art.appendChild(foot);
           labGbDraftList.appendChild(art);
         });
       }
