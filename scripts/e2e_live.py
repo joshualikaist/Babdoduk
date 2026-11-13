@@ -43,7 +43,10 @@ LANGS = ("ko", "en")
 VIEWPORTS = {"phone": (390, 844), "desktop": (1280, 800)}
 SLOW_MS = 5000
 LINK_CAP = 60
-LAB_ONLY = ["lab.html", "food.html", "lab-ggongbab.html", "data/food-log.json", "calendar.ics"]
+LAB_ONLY = ["lab.html", "food.html", "lab-ggongbab.html", "data/food-log.json"]
+# Owner 2026-11-13: the private Portal calendar export was deleted from both sites.
+# Keep checking its absence, including the encoded spelling that bypassed the old route guard.
+REMOVED_PATHS = ["calendar.ics", "calendar%2eics"]
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 FORBIDDEN_HOST = re.compile(r"dooray|portal\.kaist|admin\.", re.I)
 # Lab's own anonymous counters (docs/WORLDCUP_STATS.md, docs/PICK_STATS.md): tried, aborted, tolerated there.
@@ -505,14 +508,16 @@ def journey_worldcup(rep: Report, page, context, phase: str, size, friend_id: st
 
 def lab_only_checks(rep: Report, context):
     rep.scope = "lab-only"
-    for path in LAB_ONLY:
+    for path in LAB_ONLY + REMOVED_PATHS:
         url = urljoin(rep.base + "/", path)
         try:
             status = context.request.get(url, timeout=30000, max_redirects=5).status
         except Exception as exc:
             rep.check(f"{path}: reachable check", False, str(exc).splitlines()[0])
             continue
-        if rep.is_lab:
+        if path in REMOVED_PATHS:
+            rep.check(f"{path} stays removed", status == 404, f"status={status}")
+        elif rep.is_lab:
             rep.check(f"{path} is served on lab", status == 200, f"status={status}")
         else:
             rep.check(f"{path} is 404 on production", status == 404, f"status={status}")

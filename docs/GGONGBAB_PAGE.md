@@ -190,7 +190,11 @@ DB 접근은 `db/supabase_client.py` 가 PostgREST(`/rest/v1`) 로 직접 한다
 5. **AI** — Luna 호출 → `validator.fallback_reasons()` → 필요 시 Terra.
 6. **validate** — `validator.validate()` 가 AI 결과를 규칙과 대조한다(아래 8절).
 7. **dedup / merge** — `dedup.find_match()` 로 기존 event 와 대조. 매치되면 `merge_into()` 로 빈 값만 채우고 충돌은 `needs_review`. `event_sources` 에 연결.
+   같은 raw 항목이 다시 파싱되면(두레이 업무 수정, `PROMPT_VERSION` 변경) 그 항목뿐인 event 는 새 추출로 필드를 바꾸되 오너의 결정은 유지한다(2026-11-13): `rejected` · `archived` 는 그대로, 공개 중인 행은 공개를 유지하고 새 검토 사유는 `event_conflicts` 에 남긴다(`pipeline._update_linked`). 의심스러운 재분석은 승인된 기존 값(날짜·음식 제공 여부·확신도 등)을 바꾸지 않고, 이전에 비어 있던 칸만 채운다. 검토 사유가 없는 정상 재분석은 변경된 시간 등을 계속 반영한다.
 8. **export** — `exporter.build_payload()` → staging 파일 → `validate_content.validate_ggongbab()` 통과 시에만 `latest.json` 교체.
+   그 전에 `exporter.drop_invalid_events()` 가 행사마다 따로 검증해 통과하지 못한 행사만 빼고 개수만 로그에 남긴다(2026-11-13;
+   전에는 행사 하나 때문에 export 전체가 실패해 모든 목록이 낡았다). 같은 날 닮은 제목 · 중복 id 는 뒤의 행사를 뺀다. 공개 텍스트의
+   `public_sanitizer.public_text()` 는 진짜 태그만 지운다: “<2026 가을 축제 푸드트럭>” 같은 제목은 그대로 둔다(페이지가 값을 escape 해서 보여 준다).
 
 로그에는 카운트만 찍는다. 메일 본문 · 주소 · 토큰은 출력하지 않는다.
 
@@ -215,6 +219,9 @@ validator 가 하는 일:
 * AI 가 `true` 인데 `evidence.food` 가 비었거나 제공 문구가 아니면 → `unknown` + `needs_review`.
 * 규칙은 제공 문구를 찾았는데 AI 가 `true` 가 아니면 → `needs_review` (+ fallback).
 * AI `event_start` 날짜가 본문에서 뽑은 날짜와 다르면 → 시작 시각 폐기 + `needs_review`.
+* 본문에 “16:30~17:30” 처럼 범위로 쓰인 시각의 **끝**이 AI 시작 시각이면 → `needs_review` (“시작/종료 혼동”). 종료가 시작보다
+  이르면 종료를 지우지 않고 남긴 채 `needs_review` (“종료가 시작보다 이름”; 공개 자격은 그대로 없다). `rule_parser` 는 범위를
+  내부 필드 `time_ranges` 로 기록하고, “오후 6시 30분 ~ 8시” 처럼 오전/오후 없는 끝은 시작의 오후를 이어받아 20:00 으로 읽는다(2026-11-13).
 * 건물이 본문 건물 목록과 다르면 폐기. 본문에 건물이 하나뿐이면 규칙 값으로 채움.
 * `registration_url` 은 본문에 그대로 있어야 한다. 없으면 폐기 + review.
 * 마감일도 본문 날짜와 맞아야 한다.
@@ -286,6 +293,12 @@ Supabase 공개 투영(lab 의 DB 피드)에는 실리지 않는다: 행에 새 
 | 같은 날짜 / 다른 날짜 | +0.30 / −0.35 |
 | 주최 유사 | +0.10 |
 | 같은 건물 / 다른 건물 | +0.10 / −0.10 |
+| 같은 날, 두 시작 시각이 1시간 넘게 차이 | −0.25 |
+| 두 제목이 서로 다른 학과·학부 이름을 담음 (`전산학부` vs `기계공학과`) | 같은 시간·장소여도 별개 행사로 유지(점수 0) |
+
+정규화 제목(`normalize_title`)은 `[...]` · `(...)` 안의 글자를 지우지 않는다(괄호만 지운다). 영어 불용어(the, of, and, for, a)는
+낱말 단위로만 지운다(“AI” 가 “i” 가 되지 않게). 같은 날 제목이 0.92 이상 닮으면 0.9 로 끌어올리는 규칙은 두 시작 시각이
+같거나 한쪽에 시각이 없고, 주최 · 건물이 충돌하지 않을 때만 적용한다(2026-11-13: 같은 날 학과설명회들이 하나로 합쳐지던 문제).
 
 임계값 `GGONGBAB_DEDUP_THRESHOLD`(기본 0.72). 후보는 시작 시각 ±3일 안의 event 만 본다.
 병합 시 비어 있던 필드만 채우고, `event_start` · `building` · `food_provided` · `registration_url` · `registration_deadline` 이 서로 다르면
@@ -373,8 +386,8 @@ ISO 날짜(**offset 이 반드시 `+09:00`**) · confidence 0~1 · 만료 없음
 | 단계 | 규칙 | 위치 |
 |------|------|------|
 | 브라우저 | 종료 시각이 지나면 카드·개수·레이더에서 바로 숨김. 종료 시각이 없으면(“11:30 ~ 소진 시까지”) 시작 후 3시간까지 보여 준다 — export 유예(`GGONGBAB_EXPIRED_GRACE_HOURS`)와 같은 창이다(MISS-001, 2026-09-28 승인). 행사일 없이 신청 마감만 있는 경품 행사는 마감 시각까지만 보여 준다(유예 없음) | `js/ggongbab-select.js` `eventEnd` · `isUpcoming` |
-| export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외 | `exporter.is_expired` |
-| 검증 | 종료 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
+| export | 종료 + `GGONGBAB_EXPIRED_GRACE_HOURS`(기본 3시간)가 지난 행은 다음 export 에서 제외. 종료 시각이 없고 `sessions` 가 있는 여러 날 행사는 **마지막 세션**의 종료(없으면 시작)가 기준이다(2026-11-13; 전에는 첫 세션 + 3시간에 사라졌다) | `exporter.last_moment` · `is_expired` |
+| 검증 | 종료(없으면 마지막 세션, 그것도 없으면 시작) 후 6시간이 넘은 행이 `latest.json` 에 있으면 실패, publish 차단 | `validate_content.validate_ggongbab` |
 
 화면에는 스냅숏의 **마지막 변경** 시각(`generatedAt`, KST)만 목록 맨 위에 보여 준다. 행사 내용이 같고 `generatedAt` 만 바뀐 export 는 커밋하지 않으므로(`publish_generated.py`) 이 시각은 마지막으로 확인한 때가 아니라 목록이 마지막으로 바뀐 때다. 정적 스냅숏이므로 “실시간”·“최신”이라고 쓰지 않는다.
 끝난 행사를 `latest.json` 에 다시 넣거나 위 검증 규칙을 느슨하게 하지 않는다.
@@ -391,7 +404,7 @@ live 피드는 “지금·앞으로 참여할 수 있는 꽁밥”, 아카이브
 | 조건 | 규칙 | 위치 |
 |------|------|------|
 | 공개 자격 | live 피드와 같은 함수: 음식 명시(`food.provided == "true"`) 또는 경품(`giveaway`), `status='published'`, `needs_review=false`, confidence ≥ 기준 | `exporter.publication_eligible` |
-| 끝남 | live 피드가 버리는 바로 그 규칙: 종료(없으면 시작) + 유예 3시간 < `now` | `exporter.is_expired` |
+| 끝남 | live 피드가 버리는 바로 그 규칙: 종료(없으면 마지막 세션, 그것도 없으면 시작) + 유예 3시간 < `now` | `exporter.is_expired` |
 | 공개된 적 있음 | 이 export 직전의 `latest.json` 또는 `archive/index.json` 에 실렸던 id 만 | `exporter.previously_listed_ids` |
 | 공개 기간 | 종료(없으면 시작)가 `now` 기준 30일 안 | `ARCHIVE_WINDOW_DAYS` |
 | 조회 | 최근 60일 안에 시작한 published 행을 읽기만 함(여러 날 행사 포함) | `repository.recent_published_events` |
@@ -430,7 +443,7 @@ Actions 로그는 공개이기 때문). live 피드가 기록보다 중요하다
 * 기능 코드(`lab-ggongbab.html`, `css/ggongbab.css`, `js/ggongbab.js`, `scripts/**`)는 **lab 에서만** 개발하고, 공개 반영은 `AGENTS.md` 의 lab-first 절차(승인된 lab 커밋을 `origin/main` 기반 release 브랜치로 옮겨 검증한 뒤 merge)를 따른다.
 * `.github/workflows/ggongbab-refresh.yml` 이 `7,37 * * * *` 로 돈다(30분마다, 예약이 몰리는 정각·30분을 피함. 정각 보장 없음). cron 은 default branch(main) 의 파일만 읽으므로 **workflow 파일은 main 에 있어야 한다.**
   `content-refresh` 와 같은 concurrency group(`babdoduk-content-refresh`)을 써서 동시에 push 하지 않는다.
-* `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다.
+* `scripts/publish_generated.py` 의 ALLOWED 에 `data/ggongbab` 이 추가됐다. `latest.json` 과 `archive/index.json` 이 lab · main 양쪽에 복사되고, 손으로 쓰는 `manual.json` 과 `.staging/` 은 건드리지 않는다. 쓰다 남은 `*.tmp` 파일은 복사하지 않는다(2026-11-13).
   브랜치마다 비교해서 `generatedAt` 말고 달라진 것이 없으면 커밋하지 않는다(`VOLATILE_KEYS`, 두 파일 모두).
 * 종료 코드 2 = “안전하게 내보낼 것이 없음”(Supabase 불통, 모든 collector 실패, export 검증 실패). 이때 이전 `latest.json` 을 유지하고 publish 단계를 건너뛴다.
 * 발행 다음 단계 **Sync the public DB feed** (소유자 승인 2026-10-13): `python scripts/sync_public_feed.py` 가 같은 선택(`build_payload`)으로

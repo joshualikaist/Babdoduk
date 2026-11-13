@@ -91,6 +91,40 @@ def test_a_listed_eligible_row_is_live_or_archived_never_both_or_neither(setting
         assert sorted(live + past) == ["x"]
 
 
+def multi_day(first_day_offset_hours):
+    """Three daily noon hand-outs with no event_end, the first `first_day_offset_hours` before NOW."""
+    first = NOW - timedelta(hours=first_day_offset_hours)
+    days = [first + timedelta(days=d) for d in range(3)]
+    return row("multi", event_start=first.isoformat(), event_end=None,
+               _extras={"sessions": [{"start": d.isoformat(), "end": None} for d in days]})
+
+
+@pytest.mark.parametrize("first_day_offset_hours", [1, 21, 24 + 21])
+def test_a_multi_day_event_stays_live_until_its_last_session(settings, first_day_offset_hours):
+    """Audit 2026-11-13: with sessions and no event_end the event expired three hours after the
+    first session, so days two and three vanished from the feed and went to the archive."""
+    rows = [multi_day(first_day_offset_hours)]
+    live = build_payload(rows, settings, NOW, food_only=True)
+    assert ids(live) == ["multi"] and len(live["events"][0]["sessions"]) == 3
+    assert ids(archive(rows, settings)) == []
+    assert validate_ggongbab_payload(live, now=NOW) == []
+
+
+def test_a_multi_day_event_is_archived_after_its_last_session(settings):
+    rows = [multi_day(48 + settings.expired_grace_hours + 1)]
+    assert ids(build_payload(rows, settings, NOW, food_only=True)) == []
+    past = archive(rows, settings)
+    assert ids(past) == ["multi"]
+    assert validate_ggongbab_archive_payload(past, set()) == []
+
+
+def test_sessions_that_do_not_fit_do_not_extend_an_event(settings):
+    """Only sessions the feed would show count; a broken list keeps the old start + grace rule."""
+    broken = multi_day(21)
+    broken["_extras"]["sessions"].reverse()
+    assert ids(build_payload([broken], settings, NOW, food_only=True)) == []
+
+
 @pytest.mark.parametrize("over", [
     {"needs_review": True}, {"food_provided": "false"}, {"food_provided": "unknown"}, {"food_provided": None},
     {"status": "draft"}, {"status": "review"}, {"status": "rejected"}, {"status": "archived"},
@@ -246,9 +280,6 @@ class StubRepo:
         return generation + 1
 
 
-HAS_PROJECTION = hasattr(refresh_ggongbab, "commit_public_feed")
-
-
 @pytest.fixture
 def data_dir(tmp_path, monkeypatch):
     folder = tmp_path / "data" / "ggongbab"
@@ -283,8 +314,9 @@ def test_export_archives_what_the_previous_feed_listed(settings, data_dir, capsy
     assert refresh_ggongbab.export(settings, repo, dry_run=False) == 0
     assert ids(_read(data_dir / "latest.json")) == [uid("upcoming")]
     assert ids(_read(data_dir / "archive" / "index.json")) == [uid("listed")]
-    if HAS_PROJECTION:  # the public DB projection mirrors the live snapshot, never the archive
-        assert repo.projected == [[uid("upcoming")]]
+    # audit 2026-11-13: the export no longer writes the public DB projection; the workflow's
+    # sync step does, after publication (it mirrors the live snapshot, never the archive).
+    assert repo.projected == []
     assert not (data_dir / ".staging").exists()
     assert "events=1 archive=1" in capsys.readouterr().out
 
@@ -311,6 +343,35 @@ def test_a_failing_archive_query_never_costs_the_live_feed_a_refresh(settings, d
     assert "archive not built (ConnectionError)" in out and "archive=kept" in out
     assert "SECRET" not in out and "private.example" not in out  # Actions logs are public
     assert not (data_dir / ".staging").exists()
+
+
+def test_one_failing_event_is_left_out_instead_of_blocking_the_export(settings, data_dir, capsys):
+    """Audit 2026-11-13: one event the validator refused failed the whole export (exit 23), so
+    every other listing went stale. Now it alone is left out, with a value-free count."""
+    rows = [_fresh_row("good", ended_hours_ago=-48),
+            _fresh_row("empty-title", ended_hours_ago=-48, title="<br>"),            # nothing left after markup
+            _fresh_row("twin-a", ended_hours_ago=-30, title="공학관 피자 나눔"),
+            _fresh_row("twin-b", ended_hours_ago=-30, title="공학관 피자 나눔")]       # same-day look-alike
+    assert refresh_ggongbab.export(settings, StubRepo(rows), dry_run=False) == 0
+    listed = ids(_read(data_dir / "latest.json"))
+    assert uid("good") in listed and uid("empty-title") not in listed
+    assert len([i for i in listed if i in (uid("twin-a"), uid("twin-b"))]) == 1
+    assert validate_ggongbab_payload(_read(data_dir / "latest.json")) == []
+    out = capsys.readouterr().out
+    assert "2 event(s) failed public validation" in out
+    assert uid("empty-title") not in out and "피자" not in out      # Actions logs are public
+
+
+def test_a_bracketed_title_is_kept_and_real_markup_is_removed():
+    """Audit 2026-11-13: every <...> span was stripped, so "<2026 가을 축제 푸드트럭>" became an empty title."""
+    from ggongbab.public_sanitizer import public_text
+    assert public_text("<2026 가을 축제 푸드트럭>") == "<2026 가을 축제 푸드트럭>"
+    assert public_text("<KAIST 창업원> 점심 특강") == "<KAIST 창업원> 점심 특강"
+    assert public_text("점심 특강 <선착순 50명>") == "점심 특강 <선착순 50명>"
+    assert public_text("<b>피자</b> 제공<br/>") == "피자 제공"
+    assert public_text('<img alt="사진" src=x>점심') == "점심"
+    assert public_text("&lt;script&gt;x&lt;/script&gt;<!-- note -->") == "x"
+    assert public_text("문의 010-1234-5678") == "문의 [phone]"           # masking still runs before validation
 
 
 def test_dry_run_writes_neither_file(settings, data_dir, capsys):

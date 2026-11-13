@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Collect events, export latest.json (live listings) and archive/index.json (listings that
-ended in the last 30 days), and synchronize the sanitized public DB feed.
+"""Collect events and export latest.json (live listings) and archive/index.json (listings that
+ended in the last 30 days).
 
-Public feed synchronization requires manually applied migration 004. Canonical
-events remain committed if publication fails; no migration is applied here.
+The sanitized public DB feed is not written here: the ggongbab-refresh workflow runs
+scripts/sync_public_feed.py after it has published the snapshot (migration 004, applied by
+hand), so a projection failure never holds latest.json back.
 
     python scripts/refresh_ggongbab.py                 # full run (needs secrets)
     python scripts/refresh_ggongbab.py --export-only   # DB -> latest.json without collecting
@@ -19,7 +20,7 @@ Gov-Dooray has no mail REST API, so the archive is what the mail client exports:
 
 Exit codes: 0 ok · 2 legacy keep-snapshot status (not emitted by combined publication)
 · 20 every collector failed · 21 Supabase unreachable · 22 AI auth/quota fatal
-· 23 snapshot validation/write or public-feed synchronization failed.
+· 23 snapshot validation/write failed.
 Every non-zero exit, 2 included, fails the GitHub Actions job.
 Nothing private (mail text, addresses, tokens) is printed.
 """
@@ -42,8 +43,9 @@ from ggongbab.config import DATA_DIR, KST, Settings, load_settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa: E402
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
 from ggongbab.exporter import (ARCHIVE_DIR, ARCHIVE_LOOKBACK_DAYS, build_archive,  # noqa: E402
-                               build_payload, previously_listed_ids, write_archive, write_payload)
-from ggongbab.public_feed import PublicFeedError, prepare_public_feed, commit_public_feed  # noqa: E402
+                               build_payload, drop_invalid_events, previously_listed_ids, write_archive,
+                               write_payload)
+from ggongbab.public_feed import PublicFeedError  # noqa: E402
 from ggongbab.parsers import ai_errors  # noqa: E402
 from ggongbab.parsers.ai_errors import is_fatal  # noqa: E402
 from ggongbab.pipeline import Pipeline  # noqa: E402
@@ -192,10 +194,20 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
         if archive is not None:
             print(f"archive: {archive['count']} ended listing(s) in the last {archive['windowDays']} days")
         return 0
-    # Snapshot and public DB use the very same selection, time and sanitizer.
+    # The snapshot only. The public DB projection is synchronized by the workflow's later step
+    # (scripts/sync_public_feed.py), with the very same selection and sanitizer, AFTER this file
+    # is published: a projection failure never holds the fresh latest.json back (audit 2026-11-13).
     # Preparation failure must never be converted to the green keep-snapshot exit.
-    prepared = prepare_public_feed(repo, settings, now)
-    payload = prepared.payload
+    try:
+        payload = build_payload(repo.publishable_events(), settings, now, food_only=True)
+        payload, dropped = drop_invalid_events(payload, now)
+    except SupabaseError:
+        raise
+    except Exception:  # noqa: BLE001 - value-free, as Actions logs are public
+        print("[error] export preparation failed; keeping previous latest.json and archive")
+        return EXIT_PUBLISH
+    if dropped:
+        print(f"[warn] {dropped} event(s) failed public validation and were left out of the export")
     archive = build_archive_safely(repo, settings, now)
     tmp_dir = DATA_DIR / ".staging"
     tmp_dir.mkdir(parents=True, exist_ok=True)
@@ -230,8 +242,6 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
     kept = archive is None or archive_errors
     print(f"wrote {final.relative_to(ROOT)} events={payload['count']} "
           f"archive={'kept' if kept else archive['count']}")
-    commit_public_feed(repo, prepared)
-    print(f"public feed synchronized events={payload['count']}")
     return 0
 
 def review_report(repo) -> None:

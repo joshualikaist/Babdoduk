@@ -8,13 +8,19 @@ from urllib.parse import urlsplit
 from .parsers.sanitizer import sanitize_for_ai
 
 
+# A comment, a declaration, or a tag: an ASCII name, then nothing or ASCII-named attributes.
+_MARKUP = re.compile(r"<!--.*?-->|<![^<>]*>|</?[A-Za-z][A-Za-z0-9:-]*(?:\s+[A-Za-z_:][^<>]*)?\s*/?>", re.S)
+
+
 def public_text(value) -> str:
     if value is None:
         return ""
     if not isinstance(value, str):
         raise ValueError("PUBLIC_FIELD_NOT_TEXT")
     text = html.unescape(value)
-    text = re.sub(r"<[^>]*>", "", text)
+    # Only real markup: "<2026 가을 축제 푸드트럭>" or "<KAIST 창업원>" is a title, not a tag (audit
+    # 2026-11-13). Pages escape every value they render, so a bracket left in text is shown, never parsed.
+    text = _MARKUP.sub("", text)
     # Links belong only in the separately checked registration/source URL fields.
     text = re.sub(r"(?:https?://|www\.)\S+", "[link]", text, flags=re.I)
     text = re.sub(r"(?:JSESSIONID|pstNo|external_id|mail_id|token|password)\s*[:=]\s*\S+",

@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Optional
@@ -96,14 +97,28 @@ def publication_eligible(row: dict[str, Any], settings: Settings, *, food_only: 
     return not (row.get("event_end") and (not isinstance(end, datetime) or end.tzinfo is None or end < start))
 
 
-def is_expired(row: dict[str, Any], now: datetime, grace_hours: int) -> bool:
-    start = parse_iso(row.get("event_start")) if isinstance(row.get("event_start"), str) else row.get("event_start")
-    end = parse_iso(row.get("event_end")) if isinstance(row.get("event_end"), str) else row.get("event_end")
+def last_moment(row: dict[str, Any]) -> Optional[datetime]:
+    """When the event is last on: its end, else its last public session's end (or start), else its start.
+
+    A multi-day event with sessions and no event_end used to expire three hours after its first
+    session (audit 2026-11-13). Only sessions that public_sessions accepts count, the same ones
+    the feed shows."""
+    start, end = _when(row.get("event_start")), _when(row.get("event_end"))
     if end is not None:
-        return end + timedelta(hours=grace_hours) < now
-    if start is not None:
-        return start + timedelta(hours=grace_hours) < now
-    return True  # undated events are never published
+        return end
+    sessions = public_sessions(row.get("_extras"), row.get("event_start"), row.get("event_end"))
+    if sessions:
+        last = parse_iso(sessions[-1].get("endAt") or sessions[-1].get("startAt"))
+        if last is not None and (start is None or last > start):
+            return last
+    return start
+
+
+def is_expired(row: dict[str, Any], now: datetime, grace_hours: int) -> bool:
+    last = last_moment(row)
+    if last is None:
+        return True  # undated events are never published
+    return last + timedelta(hours=grace_hours) < now
 
 
 def public_event(row: dict[str, Any]) -> dict[str, Any]:
@@ -201,6 +216,32 @@ def build_payload(rows: list[dict[str, Any]], settings: Settings, now: Optional[
     }
 
 
+_EVENT_TAG = re.compile(r"events\[(\d+)\]")
+
+
+def drop_invalid_events(payload: dict[str, Any], now: datetime) -> tuple[dict[str, Any], int]:
+    """The payload without the events that fail the public validator, and how many were dropped.
+
+    One bad event used to fail the whole export, so every other listing went stale with it
+    (audit 2026-11-13). Each event is validated on its own first; the cross-event rules
+    (duplicate id, same-day look-alike title) then drop the later event they name. A file-level
+    error cannot be fixed by dropping events and is left for the caller's full validation.
+    """
+    from validate_content import validate_ggongbab_payload  # scripts/ is on the path of every caller
+
+    def check(events: list[dict[str, Any]]) -> list[str]:
+        return validate_ggongbab_payload({**payload, "count": len(events), "events": events}, now)
+
+    events = payload.get("events") or []
+    kept = [event for event in events if not check([event])]
+    for _ in range(len(kept)):
+        bad = {int(m.group(1)) for error in check(kept) for m in [_EVENT_TAG.match(error)] if m}
+        if not bad:
+            break
+        kept = [event for index, event in enumerate(kept) if index not in bad]
+    return {**payload, "count": len(kept), "events": kept}, len(events) - len(kept)
+
+
 def write_payload(payload: dict[str, Any], out_dir: Path = DATA_DIR) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / "latest.json"
@@ -267,7 +308,7 @@ def build_archive(rows: list[dict[str, Any]], settings: Settings, listed: set[st
             continue
         if not publication_eligible(row, settings, food_only=True):
             continue
-        last = _when(row.get("event_end")) or _when(row.get("event_start"))
+        last = last_moment(row)
         if last is None or last < cutoff:
             continue  # undated rows are never published; older ones leave the public window
         if not is_expired(row, now, settings.expired_grace_hours):

@@ -6,7 +6,8 @@ from datetime import datetime
 from ggongbab.config import KST
 from ggongbab.parsers.dooray_mail import parse_original_message, parse_sent
 from ggongbab.parsers.html_text import html_to_text, inline_file_ids
-from ggongbab.parsers.rule_parser import analyze, extract_dates, extract_times, explicit_food_evidence
+from ggongbab.parsers.rule_parser import (analyze, extract_dates, extract_time_ranges, extract_times,
+                                          explicit_food_evidence)
 from ggongbab.parsers.sanitizer import contains_pii, sanitize_for_ai
 
 from .conftest import NEGATIVE_TEXT, POSITIVE_TEXT, REFERENCE
@@ -105,6 +106,20 @@ def test_time_extraction():
     assert extract_times("11:30~12:30") == ["11:30", "12:30"]
     assert extract_times("7pm") == ["19:00"]
     assert extract_times("낮 12시 반") == ["12:30"]
+
+
+def test_time_ranges_and_a_bare_range_end():
+    """Audit 2026-11-13: "오후 6시 30분 ~ 8시" ended at 08:00; the end takes the start's 오후."""
+    assert extract_times("오후 6시 30분 ~ 8시") == ["18:30", "20:00"]
+    assert extract_time_ranges("오후 6시 30분 ~ 8시") == [("18:30", "20:00")]
+    assert extract_time_ranges("일시: 11월 11일(수) 16:30~17:30, W13") == [("16:30", "17:30")]
+    assert extract_times("12시 ~ 1시") == ["12:00", "13:00"]
+    assert extract_time_ranges("오전 11시 ~ 오후 1시") == [("11:00", "13:00")]
+    assert extract_time_ranges("2시부터 4시까지") == [("02:00", "04:00")]
+    # A 24-hour end is taken as written, and two separate times are not a range.
+    assert extract_time_ranges("22:00~01:00") == [("22:00", "01:00")]
+    assert extract_time_ranges("12:00 점심, 오후 3시 간식") == []
+    assert extract_times("1:30 pm") == ["01:30", "13:30"]
 
 
 def test_rule_facts_positive_fixture():

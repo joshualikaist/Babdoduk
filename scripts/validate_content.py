@@ -603,6 +603,22 @@ def _norm_title(title: str) -> str:
     return re.sub(r"[^\w가-힣]+", "", (title or "").lower())
 
 
+def _gg_last(ev: dict, start: datetime | None, end: datetime | None) -> datetime | None:
+    """When a listing is last on: endAt, else the last session's end or start, else startAt.
+
+    A multi-day event without endAt is current until its last session (audit 2026-11-13),
+    as on the page, which lists every session as its own day (js/ggongbab-select.js)."""
+    if end is not None:
+        return end
+    sessions = ev.get("sessions")
+    if isinstance(sessions, list) and sessions and isinstance(sessions[-1], dict):
+        item = sessions[-1]
+        last = _iso(item.get("endAt")) if item.get("endAt") else _iso(item.get("startAt"))
+        if last is not None and start is not None and last > start:
+            return last
+    return start
+
+
 def validate_ggongbab(path: Path, now: datetime | None = None) -> list[str]:
     try:
         data = load(path)
@@ -663,7 +679,7 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
             errors.append(f"{tag} endAt not ISO")
         if start and end and end < start:
             errors.append(f"{tag} endAt before startAt")
-        last = end or start
+        last = _gg_last(ev, start, end)
         if last and last + timedelta(hours=6) < now:
             errors.append(f"{tag} expired ({last.isoformat()})")
         for label, value in (("startAt", start), ("endAt", end)):
@@ -784,7 +800,7 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
         for label, value in (("startAt", start), ("endAt", end)):
             if value is not None and value.utcoffset() != KST_OFFSET:
                 errors.append(f"{tag} {label} is not +09:00 (Asia/Seoul)")
-        last = end or start
+        last = _gg_last(ev, start, end)
         if last and generated:
             if last >= generated:
                 errors.append(f"{tag} had not ended at generatedAt; live listings stay in latest.json")

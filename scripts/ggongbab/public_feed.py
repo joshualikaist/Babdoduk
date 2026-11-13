@@ -8,7 +8,7 @@ from datetime import datetime
 from uuid import UUID
 
 from .config import KST
-from .exporter import PUBLIC_SOURCE_NAMES, build_payload, kst_iso
+from .exporter import PUBLIC_SOURCE_NAMES, build_payload, drop_invalid_events, kst_iso
 from .public_sanitizer import public_url
 from .source_origin import ORIGINS, instagram_post_url
 
@@ -112,6 +112,10 @@ def prepare_public_feed(repo, settings, now=None):
         generation = repo.public_feed_generation()
         now = now or datetime.now(KST)
         payload = build_payload(repo.publishable_events(), settings, now, food_only=True)
+        # One failing event is left out (counted, value-free) instead of failing every listing.
+        payload, dropped = drop_invalid_events(payload, now)
+        if dropped:
+            print(f"[warn] {dropped} event(s) failed public validation and were left out of the export")
         if validate_ggongbab_payload(payload, now):
             raise ValueError()
         links = repo.public_feed_has_links()

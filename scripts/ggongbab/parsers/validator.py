@@ -148,8 +148,17 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
         reasons.append("날짜 근거 없음")
         start = None
         end = None
+    if start and not poster_time:
+        # "16:30~17:30" with an AI start of 17:30: the start is the range's end (audit 2026-11-13).
+        hm = start.strftime("%H:%M")
+        range_ends = {e for _s, e in facts.time_ranges}
+        range_starts = {s for s, _e in facts.time_ranges}
+        if hm in range_ends and hm not in range_starts:
+            written = next(f"{s}~{e}" for s, e in facts.time_ranges if e == hm)
+            reasons.append(f"시작/종료 혼동: AI 시작 {hm} = 본문 {written} 의 종료 시각")
     if end and start and end < start:
-        end = None
+        # Kept for the reviewer instead of silently dropped (audit 2026-11-13).
+        reasons.append(f"종료가 시작보다 이름: AI {start.strftime('%H:%M')} ~ {end.strftime('%H:%M')}")
     cand.event_start = start
     cand.event_end = end
     cand.date_text = (ai.date_text or "").strip() or None

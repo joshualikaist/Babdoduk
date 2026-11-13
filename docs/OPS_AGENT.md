@@ -28,7 +28,9 @@ Lab-only, on the operations PC. Owner, 2026-10-31: "너가 받아서 확인한 �
    output: a Korean `reply`, at most three `actions` and `for_next_session`. It has no tools: it reads only what it
    is sent and changes nothing.
 5. The program sends the reply ("🤖 자동 점검"), carries out the actions it allows (below) and appends
-   the exchange to `.local/ops-agent/history.jsonl` (the latest 200).
+   the exchange to `.local/ops-agent/history.jsonl` (the latest 200). This file, `answers.jsonl` and the
+   inbox are replaced in one step through a 0600 temporary file (`ops_storage.atomic_private`, 2026-11-13),
+   so a crash never leaves a truncated file and no other user can read one while it is written.
 
 The run handles the owner's button taps first, then new messages, and repeats while more arrive. A
 second run waits on `.local/ops-agent/run.lock`.
