@@ -155,6 +155,7 @@ class EventExtraction(BaseModel):
 class RuleFacts:
     dates: list[str] = field(default_factory=list)          # ISO dates YYYY-MM-DD found in text
     times: list[str] = field(default_factory=list)          # HH:MM found in text
+    time_ranges: list[tuple[str, str]] = field(default_factory=list)  # (start, end) HH:MM written as a range
     buildings: list[str] = field(default_factory=list)      # N1, W1-3, ...
     food_evidence: list[str] = field(default_factory=list)  # explicit "provided" phrases
     food_type_hint: FoodType = "unknown"

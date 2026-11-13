@@ -197,18 +197,20 @@ def extract_dates(text: str, reference: date) -> list[str]:
     return found
 
 
-def extract_times(text: str) -> list[str]:
-    found: list[str] = []
+# Two times joined by one of these ("16:30~17:30", "오후 6시 30분 ~ 8시", "2시부터 4시") are a range.
+_RANGE_SEP = re.compile(r"\s*(?:~|〜|∼|～|-|–|—|부터|to)\s*", re.I)
 
-    def add(h: int, mi: int) -> None:
-        if 0 <= h <= 23 and 0 <= mi <= 59:
-            val = f"{h:02d}:{mi:02d}"
-            if val not in found:
-                found.append(val)
 
+def _time_mentions(text: str) -> list[tuple[int, int, int, int, str]]:
+    """Every time in the text as (position, hour, minute, kind order, kind), in reading order.
+
+    kind is "hm" (24-hour 16:30), "ko" (오후 3시), "ko_bare" (3시, no 오전/오후) or "en" (7pm).
+    "kind order" keeps the historical output order of extract_times: all hh:mm first, then Korean, then English.
+    """
+    mentions: list[tuple[int, int, int, int, str]] = []
     for m in _HM.finditer(text):
-        add(int(m.group(1)), int(m.group(2)))
-    stripped = _HM.sub(" ", text)
+        mentions.append((m.start(), m.end(), int(m.group(1)), int(m.group(2)), "hm"))
+    stripped = _HM.sub(lambda m: " " * len(m.group(0)), text)   # same length, so positions still line up
     for m in _KO_HOUR.finditer(stripped):
         prefix, hour_s, minute_s, half = m.groups()
         hour = int(hour_s)
@@ -221,7 +223,7 @@ def extract_times(text: str) -> list[str]:
             hour += 12
         elif prefix in ("새벽", "아침", "오전") and hour == 12:
             hour = 0
-        add(hour % 24, minute)
+        mentions.append((m.start(2) if not prefix else m.start(), m.end(), hour % 24, minute, "ko" if prefix else "ko_bare"))
     for m in _EN_HOUR.finditer(text):
         hour = int(m.group(1))
         minute = int(m.group(2) or 0)
@@ -230,8 +232,51 @@ def extract_times(text: str) -> list[str]:
             hour += 12
         if ampm == "am" and hour == 12:
             hour = 0
-        add(hour, minute)
+        mentions.append((m.start(), m.end(), hour, minute, "en"))
+    return mentions
+
+
+def _with_ranges(text: str) -> tuple[list[tuple[int, int, int, int, str]], list[tuple[str, str]]]:
+    """The mentions, with a bare Korean range end read in the start's half of the day, and the ranges.
+
+    "오후 6시 30분 ~ 8시" ends at 20:00, not 08:00: an end without 오전/오후 that would come before the
+    start is moved twelve hours when that puts it after the start (audit 2026-11-13).
+    """
+    mentions = _time_mentions(text)
+    ordered = sorted(range(len(mentions)), key=lambda i: (mentions[i][0], -mentions[i][1]))
+    ranges: list[tuple[str, str]] = []
+    previous: Optional[int] = None
+    for index in ordered:
+        start_pos, end_pos, hour, minute, kind = mentions[index]
+        if previous is not None and mentions[previous][1] <= start_pos:
+            p_start, p_end, p_hour, p_minute, _p_kind = mentions[previous]
+            if _RANGE_SEP.fullmatch(text[p_end:start_pos]):
+                if kind == "ko_bare" and hour < 12 and (hour, minute) < (p_hour, p_minute) \
+                        and (hour + 12, minute) >= (p_hour, p_minute):
+                    hour += 12
+                    mentions[index] = (start_pos, end_pos, hour, minute, kind)
+                if 0 <= hour <= 23 and 0 <= p_hour <= 23:
+                    ranges.append((f"{p_hour:02d}:{p_minute:02d}", f"{hour:02d}:{minute:02d}"))
+        if previous is None or mentions[previous][1] <= start_pos:
+            previous = index
+    return mentions, ranges
+
+
+def extract_times(text: str) -> list[str]:
+    found: list[str] = []
+    mentions, _ranges = _with_ranges(text)
+    order = {"hm": 0, "ko": 1, "ko_bare": 1, "en": 2}
+    for _start, _end, hour, minute, _kind in sorted(mentions, key=lambda m: order[m[4]]):
+        if 0 <= hour <= 23 and 0 <= minute <= 59:
+            val = f"{hour:02d}:{minute:02d}"
+            if val not in found:
+                found.append(val)
     return found
+
+
+def extract_time_ranges(text: str) -> list[tuple[str, str]]:
+    """("HH:MM", "HH:MM") for every "start ~ end" written in the text, in reading order."""
+    return _with_ranges(text)[1]
 
 
 def extract_buildings(text: str) -> list[str]:
@@ -338,6 +383,7 @@ def analyze(text: str, reference: Optional[datetime] = None) -> RuleFacts:
     facts = RuleFacts(
         dates=extract_dates(text, ref),
         times=extract_times(text),
+        time_ranges=extract_time_ranges(text),
         buildings=extract_buildings(text),
         food_evidence=evidence,
         food_type_hint=food_type_hint(" ".join(evidence)) if evidence else "unknown",

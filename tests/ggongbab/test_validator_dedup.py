@@ -90,6 +90,46 @@ def test_validator_drops_hallucinated_url_and_flags_rule_conflict():
     assert "rule_conflict" in fallback_reasons(ai, facts, POSITIVE_TEXT, 0.75)
 
 
+RANGE_TEXT = "2026 뇌인지과학과 학과설명회\n일시: 2026년 11월 11일(수) 16:30~17:30\n장소: W13 컨퍼런스룸\n참석자에게 식사를 제공합니다."
+
+
+def _range_extraction(start, end):
+    return make_extraction(event_start=start, event_end=end, building="W13", room=None, time_text="16:30~17:30",
+                           evidence=Evidence(event_time="2026년 11월 11일(수) 16:30~17:30", location="W13 컨퍼런스룸",
+                                             food="참석자에게 식사를 제공합니다", registration=None))
+
+
+def test_validator_flags_a_start_that_is_the_range_end():
+    """Audit 2026-11-13: an AI start of 17:30 for "16:30~17:30" passed because 17:30 is in the text."""
+    facts = analyze(RANGE_TEXT, REFERENCE)
+    wrong = validate(_range_extraction("2026-11-11T17:30:00+09:00", None), facts, RANGE_TEXT, reference=REFERENCE)
+    assert wrong.needs_review and any("시작/종료 혼동" in r for r in wrong.review_reasons)
+    right = validate(_range_extraction("2026-11-11T16:30:00+09:00", "2026-11-11T17:30:00+09:00"), facts, RANGE_TEXT,
+                     reference=REFERENCE)
+    assert not right.needs_review, right.review_reasons
+    assert right.event_end.strftime("%H:%M") == "17:30"
+
+
+def test_validator_keeps_an_end_before_the_start_for_review():
+    """Audit 2026-11-13: an end before the start was dropped silently; it is now a review reason."""
+    facts = analyze(RANGE_TEXT, REFERENCE)
+    cand = validate(_range_extraction("2026-11-11T16:30:00+09:00", "2026-11-11T15:30:00+09:00"), facts, RANGE_TEXT,
+                    reference=REFERENCE)
+    assert cand.needs_review and any("종료가 시작보다 이름" in r for r in cand.review_reasons)
+    assert cand.event_end is not None and cand.event_end.strftime("%H:%M") == "15:30"
+
+
+def test_validator_reads_a_bare_range_end_in_the_afternoon():
+    text = "11월 20일(목) 오후 6시 30분 ~ 8시 N1 102호 간담회. 저녁 도시락을 제공합니다."
+    facts = analyze(text, REFERENCE)
+    assert facts.times == ["18:30", "20:00"]
+    morning = make_extraction(event_start="2026-11-20T08:00:00+09:00", event_end=None,
+                              evidence=Evidence(event_time="11월 20일(목) 오후 6시 30분 ~ 8시", location="N1",
+                                                food="저녁 도시락을 제공합니다", registration=None))
+    cand = validate(morning, facts, text, reference=REFERENCE)
+    assert cand.needs_review and any("시간 충돌" in r for r in cand.review_reasons)
+
+
 def test_validator_not_event_passthrough():
     facts = analyze("이번 주 학식 메뉴 안내", REFERENCE)
     cand = validate(make_extraction(is_event=False, title=None), facts, "이번 주 학식 메뉴 안내")
