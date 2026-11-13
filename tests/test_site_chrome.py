@@ -15,12 +15,19 @@ def test_every_page_carries_the_shared_nav_and_footer():
     assert result.returncode == 0, result.stdout[-3000:]
 
 
+def copy_stamped_files(tmp_path):
+    """What the sync reads besides the pages: the scripts and stylesheets it stamps."""
+    for folder in ("js", "css"):
+        shutil.copytree(ROOT / folder, tmp_path / folder, dirs_exist_ok=True, ignore=shutil.ignore_patterns("vendor"))
+
+
 def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     shutil.copytree(ROOT / "shared", tmp_path / "shared")
     shutil.copytree(ROOT / "i18n", tmp_path / "i18n")
     for page in list(chrome.PAGES) + list(chrome.LABEL_BLOCKS) + list(chrome.CONTENT_SCRIPTS) + ["data/content/labels.json"]:
         (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / page, tmp_path / page)
+    copy_stamped_files(tmp_path)
     monkeypatch.setattr(chrome, "ROOT", tmp_path)
     monkeypatch.setattr(chrome, "SHARED", tmp_path / "shared")
     monkeypatch.setattr(chrome, "LABELS", tmp_path / "data/content/labels.json")
@@ -52,6 +59,49 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     assert chrome.main(["--check"]) == 1
     assert "event.html" in capsys.readouterr().out
     assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0  # rewriting restores the shared copy
+
+
+def test_a_changed_file_gets_a_new_address(tmp_path, monkeypatch, capsys):
+    """The stamps follow the files, through the module imports; a stale one fails --check."""
+    shutil.copytree(ROOT / "shared", tmp_path / "shared")
+    shutil.copytree(ROOT / "i18n", tmp_path / "i18n")
+    for page in list(chrome.PAGES) + list(chrome.LABEL_BLOCKS) + list(chrome.CONTENT_SCRIPTS) + ["data/content/labels.json"]:
+        (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(ROOT / page, tmp_path / page)
+    copy_stamped_files(tmp_path)
+    for name, value in (("ROOT", tmp_path), ("SHARED", tmp_path / "shared"), ("I18N", tmp_path / "i18n"),
+                        ("LABELS", tmp_path / "data/content/labels.json")):
+        monkeypatch.setattr(chrome, name, value)
+    assert chrome.main(["--check"]) == 0
+
+    def stamp_of(path):
+        return chrome.stamp((tmp_path / path).read_bytes())
+
+    def read(path):
+        return (tmp_path / path).read_text(encoding="utf-8")
+
+    # A stylesheet: every page that links it moves to the new address.
+    old = stamp_of("css/site.css")
+    with open(tmp_path / "css/site.css", "a", encoding="utf-8") as css:
+        css.write("\n/* changed */\n")
+    assert chrome.main(["--check"]) == 1 and "site chrome drift" in capsys.readouterr().out
+    assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0
+    new = stamp_of("css/site.css")
+    assert new != old
+    for page in chrome.PAGES:
+        assert f'href="css/site.css?v={new}"' in read(page) and f"css/site.css?v={old}" not in read(page), page
+    # A module two imports deep: its importer, that one's importer and the home page all move.
+    before = {path: stamp_of(path) for path in ("js/campus-map.js", "js/home-map.js")}
+    with open(tmp_path / "js/campus-place.js", "a", encoding="utf-8") as js:
+        js.write("\n// changed\n")
+    assert chrome.main(["--check"]) == 1
+    assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0
+    assert f"'./campus-place.js?v={stamp_of('js/campus-place.js')}'" in read("js/campus-map.js")
+    assert f"'./campus-map.js?v={stamp_of('js/campus-map.js')}'" in read("js/home-map.js")
+    assert f'src="js/home-map.js?v={stamp_of("js/home-map.js")}"' in read("index.html")
+    assert all(stamp_of(path) != stamp for path, stamp in before.items())
+    # A page script loaded by name (event.html's world cup) carries its stamp too.
+    assert f"'js/worldcup.js?v={stamp_of('js/worldcup.js')}'" in read("event.html")
 
 
 def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
@@ -195,6 +245,8 @@ def test_a_tree_without_the_lab_only_feed_still_syncs(tmp_path, monkeypatch):
     for page in list(chrome.PAGES) + ["js/eat-slot.js", *chrome.CONTENT_SCRIPTS, "data/content/labels.json"]:
         (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / page, tmp_path / page)
+    copy_stamped_files(tmp_path)
+    (tmp_path / "js/ggongbab-public-feed.js").unlink(missing_ok=True)        # as on main
     for name, value in (("ROOT", tmp_path), ("SHARED", tmp_path / "shared"), ("I18N", tmp_path / "i18n"),
                         ("LABELS", tmp_path / "data/content/labels.json")):
         if hasattr(chrome, name):

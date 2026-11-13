@@ -1,5 +1,6 @@
 """UI-only regressions; no live service requests."""
 from check_site_ui import ROOT, public_pages, run_checks
+from sync_site_chrome import unstamped
 
 
 def test_public_page_inventory_and_shared_styles():
@@ -8,7 +9,7 @@ def test_public_page_inventory_and_shared_styles():
                           "ggongbab.html", "lab-ggongbab.html", "event.html", "lab.html", "worldcup.html", "tip.html",
                           "cardnews.html", "bobyak.html", "my.html", "privacy.html"}
     for name in pages:
-        html = (ROOT / name).read_text(encoding="utf-8")
+        html = unstamped((ROOT / name).read_text(encoding="utf-8"))
         assert 'href="css/site.css"' in html
         # Shared chrome is owned by css/site.css; page copies drift silently.
         inline = "".join(part.split("</style>")[0] for part in html.split("<style>")[1:])

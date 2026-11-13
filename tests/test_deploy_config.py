@@ -5,9 +5,12 @@ experiments stay in git on both branches, and vercel.json answers 404 for them o
 but babdoduk-lab.vercel.app. .vercelignore keeps everything that is not a site resource out of
 both deployments.
 """
+import hashlib
 import json
 import re
 from pathlib import Path
+
+import sync_site_chrome as chrome
 
 ROOT = Path(__file__).resolve().parents[1]
 LAB_HOST = "babdoduk-lab.vercel.app"
@@ -120,3 +123,40 @@ def test_the_license_reserves_every_right_and_robots_refuses_ai_crawlers_and_the
     for bot in ("GPTBot", "ClaudeBot", "CCBot", "Google-Extended", "PerplexityBot", "Bytespider"):
         assert rules[bot] == [("disallow", "/")], bot
     assert rules["*"] == [("disallow", "/data/")]
+
+
+# --- content stamps (docs/DEPLOYMENT_AND_BRANCHES.md) ------------------------------------------------------
+def deployed_text():
+    """Every page and script the site serves (vendor libraries aside)."""
+    return {path.relative_to(ROOT).as_posix(): path.read_text(encoding="utf-8")
+            for path in sorted(ROOT.glob("*.html")) + sorted((ROOT / "js").glob("*.js"))}
+
+
+STAMPED_REF = re.compile(r"""["']((?:\./)?(?:js|css)/[A-Za-z0-9_./-]+?\.(?:js|css))(\?v=[0-9a-f]+)?["']""")
+
+
+def test_every_local_script_and_stylesheet_is_addressed_by_its_content():
+    """Each local script and stylesheet reference carries ?v=<10 hex of the file's sha256>, so a changed
+    file gets a new address (browsers may keep /js/ and /css/ for long)."""
+    checked = 0
+    for name, text in deployed_text().items():
+        refs = [(m.group(1), m.group(2)) for m in STAMPED_REF.finditer(text)]
+        if name.startswith("js/"):          # modules import their neighbours as ./<file>.js
+            refs += [("js/" + m.group(1)[2:], m.group(2)) for m in
+                     re.finditer(r"""(?:\bfrom\s*|\bimport\s*\(\s*)["'](\./[A-Za-z0-9_.-]+\.js)(\?v=[0-9a-f]+)?["']""", text)
+                     if not m.group(1).startswith("./vendor/")]
+        for path, version in refs:
+            path = path.removeprefix("./")
+            if path.startswith("js/vendor/"):
+                continue                    # versioned by its folder
+            file = ROOT / path
+            if not file.exists() and path in chrome.LAB_ONLY_SCRIPTS:
+                continue
+            assert version == "?v=" + hashlib.sha256(file.read_bytes()).hexdigest()[:10], (name, path, version)
+            checked += 1
+    assert checked > 60
+    # The calendar function reads its files from disk, by plain path; the service worker keeps its address.
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    for name in re.findall(r"js/[a-z-]+\.js", config["functions"]["api/cal.js"]["includeFiles"]):
+        assert (ROOT / name).is_file(), name
+    assert "register('/sw.js'" in (ROOT / "js/ggongbab-push.js").read_text(encoding="utf-8")

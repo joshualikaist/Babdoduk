@@ -25,11 +25,17 @@ The authored page content (data/content/events.json and history.json, rendered b
 scripts/page_content.py) is written into the marked blocks of event.html and history.html
 (CONTENT_BLOCKS): the rows between `<!-- @content:<name> -->` and `<!-- @end content -->`, and
 their translations between `// @content:<name>:<lang>` and `// @end content`.
+
+Every local script and stylesheet a page loads is stamped with its content (js/site.js?v=<10 hex of
+sha256>), and so are the relative imports between our modules (js/home-map.js -> ./campus-map.js ->
+./campus-place.js), so a changed file gets a new address and browsers may keep the old one for long.
+A stale stamp is drift, like a stale nav (docs/DEPLOYMENT_AND_BRANCHES.md).
 """
 from __future__ import annotations
 
 import argparse
 import difflib
+import hashlib
 import json
 import re
 import sys
@@ -308,17 +314,95 @@ def render_strings(page: str) -> list[str]:
     return rows
 
 
+# ---- content stamps (docs/DEPLOYMENT_AND_BRANCHES.md "Caching") ---------------------------------------
+# Every local script and stylesheet a page or module loads is addressed as <path>?v=<first 10 hex of the
+# file's sha256>, so vercel.json may let browsers keep /js/* and /css/* for a year: a changed file gets a
+# new address. js/vendor/ is versioned by its folder name (three-0.186.1) and is not stamped.
+STAMP_HEX = 10
+# In a page: a quoted js/ or css/ path (a <script src>, a <link href>, or a path a page script loads
+# itself, like event.html's world cup), with or without an old stamp.
+PAGE_REF = re.compile(r"""(["'])((?:js|css)/(?!vendor/)[A-Za-z0-9_./-]+?\.(?:js|css))(?:\?v=[0-9a-f]*)?\1""")
+# In a module under js/: a relative import of another of our modules, static or dynamic.
+MODULE_REF = re.compile(r"""(\bfrom\s*|\bimport\s*\(\s*)(["'])(\./(?!vendor/)[A-Za-z0-9_.-]+\.js)(?:\?v=[0-9a-f]*)?\2""")
+
+
+STAMPED = re.compile(r"\?v=[0-9a-f]{%d}(?=[\"'])" % STAMP_HEX)
+
+
+def unstamped(text: str) -> str:
+    """The text without its content stamps, for checks that compare the paths a page loads."""
+    return STAMPED.sub("", text)
+
+
+def stamp(content: bytes) -> str:
+    return hashlib.sha256(content).hexdigest()[:STAMP_HEX]
+
+
+def file_bytes(path: str, rendered: dict[str, str]) -> bytes | None:
+    """The file as it will be deployed: its rendered text when this sync writes it, else what is on disk."""
+    if path in rendered:
+        return rendered[path].encode("utf-8")
+    file = ROOT / path
+    return file.read_bytes() if file.is_file() else None
+
+
+def stamp_page(page: str, text: str, rendered: dict[str, str]) -> str:
+    def replace(match):
+        content = file_bytes(match.group(2), rendered)
+        if content is None:
+            if match.group(2) in LAB_ONLY_SCRIPTS:      # a lab-only script this tree (main) lacks
+                return match.group(0)
+            raise SystemExit(f"{page}: loads {match.group(2)}, which does not exist")
+        return f"{match.group(1)}{match.group(2)}?v={stamp(content)}{match.group(1)}"
+    return PAGE_REF.sub(replace, text)
+
+
+def stamp_module(path: str, text: str, rendered: dict[str, str]) -> str:
+    def replace(match):
+        target = (Path(path).parent / match.group(3)).as_posix()
+        content = file_bytes(target, rendered)
+        if content is None:
+            raise SystemExit(f"{path}: imports {match.group(3)}, which does not exist")
+        return f"{match.group(1)}{match.group(2)}{match.group(3)}?v={stamp(content)}{match.group(2)}"
+    return MODULE_REF.sub(replace, text)
+
+
+def rendered_scripts() -> dict[str, str]:
+    """Every script this sync writes: the label and content blocks, then the stamps of the modules'
+    imports, repeated until stable so that a module's own stamp covers the stamps of what it imports."""
+    out = {path: synced_script(path) for path in LABEL_BLOCKS}
+    out.update({path: synced_content_script(path) for path in CONTENT_SCRIPTS})
+    modules = [path for path in (f"js/{file.name}" for file in sorted((ROOT / "js").glob("*.js")))
+               if MODULE_REF.search(out.get(path) or (ROOT / path).read_text(encoding="utf-8"))]
+    for path in modules:
+        out.setdefault(path, (ROOT / path).read_text(encoding="utf-8"))
+    for _ in range(len(modules) + 1):
+        changed = False
+        for path in modules:
+            new = stamp_module(path, out[path], out)
+            changed = changed or new != out[path]
+            out[path] = new
+        if not changed:
+            return out
+    raise SystemExit(f"the module imports do not settle (an import cycle?): {modules}")
+
+
+def rendered_files() -> dict[str, str]:
+    """Every file the sync writes, as it should be: the scripts first (their stamps go into the pages), then
+    the pages."""
+    out = rendered_scripts()
+    out.update({page: stamp_page(page, synced(page), out) for page in PAGES})
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--check", action="store_true", help="report drift instead of rewriting")
     args = parser.parse_args(argv)
     drifted = []
-    targets = ([(page, synced) for page in PAGES] + [(path, synced_script) for path in LABEL_BLOCKS]
-               + [(path, synced_content_script) for path in CONTENT_SCRIPTS])
-    for page, render_target in targets:
+    for page, expected in rendered_files().items():
         path = ROOT / page
         current = path.read_text(encoding="utf-8")
-        expected = render_target(page)
         if current == expected:
             continue
         drifted.append(page)
@@ -331,9 +415,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         if drifted:
             print(f"\nsite chrome drift in {len(drifted)} file(s): {', '.join(drifted)}. Edit shared/nav.html, "
-                  "shared/footer.html, i18n/ or data/content/, then run python scripts/sync_site_chrome.py.")
+                  "shared/footer.html, i18n/ or data/content/, then run "
+                  "python scripts/sync_site_chrome.py (it also renews the ?v= stamps).")
             return 1
-        print(f"site chrome in sync: {len(PAGES)} pages, {len(LABEL_BLOCKS) + len(CONTENT_SCRIPTS)} scripts")
+        print(f"site chrome in sync: {len(PAGES)} pages, {len(rendered_scripts())} scripts")
         return 0
     print(f"rewrote {len(drifted)} page(s)" + (f": {', '.join(drifted)}" if drifted else ""))
     return 0

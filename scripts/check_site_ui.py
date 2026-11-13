@@ -572,7 +572,7 @@ def pick_tools(browser):
         failing["on"] = fails
         recorded.clear()
         context, page = open_page(True)
-        page.route("**/js/ggongbab-public-config.js",
+        page.route("**/js/ggongbab-public-config.js*",
                    lambda route: route.fulfill(content_type="application/javascript", body=config))
         page.route("**/rest/v1/**", server)
         page.evaluate("window.__rand = 0.9")
@@ -1234,7 +1234,7 @@ def event_entry(page):
         start: visible(document.querySelector('#wcStart')) && document.querySelector('#wcStart').textContent,
         chip: visible(document.querySelector('.wc-chip')) && document.querySelector('.wc-chip').textContent.trim(),
         link: visible(link) && link.textContent.trim(), teaser: document.querySelectorAll('.event-teaser').length,
-        scripts: [...document.scripts].map(s => s.getAttribute('src')).filter(Boolean),
+        scripts: [...document.scripts].map(s => s.getAttribute('src')).filter(Boolean).map(src => src.replace(/[?]v=[0-9a-f]+$/, '')),
         slim: window.BABDODUK_WORLDCUP ? Object.keys(window.BABDODUK_WORLDCUP).sort() : null,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         text: document.body.innerText}; }"""
@@ -1356,12 +1356,12 @@ def event_entry(page):
 
     # The script not arriving leaves the link, not an empty card.
     page.clock.set_fixed_time(WC_RUNNING)
-    page.route("**/js/worldcup-entry-data.js", lambda route: route.fulfill(status=404, body=""))
+    page.route("**/js/worldcup-entry-data.js*", lambda route: route.fulfill(status=404, body=""))
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     snap = page.evaluate(SNAP)
     check(not snap["embed"] or not snap["intro"], "a failed load shows no half-built start screen")
     check(snap["link"] == "페이지 보기 →", ("a failed load falls back to the link", snap["link"]))
-    page.unroute("**/js/worldcup-entry-data.js")
+    page.unroute("**/js/worldcup-entry-data.js*")
     return count
 
 
@@ -1384,7 +1384,7 @@ def gate_preview(page):
         return False
     window["previewFrom"] = GATE_PREVIEW
     body = re.sub(r"window\.BABDODUK_WC_WINDOW = \{.*\};", lambda m: "window.BABDODUK_WC_WINDOW = " + json.dumps(window) + ";", source)
-    page.route("**/js/worldcup-gate.js", lambda route: route.fulfill(content_type="application/javascript", body=body))
+    page.route("**/js/worldcup-gate.js*", lambda route: route.fulfill(content_type="application/javascript", body=body))
     return True
 
 
@@ -1592,7 +1592,7 @@ def worldcup_gate(page):
     shot = snap("babdoduk-lab.vercel.app", "worldcup.html", WC_ENDED)
     check(shot["ended"] and shot["start"], ("lab after the end", shot))
     if synthetic:
-        page.unroute("**/js/worldcup-gate.js")
+        page.unroute("**/js/worldcup-gate.js*")
     source = (ROOT / "js/worldcup-gate.js").read_text(encoding="utf-8")
     check(source.count("'babdoduk-lab.vercel.app'") == 1 and "location.hostname" in source, "the gate names the lab host once")
     return count
@@ -1707,7 +1707,7 @@ def worldcup_boundaries(page):
     for phase, now in (("live", WC_EVE_SECOND), ("live", WC_OPENS), ("live", WC_LAST_SECOND), ("ended", WC_ENDED)):
         surfaces("babdoduk-lab.vercel.app", now, phase)
     if synthetic:
-        page.unroute("**/js/worldcup-gate.js")
+        page.unroute("**/js/worldcup-gate.js*")
     return count
 
 
@@ -1815,7 +1815,7 @@ def home_wc_promo(page):
         check(shot["shown"] and bool(shot["live"]) == early and bool(shot["soon"]) == (not early)
               and shot["states"] == (["지금 진행 중 · 10/23까지"] if early else ["10/16 오픈!"]), (host, shot))
     if synthetic:
-        page.unroute("**/js/worldcup-gate.js")
+        page.unroute("**/js/worldcup-gate.js*")
     return count
 
 
@@ -2494,7 +2494,7 @@ def worldcup_stats(page):
 
     config = ("window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABASE_URL:'https://site-ui.invalid',"
               "SUPABASE_PUBLISHABLE_KEY:'sb_publishable_SYNTHETIC'});")
-    page.route("**/js/ggongbab-public-config.js",
+    page.route("**/js/ggongbab-public-config.js*",
                lambda route: route.fulfill(content_type="application/javascript", body=config))
     page.route("**/rest/v1/**", server)
     page.set_viewport_size({"width": 390, "height": 844})
@@ -2552,7 +2552,7 @@ def worldcup_stats(page):
         page.keyboard.press("Enter")
     check(page.locator("#wcResult").is_visible() and len(recorded) == 2, "a failing server never stops the game")
     page.unroute("**/rest/v1/**")
-    page.unroute("**/js/ggongbab-public-config.js")
+    page.unroute("**/js/ggongbab-public-config.js*")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     return count
 
@@ -2702,7 +2702,7 @@ def tip_board(browser):
     page.clock.set_fixed_time(TIP_NOW)
     config = ("window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABASE_URL:'https://site-ui.invalid',"
               "SUPABASE_PUBLISHABLE_KEY:'sb_publishable_SYNTHETIC'});")
-    page.route("**/js/ggongbab-public-config.js",
+    page.route("**/js/ggongbab-public-config.js*",
                lambda route: route.fulfill(content_type="application/javascript", body=config))
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/tip.html", wait_until="networkidle")

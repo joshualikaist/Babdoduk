@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import page_content
+from sync_site_chrome import unstamped
 
 ROOT = Path(__file__).resolve().parents[1]
 CUP = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
@@ -48,7 +49,7 @@ def test_an_activity_page_link_must_be_a_page_of_this_site(tmp_path):
 
 
 def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
-    html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
+    html = unstamped((ROOT / "worldcup.html").read_text(encoding="utf-8"))
     assert re.findall(r'<script\s+src="([^"]+)"', html) == ["js/site.js", "js/ggongbab-public-config.js", "js/worldcup-gate.js", "js/worldcup.js"]
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     assert set(re.findall(r"getJson\('([^']+)'\)", script)) == {"data/foods/catalog.json"}
@@ -394,7 +395,7 @@ def test_the_start_gacha_plays_on_a_start_only_and_never_with_reduced_motion():
 
 # ---- the start screen in the news page's card (owner, 2026-10-14) ------------------------------------
 def event_page():
-    return (ROOT / "event.html").read_text(encoding="utf-8")
+    return unstamped((ROOT / "event.html").read_text(encoding="utf-8"))
 
 
 def test_the_event_card_shows_the_start_screen_instead_of_a_teaser_and_a_button():
@@ -473,7 +474,7 @@ def test_the_entry_markup_and_the_chip_have_one_source():
     css = (ROOT / "css/worldcup-entry.css").read_text(encoding="utf-8")
     assert ".wc-chip {" in css and ".wc-tile {" in css and ".wc-tile {" not in (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
     for page in ("worldcup.html", "event.html"):
-        assert 'href="css/worldcup-entry.css"' in (ROOT / page).read_text(encoding="utf-8")
+        assert 'href="css/worldcup-entry.css"' in unstamped((ROOT / page).read_text(encoding="utf-8"))
 
 
 def test_an_entry_must_belong_to_the_world_cup_page(tmp_path):
@@ -555,7 +556,7 @@ def test_a_preview_date_needs_an_entry_and_is_not_after_the_start(tmp_path):
 def test_every_page_that_shows_the_world_cup_loads_the_gate_before_its_own_script():
     for name, own in (("worldcup.html", '<script src="js/worldcup.js">'), ("event.html", "var rows = [].slice"),
                       ("index.html", '<script src="js/home.js">')):
-        html = (ROOT / name).read_text(encoding="utf-8")
+        html = unstamped((ROOT / name).read_text(encoding="utf-8"))
         assert html.count('<script src="js/worldcup-gate.js"></script>') == 1, name
         tag = html.index('<script src="js/worldcup-gate.js">')
         assert tag < html.index(own), name

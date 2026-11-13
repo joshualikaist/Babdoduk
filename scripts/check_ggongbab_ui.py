@@ -70,7 +70,7 @@ def offline_fonts(browser):
 
 
 def neutralize_public_config(context):
-    context.route("**/js/ggongbab-public-config.js", lambda route: route.fulfill(
+    context.route("**/js/ggongbab-public-config.js*", lambda route: route.fulfill(
         content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG))
 
 

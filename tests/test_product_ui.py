@@ -9,6 +9,7 @@ from playwright.sync_api import sync_playwright
 import check_ggongbab_ui
 from check_ggongbab_ui import FIXTURE_CLOCK_SCRIPT, RADAR_NOW, one_today_payload
 from check_site_ui import ROOT
+from sync_site_chrome import unstamped
 
 KST = timezone(timedelta(hours=9))
 
@@ -69,7 +70,7 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     renderer, with a browser config that holds no secret key. The home summary stays static there
     too, and the renderer itself never talks to a database.
     """
-    html = (ROOT / name).read_text(encoding="utf-8")
+    html = unstamped((ROOT / name).read_text(encoding="utf-8"))
     scripts = re.findall(r'<script\s+src="([^"]+)"', html)
     renderer = "js/home.js" if name == "index.html" else "js/ggongbab.js"
     assert scripts.index("js/ggongbab-select.js") < scripts.index(renderer)
@@ -233,7 +234,7 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
         page = (ROOT / name).read_text(encoding="utf-8")
         assert 'id="pickApp"' not in page and "js/pick.js" not in page and 'id="eatApp"' not in page, name
     assert not (ROOT / "js/food-picker.js").exists()
-    choose = (ROOT / "choose.html").read_text(encoding="utf-8")
+    choose = unstamped((ROOT / "choose.html").read_text(encoding="utf-8"))
     assert "noindex" not in choose and "location.replace" not in choose and choose.count('id="pickApp"') == 1
     assert choose.count('<script src="js/pick.js"></script>') == 1 and "eat-slot.js" not in choose
     assert choose.count('<button type="button" class="pick-go" id="pickGo">') == 1 and 'class="pk-gacha"' in choose
@@ -251,7 +252,7 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
 
 
 def test_home_is_one_hero_and_nothing_below_it():
-    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    html = unstamped((ROOT / "index.html").read_text(encoding="utf-8"))
     top = html[html.index("<main"):html.index("</main>")]
     assert top.count("<h1") == 1
     assert re.findall(r'<a class="btn btn-(?:primary|secondary)" href="([^"]+)"', top) == ["ggongbab.html", "choose.html"]
