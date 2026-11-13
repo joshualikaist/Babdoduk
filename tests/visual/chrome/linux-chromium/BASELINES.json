@@ -1,7 +1,7 @@
 {
-  "approval": "Owner approved deployed lab and baseline replacement in chat (승인할게), 2026-11-05 KST; lab 56e2c2c; CI run 42026466354; 33 footer/footer-context images changed, nav unchanged.",
+  "approval": "Owner approved 2026-11-12 (release question: 새 메뉴 모양 기준 사진 '승인'): nav with 마이 밥도둑 in 더보기, footer of three links, shortened footer copy, person icon. 50 renders from ui-guardian run 43234335718 (lab cf9da08); the other 10 unchanged from the previous approved set.",
   "platform": "linux-chromium",
-  "source": "adopted from approved-ci-42026466354",
+  "source": "adopted from ci-renders",
   "images": 60,
   "fixed_now": "2026-09-28T10:00:00+09:00",
   "sizes": [

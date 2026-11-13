@@ -403,7 +403,7 @@ def wait_rpc(page, rpcs, n):
 def test_the_public_key_is_set_or_the_feature_stays_hidden():
     assert PUSH_KEY == "" or re.fullmatch(r"B[A-Za-z0-9_-]{86}", PUSH_KEY)
     hosts = re.search(r"var HOSTS = \[([^\]]*)\];", PUSH_JS).group(1)
-    assert re.findall(r"'([^']+)'", hosts) == ["babdoduk-lab.vercel.app"], "lab only until promoted"
+    assert re.findall(r"'([^']+)'", hosts) == ["babdoduk-lab.vercel.app", "www.babdodukms.com", "babdodukms.com", "babdoduk.vercel.app"]
     assert "sb_secret_" not in PUSH_JS and "service_role" not in PUSH_JS
 
 
@@ -481,7 +481,7 @@ def test_iphone_safari_points_to_the_home_screen_and_other_hosts_show_nothing(br
     page.locator('.gg-card[data-id="wed"] .gg-save').click()
     assert page.locator("#pushAsk").count() == 0, "Safari gets the calendar question as before"
     context.close()
-    context, page, errors, rpcs = open_site(browser, host="www.babdodukms.com", storage=saved)
+    context, page, errors, rpcs = open_site(browser, host="preview.babdoduk.invalid", storage=saved)
     page.locator(".gg-saved-body").wait_for()
     assert page.locator("[data-gg-push]").count() == 0 and "홈 화면" not in page.locator(".gg-saved-body").inner_text()
     page.locator('.gg-card[data-id="wed"] .gg-save').click()

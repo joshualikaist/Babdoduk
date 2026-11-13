@@ -1,10 +1,10 @@
-# 별 누른 꽁밥 30분 전 알림 (lab)
+# 별 누른 꽁밥 30분 전 알림
 
 Owner 2026-11-12: a starred 꽁밥 should alert the phone 30 minutes before, without a file to download, for
 people who add the site to their home screen ("오케이 너무 좋다 그러면"). The calendar subscription
 (`docs/CALENDAR_FEED.md`) was step 1; this web push alert is step 2.
 
-**Status:** lab only (`HOSTS` in `js/ggongbab-push.js`). Three things must be in place, in this order:
+**Status:** on lab and, since 2026-11-12 (owner), production (`HOSTS` in `js/ggongbab-push.js`). Migration 014 is applied, the key pair exists and the timer runs. Three things had to be in place, in this order:
 
 1. The owner applies `supabase/migrations/014_push_alerts.sql` in the Supabase SQL editor.
 2. The owner runs `bash ~/Babdoduk-ops/scripts/push/setup.sh` once on the ops computer. It makes the push key

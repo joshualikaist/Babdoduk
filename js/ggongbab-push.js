@@ -15,7 +15,8 @@
 
   // The public half of the push key pair (scripts/push/keygen.js prints it). Public by design.
   var VAPID_PUBLIC_KEY = 'BEfX71XgdO8TANAExCRNO-a4XUUTlSnN3TwuOOvUxepyCwajiYW-1JUoobGNies2RRsRBjUTvNj1H4IoDEtQc38';
-  var HOSTS = ['babdoduk-lab.vercel.app'];
+  // Production since owner 2026-11-12 ("30분 전 알림 … 켜기"); the server accepts these sites only (014).
+  var HOSTS = ['babdoduk-lab.vercel.app', 'www.babdodukms.com', 'babdodukms.com', 'babdoduk.vercel.app'];
   var EVENT_ID = /^[A-Za-z0-9_-]{1,80}(#[0-9]{1,2})?$/;
   var SYNC_KEY = 'babdoduk-push-synced';   // what was last sent, so an unchanged list is not sent again
   var ASKED_KEY = 'babdoduk-push-asked';   // the one-time question after a star was answered
