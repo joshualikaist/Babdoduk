@@ -96,7 +96,7 @@ global.fetch = async (url, options) => {
 };
 const calls = [];
 const res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, end(body) { this.body = body; } };
-cal({ url: '/api/cal?t=' + data.token, headers: { host: 'babdoduk-lab.vercel.app' } }, res).then(() => {
+cal({ url: '/api/cal?t=' + data.token, headers: data.headers || { host: 'babdoduk-lab.vercel.app' } }, res).then(() => {
   console.log(JSON.stringify({ status: res.statusCode, headers: res.headers, body: res.body, calls }));
 });
 """
@@ -109,10 +109,10 @@ def feed_event(eid, start, title):
             "publication": {"public": True}}
 
 
-def run(saved, feed, token=TOKEN, rpc_ok=True):
+def run(saved, feed, token=TOKEN, rpc_ok=True, headers=None):
     if not shutil.which("node"):
         pytest.skip("node is not installed")
-    args = json.dumps({"saved": saved, "feed": feed, "token": token, "rpcOk": rpc_ok})
+    args = json.dumps({"saved": saved, "feed": feed, "token": token, "rpcOk": rpc_ok, "headers": headers})
     out = subprocess.run(["node", "-e", RUN, str(ROOT / "api/cal.js"), args], capture_output=True, text=True, timeout=30)
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)
@@ -199,3 +199,29 @@ def test_a_star_whose_listing_was_withdrawn_before_it_happened_leaves_the_calend
     every = [live["id"], archived["id"], "withdrawn", "lastweek"]
     assert entry_ids(saved, feed, None, now) == every
     assert entry_ids(saved, None, archive, now) == every
+
+
+def test_the_feed_is_read_only_from_our_own_sites_whatever_the_request_names():
+    # security audit 2026-11-13: x-forwarded-host / host never choose where the server fetches from.
+    from tests.test_ggongbab_live import LIVE
+    saved = [{"event_id": LIVE["events"][0]["id"], "saved_at": "2026-11-08T00:00:00Z", "seen": {}}]
+    for headers, origin in (({"host": "evil.example", "x-forwarded-host": "evil.example"}, "https://www.babdodukms.com"),
+                            ({"host": "babdoduk-lab.vercel.app", "x-forwarded-host": "169.254.169.254"}, "https://www.babdodukms.com"),
+                            ({"host": "x", "x-forwarded-host": "babdoduk-git-branch.vercel.app"}, "https://www.babdodukms.com"),
+                            ({"host": "x", "x-forwarded-host": "babdoduk.vercel.app.evil.example"}, "https://www.babdodukms.com"),
+                            ({}, "https://www.babdodukms.com"),
+                            ({"x-forwarded-host": "BabdodukMS.com"}, "https://babdodukms.com"),
+                            ({"host": "babdoduk.vercel.app"}, "https://babdoduk.vercel.app"),
+                            ({"host": "babdoduk-lab.vercel.app"}, "https://babdoduk-lab.vercel.app")):
+        out = run(saved, LIVE, headers=headers)
+        assert out["status"] == 200, headers
+        fetched = [c[0] for c in out["calls"] if "rpc" not in c[0]]
+        assert fetched == [origin + "/data/ggongbab/latest.json", origin + "/data/ggongbab/archive/index.json"], headers
+        links = set(re.findall(r"https://[^/\s]+/ggongbab\.html", out["body"].replace("\r\n ", "")))
+        assert links == {origin + "/ggongbab.html"}, headers
+
+
+def test_an_empty_list_fetches_no_feed():
+    out = run([], {"events": []})
+    assert out["status"] == 200 and out["body"].count("BEGIN:VEVENT") == 0
+    assert [c[0] for c in out["calls"] if "rpc" not in c[0]] == []

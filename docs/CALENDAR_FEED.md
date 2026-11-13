@@ -27,6 +27,7 @@ Calendar's add page instead of an .ics download for guests.
 |---|---|
 | Private address | `/cal/<token>.ics`, a 43-character random token per account (`my_calendar_feed()`, signed-in only). `my_calendar_feed(true)` replaces it and the old address stops; the card no longer offers this (owner 2026-11-12), so a leaked address is replaced on request. |
 | Calendar file | `api/cal.js` (Vercel function, routed by `vercel.json`). It reads the token's list with the anon function `calendar_feed_events(token)` and the site's publishable key, then writes each entry with the site's own calendar code (`js/ggongbab-live.js` `icsText`, 30-minute alarm). Times and places come from the current published feed (`data/ggongbab/latest.json`, then the archive), else from the snapshot saved with the star. A deadline-only giveaway has no time and is left out. |
+| Fixed origins | The feed is read from, and the entries link to, one of our own sites only: `www.babdodukms.com`, `babdodukms.com`, `babdoduk.vercel.app` or `babdoduk-lab.vercel.app`, whichever the request came to. Any other host (a preview address, or a forged `x-forwarded-host`) gets `https://www.babdodukms.com`, so a request can never make the function fetch from an address it names (security audit 2026-11-13). An empty list (or an unknown token) fetches no feed at all. |
 | Privacy | The table `calendar_feeds` is closed to browsers. The file holds what the person saved (titles, times, places), never a name, email or account id. Anyone with the address can read that list; the address is long and random and appears only in the iPhone's calendar settings. Responses are `private, no-store` and `noindex`. |
 
 ## Limits
@@ -41,5 +42,5 @@ Calendar's add page instead of an .ics download for guests.
 
 `tests/test_calendar_feed.py`: the migration read statically and, with `pgserver` and `psycopg`, applied to
 a throwaway PostgreSQL (tokens, other users, a new address, account deletion); `api/cal.js` run under Node
-with fetch replaced. `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, and the
+with fetch replaced (including forged hosts and an empty list). `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, and the
 card hidden while the function is missing.
