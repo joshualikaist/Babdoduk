@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "\"단맛은 빼고 식이섬유는 더하고\"… 식품업계 '저당 2라운드'",
-    "summary": "식품업계가 당 함량을 낮추고 단백질과 식이섬유를 강화한 신제품을 잇달아 선보이고 있다.",
     "source": "노컷뉴스",
-    "sourceId": "web-exa-habit",
-    "candidateId": "c_decaccf3b550e358",
     "url": "https://www.nocutnews.co.kr/news/6606299",
     "medium": "news",
-    "discoveredAt": "2026-11-13T16:46:02+09:00",
-    "publishedAt": "2026-11-13T06:00:00+09:00",
     "image": "https://file2.nocutnews.co.kr/newsroom/image/2026/11/12/202611122346452272_0.jpg",
+    "category": "trend",
+    "publishedAt": "2026-11-13T06:00:00+09:00",
+    "discoveredAt": "2026-11-13T16:46:02+09:00",
+    "sourceId": "web-exa-habit",
+    "candidateId": "c_decaccf3b550e358",
     "imageSource": "source_page_og",
+    "summary": "식품업계가 당 함량을 낮추고 단백질과 식이섬유를 강화한 신제품을 잇달아 선보이고 있다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "sales_data"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "잘하는 것에 집중한다... 편의점 4사, 특화 상품으로 매출 승부",
-          "summary": "편의점 업계가 각 사의 강점을 살린 특화 상품을 앞세워 매출 확대에 나서고 있다.",
           "source": "인사이트",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_dc86e12dec2e54de",
           "url": "https://web.insight.co.kr/news/580729",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-05T19:51:00+09:00",
           "image": "https://img.insight.co.kr/static/2026/11/05/1200/img_20261105100136_7596492n.jpg",
+          "publishedAt": "2026-11-05T19:51:00+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_dc86e12dec2e54de",
           "imageSource": "source_page_og",
+          "summary": "편의점 업계가 각 사의 강점을 살린 특화 상품을 앞세워 매출 확대에 나서고 있다.",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -45,56 +45,56 @@
         },
         {
           "title": "“식사 후에는 반드시 움직여라”…혈당 낮추고 췌장 기능 돕는 가벼운 운동",
-          "summary": "식사 후에 앉아 있지 말고 단 몇 분만이라도 신체 활동을 하면 혈당을 낮추는 데 큰 도움이 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_aab7b689ce934207",
           "url": "https://kormedi.com/2904669/",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
           "publishedAt": "2026-11-13T09:15:00+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_aab7b689ce934207",
+          "summary": "식사 후에 앉아 있지 말고 단 몇 분만이라도 신체 활동을 하면 혈당을 낮추는 데 큰 도움이 된다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“전자레인지보다 높다고?”⋯전자파 높은 생활제품 3가지 / ‘위고비 실패’ 신동, 마운자로로 25kg 뺐다⋯무슨 차이길래? / 젠슨 황도 흔들린 '혼외관계'… 바람피우는 사람, 배우자를 사랑하지 않을까?",
-          "summary": "“37세 아들이 집에만 있어”… 뒤치다꺼리하는 엄마의 심정은?",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_a16e7d3d16ce1f3f",
           "url": "https://kormedi.com/2904323/",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
           "publishedAt": "2026-11-13T06:00:00+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a16e7d3d16ce1f3f",
+          "summary": "“37세 아들이 집에만 있어”… 뒤치다꺼리하는 엄마의 심정은?",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "\"혈당 스파이크는 노화와 피로의 주범\"…내과 교수가 전하는 혈당 관리법",
-          "summary": "김성은 인턴 기자 = 혈당은 단순히 먹은 음식에 따라 결정되는 수치가 아니라 운동과 수면, 스트레스 등 평소 생활습관이 반영된 결과인 만큼 일상에서 혈당을 관리하는 습관을 만들어야 한다는 전문가의 조언이 나왔다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_f303418c087f8038",
           "url": "https://www.newsis.com/view/NISX20261112_0003865960",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
           "publishedAt": "2026-11-12T18:00:00+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_f303418c087f8038",
+          "summary": "김성은 인턴 기자 = 혈당은 단순히 먹은 음식에 따라 결정되는 수치가 아니라 운동과 수면, 스트레스 등 평소 생활습관이 반영된 결과인 만큼 일상에서 혈당을 관리하는 습관을 만들어야 한다는 전문가의 조언이 나왔다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“맥주 5000cc씩 마셨다” 장도연이 끊은 ‘혼술 습관’… 도수 낮아도 방심하면 위험",
-          "summary": "퇴근 후 시원한 맥주 한 잔으로 하루의 피로를 달래는 사람이 많다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_48d8a8c7bca1543a",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/12/2026111201317.html",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
           "publishedAt": "2026-11-12T17:15:00+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_48d8a8c7bca1543a",
+          "summary": "퇴근 후 시원한 맥주 한 잔으로 하루의 피로를 달래는 사람이 많다.",
           "trendEvidence": [
             "corroborated"
           ]
@@ -106,60 +106,60 @@
       "items": [
         {
           "title": "감자고추장찌개 황금레시피｜된장 반술과 으깬 감자로 국물 진하게 끓이는 법",
-          "summary": "쌀쌀한 날씨에는 얼큰하고 구수한 감자고추장찌개가 생각납니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_34f6378cc43fa05d",
           "url": "https://cultureagora.tistory.com/425",
           "medium": "blog",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T07:00:34+09:00",
           "image": "https://blog.kakaocdn.net/dn/wtRRT/dJMcajqIzas/USWy0w60In8L26jUDXMP90/tfile.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-13T07:00:34+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_34f6378cc43fa05d",
+          "imageSource": "feed_html",
+          "summary": "쌀쌀한 날씨에는 얼큰하고 구수한 감자고추장찌개가 생각납니다."
         },
         {
           "title": "신상출시 편스토랑 이연복 셰프 사천짜장라면 고추기름 만드는 법",
-          "summary": "345회 신상출시 편스토랑에서 이연복 셰프는 짜장라면을 활용해 집에서도 쉽고 간편하게 맛집 짜장면 만드는 법을 공개했는데요.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_bb08f026ebc401e6",
           "url": "https://seon1982.tistory.com/4155",
           "medium": "blog",
+          "publishedAt": "2026-11-13T00:00:08+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T00:00:08+09:00"
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_bb08f026ebc401e6",
+          "summary": "345회 신상출시 편스토랑에서 이연복 셰프는 짜장라면을 활용해 집에서도 쉽고 간편하게 맛집 짜장면 만드는 법을 공개했는데요."
         },
         {
           "title": "아들이 먹고 싶다던 재첩국과 담백한 대패삼겹살찜",
-          "summary": "아들이 먹고 싶다던 재첩국과 담백한 대패삼겹살찜 아들이 재첩국이 먹고 싶다고 하니 며느리는 재첩국을 먹어본 기억이 없다고 합니다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_38e23a8b886eaff0",
           "url": "https://heysukim114.tistory.com/entry/%EC%9E%AC%EC%B2%A9%EA%B5%AD%EA%B3%BC-%EB%8C%80%ED%8C%A8%EC%82%BC%EA%B2%B9%EC%82%B4%EC%B0%9C",
           "medium": "blog",
+          "publishedAt": "2026-11-13T00:00:51+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T00:00:51+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_38e23a8b886eaff0",
+          "summary": "아들이 먹고 싶다던 재첩국과 담백한 대패삼겹살찜 아들이 재첩국이 먹고 싶다고 하니 며느리는 재첩국을 먹어본 기억이 없다고 합니다."
         },
         {
           "title": "닭가슴살 간장조림 덮밥 만들기 다이어트 닭가슴살 요리 레시피",
-          "summary": "닭가슴살을 간장 조림으로 넉넉하게 만들어 냉장고에 미리 만들어 두면 다이어트 식을 빠르고 편하게 만들어 먹기 편합니다.그렇다 보니 허기지면 손이 쉽게 가는 간편식으로 라면, 빵, 떡의 유혹에서 조금은 벗을 날 수…",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_38a77b3c422d00d0",
           "url": "https://twins0807.tistory.com/entry/%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4-%EA%B0%84%EC%9E%A5%EC%A1%B0%EB%A6%BC-%EB%8D%AE%EB%B0%A5-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%8B%A4%EC%9D%B4%EC%96%B4%ED%8A%B8-%EB%8B%AD%EA%B0%80%EC%8A%B4%EC%82%B4-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-09-22T19:46:51+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-09-22T19:46:51+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_38a77b3c422d00d0",
+          "summary": "닭가슴살을 간장 조림으로 넉넉하게 만들어 냉장고에 미리 만들어 두면 다이어트 식을 빠르고 편하게 만들어 먹기 편합니다.그렇다 보니 허기지면 손이 쉽게 가는 간편식으로 라면, 빵, 떡의 유혹에서 조금은 벗을 날 수…"
         },
         {
           "title": "냉동 물만두의 변신, 새콤달콤 비빔만두 만드는 법(feat. 주방 꿀템)",
-          "summary": "냉동실에 잠자고 있는 물만두와 냉장고 속 양배추를 활용해 매콤달콤하고 아삭한 비빔만두를 뚝딱 만들었어요.",
           "source": "달순생활",
-          "sourceId": "blog-dalsoonlife",
-          "candidateId": "c_555a86f757bef2a8",
           "url": "https://dalsoonlife.tistory.com/231",
           "medium": "blog",
+          "publishedAt": "2026-09-15T14:57:16+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-09-15T14:57:16+09:00"
+          "sourceId": "blog-dalsoonlife",
+          "candidateId": "c_555a86f757bef2a8",
+          "summary": "냉동실에 잠자고 있는 물만두와 냉장고 속 양배추를 활용해 매콤달콤하고 아삭한 비빔만두를 뚝딱 만들었어요."
         }
       ]
     },
@@ -168,60 +168,60 @@
       "items": [
         {
           "title": "“단백질이 많다더니 왜 살이 찌지?”… 나트륨 함량 살펴야 할 식품 4가지",
-          "summary": "참치캔은 제품에 따라 나트륨 함량이 달라, 단백질 함량과 함께 실제 먹는 양을 기준으로 영양정보를 확인하는 것이 좋다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_bfe4f1c92b1c7d90",
           "url": "https://kormedi.com/2901135/",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T14:00:34+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/11/938373738393.jpg",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-11-13T14:00:34+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_bfe4f1c92b1c7d90",
+          "imageSource": "feed_media",
+          "summary": "참치캔은 제품에 따라 나트륨 함량이 달라, 단백질 함량과 함께 실제 먹는 양을 기준으로 영양정보를 확인하는 것이 좋다."
         },
         {
           "title": "“의외의 다이어트 식품”… 단백질 풍부한 오징어, ‘이렇게’ 먹어라",
-          "summary": "흔히 다이어트 식품 하면 닭가슴살을 떠올리지만, 오징어도 뒤지지 않는다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_88b1e4d2a7d888f7",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/12/2026111203351.html",
           "medium": "news",
+          "publishedAt": "2026-11-13T05:00:00+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T05:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_88b1e4d2a7d888f7",
+          "summary": "흔히 다이어트 식품 하면 닭가슴살을 떠올리지만, 오징어도 뒤지지 않는다."
         },
         {
           "title": "“당뇨병 위험 11% 줄었다”… 6개월간 땅콩 먹으니 벌어진 일",
-          "summary": "땅콩 섭취가 당뇨병 발병 위험을 낮춘다는 연구 결과가 나왔다.스페인 바르셀로나대·독일 포츠담-레브뤼케 인간영양연구소 연구팀이 18~33세 건강한 성인 63명을 대상으로 땅콩 섭취가 혈중 지질 구성에 미치는 영향을…",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_7a5e0c956979352b",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/13/2026111301269.html",
           "medium": "news",
+          "publishedAt": "2026-11-13T13:00:00+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T13:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_7a5e0c956979352b",
+          "summary": "땅콩 섭취가 당뇨병 발병 위험을 낮춘다는 연구 결과가 나왔다.스페인 바르셀로나대·독일 포츠담-레브뤼케 인간영양연구소 연구팀이 18~33세 건강한 성인 63명을 대상으로 땅콩 섭취가 혈중 지질 구성에 미치는 영향을…"
         },
         {
           "title": "‘이 빵’ 하나로 아침 해결했더니?…혈당 ‘쑥’ 오르고 배도 금방 꺼졌다, 왜?",
-          "summary": "날씨가 쌀쌀해지면 따뜻한 찐빵(호빵)이 생각난다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_b78681b4818ed206",
           "url": "https://kormedi.com/2903167/",
           "medium": "news",
+          "publishedAt": "2026-11-11T23:02:00+09:00",
           "discoveredAt": "2026-11-12T17:10:03+09:00",
-          "publishedAt": "2026-11-11T23:02:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_b78681b4818ed206",
+          "summary": "날씨가 쌀쌀해지면 따뜻한 찐빵(호빵)이 생각난다."
         },
         {
           "title": "“콩 식품, 혈당 조절 및 당뇨병 위험 감소에 도움” 최신 연구 주목",
-          "summary": "매년 11월 14일은 국제당뇨병연맹(IDF)과 세계보건기구(WHO)가 제정한 ‘세계 당뇨병의 날’이다.",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_18f6ad67932c7ed3",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36198",
           "medium": "news",
+          "publishedAt": "2026-11-13T18:41:43+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T18:41:43+09:00"
+          "sourceId": "news-foodicon",
+          "candidateId": "c_18f6ad67932c7ed3",
+          "summary": "매년 11월 14일은 국제당뇨병연맹(IDF)과 세계보건기구(WHO)가 제정한 ‘세계 당뇨병의 날’이다."
         }
       ]
     },
@@ -230,62 +230,62 @@
       "items": [
         {
           "title": "편의점·햄버거 브랜드, 카페까지 ‘아침밥 시장’ 경쟁 치열",
-          "summary": "직장인과 학생들의 아침밥 시장을 잡기 위해 외식·유통업계의 경쟁이 불붙고 있다.",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_c198c6b3c459aeb6",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68789",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T02:50:00+09:00",
           "image": "http://www.foodbank.co.kr/news/thumbnail/202611/68789_30514_2910_v150.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-11-13T02:50:00+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_c198c6b3c459aeb6",
+          "imageSource": "source_page_og",
+          "summary": "직장인과 학생들의 아침밥 시장을 잡기 위해 외식·유통업계의 경쟁이 불붙고 있다."
         },
         {
           "title": "일본 편의점 건강빵, 저당질 넘어 단백질·식감 경쟁으로",
-          "summary": "일본 편의점의 건강빵 시장이 저당질 중심에서 단백질·식이섬유 보충과 식사 대용으로 확대되고 있다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_e17cfc5877f401d9",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201600",
           "medium": "news",
-          "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T10:40:39+09:00",
           "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201600_202253_2128.jpg",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-13T10:40:39+09:00",
+          "discoveredAt": "2026-11-13T16:46:02+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_e17cfc5877f401d9",
+          "imageSource": "feed_html",
+          "summary": "일본 편의점의 건강빵 시장이 저당질 중심에서 단백질·식이섬유 보충과 식사 대용으로 확대되고 있다."
         },
         {
           "title": "‘세계 당뇨병의 날’ 맞아 주목받는 콩…“이소플라본 섭취 시 발병 위험 20% 감소”",
-          "summary": "14일 ‘세계 당뇨병의 날’을 맞아 일상 식단 속 콩과 콩 유래 성분이 혈당을 안정적으로 조절하고 제2형 당뇨병 발병 위험을 낮추는 데 실질적인 도움을 준다는 최신 해외 연구 결과들이 주목받고 있다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_bc5f665f93b6c936",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201636",
           "medium": "news",
+          "publishedAt": "2026-11-13T10:17:58+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T10:17:58+09:00"
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_bc5f665f93b6c936",
+          "summary": "14일 ‘세계 당뇨병의 날’을 맞아 일상 식단 속 콩과 콩 유래 성분이 혈당을 안정적으로 조절하고 제2형 당뇨병 발병 위험을 낮추는 데 실질적인 도움을 준다는 최신 해외 연구 결과들이 주목받고 있다."
         },
         {
           "title": "“제발 공복에 먹지 마세요”… 혈당 오르고 살쪄, 전문가들이 경고한 음식",
-          "summary": "사진=클립아트코리아 다이어트 중에도 달콤한 초콜릿이나 과자가 유독 당기는 순간이 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_701ffdc9a886afe9",
           "url": "https://kormedi.com/2904583/",
           "medium": "news",
+          "publishedAt": "2026-11-12T23:42:45+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-12T23:42:45+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_701ffdc9a886afe9",
+          "summary": "사진=클립아트코리아 다이어트 중에도 달콤한 초콜릿이나 과자가 유독 당기는 순간이 있다."
         },
         {
           "title": "“보충할 영양소 있다”… ‘자꾸 깨지는 손톱’ 해결법 7가지",
-          "summary": "손톱을 길게 기르고 싶지만 조금만 자라도 쉽게 부러지거나 갈라져 고민하는 사람이 많다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_4ebfd67b1bda09ee",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/13/2026111301416.html",
           "medium": "news",
+          "publishedAt": "2026-11-13T14:00:00+09:00",
           "discoveredAt": "2026-11-13T16:46:02+09:00",
-          "publishedAt": "2026-11-13T14:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_4ebfd67b1bda09ee",
+          "summary": "손톱을 길게 기르고 싶지만 조금만 자라도 쉽게 부러지거나 갈라져 고민하는 사람이 많다."
         }
       ]
     }

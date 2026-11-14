@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-14",
+  "generatedAt": "2026-11-14T16:31:08+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "신상출시 편스토랑 이연복 셰프 초간단 원팬 칠리새우 만드는 법",
+    "summary": "345회 신상출시 편스토랑에서 이연복 셰프는 칠리새우를 튀기지 않고 간편하게 끓여서 만드는 법을 공개했는데요.",
+    "source": "알고 보면 (방송 레시피)",
+    "sourceId": "blog-seon1982",
+    "candidateId": "c_b47e677b35507357",
+    "url": "https://seon1982.tistory.com/4156",
+    "medium": "blog",
+    "discoveredAt": "2026-11-14T16:31:08+09:00",
+    "publishedAt": "2026-11-14T00:00:46+09:00",
+    "image": "https://blog.kakaocdn.net/dn/comXy5/dJMcaggA6j7/cvlKQUgvzSDMKqP3rftE51/img.png",
+    "imageSource": "feed_html",
+    "category": "tips",
+    "heroKind": "pick"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "세븐일레븐, 한 손에 먹는 간편식 확대…김초밥 40만개 팔렸다",
+          "summary": "치킨텐더그랩·불고기 마끼·계란 1입 등 신상품 출시식사·간식 경계 허물어져…휴대성 높인 상품 강화▲세븐일레븐 매장에서 한 모델이 소용량 간편식",
+          "source": "이투데이",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_b7253a0d3b985d09",
+          "url": "https://www.etoday.co.kr/news/view/2645360",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-08T09:11:00+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        },
+        {
+          "title": "중년 엄마와 딸이 고기, 두부 먹었더니…몸에 어떤 변화가?",
+          "summary": "육류와 두부는 철분이 많아 빈혈 예방에 좋다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_249e3af2796341d3",
+          "url": "https://kormedi.com/2905474/",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T14:01:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "넥슨, 26일 '템빨'·'아주르 프로밀리아' 동시 출시…연말·내년 새 먹거리 키운다",
+          "summary": "'메이플스토리'와 'FC 온라인'에 힘입어 3분기 매출과 영업이익이 두 자릿수로 늘어난 넥슨이 연말부터 새로운 수익원 확보에 나선다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_0e119f87e8720e6a",
+          "url": "https://www.newsis.com/view/NISX20261113_0003867019",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T11:00:00+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        },
+        {
+          "title": "“마운자로 맞았는데도 안 빠져”…비만약 효과 못 보는 3가지 이유",
+          "summary": "남은 음식을 버리지 않고 먹는 습관은 비만약의 약효를 떨어트리는 원인이 될 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1f10be7bc0e17e67",
+          "url": "https://kormedi.com/2904780/",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T09:05:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "유한양행 \"만성신장병 신약, 임상 1상 IND 승인\"",
+          "summary": "유한양행이 만성신장병 신약에 대한 임상 1상 시험계획(IND)을 국내에서 승인받았다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_8230484b148255d4",
+          "url": "https://www.newsis.com/view/NISX20261113_0003867665",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-13T17:03:57+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "시금치 손질 데치기 무침 시금치나물 무침 요리 레시피",
+          "summary": "텃밭에 씨를 뿌려 놓은 시금치가 많이 자랐습니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_44e613d8f9c61b4f",
+          "url": "https://twins0807.tistory.com/entry/%EC%8B%9C%EA%B8%88%EC%B9%98-%EC%86%90%EC%A7%88-%EB%8D%B0%EC%B9%98%EA%B8%B0-%EB%AC%B4%EC%B9%A8-%EC%8B%9C%EA%B8%88%EC%B9%98%EB%82%98%EB%AC%BC-%EB%AC%B4%EC%B9%A8-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-13T18:23:37+09:00",
+          "image": "https://blog.kakaocdn.net/dn/l7zKW/dJMcafWsGMZ/tpXazwcFsD95YX7A9HPiCk/img.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "들기름 묵은지볶음 만들기 씻은 묵은지 요리 레시피",
+          "summary": "묵은지가 한 통하고도 반 통이나 더 남아 있어 걱정을 했더니 애들 아빠가 묵은지를 씻어 볶아 먹자라고 하는데 저는 힘들게 만든 김치 양념을 씻어 내는 게 너무 아까워 뭘 씻어~~ 하면서 늘 김치 볶음으로 해줬는데…",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_82971ea4a22cccb7",
+          "url": "https://twins0807.tistory.com/entry/%EB%93%A4%EA%B8%B0%EB%A6%84-%EB%AC%B5%EC%9D%80%EC%A7%80%EB%B3%B6%EC%9D%8C-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%94%BB%EC%9D%80-%EB%AC%B5%EC%9D%80%EC%A7%80-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T10:24:52+09:00"
+        },
+        {
+          "title": "크로크마담 만들기｜햄치즈 토스트에 계란을 올린 프랑스식 주말 브런치",
+          "summary": "바삭하게 구운 식빵 사이로 고소한 치즈가 녹아내리고, 그 위에 부드러운 계란프라이를 올린 크로크마담입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_a8d446139daa2288",
+          "url": "https://cultureagora.tistory.com/443",
+          "medium": "blog",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T06:00:15+09:00"
+        },
+        {
+          "title": "된장찌개와 세 가지 나물반찬 한 번에 만들기",
+          "summary": "된장찌개와 세 가지 나물반찬 한 번에 만들기 우리집 식탁에서 빠지지 않는 음식이 있습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_cf044ac9bf80ce8f",
+          "url": "https://heysukim114.tistory.com/entry/%EB%90%9C%EC%9E%A5%EA%B5%AD%EA%B3%BC-%EC%84%B8%EA%B0%80%EC%A7%80-%EB%82%98%EB%AC%BC%EC%9D%84-%ED%95%9C%EB%B2%88%EC%97%90",
+          "medium": "blog",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T00:00:49+09:00"
+        },
+        {
+          "title": "군고구마 듬뿍! 진하고 부드러운 바스크 치즈케이크 만들기 | Creamy Roasted Sweet Potato Basque Cheesecake Recipe",
+          "summary": "군고구마 층과 큼직한 고구마 조각이 들어간 진하고 부드러운 바스크 치즈케이크를 만들었어요.",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_15a0082c63c371c1",
+          "url": "https://www.youtube.com/watch?v=iGhXJlN5v_o",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-13T20:00:36+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "1인 가구 1000만 시대, 혼밥과 고립이 부른 ‘건강 경고등’ [박민선의 건강톡톡]",
+          "summary": "고혈압으로 정기적으로 병원을 찾던 72세 여성의 중성지방 수치가 평소보다 30% 높아지고, 기억력과 체력 저하, 우울감 등의 증상이 나타났다.",
+          "source": "시사저널",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_7fe1986ab5cf4332",
+          "url": "https://www.sisajournal.com/news/articleView.html?idxno=393551",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T09:00:00+09:00",
+          "image": "https://cdn.sisajournal.com/news/thumbnail/202611/393551_403144_5917_v150.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“삼시세끼 꼬박 먹고도 18kg 뺐다”… 20대 여성, 대신 ‘4가지 음식’ 끊었다는데",
+          "summary": "체중 감량을 위해 무작정 음식 섭취량을 줄여서는 안 된다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_1c85a0292f4782d1",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/11/2026111102975.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T00:01:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/11/2026111102973_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "채소는 무조건 다이어트 식품?…잘못 먹으면 살찌우는 뜻밖의 채소",
+          "summary": "감자는 전분 함량이 높아 너무 많이 섭취하면 다이어트를 방해할 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_8fdef6fed3803bcb",
+          "url": "https://kormedi.com/2905426/",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T09:15:00+09:00"
+        },
+        {
+          "title": "“가지가 혈압에 좋다고?”… 가지의 놀라운 건강 효능 4가지",
+          "summary": "가지는 토마토, 고추와 같은 가지과 채소로, 수분이 90% 이상을 차지해 생가지 100g의 열량이 20kcal 안팎에 그친다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_a9d2cf8b5efce110",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=69902",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T16:00:00+09:00"
+        },
+        {
+          "title": "“감자와 컵 준비하세요”… 바삭 포슬 ‘건강 간식’ 뚝딱 완성입니다",
+          "summary": "감자는 칼륨, 비타민C, 식이섬유 등 영양이 풍부한 식품이다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_527a2bab3e983b90",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/13/2026111301979.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T05:00:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "아침 공복 '레몬즙·애사비'…\"다이어트 효과 없고 위장장애만 유발해\"",
+          "summary": "이준형 인턴 기자 = 내장지방 감량을 위해 공복에 레몬즙이나 애플 사이다 비니거(애사비)를 마시거나 시리얼, 과일 주스 등으로 아침을 때우는 행위가 오히려 건강을 해치고 체중 감량에 역효과를 낼 수 있다는 진단이…",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_62bc18c341498872",
+          "url": "https://www.newsis.com/view/NISX20261113_0003867259",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-14T00:10:00+09:00"
+        },
+        {
+          "title": "“대장암 예방하려면 ‘이 음식’ 많이 드세요”…대장암 예방에 좋은 식습관 6가지",
+          "summary": "통곡물과 채소 등 식이섬유 섭취를 늘리면 대장암 예방에 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_10e521ecea4c64c2",
+          "url": "https://kormedi.com/2904407/",
+          "medium": "news",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-13T22:05:00+09:00"
+        },
+        {
+          "title": "암 환자, 심혈관질환 위험 낮추려면 지켜야 할 ‘식사 공식’",
+          "summary": "건강한 식습관을 준수하면 암 생존자들의 심혈관질환 발생 및 사망 위험이 감소한다는 연구 결과가 나왔다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_42d177a7e295b856",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/02/2026110200971.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-02T16:33:43+09:00",
+          "publishedAt": "2026-11-02T10:30:34+09:00"
+        }
+      ]
+    }
+  }
+}
