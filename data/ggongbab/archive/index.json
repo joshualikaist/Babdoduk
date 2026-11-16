@@ -1,10 +1,126 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-13T02:42:40+09:00",
+  "generatedAt": "2026-11-17T03:24:26+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 34,
+  "count": 35,
   "events": [
+    {
+      "id": "2b13d94c-bd5b-47a2-80c0-bf1250a2dc8f",
+      "title": "2026 산업디자인학과 학과설명회",
+      "summary": "산업디자인학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 추첨이 진행됩니다.",
+      "startAt": "2026-11-16T17:30:00+09:00",
+      "endAt": "2026-11-16T19:00:00+09:00",
+      "dateText": "2026년 11월 16일(월)",
+      "timeText": "17:30~19:00",
+      "location": {
+        "name": "디지털인문사회과학부동",
+        "building": "N4",
+        "room": "시청각실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "산업디자인학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "41b597af-7551-4468-b72f-80d953bb23c3",
+      "title": "2026 바이오및뇌공학과 학과설명회",
+      "summary": "바이오및뇌공학과 학과설명회가 진행되며, 사전 신청자에 한해 설명회 후 교수님·선배님들과의 저녁 식사가 제공됩니다. 참가자 경품 추첨이 있습니다.",
+      "startAt": "2026-11-16T17:00:00+09:00",
+      "endAt": "2026-11-16T18:00:00+09:00",
+      "dateText": "2026년 11월 16일(월)",
+      "timeText": "17:00~18:00",
+      "location": {
+        "name": "양분순 빌딩",
+        "building": "E16-1",
+        "room": "207호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "바이오및뇌공학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "743f4ca3-c005-45f0-92d4-b850fdf122c1",
+      "title": "2026 전기및전자공학부 학과설명회",
+      "summary": "전기및전자공학부 학과설명회와 김정호 교수님의 강연 및 Q&A가 진행됩니다. 참가자 전원에게 KAIST EE 우산과 버거즈 햄버거가 제공되며, 다양한 경품 추첨과 현장 퀴즈 이벤트가 있습니다.",
+      "startAt": "2026-11-16T16:30:00+09:00",
+      "endAt": "2026-11-16T18:00:00+09:00",
+      "dateText": "2026년 11월 16일(월)",
+      "timeText": "16:30~18:00",
+      "location": {
+        "name": "E15 대강당",
+        "building": "E15",
+        "room": "대강당"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "전기및전자공학부",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "47f87060-fce6-4cb8-af91-3a2553b5a637",
       "title": "제38대 KAIST 학부 총학생회 총선거 후보자토론회",
@@ -1132,70 +1248,6 @@
           "name": "Dooray"
         }
       ]
-    },
-    {
-      "id": "35ea43d7-f095-4541-ac2c-877c3c11c651",
-      "title": "2026 가을학기 중간고사 ME PIZZA DAY",
-      "summary": "기계공학과 전체 학부 학생을 대상으로 2026년 가을학기 중간고사 PIZZA DAY를 진행합니다. 피자와 음료 등이 제공됩니다.",
-      "startAt": "2026-10-16T18:00:00+09:00",
-      "endAt": null,
-      "dateText": "2026.10.16.(금)",
-      "timeText": "18:00~",
-      "location": {
-        "name": "기계공학동(N7) 야외 BBQ PIT",
-        "building": "N7",
-        "room": "야외 BBQ PIT"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "피자 + 음료 등",
-        "source": "text"
-      },
-      "organizer": "기계공학과행정팀",
-      "eligibility": "기계공학과 전체 학부 학생",
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "기계공학과 전체 학부 학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "3f1c34c3-a144-444f-bc56-a8734b778298",
-      "title": "KAIST 기후테크 세미나 #5",
-      "summary": "기후테크 창업가의 \"전환\" — 바이오 기술로 희토류를 회수하기까지를 주제로 하는 세미나입니다. KAIST 학생·연구원·창업팀 누구나 참여할 수 있으며, 사전 신청자에게 햄버거를 제공합니다.",
-      "startAt": "2026-10-14T13:00:00+09:00",
-      "endAt": "2026-10-14T14:00:00+09:00",
-      "dateText": "2026년 10월 14일(수)",
-      "timeText": "13:00–14:00",
-      "location": {
-        "name": "KAIST 교육지원동(W8) 1층 K-Space",
-        "building": "W8",
-        "room": "1층 K-Space"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "햄버거",
-        "source": "text"
-      },
-      "organizer": "KAIST 녹색성장지속가능대학원",
-      "eligibility": "KAIST 학생·연구원·창업팀 누구나",
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "KAIST 학생·연구원·창업팀",
-        "basis": "stated"
-      }
     }
   ]
 }
