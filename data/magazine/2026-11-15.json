@@ -5,17 +5,17 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "매운 등갈비찜 황금레시피｜잡내 없이 부드럽게 만드는 등갈비 양념 비율",
-    "summary": "매콤한 음식이 생각날 때 만들어 먹기 좋은 매운 등갈비찜이에요.",
     "source": "기록하는 인간 (요리)",
-    "sourceId": "blog-cultureagora",
-    "candidateId": "c_1b9cb3824f4653ac",
     "url": "https://cultureagora.tistory.com/429",
     "medium": "blog",
-    "discoveredAt": "2026-11-15T16:44:02+09:00",
-    "publishedAt": "2026-11-14T17:00:21+09:00",
     "image": "https://blog.kakaocdn.net/dn/dBuDmx/dJMcaatSJnb/tYmDw60qlBWkyFhCIs8Gz0/tfile.png",
-    "imageSource": "feed_html",
     "category": "tips",
+    "publishedAt": "2026-11-14T17:00:21+09:00",
+    "discoveredAt": "2026-11-15T16:44:02+09:00",
+    "sourceId": "blog-cultureagora",
+    "candidateId": "c_1b9cb3824f4653ac",
+    "imageSource": "feed_html",
+    "summary": "매콤한 음식이 생각날 때 만들어 먹기 좋은 매운 등갈비찜이에요.",
     "heroKind": "pick"
   },
   "lanes": {
@@ -24,70 +24,70 @@
       "items": [
         {
           "title": "“얼큰한 알탕 자주 먹는데?”…중년 콜레스테롤 관리엔 뜻밖의 함정, 왜?",
-          "summary": "알탕에 들어가는 명태알과 대구알은 단백질을 함유하고 있지만 콜레스테롤 함량도 높다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_2eac8ecd9cbf5393",
           "url": "https://kormedi.com/2904883/",
           "medium": "news",
-          "discoveredAt": "2026-11-15T16:44:02+09:00",
           "publishedAt": "2026-11-15T12:05:00+09:00",
+          "discoveredAt": "2026-11-15T16:44:02+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2eac8ecd9cbf5393",
+          "summary": "알탕에 들어가는 명태알과 대구알은 단백질을 함유하고 있지만 콜레스테롤 함량도 높다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“살 빼는 주사 맞고 있다면 ‘이런 음식’ 피해야”…약사가 꼽은 음식 3가지",
-          "summary": "위고비와 마운자로 등 체중감량 주사를 사용하는 사람은 식단에도 신경 써야 한다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_b5a5b17a02f6d2c5",
           "url": "https://kormedi.com/2905406/",
           "medium": "news",
-          "discoveredAt": "2026-11-15T16:44:02+09:00",
           "publishedAt": "2026-11-15T09:02:00+09:00",
+          "discoveredAt": "2026-11-15T16:44:02+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_b5a5b17a02f6d2c5",
+          "summary": "위고비와 마운자로 등 체중감량 주사를 사용하는 사람은 식단에도 신경 써야 한다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“여태 조리기만 했나요? 볶으면 식감 더 좋아요”… 제철 연근 맛있게 먹는 법",
-          "summary": "아삭한 식감의 연근은 보통 조림으로도 많이 먹지만 각종 채소와 볶는 요리법도 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_4c97cc37fb7ae9bf",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/13/2026111302224.html",
           "medium": "news",
-          "discoveredAt": "2026-11-15T16:44:02+09:00",
           "publishedAt": "2026-11-15T11:00:00+09:00",
+          "discoveredAt": "2026-11-15T16:44:02+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_4c97cc37fb7ae9bf",
+          "summary": "아삭한 식감의 연근은 보통 조림으로도 많이 먹지만 각종 채소와 볶는 요리법도 있다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "이번 주 음식 신상 11월 2주차, CU 원이 도시락부터 프리미엄 가나 한정판까지",
-          "summary": "",
           "source": "수맵로그",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_cc0e6191809db6a6",
           "url": "https://sumaplog.com/food-weekly/weekly-food-2026-w46/",
           "medium": "blog",
-          "discoveredAt": "2026-11-15T16:44:02+09:00",
           "publishedAt": "2026-11-14T18:31:25+09:00",
+          "discoveredAt": "2026-11-15T16:44:02+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cc0e6191809db6a6",
+          "summary": "",
           "trendEvidence": [
             "explicit_source_claim"
           ]
         },
         {
           "title": "\"사골국·멸치 맹신 금물\"…전문가가 꼽은 '텅 빈 뼈' 채우는 4가지 음식",
-          "summary": "이준형 인턴 기자 = 골다공증이 '소리 없는 암살자'로 불리며 노년 건강을 위협하는 가운데, 사골 국물이나 멸치를 섭취하는 것보다는 신체 상태에 맞춘 올바른 영양 보충과 낙상 사고 예방이 필수적이라는 전문가의…",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_be7e3eb7342b4497",
           "url": "https://www.newsis.com/view/NISX20261112_0003865351",
           "medium": "news",
-          "discoveredAt": "2026-11-15T16:44:02+09:00",
           "publishedAt": "2026-11-14T18:00:00+09:00",
+          "discoveredAt": "2026-11-15T16:44:02+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_be7e3eb7342b4497",
+          "summary": "이준형 인턴 기자 = 골다공증이 '소리 없는 암살자'로 불리며 노년 건강을 위협하는 가운데, 사골 국물이나 멸치를 섭취하는 것보다는 신체 상태에 맞춘 올바른 영양 보충과 낙상 사고 예방이 필수적이라는 전문가의…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -99,58 +99,58 @@
       "items": [
         {
           "title": "참치 계란말이 두툼한 계란말이 만드는 법 요리 레시피",
-          "summary": "밥 없이 다이어트 한 끼로 먹어도 되게끔 간을 심심하게 해서 참치 계란말이를 했습니다.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_32e11089758433a3",
           "url": "https://twins0807.tistory.com/entry/%EC%B0%B8%EC%B9%98-%EA%B3%84%EB%9E%80%EB%A7%90%EC%9D%B4-%EB%91%90%ED%88%BC%ED%95%9C-%EA%B3%84%EB%9E%80%EB%A7%90%EC%9D%B4-%EB%A7%8C%EB%93%9C%EB%8A%94-%EB%B2%95-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-11-14T18:05:02+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-14T18:05:02+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_32e11089758433a3",
+          "summary": "밥 없이 다이어트 한 끼로 먹어도 되게끔 간을 심심하게 해서 참치 계란말이를 했습니다."
         },
         {
           "title": "편스토랑 이연복 사천 짜장라면 레시피｜일요일엔 짜파게티, 3분 고추기름으로 맛있게 만드는 법",
-          "summary": "일요일이면 자연스럽게 생각나는 짜파게티.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_6114add7ba7947bc",
           "url": "https://cultureagora.tistory.com/458",
           "medium": "blog",
+          "publishedAt": "2026-11-15T12:25:38+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T12:25:38+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_6114add7ba7947bc",
+          "summary": "일요일이면 자연스럽게 생각나는 짜파게티."
         },
         {
           "title": "미국식 그릴드 치즈 샌드위치 만들기｜치즈 2~3가지로 만드는 바삭한 치즈 샌드위치",
-          "summary": "겉은 버터에 노릇하게 구워 바삭하고, 속은 치즈가 부드럽게 녹아내리는 미국식 그릴드 치즈 샌드위치.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_8df12e28f8392ea0",
           "url": "https://cultureagora.tistory.com/457",
           "medium": "blog",
+          "publishedAt": "2026-11-15T07:00:58+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T07:00:58+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_8df12e28f8392ea0",
+          "summary": "겉은 버터에 노릇하게 구워 바삭하고, 속은 치즈가 부드럽게 녹아내리는 미국식 그릴드 치즈 샌드위치."
         },
         {
           "title": "생고구마 계란 그릭요거트 과일 사라다 샐러드 만들기 요리 레시피",
-          "summary": "그냥 먹기보다 깍둑썰기해서 사라다를 먼저 떠 올릴까요?",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_ec5bcfe2ac3cbdf6",
           "url": "https://twins0807.tistory.com/entry/%EC%83%9D%EA%B3%A0%EA%B5%AC%EB%A7%88-%EA%B3%84%EB%9E%80-%EA%B7%B8%EB%A6%AD%EC%9A%94%EA%B1%B0%ED%8A%B8-%EA%B3%BC%EC%9D%BC-%EC%82%AC%EB%9D%BC%EB%8B%A4-%EC%83%90%EB%9F%AC%EB%93%9C-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-11-13T18:36:07+09:00",
           "discoveredAt": "2026-11-14T16:31:08+09:00",
-          "publishedAt": "2026-11-13T18:36:07+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_ec5bcfe2ac3cbdf6",
+          "summary": "그냥 먹기보다 깍둑썰기해서 사라다를 먼저 떠 올릴까요?"
         },
         {
           "title": "딸이 선물한 여유로운 하루, 광교호수공원 가을 산책",
-          "summary": "딸이 선물한 여유로운 하루, 광교호수공원 가을 산책 딸아이 아파트로 이사하고 짐을 정리하느라 집에 머물던 날이었다.",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_3d5a56398e59f31c",
           "url": "https://heysukim114.tistory.com/entry/%EA%B4%91%EA%B5%90-%ED%98%B8%EC%88%98%EA%B3%B5%EC%9B%90",
           "medium": "blog",
+          "publishedAt": "2026-11-15T00:00:19+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T00:00:19+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_3d5a56398e59f31c",
+          "summary": "딸이 선물한 여유로운 하루, 광교호수공원 가을 산책 딸아이 아파트로 이사하고 짐을 정리하느라 집에 머물던 날이었다."
         }
       ]
     },
@@ -159,60 +159,60 @@
       "items": [
         {
           "title": "“고단백 문구에 속지 마세요”… 다이어터 알아둬야 할 ‘가공식품 구매 수칙’",
-          "summary": "다이어트나 근육을 만들 때 빠지지 않고 언급되는 영양소가 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_257eab66173ada53",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/13/2026111302442.html",
           "medium": "news",
-          "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T15:30:00+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/11/13/2026111302439_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-11-15T15:30:00+09:00",
+          "discoveredAt": "2026-11-15T16:44:02+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_257eab66173ada53",
+          "imageSource": "source_page_og",
+          "summary": "다이어트나 근육을 만들 때 빠지지 않고 언급되는 영양소가 있다."
         },
         {
           "title": "“몸 20대처럼 가볍다”… 66세 미국 의사가 공개한 ‘매일 먹는 음식’",
-          "summary": "66세의 나이에도 실제보다 40년은 젊게 느껴진다는 미국 의사가 건강 관리 비결로 자신의 하루 식단을 공개했다.지난 13일(현지시간) 영국 매체 '데일리메일'에 따르면, 미국 의사이자 기능의학 전문가인 마크…",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_045c5decf49c17c2",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/13/2026111302169.html",
           "medium": "news",
+          "publishedAt": "2026-11-15T08:00:00+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T08:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_045c5decf49c17c2",
+          "summary": "66세의 나이에도 실제보다 40년은 젊게 느껴진다는 미국 의사가 건강 관리 비결로 자신의 하루 식단을 공개했다.지난 13일(현지시간) 영국 매체 '데일리메일'에 따르면, 미국 의사이자 기능의학 전문가인 마크…"
         },
         {
           "title": "\"AI 추천한 식단, 믿어도 될까\"…검증 방법 논의",
-          "summary": "인공지능(AI)을 활용한 맞춤형 영양관리 기술이 발전하는 가운데 AI가 제시하는 식단과 영양 권고를 얼마나 신뢰할 수 있는지 검증하는 문제가 새로운 과제로 떠오르고 있다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_a57fd1d9d72dcf7b",
           "url": "https://www.newsis.com/view/NISX20261113_0003867797",
           "medium": "news",
+          "publishedAt": "2026-11-15T13:01:00+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T13:01:00+09:00"
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_a57fd1d9d72dcf7b",
+          "summary": "인공지능(AI)을 활용한 맞춤형 영양관리 기술이 발전하는 가운데 AI가 제시하는 식단과 영양 권고를 얼마나 신뢰할 수 있는지 검증하는 문제가 새로운 과제로 떠오르고 있다."
         },
         {
           "title": "\"도넛보다 포화지방 많다니?\"… 건강해 보여도 주의해야 할 간식 4가지",
-          "summary": "﻿기름에 튀긴 도넛은 지방이 많은 간식으로 알려져 있다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_b16236b30d4c3d76",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=70030",
           "medium": "news",
+          "publishedAt": "2026-11-15T20:00:00+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T20:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_b16236b30d4c3d76",
+          "summary": "﻿기름에 튀긴 도넛은 지방이 많은 간식으로 알려져 있다."
         },
         {
           "title": "공복에 밥보다 견과류 먼저 먹었더니…혈당, 체중에 어떤 변화가?",
-          "summary": "견과류는 오메가3 지방산이 많아 혈액-혈관 건강, 노화 지연에도 도움이 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_05ef852f82d19e1b",
           "url": "https://kormedi.com/2905652/",
           "medium": "news",
+          "publishedAt": "2026-11-15T14:07:00+09:00",
           "discoveredAt": "2026-11-15T16:44:02+09:00",
-          "publishedAt": "2026-11-15T14:07:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_05ef852f82d19e1b",
+          "summary": "견과류는 오메가3 지방산이 많아 혈액-혈관 건강, 노화 지연에도 도움이 된다."
         }
       ]
     },
