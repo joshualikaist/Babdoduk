@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-16",
+  "generatedAt": "2026-11-16T16:51:01+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "서울우유, ‘파머스그릭’까지 저탄소 인증 원유 확대 적용…친환경 유제품 시장 선도",
+    "summary": "서울우유협동조합(조합장 문진섭)이 우유에 이어 그릭요거트 등 발효유 제품군까지 저탄소 인증 원유 적용 범위를 넓히며 친환경 유제품 시장 공략에 속도를 내고 있다.",
+    "source": "식품음료신문",
+    "sourceId": "news-thinkfood",
+    "candidateId": "c_b3036e4783ba64c7",
+    "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201646",
+    "medium": "news",
+    "discoveredAt": "2026-11-16T16:51:01+09:00",
+    "publishedAt": "2026-11-16T10:15:23+09:00",
+    "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201646_202323_1510.jpg",
+    "imageSource": "feed_html",
+    "trendEvidence": [
+      "sales_data",
+      "corroborated"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "‘가성비·한국형 메뉴로 승부’…K-커피 프랜차이즈, 아시아 영토 확장 속도",
+          "summary": "국내 커피 시장의 치열한 경쟁 속에서 합리적인 가격과 한국형 음료로 경쟁력을 다진 토종 커피 프랜차이즈들이 중국과 동남아시아 등 아시아 전역으로 영토 확장에 속도를 내고 있다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_356feb99c38f14e6",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201643",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T09:45:04+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201643_202317_4459.jpg",
+          "imageSource": "feed_html",
+          "trendEvidence": [
+            "sales_data",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "빙그레, 외국인 관광객에 바나나맛우유 양보한 시민 ‘명예 앰버서더’ 위촉",
+          "summary": "빙그레가 인천국제공항에서 외국인 관광객에게 바나나맛우유를 양보해 온라인상에서 화제를 모은 소비자를 명예 앰버서더로 위촉하고, 추가 명예 앰버서더 10인을 모집하는 ‘바나나맛우유 앰버서더를 찾습니다’ 이벤트를…",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_116b3601bca3a5f1",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201648",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T10:23:06+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201648_202325_2248.jpg",
+          "imageSource": "feed_html",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "수능 사흘 앞, 벼락치기보다 '생체시계' 유지가 중요",
+          "summary": "올해 10월 수원의 한 고등학교에서 고3 수험생이 전국연합학력평가 시험을 치르고 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_802b07ebba26b43c",
+          "url": "https://kormedi.com/2906252/",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T15:57:25+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "장이 건강해야 몸도 튼튼…장 건강 지키는 음식 9가지",
+          "summary": "유익균이 풍부한 김치는 장내 좋은 미생물의 활동을 증강시켜 소화 활동을 돕는다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_306473308c949259",
+          "url": "https://kormedi.com/2905831/",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T10:15:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        },
+        {
+          "title": "AI에 식음료 석 달 만에 다시 물었더니…신라면·참이슬 1위, 한맥 5계단 상승",
+          "summary": "생성형 AI에 식음료 브랜드를 석 달 만에 다시 물었더니 신라면과 참이슬, 락토핏은 각 분야 1위를 지켰고, 한맥은 13위에서 8위로 뛰었다.포장김치에서는 컬리의 거래액이 전년보다 늘어난 가운데 비비고와 풀무원의…",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_78c629ab9ca4a899",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36224",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T15:00:00+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "감자 계란국 끓이는 법｜아침에 좋은 부드러운 감자국 황금레시피",
+          "summary": "아침에 따뜻하고 부드러운 국물이 생각날 때 끓이기 좋은 감자 계란국입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_c62353e647b08f62",
+          "url": "https://cultureagora.tistory.com/462",
+          "medium": "blog",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T06:30:47+09:00",
+          "image": "https://blog.kakaocdn.net/dn/cdCZ3d/dJMcafhIluv/7myzuAPkNa7QRJ42eaSpp1/tfile.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "초등학생도 쌉가능 개쉬움",
+          "summary": "메추리알 소시지볶음을 만들어 보자 [재료] 깐 메추리알, 소시지, 떡볶이 양념 소스 1팩(약 3인분), 청양고추 [만드는 법] 1. 메추리알은 물기를 빼고, 소시지는 칼집을 낸다.",
+          "source": "자취요리신",
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_4197d9feb85880ec",
+          "url": "https://www.youtube.com/watch?v=V3C2Vd5Cp44",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-15T19:26:34+09:00"
+        },
+        {
+          "title": "신상출시 편스토랑 이유리 미니 팬케이크 만드는 법 (페트병 활용 초간단 브런치 레시피)",
+          "summary": "345회 신상출시 편스토랑에서 이유리는 SNS에서 유행하는 브런치로 한입 크기로 구운 팬케이크 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_1e1932e39d55fa0d",
+          "url": "https://seon1982.tistory.com/4154",
+          "medium": "blog",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T00:00:57+09:00"
+        },
+        {
+          "title": "밥 지을 때 '이것' 넣으면 밥솥 새로 살 필요없습니다.",
+          "summary": "밥 지을 때 '이것' 넣으면 밥솥 새로 살 필요없습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_5fed13fafa75d37d",
+          "url": "https://heysukim114.tistory.com/entry/%EC%8C%80-%EC%94%BB%EC%9D%84-%EB%95%8C-%EC%9D%B4%EA%B2%83-%EB%84%A3%EC%9C%BC%EB%A9%B4-%EB%B0%A5%EC%86%A5-%EC%83%88%EB%A1%9C-%EC%82%B4-%ED%95%84%EC%9A%94%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4",
+          "medium": "blog",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T00:00:08+09:00"
+        },
+        {
+          "title": "Easy Homemade Cornbread",
+          "summary": "Cornbread is a highly underrated side dish.",
+          "source": "Budget Bytes",
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_48ffe1e802512a35",
+          "url": "https://www.budgetbytes.com/everyday-cornbread/",
+          "medium": "blog",
+          "discoveredAt": "2026-11-14T16:31:08+09:00",
+          "publishedAt": "2026-11-13T23:30:00+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "영양제? 밥 먹을 때 꼭 ‘이 음식’ 추가했더니…대장, 혈관에 큰 변화가?",
+          "summary": "고기를 구워 먹을 때 상추, 양파, 마늘을 곁들이면 몸속 독성 감소에 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_10dd1e06e3cea385",
+          "url": "https://kormedi.com/2905864/",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T14:01:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/02/unnamed-file-83.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "식단 바꿨는데도 안 빠지는 살…'공복 혈당 200' 10년 차 당뇨인의 눈물",
+          "summary": "장인혜 인턴 기자 = 건강을 위해 철저하게 채소 위주의 식단으로 바꿨음에도 공복 혈당이 200㎎/dL을 넘어서고 지방간까지 진단받은 50대 여성의 사연이 공개되며 당뇨병 환자들의 올바른 혈당 관리법이 주목받고 있다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_da2e3f9a0a2af5f3",
+          "url": "https://www.newsis.com/view/NISX20261110_0003862411",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T00:00:00+09:00",
+          "image": "https://image.newsis.com/2025/10/17/NISI20251017_0001968632_web.jpg?rnd=20251017153226",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "“결혼 후 찐 살, ‘조리법’ 하나 바꾸니 빠졌다”… 14kg 감량 비결",
+          "summary": "임신 중 늘어난 체중이 출산 이후에도 줄지 않는 경우가 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_36f7b864bf5b6988",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/13/2026111301620.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T00:00:00+09:00"
+        },
+        {
+          "title": "계명대 동산병원 \"다낭콩팥병 환자 건강관리 플랫폼 구축\"",
+          "summary": "계명대학교 동산병원이 다낭콩팥병 환자의 일상 건강관리를 돕는 플랫폼 구축을 추진한다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_f687a00f944a7245",
+          "url": "https://www.newsis.com/view/NISX20261116_0003869956",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T15:01:18+09:00"
+        },
+        {
+          "title": "\"김치가 아이스크림보다 당이 많다?\"... 수치로 비교해보니",
+          "summary": "한국인이 김치로 섭취하는 당류가 하루 평균 2.30g으로 조사됐다.",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_4576bd12cac3357f",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=70023",
+          "medium": "news",
+          "discoveredAt": "2026-11-16T16:51:01+09:00",
+          "publishedAt": "2026-11-16T23:00:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": []
+    }
+  }
+}
