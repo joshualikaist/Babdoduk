@@ -1,92 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-17T03:24:26+09:00",
+  "generatedAt": "2026-11-18T04:47:30+09:00",
   "timezone": "Asia/Seoul",
-  "count": 31,
+  "count": 29,
   "events": [
-    {
-      "id": "2f507eea-eb2d-4881-8cd9-50df4fc11de9",
-      "title": "제10회 INNOVATE KOREA",
-      "summary": "헤럴드가 주최하는 제10회 INNOVATE KOREA 공연으로, 국내 뮤지컬 배우들이 출연합니다. KAIST 재학생과 교수 및 임직원은 무료 사전 티켓팅을 우선 신청할 수 있습니다.",
-      "startAt": "2026-11-17T14:00:00+09:00",
-      "endAt": "2026-11-17T18:00:00+09:00",
-      "dateText": "11월 17일",
-      "timeText": "14:00 - 18:00",
-      "location": {
-        "name": "KAIST 류근철 스포츠컴플렉스",
-        "building": "",
-        "room": ""
-      },
-      "food": {
-        "provided": "unknown",
-        "type": "unknown",
-        "description": ""
-      },
-      "organizer": "헤럴드",
-      "eligibility": "카이스트 재학생과 교수 및 임직원",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-10-18T23:59:00+09:00",
-        "url": "https://itforum.heraldcorp.com/2026/"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "아이패드 1명, 에어팟 1명"
-      },
-      "audience": {
-        "text": "카이스트 재학생과 교수 및 임직원",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "c66d6b78-f077-4534-afc8-972674114e94",
-      "title": "2026 AX학과 학과설명회",
-      "summary": "AX학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
-      "startAt": "2026-11-17T18:00:00+09:00",
-      "endAt": "2026-11-17T19:00:00+09:00",
-      "dateText": "2026년 11월 17일(화)",
-      "timeText": "18:00~19:00",
-      "location": {
-        "name": "Fusion Hall",
-        "building": "E4",
-        "room": "1층"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사",
-        "source": "text"
-      },
-      "organizer": "",
-      "eligibility": "",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.98,
-      "sources": [
-        {
-          "type": "manual",
-          "name": "Manual"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품"
-      },
-      "audience": {
-        "text": "새내기 학생",
-        "basis": "stated"
-      }
-    },
     {
       "id": "536a0459-e98b-4965-acca-b199d74f567d",
       "title": "KAIST 기후테크 세미나 #6 — 기후 위기와 촉매 기술의 역할",
