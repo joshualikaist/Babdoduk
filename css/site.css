@@ -792,23 +792,6 @@ body::after {
   word-break: keep-all;
 }
 
-.footer-contact {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-top: var(--space-2);
-}
-
-.footer-contact-a {
-  color: var(--color-ink);
-  font-weight: 700;
-}
-
-.footer-dot {
-  color: var(--color-divider);
-  margin: 0 var(--space-2);
-}
-
 .footer-email {
   margin: var(--space-3) 0 0;
   font-size: 0.75rem;
