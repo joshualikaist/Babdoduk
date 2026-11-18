@@ -1838,3 +1838,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
     transition: none;
   }
 }
+
+/* Signed in on an iPhone, the calendar choice is one line (owner 2026-11-19): the connected calendar takes the star. */
+.hc-cal-note { flex-basis: 100%; margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-ink-muted); word-break: keep-all; overflow-wrap: anywhere; }
+.hc-cal-note a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-ink); font-weight: 700; text-underline-offset: 3px; }

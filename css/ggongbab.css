@@ -205,6 +205,8 @@
 .gg-cal[hidden],.gg-more-panel[hidden],.gg-saved-body[hidden] { display:none; }
 .gg-cal-note { flex-basis:100%; margin:0; font-size:12px; line-height:18px; color:var(--color-ink-muted); }
 .gg-cal-note a { color:var(--color-accent); font-weight:700; }
+.gg-cal-linked { font-size:14px; line-height:1.6; word-break:keep-all; overflow-wrap:anywhere; }
+.gg-cal-linked a { display:inline-flex; align-items:center; min-height:44px; color:var(--color-ink); text-underline-offset:3px; }
 .gg-changes { margin:10px 0 0; padding:10px 12px; border-radius:12px; background:#fffaf0; border:1px solid #f0dcb0; }
 .gg-change { margin:0 0 6px; font-size:13px; line-height:20px; color:var(--color-ink); overflow-wrap:anywhere; }
 .gg-change-before { color:var(--color-ink-muted); text-decoration:line-through; }

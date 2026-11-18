@@ -31,7 +31,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%2C%2F0123456789ACDFJLMNOPSWabcdegilnoprstuvwy%C2%B7%EA%B8%88%EA%B8%B0%EA%B9%8C%EB%8F%84%EB%91%91%EB%93%9C%EB%A8%B9%EB%B0%A5%EB%B0%A9%EB%B3%B4%EC%84%B8%EC%98%A4%EC%9B%94%EC%9E%90%EC%A4%91%EC%A7%80%EC%A7%84%EC%BB%B5%ED%94%88%ED%95%98%ED%96%89%ED%9E%88" rel="stylesheet" />
   <!-- @end content -->
   <link rel="stylesheet" href="css/site.css?v=61206b7e58" />
-  <link rel="stylesheet" href="css/index.css?v=d4b58cefd9" />
+  <link rel="stylesheet" href="css/index.css?v=1bc3bb6583" />
 </head>
 <body class="page-home">
   <img src="images/og-babdoduk.png" alt="" width="1200" height="1200" loading="lazy" decoding="async" hidden />
@@ -272,9 +272,12 @@
         'home.cal.cell.past': '지난 꽁밥 {n}개',
         'home.cal.empty': '일정 없음',
         'home.cal.ev.apply': '신청하기',
+        'home.cal.ev.calAlready': '이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요',
+        'home.cal.ev.calConnect': '캘린더 연결 보기',
         'home.cal.ev.calFile': '캘린더 파일 (.ics)',
         'home.cal.ev.calFood': '꽁밥 · {food}',
         'home.cal.ev.calGoogle': 'Google 캘린더',
+        'home.cal.ev.calLinked': '별을 누르면 연결한 아이폰 캘린더에 들어가요.',
         'home.cal.ev.calendar': '캘린더에 추가',
         'home.cal.ev.copied': '링크를 복사했어요',
         'home.cal.ev.copyHint': '길게 눌러 복사하세요',
@@ -396,11 +399,13 @@
         'starcal.ask.no': '괜찮아요',
         'starcal.ask.title': '별 누를 때 내 캘린더에도 넣을까요?',
         'starcal.ask.yes': '넣을게요',
+        'starcal.done.already': '이미 캘린더에 넣은 꽁밥이에요',
         'starcal.done.blocked': '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요',
         'starcal.done.google': '새 창에서 저장을 눌러 주세요',
         'starcal.done.ics': '추가를 눌러 주세요',
         'starcal.done.manual': '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요',
         'starcal.done.no': '캘린더에는 넣지 않을게요',
+        'starcal.moved': '시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요',
         'starcal.nowOff': '캘린더 넣기를 껐어요',
         'starcal.nowOn': '캘린더 넣기를 켰어요',
         'starcal.off': '꺼짐',
@@ -466,9 +471,12 @@
         'home.cal.cell.past': 'past: {n}',
         'home.cal.empty': 'Nothing scheduled',
         'home.cal.ev.apply': 'Sign up',
+        'home.cal.ev.calAlready': 'Already in your calendar · tap again to add it once more',
+        'home.cal.ev.calConnect': 'Calendar connection',
         'home.cal.ev.calFile': 'Calendar file (.ics)',
         'home.cal.ev.calFood': 'Free food · {food}',
         'home.cal.ev.calGoogle': 'Google Calendar',
+        'home.cal.ev.calLinked': 'Star it and it goes into your connected iPhone Calendar.',
         'home.cal.ev.calendar': 'Add to calendar',
         'home.cal.ev.copied': 'Link copied',
         'home.cal.ev.copyHint': 'Press and hold to copy',
@@ -590,11 +598,13 @@
         'starcal.ask.no': 'No thanks',
         'starcal.ask.title': 'Add starred events to your calendar too?',
         'starcal.ask.yes': 'Yes, add them',
+        'starcal.done.already': 'Already in your calendar',
         'starcal.done.blocked': 'Couldn\'t open your calendar · open the event and try again',
         'starcal.done.google': 'Tap Save in the new tab',
         'starcal.done.ics': 'Tap Add',
         'starcal.done.manual': 'KakaoTalk can\'t add it directly · open the event and use Add to calendar',
         'starcal.done.no': 'Not adding to your calendar',
+        'starcal.moved': 'The time changed · delete the old entry in your calendar',
         'starcal.nowOff': 'Calendar adding is off',
         'starcal.nowOn': 'Calendar adding is on',
         'starcal.off': 'Off',
@@ -615,10 +625,10 @@
   <script src="js/worldcup-gate.js?v=3bcc94eb4e"></script>
   <script src="js/kaist-menu.js?v=6c909f8c8a"></script>
   <script src="js/ggongbab-select.js?v=ba548e8f0c"></script>
-  <script src="js/ggongbab-live.js?v=e130190514"></script>
+  <script src="js/ggongbab-live.js?v=c48fb987b5"></script>
   <script src="js/ggongbab-public-config.js?v=36fb24a6fd"></script>
   <script src="js/ggongbab-push.js?v=16b84e211a"></script>
-  <script src="js/home-calendar.js?v=62f4a02eab"></script>
+  <script src="js/home-calendar.js?v=67844f449a"></script>
   <script src="js/home.js?v=5953270fa7"></script>
   <script type="importmap">{"imports": {"three": "./js/vendor/three-0.186.1/three.module.js"}}</script>
   <script type="module" src="js/home-map.js?v=12a64da9b1"></script>

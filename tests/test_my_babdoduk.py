@@ -9,6 +9,7 @@ tests/test_accounts_db.py). Sign-in redirects are recorded, not followed: real G
 are checked by hand on a phone (NOT TESTED here).
 """
 import json
+from datetime import datetime, timedelta, timezone
 import re
 from pathlib import Path
 from urllib.parse import quote, unquote, urlparse
@@ -131,6 +132,10 @@ FAKE = r"""
           added += 1;
         });
         data = { added, conflicts };
+      } else if (name === 'my_calendar_link') {
+        // 016_calendar_connect.sql: present only when a test gives db.calLink; otherwise the function is missing.
+        if (!db.calLink) { save(db); return { data: null, error: { message: 'Could not find the function', code: 'PGRST202' } }; }
+        data = db.calLink;
       } else if (name === 'my_calendar_feed') {
         db.feeds = db.feeds || {};
         if (!db.feeds[uid] || args.p_new) db.feeds[uid] = (args.p_new ? 'N' : 'T').repeat(43);
@@ -593,16 +598,24 @@ IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/60
 
 def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(browser):
     """Owner 2026-11-12: connect once, then every star shows in the iPhone calendar (docs/CALENDAR_FEED.md).
-    A laptop needs no calendar link and Android gets the 30-minute alert; no talk about addresses."""
+    A laptop needs no calendar link and Android gets the 30-minute alert; no talk about addresses.
+    Before 016 is applied the card uses 013's address and cannot know the state, so after a tap it only
+    says that one tap is enough (owner 2026-11-19: a second 연결 showed every event twice)."""
     tables = {"saved_events": [], "saved_places": [], "profiles": []}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=IPHONE)
-    wait_view(page, "아이폰 캘린더에 넣기")
+    wait_view(page, "아이폰 캘린더 연결")
     link = page.locator("[data-my-cal]")
     assert link.inner_text() == "아이폰 캘린더에 연결"
     assert link.get_attribute("href") == f"webcal://{HOST}/cal/{'T' * 43}.ics"
     assert link.bounding_box()["height"] >= 44
     card = page.locator("section[aria-labelledby='myCalTitle']").inner_text()
-    assert "주소" not in card and "구글" not in card and '"구독"' in card
+    assert "주소" not in card and "구글" not in card and '"구독"' in card and "한 번만" in card
+    tap_calendar(page)
+    wait_view(page, "연결 확인 중")
+    card = page.locator("#myCal").inner_text()
+    assert "다시 누를 필요 없어요" in card and page.locator("#myCal .my-cal-btn").count() == 0
+    page.reload()
+    wait_view(page, "연결 확인 중")   # the tap is remembered in this browser
     assert errors == []
     context.close()
     for ua in (None, "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"):
@@ -614,6 +627,58 @@ def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(brow
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "fail": {"rpc:my_calendar_feed": True}}, ua=IPHONE)
     wait_view(page, "저장한 꽁밥")
     assert page.locator("[data-my-cal]").count() == 0 and errors == []
+    context.close()
+
+
+def tap_calendar(page, selector="[data-my-cal]"):
+    """Taps a webcal link without leaving the page (the browser under test has no calendar app)."""
+    page.evaluate("""() => window.addEventListener('click', e => {
+        if (e.target.closest('[data-my-cal]')) e.preventDefault(); }, true)""")
+    page.locator(selector).first.click()
+
+
+def iso_ago(hours):
+    """A time before the pages' fixed clock (NOW), never the wall clock."""
+    return (datetime.fromisoformat(NOW) - timedelta(hours=hours)).astimezone(timezone.utc).isoformat()
+
+
+def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
+    """Owner 2026-11-19 ("gmail 같은것처럼 이거 설정할 수 있게 해봐", "로직을 전면 수정해"): with 016 the card says whether
+    the calendar is connected and when it last checked, and offers the button only when it is not. A tap waits
+    for the calendar's first read (확인 중) and turns into 연결됨 by itself; 다시 연결 uses the new address, whose
+    first read stops the old one, so it never makes a second copy."""
+    tables = {"saved_events": [], "saved_places": [], "profiles": []}
+    fresh = {"link": "L" * 43, "read_at": None, "linked_at": None}
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": fresh}, ua=IPHONE)
+    wait_view(page, "아이폰 캘린더 연결")
+    assert page.locator("#myCal .my-cal-btn").get_attribute("href") == f"webcal://{HOST}/cal/{'L' * 43}.ics"
+    tap_calendar(page)
+    wait_view(page, "연결 확인 중")
+    # The phone subscribed and read the address: the server now offers the next one.
+    page.evaluate("""(at) => { const db = JSON.parse(localStorage.getItem('__fakedb'));
+        db.calLink = { link: 'M'.repeat(43), read_at: at, linked_at: at }; localStorage.setItem('__fakedb', JSON.stringify(db));
+        document.dispatchEvent(new Event('visibilitychange')); }""", iso_ago(0.1))
+    wait_view(page, "연결됨")
+    card = page.locator("#myCal").inner_text()
+    assert "다시 연결할 필요 없어요" in card and "캘린더가 마지막으로 확인한 때:" in card and "겹치지 않아요" in card
+    assert page.locator("#myCal .my-cal-btn").count() == 0
+    again = page.locator("#myCal [data-my-cal]")
+    assert again.count() == 1 and again.get_attribute("href") == f"webcal://{HOST}/cal/{'M' * 43}.ics"
+    assert again.bounding_box()["height"] >= 44
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('캘린더가 연결됐어요')")
+    assert errors == []
+    context.close()
+    # Connected in another browser: the same state, nothing to tap.
+    on = {"link": "N" * 43, "read_at": iso_ago(2), "linked_at": iso_ago(48)}
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": on}, ua=IPHONE)
+    wait_view(page, "연결됨")
+    assert page.locator("#myCal .my-cal-btn").count() == 0 and errors == []
+    context.close()
+    # No read for days: probably removed on the phone, so the button is back.
+    stale = {"link": "S" * 43, "read_at": iso_ago(24 * 10), "linked_at": iso_ago(24 * 20)}
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": stale}, ua=IPHONE)
+    wait_view(page, "한동안 확인이 없었어요")
+    assert page.locator("#myCal .my-cal-btn").inner_text() == "아이폰 캘린더에 다시 연결" and errors == []
     context.close()
 
 

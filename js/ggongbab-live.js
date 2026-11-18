@@ -304,10 +304,52 @@
       doc.body.appendChild(a);
       a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      markCalendarSent(ev);
       return true;
     } catch (err) {
       return false;
     }
+  }
+
+  // ---------- One calendar entry per listing (owner 2026-11-19) ----------
+  // A calendar file or add page always makes a new entry; a phone never replaces one it already has
+  // (owner: "동일한 행사가 두개 뜨는거지. 그거는 불필요한거잖아"). So this browser remembers each listing it sent
+  // to a calendar, with its start: the star's add skips a listing already sent for the same start, and a
+  // button asks for a second tap first. A listing whose time has moved is sent again, with a note to delete
+  // the old entry. (Signed-in iPhones use the one subscription of 마이 밥도둑 instead: docs/CALENDAR_FEED.md.)
+  var CAL_SENT_KEY = 'babdoduk-calendar-sent';
+  var CAL_SENT_MAX = 300;
+  function sentMap() {
+    try {
+      var value = JSON.parse(global.localStorage.getItem(CAL_SENT_KEY) || '{}');
+      return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    } catch (err) {
+      return {};
+    }
+  }
+  // '' (never sent from this browser) | 'same' (sent for this start) | 'moved' (sent for another start).
+  function calendarSent(ev) {
+    var at = ev && sentMap()[ev.id];
+    if (typeof at !== 'string' || !at) return '';
+    return at === String(ev.startAt) ? 'same' : 'moved';
+  }
+  function markCalendarSent(ev) {
+    try {
+      var map = sentMap();
+      map[ev.id] = String(ev.startAt);
+      var ids = Object.keys(map);
+      if (ids.length > CAL_SENT_MAX) {
+        ids.sort(function (a, b) { return String(map[a]).localeCompare(String(map[b])); });
+        ids.slice(0, ids.length - CAL_SENT_MAX).forEach(function (id) { delete map[id]; });
+      }
+      global.localStorage.setItem(CAL_SENT_KEY, JSON.stringify(map));
+    } catch (err) { /* without storage nothing is remembered */ }
+  }
+  // iPhone and iPad (iPadOS says Macintosh): the devices 마이 밥도둑's calendar connection is offered on.
+  function appleMobile(ua) {
+    var nav = global.navigator || {};
+    ua = ua == null ? nav.userAgent || '' : ua;
+    return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && nav.maxTouchPoints > 1);
   }
 
   // ---------- The star also adds to the calendar (owner 2026-11-11) ----------
@@ -339,14 +381,17 @@
     return /iPhone|iPad|iPod|Macintosh/i.test(ua) ? 'ics' : 'google';
   }
   // Must run inside the click that asked for it, or the browser blocks the new window or download.
-  // Resolves to 'ics' | 'google' | 'blocked' | 'manual'.
+  // Resolves to 'ics' | 'google' | 'blocked' | 'manual', or 'already' for a listing this browser already
+  // sent for the same start (opts.again sends it anyway).
   function addToCalendar(ev, opts, ua) {
     var route = calendarRoute(ua);
     if (route === 'manual') return 'manual';
+    if (!(opts && opts.again) && calendarSent(ev) === 'same') return 'already';
     if (route === 'ics') return downloadIcs(ev, opts) ? 'ics' : 'blocked';
     var win = global.open(googleCalendarUrl(ev, opts), '_blank');
     if (!win) return 'blocked';
     try { win.opener = null; } catch (err) {}
+    markCalendarSent(ev);
     return 'google';
   }
   // The one-time question: a small panel at the bottom of the screen that covers nothing it needs.
@@ -452,6 +497,10 @@
     setStarCalendar: setStarCalendar,
     calendarRoute: calendarRoute,
     addToCalendar: addToCalendar,
+    CAL_SENT_KEY: CAL_SENT_KEY,
+    calendarSent: calendarSent,
+    markCalendarSent: markCalendarSent,
+    appleMobile: appleMobile,
     askStarCalendar: askStarCalendar,
     eventLink: eventLink,
     weekLink: weekLink,

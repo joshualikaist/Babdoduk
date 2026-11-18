@@ -368,3 +368,12 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 
 /* 내 캘린더에 연결 (docs/CALENDAR_FEED.md): one full-width button. */
 .my-cal-btn { display: flex; width: 100%; min-height: 48px; margin: var(--space-3) 0 var(--space-2); }
+
+/* The calendar connection's state (owner 2026-11-19): one plain line above the text, like a setting. */
+.my-cal-state {
+  margin: var(--space-2) 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.my-cal-state.is-on { color: var(--color-accent); }

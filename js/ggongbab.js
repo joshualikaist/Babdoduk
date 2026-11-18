@@ -371,9 +371,14 @@
     html += '</div>';
     // Closed, the calendar box holds nothing (no hidden links in the listing's link list).
     if (calOk && !state.calOpen[ev.id]) html += '<div class="gg-cal" id="' + calId + '" hidden></div>';
-    else if (calOk) {
+    else if (calOk && savedStore && savedStore.remote && L.appleMobile && L.appleMobile()) {
+      // Signed in on an iPhone: the one calendar connection of 마이 밥도둑 takes every star, so no file or add
+      // page here; a second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
+      html += '<div class="gg-cal" id="' + calId + '"><p class="gg-cal-note gg-cal-linked">' + esc(t('gg.live.calLinked', '별을 누르면 연결한 아이폰 캘린더에 들어가요.')) +
+        ' <a href="my.html#myCal">' + esc(t('gg.live.calConnect', '캘린더 연결 보기')) + '</a></p></div>';
+    } else if (calOk) {
       html += '<div class="gg-cal" id="' + calId + '">';
-      html += '<a class="gg-btn" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
+      html += '<a class="gg-btn" data-gg-gcal="' + esc(ev.id) + '" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
         esc(t('gg.live.calGoogle', 'Google 캘린더')) + '<span class="gg-sr"> ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
       html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calFile', '캘린더 파일 (.ics)')) + '</button>';
       if (L.inTalkApp()) html += talkAppNoteHtml();
@@ -1072,9 +1077,30 @@
       else if (result === 'manual') { state.copy = { key: key, text: payload.text + '\n' + payload.url }; render(); }
     });
   }
+  // A calendar button for a listing this browser already sent asks for a second tap first (owner 2026-11-19:
+  // the same event twice in the calendar is never wanted); true when this tap may add it.
+  var calAgain = '';
+  function calendarTapOk(ev) {
+    if (L.calendarSent(ev) === 'same' && calAgain !== ev.id) {
+      calAgain = ev.id;
+      announce(t('gg.live.calAlready', '이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요'));
+      return false;
+    }
+    calAgain = '';
+    return true;
+  }
+  function movedNote(was) { return was === 'moved' ? ' · ' + t('starcal.moved', '시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요') : ''; }
   function downloadIcs(ev) {
-    if (L.downloadIcs(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) })) announce(t('gg.live.icsDone', '캘린더 파일을 받았어요'));
+    if (!calendarTapOk(ev)) return;
+    var was = L.calendarSent(ev);
+    if (L.downloadIcs(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) })) announce(t('gg.live.icsDone', '캘린더 파일을 받았어요') + movedNote(was));
     else announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
+  }
+  // The star's own add: a listing already sent for the same start is not sent again.
+  function addCalendarMessage(ev, details) {
+    var was = L.calendarSent(ev);
+    var result = L.addToCalendar(ev, details);
+    return starCalendarMessage(result) + (result === 'ics' || result === 'google' ? movedNote(was) : '');
   }
   // The star also opens the calendar's add screen (owner 2026-11-11), for visitors who said yes once.
   function starCalendarText() {
@@ -1086,6 +1112,7 @@
     };
   }
   function starCalendarMessage(result) {
+    if (result === 'already') return t('starcal.done.already', '이미 캘린더에 넣은 꽁밥이에요');
     if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
     if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
     if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
@@ -1132,12 +1159,12 @@
     if (savedStore.remote) return announce(pushState === 'on' ? savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요') : savedMessage);
     var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
     var pref = L.starCalendar();
-    if (pref === 'on') return announce(savedMessage + ' · ' + starCalendarMessage(L.addToCalendar(ev, details)));
+    if (pref === 'on') return announce(savedMessage + ' · ' + addCalendarMessage(ev, details));
     if (pushState === 'on') return announce(savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요'));
     if (pref === 'off') return announce(savedMessage);
     announce(savedMessage);
     L.askStarCalendar(starCalendarText(), function (yes) {
-      if (yes) announce(starCalendarMessage(L.addToCalendar(ev, details)));
+      if (yes) announce(addCalendarMessage(ev, details));
       else if (yes === false) announce(t('starcal.done.no', '캘린더에는 넣지 않을게요'));
       render();
       refocusStar(ev.id);
@@ -1224,6 +1251,13 @@
       var calId = el.getAttribute('data-gg-cal');
       if (state.calOpen[calId]) delete state.calOpen[calId]; else state.calOpen[calId] = true;
       render();
+      return true;
+    }
+    if ((el = e.target.closest('[data-gg-gcal]'))) {
+      // Google Calendar's add page: the link opens it, unless this listing was already sent (second tap opens).
+      var gEv = rowById(el.getAttribute('data-gg-gcal'));
+      if (gEv && !calendarTapOk(gEv)) { e.preventDefault(); return true; }
+      if (gEv) L.markCalendarSent(gEv);
       return true;
     }
     if ((el = e.target.closest('[data-gg-ics]'))) {

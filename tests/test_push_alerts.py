@@ -707,6 +707,14 @@ def test_signed_in_a_star_saves_to_the_account_and_opens_no_calendar_file(browse
     body = page.locator(".gg-saved-body").inner_text()
     assert "마이 밥도둑에서 캘린더를 연결해 보세요" in body and page.locator("[data-gg-starcal]").count() == 0  # copy cleanup, owner 2026-11-12
     assert "저장하지 못했어요" not in page.locator(".gg-toast").inner_text() and errors == []
+    # Owner 2026-11-19: the card's calendar choice offers no file or add page either, since a copy beside the
+    # connected calendar is exactly the duplicate; it points to the one connection instead.
+    page.locator('.gg-card[data-id="lunch"] .gg-card-toggle').first.click()
+    page.locator('.gg-card[data-id="lunch"] [data-gg-cal]').first.click()
+    panel = page.locator('.gg-card[data-id="lunch"] .gg-cal').first
+    assert "별을 누르면 연결한 아이폰 캘린더에 들어가요." in panel.inner_text()
+    assert panel.locator("a").get_attribute("href") == "my.html#myCal" and panel.locator("a").bounding_box()["height"] >= 44
+    assert panel.locator("[data-gg-ics], [data-gg-gcal]").count() == 0 and downloads == []
     context.close()
 
 
