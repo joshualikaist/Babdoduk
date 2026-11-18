@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T17:23:19+09:00",
+  "generatedAt": "2026-11-18T18:17:23+09:00",
   "timezone": "Asia/Seoul",
   "count": 31,
   "events": [
@@ -942,7 +942,7 @@
       "eligibility": "KAIST에 재학중인 학사과정생",
       "registration": {
         "required": "true",
-        "deadline": null,
+        "deadline": "2026-11-23T23:59:00+09:00",
         "url": "https://forms.gle/t36dFuW8Ny1hgrq86"
       },
       "confidence": 0.99,
@@ -953,7 +953,7 @@
         }
       ],
       "audience": {
-        "text": "KAIST 학사과정생",
+        "text": "학사과정생",
         "basis": "stated"
       }
     },
