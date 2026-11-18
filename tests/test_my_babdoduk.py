@@ -26,6 +26,7 @@ CONFIG = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
 ON = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}']}};"
 OFF = f"window.BABDODUK_AUTH_CONFIG = {{enabled: false, hosts: ['{HOST}']}};"
 GOOGLE_ID = "123456789012-synthetictestclientid.apps.googleusercontent.com"
+HELD = []   # requests a test answers later
 ON_GOOGLE = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}'], googleClientId: '{GOOGLE_ID}'}};"
 # A stand-in for Google's own button script: it records the setup and draws a button that hands back
 # a credential as Google's popup would.
@@ -208,6 +209,9 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
         url = urlparse(route.request.url)
         if route.request.url == "https://accounts.google.com/gsi/client" and google == "served":
             return route.fulfill(content_type="application/javascript", body=FAKE_GIS)
+        if route.request.url == "https://accounts.google.com/gsi/client" and google == "slow":
+            HELD.append(route)   # answered by the test: Google's script is still loading until then
+            return None
         if "supabase" in route.request.url and url.hostname != HOST:
             sdk_requests.append(route.request.url)
             return route.abort()
@@ -234,7 +238,7 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
     page.clock.set_fixed_time(NOW)
     errors = []
     page.on("pageerror", lambda exc: errors.append(str(exc)))
-    page.goto(f"https://{HOST}/{path}", wait_until="networkidle")
+    page.goto(f"https://{HOST}/{path}", wait_until="domcontentloaded" if google == "slow" else "networkidle")
     return context, page, errors, sdk_requests
 
 
@@ -635,6 +639,7 @@ def test_google_signs_in_with_its_own_button_and_a_hashed_nonce(browser):
     context, page, errors, _ = open_page(browser, google="served")
     page.wait_for_selector("[data-my-google] .fake-gis")
     assert page.locator("[data-my-google] .my-login-btn").count() == 0          # the redirect button gave way
+    assert page.locator("[data-my-google].is-loading").count() == 0
     assert page.get_by_role("button", name="카카오로 계속하기").count() == 1    # kakao is unchanged
     gis = page.evaluate("({ id: window.__gis.client_id, nonce: window.__gis.nonce, popup: window.__gis.ux_mode, opts: window.__gisOpts })")
     assert gis["id"] == GOOGLE_ID and gis["popup"] == "popup" and re.fullmatch(r"[0-9a-f]{64}", gis["nonce"])
@@ -678,9 +683,23 @@ def test_google_links_and_rechecks_with_its_own_button(browser):
 def test_when_google_cannot_load_the_redirect_button_stays(browser):
     context, page, errors, _ = open_page(browser, google="blocked")
     wait_view(page, "Google로 계속하기")
-    page.wait_for_timeout(500)
+    page.wait_for_selector("[data-my-google]:not(.is-loading) .my-login-btn", state="visible")
     assert page.locator("[data-my-google] .my-login-btn").count() == 1 and page.locator(".fake-gis").count() == 0
     page.get_by_role("button", name="Google로 계속하기").click()
     page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'oauth')")
+    assert errors == []
+    context.close()
+
+
+def test_the_redirect_button_is_hidden_while_googles_button_loads(browser):
+    """Owner 2026-11-18: pressed in the second before Google's button appeared, it opened the old
+    window naming supabase.co. While Google's script loads, that button is not visible."""
+    context, page, errors, _ = open_page(browser, google="slow")
+    wait_view(page, "카카오로 계속하기")
+    assert page.locator("[data-my-google].is-loading").count() == 1
+    assert not page.locator("[data-my-google] .my-login-btn").is_visible()
+    while HELD:
+        HELD.pop().abort()          # Google's script fails: the redirect button comes back
+    page.wait_for_selector("[data-my-google]:not(.is-loading) .my-login-btn", state="visible")
     assert errors == []
     context.close()
