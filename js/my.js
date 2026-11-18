@@ -347,10 +347,13 @@
   }
   // Google's own button in each Google slot (owner 2026-11-18: Google's window then names our site, not
   // the Supabase project's domain). If Google's script cannot load, the redirect button inside stays.
+  // While Google's script loads the redirect button is hidden (its space kept): the owner pressed it in
+  // that second and got the old window naming supabase.co.
   function mountGoogle() {
     if (!A || !A.googleButton) return;
     Array.prototype.forEach.call(app.querySelectorAll('[data-my-google]'), function (slot) {
       var mode = slot.getAttribute('data-my-google');
+      slot.classList.add('is-loading');
       A.googleButton(slot, {
         mode: mode, next: slot.getAttribute('data-my-google-next') || '', lang: lang(),
         onStart: function () { busy(true); },
@@ -358,7 +361,8 @@
           busy(false);
           announce(mode === 'link' ? t('my.account.linkFail', '지금은 로그인 방법을 연결할 수 없어요') : t('my.out.failed', '로그인하지 못했어요. 다시 시도해 주세요.'));
         }
-      }).then(function () { slot.classList.add('is-official'); }, function () { /* the redirect button stays */ });
+      }).then(function () { slot.classList.remove('is-loading'); slot.classList.add('is-official'); },
+        function () { slot.classList.remove('is-loading'); /* the redirect button stays */ });
     });
   }
 

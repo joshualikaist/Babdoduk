@@ -374,3 +374,4 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 .my-google { display: flex; align-items: center; justify-content: center; min-height: 44px; }
 .my-google.is-official { width: 100%; max-width: 400px; margin: 0 auto; }
 .my-row-actions .my-google.is-official { width: auto; margin: 0; }
+.my-google.is-loading > button { visibility: hidden; }
