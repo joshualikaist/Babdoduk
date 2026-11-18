@@ -24,6 +24,47 @@ def _openai():
     return OpenAI(api_key=load_settings().openai_api_key, timeout=120, max_retries=2)
 
 
+class DeferredWriter:
+    """The Dooray collection writer, verified on first use instead of at start.
+
+    Dooray closed its API for days after the 2026-11-13 incident and then rejected the old key.
+    A start that required a verified project took the whole radar down with it, and with it the
+    owner's Telegram bot, the tip review and the held-event buttons. Now the radar starts anyway:
+    a hand-over before the project verifies raises ProjectNotFound, which the bridge and the tips
+    already treat as "retry next cycle", so nothing is lost. Re-verification is tried at most once
+    per RETRY_SECONDS; once it succeeds the real writer is used unchanged, still fail-closed."""
+
+    RETRY_SECONDS = 300
+
+    def __init__(self, writer, *, now=time.time):
+        self._writer, self._now, self._next_try = writer, now, 0.0
+
+    @property
+    def verified(self) -> bool:
+        return bool(getattr(self._writer, "_verified", False))
+
+    def verify(self) -> bool:
+        if self.verified:
+            return True
+        if self._now() < self._next_try:
+            return False
+        try:
+            self._writer.verify_project()
+            return True
+        except Exception:  # noqa: BLE001 - any failure leaves the writer unverified; retried later
+            self._next_try = self._now() + self.RETRY_SECONDS
+            return False
+
+    def create_task(self, *args, **kwargs):
+        from ..web.exit_codes import ProjectNotFound
+        if not self.verify():
+            raise ProjectNotFound("Dooray collection project not verified yet")
+        return self._writer.create_task(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self._writer, name)
+
+
 def build(root: Path, *, dry_run: bool) -> Radar:
     from .telegram_review import Bot, credentials
     config = Config()
@@ -36,10 +77,13 @@ def build(root: Path, *, dry_run: bool) -> Radar:
     if not dry_run:
         from ..config import load_settings
         from ..web.task_writer import TaskWriter
-        writer = TaskWriter(load_settings())
-        writer.verify_project()
+        writer = DeferredWriter(TaskWriter(load_settings()))
     radar = Radar(root, config=config, graph=graph, judge=an.Judge(_openai()), bot=Bot(token, chat) if token and chat else None,
                   writer=writer, log=SafeLog(local / LOG), dry_run=dry_run)
+    if writer is not None and not writer.verify():
+        radar.log("IG_DOORAY_UNVERIFIED")
+        radar.alert("dooray:unverified", "두레이에 연결되지 않습니다. 인스타그램·제보 행사는 모아 두었다가 "
+                    "연결되면 넘깁니다. 두레이 열쇠를 확인해 주세요.", every=12 * 3600)
     radar.store.sync_accounts(load_accounts(root))
     if not dry_run:
         from ..config import load_settings

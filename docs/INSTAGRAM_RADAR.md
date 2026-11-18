@@ -20,7 +20,11 @@ Business Discovery (GET, every 1-6 h per account)
 ```
 
 Handing over through a Dooray task (the mail radar's path) keeps one extraction, validation and
-publication path and needs no database migration. The radar's own records live in
+publication path and needs no database migration. The Dooray project is verified on first use, not at
+start (`instagram/cli.py` `DeferredWriter`, since the 2026-11-13 Dooray incident): while Dooray is closed or
+rejects the key, the radar, the Telegram bot, tips and held events keep running, `IG_DOORAY_UNVERIFIED` is
+logged with one owner notice per 12 hours, and confirmed events wait as unsent candidates until the project
+verifies again (retried at most every 5 minutes). The radar's own records live in
 `.local/ig-radar.sqlite3`: `ig_accounts`, `ig_posts`, `ig_post_images`, `analysis_runs`,
 `food_event_candidates`, `human_reviews`, `api_usage_log`.
 

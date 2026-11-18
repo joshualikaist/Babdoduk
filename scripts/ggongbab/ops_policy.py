@@ -50,7 +50,7 @@ REASONS = SAFE_REASON_CODES | TRANSIENT | HUMAN | frozenset({
     # Instagram radar (scripts/ggongbab/instagram/, docs/INSTAGRAM_RADAR.md)
     "IG_RADAR_RUNNING", "IG_RADAR_CYCLE_OK", "IG_RADAR_CYCLE_FAILED", "IG_TOKEN_INVALID", "IG_SCOPE_MISSING",
     "IG_RATE_LIMITED", "IG_SLOWED_DOWN", "IG_ACCOUNT_UNSUPPORTED", "IG_ACCOUNT_ERROR", "IG_MODEL_UNAVAILABLE",
-    "IG_OPENAI_ERRORS", "IG_TELEGRAM_FAILED", "IG_DOORAY_FAILED",
+    "IG_OPENAI_ERRORS", "IG_TELEGRAM_FAILED", "IG_DOORAY_FAILED", "IG_DOORAY_UNVERIFIED",
     # Reader tips, reviewed through the Instagram radar's bot (scripts/ggongbab/tips.py, docs/GGONGBAB_TIPS.md)
     "TIP_REVIEW_NOT_READY", "TIP_REVIEW_FAILED", "TIP_DOORAY_FAILED", "TIP_CLASSIFY_FAILED", "TIP_EMPTY_DROPPED", "TIP_QR_LINK",
     # Held free-food events asked on the same bot (scripts/ggongbab/held.py, docs/GGONGBAB_TRIGGER.md)

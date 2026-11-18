@@ -860,3 +860,66 @@ def test_a_blocked_dispatch_is_told_to_the_owner_once(root):
     for _ in range(TRANSPORT_ALERT_AFTER + 5):
         r.request_refresh(False)
     assert len(bot.said) == 2 and "네트워크" in bot.said[1]
+
+
+# --- a closed or rejecting Dooray (2026-11-13 incident) -----------------------------------------
+class Gate(Writer):
+    """A Dooray project that verifies only while `open`; counts every verification attempt."""
+
+    def __init__(self):
+        super().__init__()
+        self.open, self.checks, self._verified = False, 0, False
+
+    def verify_project(self):
+        from ggongbab.web.exit_codes import ProjectNotFound
+        self.checks += 1
+        if not self.open:
+            raise ProjectNotFound("GET /project/v1/projects/1: HTTP 401")
+        self._verified = True
+        return {}
+
+
+def test_a_closed_dooray_holds_the_hand_over_and_sends_it_once_dooray_answers(root):
+    from ggongbab.instagram.cli import DeferredWriter
+    gate = Gate()
+    clock = {"t": NOW}
+    writer = DeferredWriter(gate, now=lambda: clock["t"])
+    judge = Judge({"[ONE]": {"gpt-6-luna": judgement(True, 0.95)}})
+    r, _ = radar(root, Graph({"shoutoutto.ee": [media("ONE", "[ONE] 간식 이벤트")]}), judge, writer=writer, clock=clock)
+    r.collect()
+    r.analyze()
+    r.bridge()
+    r.bridge()                                  # the same minute: no second knock on a closed door
+    assert gate.tasks == [] and gate.checks == 1 and not r.store.candidate("ONE")["dooray_post_id"]
+    gate.open = True
+    clock["t"] += DeferredWriter.RETRY_SECONDS + 1
+    r.bridge()
+    assert [t.mail_id for t in gate.tasks] == ["instagram-ONE"] and r.store.candidate("ONE")["dooray_post_id"] == "post-1"
+    r.bridge()
+    assert gate.checks == 2 and len(gate.tasks) == 1     # verified once, then the real writer is used as is
+
+
+def test_the_radar_and_its_bot_start_while_dooray_rejects_the_key(root, monkeypatch):
+    """Before: verify_project() at start raised and the service died, taking Telegram with it."""
+    import ggongbab.config as config_module
+    import ggongbab.held as held_module
+    import ggongbab.tips as tips_module
+    import ggongbab.web.task_writer as tw
+    from ggongbab.instagram import cli
+    from ggongbab.instagram import telegram_review as tr
+    gate, bot = Gate(), Bot()
+    monkeypatch.setattr(cli, "Config", lambda: Config(version="v26.0", ig_user_id="17841440065235713", token=TOKEN))
+    monkeypatch.setattr(cli, "_openai", lambda: object())
+    monkeypatch.setattr(cli, "load_accounts", lambda root: [])
+    monkeypatch.setattr(cli, "dispatcher", lambda root: (lambda new: "DISPATCH_NOTHING_NEW"))
+    monkeypatch.setattr(config_module, "load_settings", lambda: object())
+    monkeypatch.setattr(tw, "TaskWriter", lambda settings: gate)
+    monkeypatch.setattr(tr, "credentials", lambda local: ("x", bot.chat_id))
+    monkeypatch.setattr(tr, "Bot", lambda token, chat: bot)
+    monkeypatch.setattr(tips_module, "build", lambda *a, **k: None)
+    monkeypatch.setattr(tips_module, "report_classifier", lambda *a, **k: None)
+    monkeypatch.setattr(held_module, "build", lambda *a, **k: None)
+    r = cli.build(root, dry_run=False)
+    assert r.bot is bot and isinstance(r.writer, cli.DeferredWriter) and not r.writer.verified
+    assert "IG_DOORAY_UNVERIFIED" in (root / ".local" / "ops-ig-radar.log").read_text(encoding="utf-8")
+    assert [t for t in bot.said if "두레이에 연결되지 않습니다" in t]
