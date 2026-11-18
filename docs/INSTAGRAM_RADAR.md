@@ -24,7 +24,10 @@ publication path and needs no database migration. The Dooray project is verified
 start (`instagram/cli.py` `DeferredWriter`, since the 2026-11-13 Dooray incident): while Dooray is closed or
 rejects the key, the radar, the Telegram bot, tips and held events keep running, `IG_DOORAY_UNVERIFIED` is
 logged with one owner notice per 12 hours, and confirmed events wait as unsent candidates until the project
-verifies again (retried at most every 5 minutes). The radar's own records live in
+verifies again (retried at most every 5 minutes). Each cycle also reads the cloud refresh's newest Dooray
+`ingest_runs` (read only, `Radar.check_ingest`): a refused key ends the collector, not the run, so the
+refresh stayed green from 11-13 to 11-18 while Dooray answered HTTP 401. Two or more failed runs over 3 hours
+since the last good one send the owner one notice per 12 hours, with the HTTP status only. The radar's own records live in
 `.local/ig-radar.sqlite3`: `ig_accounts`, `ig_posts`, `ig_post_images`, `analysis_runs`,
 `food_event_candidates`, `human_reviews`, `api_usage_log`.
 

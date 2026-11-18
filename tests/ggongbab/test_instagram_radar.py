@@ -923,3 +923,39 @@ def test_the_radar_and_its_bot_start_while_dooray_rejects_the_key(root, monkeypa
     assert r.bot is bot and isinstance(r.writer, cli.DeferredWriter) and not r.writer.verified
     assert "IG_DOORAY_UNVERIFIED" in (root / ".local" / "ops-ig-radar.log").read_text(encoding="utf-8")
     assert [t for t in bot.said if "두레이에 연결되지 않습니다" in t]
+
+
+def run(hours_ago, status, error=""):
+    started = datetime.fromtimestamp(NOW - hours_ago * 3600, an.KST).isoformat()
+    return {"status": status, "started_at": started, "error_message": error}
+
+
+def test_the_cloud_dooray_outage_is_found_only_after_hours_of_failures():
+    from ggongbab.instagram.radar import dooray_outage
+    refused = "dooray /project/v1/projects/4424523215847914253/posts: HTTP 401"
+    # 2026-11-13..18 as recorded: green runs, every Dooray collector refused.
+    assert dooray_outage([run(1, "failed", refused), run(6, "failed", refused), run(30, "ok")], NOW) == (6, 401)
+    assert dooray_outage([run(1, "failed", refused), run(2, "failed", refused), run(5, "ok")], NOW) is None  # < 3 h
+    assert dooray_outage([run(4, "failed", refused), run(5, "ok")], NOW) is None                           # one blip
+    assert dooray_outage([run(0.2, "ok"), run(4, "failed"), run(8, "failed")], NOW) is None               # recovered
+    # A run stuck in "running" for an hour never finished; a fresh one is still going.
+    assert dooray_outage([run(0.5, "running"), run(5, "running"), run(9, "running"), run(20, "ok")], NOW) == (9, 0)
+    assert dooray_outage([], NOW) is None
+
+
+def test_the_owner_hears_of_a_cloud_dooray_outage_once_without_the_project_id(root):
+    bot = Bot()
+    r, clock = radar(root, Graph({}), bot=bot)
+    refused = "dooray /project/v1/projects/4424523215847914253/posts: HTTP 401"
+    r.ingest = lambda: [run(1, "failed", refused), run(6, "failed", refused), run(30, "ok")]
+    r.check_ingest()
+    r.check_ingest()
+    assert len(bot.said) == 1 and "6시간 넘게" in bot.said[0] and "401" in bot.said[0]
+    assert "4424523215847914253" not in bot.said[0]
+
+    def down():
+        raise RuntimeError("supabase down")
+    codes = []
+    r.log, r.ingest = codes.append, down
+    r.check_ingest()                            # never raises out of a cycle
+    assert codes == ["IG_INGEST_CHECK_FAILED"]

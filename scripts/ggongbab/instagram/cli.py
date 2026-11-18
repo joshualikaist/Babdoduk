@@ -94,10 +94,21 @@ def build(root: Path, *, dry_run: bool) -> Radar:
         radar.tips = tips(load_settings(), radar.bot, writer, store=radar.store, now=time.time, log=radar.log,
                           classify=classify)
         radar.dispatch = dispatcher(root)
+        radar.ingest = ingest_reader(load_settings())
         from ..held import build as held
         radar.held = held(load_settings(), radar.bot, store=radar.store, now=time.time, log=radar.log,
                           on_publish=lambda: radar.request_refresh(True))
     return radar
+
+
+def ingest_reader(settings):
+    """The newest Dooray ingest runs of the cloud refresh, for Radar.check_ingest (read only)."""
+    if not getattr(settings, "has_supabase", False):
+        return None
+    from ..db.supabase_client import SupabaseClient
+    db = SupabaseClient(settings.supabase_url, settings.supabase_secret_key)
+    return lambda: db.select("ingest_runs", {"select": "status,started_at,error_message", "source_type": "eq.dooray",
+                                             "order": "started_at.desc", "limit": "12"})
 
 
 def dispatcher(root: Path):

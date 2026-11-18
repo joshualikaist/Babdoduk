@@ -41,6 +41,7 @@ ACCOUNT_PAUSE = 2.0           # seconds between accounts: sequential, never a bu
 LOOP_SECONDS = 300
 DISPATCH_BROKEN = ("DISPATCH_AUTH_FAILED", "DISPATCH_REJECTED", "DISPATCH_NOT_CONFIGURED", "DISPATCH_DAILY_CAP")
 TRANSPORT_ALERT_AFTER = 20    # consecutive transport failures (~8 minutes of review calls)
+INGEST_ALERT_SECONDS = 3 * 3600   # the cloud's Dooray collection failing this long is told to the owner
 REFRESH_REPLIES = {
     "DISPATCHED": "🔄 갱신을 요청했습니다. 10~15분 뒤 사이트에 반영됩니다.",
     "DISPATCH_DEBOUNCED": "⏳ 5분 안에 이미 요청한 갱신이 있어, 5분이 지나면 이어서 요청합니다.",
@@ -80,6 +81,8 @@ class Radar:
         self.since = collect_since(self.root)
         self.tips = None        # ggongbab.tips.Tips: reader tips share this bot (cli.build)
         self.held = None        # ggongbab.held.Held: events the pipeline holds for review (cli.build)
+        # The cloud refresh's newest Dooray ingest runs, newest first (cli.build; check_ingest).
+        self.ingest: Optional[Callable[[], list]] = None
         self.transport_failures = 0
         # Asks the cloud refresh to take in what was handed over (ggongbab.dispatch.request_refresh
         # behind the operator switch; cli.build). Called with False to send a debounced request.
@@ -577,6 +580,27 @@ class Radar:
         except Exception:  # noqa: BLE001 - Supabase or Telegram down: the next cycle asks again
             self.log("HELD_CHECK_FAILED")
 
+    def check_ingest(self) -> None:
+        """Tell the owner when the cloud refresh's Dooray collection keeps failing. A refused key ends
+        the collector, not the run: from 2026-11-13 to 11-18 every refresh was green while Dooray
+        answered HTTP 401, and no mail, Instagram or tip event reached the site. Never stops a cycle."""
+        if self.ingest is None or self.dry_run:
+            return
+        try:
+            rows = self.ingest()
+        except Exception:  # noqa: BLE001 - Supabase down: the next cycle looks again
+            self.log("IG_INGEST_CHECK_FAILED")
+            return
+        outage = dooray_outage(rows, self.now())
+        if outage is None:
+            return
+        hours, status = outage
+        self.counts["dooray_ingest_failing_hours"] = hours
+        reason = f"두레이가 거절합니다(HTTP {status}). 깃허브 비밀 칸의 두레이 열쇠를 확인해 주세요." if status \
+            else "실행이 끝나지 않거나 실패합니다."
+        self.alert("ingest:dooray", f"클라우드의 두레이 수집이 {hours}시간 넘게 실패하고 있습니다. {reason} "
+                   "그동안 메일·인스타그램·제보 행사가 사이트에 올라가지 않습니다.", every=12 * 3600)
+
     # --- costs and one cycle ------------------------------------------------------------------------
     def cost_check(self) -> None:
         start = datetime.fromtimestamp(self.now(), an.KST).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -600,12 +624,37 @@ class Radar:
         self.review()
         self.bridge()
         self.check_held()
+        self.check_ingest()
         self.cost_check()
         purged = self.store.purge_images(self.now())
         if purged:
             self.counts["images_purged"] = purged
         self.log("IG_RADAR_CYCLE_OK")
         return "IG_RADAR_CYCLE_OK"
+
+
+def dooray_outage(rows: list, now: float) -> Optional[tuple]:
+    """(hours, HTTP status or 0) when the newest Dooray ingest runs (newest first) have all failed for
+    INGEST_ALERT_SECONDS, at least two of them, since the last successful one; otherwise None. A run
+    still 'running' an hour after it started never finished and counts as failed; a younger one is
+    skipped. Only the status code is read from the error text, which may hold a project id."""
+    import re
+    failed = []
+    for row in rows or []:
+        try:
+            started = datetime.fromisoformat(str(row.get("started_at")).replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            continue
+        status = row.get("status")
+        if status == "ok":
+            break
+        if status == "running" and now - started < 3600:
+            continue
+        failed.append((started, str(row.get("error_message") or "")))
+    if len(failed) < 2 or now - failed[-1][0] < INGEST_ALERT_SECONDS:
+        return None
+    code = re.search(r"HTTP (\d{3})", failed[0][1])
+    return int((now - failed[-1][0]) // 3600), int(code.group(1)) if code else 0
 
 
 def collect_since(root: Path) -> float:
