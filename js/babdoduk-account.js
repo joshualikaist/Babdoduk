@@ -180,8 +180,15 @@
   }
   // This device only: other devices stay signed in. The guest list in this browser is untouched.
   function signOut() {
-    return client().then(function (c) { return c.auth.signOut({ scope: 'local' }); }).then(function (res) {
-      if (res && res.error) throw res.error;
+    return client().then(function (c) {
+      return c.auth.signOut({ scope: 'local' }).then(function (res) {
+        if (!res || !res.error) return;
+        // The SDK drops this browser's session even when the server call fails (supabase-js 2.116
+        // _signOut), so only a session that is still here is a failed sign-out (2026-11-18 check).
+        return c.auth.getSession().then(function (now) {
+          if (now && now.data && now.data.session) throw res.error;
+        });
+      });
     });
   }
   function providersOf(user) {

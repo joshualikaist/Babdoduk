@@ -424,7 +424,7 @@
       A.signOut().then(function () {
         busy(false); state.user = null; state.view = 'out'; render();
         announce(t('my.account.signedOut', '로그아웃했어요'));
-      }, function () { busy(false); announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.')); });
+      }, function () { busy(false); announce(t('my.account.signoutFail', '로그아웃하지 못했어요. 다시 시도해 주세요.')); });
       return;
     }
     if ((el = e.target.closest('[data-my-unstar]'))) {

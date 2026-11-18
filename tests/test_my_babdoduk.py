@@ -160,7 +160,11 @@ FAKE = r"""
       if (o.token) { db.calls.push(['link-token', o.provider, o.token, o.nonce]); save(db); return Promise.resolve({ data: {}, error: null }); }
       db.calls.push(['link', o.provider, o.options.redirectTo]); save(db);
       return Promise.resolve(db.fail.link ? { data: null, error: { message: 'Manual linking is disabled' } } : { data: {}, error: null }); },
-    signOut(o) { const db = load(); db.calls.push(['signout', o && o.scope]); db.user = null; save(db); localStorage.removeItem('""" + TOKEN_KEY + r"""'); return Promise.resolve({ error: null }); }
+    signOut(o) { const db = load(); db.calls.push(['signout', o && o.scope]);
+      // Like supabase-js 2.116: the local session goes even when the server call fails.
+      if (db.fail.signoutKeep) { save(db); return Promise.resolve({ error: { message: 'down' } }); }
+      db.user = null; save(db); localStorage.removeItem('""" + TOKEN_KEY + r"""');
+      return Promise.resolve({ error: db.fail.signout ? { message: 'server down' } : null }); }
   };
   window.supabase = { createClient(url, key, opts) {
     const db = load(); db.calls.push(['client', url, key, opts]); save(db);
@@ -721,5 +725,26 @@ def test_the_google_link_button_also_goes_through_our_page(browser):
     assert q["redirect_uri"] == f"https://{HOST}/my.html" and url.path == "/o/oauth2/v2/auth"
     assert json.loads(page.evaluate("sessionStorage.getItem('babdoduk-google-pending')"))["mode"] == "link"
     assert not [c for c in fakedb(page)["calls"] if c[0] == "link"]
+    assert errors == []
+    context.close()
+
+
+def test_signing_out_works_even_when_the_server_call_fails(browser):
+    """2026-11-18 check: the SDK drops this browser's session even if the logout call fails; the page
+    must then show the signed-out view, not "저장하지 못했어요" over a stale account."""
+    context, page, errors, _ = open_page(browser, db={"user": user(), "fail": {"signout": True}})
+    wait_view(page, "로그아웃")
+    page.get_by_role("button", name="로그아웃").first.click()
+    wait_view(page, "카카오로 계속하기")
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('로그아웃했어요')")
+    assert page.evaluate(f"localStorage.getItem('{TOKEN_KEY}')") is None
+    assert errors == []
+    context.close()
+    # A session that really stayed is still a failure, said as one.
+    context, page, errors, _ = open_page(browser, db={"user": user(), "fail": {"signoutKeep": True}})
+    wait_view(page, "로그아웃")
+    page.get_by_role("button", name="로그아웃").first.click()
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('로그아웃하지 못했어요')")
+    assert "카카오로 계속하기" not in page.locator("#myApp").inner_text()
     assert errors == []
     context.close()
