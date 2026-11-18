@@ -10,6 +10,7 @@
 제목 **밥도둑 소식** 아래에 설명 문단 없이 바로 두 목록이 옵니다.
 
 - **지금** (`#now`): 작성된 공지(`#eventNotices`)와 진행 중·예정 활동(`#eventUpcoming`). 둘 다 없으면 “예정된 활동 없음” 한 줄만 보입니다. Instagram 링크는 목록 아래 한 줄로 따로 있습니다.
+  진행 중·예정 활동은 **이벤트 내용을 바로 보여 줍니다**(owner 2026-11-19, “진행하고 있는거는 그냥 이벤트를 띄워줘. 사람들은 가시성이 중요하잖아”): 상세 본문이 펼쳐진 채로 나오고, “자세히” 단추와 게시물 링크는 없습니다.
 - **지난 활동** (`#archive`, 목록 `#eventList`): 날짜 · 제목 · 짧은 상태 · 당시 게시물 링크. 당시 안내 전문과 상태 설명은 **자세히**(`<details>`) 안에 접혀 있습니다.
 - 이 페이지는 밥도둑이 직접 연 활동만 다룹니다. 꽁밥 일정은 싣지 않습니다.
 
@@ -67,7 +68,7 @@
   <p class="event-date"><time datetime="2026-05-19">2026.05.19</time> — <time datetime="2026-05-20">05.20</time> <span class="event-place" data-i18n="event.e1.place">태울석림제 부스</span></p>
   <h3 class="event-name" data-i18n="event.e1.summary">KAKI × 밥도둑 〈카빙〉</h3>
   <p class="event-state" data-event-state hidden></p>
-  <a class="event-link" href="https://www.instagram.com/…" target="_blank" rel="noopener noreferrer"><span data-event-cta>당시 게시물</span> <span aria-hidden="true">↗</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
+  <a class="event-link" href="https://www.instagram.com/…" target="_blank" rel="noopener noreferrer"><span data-event-cta>당시 게시물</span><span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>
   <details class="event-more">
     <summary data-i18n="event.more">자세히</summary>
     <p class="event-note" data-event-note></p>
@@ -103,8 +104,11 @@
 
 | 구간 | 링크 문구 (`[data-event-cta]`) | 자세히 안 참여 방법 행 |
 |------|--------------------------------|------------------------|
-| 진행 중 · 예정 | **게시물 보기** ↗ (`event.cta.live`) | 그대로 |
-| 지난 활동 | **당시 게시물** ↗ (`event.cta.past`) | 흐린 글씨 + “당시 안내 · 지금은 참여할 수 없어요” 표시 (`event.historical`) |
+| 진행 중 · 예정 | 숨김: 상세 본문이 펼쳐진 채 바로 보입니다(“자세히” 단추도 없음, owner 2026-11-19) | 그대로 |
+| 지난 활동 | **게시물 보기** (`event.cta.past`) | 흐린 글씨 + “당시 안내 · 지금은 참여할 수 없어요” 표시 (`event.historical`) |
+
+- 링크에는 화살표(↗, →)를 붙이지 않습니다(owner 2026-11-19, “화살표 없어도 될거같아”). 새 창은 화면 읽기 프로그램에만 “(새 창)”으로 알립니다.
+- 이 사이트 안의 활동(먹방 월드컵처럼 `link` 가 사이트 안 페이지)은 진행 중엔 카드 안 시작 화면을, 지난 뒤엔 **페이지 보기** 링크를 보여 줍니다.
 
 - `participation` 은 스크립트가 `data-detail="participation"` 행으로 씁니다(한·영 모두). 페이지 스크립트가 지난 활동일 때만 표시를 붙이고, 언어를 바꿔도 다시 붙입니다.
 - 상세 본문은 당시 안내를 그대로 둡니다. 다만 화면 조작(“카드 오른쪽 버튼” 등)을 가리키는 문장은 쓰지 않습니다.

@@ -196,6 +196,9 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert html.count("<span data-event-cta>") == n and "event.openPageBtn" not in html
     # An activity held on a page of this site opens it in place; an original post opens a new tab.
     assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == n - on_site
+    # No arrow beside the link words (owner 2026-11-19, "화살표 없어도 될거같아").
+    rows_html = html.split("<!-- @content:events -->", 1)[1].split("<!-- @end content -->", 1)[0]
+    assert "↗" not in rows_html and "→" not in rows_html
     assert "'event.cta.page'" not in html and "'event.cta.pagePast': 'Open the page'" in html   # no 지금 해보기 button: the start screen is in the card
     # copy cleanup, owner 2026-11-12: a past row's link reads the same as a live one's.
     assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '게시물 보기'" in html
