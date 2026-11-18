@@ -1,10 +1,46 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T23:09:51+09:00",
+  "generatedAt": "2026-11-18T23:46:49+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 44,
+  "count": 45,
   "events": [
+    {
+      "id": "473910da-dd78-477b-a172-f36b38767ca6",
+      "title": "2026 생명과학과 학과설명회",
+      "summary": "생명과학과 학과 소개, 수업·졸업 후 진로, 학과 행사 및 Q&A·Kahoot 퀴즈를 진행하는 설명회입니다. 참석자에게 선착순 초밥세트를 제공하고 경품을 제공합니다.",
+      "startAt": "2026-11-18T18:30:00+09:00",
+      "endAt": "2026-11-18T20:30:00+09:00",
+      "dateText": "2026. 11. 18 (수)",
+      "timeText": "18:30~20:30",
+      "location": {
+        "name": "터만홀",
+        "building": "창의학습관(E11)",
+        "room": "터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "선착순 초밥세트 증정",
+        "source": "text"
+      },
+      "organizer": "생명과학과 학생회",
+      "eligibility": "생명과학과를 꿈꾸는 모든 새내기",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "전기자전거, 에어팟5, 노브랜드버거 세트 쿠폰; 추첨을 통해 노브랜드버거 세트 쿠폰 5명 증정"
+      },
+      "audience": {
+        "text": "생명과학과 학생",
+        "basis": "inferred"
+      }
+    },
     {
       "id": "233f1198-dde3-4e4d-8b1e-76c63787b579",
       "title": "2026 신소재공학과 학과설명회",
