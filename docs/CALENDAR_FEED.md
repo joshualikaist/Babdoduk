@@ -33,7 +33,39 @@ so the rule is now: **each listing is in the calendar once.**
   time moved is sent again with "캘린더의 예전 일정은 지워 주세요" (a file can never change an entry already there).
 
 Existing duplicates stay until the visitor deletes them; after 016, one 다시 연결 empties the older subscriptions,
-which can then be removed in the Calendar app (캘린더 → 캘린더 목록 → the empty 밥도둑 내 꽁밥 → 구독 해지).
+which can then be removed in the Calendar app.
+
+## A profile instead of a subscription link (owner 2026-11-19)
+
+016 left one problem: "하나만 되도록 하는건 잘 된거 같아. 그래도 문제는 구독은 쌓여" — every 다시 연결 left an empty
+calendar on the phone, and a website cannot delete a phone's subscription. So on iPhone and iPad the button now
+installs a **configuration profile** (`/cal/<token>.mobileconfig`, routed by `vercel.json` to `api/cal.js?profile=1`)
+holding Apple's calendar subscription payload (`com.apple.subscribedcalendar.account`, iPhone and iPad only) for
+the account's address. Its top-level `PayloadIdentifier` is always `com.babdodukms.calendar`, and Apple's
+reference says this identifier "is used to determine whether a new profile should replace an existing one or
+should be added" (Configuration Profile Reference; Apple Platform Deployment, "Intro to device management
+payloads": a matching identifier is an "update"). So:
+
+- installing again **replaces** the installed profile: the phone always holds exactly one 밥도둑 calendar, named
+  **밥도둑 꽁밥** (`SubCalAccountDescription`), never a second one;
+- removing the profile (설정 → 일반 → VPN 및 기기 관리 → 밥도둑 캘린더 → 프로필 제거) removes the calendar;
+- the profile only wraps the address: serving it reads nothing and counts as no calendar read. It carries a fresh
+  address (016), so its first read retires the old one.
+
+The visitor taps the button and 허용 in Safari, then 설치 under 프로필이 다운로드됨 at the top of Settings (three
+steps on the card). Only Safari hands a profile to Settings; in other browsers and in-app views the card says to
+open the page in Safari. The profile is not signed, so Settings shows it as unverified.
+
+**Old webcal subscriptions** (the ones made before this, named 밥도둑 내 꽁밥) are reported, since they cannot be
+removed from here: `supabase/migrations/017_calendar_leftover.sql` (REVIEW AND APPLY MANUALLY, after 016) keeps the
+address a new connection replaces (`calendar_feed_retired`, closed to browsers, gone with the account). A read of
+a kept address answers one marker row (`babdoduk:retired`), which `api/cal.js` turns into a single all-day notice
+in that calendar, "밥도둑 지난 구독 · 지워 주세요", with no alert (an older `api/cal.js` skips the row and answers an
+empty calendar, as before). `my_calendar_link()` also returns `leftover_at`, and while an old address was read in
+the last day the card says which calendar to delete (밥도둑 내 꽁밥, not 밥도둑 꽁밥).
+
+Not verifiable here: the install on a real iPhone (Safari's prompt, Settings' 설치) and the replacement on a second
+install; both follow Apple's documented behavior and need one check on a phone.
 
 ## What a visitor does
 
@@ -70,9 +102,10 @@ Calendar's add page instead of an .ics download for guests.
 
 ## Tests
 
-`tests/test_calendar_feed.py`: the migrations (013 and 016) read statically and, with `pgserver` and `psycopg`,
+`tests/test_calendar_feed.py`: the profile (a real property list, one fixed identifier, our own sites only), the
+old-address notice, and the migrations (013, 016 and 017) read statically and, with `pgserver` and `psycopg`,
 applied to a throwaway PostgreSQL (tokens, other users, a new address, the newest connection winning, account
-deletion); `api/cal.js` run under Node
+deletion, an old address marked and reported); `api/cal.js` run under Node
 with fetch replaced (including forged hosts and an empty list). `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, its states (not connected, 확인 중,
 연결됨, stale, before 016) and the card hidden while the function is missing. `tests/test_star_calendar.py`: a
 listing is sent once, a button asks for a second tap, a moved listing is sent again with the note.

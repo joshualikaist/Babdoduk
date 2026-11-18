@@ -591,25 +591,34 @@ IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/60
 
 
 def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(browser):
-    """Owner 2026-11-12: connect once, then every star shows in the iPhone calendar (docs/CALENDAR_FEED.md).
+    """Owner 2026-11-12: set up once, then every star shows in the iPhone calendar (docs/CALENDAR_FEED.md).
     A laptop needs no calendar link and Android gets the 30-minute alert; no talk about addresses.
-    Before 016 is applied the card uses 013's address and cannot know the state, so after a tap it only
-    says that one tap is enough (owner 2026-11-19: a second 연결 showed every event twice)."""
+    Owner 2026-11-19 ("구독은 쌓여 ... 다른 방식을 찾아내봐"): the button installs a configuration profile that
+    replaces itself, in three short steps. Before 016 the card uses 013's address and cannot know the state."""
     tables = {"saved_events": [], "saved_places": [], "profiles": []}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=IPHONE)
     wait_view(page, "아이폰 캘린더 연결")
     link = page.locator("[data-my-cal]")
-    assert link.inner_text() == "아이폰 캘린더에 연결"
-    assert link.get_attribute("href") == f"webcal://{HOST}/cal/{'T' * 43}.ics"
+    assert link.inner_text() == "아이폰 캘린더에 연결하기"
+    assert link.get_attribute("href") == f"/cal/{'T' * 43}.mobileconfig"
     assert link.bounding_box()["height"] >= 44
     card = page.locator("section[aria-labelledby='myCalTitle']").inner_text()
-    assert "주소" not in card and "구글" not in card and '"구독"' in card and "한 번만" in card
+    assert "주소" not in card and "구글" not in card and "한 번만" in card
+    assert page.locator("#myCal .my-steps li").count() == 3 and "프로필이 다운로드됨" in card and "하나만 남아요" in card
+    assert "사파리에서" not in card
     tap_calendar(page)
-    wait_view(page, "연결 확인 중")
+    wait_view(page, "설치를 기다리는 중")
     card = page.locator("#myCal").inner_text()
-    assert "다시 누를 필요 없어요" in card and page.locator("#myCal .my-cal-btn").count() == 0
+    assert "프로필이 다운로드됨" in card and page.locator("#myCal .my-cal-btn").count() == 0
+    assert page.locator("#myCal [data-my-cal]").inner_text() == "프로필 다시 받기"
     page.reload()
-    wait_view(page, "연결 확인 중")   # the tap is remembered in this browser
+    wait_view(page, "설치를 기다리는 중")   # the tap is remembered in this browser
+    assert errors == []
+    context.close()
+    # Chrome on an iPhone keeps a profile as a file: the card says to use Safari.
+    chrome = IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=chrome)
+    wait_view(page, "사파리에서 이 페이지를 열어야 설치할 수 있어요.")
     assert errors == []
     context.close()
     for ua in (None, "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"):
@@ -625,7 +634,7 @@ def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(brow
 
 
 def tap_calendar(page, selector="[data-my-cal]"):
-    """Taps a webcal link without leaving the page (the browser under test has no calendar app)."""
+    """Taps the profile link without leaving the page (the browser under test has no Settings app)."""
     page.evaluate("""() => window.addEventListener('click', e => {
         if (e.target.closest('[data-my-cal]')) e.preventDefault(); }, true)""")
     page.locator(selector).first.click()
@@ -637,42 +646,51 @@ def iso_ago(hours):
 
 
 def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
-    """Owner 2026-11-19 ("gmail 같은것처럼 이거 설정할 수 있게 해봐", "로직을 전면 수정해"): with 016 the card says whether
-    the calendar is connected and when it last checked, and offers the button only when it is not. A tap waits
-    for the calendar's first read (확인 중) and turns into 연결됨 by itself; 다시 연결 uses the new address, whose
-    first read stops the old one, so it never makes a second copy."""
+    """Owner 2026-11-19 ("gmail 같은것처럼 이거 설정할 수 있게 해봐", "로직을 전면 수정해", "구독은 쌓여"): with 016 the
+    card says whether the calendar is connected and when it last checked, and offers the big button only when it
+    is not. A tap waits for the calendar's first read and turns into 연결됨 by itself; installing again replaces
+    the profile, so it never leaves a second calendar. An old webcal subscription still read (017) is named."""
     tables = {"saved_events": [], "saved_places": [], "profiles": []}
     fresh = {"link": "L" * 43, "read_at": None, "linked_at": None}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": fresh}, ua=IPHONE)
     wait_view(page, "아이폰 캘린더 연결")
-    assert page.locator("#myCal .my-cal-btn").get_attribute("href") == f"webcal://{HOST}/cal/{'L' * 43}.ics"
+    assert page.locator("#myCal .my-cal-btn").get_attribute("href") == f"/cal/{'L' * 43}.mobileconfig"
     tap_calendar(page)
-    wait_view(page, "연결 확인 중")
-    # The phone subscribed and read the address: the server now offers the next one.
+    wait_view(page, "설치를 기다리는 중")
+    # The phone installed the profile and read the address: the server now offers the next one.
     page.evaluate("""(at) => { const db = JSON.parse(localStorage.getItem('__fakedb'));
         db.calLink = { link: 'M'.repeat(43), read_at: at, linked_at: at }; localStorage.setItem('__fakedb', JSON.stringify(db));
         document.dispatchEvent(new Event('visibilitychange')); }""", iso_ago(0.1))
     wait_view(page, "연결됨")
     card = page.locator("#myCal").inner_text()
-    assert "다시 연결할 필요 없어요" in card and "캘린더가 마지막으로 확인한 때:" in card and "겹치지 않아요" in card
-    assert page.locator("#myCal .my-cal-btn").count() == 0
+    assert "다시 설치할 필요 없어요" in card and "캘린더가 마지막으로 확인한 때:" in card and "하나만 남아요" in card
+    assert "VPN 및 기기 관리" in card and "프로필 제거" in card
+    assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-leftover").count() == 0
     again = page.locator("#myCal [data-my-cal]")
-    assert again.count() == 1 and again.get_attribute("href") == f"webcal://{HOST}/cal/{'M' * 43}.ics"
-    assert again.bounding_box()["height"] >= 44
+    assert again.count() == 1 and again.get_attribute("href") == f"/cal/{'M' * 43}.mobileconfig"
+    assert again.inner_text() == "캘린더에 안 보이면 다시 설치" and again.bounding_box()["height"] >= 44
     page.wait_for_function("() => document.getElementById('myToast').textContent.includes('캘린더가 연결됐어요')")
     assert errors == []
     context.close()
-    # Connected in another browser: the same state, nothing to tap.
-    on = {"link": "N" * 43, "read_at": iso_ago(2), "linked_at": iso_ago(48)}
+    # Connected, and an old webcal subscription still read today: the card says which calendar to delete.
+    on = {"link": "N" * 43, "read_at": iso_ago(2), "linked_at": iso_ago(48), "leftover_at": iso_ago(1)}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": on}, ua=IPHONE)
     wait_view(page, "연결됨")
+    note = page.locator("#myCal .my-cal-leftover").inner_text()
+    assert "예전 구독이 휴대폰에 남아 있어요." in note and '"밥도둑 내 꽁밥"' in note and '"밥도둑 꽁밥"' in note
     assert page.locator("#myCal .my-cal-btn").count() == 0 and errors == []
     context.close()
-    # No read for days: probably removed on the phone, so the button is back.
+    # The old subscription stopped reading a day ago: no note.
+    gone = dict(on, leftover_at=iso_ago(30))
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": gone}, ua=IPHONE)
+    wait_view(page, "연결됨")
+    assert page.locator("#myCal .my-cal-leftover").count() == 0 and errors == []
+    context.close()
+    # No read for days: the profile was probably removed, so the button is back.
     stale = {"link": "S" * 43, "read_at": iso_ago(24 * 10), "linked_at": iso_ago(24 * 20)}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": stale}, ua=IPHONE)
     wait_view(page, "한동안 확인이 없었어요")
-    assert page.locator("#myCal .my-cal-btn").inner_text() == "아이폰 캘린더에 다시 연결" and errors == []
+    assert page.locator("#myCal .my-cal-btn").inner_text() == "다시 설치하기" and errors == []
     context.close()
 
 
