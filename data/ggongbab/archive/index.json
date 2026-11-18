@@ -1,10 +1,42 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T18:17:23+09:00",
+  "generatedAt": "2026-11-18T19:22:50+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 39,
+  "count": 40,
   "events": [
+    {
+      "id": "78b6aeba-c538-4043-b232-da92b45c95a9",
+      "title": "2026 KAIST 꿈나무 과학멘토 기초과학 강연 시리즈 '물리, 어디까지 확대해봤니?'",
+      "summary": "물리학과에서 유성구 지역 초·중학생들을 초청하여 진행하는 물리학 대중강연입니다. 양용수 교수의 '원자를 눈으로 볼 수 있을까' 강연이 진행됩니다.",
+      "startAt": "2026-11-18T14:30:00+09:00",
+      "endAt": "2026-11-18T16:00:00+09:00",
+      "dateText": "2026. 11. 18.(수)",
+      "timeText": "14:30~16:00",
+      "location": {
+        "name": "KAIST 자연과학동 공동강의실",
+        "building": "E6-1",
+        "room": "1501호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "간단한 간식",
+        "source": "text"
+      },
+      "organizer": "KAIST 물리학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "유성구 지역 초·중학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "536a0459-e98b-4965-acca-b199d74f567d",
       "title": "KAIST 기후테크 세미나 #6 — 기후 위기와 촉매 기술의 역할",
