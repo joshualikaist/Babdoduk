@@ -22,6 +22,7 @@
     cal: null,                // the calendar connection {token, readAt, linkedAt, known}, null while unknown or unavailable
     calTap: '',               // the start of the address this page tapped (also kept in localStorage)
     calFallback: false,       // Safari did not open from Chrome: offer the profile as a file
+    calLeftoverOk: '',        // when the visitor said the old subscription is deleted (also kept in localStorage)
     push: 'hidden',           // this browser's 30-minute alert: hidden | home | unsupported | denied | off | on
     profile: null,
     merge: null,              // the last merge result, for its notice and 되돌리기
@@ -208,7 +209,12 @@
   // until a calendar reads that address: meanwhile the card says 설치를 기다리는 중.
   var CAL_TAP_KEY = 'babdoduk-calendar-tap';
   var CAL_STALE_MS = 3 * 86400000;      // no read for three days: the profile was probably removed
-  var CAL_LEFTOVER_MS = 86400000;       // an old address read within a day: an old subscription is still on a phone
+  // An old address read lately means an old subscription is still on a phone (owner 2026-11-19: after deleting it
+  // the note stayed, "이상한 것같아"). Reads around the switch itself do not count, the note fades six hours after
+  // the last read, and 지웠어요 hides it until the old address is read again.
+  var CAL_LEFTOVER_MS = 6 * 3600000;
+  var CAL_LEFTOVER_GRACE_MS = 10 * 60000;
+  var CAL_LEFTOVER_KEY = 'babdoduk-calendar-leftover-ok';
   function calPath() { return '/cal/' + state.cal.token + '.mobileconfig'; }
   // Students use Chrome, not Safari (owner 2026-11-19: "웬만한거 다 크롬으로 ... 학생들 사파리 안써"), but only
   // Safari hands a downloaded profile to Settings. The profile's address needs no sign-in, so a tap in Chrome
@@ -242,8 +248,12 @@
     return 'off';
   }
   function calLeftover() {
-    var at = state.cal && state.cal.leftoverAt;
-    return !!at && Date.now() - Date.parse(at) < CAL_LEFTOVER_MS;
+    var cal = state.cal, at = cal && cal.leftoverAt ? Date.parse(cal.leftoverAt) : NaN;
+    if (isNaN(at) || Date.now() - at >= CAL_LEFTOVER_MS) return false;
+    if (cal.linkedAt && at - Date.parse(cal.linkedAt) < CAL_LEFTOVER_GRACE_MS) return false;
+    var ok = state.calLeftoverOk;
+    if (!ok) { try { ok = localStorage.getItem(CAL_LEFTOVER_KEY) || ''; } catch (e) { ok = ''; } }
+    return !(ok && at <= Date.parse(ok));
   }
   function calLink(cls, label) {
     return '<a class="' + cls + '" data-my-cal href="' + esc(calHref()) + '">' + esc(label) + '</a>';
@@ -257,7 +267,7 @@
       html += '<p class="my-cal-state is-on" role="status"><span aria-hidden="true">✓</span> ' + esc(t('my.cal.on', '연결됨')) + '</p>';
       html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누른 꽁밥이 "밥도둑 꽁밥" 캘린더에 알아서 들어가요. 다시 설치할 필요 없어요.')) + '</p>';
       html += '<p class="my-fine">' + esc(t('my.cal.checked', '캘린더가 마지막으로 확인한 때: {time}', { time: dateText(state.cal.readAt) })) + '<br>' +
-        esc(t('my.cal.delay', '새로 누른 별은 캘린더에 뜨기까지 조금 걸릴 수 있어요.')) + '</p>';
+        esc(t('my.cal.delay', '새 별은 아이폰이 다음에 확인할 때 들어가요. 바로 보려면 캘린더 앱 아래 "캘린더"를 눌러 목록을 아래로 당겨 주세요.')) + '</p>';
     } else if (s === 'pending') {
       html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.pending', '설치를 기다리는 중')) + '</p>';
       html += '<p class="my-text">' + esc(t('my.cal.pendingBody', '설정 앱 맨 위의 "프로필이 다운로드됨"을 눌러 "설치"를 마쳐 주세요.')) + '</p>';
@@ -269,7 +279,8 @@
     }
     if (calLeftover()) {
       html += '<div class="my-cal-leftover" role="note"><p class="my-note"><strong>' + esc(t('my.cal.leftover', '예전 구독이 휴대폰에 남아 있어요.')) + '</strong></p>' +
-        '<p class="my-fine">' + esc(t('my.cal.leftoverHow', '캘린더 앱 아래 "캘린더"에서 "밥도둑 내 꽁밥" 옆 ⓘ를 눌러 맨 아래 빨간 버튼으로 지워 주세요. 지금 쓰는 건 "밥도둑 꽁밥"이에요.')) + '</p></div>';
+        '<p class="my-fine">' + esc(t('my.cal.leftoverHow', '캘린더 앱 아래 "캘린더"에서 "밥도둑 내 꽁밥" 옆 ⓘ를 눌러 맨 아래 빨간 버튼으로 지워 주세요. 지금 쓰는 건 "밥도둑 꽁밥"이에요.')) + '</p>' +
+        '<button type="button" class="btn btn-secondary my-small my-cal-ok" data-my-cal-leftover-ok>' + esc(t('my.cal.leftoverOk', '지웠어요')) + '</button></div>';
     }
     if (state.calFallback && !inSafari()) {
       // Safari did not open: the file itself, then the Files app hands it to Settings.
@@ -496,6 +507,14 @@
     if (state.busy) return;
     // The webcal link opens the phone's subscribe screen by itself; the card then waits for the calendar
     // (re-drawn after the browser has followed the link, never during the click).
+    if (e.target.closest('[data-my-cal-leftover-ok]')) {
+      state.calLeftoverOk = new Date().toISOString();
+      try { localStorage.setItem(CAL_LEFTOVER_KEY, state.calLeftoverOk); } catch (err) { /* hidden for this page only */ }
+      render();
+      var calTitle = document.getElementById('myCalTitle');
+      if (calTitle) { calTitle.setAttribute('tabindex', '-1'); calTitle.focus({ preventScroll: true }); }
+      return;
+    }
     if (e.target.closest('[data-my-cal]') && state.cal) {
       rememberCalTap();
       state.calFallback = false;

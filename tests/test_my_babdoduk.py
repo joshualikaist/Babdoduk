@@ -675,6 +675,7 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     wait_view(page, "연결됨")
     card = page.locator("#myCal").inner_text()
     assert "다시 설치할 필요 없어요" in card and "캘린더가 마지막으로 확인한 때:" in card and "하나만 남아요" in card
+    assert "아래로 당겨" in card   # how to see a new star at once
     assert "VPN 및 기기 관리" in card and "프로필 제거" in card
     assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-leftover").count() == 0
     again = page.locator("#myCal [data-my-cal]")
@@ -690,9 +691,21 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     note = page.locator("#myCal .my-cal-leftover").inner_text()
     assert "예전 구독이 휴대폰에 남아 있어요." in note and '"밥도둑 내 꽁밥"' in note and '"밥도둑 꽁밥"' in note
     assert page.locator("#myCal .my-cal-btn").count() == 0 and errors == []
+    # Owner 2026-11-19: deleted, yet the note stayed. 지웠어요 hides it, also after a reload.
+    page.locator("[data-my-cal-leftover-ok]").click()
+    page.wait_for_function("() => !document.querySelector('#myCal .my-cal-leftover')")
+    page.reload()
+    wait_view(page, "연결됨")
+    assert page.locator("#myCal .my-cal-leftover").count() == 0 and errors == []
     context.close()
-    # The old subscription stopped reading a day ago: no note.
-    gone = dict(on, leftover_at=iso_ago(30))
+    # A read of the old address right when the new one took over is part of the switch, not a leftover.
+    switch = dict(on, linked_at=iso_ago(1), leftover_at=iso_ago(0.95))
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": switch}, ua=IPHONE)
+    wait_view(page, "연결됨")
+    assert page.locator("#myCal .my-cal-leftover").count() == 0 and errors == []
+    context.close()
+    # The old subscription stopped reading hours ago: no note.
+    gone = dict(on, leftover_at=iso_ago(7))
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": gone}, ua=IPHONE)
     wait_view(page, "연결됨")
     assert page.locator("#myCal .my-cal-leftover").count() == 0 and errors == []
