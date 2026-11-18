@@ -888,6 +888,14 @@
       state.entry.focus = '';
       requestAnimationFrame(function () { focusCard(target); });
     }
+    // #past (the footer's 지난 꽁밥 link): once both lists have loaded, the archive is open and in view.
+    if (state.jumpToPast && state.free.status !== 'loading' && state.archive.status !== 'loading') {
+      state.jumpToPast = false;
+      requestAnimationFrame(function () {
+        var past = document.getElementById('ggArchiveTitle');
+        if (past) past.scrollIntoView({ block: 'start' });
+      });
+    }
     renderDiagnostics();
     if (debugLayout) requestAnimationFrame(reportLayout);
   }
@@ -1313,6 +1321,12 @@
     if (tabSaved === 'menu' || tabSaved === 'free') state.activeSection = tabSaved;
   } catch (err) {}
   if (location.hash === '#menu' || location.hash === '#free') state.activeSection = location.hash.slice(1);
+  function openPast() {
+    state.activeSection = 'free';
+    state.archive.expanded = true;
+    state.jumpToPast = true;
+  }
+  if (location.hash === '#past') openPast();
   // 꽁밥 LIVE share links: ?e=<listing id> and ?week=<a date in the week, read as its Monday>; #saved opens the saved list.
   if (L) {
     var entryId = query.get('e') || '';
@@ -1324,6 +1338,7 @@
   }
   window.addEventListener('hashchange', function () {
     if (location.hash === '#menu' || location.hash === '#free') setTab(location.hash.slice(1));
+    if (location.hash === '#past') { openPast(); render(); }
   });
   function start() {
     pushRefresh();

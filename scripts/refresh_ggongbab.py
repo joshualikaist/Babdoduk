@@ -38,7 +38,7 @@ from ggongbab.config import DATA_DIR, KST, Settings, load_settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa: E402
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
 from ggongbab.exporter import (ARCHIVE_DIR, ARCHIVE_LOOKBACK_DAYS, build_archive,  # noqa: E402
-                               build_payload, previously_listed_ids, write_archive, write_payload)
+                               build_payload, write_archive, write_payload)
 from ggongbab.parsers import ai_errors  # noqa: E402
 from ggongbab.parsers.ai_errors import is_fatal  # noqa: E402
 from ggongbab.pipeline import Pipeline  # noqa: E402
@@ -169,8 +169,7 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
     # must never cost the live feed a refresh, so a failed read only skips the archive
     # (the type name alone is printed: Actions logs are public).
     try:
-        archive = build_archive(repo.recent_published_events(ARCHIVE_LOOKBACK_DAYS), settings,
-                                previously_listed_ids(DATA_DIR), now)
+        archive = build_archive(repo.recent_published_events(ARCHIVE_LOOKBACK_DAYS), settings, now)
     except Exception as exc:  # noqa: BLE001
         print(f"[warn] archive not built ({type(exc).__name__}); keeping previous archive/index.json")
         archive = None

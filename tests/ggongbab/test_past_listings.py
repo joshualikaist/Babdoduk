@@ -14,8 +14,7 @@ import pytest
 
 from ggongbab.config import KST
 from ggongbab.db.repository import MemoryRepository
-from ggongbab.exporter import (ARCHIVE_WINDOW_DAYS, build_archive, build_payload, previously_listed_ids,
-                               write_archive, write_payload)
+from ggongbab.exporter import ARCHIVE_WINDOW_DAYS, build_archive, build_payload, write_archive, write_payload
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -48,9 +47,8 @@ def row(event_id="evt-a", *, ended_hours_ago=24.0, duration_hours=1.0, **over):
     return base
 
 
-def archive(rows, settings, listed=None, now=NOW):
-    listed = {r["id"] for r in rows} if listed is None else listed
-    return build_archive(rows, settings, listed, now)
+def archive(rows, settings, now=NOW):
+    return build_archive(rows, settings, now)
 
 
 def ids(payload):
@@ -104,19 +102,13 @@ def test_listings_that_ended_more_than_30_days_ago_leave_the_public_window(setti
     assert ids(archive(rows, settings)) == ["recent"]
 
 
-def test_a_row_that_was_never_published_is_not_archived(settings):
-    """A backfilled event that ended before any export saw it was never a public listing."""
-    rows = [row("listed"), row("backfilled", ended_hours_ago=30)]
-    assert ids(archive(rows, settings, listed={"listed"})) == ["listed"]
-
-
-def test_publication_evidence_comes_from_the_previous_live_feed_and_archive(settings, tmp_path):
-    write_payload({"events": [{"id": "was-live"}]}, tmp_path)
-    write_archive({"events": [{"id": "was-archived"}]}, tmp_path)
-    assert previously_listed_ids(tmp_path) == {"was-live", "was-archived"}
-    (tmp_path / "latest.json").write_text("{not json", encoding="utf-8")
-    assert previously_listed_ids(tmp_path) == {"was-archived"}
-    assert previously_listed_ids(tmp_path / "missing") == set()
+def test_an_event_collected_only_after_it_ended_is_archived_too(settings):
+    """Owner 2026-11-18, after the Dooray outage of 11-13..18: "지난거는 지난 꽁밥에 넣어야지".
+    A row the collectors found late is past free food like any other; eligibility still applies."""
+    rows = [row("listed"), row("backfilled", ended_hours_ago=30),
+            row("backfilled-unconfirmed", ended_hours_ago=30, food_provided="unknown"),
+            row("backfilled-in-review", ended_hours_ago=30, needs_review=True)]
+    assert ids(archive(rows, settings)) == ["listed", "backfilled"]
 
 
 # ---------------------------------------------------------------------------
@@ -255,14 +247,14 @@ def _fresh_row(event_id, **over):
     return row(event_id, ended_hours_ago=(NOW - real).total_seconds() / 3600 + over.pop("ended_hours_ago", 24), **over)
 
 
-def test_export_archives_what_the_previous_feed_listed(settings, data_dir, capsys):
+def test_export_archives_ended_events_whether_or_not_the_previous_feed_listed_them(settings, data_dir, capsys):
     write_payload({"events": [{"id": "listed"}]}, data_dir)
     rows = [_fresh_row("listed"), _fresh_row("backfilled"), _fresh_row("upcoming", ended_hours_ago=-48)]
     assert refresh_ggongbab.export(settings, StubRepo(rows), dry_run=False) == 0
     assert ids(_read(data_dir / "latest.json")) == ["upcoming"]
-    assert ids(_read(data_dir / "archive" / "index.json")) == ["listed"]
+    assert ids(_read(data_dir / "archive" / "index.json")) == ["backfilled", "listed"]
     assert not (data_dir / ".staging").exists()
-    assert "events=1 archive=1" in capsys.readouterr().out
+    assert "events=1 archive=2" in capsys.readouterr().out
 
 
 def test_an_invalid_archive_keeps_the_previous_one_without_holding_back_the_live_feed(settings, data_dir, monkeypatch, capsys):
@@ -293,7 +285,7 @@ def test_dry_run_writes_neither_file(settings, data_dir, capsys):
     assert refresh_ggongbab.export(settings, StubRepo([_fresh_row("x")]), dry_run=True) == 0
     assert not (data_dir / "latest.json").exists() and not (data_dir / "archive").exists()
     assert not (data_dir / "news.json").exists()
-    assert "archive: 0 ended listing(s) in the last 30 days" in capsys.readouterr().out
+    assert "archive: 1 ended listing(s) in the last 30 days" in capsys.readouterr().out   # found late is still past free food
 
 
 def test_memory_repository_returns_recently_started_published_rows():

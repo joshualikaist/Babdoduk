@@ -773,14 +773,14 @@ def home_summary(page):
           ("23:59 uses latest; 00:01 uses today's file only when it exists", choice))
     colors = page.evaluate("""() => {
       const color = sel => getComputedStyle(document.querySelector(sel)).color;
-      return {copy: color('.footer-apple-copy'), mail: color('.footer-apple-email-plain'),
-              contact: color('.footer-apple-email-plain [data-i18n="footer.contact"]')};
+      return {copy: color('.footer-copy'), mail: color('.footer-email'),
+              contact: color('.footer-email [data-i18n="footer.contact"]')};
     }""")
     check(colors["copy"] == colors["mail"] == colors["contact"], ("footer contact matches copyright", colors))
     page.set_viewport_size({"width": 1440, "height": 900})
     wide = page.evaluate("""() => {
       const color = sel => getComputedStyle(document.querySelector(sel)).color;
-      return color('.footer-apple-copy') === color('.footer-apple-email-plain');
+      return color('.footer-copy') === color('.footer-email');
     }""")
     check(wide, "footer contact matches copyright at 1440")
     page.set_viewport_size({"width": 390, "height": 844})
@@ -801,7 +801,7 @@ def home_summary(page):
           ("English calendar date is month, day and weekday", page.locator("#homeCalToday").inner_text()))
     en_colors = page.evaluate("""() => {
       const color = sel => getComputedStyle(document.querySelector(sel)).color;
-      return color('.footer-apple-copy') === color('.footer-apple-email-plain');
+      return color('.footer-copy') === color('.footer-email');
     }""")
     check(en_colors, "English footer contact matches copyright")
     page.locator("#langToggle").click()
@@ -3118,8 +3118,12 @@ NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
 # 마이 밥도둑 heads the 더보기 group and the phone menu panel (owner 2026-11-12), beside the person icon.
 NAV_MORE = ["my.html", "mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
 INSTAGRAM = "https://www.instagram.com/babdodukms/"
-# The footer's site links are the top menu's three direct ones (owner 2026-11-12), then the privacy policy.
-FOOTER_LINKS = ["ggongbab.html", "choose.html", "event.html", "privacy.html"]
+# The footer (owner 2026-11-18): contact, every public page in four groups, then the privacy policy.
+FOOTER_MAIL = "mailto:joshualisky@kaist.ac.kr"
+FOOTER_LINKS = [FOOTER_MAIL, INSTAGRAM, "ggongbab.html", "ggongbab.html#past", "tip.html", "choose.html",
+                "ggongbab.html#menu", "https://naver.me/5NeqUPzI", "event.html", "mukbang.html", "my.html", "history.html",
+                FOOTER_MAIL + "?subject=%5B%EB%B0%A5%EB%8F%84%EB%91%91%5D%20%EC%A0%95%EB%B3%B4%20%EC%88%98%EC%A0%95%C2%B7%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD",
+                "privacy.html"]
 CHROME = r"""() => {
   const pick = (el, props) => { const s = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, s.getPropertyValue(p)])); };
   const root = document.documentElement, body = document.body, footer = document.querySelector('.site-footer');
@@ -3139,9 +3143,9 @@ CHROME = r"""() => {
       nav: pick(document.querySelector('.site-nav'), ['height', 'position', 'background-color', 'font-family']),
       footer: pick(footer, ['background-color', 'padding-top', 'padding-bottom', 'margin-top', 'color', 'font-family', 'position', 'z-index']),
       inner: pick(footer.querySelector('.site-footer-inner'), ['max-width', 'padding-left', 'padding-right']),
-      hr: pick(footer.querySelector('.footer-apple-hr'), ['border-top-color', 'border-top-width', 'margin-bottom']),
-      main: pick(footer.querySelector('.footer-apple-main'), ['font-size', 'line-height', 'grid-template-columns']),
-      fine: pick(footer.querySelector('.footer-apple-fine'), ['font-size', 'color', 'border-top-color', 'padding-top'])
+      hr: pick(footer.querySelector('.footer-hr'), ['border-top-color', 'border-top-width', 'margin-bottom']),
+      main: pick(footer.querySelector('.footer-top'), ['grid-template-columns', 'column-gap', 'row-gap']),
+      fine: pick(footer.querySelector('.footer-notice'), ['font-size', 'color', 'border-top-color', 'padding-top'])
     },
     context: {below: root.scrollHeight - (r.bottom + scrollY), width: Math.round(r.width), viewport: root.clientWidth,
               bodyPadding: getComputedStyle(body).paddingBottom, bodyMargin: getComputedStyle(body).marginBottom},

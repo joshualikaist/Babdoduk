@@ -158,7 +158,7 @@ def test_the_archive_keeps_sessions_and_audience(settings):
                  "end": (past + timedelta(days=d, hours=1)).isoformat(timespec="seconds")} for d in range(3)]
     old = row(id="22222222-2222-2222-2222-222222222222", title="지난 행사", event_start=utc(sessions[0]["start"]),
               event_end=utc(sessions[2]["end"]), _extras={"sessions": sessions, "audience": {"text": "학부생", "basis": "inferred"}})
-    archive = build_archive([old], settings, {old["id"]}, TEST_NOW)
+    archive = build_archive([old], settings, TEST_NOW)
     [event] = archive["events"]
     assert len(event["sessions"]) == 3 and event["audience"]["basis"] == "inferred"
     assert validate_ggongbab_archive_payload(archive) == []
@@ -219,7 +219,7 @@ def test_the_archive_schema_accepts_the_archive_and_refuses_bad_extras(settings)
                  "end": (past + timedelta(days=d, hours=1)).isoformat(timespec="seconds")} for d in range(3)]
     old = row(id="22222222-2222-2222-2222-222222222222", event_start=utc(sessions[0]["start"]),
               event_end=utc(sessions[2]["end"]), _extras={"sessions": sessions, "audience": {"text": "학부생", "basis": "stated"}})
-    good = build_archive([old], settings, {old["id"]}, TEST_NOW)
+    good = build_archive([old], settings, TEST_NOW)
     assert list(validator.iter_errors(good)) == []
     bad = copy.deepcopy(good)
     bad["events"][0]["audience"] = {"text": "학부생", "basis": "guess"}

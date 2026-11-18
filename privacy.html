@@ -40,8 +40,9 @@
       overflow-wrap: anywhere;
     }
     /* Above the fixed body::before canvas of css/site.css, like every page's main block. */
-    .pv-wrap { position: relative; z-index: 1; flex: 1 0 auto; width: 100%; max-width: 760px; margin: 0 auto; padding: 28px 22px 40px; line-height: 1.75; }
-    .pv-head h1 { font-size: clamp(1.75rem, 5vw, 2.25rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.25; }
+    /* Page head like every content page (owner 2026-11-13): 760 column, 16 gutter, 32 above the title. */
+    .pv-wrap { position: relative; z-index: 1; flex: 1 0 auto; width: 100%; max-width: 760px; margin: 0 auto; padding: var(--space-8) 16px 40px; line-height: 1.75; }
+    .pv-head h1 { margin: 0; font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 900; letter-spacing: -0.045em; line-height: 1.2; }
     .pv-meta { margin-top: 6px; color: #6e6e73; font-size: 0.92rem; }
     .pv-intro { margin-top: 20px; font-size: 1rem; color: #333336; }
     .pv-toc { margin-top: 24px; padding: 16px 20px; border: 1px solid #e5e5ea; border-radius: 16px; background: #fff; }
@@ -234,27 +235,60 @@
 
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer-inner">
-      <hr class="footer-apple-hr" />
-      <div class="footer-apple-main">
-        <div class="footer-apple-col footer-apple-col--left">
-          <span class="footer-apple-copy" data-i18n="footer.copyright">© 2026 밥도둑</span>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</span>
+      <hr class="footer-hr" />
+      <div class="footer-top">
+        <div class="footer-brand">
+          <p class="footer-name" data-i18n="footer.name">밥도둑</p>
+          <p class="footer-tagline" data-i18n="footer.tagline">KAIST 꽁밥과 학식을 한곳에서</p>
+          <div class="footer-contact">
+            <a class="footer-a footer-contact-a" href="mailto:joshualisky@kaist.ac.kr" data-i18n="footer.mail">이메일 문의</a>
+            <span class="footer-dot" aria-hidden="true">·</span>
+            <a class="footer-a footer-contact-a" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="footer.instagram">인스타그램 @babdodukms</a>
+          </div>
+          <p class="footer-email"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</p>
         </div>
-        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
-          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="choose.html" class="footer-apple-a" data-i18n="nav.choose">오늘 뭐 먹지</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+        <nav class="footer-map" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupFree">꽁밥</h2>
+            <ul class="footer-list">
+              <li><a href="ggongbab.html" class="footer-a" data-i18n="nav.today">오늘의 꽁밥</a></li>
+              <li><a href="ggongbab.html#past" class="footer-a" data-i18n="footer.past">지난 꽁밥</a></li>
+              <li><a href="tip.html" class="footer-a" data-i18n="nav.tip">꽁밥 제보</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupFood">먹을거리</h2>
+            <ul class="footer-list">
+              <li><a href="choose.html" class="footer-a" data-i18n="nav.choose">오늘 뭐 먹지</a></li>
+              <li><a href="ggongbab.html#menu" class="footer-a" data-i18n="footer.menu">학식</a></li>
+              <li><a href="https://naver.me/5NeqUPzI" class="footer-a" target="_blank" rel="noopener"><span data-i18n="nav.map">맛집 지도</span><span class="footer-out" aria-hidden="true"> ↗</span></a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupRead">소식</h2>
+            <ul class="footer-list">
+              <li><a href="event.html" class="footer-a" data-i18n="nav.event">소식·이벤트</a></li>
+              <li><a href="mukbang.html" class="footer-a" data-i18n="nav.magazine">밥도둑 매거진</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupAbout">밥도둑</h2>
+            <ul class="footer-list">
+              <li><a href="my.html" class="footer-a" data-i18n="nav.my">마이 밥도둑</a></li>
+              <li><a href="history.html" class="footer-a" data-i18n="footer.history">밥도둑 역사</a></li>
+              <li><a href="mailto:joshualisky@kaist.ac.kr?subject=%5B%EB%B0%A5%EB%8F%84%EB%91%91%5D%20%EC%A0%95%EB%B3%B4%20%EC%88%98%EC%A0%95%C2%B7%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD" class="footer-a" data-i18n="footer.fix">정보 수정·삭제 요청</a></li>
+            </ul>
+          </div>
         </nav>
-        <div class="footer-apple-col footer-apple-col--right">
-          <a href="privacy.html" class="footer-apple-a footer-apple-privacy" data-i18n="footer.privacy">개인정보처리방침</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span data-i18n="footer.country">대한민국</span>
-        </div>
       </div>
-      <p class="footer-apple-fine" data-i18n="footer.fine">개인이 운영하는 사이트예요. 문의는 이메일로 주세요.</p>
+      <div class="footer-notice">
+        <p data-i18n="footer.unofficial">밥도둑은 개인이 운영하는 비공식 사이트로, KAIST나 학과의 공식 안내가 아니에요.</p>
+        <p data-i18n="footer.sources">꽁밥 정보는 학교 공지·학과 메일·인스타그램·제보에서 모았어요. 가기 전에 원문을 확인해 주시고, 잘못된 정보는 알려 주세요.</p>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy" data-i18n="footer.copyright">© 2026 밥도둑</span>
+        <a href="privacy.html" class="footer-a footer-privacy" data-i18n="footer.privacy">개인정보처리방침</a>
+      </div>
     </div>
   </footer>
 
@@ -267,10 +301,22 @@
         'a11y.scrollProgress': '페이지 스크롤 진행',
         'footer.contact': '문의',
         'footer.copyright': '© 2026 밥도둑',
-        'footer.country': '대한민국',
-        'footer.fine': '개인이 운영하는 사이트예요. 문의는 이메일로 주세요.',
+        'footer.fix': '정보 수정·삭제 요청',
+        'footer.groupAbout': '밥도둑',
+        'footer.groupFood': '먹을거리',
+        'footer.groupFree': '꽁밥',
+        'footer.groupRead': '소식',
+        'footer.history': '밥도둑 역사',
+        'footer.instagram': '인스타그램 @babdodukms',
+        'footer.mail': '이메일 문의',
+        'footer.menu': '학식',
+        'footer.name': '밥도둑',
         'footer.navAria': '사이트 바로가기',
+        'footer.past': '지난 꽁밥',
         'footer.privacy': '개인정보처리방침',
+        'footer.sources': '꽁밥 정보는 학교 공지·학과 메일·인스타그램·제보에서 모았어요. 가기 전에 원문을 확인해 주시고, 잘못된 정보는 알려 주세요.',
+        'footer.tagline': 'KAIST 꽁밥과 학식을 한곳에서',
+        'footer.unofficial': '밥도둑은 개인이 운영하는 비공식 사이트로, KAIST나 학과의 공식 안내가 아니에요.',
         'nav.choose': '오늘 뭐 먹지',
         'nav.event': '소식·이벤트',
         'nav.eventShort': '소식',
@@ -380,10 +426,22 @@
         'a11y.scrollProgress': 'Page scroll progress',
         'footer.contact': 'Contact',
         'footer.copyright': '© 2026 Babdoduk',
-        'footer.country': 'South Korea',
-        'footer.fine': 'Run by an individual. Questions by email, please.',
+        'footer.fix': 'Ask for a fix or removal',
+        'footer.groupAbout': 'Babdoduk',
+        'footer.groupFood': 'Eat',
+        'footer.groupFree': 'Free food',
+        'footer.groupRead': 'News',
+        'footer.history': 'Our story',
+        'footer.instagram': 'Instagram @babdodukms',
+        'footer.mail': 'Email us',
+        'footer.menu': 'Cafeteria menus',
+        'footer.name': 'Babdoduk',
         'footer.navAria': 'Site links',
+        'footer.past': 'Past free food',
         'footer.privacy': 'Privacy Policy',
+        'footer.sources': 'Listings come from campus notices, department mail, Instagram and reader tips. Check the original before you go, and tell us if something is wrong.',
+        'footer.tagline': 'KAIST free food and cafeteria menus in one place',
+        'footer.unofficial': 'Babdoduk is an unofficial site run by an individual, not an official KAIST or department notice.',
         'nav.choose': 'What to eat',
         'nav.event': 'News & events',
         'nav.eventShort': 'News',

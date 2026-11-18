@@ -70,7 +70,7 @@ def test_news_and_validated_free_event_can_coexist(settings):
     mixed = [event, {**event, "id": "news-only", "contentType": "campus_food_news"}]
     payload = build_payload(mixed, settings, NOW, food_only=True)
     assert payload["count"] == 1 and payload["events"][0]["id"] == "free-offer"
-    archived = build_archive(mixed, settings, {"free-offer", "news-only"}, NOW + timedelta(days=1))
+    archived = build_archive(mixed, settings, NOW + timedelta(days=1))
     assert [item["id"] for item in archived["events"]] == ["free-offer"]
     assert validate_news_payload(news) == []
     assert validate_ggongbab_payload({"generatedAt": NOW.isoformat(), "timezone": "Asia/Seoul",

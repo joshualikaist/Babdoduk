@@ -51,7 +51,8 @@ def test_the_policy_is_linked_from_my_babdoduk():
     if not (ROOT / "my.html").exists():
         pytest.skip("마이 밥도둑 is lab-only; production has no sign-in page yet")
     my = (ROOT / "my.html").read_text(encoding="utf-8")
-    assert '<a href="privacy.html" data-i18n="my.privacyLink">개인정보처리방침</a>' in my
+    # Owner 2026-11-13: the footer's link is the one on 마이 밥도둑 (a second link above it was a duplicate).
+    assert 'href="privacy.html" class="footer-a footer-privacy"' in my
 
 
 @pytest.fixture(scope="module")
@@ -121,7 +122,7 @@ def test_english_and_the_table_of_contents(browser):
 
 def test_every_page_footer_links_the_policy():
     footer = (ROOT / "shared/footer.html").read_text(encoding="utf-8")
-    link = '<a href="privacy.html" class="footer-apple-a footer-apple-privacy" data-i18n="footer.privacy">개인정보처리방침</a>'
+    link = '<a href="privacy.html" class="footer-a footer-privacy" data-i18n="footer.privacy">개인정보처리방침</a>'
     assert link in footer
     pages = [p for p in ROOT.glob("*.html") if 'class="site-footer"' in p.read_text(encoding="utf-8")]
     assert len(pages) >= 10
