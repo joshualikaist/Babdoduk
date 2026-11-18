@@ -1,5 +1,5 @@
 {
-  "approval": "Owner approved 2026-11-12 (release question: 새 메뉴 모양 기준 사진 '승인'): nav with 마이 밥도둑 in 더보기, footer of three links, shortened footer copy, person icon. 50 renders from ui-guardian run 43234335718 (lab cf9da08); the other 10 unchanged from the previous approved set.",
+  "approval": "Owner approved 2026-11-18 (\"오케이 지금 딱 좋아. 이거 위로 올리자\", after the footer screenshots; artifact downloaded by the owner): the new footer (four groups, plain contact links, two-line notice) and its context. 40 renders from ui-guardian run 44248366799 (lab f1e5ad4); the 20 nav images unchanged from the previous approved set.",
   "platform": "linux-chromium",
   "source": "adopted from ci-renders",
   "images": 60,
