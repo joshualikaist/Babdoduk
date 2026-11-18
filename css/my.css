@@ -368,3 +368,9 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 
 /* 내 캘린더에 연결 (docs/CALENDAR_FEED.md): one full-width button. */
 .my-cal-btn { display: flex; width: 100%; min-height: 48px; margin: var(--space-3) 0 var(--space-2); }
+
+/* Google's own button (owner 2026-11-18). The slot holds the redirect button until Google draws its
+   button; Google's large button is 40 px, so the slot keeps the 44 px touch height around it. */
+.my-google { display: flex; align-items: center; justify-content: center; min-height: 44px; }
+.my-google.is-official { width: 100%; max-width: 400px; margin: 0 auto; }
+.my-row-actions .my-google.is-official { width: auto; margin: 0; }
