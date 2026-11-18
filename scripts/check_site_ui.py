@@ -3304,9 +3304,10 @@ NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
 # 마이 밥도둑 heads the 더보기 group and the phone menu panel (owner 2026-11-12), beside the person icon.
 NAV_MORE = ["my.html", "mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
 INSTAGRAM = "https://www.instagram.com/babdodukms/"
-# The footer (owner 2026-11-18): contact, every public page in four groups, then the privacy policy.
+# The footer (owner 2026-11-18): every public page in four groups, then the privacy policy (the email and
+# Instagram link row left the same day: "이거 그냥 없애자"; the address stays as text).
 FOOTER_MAIL = "mailto:joshualisky@kaist.ac.kr"
-FOOTER_LINKS = [FOOTER_MAIL, INSTAGRAM, "ggongbab.html", "ggongbab.html#past", "tip.html", "choose.html",
+FOOTER_LINKS = ["ggongbab.html", "ggongbab.html#past", "tip.html", "choose.html",
                 "ggongbab.html#menu", "https://naver.me/5NeqUPzI", "event.html", "mukbang.html", "my.html", "history.html",
                 FOOTER_MAIL + "?subject=%5B%EB%B0%A5%EB%8F%84%EB%91%91%5D%20%EC%A0%95%EB%B3%B4%20%EC%88%98%EC%A0%95%C2%B7%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD",
                 "privacy.html"]
