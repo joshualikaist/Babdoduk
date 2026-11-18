@@ -605,7 +605,7 @@ def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(brow
     card = page.locator("section[aria-labelledby='myCalTitle']").inner_text()
     assert "주소" not in card and "구글" not in card and "한 번만" in card
     assert page.locator("#myCal .my-steps li").count() == 3 and "프로필이 다운로드됨" in card and "하나만 남아요" in card
-    assert "사파리에서" not in card
+    assert "사파리가 잠깐" not in card
     tap_calendar(page)
     wait_view(page, "설치를 기다리는 중")
     card = page.locator("#myCal").inner_text()
@@ -615,10 +615,21 @@ def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(brow
     wait_view(page, "설치를 기다리는 중")   # the tap is remembered in this browser
     assert errors == []
     context.close()
-    # Chrome on an iPhone keeps a profile as a file: the card says to use Safari.
+    # Students use Chrome (owner 2026-11-19, "학생들 사파리 안써"): there the button hands just the profile's
+    # address to Safari, and if the page is still in front a moment later it offers the file itself.
     chrome = IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=chrome)
-    wait_view(page, "사파리에서 이 페이지를 열어야 설치할 수 있어요.")
+    wait_view(page, "사파리가 잠깐 열려요")
+    link = page.locator("#myCal .my-cal-btn")
+    assert link.get_attribute("href") == f"x-safari-https://{HOST}/cal/{'T' * 43}.mobileconfig"
+    assert "크롬으로 돌아오면" in page.locator("#myCal").inner_text()
+    tap_calendar(page)
+    wait_view(page, "설치를 기다리는 중")
+    assert page.locator("[data-my-cal-file]").count() == 0          # not before the handoff had its moment
+    wait_view(page, "사파리가 열리지 않았어요.")
+    file = page.locator("[data-my-cal-file]")
+    assert file.get_attribute("href") == f"/cal/{'T' * 43}.mobileconfig" and file.bounding_box()["height"] >= 44
+    assert "파일 앱" in page.locator("#myCal").inner_text()
     assert errors == []
     context.close()
     for ua in (None, "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"):

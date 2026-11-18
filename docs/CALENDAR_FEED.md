@@ -52,9 +52,14 @@ payloads": a matching identifier is an "update"). So:
 - the profile only wraps the address: serving it reads nothing and counts as no calendar read. It carries a fresh
   address (016), so its first read retires the old one.
 
-The visitor taps the button and 허용 in Safari, then 설치 under 프로필이 다운로드됨 at the top of Settings (three
-steps on the card). Only Safari hands a profile to Settings; in other browsers and in-app views the card says to
-open the page in Safari. The profile is not signed, so Settings shows it as unverified.
+The visitor taps the button and 허용, then 설치 under 프로필이 다운로드됨 at the top of Settings (three steps on the
+card). Only Safari hands a downloaded profile to Settings, but students use Chrome (owner 2026-11-19: "웬만한거 다
+크롬으로 기본 설정 다 바꿔줘 학생들 사파리 안써"). The profile's address needs no sign-in, so in Chrome and in-app
+browsers the button is `x-safari-https://<host>/cal/<token>.mobileconfig`: Safari opens for that one address and
+the visitor comes back to Chrome, where the card turns into 연결됨. This handoff is undocumented but used by iPhone
+apps (reported to work on iOS 15 and 17 on, not 16). If the page is still in front 2.5 s after the tap, Safari did
+not open, and the card offers the file itself (파일로 받기): tapped once in the Files app, it reaches Settings the
+same way. The profile is not signed, so Settings shows it as unverified.
 
 **Old webcal subscriptions** (the ones made before this, named 밥도둑 내 꽁밥) are reported, since they cannot be
 removed from here: `supabase/migrations/017_calendar_leftover.sql` (REVIEW AND APPLY MANUALLY, after 016) keeps the
@@ -64,8 +69,8 @@ in that calendar, "밥도둑 지난 구독 · 지워 주세요", with no alert (
 empty calendar, as before). `my_calendar_link()` also returns `leftover_at`, and while an old address was read in
 the last day the card says which calendar to delete (밥도둑 내 꽁밥, not 밥도둑 꽁밥).
 
-Not verifiable here: the install on a real iPhone (Safari's prompt, Settings' 설치) and the replacement on a second
-install; both follow Apple's documented behavior and need one check on a phone.
+Not verifiable here: the install on a real iPhone (the handoff from Chrome, Safari's prompt, Settings' 설치, the
+Files fallback) and the replacement on a second install; they need one check on a phone.
 
 ## What a visitor does
 
