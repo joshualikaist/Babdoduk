@@ -241,7 +241,7 @@
       html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누른 꽁밥이 캘린더에 알아서 들어가요. 다시 연결할 필요 없어요.')) + '</p>';
       html += '<p class="my-fine">' + esc(t('my.cal.checked', '캘린더가 마지막으로 확인한 때: {time}', { time: dateText(state.cal.readAt) })) + '<br>' +
         esc(t('my.cal.delay', '새로 누른 별은 캘린더에 뜨기까지 조금 걸릴 수 있어요.')) + '</p>';
-      html += '<p class="my-fine">' + calLink('', t('my.cal.again', '캘린더에 안 보이면 다시 연결')) + ' · ' +
+      html += '<p class="my-fine">' + calLink('', t('my.cal.again', '캘린더에 안 보이면 다시 연결')) + '<br>' +
         esc(t('my.cal.againNote', '다시 연결해도 겹치지 않아요.')) + '</p>';
     } else if (s === 'pending') {
       html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.pending', '연결 확인 중')) + '</p>';
