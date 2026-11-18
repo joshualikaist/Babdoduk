@@ -410,13 +410,14 @@
   // The calendar connection (016_calendar_connect.sql; owner 2026-11-19, a second 연결 showed every event
   // twice): the address to subscribe to now, when a calendar last read the list and when the current
   // connection was made. The first read of a new address stops the old one, so only the newest subscription
-  // shows the events. Before 016 is applied: 013's live address, with the state unknown.
+  // shows the events; leftover_at (017) is the last read of an old address. Before 016 is applied: 013's live
+  // address, with the state unknown.
   function calendarLink(c) {
     var ok = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{43}$/.test(v); };
     var stamp = function (v) { return typeof v === 'string' && !isNaN(Date.parse(v)) ? v : null; };
     return c.rpc('my_calendar_link').then(function (res) {
       var d = !res.error && res.data && typeof res.data === 'object' ? res.data : null;
-      if (d && ok(d.link)) return { token: d.link, readAt: stamp(d.read_at), linkedAt: stamp(d.linked_at), known: true };
+      if (d && ok(d.link)) return { token: d.link, readAt: stamp(d.read_at), linkedAt: stamp(d.linked_at), leftoverAt: stamp(d.leftover_at), known: true };
       return calendarFeed(c).then(function (tk) { return tk ? { token: tk, readAt: null, linkedAt: null, known: false } : null; });
     });
   }

@@ -82,6 +82,10 @@
       "dest": "/api/cal?t=$1"
     },
     {
+      "src": "/cal/([A-Za-z0-9_-]{43})\\.mobileconfig",
+      "dest": "/api/cal?t=$1&profile=1"
+    },
+    {
       "src": "/(food\\.html|lab\\.html|lab-ggongbab\\.html|calendar\\.ics|data/food-log\\.json)",
       "missing": [
         {

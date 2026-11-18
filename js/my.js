@@ -213,23 +213,28 @@
     html += '<p class="my-fine"><a href="ggongbab.html">' + esc(t('my.saved.manage', '오늘의 꽁밥에서 저장·삭제하기')) + '</a></p>';
     return html + '</section>';
   }
-  // 내 캘린더에 연결 (owner 2026-11-12; docs/CALENDAR_FEED.md): subscribe once, and every later star shows
-  // up in the iPhone calendar by itself. iPhone and iPad only (owner: a laptop needs no calendar link; Android's
-  // Google Calendar fetches a subscription only every few hours, so Android gets the 30-minute alert instead).
+  // 내 캘린더에 연결 (owner 2026-11-12; docs/CALENDAR_FEED.md): set up once, and every later star shows up in the
+  // iPhone calendar by itself. iPhone and iPad only (owner: a laptop needs no calendar link; Android's Google
+  // Calendar fetches a subscription only every few hours, so Android gets the 30-minute alert instead).
   // No address talk on the card (owner: "사람들이 주소 관련해서 무슨 말인지 이해 못할게 뻔해").
   //
-  // One connection, like an account in the phone's settings (owner 2026-11-19: a second 연결 showed every event
-  // twice, "로직을 전면 수정해"). The card says whether the calendar is connected and when it last checked, and
-  // offers the button only when it is not; 다시 연결 gives a new address whose first read stops the old one
-  // (016_calendar_connect.sql), so a second tap never makes a second copy. A tap here is remembered in this
-  // browser until a calendar reads that address: meanwhile the card says 확인 중, not "tap again".
+  // A setting, not a link (owner 2026-11-19: a second 연결 showed every event twice, then "구독은 쌓여 ... 다른
+  // 방식을 찾아내봐"). The button installs a configuration profile (api/cal.js): its fixed identifier makes a
+  // second install replace the first, so the phone always holds exactly one 밥도둑 calendar and removing the
+  // profile removes it. The card says whether the calendar is connected and when it last checked; the address
+  // in the profile is a fresh one whose first read stops the old address (016), and an old webcal
+  // subscription still on a phone is named so it can be deleted (017). A tap is remembered in this browser
+  // until a calendar reads that address: meanwhile the card says 설치를 기다리는 중.
   var CAL_TAP_KEY = 'babdoduk-calendar-tap';
-  var CAL_STALE_MS = 3 * 86400000;      // no read for three days: the subscription was probably removed
-  function calFeedUrl() { return location.host + '/cal/' + state.cal.token + '.ics'; }
+  var CAL_STALE_MS = 3 * 86400000;      // no read for three days: the profile was probably removed
+  var CAL_LEFTOVER_MS = 86400000;       // an old address read within a day: an old subscription is still on a phone
+  function calHref() { return '/cal/' + state.cal.token + '.mobileconfig'; }
   function isIos() {
     var ua = navigator.userAgent || '';
     return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   }
+  // Only Safari hands a downloaded profile to Settings; other browsers and in-app views keep it as a file.
+  function inSafari() { return !/CriOS|FxiOS|EdgiOS|OPiOS|KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|Whale/i.test(navigator.userAgent || ''); }
   // Only the address's first characters are kept: enough to know this browser tapped it.
   function calTapMark(token) { return String(token || '').slice(0, 10); }
   function calTapped() {
@@ -248,8 +253,12 @@
     if (cal.known && cal.readAt) return Date.now() - Date.parse(cal.readAt) > CAL_STALE_MS ? 'stale' : 'on';
     return 'off';
   }
+  function calLeftover() {
+    var at = state.cal && state.cal.leftoverAt;
+    return !!at && Date.now() - Date.parse(at) < CAL_LEFTOVER_MS;
+  }
   function calLink(cls, label) {
-    return '<a class="' + cls + '" data-my-cal href="webcal://' + esc(calFeedUrl()) + '">' + esc(label) + '</a>';
+    return '<a class="' + cls + '" data-my-cal href="' + esc(calHref()) + '">' + esc(label) + '</a>';
   }
   function calendarHtml() {
     if (!state.cal || !state.cal.token || !isIos()) return '';
@@ -258,24 +267,33 @@
     html += '<h2 class="my-h2" id="myCalTitle"><span aria-hidden="true">📅</span> ' + esc(t('my.cal.title', '아이폰 캘린더 연결')) + '</h2>';
     if (s === 'on') {
       html += '<p class="my-cal-state is-on" role="status"><span aria-hidden="true">✓</span> ' + esc(t('my.cal.on', '연결됨')) + '</p>';
-      html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누른 꽁밥이 캘린더에 알아서 들어가요. 다시 연결할 필요 없어요.')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누른 꽁밥이 "밥도둑 꽁밥" 캘린더에 알아서 들어가요. 다시 설치할 필요 없어요.')) + '</p>';
       html += '<p class="my-fine">' + esc(t('my.cal.checked', '캘린더가 마지막으로 확인한 때: {time}', { time: dateText(state.cal.readAt) })) + '<br>' +
         esc(t('my.cal.delay', '새로 누른 별은 캘린더에 뜨기까지 조금 걸릴 수 있어요.')) + '</p>';
-      html += '<p class="my-fine">' + calLink('', t('my.cal.again', '캘린더에 안 보이면 다시 연결')) + '<br>' +
-        esc(t('my.cal.againNote', '다시 연결해도 겹치지 않아요.')) + '</p>';
     } else if (s === 'pending') {
-      html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.pending', '연결 확인 중')) + '</p>';
-      html += '<p class="my-text">' + esc(t('my.cal.pendingBody', '캘린더에서 "구독"을 눌렀다면 끝이에요. 다시 누를 필요 없어요.')) + '</p>';
-      html += '<p class="my-fine">' + calLink('', t('my.cal.reopen', '구독 화면이 안 떴다면 다시 열기')) + '</p>';
+      html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.pending', '설치를 기다리는 중')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.cal.pendingBody', '설정 앱 맨 위의 "프로필이 다운로드됨"을 눌러 "설치"를 마쳐 주세요.')) + '</p>';
+    } else if (s === 'stale') {
+      html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.stale', '한동안 확인이 없었어요')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.cal.staleBody', '프로필을 지웠다면 다시 설치해 주세요. 캘린더는 하나만 남아요.')) + '</p>';
     } else {
-      if (s === 'stale') {
-        html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.stale', '한동안 확인이 없었어요')) + '</p>';
-        html += '<p class="my-text">' + esc(t('my.cal.staleBody', '캘린더에서 구독을 지웠다면 다시 연결해 주세요. 겹치지 않아요.')) + '</p>';
-      } else {
-        html += '<p class="my-text">' + esc(t('my.cal.body', '한 번만 연결하면 돼요. 그다음부터는 별만 누르면 캘린더에 알아서 들어가요.')) + '</p>';
-      }
-      html += calLink('btn btn-primary my-cal-btn', s === 'stale' ? t('my.cal.reconnect', '아이폰 캘린더에 다시 연결') : t('my.cal.apple', '아이폰 캘린더에 연결'));
-      html += '<p class="my-fine">' + esc(t('my.cal.appleHow', '누른 뒤 "구독"을 눌러 주세요.')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.cal.body', '한 번만 설치하면 돼요. 그다음부터는 별만 누르면 캘린더에 알아서 들어가요.')) + '</p>';
+    }
+    if (calLeftover()) {
+      html += '<div class="my-cal-leftover" role="note"><p class="my-note"><strong>' + esc(t('my.cal.leftover', '예전 구독이 휴대폰에 남아 있어요.')) + '</strong></p>' +
+        '<p class="my-fine">' + esc(t('my.cal.leftoverHow', '캘린더 앱 아래 "캘린더"에서 "밥도둑 내 꽁밥" 옆 ⓘ를 눌러 맨 아래 빨간 버튼으로 지워 주세요. 지금 쓰는 건 "밥도둑 꽁밥"이에요.')) + '</p></div>';
+    }
+    if (s === 'off' || s === 'stale') {
+      if (!inSafari()) html += '<p class="my-note">' + esc(t('my.cal.safari', '사파리에서 이 페이지를 열어야 설치할 수 있어요.')) + '</p>';
+      html += calLink('btn btn-primary my-cal-btn', s === 'stale' ? t('my.cal.reconnect', '다시 설치하기') : t('my.cal.apple', '아이폰 캘린더에 연결하기'));
+      html += '<ol class="my-steps">' +
+        '<li>' + esc(t('my.cal.step1', '버튼을 누르고 "허용"을 눌러요.')) + '</li>' +
+        '<li>' + esc(t('my.cal.step2', '설정 앱 맨 위의 "프로필이 다운로드됨"을 눌러 "설치"를 눌러요.')) + '</li>' +
+        '<li>' + esc(t('my.cal.step3', '끝이에요. 다시 설치해도 예전 것과 바뀌어서 캘린더는 하나만 남아요.')) + '</li></ol>';
+    } else {
+      html += '<p class="my-fine">' + calLink('', s === 'pending' ? t('my.cal.reopen', '프로필 다시 받기') : t('my.cal.again', '캘린더에 안 보이면 다시 설치')) + '<br>' +
+        esc(t('my.cal.againNote', '다시 설치하면 예전 것과 바뀌어서 하나만 남아요.')) + '</p>';
+      if (s === 'on') html += '<p class="my-fine">' + esc(t('my.cal.remove', '연결을 끊으려면: 설정 → 일반 → VPN 및 기기 관리 → 밥도둑 캘린더 → 프로필 제거')) + '</p>';
     }
     return html + '</section>';
   }

@@ -67,6 +67,77 @@ function calendar(blocks, name) {
   return head.concat(blocks, ['END:VCALENDAR']).join('\r\n') + '\r\n';
 }
 
+// An old address (017_calendar_leftover.sql; owner 2026-11-19, "구독은 쌓여"): a website cannot delete a phone's
+// subscription, so the calendar left behind by a newer connection shows one all-day notice, today, asking to
+// delete it, and no alert. The same id every time, so it never multiplies.
+const RETIRED = 'babdoduk:retired';
+const RETIRED_NAME = '밥도둑 지난 구독 · 지워 주세요';
+function icsEscape(text) {
+  return String(text).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
+}
+// RFC 5545 folds content lines at 75 octets; never split a character.
+function fold(line) {
+  const out = [];
+  let cur = '', bytes = 0;
+  for (const ch of line) {
+    const size = Buffer.byteLength(ch);
+    if (bytes + size > (out.length ? 74 : 75)) { out.push(cur); cur = ''; bytes = 0; }
+    cur += ch; bytes += size;
+  }
+  out.push(cur);
+  return out.join('\r\n ');
+}
+function kstDate(ms) {
+  const d = new Date(ms + 9 * 3600000);
+  return d.getUTCFullYear() + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0');
+}
+function retiredBlock(nowMs) {
+  const stamp = new Date(nowMs).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return ['BEGIN:VEVENT', 'UID:retired-subscription@babdodukms.com', 'DTSTAMP:' + stamp,
+    'DTSTART;VALUE=DATE:' + kstDate(nowMs), 'DTEND;VALUE=DATE:' + kstDate(nowMs + 86400000),
+    'SUMMARY:' + icsEscape(RETIRED_NAME),
+    'DESCRIPTION:' + icsEscape('더 이상 쓰지 않는 예전 구독이에요. 새 연결은 그대로 작동해요.\n' +
+      '캘린더 앱 아래쪽 "캘린더"에서 이 캘린더 옆 ⓘ를 눌러 맨 아래 빨간 버튼으로 지워 주세요.'),
+    'TRANSP:TRANSPARENT', 'END:VEVENT'].map(fold).join('\r\n');
+}
+
+// The iPhone connection as a configuration profile (owner 2026-11-19: "구독은 쌓여 ... 다른 방식을 찾아내봐").
+// A webcal subscription cannot be removed by a website, so every second 연결 left one more calendar behind. A
+// profile's top-level PayloadIdentifier decides "whether a new profile should replace an existing one or should
+// be added" (Apple, Configuration Profile Reference), so this one identifier, the same for every account and
+// site, makes a second install replace the first: the phone always holds exactly one 밥도둑 calendar, and
+// removing the profile in Settings removes it. The payload is Apple's calendar subscription
+// (com.apple.subscribedcalendar.account, iPhone and iPad only) pointing at this account's private address.
+const PROFILE_ID = 'com.babdodukms.calendar';
+function xml(text) {
+  return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+// A stable UUID per address and part, so the same address always gives the same profile.
+function uuidOf(seed) {
+  const h = require('crypto').createHash('sha256').update(seed).digest('hex');
+  return [h.slice(0, 8), h.slice(8, 12), '4' + h.slice(13, 16), ((parseInt(h[16], 16) & 3) | 8).toString(16) + h.slice(17, 20),
+    h.slice(20, 32)].join('-').toUpperCase();
+}
+function profile(token, origin) {
+  const feed = origin + '/cal/' + token + '.ics';
+  const s = (key, value) => '<key>' + key + '</key><string>' + xml(value) + '</string>';
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n' +
+    '<plist version="1.0"><dict>' +
+    '<key>PayloadContent</key><array><dict>' +
+    s('PayloadType', 'com.apple.subscribedcalendar.account') + '<key>PayloadVersion</key><integer>1</integer>' +
+    s('PayloadIdentifier', PROFILE_ID + '.subscription') + s('PayloadUUID', uuidOf('sub:' + feed)) +
+    s('PayloadDisplayName', '밥도둑 꽁밥') + s('SubCalAccountDescription', '밥도둑 꽁밥') +
+    s('SubCalAccountHostName', feed) + '<key>SubCalAccountUseSSL</key><true/>' +
+    '</dict></array>' +
+    s('PayloadDisplayName', '밥도둑 캘린더') +
+    s('PayloadDescription', '별 누른 꽁밥이 아이폰 캘린더에 들어가요. 다시 설치하면 예전 것을 바꿔서 하나만 남아요.') +
+    s('PayloadIdentifier', PROFILE_ID) + s('PayloadOrganization', '밥도둑') +
+    '<key>PayloadRemovalDisallowed</key><false/>' + s('PayloadType', 'Configuration') +
+    s('PayloadUUID', uuidOf('profile:' + feed)) + '<key>PayloadVersion</key><integer>1</integer>' +
+    '</dict></plist>\n';
+}
+
 async function getJson(url, options) {
   try {
     const res = await fetch(url, options);
@@ -108,6 +179,16 @@ async function handler(req, res) {
   const token = url.searchParams.get('t') || '';
   if (!TOKEN.test(token)) { res.statusCode = 404; res.end('not found'); return; }
   const origin = siteOrigin(req.headers);
+  // The profile only wraps the address: nothing is read for it, and it counts as no calendar read.
+  if (url.searchParams.get('profile') === '1') {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/x-apple-aspen-config; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="babdoduk-calendar.mobileconfig"');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Robots-Tag', 'noindex');
+    res.end(profile(token, origin));
+    return;
+  }
   const { url: base, key } = publicConfig();
   const saved = await getJson(base + '/rest/v1/rpc/calendar_feed_events', {
     method: 'POST',
@@ -115,6 +196,14 @@ async function handler(req, res) {
     body: JSON.stringify({ p_token: token })
   });
   if (!Array.isArray(saved)) { res.statusCode = 503; res.setHeader('Retry-After', '300'); res.end('try again later'); return; }
+  if (saved.some((row) => row && row.event_id === RETIRED)) {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Robots-Tag', 'noindex');
+    res.end(calendar([retiredBlock(Date.now())], RETIRED_NAME));
+    return;
+  }
   // An empty list (or an unknown token) needs no feed: nothing is fetched for it.
   const [feed, archive] = saved.length ? await Promise.all([
     getJson(origin + '/data/ggongbab/latest.json'),
@@ -133,5 +222,8 @@ module.exports.entries = entries;
 module.exports.calendar = calendar;
 module.exports.eventBlock = eventBlock;
 module.exports.siteOrigin = siteOrigin;
+module.exports.retiredBlock = retiredBlock;
+module.exports.profile = profile;
+module.exports.PROFILE_ID = PROFILE_ID;
 // The site's own free-food code in Node, also used by the push alert sender (scripts/push/send.js).
 module.exports.siteCode = siteCode;

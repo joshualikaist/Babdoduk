@@ -323,3 +323,94 @@ console.log(JSON.stringify(L.icsText(ev, { details: 'd\re', stamp: '2026-11-13T0
     assert lines.count("BEGIN:VEVENT") == 1 and lines.count("END:VEVENT") == 1
     assert "SUMMARY:a\\nATTACH:https://evil.example/x\\nb\\nc" in lines
     assert "LOCATION:N1\\nEND:VEVENT\\nBEGIN:VEVENT" in lines and "DESCRIPTION:d\\ne" in lines
+
+
+# --- the profile and old subscriptions (owner 2026-11-19, "구독은 쌓여 ... 다른 방식을 찾아내봐") --------------
+LEFTOVER = (ROOT / "supabase/migrations/017_calendar_leftover.sql").read_text(encoding="utf-8")
+
+
+def test_the_iphone_connection_is_a_profile_that_replaces_itself():
+    """A website cannot delete a webcal subscription, so every second 연결 left a calendar behind. A configuration
+    profile with one fixed PayloadIdentifier replaces the installed one instead (Apple: the identifier "is used
+    to determine whether a new profile should replace an existing one or should be added")."""
+    import plistlib
+    first = run([], None, token=TOKEN + "&profile=1", headers={"host": "www.babdodukms.com"})
+    second = run([], None, token="B" * 43 + "&profile=1", headers={"host": "babdoduk-lab.vercel.app"})
+    assert first["status"] == 200 and first["calls"] == []          # nothing is read, and no calendar read is counted
+    assert first["headers"]["Content-Type"].startswith("application/x-apple-aspen-config")
+    assert first["headers"]["Cache-Control"] == "private, no-store" and first["headers"]["X-Robots-Tag"] == "noindex"
+    a, b = (plistlib.loads(r["body"].encode("utf-8")) for r in (first, second))
+    assert a["PayloadType"] == "Configuration" and a["PayloadIdentifier"] == b["PayloadIdentifier"] == "com.babdodukms.calendar"
+    assert a["PayloadUUID"] != b["PayloadUUID"] and a["PayloadRemovalDisallowed"] is False
+    sub = a["PayloadContent"][0]
+    assert sub["PayloadType"] == "com.apple.subscribedcalendar.account" and sub["SubCalAccountUseSSL"] is True
+    assert sub["PayloadIdentifier"] == "com.babdodukms.calendar.subscription"
+    assert sub["SubCalAccountHostName"] == f"https://www.babdodukms.com/cal/{TOKEN}.ics"
+    assert sub["SubCalAccountDescription"] == "밥도둑 꽁밥"   # not 밥도둑 내 꽁밥, the old webcal calendars' name
+    assert b["PayloadContent"][0]["SubCalAccountHostName"] == f"https://babdoduk-lab.vercel.app/cal/{'B' * 43}.ics"
+    forged = run([], None, token=TOKEN + "&profile=1", headers={"host": "evil.example"})
+    assert "https://www.babdodukms.com/cal/" in forged["body"] and "evil" not in forged["body"]
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    route = next(r for r in config["routes"] if r.get("dest", "") == "/api/cal?t=$1&profile=1")
+    assert re.fullmatch(route["src"], f"/cal/{TOKEN}.mobileconfig") and not re.fullmatch(route["src"], "/cal/short.mobileconfig")
+
+
+def test_an_old_address_shows_one_notice_asking_to_delete_it():
+    out = run([{"event_id": "babdoduk:retired", "saved_at": "2026-11-19T00:00:00Z", "seen": None}], None)
+    assert out["status"] == 200 and len(out["calls"]) == 1          # no feed is fetched for it
+    body = out["body"]
+    assert body.count("BEGIN:VEVENT") == 1 and "X-WR-CALNAME:밥도둑 지난 구독 · 지워 주세요" in body
+    unfolded = body.replace("\r\n ", "")
+    assert "SUMMARY:밥도둑 지난 구독 · 지워 주세요" in unfolded and "DTSTART;VALUE=DATE:" in unfolded
+    assert "VALARM" not in body and all(len(line.encode()) <= 75 for line in body.split("\r\n"))
+
+
+def test_the_leftover_functions_are_closed_like_016():
+    assert re.findall(r"grant execute on function ([^;]+) to anon", LEFTOVER) == ["public.calendar_feed_events(text)"]
+    assert re.findall(r"grant execute on function ([^;]+) to authenticated;", LEFTOVER) == ["public.my_calendar_link()"]
+    assert "revoke all on table public.calendar_feed_retired from public, anon, authenticated;" in LEFTOVER
+    assert "alter table public.calendar_feed_retired enable row level security;" in LEFTOVER
+    assert not re.search(r"grant [a-z, ]+ on table", LEFTOVER) and "service_role" not in LEFTOVER
+
+
+@pytest.fixture(scope="module")
+def db17():
+    pgserver = pytest.importorskip("pgserver")
+    psycopg = pytest.importorskip("psycopg")
+    if not ACCOUNTS_FILE.is_file():
+        pytest.skip("supabase/migrations/011_accounts.sql is not on this branch")
+    from tests.test_accounts_db import PGCRYPTO, SHIM
+    server = pgserver.get_server(tempfile.mkdtemp(prefix="babdoduk-calleftover-"), cleanup_mode="delete")
+    uri = server.get_uri()
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute(SHIM)
+        admin.execute(ACCOUNTS_FILE.read_text(encoding="utf-8").replace(PGCRYPTO, ""))
+        admin.execute(SQL.replace(PGCRYPTO, ""))
+        admin.execute(CONNECT)
+        admin.execute(LEFTOVER)
+        admin.execute(LEFTOVER)   # applying twice is harmless
+    yield psycopg, uri
+    server.cleanup()
+
+
+def test_an_old_subscription_is_marked_and_reported(db17):
+    psycopg, uri = db17
+    from tests.test_accounts_db import As, new_user
+    a = new_user(psycopg, uri)
+    ua, anon = As(psycopg, uri, a), As(psycopg, uri)
+    ua.q("insert into public.saved_events (user_id, event_id) values (%s, 'lunch')", (a,))
+    rows = lambda token: [r[0] for r in anon.q("select event_id from public.calendar_feed_events(%s)", (token,))]
+    old = ua.q("select public.my_calendar_feed()")[0][0]          # the webcal subscription of before
+    assert rows(old) == ["lunch"]
+    link = ua.q("select public.my_calendar_link()")[0][0]
+    assert link["leftover_at"] is None
+    assert rows(link["link"]) == ["lunch"]                          # the profile's first read: the new live address
+    assert rows(old) == ["babdoduk:retired"]                        # the old subscription is told to go
+    now = ua.q("select public.my_calendar_link()")[0][0]
+    assert now["leftover_at"] is not None and now["read_at"] is not None
+    assert rows("Z" * 43) == []                                     # an address that never existed: nothing
+    assert anon.fails("select * from public.calendar_feed_retired") and ua.fails("select * from public.calendar_feed_retired")
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("delete from auth.users where id = %s", (a,))
+    assert rows(old) == [] and rows(link["link"]) == []             # gone with the account
+    ua.close(); anon.close()
