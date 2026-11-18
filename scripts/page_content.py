@@ -116,13 +116,14 @@ def event_entry(item: dict) -> list[str]:
 
 def event_link(link: str) -> str:
     """The original post opens in a new tab; a page of this site where people take part (an
-    activity like the menu world cup) opens in place."""
+    activity like the menu world cup) opens in place. The words alone, no arrow (owner 2026-11-19,
+    "화살표 없어도 될거같아"); a new tab is still announced to screen readers."""
     if link.startswith("https://"):
         return (f'  <a class="event-link" href="{attr(link)}" target="_blank" rel="noopener noreferrer">'
-                '<span data-event-cta>당시 게시물</span> <span aria-hidden="true">↗</span>'
+                '<span data-event-cta>당시 게시물</span>'
                 '<span class="event-sr" data-i18n="event.newTab">(새 창)</span></a>')
     return (f'  <a class="event-link" href="{attr(link)}" data-event-page>'
-            '<span data-event-cta>페이지 보기</span> <span aria-hidden="true">→</span></a>')
+            '<span data-event-cta>페이지 보기</span></a>')
 
 
 def event_blocks(data: dict | None = None) -> dict[str, list[str]]:

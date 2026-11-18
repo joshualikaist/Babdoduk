@@ -180,12 +180,8 @@
   color: var(--color-accent);
 }
 
-.event-link > [aria-hidden] {
-  text-decoration: none;   /* one underline under the words, not a second piece under the arrow */
-}
-
-/* One underline under the words only; the arrow beside it stays plain (owner 2026-11-13: the line under
-   "게시물 보기 ↗" was broken in two). */
+/* One underline under the words (owner 2026-11-13: the line under "게시물 보기 ↗" was broken in two);
+   since 2026-11-19 the link has no arrow at all (owner: "화살표 없어도 될거같아"). */
 .event-link {
   justify-self: start;
   display: inline-flex;
@@ -285,6 +281,17 @@
 
 .event-more[open] summary::after {
   content: '−';
+}
+
+/* A running or coming activity shows the event itself (owner 2026-11-19, "진행하고 있는거는 그냥 이벤트를
+   띄워줘"): the page script opens its details, so no 자세히 toggle and no post link; a past row keeps both. */
+.event-item:is([data-band="now"], [data-band="upcoming"]) .event-more > summary,
+.event-item:is([data-band="now"], [data-band="upcoming"]) .event-link:not([data-event-page]) {
+  display: none;
+}
+
+.event-item:is([data-band="now"], [data-band="upcoming"]) .event-more {
+  margin-top: var(--space-3);
 }
 
 .event-detail {

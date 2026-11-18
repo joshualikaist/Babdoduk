@@ -1088,6 +1088,9 @@ def event_bands(page):
         list:r.parentElement.id, chip:state.textContent, chipShown:!state.hidden, title:r.querySelector('.event-name').textContent,
         cta:r.querySelector('[data-event-cta]').textContent, linkBand:r.querySelector('.event-link').dataset.band,
         onSite:r.querySelector('.event-link').hasAttribute('data-event-page'),
+        linkShown:getComputedStyle(r.querySelector('.event-link')).display !== 'none',
+        toggleShown:getComputedStyle(r.querySelector('details.event-more > summary')).display !== 'none',
+        detailShown:r.querySelector('.event-detail').checkVisibility(),
         open:r.querySelector('details.event-more').open}; })"""
 
     def cta(row, lang="ko"):
@@ -1121,7 +1124,13 @@ def event_bands(page):
             # The world cup before its launch says when it opens (js/worldcup-gate.js).
             wanted = "10/16 공개 예정" if row["band"] == "upcoming" and row["onSite"] else labels[row["band"]]
             check(row["chip"].startswith(wanted), ("current rows name their band", row))
-        check(not row["open"], ("details stay folded by default", row))
+        # A running or coming activity shows the event itself: details open, no 자세히 toggle, no post link
+        # (owner 2026-11-19, "진행하고 있는거는 그냥 이벤트를 띄워줘"). A past row keeps 게시물 보기 and folds
+        # its details behind 자세히.
+        past = row["band"] == "past"
+        check(row["open"] == row["detailShown"] == (not past) and row["toggleShown"] == past,
+              ("live details shown without a toggle, past details folded", row))
+        check(row["linkShown"] == past, ("the post link only on a past row", row))
         check(row["linkBand"] == row["band"] and row["cta"] == cta(row),
               ("a past link opens the original post as a record; a live link is an action", row))
     check(page.locator(".event-num, .page-num").count() == 0, "event page has no decorative numbers")
@@ -1348,11 +1357,12 @@ def event_entry(page):
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.emulate_media(reduced_motion="reduce")
 
-    # A past row has no start screen, loads no world cup script and links to the page instead.
+    # A past row has no start screen, loads no world cup script and links to the page instead (the words
+    # alone: no arrow since 2026-11-19, owner "화살표 없어도 될거같아").
     page.clock.set_fixed_time(WC_ENDED)
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     snap = page.evaluate(SNAP)
-    check(not snap["embed"] and snap["link"] == "페이지 보기 →" and "js/worldcup.js" not in snap["scripts"] and snap["slim"] is None
+    check(not snap["embed"] and snap["link"] == "페이지 보기" and "js/worldcup.js" not in snap["scripts"] and snap["slim"] is None
           and "worldcup.html" == page.locator(".event-link[data-event-page]").get_attribute("href"),
           ("past: only the link, nothing loaded", snap["link"], snap["scripts"]))
 
@@ -1362,7 +1372,7 @@ def event_entry(page):
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     snap = page.evaluate(SNAP)
     check(not snap["embed"] or not snap["intro"], "a failed load shows no half-built start screen")
-    check(snap["link"] == "페이지 보기 →", ("a failed load falls back to the link", snap["link"]))
+    check(snap["link"] == "페이지 보기", ("a failed load falls back to the link", snap["link"]))
     page.unroute("**/js/worldcup-entry-data.js*")
     return count
 
