@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T04:47:30+09:00",
+  "generatedAt": "2026-11-18T13:08:38+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 37,
+  "count": 36,
   "events": [
     {
       "id": "c66d6b78-f077-4534-afc8-972674114e94",
@@ -1291,34 +1291,6 @@
         "text": "KAIST 학생",
         "basis": "stated"
       }
-    },
-    {
-      "id": "afa5f6d3-0c94-4c3a-a461-e63d07b2f5d1",
-      "title": "Adapting AI for Diverse Populations and Health Systems",
-      "summary": "Prof. Sanjay Kinra 초청 세미나로, 다양한 인구집단 및 보건의료시스템에 맞춘 인공지능 적용을 다룬다. 참석자에게 가벼운 다과와 핑거푸드를 제공한다.",
-      "startAt": "2026-10-19T12:00:00+09:00",
-      "endAt": "2026-10-19T13:00:00+09:00",
-      "dateText": "October 19 (Mon)",
-      "timeText": "12:00–13:00",
-      "location": {
-        "name": "Lecture Room Red (B501), 5th Floor, KI Building",
-        "building": "E4",
-        "room": "B501"
-      },
-      "food": {
-        "provided": "true",
-        "type": "snack",
-        "description": "Light refreshments and finger foods",
-        "source": "text"
-      },
-      "organizer": "AI미래학과 김형준교수님 연구실",
-      "eligibility": "",
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ]
     }
   ]
 }
