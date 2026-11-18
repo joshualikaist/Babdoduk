@@ -561,7 +561,7 @@ def run_flow(ai: str = "fake", page: bool = True) -> Report:
         rows_db = repo.publishable_events()
         payload = build_payload(rows_db, settings, reference, food_only=True)
         report.payload = payload
-        report.archive = build_archive(rows_db, settings, set(), reference)
+        report.archive = build_archive(rows_db, settings, reference)
         out = work / "public"
         (out / "archive").mkdir(parents=True)
         (out / "latest.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")

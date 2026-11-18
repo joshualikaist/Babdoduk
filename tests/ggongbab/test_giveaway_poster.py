@@ -145,7 +145,7 @@ def test_the_feed_lists_free_food_and_giveaways_and_validates():
     for event in payload["events"]:                       # the DB projection round-trips both fields
         assert to_snapshot_event(public_row(event)) == event
     later = NOW + timedelta(days=10)
-    archive = build_archive([poster_food, gift], settings, {poster_food["id"], gift["id"]}, later)
+    archive = build_archive([poster_food, gift], settings, later)
     assert {e["id"] for e in archive["events"]} == {poster_food["id"], gift["id"]}
 
 

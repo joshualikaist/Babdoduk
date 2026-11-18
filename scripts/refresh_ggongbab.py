@@ -43,7 +43,7 @@ from ggongbab.config import DATA_DIR, KST, Settings, load_settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository  # noqa: E402
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError  # noqa: E402
 from ggongbab.exporter import (ARCHIVE_DIR, ARCHIVE_LOOKBACK_DAYS, build_archive,  # noqa: E402
-                               build_payload, drop_invalid_events, previously_listed_ids, write_archive,
+                               build_payload, drop_invalid_events, write_archive,
                                write_payload)
 from ggongbab.public_feed import PublicFeedError  # noqa: E402
 from ggongbab.parsers import ai_errors  # noqa: E402
@@ -162,13 +162,11 @@ def validate_archive_export(path: Path, live_payload: dict) -> list[str]:
 
 
 def build_archive_safely(repo, settings: Settings, now: datetime):
-    """Past listings at the snapshot's clock, or None. Evidence of past publication is
-    read before latest.json is replaced, and the record must never cost the live feed
+    """Past listings at the snapshot's clock, or None. The record must never cost the live feed
     (or the public projection) a refresh: a failed read only skips the archive. Value-free:
     the type name alone is printed, as Actions logs are public."""
     try:
-        return build_archive(repo.recent_published_events(ARCHIVE_LOOKBACK_DAYS), settings,
-                             previously_listed_ids(DATA_DIR), now)
+        return build_archive(repo.recent_published_events(ARCHIVE_LOOKBACK_DAYS), settings, now)
     except Exception as exc:  # noqa: BLE001
         print(f"[warn] archive not built ({type(exc).__name__}); keeping previous archive/index.json")
         return None

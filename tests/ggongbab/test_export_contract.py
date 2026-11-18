@@ -153,6 +153,6 @@ def test_the_feed_and_archive_as_exported_keep_their_contracts(settings):
     assert payload["schemaVersion"] == 1 and payload["count"] == 2
     assert schema_errors(payload, "ggongbab-feed") == []
     past = row(event_start=(TEST_NOW - timedelta(days=2)).isoformat())
-    archive = build_archive([past], settings, {past["id"]}, TEST_NOW)
+    archive = build_archive([past], settings, TEST_NOW)
     assert archive["schemaVersion"] == 1 and archive["count"] == 1
     assert schema_errors(archive, "ggongbab-archive") == []
