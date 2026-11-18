@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T13:08:38+09:00",
+  "generatedAt": "2026-11-18T13:21:48+09:00",
   "timezone": "Asia/Seoul",
-  "count": 32,
+  "count": 33,
   "events": [
     {
       "id": "536a0459-e98b-4965-acca-b199d74f567d",
@@ -41,6 +41,39 @@
         "text": "관심 있는 모든 KAIST 구성원",
         "basis": "stated"
       }
+    },
+    {
+      "id": "9f11563f-22bb-4eb1-8566-054b757573df",
+      "title": "연구, 기후테크 창업이 되다!",
+      "summary": "기후테크 세미나 6회차로, 「기후 위기와 촉매 기술의 역할」을 주제로 진행됩니다. 참석자 신청 인원에 맞춰 성심당 간식을 준비합니다.",
+      "startAt": "2026-11-18T13:00:00+09:00",
+      "endAt": "2026-11-18T14:00:00+09:00",
+      "dateText": "11월 18일(수)",
+      "timeText": "13:00–14:00",
+      "location": {
+        "name": "K-Space",
+        "building": "W8",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "성심당 간식"
+      },
+      "organizer": "녹색성장지속가능대학원",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
     },
     {
       "id": "78b6aeba-c538-4043-b232-da92b45c95a9",
