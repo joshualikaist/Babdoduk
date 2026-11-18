@@ -45,8 +45,8 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     assert '"mexican": "멕시칸"' in (tmp_path / "js/eat-slot.js").read_text(encoding="utf-8")
     capsys.readouterr()
     page = tmp_path / "event.html"
-    drifted = page.read_text(encoding="utf-8").replace('href="event.html" class="footer-apple-a"',
-                                                        'href="history.html" class="footer-apple-a"')
+    drifted = page.read_text(encoding="utf-8").replace('href="event.html" class="footer-a"',
+                                                        'href="tip.html" class="footer-a"')
     assert drifted != page.read_text(encoding="utf-8")
     page.write_text(drifted, encoding="utf-8")
     assert chrome.main(["--check"]) == 1
@@ -62,16 +62,22 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
         # 오늘 뭐 먹지 is a direct destination and the magazine sits in the More menu (owner 2026-11-04);
         # no Food Log in the chrome.
         assert 'href="choose.html"' in nav and 'href="mukbang.html"' in nav, page
-        # The footer's site links are the top menu's three direct ones, in its order (owner 2026-11-12:
-        # "3개만 넣어달라는거야").
+        # The footer lists every public page in four groups (owner 2026-11-18: "너무 간추렸잖아.
+        # 필요한거는 넣어야지"), including the top menu's direct ones; never a lab-only page.
         direct = re.findall(r'class="site-nav-direct[^"]*" href="([^"]+)"', nav)
-        assert re.findall(r'<a href="([^"]+)" class="footer-apple-a" data-i18n="nav', footer) == direct, page
+        links = re.findall(r'<a href="([^"]+)"', footer)
+        assert all(href in links for href in direct), page
+        assert footer.count('class="footer-group"') == 4, page
+        for lab_only in ("food.html", "lab.html", "lab-ggongbab.html", "cardnews.html", "bobyak.html"):
+            assert f'href="{lab_only}' not in footer, (page, lab_only)
         assert nav.index('href="choose.html"') < nav.index('id="navMorePanel"') < nav.index('href="mukbang.html"'), page
         for gone in ("mukbang.html#what", 'href="food.html"'):
             assert gone not in nav and gone not in footer, (page, gone)
         current = re.findall(r'href="([^"]+)" aria-current="page"', nav)
         assert current == ([config["current"]] if config["current"] else []), (page, current)
-        assert re.search(r'<p class="footer-apple-fine" data-i18n="footer.fine">[^<]+</p>', footer), page
+        # Who runs it and where the listings come from (owner 2026-11-18).
+        assert re.search(r'<p data-i18n="footer.unofficial">[^<]+</p>', footer), page
+        assert re.search(r'<p data-i18n="footer.sources">[^<]+</p>', footer), page
     assert "<script" not in (ROOT / "shared/nav.html").read_text(encoding="utf-8")
     assert "<script" not in (ROOT / "shared/footer.html").read_text(encoding="utf-8")
 
