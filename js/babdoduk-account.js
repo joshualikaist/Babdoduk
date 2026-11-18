@@ -96,91 +96,83 @@
   // embedded browsers; the page offers "open in the default browser" there instead of this call.
   function signIn(provider, next) {
     if (PROVIDERS.indexOf(provider) === -1) return Promise.reject(new Error('unknown provider'));
+    if (provider === 'google' && googleDirect()) return googleRedirect('signin', next);
     return client().then(function (c) {
       return c.auth.signInWithOAuth({ provider: provider, options: { redirectTo: returnUrl(next) } });
     }).then(function (res) { if (res && res.error) throw res.error; return res; });
   }
-  // ---- Google's own button (owner 2026-11-18) ---------------------------------------------------
-  // The redirect above shows Google's window "to continue to <project>.supabase.co". Google's own button
-  // (Google Identity Services) signs in from this page instead, so Google names our site; the ID token it
-  // returns goes to Supabase (signInWithIdToken, or linkIdentity with a token). Google gets the SHA-256 of
-  // a fresh nonce and Supabase the nonce itself, so a token cannot be replayed into another sign-in.
-  // Anything missing (no client id, no Web Crypto, Google's script blocked) rejects, and the page keeps
-  // the redirect button.
-  var GIS_URL = 'https://accounts.google.com/gsi/client';
+  // ---- Google through our own page (owner 2026-11-18) ------------------------------------------
+  // Supabase's redirect sends Google back to <project>.supabase.co, so Google's window says "continue to
+  // myjglfynhnptlclawlcc.supabase.co". Our same button now sends Google back to my.html on this site
+  // instead (OpenID Connect, response_type=id_token: no secret anywhere), so Google's window names our
+  // site. The ID token returns in the address fragment, leaves the address bar at once, and goes to
+  // Supabase (signInWithIdToken, or linkIdentity with a token). Google gets the SHA-256 of a fresh nonce
+  // and Supabase the nonce itself; a random state ties the answer to this browser's request. Both stay in
+  // sessionStorage only until the page comes back. Without a client id, Web Crypto or sessionStorage the
+  // Supabase redirect is used as before.
+  var GOOGLE_AUTH = 'https://accounts.google.com/o/oauth2/v2/auth';
+  var GOOGLE_PENDING = 'babdoduk-google-pending';
+  var GOOGLE_PENDING_MS = 15 * 60 * 1000;
   var CLIENT_ID = /^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$/;
   function googleClientId() {
     var id = (global.BABDODUK_AUTH_CONFIG || {}).googleClientId;
     return typeof id === 'string' && CLIENT_ID.test(id) ? id : '';
   }
-  var gisPromise = null;
-  function loadGis() {
-    var ready = function () { return global.google && global.google.accounts && global.google.accounts.id; };
-    if (ready()) return Promise.resolve(global.google);
-    if (gisPromise) return gisPromise;
-    gisPromise = new Promise(function (resolve, reject) {
-      var script = document.createElement('script');
-      var timeout = setTimeout(failed, 8000);
-      function failed() { clearTimeout(timeout); script.remove(); gisPromise = null; reject(new Error('google unavailable')); }
-      script.src = GIS_URL;
-      script.async = true;
-      script.onload = function () { clearTimeout(timeout); if (ready()) resolve(global.google); else failed(); };
-      script.onerror = failed;
-      document.head.appendChild(script);
-    });
-    return gisPromise;
-  }
-  function nonces() {
+  function session() { try { return global.sessionStorage; } catch (e) { return null; } }
+  function randomToken() {
     var bytes = new Uint8Array(32);
     global.crypto.getRandomValues(bytes);
-    var raw = global.btoa(String.fromCharCode.apply(null, bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    return global.crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw)).then(function (buffer) {
-      var hashed = Array.prototype.map.call(new Uint8Array(buffer), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
-      return { raw: raw, hashed: hashed };
+    return global.btoa(String.fromCharCode.apply(null, bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function sha256Hex(text) {
+    return global.crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buffer) {
+      return Array.prototype.map.call(new Uint8Array(buffer), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
     });
   }
-  // Draws Google's button into `el`. opts.mode 'signin' (also the re-check before leaving, with
-  // opts.next 'leave') or 'link'; opts.onStart / opts.onError for the page's busy state and message.
-  // On success the page reloads at my.html like the redirect would (?next=linked after linking).
-  function googleButton(el, opts) {
-    opts = opts || {};
-    var id = googleClientId();
-    if (!id || !el || !available() || !global.crypto || !global.crypto.subtle || !global.TextEncoder) {
-      return Promise.reject(new Error('google button unavailable'));
-    }
-    return Promise.all([loadGis(), nonces()]).then(function (got) {
-      var gis = got[0].accounts.id, nonce = got[1];
-      gis.initialize({
-        client_id: id,
-        nonce: nonce.hashed,
-        ux_mode: 'popup',
-        itp_support: true,
-        callback: function (response) {
-          var token = response && response.credential;
-          if (typeof token !== 'string' || !token) { if (opts.onError) opts.onError(); return; }
-          if (opts.onStart) opts.onStart();
-          client().then(function (c) {
-            var credentials = { provider: 'google', token: token, nonce: nonce.raw };
-            return opts.mode === 'link' ? c.auth.linkIdentity(credentials) : c.auth.signInWithIdToken(credentials);
-          }).then(function (res) {
-            if (res && res.error) throw res.error;
-            global.location.assign(returnUrl(opts.mode === 'link' ? 'linked' : opts.next));
-          }).catch(function () { if (opts.onError) opts.onError(); });
-        }
+  function googleDirect() {
+    return !!(googleClientId() && session() && global.crypto && global.crypto.subtle && global.TextEncoder && global.URLSearchParams);
+  }
+  // mode 'signin' (next: '' or 'leave') or 'link'.
+  function googleRedirect(mode, next) {
+    var raw = randomToken(), state = randomToken();
+    return sha256Hex(raw).then(function (hashed) {
+      session().setItem(GOOGLE_PENDING, JSON.stringify({ state: state, nonce: raw, mode: mode, next: next || '', at: Date.now() }));
+      var params = new URLSearchParams({
+        client_id: googleClientId(), redirect_uri: global.location.origin + '/my.html', response_type: 'id_token',
+        scope: 'openid email profile', nonce: hashed, state: state, prompt: 'select_account'
       });
-      var width = Math.round(el.getBoundingClientRect().width) || 320;
-      el.textContent = '';
-      gis.renderButton(el, {
-        type: 'standard', theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with',
-        logo_alignment: 'center', width: Math.max(200, Math.min(400, width)), locale: opts.lang === 'en' ? 'en' : 'ko'
-      });
-      return true;
+      global.location.assign(GOOGLE_AUTH + '?' + params.toString());
+      return { data: {}, error: null };
     });
+  }
+  // On my.html, before the Supabase client exists: an answer from Google in the fragment. Resolves null
+  // when there is none, else { ok, next } after signing in or linking. The fragment is removed first.
+  function finishGoogle() {
+    var hash = global.location.hash || '';
+    if (!/[#&]state=/.test(hash) || !/[#&](id_token|error)=/.test(hash)) return Promise.resolve(null);
+    var params = new URLSearchParams(hash.slice(1));
+    var store = session(), pending = null;
+    try { pending = JSON.parse((store && store.getItem(GOOGLE_PENDING)) || 'null'); } catch (e) { pending = null; }
+    try { if (store) store.removeItem(GOOGLE_PENDING); } catch (e) { /* nothing kept */ }
+    global.history.replaceState(null, '', global.location.pathname + global.location.search);
+    var next = pending && typeof pending.next === 'string' ? pending.next : '';
+    var token = params.get('id_token');
+    if (!pending || pending.state !== params.get('state') || !(Date.now() - pending.at < GOOGLE_PENDING_MS) || !token) {
+      return Promise.resolve({ ok: false, next: next });
+    }
+    return client().then(function (c) {
+      var credentials = { provider: 'google', token: token, nonce: pending.nonce };
+      return pending.mode === 'link' ? c.auth.linkIdentity(credentials) : c.auth.signInWithIdToken(credentials);
+    }).then(function (res) {
+      if (res && res.error) throw res.error;
+      return { ok: true, next: next };
+    }).catch(function () { return { ok: false, next: next }; });
   }
   // Add another provider to the same account. Supabase needs "manual linking" on for this; a refusal
   // comes back as an error the page explains.
   function linkProvider(provider) {
     if (PROVIDERS.indexOf(provider) === -1) return Promise.reject(new Error('unknown provider'));
+    if (provider === 'google' && googleDirect()) return googleRedirect('link', 'linked');
     return client().then(function (c) {
       if (!c.auth.linkIdentity) throw new Error('linking unavailable');
       return c.auth.linkIdentity({ provider: provider, options: { redirectTo: returnUrl('linked') } });
@@ -435,7 +427,7 @@
     currentUser: currentUser,
     signIn: signIn,
     linkProvider: linkProvider,
-    googleButton: googleButton,
+    finishGoogle: finishGoogle,
     signOut: signOut,
     providersOf: providersOf,
     providerName: providerName,

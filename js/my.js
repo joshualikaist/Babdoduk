@@ -143,7 +143,7 @@
       html += '<p class="my-note">' + esc(t('my.out.googleTalk', '카카오톡에선 Google 로그인이 안 돼요.')) +
         ' <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('my.out.openExternal', '기본 브라우저로 열기')) + '</a></p>';
     } else {
-      html += '<div class="my-google" data-my-google="signin"><button type="button" class="my-login-btn is-google" data-my-login="google">' + GOOGLE_MARK + '<span>' + esc(t('my.out.google', 'Google로 계속하기')) + '</span></button></div>';
+      html += '<button type="button" class="my-login-btn is-google" data-my-login="google">' + GOOGLE_MARK + '<span>' + esc(t('my.out.google', 'Google로 계속하기')) + '</span></button>';
     }
     html += '</div>';
     if (guestCount()) html += guestNoteHtml();
@@ -278,9 +278,8 @@
     if (missing.length) {
       if (linkable.length) {
         html += '<div class="my-row-actions">' + linkable.map(function (p) {
-          var button = '<button type="button" class="btn btn-secondary my-small" data-my-link="' + p + '">' +
+          return '<button type="button" class="btn btn-secondary my-small" data-my-link="' + p + '">' +
             esc(t('my.account.link', '{p} 로그인도 연결', { p: providerLabel(p) })) + '</button>';
-          return p === 'google' ? '<div class="my-google" data-my-google="link">' + button + '</div>' : button;
         }).join('') + '</div>';
       }
       if (linkable.length < missing.length) {
@@ -307,9 +306,8 @@
       if (!fresh) {
         html += '<p class="my-text">' + esc(t('my.leave.reauth', '본인 확인을 위해 한 번 더 로그인해 주세요.')) + '</p>' +
           '<div class="my-row-actions">' + A.providersOf(state.user).map(function (p) {
-            var button = '<button type="button" class="btn btn-primary my-small" data-my-reauth="' + p + '">' +
+            return '<button type="button" class="btn btn-primary my-small" data-my-reauth="' + p + '">' +
               esc(t('my.leave.reauthWith', '{p}로 다시 로그인', { p: providerLabel(p) })) + '</button>';
-            return p === 'google' ? '<div class="my-google" data-my-google="signin" data-my-google-next="leave">' + button + '</div>' : button;
           }).join('') + '<button type="button" class="btn btn-secondary my-small" data-my-panel="">' + esc(t('my.cancel', '취소')) + '</button></div>';
       } else {
         html += '<label class="my-check"><input type="checkbox" id="myLeaveSure" /> ' + esc(t('my.leave.sure', '모두 지워지는 것을 확인했어요')) + '</label>' +
@@ -343,27 +341,6 @@
     }
     app.setAttribute('aria-busy', state.busy ? 'true' : 'false');
     app.innerHTML = html;
-    mountGoogle();
-  }
-  // Google's own button in each Google slot (owner 2026-11-18: Google's window then names our site, not
-  // the Supabase project's domain). If Google's script cannot load, the redirect button inside stays.
-  // While Google's script loads the redirect button is hidden (its space kept): the owner pressed it in
-  // that second and got the old window naming supabase.co.
-  function mountGoogle() {
-    if (!A || !A.googleButton) return;
-    Array.prototype.forEach.call(app.querySelectorAll('[data-my-google]'), function (slot) {
-      var mode = slot.getAttribute('data-my-google');
-      slot.classList.add('is-loading');
-      A.googleButton(slot, {
-        mode: mode, next: slot.getAttribute('data-my-google-next') || '', lang: lang(),
-        onStart: function () { busy(true); },
-        onError: function () {
-          busy(false);
-          announce(mode === 'link' ? t('my.account.linkFail', '지금은 로그인 방법을 연결할 수 없어요') : t('my.out.failed', '로그인하지 못했어요. 다시 시도해 주세요.'));
-        }
-      }).then(function () { slot.classList.remove('is-loading'); slot.classList.add('is-official'); },
-        function () { slot.classList.remove('is-loading'); /* the redirect button stays */ });
-    });
   }
 
   // ---- flow ------------------------------------------------------------------------------------------
@@ -395,7 +372,15 @@
   function start() {
     if (!A.available()) { state.view = 'off'; render(); return; }
     state.view = 'loading'; render();
-    A.client().then(function (c) {
+    // Google answers on this page (owner 2026-11-18: its window names our site, not supabase.co); the
+    // sign-in or link finishes before the account is read.
+    A.finishGoogle().then(function (google) {
+      if (google) {
+        if (google.next) state.next = google.next;
+        if (!google.ok) state.loginError = true;
+      }
+      return A.client();
+    }).then(function (c) {
       state.client = c;
       return A.currentUser();
     }).then(function (user) {
