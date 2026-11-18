@@ -1,10 +1,69 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T16:20:10+09:00",
+  "generatedAt": "2026-11-18T17:23:19+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 37,
+  "count": 39,
   "events": [
+    {
+      "id": "536a0459-e98b-4965-acca-b199d74f567d",
+      "title": "KAIST 기후테크 세미나 #6 — 기후 위기와 촉매 기술의 역할",
+      "summary": "강신현 대표가 기후 위기 대응에서 촉매 기술의 역할과 연구실 기술의 창업·사업화 경험을 소개하는 세미나입니다. 현장 참석자에게 햄버거가 제공되며 Zoom으로도 동시 진행됩니다.",
+      "startAt": "2026-11-18T13:00:00+09:00",
+      "endAt": "2026-11-18T14:00:00+09:00",
+      "dateText": "2026년 11월 18일(수)",
+      "timeText": "13:00–14:00",
+      "location": {
+        "name": "KAIST 교육지원동",
+        "building": "W8",
+        "room": "1층 K-Space"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "햄버거",
+        "source": "text"
+      },
+      "organizer": "KAIST 녹색성장지속가능대학원",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "관심 있는 모든 KAIST 구성원",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "9f11563f-22bb-4eb1-8566-054b757573df",
+      "title": "연구, 기후테크 창업이 되다!",
+      "summary": "기후테크 세미나 6회차로, 「기후 위기와 촉매 기술의 역할」을 주제로 진행됩니다. 참석자 신청 인원에 맞춰 성심당 간식을 준비합니다.",
+      "startAt": "2026-11-18T13:00:00+09:00",
+      "endAt": "2026-11-18T14:00:00+09:00",
+      "dateText": "11월 18일(수)",
+      "timeText": "13:00–14:00",
+      "location": {
+        "name": "K-Space",
+        "building": "W8",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "성심당 간식"
+      },
+      "organizer": "녹색성장지속가능대학원",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
+    },
     {
       "id": "c66d6b78-f077-4534-afc8-972674114e94",
       "title": "2026 AX학과 학과설명회",
