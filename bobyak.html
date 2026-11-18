@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/site.css?v=13e177dfb0" />
+  <link rel="stylesheet" href="css/site.css?v=b15afb60d2" />
   <link rel="stylesheet" href="css/bobyak.css?v=03d817f74e" />
 </head>
 <body class="bob-body">
@@ -87,27 +87,60 @@
 
   <footer class="site-footer" role="contentinfo">
     <div class="site-footer-inner">
-      <hr class="footer-apple-hr" />
-      <div class="footer-apple-main">
-        <div class="footer-apple-col footer-apple-col--left">
-          <span class="footer-apple-copy" data-i18n="footer.copyright">© 2026 밥도둑</span>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span class="footer-apple-email-plain"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</span>
+      <hr class="footer-hr" />
+      <div class="footer-top">
+        <div class="footer-brand">
+          <p class="footer-name" data-i18n="footer.name">밥도둑</p>
+          <p class="footer-tagline" data-i18n="footer.tagline">KAIST 꽁밥과 학식을 한곳에서</p>
+          <div class="footer-contact">
+            <a class="footer-btn" href="mailto:joshualisky@kaist.ac.kr" data-i18n="footer.mail">이메일 문의</a>
+            <a class="footer-btn" href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="footer.instagram">인스타그램 @babdodukms</a>
+          </div>
+          <p class="footer-email"><span data-i18n="footer.contact">문의</span><span aria-hidden="true">: </span>joshualisky@kaist.ac.kr</p>
         </div>
-        <nav class="footer-apple-col footer-apple-col--center" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
-          <a href="ggongbab.html" class="footer-apple-a" data-i18n="nav.today">오늘의 꽁밥</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="choose.html" class="footer-apple-a" data-i18n="nav.choose">오늘 뭐 먹지</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <a href="event.html" class="footer-apple-a" data-i18n="nav.event">소식·이벤트</a>
+        <nav class="footer-map" aria-label="사이트 바로가기" data-i18n-aria-key="footer.navAria">
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupFree">꽁밥</h2>
+            <ul class="footer-list">
+              <li><a href="ggongbab.html" class="footer-a" data-i18n="nav.today">오늘의 꽁밥</a></li>
+              <li><a href="ggongbab.html#past" class="footer-a" data-i18n="footer.past">지난 꽁밥</a></li>
+              <li><a href="tip.html" class="footer-a" data-i18n="nav.tip">꽁밥 제보</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupFood">먹을거리</h2>
+            <ul class="footer-list">
+              <li><a href="choose.html" class="footer-a" data-i18n="nav.choose">오늘 뭐 먹지</a></li>
+              <li><a href="ggongbab.html#menu" class="footer-a" data-i18n="footer.menu">학식</a></li>
+              <li><a href="https://naver.me/5NeqUPzI" class="footer-a" target="_blank" rel="noopener"><span data-i18n="nav.map">맛집 지도</span><span class="footer-out" aria-hidden="true"> ↗</span></a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupRead">소식</h2>
+            <ul class="footer-list">
+              <li><a href="event.html" class="footer-a" data-i18n="nav.event">소식·이벤트</a></li>
+              <li><a href="mukbang.html" class="footer-a" data-i18n="nav.magazine">밥도둑 매거진</a></li>
+            </ul>
+          </div>
+          <div class="footer-group">
+            <h2 class="footer-group-title" data-i18n="footer.groupAbout">밥도둑</h2>
+            <ul class="footer-list">
+              <li><a href="my.html" class="footer-a" data-i18n="nav.my">마이 밥도둑</a></li>
+              <li><a href="history.html" class="footer-a" data-i18n="footer.history">밥도둑 역사</a></li>
+              <li><a href="mailto:joshualisky@kaist.ac.kr?subject=%5B%EB%B0%A5%EB%8F%84%EB%91%91%5D%20%EC%A0%95%EB%B3%B4%20%EC%88%98%EC%A0%95%C2%B7%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD" class="footer-a" data-i18n="footer.fix">정보 수정·삭제 요청</a></li>
+            </ul>
+          </div>
         </nav>
-        <div class="footer-apple-col footer-apple-col--right">
-          <a href="privacy.html" class="footer-apple-a footer-apple-privacy" data-i18n="footer.privacy">개인정보처리방침</a>
-          <span class="footer-apple-pipe" aria-hidden="true">|</span>
-          <span data-i18n="footer.country">대한민국</span>
-        </div>
       </div>
-      <p class="footer-apple-fine" data-i18n="footer.fine">개인이 운영하는 사이트예요. 문의는 이메일로 주세요.</p>
+      <div class="footer-notice">
+        <p data-i18n="footer.unofficial">밥도둑은 개인이 운영하는 비공식 사이트예요. KAIST나 학과의 공식 안내가 아니에요.</p>
+        <p data-i18n="footer.sources">꽁밥 정보는 학교 공지, 학과 메일, 학과 인스타그램, 독자 제보에서 모았어요. 시간과 장소는 바뀔 수 있으니 가기 전에 원문을 꼭 확인해 주세요.</p>
+        <p data-i18n="footer.report">잘못된 정보나 내려야 할 내용이 있으면 이메일이나 인스타그램 메시지로 알려 주세요. 확인하고 고칠게요.</p>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy" data-i18n="footer.copyright">© 2026 밥도둑</span>
+        <a href="privacy.html" class="footer-a footer-privacy" data-i18n="footer.privacy">개인정보처리방침</a>
+      </div>
     </div>
   </footer>
 
@@ -275,10 +308,23 @@
         'bob.title': '밥약 메이커',
         'footer.contact': '문의',
         'footer.copyright': '© 2026 밥도둑',
-        'footer.country': '대한민국',
-        'footer.fine': '개인이 운영하는 사이트예요. 문의는 이메일로 주세요.',
+        'footer.fix': '정보 수정·삭제 요청',
+        'footer.groupAbout': '밥도둑',
+        'footer.groupFood': '먹을거리',
+        'footer.groupFree': '꽁밥',
+        'footer.groupRead': '소식',
+        'footer.history': '밥도둑 역사',
+        'footer.instagram': '인스타그램 @babdodukms',
+        'footer.mail': '이메일 문의',
+        'footer.menu': '학식',
+        'footer.name': '밥도둑',
         'footer.navAria': '사이트 바로가기',
+        'footer.past': '지난 꽁밥',
         'footer.privacy': '개인정보처리방침',
+        'footer.report': '잘못된 정보나 내려야 할 내용이 있으면 이메일이나 인스타그램 메시지로 알려 주세요. 확인하고 고칠게요.',
+        'footer.sources': '꽁밥 정보는 학교 공지, 학과 메일, 학과 인스타그램, 독자 제보에서 모았어요. 시간과 장소는 바뀔 수 있으니 가기 전에 원문을 꼭 확인해 주세요.',
+        'footer.tagline': 'KAIST 꽁밥과 학식을 한곳에서',
+        'footer.unofficial': '밥도둑은 개인이 운영하는 비공식 사이트예요. KAIST나 학과의 공식 안내가 아니에요.',
         'nav.choose': '오늘 뭐 먹지',
         'nav.event': '소식·이벤트',
         'nav.eventShort': '소식',
@@ -461,10 +507,23 @@
         'bob.title': 'Meal plan maker',
         'footer.contact': 'Contact',
         'footer.copyright': '© 2026 Babdoduk',
-        'footer.country': 'South Korea',
-        'footer.fine': 'Run by an individual. Questions by email, please.',
+        'footer.fix': 'Ask for a fix or removal',
+        'footer.groupAbout': 'Babdoduk',
+        'footer.groupFood': 'Eat',
+        'footer.groupFree': 'Free food',
+        'footer.groupRead': 'News',
+        'footer.history': 'Our story',
+        'footer.instagram': 'Instagram @babdodukms',
+        'footer.mail': 'Email us',
+        'footer.menu': 'Cafeteria menus',
+        'footer.name': 'Babdoduk',
         'footer.navAria': 'Site links',
+        'footer.past': 'Past free food',
         'footer.privacy': 'Privacy Policy',
+        'footer.report': 'If something is wrong or should come down, tell us by email or Instagram message. We will check and fix it.',
+        'footer.sources': 'Free-food listings come from campus notices, department mail, department Instagram accounts and reader tips. Times and places can change, so check the original notice before you go.',
+        'footer.tagline': 'KAIST free food and cafeteria menus in one place',
+        'footer.unofficial': 'Babdoduk is an unofficial site run by an individual. It is not an official KAIST or department notice.',
         'nav.choose': 'What to eat',
         'nav.event': 'News & events',
         'nav.eventShort': 'News',

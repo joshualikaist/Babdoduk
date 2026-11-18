@@ -86,8 +86,8 @@ def test_the_old_character_pictures_are_gone_everywhere():
 
 def test_footer_contact_uses_the_copyright_color():
     css = (ROOT / "css/site.css").read_text(encoding="utf-8")
-    email = css.split(".footer-apple-email-plain {", 1)[1].split("}", 1)[0]
-    copy = css.split(".footer-apple-copy {", 1)[1].split("}", 1)[0]
+    email = css.split(".footer-email {", 1)[1].split("}", 1)[0]
+    copy = css.split(".footer-copy {", 1)[1].split("}", 1)[0]
     assert "var(--color-ink-muted)" in email and "var(--color-ink-muted)" in copy
     assert "var(--color-ink)" not in email
 

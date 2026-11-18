@@ -15,7 +15,7 @@ def test_public_page_inventory_and_shared_styles():
         inline = "".join(part.split("</style>")[0] for part in html.split("<style>")[1:])
         for selector in (".site-nav-inner {", ".nav-mega-panel {", ".site-footer {", "@keyframes wordmark-holo"):
             assert selector not in inline, (name, selector)
-        assert 'href="#" class="footer-apple-a"' not in html
+        assert 'href="#" class="footer-a"' not in html
 
 
 def test_scrollbar_css_contract_and_no_trend_carousel():

@@ -761,128 +761,166 @@ body::after {
   padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
 }
 
-.footer-apple-hr {
+/* Owner 2026-11-18: a footer with what a visitor needs (who runs it, how to reach us, every page,
+   where the listings come from, the privacy policy), from references (Toss, 당근, Apple, SPARCS OTL). */
+.footer-hr {
   border: none;
   border-top: 1px solid var(--color-divider);
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-8);
 }
 
-.footer-apple-main {
+.footer-top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 12px 16px;
+  grid-template-columns: minmax(320px, 1.3fr) minmax(0, 2.4fr);
+  gap: var(--space-8) var(--space-12);
   align-items: start;
-  font-size: 0.75rem;
+}
+
+.footer-name {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.footer-tagline {
+  margin: var(--space-1) 0 0;
+  font-size: 0.875rem;
   line-height: 1.5;
-}
-
-.footer-apple-col--left {
-  justify-self: start;
-  text-align: left;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 2px;
-}
-
-.footer-apple-col--center {
-  justify-self: center;
-  text-align: center;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0;
-}
-
-.footer-apple-col--right {
-  justify-self: end;
-  text-align: right;
-  color: var(--color-ink-muted);
-  font-weight: 500;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0;
-}
-
-/* The privacy policy is the one legal link every page carries; bold so it is easy to find. */
-.footer-apple-privacy {
-  font-weight: 700;
-}
-
-.footer-apple-copy {
   color: var(--color-ink-muted);
   word-break: keep-all;
 }
 
-.footer-apple-a {
-  color: var(--color-ink);
+.footer-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
-.footer-apple-email-plain {
-  color: var(--color-ink-muted);
-  user-select: text;
-}
-
-.footer-apple-pipe {
-  color: var(--color-divider);
-  margin: 0 5px;
-  user-select: none;
-}
-
-.footer-apple-a {
+.footer-btn {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-divider);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.footer-apple-a:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+.footer-btn:hover {
+  border-color: var(--color-ink-muted);
 }
 
-.footer-apple-a:hover {
+.footer-email {
+  margin: var(--space-3) 0 0;
+  font-size: 0.75rem;
+  color: var(--color-ink-muted);
+  user-select: text;
+  overflow-wrap: anywhere;
+}
+
+.footer-map {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-4);
+}
+
+.footer-group-title {
+  margin: 0 0 var(--space-2);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.footer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--color-ink-muted);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  word-break: keep-all;
+}
+
+.footer-a:hover {
   color: var(--color-ink);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.footer-apple-fine {
-  /* Centred like every other footer line (owner 2026-11-13: alignment). */
-  text-align: center;
-  word-break: keep-all;
-  margin-top: 14px;
-  padding-top: 12px;
+.footer-a:focus-visible,
+.footer-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.footer-notice {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
   border-top: 1px solid var(--color-divider);
   font-size: 0.75rem;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--color-ink-muted);
+  word-break: keep-all;
+}
+
+.footer-notice p {
+  margin: 0;
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-4);
+  font-size: 0.75rem;
+}
+
+.footer-copy {
+  color: var(--color-ink-muted);
+  word-break: keep-all;
+}
+
+.footer-bottom .footer-privacy {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-ink);
 }
 
 @media (max-width: 800px) {
-  .footer-apple-main {
+  .footer-top {
     grid-template-columns: 1fr;
-    justify-items: center;
   }
 
-  .footer-apple-col--left,
-  .footer-apple-col--center,
-  .footer-apple-col--right {
-    justify-self: center;
-    text-align: center;
-    justify-content: center;
+  /* Phones: every link stays visible (about a dozen), two groups per row. */
+  .footer-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-4);
   }
 
-  .footer-apple-col--left { order: 1; }
-  /* Narrow: the copyright and the contact are two centred lines, without a pipe left hanging. */
-  .footer-apple-col--left { flex-direction: column; }
-  .footer-apple-col--left .footer-apple-pipe { display: none; }
-  .footer-apple-col--center { order: 2; }
-  .footer-apple-col--right { order: 3; }
+  .footer-contact .footer-btn {
+    flex: 1 1 160px;
+  }
+
+  .footer-a {
+    min-height: 36px;
+  }
 }
 
 .btn {
