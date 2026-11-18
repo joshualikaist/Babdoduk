@@ -42,7 +42,7 @@
     "note": "일정은 바뀔 수 있어요. 자세한 내용은 사이트에서 확인하세요."
   },
   "telegram": {
-    "caption": "📅 이번 주 꽁밥 카드뉴스 · {range} · 꽁밥 {total}개\n{page}"
+    "caption": "📅 이번 주 꽁밥 카드뉴스 · {range} · 꽁밥 {total}개\n{page}\n👇 다음 메시지가 인스타그램 글이에요 (길게 눌러 복사)"
   },
   "rules": {
     "perCard": 4,
@@ -55,5 +55,81 @@
     "name": "BABDODUK · KAIST FOOD",
     "avatar": "images/avatar-babdoduk.png",
     "window": "babdodukms.com/ggongbab"
+  },
+  "instagram": {
+    "about": "The weekly Instagram post text, sent to the owner's Telegram right after the cards (owner 2026-11-18: keep the format of the 11-02 and 11-08 posts). {range}, {total}, {busy}, and {kinds} are filled in; a line left empty by {busy} or {kinds} is dropped.",
+    "caption": [
+      "🍚 [밥도둑] 이번 주 꽁밥 모음.zip 🎁",
+      "",
+      "이번 주에도 KAIST 곳곳에 숨어 있는 꽁밥을 모아왔습니다! 👀",
+      "",
+      "📅 {range}",
+      "🍕 이번 주 꽁밥은 총 {total}개!",
+      "",
+      "{busy}",
+      "",
+      "{kinds}",
+      "요일별 꽁밥 일정을 한눈에 확인하고, 놓치지 말고 챙겨 가세요! 🙌",
+      "",
+      "📌 행사별 참여 대상, 신청 방법, 장소 등 자세한 사항은 반드시 밥도둑 웹사이트에서 확인해 주세요!",
+      "",
+      "🔗 https://babdodukms.com",
+      "",
+      "※ 행사 일정 및 제공 내용은 변경될 수 있으니 방문 전 최신 정보를 확인해 주세요.",
+      "",
+      "앞으로도 매주 새로운 꽁밥 정보를 모아 찾아올게요! 🍚",
+      "",
+      "#밥도둑 #Babdoduk #KAIST #꽁밥 #대학생"
+    ],
+    "busy": "특히 {day}에는 무려 {n}개의 꽁밥 일정이 기다리고 있다는 사실! 🔥",
+    "busyAtLeast": 3,
+    "kinds": [
+      [
+        "학과설명회",
+        [
+          "설명회"
+        ]
+      ],
+      [
+        "강연",
+        [
+          "강연",
+          "특강",
+          "토크",
+          "강의",
+          "lecture",
+          "talk"
+        ]
+      ],
+      [
+        "세미나",
+        [
+          "세미나",
+          "포럼",
+          "콜로키움",
+          "심포지엄",
+          "seminar",
+          "forum",
+          "colloquium",
+          "symposium"
+        ]
+      ],
+      [
+        "간담회",
+        [
+          "간담회",
+          "토론회"
+        ]
+      ],
+      [
+        "축제",
+        [
+          "페스티벌",
+          "축제",
+          "festival"
+        ]
+      ]
+    ],
+    "otherKind": "다양한 교내 행사"
   }
 }

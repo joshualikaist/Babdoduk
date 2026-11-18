@@ -179,6 +179,68 @@ def week_range(monday: date) -> str:
     return f"{monday.month}월 {monday.day}일(월) – {friday.month}월 {friday.day}일(금)"
 
 
+DAY_NAMES = ("월요일", "화요일", "수요일", "목요일", "금요일")
+POST_FILE = "post.txt"
+
+
+def post_range(monday: date) -> str:
+    """The date line of the Instagram post, as the owner writes it: '11월 9일(월) ~ 11월 13일(금)'."""
+    friday = monday + timedelta(days=4)
+    return f"{monday.month}월 {monday.day}일(월) ~ {friday.month}월 {friday.day}일(금)"
+
+
+def week_titles(by_day: list[list[dict]]) -> list[str]:
+    """Each event of the week once, in the order the cards show them."""
+    seen, out = set(), []
+    for entries in by_day:
+        for e in entries:
+            if e["_event"] not in seen:
+                seen.add(e["_event"])
+                out.append(str(e.get("title") or ""))
+    return out
+
+
+def kinds_line(titles: list[str], conf: dict) -> str:
+    """'학과설명회부터 강연, 세미나까지!' from the titles: each event counts for the first kind its title
+    names, the most frequent kinds first (ties in the template's order), at most three; events of no
+    kind make the last one the template's otherKind. One kind alone gives no line."""
+    order = [name for name, _ in conf["kinds"]]
+    counts: dict[str, int] = {}
+    other = 0
+    for title in titles:
+        low = title.lower()
+        kind = next((name for name, words in conf["kinds"] if any(w.lower() in low for w in words)), None)
+        if kind is None:
+            other += 1
+        else:
+            counts[kind] = counts.get(kind, 0) + 1
+    names = sorted(counts, key=lambda k: (-counts[k], order.index(k)))[:3]
+    if len(names) < 3 and other:
+        names.append(conf["otherKind"])
+    if len(names) < 2:
+        return ""
+    return f"{names[0]}부터 {', '.join(names[1:-1]) + ', ' if len(names) > 2 else ''}{names[-1]}까지!"
+
+
+def post_text(tpl: dict, monday: date, counts: list[int], total: int, titles: list[str]) -> str:
+    """The week's Instagram post in the owner's own format (template 'instagram'). Only the dates, the
+    total, the busiest day (when one day alone has busyAtLeast or more) and the kinds change."""
+    conf = tpl["instagram"]
+    busy = ""
+    top = max(counts) if counts else 0
+    if top >= int(conf.get("busyAtLeast", 3)) and counts.count(top) == 1:
+        busy = fill(conf["busy"], day=DAY_NAMES[counts.index(top)], n=top)
+    kinds = kinds_line(titles, conf)
+    values = {"range": post_range(monday), "total": total, "busy": busy, "kinds": kinds}
+    lines = []
+    for line in conf["caption"]:
+        if ("{busy}" in line and not busy) or ("{kinds}" in line and not kinds):
+            continue
+        lines.append(fill(line, **values))
+    text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines))
+    return text.strip() + "\n"
+
+
 # Hand-drawn strokes in the accent color, as in the 'KAIST에서 오늘 뭐 먹지?' series (owner 2026-11-08).
 SCRIBBLE = ('<svg class="scribble" viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true">'
             '<path d="M6 26 C 70 12, 130 34, 200 22 S 330 10, 394 20" /><path d="M40 34 C 120 26, 240 36, 360 28" /></svg>')
@@ -543,6 +605,12 @@ def send_drawn(args, monday: date, tpl: dict) -> int:
     caption = fill(tpl["telegram"]["caption"], range=week_range(monday), total=item["total"], page=PAGE)
     result = {"week": item["week"], "renderedAt": item.get("renderedAt"), "feedGeneratedAt": item.get("feedGeneratedAt"),
               "images": [str(p) for p in paths], "telegram": send(paths, caption, token, chat)}
+    if result["telegram"] == "PUSH_SENT":
+        # A week drawn before the post text existed gets one without the kinds line.
+        saved = folder / POST_FILE
+        post = saved.read_text(encoding="utf-8") if saved.is_file() else \
+            post_text(tpl, monday, item.get("counts") or [], item["total"], [])
+        result["telegram"] = send_text(post, token, chat)
     if result["telegram"] == "PUSH_SENT" and args.report and args.report.is_file():
         result["telegram"] = send_text(args.report.read_text(encoding="utf-8"), token, chat)
     print(json.dumps(result, ensure_ascii=False))
@@ -577,6 +645,8 @@ def main(argv=None) -> int:
     paths = render(document, args.out / monday.isoformat(), clipped)
     item = entry(feed, monday, now, tpl)
     write_index(args.out, item)
+    post = post_text(tpl, monday, item["counts"], item["total"], week_titles(days(feed, monday, tpl["rules"])))
+    (args.out / monday.isoformat() / POST_FILE).write_text(post, encoding="utf-8")
     result = {"week": item["week"], "counts": item["counts"], "days": item["days"], "images": [str(p) for p in paths],
               "check": {"events": found["events"], "missing": len(found["missing"]), "firstDayOnly": len(found["firstDayOnly"])}}
     waiting, tips = store_checks(feed, monday)
@@ -595,6 +665,8 @@ def main(argv=None) -> int:
             raise SystemExit("TELEGRAM_NOT_CONFIGURED")
         caption = fill(tpl["telegram"]["caption"], range=week_range(monday), total=item["total"], page=PAGE)
         result["telegram"] = send(paths, caption, token, chat)
+        if result["telegram"] == "PUSH_SENT":
+            result["telegram"] = send_text(post, token, chat)
         if result["telegram"] == "PUSH_SENT":
             result["telegram"] = send_text(text, token, chat)
     print(json.dumps(result, ensure_ascii=False))

@@ -389,7 +389,13 @@ def test_the_cards_drawn_at_1730_are_sent_at_1800_without_redrawing(tmp_path, mo
     assert rc.main(["--week", "2026-11-02", "--out", str(out), "--send-drawn", "--report", str(report)]) == 0
     ((paths, caption),) = sent
     assert [p.name for p in paths] == ["1.png", "2.png"] and "꽁밥 1개" in caption and "11월 2일(월)" in caption
-    assert texts == ["🔎 카드뉴스 점검\n✅ 모두 카드에 있어요"]
+    post, check = texts           # the Instagram post text, then the check (owner 2026-11-18)
+    assert post.startswith("🍚 [밥도둑] 이번 주 꽁밥 모음.zip 🎁") and "총 1개!" in post and "11월 2일(월) ~ 11월 6일(금)" in post
+    assert check == "🔎 카드뉴스 점검\n✅ 모두 카드에 있어요"
+    (out / "2026-11-02" / rc.POST_FILE).write_text("17:30에 쓴 글\n", encoding="utf-8")
+    texts.clear()
+    assert rc.main(["--week", "2026-11-02", "--out", str(out), "--send-drawn", "--report", str(report)]) == 0
+    assert texts[0] == "17:30에 쓴 글\n"      # what was written with the cards is sent as it is
 
 
 def test_a_session_held_somewhere_else_each_day_shows_that_days_place():
@@ -408,3 +414,47 @@ def test_a_session_held_somewhere_else_each_day_shows_that_days_place():
     assert "📍 E6 3438호" in tuesday and "E11" not in tuesday
     assert "📍 E11 203호" in wednesday and "E6" not in wednesday
     assert "📍 N1" in thursday          # a session without a place falls back to the event's
+
+
+# The owner's post of 2026-11-08 (instagram.com/p/Dfen1HCmMhH), word for word.
+OWNER_POST_1108 = """🍚 [밥도둑] 이번 주 꽁밥 모음.zip 🎁
+
+이번 주에도 KAIST 곳곳에 숨어 있는 꽁밥을 모아왔습니다! 👀
+
+📅 11월 9일(월) ~ 11월 13일(금)
+🍕 이번 주 꽁밥은 총 14개!
+
+특히 수요일에는 무려 6개의 꽁밥 일정이 기다리고 있다는 사실! 🔥
+
+학과설명회부터 강연, 세미나까지!
+요일별 꽁밥 일정을 한눈에 확인하고, 놓치지 말고 챙겨 가세요! 🙌
+
+📌 행사별 참여 대상, 신청 방법, 장소 등 자세한 사항은 반드시 밥도둑 웹사이트에서 확인해 주세요!
+
+🔗 https://babdodukms.com
+
+※ 행사 일정 및 제공 내용은 변경될 수 있으니 방문 전 최신 정보를 확인해 주세요.
+
+앞으로도 매주 새로운 꽁밥 정보를 모아 찾아올게요! 🍚
+
+#밥도둑 #Babdoduk #KAIST #꽁밥 #대학생
+"""
+
+
+def test_the_instagram_post_keeps_the_owners_weekly_format_word_for_word():
+    """Owner 2026-11-18: send the post text with the cards, in the format of the weekly posts."""
+    titles = ["2026 기계공학과 학과설명회", "2026 전산학부 학과설명회", "2026 뇌인지과학과 학과설명회",
+              "스승 류경채를 말하다 — 연계 특강", "2026 노벨상 수상 업적 해설 강연", "STAR-MOOC 특강",
+              "2026 KPF 학술 세미나", "첫수융합포럼: AI in Neuroscience", "에코페스티벌", "프로배구 경기 관람"]
+    assert rc.post_text(rc.template(), date(2026, 11, 9), [4, 2, 6, 3, 0], 14, titles) == OWNER_POST_1108
+
+
+def test_the_busy_day_and_kinds_lines_appear_only_when_they_say_something():
+    tpl = rc.template()
+    tie = rc.post_text(tpl, MONDAY, [3, 3, 0, 0, 0], 6, ["학과설명회", "세미나"])
+    assert "특히" not in tie and "학과설명회부터 세미나까지!" in tie
+    quiet = rc.post_text(tpl, MONDAY, [1, 1, 0, 0, 0], 2, ["A 학과설명회", "B 학과설명회"])
+    assert "특히" not in quiet and "부터" not in quiet and "\n\n\n" not in quiet
+    assert "요일별 꽁밥 일정을 한눈에" in quiet and "총 2개!" in quiet
+    other = rc.post_text(tpl, MONDAY, [5, 0, 0, 0, 0], 5, ["X 설명회", "Y 설명회", "Z 강연", "토크", "NVIDIA Robotics Day"])
+    assert "특히 월요일에는 무려 5개의" in other and "학과설명회부터 강연, 다양한 교내 행사까지!" in other
