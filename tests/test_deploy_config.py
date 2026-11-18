@@ -208,6 +208,13 @@ def test_html_policy_keeps_the_existing_script_font_and_map_sources():
                        "https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js"):
             assert script in directives["script-src"].split()
         assert "https://fonts.googleapis.com" in directives["style-src"].split()
+        # Google's own sign-in button on 마이 밥도둑 (owner 2026-11-18): its script, style, frame and
+        # calls, each limited to Google's /gsi/ path.
+        assert "https://accounts.google.com/gsi/client" in directives["script-src"].split()
+        assert "https://accounts.google.com/gsi/style" in directives["style-src"].split()
+        assert "https://accounts.google.com/gsi/" in directives["frame-src"].split()
+        assert "https://accounts.google.com/gsi/" in directives["connect-src"].split()
+        assert "https://accounts.google.com" not in policy.replace("https://accounts.google.com/gsi/", "")
         assert "https://fonts.gstatic.com" in directives["font-src"].split()
         assert "https://myjglfynhnptlclawlcc.supabase.co" in directives["connect-src"].split()
         assert "wss://myjglfynhnptlclawlcc.supabase.co" in directives["connect-src"].split()

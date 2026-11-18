@@ -25,6 +25,16 @@ UID = "11111111-1111-4111-8111-111111111111"
 CONFIG = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
 ON = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}']}};"
 OFF = f"window.BABDODUK_AUTH_CONFIG = {{enabled: false, hosts: ['{HOST}']}};"
+GOOGLE_ID = "123456789012-synthetictestclientid.apps.googleusercontent.com"
+ON_GOOGLE = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}'], googleClientId: '{GOOGLE_ID}'}};"
+# A stand-in for Google's own button script: it records the setup and draws a button that hands back
+# a credential as Google's popup would.
+FAKE_GIS = """window.google = { accounts: { id: {
+  initialize(cfg) { window.__gis = cfg; },
+  renderButton(el, opts) { const b = document.createElement('button'); b.type = 'button'; b.className = 'fake-gis';
+    b.textContent = 'Google 계정으로 계속하기'; b.onclick = () => window.__gis.callback({ credential: 'h.p.s' });
+    window.__gisOpts = opts; el.appendChild(b); }
+} } };"""
 
 
 def ev(event_id, start, end, title=None):
@@ -150,7 +160,10 @@ FAKE = r"""
       return Promise.resolve({ data: { session: db.user ? { user: db.user } : null }, error: null });
     },
     signInWithOAuth(o) { const db = load(); db.calls.push(['oauth', o.provider, o.options.redirectTo]); save(db); return Promise.resolve({ data: {}, error: null }); },
-    linkIdentity(o) { const db = load(); db.calls.push(['link', o.provider, o.options.redirectTo]); save(db);
+    signInWithIdToken(o) { const db = load(); db.calls.push(['idtoken', o.provider, o.token, o.nonce]); save(db); return Promise.resolve({ data: {}, error: null }); },
+    linkIdentity(o) { const db = load();
+      if (o.token) { db.calls.push(['link-token', o.provider, o.token, o.nonce]); save(db); return Promise.resolve({ data: {}, error: null }); }
+      db.calls.push(['link', o.provider, o.options.redirectTo]); save(db);
       return Promise.resolve(db.fail.link ? { data: null, error: { message: 'Manual linking is disabled' } } : { data: {}, error: null }); },
     signOut(o) { const db = load(); db.calls.push(['signout', o && o.scope]); db.user = null; save(db); localStorage.removeItem('""" + TOKEN_KEY + r"""'); return Promise.resolve({ error: null }); }
   };
@@ -175,7 +188,7 @@ def user(signed_in="2026-11-09T08:55:00+09:00", providers=("kakao",), name="밥�
             "identities": [{"provider": p} for p in providers], "app_metadata": {"providers": list(providers)}}
 
 
-def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang="ko", size=(390, 844), ua=None):
+def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang="ko", size=(390, 844), ua=None, google=None):
     options = {"viewport": {"width": size[0], "height": size[1]}, "timezone_id": "Asia/Seoul", "service_workers": "block"}
     if ua:
         options["user_agent"] = ua
@@ -193,6 +206,8 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
 
     def handle(route):
         url = urlparse(route.request.url)
+        if route.request.url == "https://accounts.google.com/gsi/client" and google == "served":
+            return route.fulfill(content_type="application/javascript", body=FAKE_GIS)
         if "supabase" in route.request.url and url.hostname != HOST:
             sdk_requests.append(route.request.url)
             return route.abort()
@@ -204,7 +219,7 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
         if name == "data/ggongbab/archive/index.json":
             return route.fulfill(json=ARCHIVE)
         if name == "js/babdoduk-auth-config.js":
-            return route.fulfill(content_type="application/javascript", body=ON if enabled else OFF)
+            return route.fulfill(content_type="application/javascript", body=(ON_GOOGLE if google else ON) if enabled else OFF)
         if name == "js/ggongbab-public-feed.js":
             return route.fulfill(content_type="application/javascript", body="")
         if name.startswith("data/"):
@@ -609,5 +624,63 @@ def test_english_and_widths(browser, width):
     for button in page.locator("#myApp button").all():
         if button.is_visible():
             assert button.bounding_box()["height"] >= 44, button.inner_text()
+    assert errors == []
+    context.close()
+
+
+def test_google_signs_in_with_its_own_button_and_a_hashed_nonce(browser):
+    """Owner 2026-11-18: Google's window should name our site, not <project>.supabase.co. Google's own
+    button returns an ID token; Supabase gets it with the nonce whose SHA-256 Google was given."""
+    import hashlib
+    context, page, errors, _ = open_page(browser, google="served")
+    page.wait_for_selector("[data-my-google] .fake-gis")
+    assert page.locator("[data-my-google] .my-login-btn").count() == 0          # the redirect button gave way
+    assert page.get_by_role("button", name="카카오로 계속하기").count() == 1    # kakao is unchanged
+    gis = page.evaluate("({ id: window.__gis.client_id, nonce: window.__gis.nonce, popup: window.__gis.ux_mode, opts: window.__gisOpts })")
+    assert gis["id"] == GOOGLE_ID and gis["popup"] == "popup" and re.fullmatch(r"[0-9a-f]{64}", gis["nonce"])
+    assert gis["opts"]["locale"] == "ko" and 200 <= gis["opts"]["width"] <= 400
+    page.locator(".fake-gis").click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'idtoken')")
+    call = [c for c in fakedb(page)["calls"] if c[0] == "idtoken"][0]
+    assert call[1:3] == ["google", "h.p.s"] and hashlib.sha256(call[3].encode()).hexdigest() == gis["nonce"]
+    assert not [c for c in fakedb(page)["calls"] if c[0] == "oauth"]
+    page.wait_for_url(f"https://{HOST}/my.html")
+    assert errors == []
+    context.close()
+
+
+def test_google_links_and_rechecks_with_its_own_button(browser):
+    context, page, errors, _ = open_page(browser, db={"user": user()}, google="served")
+    page.wait_for_selector('[data-my-google="link"] .fake-gis')
+    page.locator('[data-my-google="link"] .fake-gis').click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'link-token')")
+    call = [c for c in fakedb(page)["calls"] if c[0] == "link-token"][0]
+    assert call[1:3] == ["google", "h.p.s"] and len(call[3]) >= 40
+    # The page reloads at my.html?next=linked (the only way this message appears) and says it worked.
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('연결했어요')")
+    assert errors == []
+    context.close()
+    # Leaving after a while asks to sign in again; a Google user re-checks with Google's button.
+    stale = user(signed_in="2026-11-09T07:00:00+09:00", providers=("google",))
+    context, page, errors, _ = open_page(browser, db={"user": stale}, google="served")
+    wait_view(page, "탈퇴하기")
+    page.get_by_role("button", name="탈퇴하기").click()
+    page.wait_for_selector('[data-my-google="signin"][data-my-google-next="leave"] .fake-gis')
+    page.evaluate("window.__beforeReload = true")
+    page.locator('[data-my-google-next="leave"] .fake-gis').click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'idtoken')")
+    # Reloaded at my.html?next=leave, which opens the leave panel again.
+    page.wait_for_function("() => !window.__beforeReload && document.getElementById('myLeaveQ')")
+    assert errors == []
+    context.close()
+
+
+def test_when_google_cannot_load_the_redirect_button_stays(browser):
+    context, page, errors, _ = open_page(browser, google="blocked")
+    wait_view(page, "Google로 계속하기")
+    page.wait_for_timeout(500)
+    assert page.locator("[data-my-google] .my-login-btn").count() == 1 and page.locator(".fake-gis").count() == 0
+    page.get_by_role("button", name="Google로 계속하기").click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'oauth')")
     assert errors == []
     context.close()
