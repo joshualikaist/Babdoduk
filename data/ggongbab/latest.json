@@ -1,51 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T21:59:45+09:00",
+  "generatedAt": "2026-11-18T22:17:11+09:00",
   "timezone": "Asia/Seoul",
-  "count": 28,
+  "count": 27,
   "events": [
-    {
-      "id": "714defe6-f795-4c42-bdcc-11e06d5f4513",
-      "title": "2026 AI컴퓨팅학과 학과설명회",
-      "summary": "AI컴퓨팅학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
-      "startAt": "2026-11-18T18:00:00+09:00",
-      "endAt": "2026-11-18T19:00:00+09:00",
-      "dateText": "2026년 11월 18일(수)",
-      "timeText": "18:00~19:00",
-      "location": {
-        "name": "기초융합과학동",
-        "building": "E7",
-        "room": "유욱준홀(1111호)"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사",
-        "source": "text"
-      },
-      "organizer": "",
-      "eligibility": "",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.98,
-      "sources": [
-        {
-          "type": "manual",
-          "name": "Manual"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품"
-      },
-      "audience": {
-        "text": "새내기 학생",
-        "basis": "stated"
-      }
-    },
     {
       "id": "233f1198-dde3-4e4d-8b1e-76c63787b579",
       "title": "2026 신소재공학과 학과설명회",
