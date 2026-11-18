@@ -384,3 +384,4 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 .my-cal-leftover { margin: var(--space-3) 0 0; padding: 12px 14px; border-radius: 12px; background: var(--color-accent-wash); }
 .my-cal-leftover .my-note, .my-cal-leftover .my-fine { margin: 0; }
 .my-cal-leftover .my-fine { margin-top: 4px; color: var(--color-ink); }
+.my-cal-ok { margin-top: var(--space-2); min-height: 44px; }

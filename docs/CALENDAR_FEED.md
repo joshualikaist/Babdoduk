@@ -67,7 +67,13 @@ address a new connection replaces (`calendar_feed_retired`, closed to browsers, 
 a kept address answers one marker row (`babdoduk:retired`), which `api/cal.js` turns into a single all-day notice
 in that calendar, "밥도둑 지난 구독 · 지워 주세요", with no alert (an older `api/cal.js` skips the row and answers an
 empty calendar, as before). `my_calendar_link()` also returns `leftover_at`, and while an old address was read in
-the last day the card says which calendar to delete (밥도둑 내 꽁밥, not 밥도둑 꽁밥).
+the last six hours the card says which calendar to delete (밥도둑 내 꽁밥, not 밥도둑 꽁밥). Reads within ten minutes
+after the switch are part of the switch and do not count, and 지웠어요 hides the note until the old address is read
+again (owner 2026-11-19: after deleting it the note stayed).
+
+**How fast a star arrives.** A subscription is pulled: the iPhone decides when to read the address, usually about
+hourly, and no website can make it read now (the "새 별은 …" line on the card says so). Pulling the Calendars list
+down in the Calendar app reads it at once; the card says that too.
 
 Not verifiable here: the install on a real iPhone (the handoff from Chrome, Safari's prompt, Settings' 설치, the
 Files fallback) and the replacement on a second install; they need one check on a phone.
