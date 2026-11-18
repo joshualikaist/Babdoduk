@@ -262,3 +262,6 @@
 .gg-toast.is-on { opacity:1; transform:translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .gg-toast { transition:none; } }
 @media (forced-colors: active) { .gg-save[aria-pressed="true"],.gg-tool[aria-pressed="true"] { outline:2px solid Highlight; } .gg-toast { border:1px solid CanvasText; } }
+/* 캘린더 열기 (owner 2026-11-19): the nearest thing to a sync button, in the saved list of a signed-in iPhone. */
+.gg-calopen { margin:10px 0 0; }
+.gg-calopen-btn { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 16px; text-decoration:none; }

@@ -73,7 +73,10 @@ again (owner 2026-11-19: after deleting it the note stayed).
 
 **How fast a star arrives.** A subscription is pulled: the iPhone decides when to read the address, usually about
 hourly, and no website can make it read now (the "새 별은 …" line on the card says so). Pulling the Calendars list
-down in the Calendar app reads it at once; the card says that too.
+down in the Calendar app reads it at once. The owner asked for a 동기화 button; since a website cannot make the
+iPhone refresh, the nearest thing is **캘린더 열기** (`calshow://`, the Calendar app's own address, undocumented but
+widely used) on the connected card and in a signed-in iPhone's 저장한 꽁밥, with the line "열리면 아래 "캘린더"를
+누르고 목록을 아래로 당기면 새 별이 바로 들어와요". Google Calendar is not an option (owner: "구글 캘린더 아무도 안써").
 
 Not verifiable here: the install on a real iPhone (the handoff from Chrome, Safari's prompt, Settings' 설치, the
 Files fallback) and the replacement on a second install; they need one check on a phone.

@@ -675,7 +675,11 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     wait_view(page, "연결됨")
     card = page.locator("#myCal").inner_text()
     assert "다시 설치할 필요 없어요" in card and "캘린더가 마지막으로 확인한 때:" in card and "하나만 남아요" in card
-    assert "아래로 당겨" in card   # how to see a new star at once
+    # The nearest thing to a 동기화 button (owner 2026-11-19): it opens the Calendar app, where pulling the list
+    # down reads the new stars at once; no website can make the iPhone refresh by itself.
+    opener = page.locator("#myCal [data-my-cal-open]")
+    assert opener.get_attribute("href") == "calshow://" and opener.inner_text() == "캘린더 열기"
+    assert opener.bounding_box()["height"] >= 44 and "목록을 아래로 당기면" in card
     assert "VPN 및 기기 관리" in card and "프로필 제거" in card
     assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-leftover").count() == 0
     again = page.locator("#myCal [data-my-cal]")

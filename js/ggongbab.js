@@ -646,9 +646,14 @@
       html += '<h3 class="gg-saved-sub">' + esc(t('gg.live.pastTitle', '지난 꽁밥')) + '</h3>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
-    // Signed in, the calendar is the subscription on 마이 밥도둑, offered on iPhone and iPad only.
+    // Signed in, the calendar is the subscription on 마이 밥도둑, offered on iPhone and iPad only. The iPhone pulls
+    // it when it likes and no website can make it refresh, so the nearest thing to a 동기화 button (owner
+    // 2026-11-19) opens the Calendar app, where pulling the Calendars list down reads the new stars at once.
     var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
     html += pushToggleHtml() + (accountMode !== 'account' ? starCalendarToggleHtml() : ios ?
+      '<p class="gg-calopen"><a class="gg-btn gg-calopen-btn" href="calshow://" data-gg-calopen><span aria-hidden="true">📅</span> ' +
+        esc(t('gg.live.calOpen', '캘린더 열기')) + '</a></p>' +
+      '<p class="gg-saved-note">' + esc(t('gg.live.calPull', '열리면 아래 "캘린더"를 누르고 목록을 아래로 당기면 새 별이 바로 들어와요.')) + '</p>' +
       '<p class="gg-saved-note">' + esc(t('gg.live.calOnMy', '마이 밥도둑에서 캘린더를 연결해 보세요')) + '</p>' : '');
     if (accountMode === 'account') {
       html += '<p class="gg-saved-foot"><a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
