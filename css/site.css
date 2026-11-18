@@ -795,28 +795,18 @@ body::after {
 .footer-contact {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-}
-
-.footer-btn {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-divider);
-  border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-ink);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
+  margin-top: var(--space-2);
 }
 
-.footer-btn:hover {
-  border-color: var(--color-ink-muted);
+.footer-contact-a {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.footer-dot {
+  color: var(--color-divider);
+  margin: 0 var(--space-2);
 }
 
 .footer-email {
@@ -862,8 +852,7 @@ body::after {
   text-underline-offset: 2px;
 }
 
-.footer-a:focus-visible,
-.footer-btn:focus-visible {
+.footer-a:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
@@ -912,10 +901,6 @@ body::after {
   .footer-map {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-6) var(--space-4);
-  }
-
-  .footer-contact .footer-btn {
-    flex: 1 1 160px;
   }
 
   .footer-a {
