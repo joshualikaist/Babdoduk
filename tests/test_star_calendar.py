@@ -7,7 +7,7 @@ so the Google Calendar tab is only checked by its address."""
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from tests.test_ggongbab_live import browser, card, open_hub, stored  # noqa: F401  (browser is a fixture)
+from tests.test_ggongbab_live import browser, card, open_card, open_hub, stored  # noqa: F401  (browser is a fixture)
 from tests.test_home_calendar_live import open_home
 
 KEY = "babdoduk-star-calendar"
@@ -169,3 +169,47 @@ def test_the_question_fits_a_phone_in_both_languages(browser):  # noqa: F811
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
         assert errors == []
         context.close()
+
+
+def test_the_same_listing_never_goes_into_the_calendar_twice(browser):  # noqa: F811
+    """Owner 2026-11-19: two events saved to the iPhone calendar, then a third, and the first two showed twice
+    ("동일한 행사가 두개 뜨는거지. 그거는 불필요한거잖아"). A calendar file always makes a new entry, so this
+    browser remembers what it sent: the star does not send a listing again, a button asks for a second tap."""
+    context, page, errors = open_hub(browser, user_agent=IPHONE, storage={KEY: "on"})
+    downloads = []
+    page.on("download", lambda d: downloads.append(d))
+    star = card(page, "lunch").locator(".gg-save")
+    with page.expect_download():
+        star.click()
+    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent'))") == {"lunch": "2026-11-09T12:00:00+09:00"}
+    star.click()           # unstar
+    star.click()           # and star again: nothing new for the calendar
+    page.wait_for_timeout(300)
+    assert len(downloads) == 1
+    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 이미 캘린더에 넣은 꽁밥이에요"
+    # Another listing still goes in once.
+    with page.expect_download():
+        card(page, "wed").locator(".gg-save").click()
+    # The card's own button asks first, then sends on the second tap.
+    open_card(page, "lunch")
+    card(page, "lunch").locator("[data-gg-cal]").click()
+    card(page, "lunch").locator("[data-gg-ics]").click()
+    page.wait_for_timeout(300)
+    assert len(downloads) == 2
+    assert page.locator(".gg-toast").inner_text() == "이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요"
+    with page.expect_download():
+        card(page, "lunch").locator("[data-gg-ics]").click()
+    assert errors == []
+    context.close()
+
+
+def test_a_listing_whose_time_moved_goes_in_again_with_a_note(browser):  # noqa: F811
+    sent = '{"lunch": "2026-11-08T12:00:00+09:00"}'
+    context, page, errors = open_hub(browser, user_agent=IPHONE, storage={KEY: "on", "babdoduk-calendar-sent": sent})
+    with page.expect_download() as info:
+        card(page, "lunch").locator(".gg-save").click()
+    assert "DTSTART:20261109T030000Z" in Path(info.value.path()).read_text(encoding="utf-8")
+    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 추가를 눌러 주세요 · 시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요"
+    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent')).lunch") == "2026-11-09T12:00:00+09:00"
+    assert errors == []
+    context.close()

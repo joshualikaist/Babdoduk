@@ -19,7 +19,8 @@
     client: null,
     events: [],               // account rows: {id, savedAt, seen}
     places: null,             // {want, been, again} or null when unavailable
-    calToken: '',             // the calendar subscription token, '' while unknown or unavailable
+    cal: null,                // the calendar connection {token, readAt, linkedAt, known}, null while unknown or unavailable
+    calTap: '',               // the start of the address this page tapped (also kept in localStorage)
     push: 'hidden',           // this browser's 30-minute alert: hidden | home | unsupported | denied | off | on
     profile: null,
     merge: null,              // the last merge result, for its notice and 되돌리기
@@ -196,20 +197,82 @@
   // up in the iPhone calendar by itself. iPhone and iPad only (owner: a laptop needs no calendar link; Android's
   // Google Calendar fetches a subscription only every few hours, so Android gets the 30-minute alert instead).
   // No address talk on the card (owner: "사람들이 주소 관련해서 무슨 말인지 이해 못할게 뻔해").
-  function calFeedUrl() { return location.host + '/cal/' + state.calToken + '.ics'; }
+  //
+  // One connection, like an account in the phone's settings (owner 2026-11-19: a second 연결 showed every event
+  // twice, "로직을 전면 수정해"). The card says whether the calendar is connected and when it last checked, and
+  // offers the button only when it is not; 다시 연결 gives a new address whose first read stops the old one
+  // (016_calendar_connect.sql), so a second tap never makes a second copy. A tap here is remembered in this
+  // browser until a calendar reads that address: meanwhile the card says 확인 중, not "tap again".
+  var CAL_TAP_KEY = 'babdoduk-calendar-tap';
+  var CAL_STALE_MS = 3 * 86400000;      // no read for three days: the subscription was probably removed
+  function calFeedUrl() { return location.host + '/cal/' + state.cal.token + '.ics'; }
   function isIos() {
     var ua = navigator.userAgent || '';
     return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   }
+  // Only the address's first characters are kept: enough to know this browser tapped it.
+  function calTapMark(token) { return String(token || '').slice(0, 10); }
+  function calTapped() {
+    if (!state.cal) return false;
+    var mark = state.calTap;
+    if (!mark) { try { mark = localStorage.getItem(CAL_TAP_KEY) || ''; } catch (e) { mark = ''; } }
+    return mark === calTapMark(state.cal.token);
+  }
+  function rememberCalTap() {
+    state.calTap = calTapMark(state.cal.token);
+    try { localStorage.setItem(CAL_TAP_KEY, state.calTap); } catch (e) { /* kept for this page only */ }
+  }
+  function calState() {
+    var cal = state.cal;
+    if (calTapped()) return 'pending';
+    if (cal.known && cal.readAt) return Date.now() - Date.parse(cal.readAt) > CAL_STALE_MS ? 'stale' : 'on';
+    return 'off';
+  }
+  function calLink(cls, label) {
+    return '<a class="' + cls + '" data-my-cal href="webcal://' + esc(calFeedUrl()) + '">' + esc(label) + '</a>';
+  }
   function calendarHtml() {
-    if (!state.calToken || !isIos()) return '';
-    var html = '<section class="my-card" aria-labelledby="myCalTitle">';
-    html += '<h2 class="my-h2" id="myCalTitle"><span aria-hidden="true">📅</span> ' + esc(t('my.cal.title', '아이폰 캘린더에 넣기')) + '</h2>';
-    html += '<p class="my-text">' + esc(t('my.cal.body', '한 번 연결하면 별 누른 꽁밥이 캘린더에 들어가요.')) + '</p>';
-    html += '<a class="btn btn-primary my-cal-btn" data-my-cal href="webcal://' + esc(calFeedUrl()) + '">' + esc(t('my.cal.apple', '아이폰 캘린더에 연결')) + '</a>';
-    html += '<p class="my-fine">' + esc(t('my.cal.appleHow', '누른 뒤 "구독"을 눌러 주세요.')) + '</p>';
+    if (!state.cal || !state.cal.token || !isIos()) return '';
+    var s = calState();
+    var html = '<section class="my-card" id="myCal" aria-labelledby="myCalTitle">';
+    html += '<h2 class="my-h2" id="myCalTitle"><span aria-hidden="true">📅</span> ' + esc(t('my.cal.title', '아이폰 캘린더 연결')) + '</h2>';
+    if (s === 'on') {
+      html += '<p class="my-cal-state is-on" role="status"><span aria-hidden="true">✓</span> ' + esc(t('my.cal.on', '연결됨')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누른 꽁밥이 캘린더에 알아서 들어가요. 다시 연결할 필요 없어요.')) + '</p>';
+      html += '<p class="my-fine">' + esc(t('my.cal.checked', '캘린더가 마지막으로 확인한 때: {time}', { time: dateText(state.cal.readAt) })) + '<br>' +
+        esc(t('my.cal.delay', '새로 누른 별은 캘린더에 뜨기까지 조금 걸릴 수 있어요.')) + '</p>';
+      html += '<p class="my-fine">' + calLink('', t('my.cal.again', '캘린더에 안 보이면 다시 연결')) + ' · ' +
+        esc(t('my.cal.againNote', '다시 연결해도 겹치지 않아요.')) + '</p>';
+    } else if (s === 'pending') {
+      html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.pending', '연결 확인 중')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.cal.pendingBody', '캘린더에서 "구독"을 눌렀다면 끝이에요. 다시 누를 필요 없어요.')) + '</p>';
+      html += '<p class="my-fine">' + calLink('', t('my.cal.reopen', '구독 화면이 안 떴다면 다시 열기')) + '</p>';
+    } else {
+      if (s === 'stale') {
+        html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.stale', '한동안 확인이 없었어요')) + '</p>';
+        html += '<p class="my-text">' + esc(t('my.cal.staleBody', '캘린더에서 구독을 지웠다면 다시 연결해 주세요. 겹치지 않아요.')) + '</p>';
+      } else {
+        html += '<p class="my-text">' + esc(t('my.cal.body', '한 번만 연결하면 돼요. 그다음부터는 별만 누르면 캘린더에 알아서 들어가요.')) + '</p>';
+      }
+      html += calLink('btn btn-primary my-cal-btn', s === 'stale' ? t('my.cal.reconnect', '아이폰 캘린더에 다시 연결') : t('my.cal.apple', '아이폰 캘린더에 연결'));
+      html += '<p class="my-fine">' + esc(t('my.cal.appleHow', '누른 뒤 "구독"을 눌러 주세요.')) + '</p>';
+    }
     return html + '</section>';
   }
+  // Back from the calendar app: read the connection again, so 확인 중 turns into 연결됨 by itself.
+  function recheckCalendar() {
+    if (state.view !== 'in' || !state.cal || !state.client || !calTapped() || document.visibilityState === 'hidden') return;
+    A.calendarLink(state.client).then(function (cal) {
+      if (!cal || state.view !== 'in') return;
+      var was = calState();
+      state.cal = cal;
+      if (calState() !== was) {
+        render();
+        if (calState() === 'on') announce(t('my.cal.nowOn', '캘린더가 연결됐어요'));
+      }
+    }, function () { /* the card keeps its state */ });
+  }
+  document.addEventListener('visibilitychange', recheckCalendar);
   function pushIds() { return (state.store ? state.store.list() : state.events).map(function (item) { return item.id; }); }
   function pushHtml() {
     var s = state.push;
@@ -349,7 +412,7 @@
           store.reload().then(function (s) { state.store = s; state.events = s.list(); }),
           A.loadProfile(c, uid).then(function (p) { state.profile = p; }),
           A.placeCounts(c).then(function (p) { state.places = p; }, function () { state.places = null; }),
-          A.calendarFeed(c).then(function (tk) { state.calToken = tk; }, function () { state.calToken = ''; })
+          A.calendarLink(c).then(function (cal) { state.cal = cal; }, function () { state.cal = null; })
         ]);
       }).then(function () {
         if (!state.profile) {
@@ -398,6 +461,13 @@
   app.addEventListener('click', function (e) {
     var el;
     if (state.busy) return;
+    // The webcal link opens the phone's subscribe screen by itself; the card then waits for the calendar
+    // (re-drawn after the browser has followed the link, never during the click).
+    if (e.target.closest('[data-my-cal]') && state.cal) {
+      rememberCalTap();
+      setTimeout(render, 400);
+      return;
+    }
     if ((el = e.target.closest('[data-my-login]'))) {
       busy(true);
       A.signIn(el.getAttribute('data-my-login')).catch(function () {

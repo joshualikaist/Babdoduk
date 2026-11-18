@@ -84,6 +84,81 @@ def test_a_token_reads_only_its_owners_stars_and_a_new_one_stops_the_old(db):
         c.close()
 
 
+
+# --- 016: only the newest connection shows the events (owner 2026-11-19) ------------------------------
+CONNECT = (ROOT / "supabase/migrations/016_calendar_connect.sql").read_text(encoding="utf-8")
+
+
+def test_the_connection_functions_are_closed_like_013():
+    """A second 연결 on the iPhone made a second calendar with the same list ("동일한 행사가 두개 뜨는거지")."""
+    assert re.findall(r"grant execute on function ([^;]+) to anon", CONNECT) == ["public.calendar_feed_events(text)"]
+    assert re.findall(r"grant execute on function ([^;]+) to authenticated;", CONNECT) == ["public.my_calendar_link()"]
+    assert "revoke all on function public.calendar_new_token() from public, anon, authenticated;" in CONNECT
+    for name in ("my_calendar_link", "calendar_feed_events"):
+        body = CONNECT.split(f"create or replace function public.{name}(", 1)[1].split("$$;", 1)[0]
+        assert "set search_path = ''" in body and "security definer" in body, name
+    read = CONNECT.split("create or replace function public.calendar_feed_events(", 1)[1].split("$$;", 1)[0]
+    assert "returns table (event_id text, saved_at timestamptz, seen jsonb)" in read   # api/cal.js is unchanged
+    for private in ("email", "display_name", "raw_user_meta_data"):
+        assert private not in CONNECT, private
+    assert not re.search(r"grant [a-z, ]+ on table", CONNECT) and "service_role" not in CONNECT
+
+
+@pytest.fixture(scope="module")
+def db16():
+    pgserver = pytest.importorskip("pgserver")
+    psycopg = pytest.importorskip("psycopg")
+    if not ACCOUNTS_FILE.is_file():
+        pytest.skip("supabase/migrations/011_accounts.sql is not on this branch")
+    from tests.test_accounts_db import PGCRYPTO, SHIM
+    server = pgserver.get_server(tempfile.mkdtemp(prefix="babdoduk-calconnect-"), cleanup_mode="delete")
+    uri = server.get_uri()
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute(SHIM)
+        admin.execute(ACCOUNTS_FILE.read_text(encoding="utf-8").replace(PGCRYPTO, ""))
+        admin.execute(SQL.replace(PGCRYPTO, ""))
+        admin.execute(CONNECT)
+        admin.execute(CONNECT)   # applying twice is harmless
+    yield psycopg, uri
+    server.cleanup()
+
+
+def test_the_newest_connection_is_the_only_one_that_shows_the_events(db16):
+    psycopg, uri = db16
+    from tests.test_accounts_db import As, new_user
+    a, b = new_user(psycopg, uri), new_user(psycopg, uri)
+    ua, ub, anon = As(psycopg, uri, a), As(psycopg, uri, b), As(psycopg, uri)
+    ua.q("insert into public.saved_events (user_id, event_id) values (%s, 'lunch')", (a,))
+    ub.q("insert into public.saved_events (user_id, event_id) values (%s, 'other')", (b,))
+    stars = lambda token: [r[0] for r in anon.q("select event_id from public.calendar_feed_events(%s)", (token,))]
+
+    # An account that subscribed before 016 (013's address, maybe twice on the phone) keeps working ...
+    old = ua.q("select public.my_calendar_feed()")[0][0]
+    assert stars(old) == ["lunch"]
+    first = ua.q("select public.my_calendar_link()")[0][0]
+    assert re.fullmatch(r"[A-Za-z0-9_-]{43}", first["link"]) and first["link"] != old
+    assert first["read_at"] is not None and first["linked_at"] is None          # read through the old address
+    assert ua.q("select public.my_calendar_link()")[0][0]["link"] == first["link"]  # one address until it is used
+    # ... until the new address is read once: from then on only it lists the stars, the old one is empty.
+    assert stars(first["link"]) == ["lunch"]
+    assert stars(old) == [] and stars(first["link"]) == ["lunch"]
+    now = ua.q("select public.my_calendar_link()")[0][0]
+    assert now["link"] not in (old, first["link"]) and now["read_at"] and now["linked_at"]
+    assert ua.q("select public.my_calendar_feed()")[0][0] == first["link"]       # 013's function: the live one
+    # Connecting again (다시 연결) never leaves two live copies.
+    assert stars(now["link"]) == ["lunch"] and stars(first["link"]) == []
+    # A new account starts with a link and no read; other accounts are untouched; anon cannot ask for a link.
+    fresh = ub.q("select public.my_calendar_link()")[0][0]
+    assert fresh["read_at"] is None and fresh["linked_at"] is None and stars(fresh["link"]) == ["other"]
+    assert anon.fails("select public.my_calendar_link()") and ua.fails("select public.calendar_new_token()")
+    assert anon.fails("select * from public.calendar_feeds")
+    with psycopg.connect(uri, autocommit=True) as admin:
+        admin.execute("delete from auth.users where id = %s", (a,))
+    assert stars(now["link"]) == []   # gone with the account
+    for c in (ua, ub, anon):
+        c.close()
+
+
 # --- the feed function ------------------------------------------------------------------------------
 RUN = r"""
 const cal = require(process.argv[1]);
