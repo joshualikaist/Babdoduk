@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T04:47:30+09:00",
+  "generatedAt": "2026-11-18T13:08:38+09:00",
   "timezone": "Asia/Seoul",
-  "count": 29,
+  "count": 32,
   "events": [
     {
       "id": "536a0459-e98b-4965-acca-b199d74f567d",
@@ -278,8 +278,8 @@
         "description": "전기자전거, 에어팟5, 노브랜드버거 세트 쿠폰; 추첨을 통해 노브랜드버거 세트 쿠폰 5명 증정"
       },
       "audience": {
-        "text": "생명과학과를 꿈꾸는 모든 새내기",
-        "basis": "stated"
+        "text": "생명과학과 학생",
+        "basis": "inferred"
       }
     },
     {
@@ -822,6 +822,54 @@
       }
     },
     {
+      "id": "dc52cf33-6ef6-4a12-a7f7-a796cf0b4020",
+      "title": "2026년 KAIST 지식재산 세미나",
+      "summary": "KAIST 구성원을 대상으로 특허출원의 기초부터 기술분야별 특허출원 전략까지 알아보는 온라인 실시간 세미나입니다. 세미나 종료 후 만족도 설문 참여자에게 커피쿠폰을 제공합니다.",
+      "startAt": "2026-11-24T14:00:00+09:00",
+      "endAt": "2026-11-25T11:50:00+09:00",
+      "dateText": "2026. 11. 24.(화) ~ 11. 25.(수), 2일간",
+      "timeText": "11월 24일(화) 14:00~16:30 / 11월 25일(수) 10:00~11:50",
+      "location": {
+        "name": "온라인 실시간 세미나",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "coupon",
+        "description": "커피쿠폰",
+        "source": "text"
+      },
+      "organizer": "지식재산 및 기술이전센터(ITVC)",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://kaist.zoom.us/j/85429049856?pwd=NM6JCyZp6LgBA06G6prJaOviHKzDxV.1"
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "sessions": [
+        {
+          "startAt": "2026-11-24T14:00:00+09:00",
+          "endAt": "2026-11-24T16:30:00+09:00"
+        },
+        {
+          "startAt": "2026-11-25T10:00:00+09:00",
+          "endAt": "2026-11-25T11:50:00+09:00"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 구성원 누구나",
+        "basis": "stated"
+      }
+    },
+    {
       "id": "3298fd48-5107-499a-98b5-88a76e312e7b",
       "title": "2026 물리학과 학과설명회",
       "summary": "물리학과 학과설명회가 11월 24일 KI빌딩 퓨전홀에서 진행됩니다. 사전예약자에게 치킨과 피자가 제공되며, 사전등록자는 경품 이벤트에 참여할 수 있습니다.",
@@ -906,6 +954,44 @@
       },
       "audience": {
         "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "4861d28f-64c3-4527-8381-ddf02199f18e",
+      "title": "제3회 교무처 & 학사과정생 간담회",
+      "summary": "교무처가 학사과정생의 수업 및 학사제도에 대한 의견을 듣는 간담회입니다. 제3회 주제는 대형교과목, 영어강의, 강의인프라와 교육환경입니다.",
+      "startAt": "2026-11-25T12:00:00+09:00",
+      "endAt": "2026-11-25T13:00:00+09:00",
+      "dateText": "2026.11.25.(수)",
+      "timeText": "오후 12시~1시",
+      "location": {
+        "name": "창의학습관",
+        "building": "E11",
+        "room": "1층 102호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "간단한 점심식사",
+        "source": "text"
+      },
+      "organizer": "교무처",
+      "eligibility": "KAIST에 재학중인 학사과정생",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/t36dFuW8Ny1hgrq86"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 학사과정생",
         "basis": "stated"
       }
     },
@@ -1090,9 +1176,9 @@
       "organizer": "International Scholar & Student Services Team (ISSS)",
       "eligibility": "",
       "registration": {
-        "required": "unknown",
+        "required": "true",
         "deadline": null,
-        "url": ""
+        "url": "https://kaist-got-talent-o3zn.vercel.app"
       },
       "confidence": 0.99,
       "sources": [
@@ -1105,18 +1191,8 @@
         "provided": "true",
         "description": "다양한 경품 및 추첨 이벤트"
       },
-      "sessions": [
-        {
-          "startAt": "2026-11-27T16:00:00+09:00",
-          "endAt": null
-        },
-        {
-          "startAt": "2026-11-27T17:00:00+09:00",
-          "endAt": null
-        }
-      ],
       "audience": {
-        "text": "국내·외 학생 및 교직원 등 KAIST 구성원",
+        "text": "KAIST 구성원 및 그 가족",
         "basis": "stated"
       }
     },
@@ -1191,6 +1267,48 @@
       ],
       "audience": {
         "text": "제조AX 및 AI팩토리에 관심있는 기업/기관 관계자",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "239cb09d-8e8f-476a-97c5-1fade0a8d2e1",
+      "title": "ChatGPT x Notion을 활용한 연구논문 생산성 높이기",
+      "summary": "ChatGPT와 Notion을 활용해 연구논문 생산성을 높이는 실습식 특강이다. 프롬프트 작성, 긴 문서 작성, 자료 시각화 및 AI 에이전트 활용을 다룬다.",
+      "startAt": "2026-12-04T13:00:00+09:00",
+      "endAt": "2026-12-04T16:00:00+09:00",
+      "dateText": "12/4(금)",
+      "timeText": "13:00~16:00",
+      "location": {
+        "name": "본원",
+        "building": "N1",
+        "room": "117호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "맛있는 다과",
+        "source": "text"
+      },
+      "organizer": "KAIST 교수학습혁신센터",
+      "eligibility": "선착순 100명",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/oxTFvizimb4212c7A"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "CELT 자체 제작 기념품 전원 증정; 전시진 강사님의 저서 《업무와 일상을 혁신하는 새로운 방법 Notion AI》 10권 추첨 후 증정"
+      },
+      "audience": {
+        "text": "KAIST 전 구성원",
         "basis": "stated"
       }
     }
