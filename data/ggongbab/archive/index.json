@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T13:21:48+09:00",
+  "generatedAt": "2026-11-18T16:20:10+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 36,
+  "count": 37,
   "events": [
     {
       "id": "c66d6b78-f077-4534-afc8-972674114e94",
@@ -1289,6 +1289,48 @@
       ],
       "audience": {
         "text": "KAIST 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "3a789298-a711-4619-943f-2dfa24ebf5a3",
+      "title": "2026 가을학기 중간고사 간식 이벤트",
+      "summary": "AI대학이 가을학기 중간고사 기간 학생들을 위해 음료 및 간식을 제공하는 행사입니다. 음료 및 간식은 일자별 300인분이며 선착순으로 제공됩니다.",
+      "startAt": "2026-10-21T11:00:00+09:00",
+      "endAt": "2026-10-22T14:00:00+09:00",
+      "dateText": "2026. 10. 21.(수) ~ 10. 22.(목)",
+      "timeText": "11:00~14:00",
+      "location": {
+        "name": "학술문화관 앞",
+        "building": "E9",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "snack",
+        "description": "음료 및 간식(일자별 300인분, 선착순 제공)",
+        "source": "text"
+      },
+      "organizer": "AI대학 교학팀",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "sessions": [
+        {
+          "startAt": "2026-10-21T11:00:00+09:00",
+          "endAt": "2026-10-21T14:00:00+09:00"
+        },
+        {
+          "startAt": "2026-10-22T11:00:00+09:00",
+          "endAt": "2026-10-22T14:00:00+09:00"
+        }
+      ],
+      "audience": {
+        "text": "학생",
         "basis": "stated"
       }
     }
