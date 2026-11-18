@@ -24,6 +24,7 @@
     places: null,             // {want, been, again} or null when unavailable
     cal: null,                // the calendar connection {token, readAt, linkedAt, known}, null while unknown or unavailable
     calTap: '',               // the start of the address this page tapped (also kept in localStorage)
+    calFallback: false,       // Safari did not open from Chrome: offer the profile as a file
     push: 'hidden',           // this browser's 30-minute alert: hidden | home | unsupported | denied | off | on
     profile: null,
     merge: null,              // the last merge result, for its notice and 되돌리기
@@ -228,12 +229,19 @@
   var CAL_TAP_KEY = 'babdoduk-calendar-tap';
   var CAL_STALE_MS = 3 * 86400000;      // no read for three days: the profile was probably removed
   var CAL_LEFTOVER_MS = 86400000;       // an old address read within a day: an old subscription is still on a phone
-  function calHref() { return '/cal/' + state.cal.token + '.mobileconfig'; }
+  function calPath() { return '/cal/' + state.cal.token + '.mobileconfig'; }
+  // Students use Chrome, not Safari (owner 2026-11-19: "웬만한거 다 크롬으로 ... 학생들 사파리 안써"), but only
+  // Safari hands a downloaded profile to Settings. The profile's address needs no sign-in, so a tap in Chrome
+  // (or any in-app browser) opens just that address in Safari with x-safari-https:, the handoff iPhone apps use
+  // (iOS 15 and 17 on; not 16). If the page is still in front a moment later, Safari did not open: the card then
+  // offers the file itself, which the Files app hands to Settings when tapped.
+  function calHref() { return inSafari() ? calPath() : 'x-safari-' + location.protocol.replace(':', '') + '://' + location.host + calPath(); }
   function isIos() {
     var ua = navigator.userAgent || '';
     return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   }
   // Only Safari hands a downloaded profile to Settings; other browsers and in-app views keep it as a file.
+  var CAL_HANDOFF_MS = 2500;
   function inSafari() { return !/CriOS|FxiOS|EdgiOS|OPiOS|KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|Whale/i.test(navigator.userAgent || ''); }
   // Only the address's first characters are kept: enough to know this browser tapped it.
   function calTapMark(token) { return String(token || '').slice(0, 10); }
@@ -283,13 +291,20 @@
       html += '<div class="my-cal-leftover" role="note"><p class="my-note"><strong>' + esc(t('my.cal.leftover', '예전 구독이 휴대폰에 남아 있어요.')) + '</strong></p>' +
         '<p class="my-fine">' + esc(t('my.cal.leftoverHow', '캘린더 앱 아래 "캘린더"에서 "밥도둑 내 꽁밥" 옆 ⓘ를 눌러 맨 아래 빨간 버튼으로 지워 주세요. 지금 쓰는 건 "밥도둑 꽁밥"이에요.')) + '</p></div>';
     }
+    if (state.calFallback && !inSafari()) {
+      // Safari did not open: the file itself, then the Files app hands it to Settings.
+      html += '<div class="my-cal-leftover" role="note"><p class="my-note"><strong>' + esc(t('my.cal.noSafari', '사파리가 열리지 않았어요.')) + '</strong></p>' +
+        '<p class="my-fine">' + esc(t('my.cal.fileHow', '아래 "파일로 받기"를 누른 뒤, 파일 앱의 "다운로드"에서 받은 파일을 한 번 누르세요. 그다음 설정 앱 맨 위의 "프로필이 다운로드됨"에서 설치해요.')) + '</p>' +
+        '<p class="my-fine"><a data-my-cal-file href="' + esc(calPath()) + '" download="babdoduk-calendar.mobileconfig">' + esc(t('my.cal.file', '파일로 받기')) + '</a></p></div>';
+    }
     if (s === 'off' || s === 'stale') {
-      if (!inSafari()) html += '<p class="my-note">' + esc(t('my.cal.safari', '사파리에서 이 페이지를 열어야 설치할 수 있어요.')) + '</p>';
+      var chrome = !inSafari();
       html += calLink('btn btn-primary my-cal-btn', s === 'stale' ? t('my.cal.reconnect', '다시 설치하기') : t('my.cal.apple', '아이폰 캘린더에 연결하기'));
       html += '<ol class="my-steps">' +
-        '<li>' + esc(t('my.cal.step1', '버튼을 누르고 "허용"을 눌러요.')) + '</li>' +
+        '<li>' + esc(chrome ? t('my.cal.step1Chrome', '버튼을 누르면 사파리가 잠깐 열려요. "허용"을 눌러요.') : t('my.cal.step1', '버튼을 누르고 "허용"을 눌러요.')) + '</li>' +
         '<li>' + esc(t('my.cal.step2', '설정 앱 맨 위의 "프로필이 다운로드됨"을 눌러 "설치"를 눌러요.')) + '</li>' +
-        '<li>' + esc(t('my.cal.step3', '끝이에요. 다시 설치해도 예전 것과 바뀌어서 캘린더는 하나만 남아요.')) + '</li></ol>';
+        '<li>' + esc(chrome ? t('my.cal.step3Chrome', '끝이에요. 크롬으로 돌아오면 "연결됨"으로 바뀌어요. 다시 설치해도 하나만 남아요.') :
+          t('my.cal.step3', '끝이에요. 다시 설치해도 예전 것과 바뀌어서 캘린더는 하나만 남아요.')) + '</li></ol>';
     } else {
       html += '<p class="my-fine">' + calLink('', s === 'pending' ? t('my.cal.reopen', '프로필 다시 받기') : t('my.cal.again', '캘린더에 안 보이면 다시 설치')) + '<br>' +
         esc(t('my.cal.againNote', '다시 설치하면 예전 것과 바뀌어서 하나만 남아요.')) + '</p>';
@@ -505,7 +520,20 @@
     // (re-drawn after the browser has followed the link, never during the click).
     if (e.target.closest('[data-my-cal]') && state.cal) {
       rememberCalTap();
+      state.calFallback = false;
       setTimeout(render, 400);
+      if (!inSafari()) {
+        // Still in front after the handoff: Safari did not open (or the visitor said no).
+        var left = false;
+        var away = function () { left = true; };
+        document.addEventListener('visibilitychange', away, { once: true });
+        window.addEventListener('pagehide', away, { once: true });
+        setTimeout(function () {
+          document.removeEventListener('visibilitychange', away);
+          window.removeEventListener('pagehide', away);
+          if (!left && document.visibilityState === 'visible' && state.view === 'in') { state.calFallback = true; render(); }
+        }, CAL_HANDOFF_MS);
+      }
       return;
     }
     if ((el = e.target.closest('[data-my-login]'))) {
