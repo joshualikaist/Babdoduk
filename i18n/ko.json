@@ -429,6 +429,7 @@
   "my.account.saved": "저장했어요",
   "my.account.signedOut": "로그아웃했어요",
   "my.account.signout": "로그아웃",
+  "my.account.signoutFail": "로그아웃하지 못했어요. 다시 시도해 주세요.",
   "my.account.title": "내 정보",
   "my.account.with": "로그인 방법",
   "my.cal.apple": "아이폰 캘린더에 연결",

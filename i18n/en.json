@@ -429,6 +429,7 @@
   "my.account.saved": "Saved",
   "my.account.signedOut": "Signed out",
   "my.account.signout": "Sign out",
+  "my.account.signoutFail": "Could not sign out. Please try again.",
   "my.account.title": "My info",
   "my.account.with": "Signed in with",
   "my.cal.apple": "Connect iPhone Calendar",
