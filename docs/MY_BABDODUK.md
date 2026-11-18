@@ -122,6 +122,26 @@ Policies:
 
   These are checked by hand on babdoduk-lab after the owner finishes the setup.
 
+## Google returns to our page (owner 2026-11-18)
+
+With Supabase's redirect (`signInWithOAuth`), Google's window says "myjglfynhnptlclawlcc.supabase.co(으)로 이동".
+The owner wanted the same buttons with our address there, for free (a Supabase custom domain needs a paid
+plan; Google's own rendered button was tried on lab the same day and rejected: it changed the button).
+Now the 마이 밥도둑 Google sign-in, "Google 로그인도 연결" and the Google re-check before leaving send the page
+to Google with `redirect_uri` = this site's `/my.html` and `response_type=id_token` (OpenID Connect; no
+secret), so Google names our site. Google answers in the address fragment; `js/babdoduk-account.js`
+`finishGoogle` removes it from the address at once, checks the `state` saved in sessionStorage, and sends the
+ID token to Supabase (`signInWithIdToken`, or `linkIdentity` with `token` when linking), giving Google the
+SHA-256 of a fresh nonce and Supabase the nonce itself. A wrong or missing state, a refusal or an old
+request (15 minutes) signs nobody in and shows the usual failure. The client id is public
+(`js/babdoduk-auth-config.js` `googleClientId`, the web client Supabase uses). Kakao still uses Supabase's
+redirect; without a client id, Web Crypto or sessionStorage Google does too. Tests: `tests/test_my_babdoduk.py`.
+
+Owner setup, once: the Google web client lists each site's `/my.html` as an authorized redirect URI
+(`https://www.babdodukms.com/my.html`, `https://babdodukms.com/my.html`, `https://babdoduk-lab.vercel.app/my.html`,
+`https://babdoduk.vercel.app/my.html`), next to Supabase's callback, which stays. Optional: brand
+verification shows the name 밥도둑 and its logo.
+
 ## Before turning it on (owner)
 
 1. Google Cloud: OAuth consent screen (email, profile and openid scopes) and a web client. The redirect URI is `https://myjglfynhnptlclawlcc.supabase.co/auth/v1/callback`.

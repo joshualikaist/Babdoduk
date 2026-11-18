@@ -372,7 +372,15 @@
   function start() {
     if (!A.available()) { state.view = 'off'; render(); return; }
     state.view = 'loading'; render();
-    A.client().then(function (c) {
+    // Google answers on this page (owner 2026-11-18: its window names our site, not supabase.co); the
+    // sign-in or link finishes before the account is read.
+    A.finishGoogle().then(function (google) {
+      if (google) {
+        if (google.next) state.next = google.next;
+        if (!google.ok) state.loginError = true;
+      }
+      return A.client();
+    }).then(function (c) {
       state.client = c;
       return A.currentUser();
     }).then(function (user) {

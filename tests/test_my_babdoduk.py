@@ -25,6 +25,9 @@ UID = "11111111-1111-4111-8111-111111111111"
 CONFIG = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
 ON = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}']}};"
 OFF = f"window.BABDODUK_AUTH_CONFIG = {{enabled: false, hosts: ['{HOST}']}};"
+GOOGLE_ID = "123456789012-synthetictestclientid.apps.googleusercontent.com"
+GOOGLE_REQUESTS = []   # Google sign-in addresses the page went to (the fake network aborts them)
+ON_GOOGLE = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}'], googleClientId: '{GOOGLE_ID}'}};"
 
 
 def ev(event_id, start, end, title=None):
@@ -150,7 +153,12 @@ FAKE = r"""
       return Promise.resolve({ data: { session: db.user ? { user: db.user } : null }, error: null });
     },
     signInWithOAuth(o) { const db = load(); db.calls.push(['oauth', o.provider, o.options.redirectTo]); save(db); return Promise.resolve({ data: {}, error: null }); },
-    linkIdentity(o) { const db = load(); db.calls.push(['link', o.provider, o.options.redirectTo]); save(db);
+    signInWithIdToken(o) { const db = load(); db.calls.push(['idtoken', o.provider, o.token, o.nonce]);
+      if (!db.fail.idtoken) db.user = db.signInAs; save(db);
+      return Promise.resolve(db.fail.idtoken ? { data: null, error: { message: 'Bad ID token' } } : { data: {}, error: null }); },
+    linkIdentity(o) { const db = load();
+      if (o.token) { db.calls.push(['link-token', o.provider, o.token, o.nonce]); save(db); return Promise.resolve({ data: {}, error: null }); }
+      db.calls.push(['link', o.provider, o.options.redirectTo]); save(db);
       return Promise.resolve(db.fail.link ? { data: null, error: { message: 'Manual linking is disabled' } } : { data: {}, error: null }); },
     signOut(o) { const db = load(); db.calls.push(['signout', o && o.scope]); db.user = null; save(db); localStorage.removeItem('""" + TOKEN_KEY + r"""'); return Promise.resolve({ error: null }); }
   };
@@ -175,7 +183,8 @@ def user(signed_in="2026-11-09T08:55:00+09:00", providers=("kakao",), name="밥�
             "identities": [{"provider": p} for p in providers], "app_metadata": {"providers": list(providers)}}
 
 
-def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang="ko", size=(390, 844), ua=None):
+def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang="ko", size=(390, 844), ua=None,
+              google=False, session=None):
     options = {"viewport": {"width": size[0], "height": size[1]}, "timezone_id": "Asia/Seoul", "service_workers": "block"}
     if ua:
         options["user_agent"] = ua
@@ -186,10 +195,13 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
     init.append(f"if (!localStorage.getItem('__fakedb')) localStorage.setItem('__fakedb', {json.dumps(json.dumps(state))});")
     if state["user"]:
         init.append(f"if (!sessionStorage.getItem('__seeded')) {{ localStorage.setItem('{TOKEN_KEY}', '{{}}'); sessionStorage.setItem('__seeded', '1'); }}")
+    for key, value in (session or {}).items():
+        init.append(f"if (!sessionStorage.getItem('__ss_{key}')) {{ sessionStorage.setItem({json.dumps(key)}, {json.dumps(value)}); sessionStorage.setItem('__ss_{key}', '1'); }}")
     for key, value in (storage or {}).items():
         init.append(f"if (!sessionStorage.getItem('__s_{key}')) {{ localStorage.setItem({json.dumps(key)}, {json.dumps(value)}); sessionStorage.setItem('__s_{key}', '1'); }}")
     context.add_init_script(" ".join(init) + FAKE)
     sdk_requests = []
+    google_requests = GOOGLE_REQUESTS
 
     def handle(route):
         url = urlparse(route.request.url)
@@ -197,6 +209,9 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
             sdk_requests.append(route.request.url)
             return route.abort()
         if url.hostname != HOST:
+            if url.hostname == "accounts.google.com":
+                google_requests.append(route.request.url)
+                return route.fulfill(status=204, body="")   # "no content": the tab stays on my.html
             return route.abort()
         name = unquote(url.path).lstrip("/")
         if name == "data/ggongbab/latest.json":
@@ -204,7 +219,7 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
         if name == "data/ggongbab/archive/index.json":
             return route.fulfill(json=ARCHIVE)
         if name == "js/babdoduk-auth-config.js":
-            return route.fulfill(content_type="application/javascript", body=ON if enabled else OFF)
+            return route.fulfill(content_type="application/javascript", body=(ON_GOOGLE if google else ON) if enabled else OFF)
         if name == "js/ggongbab-public-feed.js":
             return route.fulfill(content_type="application/javascript", body="")
         if name.startswith("data/"):
@@ -611,5 +626,102 @@ def test_english_and_widths(browser, width):
     for button in page.locator("#myApp button").all():
         if button.is_visible():
             assert button.bounding_box()["height"] >= 44, button.inner_text()
+    assert errors == []
+    context.close()
+
+
+def google_hop(page):
+    """The address the page sent Google to, parsed, after pressing a Google button."""
+    from urllib.parse import parse_qs
+    page.wait_for_function("() => sessionStorage.getItem('babdoduk-google-pending')")
+    for _ in range(50):
+        if GOOGLE_REQUESTS:
+            break
+        page.wait_for_timeout(100)
+    url = GOOGLE_REQUESTS[-1]
+    return urlparse(url), {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
+
+
+def test_google_comes_back_to_our_page_so_its_window_names_our_site(browser):
+    """Owner 2026-11-18: the same button, but Google's window should show our address, not
+    myjglfynhnptlclawlcc.supabase.co. Google answers to my.html with an ID token (no secret)."""
+    import hashlib
+    GOOGLE_REQUESTS.clear()
+    context, page, errors, _ = open_page(browser, google=True)
+    wait_view(page, "Google로 계속하기")
+    page.get_by_role("button", name="Google로 계속하기").click(no_wait_after=True)
+    url, q = google_hop(page)
+    assert (url.scheme, url.hostname, url.path) == ("https", "accounts.google.com", "/o/oauth2/v2/auth")
+    assert q["client_id"] == GOOGLE_ID and q["redirect_uri"] == f"https://{HOST}/my.html"
+    assert q["response_type"] == "id_token" and q["scope"] == "openid email profile" and q["prompt"] == "select_account"
+    pending = json.loads(page.evaluate("sessionStorage.getItem('babdoduk-google-pending')"))
+    assert pending["state"] == q["state"] and pending["mode"] == "signin"
+    assert hashlib.sha256(pending["nonce"].encode()).hexdigest() == q["nonce"]
+    assert not [c for c in fakedb(page)["calls"] if c[0] == "oauth"]    # Supabase's redirect is not used
+    assert errors == []
+    context.close()
+
+
+def pending(mode="signin", next="", state="S" * 43, at_ms=None):
+    return json.dumps({"state": state, "nonce": "N" * 43, "mode": mode, "next": next, "at": at_ms or 4102444800000})
+
+
+def test_googles_answer_signs_in_and_leaves_no_token_in_the_address(browser):
+    context, page, errors, _ = open_page(browser, path="my.html#state=" + "S" * 43 + "&id_token=h.p.s&authuser=0",
+                                         google=True, db={"signInAs": user(providers=("google",))},
+                                         session={"babdoduk-google-pending": pending()})
+    wait_view(page, "로그인")
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'idtoken')")
+    call = [c for c in fakedb(page)["calls"] if c[0] == "idtoken"][0]
+    assert call == ["idtoken", "google", "h.p.s", "N" * 43]
+    assert "id_token" not in page.url and "#" not in page.url
+    assert page.evaluate("sessionStorage.getItem('babdoduk-google-pending')") is None
+    # The page then reads the account as after any sign-in.
+    page.wait_for_function("() => document.getElementById('myApp').textContent.includes('로그아웃')")
+    assert errors == []
+    context.close()
+
+
+def test_googles_answer_links_rechecks_and_refuses_a_stranger(browser):
+    # Linking: the token goes to linkIdentity and the page says it worked.
+    context, page, errors, _ = open_page(browser, path="my.html#state=" + "S" * 43 + "&id_token=h.p.s",
+                                         google=True, db={"user": user()}, session={"babdoduk-google-pending": pending("link", "linked")})
+    page.wait_for_function("() => document.getElementById('myToast').textContent.includes('연결했어요')")
+    assert [c for c in fakedb(page)["calls"] if c[0] == "link-token"] == [["link-token", "google", "h.p.s", "N" * 43]]
+    assert errors == []
+    context.close()
+    # Re-checking before leaving comes back to the leave panel.
+    context, page, errors, _ = open_page(browser, path="my.html#state=" + "S" * 43 + "&id_token=h.p.s", google=True,
+                                         db={"user": user(providers=("google",)), "signInAs": user(providers=("google",))},
+                                         session={"babdoduk-google-pending": pending("signin", "leave")})
+    page.wait_for_selector("#myLeaveQ")
+    assert errors == []
+    context.close()
+    # An answer this browser did not ask for (another state) is not used, and says sign-in failed.
+    context, page, errors, _ = open_page(browser, path="my.html#state=" + "X" * 43 + "&id_token=h.p.s",
+                                         google=True, session={"babdoduk-google-pending": pending()})
+    wait_view(page, "로그인하지 못했어요")
+    assert not [c for c in fakedb(page)["calls"] if c[0] in ("idtoken", "link-token")]
+    assert "id_token" not in page.url
+    assert errors == []
+    context.close()
+    # Google refused (the person closed it): the same message, nothing sent to Supabase.
+    context, page, errors, _ = open_page(browser, path="my.html#state=" + "S" * 43 + "&error=access_denied",
+                                         google=True, session={"babdoduk-google-pending": pending()})
+    wait_view(page, "로그인하지 못했어요")
+    assert not [c for c in fakedb(page)["calls"] if c[0] == "idtoken"]
+    assert errors == []
+    context.close()
+
+
+def test_the_google_link_button_also_goes_through_our_page(browser):
+    GOOGLE_REQUESTS.clear()
+    context, page, errors, _ = open_page(browser, google=True, db={"user": user()})
+    wait_view(page, "Google 로그인도 연결")
+    page.get_by_role("button", name="Google 로그인도 연결").click(no_wait_after=True)
+    url, q = google_hop(page)
+    assert q["redirect_uri"] == f"https://{HOST}/my.html" and url.path == "/o/oauth2/v2/auth"
+    assert json.loads(page.evaluate("sessionStorage.getItem('babdoduk-google-pending')"))["mode"] == "link"
+    assert not [c for c in fakedb(page)["calls"] if c[0] == "link"]
     assert errors == []
     context.close()
