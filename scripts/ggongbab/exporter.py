@@ -266,37 +266,21 @@ def archived_event(row: dict[str, Any]) -> dict[str, Any]:
     return event
 
 
-def previously_listed_ids(out_dir: Path = DATA_DIR) -> set[str]:
-    """IDs that already appeared in a published file: the live feed or archive on disk.
-
-    Read before the new export replaces them. Only these rows may enter the
-    archive, so "당시 공개된 꽁밥 안내 기록" is always true.
-    """
-    ids: set[str] = set()
-    for path in (out_dir / "latest.json", out_dir / ARCHIVE_DIR / ARCHIVE_FILE):
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
-        for event in (data.get("events") if isinstance(data, dict) else None) or []:
-            if isinstance(event, dict) and isinstance(event.get("id"), str):
-                ids.add(event["id"])
-    return ids
-
-
 def archive_sort(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Most recently ended first; ties by id, so the order never depends on the input."""
     return sorted(sorted(events, key=lambda e: e["id"]),
                   key=lambda e: e.get("endAt") or e.get("startAt") or "", reverse=True)
 
 
-def build_archive(rows: list[dict[str, Any]], settings: Settings, listed: set[str],
+def build_archive(rows: list[dict[str, Any]], settings: Settings,
                   now: Optional[datetime] = None, *, window_days: int = ARCHIVE_WINDOW_DAYS) -> dict[str, Any]:
-    """Past listings: eligible rows that the live feed drops as expired.
+    """Past free food: eligible rows that the live feed drops as expired.
 
     Uses the live feed's own eligibility and is_expired at the same `now`, so a
     row is never both live and archived, and never current in one and ended in
-    the other.
+    the other. A row collected only after it ended (the collectors were down)
+    is archived too (owner 2026-11-18, after the Dooray outage of 11-13..18:
+    "지난거는 지난 꽁밥에 넣어야지"); the 30-day window still bounds the file.
     """
     now = now or datetime.now(KST)
     cutoff = now - timedelta(days=window_days)
@@ -304,7 +288,7 @@ def build_archive(rows: list[dict[str, Any]], settings: Settings, listed: set[st
     seen: set[str] = set()
     for row in rows:
         event_id = row.get("id")
-        if not isinstance(event_id, str) or event_id in seen or event_id not in listed:
+        if not isinstance(event_id, str) or event_id in seen:
             continue
         if not publication_eligible(row, settings, food_only=True):
             continue
