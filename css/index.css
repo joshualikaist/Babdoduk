@@ -17,7 +17,9 @@
 .home {
   width: min(var(--container-editorial), calc(100% - 32px));
   margin: 0 auto;
-  padding-bottom: 32px;
+  /* No bottom padding of its own (owner 2026-11-18, "여기 공백 조금만 줄이자"): the footer's own top
+     margin is the whole gap between the last card and the footer rule. */
+  padding-bottom: 0;
 }
 
 /* ── The 먹방 월드컵 promo (owner 2026-10-14): a pink-to-blue band in the world cup's own lettering (Jua,
