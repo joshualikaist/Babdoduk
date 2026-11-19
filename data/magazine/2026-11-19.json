@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-19",
+  "generatedAt": "2026-11-19T17:37:00+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "찜기 없이 1분 컷! 기린 단팥호빵 머그컵 전자레인지로 호빵 찌기",
+    "summary": "찬바람이 불면 떠오르는 간식, 호빵의 계절이 왔네요!",
+    "source": "알고 보면 (방송 레시피)",
+    "sourceId": "blog-seon1982",
+    "candidateId": "c_df0ab78f8baf3c0c",
+    "url": "https://seon1982.tistory.com/4153",
+    "medium": "blog",
+    "discoveredAt": "2026-11-19T17:37:00+09:00",
+    "publishedAt": "2026-11-19T00:00:36+09:00",
+    "image": "https://blog.kakaocdn.net/dn/VftQf/dJMcaf9EQmH/KdMKYRiKoucz4noGClI6b1/img.jpg",
+    "imageSource": "feed_html",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "corroborated"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "혈당 잡고 비만 막으려면?…췌장 건강 지키는 음식 6가지 / “사지 마!” 외쳐도 손님 북적⋯남대문 ‘스카프 아저씨’ 인기 비결은? / 윤손하 “다이어트에도 좋아”⋯과자처럼 바삭하게 구워 먹는 ‘이 채소’는?",
+          "summary": "혈당 잡고 비만 막으려면?…췌장 건강 지키는 음식 6가지 췌장은 위장 뒤에 있는 작은 장기지만 소화 효소와 호르몬을 분비하는 중요한 일을 한다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_0d30a15197bf5b93",
+          "url": "https://kormedi.com/2902743/",
+          "medium": "news",
+          "discoveredAt": "2026-11-11T16:44:37+09:00",
+          "publishedAt": "2026-11-11T06:00:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "'스시자로' 반입 허용…\"해외 원정처방 급증 우려\"",
+          "summary": "해외에서 처방받은 GLP-1 비만치료제 ‘위고비’와 ‘마운자로’가 국내 반입이 가능해지면서 일본 등 해외 원정 처방이 더 늘어나게 될지 주목된다.12일 관련업계에 따르면, 식품의약품안전처와 관세청은 자가 치료용…",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_dd51ee129b34a34c",
+          "url": "https://www.newsis.com/view/NISX20261111_0003864562",
+          "medium": "news",
+          "discoveredAt": "2026-11-12T17:10:03+09:00",
+          "publishedAt": "2026-11-12T06:41:54+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "BBQ, 치킨 좋아하는 아이들에 답했다… 치킨캠프로 꿈과 희망 전해",
+          "summary": "BBQ가 평소 치킨을 좋아하고 요리사의 꿈을 키우는 아이들의 사연에 화답해 치킨이 만들어지는 과정을 배우고 맛있는 치킨도 함께 나누는 특별한 시간을 선물했다.제너시스BBQ 그룹(회장 윤홍근)은 최근 서울 노원구…",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_30cc4054f25677af",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36305",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T18:09:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "수입 의존도 높은 단백질…원료화 위해 생산부터 유통까지 일관된 품질 관리 긴요",
+          "summary": "한국식품위생안전성학회(회장 하상도)는 18일부터 20일까지 제주 해비치 호텔&리조트에서 열리는 40주년 정기학술대회 일환으로 ‘국산 단백질 원료 품질 관리 및 생산·재배기술 개발’ 세션을 열고 국내산 대두 단백질…",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_4d907f26967e8696",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201684",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T15:04:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "혈압 낮추는 데 가장 좋은 영양소는?…칼륨 풍부한 식품 10가지",
+          "summary": "칼륨이 풍부한 토마토는 혈압을 낮추는 데 도움이 되는 식품 중 하나로 꼽힌다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_11a58de78eea7277",
+          "url": "https://kormedi.com/2908259/",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T10:15:00+09:00",
+          "trendEvidence": [
+            "explicit_source_claim"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "강된장 황금레시피｜두부와 애호박 넣고 짜지 않게 만드는 법",
+          "summary": "구수한 된장에 두부와 애호박을 듬뿍 넣어 만드는 집밥 강된장입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_4f48d2c0b9c198f9",
+          "url": "https://cultureagora.tistory.com/464",
+          "medium": "blog",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T06:30:04+09:00"
+        },
+        {
+          "title": "마늘 소고기 미역국 끓이는 방법 미역국 마늘 요리 레시피",
+          "summary": "저는 다진 마늘이 까만 미역국에 하얗게 둥둥 떠 다니는 게 너무 별로였는데 그것은 마늘을 언제 넣느냐에 따라 미역국 맛이 완전히 달라지는 걸 알고부터는 미역국에 다진 마늘을 꼭 넣고 끓입니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_2575eb6fbdb31fc9",
+          "url": "https://twins0807.tistory.com/entry/%EB%A7%88%EB%8A%98-%EC%86%8C%EA%B3%A0%EA%B8%B0-%EB%AF%B8%EC%97%AD%EA%B5%AD-%EB%81%93%EC%9D%B4%EB%8A%94-%EB%B0%A9%EB%B2%95-%EB%AF%B8%EC%97%AD%EA%B5%AD-%EB%A7%88%EB%8A%98-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-18T19:43:22+09:00"
+        },
+        {
+          "title": "냉장고 남은 우유의 변신? 리코타치즈와 브로콜리무침",
+          "summary": "리코타치즈와 브로콜리무침 냉장고에 남아 있는 우유, 어떻게 하시나요?",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_4821e54662c7976e",
+          "url": "https://heysukim114.tistory.com/entry/%EC%9C%A0%ED%86%B5%EA%B8%B0%EA%B0%84-%EC%A7%80%EB%82%9C-%EC%9A%B0%EC%9C%A0%EB%A1%9C-%ED%83%80%EC%BD%94%EC%B9%98%EC%A6%88-%EB%A7%8C%EB%93%A4%EC%96%B4-%EB%B8%8C%EB%A1%9C%EC%BD%9C%EB%A6%AC%EB%AC%B4%EC%B9%A8",
+          "medium": "blog",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T00:00:03+09:00"
+        },
+        {
+          "title": "간단한 집밥 아들을 위한 소박한 생일밥상",
+          "summary": "간단한 집밥, 아들을 위한 소박한 생일밥상 며느리와 일주일 차이로 생일을 맞은 아들.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_dbfb718a831168b8",
+          "url": "https://heysukim114.tistory.com/entry/%EA%B0%84%EB%8B%A8%ED%95%9C-%EC%A7%91%EB%B0%A5-%EC%95%84%EB%93%A4%EC%9D%98-%EC%83%9D%EC%9D%BC%EB%B0%A5%EC%83%81",
+          "medium": "blog",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "publishedAt": "2026-11-18T00:00:32+09:00"
+        },
+        {
+          "title": "딸기와 말차가 만난 부드러운 레이어 치즈케이크 만들기 | Strawberry Matcha Cheesecake Recipe | Beautiful Layers Dessert",
+          "summary": "부드러운 말차 치즈케이크 속에 상큼한 딸기 젤리층을 넣은 딸기 말차 무스 치즈케이크를 만들었어요.",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_e0dab75e951a3ef6",
+          "url": "https://www.youtube.com/watch?v=NjS5nV5HfHg",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "publishedAt": "2026-11-17T20:00:22+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "40대는 철분, 60대는 단백질… “나이 들면 챙길 영양소 달라진다”",
+          "summary": "여성은 나이가 들면서 호르몬과 신체 기능이 변해 시기별로 신경 써야 할 영양소도 달라진다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_6e3b6f4ee9088d21",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/19/2026111901604.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T16:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/19/2026111901601_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“두부 으깨서 팬에 볶아 보세요”… 다진 고기 대신 고명으로 딱입니다",
+          "summary": "두부를 잘게 으깨 마른 팬에 볶으면 보슬보슬한 식감의 ‘두부 소보로’가 된다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_427fb5cccefd6799",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/18/2026111802636.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T04:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/18/2026111802633_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "체중 감량은 ‘이 음식’ 줄이면서 시작… 혈당 스파이크에 어떤 변화가?",
+          "summary": "수분 보충을 위해 단 음료 대신에 물을 조금씩 자주 마시는 게 좋다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_f41b22c5950c0bbf",
+          "url": "https://kormedi.com/2907789/",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-18T19:01:00+09:00"
+        },
+        {
+          "title": "공복혈당 정상인데 밥 먹으면 졸려?…의심해야 할 '혈당 스파이크'",
+          "summary": "강주연 인턴 기자 = 건강검진에서 공복혈당이 정상으로 나왔더라도 식후혈당까지 안정적이라고 단정할 수는 없다는 전문가의 분석이 나왔다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_75e6266f0715d00e",
+          "url": "https://www.newsis.com/view/NISX20261118_0003872866",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-18T18:00:00+09:00"
+        },
+        {
+          "title": "개인 취향에 흔들리는 급식 식단",
+          "summary": "급식 대상자의 건강과 영양을 고려해 작성한 식단이 관리자나 고객사 담당자의 개인 취향에 흔들리고 있다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_ac200d463be27565",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62677",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T05:16:37+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "장(腸)을 바꾸고 싶다면 영양제를 버려라⋯유익균을 살리는 식탁의 비밀",
+          "summary": "우리 몸의 장(腸)은 생각보다 민감하다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_c845fd2dfb66423f",
+          "url": "https://kormedi.com/2907434/",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T16:00:00+09:00",
+          "image": "https://cdn.kormedi.com/wp-content/uploads/2026/11/tc01500001150-l-edited.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "“혈당 쭉 끌어올렸다가 툭 떨어뜨린다”… 의사가 경고한 ‘아침 최악의 메뉴’",
+          "summary": "아침 식사는 생각보다 건강에 큰 영향을 미친다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_7fd63cde02e5ea99",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/18/2026111802224.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T00:01:00+09:00"
+        },
+        {
+          "title": "“치아 멀쩡한데 씹기 힘들다?”⋯근육까지 약해지는 노화 신호일까",
+          "summary": "노화가 깊어질수록 구강 건강은 더 중요해진다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_5fe5325905ade7b5",
+          "url": "https://kormedi.com/2908290/",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-19T10:16:06+09:00"
+        },
+        {
+          "title": "“살 빼려다 꽉 막혔다면?”… 변비 해소에 좋은 식품 3가지",
+          "summary": "차전자피는 질경이의 일종인 ‘플란타고 오바타’ 등의 씨앗 껍질이다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_88ad06572698e288",
+          "url": "https://kormedi.com/2907528/",
+          "medium": "news",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "publishedAt": "2026-11-18T22:06:00+09:00"
+        }
+      ]
+    }
+  }
+}

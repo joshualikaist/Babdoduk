@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "“유명 방송인도 아침 공복에 꼭 먹는다”… 질병 없이 천천히 늙는 비결은 KCA 주스?",
-    "summary": "방송인 문지애와 김형배 한의사가 자신의 건강한 아침 습관을 소개했다.",
     "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_4ef8ca32c03327c6",
     "url": "https://kormedi.com/2907358/",
     "medium": "news",
-    "discoveredAt": "2026-11-18T17:25:17+09:00",
-    "publishedAt": "2026-11-18T09:05:00+09:00",
     "image": "https://kormedi.com/wp-content/uploads/2026/11/resized-1200px.png",
+    "category": "trend",
+    "publishedAt": "2026-11-18T09:05:00+09:00",
+    "discoveredAt": "2026-11-18T17:25:17+09:00",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_4ef8ca32c03327c6",
     "imageSource": "feed_media",
+    "summary": "방송인 문지애와 김형배 한의사가 자신의 건강한 아침 습관을 소개했다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "[국제 곡물시장 전망] 팜유·대두유 가격 올라 가공식품 원가 상승 압력",
-          "summary": "글로벌 곡물 시장이 단순 원물 수출 중심에서 각국의 에너지 정책과 연동된 가공 산업으로 급격히 재편되면서 국내 식음료(F&B) 및 식품 가공업계의 원재료 조달 지형에도 거대한 변화가 예고됐다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_cc210377263f984f",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201595",
           "medium": "news",
-          "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T07:52:00+09:00",
           "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201595_202248_040.jpg",
+          "publishedAt": "2026-11-18T07:52:00+09:00",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_cc210377263f984f",
           "imageSource": "feed_html",
+          "summary": "글로벌 곡물 시장이 단순 원물 수출 중심에서 각국의 에너지 정책과 연동된 가공 산업으로 급격히 재편되면서 국내 식음료(F&B) 및 식품 가공업계의 원재료 조달 지형에도 거대한 변화가 예고됐다.",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -45,58 +45,58 @@
         },
         {
           "title": "[비즈톡톡] 아이돌 집밥에 옷·화장품 쿠폰까지… 편의점 도시락의 새 공식",
-          "summary": "비즈톡톡 아이돌 집밥에 옷·화장품 쿠폰까지 편의점 도시락의 새 공식 가성비 간편식 넘어 이색 메뉴·혜택으로 경쟁 CU는 아이돌 집밥, GS25는 패션·뷰티 쿠폰 혜택 세븐일레븐, 성시경 협업 제품 100만개 판매…",
           "source": "조선일보",
-          "sourceId": "web-exa-habit",
-          "candidateId": "c_8c421e6ef9f38518",
           "url": "https://biz.chosun.com/distribution/channel/2026/11/17/QINU2R67RBC5TPIS56JIZALCEQ/",
           "medium": "news",
-          "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-16T16:52:02+09:00",
           "image": "https://biz.chosun.com/resizer/v2/G44TSYZZGE2TAMRTMVSTOZRQGQ.jpg?auth=0469d84c08908c96944468ac9a71dedcd98d23ebf8e6bd27363b7e0d7898adbc&width=1000&height=525&smart=true",
+          "publishedAt": "2026-11-16T16:52:02+09:00",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_8c421e6ef9f38518",
           "imageSource": "source_page_og",
+          "summary": "비즈톡톡 아이돌 집밥에 옷·화장품 쿠폰까지 편의점 도시락의 새 공식 가성비 간편식 넘어 이색 메뉴·혜택으로 경쟁 CU는 아이돌 집밥, GS25는 패션·뷰티 쿠폰 혜택 세븐일레븐, 성시경 협업 제품 100만개 판매…",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "합격 기원 ‘찹쌀떡·초콜릿’…편의점, 시험장 앞 간식 재고도 늘렸다",
-          "summary": "",
           "source": "kukinews.com",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_bd6892fed5051e78",
           "url": "https://www.kukinews.com/article/view/kuk202611180081",
           "medium": "blog",
-          "discoveredAt": "2026-11-18T17:25:17+09:00",
           "publishedAt": "2026-11-18T09:00:00+09:00",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_bd6892fed5051e78",
+          "summary": "",
           "trendEvidence": [
             "sales_data"
           ]
         },
         {
           "title": "전문가단체 “해외 반입 허용된 비만치료제, 약가 인하·급여화 논의 시작해야”",
-          "summary": "대한내분비학회·대한당뇨병학회·대한비만학회 등 전문가 단체가 “비만치료제의 해외 원정 구매가 성행한 것은 가격 부담의 영향이 크다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_2ee5d7eac3e20fb2",
           "url": "https://kormedi.com/2907538/",
           "medium": "news",
-          "discoveredAt": "2026-11-18T17:25:17+09:00",
           "publishedAt": "2026-11-18T11:09:45+09:00",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_2ee5d7eac3e20fb2",
+          "summary": "대한내분비학회·대한당뇨병학회·대한비만학회 등 전문가 단체가 “비만치료제의 해외 원정 구매가 성행한 것은 가격 부담의 영향이 크다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "해썹인증원, 국제학술대회서 식품안전 현장관리·데이터 전환 성과 공유",
-          "summary": "한국식품안전관리인증원(원장 한상배, 해썹인증원)은 18일부터 20일까지 제주해비치호텔에서 개최되는 ‘2026년 한국식품위생안전성학회 국제학술대회’에 참가해 분과를 운영한다고 밝혔다.해썹인증원은 식품안전 분야의 최신…",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_3b09efc704d61cdc",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36289",
           "medium": "news",
-          "discoveredAt": "2026-11-18T17:25:17+09:00",
           "publishedAt": "2026-11-18T18:42:16+09:00",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_3b09efc704d61cdc",
+          "summary": "한국식품안전관리인증원(원장 한상배, 해썹인증원)은 18일부터 20일까지 제주해비치호텔에서 개최되는 ‘2026년 한국식품위생안전성학회 국제학술대회’에 참가해 분과를 운영한다고 밝혔다.해썹인증원은 식품안전 분야의 최신…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -108,60 +108,60 @@
       "items": [
         {
           "title": "알토란 장호준 셰프 초간단 오리불고기 불고기양념 만드는 법",
-          "summary": "알토란 619회에서는 고품격 보양 밥상 편이 방송되었습니다.",
           "source": "알고 보면 (방송 레시피)",
-          "sourceId": "blog-seon1982",
-          "candidateId": "c_c2c28696012cc9f7",
           "url": "https://seon1982.tistory.com/4158",
           "medium": "blog",
-          "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T00:00:44+09:00",
           "image": "https://blog.kakaocdn.net/dn/kAI34/dJMcac6ok5C/Nqm8CFSWv6w1kHmvY12OfK/img.png",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-18T00:00:44+09:00",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_c2c28696012cc9f7",
+          "imageSource": "feed_html",
+          "summary": "알토란 619회에서는 고품격 보양 밥상 편이 방송되었습니다."
         },
         {
           "title": "무생채 황금레시피｜절이지 않고 아삭하게 새우젓 국물로 감칠맛 살리는 백반집 무생채 만드는 법",
-          "summary": "가을부터 겨울까지 맛이 좋아지는 무는 달고 시원한 맛이 일품입니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_941e7ffcf4fc722f",
           "url": "https://cultureagora.tistory.com/426",
           "medium": "blog",
+          "publishedAt": "2026-11-18T17:00:53+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T17:00:53+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_941e7ffcf4fc722f",
+          "summary": "가을부터 겨울까지 맛이 좋아지는 무는 달고 시원한 맛이 일품입니다."
         },
         {
           "title": "히야시 토마토 만들기｜제철 생유자로 만드는 일본식 유자간장소스 레시피",
-          "summary": "일본 이자카야에서 만날 수 있는 간단한 토마토 요리 중 하나가 히야시 토마토(冷やしトマト)입니다.",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_b343c51150d58703",
           "url": "https://cultureagora.tistory.com/408",
           "medium": "blog",
+          "publishedAt": "2026-11-18T07:30:40+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T07:30:40+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_b343c51150d58703",
+          "summary": "일본 이자카야에서 만날 수 있는 간단한 토마토 요리 중 하나가 히야시 토마토(冷やしトマト)입니다."
         },
         {
           "title": "무청 시래기 된장국 끓이는 법 무청 시래기 요리 레시피",
-          "summary": "집에 온 딸내미가 날이 추우니 뜨끈한 국물이 생각나다 보니 요즘 그렇게 라면을 많이 먹는다고 하네요.",
           "source": "배고픈맘의 행복레시피",
-          "sourceId": "blog-twins0807",
-          "candidateId": "c_472ee963ca1e49ce",
           "url": "https://twins0807.tistory.com/entry/%EB%AC%B4%EC%B2%AD-%EC%8B%9C%EB%9E%98%EA%B8%B0-%EB%90%9C%EC%9E%A5%EA%B5%AD-%EB%81%93%EC%9D%B4%EB%8A%94-%EB%B2%95-%EB%AC%B4%EC%B2%AD-%EC%8B%9C%EB%9E%98%EA%B8%B0-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
           "medium": "blog",
+          "publishedAt": "2026-11-17T18:43:44+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-17T18:43:44+09:00"
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_472ee963ca1e49ce",
+          "summary": "집에 온 딸내미가 날이 추우니 뜨끈한 국물이 생각나다 보니 요즘 그렇게 라면을 많이 먹는다고 하네요."
         },
         {
           "title": "진짜 배달 시키는 것보다 훨씬 더 맛있습니다.",
-          "summary": "초간단 떡볶이소스 찜닭을 만들어 보자 [재료] 닭다리살 정육 500g, 불린 당면 한 줌.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_d6195e78cf41c96d",
           "url": "https://www.youtube.com/watch?v=u6-IU0VtS4Q",
           "medium": "youtube",
+          "publishedAt": "2026-11-17T19:27:01+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-17T19:27:01+09:00"
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_d6195e78cf41c96d",
+          "summary": "초간단 떡볶이소스 찜닭을 만들어 보자 [재료] 닭다리살 정육 500g, 불린 당면 한 줌."
         }
       ]
     },
@@ -170,58 +170,58 @@
       "items": [
         {
           "title": "“포만감 높이고 혈당 상승 완화까지”… 치아씨드 효과 제대로 알아보기",
-          "summary": "치아씨드는 깨보다 작은 씨앗이지만 영양 밀도가 높아 요거트나 샐러드, 스무디에 곁들여 먹는 사람이 많다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_4d747287d1948a2e",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=70131",
           "medium": "news",
+          "publishedAt": "2026-11-18T17:00:00+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T17:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_4d747287d1948a2e",
+          "summary": "치아씨드는 깨보다 작은 씨앗이지만 영양 밀도가 높아 요거트나 샐러드, 스무디에 곁들여 먹는 사람이 많다."
         },
         {
           "title": "“고기·생선 없을 때 먹었는데”… 단백질 턱없이 부족해지는 ‘잘못된 콩 섭취법’",
-          "summary": "콩은 단백질과 식이섬유가 풍부하고 혈중 콜레스테롤을 낮추는 데도 도움이 될 수 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_23412cbbe045067a",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/17/2026111702084.html",
           "medium": "news",
+          "publishedAt": "2026-11-18T06:00:00+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T06:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_23412cbbe045067a",
+          "summary": "콩은 단백질과 식이섬유가 풍부하고 혈중 콜레스테롤을 낮추는 데도 도움이 될 수 있다."
         },
         {
           "title": "“믹스커피 다음으로 당류 섭취 많은 음식”… 매일 식탁에 올리던 ‘배추김치’",
-          "summary": "매일 밥상에 오르는 김치가 의외의 당류 섭취원으로 확인됐다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_9206f4e10786f577",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/17/2026111701075.html",
           "medium": "news",
+          "publishedAt": "2026-11-17T11:30:00+09:00",
           "discoveredAt": "2026-11-17T17:59:30+09:00",
-          "publishedAt": "2026-11-17T11:30:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_9206f4e10786f577",
+          "summary": "매일 밥상에 오르는 김치가 의외의 당류 섭취원으로 확인됐다."
         },
         {
           "title": "중년 부부가 단백질 ‘이렇게’ 먹는 경우…달걀, 살코기의 양은?",
-          "summary": "달걀, 살코기, 생선 등은 단백질이 많아 근육 보강에 도움이 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_282d05415b0d705a",
           "url": "https://kormedi.com/2907493/",
           "medium": "news",
+          "publishedAt": "2026-11-18T14:01:00+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T14:01:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_282d05415b0d705a",
+          "summary": "달걀, 살코기, 생선 등은 단백질이 많아 근육 보강에 도움이 된다."
         },
         {
           "title": "히비스커스차의 놀라운 효능 4가지…\"체지방률과 허리 관련 지표 개선\"",
-          "summary": "﻿히비스커스차는 붉은빛과 새콤한 맛이 특징으로, 붉은 꽃받침잎을 말려 우린 차다.",
           "source": "하이닥 헬시라이프",
-          "sourceId": "news-hidoc-healthylife",
-          "candidateId": "c_52555954822facb4",
           "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=70117",
           "medium": "news",
+          "publishedAt": "2026-11-18T06:00:00+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T06:00:00+09:00"
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_52555954822facb4",
+          "summary": "﻿히비스커스차는 붉은빛과 새콤한 맛이 특징으로, 붉은 꽃받침잎을 말려 우린 차다."
         }
       ]
     },
@@ -230,27 +230,27 @@
       "items": [
         {
           "title": "“공복 뒤 첫 끼가 하루 대사 결정”… 노화 전문의가 꼽은 ‘완벽한 아침식사’ 3가지",
-          "summary": "김수연 원장이 아침으로 단백질이 풍부한 식단을 먹을 것을 추천했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_448fa3b322e5f49c",
           "url": "https://kormedi.com/2907790/",
           "medium": "news",
-          "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T16:18:55+09:00",
           "image": "https://kormedi.com/wp-content/uploads/2026/11/2026-11-18-14658-1.png",
-          "imageSource": "feed_media"
+          "publishedAt": "2026-11-18T16:18:55+09:00",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_448fa3b322e5f49c",
+          "imageSource": "feed_media",
+          "summary": "김수연 원장이 아침으로 단백질이 풍부한 식단을 먹을 것을 추천했다."
         },
         {
           "title": "부산 학교급식 연구성과 한자리에",
-          "summary": "부산지역 영양교사와 영양사들이 학교급식 운영과 영양·식생활교육의 질을 높이기 위해 연구·개발한 성과를 공유한다.",
           "source": "대한급식신문",
-          "sourceId": "news-fsnews",
-          "candidateId": "c_76ad4dd4b4a1ff8b",
           "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62684",
           "medium": "news",
+          "publishedAt": "2026-11-18T04:28:45+09:00",
           "discoveredAt": "2026-11-18T17:25:17+09:00",
-          "publishedAt": "2026-11-18T04:28:45+09:00"
+          "sourceId": "news-fsnews",
+          "candidateId": "c_76ad4dd4b4a1ff8b",
+          "summary": "부산지역 영양교사와 영양사들이 학교급식 운영과 영양·식생활교육의 질을 높이기 위해 연구·개발한 성과를 공유한다."
         }
       ]
     }
