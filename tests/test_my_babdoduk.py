@@ -680,12 +680,13 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
         document.dispatchEvent(new Event('visibilitychange')); }""", iso_ago(0.1))
     wait_view(page, "연결됨")
     card = page.locator("#myCal").inner_text()
-    assert "다시 설치할 필요 없어요" in card and "캘린더가 마지막으로 확인한 때:" in card and "하나만 남아요" in card
+    assert "별 누르면 캘린더에 저장!" in card and "최종 동기화 시간 :" in card and "하나만 남아요" in card
+    assert "확인할 때 들어가요" not in card  # the delay line is gone (owner 2026-11-19 copy pass)
     # The nearest thing to a 동기화 button (owner 2026-11-19): it opens the Calendar app, where pulling the list
     # down reads the new stars at once; no website can make the iPhone refresh by itself.
     opener = page.locator("#myCal [data-my-cal-open]")
     assert opener.get_attribute("href") == "calshow://" and opener.inner_text() == "캘린더 열기"
-    assert opener.bounding_box()["height"] >= 44 and "아래로 쓸어내렸다 놓으세요" in card
+    assert opener.bounding_box()["height"] >= 44 and "캘린더 누르고, 아래로 스크롤 해서 새로고침" in card
     assert "VPN 및 기기 관리" in card and "프로필 제거" in card
     assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-box").count() == 0
     again = page.locator("#myCal [data-my-cal]")
