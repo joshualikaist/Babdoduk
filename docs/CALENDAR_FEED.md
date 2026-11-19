@@ -72,13 +72,13 @@ day (2026-11-19, "이거 아무도 안했을거야 삭제해줘": hardly anyone 
 `leftover_at`; the notice inside the old calendar stays.
 
 **How fast a star arrives.** A subscription is pulled: the iPhone decides when to read the address, usually about
-hourly, and no website can make it read now (the "새 별은 …" line on the card says so). Pulling the Calendars list
+hourly, and no website can make it read now; the card shows only "최종 동기화 시간 : …", the time of the last read. Pulling the Calendars list
 down in the Calendar app reads it at once. The owner asked for a 동기화 button; since a website cannot make the
 iPhone refresh, the nearest thing is **캘린더 열기** (`calshow://`, the Calendar app's own address, undocumented but
-widely used) on the connected card and in a signed-in iPhone's 저장한 꽁밥, with the line "열리면 아래 "캘린더"를
-누르고, 뜬 목록을 손가락으로 아래로 쓸어내렸다 놓으세요. 위에서 동그라미가 돌면 새 별이 바로 들어와요". The owner
-tried it on an iPhone from Chrome on 2026-11-19 ("와 미친 이거 된다"): 캘린더 열기 opened the app and the swipe brought the
-new star in. "당기면" alone was unclear to the owner, hence the spelled-out gesture. Google Calendar is not an option (owner: "구글 캘린더 아무도 안써").
+widely used) on the connected card and in a signed-in iPhone's 저장한 꽁밥, with the line "캘린더 누르고, 아래로
+스크롤 해서 새로고침" (the owner's own wording, 2026-11-19, which also made the card's lines "별 누르면 캘린더에 저장!"
+and "최종 동기화 시간 : …" and dropped the "새 별은 아이폰이 확인할 때 들어가요" line). The owner tried it on an iPhone from
+Chrome on 2026-11-19 ("와 미친 이거 된다"): 캘린더 열기 opened the app and the swipe brought the new star in. Google Calendar is not an option (owner: "구글 캘린더 아무도 안써").
 
 Not verifiable here: the install on a real iPhone (the handoff from Chrome, Safari's prompt, Settings' 설치, the
 Files fallback) and the replacement on a second install; they need one check on a phone.

@@ -250,13 +250,12 @@
     html += '<h2 class="my-h2" id="myCalTitle"><span aria-hidden="true">📅</span> ' + esc(t('my.cal.title', '아이폰 캘린더 연결')) + '</h2>';
     if (s === 'on') {
       html += '<p class="my-cal-state is-on" role="status"><span aria-hidden="true">✓</span> ' + esc(t('my.cal.on', '연결됨')) + '</p>';
-      html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누른 꽁밥이 "밥도둑 꽁밥" 캘린더에 알아서 들어가요. 다시 설치할 필요 없어요.')) + '</p>';
-      html += '<p class="my-fine">' + esc(t('my.cal.checked', '캘린더가 마지막으로 확인한 때: {time}', { time: dateText(state.cal.readAt) })) + '<br>' +
-        esc(t('my.cal.delay', '새 별은 아이폰이 확인할 때 들어가요. 보통 한 시간 안이에요.')) + '</p>';
+      html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누르면 캘린더에 저장!')) + '</p>';
+      html += '<p class="my-fine">' + esc(t('my.cal.checked', '최종 동기화 시간 : {time}', { time: dateText(state.cal.readAt) })) + '</p>';
       // The nearest thing to a 동기화 button (owner 2026-11-19): no website can make the iPhone refresh, so this
       // opens the Calendar app, where pulling the Calendars list down reads the new stars at once.
       html += '<a class="btn btn-secondary my-cal-open" href="calshow://" data-my-cal-open>' + esc(t('my.cal.open', '캘린더 열기')) + '</a>';
-      html += '<p class="my-fine">' + esc(t('my.cal.pull', '열리면 아래 "캘린더"를 누르고, 뜬 목록을 손가락으로 아래로 쓸어내렸다 놓으세요. 위에서 동그라미가 돌면 새 별이 바로 들어와요.')) + '</p>';
+      html += '<p class="my-fine">' + esc(t('my.cal.pull', '캘린더 누르고, 아래로 스크롤 해서 새로고침')) + '</p>';
     } else if (s === 'pending') {
       html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.pending', '설치를 기다리는 중')) + '</p>';
       html += '<p class="my-text">' + esc(t('my.cal.pendingBody', '설정 앱 맨 위의 "프로필이 다운로드됨"을 눌러 "설치"를 마쳐 주세요.')) + '</p>';

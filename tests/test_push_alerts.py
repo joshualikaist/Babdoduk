@@ -709,7 +709,7 @@ def test_signed_in_a_star_saves_to_the_account_and_opens_no_calendar_file(browse
     # Owner 2026-11-19 (a 동기화 button): 캘린더 열기 opens the Calendar app, where pulling the list down reads at once.
     opener = page.locator(".gg-saved-body [data-gg-calopen]")
     assert opener.get_attribute("href") == "calshow://" and opener.bounding_box()["height"] >= 44
-    assert "아래로 쓸어내렸다 놓으세요" in body
+    assert "캘린더 누르고, 아래로 스크롤 해서 새로고침" in body
     assert "저장하지 못했어요" not in page.locator(".gg-toast").inner_text() and errors == []
     # Owner 2026-11-19: the card's calendar choice offers no file or add page either, since a copy beside the
     # connected calendar is exactly the duplicate; it points to the one connection instead.
