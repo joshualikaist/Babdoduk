@@ -660,7 +660,7 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     """Owner 2026-11-19 ("gmail 같은것처럼 이거 설정할 수 있게 해봐", "로직을 전면 수정해", "구독은 쌓여"): with 016 the
     card says whether the calendar is connected and when it last checked, and offers the big button only when it
     is not. A tap waits for the calendar's first read and turns into 연결됨 by itself; installing again replaces
-    the profile, so it never leaves a second calendar. An old webcal subscription still read (017) is named."""
+    the profile, so it never leaves a second calendar."""
     tables = {"saved_events": [], "saved_places": [], "profiles": []}
     fresh = {"link": "L" * 43, "read_at": None, "linked_at": None}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": fresh}, ua=IPHONE)
@@ -681,38 +681,22 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     assert opener.get_attribute("href") == "calshow://" and opener.inner_text() == "캘린더 열기"
     assert opener.bounding_box()["height"] >= 44 and "아래로 쓸어내렸다 놓으세요" in card
     assert "VPN 및 기기 관리" in card and "프로필 제거" in card
-    assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-leftover").count() == 0
+    assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-box").count() == 0
     again = page.locator("#myCal [data-my-cal]")
     assert again.count() == 1 and again.get_attribute("href") == f"/cal/{'M' * 43}.mobileconfig"
     assert again.inner_text() == "캘린더에 안 보이면 다시 설치" and again.bounding_box()["height"] >= 44
     page.wait_for_function("() => document.getElementById('myToast').textContent.includes('캘린더가 연결됐어요')")
     assert errors == []
     context.close()
-    # Connected, and an old webcal subscription still read today: the card says which calendar to delete.
+    # An old subscription still read (017's leftover_at) is no longer named on the card (owner 2026-11-19,
+    # "이거 아무도 안했을거야 삭제해줘"): the old calendar shows its own notice (api/cal.js), the card stays quiet.
     on = {"link": "N" * 43, "read_at": iso_ago(2), "linked_at": iso_ago(48), "leftover_at": iso_ago(1)}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": on}, ua=IPHONE)
     wait_view(page, "연결됨")
-    note = page.locator("#myCal .my-cal-leftover").inner_text()
-    assert "예전 구독이 휴대폰에 남아 있어요." in note and '"밥도둑 내 꽁밥"' in note and '"밥도둑 꽁밥"' in note
-    assert page.locator("#myCal .my-cal-btn").count() == 0 and errors == []
-    # Owner 2026-11-19: deleted, yet the note stayed. 지웠어요 hides it, also after a reload.
-    page.locator("[data-my-cal-leftover-ok]").click()
-    page.wait_for_function("() => !document.querySelector('#myCal .my-cal-leftover')")
-    page.reload()
-    wait_view(page, "연결됨")
-    assert page.locator("#myCal .my-cal-leftover").count() == 0 and errors == []
-    context.close()
-    # A read of the old address right when the new one took over is part of the switch, not a leftover.
-    switch = dict(on, linked_at=iso_ago(1), leftover_at=iso_ago(0.95))
-    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": switch}, ua=IPHONE)
-    wait_view(page, "연결됨")
-    assert page.locator("#myCal .my-cal-leftover").count() == 0 and errors == []
-    context.close()
-    # The old subscription stopped reading hours ago: no note.
-    gone = dict(on, leftover_at=iso_ago(7))
-    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": gone}, ua=IPHONE)
-    wait_view(page, "연결됨")
-    assert page.locator("#myCal .my-cal-leftover").count() == 0 and errors == []
+    card = page.locator("#myCal").inner_text()
+    assert "예전 구독" not in card and "밥도둑 내 꽁밥" not in card and "지웠어요" not in card
+    assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-box").count() == 0
+    assert errors == []
     context.close()
     # No read for days: the profile was probably removed, so the button is back.
     stale = {"link": "S" * 43, "read_at": iso_ago(24 * 10), "linked_at": iso_ago(24 * 20)}

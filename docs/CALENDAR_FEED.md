@@ -66,10 +66,10 @@ removed from here: `supabase/migrations/017_calendar_leftover.sql` (REVIEW AND A
 address a new connection replaces (`calendar_feed_retired`, closed to browsers, gone with the account). A read of
 a kept address answers one marker row (`babdoduk:retired`), which `api/cal.js` turns into a single all-day notice
 in that calendar, "밥도둑 지난 구독 · 지워 주세요", with no alert (an older `api/cal.js` skips the row and answers an
-empty calendar, as before). `my_calendar_link()` also returns `leftover_at`, and while an old address was read in
-the last six hours the card says which calendar to delete (밥도둑 내 꽁밥, not 밥도둑 꽁밥). Reads within ten minutes
-after the switch are part of the switch and do not count, and 지웠어요 hides the note until the old address is read
-again (owner 2026-11-19: after deleting it the note stayed).
+empty calendar, as before). `my_calendar_link()` also returns `leftover_at`, the last read of an old address. The
+card named such a calendar for a few hours (밥도둑 내 꽁밥, with a 지웠어요 button) until the owner removed it the same
+day (2026-11-19, "이거 아무도 안했을거야 삭제해줘": hardly anyone subscribed the old way). The page now ignores
+`leftover_at`; the notice inside the old calendar stays.
 
 **How fast a star arrives.** A subscription is pulled: the iPhone decides when to read the address, usually about
 hourly, and no website can make it read now (the "새 별은 …" line on the card says so). Pulling the Calendars list
