@@ -76,7 +76,9 @@ hourly, and no website can make it read now (the "새 별은 …" line on the ca
 down in the Calendar app reads it at once. The owner asked for a 동기화 button; since a website cannot make the
 iPhone refresh, the nearest thing is **캘린더 열기** (`calshow://`, the Calendar app's own address, undocumented but
 widely used) on the connected card and in a signed-in iPhone's 저장한 꽁밥, with the line "열리면 아래 "캘린더"를
-누르고 목록을 아래로 당기면 새 별이 바로 들어와요". Google Calendar is not an option (owner: "구글 캘린더 아무도 안써").
+누르고, 뜬 목록을 손가락으로 아래로 쓸어내렸다 놓으세요. 위에서 동그라미가 돌면 새 별이 바로 들어와요". The owner
+tried it on an iPhone from Chrome on 2026-11-19 ("와 미친 이거 된다"): 캘린더 열기 opened the app and the swipe brought the
+new star in. "당기면" alone was unclear to the owner, hence the spelled-out gesture. Google Calendar is not an option (owner: "구글 캘린더 아무도 안써").
 
 Not verifiable here: the install on a real iPhone (the handoff from Chrome, Safari's prompt, Settings' 설치, the
 Files fallback) and the replacement on a second install; they need one check on a phone.

@@ -271,7 +271,7 @@
       // The nearest thing to a 동기화 button (owner 2026-11-19): no website can make the iPhone refresh, so this
       // opens the Calendar app, where pulling the Calendars list down reads the new stars at once.
       html += '<a class="btn btn-secondary my-cal-open" href="calshow://" data-my-cal-open>' + esc(t('my.cal.open', '캘린더 열기')) + '</a>';
-      html += '<p class="my-fine">' + esc(t('my.cal.pull', '열리면 아래 "캘린더"를 누르고 목록을 아래로 당기면 새 별이 바로 들어와요.')) + '</p>';
+      html += '<p class="my-fine">' + esc(t('my.cal.pull', '열리면 아래 "캘린더"를 누르고, 뜬 목록을 손가락으로 아래로 쓸어내렸다 놓으세요. 위에서 동그라미가 돌면 새 별이 바로 들어와요.')) + '</p>';
     } else if (s === 'pending') {
       html += '<p class="my-cal-state" role="status">' + esc(t('my.cal.pending', '설치를 기다리는 중')) + '</p>';
       html += '<p class="my-text">' + esc(t('my.cal.pendingBody', '설정 앱 맨 위의 "프로필이 다운로드됨"을 눌러 "설치"를 마쳐 주세요.')) + '</p>';
