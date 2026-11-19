@@ -49,6 +49,23 @@ def test_the_facts_match_the_code_they_describe():
             assert tracker not in text, (name, tracker)
 
 
+
+def test_alerts_and_the_calendar_connection_are_in_the_policy_as_the_code_keeps_them():
+    """Both reached production on 2026-11-13 and were missing from the policy until 2026-11-19."""
+    push = (ROOT / "supabase/migrations/014_push_alerts.sql").read_text(encoding="utf-8")
+    sender = (ROOT / "scripts/push/send.js").read_text(encoding="utf-8")
+    for host, name in (("web\\.push\\.apple\\.com", "Apple"), ("fcm\\.googleapis\\.com", "Google"),
+                       ("push\\.services\\.mozilla\\.com", "Mozilla"), ("notify\\.windows\\.com", "Microsoft")):
+        assert host in push and name in KO["privacy.s5.push"] and name in EN["privacy.s5.push"], name
+    assert "No account, name, email or IP is stored" in push and "IP" in KO["privacy.s1.pushItems"]
+    assert "delete from public.push_devices where endpoint = p_endpoint" in push and "끄면 바로 지우고" in KO["privacy.s3.i6"]
+    assert "const DROP_AFTER = 10" in sender and "status === 404 || status === 410" in sender and "10번" in KO["privacy.s3.i6"]
+    feeds = (ROOT / "supabase/migrations/013_calendar_feed.sql").read_text(encoding="utf-8")
+    retired = (ROOT / "supabase/migrations/017_calendar_leftover.sql").read_text(encoding="utf-8")
+    assert feeds.count("references auth.users (id) on delete cascade") == 1
+    assert "references auth.users (id) on delete cascade" in retired and "예전 주소까지" in KO["privacy.s3.i7"]
+    assert "개정 2026년 11월 19일" in KO["privacy.meta"] and "Revised November 19, 2026" in EN["privacy.meta"]
+
 def test_the_policy_is_linked_from_my_babdoduk():
     if not (ROOT / "my.html").exists():
         pytest.skip("마이 밥도둑 is lab-only; production has no sign-in page yet")
