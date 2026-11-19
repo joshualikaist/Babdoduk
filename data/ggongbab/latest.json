@@ -1,47 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-19T21:43:49+09:00",
+  "generatedAt": "2026-11-19T22:13:59+09:00",
   "timezone": "Asia/Seoul",
-  "count": 24,
+  "count": 23,
   "events": [
-    {
-      "id": "1f338e46-0c42-46eb-81a1-3d06a8b9835e",
-      "title": "2026 항공우주공학과 학과설명회",
-      "summary": "항공우주공학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
-      "startAt": "2026-11-19T17:30:00+09:00",
-      "endAt": "2026-11-19T19:10:00+09:00",
-      "dateText": "2026년 11월 19일(목)",
-      "timeText": "17:30~19:10",
-      "location": {
-        "name": "N7 대회의실",
-        "building": "N7",
-        "room": "대회의실"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "참석자에게 식사를 제공합니다.",
-        "source": "text"
-      },
-      "organizer": "항공우주공학과",
-      "eligibility": "",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "manual",
-          "name": "Manual"
-        }
-      ],
-      "audience": {
-        "text": "새내기 학생",
-        "basis": "stated"
-      }
-    },
     {
       "id": "5e65e3b8-c36f-4cc1-a629-ff3e0ccd8080",
       "title": "NVIDIA Robotics Day",
