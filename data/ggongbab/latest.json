@@ -1,55 +1,9 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-18T23:46:49+09:00",
+  "generatedAt": "2026-11-19T21:43:49+09:00",
   "timezone": "Asia/Seoul",
-  "count": 25,
+  "count": 24,
   "events": [
-    {
-      "id": "135dc464-d460-4837-a3f4-255548f22218",
-      "title": "2026 생명화학공학과 학과설명회",
-      "summary": "생명화학공학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 추첨이 진행됩니다.",
-      "startAt": "2026-11-19T17:00:00+09:00",
-      "endAt": "2026-11-19T18:30:00+09:00",
-      "dateText": "2026년 11월 19일(목)",
-      "timeText": "17:00~18:30",
-      "location": {
-        "name": "인문사회과학부동",
-        "building": "N4",
-        "room": "시청각실"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사",
-        "source": "text"
-      },
-      "organizer": "생명화학공학과",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": "https://forms.gle/dNXRxi6ziBjXErvKA"
-      },
-      "confidence": 1.0,
-      "sources": [
-        {
-          "type": "manual",
-          "name": "Manual"
-        },
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품"
-      },
-      "audience": {
-        "text": "새내기 학생",
-        "basis": "stated"
-      }
-    },
     {
       "id": "1f338e46-0c42-46eb-81a1-3d06a8b9835e",
       "title": "2026 항공우주공학과 학과설명회",
