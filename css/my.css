@@ -381,8 +381,7 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 /* The profile install in three short steps, and an old subscription still on the phone (owner 2026-11-19). */
 .my-steps { margin: var(--space-2) 0 0; padding-left: 1.4em; font-size: 14px; line-height: 1.6; color: var(--color-ink); word-break: keep-all; overflow-wrap: anywhere; }
 .my-steps li + li { margin-top: 4px; }
-.my-cal-leftover { margin: var(--space-3) 0 0; padding: 12px 14px; border-radius: 12px; background: var(--color-accent-wash); }
-.my-cal-leftover .my-note, .my-cal-leftover .my-fine { margin: 0; }
-.my-cal-leftover .my-fine { margin-top: 4px; color: var(--color-ink); }
-.my-cal-ok { margin-top: var(--space-2); min-height: 44px; }
+.my-cal-box { margin: var(--space-3) 0 0; padding: 12px 14px; border-radius: 12px; background: var(--color-accent-wash); }
+.my-cal-box .my-note, .my-cal-box .my-fine { margin: 0; }
+.my-cal-box .my-fine { margin-top: 4px; color: var(--color-ink); }
 .my-cal-open { display: flex; width: 100%; min-height: 48px; margin: var(--space-3) 0 0; }
