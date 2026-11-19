@@ -10,9 +10,17 @@ after every change took about 20 minutes, mostly the site-UI run done twice and 
 
 | When | Command | What it runs | Time on the ops PC |
 | --- | --- | --- | --- |
+| While working on a change | `python scripts/check_all.py --changed` | chrome sync, content, and only the test files that name a changed file, a page that loads a changed script or stylesheet, or a changed module; a shared file (`site.css`, `site.js`, `shared/`, `conftest.py`, ...) or a source file no test names runs the quick set instead | seconds to ~1 min |
 | Before a push to `lab` | `python scripts/check_all.py --quick` | chrome sync, content, every test except the full site-UI run, on parallel workers (`pytest-xdist`) | ~1 min |
 | After the push | `python scripts/ci_status.py <commit> --wait` | GitHub's `tests` workflow: the whole suite including the site-UI run; `chrome-sync`; `visual-guardian` | read only |
 | Before a production release (and its handoff) | `python scripts/check_all.py` | the five gates below, once each; the site-UI groups side by side | ~4 min |
+
+`check_all.py` first checks that its Python has `pytest-xdist`, `pypdfium2` and `playwright`. Without
+`pytest-xdist` every test runs one after another, several times slower, and without `pypdfium2` the
+mail-to-card test fails (2026-11-19: checks run in `~/.venvs/babdoduk-ci` had neither). When a part
+is missing, it reruns itself with the first Python that has them all: `$BABDODUK_PYTHON`, the repository's
+`.venv`, then the ops PC's `~/Babdoduk-ops/.venv`, and prints which. If none has them, it names what is
+missing (`pip install -r requirements-dev.txt -r requirements-ggongbab.txt`) and carries on.
 
 The five gates it runs:
 
@@ -37,7 +45,7 @@ The browser gates block web fonts to stay deterministic. For a change that affec
 ## Which gates
 
 `AGENTS.md` ("Verification by change type") decides which gates a change needs:
-- **While iterating:** run the test file you touched (`python -m pytest tests/<file> -q`) and the checker for the page you changed.
+- **While iterating:** `check_all.py --changed`, or the test file you touched (`python -m pytest tests/<file> -q`) and the checker for the page you changed. `--changed` never replaces the quick check before a lab push.
 - **Before a push to `lab`:** `check_all.py --quick`, then read the commit's GitHub checks after the push. A failed GitHub check is a first result like any other: report it and fix it on the task branch.
 - **Before a production release, or a handoff that ends one:** all five, `check_all.py`.
 - **Documentation only:** check links and facts against the code; no browser gates.
