@@ -685,7 +685,7 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     # down reads the new stars at once; no website can make the iPhone refresh by itself.
     opener = page.locator("#myCal [data-my-cal-open]")
     assert opener.get_attribute("href") == "calshow://" and opener.inner_text() == "캘린더 열기"
-    assert opener.bounding_box()["height"] >= 44 and "목록을 아래로 당기면" in card
+    assert opener.bounding_box()["height"] >= 44 and "아래로 쓸어내렸다 놓으세요" in card
     assert "VPN 및 기기 관리" in card and "프로필 제거" in card
     assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-leftover").count() == 0
     again = page.locator("#myCal [data-my-cal]")

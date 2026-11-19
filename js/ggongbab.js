@@ -662,7 +662,7 @@
     html += pushToggleHtml() + (accountMode !== 'account' ? starCalendarToggleHtml() : ios ?
       '<p class="gg-calopen"><a class="gg-btn gg-calopen-btn" href="calshow://" data-gg-calopen><span aria-hidden="true">📅</span> ' +
         esc(t('gg.live.calOpen', '캘린더 열기')) + '</a></p>' +
-      '<p class="gg-saved-note">' + esc(t('gg.live.calPull', '열리면 아래 "캘린더"를 누르고 목록을 아래로 당기면 새 별이 바로 들어와요.')) + '</p>' +
+      '<p class="gg-saved-note">' + esc(t('gg.live.calPull', '열리면 아래 "캘린더"를 누르고, 뜬 목록을 손가락으로 아래로 쓸어내렸다 놓으세요. 위에서 동그라미가 돌면 새 별이 바로 들어와요.')) + '</p>' +
       '<p class="gg-saved-note">' + esc(t('gg.live.calOnMy', '마이 밥도둑에서 캘린더를 연결해 보세요')) + '</p>' : '');
     if (accountMode === 'account') {
       html += '<p class="gg-saved-foot"><a href="my.html">' + esc(t('gg.live.myLink', '마이 밥도둑')) + '</a></p>';
