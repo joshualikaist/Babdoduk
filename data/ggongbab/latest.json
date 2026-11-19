@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-19T22:13:59+09:00",
+  "generatedAt": "2026-11-20T04:20:50+09:00",
   "timezone": "Asia/Seoul",
-  "count": 23,
+  "count": 24,
   "events": [
     {
       "id": "5e65e3b8-c36f-4cc1-a629-ff3e0ccd8080",
@@ -748,6 +748,43 @@
       ],
       "audience": {
         "text": "전산학부 주전공·복수전공·부전공 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "cae3a070-cbc6-48ac-8ceb-be94b797b45e",
+      "title": "KISA Presidential Debate 2026",
+      "summary": "Raahim Muhammad와 Maftuna Rajabova가 국제학생 커뮤니티를 대상으로 아이디어와 목표를 공유하는 KISA 회장 토론회입니다. 선착순 40명에게 무료 버거가 제공됩니다.",
+      "startAt": "2026-11-26T19:30:00+09:00",
+      "endAt": "2026-11-26T20:30:00+09:00",
+      "dateText": "November 26th, 2026",
+      "timeText": "7:30 PM – 8:30 PM",
+      "location": {
+        "name": "Multi-Purpose Hall W2-1",
+        "building": "W2-1",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "Free burgers for the first 40 attendees!"
+      },
+      "organizer": "KISA",
+      "eligibility": "",
+      "registration": {
+        "required": "unknown",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "international student community",
         "basis": "stated"
       }
     },
