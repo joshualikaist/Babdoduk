@@ -1,10 +1,46 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-20T18:05:56+09:00",
+  "generatedAt": "2026-11-20T19:27:04+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 48,
+  "count": 49,
   "events": [
+    {
+      "id": "5e65e3b8-c36f-4cc1-a629-ff3e0ccd8080",
+      "title": "NVIDIA Robotics Day",
+      "summary": "NVIDIA와 KAIST가 함께하는 행사로, 로보틱스 기술 세미나, 연구 발표, Physical AI 실습, 커리어톡 및 NVIDIA 연구 지원 프로그램 소개가 진행됩니다. 점심 도시락이 지원되며 NVIDIA Jetson Thor 개발자 키트 경품 추첨이 있습니다.",
+      "startAt": "2026-11-20T10:00:00+09:00",
+      "endAt": "2026-11-20T16:00:00+09:00",
+      "dateText": "2026년 11월 20일(금)",
+      "timeText": "오전 10시~오후 4시 (오전 9시 30분 부터 입장 시작)",
+      "location": {
+        "name": "KAIST 서울 홍릉캠퍼스 1호관 대강당",
+        "building": "1호관",
+        "room": "대강당"
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "점심 도시락 지원",
+        "source": "text"
+      },
+      "organizer": "NVIDIA와 KAIST",
+      "eligibility": "로보틱스와 Physical AI에 관심 있는 대학원생과 연구자",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "NVIDIA Jetson Thor 개발자 키트 경품 추첨"
+      },
+      "audience": {
+        "text": "로보틱스와 Physical AI에 관심 있는 대학원생과 연구자",
+        "basis": "stated"
+      }
+    },
     {
       "id": "a570f9bc-fc63-426d-8189-e02561959379",
       "title": "KAIST 건강달리기 대회",
