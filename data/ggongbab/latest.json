@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-20T04:20:50+09:00",
+  "generatedAt": "2026-11-20T09:20:47+09:00",
   "timezone": "Asia/Seoul",
   "count": 24,
   "events": [
@@ -135,9 +135,9 @@
       "title": "2026년 하반기 교내 입주업체 만족도조사",
       "summary": "교내 식당, 카페 및 생활편의시설에 대한 만족도 온라인 설문조사입니다. 성실히 참여한 사람 중 4명을 추첨해 신세계 상품권 10만원권을 제공합니다.",
       "startAt": "2026-11-20T23:59:00+09:00",
-      "endAt": null,
+      "endAt": "2026-11-20T23:59:00+09:00",
       "dateText": "11월 20일(금) 23:59까지",
-      "timeText": "",
+      "timeText": "23:59까지",
       "location": {
         "name": "",
         "building": "",
