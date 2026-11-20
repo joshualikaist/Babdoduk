@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "date": "2026-11-22",
   "dateLabel": "11월 22일",
-  "fetchedAt": "2026-11-20T01:32:28+09:00",
+  "fetchedAt": "2026-11-20T10:54:12+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "status": "AVAILABLE",
   "coverage": {
@@ -120,7 +120,8 @@
           "감자스프2,5,6,16",
           "계란후라이1,5",
           "비엔나야채볶음5,6,15,16",
-          "씨리얼*우유5,6,2"
+          "씨리얼*우유5,6,2",
+          "바나나"
         ],
         "price": "",
         "kcal": "765 kcal"
