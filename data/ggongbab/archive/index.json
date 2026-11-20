@@ -1,10 +1,41 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-20T19:27:04+09:00",
+  "generatedAt": "2026-11-21T03:07:21+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 49,
+  "count": 50,
   "events": [
+    {
+      "id": "fa5de66b-c66a-40e1-9264-ef354501f0a2",
+      "title": "2026년 하반기 교내 입주업체 만족도조사",
+      "summary": "교내 식당, 카페 및 생활편의시설에 대한 만족도 온라인 설문조사입니다. 성실히 참여한 사람 중 4명을 추첨해 신세계 상품권 10만원권을 제공합니다.",
+      "startAt": "2026-11-20T23:59:00+09:00",
+      "endAt": "2026-11-20T23:59:00+09:00",
+      "dateText": "11월 20일(금) 23:59까지",
+      "timeText": "23:59까지",
+      "location": {
+        "name": "",
+        "building": "",
+        "room": ""
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": ""
+      },
+      "organizer": "입주업체모니터링위원회",
+      "eligibility": "졸업생 및 외부인은 본 설문에 참여하실 수 없습니다.",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "신세계 상품권 10만원권 (4명 추첨)"
+      }
+    },
     {
       "id": "5e65e3b8-c36f-4cc1-a629-ff3e0ccd8080",
       "title": "NVIDIA Robotics Day",
