@@ -64,7 +64,7 @@ def test_alerts_and_the_calendar_connection_are_in_the_policy_as_the_code_keeps_
     retired = (ROOT / "supabase/migrations/017_calendar_leftover.sql").read_text(encoding="utf-8")
     assert feeds.count("references auth.users (id) on delete cascade") == 1
     assert "references auth.users (id) on delete cascade" in retired and "예전 주소까지" in KO["privacy.s3.i7"]
-    assert "개정 2026년 11월 19일" in KO["privacy.meta"] and "Revised November 19, 2026" in EN["privacy.meta"]
+    assert "개정 2026년 11월 20일" in KO["privacy.meta"] and "Revised November 20, 2026" in EN["privacy.meta"]
 
 def test_the_policy_is_linked_from_my_babdoduk():
     if not (ROOT / "my.html").exists():

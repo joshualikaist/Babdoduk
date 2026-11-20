@@ -89,6 +89,41 @@
   try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
   applyLang(saved === 'en' ? 'en' : 'ko');
 
+  // 방문 수 (owner 2026-11-20; docs/USAGE_STATS.md, api/visit.js): once per page load on our own sites, the
+  // page, its language and phone/tablet/computer go to the site's /api/visit, which adds one to that hour's
+  // count. No cookie, no id, nothing about the person. Nothing is sent from an automated browser, with the
+  // browser's "do not track" or privacy-control setting on, or from a device that opted out by opening any
+  // page once with ?nocount=1 (the owner's own phone; ?nocount=0 counts it again).
+  function visitInfo(loc, nav) {
+    if (!/^(www\.babdodukms\.com|babdoduk\.vercel\.app|babdoduk-lab\.vercel\.app)$/.test(loc.hostname)) return null;
+    if (nav.webdriver || nav.globalPrivacyControl || nav.doNotTrack === '1' || window.doNotTrack === '1') return null;
+    var off = false;
+    try {
+      var opt = new URLSearchParams(loc.search).get('nocount');
+      if (opt === '1') localStorage.setItem('babdoduk-nocount', '1');
+      if (opt === '0') localStorage.removeItem('babdoduk-nocount');
+      off = localStorage.getItem('babdoduk-nocount') === '1';
+    } catch (e) {}
+    if (off) return null;
+    var page = (loc.pathname.split('/').pop() || 'index').replace(/\.html$/, '') || 'index';
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(page)) return null;
+    var ua = nav.userAgent || '';
+    var tablet = /iPad|Tablet/i.test(ua) || (/Macintosh/.test(ua) && nav.maxTouchPoints > 1) ||
+      (/Android/.test(ua) && !/Mobile/.test(ua));
+    var device = tablet ? 'tablet' : /Mobi|iPhone|iPod|Android/i.test(ua) ? 'phone' : 'computer';
+    return { page: page, lang: document.documentElement.lang === 'en' ? 'en' : 'ko', device: device };
+  }
+  window.BabdodukVisit = { info: visitInfo };
+  var visit = null;
+  try { visit = visitInfo(location, navigator); } catch (e) {}
+  if (visit && navigator.sendBeacon) {
+    var sendVisit = function () {
+      try { navigator.sendBeacon('/api/visit', JSON.stringify(visit)); } catch (e) {}
+    };
+    if (document.readyState === 'complete') sendVisit();
+    else window.addEventListener('load', sendVisit, { once: true });
+  }
+
   // Phones: the menu button opens the links as a panel from the left, under the bar (css/site.css).
   // A dimmed backdrop, Escape, a link or focus leaving the panel closes it; Escape and the backdrop
   // give focus back to the button.

@@ -824,6 +824,7 @@ git log --format='%h %an %s' origin/lab..origin/main | Select-String -NotMatch '
 | `docs/CAMPUS_FOOD_NEWS.md` | 먹거리 소식(꽁밥과 분리된 뉴스) |
 | `docs/PICK.md` | 오늘 뭐 먹지: 메뉴 뽑기(캡슐 기계) |
 | `docs/PICK_STATS.md` | 오늘 뭐 먹지: 모두의 취향(👍·다시 뽑기 합계, lab 전용, 마이그레이션 010) |
+| `docs/USAGE_STATS.md` | 방문 수(한 시간 단위 페이지 연 횟수, 마이그레이션 018, `api/visit.js`)와 이용 통계 보고서(`scripts/usage_stats.py`) |
 | `docs/CAMPUS_MAP.md` | 3D 캠퍼스 지도(홈, 2026-11-05 main): 결정, 단계, 건물 표와 행사 위치 찾기 |
 | `docs/PUBLIC_EXPOSURE.md` | 공개 범위와 권리 표시: LICENSE, 데이터 허용 사이트, robots.txt, 공개 칸 |
 | `docs/GGONGBAB_DISCOVERY.md` | 꽁밥 레이더·근거·평가 |
