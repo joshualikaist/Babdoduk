@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-20T10:37:18+09:00",
+  "generatedAt": "2026-11-20T12:23:21+09:00",
   "timezone": "Asia/Seoul",
-  "count": 25,
+  "count": 26,
   "events": [
     {
       "id": "5e65e3b8-c36f-4cc1-a629-ff3e0ccd8080",
@@ -593,6 +593,44 @@
       "audience": {
         "text": "새내기 학생",
         "basis": "stated"
+      }
+    },
+    {
+      "id": "e84cb245-c3a1-4915-92a2-f7585d832ef7",
+      "title": "AI 엔지니어 토크 워크숍",
+      "summary": "AI 엔지니어의 실무와 커리어에 대해 듣는 워크숍입니다. 다과와 ChatGPT Plus 1개월 이용권을 무료로 제공합니다.",
+      "startAt": "2026-11-24T19:00:00+09:00",
+      "endAt": "2026-11-24T21:00:00+09:00",
+      "dateText": "2026-11-24",
+      "timeText": "19:00~21:00",
+      "location": {
+        "name": "KAIST 본원",
+        "building": "N4",
+        "room": "1125호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "다과",
+        "source": "text"
+      },
+      "organizer": "OpenAI Student Collective at KAIST",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://luma.com/openai-studentcollective-kaist"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "ChatGPT Plus 1개월 이용권(선착순)"
       }
     },
     {
