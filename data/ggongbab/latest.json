@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-21T14:10:11+09:00",
+  "generatedAt": "2026-11-22T03:15:55+09:00",
   "timezone": "Asia/Seoul",
-  "count": 23,
+  "count": 22,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -50,44 +50,6 @@
           "endAt": "2026-11-27T16:00:00+09:00"
         }
       ]
-    },
-    {
-      "id": "cf3bec49-11ec-4223-afa2-cf008e401ffa",
-      "title": "2026 XR·AI 윈터스쿨 & 현장 해커톤",
-      "summary": "스마트안경·XR 기기 핸즈온 실습과 강의, 1박 2일 프로토타입 해커톤으로 구성된 행사입니다. 학부생 및 대학원생이 참여할 수 있으며, 전 일정 식사·간식이 제공됩니다.",
-      "startAt": "2026-11-21T00:00:00+09:00",
-      "endAt": "2026-11-22T00:00:00+09:00",
-      "dateText": "2026. 11. 21.(토) ~ 11. 22.(일) (2일간)",
-      "timeText": "",
-      "location": {
-        "name": "대전 본원",
-        "building": "",
-        "room": ""
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "전 일정 식사·간식 제공",
-        "source": "text"
-      },
-      "organizer": "KI-ITAIC 증강현실연구센터(ARRC) · 메타버스대학원(GSMV) · 국립목포대학교 AI부트캠프사업단 · KISTI Open XR 융합연구단 · 가천대학교",
-      "eligibility": "XR·AI 및 스마트안경 연구·개발에 관심 있는 학부생 및 대학원생",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-11-06T23:59:00+09:00",
-        "url": "https://docs.google.com/forms/d/e/1FAIpQLScTuntOfnmoQhCeSIaXAVggEzbCuVe4nyfC_mJRGF1Tr7hpqg/viewform"
-      },
-      "confidence": 0.97,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "XR·AI 및 스마트안경 연구·개발에 관심 있는 학부생 및 대학원생",
-        "basis": "stated"
-      }
     },
     {
       "id": "3bbed3a2-ca1b-400d-9156-6a54f20d2729",
