@@ -5,22 +5,22 @@
   "rules": "lanes-v1",
   "featured": {
     "title": "편의점 상비약 14년 만에 늘어나나⋯약사회는 토론회 보이콧",
-    "summary": "국무조정실 민관합동 규제합리화추진단과 국회미래연구원이 19일 국회도서관에서 개최한 '안전상비의약품 약국 외 판매제도 개선방안' 토론회를 진행하고 있다.",
     "source": "코메디닷컴",
-    "sourceId": "news-kormedi",
-    "candidateId": "c_49487a72b7170fbb",
     "url": "https://kormedi.com/2908885/",
     "medium": "news",
-    "discoveredAt": "2026-11-20T17:32:27+09:00",
-    "publishedAt": "2026-11-19T17:39:24+09:00",
     "image": "https://kormedi.com/wp-content/uploads/2026/11/kakaotalk-20261119-165041012-01-edited.jpg",
+    "category": "trend",
+    "publishedAt": "2026-11-19T17:39:24+09:00",
+    "discoveredAt": "2026-11-20T17:32:27+09:00",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_49487a72b7170fbb",
     "imageSource": "feed_media",
+    "summary": "국무조정실 민관합동 규제합리화추진단과 국회미래연구원이 19일 국회도서관에서 개최한 '안전상비의약품 약국 외 판매제도 개선방안' 토론회를 진행하고 있다.",
+    "heroKind": "trend",
     "trendEvidence": [
       "explicit_source_claim",
       "corroborated"
-    ],
-    "category": "trend",
-    "heroKind": "trend"
+    ]
   },
   "lanes": {
     "trend": {
@@ -28,16 +28,16 @@
       "items": [
         {
           "title": "[비즈톡톡] 엿 대신 초코모찌… 수능 선물도 ‘떡 디저트’ 열풍",
-          "summary": "비즈톡톡 엿 대신 초코모찌 수능 선물도 떡 디저트 열풍 11월 편의점 3사 떡류 매출 급증 초코모찌·생초코찹쌀떡이 견인",
           "source": "조선일보",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_aec1dcdad70bf034",
           "url": "https://biz.chosun.com/distribution/channel/2026/11/17/BEWNQILSXFBRJPWMTRRU26CIBQ/",
           "medium": "news",
-          "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-17T14:49:10+09:00",
           "image": "https://biz.chosun.com/resizer/v2/VLA5BBDVFJETDAMWQQZYZPF5KA.jpg?auth=c0fa86a4af7e8846ef959eefa2db2236d806d03f8995add016d68d52b306cbd7&width=1200&height=630&smart=true",
+          "publishedAt": "2026-11-17T14:49:10+09:00",
+          "discoveredAt": "2026-11-20T17:32:27+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_aec1dcdad70bf034",
           "imageSource": "source_page_og",
+          "summary": "비즈톡톡 엿 대신 초코모찌 수능 선물도 떡 디저트 열풍 11월 편의점 3사 떡류 매출 급증 초코모찌·생초코찹쌀떡이 견인",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data",
@@ -46,14 +46,14 @@
         },
         {
           "title": "식품·외식업계, 익숙한 메뉴에 세계 각국의 맛 더한다...다시 떠오르는 퓨전",
-          "summary": "식품·외식업계가 양고기와 후무스, 베트남 고추, 스페인·멕시코 요리 등을 접목한 신메뉴를 선보이고 있다.",
           "source": "싱글리스트",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_cf940ca25e49e0ba",
           "url": "https://www.slist.kr/news/articleView.html?idxno=783383",
           "medium": "news",
-          "discoveredAt": "2026-11-20T17:32:27+09:00",
           "publishedAt": "2026-11-20T10:02:20+09:00",
+          "discoveredAt": "2026-11-20T17:32:27+09:00",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_cf940ca25e49e0ba",
+          "summary": "식품·외식업계가 양고기와 후무스, 베트남 고추, 스페인·멕시코 요리 등을 접목한 신메뉴를 선보이고 있다.",
           "trendEvidence": [
             "explicit_source_claim",
             "sales_data"
@@ -61,42 +61,42 @@
         },
         {
           "title": "한솥도시락, 33년간 국내산 배추·고춧가루로 만든 김치만 사용",
-          "summary": "한솥도시락이 오는 22일 '김치의 날'을 앞두고 33년간 국내산 배추와 고춧가루로 김치를 제공해온 원칙을 공개했다.최근 배추와 김치 수입은 증가세를 보이고 있다.",
           "source": "식품외식경제",
-          "sourceId": "news-foodbank",
-          "candidateId": "c_7adb20fab6c0a285",
           "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68820",
           "medium": "news",
-          "discoveredAt": "2026-11-20T17:32:27+09:00",
           "publishedAt": "2026-11-20T20:49:24+09:00",
+          "discoveredAt": "2026-11-20T17:32:27+09:00",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_7adb20fab6c0a285",
+          "summary": "한솥도시락이 오는 22일 '김치의 날'을 앞두고 33년간 국내산 배추와 고춧가루로 김치를 제공해온 원칙을 공개했다.최근 배추와 김치 수입은 증가세를 보이고 있다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "“영양제보다 낫다” 최화정, 매일 10분 꼭 지킨다는 ‘베란다 햇빛 쬐기’",
-          "summary": "실내 생활이 길어지고 자외선 차단제 사용이 일상화되면서 현대인의 몸은 만성적인 햇빛 부족 상태에 놓여 있다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_b86136ace275f56d",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/19/2026111902248.html",
           "medium": "news",
-          "discoveredAt": "2026-11-20T17:32:27+09:00",
           "publishedAt": "2026-11-20T02:00:00+09:00",
+          "discoveredAt": "2026-11-20T17:32:27+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_b86136ace275f56d",
+          "summary": "실내 생활이 길어지고 자외선 차단제 사용이 일상화되면서 현대인의 몸은 만성적인 햇빛 부족 상태에 놓여 있다.",
           "trendEvidence": [
             "corroborated"
           ]
         },
         {
           "title": "식품진흥원, 규제혁신·창업기업 성장 지원 성과로 ‘공공정책 우수경영 대상’",
-          "summary": "한국식품산업클러스터진흥원이 식품산업 현장의 규제·기술 애로 해소와 창업기업 성장 지원을 위한 정책 추진 및 국민 소통 성과를 인정받았다.특히 국민 의견 수렴 과정에서 청년 식품창업기업 육성에 대한 높은 정책 수요를…",
           "source": "푸드아이콘",
-          "sourceId": "news-foodicon",
-          "candidateId": "c_445beeeee604c69e",
           "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36319",
           "medium": "news",
-          "discoveredAt": "2026-11-19T17:37:00+09:00",
           "publishedAt": "2026-11-20T02:11:00+09:00",
+          "discoveredAt": "2026-11-19T17:37:00+09:00",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_445beeeee604c69e",
+          "summary": "한국식품산업클러스터진흥원이 식품산업 현장의 규제·기술 애로 해소와 창업기업 성장 지원을 위한 정책 추진 및 국민 소통 성과를 인정받았다.특히 국민 의견 수렴 과정에서 청년 식품창업기업 육성에 대한 높은 정책 수요를…",
           "trendEvidence": [
             "corroborated"
           ]
@@ -108,58 +108,58 @@
       "items": [
         {
           "title": "와 이 라면이 이렇게까지 맛있을 줄 꿈에도 몰랐습니다.",
-          "summary": "계란볶음스낵면을 만들어 보자 [재료] 스낵면, 계란, 대파 [만드는 법] 1. 팬에 식용유를 두르고 대파 1/2대를 볶아 파 향을 낸다.",
           "source": "자취요리신",
-          "sourceId": "yt-jachwiyorisin",
-          "candidateId": "c_55ddc7333dab1226",
           "url": "https://www.youtube.com/watch?v=zmr6R7JbRy4",
           "medium": "youtube",
+          "publishedAt": "2026-11-19T19:36:55+09:00",
           "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-19T19:36:55+09:00"
+          "sourceId": "yt-jachwiyorisin",
+          "candidateId": "c_55ddc7333dab1226",
+          "summary": "계란볶음스낵면을 만들어 보자 [재료] 스낵면, 계란, 대파 [만드는 법] 1. 팬에 식용유를 두르고 대파 1/2대를 볶아 파 향을 낸다."
         },
         {
           "title": "Omurice (Omelette Rice with Easy Brown Sauce)",
-          "summary": "Omurice is a Korean-style omelette rice with ham and vegetable ketchup fried rice folded in soft egg and finished with…",
           "source": "Beyond Kimchee",
-          "sourceId": "blog-beyondkimchee",
-          "candidateId": "c_f73be11a5ce906d2",
           "url": "https://www.beyondkimchee.com/omurice/",
           "medium": "blog",
+          "publishedAt": "2026-11-19T22:20:00+09:00",
           "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-19T22:20:00+09:00"
+          "sourceId": "blog-beyondkimchee",
+          "candidateId": "c_f73be11a5ce906d2",
+          "summary": "Omurice is a Korean-style omelette rice with ham and vegetable ketchup fried rice folded in soft egg and finished with…"
         },
         {
           "title": "Chicken and Stuffing Casserole",
-          "summary": "If my childhood could be summed up in one dinner, this Chicken and Stuffing Casserole would be it.",
           "source": "Budget Bytes",
-          "sourceId": "blog-budgetbytes",
-          "candidateId": "c_39d1ebeba8b55fe6",
           "url": "https://www.budgetbytes.com/chicken-and-stuffing-casserole/",
           "medium": "blog",
+          "publishedAt": "2026-11-18T23:30:00+09:00",
           "discoveredAt": "2026-11-19T17:37:00+09:00",
-          "publishedAt": "2026-11-18T23:30:00+09:00"
+          "sourceId": "blog-budgetbytes",
+          "candidateId": "c_39d1ebeba8b55fe6",
+          "summary": "If my childhood could be summed up in one dinner, this Chicken and Stuffing Casserole would be it."
         },
         {
           "title": "무화과 샌드위치 만들기｜크림치즈 넣은 가을 제철 브런치 레시피",
-          "summary": "",
           "source": "기록하는 인간 (요리)",
-          "sourceId": "blog-cultureagora",
-          "candidateId": "c_51fd8ae96db0044c",
           "url": "https://cultureagora.tistory.com/374",
           "medium": "blog",
+          "publishedAt": "2026-10-11T00:17:39+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-10-11T00:17:39+09:00"
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_51fd8ae96db0044c",
+          "summary": ""
         },
         {
           "title": "점심 특선, 한우판구이로 더 맛있게! 수원 우판등심",
-          "summary": "",
           "source": "고요한 산사의 풍경소리 (집밥)",
-          "sourceId": "blog-heysukim114",
-          "candidateId": "c_49091f892b5375b7",
           "url": "https://heysukim114.tistory.com/entry/%EC%A0%90%EC%8B%AC-%ED%8A%B9%EC%84%A0-%ED%95%9C%EC%9A%B0%ED%8C%90%EA%B5%AC%EC%9D%B4%EB%A1%9C-%EB%8D%94-%EB%A7%9B%EC%9E%88%EA%B2%8C-%EC%9A%B0%ED%8C%90%EB%93%B1%EC%8B%AC",
           "medium": "blog",
+          "publishedAt": "2026-09-28T00:00:38+09:00",
           "discoveredAt": "2026-10-12T15:44:20+09:00",
-          "publishedAt": "2026-09-28T00:00:38+09:00"
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_49091f892b5375b7",
+          "summary": ""
         }
       ]
     },
@@ -168,60 +168,60 @@
       "items": [
         {
           "title": "“도라지에 소금을 넣고 주물러 보세요”… 사포닌 풍부한 겨울 건강식 됩니다",
-          "summary": "도라지는 식이섬유, 무기질, 비타민, 사포닌 등 다양한 영양 성분을 함유한 뿌리 채소다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_a1a8dd9b00002121",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/19/2026111902710.html",
           "medium": "news",
-          "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-20T05:00:00+09:00",
           "image": "https://health.chosun.com/site/data/img_dir/2026/11/19/2026111902705_0.jpg",
-          "imageSource": "source_page_og"
+          "publishedAt": "2026-11-20T05:00:00+09:00",
+          "discoveredAt": "2026-11-20T17:32:27+09:00",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_a1a8dd9b00002121",
+          "imageSource": "source_page_og",
+          "summary": "도라지는 식이섬유, 무기질, 비타민, 사포닌 등 다양한 영양 성분을 함유한 뿌리 채소다."
         },
         {
           "title": "“찬 바람 불자 혈압도 들썩?”…중년 혈압 관리에 좋은 ‘이 음식’ 뭐길래?",
-          "summary": "시금치와 딸기에는 칼륨과 식이섬유 등 혈압 관리에 도움이 되는 영양소가 들어 있다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_a673d4898b6bd3f1",
           "url": "https://kormedi.com/2907848/",
           "medium": "news",
+          "publishedAt": "2026-11-20T08:02:00+09:00",
           "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-20T08:02:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_a673d4898b6bd3f1",
+          "summary": "시금치와 딸기에는 칼륨과 식이섬유 등 혈압 관리에 도움이 되는 영양소가 들어 있다."
         },
         {
           "title": "몸에 좋은 기름 따로 있다…건강 지키는 ‘착한 지방’의 정체",
-          "summary": "비빔밥 등에 넣어 먹는 참기름은 불포화 지방산과 항산화 성분이 풍부해 혈관 건강과 세포 보호에 도움이 된다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_7ca92f3af9ed11e9",
           "url": "https://kormedi.com/2908240/",
           "medium": "news",
+          "publishedAt": "2026-11-19T09:15:00+09:00",
           "discoveredAt": "2026-11-19T17:37:00+09:00",
-          "publishedAt": "2026-11-19T09:15:00+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_7ca92f3af9ed11e9",
+          "summary": "비빔밥 등에 넣어 먹는 참기름은 불포화 지방산과 항산화 성분이 풍부해 혈관 건강과 세포 보호에 도움이 된다."
         },
         {
           "title": "밤새우고 건강 챙기는 중국 MZ…간식 시장까지 바꿨다",
-          "summary": "중국 간식 시장이 맛과 편의성을 넘어 건강 관리 기능을 결합한 제품 중심으로 빠르게 재편되고 있다.",
           "source": "식품음료신문",
-          "sourceId": "news-thinkfood",
-          "candidateId": "c_a5c554dd534f699f",
           "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201657",
           "medium": "news",
+          "publishedAt": "2026-11-20T10:06:50+09:00",
           "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-20T10:06:50+09:00"
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_a5c554dd534f699f",
+          "summary": "중국 간식 시장이 맛과 편의성을 넘어 건강 관리 기능을 결합한 제품 중심으로 빠르게 재편되고 있다."
         },
         {
           "title": "한혜진이 경악했지만… 영양 만점 밀웜, “절반이 단백질”",
-          "summary": "밀웜은 생김새 때문에 거부감을 줄 수 있지만 국내에서도 식품 원료로 인정된 식용 곤충이다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_9233a01df3018fe3",
           "url": "https://health.chosun.com/site/data/html_dir/2026/11/20/2026112001468.html",
           "medium": "news",
+          "publishedAt": "2026-11-20T17:00:00+09:00",
           "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-20T17:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_9233a01df3018fe3",
+          "summary": "밀웜은 생김새 때문에 거부감을 줄 수 있지만 국내에서도 식품 원료로 인정된 식용 곤충이다."
         }
       ]
     },
@@ -230,49 +230,49 @@
       "items": [
         {
           "title": "\"수능 후 체중 증가했다\"…급하게 빼려다 건강 잃어",
-          "summary": "대학수학능력시험(수능)이 끝난 뒤 수험 기간 늘어난 체중을 줄이기 위해 무리하게 다이어트에 나서는 것은 주의해야 한다.",
           "source": "뉴시스",
-          "sourceId": "news-newsis-health",
-          "candidateId": "c_40b504952e84de2e",
           "url": "https://www.newsis.com/view/NISX20261119_0003875567",
           "medium": "news",
-          "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-20T07:01:00+09:00",
           "image": "https://image.newsis.com/2026/07/09/NISI20260709_0021356883_web.jpg?rnd=20260709131034",
-          "imageSource": "feed_html"
+          "publishedAt": "2026-11-20T07:01:00+09:00",
+          "discoveredAt": "2026-11-20T17:32:27+09:00",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_40b504952e84de2e",
+          "imageSource": "feed_html",
+          "summary": "대학수학능력시험(수능)이 끝난 뒤 수험 기간 늘어난 체중을 줄이기 위해 무리하게 다이어트에 나서는 것은 주의해야 한다."
         },
         {
           "title": "삼겹살·버터 즐긴다면⋯콜레스테롤 더 조심해야 할 사람은?",
-          "summary": "미국 스탠퍼드대 연구진은 포화지방 섭취량과 혈중 LDL 콜레스테롤 수치의 연관성이 유전적 소인에 따라 달라질 수 있다는 연구 결과를 발표했다.",
           "source": "코메디닷컴",
-          "sourceId": "news-kormedi",
-          "candidateId": "c_3a1906548768e489",
           "url": "https://kormedi.com/2908924/",
           "medium": "news",
+          "publishedAt": "2026-11-19T17:54:06+09:00",
           "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-11-19T17:54:06+09:00"
+          "sourceId": "news-kormedi",
+          "candidateId": "c_3a1906548768e489",
+          "summary": "미국 스탠퍼드대 연구진은 포화지방 섭취량과 혈중 LDL 콜레스테롤 수치의 연관성이 유전적 소인에 따라 달라질 수 있다는 연구 결과를 발표했다."
         },
         {
           "title": "'고독한 미식가' 어딜갈까…67% \"5만이상 매장\"",
-          "summary": "혼밥(혼자 먹는 밥)이 단순히 한 끼를 해결하는 방식에서 벗어나 개인의 취향에 맞춘 고급 미식 영역으로 자리잡고 있다.",
           "source": "뉴시스",
-          "sourceId": "web-exa-trend",
-          "candidateId": "c_b933f22a5101a8cf",
           "url": "https://www.newsis.com/view/NISX20260914_0003788003",
           "medium": "news",
+          "publishedAt": "2026-09-14T10:00:18+09:00",
           "discoveredAt": "2026-11-20T17:32:27+09:00",
-          "publishedAt": "2026-09-14T10:00:18+09:00"
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_b933f22a5101a8cf",
+          "summary": "혼밥(혼자 먹는 밥)이 단순히 한 끼를 해결하는 방식에서 벗어나 개인의 취향에 맞춘 고급 미식 영역으로 자리잡고 있다."
         },
         {
           "title": "“100세에도 출근” 미국 현역 교수가 ‘아침에 꼭 먹는 음식’",
-          "summary": "100세의 나이에도 매주 연구실에 출근하며 강의 활동을 이어가고 있는 미국 피츠버그대 명예교수의 건강 관리법이 화제다.",
           "source": "헬스조선",
-          "sourceId": "news-healthchosun",
-          "candidateId": "c_31f9e40114cf8fa4",
           "url": "https://health.chosun.com/site/data/html_dir/2026/10/20/2026102002036.html",
           "medium": "news",
+          "publishedAt": "2026-10-21T04:00:00+09:00",
           "discoveredAt": "2026-10-21T14:53:33+09:00",
-          "publishedAt": "2026-10-21T04:00:00+09:00"
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_31f9e40114cf8fa4",
+          "summary": "100세의 나이에도 매주 연구실에 출근하며 강의 활동을 이어가고 있는 미국 피츠버그대 명예교수의 건강 관리법이 화제다."
         }
       ]
     }

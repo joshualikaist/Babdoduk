@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-21",
+  "generatedAt": "2026-11-21T17:11:48+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "에그인헬 샥슈카 만들기｜토마토소스와 계란으로 만드는 브런치 레시피",
+    "summary": "매콤한 토마토소스에 부드러운 계란을 넣어 익힌 에그인헬 입니다.",
+    "source": "기록하는 인간 (요리)",
+    "sourceId": "blog-cultureagora",
+    "candidateId": "c_645105f6e0880926",
+    "url": "https://cultureagora.tistory.com/447",
+    "medium": "blog",
+    "discoveredAt": "2026-11-21T17:11:48+09:00",
+    "publishedAt": "2026-11-21T07:30:00+09:00",
+    "image": "https://blog.kakaocdn.net/dn/br82Y5/dJMcadRwEiv/SHnytF08GsR48dwnyVBcIK/tfile.png",
+    "imageSource": "feed_html",
+    "category": "tips",
+    "heroKind": "pick"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "\"원정처방 늘어날 수밖에\"…국내 가격 떨어질까[비만약 반입 허용③]",
+          "summary": "해외에서 처방받은 비만치료제를 국내에 반입할 수 있게 되면서 비만치료제 가격 인하 압박이 커지고 있다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_ad3d20243aaab5ba",
+          "url": "https://www.newsis.com/view/NISX20261120_0003877257",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T15:01:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "\"경비 뽑고도 남네\"…日병원 살찌우는 스시자로[비만약 반입 허용①]",
+          "summary": "해외에서 처방받은 비만치료제를 국내에 반입할 수 있게 되면서 일본 현지 병원을 찾는 이른바 ‘스시자로’(스시+마운자로) 원정 처방이 본격화하고 있다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_95fd1a108d18e14a",
+          "url": "https://www.newsis.com/view/NISX20261120_0003876733",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T13:01:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "[가치소비, 트렌드⑰ ] \"치킨만으론 생존 불가\"… 사이드 메뉴 혁명, 치킨업계 가치소비 지형도 바꿨다",
+          "summary": "대한민국 외식 산업의 굳건한 맹주였던 '치킨'이 거대한 패러다임 전환기를 맞이하고 있다.",
+          "source": "가치소비뉴스 컨슈머와이드",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_593878501ac73b2e",
+          "url": "https://www.consumerwide.com/news/articleView.html?idxno=67416",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-19T01:08:48+09:00",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data"
+          ]
+        },
+        {
+          "title": "대상, 김장철 배추값 부담 낮춘다",
+          "summary": "본격적인 김장철을 맞아 소비자들의 장바구니 부담을 덜고 국내산 농산물 소비를 촉진하기 위한 상생마케팅이 펼쳐진다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_c5d660b3b12ae62c",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62714",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T03:14:03+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "소유진 “귤구이, 겨울에 꼭 해보세요”⋯단맛 올리고 비타민 C 챙기려면?",
+          "summary": "단맛 끌어올려!”라는 글과 함께 만드는 과정을 공개했다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_09dcfa5f1222a8c8",
+          "url": "https://kormedi.com/2908397/",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T15:05:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "신상출시 편스토랑 지승현 갑오징어 숯불구이 만드는 법",
+          "summary": "346회 신상출시 편스토랑에서 배우 지승현은 공격수 셰프의 레시피를 응용해 라면수프와 땅콩버터를 활용한 갑오징어 숯불구이 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_5ea387f3408f7bd0",
+          "url": "https://seon1982.tistory.com/4160",
+          "medium": "blog",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T00:00:17+09:00"
+        },
+        {
+          "title": "손녀 낮잠 시간에 후다닥! 간단 반찬 4가지",
+          "summary": "간단 반찬 4가지 6개월 된 손녀를 돌보다 보니 하루가 어떻게 지나가는지 모릅니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_dbdc7dfd80b077f4",
+          "url": "https://heysukim114.tistory.com/entry/%EB%B0%98%EC%B0%AC-%EB%A7%8C%EB%93%9C%EB%8A%94-%EB%82%A0-9",
+          "medium": "blog",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T00:00:31+09:00"
+        },
+        {
+          "title": "된장찌개 황금레시피｜고깃집처럼 진하고 칼칼한 맛 내는 비법",
+          "summary": "고깃집에서 고기를 먹고 나면 꼭 생각나는 된장찌개가 있죠.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_40a4a330a39fb581",
+          "url": "https://cultureagora.tistory.com/446",
+          "medium": "blog",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-20T18:24:45+09:00"
+        },
+        {
+          "title": "김치라면 맛있게 끓이는 법｜신김치로 국물까지 시원하게",
+          "summary": "찬바람이 불기 시작하면 뜨끈하고 얼큰한 국물 요리가 생각나죠.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_cbf190cbf3826fac",
+          "url": "https://cultureagora.tistory.com/436",
+          "medium": "blog",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T12:30:40+09:00"
+        },
+        {
+          "title": "속에 브라우니가 통째로! 크리스마스 진저브레드 선물상자 쿠키 만들기 | Brownie Inside! Christmas Gingerbread Gift Box Cookies",
+          "summary": "꾸덕한 브라우니를 통째로 감싼 진저브레드 쿠키!",
+          "source": "쿠킹트리 Cooking tree",
+          "sourceId": "yt-cookingtree",
+          "candidateId": "c_2a8f0eca9a3c319d",
+          "url": "https://www.youtube.com/watch?v=SB-1GBGmVrY",
+          "medium": "youtube",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-20T20:00:28+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "‘GLP-1’ 치료제 쓰는 당뇨병 환자, 단백질 섭취량 더 적었다",
+          "summary": "당뇨병을 앓으면서 체중 감량을 위해 GLP-1 계열 비만 치료제를 투여하는 환자는 그렇지 않은 환자보다 하루 단백질 섭취량이 적을 수 있다는 연구 결과가 나왔다.미국 매사추세츠대 연구팀은 미국…",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_2249f4f4c4a0b9d3",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/20/2026112002575.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T14:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/20/2026112002564_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "장나라 “비타민도 주 5일만”…많이 챙겨 먹으면 간에 부담?",
+          "summary": "장나라는 영양제를 챙길 때도 간 건강을 고려해 과하게 먹지 않으려 한다고 말했다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_cc109072d5c0f462",
+          "url": "https://kormedi.com/2909157/",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T11:06:00+09:00"
+        },
+        {
+          "title": "“늦바람이 무섭다더니…” 노인들 함부로 따라하면 안 되는 식사법",
+          "summary": "노년기에 들어 건강을 위해 고기나 계란을 끊고 채식으로 식단을 바꾸기도 한다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_cb6463bc8cd9c9e2",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/20/2026112002651.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T13:00:00+09:00"
+        },
+        {
+          "title": "[제443호 레시피] 새송이우엉장조림",
+          "summary": "굵은 줄기 속 쫄깃한 매력 ‘새송이버섯’새송이버섯은 굵고 탄탄한 줄기와 쫄깃한 식감이 특징으로, 구이나 볶음, 전, 찌개 등 다양한 요리에 활용된다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_b8a6ec4d419f90da",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62716",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T03:12:40+09:00"
+        },
+        {
+          "title": "[제443호 레시피] 파인애플수제함박스테이크",
+          "summary": "새콤달콤한 열대의 풍미 ‘파인애플’파인애플은 상큼한 산미와 달콤한 과즙이 특징인 열대 과일로, 생과일은 물론 주스와 샐러드, 구이 등 다양하게 활용된다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_d22842b90830f756",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62717",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T03:12:22+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "찬바람에 몸도 마음도 움츠러들어…겨울 우울감 날리는 음식 6가지",
+          "summary": "버섯은 혈당을 낮추는 성분과 프리바이오틱스를 함유하고 있어 기분을 안정시키는 데 도움이 되는 식품으로 꼽힌다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1225219190cdae73",
+          "url": "https://kormedi.com/2909948/",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T10:15:00+09:00"
+        },
+        {
+          "title": "오래 살려면, 운동과 식사 중 무엇이 더 중요할까? 美 연구진 분석 결과",
+          "summary": "오래 살기 위해서는 건강한 식단을 유지하는 것보다 꾸준히 운동하고 체력을 기르는 것이 더 중요할 수 있다는 연구 결과가 나왔다.미국 애리조나주립대 글렌 게서 교수와 미국 의료기관 카이저 퍼머넌트의 로버트 샐리스…",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_62bfcf5b0a944ca7",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/20/2026112002154.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-11-21T10:00:00+09:00"
+        },
+        {
+          "title": "2025 식품소비행태조사 기초분석보고서 }",
+          "summary": "",
+          "source": "krei.re.kr",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_d554e52c9020f062",
+          "url": "https://krei.re.kr/krei/page/53?biblioId=545314&cmd=view&pageIndex=1",
+          "medium": "research",
+          "discoveredAt": "2026-11-21T17:11:48+09:00",
+          "publishedAt": "2026-05-08T12:00:00+09:00"
+        },
+        {
+          "title": "“밤마다 먹는 음식, 얼굴 확 늙는다”⋯ 피부 노화 부르는 야식 3가지",
+          "summary": "피부 노화는 나이가 들면서 자연스럽게 진행되지만 자외선 노출, 흡연, 음주, 식습관 등 생활 요인에 따라 그 속도가 달라질 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_f9605e47d75cb89c",
+          "url": "https://kormedi.com/2888896/",
+          "medium": "news",
+          "discoveredAt": "2026-10-24T14:38:43+09:00",
+          "publishedAt": "2026-10-23T16:05:00+09:00"
+        }
+      ]
+    }
+  }
+}
