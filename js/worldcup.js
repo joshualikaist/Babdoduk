@@ -1486,7 +1486,7 @@
   // beat: the brand's pink-to-indigo gradient with soft glows, rays and confetti; "🏆 나의 최애 메뉴";
   // the winner's photo, large and rounded, with a crown; the dish name huge in Jua and its other name
   // small; "한식 32강 우승"; the runner-up and the other two semifinalists as photo chips; the CTA
-  // "너의 최애는? 👉 babdoduk.vercel.app" and the wordmark; the photo credits, tiny. Instagram's own
+  // "너의 최애는? 👉 babdodukms.com" and the wordmark; the photo credits, tiny. Instagram's own
   // controls cover about 250 px at the top and at the bottom of a story, so everything that matters
   // sits between STORY.top and STORY.bottom; only decoration and the credits go outside.
   // The photos are this site's own files (images/worldcup/), so the canvas is never tainted and can be
@@ -1670,7 +1670,7 @@
     ctx.restore();
   }
   function storyTexts() {
-    var host = /^babdoduk(-lab)?\.vercel\.app$/.test(location.hostname) ? location.hostname : 'babdoduk.vercel.app';
+    var host = location.hostname === 'babdoduk-lab.vercel.app' ? location.hostname : 'babdodukms.com';
     var opponents = [result.finalist].concat(result.semis || []).filter(Boolean);
     var photos = [result.id].concat(opponents).map(photoOf).filter(Boolean);
     var credited = photos.length > 0;   // the names and licences are on the page (renderCredits), not on the card
@@ -1865,7 +1865,7 @@
       ctx.textAlign = 'center';
     });
 
-    // The call to play, "너의 최애는? 👉 babdoduk.vercel.app", and the wordmark: both inside the safe zone.
+    // The call to play, "너의 최애는? 👉 babdodukms.com", and the wordmark: both inside the safe zone.
     shadow('rgba(30, 10, 60, 0.4)', 28, 10);
     pill(words.cta + ' 👉 ' + words.host, display(44), ctaY, 88, '#1e1d1a', '#ffffff');
     ctx.font = plain(900, 46);

@@ -29,7 +29,7 @@ def test_home_and_event_drop_the_noisy_chrome():
     assert 'class="event-instagram"' in event and "@babdodukms" in event
 
 
-PREVIEW = "https://babdoduk.vercel.app/images/og-babdoduk.png"
+PREVIEW = "https://www.babdodukms.com/images/og-babdoduk.png"
 # The character pictures used before (a preview card and the home kicker's avatar) were not ours to use;
 # the Babdoduk wordmark replaced them (owner 2026-11-10), under new file names so cached previews refresh.
 GONE = ("kakao-loopy", "profile-instagram")

@@ -2686,7 +2686,7 @@ def worldcup_share(page):
         return (lines == [line] and all(p["author"] not in t and p["license"] not in t for p in card_photos for t in texts)
                 and not any("CC BY" in t for t in texts))
 
-    check(card_credit_ok(page.evaluate("window.__cardText"), "📷 Wikimedia Commons · 사진 출처 babdoduk.vercel.app/worldcup.html"),
+    check(card_credit_ok(page.evaluate("window.__cardText"), "📷 Wikimedia Commons · 사진 출처 babdodukms.com/worldcup.html"),
           ("the card's one credit line names no photographer", page.evaluate("window.__cardText")))
     # The result screen lists the author and licence, linked, of the four photos on the card.
     page.locator("#wcCredits summary").click()
@@ -2765,7 +2765,7 @@ def worldcup_share(page):
     check(page.locator("#wcSaveImage").inner_text().strip().endswith("Save story image")
           and page.evaluate("document.getElementById('wcStoryPreview').alt").startswith("Story image preview"),
           "a language switch redraws the card and the buttons in English")
-    check(card_credit_ok(page.evaluate("window.__cardText"), "📷 Wikimedia Commons · photo credits at babdoduk.vercel.app/worldcup.html"),
+    check(card_credit_ok(page.evaluate("window.__cardText"), "📷 Wikimedia Commons · photo credits at babdodukms.com/worldcup.html"),
           ("the English card's one credit line names no photographer", page.evaluate("window.__cardText")))
     check(page.locator("#wcCredits summary").inner_text() == "Photo credits" and page.locator("#wcCreditsList li").count() == 4,
           "the credits are listed in English too")
