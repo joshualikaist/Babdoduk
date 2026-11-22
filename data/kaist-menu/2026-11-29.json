@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-29",
+  "dateLabel": "11월 29일",
+  "fetchedAt": "2026-11-23T00:15:48+09:00",
+  "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
+  "status": "AVAILABLE",
+  "coverage": {
+    "requested": 8,
+    "fetched": 8,
+    "failed": [],
+    "carried": []
+  },
+  "restaurants": [
+    {
+      "id": "icc",
+      "name": "문지캠퍼스",
+      "building": "문지",
+      "breakfast": {
+        "hours": "",
+        "items": [],
+        "price": "",
+        "kcal": ""
+      },
+      "lunch": {
+        "hours": "",
+        "items": [
+          "백미밥",
+          "소고기무국(5,6,16)",
+          "고구마닭갈비(5,6,15)",
+          "메밀전병(3,5,6,10)",
+          "브로콜리/초장(5,6)",
+          "배추김치",
+          "[칼로리:860kcal]"
+        ],
+        "price": "",
+        "kcal": ""
+      },
+      "dinner": {
+        "hours": "",
+        "items": [
+          "백미밥",
+          "들깨미역국(5,6)",
+          "제육볶음(5,6,10)",
+          "볼어묵볶음(5,6,18)",
+          "무생채(5,6)",
+          "배추김치",
+          "[칼로리:940kcal]"
+        ],
+        "price": "",
+        "kcal": ""
+      }
+    },
+    {
+      "id": "hawam",
+      "name": "화암 기숙사",
+      "building": "화암",
+      "breakfast": {
+        "hours": "",
+        "items": [],
+        "price": "",
+        "kcal": ""
+      },
+      "lunch": {
+        "hours": "",
+        "items": [
+          "백미밥",
+          "소고기무국(5,6,16)",
+          "고구마닭갈비(5,6,15)",
+          "메밀전병(3,5,6,10)",
+          "브로콜리/초장(5,6)",
+          "배추김치",
+          "[칼로리:860kcal]"
+        ],
+        "price": "",
+        "kcal": ""
+      },
+      "dinner": {
+        "hours": "",
+        "items": [
+          "백미밥",
+          "들깨미역국(5,6)",
+          "제육볶음(5,6,10)",
+          "볼어묵볶음(5,6,18)",
+          "무생채(5,6)",
+          "배추김치",
+          "[칼로리:940kcal]"
+        ],
+        "price": "",
+        "kcal": ""
+      }
+    }
+  ]
+}
