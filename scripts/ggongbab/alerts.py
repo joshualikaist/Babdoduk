@@ -133,11 +133,15 @@ PORTAL_HUMAN = {"PORTAL_LIST_AUTH_REQUIRED": "AUTH_EXPIRED", "PORTAL_LIST_REDIRE
                 "PORTAL_UI_CHANGED": "CONTRACT_CHANGED", "OPS_RETRY_EXHAUSTED": "RETRY_EXHAUSTED"}
 
 
-def portal_alert(runtime: dict, *, running: bool, enabled: bool, now: float) -> Alert:
+def portal_alert(runtime: dict, *, running: bool, enabled: bool, now: float, latched: str = "") -> Alert:
+    """`latched`: the watchdog's own latch (ops-watchdog.json). When the watchdog itself sees the
+    session gone (the Portal's tab back on its login page) the worker has only exited with a transport
+    reason and wrote no manual reason, so the phone said "수집이 꺼져 있어요 · 다시 켜 줘" while the
+    real need was a login (2026-11-19..22)."""
     age = _age(runtime.get("last_success"), now)                       # what the operator reads
     judged = _age(_fresh_since(runtime, running), now)                 # what the severity rests on
     severity, code = staleness("portal", judged)
-    human = PORTAL_HUMAN.get(runtime.get("manual_reason") or "")
+    human = PORTAL_HUMAN.get(runtime.get("manual_reason") or "") or PORTAL_HUMAN.get(latched or "")
     if human:
         return Alert.of("portal", human, age, now)
     if enabled and not running and severity != "healthy":
@@ -196,7 +200,9 @@ def evaluate(local: Path, *, portal_running: bool, radar_running: bool, now: Opt
     now = time.time() if now is None else now
     control = read_json(local / "ops-control.json", {"enabled": False, "resume": 0})
     portal = read_json(local / "ops-portal.json", {"last_success": None, "manual_reason": ""})
-    alerts = [portal_alert(portal, running=portal_running, enabled=bool(control.get("enabled")), now=now)]
+    latched = read_json(local / "ops-watchdog.json", {}).get("latched") or ""
+    alerts = [portal_alert(portal, running=portal_running, enabled=bool(control.get("enabled")), now=now,
+                           latched=latched if isinstance(latched, str) else "")]
     radar_control = read_json(local / "radar-control.json", {"enabled": False})
     if radar_control.get("enabled") or (local / "ops-radar.json").exists():
         radar = read_json(local / "ops-radar.json", {"last_success": None, "reason": ""})

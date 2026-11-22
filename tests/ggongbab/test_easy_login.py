@@ -190,12 +190,53 @@ def test_a_click_that_leads_somewhere_else_stops(local):
     assert code == "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE" and telegram.messages == []
 
 
-def test_a_page_that_never_moves_or_never_answers_stops(local):
+def test_a_page_that_never_moves_or_never_answers_stops_after_one_fresh_start(local):
     stuck = Browser(PORTAL, VIEW, stall=True)
     assert run(local, stuck)[0] == "EASY_LOGIN_STOPPED_NO_PROGRESS"
+    assert stuck.navigations == [el.PORTAL_LOGIN_URL]          # once, before Easy Login's button only
+    assert stuck.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON]
     (local / el.STATE).unlink()
     silent = Browser(PORTAL, answer=False)          # for example an alert() dialog holds the page
     assert run(local, silent)[0] == "EASY_LOGIN_STOPPED_UNRESPONSIVE" and silent.clicks == []
+    assert silent.navigations == [el.PORTAL_LOGIN_URL]
+
+
+def test_a_tab_stuck_loading_gets_one_fresh_start_and_the_code_follows(local):
+    """2026-11-19/20: three requests in a row met a Portal tab whose page never finished loading."""
+    loading = dict(PORTAL, ready=False)
+    browser = Browser(loading, PORTAL, VIEW, MFA)
+    code, telegram = run(local, browser)
+    assert code == "EASY_LOGIN_CODE_SENT" and len(telegram.messages) == 1
+    assert browser.navigations == [el.PORTAL_LOGIN_URL]
+    assert browser.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON]
+
+
+def test_no_fresh_start_once_easy_login_was_pressed(local):
+    """That click may already have sent the phone an approval request; a second would confuse."""
+    browser = Browser(VIEW, stall=True)
+    assert run(local, browser, start="view")[0] == "EASY_LOGIN_STOPPED_NO_PROGRESS"
+    assert browser.clicks == [el.EASY_LOGIN_BUTTON] and browser.navigations == []
+
+
+def test_an_automatic_attempt_starts_afresh_when_the_portal_waits_on_another_page(local):
+    """2026-11-21: a code at 06:23 expired unanswered and the tab stayed on the expired page; every
+    automatic attempt then ended in EASY_LOGIN_NO_LOGIN_PAGE, every 5 minutes, until the owner
+    pressed 🔑 the next afternoon."""
+    browser = Browser(STUCK, PORTAL, VIEW, MFA)
+    clock = Clock()
+    targets = [{"id": "t0", "url": URL["dooray"]}, {"id": "t1", "url": URL["stuck"]}]
+    code = el.attempt(local, 9224, notifier=Telegram(), targets=lambda port: targets, cdp=browser,
+                      now=lambda: NOW, sleep=clock.sleep, clock=clock, mail_host=DOORAY_HOST, portal_wait=True)
+    assert code == "EASY_LOGIN_CODE_SENT"
+    assert browser.navigations == [el.PORTAL_LOGIN_URL] and browser.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON]
+    state = json.loads((local / el.STATE).read_text(encoding="utf-8"))
+    assert state["attempts"] == [NOW] and state["requests"] == []             # an automatic attempt
+    # Without the Portal waiting for a login, a page that is not a login page is still left alone.
+    (local / el.STATE).unlink()
+    untouched = Browser(STUCK, PORTAL, VIEW, MFA)
+    code = el.attempt(local, 9224, notifier=Telegram(), targets=lambda port: targets, cdp=untouched,
+                      now=lambda: NOW, sleep=clock.sleep, clock=clock, mail_host=DOORAY_HOST)
+    assert code == "EASY_LOGIN_NO_LOGIN_PAGE" and untouched.expressions == [] and untouched.navigations == []
 
 
 def test_an_open_verification_page_is_never_touched(local):
@@ -229,28 +270,45 @@ def test_a_failed_telegram_send_is_not_a_sent_code(local):
 
 
 # --- the limits ----------------------------------------------------------------------------------
-def test_at_most_one_attempt_per_thirty_minutes_and_four_a_day(local):
+def test_at_most_one_attempt_per_thirty_minutes_and_six_a_day(local):
+    """Six: the Portal's session ended about 4 h 26 min after each login (2026-11-18..21), so a waking
+    day needs four, and a failed attempt counts too."""
+    assert el.DAILY_MAX == 6
     assert run(local, Browser(PORTAL, VIEW, MFA))[0] == "EASY_LOGIN_CODE_SENT"
     atomic_json(local / "ops-portal.json", {"last_success": NOW + 60})            # the owner approved
     assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + 600)[0] == "EASY_LOGIN_RATE_LIMITED"
-    for i in range(1, 4):
+    for i in range(1, el.DAILY_MAX):
         now = NOW + i * el.MIN_GAP_SECONDS
         atomic_json(local / "ops-portal.json", {"last_success": now - 1})
         assert run(local, Browser(PORTAL, VIEW, MFA), now=now)[0] == "EASY_LOGIN_CODE_SENT"
         atomic_json(local / "ops-portal.json", {"last_success": now + 60})
-    assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + 4 * el.MIN_GAP_SECONDS)[0] == "EASY_LOGIN_RATE_LIMITED"
+    full = NOW + el.DAILY_MAX * el.MIN_GAP_SECONDS
+    assert run(local, Browser(PORTAL, VIEW, MFA), now=full)[0] == "EASY_LOGIN_RATE_LIMITED"
     assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + 86400 + 1)[0] == "EASY_LOGIN_CODE_SENT"
 
 
-def test_two_unanswered_codes_pause_it_until_a_person_logs_in(local):
+def test_two_unanswered_codes_pause_it_until_a_person_logs_in_or_for_three_hours(local):
     assert run(local, Browser(PORTAL, VIEW, MFA))[0] == "EASY_LOGIN_CODE_SENT"
     later = NOW + el.MIN_GAP_SECONDS
     assert run(local, Browser(PORTAL, VIEW, MFA), now=later)[0] == "EASY_LOGIN_CODE_SENT"
     third = later + el.MIN_GAP_SECONDS
     assert run(local, Browser(PORTAL, VIEW, MFA), now=third)[0] == "EASY_LOGIN_PAUSED_UNANSWERED"
     assert el.may_start(local, third) is False
+    lifted = later + el.UNANSWERED_PAUSE_SECONDS            # three hours after the second code
+    assert el.may_start(local, lifted - 60) is False
+    assert el.may_start(local, lifted) is True                                  # the owner was only away
     atomic_json(local / "ops-radar.json", {"last_success": third + 5})          # a person logged in
     assert el.may_start(local, third + 10) is True
+
+
+def test_no_automatic_code_at_night_but_the_owners_own_request_still_works(local):
+    night = 1_999_965_600.0                    # 2033-05-18 03:00 KST
+    assert el.quiet(night) and not el.quiet(night + 5 * 3600) and not el.quiet(night - 2 * 3600 - 1)
+    assert run(local, Browser(PORTAL, VIEW, MFA), now=night)[0] == "EASY_LOGIN_QUIET_HOURS"
+    assert el.may_start(local, night) is False
+    assert json.loads((local / el.STATE).read_text(encoding="utf-8"))["attempts"] == []      # nothing counted
+    assert ask(local, Browser(PORTAL, VIEW, MFA), "portal", now=night)[0] == "EASY_LOGIN_CODE_SENT"
+    assert el.may_start(local, night + 5 * 3600) is True                       # 08:00
 
 
 def test_a_code_still_waiting_blocks_a_second_one():

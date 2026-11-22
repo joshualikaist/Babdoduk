@@ -47,12 +47,15 @@ LOCK = "easy-login.lock"
 LOG = "ops-easy-login.log"
 
 MIN_GAP_SECONDS = 1800        # at most one attempt per 30 minutes ...
-DAILY_MAX = 4                 # ... and four per day
-UNANSWERED_MAX = 2            # two unanswered codes in a row pause it until a person logs in
+DAILY_MAX = 6                 # ... and six per day (the Portal's session ends about 4 h 26 min after a login,
+                              # 2026-11-18..21, so a waking day needs four; a failed attempt counts too)
+UNANSWERED_MAX = 2            # two unanswered codes in a row pause it ...
+UNANSWERED_PAUSE_SECONDS = 3 * 3600   # ... for three hours, or until a person logs in
+QUIET_HOURS = (1, 8)          # KST [start, end): no automatic code at night; the owner's own request still works
 CODE_LIFETIME_SECONDS = 300   # the page offers 3 minutes (extendable); past this a code is unanswered
 STEP_WAIT_SECONDS = 20        # how long one click may take to reach the next page
 MAX_STEPS = 4
-ID_SETTLE_SECONDS = 3      # Remember ID fills the field just after the SSO page loads
+ID_SETTLE_SECONDS = 8      # Remember ID fills the field after the SSO page loads (3 s was too short 11-18/19)
 READY_SETTLE_SECONDS = 2   # a page to click in: this long after its load completes (its scripts bind the buttons)
 REQUEST_GAP_SECONDS = 60      # the owner's own request: a double tap is one request ...
 REQUEST_DAILY_MAX = 10        # ... and at most ten a day
@@ -74,6 +77,7 @@ CODES = frozenset({
     "EASY_LOGIN_STOPPED_UNRESPONSIVE", "EASY_LOGIN_STOPPED_NO_PROGRESS",
     "EASY_LOGIN_REQUESTED", "EASY_LOGIN_REQUEST_NOT_STARTED", "EASY_LOGIN_REQUEST_TOO_SOON",
     "EASY_LOGIN_REQUEST_DAILY_MAX", "EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_STOPPED_TABS_UNCLEAR",
+    "EASY_LOGIN_QUIET_HOURS",
 })
 
 # The owner's request: this button (telegram_review.Bot.events -> ("login", callback)) or a short
@@ -215,11 +219,24 @@ def normalize(state: dict, now: float, last_success: Optional[float]) -> dict:
     if (state["unanswered"] and state["last_unanswered"] is not None and last_success is not None
             and last_success > float(state["last_unanswered"])):
         state.update(unanswered=0, last_unanswered=None)
+    if (state["unanswered"] >= UNANSWERED_MAX and state["last_unanswered"] is not None
+            and now - float(state["last_unanswered"]) >= UNANSWERED_PAUSE_SECONDS):
+        # The owner was away (2026-11-21: a code at 06:23, then nothing until the next afternoon).
+        state.update(unanswered=0, last_unanswered=None)
     return state
+
+
+def quiet(now: float) -> bool:
+    """Night in Seoul (QUIET_HOURS): an automatic code then would only expire unanswered."""
+    hour = time.gmtime(now + 9 * 3600).tm_hour
+    start, end = QUIET_HOURS
+    return start <= hour < end
 
 
 def gate(state: dict, now: float) -> Optional[str]:
     """None when an attempt may start now, else the reason it may not (state already normalized)."""
+    if quiet(now):
+        return "EASY_LOGIN_QUIET_HOURS"
     if state["unanswered"] >= UNANSWERED_MAX:
         return "EASY_LOGIN_PAUSED_UNANSWERED"
     if state["last_sent"] is not None:
@@ -380,9 +397,18 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
         state["last_sent"] = None
     else:
         target, reason = choose_target(pages)
-        if target is None:
-            return reason
         how = "here"
+        if target is None and reason == "EASY_LOGIN_NO_LOGIN_PAGE" and portal_wait:
+            # The Portal waits for a login but its tab is not on a login page, for example the
+            # verification page that expired unanswered at 06:23 on 2026-11-21: from then on every
+            # attempt ended here, every 5 minutes, until the owner pressed 🔑 the next afternoon.
+            # Start afresh from the Portal's login page, as the owner's request does.
+            target, how = request_target(pages, mail_host=mail_host, mail_tab=mail_tab, portal_wait=portal_wait,
+                                         mail_wait=False)
+            if target is None and how != "open":
+                return "EASY_LOGIN_NO_LOGIN_PAGE" if how == "EASY_LOGIN_NOT_NEEDED" else how
+        elif target is None:
+            return reason
         state["attempts"].append(now())
     # The attempt counts from here, whatever happens next.
     atomic_json(local / STATE, state)
@@ -399,10 +425,21 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
             if how == "reset":
                 page.navigate(PORTAL_LOGIN_URL)
                 last_kind = page_kind(target.get("url", ""))    # wait until the page has left it
-            for _ in range(MAX_STEPS):
+            # One fresh start from the Portal's login page when a page never finishes loading or a
+            # click leads nowhere (2026-11-19/20: three requests in a row ended on a tab stuck
+            # loading). Never after Easy Login's button: that click may already have sent the phone
+            # an approval request, and a second one would be confusing.
+            restart_left, easy_clicked, steps = True, False, 0
+            while steps < MAX_STEPS:
                 probe = _wait_for_next_page(page, probe_js, last_kind, sleep=sleep, clock=clock)
                 if probe is None:
+                    if restart_left and not easy_clicked:
+                        restart_left = False
+                        page.navigate(PORTAL_LOGIN_URL)
+                        last_kind = None
+                        continue
                     return "EASY_LOGIN_STOPPED_UNRESPONSIVE" if last_kind is None else "EASY_LOGIN_STOPPED_NO_PROGRESS"
+                steps += 1
                 action = decide(probe)
                 if action[0] == "stop":
                     return action[1]
@@ -416,6 +453,7 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
                 selector = action[1]
                 if selector not in CLICKABLE:
                     return "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE"
+                easy_clicked = easy_clicked or selector == EASY_LOGIN_BUTTON
                 last_kind = page_kind(f"https://{probe['host']}{probe['path']}")
                 page.evaluate(f"(() => {{ const e = document.querySelector({json.dumps(selector)}); "
                               f"if (e) e.click(); return !!e; }})()")
@@ -474,10 +512,9 @@ def run_assist(root: Path, *, requested: bool = False) -> int:
         notifier = local_notifier(local)
         if requested:
             log("EASY_LOGIN_REQUESTED")
-            where = dict(mail_host=dooray_host(local / "dooray-ui.json"), mail_tab=read_mode(local) == "unified",
-                         **login_waits(local))
-        else:
-            where = {}
+        # Both need the browser's layout: an automatic attempt may also start afresh (attempt).
+        where = dict(mail_host=dooray_host(local / "dooray-ui.json"), mail_tab=read_mode(local) == "unified",
+                     **login_waits(local))
         with poller_lock(local / LOCK):
             code = attempt(local, slot_for(root, "portal").port, notifier=notifier,
                            targets=page_targets, cdp=LoopbackCdp, requested=requested, **where)

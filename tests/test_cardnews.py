@@ -72,6 +72,7 @@ def test_sessions_outside_the_week_and_an_event_without_sessions():
 def test_the_cards_are_drawn_from_the_live_list_and_never_from_a_stale_copy(tmp_path):
     now = datetime(2026, 11, 8, 18, 0, tzinfo=rc.KST)
     assert rc.LIVE_FEED.startswith("https://") and rc.LIVE_FEED.endswith("/data/ggongbab/latest.json")
+    assert rc.LIVE_FEED.startswith("https://www.babdodukms.com/")   # babdoduk.vercel.app is gone (2026-11-22)
     assert not rc.stale({"generatedAt": "2026-11-08T09:00:00+09:00"}, now)
     assert rc.stale({"generatedAt": "2026-10-31T20:21:46+09:00"}, now)          # the copy behind the 11-02 cards
     assert rc.stale({}, now) and rc.stale({"generatedAt": "어제"}, now)

@@ -59,6 +59,26 @@ def test_a_stale_enabled_worker_that_is_not_running_is_critical():
     assert (a.severity, a.reason) == ("critical", "WORKER_NOT_RUNNING")
 
 
+def test_the_watchdogs_own_login_latch_asks_for_a_login_not_a_restart(tmp_path):
+    """2026-11-19..22: the worker exited with a transport reason (no manual reason) and the watchdog
+    latched PORTAL_LIST_AUTH_REQUIRED on the Portal's login page; the phone still said "수집이 꺼져
+    있어요 · 다시 켜 줘", which no restart could fix."""
+    runtime = {"last_success": NOW - 34000, "manual_reason": "", "reason": "PORTAL_LIST_TRANSPORT_UNAVAILABLE"}
+    a = alerts.portal_alert(runtime, running=False, enabled=True, now=NOW, latched="PORTAL_LIST_AUTH_REQUIRED")
+    assert (a.severity, a.reason, a.action) == ("critical", "AUTH_EXPIRED", "login")
+    local = tmp_path / ".local"
+    atomic_json(local / "ops-control.json", {"enabled": True, "resume": 1})
+    atomic_json(local / "ops-portal.json", runtime)
+    atomic_json(local / "ops-watchdog.json", {"launches": 1, "recoveries": 0, "retry_at": 0,
+                                              "latched": "PORTAL_LIST_AUTH_REQUIRED", "resume": 1, "launched_at": 1})
+    [portal] = alerts.evaluate(local, portal_running=False, radar_running=False, now=NOW)
+    assert (portal.reason, portal.action) == ("AUTH_EXPIRED", "login")
+    atomic_json(local / "ops-watchdog.json", {"launches": 1, "recoveries": 0, "retry_at": 0, "latched": "",
+                                              "resume": 1, "launched_at": 1})
+    [portal] = alerts.evaluate(local, portal_running=False, radar_running=False, now=NOW)
+    assert portal.reason == "WORKER_NOT_RUNNING"                      # a plain stop is still a stop
+
+
 def test_flash_candidates_waiting_more_than_ten_minutes_alert_until_dispatched():
     waiting = {"pending": [{"id": "h1", "discovered_at": NOW - 700, "dispatched": False}]}
     done = {"pending": [{"id": "h1", "discovered_at": NOW - 700, "dispatched": True}]}

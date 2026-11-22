@@ -51,14 +51,20 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
 
 ## Limits
 
-* At most one attempt per 30 minutes and four per day; a code that expires unanswered counts.
-* After two unanswered attempts in a row it stops until a person logs in by hand, so the phone never
-  turns into a stream of approval requests that someone answers by habit.
+* At most one attempt per 30 minutes and six per day; a code that expires unanswered counts. The
+  Portal's session ended about 4 h 26 min after each login (2026-11-18..21), so a waking day needs
+  four logins, and a failed attempt counts too.
+* No automatic attempt from 01:00 to 08:00 KST (`QUIET_HOURS`): a code then only expires unanswered.
+  The first check after 08:00 sends one. The owner's own request works at any hour.
+* After two unanswered attempts in a row it pauses for three hours (`UNANSWERED_PAUSE_SECONDS`) or until
+  a person logs in, so the phone never turns into a stream of approval requests that someone answers
+  by habit. Until 2026-11-22 the pause held until a manual login, and the Portal then stood still for
+  a day behind one missed early-morning code.
 * An approval request that arrives **without** a matching Telegram message is not ours: reject it.
 * The owner's own requests (below) skip these limits: the owner is there and asked. They have their own
   limits instead: at most one a minute (a double tap counts once) and ten a day. A request also restarts
   the 30 minutes before the next automatic attempt. It does not lift the pause after two unanswered
-  codes; only a successful login does that.
+  codes; a successful login or the three hours do that.
 
 ## How it runs
 
@@ -77,16 +83,26 @@ LIST or the Dooray Radar reports that it needs a login), and only these steps:
   that one tab. A page probe returns fixed facts only; the owner's ID is compared inside the page.
   A page is clicked only once its load has completed (`document.readyState`) and
   `READY_SETTLE_SECONDS` (2 s) have passed: the Portal's login button is a bare link whose handler the
-  page's script binds. Each click must reach the next page within 20 s; an unanswered page (for
-  example an `alert()` dialog) stops it.
+  page's script binds. Each click must reach the next page within 20 s. A page that never finishes
+  loading or a click that leads nowhere gets one fresh start from the Portal's login page
+  (`Page.navigate`, the one fixed URL); a second failure stops it. There is no fresh start once Easy
+  Login's own button was clicked, because that click may already have sent the phone an approval
+  request. Remember ID gets `ID_SETTLE_SECONDS` (8 s) to fill the ID field: 3 s ended five attempts
+  on 2026-11-18/19 with `EASY_LOGIN_STOPPED_ID_EMPTY`.
 * After the code is sent, the attempt ends. The owner approves on the phone; the SSO page closes
   and the watchdog's existing resume path (`may_resume`) restarts the worker.
 * State `.local/easy-login-state.json`: attempt times, the time of the last code, the unanswered
   count. Log `.local/ops-easy-login.log`: fixed codes only (`EASY_LOGIN_*`).
 * A verification page that expired without an answer stays in the tab, and on 2026-10-31 the tab
-  then showed `sso.kaist.ac.kr/auth/user/login/view`. The automatic attempt starts from neither page,
-  so it logs `EASY_LOGIN_NO_LOGIN_PAGE` until a person acts. That person is the owner's request
-  (below), from the 🔑 button that every code message and every login alert carries.
+  then showed `sso.kaist.ac.kr/auth/user/login/view`. Until 2026-11-22 the automatic attempt started
+  from neither page and logged `EASY_LOGIN_NO_LOGIN_PAGE` every 5 minutes until the owner pressed 🔑
+  (on 2026-11-21 from 06:23 until the next afternoon). Now, while the Portal waits for a login, the
+  automatic attempt picks its page like the owner's request (`request_target`, below): it sends the
+  Portal's tab back to the Portal's login page, or opens one, and starts afresh. Without a Portal login
+  wait it still touches nothing.
+* While the watchdog holds a login latch, the phone alert says the login is gone and carries 🔑
+  (`alerts.evaluate` reads the watchdog's latch). Until 2026-11-22 a latch the watchdog set itself
+  left the worker's state without a manual reason, and the phone said "수집이 꺼져 있어요 · 다시 켜 줘".
 
 ## On the owner's request (owner decision 2026-10-31)
 
@@ -139,6 +155,5 @@ Telegram must be configured first (`ops.sh alert --status`).
 Synthetic page fixtures only (no live SSO in tests): the three pages in order; an empty ID field;
 the ID/PW tab selected; an unknown page; a CAPTCHA or error text; an expired code; the rate limits;
 no Telegram configured; the code absent from every log line and state file. All of these are in
-`tests/ggongbab/test_easy_login.py`. Still open: one live acceptance run with the owner present
-(the verification page's markup was never seen by the code; the digit reading is the part most
-likely to need a fix).
+`tests/ggongbab/test_easy_login.py`. The live acceptance run passed on 2026-10-29, and codes have been
+answered from the phone since.

@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from content_labels import labels  # noqa: E402
 
-LIVE_FEED = "https://babdoduk.vercel.app/data/ggongbab/latest.json"
+LIVE_FEED = "https://www.babdodukms.com/data/ggongbab/latest.json"   # the old babdoduk.vercel.app address is gone (2026-11-22)
 MAX_FEED_AGE = timedelta(hours=36)   # the list is refreshed several times a day; older means a stale copy
 OUT = ROOT / "data" / "cardnews"
 TEMPLATE = ROOT / "inputs" / "cardnews" / "template.json"
