@@ -41,13 +41,19 @@ def test_the_counts_hold_no_person_and_only_count_visit_is_open():
     assert "request.headers" not in SQL, "the database never looks at who called"
 
 
+LAB_ONLY_PAGES = {"bobyak", "cardnews"}     # vercel.json answers 404 for them outside babdoduk-lab
+
+
 def test_the_sites_and_pages_agree_everywhere():
     assert set(re.findall(r"'([a-z.-]+\.(?:com|app))'", SQL)) == OUR_SITES
     assert set(re.findall(r"'([a-z.-]+\.(?:com|app))'", API.split("const SITES", 1)[1].split(";", 1)[0])) == OUR_SITES
     counter = re.search(r"/\^\((.+?)\)\$/\.test\(loc\.hostname\)", SITE_JS).group(1)
     assert {h.replace("\\.", ".") for h in counter.split("|")} == OUR_SITES
     seeded = set(re.findall(r"\('([a-z0-9-]+)'\)", SQL.split("insert into public.visit_pages", 1)[1].split(";", 1)[0]))
-    assert seeded == {p.stem for p in ROOT.glob("*.html")}, "a new page needs python scripts/usage_stats.py pages"
+    pages = {p.stem for p in ROOT.glob("*.html")}
+    assert pages <= seeded, "a new page needs python scripts/usage_stats.py pages"
+    # One database serves both sites: production lacks the lab-only pages, which stay seeded for the lab.
+    assert seeded - pages <= LAB_ONLY_PAGES
     assert usage_stats.SITES["all"] == tuple(sorted(OUR_SITES, key=["www.babdodukms.com", "babdoduk.vercel.app",
                                                                     "babdoduk-lab.vercel.app"].index))
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))["functions"]["api/visit.js"]
