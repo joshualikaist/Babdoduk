@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
 OG_IMAGE = ROOT / "images/worldcup/og-worldcup.jpg"
-OG_URL = "https://babdoduk.vercel.app/images/worldcup/og-worldcup.jpg"
+OG_URL = "https://www.babdodukms.com/images/worldcup/og-worldcup.jpg"
 
 
 def head(name):
@@ -73,8 +73,8 @@ def test_link_previews_show_the_world_cup_teaser():
     data = OG_IMAGE.read_bytes()
     assert len(data) < 300_000, len(data)
     assert jpeg_size(data) == (1200, 630)
-    for name, url in (("worldcup.html", "https://babdoduk.vercel.app/worldcup.html"),
-                      ("event.html", "https://babdoduk.vercel.app/event.html")):
+    for name, url in (("worldcup.html", "https://www.babdodukms.com/worldcup.html"),
+                      ("event.html", "https://www.babdodukms.com/event.html")):
         text = head(name)
         og = dict(re.findall(r'<meta property="(og:[\w:]+)" content="([^"]*)"', text))
         tw = dict(re.findall(r'<meta name="(twitter:[\w:]+)" content="([^"]*)"', text))
