@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "weekStart": "2026-11-23",
   "weekEnd": "2026-11-29",
-  "generatedAt": "2026-11-23T10:08:26+09:00",
+  "generatedAt": "2026-11-23T18:22:47+09:00",
   "timezone": "Asia/Seoul",
   "days": [
     {
@@ -10,49 +10,49 @@
       "available": true,
       "restaurantCount": 8,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-23T10:08:26+09:00"
+      "fetchedAt": "2026-11-23T18:22:47+09:00"
     },
     {
       "date": "2026-11-24",
       "available": true,
       "restaurantCount": 8,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-23T10:08:26+09:00"
+      "fetchedAt": "2026-11-23T18:22:47+09:00"
     },
     {
       "date": "2026-11-25",
       "available": true,
-      "restaurantCount": 7,
+      "restaurantCount": 8,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-23T10:08:26+09:00"
+      "fetchedAt": "2026-11-23T18:22:47+09:00"
     },
     {
       "date": "2026-11-26",
       "available": true,
-      "restaurantCount": 4,
+      "restaurantCount": 6,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-23T10:08:26+09:00"
+      "fetchedAt": "2026-11-23T18:22:47+09:00"
     },
     {
       "date": "2026-11-27",
       "available": true,
-      "restaurantCount": 4,
+      "restaurantCount": 6,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-23T10:08:26+09:00"
+      "fetchedAt": "2026-11-23T18:22:47+09:00"
     },
     {
       "date": "2026-11-28",
       "available": true,
-      "restaurantCount": 2,
+      "restaurantCount": 3,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-23T10:08:26+09:00"
+      "fetchedAt": "2026-11-23T18:22:47+09:00"
     },
     {
       "date": "2026-11-29",
       "available": true,
-      "restaurantCount": 2,
+      "restaurantCount": 3,
       "status": "AVAILABLE",
-      "fetchedAt": "2026-11-23T10:08:26+09:00"
+      "fetchedAt": "2026-11-23T18:22:47+09:00"
     }
   ]
 }
