@@ -387,13 +387,22 @@
     return /iPhone|iPad|iPod|Macintosh/i.test(ua) ? 'ics' : 'google';
   }
   // The listing's calendar file on this site (api/cal.js answers /cal/e/<id>.ics from the published feed; a
-  // repeat's '#' travels as '_'), opened in Safari through x-safari-https:, the handoff iPhone apps use (iOS 15
-  // and 17 on; not 16), as 마이 밥도둑's calendar connection does.
-  var SAFARI_WAIT_MS = 2500;
+  // repeat's '#' travels as '_').
   function eventFilePath(ev) { return '/cal/e/' + encodeURIComponent(String(ev.id).replace(/#/g, '_')) + '.ics'; }
+  // The file itself, opened in Safari by the handoff, left Safari open on nothing (owner 2026-11-23, iPhone Chrome,
+  // "사파리만 열림"), most likely because Safari shows the Calendar's add screen only for a tap made in Safari
+  // (inferred, not confirmed on a device). So the handoff opens the
+  // listing's own page with ?cal=1 in Safari through x-safari-https:, the handoff iPhone apps use (iOS 15 and 17
+  // on; not 16), and that page asks once with a 캘린더에 넣기 button (ggongbab.js) whose tap opens the file.
+  var SAFARI_WAIT_MS = 2500;
+  function landingUrl(ev, base) {
+    var u = new URL(eventLink(ev.id, base));
+    u.searchParams.set('cal', '1');
+    return u.href;
+  }
   function safariUrl(ev, loc) {
     loc = loc || global.location;
-    return 'x-safari-' + String(loc.protocol).replace(':', '') + '://' + loc.host + eventFilePath(ev);
+    return 'x-safari-' + landingUrl(ev, loc.href);
   }
   // Still in front a moment after the handoff: Safari did not open (or the visitor said no), and `onStay` runs.
   function openInSafari(ev, onStay) {
@@ -440,7 +449,8 @@
   // `text` holds the page's strings (title, body, yes, no). `answer(choice)` gets true, false,
   // or null (closed with Escape: ask again next time) and runs inside the click, so a yes can still
   // open the calendar.
-  function askStarCalendar(text, answer) {
+  // `keep`: the answer is not the star's setting (the Safari page's one-off question below).
+  function askStarCalendar(text, answer, keep) {
     var doc = global.document;
     var old = doc.getElementById('starCalAsk');
     if (old) old.remove();
@@ -460,7 +470,7 @@
     function close(choice) {
       box.remove();
       doc.removeEventListener('keydown', onKey, true);
-      if (choice !== null) setStarCalendar(choice);
+      if (choice !== null && !keep) setStarCalendar(choice);
       answer(choice);
     }
     function onKey(e) { if (e.key === 'Escape' && box.isConnected) { e.preventDefault(); close(null); } }
@@ -540,6 +550,7 @@
     calendarRoute: calendarRoute,
     eventFilePath: eventFilePath,
     safariUrl: safariUrl,
+    landingUrl: landingUrl,
     addToCalendar: addToCalendar,
     CAL_SENT_KEY: CAL_SENT_KEY,
     calendarSent: calendarSent,

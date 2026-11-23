@@ -461,7 +461,7 @@
   function starCalendarMessage(result) {
     if (result === 'already') return t('starcal.done.already', '이미 캘린더에 넣은 꽁밥이에요');
     if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
-    if (result === 'safari') return t('starcal.done.safari', '사파리에서 추가를 눌러 주세요');
+    if (result === 'safari') return t('starcal.done.safari', '사파리에서 캘린더에 넣기를 눌러 주세요');
     if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
     if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
     return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요');

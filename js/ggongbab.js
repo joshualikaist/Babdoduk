@@ -40,7 +40,7 @@
     savedOpen: false,
     calOpen: {},              // the listings whose calendar choices are open
     copy: null,               // {key, text}: what to copy by hand when sharing and copying both failed
-    entry: { id: '', week: '', done: false, notice: null }
+    entry: { id: '', week: '', done: false, notice: null, cal: false, calAsk: '' }
   };
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
@@ -687,6 +687,7 @@
       state.activeSection = 'free';
       state.open[live.id] = true;
       en.focus = live.id;
+      if (en.cal) en.calAsk = live.id;
       en.done = true;
       return;
     }
@@ -907,6 +908,11 @@
       state.entry.focus = '';
       requestAnimationFrame(function () { focusCard(target); });
     }
+    if (state.entry.calAsk) {
+      var calTarget = state.entry.calAsk;
+      state.entry.calAsk = '';
+      requestAnimationFrame(function () { askLanding(calTarget); });
+    }
     // #past (the footer's 지난 꽁밥 link): once both lists have loaded, the archive is open and in view.
     if (state.jumpToPast && state.free.status !== 'loading' && state.archive.status !== 'loading') {
       state.jumpToPast = false;
@@ -1117,6 +1123,27 @@
     if (L.downloadIcs(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) })) announce(t('gg.live.icsDone', '캘린더 파일을 받았어요') + movedNote(was));
     else announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
   }
+  // The page Safari opens for an iPhone browser's calendar button (?e=<id>&cal=1, L.landingUrl): Safari seems to show
+  // the Calendar's add screen only for a tap made in Safari, so it asks once, and 캘린더에 넣기 opens the listing's file
+  // (/cal/e/<id>.ics). Only in Safari (route 'ics'); anywhere else the address just opens the listing. The answer
+  // is not the star's setting.
+  function askLanding(id) {
+    var ev = rowById(id);
+    if (!ev || L.calendarRoute() !== 'ics' || !L.canCalendar(ev, nowKst())) return;
+    L.askStarCalendar({
+      title: t('starcal.landing.title', '아이폰 캘린더에 넣을까요?'),
+      body: t('starcal.landing.body', '{title} · 시작 30분 전에 알림이 와요').replace('{title}', ev.title || ''),
+      yes: t('starcal.landing.yes', '캘린더에 넣기'),
+      no: t('starcal.landing.no', '닫기')
+    }, function (yes) {
+      if (yes) {
+        L.markCalendarSent(ev);
+        location.assign(L.eventFilePath(ev));
+        announce(t('starcal.done.ics', '추가를 눌러 주세요'));
+      }
+      focusCard(ev.id);
+    }, true);
+  }
   function noSafari() { announce(t('starcal.done.noSafari', '사파리가 열리지 않았어요 · 사파리에서 밥도둑을 열고 다시 눌러 주세요')); }
   // The star's own add: a listing already sent for the same start is not sent again.
   function addCalendarMessage(ev, details) {
@@ -1137,7 +1164,7 @@
   function starCalendarMessage(result) {
     if (result === 'already') return t('starcal.done.already', '이미 캘린더에 넣은 꽁밥이에요');
     if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
-    if (result === 'safari') return t('starcal.done.safari', '사파리에서 추가를 눌러 주세요');
+    if (result === 'safari') return t('starcal.done.safari', '사파리에서 캘린더에 넣기를 눌러 주세요');
     if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
     if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
     return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요');
@@ -1419,6 +1446,16 @@
   if (L) {
     var entryId = query.get('e') || '';
     if (/^[A-Za-z0-9_-]{1,80}(#[0-9]{1,2})?$/.test(entryId)) state.entry.id = entryId;
+    // ?cal=1: opened in Safari by an iPhone browser's calendar button (askLanding). Asked once: a reload or a
+    // copied address does not ask again.
+    if (query.get('cal') === '1') {
+      state.entry.cal = !!state.entry.id;
+      try {
+        var plain = new URL(location.href);
+        plain.searchParams.delete('cal');
+        history.replaceState(history.state, '', plain.pathname + plain.search + plain.hash);
+      } catch (err) {}
+    }
     var entryWeek = query.get('week') || '';
     if (L.isYmd(entryWeek)) state.entry.week = L.mondayOf(entryWeek);
     if (state.entry.id || state.entry.week) state.activeSection = 'free';
