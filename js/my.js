@@ -134,10 +134,17 @@
   }
 
   // ---- views -----------------------------------------------------------------------------------------
+  // Counted like the list it links to: a listing whose day is over has left 저장한 꽁밥 (L.dayPassed), so it is
+  // not counted here either (2026-11-23: production said "저장한 꽁밥 4개" beside a list of one).
   function guestCount() {
     try {
       var v = JSON.parse(localStorage.getItem('babdoduk-ggongbab-saved') || 'null');
-      return v && v.v === 1 && Array.isArray(v.items) ? v.items.length : 0;
+      if (!v || v.v !== 1 || !Array.isArray(v.items)) return 0;
+      var today = F ? F.nowKst() : null;
+      return v.items.filter(function (item) {
+        var seen = item && item.seen || {};
+        return !(L && today && L.dayPassed({ startAt: seen.startAt, endAt: seen.endAt || null }, today));
+      }).length;
     } catch (e) { return 0; }
   }
   function guestNoteHtml() {

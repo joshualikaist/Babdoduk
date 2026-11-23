@@ -373,21 +373,63 @@
   // the file's 30-minute alert; elsewhere Google Calendar's add page opens, with the visitor's own
   // default reminder. The kakaotalk in-app browser does neither reliably, so it is sent to the buttons.
   // Chrome, Firefox, Edge and Opera on iPhone save an .ics file as a download instead of opening the add
-  // screen (owner 2026-11-12, iPhone Chrome screenshot), so they get Google Calendar's add page too.
+  // screen (owner 2026-11-12, iPhone Chrome screenshot), and they used to get Google Calendar's add page, which
+  // on production opened Google's sign-in (2026-11-23): students use the iPhone's own calendar, not Google's
+  // (owner 2026-11-19, "구글 캘린더 아무도 안써"). So these browsers, and the in-app browsers of other apps on an
+  // iPhone, hand the listing's own calendar file to Safari ('safari'), where it opens the add screen as it does
+  // for Safari visitors. The kakaotalk in-app browser keeps its own route.
+  var IOS_OTHER_BROWSER = /CriOS|FxiOS|EdgiOS|OPiOS/;
+  var IN_APP = /NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|Whale/i;
   function calendarRoute(ua) {
     ua = ua == null ? (global.navigator || {}).userAgent || '' : ua;
     if (inTalkApp(ua)) return 'manual';
-    if (/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)) return 'google';
+    if (IOS_OTHER_BROWSER.test(ua) || (IN_APP.test(ua) && /iPhone|iPad|iPod/.test(ua))) return 'safari';
     return /iPhone|iPad|iPod|Macintosh/i.test(ua) ? 'ics' : 'google';
   }
+  // The listing's calendar file on this site (api/cal.js answers /cal/e/<id>.ics from the published feed; a
+  // repeat's '#' travels as '_'), opened in Safari through x-safari-https:, the handoff iPhone apps use (iOS 15
+  // and 17 on; not 16), as 마이 밥도둑's calendar connection does.
+  var SAFARI_WAIT_MS = 2500;
+  function eventFilePath(ev) { return '/cal/e/' + encodeURIComponent(String(ev.id).replace(/#/g, '_')) + '.ics'; }
+  function safariUrl(ev, loc) {
+    loc = loc || global.location;
+    return 'x-safari-' + String(loc.protocol).replace(':', '') + '://' + loc.host + eventFilePath(ev);
+  }
+  // Still in front a moment after the handoff: Safari did not open (or the visitor said no), and `onStay` runs.
+  function openInSafari(ev, onStay) {
+    var doc = global.document;
+    try {
+      var a = doc.createElement('a');
+      a.href = safariUrl(ev);
+      doc.body.appendChild(a);
+      a.click();
+      setTimeout(function () { a.remove(); }, 1000);
+    } catch (err) {
+      return false;
+    }
+    markCalendarSent(ev);
+    if (typeof onStay === 'function' && doc) {
+      var left = false;
+      var away = function () { left = true; };
+      doc.addEventListener('visibilitychange', away, { once: true });
+      global.addEventListener('pagehide', away, { once: true });
+      setTimeout(function () {
+        doc.removeEventListener('visibilitychange', away);
+        global.removeEventListener('pagehide', away);
+        if (!left && doc.visibilityState === 'visible') onStay();
+      }, SAFARI_WAIT_MS);
+    }
+    return true;
+  }
   // Must run inside the click that asked for it, or the browser blocks the new window or download.
-  // Resolves to 'ics' | 'google' | 'blocked' | 'manual', or 'already' for a listing this browser already
-  // sent for the same start (opts.again sends it anyway).
+  // Resolves to 'ics' | 'safari' | 'google' | 'blocked' | 'manual', or 'already' for a listing this browser
+  // already sent for the same start (opts.again sends it anyway). opts.onStay: see openInSafari.
   function addToCalendar(ev, opts, ua) {
     var route = calendarRoute(ua);
     if (route === 'manual') return 'manual';
     if (!(opts && opts.again) && calendarSent(ev) === 'same') return 'already';
     if (route === 'ics') return downloadIcs(ev, opts) ? 'ics' : 'blocked';
+    if (route === 'safari') return openInSafari(ev, opts && opts.onStay) ? 'safari' : 'blocked';
     var win = global.open(googleCalendarUrl(ev, opts), '_blank');
     if (!win) return 'blocked';
     try { win.opener = null; } catch (err) {}
@@ -496,6 +538,8 @@
     starCalendar: starCalendar,
     setStarCalendar: setStarCalendar,
     calendarRoute: calendarRoute,
+    eventFilePath: eventFilePath,
+    safariUrl: safariUrl,
     addToCalendar: addToCalendar,
     CAL_SENT_KEY: CAL_SENT_KEY,
     calendarSent: calendarSent,

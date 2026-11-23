@@ -174,8 +174,32 @@ function entries(saved, feed, archive, now) {
   return out;
 }
 
+// One listing's calendar file, for a guest (owner 2026-11-23, "아이폰 캘린더에 넣기"): Chrome and in-app browsers on
+// an iPhone keep a calendar file as a download, so their star hands /cal/e/<id>.ics to Safari (x-safari-https:,
+// js/ggongbab-live.js), and Safari opens the Calendar's own add screen with the 30-minute alert. It reads only
+// the published feed of our own site: no token, no database. A repeat's '#' travels as '_'.
+const EVENT_FILE = /^[A-Za-z0-9-]{1,64}(?:_\d{1,3})?$/;
+async function eventFile(param, origin, res) {
+  const id = EVENT_FILE.test(param) ? param.replace('_', '#') : '';
+  if (!id) { res.statusCode = 404; res.end('not found'); return; }
+  const feed = await getJson(origin + '/data/ggongbab/latest.json');
+  if (!feed) { res.statusCode = 503; res.setHeader('Retry-After', '60'); res.end('try again later'); return; }
+  const { F, L } = siteCode();
+  const now = F.nowKst();
+  const ev = F.occurrences((feed.events || []).filter(F.isPublic)).find((e) => e.id === id && L.canCalendar(e, now));
+  if (!ev) { res.statusCode = 404; res.end('not found'); return; }
+  const link = origin + '/ggongbab.html?e=' + encodeURIComponent(ev.id);
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', 'inline; filename="' + L.icsFileName(ev) + '"');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex');
+  res.end(L.icsText(ev, { url: link, details: '참여 조건과 변경 사항은 밥도둑에서 확인하세요.\n' + link }));
+}
+
 async function handler(req, res) {
   const url = new URL(req.url, DEFAULT_ORIGIN);
+  if (url.searchParams.has('e')) { await eventFile(url.searchParams.get('e') || '', siteOrigin(req.headers), res); return; }
   const token = url.searchParams.get('t') || '';
   if (!TOKEN.test(token)) { res.statusCode = 404; res.end('not found'); return; }
   const origin = siteOrigin(req.headers);

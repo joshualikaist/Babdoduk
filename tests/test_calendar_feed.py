@@ -6,6 +6,7 @@ project). The feed function runs under Node with fetch replaced, so nothing leav
 """
 from __future__ import annotations
 
+import datetime
 import json
 import re
 import shutil
@@ -166,12 +167,12 @@ const data = JSON.parse(process.argv[2]);
 global.fetch = async (url, options) => {
   calls.push([url, options && options.body ? JSON.parse(options.body) : null]);
   if (url.includes('/rest/v1/rpc/calendar_feed_events')) return { ok: data.rpcOk, json: async () => data.saved };
-  if (url.endsWith('/data/ggongbab/latest.json')) return { ok: true, json: async () => data.feed };
+  if (url.endsWith('/data/ggongbab/latest.json')) return { ok: data.feedOk !== false, json: async () => data.feed };
   return { ok: false, json: async () => null };
 };
 const calls = [];
 const res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, end(body) { this.body = body; } };
-cal({ url: '/api/cal?t=' + data.token, headers: data.headers || { host: 'babdoduk-lab.vercel.app' } }, res).then(() => {
+cal({ url: data.url || ('/api/cal?t=' + data.token), headers: data.headers || { host: 'babdoduk-lab.vercel.app' } }, res).then(() => {
   console.log(JSON.stringify({ status: res.statusCode, headers: res.headers, body: res.body, calls }));
 });
 """
@@ -184,10 +185,11 @@ def feed_event(eid, start, title):
             "publication": {"public": True}}
 
 
-def run(saved, feed, token=TOKEN, rpc_ok=True, headers=None):
+def run(saved, feed, token=TOKEN, rpc_ok=True, headers=None, url=None, feed_ok=True):
     if not shutil.which("node"):
         pytest.skip("node is not installed")
-    args = json.dumps({"saved": saved, "feed": feed, "token": token, "rpcOk": rpc_ok, "headers": headers})
+    args = json.dumps({"saved": saved, "feed": feed, "token": token, "rpcOk": rpc_ok, "headers": headers,
+                       "url": url, "feedOk": feed_ok})
     out = subprocess.run(["node", "-e", RUN, str(ROOT / "api/cal.js"), args], capture_output=True, text=True, timeout=30)
     assert out.returncode == 0, out.stderr
     return json.loads(out.stdout)
@@ -414,3 +416,50 @@ def test_an_old_subscription_is_marked_and_reported(db17):
         admin.execute("delete from auth.users where id = %s", (a,))
     assert rows(old) == [] and rows(link["link"]) == []             # gone with the account
     ua.close(); anon.close()
+
+
+# --- one listing's file, for a guest's iPhone Chrome (2026-11-23) ------------------------------------------
+def soon(days, hour=12):
+    """A start `days` from now in KST, so the listing is upcoming for the function's own clock."""
+    kst = datetime.timezone(datetime.timedelta(hours=9))
+    day = datetime.datetime.now(kst).date() + datetime.timedelta(days=days)
+    return f"{day.isoformat()}T{hour:02d}:00:00+09:00"
+
+
+def test_one_listing_file_opens_in_safaris_add_screen_with_the_alert():
+    later = feed_event("aaaaaaaa-1111-4222-8333-444444444444", soon(2), "다음 주 세미나")
+    past = feed_event("bbbbbbbb-1111-4222-8333-444444444444", soon(-2), "지난 세미나")
+    hidden = dict(feed_event("cccccccc-1111-4222-8333-444444444444", soon(2), "검토 중"), needsReview=True)  # F.isPublic
+    feed = {"events": [later, past, hidden]}
+    out = run(None, feed, url="/api/cal?e=" + later["id"])
+    assert out["status"] == 200 and out["headers"]["Content-Type"] == "text/calendar; charset=utf-8"
+    assert out["headers"]["Content-Disposition"] == 'inline; filename="babdoduk-' + soon(2)[:10] + '.ics"'
+    body = out["body"]
+    assert body.count("BEGIN:VEVENT") == 1 and "SUMMARY:다음 주 세미나" in body and "TRIGGER:-PT30M" in body
+    assert f"UID:{later['id']}@babdodukms.com" in body
+    assert "https://babdoduk-lab.vercel.app/ggongbab.html?e=" in body.replace("\r\n ", "")
+    # Only the published feed is read: no token, no database.
+    assert [c[0] for c in out["calls"]] == ["https://babdoduk-lab.vercel.app/data/ggongbab/latest.json"]
+    # An ended, held or unknown listing has no file; a malformed id reads nothing.
+    for eid in (past["id"], hidden["id"], "dddddddd-1111-4222-8333-444444444444"):
+        assert run(None, feed, url="/api/cal?e=" + eid)["status"] == 404, eid
+    for bad in ("", "../x", "a" * 65, "abc_x", "abc%0d"):
+        missing = run(None, feed, url="/api/cal?e=" + bad)
+        assert missing["status"] == 404 and missing["calls"] == [], bad
+    failed = run(None, feed, url="/api/cal?e=" + later["id"], feed_ok=False)
+    assert failed["status"] == 503 and failed["headers"]["Retry-After"] == "60"
+
+
+def test_one_listing_file_reads_only_our_own_sites_and_finds_a_repeat():
+    repeat = feed_event("eeeeeeee-1111-4222-8333-444444444444", soon(1), "이틀 행사")
+    repeat["sessions"] = [{"startAt": soon(1), "endAt": soon(1, 13)}, {"startAt": soon(2), "endAt": soon(2, 13)}]
+    out = run(None, {"events": [repeat]}, url="/api/cal?e=" + repeat["id"] + "_2",
+              headers={"host": "evil.example", "x-forwarded-host": "evil.example"})
+    assert out["calls"] == [["https://www.babdodukms.com/data/ggongbab/latest.json", None]]
+    assert out["status"] == 200 and re.findall(r"UID:([^@]+)@", out["body"]) == [repeat["id"] + "-2"]
+    assert "DTSTART:" + soon(2).replace("-", "")[:8] in out["body"]
+    assert run(None, {"events": [repeat]}, url="/api/cal?e=" + repeat["id"])["status"] == 404, "a repeat is named by its day"
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    route = next(r for r in config["routes"] if r.get("dest") == "/api/cal?e=$1")
+    assert re.fullmatch(route["src"], "/cal/e/" + repeat["id"] + "_2.ics")
+    assert not re.fullmatch(route["src"], "/cal/e/a/b.ics") and not re.fullmatch(route["src"], "/cal/" + TOKEN + ".ics")
