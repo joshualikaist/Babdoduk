@@ -16,6 +16,13 @@ IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/60
 ANDROID = ("Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) "
            "Chrome/131.0.0.0 Mobile Safari/537.36")
 KAKAO = ANDROID + " KAKAOTALK 11.0.0"
+CHROME_IPHONE = IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")
+# Records each Safari handoff link the page clicks and stops it there: a headless browser cannot follow
+# x-safari-https:, and its attempt would block the page's later clicks.
+HANDOFFS = """() => document.addEventListener('click', (e) => {
+  const a = e.target && e.target.closest && e.target.closest('a');
+  if (a && a.href.startsWith('x-safari-')) { e.preventDefault(); (window.__handoffs = window.__handoffs || []).push(a.href); }
+}, true)"""
 
 
 def google_tab(context):
@@ -37,12 +44,13 @@ def test_the_file_carries_a_30_minute_alert_and_the_route_follows_the_device(bro
               routes: uas.map((ua) => L.calendarRoute(ua))};
     }""", [IPHONE, ANDROID, KAKAO, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15",
            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0",
-           IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")])
+           CHROME_IPHONE, IPHONE + " Instagram 350.0", ANDROID + " Instagram 350.0", IPHONE + " KAKAOTALK 11.0.0"])
     ics = out["ics"]
     alarm = ics[ics.index("BEGIN:VALARM"):ics.index("END:VALARM")]
     assert "TRIGGER:-PT30M" in alarm and "ACTION:DISPLAY" in alarm and "DESCRIPTION:점심" in alarm
     assert ics.index("END:VALARM") < ics.index("END:VEVENT")
-    assert out["routes"] == ["ics", "google", "manual", "ics", "google", "google"], "iPhone Chrome downloads .ics files"
+    # iPhone Chrome and in-app browsers keep a calendar file as a download: Safari opens it instead (never Google).
+    assert out["routes"] == ["ics", "google", "manual", "ics", "google", "safari", "safari", "google", "manual"]
     assert errors == []
     context.close()
 
@@ -211,5 +219,71 @@ def test_a_listing_whose_time_moved_goes_in_again_with_a_note(browser):  # noqa:
     assert "DTSTART:20261109T030000Z" in Path(info.value.path()).read_text(encoding="utf-8")
     assert page.locator(".gg-toast").inner_text() == "저장했어요 · 추가를 눌러 주세요 · 시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요"
     assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent')).lunch") == "2026-11-09T12:00:00+09:00"
+    assert errors == []
+    context.close()
+
+
+def test_iphone_chrome_hands_the_listing_to_safari_never_to_google(browser):  # noqa: F811
+    """2026-11-23: on production a guest's 넣을게요 in iPhone Chrome opened Google's sign-in, and students use the
+    iPhone's own calendar (owner 2026-11-19, "구글 캘린더 아무도 안써"). Chrome keeps a calendar file as a download,
+    so the listing's own file (/cal/e/<id>.ics) opens in Safari, which shows the Calendar's add screen."""
+    context, page, errors = open_hub(browser, user_agent=CHROME_IPHONE, storage={KEY: "on"})
+    google_tab(context)
+    page.evaluate(HANDOFFS)
+    pages = len(context.pages)
+    card(page, "lunch").locator(".gg-save").click()
+    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/cal/e/lunch.ics"]
+    assert len(context.pages) == pages, "no Google Calendar tab"
+    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 사파리에서 추가를 눌러 주세요"
+    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent'))") == {"lunch": "2026-11-09T12:00:00+09:00"}
+    # Still in front a moment later: Safari did not open, and the page says what to do.
+    page.wait_for_timeout(2800)
+    assert page.locator(".gg-toast").inner_text() == "사파리가 열리지 않았어요 · 사파리에서 밥도둑을 열고 다시 눌러 주세요"
+    # The card offers the iPhone's calendar only, and its button hands over the same way (a listing already
+    # sent asks for a second tap first).
+    open_card(page, "lunch")
+    card(page, "lunch").locator("[data-gg-cal]").click()
+    box = card(page, "lunch").locator(".gg-cal")
+    assert box.locator("[data-gg-gcal]").count() == 0 and box.locator("a[href*='google']").count() == 0
+    assert box.locator("[data-gg-ics]").inner_text() == "아이폰 캘린더에 넣기"
+    box.locator("[data-gg-ics]").click()
+    assert len(page.evaluate("window.__handoffs")) == 1
+    box.locator("[data-gg-ics]").click()
+    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/cal/e/lunch.ics"] * 2
+    assert len(context.pages) == pages
+    assert errors == []
+    context.close()
+
+
+def test_an_iphone_card_offers_only_the_iphone_calendar_and_other_phones_keep_both(browser):  # noqa: F811
+    context, page, errors = open_hub(browser, user_agent=IPHONE)
+    open_card(page, "lunch")
+    card(page, "lunch").locator("[data-gg-cal]").click()
+    box = card(page, "lunch").locator(".gg-cal")
+    assert box.locator("[data-gg-gcal]").count() == 0
+    with page.expect_download() as info:
+        box.locator("[data-gg-ics]").click()
+    assert info.value.suggested_filename == "babdoduk-2026-11-09.ics"
+    assert errors == []
+    context.close()
+    context, page, errors = open_hub(browser, user_agent=ANDROID)
+    open_card(page, "lunch")
+    card(page, "lunch").locator("[data-gg-cal]").click()
+    box = card(page, "lunch").locator(".gg-cal")
+    assert box.locator("[data-gg-gcal]").count() == 1 and box.locator("[data-gg-ics]").inner_text() == "캘린더 파일 (.ics)"
+    assert errors == []
+    context.close()
+
+
+def test_the_home_calendar_hands_iphone_chrome_to_safari_too(browser):  # noqa: F811
+    context, page, errors = open_home(browser, user_agent=CHROME_IPHONE)
+    page.evaluate(HANDOFFS)
+    pages = len(context.pages)
+    page.locator('[data-hc-save="lunch"]').click()
+    page.locator("#starCalAsk .starcal-yes").click()
+    handoffs = page.evaluate("window.__handoffs")
+    assert len(handoffs) == 1 and handoffs[0].startswith("x-safari-https://") and handoffs[0].endswith("/cal/e/lunch.ics")
+    assert len(context.pages) == pages
+    assert page.locator("#homeCalLive").inner_text() == "사파리에서 추가를 눌러 주세요"
     assert errors == []
     context.close()

@@ -378,6 +378,12 @@
       // page here; a second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
       html += '<div class="gg-cal" id="' + calId + '"><p class="gg-cal-note gg-cal-linked">' + esc(t('gg.live.calLinked', '별을 누르면 연결한 아이폰 캘린더에 들어가요.')) +
         ' <a href="my.html#myCal">' + esc(t('gg.live.calConnect', '캘린더 연결 보기')) + '</a></p></div>';
+    } else if (calOk && L.appleMobile && L.appleMobile() && L.calendarRoute() !== 'manual') {
+      // On an iPhone the iPhone's own calendar only (owner 2026-11-19, "구글 캘린더 아무도 안써"): Safari opens the
+      // file's add screen, and other browsers hand the file to Safari (L.calendarRoute).
+      html += '<div class="gg-cal" id="' + calId + '">';
+      html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calApple', '아이폰 캘린더에 넣기')) + '</button>';
+      html += '</div>';
     } else if (calOk) {
       html += '<div class="gg-cal" id="' + calId + '">';
       html += '<a class="gg-btn" data-gg-gcal="' + esc(ev.id) + '" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
@@ -1103,14 +1109,21 @@
   function downloadIcs(ev) {
     if (!calendarTapOk(ev)) return;
     var was = L.calendarSent(ev);
+    // Chrome and in-app browsers on an iPhone: the file opens in Safari instead (L.calendarRoute).
+    if (L.calendarRoute() === 'safari') {
+      var result = L.addToCalendar(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id), again: true, onStay: noSafari });
+      return announce(starCalendarMessage(result) + (result === 'safari' ? movedNote(was) : ''));
+    }
     if (L.downloadIcs(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) })) announce(t('gg.live.icsDone', '캘린더 파일을 받았어요') + movedNote(was));
     else announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
   }
+  function noSafari() { announce(t('starcal.done.noSafari', '사파리가 열리지 않았어요 · 사파리에서 밥도둑을 열고 다시 눌러 주세요')); }
   // The star's own add: a listing already sent for the same start is not sent again.
   function addCalendarMessage(ev, details) {
     var was = L.calendarSent(ev);
+    details.onStay = noSafari;
     var result = L.addToCalendar(ev, details);
-    return starCalendarMessage(result) + (result === 'ics' || result === 'google' ? movedNote(was) : '');
+    return starCalendarMessage(result) + (result === 'ics' || result === 'safari' || result === 'google' ? movedNote(was) : '');
   }
   // The star also opens the calendar's add screen (owner 2026-11-11), for visitors who said yes once.
   function starCalendarText() {
@@ -1124,6 +1137,7 @@
   function starCalendarMessage(result) {
     if (result === 'already') return t('starcal.done.already', '이미 캘린더에 넣은 꽁밥이에요');
     if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
+    if (result === 'safari') return t('starcal.done.safari', '사파리에서 추가를 눌러 주세요');
     if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
     if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
     return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요');

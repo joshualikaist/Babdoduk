@@ -284,6 +284,24 @@ def test_turned_off_the_pages_load_no_sign_in_client(browser):
     context.close()
 
 
+def test_the_guest_count_leaves_out_what_left_the_saved_list(browser):
+    # 2026-11-23: production said "저장한 꽁밥 4개" beside a 저장한 꽁밥 list of one. From the day after its
+    # event a listing leaves the list (L.dayPassed), so the count it links to leaves it out too.
+    guest = local((LUNCH, "2026-11-08T10:00:00Z"), (WED, "2026-11-08T10:00:00Z"), (OLD, "2026-11-04T10:00:00Z"))
+    context, page, errors, _ = open_page(browser, storage={SAVED_KEY: guest})
+    wait_view(page, "카카오로 계속하기")
+    assert "저장한 꽁밥 2개" in app_text(page)
+    assert len(json.loads(page.evaluate(f"localStorage.getItem('{SAVED_KEY}')"))["items"]) == 3, "the saved rows stay"
+    assert errors == []
+    context.close()
+    only_past = local((OLD, "2026-11-04T10:00:00Z"))
+    context, page, errors, _ = open_page(browser, storage={SAVED_KEY: only_past})
+    wait_view(page, "카카오로 계속하기")
+    assert "저장한 꽁밥" not in app_text(page), "only past listings: no count line at all"
+    assert errors == []
+    context.close()
+
+
 def test_a_guest_on_the_hub_never_loads_the_client_even_when_turned_on(browser):
     context, page, errors, sdk = open_page(browser, path="ggongbab.html")
     page.locator(".gg-card").first.wait_for()
