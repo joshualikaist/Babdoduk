@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-23",
+  "generatedAt": "2026-11-23T18:05:39+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "“먹는 알츠하이머약, 치매 진행 31% 늦췄다”⋯아리바이오, 美 허가 도전",
+    "summary": "정재준 아리바이오 회장이 23일 서울 여의도 페어몬트 앰배서더 호텔에서 열린 기자간담회에서 알츠하이머 치료제 후보물질 AR1001의 임상3상 성과에 대해 설명하고 있다.",
+    "source": "코메디닷컴",
+    "sourceId": "news-kormedi",
+    "candidateId": "c_abd301776a20ee21",
+    "url": "https://kormedi.com/2910955/",
+    "medium": "news",
+    "discoveredAt": "2026-11-23T18:05:39+09:00",
+    "publishedAt": "2026-11-23T16:43:56+09:00",
+    "image": "https://kormedi.com/wp-content/uploads/2026/11/unnamed-file-266-edited.jpg",
+    "imageSource": "feed_media",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "corroborated"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "[식품위생안전성학회 정기학술대회] AI 시대를 위한 식품안전 시스템 준비",
+          "summary": "빅데이터와 인공지능(AI) 등 첨단 디지털 기술을 식품위해평가와 안전관리에 활용하기 위한 국내외 연구 동향과 성과를 공유하고, 산·학·연 전문가들과 함께 식품위해평가의 발전방향을 함께 모색하기 위한 특별한 자리가…",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_3e80db6c85448d20",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201680",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T07:51:00+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201680_202367_497.jpg",
+          "imageSource": "feed_html",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "밥값 1만원 비명… 새벽 6시 기상해 반찬 싸는 '오피스 도시락족'",
+          "summary": "'런치플레이션(점심+인플레이션)'이 꺾일 줄 모르자, 수면 부족을 감수하고 새벽 일찍 일어나 직접 점심 도시락을 싸는 2030 '오피스 도시락족'이 급증하고 있다.",
+          "source": "KtN (K trendy NEWS)",
+          "sourceId": "web-exa-habit",
+          "candidateId": "c_e2157a5c9b7a9f3e",
+          "url": "http://www.k-trendynews.com/news/articleView.html?idxno=206963",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-17T12:12:40+09:00",
+          "image": "https://cdn.k-trendynews.com/news/photo/202611/206963_358310_126.png",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "편의점 겨울 간식 2026 | 어묵 564%·군고구마 248% 증가, 신상·가격",
+          "summary": "세븐일레븐 어묵 564%·군고구마 248% 증가, 군고구마 2,200원, 호빵·딸기 샌드 신상과 지난해 한파 수치를 정리했습니다.",
+          "source": "trendmate.co.kr",
+          "sourceId": "web-exa-trend",
+          "candidateId": "c_5fd60d50253424f5",
+          "url": "https://www.trendmate.co.kr/2026-convenience-store-winter-snacks/",
+          "medium": "blog",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-19T12:00:00+09:00",
+          "image": "https://www.trendmate.co.kr/wp-content/uploads/2026/11/cov-cvs.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "sales_data",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "CJ웰케어, 일본 판매 1위 레몬 음료 ‘키레토 레몬’ 국내 출시",
+          "summary": "CJ웰케어가 일본 식음료 기업 ‘포카삿포로 푸드&비버리지(Pokka Sapporo Food & Beverage)’의 대표 레몬 음료 브랜드 ‘키레토 레몬(KIRETO LEMON)’을 국내에 공식 출시한다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_e025ba942acdb669",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201705",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T14:03:02+09:00",
+          "trendEvidence": [
+            "sales_data"
+          ]
+        },
+        {
+          "title": "김장철 수산물 원산지 단속 강화",
+          "summary": "김장철을 맞아 천일염과 젓갈류 등 주요 김장재료에 대한 원산지 표시 단속이 강화된다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_2c9dc1a1caf2a8b1",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62735",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-24T03:02:38+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "신상출시 편스토랑 도경완 이북식 찜닭 닭칼국수 만드는 법",
+          "summary": "346회 신상출시 편스토랑에서 도경완은 담백하고 고소한 이북식 찜닭 만드는 법을 공개했는데요.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_c63366969f04e09b",
+          "url": "https://seon1982.tistory.com/4163",
+          "medium": "blog",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T00:00:08+09:00",
+          "image": "https://blog.kakaocdn.net/dn/TMXaA/dJMcag1XQVK/K6SaW5woG2U6SKjF7uyTVK/img.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "묵은지 참치김밥 만들기｜느끼하지 않고 고소한 참치마요 김밥 레시피",
+          "summary": "참치김밥에 잘 익은 묵은지를 더하면 고소하면서도 개운한 김밥을 만들 수 있습니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_75217875cadc2534",
+          "url": "https://cultureagora.tistory.com/423",
+          "medium": "blog",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-22T17:00:45+09:00"
+        },
+        {
+          "title": "명란 순두부국 끓이는 법｜아침에 좋은 명란젓 하나로 감칠맛 살리는 맑은 순두부국",
+          "summary": "쌀쌀한 날씨에 따뜻하고 담백한 국물이 생각날 때 끓이기 좋은 명란 순두부국입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_4b05700eb4869c3b",
+          "url": "https://cultureagora.tistory.com/463",
+          "medium": "blog",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T06:30:32+09:00"
+        },
+        {
+          "title": "41층 스타벅스에서 바라본 광교호수공원의 아름다운 야경",
+          "summary": "41층 스타벅스에서 바라본 광교호수공원의 아름다운 야경 딸아이가 새 아파트로 이사하는 날, 입주와 정리를 도와주고 함께 시간을 보냈습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_6f9e913117f3bc00",
+          "url": "https://heysukim114.tistory.com/entry/41%EC%B8%B5-%EC%8A%A4%ED%83%80%EB%B2%85%EC%8A%A4%EC%97%90%EC%84%9C-%EB%B3%B4%EB%8A%94-%EA%B4%91%EA%B5%90%ED%98%B8%EC%88%98%EA%B3%B5%EC%9B%90%EC%9D%98-%EC%95%84%EB%A6%84%EB%8B%A4%EC%9A%B4-%EC%95%BC%EA%B2%BD",
+          "medium": "blog",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T00:00:43+09:00"
+        },
+        {
+          "title": "가을빛, 색고은 단호박죽 레시피",
+          "summary": "가을빛, 색고은 단호박죽 레시피 가을이 깊어지면서 노랗게 익은 단호박이 눈에 들어옵니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_3ef18b91b947623f",
+          "url": "https://heysukim114.tistory.com/entry/%EC%83%89%EA%B3%A0%EC%9D%80-%EB%8B%A8%ED%98%B8%EB%B0%95%EC%A3%BD",
+          "medium": "blog",
+          "discoveredAt": "2026-10-12T15:44:20+09:00",
+          "publishedAt": "2026-10-08T00:00:24+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "먹으면서도 후회는 없다…건강하게 즐기는 착한 간식 8가지",
+          "summary": "제철 맞은 사과 몇 조각을 간식으로 먹으면 체중 증가 염려 없이 공복감을 없애고 각종 영양소를 섭취하는 데 도움이 된다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_6a89f3904ccb261f",
+          "url": "https://kormedi.com/2910441/",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T10:05:00+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/11/gettyimages-1358367395-edited.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "65세 넘었다면, ‘무조건 다이어트’는 금물… “뱃살 먼저 따져라”",
+          "summary": "나이가 들면서 붙은 살 때문에 고민하는 사람이 많다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_749226e23000dfaf",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/20/2026112002819.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-22T22:00:00+09:00"
+        },
+        {
+          "title": "혈당 튈까 무조건 참던 흰밥… ‘찐 가지’ 곁들이면 반전 일어납니다",
+          "summary": "흰쌀밥에 무엇을 더하는지에 따라서 식후 혈당이 오르는 정도가 달라질 수 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_2223e1cc22acf956",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/20/2026112002747.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-22T16:58:34+09:00",
+          "publishedAt": "2026-11-21T18:00:00+09:00"
+        },
+        {
+          "title": "윗배 통증 19세男⋯건강했는데, 까닭 없이 ‘급성췌장염’에 걸렸다?",
+          "summary": "젊은 남성이 상복부 통증을 호소하고 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_1601f32d8bd4346a",
+          "url": "https://kormedi.com/2910833/",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T18:01:00+09:00"
+        },
+        {
+          "title": "‘알토란’ 애호박찌개…혈압 높은데 국물 마셔도 될까? [1분 Q&A]",
+          "summary": "애호박찌개를 싱겁게 끓이면 국물까지 다 먹어도 될까요?",
+          "source": "하이닥 헬시라이프",
+          "sourceId": "news-hidoc-healthylife",
+          "candidateId": "c_afe4ad1dd354e927",
+          "url": "https://news.hidoc.co.kr/news/articleView.html?idxno=70352",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T02:15:00+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“살 빼려다 몸에 돌 생긴다”…담석 위험 높이는 다이어트 습관 3가지",
+          "summary": "급격한 체중 감량은 담즙의 성분과 배출에 영향을 줘 담낭에 담석이 생길 위험을 높일 수 있다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_21c677811d5d964f",
+          "url": "https://kormedi.com/2910925/",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T17:13:55+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/11/49389483983.jpg",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "매일 아침으로 ‘이것’ 먹던 30대男… 혼수상태 빠졌다가 끝내 숨져",
+          "summary": "매일 아침 햄버거, 프라이드 치킨을 먹던 30대 중국 남성이 직장에서 갑자기 혼수상태에 빠져 병원으로 실려갔고 결국 숨진 안타까운 사연이 전해졌다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_043a81b7e37fe908",
+          "url": "https://kormedi.com/2910967/",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T17:15:29+09:00",
+          "image": "https://kormedi.com/wp-content/uploads/2026/11/gemini-generated-image-64tqrs64tqrs64tq-edited.png",
+          "imageSource": "feed_media"
+        },
+        {
+          "title": "늘어나는 가을 식중독, 여름 한철 대책으론 한계-하상도의 식품 바로보기(455)",
+          "summary": "누구나 그렇게 알고 있고, 정부의 예방 대책도 여름철에 집중돼 있다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_84d1729219debf98",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201651",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T07:46:00+09:00"
+        },
+        {
+          "title": "“위장 점막 손상되고 염증 생긴다”… 위암 부르는 습관 3가지",
+          "summary": "사진은 기사의 특정 내용과 관련 없는 기사의 이해를 돕기 위한 이미지.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_3e1e12c38a6607a9",
+          "url": "https://kormedi.com/2910340/",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-22T21:24:50+09:00"
+        }
+      ]
+    }
+  }
+}
