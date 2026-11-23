@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T22:05:29+09:00",
+  "generatedAt": "2026-11-23T23:10:32+09:00",
   "timezone": "Asia/Seoul",
-  "count": 22,
+  "count": 19,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -86,135 +86,6 @@
       "giveaway": {
         "provided": "true",
         "description": "배달의민족 상품권; 사진을 제출한 선착순 3분께 상품"
-      }
-    },
-    {
-      "id": "cce0b2e8-355c-4ec7-903b-80825f801b8e",
-      "title": "제288회 NAEK Forum",
-      "summary": "공과대학 학사과정 재학생을 대상으로 중국의 부상과 우리의 대응을 주제로 포럼과 패널토론을 개최한다. 추천 희망자는 참가신청서와 개인정보수집이용동의서를 제출해야 한다.",
-      "startAt": "2026-11-23T17:00:00+09:00",
-      "endAt": "2026-11-23T20:00:00+09:00",
-      "dateText": "2026. 11. 23.(월)",
-      "timeText": "17:00~20:00",
-      "location": {
-        "name": "양재 엘타워 5층 '오르체홀'",
-        "building": "",
-        "room": "오르체홀"
-      },
-      "food": {
-        "provided": "unknown",
-        "type": "unknown",
-        "description": ""
-      },
-      "organizer": "한국공학한림원",
-      "eligibility": "공과대학 학사과정 재학생(4학년 제외)",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-10-30T23:59:00+09:00",
-        "url": "https://portal.kaist.ac.kr/kaist/portal/board/ntc/1020"
-      },
-      "confidence": 0.98,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "‘NAEK 인증서’ 증정"
-      },
-      "audience": {
-        "text": "공과대학 학사과정 재학생(4학년 제외)",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "5bdb46c4-a089-41fa-aed2-5f753286166d",
-      "title": "2026 건설및환경공학과 학과설명회",
-      "summary": "건설및환경공학과 학과설명회에서 학과 정보 안내와 식사 제공 및 경품 준비가 진행됩니다.",
-      "startAt": "2026-11-23T18:00:00+09:00",
-      "endAt": "2026-11-23T20:00:00+09:00",
-      "dateText": "2026년 11월 23일(월)",
-      "timeText": "18:00~20:00",
-      "location": {
-        "name": "창의학습관",
-        "building": "E11",
-        "room": "304호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사",
-        "source": "text"
-      },
-      "organizer": "건설및환경공학과",
-      "eligibility": "",
-      "registration": {
-        "required": "unknown",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.98,
-      "sources": [
-        {
-          "type": "manual",
-          "name": "Manual"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품"
-      },
-      "audience": {
-        "text": "새내기 학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "ebb77702-4221-40b2-9ad5-cd7c8f14f3be",
-      "title": "2026 원자력및양자공학과 학과설명회",
-      "summary": "원자력및양자공학과 학과설명회에서 학과 정보 안내와 식사를 제공합니다. 참석자를 대상으로 경품이 준비되어 있습니다.",
-      "startAt": "2026-11-23T18:00:00+09:00",
-      "endAt": "2026-11-23T20:00:00+09:00",
-      "dateText": "2026년 11월 23일(월)",
-      "timeText": "18:00~20:00",
-      "location": {
-        "name": "기계공학동 1층(1501)",
-        "building": "N7",
-        "room": "1501호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "식사를 제공합니다",
-        "source": "text"
-      },
-      "organizer": "원자력및양자공학과",
-      "eligibility": "원자력및양자공학과에 관심 있는 여러분",
-      "registration": {
-        "required": "true",
-        "deadline": null,
-        "url": ""
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        },
-        {
-          "type": "manual",
-          "name": "Manual"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "경품"
-      },
-      "audience": {
-        "text": "원자력및양자공학과에 관심 있는 여러분",
-        "basis": "stated"
       }
     },
     {
