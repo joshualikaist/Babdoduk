@@ -226,15 +226,16 @@ def test_a_listing_whose_time_moved_goes_in_again_with_a_note(browser):  # noqa:
 def test_iphone_chrome_hands_the_listing_to_safari_never_to_google(browser):  # noqa: F811
     """2026-11-23: on production a guest's 넣을게요 in iPhone Chrome opened Google's sign-in, and students use the
     iPhone's own calendar (owner 2026-11-19, "구글 캘린더 아무도 안써"). Chrome keeps a calendar file as a download,
-    so the listing's own file (/cal/e/<id>.ics) opens in Safari, which shows the Calendar's add screen."""
+    and Safari shows the Calendar's add screen only for a tap made in Safari (the file handed over directly left
+    Safari open on nothing, owner 2026-11-23): the listing's page opens in Safari with ?cal=1, which asks there."""
     context, page, errors = open_hub(browser, user_agent=CHROME_IPHONE, storage={KEY: "on"})
     google_tab(context)
     page.evaluate(HANDOFFS)
     pages = len(context.pages)
     card(page, "lunch").locator(".gg-save").click()
-    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/cal/e/lunch.ics"]
+    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/ggongbab.html?e=lunch&cal=1"]
     assert len(context.pages) == pages, "no Google Calendar tab"
-    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 사파리에서 추가를 눌러 주세요"
+    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 사파리에서 캘린더에 넣기를 눌러 주세요"
     assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent'))") == {"lunch": "2026-11-09T12:00:00+09:00"}
     # Still in front a moment later: Safari did not open, and the page says what to do.
     page.wait_for_timeout(2800)
@@ -249,7 +250,7 @@ def test_iphone_chrome_hands_the_listing_to_safari_never_to_google(browser):  # 
     box.locator("[data-gg-ics]").click()
     assert len(page.evaluate("window.__handoffs")) == 1
     box.locator("[data-gg-ics]").click()
-    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/cal/e/lunch.ics"] * 2
+    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/ggongbab.html?e=lunch&cal=1"] * 2
     assert len(context.pages) == pages
     assert errors == []
     context.close()
@@ -282,8 +283,64 @@ def test_the_home_calendar_hands_iphone_chrome_to_safari_too(browser):  # noqa: 
     page.locator('[data-hc-save="lunch"]').click()
     page.locator("#starCalAsk .starcal-yes").click()
     handoffs = page.evaluate("window.__handoffs")
-    assert len(handoffs) == 1 and handoffs[0].startswith("x-safari-https://") and handoffs[0].endswith("/cal/e/lunch.ics")
+    assert len(handoffs) == 1 and handoffs[0].startswith("x-safari-https://") and handoffs[0].endswith("/ggongbab.html?e=lunch&cal=1")
     assert len(context.pages) == pages
-    assert page.locator("#homeCalLive").inner_text() == "사파리에서 추가를 눌러 주세요"
+    assert page.locator("#homeCalLive").inner_text() == "사파리에서 캘린더에 넣기를 눌러 주세요"
     assert errors == []
     context.close()
+
+
+def file_requests(context):
+    """Answers the listing's calendar file (api/cal.js on the site) and records each request for it."""
+    seen = []
+
+    def answer(route):
+        seen.append(urlparse(route.request.url).path)
+        route.fulfill(status=200, content_type="text/calendar; charset=utf-8", body="BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n")
+    context.route("**/cal/e/*.ics", answer)
+    return seen
+
+
+def test_safari_asks_once_on_the_page_the_handoff_opens_and_its_tap_opens_the_file(browser):  # noqa: F811
+    """The Safari side of the handoff: ?e=<id>&cal=1 opens the listing and asks once; 캘린더에 넣기 is a tap in
+    Safari, which opens the listing's file (/cal/e/<id>.ics) and so the Calendar's add screen."""
+    context, page, errors = open_hub(browser, query="?e=lunch&cal=1", user_agent=IPHONE)
+    seen = file_requests(context)
+    ask = page.locator("#starCalAsk")
+    ask.wait_for()
+    assert page.locator("#starCalAskTitle").inner_text() == "아이폰 캘린더에 넣을까요?"
+    assert page.locator("#starCalAskBody").inner_text() == "lunch 행사 · 시작 30분 전에 알림이 와요"
+    assert page.evaluate("document.activeElement.textContent") == "캘린더에 넣기"
+    assert urlparse(page.url).query == "e=lunch", "asked once: a reload or a copied address does not ask again"
+    assert card(page, "lunch").locator(".gg-card-toggle").get_attribute("aria-expanded") == "true"
+    ask.locator(".starcal-yes").click()
+    page.wait_for_timeout(300)
+    assert seen == ["/cal/e/lunch.ics"]
+    assert page.locator("#starCalAsk").count() == 0
+    assert page.locator(".gg-toast").inner_text() == "추가를 눌러 주세요"
+    assert pref(page) is None, "not the star's setting"
+    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent'))") == {"lunch": "2026-11-09T12:00:00+09:00"}
+    page.reload(wait_until="networkidle")
+    page.locator(".gg-card").first.wait_for()
+    page.wait_for_timeout(300)
+    assert page.locator("#starCalAsk").count() == 0
+    assert errors == []
+    context.close()
+    # 닫기 opens nothing and leaves the star's setting alone.
+    context, page, errors = open_hub(browser, query="?e=lunch&cal=1", user_agent=IPHONE)
+    seen = file_requests(context)
+    page.locator("#starCalAsk .starcal-no").click()
+    page.wait_for_timeout(300)
+    assert seen == [] and page.locator("#starCalAsk").count() == 0 and pref(page) is None
+    assert errors == []
+    context.close()
+
+
+def test_the_safari_question_only_comes_in_safari_for_an_upcoming_listing(browser):  # noqa: F811
+    for ua, query in ((CHROME_IPHONE, "?e=lunch&cal=1"), (ANDROID, "?e=lunch&cal=1"), (IPHONE, "?e=nope&cal=1"),
+                      (IPHONE, "?cal=1"), (IPHONE, "?e=lunch")):
+        context, page, errors = open_hub(browser, query=query, user_agent=ua)
+        page.wait_for_timeout(400)
+        assert page.locator("#starCalAsk").count() == 0, (ua[-40:], query)
+        assert errors == []
+        context.close()

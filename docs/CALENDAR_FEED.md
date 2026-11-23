@@ -102,10 +102,15 @@ Guests on an iPhone get the iPhone's own calendar only (2026-11-23). Until then 
 Google Calendar's add page, which on production opened Google's sign-in, and students use the iPhone calendar
 (owner 2026-11-19, "구글 캘린더 아무도 안써"). Chrome, Firefox, Edge, Opera and the in-app browsers of other apps
 (Instagram, NAVER, Facebook, LINE, Daum, Whale) keep a calendar file as a download, so their star and the card's
-**아이폰 캘린더에 넣기** open the listing's own file, `/cal/e/<id>.ics`, in Safari through `x-safari-https:`, the same
-handoff as the profile above; Safari shows the Calendar's add screen with the 30-minute alert. If the page is still
-in front 2.5 s later, Safari did not open, and the page says "사파리가 열리지 않았어요 · 사파리에서 밥도둑을 열고 다시
-눌러 주세요". Safari itself gets the file directly, as before; KakaoTalk keeps its own note. On an iPhone the card
+**아이폰 캘린더에 넣기** open the listing's own page, `ggongbab.html?e=<id>&cal=1`, in Safari through `x-safari-https:`,
+the same handoff as the profile above. That page asks once ("아이폰 캘린더에 넣을까요?", the title and the 30-minute
+alert), and its **캘린더에 넣기** opens the listing's file, `/cal/e/<id>.ics`, so Safari shows the Calendar's add screen.
+The file itself was handed over at first, but Safari then opened on nothing (owner 2026-11-23, iPhone Chrome: "사파리만
+열림"), most likely because Safari shows the add screen only for a tap made in Safari (inferred, not yet confirmed
+on a device). The question comes only in Safari, only for an
+upcoming listing, and only once: the page drops `cal=1` from its address, and the answer is not the star's setting. If the
+Chrome page is still in front 2.5 s after the tap, Safari did not open, and the page says "사파리가 열리지 않았어요 ·
+사파리에서 밥도둑을 열고 다시 눌러 주세요". Safari itself gets the file directly, as before; KakaoTalk keeps its own note. On an iPhone the card
 offers that one button instead of the Google link and the file. Android and computers are unchanged.
 
 ## How it works
@@ -134,7 +139,9 @@ applied to a throwaway PostgreSQL (tokens, other users, a new address, the newes
 deletion, an old address marked and reported); `api/cal.js` run under Node
 with fetch replaced (including forged hosts, an empty list, and one listing's file: found, ended, held, unknown,
 malformed, a repeat's day, the feed failing). `tests/test_star_calendar.py`: iPhone Chrome's star and card hand the
-listing to Safari (never a Google tab), the note when Safari does not open, iPhone cards without the Google link. `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, its states (not connected, 확인 중,
+listing's page to Safari (never a Google tab), the note when Safari does not open, iPhone cards without the Google link,
+and that page's one question in Safari (its tap opens the file; 닫기 opens nothing; not in Chrome or Android, not for an
+unknown listing, not again after a reload). `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, its states (not connected, 확인 중,
 연결됨, stale, before 016) and the card hidden while the function is missing. `tests/test_star_calendar.py`: a
 listing is sent once, a button asks for a second tap, a moved listing is sent again with the note.
 `tests/test_push_alerts.py`: signed in on an iPhone, a listing's calendar choice points to the connection.
