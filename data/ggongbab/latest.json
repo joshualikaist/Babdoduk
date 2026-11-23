@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-22T03:15:55+09:00",
+  "generatedAt": "2026-11-23T10:44:07+09:00",
   "timezone": "Asia/Seoul",
-  "count": 22,
+  "count": 23,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -789,6 +789,44 @@
       ],
       "audience": {
         "text": "기계공학과 재학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "632b8723-d7d0-49fb-bb3b-2c98f9bced26",
+      "title": "[카카오 AI 돛 X KAIST] 창업세미나 '미래를 향해, 가능성의 항해'",
+      "summary": "카카오 AI 돛 창업세미나로, AI 기술 트렌드와 창업 인사이트 및 카카오의 창업지원 프로그램을 소개한다. 참석자 전원에게 런치박스와 기념품을 제공한다.",
+      "startAt": "2026-12-02T12:00:00+09:00",
+      "endAt": "2026-12-02T14:00:00+09:00",
+      "dateText": "2026년 12월 2일(수)",
+      "timeText": "12:00~14:00",
+      "location": {
+        "name": "크래프톤 SoC 빌딩",
+        "building": "E3-5",
+        "room": "210호 대형강의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "런치박스(점심 식사)",
+        "source": "text"
+      },
+      "organizer": "카카오 AI 돛",
+      "eligibility": "AI 및 기술 창업에 관심 있는 KAIST 학부생, 대학원생, 연구원 및 예비 창업자; 선착순 100명",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/rjwu8A8z4JhXbmLW8"
+      },
+      "confidence": 1.0,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "AI 및 기술 창업에 관심 있는 KAIST 학부생, 대학원생, 연구원 및 예비 창업자",
         "basis": "stated"
       }
     },
