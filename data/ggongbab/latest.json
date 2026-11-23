@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T10:44:07+09:00",
+  "generatedAt": "2026-11-23T14:36:08+09:00",
   "timezone": "Asia/Seoul",
   "count": 23,
   "events": [
@@ -315,7 +315,7 @@
       "timeText": "11월 24일(화) 14:00~16:30 / 11월 25일(수) 10:00~11:50",
       "location": {
         "name": "온라인 실시간 세미나",
-        "building": "",
+        "building": "W7",
         "room": ""
       },
       "food": {
