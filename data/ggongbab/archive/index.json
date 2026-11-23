@@ -1,10 +1,86 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T18:04:54+09:00",
+  "generatedAt": "2026-11-23T22:05:29+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 50,
+  "count": 52,
   "events": [
+    {
+      "id": "161ab539-6556-4ce1-a2ba-e60b5143cb69",
+      "title": "2026 수리과학과 학과설명회",
+      "summary": "수리과학과에 관심 있는 새내기를 위한 학과설명회입니다. 사전신청자 대상으로 설명회 후 교수님들과 치킨과 피자를 함께 먹는 시간이 있습니다.",
+      "startAt": "2026-11-23T17:00:00+09:00",
+      "endAt": "2026-11-23T19:00:00+09:00",
+      "dateText": "2026년 11월 23일(월)",
+      "timeText": "17:00~19:00",
+      "location": {
+        "name": "E6-1 공동강의실",
+        "building": "E6-1",
+        "room": "공동강의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "수리과학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        },
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "f20700a5-0242-4a21-98ae-c5e6a29b9695",
+      "title": "2026 AI미래학과 학과설명회",
+      "summary": "AI미래학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다. 경품이 준비되어 있습니다.",
+      "startAt": "2026-11-23T18:00:00+09:00",
+      "endAt": "2026-11-23T19:00:00+09:00",
+      "dateText": "2026년 11월 23일(월)",
+      "timeText": "18:00~19:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층 Fusion Hall"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "cf3bec49-11ec-4223-afa2-cf008e401ffa",
       "title": "2026 XR·AI 윈터스쿨 & 현장 해커톤",
