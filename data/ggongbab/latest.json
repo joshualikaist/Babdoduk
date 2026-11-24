@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-23T23:10:32+09:00",
+  "generatedAt": "2026-11-24T14:34:00+09:00",
   "timezone": "Asia/Seoul",
-  "count": 19,
+  "count": 20,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -537,6 +537,40 @@
         "text": "KAIST 구성원 및 그 가족",
         "basis": "stated"
       }
+    },
+    {
+      "id": "6ff69c36-e6f6-4ba5-8c82-20b780a7f701",
+      "title": "캠퍼스를 잇는 런치 콘서트 <영화 음악과 클래식>",
+      "summary": "KAIST 문지캠퍼스 L 강의동 로비에서 영화 음악과 클래식 공연이 열립니다. 사전예약자 선착순 200명에게 공연 종료 후 런치박스를 제공합니다.",
+      "startAt": "2026-11-30T12:00:00+09:00",
+      "endAt": null,
+      "dateText": "11월 30일 (Mon)",
+      "timeText": "12:00",
+      "location": {
+        "name": "KAIST 문지캠퍼스 L 강의동 로비",
+        "building": "",
+        "room": "L 강의동 로비"
+      },
+      "food": {
+        "provided": "true",
+        "type": "lunchbox",
+        "description": "사전예약자 선착순 200명께 공연 종료 후 런치박스를 제공",
+        "source": "text"
+      },
+      "organizer": "KAIST 문화행사",
+      "eligibility": "사전예약자 선착순 200명",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/oMbbV5kYR6hbiapb6"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ]
     },
     {
       "id": "1fbfee27-ae35-4bee-a72a-2a128685e817",
