@@ -439,7 +439,7 @@ def test_signing_in_merges_the_guest_list_once_keeps_the_account_copy_and_can_un
     context.close()
 
 
-def test_the_account_list_shows_upcoming_past_and_missing_without_calling_anything_cancelled(browser):
+def test_the_account_list_shows_upcoming_and_past_and_drops_a_withdrawn_star(browser):
     ghost = {"title": "사라진 행사", "startAt": "2026-11-12T12:00:00+09:00", "endAt": "2026-11-12T13:00:00+09:00", "place": "N1"}
     tables = {"saved_events": [
         {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": dict(seen(LUNCH), place="N1 다른 곳")},

@@ -81,10 +81,8 @@ def test_the_star_saves_without_opening_and_the_hub_shows_it(browser):
     star.click()
     assert page.locator('[data-hc-save="lunch"]').get_attribute("aria-pressed") == "true"
     assert lunch.locator(".hc-ev-btn").get_attribute("aria-expanded") == "false", "the star does not open the row"
-    # The first star asks once whether stars should also add to the calendar (tests/test_star_calendar.py);
-    # closing the question with Escape answers nothing and gives the focus back to the star.
-    page.locator("#starCalAsk").wait_for()
-    page.keyboard.press("Escape")
+    # A guest's star asks nothing about a calendar (owner 2026-11-24, tests/test_star_calendar.py); the focus stays.
+    page.wait_for_timeout(300)
     assert page.locator("#starCalAsk").count() == 0
     assert page.evaluate("document.activeElement.getAttribute('data-hc-save')") == "lunch"
     assert "저장했어요" in page.locator("#homeCalLive").inner_text()
@@ -154,9 +152,10 @@ def test_the_star_fits_at_every_width(browser, width):
     context.close()
 
 
-def test_an_opened_listing_adds_itself_to_a_calendar(browser):
-    context = None
-    context, page, errors = open_home(browser)
+def test_an_opened_listing_adds_itself_to_a_calendar_when_signed_in(browser):
+    # Signed in only (owner 2026-11-24); a computer gets Google Calendar's add page and the file.
+    from tests.test_my_babdoduk import TOKEN_KEY
+    context, page, errors = open_home(browser, storage={TOKEN_KEY: "{}"})
     page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
     assert page.locator('.hc-ev.is-open a.hc-ev-cal').count() == 0, "closed, the choice holds no link"
     toggle = page.locator('[data-hc-cal="lunch"]')

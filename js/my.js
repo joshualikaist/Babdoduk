@@ -88,7 +88,8 @@
     for (var i = 0; i < (list || []).length; i++) if (list[i].id === id) return list[i];
     return null;
   }
-  // Each saved event against the newest public data: upcoming, ended or missing (never "cancelled").
+  // Each saved event against the newest public data: upcoming, ended, checking, or missing (no longer published
+  // and not over). A missing one is never listed: its star comes off (dropMissing).
   function savedRows(now) {
     var today = F ? F.nowKst() : null;
     return state.events.map(function (item) {

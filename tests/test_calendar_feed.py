@@ -6,7 +6,6 @@ project). The feed function runs under Node with fetch replaced, so nothing leav
 """
 from __future__ import annotations
 
-import datetime
 import json
 import re
 import shutil
@@ -419,47 +418,40 @@ def test_an_old_subscription_is_marked_and_reported(db17):
 
 
 # --- one listing's file, for a guest's iPhone Chrome (2026-11-23) ------------------------------------------
-def soon(days, hour=12):
-    """A start `days` from now in KST, so the listing is upcoming for the function's own clock."""
-    kst = datetime.timezone(datetime.timedelta(hours=9))
-    day = datetime.datetime.now(kst).date() + datetime.timedelta(days=days)
-    return f"{day.isoformat()}T{hour:02d}:00:00+09:00"
 
 
-def test_one_listing_file_opens_in_safaris_add_screen_with_the_alert():
-    later = feed_event("aaaaaaaa-1111-4222-8333-444444444444", soon(2), "다음 주 세미나")
-    past = feed_event("bbbbbbbb-1111-4222-8333-444444444444", soon(-2), "지난 세미나")
-    hidden = dict(feed_event("cccccccc-1111-4222-8333-444444444444", soon(2), "검토 중"), needsReview=True)  # F.isPublic
-    feed = {"events": [later, past, hidden]}
-    out = run(None, feed, url="/api/cal?e=" + later["id"])
-    assert out["status"] == 200 and out["headers"]["Content-Type"] == "text/calendar; charset=utf-8"
-    assert out["headers"]["Content-Disposition"] == 'inline; filename="babdoduk-' + soon(2)[:10] + '.ics"'
-    body = out["body"]
-    assert body.count("BEGIN:VEVENT") == 1 and "SUMMARY:다음 주 세미나" in body and "TRIGGER:-PT30M" in body
-    assert f"UID:{later['id']}@babdodukms.com" in body
-    assert "https://babdoduk-lab.vercel.app/ggongbab.html?e=" in body.replace("\r\n ", "")
-    # Only the published feed is read: no token, no database.
-    assert [c[0] for c in out["calls"]] == ["https://babdoduk-lab.vercel.app/data/ggongbab/latest.json"]
-    # An ended, held or unknown listing has no file; a malformed id reads nothing.
-    for eid in (past["id"], hidden["id"], "dddddddd-1111-4222-8333-444444444444"):
-        assert run(None, feed, url="/api/cal?e=" + eid)["status"] == 404, eid
-    for bad in ("", "../x", "a" * 65, "abc_x", "abc%0d"):
-        missing = run(None, feed, url="/api/cal?e=" + bad)
-        assert missing["status"] == 404 and missing["calls"] == [], bad
-    failed = run(None, feed, url="/api/cal?e=" + later["id"], feed_ok=False)
-    assert failed["status"] == 503 and failed["headers"]["Retry-After"] == "60"
+ENTRIES = r"""
+const cal = require(process.argv[1]);
+const d = JSON.parse(process.argv[2]);
+console.log(JSON.stringify(cal.entries(d.saved, d.feed, d.archive, new Date(d.now)).map((ev) => ev.id)));
+"""
 
 
-def test_one_listing_file_reads_only_our_own_sites_and_finds_a_repeat():
-    repeat = feed_event("eeeeeeee-1111-4222-8333-444444444444", soon(1), "이틀 행사")
-    repeat["sessions"] = [{"startAt": soon(1), "endAt": soon(1, 13)}, {"startAt": soon(2), "endAt": soon(2, 13)}]
-    out = run(None, {"events": [repeat]}, url="/api/cal?e=" + repeat["id"] + "_2",
-              headers={"host": "evil.example", "x-forwarded-host": "evil.example"})
-    assert out["calls"] == [["https://www.babdodukms.com/data/ggongbab/latest.json", None]]
-    assert out["status"] == 200 and re.findall(r"UID:([^@]+)@", out["body"]) == [repeat["id"] + "-2"]
-    assert "DTSTART:" + soon(2).replace("-", "")[:8] in out["body"]
-    assert run(None, {"events": [repeat]}, url="/api/cal?e=" + repeat["id"])["status"] == 404, "a repeat is named by its day"
-    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
-    route = next(r for r in config["routes"] if r.get("dest") == "/api/cal?e=$1")
-    assert re.fullmatch(route["src"], "/cal/e/" + repeat["id"] + "_2.ics")
-    assert not re.fullmatch(route["src"], "/cal/e/a/b.ics") and not re.fullmatch(route["src"], "/cal/" + TOKEN + ".ics")
+def entry_ids(saved, feed, archive, now):
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    args = json.dumps({"saved": saved, "feed": feed, "archive": archive, "now": now})
+    out = subprocess.run(["node", "-e", ENTRIES, str(ROOT / "api/cal.js"), args], capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    return json.loads(out.stdout)
+
+
+def test_a_star_whose_listing_was_withdrawn_before_it_happened_leaves_the_calendar():
+    # Owner 2026-11-24: "빠진거는 알아서 별표에서도 빠져야지". The clock is fixed: 2026-11-24 10:00 KST.
+    now = "2026-11-24T01:00:00Z"
+    live = feed_event("aaaaaaaa-1111-4222-8333-444444444444", "2026-11-26T12:00:00+09:00", "다음 세미나")
+    archived = feed_event("bbbbbbbb-1111-4222-8333-444444444444", "2026-11-20T12:00:00+09:00", "지난 세미나")
+    saved = [
+        {"event_id": live["id"], "seen": {"title": "다음 세미나", "startAt": live["startAt"]}},
+        {"event_id": archived["id"], "seen": {"title": "지난 세미나", "startAt": archived["startAt"]}},
+        {"event_id": "withdrawn", "seen": {"title": "빠진 행사", "startAt": "2026-11-27T12:00:00+09:00"}},
+        {"event_id": "lastweek", "seen": {"title": "지난주 행사", "startAt": "2026-11-17T12:00:00+09:00",
+                                          "endAt": "2026-11-17T13:00:00+09:00"}},
+    ]
+    feed, archive = {"events": [live]}, {"events": [archived]}
+    # Both lists read: the withdrawn listing is left out; a listing that already happened stays.
+    assert entry_ids(saved, feed, archive, now) == [live["id"], archived["id"], "lastweek"]
+    # A list that could not be read never takes an event away: every star keeps its own copy.
+    every = [live["id"], archived["id"], "withdrawn", "lastweek"]
+    assert entry_ids(saved, feed, None, now) == every
+    assert entry_ids(saved, None, archive, now) == every

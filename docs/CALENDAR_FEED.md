@@ -27,7 +27,7 @@ so the rule is now: **each listing is in the calendar once.**
   after a tap only says that one tap is enough.
 - **Signed in on an iPhone**, a listing's 캘린더에 추가 offers no file or Google page, only "별을 누르면 연결한 아이폰
   캘린더에 들어가요" with a link to the card: a copy beside the subscription is exactly the duplicate.
-- **Guests and other devices** still get one-listing files (or, off Apple devices, Google Calendar's add page), but this browser remembers
+- **Signed in on other devices**, a listing's 캘린더에 추가 gives the listing's file (or Google Calendar's add page); guests get no calendar (below). This browser remembers
   what it sent (`babdoduk-calendar-sent`: listing id → start, 300 at most): the star does not send a listing again,
   a button asks for a second tap ("이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요"), and a listing whose
   time moved is sent again with "캘린더의 예전 일정은 지워 주세요" (a file can never change an entry already there).
@@ -98,28 +98,28 @@ Files fallback) and the replacement on a second install; they need one check on 
 Signed in, the star no longer opens a calendar add screen or file (the subscription takes it; on iPhone
 Chrome a file download also cut off the account save).
 
-Guests on an iPhone get the iPhone's own calendar only (2026-11-23). Until then iPhone Chrome, Firefox and Edge got
-Google Calendar's add page, which on production opened Google's sign-in, and students use the iPhone calendar
-(owner 2026-11-19, "구글 캘린더 아무도 안써"). Chrome, Firefox, Edge, Opera and the in-app browsers of other apps
-(Instagram, NAVER, Facebook, LINE, Daum, Whale) keep a calendar file as a download, so their star and the card's
-**아이폰 캘린더에 넣기** open the listing's own page, `ggongbab.html?e=<id>&cal=1`, in Safari through `x-safari-https:`,
-the same handoff as the profile above. That page asks once ("아이폰 캘린더에 넣을까요?", the title and the 30-minute
-alert), and its **캘린더에 넣기** opens the listing's file, `/cal/e/<id>.ics`, so Safari shows the Calendar's add screen.
-The file itself was handed over at first, but Safari then opened on nothing (owner 2026-11-23, iPhone Chrome: "사파리만
-열림"), most likely because Safari shows the add screen only for a tap made in Safari (inferred, not yet confirmed
-on a device). The question comes only in Safari, only for an
-upcoming listing, and only once: the page drops `cal=1` from its address, and the answer is not the star's setting. If the
-Chrome page is still in front 2.5 s after the tap, Safari did not open, and the page says "사파리가 열리지 않았어요 ·
-사파리에서 밥도둑을 열고 다시 눌러 주세요". Safari itself gets the file directly, as before; KakaoTalk keeps its own note. On an iPhone the card
-offers that one button instead of the Google link and the file. Android and computers are unchanged.
+**Signed in only (owner 2026-11-24):** "로그인을 하지 않으면 그런 기능을 아예 주지 말고, 로그인 시에만 그 기능이
+첨부되도록". A guest gets no 캘린더에 추가 button (on 오늘의 꽁밥 or the home calendar), no calendar question after a
+star, and no calendar line in 저장한 꽁밥; sharing and saving are unchanged. Signed in, an iPhone or iPad points to the
+connection above and other devices get Google Calendar's add page and the listing's file. This replaces the guest
+paths of 2026-11-11 to 2026-11-23 (the star's calendar question and its `babdoduk-star-calendar` answer, and iPhone
+Chrome's handoff of the listing's file or page to Safari, which on a real iPhone opened Safari with no add screen,
+owner 2026-11-23 "사파리만 열림"). The single-listing file `/cal/e/<id>.ics` that handoff used is gone with it; an old
+`?cal=1` address just opens the listing.
+
+**A withdrawn listing leaves the stars (owner 2026-11-24):** "빠진거는 알아서 별표에서도 빠져야지". A saved listing
+that is in neither the published list nor the archive and is not over loses its star by itself when 오늘의 꽁밥 or
+마이 밥도둑 next opens (the "목록에서 빠짐" row is gone), so it also leaves this calendar; `api/cal.js` leaves such a
+star out at once, without waiting for that. Only when both lists were really read: a failed read never removes
+anything (the row then says 확인 중, and the calendar keeps the saved copy). Push alerts already read only the
+newest published list.
 
 ## How it works
 
 | Part | Where |
 |---|---|
 | Private address | `/cal/<token>.ics`, a 43-character random token per account (`my_calendar_feed()`, signed-in only). `my_calendar_feed(true)` replaces it and the old address stops; the card no longer offers this (owner 2026-11-12), so a leaked address is replaced on request. |
-| Calendar file | `api/cal.js` (Vercel function, routed by `vercel.json`). It reads the token's list with the anon function `calendar_feed_events(token)` and the site's publishable key, then writes each entry with the site's own calendar code (`js/ggongbab-live.js` `icsText`, 30-minute alarm). Times and places come from the current published feed (`data/ggongbab/latest.json`, then the archive), else from the snapshot saved with the star. A deadline-only giveaway has no time and is left out. |
-| One listing's file | `/cal/e/<id>.ics` → `api/cal.js?e=<id>` (a repeat's `#n` travels as `_n`), for guests whose browser keeps a file as a download (above). It reads only the published feed of our own site (no token, no database) and answers the upcoming public listing with that id, written by the same `icsText` (30-minute alarm), as `inline` `text/calendar`; an ended, held or unknown listing is 404, a malformed id is 404 before anything is read, and a feed that cannot be read is 503. |
+| Calendar file | `api/cal.js` (Vercel function, routed by `vercel.json`). It reads the token's list with the anon function `calendar_feed_events(token)` and the site's publishable key, then writes each entry with the site's own calendar code (`js/ggongbab-live.js` `icsText`, 30-minute alarm). Times and places come from the current published feed (`data/ggongbab/latest.json`, then the archive), else from the snapshot saved with the star. A deadline-only giveaway has no time and is left out, and so is a star whose listing was withdrawn before it was over (both lists read, above). |
 | Fixed origins | The feed is read from, and the entries link to, one of our own sites only: `www.babdodukms.com`, `babdodukms.com`, `babdoduk.vercel.app` or `babdoduk-lab.vercel.app`, whichever the request came to. Any other host (a preview address, or a forged `x-forwarded-host`) gets `https://www.babdodukms.com`, so a request can never make the function fetch from an address it names (security audit 2026-11-13). An empty list (or an unknown token) fetches no feed at all. |
 | Privacy | The table `calendar_feeds` is closed to browsers. The file holds what the person saved (titles, times, places), never a name, email or account id. Anyone with the address can read that list; the address is long and random and appears only in the iPhone's calendar settings. Responses are `private, no-store` and `noindex`. |
 
@@ -128,7 +128,7 @@ offers that one button instead of the Google link and the file. Android and comp
 - The phone decides how often it fetches a subscribed calendar; the file only hints every 15 minutes
   (`REFRESH-INTERVAL`, `X-PUBLISHED-TTL`). A star made just before an event can arrive after its alert.
 - Not offered on Android or computers (see above).
-- Guests (not signed in) cannot subscribe: their stars live only in their browser.
+- Guests (not signed in) get no calendar at all: their stars live only in their browser.
 - iPhone can be set to drop alerts from subscribed calendars; this needs checking on a real phone.
 
 ## Tests
@@ -137,11 +137,10 @@ offers that one button instead of the Google link and the file. Android and comp
 old-address notice, and the migrations (013, 016 and 017) read statically and, with `pgserver` and `psycopg`,
 applied to a throwaway PostgreSQL (tokens, other users, a new address, the newest connection winning, account
 deletion, an old address marked and reported); `api/cal.js` run under Node
-with fetch replaced (including forged hosts, an empty list, and one listing's file: found, ended, held, unknown,
-malformed, a repeat's day, the feed failing). `tests/test_star_calendar.py`: iPhone Chrome's star and card hand the
-listing's page to Safari (never a Google tab), the note when Safari does not open, iPhone cards without the Google link,
-and that page's one question in Safari (its tap opens the file; 닫기 opens nothing; not in Chrome or Android, not for an
-unknown listing, not again after a reload). `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, its states (not connected, 확인 중,
-연결됨, stale, before 016) and the card hidden while the function is missing. `tests/test_star_calendar.py`: a
-listing is sent once, a button asks for a second tap, a moved listing is sent again with the note.
+with fetch replaced (including forged hosts and an empty list), and its entries with a fixed clock (a withdrawn star
+left out once both lists are read, kept when either fails). `tests/test_star_calendar.py`: a guest gets no calendar
+button, question or handoff on 오늘의 꽁밥 and the home calendar (iPhone Safari and Chrome, Android, KakaoTalk, PC, even
+with an old answer stored), and signed in the home calendar offers it. `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, its states (not connected, 확인 중,
+연결됨, stale, before 016) and the card hidden while the function is missing. `tests/test_star_calendar.py`: signed in
+on a phone, a listing is sent once, a button asks for a second tap, a moved listing is sent again with the note.
 `tests/test_push_alerts.py`: signed in on an iPhone, a listing's calendar choice points to the connection.
