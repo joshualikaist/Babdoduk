@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css?v=37dd7ee50a" />
-  <link rel="stylesheet" href="css/magazine.css?v=854a499cae" />
+  <link rel="stylesheet" href="css/magazine.css?v=6719f7764b" />
   <link rel="stylesheet" href="css/choose.css?v=5c206159ea" />
 </head>
 <body class="mg-body">
@@ -60,8 +60,10 @@
   <main class="mg-page">
     <div class="mg-mobile-edition">
       <button type="button" id="mgDatePrev" aria-label="이전 호">‹</button>
-      <button type="button" id="mgDateOpen" data-i18n="mg.cal.open">날짜 보기</button>
-      <strong id="mgMobileDate">—</strong>
+      <!-- The date itself opens the calendar, raised so it reads as a button (owner 2026-11-24). -->
+      <button type="button" class="mg-date-pick" id="mgDateOpen" aria-expanded="false" aria-controls="mgMobileCal" aria-label="날짜 보기">
+        <span id="mgMobileDate">—</span><span class="mg-date-caret" aria-hidden="true">▾</span>
+      </button>
       <button type="button" id="mgDateNext" aria-label="다음 호">›</button>
     </div>
     <div class="mg-mobile-cal" id="mgMobileCal">
@@ -211,7 +213,7 @@
             <ul class="footer-list">
               <li><a href="choose.html" class="footer-a" data-i18n="nav.choose">오늘 뭐 먹지</a></li>
               <li><a href="ggongbab.html#menu" class="footer-a" data-i18n="footer.menu">학식</a></li>
-              <li><a href="https://naver.me/5NeqUPzI" class="footer-a" target="_blank" rel="noopener"><span data-i18n="nav.map">맛집 지도</span><span class="footer-out" aria-hidden="true"> ↗</span></a></li>
+              <li><a href="https://naver.me/5NeqUPzI" class="footer-a" target="_blank" rel="noopener"><span data-i18n="nav.map">맛집 지도</span></a></li>
             </ul>
           </div>
           <div class="footer-group">
@@ -679,6 +681,8 @@
         var issue = document.querySelector('.mg-masthead-issue');
         if (indexDate) indexDate.textContent = dateLabel;
         if (mobileDate) mobileDate.textContent = dateLabel;
+        var dateOpen = document.getElementById('mgDateOpen');
+        if (dateOpen) dateOpen.setAttribute('aria-label', t('mg.cal.open', '날짜 보기') + ' · ' + dateLabel);
         var published = publishedLabel(ed);
         if (schedule) schedule.textContent = published;
         if (week) week.textContent = dateLabel + (published ? ' · ' + published : '');
@@ -747,8 +751,16 @@
       var openBtn = document.getElementById('mgDateOpen');
       var mobileCal = document.getElementById('mgMobileCal');
       if (openBtn && mobileCal) {
+        var setOpen = function (open) {
+          mobileCal.classList.toggle('is-open', open);
+          openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
         openBtn.addEventListener('click', function () {
-          mobileCal.classList.toggle('is-open');
+          setOpen(!mobileCal.classList.contains('is-open'));
+        });
+        // A picked day closes the calendar again; the new edition's date shows on the button.
+        mobileCal.addEventListener('click', function (e) {
+          if (e.target.closest('.mg-cal-day.is-live')) setOpen(false);
         });
       }
       var prevBtn = document.getElementById('mgDatePrev');
