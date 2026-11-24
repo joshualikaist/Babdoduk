@@ -1,5 +1,5 @@
 {
-  "approval": "Owner approved 2026-11-18 (\"오케이 지금 딱 좋아. 이거 위로 올리자\", after the footer screenshots; artifact downloaded by the owner): the new footer (four groups, plain contact links, two-line notice) and its context. 40 renders from ui-guardian run 44248366799 (lab f1e5ad4); the 20 nav images unchanged from the previous approved set.",
+  "approval": "Owner approved 2026-11-24 (\"바닥글 승인\", after the footer comparison on lab b67c879): the footer without the email/Instagram row (owner 11-18, \"이거 그냥 없애자\"), without the map link's arrow, and history.html without its link row (owner 11-24). 40 footer and footer-context renders from ui-guardian run 45310700698 (lab b67c879, artifact downloaded by the owner); the 20 nav images unchanged from the previous approved set.",
   "platform": "linux-chromium",
   "source": "adopted from ci-renders",
   "images": 60,
