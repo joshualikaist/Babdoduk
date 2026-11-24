@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css?v=61206b7e58" />
-  <link rel="stylesheet" href="css/magazine.css?v=6719f7764b" />
+  <link rel="stylesheet" href="css/magazine.css?v=f317c40e23" />
   <link rel="stylesheet" href="css/choose.css?v=5c206159ea" />
 </head>
 <body class="mg-body">
@@ -635,9 +635,21 @@
         img.src = src;
       }
 
+      // ‹ and › are dimmed at the oldest and the newest edition, where they have nowhere to go (2026-11-24:
+      // the press-every-button run found 다음 호 doing nothing on the newest one).
+      function updateStepButtons() {
+        var dates = (index.dates || []).slice().sort();
+        var at = dates.indexOf(currentDate);
+        var prev = document.getElementById('mgDatePrev');
+        var next = document.getElementById('mgDateNext');
+        if (prev) prev.disabled = at <= 0;
+        if (next) next.disabled = at === -1 || at >= dates.length - 1;
+      }
+
       function applyEdition(ed) {
         lastEdition = ed;
         currentDate = ed.date;
+        updateStepButtons();
         var parts = ed.date.split('-');
         viewYear = parseInt(parts[0], 10);
         viewMonth = parseInt(parts[1], 10) - 1;
