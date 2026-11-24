@@ -25,12 +25,10 @@ so the rule is now: **each listing is in the calendar once.**
   button after a tap so it is not tapped again.
 - **Before 016 is applied** the card falls back to 013's address (`my_calendar_feed()`), cannot know the state, and
   after a tap only says that one tap is enough.
-- **Signed in on an iPhone**, a listing's 캘린더에 추가 offers no file or Google page, only "별을 누르면 연결한 아이폰
-  캘린더에 들어가요" with a link to the card: a copy beside the subscription is exactly the duplicate.
-- **Signed in on other devices**, a listing's 캘린더에 추가 gives the listing's file (or Google Calendar's add page); guests get no calendar (below). This browser remembers
-  what it sent (`babdoduk-calendar-sent`: listing id → start, 300 at most): the star does not send a listing again,
-  a button asks for a second tap ("이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요"), and a listing whose
-  time moved is sent again with "캘린더의 예전 일정은 지워 주세요" (a file can never change an entry already there).
+- **No listing has a calendar button (owner 2026-11-24):** "캘린더에 추가는 마이 밥도둑에서". Signed in or not, an
+  opened listing on 오늘의 꽁밥 or the home calendar has no 캘린더에 추가 (and no share button); the connection
+  takes every star. Until that morning a signed-in iPhone got a note pointing here and other devices the listing's
+  file or Google Calendar's add page, remembered per listing in `babdoduk-calendar-sent` (no longer written).
 
 Existing duplicates stay until the visitor deletes them; after 016, one 다시 연결 empties the older subscriptions,
 which can then be removed in the Calendar app.
@@ -99,9 +97,8 @@ Signed in, the star no longer opens a calendar add screen or file (the subscript
 Chrome a file download also cut off the account save).
 
 **Signed in only (owner 2026-11-24):** "로그인을 하지 않으면 그런 기능을 아예 주지 말고, 로그인 시에만 그 기능이
-첨부되도록". A guest gets no 캘린더에 추가 button (on 오늘의 꽁밥 or the home calendar), no calendar question after a
-star, and no calendar line in 저장한 꽁밥; sharing and saving are unchanged. Signed in, an iPhone or iPad points to the
-connection above and other devices get Google Calendar's add page and the listing's file. This replaces the guest
+첨부되도록". A guest gets no calendar question after a star and no calendar line in 저장한 꽁밥; later the same day
+no listing kept a calendar button at all (above). This replaces the guest
 paths of 2026-11-11 to 2026-11-23 (the star's calendar question and its `babdoduk-star-calendar` answer, and iPhone
 Chrome's handoff of the listing's file or page to Safari, which on a real iPhone opened Safari with no add screen,
 owner 2026-11-23 "사파리만 열림"). The single-listing file `/cal/e/<id>.ics` that handoff used is gone with it; an old
@@ -138,9 +135,8 @@ old-address notice, and the migrations (013, 016 and 017) read statically and, w
 applied to a throwaway PostgreSQL (tokens, other users, a new address, the newest connection winning, account
 deletion, an old address marked and reported); `api/cal.js` run under Node
 with fetch replaced (including forged hosts and an empty list), and its entries with a fixed clock (a withdrawn star
-left out once both lists are read, kept when either fails). `tests/test_star_calendar.py`: a guest gets no calendar
-button, question or handoff on 오늘의 꽁밥 and the home calendar (iPhone Safari and Chrome, Android, KakaoTalk, PC, even
-with an old answer stored), and signed in the home calendar offers it. `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, its states (not connected, 확인 중,
-연결됨, stale, before 016) and the card hidden while the function is missing. `tests/test_star_calendar.py`: signed in
-on a phone, a listing is sent once, a button asks for a second tap, a moved listing is sent again with the note.
-`tests/test_push_alerts.py`: signed in on an iPhone, a listing's calendar choice points to the connection.
+left out once both lists are read, kept when either fails). `tests/test_star_calendar.py`: no calendar or
+share button, question or handoff on 오늘의 꽁밥 and the home calendar, signed in or not (iPhone Safari and Chrome, Android,
+KakaoTalk, PC, even with an old answer stored); the star only shows its toast. `tests/test_my_babdoduk.py`: the card on iPhone only, its short text, its states (not connected, 확인 중,
+연결됨, stale, before 016) and the card hidden while the function is missing.
+`tests/test_push_alerts.py`: signed in, the star saves to the account and an opened listing has no calendar button.

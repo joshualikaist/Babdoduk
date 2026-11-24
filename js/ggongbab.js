@@ -38,7 +38,6 @@
     day: 'all', who: 'all', area: 'all',
     moreFilters: false,
     savedOpen: false,
-    calOpen: {},              // the listings whose calendar choices are open
     copy: null,               // {key, text}: what to copy by hand when sharing and copying both failed
     entry: { id: '', week: '', done: false, notice: null }
   };
@@ -320,10 +319,9 @@
     }
     var via = sourceLabel(ev);
     if (via) html += '<p class="gg-source">' + esc(via) + '</p>';
-    html += toolsHtml(ev, now, n);
     return html + '</div></article>';
   }
-  // ---- 꽁밥 LIVE: save, share, calendar (js/ggongbab-live.js) ----
+  // ---- 꽁밥 LIVE: save and the week share (js/ggongbab-live.js) ----
   function savedChanges(ev) {
     return savedStore && savedStore.has(ev.id) ? L.changes(savedStore.get(ev.id), ev) : [];
   }
@@ -355,53 +353,12 @@
     });
     return html + '<button type="button" class="gg-btn gg-ack" data-gg-ack="' + esc(ev.id) + '">' + esc(t('gg.live.ack', '확인했어요')) + '</button></div>';
   }
-  function toolsHtml(ev, now, n) {
-    if (!L) return '';
-    var html = '<div class="gg-tools">';
-    if (savedStore) {
-      var on = savedStore.has(ev.id);
-      html += '<button type="button" class="gg-btn gg-tool" data-gg-save="' + esc(ev.id) + '" aria-pressed="' + on + '">' +
-        '<span aria-hidden="true">' + (on ? '★' : '☆') + '</span> ' + esc(on ? t('gg.live.saved', '저장됨') : t('gg.live.save', '저장')) + '</button>';
-    }
-    html += '<button type="button" class="gg-btn gg-tool" data-gg-share="' + esc(ev.id) + '">' + esc(t('gg.live.share', '공유')) + '</button>';
-    // Signed in only (owner 2026-11-24, "로그인 시에만 그 기능이 첨부되도록"): a guest gets no calendar button.
-    var calOk = accountMode === 'account' && L.canCalendar(ev, now);
-    var calId = 'ggCal' + n;
-    if (calOk) html += '<button type="button" class="gg-btn gg-tool" data-gg-cal="' + esc(ev.id) + '" aria-expanded="' + !!state.calOpen[ev.id] +
-      '" aria-controls="' + calId + '">' + esc(t('gg.live.calendar', '캘린더에 추가')) + '</button>';
-    html += '</div>';
-    // Closed, the calendar box holds nothing (no hidden links in the listing's link list).
-    if (calOk && !state.calOpen[ev.id]) html += '<div class="gg-cal" id="' + calId + '" hidden></div>';
-    else if (calOk && L.appleMobile && L.appleMobile()) {
-      // On an iPhone the one calendar connection of 마이 밥도둑 takes every star, so no file or add page here; a
-      // second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
-      html += '<div class="gg-cal" id="' + calId + '"><p class="gg-cal-note gg-cal-linked">' + esc(t('gg.live.calLinked', '별을 누르면 연결한 아이폰 캘린더에 들어가요.')) +
-        ' <a href="my.html#myCal">' + esc(t('gg.live.calConnect', '캘린더 연결 보기')) + '</a></p></div>';
-    } else if (calOk) {
-      html += '<div class="gg-cal" id="' + calId + '">';
-      html += '<a class="gg-btn" data-gg-gcal="' + esc(ev.id) + '" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
-        esc(t('gg.live.calGoogle', 'Google 캘린더')) + '<span class="gg-sr"> ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
-      html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calFile', '캘린더 파일 (.ics)')) + '</button>';
-      if (L.inTalkApp()) html += talkAppNoteHtml();
-      html += '</div>';
-    }
-    if (state.copy && state.copy.key === ev.id) html += copyBoxHtml();
-    return html;
-  }
-  function talkAppNoteHtml() {
-    return '<p class="gg-cal-note">' + esc(t('gg.live.kakaoNote', '카카오톡 안에서는 파일 받기가 안 될 수 있어요')) +
-      ' · <a href="' + esc(L.openExternalUrl(location.href)) + '">' + esc(t('gg.live.openBrowser', '기본 브라우저로 열기')) + '</a></p>';
-  }
+  // An opened listing carries no save, share or calendar buttons (owner 2026-11-24: "저장됨은 팝업처럼 가볍게 뜨게 하고,
+  // 공유 삭제, 캘린더에 추가는 마이 밥도둑에서"): the row's star saves it and a short toast says so, and the calendar
+  // is the one connection on 마이 밥도둑.
   function copyBoxHtml() {
     return '<label class="gg-copy"><span>' + esc(t('gg.live.copyHint', '길게 눌러 복사하세요')) + '</span>' +
       '<textarea readonly rows="3">' + esc(state.copy.text) + '</textarea></label>';
-  }
-  function calendarDetails(ev) {
-    var lines = [];
-    var dish = hasFood(ev) ? F.dishLabel(ev, t) : '';
-    if (dish) lines.push(t('gg.live.calFood', '꽁밥 · {food}').replace('{food}', dish));
-    lines.push(L.eventLink(ev.id));
-    return lines.join('\n');
   }
   // `icon` is decorative markup: the label alone names the chip.
   function chip(group, value, label, pressed, icon) {
@@ -557,11 +514,6 @@
     if (rows.length > 12) lines.push(t('gg.live.more12', '외 {n}개').replace('{n}', String(rows.length - 12)));
     var title = t('gg.live.weekTitle', '밥도둑 꽁밥 · {date} 주').replace('{date}', shortDate(L.mondayOf(range[0])));
     return { title: title, text: title + '\n' + lines.join('\n'), url: L.weekLink(L.mondayOf(range[0])) };
-  }
-  function eventShare(ev) {
-    var where = shortPlace(ev);
-    var text = rowWhat(ev) + ' · ' + ev.title + '\n' + (isDeadlineOnly(ev) ? signUpByText(toKst(ev.startAt)) : whenText(ev.startAt, ev.endAt)) + (where ? ' · ' + where : '');
-    return { title: ev.title, text: text, url: L.eventLink(ev.id) };
   }
   function rowById(id) {
     var list = (state.free.data && state.free.data.events) || [];
@@ -1083,25 +1035,6 @@
       else if (result === 'manual') { state.copy = { key: key, text: payload.text + '\n' + payload.url }; render(); }
     });
   }
-  // A calendar button for a listing this browser already sent asks for a second tap first (owner 2026-11-19:
-  // the same event twice in the calendar is never wanted); true when this tap may add it.
-  var calAgain = '';
-  function calendarTapOk(ev) {
-    if (L.calendarSent(ev) === 'same' && calAgain !== ev.id) {
-      calAgain = ev.id;
-      announce(t('gg.live.calAlready', '이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요'));
-      return false;
-    }
-    calAgain = '';
-    return true;
-  }
-  function movedNote(was) { return was === 'moved' ? ' · ' + t('starcal.moved', '시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요') : ''; }
-  function downloadIcs(ev) {
-    if (!calendarTapOk(ev)) return;
-    var was = L.calendarSent(ev);
-    if (L.downloadIcs(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) })) announce(t('gg.live.icsDone', '캘린더 파일을 받았어요') + movedNote(was));
-    else announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
-  }
   function refocusStar(id) {
     var esc2 = window.CSS && CSS.escape ? CSS.escape(id) : id;
     var star = root.querySelector('.gg-save[data-gg-save="' + esc2 + '"]') || root.querySelector('[data-gg-save="' + esc2 + '"]');
@@ -1197,30 +1130,7 @@
       render();
       return true;
     }
-    if ((el = e.target.closest('[data-gg-share]'))) {
-      var shared = rowById(el.getAttribute('data-gg-share'));
-      if (shared) shareOut(shared.id, eventShare(shared));
-      return true;
-    }
     if (e.target.closest('[data-gg-share-week]')) { shareOut('week', weekShare(nowKst())); return true; }
-    if ((el = e.target.closest('[data-gg-cal]'))) {
-      var calId = el.getAttribute('data-gg-cal');
-      if (state.calOpen[calId]) delete state.calOpen[calId]; else state.calOpen[calId] = true;
-      render();
-      return true;
-    }
-    if ((el = e.target.closest('[data-gg-gcal]'))) {
-      // Google Calendar's add page: the link opens it, unless this listing was already sent (second tap opens).
-      var gEv = rowById(el.getAttribute('data-gg-gcal'));
-      if (gEv && !calendarTapOk(gEv)) { e.preventDefault(); return true; }
-      if (gEv) L.markCalendarSent(gEv);
-      return true;
-    }
-    if ((el = e.target.closest('[data-gg-ics]'))) {
-      var calEv = rowById(el.getAttribute('data-gg-ics'));
-      if (calEv && L.canCalendar(calEv, nowKst())) downloadIcs(calEv);
-      return true;
-    }
     if (e.target.closest('[data-gg-more]')) { state.moreFilters = !state.moreFilters; render(); return true; }
     if (e.target.closest('[data-gg-reset]')) {
       state.food = 'all'; state.day = 'all'; state.who = 'all'; state.area = 'all';

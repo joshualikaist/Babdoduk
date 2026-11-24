@@ -239,8 +239,10 @@ def test_save_toggle_survives_reload_without_duplicates(browser):
     page.locator('[data-gg-goto="lunch"]').click()
     assert card(page, "lunch").locator(".gg-card-toggle").get_attribute("aria-expanded") == "true"
     assert page.evaluate("document.activeElement.dataset.id") == "lunch"
-    # Unsaving from the detail toolbar.
-    card(page, "lunch").locator('.gg-tool[data-gg-save]').click()
+    # The opened listing has no toolbar; its row star unsaves it.
+    assert card(page, "lunch").locator(".gg-tool").count() == 0
+    card(page, "lunch").locator(".gg-save").click()
+    assert page.locator(".gg-toast").inner_text() == "저장을 지웠어요"
     assert stored(page)["items"] == []
     assert card(page, "lunch").locator(".gg-save").get_attribute("aria-pressed") == "false"
     assert not errors, errors
@@ -369,40 +371,35 @@ def test_optional_filters_never_persist(browser):
     context.close()
 
 
-def test_share_one_listing_and_the_week(browser):
+def test_share_the_week(browser):
+    """Only the week is shared now: an opened listing has no share button (owner 2026-11-24, "공유 삭제")."""
     context, page, errors = open_hub(browser)
     open_card(page, "wed")
-    card(page, "wed").locator("[data-gg-share]").click()
-    page.wait_for_function("window.__copied.length === 1")
-    copied = page.evaluate("window.__copied[0]")
-    assert copied.splitlines()[0] == "간식 · wed 행사"
-    assert copied.splitlines()[-1] == f"https://{HOST}/ggongbab.html?e=wed"
-    assert page.locator(".gg-toast").inner_text() == "링크를 복사했어요"
+    assert card(page, "wed").locator("[data-gg-share]").count() == 0
     page.locator("[data-gg-share-week]").click()
-    page.wait_for_function("window.__copied.length === 2")
-    week = page.evaluate("window.__copied[1]").splitlines()
+    page.wait_for_function("window.__copied.length === 1")
+    week = page.evaluate("window.__copied[0]").splitlines()
     assert week[0] == "밥도둑 꽁밥 · 11월 9일 주"
     assert week[-1] == f"https://{HOST}/ggongbab.html?week=2026-11-09"
     assert len(week) == 7 and not any("nextweek" in line for line in week)   # this week only
+    assert page.locator(".gg-toast").inner_text() == "링크를 복사했어요"
     context.close()
 
     # The device's share sheet when there is one; no copy then.
     context, page, errors = open_hub(browser, share="native")
-    open_card(page, "lunch")
-    card(page, "lunch").locator("[data-gg-share]").click()
+    page.locator("[data-gg-share-week]").click()
     page.wait_for_function("window.__shared.length === 1")
     data = page.evaluate("window.__shared[0]")
-    assert data["url"] == f"https://{HOST}/ggongbab.html?e=lunch" and data["title"] == "lunch 행사"
+    assert data["url"] == f"https://{HOST}/ggongbab.html?week=2026-11-09" and data["title"] == "밥도둑 꽁밥 · 11월 9일 주"
     assert page.evaluate("window.__copied.length") == 0
     context.close()
 
     # Neither works (some in-app browsers): the text to copy by hand.
     context, page, errors = open_hub(browser, clipboard="denied")
-    open_card(page, "lunch")
-    card(page, "lunch").locator("[data-gg-share]").click()
-    box = card(page, "lunch").locator(".gg-copy textarea")
+    page.locator("[data-gg-share-week]").click()
+    box = page.locator(".gg-copy textarea")
     box.wait_for()
-    assert box.input_value().endswith("?e=lunch")
+    assert box.input_value().endswith("?week=2026-11-09")
     assert not errors, errors
     context.close()
 
@@ -447,41 +444,27 @@ def test_shared_links_open_the_listing_or_say_why_not(browser):
     context.close()
 
 
-def test_calendar_one_listing_at_a_time(browser):
-    # Signed in only (owner 2026-11-24); a computer gets Google Calendar's add page and the file.
-    context, page, errors = open_hub(browser, signed_in=True)
-    open_card(page, "lunch")
-    cal_button = card(page, "lunch").locator("[data-gg-cal]")
-    assert cal_button.get_attribute("aria-expanded") == "false"
-    assert not card(page, "lunch").locator(".gg-cal").is_visible()          # closed until asked for
-    assert card(page, "lunch").locator(".gg-cal a").count() == 0
-    cal_button.click()
-    panel = card(page, "lunch").locator(".gg-cal")
-    assert panel.is_visible() and cal_button.get_attribute("aria-expanded") == "true"
-    google = panel.locator("a").get_attribute("href")
-    q = parse_qs(urlparse(google).query)
-    assert q["dates"] == ["20261109T030000Z/20261109T040000Z"] and q["text"] == ["lunch 행사"]
-    assert f"https://{HOST}/ggongbab.html?e=lunch" in q["details"][0]
-    assert panel.locator("a").get_attribute("rel") == "noopener"
-    for box in panel.locator(".gg-btn").evaluate_all("els => els.map(el => el.getBoundingClientRect().height)"):
-        assert box >= 43.5
-    with page.expect_download() as info:
-        panel.locator("[data-gg-ics]").click()
-    download = info.value
-    assert download.suggested_filename == "babdoduk-2026-11-09.ics"
-    text = Path(download.path()).read_text(encoding="utf-8")
-    assert text.count("BEGIN:VEVENT") == 1 and "DTSTART:20261109T030000Z" in text
-    # No end in the notice: the calendar choice still opens (copy cleanup, owner 2026-11-12: the
-    # "no end time" line is gone).
-    open_card(page, "noend")
-    card(page, "noend").locator("[data-gg-cal]").click()
-    assert card(page, "noend").locator(".gg-cal").is_visible() and card(page, "noend").locator(".gg-cal-note").count() == 0
-    # A giveaway listed only by its sign-up deadline has no event time to add.
-    open_card(page, "gift")
-    assert card(page, "gift").locator("[data-gg-cal]").count() == 0
-    assert card(page, "gift").locator("[data-gg-share]").count() == 1
-    assert not errors, errors
-    context.close()
+def test_an_opened_listing_has_no_save_share_or_calendar_buttons(browser):
+    """Owner 2026-11-24: "저장됨은 팝업처럼 가볍게 뜨게 하고, 공유 삭제, 캘린더에 추가는 마이 밥도둑에서". Signed in or
+    not, an opened listing ends with its sign-up and source links; the row star saves it with a short toast, and
+    the calendar is the one connection on 마이 밥도둑."""
+    for signed_in in (False, True):
+        context, page, errors = open_hub(browser, signed_in=signed_in)
+        for event_id in ("lunch", "noend", "gift"):
+            open_card(page, event_id)
+            opened = card(page, event_id)
+            assert opened.locator(".gg-card-toggle").get_attribute("aria-expanded") == "true"
+            assert opened.locator(".gg-tools, .gg-tool, [data-gg-share], [data-gg-cal], [data-gg-ics], [data-gg-gcal], .gg-cal").count() == 0
+            assert opened.locator(".gg-save").count() == 1          # the row star only
+            assert "캘린더" not in opened.inner_text() and "공유" not in opened.inner_text()
+        card(page, "lunch").locator(".gg-save").click()
+        toast = page.locator(".gg-toast")
+        toast.wait_for(state="visible")
+        assert toast.inner_text() == "저장했어요"
+        page.wait_for_timeout(2900)                                # it goes by itself
+        assert toast.evaluate("el => getComputedStyle(el).opacity") == "0"
+        assert not errors, errors
+        context.close()
 
 
 def test_new_feature_note_closes_for_good(browser):
@@ -538,13 +521,15 @@ def test_english_and_phone_layout(browser):
         page.locator("[data-gg-more]").click()
         page.locator("[data-gg-saved]").click()
         open_card(page, "lunch")
-        live_ui = " ".join(page.locator(".gg-more-panel, .gg-saved, .gg-tools, .gg-cal, .gg-new").all_inner_texts())
+        live_ui = " ".join(page.locator(".gg-more-panel, .gg-saved, .gg-new").all_inner_texts())
         assert not re.search(r"[가-힣]", live_ui.replace("lunch 행사", "")), live_ui
-        assert "Saved" in live_ui and "Share" in live_ui
+        assert "Saved" in live_ui
+        # An opened listing carries no save, share or calendar buttons (owner 2026-11-24).
+        assert card(page, "lunch").locator(".gg-tools, .gg-tool, [data-gg-share], [data-gg-cal], .gg-cal").count() == 0
         assert "calendar" not in live_ui.lower(), "a guest gets no calendar (owner 2026-11-24)"
         assert page.evaluate("document.documentElement.scrollWidth") <= width
         # Every new control is a 44 px tap target with a name.
-        for box in page.locator(".gg-save, .gg-tool, .gg-more, .gg-chip, .gg-unsave, .gg-new-close, .gg-saved-toggle, .gg-cal .gg-btn").evaluate_all(
+        for box in page.locator(".gg-save, .gg-more, .gg-chip, .gg-unsave, .gg-new-close, .gg-saved-toggle").evaluate_all(
                 "els => els.filter(el => el.offsetParent).map(el => { const r = el.getBoundingClientRect();"
                 " return [r.width, r.height, (el.getAttribute('aria-label') || el.textContent).trim()]; })"):
             assert min(box[0], box[1]) >= 43.5 and box[2], box
