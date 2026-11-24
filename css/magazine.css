@@ -268,6 +268,47 @@ body.mg-body .site-footer {
   cursor: pointer;
 }
 
+/* The date is the calendar's button: slightly raised so it reads as something to press (owner 2026-11-24,
+   "날짜를 누르면 달력이 나오게 하고, 이거 살짝 입체로"). */
+.mg-mobile-edition .mg-date-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(30, 29, 26, 0.14);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff 0%, #f3efe8 100%);
+  box-shadow: 0 2px 0 rgba(30, 29, 26, 0.12), 0 4px 10px rgba(30, 29, 26, 0.08), inset 0 1px 0 #ffffff;
+  font-weight: 800;
+  font-size: 16px;
+  color: #1e1d1a;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.mg-mobile-edition .mg-date-pick:active,
+.mg-mobile-edition .mg-date-pick[aria-expanded="true"] {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(30, 29, 26, 0.12), 0 2px 4px rgba(30, 29, 26, 0.08), inset 0 1px 2px rgba(30, 29, 26, 0.06);
+}
+.mg-mobile-edition .mg-date-pick:focus-visible {
+  outline: 3px solid var(--color-focus, #1e1d1a);
+  outline-offset: 2px;
+}
+.mg-date-caret {
+  font-size: 12px;
+  color: #6d665e;
+  transition: transform 0.15s ease;
+}
+.mg-date-pick[aria-expanded="true"] .mg-date-caret {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mg-mobile-edition .mg-date-pick,
+  .mg-date-caret {
+    transition: none;
+  }
+}
+
 .mg-mobile-cal {
   display: none;
   margin-bottom: 16px;

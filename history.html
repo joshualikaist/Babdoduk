@@ -206,25 +206,47 @@
       word-break: keep-all;
     }
 
-    .history-next {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px 20px;
-      margin-top: 32px;
-      padding-top: 16px;
-      border-top: 1px solid var(--color-divider, #ded6c9);
+    /* The smaller versions inside one entry, one per line (owner 2026-11-24). */
+    .timeline-updates {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(0, 0, 0, 0.14);
     }
-    .history-next a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-      font-size: 14px;
+    .timeline-update {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 10px;
+      row-gap: 2px;
+      align-items: baseline;
+    }
+    .timeline-update-head {
+      min-width: 0;
+      font-size: 0.86rem;
       font-weight: 700;
-      color: var(--color-ink, #1e1d1a);
-      text-decoration: none;
+      color: #1d1d1f;
+      word-break: keep-all;
     }
-    .history-next a:hover { text-decoration: underline; text-underline-offset: 4px; }
-    .history-next a:focus-visible { outline: 2px solid var(--color-ink, #1e1d1a); outline-offset: 2px; }
+    .timeline-update-ver {
+      margin-right: 4px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .timeline-update-date {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-ink-muted, #6d665e);
+      white-space: nowrap;
+    }
+    .timeline-update-desc {
+      grid-column: 1 / -1;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #4a453e;
+      word-break: keep-all;
+    }
   </style>
   <link rel="stylesheet" href="css/site.css?v=61206b7e58" />
   <link rel="stylesheet" href="css/app.css?v=df3a2a8243" />
@@ -328,96 +350,33 @@
             <hr class="timeline-rule" />
             <h2 class="timeline-label" data-i18n="history.t3.label">Babdoduk ver2. 오픈</h2>
             <p class="timeline-desc" data-i18n="history.t3.desc">오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.</p>
-          </div>
-        </div>
-      </li>
-      <li class="timeline-item">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2.1" data-i18n-aria-key="history.t4.photoAlt">
-              <span class="timeline-mark" aria-hidden="true">ver2.1</span>
-            </figure>
-          </div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" datetime="2026-10-04" data-i18n="history.t4.year">2026.10.4</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t4.label">ver2.1 꽁밥 달력</h2>
-            <p class="timeline-desc" data-i18n="history.t4.desc">홈에서 한눈에 보는 꽁밥 일정</p>
-          </div>
-        </div>
-      </li>
-      <li class="timeline-item">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2.2" data-i18n-aria-key="history.t5.photoAlt">
-              <span class="timeline-mark" aria-hidden="true">ver2.2</span>
-            </figure>
-          </div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" datetime="2026-10-14" data-i18n="history.t5.year">2026.10.14</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t5.label">ver2.2 먹방 월드컵</h2>
-            <p class="timeline-desc" data-i18n="history.t5.desc">메뉴 32강 월드컵, 경품 꽁밥 표시</p>
-          </div>
-        </div>
-      </li>
-      <li class="timeline-item">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2.3" data-i18n-aria-key="history.t6.photoAlt">
-              <span class="timeline-mark" aria-hidden="true">ver2.3</span>
-            </figure>
-          </div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" datetime="2026-11-02" data-i18n="history.t6.year">2026.11.2</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t6.label">ver2.3 꽁밥 제보</h2>
-            <p class="timeline-desc" data-i18n="history.t6.desc">놓친 꽁밥을 누구나 제보</p>
-          </div>
-        </div>
-      </li>
-      <li class="timeline-item">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2.4" data-i18n-aria-key="history.t7.photoAlt">
-              <span class="timeline-mark" aria-hidden="true">ver2.4</span>
-            </figure>
-          </div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" datetime="2026-11-04" data-i18n="history.t7.year">2026.11.4</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t7.label">ver2.4 꽁밥 지도</h2>
-            <p class="timeline-desc" data-i18n="history.t7.desc">캠퍼스 지도에서 꽁밥 찾기</p>
-          </div>
-        </div>
-      </li>
-      <li class="timeline-item">
-        <div class="timeline-item-grid">
-          <div class="timeline-item-photo-cell">
-            <figure class="timeline-item-media" role="img" aria-label="Babdoduk ver2.5" data-i18n-aria-key="history.t8.photoAlt">
-              <span class="timeline-mark" aria-hidden="true">ver2.5</span>
-            </figure>
-          </div>
-          <div class="timeline-item-rail">
-            <span class="timeline-marker" aria-hidden="true"></span>
-          </div>
-          <div class="timeline-item-body">
-            <time class="timeline-year" datetime="2026-11-05" data-i18n="history.t8.year">2026.11.5</time>
-            <hr class="timeline-rule" />
-            <h2 class="timeline-label" data-i18n="history.t8.label">ver2.5 메뉴 뽑기</h2>
-            <p class="timeline-desc" data-i18n="history.t8.desc">버튼 하나로 오늘 메뉴</p>
+            <ol class="timeline-updates">
+              <li class="timeline-update">
+                <span class="timeline-update-head"><span class="timeline-update-ver">ver2.1</span> <span data-i18n="history.t3.u1.label">꽁밥 달력</span></span>
+                <time class="timeline-update-date" datetime="2026-10-04" data-i18n="history.t3.u1.year">10.4</time>
+                <span class="timeline-update-desc" data-i18n="history.t3.u1.desc">홈에서 한눈에 보는 꽁밥 일정</span>
+              </li>
+              <li class="timeline-update">
+                <span class="timeline-update-head"><span class="timeline-update-ver">ver2.2</span> <span data-i18n="history.t3.u2.label">먹방 월드컵</span></span>
+                <time class="timeline-update-date" datetime="2026-10-14" data-i18n="history.t3.u2.year">10.14</time>
+                <span class="timeline-update-desc" data-i18n="history.t3.u2.desc">메뉴 32강 월드컵, 경품 꽁밥 표시</span>
+              </li>
+              <li class="timeline-update">
+                <span class="timeline-update-head"><span class="timeline-update-ver">ver2.3</span> <span data-i18n="history.t3.u3.label">꽁밥 제보</span></span>
+                <time class="timeline-update-date" datetime="2026-11-02" data-i18n="history.t3.u3.year">11.2</time>
+                <span class="timeline-update-desc" data-i18n="history.t3.u3.desc">놓친 꽁밥을 누구나 제보</span>
+              </li>
+              <li class="timeline-update">
+                <span class="timeline-update-head"><span class="timeline-update-ver">ver2.4</span> <span data-i18n="history.t3.u4.label">꽁밥 지도</span></span>
+                <time class="timeline-update-date" datetime="2026-11-04" data-i18n="history.t3.u4.year">11.4</time>
+                <span class="timeline-update-desc" data-i18n="history.t3.u4.desc">캠퍼스 지도에서 꽁밥 찾기</span>
+              </li>
+              <li class="timeline-update">
+                <span class="timeline-update-head"><span class="timeline-update-ver">ver2.5</span> <span data-i18n="history.t3.u5.label">메뉴 뽑기</span></span>
+                <time class="timeline-update-date" datetime="2026-11-05" data-i18n="history.t3.u5.year">11.5</time>
+                <span class="timeline-update-desc" data-i18n="history.t3.u5.desc">버튼 하나로 오늘 메뉴</span>
+              </li>
+            </ol>
           </div>
         </div>
       </li>
@@ -439,12 +398,6 @@
       </li>
       <!-- @end content -->
     </ol>
-
-    <nav class="history-next" aria-label="더 둘러보기" data-i18n-aria-key="history.nextAria">
-      <a href="event.html#archive" data-i18n="history.next.events">지난 활동 기록 →</a>
-      <a href="mukbang.html" data-i18n="history.next.magazine">밥도둑 매거진 →</a>
-      <a href="https://www.instagram.com/babdodukms/" target="_blank" rel="noopener" data-i18n="history.next.insta">인스타그램 ↗</a>
-    </nav>
   </main>
 
   <footer class="site-footer" role="contentinfo">
@@ -470,7 +423,7 @@
             <ul class="footer-list">
               <li><a href="choose.html" class="footer-a" data-i18n="nav.choose">오늘 뭐 먹지</a></li>
               <li><a href="ggongbab.html#menu" class="footer-a" data-i18n="footer.menu">학식</a></li>
-              <li><a href="https://naver.me/5NeqUPzI" class="footer-a" target="_blank" rel="noopener"><span data-i18n="nav.map">맛집 지도</span><span class="footer-out" aria-hidden="true"> ↗</span></a></li>
+              <li><a href="https://naver.me/5NeqUPzI" class="footer-a" target="_blank" rel="noopener"><span data-i18n="nav.map">맛집 지도</span></a></li>
             </ul>
           </div>
           <div class="footer-group">
@@ -525,10 +478,6 @@
         'footer.tagline': 'KAIST 꽁밥과 학식을 한곳에서',
         'footer.unofficial': '밥도둑은 개인이 운영하는 비공식 사이트로, KAIST나 학과의 공식 안내가 아니에요.',
         'history.heroTitle': '밥도둑의 역사',
-        'history.next.events': '지난 활동 기록 →',
-        'history.next.insta': '인스타그램 ↗',
-        'history.next.magazine': '밥도둑 매거진 →',
-        'history.nextAria': '더 둘러보기',
         'history.roadmap.desc': '브랜드 활동 및 서비스 확장에 따라 본 타임라인을 지속적으로 업데이트할 예정입니다.',
         'history.roadmap.label': '로드맵',
         'history.t1.desc': '밥도둑의 공식 인스타그램 계정을 개설하고, 레시피·일상 기반 콘텐츠 발행을 시작했습니다.',
@@ -542,27 +491,22 @@
         'history.t3.desc': '오늘의 꽁밥·학식·매거진 등 주요 기능을 새 구조로 공개했습니다.',
         'history.t3.label': 'Babdoduk ver2. 오픈',
         'history.t3.photoAlt': 'Babdoduk ver2',
+        'history.t3.u1.desc': '홈에서 한눈에 보는 꽁밥 일정',
+        'history.t3.u1.label': '꽁밥 달력',
+        'history.t3.u1.year': '10.4',
+        'history.t3.u2.desc': '메뉴 32강 월드컵, 경품 꽁밥 표시',
+        'history.t3.u2.label': '먹방 월드컵',
+        'history.t3.u2.year': '10.14',
+        'history.t3.u3.desc': '놓친 꽁밥을 누구나 제보',
+        'history.t3.u3.label': '꽁밥 제보',
+        'history.t3.u3.year': '11.2',
+        'history.t3.u4.desc': '캠퍼스 지도에서 꽁밥 찾기',
+        'history.t3.u4.label': '꽁밥 지도',
+        'history.t3.u4.year': '11.4',
+        'history.t3.u5.desc': '버튼 하나로 오늘 메뉴',
+        'history.t3.u5.label': '메뉴 뽑기',
+        'history.t3.u5.year': '11.5',
         'history.t3.year': '2026.9.30',
-        'history.t4.desc': '홈에서 한눈에 보는 꽁밥 일정',
-        'history.t4.label': 'ver2.1 꽁밥 달력',
-        'history.t4.photoAlt': 'Babdoduk ver2.1',
-        'history.t4.year': '2026.10.4',
-        'history.t5.desc': '메뉴 32강 월드컵, 경품 꽁밥 표시',
-        'history.t5.label': 'ver2.2 먹방 월드컵',
-        'history.t5.photoAlt': 'Babdoduk ver2.2',
-        'history.t5.year': '2026.10.14',
-        'history.t6.desc': '놓친 꽁밥을 누구나 제보',
-        'history.t6.label': 'ver2.3 꽁밥 제보',
-        'history.t6.photoAlt': 'Babdoduk ver2.3',
-        'history.t6.year': '2026.11.2',
-        'history.t7.desc': '캠퍼스 지도에서 꽁밥 찾기',
-        'history.t7.label': 'ver2.4 꽁밥 지도',
-        'history.t7.photoAlt': 'Babdoduk ver2.4',
-        'history.t7.year': '2026.11.4',
-        'history.t8.desc': '버튼 하나로 오늘 메뉴',
-        'history.t8.label': 'ver2.5 메뉴 뽑기',
-        'history.t8.photoAlt': 'Babdoduk ver2.5',
-        'history.t8.year': '2026.11.5',
         'history.timelineAria': '타임라인',
         'nav.choose': '오늘 뭐 먹지',
         'nav.event': '소식·이벤트',
@@ -607,10 +551,6 @@
         'footer.tagline': 'KAIST free food and cafeteria menus in one place',
         'footer.unofficial': 'Babdoduk is an unofficial site run by an individual, not an official KAIST or department notice.',
         'history.heroTitle': 'History of Babdoduk',
-        'history.next.events': 'Past activity record →',
-        'history.next.insta': 'Instagram ↗',
-        'history.next.magazine': 'Babdoduk Magazine →',
-        'history.nextAria': 'Explore more',
         'history.roadmap.desc': 'This timeline will be updated on an ongoing basis to reflect upcoming initiatives and milestones.',
         'history.roadmap.label': 'Roadmap',
         'history.t1.desc': 'Launched the official Babdoduk Instagram channel and began publishing recipe- and lifestyle-oriented content.',
@@ -624,27 +564,22 @@
         'history.t3.desc': 'Published today\'s free food, cafeteria menus, and the magazine in a new structure.',
         'history.t3.label': 'Babdoduk ver2. Open',
         'history.t3.photoAlt': 'Babdoduk ver2',
+        'history.t3.u1.desc': 'Free food at a glance on the home page',
+        'history.t3.u1.label': 'Free-food calendar',
+        'history.t3.u1.year': 'Oct 4',
+        'history.t3.u2.desc': 'A round of 32 dishes, and giveaways marked',
+        'history.t3.u2.label': 'Mukbang World Cup',
+        'history.t3.u2.year': 'Oct 14',
+        'history.t3.u3.desc': 'Anyone can report free food we missed',
+        'history.t3.u3.label': 'Free-food tips',
+        'history.t3.u3.year': 'Nov 2',
+        'history.t3.u4.desc': 'Find free food on the campus map',
+        'history.t3.u4.label': 'Free-food map',
+        'history.t3.u4.year': 'Nov 4',
+        'history.t3.u5.desc': 'Today\'s menu in one tap',
+        'history.t3.u5.label': 'Menu draw',
+        'history.t3.u5.year': 'Nov 5',
         'history.t3.year': 'Sep 30, 2026',
-        'history.t4.desc': 'Free food at a glance on the home page',
-        'history.t4.label': 'ver2.1 Free-food calendar',
-        'history.t4.photoAlt': 'Babdoduk ver2.1',
-        'history.t4.year': 'Oct 4, 2026',
-        'history.t5.desc': 'A round of 32 dishes, and giveaways marked',
-        'history.t5.label': 'ver2.2 Mukbang World Cup',
-        'history.t5.photoAlt': 'Babdoduk ver2.2',
-        'history.t5.year': 'Oct 14, 2026',
-        'history.t6.desc': 'Anyone can report free food we missed',
-        'history.t6.label': 'ver2.3 Free-food tips',
-        'history.t6.photoAlt': 'Babdoduk ver2.3',
-        'history.t6.year': 'Nov 2, 2026',
-        'history.t7.desc': 'Find free food on the campus map',
-        'history.t7.label': 'ver2.4 Free-food map',
-        'history.t7.photoAlt': 'Babdoduk ver2.4',
-        'history.t7.year': 'Nov 4, 2026',
-        'history.t8.desc': 'Today\'s menu in one tap',
-        'history.t8.label': 'ver2.5 Menu draw',
-        'history.t8.photoAlt': 'Babdoduk ver2.5',
-        'history.t8.year': 'Nov 5, 2026',
         'history.timelineAria': 'Timeline',
         'nav.choose': 'What to eat',
         'nav.event': 'News & events',

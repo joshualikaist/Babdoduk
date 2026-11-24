@@ -197,7 +197,34 @@ def picture(key: str, item: dict) -> list[str]:
     ]
 
 
-def timeline_item(cell: list[str], year: str, key: str, title: str, body: str, cell_attrs: str = "") -> list[str]:
+def short_date(day: str, lang: str) -> str:
+    _, month, date = (int(part) for part in day.split("-"))
+    return f"{month}.{date}" if lang == "ko" else f"{MONTHS[month - 1]} {date}"
+
+
+def updates_list(key: str, item: dict) -> list[str]:
+    """The smaller versions inside one entry, one per line (owner 2026-11-24: "크게 ver2라고 해놓고, 오른쪽에
+    ver 2.1, 2.2, 2.3 이렇게 아래에 하나씩")."""
+    ordered = sorted(item.get("updates") or [], key=lambda update: update["date"])
+    if not ordered:
+        return []
+    rows = ['<ol class="timeline-updates">']
+    for index, update in enumerate(ordered, 1):
+        sub = f"history.{key}.u{index}"
+        rows += [
+            '  <li class="timeline-update">',
+            f'    <span class="timeline-update-head"><span class="timeline-update-ver">{text(update["version"])}</span> '
+            f'<span data-i18n="{sub}.label">{text(update["title"]["ko"])}</span></span>',
+            f'    <time class="timeline-update-date" datetime="{update["date"]}" data-i18n="{sub}.year">'
+            f'{short_date(update["date"], "ko")}</time>',
+            f'    <span class="timeline-update-desc" data-i18n="{sub}.desc">{text(update["text"]["ko"])}</span>',
+            '  </li>',
+        ]
+    return rows + ['</ol>']
+
+
+def timeline_item(cell: list[str], year: str, key: str, title: str, body: str, cell_attrs: str = "",
+                  extra: list[str] | None = None) -> list[str]:
     return [
         '<li class="timeline-item">',
         '  <div class="timeline-item-grid">',
@@ -212,6 +239,7 @@ def timeline_item(cell: list[str], year: str, key: str, title: str, body: str, c
         '      <hr class="timeline-rule" />',
         f'      <h2 class="timeline-label" data-i18n="history.{key}.label">{text(title)}</h2>',
         f'      <p class="timeline-desc" data-i18n="history.{key}.desc">{text(body)}</p>',
+        *[f"      {line}" for line in (extra or [])],
         '    </div>',
         '  </div>',
         '</li>',
@@ -229,7 +257,8 @@ def history_blocks(data: dict | None = None) -> dict[str, list[str]]:
     for key, item in milestones(data):
         year = (f'<time class="timeline-year" datetime="{item["date"]}" data-i18n="history.{key}.year">'
                 f'{milestone_date(item["date"], "ko")}</time>')
-        rows += timeline_item(picture(key, item), year, key, item["title"]["ko"], item["text"]["ko"])
+        rows += timeline_item(picture(key, item), year, key, item["title"]["ko"], item["text"]["ko"],
+                              extra=updates_list(key, item))
     roadmap = data["roadmap"]
     rows += timeline_item(['<div class="timeline-item-media timeline-item-media--next">'
                            '<span class="timeline-next-mark">NEXT</span></div>'],
@@ -249,6 +278,10 @@ def history_strings(data: dict | None = None) -> dict[str, dict[str, str]]:
             table[f"history.{key}.year"] = milestone_date(item["date"], lang)
             table[f"history.{key}.label"] = item["title"][lang]
             table[f"history.{key}.desc"] = item["text"][lang]
+            for index, update in enumerate(sorted(item.get("updates") or [], key=lambda u: u["date"]), 1):
+                table[f"history.{key}.u{index}.label"] = update["title"][lang]
+                table[f"history.{key}.u{index}.year"] = short_date(update["date"], lang)
+                table[f"history.{key}.u{index}.desc"] = update["text"][lang]
         table["history.roadmap.label"] = data["roadmap"]["title"][lang]
         table["history.roadmap.desc"] = data["roadmap"]["text"][lang]
     return tables
