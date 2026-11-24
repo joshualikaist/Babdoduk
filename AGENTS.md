@@ -31,6 +31,10 @@ Record the owner's bypass authorization in the task report. A bypass change is b
 
 **Lab never trails production.** If `origin/main` has a source commit that `origin/lab` lacks (generated-data bot commits aside), staging no longer previews production: back-sync it before starting product work. A release is not operationally complete until that back-sync is pushed and deployed to babdoduk-lab. The procedures are `session-start` (the drift check), `release-babdoduk` (the lab acceptance gate, selective promotion and back-sync) and `handoff`.
 
+## Talking to the owner (non-negotiable)
+
+Every message to the owner is in plain, short Korean: final reports, questions, and every progress line written between tool calls. No English words, not even quoted UI labels or branch names in prose; commands, paths, branch names and code go only in code blocks. Owner 2026-11-24: "한국어로 답장해 … 왜 자꾸 영어로 말하는거야". Code, comments, commit messages and these repository documents stay in English.
+
 ## Before starting
 
 1. Read the documents the task needs: `PRD.md` for product scope, `DESIGN_SYSTEM.md` for visual work, `ARCHITECTURE.md` for system boundaries, `docs/GUIDE.md` (pages, data, pipelines and operations; `README.md` is only the short overview) and the `docs/` file governing the feature. Inspect the implementation and tests before planning a replacement.
