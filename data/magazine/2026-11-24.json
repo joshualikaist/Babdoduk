@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-24",
+  "generatedAt": "2026-11-24T19:52:37+09:00",
+  "rules": "lanes-v1",
+  "featured": {
+    "title": "\"치킨집 갔더니 닭볶음탕이?\"…매장 메뉴판 확 바뀐 이유가 [권용훈의 트렌드워치]",
+    "summary": "치즈볼과 감자튀김 등 간단한 곁들임 메뉴에서 벗어나 닭편육과 감바스, 닭볶음탕까지 등장했다.",
+    "source": "한국경제TV",
+    "sourceId": "web-exa-trend",
+    "candidateId": "c_849ef1d1a9e58b24",
+    "url": "https://www.wowtv.co.kr/NewsCenter/News/Read?articleId=202611233350i",
+    "medium": "news",
+    "discoveredAt": "2026-11-24T19:52:37+09:00",
+    "publishedAt": "2026-11-24T13:00:01+09:00",
+    "image": "https://img.hankyung.com/photo/202611/01.46514287.1.jpg",
+    "imageSource": "source_page_og",
+    "trendEvidence": [
+      "explicit_source_claim",
+      "sales_data"
+    ],
+    "category": "trend",
+    "heroKind": "trend"
+  },
+  "lanes": {
+    "trend": {
+      "lead": "요즘 사람들이 뭘 먹고 있는지",
+      "items": [
+        {
+          "title": "아리바이오 \"먹는 치매약, 질병진행 7.2개월 늦춰\"",
+          "summary": "아리바이오가 경구용 알츠하이머병 치료제 후보물질 ‘AR1001’을 1년 반 동안 복용한 환자의 질병 진행이 약 7.2개월 늦춰졌다는 글로벌 임상 3상 연장시험 결과를 처음 공개했다.",
+          "source": "뉴시스",
+          "sourceId": "news-newsis-health",
+          "candidateId": "c_1db71b30ad446b62",
+          "url": "https://www.newsis.com/view/NISX20261123_0003879272",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T13:41:06+09:00",
+          "image": "https://image.newsis.com/2026/11/23/NISI20261123_0002299634_web.jpg?rnd=20261123132811",
+          "imageSource": "feed_html",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "제과·스낵 전시회 ‘ISM 2027’, 내년 1월 31일 쾰른서 개막",
+          "summary": "세계 제과·스낵 산업 전시회 ‘ISM 2027’이 원료부터 제조, 완제품까지 3개 전문 전시회로 세분화해 내년 1월 31일부터 2월 3일까지 독일 쾰른에서 열린다.이번 행사는 ‘가치사슬 전반의…",
+          "source": "식품저널",
+          "sourceId": "news-foodnews",
+          "candidateId": "c_6763bc69cedec8cd",
+          "url": "http://www.foodnews.co.kr/news/articleView.html?idxno=121123",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T20:22:14+09:00",
+          "image": "https://cdn.foodnews.co.kr/news/thumbnail/202611/121123_87751_2156_v150.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "explicit_source_claim",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "BBQ ‘서울닭방’, 여의도 직장인 입맛 잡았다…평일 매출 주말보다 40% 높아",
+          "summary": "제너시스BBQ 그룹이 선보인 K-치킨 델리 브랜드 ‘서울닭방(SEOUL DAKBANG)’이 여의도 직장인들의 점심과 퇴근길 수요를 확보하며 매출 성장세를 이어가고 있다.지난 8월 더현대 서울에 첫 매장을 연 이후…",
+          "source": "푸드아이콘",
+          "sourceId": "news-foodicon",
+          "candidateId": "c_e29963c28fb4735a",
+          "url": "http://www.foodicon.co.kr/news/articleView.html?idxno=36357",
+          "medium": "news",
+          "discoveredAt": "2026-11-23T18:05:39+09:00",
+          "publishedAt": "2026-11-23T17:50:19+09:00",
+          "image": "http://www.foodicon.co.kr/news/photo/202611/36357_55428_506.jpg",
+          "imageSource": "source_page_og",
+          "trendEvidence": [
+            "sales_data",
+            "corroborated"
+          ]
+        },
+        {
+          "title": "“50세 넘었다면 이 9가지 음식 줄여라”…의사들이 경고한 식습관, 무엇?",
+          "summary": "50세 이후에도 젊었을 때와 똑같은 식습관을 유지하면 안 된다는 의사들의 경고가 나왔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_d14dc41e8a8e4db5",
+          "url": "https://kormedi.com/2911229/",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T12:02:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        },
+        {
+          "title": "54세 션, “관절 나이 20대, 혈관은 10대”⋯러닝만큼 챙긴 ‘이 습관’은?",
+          "summary": "강호동이 무릎과 발목 검사를 받는지 묻자, 션은 “검사를 받았는데 관절 나이가 20대로 나왔다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ee619f56cd041dd8",
+          "url": "https://kormedi.com/2910158/",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T18:02:00+09:00",
+          "trendEvidence": [
+            "corroborated"
+          ]
+        }
+      ]
+    },
+    "tips": {
+      "lead": "밥이 더 맛있어지는 작은 조리 팁",
+      "items": [
+        {
+          "title": "갈비양념 간장 계란프라이 만들기｜일본식 달콤짭짤 계란프라이 덮밥 레시피",
+          "summary": "갈비양념과 간장을 섞어 만드는 계란 프라이 덮밥입니다.",
+          "source": "기록하는 인간 (요리)",
+          "sourceId": "blog-cultureagora",
+          "candidateId": "c_17f125c483dd3c63",
+          "url": "https://cultureagora.tistory.com/470",
+          "medium": "blog",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T07:00:57+09:00",
+          "image": "https://blog.kakaocdn.net/dn/lsAFN/dJMcagA2s2j/TvW6tesr4liBf9XTKmSvE0/tfile.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "알토란 천상현 셰프 애호박찌개 만드는 법",
+          "summary": "알토란 620회에서는 속 풀리는 뜨끈한 밥상 편이 방송되었습니다.",
+          "source": "알고 보면 (방송 레시피)",
+          "sourceId": "blog-seon1982",
+          "candidateId": "c_497e218181359d04",
+          "url": "https://seon1982.tistory.com/4164",
+          "medium": "blog",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T00:00:13+09:00",
+          "image": "https://blog.kakaocdn.net/dn/ben3jv/dJMcai6Brnd/As04vnwCvQiIA98PL9d1ok/img.png",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "수삼 인삼 무침 만들기 수삼 뿌리 요리 레시피",
+          "summary": "수삼 두 채를 솔로 문질려 씻으면서 떨어져 나온 수삼 뿌리를 이용해 수삼 인삼 무침을 만들었습니다.",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_eed9193b1bb41886",
+          "url": "https://twins0807.tistory.com/entry/%EC%88%98%EC%82%BC-%EC%9D%B8%EC%82%BC-%EB%AC%B4%EC%B9%A8-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%88%98%EC%82%BC-%EB%BF%8C%EB%A6%AC-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T08:10:01+09:00"
+        },
+        {
+          "title": "수삼 인삼 차 인삼 우유 만들기 요리 레시피",
+          "summary": "수삼 두 채를 씻어 오래 두고 먹을 수삼은 냉동실에 얼려 두고 씻으면서 떨어져 나온 뿌리는 수삼 인삼 무침으로 해서 먹고 나머지 수삼은 압력솥에 대추와 함께 끓여 삶은 수삼은 건져 다지기에 갈아 우유에 한 큰술씩…",
+          "source": "배고픈맘의 행복레시피",
+          "sourceId": "blog-twins0807",
+          "candidateId": "c_4ca0149811c57b61",
+          "url": "https://twins0807.tistory.com/entry/%EC%88%98%EC%82%BC-%EC%9D%B8%EC%82%BC-%EC%B0%A8-%EC%9D%B8%EC%82%BC-%EC%9A%B0%EC%9C%A0-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%9A%94%EB%A6%AC-%EB%A0%88%EC%8B%9C%ED%94%BC",
+          "medium": "blog",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T11:35:37+09:00"
+        },
+        {
+          "title": "밀키트 오리주물럭에 수삼을 더하다! 향긋하고 든든한 오리수삼불고기",
+          "summary": "향긋하고 든든한 오리수삼불고기 6개월 된 손녀를 돌보다 보니 매일 식사를 준비하는 일도 만만치 않습니다.",
+          "source": "고요한 산사의 풍경소리 (집밥)",
+          "sourceId": "blog-heysukim114",
+          "candidateId": "c_83f97ad37d1cfbf3",
+          "url": "https://heysukim114.tistory.com/entry/%EB%B0%80%ED%82%A4%ED%8A%B8-%EC%98%A4%EB%A6%AC%EC%A3%BC%EB%AC%BC%EB%9F%AD%EC%97%90-%EC%88%98%EC%82%BC%EC%9D%84-%EB%8D%94%ED%95%98%EB%8B%A4",
+          "medium": "blog",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T00:00:45+09:00"
+        }
+      ]
+    },
+    "health": {
+      "lead": "맛도 포기하지 않는 건강식",
+      "items": [
+        {
+          "title": "“보약이 따로 없다”… 김소형 박사가 추천한 ‘두부 브로콜리 수프’",
+          "summary": "찬 바람이 불면 따뜻하고 부드러운 수프 한 그릇이 생각날 수 있다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_1753ff98c0730ae6",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/24/2026112402438.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T18:00:00+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/24/2026112402433_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“길게 썰고, 잘게 다지고” 비타민 보고 ‘파프리카 활용법 3’",
+          "summary": "파프리카는 비타민C, 베타카로틴, 식이섬유 등 영양소가 풍부한 채소다.",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_d62d40a10f8c21f2",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/24/2026112401250.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T11:31:01+09:00",
+          "image": "https://health.chosun.com/site/data/img_dir/2026/11/24/2026112401245_0.jpg",
+          "imageSource": "source_page_og"
+        },
+        {
+          "title": "“감자볶음에 ‘이것’ 꼭 넣는데?”…혈압에 부담, 대장암 위험까지?",
+          "summary": "감자에는 혈압 관리에 도움이 되는 칼륨이 들어 있지만, 햄을 넣으면 나트륨과 가공육 섭취가 늘어난다.",
+          "source": "코메디닷컴",
+          "sourceId": "news-kormedi",
+          "candidateId": "c_ec89c87b434fdfc1",
+          "url": "https://kormedi.com/2910890/",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T17:07:00+09:00"
+        },
+        {
+          "title": "전국한우협회, “러너 회복 식단엔 한우”… 한우 육포 시식·체험 이벤트 인기",
+          "summary": "전국한우협회(회장 민경천)는 지난 21일 서울 여의도공원 문화의마당에서 열린 ‘2026 아식스 서울신문 고프리런’에 참가해 러너들에게 한우의 영양학적 가치를 알렸다.한우는 근육 생성과 회복에 필요한 양질의 단백질은…",
+          "source": "식품외식경제",
+          "sourceId": "news-foodbank",
+          "candidateId": "c_278cd83128659fe7",
+          "url": "http://www.foodbank.co.kr/news/articleView.html?idxno=68846",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-25T01:08:00+09:00"
+        },
+        {
+          "title": "초고령사회, 맞춤형 영양관리 해법 모색",
+          "summary": "초고령사회에 대응해 고령자의 건강한 노화를 지원하기 위한 맞춤형 영양관리와 고령친화식품의 역할을 모색하는 학술교류의 장이 마련됐다.",
+          "source": "대한급식신문",
+          "sourceId": "news-fsnews",
+          "candidateId": "c_ce5291c627e37128",
+          "url": "http://www.fsnews.co.kr/news/articleView.html?idxno=62742",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T05:18:27+09:00"
+        }
+      ]
+    },
+    "habit": {
+      "lead": "잘 먹는 법에 대한 작은 이야기",
+      "items": [
+        {
+          "title": "“담배처럼 규제하라” 미국 강타한 초가공식품 소송전-제이 리(Jay Lee)의 미국 통신(184)",
+          "summary": "이종찬 대표(J&B Food Consulting) 최근 미국 식품업계는 그야말로 ‘역대급 긴장감’ 속에 휩싸여 있다.",
+          "source": "식품음료신문",
+          "sourceId": "news-thinkfood",
+          "candidateId": "c_c7f6fe57975972c0",
+          "url": "https://www.thinkfood.co.kr/news/articleView.html?idxno=201671",
+          "medium": "news",
+          "discoveredAt": "2026-11-24T19:52:37+09:00",
+          "publishedAt": "2026-11-24T07:47:00+09:00",
+          "image": "https://cdn.thinkfood.co.kr/news/photo/202611/201671_202352_5112.jpg",
+          "imageSource": "feed_html"
+        },
+        {
+          "title": "과일·채소 많이 먹는 사람, 우울증 위험 37％ 낮았다",
+          "summary": "과일과 채소를 많이 먹는 사람은 적게 먹는 사람보다 우울증에 걸릴 위험이 낮다는 연구 결과가 나왔다.이란 테헤란의대 나자닌 자마니안 연구팀은 과일·채소 섭취와 우울증 발생 위험의 ..",
+          "source": "헬스조선",
+          "sourceId": "news-healthchosun",
+          "candidateId": "c_272d86d64bddb17d",
+          "url": "https://health.chosun.com/site/data/html_dir/2026/11/18/2026111802688.html",
+          "medium": "news",
+          "discoveredAt": "2026-11-18T17:25:17+09:00",
+          "publishedAt": "2026-11-18T16:45:02+09:00"
+        }
+      ]
+    }
+  }
+}
