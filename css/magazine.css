@@ -268,6 +268,25 @@ body.mg-body .site-footer {
   cursor: pointer;
 }
 
+/* ‹ and ›: a full 44 px tap target each, dimmed where there is no edition to go to. */
+.mg-mobile-edition #mgDatePrev,
+.mg-mobile-edition #mgDateNext {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 22px;
+  color: #1e1d1a;
+}
+.mg-mobile-edition #mgDatePrev:disabled,
+.mg-mobile-edition #mgDateNext:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.mg-mobile-edition #mgDatePrev:focus-visible,
+.mg-mobile-edition #mgDateNext:focus-visible {
+  outline: 3px solid var(--color-focus, #1e1d1a);
+  outline-offset: 2px;
+}
+
 /* The date is the calendar's button: slightly raised so it reads as something to press (owner 2026-11-24,
    "날짜를 누르면 달력이 나오게 하고, 이거 살짝 입체로"). */
 .mg-mobile-edition .mg-date-pick {
