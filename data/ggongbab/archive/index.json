@@ -1,10 +1,118 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-24T14:34:00+09:00",
+  "generatedAt": "2026-11-25T06:02:03+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 55,
+  "count": 58,
   "events": [
+    {
+      "id": "e84cb245-c3a1-4915-92a2-f7585d832ef7",
+      "title": "AI 엔지니어 토크 워크숍",
+      "summary": "AI 엔지니어의 실무와 커리어에 대해 듣는 워크숍입니다. 다과와 ChatGPT Plus 1개월 이용권을 무료로 제공합니다.",
+      "startAt": "2026-11-24T19:00:00+09:00",
+      "endAt": "2026-11-24T21:00:00+09:00",
+      "dateText": "2026-11-24",
+      "timeText": "19:00~21:00",
+      "location": {
+        "name": "KAIST 본원",
+        "building": "N4",
+        "room": "1125호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "다과",
+        "source": "text"
+      },
+      "organizer": "OpenAI Student Collective at KAIST",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "ChatGPT Plus 1개월 이용권(선착순)"
+      }
+    },
+    {
+      "id": "4c958c32-9932-4b7d-a041-67e37018bc7b",
+      "title": "2026 화학과 학과설명회",
+      "summary": "화학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-24T18:30:00+09:00",
+      "endAt": "2026-11-24T20:30:00+09:00",
+      "dateText": "2026년 11월 24일(화)",
+      "timeText": "18:30~20:30",
+      "location": {
+        "name": "E6 공동강의실",
+        "building": "E6",
+        "room": "공동강의실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "화학과",
+      "eligibility": "새내기과정학부 학생",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "3298fd48-5107-499a-98b5-88a76e312e7b",
+      "title": "2026 물리학과 학과설명회",
+      "summary": "물리학과 학과설명회가 11월 24일 KI빌딩 퓨전홀에서 진행됩니다. 사전예약자에게 치킨과 피자가 제공되며, 사전등록자는 경품 이벤트에 참여할 수 있습니다.",
+      "startAt": "2026-11-24T16:30:00+09:00",
+      "endAt": "2026-11-24T18:30:00+09:00",
+      "dateText": "2026년 11월 24일(화)",
+      "timeText": "16:30~18:30",
+      "location": {
+        "name": "창의학습관 터만홀",
+        "building": "E11",
+        "room": "터만홀"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "물리학과",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        },
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      }
+    },
     {
       "id": "5bdb46c4-a089-41fa-aed2-5f753286166d",
       "title": "2026 건설및환경공학과 학과설명회",
