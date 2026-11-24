@@ -59,7 +59,7 @@ def browser():
 
 
 def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=None, clipboard="ok",
-             notice_seen=True, user_agent=None):
+             notice_seen=True, user_agent=None, archive_status=200, signed_in=False):
     extra = {"user_agent": user_agent} if user_agent else {}
     context = browser.new_context(viewport={"width": size[0], "height": size[1]}, timezone_id="Asia/Seoul",
                                   service_workers="block", accept_downloads=True, **extra)
@@ -78,19 +78,32 @@ def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=
         init.append("Object.defineProperty(navigator, 'clipboard', {value: {writeText: (t) => { window.__copied.push(t); return Promise.resolve(); }}});")
     else:
         init.append("Object.defineProperty(navigator, 'clipboard', {value: {writeText: () => Promise.reject(new Error('denied'))}});")
-    context.add_init_script(" ".join(init))
+    fake = ""
+    if signed_in:
+        # Signed in through the fake account client of tests/test_my_babdoduk.py (no network).
+        from tests.test_my_babdoduk import FAKE, TOKEN_KEY, user
+        db = {"user": user(), "tables": {"saved_events": [], "saved_places": [], "profiles": []}, "calls": [], "fail": {}}
+        init.append(f"if (!localStorage.getItem('__fakedb')) localStorage.setItem('__fakedb', {json.dumps(json.dumps(db))});")
+        init.append(f"localStorage.setItem('{TOKEN_KEY}', '{{}}');")
+        fake = FAKE
+    context.add_init_script(" ".join(init) + fake)
 
     def handle(route):
         url = urlparse(route.request.url)
         if url.hostname != HOST:
             return route.abort()
         path = unquote(url.path).lstrip("/")
+        if signed_in and path == "js/babdoduk-auth-config.js":
+            return route.fulfill(content_type="application/javascript",
+                                 body=f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}']}};")
         if path == "data/ggongbab/latest.json":
             return route.fulfill(json=LIVE)
         if path == "data/ggongbab/archive/index.json":
-            return route.fulfill(json=ARCHIVE)
-        if path == "js/ggongbab-public-config.js":
+            return route.fulfill(json=ARCHIVE) if archive_status == 200 else route.fulfill(status=archive_status, body="")
+        if path == "js/ggongbab-public-config.js" and not signed_in:   # signed in, the account needs the real one
             return route.fulfill(content_type="application/javascript", body="window.BABDODUK_PUBLIC_FEED_CONFIG = {};")
+        if path == "js/ggongbab-public-feed.js" and signed_in:
+            return route.fulfill(content_type="application/javascript", body="")
         if path.startswith("data/"):
             return route.fulfill(status=404, body="")
         file = (ROOT / path).resolve()
@@ -105,6 +118,9 @@ def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=
     page.on("pageerror", lambda exc: errors.append(str(exc)))
     page.goto(f"https://{HOST}/ggongbab.html{query}", wait_until="networkidle")
     page.locator(".gg-card").first.wait_for()
+    if signed_in:
+        page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some((c) => c[0] === 'saved_events')")
+        page.wait_for_timeout(200)
     return context, page, errors
 
 
@@ -257,21 +273,23 @@ def test_changes_since_saving_ended_and_missing(browser):
     assert len(changes) == 2
     assert changes[0].startswith("시간 변경") and "11:00" in changes[0] and "12:00" in changes[0]
     assert changes[1].startswith("장소 변경") and "E3 · 201호" in changes[1]
-    # The saved list: the change counted, ended and missing listings kept apart.
+    # The saved list: the change counted, ended listings kept apart.
     assert "변경 1" in page.locator("[data-gg-saved]").inner_text()
     page.locator("[data-gg-saved]").click()
     rows = page.locator(".gg-saved-row")
     tags = dict(zip(rows.evaluate_all("els => els.map(el => el.dataset.savedId)"),
                     rows.locator(".gg-saved-tags").all_inner_texts()))
     assert tags["lunch"] == "변경됨" and tags["wed"] == ""
-    assert tags["gone"] == "목록에서 빠짐"
+    # Owner 2026-11-24 ("빠진거는 알아서 별표에서도 빠져야지"): a listing that left the published list before it was
+    # over loses its star by itself, once both lists have loaded.
+    assert "gone" not in tags and "gone" not in [i["id"] for i in stored(page)["items"]]
     # Owner 2026-11-12: from the day after its event a star leaves the list by itself; the saved row stays,
     # so the subscribed calendar keeps the event. One that ended earlier today is still shown as ended.
     assert tags["morning"] == "종료" and "oldone" not in tags and "gonepast" not in tags
     assert {"oldone", "gonepast"} <= {i["id"] for i in stored(page)["items"]}
-    assert page.locator(".gg-saved-n").inner_text() == "4"
+    assert page.locator(".gg-saved-n").inner_text() == "3"
     body = page.locator(".gg-saved-body").inner_text()
-    assert "취소됐" in body and "취소됨" not in body and "취소 확정" not in body   # never asserted as cancelled
+    assert "목록에서 빠짐" not in body and "취소" not in body   # never asserted as cancelled
     assert "참석" not in body and "다녀옴" not in body  # copy cleanup, owner 2026-11-12: the past-list note is gone; still no attendance claim
     assert page.locator('.gg-saved-row[data-saved-id="morning"] [data-gg-goto]').count() == 0
     # "확인했어요" makes the newest copy the visitor's, and the marks go.
@@ -282,6 +300,18 @@ def test_changes_since_saving_ended_and_missing(browser):
     # Removing a past one.
     page.locator('[data-gg-unsave="morning"]').click()
     assert "morning" not in [i["id"] for i in stored(page)["items"]]
+    assert not errors, errors
+    context.close()
+
+
+def test_a_failed_list_never_takes_a_star_away(browser):
+    # A withdrawn-looking listing is only judged once both lists really loaded: with the archive failing, the
+    # star stays and the row says 확인 중.
+    storage = saved_store(item("gone", "2026-11-20T12:00:00+09:00", "2026-11-20T13:00:00+09:00", title="사라진 행사"))
+    context, page, errors = open_hub(browser, storage=storage, query="#saved", archive_status=500)
+    row = page.locator('.gg-saved-row[data-saved-id="gone"]')
+    assert row.locator(".gg-saved-tags").inner_text() == "확인 중"
+    assert [i["id"] for i in stored(page)["items"]] == ["gone"]
     assert not errors, errors
     context.close()
 
@@ -418,7 +448,8 @@ def test_shared_links_open_the_listing_or_say_why_not(browser):
 
 
 def test_calendar_one_listing_at_a_time(browser):
-    context, page, errors = open_hub(browser)
+    # Signed in only (owner 2026-11-24); a computer gets Google Calendar's add page and the file.
+    context, page, errors = open_hub(browser, signed_in=True)
     open_card(page, "lunch")
     cal_button = card(page, "lunch").locator("[data-gg-cal]")
     assert cal_button.get_attribute("aria-expanded") == "false"
@@ -432,6 +463,8 @@ def test_calendar_one_listing_at_a_time(browser):
     assert q["dates"] == ["20261109T030000Z/20261109T040000Z"] and q["text"] == ["lunch 행사"]
     assert f"https://{HOST}/ggongbab.html?e=lunch" in q["details"][0]
     assert panel.locator("a").get_attribute("rel") == "noopener"
+    for box in panel.locator(".gg-btn").evaluate_all("els => els.map(el => el.getBoundingClientRect().height)"):
+        assert box >= 43.5
     with page.expect_download() as info:
         panel.locator("[data-gg-ics]").click()
     download = info.value
@@ -457,7 +490,7 @@ def test_new_feature_note_closes_for_good(browser):
     page.locator("[data-gg-more]").click()
     assert not page.locator(".gg-more-panel").is_visible()
     note = page.locator(".gg-new")
-    assert "저장·공유·캘린더" in note.inner_text()  # copy cleanup, owner 2026-11-12
+    assert "저장·공유" in note.inner_text() and "캘린더" not in note.inner_text()  # a guest gets no calendar (owner 2026-11-24)
     # It sits in the page head, above the list, and covers nothing.
     assert page.evaluate("getComputedStyle(document.querySelector('.gg-new')).position") == "static"
     page.locator("[data-gg-new-close]").click()
@@ -505,10 +538,10 @@ def test_english_and_phone_layout(browser):
         page.locator("[data-gg-more]").click()
         page.locator("[data-gg-saved]").click()
         open_card(page, "lunch")
-        card(page, "lunch").locator("[data-gg-cal]").click()
         live_ui = " ".join(page.locator(".gg-more-panel, .gg-saved, .gg-tools, .gg-cal, .gg-new").all_inner_texts())
         assert not re.search(r"[가-힣]", live_ui.replace("lunch 행사", "")), live_ui
-        assert "Saved" in live_ui and "Add to calendar" in live_ui  # copy cleanup, owner 2026-11-12
+        assert "Saved" in live_ui and "Share" in live_ui
+        assert "calendar" not in live_ui.lower(), "a guest gets no calendar (owner 2026-11-24)"
         assert page.evaluate("document.documentElement.scrollWidth") <= width
         # Every new control is a 44 px tap target with a name.
         for box in page.locator(".gg-save, .gg-tool, .gg-more, .gg-chip, .gg-unsave, .gg-new-close, .gg-saved-toggle, .gg-cal .gg-btn").evaluate_all(

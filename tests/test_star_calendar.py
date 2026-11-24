@@ -1,346 +1,148 @@
-"""The star also adds to the calendar (owner 2026-11-11, docs/GGONGBAB_LIVE.md): a web page cannot write
-into a phone's calendar by itself, so the first star asks once, and for visitors who said yes every later
-star opens the calendar's own add screen (an .ics file with a 30-minute alert on Apple devices, Google
-Calendar's add page elsewhere). The answer stays in this browser and can be changed in 저장한 꽁밥.
-Synthetic data and a fixed clock (tests/test_ggongbab_live.py); every request off the test host is refused,
-so the Google Calendar tab is only checked by its address."""
+"""The calendar is for signed-in visitors only (owner 2026-11-24: "로그인을 하지 않으면 그런 기능을 아예 주지 말고,
+로그인 시에만 그 기능이 첨부되도록"). A guest gets no calendar button and no calendar question anywhere, whatever an
+older visit left in this browser; signed in, an iPhone points to the one calendar connection of 마이 밥도둑
+(tests/test_push_alerts.py) and other devices get Google Calendar's add page and the listing's file, once per
+listing (docs/CALENDAR_FEED.md). Synthetic data and a fixed clock (tests/test_ggongbab_live.py); every request
+off the test host is refused, so the Google Calendar tab is only checked by its address."""
+import json
+import shutil
+import subprocess
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+
+import pytest
 
 from tests.test_ggongbab_live import browser, card, open_card, open_hub, stored  # noqa: F401  (browser is a fixture)
 from tests.test_home_calendar_live import open_home
 
-KEY = "babdoduk-star-calendar"
+ROOT = Path(__file__).resolve().parents[1]
 IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
           "Version/18.0 Mobile/15E148 Safari/604.1")
 ANDROID = ("Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) "
            "Chrome/131.0.0.0 Mobile Safari/537.36")
 KAKAO = ANDROID + " KAKAOTALK 11.0.0"
 CHROME_IPHONE = IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")
-# Records each Safari handoff link the page clicks and stops it there: a headless browser cannot follow
-# x-safari-https:, and its attempt would block the page's later clicks.
+PC = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+# What older visits left in a guest's browser: the star's calendar answer and a sent listing.
+OLD_GUEST = {"babdoduk-star-calendar": "on", "babdoduk-calendar-sent": '{"wed": "2026-11-11T17:00:00+09:00"}'}
+# Records any link to another app the page clicks (none is expected) and stops it there.
 HANDOFFS = """() => document.addEventListener('click', (e) => {
   const a = e.target && e.target.closest && e.target.closest('a');
-  if (a && a.href.startsWith('x-safari-')) { e.preventDefault(); (window.__handoffs = window.__handoffs || []).push(a.href); }
+  if (a && !/^https?:/.test(a.href)) { e.preventDefault(); (window.__handoffs = window.__handoffs || []).push(a.href); }
 }, true)"""
+ICS = r"""
+const fs = require('fs'), vm = require('vm');
+const window = { navigator: { userAgent: '' }, document: {}, localStorage: null, location: { origin: '' } };
+const context = vm.createContext({ window, URLSearchParams, Date, Intl, Math, JSON, encodeURIComponent, unescape, escape, console });
+for (const f of ['js/ggongbab-select.js', 'js/ggongbab-live.js']) vm.runInContext(fs.readFileSync(f, 'utf8'), context);
+const ev = {id: 'x', title: '점심', startAt: '2026-11-09T12:00:00+09:00', endAt: '2026-11-09T13:00:00+09:00',
+            location: {building: 'E11', room: '', name: ''}, food: {provided: 'true'}};
+console.log(JSON.stringify(window.BabdodukLive.icsText(ev, {stamp: '2026-11-09T00:00:00Z'})));
+"""
 
 
-def google_tab(context):
-    """Answers Google Calendar's add page with an empty page, so the new tab keeps its address offline."""
-    context.route("https://calendar.google.com/**", lambda route: route.fulfill(status=200, content_type="text/html", body=""))
-
-
-def pref(page):
-    return page.evaluate(f"localStorage.getItem('{KEY}')")
-
-
-def test_the_file_carries_a_30_minute_alert_and_the_route_follows_the_device(browser):  # noqa: F811
-    context, page, errors = open_hub(browser)
-    out = page.evaluate("""(uas) => {
-      const L = window.BabdodukLive;
-      const ev = {id: 'x', title: '점심', startAt: '2026-11-09T12:00:00+09:00', endAt: '2026-11-09T13:00:00+09:00',
-                  location: {building: 'E11', room: '', name: ''}, food: {provided: 'true'}};
-      return {ics: L.icsText(ev, {stamp: '2026-11-09T00:00:00Z'}),
-              routes: uas.map((ua) => L.calendarRoute(ua))};
-    }""", [IPHONE, ANDROID, KAKAO, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15",
-           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0",
-           CHROME_IPHONE, IPHONE + " Instagram 350.0", ANDROID + " Instagram 350.0", IPHONE + " KAKAOTALK 11.0.0"])
-    ics = out["ics"]
+def test_the_file_carries_a_30_minute_alert():
+    """The file a signed-in computer or Android phone downloads keeps the 30-minute alert (owner 2026-11-11)."""
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    out = subprocess.run(["node", "-e", ICS], cwd=ROOT, capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    ics = json.loads(out.stdout)
     alarm = ics[ics.index("BEGIN:VALARM"):ics.index("END:VALARM")]
     assert "TRIGGER:-PT30M" in alarm and "ACTION:DISPLAY" in alarm and "DESCRIPTION:점심" in alarm
     assert ics.index("END:VALARM") < ics.index("END:VEVENT")
-    # iPhone Chrome and in-app browsers keep a calendar file as a download: Safari opens it instead (never Google).
-    assert out["routes"] == ["ics", "google", "manual", "ics", "google", "safari", "safari", "google", "manual"]
-    assert errors == []
-    context.close()
 
 
-def test_yes_opens_the_calendar_now_and_on_every_later_star(browser):  # noqa: F811
-    context, page, errors = open_hub(browser, user_agent=ANDROID)
-    google_tab(context)
-    star = card(page, "lunch").locator(".gg-save")
-    star.click()
-    ask = page.locator("#starCalAsk")
-    assert ask.get_attribute("role") == "dialog"
-    assert page.locator("#starCalAskTitle").inner_text() == "별 누를 때 내 캘린더에도 넣을까요?"
-    assert "30분 전" in page.locator("#starCalAskBody").inner_text()
-    assert page.evaluate("document.activeElement.textContent") == "넣을게요"
-    assert [i["id"] for i in stored(page)["items"]] == ["lunch"], "saved before the question is answered"
-    with context.expect_page() as info:
-        ask.locator(".starcal-yes").click()
-    q = parse_qs(urlparse(info.value.url).query)
-    assert urlparse(info.value.url).hostname == "calendar.google.com"
-    assert q["text"] == ["lunch 행사"] and q["dates"] == ["20261109T030000Z/20261109T040000Z"]
-    info.value.close()
-    assert pref(page) == "on" and page.locator("#starCalAsk").count() == 0
-    assert page.locator(".gg-toast").inner_text() == "새 창에서 저장을 눌러 주세요"  # copy cleanup, owner 2026-11-12
-    assert page.evaluate("document.activeElement.getAttribute('data-gg-save')") == "lunch"
-    # Later stars open it straight away, without asking again.
-    with context.expect_page() as info:
-        card(page, "wed").locator(".gg-save").click()
-    assert parse_qs(urlparse(info.value.url).query)["text"] == ["wed 행사"]
-    info.value.close()
-    assert page.locator("#starCalAsk").count() == 0
-    assert page.locator(".gg-toast").inner_text().startswith("저장했어요")
-    # Removing a star opens nothing.
-    pages = len(context.pages)
-    card(page, "wed").locator(".gg-save").click()
-    assert len(context.pages) == pages and page.locator("#starCalAsk").count() == 0
-    # The switch in 저장한 꽁밥 turns it off again.
-    page.locator("[data-gg-saved]").click()
-    switch = page.locator("[data-gg-starcal]")
-    assert switch.get_attribute("aria-pressed") == "true" and "켜짐" in switch.inner_text()
-    switch.click()
-    assert pref(page) == "off" and page.locator("[data-gg-starcal]").get_attribute("aria-pressed") == "false"
-    assert page.evaluate("document.activeElement.hasAttribute('data-gg-starcal')")
-    card(page, "noend").locator(".gg-save").click()
-    assert len(context.pages) == pages and page.locator("#starCalAsk").count() == 0
-    assert errors == []
-    context.close()
-
-
-def test_no_escape_and_listings_without_a_time(browser):  # noqa: F811
-    context, page, errors = open_hub(browser, user_agent=ANDROID)
-    # A giveaway listed only by its sign-up deadline has no time to add: no question.
-    card(page, "gift").locator(".gg-save").click()
-    assert page.locator("#starCalAsk").count() == 0 and pref(page) is None
-    # Escape answers nothing, so the next star asks again.
-    card(page, "lunch").locator(".gg-save").click()
-    page.locator("#starCalAsk").wait_for()
-    page.keyboard.press("Escape")
-    assert page.locator("#starCalAsk").count() == 0 and pref(page) is None
-    assert page.evaluate("document.activeElement.getAttribute('data-gg-save')") == "lunch"
-    pages = len(context.pages)
-    card(page, "wed").locator(".gg-save").click()
-    page.locator("#starCalAsk .starcal-no").click()
-    assert pref(page) == "off" and len(context.pages) == pages
-    assert page.locator(".gg-toast").inner_text() == "캘린더에는 넣지 않을게요"  # copy cleanup, owner 2026-11-12
-    card(page, "noend").locator(".gg-save").click()
-    assert page.locator("#starCalAsk").count() == 0
-    assert errors == []
-    context.close()
-
-
-def test_an_iphone_gets_the_file_and_kakaotalk_gets_the_buttons(browser):  # noqa: F811
-    context, page, errors = open_hub(browser, user_agent=IPHONE, storage={KEY: "on"})
-    with page.expect_download() as info:
-        card(page, "lunch").locator(".gg-save").click()
-    text = Path(info.value.path()).read_text(encoding="utf-8")
-    assert info.value.suggested_filename == "babdoduk-2026-11-09.ics"
-    assert "DTSTART:20261109T030000Z" in text and "TRIGGER:-PT30M" in text
-    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 추가를 눌러 주세요"  # copy cleanup, owner 2026-11-12
-    assert errors == []
-    context.close()
-
-    context, page, errors = open_hub(browser, user_agent=KAKAO, storage={KEY: "on"})
-    pages = len(context.pages)
-    card(page, "lunch").locator(".gg-save").click()
-    assert len(context.pages) == pages
-    assert "카카오톡에선 바로 안 돼요" in page.locator(".gg-toast").inner_text()  # copy cleanup, owner 2026-11-12
-    assert errors == []
-    context.close()
-
-
-def test_the_home_calendar_star_asks_and_adds_too(browser):  # noqa: F811
-    context, page, errors = open_home(browser, user_agent=IPHONE)
-    page.locator('[data-hc-save="lunch"]').click()
-    ask = page.locator("#starCalAsk")
-    ask.wait_for()
-    assert page.evaluate("document.activeElement.textContent") == "넣을게요"
-    with page.expect_download() as info:
-        ask.locator(".starcal-yes").click()
-    assert "TRIGGER:-PT30M" in Path(info.value.path()).read_text(encoding="utf-8")
-    assert pref(page) == "on"
-    assert page.locator("#homeCalLive").inner_text() == "추가를 눌러 주세요"  # copy cleanup, owner 2026-11-12
-    assert page.evaluate("document.activeElement.getAttribute('data-hc-save')") == "lunch"
-    # Saved on the home calendar, the answer holds on the hub too: its next star opens the file at once.
-    page.goto(page.url.replace("index.html", "ggongbab.html"), wait_until="networkidle")
-    page.locator(".gg-card").first.wait_for()
-    with page.expect_download():
-        card(page, "wed").locator(".gg-save").click()
-    assert page.locator("#starCalAsk").count() == 0
-    assert errors == []
-    context.close()
-
-
-def test_the_question_fits_a_phone_in_both_languages(browser):  # noqa: F811
-    for lang, title in (("ko", "별 누를 때 내 캘린더에도 넣을까요?"), ("en", "Add starred events to your calendar too?")):
-        context, page, errors = open_hub(browser, user_agent=ANDROID, lang=lang, size=(360, 740))
-        card(page, "lunch").locator(".gg-save").click()
-        ask = page.locator("#starCalAsk")
-        assert page.locator("#starCalAskTitle").inner_text() == title
-        box = ask.bounding_box()
-        assert box["x"] >= 16 and box["x"] + box["width"] <= 344 and box["y"] + box["height"] <= 740
-        for button in (".starcal-yes", ".starcal-no"):
-            b = ask.locator(button).bounding_box()
-            assert b["height"] >= 44
-        assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
-        assert errors == []
-        context.close()
-
-
-def test_the_same_listing_never_goes_into_the_calendar_twice(browser):  # noqa: F811
-    """Owner 2026-11-19: two events saved to the iPhone calendar, then a third, and the first two showed twice
-    ("동일한 행사가 두개 뜨는거지. 그거는 불필요한거잖아"). A calendar file always makes a new entry, so this
-    browser remembers what it sent: the star does not send a listing again, a button asks for a second tap."""
-    context, page, errors = open_hub(browser, user_agent=IPHONE, storage={KEY: "on"})
+@pytest.mark.parametrize("ua", [IPHONE, CHROME_IPHONE, ANDROID, KAKAO, PC], ids=["safari", "iphone-chrome", "android", "kakao", "pc"])
+def test_a_guest_gets_no_calendar_on_the_hub(browser, ua):  # noqa: F811
+    # The old Safari page's address (?cal=1) only opens the listing now.
+    context, page, errors = open_hub(browser, user_agent=ua, storage=OLD_GUEST, query="?e=lunch&cal=1")
+    page.evaluate(HANDOFFS)
     downloads = []
     page.on("download", lambda d: downloads.append(d))
-    star = card(page, "lunch").locator(".gg-save")
-    with page.expect_download():
-        star.click()
-    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent'))") == {"lunch": "2026-11-09T12:00:00+09:00"}
-    star.click()           # unstar
-    star.click()           # and star again: nothing new for the calendar
+    lunch = card(page, "lunch")
+    assert lunch.locator(".gg-card-toggle").get_attribute("aria-expanded") == "true"
+    assert lunch.locator("[data-gg-share]").count() == 1 and lunch.locator("[data-gg-cal], .gg-cal").count() == 0
+    # The star saves and asks nothing about a calendar, even in a browser that once answered yes.
+    lunch.locator(".gg-save").click()
+    page.wait_for_timeout(400)
+    assert page.locator(".gg-toast").inner_text() == "저장했어요"
+    assert page.locator("#starCalAsk").count() == 0 and downloads == [] and page.evaluate("window.__handoffs || []") == []
+    assert [i["id"] for i in stored(page)["items"]] == ["lunch"]
+    page.locator("[data-gg-saved]").click()
+    assert page.locator("[data-gg-starcal], [data-gg-calopen]").count() == 0
+    assert "캘린더" not in page.locator("#foodHubFree").inner_text()
+    assert errors == []
+    context.close()
+
+
+@pytest.mark.parametrize("ua", [IPHONE, CHROME_IPHONE, ANDROID], ids=["safari", "iphone-chrome", "android"])
+def test_a_guest_gets_no_calendar_on_the_home_calendar(browser, ua):  # noqa: F811
+    context, page, errors = open_home(browser, user_agent=ua, storage=OLD_GUEST)
+    page.evaluate(HANDOFFS)
+    downloads = []
+    page.on("download", lambda d: downloads.append(d))
+    page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
+    opened = page.locator(".hc-ev.is-open")
+    assert opened.locator("[data-hc-share]").count() == 1
+    assert opened.locator("[data-hc-cal], [data-hc-ics], [data-hc-gcal]").count() == 0
+    page.locator('[data-hc-save="lunch"]').click()
+    page.wait_for_timeout(400)
+    live = page.locator("#homeCalLive").inner_text()
+    assert "저장했어요" in live and "캘린더" not in live
+    assert page.locator("#starCalAsk").count() == 0 and downloads == [] and page.evaluate("window.__handoffs || []") == []
+    assert errors == []
+    context.close()
+
+
+def test_signed_in_a_phone_gets_google_and_the_file_once_per_listing(browser):  # noqa: F811
+    """Owner 2026-11-19: the same event twice in the calendar is never wanted, so a button asks for a second tap
+    for a listing this browser already sent; a listing whose time moved goes in again with a note."""
+    sent = '{"wed": "2026-11-10T17:00:00+09:00"}'
+    context, page, errors = open_hub(browser, user_agent=ANDROID, signed_in=True, storage={"babdoduk-calendar-sent": sent})
+    downloads = []
+    page.on("download", lambda d: downloads.append(d))
+    # The star saves to the account and opens nothing.
+    card(page, "lunch").locator(".gg-save").click()
+    page.wait_for_timeout(400)
+    assert page.locator("#starCalAsk").count() == 0 and downloads == []
+    open_card(page, "lunch")
+    card(page, "lunch").locator("[data-gg-cal]").click()
+    panel = card(page, "lunch").locator(".gg-cal")
+    assert panel.locator("a[data-gg-gcal]").get_attribute("href").startswith("https://calendar.google.com/calendar/render?")
+    with page.expect_download() as info:
+        panel.locator("[data-gg-ics]").click()
+    assert "TRIGGER:-PT30M" in Path(info.value.path()).read_text(encoding="utf-8")
+    assert page.locator(".gg-toast").inner_text() == "캘린더 파일을 받았어요"
+    panel.locator("[data-gg-ics]").click()
     page.wait_for_timeout(300)
     assert len(downloads) == 1
-    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 이미 캘린더에 넣은 꽁밥이에요"
-    # Another listing still goes in once.
-    with page.expect_download():
-        card(page, "wed").locator(".gg-save").click()
-    # The card's own button asks first, then sends on the second tap.
-    open_card(page, "lunch")
-    card(page, "lunch").locator("[data-gg-cal]").click()
-    card(page, "lunch").locator("[data-gg-ics]").click()
-    page.wait_for_timeout(300)
-    assert len(downloads) == 2
     assert page.locator(".gg-toast").inner_text() == "이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요"
     with page.expect_download():
-        card(page, "lunch").locator("[data-gg-ics]").click()
+        panel.locator("[data-gg-ics]").click()
+    # A listing sent for another start goes in again, with a note to delete the old entry.
+    open_card(page, "wed")
+    card(page, "wed").locator("[data-gg-cal]").click()
+    with page.expect_download():
+        card(page, "wed").locator("[data-gg-ics]").click()
+    assert page.locator(".gg-toast").inner_text() == "캘린더 파일을 받았어요 · 시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요"
+    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent')).wed") == "2026-11-11T17:00:00+09:00"
     assert errors == []
     context.close()
 
 
-def test_a_listing_whose_time_moved_goes_in_again_with_a_note(browser):  # noqa: F811
-    sent = '{"lunch": "2026-11-08T12:00:00+09:00"}'
-    context, page, errors = open_hub(browser, user_agent=IPHONE, storage={KEY: "on", "babdoduk-calendar-sent": sent})
-    with page.expect_download() as info:
-        card(page, "lunch").locator(".gg-save").click()
-    assert "DTSTART:20261109T030000Z" in Path(info.value.path()).read_text(encoding="utf-8")
-    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 추가를 눌러 주세요 · 시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요"
-    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent')).lunch") == "2026-11-09T12:00:00+09:00"
+@pytest.mark.parametrize("ua", [ANDROID, CHROME_IPHONE], ids=["android", "iphone-chrome"])
+def test_signed_in_the_home_calendar_offers_the_calendar_too(browser, ua):  # noqa: F811
+    from tests.test_my_babdoduk import TOKEN_KEY
+    context, page, errors = open_home(browser, user_agent=ua, storage={TOKEN_KEY: "{}"})
+    page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
+    page.locator('[data-hc-cal="lunch"]').click()
+    opened = page.locator(".hc-ev.is-open")
+    if ua == ANDROID:
+        assert opened.locator("[data-hc-gcal]").count() == 1 and opened.locator("[data-hc-ics]").count() == 1
+    else:
+        # On an iPhone the one connection of 마이 밥도둑 takes every star: no file or add page beside it.
+        assert "별을 누르면 연결한 아이폰 캘린더에 들어가요." in opened.locator(".hc-cal-note").inner_text()
+        assert opened.locator("[data-hc-gcal], [data-hc-ics]").count() == 0
+        assert opened.locator(".hc-cal-note a").get_attribute("href") == "my.html#myCal"
     assert errors == []
     context.close()
-
-
-def test_iphone_chrome_hands_the_listing_to_safari_never_to_google(browser):  # noqa: F811
-    """2026-11-23: on production a guest's 넣을게요 in iPhone Chrome opened Google's sign-in, and students use the
-    iPhone's own calendar (owner 2026-11-19, "구글 캘린더 아무도 안써"). Chrome keeps a calendar file as a download,
-    and Safari shows the Calendar's add screen only for a tap made in Safari (the file handed over directly left
-    Safari open on nothing, owner 2026-11-23): the listing's page opens in Safari with ?cal=1, which asks there."""
-    context, page, errors = open_hub(browser, user_agent=CHROME_IPHONE, storage={KEY: "on"})
-    google_tab(context)
-    page.evaluate(HANDOFFS)
-    pages = len(context.pages)
-    card(page, "lunch").locator(".gg-save").click()
-    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/ggongbab.html?e=lunch&cal=1"]
-    assert len(context.pages) == pages, "no Google Calendar tab"
-    assert page.locator(".gg-toast").inner_text() == "저장했어요 · 사파리에서 캘린더에 넣기를 눌러 주세요"
-    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent'))") == {"lunch": "2026-11-09T12:00:00+09:00"}
-    # Still in front a moment later: Safari did not open, and the page says what to do.
-    page.wait_for_timeout(2800)
-    assert page.locator(".gg-toast").inner_text() == "사파리가 열리지 않았어요 · 사파리에서 밥도둑을 열고 다시 눌러 주세요"
-    # The card offers the iPhone's calendar only, and its button hands over the same way (a listing already
-    # sent asks for a second tap first).
-    open_card(page, "lunch")
-    card(page, "lunch").locator("[data-gg-cal]").click()
-    box = card(page, "lunch").locator(".gg-cal")
-    assert box.locator("[data-gg-gcal]").count() == 0 and box.locator("a[href*='google']").count() == 0
-    assert box.locator("[data-gg-ics]").inner_text() == "아이폰 캘린더에 넣기"
-    box.locator("[data-gg-ics]").click()
-    assert len(page.evaluate("window.__handoffs")) == 1
-    box.locator("[data-gg-ics]").click()
-    assert page.evaluate("window.__handoffs") == ["x-safari-https://ggongbab-live.invalid/ggongbab.html?e=lunch&cal=1"] * 2
-    assert len(context.pages) == pages
-    assert errors == []
-    context.close()
-
-
-def test_an_iphone_card_offers_only_the_iphone_calendar_and_other_phones_keep_both(browser):  # noqa: F811
-    context, page, errors = open_hub(browser, user_agent=IPHONE)
-    open_card(page, "lunch")
-    card(page, "lunch").locator("[data-gg-cal]").click()
-    box = card(page, "lunch").locator(".gg-cal")
-    assert box.locator("[data-gg-gcal]").count() == 0
-    with page.expect_download() as info:
-        box.locator("[data-gg-ics]").click()
-    assert info.value.suggested_filename == "babdoduk-2026-11-09.ics"
-    assert errors == []
-    context.close()
-    context, page, errors = open_hub(browser, user_agent=ANDROID)
-    open_card(page, "lunch")
-    card(page, "lunch").locator("[data-gg-cal]").click()
-    box = card(page, "lunch").locator(".gg-cal")
-    assert box.locator("[data-gg-gcal]").count() == 1 and box.locator("[data-gg-ics]").inner_text() == "캘린더 파일 (.ics)"
-    assert errors == []
-    context.close()
-
-
-def test_the_home_calendar_hands_iphone_chrome_to_safari_too(browser):  # noqa: F811
-    context, page, errors = open_home(browser, user_agent=CHROME_IPHONE)
-    page.evaluate(HANDOFFS)
-    pages = len(context.pages)
-    page.locator('[data-hc-save="lunch"]').click()
-    page.locator("#starCalAsk .starcal-yes").click()
-    handoffs = page.evaluate("window.__handoffs")
-    assert len(handoffs) == 1 and handoffs[0].startswith("x-safari-https://") and handoffs[0].endswith("/ggongbab.html?e=lunch&cal=1")
-    assert len(context.pages) == pages
-    assert page.locator("#homeCalLive").inner_text() == "사파리에서 캘린더에 넣기를 눌러 주세요"
-    assert errors == []
-    context.close()
-
-
-def file_requests(context):
-    """Answers the listing's calendar file (api/cal.js on the site) and records each request for it."""
-    seen = []
-
-    def answer(route):
-        seen.append(urlparse(route.request.url).path)
-        route.fulfill(status=200, content_type="text/calendar; charset=utf-8", body="BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n")
-    context.route("**/cal/e/*.ics", answer)
-    return seen
-
-
-def test_safari_asks_once_on_the_page_the_handoff_opens_and_its_tap_opens_the_file(browser):  # noqa: F811
-    """The Safari side of the handoff: ?e=<id>&cal=1 opens the listing and asks once; 캘린더에 넣기 is a tap in
-    Safari, which opens the listing's file (/cal/e/<id>.ics) and so the Calendar's add screen."""
-    context, page, errors = open_hub(browser, query="?e=lunch&cal=1", user_agent=IPHONE)
-    seen = file_requests(context)
-    ask = page.locator("#starCalAsk")
-    ask.wait_for()
-    assert page.locator("#starCalAskTitle").inner_text() == "아이폰 캘린더에 넣을까요?"
-    assert page.locator("#starCalAskBody").inner_text() == "lunch 행사 · 시작 30분 전에 알림이 와요"
-    assert page.evaluate("document.activeElement.textContent") == "캘린더에 넣기"
-    assert urlparse(page.url).query == "e=lunch", "asked once: a reload or a copied address does not ask again"
-    assert card(page, "lunch").locator(".gg-card-toggle").get_attribute("aria-expanded") == "true"
-    ask.locator(".starcal-yes").click()
-    page.wait_for_timeout(300)
-    assert seen == ["/cal/e/lunch.ics"]
-    assert page.locator("#starCalAsk").count() == 0
-    assert page.locator(".gg-toast").inner_text() == "추가를 눌러 주세요"
-    assert pref(page) is None, "not the star's setting"
-    assert page.evaluate("JSON.parse(localStorage.getItem('babdoduk-calendar-sent'))") == {"lunch": "2026-11-09T12:00:00+09:00"}
-    page.reload(wait_until="networkidle")
-    page.locator(".gg-card").first.wait_for()
-    page.wait_for_timeout(300)
-    assert page.locator("#starCalAsk").count() == 0
-    assert errors == []
-    context.close()
-    # 닫기 opens nothing and leaves the star's setting alone.
-    context, page, errors = open_hub(browser, query="?e=lunch&cal=1", user_agent=IPHONE)
-    seen = file_requests(context)
-    page.locator("#starCalAsk .starcal-no").click()
-    page.wait_for_timeout(300)
-    assert seen == [] and page.locator("#starCalAsk").count() == 0 and pref(page) is None
-    assert errors == []
-    context.close()
-
-
-def test_the_safari_question_only_comes_in_safari_for_an_upcoming_listing(browser):  # noqa: F811
-    for ua, query in ((CHROME_IPHONE, "?e=lunch&cal=1"), (ANDROID, "?e=lunch&cal=1"), (IPHONE, "?e=nope&cal=1"),
-                      (IPHONE, "?cal=1"), (IPHONE, "?e=lunch")):
-        context, page, errors = open_hub(browser, query=query, user_agent=ua)
-        page.wait_for_timeout(400)
-        assert page.locator("#starCalAsk").count() == 0, (ua[-40:], query)
-        assert errors == []
-        context.close()

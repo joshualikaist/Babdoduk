@@ -352,137 +352,13 @@
     return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && nav.maxTouchPoints > 1);
   }
 
-  // ---------- The star also adds to the calendar (owner 2026-11-11) ----------
-  // A web page cannot write into a phone's calendar on its own. The closest is to open the calendar's
-  // own add screen right after a star, for visitors who said yes once. The answer is kept in this
-  // browser: 'on' or 'off'; nothing stored means not asked yet. Without storage the question is never
-  // asked, since the answer could not be kept.
-  var STAR_CAL_KEY = 'babdoduk-star-calendar';
-  function starCalendar() {
-    try {
-      var value = global.localStorage.getItem(STAR_CAL_KEY);
-      return value === 'on' || value === 'off' ? value : '';
-    } catch (err) {
-      return 'off';
-    }
-  }
-  function setStarCalendar(on) {
-    try { global.localStorage.setItem(STAR_CAL_KEY, on ? 'on' : 'off'); return true; } catch (err) { return false; }
-  }
-  // Apple devices (iPadOS says Macintosh) open an .ics file in an "add to calendar" screen that keeps
-  // the file's 30-minute alert; elsewhere Google Calendar's add page opens, with the visitor's own
-  // default reminder. The kakaotalk in-app browser does neither reliably, so it is sent to the buttons.
-  // Chrome, Firefox, Edge and Opera on iPhone save an .ics file as a download instead of opening the add
-  // screen (owner 2026-11-12, iPhone Chrome screenshot), and they used to get Google Calendar's add page, which
-  // on production opened Google's sign-in (2026-11-23): students use the iPhone's own calendar, not Google's
-  // (owner 2026-11-19, "구글 캘린더 아무도 안써"). So these browsers, and the in-app browsers of other apps on an
-  // iPhone, hand the listing's own calendar file to Safari ('safari'), where it opens the add screen as it does
-  // for Safari visitors. The kakaotalk in-app browser keeps its own route.
-  var IOS_OTHER_BROWSER = /CriOS|FxiOS|EdgiOS|OPiOS/;
-  var IN_APP = /NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|Whale/i;
-  function calendarRoute(ua) {
-    ua = ua == null ? (global.navigator || {}).userAgent || '' : ua;
-    if (inTalkApp(ua)) return 'manual';
-    if (IOS_OTHER_BROWSER.test(ua) || (IN_APP.test(ua) && /iPhone|iPad|iPod/.test(ua))) return 'safari';
-    return /iPhone|iPad|iPod|Macintosh/i.test(ua) ? 'ics' : 'google';
-  }
-  // The listing's calendar file on this site (api/cal.js answers /cal/e/<id>.ics from the published feed; a
-  // repeat's '#' travels as '_').
-  function eventFilePath(ev) { return '/cal/e/' + encodeURIComponent(String(ev.id).replace(/#/g, '_')) + '.ics'; }
-  // The file itself, opened in Safari by the handoff, left Safari open on nothing (owner 2026-11-23, iPhone Chrome,
-  // "사파리만 열림"), most likely because Safari shows the Calendar's add screen only for a tap made in Safari
-  // (inferred, not confirmed on a device). So the handoff opens the
-  // listing's own page with ?cal=1 in Safari through x-safari-https:, the handoff iPhone apps use (iOS 15 and 17
-  // on; not 16), and that page asks once with a 캘린더에 넣기 button (ggongbab.js) whose tap opens the file.
-  var SAFARI_WAIT_MS = 2500;
-  function landingUrl(ev, base) {
-    var u = new URL(eventLink(ev.id, base));
-    u.searchParams.set('cal', '1');
-    return u.href;
-  }
-  function safariUrl(ev, loc) {
-    loc = loc || global.location;
-    return 'x-safari-' + landingUrl(ev, loc.href);
-  }
-  // Still in front a moment after the handoff: Safari did not open (or the visitor said no), and `onStay` runs.
-  function openInSafari(ev, onStay) {
-    var doc = global.document;
-    try {
-      var a = doc.createElement('a');
-      a.href = safariUrl(ev);
-      doc.body.appendChild(a);
-      a.click();
-      setTimeout(function () { a.remove(); }, 1000);
-    } catch (err) {
-      return false;
-    }
-    markCalendarSent(ev);
-    if (typeof onStay === 'function' && doc) {
-      var left = false;
-      var away = function () { left = true; };
-      doc.addEventListener('visibilitychange', away, { once: true });
-      global.addEventListener('pagehide', away, { once: true });
-      setTimeout(function () {
-        doc.removeEventListener('visibilitychange', away);
-        global.removeEventListener('pagehide', away);
-        if (!left && doc.visibilityState === 'visible') onStay();
-      }, SAFARI_WAIT_MS);
-    }
-    return true;
-  }
-  // Must run inside the click that asked for it, or the browser blocks the new window or download.
-  // Resolves to 'ics' | 'safari' | 'google' | 'blocked' | 'manual', or 'already' for a listing this browser
-  // already sent for the same start (opts.again sends it anyway). opts.onStay: see openInSafari.
-  function addToCalendar(ev, opts, ua) {
-    var route = calendarRoute(ua);
-    if (route === 'manual') return 'manual';
-    if (!(opts && opts.again) && calendarSent(ev) === 'same') return 'already';
-    if (route === 'ics') return downloadIcs(ev, opts) ? 'ics' : 'blocked';
-    if (route === 'safari') return openInSafari(ev, opts && opts.onStay) ? 'safari' : 'blocked';
-    var win = global.open(googleCalendarUrl(ev, opts), '_blank');
-    if (!win) return 'blocked';
-    try { win.opener = null; } catch (err) {}
-    markCalendarSent(ev);
-    return 'google';
-  }
-  // The one-time question: a small panel at the bottom of the screen that covers nothing it needs.
-  // `text` holds the page's strings (title, body, yes, no). `answer(choice)` gets true, false,
-  // or null (closed with Escape: ask again next time) and runs inside the click, so a yes can still
-  // open the calendar.
-  // `keep`: the answer is not the star's setting (the Safari page's one-off question below).
-  function askStarCalendar(text, answer, keep) {
-    var doc = global.document;
-    var old = doc.getElementById('starCalAsk');
-    if (old) old.remove();
-    var box = doc.createElement('div');
-    box.id = 'starCalAsk';
-    box.className = 'starcal';
-    box.setAttribute('role', 'dialog');
-    box.setAttribute('aria-labelledby', 'starCalAskTitle');
-    box.setAttribute('aria-describedby', 'starCalAskBody');
-    box.innerHTML = '<p class="starcal-title" id="starCalAskTitle"></p><p class="starcal-body" id="starCalAskBody"></p>' +
-      '<div class="starcal-actions"><button type="button" class="starcal-yes" data-starcal="yes"></button>' +
-      '<button type="button" class="starcal-no" data-starcal="no"></button></div>';
-    box.querySelector('.starcal-title').textContent = text.title;
-    box.querySelector('.starcal-body').textContent = text.body;
-    box.querySelector('.starcal-yes').textContent = text.yes;
-    box.querySelector('.starcal-no').textContent = text.no;
-    function close(choice) {
-      box.remove();
-      doc.removeEventListener('keydown', onKey, true);
-      if (choice !== null && !keep) setStarCalendar(choice);
-      answer(choice);
-    }
-    function onKey(e) { if (e.key === 'Escape' && box.isConnected) { e.preventDefault(); close(null); } }
-    box.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-starcal]');
-      if (b) close(b.getAttribute('data-starcal') === 'yes');
-    });
-    doc.addEventListener('keydown', onKey, true);
-    doc.body.appendChild(box);
-    box.querySelector('.starcal-yes').focus({ preventScroll: true });
-    return box;
-  }
+  // ---------- Signed in only (owner 2026-11-24) ----------
+  // "로그인을 하지 않으면 그런 기능을 아예 주지 말고, 로그인 시에만 그 기능이 첨부되도록": a guest gets no calendar
+  // button and no calendar question. Signed in, an iPhone or iPad uses the one calendar connection of 마이 밥도둑
+  // (docs/CALENDAR_FEED.md) and other devices get Google Calendar's add page and the listing's file (an Apple
+  // computer opens the file in Calendar's add screen with its 30-minute alert). The guest flows that came before
+  // (the star's calendar question, kept as 'babdoduk-star-calendar', and the Safari handoff of 2026-11-23) are gone;
+  // a key some browser still keeps is never read.
 
   // ---------- Share ----------
   function pageUrl(base) {
@@ -544,19 +420,10 @@
     icsFileName: icsFileName,
     downloadIcs: downloadIcs,
     ALARM_MINUTES: ALARM_MINUTES,
-    STAR_CAL_KEY: STAR_CAL_KEY,
-    starCalendar: starCalendar,
-    setStarCalendar: setStarCalendar,
-    calendarRoute: calendarRoute,
-    eventFilePath: eventFilePath,
-    safariUrl: safariUrl,
-    landingUrl: landingUrl,
-    addToCalendar: addToCalendar,
     CAL_SENT_KEY: CAL_SENT_KEY,
     calendarSent: calendarSent,
     markCalendarSent: markCalendarSent,
     appleMobile: appleMobile,
-    askStarCalendar: askStarCalendar,
     eventLink: eventLink,
     weekLink: weekLink,
     inTalkApp: inTalkApp,

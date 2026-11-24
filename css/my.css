@@ -219,7 +219,7 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 
 .my-when { font-size: 12px; font-weight: 700; color: var(--color-ink-muted); }
 .my-what { font-size: 15px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; word-break: keep-all; }
-.my-row.is-ended .my-what, .my-row.is-missing .my-what { color: var(--color-ink-muted); }
+.my-row.is-ended .my-what { color: var(--color-ink-muted); }
 
 .my-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
@@ -249,7 +249,7 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
   white-space: nowrap;
 }
 
-.my-tag.is-changed, .my-tag.is-missing { background: var(--color-accent-wash); color: var(--color-accent); }
+.my-tag.is-changed { background: var(--color-accent-wash); color: var(--color-accent); }
 
 .my-counts {
   display: grid;

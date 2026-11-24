@@ -396,25 +396,22 @@
   }
   // Closed, the calendar choice holds nothing, so an opened listing's links stay its public source only.
   var calOpen = '';
+  // Signed in only (owner 2026-11-24, "로그인 시에만 그 기능이 첨부되도록"): a guest gets no calendar button.
+  function signedIn() { return !!(window.BabdodukPush && window.BabdodukPush.signedIn()); }
   function calendarToggle(ev) {
-    if (!L || !L.canCalendar(ev, F.nowKst())) return '';
+    if (!L || !signedIn() || !L.canCalendar(ev, F.nowKst())) return '';
     return '<button type="button" class="btn btn-secondary hc-ev-cal" data-hc-cal="' + esc(ev.id) + '" aria-expanded="' + (calOpen === ev.id) + '">' +
       esc(t('home.cal.ev.calendar', '캘린더에 추가')) + '</button>';
   }
   function calendarHtml(ev) {
-    if (!L || !L.canCalendar(ev, F.nowKst())) return '';
+    if (!L || !signedIn() || !L.canCalendar(ev, F.nowKst())) return '';
     var open = calOpen === ev.id;
     if (!open) return '';
-    // Signed in on an iPhone: the one calendar connection of 마이 밥도둑 takes every star, so no file or add page
-    // here; a second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
-    if (window.BabdodukPush && window.BabdodukPush.signedIn() && L.appleMobile && L.appleMobile()) {
+    // On an iPhone the one calendar connection of 마이 밥도둑 takes every star, so no file or add page here; a
+    // second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
+    if (L.appleMobile && L.appleMobile()) {
       return '<p class="hc-cal-note">' + esc(t('home.cal.ev.calLinked', '별을 누르면 연결한 아이폰 캘린더에 들어가요.')) +
         ' <a href="my.html#myCal">' + esc(t('home.cal.ev.calConnect', '캘린더 연결 보기')) + '</a></p>';
-    }
-    // On an iPhone the iPhone's own calendar only (owner 2026-11-19, "구글 캘린더 아무도 안써"): Safari opens the
-    // file's add screen, and other browsers hand the file to Safari (L.calendarRoute).
-    if (L.appleMobile && L.appleMobile() && L.calendarRoute() !== 'manual') {
-      return '<button type="button" class="btn btn-secondary hc-ev-cal" data-hc-ics="' + esc(ev.id) + '">' + esc(t('home.cal.ev.calApple', '아이폰 캘린더에 넣기')) + '</button>';
     }
     var html = '<a class="btn btn-secondary hc-ev-cal" data-hc-gcal="' + esc(ev.id) + '" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) +
       '" target="_blank" rel="noopener">' + esc(t('home.cal.ev.calGoogle', 'Google 캘린더')) +
@@ -439,32 +436,8 @@
     var item = findItem(id);
     if (!L || !item || !calendarTapOk(item.ev)) return;
     var was = L.calendarSent(item.ev);
-    // Chrome and in-app browsers on an iPhone: the file opens in Safari instead (L.calendarRoute).
-    if (L.calendarRoute() === 'safari') {
-      var result = L.addToCalendar(item.ev, { details: calendarDetails(item.ev), url: L.eventLink(id), again: true, onStay: noSafari });
-      els.live.textContent = starCalendarMessage(result) + (result === 'safari' ? movedNote(was) : '');
-      return;
-    }
     els.live.textContent = L.downloadIcs(item.ev, { details: calendarDetails(item.ev), url: L.eventLink(id) }) ?
       t('home.cal.ev.icsDone', '캘린더 파일을 받았어요') + movedNote(was) : t('home.cal.ev.icsFail', '이 브라우저에서는 파일을 받을 수 없어요');
-  }
-  function noSafari() { els.live.textContent = t('starcal.done.noSafari', '사파리가 열리지 않았어요 · 사파리에서 밥도둑을 열고 다시 눌러 주세요'); }
-  // The star's own add: a listing already sent for the same start is not sent again.
-  function addCalendarMessage(ev, details) {
-    var was = L.calendarSent(ev);
-    details.onStay = noSafari;
-    var result = L.addToCalendar(ev, details);
-    return starCalendarMessage(result) + (result === 'ics' || result === 'safari' || result === 'google' ? movedNote(was) : '');
-  }
-  // The star also opens the calendar's add screen (owner 2026-11-11), for visitors who said yes once;
-  // the same answer as on ggongbab.html (js/ggongbab-live.js).
-  function starCalendarMessage(result) {
-    if (result === 'already') return t('starcal.done.already', '이미 캘린더에 넣은 꽁밥이에요');
-    if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
-    if (result === 'safari') return t('starcal.done.safari', '사파리에서 캘린더에 넣기를 눌러 주세요');
-    if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
-    if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
-    return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요');
   }
   function pushMessage(result) {
     if (result === 'on') return t('push.nowOn', '30분 전 알림을 켰어요');
@@ -497,27 +470,9 @@
       }, 0);
       return savedMessage;
     }
-    // Signed in: the calendar subscription on 마이 밥도둑 takes the stars, so no calendar screen opens here.
-    if (window.BabdodukPush && window.BabdodukPush.signedIn()) return savedMessage;
-    var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
-    var pref = L.starCalendar();
-    if (pref === 'on') return savedMessage + ' · ' + addCalendarMessage(ev, details);
+    // The star opens no calendar screen: signed in, the subscription on 마이 밥도둑 takes the stars, and a guest
+    // gets no calendar at all (owner 2026-11-24).
     if (pushOn) return savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요');
-    if (pref === 'off') return savedMessage;
-    var text = {
-      title: t('starcal.ask.title', '별 누를 때 내 캘린더에도 넣을까요?'),
-      body: t('starcal.ask.body', '넣으면 시작 30분 전에 알림이 와요.'),
-      yes: t('starcal.ask.yes', '넣을게요'),
-      no: t('starcal.ask.no', '괜찮아요')
-    };
-    // Asked after this click's own focus and message are settled (toggleSave refocuses the star).
-    setTimeout(function () {
-      L.askStarCalendar(text, function (yes) {
-        if (yes) els.live.textContent = addCalendarMessage(ev, details);
-        else if (yes === false) els.live.textContent = t('starcal.done.no', '캘린더에는 넣지 않을게요');
-        refocus('[data-hc-save="' + (window.CSS && CSS.escape ? CSS.escape(ev.id) : ev.id) + '"]');
-      });
-    }, 0);
     return savedMessage;
   }
   function saveButton(item, i) {

@@ -149,49 +149,34 @@ async function getJson(url, options) {
 
 // Each saved item against the newest public data (the same rule as 마이 밥도둑): the current listing, else
 // its archived copy, else the snapshot saved with the star. A deadline-only listing has no time to add.
-function entries(saved, feed, archive) {
+// A star whose listing left both published lists before it was over is left out (owner 2026-11-24, "빠진거는
+// 알아서 별표에서도 빠져야지"): the pages take such a star off when they next open, and the calendar does not wait
+// for that. Only when both lists were read: a failed read never takes an event away.
+function entries(saved, feed, archive, now) {
   const { F, L } = siteCode();
   const live = F.occurrences((feed && feed.events || []).filter(F.isPublic));
   const past = F.occurrences((archive && archive.events || []).filter(F.isPublic));
   const byId = new Map();
   past.concat(live).forEach((ev) => byId.set(ev.id, ev));
+  const known = !!(feed && archive);
+  const nowKst = F.toKst((now || new Date()).toISOString());
   const out = [];
   for (const row of saved || []) {
     const seen = row.seen || {};
-    const ev = byId.get(row.event_id) ||
-      (seen.startAt ? { id: row.event_id, title: seen.title || '', startAt: seen.startAt, endAt: seen.endAt || null,
-        location: seen.place ? { name: String(seen.place) } : null } : null);
+    let ev = byId.get(row.event_id);
+    if (!ev && seen.startAt) {
+      ev = { id: row.event_id, title: seen.title || '', startAt: seen.startAt, endAt: seen.endAt || null,
+        location: seen.place ? { name: String(seen.place) } : null };
+      const end = F.eventEnd(ev);
+      if (known && !(end && end < nowKst)) continue;
+    }
     if (ev && L.canCalendar(ev)) out.push(ev);
   }
   return out;
 }
 
-// One listing's calendar file, for a guest (owner 2026-11-23, "아이폰 캘린더에 넣기"): Chrome and in-app browsers on
-// an iPhone keep a calendar file as a download, so their star hands /cal/e/<id>.ics to Safari (x-safari-https:,
-// js/ggongbab-live.js), and Safari opens the Calendar's own add screen with the 30-minute alert. It reads only
-// the published feed of our own site: no token, no database. A repeat's '#' travels as '_'.
-const EVENT_FILE = /^[A-Za-z0-9-]{1,64}(?:_\d{1,3})?$/;
-async function eventFile(param, origin, res) {
-  const id = EVENT_FILE.test(param) ? param.replace('_', '#') : '';
-  if (!id) { res.statusCode = 404; res.end('not found'); return; }
-  const feed = await getJson(origin + '/data/ggongbab/latest.json');
-  if (!feed) { res.statusCode = 503; res.setHeader('Retry-After', '60'); res.end('try again later'); return; }
-  const { F, L } = siteCode();
-  const now = F.nowKst();
-  const ev = F.occurrences((feed.events || []).filter(F.isPublic)).find((e) => e.id === id && L.canCalendar(e, now));
-  if (!ev) { res.statusCode = 404; res.end('not found'); return; }
-  const link = origin + '/ggongbab.html?e=' + encodeURIComponent(ev.id);
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-  res.setHeader('Content-Disposition', 'inline; filename="' + L.icsFileName(ev) + '"');
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('X-Robots-Tag', 'noindex');
-  res.end(L.icsText(ev, { url: link, details: '참여 조건과 변경 사항은 밥도둑에서 확인하세요.\n' + link }));
-}
-
 async function handler(req, res) {
   const url = new URL(req.url, DEFAULT_ORIGIN);
-  if (url.searchParams.has('e')) { await eventFile(url.searchParams.get('e') || '', siteOrigin(req.headers), res); return; }
   const token = url.searchParams.get('t') || '';
   if (!TOKEN.test(token)) { res.statusCode = 404; res.end('not found'); return; }
   const origin = siteOrigin(req.headers);
@@ -225,7 +210,7 @@ async function handler(req, res) {
     getJson(origin + '/data/ggongbab/latest.json'),
     getJson(origin + '/data/ggongbab/archive/index.json')
   ]) : [null, null];
-  const blocks = entries(saved, feed, archive).map((ev) => eventBlock(ev, origin));
+  const blocks = entries(saved, feed, archive, new Date()).map((ev) => eventBlock(ev, origin));
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
   res.setHeader('Cache-Control', 'private, no-store');

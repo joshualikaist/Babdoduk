@@ -40,7 +40,7 @@
     savedOpen: false,
     calOpen: {},              // the listings whose calendar choices are open
     copy: null,               // {key, text}: what to copy by hand when sharing and copying both failed
-    entry: { id: '', week: '', done: false, notice: null, cal: false, calAsk: '' }
+    entry: { id: '', week: '', done: false, notice: null }
   };
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
@@ -366,24 +366,19 @@
         '<span aria-hidden="true">' + (on ? '★' : '☆') + '</span> ' + esc(on ? t('gg.live.saved', '저장됨') : t('gg.live.save', '저장')) + '</button>';
     }
     html += '<button type="button" class="gg-btn gg-tool" data-gg-share="' + esc(ev.id) + '">' + esc(t('gg.live.share', '공유')) + '</button>';
-    var calOk = L.canCalendar(ev, now);
+    // Signed in only (owner 2026-11-24, "로그인 시에만 그 기능이 첨부되도록"): a guest gets no calendar button.
+    var calOk = accountMode === 'account' && L.canCalendar(ev, now);
     var calId = 'ggCal' + n;
     if (calOk) html += '<button type="button" class="gg-btn gg-tool" data-gg-cal="' + esc(ev.id) + '" aria-expanded="' + !!state.calOpen[ev.id] +
       '" aria-controls="' + calId + '">' + esc(t('gg.live.calendar', '캘린더에 추가')) + '</button>';
     html += '</div>';
     // Closed, the calendar box holds nothing (no hidden links in the listing's link list).
     if (calOk && !state.calOpen[ev.id]) html += '<div class="gg-cal" id="' + calId + '" hidden></div>';
-    else if (calOk && savedStore && savedStore.remote && L.appleMobile && L.appleMobile()) {
-      // Signed in on an iPhone: the one calendar connection of 마이 밥도둑 takes every star, so no file or add
-      // page here; a second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
+    else if (calOk && L.appleMobile && L.appleMobile()) {
+      // On an iPhone the one calendar connection of 마이 밥도둑 takes every star, so no file or add page here; a
+      // second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
       html += '<div class="gg-cal" id="' + calId + '"><p class="gg-cal-note gg-cal-linked">' + esc(t('gg.live.calLinked', '별을 누르면 연결한 아이폰 캘린더에 들어가요.')) +
         ' <a href="my.html#myCal">' + esc(t('gg.live.calConnect', '캘린더 연결 보기')) + '</a></p></div>';
-    } else if (calOk && L.appleMobile && L.appleMobile() && L.calendarRoute() !== 'manual') {
-      // On an iPhone the iPhone's own calendar only (owner 2026-11-19, "구글 캘린더 아무도 안써"): Safari opens the
-      // file's add screen, and other browsers hand the file to Safari (L.calendarRoute).
-      html += '<div class="gg-cal" id="' + calId + '">';
-      html += '<button type="button" class="gg-btn" data-gg-ics="' + esc(ev.id) + '">' + esc(t('gg.live.calApple', '아이폰 캘린더에 넣기')) + '</button>';
-      html += '</div>';
     } else if (calOk) {
       html += '<div class="gg-cal" id="' + calId + '">';
       html += '<a class="gg-btn" data-gg-gcal="' + esc(ev.id) + '" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) + '" target="_blank" rel="noopener">' +
@@ -582,7 +577,7 @@
   }
   // Each saved listing against the newest data: upcoming (with changes), ended (from the feed, the
   // archive, or, once both have loaded, the visitor's own copy), missing (no longer published and not
-  // over: never called cancelled, the feed does not say so), or still being checked.
+  // over), or still being checked. A missing listing is never shown: its star comes off (dropMissing).
   function savedGroups(now) {
     var out = { upcoming: [], ended: [], missing: [], checking: [], gone: [] };
     savedStore.list().forEach(function (item) {
@@ -596,7 +591,9 @@
       var end = F.eventEnd(mine);
       if (L.dayPassed(mine, F.nowKst())) out.gone.push(item);
       else if (end && end < now) out.ended.push({ item: item, ev: mine, own: true });
-      else out.missing.push({ item: item, ev: mine });
+      // Missing only when both lists really loaded: a failed load never makes a listing look withdrawn.
+      else if (state.free.status === 'ready' && state.archive.status === 'ready') out.missing.push({ item: item, ev: mine });
+      else out.checking.push({ item: item });
     });
     out.upcoming.sort(function (a, b) { return byStartAt(a.ev, b.ev); });
     out.ended.sort(function (a, b) { return byStartAt(b.ev, a.ev); });
@@ -617,21 +614,31 @@
     if (kind === 'upcoming' && L.phaseOf(row.ev, now) === 'now') tags.push(['now', t('gg.live.now', '진행 중')]);
     if (kind === 'upcoming' && row.changes.length) tags.push(['changed', t('gg.live.changed', '변경됨')]);
     if (kind === 'ended') tags.push(['ended', t('gg.archive.ended', '종료')]);
-    if (kind === 'missing') tags.push(['missing', t('gg.live.missing', '목록에서 빠짐')]);
     if (kind === 'checking') tags.push(['checking', t('gg.live.checking', '확인 중')]);
     html += '<span class="gg-saved-tags">' + tags.map(function (tag) {
       return '<span class="gg-saved-tag is-' + tag[0] + '">' + esc(tag[1]) + '</span>';
     }).join('') + '</span>';
     html += '<button type="button" class="gg-unsave" data-gg-unsave="' + esc(row.item.id) + '" aria-label="' +
       esc(t('gg.live.unsaveAria', '{title} 저장 지우기').replace('{title}', title)) + '"><span aria-hidden="true">×</span></button>';
-    if (kind === 'missing') html += '<p class="gg-saved-note">' + esc(t('gg.live.missingNote', '취소됐을 수 있어요. 공지를 확인하세요.')) + '</p>';
     return html + '</li>';
+  }
+  // A saved listing that left the published list before it was over (owner 2026-11-24: "빠진거는 알아서 별표에서도
+  // 빠져야지") loses its star by itself, like a tap on ×: signed in, that also takes it out of the subscribed
+  // calendar. Once per listing and page load, so a failed account write is not retried on every render.
+  var droppedIds = {};
+  function dropMissing(now) {
+    if (!savedStore) return;
+    var gone = savedGroups(now).missing.filter(function (row) { return !droppedIds[row.item.id]; });
+    gone.forEach(function (row) { droppedIds[row.item.id] = true; savedStore.remove(row.item.id); });
+    if (gone.length) pushChanged();
   }
   function savedHtml(now) {
     if (!savedStore) return '';
     var g = savedGroups(now);
     // A listing whose day is over is not shown or counted (L.dayPassed); its saved row stays for the calendar.
-    var all = savedStore.list().filter(function (item) { return g.gone.indexOf(item) < 0; });
+    // A missing one is not shown either, even where its star could not be taken off.
+    var hidden = g.gone.concat(g.missing.map(function (row) { return row.item; }));
+    var all = savedStore.list().filter(function (item) { return hidden.indexOf(item) < 0; });
     var recovered = savedStore.recovered();
     if (!all.length && !recovered) return '';
     var changedN = g.upcoming.filter(function (row) { return row.changes.length; }).length;
@@ -644,8 +651,7 @@
     html += '<div class="gg-saved-body" id="ggSavedBody"' + (open ? '' : ' hidden') + '>';
     if (recovered) html += '<p class="gg-saved-note">' + esc(t('gg.live.recovered', '저장 기록을 읽을 수 없어 새로 시작했어요.')) + '</p>';
     var active = g.upcoming.map(function (r) { return savedRowHtml(r, 'upcoming', now); })
-      .concat(g.checking.map(function (r) { return savedRowHtml(r, 'checking', now); }))
-      .concat(g.missing.map(function (r) { return savedRowHtml(r, 'missing', now); }));
+      .concat(g.checking.map(function (r) { return savedRowHtml(r, 'checking', now); }));
     if (active.length) html += '<ol class="gg-saved-list">' + active.join('') + '</ol>';
     else if (all.length) html += '<p class="gg-saved-note">' + esc(t('gg.live.noUpcoming', '다가오는 저장 꽁밥 없음')) + '</p>';
     if (g.ended.length) {
@@ -656,7 +662,7 @@
     // it when it likes and no website can make it refresh, so the nearest thing to a 동기화 button (owner
     // 2026-11-19) opens the Calendar app, where pulling the Calendars list down reads the new stars at once.
     var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
-    html += pushToggleHtml() + (accountMode !== 'account' ? starCalendarToggleHtml() : ios ?
+    html += pushToggleHtml() + (accountMode === 'account' && ios ?
       '<p class="gg-calopen"><a class="gg-btn gg-calopen-btn" href="calshow://" data-gg-calopen><span aria-hidden="true">📅</span> ' +
         esc(t('gg.live.calOpen', '캘린더 열기')) + '</a></p>' +
       '<p class="gg-saved-note">' + esc(t('gg.live.calPull', '캘린더 누르고, 아래로 스크롤 해서 새로고침')) + '</p>' +
@@ -687,7 +693,6 @@
       state.activeSection = 'free';
       state.open[live.id] = true;
       en.focus = live.id;
-      if (en.cal) en.calAsk = live.id;
       en.done = true;
       return;
     }
@@ -715,7 +720,7 @@
   function newNoticeHtml() {
     if (!L || noticeDismissed()) return '';
     return '<div class="gg-new" role="note"><span class="gg-new-tag">NEW</span><p>' +
-      esc(t('gg.live.newNote', '☆ 저장·공유·캘린더 추가가 생겼어요')) + '</p>' +
+      esc(t('gg.live.newNote', '☆ 저장·공유가 생겼어요')) + '</p>' +
       '<button type="button" class="gg-new-close" data-gg-new-close aria-label="' + esc(t('gg.live.newClose', '새 기능 안내 닫기')) + '"><span aria-hidden="true">×</span></button></div>';
   }
   function filteredEmptyHtml() {
@@ -885,6 +890,7 @@
     var now = nowKst();
     cardSeq = 0;
     processEntry(now);
+    dropMissing(now);
     var focus = focusSelector();
     var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1>';
     html += metricHtml(now);
@@ -907,11 +913,6 @@
       var target = state.entry.focus;
       state.entry.focus = '';
       requestAnimationFrame(function () { focusCard(target); });
-    }
-    if (state.entry.calAsk) {
-      var calTarget = state.entry.calAsk;
-      state.entry.calAsk = '';
-      requestAnimationFrame(function () { askLanding(calTarget); });
     }
     // #past (the footer's 지난 꽁밥 link): once both lists have loaded, the archive is open and in view.
     if (state.jumpToPast && state.free.status !== 'loading' && state.archive.status !== 'loading') {
@@ -1115,59 +1116,8 @@
   function downloadIcs(ev) {
     if (!calendarTapOk(ev)) return;
     var was = L.calendarSent(ev);
-    // Chrome and in-app browsers on an iPhone: the file opens in Safari instead (L.calendarRoute).
-    if (L.calendarRoute() === 'safari') {
-      var result = L.addToCalendar(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id), again: true, onStay: noSafari });
-      return announce(starCalendarMessage(result) + (result === 'safari' ? movedNote(was) : ''));
-    }
     if (L.downloadIcs(ev, { details: calendarDetails(ev), url: L.eventLink(ev.id) })) announce(t('gg.live.icsDone', '캘린더 파일을 받았어요') + movedNote(was));
     else announce(t('gg.live.icsFail', '이 브라우저에서는 파일을 받을 수 없어요'));
-  }
-  // The page Safari opens for an iPhone browser's calendar button (?e=<id>&cal=1, L.landingUrl): Safari seems to show
-  // the Calendar's add screen only for a tap made in Safari, so it asks once, and 캘린더에 넣기 opens the listing's file
-  // (/cal/e/<id>.ics). Only in Safari (route 'ics'); anywhere else the address just opens the listing. The answer
-  // is not the star's setting.
-  function askLanding(id) {
-    var ev = rowById(id);
-    if (!ev || L.calendarRoute() !== 'ics' || !L.canCalendar(ev, nowKst())) return;
-    L.askStarCalendar({
-      title: t('starcal.landing.title', '아이폰 캘린더에 넣을까요?'),
-      body: t('starcal.landing.body', '{title} · 시작 30분 전에 알림이 와요').replace('{title}', ev.title || ''),
-      yes: t('starcal.landing.yes', '캘린더에 넣기'),
-      no: t('starcal.landing.no', '닫기')
-    }, function (yes) {
-      if (yes) {
-        L.markCalendarSent(ev);
-        location.assign(L.eventFilePath(ev));
-        announce(t('starcal.done.ics', '추가를 눌러 주세요'));
-      }
-      focusCard(ev.id);
-    }, true);
-  }
-  function noSafari() { announce(t('starcal.done.noSafari', '사파리가 열리지 않았어요 · 사파리에서 밥도둑을 열고 다시 눌러 주세요')); }
-  // The star's own add: a listing already sent for the same start is not sent again.
-  function addCalendarMessage(ev, details) {
-    var was = L.calendarSent(ev);
-    details.onStay = noSafari;
-    var result = L.addToCalendar(ev, details);
-    return starCalendarMessage(result) + (result === 'ics' || result === 'safari' || result === 'google' ? movedNote(was) : '');
-  }
-  // The star also opens the calendar's add screen (owner 2026-11-11), for visitors who said yes once.
-  function starCalendarText() {
-    return {
-      title: t('starcal.ask.title', '별 누를 때 내 캘린더에도 넣을까요?'),
-      body: t('starcal.ask.body', '넣으면 시작 30분 전에 알림이 와요.'),
-      yes: t('starcal.ask.yes', '넣을게요'),
-      no: t('starcal.ask.no', '괜찮아요')
-    };
-  }
-  function starCalendarMessage(result) {
-    if (result === 'already') return t('starcal.done.already', '이미 캘린더에 넣은 꽁밥이에요');
-    if (result === 'ics') return t('starcal.done.ics', '추가를 눌러 주세요');
-    if (result === 'safari') return t('starcal.done.safari', '사파리에서 캘린더에 넣기를 눌러 주세요');
-    if (result === 'google') return t('starcal.done.google', '새 창에서 저장을 눌러 주세요');
-    if (result === 'manual') return t('starcal.done.manual', '카카오톡에선 바로 안 돼요 · 펼쳐서 캘린더에 추가를 눌러 주세요');
-    return t('starcal.done.blocked', '캘린더를 열지 못했어요 · 펼쳐서 다시 눌러 주세요');
   }
   function refocusStar(id) {
     var esc2 = window.CSS && CSS.escape ? CSS.escape(id) : id;
@@ -1205,21 +1155,9 @@
       });
       return;
     }
-    // Signed in: the subscribed calendar on 마이 밥도둑 takes every star by itself (docs/CALENDAR_FEED.md), so the
-    // star opens no calendar screen; a file download here can also cut off the account save (owner 2026-11-12).
-    if (savedStore.remote) return announce(pushState === 'on' ? savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요') : savedMessage);
-    var details = { details: calendarDetails(ev), url: L.eventLink(ev.id) };
-    var pref = L.starCalendar();
-    if (pref === 'on') return announce(savedMessage + ' · ' + addCalendarMessage(ev, details));
-    if (pushState === 'on') return announce(savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요'));
-    if (pref === 'off') return announce(savedMessage);
-    announce(savedMessage);
-    L.askStarCalendar(starCalendarText(), function (yes) {
-      if (yes) announce(addCalendarMessage(ev, details));
-      else if (yes === false) announce(t('starcal.done.no', '캘린더에는 넣지 않을게요'));
-      render();
-      refocusStar(ev.id);
-    });
+    // The star opens no calendar screen: signed in, the subscribed calendar on 마이 밥도둑 takes every star by itself
+    // (docs/CALENDAR_FEED.md); a guest gets no calendar at all (owner 2026-11-24).
+    announce(pushState === 'on' ? savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요') : savedMessage);
   }
   function pushToggleHtml() {
     if (!P) return '';
@@ -1231,13 +1169,6 @@
     if (pushState === 'home') return '<p class="gg-saved-note">' + esc(t('push.home', '홈 화면에 추가한 밥도둑에서 알림을 켤 수 있어요.')) + '</p>';
     if (pushState === 'denied') return '<p class="gg-saved-note">' + esc(t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.')) + '</p>';
     return '';
-  }
-  function starCalendarToggleHtml() {
-    if (!L) return '';
-    var on = L.starCalendar() === 'on';
-    return '<p class="gg-starcal-line"><button type="button" class="gg-btn gg-starcal" data-gg-starcal aria-pressed="' + on + '">' +
-      esc(t('starcal.toggle', '별 누를 때 캘린더에도 넣기')) + ' <strong>' +
-      esc(on ? t('starcal.on', '켜짐') : t('starcal.off', '꺼짐')) + '</strong></button></p>';
   }
   function liveClick(e) {
     var el;
@@ -1268,15 +1199,6 @@
         var toggle = root.querySelector('[data-gg-push]');
         if (toggle) toggle.focus({ preventScroll: true });
       });
-      return true;
-    }
-    if (e.target.closest('[data-gg-starcal]')) {
-      var turnOn = L.starCalendar() !== 'on';
-      if (L.setStarCalendar(turnOn)) announce(turnOn ? t('starcal.nowOn', '캘린더 넣기를 켰어요') : t('starcal.nowOff', '캘린더 넣기를 껐어요'));
-      else announce(t('gg.live.saveFail', '이 브라우저에서는 저장할 수 없어요'));
-      render();
-      var sw = root.querySelector('[data-gg-starcal]');
-      if (sw) sw.focus({ preventScroll: true });
       return true;
     }
     if ((el = e.target.closest('[data-gg-unsave]'))) {
@@ -1446,16 +1368,6 @@
   if (L) {
     var entryId = query.get('e') || '';
     if (/^[A-Za-z0-9_-]{1,80}(#[0-9]{1,2})?$/.test(entryId)) state.entry.id = entryId;
-    // ?cal=1: opened in Safari by an iPhone browser's calendar button (askLanding). Asked once: a reload or a
-    // copied address does not ask again.
-    if (query.get('cal') === '1') {
-      state.entry.cal = !!state.entry.id;
-      try {
-        var plain = new URL(location.href);
-        plain.searchParams.delete('cal');
-        history.replaceState(history.state, '', plain.pathname + plain.search + plain.hash);
-      } catch (err) {}
-    }
     var entryWeek = query.get('week') || '';
     if (L.isYmd(entryWeek)) state.entry.week = L.mondayOf(entryWeek);
     if (state.entry.id || state.entry.week) state.activeSection = 'free';
