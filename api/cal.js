@@ -67,18 +67,26 @@ async function getJson(url, options) {
 
 // Each saved item against the newest public data (the same rule as 마이 밥도둑): the current listing, else
 // its archived copy, else the snapshot saved with the star. A deadline-only listing has no time to add.
-function entries(saved, feed, archive) {
+function entries(saved, feed, archive, now) {
   const { F, L } = siteCode();
   const live = F.occurrences((feed && feed.events || []).filter(F.isPublic));
   const past = F.occurrences((archive && archive.events || []).filter(F.isPublic));
   const byId = new Map();
   past.concat(live).forEach((ev) => byId.set(ev.id, ev));
+  // A star whose listing left both published lists before it was over is left out (owner 2026-11-24, "빠진거는
+  // 알아서 별표에서도 빠져야지"). Only when both lists were read: a failed read never takes an event away.
+  const known = !!(feed && archive);
+  const nowKst = F.toKst((now || new Date()).toISOString());
   const out = [];
   for (const row of saved || []) {
     const seen = row.seen || {};
-    const ev = byId.get(row.event_id) ||
-      (seen.startAt ? { id: row.event_id, title: seen.title || '', startAt: seen.startAt, endAt: seen.endAt || null,
-        location: seen.place ? { name: String(seen.place) } : null } : null);
+    let ev = byId.get(row.event_id);
+    if (!ev && seen.startAt) {
+      ev = { id: row.event_id, title: seen.title || '', startAt: seen.startAt, endAt: seen.endAt || null,
+        location: seen.place ? { name: String(seen.place) } : null };
+      const end = F.eventEnd(ev);
+      if (known && !(end && end < nowKst)) continue;
+    }
     if (ev && L.canCalendar(ev)) out.push(ev);
   }
   return out;
@@ -100,7 +108,7 @@ async function handler(req, res) {
     getJson(origin + '/data/ggongbab/latest.json'),
     getJson(origin + '/data/ggongbab/archive/index.json')
   ]);
-  const blocks = entries(saved, feed, archive).map((ev) => eventBlock(ev, origin));
+  const blocks = entries(saved, feed, archive, new Date()).map((ev) => eventBlock(ev, origin));
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
   res.setHeader('Cache-Control', 'private, no-store');

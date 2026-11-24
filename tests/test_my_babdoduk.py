@@ -427,12 +427,16 @@ def test_the_account_list_shows_upcoming_past_and_missing_without_calling_anythi
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables})
     wait_view(page, "저장한 꽁밥")
     rows = page.locator(".my-row").evaluate_all("els => els.map(el => [el.className, el.innerText])")
-    assert [r[0] for r in rows] == ["my-row is-upcoming", "my-row is-missing", "my-row is-ended"]
-    assert "변경됨" in rows[0][1] and "목록에서 빠짐" in rows[1][1] and "지난 꽁밥" in rows[2][1] and "아침 행사" in rows[2][1]
+    assert [r[0] for r in rows] == ["my-row is-upcoming", "my-row is-ended"]
+    assert "변경됨" in rows[0][1] and "지난 꽁밥" in rows[1][1] and "아침 행사" in rows[1][1]
+    # Owner 2026-11-24 ("빠진거는 알아서 별표에서도 빠져야지"): a listing that left both public lists before it was
+    # over loses its star by itself, so it also leaves the subscribed calendar.
+    assert "사라진 행사" not in app_text(page) and "목록에서 빠짐" not in app_text(page)
+    page.wait_for_function("() => !JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.some((r) => r.event_id === 'ghost')")
     # Owner 2026-11-12: from the day after its event a star leaves the list; the row stays for the calendar.
     assert "지난 세미나" not in app_text(page)
     assert "수요 간담회" not in app_text(page), "another user's row never shows"
-    assert "취소" not in rows[1][1]
+    assert "취소" not in app_text(page)
     assert page.locator(".my-row.is-upcoming a").get_attribute("href") == f"https://{HOST}/ggongbab.html?e=lunch"
     # The restaurant list belongs to 밥약 메이커, which is lab-only: production shows no counts card
     # and never asks for them.

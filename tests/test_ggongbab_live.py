@@ -59,7 +59,7 @@ def browser():
 
 
 def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=None, clipboard="ok",
-             notice_seen=True, user_agent=None):
+             notice_seen=True, user_agent=None, archive_status=200):
     extra = {"user_agent": user_agent} if user_agent else {}
     context = browser.new_context(viewport={"width": size[0], "height": size[1]}, timezone_id="Asia/Seoul",
                                   service_workers="block", accept_downloads=True, **extra)
@@ -88,7 +88,7 @@ def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=
         if path == "data/ggongbab/latest.json":
             return route.fulfill(json=LIVE)
         if path == "data/ggongbab/archive/index.json":
-            return route.fulfill(json=ARCHIVE)
+            return route.fulfill(json=ARCHIVE) if archive_status == 200 else route.fulfill(status=archive_status, body="")
         if path == "js/ggongbab-public-config.js":
             return route.fulfill(content_type="application/javascript", body="window.BABDODUK_PUBLIC_FEED_CONFIG = {};")
         if path.startswith("data/"):
@@ -264,14 +264,16 @@ def test_changes_since_saving_ended_and_missing(browser):
     tags = dict(zip(rows.evaluate_all("els => els.map(el => el.dataset.savedId)"),
                     rows.locator(".gg-saved-tags").all_inner_texts()))
     assert tags["lunch"] == "변경됨" and tags["wed"] == ""
-    assert tags["gone"] == "목록에서 빠짐"
+    # Owner 2026-11-24 ("빠진거는 알아서 별표에서도 빠져야지"): a listing that left the published list before it was
+    # over loses its star by itself, once both lists have loaded.
+    assert "gone" not in tags and "gone" not in [i["id"] for i in stored(page)["items"]]
     # Owner 2026-11-12: from the day after its event a star leaves the list by itself; the saved row stays,
     # so the subscribed calendar keeps the event. One that ended earlier today is still shown as ended.
     assert tags["morning"] == "종료" and "oldone" not in tags and "gonepast" not in tags
     assert {"oldone", "gonepast"} <= {i["id"] for i in stored(page)["items"]}
-    assert page.locator(".gg-saved-n").inner_text() == "4"
+    assert page.locator(".gg-saved-n").inner_text() == "3"
     body = page.locator(".gg-saved-body").inner_text()
-    assert "취소됐" in body and "취소됨" not in body and "취소 확정" not in body   # never asserted as cancelled
+    assert "목록에서 빠짐" not in body and "취소" not in body   # never asserted as cancelled
     assert "참석" not in body and "다녀옴" not in body  # copy cleanup, owner 2026-11-12: the past-list note is gone; still no attendance claim
     assert page.locator('.gg-saved-row[data-saved-id="morning"] [data-gg-goto]').count() == 0
     # "확인했어요" makes the newest copy the visitor's, and the marks go.
@@ -282,6 +284,18 @@ def test_changes_since_saving_ended_and_missing(browser):
     # Removing a past one.
     page.locator('[data-gg-unsave="morning"]').click()
     assert "morning" not in [i["id"] for i in stored(page)["items"]]
+    assert not errors, errors
+    context.close()
+
+
+def test_a_failed_list_never_takes_a_star_away(browser):
+    # A withdrawn-looking listing is only judged once both lists really loaded: with the archive failing, the
+    # star stays and the row says 확인 중.
+    storage = saved_store(item("gone", "2026-11-20T12:00:00+09:00", "2026-11-20T13:00:00+09:00", title="사라진 행사"))
+    context, page, errors = open_hub(browser, storage=storage, query="#saved", archive_status=500)
+    row = page.locator('.gg-saved-row[data-saved-id="gone"]')
+    assert row.locator(".gg-saved-tags").inner_text() == "확인 중"
+    assert [i["id"] for i in stored(page)["items"]] == ["gone"]
     assert not errors, errors
     context.close()
 

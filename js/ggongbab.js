@@ -583,7 +583,9 @@
       var end = F.eventEnd(mine);
       if (L.dayPassed(mine, F.nowKst())) out.gone.push(item);
       else if (end && end < now) out.ended.push({ item: item, ev: mine, own: true });
-      else out.missing.push({ item: item, ev: mine });
+      // Missing only when both lists really loaded: a failed load never makes a listing look withdrawn.
+      else if (state.free.status === 'ready' && state.archive.status === 'ready') out.missing.push({ item: item, ev: mine });
+      else out.checking.push({ item: item });
     });
     out.upcoming.sort(function (a, b) { return byStartAt(a.ev, b.ev); });
     out.ended.sort(function (a, b) { return byStartAt(b.ev, a.ev); });
@@ -604,21 +606,31 @@
     if (kind === 'upcoming' && L.phaseOf(row.ev, now) === 'now') tags.push(['now', t('gg.live.now', '진행 중')]);
     if (kind === 'upcoming' && row.changes.length) tags.push(['changed', t('gg.live.changed', '변경됨')]);
     if (kind === 'ended') tags.push(['ended', t('gg.archive.ended', '종료')]);
-    if (kind === 'missing') tags.push(['missing', t('gg.live.missing', '목록에서 빠짐')]);
     if (kind === 'checking') tags.push(['checking', t('gg.live.checking', '확인 중')]);
     html += '<span class="gg-saved-tags">' + tags.map(function (tag) {
       return '<span class="gg-saved-tag is-' + tag[0] + '">' + esc(tag[1]) + '</span>';
     }).join('') + '</span>';
     html += '<button type="button" class="gg-unsave" data-gg-unsave="' + esc(row.item.id) + '" aria-label="' +
       esc(t('gg.live.unsaveAria', '{title} 저장 지우기').replace('{title}', title)) + '"><span aria-hidden="true">×</span></button>';
-    if (kind === 'missing') html += '<p class="gg-saved-note">' + esc(t('gg.live.missingNote', '취소됐을 수 있어요. 공지를 확인하세요.')) + '</p>';
     return html + '</li>';
+  }
+  // A saved listing that left the published list before it was over (owner 2026-11-24: "빠진거는 알아서 별표에서도
+  // 빠져야지") loses its star by itself, like a tap on ×: signed in, that also takes it out of the subscribed
+  // calendar. Once per listing and page load, so a failed account write is not retried on every render.
+  var droppedIds = {};
+  function dropMissing(now) {
+    if (!savedStore) return;
+    var gone = savedGroups(now).missing.filter(function (row) { return !droppedIds[row.item.id]; });
+    gone.forEach(function (row) { droppedIds[row.item.id] = true; savedStore.remove(row.item.id); });
+    if (gone.length) pushChanged();
   }
   function savedHtml(now) {
     if (!savedStore) return '';
     var g = savedGroups(now);
     // A listing whose day is over is not shown or counted (L.dayPassed); its saved row stays for the calendar.
-    var all = savedStore.list().filter(function (item) { return g.gone.indexOf(item) < 0; });
+    // A missing one is not shown either, even where its star could not be taken off.
+    var hidden = g.gone.concat(g.missing.map(function (row) { return row.item; }));
+    var all = savedStore.list().filter(function (item) { return hidden.indexOf(item) < 0; });
     var recovered = savedStore.recovered();
     if (!all.length && !recovered) return '';
     var changedN = g.upcoming.filter(function (row) { return row.changes.length; }).length;
@@ -631,8 +643,7 @@
     html += '<div class="gg-saved-body" id="ggSavedBody"' + (open ? '' : ' hidden') + '>';
     if (recovered) html += '<p class="gg-saved-note">' + esc(t('gg.live.recovered', '저장 기록을 읽을 수 없어 새로 시작했어요.')) + '</p>';
     var active = g.upcoming.map(function (r) { return savedRowHtml(r, 'upcoming', now); })
-      .concat(g.checking.map(function (r) { return savedRowHtml(r, 'checking', now); }))
-      .concat(g.missing.map(function (r) { return savedRowHtml(r, 'missing', now); }));
+      .concat(g.checking.map(function (r) { return savedRowHtml(r, 'checking', now); }));
     if (active.length) html += '<ol class="gg-saved-list">' + active.join('') + '</ol>';
     else if (all.length) html += '<p class="gg-saved-note">' + esc(t('gg.live.noUpcoming', '다가오는 저장 꽁밥 없음')) + '</p>';
     if (g.ended.length) {
@@ -865,6 +876,7 @@
     var now = nowKst();
     cardSeq = 0;
     processEntry(now);
+    dropMissing(now);
     var focus = focusSelector();
     var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1>';
     html += metricHtml(now);

@@ -243,12 +243,11 @@
 .gg-saved-open.is-static { cursor:default; }
 .gg-saved-when { font-size:12px; font-weight:700; color:var(--color-ink-muted); }
 .gg-saved-title { font-size:14px; font-weight:700; line-height:20px; overflow-wrap:anywhere; }
-.gg-saved-row.is-ended .gg-saved-title,.gg-saved-row.is-missing .gg-saved-title { color:var(--color-ink-muted); font-weight:600; }
+.gg-saved-row.is-ended .gg-saved-title { color:var(--color-ink-muted); font-weight:600; }
 .gg-saved-tags { display:inline-flex; flex-wrap:wrap; gap:4px; }
 .gg-saved-tag { display:inline-flex; align-items:center; height:20px; padding:0 6px; border-radius:6px; font-size:11px; font-weight:800; white-space:nowrap; background:#f3f0ea; color:var(--color-ink-muted); }
 .gg-saved-tag.is-now { background:#e8f5ec; color:#1f6b3a; }
 .gg-saved-tag.is-changed { background:#fff3d6; color:#7a4b00; }
-.gg-saved-tag.is-missing { background:#fdecec; color:#8a1f1f; }
 .gg-saved-note { flex-basis:100%; margin:4px 0; font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
 .gg-saved-sub { margin:12px 0 2px; font-size:13px; font-weight:800; color:var(--color-ink-muted); }
 .gg-saved-foot { margin:10px 0 0; font-size:12px; line-height:18px; color:var(--color-ink-muted); }

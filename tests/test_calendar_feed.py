@@ -162,3 +162,40 @@ def test_a_past_star_stays_in_the_calendar():
               "seen": {"title": "지난주 세미나", "startAt": "2026-11-03T12:00:00+09:00", "endAt": "2026-11-03T13:00:00+09:00", "place": "E11"}}]
     body = run(saved, {"events": []})["body"]
     assert "SUMMARY:지난주 세미나" in body and body.count("BEGIN:VEVENT") == 1
+
+
+ENTRIES = r"""
+const cal = require(process.argv[1]);
+const d = JSON.parse(process.argv[2]);
+console.log(JSON.stringify(cal.entries(d.saved, d.feed, d.archive, new Date(d.now)).map((ev) => ev.id)));
+"""
+
+
+def entry_ids(saved, feed, archive, now):
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    args = json.dumps({"saved": saved, "feed": feed, "archive": archive, "now": now})
+    out = subprocess.run(["node", "-e", ENTRIES, str(ROOT / "api/cal.js"), args], capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, out.stderr
+    return json.loads(out.stdout)
+
+
+def test_a_star_whose_listing_was_withdrawn_before_it_happened_leaves_the_calendar():
+    # Owner 2026-11-24: "빠진거는 알아서 별표에서도 빠져야지". The clock is fixed: 2026-11-24 10:00 KST.
+    now = "2026-11-24T01:00:00Z"
+    live = feed_event("aaaaaaaa-1111-4222-8333-444444444444", "2026-11-26T12:00:00+09:00", "다음 세미나")
+    archived = feed_event("bbbbbbbb-1111-4222-8333-444444444444", "2026-11-20T12:00:00+09:00", "지난 세미나")
+    saved = [
+        {"event_id": live["id"], "seen": {"title": "다음 세미나", "startAt": live["startAt"]}},
+        {"event_id": archived["id"], "seen": {"title": "지난 세미나", "startAt": archived["startAt"]}},
+        {"event_id": "withdrawn", "seen": {"title": "빠진 행사", "startAt": "2026-11-27T12:00:00+09:00"}},
+        {"event_id": "lastweek", "seen": {"title": "지난주 행사", "startAt": "2026-11-17T12:00:00+09:00",
+                                          "endAt": "2026-11-17T13:00:00+09:00"}},
+    ]
+    feed, archive = {"events": [live]}, {"events": [archived]}
+    # Both lists read: the withdrawn listing is left out; a listing that already happened stays.
+    assert entry_ids(saved, feed, archive, now) == [live["id"], archived["id"], "lastweek"]
+    # A list that could not be read never takes an event away: every star keeps its own copy.
+    every = [live["id"], archived["id"], "withdrawn", "lastweek"]
+    assert entry_ids(saved, feed, None, now) == every
+    assert entry_ids(saved, None, archive, now) == every

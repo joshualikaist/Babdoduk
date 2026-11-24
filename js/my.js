@@ -28,6 +28,7 @@
     merge: null,              // the last merge result, for its notice and 되돌리기
     feed: null,               // public events (occurrences) once loaded
     archive: null,
+    listsOk: false,           // both public lists really loaded: only then can a saved event count as withdrawn
     panel: '',                // '' | 'clear' | 'leave'
     editing: false,
     busy: false,
@@ -78,6 +79,7 @@
       var pub = function (list) { return F ? F.occurrences((list || []).filter(F.isPublic)) : (list || []); };
       state.feed = res[0] ? pub(res[0].events) : [];
       state.archive = res[1] ? pub(res[1].events) : [];
+      state.listsOk = !!(res[0] && res[1]);
     });
   }
   function find(list, id) {
@@ -96,19 +98,37 @@
       var kind;
       if (live && F && F.isUpcoming(live, now)) kind = 'upcoming';
       else if (live || past || (end && end < now)) kind = 'ended';
-      else if (state.feed === null) kind = 'checking';
+      else if (state.feed === null || !state.listsOk) kind = 'checking';
       else kind = 'missing';
       var changed = kind === 'upcoming' && L ? L.changes(item, live).length > 0 : false;
       return { item: item, ev: ev, kind: kind, changed: changed };
     }).filter(function (row) {
       // From the day after the event it leaves the list; the saved row stays for the subscribed calendar.
-      return !(row.kind === 'ended' && L && L.dayPassed(row.ev, today));
+      return row.kind !== 'missing' && !(row.kind === 'ended' && L && L.dayPassed(row.ev, today));
     }).sort(function (a, b) {
-      var order = { upcoming: 0, checking: 1, missing: 2, ended: 3 };
+      var order = { upcoming: 0, checking: 1, ended: 2 };
       if (order[a.kind] !== order[b.kind]) return order[a.kind] - order[b.kind];
       var x = Date.parse(a.ev.startAt) || 0, y = Date.parse(b.ev.startAt) || 0;
       return a.kind === 'ended' ? y - x : x - y;
     });
+  }
+
+  // A saved event that left the published list before it was over (owner 2026-11-24: "빠진거는 알아서 별표에서도
+  // 빠져야지") loses its star by itself, so it also leaves the subscribed calendar. Once, after both lists loaded.
+  function withdrawn(item, now) {
+    if (!state.listsOk || find(state.feed, item.id) || find(state.archive, item.id)) return false;
+    var seen = item.seen || {};
+    var end = F ? F.eventEnd({ id: item.id, title: seen.title, startAt: seen.startAt, endAt: seen.endAt || null }) : null;
+    return !(end && end < now);
+  }
+  function dropMissing() {
+    if (!state.store || !F) return;
+    var now = F.nowKst();
+    var gone = state.events.filter(function (item) { return withdrawn(item, now); });
+    gone.forEach(function (item) { state.store.remove(item.id); });
+    if (!gone.length) return;
+    state.events = state.store.list();
+    if (P && state.push === 'on') P.changed(pushIds(), lang());
   }
 
   // ---- views -----------------------------------------------------------------------------------------
@@ -174,7 +194,7 @@
       html += '<p class="my-text">' + esc(t('my.saved.empty', '아직 저장한 꽁밥이 없어요. 오늘의 꽁밥에서 ☆를 눌러 보세요.')) + '</p>';
     } else {
       html += '<ol class="my-list">' + rows.map(function (row) {
-        var tag = { upcoming: '', checking: t('my.saved.checking', '확인 중'), missing: t('my.saved.missing', '목록에서 빠짐'), ended: t('my.saved.ended', '지난 꽁밥') }[row.kind];
+        var tag = { upcoming: '', checking: t('my.saved.checking', '확인 중'), ended: t('my.saved.ended', '지난 꽁밥') }[row.kind];
         var tags = (row.changed ? '<span class="my-tag is-changed">' + esc(t('my.saved.changed', '변경됨')) + '</span>' : '') +
           (tag ? '<span class="my-tag is-' + row.kind + '">' + esc(tag) + '</span>' : '');
         var title = esc(row.ev.title || (row.item.seen || {}).title || '');
@@ -188,9 +208,6 @@
           '"><span aria-hidden="true">★</span></button>';
         return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + unstar + '</li>';
       }).join('') + '</ol>';
-      if (rows.some(function (r) { return r.kind === 'missing'; })) {
-        html += '<p class="my-fine">' + esc(t('my.saved.missingNote', '취소됐을 수 있어요. 공지를 확인하세요.')) + '</p>';
-      }
     }
     html += '<p class="my-fine"><a href="ggongbab.html">' + esc(t('my.saved.manage', '오늘의 꽁밥에서 저장·삭제하기')) + '</a></p>';
     return html + '</section>';
@@ -389,6 +406,7 @@
       var pushKnown = P ? P.status().then(function (s) { state.push = s; }, function () { state.push = 'hidden'; }) : null;
       return Promise.all([loadAccount(), loadFeed(), pushKnown]).then(function () {
         state.view = 'in';
+        dropMissing();
         if (P && state.push === 'on') P.sync(pushIds(), lang());
         if (state.next === 'leave') state.panel = 'leave';
         if (state.next === 'linked') announce(state.loginError ? t('my.account.linkFail', '지금은 로그인 방법을 연결할 수 없어요') : t('my.account.linked', '로그인 방법을 연결했어요'));
