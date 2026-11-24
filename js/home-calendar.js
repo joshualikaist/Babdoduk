@@ -369,10 +369,11 @@
   // The audience in small text: an inferred one carries "(추정)", so a guess never reads as a statement.
   // 꽁밥 LIVE on the home calendar (owner 2026-11-08: "캘린더에도 누르면 저장되도록"): the same browser
   // store as the hub's ☆ (js/ggongbab-live.js, docs/GGONGBAB_LIVE.md), so a listing saved here shows in
-  // 저장한 꽁밥 on ggongbab.html; and a share of the listing's hub link. Only listings still to come.
+  // 저장한 꽁밥 on ggongbab.html. Only listings still to come. No share or calendar button here (owner 2026-11-24:
+  // "공유 삭제, 캘린더에 추가는 마이 밥도둑에서"): a star shows a short toast, and the calendar is the one
+  // connection on 마이 밥도둑.
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
-  var liveNote = { id: '', text: '', copy: '' };
   // 별 누른 꽁밥 30분 전 알림 (owner 2026-11-12: "첫 화면에서도 바로 들어가게"; docs/PUSH_ALERTS.md).
   // This page keeps the browser's guest list, so someone signed in is left to ggongbab.html and my.html.
   var P = L && window.BabdodukPush && !window.BabdodukPush.signedIn() ? window.BabdodukPush : null;
@@ -388,57 +389,6 @@
   // The star is a drawn icon, not a text character: this module shows no emoji or symbol glyphs.
   var STAR = '<svg class="hc-save-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
     '<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
-  function calendarDetails(ev) {
-    var lines = [];
-    if (F.hasFood(ev) && !F.isDeadlineOnly(ev)) lines.push(fill(t('home.cal.ev.calFood', '꽁밥 · {food}'), { food: F.dishLabel(ev, t) }));
-    lines.push(L.eventLink(ev.id));
-    return lines.join('\n');
-  }
-  // Closed, the calendar choice holds nothing, so an opened listing's links stay its public source only.
-  var calOpen = '';
-  // Signed in only (owner 2026-11-24, "로그인 시에만 그 기능이 첨부되도록"): a guest gets no calendar button.
-  function signedIn() { return !!(window.BabdodukPush && window.BabdodukPush.signedIn()); }
-  function calendarToggle(ev) {
-    if (!L || !signedIn() || !L.canCalendar(ev, F.nowKst())) return '';
-    return '<button type="button" class="btn btn-secondary hc-ev-cal" data-hc-cal="' + esc(ev.id) + '" aria-expanded="' + (calOpen === ev.id) + '">' +
-      esc(t('home.cal.ev.calendar', '캘린더에 추가')) + '</button>';
-  }
-  function calendarHtml(ev) {
-    if (!L || !signedIn() || !L.canCalendar(ev, F.nowKst())) return '';
-    var open = calOpen === ev.id;
-    if (!open) return '';
-    // On an iPhone the one calendar connection of 마이 밥도둑 takes every star, so no file or add page here; a
-    // second copy beside the connected calendar is exactly the duplicate (owner 2026-11-19).
-    if (L.appleMobile && L.appleMobile()) {
-      return '<p class="hc-cal-note">' + esc(t('home.cal.ev.calLinked', '별을 누르면 연결한 아이폰 캘린더에 들어가요.')) +
-        ' <a href="my.html#myCal">' + esc(t('home.cal.ev.calConnect', '캘린더 연결 보기')) + '</a></p>';
-    }
-    var html = '<a class="btn btn-secondary hc-ev-cal" data-hc-gcal="' + esc(ev.id) + '" href="' + esc(L.googleCalendarUrl(ev, { details: calendarDetails(ev) })) +
-      '" target="_blank" rel="noopener">' + esc(t('home.cal.ev.calGoogle', 'Google 캘린더')) +
-      '<span class="home-sr-only"> ' + esc(t('home.banner.newTab', '(새 창에서 열림)')) + '</span></a>';
-    html += '<button type="button" class="btn btn-secondary hc-ev-cal" data-hc-ics="' + esc(ev.id) + '">' + esc(t('home.cal.ev.calFile', '캘린더 파일 (.ics)')) + '</button>';
-    return html;
-  }
-  // A calendar button for a listing this browser already sent asks for a second tap first (owner 2026-11-19:
-  // the same event twice in the calendar is never wanted); true when this tap may add it.
-  var calAgain = '';
-  function calendarTapOk(ev) {
-    if (L.calendarSent(ev) === 'same' && calAgain !== ev.id) {
-      calAgain = ev.id;
-      els.live.textContent = t('home.cal.ev.calAlready', '이미 캘린더에 넣은 꽁밥이에요 · 한 번 더 누르면 또 넣어요');
-      return false;
-    }
-    calAgain = '';
-    return true;
-  }
-  function movedNote(was) { return was === 'moved' ? ' · ' + t('starcal.moved', '시간이 바뀌었어요 · 캘린더의 예전 일정은 지워 주세요') : ''; }
-  function downloadIcs(id) {
-    var item = findItem(id);
-    if (!L || !item || !calendarTapOk(item.ev)) return;
-    var was = L.calendarSent(item.ev);
-    els.live.textContent = L.downloadIcs(item.ev, { details: calendarDetails(item.ev), url: L.eventLink(id) }) ?
-      t('home.cal.ev.icsDone', '캘린더 파일을 받았어요') + movedNote(was) : t('home.cal.ev.icsFail', '이 브라우저에서는 파일을 받을 수 없어요');
-  }
   function pushMessage(result) {
     if (result === 'on') return t('push.nowOn', '30분 전 알림을 켰어요');
     if (result === 'denied') return t('push.blocked', '알림이 막혀 있어요. 휴대폰 설정에서 허용해 주세요.');
@@ -480,13 +430,6 @@
     var on = savedStore.has(item.ev.id);
     return '<button type="button" class="hc-save" data-hc-save="' + esc(item.ev.id) + '" aria-pressed="' + on + '" aria-label="' +
       esc(fill(t('home.cal.ev.saveAria', '{title} 저장'), { title: item.ev.title })) + '">' + STAR + '</button>';
-  }
-  function shareText(ev) {
-    var start = F.toKst(ev.startAt);
-    var place = shortPlace(ev.location);
-    var dish = F.isDeadlineOnly(ev) || !F.hasFood(ev) ? '' : F.dishLabel(ev, t);
-    var when = start ? dateLabel(F.ymd(start)) + (F.isDeadlineOnly(ev) ? '' : ' ' + hm(start)) : '';
-    return (dish ? dish + ' · ' : '') + ev.title + '\n' + [when, place].filter(Boolean).join(' · ');
   }
   function whoText(ev) {
     return F.audienceOf(ev, function (who) { return fill(t('home.cal.ev.estimated', '{who} (추정)'), { who: who }); });
@@ -568,20 +511,7 @@
         esc(source.type === 'instagram' ? t('home.cal.ev.instagram', '인스타그램 원문 보기') : t('home.cal.ev.original', '원문 보기')) +
         ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
     }
-    if (L && item.active) {
-      actions.push('<button type="button" class="btn btn-secondary hc-ev-share" data-hc-share="' + esc(ev.id) + '">' +
-        '<span aria-hidden="true">↗</span> ' + esc(t('home.cal.ev.share', '공유')) + '</button>');
-      var toggleCal = calendarToggle(ev);
-      if (toggleCal) actions.push(toggleCal);
-    }
     if (actions.length) rows.push('<p class="hc-ev-actions">' + actions.join('') + '</p>');
-    var cal = item.active ? calendarHtml(ev) : '';
-    if (cal) rows.push('<p class="hc-ev-actions hc-ev-cals">' + cal + '</p>');
-    if (liveNote.id === ev.id && liveNote.text) rows.push('<p class="hc-ev-note" role="status">' + esc(liveNote.text) + '</p>');
-    if (liveNote.id === ev.id && liveNote.copy) {
-      rows.push('<label class="hc-ev-copy">' + esc(t('home.cal.ev.copyHint', '길게 눌러 복사하세요')) +
-        '<textarea readonly rows="3">' + esc(liveNote.copy) + '</textarea></label>');
-    }
     var via = sourceKey(ev);
     if (via && !source) rows.push('<p class="hc-ev-src">' + esc(fill(t('home.cal.ev.source', '출처 · {source}'), { source: t(via, '') })) + '</p>');
     return rows.join('');
@@ -807,21 +737,24 @@
     scroll = els.day.querySelector('.hc-events-scroll');
     if (scroll) scroll.scrollTop = top;
     els.live.textContent = message;
+    showToast(message);
     refocus('[data-hc-save="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
   }
-  function shareListing(id) {
-    var item = findItem(id);
-    if (!L || !item) return;
-    var payload = { title: item.ev.title, text: shareText(item.ev), url: L.eventLink(id) };
-    L.share(payload).then(function (result) {
-      if (result !== 'copied' && result !== 'manual') return;   // shared through the sheet, or cancelled
-      liveNote = { id: id, text: '', copy: '' };
-      if (result === 'copied') liveNote.text = t('home.cal.ev.copied', '링크를 복사했어요');
-      else liveNote.copy = payload.text + '\n' + payload.url;
-      els.live.textContent = liveNote.text || t('home.cal.ev.copyHint', '길게 눌러 복사하세요');
-      renderDay();
-      refocus('[data-hc-share="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
-    });
+  // A short toast for the star, like the hub's (the status line above stays for screen readers, so this one is hidden
+  // from them and is not announced twice).
+  var toast = null, toastTimer = 0;
+  function showToast(message) {
+    if (!message) return;
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'hc-toast';
+      toast.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('is-on'); }, 2600);
   }
   function onClick(e) {
     var target = e.target;
@@ -835,26 +768,6 @@
     if (target.closest('[data-hc-today]')) return goToday();
     var star = target.closest('[data-hc-save]');
     if (star) return toggleSave(star.getAttribute('data-hc-save'));
-    var calBtn = target.closest('[data-hc-cal]');
-    if (calBtn) {
-      var cid = calBtn.getAttribute('data-hc-cal');
-      calOpen = calOpen === cid ? '' : cid;
-      renderDay();
-      refocus('[data-hc-cal="' + (window.CSS && CSS.escape ? CSS.escape(cid) : cid) + '"]');
-      return;
-    }
-    var gcal = target.closest('[data-hc-gcal]');
-    if (gcal) {
-      // Google Calendar's add page: the link opens it, unless this listing was already sent (second tap opens).
-      var gItem = findItem(gcal.getAttribute('data-hc-gcal'));
-      if (gItem && !calendarTapOk(gItem.ev)) { e.preventDefault(); return; }
-      if (gItem) L.markCalendarSent(gItem.ev);
-      return;
-    }
-    var ics = target.closest('[data-hc-ics]');
-    if (ics) return downloadIcs(ics.getAttribute('data-hc-ics'));
-    var share = target.closest('[data-hc-share]');
-    if (share) return shareListing(share.getAttribute('data-hc-share'));
     var row = target.closest('.hc-ev-btn');
     if (row) return toggle(row);
     var go = target.closest('[data-hc-go]');

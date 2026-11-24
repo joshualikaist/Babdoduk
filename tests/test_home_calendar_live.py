@@ -110,37 +110,6 @@ def test_past_listings_have_no_star_or_share(browser):
     context.close()
 
 
-def test_share_uses_the_sheet_then_the_clipboard_then_text_to_copy(browser):
-    context, page, errors = open_home(browser, share="native")
-    page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
-    page.locator('[data-hc-share="lunch"]').click()
-    page.wait_for_function("() => window.__shared.length === 1")
-    shared = page.evaluate("window.__shared[0]")
-    assert shared["url"] == f"https://{HOST}/ggongbab.html?e=lunch" and "lunch 행사" in shared["text"]
-    assert "11월 9일" in shared["text"] or "11/9" in shared["text"] or "9" in shared["text"]
-    context.close()
-
-    context, page, errors = open_home(browser)
-    page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
-    page.locator('[data-hc-share="lunch"]').click()
-    page.wait_for_function("() => window.__copied.length === 1")
-    assert page.evaluate("window.__copied[0]").endswith(f"https://{HOST}/ggongbab.html?e=lunch")
-    page.locator(".hc-ev-note").wait_for()
-    assert page.locator(".hc-ev-note").inner_text() == "링크를 복사했어요"
-    context.close()
-
-    context, page, errors = open_home(browser, clipboard="fail", lang="en")
-    page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
-    share = page.locator('[data-hc-share="lunch"]')
-    assert share.inner_text().strip().endswith("Share")
-    share.click()
-    page.locator(".hc-ev-copy textarea").wait_for()
-    assert page.locator(".hc-ev-copy textarea").input_value().endswith("ggongbab.html?e=lunch")
-    assert "Press and hold to copy" in page.locator(".hc-ev-copy").inner_text()
-    assert errors == []
-    context.close()
-
-
 @pytest.mark.parametrize("width", [360, 1440])
 def test_the_star_fits_at_every_width(browser, width):
     context, page, errors = open_home(browser, width=width)
@@ -148,31 +117,5 @@ def test_the_star_fits_at_every_width(browser, width):
     star = page.locator('[data-hc-save="lunch"]').bounding_box()
     row = page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-row').bounding_box()
     assert star["x"] + star["width"] <= row["x"] + row["width"] + 8
-    assert errors == []
-    context.close()
-
-
-def test_an_opened_listing_adds_itself_to_a_calendar_when_signed_in(browser):
-    # Signed in only (owner 2026-11-24); a computer gets Google Calendar's add page and the file.
-    from tests.test_my_babdoduk import TOKEN_KEY
-    context, page, errors = open_home(browser, storage={TOKEN_KEY: "{}"})
-    page.locator('.hc-ev:has([data-hc-save="lunch"]) .hc-ev-btn').click()
-    assert page.locator('.hc-ev.is-open a.hc-ev-cal').count() == 0, "closed, the choice holds no link"
-    toggle = page.locator('[data-hc-cal="lunch"]')
-    assert toggle.get_attribute("aria-expanded") == "false"
-    toggle.click()
-    assert page.locator('[data-hc-cal="lunch"]').get_attribute("aria-expanded") == "true"
-    assert page.evaluate("document.activeElement.getAttribute('data-hc-cal')") == "lunch"
-    google = page.locator('.hc-ev.is-open a.hc-ev-cal')
-    href = google.get_attribute("href")
-    assert href.startswith("https://calendar.google.com/calendar/render?") and "action=TEMPLATE" in href
-    assert "ctz=Asia%2FSeoul" in href and "20261109T030000Z%2F20261109T040000Z" in href
-    assert page.locator(".hc-ev.is-open .hc-ev-calnote").count() == 0  # copy cleanup, owner 2026-11-12: the minical line is gone
-    with page.expect_download() as info:
-        page.locator('[data-hc-ics="lunch"]').click()
-    download = info.value
-    assert download.suggested_filename == "babdoduk-2026-11-09.ics"
-    text = open(download.path(), encoding="utf-8").read()
-    assert "DTSTART:20261109T030000Z" in text and "ggongbab.html?e=lunch" in text.replace("\r\n ", "")
     assert errors == []
     context.close()
