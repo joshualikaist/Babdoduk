@@ -71,6 +71,30 @@ def _url_in_source(url: str, facts: RuleFacts, source_text: str) -> bool:
     return any(u.rstrip("/") == stripped for u in facts.urls)
 
 
+_SOURCE_URL = re.compile(r"https?://[^\s<>\"'()\]]+")
+
+
+def _url_key(url: str) -> tuple[str, str]:
+    parts = urlparse(url)
+    return (parts.hostname or "").lower(), parts.path.rstrip("/").lower()
+
+
+def _source_url(url: str, facts: RuleFacts, source_text: str) -> Optional[str]:
+    """The source's own spelling of the AI's registration URL, or None when the source has no such link.
+    The AI copies long links with a slip now and then (2026-11-26: one letter's case in a Google Forms id,
+    a changed tracking parameter in a MathWorks link), and both events were held without their sign-up
+    link although the mail had it. A link not copied verbatim is replaced by the one link of the source
+    with the same host and path (compared without case); two or more such links, or none, drop it."""
+    if _url_in_source(url, facts, source_text):
+        return url
+    key = _url_key(url)
+    if not key[0]:
+        return None
+    found = {u.rstrip(".,;") for u in [*facts.urls, *_SOURCE_URL.findall(source_text or "")]
+             if _url_ok(u.rstrip(".,;")) and _url_key(u.rstrip(".,;")) == key}
+    return found.pop() if len(found) == 1 else None
+
+
 def _evidence_supported(quote: Optional[str], source_text: str) -> bool:
     """A quote counts only if a meaningful chunk of it appears in the source."""
     q = _norm(quote)
@@ -237,9 +261,10 @@ def validate(ai: EventExtraction, facts: RuleFacts, source_text: str, *, source_
         if not _url_ok(url):
             reasons.append("신청 URL 형식 오류")
             url = None
-        elif not _url_in_source(url, facts, source_text):
-            reasons.append("신청 URL이 본문에 없음")
-            url = None
+        else:
+            url = _source_url(url, facts, source_text)
+            if url is None:
+                reasons.append("신청 URL이 본문에 없음")
     cand.registration_url = url
     deadline = parse_iso(ai.registration_deadline)
     if deadline:
