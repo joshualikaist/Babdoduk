@@ -10,8 +10,9 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
+from . import qr
 from .collectors.base import Collector, CollectorError
 from .config import KST, PROMPT_VERSION, Settings
 from .db.repository import SOURCE_PRIORITY, Repository
@@ -86,11 +87,14 @@ class RunStats:
 
 class Pipeline:
     def __init__(self, settings: Settings, repo: Repository, extractor: Optional[Extractor],
-                 collectors: list[Collector]):
+                 collectors: list[Collector], link_checker: Optional[Callable] = None):
         self.settings = settings
         self.repo = repo
         self.extractor = extractor
         self.collectors = collectors
+        # link_check.apply in the real refresh (scripts/refresh_ggongbab.py); None elsewhere, so tests,
+        # previews and backfills never open a link.
+        self.link_checker = link_checker
         self.stats = RunStats()
 
     # ------------------------------------------------------------------
@@ -179,6 +183,8 @@ class Pipeline:
             self.stats.items_new += 1
 
         outcome = self.parse_item(item, raw_item_id, content_hash)
+        if self.link_checker is not None and outcome.candidate is not None:
+            self.link_checker(outcome.candidate)
         # Attachment rows are written after parse_item, because that is where the
         # bytes (and therefore mime type / sha256 / parse_status) are resolved.
         self.repo.upsert_attachments(raw_item_id, item.attachments)
@@ -208,6 +214,9 @@ class Pipeline:
             if extraction is not None:
                 # Poster quotes stay acceptable only if that parse was made with images.
                 images_sent = 1 if cached.get("input_kind") == "text+image" else 0
+                if images_sent:
+                    item.load_attachments()
+                    clean_text, facts = _with_qr_links(item, clean_text, facts, _event_images(item, self.settings), reference)
                 cand = validate(extraction, facts, clean_text, source_type=item.source_type,
                                 source_priority=source_priority, reference=reference, images=images_sent)
                 return ParseOutcome(candidate=cand, skipped_cached=True)
@@ -225,6 +234,7 @@ class Pipeline:
         # Only now, past every cache check, is it worth paying for attachment downloads.
         item.load_attachments()
         images = _event_images(item, self.settings)
+        clean_text, facts = _with_qr_links(item, clean_text, facts, images, reference)
         note = f"POSTER_IMAGES_ATTACHED: {len(images)}" if images else ""
         user_text = build_user_text(
             subject=sanitize_for_ai(item.subject), body=clean_text,
@@ -383,6 +393,20 @@ class Pipeline:
 def _is_event(cached: dict[str, Any]) -> bool:
     parsed = cached.get("parsed_json") or {}
     return bool(parsed.get("is_event", True))
+
+
+QR_HEADING = "[포스터 QR 코드 링크]"
+
+
+def _with_qr_links(item: RawItem, clean_text: str, facts, images: list[tuple[str, bytes]], reference):
+    """The text with the links printed as QR codes on the poster images (owner 2026-11-26: "포스터를 안봐서
+    그래. 거기 qr코드 있잖아"), so the AI may name one as the sign-up link and the validator finds it in
+    the source. Unchanged when no image carries a QR link."""
+    links = [link for link in qr.decode(data for _, data in images) if link not in clean_text]
+    if not links:
+        return clean_text, facts
+    clean_text = f"{clean_text}\n\n{QR_HEADING}\n" + "\n".join(links)
+    return clean_text, analyze(f"{item.subject}\n{clean_text}", reference)
 
 
 def _event_images(item: RawItem, settings: Settings) -> list[tuple[str, bytes]]:

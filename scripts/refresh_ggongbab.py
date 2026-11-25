@@ -363,7 +363,9 @@ def main() -> int:
     stats = None
     if not args.export_only:
         extractor = build_extractor(settings, args.dry_run)
-        pipeline = Pipeline(settings, repo, extractor, build_collectors(settings, repo, args.only))
+        from ggongbab import link_check
+        pipeline = Pipeline(settings, repo, extractor, build_collectors(settings, repo, args.only),
+                            link_checker=None if args.dry_run else link_check.apply)
         try:
             stats = pipeline.run()
         except SupabaseError:
