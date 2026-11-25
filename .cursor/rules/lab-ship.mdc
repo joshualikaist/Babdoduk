@@ -13,7 +13,7 @@ alwaysApply: true
   소유자가 허락했을 때만 합니다.
 - 본편 반영 절차는 `.claude/skills/release-babdoduk/SKILL.md` 입니다.
 - 배포는 Vercel Git 연동뿐입니다. Vercel CLI 로 배포하지 않습니다(`vercel --prod` 금지).
-- 생성 데이터(`data/magazine/`, `data/kaist-menu/`, `data/ggongbab/latest.json`, `data/ggongbab/archive/`)는
+- 생성 데이터(`data/magazine/`, `data/kaist-menu/`, `data/ggongbab/` 전체, `research/magazine/`; `scripts/publish_generated.py`)는
   `babdoduk-content-bot` 이 `lab`·`main` 에 직접 발행합니다. 손으로 만들거나 기능 커밋에 섞지 않습니다.
 - 강제 push, `git reset --hard`, `git clean`, `git branch -D`, 강제 worktree 삭제는 쓰지 않습니다.
   브랜치·worktree 정리는 `docs/REPOSITORY_HYGIENE.md` 를 따릅니다.

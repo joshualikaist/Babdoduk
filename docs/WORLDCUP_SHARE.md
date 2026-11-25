@@ -14,8 +14,8 @@
 4. 메뉴 이름: Jua 로 아주 크게(한 줄이 안 되면 두 줄, 사진이 그만큼 줄어듦), 아래에 다른 언어 이름.
 5. "🍚 한식 32강 우승" 흰 알약.
 6. 결승 상대와 4강 두 메뉴: 둥근 사진 칩 한 줄("결승 상대", "4강"). 대진 기록이 없는 옛 저장 판이면 결승 상대만.
-7. "너의 최애는? 👉 babdoduk.vercel.app" 검은 알약(lab 에서는 lab 주소), 그 아래 Babdoduk 워드마크와 "밥도둑 먹방 월드컵".
-8. 맨 아래 아주 작게 한 줄: "📷 Wikimedia Commons · 사진 출처 babdoduk.vercel.app/worldcup.html"(lab 에서는 lab 주소). 작가 이름과 라이선스는 카드에 적지 않고, CC BY / BY-SA 가 요구하는 표시는 그 주소의 결과 화면 "사진 출처"(우승·결승 상대·4강 사진 4장의 작가와 라이선스, 원본 링크 포함)로 합니다. 매체에 맞는 합리적인 방식의 표시(링크로 전체 출처를 안내)입니다.
+7. "너의 최애는? 👉 babdodukms.com" 검은 알약(lab 에서는 lab 주소), 그 아래 Babdoduk 워드마크와 "밥도둑 먹방 월드컵".
+8. 맨 아래 아주 작게 한 줄: "📷 Wikimedia Commons · 사진 출처 babdodukms.com/worldcup.html"(lab 에서는 lab 주소). 작가 이름과 라이선스는 카드에 적지 않고, CC BY / BY-SA 가 요구하는 표시는 그 주소의 결과 화면 "사진 출처"(우승·결승 상대·4강 사진 4장의 작가와 라이선스, 원본 링크 포함)로 합니다. 매체에 맞는 합리적인 방식의 표시(링크로 전체 출처를 안내)입니다.
 
 인스타그램 스토리는 위아래 약 250px 를 자기 UI 로 덮으므로, 2~7은 모두 y 250~1670 안에 있습니다(바깥은 장식과 사진 출처 한 줄뿐).
 
@@ -36,7 +36,7 @@
 
 ## 친구 도전 링크
 
-`https://babdoduk.vercel.app/worldcup.html?from=<메뉴 id>&cat=<카테고리>` — 지금 주소의 origin 을 쓰므로 lab 에서 공유하면 lab 링크입니다.
+`https://www.babdodukms.com/worldcup.html?from=<메뉴 id>&cat=<카테고리>` — 지금 주소의 origin 을 쓰므로 lab 에서 공유하면 lab 링크입니다.
 
 - 열면 시작 화면 위에 "친구의 최애는 ○○! 🏆 너도 해봐"(메뉴 사진 포함)가 나오고 그 카테고리 타일이 골라져 있습니다.
 - 두 값은 따로 검사합니다: `from` 은 풀의 메뉴, `cat` 은 알려진 카테고리(그 풀이 한 판 이상)일 때만 쓰고, 아니면 무시합니다.
@@ -54,7 +54,7 @@
 - **SDK**: 공식 Kakao JS SDK `2.8.3` 하나만, `https://t1.kakaocdn.net/kakao_js_sdk/2.8.3/kakao.min.js`, `integrity="sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy"`, `crossorigin="anonymous"`. 해시는 Kakao 개발자 문서 다운로드 페이지의 값이고, 파일을 직접 받아 sha384 를 계산해 같은 값임을 확인했습니다.
 - **언제 받나**: `js/worldcup.js` 의 `renderResult` → `showKakao()` → `loadKakao()` 만 받습니다(`<script>` 태그를 동적으로 만듦). 시작·대결 화면이나 다른 페이지에서는 받지 않고, HTML 에는 외부 스크립트 태그가 없습니다. 8초 안에 받아지지 않거나 무결성 검사·초기화가 실패하면 버튼은 계속 숨겨져 있고 다시 시도하지 않습니다. 누른 순간 SDK 가 쓸 수 없으면 버튼을 숨기고 기존 공유(`share()`)로 넘어갑니다.
 - **키**: JavaScript 키는 `js/worldcup.js` 의 상수 `KAKAO_JS_KEY` 한 곳에만 있습니다. 공개값(도메인 제한)이라 코드에 둡니다. REST·Admin 키는 어디에도 쓰지 않고 받지도 않습니다. `Kakao.init` 은 `Kakao.isInitialized()` 로 지켜 한 번만 부릅니다.
-- **등록된 도메인**(Kakao Developers → 앱 → 플랫폼 → Web): `https://babdoduk.vercel.app`, `https://babdoduk-lab.vercel.app`. 다른 주소(로컬 미리보기 등)에서는 카카오가 거절하므로 공유가 되지 않습니다.
+- **등록된 도메인**(Kakao Developers → 앱 → 플랫폼 → Web): `https://babdoduk.vercel.app`, `https://babdoduk-lab.vercel.app`. 다른 주소(로컬 미리보기 등)에서는 카카오가 거절하므로 공유가 되지 않습니다. 옛 주소는 2026-11-18쯤부터 열리지 않으므로, 운영(`https://www.babdodukms.com`)에서 카카오 공유가 되려면 이 도메인을 등록해야 합니다(아직 소유자 작업으로 남아 있음).
 - **키를 바꾸려면**: Kakao Developers 에서 앱의 JavaScript 키를 재발급(또는 새 앱을 만들어 같은 두 도메인을 등록)하고, `KAKAO_JS_KEY` 와 `tests/test_worldcup_share.py` 의 `KAKAO_KEY` 를 새 값으로 바꾼 뒤 lab 에서 확인하고 같은 순서(lab → 승인 → main)로 내보냅니다. 옛 키는 Kakao 쪽에서 폐기합니다. SDK 버전을 올릴 때는 다운로드 페이지의 새 버전과 해시를 쓰고 파일을 받아 직접 sha384 를 계산해 대조한 뒤, 코드의 `KAKAO_SDK` 와 테스트의 `KAKAO_SRC`·`KAKAO_INTEGRITY` 를 함께 바꿉니다.
 - **카드 내용** (`kakaoFeed()`, `window.BabdodukWorldcupShare.kakaoFeed()`): 제목 "친구의 우승 메뉴는 ○○! 🏆", 설명 "한식 32강 · 너의 최애는?", 이미지 = 지금 origin 의 절대 https 주소(우승 메뉴 사진 `images/worldcup/<id>.jpg`, 없으면 `images/worldcup/og-worldcup.jpg`), 링크와 "너도 해보기" 버튼 = 친구 도전 링크(`worldcup.html?from=<메뉴 id>&cat=<카테고리>`, mobileWebUrl·webUrl 모두). 문구는 `i18n` 의 `wc.kakao*` 키입니다.
 - **CSP**: 이 저장소의 `vercel.json` 에는 `Content-Security-Policy` 헤더도 `<meta>` CSP 도 없어서 따로 허용할 것이 없습니다. CSP 를 도입할 때는 `script-src https://t1.kakaocdn.net` 과 카카오 공유 창이 쓰는 주소를 허용해야 합니다.

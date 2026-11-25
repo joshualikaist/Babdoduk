@@ -1,6 +1,6 @@
 ---
 name: ui-review
-description: Visual, responsive and accessibility review of Babdoduk pages (home hero and free-food calendar, food hub, magazine, events, food log) at 1920, 1440, 768, 390 and 360 px, locally and on the deployed babdoduk-lab candidate, using real screenshots plus state and failure checks.
+description: Visual, responsive and accessibility review of Babdoduk pages (home hero and free-food calendar, food hub, magazine, events, and the lab-only food log) at 1920, 1440, 768, 390 and 360 px, locally and on the deployed babdoduk-lab candidate, using real screenshots plus state and failure checks.
 ---
 
 # UI review
@@ -33,10 +33,10 @@ Review rendered pages, not only CSS or DOM numbers. Take the screenshots and loo
 ## Home
 - One editorial hero, with its primary and secondary actions in the first mobile screen:
   - primary: `오늘의 꽁밥 보기` → `ggongbab.html`;
-  - secondary: `메뉴 고르기` → `mukbang.html#what`.
-- The collage is decorative (`aria-hidden`, no visible label and no dish names); it never implies today's menu. At 720px and below it is not shown (owner 2026-11-03).
-- The today strip keeps the `#homeMenuStatus` and `#homeFreeStatus` states and the "마지막 변경 {time}" wording. It makes no "latest", "real-time" or "live" claims.
-- Nothing below the hero (owner 2026-11-02): the former groups 01 오늘 먹기, 02 읽어보기 and 03 밥도둑 소식 are gone; the map, Instagram and history stay in the More menu, the magazine and news in the top bar.
+  - secondary: `메뉴 뽑기` → `choose.html`.
+- The campus map (`#homeMap`, `js/home-map.js`, `docs/CAMPUS_MAP.md`) replaced the photo collage: wider than 720px it sits beside the copy; at 720px and below only the `꽁밥 지도` button (`#homeMapOpen`, at least 44px) shows and opens it in a dialog. Its pins show only events of the day the calendar shows.
+- The free-food calendar (`#homeCal`, `docs/HOME_CALENDAR.md`) replaced the old status strip; `#homeFreeStatus` is gone. The cafeteria line keeps the `#homeMenuStatus` states and the calendar the "마지막 변경 {time}" wording. Neither makes "latest", "real-time" or "live" claims.
+- Below the hero only the calendar, the cafeteria line and the map (owner 2026-11-02): the former groups 01 오늘 먹기, 02 읽어보기 and 03 밥도둑 소식 are gone; the map, Instagram and history stay in the More menu, the magazine and news in the top bar.
 - The wordmark keeps the original holographic gradient.
 - Nothing is invented: no fabricated events, notices, menus, counts or restaurant inventory.
 

@@ -55,7 +55,7 @@
 | `title` | 제목. “(예정)”을 붙이지 않습니다 |
 | `place` | 선택. 장소는 제목에 섞지 않고 여기에 둡니다 |
 | `entry` | 선택. `worldcup`(먹방 월드컵)만 있습니다. 활동이 진행 중이면 카드 안에 그 페이지의 시작 화면(제목, 카테고리 타일, 미리보기, 시작 버튼)을 그대로 보여 주고, 시작하면 그 페이지(`link`)가 같은 카테고리로 바로 열립니다. 지난 뒤에는 “페이지 보기” 링크만 남습니다. `link` 가 `worldcup.html` 이 아니면 검사가 실패합니다 |
-| `previewFrom` | 선택, `entry` 가 있는 활동만. `YYYY-MM-DD`(KST), `start` 보다 늦으면 안 됩니다. **lab(`babdoduk-lab.vercel.app`)과 localhost 에서만** 이 날부터 활동이 시작된 것으로 봐서 출시 전에 시험할 수 있습니다. 운영(`babdoduk.vercel.app`)과 다른 주소는 무시합니다(아래 “먹방 월드컵 출시 문”) |
+| `previewFrom` | 선택, `entry` 가 있는 활동만. `YYYY-MM-DD`(KST), `start` 보다 늦으면 안 됩니다. **lab(`babdoduk-lab.vercel.app`)과 localhost 에서만** 이 날부터 활동이 시작된 것으로 봐서 출시 전에 시험할 수 있습니다. 운영(`www.babdodukms.com`)과 다른 주소는 무시합니다(아래 “먹방 월드컵 출시 문”) |
 | `details` | 네 줄(`summary` 필수, `duration`·`prizes`·`participation` 선택) **또는** `note` 한 블록 |
 
 - 모든 글은 `ko` 와 `en` 을 함께 씁니다. 한쪽만 있으면 계약 검사가 실패합니다.

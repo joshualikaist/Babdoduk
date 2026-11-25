@@ -4,7 +4,7 @@ Campus food news (production since 2026-09-30): a review file on the operator PC
 
 Data files, their writers, contracts (`schemas/`), checks and readers: `docs/DATA.md`.
 
-Status: `main` production baseline (reviewed 2026-09-30). “In code” does not establish that a config is active, that a deployment serves it or that its data is fresh. Sections labelled **Lab-only / not promoted to production in the current main baseline** describe work that exists only on the `lab` branch.
+Status: `main` production baseline (reviewed 2026-09-30; system map, pages, deployment and push corrected 2026-11-25). “In code” does not establish that a config is active, that a deployment serves it or that its data is fresh. Sections labelled **Lab-only / not promoted to production in the current main baseline** describe work that exists only on the `lab` branch.
 
 ## Production system map (`main`)
 
@@ -33,12 +33,21 @@ LOCAL FRONTEND STATE
 data/foods/catalog.json + 7 packs → food engine → 오늘 뭐 먹지 capsule machine (choose.html, js/pick.js; with data/kaist-menu/ for the cafeteria, data/foods/campus-kiosk.json for photographed campus restaurant menus, and data/content/worldcup.json photos)
 food.html (unreleased, lab only) + authored data/food-log.json + browser-local entries/preferences/filters
 
+BROWSER → SUPABASE (publishable key, checking functions and RLS only; AGENTS.md exceptions)
+tip.html → tip board (docs/GGONGBAB_TIPS.md)
+my.html (+ ggongbab.html) → optional sign-in, 마이 밥도둑 (docs/MY_BABDODUK.md)
+index.html, ggongbab.html, my.html → js/ggongbab-push.js + sw.js, 30-minute alerts (docs/PUSH_ALERTS.md)
+
+VERCEL FUNCTIONS (api/)
+api/cal.js ← /cal/<token>.ics, the starred-event calendar subscription (docs/CALENDAR_FEED.md)
+api/visit.js ← js/site.js, hourly anonymous visit counts (docs/USAGE_STATS.md)
+
 OPERATIONS
 GitHub Actions content-refresh → validate_content.py → allowlisted generated paths to lab and main
 Local Dooray agent (resident browser, human SSO) → Dooray tasks for the collectors
 ```
 
-The browser holds no database configuration: every public page reads only static files served from the same site.
+Apart from the exceptions in `AGENTS.md` (the tip board, optional sign-in and 마이 밥도둑, the push alerts; the browser holds only the public URL and publishable key of `js/ggongbab-public-config.js`), every public page reads only static files served from the same site.
 
 ## Lab-only architecture (not promoted to production in the current main baseline)
 
@@ -61,7 +70,7 @@ On lab the static file and the DB projection are written in sequence, not atomic
 
 ## Static frontend and local state
 
-Twelve HTML files are the route entry points (eleven on main, where `cardnews.html` is absent): `index.html`, `ggongbab.html`, `lab-ggongbab.html`, `choose.html` (오늘 뭐 먹지, the one picker since 2026-11-04; docs/PICK.md), `mukbang.html`, `food.html` (unreleased, lab only, noindex/nofollow), `event.html`, `history.html`, `worldcup.html` (the menu world cup, opened from an activity on `event.html`; `js/worldcup.js` plays `data/content/worldcup.json` over the food catalog and keeps progress in localStorage only), `lab.html`, `tip.html` (the free-food tip board, public since 2026-11-02, noindex/nofollow; docs/GGONGBAB_TIPS.md), `cardnews.html` (the weekly card news preview, lab only; docs/CARDNEWS.md). CSS and JavaScript are loaded without a build step; `css/site.css` owns the shared navigation, footer, tokens and scrollbar. The navigation and footer markup comes from `shared/nav.html` and `shared/footer.html`; `scripts/sync_site_chrome.py` writes a static copy into each page (so it works without JavaScript) together with the shared labels of `data/content/labels.json` (free-food types, sources, cafeterias, cuisines, magazine lanes; the pipeline reads the same file through `scripts/content_labels.py`) and the page content of `data/content/events.json` and `history.json` (the rows and translations of `event.html` and `history.html`, rendered by `scripts/page_content.py`), and its `--check` mode, run by the `ui-guardian` workflow, fails on drift; the same workflow runs `scripts/check_site_ui.py --chrome-only` (site guardian and visual comparison) in a pinned Playwright container. Vercel serves the static files; see “Environment and deployment”. The experiment pages (`lab.html`, `lab-ggongbab.html`, `food.html`, `cardnews.html`) and their data (`data/food-log.json`, `calendar.ics`, `data/cardnews/`) are lab-only: `vercel.json` answers 404 for them on every host but babdoduk-lab.vercel.app, so production never serves them while both branches keep the same files.
+Fifteen HTML files are the route entry points (thirteen on main, where `cardnews.html` and `bobyak.html` are absent): `index.html`, `ggongbab.html`, `lab-ggongbab.html`, `choose.html` (오늘 뭐 먹지, the one picker since 2026-11-04; docs/PICK.md), `mukbang.html`, `food.html` (unreleased, lab only, noindex/nofollow), `event.html`, `history.html`, `worldcup.html` (the menu world cup, opened from an activity on `event.html`; `js/worldcup.js` plays `data/content/worldcup.json` over the food catalog and keeps progress in localStorage only), `lab.html`, `tip.html` (the free-food tip board, public since 2026-11-02, noindex/nofollow; docs/GGONGBAB_TIPS.md), `cardnews.html` (the weekly card news preview, lab only; docs/CARDNEWS.md), `my.html` (마이 밥도둑, optional sign-in; docs/MY_BABDODUK.md), `privacy.html` (the privacy policy, served on every host), `bobyak.html` (밥약 메이커, lab only; docs/BOBYAK.md). CSS and JavaScript are loaded without a build step; `css/site.css` owns the shared navigation, footer, tokens and scrollbar. The navigation and footer markup comes from `shared/nav.html` and `shared/footer.html`; `scripts/sync_site_chrome.py` writes a static copy into each page (so it works without JavaScript) together with the shared labels of `data/content/labels.json` (free-food types, sources, cafeterias, cuisines, magazine lanes; the pipeline reads the same file through `scripts/content_labels.py`) and the page content of `data/content/events.json` and `history.json` (the rows and translations of `event.html` and `history.html`, rendered by `scripts/page_content.py`), and its `--check` mode, run by the `ui-guardian` workflow, fails on drift; the same workflow runs `scripts/check_site_ui.py --chrome-only` (site guardian and visual comparison) in a pinned Playwright container. Vercel serves the static files; see “Environment and deployment”. The experiment pages (`lab.html`, `lab-ggongbab.html`, `food.html`, `cardnews.html`, `bobyak.html`) and their data (`data/food-log.json`, `data/cardnews/`, `data/places/`) are lab-only: `vercel.json` answers 404 for them on every host but babdoduk-lab.vercel.app, so production never serves them while both branches keep the same files. The rule still names `calendar.ics` (a Portal calendar export, deleted 2026-11-13) in case it is ever put back.
 
 `js/ggongbab.js` renders normal, fixture and localhost preview modes; fixture mode (lab page only) loads its synthetic data from `tests/fixtures/ggongbab-lab.js`, which is never deployed, and public routes cannot read the private preview, and normal mode reads only the static snapshots: `data/ggongbab/latest.json`, the past listings (`archive/index.json`) and the campus news (`news.json`). `js/ggongbab-select.js` holds the client-side eligibility repeat (explicit food, not under review, not ended) shared by the hub and the home summary. `js/kaist-menu.js` exports the KST date and stale rules used by the hub, the magazine's cafeteria summary (`#kaistToday` in `mukbang.html`, below the four lanes) and `js/home.js`; the home summary reads the same static snapshots as the hub and names their last publication time. `js/home-calendar.js` draws the home's free-food calendar (Sunday-first KST month, selected day, upcoming) from `data/ggongbab/latest.json` and the past listings through the same `js/ggongbab-select.js` rules (`docs/HOME_CALENDAR.md`). `js/food-engine.js` loads the built catalog; `js/pick.js` draws one cafeteria meal or delivery dish and runs the capsule machine on `choose.html` (docs/PICK.md). Filter, preference, language and food-log state use localStorage. Each page's translation table is written into the page by `scripts/sync_site_chrome.py` from `i18n/ko.json` and `i18n/en.json` (the key families the page shows), the shared labels and `data/content/`; `js/site.js`, loaded right after it, is the one language switch (it announces `babdoduk-lang` for the page's own scripts), scroll bar and "more" menu.
 
@@ -101,9 +110,9 @@ Portal: `main` contains the earlier Portal observation, discovery and queue diag
 
 ## Environment and deployment
 
-`main` is production and `lab` is integration/staging. Vercel's Git integration is active for both projects: GitHub deployment records from 2026-09-23 show a push to `main` creating a Production deployment of `babdoduk` (https://babdoduk.vercel.app), a push to `lab` creating a Production deployment of `babdoduk-lab`, and each project building the other's branch as a Preview. Treat merging to `main` as a production deploy. Generated content is pushed to both branches without promoting application code. Branch, worktree and release rules are in `AGENTS.md` (“Git / Multi-Agent Session Protocol”) and `docs/DEPLOYMENT_AND_BRANCHES.md`.
+`main` is production and `lab` is integration/staging. Vercel's Git integration is active for both projects: GitHub deployment records from 2026-09-23 show a push to `main` creating a Production deployment of `babdoduk` (then https://babdoduk.vercel.app; production is https://www.babdodukms.com since 2026-11-02, and the old address stopped answering around 2026-11-18), a push to `lab` creating a Production deployment of `babdoduk-lab`, and each project building the other's branch as a Preview. Treat merging to `main` as a production deploy. Generated content is pushed to both branches without promoting application code. Branch, worktree and release rules are in `AGENTS.md` (“Git / Multi-Agent Session Protocol”) and `docs/DEPLOYMENT_AND_BRANCHES.md`.
 
-No tracked Web Push/service worker implementation exists. Do not add browser notification permission as a side effect of a redesign.
+The only service worker is `sw.js`, which shows the 30-minute alerts for starred events and caches nothing; `js/ggongbab-push.js` asks for notification permission only when someone turns the alert on (`docs/PUSH_ALERTS.md`). Do not add browser notification permission as a side effect of a redesign.
 
 ## Failure, tests and observability
 

@@ -36,7 +36,7 @@ The five gates it runs:
 (`--jobs`, `BABDODUK_SITE_UI_JOBS`; `--jobs 1` is the old one-after-another order). More than six made
 timing checks fail from CPU load (the drawer's fixed 300 ms wait), so six is the cap. The chrome
 screenshot comparison is skipped unless `check_all.py --visual`: baselines exist for the pinned CI
-container and the owner's Windows PC, not this Linux PC, and ui-guardian compares them in CI.
+container and the owner's Windows PC, not the Linux PC, and ui-guardian compares them in CI.
 
 `pytest.ini` sets `addopts = -q`. Add `-o addopts=""` to get the "N passed" line. The browser checks use installed Chrome through Playwright. They never call live accounts or databases.
 
@@ -57,7 +57,7 @@ The browser gates block web fonts to stay deterministic. For a change that affec
 - Classify each failure with evidence:
   - **Regression:** the failing check exercises files this change touched (compare `git diff --name-only <base>` with what the check loads), or the failure reproduces.
   - **Pre-existing intermittent:** a known flake, and the failing check does not load the changed files. Report the first failure, its prior occurrences and the rerun result together.
-- Known intermittent issues on this Windows machine:
+- Known intermittent issues, recorded on the owner's Windows PC (not yet confirmed or ruled out on the Linux PC):
   - `check_ggongbab_ui.py`'s first `.gg-card` wait in the production-page loop sometimes times out after 30 s. The occurrences so far coincided with host power or display transitions in the Windows event log.
   - `tests/ggongbab/test_ai_errors.py::test_transient_failure_recovers_on_retry` sometimes fails in a full run and passes in isolation.
 - Tests prove the code under test. They do not prove that production, external services or data freshness are healthy, so say what was not tested.

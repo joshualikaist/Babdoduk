@@ -138,8 +138,9 @@ request (15 minutes) signs nobody in and shows the usual failure. The client id 
 redirect; without a client id, Web Crypto or sessionStorage Google does too. Tests: `tests/test_my_babdoduk.py`.
 
 Owner setup, once: the Google web client lists each site's `/my.html` as an authorized redirect URI
-(`https://www.babdodukms.com/my.html`, `https://babdodukms.com/my.html`, `https://babdoduk-lab.vercel.app/my.html`,
-`https://babdoduk.vercel.app/my.html`), next to Supabase's callback, which stays. Optional: brand
+(`https://www.babdodukms.com/my.html`, `https://babdodukms.com/my.html`, `https://babdoduk-lab.vercel.app/my.html`),
+next to Supabase's callback, which stays. The old `https://babdoduk.vercel.app/my.html` is no longer needed: that address
+stopped answering around 2026-11-18 and `js/babdoduk-auth-config.js` no longer lists it. Optional: brand
 verification shows the name 밥도둑 and its logo.
 
 ## Before turning it on (owner)

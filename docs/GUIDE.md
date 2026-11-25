@@ -22,7 +22,7 @@
 | **소식·이벤트** | `event.html` | 밥도둑의 공지·예정 활동과 지난 활동 기록 | `data/content/events.json` (sync 가 `event.html` 에 씀) |
 | **맛집 지도** | 네이버 지도 (외부 링크) | 밥도둑이 저장해 둔 KAIST 근처 식당 | 외부 서비스 |
 
-먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`, 밥약 메이커 `bobyak.html`)와 그 데이터(`data/food-log.json`, `calendar.ics`, `data/cardnews/`, `data/places/`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다.
+먹방 가계부(`food.html`)는 **공개 전(실험실 전용)** 입니다: 공개 내비·푸터·홈에 링크가 없고 `noindex, nofollow` 이며 `lab.html` 에서만 엽니다. 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`, 밥약 메이커 `bobyak.html`)와 그 데이터(`data/food-log.json`, `data/cardnews/`, `data/places/`)는 `vercel.json` 이 babdoduk-lab 이 아닌 모든 주소에서 404 로 막아, production 에서는 열리지 않습니다. 같은 규칙에 남아 있는 `calendar.ics`(Portal 일정 내보내기)는 2026-11-13 에 지웠습니다.
 
 홈(`index.html`)은 오늘의 꽁밥과 메뉴 뽑기(`choose.html`)로 바로 시작하게 하고, 바로 아래에 오늘의 꽁밥 달력과
 학식 한 줄을 둡니다(`docs/HOME_CALENDAR.md`). 그 아래에는 아무것도 두지 않습니다(01 오늘 먹기 · 02 읽어보기 · 03 밥도둑 소식은 소유자 결정으로 2026-11-02 에 없앴습니다). `history.html` 은 밥도둑이 걸어온 길입니다.
@@ -88,7 +88,7 @@ python scripts\check_real_fonts.py              # 별도: 실제 웹 폰트로 �
 | UI 검증 · 테스트 | §8 · §9 |
 | 자동화 · 브랜치 · 배포 | §10 · §11, `docs/DEPLOYMENT_AND_BRANCHES.md` |
 | 소식·이벤트 쓰는 법 (`data/content/events.json`) | `docs/EVENT_DETAIL_FIELDS.md` |
-| 밥도둑 2.0 (꽁밥 LIVE, 마이 밥도둑·로그인, 밥약 메이커, 계획) | `docs/GGONGBAB_LIVE.md`, `docs/MY_BABDODUK.md`, `docs/CALENDAR_FEED.md`(내 꽁밥 캘린더 구독, lab), `docs/PUSH_ALERTS.md`(별 누른 꽁밥 30분 전 알림, lab), `docs/BOBYAK.md`, `docs/BABDODUK_2_PLAN.md` |
+| 밥도둑 2.0 (꽁밥 LIVE, 마이 밥도둑·로그인, 밥약 메이커, 계획) | `docs/GGONGBAB_LIVE.md`, `docs/MY_BABDODUK.md`, `docs/CALENDAR_FEED.md`(내 꽁밥 캘린더 구독, 2026-11-12 부터 운영), `docs/PUSH_ALERTS.md`(별 누른 꽁밥 30분 전 알림, 2026-11-12 부터 운영), `docs/BOBYAK.md`, `docs/BABDODUK_2_PLAN.md` |
 | 보안 원칙 | §12 |
 
 아래 운영 기록 중 날짜가 있는 상태 설명은 현재 상태 보장이 아니며, 실행 전 코드·데이터·배포 브랜치를 확인합니다.

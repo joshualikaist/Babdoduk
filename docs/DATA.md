@@ -30,7 +30,7 @@ contracts themselves are standard JSON Schema files in `schemas/` (data plan pha
 | `data/food-log.json` | The creator's food log | a person | `food-log` | `--only authored`: each day's total | `food.html` | babdoduk-lab only |
 | `inputs/ggongbab/manual.json` | Hand-written free-food notices | a person | `ggongbab-manual` | `--only authored`: unique ids | the free-food refresh | no |
 | `inputs/ggongbab/food-news.json` | Public campus news items | operator PC, `export_food_news.py --review` (the review file stays in `.local/`) | `ggongbab-news-input` | `--only authored`: each item's derived id | the free-food refresh | no |
-| `calendar.ics` | KAIST Portal calendar export | a person | none | none | `lab.html` | babdoduk-lab only |
+| `calendar.ics` (deleted 2026-11-13, commit 50febeb) | KAIST Portal calendar export; `lab.html`'s loader now finds no file | a person | none | none | `lab.html` | babdoduk-lab only (the 404 rule stays) |
 | `scripts/discovery/sources.json` | Magazine source registry: one entry per source | a person (one source per change) | `magazine-sources` | `--only magazine`, plus `discovery.registry.validate` | the magazine run | no |
 
 `python scripts/validate_content.py` checks every family; a bot passes `--only` with the families it

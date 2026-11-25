@@ -16,8 +16,8 @@
 - [ ] 작업 브랜치는 **최신 `origin/lab`** 에서 만들었다. 본편이 목적지라는 이유로 `main` 에서 시작하지 않았다
 - [ ] `main` 에서 시작했다면, 소유자가 lab 우회를 **명시적으로** 허락한 경우(긴급 hotfix, main 에서만 가능한 인프라 복구, 저장소 긴급 수정)이며 그 허락을 기록했다
 - [ ] 드리프트 확인이 비어 있다: `git log --format='%h %an %s' origin/lab..origin/main` 에 bot 이 아닌 커밋이 없다
-- [ ] 생성 데이터(`data/magazine/**`, `data/kaist-menu/**`, `data/ggongbab/latest.json`, `data/ggongbab/archive/**`)는 bot 이 lab·main 에 직접 푸시한다. 이 JSON 커밋을 기능 커밋과 섞지 않았다
-- [ ] `lab.html` / `lab-ggongbab.html` / `food.html` / `cardnews.html` 은 두 브랜치에 있어도 되지만, 홈 내비에는 실험 링크를 걸지 않는다. production 에서는 `vercel.json` 이 404 로 막는다(babdoduk-lab 에서만 열림)
+- [ ] 생성 데이터(`data/magazine/**`, `data/kaist-menu/**`, `data/ggongbab/**`, `research/magazine/**`; `scripts/publish_generated.py`)는 bot 이 lab·main 에 직접 푸시한다. 이 JSON 커밋을 기능 커밋과 섞지 않았다
+- [ ] `lab.html` / `lab-ggongbab.html` / `food.html` / `cardnews.html` / `bobyak.html` 과 그 데이터(`data/food-log.json`, `data/cardnews/`, `data/places/`)는 두 브랜치에 있어도 되지만, 홈 내비에는 실험 링크를 걸지 않는다. production 에서는 `vercel.json` 이 404 로 막는다(babdoduk-lab 에서만 열림)
 
 ---
 
@@ -25,7 +25,7 @@
 
 - [ ] `git status` — 의도하지 않은 파일(대용량 zip, `__pycache__`, 로컬 설정)이 커밋에 없다
 - [ ] 변경 파일이 이번 작업 범위와 맞고, 보호 영역(`supabase/`, workflow, collector 등)은 승인이 있을 때만 들어 있다
-- [ ] 게이트 첫 실행 결과를 기록했다(`/verify-babdoduk`): pytest, `validate_content.py`, `sync_site_chrome.py --check`, `check_site_ui.py`, `check_ggongbab_ui.py`, 레이아웃·문구 변경이면 `check_real_fonts.py`
+- [ ] 게이트 첫 실행 결과를 기록했다(`/verify-babdoduk`): lab push 전에는 `python scripts/check_all.py --quick`, push 뒤에는 그 커밋의 GitHub 검사(`python scripts/ci_status.py <커밋> --wait`). 다섯 게이트 전부(`python scripts/check_all.py`)는 본편 릴리스 전에 돌린다(AGENTS.md, 2026-11-12). 레이아웃·문구 변경이면 `check_real_fonts.py` 도
 - [ ] 번역은 `i18n/ko.json`·`en.json` 에서 고치고 `scripts/sync_site_chrome.py` 로 페이지에 반영했다(두 파일의 키가 같다)
 
 ---

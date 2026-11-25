@@ -126,6 +126,10 @@ day; the rest is marked.
 
 ## How it would fit the pipeline (not started)
 
+Superseded (2026-10-29): the plan below was never built under these names. The radar that runs is described in
+`docs/INSTAGRAM_RADAR.md`; its account list is `inputs/instagram/accounts.json` and its code is
+`scripts/ggongbab/instagram/`. The original plan is kept as it was written:
+
 * Input (authored): `inputs/ggongbab/instagram-sources.json` with `{handle, unit, audience, enabled}` per account.
 * A collector (`scripts/ggongbab/collectors/instagram.py`) returns one `RawItem` per new post (dedup by shortcode):
   caption as text, poster images as attachments, `source_url` = the post link. The existing AI parser then reads
