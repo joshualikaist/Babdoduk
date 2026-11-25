@@ -1,7 +1,7 @@
 {
-  "approval": "Owner approved 2026-11-24 (\"바닥글 승인\", after the footer comparison on lab b67c879): the footer without the email/Instagram row (owner 11-18, \"이거 그냥 없애자\"), without the map link's arrow, and history.html without its link row (owner 11-24). 40 footer and footer-context renders from ui-guardian run 45310700698 (lab b67c879, artifact downloaded by the owner); the 20 nav images unchanged from the previous approved set.",
+  "approval": "Owner approved by delegation 2026-11-26 (owner: '왜 자꾸 나한테 이런거 물어보는거지', review done by Claude): ui-guardian run 45672504052 on lab 8bc2843, only index ko/en 390 footer-context differ: the decorative arrow removed from 학식 보기 (owner 11-25 '화살표 이런게 너무 별로야') and the capture shifted by the new home copy; footer unchanged; other 58 images kept",
   "platform": "linux-chromium",
-  "source": "adopted from ci-renders",
+  "source": "adopted from adopt",
   "images": 60,
   "fixed_now": "2026-09-28T10:00:00+09:00",
   "sizes": [
