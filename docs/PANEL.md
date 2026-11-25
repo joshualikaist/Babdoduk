@@ -32,12 +32,32 @@ Reviewers only read; none edits files, uses the network or touches protected sys
 3. Save the workflow's return value as JSON and run
    `python scripts/panel/publish.py --result <file> --capture .local/panel/<run>`. It writes
    `data/panel/latest.json` and the cited screenshots as `data/panel/shots/*.webp` (480 px wide).
-4. Commit those two paths with the run date and push through lab as usual.
+4. Run `python scripts/panel/live.py export --run <workflow run dir>` (the run's
+   `.../subagents/workflows/wf_*` folder). It writes `data/panel/timeline.json`, the split-screen replay.
+5. Commit those paths with the run date and push through lab as usual.
+
+## Split screen, live and replay
+
+Owner request 2026-11-26: see every reviewer at once, like a split terminal, while the review runs.
+Each workflow agent writes its steps with timestamps to `agent-<id>.jsonl`, and `journal.jsonl` says which
+agent is which reviewer. `scripts/panel/live.py` turns them into one timeline: one pane per reviewer
+(디자이너 1·2, 개발자 1·2, 문구 담당, 창업가, 비판자), each step as a short Korean line (screen viewed,
+file read, code searched, findings, comments). File paths become base names and commands are never shown.
+The reviewers say one Korean sentence before each step (`.claude/agents/panel-*.md`), so the panes read
+as narration.
+
+* **Live, on this computer:** `python scripts/panel/live.py watch` serves the site on
+  http://127.0.0.1:8765/panel.html and answers `data/panel/live.json` from the newest run (or `--run`)
+  on every request; the page polls it every 2 s. It listens on 127.0.0.1 only. The lab site cannot be live:
+  it is static, and publishing every step would mean a deployment every few seconds.
+* **Replay, on lab:** the page plays `data/panel/timeline.json` at 1×, 10× (default) or 60×, with
+  pause, restart and jump-to-end. With reduced motion it opens at the end.
 
 ## Page
 
 `panel.html` (lab only: `vercel.json` answers 404 elsewhere; `noindex`; in the lab "more" menu as
-가상 평가단). It shows the run, the panel's overall view, the top 10 with who raised each and the fix,
+가상 평가단). The split screen comes first (`js/panel-live.js`; it tries `live.json` only on 127.0.0.1 or
+localhost). Below it the page shows the run, the panel's overall view, the top 10 with who raised each and the fix,
 the members with their one-line summaries, and every thread as a chat (the critic on the right), filtered
 by member and verdict (accepted by default). All text is inserted as text; a screenshot loads only from
 `data/panel/shots/`. The page is left out of the visit counter (`js/site.js`). The conversation itself is

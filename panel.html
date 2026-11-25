@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css?v=71967c9f54" />
-  <link rel="stylesheet" href="css/panel.css?v=f618d4e083" />
+  <link rel="stylesheet" href="css/panel.css?v=b8dddb78e9" />
 </head>
 <body class="pn-body">
   <header class="site-nav" role="banner">
@@ -51,6 +51,7 @@
       <h1 class="page-title pn-title" id="pnTitle" data-i18n="panel.title">가상 평가단</h1>
       <p class="pn-lead" data-i18n="panel.lead">인공지능 평가자들이 실험 사이트를 보고 나눈 대화예요. 진짜 학생의 의견은 아니에요.</p>
     </section>
+    <section class="pn-live" id="pnLive" aria-labelledby="pnLiveTitle" hidden></section>
     <div class="pn-app" id="pnApp" aria-live="polite" data-state="loading">
       <p class="pn-state" data-i18n="panel.loading">평가를 불러오는 중</p>
     </div>
@@ -176,6 +177,26 @@
         'panel.kind.reply': '답변',
         'panel.kind.verdict': '판정',
         'panel.lead': '인공지능 평가자들이 실험 사이트를 보고 나눈 대화예요. 진짜 학생의 의견은 아니에요.',
+        'panel.live.clock': '{m}분 {s}초',
+        'panel.live.controls': '재생 조절',
+        'panel.live.done': '끝',
+        'panel.live.doneLine': '✔ 이 단계 끝',
+        'panel.live.end': '끝까지 보기',
+        'panel.live.finished': '평가가 끝났어요',
+        'panel.live.leadLive': '지금 이 컴퓨터에서 진행 중인 평가예요. 평가자마다 칸 하나씩, 2초마다 새로 보여 줘요.',
+        'panel.live.leadReplay': '지난 평가를 평가자마다 칸 하나씩 다시 보여 줘요. 실제로 걸린 시간 그대로 재생할 수도 있어요.',
+        'panel.live.log': '{name}의 작업 기록',
+        'panel.live.on': '실시간',
+        'panel.live.pause': '멈춤',
+        'panel.live.phase': '지금 단계: {name}',
+        'panel.live.play': '재생',
+        'panel.live.ready': '시작 전',
+        'panel.live.replay': '다시 보기',
+        'panel.live.restart': '처음부터',
+        'panel.live.speed': '{n}배',
+        'panel.live.title': '평가 화면',
+        'panel.live.wait': '대기',
+        'panel.live.work': '작업 중',
         'panel.loading': '평가를 불러오는 중',
         'panel.members': '평가자',
         'panel.meta': '{at} 평가 · 화면 {pages}개, {views}장 · 지적 {total}개 (인정 {accept}, 기각 {reject})',
@@ -261,6 +282,26 @@
         'panel.kind.reply': 'reply',
         'panel.kind.verdict': 'verdict',
         'panel.lead': 'A conversation between AI reviewers about the lab site. These are not real students\' opinions.',
+        'panel.live.clock': '{m}m {s}s',
+        'panel.live.controls': 'Playback',
+        'panel.live.done': 'Done',
+        'panel.live.doneLine': '✔ Step done',
+        'panel.live.end': 'Jump to the end',
+        'panel.live.finished': 'The review is over',
+        'panel.live.leadLive': 'A review running on this computer right now. One pane per reviewer, refreshed every 2 seconds.',
+        'panel.live.leadReplay': 'The last review, replayed with one pane per reviewer. You can also play it at its real pace.',
+        'panel.live.log': '{name}\'s work log',
+        'panel.live.on': 'Live',
+        'panel.live.pause': 'Pause',
+        'panel.live.phase': 'Now: {name}',
+        'panel.live.play': 'Play',
+        'panel.live.ready': 'Not started',
+        'panel.live.replay': 'Replay',
+        'panel.live.restart': 'From the start',
+        'panel.live.speed': '{n}×',
+        'panel.live.title': 'Review screen',
+        'panel.live.wait': 'Waiting',
+        'panel.live.work': 'Working',
         'panel.loading': 'Loading the review',
         'panel.members': 'Reviewers',
         'panel.meta': 'Reviewed {at} · {pages} pages, {views} shots · {total} findings ({accept} accepted, {reject} rejected)',
@@ -288,6 +329,7 @@
   </script>
   <script src="js/site.js?v=684bc507f0"></script>
   <!-- @end i18n -->
+  <script src="js/panel-live.js?v=3e62ace096"></script>
   <script src="js/panel.js?v=511f556eae"></script>
 </body>
 </html>

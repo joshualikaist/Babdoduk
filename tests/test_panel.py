@@ -42,7 +42,22 @@ def browser():
         chrome.close()
 
 
-def open_panel(browser, report=REPORT, width=390, lang="ko"):
+TIMELINE = {
+    "live": False, "run": "wf_test", "at": "2026-11-25T18:50:00+09:00",
+    "panes": [{"id": "designer1", "name": "디자이너 1", "emoji": "🎨"}, {"id": "critic", "name": "비판자", "emoji": "🧐"}],
+    "phases": [{"t": 0, "title": "각자 평가"}, {"t": 20, "title": "최종 판정"}],
+    "events": [{"t": 0, "pane": "designer1", "kind": "start", "text": "각자 평가"},
+               {"t": 3, "pane": "designer1", "kind": "step", "text": "📷 화면 보기: index-iphone"},
+               {"t": 9, "pane": "designer1", "kind": "finding", "text": "<img src=x onerror=alert(1)> 심각도 3"},
+               {"t": 10, "pane": "designer1", "kind": "done", "text": "끝"},
+               {"t": 20, "pane": "critic", "kind": "start", "text": "최종 판정"},
+               {"t": 30, "pane": "critic", "kind": "say", "text": "먼저 고칠 것 2개를 골랐어요."},
+               {"t": 30, "pane": "critic", "kind": "done", "text": "끝"}],
+    "end": 30,
+}
+
+
+def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None):
     context = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
     context.add_init_script(f"localStorage.setItem('babdoduk-lang', '{lang}'); localStorage.setItem('babdoduk-nocount', '1');")
     errors = []
@@ -55,6 +70,8 @@ def open_panel(browser, report=REPORT, width=390, lang="ko"):
         if name == "data/panel/latest.json":
             return route.fulfill(status=200 if report is not None else 404, body=json.dumps(report or {}),
                                  content_type="application/json")
+        if name == "data/panel/timeline.json" and timeline is not None:
+            return route.fulfill(status=200, body=json.dumps(timeline), content_type="application/json")
         if name.startswith(("data/", "api/")):
             return route.fulfill(status=404, body="")
         file = (ROOT / name).resolve()
@@ -63,6 +80,8 @@ def open_panel(browser, report=REPORT, width=390, lang="ko"):
         return route.fulfill(status=404, body="")
 
     context.route("**/*", handle)
+    context.add_init_script("window.__requests = []; const f = window.fetch; "
+                            "window.fetch = (u, o) => { window.__requests.push(String(u)); return f(u, o); };")
     page = context.new_page()
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"https://{HOST}/panel.html")
@@ -137,3 +156,72 @@ def test_the_page_is_lab_only_and_uncounted():
     html = (ROOT / "panel.html").read_text(encoding="utf-8")
     assert '<meta name="robots" content="noindex, nofollow" />' in html
     assert "page === 'panel') return null;" in (ROOT / "js/site.js").read_text(encoding="utf-8")
+
+
+def test_the_split_screen_replays_each_reviewer_in_its_own_pane(browser):
+    context, page, errors = open_panel(browser, timeline=TIMELINE, width=1440)
+    live = page.locator("#pnLive")
+    live.locator(".pn-term").first.wait_for()
+    assert live.get_attribute("data-mode") == "replay" and live.is_visible()
+    assert live.locator(".pn-term").count() == 2
+    assert "data/panel/live.json" not in page.evaluate("window.__requests"), "live data only on this computer"
+    live.locator("button", has_text="끝까지 보기").click()
+    assert live.locator(".pn-live-phase").inner_text() == "평가가 끝났어요"
+    assert live.locator(".pn-term--designer1 .pn-line").count() == 4
+    assert "<img src=x onerror=alert(1)> 심각도 3" in live.locator(".pn-line--finding").inner_text()
+    assert live.locator(".pn-term--critic .pn-term-status").get_attribute("data-status") == "done"
+    live.locator("button", has_text="처음부터").click()
+    assert live.locator("button[aria-pressed='true']", has_text="10배").count() == 1
+    for button in live.locator("button").all():
+        assert button.bounding_box()["height"] >= 44
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert errors == []
+    context.close()
+
+
+def test_the_split_screen_fits_a_phone_and_hides_without_data(browser):
+    context, page, errors = open_panel(browser, timeline=TIMELINE, width=360)
+    page.locator("#pnLive .pn-term").first.wait_for()
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    assert page.locator("#pnLive .pn-term-body").first.evaluate("b => b.tabIndex") == 0
+    context.close()
+    context, page, errors = open_panel(browser)
+    page.wait_for_timeout(300)
+    assert page.locator("#pnLive").is_hidden()
+    assert errors == []
+    context.close()
+
+
+def test_the_timeline_hides_paths_and_commands(tmp_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("panel_live", ROOT / "scripts/panel/live.py")
+    live = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(live)
+    (tmp_path / "journal.jsonl").write_text("\n".join(json.dumps(r) for r in [
+        {"type": "started", "agentId": "a1", "label": "review:designer1", "phase": "Review"},
+        {"type": "result", "agentId": "a1", "result": {"summary": "첫인상은 좋아요.", "findings": [{"severity": 3, "title": "잘림"}]}},
+        {"type": "started", "agentId": "a2", "label": "discuss:developer", "phase": "Discuss"},
+    ]), encoding="utf-8")
+
+    def turn(at, *parts):
+        return json.dumps({"type": "assistant", "timestamp": at, "message": {"content": list(parts)}})
+    (tmp_path / "agent-a1.jsonl").write_text("\n".join([
+        turn("2026-11-25T10:00:00Z", {"type": "text", "text": "아이폰 홈을 볼게요."},
+             {"type": "tool_use", "name": "Read", "input": {"file_path": "/tmp/claude-1000/x/scratchpad/panel/run1/shots/index-iphone.jpg"}}),
+        turn("2026-11-25T10:00:05Z", {"type": "tool_use", "name": "Bash", "input": {"command": "cat ~/.config/babdoduk/credentials/token | grep x"}}),
+        turn("2026-11-25T10:00:09Z", {"type": "tool_use", "name": "Read", "input": {"file_path": "/home/u/workspaces/Babdoduk-wt/t/js/ggongbab.js"}}),
+        turn("2026-11-25T10:00:10Z", {"type": "text", "text": "Now checking the code."}),
+    ]), encoding="utf-8")
+    (tmp_path / "agent-a2.jsonl").write_text(turn("2026-11-25T10:01:00Z", {"type": "tool_use", "name": "Grep", "input": {"pattern": "tabsHtml"}}), encoding="utf-8")
+    data = live.build(tmp_path)
+    text = json.dumps(data, ensure_ascii=False)
+    assert "/tmp" not in text and "/home" not in text and "credentials" not in text and "Now checking" not in text
+    lines = [(e["pane"], e["kind"], e["text"]) for e in data["events"]]
+    assert ("designer1", "say", "아이폰 홈을 볼게요.") in lines
+    assert ("designer1", "step", "📷 화면 보기: index-iphone") in lines
+    assert ("designer1", "step", "⌨️ 명령 실행") in lines
+    assert ("designer1", "step", "📄 읽기: js/ggongbab.js") in lines
+    assert ("designer1", "finding", "심각도 3 · 잘림") in lines and ("designer1", "done", "끝") in lines
+    assert ("developer1", "step", "🔎 찾기: tabsHtml") in lines
+    assert data["state"] == {"designer1": "done", "developer1": "working"}
+    assert data["events"][-1]["t"] == 60.0 and data["phases"][1]["title"] == "서로 의견"
