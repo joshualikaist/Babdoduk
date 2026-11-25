@@ -158,11 +158,12 @@ def mail(*images):
 
 
 def big_poster(link):
-    pytest.importorskip("zxingcpp")
+    zxingcpp = pytest.importorskip("zxingcpp")
     from PIL import Image, ImageDraw
 
-    from .test_qr import poster
-    sheet = Image.open(io.BytesIO(poster(link))).convert("RGB")
+    code = zxingcpp.create_barcode(link, zxingcpp.BarcodeFormat.QRCode).to_image(scale=6)
+    height, width = code.shape[:2]
+    sheet = Image.frombytes("L", (width, height), bytes(memoryview(code))).convert("RGB")
     canvas = Image.new("RGB", (sheet.width + 600, sheet.height + 600), "white")
     draw = ImageDraw.Draw(canvas)
     for y in range(0, canvas.height, 7):         # some poster texture, so the photo is not a tiny icon
