@@ -1,10 +1,78 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T16:08:58+09:00",
+  "generatedAt": "2026-11-25T22:41:30+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 59,
+  "count": 61,
   "events": [
+    {
+      "id": "58780475-64ae-41b3-bb27-b1874a265c02",
+      "title": "2026 산업디자인학과 학과설명회",
+      "summary": "새내기를 위한 2026학년도 산업디자인학과 학과설명회입니다. 사전 신청자와 현장 참석자 중 선착순 120명에게 싸이버거 세트와 과일요거트모찌가 제공됩니다.",
+      "startAt": "2026-11-25T18:00:00+09:00",
+      "endAt": "2026-11-25T19:30:00+09:00",
+      "dateText": "11월 25일 (수)",
+      "timeText": "18:00~19:30",
+      "location": {
+        "name": "디지털인문사회과학부동",
+        "building": "N4",
+        "room": "시청각실"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "싸이버거세트 및 과일요커트모찌",
+        "source": "text"
+      },
+      "organizer": "산업디자인학과 학생회",
+      "eligibility": "선착순 70명의 사전신청자",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "새내기",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "4c25d47a-f84d-49ac-9c0a-d273dcfa63fd",
+      "title": "2026 AI시스템학과 학과설명회",
+      "summary": "AI시스템학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-25T18:00:00+09:00",
+      "endAt": "2026-11-25T19:00:00+09:00",
+      "dateText": "2026년 11월 25일(수)",
+      "timeText": "18:00~19:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "4861d28f-64c3-4527-8381-ddf02199f18e",
       "title": "제3회 교무처 & 학사과정생 간담회",
