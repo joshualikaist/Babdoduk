@@ -7,7 +7,7 @@
 비교용 URL:
 
 - 스테이징: https://babdoduk-lab.vercel.app (`babdoduk-lab` 프로젝트, `lab` 브랜치)
-- 공개: https://babdoduk.vercel.app (`babdoduk` 프로젝트, `main` 브랜치)
+- 공개: https://www.babdodukms.com (`babdoduk` 프로젝트, `main` 브랜치)
 
 ---
 
@@ -34,7 +34,7 @@
 
 - [ ] 그 `lab` 커밋의 `Vercel – babdoduk-lab` 상태가 **성공**이다
 - [ ] https://babdoduk-lab.vercel.app 에서 바뀐 페이지와 내비의 주요 페이지를 한·영, 1440·390·360 으로 확인했다(가로 넘침·JS 오류 없음)
-- [ ] 공통 페이지는 babdoduk.vercel.app 과 비교했다. lab 은 최소한 본편 기준선이며, 다른 점은 lab 전용 실험이나 이번 변경으로 설명된다
+- [ ] 공통 페이지는 www.babdodukms.com 과 비교했다. lab 은 최소한 본편 기준선이며, 다른 점은 lab 전용 실험이나 이번 변경으로 설명된다
 - [ ] 소유자가 lab 에 배포된 결과를 **승인**했다
 
 ---
@@ -53,7 +53,7 @@
 
 ## 4. main 반영 직후
 
-- [ ] `Vercel – babdoduk` 상태가 성공이고, https://babdoduk.vercel.app 에서 바뀐 기능이 lab 에서처럼 동작한다
+- [ ] `Vercel – babdoduk` 상태가 성공이고, https://www.babdodukms.com 에서 바뀐 기능이 lab 에서처럼 동작한다
 - [ ] **back-sync:** 최신 `origin/main` 을 `lab` 에 일반 merge 해 push 했고, 그 커밋의 babdoduk-lab 배포가 성공했다
 - [ ] 드리프트 확인이 다시 비어 있다. 이것까지 끝나야 릴리스 완료다
 - [ ] 끝난 작업·release 브랜치와 worktree 를 `REPOSITORY_HYGIENE.md` 대로 분류해 보고했다. 삭제는 소유자 승인 뒤에만 한다

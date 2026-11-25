@@ -672,7 +672,7 @@
   function newNoticeHtml() {
     if (!L || noticeDismissed()) return '';
     return '<div class="gg-new" role="note"><span class="gg-new-tag">NEW</span><p>' +
-      esc(t('gg.live.newNote', '☆ 저장·공유가 생겼어요')) + '</p>' +
+      esc(t('gg.live.newNote', '☆ 저장이 생겼어요')) + '</p>' +
       '<button type="button" class="gg-new-close" data-gg-new-close aria-label="' + esc(t('gg.live.newClose', '새 기능 안내 닫기')) + '"><span aria-hidden="true">×</span></button></div>';
   }
   function filteredEmptyHtml() {

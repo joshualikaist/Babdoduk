@@ -82,7 +82,7 @@ jobs:
         id: prod
         if: env.TARGET == 'both' || env.TARGET == 'prod'
         continue-on-error: true
-        run: python scripts/e2e_live.py --base https://babdoduk.vercel.app --out .local/e2e-live
+        run: python scripts/e2e_live.py --base https://www.babdodukms.com --out .local/e2e-live
       - name: Lab
         id: lab
         if: env.TARGET == 'both' || env.TARGET == 'lab'
@@ -92,7 +92,7 @@ jobs:
         id: bprod
         if: env.TARGET == 'browsers'
         continue-on-error: true
-        run: python scripts/e2e_browsers.py --base https://babdoduk.vercel.app --out .local/e2e-live
+        run: python scripts/e2e_browsers.py --base https://www.babdodukms.com --out .local/e2e-live
       - name: Browsers on lab
         id: blab
         if: env.TARGET == 'browsers'
@@ -102,7 +102,7 @@ jobs:
         id: qprod
         if: env.TARGET == 'quality'
         continue-on-error: true
-        run: python scripts/e2e_quality.py --base https://babdoduk.vercel.app --out .local/e2e-live
+        run: python scripts/e2e_quality.py --base https://www.babdodukms.com --out .local/e2e-live
       - name: Quality (accessibility, links, performance), lab
         id: qlab
         if: env.TARGET == 'quality'

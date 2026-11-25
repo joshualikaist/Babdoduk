@@ -18,7 +18,7 @@ Review rendered pages, not only CSS or DOM numbers. Take the screenshots and loo
 
 ## On babdoduk-lab (before any production release)
 - Review the deployed lab commit, not only a local server: https://babdoduk-lab.vercel.app after its `Vercel – babdoduk-lab` status for that exact `lab` SHA succeeded. Record the SHA and the URLs checked; this is the `LAB_URL_TESTED` evidence for `/release-babdoduk`.
-- For shared pages, compare lab with production (https://babdoduk.vercel.app, same path and query). Lab must show at least the production baseline; every difference must be an intentional lab-only experiment or the change under review. An unexplained regression on lab fails the review.
+- For shared pages, compare lab with production (https://www.babdodukms.com, same path and query). Lab must show at least the production baseline; every difference must be an intentional lab-only experiment or the change under review. An unexplained regression on lab fails the review.
 - Check Korean and English, at 1440, 390 and 360 at least, with no horizontal overflow and no JS errors.
 
 ## Every size

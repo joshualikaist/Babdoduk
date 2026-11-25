@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Release Babdoduk
 
-`main` is production: every push or merge to `main` deploys https://babdoduk.vercel.app through Vercel's Git integration. This procedure never merges or pushes `main` unless the owner has explicitly authorized this specific release in the current task.
+`main` is production: every push or merge to `main` deploys https://www.babdodukms.com through Vercel's Git integration. This procedure never merges or pushes `main` unless the owner has explicitly authorized this specific release in the current task.
 
 Every release follows the lab-first lifecycle in `AGENTS.md`: task → `lab` → deployed babdoduk-lab → owner approval → release candidate from `origin/main` → production → back-sync. Local tests passing is not a substitute for any step.
 
@@ -68,7 +68,7 @@ On a clean release HEAD, run all five gates from `/verify-babdoduk` one at a tim
 ## 7. Verify production
 - `git fetch origin`, and confirm `origin/main` equals the merge SHA.
 - Wait for the commit's `Vercel – babdoduk` status to succeed.
-- Smoke-test https://babdoduk.vercel.app read-only: pages load, navigation works, the changed features behave as they did on lab, there are no console exceptions and no unexpected supabase/Realtime requests.
+- Smoke-test https://www.babdodukms.com read-only: pages load, navigation works, the changed features behave as they did on lab, there are no console exceptions and no unexpected supabase/Realtime requests.
 
 ## 8. Back-sync lab (required; the release is not complete without it)
 - In a fresh worktree from the latest `origin/lab`, run a normal merge of the latest `origin/main` (never rebase, never force). Keep intentional lab-only experiments; resolve each conflict file by file.
