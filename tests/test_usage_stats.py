@@ -42,6 +42,7 @@ def test_the_counts_hold_no_person_and_only_count_visit_is_open():
 
 
 LAB_ONLY_PAGES = {"bobyak", "cardnews"}
+NOT_COUNTED = {"panel"}
 
 
 def test_the_sites_and_pages_agree_everywhere():
@@ -50,7 +51,8 @@ def test_the_sites_and_pages_agree_everywhere():
     counter = re.search(r"/\^\((.+?)\)\$/\.test\(loc\.hostname\)", SITE_JS).group(1)
     assert {h.replace("\\.", ".") for h in counter.split("|")} == OUR_SITES
     seeded = set(re.findall(r"\('([a-z0-9-]+)'\)", SQL.split("insert into public.visit_pages", 1)[1].split(";", 1)[0]))
-    pages = {p.stem for p in ROOT.glob("*.html")}
+    pages = {p.stem for p in ROOT.glob("*.html")} - NOT_COUNTED
+    assert "page === 'panel') return null;" in SITE_JS
     assert pages <= seeded, "a new page needs python scripts/usage_stats.py pages"
     assert seeded - pages <= LAB_ONLY_PAGES
     assert usage_stats.SITES["all"] == tuple(sorted(OUR_SITES, key=["www.babdodukms.com", "babdoduk.vercel.app",

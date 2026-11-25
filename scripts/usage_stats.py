@@ -263,7 +263,7 @@ def report(call, days: int = 28, site: str = "prod", now: datetime | None = None
 
 
 def add_pages(call, root: Path = ROOT) -> int:
-    pages = sorted(p.stem for p in root.glob("*.html"))
+    pages = sorted(p.stem for p in root.glob("*.html") if p.stem != "panel")
     call("POST", "visit_pages", [{"page": p} for p in pages], "resolution=ignore-duplicates,return=minimal")
     counted = {r["page"] for r in call("GET", "visit_pages?select=page") or []}
     missing = sorted(set(pages) - counted)

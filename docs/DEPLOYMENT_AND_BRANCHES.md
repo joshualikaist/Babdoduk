@@ -120,8 +120,8 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
   (`scripts/`, `tests/`, `docs/`, `*.md`), 사람이 쓰는 입력(`inputs/`), 페이지에 미리 써 넣는 공통 라벨·소식·역사(`data/content/`),
   작업 기록(`research/`), 도구 설정(`.claude/`, `.github/`, `.cursor/`)은 두 프로젝트 모두 배포하지 않습니다.
   그 전에는 production 이 `scripts/`, `.claude/settings.json`, `data/ggongbab/manual.json` 까지 서빙했습니다.
-- **`vercel.json`**: 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`, 밥약 메이커 `bobyak.html`)와 그 데이터
-  (`data/food-log.json`, `data/cardnews/`, `data/places/`)는 babdoduk-lab.vercel.app 이 아닌 모든 주소에서 404 입니다(규칙에 남은
+- **`vercel.json`**: 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`, 카드뉴스 `cardnews.html`, 가상 평가단 `panel.html`, 밥약 메이커 `bobyak.html`)와 그 데이터
+  (`data/food-log.json`, `data/cardnews/`, `data/panel/`, `data/places/`)는 babdoduk-lab.vercel.app 이 아닌 모든 주소에서 404 입니다(규칙에 남은
   `calendar.ics` 는 2026-11-13 에 지운 파일입니다). 두 브랜치가 같은 파일을 갖고 있어도
   production 은 서빙하지 않으므로, 릴리스·back-sync 때 따로 지우거나 되살릴 파일이 없습니다. 고유 배포 URL
   (`babdoduk-<hash>-….vercel.app`)은 Vercel 로그인 뒤에 있어서, production 쪽 404 는 릴리스 뒤 www.babdodukms.com 에서 확인합니다.

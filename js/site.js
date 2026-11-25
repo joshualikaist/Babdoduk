@@ -36,7 +36,7 @@
     return document.documentElement.lang === 'en' ? 'en' : 'ko';
   };
   var LAB_HOST = 'babdoduk-lab.vercel.app';
-  var LAB_LINKS = [['cardnews.html', 'nav.labCards', '카드뉴스']];
+  var LAB_LINKS = [['cardnews.html', 'nav.labCards', '카드뉴스'], ['panel.html', 'nav.labPanel', '가상 평가단']];
   var morePanel = document.getElementById('navMorePanel');
   if (location.hostname === LAB_HOST && morePanel && !morePanel.querySelector('a[href="cardnews.html"]')) {
     LAB_LINKS.forEach(function (link) {
@@ -84,7 +84,7 @@
     } catch (e) {}
     if (off) return null;
     var page = (loc.pathname.split('/').pop() || 'index').replace(/\.html$/, '') || 'index';
-    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(page)) return null;
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(page) || page === 'panel') return null;
     var ua = nav.userAgent || '';
     var tablet = /iPad|Tablet/i.test(ua) || (/Macintosh/.test(ua) && nav.maxTouchPoints > 1) ||
       (/Android/.test(ua) && !/Mobile/.test(ua));

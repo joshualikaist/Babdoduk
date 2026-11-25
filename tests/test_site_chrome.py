@@ -109,7 +109,7 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
         links = re.findall(r'<a href="([^"]+)"', footer)
         assert all(href in links for href in direct), page
         assert footer.count('class="footer-group"') == 4, page
-        for lab_only in ("food.html", "lab.html", "lab-ggongbab.html", "cardnews.html", "bobyak.html"):
+        for lab_only in ("food.html", "lab.html", "lab-ggongbab.html", "cardnews.html", "panel.html", "bobyak.html"):
             assert f'href="{lab_only}' not in footer, (page, lab_only)
         assert nav.index('href="choose.html"') < nav.index('id="navMorePanel"') < nav.index('href="mukbang.html"'), page
         for gone in ("mukbang.html#what", 'href="food.html"'):

@@ -52,6 +52,7 @@ COMMON_STRINGS = ("a11y", "nav", "footer")
 
 LAB_LINKS = [
     '<a class="nav-mega-link" href="cardnews.html" data-i18n="nav.labCards">카드뉴스</a>',
+    '<a class="nav-mega-link" href="panel.html" data-i18n="nav.labPanel">가상 평가단</a>',
 ]
 LAB_RIBBON = [
     '<div class="lab-fork-ribbon">',
@@ -73,6 +74,7 @@ PAGES = {
                           "strings": ("gg", "ggongbab", "km", "dish", "starcal")},
     "tip.html": {"current": "tip.html", "strings": ("tip",)},
     "cardnews.html": {"current": "cardnews.html", "lab": True, "strings": ("cardnews",)},
+    "panel.html": {"current": "panel.html", "lab": True, "strings": ("panel",)},
     "bobyak.html": {"current": None, "lab": True, "strings": ("bob",)},
     "my.html": {"current": None, "strings": ("my", "push")},
     "privacy.html": {"current": None, "strings": ("privacy",)},
