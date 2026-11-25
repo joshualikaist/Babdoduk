@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T22:41:30+09:00",
+  "generatedAt": "2026-11-26T02:22:48+09:00",
   "timezone": "Asia/Seoul",
-  "count": 13,
+  "count": 14,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -503,6 +503,44 @@
       },
       "audience": {
         "text": "KAIST 전 구성원",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "c902ac4f-6a33-48c3-991d-e3b6dbd85a63",
+      "title": "OpenAI Student Collective Campus Showcase (KAIST)",
+      "summary": "KAIST 학생들이 ChatGPT와 Codex로 만든 프로젝트를 소개하는 발표회입니다. 학생·교수·교직원 누구나 참석할 수 있습니다.",
+      "startAt": "2026-12-04T19:00:00+09:00",
+      "endAt": "2026-12-04T20:30:00+09:00",
+      "dateText": "2026년 12월 4일(금)",
+      "timeText": "19:00~20:30",
+      "location": {
+        "name": "터만홀",
+        "building": "E11",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "refreshment",
+        "description": "다과 선착순 제공",
+        "source": "text"
+      },
+      "organizer": "OpenAI Student Collective KAIST",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://luma.com/openai-studentcollective-kaist"
+      },
+      "confidence": 1.0,
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "audience": {
+        "text": "학생·교수·교직원 누구나",
         "basis": "stated"
       }
     }
