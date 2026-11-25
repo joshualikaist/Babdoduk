@@ -51,7 +51,6 @@ def test_failed_write_is_retried_and_success_is_skipped(tmp_path, dooray_setting
     agent.finalize_mail(state, "mail-1", "subject", date(2026, 9, 1), failed=True, post_id=None)
     assert not state.seen("mail-1")
 
-    # A legacy write-failed row must not block the next run either.
     state.record("mail-1", "subject", date(2026, 9, 1), registered=False, outcome="write-failed")
     assert not state.seen("mail-1")
 
@@ -237,8 +236,6 @@ def test_refresh_exit_classes_and_workflow():
     assert refresh.classify_refresh_exit(fatal="quota_exhausted", export_code=0) == 22
     assert refresh.classify_refresh_exit(fatal="auth", export_code=2) == 22
     assert refresh.classify_refresh_exit(publish_error=True) == 23
-    # A refresh that published nothing is red: the legacy 2 (on main still every failed
-    # refresh) as much as 20-23. The workflow file is the same on lab and main.
     for code in (2, 20, 21, 22, 23):
         assert refresh.workflow_stays_green(code) is False
     workflow = (ROOT / ".github" / "workflows" / "ggongbab-refresh.yml").read_text(encoding="utf-8")

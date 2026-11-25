@@ -25,7 +25,6 @@ from ggongbab.web.exit_codes import UiContractError
 from .conftest import make_extraction
 from .test_pipeline_export import FUTURE_TEXT, _item, future_extraction
 
-# generate_preview exports the synthetic FUTURE event; pin its clock to the test clock.
 pytestmark = pytest.mark.usefixtures("pin_preview_clock")
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -184,7 +183,6 @@ def test_persistent_failure_leaves_a_final_error(settings, tmp_path, monkeypatch
         generate_preview([_item()], _counts(), _settings_with_key(settings), error_retries=1,
                          backoff_seconds=0,
                          extractor_factory=lambda _key: extractor, log=lambda *_a: None)
-    # One first pass plus one retry pass, never an unbounded loop.
     assert extractor.calls == 2
 
 
@@ -363,6 +361,4 @@ def test_non_retryable_failures_are_never_resent(settings, tmp_path, monkeypatch
         generate_preview([_item(), _item(ext_id="b-2")], _counts(), _settings_with_key(settings),
                          error_retries=2, backoff_seconds=0,
                          extractor_factory=lambda _key: extractor, log=lambda *_a: None)
-    # A spent quota fails the account, not the item: the first rejection stops
-    # the run, so the second item is never sent and no retry pass happens.
     assert extractor.calls == 1

@@ -69,8 +69,6 @@ class DB:
         return [dict(r) for r in self.rows.values() if self._match(r, params)]
 
     def update(self, table, match, values):
-        # SupabaseClient.update writes "eq." itself: a match that already carries it would reach the
-        # server as eq.eq.<id> and fail (the first real tip, 2026-11-01).
         assert set(match) == {"id"} and TIP.fullmatch(match["id"]), match
         self.calls.append(("update", table, match, values))
         self.rows[match["id"]].update(values)
@@ -78,7 +76,7 @@ class DB:
 
     def upsert(self, table, rows, on_conflict):
         assert table == "ggongbab_tip_board" and on_conflict == "id"
-        assert set(rows) == {"id", "title", "place", "event_date", "time_text", "food"}   # nothing private
+        assert set(rows) == {"id", "title", "place", "event_date", "time_text", "food"}
         self.board[rows["id"]] = rows
         return []
 
@@ -167,18 +165,18 @@ class Classify:
 
 
 def test_a_new_tip_is_asked_once_with_its_photo_after_it_settles(make):
-    fresh = row(TIP_B, created_at=tips.iso(NOW - 30))           # photos may still be uploading
+    fresh = row(TIP_B, created_at=tips.iso(NOW - 30))
     t, db, storage, bot, _, clock = make([row(TIP_A), fresh], files={f"{TIP_A}/1.jpg": jpeg(), f"{TIP_A}/2.jpg": jpeg()})
     t.poll()
     (asked,) = bot.asked
     assert asked[0] == TIP_A and asked[2] is True
     assert "학과설명회 피자" in asked[1] and "경품" in asked[1] and "사진: 2장" in asked[1]
     assert db.rows[TIP_A]["notified_at"] and db.rows[TIP_B]["notified_at"] is None
-    t.poll()                                                    # within five minutes: no call at all
+    t.poll()
     assert len(bot.asked) == 1
     clock["t"] += 301
     t.poll()
-    assert [a[0] for a in bot.asked] == [TIP_A, TIP_B]          # never the same tip twice
+    assert [a[0] for a in bot.asked] == [TIP_A, TIP_B]
 
 
 def test_accepting_puts_public_fields_on_the_board_and_hands_the_tip_over(make):
@@ -192,8 +190,8 @@ def test_accepting_puts_public_fields_on_the_board_and_hands_the_tip_over(make):
     assert task.subject == "[꽁밥 제보] 학과설명회 피자" and task.mail_id == f"tip-{TIP_A}"
     assert re.search(rf"^제보 ID: {TIP_A}$", task.body, re.M) and "https://example.org/form" in task.body
     assert len(task.images) == 1 and db.rows[TIP_A]["dooray_post_id"] == "task-1"
-    assert t.handed == 1                                        # the radar asks for a refresh
-    t.decide("ok", TIP_A, "cb")                                 # a second tap changes nothing
+    assert t.handed == 1
+    t.decide("ok", TIP_A, "cb")
     assert len(writer.tasks) == 1 and bot.answered[-1] == "이미 올렸습니다" and t.handed == 1
 
 
@@ -208,7 +206,7 @@ def test_an_accepted_tip_without_a_title_still_carries_the_marker_subject(make):
     writer = Writer()
     t, _, _, _, _, _ = make([row(TIP_A, title="  ", status="accepted")], writer=writer)
     t.hand_over()
-    assert writer.tasks[0].subject == "[꽁밥 제보] 제목 없는 제보"     # the source check needs a title
+    assert writer.tasks[0].subject == "[꽁밥 제보] 제목 없는 제보"
 
 
 def test_a_past_tip_goes_on_the_board_but_not_to_the_collection_project(make):
@@ -223,7 +221,7 @@ def test_a_failed_handover_is_retried_on_the_next_poll(make):
     t, db, _, _, logs, clock = make([row(TIP_A, notified_at="x")], writer=writer)
     t.decide("ok", TIP_A, "cb")
     assert db.rows[TIP_A]["status"] == "accepted" and db.rows[TIP_A]["dooray_post_id"] is None
-    assert "TIP_DOORAY_FAILED" in logs and t.handed == 0       # nothing handed over, nothing to refresh
+    assert "TIP_DOORAY_FAILED" in logs and t.handed == 0
     writer.fail = False
     t.poll()
     assert len(writer.tasks) == 1 and db.rows[TIP_A]["dooray_post_id"] == "task-1" and t.handed == 1
@@ -286,7 +284,7 @@ def test_the_task_body_carries_the_marker_line_the_pipeline_trusts():
     body = tips.task_body(row(TIP_A), datetime(2026, 11, 2, 12, 0, tzinfo=KST))
     assert body.splitlines()[-1] == f"제보 ID: {TIP_A}"
     from ggongbab.parsers.rule_parser import explicit_food_evidence
-    assert explicit_food_evidence(body)                           # the validator finds the provision phrase
+    assert explicit_food_evidence(body)
     assert not explicit_food_evidence(tips.task_body(row(TIP_A, food=None), datetime(2026, 11, 2, 12, 0, tzinfo=KST)))
     assert datetime.fromisoformat(row(TIP_A)["created_at"].replace("Z", "+00:00")).tzinfo == timezone.utc
 
@@ -296,7 +294,7 @@ def test_a_report_is_read_by_the_model_once_and_asked_with_the_visitors_words(ma
     classify = Classify()
     t, db, _, bot, _, clock = make([report(TIP_A), row(TIP_B)], files={f"{TIP_A}/1.jpg": jpeg()}, classify=classify)
     t.poll()
-    assert classify.calls == [(TIP_A, report(TIP_A)["details"], 1, "2026-11-02")]   # a typed tip is not read
+    assert classify.calls == [(TIP_A, report(TIP_A)["details"], 1, "2026-11-02")]
     stored = db.rows[TIP_A]
     assert {k: stored[k] for k in ("title", "place", "event_date", "time_text", "food")} == {
         "title": "학과 설명회 피자", "place": "E3-1 로비", "event_date": "2026-11-03", "time_text": "18:00", "food": "피자"}
@@ -306,7 +304,7 @@ def test_a_report_is_read_by_the_model_once_and_asked_with_the_visitors_words(ma
     assert "판단: 꽁밥 같음 (0.90)" in text and "✅ 게시판에 올리고" in text
     clock["t"] += 301
     t.poll()
-    assert len(classify.calls) == 1 and len(bot.asked) == 2                 # never read or asked twice
+    assert len(classify.calls) == 1 and len(bot.asked) == 2
 
 
 def test_a_report_the_model_could_not_read_still_reaches_the_owner(make):

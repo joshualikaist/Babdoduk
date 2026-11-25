@@ -40,7 +40,6 @@ def test_service_role_key_is_legacy_fallback(monkeypatch):
 
 
 def test_empty_primary_falls_through(monkeypatch):
-    # GitHub Actions passes an unset secret as an empty string, not as an absent variable.
     monkeypatch.setenv("SUPABASE_SECRET_KEY", "")
     monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "legacy_jwt")
     s = Settings()

@@ -20,8 +20,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = ROOT / "schemas"
-# Which files each schema governs: (path pattern, schema, family, one value per line?).
-# docs/DATA.md is the readable form of this table.
 CONTRACTS = (
     ("data/ggongbab/latest.json", "ggongbab-feed", "ggongbab", False),
     ("data/ggongbab/archive/index.json", "ggongbab-archive", "ggongbab", False),
@@ -196,7 +194,7 @@ def contract_errors(families=None, root: Path = ROOT) -> list[str]:
             if found and lines:
                 bad += 1
                 if bad > 3:
-                    continue           # a store of thousands of lines: the first few say enough
+                    continue
             errors += found
         if bad > 3:
             errors.append(f"{rel}: {bad} lines break schemas/{name}.schema.json in all")

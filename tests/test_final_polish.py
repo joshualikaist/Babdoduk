@@ -30,8 +30,6 @@ def test_home_and_event_drop_the_noisy_chrome():
 
 
 PREVIEW = "https://www.babdodukms.com/images/og-babdoduk.png"
-# The character pictures used before (a preview card and the home kicker's avatar) were not ours to use;
-# the Babdoduk wordmark replaced them (owner 2026-11-10), under new file names so cached previews refresh.
 GONE = ("kakao-loopy", "profile-instagram")
 
 
@@ -46,7 +44,6 @@ def png_size(data: bytes) -> tuple[int, int]:
 
 
 def test_home_link_preview_is_the_babdoduk_wordmark():
-    # Kakao once showed the first food photo (kimchi-jjigae) because the page had no preview image.
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     meta = head_meta(html)
     assert meta["og:title"] == "밥도둑 Babdoduk"
@@ -56,7 +53,7 @@ def test_home_link_preview_is_the_babdoduk_wordmark():
     width, height = png_size((ROOT / "images/og-babdoduk.png").read_bytes())
     assert (meta["og:image:width"], meta["og:image:height"]) == (str(width), str(height)) == ("1200", "1200")
     body = html.split("<body", 1)[1]
-    assert re.search(r'<img src="([^"]+)"', body).group(1) == "images/og-babdoduk.png"  # first image a scraper sees
+    assert re.search(r'<img src="([^"]+)"', body).group(1) == "images/og-babdoduk.png"
     kicker = body.split('class="home-kicker"', 1)[1].split("</p>", 1)[0]
     assert '<img src="images/avatar-babdoduk.png" alt=""' in kicker
     assert png_size((ROOT / "images/avatar-babdoduk.png").read_bytes()) == (256, 256)
@@ -64,8 +61,6 @@ def test_home_link_preview_is_the_babdoduk_wordmark():
         page_html = (ROOT / page).read_text(encoding="utf-8")
         assert head_meta(page_html)["og:image"] == PREVIEW, page
         assert f'<link rel="image_src" href="{PREVIEW}" />' in page_html, page
-    # The news page and the world cup show the world cup's teaser instead (owner 2026-10-14,
-    # tests/test_worldcup_share.py).
     for page in ("event.html", "worldcup.html"):
         assert head_meta((ROOT / page).read_text(encoding="utf-8"))["og:image"].endswith("/images/worldcup/og-worldcup.jpg"), page
 

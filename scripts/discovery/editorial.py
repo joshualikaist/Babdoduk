@@ -20,15 +20,12 @@ import re
 
 LAUNCH_TITLE = re.compile(r"(출시|선보|선봬|신제품|신상품|새상품|새 상품|신메뉴|론칭|런칭|내놔|내놓|출격|한정\s*판매|판매\s*시작|"
                           r"리뉴얼|새 단장|앞세워|라인업|포트폴리오|launch(es|ed)?\b|introduc(es|ed)\b|debuts?\b)", re.I)
-# The lead sentence reports that someone launched something ("…를 출시했다", "…선보인다고 밝혔다");
-# "최근 출시된 크림빵이 …" in a story about demand is not a launch.
 LAUNCH_LEAD = re.compile(r"(출시(했|한다|하며|해\s|했다고|한다고|에\s*나섰|를\s*늘)|선보(였|인다|여\s|인다고|였다고|이며)|선봬|"
                          r"내놓(았|는다|아\s|으며)|내놨|잇달아\s*(출시|선보|내놓)|출간(했|한다|한다고)|론칭(했|한다)|런칭(했|한다)|"
                          r"판매를\s*시작|개발(돼|됐다|했다고|해\s*출시))")
-LEAD_SENTENCES = 3          # a launch is often announced in the second or third sentence
+LEAD_SENTENCES = 3
 ROUND_UP = re.compile(r"(^\s*\[[^\]]*(신상품|신제품|새상품|새 상품|신상)[^\]]*\]|\btop\s*\d+\b|[’'”\"]\s*외\s*$|\s외\s*$|"
                       r"신상\s*(모음|정리|총정리))", re.I)
-# A sentence that speaks for the seller: attribution, plans, or stock PR phrases.
 PR_SENTENCE = re.compile(r"(밝혔다|말했다|설명했다|강조했다|전했다|덧붙였다|계획이다|방침이다|예정이다|관계자|측은|라며|이라며|"
                          r"고\s*말|트렌드에\s*(맞춰|발맞춰)|트렌드를\s*반영|소비자\s*니즈|고객\s*니즈|니즈를\s*반영|인기\s*(제품|상품)|"
                          r"선보이게|출시하게|according to the company|said in a statement)", re.I)
@@ -36,10 +33,7 @@ DEMAND_WORDS = re.compile(r"(판매|매출|주문|거래액|출고|소비량|검
 INCREASE_WORDS = re.compile(r"(증가|늘어|늘었|늘며|늘고|급증|성장|돌파|기록|올랐|오른|상승|신장|치솟|껑충|뛰었|뛰어|\d+\s*배|1위|누적|"
                             r"완판|품절|\bup\b|rose|jumped|grew|doubled|record)", re.I)
 FIGURE = re.compile(r"\d")
-# Safety and regulation: a recall "5배 검출" is not demand.
 REGULATION = re.compile(r"(검출|회수|리콜|위반|적발|초과|부적합|기준치|판매\s*중단|판매\s*금지|행정처분|recall)", re.I)
-# Words that mean popularity only when the sentence is about people wanting something:
-# "오메가6를 급증시켜" or "환자가 급증" is not a food trend.
 AMBIGUOUS_CLAIMS = ("급증", "트렌드", "trend", "역대급", "인기 급상승")
 DEMAND_CONTEXT = re.compile(r"(수요|판매|매출|검색|관심|소비|구매|주문|이용|방문|찾는|찾아|줄을|줄 서|몰리|몰려|인기|손님|"
                             r"고객|팬|sns|유행|demand|sales|search|buy|queue)", re.I)
@@ -48,7 +42,6 @@ CELEBRITY = re.compile(r"((배우|가수|개그맨|개그우먼|방송인|아이
 WEIGHT = re.compile(r"(다이어트|요요|감량|\d+\s*kg|몸무게|체중|살\s*빠|살을\s*뺀|뱃살|몸매|식단\s*공개)", re.I)
 ASMR_MUKBANG = re.compile(r"(asmr|먹방|mukbang|eating show|몰아보기|playlist|브이로그|vlog|montage)", re.I)
 COMPILATION = re.compile(r"(compilation|모음|\d+\s*시간|\d+\s*hours?\b|\brecipes\b|\bideas\b|round-?up)", re.I)
-# Instructions, not the word "ingredients" in an intro: numbered steps, a method heading, amounts.
 STEPS = re.compile(r"(만드는\s*(방법|법)|조리\s*(순서|방법)|재료\s*[:：]|ingredients\s*[:\n]|instructions\s*[:\n]|"
                    r"directions\s*:|\bstep\s*\d|(^|\s)\d\.\s|\d+\s*(tbsp|tsp|큰술|작은술|컵)|how to make)", re.I)
 SHOPPING_TITLE = re.compile(r"(best .{0,40} to buy|where to buy|what to buy|buying guide|gift guide|souvenir|shopping guide|"
@@ -60,9 +53,7 @@ HEALTH_BASIS = ("영양", "단백질", "식이섬유", "칼로리", "열량", "�
 EVENT_LEAD = re.compile(r"((교육|행사|캠페인|체험|대회|축제|간담회|세미나|강연|특강|워크숍|시식회)[’'”\"]?(을|를|에|에서)?\s*"
                         r"(실시|진행|개최|참여|열었|마련|펼쳤)|(대상|최우수상|우수상|금상|은상|장려상)(을|를)?\s*(받았|수상|차지)|"
                         r"수상했다)")
-# Opinion columns and contributed pieces: someone's view, not reporting or evidence.
 COLUMN = re.compile(r"(칼럼|인사이트\s*\(\d+\)|\[기고\]|\[시론\]|\[논단\]|\[사설\]|오피니언|기고문|\bop-ed\b)", re.I)
-# A measured behavior sentence is about people (not a product's specification).
 PEOPLE = re.compile(r"(소비자|응답자|가구|학생|청소년|직장인|국민|성인|어린이|노인|이용자|고객|사람|남성|여성|20대|30대|MZ|1인|"
                     r"구매|섭취|식사|끼니|혼밥|외식|배달|respondents|people|adults|students|consumers|households)", re.I)
 RESEARCH = re.compile(r"(조사|설문|응답|통계|연구|보고서|리포트|실태|survey|study|respondents|report)", re.I)
@@ -139,7 +130,6 @@ def purchase_links(row: dict) -> bool:
     return bool(PURCHASE.search(row.get("sourceExcerpt") or ""))
 
 
-# A video's views say something about a food only when the video is about what is popular.
 TREND_TITLE = re.compile(r"(유행|요즘|신상|핫한|핫하다는|화제|인기|트렌드|품절|난리|대란|챌린지|오픈런|viral|trending|trend|hype)",
                          re.I)
 

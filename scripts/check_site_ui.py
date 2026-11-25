@@ -19,8 +19,6 @@ from deploy_headers import response_headers
 
 ROOT = Path(__file__).resolve().parents[1]
 SIZES = [(1920, 1080), (1440, 900), (768, 1024), (390, 844), (360, 800)]
-# The browser the checks drive: the installed Chrome locally (Windows classic scrollbars), or the
-# Chromium bundled with the pinned Playwright container in CI (BABDODUK_BROWSER=chromium).
 BROWSER = os.environ.get("BABDODUK_BROWSER", "chrome")
 IN_CI = os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true"
 
@@ -59,8 +57,6 @@ EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABAS
 
 
 SITE_HOST = "site-ui.invalid"
-# Hosts the launch gate tells apart (js/worldcup-gate.js): production, lab and localhost are served from
-# the same files here, so a check can load a page "as" each; every other host is refused.
 GATE_HOSTS = {"www.babdodukms.com": "production", "babdoduk-lab.vercel.app": "lab", "localhost": "localhost"}
 SERVED_HOSTS = {SITE_HOST, *GATE_HOSTS}
 
@@ -69,10 +65,8 @@ def offline_route(route):
     url = urlparse(route.request.url)
     path = unquote(url.path).lstrip("/")
     if url.hostname not in SERVED_HOSTS:
-        route.abort()  # no external fonts, SDKs, DBs, APIs, or image hosts
+        route.abort()
     elif path == "js/ggongbab-public-config.js":
-        # Lab carries the public project values; the static checks run with none, so no page
-        # reaches a database (worldcup_stats tests the world cup's stats against a fake server).
         route.fulfill(content_type="application/javascript", body=EMPTY_PUBLIC_CONFIG)
     elif path == "data/ggongbab/latest.json":
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
@@ -82,7 +76,7 @@ def offline_route(route):
         file = (ROOT / path).resolve()
         if (file.is_file() and ROOT in file.parents and not any(p.startswith(".") for p in Path(path).parts)
                 and file.suffix in (".html", ".css", ".js", ".json", ".png", ".jpg", ".svg", ".webp", ".woff2",
-                                    ".glb", ".wasm")):    # the campus map's model and Draco decoder
+                                    ".glb", ".wasm")):
             route.fulfill(path=str(file))
         else:
             route.fulfill(status=404, body="")
@@ -134,8 +128,6 @@ def inspect_page(page, name, size, screenshot_dir=None):
     check(contrast(metrics["track"], metrics["thumb"]) >= 3, "thumb contrast >= 3:1")
     check(metrics["thumbVariable"] != metrics["hoverVariable"], "distinct hover thumb")
     check(metrics["scrollbarColor"] == "auto", "Chromium pseudo parts not overridden")
-    # Chrome is launched without Playwright's default --hide-scrollbars. This
-    # proves a classic Windows scrollbar actually occupies space, not just CSS.
     if page.evaluate("document.documentElement.scrollHeight > innerHeight"):
         check(metrics["viewportGutter"] == 16, ("visible Windows scrollbar gutter", metrics))
 
@@ -149,7 +141,6 @@ def inspect_page(page, name, size, screenshot_dir=None):
           "the magazine is in the More menu and no link aims at its old picker anchor")
     check(page.locator(".nav-mega-row > .nav-mega").count() == 1,
           "secondary destinations share one More menu")
-    # Only what is on screen counts: the phone menu panel and the More menu are hidden until opened.
     nav_items = page.locator("#navDrawerToggle, #navHome, #navInstagram, .site-nav-direct, .nav-mega-trigger, .nav-mega-link, #langToggle").evaluate_all(
         """els => els.map(el => { const r = el.getBoundingClientRect(); const st = getComputedStyle(el);
           if (!r.width || !r.height || st.visibility !== 'visible' || st.display === 'none') return null;
@@ -172,9 +163,6 @@ def inspect_page(page, name, size, screenshot_dir=None):
         activeId:document.activeElement.id, current:(d.querySelector('[aria-current="page"]') || {}).getAttribute?.('href') || null,
         backdrop:!!back && !back.hidden, bar:document.querySelector('.site-nav-inner').getBoundingClientRect().bottom}; }"""
     if phone:
-        # Owner 2026-11-02 ("버튼이 다닥다닥 붙어있거든", "어떤 버튼을 누르면 이렇게 왼쪽에 탭이 뜨도록"): the
-        # bar holds the menu button, the wordmark and the language switch; the button opens every
-        # destination, the More links included, as a list in a panel from the left under the bar.
         box = toggle.bounding_box()
         check(box and box["width"] >= 44 and box["height"] >= 44 and toggle.get_attribute("aria-expanded") == "false",
               ("phone menu button, 44px, closed", box))
@@ -185,7 +173,7 @@ def inspect_page(page, name, size, screenshot_dir=None):
         row = page.locator(".site-nav-inner").evaluate("el => el.getBoundingClientRect().height")
         check(row <= 64, ("the bar stays one slim row", row))
         toggle.click()
-        page.wait_for_timeout(300)                 # the panel slides in (0.22s)
+        page.wait_for_timeout(300)
         opened = page.evaluate(drawer_js)
         hrefs = [link["href"] for link in opened["links"]]
         check(toggle.get_attribute("aria-expanded") == "true" and opened["visible"] == "visible" and opened["backdrop"],
@@ -221,7 +209,6 @@ def inspect_page(page, name, size, screenshot_dir=None):
     check(footer_links and all(href and href != "#" and (ROOT / href.split("#")[0]).is_file()
                                for href in footer_links if not href.startswith(("mailto:", "https:"))),
           ("footer links resolve to real pages", footer_links))
-    # Every width shows the full names; on phones they are read with the menu panel open.
     def labels():
         if phone:
             toggle.click()
@@ -236,7 +223,7 @@ def inspect_page(page, name, size, screenshot_dir=None):
     check(english == ["Today's free food", "What to eat", "News & events"],
           ("English primary labels", english, page.evaluate("document.documentElement.lang")))
     page.locator("#langToggle").click()
-    if not phone:      # on phones the More links are in the menu panel, without a menu of their own
+    if not phone:
         nav = page.locator(".nav-mega-trigger").first
         nav.click()
         check(nav.get_attribute("aria-expanded") == "true", "navigation opens")
@@ -248,8 +235,6 @@ def inspect_page(page, name, size, screenshot_dir=None):
 
     if name == "mukbang.html":
         check(metrics["track"] == "rgb(247, 244, 238)", "magazine paper color")
-        # Exercise all four lanes with multiple, deliberately unbroken titles;
-        # test DOM only, never generated data on disk.
         page.evaluate("""title => document.querySelectorAll('.mg-lane-items').forEach(box => {
           box.replaceChildren();
           for (let i=0;i<4;i++) {
@@ -329,8 +314,6 @@ def magazine_tools(page):
     page.unroute("**/data/kaist-menu/week.json")
     page.unroute(f"**/data/kaist-menu/{today}.json")
 
-    # One picker product: 오늘 뭐 먹지 at choose.html since 2026-11-04 (owner); the magazine keeps a card
-    # pointing there, and an old mukbang.html#what link lands on it.
     page.goto("https://site-ui.invalid/mukbang.html", wait_until="networkidle")
     check(page.locator("#eatApp, #pickApp").count() == 0 and page.locator('#what a[href="choose.html"]').count() == 1,
           "no picker in the magazine, a card pointing to 오늘 뭐 먹지")
@@ -339,8 +322,6 @@ def magazine_tools(page):
     page.locator("#pickApp").wait_for()
     check(page.locator("#pickApp").count() == 1, ("an old #what link lands on 오늘 뭐 먹지", page.url))
 
-    # Edition provenance: only source-backed stories render (a desk item or a non-http URL is
-    # dropped, never shown as a note), an empty lane says so, and an older edition is labelled.
     edition = {"date": "2026-01-02", "schedule": "Daily 10:00 KST",
                "featured": {"title": "F", "summary": "s", "source": "Src", "url": "https://example.org/f",
                             "medium": "blog", "category": "tips"},
@@ -390,7 +371,7 @@ def magazine_edition_time(page):
                 for day in ("2026-01-01", "2026-01-02")}
     context = new_context(page.context.browser)
     try:
-        context.clock.set_fixed_time("2026-01-03T09:00:00+09:00")      # the morning before 01-03 runs
+        context.clock.set_fixed_time("2026-01-03T09:00:00+09:00")
         view = context.new_page()
         view.route("**/data/magazine/index.json", lambda route: route.fulfill(
             json={"latest": "2026-01-02", "dates": ["2026-01-01", "2026-01-02"]}))
@@ -401,11 +382,9 @@ def magazine_edition_time(page):
         check(issue == "2026.01.02 · 최신 호", ("yesterday's newest edition is the latest one", issue))
         stamps = [view.locator(sel).text_content().strip() for sel in ("#mgSchedule", "#mgBoardWeek")]
         check(stamps == ["15:36 발행", "2026.01.02 · 15:36 발행"], ("the edition's own build time", stamps))
-        claims = view.locator("#mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()  # copy cleanup, owner 2026-11-12: .mg-method is gone
+        claims = view.locator("#mgSchedule, #mgBoardWeek, .mg-masthead-issue").all_text_contents()
         check(not any("10:00" in text for text in claims), ("no fixed schedule is claimed", claims))
         view.locator("#langToggle").click()
-        # The magazine redraws its masthead in a task after the switch (mukbang.html's setTimeout), so
-        # wait for the redraw, up to 5 s, before reading; a masthead that never changes still fails below.
         try:
             view.wait_for_function("() => document.documentElement.lang === 'en' && !/[가-힣]/.test("
                                    "document.querySelector('.mg-masthead-issue').textContent)", timeout=5000)
@@ -478,7 +457,6 @@ def pick_tools(browser):
     check(machine["y"] >= stage["y"] and machine["y"] + machine["height"] * 0.74 <= stage["y"] + stage["height"],
           ("the machine fits its stage", stage, machine))
 
-    # 0.1: a cafeteria meal (one is being served), the first one.
     page.locator("#pickGo").click()
     page.locator(".pick-result:not([hidden]) .pick-menu").wait_for()
     check(page.locator(".pick-result-title").inner_text().strip() == "카이마루 N11", "main-campus meals still served only")
@@ -491,27 +469,23 @@ def pick_tools(browser):
     check(page.locator("#pickGoLabel").inner_text() == "다시 뽑기", "the button says 다시 뽑기")
     check(page.locator(".pk-cap").count() == 1 and page.locator(".pk-strip").inner_text() == "🍱", "one capsule; the screen shows the pick")
 
-    # 0.65: on campus (< 0.7) but past the cafeteria's 2 in 7, so a campus restaurant (the second
-    # store, 별리달리); the original set name and photographed price survive.
     page.evaluate("window.__rand = 0.65")
     page.locator("#pickGo").click()
     page.wait_for_function("document.querySelector('.pick-result-kicker').textContent.includes('교내 식당')")
     check(page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "the set stays one menu")
     check("별리달리" in page.locator("#pickResult").inner_text() and "7,600" in page.locator("#pickResult").inner_text(),
           "the card shows the restaurant and photographed price")
-    # copy cleanup, owner 2026-11-12: shorter sold-out and campus notes.
     check("품절 표시가 있었어요" in page.locator("#pickResult").inner_text()
           and "판매 여부" in page.locator("#pickResult").inner_text() and page.locator('.pick-like').count() == 0,
           "the sold-out mark and the check-at-the-shop note are shown, without delivery votes")
     page.locator("#langToggle").click()
     check("Campus restaurant" in page.locator(".pick-result-kicker").inner_text()
-          and "Marked sold out" in page.locator("#pickResult").inner_text()  # copy cleanup, owner 2026-11-12
+          and "Marked sold out" in page.locator("#pickResult").inner_text()
           and "Check prices and availability" in page.locator("#pickResult").inner_text()
           and page.locator(".pick-result-title").inner_text() == "알밥+치킨+음료세트", "English labels preserve the original menu name")
     page.locator("#langToggle").click()
     check(page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), "campus result fits a phone")
 
-    # 0.9: a delivery dish, with its photo and the photo's credit.
     page.evaluate("window.__rand = 0.9")
     page.locator("#pickGo").click()
     page.locator(".pick-result:not([hidden]) .pick-note").wait_for()
@@ -526,7 +500,6 @@ def pick_tools(browser):
     check(page.locator("#pickSound").get_attribute("aria-pressed") == "true", "sound turns on when asked")
     context.close()
 
-    # With motion: the draw plays (the button is busy), lands by itself, and a press during it lands at once.
     context, page = open_page(False)
     page.locator("#pickGo").click()
     page.wait_for_function("document.getElementById('pickGo').getAttribute('aria-busy') === 'true' && "
@@ -542,7 +515,6 @@ def pick_tools(browser):
           and page.locator(".pick-stage.is-done").count() == 1, "a press during a draw lands it at once")
     context.close()
 
-    # English.
     context, page = open_page(True, "en")
     check(page.locator("#pickGoLabel").inner_text() == "Draw a menu", "the button in English")
     page.locator("#pickGo").click()
@@ -551,10 +523,6 @@ def pick_tools(browser):
           and page.locator("#pickGoLabel").inner_text() == "Draw again", "the card and button in English")
     context.close()
 
-    # Everyone's taste (owner 2026-11-05, 방법 A; lab, docs/PICK_STATS.md): with the public project values
-    # the page reads the counts, offers 👍 이거 먹을래요 on a delivery dish, and sends one signal at a time
-    # (draw, like, reroll past an unliked dish); a failing server changes nothing. A fake server on the
-    # site's own host; no live database. Without the values (every check above) there is no 👍 button.
     pool = re.findall(r'"([a-z0-9]+(?:-[a-z0-9]+)*)":\[', (ROOT / "js/pick-photos.js").read_text(encoding="utf-8"))
     rows = [{"dish_id": d, "likes": 5, "rerolls": 1} for d in pool]
     recorded, failing = [], {"on": False}
@@ -587,14 +555,13 @@ def pick_tools(browser):
             check(recorded == [{"p_dish": first, "p_signal": "draw"}] and first in pool, ("a draw is sent once", recorded))
             check(page.locator(".pick-votes").inner_text().startswith("👍 5"), "everyone's likes show on the card")
         page.locator(".pick-like").click()
-        # copy cleanup, owner 2026-11-12: the liked label is "👍 좋아요!" alone.
         check(page.locator(".pick-like").is_disabled() and "좋아요!" in page.locator(".pick-like").inner_text()
               and page.locator("#pickStatus").inner_text() == page.locator(".pick-like").inner_text(), "👍 once, announced")
-        page.locator("#pickGo").click()                        # liked: no reroll for it
+        page.locator("#pickGo").click()
         page.locator(".pick-result:not([hidden]) .pick-like:not([disabled])").wait_for()
         page.wait_for_timeout(100)
         second = recorded[-1]["p_dish"] if recorded else None
-        page.locator("#pickGo").click()                        # not liked: a reroll for it
+        page.locator("#pickGo").click()
         page.locator(".pick-result:not([hidden]) .pick-like").wait_for()
         page.wait_for_timeout(100)
         signals = [r["p_signal"] for r in recorded]
@@ -653,7 +620,6 @@ def lab_menu(page):
         assert ok, f"lab menu: {detail}"
         count += 1
 
-    # Owner 2026-11-12: only 카드뉴스 is left; 실험실 and 꽁밥 실험 must not come back by accident.
     labs = ["cardnews.html"]
     names = {"ko": ["카드뉴스"], "en": ["Card news"]}
     gone = ["lab.html", "lab-ggongbab.html"]
@@ -704,7 +670,7 @@ def magazine_sparse(page):
     featured_trend = dict(story(0, "trend"), category="trend", heroKind="trend", trendEvidence=evidence,
                           image="https://img.example.invalid/t.png", imageSource="source_page_og", medium="news")
     featured_claim = dict(story(0, "trend"), category="trend", heroKind="trend", medium="news",
-                          image="https://img.example.invalid/c.png", imageSource="source_page_og")   # no evidence
+                          image="https://img.example.invalid/c.png", imageSource="source_page_og")
     fixtures = [
         ("trend hero", featured_trend, {"tips": [story(1, "tips")], "trend": [dict(story(1, "trend"), trendEvidence=evidence)],
                                         "health": [], "habit": [dict(story(1, "habit"), medium="research")]}),
@@ -723,7 +689,7 @@ def magazine_sparse(page):
         edition = {"date": "2026-01-03", "schedule": "Daily 10:00 KST", "featured": featured,
                    "lanes": {lane: {"lead": lane, "items": items[lane]} for lane in lanes}}
         def serve(payload):
-            return lambda route: route.fulfill(json=payload)   # Playwright passes (route, request)
+            return lambda route: route.fulfill(json=payload)
         page.route("**/data/magazine/2026-01-03.json", serve(edition))
         for width, height in ((390, 844), (1440, 900)):
             page.set_viewport_size({"width": width, "height": height})
@@ -741,7 +707,6 @@ def magazine_sparse(page):
                 qualified = featured.get("heroKind") == "trend" and featured.get("trendEvidence")
                 label = page.inner_text("#mgHeroLabel").strip()
                 check(label == ("지금 뜨는 먹거리" if qualified else "오늘의 추천 글"), (where, "hero label", label))
-                # copy cleanup, owner 2026-11-12: the "유행 근거" evidence lines are gone from the hero and the cards.
                 check(page.locator("#mgHeroTags, .mg-story-tags").count() == 0, (where, "no evidence lines"))
                 visual = page.locator("#mgHeroVisual")
                 if featured.get("image"):
@@ -758,7 +723,7 @@ def magazine_sparse(page):
     return count
 
 
-HOME_CLOCK = {"now": None}      # the moment the home page's clock is fixed at (WC_SOON unless a check moves it)
+HOME_CLOCK = {"now": None}
 
 
 def home_now():
@@ -918,9 +883,6 @@ def home_summary(page):
     return count
 
 
-# Food Log is lab-only (lab.html): it has no public home link. Since 2026-11-02 (owner: "01 오늘먹기 부터
-# 그 쭉 아래에 있는거는 없애도 될 것 같아") the home page is its hero alone: the eat, read and news groups
-# below it are gone, and so is its magazine request.
 HOME_TOP = """() => {
   const q = s => document.querySelector(s);
   const box = el => { const r = el.getBoundingClientRect(); return {x:r.x, y:r.y, w:r.width, h:r.height, right:r.right, bottom:r.bottom}; };
@@ -947,7 +909,7 @@ HOME_TOP = """() => {
 def home_hero(page):
     """One editorial hero with the free-food calendar in the first screen, and nothing below it."""
     count = 0
-    set_home_clock(page, WC_SOON)            # the promo's `soon` state, whatever today is
+    set_home_clock(page, WC_SOON)
 
     def check(ok, detail):
         nonlocal count
@@ -965,7 +927,7 @@ def home_hero(page):
               (where, "primary CTA inside the first screen", top["cta"]))
         check(top["grid"]["bottom"] <= height and top["grid"]["h"] > 0,
               (where, "the calendar grid is in the first screen", top["grid"]))
-        if width <= 720:     # owner 2026-11-04: phones get the 지도 보기 button only (docs/CAMPUS_MAP.md)
+        if width <= 720:
             check(top["map"]["h"] == 0 and top["open"]["h"] >= 44, (where, "phones: the map behind its button", top["map"], top["open"]))
         else:
             check(top["map"]["h"] > 150 and top["open"]["h"] == 0, (where, "the map beside the copy", top["map"], top["open"]))
@@ -983,7 +945,6 @@ def home_hero(page):
               (where, "English fits", english["root"], english["body"]))
         page.locator("#langToggle").click()
 
-    # Menu published today and no free food: the calendar says so; the hero keeps its shape.
     today = home_now().strftime("%Y-%m-%d")
     page.route("**/data/kaist-menu/latest.json", lambda route: route.fulfill(json={
         "date": today, "restaurants": [{"id": "r1", "name": "r1", "lunch": {"items": ["밥"]}}]}))
@@ -1002,9 +963,6 @@ def home_hero(page):
     return count
 
 
-# The home page's first screen in every state of the world cup promo (js/worldcup-gate.js, its `phase`):
-# the page clock is fixed per state and the page is served as the production-like site host, so the
-# promo's height never depends on today's date or on the lab `previewFrom` override.
 HOME_FIRST_SCREENS = ((360, 800), (390, 844), (1440, 900))
 HOME_FIRST_SCREEN = """() => { const q = s => document.querySelector(s);
   const box = e => { const r = e.getBoundingClientRect(); return {top: r.top, bottom: r.bottom, height: r.height}; };
@@ -1051,7 +1009,7 @@ def home_first_screen(page):
                 check(shot["shown"] == (phase != "ended") and (shot["cta"] != 0 if shot["shown"] else True),
                       (where, "the promo is there unless the world cup is over", shot))
                 check(shot["overflow"] <= 0, (where, "no horizontal overflow", shot["overflow"]))
-                if lang == "ko":     # the English hero is taller by its own copy, before any promo: not a contract
+                if lang == "ko":
                     check(0 < shot["grid"]["bottom"] <= height,
                           (where, "the calendar grid is in the first screen", shot["grid"], shot["answer"]))
                 if width <= 720:
@@ -1095,14 +1053,12 @@ def event_bands(page):
 
     def cta(row, lang="ko"):
         """An original post is a record once past; an activity on a page of this site opens it."""
-        # copy cleanup, owner 2026-11-12: a past post link reads 게시물 보기 / View post too.
         words = {"ko": (("페이지 보기", "페이지 보기"), ("게시물 보기", "게시물 보기")),
                  "en": (("Open the page", "Open the page"), ("View post", "View post"))}[lang]
         return words[0 if row["onSite"] else 1][row["band"] == "past"]
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     rows = page.locator(".event-item").evaluate_all(ROWS)
-    # One row per authored activity (data/content/events.json): 2026-11-12 the 꽁밥 인증샷 event made it four.
     authored = len(json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))["activities"])
     check(len(rows) == authored, ("one row per authored activity", authored, rows))
     check([row["title"] for row in rows if row["onSite"]] == ["먹방 월드컵 32강"]
@@ -1116,17 +1072,13 @@ def event_bands(page):
         check("(예정)" not in row["title"], ("tentative state is a status, not a title suffix", row))
         check("진행됨" not in row["chip"] or row["conf"] == "held", ("only a confirmed event says it took place", row))
         if row["band"] == "past":
-            expected_chip = {"announced": "", "tentative": "미확정"}.get(row["conf"])  # copy cleanup, owner 2026-11-12
+            expected_chip = {"announced": "", "tentative": "미확정"}.get(row["conf"])
             if expected_chip is not None:
                 check(row["chip"] == expected_chip and row["chipShown"] == bool(expected_chip),
                       ("a past date is not reported as held; an unconfirmed plan says so briefly", row))
         else:
-            # The world cup before its launch says when it opens (js/worldcup-gate.js).
             wanted = "10/16 공개 예정" if row["band"] == "upcoming" and row["onSite"] else labels[row["band"]]
             check(row["chip"].startswith(wanted), ("current rows name their band", row))
-        # A running or coming activity shows the event itself: details open, no 자세히 toggle, no post link
-        # (owner 2026-11-19, "진행하고 있는거는 그냥 이벤트를 띄워줘"). A past row keeps 게시물 보기 and folds
-        # its details behind 자세히.
         past = row["band"] == "past"
         check(row["open"] == row["detailShown"] == (not past) and row["toggleShown"] == past,
               ("live details shown without a toggle, past details folded", row))
@@ -1154,22 +1106,20 @@ def event_bands(page):
             check(field["fields"] == 1 and field["historical"] == past and field["tags"] == ([lang_tag] if past else []),
                   ("past participation instructions are marked historical, once", field))
 
-    participation("종료")  # copy cleanup, owner 2026-11-12
+    participation("종료")
     check(page.locator(".event-elsewhere").count() == 0, "free food stays in navigation, not in the news title")
-    # Full context is one keyboard action away.
     tentative = page.locator('.event-item[data-confirmation="tentative"]')
     tentative.locator("details.event-more summary").focus()
     page.keyboard.press("Enter")
-    # copy cleanup, owner 2026-11-12: the state explanation behind 자세히 is gone; the details still open.
     check(tentative.locator("details.event-more").evaluate("d => d.open")
           and tentative.locator("[data-event-note]").count() == 0, "자세히 opens from the keyboard")
     page.locator("#langToggle").click()
     english = page.locator("[data-event-cta]").all_text_contents()
     check(english == [cta(row, "en") for row in rows],
           ("English CTA follows the band", english))
-    participation("Ended")  # copy cleanup, owner 2026-11-12
+    participation("Ended")
     page.locator("#langToggle").click()
-    participation("종료")  # copy cleanup, owner 2026-11-12
+    participation("종료")
     live = sum(row["band"] != "past" for row in rows)
     check(page.locator("#eventEmpty").is_visible() == (live == 0), "empty state only when nothing is current")
     check(page.locator("#eventEmpty a").count() == 0, "Instagram is not part of the empty state")
@@ -1181,7 +1131,6 @@ def event_bands(page):
     check(not page.locator(".event-lead, .event-archive-note, .event-counts, .event-boundary").count(),
           "no lead, scope or count paragraphs")
 
-    # A synthetic upcoming, unconfirmed row moves into 지금 with an actionable link.
     start, end = (today + timedelta(days=3)).isoformat(), (today + timedelta(days=4)).isoformat()
     source = (ROOT / "event.html").read_text(encoding="utf-8").replace(
         'data-start="2026-05-19" data-end="2026-05-20"', f'data-start="{start}" data-end="{end}"', 1)
@@ -1202,10 +1151,9 @@ def event_bands(page):
     return count
 
 
-# The page clocks of the world cup's launch window (2026-10-16 .. 2026-10-23, Korea time, both days included).
-WC_SOON = "2026-10-14T21:30:00+09:00"        # before the launch: D-2, 1 day 2 hours left
-WC_EVE = "2026-10-15T23:59:00+09:00"         # the last minute before it opens
-WC_OPENS = "2026-10-15T15:00:00Z"            # = 2026-10-16 00:00 in Korea, whatever the browser's timezone
+WC_SOON = "2026-10-14T21:30:00+09:00"
+WC_EVE = "2026-10-15T23:59:00+09:00"
+WC_OPENS = "2026-10-15T15:00:00Z"
 WC_RUNNING = "2026-10-18T12:00:00+09:00"
 WC_LAST = "2026-10-23T23:59:00+09:00"
 WC_ENDED = "2026-10-24T00:00:00+09:00"
@@ -1273,11 +1221,9 @@ def event_entry(page):
         check(snap["overflow"] <= 0, (width, "no horizontal scroll", snap["overflow"]))
         check("js/worldcup.js" in snap["scripts"] and "js/worldcup-entry-data.js" in snap["scripts"]
               and "photos" not in snap["slim"] and "basis" not in snap["slim"], (width, "the slim data, not the pool with its photo credits", snap["slim"]))
-        # Inside the card: after the date, title and state, before 자세히.
         order = page.evaluate("""() => { const item = document.querySelector('.event-item .wc-embed').closest('.event-item');
           return [...item.children].map(c => c.className.split(' ')[0] || c.tagName); }""")
         check(order == ["event-date", "event-name", "event-state", "wc-embed", "event-link", "event-more"], (width, "inside the event card", order))
-        # Keyboard: a tile toggles with Space and the start button is reachable and focus is visible.
         page.locator('.wc-tile[data-cat="korean"]').focus()
         page.keyboard.press("Space")
         check(page.locator('.wc-tile[data-cat="korean"]').get_attribute("aria-pressed") == "true"
@@ -1285,7 +1231,6 @@ def event_entry(page):
         page.locator("#wcStart").focus()
         check(page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none", (width, "visible focus on the start button"))
 
-    # English, and the language switch re-words the tiles and the headline.
     page.set_viewport_size({"width": 390, "height": 844})
     page.locator("#langToggle").click()
     snap = page.evaluate(SNAP)
@@ -1295,7 +1240,6 @@ def event_entry(page):
     check(snap["overflow"] <= 0, "English: no horizontal scroll")
     page.locator("#langToggle").click()
 
-    # Start: worldcup.html?cat=<chosen>&go=1; a saved game is not touched until then.
     page.locator('.wc-tile[data-cat="japanese"]').click()
     with page.expect_navigation() as navigation:
         page.locator("#wcStart").click()
@@ -1314,7 +1258,6 @@ def event_entry(page):
           and page.locator("#wcResume").is_visible() and page.locator("#wcMatch").is_hidden(),
           "a reload keeps the game and offers 이어하기, it does not deal another")
 
-    # Never without go=1; an unknown category is ignored (the whole pool); a saved game is replaced by a fresh one.
     def arrive(query, saved=None):
         page.goto("https://site-ui.invalid/worldcup.html", wait_until="networkidle")
         page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
@@ -1346,7 +1289,6 @@ def event_entry(page):
           "without go=1 a saved game stays and 이어하기 is offered")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
 
-    # With motion the arrival plays the start gacha, as if the button had been pressed on the page.
     page.emulate_media(reduced_motion="no-preference")
     page.goto("https://site-ui.invalid/worldcup.html?cat=chinese&go=1", wait_until="networkidle")
     page.wait_for_function(SPLASH_OPEN)
@@ -1357,8 +1299,6 @@ def event_entry(page):
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.emulate_media(reduced_motion="reduce")
 
-    # A past row has no start screen, loads no world cup script and links to the page instead (the words
-    # alone: no arrow since 2026-11-19, owner "화살표 없어도 될거같아").
     page.clock.set_fixed_time(WC_ENDED)
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
     snap = page.evaluate(SNAP)
@@ -1366,7 +1306,6 @@ def event_entry(page):
           and "worldcup.html" == page.locator(".event-link[data-event-page]").get_attribute("href"),
           ("past: only the link, nothing loaded", snap["link"], snap["scripts"]))
 
-    # The script not arriving leaves the link, not an empty card.
     page.clock.set_fixed_time(WC_RUNNING)
     page.route("**/js/worldcup-entry-data.js*", lambda route: route.fulfill(status=404, body=""))
     page.goto("https://site-ui.invalid/event.html", wait_until="networkidle")
@@ -1421,8 +1360,6 @@ GATE_SNAP = """() => { const shown = e => !!e && !e.hidden && getComputedStyle(e
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
 
 
-# The mystery box (owner 2026-10-14): before the launch the tiles, the preview photos and the floating
-# photos are blurred, inert or aria-hidden placeholders with no photo request; live and ended leave them alone.
 MYSTERY_SNAP = """() => { const q = s => document.querySelector(s), all = s => [...document.querySelectorAll(s)];
   const shown = e => !!e && !e.hidden && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
   const blur = e => { const m = /blur\\(([\\d.]+)px\\)/.exec(getComputedStyle(e).filter); return m ? Number(m[1]) : 0; };
@@ -1494,7 +1431,6 @@ def worldcup_gate(page):
               and shot["floaterSrc"] and all((src or "").startswith("images/worldcup/") for src in shot["floaterSrc"]) and not shot["lock"],
               (where, "the real photos load and no lock shows", shot))
 
-    # worldcup.html before the launch: the teaser, locked, nothing playable.
     photos.clear()
     shot = snap(SITE_HOST, "worldcup.html", WC_SOON)
     mystery_hidden(page.evaluate(MYSTERY_SNAP), "worldcup.html")
@@ -1504,7 +1440,6 @@ def worldcup_gate(page):
     check(not shot["start"] and not shot["resume"] and not shot["match"] and shot["intro"] and shot["tiles"] == 9
           and shot["floaters"] == 4, ("the teaser stays, the start button is gone", shot))
     check(shot["overflow"] <= 0, ("no horizontal scroll", shot["overflow"]))
-    # The mystery box takes neither a tap nor the keyboard: a tile is not chosen, and Tab never enters it.
     page.locator('.wc-tile[data-cat="korean"]').scroll_into_view_if_needed()
     tile = page.locator('.wc-tile[data-cat="korean"]').bounding_box()
     page.mouse.click(tile["x"] + tile["width"] / 2, tile["y"] + tile["height"] / 2)
@@ -1515,7 +1450,7 @@ def worldcup_gate(page):
         entered = entered or page.evaluate("!!document.activeElement.closest('#wcMysteryBody')")
     check(not entered and page.locator(".wc-tile[aria-pressed]").count() == 0 and page.locator("#wcPreview img[src]").count() == 0,
           "a tap or Tab does not reach the blurred tiles")
-    page.evaluate("document.querySelector('#wcStart').click()")              # even a forced click starts nothing
+    page.evaluate("document.querySelector('#wcStart').click()")
     check(page.locator("#wcMatch").is_hidden() and not page.evaluate("localStorage.getItem('babdoduk-worldcup')"),
           "a forced start click does nothing")
     page.locator("#langToggle").click()
@@ -1539,7 +1474,6 @@ def worldcup_gate(page):
     shot = snap(SITE_HOST, "worldcup.html", WC_EVE)
     check(shot["locked"] and shot["count"] == "D-1 · 1분 남음", ("the last minute", shot))
 
-    # The launch moment, read as Korea time: midnight there is the first moment, whatever the clock's zone.
     for now in (WC_OPENS, WC_RUNNING, WC_LAST):
         shot = snap(SITE_HOST, "worldcup.html", now)
         check(shot["phase"] == "live" and shot["start"] and not shot["locked"] and not shot["ended"], ("open", now, shot))
@@ -1547,16 +1481,14 @@ def worldcup_gate(page):
     shot = snap(SITE_HOST, "worldcup.html", WC_LAST, "?cat=korean&go=1")
     check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", ("go=1 starts on the last day", shot))
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
-    # After the end: still playable, with a small note.
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED)
     check(shot["phase"] == "ended" and shot["start"] and shot["ended"] and not shot["locked"], ("after the end: playable with a note", shot))
     mystery_open(page.evaluate(MYSTERY_SNAP), ("worldcup.html", "ended"))
-    check("이벤트는 끝났지만" in page.locator(".wc-ended").inner_text(), "the note says the event is over")  # copy cleanup, owner 2026-11-12
+    check("이벤트는 끝났지만" in page.locator(".wc-ended").inner_text(), "the note says the event is over")
     shot = snap(SITE_HOST, "worldcup.html", WC_ENDED, "?cat=korean&go=1")
     check(shot["match"] and json.loads(shot["saved"])["game"]["category"] == "korean", "after the end go=1 still plays")
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
 
-    # The news card: before the launch the teaser with the locked pill, in the coming-up list.
     photos.clear()
     shot = snap(SITE_HOST, "event.html", WC_SOON)
     check(shot["band"] == "upcoming" and shot["state"] == "10/16 공개 예정" and shot["locked"] and not shot["start"] and shot["tiles"] == 9
@@ -1581,13 +1513,11 @@ def worldcup_gate(page):
     check(shot["band"] == "past" and not shot["start"] and page.locator(".wc-embed").is_hidden()
           and page.locator("#eventList .event-link[data-event-page]").count() == 1, ("past card", shot))
 
-    # Without a previewFrom in the data (production), no host opens it before the start.
     if "previewFrom" not in gate_window():
         for host in ("www.babdodukms.com", "babdoduk-lab.vercel.app", "localhost"):
             shot = snap(host, "worldcup.html", WC_SOON)
             check(shot["locked"] and not shot["start"], (host, "no previewFrom: locked", shot))
     synthetic = gate_preview(page)
-    # The lab override: only on lab and localhost (previewFrom), never on production or another host.
     for host, early in (("www.babdodukms.com", False), (SITE_HOST, False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
         shot = snap(host, "worldcup.html", WC_SOON)
         check(shot["locked"] == (not early) and shot["start"] == early, (host, "worldcup.html", shot))
@@ -1598,7 +1528,6 @@ def worldcup_gate(page):
         shot = snap(host, "worldcup.html", WC_SOON, "?cat=korean&go=1")
         check(shot["match"] == early, (host, "go=1", shot))
         page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
-    # Lab opens it from 2026-10-13, not before; and it still closes at the end like production.
     shot = snap("babdoduk-lab.vercel.app", "worldcup.html", "2026-10-12T23:59:00+09:00")
     check(shot["locked"] and shot["count"].startswith("D-"), ("lab before previewFrom", shot))
     shot = snap("babdoduk-lab.vercel.app", "worldcup.html", WC_ENDED)
@@ -1610,7 +1539,6 @@ def worldcup_gate(page):
     return count
 
 
-# The launch window to the second (Korea time): the last second before it opens and the last second of it.
 WC_EVE_SECOND = "2026-10-15T23:59:59+09:00"
 WC_LAST_SECOND = "2026-10-23T23:59:59+09:00"
 
@@ -1652,7 +1580,6 @@ def worldcup_boundaries(page):
 
     def surfaces(host, now, phase):
         where = (host, now, phase)
-        # worldcup.html
         visit(host, "worldcup.html", now)
         shot, mystery = page.evaluate(GATE_SNAP), page.evaluate(MYSTERY_SNAP)
         check(shot["phase"] == {"locked": "soon"}.get(phase, phase), (where, "worldcup.html phase", shot["phase"]))
@@ -1666,23 +1593,21 @@ def worldcup_boundaries(page):
                   (where, "tiles unblurred and the dish photos present", mystery))
             check(page.evaluate("[...document.querySelectorAll('#wcPreviewPhotos img')].every(i => i.complete && i.naturalWidth > 0)"),
                   (where, "the preview photos load"))
-            check(shot["ended"] == (phase == "ended") and (phase != "ended" or "이벤트는 끝났지만" in page.locator(".wc-ended").inner_text()),  # copy cleanup, owner 2026-11-12
+            check(shot["ended"] == (phase == "ended") and (phase != "ended" or "이벤트는 끝났지만" in page.locator(".wc-ended").inner_text()),
                   (where, "the end note only after the end"))
-        # go=1
         visit(host, "worldcup.html", now, "?cat=korean&go=1")
         shot = page.evaluate(GATE_SNAP)
         check(shot["match"] == (phase != "locked") and (phase == "locked" or json.loads(shot["saved"])["game"]["category"] == "korean"),
               (where, "go=1 starts a game unless locked", shot))
         check((phase != "locked") or not shot["saved"], (where, "locked: nothing saved"))
         page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
-        # event.html: the bands of every activity follow the date; the world cup card follows the phase
         visit(host, "event.html", now)
         rows = page.evaluate(EVENT_ROWS_SNAP)
         today = datetime.fromisoformat(now).astimezone(kst).date().isoformat()
         empty = rows.pop()["empty"]
         for row in rows:
             want = "upcoming" if today < row["start"] else "past" if today > row["end"] else "now"
-            if row["start"] == "2026-10-16":      # the world cup card also follows the lab override
+            if row["start"] == "2026-10-16":
                 want = {"locked": "upcoming", "live": "now", "ended": "past"}[phase]
             check(row["band"] == want and row["list"] == ("eventList" if want == "past" else "eventUpcoming"),
                   (where, "event band follows the Korean date", today, row))
@@ -1695,7 +1620,6 @@ def worldcup_boundaries(page):
         if phase == "ended":
             check(page.locator(".wc-embed").is_hidden() and page.locator("#eventList .event-link[data-event-page]").count() == 1,
                   (where, "the card is a past row with its link"))
-        # index.html: the promo
         visit(host, "index.html", now)
         promo = page.evaluate(HOME_PROMO_SNAP)
         check(promo["cal"] and promo["overflow"] <= 0, (where, "home keeps its calendar", promo))
@@ -1708,11 +1632,8 @@ def worldcup_boundaries(page):
         else:
             check(not promo["shown"], (where, "home promo hidden after the end", promo))
 
-    # The production host: strict, whatever the data says.
     for phase, now in (("locked", WC_EVE_SECOND), ("live", WC_OPENS), ("live", WC_LAST_SECOND), ("ended", WC_ENDED)):
         surfaces("www.babdodukms.com", now, phase)
-    # The lab host opens early (previewFrom) and closes with production: open at the last second before the
-    # launch, still open at the last second, ended at midnight; the home promo goes then too.
     synthetic = gate_preview(page)
     early = gate_window().get("previewFrom", GATE_PREVIEW) <= "2026-10-15"
     check(early, "the lab preview starts before the launch day")
@@ -1762,7 +1683,7 @@ def home_wc_promo(page):
 
     for width, height in ((390, 844), (360, 800), (1280, 800)):
         shot = snap(SITE_HOST, WC_SOON, (width, height))
-        full = "D-2 · 1일 2시간 남음" if width >= 641 else "D-2"       # a phone keeps just the days
+        full = "D-2 · 1일 2시간 남음" if width >= 641 else "D-2"
         visible = page.locator(".home-wc-count").inner_text().strip()
         check(shot["shown"] and shot["title"] == "🏆 밥도둑 먹방 월드컵" and shot["states"] == ["10/16 오픈!"]
               and shot["count"] == "D-2 · 1일 2시간 남음" and visible == full, (width, "before the launch", shot, visible))
@@ -1771,7 +1692,6 @@ def home_wc_promo(page):
         check(not any(shot["photos"]) and shot["photoSrc"] == [None, None] and len(shot["photoBlur"]) == 2 and all(b >= 3 for b in shot["photoBlur"]),
               (width, "two blurred placeholders, no dish photo before the launch", shot["photos"], shot["photoSrc"], shot["photoBlur"]))
         check(not home_photos, (width, "no dish photo is requested before the launch", home_photos))
-        # A phone: above the copy; wider, in the paper band under it. Either way before the calendar.
         order = shot["top"] < shot["hero"] if width < 721 else shot["hero"] < shot["top"]
         check(shot["overflow"] <= 0 and shot["cal"] and order and shot["top"] < shot["calTop"],
               (width, "in the hero band, the calendar stays", shot))
@@ -1788,7 +1708,6 @@ def home_wc_promo(page):
         check(not shot["shown"] and shot["cal"] and shot["overflow"] <= 0, (width, "gone after the end", shot))
         check(page.locator(".home-top").evaluate("e => e.getBoundingClientRect().top") < 120, (width, "after the end the hero is back at the top"))
 
-    # English, on the page's language switch.
     snap(SITE_HOST, WC_SOON)
     page.locator("#langToggle").click()
     shot = page.evaluate(SNAP)
@@ -1801,7 +1720,6 @@ def home_wc_promo(page):
           ("English running", shot))
     page.evaluate("localStorage.removeItem('babdoduk-lang')")
 
-    # Keyboard: the button is reachable and its focus ring shows; the whole band is its click target.
     snap(SITE_HOST, WC_RUNNING)
     page.locator(".home-wc-cta--live").focus()
     check(page.evaluate("getComputedStyle(document.querySelector('.home-wc-cta--live'), '::after').outlineStyle") != "none",
@@ -1813,8 +1731,6 @@ def home_wc_promo(page):
     check(contrast("rgb(253, 230, 138)", "rgb(190, 24, 93)") >= 4.5 and contrast("rgb(157, 23, 77)", "rgb(255, 255, 255)") >= 4.5,
           "the state line and the button keep their contrast on the gradient")
 
-    # Lab opens it early (previewFrom); production does not. Without one in the data (production),
-    # no host does; the override then runs on a synthetic previewFrom.
     if "previewFrom" not in gate_window():
         for host in ("www.babdodukms.com", "babdoduk-lab.vercel.app", "localhost"):
             shot = snap(host, WC_SOON)
@@ -1831,13 +1747,10 @@ def home_wc_promo(page):
     return count
 
 
-# Every round splash the page opens, in order: beforetoggle fires as showPopover() runs.
 SPLASH_LOG = """() => { window.__splashes = [];
   document.querySelector('#wcSplash').addEventListener('beforetoggle', e => {
     if (e.newState === 'open') window.__splashes.push(e.target.dataset.round); }); }"""
 SPLASH_OPEN = "document.querySelector('#wcSplash').matches(':popover-open')"
-# The final's crash held still and seeked: fighter boxes off the stage from the hit to the end,
-# the clash scale against the real card, card text under the VS at rest, the landing error.
 SPLASH_GEOMETRY = """() => { const s = document.querySelector('#wcSplash'), all = s.getAnimations({subtree: true});
   const box = el => { const r = el.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
   const fighters = () => [...s.querySelectorAll('.wc-fighter')].map(box);
@@ -1904,7 +1817,6 @@ def worldcup_play(page):
     check(page.locator(".wc-card").first.get_attribute("data-id") == first and page.locator("#wcCount").inner_text() == "1 / 16",
           "undo returns to the same match")
     check(page.locator("#wcUndo").is_disabled(), "nothing to undo on the first match of a fresh game")
-    # 처음부터 draws a new bracket, and 되돌리기 takes it back (owner 2026-10-13: no confirm step).
     page.locator(".wc-card").first.focus()
     page.keyboard.press("Enter")
     second = [page.locator(".wc-card").nth(i).get_attribute("data-id") for i in (0, 1)]
@@ -1926,7 +1838,7 @@ def worldcup_play(page):
         if i:
             check(page.evaluate(on_first), ("after each pick focus is on the next match's first card", i))
         page.keyboard.press("Enter")
-        if i == size // 2 + size // 4 - 1:              # the round of 16 just closed
+        if i == size // 2 + size // 4 - 1:
             page.wait_for_function("document.getElementById('wcStatus').textContent.startsWith('8강 1번째 경기')")
             check(page.locator("#wcRound").inner_text() == "8강" and not page.evaluate(SPLASH_OPEN),
                   "with reduced motion the 8강 match comes at once, announced, without a splash")
@@ -1999,7 +1911,6 @@ def worldcup_categories(page):
         check(len(shown) == 5 and len(set(shown)) == 5, ("five photos of the next draw", shown))
     page.set_viewport_size({"width": 390, "height": 844})
 
-    # Tiles by keyboard: Tab reaches them, Space and Enter choose; the focus ring is visible.
     page.locator('#wcCats [data-cat="all"]').focus()
     page.keyboard.press("Tab")
     check(page.evaluate("document.activeElement.dataset.cat") == "korean", "Tab moves to the next tile")
@@ -2010,7 +1921,6 @@ def worldcup_categories(page):
     page.locator('#wcCats [data-cat="dessert"]').focus()
     page.keyboard.press("Enter")
     check([c[0] for c in page.evaluate(chips) if c[2] == "true"] == ["dessert"], "Enter chooses a tile too")
-    # 아무거나 (reduced motion: at once) lands on another category and says which.
     for _ in range(3):
         before = [c[0] for c in page.evaluate(chips) if c[2] == "true"][0]
         page.locator('#wcCats [data-cat="random"]').focus()
@@ -2024,7 +1934,6 @@ def worldcup_categories(page):
     teased = page.evaluate(preview)
     check(len(teased) == 5 and all(cats[d] == "korean" for d in teased), ("the photos follow the chosen category", teased))
 
-    # 32 cards, all from 한식, and the category on the round header; the five photos were really in it.
     page.locator("#wcStart").click()
     check(page.evaluate("window.__splashes || []") == [] and not page.evaluate(SPLASH_OPEN), "reduced motion: no start gacha")
     game = page.evaluate(stored)
@@ -2037,7 +1946,6 @@ def worldcup_categories(page):
     check(all(cats[d] == "korean" for d in shown), ("the cards on screen are 한식", shown))
     page.keyboard.press("Enter")
 
-    # Resume keeps it, also after a reload.
     page.reload(wait_until="networkidle")
     resume = page.locator("#wcResume").inner_text()
     check("한식" in resume and page.locator('#wcCats [data-cat="korean"]').get_attribute("aria-pressed") == "true",
@@ -2045,12 +1953,10 @@ def worldcup_categories(page):
     page.locator("#wcResume").click()
     check(page.locator("#wcGame").inner_text() == "한식 32강" and page.locator("#wcCount").inner_text() == "2 / 16"
           and page.evaluate(stored)["category"] == "korean", "resuming plays the same 한식 game")
-    # 처음부터 stays in the category.
     page.locator("#wcRestart").click()
     check(page.evaluate(stored)["category"] == "korean" and set(page.evaluate(stored)["entrants"]) <= set(korean),
           "a restart draws a new bracket from the same category")
 
-    # English: the chips, the header and the resume label follow the language.
     page.locator("#langToggle").click()
     check(page.locator("#wcGame").inner_text() == "Korean · Round of 32", ("the header in English", page.locator("#wcGame").inner_text()))
     save(worldcup_saved(cup, 16, 7, "korean"))
@@ -2064,7 +1970,6 @@ def worldcup_categories(page):
           and page.locator("#wcStart").is_hidden(), ("a saved game: the big 이어하기 and a small 새로 시작", page.locator("#wcResume").inner_text()))
     page.locator("#langToggle").click()
 
-    # An older save has no category: whole pool, readable, resumable.
     save(worldcup_saved(cup, 16, 7))
     page.reload(wait_until="networkidle")
     check(page.locator("#wcResume").is_visible() and "전체" in page.locator("#wcResume").inner_text()
@@ -2073,18 +1978,15 @@ def worldcup_categories(page):
     check(page.locator("#wcGame").inner_text() == "전체 32강" and page.locator("#wcCount").inner_text() == "8 / 8",
           "and resumes as 전체 32강")
 
-    # The result shows the category too.
     save(worldcup_saved(cup, 2, 0, "korean"))
     page.reload(wait_until="networkidle")
     page.locator("#wcResume").click()
     page.keyboard.press("Enter")
     check(page.locator("#wcResult").is_visible() and page.locator("#wcResultGame").inner_text() == "한식 32강",
           ("the result names the category", page.locator("#wcResultGame").inner_text()))
-    # Playing again keeps the category.
     page.locator("#wcAgain").click()
     check(page.evaluate(stored)["category"] == "korean", "다시 하기 plays the same category")
 
-    # An unreadable category in a save is dropped rather than trusted.
     bad = worldcup_saved(cup, 16, 7, "korean")
     bad["game"]["category"] = "brunch"
     save(bad)
@@ -2159,21 +2061,17 @@ def worldcup_splash(page):
     check(len(game["entrants"]) == 4 and game["winners"] == [] and page.evaluate(on_first),
           ("Space skips without a pick, even on its release", game["winners"]))
 
-    # A key held through the skip: its repeats are swallowed, so they never pick.
     close_round(8)
     page.wait_for_function(SPLASH_OPEN)
     page.keyboard.down("Enter")
     page.wait_for_function(closed)
-    page.keyboard.down("Enter")                       # Playwright sends a second down as a repeat
+    page.keyboard.down("Enter")
     page.keyboard.down("Enter")
     page.keyboard.up("Enter")
     game = page.evaluate(stored)
     check(len(game["entrants"]) == 4 and game["winners"] == [] and page.evaluate(on_first),
           ("a held key skips once and never picks", game["winners"]))
 
-    # A screen reader activates the card under the splash: that ends the splash, it is not a pick.
-    # The splash is held still first and the click must end it within a second, long before its
-    # safety timer would.
     close_round(8)
     page.wait_for_function(SPLASH_OPEN)
     page.evaluate("() => document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.pause())")
@@ -2198,16 +2096,12 @@ def worldcup_splash(page):
     check(crash["round"] == "2" and crash["title"] == "결승!" and crash["fighters"] == crash["cards"]
           and len(crash["cards"]) == 2 and crash["hiddenCards"] and crash["vs"] == "VS" and crash["flashes"] == 1,
           ("the final: the two finalists' doubles crash under a VS stamp, with one flash", crash))
-    page.mouse.click(195, 422)                        # a tap in the middle, over where the cards are
+    page.mouse.click(195, 422)
     page.wait_for_function(closed)
     game = page.evaluate(stored)
     check(len(game["entrants"]) == 2 and game["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown),
           ("a tap skips to the final without a pick, the cards shown again", game["winners"]))
 
-    # The phone crash, on a 360 px screen: the finalists clash about 1.5x their size (on a
-    # diagonal, a phone's pair already fills the width), stay on the screen from the hit to the
-    # end, the VS never covers a name, and they land exactly on the real cards. Read in one call
-    # with the splash held still and seeked, so no timer runs in between.
     page.set_viewport_size({"width": 360, "height": 800})
     close_round(4)
     page.wait_for_function(SPLASH_OPEN)
@@ -2215,7 +2109,6 @@ def worldcup_splash(page):
     check(geometry["outside"] == 0 and 1.45 <= geometry["scale"] <= 1.7 and geometry["covered"] == 0 and geometry["miss"] < 1,
           ("phone crash: bigger, on the screen, VS clear of the names, landing on the cards", geometry))
 
-    # Played out: finish() runs the splash to its end (no waiting on the clock).
     page.evaluate("document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.finish())")
     page.wait_for_function(closed)
     check(page.evaluate(on_first) and page.locator("#wcCount").inner_text() == "1 / 1" and page.evaluate(shown)
@@ -2226,7 +2119,6 @@ def worldcup_splash(page):
           "and the final is played to the winner")
     page.set_viewport_size({"width": 390, "height": 844})
 
-    # A splash that never finishes (held still here) still ends by itself and gives the match back.
     close_round(16)
     page.wait_for_function(SPLASH_OPEN)
     page.evaluate("() => document.querySelector('#wcSplash').getAnimations({subtree: true}).forEach(a => a.pause())")
@@ -2234,7 +2126,6 @@ def worldcup_splash(page):
     check(page.evaluate(on_first) and page.evaluate(shown) and len(page.evaluate(stored)["entrants"]) == 8,
           "a stuck splash ends by itself, focus on the 8강 match")
 
-    # Anything failing only takes the splash away: the match still comes and takes picks.
     page.evaluate("s => localStorage.setItem('babdoduk-worldcup', JSON.stringify(s))", worldcup_saved(cup, 16, 7))
     page.reload(wait_until="networkidle")
     page.evaluate("() => { Element.prototype.animate = () => { throw new Error('no animation'); }; }")
@@ -2307,13 +2198,11 @@ def worldcup_gacha(page):
         check(page.evaluate(stored)["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown),
               (width, "Enter skips to the match without a pick"))
 
-    # 처음부터 plays it again; a tap anywhere skips it, never a pick.
     page.locator("#wcRestart").click()
     page.wait_for_function(SPLASH_OPEN)
     page.mouse.click(640, 400)
     page.wait_for_function(closed)
     check(page.evaluate(stored)["winners"] == [] and page.evaluate(on_first) and page.evaluate(shown), "a tap skips it without a pick")
-    # Played out, it lands on the match.
     page.locator("#wcRestart").click()
     page.wait_for_function(SPLASH_OPEN)
     page.evaluate("document.getAnimations().forEach(a => { if (a.effect && isFinite(a.effect.getComputedTiming().endTime)) a.finish(); })")
@@ -2323,13 +2212,11 @@ def worldcup_gacha(page):
     page.keyboard.press("Enter")
     page.wait_for_function("document.getElementById('wcCount').textContent === '2 / 16'")
     check(page.evaluate(stored)["winners"] != [], "and the match takes a pick")
-    # 이어하기 never plays it.
     page.reload(wait_until="networkidle")
     page.evaluate(SPLASH_LOG)
     page.locator("#wcResume").click()
     check(page.evaluate("window.__splashes") == [] and page.evaluate(on_first) and page.locator("#wcCount").inner_text() == "2 / 16",
           "이어하기 goes straight to the match")
-    # 새로 시작 under 이어하기 does.
     page.reload(wait_until="networkidle")
     page.evaluate(SPLASH_LOG)
     page.locator("#wcNew").click()
@@ -2340,7 +2227,6 @@ def worldcup_gacha(page):
     page.evaluate("localStorage.removeItem('babdoduk-worldcup')")
     page.set_viewport_size({"width": 390, "height": 844})
     page.emulate_media(reduced_motion="reduce")
-    # Reduced motion: still pictures, a still button, and the match at once.
     page.reload(wait_until="networkidle")
     page.evaluate(SPLASH_LOG)
     check(page.evaluate("document.getAnimations().filter(a => a.effect && a.effect.target && a.effect.target.closest('#wcIntro')).length") == 0
@@ -2353,7 +2239,6 @@ def worldcup_gacha(page):
     return count
 
 
-# Counts the AudioContexts a page makes; the real one is kept (headless Chromium plays it to no device).
 WC_AUDIO = """(() => { const A = window.AudioContext; if (!A) return; let n = 0;
   class Counted extends A { constructor(...args) { super(...args); n++; window.__audio = this; } }
   window.AudioContext = Counted; window.webkitAudioContext = Counted; window.__audioContexts = () => n; })();"""
@@ -2401,10 +2286,9 @@ def worldcup_sound(page):
         page.wait_for_function(running)
         s = state()
         check(s["pressed"] == "true" and s["contexts"] == 1 and s["stored"] == "1", ("the press turns it on: one AudioContext", s))
-        # In the start gacha the toggle is above the scene; neither a tap nor a key on it skips the scene.
         page.locator("#wcStart").click()
         page.wait_for_function(SPLASH_OPEN)
-        page.evaluate("document.getAnimations().forEach(a => a.pause())")   # hold the scene still while it is pressed
+        page.evaluate("document.getAnimations().forEach(a => a.pause())")
         check(state()["onTop"], "the toggle sits above the gacha")
         page.locator("#wcSound").click()
         s = state()
@@ -2423,14 +2307,12 @@ def worldcup_sound(page):
         page.keyboard.press("Enter")
         page.wait_for_function("document.getElementById('wcCount').textContent === '2 / 16'")
         check(state()["contexts"] == 1, "a pick plays its effect on the same AudioContext")
-        # A hidden tab: the music sleeps, and wakes when the tab is back.
         page.evaluate("Object.defineProperty(document, 'hidden', {configurable: true, get: () => true});"
                       "document.dispatchEvent(new Event('visibilitychange'))")
         page.wait_for_function("window.__audio.state === 'suspended'")
         page.evaluate("delete document.hidden; document.dispatchEvent(new Event('visibilitychange'))")
         page.wait_for_function(running)
         check(state()["contexts"] == 1, "a hidden tab suspends it and its return resumes it")
-        # The choice is kept: the next visit shows it on and starts at the first press anywhere.
         page.reload(wait_until="networkidle")
         s = state()
         check(s["pressed"] == "true" and s["contexts"] == 0, ("remembered on, nothing made before a press", s))
@@ -2443,19 +2325,16 @@ def worldcup_sound(page):
         page.reload(wait_until="networkidle")
         s = state()
         check(s["pressed"] == "false" and s["stored"] == "0", ("turned off, it stays off", s))
-        # Reduced motion: available, but off on every visit.
         page.evaluate("localStorage.setItem('babdoduk-worldcup-sound', '1')")
         page.emulate_media(reduced_motion="reduce")
         page.reload(wait_until="networkidle")
         s = state()
         check(s["shown"] and s["pressed"] == "false" and s["contexts"] == 0, ("reduced motion: there, but off", s))
-        # English.
         page.evaluate("localStorage.setItem('babdoduk-lang', 'en')")
         page.reload(wait_until="networkidle")
         s = state()
         check(s["label"] == "Turn music on/off" and s["text"] == "Music", ("the toggle in English", s))
         page.evaluate("localStorage.setItem('babdoduk-lang', 'ko')")
-        # Before the launch: the toggle works, and nothing of the game starts.
         page.clock.set_fixed_time(WC_SOON)
         page.evaluate("localStorage.removeItem('babdoduk-worldcup'); localStorage.removeItem('babdoduk-worldcup-sound')")
         page.reload(wait_until="networkidle")
@@ -2516,8 +2395,6 @@ def worldcup_stats(page):
     page.locator("#wcRanking").wait_for()
     check(page.locator("#wcRankingList li").count() == 10 and "1,234" in page.locator("#wcRankingTotal").inner_text(),
           "the intro shows everyone's top ten and the number of games")
-    # Measured once the match has settled (its count shown, its photos decoded): right after the
-    # click the layout can still move, and the check then failed now and then (2026-10-30).
     settled = ("n => document.getElementById('wcCount').textContent.startsWith(n + ' /')"
                " && [...document.querySelectorAll('.wc-card img')].every(i => i.complete)")
     page.locator("#wcStart").click()
@@ -2529,9 +2406,6 @@ def worldcup_stats(page):
           "after a pick, the last pick's win rates")
     check(abs(page.locator(".wc-card").first.bounding_box()["y"] - top) < 1,
           "the win-rate line keeps its place, so the cards do not jump when it fills")
-    # Which dishes meet is random, so the longest names of the pool are put in the line too: on
-    # phones two long names wrapped and moved the cards, and the check above failed only now and
-    # then (2026-10-31).
     items = [i for pack in (ROOT / "data/foods/packs").glob("*.json")
              for i in json.loads(pack.read_text(encoding="utf-8"))["items"] if i["id"] in set(pool)]
     longest = {lang: sorted((i[key] or "" for i in items), key=len)[-2:] for lang, key in (("ko", "nameKo"), ("en", "nameEn"))}
@@ -2587,7 +2461,6 @@ def png_size(data):
     return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
 
 
-# The story card's preview, redrawn on a fresh canvas and exported: works only for an untainted image.
 STORY_SNAP = """() => { const img = document.getElementById('wcStoryPreview'), q = s => document.querySelector(s);
   let exported = null, pixel = null;
   if (img && !img.hidden && img.naturalWidth) {
@@ -2600,12 +2473,10 @@ STORY_SNAP = """() => { const img = document.getElementById('wcStoryPreview'), q
     save: q('#wcSaveImage').innerText.replace(/\\s+/g, ' ').trim(), share: q('#wcShare').innerText.replace(/\\s+/g, ' ').trim(),
     hint: q('.wc-story-hint').innerText, toast: q('#wcShareStatus').textContent,
     toastShown: q('#wcShareStatus').classList.contains('is-shown'), role: q('#wcShareStatus').getAttribute('role')}; }"""
-# Every string the story card draws, recorded (the card is pixels): the credit line must carry no names.
 CARD_TEXT_SPY = """() => { window.__cardText = [];
   if (window.__cardSpy) return; window.__cardSpy = true;
   const draw = CanvasRenderingContext2D.prototype.fillText;
   CanvasRenderingContext2D.prototype.fillText = function (text, ...rest) { window.__cardText.push(String(text)); return draw.call(this, text, ...rest); }; }"""
-# Web Share and the clipboard, recorded instead of performed; `touch` makes the page see a phone.
 SHARE_STUB = """([touch, files, fail]) => { window.__shared = []; window.__copied = [];
   const mm = window.__realMatchMedia || (window.__realMatchMedia = window.matchMedia.bind(window));
   window.matchMedia = q => q === '(pointer: coarse)' ? {matches: touch, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}} : mm(q);
@@ -2621,10 +2492,6 @@ FRIEND_SNAP = """() => { const q = s => document.querySelector(s), shown = e => 
     query: location.search, overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }"""
 
 
-# ---------------------------------------------------------------------------------------------------
-# 꽁밥 제보 (tip.html, public since 2026-11-02; docs/GGONGBAB_TIPS.md): a fake Supabase client stands in for the
-# project, so no check reaches a database. The page clock is fixed and the board's rows derive from it.
-# ---------------------------------------------------------------------------------------------------
 TIP_NOW = "2026-11-03T10:00:00+09:00"
 TIP_ID = "0b6f3c2e-7d4a-4f8e-9a21-5c3d2e1f0a9b"
 TIP_FAKE_CLIENT = """(() => {
@@ -2656,7 +2523,6 @@ TIP_FAKE_CLIENT = """(() => {
     };
   }};
 })();""".replace("TIP_ID", TIP_ID)
-# A large photo made in the page (no image library needed): 2400x1600, which the page scales down.
 TIP_BIG_PHOTO = """async () => {
   const canvas = document.createElement('canvas'); canvas.width = 2400; canvas.height = 1600;
   const ctx = canvas.getContext('2d'); ctx.fillStyle = '#c0392b'; ctx.fillRect(0, 0, 2400, 1600);
@@ -2683,10 +2549,9 @@ def tip_board(browser):
     def day(offset):
         return (datetime.fromisoformat(TIP_NOW) + timedelta(days=offset)).date().isoformat()
 
-    # Empty configuration (the static checks' default): closed form, no board, no request at all.
     context = new_context(browser)
     requests = []
-    fonts = ("fonts.googleapis.com", "fonts.gstatic.com")       # the page's stylesheet link, refused offline
+    fonts = ("fonts.googleapis.com", "fonts.gstatic.com")
     context.on("request", lambda req: requests.append(req.url)
                if urlparse(req.url).hostname not in {*SERVED_HOSTS, *fonts} else None)
     page = context.new_page()
@@ -2731,10 +2596,9 @@ def tip_board(browser):
     check(page.locator(".tip-item.is-today time").get_attribute("datetime") == day(0)
           and page.locator(".tip-board img").count() == 0, "today's tip carries its date; no markup from the data runs")
 
-    # Nothing written and no photo: not sent; the field says why and takes focus.
     page.locator("#tipSubmit").click()
     check(page.evaluate("window.__tip.rpc.length") == 0 and page.locator("#tipTextInput").get_attribute("aria-invalid") == "true"
-          and page.locator("#tipTextError").inner_text() == "내용을 적거나 사진을 올려 주세요."  # copy cleanup, owner 2026-11-12
+          and page.locator("#tipTextError").inner_text() == "내용을 적거나 사진을 올려 주세요."
           and page.evaluate("document.activeElement.id") == "tipTextInput"
           and page.locator("#tipStatus").inner_text() == "표시한 칸을 확인해 주세요.",
           "an empty tip is not sent; the field says why and takes focus")
@@ -2743,7 +2607,6 @@ def tip_board(browser):
           and page.locator("#tipTextCount").inner_text() == "30 / 1000",
           "writing clears the mark and the status at once; the counter counts trimmed characters")
 
-    # Photos: a wrong type is refused, at most three are kept, one can be removed again.
     page.set_input_files("#tipPhotos", [{"name": "a.gif", "mimeType": "image/gif", "buffer": b"GIF89a"}])
     page.locator("#tipPhotosError:not([hidden])").wait_for()
     check(page.locator(".tip-preview").count() == 0 and "JPG" in page.locator("#tipPhotosError").inner_text(),
@@ -2762,7 +2625,6 @@ def tip_board(browser):
     page.evaluate(TIP_BIG_PHOTO)
     page.wait_for_function("document.querySelectorAll('.tip-preview').length === 2")
 
-    # Rate limited: the form stays as it was, with the reason.
     page.evaluate("window.__tip.mode = 'rate'")
     page.locator("#tipSubmit").click()
     page.wait_for_function("document.getElementById('tipStatus').dataset.tone === 'error'")
@@ -2771,7 +2633,6 @@ def tip_board(browser):
           and page.locator("#tipSubmit").is_enabled() and page.evaluate("window.__tip.uploads.length") == 0,
           "a rate-limited tip keeps the form, says why, and sends no photo")
 
-    # Sent: one call with the trimmed words, the photo count and an empty honeypot, then the photos.
     page.evaluate("window.__tip.mode = 'ok'; window.__tip.rpc = []")
     page.locator("#tipSubmit").click()
     page.locator("#tipDone:not([hidden])").wait_for()
@@ -2788,7 +2649,6 @@ def tip_board(browser):
     check(page.locator("#tipDoneWarn").is_hidden() and page.evaluate("document.activeElement.id") == "tipDoneTitle"
           and page.locator("#tipForm").is_hidden(), "the confirmation takes focus; no warning when every photo went through")
 
-    # A photo alone is a tip too.
     page.locator("#tipAgain").click()
     check(page.locator("#tipForm").is_visible() and page.locator("#tipTextInput").input_value() == ""
           and page.locator(".tip-preview").count() == 0 and page.evaluate("document.activeElement.id") == "tipTextInput",
@@ -2801,10 +2661,9 @@ def tip_board(browser):
     check(page.evaluate("window.__tip.rpc[0].args") == {"p_text": "", "p_photos": 1, "p_hp": ""}
           and len(page.evaluate("window.__tip.uploads")) == 1, "a poster photo without words is sent as a tip")
 
-    # Photos that fail: with words the tip still counts; a photo-only tip that lost its photo is empty.
     page.evaluate("window.__tip.upload = 'fail'")
     for words, warning in (("도서관 앞 커피차", "사진은 올라가지 않았어요. 제보는 접수됐어요."),
-                           ("", "사진이 올라가지 않았어요. 다시 보내 주세요.")):  # copy cleanup, owner 2026-11-12
+                           ("", "사진이 올라가지 않았어요. 다시 보내 주세요.")):
         page.locator("#tipAgain").click()
         page.locator("#tipTextInput").fill(words)
         page.set_input_files("#tipPhotos", [{"name": "a.png", "mimeType": "image/png", "buffer": PNG_1PX}])
@@ -2813,7 +2672,6 @@ def tip_board(browser):
         page.locator("#tipDone:not([hidden])").wait_for()
         check(page.locator("#tipDoneWarn").inner_text() == warning, ("a failed photo upload is said plainly", words, warning))
 
-    # A failing server: the form stays with the reason. English, too.
     page.locator("#tipAgain").click()
     page.evaluate("window.__tip.mode = 'fail'")
     page.locator("#tipTextInput").fill("카이마루 앞 붕어빵")
@@ -2872,7 +2730,6 @@ def worldcup_share(page):
 
     check(card_credit_ok(page.evaluate("window.__cardText"), "📷 Wikimedia Commons · 사진 출처 babdodukms.com/worldcup.html"),
           ("the card's one credit line names no photographer", page.evaluate("window.__cardText")))
-    # The result screen lists the author and licence, linked, of the four photos on the card.
     page.locator("#wcCredits summary").click()
     items = page.locator("#wcCreditsList li").evaluate_all(
         "els => els.map(li => ({text: li.innerText, links: [...li.querySelectorAll('a')].map(a => [a.textContent, a.href])}))")
@@ -2894,7 +2751,6 @@ def worldcup_share(page):
           ("the two buttons, the Instagram hint and the preview's text", snap))
     check(snap["role"] == "status", "the toast is a status region")
     friend_url = f"https://site-ui.invalid/worldcup.html?from={winner}&cat=korean"
-    # A computer: the PNG is downloaded; 공유하기 copies the friend link. Neither opens a share sheet.
     page.evaluate(SHARE_STUB, [False, True, None])
     with page.expect_download() as download:
         page.locator("#wcSaveImage").click()
@@ -2907,13 +2763,11 @@ def worldcup_share(page):
     page.wait_for_function("document.getElementById('wcShareStatus').textContent === '링크를 복사했어요'")
     check(page.evaluate("window.__copied") == [friend_url] and page.evaluate("window.__shared") == [],
           ("a computer copies the friend link (this host), no share sheet", page.evaluate("window.__copied")))
-    # Keyboard: both buttons are reachable and show a focus ring.
     page.locator("#wcSaveImage").focus()
     page.keyboard.press("Tab")
     check(page.evaluate("document.activeElement.id") == "wcShare"
           and page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none",
           "Tab moves from 저장 to 공유하기 with a visible focus ring")
-    # A phone: the share sheet gets the PNG, the text and the link; 저장 hands over the file alone.
     page.evaluate(SHARE_STUB, [True, True, None])
     page.locator("#wcShare").click()
     page.wait_for_function("window.__shared.length === 1")
@@ -2926,22 +2780,21 @@ def worldcup_share(page):
     shared = page.evaluate("window.__shared")[1]
     check(len(shared["files"]) == 1 and shared["files"][0]["type"] == "image/png" and shared["text"] is None and shared["url"] is None,
           ("스토리 이미지 저장 on a phone opens the share sheet with the file alone", shared))
-    page.evaluate(SHARE_STUB, [True, False, None])                 # a browser that cannot share files
+    page.evaluate(SHARE_STUB, [True, False, None])
     page.locator("#wcShare").click()
     page.wait_for_function("window.__shared.length === 1")
     shared = page.evaluate("window.__shared")[0]
     check(shared["files"] == [] and shared["url"] == friend_url and shared["text"], ("without file sharing: the text and the link", shared))
-    page.evaluate(SHARE_STUB, [True, True, "AbortError"])            # closing the sheet says nothing
+    page.evaluate(SHARE_STUB, [True, True, "AbortError"])
     page.evaluate("document.getElementById('wcShareStatus').textContent = ''")
     page.locator("#wcShare").click()
     page.wait_for_timeout(200)
     check(page.evaluate("window.__copied") == [] and page.evaluate("document.getElementById('wcShareStatus').textContent") == "",
           "a cancelled share sheet is not an error")
-    page.evaluate(SHARE_STUB, [True, True, "NotAllowedError"])       # a refused share falls back to the link
+    page.evaluate(SHARE_STUB, [True, True, "NotAllowedError"])
     page.locator("#wcShare").click()
     page.wait_for_function("window.__copied.length === 1")
     check(page.evaluate("window.__copied") == [friend_url], "a refused share copies the friend link instead")
-    # English: the card is drawn again in English.
     before = page.evaluate("document.getElementById('wcStoryPreview').src")
     page.evaluate(CARD_TEXT_SPY)
     page.locator("#langToggle").click()
@@ -2956,7 +2809,6 @@ def worldcup_share(page):
     page.locator("#langToggle").click()
     page.evaluate("localStorage.removeItem('babdoduk-lang')")
 
-    # The friend link: a banner and the category, never a game.
     page.set_viewport_size({"width": 390, "height": 844})
 
     def friend(query):
@@ -2979,7 +2831,6 @@ def worldcup_share(page):
     check(not shot["banner"] and shot["pressed"] == ["japanese"], ("a dish outside the pool is ignored", shot))
     shot = friend("?from=%3Cimg%3E&cat=%3Cb%3E")
     check(not shot["banner"] and shot["pressed"] == ["all"] and not shot["match"], ("nonsense is ignored", shot))
-    # Before the launch: the banner, no photo request, the game locked.
     photos = mystery_requests(page)
     page.clock.set_fixed_time(WC_SOON)
     shot = friend(f"?from={finalist}&cat=korean")
@@ -3007,15 +2858,12 @@ def is_kakao_sdk_host(host):
     return host == "t1.kakaocdn.net" or host == "kakao.com" or host.endswith(".kakao.com")
 KAKAO_SDK_INTEGRITY = "sha384-oroumrnFVE0xtgqyDZJARgERibXg2C28380uaUZz2kHDS5CR7tu20eGiOU6GkTpy"
 KAKAO_JS_KEY = "92860c2f30dc6829c664d36be75e0b3d"
-# A fulfilled response cannot match the real file's SRI hash, so this spy records the integrity and
-# crossOrigin the page asks for (asserted against the pinned values) and does not apply the integrity.
 KAKAO_SPY = """(() => {
   window.__kakaoEls = [];
   const proto = HTMLScriptElement.prototype;
   Object.defineProperty(proto, 'integrity', { configurable: true, get() { return this.__integrity || ''; },
     set(v) { this.__integrity = v; window.__kakaoEls.push(this); } });
 })();"""
-# Fake SDKs: "ok" behaves; "send-throws" fails when sharing; "init-throws" fails to initialise.
 KAKAO_FAKES = {
     "ok": """window.__kakao = { init: [], sent: [] };
       window.Kakao = { init(k) { window.__kakao.init.push(k); this._ok = true; }, isInitialized() { return !!this._ok; },
@@ -3070,7 +2918,6 @@ def worldcup_kakao(page):
         return before
 
     serve("ok")
-    # Nothing Kakao on the other pages or the world cup start screen.
     for name in ("index.html", "event.html", "mukbang.html", "worldcup.html"):
         view.goto("https://site-ui.invalid/" + name, wait_until="networkidle")
     check(not kakao_requests, ("no Kakao request on the other pages or the world cup start screen", kakao_requests))
@@ -3086,7 +2933,6 @@ def worldcup_kakao(page):
     button = view.locator("#wcKakao")
     check("".join(button.inner_text().split()) == "💬카카오톡" and button.evaluate("el => el.tagName") == "BUTTON",
           ("the button is 💬 카카오톡", button.inner_text()))
-    # Keyboard: Tab from 공유하기 reaches it with a visible focus ring; Enter shares.
     view.locator("#wcShare").focus()
     view.keyboard.press("Tab")
     check(view.evaluate("document.activeElement.id") == "wcKakao"
@@ -3105,7 +2951,6 @@ def worldcup_kakao(page):
           and len(buttons) == 1 and buttons[0]["title"] == "너도 해보기"
           and buttons[0]["link"] == {"mobileWebUrl": friend_url, "webUrl": friend_url},
           ("the link and the 너도 해보기 button are the friend link", feed))
-    # English, and a second game: still one request and one init.
     view.locator("#langToggle").click()
     check("".join(view.locator("#wcKakao").inner_text().split()) == "💬KakaoTalk", "the button in English")
     view.locator("#wcKakao").click()
@@ -3116,7 +2961,6 @@ def worldcup_kakao(page):
     view.locator("#wcAgain").click()
     check(kakao_requests == [KAKAO_SDK_URL] and view.evaluate("window.__kakao.init") == [KAKAO_JS_KEY],
           ("one request and one init for the whole visit", (kakao_requests, view.evaluate("window.__kakao.init"))))
-    # The fallback: sendDefault throwing hides the button and falls back to the existing share (a computer copies the link).
     serve("send-throws")
     to_result()
     view.wait_for_function("() => !document.getElementById('wcKakao').hidden")
@@ -3125,7 +2969,6 @@ def worldcup_kakao(page):
     view.wait_for_function("window.__copied.length === 1")
     check(view.evaluate("window.__copied") == [friend_url] and view.locator("#wcKakao").is_hidden(),
           "a failing sendDefault hides the button and falls back to the link copy")
-    # The SDK failing to initialise, and the SDK blocked: no button, the other buttons stay, no errors.
     for mode in ("init-throws", None):
         serve(mode)
         to_result()
@@ -3133,7 +2976,7 @@ def worldcup_kakao(page):
         check(view.locator("#wcKakao").is_hidden() and view.locator("#wcShare").is_visible()
               and view.locator("#wcSaveImage").is_visible(), (f"the SDK {mode or 'blocked'}: no 카카오톡 button, the rest remains", mode))
     check(not errors, ("no page errors", errors))
-    view.evaluate("localStorage.removeItem('babdoduk-worldcup'); localStorage.removeItem('babdoduk-lang')")   # the context is shared
+    view.evaluate("localStorage.removeItem('babdoduk-worldcup'); localStorage.removeItem('babdoduk-lang')")
     view.close()
     return count
 
@@ -3176,7 +3019,6 @@ def food_provenance(page):
     cells = page.locator(".food-cal-cell.has-data").evaluate_all(
         "els => els.map(el => ({local: el.classList.contains('is-local'), label: el.getAttribute('aria-label')}))")
     check([c["local"] for c in cells] == [False, True, True], ("browser entries are marked", cells))
-    # copy cleanup, owner 2026-11-12: a browser entry reads 내 기록, without the "replaces" note.
     check("공개 기록" in cells[0]["label"] and "내 기록" in cells[1]["label"] and "대신" not in cells[1]["label"],
           ("source named in labels", cells))
     check("공개 기록 1일" in page.locator("#foodSourceLegend").inner_text()
@@ -3301,21 +3143,11 @@ def structure_and_failures(page):
     page.unroute("**/data/**")
     return count
 
-# ---------------------------------------------------------------------------------------------------
-# Site guardian: the shared chrome is identical on every public page (structure, destinations, computed
-# footer styles and the transition into the footer), in both languages and at desktop and phone widths.
-# ---------------------------------------------------------------------------------------------------
-# food.html is lab-only. choose.html (오늘 뭐 먹지, 2026-11-04) has no approved chrome baselines yet; pick_tools
-# and release_contracts check it until the owner approves its renders (docs/VISUAL_BASELINES.md).
 GUARD_PAGES = ["index.html", "ggongbab.html", "mukbang.html", "event.html", "history.html"]
 GUARD_SIZES = [(1440, 900), (390, 844), (360, 800)]
 NAV_DIRECT = ["ggongbab.html", "choose.html", "event.html"]
-# Instagram left the More menu for a logo beside the wordmark (owner 2026-11-05; INSTAGRAM below).
-# 마이 밥도둑 heads the 더보기 group and the phone menu panel (owner 2026-11-12), beside the person icon.
 NAV_MORE = ["my.html", "mukbang.html", "history.html", "tip.html", "https://naver.me/5NeqUPzI"]
 INSTAGRAM = "https://www.instagram.com/babdodukms/"
-# The footer (owner 2026-11-18): every public page in four groups, then the privacy policy (the email and
-# Instagram link row left the same day: "이거 그냥 없애자"; the address stays as text).
 FOOTER_MAIL = "mailto:joshualisky@kaist.ac.kr"
 FOOTER_LINKS = ["ggongbab.html", "ggongbab.html#past", "tip.html", "choose.html",
                 "ggongbab.html#menu", "https://naver.me/5NeqUPzI", "event.html", "mukbang.html", "my.html", "history.html",
@@ -3358,7 +3190,7 @@ def site_guardian(page):
     def check(ok, detail):
         nonlocal count
         if not ok:
-            raise AssertionError(f"site guardian: {detail}", detail)  # detail: (where, component, values)
+            raise AssertionError(f"site guardian: {detail}", detail)
         count += 1
 
     errors, broken = [], []
@@ -3416,10 +3248,6 @@ def site_guardian(page):
     return count
 
 
-# ---------------------------------------------------------------------------------------------------
-# Visual regression for the shared chrome. Golden images live in tests/visual/chrome and change only
-# with an explicit owner approval note (see docs/VISUAL_BASELINES.md); a mismatch never re-baselines.
-# ---------------------------------------------------------------------------------------------------
 BASELINE_ROOT = ROOT / "tests/visual/chrome"
 PARTS = ("nav", "footer", "footer-context")
 
@@ -3466,8 +3294,6 @@ DIFF_DIR = ROOT / ".local/visual-diff"
 VISUAL_SIZES = [(1440, 900), (390, 844)]
 FIXED_NOW = "2026-09-28T10:00:00+09:00"
 CONTEXT_ABOVE = 180
-# Motion off, and the 2% film-grain overlay hidden: it is decoration, and its noise would make every
-# baseline incompressible without telling anything about layout, surfaces or spacing.
 STILL = ("*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }"
          " body::after { display: none !important; }")
 FIXTURES = {
@@ -3485,7 +3311,7 @@ def visual_route(route):
     if path in FIXTURES:
         route.fulfill(json=FIXTURES[path])
     elif path.startswith("data/magazine/"):
-        route.fulfill(status=404, body="")  # the desk fallback is static; editions change daily
+        route.fulfill(status=404, body="")
     else:
         route.fallback()
 
@@ -3556,7 +3382,7 @@ def chrome_visual(page, update=False, approval=None):
     for file_name, data in shots:
         expected = folder / file_name
         actual = DIFF_DIR / file_name
-        actual.write_bytes(data)  # kept for review whenever the image fails
+        actual.write_bytes(data)
         if not expected.is_file():
             failures.append((file_name, f"no approved baseline for {folder.name}"))
             continue
@@ -3590,7 +3416,6 @@ class _Run:
 
     def page(self, clock=None):
         page = self.watch(new_context(self.browser)).new_page()
-        # WebSockets bypass routing and emit no request event; record every attempt.
         page.on("websocket", lambda ws: self.api_attempts.append(ws.url))
         if clock:
             page.clock.set_fixed_time(clock)
@@ -3614,8 +3439,6 @@ def _features(r, report, screenshots):
     report["checks"] += magazine_sparse(page)
     report["checks"] += magazine_edition_time(page)
     report["checks"] += release_contracts(page)
-    # The home page's checks own a page whose clock is fixed (home_page), so the world cup promo's
-    # state and the calendar do not depend on today.
     home = home_page(r.browser, r.api_attempts)
     report["checks"] += home_summary(home)
     report["checks"] += home_hero(home)
@@ -3671,7 +3494,7 @@ def _security_policy(r, report, screenshots):
                         if width <= 720:
                             page.locator("#homeMapOpen").click()
                         page.wait_for_function("() => document.querySelector('.home-map-stage').dataset.state !== 'poster' && document.querySelector('.home-map-stage').dataset.state !== 'loading'")
-                    page.wait_for_timeout(30)  # dispatch the policy events from the completed loads
+                    page.wait_for_timeout(30)
                     violations = page.evaluate("window.__babdodukCsp")
                     assert not violations and not errors, (name, lang, width, violations, errors)
                     report["checks"] += 1
@@ -3688,8 +3511,6 @@ def _structure(r, report, screenshots):
     page = r.page()
     report["checks"] += structure_and_failures(page)
     report["checks"] += site_guardian(page)
-    # High contrast must defer to the system; custom colors/widths must not
-    # leak from either the standards or WebKit rule sets.
     page.emulate_media(forced_colors="active")
     check = page.evaluate(MEASURE)
     assert check["scrollbarColor"] == "auto"
@@ -3697,8 +3518,6 @@ def _structure(r, report, screenshots):
     report["checks"] += 2
 
 
-# The world cup runs from 2026-10-16 (js/worldcup-gate.js): its checks own a page whose clock is fixed
-# (inside the window unless a check sets another), so nothing depends on today. Two pages, each in order.
 def _worldcup_play(r, report, screenshots):
     cup = r.page(WC_RUNNING)
     for check in (event_entry, worldcup_play, worldcup_categories, worldcup_splash, worldcup_gacha, worldcup_sound):
@@ -3712,14 +3531,9 @@ def _worldcup_rest(r, report, screenshots):
 
 
 def _visual(r, report, screenshots):
-    # It fixes the page clock and data for deterministic screenshots. Its baselines exist per OS and
-    # browser build (baseline_platform); the tests workflow, which has none, skips it explicitly, and
-    # ui-guardian compares them in the container they were rendered in.
     report["checks"] += chrome_visual(r.page())
 
 
-# Independent groups: each runs in its own browser, so --jobs N runs them side by side (owner 2026-11-12:
-# the checks took too long one after another). Within a group the order is the old sequential order.
 GROUPS = {f"matrix-{w}": _matrix((w, h)) for w, h in SIZES}
 GROUPS.update({"features": _features, "menus": _menus, "structure": _structure,
                "worldcup-play": _worldcup_play, "worldcup-rest": _worldcup_rest,
@@ -3836,7 +3650,7 @@ def run_chrome_checks():
             report["guardian"] = site_guardian(page)
         except AssertionError as exc:
             guardian_error = exc
-            shot = page.screenshot(full_page=True)  # the page and viewport the guardian stopped on
+            shot = page.screenshot(full_page=True)
             failed.append(exc.args[0])
         try:
             report["visual"] = chrome_visual(page)
@@ -3844,7 +3658,7 @@ def run_chrome_checks():
             failed.append(f"visual: {exc}")
         browser.close()
     if guardian_error is not None:
-        guardian_summary(guardian_error, shot)  # after chrome_visual, which resets .local/visual-diff
+        guardian_summary(guardian_error, shot)
     assert not failed, failed
     report["checks"] = report["guardian"] + report["visual"]
     return report

@@ -1,5 +1,3 @@
-/* 먹방 월드컵 (worldcup.html): two dish cards at a time, each with its name, other-language name, up
-   to two flavour tags and a credited free photo, a thin progress line, then the winner. */
 *, *::before, *::after { margin: 0; padding: 0; }
 
 .wc-page {
@@ -56,8 +54,6 @@
   color: var(--color-ink-muted);
 }
 
-/* The start screen's height while js/worldcup.js loads (755 px on a phone, 915 px from 561 px), so the
-   photo note and the footer below do not jump when it replaces this (owner 2026-10-16, layout shift). */
 .wc-page .wc-loading {
   min-height: 755px;
 }
@@ -73,7 +69,6 @@
   font-weight: 600;
 }
 
-/* The game being played, "한식 32강": a small accent line over the round, and over the winner. */
 .wc-game {
   margin-bottom: var(--space-1);
   font-size: 13px;
@@ -118,7 +113,6 @@
   outline-offset: 3px;
 }
 
-/* A match: round, count and a thin line for the whole bracket, then the two cards. */
 .wc-match {
   scroll-margin-top: calc(var(--nav-h) + 12px);
 }
@@ -159,8 +153,6 @@
   transition: width 200ms ease;
 }
 
-/* Both cards share the first row (so they are always the same height and their photos line up)
-   and both credits the second, however long a credit is. */
 .wc-pair {
   position: relative;
   display: grid;
@@ -184,13 +176,12 @@
   grid-row: 1;
 }
 
-/* The photo sits under the words (owner, 2026-10-13); 4:3 crops, cover keeps any stray size tidy. */
 .wc-photo {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 3;
-  margin-top: auto;          /* words at the top, photos level across the two cards */
+  margin-top: auto;
   border-radius: var(--radius-md);
   object-fit: cover;
   background: var(--color-surface-muted);
@@ -293,18 +284,13 @@
   margin-top: var(--space-4);
 }
 
-/* Undo and restart under the match: a line icon and a bold short label on a 12px control (owner
-   2026-10-13: fewer words, livelier lettering than a plain underline). 되돌리기 steps back one pick,
-   or takes back a restart, and is used often: the warm one, accent-wash fill and an accent arrow.
-   처음부터 draws a new bracket: quieter (outline, muted label) and on the far side, so a slip is less
-   likely, and 되돌리기 still brings the old bracket back. Never red: nothing here is final. */
 .wc-tool {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   min-height: 44px;
   padding: 0 var(--space-4) 0 var(--space-3);
-  border: 1px solid transparent;         /* transparent, so forced colours still draw the edge */
+  border: 1px solid transparent;
   border-radius: 12px;
   background: none;
   color: var(--color-ink);
@@ -335,13 +321,11 @@
 }
 
 .wc-tool--restart {
-  margin-inline-start: auto;             /* far right, and still right when the row wraps */
+  margin-inline-start: auto;
   border-color: var(--color-divider);
   color: var(--color-ink-muted);
 }
 
-/* Hover only with a real pointer, so a tap never leaves a sticky hover. The tints are the tokens
-   at low alpha (accent #be185d, ink #1e1d1a), as at .wc-card.is-picked. */
 @media (hover: hover) and (pointer: fine) {
   .wc-tool--undo:hover:not(:disabled) {
     background: rgba(190, 24, 93, 0.14);
@@ -353,7 +337,6 @@
   }
 }
 
-/* Press, for touch and mouse alike; after the hover rules, so it also shows under the pointer. */
 .wc-tool--undo:active:not(:disabled) {
   background: rgba(190, 24, 93, 0.2);
 }
@@ -363,8 +346,6 @@
   color: var(--color-ink);
 }
 
-/* First match of a fresh game: nothing to take back. Faded, muted and without the fill, so the
-   state is not opacity alone. */
 .wc-tool:disabled {
   background: none;
   color: var(--color-ink-muted);
@@ -376,8 +357,6 @@
   color: inherit;
 }
 
-/* Motion only for people who have not asked for less: a quick tint, a small press, the undo arrow
-   leans back and the restart arrows turn half a circle (the glyph lands on itself). */
 @media (prefers-reduced-motion: no-preference) {
   .wc-tool {
     transition: background-color var(--ease), color var(--ease), transform var(--ease);
@@ -402,7 +381,6 @@
   }
 }
 
-/* High contrast: system colours only (the accent arrow follows the label). */
 @media (forced-colors: active) {
   .wc-tool .wc-tool-icon {
     color: inherit;
@@ -414,7 +392,6 @@
   }
 }
 
-/* 기록 지우기 under the past winners stays a quiet underlined text button. */
 .wc-text {
   min-height: 44px;
   padding: 0 var(--space-1);
@@ -438,7 +415,6 @@
   cursor: default;
 }
 
-/* The winner */
 .wc-result {
   text-align: center;
 }
@@ -475,9 +451,6 @@
   color: var(--color-ink-muted);
 }
 
-/* The story card (js/worldcup.js prepareStory, owner 2026-10-14): its preview, tilted like a photo
-   just printed, beside 📥 스토리 이미지 저장 and 📤 공유하기 and the one-line Instagram hint. While it
-   is being drawn a gradient placeholder holds its place. */
 .wc-story {
   display: flex;
   align-items: center;
@@ -574,7 +547,6 @@
   overflow-wrap: anywhere;
 }
 
-/* 사진 출처: the author and licence, linked, of the four photos on the story card (renderCredits). */
 .wc-credits {
   max-width: 520px;
   margin: var(--space-3) auto 0;
@@ -623,7 +595,6 @@
   text-underline-offset: 2px;
 }
 
-/* 저장했어요 / 링크를 복사했어요: a toast at the bottom of the screen, and the same words read out once. */
 .wc-toast {
   position: fixed;
   left: 50%;
@@ -650,7 +621,6 @@
   transform: translate(-50%, 0);
 }
 
-/* A friend's shared result over the start screen: "친구의 최애는 ○○! 🏆 너도 해봐". */
 .wc-friend {
   position: relative;
   z-index: 2;
@@ -724,7 +694,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Pick feedback: the chosen card pops with a check, the other steps back. */
 .wc-card {
   position: relative;
 }
@@ -759,13 +728,8 @@
   transform: scale(0.96);
 }
 
-/* The round splash (js/worldcup.js showSplash, owner 2026-10-14): from the quarterfinals on, a
-   black stage in the top layer, above the navigation, with the round in Jua; the final adds the
-   crash of the two finalists under a VS stamp. The script builds it only while it plays and moves
-   only transform and opacity; with reduced motion or forced colours it is never opened. Colours:
-   black and white, accents from the wordmark gradient (#ec4899, #a855f7, #6366f1). */
 .wc-splash {
-  display: none;                         /* where popovers are not supported: never shown */
+  display: none;
 }
 
 .wc-splash:popover-open {
@@ -783,7 +747,7 @@
   color: #fff;
   overflow: hidden;
   overflow: clip;
-  touch-action: pinch-zoom;              /* no scrolling under it; zoom still works */
+  touch-action: pinch-zoom;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -824,7 +788,7 @@
 .wc-splash-vs {
   position: relative;
   font-family: 'Jua', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-  font-weight: 900;                      /* Jua has one weight; the fallback gets its heaviest */
+  font-weight: 900;
   font-synthesis: none;
   line-height: 1.15;
   white-space: nowrap;
@@ -845,7 +809,6 @@
   width: 0.26em;
 }
 
-/* Two gradient rules frame the title, drawn in from opposite sides. */
 .wc-splash-line {
   position: absolute;
   left: 0;
@@ -873,7 +836,6 @@
   border: 3px solid rgba(255, 255, 255, 0.85);
 }
 
-/* The crash: thin speed lines from the edges, coloured rays from the impact, a shock ring. */
 .wc-splash-lines,
 .wc-splash-burst,
 .wc-splash-wave {
@@ -899,12 +861,10 @@
   line-height: 1;
   padding: 0 0.12em 0.14em 0;
   transform-origin: 50% 55%;
-  /* A pink-to-indigo extrusion, then a dark halo so the letters hold over any photo. */
   text-shadow: 0.03em 0.03em 0 #ec4899, 0.06em 0.06em 0 #c44fd0, 0.09em 0.09em 0 #a855f7, 0.12em 0.12em 0 #6366f1,
     0.06em 0.08em 0.16em rgba(0, 0, 0, 0.75), 0 0 0.3em rgba(168, 85, 247, 0.55);
 }
 
-/* A finalist: the double of its card (same face, same box), a brand rim and speed streaks. */
 .wc-fighter {
   position: absolute;
   box-sizing: border-box;
@@ -984,10 +944,7 @@
   to { transform: scale(1); opacity: 1; }
 }
 
-/* Everyone's picks (lab, stage 2): the last pick's win rates and the ranking. */
 .wc-last {
-  /* Two lines kept whether empty, short or long, and never more: two long dish names wrapped to a
-     second (Korean) or third (English) line on phones and pushed the cards down (2026-10-31). */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1070,7 +1027,6 @@
     padding: var(--space-6) var(--space-4);
   }
 
-  /* Phone: the two dishes stay side by side, square photos, VS between them. */
   .wc-pair {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--space-2) var(--space-3);
@@ -1170,12 +1126,6 @@
   }
 }
 
-/* The start gacha (js/worldcup.js showGacha, owner 2026-10-14): in the splash's popover, a night
-   stage with a pink and violet glow, a capsule machine with a face (220 x 330 at --k = 1) whose
-   screen counts the draw, capsules that pop open on dish photos, "너의 최애는?" on a pill, the
-   first two dishes as photo cards with a VS badge, and a small 건너뛰기 hint. The script builds it
-   only while it plays and moves only transform and opacity. The brand mix: pink, violet, indigo,
-   with cyan and yellow only as capsule colours. */
 .wc-splash[data-round="start"] .wc-splash-bg {
   background: radial-gradient(70% 55% at 50% 42%, #2b1755, #130d24 72%);
 }
@@ -1239,7 +1189,7 @@
 }
 
 .wc-gacha-body::before,
-.wc-gacha-body::after {                   /* feet */
+.wc-gacha-body::after {
   content: "";
   position: absolute;
   bottom: -10px;
@@ -1311,7 +1261,7 @@
 .wc-gacha-eye--l { left: 62px; }
 .wc-gacha-eye--r { right: 62px; }
 
-.wc-gacha-mouth {                         /* the chute: the capsules come out of it */
+.wc-gacha-mouth {
   position: absolute;
   left: 50%;
   top: 100px;
@@ -1361,7 +1311,6 @@
   box-shadow: inset 0 0 0 2px #0f0e0c;
 }
 
-/* The first two dishes: photo cards with a white ring, the size of the real match photos. */
 .wc-duelist {
   position: absolute;
   margin: 0;
@@ -1402,7 +1351,6 @@
   paint-order: stroke fill;
 }
 
-/* One line of text at a time: 한식 32강 뽑는 중…, then 너의 최애는?. */
 .wc-gacha-line,
 .wc-gacha-ask {
   position: absolute;
@@ -1465,13 +1413,10 @@
   font-size: 14px;
 }
 
-/* The music toggle (js/worldcup.js sound, owner 2026-10-14): a pill in the bottom corner, in the top
-   layer (a manual popover) so it stays above the splash and the gacha; 🔇 off, 🔊 on, an icon alone
-   on a phone. Off by default. */
 .wc-sound-dock {
   position: fixed;
   inset: auto max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) auto;
-  z-index: 10002;                        /* where popovers are not supported: above the navigation */
+  z-index: 10002;
   width: auto;
   height: auto;
   margin: 0;
@@ -1521,7 +1466,6 @@
   display: none;
 }
 
-/* A dark ring on a white halo: visible on the page and on the black splash alike. */
 .wc-sound:focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;

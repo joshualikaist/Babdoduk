@@ -41,7 +41,7 @@ def test_the_counts_hold_no_person_and_only_count_visit_is_open():
     assert "request.headers" not in SQL, "the database never looks at who called"
 
 
-LAB_ONLY_PAGES = {"bobyak", "cardnews"}     # vercel.json answers 404 for them outside babdoduk-lab
+LAB_ONLY_PAGES = {"bobyak", "cardnews"}
 
 
 def test_the_sites_and_pages_agree_everywhere():
@@ -52,7 +52,6 @@ def test_the_sites_and_pages_agree_everywhere():
     seeded = set(re.findall(r"\('([a-z0-9-]+)'\)", SQL.split("insert into public.visit_pages", 1)[1].split(";", 1)[0]))
     pages = {p.stem for p in ROOT.glob("*.html")}
     assert pages <= seeded, "a new page needs python scripts/usage_stats.py pages"
-    # One database serves both sites: production lacks the lab-only pages, which stay seeded for the lab.
     assert seeded - pages <= LAB_ONLY_PAGES
     assert usage_stats.SITES["all"] == tuple(sorted(OUR_SITES, key=["www.babdodukms.com", "babdoduk.vercel.app",
                                                                     "babdoduk-lab.vercel.app"].index))
@@ -93,7 +92,6 @@ def test_a_page_opened_on_our_site_adds_one_count_and_nothing_about_the_person()
     assert url.endswith("/rest/v1/rpc/count_visit")
     assert body == {"p_site": "babdoduk-lab.vercel.app", "p_page": "ggongbab", "p_lang": "ko", "p_device": "phone"}
     assert headers == ["Authorization", "Content-Type", "apikey"], "no address or agent is passed on"
-    # A parsed JSON body counts the same.
     assert call_visit({"page": "index", "lang": "en", "device": "computer"})["calls"][0][1]["p_lang"] == "en"
 
 
@@ -175,13 +173,13 @@ def test_one_page_load_sends_one_count_of_page_language_and_device(browser):
 
 
 @pytest.mark.parametrize("url,human,init", [
-    ("http://127.0.0.1/privacy.html", True, ""),                                    # not our site
-    ("https://babdoduk-lab.vercel.app/privacy.html", False, ""),                     # an automated browser
+    ("http://127.0.0.1/privacy.html", True, ""),
+    ("https://babdoduk-lab.vercel.app/privacy.html", False, ""),
     ("https://babdoduk-lab.vercel.app/privacy.html", True,
      "Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', { get: () => true });"),
     ("https://babdoduk-lab.vercel.app/privacy.html", True,
      "Object.defineProperty(Navigator.prototype, 'doNotTrack', { get: () => '1' });"),
-    ("https://babdoduk-lab.vercel.app/privacy.html?nocount=1", True, ""),            # the owner's own phone
+    ("https://babdoduk-lab.vercel.app/privacy.html?nocount=1", True, ""),
 ])
 def test_nothing_is_sent_when_it_should_not_count(browser, url, human, init):
     context, page, beacons = open_page(browser, url, human=human, init=init)
@@ -199,7 +197,7 @@ def test_opting_out_sticks_until_it_is_undone(browser):
     assert len(beacons) == 1
     info = page.evaluate("""() => BabdodukVisit.info({ hostname: 'www.babdodukms.com', search: '', pathname: '/lab-ggongbab.html' },
         { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', maxTouchPoints: 5 })""")
-    assert info == {"page": "lab-ggongbab", "lang": "ko", "device": "tablet"}   # an iPad asks for the desktop site
+    assert info == {"page": "lab-ggongbab", "lang": "ko", "device": "tablet"}
     context.close()
 
 
@@ -246,13 +244,13 @@ def stand_in(tmp_path):
 def test_the_report_answers_when_where_and_which_stars_with_small_numbers_hidden(tmp_path):
     call, asked = stand_in(tmp_path)
     text = usage_stats.report(call, days=28, site="prod", now=NOW, root=tmp_path)
-    assert "모두 43번 열렸어요." in text                       # the lab's 900 are left out of 실제 사이트
+    assert "모두 43번 열렸어요." in text
     assert "| 11시 | 43 |" in text and "| 금 | 40 |" in text and "| 밥도둑 · 꽁밥 | 40 |" in text and "- 휴대폰: 40" in text
     assert "| 1 | 점심 도시락 나눔 · 11/18 수 · 도시락 | 7 |" in text
-    assert "| 2 | 다과회 · 11/19 목 · 다과 | 5 미만 |" in text   # 2 stars: hidden
+    assert "| 2 | 다과회 · 11/19 목 · 다과 | 5 미만 |" in text
     assert "| 10시 | 7 |" in text and "| 9시 | 5 미만 |" in text
     assert "알림을 켠 기기는 5대예요." in text and "| 서맛골 W2 | 6 | 5 미만 | 5 미만 | 6 |" in text
-    assert "| 1 | 비빔밥 | 4 |" in text                         # already anonymous: shown as it is
+    assert "| 1 | 비빔밥 | 4 |" in text
     for path in asked:
         table, query = path.split("?", 1)
         columns = set(re.search(r"select=([^&]+)", query).group(1).split(","))

@@ -34,7 +34,7 @@ def test_both_languages_have_every_key():
     assert set(I18N["ko"]) == set(I18N["en"])
     for lang, strings in I18N.items():
         assert all(isinstance(value, str) and value.strip() for value in strings.values()), lang
-        assert list(strings) == sorted(strings), lang          # kept sorted, so a diff shows one line
+        assert list(strings) == sorted(strings), lang
 
 
 def test_every_key_has_one_source():
@@ -48,11 +48,11 @@ def test_every_key_has_one_source():
             generated |= set(chrome.CONTENT_STRINGS[page]()["ko"])
         assert not generated & set(I18N["ko"]), (page, sorted(generated & set(I18N["ko"])))
     orphans = sorted(k for k in I18N["ko"] if k.split(".")[0] not in families and not k.startswith("title."))
-    assert orphans == []                                      # every key reaches some page
+    assert orphans == []
 
 
 def test_every_page_reads_its_text_in_both_languages():
-    assert chrome.main(["--check"]) == 0                      # the committed tables are what the sync writes
+    assert chrome.main(["--check"]) == 0
     titles = set()
     for page in chrome.PAGES:
         html = (ROOT / page).read_text(encoding="utf-8")
@@ -70,7 +70,6 @@ def test_one_language_switch_for_every_page():
         html = chrome.unstamped((ROOT / page).read_text(encoding="utf-8"))
         block = html[html.index("<!-- @i18n:strings -->"):html.index("<!-- @end i18n -->")]
         assert block.rstrip().endswith('<script src="js/site.js"></script>'), page
-        # The table and site.js come before every other script of the page.
         assert html.index("<script") > html.index("<!-- @i18n:strings -->"), page
         for copy in ("function applyLang", "getElementById('scrollProgressBar')", "querySelectorAll('[data-mega]')",
                      "var STR = ", "babdoduk-langchange"):
@@ -92,7 +91,7 @@ def test_the_wordmark_says_where_it_goes():
     for page, config in chrome.PAGES.items():
         nav = (ROOT / page).read_text(encoding="utf-8")
         link = re.search(r'<a href="([^"]+)" id="navHome"[^>]*>', nav).group(0)
-        if config.get("home") == "#":                          # the home page scrolls to the top
+        if config.get("home") == "#":
             assert 'data-i18n-aria-key="nav.topAria" aria-label="맨 위로"' in link, page
         else:
             assert 'href="index.html"' in link and 'data-i18n-aria-key="nav.homeAria" aria-label="홈으로"' in link, page

@@ -15,7 +15,6 @@ from schema_check import load_schema, schema_errors
 
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = json.loads((ROOT / "data/content/labels.json").read_text(encoding="utf-8"))
-# The picker's cuisine map before 2026-10-12, which sent 121 western dishes to 한식.
 OLD_CUISINE = {"korean": "한식", "chinese": "중식", "japanese": "일식", "western": "양식", "southeast-asian": "동남아",
                "indian": "인도", "middle-eastern": "중동", "fusion": "퓨전", "snack": "분식", "dessert": "디저트"}
 
@@ -54,9 +53,7 @@ def test_the_picker_calls_a_dish_korean_only_when_it_is():
         if label == "한식":
             assert food["cuisine"] == "korean" or food["cuisineGroup"] == "korean", food["id"]
     groups = {food["cuisineGroup"] for food in foods}
-    assert groups <= set(LABELS["cuisines"]["byGroup"])            # no dish falls back to the default
-    # The fix of 2026-10-12, exactly: 121 western dishes stop being 한식, nothing else moves. The MFDS dishes of
-    # 2026-10-13 (P5) add 9 more the old map would have sent to 한식 (7 pastas, a potato soup, hotcakes).
+    assert groups <= set(LABELS["cuisines"]["byGroup"])
     old = [OLD_CUISINE.get(f["cuisine"]) or OLD_CUISINE.get(f["cuisineGroup"]) or "한식" for f in foods]
     moved = [(o, n) for o, n in zip(old, shown) if o != n]
     assert len(moved) == 121 + 9 and set(moved) == {("한식", "양식")}
@@ -93,12 +90,9 @@ def test_the_public_contracts_name_the_sources_as_the_labels_do():
 def test_the_pages_carry_the_labels_and_name_them_once():
     # Written by scripts/sync_site_chrome.py: the committed pages and scripts are what it writes.
     assert sync_site_chrome.main(["--check"]) == 0
-    # No second copy of a type or source label in the hub's script (its filter chips are another
-    # vocabulary: buckets of several types).
     hub = (ROOT / "js/ggongbab.js").read_text(encoding="utf-8")
     assert re.search(r"lunchbox:\s*'", hub) is None
     assert re.findall(r"t\('gg\.(?:food\.[a-z' +]+|source\.\w+)',\s*'([^']+)'\)", hub) == []
-    # The Korean text a page shows before its script runs is the label itself.
     for page in ("index.html", "mukbang.html"):
         html = (ROOT / page).read_text(encoding="utf-8")
         for key, pair in sync_site_chrome.label_strings(page).items():

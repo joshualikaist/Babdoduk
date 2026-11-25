@@ -154,7 +154,6 @@ def test_no_pagination_is_allowed_and_no_detail_is_reported():
     report, d = collect([response()] + opened())
     assert report["listReplayable"] and not report["paginationParameterObserved"]
     assert report["contract"]["pagination"] == "none"
-    # A list nobody clicked through has no contract at all any more.
     alone, _ = collect([response()])
     assert "NO_DETAIL_CANDIDATE" in alone["reasons"]
     assert alone["contract"] is None
@@ -219,8 +218,6 @@ def test_debug_file_and_terminal_export_only_fixed_counts_and_reasons(monkeypatc
     assert set(debug["diagnostics"]) == {"counts", "rejected", "safe"}
     for section in ("counts", "rejected"):
         assert all(type(v) is int for v in debug["diagnostics"][section].values())
-    # The structural section carries names and paths, never values. This URL
-    # had ?token=PRIVATE-TOKEN, so the key name itself must be redacted too.
     safe = debug["diagnostics"]["safe"]
     assert set(safe) == {"unsafeQueryKeys", "listCandidate", "paginationCandidates",
                          "staticStructuralKeys", "detailBodyCandidatePaths",

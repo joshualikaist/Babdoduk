@@ -13,17 +13,17 @@ CASES = [
     ("현장 참석자 샌드위치 제공", "meal", ["sandwich"]),
     ("도시락, 다과", "lunchbox", ["lunchbox", "refreshment"]),
     ("사전 신청자 점심 제공", "meal", ["lunch"]),
-    ("BBQ 황금올리브 반반치킨 1마리 쿠폰", "coupon", ["chicken", "coupon"]),   # a chicken brand, not a barbecue
+    ("BBQ 황금올리브 반반치킨 1마리 쿠폰", "coupon", ["chicken", "coupon"]),
     ("소고기 BBQ 식사", "meal", ["bbq"]),
     ("샌드위치+음료 박스", "meal", ["sandwich", "drink"]),
     ("커피 및 다과", "refreshment", ["coffee", "refreshment"]),
     ("상무초밥 세트 (사전 신청자 선착순 190명)", "meal", ["sushi"]),
     ("쉑쉑버거와 음료", "meal", ["burger", "drink"]),
-    ("점심 도시락 지원", "lunchbox", ["lunchbox"]),                          # a named dish beats a general word
-    ("전 일정 식사·간식 제공", "meal", ["meal", "snack"]),                    # a general word leads light food
+    ("점심 도시락 지원", "lunchbox", ["lunchbox"]),
+    ("전 일정 식사·간식 제공", "meal", ["meal", "snack"]),
     ("석식 케이터링", "meal", ["dinner"]),
     ("Sandwiches will be provided to the first 130 attendees.", "meal", ["sandwich"]),
-    ("", "refreshment", ["refreshment"]),                                    # no description: the type
+    ("", "refreshment", ["refreshment"]),
     ("", "unknown", ["food"]),
 ]
 
@@ -41,6 +41,6 @@ def test_dishes_read_the_food_description():
                          capture_output=True, text=True, check=True)
     result = json.loads(out.stdout)
     assert result["got"] == [case[2] for case in CASES]
-    assert result["none"] == []                     # no explicit food, no dish
+    assert result["none"] == []
     assert result["label"] == "도시락 · 다과"
     assert result["lang"] == [True, False, True, False]

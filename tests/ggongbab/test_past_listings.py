@@ -40,7 +40,6 @@ def row(event_id="evt-a", *, ended_hours_ago=24.0, duration_hours=1.0, **over):
         "organizer": "경력개발센터", "eligibility": "KAIST 학생",
         "registration_required": "true", "registration_url": "https://example.org/register",
         "confidence": 0.95, "needs_review": False, "review_reason": None, "status": "published",
-        # Private columns a careless exporter could leak.
         "sender_email": "someone@kaist.ac.kr", "raw_text": "원문 메일 본문", "external_id": "dooray-123",
         "_sources": [{"type": "dooray", "name": "Dooray", "url": "https://kaist.dooray.com/task/123"}],
     }
@@ -56,9 +55,6 @@ def ids(payload):
     return [event["id"] for event in payload["events"]]
 
 
-# ---------------------------------------------------------------------------
-# Which rows enter
-# ---------------------------------------------------------------------------
 def test_an_ended_listing_moves_from_the_live_feed_to_the_archive(settings):
     rows = [row("ended", ended_hours_ago=24)]
     assert ids(build_payload(rows, settings, NOW, food_only=True)) == []
@@ -84,7 +80,7 @@ def test_a_listed_eligible_row_is_live_or_archived_never_both_or_neither(setting
     rows = [row("x", ended_hours_ago=hours)]
     live, past = ids(build_payload(rows, settings, NOW, food_only=True)), ids(archive(rows, settings))
     if hours <= -24 * settings.export_horizon_days:
-        assert live == past == []  # beyond the live horizon, and not ended
+        assert live == past == []
     else:
         assert sorted(live + past) == ["x"]
 
@@ -146,9 +142,6 @@ def test_an_event_collected_only_after_it_ended_is_archived_too(settings):
     assert ids(archive(rows, settings)) == ["listed", "backfilled"]
 
 
-# ---------------------------------------------------------------------------
-# What an archived record carries
-# ---------------------------------------------------------------------------
 def test_an_archived_record_has_no_sign_up_data_and_no_private_fields(settings):
     event = archive([row("x")], settings)["events"][0]
     assert "registration" not in event and "confidence" not in event
@@ -185,9 +178,6 @@ def test_the_payload_shape(settings):
     assert payload["timezone"] == "Asia/Seoul" and payload["windowDays"] == 30 and payload["count"] == 1
 
 
-# ---------------------------------------------------------------------------
-# Validation
-# ---------------------------------------------------------------------------
 def valid_archive(settings):
     return archive([row("a", ended_hours_ago=5), row("b", ended_hours_ago=50,
                     _sources=[{"type": "kaist_public", "name": "KAIST 공지", "url": "https://www.kaist.ac.kr/kr/html/n/2"}])], settings)
@@ -242,13 +232,10 @@ def test_a_committed_live_feed_is_judged_at_its_own_generation_time(settings):
     """Without an explicit `now` the validator uses the file's generatedAt, as the archive does:
     a committed snapshot never starts failing later and blocking another family's publish."""
     live = build_payload([row("x", ended_hours_ago=-5)], settings, NOW - timedelta(hours=12), food_only=True)
-    assert validate_ggongbab_payload(live) == []          # the wall clock is weeks past this file
+    assert validate_ggongbab_payload(live) == []
     assert any("expired" in err for err in validate_ggongbab_payload(live, now=NOW + timedelta(hours=12)))
 
 
-# ---------------------------------------------------------------------------
-# The export writes both files, from one clock, with the live feed first
-# ---------------------------------------------------------------------------
 class StubRepo:
     def __init__(self, rows):
         self.rows = rows
@@ -260,7 +247,6 @@ class StubRepo:
     def recent_published_events(self, days):
         return [dict(r) for r in self.rows]
 
-    # Where the export also synchronizes the public DB projection (lab), record what reaches it.
     def public_feed_generation(self):
         return len(self.projected)
 
@@ -306,8 +292,6 @@ def test_export_archives_ended_events_whether_or_not_the_previous_feed_listed_th
     assert refresh_ggongbab.export(settings, repo, dry_run=False) == 0
     assert ids(_read(data_dir / "latest.json")) == [uid("upcoming")]
     assert ids(_read(data_dir / "archive" / "index.json")) == sorted([uid("listed"), uid("backfilled")])
-    # audit 2026-11-13: the export no longer writes the public DB projection; the workflow's
-    # sync step does, after publication (it mirrors the live snapshot, never the archive).
     assert repo.projected == []
     assert not (data_dir / ".staging").exists()
     assert "events=1 archive=2" in capsys.readouterr().out
@@ -333,7 +317,7 @@ def test_a_failing_archive_query_never_costs_the_live_feed_a_refresh(settings, d
     assert _read(data_dir / "archive" / "index.json")["generatedAt"] == "previous"
     out = capsys.readouterr().out
     assert "archive not built (ConnectionError)" in out and "archive=kept" in out
-    assert "SECRET" not in out and "private.example" not in out  # Actions logs are public
+    assert "SECRET" not in out and "private.example" not in out
     assert not (data_dir / ".staging").exists()
 
 
@@ -341,9 +325,9 @@ def test_one_failing_event_is_left_out_instead_of_blocking_the_export(settings, 
     """Audit 2026-11-13: one event the validator refused failed the whole export (exit 23), so
     every other listing went stale. Now it alone is left out, with a value-free count."""
     rows = [_fresh_row("good", ended_hours_ago=-48),
-            _fresh_row("empty-title", ended_hours_ago=-48, title="<br>"),            # nothing left after markup
+            _fresh_row("empty-title", ended_hours_ago=-48, title="<br>"),
             _fresh_row("twin-a", ended_hours_ago=-30, title="공학관 피자 나눔"),
-            _fresh_row("twin-b", ended_hours_ago=-30, title="공학관 피자 나눔")]       # same-day look-alike
+            _fresh_row("twin-b", ended_hours_ago=-30, title="공학관 피자 나눔")]
     assert refresh_ggongbab.export(settings, StubRepo(rows), dry_run=False) == 0
     listed = ids(_read(data_dir / "latest.json"))
     assert uid("good") in listed and uid("empty-title") not in listed
@@ -351,7 +335,7 @@ def test_one_failing_event_is_left_out_instead_of_blocking_the_export(settings, 
     assert validate_ggongbab_payload(_read(data_dir / "latest.json")) == []
     out = capsys.readouterr().out
     assert "2 event(s) failed public validation" in out
-    assert uid("empty-title") not in out and "피자" not in out      # Actions logs are public
+    assert uid("empty-title") not in out and "피자" not in out
 
 
 def test_a_bracketed_title_is_kept_and_real_markup_is_removed():
@@ -363,14 +347,14 @@ def test_a_bracketed_title_is_kept_and_real_markup_is_removed():
     assert public_text("<b>피자</b> 제공<br/>") == "피자 제공"
     assert public_text('<img alt="사진" src=x>점심') == "점심"
     assert public_text("&lt;script&gt;x&lt;/script&gt;<!-- note -->") == "x"
-    assert public_text("문의 010-1234-5678") == "문의 [phone]"           # masking still runs before validation
+    assert public_text("문의 010-1234-5678") == "문의 [phone]"
 
 
 def test_dry_run_writes_neither_file(settings, data_dir, capsys):
     assert refresh_ggongbab.export(settings, StubRepo([_fresh_row("x")]), dry_run=True) == 0
     assert not (data_dir / "latest.json").exists() and not (data_dir / "archive").exists()
     assert not (data_dir / "news.json").exists()
-    assert "archive: 1 ended listing(s) in the last 30 days" in capsys.readouterr().out   # found late is still past free food
+    assert "archive: 1 ended listing(s) in the last 30 days" in capsys.readouterr().out
 
 
 def test_memory_repository_returns_recently_started_published_rows():

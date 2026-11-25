@@ -1,8 +1,3 @@
-/* 꽁밥 카드뉴스 (cardnews.html, lab only; docs/CARDNEWS.md).
-
-   Shows the newest week of data/cardnews/index.json, written by scripts/render_cardnews.py: a cover
-   and one card for each weekday with events, the same images that go to Telegram and Instagram. Each card opens at
-   full size. The cards themselves are Korean; the page around them follows the language switch. */
 (function () {
   'use strict';
 
@@ -37,7 +32,6 @@
       timeZone: 'Asia/Seoul', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
     }).format(when);
   }
-  // The cover, then one card for each entry of `days` (0 = Monday): a day without events has none, a busy day may have two.
   function valid(item) {
     return item && /^\d{4}-\d{2}-\d{2}$/.test(item.week) && Array.isArray(item.counts) && item.counts.length === 5
       && Array.isArray(item.days) && item.days.every(function (d) { return d >= 0 && d <= 4; })
@@ -52,7 +46,6 @@
     link.href = src;
     link.target = '_blank';
     link.rel = 'noopener';
-    // The link carries the card's description; the image inside it adds nothing of its own.
     link.setAttribute('aria-label', t('cardnews.open', { label: alt }));
     var img = document.createElement('img');
     img.src = src;

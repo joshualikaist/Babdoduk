@@ -1,7 +1,3 @@
-/* Home free-food calendar: today's answer, the month at a glance, one selected day and what
-   comes next. It reads the same validated public snapshot and past listings as the food hub,
-   through the hub's own eligibility and grace-window rules (js/ggongbab-select.js), and it
-   never states more than those files hold. Dates are KST whatever the browser's time zone. */
 (function () {
   var F = window.BabdodukFreeFood;
   if (!F) return;
@@ -9,8 +5,8 @@
   var DAY_MS = 86400000;
   var LIVE_URL = 'data/ggongbab/latest.json';
   var ARCHIVE_URL = 'data/ggongbab/archive/index.json';
-  var ARCHIVE_WINDOW_DAYS = 30;   // the past listings' own window; older days are not kept
-  var MONTHS_AHEAD = 2;           // browsable beyond today's month, or further to the last event
+  var ARCHIVE_WINDOW_DAYS = 30;
+  var MONTHS_AHEAD = 2;
   var UPCOMING_ROWS = 4;
 
   // ---- Dates as 'YYYY-MM-DD' strings, computed in UTC so no browser offset leaks in ----
@@ -21,7 +17,7 @@
     return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
   }
   function addDays(iso, n) { return msToIso(isoToMs(iso) + n * DAY_MS); }
-  function weekdaySun(iso) { return new Date(isoToMs(iso)).getUTCDay(); } // 0 = Sunday (grid column)
+  function weekdaySun(iso) { return new Date(isoToMs(iso)).getUTCDay(); }
   function daysInMonth(ym) { return new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 0)).getUTCDate(); }
   function monthOf(iso) { return iso.slice(0, 7); }
   function addMonths(ym, n) {
@@ -29,7 +25,6 @@
     var y = +ym.slice(0, 4) + Math.floor(m / 12);
     return y + '-' + pad(((m % 12) + 12) % 12 + 1);
   }
-  // Sunday-first weeks covering the month: 4 to 6 rows, overflow days included.
   function monthGrid(ym) {
     var first = ym + '-01';
     var lead = weekdaySun(first);
@@ -43,7 +38,6 @@
     }
     return weeks;
   }
-  // PageUp/PageDown: the same day number in the neighbouring month, clamped to its length.
   function shiftMonth(iso, n) {
     var ym = addMonths(monthOf(iso), n);
     return ym + '-' + pad(Math.min(+iso.slice(8, 10), daysInMonth(ym)));
@@ -54,9 +48,6 @@
     var s = F.toKst(ev.startAt);
     return s ? F.ymd(s) : '';
   }
-  // Live rows first, so a row that is in both files is taken once, from the live copy. A
-  // giveaway-only listing (`food: false`) is kept for its 🎁 marker and its row, but no free-food
-  // count, answer, default date or 다가오는 꽁밥 row ever counts it.
   function buildIndex(liveEvents, archiveEvents, now, windowStart) {
     var seen = {};
     var days = {};
@@ -78,7 +69,6 @@
     });
     return days;
   }
-  // active/past count free food only; gifts counts the giveaway-only listings, apart.
   function countsOn(days, iso) {
     var active = 0;
     var past = 0;
@@ -98,7 +88,6 @@
       return day > afterIso && days[day].some(function (item) { return item.active && item.food; });
     }).sort()[0] || '';
   }
-  // Today when it still has something on; otherwise the next date that does; otherwise today.
   function defaultSelection(days, todayIso) {
     if (countsOn(days, todayIso).active) return todayIso;
     return nextActiveDay(days, todayIso) || todayIso;
@@ -137,12 +126,10 @@
     try {
       var u = new URL(url, location.href);
       if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
-      if (/(^|\.)dooray\.com$/i.test(u.hostname)) return '';   // never a mail-system link
+      if (/(^|\.)dooray\.com$/i.test(u.hostname)) return '';
       return u.href;
     } catch (e) { return ''; }
   }
-  // Only public web pages (KAIST notices, Babdoduk's own entries, an Instagram post) are linked;
-  // internal sources never are. {type, url} or null.
   function publicSource(ev) {
     var link = F.sourceLink(ev), url = link ? safeHref(link.url) : '';
     return url ? { type: link.type, url: url } : null;
@@ -195,18 +182,14 @@
   function fill(template, values) {
     return String(template).replace(/\{(\w+)\}/g, function (all, name) { return values[name] != null ? values[name] : all; });
   }
-  // The dish in a word or two (F.dishes, owner 2026-11-05: the time and the food first); '' for a
-  // giveaway-only listing. Words only: the calendar module carries no emoji but the giveaway mark.
   function dishHtml(ev, cls) {
     if (!F.hasFood(ev)) return '';
     return '<span class="' + cls + '">' + esc(F.dishLabel(ev, t)) + '</span>';
   }
-  // The giveaway mark: the emoji is decoration, the word says it (owner decision 2026-10-14).
   var GIFT = '<span aria-hidden="true">🎁</span> ';
   function giftText(ev) {
     return F.hasGiveaway(ev) ? String(ev.giveaway.description || '').trim() : '';
   }
-  // A deadline-only giveaway's time is its sign-up deadline, never an event time.
   function timeText(ev, start) {
     if (!start) return t('home.cal.ev.timeTbd', '시간 미정');
     return F.isDeadlineOnly(ev) ? fill(t('home.cal.ev.signUpBy', '신청 마감 {time}'), { time: hm(start) }) : hm(start);
@@ -229,8 +212,8 @@
     live: document.getElementById('homeCalLive')
   };
   var state = {
-    status: 'loading',          // the live snapshot: loading | ready | error
-    archiveStatus: 'loading',   // the past listings: loading | ready | error
+    status: 'loading',
+    archiveStatus: 'loading',
     live: null,
     archive: null,
     windowDays: ARCHIVE_WINDOW_DAYS,
@@ -243,7 +226,7 @@
     selected: '',
     focus: '',
     open: '',
-    touched: false             // a person picked a date: late data never moves their choice
+    touched: false
   };
   var grid = null;
 
@@ -251,7 +234,6 @@
     var now = F.nowKst();
     state.todayIso = F.ymd(now);
     state.windowStart = addDays(state.todayIso, -state.windowDays);
-    // A multi-day event is one row per session day (js/ggongbab-select.js occurrences).
     var liveEvents = state.status === 'ready' ? F.occurrences(state.live.events) : [];
     var archiveEvents = state.archiveStatus === 'ready' && state.archive ? F.occurrences(state.archive.events) : [];
     state.days = state.status === 'error' ? {} : buildIndex(liveEvents, archiveEvents, now, state.windowStart);
@@ -261,8 +243,6 @@
     state.minMonth = monthOf(state.windowStart);
     state.maxMonth = monthOf(last) > ahead ? monthOf(last) : ahead;
   }
-  // The approved default: today's month on screen; the day panel on today, or on the next
-  // event date when today has nothing on.
   function resetView() {
     state.view = monthOf(state.todayIso);
     state.selected = state.status === 'ready' ? defaultSelection(state.days, state.todayIso) : state.todayIso;
@@ -310,8 +290,6 @@
     var marks = '';
     for (var i = 0; i < dots; i++) marks += '<span class="hc-dot"></span>';
     for (var j = 0; j < rings; j++) marks += '<span class="hc-dot is-past"></span>';
-    // A giveaway-only listing: one 🎁 at the date's corner, outside the free-food marker slot,
-    // so it never reads as (or displaces) a free-food dot. The cell's label names it.
     var gift = counts.gifts ? '<span class="hc-gift' + (counts.giftsActive ? '' : ' is-past') + '" aria-hidden="true">🎁</span>' : '';
     return '<td class="' + cls.join(' ') + '" data-date="' + iso + '" tabindex="' + (iso === state.focus ? '0' : '-1') +
       '" aria-selected="' + (iso === state.selected ? 'true' : 'false') + '"' +
@@ -324,7 +302,6 @@
     next: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
-  // The month header is built once, so its buttons keep keyboard focus across month changes.
   function mountGrid() {
     els.month.innerHTML =
       '<div class="hc-month">' +
@@ -366,16 +343,8 @@
     if (cell) cell.focus();
   }
 
-  // The audience in small text: an inferred one carries "(추정)", so a guess never reads as a statement.
-  // 꽁밥 LIVE on the home calendar (owner 2026-11-08: "캘린더에도 누르면 저장되도록"): the same browser
-  // store as the hub's ☆ (js/ggongbab-live.js, docs/GGONGBAB_LIVE.md), so a listing saved here shows in
-  // 저장한 꽁밥 on ggongbab.html. Only listings still to come. No share or calendar button here (owner 2026-11-24:
-  // "공유 삭제, 캘린더에 추가는 마이 밥도둑에서"): a star shows a short toast, and the calendar is the one
-  // connection on 마이 밥도둑.
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
-  // 별 누른 꽁밥 30분 전 알림 (owner 2026-11-12: "첫 화면에서도 바로 들어가게"; docs/PUSH_ALERTS.md).
-  // This page keeps the browser's guest list, so someone signed in is left to ggongbab.html and my.html.
   var P = L && window.BabdodukPush && !window.BabdodukPush.signedIn() ? window.BabdodukPush : null;
   var pushOn = false;
   function savedIds() { return savedStore ? savedStore.list().map(function (item) { return item.id; }) : []; }
@@ -386,7 +355,6 @@
       if (pushOn) P.sync(savedIds(), langCode());
     });
   }
-  // The star is a drawn icon, not a text character: this module shows no emoji or symbol glyphs.
   var STAR = '<svg class="hc-save-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">' +
     '<path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6-4.5-4.2 6.1-.8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
   function pushMessage(result) {
@@ -397,7 +365,6 @@
   function afterStar(ev, savedMessage) {
     if (!L.canCalendar(ev, F.nowKst())) return savedMessage;
     var starSel = '[data-hc-save="' + (window.CSS && CSS.escape ? CSS.escape(ev.id) : ev.id) + '"]';
-    // In the site opened from the home screen, the first star offers the phone's own alert instead.
     if (P && P.standalone() && P.shouldAsk()) {
       setTimeout(function () {
         P.ask({
@@ -420,8 +387,6 @@
       }, 0);
       return savedMessage;
     }
-    // The star opens no calendar screen: signed in, the subscription on 마이 밥도둑 takes the stars, and a guest
-    // gets no calendar at all (owner 2026-11-24).
     if (pushOn) return savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요');
     return savedMessage;
   }
@@ -437,9 +402,6 @@
   function sessionText(ev) {
     return ev.session ? fill(t('home.cal.ev.session', '{n}/{total}회차'), { n: ev.session.n, total: ev.session.total }) : '';
   }
-  // A collapsed row, as the hub's (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in
-  // bold): the time in its own column; the dish in bold (a giveaway-only row: 🎁 경품; a deadline-only
-  // one: its deadline); then the title, place, session, giveaway and sign-up in one small muted line.
   function timeCol(item) {
     var ev = item.ev;
     var start = F.toKst(ev.startAt);
@@ -462,10 +424,8 @@
     var meta = [];
     if (place) meta.push(esc(place));
     if (part) meta.push(esc(part));
-    // The gift mark joins the muted line when the bold line is a dish or a deadline.
     if (F.hasGiveaway(ev) && (item.food || F.isDeadlineOnly(ev))) meta.push('<span class="hc-ev-gift">' + GIFT + esc(t('home.cal.ev.gift', '경품')) + '</span>');
     if (item.active && F.signUp(ev).required === 'true') meta.push(esc(t('home.cal.ev.reg', '사전 신청')));
-    // Only an extracted audience gets a line of its own on the collapsed row; a plain eligibility stays in the details.
     var who = ev.audience ? whoText(ev) : '';
     return '<span class="hc-ev-sub"><span class="hc-ev-title" id="homeCalEvTitle' + i + '">' + esc(ev.title) + '</span>' +
       (meta.length ? '<span class="hc-ev-meta"> · ' + meta.join(' · ') + '</span>' : '') + '</span>' +
@@ -488,7 +448,7 @@
     var reg = ev.registration || {};
     var deadline = F.toKst(reg.deadline);
     var closed = !item.active || (deadline && deadline < F.nowKst());
-    if (deadline && !closed && !deadlineOnly) {   // a deadline-only giveaway already leads with it
+    if (deadline && !closed && !deadlineOnly) {
       rows.push('<p class="hc-ev-line">' + esc(fill(t('home.cal.ev.deadline', '신청 마감 · {date}'),
         { date: dateLabel(F.ymd(deadline)) + ' ' + hm(deadline) })) + '</p>');
     }
@@ -496,7 +456,7 @@
     var actions = [];
     var sign = F.signUp(ev);
     var regUrl = closed ? '' : safeHref(sign.url);
-    var joinUrl = item.active ? safeHref(sign.join) : '';   // an ended meeting is a record, not an invitation
+    var joinUrl = item.active ? safeHref(sign.join) : '';
     if (joinUrl) {
       actions.push('<a class="btn ' + (regUrl ? 'btn-secondary' : 'btn-primary') + ' hc-ev-apply" href="' + esc(joinUrl) + '" target="_blank" rel="noopener">' +
         esc(t('home.cal.ev.join', '온라인 참여')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
@@ -516,8 +476,6 @@
     if (via && !source) rows.push('<p class="hc-ev-src">' + esc(fill(t('home.cal.ev.source', '출처 · {source}'), { source: t(via, '') })) + '</p>');
     return rows.join('');
   }
-  // The 3D campus map (js/home-map.js, docs/CAMPUS_MAP.md) pins the day shown here: it hears each
-  // drawn day, and asks for an event with babdoduk:show when a person picks "일정에서 보기" on a pin.
   function emitDay() {
     var detail = { day: state.selected, today: state.todayIso, items: (state.days[state.selected] || []).slice() };
     window.babdodukCalendarDay = detail;
@@ -543,10 +501,8 @@
       else text = t('home.cal.noRecord', '기록 없음');
       html += text ? '<p class="hc-empty">' + esc(text) + '</p>' : '';
     } else {
-      // Four or more listings scroll inside the day (fitScroll).
       html += (list.length >= SCROLL_FROM ? '<div class="hc-events-scroll">' : '') + '<ul class="hc-events">' + list.map(function (item, i) {
         var open = state.open === item.ev.id;
-        // The button covers the row (a tap anywhere on it opens it; not the opened details) and is named by the title.
         return '<li class="hc-ev' + (item.active ? '' : ' is-past') + (open ? ' is-open' : '') + '">' +
           '<div class="hc-ev-row' + (savedStore && item.active ? ' has-save' : '') + '"><button type="button" class="hc-ev-btn" data-hc-ev="' + esc(item.ev.id) + '" aria-expanded="' + open +
           '" aria-controls="homeCalEv' + i + '" aria-labelledby="homeCalEvTitle' + i + '"></button>' + timeCol(item) + '<span class="hc-ev-body">' + headLine(item) + metaLines(item, i) + '</span>' + saveButton(item, i) + '</div>' +
@@ -557,27 +513,20 @@
     els.day.hidden = false;
     fitScroll();
   }
-  // Owner 2026-11-05: "이벤트나 꽁밥이 4개 이상부터는 스크롤바 설치해줘. 밑으로 내리도록". From the fourth
-  // listing on, the day's list scrolls in a box that shows three rows and the top of the fourth, so it
-  // reads as more below. Measured on the closed rows (an opened row's details scroll inside, the box
-  // keeps its height); again on a resize, where the rows rewrap.
   var SCROLL_FROM = 4, SCROLL_PEEK = 40;
   function fitScroll() {
     var box = els.day.querySelector('.hc-events-scroll');
     if (!box) return;
     var rows = box.querySelectorAll('.hc-ev-row'), height = 0;
-    for (var i = 0; i < SCROLL_FROM - 1 && i < rows.length; i++) height += rows[i].offsetHeight + 1;   // + the divider
+    for (var i = 0; i < SCROLL_FROM - 1 && i < rows.length; i++) height += rows[i].offsetHeight + 1;
     box.style.maxHeight = (height + SCROLL_PEEK) + 'px';
   }
-  // Phones fire resize when the address bar shows or hides: measure once a frame at most.
   var fitQueued = false;
   window.addEventListener('resize', function () {
     if (fitQueued) return;
     fitQueued = true;
     requestAnimationFrame(function () { fitQueued = false; fitScroll(); });
   });
-  // Only dates after the selected day (or after today, when a past day is selected); never the selected day again.
-  // Free food only, like its title: a giveaway-only listing is found by its 🎁 date.
   function renderNext() {
     var after = state.selected > state.todayIso ? state.selected : state.todayIso;
     var rows = [];
@@ -687,7 +636,6 @@
     emitDay();
     focusCell(state.focus);
   }
-  // A pin's "일정에서 보기": that event, open, in view and focused.
   function showEvent(id) {
     var day = Object.keys(state.days).filter(function (d) {
       return state.days[d].some(function (item) { return item.ev.id === id; });
@@ -726,7 +674,7 @@
   function toggleSave(id) {
     var item = findItem(id);
     if (!savedStore || !item) return;
-    savedStore.reload();   // another tab may have saved or removed it since
+    savedStore.reload();
     var message;
     if (savedStore.has(id)) message = savedStore.remove(id) ? t('home.cal.ev.unsaved', '저장을 지웠어요') : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
     else message = savedStore.add(item.ev) ? afterStar(item.ev, t('home.cal.ev.saved', '저장했어요')) : t('home.cal.ev.saveFail', '이 브라우저에서는 저장할 수 없어요');
@@ -740,8 +688,6 @@
     showToast(message);
     refocus('[data-hc-save="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
   }
-  // A short toast for the star, like the hub's (the status line above stays for screen readers, so this one is hidden
-  // from them and is not announced twice).
   var toast = null, toastTimer = 0;
   function showToast(message) {
     if (!message) return;
@@ -791,8 +737,8 @@
       case 'ArrowRight': target = addDays(iso, 1); break;
       case 'ArrowUp': target = addDays(iso, -7); break;
       case 'ArrowDown': target = addDays(iso, 7); break;
-      case 'Home': target = addDays(iso, -weekdaySun(iso)); break;      // Sunday of the row
-      case 'End': target = addDays(iso, 6 - weekdaySun(iso)); break;    // Saturday of the row
+      case 'Home': target = addDays(iso, -weekdaySun(iso)); break;
+      case 'End': target = addDays(iso, 6 - weekdaySun(iso)); break;
       case 'PageUp': target = shiftMonth(iso, -1); break;
       case 'PageDown': target = shiftMonth(iso, 1); break;
       case 'Enter':
@@ -828,7 +774,7 @@
 
   function getJson(url, allowMissing) {
     return fetch(url, { cache: 'no-store' }).then(function (res) {
-      if (allowMissing && res.status === 404) return { events: [] }; // not exported yet: nothing archived
+      if (allowMissing && res.status === 404) return { events: [] };
       if (!res.ok) throw new Error('unavailable');
       return res.json();
     });
@@ -848,15 +794,11 @@
   els.month.addEventListener('keydown', onKey);
   document.addEventListener('babdoduk-lang', render);
   document.addEventListener('babdoduk:show', function (e) { if (e.detail && e.detail.id) showEvent(e.detail.id); });
-  // Which listings are on and which are over, per day: what a return to the tab can change.
   function listingKey() {
     return state.todayIso + '|' + Object.keys(state.days).sort().map(function (day) {
       return day + ':' + state.days[day].map(function (item) { return item.ev.id + (item.active ? '+' : '-'); }).join(',');
     }).join('|');
   }
-  // Coming back to the tab after midnight (KST) starts again from the new today; a listing that ended
-  // meanwhile is redrawn as over. Otherwise nothing is redrawn, so an opened row, the focus and the
-  // map's open card stay as they were. No timers.
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible' || state.status === 'loading') return;
     var before = state.todayIso, key = listingKey();
@@ -883,7 +825,6 @@
     state.archive = null;
     state.archiveStatus = 'error';
   }).then(function () {
-    // Past markers only; the selection a person has made is kept.
     if (state.status !== 'ready') return;
     var selected = state.selected;
     var view = state.view;

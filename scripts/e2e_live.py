@@ -37,19 +37,16 @@ from urllib.parse import urldefrag, urljoin, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 KST = dt.timezone(dt.timedelta(hours=9))
-PROD_HOST = "www.babdodukms.com"   # babdoduk.vercel.app answers DEPLOYMENT_NOT_FOUND since about 2026-11-18
+PROD_HOST = "www.babdodukms.com"
 LAB_HOST = "babdoduk-lab.vercel.app"
 LANGS = ("ko", "en")
 VIEWPORTS = {"phone": (390, 844), "desktop": (1280, 800)}
 SLOW_MS = 5000
 LINK_CAP = 60
 LAB_ONLY = ["lab.html", "food.html", "lab-ggongbab.html", "data/food-log.json"]
-# Owner 2026-11-13: the private Portal calendar export was deleted from both sites.
-# Keep checking its absence, including the encoded spelling that bypassed the old route guard.
 REMOVED_PATHS = ["calendar.ics", "calendar%2eics"]
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 FORBIDDEN_HOST = re.compile(r"dooray|portal\.kaist|admin\.", re.I)
-# Lab's own anonymous counters (docs/WORLDCUP_STATS.md, docs/PICK_STATS.md): tried, aborted, tolerated there.
 RECORD_RPCS = ("rpc/worldcup_record_game", "rpc/pick_record")
 
 
@@ -297,12 +294,10 @@ def finish_signals(rep: Report, signals: dict):
     aborted = signals["aborted"]
     errors = [f"{u}: {t[:160]}" for u, t, src in signals["console"] if src not in aborted
               and not (t.startswith("Failed to load resource") and "ERR_FAILED" in t and not src)]
-    # A resource error line in the console is the same event as a bad response; report it there once.
     errors = [e for e in errors if "Failed to load resource" not in e]
     rep.check("no console errors", not errors, " | ".join(errors[:6]))
     rep.check("no page errors", not signals["page_errors"], " | ".join(signals["page_errors"][:6]))
     own = lambda u: urlparse(u).hostname in (urlparse(rep.base).hostname, PROD_HOST, LAB_HOST)         or (urlparse(u).hostname or "").endswith(".supabase.co")
-    # Third-party hosts (hot-linked article photos, fonts) are outside our control: their failures warn.
     bad = [f"{s} {u} (on {p})" for u, s, p in signals["bad"] if u not in aborted and own(u)]
     for u, s, p in signals["bad"]:
         if u not in aborted and not own(u):
@@ -343,7 +338,6 @@ def journey_home(rep: Report, page, context, phase: str, lang: str):
         rep.check("home: promo shows the countdown", bool(page.locator(".home-wc [data-wc-countdown]").first.inner_text().strip()))
     if phase == "live":
         rep.check("home: promo links to the game", page.locator(".home-wc-cta--live").first.is_visible())
-    # Language toggle: flips the page language and flips back.
     toggle = page.locator("#langToggle")
     try:
         if not toggle.is_visible():
@@ -416,7 +410,7 @@ def journey_choose(rep: Report, page, context):
     if go.count():
         rep.check("choose.html: the draw button is visible", go.is_visible())
         go.click()
-        go.click()                                            # a second press lands the draw at once
+        go.click()
         result = page.locator("#pickResult:not([hidden])")
         result.wait_for(timeout=15000)
         title = result.locator(".pick-result-title")
@@ -480,7 +474,6 @@ def journey_worldcup(rep: Report, page, context, phase: str, size, friend_id: st
         except Exception as exc:
             rep.check("worldcup: a category can be picked", False, str(exc).splitlines()[0])
         page.locator("#wcStart").click()
-        # The start gacha: tap to skip it if it plays.
         opened = wait_for(page, "() => { const s = document.getElementById('wcSplash'); return (s && s.matches(':popover-open')) || !document.getElementById('wcMatch').hidden; }", 8000)
         if page.evaluate("() => { const s = document.getElementById('wcSplash'); return !!s && s.matches(':popover-open'); }"):
             tap_splash(page, size)
@@ -498,7 +491,6 @@ def journey_worldcup(rep: Report, page, context, phase: str, size, friend_id: st
             rep.check("worldcup: story canvas toDataURL works", url_len > 10000, f"len={url_len}")
             rep.check("worldcup: save and share buttons present",
                       page.locator("#wcSaveImage").is_visible() and page.locator("#wcShare").is_visible())
-    # The friend link (a shared result) in any phase.
     goto(rep, page, f"worldcup.html?from={friend_id}&cat={category_hint}", lambda: settle(page, 800))
     wait_for(page, "() => document.getElementById('wcFriend') && !document.getElementById('wcFriend').hidden", 8000)
     banner = page.locator("#wcFriend")

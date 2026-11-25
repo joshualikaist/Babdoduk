@@ -1,7 +1,3 @@
-/* Home: the two core food tasks (the free-food calendar and the cafeteria line) in one hero; nothing
-   below it since 2026-11-02 (owner).
-   Colors come from the semantic tokens in site.css; the warm canvas is the
-   home page's named exception (see DESIGN_SYSTEM.md). */
 .page-home {
   background: #f5f1e8;
   color: var(--color-ink);
@@ -17,17 +13,9 @@
 .home {
   width: min(var(--container-editorial), calc(100% - 32px));
   margin: 0 auto;
-  /* No bottom padding of its own (owner 2026-11-18, "여기 공백 조금만 줄이자"): the footer's own top
-     margin is the whole gap between the last card and the footer rule. */
   padding-bottom: 0;
 }
 
-/* ── The 먹방 월드컵 promo (owner 2026-10-14): a pink-to-blue band in the world cup's own lettering (Jua,
-   the letters the sync asks Google Fonts for) with two of its dish photos. Before the launch it counts
-   down and opens the news page; while it runs its button starts the game; after the end
-   js/worldcup-gate.js hides it (data-wc-show). It is the first thing of .home-top: on a phone above the
-   copy, on a wide screen under it inside the paper band, where it costs the calendar below only a few
-   pixels (tests/test_home_calendar.py keeps the whole month on the first screen). ── */
 .home-wc {
   --wc-display: 'Jua', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   grid-area: promo;
@@ -51,9 +39,6 @@
   display: none;
 }
 
-/* Until js/worldcup-gate.js has decided (it sets html[data-wc-phase] in the same step as it shows the
-   band), the band keeps its place, invisible, so the copy and the calendar below do not jump when it
-   appears (owner 2026-10-16, layout shift). Without scripting it stays out, as before. */
 @media (scripting: enabled) {
   html:not([data-wc-phase]) .home-wc[hidden] {
     display: grid;
@@ -61,7 +46,7 @@
   }
 }
 
-.home-wc::before {                        /* a soft light in the corner, behind the photos */
+.home-wc::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -91,8 +76,6 @@
 .home-wc-photo--a { top: 0; left: 0; rotate: -8deg; }
 .home-wc-photo--b { top: 5px; right: 0; rotate: 7deg; }
 
-/* Before the launch the two photos are blurred placeholders with no `src` (js/worldcup-gate.js sets it
-   from data-wc-src once the world cup is live): owner 2026-10-14, nothing of the draw is revealed. */
 html[data-wc-phase="soon"] .home-wc-photo {
   filter: blur(3px) saturate(0.6);
   background:
@@ -110,7 +93,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .home-wc-state,
 .home-wc-cta {
   font-family: var(--wc-display);
-  font-weight: 400;                       /* Jua has one weight */
+  font-weight: 400;
   font-synthesis: none;
   letter-spacing: 0;
 }
@@ -134,7 +117,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .home-wc-state {
   font-size: 0.85rem;
   line-height: 1.25;
-  color: #fde68a;                         /* warm yellow on the gradient: 6.9:1 on the pink end */
+  color: #fde68a;
 }
 
 .home-wc-count {
@@ -152,12 +135,9 @@ html[data-wc-phase="soon"] .home-wc-photo {
 }
 
 .home-wc-count .wc-cd-rest {
-  display: none;                          /* a phone keeps just "D-2" */
+  display: none;
 }
 
-/* The link is a 44 px tap target (owner 2026-10-16); the white pill inside it (.home-wc-pill) stays 36 px
-   on a phone, and the negative margin keeps the band as slim as the pill. The whole band is the link
-   as well (::after). */
 .home-wc-cta {
   display: inline-flex;
   align-items: center;
@@ -183,7 +163,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
   box-shadow: 0 3px 0 rgba(30, 27, 75, 0.35), 0 6px 12px rgba(30, 27, 75, 0.2);
 }
 
-.home-wc-cta::after {                     /* the whole band is the link */
+.home-wc-cta::after {
   content: "";
   position: absolute;
   inset: -1px;
@@ -223,8 +203,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* A phone: the band is one slim row, so the soon button (the longer words) is a little tighter and its
-   title keeps to one line next to it. */
 @media (max-width: 440px) {
   .home-wc-cta--soon {
     font-size: 0.82rem;
@@ -236,12 +214,10 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* A very narrow phone: the button is its emoji or arrow (its words stay for screen readers), so the band
-   stays a single slim row. */
 @media (max-width: 379px) {
   .home-wc-cta {
     width: 44px;
-    margin: -4px -2px;                    /* a 40 px button in a 44 px target */
+    margin: -4px -2px;
   }
 
   .home-wc-cta .home-wc-pill {
@@ -259,7 +235,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* Room enough (a big phone, or the paper band of a wide screen): the whole countdown, bigger lettering. */
 @media (min-width: 441px) and (max-width: 720px), (min-width: 861px) {
   .home-wc {
     column-gap: 16px;
@@ -311,8 +286,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* Side by side (above 720 px): under the copy in the paper band, in line with it; the copy gives up the
-   bottom padding the promo now provides. */
 @media (min-width: 721px) {
   .home-title-row .home-map-open {
     display: none;
@@ -330,12 +303,10 @@ html[data-wc-phase="soon"] .home-wc-photo {
 
 @media (min-width: 721px) and (scripting: enabled) {
   html:not([data-wc-phase]) .home-top:has(.home-wc) .home-hero {
-    padding-bottom: 0;                    /* the band's reserved place, as above */
+    padding-bottom: 0;
   }
 }
 
-/* ── Top: who we are, the free-food calendar, the cafeteria line, and the campus map. On wide
-   screens a paper band sits behind the copy and the map; the calendar has its own surface. ── */
 .home-top {
   --hero-paper: #eee3cf;
   --hero-ink-soft: #5a534a;
@@ -402,13 +373,11 @@ html[data-wc-phase="soon"] .home-wc-photo {
   overflow-wrap: anywhere;
 }
 
-/* Latin letters at -0.055em and 900 crowd; the English line is also longer (owner check 2026-11-05). */
 :root[lang="en"] .home-title {
   font-size: clamp(2rem, 4.5vw, 4rem);
   letter-spacing: -0.035em;
 }
 
-/* A marker stroke under the question, not a gradient on the letters. */
 .home-title-mark {
   background: linear-gradient(transparent 66%, rgba(236, 72, 153, 0.26) 66%, rgba(236, 72, 153, 0.26) 90%, transparent 90%);
   -webkit-box-decoration-break: clone;
@@ -435,8 +404,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   border-color: rgba(30, 29, 26, 0.24);
 }
 
-/* The campus map (docs/CAMPUS_MAP.md): the clay island floats on the hero paper. The poster is the
-   same view rendered, the live model fades in over it; pins and the card are buttons above both. */
 .home-map {
   grid-area: map;
   position: relative;
@@ -464,7 +431,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   transition: opacity 400ms ease;
 }
 
-/* The map can be dragged off centre: its edges fade into the paper instead of cutting the island. */
 .home-map-poster,
 .home-map-canvas {
   -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent),
@@ -497,7 +463,7 @@ html[data-wc-phase="soon"] .home-wc-photo {
 .home-map-pins {
   position: absolute;
   inset: 0;
-  overflow: hidden;           /* a pin never leaves the map, whatever the camera does */
+  overflow: hidden;
   pointer-events: none;
 }
 
@@ -505,7 +471,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   display: none;
 }
 
-/* A pin's tip points at its building: the JS gives the point as --x / --y. */
 .home-map-pin {
   position: absolute;
   left: 0;
@@ -572,9 +537,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   font-size: 11px;
 }
 
-/* The card (js/campus-map.js cardHtml): the head stays, the body scrolls past about three listings,
-   and a line sets off every listing (owner 2026-11-05). The body's soft shadows show there is more
-   above or below (covers move with the content, shadows stay with the box). */
 .home-map-card {
   position: absolute;
   z-index: 3;
@@ -590,7 +552,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   box-shadow: 0 14px 30px rgba(30, 29, 26, 0.18);
 }
 
-/* `display: flex` above would otherwise show a closed (hidden) card as an empty white bar (2026-11-05). */
 .home-map-card[hidden] {
   display: none;
 }
@@ -700,7 +661,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   color: var(--color-ink);
 }
 
-/* ＋ − ⟲ ⤢ in the map's lower right corner, once the live model is there. */
 .home-map-tools {
   position: absolute;
   right: 6px;
@@ -779,7 +739,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   display: none;
 }
 
-/* Phones: the map opens full screen. */
 .home-map-dialog {
   width: 100vw;
   max-width: none;
@@ -833,9 +792,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   touch-action: none;
 }
 
-/* ── 오늘의 꽁밥: one restrained surface. Answer line, month grid, the selected day and what
-   comes next. One accent (today, food markers, links); ink marks the chosen date. No shadows,
-   no inner cards, no cell borders. ── */
 .home-cal {
   grid-area: cal;
   min-width: 0;
@@ -853,8 +809,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   margin-bottom: var(--space-4);
 }
 
-/* Phones: 꽁밥 지도 sits beside the headline's first line ("KAIST에서" leaves 100 px or more down to 320 px),
-   so the hero keeps its height and the month its first-screen place. */
 .home-title-row {
   position: relative;
 }
@@ -934,8 +888,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   min-width: 0;
 }
 
-/* Before js/home-calendar.js draws the month: the height of a five-week month (header, weekday row and
-   five 48 px rows), so the page below does not jump when it does. */
 .home-cal-month:empty {
   min-height: 304px;
 }
@@ -955,7 +907,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   display: none;
 }
 
-/* Month header: the month on the left, then 오늘 (only away from this month) and the arrows. */
 .hc-month {
   display: flex;
   align-items: center;
@@ -1019,7 +970,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   outline-offset: 2px;
 }
 
-/* The grid: Sunday first, seven even columns, 48px rows with the marker slot always reserved. */
 .hc-grid {
   width: 100%;
   border-collapse: collapse;
@@ -1141,14 +1091,11 @@ html[data-wc-phase="soon"] .home-wc-photo {
   background: var(--color-accent);
 }
 
-/* A past event: hollow and muted, so what is still ahead stays dominant. */
 .hc-dot.is-past {
   background: transparent;
   border: 1px solid var(--color-ink-muted);
 }
 
-/* A giveaway-only listing (owner decision 2026-10-14): a small 🎁 on the date's upper right,
-   outside the free-food marker slot, so it never takes a dot's place or shifts the grid. */
 .hc-gift {
   position: absolute;
   top: 0;
@@ -1170,7 +1117,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   white-space: nowrap;
 }
 
-/* The selected day: its events, each one tap from its details. */
 .hc-day-title {
   display: flex;
   flex-wrap: wrap;
@@ -1207,9 +1153,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   border-top: 1px solid var(--color-divider);
 }
 
-/* Four or more listings (js/home-calendar.js fitScroll): the list scrolls inside its box, three rows
-   and the top of the fourth in view, with the site's scrollbar. Soft shadows at the top and bottom
-   show there is more (covers move with the content, shadows stay with the box). */
 .hc-events-scroll {
   position: relative;
   overflow-y: auto;
@@ -1221,9 +1164,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
     radial-gradient(farthest-side at 50% 100%, rgba(30, 29, 26, 0.16), transparent) bottom / 100% 8px no-repeat scroll;
 }
 
-/* A row, as the hub's (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in bold):
-   the time in its own column, the dish in bold, then the title and place in one small muted line.
-   The button covers the row, so a tap anywhere opens it; the row itself only shows text. */
 .hc-ev-btn {
   position: absolute;
   inset: 0;
@@ -1312,8 +1252,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   color: var(--color-ink-muted);
 }
 
-/* ☆ save on a listing still to come (꽁밥 LIVE, docs/GGONGBAB_LIVE.md): the same store as the hub's star.
-   It sits above the row's covering button, so a tap on it saves instead of opening the row. */
 .hc-ev-row.has-save {
   grid-template-columns: 44px minmax(0, 1fr) 44px;
 }
@@ -1348,7 +1286,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   .hc-save[aria-pressed="true"] { outline: 2px solid Highlight; }
 }
 
-/* Aligned with the text column. */
 .hc-ev-detail {
   padding: 0 0 14px 56px;
 }
@@ -1399,7 +1336,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   color: var(--color-ink-muted);
 }
 
-/* 다가오는 꽁밥: later dates only, at most four rows, one tap to the day and its details. */
 .hc-next-title {
   margin: 0 0 4px;
   padding-top: 14px;
@@ -1493,7 +1429,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   display: none;
 }
 
-/* Phones: in 다가오는 꽁밥 the date takes its own line, so a title keeps its width. */
 @media (max-width: 640px) {
   .hc-next-row {
     grid-template-columns: 44px minmax(0, 1fr);
@@ -1509,7 +1444,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* Wide enough for the split: the day and what is next on the left, the month on the right. */
 @media (min-width: 768px) {
   .home-cal-body {
     grid-template-columns: minmax(0, 1fr) 364px;
@@ -1551,15 +1485,12 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* Cafeteria line: outside the calendar, one row on the page. */
 .home-menu-line {
   grid-area: menu;
   min-width: 0;
   margin-top: var(--space-3);
 }
 
-/* A card like the calendar above it, edge to edge with it (owner 2026-11-13: the 학식 line floated outside
-   any card, its parts scattered over two lines). */
 .home-status {
   display: flex;
   gap: 12px;
@@ -1666,7 +1597,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   border-radius: 14px;
 }
 
-/* ── Responsive: one task-first column on phones ── */
 @media (max-width: 1100px) {
   .home-top {
     column-gap: var(--space-8);
@@ -1699,9 +1629,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* One task-first column once the copy and the map no longer fit side by side. */
-/* Phones and narrow tablets: copy on its own paper, then the calendar and the cafeteria line. The map
-   is behind the 지도 보기 button (owner 2026-11-04): the schedule is never behind a picture. */
 @media (max-width: 720px) {
   .home-top {
     grid-template-columns: minmax(0, 1fr);
@@ -1728,12 +1655,10 @@ html[data-wc-phase="soon"] .home-wc-photo {
     border: 1px solid rgba(30, 29, 26, 0.08);
   }
 
-  /* Owner 2026-11-04: phones get the 지도 보기 button only; the map opens in a dialog. */
   .home-map {
     display: none;
   }
 
-  /* The English headline's first line is long: it wraps before the button instead of running under it. */
   :root[lang="en"] .home-title-row:has(.home-map-open:not([hidden])) .home-title {
     padding-right: 104px;
   }
@@ -1765,7 +1690,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
     font-size: clamp(2.1rem, 10.4vw, 2.6rem);
   }
 
-  /* Side by side when both labels fit (390px), stacked on narrower phones. */
   .home-actions {
     margin-top: var(--space-4);
   }
@@ -1777,8 +1701,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* 메뉴 고르기(룰렛) is longer (owner 2026-11-04): on 360px phones both buttons still share one row in
-   the fallback font too, so the month stays in the first screen; 320px stacks them as before. */
 @media (min-width: 340px) and (max-width: 380px) {
   .home-actions {
     flex-wrap: nowrap;
@@ -1807,9 +1729,6 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
-/* Signed in on an iPhone, the calendar choice is one line (owner 2026-11-19): the connected calendar takes the star. */
-
-/* The star's toast (owner 2026-11-24: "저장됨은 팝업처럼 가볍게"), the same as the food hub's. */
 .hc-toast { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 50; max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 12px; background: #1d1d1f; color: #fff; font-size: 14px; line-height: 20px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .16s, transform .16s; }
 .hc-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .hc-toast { transition: none; } }

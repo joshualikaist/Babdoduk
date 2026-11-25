@@ -89,9 +89,9 @@ def test_duplicate_supervisors_and_existing_poller_lock(files):
         assert lock_held(files.worker_lock)
         with pytest.raises(ListStateError):
             run_worker(files, settings=SimpleNamespace(has_supabase=False))
-        assert not files.runtime.exists()  # must not overwrite running worker status
+        assert not files.runtime.exists()
     assert not lock_held(files.worker_lock)
-    assert files.worker_lock.exists()  # crash-safe lock does not rely on deleting files
+    assert files.worker_lock.exists()
 
 
 def test_watchdog_does_not_launch_over_manual_or_orphan_worker(files):
@@ -184,12 +184,12 @@ def test_a_login_latch_resumes_after_a_person_logged_in_again(files):
     dog, launch, pages = latched_dog(files, clock, "PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS")
     try:
         launches = launch.call_count
-        ticks(dog, clock, 3)                                 # a Portal page alone: no login seen
+        ticks(dog, clock, 3)
         assert dog.state["latched"] and launch.call_count == launches
-        pages["urls"] = [SSO_PAGE]                           # a person is logging in
+        pages["urls"] = [SSO_PAGE]
         ticks(dog, clock)
         assert dog.state["latched"] and launch.call_count == launches
-        pages["urls"] = [PORTAL_PAGE]                        # the login finished
+        pages["urls"] = [PORTAL_PAGE]
         ticks(dog, clock)
         assert files.control_state() == {"enabled": True, "resume": clock()}
         assert "OPS_AUTO_RESUMED" in (files.local / "ops-watchdog.log").read_text(encoding="utf-8")
@@ -217,14 +217,14 @@ def test_a_settled_browser_gets_one_quick_retry_and_a_broken_session_no_loop(fil
     dog, launch, pages = latched_dog(files, clock, code)
     try:
         launches = launch.call_count
-        ticks(dog, clock, 6)                                 # 90 s after the latch was first seen: too soon
+        ticks(dog, clock, 6)
         assert dog.state["latched"] and launch.call_count == launches
-        ticks(dog, clock, 4)                                 # 120 s: acknowledged; the next tick relaunches
+        ticks(dog, clock, 4)
         assert not dog.state["latched"] and launch.call_count == launches + 1
-        fail_again(dog, files, clock, code)                  # still broken
-        ticks(dog, clock, 20)                                # 5 minutes: no second quick retry
+        fail_again(dog, files, clock, code)
+        ticks(dog, clock, 20)
         assert dog.state["latched"] == code and launch.call_count == launches + 1
-        pages["urls"] = [SSO_PAGE]                           # only a person's login resumes it now
+        pages["urls"] = [SSO_PAGE]
         ticks(dog, clock)
         pages["urls"] = [PORTAL_PAGE]
         ticks(dog, clock, 2)
@@ -238,17 +238,17 @@ def test_a_successful_scan_gives_the_quick_retry_back(files):
     code = "PORTAL_CONTEXT_MISSING_OR_AMBIGUOUS"
     dog, launch, pages = latched_dog(files, clock, code)
     try:
-        ticks(dog, clock, 10)                                # quick retry used, worker relaunched
+        ticks(dog, clock, 10)
         assert not dog.state["latched"]
         launches = launch.call_count
         clock.value += 30
-        row = files.runtime_state()                          # the relaunched worker scans successfully
+        row = files.runtime_state()
         row.update(observed=clock(), reason="WORKER_RUNNING", manual_reason="", last_success=clock(), running=True)
         atomic_json(files.runtime, row)
         ticks(dog, clock)
-        assert launch.call_count == launches                 # nothing to do while it runs
-        fail_again(dog, files, clock, code)                  # a later, separate latch
-        ticks(dog, clock, 10)                                # gets its own quick retry
+        assert launch.call_count == launches
+        fail_again(dog, files, clock, code)
+        ticks(dog, clock, 10)
         assert not dog.state["latched"] and launch.call_count == launches + 1
     finally:
         dog.close()
@@ -264,7 +264,7 @@ def test_only_login_latches_resume_on_their_own(files, code):
         pages["urls"] = [SSO_PAGE]
         ticks(dog, clock)
         pages["urls"] = [PORTAL_PAGE]
-        ticks(dog, clock, 20)                                # neither a login nor a quick retry
+        ticks(dog, clock, 20)
         assert dog.state["latched"] == code and launch.call_count == launches
     finally:
         dog.close()
@@ -277,7 +277,7 @@ def test_an_unverified_browser_or_two_portal_pages_never_resume(files):
         launches = launch.call_count
         pages["urls"] = [SSO_PAGE]
         ticks(dog, clock)
-        pages["urls"] = [PORTAL_PAGE, PORTAL_PAGE]           # ambiguous: two Portal pages
+        pages["urls"] = [PORTAL_PAGE, PORTAL_PAGE]
         ticks(dog, clock, 12)
         dog.host.inspect.return_value = ("unverified", None)
         pages["urls"] = [PORTAL_PAGE]
@@ -379,7 +379,6 @@ def test_stale_recovery_stops_exact_verified_process(tmp_path):
     host, run, start, verify = host_fixture(tmp_path, inventory(True, [DEDICATED, OTHER], [123]))
     run.side_effect = [json.dumps(inventory(True, [DEDICATED, OTHER], [123])), "", json.dumps(inventory(processes=[OTHER]))]
     host.ensure(recover_stale=True)
-    # The exact verified identity plus the slot's port (stdin JSON, never interpolated).
     assert run.call_args_list[1].args == (STOP_SCRIPT, dict(DEDICATED, port=9223))
     start.assert_called_once()
     assert "CreationDate" in STOP_SCRIPT and "CommandLine -cne" in STOP_SCRIPT
@@ -437,7 +436,7 @@ def test_status_never_formats_unknown_content_or_account_data(files):
     host = Mock(inspect=Mock(return_value=("verified", {"command": "JSESSIONID=SECRET"})))
     lines = "\n".join(status_lines(files, host=host, now=1000))
     assert "42 sec ago" in lines and "9223" in lines and "9222" in lines
-    assert "WORKER_EXITED" in lines  # lock absent, old healthy record is not a running worker
+    assert "WORKER_EXITED" in lines
     assert "SECRET" not in lines and "not tested locally" in lines
     row = files.runtime_state()
     row["reason"] = "SECRET_SUBJECT"
@@ -475,7 +474,7 @@ def test_task_scheduler_configuration_and_no_dooray_autostart():
     assert "-ExecutionTimeLimit ([TimeSpan]::Zero)" in script
     assert "-WakeToRun" not in script and "-Password" not in script and "-AtStartup" not in script
     assert "dooray_web_agent" not in script and "dooray-once" not in script
-    assert "Start-ScheduledTask" not in script  # installation does not contact Portal
+    assert "Start-ScheduledTask" not in script
 
 
 def test_ports_and_no_profile_or_state_removal_or_detail_endpoints():
@@ -489,7 +488,6 @@ def test_ports_and_no_profile_or_state_removal_or_detail_endpoints():
                       "clear_cookies", "Network.clearBrowserCookies", "Storage.clearDataForOrigin",
                       "open_body", "detail_api"):
         assert forbidden not in source
-    # The Ops Chrome modules delete nothing at all (profiles, state, latches stay as they are).
     new = "\n".join((ROOT / "scripts/ggongbab" / name).read_text(encoding="utf-8") for name in (
         "ops_browser.py", "ops_browser_control.py", "ops_browser_proof.py"))
     for forbidden in ("unlink(", "rmdir", "os.remove", "shutil", "Stop-Process", "kill("):
@@ -508,8 +506,6 @@ def test_bounded_in_process_retries_and_cooperative_stop(tmp_path):
         patch.setattr(poller.PortalListPoller, "poll_once", Mock(side_effect=errors))
         code = run_poller(provider, state, emit_heartbeat=lambda row: None, max_failures=3,
             on_retry=delays.append, sleep=calls.append, monotonic=lambda: 0, log=lambda _: None)
-        # Backoff after the first failure; from the second, the stale transport is rebuilt
-        # after a short bounded wait (Phase 2). The failure budget still stops the worker.
         assert code == 1 and delays == [120, 30, 30] and sum(calls) == 150
         assert provider.acquire.call_count == 2
     provider.reset_mock()
@@ -559,7 +555,7 @@ def test_stale_live_worker_is_reported_without_kill(files):
     try:
         dog.tick()
         child = dog.child
-        for _ in range(41):                      # the watchdog keeps its 15 s cadence; the worker is silent
+        for _ in range(41):
             clock.value += 15
             dog.tick()
         assert dog.state["latched"] == "OPS_WORKER_UNRESPONSIVE"
@@ -574,10 +570,10 @@ def test_a_sleep_gives_the_worker_a_grace_window_before_it_is_called_unresponsiv
     dog, _ = watchdog(files, clock)
     try:
         dog.tick()
-        clock.value += 7200                      # the PC slept for two hours: no tick ran
+        clock.value += 7200
         dog.tick()
         assert dog.state["latched"] == ""
-        for _ in range(38):                      # still inside the 600 s grace after waking
+        for _ in range(38):
             clock.value += 15
             dog.tick()
         assert dog.state["latched"] == ""
@@ -609,7 +605,7 @@ def test_a_worker_waking_from_its_own_backoff_is_not_called_unresponsive(files):
     try:
         dog.tick()
         record(files, "PORTAL_LIST_CONNECTION_ERROR", clock, retry_not_before=clock.value + 900)
-        for _ in range(61):                      # 915 s: the backoff is over, the worker is rebuilding
+        for _ in range(61):
             clock.value += 15
             dog.tick()
         assert dog.state["latched"] == ""
@@ -707,7 +703,7 @@ def retry_host(tmp_path, snapshots, verify=None):
     return host, run, start, slept
 
 
-MID_EXIT = {"pid": 77, "command": "", "created": "5"}   # a renderer gone mid-snapshot: no command line
+MID_EXIT = {"pid": 77, "command": "", "created": "5"}
 
 
 def test_one_unreadable_snapshot_after_a_resume_is_read_again_not_latched(tmp_path):
@@ -720,7 +716,7 @@ def test_one_unreadable_snapshot_after_a_resume_is_read_again_not_latched(tmp_pa
 
 
 def test_an_owner_that_stays_unverified_still_fails_closed_after_the_rereads(tmp_path):
-    unknown = inventory(True, [OTHER], [456])            # a listener that is not the dedicated Chrome
+    unknown = inventory(True, [OTHER], [456])
     host, run, start, slept = retry_host(tmp_path, [unknown] * 4)
     with pytest.raises(OpsError, match="^PORTAL_RESIDENT_OWNER_UNVERIFIED$"):
         host.ensure(recover_stale=True)
@@ -748,21 +744,21 @@ def test_a_missing_browser_is_opened_for_a_login_and_at_most_every_thirty_minute
     both collectors stood still for days behind a toast. The watchdog now opens it, for a person to log in."""
     clock = Clock()
     wd, launch = watchdog(files, clock)
-    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)   # latched after the last operator start
+    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)
     wd.save()
     wd.host.inspect.return_value = ("absent", None)
     assert wd.tick() is True
     wd.host.ensure.assert_called_once()
-    assert wd.host.ensure.call_args.kwargs["minimized"] is False      # a person must see the login page
+    assert wd.host.ensure.call_args.kwargs["minimized"] is False
     clock.value += 15
     wd.tick()
-    assert wd.host.ensure.call_count == 1                             # not on every 15 s tick
+    assert wd.host.ensure.call_count == 1
     clock.value += ops.REOPEN_BROWSER_SECONDS
     wd.tick()
     assert wd.host.ensure.call_count == 2
     assert "OPS_BROWSER_AUTO_OPENED" in (files.local / "ops-watchdog.log").read_text(encoding="utf-8")
-    launch.assert_not_called()                                        # the latch still launches no worker
-    assert wd.state["latched"] == "PORTAL_LIST_AUTH_REQUIRED"          # opening is not a login
+    launch.assert_not_called()
+    assert wd.state["latched"] == "PORTAL_LIST_AUTH_REQUIRED"
 
 
 def test_without_a_login_latch_the_browser_opens_as_an_unattended_start(files):
@@ -777,7 +773,7 @@ def test_without_a_login_latch_the_browser_opens_as_an_unattended_start(files):
 def test_a_failed_open_is_logged_and_waits_for_the_next_attempt(files):
     clock = Clock()
     wd, _ = watchdog(files, clock)
-    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)   # latched after the last operator start
+    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)
     wd.host.inspect.return_value = ("absent", None)
     wd.host.ensure.side_effect = OpsError("PORTAL_RESIDENT_OWNER_UNVERIFIED")
     assert wd.tick() is True
@@ -791,10 +787,10 @@ def test_a_failed_open_is_logged_and_waits_for_the_next_attempt(files):
 def test_only_an_absent_browser_is_opened(files, state):
     clock = Clock()
     wd, _ = watchdog(files, clock)
-    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)   # latched after the last operator start
+    wd.state.update(latched="PORTAL_LIST_AUTH_REQUIRED", resume=1000)
     wd.host.inspect.return_value = (state, None)
     wd.tick()
-    wd.host.ensure.assert_not_called()                                # a stale or unknown process is never touched
+    wd.host.ensure.assert_not_called()
 
 
 def test_stopped_workers_never_open_the_browser(files):

@@ -40,7 +40,6 @@ ENGINES = {
     "firefox-desktop": {"browser": "firefox", "device": None, "size": (1280, 800), "touch": False},
     "chromium-pixel7": {"browser": "chromium", "device": "Pixel 7", "touch": True},
 }
-# Main controls whose touch size is checked (only those that are visible on the page).
 TARGET_SELECTORS = {
     "index.html": ["#langToggle", ".home-wc a"],
     "ggongbab.html": [".gg-chip"],
@@ -167,8 +166,6 @@ def j_simple(rep, page, path, touch):
 def sound_check(rep, page):
     toggle = page.locator("#wcSound")
     if not page.evaluate("() => !!(window.AudioContext || window.webkitAudioContext)"):
-        # Playwright's WebKit build (Linux/Windows) has no Web Audio, unlike Safari: the page must then
-        # simply keep the toggle hidden and stay quiet.
         rep.warn("this engine has no Web Audio (Playwright WebKit build); the toggle is only checked to stay hidden")
         rep.check("worldcup: without Web Audio the sound toggle stays hidden", not page.locator("#wcSound").is_visible())
         return
@@ -186,7 +183,7 @@ def sound_check(rep, page):
         count, errors = page.evaluate("[window.__audioCount, window.__audioErrors]")
         ok, detail = audio_ok(count, errors)
         rep.check("worldcup: sound toggle creates exactly one AudioContext, no errors", ok and on == "true", f"{detail} pressedAfterFirst={on}")
-        toggle.click(timeout=5000)   # leave it off
+        toggle.click(timeout=5000)
     except Exception as exc:
         rep.check("worldcup: sound toggle works", False, str(exc).splitlines()[0])
 

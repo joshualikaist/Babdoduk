@@ -40,7 +40,7 @@ PER_QUERY = 6
 PAGE_CHARS = 5000
 MIN_TEXT = 120
 JINA_PER_SOURCE = 8
-FETCH_BATCH = 10            # pages per web_fetch_exa call: one run stays near 30 calls to the free server
+FETCH_BATCH = 10
 DEFAULT_OBJECTIVE = ("Public Korean or international pages about food: news, reports, research or blog posts. "
                      "Exclude shopping and product listing pages.")
 PAGE_DATE = re.compile(r"(20\d{2})\s*(?:[.\-/]|년)\s*(\d{1,2})\s*(?:[.\-/]|월)\s*(\d{1,2})")
@@ -179,7 +179,6 @@ def discover(source: dict, *, fetcher, env=os.environ, opener=urllib.request.url
         ran.append(query)
         public = [h for h in hits if is_public_url(h.get("url") or "") and collectable(h.get("url") or "")]
         found.extend((query, rank, hit) for rank, hit in enumerate(public, 1))
-    # One page read per distinct URL, in batches, after all searches.
     urls = list(dict.fromkeys(hit["url"] for _, _, hit in found))
     pages: dict = {}
     for at in range(0, len(urls), FETCH_BATCH):
@@ -205,7 +204,7 @@ def discover(source: dict, *, fetcher, env=os.environ, opener=urllib.request.url
                 published, date_source = read["published"], "page_metadata"
         title = hit.get("title") or ""
         if page.get("title") and (not title or title.rstrip().endswith(("...", "…"))):
-            title = page["title"]            # search titles are cut off; the page's own is whole
+            title = page["title"]
         items.append(build_item(hit["url"], title, published=published,
                                 published_source=date_source, raw_page=raw,
                                 highlights=hit.get("highlights") or "", query=query, lane=lane, rank=rank,

@@ -27,13 +27,13 @@ def test_every_kind_of_delivery_food_has_dishes_and_each_dish_one_kind():
     assert set(kinds) == {"chicken", "pizza", "burger", "jokbal", "chinese", "bunsik", "japanese", "asian", "western", "korean"}
     assert all(len(names) >= 3 for names in kinds.values()), {k: len(v) for k, v in kinds.items()}
     every = [name for names in kinds.values() for name in names]
-    assert len(every) == len(set(every))                                   # one kind each
+    assert len(every) == len(set(every))
     assert "족발" in kinds["jokbal"] and "짜장면" in kinds["chinese"] and "떡볶이" in kinds["bunsik"]
     assert "마르게리타 피자" in kinds["pizza"] and "치즈버거" in kinds["burger"]
-    assert "치킨버거" not in kinds["chicken"] and "치킨버거" in kinds["burger"]   # a chicken burger is a burger
+    assert "치킨버거" not in kinds["chicken"] and "치킨버거" in kinds["burger"]
     assert not set(kinds["chicken"]) & {"치킨반미", "하이난치킨라이스"}
     only_delivery = run("P.categorize(foods.map(f => Object.assign({}, f, {diningMode: ['restaurant']})))")
-    assert only_delivery == {}                                             # dishes nobody delivers stay out
+    assert only_delivery == {}
 
 
 def test_only_main_campus_meals_still_being_served_are_offered():
@@ -44,7 +44,7 @@ def test_only_main_campus_meals_still_being_served_are_offered():
         {"id": "c", "name": "문지캠퍼스", "building": "문지", "lunch": {"items": ["밥"], "hours": "11:30~13:30"}},
         {"id": "d", "name": "서울캠퍼스", "building": "서울", "dinner": {"items": ["밥"]}}]}
     noon = run(f"P.servingMeals({json.dumps(day)}, 12 * 60).map(s => s.resto.id + ':' + s.meal)")
-    assert noon == ["a:lunch", "a:dinner"]                                  # breakfast over; no hours: usual end
+    assert noon == ["a:lunch", "a:dinner"]
     evening = run(f"P.servingMeals({json.dumps(day)}, 19 * 60 + 5).map(s => s.resto.id + ':' + s.meal)")
     assert evening == []
 
@@ -63,11 +63,11 @@ def test_a_draw_stays_on_campus_seven_in_ten_and_is_a_delivery_dish_otherwise():
         return run(f"(() => {{ const v = {seq}; let i = 0; const r = P.draw({json.dumps(meals_)}, {json.dumps(dishes_)}, () => v[i++]);"
                    " return r && (r.meal ? 'meal:' + r.meal.resto.id : 'dish:' + r.dish.id); })()")
 
-    assert draw(meals, dishes, [0.69, 0.6]) == "meal:b"          # on campus, no campus menus: the cafeteria, then which meal
-    assert draw(meals, dishes, [0.7, 0.2]) == "dish:x"           # delivery 3 in 10; weights 1 and 3: the first quarter is x
+    assert draw(meals, dishes, [0.69, 0.6]) == "meal:b"
+    assert draw(meals, dishes, [0.7, 0.2]) == "dish:x"
     assert draw(meals, dishes, [0.7, 0.3]) == "dish:y"
-    assert draw([], dishes, [0.1]) == "dish:x"                   # no meal being served: always a dish
-    assert draw(meals, [], [0.1]) == "meal:a"                    # no dishes: always a meal, no share drawn
+    assert draw([], dishes, [0.1]) == "dish:x"
+    assert draw(meals, [], [0.1]) == "meal:a"
     assert draw([], [], [0.5]) is None
 
 
@@ -83,7 +83,7 @@ def test_the_photo_credits_the_page_carries_are_the_world_cups_and_cover_every_d
     carried = json.loads(subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True, check=True).stdout)
     cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))["photos"]
     drawn = set(run("foods.filter(f => P.kindOf(f) && f.popularity >= P.MIN_POPULARITY).map(f => f.id)"))
-    assert drawn & set(cup) == set(carried["photos"])           # exactly the photographed dishes it can draw
+    assert drawn & set(cup) == set(carried["photos"])
     assert len(carried["photos"]) >= 20
     for dish_id, (author, licence, source, link) in carried["photos"].items():
         photo = cup[dish_id]
@@ -103,7 +103,7 @@ def test_taste_is_one_without_votes_and_moves_slowly_towards_two_or_zero():
     values = run("[[0,0],[2,0],[10,0],[100,0],[0,2],[0,10],[0,100],[5,5]].map(([l, r]) => Math.round(P.taste(l, r) * 100))")
     assert values == [100, 133, 171, 196, 67, 29, 4, 100]
     dishes = [{"id": "x", "popularity": 4}, {"id": "y", "popularity": 4}]
-    votes = {"x": {"likes": 0, "rerolls": 100}}                   # x: weight 4 * 0.04 (3.7% of draws), y: 4
+    votes = {"x": {"likes": 0, "rerolls": 100}}
     picked = run(f"[0.01, 0.05, 0.5, 0.99].map(v => P.draw([], {json.dumps(dishes)}, () => v, {json.dumps(votes)}).dish.id)")
     assert picked == ["x", "y", "y", "y"]
 
@@ -132,8 +132,7 @@ def test_campus_pick_is_balanced_by_store_and_falls_back_when_sources_are_empty(
     assert draw([], [{"id": "d"}], [0.8, 0.2])["dish"]["id"] == "d"
     assert draw([], [], [0.9, 0.1])["campus"]["name"] == "b1"
     assert draw([{"meal": "lunch"}], [], [0.1, 0.5])["meal"]["meal"] == "lunch"
-    # Owner 2026-11-10: cafeteria and campus restaurants 7 in 10 together, delivery 3; cafeteria 2 of the 10, campus 5.
     lunch, dish = [{"meal": "lunch"}], [{"id": "d"}]
-    assert draw(lunch, dish, [0.69, 0.28, 0.0])["meal"]["meal"] == "lunch"     # 0.28 < 2/7
-    assert draw(lunch, dish, [0.69, 0.29, 0.9, 0.0])["campus"]["name"] == "b1" # 0.29 >= 2/7
+    assert draw(lunch, dish, [0.69, 0.28, 0.0])["meal"]["meal"] == "lunch"
+    assert draw(lunch, dish, [0.69, 0.29, 0.9, 0.0])["campus"]["name"] == "b1"
     assert draw(lunch, dish, [0.7, 0.0])["dish"]["id"] == "d"

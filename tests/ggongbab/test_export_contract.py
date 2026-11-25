@@ -18,7 +18,6 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from validate_content import validate_ggongbab  # noqa: E402
 
-# Derived from the fixed test clock; every export and validation below runs at TEST_NOW.
 FUTURE_UTC = (TEST_NOW.astimezone(timezone.utc) + timedelta(days=4)).replace(hour=3, minute=0, second=0,
                                                                               microsecond=0)
 
@@ -28,7 +27,6 @@ def row(**over):
         "id": "11111111-1111-1111-1111-111111111111",
         "title": "기업 설명회",
         "summary": "9월 25일 12시 N1에서 기업 설명회를 진행합니다.",
-        # As Postgres returns it: timestamptz rendered in UTC.
         "event_start": FUTURE_UTC.isoformat(),
         "event_end": None, "registration_deadline": None,
         "date_text": "9월 25일", "time_text": "12시",
@@ -48,10 +46,9 @@ def test_utf8_json_roundtrip_is_real_korean(settings, tmp_path):
     path = write_payload(payload, tmp_path)
     raw = path.read_bytes()
     assert not raw.startswith(b"\xef\xbb\xbf"), "no BOM"
-    data = json.loads(raw.decode("utf-8"))          # must decode as UTF-8, not cp949
+    data = json.loads(raw.decode("utf-8"))
     ev = data["events"][0]
     assert ev["title"] == "기업 설명회"
-    # The bytes really are Korean code points, not escapes or mojibake.
     assert ev["title"].encode("unicode_escape") == b"\\uae30\\uc5c5 \\uc124\\uba85\\ud68c"
     assert "기업 설명회".encode("utf-8") in raw
     assert "\\u" not in raw.decode("utf-8"), "ensure_ascii must stay False"
@@ -100,7 +97,7 @@ def test_registration_true_and_false_survive(settings):
 
 def test_validator_rejects_boolean_tri_state(tmp_path, settings):
     payload = build_payload([row()], settings, TEST_NOW)
-    payload["events"][0]["food"]["provided"] = True          # the old boolean contract
+    payload["events"][0]["food"]["provided"] = True
     payload["events"][0]["registration"]["required"] = False
     path = tmp_path / "latest.json"
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
@@ -125,14 +122,13 @@ def test_export_normalizes_db_utc_timestamps_to_kst(settings):
     ev = payload["events"][0]
     for value in (ev["startAt"], ev["endAt"], ev["registration"]["deadline"], payload["generatedAt"]):
         assert value.endswith("+09:00"), value
-    # Same instant, Seoul wall clock: 03:00 UTC is 12:00 KST.
     assert datetime.fromisoformat(ev["startAt"]) == FUTURE_UTC
     assert datetime.fromisoformat(ev["startAt"]).hour == FUTURE_UTC.astimezone(KST).hour == 12
 
 
 def test_validator_rejects_non_kst_offset(tmp_path, settings):
     payload = build_payload([row()], settings, TEST_NOW)
-    payload["events"][0]["startAt"] = FUTURE_UTC.isoformat()   # +00:00
+    payload["events"][0]["startAt"] = FUTURE_UTC.isoformat()
     path = tmp_path / "latest.json"
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     assert any("not +09:00" in e for e in validate_ggongbab(path, TEST_NOW))

@@ -39,7 +39,7 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import e2e_live as live  # noqa: E402  (pure helpers: phase, host tag, world cup window)
-settle, wait_for = live.settle, live.wait_for   # one copy of the page-wait helpers
+settle, wait_for = live.settle, live.wait_for
 
 AXE_VERSION = "4.10.3"
 AXE_URL = f"https://cdn.jsdelivr.net/npm/axe-core@{AXE_VERSION}/axe.min.js"
@@ -52,7 +52,7 @@ IMPACT_ORDER = ("critical", "serious", "moderate", "minor")
 LCP_WARN_MS = 2500
 CLS_WARN = 0.1
 PHONE_WEIGHT_WARN = 3 * 1024 * 1024
-OVERSIZE_RATIO = 3.0          # natural pixels per displayed device pixel (linear) that counts as "much larger"
+OVERSIZE_RATIO = 3.0
 OVERSIZE_MIN_BYTES = 15 * 1024
 CRAWL_PAGE_CAP = 60
 EXTERNAL_TIMEOUT_MS = 10000
@@ -90,7 +90,6 @@ def page_key(url: str) -> str:
     return parts.path or "/"
 
 
-# Fragments a page's script routes on (location.hash) instead of an element id.
 APP_FRAGMENTS = {"/ggongbab.html": {"menu", "free"}}
 
 
@@ -192,13 +191,13 @@ class Quality:
         self.base = base.rstrip("/")
         self.out = out
         self.is_lab = urlparse(base).hostname == live.LAB_HOST
-        self.a11y_rows: list[dict] = []        # per-scope axe violations
-        self.a11y_runs: list[dict] = []        # (page, scope, counts) for every axe run
-        self.keyboard: list[dict] = []         # keyboard-pass findings and passes
+        self.a11y_rows: list[dict] = []
+        self.a11y_runs: list[dict] = []
+        self.keyboard: list[dict] = []
         self.links: dict = {"pages": [], "internal": [], "broken": [], "anchors": [], "external": []}
         self.perf: list[dict] = []
         self.warnings: list[str] = []
-        self.errors: list[str] = []            # problems of the checks themselves (count as failures)
+        self.errors: list[str] = []
         self.posts: list[dict] = []
         self.meta: dict = {}
 
@@ -295,8 +294,6 @@ def a11y_pages(q: Quality, browser, axe_src: str):
                 context.close()
 
 
-# keyboard helpers ---------------------------------------------------------------------------------------
-
 FOCUS_JS = """() => {
   const el = document.activeElement;
   if (!el || el === document.body || el === document.documentElement) return null;
@@ -330,7 +327,7 @@ def tab_to(page, selector: str, max_tabs: int = 120, from_start: bool = True):
         page.keyboard.press("Tab")
         if focus_matches(page, selector):
             info = page.evaluate(FOCUS_JS)
-            for _ in range(10):              # the browser's scroll-into-view may be smooth: give it up to ~2.5 s
+            for _ in range(10):
                 if not info or info["inView"]:
                     break
                 page.wait_for_timeout(250)
@@ -368,7 +365,7 @@ def keyboard_nav(q: Quality, page, scope: str):
     kb = Keyboard(q, page, scope, "index.html")
     goto(q, page, "index.html")
     kb.reach("nav wordmark", "a#navHome")
-    for href in ("ggongbab.html", "choose.html", "event.html"):   # the direct destinations since 2026-11-04
+    for href in ("ggongbab.html", "choose.html", "event.html"):
         kb.reach(f"nav link {href}", f'a.site-nav-direct[href="{href}"]', from_start=True)
     lang0 = page.evaluate("document.documentElement.lang")
     info = kb.reach("language toggle", "#langToggle")
@@ -378,9 +375,8 @@ def keyboard_nav(q: Quality, page, scope: str):
         changed = page.evaluate("document.documentElement.lang") != lang0
         kb.add("language toggle activates with Enter", changed, f"lang stayed {lang0}")
         if changed:
-            page.keyboard.press("Enter")   # put it back
+            page.keyboard.press("Enter")
             page.wait_for_timeout(300)
-    # Activate a nav link with Enter and arrive.
     goto(q, page, "index.html")
     if kb.reach("nav link ggongbab (activate)", 'a.site-nav-direct[href="ggongbab.html"]'):
         page.keyboard.press("Enter")
@@ -405,7 +401,6 @@ def keyboard_filters(q: Quality, page, scope: str):
         page.wait_for_timeout(300)
         after = page.locator(sel).first.get_attribute("aria-pressed")
         kb.add("Space toggles a filter chip", after != before, f"aria-pressed {before} -> {after}")
-    # Enter on the 'all' chip must make it the pressed one (the chips are a single-choice group).
     all_sel = '.gg-chip[data-group="food"][data-value="all"]'
     if info and kb.reach("filter chip 'all'", all_sel, max_tabs=150):
         page.keyboard.press("Enter")
@@ -446,7 +441,6 @@ def worldcup_flow(q: Quality, browser, axe_src: str, lang: str, vp: str, phase: 
     try:
         goto(q, page, "worldcup.html", 1000)
         wait_for(page, "() => document.getElementById('wcIntro') && !document.getElementById('wcIntro').hidden")
-        # sound toggle
         sound = kb.reach("sound toggle", "#wcSound", max_tabs=150)
         if sound:
             before = page.locator("#wcSound").get_attribute("aria-pressed")
@@ -455,7 +449,7 @@ def worldcup_flow(q: Quality, browser, axe_src: str, lang: str, vp: str, phase: 
             after = page.locator("#wcSound").get_attribute("aria-pressed")
             kb.add("Space toggles the sound button", after != before, f"aria-pressed {before} -> {after}")
             if after != before:
-                page.keyboard.press("Enter")   # off again
+                page.keyboard.press("Enter")
                 page.wait_for_timeout(300)
         if phase == "soon":
             tile = tab_to(page, "#wcCats .wc-tile", 60)
@@ -466,7 +460,7 @@ def worldcup_flow(q: Quality, browser, axe_src: str, lang: str, vp: str, phase: 
         tile = kb.reach("category tile", "#wcCats .wc-tile", max_tabs=150)
         if tile:
             sel_before = page.evaluate("() => document.querySelector('#wcCats .wc-tile[aria-pressed=\"true\"], #wcCats .wc-tile.is-selected, #wcCats .wc-tile.on') ? 1 : 0")
-            page.keyboard.press("Tab")                     # move to another tile and pick it with Enter
+            page.keyboard.press("Tab")
             page.keyboard.press("Enter")
             page.wait_for_timeout(300)
             kb.add("Enter picks a category tile", True)
@@ -478,7 +472,6 @@ def worldcup_flow(q: Quality, browser, axe_src: str, lang: str, vp: str, phase: 
         kb.add("Enter on start begins the game", opened)
         skip_splash(page, kb)
         wait_for(page, "() => !document.getElementById('wcMatch').hidden", 10000)
-        # keyboard picks
         deadline = time.time() + 150
         first_card = True
         kbd_picks = 0
@@ -503,7 +496,6 @@ def worldcup_flow(q: Quality, browser, axe_src: str, lang: str, vp: str, phase: 
                     break
             else:
                 page.wait_for_timeout(200)
-        # fall back to the pointer so the result screen can still be checked
         if not page.locator("#wcResult").is_visible():
             kb.add("game reaches the result with keyboard picks alone", False, f"{kbd_picks} keyboard picks, then pointer fallback")
             live_deadline = time.time() + 120
@@ -700,10 +692,10 @@ def phase_links(q: Quality, browser):
     seen_net: dict[str, int] = {}
     page.on("response", lambda r: seen_net.__setitem__(r.url, r.status))
     queue = ["/index.html"]
-    visited: dict[str, dict] = {}       # path -> {ids, status, from}
-    internal: dict[str, dict] = {}      # url -> {status, found_on:set, kind}
+    visited: dict[str, dict] = {}
+    internal: dict[str, dict] = {}
     external: dict[str, set] = {}
-    anchor_refs: list[tuple] = []       # (found_on_page, target_url, fragment, text)
+    anchor_refs: list[tuple] = []
     found_from = {"/index.html": "start"}
     try:
         seeded = False
@@ -757,12 +749,10 @@ def phase_links(q: Quality, browser):
                     internal.setdefault(target, {"found_on": set(), "kind": asset["tag"]})["found_on"].add(key)
                 elif kind == "external":
                     external.setdefault(target, set()).add(key)
-        # network responses seen while loading (JSON data fetched by scripts, fonts, ...)
         for url, status in seen_net.items():
             kind, target, _ = normalize_link(url, q.base + "/", q.base)
             if kind == "internal":
                 internal.setdefault(target, {"found_on": set(), "kind": "network"})["found_on"].add("(runtime request)")
-        # status of every internal URL (GET only)
         for url, rec in sorted(internal.items()):
             key = page_key(url)
             if key in visited and url.split("?")[0].endswith(".html") and isinstance(visited[key]["status"], int):
@@ -780,7 +770,6 @@ def phase_links(q: Quality, browser):
         for key, info in visited.items():
             if info["status"] != 200:
                 q.links["broken"].append({"url": key, "status": info["status"], "found_on": [info["from"]], "kind": "page"})
-        # anchors
         done = set()
         for found_on, target, frag, text in anchor_refs:
             tkey = page_key(target)
@@ -796,7 +785,6 @@ def phase_links(q: Quality, browser):
                     continue
             if not anchor_target_exists(frag, visited[tkey]["ids"], tkey):
                 q.links["anchors"].append({"on": found_on, "href": f"{tkey}#{frag}", "text": text})
-        # external (warn only)
         for url, pages in sorted(external.items()):
             host = urlparse(url).hostname or ""
             if live.FORBIDDEN_HOST.search(host):

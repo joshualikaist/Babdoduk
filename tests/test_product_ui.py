@@ -48,17 +48,9 @@ def test_fixture_clock_is_scoped_before_date_replacement():
         assert FIXTURE_CLOCK_SCRIPT.index(guard) < replacement
 
 
-# The read-only Realtime client is a lab-only experiment (docs/GGONGBAB_REALTIME.md). main never
-# carries the module, and the release guard refuses it in a main diff, so there the strict
-# static-only contract below always applies.
 LIVE_FEED_MODULE = ROOT / "js/ggongbab-public-feed.js"
 LIVE_FEED_SCRIPTS = ("js/ggongbab-public-config.js", "js/ggongbab-public-feed.js")
-# 마이 밥도둑 (Phase 2, lab; docs/MY_BABDODUK.md): the optional account store on the hub. It loads the
-# sign-in client only for someone already signed in on this browser and only on the hosts that
-# js/babdoduk-auth-config.js enables (tests/test_my_babdoduk.py); the renderer still never talks to a database.
 ACCOUNT_SCRIPTS = ("js/babdoduk-auth-config.js", "js/babdoduk-account.js")
-# 별 누른 꽁밥 30분 전 알림 (lab; docs/PUSH_ALERTS.md): two checking functions only, called only for a browser
-# that turned the alert on, and only on the hosts js/ggongbab-push.js lists (tests/test_push_alerts.py).
 PUSH_SCRIPTS = ("js/ggongbab-push.js",)
 
 
@@ -80,16 +72,12 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
         assert scripts[-len(tail):] == tail, scripts
         auth = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
         hosts = re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", auth).group(1)
-        # On for lab and, since owner 2026-11-11, production as well (tests/test_my_babdoduk.py).
         assert "babdoduk-lab.vercel.app" in hosts and "www.babdodukms.com" in hosts
         config = (ROOT / "js/ggongbab-public-config.js").read_text(encoding="utf-8")
         assert not re.search(r"sb_secret_|service_role|SUPABASE_SECRET", config)
     else:
         assert "ggongbab-public-feed.js" not in html
         if name == "index.html":
-            # Owner 2026-11-12 ("첫 화면에서도 바로 들어가게 해줄 수 있으면 짱이지"): the home calendar's star
-            # sends the alert list itself, so the home page loads the public config for the alert module only,
-            # right before the calendar. Nothing on it reads the feed from a database.
             assert scripts[scripts.index("js/home-calendar.js") - 2:scripts.index("js/home-calendar.js")] == [
                 "js/ggongbab-public-config.js", *PUSH_SCRIPTS]
         else:
@@ -97,11 +85,11 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
     for script in scripts:
         assert not script.startswith(("http:", "https:", "//"))
         if live and script in LIVE_FEED_SCRIPTS:
-            continue  # the experiment itself: tests/ggongbab/test_frontend_public_feed.py
+            continue
         if live and script in ACCOUNT_SCRIPTS:
-            continue  # the account store: tests/test_my_babdoduk.py
+            continue
         if script in PUSH_SCRIPTS or (name == "index.html" and script == "js/ggongbab-public-config.js"):
-            continue  # the 30-minute alert and its public config: tests/test_push_alerts.py
+            continue
         source = (ROOT / script.split("?")[0]).read_text(encoding="utf-8")
         forbidden = ("supabase", "createClient(", "WebSocket(", "EventSource(")
         if not (live and script == "js/ggongbab.js"):
@@ -111,7 +99,6 @@ def test_static_feed_pages_use_shared_selector_without_live_feed(name):
 
 
 def test_home_snapshot_copy_names_last_change_without_freshness_claims():
-    # An export that changes nothing is not committed, so the stamp is the list's last change.
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     ko, en = re.findall(r"'home\.free\.asOf': '([^']*)'", html)
     assert ko == "마지막 변경 {time}" and en == "Last changed {time}"
@@ -135,7 +122,6 @@ def test_hub_feed_note_names_the_last_change_and_claims_no_live_data(name):
 
 PAST_KEYS = ("gg.archive.title", "gg.archive.lead", "gg.archive.ended", "gg.archive.record", "gg.archive.source",
              "gg.archive.empty", "gg.archive.error", "gg.archive.loading", "gg.archive.more", "gg.archive.less", "gg.newTab")
-# copy cleanup, owner 2026-11-12: shorter record and source labels.
 PAST_KO = {"gg.archive.title": "지난 꽁밥 기록", "gg.archive.ended": "종료", "gg.archive.record": "지난 꽁밥 안내",
            "gg.archive.source": "공지 보기", "gg.archive.empty": "최근 30일 기록 없음"}
 PAST_EN = {"gg.archive.title": "Past free-food listings", "gg.archive.ended": "Ended",
@@ -150,7 +136,6 @@ def test_past_listing_copy_is_bilingual_and_never_claims_an_outcome(name):
     assert all(len(values) == 2 and all(values) for values in strings.values()), strings
     assert {key: strings[key][0] for key in PAST_KO} == PAST_KO
     assert {key: strings[key][1] for key in PAST_EN} == PAST_EN
-    # copy cleanup, owner 2026-11-12: the lead is the window only; the title and the 종료 badge say "ended".
     assert strings["gg.archive.lead"] == ["최근 30일", "Last 30 days"]
     text = " ".join(value for values in strings.values() for value in values).lower()
     for claim in ("진행됨", "진행된", "완료", "성공", "held", "completed", "successful", "took place", "happened"):
@@ -199,40 +184,28 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     html = (ROOT / "event.html").read_text(encoding="utf-8")
     rows = re.findall(r'data-start="(\d{4}-\d{2}-\d{2})"\s+data-end="(\d{4}-\d{2}-\d{2})"\s+'
                       r'data-confirmation="([^"]+)"', html)
-    # One row per authored activity (data/content/events.json); the owner adds events over time.
     activities = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))["activities"]
     n, on_site = len(activities), sum(1 for a in activities if not a["link"].startswith("http"))
     assert len(rows) == n >= 4
-    assert "STROKE" not in html and "언빌리버블" not in html   # it did not happen
-    # The third row is the site's own menu world cup (2026-10-13), held on worldcup.html.
+    assert "STROKE" not in html and "언빌리버블" not in html
     assert "'event.e2.summary': '먹방 월드컵 32강'" in html and 'href="worldcup.html" data-event-page>' in html
     assert all(confirmation in ("announced", "tentative") for *_, confirmation in rows)
-    assert "'event.state.tentative.past': '미확정'" in html  # copy cleanup, owner 2026-11-12
-    assert "'event.state.announced.past'" not in html  # an unrecorded outcome claims nothing, visibly
-    assert "'event.state.held.past'" in html  # only an explicit "held" state may say it took place
-    # copy cleanup, owner 2026-11-12: the status notes behind 자세히 are gone; the state chip stays.
+    assert "'event.state.tentative.past': '미확정'" in html
+    assert "'event.state.announced.past'" not in html
+    assert "'event.state.held.past'" in html
     assert "'event.note." not in html and "data-event-note" not in html
-    # Each row's link is labelled by the page script from its date band; a past row links to
-    # the original post as a record, and each authored instruction block can be marked historical.
     assert html.count("<span data-event-cta>") == n and "event.openPageBtn" not in html
-    # An activity held on a page of this site opens it in place; an original post opens a new tab.
     assert html.count('target="_blank" rel="noopener noreferrer"><span data-event-cta>') == n - on_site
-    # No arrow beside the link words (owner 2026-11-19, "화살표 없어도 될거같아").
     rows_html = html.split("<!-- @content:events -->", 1)[1].split("<!-- @end content -->", 1)[0]
     assert "↗" not in rows_html and "→" not in rows_html
-    assert "'event.cta.page'" not in html and "'event.cta.pagePast': 'Open the page'" in html   # no 지금 해보기 button: the start screen is in the card
-    # copy cleanup, owner 2026-11-12: a past row's link reads the same as a live one's.
+    assert "'event.cta.page'" not in html and "'event.cta.pagePast': 'Open the page'" in html
     assert "'event.cta.live': '게시물 보기'" in html and "'event.cta.past': '게시물 보기'" in html
     assert "'event.cta.live': 'View post'" in html and "'event.cta.past': 'View post'" in html
     assert html.count('<details class="event-more">') == n and "event-tab" not in html
-    # Every activity, in the Korean markup and in the ko and en tables (data/content/events.json).
     assert html.count('<div class="event-detail-row" data-detail="participation">') == 3 * n
     assert "event-elsewhere" not in html and "event-num" not in html and 'class="page-num"' not in html
     assert 'class="event-instagram"' in html and "@babdodukms" in html
     assert 'id="eventEmpty"' in html and "event.emptyLink" not in html
-    # One picker product: 오늘 뭐 먹지 at choose.html (owner 2026-11-04), js/pick.js; since 2026-11-05 one
-    # button and the world cup's capsule machine, no choices and no slot reel. The magazine keeps a card
-    # pointing there and sends an old #what link on.
     for name in ("index.html", "ggongbab.html", "mukbang.html", "event.html", "food.html", "history.html"):
         page = (ROOT / name).read_text(encoding="utf-8")
         assert 'id="pickApp"' not in page and "js/pick.js" not in page and 'id="eatApp"' not in page, name
@@ -247,11 +220,8 @@ def test_past_events_are_not_reported_as_held_and_there_is_one_picker():
     assert '<a class="mg-pick-link" href="choose.html">' in magazine
     assert "if (location.hash === '#what') location.replace('choose.html');" in magazine
     index = (ROOT / "index.html").read_text(encoding="utf-8")
-    assert 'href="choose.html" data-i18n="home.ctaChoose"' in index   # the home call to action reaches the picker
+    assert 'href="choose.html" data-i18n="home.ctaChoose"' in index
 
-
-# Food Log is unreleased (lab only): no home link. Since 2026-11-02 (owner) the home page is its hero
-# alone: the eat (banner shelf), read and news groups below it are gone.
 
 
 def test_home_is_one_hero_and_nothing_below_it():
@@ -263,8 +233,6 @@ def test_home_is_one_hero_and_nothing_below_it():
     for gone in ("home-group", "homeShelf", "homeFeature", "home-news", "explore-card", "data-shelf", "home-read"):
         assert gone not in top, gone
     assert re.findall(r'<section class="(home-[\w-]+)"', top) == ["home-wc", "home-hero", "home-cal", "home-map"]
-    # Owner 2026-11-04: the 3D campus map took the food photo collage's place (docs/CAMPUS_MAP.md). Its
-    # poster is decorative (the pins are the buttons), sized, and lazy: phones open the map on request.
     assert "home-collage" not in html and "images/home/" not in html
     section = top.split('<section class="home-map"')[1].split("</section>")[0]
     photos = re.findall(r"<img [^>]+>", section)
@@ -276,7 +244,7 @@ def test_home_is_one_hero_and_nothing_below_it():
     assert '<script type="importmap">' in html and '<script type="module" src="js/home-map.js"></script>' in html
     home_js = (ROOT / "js/home.js").read_text(encoding="utf-8")
     assert "setInterval" not in home_js and "setTimeout" not in home_js and "autoplay" not in home_js.lower()
-    assert "data/magazine" not in home_js and "homeShelf" not in home_js     # no magazine request, no shelf
+    assert "data/magazine" not in home_js and "homeShelf" not in home_js
 
 
 def test_home_strings_exist_in_both_languages():
@@ -291,7 +259,6 @@ def test_home_strings_exist_in_both_languages():
 def test_brand_and_hub_name():
     event = (ROOT / "event.html").read_text(encoding="utf-8")
     assert event.index('id="now"') < event.index('id="archive"')
-    # No invented notices: the list the sync writes from data/content/events.json is empty.
     assert re.search(r'<ul class="event-notices" id="eventNotices" role="list">\s*<!-- @content:notices -->'
                      r'\s*<!-- @end content -->\s*</ul>', event)
     for name in ("index.html", "ggongbab.html", "mukbang.html", "choose.html", "event.html", "food.html", "history.html", "lab.html"):

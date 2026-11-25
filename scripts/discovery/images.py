@@ -15,7 +15,7 @@ from .common import UA, is_public_url
 META_IMAGE = re.compile(r"""<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)(?::src)?["'][^>]*>""", re.I)
 CONTENT = re.compile(r"""content=["']([^"']+)["']""", re.I)
 PAGE_BUDGET = 30
-PER_LANE_BUDGET = 12        # every lane's best candidates get an image check, not only the global top
+PER_LANE_BUDGET = 12
 
 
 def page_image(url: str, fetcher) -> str:

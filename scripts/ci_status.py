@@ -30,7 +30,7 @@ def check_runs(sha):
 
 def summarize(runs):
     latest = {}
-    for run in runs:   # the newest run of each check name
+    for run in runs:
         if run["name"] not in latest or run["started_at"] > latest[run["name"]]["started_at"]:
             latest[run["name"]] = run
     return sorted((name, r["status"], r.get("conclusion")) for name, r in latest.items())

@@ -27,7 +27,7 @@ CONFIG = (ROOT / "js/babdoduk-auth-config.js").read_text(encoding="utf-8")
 ON = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}']}};"
 OFF = f"window.BABDODUK_AUTH_CONFIG = {{enabled: false, hosts: ['{HOST}']}};"
 GOOGLE_ID = "123456789012-synthetictestclientid.apps.googleusercontent.com"
-GOOGLE_REQUESTS = []   # Google sign-in addresses the page went to (the fake network aborts them)
+GOOGLE_REQUESTS = []
 ON_GOOGLE = f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}'], googleClientId: '{GOOGLE_ID}'}};"
 
 
@@ -220,7 +220,7 @@ def open_page(browser, path="my.html", db=None, storage=None, enabled=True, lang
         if url.hostname != HOST:
             if url.hostname == "accounts.google.com":
                 google_requests.append(route.request.url)
-                return route.fulfill(status=204, body="")   # "no content": the tab stays on my.html
+                return route.fulfill(status=204, body="")
             return route.abort()
         name = unquote(url.path).lstrip("/")
         if name == "data/ggongbab/latest.json":
@@ -260,12 +260,10 @@ def wait_view(page, text):
 
 
 def test_on_for_lab_and_production():
-    # On since 2026-11-10 on lab (owner: providers set up, 011 applied) and on production since 2026-11-11
-    # (owner: "로그인은 푸시 및 배포가 안된거임? 이거까지 했어야지").
     assert re.search(r"enabled:\s*true", CONFIG)
     hosts = re.findall(r"'([^']+)'", re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", CONFIG).group(1))
     assert {"www.babdodukms.com", "babdodukms.com", "babdoduk-lab.vercel.app"} <= set(hosts)
-    assert "babdoduk.vercel.app" not in hosts   # the old address is gone and no longer ours (2026-11-25)
+    assert "babdoduk.vercel.app" not in hosts
     for name in ("js/babdoduk-account.js", "js/babdoduk-auth-config.js", "js/my.js"):
         text = (ROOT / name).read_text(encoding="utf-8")
         assert "sb_secret_" not in text and "service_role" not in text, name
@@ -286,8 +284,6 @@ def test_turned_off_the_pages_load_no_sign_in_client(browser):
 
 
 def test_the_guest_count_leaves_out_what_left_the_saved_list(browser):
-    # 2026-11-23: production said "저장한 꽁밥 4개" beside a 저장한 꽁밥 list of one. From the day after its
-    # event a listing leaves the list (L.dayPassed), so the count it links to leaves it out too.
     guest = local((LUNCH, "2026-11-08T10:00:00Z"), (WED, "2026-11-08T10:00:00Z"), (OLD, "2026-11-04T10:00:00Z"))
     context, page, errors, _ = open_page(browser, storage={SAVED_KEY: guest})
     wait_view(page, "카카오로 계속하기")
@@ -309,7 +305,7 @@ def test_a_guest_on_the_hub_never_loads_the_client_even_when_turned_on(browser):
     assert not [c for c in fakedb(page)["calls"] if c[0] == "client"] and not sdk
     page.locator('.gg-card[data-id="lunch"] .gg-save').click()
     assert json.loads(page.evaluate(f"localStorage.getItem('{SAVED_KEY}')"))["items"][0]["id"] == "lunch"
-    assert page.locator("#ggSaved").count() == 1  # copy cleanup, owner 2026-11-12: no "this browser only" line
+    assert page.locator("#ggSaved").count() == 1
     assert errors == []
     context.close()
 
@@ -318,7 +314,6 @@ def test_signed_out_offers_both_providers_with_a_full_page_redirect(browser):
     context, page, errors, _ = open_page(browser)
     wait_view(page, "카카오로 계속하기")
     text = app_text(page)
-    # Owner 2026-11-12: "필요없는 글 다 삭제해줘": the sign-in card holds the buttons, little else.
     assert "KAIST" not in text and "이렇게 돼요" not in text and "저장한 꽁밥이 없어요" not in text
     client = [c for c in fakedb(page)["calls"] if c[0] == "client"][0]
     assert client[1] == "https://myjglfynhnptlclawlcc.supabase.co" and client[2].startswith("sb_publishable_")
@@ -339,14 +334,11 @@ def test_signed_out_offers_both_providers_with_a_full_page_redirect(browser):
 
 
 def test_back_from_the_sign_in_screen_the_buttons_work_again(browser):
-    # 2026-11-25: a sign-in leaves the page while it is busy; a phone that restores the page from its
-    # back-forward cache must not keep every button dead until a reload.
     context, page, errors, _ = open_page(browser)
     wait_view(page, "카카오로 계속하기")
     page.get_by_role("button", name="카카오로 계속하기").click()
     page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'oauth')")
     assert page.get_attribute("#myApp", "aria-busy") == "true"
-    # Not from the cache (an ordinary pageshow): nothing changes, the redirect is still on its way.
     page.evaluate("window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted: false}))")
     assert page.get_attribute("#myApp", "aria-busy") == "true"
     page.evaluate("window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted: true}))")
@@ -373,7 +365,6 @@ TALK_UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/120 Mobile 
 
 
 def test_linking_the_other_login_and_what_the_talk_app_shows_instead(browser):
-    # A normal browser: the missing provider is offered, with a full-page redirect back to my.html.
     context, page, errors, _ = open_page(browser, db={"user": user()})
     wait_view(page, "Google 로그인도 연결")
     page.get_by_role("button", name="Google 로그인도 연결").click()
@@ -381,23 +372,20 @@ def test_linking_the_other_login_and_what_the_talk_app_shows_instead(browser):
     assert [c for c in fakedb(page)["calls"] if c[0] == "link"] == [["link", "google", f"https://{HOST}/my.html?next=linked"]]
     assert errors == []
     context.close()
-    # Supabase's manual linking turned off: the refusal is said, not swallowed.
     context, page, errors, _ = open_page(browser, db={"user": user(), "fail": {"link": True}})
     wait_view(page, "Google 로그인도 연결")
     page.get_by_role("button", name="Google 로그인도 연결").click()
     page.wait_for_function("() => document.getElementById('myToast').textContent.includes('연결할 수 없어요')")
     assert errors == []
     context.close()
-    # Inside the talk app Google is refused, so the button gives way to the default-browser link.
     context, page, errors, _ = open_page(browser, db={"user": user()}, ua=TALK_UA)
-    wait_view(page, "카카오톡에선 Google 연결이 안 돼요")  # copy cleanup, owner 2026-11-12
+    wait_view(page, "카카오톡에선 Google 연결이 안 돼요")
     assert page.get_by_role("button", name="Google 로그인도 연결").count() == 0
     link = page.get_by_role("link", name="기본 브라우저로 열기")
     assert link.count() == 1
     assert link.get_attribute("href") == "kakaotalk://web/openExternal?url=" + quote(f"https://{HOST}/my.html", safe="")
     assert errors == []
     context.close()
-    # Signed in with Google inside the talk app: linking kakao still works there, so it stays a button.
     context, page, errors, _ = open_page(browser, db={"user": user(providers=("google",))}, ua=TALK_UA)
     wait_view(page, "카카오 로그인도 연결")
     assert page.get_by_role("link", name="기본 브라우저로 열기").count() == 0
@@ -445,7 +433,6 @@ def test_signing_in_merges_the_guest_list_once_keeps_the_account_copy_and_can_un
     wait_view(page, "저장한 꽁밥")
     assert page.locator(".my-merge").count() == 0, "the same browser list merges once"
     assert len([c for c in fakedb(page)["calls"] if c[:2] == ["rpc", "merge_saved_events"]]) == 1
-    # A new sign-in on a fresh browser state merges again, and 되돌리기 takes out exactly what it added.
     page.evaluate("localStorage.removeItem('babdoduk-account-merged')")
     page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb'));
         db.tables.saved_events = db.tables.saved_events.filter(r => r.event_id === 'lunch');
@@ -477,11 +464,8 @@ def test_the_account_list_shows_upcoming_and_past_and_drops_a_withdrawn_star(bro
     rows = page.locator(".my-row").evaluate_all("els => els.map(el => [el.className, el.innerText])")
     assert [r[0] for r in rows] == ["my-row is-upcoming", "my-row is-ended"]
     assert "변경됨" in rows[0][1] and "지난 꽁밥" in rows[1][1] and "아침 행사" in rows[1][1]
-    # Owner 2026-11-24 ("빠진거는 알아서 별표에서도 빠져야지"): a listing that left both public lists before it was
-    # over loses its star by itself, so it also leaves the subscribed calendar.
     assert "사라진 행사" not in app_text(page) and "목록에서 빠짐" not in app_text(page)
     page.wait_for_function("() => !JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.some((r) => r.event_id === 'ghost')")
-    # Owner 2026-11-12: from the day after its event a star leaves the list; the row stays for the calendar.
     assert "지난 세미나" not in app_text(page)
     assert "수요 간담회" not in app_text(page), "another user's row never shows"
     assert "취소" not in app_text(page)
@@ -504,13 +488,12 @@ def test_the_hub_saves_to_the_account_and_leaves_the_browser_list_alone(browser)
     page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.length === 1")
     assert page.locator("#ggSaved").count() == 1
     page.locator("[data-gg-saved]").click()
-    assert "마이 밥도둑" in page.locator("#ggSaved").inner_text()  # copy cleanup, owner 2026-11-12: the account line is only the link now
+    assert "마이 밥도둑" in page.locator("#ggSaved").inner_text()
     assert page.locator('#ggSaved a[href="my.html"]').count() == 1
     assert page.evaluate(f"localStorage.getItem('{SAVED_KEY}')") == guest
     toast = page.locator(".gg-toast")
     toast.wait_for(state="attached")
-    page.wait_for_function("() => (document.querySelector('.gg-toast') || {}).textContent.includes('저장했어요')")  # copy cleanup, owner 2026-11-12
-    # A refused write is undone on screen and said out loud.
+    page.wait_for_function("() => (document.querySelector('.gg-toast') || {}).textContent.includes('저장했어요')")
     page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb')); db.fail['saved_events:insert'] = true;
         localStorage.setItem('__fakedb', JSON.stringify(db)); }""")
     page.locator('.gg-card[data-id="wed"] .gg-save').click()
@@ -528,7 +511,7 @@ def test_when_the_account_cannot_load_the_hub_keeps_the_browser_list_and_says_so
     page.locator(".gg-card").first.wait_for()
     page.wait_for_function("() => !!document.querySelector('#ggSaved')")
     page.locator("[data-gg-saved]").click()
-    page.wait_for_function("() => document.querySelector('#ggSaved').innerText.includes('계정 목록을 불러오지 못했어요')")  # copy cleanup, owner 2026-11-12
+    page.wait_for_function("() => document.querySelector('#ggSaved').innerText.includes('계정 목록을 불러오지 못했어요')")
     assert page.locator('.gg-card[data-id="lunch"] .gg-save').get_attribute("aria-pressed") == "true"
     assert errors == []
     context.close()
@@ -617,7 +600,6 @@ def test_a_saved_event_is_removed_right_here_and_comes_back_if_the_server_refuse
     assert page.locator(".my-row").count() == 1 and "저장한 꽁밥 1" in page.locator("#mySavedTitle").inner_text()
     assert page.evaluate("document.activeElement.getAttribute('data-my-unstar')") == "wed"
     page.wait_for_function("() => document.getElementById('myToast').textContent === '저장을 취소했어요'")
-    # The server refuses: the row comes back and the page says so.
     page.evaluate("""() => { const db = JSON.parse(localStorage.getItem('__fakedb')); db.fail['saved_events:delete'] = true;
                              localStorage.setItem('__fakedb', JSON.stringify(db)); }""")
     page.locator("[data-my-unstar]").click()
@@ -655,11 +637,9 @@ def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(brow
     assert "프로필이 다운로드됨" in card and page.locator("#myCal .my-cal-btn").count() == 0
     assert page.locator("#myCal [data-my-cal]").inner_text() == "프로필 다시 받기"
     page.reload()
-    wait_view(page, "설치를 기다리는 중")   # the tap is remembered in this browser
+    wait_view(page, "설치를 기다리는 중")
     assert errors == []
     context.close()
-    # Students use Chrome (owner 2026-11-19, "학생들 사파리 안써"): there the button hands just the profile's
-    # address to Safari, and if the page is still in front a moment later it offers the file itself.
     chrome = IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, ua=chrome)
     wait_view(page, "사파리가 잠깐 열려요")
@@ -668,7 +648,7 @@ def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(brow
     assert "크롬으로 돌아오면" in page.locator("#myCal").inner_text()
     tap_calendar(page)
     wait_view(page, "설치를 기다리는 중")
-    assert page.locator("[data-my-cal-file]").count() == 0          # not before the handoff had its moment
+    assert page.locator("[data-my-cal-file]").count() == 0
     wait_view(page, "사파리가 열리지 않았어요.")
     file = page.locator("[data-my-cal-file]")
     assert file.get_attribute("href") == f"/cal/{'T' * 43}.mobileconfig" and file.bounding_box()["height"] >= 44
@@ -680,7 +660,6 @@ def test_the_calendar_card_is_for_iphone_only_and_says_no_more_than_it_must(brow
         wait_view(page, "저장한 꽁밥")
         assert page.locator("[data-my-cal]").count() == 0 and "캘린더" not in app_text(page) and errors == []
         context.close()
-    # Before the database has the function (013 not applied), the card stays away.
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "fail": {"rpc:my_calendar_feed": True}}, ua=IPHONE)
     wait_view(page, "저장한 꽁밥")
     assert page.locator("[data-my-cal]").count() == 0 and errors == []
@@ -711,16 +690,13 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     assert page.locator("#myCal .my-cal-btn").get_attribute("href") == f"/cal/{'L' * 43}.mobileconfig"
     tap_calendar(page)
     wait_view(page, "설치를 기다리는 중")
-    # The phone installed the profile and read the address: the server now offers the next one.
     page.evaluate("""(at) => { const db = JSON.parse(localStorage.getItem('__fakedb'));
         db.calLink = { link: 'M'.repeat(43), read_at: at, linked_at: at }; localStorage.setItem('__fakedb', JSON.stringify(db));
         document.dispatchEvent(new Event('visibilitychange')); }""", iso_ago(0.1))
     wait_view(page, "연결됨")
     card = page.locator("#myCal").inner_text()
     assert "별 누르면 캘린더에 저장!" in card and "최종 동기화 시간 :" in card and "하나만 남아요" in card
-    assert "확인할 때 들어가요" not in card  # the delay line is gone (owner 2026-11-19 copy pass)
-    # The nearest thing to a 동기화 button (owner 2026-11-19): it opens the Calendar app, where pulling the list
-    # down reads the new stars at once; no website can make the iPhone refresh by itself.
+    assert "확인할 때 들어가요" not in card
     opener = page.locator("#myCal [data-my-cal-open]")
     assert opener.get_attribute("href") == "calshow://" and opener.inner_text() == "캘린더 열기"
     assert opener.bounding_box()["height"] >= 44 and "캘린더 누르고, 아래로 스크롤 해서 새로고침" in card
@@ -732,8 +708,6 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     page.wait_for_function("() => document.getElementById('myToast').textContent.includes('캘린더가 연결됐어요')")
     assert errors == []
     context.close()
-    # An old subscription still read (017's leftover_at) is no longer named on the card (owner 2026-11-19,
-    # "이거 아무도 안했을거야 삭제해줘"): the old calendar shows its own notice (api/cal.js), the card stays quiet.
     on = {"link": "N" * 43, "read_at": iso_ago(2), "linked_at": iso_ago(48), "leftover_at": iso_ago(1)}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": on}, ua=IPHONE)
     wait_view(page, "연결됨")
@@ -742,7 +716,6 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
     assert page.locator("#myCal .my-cal-btn").count() == 0 and page.locator("#myCal .my-cal-box").count() == 0
     assert errors == []
     context.close()
-    # No read for days: the profile was probably removed, so the button is back.
     stale = {"link": "S" * 43, "read_at": iso_ago(24 * 10), "linked_at": iso_ago(24 * 20)}
     context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables, "calLink": stale}, ua=IPHONE)
     wait_view(page, "한동안 확인이 없었어요")
@@ -798,7 +771,7 @@ def test_google_comes_back_to_our_page_so_its_window_names_our_site(browser):
     pending = json.loads(page.evaluate("sessionStorage.getItem('babdoduk-google-pending')"))
     assert pending["state"] == q["state"] and pending["mode"] == "signin"
     assert hashlib.sha256(pending["nonce"].encode()).hexdigest() == q["nonce"]
-    assert not [c for c in fakedb(page)["calls"] if c[0] == "oauth"]    # Supabase's redirect is not used
+    assert not [c for c in fakedb(page)["calls"] if c[0] == "oauth"]
     assert errors == []
     context.close()
 
@@ -817,28 +790,24 @@ def test_googles_answer_signs_in_and_leaves_no_token_in_the_address(browser):
     assert call == ["idtoken", "google", "h.p.s", "N" * 43]
     assert "id_token" not in page.url and "#" not in page.url
     assert page.evaluate("sessionStorage.getItem('babdoduk-google-pending')") is None
-    # The page then reads the account as after any sign-in.
     page.wait_for_function("() => document.getElementById('myApp').textContent.includes('로그아웃')")
     assert errors == []
     context.close()
 
 
 def test_googles_answer_links_rechecks_and_refuses_a_stranger(browser):
-    # Linking: the token goes to linkIdentity and the page says it worked.
     context, page, errors, _ = open_page(browser, path="my.html#state=" + "S" * 43 + "&id_token=h.p.s",
                                          google=True, db={"user": user()}, session={"babdoduk-google-pending": pending("link", "linked")})
     page.wait_for_function("() => document.getElementById('myToast').textContent.includes('연결했어요')")
     assert [c for c in fakedb(page)["calls"] if c[0] == "link-token"] == [["link-token", "google", "h.p.s", "N" * 43]]
     assert errors == []
     context.close()
-    # Re-checking before leaving comes back to the leave panel.
     context, page, errors, _ = open_page(browser, path="my.html#state=" + "S" * 43 + "&id_token=h.p.s", google=True,
                                          db={"user": user(providers=("google",)), "signInAs": user(providers=("google",))},
                                          session={"babdoduk-google-pending": pending("signin", "leave")})
     page.wait_for_selector("#myLeaveQ")
     assert errors == []
     context.close()
-    # An answer this browser did not ask for (another state) is not used, and says sign-in failed.
     context, page, errors, _ = open_page(browser, path="my.html#state=" + "X" * 43 + "&id_token=h.p.s",
                                          google=True, session={"babdoduk-google-pending": pending()})
     wait_view(page, "로그인하지 못했어요")
@@ -846,7 +815,6 @@ def test_googles_answer_links_rechecks_and_refuses_a_stranger(browser):
     assert "id_token" not in page.url
     assert errors == []
     context.close()
-    # Google refused (the person closed it): the same message, nothing sent to Supabase.
     context, page, errors, _ = open_page(browser, path="my.html#state=" + "S" * 43 + "&error=access_denied",
                                          google=True, session={"babdoduk-google-pending": pending()})
     wait_view(page, "로그인하지 못했어요")
@@ -879,7 +847,6 @@ def test_signing_out_works_even_when_the_server_call_fails(browser):
     assert page.evaluate(f"localStorage.getItem('{TOKEN_KEY}')") is None
     assert errors == []
     context.close()
-    # A session that really stayed is still a failure, said as one.
     context, page, errors, _ = open_page(browser, db={"user": user(), "fail": {"signoutKeep": True}})
     wait_view(page, "로그아웃")
     page.get_by_role("button", name="로그아웃").first.click()

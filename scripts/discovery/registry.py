@@ -42,8 +42,8 @@ STATUSES = ("ACTIVE", "STALE", "DEGRADED", "DISABLED")
 AUTHORED = {"id", "name", "type", "url", "channelId", "enabled", "trustTier", "categories", "discoveryMethod",
             "queries", "note", "knownIssue", "lane", "localOnly", "requireFood", "objective", "kind",
             "pagedFeed", "feedPages", "excerpt", "permission", "withdrawn"}
-TEXT_FIELDS = ("permission", "withdrawn")    # when present: a non-empty sentence (who, when, where)
-MAX_FEED_PAGES = 5         # adapters.rss.page_urls: the feed and at most four older pages
+TEXT_FIELDS = ("permission", "withdrawn")
+MAX_FEED_PAGES = 5
 KINDS = {"recipe", "news", "research", "video", "mixed"}
 
 

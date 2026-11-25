@@ -72,7 +72,7 @@ def test_absent_mode_file_keeps_the_legacy_browsers_until_the_operator_switches(
     assert ob.slot_for(tmp_path, "dooray") == ob.legacy_slot(tmp_path, "dooray")
     ob.set_mode(tmp_path / ".local", "unified")
     assert ob.slot_for(tmp_path, "portal") == ob.slot_for(tmp_path, "dooray") == ob.unified_slot(tmp_path)
-    ob.set_mode(tmp_path / ".local", "separate")              # the rollback
+    ob.set_mode(tmp_path / ".local", "separate")
     assert ob.slot_for(tmp_path, "dooray").port == DOORAY_PORT
 
 
@@ -100,7 +100,7 @@ def test_start_arguments_one_profile_loopback_two_tabs(monkeypatch, tmp_path):
     args = captured["args"]
     assert args[1:6] == ["--remote-debugging-address=127.0.0.1", "--remote-debugging-port=9224",
                          f"--user-data-dir={slot.profile}", "--no-first-run", "--no-default-browser-check"]
-    assert args[6:] == [ob.PORTAL_START, ob.DOORAY_FALLBACK]   # tabs of ONE window, no --new-window
+    assert args[6:] == [ob.PORTAL_START, ob.DOORAY_FALLBACK]
     assert not any("0.0.0.0" in a or "User Data" in a or "--new-window" in a for a in args)
 
 
@@ -148,11 +148,11 @@ def test_tabs_are_opened_only_for_a_missing_role_in_the_background():
                           targets=fake_targets(PORTAL_URL, DOORAY_URL), cdp=unused)["portal"] == 1
     assert unused.created == []
     with pytest.raises(OpsError):
-        ob.open_tab(9224, "http://portal.kaist.ac.kr/", cdp=TabCdp())       # https only
+        ob.open_tab(9224, "http://portal.kaist.ac.kr/", cdp=TabCdp())
     with pytest.raises(OpsError):
-        ob.open_tab(9224, "https://x.invalid/?a=1", cdp=TabCdp())           # no query values
+        ob.open_tab(9224, "https://x.invalid/?a=1", cdp=TabCdp())
     with pytest.raises(OpsError, match="OPS_BROWSER_TAB_OPEN_FAILED"):
-        ob.open_tab(9224, ob.PORTAL_START, cdp=TabCdp(reply={}))            # no target created
+        ob.open_tab(9224, ob.PORTAL_START, cdp=TabCdp(reply={}))
     source = (Path(__file__).resolve().parents[2] / "scripts/ggongbab/ops_browser.py").read_text(encoding="utf-8")
     assert "/json/new" not in source.replace("`PUT /json/new`", "")
 
@@ -235,17 +235,17 @@ def test_unified_owner_is_verified_by_port_profile_and_loopback(tmp_path):
     host, run, _, _ = unified_host(tmp_path, inv(True, [OPS, LEGACY_PORTAL, PERSONAL, RENDERER], [700]))
     assert host.port == 9224 and host.profile.name == "ops-browser-profile"
     assert host.inspect() == ("verified", OPS)
-    assert run.call_args.args == (INVENTORY_SCRIPT, {"port": 9224})   # stdin JSON, not interpolated
+    assert run.call_args.args == (INVENTORY_SCRIPT, {"port": 9224})
     assert "9223" not in INVENTORY_SCRIPT and "9223" not in STOP_SCRIPT
 
 
 @pytest.mark.parametrize("data", [
-    inv(True, [LEGACY_PORTAL], [600]),                 # an unknown (other-profile) listener on 9224
-    inv(True, [OPS], [701]),                           # listener owned by another pid
-    inv(True, [OPS], [700, 701]),                      # ambiguous owners
-    inv(True, [OPS], [700], loopback=False),           # not loopback-only
-    inv(True, [], [999]),                              # non-Chrome / unlisted owner
-    inv(True, [OPS, dict(OPS, pid=702, created="7002")], [700]),   # two browsers on one profile
+    inv(True, [LEGACY_PORTAL], [600]),
+    inv(True, [OPS], [701]),
+    inv(True, [OPS], [700, 701]),
+    inv(True, [OPS], [700], loopback=False),
+    inv(True, [], [999]),
+    inv(True, [OPS, dict(OPS, pid=702, created="7002")], [700]),
 ])
 def test_unknown_or_ambiguous_owner_fails_closed_and_is_never_stopped(tmp_path, data):
     host, run, start, verify = unified_host(tmp_path, data)
@@ -274,7 +274,7 @@ def test_recovery_stops_only_the_verified_unified_process(tmp_path):
     host._start = Mock()
     host.ensure(recover_stale=True)
     stops = [call.args for call in run.call_args_list if call.args[0] == STOP_SCRIPT]
-    assert stops == [(STOP_SCRIPT, dict(OPS, port=9224))]       # exact pid + creation + command line
+    assert stops == [(STOP_SCRIPT, dict(OPS, port=9224))]
     host._start.assert_called_once()
     verify.assert_called_once_with(host.profile, 9224)
     assert "CreationDate" in STOP_SCRIPT and "CommandLine -cne" in STOP_SCRIPT and "-Force" not in STOP_SCRIPT
@@ -288,9 +288,9 @@ def test_a_worker_start_of_the_unified_browser_opens_both_tabs(tmp_path, monkeyp
                         lambda profile, **kw: seen.update(kw, profile=profile))
     host.ensure()
     assert seen["profile"] == host.profile and seen["port"] == 9224 and seen["roles"] == ("portal", "dooray")
-    assert seen["dooray_url"] == "https://kaist.gov-dooray.com/mail/systems/inbox"   # no query value
+    assert seen["dooray_url"] == "https://kaist.gov-dooray.com/mail/systems/inbox"
     assert seen["mail_host"] == "kaist.gov-dooray.com"
-    assert seen["minimized"] is False              # an operator's start: a normal window for the login
+    assert seen["minimized"] is False
     verify.assert_called_once_with(host.profile, 9224)
 
 
@@ -326,7 +326,7 @@ def test_the_minimized_start_up_info_never_activates_the_window():
     from ggongbab.web import resident
     info = resident.minimized_startup()
     if not hasattr(resident.subprocess, "STARTUPINFO"):
-        assert info is None                        # not Windows: a normal start
+        assert info is None
     else:
         assert info.wShowWindow == 7 and info.dwFlags & resident.subprocess.STARTF_USESHOWWINDOW
 
@@ -336,7 +336,7 @@ def test_concurrent_starts_of_the_shared_browser_are_serialised(tmp_path):
     with poller_lock(tmp_path / ".local" / ob.START_LOCK):
         with pytest.raises(OpsError, match="OPS_BROWSER_START_BUSY"):
             host.ensure()
-    host.ensure()   # free again: a verified browser is reused, never started twice
+    host.ensure()
 
 
 # --- page selection: Portal and Dooray in one browser -------------------------------------------
@@ -365,7 +365,7 @@ def test_portal_handoff_with_the_dooray_tab_present_reads_only_the_portal_list_c
     context = SimpleNamespace(cookies=Mock(return_value=[{
         "name": "JSESSIONID", "value": "x", "domain": "portal.kaist.ac.kr", "path": "/", "secure": True,
         "expires": -1}]))
-    pages = [Page(DOORAY_URL, context), Page(PORTAL_URL, context)]    # ONE shared default context
+    pages = [Page(DOORAY_URL, context), Page(PORTAL_URL, context)]
     calls = []
 
     @contextmanager
@@ -428,15 +428,15 @@ def test_radar_verifies_the_owner_before_every_attach_and_uses_only_the_dooray_t
     with pytest.raises(radar.BrowserUnverified):
         with captured["session_factory"]():
             pytest.fail("attached to an unverified browser")
-    assert attached == [] and woke == []                    # no wake or attach without a verified owner
+    assert attached == [] and woke == []
     owner.side_effect = None
     with captured["session_factory"]() as session:
-        assert session.page is inbox                         # never the Portal tab
+        assert session.page is inbox
     profile = "ops-browser-profile" if mode == "unified" else "dooray-browser-profile"
     assert owner.call_args.args[1] == port and Path(owner.call_args.args[0]).name == profile
     assert attached[0][0] == profile and attached[0][1]["attach_only"] and attached[0][1]["start_url"] == ""
     assert attached[0][1]["port"] == port and not portal.navigations
-    assert woke == [(port, "kaist.gov-dooray.com")]          # dead tabs restored before the attach
+    assert woke == [(port, "kaist.gov-dooray.com")]
 
 
 def test_an_unverified_radar_browser_backs_off_and_alerts_without_attaching(tmp_path):
@@ -456,7 +456,7 @@ def test_an_unverified_radar_browser_backs_off_and_alerts_without_attaching(tmp_
                            sleep=waits.append, log=lambda _: None)
     assert code == 0 and files.runtime_state()["reason"] == radar.UNVERIFIED
     lister.assert_not_called()
-    assert files.unread_allowed()                          # not an unread violation: no latch
+    assert files.unread_allowed()
     assert [b[0] for b in beats] == ["collector_error"] * 2 and sum(waits) == 360
     alert = radar_alert(files.runtime_state(), running=True, enabled=True, unread_disabled=False, now=t0)
     assert alert.severity == "critical" and alert.reason == "BROWSER_UNVERIFIED"
@@ -518,7 +518,7 @@ def test_mode_switch_requires_both_workers_stopped_and_touches_only_its_file(tmp
     assert json.loads(after.pop(ob.MODE_FILE)) == {"mode": "unified"}
     assert {k: v for k, v in after.items() if not k.endswith(".lock")} == {
         k: v for k, v in before.items() if not k.endswith(".lock")}
-    control.switch_mode(files, "separate")                  # rollback = one value back
+    control.switch_mode(files, "separate")
     assert ob.slot_for(tmp_path, "portal").port == 9223 and ob.slot_for(tmp_path, "dooray").port == 9222
 
 
@@ -529,14 +529,14 @@ def test_legacy_browsers_are_closed_only_after_cutover_and_only_when_verified(tm
     host = Mock(profile=files.local / "portal-browser-profile", port=9223)
     host.inspect.side_effect = [("verified", LEGACY_PORTAL), ("absent", None)]
     connect, verify = Mock(), Mock()
-    with pytest.raises(OpsError):                           # still the workers' browser in separate mode
+    with pytest.raises(OpsError):
         control.close_legacy(files, "portal", host=host, connect=connect, verify=verify, sleep=lambda _: None)
     connect.assert_not_called()
     ob.set_mode(files.local, "unified")
     assert control.close_legacy(files, "portal", host=host, connect=connect, verify=verify,
                                 sleep=lambda _: None) == "closed"
     verify.assert_called_once_with(host.profile, 9223)
-    connect.assert_called_once_with(9223, 600)              # the CDP close is bound to the verified pid
+    connect.assert_called_once_with(9223, 600)
     assert control.profile_inventory(files) == {"ops-browser-profile": True, "portal-browser-profile": True,
                                                 "dooray-browser-profile": True}
     for state in ("unverified", "stale"):
@@ -682,7 +682,7 @@ def test_the_proof_passes_only_with_one_stable_browser_and_overlapping_clients(t
     assert report["overlaps"] == 2 and report["windows"] == 1 and report["chrome_pid"] == 700
     stored = (tmp_path / ".local" / proof.PROOF_FILE).read_text(encoding="utf-8")
     assert json.loads(stored)["result"] == "PASS"
-    assert set(local_snapshot(tmp_path)) == {proof.PROOF_FILE}  # no worker state file is written
+    assert set(local_snapshot(tmp_path)) == {proof.PROOF_FILE}
 
 
 @pytest.mark.parametrize("after,field", [

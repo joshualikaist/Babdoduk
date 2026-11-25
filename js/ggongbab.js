@@ -1,4 +1,3 @@
-/* One event renderer for normal, fixture and localhost preview data. */
 (function () {
   var root = document.getElementById('ggongbabFeed');
   if (!root || !window.BabdodukFreeFood) return;
@@ -22,7 +21,6 @@
     'likelyEvents','explicitFood','needsReview','notEvent','publicCount',
     'sourceDoorayCandidates','sourcePortalCandidates','sourcePublicCandidates'];
   var TAB_KEY = 'babdoduk-foodhub-tab';
-  // Past listings: a separate static file, loaded on its own so a failure never touches the live feed.
   var ARCHIVE_URL = 'data/ggongbab/archive/index.json';
   var ARCHIVE_WINDOW_DAYS = 30;
   var state = {
@@ -31,20 +29,16 @@
     menu: { status: 'loading' },
     archive: { status: 'loading', data: null, expanded: false },
     news: { status: 'loading', items: [] },
-    open: {},                 // the listings opened to their details (2026-11-05)
+    open: {},
     food: 'all',
-    // 꽁밥 LIVE (docs/GGONGBAB_LIVE.md): the optional filters, never saved (the date is relative to
-    // today; the saved filter object keeps its {when, food} shape), the saved listings and the share link.
     day: 'all', who: 'all', area: 'all',
     moreFilters: false,
     savedOpen: false,
-    copy: null,               // {key, text}: what to copy by hand when sharing and copying both failed
+    copy: null,
     entry: { id: '', week: '', done: false, notice: null }
   };
   var L = window.BabdodukLive;
   var savedStore = L ? L.createStore() : null;
-  // 마이 밥도둑 (docs/MY_BABDODUK.md): someone signed in on this browser sees and edits the account's
-  // list instead; guests never load the sign-in client. The guest list in this browser stays as it is.
   var accountMode = '';
   if (L && window.BabdodukAccount) {
     window.BabdodukAccount.attachSavedStore(function (store, failed) {
@@ -54,7 +48,6 @@
       if (kind === 'failed') { announce(t('gg.live.syncFail', '저장하지 못했어요. 다시 시도해 주세요.')); render(); }
     });
   }
-  // 별 누른 꽁밥 30분 전 알림 (docs/PUSH_ALERTS.md): 'hidden' until the browser says otherwise.
   var P = L ? window.BabdodukPush || null : null;
   var pushState = 'hidden';
   function langCode() { return window.babdodukGetLang && window.babdodukGetLang() === 'en' ? 'en' : 'ko'; }
@@ -75,8 +68,6 @@
   var AREA_FILTERS = ['all', 'north', 'east', 'west', 'unknown'];
   var menuCtl = null;
   var feedCtl = null;
-  // Query isolation also applies to the public page, where lab fixtures remain
-  // unreachable: those URLs use the public JSON, never a database connection.
   var allowLiveFeed = mode === 'normal' && query.get('preview') !== '1' && query.get('fixture') !== '1';
 
   function t(key, fallback) {
@@ -100,7 +91,6 @@
   }
   var toKst = F.toKst, nowKst = F.nowKst, ymd = F.ymd, tri = F.tri, isPublic = F.isPublic, isUpcoming = F.isUpcoming;
   var hasFood = F.hasFood, hasGiveaway = F.hasGiveaway, isDeadlineOnly = F.isDeadlineOnly;
-  // The food-type row: the food buckets, then giveaways (a listing of its own, never a food type).
   var FOOD_FILTERS = ['all', 'meal', 'snack', 'refreshment', 'giveaway'];
   var GIFT = '<span aria-hidden="true">🎁</span> ';
   function hm(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
@@ -128,14 +118,10 @@
     if (type === 'refreshment' || type === 'beverage') return 'refreshment';
     return 'meal';
   }
-  // Everything from today on (owner 2026-11-05: the day tiles went, "사람들이 내려보면서 보면되지").
-  // Rows are one per session day already (F.occurrences), so a row matches on its own start.
   function fromToday(ev, today) {
     var s = toKst(ev.startAt);
     return !!s && ymd(s) >= ymd(today);
   }
-  // A food chip matches only rows with explicit food (a giveaway-only row is in no food bucket);
-  // the giveaway chip matches every giveaway, with or without food.
   function inFood(ev) {
     if (state.food === 'all') return true;
     if (state.food === 'giveaway') return hasGiveaway(ev);
@@ -144,8 +130,6 @@
   function publicList() {
     return ((state.free.data && state.free.data.events) || []).filter(isPublic);
   }
-  // Free food only (F.todayUpcoming): the radar, the hero metric, the tab and the cafeteria hint
-  // count it; a giveaway-only listing is shown but never counted.
   function todayUpcoming(now) {
     return F.todayUpcoming(publicList(), now);
   }
@@ -156,7 +140,6 @@
     });
     return upcoming[0] || null;
   }
-  // The optional filters: date (KST), who the source says it is for, campus area by building number.
   function inMore(ev, now) {
     if (!L) return true;
     if (state.day !== 'all' && !L.inDays(ev, state.day, now)) return false;
@@ -177,7 +160,7 @@
     return F.futurePublic(publicList(), now);
   }
   function foodTypeLabel(type) {
-    return t('gg.food.' + type, '');      // the page's tables carry every type (data/content/labels.json)
+    return t('gg.food.' + type, '');
   }
   function mapLink(ev) {
     var loc = ev.location || {};
@@ -206,9 +189,6 @@
       return value && values.indexOf(value) === index;
     });
   }
-  // The full place, for the details. The written-out name joins only when it adds something and is
-  // in the page's language: a bilingual mail's English building names stayed on the Korean page
-  // ("E6-1 / E4 · 1501 / C101 · Natural Science Building, …", 2026-11-05).
   function placeLabel(ev) {
     var loc = ev.location || {};
     var pieces = placePieces(ev);
@@ -218,26 +198,21 @@
         (!pieces.length || F.inLang(loc.name, pageLang()))) pieces.push(loc.name);
     return pieces.join(' · ');
   }
-  // The row's place: the building and room only (the name when there is nothing else).
   function shortPlace(ev) {
     var pieces = placePieces(ev);
     return pieces.length ? pieces.join(' · ') : String((ev.location || {}).name || '');
   }
-  // Only for explicit food: a giveaway-only listing never gets a food label or the "음식 제공" fallback.
   function foodLabelOf(ev) {
     if (!hasFood(ev)) return '';
     var food = ev.food || {};
     return food.description && food.description.length <= 22 ? food.description : foodTypeLabel(food.type) || t('gg.foodFallback', '음식 제공');
   }
-  // The stated food in full, for the details: only in the page's language and only when it says more
-  // than the dish on the row ("현장 참석자 샌드위치 제공" says who gets it; "샌드위치" does not).
   function foodDetailOf(ev) {
     var text = String((ev.food || {}).description || '').trim();
     if (!hasFood(ev) || !text || !F.inLang(text, pageLang())) return '';
     var bare = function (value) { return value.replace(/제공|및|그리고|\band\b|[\s·,+&/()와과]/gi, '').toLowerCase(); };
     return bare(text) === bare(F.dishLabel(ev, t)) ? '' : text;
   }
-  // The food badge: the dish in a word or two (F.dishes).
   function foodBadgeHtml(ev) {
     if (!hasFood(ev)) return '';
     var html = '<span class="gg-food-primary is-' + esc(foodBucket(ev)) + '"><span>' + esc(F.dishLabel(ev, t)) + '</span>';
@@ -246,21 +221,13 @@
   function giveawayText(ev) {
     return hasGiveaway(ev) ? String(ev.giveaway.description || '').trim() : '';
   }
-  // A deadline-only giveaway's date is its sign-up deadline, never an event time.
   function signUpByText(s) {
     return t('gg.giveaway.signUpBy', '신청 마감 {date}').replace('{date}', dayLabel(s) + ' ' + hm(s));
   }
-  // Only public web pages (KAIST notices, Babdoduk's own entries, an Instagram post) are linked;
-  // internal sources never are. {type, url} or null.
   function publicSource(ev) {
     var link = F.sourceLink(ev), url = link ? safeHref(link.url) : '';
     return url ? { type: link.type, url: url } : null;
   }
-  // One listing (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in bold):
-  //   12:00   샌드위치 (🎁 경품)                         신청
-  //           2026 노벨 … 강연회 · E9 양승택오디토리움      (small, muted, two lines at most)
-  // A transparent button covers the row (not the opened details) and opens the rest (food in full, the whole place and map,
-  // giveaway, audience, organizer, deadline, summary, links, source); links sit above it.
   var cardSeq = 0;
   function cardHtml(ev, now, featured) {
     var s = toKst(ev.startAt);
@@ -278,7 +245,6 @@
       '" aria-controls="' + detailId + '" aria-labelledby="' + titleId + '"></button><div class="gg-clock">';
     if (!deadlineOnly) html += '<time class="gg-time' + (s ? '' : ' is-unknown') + '">' + esc(s ? hm(s) : t('gg.timeTbd', '시간 미정')) + '</time>';
     html += '</div><div class="gg-card-main">';
-    // A deadline-only giveaway leads with its sign-up deadline, not an event time.
     if (deadlineOnly) html += '<p class="gg-time is-deadline' + (closed ? ' is-closed' : '') + '">' + esc(signUpByText(s)) + '</p>';
     html += '<p class="gg-card-badges">' + foodBadgeHtml(ev);
     if (gift) html += '<span class="gg-gift-badge">' + GIFT + esc(t('gg.giveaway.label', '경품')) + '</span>';
@@ -288,7 +254,6 @@
     if (changed.length) html += '<span class="gg-changed-label">' + esc(t('gg.live.changed', '변경됨')) + '</span>';
     html += '</p><p class="gg-sub"><span class="gg-title" id="' + titleId + '" role="heading" aria-level="3">' + esc(ev.title) + '</span>' +
       '<span class="gg-where' + (where ? '' : ' is-unknown') + '"> · ' + esc(where || t('gg.placeTbd', '장소 미정')) + '</span></p></div>';
-    // The row's link says when signing up is required ("사전 신청"), so no second badge is needed.
     if (regUrl) html += '<a class="gg-row-reg" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' +
       esc(sign.required === 'true' ? t('gg.registerRequiredShort', '사전 신청') : t('gg.registerShort', '신청')) +
       '<span class="gg-sr"> ' + esc(ev.title) + ' ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
@@ -307,7 +272,7 @@
     if (who) html += '<p class="gg-eligibility">' + esc(t('gg.eligibility','대상')) + ' · ' + esc(who) + '</p>';
     if (ev.organizer) html += '<p class="gg-organizer">' + esc(t('gg.organizer', '주최')) + ' · ' + esc(ev.organizer) + '</p>';
     if (sign.required === 'false') html += '<p class="gg-reg-note">' + esc(t('gg.regNotNeeded','신청 없이 참여')) + '</p>';
-    if (!deadlineOnly) html += deadlineHtml(ev, now);   // a deadline-only giveaway already leads with it
+    if (!deadlineOnly) html += deadlineHtml(ev, now);
     if (ev.summary) html += '<p class="gg-summary">' + esc(ev.summary) + '</p>';
     var joinUrl = safeHref(sign.join);
     var source = publicSource(ev);
@@ -334,15 +299,12 @@
     if (e && e > s) text += '–' + (ymd(e) === ymd(s) ? '' : dayLabel(e) + ' ') + hm(e);
     return text;
   }
-  // The row's star: a toggle named by the listing, so a screen reader hears what it saves.
   function saveButtonHtml(ev) {
     if (!savedStore) return '';
     var on = savedStore.has(ev.id);
     return '<button type="button" class="gg-save" data-gg-save="' + esc(ev.id) + '" aria-pressed="' + on + '" aria-label="' +
       esc(t('gg.live.saveAria', '{title} 저장').replace('{title}', ev.title || '')) + '"><span aria-hidden="true">' + (on ? '★' : '☆') + '</span></button>';
   }
-  // What changed since the visitor saved it: their own earlier copy against the newest one. Nothing is
-  // compared when the feed itself carries no earlier state.
   function changesHtml(ev, changed) {
     if (!changed.length) return '';
     var html = '<div class="gg-changes">';
@@ -355,14 +317,10 @@
     });
     return html + '<button type="button" class="gg-btn gg-ack" data-gg-ack="' + esc(ev.id) + '">' + esc(t('gg.live.ack', '확인했어요')) + '</button></div>';
   }
-  // An opened listing carries no save, share or calendar buttons (owner 2026-11-24: "저장됨은 팝업처럼 가볍게 뜨게 하고,
-  // 공유 삭제, 캘린더에 추가는 마이 밥도둑에서"): the row's star saves it and a short toast says so, and the calendar
-  // is the one connection on 마이 밥도둑.
   function copyBoxHtml() {
     return '<label class="gg-copy"><span>' + esc(t('gg.live.copyHint', '길게 눌러 복사하세요')) + '</span>' +
       '<textarea readonly rows="3">' + esc(state.copy.text) + '</textarea></label>';
   }
-  // `icon` is decorative markup: the label alone names the chip.
   function chip(group, value, label, pressed, icon) {
     return '<button type="button" class="gg-chip" data-group="' + group + '" data-value="' + value + '" aria-pressed="' + (pressed ? 'true' : 'false') + '">' + (icon || '') + esc(label) + '</button>';
   }
@@ -379,14 +337,12 @@
     h += '</div>';
     return h;
   }
-  // Date, who and where: behind one button, so the phone's first screen keeps the list.
   function moreFiltersHtml() {
     var n = moreCount();
     var h = '<button type="button" class="gg-more" data-gg-more aria-expanded="' + state.moreFilters + '" aria-controls="ggMoreFilters">' +
       esc(t('gg.live.more', '날짜·대상·위치')) + (n ? ' <span class="gg-more-count">' + n + '</span>' : '') +
       '<span aria-hidden="true" class="gg-more-caret">' + (state.moreFilters ? '▴' : '▾') + '</span></button>';
     h += '<div class="gg-more-panel" id="ggMoreFilters"' + (state.moreFilters ? '' : ' hidden') + '>';
-    // Closed, the panel holds nothing: no hidden chips for a tab order or a tap-size audit to meet.
     if (!state.moreFilters) return h + '</div>';
     var days = DAY_FILTERS.slice();
     if (/^w:/.test(state.day)) days.push(state.day);
@@ -413,13 +369,9 @@
     if (count <= 2) return t('gg.radar.some', '🍙 한 끼는 건질 수 있어요');
     return t('gg.radar.many', '🔥 오늘 꽁밥 풍년');
   }
-  // The radar (2026-11-05): one slim line, the day's mood and count, and the next free meal as a
-  // button to its row. It was a 258 px box that repeated the hero's count and the first card.
   function radarHtml(now) {
     var today = todayUpcoming(now);
     var next = earliestToday(now);
-    // Without a next meal there is no button under the line: the box keeps its own bottom padding
-    // (2026-11-05: "오늘은 꽁밥 가뭄" sat on the box's bottom edge and looked cut off).
     var html = '<section class="gg-radar' + (next ? '' : ' is-quiet') + '" aria-label="' + esc(t('gg.radar.label', '오늘의 꽁밥 레이더')) + '">';
     html += '<p class="gg-radar-line"><span class="gg-radar-title">' + esc(radarCopy(today.length)) + '</span>' +
       '<span class="gg-radar-count">' + esc(t('gg.radar.count', '오늘 {n}개').replace('{n}', String(today.length))) + '</span></p>';
@@ -479,9 +431,6 @@
     }
     return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '맞는 꽁밥이 없어요')) + '</strong>' + '</div>';
   }
-  // What this list is (the public current and upcoming rows only; ended rows
-  // leave it) and when the snapshot was published. It makes no freshness claim
-  // beyond that time.
   function feedNoteHtml(now) {
     var g = state.free.data && toKst(state.free.data.generatedAt);
     if (!g) return '';
@@ -492,7 +441,6 @@
   }
   // ---- 꽁밥 LIVE: the week to share, saved listings, the shared-link entry, the new-feature note ----
   function byStartAt(a, b) { return String(a.startAt || '').localeCompare(String(b.startAt || '')); }
-  // The week a share covers: the week a shared link opened, else from today to Sunday.
   function shareRange(now) {
     return /^w:/.test(state.day) ? L.dayRange(state.day, now) : L.dayRange('week', now);
   }
@@ -527,9 +475,6 @@
     for (var i = 0; i < list.length; i++) if (list[i].id === id && isPublic(list[i])) return list[i];
     return null;
   }
-  // Each saved listing against the newest data: upcoming (with changes), ended (from the feed, the
-  // archive, or, once both have loaded, the visitor's own copy), missing (no longer published and not
-  // over), or still being checked. A missing listing is never shown: its star comes off (dropMissing).
   function savedGroups(now) {
     var out = { upcoming: [], ended: [], missing: [], checking: [], gone: [] };
     savedStore.list().forEach(function (item) {
@@ -543,7 +488,6 @@
       var end = F.eventEnd(mine);
       if (L.dayPassed(mine, F.nowKst())) out.gone.push(item);
       else if (end && end < now) out.ended.push({ item: item, ev: mine, own: true });
-      // Missing only when both lists really loaded: a failed load never makes a listing look withdrawn.
       else if (state.free.status === 'ready' && state.archive.status === 'ready') out.missing.push({ item: item, ev: mine });
       else out.checking.push({ item: item });
     });
@@ -574,9 +518,6 @@
       esc(t('gg.live.unsaveAria', '{title} 저장 지우기').replace('{title}', title)) + '"><span aria-hidden="true">×</span></button>';
     return html + '</li>';
   }
-  // A saved listing that left the published list before it was over (owner 2026-11-24: "빠진거는 알아서 별표에서도
-  // 빠져야지") loses its star by itself, like a tap on ×: signed in, that also takes it out of the subscribed
-  // calendar. Once per listing and page load, so a failed account write is not retried on every render.
   var droppedIds = {};
   function dropMissing(now) {
     if (!savedStore) return;
@@ -587,8 +528,6 @@
   function savedHtml(now) {
     if (!savedStore) return '';
     var g = savedGroups(now);
-    // A listing whose day is over is not shown or counted (L.dayPassed); its saved row stays for the calendar.
-    // A missing one is not shown either, even where its star could not be taken off.
     var hidden = g.gone.concat(g.missing.map(function (row) { return row.item; }));
     var all = savedStore.list().filter(function (item) { return hidden.indexOf(item) < 0; });
     var recovered = savedStore.recovered();
@@ -610,9 +549,6 @@
       html += '<h3 class="gg-saved-sub">' + esc(t('gg.live.pastTitle', '지난 꽁밥')) + '</h3>';
       html += '<ol class="gg-saved-list is-past">' + g.ended.map(function (r) { return savedRowHtml(r, 'ended', now); }).join('') + '</ol>';
     }
-    // Signed in, the calendar is the subscription on 마이 밥도둑, offered on iPhone and iPad only. The iPhone pulls
-    // it when it likes and no website can make it refresh, so the nearest thing to a 동기화 button (owner
-    // 2026-11-19) opens the Calendar app, where pulling the Calendars list down reads the new stars at once.
     var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
     html += pushToggleHtml() + (accountMode === 'account' && ios ?
       '<p class="gg-calopen"><a class="gg-btn gg-calopen-btn" href="calshow://" data-gg-calopen><span aria-hidden="true">📅</span> ' +
@@ -626,7 +562,6 @@
     }
     return html + '</div></section>';
   }
-  // A shared link (?e=<id>, ?week=<Monday>) resolves once the data it needs has loaded.
   function processEntry(now) {
     var en = state.entry;
     if (en.done || !L) return;
@@ -641,7 +576,7 @@
     var rows = ((state.free.data && state.free.data.events) || []).filter(isPublic).filter(matches).sort(byStartAt);
     var live = rows.filter(function (ev) { return isUpcoming(ev, now); })[0];
     if (live) {
-      state.food = 'all'; state.day = 'all'; state.who = 'all'; state.area = 'all';   // shown, not saved
+      state.food = 'all'; state.day = 'all'; state.who = 'all'; state.area = 'all';
       state.activeSection = 'free';
       state.open[live.id] = true;
       en.focus = live.id;
@@ -668,7 +603,6 @@
   function noticeDismissed() {
     try { return localStorage.getItem(NOTICE_KEY) === '1'; } catch (err) { return true; }
   }
-  // One line, under the page title, closed for good with ×; it never covers the list.
   function newNoticeHtml() {
     if (!L || noticeDismissed()) return '';
     return '<div class="gg-new" role="note"><span class="gg-new-tag">NEW</span><p>' +
@@ -685,9 +619,6 @@
       esc(t('gg.live.emptyWhy', '조건 · {list}').replace('{list}', parts.join(' · '))) +
       '<br><button type="button" class="gg-btn gg-reset" data-gg-reset>' + esc(t('gg.live.reset', '필터 초기화')) + '</button></div>';
   }
-  // Past listings: public rows that have ended, from the archive file plus any live-feed row
-  // whose end has already passed (it leaves the live list at once; the next export archives it).
-  // The same client rules decide both lists, so a row is shown live or past, never both.
   function pastListings(now) {
     var cutoff = now.getTime() - ARCHIVE_WINDOW_DAYS * 86400000;
     var seen = {};
@@ -706,7 +637,6 @@
         String(a.id).localeCompare(String(b.id));
     });
   }
-  // A record, not an invitation: no registration, deadline or primary button, whatever the data holds.
   function pastHtml(ev) {
     var s = toKst(ev.startAt);
     var gift = hasGiveaway(ev);
@@ -739,7 +669,6 @@
     if (status === 'loading') html += '<p class="gg-archive-state">' + esc(t('gg.archive.loading', '불러오는 중')) + '</p>';
     else if (status === 'error') html += '<p class="gg-archive-state" data-archive-state="error">' + esc(t('gg.archive.error', '지난 기록을 불러오지 못했어요.')) + '</p>';
     else if (!list.length) html += '<p class="gg-archive-state" data-archive-state="empty">' + esc(t('gg.archive.empty', '최근 30일 기록 없음')) + '</p>';
-    // Closed until asked for (2026-11-05): one button, then the whole list.
     if (list.length) {
       var expanded = state.archive.expanded;
       html += '<button type="button" class="gg-archive-more" data-gg-archive-more aria-controls="ggPastList" aria-expanded="' + expanded + '">' +
@@ -753,9 +682,7 @@
   function freePaneHtml(now) {
     var html = entryNoticeHtml() + savedHtml(now);
     if (state.free.status === 'ready') html += radarHtml(now);
-    // The radar's own height, so it does not push the list when it lands.
     else if (state.free.status === 'loading') html += '<div class="gg-skeleton gg-radar-skeleton"></div>';
-    // The live list and its sticky filters share one box, so the filters stop at the archive.
     html += '<div class="gg-live">';
     html += filtersHtml();
     html += '<div class="gg-feed">';
@@ -764,8 +691,6 @@
     else {
       html += feedNoteHtml(now);
       var events = visibleEvents(now);
-      // The featured "다음 꽁밥" is the radar's next free meal: always a food row (one that also has a
-      // giveaway may be it), never a giveaway-only row, which the radar does not count.
       var featuredId = (earliestToday(now) || {}).id;
       if (!events.length) {
         if (L && filtersActive()) html += filteredEmptyHtml();
@@ -794,7 +719,6 @@
     if (state.news.status === 'off') return '';
     var html = '<section class="gg-news" aria-labelledby="ggNewsTitle"><h2 id="ggNewsTitle">' +
       esc(t('gg.news.title', '먹거리 소식')) + '</h2>';
-    // Nothing while loading or when there is no news (2026-11-05: an empty section is not news).
     if (state.news.status === 'loading' || (state.news.status === 'ready' && !state.news.items.length)) return '';
     if (state.news.status === 'error') return html + '<p class="gg-news-state">' + esc(t('gg.news.error', '소식을 불러오지 못했어요.')) + '</p></section>';
     html += '<ul class="gg-news-list">';
@@ -814,8 +738,6 @@
     state.news.items = data.items.filter(function (item) {
       if (!item || item.contentType !== 'campus_food_news' || !/^news-[a-f0-9]{32}$/.test(item.id || '') ||
           !/^\d{4}-\d{2}-\d{2}$/.test(item.noticeDate || '') || typeof item.title !== 'string' || !item.title || seen[item.id]) return false;
-      // Defense in depth: private source URLs/IDs are never rendered, including
-      // malformed static payloads. The exporter is the authoritative validator.
       var text = [item.title, item.summary || '', item.location || ''].join(' ');
       if (/portal\.kaist\.ac\.kr|sso\.kaist\.ac\.kr|\/wz\/|pstNo|boardNo|external[_ ]?id|https?:\/\//i.test(text) ||
           /\b[a-z_][\w-]*\s*=\s*\S+/i.test(text)) return false;
@@ -866,7 +788,6 @@
       state.entry.focus = '';
       requestAnimationFrame(function () { focusCard(target); });
     }
-    // #past (the footer's 지난 꽁밥 link): once both lists have loaded, the archive is open and in view.
     if (state.jumpToPast && state.free.status !== 'loading' && state.archive.status !== 'loading') {
       state.jumpToPast = false;
       requestAnimationFrame(function () {
@@ -877,7 +798,6 @@
     renderDiagnostics();
     if (debugLayout) requestAnimationFrame(reportLayout);
   }
-  // render() replaces the feed markup; keep a keyboard user's place on the same control.
   function focusSelector() {
     var el = document.activeElement;
     if (!el || el === root || !root.contains(el)) return '';
@@ -912,14 +832,13 @@
     }
     menuCtl = window.BabdodukKaistMenu.attach(host, opts);
   }
-  // Fixture mode's synthetic data: tests/fixtures/ggongbab-lab.js, loaded at the end of this file.
   function labFixtures() {
     if (!window.BabdodukLabFixtures) throw new Error('fixtures unavailable');
     return window.BabdodukLabFixtures;
   }
   function acceptFree(data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad payload');
-    data = Object.assign({}, data, { events: F.occurrences(data.events) });   // one row per session day
+    data = Object.assign({}, data, { events: F.occurrences(data.events) });
     state.free.data = data;
     state.free.status = 'ready';
     render();
@@ -961,11 +880,10 @@
     if (mode === 'preview' || mode === 'blocked') { state.archive.status = 'off'; return; }
     if (mode === 'fixture') { acceptArchive(labFixtures().archive(nowKst(), ARCHIVE_WINDOW_DAYS)); return; }
     fetch(ARCHIVE_URL, { cache: 'no-store' }).then(function (res) {
-      if (res.status === 404) return { events: [] }; // not generated yet: nothing has been archived
+      if (res.status === 404) return { events: [] };
       if (!res.ok) throw new Error('unavailable');
       return res.json();
     }).then(acceptArchive).catch(function () {
-      // Non-fatal: the live feed above keeps its own state.
       state.archive.status = 'error';
       render();
     });
@@ -1030,7 +948,6 @@
     target.setAttribute('tabindex', '-1');
     target.focus({ preventScroll: true });
   }
-  // One polite status line for save, copy and share results (outside the re-rendered feed).
   var toast = null, toastTimer = null;
   function announce(message) {
     if (!toast) {
@@ -1074,7 +991,6 @@
   function afterStar(ev, savedMessage) {
     pushChanged();
     if (!L.canCalendar(ev, nowKst())) return announce(savedMessage);
-    // In the site opened from the home screen, the first star offers the phone's own alert instead.
     if (P && P.standalone() && P.shouldAsk()) {
       announce(savedMessage);
       P.ask(pushAskText(), function (yes) {
@@ -1088,8 +1004,6 @@
       });
       return;
     }
-    // The star opens no calendar screen: signed in, the subscribed calendar on 마이 밥도둑 takes every star by itself
-    // (docs/CALENDAR_FEED.md); a guest gets no calendar at all (owner 2026-11-24).
     announce(pushState === 'on' ? savedMessage + ' · ' + t('push.willAlert', '30분 전에 알림이 와요') : savedMessage);
   }
   function pushToggleHtml() {
@@ -1120,7 +1034,6 @@
       return true;
     }
     if (P && e.target.closest('[data-gg-push]')) {
-      // Inside the click: turning on asks the phone's permission question right here.
       var turningOn = pushState !== 'on';
       (turningOn ? P.enable(savedIds(), langCode()) : P.disable()).then(function (result) {
         if (turningOn) pushDone(result);
@@ -1191,12 +1104,11 @@
       var group = chipEl.getAttribute('data-group');
       var value = chipEl.getAttribute('data-value');
       if (group === 'day' || group === 'who' || group === 'area') {
-        state[group] = value;                      // the optional filters are not saved
+        state[group] = value;
         render();
         return;
       }
       if (group === 'food') state.food = value;
-      // `when` stays in the saved value, always 'all', so a page from before the change still reads it.
       try { localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({ when: 'all', food: state.food })); } catch (err) {}
       render();
       return;
@@ -1239,7 +1151,6 @@
   });
   document.addEventListener('babdoduk-lang', render);
   document.addEventListener('babdoduk-lang', pushChanged);
-  // Expiry remains client-side even if the backend has not deleted a row yet.
   var expiryTimer;
   function resumeFeed() {
     if (document.hidden) return;
@@ -1260,8 +1171,7 @@
 
   try {
     var saved = JSON.parse(localStorage.getItem('babdoduk-ggongbab-filter') || 'null');
-    // A saved day (from the day tiles, gone since 2026-11-05) is ignored; the food filter stays.
-    if (saved && FOOD_FILTERS.indexOf(saved.food) >= 0) state.food = saved.food;   // anything else stays 'all'
+    if (saved && FOOD_FILTERS.indexOf(saved.food) >= 0) state.food = saved.food;
   } catch (err) {}
   try {
     var tabSaved = localStorage.getItem(TAB_KEY);
@@ -1274,7 +1184,6 @@
     state.jumpToPast = true;
   }
   if (location.hash === '#past') openPast();
-  // 꽁밥 LIVE share links: ?e=<listing id> and ?week=<a date in the week, read as its Monday>; #saved opens the saved list.
   if (L) {
     var entryId = query.get('e') || '';
     if (/^[A-Za-z0-9_-]{1,80}(#[0-9]{1,2})?$/.test(entryId)) state.entry.id = entryId;
@@ -1294,8 +1203,6 @@
     loadNews();
     if (document.hidden) pauseFeed(); else resumeFeed();
   }
-  // Fixture mode (the lab page only) reads its synthetic data from tests/fixtures/, which the local
-  // server serves (python scripts/check_ggongbab_ui.py --serve) and no deployment carries.
   if (mode === 'fixture') {
     var fixtureScript = document.createElement('script');
     fixtureScript.src = 'tests/fixtures/ggongbab-lab.js';

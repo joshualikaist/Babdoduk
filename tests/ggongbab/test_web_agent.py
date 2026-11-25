@@ -58,10 +58,10 @@ def test_state_holds_no_personal_information(tmp_path):
     data = json.loads(blob)
     assert set(data["mails"][0]) == {"id_hash", "subject_hash", "received", "processed_at",
                                      "registered", "outcome", "rules", "reason"}
-    assert data["mails"][0]["reason"] == ""     # a rule phrase when given, never mail text
+    assert data["mails"][0]["reason"] == ""
     assert len(data["mails"][0]["id_hash"]) == 32
     from ggongbab.prefilter import PREFILTER_VERSION
-    assert data["mails"][0]["rules"] == PREFILTER_VERSION   # a rules version, never mail-derived
+    assert data["mails"][0]["rules"] == PREFILTER_VERSION
 
 
 def test_corrupt_state_file_does_not_stop_the_agent(tmp_path):
@@ -111,7 +111,7 @@ def test_incomplete_contract_is_rejected():
 
 def test_json_endpoint_needs_no_selectors():
     contract = UiContract(verified=True, list_api="https://x/api/mails?page=1")
-    contract.require_ready()          # must not raise
+    contract.require_ready()
 
 
 def test_local_override_wins(tmp_path):
@@ -156,7 +156,7 @@ def test_project_verified_by_exact_name(dooray_settings):
 
 @pytest.mark.parametrize("result", [
     {"code": "다른-프로젝트", "state": "active"},
-    {"code": "밥도둑-꽁밥-행사-수집함 ", "state": "active"},   # trailing space is not a match
+    {"code": "밥도둑-꽁밥-행사-수집함 ", "state": "active"},
     {"code": "밥도둑-꽁밥-행사-수집함", "state": "archived"},
     {},
 ])
@@ -295,7 +295,6 @@ def test_no_password_handling_anywhere_in_the_agent():
         names, called = _code_symbols(path)
         for forbidden in ("password", "passwd", "credential", "keyring", "secret"):
             assert not any(forbidden in name for name in names), f"{path.name}: {forbidden}"
-        # Playwright's text-entry calls: the agent must never fill a login form.
         for forbidden in ("fill", "press_sequentially", "set_input_files"):
             assert forbidden not in called, f"{path.name}: {forbidden}()"
 
@@ -445,7 +444,6 @@ def test_discovery_report_holds_no_values(tmp_path):
     blob = out.read_text(encoding="utf-8")
     for leak in ("삼성전자", "Tech Lunch Talk", "abc123", "someone@kaist.ac.kr"):
         assert leak not in blob, leak
-    # A query value is redacted to <v>, which also swallows an address that sat there.
     assert "token=<v>" in blob and "page=<v>" in blob
     assert "u=<v>" in blob
     assert report["evidence"]["A_mailListCallObserved"] is True
@@ -470,9 +468,9 @@ def test_observer_ignores_non_xhr_and_unreadable_bodies():
         FakeResponse("https://x/app.js", None, content_type="application/javascript", resource_type="script"),
         FakeResponse("https://x/v1/thing", None, content_type="application/json"),
     )
-    assert len(observer.calls) == 1               # the script was ignored
+    assert len(observer.calls) == 1
     only = next(iter(observer.calls.values()))
-    assert only["shape"] is None                  # unreadable body left as unknown
+    assert only["shape"] is None
 
 
 def test_observe_reloads_to_trigger_the_list_call():
@@ -506,9 +504,6 @@ def test_wait_for_login_only_proves_a_session_not_a_mailbox():
 
 
 # --- the reported production bug ----------------------------------------------
-# Real report: the user reached https://kaist.gov-dooray.com/mail/systems/inbox and
-# pressed Enter, but setup kept reading the launch page and saved the root URL,
-# corroborated only by 25 generic repeated containers.
 ROOT_URL = "https://kaist.gov-dooray.com/"
 INBOX_URL = "https://kaist.gov-dooray.com/mail/systems/inbox"
 LOGIN_URL = "https://sso.kaist.ac.kr/login"
@@ -604,7 +599,7 @@ def test_login_and_root_and_inbox_selects_inbox():
                           FakeCtxPage(FakeFrame(ROOT_URL, generic_groups())),
                           FakeCtxPage(FakeFrame(INBOX_URL, mail_row_groups())))
     target = select_mail_page(context, HOST)
-    assert target.url == INBOX_URL       # the other-host login page is filtered out entirely
+    assert target.url == INBOX_URL
 
 
 def test_inbox_inside_a_frame_is_selected():
@@ -662,7 +657,7 @@ def test_root_page_with_generic_repetition_is_refused(tmp_path):
     from ggongbab.web.page_select import select_mail_page, summarise_rows
 
     context = FakeContext(FakeCtxPage(FakeFrame(ROOT_URL, generic_groups(25))))
-    assert select_mail_page(context, HOST) is None      # nothing qualifies
+    assert select_mail_page(context, HOST) is None
 
     observer = NetworkObserver(context)
     observer.start()
@@ -673,7 +668,6 @@ def test_root_page_with_generic_repetition_is_refused(tmp_path):
     assert report["evidence"]["B_confirmedByUser"] is True
     assert report["evidence"]["A_mailListCallObserved"] is False
     assert report["evidence"]["C_strong"] is False
-    # B alone must never be enough.
     corroborated = report["evidence"]["A_mailListCallObserved"] or report["evidence"]["C_strong"]
     assert corroborated is False
 
@@ -754,8 +748,6 @@ def test_setup_overwrites_an_earlier_wrong_mail_url(tmp_path):
 
 
 # --- calibration from the live discovery -------------------------------------
-# Measured on the real inbox: Dooray serves its mail list WITHOUT "json" in the
-# content-type, which is why the first classifier filed it under nonJsonCalls.
 def _mail_page(rows, page_no=0):
     return {"totalCount": 137, "contents": rows}
 
@@ -914,7 +906,7 @@ def test_calibrate_leaves_unverified_when_smoke_fails():
         "isJson": True, "afterReload": True, "onMailScreen": True, "hitCount": 2,
         "shape": {"kind": "rows", "rowCount": 50, "rowKeys": ["id", "subject", "receivedAt"]},
     }
-    page = FakeApiPage([_mail_page(_rows(1, 2))])       # only 2 rows: below the floor
+    page = FakeApiPage([_mail_page(_rows(1, 2))])
     calibrate(page, observer, contract, log=lambda *_a: None)
     assert contract.verified is False and contract.list_api == ""
 
@@ -956,8 +948,8 @@ def test_paging_stops_at_the_date_cutoff():
     pages = [_mail_page(_rows(100, 20, day=18)), _mail_page(_rows(200, 20, day=2))]
     session, page = _paged_session(pages, contract)
     headers = list_mails(session, limit=500, since=date(2026, 9, 10), max_pages=10)
-    assert len(headers) == 40                 # the page that crossed the cutoff is still kept
-    assert len(page.request.urls) == 2        # and then it stops
+    assert len(headers) == 40
+    assert len(page.request.urls) == 2
 
 
 def test_paging_stops_when_no_new_ids_appear():
@@ -1113,9 +1105,6 @@ def test_cookie_summary_reports_names_only(tmp_path):
 
 
 # --- login detection across tabs ----------------------------------------------
-# Real report: --setup printed its banner and then sat there. wait_for_login held
-# the launch page, which stayed parked on the identity provider while the signed-in
-# app lived in another tab, so it waited out the whole timeout.
 IDP_URL = "https://kaist.gov-dooray.com/idp/multi"
 APP_URL = "https://kaist.gov-dooray.com/home"
 
@@ -1257,7 +1246,6 @@ def test_progress_is_logged_only_when_the_state_changes():
     joined = "\n".join(lines)
     assert "[setup] waiting for SSO login..." in joined
     assert "authenticated Dooray page detected" in joined
-    # the same message must not repeat on every poll
     assert len(lines) == len(set(lines)), lines
 
 
@@ -1288,8 +1276,6 @@ def test_wait_for_login_rereads_the_context_every_poll():
 
 
 # --- the mail screen must not be called an identity provider ------------------
-# Real report: the user was logged in and looking at /mail/systems/inbox, and the
-# terminal still said "still on the identity provider".
 MAIL_URL = "https://kaist.gov-dooray.com/mail/systems/inbox"
 
 
@@ -1417,9 +1403,6 @@ def test_mail_frame_on_another_host_is_ignored():
 
 
 # --- the mailbox lives in a frame under an /idp/ shell -------------------------
-# Real report: the user was reading the inbox while the terminal insisted on
-# "identity-provider". observe_page returned on the login URL before it ever
-# looked at the frames.
 def test_A_idp_shell_with_a_mail_frame_is_authenticated():
     page = FakeLoginPage(IDP_URL, ready_state="interactive", text=0, frame_urls=[MAIL_URL])
     obs = _observe(page)
@@ -1566,10 +1549,6 @@ def test_H_setup_logs_carry_no_query_or_content():
 
 
 # --- browser engine choice and lifecycle tracing ------------------------------
-# The live setup stopped at /idp/multi and then an other-host login page, and no
-# /mail/... navigation ever reached the context. Tracing makes that visible, and
-# the installed Chrome is preferred so the SSO flow runs in the browser the
-# machine already uses.
 class FakeChromium:
     def __init__(self, failing_channels=()):
         self.failing = set(failing_channels)
@@ -1793,10 +1772,6 @@ def test_setup_passes_the_tracer_and_prefers_chrome():
 
 
 # --- the detection loop must not be starved by page.evaluate ------------------
-# Real report: after the SSO hop to sso.kaist.ac.kr the terminal went quiet. The
-# context default timeout was 45s and detection calls evaluate on every page and
-# frame each poll, so a page mid-redirect could stall the loop for most of the
-# budget while the "only log on change" rule kept the screen silent.
 class TimeoutRecordingContext(FakeContext):
     def __init__(self, *pages):
         super().__init__(*pages)
@@ -1841,7 +1816,6 @@ def test_detect_timeout_is_far_below_the_setup_budget():
     from ggongbab.web.browser import DETECT_TIMEOUT_MS, NAV_TIMEOUT_MS, SETUP_TIMEOUT_SECONDS
 
     assert DETECT_TIMEOUT_MS < NAV_TIMEOUT_MS
-    # One stalled page must not be able to eat a meaningful slice of the budget.
     assert DETECT_TIMEOUT_MS / 1000 <= SETUP_TIMEOUT_SECONDS / 20
 
 
@@ -1874,14 +1848,11 @@ def test_heartbeat_breaks_the_silence_while_nothing_changes(monkeypatch):
 
 
 # --- resident Chrome over CDP -------------------------------------------------
-# Reached after the live trace proved a context escape: page #1 stayed on the
-# KAIST SSO form for 92s while the user finished logging in elsewhere.
 def test_debug_port_is_loopback_only():
     from ggongbab.web import resident
 
     assert resident.DEBUG_HOST == "127.0.0.1"
     assert resident.endpoint(9222) == "http://127.0.0.1:9222"
-    # Comments may mention it; no executable line may use it.
     lines = Path(resident.__file__).read_text(encoding="utf-8").splitlines()
     code = " ".join(line.split("#", 1)[0] for line in lines)
     assert "0.0.0.0" not in code, "the debug port must never bind to a public address"
@@ -1936,7 +1907,6 @@ def test_launch_arguments_use_the_dedicated_profile_and_loopback(monkeypatch, tm
     assert "--remote-debugging-port=9333" in args
     profile_arg = [a for a in args if a.startswith("--user-data-dir=")][0]
     assert profile_arg.endswith("dooray-browser-profile")
-    # Absolute, because stop_chrome matches the command line.
     assert str(profile.resolve()) in profile_arg
     for forbidden in ("Google\\Chrome\\User Data", "--remote-debugging-address=0.0.0.0"):
         assert not any(forbidden in a for a in args)
@@ -2040,7 +2010,6 @@ def test_setup_follows_new_cdp_context_and_pumps_sso_events():
     browser = SimpleNamespace(contexts=[first])
     scope = BrowserScope(browser, 9222)
     session = Session(sso, scope, UiContract())
-    # Model Playwright: context creation becomes visible only when events run.
     sso.wait_for_timeout = lambda _ms: browser.contexts.append(second) if second not in browser.contexts else None
     seen_pages, seen_responses = [], []
     scope.on("page", seen_pages.append)
@@ -2118,10 +2087,6 @@ def test_cdp_diagnostics_distinguish_targets_and_redact_secrets(monkeypatch, mai
 
 
 # --- preview, detail body and the read-state gate -----------------------------
-# Live shapes, measured on the tenant:
-#   list row  : mailSummary.previewText  -> str(~194 chars), 295/300 non-empty
-#   detail    : GET /v2/wapi/mails/{id}?render=... -> result.content.body.content
-#   read flag : mailSummary.flags.read   -> bool, 300/300 present, all true
 LIVE_ROW = {
     "id": "4424595166006584821",
     "subject": "삼성전자 Tech Lunch Talk",
@@ -2143,7 +2108,6 @@ def test_preview_comes_from_the_nested_path():
     from ggongbab.web.mail_reader import _row_preview
 
     assert _row_preview(LIVE_ROW, "mailSummary.previewText").startswith("9월 25일")
-    # mailSummary itself is an object, so a flat lookup must not produce junk.
     assert _row_preview(LIVE_ROW, "") == ""
 
 
@@ -2282,7 +2246,6 @@ def test_run_refuses_read_state_without_a_verified_field():
 def test_subject_only_dry_run_stays_allowed():
     start = AGENT_SRC.index("def cmd_run(")
     body = AGENT_SRC[start:AGENT_SRC.index("def _run_pipeline(")]
-    # The gate is scoped to --read-state, so subject-only runs are untouched by it.
     assert 'args.read_state != "all"' in body
 
 

@@ -31,7 +31,7 @@ def inside(p, poly):
         if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1: c = not c
     return c
 def ring(refs): return [xy(n) for n in refs if n in nodes]
-EDGE_SLACK = 25.0   # meters a ground shape may reach past the campus outline
+EDGE_SLACK = 25.0
 def edge_distance(p):
     best = float("inf")
     for i in range(len(boundary)):
@@ -57,8 +57,6 @@ def stitch(member_refs):
 features = {"buildings": [], "grass": [], "water": [], "wood": [], "pitch": [], "track": [], "parking": [], "paths": [], "roads": []}
 def add_area(kind, pts, t, holes=()):
     if len(pts) < 4 or not inside(centroid(pts), boundary): return
-    # Ground shapes stay on the island: one that runs past the campus edge (a verge strip along an
-    # outside road) would hang off the model; one that only grazes the edge is kept.
     if kind != "buildings" and not all(inside(p, boundary) or edge_distance(p) < EDGE_SLACK for p in pts): return
     item = {"pts": pts}
     if kind == "pitch" and t.get("sport"): item["sport"] = t["sport"].split(";")[0]
@@ -100,7 +98,6 @@ for rel in r.iter("relation"):
     holes = [ring(h) for h in stitch(inners)]
     for o in stitch(outers):
         if o[0] == o[-1]: add_area(kind, ring(o), t, holes)
-# Landmarks as points: the main gate's pillars and the carillon on the pond (석림의 종).
 def node_xy(n):
     lat, lon = float(n.get("lat")), float(n.get("lon"))
     return [round((lon - lon0) * 111320 * K, 2), round((lat - lat0) * 110540, 2)]

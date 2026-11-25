@@ -10,8 +10,8 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 HOST = "home-calendar.invalid"
-NOW = "2026-10-01T09:00:00+09:00"   # a Thursday; October 2026 starts on a Thursday
-ACCENT = "rgb(190, 24, 93)"   # --color-accent #be185d (brand pink since 2026-10-13)
+NOW = "2026-10-01T09:00:00+09:00"
+ACCENT = "rgb(190, 24, 93)"
 INK = "rgb(30, 29, 26)"
 KAIST_E11 = {"name": "창의학습관(E11) 101호", "building": "창의학습관(E11)", "room": "101호"}
 
@@ -60,7 +60,7 @@ def open_home(browser, live=LIVE, archive=ARCHIVE, now=NOW, lang="ko", size=(390
         if path == "data/ggongbab/archive/index.json":
             return route.fulfill(json=archive) if archive_status == 200 else route.fulfill(status=archive_status, body="")
         if path.startswith("data/"):
-            return route.fulfill(status=404, body="")   # cafeteria and magazine are not under test here
+            return route.fulfill(status=404, body="")
         file = (ROOT / path).resolve()
         if file.is_file() and ROOT in file.parents:
             return route.fulfill(path=str(file))
@@ -109,14 +109,14 @@ def test_month_math_is_sunday_first_and_calendar_correct(browser):
               months: [C.addMonths('2026-01', -1), C.addMonths('2026-12', 1), C.addMonths('2026-10', 14)],
               days7: C.addDays('2026-12-28', 7)};
     }""")
-    assert math["oct"] == ["2026-09-27", "2026-10-31", 5]     # starts Thursday: 4 leading days, none after
-    assert math["nov"] == ["2026-11-01", "2026-12-05", 5]     # starts on a Sunday: no leading overflow
-    assert math["aug"] == ["2026-07-26", "2026-09-05", 6]     # starts on a Saturday: 6 leading days, 6 rows
-    assert math["feb26"] == ["2026-02-01", "2026-02-28", 4]   # Sunday start, 28 days: exactly 4 rows
-    assert math["feb28"] == ["2028-01-30", "2028-03-04", 5]   # leap-year February
+    assert math["oct"] == ["2026-09-27", "2026-10-31", 5]
+    assert math["nov"] == ["2026-11-01", "2026-12-05", 5]
+    assert math["aug"] == ["2026-07-26", "2026-09-05", 6]
+    assert math["feb26"] == ["2026-02-01", "2026-02-28", 4]
+    assert math["feb28"] == ["2028-01-30", "2028-03-04", 5]
     assert math["feb28Has29"] and math["after29"] == "2028-03-01"
-    assert math["columnsOk"]                                   # column 0 is always a Sunday
-    assert math["days"] == [28, 28, 29, 29, 28, 31]            # 2000 leap, 2100 not
+    assert math["columnsOk"]
+    assert math["days"] == [28, 28, 29, 29, 28, 31]
     assert math["sunday"] == 0 and math["saturday"] == 6
     assert math["clamp"] == ["2026-02-28", "2028-02-29", "2026-02-28"]
     assert math["months"] == ["2025-12", "2027-01", "2027-12"] and math["days7"] == "2027-01-04"
@@ -138,7 +138,7 @@ def test_rendered_grid_is_sunday_first_with_muted_overflow(browser):
     assert last.get_attribute("data-date") == "2026-10-31" and "is-other" not in last.get_attribute("class")
     assert "is-other" in cell(page, "2026-09-30").get_attribute("class")
     assert "is-other" not in cell(page, "2026-10-01").get_attribute("class")
-    page.locator("[data-hc-step='1']").click()                        # November starts on a Sunday
+    page.locator("[data-hc-step='1']").click()
     assert page.locator(".hc-month-title").inner_text() == "11월"
     first = page.locator("#homeCalGrid tbody td").first
     assert first.get_attribute("data-date") == "2026-11-01" and "is-other" not in first.get_attribute("class")
@@ -150,9 +150,9 @@ def test_rendered_grid_is_sunday_first_with_muted_overflow(browser):
 
 
 @pytest.mark.parametrize("tz, now, today", [
-    ("America/Los_Angeles", "2026-10-01T08:00:00+09:00", "2026-10-01"),   # still Sep 30 in LA
-    ("Pacific/Kiritimati", "2026-09-30T23:30:00+09:00", "2026-09-30"),    # already Oct 1 at UTC+14
-    ("UTC", "2026-10-01T00:05:00+09:00", "2026-10-01"),                   # just after midnight KST
+    ("America/Los_Angeles", "2026-10-01T08:00:00+09:00", "2026-10-01"),
+    ("Pacific/Kiritimati", "2026-09-30T23:30:00+09:00", "2026-09-30"),
+    ("UTC", "2026-10-01T00:05:00+09:00", "2026-10-01"),
 ])
 def test_today_is_the_kst_date_whatever_the_browser_zone(browser, tz, now, today):
     context, page, _ = open_home(browser, now=now, tz=tz)
@@ -173,13 +173,11 @@ def test_next_event_date_is_the_default_when_today_is_empty(browser):
     assert page.locator('#homeCalGrid td[aria-selected="true"]').count() == 1
     assert day_title(page) == "10월 7일 (수)"
     assert page.locator(".hc-ev-title").all_inner_texts() == ["첫수융합포럼", "Temp Seoul Meetup"]
-    assert page.locator("#homeCalNext").is_hidden()        # nothing after the selected day
-    # The row carries no date: the panel heading says it once.
+    assert page.locator("#homeCalNext").is_hidden()
     assert "10월 7일" not in page.locator(".hc-ev-btn").first.inner_text()
-    # Today stays selectable.
     today.click()
     assert today.get_attribute("aria-selected") == "true" and page.locator(".hc-empty").inner_text() == "일정 없음"
-    assert page.locator(".hc-next-row").count() == 2       # the next dates are one tap away
+    assert page.locator(".hc-next-row").count() == 2
     context.close()
 
 
@@ -191,21 +189,21 @@ def test_today_with_events_is_selected_and_counted(browser):
         ev("unknown", "2026-10-01T11:00:00+09:00", food={"provided": "unknown"}, title="음식 미확인"),
         FORUM]}
     context, page, _ = open_home(browser, live=live)
-    assert answer(page) == "오늘 2개 · 12:00부터"          # only public rows count
+    assert answer(page) == "오늘 2개 · 12:00부터"
     assert page.locator("#homeCal").get_attribute("data-state") == "ready"
     today = cell(page, "2026-10-01")
     assert today.get_attribute("aria-selected") == "true" and today.get_attribute("aria-current") == "date"
     style = today.locator(".hc-num").evaluate("el => { const s = getComputedStyle(el); return [s.backgroundColor, s.color]; }")
-    assert style[0] == ACCENT                               # today + selected: accent disc
+    assert style[0] == ACCENT
     assert day_title(page) == "10월 1일 (목) 오늘"
     assert page.locator(".hc-ev-title").all_inner_texts() == ["점심 간담회", "티타임"]
     assert page.locator(".hc-next-row .hc-next-title").all_inner_texts() == ["첫수융합포럼"]
-    assert page.locator(".hc-next-row .hc-next-dish").all_inner_texts() == ["다과"]   # the dish leads (2026-11-05)
+    assert page.locator(".hc-next-row .hc-next-dish").all_inner_texts() == ["다과"]
     cell(page, "2026-10-07").click()
     selected = cell(page, "2026-10-07").locator(".hc-num").evaluate("el => getComputedStyle(el).backgroundColor")
     ring = today.locator(".hc-num").evaluate("el => [getComputedStyle(el).backgroundColor, getComputedStyle(el).borderTopColor]")
-    assert selected == INK                                  # selected: ink disc
-    assert ring == ["rgba(0, 0, 0, 0)", ACCENT]             # today alone: accent ring only
+    assert selected == INK
+    assert ring == ["rgba(0, 0, 0, 0)", ACCENT]
     context.close()
 
 
@@ -236,8 +234,8 @@ def test_markers_live_past_multiple_and_labels(browser):
         ev("m1", "2026-10-14T12:00:00+09:00"), ev("m2", "2026-10-14T13:00:00+09:00"), ev("m3", "2026-10-14T18:00:00+09:00")]}
     context, page, _ = open_home(browser, live=live)
     assert dots(page, "2026-10-07") == ["live", "live"]
-    assert dots(page, "2026-10-14") == ["live", "live"]          # never more than two
-    assert dots(page, "2026-09-29") == ["past"]                  # a retained record
+    assert dots(page, "2026-10-14") == ["live", "live"]
+    assert dots(page, "2026-09-29") == ["past"]
     assert dots(page, "2026-10-08") == []
     assert cell(page, "2026-10-14").get_attribute("aria-label") == "10월 14일 수요일, 꽁밥 3개"
     assert cell(page, "2026-09-29").get_attribute("aria-label") == "9월 29일 화요일, 지난 꽁밥 1개"
@@ -245,7 +243,6 @@ def test_markers_live_past_multiple_and_labels(browser):
         "el => { const s = getComputedStyle(el); return [s.backgroundColor, s.borderTopStyle]; }")
         for sel in ('#homeCalGrid td[data-date="2026-10-07"] .hc-dot', '#homeCalGrid td[data-date="2026-09-29"] .hc-dot'))
     assert live_dot == [ACCENT, "none"] and past_dot[0] == "rgba(0, 0, 0, 0)" and past_dot[1] == "solid"
-    # Marker slots are reserved on every day, so data never shifts the grid.
     heights = page.locator("#homeCalGrid .hc-marks").evaluate_all("els => [...new Set(els.map(e => e.getBoundingClientRect().height))]")
     assert heights == [5]
     cell(page, "2026-10-14").click()
@@ -260,7 +257,7 @@ def test_live_and_archive_rows_are_deduplicated(browser):
     context, page, _ = open_home(browser, live=live, archive=archive)
     assert dots(page, "2026-09-30") == ["past"]
     cell(page, "2026-09-30").click()
-    assert page.locator(".hc-ev-title").all_inner_texts() == ["중복 없는 행사"]   # once, the live copy
+    assert page.locator(".hc-ev-title").all_inner_texts() == ["중복 없는 행사"]
     assert "종료" in page.locator(".hc-ev-clock").first.inner_text()
     context.close()
 
@@ -281,8 +278,8 @@ def test_a_failed_load_is_never_shown_as_an_empty_schedule(browser):
 @pytest.mark.parametrize("status, expected", [(503, "지난 기록을 불러오지 못했어요"), (404, "기록 없음")])
 def test_past_days_say_what_the_archive_allows(browser, status, expected):
     context, page, _ = open_home(browser, archive_status=status)
-    assert page.locator("#homeCal").get_attribute("data-state") == "empty"   # the live schedule still loads
-    cell(page, "2026-09-28").click()                                  # a visible overflow day, no record
+    assert page.locator("#homeCal").get_attribute("data-state") == "empty"
+    cell(page, "2026-09-28").click()
     assert page.locator(".hc-empty").inner_text() == expected
     context.close()
 
@@ -294,14 +291,14 @@ def test_selected_future_and_past_days(browser):
     assert day_title(page) == "10월 3일 (토)"
     assert page.locator(".hc-empty").inner_text() == "일정 없음"
     assert page.locator("#homeCalLive").inner_text() == "10월 3일 토요일 · 일정 없음"
-    assert page.locator(".hc-next-row").count() == 2                 # 10/7 is after the selected day
-    cell(page, "2026-09-28").click()                                  # an overflow day of September
-    assert page.locator(".hc-month-title").inner_text() == "10월"     # a visible overflow day keeps the month
+    assert page.locator(".hc-next-row").count() == 2
+    cell(page, "2026-09-28").click()
+    assert page.locator(".hc-month-title").inner_text() == "10월"
     assert page.locator(".hc-empty").inner_text() == "기록 없음"
     cell(page, "2026-09-29").click()
     assert page.locator(".hc-ev-title").all_inner_texts() == ["지난 세미나"]
     clock = page.locator(".hc-ev-clock").first.inner_text().split()
-    assert clock == ["12:00", "종료"], clock                         # the time column says it ended
+    assert clock == ["12:00", "종료"], clock
     context.close()
 
 
@@ -311,21 +308,20 @@ def test_month_navigation_bounds_and_return_to_today(browser):
     assert today_button.is_hidden()
     page.locator('[data-hc-step="1"]').click()
     assert page.locator(".hc-month-title").inner_text() == "11월" and today_button.is_visible()
-    assert page.locator("#homeCalGrid tbody td").first.get_attribute("data-date") == "2026-11-01"   # starts on a Sunday
-    assert day_title(page) == "10월 7일 (수)"      # the selection is kept
+    assert page.locator("#homeCalGrid tbody td").first.get_attribute("data-date") == "2026-11-01"
+    assert day_title(page) == "10월 7일 (수)"
     page.locator('[data-hc-step="-1"]').click()
     page.locator('[data-hc-step="-1"]').click()
     assert page.locator(".hc-month-title").inner_text() == "9월"
-    # The retained window starts 30 days before today: earlier days are inert and cannot be focused.
     assert page.locator('[data-hc-step="-1"]').get_attribute("aria-disabled") == "true"
-    page.locator('[data-hc-step="-1"]').click(force=True)                   # a disabled arrow does nothing
+    page.locator('[data-hc-step="-1"]').click(force=True)
     assert page.locator(".hc-month-title").inner_text() == "9월"
     off = page.locator("#homeCalGrid td.is-off")
     assert off.count() >= 1 and off.first.get_attribute("tabindex") is None and off.first.get_attribute("data-date") is None
     assert page.locator('#homeCalGrid td.is-off .hc-dot').count() == 0
     today_button.click()
     assert page.locator(".hc-month-title").inner_text() == "10월" and today_button.is_hidden()
-    assert cell(page, "2026-10-07").get_attribute("aria-selected") == "true"   # the default policy again
+    assert cell(page, "2026-10-07").get_attribute("aria-selected") == "true"
     context.close()
 
 
@@ -337,13 +333,12 @@ def test_keyboard_follows_the_date_grid_pattern(browser):
     def active():
         return page.evaluate("document.activeElement.dataset.date")
 
-    # Home = the row's Sunday, End = the row's Saturday.
     for key, expected in (("ArrowRight", "2026-10-08"), ("ArrowDown", "2026-10-15"), ("Home", "2026-10-11"),
                           ("End", "2026-10-17"), ("ArrowUp", "2026-10-10"), ("ArrowLeft", "2026-10-09")):
         page.keyboard.press(key)
         assert active() == expected, key
         assert page.locator('#homeCalGrid td[tabindex="0"]').count() == 1
-    assert cell(page, "2026-10-07").get_attribute("aria-selected") == "true"    # moving is not selecting
+    assert cell(page, "2026-10-07").get_attribute("aria-selected") == "true"
     page.keyboard.press("PageDown")
     assert active() == "2026-11-09" and page.locator(".hc-month-title").inner_text() == "11월"
     page.keyboard.press("PageUp")
@@ -355,7 +350,7 @@ def test_keyboard_follows_the_date_grid_pattern(browser):
     page.keyboard.press(" ")
     assert cell(page, "2026-10-10").get_attribute("aria-selected") == "true" and active() == "2026-10-10"
     focus = page.evaluate("getComputedStyle(document.activeElement.querySelector('.hc-num')).outlineStyle")
-    assert focus == "solid"                                   # focus-visible ring
+    assert focus == "solid"
     context.close()
 
 
@@ -366,11 +361,11 @@ def test_home_and_end_stay_on_a_row_that_already_starts_or_ends_there(browser):
     def active():
         return page.evaluate("document.activeElement.dataset.date")
 
-    cell(page, "2026-10-04").focus()                  # a Sunday
+    cell(page, "2026-10-04").focus()
     page.keyboard.press("Home")
     assert active() == "2026-10-04"
     page.keyboard.press("End")
-    assert active() == "2026-10-10"                   # the Saturday of the same row
+    assert active() == "2026-10-10"
     page.keyboard.press("End")
     assert active() == "2026-10-10"
     context.close()
@@ -422,7 +417,7 @@ def test_links_are_public_only_and_first_come_is_never_inferred(browser):
     for button in page.locator(".hc-ev-btn").all():
         button.click()
     hrefs = page.locator("#homeCalDay a").evaluate_all("els => els.map(a => a.href)")
-    assert hrefs == ["https://www.kaist.ac.kr/news/1"]                   # the public notice only
+    assert hrefs == ["https://www.kaist.ac.kr/news/1"]
     assert page.locator("#homeCalDay a.hc-ev-link").inner_text().startswith("원문 보기")
     shown = page.locator("#homeCalDay").inner_text()
     assert "선착순" not in shown and "소진" not in shown and "dooray" not in shown.lower()
@@ -459,12 +454,11 @@ def test_phones_put_the_calendar_first_without_overflow(browser, width, height):
               menu: r('.home-menu-line').top,
               grid: r('#homeCalGrid .hc-grid'), cell: r('#homeCalGrid td[data-date]'), hero: r('.home-hero').bottom}; }""")
     assert box["overflow"] <= 0
-    assert box["hero"] <= box["cal"] < box["menu"]      # copy, calendar, cafeteria
-    assert box["map"] == 0 and box["open"] >= 44        # owner 2026-11-04: phones get the 지도 보기 button only
-    # 44 px targets at phone width; at 320 px (small phones, 400% zoom) still well above WCAG's 24 px.
+    assert box["hero"] <= box["cal"] < box["menu"]
+    assert box["map"] == 0 and box["open"] >= 44
     assert box["grid"]["right"] <= width and box["cell"]["width"] >= (44 if width >= 390 else 36)
     if width >= 360:
-        assert box["grid"]["bottom"] <= height                             # the whole month in the first screen
+        assert box["grid"]["bottom"] <= height
     assert page.locator('[data-banner="today"], #homeFreeStatus, .home-today').count() == 0
     assert page.locator("#homeMenuStatus").count() == 1
     context.close()
@@ -480,7 +474,7 @@ def test_desktop_split_keeps_the_grid_compact(browser):
     assert 320 <= box["grid"]["width"] <= 340
     assert box["grid"]["left"] > box["day"]["right"] and box["divider"] == "solid"
     assert box["map"]["top"] < box["cal"]["top"] and abs(box["map"]["top"] - box["hero"]["top"]) < 200
-    assert box["map"]["height"] > 200 and box["open"]["height"] == 0       # the map beside the copy, no button
+    assert box["map"]["height"] > 200 and box["open"]["height"] == 0
     assert box["grid"]["bottom"] <= 900
     context.close()
 
@@ -494,11 +488,10 @@ def test_no_weight_900_or_decoration_in_the_module(browser):
     text = page.locator("#homeCal").inner_text()
     for word in ("실시간", "LIVE", "놓치지", "서둘러", "최신"):
         assert word not in text
-    assert re.search(r"[☀-➿\U0001F300-\U0001FAFF]", text) is None   # no emoji
+    assert re.search(r"[☀-➿\U0001F300-\U0001FAFF]", text) is None
     context.close()
 
 
-# Giveaways (owner decisions 2026-10-14): listed with a 🎁 marker, never counted as free food.
 NO_FOOD = {"provided": "unknown", "type": "unknown", "description": ""}
 EXPO = ev("expo", "2026-10-01T14:00:00+09:00", "2026-10-01T17:00:00+09:00", title="창업 엑스포", food=NO_FOOD,
           giveaway={"provided": "true", "description": "경품 추첨 (에어팟)"})
@@ -521,27 +514,22 @@ def gift(page, iso):
 
 def test_a_giveaway_is_marked_but_never_counted(browser):
     context, page, errors = open_home(browser, live=GIFT_LIVE, archive=GIFT_ARCHIVE)
-    # Today has only a giveaway: the answer and the default day still speak of free food.
     assert answer(page) == "오늘은 없어요 · 다음 10월 7일 (수)"
     assert cell(page, "2026-10-07").get_attribute("aria-selected") == "true"
     assert dots(page, "2026-10-01") == [] and gift(page, "2026-10-01").count() == 1
     assert cell(page, "2026-10-01").get_attribute("aria-label") == "10월 1일 목요일, 경품 1개"
-    # Food with a gift is free food: a dot and the count, no separate gift marker on the date.
     assert dots(page, "2026-10-07") == ["live", "live"] and gift(page, "2026-10-07").count() == 0
     assert cell(page, "2026-10-07").get_attribute("aria-label") == "10월 7일 수요일, 꽁밥 3개"
-    # A deadline-only draw and a past giveaway: markers only, a muted one for the past.
     assert dots(page, "2026-10-09") == [] and gift(page, "2026-10-09").get_attribute("class") == "hc-gift"
     assert dots(page, "2026-09-28") == [] and "is-past" in gift(page, "2026-09-28").get_attribute("class")
     assert cell(page, "2026-09-28").get_attribute("aria-label") == "9월 28일 월요일, 경품 1개"
     assert gift(page, "2026-10-01").get_attribute("aria-hidden") == "true"
-    # The marker is outside the reserved free-food slot: the grid does not move.
     heights = page.locator("#homeCalGrid .hc-marks").evaluate_all("els => [...new Set(els.map(e => e.getBoundingClientRect().height))]")
     assert heights == [5]
     box = gift(page, "2026-10-01").evaluate("""el => { const g = el.getBoundingClientRect(), c = el.closest('td').getBoundingClientRect();
       return g.left >= c.left && g.right <= c.right + 0.5 && g.top >= c.top; }""")
     assert box
-    # 다가오는 꽁밥 is free food only.
-    assert page.locator(".hc-next-row").count() == 0                     # nothing after 10/7 but the draw
+    assert page.locator(".hc-next-row").count() == 0
     assert not errors
     context.close()
 
@@ -552,25 +540,22 @@ def test_giveaway_rows_name_no_food_and_lead_with_a_deadline(browser):
     assert page.locator("#homeCalLive").inner_text() == "10월 1일 목요일 · 경품 1개"
     assert page.locator(".hc-ev-title").all_inner_texts() == ["창업 엑스포"]
     assert page.locator(".hc-ev-time").all_inner_texts() == ["14:00"]
-    assert page.locator(".hc-ev-head").all_inner_texts() == ["🎁 경품"]   # a giveaway names no dish
+    assert page.locator(".hc-ev-head").all_inner_texts() == ["🎁 경품"]
     assert page.locator(".hc-ev-sub").all_inner_texts() == ["창업 엑스포 · E11 101호"]
     assert "제공" not in page.locator("#homeCalDay").inner_text() and "음식" not in page.locator("#homeCalDay").inner_text()
     page.locator(".hc-ev-btn").click()
     assert "경품 · 경품 추첨 (에어팟)" in page.locator(".hc-ev-detail").inner_text()
-    # Food and a gift: both, in that order.
     cell(page, "2026-10-07").click()
     assert page.locator(".hc-ev-head").all_inner_texts()[-1] == "샌드위치"
     assert page.locator(".hc-ev-meta").all_inner_texts()[-1].endswith("🎁 경품")
-    # A deadline-only giveaway: its time is the sign-up deadline, never an event time, said once.
     cell(page, "2026-10-09").click()
-    assert page.locator(".hc-ev-time").all_inner_texts() == [""]        # no event time, the deadline leads
+    assert page.locator(".hc-ev-time").all_inner_texts() == [""]
     assert page.locator(".hc-ev-head").all_inner_texts() == ["신청 마감 23:59"]
     assert [m.lstrip(" ·") for m in page.locator(".hc-ev-meta").all_inner_texts()] == ["E11 101호 · 🎁 경품 · 사전 신청"]
     page.locator(".hc-ev-btn").click()
     detail = page.locator(".hc-ev-detail").inner_text()
     assert detail.startswith("신청 마감 23:59 · 창의학습관(E11) 101호") and "신청 마감 · " not in detail
     assert page.locator(".hc-ev-detail a.hc-ev-apply").get_attribute("href") == "https://forms.gle/draw"
-    # The only emoji the module ever shows is the gift, and only for a giveaway.
     emoji = set(re.findall(r"[☀-➿\U0001F300-\U0001FAFF]", page.locator("#homeCal").inner_text()))
     assert emoji == {"🎁"}
     assert not errors
@@ -583,7 +568,7 @@ def test_a_giveaway_only_today_does_not_inflate_the_answer(browser):
                giveaway={"provided": "true", "description": ""})
     live = {"generatedAt": LIVE["generatedAt"], "events": [early, lunch, EXPO]}
     context, page, _ = open_home(browser, live=live)
-    assert answer(page) == "오늘 1개 · 12:00부터"                       # the meal only, from its own time
+    assert answer(page) == "오늘 1개 · 12:00부터"
     assert cell(page, "2026-10-01").get_attribute("aria-label") == "10월 1일 목요일, 꽁밥 1개, 경품 2개"
     assert dots(page, "2026-10-01") == ["live"]
     assert page.locator(".hc-ev-title").all_inner_texts() == ["오전 경품", "점심 간담회", "창업 엑스포"]
@@ -599,12 +584,11 @@ def test_giveaway_english_strings(browser):
     page.locator(".hc-ev-btn").click()
     assert "Giveaway: 커피 쿠폰" in page.locator(".hc-ev-detail").inner_text()
     cell(page, "2026-10-07").click()
-    assert page.locator(".hc-ev-head").all_inner_texts()[-1].endswith("Sandwiches")   # the dish, in English too
+    assert page.locator(".hc-ev-head").all_inner_texts()[-1].endswith("Sandwiches")
     assert page.locator(".hc-ev-meta").all_inner_texts()[-1].endswith("🎁 Giveaway")
     context.close()
 
 
-# Month, year and leap-day boundaries under fixed KST clocks (stage 5 date scenarios).
 def _month_events(last, first):
     """A lunch on `last` (ended by 13:00), a deadline-only prize draw due at 23:59 that day (listed at
     its deadline, no grace), and a lunch on `first`, the next day."""
@@ -619,12 +603,10 @@ def _month_events(last, first):
 @pytest.mark.parametrize("last, first, title_last, title_first, last_label", [
     ("2026-10-31", "2026-11-01", "10월", "11월", "10월 31일 토요일"),
     ("2026-12-31", "2027-01-01", "12월", "1월", "12월 31일 목요일"),
-    ("2028-02-29", "2028-03-01", "2월", "3월", "2월 29일 화요일"),        # a leap day
+    ("2028-02-29", "2028-03-01", "2월", "3월", "2월 29일 화요일"),
 ])
 def test_the_last_second_and_the_first_second_of_a_month(browser, last, first, title_last, title_first, last_label):
     live = _month_events(last, first)
-    # 23:59:59 on the last day: still that day and month. The lunch is over, the draw closes at 23:59:00
-    # and is past too, the next day's lunch is next.
     context, page, errors = open_home(browser, live=live, archive={"windowDays": 30, "events": []}, now=f"{last}T23:59:59+09:00")
     current = page.locator('#homeCalGrid td[aria-current="date"]')
     assert current.count() == 1 and current.get_attribute("data-date") == last
@@ -632,14 +614,11 @@ def test_the_last_second_and_the_first_second_of_a_month(browser, last, first, t
     assert cell(page, last).get_attribute("aria-label").startswith(last_label)
     assert answer(page).startswith("오늘 일정은 끝났어요 · 다음 ")
     assert dots(page, last) == ["past"]
-    assert gift(page, last).count() == 1 and "is-past" in gift(page, last).get_attribute("class")   # the draw closed at 23:59:00
+    assert gift(page, last).count() == 1 and "is-past" in gift(page, last).get_attribute("class")
     assert page.locator("#homeCalToday").inner_text().startswith(f"{int(last[5:7])}월 {int(last[8:10])}일 (")
-    # (When the next event is in the next month, the default day panel shows it while the grid keeps today's
-    # month: the approved default in js/home-calendar.js, not a lost selection.)
     assert day_title(page).startswith(f"{int(first[5:7])}월 {int(first[8:10])}일") and "내일" in day_title(page)
     assert not errors
     context.close()
-    # One second later it is the next day and, across a month, the next month: today moves, the title follows.
     context, page, errors = open_home(browser, live=live, archive={"windowDays": 30, "events": []}, now=f"{first}T00:00:00+09:00")
     current = page.locator('#homeCalGrid td[aria-current="date"]')
     assert current.count() == 1 and current.get_attribute("data-date") == first
@@ -647,7 +626,7 @@ def test_the_last_second_and_the_first_second_of_a_month(browser, last, first, t
     assert answer(page).startswith("오늘 1개 · 12:00부터")
     assert dots(page, first) == ["live"]
     assert page.locator("#homeCalToday").inner_text().startswith(f"{int(first[5:7])}월 {int(first[8:10])}일 (")
-    yesterday = cell(page, last)           # November starts on a Sunday, so October 31 is not on its grid
+    yesterday = cell(page, last)
     assert yesterday.count() == 0 or "is-other" in yesterday.get_attribute("class")
     assert not errors
     context.close()
@@ -656,13 +635,12 @@ def test_the_last_second_and_the_first_second_of_a_month(browser, last, first, t
 def test_a_deadline_only_draw_on_the_last_day_is_live_until_its_deadline(browser):
     live = _month_events("2026-10-31", "2026-11-01")
     context, page, _ = open_home(browser, live=live, archive={"windowDays": 30, "events": []}, now="2026-10-31T23:58:59+09:00")
-    assert gift(page, "2026-10-31").get_attribute("class") == "hc-gift"                 # not yet past
-    assert answer(page).startswith("오늘 일정은 끝났어요")                                # the draw is never counted
+    assert gift(page, "2026-10-31").get_attribute("class") == "hc-gift"
+    assert answer(page).startswith("오늘 일정은 끝났어요")
     cell(page, "2026-10-31").click()
     heads = page.locator(".hc-ev-head").all_inner_texts()
     meta = [m.lstrip(" ·") for m in page.locator(".hc-ev-meta").all_inner_texts()]
     assert "신청 마감 23:59" in heads and "E11 101호 · 🎁 경품 · 사전 신청" in meta, (heads, meta)
-    # Navigating into the next month and back keeps today marked on the last day.
     page.locator("[data-hc-step='1']").click()
     assert page.locator(".hc-month-title").inner_text() == "11월"
     assert cell(page, "2026-11-01").get_attribute("aria-current") is None
@@ -673,14 +651,11 @@ def test_a_deadline_only_draw_on_the_last_day_is_live_until_its_deadline(browser
 
 
 def test_a_meeting_link_is_join_online_not_a_sign_up(browser):
-    # The parser read a lecture's Zoom address as "register here" and marked sign-up required.
     zoom = "https://kaist.zoom.us/j/89487469591"
     lecture = ev("lecture", "2026-10-07T12:00:00+09:00", "2026-10-07T13:00:00+09:00", title="노벨상 강연",
                  registration={"required": "true", "deadline": None, "url": zoom})
     context, page, errors = open_home(browser, live={"generatedAt": LIVE["generatedAt"], "events": [lecture, FORUM]})
     cell(page, "2026-10-07").click()
-    # Both start at 12:00, so pick the rows by title, not by position.
-    # The row's button carries no text (it covers the row and is named by the title): find the row.
     lecture_item = page.locator(".hc-ev", has_text="노벨상 강연")
     lecture_row, form_row = lecture_item.locator(".hc-ev-btn"), page.locator(".hc-ev", has_text="첫수융합포럼").locator(".hc-ev-btn")
     lecture_row.click()
@@ -689,7 +664,6 @@ def test_a_meeting_link_is_join_online_not_a_sign_up(browser):
     assert detail.locator("a.hc-ev-apply").get_attribute("href") == zoom
     assert "온라인 참여" in detail.inner_text() and "신청하기" not in detail.inner_text()
     assert "사전 신청" not in lecture_item.locator(".hc-ev-row").inner_text()
-    # A real form stays a sign-up.
     form_row.click()
     form = page.locator("#" + form_row.get_attribute("aria-controls"))
     assert "신청하기" in form.inner_text() and "온라인 참여" not in form.inner_text()
@@ -727,13 +701,12 @@ def test_four_or_more_listings_scroll_inside_the_day(browser):
           return {client: b.clientHeight, scroll: b.scrollHeight, overflow: getComputedStyle(b).overflowY,
                   third: bottom(2), fourthTop: top(3), fourthBottom: bottom(3), n: rows.length}; }""")
         assert m["n"] == 5 and m["overflow"] == "auto" and m["scroll"] > m["client"], m
-        assert m["third"] <= m["client"] + 1 and m["fourthTop"] < m["client"] < m["fourthBottom"], m   # a peek of the fourth
+        assert m["third"] <= m["client"] + 1 and m["fourthTop"] < m["client"] < m["fourthBottom"], m
         before = m["client"]
-        page.locator(".hc-ev-btn").first.click()                       # an opened row scrolls inside
+        page.locator(".hc-ev-btn").first.click()
         assert box.evaluate("b => b.clientHeight") == before
         box.evaluate("b => b.scrollTop = b.scrollHeight")
         assert page.locator(".hc-ev").nth(4).is_visible()
-        # (the harness answers the cafeteria and map data with an empty 404, which other modules report)
         assert not [e for e in errors if "fitScroll" in e or "maxHeight" in e], errors
         context.close()
     three = {"generatedAt": LIVE["generatedAt"], "events": rows[:3]}

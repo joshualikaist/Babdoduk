@@ -1,12 +1,8 @@
-/* 마이 밥도둑 (my.html, lab only; docs/MY_BABDODUK.md). Optional sign-in, the account's saved free-food
- * list and restaurant list counts, the private profile name, signing out, clearing saved data and
- * leaving. Login is never forced: a guest sees what this browser saved and what signing in adds.
- */
 (function () {
   'use strict';
 
   var A = window.BabdodukAccount;
-  var P = window.BabdodukPush || null;   // 30분 전 알림 (docs/PUSH_ALERTS.md)
+  var P = window.BabdodukPush || null;
   var L = window.BabdodukLive;
   var F = window.BabdodukFreeFood;
   var app = document.getElementById('myApp');
@@ -14,28 +10,27 @@
   if (!app || !A) return;
 
   var state = {
-    view: 'loading',          // off | out | in | error | left
+    view: 'loading',
     user: null,
     client: null,
-    events: [],               // account rows: {id, savedAt, seen}
-    places: null,             // {want, been, again} or null when unavailable
-    cal: null,                // the calendar connection {token, readAt, linkedAt, known}, null while unknown or unavailable
-    calTap: '',               // the start of the address this page tapped (also kept in localStorage)
-    calFallback: false,       // Safari did not open from Chrome: offer the profile as a file
-    push: 'hidden',           // this browser's 30-minute alert: hidden | home | unsupported | denied | off | on
+    events: [],
+    places: null,
+    cal: null,
+    calTap: '',
+    calFallback: false,
+    push: 'hidden',
     profile: null,
-    merge: null,              // the last merge result, for its notice and 되돌리기
-    feed: null,               // public events (occurrences) once loaded
+    merge: null,
+    feed: null,
     archive: null,
-    listsOk: false,           // both public lists really loaded: only then can a saved event count as withdrawn
-    panel: '',                // '' | 'clear' | 'leave'
+    listsOk: false,
+    panel: '',
     editing: false,
     busy: false,
     loginError: /[?&#]error(=|_description=)/.test(location.search + location.hash),
     next: (location.search.match(/[?&]next=([a-z-]{1,20})/) || [])[1] || ''
   };
 
-  // The sign-in buttons carry each provider's own mark (decorative; the label says the provider).
   var KAKAO_MARK = '<svg class="my-login-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#191600" d="M12 3C6.48 3 2 6.58 2 11c0 2.86 1.88 5.37 4.7 6.78-.2.74-.74 2.7-.85 3.12-.13.52.19.51.4.37.17-.11 2.62-1.78 3.68-2.5.67.1 1.36.15 2.07.15 5.52 0 10-3.58 10-8S17.52 3 12 3z"/></svg>';
   var GOOGLE_MARK = '<svg class="my-login-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
 
@@ -85,8 +80,6 @@
     for (var i = 0; i < (list || []).length; i++) if (list[i].id === id) return list[i];
     return null;
   }
-  // Each saved event against the newest public data: upcoming, ended, checking, or missing (no longer published
-  // and not over). A missing one is never listed: its star comes off (dropMissing).
   function savedRows(now) {
     var today = F ? F.nowKst() : null;
     return state.events.map(function (item) {
@@ -103,7 +96,6 @@
       var changed = kind === 'upcoming' && L ? L.changes(item, live).length > 0 : false;
       return { item: item, ev: ev, kind: kind, changed: changed };
     }).filter(function (row) {
-      // From the day after the event it leaves the list; the saved row stays for the subscribed calendar.
       return row.kind !== 'missing' && !(row.kind === 'ended' && L && L.dayPassed(row.ev, today));
     }).sort(function (a, b) {
       var order = { upcoming: 0, checking: 1, ended: 2 };
@@ -113,8 +105,6 @@
     });
   }
 
-  // A saved event that left the published list before it was over (owner 2026-11-24: "빠진거는 알아서 별표에서도
-  // 빠져야지") loses its star by itself, so it also leaves the subscribed calendar. Once, after both lists loaded.
   function withdrawn(item, now) {
     if (!state.listsOk || find(state.feed, item.id) || find(state.archive, item.id)) return false;
     var seen = item.seen || {};
@@ -132,8 +122,6 @@
   }
 
   // ---- views -----------------------------------------------------------------------------------------
-  // Counted like the list it links to: a listing whose day is over has left 저장한 꽁밥 (L.dayPassed), so it is
-  // not counted here either (2026-11-23: production said "저장한 꽁밥 4개" beside a list of one).
   function guestCount() {
     try {
       var v = JSON.parse(localStorage.getItem('babdoduk-ggongbab-saved') || 'null');
@@ -161,7 +149,6 @@
   function outHtml() {
     var inTalk = L && L.inTalkApp && L.inTalkApp(navigator.userAgent);
     var html = '<section class="my-card" aria-labelledby="myOutTitle">';
-    // Only the buttons (owner 2026-11-12: "필요없는 글 다 삭제해줘").
     html += '<h2 class="my-h2" id="myOutTitle">' + esc(t('my.out.title', '로그인')) + '</h2>';
     if (state.loginError) html += '<p class="my-alert" role="alert">' + esc(t('my.out.failed', '로그인하지 못했어요. 다시 시도해 주세요.')) + '</p>';
     html += '<div class="my-login">';
@@ -209,7 +196,6 @@
         var main = row.kind === 'upcoming'
           ? '<a class="my-row-link" href="' + esc(L ? L.eventLink(row.item.id) : 'ggongbab.html') + '">' + body + '</a>'
           : '<p class="my-row-link is-static">' + body + '</p>';
-        // Owner 2026-11-12: a saved event can be removed right here, without going to 오늘의 꽁밥.
         var unstar = '<button type="button" class="my-unstar" data-my-unstar="' + esc(row.item.id) + '" aria-pressed="true" aria-label="' +
           esc(t('my.saved.remove', '저장 취소: {title}', { title: row.ev.title || (row.item.seen || {}).title || '' })) +
           '"><span aria-hidden="true">★</span></button>';
@@ -219,35 +205,16 @@
     html += '<p class="my-fine"><a href="ggongbab.html">' + esc(t('my.saved.manage', '오늘의 꽁밥에서 저장·삭제하기')) + '</a></p>';
     return html + '</section>';
   }
-  // 내 캘린더에 연결 (owner 2026-11-12; docs/CALENDAR_FEED.md): set up once, and every later star shows up in the
-  // iPhone calendar by itself. iPhone and iPad only (owner: a laptop needs no calendar link; Android's Google
-  // Calendar fetches a subscription only every few hours, so Android gets the 30-minute alert instead).
-  // No address talk on the card (owner: "사람들이 주소 관련해서 무슨 말인지 이해 못할게 뻔해").
-  //
-  // A setting, not a link (owner 2026-11-19: a second 연결 showed every event twice, then "구독은 쌓여 ... 다른
-  // 방식을 찾아내봐"). The button installs a configuration profile (api/cal.js): its fixed identifier makes a
-  // second install replace the first, so the phone always holds exactly one 밥도둑 calendar and removing the
-  // profile removes it. The card says whether the calendar is connected and when it last checked; the address
-  // in the profile is a fresh one whose first read stops the old address (016), and an old webcal
-  // subscription still on a phone is named so it can be deleted (017). A tap is remembered in this browser
-  // until a calendar reads that address: meanwhile the card says 설치를 기다리는 중.
   var CAL_TAP_KEY = 'babdoduk-calendar-tap';
-  var CAL_STALE_MS = 3 * 86400000;      // no read for three days: the profile was probably removed
+  var CAL_STALE_MS = 3 * 86400000;
   function calPath() { return '/cal/' + state.cal.token + '.mobileconfig'; }
-  // Students use Chrome, not Safari (owner 2026-11-19: "웬만한거 다 크롬으로 ... 학생들 사파리 안써"), but only
-  // Safari hands a downloaded profile to Settings. The profile's address needs no sign-in, so a tap in Chrome
-  // (or any in-app browser) opens just that address in Safari with x-safari-https:, the handoff iPhone apps use
-  // (iOS 15 and 17 on; not 16). If the page is still in front a moment later, Safari did not open: the card then
-  // offers the file itself, which the Files app hands to Settings when tapped.
   function calHref() { return inSafari() ? calPath() : 'x-safari-' + location.protocol.replace(':', '') + '://' + location.host + calPath(); }
   function isIos() {
     var ua = navigator.userAgent || '';
     return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   }
-  // Only Safari hands a downloaded profile to Settings; other browsers and in-app views keep it as a file.
   var CAL_HANDOFF_MS = 2500;
   function inSafari() { return !/CriOS|FxiOS|EdgiOS|OPiOS|KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|Whale/i.test(navigator.userAgent || ''); }
-  // Only the address's first characters are kept: enough to know this browser tapped it.
   function calTapMark(token) { return String(token || '').slice(0, 10); }
   function calTapped() {
     if (!state.cal) return false;
@@ -257,7 +224,7 @@
   }
   function rememberCalTap() {
     state.calTap = calTapMark(state.cal.token);
-    try { localStorage.setItem(CAL_TAP_KEY, state.calTap); } catch (e) { /* kept for this page only */ }
+    try { localStorage.setItem(CAL_TAP_KEY, state.calTap); } catch (e) {  }
   }
   function calState() {
     var cal = state.cal;
@@ -277,8 +244,6 @@
       html += '<p class="my-cal-state is-on" role="status"><span aria-hidden="true">✓</span> ' + esc(t('my.cal.on', '연결됨')) + '</p>';
       html += '<p class="my-text">' + esc(t('my.cal.onBody', '별 누르면 캘린더에 저장!')) + '</p>';
       html += '<p class="my-fine">' + esc(t('my.cal.checked', '최종 동기화 시간 : {time}', { time: dateText(state.cal.readAt) })) + '</p>';
-      // The nearest thing to a 동기화 button (owner 2026-11-19): no website can make the iPhone refresh, so this
-      // opens the Calendar app, where pulling the Calendars list down reads the new stars at once.
       html += '<a class="btn btn-secondary my-cal-open" href="calshow://" data-my-cal-open>' + esc(t('my.cal.open', '캘린더 열기')) + '</a>';
       html += '<p class="my-fine">' + esc(t('my.cal.pull', '캘린더 누르고, 아래로 스크롤 해서 새로고침')) + '</p>';
     } else if (s === 'pending') {
@@ -291,7 +256,6 @@
       html += '<p class="my-text">' + esc(t('my.cal.body', '한 번만 설치하면 돼요. 그다음부터는 별만 누르면 캘린더에 알아서 들어가요.')) + '</p>';
     }
     if (state.calFallback && !inSafari()) {
-      // Safari did not open: the file itself, then the Files app hands it to Settings.
       html += '<div class="my-cal-box" role="note"><p class="my-note"><strong>' + esc(t('my.cal.noSafari', '사파리가 열리지 않았어요.')) + '</strong></p>' +
         '<p class="my-fine">' + esc(t('my.cal.fileHow', '아래 "파일로 받기"를 누른 뒤, 파일 앱의 "다운로드"에서 받은 파일을 한 번 누르세요. 그다음 설정 앱 맨 위의 "프로필이 다운로드됨"에서 설치해요.')) + '</p>' +
         '<p class="my-fine"><a data-my-cal-file href="' + esc(calPath()) + '" download="babdoduk-calendar.mobileconfig">' + esc(t('my.cal.file', '파일로 받기')) + '</a></p></div>';
@@ -311,7 +275,6 @@
     }
     return html + '</section>';
   }
-  // Back from the calendar app: read the connection again, so 확인 중 turns into 연결됨 by itself.
   function recheckCalendar() {
     if (state.view !== 'in' || !state.cal || !state.client || !calTapped() || document.visibilityState === 'hidden') return;
     A.calendarLink(state.client).then(function (cal) {
@@ -322,7 +285,7 @@
         render();
         if (calState() === 'on') announce(t('my.cal.nowOn', '캘린더가 연결됐어요'));
       }
-    }, function () { /* the card keeps its state */ });
+    }, function () {  });
   }
   document.addEventListener('visibilitychange', recheckCalendar);
   function pushIds() { return (state.store ? state.store.list() : state.events).map(function (item) { return item.id; }); }
@@ -382,8 +345,6 @@
       (linked.length ? linked.map(function (p) { return '<span class="my-chip">' + esc(providerLabel(p)) + '</span>'; }).join(' ') : '—') + '</dd>';
     html += '</dl>';
     var missing = A.PROVIDERS.filter(function (p) { return linked.indexOf(p) === -1; });
-    // Google refuses the talk app's own browser, and the default browser opens without this session, so
-    // linking Google there starts with signing in again outside the app.
     var inTalk = L && L.inTalkApp && L.inTalkApp(navigator.userAgent);
     var linkable = missing.filter(function (p) { return !(inTalk && p === 'google'); });
     if (missing.length) {
@@ -468,7 +429,6 @@
         ]);
       }).then(function () {
         if (!state.profile) {
-          // First visit: keep the provider's name as the private display name, editable or clearable.
           var name = A.providerName(state.user);
           if (name) return A.saveProfile(c, uid, name).then(function (n) { state.profile = { display_name: n }; }, function () { return null; });
         }
@@ -476,15 +436,12 @@
   }
   function onStoreChange(kind) {
     if (kind !== 'failed') return;
-    // A removal the server refused is put back by the store: show the list as it really is.
     if (state.store && state.view === 'in') { state.events = state.store.list(); render(); }
     announce(t('my.failed', '저장하지 못했어요. 다시 시도해 주세요.'));
   }
   function start() {
     if (!A.available()) { state.view = 'off'; render(); return; }
     state.view = 'loading'; render();
-    // Google answers on this page (owner 2026-11-18: its window names our site, not supabase.co); the
-    // sign-in or link finishes before the account is read.
     A.finishGoogle().then(function (google) {
       if (google) {
         if (google.next) state.next = google.next;
@@ -510,9 +467,6 @@
     }).catch(function () { state.view = 'error'; render(); });
   }
   function busy(on) { state.busy = on; app.setAttribute('aria-busy', on ? 'true' : 'false'); }
-  // Signing in or linking leaves this page while it is busy. A phone that brings the page back from its
-  // back-forward cache (the visitor pressed back on the sign-in screen) would otherwise keep every button
-  // dead until a reload (2026-11-25).
   window.addEventListener('pageshow', function (e) {
     if (e.persisted && state.busy) busy(false);
   });
@@ -520,14 +474,11 @@
   app.addEventListener('click', function (e) {
     var el;
     if (state.busy) return;
-    // The webcal link opens the phone's subscribe screen by itself; the card then waits for the calendar
-    // (re-drawn after the browser has followed the link, never during the click).
     if (e.target.closest('[data-my-cal]') && state.cal) {
       rememberCalTap();
       state.calFallback = false;
       setTimeout(render, 400);
       if (!inSafari()) {
-        // Still in front after the handoff: Safari did not open (or the visitor said no).
         var left = false;
         var away = function () { left = true; };
         document.addEventListener('visibilitychange', away, { once: true });
@@ -578,7 +529,6 @@
       if (P && state.push === 'on') P.changed(pushIds(), lang());
       render();
       announce(t('my.saved.removed', '저장을 취소했어요'));
-      // Focus stays in the list: the star now in the removed row's place, the last one, or the heading.
       var stars = app.querySelectorAll('[data-my-unstar]');
       var heading = document.getElementById('mySavedTitle');
       if (stars.length) stars[Math.min(at, stars.length - 1)].focus();
@@ -586,7 +536,6 @@
       return;
     }
     if (P && e.target.closest('[data-my-push]')) {
-      // Inside the click: turning on asks the phone's permission question right here.
       var turningOn = state.push !== 'on';
       busy(true);
       (turningOn ? P.enable(pushIds(), lang()) : P.disable()).then(function (result) {

@@ -50,7 +50,6 @@
         linear-gradient(180deg, rgba(239, 246, 255, 0.35) 0%, transparent 22%, transparent 78%, rgba(239, 246, 255, 0.2) 100%);
     }
 
-    /* Page head like every content page (owner 2026-11-13): 760 column, 16 gutter, 32 above the title. */
     .history-wrap {
       position: relative;
       z-index: 1;
@@ -92,7 +91,6 @@
       background: var(--color-divider, #ded6c9);
       border-radius: 1px;
     }
-    /* One accent for the whole archive, from the shared tokens. */
     .timeline-item {
       position: relative;
       padding-bottom: 40px;
@@ -109,9 +107,6 @@
       width: var(--tl-thumb);
       padding-top: 2px;
     }
-    /* One archive plate for every entry: same size, radius, paper and border.
-       Artwork sits inside at one scale; multiply lets a white image
-       background take the plate's colour instead of showing as a box. */
     .timeline-item-media {
       display: grid;
       place-items: center;
@@ -206,7 +201,6 @@
       word-break: keep-all;
     }
 
-    /* The smaller versions inside one entry, one per line (owner 2026-11-24). */
     .timeline-updates {
       list-style: none;
       display: grid;
@@ -248,8 +242,8 @@
       word-break: keep-all;
     }
   </style>
-  <link rel="stylesheet" href="css/site.css?v=ee9ae19475" />
-  <link rel="stylesheet" href="css/app.css?v=df3a2a8243" />
+  <link rel="stylesheet" href="css/site.css?v=71967c9f54" />
+  <link rel="stylesheet" href="css/app.css?v=a46b548c3b" />
 </head>
 <body>
   <header class="site-nav" role="banner">
@@ -287,8 +281,6 @@
     </header>
 
     <ol class="timeline" aria-label="타임라인" data-i18n-aria-key="history.timelineAria">
-      <!-- Written from data/content/history.json by scripts/sync_site_chrome.py, oldest first with
-           the roadmap last; never edit the rows here. -->
       <!-- @content:timeline -->
       <li class="timeline-item">
         <div class="timeline-item-grid">
@@ -604,7 +596,7 @@
       }
     };
   </script>
-  <script src="js/site.js?v=ddf3962762"></script>
+  <script src="js/site.js?v=7e55f67c4e"></script>
   <!-- @end i18n -->
 </body>
 </html>

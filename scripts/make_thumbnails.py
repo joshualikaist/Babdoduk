@@ -28,7 +28,7 @@ QUALITY = 74
 def worldcup_jobs() -> list[tuple[Path, Path, int]]:
     jobs = []
     for src in sorted(WORLDCUP.glob("*.jpg")):
-        if src.stem.startswith("og-"):          # the share image is never shown on a page
+        if src.stem.startswith("og-"):
             continue
         for width in WORLDCUP_WIDTHS:
             jobs.append((src, WORLDCUP_THUMBS / f"{src.stem}-{width}.webp", width))

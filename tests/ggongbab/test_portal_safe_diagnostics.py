@@ -29,9 +29,6 @@ def blob(*parts):
     return json.dumps(parts, ensure_ascii=False)
 
 
-# ---------------------------------------------------------------------------
-# 1-5: unsafe query keys are nameable, values never are
-# ---------------------------------------------------------------------------
 def test_unsafe_non_sensitive_query_key_name_is_diagnosable():
     """The whole point: say which knob blocked the contract."""
     report, d = collect([response(url=BASE + "/api/notices?boardId=PRIVATE-BOARD")])
@@ -82,9 +79,6 @@ def test_duplicate_query_key_is_named_not_just_counted():
     assert d.unsafe_query_keys == ["boardId"]
 
 
-# ---------------------------------------------------------------------------
-# 2: list candidate metadata
-# ---------------------------------------------------------------------------
 def test_list_candidate_records_shape_without_values():
     report, d = collect([response(url=BASE + "/api/notices?boardId=PRIVATE-BOARD&page=0")])
     candidate = report["diagnostics"]["safe"]["listCandidate"]
@@ -106,9 +100,6 @@ def test_unsafe_path_is_withheld_entirely():
     assert d.list_candidate["templatedPath"] == ""
 
 
-# ---------------------------------------------------------------------------
-# 6-8: pagination and static structural candidates
-# ---------------------------------------------------------------------------
 def _two_list_calls(first_url, second_url):
     """Two pages of the same list, plus the two notices that were opened.
 
@@ -142,7 +133,6 @@ def test_opaque_pagination_change_is_reported_but_not_authorized():
     entry = next(c for c in d.pagination_candidates if c["key"] == "currentPage")
     assert entry["changesBetweenListCalls"] and entry["opaqueChanging"]
     assert not entry["numericMonotonic"]
-    # Named, yet still refused: the contract is not built from a key name.
     assert not report["listReplayable"]
     assert report["contract"] is None
     assert "abc" not in blob(d.export()) and "def" not in blob(d.export())
@@ -162,9 +152,6 @@ def test_pagination_candidates_need_two_observed_calls():
     assert d.static_structural_keys == []
 
 
-# ---------------------------------------------------------------------------
-# 15 / §4: structural params are authorized only by explicit opt-in
-# ---------------------------------------------------------------------------
 def test_structural_key_is_replayable_only_when_an_operator_opts_in():
     url = BASE + "/api/notices?boardId=notice01"
     assert request_shape(url) is None
@@ -183,9 +170,6 @@ def test_opt_in_cannot_whitelist_a_credential_shaped_key():
     assert not structural_value_ok("sessionToken", "abc123")
 
 
-# ---------------------------------------------------------------------------
-# 9-13: detail body paths
-# ---------------------------------------------------------------------------
 def ambiguous_detail(identifier="PRIVATE-ID-A"):
     return {"result": {"id": identifier, "body": BODY, "content": BODY}}
 
@@ -231,10 +215,8 @@ def test_ambiguous_subtree_remains_rejected():
 
 
 def test_subtree_widens_outward_only_until_it_finds_one():
-    # Nothing beside the id itself, exactly one a level out.
     assert body_path_in_id_subtree(
         "result.meta.id", ["result.content"]) == "result.content"
-    # Two a level out is still ambiguous.
     assert body_path_in_id_subtree(
         "result.meta.id", ["result.content", "result.body"]) == ""
 
@@ -251,7 +233,6 @@ def test_ambiguous_body_is_resolved_end_to_end_by_the_verified_id():
     safe = report["diagnostics"]["safe"]
     assert safe["bodyDisambiguatedByIdSubtree"] is True
     assert report["contract"]["detail_body_path"] == "result.content"
-    # Observed as ambiguous, but resolved, so it is not reported as a blocker.
     assert d.rejected["body path ambiguous"] == 2
     assert d.body_ambiguity_unresolved == 0
     assert "DETAIL_BODY_PATH_AMBIGUOUS" not in report["reasons"]
@@ -266,9 +247,6 @@ def test_unresolvable_ambiguity_still_blocks():
     assert not report["detailReplayable"]
 
 
-# ---------------------------------------------------------------------------
-# 14: nothing notice-derived reaches the debug file or the terminal
-# ---------------------------------------------------------------------------
 def test_debug_file_and_staged_output_carry_no_notice_content(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(agent, "LOCAL_DIR", tmp_path)
     monkeypatch.setattr(agent, "DISCOVERY_FILE", tmp_path / "discovery.json")
@@ -288,7 +266,6 @@ def test_debug_file_and_staged_output_carry_no_notice_content(monkeypatch, tmp_p
         + agent.DISCOVERY_FILE.read_text(encoding="utf-8")
     for secret in SECRETS:
         assert secret not in everything, secret
-    # ...while the diagnosis itself did survive.
     assert "boardId" in output
     assert REDACTED in output
     assert "result.content" in output
@@ -304,7 +281,6 @@ def test_staged_output_names_each_stage(monkeypatch, capsys, tmp_path):
                  "  unsafe query keys: [boardId]", "Selected notice detail:",
                  "Pagination:"):
         assert line in output, line
-    # Nothing correlated, so pagination was never even considered.
     assert "evaluated only after notice list correlation: not reached" in output
 
 
@@ -314,5 +290,4 @@ def test_diagnostics_do_not_authorize_unknown_structural_params():
     assert d.unsafe_query_keys == ["boardId"]
     assert report["contract"] is None
     assert not report["listReplayable"]
-    # The default build authorizes no structural parameter at all.
     assert build_discovery([], BASE + "/")["contract"] is None

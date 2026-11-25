@@ -17,14 +17,14 @@ from mathutils import Vector
 argv = sys.argv[sys.argv.index("--") + 1:]
 SRC, STYLE, OUT = argv[0], argv[1], argv[2]
 SAMPLES = int(argv[3]) if len(argv) > 3 else 96
-WEB = "--web" in argv                 # export_web.py follows: no sample pins, no render here
+WEB = "--web" in argv
 data = json.load(open(SRC))
 EXTRA = json.load(open(SRC.rsplit("/", 1)[0] + "/buildings-extra.json")) if "/" in SRC else {}
 STYLE_OF = EXTRA.get("styles", {})
 STYLE_ID = {"glass": 1, "brick": 2, "sports": 3}
 random.seed(7)
 
-PINS = () if "--nopins" in sys.argv else ("E11", "E9", "N13")   # sample "today" events for the mockup
+PINS = () if "--nopins" in sys.argv else ("E11", "E9", "N13")
 
 STYLES = {
     "clay": dict(base_top=(0.93, 0.89, 0.80), base_side=(0.62, 0.45, 0.33), grass=(0.55, 0.72, 0.42),
@@ -230,7 +230,6 @@ def poly_area(pts):
     return abs(sum(pts[i][0] * pts[i - 1][1] - pts[i - 1][0] * pts[i][1] for i in range(len(pts)))) / 2
 
 
-# Nested areas (courts inside a sports ground) must not share a top face: smaller ones sit a little higher.
 COURTS = {"tennis", "badminton", "basketball", "volleyball"}
 for kind, z1 in (("parking", 0.25), ("track", 0.30), ("pitch", 0.34), ("grass", 0.38), ("wood", 0.40)):
     ranked = sorted(data.get(kind, []), key=lambda a: -poly_area(a["pts"]))
@@ -297,14 +296,11 @@ def finish_roof(ob, b, h):
         bmesh.ops.inset_region(bm, faces=tops, thickness=0.8, depth=0.0, use_even_offset=True)
         inner = {v for f in tops for v in f.verts}
         bmesh.ops.translate(bm, verts=list(inner), vec=(0, 0, -0.9))
-        # A narrow, bent outline can make the inset shoot a corner far away (W7 did, 2 km): keep
-        # that building without a parapet.
         if any(not (min(xs0) - 1 <= v.co.x <= max(xs0) + 1 and min(ys0) - 1 <= v.co.y <= max(ys0) + 1) for v in bm.verts):
             bm.free(); bm = before
         else:
             before.free()
     if STYLE_OF.get(b.get("code")) == "sports":
-        # The sports complex's roof slants up across its long side (photo, 2019).
         xs1 = [v.co.x for v in bm.verts]; ys1 = [v.co.y for v in bm.verts]
         axis = 0 if max(xs1) - min(xs1) >= max(ys1) - min(ys1) else 1
         lo, hi = (min(xs1), max(xs1)) if axis == 0 else (min(ys1), max(ys1))
@@ -391,20 +387,20 @@ gate = [list(onto_island(x, y)) for x, y in LM.get("gate", [])]
 for k, (x, y) in enumerate(gate):
     box(f"lm_gate{k}", x, y, 0.4, 2.6, 2.6, 16.0, MAT["stone"])
     box(f"lm_gatecap{k}", x, y, 16.4, 3.1, 3.1, 0.8, MAT["stone"])
-for a, b2 in zip(gate[0::2], gate[1::2]):           # each pair carries a beam (photo: the gate frame)
+for a, b2 in zip(gate[0::2], gate[1::2]):
     mx, my = (a[0] + b2[0]) / 2, (a[1] + b2[1]) / 2
     span = math.hypot(b2[0] - a[0], b2[1] - a[1])
     box("lm_gatebeam", mx, my, 13.6, span, 1.8, 1.6, MAT["stone"], rot=math.atan2(b2[1] - a[1], b2[0] - a[0]))
 for (cx, cy) in LM.get("carillon", [])[:1]:
     for j, (dx, mat) in enumerate(((-1.1, MAT["car_red"]), (0.0, MAT["car_blue"]), (1.1, MAT["car_green"]))):
-        for step in range(7):                         # three ribbons zigzagging up, a little taller than life
+        for step in range(7):
             off = 1.3 if (step + j) % 2 else -1.3
             box(f"lm_car{j}_{step}", cx + dx * 1.4 + off * 0.6, cy, 0.4 + step * 3.0, 0.8, 0.8, 3.3, mat,
                 tilt=0.0, rot=0.0).rotation_euler.y = 0.35 * (1 if (step + j) % 2 else -1)
     water = next((w["pts"] for w in data.get("water", []) if inside(cx, cy, w["pts"]) or
                   min(math.hypot(px - cx, py - cy) for px, py in w["pts"]) < 80), None)
     jets, spots = 0, []
-    for radius in (18, 26, 34, 42):                   # three fountains on the water around the island
+    for radius in (18, 26, 34, 42):
         for k in range(16):
             ang = k * math.tau / 16
             jx, jy = cx + radius * math.cos(ang), cy + radius * math.sin(ang)
@@ -520,7 +516,7 @@ cam_data.clip_start = 50; cam_data.clip_end = 20000
 cam = bpy.data.objects.new("cam", cam_data); col.objects.link(cam)
 target = Vector((30, -10, 0))
 elev, azim, dist = math.radians(46), math.radians(-28), 3950
-if len(argv) > 6:                       # close-up: target x, y and distance
+if len(argv) > 6:
     target = Vector((float(argv[4]), float(argv[5]), 0)); dist = float(argv[6]); elev = math.radians(42)
 cam.location = target + Vector((math.sin(azim) * math.cos(elev) * dist, -math.cos(azim) * math.cos(elev) * dist,
                                 math.sin(elev) * dist))

@@ -78,7 +78,6 @@ def test_redirect_to_file_host_keeps_auth(monkeypatch):
     assert data == PNG and ctype == "image/png"
     assert calls[0][0].endswith("?media=raw")
     assert "authorization" in calls[0][1]
-    # file-api.gov-dooray.com is still a dooray host, so the token may travel.
     assert "authorization" in calls[1][1]
 
 
@@ -101,7 +100,6 @@ def test_redirect_to_external_host_drops_auth(monkeypatch):
 
 
 @pytest.mark.parametrize("base,host,trusted", [
-    # The live deployment is the government tenant; its file host is a sibling label.
     ("https://api.gov-dooray.com", "api.gov-dooray.com", True),
     ("https://api.gov-dooray.com", "file-api.gov-dooray.com", True),
     ("https://api.gov-dooray.com", "evil-dooray.com.attacker.net", False),
@@ -289,7 +287,6 @@ def test_reparse_of_single_source_event_applies_corrections(settings):
     event = next(iter(repo.events.values()))
     assert event["eligibility"] is None, "validator should already drop attendee-words"
 
-    # Force a stale value as the old validator would have stored it, then re-parse.
     event["eligibility"] = "참석자"
     repo.ai_runs.clear()
     stats = Pipeline(settings, repo, FakeExtractor(future_extraction), [ListCollector([_item()])]).run()

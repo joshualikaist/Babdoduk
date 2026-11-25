@@ -48,10 +48,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SHARED = ROOT / "shared"
 LABELS = ROOT / "data" / "content" / "labels.json"
 I18N = ROOT / "i18n"
-# The key families every page's table carries; PAGES `strings` adds the page's own.
 COMMON_STRINGS = ("a11y", "nav", "footer")
 
-# Owner 2026-11-12: 실험실 and 꽁밥 실험 left the menu; their pages stay, reachable by address.
 LAB_LINKS = [
     '<a class="nav-mega-link" href="cardnews.html" data-i18n="nav.labCards">카드뉴스</a>',
 ]
@@ -61,36 +59,22 @@ LAB_RIBBON = [
     '</div>',
 ]
 
-# Page -> the nav link it marks as current (None on the home page, whose wordmark
-# scrolls to the top instead of linking to itself), and the i18n/ key families its
-# translation table carries besides COMMON_STRINGS (`strings`).
 PAGES = {
     "index.html": {"current": None, "home": "#", "strings": ("home", "dish", "starcal", "push")},
     "ggongbab.html": {"current": "ggongbab.html", "strings": ("gg", "ggongbab", "km", "dish", "starcal", "push")},
     "mukbang.html": {"current": "mukbang.html", "strings": ("kaist", "km", "mg")},
-    # 오늘 뭐 먹지 (owner 2026-11-04): the one menu picker, a direct destination; the capsule machine (js/pick.js, 2026-11-05).
     "choose.html": {"current": "choose.html", "strings": ("pick",)},
     "event.html": {"current": "event.html", "strings": ("event",)},
-    # Food Log is lab-only: no public nav/footer link points at it; it carries the lab links.
     "food.html": {"current": None, "lab": True, "strings": ("cal", "food")},
     "history.html": {"current": "history.html", "strings": ("history",)},
-    # The menu world cup opens from an activity on event.html; no nav link points at it.
     "worldcup.html": {"current": None, "strings": ("wc",)},
     "lab.html": {"current": None, "lab": True, "strings": ("lab",)},
     "lab-ggongbab.html": {"current": None, "lab": True, "ribbon": True,
                           "strings": ("gg", "ggongbab", "km", "dish", "starcal")},
-    # The free-food tip board (docs/GGONGBAB_TIPS.md): a public page since 2026-11-02 (owner), in every
-    # page's "more" menu.
     "tip.html": {"current": "tip.html", "strings": ("tip",)},
-    # The weekly card news preview is lab-only (docs/CARDNEWS.md), the images that go to Telegram.
     "cardnews.html": {"current": "cardnews.html", "lab": True, "strings": ("cardnews",)},
-    # 밥약 메이커 (밥도둑 2.0 phase 3, docs/BOBYAK.md) is lab-only until the owner approves it: reachable from
-    # lab.html, no nav link (the nav rename to the four 2.0 destinations awaits the owner).
     "bobyak.html": {"current": None, "lab": True, "strings": ("bob",)},
-    # 마이 밥도둑 (밥도둑 2.0 Phase 2, docs/MY_BABDODUK.md): optional sign-in; public since owner 2026-11-11.
     "my.html": {"current": None, "strings": ("my", "push")},
-    # 개인정보처리방침 (owner 2026-11-08): public on every host, because Google's sign-in consent screen
-    # needs its address on the site's own domain; linked from 마이 밥도둑, no nav item.
     "privacy.html": {"current": None, "strings": ("privacy",)},
 }
 
@@ -118,7 +102,7 @@ def render_nav(page: str, config: dict) -> list[str]:
         out.append(line)
     rendered = "\n".join(out)
     rendered = rendered.replace('<a href="index.html" id="navHome"', f'<a href="{config.get("home", "index.html")}" id="navHome"')
-    if config.get("home") == "#":  # the home page's wordmark scrolls to the top
+    if config.get("home") == "#":
         rendered = rendered.replace('data-i18n-aria-key="nav.homeAria" aria-label="홈으로"',
                                     'data-i18n-aria-key="nav.topAria" aria-label="맨 위로"', 1)
     if current:
@@ -191,8 +175,6 @@ def _object(mapping: dict) -> str:
     return json.dumps(mapping, ensure_ascii=False)
 
 
-# Scripts of lab-only experiments (not promoted to production in the current main baseline). A tree
-# without one, like main, has no block to write there; any other missing script stops the sync.
 LAB_ONLY_SCRIPTS = {"js/ggongbab-public-feed.js"}
 
 
@@ -201,7 +183,6 @@ def present(blocks: dict, root: Path) -> dict:
     return {path: block for path, block in blocks.items() if path not in LAB_ONLY_SCRIPTS or (root / path).exists()}
 
 
-# Script blocks between `// @labels:<name>` and `// @end labels`, rendered from the labels.
 ALL_LABEL_BLOCKS = {
     "js/eat-slot.js": {
         "cuisines": lambda data: [
@@ -218,20 +199,17 @@ ALL_LABEL_BLOCKS = {
 LABEL_BLOCKS = present(ALL_LABEL_BLOCKS, ROOT)
 
 
-# Page blocks rendered from data/content/ (scripts/page_content.py), and their translations.
 CONTENT_BLOCKS = {
     "event.html": lambda: {**page_content.event_blocks(), **page_content.worldcup_font_block()},
     "history.html": page_content.history_blocks,
     "worldcup.html": page_content.worldcup_blocks,
     "index.html": page_content.home_font_block,
 }
-# Scripts with `// @content:<name>` blocks written from data/content/ (loaded by a page only when needed).
 CONTENT_SCRIPTS = {
     "js/worldcup-entry-data.js": page_content.worldcup_entry_data_blocks,
     "js/worldcup-gate.js": page_content.worldcup_gate_blocks,
     "js/pick-photos.js": page_content.pick_photo_blocks,
 }
-# The single keys (not whole families) a page's table carries besides its PAGES `strings`.
 PAGE_KEYS = {
     "event.html": page_content.WORLDCUP_ENTRY_KEYS,
     "index.html": page_content.WORLDCUP_GATE_KEYS,
@@ -315,14 +293,8 @@ def render_strings(page: str) -> list[str]:
 
 
 # ---- content stamps (docs/DEPLOYMENT_AND_BRANCHES.md "Caching") ---------------------------------------
-# Every local script and stylesheet a page or module loads is addressed as <path>?v=<first 10 hex of the
-# file's sha256>, so vercel.json may let browsers keep /js/* and /css/* for a year: a changed file gets a
-# new address. js/vendor/ is versioned by its folder name (three-0.186.1) and is not stamped.
 STAMP_HEX = 10
-# In a page: a quoted js/ or css/ path (a <script src>, a <link href>, or a path a page script loads
-# itself, like event.html's world cup), with or without an old stamp.
 PAGE_REF = re.compile(r"""(["'])((?:js|css)/(?!vendor/)[A-Za-z0-9_./-]+?\.(?:js|css))(?:\?v=[0-9a-f]*)?\1""")
-# In a module under js/: a relative import of another of our modules, static or dynamic.
 MODULE_REF = re.compile(r"""(\bfrom\s*|\bimport\s*\(\s*)(["'])(\./(?!vendor/)[A-Za-z0-9_.-]+\.js)(?:\?v=[0-9a-f]*)?\2""")
 
 
@@ -350,7 +322,7 @@ def stamp_page(page: str, text: str, rendered: dict[str, str]) -> str:
     def replace(match):
         content = file_bytes(match.group(2), rendered)
         if content is None:
-            if match.group(2) in LAB_ONLY_SCRIPTS:      # a lab-only script this tree (main) lacks
+            if match.group(2) in LAB_ONLY_SCRIPTS:
                 return match.group(0)
             raise SystemExit(f"{page}: loads {match.group(2)}, which does not exist")
         return f"{match.group(1)}{match.group(2)}?v={stamp(content)}{match.group(1)}"

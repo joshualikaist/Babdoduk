@@ -127,7 +127,7 @@ def ytdlp_channel(source: dict, runner, binary: str) -> AdapterResult:
                     extra=["--playlist-end", str(CHANNEL_LATEST)], method="yt-dlp_channel")
     for item in result.items:
         item.pop("discoveryQuery", None)
-        item.pop("channelTitle", None)          # a registered channel keeps its registry name
+        item.pop("channelTitle", None)
     return AdapterResult(result.status, items=result.items, code=result.code, queries=[])
 
 

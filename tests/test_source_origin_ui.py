@@ -57,7 +57,7 @@ def open_page(browser, page_name, lang="ko"):
     def handle(route):
         url = urlparse(route.request.url)
         if url.hostname != HOST:
-            return route.abort()          # no live public feed, CDN or deployment
+            return route.abort()
         path = unquote(url.path).lstrip("/")
         if path == "data/ggongbab/latest.json":
             return route.fulfill(json=LIVE)
@@ -93,22 +93,22 @@ def test_the_food_hub_credits_and_links_an_instagram_post_and_credits_a_tip(brow
     assert card(page, "insta").locator(".gg-source").inner_text() == "인스타그램"
     assert links(card(page, "insta")) == [[POST, "_blank", "noopener", "인스타그램 원문"]]
     assert card(page, "forged").locator(".gg-source").inner_text() == "인스타그램"
-    assert links(card(page, "forged")) == []                       # not the canonical permalink: no link
+    assert links(card(page, "forged")) == []
     assert card(page, "tip").locator(".gg-source").inner_text() == "제보"
-    assert links(card(page, "tip")) == []                          # a tip never links, whatever the data holds
+    assert links(card(page, "tip")) == []
     assert card(page, "mail").locator(".gg-source").inner_text() == "KAIST 메일"
-    page.locator("[data-gg-archive-more]").click()                # past listings stay closed until asked for
+    page.locator("[data-gg-archive-more]").click()
     past = page.locator('.gg-past[data-past-id="past"]')
     past.wait_for()
     assert past.locator("a").get_attribute("href") == POST
-    assert past.locator("a").inner_text().startswith("인스타그램 보기")  # copy cleanup, owner 2026-11-12
+    assert past.locator("a").inner_text().startswith("인스타그램 보기")
     assert "인스타그램" in past.locator(".gg-past-note").inner_text()
 
     page.locator("#langToggle").click()
     assert card(page, "insta").locator(".gg-source").inner_text() == "Instagram"
     assert card(page, "insta").locator("a.gg-btn").inner_text() == "Instagram post"
     assert card(page, "tip").locator(".gg-source").inner_text() == "Reader tip"
-    assert past.locator("a").inner_text().startswith("View on Instagram")  # copy cleanup, owner 2026-11-12
+    assert past.locator("a").inner_text().startswith("View on Instagram")
     assert not errors
     context.close()
 
@@ -120,7 +120,7 @@ def test_the_home_calendar_links_the_post_and_names_a_tip(browser):
         button.click()
     day = page.locator("#homeCalDay")
     hrefs = day.locator("a").evaluate_all("els => els.map(a => [a.getAttribute('href'), a.rel])")
-    assert hrefs == [[POST, "noopener"]]                           # the post only: no forged link, no tip link
+    assert hrefs == [[POST, "noopener"]]
     assert day.locator("a.hc-ev-link").inner_text().startswith("인스타그램 원문 보기")
     sources = day.locator(".hc-ev-src").all_inner_texts()
     assert sources == ["출처 · 인스타그램", "출처 · 제보", "출처 · KAIST 메일"]

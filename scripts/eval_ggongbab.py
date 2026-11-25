@@ -33,7 +33,7 @@ from ggongbab.prefilter import classify  # noqa: E402
 
 GOLD_DIR = ROOT / "tests/fixtures/ggongbab/gold"
 MISS_DIR = ROOT / "tests/fixtures/ggongbab/misses"
-REFERENCE = "2026-09-19T09:00:00+09:00"   # anchors year inference for gold samples without a mail time
+REFERENCE = "2026-09-19T09:00:00+09:00"
 
 
 def load_samples() -> list[dict]:

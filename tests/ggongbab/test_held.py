@@ -35,7 +35,7 @@ class DB:
         if params["status"] == "eq.published":
             day = params["and"].split("event_start.gte.")[1][:10]
             return [dict(r) for r in self.rows.values() if r["status"] == "published"
-                    and r["event_start"][:10] == day]        # the fakes' events start in the KST morning
+                    and r["event_start"][:10] == day]
         assert params["status"] == "eq.review" and params["needs_review"] == "eq.true"
         return [dict(r) for r in self.rows.values() if r["status"] == "review" and r["needs_review"]]
 
@@ -83,9 +83,9 @@ def test_only_held_events_that_look_like_free_food_are_asked_once_each():
     text = bot.asked[0][1]
     assert "망한과제" in text and "11/04(수) 18:00" in text and "E9 5층 존해너홀" in text and "싸이버거" in text
     assert "⚠️" not in text
-    assert h.poll() == 0                                    # asked already
+    assert h.poll() == 0
     db.rows[BURGER]["updated_at"] = "2026-11-03T07:00:00+00:00"
-    assert h.poll() == 1                                    # the pipeline changed it: asked again
+    assert h.poll() == 1
 
 
 def test_a_poll_asks_at_most_a_few_and_the_rest_come_next_time():

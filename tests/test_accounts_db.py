@@ -20,9 +20,6 @@ SQL = (ROOT / "supabase/migrations/011_accounts.sql").read_text(encoding="utf-8"
 TABLES = ("profiles", "saved_events", "saved_places", "place_lists", "place_list_items")
 
 
-# ---------------------------------------------------------------------------------------------------
-# Static reading
-# ---------------------------------------------------------------------------------------------------
 def test_every_table_denies_by_default_and_only_signed_in_users_get_rights():
     for table in TABLES:
         assert f"alter table public.{table} enable row level security;" in SQL, table
@@ -57,9 +54,6 @@ def test_the_service_key_and_no_secret_appear():
     assert not re.search(r"sb_secret_|eyJ[A-Za-z0-9_-]{20,}", SQL)
 
 
-# ---------------------------------------------------------------------------------------------------
-# A real PostgreSQL
-# ---------------------------------------------------------------------------------------------------
 SHIM = """
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
@@ -93,7 +87,7 @@ def db():
         assert PGCRYPTO in SQL
         local = SQL.replace(PGCRYPTO, "")
         admin.execute(local)
-        admin.execute(local)  # applying twice is harmless
+        admin.execute(local)
     yield psycopg, uri
     server.cleanup()
 

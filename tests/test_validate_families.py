@@ -12,7 +12,7 @@ def test_only_validates_the_families_being_published(tmp_path, monkeypatch, caps
     monkeypatch.setattr(validate_content, "ROOT", tmp_path)
     validate_content.main(["--only", "kaist-menu", "magazine"])
     assert "content validation ok (kaist-menu, magazine)" in capsys.readouterr().out
-    for argv in (["--only", "ggongbab"], []):              # the broken family, and all by default
+    for argv in (["--only", "ggongbab"], []):
         with pytest.raises(SystemExit) as stopped:
             validate_content.main(argv)
         assert stopped.value.code == 1

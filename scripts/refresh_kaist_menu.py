@@ -38,30 +38,23 @@ UA = "BabdodukMenu/1.0 (+https://github.com/joshualikaist/Babdoduk)"
 KST = timezone(timedelta(hours=9))
 TIMEZONE = "Asia/Seoul"
 BASE = "https://www.kaist.ac.kr/kr/html/campus/053001.html"
-SCHEMA_VERSION = 1      # schemas/kaist-menu-day.schema.json and kaist-menu-week.schema.json
+SCHEMA_VERSION = 1
 
-# Day states. AVAILABLE: a validated menu for that date. NOT_PUBLISHED_YET: every restaurant
-# answered with an empty official table. FETCH_FAILED: no usable answer and nothing saved.
-# STALE_SAVED_DATA: this run could not confirm the day, so the previously saved file stays.
 AVAILABLE = "AVAILABLE"
 NOT_PUBLISHED_YET = "NOT_PUBLISHED_YET"
 FETCH_FAILED = "FETCH_FAILED"
 STALE_SAVED_DATA = "STALE_SAVED_DATA"
 
 REQUEST_PAUSE_SECONDS = 0.25
-MAX_CONSECUTIVE_FAILURES = 8        # one date's worth of restaurants: the site is down, stop
-RUN_BUDGET_SECONDS = 480            # later dates keep their saved files
+MAX_CONSECUTIVE_FAILURES = 8
+RUN_BUDGET_SECONDS = 480
 
-# The ids are the codes of the official ActFodlst('...') calls on 053001.html, not guessed; names,
-# buildings and order are the shared labels (data/content/labels.json).
 RESTAURANTS = content_labels.restaurants()
 MEALS = ("breakfast", "lunch", "dinner")
 
 NOTE = re.compile(r"^(\*|안녕하세요|운영시간|금액|알레르기|인스타|주말)")
 ALLERGEN = re.compile(r"^\(?\d+(?:\s*,\s*\d+)*\)?$")
 PRICE = re.compile(r"(\d{1,3}(?:,\d{3})*\s*원)")
-# An explicit calorie line, not a suffix match inside a thousands-separated
-# number, allergen list, price, or promotional sentence.
 KCAL = re.compile(r"^(?:(?:총\s*칼로리|총\s*열량|칼로리|열량)\s*[:：]?\s*)?"
                   r"(\d{1,3}(?:,\d{3})+|\d+)\s*kcal\s*$", re.I)
 BR = re.compile(r"<br\s*/?>", re.I)
@@ -285,7 +278,6 @@ def decide(day: date, restaurants: list, coverage: dict, saved: Optional[dict],
         }
         return AVAILABLE, payload
     if saved:
-        # Nothing new that proves the saved menu wrong: keep it, and say it was not re-confirmed.
         return STALE_SAVED_DATA, None
     if failed:
         return FETCH_FAILED, None
@@ -339,7 +331,6 @@ def refresh(out: Path = OUT, *, now: Optional[datetime] = None, fetcher: Callabl
               f" fetched={coverage['fetched']}/{coverage['requested']}")
     today_saved = read_day(out, today)
     if today_saved is not None:
-        # latest.json keeps meaning TODAY: byte-identical to today's dated file.
         text = day_path(out, today).read_text(encoding="utf-8")
         latest = out / "latest.json"
         if not latest.exists() or latest.read_text(encoding="utf-8") != text:

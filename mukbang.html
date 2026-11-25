@@ -23,9 +23,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/site.css?v=ee9ae19475" />
-  <link rel="stylesheet" href="css/magazine.css?v=f317c40e23" />
-  <link rel="stylesheet" href="css/choose.css?v=5c206159ea" />
+  <link rel="stylesheet" href="css/site.css?v=71967c9f54" />
+  <link rel="stylesheet" href="css/magazine.css?v=eb0d68054d" />
+  <link rel="stylesheet" href="css/choose.css?v=ff75825d29" />
 </head>
 <body class="mg-body">
   <header class="site-nav" role="banner">
@@ -60,7 +60,6 @@
   <main class="mg-page">
     <div class="mg-mobile-edition">
       <button type="button" id="mgDatePrev" aria-label="이전 호">‹</button>
-      <!-- The date itself opens the calendar, raised so it reads as a button (owner 2026-11-24). -->
       <button type="button" class="mg-date-pick" id="mgDateOpen" aria-expanded="false" aria-controls="mgMobileCal" aria-label="날짜 보기">
         <span id="mgMobileDate">—</span><span class="mg-date-caret" aria-hidden="true">▾</span>
       </button>
@@ -136,8 +135,6 @@
             </figure>
           </article>
 
-          <!-- 오늘 뭐 먹지 has its own page since 2026-11-04 (owner), a direct destination in the navigation;
-               this card points there, and an old mukbang.html#what link goes straight to it. -->
           <section class="mg-picker choose-picker mg-pick-card" id="what" aria-labelledby="mgPickTitle">
             <a class="mg-pick-link" href="choose.html">
               <span class="mg-pick-emoji" aria-hidden="true">🎰</span>
@@ -466,9 +463,8 @@
       }
     };
   </script>
-  <script src="js/site.js?v=ddf3962762"></script>
+  <script src="js/site.js?v=7e55f67c4e"></script>
   <!-- @end i18n -->
-  <!-- The menu picker moved to choose.html (2026-11-04): an old link to its anchor lands there. -->
   <script>if (location.hash === '#what') location.replace('choose.html');</script>
 
   <script>
@@ -501,15 +497,12 @@
         return iso.replace(/-/g, '.');
       }
 
-      // KST calendar date of an instant (ms), whatever the viewer's timezone.
       function kstIso(ms) {
         var kst = new Date(ms + 9 * 3600000);
         return kst.getUTCFullYear() + '-' + String(kst.getUTCMonth() + 1).padStart(2, '0') + '-' +
           String(kst.getUTCDate()).padStart(2, '0');
       }
 
-      // When this edition was actually built (its generatedAt), in KST: the scheduled run starts
-      // hours late on GitHub, so a fixed "10:00" would be a claim the edition does not support.
       function publishedLabel(ed) {
         var ms = Date.parse(ed.generatedAt || '');
         if (isNaN(ms)) return '';
@@ -537,7 +530,6 @@
         } catch (err) { return ''; }
       }
 
-      // Only source-backed stories are rendered: a story without a real http(s) URL is dropped.
       function storyHtml(item) {
         var href = item && item.url ? safeUrl(item.url) : '';
         if (!href || !item.title || !item.source) return '';
@@ -613,8 +605,6 @@
             mediaLink.removeAttribute('rel');
           }
         }
-        // The story's own image only (feed media, official thumbnail or the article's og:image).
-        // Without one the hero is text-only; there is no placeholder picture.
         var hero = document.getElementById('featured');
         var src = featured.image || '';
         visual.classList.remove('has-photo');
@@ -633,8 +623,6 @@
         img.src = src;
       }
 
-      // ‹ and › are dimmed at the oldest and the newest edition, where they have nowhere to go (2026-11-24:
-      // the press-every-button run found 다음 호 doing nothing on the newest one).
       function updateStepButtons() {
         var dates = (index.dates || []).slice().sort();
         var at = dates.indexOf(currentDate);
@@ -655,7 +643,7 @@
         var heroEl = document.getElementById('featured');
         if (heroEl) {
           heroEl.hidden = !featured;
-          heroEl.removeAttribute('data-pending');   // its reserved place (css/magazine.css) is no longer needed
+          heroEl.removeAttribute('data-pending');
         }
         featured = featured || {};
         var titleEl = document.getElementById('mgHeroTitle');
@@ -665,7 +653,6 @@
         var linkEl = document.getElementById('mgHeroLink');
         var heroLabel = document.getElementById('mgHeroLabel');
         if (heroLabel) {
-          // "오늘의 추천 글" unless discovery marked a qualified trend (heroKind "trend" + evidence).
           var heroKey = featured.heroKind === 'trend' && (featured.trendEvidence || []).length ? 'mg.hero.trend' : 'mg.hero.pick';
           heroLabel.setAttribute('data-i18n', heroKey);
           heroLabel.textContent = t(heroKey, heroKey === 'mg.hero.trend' ? '지금 뜨는 먹거리' : '오늘의 추천 글');
@@ -698,8 +685,6 @@
         var published = publishedLabel(ed);
         if (schedule) schedule.textContent = published;
         if (week) week.textContent = dateLabel + (published ? ' · ' + published : '');
-        // Today's run starts hours after midnight, so until it lands yesterday's edition is still
-        // the newest one: "latest", not "past". An older or superseded edition is a past one.
         var todayIso = kstIso(Date.now());
         var yesterdayIso = kstIso(Date.now() - 86400000);
         var label = ed.date === todayIso ? t('mg.issue.today', '오늘 호')
@@ -770,7 +755,6 @@
         openBtn.addEventListener('click', function () {
           setOpen(!mobileCal.classList.contains('is-open'));
         });
-        // A picked day closes the calendar again; the new edition's date shows on the button.
         mobileCal.addEventListener('click', function (e) {
           if (e.target.closest('.mg-cal-day.is-live')) setOpen(false);
         });
@@ -816,7 +800,6 @@
         .catch(function () {
           var pendingHero = document.getElementById('featured');
           if (pendingHero) pendingHero.removeAttribute('data-pending');
-          // No edition: say so, show no edition date and no stories (never stand-in text).
           document.querySelectorAll('[data-lane-items]').forEach(function (box) {
             box.innerHTML = '<p class="mg-lane-empty">' + escapeHtml(t('mg.laneEmpty', '오늘은 새 이야기가 없어요.')) + '</p>';
           });
@@ -832,6 +815,6 @@
         });
     })();
   </script>
-  <script src="js/kaist-menu.js?v=6c909f8c8a"></script>
+  <script src="js/kaist-menu.js?v=758cd518d3"></script>
 </body>
 </html>

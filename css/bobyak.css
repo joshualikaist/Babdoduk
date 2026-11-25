@@ -1,8 +1,3 @@
-/* 밥약 메이커 (bobyak.html, lab only; docs/BOBYAK.md): the restaurant roulette, the place card, 먹킷리스트 and the
-   bill split. Cream canvas and the pink accent of the site; one column on phones; every control is a 44px
-   target (a chip is a 34px visible pill inside a 44px hit area, as on the food hub). */
-
-/* Above the fixed body::before canvas of css/site.css, as every page's main is. */
 .bob-page { position: relative; z-index: 1; width: min(720px, calc(100% - 32px)); margin: 0 auto;
   padding: calc(var(--nav-h, 52px) + 24px) 0 var(--space-16, 64px); display: grid; gap: 28px; }
 .bob-hero { display: grid; gap: 10px; }
@@ -22,11 +17,9 @@
 .bob-warn { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--color-accent-wash); color: var(--color-ink); font-size: 14px; }
 .bob-tips { margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-ink-muted); text-align: center; overflow-wrap: anywhere; }
 
-/* Grid columns never grow past the page: a long input or name wraps or shrinks instead. */
 .bob-hero, .bob-section, .bob-settle, .bob-field, .bob-result, .bob-list, .bob-settle-result, .bob-card, .bob-filters { grid-template-columns: minmax(0, 1fr); }
 .bob-person-name, .bob-person-fixed { width: 100%; }
 
-/* Buttons */
 .bob-btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
   min-height: 44px; min-width: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: #fff;
   box-shadow: inset 0 0 0 1px rgba(30, 29, 26, .18); color: var(--color-ink); font: inherit; font-size: 15px; font-weight: 700;
@@ -51,7 +44,6 @@
 .bob-chip:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -3px; }
 .bob-chips { display: flex; flex-wrap: wrap; gap: 10px 10px; padding: 5px; }
 
-/* Roulette */
 .bob-pick-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .bob-pick-row #bobSpin { flex: 1 1 200px; min-height: 52px; font-size: 18px; }
 .bob-filters { display: grid; gap: 10px; padding: 14px; border-radius: 16px; background: var(--color-surface-muted); }
@@ -69,7 +61,6 @@
 .bob-consent-title { font-weight: 800; }
 .bob-consent-on { margin: 0; font-size: 14px; color: var(--color-ink-muted); }
 
-/* Place card */
 .bob-card { display: grid; gap: 10px; padding: 18px; border-radius: 18px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-divider);
   min-width: 0; overflow-wrap: anywhere; }
 .bob-card--candidate { background: var(--color-surface); box-shadow: inset 0 0 0 1px var(--color-divider), inset 4px 0 0 #d6cfc2; }
@@ -99,7 +90,6 @@
   background: #fff; color: var(--color-ink); font: inherit; font-size: 16px; line-height: 1.5; resize: vertical; }
 .bob-memo .bob-btn { justify-self: start; }
 
-/* 먹킷리스트 */
 .bob-list { display: grid; gap: 14px; min-width: 0; }
 .bob-list-group { display: grid; gap: 6px; }
 .bob-list-title { margin: 0; font-size: 16px; }
@@ -114,7 +104,6 @@
 .bob-row .bob-badge { padding: 0 6px; font-size: 11px; }
 .bob-row--missing .bob-row-name { color: var(--color-ink-muted); }
 
-/* 정산 */
 .bob-settle { display: grid; gap: 14px; min-width: 0; }
 .bob-field { display: grid; gap: 6px; min-width: 0; }
 .bob-money { display: flex; align-items: center; gap: 8px; }
@@ -148,7 +137,6 @@
 .bob-error { margin: 0; padding: 10px 12px; border-radius: 12px; background: #fdecec; color: #8a1c1c; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
 .bob-settle-result > .bob-btn { justify-self: start; }
 
-/* Copy by hand, and the status line */
 .bob-copy { display: grid; gap: 8px; padding: 14px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-divider); }
 .bob-copy-note { margin: 0; font-size: 14px; }
 .bob-copy .bob-btn { justify-self: start; }

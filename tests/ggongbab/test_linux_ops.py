@@ -82,7 +82,7 @@ def profile_of(root):
 
 def test_listener_table_parses_ipv4_ipv6_and_only_listen_rows(proc):
     proc.listen(UNIFIED_PORT, 111)
-    proc.tcp.append(tcp_line(9, "0100007F", UNIFIED_PORT, "01", 999))       # ESTABLISHED: not a listener
+    proc.tcp.append(tcp_line(9, "0100007F", UNIFIED_PORT, "01", 999))
     proc.listen(9999, 222)
     proc.listen(UNIFIED_PORT, 333, address="00000000000000000000000001000000", v6=True)
     assert linux_proc.listeners(UNIFIED_PORT) == [("127.0.0.1", 111), ("::1", 333)]
@@ -92,7 +92,6 @@ def test_inventory_verifies_the_one_dedicated_browser(proc, ops_root):
     profile = profile_of(ops_root)
     proc.listen(UNIFIED_PORT, 5001)
     proc.process(100, browser_argv(profile), sockets=[5001])
-    # A renderer whose title Chrome rewrote (one space-joined argv string) and a zombie.
     proc.process(101, [], raw=f"/opt/google/chrome/chrome --type=renderer --user-data-dir={profile}\0".encode())
     proc.process(102, [], state="Z", raw=b"")
     proc.process(103, ["/usr/bin/python3", "x.py"], comm="python3")
@@ -118,7 +117,7 @@ def test_inventory_fails_closed(proc, ops_root, variant):
 def test_inventory_reports_absent_and_stale(proc, ops_root):
     host = host_module.ResidentHost(ops_root, run=host_module.linux_run, split=host_module.linux_split)
     assert host.inspect() == ("absent", None)
-    proc.process(100, browser_argv(profile_of(ops_root)))          # running, but not listening
+    proc.process(100, browser_argv(profile_of(ops_root)))
     assert host.inspect()[0] == "stale"
 
 
@@ -148,7 +147,6 @@ def test_stop_rechecks_identity_then_terms_and_kills_only_the_same_process(proc,
         with pytest.raises(ValueError):
             linux_proc.stop_verified(dict(expected, **changed), kill=lambda *a: sent.append(a), sleep=lambda _: None)
     assert sent == []
-    # Still the same process after the grace period: SIGKILL follows.
     linux_proc.stop_verified(expected, kill=lambda *a: sent.append(a), sleep=lambda _: None)
     assert sent == [(100, signal.SIGTERM), (100, signal.SIGKILL)]
 
@@ -162,7 +160,7 @@ def test_stop_does_not_kill_after_a_graceful_exit(proc, ops_root):
 
     def kill(pid, sig):
         sent.append((pid, sig))
-        shutil.rmtree(proc.root / "100")               # the browser exits on SIGTERM
+        shutil.rmtree(proc.root / "100")
 
     linux_proc.stop_verified(expected, kill=kill, sleep=lambda _: None)
     assert sent == [(100, signal.SIGTERM)]
@@ -175,7 +173,7 @@ def test_rewritten_chrome_title_is_split_and_a_spaced_profile_fails_closed(proc,
     host = host_module.ResidentHost(ops_root, run=host_module.linux_run, split=host_module.linux_split)
     state, process = host.inspect()
     assert state == "verified" and process["command"] == browser_argv(profile)
-    assert linux_proc.argv(b"a\0b c\0") == ["a", "b c"]          # real NUL-separated argv is kept as-is
+    assert linux_proc.argv(b"a\0b c\0") == ["a", "b c"]
 
 
 @linux_only
@@ -219,8 +217,6 @@ def test_ops_script_is_valid_bash():
     text = script.read_text(encoding="utf-8")
     assert "vercel" not in text and "--force" not in text
     assert "KillMode=process" in text
-    # The Radar starts after the Portal worker has opened the Ops Chrome at login (measured
-    # 2026-10-18: a simultaneous start meant DOORAY_BROWSER_ABSENT and a 6-minute backoff).
     assert "RADAR_START_DELAY=120" in text and "ExecStartPre=/bin/sleep" in text
     assert "TimeoutStartSec=300" in text and 'start --no-block "$RADAR_UNIT"' in text
 

@@ -1,5 +1,3 @@
-/* 마이 밥도둑 (my.html, lab only; docs/MY_BABDODUK.md). Navigation and footer are owned by site.css;
-   colors come from its semantic tokens. */
 .my-page {
   position: relative;
   z-index: 1;
@@ -23,7 +21,6 @@
   border: 0;
 }
 
-/* A plain page head like every content page (owner 2026-11-13): no card, no label. */
 .my-hero { padding: 0 0 var(--space-2); }
 
 .my-title { margin: 0; word-break: keep-all; overflow-wrap: anywhere; }
@@ -110,8 +107,6 @@
 
 .my-login { display: grid; gap: 14px; margin-top: var(--space-4); }
 
-/* Raised buttons (owner 2026-11-12: "조금 더 입체감 있게"): a darker bottom edge and a soft shadow that the
-   button sinks into when pressed. */
 .my-login-btn {
   --login-edge: rgba(0, 0, 0, 0.18);
   position: relative;
@@ -223,7 +218,6 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 
 .my-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 
-/* The filled star removes a saved event on this page (owner 2026-11-12). */
 .my-unstar {
   flex: none;
   width: 44px;
@@ -364,12 +358,8 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
   .my-login .my-note { grid-column: 1 / -1; }
 }
 
-/* 개인정보처리방침 링크 (privacy.html): the page's last line, quiet but easy to tap */
-
-/* 내 캘린더에 연결 (docs/CALENDAR_FEED.md): one full-width button. */
 .my-cal-btn { display: flex; width: 100%; min-height: 48px; margin: var(--space-3) 0 var(--space-2); }
 
-/* The calendar connection's state (owner 2026-11-19): one plain line above the text, like a setting. */
 .my-cal-state {
   margin: var(--space-2) 0 0;
   font-size: 15px;
@@ -378,7 +368,6 @@ a.my-row-link:hover .my-what { text-decoration: underline; }
 }
 .my-cal-state.is-on { color: var(--color-accent); }
 
-/* The profile install in three short steps, and an old subscription still on the phone (owner 2026-11-19). */
 .my-steps { margin: var(--space-2) 0 0; padding-left: 1.4em; font-size: 14px; line-height: 1.6; color: var(--color-ink); word-break: keep-all; overflow-wrap: anywhere; }
 .my-steps li + li { margin-top: 4px; }
 .my-cal-box { margin: var(--space-3) 0 0; padding: 12px 14px; border-radius: 12px; background: var(--color-accent-wash); }

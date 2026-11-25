@@ -1,6 +1,3 @@
-/* Client-side eligibility for published free-food rows, shared by the hub
-   and the home summary. The backend selection policy stays authoritative;
-   this repeats its safety checks so an unsafe row never becomes a card or count. */
 (function (global) {
   var KST_OFFSET = 9 * 60;
 
@@ -20,9 +17,6 @@
     var s = String(value == null ? 'unknown' : value).toLowerCase();
     return (s === 'true' || s === 'false') ? s : 'unknown';
   }
-  // A listing stands on explicit food, or on a giveaway: a prize draw or a gift for participants
-  // (owner decision 2026-10-14; the backend's publication_eligible). Unknown food is neither a
-  // positive nor a negative claim, so a row with neither is not shown.
   function hasFood(ev) { return tri((ev.food || {}).provided) === 'true'; }
   function hasGiveaway(ev) {
     var gift = ev.giveaway;
@@ -32,23 +26,14 @@
     return (!ev.contentType || ev.contentType === 'free_food') &&
       (hasFood(ev) || hasGiveaway(ev)) && !ev.needs_review && !ev.needsReview;
   }
-  // What every free-food (꽁밥) count counts: a listed row with explicit food. A giveaway-only
-  // listing is shown with its gift mark but is never counted as free food.
   function isFreeFood(ev) { return isPublic(ev) && hasFood(ev); }
   function isGiveawayOnly(ev) { return isPublic(ev) && !hasFood(ev); }
-  // A giveaway with no event date of its own is listed at its sign-up deadline: the export writes
-  // the deadline as startAt. Compared as instants, so the static snapshot and the lab Realtime
-  // rows read the same however each spells the time.
   function isDeadlineOnly(ev) {
     if (!hasGiveaway(ev)) return false;
     var start = toKst(ev.startAt);
     var deadline = toKst((ev.registration || {}).deadline);
     return !!start && !!deadline && start.getTime() === deadline.getTime();
   }
-  // With no end time ("11:30 ~ 소진 시까지"), an event stays current for the same window
-  // the feed keeps it after it starts (GGONGBAB_EXPIRED_GRACE_HOURS, 3 h), so a hand-out
-  // that began before anyone saw the notice is still listed while it may be running.
-  // A deadline-only giveaway is listed until its sign-up deadline, and no longer.
   var OPEN_ENDED_HOURS = 3;
   function eventEnd(ev) {
     var end = toKst(ev.endAt);
@@ -62,7 +47,6 @@
     return !end || end >= now;
   }
   function byStart(a, b) { return String(a.startAt || '').localeCompare(String(b.startAt || '')); }
-  // The counted free food of today, and from today on: giveaway-only listings are left out.
   function todayUpcoming(events, now) {
     return (events || []).filter(function (ev) {
       var s = toKst(ev.startAt);
@@ -77,11 +61,6 @@
   }
 
   // ---- Sessions (2026-10-18) ----
-  // An event that runs over several days carries `sessions`: each with its own start, end and, when the
-  // source said so, its own place and food. `occurrences` turns such an event into one row per session
-  // day (id "<id>#<n>", that session's times, place and food, every other field of the event), so the
-  // counts, dots, day panel and upcoming list all work per day without knowing about sessions. An event
-  // without sessions, or whose sessions do not hold together, stays one row exactly as before.
   var MAX_SESSIONS = 14;
   function validSessions(ev) {
     var list = ev && ev.sessions;
@@ -116,9 +95,6 @@
     });
     return out;
   }
-  // Who an event is for, as a short line, or ''. The extracted audience wins (an inferred one is
-  // marked, because it is a guess from the content, not a statement); the stated eligibility is the
-  // fallback. `mark` formats an inferred audience, e.g. "{who} (추정)".
   function audienceOf(ev, mark) {
     var a = ev && ev.audience;
     if (a && typeof a.text === 'string' && a.text.trim()) {
@@ -128,9 +104,6 @@
     return ev && ev.eligibility ? String(ev.eligibility) : '';
   }
 
-  // The source a listing links to, or null: a KAIST notice or Babdoduk's own entry, else the
-  // Instagram post itself, and only in its canonical permalink form (2026-10-31). Mail, the Portal
-  // and reader tips never link. Pages still pass the URL through their own safeHref.
   var INSTAGRAM_POST = /^https:\/\/www\.instagram\.com\/(?:p|reel)\/[A-Za-z0-9_-]{5,20}\/$/;
   function sourceLink(ev) {
     var sources = ((ev && ev.sources) || []).filter(function (src) { return src && typeof src.url === 'string' && src.url; });
@@ -139,8 +112,6 @@
     var link = notice || post;
     return link ? { type: link.type, url: link.url } : null;
   }
-  // The one group a listing is credited to (data/content/labels.json sourceLabels): where it was
-  // found when that is public (an Instagram post, a reader tip), else the existing order.
   var SOURCE_GROUPS = [['instagram', 'instagram'], ['tip', 'tip'], ['dooray', 'mail'], ['dooray_mailbox', 'mail'],
     ['portal', 'portal'], ['kaist_public', 'public'], ['manual', 'manual']];
   function sourceGroup(ev) {
@@ -151,14 +122,7 @@
     return '';
   }
 
-  // A Zoom/Meet/Teams/Webex address is how to attend online, never a sign-up form. The parser
-  // sometimes reads one as "register here" (and then marks sign-up as required), so the pages
-  // split the registration into {required, url} for a real sign-up and {join} for a meeting link.
-  // A sign-up is only claimed with a form link or a deadline; "false" is kept as it is.
   var MEETING_HOST = /(^|\.)(zoom\.us|zoom\.com|zoomgov\.com|meet\.google\.com|teams\.microsoft\.com|teams\.live\.com|webex\.com)$/i;
-  // The browser's own URL parser decides the host (backslashes, user@ prefixes, a trailing dot), so a
-  // look-alike such as https://evil.com\.zoom.us/ is not taken for Zoom. A registration page on those
-  // hosts (/webinar/register/...) is a real sign-up and stays one.
   function isMeetingLink(url) {
     var u;
     try { u = new URL(String(url || '').trim()); } catch (err) { return false; }
@@ -174,10 +138,6 @@
     return { required: required === 'true' && !reg.deadline ? 'unknown' : required, url: '', join: url };
   }
 
-  // What is handed out, in one or two words (owner 2026-11-05: the time and the food first, the rest on
-  // a tap): the dishes the food description names, as i18n keys `dish.<key>` (words only).
-  // Only the description is read, never the title. Named dishes come first (at most two); a general
-  // word (점심, 식사) stands alone or leads only light food ("식사 · 간식"); without either, the type.
   var DISHES = [
     ['burger', /버거|burger/i],
     ['pizza', /피자|pizza/i],
@@ -209,7 +169,6 @@
     var food = ev.food || {};
     var text = String(food.description || '');
     var found = DISHES.filter(function (row) { return row[1].test(text); }).map(function (row) { return row[0]; });
-    // "BBQ 황금올리브 치킨" is a chicken brand, not a barbecue.
     if (found.indexOf('chicken') >= 0) found = found.filter(function (key) { return key !== 'bbq'; });
     found = found.slice(0, 2);
     var general = GENERAL.filter(function (row) { return row[1].test(text); }).map(function (row) { return row[0]; })[0];
@@ -217,12 +176,9 @@
     if (!found.length) found.push(TYPE_DISH[food.type] || 'food');
     return found.map(function (key) { return { key: key }; });
   }
-  // One label for a row: "샌드위치", "도시락 · 다과". `t(key, fallback)` is the page's translation lookup.
   function dishLabel(ev, t) {
     return dishes(ev).map(function (d) { return t('dish.' + d.key, d.key); }).join(' · ');
   }
-  // Whether a free text is in the page's language: Korean text on the Korean page, text without
-  // Hangul on the English page. Source text in the other language stays out of the page's lines.
   function inLang(text, lang) {
     var hangul = /[가-힣]/.test(String(text || ''));
     return lang === 'en' ? !hangul : hangul;

@@ -42,7 +42,6 @@ def telegram_chats(token: str, opener=urllib.request.urlopen) -> list[tuple[str,
     for update in payload.get("result") or []:
         message = update.get("message") or {}
         chat, sender = message.get("chat") or {}, message.get("from") or {}
-        # Only a person's own private chat: the bot answers nothing else (security audit 2026-11-13).
         if (chat.get("type") == "private" and re.fullmatch(r"[1-9][0-9]{2,19}", str(chat.get("id", "")))
                 and str(sender.get("id", "")) == str(chat["id"])):
             chats[str(chat["id"])] = str(chat.get("first_name") or "")
@@ -92,7 +91,6 @@ def main(argv=None) -> int:
             print(f"chat id {chat_id}  ({name})")
         return 0
     if args.use_telegram:
-        # A private chat only (positive id): the bot reads no group (security audit 2026-11-13).
         if not args.chat_id or not re.fullmatch(r"[1-9]\d{2,19}", args.chat_id):
             print("--chat-id must be the numeric id printed by --find-telegram-chat")
             return 1

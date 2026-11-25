@@ -1,14 +1,3 @@
-/* 꽁밥 LIVE, Phase 1 (docs/GGONGBAB_LIVE.md): what the hub adds on top of the published snapshot.
-   - Saved listings, kept in this browser only (localStorage `babdoduk-ggongbab-saved`, schema v1).
-     A saved row keeps the listing's id and what the visitor saw when saving (time, place, title), never
-     the whole event: the page always shows the newest published copy, and the "seen" values are only
-     there to say what changed since.
-   - Filters read only what the data states: the audience as written (an inferred one is "확인 필요"),
-     the campus area from a KAIST building number (N/E/W), the KST date.
-   - One listing to a calendar (a Google Calendar link or an .ics file with a 30-minute alert), never the
-     whole feed; and, for visitors who said yes once, the calendar's add screen right after a star.
-   - Share links: ggongbab.html?e=<id> for one listing, ?week=<Monday> for a week.
-   No network calls, no accounts, no analytics. Needs js/ggongbab-select.js (BabdodukFreeFood). */
 (function (global) {
   var F = global.BabdodukFreeFood;
   if (!F) return;
@@ -30,7 +19,6 @@
     });
     return seen.join(' · ');
   }
-  // What the visitor saw when saving; only these fields, only as text.
   function seenOf(ev) {
     return {
       title: clip(String(ev.title || ''), 200),
@@ -48,8 +36,6 @@
       seen: { title: clip(seen.title, 200), startAt: clip(seen.startAt, 40), endAt: clip(seen.endAt, 40), place: clip(seen.place, 200) }
     };
   }
-  // {items, writable}. Unreadable data is set aside once (never silently thrown away) and the list
-  // starts empty; a newer schema than this page knows is shown but never rewritten.
   function readStore(storage) {
     var raw = null;
     try { raw = storage.getItem(SAVED_KEY); } catch (err) { return { items: [], writable: false }; }
@@ -100,7 +86,6 @@
         state.items = state.items.filter(function (item) { return item.id !== id; });
         return state.items.length !== before && write();
       },
-      // "확인했어요": the visitor has seen the change, so the current copy becomes what they saw.
       acknowledge: function (ev) {
         var item = find(ev.id);
         if (!item) return false;
@@ -113,8 +98,6 @@
   function safeStorage() {
     try { return global.localStorage; } catch (err) { return null; }
   }
-  // What changed between what the visitor saw and the newest copy: [{field, before, after}].
-  // Times compare as instants, so "+09:00" and "Z" spellings of the same time are no change.
   function sameInstant(a, b) {
     if (!a && !b) return true;
     var x = Date.parse(a), y = Date.parse(b);
@@ -133,16 +116,12 @@
     return out;
   }
 
-  // A saved listing whose day is over (owner 2026-11-12: "행사 당일이 지나면 별은 알아서 지워지는"): from the
-  // next KST day it leaves the saved lists. The saved row itself stays, so the subscribed calendar keeps the
-  // event (docs/CALENDAR_FEED.md); only taking the star away removes it there. `nowKst` is F.nowKst().
   function dayPassed(ev, nowKst) {
     var last = F.toKst(ev && ev.endAt) || F.toKst(ev && ev.startAt);
     return !!(last && nowKst && F.ymd(last) < F.ymd(nowKst));
   }
 
   // ---------- Filters ----------
-  // A KAIST building number starts with its campus area: N (north), E (east), W (west).
   var AREA_CODE = /(?:^|[^A-Za-z0-9])([NEW])(\d{1,2})(?:-\d{1,2})?(?![0-9])/;
   function areaOf(ev) {
     var loc = (ev && ev.location) || {};
@@ -153,7 +132,6 @@
     }
     return 'unknown';
   }
-  // Who a listing is for, only as the source wrote it. An inferred audience, or none, is "check".
   var WHO = [
     ['fresh', /새내기|신입생|\d{2}\s*학번|freshm(a|e)n|first[- ]year/i],
     ['undergrad', /학부생|학사\s*과정|학부\s*학생|재학생|새내기|신입생|\d{2}\s*학번|undergrad/i],
@@ -183,13 +161,11 @@
     return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
   }
   function addDaysYmd(key, n) { return utcToYmd(ymdToUtc(key) + n * 86400000); }
-  function weekdayOf(key) { return new Date(ymdToUtc(key)).getUTCDay(); }    // 0 = Sunday
-  // Monday of the KST week that holds `key` (Monday to Sunday, as the hub's "이번 주").
+  function weekdayOf(key) { return new Date(ymdToUtc(key)).getUTCDay(); }
   function mondayOf(key) { return addDaysYmd(key, -((weekdayOf(key) + 6) % 7)); }
   function isYmd(key) {
     return /^\d{4}-\d{2}-\d{2}$/.test(String(key || '')) && utcToYmd(ymdToUtc(key)) === key;
   }
-  // [first, last] day keys for a date filter: 'all' | 'today' | 'week' | 'next' | 'w:<Monday>'.
   function dayRange(filter, now) {
     var today = F.ymd(now);
     if (filter === 'today') return [today, today];
@@ -209,7 +185,6 @@
     var key = F.ymd(s);
     return key >= range[0] && key <= range[1];
   }
-  // Now relative to the listing's own times: 'soon' (not started), 'now' (running), 'ended'.
   function phaseOf(ev, now) {
     var s = F.toKst(ev.startAt), end = F.eventEnd(ev);
     if (end && end < now) return 'ended';
@@ -220,13 +195,11 @@
   // ---------- Calendar ----------
   var ALARM_MINUTES = 30;
   function utcStamp(iso) {
-    if (!iso || typeof iso !== 'string') return '';        // new Date(null) would be 1970
+    if (!iso || typeof iso !== 'string') return '';
     var d = new Date(iso);
     if (isNaN(d.getTime())) return '';
     return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   }
-  // A calendar entry needs a real event time: a deadline-only giveaway has none, and an ended
-  // listing is not offered. An unknown end is never made up: the entry then starts and ends at once.
   function canCalendar(ev, now) {
     if (!ev || !utcStamp(ev.startAt) || F.isDeadlineOnly(ev)) return false;
     return !now || F.isUpcoming(ev, now);
@@ -249,12 +222,9 @@
     if (opts && opts.details) params.set('details', opts.details);
     return 'https://calendar.google.com/calendar/render?' + params.toString();
   }
-  // Every line break (CRLF, a lone CR or LF) becomes the text \n: a lone CR must never end a content line,
-  // or a title could add its own calendar properties (security audit 2026-11-13).
   function icsEscape(text) {
     return String(text == null ? '' : text).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
   }
-  // RFC 5545 folds content lines at 75 octets; count UTF-8 bytes, never split a character.
   function fold(line) {
     var out = [], cur = '', bytes = 0;
     for (var i = 0; i < line.length; i++) {
@@ -284,21 +254,12 @@
     if (place) lines.push('LOCATION:' + icsEscape(place));
     if (opts && opts.details) lines.push('DESCRIPTION:' + icsEscape(opts.details));
     if (opts && opts.url) lines.push('URL:' + icsEscape(opts.url));
-    // The reminder rides in the file (owner 2026-11-11: an alert 30 minutes before the start).
     lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(ev.title), 'TRIGGER:-PT' + ALARM_MINUTES + 'M', 'END:VALARM');
     lines.push('END:VEVENT', 'END:VCALENDAR');
     return lines.map(fold).join('\r\n') + '\r\n';
   }
-  // The guest calendar file and its per-browser memory ('babdoduk-calendar-sent') were removed with the
-  // guest calendar flows (2026-11-24); the leftover helpers went on 2026-11-25.
 
   // ---------- Signed in only (owner 2026-11-24) ----------
-  // "로그인을 하지 않으면 그런 기능을 아예 주지 말고, 로그인 시에만 그 기능이 첨부되도록": a guest gets no calendar
-  // button and no calendar question. Signed in, an iPhone or iPad uses the one calendar connection of 마이 밥도둑
-  // (docs/CALENDAR_FEED.md) and other devices get Google Calendar's add page and the listing's file (an Apple
-  // computer opens the file in Calendar's add screen with its 30-minute alert). The guest flows that came before
-  // (the star's calendar question, kept as 'babdoduk-star-calendar', and the Safari handoff of 2026-11-23) are gone;
-  // a key some browser still keeps is never read.
 
   // ---------- Share ----------
   function pageUrl(base) {
@@ -316,11 +277,8 @@
     u.searchParams.set('week', monday);
     return u.href;
   }
-  // The kakaotalk in-app browser (its user agent says so); downloads may not work there.
   function inTalkApp(ua) { return /kakaotalk/i.test(ua == null ? (global.navigator || {}).userAgent || '' : ua); }
-  // The kakaotalk app's scheme for leaving its in-app browser.
   function openExternalUrl(url) { return 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url); }
-  // Resolves 'shared' | 'copied' | 'manual' | 'cancelled'. 'manual' means the caller shows the text to copy.
   function share(payload) {
     var nav = global.navigator || {};
     var text = payload.text ? payload.text + '\n' + payload.url : payload.url;

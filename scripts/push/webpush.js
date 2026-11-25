@@ -1,11 +1,3 @@
-/* Web push without packages (docs/PUSH_ALERTS.md): the two standards a push message needs, on Node's own
- * crypto module.
- *   - RFC 8291 message encryption ("aes128gcm"): only the receiving browser can read the message; the push
- *     service (Apple, Google, Mozilla) carries it without seeing the text.
- *   - RFC 8292 VAPID: a signed note that says the message comes from the server whose public key the
- *     browser subscribed with, so no one else can push to our subscribers.
- * The private key never leaves this process: it is read from the owner's credential file by the caller.
- */
 'use strict';
 
 const crypto = require('crypto');
@@ -18,8 +10,6 @@ function hkdf(ikm, salt, info, length) {
   return Buffer.from(crypto.hkdfSync('sha256', ikm, salt, info, length));
 }
 
-// The encrypted body for one subscription. `opts.salt` and `opts.senderPrivateKey` exist only so a test can
-// repeat the RFC 8291 example; normal use draws both at random for every message.
 function encrypt(plaintext, p256dh, auth, opts = {}) {
   const receiver = unb64u(p256dh);
   const secret = unb64u(auth);
@@ -37,7 +27,6 @@ function encrypt(plaintext, p256dh, auth, opts = {}) {
   const key = hkdf(ikm, salt, Buffer.from('Content-Encoding: aes128gcm\0'), 16);
   const nonce = hkdf(ikm, salt, Buffer.from('Content-Encoding: nonce\0'), 12);
   const cipher = crypto.createCipheriv('aes-128-gcm', key, nonce);
-  // One record: the text, then 0x02 ("last record", no padding), then the tag.
   const body = Buffer.concat([cipher.update(Buffer.concat([data, Buffer.from([2])])), cipher.final(), cipher.getAuthTag()]);
   const head = Buffer.alloc(21);
   salt.copy(head, 0);
@@ -46,9 +35,6 @@ function encrypt(plaintext, p256dh, auth, opts = {}) {
   return Buffer.concat([head, sender, body]);
 }
 
-// A new key pair, as kept in the credential file: {publicKey, privateKey} in base64url (65 and 32 bytes).
-// Node drops leading zero bytes of the private number (about 1 key in 256 is shorter than 32 bytes), so it is
-// padded back; a key file written before this fix is padded when read (signingKey).
 function pad32(buf) { return buf.length >= 32 ? buf : Buffer.concat([Buffer.alloc(32 - buf.length), buf]); }
 function generateKeys() {
   const ecdh = crypto.createECDH('prime256v1');
@@ -66,7 +52,6 @@ function signingKey(keys) {
   });
 }
 
-// The Authorization header for one push service: a JWT good for 12 hours, signed with ES256.
 function vapidAuthorization(endpoint, keys, subject, nowMs) {
   const head = b64u(JSON.stringify({ typ: 'JWT', alg: 'ES256' }));
   const claims = b64u(JSON.stringify({
@@ -78,7 +63,6 @@ function vapidAuthorization(endpoint, keys, subject, nowMs) {
   return 'vapid t=' + head + '.' + claims + '.' + b64u(sig) + ', k=' + keys.publicKey;
 }
 
-// The request to make: {url, init} for fetch. `ttl` is how long the push service may hold the message.
 function pushRequest(device, message, keys, subject, opts = {}) {
   const body = encrypt(JSON.stringify(message), device.p256dh, device.auth);
   return {

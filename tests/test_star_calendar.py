@@ -20,9 +20,7 @@ ANDROID = ("Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, 
 KAKAO = ANDROID + " KAKAOTALK 11.0.0"
 CHROME_IPHONE = IPHONE.replace("Version/18.0 Mobile/15E148 Safari", "CriOS/131.0.0.0 Mobile/15E148 Safari")
 PC = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-# What older visits left in a guest's browser: the star's calendar answer and a sent listing.
 OLD_GUEST = {"babdoduk-star-calendar": "on", "babdoduk-calendar-sent": '{"wed": "2026-11-11T17:00:00+09:00"}'}
-# Records any link to another app the page clicks (none is expected) and stops it there.
 HANDOFFS = """() => document.addEventListener('click', (e) => {
   const a = e.target && e.target.closest && e.target.closest('a');
   if (a && !/^https?:/.test(a.href)) { e.preventDefault(); (window.__handoffs = window.__handoffs || []).push(a.href); }
@@ -53,7 +51,6 @@ def test_the_file_carries_a_30_minute_alert():
 @pytest.mark.parametrize("ua", [IPHONE, CHROME_IPHONE, ANDROID, KAKAO, PC], ids=["safari", "iphone-chrome", "android", "kakao", "pc"])
 @pytest.mark.parametrize("signed_in", [False, True], ids=["guest", "signed-in"])
 def test_no_calendar_or_share_on_the_hub(browser, ua, signed_in):  # noqa: F811
-    # The old Safari page's address (?cal=1) only opens the listing now.
     context, page, errors = open_hub(browser, user_agent=ua, signed_in=signed_in, storage=OLD_GUEST, query="?e=lunch&cal=1")
     page.evaluate(HANDOFFS)
     downloads = []
@@ -61,7 +58,6 @@ def test_no_calendar_or_share_on_the_hub(browser, ua, signed_in):  # noqa: F811
     lunch = card(page, "lunch")
     assert lunch.locator(".gg-card-toggle").get_attribute("aria-expanded") == "true"
     assert lunch.locator("[data-gg-share], [data-gg-cal], [data-gg-ics], [data-gg-gcal], .gg-cal, .gg-tool").count() == 0
-    # The star saves with a toast and asks nothing about a calendar, even in a browser that once answered yes.
     lunch.locator(".gg-save").click()
     page.wait_for_timeout(400)
     assert page.locator(".gg-toast").inner_text() == "저장했어요"

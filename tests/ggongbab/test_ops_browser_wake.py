@@ -97,7 +97,7 @@ def test_a_discarded_portal_tab_is_reloaded_in_place_without_activation():
     discarded tab's own session brought it back with the window left minimized."""
     cdp = FakeCdp({"p": (PORTAL, False, True), "d": (INBOX, True, True)})
     assert ob.wake_tabs(9224, HOST, cdp=cdp, sleep=lambda _: None) == {"pages": 2, "restored": 1, "roles": ["portal"]}
-    assert cdp.reloaded == {"p"}                             # never the live Dooray tab
+    assert cdp.reloaded == {"p"}
     assert "Target.activateTarget" not in cdp.calls and set(cdp.calls) <= SAFE_METHODS
 
 
@@ -112,7 +112,7 @@ def test_a_tab_that_stays_dead_fails_closed():
     ticks = iter(range(0, 1000))
     with pytest.raises(OpsError, match="OPS_BROWSER_TAB_UNRESPONSIVE"):
         ob.wake_tabs(9224, HOST, cdp=cdp, wait=5, sleep=lambda _: None, clock=lambda: next(ticks))
-    assert cdp.calls[-1] == "Target.detachFromTarget"        # the probe session is always released
+    assert cdp.calls[-1] == "Target.detachFromTarget"
 
 
 def test_unreadable_targets_fail_closed():
@@ -159,11 +159,11 @@ def test_client_frames_are_masked_and_replies_events_pings_are_handled():
         opcode, payload = read_client_frame(server_sock)
         message = json.loads(payload)
         seen["request"] = message
-        server_sock.sendall(server_frame({"method": "Target.targetCreated", "params": {}}))   # an event
-        server_sock.sendall(server_frame(b"hi", opcode=0x9))                                   # a ping
+        server_sock.sendall(server_frame({"method": "Target.targetCreated", "params": {}}))
+        server_sock.sendall(server_frame(b"hi", opcode=0x9))
         part = json.dumps({"id": message["id"], "result": {"ok": True}}).encode()
         server_sock.sendall(server_frame(part[:5], fin=False)
-                            + bytes([0x80 | 0x0, len(part) - 5]) + part[5:])                  # fragmented
+                            + bytes([0x80 | 0x0, len(part) - 5]) + part[5:])
         seen["pong"] = read_client_frame(server_sock)
 
     thread = threading.Thread(target=server)
@@ -249,8 +249,6 @@ def test_the_client_source_reads_no_content():
     wake = (ROOT / "scripts/ggongbab/ops_browser.py").read_text(encoding="utf-8")
     for forbidden in ("Runtime.evaluate", "Page.navigate", "getCookies", "Input.", "closeTarget"):
         assert forbidden not in source and forbidden not in wake
-    # The only reload is the restore of a page that answered neither probe, and nothing in the
-    # ops layer may activate a target or the window again.
     assert "Page.reload" not in source and wake.count('client.call("Page.reload"') == 1
     assert 'call("Target.activateTarget"' not in wake
     assert '"127.0.0.1"' in source and "0.0.0.0" not in source
@@ -274,7 +272,7 @@ def test_the_worker_host_wakes_tabs_only_after_the_owner_is_verified(tmp_path):
     host.verify = Mock(side_effect=AuthRequired("PORTAL_RESIDENT_OWNER_UNVERIFIED"))
     with pytest.raises(AuthRequired):
         host.ensure()
-    assert order == []                                       # an unverified browser is never touched
+    assert order == []
 
 
 @pytest.mark.parametrize("code,expected", [("OPS_BROWSER_TAB_UNRESPONSIVE", "PORTAL_CDP_ATTACH_TIMEOUT"),
@@ -411,8 +409,8 @@ def test_a_radar_attach_timeout_is_a_browser_condition_and_scan_errors_pass_thro
 
     monkeypatch.setattr("ggongbab.web.resident.resident_session", live)
     workers.radar(Files(tmp_path), dry_run=True, once=True)
-    with pytest.raises(UiContractError):                     # a scan error keeps its own meaning
+    with pytest.raises(UiContractError):
         with captured["session_factory"]():
             raise UiContractError("DOORAY_CONTRACT_CHANGED")
     log = (tmp_path / ".local" / "ops-radar.log").read_text(encoding="utf-8")
-    assert "OPS_BROWSER_TAB_RESTORED" in log                  # restores are visible to the operator
+    assert "OPS_BROWSER_TAB_RESTORED" in log

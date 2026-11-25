@@ -3,8 +3,6 @@
   var STEP = 360 / COUNT;
   var ITEM_H = 54;
   var RADIUS = ITEM_H / (2 * Math.tan(Math.PI / COUNT));
-  // A dish's own cuisine first, else its group (data/content/labels.json `cuisines`; written by
-  // scripts/sync_site_chrome.py, never by hand).
   // @labels:cuisines
   var CUISINE_BY_CUISINE = {"korean": "한식", "chinese": "중식", "japanese": "일식", "indian": "인도", "fusion": "퓨전"};
   var CUISINE_BY_GROUP = {"korean": "한식", "chinese": "중식", "japanese": "일식", "southeast-asian": "동남아", "indian": "인도", "middle-eastern": "중동", "western": "양식", "american": "양식", "italian": "양식", "french": "양식", "mexican": "양식", "fusion": "퓨전", "snack": "분식", "dessert": "디저트"};

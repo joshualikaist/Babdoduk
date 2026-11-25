@@ -1,5 +1,3 @@
-/* Feed only: navigation and footer are owned by site.css. Colors use its semantic tokens. */
-/* Page head like every content page (owner 2026-11-13, "글씨 정렬"): 760 column, 16 gutter, 32 above the title, .page-title size. */
 .ggongbab-page-wrap { position:relative; z-index:1; flex:1 0 auto; width:100%; max-width:760px; margin:0 auto; padding:var(--space-8) 16px 64px; }
 .gg-hero { padding:0 0 10px; }
 .gg-hero h1 { margin:0; font-size:clamp(1.75rem, 4vw, 2.25rem); font-weight:900; line-height:1.2; letter-spacing:-0.045em; color:var(--color-ink); }
@@ -8,8 +6,6 @@
 .food-hub-tab { flex:1; height:36px; border:0; border-radius:12px; background:transparent; color:var(--color-ink-muted); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
 .food-hub-tab[aria-selected="true"] { background:var(--color-ink); color:var(--color-surface); }
 .food-hub-tab:focus-visible,.gg-radar-cta:focus-visible,.km-day:focus-visible,.km-meal:focus-visible,.km-fav:focus-visible,.km-expand:focus-visible,.km-cta:focus-visible,.km-stale-toggle:focus-visible,.gg-choose-link:focus-visible,.gg-card:focus-visible { outline:2px solid var(--color-focus); outline-offset:2px; }
-/* The radar (2026-11-05): one slim line, the day's mood and count, then the next free meal as a
-   button to its row. It was a tall box repeating the hero's count and the first card. */
 .gg-radar { width:100%; padding:10px 14px 0; margin:0 0 12px; border-radius:14px; background:var(--color-surface); border:1px solid var(--color-divider); box-shadow:inset 3px 0 0 var(--color-accent); }
 .gg-radar.is-quiet { padding-bottom:10px; }
 .gg-radar-line { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
@@ -24,9 +20,6 @@
 .km-head h2 { font-size:20px; font-weight:900; line-height:26px; letter-spacing:-.03em; color:#1d1d1f; }
 .km-date { font-size:13px; font-weight:500; line-height:20px; color:#6e6e73; }
 .km-count { font-size:12px; font-weight:700; line-height:18px; color:var(--color-accent); }
-/* This week's dates: seven equal columns that fit 360px even with a visible Windows scrollbar,
-   so no internal scrolling hides the selected date. Selected = filled ink (like the hub tabs);
-   today = a small "오늘" word, not only a color. */
 .km-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; margin:0 0 12px; }
 .km-day { min-width:0; min-height:54px; padding:7px 0 5px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:1px; border:1px solid var(--color-divider); border-radius:12px; background:var(--color-surface); color:var(--color-ink-muted); font-family:inherit; cursor:pointer; }
 .km-day-dow { font-size:11px; font-weight:700; line-height:14px; }
@@ -58,14 +51,9 @@
 .km-stale-toggle,.km-cta { margin-top:8px; height:36px; padding:0 12px; border:0; border-radius:10px; background:#1d1d1f; color:#fff; font-family:inherit; font-weight:700; font-size:13px; line-height:16px; cursor:pointer; }
 .km-cta.is-ghost { background:#fff; color:#1d1d1f; border:1px solid #d2d2d7; }
 .gg-card { scroll-margin-top:calc(var(--gg-nav-offset, 0px) + 16px); }
-/* The days (owner 2026-11-03): this week's and next week's tiles, styled as the cafeteria strip (.km-day). */
 .gg-filters { position:sticky; top:var(--gg-nav-offset, 0px); z-index:4; margin:0 -16px; padding:10px 16px 12px; background:var(--bg); border-bottom:1px solid var(--color-divider); }
-/* Wraps rather than overflowing when longer (English) labels meet a phone width. */
 .gg-filter-row { display:flex; flex-wrap:wrap; gap:6px; }
 .gg-filter-row + .gg-filter-row { margin-top:8px; }
-/* A 34 px pill inside a 44 px tap target (owner 2026-10-16): the 5 px transparent border is the extra
-   touch area, the background stops at the padding box, the 1 px ring is an inset shadow, and the
-   negative margin keeps the pills exactly where the 34 px ones were. */
 .gg-chip { appearance:none; box-sizing:border-box; height:44px; min-width:44px; margin:-5px; padding:0 13px; border-radius:999px; border:5px solid transparent; background:#fff; background-clip:padding-box; box-shadow:inset 0 0 0 1px #e5e5ea; color:#3a3a3c; font-family:inherit; font-size:13px; font-weight:600; line-height:16px; cursor:pointer; white-space:nowrap; }
 .gg-chip[aria-pressed="true"] { background-color:#1d1d1f; color:#fff; box-shadow:inset 0 0 0 1px #1d1d1f; }
 .gg-chip:hover { box-shadow:inset 0 0 0 1px rgba(30,29,26,.38); }
@@ -76,10 +64,6 @@
 .gg-day { display:flex; align-items:center; gap:8px; margin:18px 0 10px; font-size:14px; font-weight:700; line-height:20px; color:#3a3a3c; scroll-margin-top:calc(var(--gg-nav-offset, 0px) + 110px); }
 .gg-day-rel { display:inline-flex; align-items:center; height:22px; padding:0 7px; border-radius:6px; font-size:12px; font-weight:700; background:var(--color-ink); color:var(--color-surface); }
 .gg-day-rel.is-today { background:var(--color-accent); }
-/* One listing (owner 2026-11-05: "시간 | 행사 / 세부내용(작은 글씨, 연하게)", the food in bold): a time
-   column, the dish in bold, then the title and place in one small muted line (two at most), and the
-   sign-up link on the right. A day's rows share one white list with hairlines between them. The
-   transparent toggle covers the row; links and the opened details sit above it. */
 .gg-day-list { overflow:hidden; border:1px solid #ececf0; border-radius:16px; background:#fff; }
 .gg-card { position:relative; width:100%; padding:12px 14px; border-bottom:1px solid #f0f0f2; }
 .gg-card:last-child { border-bottom:0; }
@@ -92,23 +76,17 @@
 .gg-time { font-size:15px; font-weight:800; line-height:22px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:#1d1d1f; white-space:nowrap; }
 .gg-time.is-unknown { font-size:11px; font-weight:600; line-height:16px; white-space:normal; color:#86868b; }
 .gg-card.is-featured .gg-time { color:var(--color-accent); }
-/* A deadline-only giveaway leads with its sign-up deadline in the main column instead of a time. */
 .gg-time.is-deadline { margin-bottom:2px; font-size:13px; line-height:18px; letter-spacing:-.01em; color:#9f1239; white-space:normal; word-break:keep-all; overflow-wrap:anywhere; }
 .gg-time.is-deadline.is-closed { color:#86868b; }
 .gg-card-badges { display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; min-height:22px; }
-/* The dish is the row's bold line. */
 .gg-food-primary { display:inline-flex; align-items:baseline; min-width:0; max-width:100%; font-size:16px; font-weight:800; line-height:22px; letter-spacing:-.02em; color:#1d1d1f; }
-/* The dish wraps to a second line rather than being cut ("Lunch boxes · Refreshm…" at 390, 2026-11-05). */
 .gg-food-primary span { min-width:0; word-break:keep-all; overflow-wrap:anywhere; }
-/* Food stated only in an attached poster: a quieter part of the same label, never ellipsized. */
-/* A giveaway (prize draw or gift): its own hue, apart from every food colour, and always labelled. */
 .gg-gift-badge { display:inline-flex; align-items:center; gap:2px; height:22px; padding:0 7px; border-radius:999px; border:1px solid #ddd6fe; background:#f5f3ff; color:#6d28d9; font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
 .gg-sub { margin-top:2px; font-size:13px; font-weight:500; line-height:19px; color:#6e6e73; word-break:keep-all; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .gg-title { font:inherit; color:inherit; }
 .gg-where.is-unknown { color:#86868b; }
 .gg-card.is-open .gg-sub { display:block; -webkit-line-clamp:unset; }
 .gg-reg-badge { grid-column:3; display:inline-flex; align-items:center; height:22px; padding:0 7px; border-radius:999px; border:1px solid var(--color-divider); background:#f3f0ea; color:var(--color-ink); font-size:12px; font-weight:700; line-height:16px; white-space:nowrap; }
-/* The row's sign-up link: a 44 px target that does not make the row taller. */
 .gg-row-reg { grid-column:3; position:relative; z-index:1; display:inline-flex; align-items:center; min-height:44px; margin:-11px -6px; padding:0 6px; font-size:13px; font-weight:800; line-height:22px; color:var(--color-accent); text-decoration:none; white-space:nowrap; }
 .gg-row-reg:hover { text-decoration:underline; text-underline-offset:3px; }
 .gg-card .gg-featured-label { display:inline-flex; align-items:center; height:20px; margin:0; padding:0 6px; border-radius:6px; background:var(--color-accent-wash); color:var(--color-accent); font-size:11px; font-weight:800; line-height:18px; letter-spacing:.02em; }
@@ -134,12 +112,9 @@
 .gg-state strong { display:block; font-size:15px; font-weight:700; line-height:22px; color:#1d1d1f; margin-bottom:6px; }
 .gg-state button { margin-top:12px; font:inherit; padding:8px 14px; border:1px solid #d2d2d7; border-radius:10px; background:#fff; cursor:pointer; }
 .gg-state code { display:block; margin-top:12px; font-size:11px; text-align:left; }
-/* While the hub is still loading (its skeletons are showing) it takes the first screen, so the footer
-   starts below it and does not jump when the list lands (owner 2026-10-16, layout shift). */
 #ggongbabFeed:has(.gg-skeleton) { min-height:100vh; }
 .gg-skeleton { height:128px; border-radius:18px; margin-bottom:12px; background:linear-gradient(90deg,#f2f2f7,#fafafa,#f2f2f7); background-size:200% 100%; animation:gg-shimmer 1.4s ease infinite; }
 @keyframes gg-shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
-/* What the list holds and when it was published: quiet source metadata, not a status badge. */
 .gg-feed-note { margin:4px 0 0; font-size:12px; line-height:18px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
 .gg-updated { margin-top:2px; font-weight:700; font-variant-numeric:tabular-nums; }
 .gg-diagnostic-toggle { position:fixed; right:12px; bottom:12px; z-index:20000; font:700 11px/16px 'Noto Sans KR',sans-serif; padding:6px 9px; border:0; border-radius:999px; background:#111827; color:#fff; cursor:pointer; }
@@ -148,8 +123,6 @@
 .gg-diagnostic-panel dl { display:grid; grid-template-columns:1fr auto; gap:6px; }
 .gg-diagnostic-panel dt { color:#6e6e73; }
 .gg-diagnostic-panel dd { font-variant-numeric:tabular-nums; font-weight:700; }
-/* Past listings: below the live list, muted and flat. No card shadow, accent, food colour or
-   primary button, so an ended listing never reads as something to sign up for. */
 .gg-archive { margin-top:36px; padding-top:20px; border-top:1px dashed rgba(30,29,26,.22); }
 .gg-archive-title { font-size:17px; font-weight:800; line-height:24px; letter-spacing:-.02em; color:#3d3935; scroll-margin-top:calc(var(--gg-nav-offset, 0px) + 16px); }
 .gg-archive-lead { margin-top:4px; font-size:13px; line-height:20px; color:var(--color-ink-muted); word-break:keep-all; overflow-wrap:anywhere; }
@@ -175,7 +148,6 @@
 @media(min-width:720px) { .gg-filters { margin-left:-16px; margin-right:-16px; padding-left:16px; padding-right:16px; } .km-grid { grid-template-columns:1fr 1fr; } }
 @media(max-width:320px) { .gg-btn { width:100%; } .gg-chip { padding:0 9px; } .gg-detail { margin-left:0; } }
 @media(prefers-reduced-motion:reduce) { .gg-skeleton { animation:none; } }
-/* Campus food news follows live opportunities; plain rows, independent of cards. */
 .gg-news { margin: 2rem 0; padding-top: 1.5rem; border-top: 1px solid var(--color-divider); }
 .gg-news h2 { margin: 0 0 1rem; font-size: 1.15rem; }
 .gg-news-list { list-style: none; margin: 0; padding: 0; }
@@ -188,7 +160,6 @@
 @media (max-width: 600px) { .gg-news-row { grid-template-columns: minmax(0, 1fr); gap: .4rem; } }
 @media(hover:hover) { .gg-card:hover { background:#fafafb; } }
 
-/* 꽁밥 LIVE (docs/GGONGBAB_LIVE.md): save, share, calendar, optional filters, saved list, notices. */
 .gg-save { grid-column:4; grid-row:1; position:relative; z-index:1; align-self:start; justify-self:end; width:44px; height:44px; margin:-11px -6px -11px 0; padding:0; border:0; border-radius:12px; background:transparent; color:var(--color-ink-muted); font:inherit; font-size:20px; line-height:44px; text-align:center; cursor:pointer; pointer-events:auto; }
 .gg-save[aria-pressed="true"] { color:var(--color-accent); }
 .gg-save:hover { background:var(--color-accent-wash); }
@@ -251,6 +222,5 @@
 .gg-toast.is-on { opacity:1; transform:translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .gg-toast { transition:none; } }
 @media (forced-colors: active) { .gg-save[aria-pressed="true"] { outline:2px solid Highlight; } .gg-toast { border:1px solid CanvasText; } }
-/* 캘린더 열기 (owner 2026-11-19): the nearest thing to a sync button, in the saved list of a signed-in iPhone. */
 .gg-calopen { margin:10px 0 0; }
 .gg-calopen-btn { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 16px; text-decoration:none; }

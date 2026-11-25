@@ -30,16 +30,14 @@ def routes():
 def test_lab_only_experiments_answer_404_on_every_host_but_the_lab():
     [route] = [r for r in routes() if "status" in r]
     assert route["status"] == 404 and route["missing"] == [{"type": "host", "value": LAB_HOST}]
-    assert set(route) == {"src", "missing", "status"}          # no destination: nothing else is served
+    assert set(route) == {"src", "missing", "status"}
     pattern = re.compile(route["src"])
     for path in LAB_ONLY:
         assert pattern.fullmatch("/" + path), path
         if path == "calendar.ics":
-            # Owner 2026-11-13: the KAIST Portal export is deleted (production served it under an encoded
-            # path despite the 404 rule); the rule stays so a copy put back is still kept off production.
             assert not (ROOT / path).exists(), path
             continue
-        assert (ROOT / path).exists(), path                     # kept in git: the lab still serves it
+        assert (ROOT / path).exists(), path
     for path in SITE + ("data/food-log.json.bak", "lab-ggongbab.html/x", "data/cardnews", "cardnews.html.bak",
                         "bobyak.html.bak", "data/places"):
         assert not pattern.fullmatch("/" + path), path
@@ -74,9 +72,7 @@ def test_only_site_resources_are_deployed():
                  "data/content", ".claude", ".cursor", ".github", "*.md", "*.txt", "*.ini", ".env.example",
                  ".local", ".env"):
         assert name in entries, name
-    # robots.txt is the one text file the site serves (docs/PUBLIC_EXPOSURE.md).
     assert entries.index("!robots.txt") > entries.index("*.txt")
-    # Nothing the pages load is ignored: no entry names a site file or folder.
     for entry in entries:
         assert entry not in ("css", "js", "images", "data", "manifest.json", "*.html", "*.json", "*.css", "*.js"), entry
     for path in SITE:
@@ -107,14 +103,13 @@ def test_only_our_domain_may_read_the_data_from_another_site_and_the_rights_noti
     [notice] = [r for r in header_routes if "Content-Type" in r["headers"]]
     assert re.fullmatch(notice["src"], "/LICENSE")
     assert notice["headers"] == {"Content-Type": "text/plain; charset=utf-8"}
-    # Header routes come first: the lab-only 404 still answers after them.
     assert "status" in routes()[-1]
 
 
 def test_the_license_reserves_every_right_and_robots_refuses_ai_crawlers_and_the_data():
     license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
     assert "All rights reserved" in license_text
-    assert "Permission is hereby granted" not in license_text          # no longer the MIT grant
+    assert "Permission is hereby granted" not in license_text
     robots = (ROOT / "robots.txt").read_text(encoding="utf-8")
     groups, current = [], None
     for line in robots.splitlines():
@@ -151,21 +146,20 @@ def test_every_local_script_and_stylesheet_is_addressed_by_its_content():
     checked = 0
     for name, text in deployed_text().items():
         refs = [(m.group(1), m.group(2)) for m in STAMPED_REF.finditer(text)]
-        if name.startswith("js/"):          # modules import their neighbours as ./<file>.js
+        if name.startswith("js/"):
             refs += [("js/" + m.group(1)[2:], m.group(2)) for m in
                      re.finditer(r"""(?:\bfrom\s*|\bimport\s*\(\s*)["'](\./[A-Za-z0-9_.-]+\.js)(\?v=[0-9a-f]+)?["']""", text)
                      if not m.group(1).startswith("./vendor/")]
         for path, version in refs:
             path = path.removeprefix("./")
             if path.startswith("js/vendor/"):
-                continue                    # versioned by its folder
+                continue
             file = ROOT / path
             if not file.exists() and path in chrome.LAB_ONLY_SCRIPTS:
                 continue
             assert version == "?v=" + hashlib.sha256(file.read_bytes()).hexdigest()[:10], (name, path, version)
             checked += 1
     assert checked > 60
-    # The calendar function reads its files from disk, by plain path; the service worker keeps its address.
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
     for name in re.findall(r"js/[a-z-]+\.js", config["functions"]["api/cal.js"]["includeFiles"]):
         assert (ROOT / name).is_file(), name
@@ -212,5 +206,4 @@ def test_html_policy_keeps_the_existing_script_font_and_map_sources():
         assert "https://myjglfynhnptlclawlcc.supabase.co" in directives["connect-src"].split()
         assert "wss://myjglfynhnptlclawlcc.supabase.co" in directives["connect-src"].split()
         assert directives["worker-src"] == "'self' blob:"
-        # Magazine photos come from changing article/image hosts, never executable code.
         assert "https:" in directives["img-src"].split()

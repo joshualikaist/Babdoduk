@@ -12,7 +12,6 @@
   --text-tertiary: #777772;
   --accent: #db2777;
   --accent-soft: rgba(219, 39, 119, 0.12);
-  /* Semantic roles coexist with page-specific legacy tokens during migration. */
   --color-canvas: var(--bg);
   --color-surface: #fffdf8;
   --color-surface-muted: #f5f1e8;
@@ -58,8 +57,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Viewport colors belong on the root; body variables do not inherit upward.
-   Magazine keeps its existing paper surface, including nested scroll areas. */
 html:has(body.page-home),
 body.page-home {
   --scrollbar-track: #f5f1e8;
@@ -71,15 +68,12 @@ body.mg-body {
   --scrollbar-track: var(--bg);
 }
 
-/* Retain native width and system high-contrast scrollbars in Firefox. */
 @media (forced-colors: none) {
   * {
     scrollbar-width: auto;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
 
-  /* Modern Chromium also supports scrollbar-color, which otherwise overrides
-     these parts. Use parts here for the matching corner and subtle hover. */
   @supports selector(::-webkit-scrollbar) {
     * { scrollbar-color: auto; }
     ::-webkit-scrollbar {
@@ -114,8 +108,6 @@ body {
   overflow-x: hidden;
   position: relative;
   background: var(--bg);
-  /* No bottom padding or UA margin: the footer ends the page on every route, so no
-     strip of canvas shows below it (the footer used to float on some pages only). */
   margin: 0;
   padding: 64px 0 0;
 }
@@ -152,7 +144,6 @@ body::after {
   overflow: hidden;
 }
 
-/* Brand accent (original): the holographic gradient shared with the wordmark. */
 .scroll-progress-bar {
   height: 100%;
   width: 0%;
@@ -202,8 +193,6 @@ body::after {
   box-shadow: none;
 }
 
-/* The wordmark and, beside it, Babdoduk on Instagram (owner 2026-11-05: "맨 위 왼쪽 Babdoduk 옆에 인스타그램
-   로고"; it left the More menu) hold the bar's first place together. */
 .site-nav-brand {
   justify-self: start;
   align-self: center;
@@ -238,7 +227,6 @@ body::after {
   outline-offset: -4px;
 }
 
-/* Lab only: the sign-in icon js/site.js adds beside Instagram on babdoduk-lab. */
 .site-nav-my:hover,
 .site-nav-my[aria-current="page"] {
   color: var(--color-accent);
@@ -257,8 +245,6 @@ body::after {
   line-height: 1.15;
   text-decoration: none;
   white-space: nowrap;
-  /* The Babdoduk brand mark keeps its original holographic gradient
-     (owner decision); only its size and 44px target are new. */
   background: linear-gradient(
     110deg,
     #6366f1 0%,
@@ -489,22 +475,15 @@ body::after {
   outline-offset: -2px;
 }
 
-/* A direct link with a long label shows a short one on phones (only one is ever rendered). */
 .nav-label-short {
   display: none;
 }
 
-/* The menu button exists for phones only. */
 .nav-drawer-toggle,
 .nav-drawer-backdrop {
   display: none;
 }
 
-/* Phones (owner 2026-11-02: "버튼이 다닥다닥 붙어있거든", then "어떤 버튼을 누르면 이렇게 왼쪽에 탭이
-   뜨도록"): the bar keeps the menu button, the wordmark and the language switch. The button opens every
-   destination, the More links included, as a list in a panel from the left under the bar, 16px labels
-   in 52px rows, the current page marked; a dimmed backdrop, Escape or a link closes it (js/site.js).
-   The same .nav-mega-row is the panel: there is no second copy of the links. */
 @media (max-width: 520px) {
   .site-nav-inner {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
@@ -533,7 +512,6 @@ body::after {
     outline-offset: -2px;
   }
 
-  /* Three bars that turn into a cross while the panel is open. */
   .nav-drawer-icon,
   .nav-drawer-icon::before,
   .nav-drawer-icon::after {
@@ -580,7 +558,7 @@ body::after {
     bottom: 0;
     left: 0;
     z-index: 2;
-    justify-self: stretch;       /* the top row's centring would shrink a fixed box to its content */
+    justify-self: stretch;
     align-self: stretch;
     width: min(78vw, 300px);
     max-width: none;
@@ -599,17 +577,17 @@ body::after {
     box-shadow: 8px 0 24px rgba(17, 24, 39, 0.12);
     transform: translateX(-102%);
     visibility: hidden;
-    transition: transform 0.22s ease, visibility 0s linear 0.22s;   /* hidden only once it has slid out */
+    transition: transform 0.22s ease, visibility 0s linear 0.22s;
   }
 
   html.nav-drawer-open .nav-mega-row {
     transform: none;
     visibility: visible;
-    transition: transform 0.22s ease, visibility 0s;                /* visible at once, so focus can enter */
+    transition: transform 0.22s ease, visibility 0s;
   }
 
   html.nav-drawer-open {
-    overflow: hidden;            /* the page under the panel does not scroll with it */
+    overflow: hidden;
   }
 
   .nav-drawer-backdrop {
@@ -636,7 +614,7 @@ body::after {
     display: contents;
     visibility: inherit;
     pointer-events: auto;
-    transition: none;            /* its links follow the panel at once */
+    transition: none;
   }
 
   .site-nav-direct,
@@ -662,7 +640,6 @@ body::after {
     color: var(--color-ink-muted);
   }
 
-  /* The More links follow under a rule. */
   .nav-mega-panel > .nav-mega-link:first-child {
     margin-top: 8px;
     border-top: 1px solid var(--color-divider);
@@ -697,8 +674,6 @@ body::after {
   }
 }
 
-/* Page head: an index number and a one-line title. Pages speak through titles,
-   dates, images, short metadata and actions, not lead paragraphs (DESIGN_SYSTEM.md). */
 .page-head {
   padding: var(--space-8) 0 0;
 }
@@ -723,7 +698,6 @@ body::after {
   color: var(--color-accent);
 }
 
-/* Section title followed by a thin rule: "지금 ────". */
 .page-section-title {
   display: flex;
   align-items: center;
@@ -743,9 +717,6 @@ body::after {
 }
 
 .site-footer {
-  /* Stack above the fixed body::before canvas, like .page-fill. The footer has
-     no surface of its own: on every page it sits on the page canvas, separated by
-     the same rule, so it never reads as a slab on one page and not another. */
   position: relative;
   z-index: 1;
   flex-shrink: 0;
@@ -761,8 +732,6 @@ body::after {
   padding: 0 max(22px, env(safe-area-inset-right)) 0 max(22px, env(safe-area-inset-left));
 }
 
-/* Owner 2026-11-18: a footer with what a visitor needs (who runs it, how to reach us, every page,
-   where the listings come from, the privacy policy), from references (Toss, 당근, Apple, SPARCS OTL). */
 .footer-hr {
   border: none;
   border-top: 1px solid var(--color-divider);
@@ -880,7 +849,6 @@ body::after {
     grid-template-columns: 1fr;
   }
 
-  /* Phones: every link stays visible (about a dozen), two groups per row. */
   .footer-map {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-6) var(--space-4);
@@ -898,7 +866,7 @@ body::after {
   height: 44px;
   padding: 0 18px;
   border-radius: 12px;
-  font-family: inherit;   /* a <button class="btn"> otherwise takes the browser's button font */
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -954,9 +922,6 @@ body::after {
   }
 }
 
-/* The one-time "star also adds to the calendar" question (js/ggongbab-live.js askStarCalendar,
-   owner 2026-11-11), shown on the home calendar and the food hub: a small panel above the bottom
-   edge that covers no control it asks about. */
 .starcal {
   position: fixed;
   left: 50%;

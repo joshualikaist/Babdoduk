@@ -20,7 +20,6 @@ INBOX_MAX_DAYS = 3
 ITEM_KEYS = ("title", "sourceUrl", "sourceItemId", "publishedAt", "publishedAtSource", "text", "imageUrl",
              "imageSource", "medium", "discoveryQuery", "discoveryLane", "discoveryMethod", "trustTier",
              "channelTitle", "viewCount", "likeCount")
-# A registered channel keeps the registry's trust tier; only search results are Tier C.
 CHANNEL_KEYS = tuple(k for k in ITEM_KEYS if k != "trustTier")
 
 

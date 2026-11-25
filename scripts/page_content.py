@@ -22,7 +22,6 @@ from urllib.parse import quote
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "data" / "content"
 LANGS = ("ko", "en")
-# The four fixed detail labels (docs/EVENT_DETAIL_FIELDS.md), in the order they are shown.
 DETAIL_LABELS = {
     "summary": {"ko": "이벤트 내용", "en": "Event summary"},
     "duration": {"ko": "진행 기간", "en": "Duration"},
@@ -30,7 +29,6 @@ DETAIL_LABELS = {
     "participation": {"ko": "참여 방법", "en": "How to participate"},
 }
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-# The only markup a detail value may carry; everything else in the content is plain text.
 INLINE_MARKUP = re.compile(r"</?strong>")
 
 
@@ -337,9 +335,6 @@ def worldcup_entry(data: dict | None = None) -> list[str]:
         '  <p class="wc-intro-tone" data-i18n="wc.intro.tone">시험기간으로 지친 당신! 메뉴나 골라~</p>',
         '  <p class="wc-ended" data-wc-show="ended" hidden><span aria-hidden="true">🏁</span> '
         '<span data-i18n="wc.ended">이벤트는 끝났지만 계속 할 수 있어요</span></p>',
-        # The tiles and the preview are one mystery box before the launch (owner 2026-10-14: blurred, nothing
-        # revealed): js/worldcup.js makes the body inert and hidden from assistive tech while the gate says
-        # `soon`, css/worldcup-entry.css blurs it, and the lock over it (data-wc-show) says when it opens.
         '  <div class="wc-mystery" id="wcMystery">',
         '    <div class="wc-mystery-body" id="wcMysteryBody">',
         '      <p class="wc-sr" id="wcCatsLabel" data-i18n="wc.catLabel">카테고리</p>',
@@ -355,7 +350,6 @@ def worldcup_entry(data: dict | None = None) -> list[str]:
         '<span class="wc-mystery-badge" aria-hidden="true"><span>🔒</span> <span data-wc-fmt="wc.mystery.badge">곧 공개</span></span></p>',
         '  </div>',
         '  <div class="wc-intro-actions">',
-        # Before the launch (js/worldcup-gate.js): the start button gives way to this locked pill.
         '    <p class="wc-locked" id="wcLocked" data-wc-show="soon" hidden><span class="wc-locked-pill">'
         '<span aria-hidden="true">🔒</span> <span data-wc-fmt="wc.locked">곧 오픈</span></span> '
         '<span class="wc-locked-count" data-wc-countdown></span></p>',
@@ -376,17 +370,13 @@ def worldcup_chip() -> list[str]:
             '사진 위키미디어 공용(잘라서 줄임)</span></p>']
 
 
-# The launch gate's texts (js/worldcup-gate.js): the locked pill, the countdown, the dates. The home
-# page's promo carries these besides its own `home.wc` family.
 WORLDCUP_GATE_KEYS = ("wc.locked", "wc.dateShort", "wc.months", "wc.countdown.d", "wc.countdown.long",
                       "wc.countdown.hours", "wc.countdown.minutes")
-# The translation keys the start screen uses (the event page carries these, not the whole `wc` family).
 WORLDCUP_ENTRY_KEYS = ("wc.intro.title", "wc.intro.tone", "wc.catLabel", "wc.preview", "wc.start", "wc.resume",
                        "wc.newStart", "wc.round.n", "wc.round.semi", "wc.round.final", "wc.catCount", "wc.catLanded",
                        "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
                        "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.cat.randomSub",
                        "wc.photoChip", "wc.ended", "wc.state.soon", "wc.mystery.badge", "wc.mystery.sr", *WORLDCUP_GATE_KEYS)
-# Every dish photo is images/worldcup/<id>.jpg; the event page's slim data lists no paths.
 WORLDCUP_PHOTO_PATH = "images/worldcup/{id}.jpg"
 
 
@@ -450,7 +440,6 @@ def catalog_names(root: Path = ROOT) -> dict[str, list[str]]:
     return names
 
 
-# js/pick.js MIN_POPULARITY: 오늘 뭐 먹지 draws only the delivery staples (owner 2026-11-05).
 PICK_MIN_POPULARITY = 4
 
 
@@ -505,9 +494,6 @@ def worldcup_entry_data_blocks(data: dict | None = None) -> dict[str, list[str]]
     return {"worldcup": ["window.BABDODUK_WORLDCUP = " + payload.replace("<", "\\u003c") + ";"]}
 
 
-# The world cup's display lettering is Jua (owner 2026-10-14: a playful entry). Google Fonts sends
-# only the letters asked for (`text=`), so the link carries every letter these labels use, in both
-# languages. Dish names are never set in Jua (dynamic text would mix fonts letter by letter).
 WORLDCUP_JUA_KEYS = ("wc.locked", "wc.ended", "wc.months", "wc.dateShort", "wc.title", "wc.intro.title", "wc.start", "wc.resume", "wc.newStart", "wc.preview",
                      "wc.cat.all", "wc.cat.korean", "wc.cat.chinese", "wc.cat.japanese", "wc.cat.western",
                      "wc.cat.world", "wc.cat.snack", "wc.cat.dessert", "wc.cat.random", "wc.catGame",
@@ -515,8 +501,6 @@ WORLDCUP_JUA_KEYS = ("wc.locked", "wc.ended", "wc.months", "wc.dateShort", "wc.t
                      "wc.gacha.skip", "wc.splash.quarter", "wc.splash.semi", "wc.splash.final", "wc.vs")
 
 
-# The home page's promo sets only its title, its state line and its button in Jua (months are the
-# English month names of the date it shows).
 HOME_JUA_KEYS = ("home.wc.title", "home.wc.soon", "home.wc.live", "home.wc.cta.soon", "home.wc.cta.live",
                  "wc.months", "wc.dateShort")
 
@@ -534,9 +518,6 @@ def worldcup_font_url(keys: tuple[str, ...] | None = None) -> str:
     return "https://fonts.googleapis.com/css2?family=Jua&display=swap&text=" + quote(worldcup_font_letters(keys), safe="")
 
 
-# The world cup's categories (owner, 2026-10-14): each dish of the pool is in exactly one, taken from
-# the catalog's `cuisineGroup`. "all" is the whole pool and is not stored. js/worldcup.js lists the
-# same keys in the order of the chips.
 WORLDCUP_CATEGORIES = ("korean", "chinese", "japanese", "western", "world", "snack", "dessert")
 WORLDCUP_CATEGORY_BY_GROUP = {
     "korean": "korean", "chinese": "chinese", "japanese": "japanese",
@@ -594,7 +575,6 @@ def worldcup_errors(root: Path = ROOT) -> list[str]:
                 items = json.loads(pack_path.read_text(encoding="utf-8")).get("items") or []
                 names |= {item.get("id"): item.get("nameKo") or "" for item in items}
                 groups |= {item.get("id"): worldcup_category(item) for item in items}
-        # The category follows the catalog (cuisineGroup), so a dish cannot drift into another one.
         errors += [f"worldcup.json: {dish} is in the category {categories[dish]!r}, but the catalog says {groups[dish]!r}"
                    for dish in dishes if dish in categories and dish in groups and categories[dish] != groups[dish]]
         errors += [f"worldcup.json: {dish} is not a catalog dish" for dish in dishes if dish not in names]
@@ -604,8 +584,6 @@ def worldcup_errors(root: Path = ROOT) -> list[str]:
     return errors
 
 
-# The owner's variety rule (2026-10-13): at most five variants of the same dish in the pool. A dish
-# whose Korean name contains one of these words is that dish (the longest match wins: 볶음밥, not 밥).
 SAME_DISH_LIMIT = 5
 SAME_DISH = ("김밥", "치킨", "떡볶이", "라볶이", "라면", "피자", "버거", "초밥", "스시", "우동", "만두", "볶음밥", "국밥",
              "파스타", "샐러드", "케이크", "샌드위치", "카레", "커리", "냉면", "쌀국수", "짬뽕", "짜장", "탕수육", "돈까스",

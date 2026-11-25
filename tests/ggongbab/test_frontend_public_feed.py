@@ -95,7 +95,7 @@ def test_static_browser_security_contract():
     assert re.findall(r"client\.from\(([^)]+)\)", code) == ["TABLE"]
     assert tuple(re.search(r"var COLUMNS = '([^']+)'", code)[1].split(",")) == PUBLIC_COLUMNS
     assert not re.search(r"\.(insert|update|upsert|rpc)\s*\(", code)
-    assert re.findall(r"([\w.]+)\.delete\(", code) == ["collection"]  # local Map, not DB
+    assert re.findall(r"([\w.]+)\.delete\(", code) == ["collection"]
     assert ".innerHTML" not in code and "eval(" not in code
     assert "@2.116.0/dist/umd/supabase.js" in code
     assert "script.integrity = 'sha384-" in code
@@ -115,7 +115,6 @@ def browser():
 def ui(browser):
     context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR")
     page = context.new_page()
-    # Dedicated synthetic integration clock; production/checker clocks unchanged.
     page.clock.install(time=NOW)
     state = {"config": True, "requests": [], "errors": [], "snapshot": {
         "generatedAt": "2026-09-23T09:00:00+09:00", "events": [to_snapshot_event(row(9))]}}
@@ -198,7 +197,7 @@ def test_browser_insert_update_revision_and_delete_recalculates_ui(ui):
 def test_browser_filters_language_tab_and_cafeteria_survive_updates(ui):
     page = ui["open"]()
     page.locator(".gg-card").wait_for()
-    page.locator('[data-group="food"][data-value="snack"]').click()   # (the day tiles went on 2026-11-05)
+    page.locator('[data-group="food"][data-value="snack"]').click()
     page.locator("#langToggle").click()
     page.locator("#foodHubTabMenu").click()
     emit(page, "INSERT", row(2))
@@ -248,7 +247,6 @@ def test_browser_query_isolation(ui, path):
 
 
 def test_browser_localhost_preview_isolation(ui):
-    # Intercept localhost as well; no server or real preview data is read.
     page = ui["page"]
     page.route("http://localhost/**", lambda route: route.fulfill(
         json=ui["snapshot"]) if urlparse(route.request.url).path == "/.local/ggongbab-preview.json" else route.fulfill(
@@ -333,15 +331,13 @@ def test_browser_giveaway_rows_render_the_same_from_both_paths(ui):
     page = ui["page"]
     assert page.locator(f'[data-id="{gift["id"]}"] .gg-food-primary').count() == 0
     assert page.locator(f'[data-id="{gift["id"]}"] .gg-gift-badge').count() == 1
-    # copy cleanup, owner 2026-11-12: the "포스터 기준" note is gone; the poster-only food is still shown.
     assert page.locator(f'[data-id="{talk["id"]}"] .gg-food-primary').count() == 1
     assert page.locator(f'[data-id="{talk["id"]}"] .gg-food-source').count() == 0
     assert page.locator(f'[data-id="{draw["id"]}"] .gg-time.is-deadline').inner_text() == "신청 마감 9월 25일 (금) 23:59"
-    # The static snapshot of the same rows; the draw's deadline is spelled in UTC there, the same instant.
     snapshot = [to_snapshot_event(item) for item in rows]
     snapshot[3]["registration"]["deadline"] = "2026-09-25T14:59:00Z"
     ui["config"] = False
     ui["snapshot"] = {"generatedAt": "2026-09-23T09:00:00+09:00", "events": snapshot}
     static = cards(ui["open"](rows))
-    assert page.locator(".gg-updated").count() == 1      # this time it is the snapshot
+    assert page.locator(".gg-updated").count() == 1
     assert static == live

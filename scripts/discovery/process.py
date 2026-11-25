@@ -31,9 +31,9 @@ from .registry import TIERS
 
 TITLE_DUPLICATE = 0.82
 EXCERPT_SUPPORT = 0.5
-MAX_AGE_DAYS = 365          # evergreen lanes (tips, health) and news
+MAX_AGE_DAYS = 365
 RESEARCH_MAX_DAYS = evidence.HABIT_RESEARCH_MAX_DAYS
-MIN_TEXT = {"youtube": 20, "blog": 60, "news": 60, "research": 120}   # news RSS descriptions are short
+MIN_TEXT = {"youtube": 20, "blog": 60, "news": 60, "research": 120}
 TIER_C_MIN_TEXT = 200
 
 LANE_WORDS = {
@@ -50,11 +50,10 @@ PROMOTION_WORDS = ("cooking challenge", "giveaway", "contest", "enter to win", "
                    "챌린지 참여", "추첨", "공모전", "공모", "총상금", "응모", "참가자 모집", "체험단", "프로모션", "기획전",
                    "행사정보", "할인정보", "할인 정보", "1+1행사", "1+1 행사", "2+1행사", "2+1 행사")
 SEARCH_TYPES = ("web_search", "youtube_search")
-# Board notices, personnel, obituaries, announcements and event recaps are not stories.
 NOTICE_TAG = re.compile(r"^\s*\[[^\]]*(게시판|인사|부고|동정|알림|공지|모집|교육|행사|포토|사진|경조|화촉|신간|새 책|북)[^\]]*\]")
 EVENT_TITLE = ("성료", "개최", "시상식", "기념식", "발대식", "협약식", "간담회", "세미나", "포럼", "박람회", "페스티벌",
                "축제", "설명회", "강좌", "강연", "특강", "웨비나", "캠페인")
-LANE_MIN_HITS = 2          # tips/health outside the source's own categories need two signals
+LANE_MIN_HITS = 2
 OFF_TOPIC = ("맛집", "리조트", "호텔", "여행", "투어", "숙소", "호캉스", "노포", "출장", "브이로그 여행", "travel", "resort", "hotel")
 BLOCKED = ("위장 학대", "경고:", "dangerous trend", "3x Speed", "위글위글", "주방템", "영수증만", "이벤트안내")
 HOW_TO_KINDS = ("recipe", "video", "post")
@@ -139,7 +138,7 @@ def normalize(raw: dict, source: dict, now: datetime) -> Optional[dict]:
         "publishedAt": iso(published),
         "publishedAtSource": raw.get("publishedAtSource") or ("feed" if published else ""),
         "imageUrl": raw.get("imageUrl") or "", "imageSource": raw.get("imageSource") or "",
-        "imageValidated": False,          # only images.enrich sets it, after a real image response
+        "imageValidated": False,
         "categoryHints": list(source.get("categories") or []), "discoveryQuery": raw.get("discoveryQuery"),
         "discoveryMethod": raw.get("discoveryMethod") or source.get("discoveryMethod"),
         "discoveryLane": raw.get("discoveryLane") or source.get("lane"),
@@ -154,15 +153,12 @@ def normalize(raw: dict, source: dict, now: datetime) -> Optional[dict]:
         "habitSignals": evidence.habit_signals(title, evidence_text),
         "audienceRelevance": evidence.audience(title, text),
         "sourceItemId": f"yt:{vid}" if vid else (item_id or canonical_url(url)),
-        # Title plus the start of the text: the same post republished under another URL, not two
-        # videos that merely share a channel's boilerplate description.
         "contentHash": sha(normalize_title(raw.get("title") or "") + re.sub(r"\s+", "", text)[:300]) if len(text) >= 40 else None,
         "canonicalHash": sha(canonical_url(url)),
     }
 
 
 def _dedup_keys(row: dict) -> list[str]:
-    # Only real values are evidence: an absent id must never match another absent id.
     return [f"{kind}:{row[field]}" for kind, field in (("url", "canonicalHash"), ("item", "sourceItemId"),
                                                        ("content", "contentHash")) if row.get(field)]
 
@@ -182,7 +178,6 @@ def mark_duplicates(rows: list[dict], anchors: Iterable[dict] = ()) -> int:
     normalized-title similarity. Provenance of every duplicate stays in the store. Anchors (the
     compact rows of published stories) are originals only and are never marked: a copy of a
     published story under another URL is a duplicate whatever its discovery order."""
-    # Discovery order is persistent (discoveredSeq), so the same row stays the original run after run.
     ordered = sorted(rows, key=lambda r: (int(r.get("discoveredSeq") or 0), r["candidateId"]))
     by_key: dict[str, str] = {}
     kept: list[dict] = []
@@ -197,8 +192,6 @@ def mark_duplicates(rows: list[dict], anchors: Iterable[dict] = ()) -> int:
         keys = _dedup_keys(row)
         original = next((by_key[k] for k in keys if k in by_key), None)
         if original is None:
-            # Title similarity is supporting evidence only: it needs the same site, or a matching
-            # excerpt, before two different URLs count as one story.
             for other in kept:
                 if title_similarity(row.get("title") or "", other.get("title") or "") < TITLE_DUPLICATE:
                     continue
@@ -238,7 +231,7 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
     if not is_public_url(url):
         return "BAD_URL"
     if row.get("sourceType") in SEARCH_TYPES and not hosts.collectable(url):
-        return "HOST_NOT_COLLECTED"                # found by search on a host collected only with permission
+        return "HOST_NOT_COLLECTED"
     if len(title) < 4:
         return "NO_TITLE"
     minimum = MIN_TEXT.get(row.get("medium"), MIN_TEXT["blog"])
@@ -246,7 +239,7 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
         return "NO_SOURCE_TEXT"
     if row.get("commercePage"):
         return "COMMERCE_PAGE"
-    disclosed = evidence.NOT_SPONSORED.sub(" ", blob)          # "협찬 없이", "내돈내산" is not an ad
+    disclosed = evidence.NOT_SPONSORED.sub(" ", blob)
     if row.get("sponsored") or any(word.lower() in disclosed for word in AD_WORDS) or editorial.purchase_links(row):
         return "AD_OR_SPONSORED"
     if any(word in blob for word in PROMOTION_WORDS):
@@ -263,11 +256,8 @@ def rejection(row: dict, now: datetime) -> Optional[str]:
         return "BLOCKED_TOPIC"
     if any(word.lower() in title.lower() for word in OFF_TOPIC):
         return "OFF_TOPIC_RESTAURANT_TRAVEL"
-    # A registered food blog or channel is food by definition; open discovery (Tier C) and broad
-    # news feeds (requireFood) must show it.
     if (row.get("trustTier") == "C" or row.get("requireFood")) and not evidence.is_food(title, row.get("sourceExcerpt") or ""):
         return "NOT_FOOD"
-    # A search result without a date cannot show when it was true; feeds always carry one.
     if row.get("sourceType") in SEARCH_TYPES and not row.get("publishedAt"):
         return "NO_DATE"
     if row.get("trustTier") == "C" and (row.get("textLength") or 0) < TIER_C_MIN_TEXT and row.get("medium") != "youtube":
@@ -356,12 +346,10 @@ def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
         out["trend"] = "NOT_FOOD"
     elif editorial.round_up(row) or (launch and not set(kinds) & {"sales_data", "engagement"} and
                                       not editorial.stockout(((row.get("trendEvidenceDetail") or {}).get("explicit_source_claim")) or "")):
-        # a launch is not a trend without measured demand for it (sales, engagement, stockouts or
-        # queues); a line that the ingredient is trending is the launch's framing, not evidence
         out["trend"] = "PRODUCT_ANNOUNCEMENT_ONLY"
     elif (kind == "recipe" or (kind == "video" and editorial.instructional(row, kind))) and \
             not set(kinds) & {"sales_data", "explicit_source_claim"}:
-        out["trend"] = "RECIPE_WITHOUT_TREND_EVIDENCE"   # a popular recipe is a recipe, not a food trend
+        out["trend"] = "RECIPE_WITHOUT_TREND_EVIDENCE"
     elif not kinds:
         weak = (row.get("trendSignals") or {}).get("explicit_source_claim")
         out["trend"] = "RECIPE_WITHOUT_TREND_EVIDENCE" if kind == "recipe" and weak else "NO_TREND_EVIDENCE"
@@ -378,7 +366,7 @@ def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
     elif business:
         out["habit"] = "BUSINESS_NEWS"
     elif launch:
-        out["habit"] = "PRODUCT_ANNOUNCEMENT_ONLY"       # company promotion is not behavior evidence
+        out["habit"] = "PRODUCT_ANNOUNCEMENT_ONLY"
     elif tier not in ("A", "B") or kind == "video":
         out["habit"] = "NOT_BEHAVIOR_SOURCE"
     elif age is None:
@@ -402,7 +390,6 @@ def lane_decisions(row: dict, now: Optional[datetime]) -> dict:
     elif launch:
         out["health"] = "PRODUCT_ANNOUNCEMENT_ONLY"
     elif editorial.health_story(row):
-        # the source itself frames food and health; a category or the ingredients are not enough
         out["health"] = None
     else:
         out["health"] = "NO_HEALTH_BASIS"
@@ -432,7 +419,6 @@ def _choose(row: dict, decisions: dict, habit_words: set) -> Optional[str]:
     if not ok:
         return None
     if "trend" in ok and "habit" in ok:
-        # a story about how people eat (혼밥, 도시락, 결식 ...) is a habit story even when it is recent
         return "habit" if len(habit_words) >= 3 else "trend"
     wanted = row.get("discoveryLane")
     if wanted in ok:
@@ -446,10 +432,7 @@ def _choose(row: dict, decisions: dict, habit_words: set) -> Optional[str]:
 
 
 # --- a stored row without its text (decision 6) ---------------------------------------------
-# lane_decisions and rejection read the text. A row its source no longer lists keeps what they
-# decided; only these can still change it, and they need no text: its age (the trend and habit
-# windows, TOO_OLD), the hosts open discovery reads, and corroboration by the stories of the run.
-HELD_TREND_FIXED = ("BUSINESS_NEWS", "NO_DATE")                          # checked before the age
+HELD_TREND_FIXED = ("BUSINESS_NEWS", "NO_DATE")
 HELD_HABIT_FIXED = ("RECIPE_NOT_HABIT", "BUSINESS_NEWS", "PRODUCT_ANNOUNCEMENT_ONLY", "NOT_BEHAVIOR_SOURCE",
                     "NO_DATE")
 

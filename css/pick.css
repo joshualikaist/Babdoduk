@@ -1,8 +1,3 @@
-/* 오늘 뭐 먹지 (choose.html, js/pick.js, owner 2026-11-05): one button and the world cup's capsule machine
-   (css/worldcup.css .wc-gacha, the start gacha) on its night stage, then the card that names the pick.
-   The machine is 220 x 330 at --k = 1, as on the world cup; only transform and opacity move. */
-
-/* Page head like every content page (owner 2026-11-13, "글씨 정렬"): 760 column, 16 gutter, 32 above the title, .page-title size. */
 .pick-page {
   width: 100%;
   max-width: 760px;
@@ -50,7 +45,6 @@
   color: var(--color-accent);
 }
 
-/* The night stage (the world cup's start gacha, in the page instead of a popover). */
 .pick-stage {
   position: relative;
   height: 320px;
@@ -121,7 +115,7 @@
 }
 
 .pk-body::before,
-.pk-body::after {                        /* feet */
+.pk-body::after {
   content: "";
   position: absolute;
   bottom: -10px;
@@ -134,7 +128,6 @@
 .pk-body::before { left: 34px; }
 .pk-body::after { right: 34px; }
 
-/* The screen runs through food while the crank turns and stops on the pick's. */
 .pk-screen {
   position: absolute;
   left: 20px;
@@ -191,7 +184,7 @@
 .pk-eye--l { left: 62px; }
 .pk-eye--r { right: 62px; }
 
-.pk-mouth {                              /* the chute: the capsule comes out of it */
+.pk-mouth {
   position: absolute;
   left: 50%;
   top: 100px;
@@ -203,8 +196,6 @@
   transform-origin: 50% 0;
 }
 
-/* The pick: a capsule that lands above the machine and opens on the dish (a photo, or an emoji for
-   a cafeteria meal or a dish without one). It rests at its CSS place, so a resize keeps it there. */
 .pk-cap {
   position: absolute;
   left: 50%;
@@ -248,7 +239,6 @@
   box-shadow: inset 0 0 0 3px #0f0e0c;
 }
 
-/* After a draw the machine steps back so the capsule reads. */
 .pick-stage.is-done .pk-gacha {
   opacity: 0.32;
 }
@@ -389,7 +379,6 @@
   text-decoration: none;
 }
 
-/* 👍 이거 먹을래요 (only with the taste counts, docs/PICK_STATS.md): pressed once per draw. */
 .pick-like {
   display: inline-flex;
   align-items: center;

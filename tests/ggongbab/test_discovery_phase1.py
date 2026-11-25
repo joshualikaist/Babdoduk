@@ -106,7 +106,7 @@ def test_prompt_separates_first_come_supply_from_registration():
 
 # --- prefilter ----------------------------------------------------------------------
 @pytest.mark.parametrize("subject,body", [
-    ("커피차와 함께하는 캠퍼스 홍보 행사", ""),                       # MISS-001: subject only, no date
+    ("커피차와 함께하는 캠퍼스 홍보 행사", ""),
     ("안내", "방문자 전원 커피 제공 (선착순, 소진 시 종료)"),
     ("(광고) 캠퍼스 이벤트", "학생 여러분께 커피를 무료로 드립니다.\n수신거부는 아래 링크를 누르세요."),
     ("무료 푸드트럭", "학생회관 앞에서 운영합니다."),
@@ -122,7 +122,7 @@ def test_transactional_body_wording_still_denies():
 
 @pytest.mark.parametrize("subject,body,level", [
     ("캠퍼스 홍보 행사", "방문자 전원 커피 제공 (선착순, 소진 시 종료)", "high"),
-    ("세미나", "2026년 9월 28일 16시 세미나, 다과 제공", "high"),          # today
+    ("세미나", "2026년 9월 28일 16시 세미나, 다과 제공", "high"),
     ("세미나", "10월 30일 16시 세미나, 다과 제공", "normal"),
 ])
 def test_urgency_orders_work_but_never_decides_truth(subject, body, level):

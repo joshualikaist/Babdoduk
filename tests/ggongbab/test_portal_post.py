@@ -175,7 +175,6 @@ def test_observed_post_method_and_evidence_required():
     with pytest.raises(UiContractError):
         fetch_detail(request, c, IDS[0])
     request.post.assert_not_called()
-    # Changing an old GET method cannot accidentally opt into POST.
     from .test_portal_agent import contract
     old = contract()
     old.detail_method = "POST"
@@ -188,7 +187,6 @@ def test_post_list_body_pagination_is_observed_and_replayed():
     assert report["diagnostics"]["safe"]["postPaginationCandidates"] == [{"path": "pageNo", "numericMonotonic": True}]
     request = Mock()
     request.post.side_effect = [Response(listing([notice("one"), notice("two")])), Response(listing([]))]
-    # Copy arguments since requests receive a mutable body which advances between pages.
     bodies = []
     def post(*_, **kwargs):
         bodies.append(deepcopy(kwargs["data"]))

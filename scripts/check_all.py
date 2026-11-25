@@ -46,11 +46,9 @@ NEEDED = {
 }
 INSTALL = "pip install -r requirements-dev.txt -r requirements-ggongbab.txt"
 SWITCHED = "BABDODUK_CHECK_PYTHON_CHOSEN"
-# Shared by every page or every test: a change here runs the whole quick set.
 WIDE = ("tests/conftest.py", "tests/ggongbab/conftest.py", "tests/fixtures/", "pytest.ini", "requirements",
         "shared/", "js/site.js", "css/site.css", "scripts/sync_site_chrome.py", "scripts/content_labels.py",
         "data/content/labels.json", "scripts/check_site_ui.py")
-# Changes that need no test of their own when no test names them.
 NO_TEST_NEEDED = (".md", ".txt", ".png", ".jpg", ".jpeg", ".webp", ".svg", ".ico", ".gitignore")
 
 
@@ -82,7 +80,6 @@ def choose_python(argv):
     if not lacking or os.environ.get(SWITCHED):
         return lacking
     for python in candidate_pythons():
-        # A venv's python links to the system one, so compare the paths themselves, not where they lead.
         if os.path.abspath(python) != os.path.abspath(sys.executable) and not missing_parts(python):
             print(f"this Python lacks {', '.join(lacking)}: running with {python}", flush=True)
             os.environ[SWITCHED] = "1"

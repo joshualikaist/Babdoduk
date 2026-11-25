@@ -16,9 +16,6 @@ from ggongbab.models import EventExtraction, Evidence  # noqa: E402
 from ggongbab.parsers.ai_parser import AIResult, AIUsage  # noqa: E402
 
 REFERENCE = datetime(2026, 9, 19, 9, 0, tzinfo=KST)
-# The fixed "now" of the synthetic pipeline tests. Event dates are derived from it and it
-# is passed to every production call that compares against the current time, so a test
-# never depends on the calendar day it runs on.
 TEST_NOW = REFERENCE
 
 POSITIVE_TEXT = "9월 25일 12시 N1에서 기업 설명회를 진행합니다.\n참석자에게 점심 도시락을 제공합니다."

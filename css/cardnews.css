@@ -1,5 +1,3 @@
-/* 꽁밥 카드뉴스 (cardnews.html, lab only; docs/CARDNEWS.md): the week's six cards, read top to bottom. */
-/* Above the fixed body::before canvas of css/site.css, as every page's main is. */
 .cn-page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: var(--space-6, 24px) var(--space-4, 16px) var(--space-16, 64px); display: grid; gap: 32px; }
 .cn-hero { display: grid; gap: 10px; max-width: 760px; }
 .cn-kicker { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .08em; color: var(--color-ink-muted, #625d54); }

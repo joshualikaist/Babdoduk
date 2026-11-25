@@ -76,7 +76,7 @@ def test_force_is_explicit_and_reuses_pipeline(isolated, settings):
     extractor = FakeExtractor(future_extraction)
     payload = preview.generate_preview([item()] * 2, {}, settings, max_ai_candidates=1, force=True,
                                       extractor_factory=lambda _: extractor, log=lambda *_: None)
-    assert payload["count"] == 1 and len(extractor.calls) == 1  # production dedup/cache
+    assert payload["count"] == 1 and len(extractor.calls) == 1
 
 
 @pytest.mark.parametrize("food,review,expected", [("true", False, 1), ("false", False, 0),

@@ -23,7 +23,7 @@ def test_every_table_has_row_level_security_and_browsers_only_read_counts():
     grants = statement(r"grant ([a-z, ]+) on table public\.(\w+) to ([a-z_, ]+);")
     browser = [(what, table) for what, table, who in grants if "anon" in who or "authenticated" in who]
     assert browser == [("select", "pick_dish_stats")]
-    assert not statement(r"grant [^;]* on table public\.pick_(secret|rate)")          # never readable
+    assert not statement(r"grant [^;]* on table public\.pick_(secret|rate)")
 
 
 def test_the_only_browser_write_is_the_checking_function():
@@ -34,7 +34,6 @@ def test_the_only_browser_write_is_the_checking_function():
         assert f"raise exception '{code}'" in SQL, code
     assert "p_signal not in ('draw', 'like', 'reroll')" in SQL
     assert "if recorded > 120 then" in SQL and "interval '1 day'" in SQL
-    # One signal moves one count of one dish by one.
     assert re.search(r"draws = draws \+ \(p_signal = 'draw'\)::int,\s+likes = likes \+ \(p_signal = 'like'\)::int,\s+"
                      r"rerolls = rerolls \+ \(p_signal = 'reroll'\)::int", SQL)
 
@@ -58,7 +57,7 @@ class Fake:
         if method == "POST" and path == "pick_dish_stats":
             assert prefer.startswith("resolution=ignore-duplicates")
             for row in body:
-                assert set(row) == {"dish_id"}                       # never a count
+                assert set(row) == {"dish_id"}
                 self.rows.setdefault(row["dish_id"], {"dish_id": row["dish_id"], "draws": 0, "likes": 0, "rerolls": 0})
             return None
         if path.startswith("pick_dish_stats"):

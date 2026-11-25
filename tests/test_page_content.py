@@ -36,7 +36,7 @@ def activity(start, end, title, confirmation="announced"):
 
 
 def test_the_pages_carry_the_content_in_both_languages():
-    assert chrome.main(["--check"]) == 0   # the committed pages are what the sync writes
+    assert chrome.main(["--check"]) == 0
     html = (ROOT / "event.html").read_text(encoding="utf-8")
     strings = tables(html)
     ordered = sorted(EVENTS["activities"], key=lambda item: (item["start"], item["end"]))
@@ -50,7 +50,6 @@ def test_the_pages_carry_the_content_in_both_languages():
                 assert pair[lang] in sheet, (index, field, lang)
             if "place" in item:
                 assert strings[lang][f"event.e{index}.place"] == item["place"][lang]
-        # Korean is in the markup itself, so the page reads without JavaScript.
         assert f'data-i18n="event.e{index}.summary">{item["title"]["ko"]}</h3>' in html
     history = (ROOT / "history.html").read_text(encoding="utf-8")
     strings = tables(history)
@@ -70,10 +69,10 @@ def test_order_and_dates_are_computed_not_authored():
                        activity("2026-05-19", "2026-05-18", "앞")]}
     blocks = page_content.event_blocks(data)
     rows = "\n".join(blocks["events"])
-    assert rows.index("앞") < rows.index("하루") < rows.index("연말")      # start, then end date
-    assert '<time datetime="2026-05-19">2026.05.19</time></p>' in rows         # one day, one date
-    assert "2026.12.30</time> — <time datetime=\"2027-01-02\">2027.01.02</time>" in rows  # the year changes
-    assert blocks["notices"][0].count("나중") == 1 and "먼저" in blocks["notices"][1]   # newest first
+    assert rows.index("앞") < rows.index("하루") < rows.index("연말")
+    assert '<time datetime="2026-05-19">2026.05.19</time></p>' in rows
+    assert "2026.12.30</time> — <time datetime=\"2027-01-02\">2027.01.02</time>" in rows
+    assert blocks["notices"][0].count("나중") == 1 and "먼저" in blocks["notices"][1]
     strings = page_content.event_strings(data)
     assert strings["en"]["event.n0.title"] == "Newer" and strings["ko"]["event.e2.summary"] == "연말"
     history = page_content.history_blocks({"schemaVersion": 1, "roadmap": HISTORY["roadmap"],
@@ -101,9 +100,9 @@ def test_an_edit_reaches_the_page_in_both_languages(tmp_path, monkeypatch):
     (content / "events.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     monkeypatch.setattr(page_content, "CONTENT", content)
     page = chrome.synced("event.html")
-    assert page != (ROOT / "event.html").read_text(encoding="utf-8")   # the committed page is now stale
+    assert page != (ROOT / "event.html").read_text(encoding="utf-8")
     strings = tables(page)
-    added = f"event.e{len(EVENTS['activities'])}.summary"   # the appended row, whatever the page held before
+    added = f"event.e{len(EVENTS['activities'])}.summary"
     assert strings["ko"][added] == "밥도둑 시식회" and strings["en"][added] == "밥도둑 시식회".upper()
     assert strings["en"]["event.n0.text"] == "It's in November."
     assert '<strong data-i18n="event.n0.title">시식회 안내</strong>' in page
@@ -114,7 +113,7 @@ def test_content_the_contracts_cannot_judge_is_refused(tmp_path):
     content = tmp_path / "data/content"
     shutil.copytree(ROOT / "data/content", content)
     data = copy.deepcopy(EVENTS)
-    data["activities"][0]["end"] = "2026-05-01"                                        # before its start
+    data["activities"][0]["end"] = "2026-05-01"
     data["activities"][1]["details"]["prizes"]["en"] = 'Prizes <a href="https://x.example">here</a>'
     data["activities"][1]["details"]["summary"]["ko"] = "<strong>열린 채로"
     (content / "events.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")

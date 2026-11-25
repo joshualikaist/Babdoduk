@@ -1,5 +1,3 @@
-/* 꽁밥 제보 (tip.html, lab only; docs/GGONGBAB_TIPS.md). Navigation and footer are owned by
-   site.css; colors come from its semantic tokens. */
 .tip-page {
   position: relative;
   z-index: 1;
@@ -24,7 +22,6 @@
 }
 
 /* ---- hero ------------------------------------------------------------------------------------ */
-/* A plain page head like every content page (owner 2026-11-13): no card, no label, no sample ticket. */
 .tip-hero { padding: 0 0 var(--space-2); }
 .tip-hero-copy { min-width: 0; }
 
@@ -240,8 +237,6 @@ input[type="date"].tip-input { appearance: none; -webkit-appearance: none; }
 .tip-error::before { content: '!'; flex: 0 0 auto; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #b42318; color: #fff; font-size: 11px; font-weight: 900; }
 .tip-error[hidden] { display: none; }
 
-/* Photos: the real file input covers the drop zone, so a click or a tap anywhere opens the picker
-   and keyboard focus lands on it (shown on the zone). */
 .tip-drop {
   position: relative;
   display: grid;

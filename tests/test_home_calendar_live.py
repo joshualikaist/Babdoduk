@@ -81,7 +81,6 @@ def test_the_star_saves_without_opening_and_the_hub_shows_it(browser):
     star.click()
     assert page.locator('[data-hc-save="lunch"]').get_attribute("aria-pressed") == "true"
     assert lunch.locator(".hc-ev-btn").get_attribute("aria-expanded") == "false", "the star does not open the row"
-    # A guest's star asks nothing about a calendar (owner 2026-11-24, tests/test_star_calendar.py); the focus stays.
     page.wait_for_timeout(300)
     assert page.locator("#starCalAsk").count() == 0
     assert page.evaluate("document.activeElement.getAttribute('data-hc-save')") == "lunch"

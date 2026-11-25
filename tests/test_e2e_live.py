@@ -14,10 +14,8 @@ def utc(*args):
 
 
 def test_phase_boundaries_are_read_in_korea_time():
-    # 2026-10-15 15:00 UTC is already 10/16 00:00 in Korea.
     assert e2e.wc_phase(utc(2026, 10, 15, 14, 59), WINDOW) == "soon"
     assert e2e.wc_phase(utc(2026, 10, 15, 15, 0), WINDOW) == "live"
-    # The last day runs to 23:59 KST = 14:59 UTC.
     assert e2e.wc_phase(utc(2026, 10, 23, 14, 59), WINDOW) == "live"
     assert e2e.wc_phase(utc(2026, 10, 23, 15, 0), WINDOW) == "ended"
 
@@ -50,10 +48,10 @@ def test_post_violations_production_vs_lab():
     other = {"host": "x.supabase.co", "path": "/rest/v1/something"}
     assert e2e.post_violations([rpc], is_lab=False) == [rpc]
     assert e2e.post_violations([rpc, other], is_lab=True) == [other]
-    pick = {"host": "x.supabase.co", "path": "/rest/v1/rpc/pick_record"}       # 오늘 뭐 먹지 (docs/PICK_STATS.md)
+    pick = {"host": "x.supabase.co", "path": "/rest/v1/rpc/pick_record"}
     assert e2e.post_violations([pick], is_lab=True) == [] and e2e.post_violations([pick], is_lab=False) == [pick]
     elsewhere = {"host": "evil.example", "path": "/rest/v1/rpc/pick_record"}
-    assert e2e.post_violations([elsewhere], is_lab=True) == [elsewhere]       # only the project's own host
+    assert e2e.post_violations([elsewhere], is_lab=True) == [elsewhere]
 
 
 def test_parse_wc_window_reads_the_served_gate_script():

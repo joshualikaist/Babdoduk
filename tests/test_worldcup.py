@@ -19,7 +19,7 @@ def test_each_game_draws_32_from_a_pool_of_distinct_catalog_dishes():
     assert CUP["size"] == 32 and len(CUP["dishes"]) >= 32 and len(set(CUP["dishes"])) == len(CUP["dishes"])
     assert page_content.worldcup_errors(ROOT) == []
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    assert "shuffle(poolOf(cat)).slice(0, size)" in script    # a fresh draw from the chosen category each game
+    assert "shuffle(poolOf(cat)).slice(0, size)" in script
 
 
 def test_a_broken_bracket_is_refused(tmp_path):
@@ -32,7 +32,7 @@ def test_a_broken_bracket_is_refused(tmp_path):
         return page_content.worldcup_errors(tmp_path)
 
     assert errors(CUP["dishes"]) == []
-    assert any("not a bracket" in e for e in errors(CUP["dishes"][:31]))           # fewer dishes than a game
+    assert any("not a bracket" in e for e in errors(CUP["dishes"][:31]))
     assert any("twice" in e for e in errors(CUP["dishes"][:31] + CUP["dishes"][:1]))
     assert any("not a catalog dish" in e for e in errors(CUP["dishes"][:31] + ["kr-made-up-dish"]))
 
@@ -53,23 +53,18 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
     assert re.findall(r'<script\s+src="([^"]+)"', html) == ["js/site.js", "js/ggongbab-public-config.js", "js/worldcup-gate.js", "js/worldcup.js"]
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     assert set(re.findall(r"getJson\('([^']+)'\)", script)) == {"data/foods/catalog.json"}
-    # data/content/ is never deployed (.vercelignore): the sync writes the dishes into the page.
     embedded = re.search(r"window\.BABDODUK_WORLDCUP = (\{.*\});", html).group(1)
     assert json.loads(embedded)["dishes"] == CUP["dishes"]
     assert json.loads(embedded)["categories"] == CUP["categories"]
     for forbidden in ("supabase", "XMLHttpRequest", "WebSocket", "sendBeacon", "createClient"):
         assert forbidden not in script, forbidden
-    # Stage 2 (lab): the only write is one finished game through the validating RPC.
     assert re.findall(r"api\('([a-z_/]+)", script) == ["worldcup_dish_stats", "worldcup_totals", "rpc/worldcup_record_game"]
     assert "method: body ? 'POST' : 'GET'" in script and "log.length !== size - 1" in script
     assert "var KEY = 'babdoduk-worldcup';" in script and "localStorage.setItem(KEY" in script
     assert html.count('<button type="button" class="wc-card"') == 2
     assert 'id="wcStatus" role="status"' in html and "'wc.title': 'Babdoduk Food World Cup'" in html
-    # Pictures are decoration inside the pick buttons (the button names the dish); no claims about
-    # what is on sale: the catalog is general information.
     main = html.split("<main", 1)[1].split("</main>", 1)[0]
     assert re.findall(r"<img [^>]*>", main) and all('alt=""' in tag for tag in re.findall(r"<img [^>]*>", main))
-    # One small photo chip, no price sentence (owner 2026-10-14); the photos are credited by name large.
     ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
     en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
     assert (ko["wc.photoChip"], en["wc.photoChip"]) == ("사진 위키미디어 공용(잘라서 줄임)", "Photos: Wikimedia Commons (cropped, resized)")
@@ -78,9 +73,6 @@ def test_the_page_reads_only_static_files_and_keeps_results_in_this_browser():
 
 
 def test_undo_and_restart_are_an_icon_and_a_short_label():
-    # Owner, 2026-10-13: fewer words, and the two controls under the match less bland than a plain
-    # underline. The icon is decoration (aria-hidden); the visible word is the button's name, and
-    # the translation goes on the inner span so the language switch never wipes the icon.
     html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
     tools = html.split('<div class="wc-tools">', 1)[1].split("</div>", 1)[0]
     for button, key in (("wcUndo", "wc.undo"), ("wcRestart", "wc.restart")):
@@ -94,7 +86,7 @@ def test_undo_and_restart_are_an_icon_and_a_short_label():
     css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
     assert ".wc-tool:focus-visible" in css and "min-height: 44px" in css.split(".wc-tool {", 1)[1].split("}", 1)[0]
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    assert "if (previous.game)" in script            # 되돌리기 takes back 처음부터
+    assert "if (previous.game)" in script
 
 
 def test_every_dish_has_a_credited_free_photo_on_disk():
@@ -104,7 +96,7 @@ def test_every_dish_has_a_credited_free_photo_on_disk():
         assert (ROOT / photo["image"]).is_file() and photo["image"] == f"images/worldcup/{dish}.jpg"
         assert photo["source"].startswith("https://commons.wikimedia.org/wiki/File:") and photo["author"]
         assert "NC" not in photo["license"] and "ND" not in photo["license"]
-        assert (ROOT / photo["image"]).stat().st_size < 150_000          # a cropped, resized copy
+        assert (ROOT / photo["image"]).stat().st_size < 150_000
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     assert "showPhoto(" in script and "wc.photoCredit" in script
 
@@ -116,12 +108,10 @@ def test_a_missing_photo_is_refused(tmp_path):
     (tmp_path / "data/content/worldcup.json").write_text(json.dumps(broken), encoding="utf-8")
     errors = page_content.worldcup_errors(tmp_path)
     assert any(f"{CUP['dishes'][0]} has no photo" in e for e in errors)
-    assert any("which does not exist" in e for e in errors)              # the files are not in tmp_path
+    assert any("which does not exist" in e for e in errors)
 
 
 def test_the_pool_is_large_and_varied_as_the_copy_says():
-    # The page, the event and the share text all say "more than 700 dishes" (owner, 2026-10-13:
-    # aim for 1,000, at most five variants of the same dish).
     assert len(CUP["dishes"]) > 700
     events = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))
     teaser = next(a for a in events["activities"] if a.get("link") == "worldcup.html")
@@ -158,8 +148,6 @@ def splash_module():
 
 
 def test_a_new_round_takes_the_screen_from_the_quarterfinals_on():
-    # Owner, 2026-10-14: no banner over the cards ("8강 진출 16강 진출이 음식이랑 같이 떠 있어");
-    # from 8강 a black full-screen beat, 결승 with the finalists' crash. Nothing for 16강.
     html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
     css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
     module = splash_module()
@@ -173,11 +161,8 @@ def test_a_new_round_takes_the_screen_from_the_quarterfinals_on():
     assert [ko[f"wc.splash.{k}"] for k in ("quarter", "semi", "final")] == ["8강 진출!", "4강 진출!", "결승!"]
     assert [en[f"wc.splash.{k}"] for k in ("quarter", "semi", "final")] == ["Quarterfinals!", "Semifinals!", "The Final!"]
     assert not any(k.startswith("wc.banner") for k in ko)
-    # The owner says 8강, 4강, 결승: the semifinal's round header too (English keeps Semifinal).
     assert (ko["wc.round.semi"], en["wc.round.semi"]) == ("4강", "Semifinal")
     assert "준결승" not in (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    # A top-layer popover above the navigation, decoration only; reduced motion, forced colours or
-    # no popover support: straight to the match.
     assert '<div class="wc-splash" id="wcSplash" popover="manual" aria-hidden="true"></div>' in html
     assert "!reduced && !(forcedColors && forcedColors.matches)" in module and "typeof splashEl.showPopover === 'function'" in module
     assert "if (reduced) { renderMatch(true); return; }" in (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
@@ -189,15 +174,13 @@ def test_the_splash_moves_only_transform_and_opacity_and_flashes_once_in_white()
     for call in re.findall(r"track\([^;]*?\]\]\);", module, re.S):
         moved |= set(re.findall(r"[{,] (\w+): (?!function)", call))
     assert moved == {"transform", "opacity"}, moved
-    assert module.count("'wc-splash-flash'") == 1                       # one flash, in the final only
+    assert module.count("'wc-splash-flash'") == 1
     css = (ROOT / "css/worldcup.css").read_text(encoding="utf-8")
-    flash = css.rsplit(".wc-splash-flash {", 1)[1].split("}", 1)[0]          # its own rule, after the shared one
+    flash = css.rsplit(".wc-splash-flash {", 1)[1].split("}", 1)[0]
     assert "background: #fff;" in flash
-    # Black and white with the wordmark gradient: never red, never the old red-brown accent.
-    block = css.split("/* The round splash", 1)[1].split(".wc-confetti {", 1)[0]
+    block = css.split("\n.wc-splash {", 1)[1].split(".wc-confetti {", 1)[0]
     colours = set(re.findall(r"#[0-9a-fA-F]{3,6}\b", block))
     assert colours <= {"#000", "#fff", "#ec4899", "#a855f7", "#6366f1", "#c44fd0"}, colours
-    # The shake stays within 8 px; the stages are 0.8 s and 2 s.
     amps = [float(a) for a in re.findall(r"amp = phone \? (\d+) : (\d+)", module)[0]]
     assert max(amps) <= 8
 
@@ -220,17 +203,14 @@ def test_a_skip_is_never_a_pick():
     pick = script.split("function pick(side) {", 1)[1]
     assert pick.lstrip().startswith("if (splash) { endSplash('skip'); return; }")
     assert "splashEl.addEventListener('click', function () { endSplash('skip'); });" in script
-    assert "if (e.detail && Date.now() < quietUntil) return;" in script                 # a tap just after
+    assert "if (e.detail && Date.now() < quietUntil) return;" in script
     keyup = script.split("document.addEventListener('keyup', function (e) {", 1)[1].split("}, true);", 1)[0]
-    assert "e.preventDefault();" in keyup and "heldKey" in keyup                         # Space clicks on release
-    # The match is rendered and focused before the splash, and gets focus again after it.
+    assert "e.preventDefault();" in keyup and "heldKey" in keyup
     assert "renderMatch(true, splashing);\n      if (splashing) showSplash(round);" in script
     assert "if (reason !== 'quiet' && view === 'match') cards[0].focus({ preventScroll: true });" in script
 
 
 # ---- categories (owner, 2026-10-14: "너무 좋아") -------------------------------------------------------
-# What the owner approved: 전체 plus seven categories, each played as a 32강. The pool was derived from
-# the catalog's cuisineGroup, so the counts below are exactly the approved table.
 CATEGORY_COUNTS = {"korean": 268, "chinese": 75, "japanese": 75, "western": 132, "world": 86, "snack": 35, "dessert": 92}
 
 
@@ -244,14 +224,14 @@ def catalog_items():
 
 def test_every_pool_dish_is_in_exactly_one_category_and_the_counts_are_the_approved_ones():
     categories = CUP["categories"]
-    assert set(categories) == set(CUP["dishes"])                      # one entry per dish, none for a stranger
+    assert set(categories) == set(CUP["dishes"])
     assert set(categories.values()) == set(page_content.WORLDCUP_CATEGORIES) == set(CATEGORY_COUNTS)
     counts = {key: sum(1 for c in categories.values() if c == key) for key in CATEGORY_COUNTS}
     assert counts == CATEGORY_COUNTS
-    assert sum(counts.values()) == len(CUP["dishes"]) == 763            # 전체
-    assert min(counts.values()) >= CUP["size"]                          # every category fills a 32강
+    assert sum(counts.values()) == len(CUP["dishes"]) == 763
+    assert min(counts.values()) >= CUP["size"]
     items = catalog_items()
-    for dish, key in categories.items():                               # and it is the catalog's own cuisineGroup
+    for dish, key in categories.items():
         assert key == page_content.worldcup_category(items[dish]), dish
     assert not [g for g in {i["cuisineGroup"] for i in items.values()} if g not in page_content.WORLDCUP_CATEGORY_BY_GROUP]
 
@@ -272,14 +252,14 @@ def test_a_dish_without_or_in_the_wrong_category_is_refused(tmp_path):
     assert any("does not exist" in e for e in errors(dict(CUP["categories"], **{first: "brunch"})))
     assert any(f"{first} is in the category 'dessert', but the catalog says" in e
                for e in errors(dict(CUP["categories"], **{first: "dessert"})))
-    thin = {d: ("korean" if c == "snack" else c) for d, c in CUP["categories"].items()}      # no snacks left
+    thin = {d: ("korean" if c == "snack" else c) for d, c in CUP["categories"].items()}
     assert any("the category 'snack' has 0 dishes, fewer than a game of 32" in e for e in errors(thin))
 
 
 def test_the_start_screen_offers_the_categories_with_counts_and_keeps_the_choice_in_the_saved_game():
     html = (ROOT / "worldcup.html").read_text(encoding="utf-8")
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    css = (ROOT / "css/worldcup-entry.css").read_text(encoding="utf-8")        # the start screen's styles
+    css = (ROOT / "css/worldcup-entry.css").read_text(encoding="utf-8")
     ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
     en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
     keys = ["all", *CATEGORY_COUNTS]
@@ -287,22 +267,18 @@ def test_the_start_screen_offers_the_categories_with_counts_and_keeps_the_choice
     assert [ko[f"wc.cat.{k}"] for k in keys] == ["전체", "한식", "중식", "일식", "양식", "아시아·세계", "분식·간식", "디저트·카페"]
     assert [en[f"wc.cat.{k}"] for k in keys] == ["All", "Korean", "Chinese", "Japanese", "Western", "Asian & world",
                                                  "Snacks", "Desserts & café"]
-    # The tiles sit above the start button, in a labelled group of toggle buttons on a 3 x 3 board
-    # (owner 2026-10-14: big tiles rather than pills). The name is the visible text; the emoji is decoration.
     intro = html.split('id="wcIntro"', 1)[1].split('id="wcStart"', 1)[0]
     assert 'id="wcCats" role="group" aria-labelledby="wcCatsLabel"' in intro
     assert "tile.setAttribute('aria-pressed', cat === category ? 'true' : 'false')" in script
     assert "emoji.setAttribute('aria-hidden', 'true');" in script
     assert ".wc-tile:focus-visible" in css and "min-height: 96px" in css.split(".wc-tile {", 1)[1].split("}", 1)[0]
     assert "grid-template-columns: repeat(3, minmax(0, 1fr))" in css.split(".wc-tiles {", 1)[1].split("}", 1)[0]
-    # The saved game records its category; an older one has none and is the whole pool.
     assert "category: cat };" in script and "if (g.category == null) return 'all';" in script
-    assert "var KEY = 'babdoduk-worldcup';" in script and "{ v: 1, set: signature()" in script      # old saves stay readable
-    # The category is shown while playing, on the result, in the share text and on the image.
+    assert "var KEY = 'babdoduk-worldcup';" in script and "{ v: 1, set: signature()" in script
     assert "$('wcGame').textContent = gameLabel(game.category);" in script
     assert "$('wcResultGame').textContent = gameLabel(result.category);" in script
     assert "{cat}" in ko["wc.shareText"] and "{cat}" in en["wc.shareText"]
-    assert "won: fill(t('wc.story.won', '{game} 우승'), { game: gameLabel(result.category) })" in script     # the story card
+    assert "won: fill(t('wc.story.won', '{game} 우승'), { game: gameLabel(result.category) })" in script
     assert (ko["wc.catGame"], en["wc.catGame"]) == ("{cat} {n}강", "{cat} · Round of {n}")
 
 
@@ -328,21 +304,18 @@ def test_the_start_screen_has_the_owners_headline_and_no_notes():
     en = json.loads((ROOT / "i18n/en.json").read_text(encoding="utf-8"))
     assert (ko["wc.intro.title"], en["wc.intro.title"]) == ("오늘의 {n}강, 뭐가 나올까?", "What’s in today’s round of {n}?")
     assert (ko["wc.intro.tone"], en["wc.intro.tone"]) == ("시험기간으로 지친 당신! 메뉴나 골라~", "Exam week got you? Just pick a menu~")
-    # The static page (before the script) already says it, the round on the highlighter.
     assert '<h3 class="wc-intro-title" id="wcIntroTitle">오늘의 <span class="wc-hl">32강</span>, 뭐가 나올까?</h3>' in html
-    # The two notes under the button are gone (owner's mark-up), with their keys, and so is the old line.
     for gone in ("wc.note", "wc.rankingNote"):
         assert gone not in ko and gone not in en and gone not in html
     assert "이 브라우저에 저장돼요" not in html and "익명으로 집계" not in html and "wcStatsNote" not in html
     assert "700개가 넘는 메뉴 중 무작위로 뽑아요" not in html.split('id="wcIntro"', 1)[1].split("</main>", 1)[0]
-    # The display lettering is Jua, cut to the letters of its labels in both languages.
     link = re.search(r'<link href="(https://fonts\.googleapis\.com/css2\?family=Jua[^"]+)" rel="stylesheet" />', html).group(1)
     letters = set(parse_qs(urlparse(link).query)["text"][0])
     for strings in (ko, en):
         for key in page_content.WORLDCUP_JUA_KEYS:
             assert set(re.sub(r"\{\w+\}", "", strings[key])) <= letters, key
     css = "".join((ROOT / f"css/{name}.css").read_text(encoding="utf-8") for name in ("worldcup", "worldcup-entry"))
-    assert "background-clip: text" not in css                   # the highlighter is a background, never gradient text
+    assert "background-clip: text" not in css
     assert "#b43d27" not in css and "#f45e45" not in (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
 
 
@@ -351,16 +324,13 @@ def test_the_tiles_preview_the_dishes_the_next_game_really_draws():
     emoji = dict(re.findall(r"(\w+): '([^']+)'", re.search(r"var CATEGORY_EMOJI = \{(.*?)\};", script, re.S).group(1)))
     assert emoji == {"all": "🎲", "korean": "🍚", "chinese": "🥟", "japanese": "🍣", "western": "🍝", "world": "🍜",
                      "snack": "🍢", "dessert": "🍰"}
-    # Choosing draws the bracket; the photos are five of it; a start from this screen plays that bracket.
     assert "pending = { cat: cat, ids: draw(cat) };" in script
     assert "(pending ? pending.ids.slice(2, 7) : [])" in script
     assert "view === 'intro' && pending && pending.cat === cat ? pending.ids : draw(cat)" in script
-    # 아무거나 lands on another category, at once with reduced motion, and says which.
     assert "c !== category" in script and "if (!moving()) { landSpin(target); return; }" in script
     ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
     assert (ko["wc.cat.random"], ko["wc.preview"], ko["wc.catLanded"]) == ("아무거나", "이 중에서 나와요!", "{cat} 당첨!")
-    # The start screen's motion moves only transform, scale and opacity; arrival runs are bounded.
-    intro = module("// ---- the start screen", "// `instant`: a round splash")
+    intro = module("// ---- the start screen", "  function renderMatch(focus, instant)")
     assert moved_properties(intro) <= {"transform", "scale", "opacity"}, moved_properties(intro)
     assert "iterations: arriving ? 3 : 2" in intro and "iterations: arriving ? 2 : 1" in intro
 
@@ -368,25 +338,20 @@ def test_the_tiles_preview_the_dishes_the_next_game_really_draws():
 def test_the_start_gacha_plays_on_a_start_only_and_never_with_reduced_motion():
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
     gacha = module("// ---- start gacha", "// ---- result image")
-    # Only the starts open it; 이어하기 never does.
     assert "$('wcStart').addEventListener('click', begin);" in script and "$('wcNew').addEventListener('click', begin);" in script
     assert "function begin() {\n    if (locked()) return;\n    stopSpin(true);" in script and "    start(category, true);\n  }" in script
     assert "function resume() {\n    if (locked()) return;\n    if (!game) { start(category, false); return; }\n    show('match');\n    renderMatch(true);\n  }" in script
-    # The game is stored and the match rendered, focused and announced before it opens.
-    assert "store();                                            // the draw is kept before anything moves" in script
+    assert "    result = null;\n    store();\n    show('match');" in script   # the draw is kept before anything moves
     assert "if (animate && canGacha()) {\n      renderMatch(true, true);\n      showGacha();" in script
     assert "!reduced && !(forcedColors && forcedColors.matches) && !document.hidden" in gacha
     assert "typeof splashEl.showPopover === 'function'" in gacha
-    # It plays in the splash's popover, so a tap or a key skips it and never picks (test_a_skip_is_never_a_pick).
     assert "splashEl.setAttribute('data-round', 'start');" in gacha and "splash = {" in gacha
-    # About 5 s, only transform, scale and opacity, no flash, a jolt of at most 4 px.
     end = int(re.search(r"end: (\d+) \}", gacha).group(1))
     assert 4500 <= end <= 5200
     assert moved_properties(gacha) <= {"transform", "scale", "opacity"}, moved_properties(gacha)
     assert "wc-splash-flash" not in gacha and "Flash" not in gacha
     jolts = [abs(int(x)) for x in re.findall(r"translate\((-?\d+)px, 0px\)' \}\]", gacha)]
     assert jolts and max(jolts) <= 4
-    # One line of text at a time: the drawing line is gone before the question comes.
     ko = json.loads((ROOT / "i18n/ko.json").read_text(encoding="utf-8"))
     assert (ko["wc.gacha.drawing"], ko["wc.gacha.ask"]) == ("{game} 뽑는 중…", "너의 최애는?")
     assert "[tD + 120, { transform: 'translateY(0px)', opacity: 0 }]" in gacha
@@ -403,20 +368,17 @@ def test_the_event_card_shows_the_start_screen_instead_of_a_teaser_and_a_button(
     events = json.loads((ROOT / "data/content/events.json").read_text(encoding="utf-8"))
     cup_event = next(a for a in events["activities"] if a.get("link") == "worldcup.html")
     assert cup_event["entry"] == "worldcup" and "pictures" not in cup_event
-    # The teaser photos with their vs badge, their credit and the 지금 해보기 button are gone.
     for gone in ("event-teaser", "event.e2.credit", "Startandstar", "event.cta.page'", "지금 해보기"):
         assert gone not in html and gone not in (ROOT / "css/event.css").read_text(encoding="utf-8"), gone
     row = html.split('data-i18n="event.e2.summary"', 1)[1].split("</li>", 1)[0]
     entry = row.split('<div class="wc-embed" data-wc-embed>', 1)[1].split('<a class="event-link"', 1)[0]
-    # The same markup as worldcup.html's start screen: one source (page_content.worldcup_entry).
     wc = (ROOT / "worldcup.html").read_text(encoding="utf-8")
     wc_entry = wc.split('id="wcIntro" hidden>', 1)[1].split('<div class="wc-view wc-match"', 1)[0]
     squash = lambda markup: re.sub(r"\s+", " ", markup)
     for part in page_content.worldcup_entry():
         assert squash(part.strip()) in squash(entry) and squash(part.strip()) in squash(wc_entry), part
     assert 'id="wcStart"' in entry and 'id="wcCats" role="group" aria-labelledby="wcCatsLabel"' in entry
-    assert entry.count('<p class="wc-chip">') == 1 and 'id="wcStatus" role="status"' in entry     # the one chip, announcements
-    # The card keeps its date range, title and state; the link stays for a past row and a failed load.
+    assert entry.count('<p class="wc-chip">') == 1 and 'id="wcStatus" role="status"' in entry
     assert '<time datetime="2026-10-16">2026.10.16</time> — <time datetime="2026-10-23">10.23</time>' in html
     assert 'href="worldcup.html" data-event-page><span data-event-cta>페이지 보기</span>' in row
     assert "자세히" in row
@@ -424,19 +386,11 @@ def test_the_event_card_shows_the_start_screen_instead_of_a_teaser_and_a_button(
 
 def test_the_event_page_loads_the_world_cup_only_for_its_running_card():
     html = event_page()
-    # Static: the small stylesheet and the Jua letters; the script and its data are added by the page
-    # script only while a row that shows the start screen is running or coming up.
     assert 'href="css/worldcup-entry.css"' in html and "family=Jua" in html
-    # (the launch gate is the one script it carries up front: js/worldcup-gate.js, a few hundred bytes of logic)
     assert re.findall(r'<script[^>]+src="(js/worldcup[^"]*)"', html) == ["js/worldcup-gate.js"] and "BABDODUK_WORLDCUP" not in html
     assert "['js/worldcup-entry-data.js', 'js/worldcup.js']" in html and "script.async = false;" in html
     assert '.event-item:not([data-band="past"]) [data-wc-embed]' in html
-    # No pool inlined: the page stays light (the slim pool alone is ~47 KB; 42 KB leaves room for the
-    # shared footer, which grew by the privacy link on 2026-11-10).
-    # 52 KB since 2026-11-12: the authored event cards grow the page (the 꽁밥 인증샷 card took it past 42 KB);
-    # an inlined pool would still add ~47 KB and fail this.
     assert len(html.encode("utf-8")) < 52_000
-    # The slim data: names, categories and the photo path; no photo credits, no 1.3 MB catalog.
     data = (ROOT / "js/worldcup-entry-data.js").read_text(encoding="utf-8")
     slim = json.loads(re.search(r"window.BABDODUK_WORLDCUP = (\{.*\});", data).group(1))
     assert sorted(slim) == ["dishes", "photoPath", "size"] and slim["size"] == 32 and slim["photoPath"] == page_content.WORLDCUP_PHOTO_PATH
@@ -445,7 +399,6 @@ def test_the_event_page_loads_the_world_cup_only_for_its_running_card():
     assert all(v[:2] == names[d] for d, v in slim["dishes"].items())
     assert "author" not in data and "license" not in data and len(data.encode("utf-8")) < 60_000
     assert all(photo["image"] == page_content.WORLDCUP_PHOTO_PATH.format(id=dish) for dish, photo in CUP["photos"].items())
-    # The page's table carries the start screen's keys only, not the whole `wc` family.
     table = html.split("window.BABDODUK_STR = {", 1)[1]
     keys = set(re.findall(r"'(wc\.[\w.]+)':", table.split("    en: {", 1)[0]))
     assert keys == set(page_content.WORLDCUP_ENTRY_KEYS)
@@ -453,18 +406,14 @@ def test_the_event_page_loads_the_world_cup_only_for_its_running_card():
 
 def test_the_embedded_start_opens_the_game_page_and_the_game_page_starts_only_for_go():
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    # In the card there is no match, result, splash or stored game; the start navigates.
     assert "var embedded = !document.getElementById('wcMatch');" in script
     assert "location.href = 'worldcup.html?cat=' + encodeURIComponent(category) + '&go=1';" in script
     assert "if (!embedded) restore();" in script and "if (embedded) return;" in script
-    assert "data/foods/catalog.json" in script and "embedded ? new Promise" in script       # the catalog only on the game page
-    # The game page: only go=1; a category is checked against the known ones, else the whole pool;
-    # the address is cleaned; the start is the same call as the button's.
+    assert "data/foods/catalog.json" in script and "embedded ? new Promise" in script
     requested = module("function requested() {", "function cleanAddress()")
     assert "query.get('go') !== '1'" in requested and "CATEGORIES.indexOf(cat) >= 0 && poolOf(cat).length >= size ? cat : 'all'" in requested
     assert "history.replaceState(null, '', location.pathname + location.hash)" in script
-    assert "// as if 32강 시작 had been pressed here\n      start(asked, true);" in script
-    # Starting replaces a saved game exactly as 새로 시작 does (start(cat, true) keeps its undo step).
+    assert "if (asked) {\n      start(asked, true);" in script
     assert "$('wcNew').addEventListener('click', begin);" in script
 
 
@@ -515,11 +464,10 @@ def test_the_launch_window_is_the_events_dates_written_into_the_gate():
     assert (CUP_EVENT["start"], CUP_EVENT["end"]) == ("2026-10-16", "2026-10-23")
     window = json.loads(re.search(r"window.BABDODUK_WC_WINDOW = (\{.*\});", gate_script()).group(1))
     expected = {"start": CUP_EVENT["start"], "end": CUP_EVENT["end"]}
-    if "previewFrom" in CUP_EVENT:                      # lab only: production's data carries none
+    if "previewFrom" in CUP_EVENT:
         expected["previewFrom"] = CUP_EVENT["previewFrom"]
     assert window == expected and window == page_content.worldcup_gate()
     assert "previewFrom" not in window or window["previewFrom"] < window["start"]
-    # The event's own duration text names the same days.
     assert "10월 16일" in CUP_EVENT["details"]["duration"]["ko"] and "10월 23일" in CUP_EVENT["details"]["duration"]["ko"]
     assert "October 16" in CUP_EVENT["details"]["duration"]["en"] and "October 23" in CUP_EVENT["details"]["duration"]["en"]
 
@@ -528,7 +476,6 @@ def test_only_lab_and_localhost_honour_the_preview_date():
     script = gate_script()
     assert script.count("previewFrom") >= 2 and "location.hostname" in script
     assert re.search(r"host === 'babdoduk-lab\.vercel\.app' \|\| host === 'localhost' \|\| host === '127\.0\.0\.1'", script)
-    # The page never trusts a query string or storage for it: the date comes from the data and the host alone.
     assert "location.search" not in script and "localStorage" not in script
 
 
@@ -548,7 +495,7 @@ def test_a_preview_date_needs_an_entry_and_is_not_after_the_start(tmp_path):
     assert errors(previewFrom="2026-10-17") and not errors(previewFrom="2026-10-16")
     data = json.loads(path.read_text(encoding="utf-8"))
     first = data["activities"][0]
-    first["previewFrom"] = "2026-05-01"                     # an activity without a start screen has none
+    first["previewFrom"] = "2026-05-01"
     path.write_text(json.dumps(data), encoding="utf-8")
     assert any("previewFrom" in e for e in page_content.content_errors(tmp_path))
 
@@ -560,7 +507,7 @@ def test_every_page_that_shows_the_world_cup_loads_the_gate_before_its_own_scrip
         assert html.count('<script src="js/worldcup-gate.js"></script>') == 1, name
         tag = html.index('<script src="js/worldcup-gate.js">')
         assert tag < html.index(own), name
-        assert html.index("window.BABDODUK_STR") < tag, name        # the texts it fills are there first
+        assert html.index("window.BABDODUK_STR") < tag, name
 
 
 def test_the_start_screen_has_a_locked_pill_and_an_ended_note_driven_by_the_gate():
@@ -568,7 +515,6 @@ def test_the_start_screen_has_a_locked_pill_and_an_ended_note_driven_by_the_gate
     assert 'id="wcLocked" data-wc-show="soon" hidden' in entry and "data-wc-countdown" in entry and 'data-wc-fmt="wc.locked"' in entry
     assert 'class="wc-ended" data-wc-show="ended" hidden' in entry
     script = (ROOT / "js/worldcup.js").read_text(encoding="utf-8")
-    # Nothing starts before the launch, by any path: the start, 이어하기, a start from the address and the games themselves.
     for guarded in ("function start(cat, animate) {\n    if (locked()) return;", "function resume() {\n    if (locked()) return;",
                     "function begin() {\n    if (locked()) return;", "if (asked && locked()) asked = null;"):
         assert guarded in script, guarded
@@ -598,6 +544,6 @@ def test_the_home_promo_is_text_from_i18n_with_real_dish_photos_and_hides_itself
         assert (ROOT / photo).is_file() and photo.split("/")[-1][:-4] in CUP["photos"], photo
     assert len(re.findall(r'src="images/worldcup/', promo)) == 2
     assert html.index('<div class="home-top">') < html.index('<section class="home-wc"') < html.index('<section class="home-hero"')
-    assert "family=Jua" in html                                                                      # the letters the sync asks for
+    assert "family=Jua" in html
     css = (ROOT / "css/index.css").read_text(encoding="utf-8")
     assert "linear-gradient(115deg, #be185d, #a21caf 50%, #4f46e5)" in css and ".home-wc[hidden]" in css

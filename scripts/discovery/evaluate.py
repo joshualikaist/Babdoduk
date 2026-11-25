@@ -45,14 +45,14 @@ def atom_youtube(video: str, title: str) -> bytes:
 FEEDS = {
     "https://recipes.example.org/feed": rss([
         {"title": "양파 간장 조림 레시피", "link": "https://recipes.example.org/onion", "image": "https://recipes.example.org/onion.jpg"},
-        {"title": "두부 부침 만드는 법", "link": "https://recipes.example.org/tofu"},                       # missing image
+        {"title": "두부 부침 만드는 법", "link": "https://recipes.example.org/tofu"},
         {"title": "쿠팡파트너스 주방템 추천", "link": "https://recipes.example.org/ad", "text": LONG + " 쿠팡파트너스 활동의 일환으로 수수료를 받습니다."},
-        {"title": "제주 맛집 여행 코스", "link": "https://recipes.example.org/jeju"},                        # off topic
-        {"title": "나쁜 링크 레시피", "link": "javascript:alert(1)"},                                        # bad URL
-        {"title": "양파 간장 조림 레시피!", "link": "https://recipes.example.org/onion-2"},                   # duplicate title
+        {"title": "제주 맛집 여행 코스", "link": "https://recipes.example.org/jeju"},
+        {"title": "나쁜 링크 레시피", "link": "javascript:alert(1)"},
+        {"title": "양파 간장 조림 레시피!", "link": "https://recipes.example.org/onion-2"},
     ]),
     "https://second.example.org/feed": rss([
-        {"title": "양파 간장 조림 (다른 경로)", "link": "https://recipes.example.org/onion?utm_source=x"},    # duplicate URL
+        {"title": "양파 간장 조림 (다른 경로)", "link": "https://recipes.example.org/onion?utm_source=x"},
     ]),
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCevalchannel0000000000": atom_youtube("abcdefghijk", "10분 계란 볶음밥 레시피"),
 }
@@ -88,7 +88,7 @@ def run_evaluation(root: Path) -> dict:
                             log=lambda _: None)
     edition, chosen = select.build(run["store"].all(), date="2026-09-29", generated_at="2026-09-29T10:30:00+09:00",
                                    recent=set())
-    rows = run["store"].all()          # as this run judged them: finish() compacts what can no longer change
+    rows = run["store"].all()
     report = pipeline.finish(paths, run, edition, chosen, NOW)
     stories = [edition["featured"]] + [i for s in edition["lanes"].values() for i in s["items"]]
     stories = [s for s in stories if s]

@@ -33,9 +33,6 @@ def raw_items(count):
     return [_item(ext_id=f"policy-{n}") for n in range(count)]
 
 
-# ---------------------------------------------------------------------------
-# 1-2, 5-6: the default is Luna alone, in every place that can set it
-# ---------------------------------------------------------------------------
 def test_primary_model_defaults_to_luna(monkeypatch):
     monkeypatch.delenv("GGONGBAB_AI_MODEL", raising=False)
     assert Settings().ai_model == "gpt-5.6-luna"
@@ -67,9 +64,6 @@ def test_workflow_does_not_inject_terra():
     assert line.strip() == "GGONGBAB_AI_FALLBACK_MODEL: ${{ vars.GGONGBAB_AI_FALLBACK_MODEL }}"
 
 
-# ---------------------------------------------------------------------------
-# 7: reasoning effort
-# ---------------------------------------------------------------------------
 def test_extractor_requests_no_reasoning_effort():
     """Chain-of-thought is billed as output tokens and buys nothing here."""
     source = textwrap.dedent(inspect.getsource(OpenAIExtractor.extract))
@@ -88,9 +82,6 @@ def test_reasoning_effort_none_is_a_value_the_sdk_accepts():
     assert "none" in typing.get_args(typing.get_args(ReasoningEffort)[0])
 
 
-# ---------------------------------------------------------------------------
-# Test doubles
-# ---------------------------------------------------------------------------
 class RecordingExtractor:
     """Answers from a script and remembers which models were asked."""
 
@@ -130,9 +121,6 @@ def _fail(model, category, tokens=(0, 0)):
                     usage=AIUsage(input_tokens=tokens[0], output_tokens=tokens[1]))
 
 
-# ---------------------------------------------------------------------------
-# 3-4: fallback only when explicitly configured
-# ---------------------------------------------------------------------------
 def test_ambiguous_result_makes_no_second_call_when_fallback_is_unset(settings):
     """Ambiguous is an answer, not an error: it becomes needs_review, not a retry."""
     settings.ai_fallback_model = ""
@@ -168,9 +156,6 @@ def test_fallback_equal_to_primary_is_not_called_twice(settings):
     assert extractor.models == ["gpt-5.6-luna"]
 
 
-# ---------------------------------------------------------------------------
-# 8-11: fail fast on account-level failures, retry only transient ones
-# ---------------------------------------------------------------------------
 def test_quota_and_auth_are_fatal_and_never_retryable():
     for category in (ai_errors.QUOTA, ai_errors.AUTH):
         assert ai_errors.is_fatal(category)
@@ -225,9 +210,6 @@ def test_a_transient_failure_does_not_stop_the_run(settings):
     assert pipeline.stats.ai_skipped_quota == 0
 
 
-# ---------------------------------------------------------------------------
-# 12: the retry path actually runs (the import collision made it raise)
-# ---------------------------------------------------------------------------
 def test_retry_path_can_actually_sleep():
     """`from datetime import time` once shadowed the module, so sleep() raised."""
     from ggongbab import preview
@@ -245,9 +227,6 @@ def test_preview_uses_the_datetime_alias_for_midnight():
     assert "time.min" not in source.replace("dt_time.min", "")
 
 
-# ---------------------------------------------------------------------------
-# 13-16: per-model usage aggregation and cost
-# ---------------------------------------------------------------------------
 def test_usage_is_aggregated_per_model(settings):
     settings.ai_fallback_model = "gpt-5.6-terra"
     extractor = RecordingExtractor([
@@ -282,9 +261,7 @@ def test_a_retried_call_is_counted_in_usage(settings):
 
 
 def test_cost_for_luna_matches_the_published_rate():
-    # 1,000,000 in + 1,000,000 out = $0.20 + $1.20
     assert pricing.estimate_cost_usd("gpt-5.6-luna", 1_000_000, 1_000_000) == pytest.approx(1.40)
-    # A realistic run: ~118k in, ~29k out
     assert pricing.estimate_cost_usd("gpt-5.6-luna", 118_234, 28_741) == pytest.approx(
         118_234 * 0.20 / 1e6 + 28_741 * 1.20 / 1e6)
 
@@ -322,9 +299,6 @@ def test_usage_summary_is_labelled_an_estimate():
     assert pricing.PRICING_AS_OF in text
 
 
-# ---------------------------------------------------------------------------
-# 17: cost and error reporting must stay content-free
-# ---------------------------------------------------------------------------
 def test_usage_summary_contains_only_numbers_and_model_names():
     usage = {"gpt-5.6-luna": {"calls": 3, "input_tokens": 1234, "output_tokens": 56}}
     for line in pricing.usage_lines(usage):
@@ -354,9 +328,6 @@ def test_stop_lines_report_counts_only():
         assert not re.search(r"[가-힣@]", line)
 
 
-# ---------------------------------------------------------------------------
-# 18: fallback effectiveness, for the day someone asks whether Terra earns its price
-# ---------------------------------------------------------------------------
 def _fallback_run(settings, primary, fallback):
     settings.ai_fallback_model = "gpt-5.6-terra"
     extractor = RecordingExtractor([primary, fallback])

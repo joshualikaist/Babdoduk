@@ -46,7 +46,6 @@ def detail_response(r, **changes):
 
 
 def reviewed_contract():
-    # Hypothetical future side-effect review used only to exercise runtime gates.
     c = known.known_contract()
     c.known_schema_verified = c.detail_side_effect_reviewed = c.verified = True
     c.potential_view_side_effect = False
@@ -234,7 +233,6 @@ def test_board_numbers_mismatch_names_the_field():
     failure = observe_mismatch("boardNos=", "boardNos=99")
     assert str(failure) == "KNOWN_DETAIL_BOARDNOS_MISMATCH"
     assert failure.checks["boardNos empty"] is False
-    # Checked before the row is consulted, so this one is honestly unknown.
     assert failure.checks["boardNo matches row"] is None
 
 

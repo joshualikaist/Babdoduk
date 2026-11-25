@@ -16,26 +16,15 @@ ALLOWED = {
     "data/magazine": ROOT / "data" / "magazine",
     "data/kaist-menu": ROOT / "data" / "kaist-menu",
     "data/ggongbab": ROOT / "data" / "ggongbab",
-    # Magazine discovery store (registry, candidates, health, run log); not deployed (.vercelignore).
     "research/magazine": ROOT / "research" / "magazine",
 }
-# Files inside an allowed path that are hand-edited inputs, never generated output.
 SKIP_NAMES = {"manual.json", ".staging"}
-# A writer's half-written temporary file (latest.json.tmp, an atomic writer's .x.tmp) is never
-# published, even when a crash left it behind (audit 2026-11-13).
 SKIP_SUFFIXES = (".tmp",)
-# Top-level keys rewritten on every run without changing what the page shows. A file
-# whose only difference is in these keys is not worth a commit (and two deployments).
 VOLATILE_KEYS = {
     "data/ggongbab/latest.json": {"generatedAt"},
-    # Past listings are stamped on every export too; an added or aged-out listing still commits.
     "data/ggongbab/archive/index.json": {"generatedAt"},
     "data/ggongbab/news.json": {"generatedAt"},
 }
-# The KAIST menu files are re-stamped on every run even when no menu changed: fetchedAt in
-# the dated files and latest.json, generatedAt plus each day's fetchedAt in week.json. Those
-# stamps alone made 24 of 61 menu bot commits on main (2026-09-12 to 10-11), each one two
-# deployments. They are ignored at any depth; any other change still commits every file.
 KAIST_DIR = "data/kaist-menu/"
 KAIST_VOLATILE = {"generatedAt", "fetchedAt"}
 

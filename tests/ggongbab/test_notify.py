@@ -83,7 +83,7 @@ def test_ntfy_is_authenticated_and_marks_critical_urgent():
 
 
 def test_message_has_no_room_for_private_text():
-    a = Alert.of("dooray_radar", PRIVATE, 30, NOW)          # unknown reason collapses to a fixed code
+    a = Alert.of("dooray_radar", PRIVATE, 30, NOW)
     text = notify.format_message([a], source="local PC")
     assert PRIVATE not in text and "NO_SUCCESS_RECORDED" in text
 
@@ -100,7 +100,7 @@ def test_critical_pushes_once_then_reminds_after_six_hours_and_reports_recovery(
 def test_a_brief_warning_never_reaches_the_phone_but_a_lasting_one_does(tmp_path):
     policy, sink = notify.PushPolicy(tmp_path / "state.json"), Recorder()
     assert notify.push([warn()], sink, policy, source="local PC", now=NOW) == notify.NOTHING
-    assert notify.push([ok()], sink, policy, source="local PC", now=NOW + 60) == notify.NOTHING   # no recovery spam
+    assert notify.push([ok()], sink, policy, source="local PC", now=NOW + 60) == notify.NOTHING
     assert notify.push([warn()], sink, policy, source="local PC", now=NOW + 120) == notify.NOTHING
     assert notify.push([warn()], sink, policy, source="local PC", now=NOW + 120 + 601) == notify.SENT
     assert sink.messages and "WARNING" in sink.messages[0]
@@ -179,7 +179,7 @@ def test_an_unread_alert_brings_the_unlock_button_for_the_latch_set_now(tmp_path
     (tmp_path / "alert-push.json").write_text(json.dumps({"provider": "telegram", "chat_id": "42"}), encoding="utf-8")
     alert = Alert.of("dooray_radar", "UNREAD_RADAR_DISABLED", 60, NOW)
     notifier = notify.local_notifier(tmp_path, read_credential=lambda t: TOKEN)
-    assert notifier.markup([alert]) is None                         # no latch file: no button
+    assert notifier.markup([alert]) is None
     (tmp_path / notify.UNREAD_LATCH).write_text(json.dumps({"reason": "X", "at": 1794447945.82}), encoding="utf-8")
     assert notify.unread_button_id(tmp_path) == "u1794447945"
     notifier._opener = opener = Opener()
@@ -207,7 +207,7 @@ def test_a_login_alert_brings_the_login_button_while_easy_login_is_on(tmp_path, 
     assert login["reply_markup"] == {"inline_keyboard": [[{"text": "🔑 로그인 요청", "callback_data": "login:go"}]]}
     assert notify.PHONE_LOGIN_TODO in login["text"]
     assert "reply_markup" not in stale and notify.PHONE_LOGIN_TODO not in stale["text"]
-    (tmp_path / "easy-login.json").unlink()                       # off: the old wording, no button
+    (tmp_path / "easy-login.json").unlink()
     notifier = notify.local_notifier(tmp_path, read_credential=lambda t: TOKEN)
     notifier._opener = opener = Opener()
     notify.push([Alert.of("portal", "AUTH_EXPIRED", 900, NOW)], notifier, notify.PushPolicy(tmp_path / "off.json"),
@@ -219,7 +219,7 @@ def test_a_login_alert_brings_the_login_button_while_easy_login_is_on(tmp_path, 
 def test_the_phone_waits_out_a_brief_critical_like_the_toast(tmp_path):
     sink = Recorder()
     assert notify.push_local(tmp_path, [crit()], now=NOW, notifier=sink) == notify.NOTHING
-    assert notify.push_local(tmp_path, [ok()], now=NOW + 60, notifier=sink) == notify.NOTHING      # healed: quiet
+    assert notify.push_local(tmp_path, [ok()], now=NOW + 60, notifier=sink) == notify.NOTHING
     notify.push_local(tmp_path, [crit()], now=NOW + 120, notifier=sink)
     assert notify.push_local(tmp_path, [crit()], now=NOW + 120 + notify.TOAST_CRITICAL_AFTER_SECONDS,
                              notifier=sink) == notify.SENT
@@ -259,7 +259,7 @@ def test_the_toast_runs_hidden_powershell_and_reports_fixed_codes():
     import subprocess
     script = base64.b64decode(command[6]).decode("utf-16-le")
     assert "ToastNotificationManager" in script and notify.TOAST_APP_ID in script
-    assert "로그인" not in script                      # the text travels base64-encoded, never spliced in
+    assert "로그인" not in script
     assert kwargs["creationflags"] == getattr(subprocess, "CREATE_NO_WINDOW", 0)
     assert notify.WindowsToastNotifier(run=Run(code=1)).send(("t", "b")) == notify.TRANSPORT_FAILED
     assert notify.WindowsToastNotifier(run=Run(error=OSError("x"))).send(("t", "b")) == notify.TRANSPORT_FAILED
@@ -301,13 +301,12 @@ def test_linux_toast_is_in_one_slot_and_replaces_the_previous_one(tmp_path):
     assert sender.send(sender.render([stuck()], [])) == notify.SENT
     command, kwargs = run.calls[0]
     assert command[:3] == ["gdbus", "call", "--session"] and "org.freedesktop.Notifications.Notify" in command
-    assert command[command.index("org.freedesktop.Notifications.Notify") + 1:][:3] == ["밥도둑 운영", "0", ""]   # first: no id
+    assert command[command.index("org.freedesktop.Notifications.Notify") + 1:][:3] == ["밥도둑 운영", "0", ""]
     assert "shell" not in kwargs and kwargs["timeout"] == 15
-    # The recovery message goes out with the id of the first one: same slot, transient, normal urgency.
     assert sender.send(sender.render([], ["portal"])) == notify.SENT
     command, _ = run.calls[1]
     tail = command[command.index("org.freedesktop.Notifications.Notify") + 1:]
-    assert tail[:2] == ["밥도둑 운영", "41"]                       # replaces_id of the earlier toast
+    assert tail[:2] == ["밥도둑 운영", "41"]
     assert "'transient': <true>" in tail[-2] and "<byte 1>" in tail[-2] and tail[-1] == "6000"
     assert json.loads((tmp_path / "toast-id.json").read_text(encoding="utf-8"))["id"] == 42
 
@@ -324,11 +323,11 @@ def test_only_an_alert_that_needs_a_person_is_sticky_and_every_toast_says_when(t
     sender.send(login)
     sender.send(stale)
     first, second = (c[0][c[0].index("org.freedesktop.Notifications.Notify") + 1:] for c in run.calls)
-    assert "<byte 2>" in first[-2] and first[-1] == "0"           # critical urgency, never auto-expires
-    assert "<byte 1>" in second[-2] and second[-1] == "20000"      # the same critical title, but it expires
+    assert "<byte 2>" in first[-2] and first[-1] == "0"
+    assert "<byte 1>" in second[-2] and second[-1] == "20000"
     from datetime import datetime
     stamp = datetime.fromtimestamp(NOW, notify.KST).strftime("%H:%M")
-    assert first[4].endswith(f"({stamp} 기준)'") and "로그인" in first[3 + 1]      # title [3], body [4]
+    assert first[4].endswith(f"({stamp} 기준)'") and "로그인" in first[3 + 1]
 
 
 def test_linux_toast_text_is_escaped_for_gvariant_and_stays_fixed_korean(tmp_path):
@@ -372,11 +371,11 @@ def test_the_toast_waits_out_a_brief_critical_and_keeps_its_own_state(tmp_path):
     toast = Recorder()
     assert notify.push_local(tmp_path, [crit()], now=NOW, notifier=None, toast=toast) == notify.NOT_CONFIGURED
     assert toast.messages == []
-    notify.push_local(tmp_path, [ok()], now=NOW + 60, notifier=None, toast=toast)           # caught up: quiet
+    notify.push_local(tmp_path, [ok()], now=NOW + 60, notifier=None, toast=toast)
     notify.push_local(tmp_path, [crit()], now=NOW + 120, notifier=None, toast=toast)
     notify.push_local(tmp_path, [crit()], now=NOW + 120 + notify.TOAST_CRITICAL_AFTER_SECONDS, notifier=None,
                       toast=toast)
-    assert len(toast.messages) == 1 and isinstance(toast.messages[0], str)               # Recorder has no render
+    assert len(toast.messages) == 1 and isinstance(toast.messages[0], str)
     assert (tmp_path / notify.TOAST_STATE).exists() and not (tmp_path / "alert-push-state.json").exists()
 
 

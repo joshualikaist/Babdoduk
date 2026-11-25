@@ -108,7 +108,7 @@ def test_switching_on_answers_no_old_message_and_then_every_new_one(ops):
     (content,) = seen
     assert "메일 레이더 멈춘 것 같아" in content[0]["text"] and "어제 쓴 메모" not in content[0]["text"].split("## 지난")[0]
     assert bot.said == ["🤖 자동 점검\n레이더는 정상입니다."] and logs == ["OPS_AGENT_ANSWERED"]
-    agent.cycle()                                                   # nothing new: no second call
+    agent.cycle()
     assert len(seen) == 1
     (entry,) = agent.history(5)
     assert entry["notes"] == ["메일 레이더 멈춘 것 같아"] and entry["reply"] == "레이더는 정상입니다."
@@ -122,7 +122,7 @@ def test_while_off_messages_are_only_kept(ops):
     note(root, "테스트")
     agent.cycle()
     assert seen == [] and bot.said == []
-    oa.set_enabled(root, True, NOW + 2)                            # turning it on again answers nothing old
+    oa.set_enabled(root, True, NOW + 2)
     agent.cycle()
     assert seen == []
 
@@ -143,14 +143,14 @@ def test_the_model_sees_masked_readable_state_and_the_photo_but_no_secret_file(o
     note(root, "이 경고 뭐야? sb_secret_SYNTHETIC123456789", photo=jpeg())
     elsewhere = root / "outside.jpg"
     elsewhere.write_bytes(jpeg())
-    with (local / tr.INBOX).open("a", encoding="utf-8") as inbox:     # a path outside the inbox folder is never read
+    with (local / tr.INBOX).open("a", encoding="utf-8") as inbox:
         inbox.write(json.dumps({"at": "2026-11-02 12:00:05", "text": "두 번째", "photo": str(elsewhere)}) + "\n")
     agent.cycle()
     (content,) = seen
     text = content[0]["text"]
     assert "service portal-worker: inactive (control enabled)" in text and "service dooray-radar: active" in text
     assert "unread latch: SET" in text and "/v2/mail/<id>" in text and "abc1234" in text
-    assert time_text(NOW - 120) in text                             # epoch seconds read as local time
+    assert time_text(NOW - 120) in text
     assert text.count("DOORAY_RADAR_RUNNING\n") <= oa.LOG_LINES
     for secret in ("sk-proj-SYNTHETIC", "20261234", "987654321", "sb_secret_SYNTHETIC", "expected_id"):
         assert secret not in text
@@ -199,7 +199,7 @@ def test_a_recheck_stops_the_radar_reads_again_and_starts_it(ops):
     note(root, "메일 놓친 것 같아")
     agent.cycle()
     tails = [c[-1] if c[-1] != "1" else " ".join(c[-3:]) for c in run.calls if c[0] != "systemctl" and c[0] != "git"]
-    assert tails == ["radar-stop", "radar-recheck --days 1", "radar-start"]     # 9 days is out of range: 1
+    assert tails == ["radar-stop", "radar-recheck --days 1", "radar-start"]
     assert "최근 1일 메일을 다시 읽었습니다" in bot.said[0]
     clock["t"] += 3600
     note(root, "한 번 더", clock["t"])
@@ -248,7 +248,7 @@ def test_the_unread_latch_is_cleared_only_after_the_owner_taps_ok(ops):
     oa.record_answer(local, "no", ask_id, clock["t"])
     agent.cycle()
     assert bot.said[-1] == "🤖 잠금을 그대로 둡니다." and not run.did("radar-allow-unread")
-    oa.record_answer(local, "ok", ask_id, clock["t"])              # the question was already answered
+    oa.record_answer(local, "ok", ask_id, clock["t"])
     agent.cycle()
     assert "이미 처리했거나" in bot.said[-1] and not run.did("radar-allow-unread")
 
@@ -257,7 +257,7 @@ def test_the_unread_latch_is_cleared_only_after_the_owner_taps_ok(ops):
     second = bot.asked[-1][0]
     oa.record_answer(local, "ok", second, clock["t"] + 120)
     agent.cycle()
-    assert run.did("radar-allow-unread") and run.did("radar-recheck", "--days", "2")   # 30 hours locked: 2 days
+    assert run.did("radar-allow-unread") and run.did("radar-recheck", "--days", "2")
     assert bot.said[-1].startswith("🔓 안 읽은 메일도 다시 수집합니다.") and "OPS_AGENT_UNREAD_ALLOWED" in logs
 
 
@@ -270,7 +270,7 @@ def test_the_unlock_button_on_an_unread_alert_clears_only_the_latch_it_was_sent_
     oa.set_enabled(root, True, NOW)
     run = Run()
     agent, bot, seen, logs, clock = build(run=run)
-    oa.record_answer(local, "ok", f"u{int(NOW - 7200)}", NOW)          # an older latch's button
+    oa.record_answer(local, "ok", f"u{int(NOW - 7200)}", NOW)
     agent.cycle()
     assert "예전 알림의 버튼" in bot.said[-1] and not run.did("radar-allow-unread")
     oa.record_answer(local, "no", f"u{int(NOW - 600)}", NOW + 1)
@@ -413,7 +413,7 @@ def test_a_login_the_owner_asks_for_starts_after_the_reply_and_never_on_the_mode
     run = Run()
     agent, bot, _, _, _ = build([answer("로그인이 필요해 보입니다.", [{"do": "login"}])], run=run)
     note(root, "메일 레이더 괜찮아?", NOW + 120)
-    agent.cycle()                                                  # not asked: nothing starts
+    agent.cycle()
     assert not any("easy-login" in c for c in run.calls) and "🔑" not in bot.said[-1]
 
 
@@ -480,7 +480,6 @@ def test_inbox_answers_and_history_are_replaced_atomically_and_private(ops, monk
         if path.is_file() and path.name in (tr.INBOX, oa.ANSWERS, oa.HISTORY):
             assert stat.S_IMODE(path.stat().st_mode) == 0o600
 
-    # A failed write leaves the previous inbox whole and no temporary file behind.
     before = (root / ".local" / tr.INBOX).read_text(encoding="utf-8")
 
     def broken(src, dst):

@@ -55,14 +55,12 @@ def test_browsers_get_two_checking_functions_and_the_sender_reads_with_the_backe
 
 
 def test_015_tightens_the_keys_and_limits_new_devices_per_visitor_in_a_closed_table():
-    # security audit 2026-11-13: applied by hand on top of 014 (docs/PUSH_ALERTS.md).
     assert SQL_015.lstrip().startswith("--") and "APPLY MANUALLY" in SQL_015 and "after 008 and 014" in SQL_015
     body = SQL_015.split("begin;", 1)[1]
     assert body.rstrip().endswith("commit;")
     for name, pattern in (("p256dh", "^B[A-Za-z0-9_-]{86}$"), ("auth", "^[A-Za-z0-9_-]{22}$")):
         assert f"drop constraint if exists push_devices_{name}_check;" in body
         assert f"add constraint push_devices_{name}_check check ({name} ~ '{pattern}');" in body
-        # rows that do not fit are deleted before the check goes on
         assert body.index(f"{name} !~ '{pattern}'") < body.index(f"add constraint push_devices_{name}_check")
     assert "alter table public.push_device_rate enable row level security;" in body
     assert "revoke all on table public.push_device_rate from public, anon, authenticated, service_role;" in body
@@ -71,7 +69,6 @@ def test_015_tightens_the_keys_and_limits_new_devices_per_visitor_in_a_closed_ta
     assert "security definer" in fn and "set search_path = ''" in fn
     assert "extensions.digest((select salt from public.ggongbab_tip_secret) || today::text || forwarded, 'sha256')" in fn
     assert "hourly > 5 or daily > 20" in fn and ">= 500" in fn and ">= 50000" in fn, "per visitor, and the global caps stay"
-    # the limits apply only inside the branch for a new endpoint
     new_branch = fn.split("if not exists (select 1 from public.push_devices where endpoint = p_endpoint) then", 1)[1].split("end if;\n  insert", 1)[0]
     assert "push_device_rate" in new_branch and "PUSH_DEVICE_RATE_LIMITED" in new_branch
     granted = re.findall(r"grant execute on function public\.([a-z_]+)\([^)]*\) to ([a-z, ]+);", body)
@@ -91,16 +88,14 @@ def db():
         admin.execute("do $$ begin if not exists (select 1 from pg_roles where rolname = 'service_role') then "
                       "create role service_role nologin; end if; end $$;")
         admin.execute(SQL)
-        admin.execute(SQL)  # applying twice is harmless
+        admin.execute(SQL)
         admin.execute(STAND_INS)
         admin.execute(SQL_015)
-        admin.execute(SQL_015)  # so is 015, on top of 014 as production has it
+        admin.execute(SQL_015)
     yield psycopg, uri
     server.cleanup()
 
 
-# 015 reuses 008's salt and pgcrypto's digest. 008 itself needs Supabase storage, so its salt table is taken
-# from the migration's own text; pgserver ships without pgcrypto, so digest is a stand-in with the same result.
 SECRET_TABLE = ("create table if not exists public.ggongbab_tip_secret ("
                 + TIPS_SQL.split("create table if not exists public.ggongbab_tip_secret (", 1)[1].split(
                     "revoke all on table public.ggongbab_tip_secret", 1)[0]
@@ -124,7 +119,6 @@ def test_a_device_turns_on_updates_its_list_and_turns_off(db):
     anon.q(save, (ENDPOINT, P256DH, AUTH, ["wed"], "en", site))
     with psycopg.connect(uri, autocommit=True) as admin:
         assert admin.execute("select events, lang from public.push_devices").fetchall() == [(["wed"], "en")]
-    # Only real push services, well-formed keys, our own sites and two languages.
     for bad in (("https://evil.example/x", P256DH, AUTH, "ko", site), (ENDPOINT, "short", AUTH, "ko", site),
                 (ENDPOINT, P256DH, "!" * 22, "ko", site), (ENDPOINT + "2", P256DH, AUTH, "fr", site),
                 (ENDPOINT + "3", P256DH, AUTH, "ko", "https://evil.example")):
@@ -161,7 +155,6 @@ def visitor(psycopg, uri, address):
 
 
 def test_015_one_visitor_adds_at_most_5_devices_an_hour_and_20_a_day_and_updates_are_never_limited(db):
-    # security audit 2026-11-13: one visitor could fill the 500-a-day global cap and lock everyone out.
     psycopg, uri = db
     with psycopg.connect(uri, autocommit=True) as admin:
         admin.execute("delete from public.push_devices")
@@ -172,7 +165,7 @@ def test_015_one_visitor_adds_at_most_5_devices_an_hour_and_20_a_day_and_updates
     for i in range(5):
         assert a.q(save, (endpoint(i), P256DH, AUTH, ["x"])) == [(True,)]
     assert a.fails(save, (endpoint(5), P256DH, AUTH, ["x"])), "the sixth new device in an hour"
-    for _ in range(3):   # a known device updates as often as it likes
+    for _ in range(3):
         assert a.q(save, (endpoint(0), P256DH, AUTH, ["y"])) == [(True,)]
     assert b.q(save, (endpoint("b"), P256DH, AUTH, ["x"])) == [(True,)], "another visitor is not affected"
     with psycopg.connect(uri, autocommit=True) as admin:
@@ -181,8 +174,6 @@ def test_015_one_visitor_adds_at_most_5_devices_an_hour_and_20_a_day_and_updates
         assert sorted(n for _, n in rows) == [1, 5], "a refused attempt is not counted"
         assert all(re.fullmatch(r"[0-9a-f]{64}", h) and "203.0.113.7" not in h for h, _ in rows), "a hash, never the address"
     assert a.q(save, (endpoint(1), P256DH, AUTH, ["z"])) == [(True,)], "updating stays open after the limit"
-    # The day: 18 new devices earlier today (a row two hours back under the same hash: the hash holds the
-    # Korean date, so whatever the hour, it is the same day's). Two more pass, the 21st does not.
     c = visitor(psycopg, uri, "203.0.113.50")
     with psycopg.connect(uri, autocommit=True) as admin:
         admin.execute("insert into public.push_device_rate (client_hash, window_start, devices) values ("
@@ -192,7 +183,6 @@ def test_015_one_visitor_adds_at_most_5_devices_an_hour_and_20_a_day_and_updates
     assert c.q(save, (endpoint("c1"), P256DH, AUTH, ["x"])) == [(True,)]
     assert c.q(save, (endpoint("c2"), P256DH, AUTH, ["x"])) == [(True,)]
     assert c.fails(save, (endpoint("c3"), P256DH, AUTH, ["x"])), "the 21st new device of the day, the 3rd of the hour"
-    # Rate rows older than a day go; a visitor with a fresh slate adds again.
     with psycopg.connect(uri, autocommit=True) as admin:
         admin.execute("update public.push_device_rate set window_start = window_start - interval '25 hours'")
     assert a.q(save, (endpoint(6), P256DH, AUTH, ["x"])) == [(True,)]
@@ -242,7 +232,6 @@ def test_015_deletes_stored_rows_of_the_old_looser_shape(db, tmp_path):
     psycopg, uri = db
     with psycopg.connect(uri, autocommit=True) as admin:
         admin.execute("delete from public.push_devices")
-        # As 014 allowed them: drop 015's checks for a moment, store an 88/24-character row and a good one.
         admin.execute("alter table public.push_devices drop constraint push_devices_p256dh_check, drop constraint push_devices_auth_check")
         admin.execute("insert into public.push_devices (endpoint, p256dh, auth, site) values "
                       "('https://fcm.googleapis.com/fcm/send/old', %s, %s, 'https://www.babdodukms.com'), "
@@ -343,7 +332,6 @@ def run_sender(tmp_path, nows, devices, push_status=None, lang="ko", feed_ok=Tru
 
 
 def device(endpoint=ENDPOINT, events=("soon",), lang="ko"):
-    # Any valid browser key will do for sending; this is the receiver key of the RFC 8291 example.
     return {"endpoint": endpoint, "p256dh": "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4",
             "auth": "BTBZMqHH6r4Tts7J_aSIgg", "events": list(events), "lang": lang, "site": "https://babdoduk-lab.vercel.app", "failures": 0}
 
@@ -432,8 +420,6 @@ IPHONE = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/60
           "Version/18.0 Mobile/15E148 Safari/604.1")
 TEST_KEY = "B" + "C" * 86
 
-# A stand-in for the push service, the permission question and the service worker. `push` = false leaves
-# them out, like iPhone Safari outside the home-screen app.
 FAKE_PUSH = r"""
 (() => {
   const cfg = window.__pushCfg;
@@ -564,11 +550,10 @@ def test_the_home_screen_app_asks_after_the_first_star_and_keeps_the_list_curren
     assert name == "push_device_save" and body["p_events"] == ["lunch"] and body["p_lang"] == "ko"
     assert body["p_site"] == "https://babdoduk-lab.vercel.app" and body["p_endpoint"] == "https://web.push.apple.com/QFAKE"
     assert headers["apikey"].startswith("sb_publishable_")
-    page.wait_for_function("() => document.querySelector('.gg-toast').innerText.includes('30분 전 알림을 켰어요')")  # copy cleanup, owner 2026-11-12
+    page.wait_for_function("() => document.querySelector('.gg-toast').innerText.includes('30분 전 알림을 켰어요')")
     toggle = page.locator("[data-gg-push]")
     toggle.wait_for()
     assert toggle.get_attribute("aria-pressed") == "true" and "켜짐" in toggle.inner_text()
-    # Unstarring updates the server's list; the second star is not asked about again.
     page.locator('.gg-card[data-id="wed"] .gg-save').click()
     wait_rpc(page, rpcs, 2)
     assert sorted(rpcs[1][1]["p_events"]) == ["lunch", "wed"] and page.locator("#pushAsk").count() == 0
@@ -576,7 +561,6 @@ def test_the_home_screen_app_asks_after_the_first_star_and_keeps_the_list_curren
     page.locator('.gg-card[data-id="lunch"] .gg-save').click()
     wait_rpc(page, rpcs, 3)
     assert rpcs[2][1]["p_events"] == ["wed"]
-    # Turning off: the browser's subscription first, then the server row.
     page.locator("[data-gg-push]").click()
     wait_rpc(page, rpcs, 4)
     assert rpcs[3][0] == "push_device_remove" and rpcs[3][1] == {"p_endpoint": "https://web.push.apple.com/QFAKE"}
@@ -598,7 +582,7 @@ def test_no_to_the_question_or_a_refused_permission_never_subscribes(browser):
     page.locator("#pushAsk .starcal-yes").click()
     page.wait_for_function("() => document.querySelector('.gg-toast').innerText.includes('알림이 막혀 있어요')")
     assert calls(page) == [["permission"]] and rpcs == []
-    assert "휴대폰 설정에서 허용" in page.locator(".gg-saved-body").inner_text()  # copy cleanup, owner 2026-11-12
+    assert "휴대폰 설정에서 허용" in page.locator(".gg-saved-body").inner_text()
     assert errors == []
     context.close()
 
@@ -619,7 +603,7 @@ def test_iphone_safari_points_to_the_home_screen_and_other_hosts_show_nothing(br
     context, page, errors, rpcs = open_site(browser, push=False, standalone=False, storage=saved)
     body = page.locator(".gg-saved-body")
     body.wait_for()
-    assert "홈 화면에 추가한 밥도둑에서" in body.inner_text() and page.locator("[data-gg-push]").count() == 0  # copy cleanup, owner 2026-11-12
+    assert "홈 화면에 추가한 밥도둑에서" in body.inner_text() and page.locator("[data-gg-push]").count() == 0
     page.locator('.gg-card[data-id="wed"] .gg-save').click()
     assert page.locator("#pushAsk").count() == 0, "Safari gets the calendar question as before"
     context.close()
@@ -650,7 +634,7 @@ def test_my_babdoduk_turns_alerts_on_and_off_for_this_phone(browser):
     context, page, errors, rpcs = open_site(browser, path="my.html", account=user())
     card = page.locator("section[aria-labelledby='myPushTitle']")
     card.wait_for()
-    assert "30분 전 알림" in card.inner_text()  # copy cleanup, owner 2026-11-12: the card's explanation is gone, the title stays
+    assert "30분 전 알림" in card.inner_text()
     card.locator("[data-my-push]").click()
     wait_rpc(page, rpcs, 1)
     assert rpcs[0][0] == "push_device_save"
@@ -664,7 +648,6 @@ def test_my_babdoduk_turns_alerts_on_and_off_for_this_phone(browser):
 
 
 def test_a_star_on_the_home_calendar_asks_and_updates_the_alert_list(browser):
-    # Owner 2026-11-12: "첫 화면에서도 바로 들어가게 해줄 수 있으면 짱이지".
     context, page, errors, rpcs = open_site(browser, path="index.html")
     page.locator('[data-hc-save="lunch"]').click()
     page.locator("#pushAsk").wait_for()
@@ -672,13 +655,12 @@ def test_a_star_on_the_home_calendar_asks_and_updates_the_alert_list(browser):
     page.locator("#pushAsk .starcal-yes").click()
     wait_rpc(page, rpcs, 1)
     assert rpcs[0][0] == "push_device_save" and rpcs[0][1]["p_events"] == ["lunch"]
-    page.wait_for_function("() => document.getElementById('homeCalLive').innerText.includes('30분 전 알림을 켰어요')")  # copy cleanup, owner 2026-11-12
+    page.wait_for_function("() => document.getElementById('homeCalLive').innerText.includes('30분 전 알림을 켰어요')")
     page.locator('[data-hc-save="lunch"]').click()
     wait_rpc(page, rpcs, 2)
     assert rpcs[1][1]["p_events"] == []
     assert errors == []
     context.close()
-    # Someone signed in: the home page's guest list never replaces the account's alert list.
     from tests.test_my_babdoduk import TOKEN_KEY
     context, page, errors, rpcs = open_site(browser, path="index.html", subscribed=True, permission="granted",
                                             storage={TOKEN_KEY: "{}"})
@@ -689,8 +671,6 @@ def test_a_star_on_the_home_calendar_asks_and_updates_the_alert_list(browser):
 
 
 def test_signed_in_a_star_saves_to_the_account_and_opens_no_calendar_file(browser):
-    # Owner 2026-11-12 (iPhone Chrome screenshot): the star started an .ics download, which cut off the
-    # account save ("저장하지 못했어요"). The subscribed calendar on 마이 밥도둑 takes the stars instead.
     from tests.test_my_babdoduk import user
     context, page, errors, rpcs = open_site(browser, path="ggongbab.html#saved", account=user(), push=False, standalone=False,
                                             storage={"babdoduk-star-calendar": "on"})
@@ -699,19 +679,17 @@ def test_signed_in_a_star_saves_to_the_account_and_opens_no_calendar_file(browse
     downloads = []
     page.on("download", lambda d: downloads.append(d))
     page.locator('.gg-card[data-id="lunch"] .gg-save').click()
-    page.wait_for_function("() => document.querySelector('.gg-toast') && document.querySelector('.gg-toast').innerText.includes('저장했어요')")  # copy cleanup, owner 2026-11-12
+    page.wait_for_function("() => document.querySelector('.gg-toast') && document.querySelector('.gg-toast').innerText.includes('저장했어요')")
     page.wait_for_timeout(500)
     assert downloads == [] and page.locator("#starCalAsk").count() == 0
     rows = page.evaluate("JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events")
     assert [r["event_id"] for r in rows] == ["lunch"]
     body = page.locator(".gg-saved-body").inner_text()
-    assert "마이 밥도둑에서 캘린더를 연결해 보세요" in body and page.locator("[data-gg-starcal]").count() == 0  # copy cleanup, owner 2026-11-12
-    # Owner 2026-11-19 (a 동기화 button): 캘린더 열기 opens the Calendar app, where pulling the list down reads at once.
+    assert "마이 밥도둑에서 캘린더를 연결해 보세요" in body and page.locator("[data-gg-starcal]").count() == 0
     opener = page.locator(".gg-saved-body [data-gg-calopen]")
     assert opener.get_attribute("href") == "calshow://" and opener.bounding_box()["height"] >= 44
     assert "캘린더 누르고, 아래로 스크롤 해서 새로고침" in body
     assert "저장하지 못했어요" not in page.locator(".gg-toast").inner_text() and errors == []
-    # Owner 2026-11-24 ("캘린더에 추가는 마이 밥도둑에서"): an opened listing has no calendar button at all.
     page.locator('.gg-card[data-id="lunch"] .gg-card-toggle').first.click()
     card = page.locator('.gg-card[data-id="lunch"]').first
     assert card.locator("[data-gg-cal], .gg-cal, [data-gg-ics], [data-gg-gcal], [data-gg-share]").count() == 0 and downloads == []
@@ -748,8 +726,6 @@ async function fetchImpl(url, init) {
 
 
 def test_a_database_hiccup_after_a_delivered_alert_never_sends_it_again(tmp_path):
-    # Audit 2026-11-13: forgetting a gone device threw, the run stopped before saving what went out, and the
-    # same alert went out again every two minutes.
     out = node(FLAKY_DB, str(tmp_path / "sent.json"))
     assert out == {"delivered": 1, "saved": 1}
 
@@ -760,8 +736,6 @@ BAD_KEY_ROW = FLAKY_DB.replace("[dev('a'), dev('b')]", "[dev('a'), Object.assign
 
 
 def test_a_stored_row_that_cannot_encrypt_never_stops_the_phones_after_it(tmp_path):
-    # Security audit 2026-11-13: anyone can store keys of the right length that are not a curve point; the
-    # sender threw on that row and every later phone lost its alert, run after run.
     out = node(BAD_KEY_ROW, str(tmp_path / "sent.json"))
     assert out == {"delivered": 2, "saved": 3}, "both good phones once; the bad row is marked and never retried"
 
@@ -787,7 +761,6 @@ console.log(JSON.stringify({ bad: short }));
 
 
 def test_a_private_key_with_a_leading_zero_byte_still_signs():
-    # Audit 2026-11-13: about 1 key in 256 came out 31 bytes long and every alert signature failed.
     assert node(SHORT_KEY) == {"bad": 0}
 
 
@@ -820,7 +793,6 @@ const result = {};
 
 
 def test_the_sender_reads_every_device_past_the_databases_page_size():
-    # security audit 2026-11-13: one request returned at most 1000 rows, so device 1001 onwards never got an alert.
     out = node(PAGED, json.dumps(FEED))
     assert out["2500"]["devices"] == 2500 and out["2500"]["logged"] == 2500, "every device once, none twice"
     assert out["2500"]["reads"] == [["endpoint.asc", "1000", "0"], ["endpoint.asc", "1000", "1000"], ["endpoint.asc", "1000", "2000"]]
@@ -829,8 +801,6 @@ def test_the_sender_reads_every_device_past_the_databases_page_size():
 
 
 def test_the_key_folder_is_private_even_when_it_already_existed_and_the_unit_is_hardened(tmp_path):
-    # security audit 2026-11-13: mkdir's mode applies only to a folder it makes, so an existing credentials
-    # folder kept its looser rights; the timer's service now runs without privilege gain and with a private umask.
     nodebin = shutil.which("node")
     if not nodebin:
         pytest.skip("node is not installed")
@@ -839,7 +809,7 @@ def test_the_key_folder_is_private_even_when_it_already_existed_and_the_unit_is_
     folder.chmod(0o755)
     env = {"PATH": "/usr/bin:/bin", "HOME": str(tmp_path), "BABDODUK_PUSH_KEYS": str(folder / "babdoduk_push-vapid"),
            "BABDODUK_PUSH_PUBLIC": str(tmp_path / "public.txt")}
-    for _ in range(2):   # made, then kept: both runs leave the folder private
+    for _ in range(2):
         out = subprocess.run([nodebin, "scripts/push/keygen.js"], capture_output=True, text=True, cwd=ROOT, env=env, timeout=30)
         assert out.returncode == 0, out.stderr
         assert oct(folder.stat().st_mode & 0o777) == "0o700"

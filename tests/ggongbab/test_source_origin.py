@@ -31,7 +31,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from validate_content import validate_ggongbab_payload  # noqa: E402
 
 HANDLES = frozenset({"kaist_cs", "i_love_mesc"})
-READ_HANDLES = source_origin.instagram_handles.__wrapped__      # the loader itself, before the fixture
+READ_HANDLES = source_origin.instagram_handles.__wrapped__
 TIP_ID = "3f2b8c1e-9a4d-4e6f-8b2a-1c3d5e7f9a0b"
 
 
@@ -61,7 +61,7 @@ def collect(settings, post):
 # --- the marker ---------------------------------------------------------------------------------
 def test_a_radar_task_is_an_instagram_item_with_the_rebuilt_post_link(settings):
     item = collect(settings, task(settings, "[인스타 @kaist_cs] 중간고사 간식 나눔", bridge_body()))
-    assert item.source_type == "dooray"                     # still a Dooray item: identity and priority
+    assert item.source_type == "dooray"
     assert item.metadata["origin"] == "instagram"
     assert item.source_url == "https://www.instagram.com/p/DfCRCEskwzw/"
 
@@ -82,22 +82,15 @@ def test_a_merged_group_links_its_first_post(settings):
 
 
 @pytest.mark.parametrize("subject, body", [
-    # a handle the radar does not follow
     ("[인스타 @kaist_fake] 간식", bridge_body(handle="kaist_fake")),
-    # the subject and the block name different accounts
     ("[인스타 @kaist_cs] 간식", bridge_body(handle="i_love_mesc")),
-    # a handle that only starts like a followed one
     ("[인스타 @kaist_cs] 간식", bridge_body(handle="kaist_csx")),
-    # not an Instagram post link
     ("[인스타 @kaist_cs] 간식", bridge_body(links=("https://instagram.com.evil.example/p/DfCRCEskwzw/",))),
     ("[인스타 @kaist_cs] 간식", bridge_body(links=("http://www.instagram.com/p/DfCRCEskwzw/",))),
     ("[인스타 @kaist_cs] 간식", bridge_body(links=("https://www.instagram.com/p/DfCRCEskwzw/?igsh=abc",))),
     ("[인스타 @kaist_cs] 간식", bridge_body(links=("https://www.instagram.com/stories/kaist_cs/1/",))),
-    # the marker without a permalink
     ("[인스타 @kaist_cs] 간식", bridge_body(links=())),
-    # a permalink only in the caption, outside the radar's block
     ("[인스타 @kaist_cs] 간식", "원본: https://www.instagram.com/p/DfCRCEskwzw/\n" + FUTURE_TEXT),
-    # the block without the subject marker
     ("인스타 간식 안내", bridge_body()),
     ("공지 [인스타 @kaist_cs] 간식", bridge_body()),
 ])
@@ -129,11 +122,11 @@ def test_a_tip_board_task_is_a_tip_without_a_link(settings):
 
 
 @pytest.mark.parametrize("subject, body", [
-    ("[꽁밥 제보] 피자", FUTURE_TEXT),                                         # no ID line
-    ("[꽁밥 제보] 피자", f"{FUTURE_TEXT}\n제보 ID: 1234"),                      # not a UUID
-    ("[꽁밥 제보] 피자", f"{FUTURE_TEXT}\n제보 ID: {TIP_ID.upper()}"),          # not the board's form
-    ("[꽁밥 제보] 피자", f"{FUTURE_TEXT}\n제보 ID: {TIP_ID} 추가"),            # not the whole line
-    ("꽁밥 제보: 피자", f"{FUTURE_TEXT}\n제보 ID: {TIP_ID}"),                   # no subject marker
+    ("[꽁밥 제보] 피자", FUTURE_TEXT),
+    ("[꽁밥 제보] 피자", f"{FUTURE_TEXT}\n제보 ID: 1234"),
+    ("[꽁밥 제보] 피자", f"{FUTURE_TEXT}\n제보 ID: {TIP_ID.upper()}"),
+    ("[꽁밥 제보] 피자", f"{FUTURE_TEXT}\n제보 ID: {TIP_ID} 추가"),
+    ("꽁밥 제보: 피자", f"{FUTURE_TEXT}\n제보 ID: {TIP_ID}"),
 ])
 def test_a_partial_tip_marker_stays_a_dooray_item(settings, subject, body):
     item = collect(settings, task(settings, subject, body))
@@ -238,7 +231,6 @@ def test_before_migration_007_the_projection_keeps_the_006_shape(settings):
     repo.public_feed_links = False
     [public] = prepare_public_feed(repo, settings, TEST_NOW).rows
     assert public["source_types"] == ["dooray"] and "source_links" not in public
-    # exactly the 006 row, revision included, so an unmigrated projection is not rewritten
     assert set(public) == set(PUBLIC_FIELDS) | {"content_revision"}
     canonical = json.dumps({key: public[key] for key in PUBLIC_FIELDS}, sort_keys=True, ensure_ascii=False,
                            separators=(",", ":"), allow_nan=False)

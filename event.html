@@ -8,8 +8,6 @@
   <meta property="og:title" content="밥도둑 소식 · 먹방 월드컵" />
   <meta property="og:description" content="밥도둑의 지금과 지난 활동. 지금은 먹방 월드컵: 너의 최애 메뉴는?" />
   <meta property="og:url" content="https://www.babdodukms.com/event.html" />
-  <!-- The world cup's link preview (KakaoTalk and others): a teaser that shows no category tile
-       (images/worldcup/og-worldcup.jpg, 1200x630, docs/WORLDCUP_SHARE.md). -->
   <meta property="og:image" content="https://www.babdodukms.com/images/worldcup/og-worldcup.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -35,9 +33,9 @@
        splash and the start gacha): just the letters of WORLDCUP_JUA_KEYS in scripts/page_content.py. -->
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%26%2C%2F0123456789%3FABCDFJKMNOQRSTVWabcdefghiklmnoprstuvwy%C2%B7%C3%A9%E2%80%99%E2%80%A6%EA%B0%80%EA%B0%84%EA%B0%95%EA%B1%B0%EA%B1%B4%EA%B2%B0%EA%B3%84%EA%B8%B0%EA%B9%8C%EB%81%9D%EB%82%98%EB%82%AC%EB%84%88%EB%8A%94%EB%8A%98%EB%8F%84%EB%91%91%EB%93%9C%EB%94%94%EB%9B%B0%EB%A1%9C%EB%A7%8C%EB%A8%B9%EB%AC%B4%EB%AD%90%EB%B0%A5%EB%B0%A9%EB%B2%A4%EB%B6%84%EB%BD%91%EC%83%88%EC%84%9C%EC%84%B8%EC%86%8D%EC%88%98%EC%8A%B9%EC%8B%9C%EC%8B%9D%EC%95%84%EC%95%A0%EC%96%91%EC%96%B4%EC%97%90%EC%98%A4%EC%98%AC%EC%99%80%EC%9A%94%EC%9B%94%EC%9D%98%EC%9D%B4%EC%9D%BC%EC%9E%88%EC%9E%91%EC%A0%80%EC%A0%84%EC%A4%91%EC%A7%80%EC%A7%84%EC%B2%B4%EC%B5%9C%EC%B6%9C%EC%B9%B4%EC%BB%B5%ED%8A%B8%ED%8E%98%ED%94%88%ED%95%98%ED%95%9C%ED%95%A0" rel="stylesheet" />
   <!-- @end content -->
-  <link rel="stylesheet" href="css/site.css?v=ee9ae19475" />
-  <link rel="stylesheet" href="css/worldcup-entry.css?v=8074af57d2" />
-  <link rel="stylesheet" href="css/event.css?v=0307551bf0" />
+  <link rel="stylesheet" href="css/site.css?v=71967c9f54" />
+  <link rel="stylesheet" href="css/worldcup-entry.css?v=df57443c2a" />
+  <link rel="stylesheet" href="css/event.css?v=6a3072131c" />
 </head>
 <body>
   <header class="site-nav" role="banner">
@@ -74,12 +72,8 @@
       <h1 class="page-title"><span data-i18n="event.title">밥도둑 소식</span></h1>
     </header>
 
-    <!-- Current relevance first: authored notices, then anything running or coming up. -->
     <section class="event-section event-now" id="now" aria-labelledby="eventNowTitle">
       <h2 class="page-section-title" id="eventNowTitle" data-i18n="event.now.title">지금</h2>
-      <!-- Authored notices, newest first: written from data/content/events.json `notices` by
-           scripts/sync_site_chrome.py. Add only what the owner has actually announced; the empty
-           state below is shown otherwise. -->
       <ul class="event-notices" id="eventNotices" role="list">
         <!-- @content:notices -->
         <!-- @end content -->
@@ -90,13 +84,6 @@
 
     <section class="event-section event-archive" id="archive" aria-labelledby="eventListTitle">
       <h2 class="page-section-title" id="eventListTitle" data-i18n="event.listTitle">지난 활동</h2>
-      <!-- The rows are written from data/content/events.json `activities` by scripts/sync_site_chrome.py,
-           in start-date order (docs/EVENT_DETAIL_FIELDS.md); never edit them here. data-start/data-end
-           are KST dates; data-confirmation is what was announced or verified: announced | tentative |
-           held | cancelled. The page script computes the band (now / upcoming / past) from the dates,
-           moves running and upcoming rows into 지금, writes each row's short state and link label, and
-           marks a past row's participation instructions as historical. A date passing never proves an
-           event took place. -->
       <ol class="event-list" id="eventList">
         <!-- @content:events -->
         <li class="event-item" data-start="2026-05-13" data-end="2026-05-20" data-confirmation="announced">
@@ -445,9 +432,9 @@
       }
     };
   </script>
-  <script src="js/site.js?v=ddf3962762"></script>
+  <script src="js/site.js?v=7e55f67c4e"></script>
   <!-- @end i18n -->
-  <script src="js/worldcup-gate.js?v=e0bc457834"></script>
+  <script src="js/worldcup-gate.js?v=529b6a27b2"></script>
 
   <script>
     (function () {
@@ -464,10 +451,7 @@
         var d = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       }
-      // The row that shows the world cup's start screen opens by js/worldcup-gate.js: the same first day,
-      // except that lab (and localhost) may open it early to test it.
       var gate = window.BabdodukWorldcup;
-      // Dates decide the band; they never prove that a past event took place.
       function bandOf(row, today) {
         var start = row.getAttribute('data-start');
         if (gate && row.querySelector('[data-wc-embed]')) start = gate.startDate();
@@ -476,7 +460,6 @@
         if (today > end) return 'past';
         return 'now';
       }
-      // Past participation instructions stay as announced, labelled as no longer open.
       function markParticipation(row, band) {
         var field = row.querySelector('[data-detail="participation"]');
         if (!field) return;
@@ -490,16 +473,14 @@
         tag.textContent = t('event.historical', '종료');
         value.insertBefore(tag, value.firstChild);
       }
-      // The world cup's start screen (data/content/events.json `entry`) is js/worldcup.js with its data,
-      // loaded only while a row that shows it is running or coming up; a past row has a link instead.
       var entryLoading = false;
       function loadEntry() {
         if (entryLoading || !document.querySelector('.event-item:not([data-band="past"]) [data-wc-embed]')) return;
         entryLoading = true;
-        ['js/worldcup-entry-data.js?v=a2a8b6f331', 'js/worldcup.js?v=d03a00e3b8'].forEach(function (src) {
+        ['js/worldcup-entry-data.js?v=a2a8b6f331', 'js/worldcup.js?v=da4abd8111'].forEach(function (src) {
           var script = document.createElement('script');
           script.src = src;
-          script.async = false;                     // in this order
+          script.async = false;
           script.onerror = function () {
             [].forEach.call(document.querySelectorAll('[data-wc-embed]'), function (box) { box.setAttribute('data-failed', ''); });
           };
@@ -515,11 +496,8 @@
           row.setAttribute('data-band', band);
           (band === 'past' ? pastList : nowList).appendChild(row);
           if (band !== 'past') live += 1;
-          // The section already says "past". A confirmed outcome or an unconfirmed plan is
-          // named; an announced event whose outcome was never recorded claims nothing.
           var detail = t('event.state.' + confirmation + '.' + band, '');
           var parts = band === 'past' || confirmation === 'cancelled' ? [detail] : [t('event.band.' + band, ''), detail];
-          // The world cup before its launch says when it opens, not just "예정".
           if (gate && band === 'upcoming' && row.querySelector('[data-wc-embed]')) {
             parts = [t('wc.state.soon', '').replace('{date}', gate.dateLabel('start'))];
           }
@@ -527,8 +505,6 @@
           state.textContent = parts.filter(Boolean).join(' · ');
           state.hidden = !state.textContent;
           state.setAttribute('data-band', band);
-          // A past row links to the original post as a record, not as a way to take part. An
-          // activity held on a page of this site (data-event-page) links to that page instead.
           var link = row.querySelector('.event-link');
           var cta = row.querySelector('[data-event-cta]');
           var onSite = link && link.hasAttribute('data-event-page');
@@ -536,10 +512,6 @@
           if (cta) cta.textContent = onSite
             ? t('event.cta.pagePast', cta.textContent)
             : t(band === 'past' ? 'event.cta.past' : 'event.cta.live', cta.textContent);
-          // A running or coming activity shows the event itself, not a post link and a closed 자세히
-          // (owner 2026-11-19, "진행하고 있는거는 그냥 이벤트를 띄워줘. 사람들은 가시성이 중요하잖아"):
-          // its details stay open (css/event.css hides the toggle and the post link for these rows).
-          // A past row keeps 게시물 보기 and its details folded.
           var more = row.querySelector('.event-more');
           if (more && band !== 'past') more.open = true;
           markParticipation(row, band);
@@ -551,7 +523,6 @@
         var empty = document.getElementById('eventEmpty');
         notices.hidden = !notices.children.length;
         empty.hidden = live > 0 || notices.children.length > 0;
-        // The sections may show now: every row is in its band (css/event.css kept them invisible until here).
         document.querySelector('.event-page-wrap').setAttribute('data-ready', '');
       }
       render();

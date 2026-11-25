@@ -1,7 +1,3 @@
-/* Home summary: the cafeteria line. Reads the same generated public data as the food hub, with its
-   freshness rules, and links to it for detail. It never states more than the payload supports. Free
-   food is the calendar's (js/home-calendar.js). The banner shelf, the magazine pick and the news
-   group below the hero are gone (owner 2026-11-02). */
 (function () {
   var M = window.BabdodukKaistMenu;
   var F = window.BabdodukFreeFood;

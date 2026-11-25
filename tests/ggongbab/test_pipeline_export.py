@@ -74,17 +74,14 @@ def test_pipeline_end_to_end_and_idempotent(settings):
     event = next(iter(repo.events.values()))
     assert event["status"] == "published" and event["food_type"] == "lunchbox"
     assert repo.ai_runs[0]["usage_input_tokens"] == 120 and repo.ai_runs[0]["model"] == "gpt-5.6-luna"
-    # PII must not reach the model
     sent = extractor.calls[0][1]
     assert "kaist.ac.kr" not in sent and "SUBJECT: 기업 설명회" in sent
 
-    # second run: same post, same hash -> no AI, no new event
     pipe2 = Pipeline(settings, repo, extractor, [ListCollector([_item()])])
     stats2 = pipe2.run()
     assert stats2.ai_calls == 0 and stats2.ai_skipped == 1 and stats2.events_created == 0
     assert len(repo.events) == 1 and len(extractor.calls) == 1
 
-    # changed content -> re-parse, merged into the same event
     changed = _item(text=FUTURE_TEXT + "\n신청: https://forms.gle/zzz")
     pipe3 = Pipeline(settings, repo, extractor, [ListCollector([changed])])
     stats3 = pipe3.run()
@@ -108,7 +105,6 @@ def test_pipeline_fallback_only_when_ambiguous(settings):
     repo = MemoryRepository()
 
     def primary(text):
-        # claims food from a time-of-day phrase -> validator flags -> fallback
         return make_extraction(event_start=FUTURE.isoformat(), food_provided="true", food_type="meal",
                                evidence=Evidence(event_time="12시", location="N1", food="12시 점심시간에", registration=None))
 
@@ -223,8 +219,6 @@ def test_export_privacy_and_validation(settings, tmp_path):
 
 
 def test_export_validator_catches_private_fields(tmp_path):
-    # Privacy is checked per field: private keys are refused by name, and personal data in
-    # public text (here the summary) is refused by pattern.
     bad = {"generatedAt": TEST_NOW.isoformat(), "timezone": "Asia/Seoul", "events": [{
         "id": "a", "title": "x", "summary": "문의 a@b.com", "startAt": FUTURE.isoformat(), "confidence": 0.9,
         "food": {"provided": True, "type": "meal"}, "registration": {}, "sources": [{"type": "dooray", "name": "Dooray"}],

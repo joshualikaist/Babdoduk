@@ -27,7 +27,7 @@ def test_the_groups_still_run_every_check_of_the_old_sequence():
                  "worldcup_play", "worldcup_categories", "worldcup_splash", "worldcup_gacha", "worldcup_sound", "worldcup_stats",
                  "worldcup_share", "worldcup_kakao", "worldcup_gate", "worldcup_boundaries", "home_wc_promo", "tip_board",
                  "history_archive", "food_provenance", "structure_and_failures", "site_guardian", "chrome_visual"):
-        if hasattr(check_site_ui, name):   # lab carries lab_menu and worldcup_stats; main does not
+        if hasattr(check_site_ui, name):
             assert re.search(rf"\b{name}\b", body), name
     assert [g for g in GROUPS if g.startswith("matrix-")] == [f"matrix-{w}" for w, _ in SIZES]
     assert "assert not r.api_attempts" in source, "every group still refuses live requests"
@@ -81,7 +81,7 @@ def test_a_python_without_the_parallel_runner_hands_over_to_one_with_it(monkeypa
     other = tmp_path / "python"
     other.write_text("")
     other.chmod(0o755)
-    monkeypatch.setenv(check_all.SWITCHED, "")   # restored to unset afterwards
+    monkeypatch.setenv(check_all.SWITCHED, "")
     monkeypatch.setattr(check_all, "candidate_pythons", lambda: [str(other)])
     monkeypatch.setattr(check_all, "missing_parts", lambda python=None: ["xdist"] if python is None else [])
     calls = []

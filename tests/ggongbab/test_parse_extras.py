@@ -102,7 +102,7 @@ def test_sessions_that_do_not_fit_the_event_are_dropped_whole(name, extras):
 
 
 def test_sessions_of_another_event_are_not_attached_by_start_alone():
-    other_start = utc(at(1, 12))                  # the event row starts a day later than the parse says
+    other_start = utc(at(1, 12))
     assert parse_extras.public_sessions({"sessions": concert_sessions()}, other_start, utc(at(4, 19, 30))) == []
 
 
@@ -288,11 +288,11 @@ def test_the_supabase_read_asks_only_for_current_successful_primary_parses_in_sh
              "parsed_json": {"event_start": at(0, 12), "sessions": concert_sessions(), "audience": None}}]
     client = FakeClient(runs)
     SupabaseRepository(client)._attach_extras(events, {"e1": raw_ids})
-    assert len(client.calls) == 2                                     # 55 ids -> two requests, never one long URL
+    assert len(client.calls) == 2
     table, params = client.calls[0]
     assert table == "ai_parse_runs"
     assert params["prompt_version"] == f"eq.{PROMPT_VERSION}" and params["status"] == "eq.ok"
-    assert params["role"] == "eq.primary" and params["order"] == "id.asc"          # select_all needs a unique order
+    assert params["role"] == "eq.primary" and params["order"] == "id.asc"
     assert params["raw_item_id"].startswith("in.(raw-000,") and params["select"] == "id,raw_item_id,parsed_json,created_at"
     assert events[0]["_extras"]["sessions"] == concert_sessions()
 
@@ -301,7 +301,7 @@ def test_a_failing_supabase_read_leaves_the_events_untouched():
     events = [{"id": "e1", "event_start": utc(at(0, 12))}]
     SupabaseRepository(FakeClient(fail=True))._attach_extras(events, {"e1": ["raw-1"]})
     assert "_extras" not in events[0]
-    SupabaseRepository(FakeClient())._attach_extras([], {})            # nothing to read: no error
+    SupabaseRepository(FakeClient())._attach_extras([], {})
 
 
 def test_the_database_projection_prepares_with_the_new_keys_and_never_carries_them(settings):
@@ -363,4 +363,4 @@ def test_the_prompt_asks_for_sessions_and_a_strict_audience_and_the_version_move
     for needle in ("4a. sessions", "one item per day", "sessions = null", "6c. audience", 'basis = "inferred" ONLY',
                    "is NOT inferred", "event_start and event_end stay the", "list ONLY those days"):
         assert needle in SYSTEM_PROMPT, needle
-    assert "ONE event" in SYSTEM_PROMPT       # still one event; sessions only describe its days
+    assert "ONE event" in SYSTEM_PROMPT

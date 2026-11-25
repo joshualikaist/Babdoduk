@@ -17,8 +17,6 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SQL = (ROOT / "supabase/migrations/013_calendar_feed.sql").read_text(encoding="utf-8")
-# The accounts migration (011) is kept on lab; main applies it but does not carry the file, so the database
-# tests below run where it exists and skip elsewhere.
 ACCOUNTS_FILE = ROOT / "supabase/migrations/011_accounts.sql"
 
 
@@ -53,7 +51,7 @@ def db():
         admin.execute(SHIM)
         admin.execute(ACCOUNTS.replace(PGCRYPTO, ""))
         admin.execute(SQL.replace(PGCRYPTO, ""))
-        admin.execute(SQL.replace(PGCRYPTO, ""))  # applying twice is harmless
+        admin.execute(SQL.replace(PGCRYPTO, ""))
     yield psycopg, uri
     server.cleanup()
 
@@ -78,7 +76,7 @@ def test_a_token_reads_only_its_owners_stars_and_a_new_one_stops_the_old(db):
     assert [r[0] for r in anon.q("select event_id from public.calendar_feed_events(%s)", (fresh,))] == ["lunch"]
     with psycopg.connect(uri, autocommit=True) as admin:
         admin.execute("delete from auth.users where id = %s", (a,))
-    assert anon.q("select * from public.calendar_feed_events(%s)", (fresh,)) == []   # gone with the account
+    assert anon.q("select * from public.calendar_feed_events(%s)", (fresh,)) == []
     for c in (ua, ub, anon):
         c.close()
 
@@ -97,7 +95,7 @@ def test_the_connection_functions_are_closed_like_013():
         body = CONNECT.split(f"create or replace function public.{name}(", 1)[1].split("$$;", 1)[0]
         assert "set search_path = ''" in body and "security definer" in body, name
     read = CONNECT.split("create or replace function public.calendar_feed_events(", 1)[1].split("$$;", 1)[0]
-    assert "returns table (event_id text, saved_at timestamptz, seen jsonb)" in read   # api/cal.js is unchanged
+    assert "returns table (event_id text, saved_at timestamptz, seen jsonb)" in read
     for private in ("email", "display_name", "raw_user_meta_data"):
         assert private not in CONNECT, private
     assert not re.search(r"grant [a-z, ]+ on table", CONNECT) and "service_role" not in CONNECT
@@ -117,7 +115,7 @@ def db16():
         admin.execute(ACCOUNTS_FILE.read_text(encoding="utf-8").replace(PGCRYPTO, ""))
         admin.execute(SQL.replace(PGCRYPTO, ""))
         admin.execute(CONNECT)
-        admin.execute(CONNECT)   # applying twice is harmless
+        admin.execute(CONNECT)
     yield psycopg, uri
     server.cleanup()
 
@@ -131,29 +129,25 @@ def test_the_newest_connection_is_the_only_one_that_shows_the_events(db16):
     ub.q("insert into public.saved_events (user_id, event_id) values (%s, 'other')", (b,))
     stars = lambda token: [r[0] for r in anon.q("select event_id from public.calendar_feed_events(%s)", (token,))]
 
-    # An account that subscribed before 016 (013's address, maybe twice on the phone) keeps working ...
     old = ua.q("select public.my_calendar_feed()")[0][0]
     assert stars(old) == ["lunch"]
     first = ua.q("select public.my_calendar_link()")[0][0]
     assert re.fullmatch(r"[A-Za-z0-9_-]{43}", first["link"]) and first["link"] != old
-    assert first["read_at"] is not None and first["linked_at"] is None          # read through the old address
-    assert ua.q("select public.my_calendar_link()")[0][0]["link"] == first["link"]  # one address until it is used
-    # ... until the new address is read once: from then on only it lists the stars, the old one is empty.
+    assert first["read_at"] is not None and first["linked_at"] is None
+    assert ua.q("select public.my_calendar_link()")[0][0]["link"] == first["link"]
     assert stars(first["link"]) == ["lunch"]
     assert stars(old) == [] and stars(first["link"]) == ["lunch"]
     now = ua.q("select public.my_calendar_link()")[0][0]
     assert now["link"] not in (old, first["link"]) and now["read_at"] and now["linked_at"]
-    assert ua.q("select public.my_calendar_feed()")[0][0] == first["link"]       # 013's function: the live one
-    # Connecting again (다시 연결) never leaves two live copies.
+    assert ua.q("select public.my_calendar_feed()")[0][0] == first["link"]
     assert stars(now["link"]) == ["lunch"] and stars(first["link"]) == []
-    # A new account starts with a link and no read; other accounts are untouched; anon cannot ask for a link.
     fresh = ub.q("select public.my_calendar_link()")[0][0]
     assert fresh["read_at"] is None and fresh["linked_at"] is None and stars(fresh["link"]) == ["other"]
     assert anon.fails("select public.my_calendar_link()") and ua.fails("select public.calendar_new_token()")
     assert anon.fails("select * from public.calendar_feeds")
     with psycopg.connect(uri, autocommit=True) as admin:
         admin.execute("delete from auth.users where id = %s", (a,))
-    assert stars(now["link"]) == []   # gone with the account
+    assert stars(now["link"]) == []
     for c in (ua, ub, anon):
         c.close()
 
@@ -232,7 +226,6 @@ def test_the_address_routes_to_the_function_with_the_site_code_bundled():
 
 
 def test_a_past_star_stays_in_the_calendar():
-    # Owner 2026-11-12: after its day a star leaves the saved lists, but the calendar keeps the event.
     saved = [{"event_id": "lastweek", "saved_at": "2026-11-01T00:00:00Z",
               "seen": {"title": "지난주 세미나", "startAt": "2026-11-03T12:00:00+09:00", "endAt": "2026-11-03T13:00:00+09:00", "place": "E11"}}]
     body = run(saved, {"events": []})["body"]
@@ -240,7 +233,6 @@ def test_a_past_star_stays_in_the_calendar():
 
 
 def test_the_feed_is_read_only_from_our_own_sites_whatever_the_request_names():
-    # security audit 2026-11-13: x-forwarded-host / host never choose where the server fetches from.
     from tests.test_ggongbab_live import LIVE
     saved = [{"event_id": LIVE["events"][0]["id"], "saved_at": "2026-11-08T00:00:00Z", "seen": {}}]
     for headers, origin in (({"host": "evil.example", "x-forwarded-host": "evil.example"}, "https://www.babdodukms.com"),
@@ -249,7 +241,7 @@ def test_the_feed_is_read_only_from_our_own_sites_whatever_the_request_names():
                             ({"host": "x", "x-forwarded-host": "babdoduk.vercel.app.evil.example"}, "https://www.babdodukms.com"),
                             ({}, "https://www.babdodukms.com"),
                             ({"x-forwarded-host": "BabdodukMS.com"}, "https://babdodukms.com"),
-                            ({"host": "babdoduk.vercel.app"}, "https://www.babdodukms.com"),   # the old address is no longer ours
+                            ({"host": "babdoduk.vercel.app"}, "https://www.babdodukms.com"),
                             ({"host": "babdoduk-lab.vercel.app"}, "https://babdoduk-lab.vercel.app")):
         out = run(saved, LIVE, headers=headers)
         assert out["status"] == 200, headers
@@ -266,8 +258,6 @@ def test_an_empty_list_fetches_no_feed():
 
 
 def test_a_lone_carriage_return_never_ends_a_calendar_line():
-    # security audit 2026-11-13: icsEscape turns CRLF, a lone CR and a lone LF alike into the text \n, so a
-    # title, place or note can never start a property of its own (here a forged ATTACH or a second event).
     if not shutil.which("node"):
         pytest.skip("node is not installed")
     script = r"""
@@ -279,7 +269,7 @@ console.log(JSON.stringify(L.icsText(ev, { details: 'd\re', stamp: '2026-11-13T0
     out = subprocess.run(["node", "-e", script, str(ROOT / "api/cal.js")], capture_output=True, text=True, timeout=30)
     assert out.returncode == 0, out.stderr
     ics = json.loads(out.stdout)
-    body = ics[:-2]                                         # the file ends with one CRLF
+    body = ics[:-2]
     assert "\r" not in body.replace("\r\n", "") and "\n" not in body.replace("\r\n", ""), "only CRLF ends a line"
     lines = ics.replace("\r\n ", "").split("\r\n")
     assert not any(line.startswith("ATTACH") for line in lines)
@@ -299,7 +289,7 @@ def test_the_iphone_connection_is_a_profile_that_replaces_itself():
     import plistlib
     first = run([], None, token=TOKEN + "&profile=1", headers={"host": "www.babdodukms.com"})
     second = run([], None, token="B" * 43 + "&profile=1", headers={"host": "babdoduk-lab.vercel.app"})
-    assert first["status"] == 200 and first["calls"] == []          # nothing is read, and no calendar read is counted
+    assert first["status"] == 200 and first["calls"] == []
     assert first["headers"]["Content-Type"].startswith("application/x-apple-aspen-config")
     assert first["headers"]["Cache-Control"] == "private, no-store" and first["headers"]["X-Robots-Tag"] == "noindex"
     a, b = (plistlib.loads(r["body"].encode("utf-8")) for r in (first, second))
@@ -309,7 +299,7 @@ def test_the_iphone_connection_is_a_profile_that_replaces_itself():
     assert sub["PayloadType"] == "com.apple.subscribedcalendar.account" and sub["SubCalAccountUseSSL"] is True
     assert sub["PayloadIdentifier"] == "com.babdodukms.calendar.subscription"
     assert sub["SubCalAccountHostName"] == f"https://www.babdodukms.com/cal/{TOKEN}.ics"
-    assert sub["SubCalAccountDescription"] == "밥도둑 꽁밥"   # not 밥도둑 내 꽁밥, the old webcal calendars' name
+    assert sub["SubCalAccountDescription"] == "밥도둑 꽁밥"
     assert b["PayloadContent"][0]["SubCalAccountHostName"] == f"https://babdoduk-lab.vercel.app/cal/{'B' * 43}.ics"
     forged = run([], None, token=TOKEN + "&profile=1", headers={"host": "evil.example"})
     assert "https://www.babdodukms.com/cal/" in forged["body"] and "evil" not in forged["body"]
@@ -320,7 +310,7 @@ def test_the_iphone_connection_is_a_profile_that_replaces_itself():
 
 def test_an_old_address_shows_one_notice_asking_to_delete_it():
     out = run([{"event_id": "babdoduk:retired", "saved_at": "2026-11-19T00:00:00Z", "seen": None}], None)
-    assert out["status"] == 200 and len(out["calls"]) == 1          # no feed is fetched for it
+    assert out["status"] == 200 and len(out["calls"]) == 1
     body = out["body"]
     assert body.count("BEGIN:VEVENT") == 1 and "X-WR-CALNAME:밥도둑 지난 구독 · 지워 주세요" in body
     unfolded = body.replace("\r\n ", "")
@@ -351,7 +341,7 @@ def db17():
         admin.execute(SQL.replace(PGCRYPTO, ""))
         admin.execute(CONNECT)
         admin.execute(LEFTOVER)
-        admin.execute(LEFTOVER)   # applying twice is harmless
+        admin.execute(LEFTOVER)
     yield psycopg, uri
     server.cleanup()
 
@@ -363,19 +353,19 @@ def test_an_old_subscription_is_marked_and_reported(db17):
     ua, anon = As(psycopg, uri, a), As(psycopg, uri)
     ua.q("insert into public.saved_events (user_id, event_id) values (%s, 'lunch')", (a,))
     rows = lambda token: [r[0] for r in anon.q("select event_id from public.calendar_feed_events(%s)", (token,))]
-    old = ua.q("select public.my_calendar_feed()")[0][0]          # the webcal subscription of before
+    old = ua.q("select public.my_calendar_feed()")[0][0]
     assert rows(old) == ["lunch"]
     link = ua.q("select public.my_calendar_link()")[0][0]
     assert link["leftover_at"] is None
-    assert rows(link["link"]) == ["lunch"]                          # the profile's first read: the new live address
-    assert rows(old) == ["babdoduk:retired"]                        # the old subscription is told to go
+    assert rows(link["link"]) == ["lunch"]
+    assert rows(old) == ["babdoduk:retired"]
     now = ua.q("select public.my_calendar_link()")[0][0]
     assert now["leftover_at"] is not None and now["read_at"] is not None
-    assert rows("Z" * 43) == []                                     # an address that never existed: nothing
+    assert rows("Z" * 43) == []
     assert anon.fails("select * from public.calendar_feed_retired") and ua.fails("select * from public.calendar_feed_retired")
     with psycopg.connect(uri, autocommit=True) as admin:
         admin.execute("delete from auth.users where id = %s", (a,))
-    assert rows(old) == [] and rows(link["link"]) == []             # gone with the account
+    assert rows(old) == [] and rows(link["link"]) == []
     ua.close(); anon.close()
 
 
@@ -399,7 +389,6 @@ def entry_ids(saved, feed, archive, now):
 
 
 def test_a_star_whose_listing_was_withdrawn_before_it_happened_leaves_the_calendar():
-    # Owner 2026-11-24: "빠진거는 알아서 별표에서도 빠져야지". The clock is fixed: 2026-11-24 10:00 KST.
     now = "2026-11-24T01:00:00Z"
     live = feed_event("aaaaaaaa-1111-4222-8333-444444444444", "2026-11-26T12:00:00+09:00", "다음 세미나")
     archived = feed_event("bbbbbbbb-1111-4222-8333-444444444444", "2026-11-20T12:00:00+09:00", "지난 세미나")
@@ -411,9 +400,7 @@ def test_a_star_whose_listing_was_withdrawn_before_it_happened_leaves_the_calend
                                           "endAt": "2026-11-17T13:00:00+09:00"}},
     ]
     feed, archive = {"events": [live]}, {"events": [archived]}
-    # Both lists read: the withdrawn listing is left out; a listing that already happened stays.
     assert entry_ids(saved, feed, archive, now) == [live["id"], archived["id"], "lastweek"]
-    # A list that could not be read never takes an event away: every star keeps its own copy.
     every = [live["id"], archived["id"], "withdrawn", "lastweek"]
     assert entry_ids(saved, feed, None, now) == every
     assert entry_ids(saved, None, archive, now) == every

@@ -1,4 +1,3 @@
-/* Read-only public feed controller. Rendering never owns connections. */
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -7,11 +6,9 @@
   'use strict';
   var TABLE = 'ggongbab_public_events';
   var COLUMNS = 'id,title,summary,start_at,end_at,date_text,time_text,location_name,building,room,food_provided,food_type,food_description,organizer,eligibility,registration_required,registration_deadline,registration_url,source_types,confidence,food_source,giveaway,giveaway_description,source_links,content_revision,updated_at';
-  // Migration 007 (2026-10-31) added source_links; a projection it has not reached is read without it.
   var LEGACY_COLUMNS = COLUMNS.replace(',source_links', '');
   var LINKED = Object.freeze({ kaist_public: true, manual: true, instagram: true });
   var INSTAGRAM_POST = /^https:\/\/www\.instagram\.com\/(?:p|reel)\/[A-Za-z0-9_-]{5,20}\/$/;
-  // The sources' public names (data/content/labels.json; written by scripts/sync_site_chrome.py).
   // @labels:source-names
   var NAMES = Object.freeze({"dooray": "Dooray", "dooray_mailbox": "Dooray 메일함", "kaist_public": "KAIST 공지", "manual": "Manual", "portal": "KAIST Portal", "instagram": "Instagram", "tip": "제보"});
   // @end labels
@@ -24,8 +21,6 @@
     if (!Number.isFinite(date.getTime())) return null;
     return new Date(date.getTime() + 9 * 3600000).toISOString().slice(0, 19) + '+09:00';
   }
-  // The public link of one source: an https page for a notice or own entry, the canonical permalink
-  // for an Instagram post; nothing for any other source.
   function linkFor(kind, links) {
     if (!LINKED[kind] || !Array.isArray(links)) return '';
     for (var i = 0; i < links.length; i++) {
@@ -55,7 +50,6 @@
         return source;
       })
     };
-    // Migration 006: a giveaway listing (a prize draw or gift for participants).
     if (row.giveaway === 'true') event.giveaway = { provided: 'true', description: row.giveaway_description || '' };
     return event;
   }
@@ -139,11 +133,10 @@
       if (old) cleanup = cleanup.then(async function () {
         try {
           var removed = await owner.removeChannel(old);
-          // A failed removal must not reuse a client retaining an old channel.
           if (removed === 'error' || removed === 'timed out') client = null;
         } catch (e) { client = null; }
         finally { owner.realtime.disconnect(); }
-      }).catch(function () { /* Fixed boundary: never log transport objects. */ });
+      }).catch(function () {  });
       return cleanup;
     }
     async function fallback(token) {
@@ -160,8 +153,6 @@
         var data = await Promise.race([options.loadSnapshot(controller ? controller.signal : undefined), timeout]);
         if (!current(token)) return;
         if (!data || !Array.isArray(data.events)) throw new Error('public snapshot unavailable');
-        // An outage must never replace a successfully selected DB feed with an
-        // older snapshot (including resurrecting deleted rows). Keep it visible.
         if (dbData) return;
         collection = new Map(data.events.map(function (event) { return [event.id, { event: event }]; }));
         generatedAt = data.generatedAt || null;
@@ -198,14 +189,12 @@
     }
     async function selectAll(token) {
       var rows = [], offset = 0;
-      // Continue to an EMPTY page, not a short page: server limits may be lower
-      // than our requested range. Deadline bounds pathological/huge responses.
       while (current(token)) {
         var response = await client.from(TABLE).select(columns)
           .order('start_at', { ascending: true }).order('id', { ascending: true })
           .range(offset, offset + 499).abortSignal(abort.signal);
         if (response.error && response.error.code === '42703' && columns === COLUMNS && !rows.length) {
-          columns = LEGACY_COLUMNS;     // undefined column: migration 007 is not applied yet
+          columns = LEGACY_COLUMNS;
           continue;
         }
         if (response.error || !Array.isArray(response.data)) throw new Error('public select unavailable');
@@ -222,8 +211,6 @@
       deadlineTimer = schedule(function () { fail(token); }, 12000);
       abort = new AbortController();
       try {
-        // Changes during SELECT invalidate that result. Re-select rather than
-        // replay buffered older rows over a newer snapshot. No partial publish.
         for (var round = 0; round < 5; round++) {
           dirty = false;
           var rows = await selectAll(token);
@@ -261,8 +248,6 @@
           if (!current(token)) { created.realtime.disconnect(); return; }
           client = created;
         }
-        // Fence changes even before SUBSCRIBED. Only its authoritative SELECT
-        // may replace the visible snapshot/cached feed.
         reconciling = true;
         channel = client.channel('ggongbab-public-feed');
         channel.on('postgres_changes', { event: '*', schema: 'public', table: TABLE },

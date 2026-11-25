@@ -1,12 +1,3 @@
-/* 방문 수 (owner 2026-11-20: "내 사이트를 언제 제일 많이 이용하는지, 어디 콘텐츠가 반응이 좋은지"; docs/USAGE_STATS.md).
- * POST /api/visit with {"page", "lang", "device"} (js/site.js sends it once per page load) adds one to this
- * hour's count through count_visit (supabase/migrations/018_visit_counts.sql) with the site's publishable key.
- *
- * Nothing about the person is read, kept or passed on: not the address, not a cookie, not the user agent
- * (which is only looked at here to leave crawlers out). The site is the request's host, and only our own
- * three sites count; a preview address or a forged host counts nothing. It answers 204 whatever happens, so
- * a page never waits on it or learns anything from it.
- */
 'use strict';
 
 const fs = require('fs');
@@ -33,7 +24,6 @@ function siteOf(headers) {
   return SITES.has(host) ? host : null;
 }
 
-// The beacon's text (sendBeacon sends text/plain), whatever the platform made of it.
 async function readBody(req) {
   let raw = req.body;
   if (raw && typeof raw === 'object' && !Buffer.isBuffer(raw)) return raw;
@@ -49,7 +39,6 @@ async function readBody(req) {
   try { return JSON.parse(raw); } catch (e) { return null; }
 }
 
-// The one count a request may add, or null.
 function visitOf(body, headers) {
   const site = siteOf(headers);
   const agent = String((headers || {})['user-agent'] || '');
@@ -82,7 +71,7 @@ async function handler(req, res) {
         });
       }
     }
-  } catch (e) { /* a lost count is fine; the page never hears of it */ }
+  } catch (e) {  }
   res.end();
 }
 

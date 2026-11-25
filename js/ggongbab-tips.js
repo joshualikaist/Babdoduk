@@ -1,15 +1,3 @@
-/* 꽁밥 제보 (tip.html, lab only; docs/GGONGBAB_TIPS.md).
-
-   A visitor writes what they saw in their own words, with up to three photos (owner 2026-11-01: "사용자는
-   제보하는거고, 우리는 그거를 분류하는 사람이 되어야"), and sends it through the checking function
-   ggongbab_submit_report (supabase/migrations/009_ggongbab_tip_reports.sql), which returns the tip's
-   id; the photos then go to the private bucket under that id. The operations PC sorts the report into
-   an event and the owner confirms it; the board lists only the confirmed tips (ggongbab_tip_board:
-   title, place, date, time and food). Nothing is read back from the tips or the photos.
-
-   The public URL and publishable key come from js/ggongbab-public-config.js, as for the public feed
-   and the world cup. With an empty configuration the page makes no request: the form says tips are
-   closed and the board that it cannot load. The Supabase client is the public feed's pinned build. */
 (function () {
   'use strict';
 
@@ -24,7 +12,6 @@
   var MAX_BYTES = 5 * 1024 * 1024;
   var MAX_SIDE = 2000;
   var TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
-  // Characters after trimming; the function checks the same: words (at least MIN_TEXT) or a photo.
   var MIN_TEXT = 2;
   var MAX_TEXT = 1000;
 
@@ -129,7 +116,6 @@
   function values() {
     return { text: $('tipTextInput').value.trim(), hp: $('tipHp').value };
   }
-  // The id of the field to fix, or null.
   function validate(v) {
     var n = v.text.length;
     var key = n > MAX_TEXT ? 'tip.err.text' : n < MIN_TEXT && !photos.length ? 'tip.err.empty' : '';
@@ -146,7 +132,6 @@
       img.src = url;
     });
   }
-  // A large photo is scaled down to 2000px on its long side as a JPEG; a small one is sent as it is.
   function prepare(file) {
     if (!TYPES[file.type]) return Promise.reject(new Error('tip.err.photoType'));
     return loadImage(file).then(function (img) {
@@ -438,7 +423,6 @@
   placeholders();
   counter();
   form.addEventListener('submit', submit);
-  // After a first try, each correction (words or a photo) updates the mark at once.
   function recheck() {
     if (!checked) return;
     if (!validate(values()) && statusKey === 'tip.status.invalid') setStatus('', '');

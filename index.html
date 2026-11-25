@@ -30,8 +30,8 @@
        scripts/page_content.py. -->
   <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap&text=%20%21%2C%2F0123456789ACDFJLMNOPSWabcdegilnoprstuvwy%C2%B7%EA%B8%88%EA%B8%B0%EA%B9%8C%EB%8F%84%EB%91%91%EB%93%9C%EB%A8%B9%EB%B0%A5%EB%B0%A9%EB%B3%B4%EC%84%B8%EC%98%A4%EC%9B%94%EC%9E%90%EC%A4%91%EC%A7%80%EC%A7%84%EC%BB%B5%ED%94%88%ED%95%98%ED%96%89%ED%9E%88" rel="stylesheet" />
   <!-- @end content -->
-  <link rel="stylesheet" href="css/site.css?v=ee9ae19475" />
-  <link rel="stylesheet" href="css/index.css?v=6b14c9a2e6" />
+  <link rel="stylesheet" href="css/site.css?v=71967c9f54" />
+  <link rel="stylesheet" href="css/index.css?v=63d725db81" />
 </head>
 <body class="page-home">
   <img src="images/og-babdoduk.png" alt="" width="1200" height="1200" loading="lazy" decoding="async" hidden />
@@ -65,14 +65,7 @@
   </header>
 
   <main class="page-fill home" id="main">
-    <!-- The top, in reading order: who we are, the free-food calendar, the cafeteria line, then the
-         decorative collage. On wide screens the collage sits beside the copy on the same paper band. -->
     <div class="home-top">
-      <!-- The 먹방 월드컵 promo (owner 2026-10-14; a paragraph, not a heading: the h1 comes first). Before the
-           launch it counts down and points to the news page, while it runs it starts the game, after the
-           end it is gone. Its two dish photos are blurred placeholders with no `src` until it is live
-           (data-wc-src; nothing is revealed before the launch). js/worldcup-gate.js decides (data-wc-show) from data/content/events.json; the
-           fonts and texts are written by the sync. -->
       <section class="home-wc" aria-labelledby="homeWcTitle" data-wc-show="soon live" hidden>
         <div class="home-wc-photos" aria-hidden="true">
           <img class="home-wc-photo home-wc-photo--a" data-wc-src="images/worldcup/kr-bulgogi.jpg" data-wc-srcset="images/worldcup/thumb/kr-bulgogi-160.webp 160w, images/worldcup/thumb/kr-bulgogi-320.webp 320w" sizes="(max-width: 440px) 40px, 62px" alt="" width="720" height="540" decoding="async" />
@@ -95,8 +88,6 @@
           </p>
           <div class="home-title-row">
             <h1 class="home-title" id="homeTitle" data-i18n-html="home.title">KAIST에서<br /><span class="home-title-mark">오늘 뭐 먹지?</span></h1>
-            <!-- Phones: the campus map opens from here, beside the headline's first line (owner 2026-11-04,
-                 "꽁밥 지도"); wider screens show the map beside the copy. -->
             <button type="button" class="home-map-open" id="homeMapOpen" aria-haspopup="dialog" aria-controls="homeMapDialog" data-i18n="home.map.show" hidden>꽁밥 지도</button>
           </div>
           <div class="home-actions">
@@ -106,7 +97,6 @@
         </div>
       </section>
 
-      <!-- Free food only: the published schedule and the past listings, never menus, stories or Babdoduk events. -->
       <section class="home-cal" id="homeCal" aria-labelledby="homeCalTitle" data-state="loading">
         <div class="home-cal-head">
           <h2 class="home-cal-title" id="homeCalTitle"><span data-i18n="home.cal.title">오늘의 꽁밥</span> <span class="home-cal-date" id="homeCalToday"></span></h2>
@@ -135,10 +125,6 @@
         </a>
       </div>
 
-      <!-- The 3D campus map (docs/CAMPUS_MAP.md, owner 2026-11-04): the clay miniature of the campus, a pin
-           on the building of each free-food event of the day the calendar shows. js/home-map.js wakes it
-           when it is on screen; phones see only the 지도 보기 button, which opens it in the dialog below.
-           The poster is the same view rendered, so the pins sit right before the live model loads. -->
       <section class="home-map" id="homeMap" aria-labelledby="homeMapTitle">
         <h2 class="home-sr-only" id="homeMapTitle" data-i18n="home.map.title">꽁밥 지도</h2>
         <div class="home-map-frame" id="homeMapFrame">
@@ -568,17 +554,17 @@
       }
     };
   </script>
-  <script src="js/site.js?v=ddf3962762"></script>
+  <script src="js/site.js?v=7e55f67c4e"></script>
   <!-- @end i18n -->
-  <script src="js/worldcup-gate.js?v=e0bc457834"></script>
-  <script src="js/kaist-menu.js?v=6c909f8c8a"></script>
-  <script src="js/ggongbab-select.js?v=74f99730c5"></script>
-  <script src="js/ggongbab-live.js?v=a954858cd0"></script>
-  <script src="js/ggongbab-public-config.js?v=36fb24a6fd"></script>
-  <script src="js/ggongbab-push.js?v=56fc3d8c95"></script>
-  <script src="js/home-calendar.js?v=83521a418c"></script>
-  <script src="js/home.js?v=5953270fa7"></script>
+  <script src="js/worldcup-gate.js?v=529b6a27b2"></script>
+  <script src="js/kaist-menu.js?v=758cd518d3"></script>
+  <script src="js/ggongbab-select.js?v=7c434addcd"></script>
+  <script src="js/ggongbab-live.js?v=8c3c3f68f3"></script>
+  <script src="js/ggongbab-public-config.js?v=218d7dd851"></script>
+  <script src="js/ggongbab-push.js?v=3f85a17e6f"></script>
+  <script src="js/home-calendar.js?v=ce538a36fe"></script>
+  <script src="js/home.js?v=620df5fb40"></script>
   <script type="importmap">{"imports": {"three": "./js/vendor/three-0.186.1/three.module.js"}}</script>
-  <script type="module" src="js/home-map.js?v=12a64da9b1"></script>
+  <script type="module" src="js/home-map.js?v=bdb4e3fbc2"></script>
 </body>
 </html>

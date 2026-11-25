@@ -87,7 +87,7 @@ class Robots:
         except urllib.error.HTTPError as exc:
             if exc.code in (401, 403) or exc.code >= 500:
                 return None
-            parser.parse([])                        # no robots.txt: nothing is disallowed
+            parser.parse([])
             return parser
         except Exception:  # noqa: BLE001 - unreadable robots.txt: do not read the page
             return None

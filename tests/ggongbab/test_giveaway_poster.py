@@ -142,7 +142,7 @@ def test_the_feed_lists_free_food_and_giveaways_and_validates():
     assert gift_event["giveaway"] == {"provided": "true", "description": "경품 추첨"}
     assert gift_event["food"] == {"provided": "unknown", "type": "unknown", "description": ""}
     assert validate_ggongbab_payload(payload, NOW) == []
-    for event in payload["events"]:                       # the DB projection round-trips both fields
+    for event in payload["events"]:
         assert to_snapshot_event(public_row(event)) == event
     later = NOW + timedelta(days=10)
     archive = build_archive([poster_food, gift], settings, later)
@@ -163,4 +163,4 @@ def test_the_validator_refuses_a_listing_with_neither_food_nor_a_giveaway():
 
 
 def test_reference_date_is_unchanged():
-    assert REFERENCE.year == 2026     # conftest's clock: the synthetic suite never reads the wall clock
+    assert REFERENCE.year == 2026

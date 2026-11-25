@@ -24,8 +24,6 @@ from .conftest import TEST_NOW
 from .test_export_contract import row
 
 NOW = datetime(2026, 9, 27, 12, 0, tzinfo=KST)
-# A valid uuid4 whose segments "b18-8387-8430" read as the mobile number 018-8387-8430. Under the
-# old whole-JSON scan this id alone failed the export with "contains a phone number".
 PHONE_LIKE_UUID = "af775085-697f-4b18-8387-8430f235e0b0"
 NOTICE_URL = "https://www.kaist.ac.kr/kr/html/campus/053501.html"
 
@@ -50,7 +48,7 @@ def event(**over):
 
 def past_event(**over):
     ev = event(**over)
-    del ev["registration"], ev["confidence"]  # a past listing carries no sign-up data
+    del ev["registration"], ev["confidence"]
     ev["startAt"], ev["endAt"] = (NOW - timedelta(days=2, hours=1)).isoformat(), (NOW - timedelta(days=2)).isoformat()
     return ev
 
@@ -72,7 +70,6 @@ def check_archive(ev):
     return validate_ggongbab_archive_payload(archive(ev))
 
 
-# kind: (event factory, validator, event tag, message prefix)
 VALIDATORS = {"live": (event, check_live, "events[0]", "ggongbab export"),
               "archive": (past_event, check_archive, "archive[0]", "ggongbab archive")}
 
@@ -94,13 +91,10 @@ def test_the_synthetic_events_are_valid(kind):
     assert check(make()) == []
 
 
-# ---------------------------------------------------------------------------
-# The regression: a structural UUID is not a phone number
-# ---------------------------------------------------------------------------
 def test_the_fixed_uuid_reproduces_the_bug_class():
     assert uuid.UUID(PHONE_LIKE_UUID).version == 4 and str(uuid.UUID(PHONE_LIKE_UUID)) == PHONE_LIKE_UUID
     assert PHONE_RE.search(PHONE_LIKE_UUID).group() == "18-8387-8430"
-    assert PHONE_RE.search(json.dumps(live(event(id=PHONE_LIKE_UUID))))  # what the old whole-JSON scan matched
+    assert PHONE_RE.search(json.dumps(live(event(id=PHONE_LIKE_UUID))))
 
 
 @pytest.mark.parametrize("kind", VALIDATORS)
@@ -123,15 +117,12 @@ def seeded_uuids(n=4000, seed=20260927):
 def test_structural_uuid_ids_never_trigger_privacy_errors():
     ids = seeded_uuids()
     phone_like = [uid for uid in ids if PHONE_RE.search(uid)]
-    assert len(phone_like) >= 5, len(phone_like)  # the sample really contains the old ~0.28% false-positive class
+    assert len(phone_like) >= 5, len(phone_like)
     for uid in ids:
         assert validate_ggongbab_payload(live(event(id=uid)), NOW) == [], uid
         assert validate_ggongbab_archive_payload(archive(past_event(id=uid))) == [], uid
 
 
-# ---------------------------------------------------------------------------
-# Real personal data in public text is still refused
-# ---------------------------------------------------------------------------
 PHONES = ["010-1234-5678", "01012345678", "010 1234 5678", "010.1234.5678",
           "+82 10-1234-5678", "+82-10-1234-5678", "+821012345678"]
 TEXT_PATHS = ["title", "summary", "dateText", "timeText", "organizer", "eligibility",
@@ -188,13 +179,10 @@ def test_ids_are_plain_identifiers(kind):
     assert f"{prefix} contains a token-like string in {tag}.id" in check(make(id="sk-A1b2C3d4E5f6G7h8I9"))
 
 
-# ---------------------------------------------------------------------------
-# URLs: URL rules, not text rules
-# ---------------------------------------------------------------------------
 @pytest.mark.parametrize("kind", VALIDATORS)
 @pytest.mark.parametrize("url", [
-    "https://www.kaist.ac.kr/kr/html/news/01012345678",                              # phone-like digits in the path
-    "https://www.kaist.ac.kr/kr/html/campus/053501.html?mode=V&mng_no=1712345678",   # a numeric id, no dial prefix
+    "https://www.kaist.ac.kr/kr/html/news/01012345678",
+    "https://www.kaist.ac.kr/kr/html/campus/053501.html?mode=V&mng_no=1712345678",
     "https://www.kaist.ac.kr/kr/html/campus/053501.html?mode=V&mng_no=12345",
     "https://example.org/notice/" + PHONE_LIKE_UUID,
 ])
@@ -245,15 +233,9 @@ def test_an_internal_source_never_carries_a_url(kind, source_type):
     assert f"{tag} exposes a {source_type} source URL; only public notice links may be kept" in check(ev)
 
 
-# ---------------------------------------------------------------------------
-# Contract: privacy scanning follows an explicit, reviewed schema
-# ---------------------------------------------------------------------------
-# Changing this list is a privacy decision. Review the new field, then update both lists.
 EXPECTED_TEXT_FIELDS = ("title", "summary", "dateText", "timeText", "organizer", "eligibility",
                         "location.name", "location.building", "location.room", "food.description",
                         "giveaway.description", "sources[].name",
-                        # 2026-10-18: each day of a multi-day event, and who the event is for. Reviewed: free text
-                        # of the same kind as the venue, food and eligibility above, scanned like them.
                         "sessions[].location.name", "sessions[].location.building", "sessions[].location.room",
                         "sessions[].foodDescription", "audience.text")
 
@@ -327,7 +309,6 @@ def full_row():
             "eligibility": "e", "registration_required": "true",
             "registration_deadline": "2026-09-30T03:00:00+00:00", "registration_url": "https://forms.gle/AbC",
             "confidence": 0.9, "_sources": [{"type": "kaist_public", "name": "KAIST 공지", "url": NOTICE_URL}],
-            # What parse_extras attaches: two sessions inside the event's 12:00-13:00 and its audience.
             "_extras": {"sessions": [{"start": "2026-10-01T12:00:00+09:00", "end": "2026-10-01T12:20:00+09:00",
                                       "location_name": "n", "building": "b", "room": "r", "food_description": "f"},
                                      {"start": "2026-10-01T12:30:00+09:00", "end": "2026-10-01T13:00:00+09:00"}],
@@ -350,7 +331,7 @@ def test_an_unreviewed_field_is_refused_not_silently_scanned(kind, path):
 
 def test_unreviewed_top_level_keys_and_preview_diagnostics():
     assert any("top-level 'notes'" in err for err in validate_ggongbab_payload({**live(event()), "notes": "x"}, NOW))
-    counters = {**live(event()), "_preview": {"publicCount": 1, "inputTokens": 1712345678}}  # a big counter is not a phone
+    counters = {**live(event()), "_preview": {"publicCount": 1, "inputTokens": 1712345678}}
     assert validate_ggongbab_payload(counters, NOW) == []
     counters["_preview"]["subject"] = "PRIVATE"
     assert "ggongbab export _preview must hold numeric counters only" in validate_ggongbab_payload(counters, NOW)

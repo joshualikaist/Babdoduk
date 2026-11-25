@@ -28,7 +28,7 @@ class Paths:
         self.candidates = self.research / "candidates.jsonl"
         self.health = self.research / "health.json"
         self.runs = self.research / "runs.jsonl"
-        self.inbox = self.research / "inbox"          # written only by the local sidecar
+        self.inbox = self.research / "inbox"
 
 
 def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.environ,
@@ -39,12 +39,12 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
     a cloud-parity build on a machine that can reach what GitHub's runners cannot). A skipped
     source is recorded as DEGRADED with SKIPPED_CLOUD_PARITY, never as a success."""
     if fetcher is fetch:
-        fetcher = HostPacer(fetch)             # two seconds between requests to one host (docs/MAGAZINE_SOURCES.md)
+        fetcher = HostPacer(fetch)
     sources = registry.load(paths.registry)
     source_health = registry.load_health(paths.source_health)
     store = CandidateStore(paths.candidates)
     health, queries, new = {}, [], 0
-    throttled: set[str] = set()                # a type that answered 429 is not asked again this run
+    throttled: set[str] = set()
     for source in sources:
         entry = source_health.setdefault(source["id"], {})
         if not source.get("enabled"):
@@ -90,7 +90,7 @@ def discover(paths: Paths, now: datetime, *, fetcher: Callable = fetch, env=os.e
         health[source["id"]].update({k: entry.get(k) for k in ("status", "lastSuccessAt", "lastFailureAt",
                                                                 "failureCount", "newestItemAt")})
     apply_excerpt_rules(rows, sources)
-    reset_decisions(rows)                      # recompute decisions each run from the stored facts
+    reset_decisions(rows)
     counts = process.process(rows, now)
     whole = [row for row in rows if not row.get("compact")]
     image_counts = images.enrich(whole, fetcher, validate=validate)
@@ -194,7 +194,6 @@ def lane_report(rows: list[dict]) -> dict:
                 continue
             else:
                 other = (row.get("assignedCategory") or "").upper()
-                # A compact row keeps no per-lane reasons, only that no lane took it.
                 key = (row.get("laneDecisions") or {}).get(lane) or (f"ASSIGNED_{other}" if other else
                                                                       row.get("rejectionReason") or "UNJUDGED")
             reasons[key] = reasons.get(key, 0) + 1

@@ -1,8 +1,3 @@
-/* The world cup's start screen, shared by worldcup.html (the whole page) and event.html (the live
-   event card, `.wc-embed`): the headline, the category tiles, the preview, the breathing start button
-   and the floating photos, and the one photo-credit chip. Both pages carry the same markup (written
-   from scripts/page_content.py worldcup_entry) and run the same js/worldcup.js. The rest of the
-   world cup (the match, the result, the splash and the gacha) is css/worldcup.css. */
 .wc-view[hidden],
 .wc-btn[hidden],
 .wc-link[hidden] {
@@ -18,7 +13,6 @@
   white-space: nowrap;
 }
 
-/* The buttons of the world cup */
 .wc-btn {
   display: inline-flex;
   align-items: center;
@@ -45,18 +39,12 @@
   outline-offset: 3px;
 }
 
-/* The start screen (owner 2026-10-14: "초입이 재미있어야", a campus game lobby rather than a form).
-   A band the width of the screen on a phone: dish photos float behind the edges of a round card
-   with a pink-to-blue rim; in it the headline in Jua with the round on a highlighter, the owner's
-   tone line, the category tiles, five dishes of the next draw and the big breathing button. The
-   brand mix is pink (#db2777, deepened to #be185d for text) and indigo/blue; never the old red-brown.
-   Only transform and opacity move (js/worldcup.js ambient, choose, renderPreview, spinTiles). */
 .wc-page,
 .wc-embed {
   --wc-display: 'Jua', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   --wc-grad: linear-gradient(115deg, #db2777, #a21caf 48%, #4f46e5);
   --wc-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  overflow-x: clip;                       /* the floating photos never widen the page */
+  overflow-x: clip;
 }
 
 .wc-head .page-title,
@@ -66,7 +54,7 @@
 .wc-btn.wc-btn--big,
 .wc-link {
   font-family: var(--wc-display);
-  font-weight: 400;                       /* Jua has one weight */
+  font-weight: 400;
   font-synthesis: none;
   letter-spacing: 0;
 }
@@ -77,7 +65,7 @@
   padding: 44px 16px 48px;
 }
 
-.wc-intro::before {                       /* soft pink and blue light behind the card */
+.wc-intro::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -109,7 +97,6 @@
   display: none;
 }
 
-/* A phone: four photos peeking from behind the card's top and bottom corners. */
 .wc-floater:nth-child(1) { --s: 72px; --r: -11deg; top: 2px; left: 8px; }
 .wc-floater:nth-child(2) { --s: 60px; --r: 9deg; top: 10px; right: 10px; }
 .wc-floater:nth-child(3) { --s: 58px; --r: 8deg; bottom: 8px; left: 20px; }
@@ -138,7 +125,6 @@
   text-wrap: balance;
 }
 
-/* The round on a pink-to-blue highlighter: accent text over the light lower half (never gradient text). */
 .wc-hl {
   padding: 0 0.08em;
   color: var(--color-accent);
@@ -157,7 +143,6 @@
   overflow-wrap: anywhere;
 }
 
-/* The category tiles: a 3 x 3 board (eight categories and 아무거나), big enough for a thumb. */
 .wc-tiles {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -187,7 +172,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.wc-tile::after {                         /* the brand glow of the chosen tile */
+.wc-tile::after {
   content: "";
   position: absolute;
   inset: -2px;
@@ -236,7 +221,6 @@
   color: var(--color-accent);
 }
 
-/* 아무거나: a dashed lilac tile; while it spins, the light runs through the others. */
 .wc-tile--random {
   border-style: dashed;
   border-color: #c4b5fd;
@@ -267,7 +251,6 @@
   outline-offset: 3px;
 }
 
-/* 이 중에서 나와요: five photos of the next draw, a fanned row of stickers. */
 .wc-preview {
   margin-top: var(--space-6);
 }
@@ -318,7 +301,6 @@
   box-shadow: 0 6px 14px rgba(30, 29, 26, 0.16);
 }
 
-/* The big button: 🎰 32강 시작 (or ▶ 이어하기), a gradient key with a lip and a glow that breathes. */
 .wc-intro-actions {
   display: flex;
   flex-direction: column;
@@ -345,7 +327,7 @@
   touch-action: manipulation;
 }
 
-.wc-btn--big::before {                    /* the glow that breathes with the button */
+.wc-btn--big::before {
   content: "";
   position: absolute;
   inset: -12px;
@@ -395,8 +377,6 @@
   outline-offset: 3px;
 }
 
-/* Before the launch (js/worldcup-gate.js) the big button is a locked pill with a countdown under it;
-   after the end the card carries a small note. Both show by data-wc-show. */
 .wc-locked,
 .wc-ended {
   margin: 0;
@@ -518,7 +498,6 @@
   }
 }
 
-/* Wider: six photos float in the room either side of the card, larger. */
 @media (min-width: 700px) {
   .wc-page .wc-floater:nth-child(1) { --s: 128px; --r: -9deg; top: 4%; left: calc(50% - 404px); right: auto; bottom: auto; }
   .wc-page .wc-floater:nth-child(2) { --s: 104px; --r: 7deg; top: 40%; left: calc(50% - 404px); right: auto; bottom: auto; }
@@ -528,7 +507,6 @@
   .wc-page .wc-floater:nth-child(6) { --s: 108px; --r: 10deg; bottom: 4%; right: calc(50% - 408px); left: auto; top: auto; }
 }
 
-/* Press, hover and the chosen tile's spring, only for people who have not asked for less motion. */
 @media (prefers-reduced-motion: no-preference) {
   .wc-tile {
     transition: transform 420ms var(--wc-spring);
@@ -566,7 +544,6 @@
   }
 }
 
-/* The one photo-credit chip (owner 2026-10-14): where the photos come from, in one small pill. */
 .wc-chip {
   display: flex;
   align-items: center;
@@ -602,11 +579,6 @@
   .wc-embed .wc-floater:nth-child(4) { --s: 108px; right: 12px; bottom: 6px; }
 }
 
-/* Before the launch the draw stays a secret (owner 2026-10-14: "블러 처리 ... 최대한 공개 안하게끔"). While
-   js/worldcup-gate.js says `soon` (html[data-wc-phase="soon"]) the tiles, the preview photos and the
-   floating photos are blurred past reading, and a frosted lock sits over the tiles and the preview like a
-   mystery box. js/worldcup.js also makes the box inert and aria-hidden, shows the photos as placeholders
-   with no `src`, and the lock carries the one sentence for assistive tech. Live and ended: untouched. */
 .wc-mystery {
   position: relative;
 }
@@ -617,8 +589,8 @@
 }
 
 html[data-wc-phase="soon"] .wc-mystery {
-  overflow: hidden;                       /* the blur never bleeds out of the box */
-  margin: calc(var(--space-6) - 14px) 0 -16px;   /* the padding below adds to the layout nothing: the card keeps its height */
+  overflow: hidden;
+  margin: calc(var(--space-6) - 14px) 0 -16px;
   padding: 0 0 16px;
   border-radius: 24px;
   background: linear-gradient(150deg, #fdf2f8, #f5f3ff 55%, #eff6ff);
@@ -685,7 +657,6 @@ html[data-wc-phase="soon"] .wc-floater {
   filter: blur(9px) saturate(0.55);
 }
 
-/* The placeholders: soft colour, so a blurred spot reads as a hidden photo and not an empty frame. */
 html[data-wc-phase="soon"] .wc-floater,
 html[data-wc-phase="soon"] .wc-preview-photo {
   background:

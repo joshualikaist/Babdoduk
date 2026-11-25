@@ -144,7 +144,7 @@ def main() -> int:
     parser.parse_args()
     try:
         report = run()
-    except Exception as exc:  # the browser or the loopback server could not start
+    except Exception as exc:
         print(json.dumps({"status": "SKIP", "reason": type(exc).__name__ + ": " + str(exc)[:200]}, indent=2))
         print("real-font smoke: SKIP (could not run)")
         return EXIT["SKIP"]

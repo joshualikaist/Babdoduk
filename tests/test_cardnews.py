@@ -29,12 +29,12 @@ def test_a_cover_and_a_card_only_for_each_weekday_with_events_by_korean_day():
     """Owner 2026-11-02: a weekday without events gets no card."""
     events = [event("2026-11-02T12:00:00+09:00", "월요일 점심"), event("2026-11-06T15:00:00+09:00", "금요일 오후"),
               event("2026-11-01T23:30:00+09:00", "일요일 밤"), event("2026-11-07T10:00:00+09:00", "토요일"),
-              event("2026-11-03T15:30:00+00:00", "UTC로 적힌 수요일 새벽")]   # 11-04 00:30 KST
+              event("2026-11-03T15:30:00+00:00", "UTC로 적힌 수요일 새벽")]
     found = cards(events)
     assert len(found) == 4 and 'class="card cover"' in found[0]
     assert "월요일 점심" in found[1] and "UTC로 적힌 수요일 새벽" in found[2] and "금요일 오후" in found[3]
     joined = "".join(found)
-    assert "일요일 밤" not in joined and "토요일" not in joined            # the weekend is not this card news
+    assert "일요일 밤" not in joined and "토요일" not in joined
     assert "아직 알려진 꽁밥이 없어요" not in joined
     assert [b for b in re.findall(r'<div class="n">([^<]+)</div>', found[0])] == ["1", "–", "1", "–", "1"]
     assert "이번 주 꽁밥 <em>3개</em>" in found[0] and "11월 2일(월) – 11월 6일(금)" in found[0]
@@ -53,9 +53,9 @@ def test_an_event_held_on_several_days_is_on_each_of_those_days():
     for day in found[1:]:
         assert "토크 콘서트" in day
     assert ">12:00<small>~ 12:50</small>" in found[2] and ">16:00<small>~ 19:30</small>" in found[5]
-    assert found[3].index("수요일 아침") < found[3].index("토크 콘서트")          # each day by that day's time
+    assert found[3].index("수요일 아침") < found[3].index("토크 콘서트")
     assert re.findall(r'<div class="n">([^<]+)</div>', found[0]) == ["1", "1", "2", "1", "1"]
-    assert "이번 주 꽁밥 <em>2개</em>" in found[0]                                  # an event counts once
+    assert "이번 주 꽁밥 <em>2개</em>" in found[0]
     item = rc.entry({"events": [series, other]}, MONDAY, datetime(2026, 11, 1, 18, 0, tzinfo=rc.KST))
     assert item["counts"] == [1, 1, 2, 1, 1] and item["total"] == 2 and item["days"] == [0, 1, 2, 3, 4]
 
@@ -66,15 +66,15 @@ def test_sessions_outside_the_week_and_an_event_without_sessions():
     long_span = event("2026-11-02T16:00:00+09:00", "설명회 일정", end="2026-11-25T20:00:00+09:00")
     found = cards([started_last_week, long_span])
     assert len(found) == 3 and "설명회 일정" in found[1] and "지난주부터" in found[2]
-    assert "지난주부터" not in found[1] and "설명회 일정" not in found[2]   # no sessions: the day it starts
+    assert "지난주부터" not in found[1] and "설명회 일정" not in found[2]
 
 
 def test_the_cards_are_drawn_from_the_live_list_and_never_from_a_stale_copy(tmp_path):
     now = datetime(2026, 11, 8, 18, 0, tzinfo=rc.KST)
     assert rc.LIVE_FEED.startswith("https://") and rc.LIVE_FEED.endswith("/data/ggongbab/latest.json")
-    assert rc.LIVE_FEED.startswith("https://www.babdodukms.com/")   # babdoduk.vercel.app is gone (2026-11-22)
+    assert rc.LIVE_FEED.startswith("https://www.babdodukms.com/")
     assert not rc.stale({"generatedAt": "2026-11-08T09:00:00+09:00"}, now)
-    assert rc.stale({"generatedAt": "2026-10-31T20:21:46+09:00"}, now)          # the copy behind the 11-02 cards
+    assert rc.stale({"generatedAt": "2026-10-31T20:21:46+09:00"}, now)
     assert rc.stale({}, now) and rc.stale({"generatedAt": "어제"}, now)
     copy = tmp_path / "latest.json"
     copy.write_text(json.dumps({"generatedAt": "2026-11-08T09:00:00+09:00", "events": []}), encoding="utf-8")
@@ -109,7 +109,7 @@ def test_what_the_list_does_not_have_is_left_out():
     (_, monday, *_) = cards([event("2026-11-02T12:00:00+09:00", food="unknown", provided="unknown", building="", room="",
                                    end="2026-11-03T01:00:00+09:00")])
     assert 'class="pill"' not in monday and "📍" not in monday and "대상" not in monday
-    assert '<div class="t">12:00</div>' in monday      # an end on another day is not shown as a time
+    assert '<div class="t">12:00</div>' in monday
 
 
 def test_without_splitting_a_busy_day_is_dense_shows_four_and_says_how_many_more():
@@ -118,7 +118,7 @@ def test_without_splitting_a_busy_day_is_dense_shows_four_and_says_how_many_more
     tpl["rules"]["splitBusyDays"] = False
     friday = cards(busy, tpl)[-1]
     assert friday.startswith('<section class="card dense">') and friday.count('<article class="ev">') == 4
-    assert "외 2개 더 · 사이트에서 확인하세요" in friday and "대상 ·" not in friday    # no room for the audience line
+    assert "외 2개 더 · 사이트에서 확인하세요" in friday and "대상 ·" not in friday
     three = cards(busy[:3])[-1]
     assert three.startswith('<section class="card dense">') and "외" not in three and "대상 · 누구나" in three
 
@@ -133,7 +133,7 @@ def test_a_day_with_more_than_a_card_holds_goes_on_to_a_second_card():
     assert first.count('<article class="ev">') == 4 and second.count('<article class="ev">') == 2
     assert "외 " not in first + second and "행사 5" in second
     assert "이번 주 꽁밥 · 금 · 1/2" in first and "이번 주 꽁밥 · 금 · 2/2" in second
-    assert "꽁밥 6개" in first and "꽁밥 6개" in second                     # the day's count on both
+    assert "꽁밥 6개" in first and "꽁밥 6개" in second
     assert re.findall(r'<div class="n">([^<]+)</div>', found[0])[4] == "6"
     assert [re.search(r'class="page">(\d) / (\d)<', c).groups() for c in found] == [(str(n), "3") for n in range(1, 4)]
     item = rc.entry({"events": busy}, MONDAY, datetime(2026, 11, 1, 18, 0, tzinfo=rc.KST))
@@ -204,7 +204,7 @@ def test_the_published_week_matches_its_images():
         assert sorted(set(week["days"])) == [i for i in range(5) if week["counts"][i]] and week["days"] == sorted(week["days"])
         assert len(week["images"]) == len(week["days"]) + 1
         folder = sorted((root / "data/cardnews" / week["week"]).glob("*.png"))
-        assert [f"data/cardnews/{week['week']}/{p.name}" for p in folder] == week["images"]     # no stale card left
+        assert [f"data/cardnews/{week['week']}/{p.name}" for p in folder] == week["images"]
         for src in week["images"]:
             data = (root / src).read_bytes()
             assert data[:8] == b"\x89PNG\r\n\x1a\n" and data[16:24] == (1080).to_bytes(4, "big") + (1350).to_bytes(4, "big")
@@ -255,7 +255,7 @@ def test_the_cards_go_to_telegram_as_one_album_with_the_caption_on_the_first(tmp
         many.append(path)
     batched = Opener()
     assert rc.send(many, "📅 이번 주 꽁밥", "123:SECRET", "42", batched) == "PUSH_SENT"
-    assert [r.full_url.rsplit("/", 1)[1] for r in batched.requests] == ["sendMediaGroup", "sendPhoto"]   # 10 + 1
+    assert [r.full_url.rsplit("/", 1)[1] for r in batched.requests] == ["sendMediaGroup", "sendPhoto"]
     first = batched.requests[0].data.decode("utf-8", "replace")
     assert first.count('filename="') == 10 and "📅 이번 주 꽁밥" in first
     assert 'name="caption"' not in batched.requests[1].data.decode("utf-8", "replace")
@@ -281,7 +281,7 @@ def test_cards_are_kept_a_month_then_their_files_are_deleted(tmp_path):
         index = rc.write_index(tmp_path, rc.entry(feed, monday, now))
     assert [w["week"] for w in index["weeks"]] == ["2026-11-02", "2026-10-26", "2026-10-19", "2026-10-12", "2026-10-05"]
     assert not (tmp_path / "2026-09-28").exists() and (tmp_path / "2026-10-05" / "1.png").exists()
-    (tmp_path / "notes").mkdir()                                  # only week folders are ever removed
+    (tmp_path / "notes").mkdir()
     rc.write_index(tmp_path, rc.entry(feed, date(2026, 11, 9), now))
     assert not (tmp_path / "2026-10-05").exists() and (tmp_path / "notes").exists()
 
@@ -298,7 +298,7 @@ def test_the_self_check_reads_the_drawn_cards_back_against_the_list():
     found = rc.check(feed, MONDAY, rc.build(feed, MONDAY, NAMES, tpl), tpl["rules"])
     assert found["missing"] == [] and found["events"] == 7
     assert found["firstDayOnly"] == ["11-04~11-06 사흘 축제"]
-    tpl["rules"]["splitBusyDays"] = False                               # a hidden event is caught
+    tpl["rules"]["splitBusyDays"] = False
     found = rc.check(feed, MONDAY, rc.build(feed, MONDAY, NAMES, tpl), tpl["rules"])
     assert found["missing"] == ["11-06 금 3", "11-06 금 4"]
     text = rc.report(found, ["11-02 업비트 디지털 자산 특강 (병합 충돌 building)"])
@@ -390,13 +390,13 @@ def test_the_cards_drawn_at_1730_are_sent_at_1800_without_redrawing(tmp_path, mo
     assert rc.main(["--week", "2026-11-02", "--out", str(out), "--send-drawn", "--report", str(report)]) == 0
     ((paths, caption),) = sent
     assert [p.name for p in paths] == ["1.png", "2.png"] and "꽁밥 1개" in caption and "11월 2일(월)" in caption
-    post, check = texts           # the Instagram post text, then the check (owner 2026-11-18)
+    post, check = texts
     assert post.startswith("🍚 [밥도둑] 이번 주 꽁밥 모음.zip 🎁") and "총 1개!" in post and "11월 2일(월) ~ 11월 6일(금)" in post
     assert check == "🔎 카드뉴스 점검\n✅ 모두 카드에 있어요"
     (out / "2026-11-02" / rc.POST_FILE).write_text("17:30에 쓴 글\n", encoding="utf-8")
     texts.clear()
     assert rc.main(["--week", "2026-11-02", "--out", str(out), "--send-drawn", "--report", str(report)]) == 0
-    assert texts[0] == "17:30에 쓴 글\n"      # what was written with the cards is sent as it is
+    assert texts[0] == "17:30에 쓴 글\n"
 
 
 def test_a_session_held_somewhere_else_each_day_shows_that_days_place():
@@ -414,10 +414,9 @@ def test_a_session_held_somewhere_else_each_day_shows_that_days_place():
     (_, tuesday, wednesday, thursday) = cards([kpf])
     assert "📍 E6 3438호" in tuesday and "E11" not in tuesday
     assert "📍 E11 203호" in wednesday and "E6" not in wednesday
-    assert "📍 N1" in thursday          # a session without a place falls back to the event's
+    assert "📍 N1" in thursday
 
 
-# The owner's post of 2026-11-08 (instagram.com/p/Dfen1HCmMhH), word for word.
 OWNER_POST_1108 = """🍚 [밥도둑] 이번 주 꽁밥 모음.zip 🎁
 
 이번 주에도 KAIST 곳곳에 숨어 있는 꽁밥을 모아왔습니다! 👀

@@ -39,9 +39,6 @@ def _meaningful(old: dict, new: dict, path: str = FEED_PATH) -> list[str]:
     return publish_generated.meaningful_changes([path], lambda p: _dump(old), lambda p: _dump(new))
 
 
-# ---------------------------------------------------------------------------
-# The comparison
-# ---------------------------------------------------------------------------
 def test_only_generated_at_differs_is_not_a_change():
     assert _meaningful(FEED, _feed(generatedAt="2026-09-25T10:30:00+09:00")) == []
 
@@ -83,9 +80,6 @@ def test_magazine_files_keep_committing_on_any_change():
     assert publish_generated.VOLATILE_KEYS["data/ggongbab/news.json"] == {"generatedAt"}
 
 
-# ---------------------------------------------------------------------------
-# Past listings (archive/index.json) follow the same rule
-# ---------------------------------------------------------------------------
 ARCHIVE_PATH = "data/ggongbab/archive/index.json"
 ARCHIVE = {"generatedAt": "2026-09-25T10:00:00+09:00", "timezone": "Asia/Seoul", "windowDays": 30,
            "count": 1, "events": [dict(EVENT_A, id="evt-past", start="2026-09-20T12:00:00+09:00")]}
@@ -112,9 +106,6 @@ def test_the_first_archive_file_always_counts():
     assert publish_generated.meaningful_changes(ap, lambda p: None, lambda p: _dump(ARCHIVE)) == ap
 
 
-# ---------------------------------------------------------------------------
-# What may be published
-# ---------------------------------------------------------------------------
 def test_manual_json_is_never_copied_or_deleted(tmp_path):
     src, dest = tmp_path / "src", tmp_path / "dest"
     (src / "data/ggongbab/.staging").mkdir(parents=True)
@@ -142,7 +133,7 @@ def test_temporary_files_are_never_copied(tmp_path):
     (src / "data/ggongbab/latest.json.tmp").write_text('{"half": ', encoding="utf-8")
     (src / "data/ggongbab/archive/index.json.tmp").write_text("{", encoding="utf-8")
     (dest / "data/ggongbab").mkdir(parents=True)
-    (dest / "data/ggongbab/latest.json.tmp").write_text("{", encoding="utf-8")   # left on a branch earlier
+    (dest / "data/ggongbab/latest.json.tmp").write_text("{", encoding="utf-8")
 
     publish_generated.copy_allowed(src, dest, ["data/ggongbab"])
 
@@ -157,9 +148,6 @@ def test_paths_outside_the_generated_allowlist_are_refused(monkeypatch, path):
         publish_generated.main()
 
 
-# ---------------------------------------------------------------------------
-# End to end against a local origin: does anything get committed and pushed?
-# ---------------------------------------------------------------------------
 def _git(cwd, *args) -> str:
     return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True,
                           text=True, encoding="utf-8").stdout.strip()
@@ -271,7 +259,7 @@ def test_kaist_menu_files_that_only_got_new_stamps_are_not_a_change():
         assert _meaningful(DAY, restamped, path) == []
     week = json.loads(json.dumps(WEEK))
     week["generatedAt"] = "2026-10-12T10:31:00+09:00"
-    week["days"][0]["fetchedAt"] = "2026-10-12T10:31:00+09:00"       # nested stamp, same week
+    week["days"][0]["fetchedAt"] = "2026-10-12T10:31:00+09:00"
     assert _meaningful(WEEK, week, "data/kaist-menu/week.json") == []
 
 
@@ -283,4 +271,4 @@ def test_a_real_menu_or_week_change_still_commits():
     week = json.loads(json.dumps(WEEK))
     week["days"][0]["available"] = False
     assert _meaningful(WEEK, week, "data/kaist-menu/week.json") == ["data/kaist-menu/week.json"]
-    assert _meaningful(DAY, DAY, "data/kaist-menu/.gitkeep") == ["data/kaist-menu/.gitkeep"]  # not JSON: counts
+    assert _meaningful(DAY, DAY, "data/kaist-menu/.gitkeep") == ["data/kaist-menu/.gitkeep"]

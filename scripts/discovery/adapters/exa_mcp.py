@@ -44,7 +44,7 @@ class ExaMCP:
         if self.session:
             headers["Mcp-Session-Id"] = self.session
         if self.calls and self.pause:
-            self.sleep(self.pause)                 # a polite pace for a free public service
+            self.sleep(self.pause)
         self.calls += 1
         request = urllib.request.Request(self.url, data=json.dumps(payload).encode("utf-8"), headers=headers,
                                          method="POST")

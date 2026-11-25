@@ -25,7 +25,7 @@ POOL = ROOT / "data" / "content" / "worldcup.json"
 def settings(env: dict | None = None) -> tuple[str, str]:
     env = dict(os.environ if env is None else env)
     dotenv = ROOT / ".env"
-    if dotenv.is_file():                       # the environment wins over the file
+    if dotenv.is_file():
         for line in dotenv.read_text(encoding="utf-8").splitlines():
             name, sep, value = line.strip().partition("=")
             if sep and not name.startswith("#"):
@@ -47,7 +47,7 @@ def request(url: str, key: str, method: str, path: str, body=None, prefer: str =
         with urllib.request.urlopen(req, timeout=60) as response:
             raw = response.read()
     except urllib.error.HTTPError as exc:
-        raise SystemExit(f"{method} {path.split('?')[0]}: HTTP {exc.code}") from None   # no response text
+        raise SystemExit(f"{method} {path.split('?')[0]}: HTTP {exc.code}") from None
     return json.loads(raw) if raw else None
 
 

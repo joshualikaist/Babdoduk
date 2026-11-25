@@ -28,14 +28,11 @@ def test_ai_schema_parses_and_rejects_bad_enum():
 
 
 def test_ai_schema_is_strict_friendly():
-    # Structured Outputs requires every field to be present (None allowed, no defaults). What is
-    # sent is the SDK's strict conversion: the v4 fields' null defaults are dropped there.
     from openai.lib._pydantic import to_strict_json_schema
     schema = to_strict_json_schema(EventExtraction)
     assert set(schema["required"]) == set(schema["properties"].keys())
     assert set(schema["$defs"]["Evidence"]["required"]) == {"event_time", "location", "food", "registration",
                                                              "giveaway", "from_poster", "audience"}
-    # v6 (2026-10-18): the per-day sessions and the audience are nested objects with every field required.
     assert set(schema["$defs"]["SessionExtraction"]["required"]) == set(schema["$defs"]["SessionExtraction"]["properties"])
     assert set(schema["$defs"]["AudienceExtraction"]["required"]) == {"text", "basis"}
     assert '"default"' not in json.dumps(schema)
@@ -57,7 +54,6 @@ def test_validator_positive_fixture():
 
 def test_validator_lunch_time_counterexample():
     facts = analyze(NEGATIVE_TEXT, REFERENCE)
-    # AI wrongly claims food with a time-of-day quote
     ai = make_extraction(food_provided="true", food_type="meal",
                          evidence=Evidence(event_time="9월 25일 12시", location="N1", food="12시 점심시간에", registration=None))
     cand = validate(ai, facts, NEGATIVE_TEXT, reference=REFERENCE)
@@ -183,7 +179,7 @@ def test_merge_fills_missing_and_flags_conflicts():
 
     conflicting = _cand("Tech Lunch Talk", building="E5", food_provided="false")
     updated2, reasons2 = merge_into(updated, conflicting)
-    assert updated2["building"] == "N1"  # never overwritten
+    assert updated2["building"] == "N1"
     assert updated2["needs_review"] and updated2["status"] == "review"
     assert any("building" in r for r in reasons2) and any("food_provided" in r for r in reasons2)
 
@@ -224,9 +220,6 @@ def test_same_url(a, b, same):
 
 
 # --- dedup: same-day sessions (audit 2026-11-13) -------------------------------
-# The real title shapes of the 2026 department info sessions (inputs/ggongbab/manual.json and a
-# Dooray mail shape). On one day they used to merge: the same-title floor ignored the start time,
-# building and organizer, and normalization dropped "[전산학부]" and turned "AI" into "i".
 INFO_SESSION_TITLES = [
     "2026 기계공학과 학과설명회", "2026 산업및시스템공학과 학과설명회", "2026 뇌인지과학과 학과설명회",
     "2026 기술경영학부 학과설명회", "2026 전기및전자공학부 학과설명회", "2026 바이오및뇌공학과 학과설명회",
@@ -238,13 +231,13 @@ INFO_SESSION_TITLES = [
     "[전산학부] 학과 설명회",
 ]
 DEPARTMENTS = [t.split()[-2] if t.startswith("2026") else t.split()[0].strip("[]") for t in INFO_SESSION_TITLES]
-BRACKET_TITLES = [f"[{d}] 학과 설명회" for d in DEPARTMENTS]          # the Dooray mail shape for every department
+BRACKET_TITLES = [f"[{d}] 학과 설명회" for d in DEPARTMENTS]
 BUILDINGS = ["N7", "E2", "E4", "E5", "E6", "E7", "N1", "N3", "N4", "N5", "W1", "W2", "W3", "W4", "W5", "W6",
              "W7", "W8", "W9", "W10", "E15", "E3"]
 
 
 def _session(i, title, building=True):
-    start = f"2026-11-23T{9 + i // 2:02d}:{30 * (i % 2):02d}:00+09:00"     # 09:00, 09:30, ... 19:30
+    start = f"2026-11-23T{9 + i // 2:02d}:{30 * (i % 2):02d}:00+09:00"
     return _cand(title, start=start, building=BUILDINGS[i] if building else None,
                  food_provided="true", food_type="meal")
 
@@ -270,7 +263,6 @@ def test_no_two_department_info_sessions_score_as_one(building, titles):
         for b in sessions[i + 1:]:
             row = b.to_db_row()
             assert score_pair(a, row) < 0.72, (a.title, b.title, score_pair(a, row))
-            # Even at the very same minute without a building, the department names keep them apart.
             same_time = _cand(a.title, start=row["event_start"])
             assert score_pair(same_time, {**row, "building": None}) < 0.72, (a.title, b.title)
 
@@ -291,16 +283,12 @@ def test_different_departments_in_the_same_room_at_the_same_time_stay_separate()
 
 
 @pytest.mark.parametrize("existing, incoming", [
-    # one session, two mails: brackets, 안내/설명회 and spacing differ
     ({"title": "[전산학부] 학과 설명회", "event_start": "2026-11-23T18:00:00+09:00", "building": "E3"},
      {"title": "전산학부 학과설명회 안내", "start": "2026-11-23T18:00:00+09:00", "building": "E3"}),
-    # the same title, one source gives only the date
     ({"title": "2026 수리과학과 학과설명회", "event_start": "2026-11-23T00:00:00+09:00", "building": None},
      {"title": "2026 수리과학과 학과설명회", "start": "2026-11-23T17:00:00+09:00", "building": "E6-1"}),
-    # the same title and minute, the building written two ways
     ({"title": "2026 생명과학과 학과설명회", "event_start": "2026-11-18T18:30:00+09:00", "building": "창의학습관(E11)"},
      {"title": "2026 생명과학과 학과설명회", "start": "2026-11-18T18:30:00+09:00", "building": "E11"}),
-    # the same title and minute, the KST and UTC spellings of one instant
     ({"title": "삼성전자 Tech Lunch Talk", "event_start": "2026-09-25T03:00:00+00:00", "building": "N1"},
      {"title": "[안내] 삼성전자 Tech Lunch Talk", "start": "2026-09-25T12:00:00+09:00", "building": "N1"}),
 ])

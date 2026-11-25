@@ -114,7 +114,7 @@ def make_poster_png() -> bytes:
     pixels = image.load()
     for y in range(height):
         for x in range(width):
-            base, noise = 235 - y // 30, (6 if y > 1100 else 0)     # noise only in the bottom strip keeps the file small
+            base, noise = 235 - y // 30, (6 if y > 1100 else 0)
             pixels[x, y] = (base + rng.randint(-noise, noise), base - 12 + rng.randint(-noise, noise),
                             255 - y // 20 + rng.randint(-noise, noise))
     draw = ImageDraw.Draw(image)
@@ -131,7 +131,6 @@ def make_poster_png() -> bytes:
 
 
 def write_fixtures() -> None:
-    # The PDF keeps its "Date:" and "Venue:" labels: they are flyer content, not a mail header block.
     (FIXTURES / "poster.png").write_bytes(make_poster_png())
     (FIXTURES / "announcement.pdf").write_bytes(_pdf([
         "Startup Networking Day",
@@ -147,13 +146,13 @@ def write_fixtures() -> None:
 @dataclass
 class Expect:
     candidate: bool
-    reason: str = ""            # prefilter reason (exact, fake and real alike: no AI involved)
+    reason: str = ""
     opened: bool = True
-    images: int = 0             # poster images that go with the task
+    images: int = 0
     attachment_block: bool = False
-    restored: bool = False      # an unread mail marked unread again
+    restored: bool = False
     published: bool = False
-    food: str = ""              # "text" / "poster" food source when published with food
+    food: str = ""
     giveaway: bool = False
     deadline_only: bool = False
 
@@ -163,9 +162,7 @@ EXPECT: dict[str, Expect] = {
     "food-pdf": Expect(True, "food provision wording + event + date", attachment_block=True, published=True, food="text"),
     "food-poster": Expect(True, "event + poster image", images=1, restored=True, published=True, food="poster"),
     "giveaway-expo": Expect(True, "giveaway wording + event + date", published=True, giveaway=True),
-    # A survey with a prize draw and no event to attend is not listed (owner decision 2026-10-15).
     "giveaway-deadline": Expect(True, "giveaway wording + event + date"),
-    # A booth with a prize draw and only a sign-up deadline is listed, starting at its deadline.
     "giveaway-booth": Expect(True, "giveaway wording + event + date", published=True, giveaway=True,
                              deadline_only=True),
     "multi-session": Expect(True, "food provision wording + event + date", published=True, food="text"),
@@ -246,7 +243,7 @@ def run_radar_stage(reference: datetime, mails: list[dict], work: Path) -> Radar
     headers, request = build_mailbox(reference, mails)
     session = SimpleNamespace(page=SimpleNamespace(request=request), context=None,
                               contract=SimpleNamespace(detail_api=DETAIL_API, detail_body_path=BODY_PATH))
-    state = AgentState.load(work / "ggongbab-mail-state.json")      # a temp file, never the operator's ledger
+    state = AgentState.load(work / "ggongbab-mail-state.json")
     writer = CapturingWriter()
     guard = radar.RequestGuard(None, HOST)
     result = radar.scan_once(session, state, writer, list_mails=lambda s, **_: headers, now=reference,
@@ -260,7 +257,7 @@ class FakeDoorayClient:
     """The Dooray API client, answering from memory: a task's files are the posters the Radar attached."""
 
     def __init__(self, files: dict[str, list[tuple[str, str, bytes]]]):
-        self.files = files      # post id -> [(file id, mime, data)]
+        self.files = files
 
     def list_post_files(self, project_id, post_id):
         return [{"id": fid, "name": f"poster-{i}.jpg", "size": len(data)}
@@ -313,7 +310,6 @@ def ext(**kw) -> EventExtraction:
     return EventExtraction(**base)
 
 
-# What a faithful model returns for each fixture, keyed by a piece of the subject line.
 SCRIPT = {
     "반도체 산업 진로 특강": lambda: ext(
         title="반도체 산업 진로 특강", summary="반도체 산업 진로 특강과 점심 도시락 제공.",
@@ -345,7 +341,6 @@ SCRIPT = {
         giveaway="true", giveaway_description="경품 추첨 (에어팟 3명), 스탬프 투어 기념품", confidence=0.92,
         evidence=ev(event_time="9월 20일(일) 10:00~17:00", location="KI빌딩 1층 로비",
                           food=None, registration=None, giveaway="방문객 대상 경품 추첨(에어팟 3명)을 진행")),
-    # A survey with a prize draw and nothing to attend: the model reads it as no event (prompt rule 7).
     "KAIST 설문 참여 이벤트": lambda: ext(
         is_event=False, title="KAIST 설문 참여 이벤트", summary="설문 참여자 추첨으로 문화상품권을 제공합니다.",
         confidence=0.95),
@@ -455,7 +450,6 @@ class Report:
 
 
 def make_settings(ai_model: str) -> Settings:
-    # Explicit values everywhere an environment variable would otherwise decide.
     return Settings(dooray_token="e2e-offline", dooray_project_id="e2e-project", dooray_base="https://dooray.e2e.invalid",
                     supabase_url="", supabase_secret_key="", openai_api_key="", ai_model=ai_model,
                     ai_fallback_model="", ai_confidence_threshold=0.75, ai_max_images=2, publish_confidence_threshold=0.7,
@@ -502,7 +496,6 @@ def run_flow(ai: str = "fake", page: bool = True) -> Report:
             report.check(bool(restore_posts) is expect.restored,
                          f"{row.key}: unread restore {bool(restore_posts)}, expected {expect.restored}")
             if expect.restored:
-                # the restore comes after every download of that mail
                 last_get = max((i for i, e in enumerate(outcome.request.log) if e[0] == "GET" and f"/{mail['mail_id']}" in e[1]), default=-1)
                 report.check(outcome.request.log.index(restore_posts[0]) > last_get, f"{row.key}: restored before the last download")
         report.check(all(e[0] == "GET" or e[1] == f"https://{HOST}/v2/wapi/mails/unread" for e in outcome.request.log),
@@ -545,7 +538,7 @@ def run_flow(ai: str = "fake", page: bool = True) -> Report:
             row.event_id = linked[0] if linked else None
             row.ai = f"event={'Y' if cand.is_event else 'N'} food={cand.food_provided}" + (
                 f"/{cand.food_evidence_source}" if cand.food_evidence_source else "") + f" gift={cand.giveaway} c={cand.confidence}"
-            if not cand.is_event:       # keep what the model said, to explain the mismatch (fixture text only)
+            if not cand.is_event:
                 run = next((r for r in reversed(repo.ai_runs) if r["raw_item_id"] == raw["id"]), None)
                 parsed_json = (run or {}).get("parsed_json") or {}
                 row.ai += f" model_note={(parsed_json.get('review_reason') or parsed_json.get('summary') or '')[:160]!r}"
@@ -647,7 +640,6 @@ def check_page(report: Report, rows: dict, published: dict, reference: datetime,
                     row.card += " 🎁"
                     report.check(card.locator(".gg-giveaway").count() == 1, f"{key}: giveaway line missing")
                 if expect.food == "poster":
-                    # copy cleanup, owner 2026-11-12: the "포스터 기준" note is gone; the food line stays.
                     report.check(card.locator(".gg-food-primary").count() == 1 and card.locator(".gg-food-source").count() == 0,
                                  f"{key}: poster-sourced food shows no food line, or a poster note")
                     row.card += " 음식(포스터)"
@@ -660,7 +652,6 @@ def check_page(report: Report, rows: dict, published: dict, reference: datetime,
                     line = " ".join(card.locator(".gg-time.is-deadline").inner_text().split())
                     report.check(line == "신청 마감 9월 24일 (목) 23:59", f"{key}: date line {line!r}")
                     row.card += " 마감일"
-            # Only food counts: giveaway-only listings never raise the free-meal count.
             today = reference.date().isoformat()
             food_today = sum(1 for e in published.values() if e["startAt"].startswith(today) and e["food"]["provided"] == "true")
             count = tab.locator(".gg-radar-count").inner_text()

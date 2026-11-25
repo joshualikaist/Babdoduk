@@ -53,9 +53,6 @@ def write_eml(tmp_path: Path, name: str, **kw) -> Path:
 
 
 RECEIVED = datetime(2026, 9, 3, 10, 0, tzinfo=KST)
-# The backfill window closes at the end of the synthetic September. Like FUTURE it is derived
-# from the fixed test clock (TEST_NOW), and every run_backfill call gets that clock as `now`,
-# so the synthetic event is inside the window and still ahead on every calendar day.
 EVENT_UNTIL = FUTURE.date() + timedelta(days=8)
 
 
@@ -302,7 +299,7 @@ def test_dry_run_writes_no_events(settings, tmp_path):
     repo = MemoryRepository()
     run_backfill(settings, repo, FakeExtractor(future_extraction), archive_items(settings, tmp_path),
                  now=TEST_NOW)
-    assert len(repo.events) == 1        # only in memory
+    assert len(repo.events) == 1
     report_text = run_backfill(settings, MemoryRepository(), FakeExtractor(future_extraction),
                                archive_items(settings, tmp_path), now=TEST_NOW).render(EVENT_UNTIL, dry_run=True)
     assert "DRY RUN - nothing was written" in report_text
@@ -339,8 +336,6 @@ def test_past_event_stored_but_not_exported(settings, tmp_path):
     from ggongbab.exporter import build_payload
 
     past = (TEST_NOW - timedelta(days=4)).replace(hour=12, minute=0, second=0, microsecond=0)
-    # The body must state the same past date, otherwise the validator rightly
-    # rejects the extraction as a date conflict and there is nothing to test here.
     past_body = (f"{past.month}월 {past.day}일 12시 N1 101호에서 설명회를 진행했습니다.\n"
                  "참석자에게 점심 도시락을 제공합니다.")
     repo = MemoryRepository()

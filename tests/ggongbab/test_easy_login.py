@@ -24,7 +24,7 @@ URL = {"portal": "https://portal.kaist.ac.kr/common/login/login.do",
        "view": "https://sso.kaist.ac.kr/auth/kaist/user/login/view?agt_id=kaist-prod-portal",
        "mfa": "https://sso.kaist.ac.kr/auth/twofactor/mfa/login2Factor",
        "dooray": "https://kaist.gov-dooray.com/mail/systems/inbox",
-       "stuck": "https://sso.kaist.ac.kr/auth/user/login/view",          # where an expired verification ended
+       "stuck": "https://sso.kaist.ac.kr/auth/user/login/view",
        "main": "https://portal.kaist.ac.kr/index.html"}
 STUCK = {"host": "sso.kaist.ac.kr", "path": "/auth/user/login/view"}
 BLANK = {"host": "", "path": "blank"}
@@ -54,7 +54,7 @@ class Browser:
         if method == "Target.attachToTarget":
             assert params["flatten"] is True
             return {"sessionId": "s1"}
-        if method in ("Page.navigate", "Target.createTarget"):   # both lead to the next page
+        if method in ("Page.navigate", "Target.createTarget"):
             if method == "Page.navigate":
                 assert session == "s1"
                 self.navigations.append(params["url"])
@@ -123,7 +123,7 @@ def test_two_clicks_then_the_code_goes_to_telegram_and_nowhere_else(local):
     assert browser.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON] and browser.closed
     (text,) = telegram.messages
     assert "67" in text and "2분 59초" in text and "거절하세요" in text
-    assert telegram.markups[0]["inline_keyboard"][0][0]["callback_data"] == el.REQUEST_CALLBACK   # a new code later
+    assert telegram.markups[0]["inline_keyboard"][0][0]["callback_data"] == el.REQUEST_CALLBACK
     state = (local / el.STATE).read_text(encoding="utf-8")
     assert "67" not in state and OWNER_ID not in state
     assert json.loads(state)["last_sent"] == NOW and json.loads(state)["attempts"] == [NOW]
@@ -193,10 +193,10 @@ def test_a_click_that_leads_somewhere_else_stops(local):
 def test_a_page_that_never_moves_or_never_answers_stops_after_one_fresh_start(local):
     stuck = Browser(PORTAL, VIEW, stall=True)
     assert run(local, stuck)[0] == "EASY_LOGIN_STOPPED_NO_PROGRESS"
-    assert stuck.navigations == [el.PORTAL_LOGIN_URL]          # once, before Easy Login's button only
+    assert stuck.navigations == [el.PORTAL_LOGIN_URL]
     assert stuck.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON]
     (local / el.STATE).unlink()
-    silent = Browser(PORTAL, answer=False)          # for example an alert() dialog holds the page
+    silent = Browser(PORTAL, answer=False)
     assert run(local, silent)[0] == "EASY_LOGIN_STOPPED_UNRESPONSIVE" and silent.clicks == []
     assert silent.navigations == [el.PORTAL_LOGIN_URL]
 
@@ -230,8 +230,7 @@ def test_an_automatic_attempt_starts_afresh_when_the_portal_waits_on_another_pag
     assert code == "EASY_LOGIN_CODE_SENT"
     assert browser.navigations == [el.PORTAL_LOGIN_URL] and browser.clicks == [el.PORTAL_BUTTON, el.EASY_LOGIN_BUTTON]
     state = json.loads((local / el.STATE).read_text(encoding="utf-8"))
-    assert state["attempts"] == [NOW] and state["requests"] == []             # an automatic attempt
-    # Without the Portal waiting for a login, a page that is not a login page is still left alone.
+    assert state["attempts"] == [NOW] and state["requests"] == []
     (local / el.STATE).unlink()
     untouched = Browser(STUCK, PORTAL, VIEW, MFA)
     code = el.attempt(local, 9224, notifier=Telegram(), targets=lambda port: targets, cdp=untouched,
@@ -275,7 +274,7 @@ def test_at_most_one_attempt_per_thirty_minutes_and_six_a_day(local):
     day needs four, and a failed attempt counts too."""
     assert el.DAILY_MAX == 6
     assert run(local, Browser(PORTAL, VIEW, MFA))[0] == "EASY_LOGIN_CODE_SENT"
-    atomic_json(local / "ops-portal.json", {"last_success": NOW + 60})            # the owner approved
+    atomic_json(local / "ops-portal.json", {"last_success": NOW + 60})
     assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + 600)[0] == "EASY_LOGIN_RATE_LIMITED"
     for i in range(1, el.DAILY_MAX):
         now = NOW + i * el.MIN_GAP_SECONDS
@@ -294,21 +293,21 @@ def test_two_unanswered_codes_pause_it_until_a_person_logs_in_or_for_three_hours
     third = later + el.MIN_GAP_SECONDS
     assert run(local, Browser(PORTAL, VIEW, MFA), now=third)[0] == "EASY_LOGIN_PAUSED_UNANSWERED"
     assert el.may_start(local, third) is False
-    lifted = later + el.UNANSWERED_PAUSE_SECONDS            # three hours after the second code
+    lifted = later + el.UNANSWERED_PAUSE_SECONDS
     assert el.may_start(local, lifted - 60) is False
-    assert el.may_start(local, lifted) is True                                  # the owner was only away
-    atomic_json(local / "ops-radar.json", {"last_success": third + 5})          # a person logged in
+    assert el.may_start(local, lifted) is True
+    atomic_json(local / "ops-radar.json", {"last_success": third + 5})
     assert el.may_start(local, third + 10) is True
 
 
 def test_no_automatic_code_at_night_but_the_owners_own_request_still_works(local):
-    night = 1_999_965_600.0                    # 2033-05-18 03:00 KST
+    night = 1_999_965_600.0
     assert el.quiet(night) and not el.quiet(night + 5 * 3600) and not el.quiet(night - 2 * 3600 - 1)
     assert run(local, Browser(PORTAL, VIEW, MFA), now=night)[0] == "EASY_LOGIN_QUIET_HOURS"
     assert el.may_start(local, night) is False
-    assert json.loads((local / el.STATE).read_text(encoding="utf-8"))["attempts"] == []      # nothing counted
+    assert json.loads((local / el.STATE).read_text(encoding="utf-8"))["attempts"] == []
     assert ask(local, Browser(PORTAL, VIEW, MFA), "portal", now=night)[0] == "EASY_LOGIN_CODE_SENT"
-    assert el.may_start(local, night + 5 * 3600) is True                       # 08:00
+    assert el.may_start(local, night + 5 * 3600) is True
 
 
 def test_a_code_still_waiting_blocks_a_second_one():
@@ -337,19 +336,19 @@ def dog(tmp_path, *, enabled=True, now=1000.0):
 def test_the_watchdog_starts_one_attempt_after_the_quick_retry_had_its_chance(tmp_path):
     wd, easy, clock, files = dog(tmp_path)
     wd.tick()
-    assert easy.call_count == 0                                   # the quick retry comes first
+    assert easy.call_count == 0
     clock["t"] += ops.QUICK_RETRY_SECONDS + 30
     wd.tick()
     assert easy.call_count == 1
     assert "EASY_LOGIN_STARTED" in (files.local / "ops-watchdog.log").read_text(encoding="utf-8")
     clock["t"] += 15
     wd.tick()
-    assert easy.call_count == 1                                   # one at a time, not every tick
+    assert easy.call_count == 1
     wd.easy_child.poll.return_value = 1
     clock["t"] += ops.EASY_LOGIN_CHECK_SECONDS
     atomic_json(files.local / el.STATE, {"attempts": [clock["t"] - 60], "last_sent": None, "unanswered": 0})
     wd.tick()
-    assert easy.call_count == 1                                   # its own 30-minute limit holds
+    assert easy.call_count == 1
 
 
 def test_the_watchdog_never_starts_it_without_the_opt_in(tmp_path):
@@ -392,10 +391,10 @@ def test_a_logged_out_portal_page_becomes_a_login_wait_that_starts_it(tmp_path):
     wd, easy, clock, files = logged_out(tmp_path)
     wd.tick()
     assert wd.state["latched"] == "PORTAL_LIST_AUTH_REQUIRED"
-    wd.launch.assert_not_called()                                 # no more restarts against a dead session
+    wd.launch.assert_not_called()
     clock["t"] += ops.QUICK_RETRY_SECONDS + 30
     wd.tick()
-    assert files.control_state()["resume"] == 1000                # no quick retry on a login page
+    assert files.control_state()["resume"] == 1000
     assert easy.call_count == 1
 
 
@@ -430,7 +429,7 @@ def test_on_request_an_expired_login_goes_back_to_the_portal_login_page_and_a_ne
     assert "67" in text and markup == el.request_markup("🔁 새 승인 번호 받기")
     state = json.loads((local / el.STATE).read_text(encoding="utf-8"))
     assert state["requests"] == [NOW] and state["attempts"] == [NOW - 600] and state["last_sent"] == NOW
-    assert state["unanswered"] == 2               # the automatic pause still waits for a real login
+    assert state["unanswered"] == 2
     assert el.may_start(local, NOW + el.MIN_GAP_SECONDS) is False
 
 
@@ -463,7 +462,7 @@ def test_it_clicks_only_once_the_page_has_loaded_and_settled(local):
     code = el.attempt(local, 9224, notifier=Telegram(), targets=lambda port: targets, cdp=browser, now=lambda: NOW,
                       sleep=clock.sleep, clock=clock, requested=True, mail_host=DOORAY_HOST, portal_wait=True)
     assert code == "EASY_LOGIN_CODE_SENT"
-    assert clicks_at[0] >= 3 + el.READY_SETTLE_SECONDS          # three probes still loading, then the settle
+    assert clicks_at[0] >= 3 + el.READY_SETTLE_SECONDS
     assert "ready: document.readyState === 'complete'" in el.PROBE
 
 
@@ -475,19 +474,19 @@ def test_a_missing_portal_tab_is_opened_in_the_background_at_the_login_page(loca
 
 
 @pytest.mark.parametrize("pages, extra, expected", [
-    (("dooray", "stuck"), {}, ("t1", "reset")),          # the Portal's login on an expired page
-    (("dooray", "mfa"), {}, ("t1", "reset")),            # an open verification page: the owner wants a new code
-    (("dooray", "view"), {}, ("t1", "reset")),           # even a login page starts afresh (it may be stale)
+    (("dooray", "stuck"), {}, ("t1", "reset")),
+    (("dooray", "mfa"), {}, ("t1", "reset")),
+    (("dooray", "view"), {}, ("t1", "reset")),
     (("dooray", "portal"), {}, ("t1", "here")),
     (("dooray", "main"), {"portal_wait": True}, ("t1", "reset")),
     (("dooray", "main"), {}, (None, "EASY_LOGIN_NOT_NEEDED")),
     (("dooray", "main"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
     (("dooray",), {"portal_wait": True}, (None, "open")),
-    (("main", "view"), {"mail_wait": True}, ("t1", "here")),   # Dooray's own SSO login page
+    (("main", "view"), {"mail_wait": True}, ("t1", "here")),
     (("main", "stuck"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
     (("stuck", "view"), {"portal_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
-    (("stuck",), {"portal_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),   # whose SSO page is it?
-    (("stuck",), {"portal_wait": True, "mail_tab": False}, ("t0", "reset")),          # separate browsers
+    (("stuck",), {"portal_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
+    (("stuck",), {"portal_wait": True, "mail_tab": False}, ("t0", "reset")),
 ])
 def test_where_an_owner_request_starts(pages, extra, expected):
     targets = [{"id": f"t{i}", "url": URL[k]} for i, k in enumerate(pages)]
@@ -515,7 +514,7 @@ def test_the_owners_requests_have_their_own_limits_instead_of_the_automatic_ones
 
 def test_an_owner_request_also_restarts_the_automatic_thirty_minutes(local):
     assert ask(local, Browser(PORTAL, VIEW, MFA), "portal")[0] == "EASY_LOGIN_CODE_SENT"
-    atomic_json(local / "ops-portal.json", {"last_success": NOW + 60})            # the owner approved
+    atomic_json(local / "ops-portal.json", {"last_success": NOW + 60})
     assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + 600)[0] == "EASY_LOGIN_RATE_LIMITED"
     assert run(local, Browser(PORTAL, VIEW, MFA), now=NOW + el.MIN_GAP_SECONDS)[0] == "EASY_LOGIN_CODE_SENT"
 
@@ -525,7 +524,7 @@ def test_the_owner_is_told_every_outcome_in_fixed_words():
         text, markup = el.outcome(code)
         assert text and markup in (None, el.request_markup("🔑 다시 요청"))
     for quiet in ("EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_REQUEST_TOO_SOON", "EASY_LOGIN_REQUEST_DAILY_MAX"):
-        assert el.outcome(quiet)[1] is None                  # pressing again would not help yet
+        assert el.outcome(quiet)[1] is None
     assert "아이디 칸이 비어" in el.outcome("EASY_LOGIN_STOPPED_ID_EMPTY")[0]
 
 
@@ -545,7 +544,7 @@ def test_a_request_reports_its_outcome_on_telegram_and_an_automatic_run_does_not
     assert telegram.messages == [el.OUTCOME["EASY_LOGIN_NOT_NEEDED"]] and telegram.markups == [None]
     log = (local / el.LOG).read_text(encoding="utf-8")
     assert "EASY_LOGIN_REQUESTED" in log and "EASY_LOGIN_NOT_NEEDED" in log
-    assert el.run_assist(tmp_path) == 1 and len(telegram.messages) == 1      # EASY_LOGIN_NO_LOGIN_PAGE, quietly
+    assert el.run_assist(tmp_path) == 1 and len(telegram.messages) == 1
 
 
 @pytest.mark.parametrize("text, wanted", [
@@ -597,21 +596,21 @@ def test_the_bot_starts_a_request_on_the_button_or_on_login_and_keeps_questions_
     assert tr.LOGIN_CALLBACK == el.REQUEST_CALLBACK
     bot.pending = [message(1, "로그인")]
     radar.handle_updates(0)
-    assert launched == [] and "꺼져 있습니다" in bot.said[-1]          # Easy Login is off on this PC
+    assert launched == [] and "꺼져 있습니다" in bot.said[-1]
     atomic_json(local / el.CONFIG, {"enabled": True, "expected_id": OWNER_ID})
-    bot.pending = [tap(2, chat=99)]                                    # another chat: ignored
+    bot.pending = [tap(2, chat=99)]
     radar.handle_updates(0)
     assert launched == [] and bot.answered == []
     bot.pending = [tap(3)]
     radar.handle_updates(0)
     assert launched == [tmp_path] and bot.answered[-1].startswith("🔑")
-    bot.pending = [message(4, "로그인 다시 할게")]                    # the first one still runs
+    bot.pending = [message(4, "로그인 다시 할게")]
     radar.handle_updates(0)
     assert len(launched) == 1 and "여는 중" in bot.said[-1]
     radar.login_child.poll.return_value = 0
     bot.pending = [message(5, "다시 로그인")]
     radar.handle_updates(0)
-    assert len(launched) == 2 and not (local / tr.INBOX).exists()      # a request is not a note
+    assert len(launched) == 2 and not (local / tr.INBOX).exists()
     bot.pending = [message(6, "로그인 왜 풀렸어?")]
     radar.handle_updates(0)
     assert len(launched) == 2 and "왜 풀렸어" in (local / tr.INBOX).read_text(encoding="utf-8")
@@ -626,5 +625,5 @@ def test_no_automatic_resume_while_the_portal_tab_is_back_on_its_login_page(tmp_
     for step in ("portal", "view", "mfa"):
         tabs["now"] = [{"id": "d", "url": URL["dooray"]}, {"id": "s", "url": URL[step]}]
         assert wd.may_resume("verified", clock["t"]) is None
-    tabs["now"] = [{"id": "d", "url": URL["dooray"]}, {"id": "s", "url": URL["main"]}]    # approved
+    tabs["now"] = [{"id": "d", "url": URL["dooray"]}, {"id": "s", "url": URL["main"]}]
     assert wd.may_resume("verified", clock["t"]) == "login"

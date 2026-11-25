@@ -1,33 +1,9 @@
-/* 오늘 뭐 먹지 (choose.html). Owner 2026-11-05: the slot roulette and its three steps are gone ("이 룰렛은
-   폐기해줘", "사람들이 선택하는거 귀찮으니까 룰렛 돌리는거 아니야"); in their place the world cup's capsule
-   machine ("월드컵 때 썼던 … 그거", js/worldcup.js showGacha), one button and no choices.
-
-   메뉴 뽑기: the machine cranks three times while its screen runs through food, squashes, and drops one
-   capsule that flies up and pops open on the pick; the card under the button names it. The pick is a
-   KAIST cafeteria meal still being served today, a campus restaurant menu transcribed from photos, or a
-   popular delivery dish (MIN_POPULARITY). While a cafeteria meal is being served, about four draws in ten are one. A
-   press during a draw lands it at once; reduced motion, forced colours or no Web Animations show the
-   pick straight away. Only transform and opacity move. (Opening a delivery app waits for the owner,
-   2026-11-04: "이거는 나중에 구현".)
-
-   Public helpers (tests/test_pick.py): window.BabdodukPick.{CATEGORIES, categorize, servingMeals,
-   cleanItems, kindOf, draw}. */
 (function () {
   var MEALS = ['breakfast', 'lunch', 'dinner'];
-  // When a cafeteria lists no hours: the usual KAIST windows.
   var MEAL_END = { breakfast: '09:30', lunch: '13:30', dinner: '19:00' };
-  // Owner 2026-11-10: cafeteria meals and campus restaurants together take 7 draws in 10, delivery 3.
-  // While a cafeteria meal is being served, it takes 2 of the 10 draws and the campus restaurants 5
-  // (owner 2026-11-10: 학식 2, 교내 식당 5, 배달 3); with no meal served, the campus restaurants take all 7.
   var LOCAL_SHARE = 0.7;
   var CAFETERIA_SHARE = 0.2;
-  // Only dishes the catalog rates 4 or 5 for popularity: the delivery-app staples (치킨, 짜장면, 떡볶이,
-  // 마라탕 …). Owner 2026-11-05: "배달음식이 너무나도 한국 정서와 조금 다른 것 같다"; at 3 and below the
-  // pool was 354 dishes such as 루면 or 비앙비앙면 and drew four times in five. scripts/page_content.py
-  // pick_photo_blocks carries the photo credits of the same dishes.
   var MIN_POPULARITY = 4;
-  // Kinds of delivery food, as the delivery apps group them. A dish takes the first kind it fits, so the
-  // specific kinds come before the broad ones (한식 last).
   var CATEGORIES = [
     { id: 'chicken', emoji: '🍗', test: function (f) {
       return (/치킨|닭강정|후라이드|양념통닭/.test(f.nameKo) && f.dishType !== 'sandwich' && f.dishType !== 'wrap' &&
@@ -48,7 +24,6 @@
     { id: 'korean', emoji: '🍚', test: function (f) { return f.cuisineGroup === 'korean'; } },
   ];
 
-  // The kind of a delivery dish, or null (not delivered, a dessert or a drink, or no kind fits).
   function kindOf(f) {
     if (!f || (f.diningMode || []).indexOf('delivery') < 0 || f.category === 'dessert' || f.category === 'drink') return null;
     for (var i = 0; i < CATEGORIES.length; i++) {
@@ -56,7 +31,6 @@
     }
     return null;
   }
-  // Delivery dishes by kind; a kind with fewer than three dishes is left out.
   function categorize(foods) {
     var out = {};
     CATEGORIES.forEach(function (c) { out[c.id] = []; });
@@ -72,9 +46,6 @@
     var m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || '').trim());
     return m ? Number(m[1]) * 60 + Number(m[2]) : null;
   }
-  // The cafeteria meals of `data` (a kaist-menu day) still being served at `now` (minutes after KST
-  // midnight): ones whose listed end, or the usual one, is still ahead. Only the Daejeon main campus
-  // (a building code such as N11 or E5): 문지, 화암 and Seoul are other campuses.
   var MAIN_CAMPUS = /^[EWNS]\d/;
   function servingMeals(data, nowMinutes) {
     var out = [];
@@ -92,24 +63,16 @@
     return out;
   }
 
-  // A menu line as a person reads it: allergen numbers "(5,6,10)" and the calorie line go.
   function cleanItems(items) {
     return (items || []).map(function (item) { return String(item).replace(/\s*\([\d,*\s]+\)\s*$/, '').trim(); })
       .filter(function (item) { return item && !/^\[?\s*칼로리/.test(item) && !/kcal\]?$/i.test(item); });
   }
 
-  // Everyone's taste (owner 2026-11-05, 방법 A; supabase/migrations/010_pick_stats.sql, docs/PICK_STATS.md):
-  // a dish's weight is its popularity times taste(likes, rerolls). With no votes it is 1; it rises
-  // towards 2 as people press 👍 이거 먹을래요 and falls towards 0 as they draw again past the dish.
-  // The +2/+4 is a prior of two likes and two rerolls, so a few votes move it only a little.
   function taste(likes, rerolls) {
     likes = Math.max(0, Number(likes) || 0);
     rerolls = Math.max(0, Number(rerolls) || 0);
     return 2 * (likes + 2) / (likes + rerolls + 4);
   }
-  // A daily cafeteria meal, a photographed campus restaurant menu, or a delivery dish.
-  // On campus (cafeteria or campus restaurant) LOCAL_SHARE of the time, else delivery; when one side
-  // has nothing to draw, the other side takes every draw. Delivery weights and taste stay unchanged.
   function draw(meals, dishes, rand, votes, campus) {
     rand = rand || Math.random;
     meals = meals || [];
@@ -120,7 +83,6 @@
       if (meals.length && (!campus.length || rand() < CAFETERIA_SHARE / LOCAL_SHARE)) {
         return { meal: meals[Math.floor(rand() * meals.length)] };
       }
-      // Select a store first so larger menus do not drown out smaller restaurants.
       var stores = Array.from(new Set(campus.map(function (item) { return item.store; })));
       var store = stores[Math.floor(rand() * stores.length)];
       var choices = campus.filter(function (item) { return item.store === store; });
@@ -233,9 +195,6 @@
         typeof item.name === 'string' && item.name;
     }) : [];
   }, function () { state.campus = []; });
-  // The world cup's photos with their credits (js/pick-photos.js, written from data/content/worldcup.json):
-  // only photographed dishes are drawn, each capsule opening on its photo. Without them every delivery
-  // dish stays in, on its kind's emoji.
   var PHOTOS = window.BABDODUK_PICK_PHOTOS || { links: [], photos: {} };
   function photoOf(id) {
     var p = PHOTOS.photos[id];
@@ -249,8 +208,6 @@
   }, function () { state.dishes = []; });
 
   // ---- everyone's taste: read the counts, send one signal at a time ----------------------------------
-  // Only with the browser-public project values (js/ggongbab-public-config.js, lab); without them, or
-  // when the server fails, the page draws by popularity alone and shows no 👍 button.
   var statsApi = (function () {
     var c = window.BABDODUK_PUBLIC_FEED_CONFIG;
     try {
@@ -277,7 +234,6 @@
       });
     }, function () {});
   }
-  // 'draw', 'like' or 'reroll' for a delivery dish; nothing else is ever sent.
   function record(signal, dish) {
     if (!statsApi || !dish) return;
     api('rpc/pick_record', { p_dish: dish.id, p_signal: signal }).catch(function () {});
@@ -305,7 +261,6 @@
     sx = sx == null ? 1 : sx;
     return 'translate(' + x + 'px, ' + y + 'px) rotate(' + (r || 0) + 'deg) scale(' + sx + ', ' + (sy == null ? sx : sy) + ')';
   }
-  // One element's part as [ms, keyframe, easing onward] steps: a single animation, filled both ways.
   function track(run, el, steps) {
     var from = steps[0][0], span = steps[steps.length - 1][0] - from;
     var frames = steps.map(function (step) {
@@ -321,7 +276,6 @@
   function q(sel) { return els.machine.querySelector(sel); }
   function pickEmoji(pick) { return pick.meal ? '🍱' : pick.campus ? '🍽️' : pick.kind.emoji; }
 
-  // The capsule of a pick: its face (the photo or an emoji) under half a coloured shell.
   function capsule(pick) {
     var cap = node('div', 'pk-cap', els.stage), y = node('div', 'pk-cap-y', cap), face = node('div', 'pk-cap-face', y);
     var photo = pick.dish && photoOf(pick.dish.id);
@@ -362,7 +316,6 @@
     els.go.setAttribute('aria-busy', 'true');
     els.goLabel.textContent = t('pick.drawing', '뽑는 중…');
     var tP = CRANKS * CRANK, from = tP + 80, tOpen = from + 640, tEnd = tOpen + 300;
-    // 가샤: each turn of the crank jiggles the balls, shakes the body and makes the machine squint.
     var crank = [], shake = [], eyes = [], balls = [[], [], [], [], [], [], []];
     for (var c = 0; c < CRANKS; c++) {
       var at = c * CRANK, amp = [0.6, 0.8, 1][c];
@@ -385,14 +338,11 @@
                                 [tP, { transform: 'translateY(' + -(strip.length - 1) * 38 + 'px)' }]]);
     track(run, q('.pk-screen'), [[tP, { transform: 'scale(1)' }, EASE.out], [tP + 96, { transform: 'scale(1.25)' }],
                                  [tP + 320, { transform: 'scale(1)' }]]);
-    // 퐁: the machine squashes as the mouth opens, then steps back when the capsule opens.
     track(run, els.machine, [[tP, { transform: pose(0, 0), opacity: 1 }, 'ease-in'], [tP + 110, { transform: pose(0, 0, 0, 1.08, 0.88), opacity: 1 }],
                              [tP + 144, { transform: pose(0, 0, 0, 0.94, 1.1), opacity: 1 }, EASE.bouncy], [tP + 480, { transform: pose(0, 0), opacity: 1 }],
                              [tOpen, { transform: pose(0, 0), opacity: 1 }, EASE.io], [tEnd, { transform: pose(0, 0), opacity: 0.32 }]]);
     track(run, q('.pk-mouth'), [[tP, { transform: 'scaleY(1)' }], [tP + 76, { transform: 'scaleY(1.35)' }],
                                 [tP + 560, { transform: 'scaleY(1.35)' }], [tP + 640, { transform: 'scaleY(1)' }]]);
-    // The capsule: out of the mouth, up in an arc to its place above the machine, a bounce, then its
-    // shell flies off. Measured once; it moves from the mouth to its own CSS place.
     var mouth = q('.pk-mouth').getBoundingClientRect(), home = cap.getBoundingClientRect();
     var dx = mouth.left + mouth.width / 2 - (home.left + home.width / 2);
     var dy = mouth.top + mouth.height / 2 - (home.top + home.height / 2);
@@ -408,7 +358,6 @@
     var last = run.anims[run.anims.length - 1];
     last.finished.then(function () { if (state.run === run) finish(pick); }, function () {});
   }
-  // A press during a draw lands it at once.
   function landNow() {
     var run = state.run;
     if (!run) return;
@@ -419,7 +368,7 @@
     if (state.run) state.run.anims.forEach(function (a) { a.cancel(); });
     state.run = null;
     els.stage.classList.add('is-done');
-    q('.pk-strip').textContent = pickEmoji(pick);      // the screen keeps the pick's food
+    q('.pk-strip').textContent = pickEmoji(pick);
     els.go.removeAttribute('aria-busy');
     els.goLabel.textContent = t('pick.again', '다시 뽑기');
     state.last = pick;
@@ -427,7 +376,6 @@
   }
 
   // ---- the card ---------------------------------------------------------------------------------------
-  // `relabel`: the language changed; the card is rewritten in place, focus and scroll stay.
   function showResult(pick, relabel) {
     var html, name;
     if (pick.meal) {
@@ -490,7 +438,6 @@
 
   function go() {
     if (state.run) { landNow(); return; }
-    // Drawing again past a dish with no 👍 counts against it, once.
     if (state.last && state.last.dish && !state.last.liked && !state.last.passed) {
       state.last.passed = true;
       record('reroll', state.last.dish);
@@ -525,8 +472,6 @@
     els.status.textContent = button.textContent;
   });
   els.sound.addEventListener('click', function () { sound.toggle(); paintSound(); });
-  // The button says what it does now (its label has no data-i18n: it changes with the draw); a language
-  // change also rewrites the card in the new language.
   function labelGo() {
     els.goLabel.textContent = state.run ? t('pick.drawing', '뽑는 중…') : state.last ? t('pick.again', '다시 뽑기') : t('pick.go', '메뉴 뽑기');
   }

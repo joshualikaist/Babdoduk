@@ -1,5 +1,3 @@
-/* Page surfaces: food / ggongbab / history / lab. Events use css/event.css. */
-
 .food-tracker-wrap,
 .ggongbab-page-wrap,
 .history-wrap,
@@ -41,7 +39,6 @@
   border-color: #efd3c6 !important;
 }
 
-/* Seven days must fit even with a visible Windows scrollbar at 360px. */
 .food-cal-weekdays,
 .food-cal-grid {
   grid-template-columns: repeat(7, minmax(0, 1fr));

@@ -107,8 +107,6 @@ def _set(path, value):
 
 
 _set.DELETE = object()
-# The breaks that matter for each contract: a private or unknown key, a wrong vocabulary, a broken
-# id or time, a missing field. Each must fail.
 BREAKS = {
     "ggongbab-feed": [("a private field", _set("events.0.sender_email", "a@b.c")),
                       ("an unknown food type", _set("events.0.food.type", "pizza")),
@@ -196,9 +194,9 @@ BREAKS = {
 def test_every_schema_is_used_and_every_contract_governs_files():
     assert {name for _, name, _, _ in sc.CONTRACTS} == set(NAMES) == set(VALID)
     found = {name for _, name, _ in sc.contract_files()}
-    assert found == set(NAMES)                                  # every contract has at least one real file
+    assert found == set(NAMES)
     for name in NAMES:
-        sc.load_schema(name)                                    # only the supported keyword subset
+        sc.load_schema(name)
 
 
 def test_every_governed_file_keeps_its_contract():
@@ -215,7 +213,7 @@ def test_each_contract_accepts_its_example_and_refuses_its_breaks(name):
 
 def test_a_store_row_is_whole_or_compact_never_a_mix():
     assert sc.schema_errors(COMPACT, "magazine-candidate") == []
-    assert sc.schema_errors(dict(COMPACT, sourceExcerpt="본문"), "magazine-candidate")   # compact keeps no text
+    assert sc.schema_errors(dict(COMPACT, sourceExcerpt="본문"), "magazine-candidate")
     assert sc.schema_errors(dict(VALID["magazine-candidate"], compact=True), "magazine-candidate")
 
 
@@ -281,7 +279,7 @@ def test_authored_data_agrees_with_itself(tmp_path):
     (tmp_path / "data/food-log.json").write_text(json.dumps(
         {"currency": "KRW", "entries": [{"date": "2026-05-06", "total": 1, "items": [{"meal": "a", "label": "b", "amount": 2}]}]}),
         encoding="utf-8")
-    forged = dict(NEWS, title="교내 신규 카페 오픈 안내")                 # the id no longer derives from the facts
+    forged = dict(NEWS, title="교내 신규 카페 오픈 안내")
     (tmp_path / "inputs/ggongbab/food-news.json").write_text(json.dumps({"items": [forged]}), encoding="utf-8")
     errors = validate_content.validate_authored(tmp_path)
     assert any("catalog count" in e for e in errors) and any("food-log" in e for e in errors)
@@ -296,8 +294,8 @@ def test_the_food_packs_are_the_source_and_keep_the_generators_checks(tmp_path):
     packs = tmp_path / "data" / "foods" / "packs"
     korean = json.loads((packs / "korean.json").read_text(encoding="utf-8"))
     western = json.loads((packs / "western.json").read_text(encoding="utf-8"))
-    korean["items"][1]["nameKo"] = korean["items"][0]["nameKo"]          # two dishes, one name
-    western["items"][0]["cuisineGroup"] = "korean"                         # a Korean dish in the western pack
+    korean["items"][1]["nameKo"] = korean["items"][0]["nameKo"]
+    western["items"][0]["cuisineGroup"] = "korean"
     (packs / "korean.json").write_text(json.dumps(korean, ensure_ascii=False), encoding="utf-8")
     (packs / "western.json").write_text(json.dumps(dict(western, pack="westen"), ensure_ascii=False), encoding="utf-8")
     errors = validate_content.validate_authored(tmp_path)

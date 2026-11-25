@@ -222,14 +222,14 @@ def test_first_run_backfills_thirty_then_only_new_posts_and_images_are_stored_on
     posts[1]["children"]["data"][0]["media_url"] = "https://scontent.cdninstagram.com/same.jpg"
     graph = Graph({"shoutoutto.ee": posts})
     r, clock = radar(root, graph)
-    assert r.collect() == 30                                     # first backfill stops at 30
+    assert r.collect() == 30
     assert [c[1] for c in graph.calls if c[0] == "shoutoutto.ee"] == ["", "10", "20"]
     assert r.store.account("shoutoutto.ee")["last_media_id"] == "9000"
     hashes = {row["sha256"] for m in range(30) for row in r.store.images(f"9{m:03d}")}
-    assert len(list((root / ".local/ig-media").iterdir())) == len(hashes) < 60   # the shared image once
+    assert len(list((root / ".local/ig-media").iterdir())) == len(hashes) < 60
     graph.posts["shoutoutto.ee"] = [media("9999", "새 글")] + posts
     clock["t"] += 3 * 3600
-    assert r.collect() == 1                                      # stops at the first known post
+    assert r.collect() == 1
     assert r.store.has_post("9999")
 
 
@@ -238,11 +238,11 @@ def test_posts_before_collect_since_are_never_collected_and_a_pinned_post_does_n
     (root / "inputs/instagram").mkdir(parents=True)
     (root / "inputs/instagram/accounts.json").write_text(json.dumps({"collect_since": "2026-10-05", "accounts": []}))
     pinned = media("PIN", "고정 공지", ts="2026-09-01T00:00:00+0000")
-    recent = [media(f"R{n}", f"글 {n}", ts=f"2026-10-0{6 - n}T03:00:00+0000") for n in range(2)]   # 10-06, 10-05 KST
+    recent = [media(f"R{n}", f"글 {n}", ts=f"2026-10-0{6 - n}T03:00:00+0000") for n in range(2)]
     older = [media(f"O{n}", f"옛 글 {n}", ts=f"2026-10-0{4 - n}T03:00:00+0000") for n in range(3)]
     graph = Graph({"shoutoutto.ee": [pinned] + recent + older + [media(f"X{n}", "x", ts="2026-09-01T00:00:00+0000") for n in range(10)]})
     r, clock = radar(root, graph)
-    assert r.collect() == 2 and [c[1] for c in graph.calls if c[0] == "shoutoutto.ee"] == [""]   # one page
+    assert r.collect() == 2 and [c[1] for c in graph.calls if c[0] == "shoutoutto.ee"] == [""]
     assert r.store.has_post("R0") and r.store.has_post("R1") and not r.store.has_post("PIN") and not r.store.has_post("O0")
     assert r.store.account("shoutoutto.ee")["last_media_id"] == "R0"
     graph.posts["shoutoutto.ee"] = [pinned, media("NEW", "새 글", ts="2026-10-07T00:00:00+0000")] + recent + older
@@ -264,7 +264,7 @@ def test_accounts_are_due_by_their_interval_and_high_usage_doubles_it(root):
     r, clock = radar(root, graph, bot=bot)
     r.collect()
     assert r.store.get("slow_factor") == 2 and any("2배" in s for s in bot.said)
-    clock["t"] += 3 * 3600                                       # 3 h: past 120 min, not past 240 min
+    clock["t"] += 3 * 3600
     assert [a["username"] for a in r.due()] == []
     clock["t"] += 3 * 3600
     assert {a["username"] for a in r.due()} == {"shoutoutto.ee", "in.cs.tagram"}
@@ -276,7 +276,7 @@ def test_a_rate_limit_stops_the_round_and_backs_off_exponentially(root):
     r.collect()
     first = r.store.get("backoff_until") - clock["t"]
     assert first == 900 and r.backing_off()
-    assert [c[0] for c in graph.calls] == ["in.cs.tagram"]       # nothing after the limit
+    assert [c[0] for c in graph.calls] == ["in.cs.tagram"]
     clock["t"] += 901
     r.store.update_account("in.cs.tagram", last_checked=None)
     r.collect()
@@ -333,10 +333,10 @@ def test_golden_food_post_is_confirmed_its_english_twin_merged_and_the_open_lab_
     assert ko["status"] == en["status"] == "auto_confirmed" and en["merge_group"] == ko["merge_group"] == "Dd1fg2j4Nf"
     extraction = json.loads(ko["extraction_json"])
     assert extraction["start_at"] == "2026-10-08T17:30+09:00" and extraction["quantity_limit"] == "선착순 100명"
-    assert lab["status"] == "auto_rejected" and lab["decided_by"] == "prefilter"   # no food word, one image
+    assert lab["status"] == "auto_rejected" and lab["decided_by"] == "prefilter"
     assert all(call[0] == "gpt-6-luna" for call in judge.calls) and all(call[2] == 2 for call in judge.calls)
     r.bridge()
-    (task,) = writer.tasks                                      # one task for the merged event
+    (task,) = writer.tasks
     assert task.subject.startswith("[인스타 @shoutoutto.ee] 중간고사 간식 이벤트")
     assert "https://www.instagram.com/p/Dd1fg2j4Nf/" in task.body and "https://www.instagram.com/p/Dd1kD9Iw/" in task.body
     assert len(task.images) == 2 and task.mail_id == "instagram-Dd1fg2j4Nf"
@@ -403,8 +403,8 @@ def test_an_unsure_post_becomes_a_question_and_the_owners_button_decides(root):
     (asked,) = bot.asked
     assert asked[0] == "Q0" and asked[2] is True and "1차: 꽁밥 0.50 / 2차: 꽁밥 0.50" in asked[1]
     r.bridge()
-    assert writer.tasks == []                                   # never before the owner answers
-    bot.pending = [button("ok", "Q0", chat=999, update_id=1)]   # someone else: ignored
+    assert writer.tasks == []
+    bot.pending = [button("ok", "Q0", chat=999, update_id=1)]
     r.review()
     assert r.store.candidate("Q0")["status"] == "pending_human"
     bot.pending = [button("ok", "Q0", update_id=2)]
@@ -457,10 +457,10 @@ def test_the_owners_own_messages_and_photos_are_kept_for_claude_with_secrets_mas
     assert [n["text"] for n in notes] == ["레이더 오류 났어 [가림]", "이 경고 화면", ""]
     photo = root / ".local" / notes[1]["photo"].split("/.local/", 1)[1]
     assert photo.read_bytes()[:2] == b"\xff\xd8" and oct(photo.stat().st_mode)[-3:] == "600"
-    assert "photo" not in notes[2]                              # the download failed: the note stays
+    assert "photo" not in notes[2]
     assert oct((root / ".local/telegram-inbox.jsonl").stat().st_mode)[-3:] == "600"
     assert sum("메모로 저장했습니다" in t for t in bot.said) == 3
-    assert r.store.candidate("Q0")["status"] == "pending_human"   # a note never answers a question
+    assert r.store.candidate("Q0")["status"] == "pending_human"
 
 
 def test_an_edit_reply_is_not_kept_as_a_note(root):
@@ -486,7 +486,6 @@ def test_the_inbox_keeps_only_the_latest_notes_and_photos(root, monkeypatch):
 
 
 def test_only_the_owners_own_private_chat_is_read_never_a_group_or_another_sender():
-    # security audit 2026-11-13: the chat id alone is not enough; the sender must be that private chat's owner.
     from ggongbab.instagram.telegram_review import Bot as Real
     bot = Real("t", "42")
 
@@ -505,7 +504,6 @@ def test_only_the_owners_own_private_chat_is_read_never_a_group_or_another_sende
     assert bot.events([msg(42, 42), tap(42, 42)]) == [("text", "로그인", None), ("login", "c")]
     for chat, sender in ((42, 7), (42, None), (-1001234567890, 42), (-42, 42), (7, 7), (7, 42)):
         assert bot.events([msg(chat, sender), tap(chat, sender), tap(chat, sender, "agent:ok:0123456789ab")]) == [], (chat, sender)
-    # A group configured as the allowed chat reads nothing: no sender's id is a negative group id.
     group = Real("t", "-1001234567890")
     assert group.events([msg(-1001234567890, -1001234567890), tap(-1001234567890, 42)]) == []
 
@@ -522,7 +520,7 @@ def test_the_chat_finder_lists_only_private_chats_whose_sender_is_the_chat(tmp_p
 
     assert alert_push.telegram_chats("t", opener=opener) == [("4242", "A")]
     monkeypatch.setattr(alert_push, "CONFIG", tmp_path / "alert-push.json")
-    assert alert_push.main(["--use-telegram", "--chat-id", "-1001234567890"]) == 1   # a group id is refused
+    assert alert_push.main(["--use-telegram", "--chat-id", "-1001234567890"]) == 1
     assert not (tmp_path / "alert-push.json").exists()
 
 
@@ -537,10 +535,10 @@ def test_images_of_finished_posts_are_deleted_after_fourteen_days_and_shared_fil
     r.analyze()
     assert r.store.post("SKIP")["prefilter"] == "skip"
     files = {p.name for p in (root / ".local/ig-media").iterdir()}
-    assert len(files) == 2                                     # KEEP and DROP share one file
+    assert len(files) == 2
     assert r.store.purge_images(clock["t"] + 13 * 86400) == 0
     removed = r.store.purge_images(clock["t"] + 15 * 86400)
-    assert removed == 1                                        # SKIP's own file; the shared one is KEEP's too
+    assert removed == 1
     assert r.store.images("DROP") == [] and r.store.images("SKIP") == [] and len(r.store.images("KEEP")) == 1
     assert {p.name for p in (root / ".local/ig-media").iterdir()} <= files and r.load_images("KEEP")
     assert r.store.post("DROP")["permalink"] and r.store.candidate("DROP")["status"] == "auto_rejected"
@@ -555,7 +553,7 @@ def test_more_than_five_questions_a_day_wait_for_a_digest(root):
     (digest,) = bot.digests
     assert len(digest) == 2 and not r.store.candidates("queued_digest")
     r.review()
-    assert len(bot.digests) == 1                                # once per digest slot
+    assert len(bot.digests) == 1
 
 
 def test_events_that_are_over_are_neither_asked_about_nor_handed_over(root):
@@ -576,7 +574,7 @@ def test_events_that_are_over_are_neither_asked_about_nor_handed_over(root):
     r.bridge()
     assert bot.asked == [] and [t.mail_id for t in writer.tasks] == ["instagram-NEW"]
     r.store.update_candidate("NEW", status="auto_confirmed", dooray_post_id=None)
-    clock["t"] = datetime(2026, 10, 8, 21, 0, tzinfo=an.KST).timestamp()   # confirmed, but the event passed
+    clock["t"] = datetime(2026, 10, 8, 21, 0, tzinfo=an.KST).timestamp()
     r.bridge()
     assert r.store.candidate("NEW")["status"] == "expired" and len(writer.tasks) == 1
 
@@ -646,11 +644,11 @@ def test_a_single_poster_about_an_info_session_or_giveaway_reaches_the_model():
 
 
 @pytest.mark.parametrize("extraction, posted, past", [
-    ({"start_at": "2026-10-07T07:00+09:00"}, "2026-10-01T00:00:00+0000", False),   # started 2 h ago
-    ({"start_at": "2026-10-07T05:00+09:00"}, "2026-10-01T00:00:00+0000", True),    # 4 h ago, no end
+    ({"start_at": "2026-10-07T07:00+09:00"}, "2026-10-01T00:00:00+0000", False),
+    ({"start_at": "2026-10-07T05:00+09:00"}, "2026-10-01T00:00:00+0000", True),
     ({"start_at": "2026-10-06T10:00+09:00", "end_at": "2026-10-09T18:00+09:00"}, "2026-10-01T00:00:00+0000", False),
-    ({"start_at": None}, "2026-09-30T00:00:00+0000", False),                       # undated, 7 days old
-    ({"start_at": None}, "2026-09-20T00:00:00+0000", True),                        # undated, 17 days old
+    ({"start_at": None}, "2026-09-30T00:00:00+0000", False),
+    ({"start_at": None}, "2026-09-20T00:00:00+0000", True),
     ({"start_at": "곧"}, "2026-10-06T00:00:00+0000", False),
 ])
 def test_an_event_is_over_after_its_end_or_three_hours_after_its_start(extraction, posted, past):
@@ -696,9 +694,9 @@ def test_the_accounts_file_lists_valid_unique_accounts_with_sane_intervals():
     assert names[:3] == ["shoutoutto.ee", "in.cs.tagram", "kaistua_grit"] and len(set(names)) == len(names)
     assert all(USERNAME.fullmatch(n) and n == n.lower() for n in names)
     assert all(60 <= row["interval_minutes"] <= 360 and row["display_name"] for row in rows)
-    assert sum(1440 / row["interval_minutes"] for row in rows) <= 300     # the daily call target
+    assert sum(1440 / row["interval_minutes"] for row in rows) <= 300
     graduate = {"kaist_gsa", "kaist_dhcss", "kaist_stp", "kaistbiz", "kaist_gsis", "kaist_future"}
-    assert not graduate & set(names)      # undergraduate accounts only (docs/INSTAGRAM_SOURCES.md)
+    assert not graduate & set(names)
 
 
 def test_every_logged_code_is_declared():
@@ -732,7 +730,7 @@ def test_a_handover_asks_for_a_refresh_and_a_quiet_cycle_only_flushes(root):
     r.bridge()
     assert len(writer.tasks) == 1 and calls == [True] and "DISPATCHED" in logs and r.counts["dispatch"] == "DISPATCHED"
     r.counts = {}
-    r.bridge()                                                  # nothing new: a debounced request may still go
+    r.bridge()
     assert calls == [True, False] and logs.count("DISPATCHED") == 1
 
 
@@ -758,7 +756,7 @@ def test_a_tip_handed_over_between_cycles_is_dispatched_at_once(root):
         handed = 0
 
         def poll(self):
-            self.handed += 1                                    # the owner's ✅ handed one over
+            self.handed += 1
 
     class QuietBot(Bot):
         def updates(self, offset, wait):
@@ -781,7 +779,7 @@ def test_the_radar_dispatcher_obeys_the_operator_switch(root, monkeypatch):
     send = dispatcher(root)
     assert send(True) == "DISPATCH_OFF" and not (root / ".local" / "dispatch-state.json").exists()
     RadarFiles(root).set_dispatch(True, NOW)
-    assert send(True) == "DISPATCH_NOT_CONFIGURED"             # switched on, but no token stored here
+    assert send(True) == "DISPATCH_NOT_CONFIGURED"
 
 
 # --- the 2026-11-03 audit: nothing waits for an unrelated trigger --------------------------------
@@ -815,7 +813,7 @@ def test_the_owner_writes_refresh_and_hears_what_happened(root):
     r.handle_updates(0)
     assert calls == [True, True]
     assert bot.said[0].startswith("🔄") and bot.said[1].startswith("⏳")
-    assert not (root / ".local" / "telegram-inbox.jsonl").exists()      # a command, not a note
+    assert not (root / ".local" / "telegram-inbox.jsonl").exists()
 
 
 def test_held_buttons_reach_the_held_checker_and_a_cycle_asks_about_held_events(root):
@@ -889,14 +887,14 @@ def test_a_closed_dooray_holds_the_hand_over_and_sends_it_once_dooray_answers(ro
     r.collect()
     r.analyze()
     r.bridge()
-    r.bridge()                                  # the same minute: no second knock on a closed door
+    r.bridge()
     assert gate.tasks == [] and gate.checks == 1 and not r.store.candidate("ONE")["dooray_post_id"]
     gate.open = True
     clock["t"] += DeferredWriter.RETRY_SECONDS + 1
     r.bridge()
     assert [t.mail_id for t in gate.tasks] == ["instagram-ONE"] and r.store.candidate("ONE")["dooray_post_id"] == "post-1"
     r.bridge()
-    assert gate.checks == 2 and len(gate.tasks) == 1     # verified once, then the real writer is used as is
+    assert gate.checks == 2 and len(gate.tasks) == 1
 
 
 def test_the_radar_and_its_bot_start_while_dooray_rejects_the_key(root, monkeypatch):
@@ -933,12 +931,10 @@ def run(hours_ago, status, error=""):
 def test_the_cloud_dooray_outage_is_found_only_after_hours_of_failures():
     from ggongbab.instagram.radar import dooray_outage
     refused = "dooray /project/v1/projects/4424523215847914253/posts: HTTP 401"
-    # 2026-11-13..18 as recorded: green runs, every Dooray collector refused.
     assert dooray_outage([run(1, "failed", refused), run(6, "failed", refused), run(30, "ok")], NOW) == (6, 401)
-    assert dooray_outage([run(1, "failed", refused), run(2, "failed", refused), run(5, "ok")], NOW) is None  # < 3 h
-    assert dooray_outage([run(4, "failed", refused), run(5, "ok")], NOW) is None                           # one blip
-    assert dooray_outage([run(0.2, "ok"), run(4, "failed"), run(8, "failed")], NOW) is None               # recovered
-    # A run stuck in "running" for an hour never finished; a fresh one is still going.
+    assert dooray_outage([run(1, "failed", refused), run(2, "failed", refused), run(5, "ok")], NOW) is None
+    assert dooray_outage([run(4, "failed", refused), run(5, "ok")], NOW) is None
+    assert dooray_outage([run(0.2, "ok"), run(4, "failed"), run(8, "failed")], NOW) is None
     assert dooray_outage([run(0.5, "running"), run(5, "running"), run(9, "running"), run(20, "ok")], NOW) == (9, 0)
     assert dooray_outage([], NOW) is None
 
@@ -957,5 +953,5 @@ def test_the_owner_hears_of_a_cloud_dooray_outage_once_without_the_project_id(ro
         raise RuntimeError("supabase down")
     codes = []
     r.log, r.ingest = codes.append, down
-    r.check_ingest()                            # never raises out of a cycle
+    r.check_ingest()
     assert codes == ["IG_INGEST_CHECK_FAILED"]

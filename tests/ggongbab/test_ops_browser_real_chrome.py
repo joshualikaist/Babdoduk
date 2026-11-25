@@ -86,7 +86,7 @@ def test_one_real_chrome_serves_two_concurrent_cdp_clients(tmp_path, pages_serve
         assert state == "verified"
         verify_resident_owner(profile, port)
         windows = window_ids(port)
-        assert len(windows) == 1                            # two tabs, one window
+        assert len(windows) == 1
 
         barrier = threading.Barrier(2, timeout=60)
         results = {}
@@ -99,7 +99,7 @@ def test_one_real_chrome_serves_two_concurrent_cdp_clients(tmp_path, pages_serve
                     attached = time.monotonic()
                     mine = by_host(session.context, hostname)
                     assert len(mine) == 1
-                    barrier.wait()                          # both clients attached right now
+                    barrier.wait()
                     status = mine[0].request.get(url).status
                     title = mine[0].evaluate("document.title")
                     others = [p.url for p in session.context.pages if p not in mine]
@@ -116,20 +116,19 @@ def test_one_real_chrome_serves_two_concurrent_cdp_clients(tmp_path, pages_serve
             thread.join(120)
         assert "error" not in results["a"] and "error" not in results["b"], results
         a, b = results["a"], results["b"]
-        assert a["attached"] < b["detached"] and b["attached"] < a["detached"]   # overlapping clients
+        assert a["attached"] < b["detached"] and b["attached"] < a["detached"]
         assert a["status"] == b["status"] == 200
         assert a["title"] == "/portal-like" and b["title"] == "/mail/inbox"
 
         after = ob.page_targets(port)
-        assert {p["id"]: p["url"] for p in after} == {p["id"]: p["url"] for p in pages}   # nothing closed/moved
-        assert is_running(port) and host.inspect() == ("verified", owner)                 # same live process
-        assert window_ids(port) == windows                                               # no new window
+        assert {p["id"]: p["url"] for p in after} == {p["id"]: p["url"] for p in pages}
+        assert is_running(port) and host.inspect() == ("verified", owner)
+        assert window_ids(port) == windows
 
         ob.new_tab(port, f"http://127.0.0.1:{pages_server}/third")
         time.sleep(1)
-        assert len(ob.page_targets(port)) == 3 and window_ids(port) == windows           # tab, not window
+        assert len(ob.page_targets(port)) == 3 and window_ids(port) == windows
 
-        # A hidden tab that Chrome froze must not block attaching: wake_tabs restores it.
         from ggongbab.cdp_lite import LoopbackCdp
         hidden = [p for p in ob.page_targets(port) if p["url"].endswith("/portal-like")][0]
         with LoopbackCdp(port) as cdp:
@@ -141,19 +140,19 @@ def test_one_real_chrome_serves_two_concurrent_cdp_clients(tmp_path, pages_serve
         from playwright.sync_api import sync_playwright
         from ggongbab.web.resident import endpoint
         with sync_playwright() as pw:
-            browser = pw.chromium.connect_over_cdp(endpoint(port), timeout=20_000)   # no hang
+            browser = pw.chromium.connect_over_cdp(endpoint(port), timeout=20_000)
             assert len(browser.contexts[0].pages) == 3
             browser.close()
-        assert {p["id"] for p in ob.page_targets(port)} >= {p["id"] for p in pages}       # nothing closed
+        assert {p["id"] for p in ob.page_targets(port)} >= {p["id"] for p in pages}
 
         with pytest.raises(Exception):
-            _cdp_close(port, owner["pid"] + 1)               # a different PID is never closed
+            _cdp_close(port, owner["pid"] + 1)
         assert is_running(port)
         _cdp_close(port, owner["pid"])
         process.wait(timeout=30)
         assert host.inspect()[0] == "absent"
-        assert profile.is_dir()                              # the profile itself is kept
+        assert profile.is_dir()
     finally:
         if process.poll() is None:
-            process.terminate()                              # only the Chrome this test started
+            process.terminate()
             process.wait(timeout=30)

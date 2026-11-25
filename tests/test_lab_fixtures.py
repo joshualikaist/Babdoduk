@@ -32,12 +32,10 @@ def test_the_public_scripts_carry_no_synthetic_data():
         for marker in ("fixtureData", "fixtureArchive", "fixtureMenu", "fixtureDay", "캠퍼스 진로 이야기", "'fixture-'",
                        "교내 새 식당 오픈 안내", "특제 돈가스"):
             assert marker not in script, marker
-    # The hub loads the fixture only in fixture mode, which only the lab page has.
     assert re.findall(r"\.src = '([^']+)'", hub) == ["tests/fixtures/ggongbab-lab.js"]
     loader = hub[hub.index("if (mode === 'fixture') {\n    var fixtureScript"):]
     assert "fixtureScript.src = 'tests/fixtures/ggongbab-lab.js';" in loader
     assert re.search(r"if \(!isLab\) return 'normal';", hub)
-    # tests/ is never deployed, so no visitor of either site can load it.
     assert "tests" in (ROOT / ".vercelignore").read_text(encoding="utf-8").splitlines()
 
 
@@ -66,5 +64,5 @@ def test_the_fixture_cafeterias_are_the_real_ones():
     shown = run_fixture("F.menu(false, new Date(2026, 9, 12, 12, 0)).restaurants"
                         ".map(r => ({id: r.id, name: r.name, building: r.building}))")
     real = [{"id": r["id"], "name": r["name"], "building": r["building"]} for r in labels]
-    assert shown == [r for r in real if r["id"] in {s["id"] for s in shown}]   # the same places, in their order
+    assert shown == [r for r in real if r["id"] in {s["id"] for s in shown}]
     assert len(shown) == 6

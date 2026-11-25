@@ -27,7 +27,7 @@ def test_anchor_targets():
     assert eq.anchor_target_exists("today", {"today", "x"})
     assert not eq.anchor_target_exists("nope", {"today"})
     assert eq.anchor_target_exists("top", set()) and eq.anchor_target_exists("", set())
-    assert eq.anchor_target_exists("menu", set(), "/ggongbab.html")      # hash route of the page's script
+    assert eq.anchor_target_exists("menu", set(), "/ggongbab.html")
     assert not eq.anchor_target_exists("menu", set(), "/mukbang.html")
     assert eq.anchor_target_exists("%EC%98%A4", {"오"})
 
@@ -65,7 +65,7 @@ def test_perf_warnings_thresholds():
     assert eq.perf_warnings("p", "phone/ko", ok, True) == []
     bad = {"lcp_ms": 2600, "cls": 0.11, "bytes": 3 * 1024 * 1024 + 1}
     assert len(eq.perf_warnings("p", "phone/ko", bad, True)) == 3
-    assert len(eq.perf_warnings("p", "desktop/ko", bad, False)) == 2   # weight only on the phone
+    assert len(eq.perf_warnings("p", "desktop/ko", bad, False)) == 2
 
 
 def test_page_key_and_human():

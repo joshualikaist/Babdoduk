@@ -1,16 +1,4 @@
 #!/usr/bin/env node
-/* 별 누른 꽁밥 30분 전 알림, the sender (docs/PUSH_ALERTS.md). Run by the ops computer's timer every two
- * minutes (scripts/push/babdoduk-push.timer):
- *   1. read the public feed (data/ggongbab/latest.json) and find the listings that start within 30 minutes;
- *   2. only if there are any, read the devices that starred them (push_devices, backend key);
- *   3. send each device one encrypted message per listing, once (a local record of what went out);
- *   4. forget a device its push service no longer knows (404/410).
- * The start time always comes from the newest public feed, so a moved or withdrawn listing never alerts at
- * the old time. Nothing is printed that identifies a device or a key.
- *
- *   node scripts/push/send.js            send what is due
- *   node scripts/push/send.js --dry-run  say what would be sent; send and record nothing
- */
 'use strict';
 
 const fs = require('fs');
@@ -23,14 +11,13 @@ const { siteCode } = require('../../api/cal');
 const ROOT = path.join(__dirname, '..', '..');
 const LEAD_MS = 30 * 60 * 1000;
 const KEEP_MS = 2 * 24 * 3600 * 1000;
-const DROP_AFTER = 10;   // consecutive refusals before a device is forgotten
-const PAGE = 1000;       // rows per database read: Supabase's default max rows
-const MAX_PAGES = 100;   // 100 000 rows, twice the database's own cap of 50 000 devices
+const DROP_AFTER = 10;
+const PAGE = 1000;
+const MAX_PAGES = 100;
 const SUBJECT = 'https://www.babdodukms.com';
 const FEEDS = ['https://www.babdodukms.com/data/ggongbab/latest.json', 'https://babdoduk-lab.vercel.app/data/ggongbab/latest.json'];
 
 // ---- what is due ----------------------------------------------------------------------------------------
-// The public listings (one per session) that start within the next 30 minutes and have a time to alert on.
 function dueEvents(feed, nowMs) {
   const { F, L } = siteCode();
   return F.occurrences(((feed && feed.events) || []).filter(F.isPublic)).filter((ev) => {
@@ -44,7 +31,6 @@ function kstTime(iso) {
     .format(new Date(iso));
 }
 
-// The notification: the listing's title, then when and where. Plain words, the device's language.
 function message(ev, device, nowMs) {
   const { L } = siteCode();
   const mins = Math.max(1, Math.round((Date.parse(ev.startAt) - nowMs) / 60000));
@@ -86,9 +72,6 @@ function db(env, fetchImpl) {
   const headers = { apikey: env.SUPABASE_SECRET_KEY, Authorization: 'Bearer ' + env.SUPABASE_SECRET_KEY };
   const where = (endpoint) => '?endpoint=eq.' + encodeURIComponent(endpoint);
   return {
-    // Every device that starred one of the ids, page by page: the database answers at most PAGE rows a
-    // request (Supabase's max rows), so one request alone silently dropped every device after the first
-    // thousand (security audit 2026-11-13). A stable order, and a short page ends the reading.
     async devicesFor(ids) {
       const list = '{' + ids.map((id) => '"' + id + '"').join(',') + '}';
       const query = base + '?select=endpoint,p256dh,auth,events,lang,site,failures&events=ov.' + encodeURIComponent(list) +
@@ -122,12 +105,11 @@ async function readFeed(fetchImpl, urls) {
     try {
       const res = await fetchImpl(url, { headers: { 'Cache-Control': 'no-cache' } });
       if (res.ok) return await res.json();
-    } catch (err) { /* the next copy */ }
+    } catch (err) {  }
   }
   return null;
 }
 
-// One run. Everything outside is passed in, so a test can run it with a fake clock, network and files.
 async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRun = false, log = console.log }) {
   const summary = { due: 0, devices: 0, sent: 0, gone: 0, refused: 0, later: 0 };
   const feed = await readFeed(fetchImpl, feeds);
@@ -139,8 +121,6 @@ async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRu
   const devices = await store.devicesFor(due.map((ev) => ev.id));
   summary.devices = devices.length;
   const sent = readSent(sentFile);
-  // The record is saved however the run ends: a database hiccup after a delivered alert must never make the
-  // next run (two minutes later) send it again (audit 2026-11-13).
   try {
   for (const device of devices) {
     const wanted = new Set(device.events || []);
@@ -148,8 +128,6 @@ async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRu
       if (!wanted.has(ev.id) || sent[sentKey(device, ev)]) continue;
       const msg = message(ev, device, nowMs);
       if (dryRun) { log('push (dry run): ' + hashOf(device.endpoint).slice(0, 8) + ' ← ' + msg.title + ' / ' + msg.body); continue; }
-      // A row whose keys cannot encrypt (anyone can store one) counts as refused for good, so it never stops the
-      // phones after it (security audit 2026-11-13); a push service that hangs is given 10 seconds.
       let req = null;
       try { req = webpush.pushRequest(device, msg, keys, SUBJECT, { ttl: (Date.parse(ev.startAt) - nowMs) / 1000, now: nowMs }); }
       catch (err) { req = null; }
@@ -162,16 +140,15 @@ async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRu
         sent[sentKey(device, ev)] = new Date(nowMs).toISOString();
         summary.sent++;
       } else if (status === 404 || status === 410) {
-        await quietly(() => store.forget(device.endpoint));   // still there next run: it answers 410 again
+        await quietly(() => store.forget(device.endpoint));
         summary.gone++;
         break;
       } else if (status === 400 || status === 403 || status === 413) {
-        // Refused for good (a bad key or message): do not retry this one, count it against the device.
         sent[sentKey(device, ev)] = new Date(nowMs).toISOString();
         await quietly(() => store.refused(device));
         summary.refused++;
       } else {
-        summary.later++;   // busy or unreachable: the next run tries again while it is still before the start
+        summary.later++;
       }
     }
   }
@@ -181,7 +158,6 @@ async function run({ nowMs, fetchImpl, env, keys, sentFile, feeds = FEEDS, dryRu
   return summary;
 }
 
-// A bookkeeping call to the database that may fail without stopping the run.
 async function quietly(fn) {
   try { await fn(); return true; } catch (err) { return false; }
 }
@@ -194,7 +170,7 @@ function readEnv(file) {
       const m = line.match(/^\s*(SUPABASE_URL|SUPABASE_SECRET_KEY)\s*=\s*(.*?)\s*$/);
       if (m) out[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2');
     }
-  } catch (err) { /* reported below */ }
+  } catch (err) {  }
   for (const name of ['SUPABASE_URL', 'SUPABASE_SECRET_KEY']) if (process.env[name]) out[name] = process.env[name];
   return out;
 }

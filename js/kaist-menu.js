@@ -1,5 +1,3 @@
-/* KAIST cafeteria renderer. Mukbang keeps its compact panel; the food hub
-   attaches a meal/restaurant grid. Official items are never re-ranked. */
 (function (global) {
   var MEALS = ['breakfast', 'lunch', 'dinner'];
   var FAVORITES_KEY = 'babdoduk-menu-favorites';
@@ -59,8 +57,6 @@
   function restaurantsWithMenus(data) {
     return ((data && data.restaurants) || []).filter(hasAnyMeal);
   }
-  // Weekly browsing: a payload is right when it is for the SELECTED date. A future date is
-  // not "stale" merely because it is not today; staleness is a today-only question.
   function isDataForSelectedDate(data, selectedDate) {
     return !!(data && data.date && selectedDate && data.date === selectedDate);
   }
@@ -81,8 +77,6 @@
   function payloadFor(data, iso) {
     return data && data.date === iso && Array.isArray(data.restaurants) ? data : null;
   }
-  // latest.json is the fast snapshot. After midnight it can still name yesterday while
-  // week.json and YYYY-MM-DD.json already hold today. Stale means today's file is absent.
   function resolveTodayChoice(latest, week, dated, todayIso) {
     if (payloadFor(latest, todayIso)) return { use: 'latest', data: latest };
     var entry = weekDay(week, todayIso);
@@ -106,9 +100,6 @@
       });
       function finish(saved, week) {
         var entry = weekDay(week, todayIso);
-        // The bot publishes the dated files and week.json together, so only a date the index
-        // lists can have a file: before a new week is published (Monday morning) today is not
-        // in it, and asking would only be a 404. Without an index, today's file is still tried.
         if (week && !entry) return saved;
         if (entry && entry.available === false) return saved;
         return getJson(dayBase + todayIso + '.json').then(function (dated) {
@@ -126,8 +117,6 @@
     var time = Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
     return isNaN(time) ? null : time;
   }
-  // Saturday or Sunday (KST calendar date): the cafeterias post no menu, so a missing one is not
-  // "still updating" (owner 2026-10-16). Public holidays are not known to the site.
   function isWeekend(isoDate) {
     var time = utcDay(isoDate);
     if (time == null) return false;
@@ -138,8 +127,6 @@
     var d = new Date(time);
     return d.getUTCFullYear() + '-' + pad2(d.getUTCMonth() + 1) + '-' + pad2(d.getUTCDate());
   }
-  // Monday to Sunday of the KST week containing `todayIso` (calendar arithmetic in UTC, so
-  // month/year boundaries, leap days and the viewer's own timezone cannot shift it).
   function weekDates(todayIso) {
     var time = utcDay(todayIso);
     if (time == null) return [];
@@ -175,7 +162,6 @@
   function writeMeal(meal) {
     try { localStorage.setItem(MEAL_KEY, meal); } catch (err) {}
   }
-  // Re-rendering replaces the markup; keep keyboard users on the same control.
   function focusSelector(host) {
     var el = document.activeElement;
     if (!el || el === host || !host.contains(el)) return '';
@@ -213,7 +199,6 @@
       expanded: {},
       showStale: false,
       host: host,
-      // The cafeteria week. The selected date is page state only: every load starts at today.
       today: today,
       week: weekDates(today),
       selected: today,
@@ -224,8 +209,6 @@
     function emit() {
       if (typeof options.onChange === 'function') options.onChange(snapshot());
     }
-    // Always TODAY: the page's top metric and the free-food hints describe today, whichever
-    // cafeteria date is being browsed.
     function snapshot() {
       var todayIso = ymd(toKst());
       var stale = !isDataForSelectedDate(state.data, todayIso);
@@ -338,7 +321,6 @@
       if (isDataForSelectedDate(state.data, state.selected)) {
         return subHtml(dateHeading(state.selected), visibleRestaurants(state.data).length) + menuHtml(state.data, false);
       }
-      // latest.json still holds an earlier day: today's menu is not published yet.
       var staleTitle = isWeekend(state.selected) ? t('km.weekendTitle', '주말엔 학식이 없어요.') : t('km.staleTitle', '오늘 메뉴가 아직 안 올라왔어요.');
       var html = '<div class="km-warn" data-km-stale="1"><strong>' + esc(staleTitle) + '</strong><br>' +
         esc(t('km.staleSaved', '최근 메뉴:')) + ' ' + esc(dateHeading(state.data && state.data.date)) +
@@ -417,9 +399,6 @@
         emit();
       });
     }
-    // When latest.json is already today, the today view does not ask for week.json.
-    // A later date change reads the index once; a missing or older index is ignored
-    // and that date's file is fetched on demand.
     var weekRequest = null;
     function ensureWeek() {
       if (!weekRequest) {
@@ -429,7 +408,7 @@
         }).then(function (index) {
           if (!index || !Array.isArray(index.days)) return;
           if (index.weekStart === state.week[0]) state.weekIndex = index;
-          else state.otherWeek = true;   // the published files are another week's
+          else state.otherWeek = true;
         }).catch(function () {});
       }
       return weekRequest;
@@ -447,8 +426,6 @@
       render();
       var base = options.dayBase || 'data/kaist-menu/';
       ensureWeek().then(function () {
-        // A date the index lists without a file is not requested: no 404 for a known gap. Nor is
-        // any date while the published index is another week's: its files are published with it.
         var known = weekEntry(date);
         if (!known && state.otherWeek) return 'none';
         if (known && known.available === false) return known.status === 'FETCH_FAILED' ? 'failed' : 'none';
@@ -463,7 +440,7 @@
       }).then(function (result) {
         if (result === 'none' || result === 'failed') state.days[date] = { status: result };
         else if (isDataForSelectedDate(result, date) && Array.isArray(result.restaurants)) {
-          state.days[date] = { status: 'available', data: result };      // kept for this page session
+          state.days[date] = { status: 'available', data: result };
         } else state.days[date] = { status: 'failed' };
         render();
       }).catch(function () {
@@ -471,8 +448,6 @@
         render();
       });
     }
-    // A loaded date is reused for the rest of the page session; only a date that has no
-    // menu yet or failed is asked again.
     function selectDate(date) {
       if (state.week.indexOf(date) < 0) return;
       state.selected = date;
@@ -523,7 +498,7 @@
         return;
       }
       if (e.target.closest && e.target.closest('[data-km-retry-day]')) {
-        weekRequest = null;          // the collector may have run since: read the index again
+        weekRequest = null;
         loadDay(state.selected);
         return;
       }
@@ -531,7 +506,6 @@
         load();
       }
     }
-    // Left/Right, Home and End move between dates; Enter or Space selects (native buttons).
     function onKeydown(e) {
       var day = e.target.closest && e.target.closest('[data-km-date]');
       if (!day) return;
@@ -577,7 +551,6 @@
 
   var summary = document.getElementById('kaistToday');
   if (!summary) return;
-  // Cafeteria summary on the menu picker page: same KST clock, freshness rule and escaping as the hub.
   var mukState = { status: 'loading', data: null, resto: '', meal: defaultMeal(toKst()) };
   function mukGroup(label, attr, rows, current) {
     var html = '<div class="kaist-' + attr + 's" role="group" aria-label="' + esc(label) + '">';

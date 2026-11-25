@@ -11,7 +11,6 @@ def test_public_page_inventory_and_shared_styles():
     for name in pages:
         html = unstamped((ROOT / name).read_text(encoding="utf-8"))
         assert 'href="css/site.css"' in html
-        # Shared chrome is owned by css/site.css; page copies drift silently.
         inline = "".join(part.split("</style>")[0] for part in html.split("<style>")[1:])
         for selector in (".site-nav-inner {", ".nav-mega-panel {", ".site-footer {", "@keyframes wordmark-holo"):
             assert selector not in inline, (name, selector)
@@ -35,6 +34,5 @@ def test_scrollbar_css_contract_and_no_trend_carousel():
 
 def test_all_public_pages_windows_scrollbars_and_overflow():
     report = run_checks()
-    # Fifteen pages, including the lab-only bobyak and my pages and the privacy page, at five widths.
     assert len(report["results"]) == 75
     assert all(result["overflow"] == 0 for result in report["results"].values())

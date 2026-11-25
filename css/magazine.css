@@ -268,7 +268,6 @@ body.mg-body .site-footer {
   cursor: pointer;
 }
 
-/* ‹ and ›: a full 44 px tap target each, dimmed where there is no edition to go to. */
 .mg-mobile-edition #mgDatePrev,
 .mg-mobile-edition #mgDateNext {
   min-width: 44px;
@@ -287,8 +286,6 @@ body.mg-body .site-footer {
   outline-offset: 2px;
 }
 
-/* The date is the calendar's button: slightly raised so it reads as something to press (owner 2026-11-24,
-   "날짜를 누르면 달력이 나오게 하고, 이거 살짝 입체로"). */
 .mg-mobile-edition .mg-date-pick {
   display: inline-flex;
   align-items: center;
@@ -357,7 +354,6 @@ body.mg-body .site-footer {
   font-variant-numeric: tabular-nums;
 }
 
-/* The page title leads; the issue label sits beside it. */
 .mg-lede {
   grid-column: 1;
   grid-row: 1;
@@ -471,9 +467,6 @@ body.mg-body .site-footer {
   transform: scale(1.015);
 }
 
-/* First screen (owner choice A, 2026-10-13): the featured story with the picker (#what) beside
-   it when the column is wide enough, right below it otherwise. Without a featured story the
-   picker has the row to itself. */
 .mg-main {
   container: mg-main / inline-size;
 }
@@ -759,13 +752,8 @@ body.mg-body .nav-mega-link.is-current {
   }
 }
 
-/* Source-backed only: a hero without its own image is text-only (no placeholder picture),
-   and an empty lane says so quietly. */
-.mg-hero[hidden], .mg-hero-visual[hidden] { display: none; }   /* author display rules beat [hidden] */
+.mg-hero[hidden], .mg-hero-visual[hidden] { display: none; }
 
-/* Until the edition has loaded (data-pending, removed by the page script) the featured story keeps an
-   invisible place of about its height, so the picker and the board below do not jump when it appears
-   (owner 2026-10-16, layout shift). Without scripting nothing ever fills it, and it stays out. */
 @media (scripting: enabled) {
   .mg-hero[hidden][data-pending] {
     display: grid;
@@ -783,7 +771,6 @@ body.mg-body .nav-mega-link.is-current {
 .mg-hero.mg-hero--text .mg-hero-copy { max-width: 760px; }
 .mg-lane-empty { margin: 4px 0 0; font-size: 13px; line-height: 20px; color: var(--color-ink-muted, #6e6e73); }
 
-/* 오늘 뭐 먹지 moved to choose.html (2026-11-04): the card in its old place points there. */
 .mg-pick-link {
   display: flex;
   flex-direction: column;

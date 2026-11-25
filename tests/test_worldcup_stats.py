@@ -24,7 +24,7 @@ def test_every_table_has_row_level_security_and_browsers_only_read_counts():
     grants = statement(r"grant ([a-z, ]+) on table public\.(\w+) to ([a-z_, ]+);")
     browser = [(what, table) for what, table, who in grants if "anon" in who or "authenticated" in who]
     assert browser == [("select", "worldcup_dish_stats"), ("select", "worldcup_totals")]
-    assert not statement(r"grant [^;]* on table public\.worldcup_(secret|rate)")      # never readable
+    assert not statement(r"grant [^;]* on table public\.worldcup_(secret|rate)")
 
 
 def test_the_only_browser_write_is_the_validating_function():
@@ -43,9 +43,8 @@ def test_no_identity_or_free_text_is_kept():
     assert columns["worldcup_dish_stats"] == ["dish_id", "matches", "wins", "entries", "titles", "updated_at"]
     assert columns["worldcup_totals"] == ["singleton", "games", "updated_at"]
     assert columns["worldcup_rate"] == ["client_hash", "window_start", "games"]
-    # The address only ever enters a salted digest with the day; it is never stored as such.
     assert "extensions.digest((select salt from public.worldcup_secret) || current_date::text || forwarded" in SQL
-    assert re.search(r"values \(client, date_trunc\('hour', now\(\)\), 1\)", SQL)    # only the digest is stored
+    assert re.search(r"values \(client, date_trunc\('hour', now\(\)\), 1\)", SQL)
 
 
 class Fake:
@@ -58,7 +57,7 @@ class Fake:
         if method == "POST" and path == "worldcup_dish_stats":
             assert prefer.startswith("resolution=ignore-duplicates")
             for row in body:
-                assert set(row) == {"dish_id"}                       # never a count
+                assert set(row) == {"dish_id"}
                 self.rows.setdefault(row["dish_id"], {"dish_id": row["dish_id"], "matches": 0, "wins": 0,
                                                       "entries": 0, "titles": 0})
             return None

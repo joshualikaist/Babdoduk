@@ -35,8 +35,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from content_labels import labels  # noqa: E402
 
-LIVE_FEED = "https://www.babdodukms.com/data/ggongbab/latest.json"   # the old babdoduk.vercel.app address is gone (2026-11-22)
-MAX_FEED_AGE = timedelta(hours=36)   # the list is refreshed several times a day; older means a stale copy
+LIVE_FEED = "https://www.babdodukms.com/data/ggongbab/latest.json"
+MAX_FEED_AGE = timedelta(hours=36)
 OUT = ROOT / "data" / "cardnews"
 TEMPLATE = ROOT / "inputs" / "cardnews" / "template.json"
 CARD_CSS = ROOT / "inputs" / "cardnews" / "card.css"
@@ -45,7 +45,7 @@ KST = timezone(timedelta(hours=9))
 WIDTH, HEIGHT = 1080, 1350
 DAYS = ("월", "화", "수", "목", "금")
 DAY_NAMES = ("월요일", "화요일", "수요일", "목요일", "금요일")
-KEEP_DAYS = 31        # a week's cards are kept a month (owner 2026-11-02), then deleted
+KEEP_DAYS = 31
 TELEGRAM_API = "https://api.telegram.org"
 
 esc = html.escape
@@ -241,7 +241,6 @@ def post_text(tpl: dict, monday: date, counts: list[int], total: int, titles: li
     return text.strip() + "\n"
 
 
-# Hand-drawn strokes in the accent color, as in the 'KAIST에서 오늘 뭐 먹지?' series (owner 2026-11-08).
 SCRIBBLE = ('<svg class="scribble" viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true">'
             '<path d="M6 26 C 70 12, 130 34, 200 22 S 330 10, 394 20" /><path d="M40 34 C 120 26, 240 36, 360 28" /></svg>')
 SPARK = ('<svg class="spark" viewBox="0 0 80 80" aria-hidden="true"><path d="M40 6 L40 26" /><path d="M66 18 L52 32" />'
@@ -372,7 +371,7 @@ def render(document: str, folder: Path, clipped: list[int] | None = None) -> lis
     from playwright.sync_api import sync_playwright
     folder.mkdir(parents=True, exist_ok=True)
     for old in folder.glob("*.png"):
-        old.unlink()                                   # a rerun may have fewer cards
+        old.unlink()
     channel = os.environ.get("BABDODUK_BROWSER", "chrome")
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel=None if channel == "chromium" else channel, headless=True)
@@ -392,7 +391,7 @@ def render(document: str, folder: Path, clipped: list[int] | None = None) -> lis
 def entry(feed: dict, monday: date, now: datetime, tpl: dict | None = None) -> dict:
     tpl = tpl or template()
     by_day = days(feed, monday, tpl["rules"])
-    shown = [i for i, *_ in pages(by_day, tpl["rules"])]     # one entry per day card: a busy day repeats
+    shown = [i for i, *_ in pages(by_day, tpl["rules"])]
     return {"week": monday.isoformat(), "renderedAt": now.isoformat(timespec="seconds"),
             "feedGeneratedAt": feed.get("generatedAt"), "counts": [len(d) for d in by_day],
             "total": distinct(by_day), "days": shown,
@@ -606,7 +605,6 @@ def send_drawn(args, monday: date, tpl: dict) -> int:
     result = {"week": item["week"], "renderedAt": item.get("renderedAt"), "feedGeneratedAt": item.get("feedGeneratedAt"),
               "images": [str(p) for p in paths], "telegram": send(paths, caption, token, chat)}
     if result["telegram"] == "PUSH_SENT":
-        # A week drawn before the post text existed gets one without the kinds line.
         saved = folder / POST_FILE
         post = saved.read_text(encoding="utf-8") if saved.is_file() else \
             post_text(tpl, monday, item.get("counts") or [], item["total"], [])

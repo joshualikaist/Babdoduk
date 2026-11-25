@@ -39,7 +39,6 @@ FEED = {"schemaVersion": 1, "updatedAt": "2026-11-08",
 @pytest.fixture(scope="module")
 def browser():
     with sync_playwright() as pw:
-        # Real classic scrollbars, as the site checker runs: a 360px window leaves 344px for the page.
         chrome = pw.chromium.launch(channel="chrome", headless=True, ignore_default_args=["--hide-scrollbars"],
                                     args=["--disable-features=OverlayScrollbar,FluentOverlayScrollbar"])
         yield chrome
@@ -91,11 +90,11 @@ def test_settlement_arithmetic_always_adds_up(browser):
     amounts = lambda r: [s["amount"] for s in r["shares"]]
     people = lambda n, **kw: [dict({"name": f"p{i}"}, **kw) for i in range(n)]
     r = page.evaluate(run, {"total": 10000, "people": people(3)})
-    assert r["ok"] and amounts(r) == [3334, 3333, 3333]                         # the extra won goes to the top
+    assert r["ok"] and amounts(r) == [3334, 3333, 3333]
     r = page.evaluate(run, {"total": 10000, "people": people(3), "unit": 100})
     assert amounts(r) == [3400, 3300, 3300]
     r = page.evaluate(run, {"total": 10005, "people": people(3), "unit": 10})
-    assert amounts(r) == [3345, 3330, 3330] and sum(amounts(r)) == 10005        # below one unit: the first person
+    assert amounts(r) == [3345, 3330, 3330] and sum(amounts(r)) == 10005
     r = page.evaluate(run, {"total": 45000, "mode": "treat", "payer": 1, "people": people(3)})
     assert amounts(r) == [0, 45000, 0]
     r = page.evaluate(run, {"total": 30000, "people": [{"name": "a"}, {"name": "b", "excluded": True}, {"name": "c"}]})
@@ -119,7 +118,6 @@ def test_settlement_arithmetic_always_adds_up(browser):
                         ({"total": 1000, "people": [{"fixed": -5}, {}]}, "fixedInvalid"),
                         ({"total": 1000, "people": [{"fixed": 300}, {"fixed": 300}]}, "fixedShort")]:
         assert page.evaluate(run, case) == {"ok": False, "error": error}, case
-    # Invariant over many shapes: every share is a whole, non-negative amount and they add up to the total.
     bad = page.evaluate("""() => {
       const bad = []; let seed = 7;
       const rnd = n => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
@@ -170,7 +168,6 @@ def test_settlement_form_splits_shares_and_never_sends_amounts(browser):
     assert shared["url"].endswith("/bobyak.html") and "10000" not in shared["url"]
     page.locator('[data-bob="remove-person"][data-index="0"]').click()
     assert page.locator(".bob-person").count() == 2
-    # Typing and splitting asked nothing of any server.
     assert [u for u in requests[before:] if "/data/" in u or HOST not in u] == []
     assert not errors
     context.close()
@@ -184,14 +181,13 @@ def test_roulette_rules(browser):
     r = page.evaluate(pick, {})
     assert r["status"] == "ok" and r["pool"] == "verified" and r["place"]["id"] in ("p-0001", "p-0002") and r["size"] == 2
     assert page.evaluate(pick, {"avoid": "p-0002"})["place"]["id"] == "p-0001"
-    assert page.evaluate(pick, {"area": "gung"}) == {"status": "consent", "count": 1}       # never mixed in silently
+    assert page.evaluate(pick, {"area": "gung"}) == {"status": "consent", "count": 1}
     r = page.evaluate(pick, {"area": "gung", "consent": True})
     assert r["status"] == "ok" and r["pool"] == "candidate" and r["place"]["id"] == "p-0003"
-    # Consent does not push candidates ahead of verified places.
     assert page.evaluate(pick, {"consent": True})["pool"] == "verified"
-    assert page.evaluate(pick, {"budget": "under10k"})["place"]["id"] == "p-0001"            # the one with a checked price
+    assert page.evaluate(pick, {"budget": "under10k"})["place"]["id"] == "p-0001"
     assert page.evaluate(pick, {"budget": "over15k", "consent": True}) == {"status": "empty", "reason": "filters"}
-    assert page.evaluate(pick, {"area": "kaist", "consent": True}) == {"status": "empty", "reason": "filters"}  # closed never
+    assert page.evaluate(pick, {"area": "kaist", "consent": True}) == {"status": "empty", "reason": "filters"}
     assert page.evaluate(pick, {"savedIds": []}) == {"status": "empty", "reason": "saved"}
     assert page.evaluate(pick, {"savedIds": ["p-0004", "p-0005"]}) == {"status": "empty", "reason": "saved"}
     assert page.evaluate(pick, {"savedIds": ["p-0002"]})["place"]["id"] == "p-0002"
@@ -207,37 +203,34 @@ def test_roulette_rules(browser):
 
 def test_one_tap_pick_then_consent_for_candidates(browser):
     context, page, errors, _ = open_page(browser)
-    assert page.locator("#bobDataNote").inner_text() == "식당 2곳 · 후보 1곳"  # copy cleanup, owner 2026-11-12
+    assert page.locator("#bobDataNote").inner_text() == "식당 2곳 · 후보 1곳"
     page.locator("#bobSpin").click()
     card = page.locator(".bob-card")
     assert card.count() == 1 and card.locator(".bob-badge").inner_text() == "밥도둑 확인"
     assert page.evaluate("document.activeElement.classList.contains('bob-card')")
-    # Optional filters: the area with only a candidate asks first.
     page.locator("#bobFiltersToggle").click()
     assert page.locator("#bobFilters").is_visible()
     page.locator('[data-bob="filter"][data-group="area"][data-value="gung"]').click()
     assert "1개" in page.locator("#bobFiltersToggle").inner_text()
     page.locator("#bobSpin").click()
     assert page.locator(".bob-consent").count() == 1 and page.locator(".bob-card").count() == 0
-    assert "확인하지 않은 식당 1곳" in page.locator(".bob-consent").inner_text()  # copy cleanup, owner 2026-11-12
+    assert "확인하지 않은 식당 1곳" in page.locator(".bob-consent").inner_text()
     page.locator('[data-bob="consent"]').click()
     card = page.locator(".bob-card")
     assert card.locator(".bob-card-name").inner_text() == "궁동 떡볶이"
     assert card.locator(".bob-badge").inner_text() == "확인 안 된 후보"
-    assert "확인 안 된 식당이에요" in card.inner_text()  # copy cleanup, owner 2026-11-12
-    assert "확인 안 됨" in card.inner_text()                                   # menu, price, hours are not invented
+    assert "확인 안 된 식당이에요" in card.inner_text()
+    assert "확인 안 됨" in card.inner_text()
     assert page.locator(".bob-consent-on").count() == 1
     page.locator('[data-bob="consent-off"]').click()
     page.locator("#bobSpin").click()
     assert page.locator(".bob-consent").count() == 1
-    # A budget only matches checked prices; nothing matches -> say so and offer a reset.
     page.locator('[data-bob="filter"][data-group="area"][data-value="all"]').click()
     page.locator('[data-bob="filter"][data-group="budget"][data-value="over15k"]').click()
     page.locator("#bobSpin").click()
     assert "이 조건에 맞는 식당이 없어요" in page.locator("#bobResult").inner_text()
     page.locator('#bobResult [data-bob="reset"]').click()
     assert page.locator("#bobFiltersToggle").inner_text() == "조건 고르기"
-    # Only cuisines that exist are offered.
     cuisines = page.locator('[data-group="cuisine"]').evaluate_all("els => els.map(e => e.dataset.value)")
     assert cuisines == ["all", "korean", "western", "snack"]
     assert not errors
@@ -255,11 +248,11 @@ def test_card_shows_only_confirmed_facts_with_their_source(browser):
     assert "소상공인시장진흥공단" in text
     assert card.locator('a[href^="https://map.naver.com/p/search/"]').get_attribute("rel") == "noopener"
     assert card.locator('a[href^="https://map.kakao.com/?q="]').get_attribute("target") == "_blank"
-    assert card.locator('[data-bob="spin"]').count() == 0                       # a shared link is not a pick
+    assert card.locator('[data-bob="spin"]').count() == 0
     context.close()
     context, page, errors2, _ = open_page(browser, "?p=p-0004")
     assert page.locator(".bob-badge").first.inner_text() == "정보 확인 필요"
-    assert "정보가 바뀌었을 수 있어요" in page.locator(".bob-card").inner_text()  # copy cleanup, owner 2026-11-12
+    assert "정보가 바뀌었을 수 있어요" in page.locator(".bob-card").inner_text()
     context.close()
     context, page, errors3, _ = open_page(browser, "?p=p-9999")
     assert "이 식당을 찾지 못했어요" in page.locator("#bobResult").inner_text()
@@ -271,7 +264,7 @@ def test_empty_data_and_failed_load_are_told_apart(browser):
     empty = dict(FEED, places=[], updatedAt=None)
     context, page, errors, _ = open_page(browser, feed=empty)
     assert "아직 올라온 식당이 없어요" in page.locator("#bobResult").inner_text()
-    assert page.locator("#bobDataNote").inner_text() == "식당 0곳 · 후보 0곳"  # copy cleanup, owner 2026-11-12
+    assert page.locator("#bobDataNote").inner_text() == "식당 0곳 · 후보 0곳"
     page.locator("#bobSpin").click()
     assert "아직 올라온 식당이 없어요" in page.locator("#bobResult").inner_text()
     context.close()
@@ -290,7 +283,7 @@ def test_food_list_saves_moves_removes_and_feeds_the_roulette(browser):
     page.locator("#bobFiltersToggle").click()
     page.locator('[data-bob="saved-only"]').click()
     page.locator("#bobSpin").click()
-    assert "먹킷리스트에 담은 식당이 없어요" in page.locator("#bobResult").inner_text()  # copy cleanup, owner 2026-11-12
+    assert "먹킷리스트에 담은 식당이 없어요" in page.locator("#bobResult").inner_text()
     page.goto(f"https://{HOST}/bobyak.html?p=p-0002", wait_until="networkidle")
     page.locator('[data-bob="list-set"][data-status="want"]').click()
     data = stored(page)
@@ -303,13 +296,11 @@ def test_food_list_saves_moves_removes_and_feeds_the_roulette(browser):
     page.locator('.bob-card [data-bob="memo-save"]').click()
     assert stored(page)["items"][0]["memo"] == "창가 자리, 민수 생일"
     assert "또 갈래" in page.locator("#bobListBody").inner_text() and "창가 자리" in page.locator("#bobListBody").inner_text()
-    # The memo stays out of what is shared.
     page.locator('.bob-card [data-bob="share-place"]').click()
     page.wait_for_function("window.__shared.length === 1")
     shared = page.evaluate("window.__shared[0]")
     assert shared["url"].endswith("/bobyak.html?p=p-0002")
     assert "창가" not in json.dumps(shared, ensure_ascii=False) and "또 갈래" not in json.dumps(shared, ensure_ascii=False)
-    # Saved-only roulette now picks it.
     page.locator("#bobFiltersToggle").click()
     page.locator('[data-bob="saved-only"]').click()
     page.locator("#bobSpin").click()
@@ -348,7 +339,7 @@ def test_damaged_and_newer_saved_data(browser):
     assert "어은 국밥" in page.locator("#bobListBody").inner_text()
     page.locator('#bobListBody [data-bob="open"]').click()
     page.locator('[data-bob="list-set"][data-status="want"]').click()
-    assert page.evaluate(f"localStorage.getItem('{SAVED_KEY}')") == newer           # never rewritten
+    assert page.evaluate(f"localStorage.getItem('{SAVED_KEY}')") == newer
     assert page.locator(".bob-card textarea").count() == 0
     assert not errors + errors2
     context.close()
@@ -358,7 +349,7 @@ def test_damaged_and_newer_saved_data(browser):
 def test_english_keeps_korean_names(browser):
     context, page, errors, _ = open_page(browser, "?p=p-0001", lang="en")
     card = page.locator(".bob-card")
-    assert card.locator(".bob-card-name").inner_text() == "어은 국밥"                # no invented English name
+    assert card.locator(".bob-card-name").inner_text() == "어은 국밥"
     text = card.inner_text()
     assert "Checked by Babdoduk" in text and "Up to ₩10,000" in text and "Not checked" in text
     assert page.locator("h1").inner_text() == "Meal plan maker"

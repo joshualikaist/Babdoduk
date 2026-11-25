@@ -11,7 +11,7 @@ import pytest
 import refresh_kaist_menu as km
 
 KST = km.KST
-WED = datetime(2026, 9, 30, 6, 0, tzinfo=KST)          # a Wednesday, 06:00 KST
+WED = datetime(2026, 9, 30, 6, 0, tzinfo=KST)
 IDS = [row["id"] for row in km.RESTAURANTS]
 
 
@@ -56,12 +56,12 @@ def day_file(tmp_path, iso):
 
 # --- week arithmetic ----------------------------------------------------------------------
 @pytest.mark.parametrize("day,monday,sunday", [
-    (date(2026, 9, 30), date(2026, 9, 28), date(2026, 10, 4)),     # month boundary Sep -> Oct
-    (date(2026, 9, 28), date(2026, 9, 28), date(2026, 10, 4)),     # Monday is its own start
-    (date(2026, 10, 4), date(2026, 9, 28), date(2026, 10, 4)),     # Sunday closes the week
-    (date(2026, 12, 31), date(2026, 12, 28), date(2027, 1, 3)),    # year boundary
-    (date(2028, 2, 29), date(2028, 2, 28), date(2028, 3, 5)),      # leap day
-    (date(2027, 3, 1), date(2027, 3, 1), date(2027, 3, 7)),        # non-leap March 1st
+    (date(2026, 9, 30), date(2026, 9, 28), date(2026, 10, 4)),
+    (date(2026, 9, 28), date(2026, 9, 28), date(2026, 10, 4)),
+    (date(2026, 10, 4), date(2026, 9, 28), date(2026, 10, 4)),
+    (date(2026, 12, 31), date(2026, 12, 28), date(2027, 1, 3)),
+    (date(2028, 2, 29), date(2028, 2, 28), date(2028, 3, 5)),
+    (date(2027, 3, 1), date(2027, 3, 1), date(2027, 3, 7)),
 ])
 def test_week_is_monday_to_sunday(day, monday, sunday):
     week = km.week_of(day)
@@ -71,9 +71,9 @@ def test_week_is_monday_to_sunday(day, monday, sunday):
 
 
 @pytest.mark.parametrize("instant,expected", [
-    (datetime(2026, 9, 27, 15, 30, tzinfo=timezone.utc), date(2026, 9, 28)),                # Mon 00:30 KST
-    (datetime(2026, 9, 27, 14, 59, tzinfo=timezone.utc), date(2026, 9, 27)),                # Sun 23:59 KST
-    (datetime(2026, 9, 27, 9, 0, tzinfo=timezone(timedelta(hours=-7))), date(2026, 9, 28)),  # LA Sunday evening
+    (datetime(2026, 9, 27, 15, 30, tzinfo=timezone.utc), date(2026, 9, 28)),
+    (datetime(2026, 9, 27, 14, 59, tzinfo=timezone.utc), date(2026, 9, 27)),
+    (datetime(2026, 9, 27, 9, 0, tzinfo=timezone(timedelta(hours=-7))), date(2026, 9, 28)),
 ])
 def test_the_kaist_day_is_decided_in_kst_not_by_the_host_timezone(instant, expected):
     assert km.kst_today(instant) == expected
@@ -90,7 +90,7 @@ def test_daily_filename_is_the_iso_date(tmp_path):
 
 # --- a full week --------------------------------------------------------------------------
 def test_first_run_of_a_week_fetches_all_seven_days_and_writes_the_index(tmp_path):
-    site = Site({"2026-10-04": "empty"})                                   # Sunday not published yet
+    site = Site({"2026-10-04": "empty"})
     summary = run(tmp_path, site)
     assert summary["requests"] == 56 and len(site.calls) == 56
     week = json.loads((tmp_path / "week.json").read_text(encoding="utf-8"))
@@ -101,7 +101,7 @@ def test_first_run_of_a_week_fetches_all_seven_days_and_writes_the_index(tmp_pat
     sunday = week["days"][-1]
     assert (sunday["available"], sunday["status"], sunday["fetchedAt"]) == (False, km.NOT_PUBLISHED_YET, None)
     assert not (tmp_path / "2026-10-04.json").exists()
-    assert "restaurants" not in json.dumps(week)                            # the index never holds menus
+    assert "restaurants" not in json.dumps(week)
     thursday = day_file(tmp_path, "2026-10-01")
     assert thursday["date"] == "2026-10-01" and thursday["dateLabel"] == "10월 1일"
     assert thursday["status"] == km.AVAILABLE and thursday["coverage"] == {
@@ -118,13 +118,13 @@ def test_latest_json_stays_todays_payload(tmp_path):
 def test_later_runs_refresh_only_today_and_the_rest_of_the_week(tmp_path):
     run(tmp_path, Site())
     site = Site()
-    summary = run(tmp_path, site, now=WED + timedelta(hours=10))           # 16:30 the same day
+    summary = run(tmp_path, site, now=WED + timedelta(hours=10))
     assert summary["requests"] == 40 and {d for _, d in site.calls} == {
         "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04"}
     sunday = Site()
     assert run(tmp_path, sunday, now=datetime(2026, 10, 4, 6, 0, tzinfo=KST))["requests"] == 8
     week = json.loads((tmp_path / "week.json").read_text(encoding="utf-8"))
-    assert [d["status"] for d in week["days"]] == [km.AVAILABLE] * 7          # past days kept, not refetched
+    assert [d["status"] for d in week["days"]] == [km.AVAILABLE] * 7
 
 
 def test_a_manual_full_week_refresh_refetches_past_days(tmp_path):
@@ -143,14 +143,13 @@ def test_a_new_week_starts_a_new_baseline(tmp_path):
 
 
 def test_a_new_week_removes_the_dated_files_of_other_weeks(tmp_path):
-    run(tmp_path, Site())                                                  # 09-28 .. 10-04 saved
-    (tmp_path / "2026-09-01.json").write_text("{}", encoding="utf-8")       # an older leftover
-    # Monday before the cafeterias post: no menu today, latest.json keeps the last saved menu.
+    run(tmp_path, Site())
+    (tmp_path / "2026-09-01.json").write_text("{}", encoding="utf-8")
     summary = run(tmp_path, Site(default="empty"), now=datetime(2026, 10, 5, 6, 0, tzinfo=KST))
     assert "2026-09-28.json" in summary["pruned"] and "2026-09-01.json" in summary["pruned"]
     assert not list(tmp_path.glob("2026-09-*.json")) and not (tmp_path / "2026-10-04.json").exists()
     assert json.loads((tmp_path / "latest.json").read_text(encoding="utf-8"))["date"] == "2026-09-30"
-    assert _validated(tmp_path) == []                       # the index and the files still agree
+    assert _validated(tmp_path) == []
 
 
 # --- failures never erase a known-good day --------------------------------------------------
@@ -179,7 +178,7 @@ def test_a_partial_restaurant_failure_is_recorded_and_carries_saved_entries(tmp_
     run(tmp_path, Site({("west", "2026-10-01"): "down"}), now=WED + timedelta(hours=10))
     thursday = day_file(tmp_path, "2026-10-01")
     assert thursday["coverage"] == {"requested": 8, "fetched": 7, "failed": ["west"], "carried": ["west"]}
-    assert [r["id"] for r in thursday["restaurants"]] == IDS                # canonical order kept
+    assert [r["id"] for r in thursday["restaurants"]] == IDS
 
 
 def test_a_partial_failure_without_saved_data_does_not_pretend_to_be_complete(tmp_path):
@@ -187,7 +186,7 @@ def test_a_partial_failure_without_saved_data_does_not_pretend_to_be_complete(tm
     today = day_file(tmp_path, "2026-09-30")
     assert today["coverage"]["failed"] == ["east1", "east2"] and today["coverage"]["carried"] == []
     assert len(today["restaurants"]) == 6
-    assert "OSError" not in json.dumps(today) and "network" not in json.dumps(today)   # no exception text
+    assert "OSError" not in json.dumps(today) and "network" not in json.dumps(today)
 
 
 def test_an_unconfirmed_empty_day_with_failures_is_a_failure_not_unpublished(tmp_path):
@@ -225,13 +224,12 @@ def test_today_without_any_menu_exits_2_and_keeps_the_previous_latest(tmp_path, 
     monkeypatch.setattr(km.time, "sleep", lambda _: None)
     real_refresh = km.refresh
     monkeypatch.setattr(km, "refresh", lambda **kw: real_refresh(tmp_path, fetcher=km.fetch, **kw))
-    # 10-01 was saved by the first run, so empty answers keep it: today still has a menu.
     assert km.main([]) == 0
     before = (tmp_path / "latest.json").read_text(encoding="utf-8")
     assert json.loads(before)["date"] == "2026-10-01"
     (tmp_path / "2026-10-01.json").unlink()
     assert km.main([]) == 2
-    assert (tmp_path / "latest.json").read_text(encoding="utf-8") == before   # never replaced by nothing
+    assert (tmp_path / "latest.json").read_text(encoding="utf-8") == before
 
 
 def test_writes_are_atomic_and_leave_no_temp_files(tmp_path):
@@ -248,7 +246,7 @@ def _validated(tmp_path):
 def test_generated_week_and_dated_files_validate(tmp_path):
     run(tmp_path, Site({"2026-10-04": "empty", ("west", "2026-10-02"): "down"}))
     assert _validated(tmp_path) == []
-    from schema_check import schema_errors           # schemas/kaist-menu-*.schema.json, docs/DATA.md
+    from schema_check import schema_errors
     for path in sorted(tmp_path.glob("*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
         assert data["schemaVersion"] == 1, path.name

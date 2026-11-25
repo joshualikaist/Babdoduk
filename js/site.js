@@ -1,12 +1,3 @@
-/* What every page shares: the language switch, the scroll progress bar, the home link that scrolls
-   to the top on the home page, and the "more" menu of the navigation.
-
-   The page's translation table comes first, as window.BABDODUK_STR = { ko: {...}, en: {...} },
-   written into each page by scripts/sync_site_chrome.py from i18n/ko.json and i18n/en.json (plus
-   data/content/), and this script runs right after it, before the page's own scripts. Changing
-   the language rewrites every [data-i18n] text, [data-i18n-html] fragment, [data-i18n-aria-key]
-   label and [data-i18n-alt] text, the document title, and then announces `babdoduk-lang` on the
-   document for the page's own scripts. */
 (function () {
   var STR = window.BABDODUK_STR || { ko: {}, en: {} };
 
@@ -44,12 +35,7 @@
   window.babdodukGetLang = function () {
     return document.documentElement.lang === 'en' ? 'en' : 'ko';
   };
-  // The lab's own pages answer 404 on every host but babdoduk-lab (vercel.json), so the public pages
-  // carry no link to them. On babdoduk-lab, and only there, the "more" menu of every page lists them
-  // too, so the lab is reachable from its home page (owner 2026-11-01). The pages' HTML is the same on
-  // both branches; the lab pages already carry these links (scripts/sync_site_chrome.py LAB_LINKS).
   var LAB_HOST = 'babdoduk-lab.vercel.app';
-  // Owner 2026-11-12: 실험실 and 꽁밥 실험 left the menu (the pages stay, reachable by address).
   var LAB_LINKS = [['cardnews.html', 'nav.labCards', '카드뉴스']];
   var morePanel = document.getElementById('navMorePanel');
   if (location.hostname === LAB_HOST && morePanel && !morePanel.querySelector('a[href="cardnews.html"]')) {
@@ -62,9 +48,6 @@
       morePanel.appendChild(a);
     });
   }
-  // 마이 밥도둑 (my.html): every page gets a person icon beside Instagram that opens it (owner 2026-11-10:
-  // no way in otherwise; on every host since 2026-11-11), named 로그인, or 마이 밥도둑 once this browser
-  // holds a sign-in.
   var insta = document.getElementById('navInstagram');
   if (insta && !document.getElementById('navMy')) {
     var signedIn = false;
@@ -89,11 +72,6 @@
   try { saved = localStorage.getItem('babdoduk-lang') || 'ko'; } catch (e) {}
   applyLang(saved === 'en' ? 'en' : 'ko');
 
-  // 방문 수 (owner 2026-11-20; docs/USAGE_STATS.md, api/visit.js): once per page load on our own sites, the
-  // page, its language and phone/tablet/computer go to the site's /api/visit, which adds one to that hour's
-  // count. No cookie, no id, nothing about the person. Nothing is sent from an automated browser, with the
-  // browser's "do not track" or privacy-control setting on, or from a device that opted out by opening any
-  // page once with ?nocount=1 (the owner's own phone; ?nocount=0 counts it again).
   function visitInfo(loc, nav) {
     if (!/^(www\.babdodukms\.com|babdoduk\.vercel\.app|babdoduk-lab\.vercel\.app)$/.test(loc.hostname)) return null;
     if (nav.webdriver || nav.globalPrivacyControl || nav.doNotTrack === '1' || window.doNotTrack === '1') return null;
@@ -124,9 +102,6 @@
     else window.addEventListener('load', sendVisit, { once: true });
   }
 
-  // Phones: the menu button opens the links as a panel from the left, under the bar (css/site.css).
-  // A dimmed backdrop, Escape, a link or focus leaving the panel closes it; Escape and the backdrop
-  // give focus back to the button.
   var drawerBtn = document.getElementById('navDrawerToggle');
   var drawer = document.getElementById('siteNavLinks');
   if (drawerBtn && drawer) {
@@ -181,10 +156,8 @@
     });
   }
 
-  // Scroll progress.
   var bar = document.getElementById('scrollProgressBar');
   var wrap = bar && bar.parentElement;
-  // At most once a frame however many scroll events arrive; the attribute only when its number changes.
   var queued = false, shownPct = -1;
   function update() {
     queued = false;
@@ -204,7 +177,6 @@
   window.addEventListener('resize', onScroll);
   if (bar) update();
 
-  // On the home page the wordmark links to "#": it scrolls back to the top.
   var navHome = document.getElementById('navHome');
   if (navHome) {
     navHome.addEventListener('click', function (e) {
@@ -216,7 +188,6 @@
     });
   }
 
-  // The navigation's "more" menu: one open at a time, closed by a click elsewhere or Escape.
   document.querySelectorAll('[data-mega]').forEach(function (mega) {
     mega.addEventListener('click', function (e) {
       e.stopPropagation();

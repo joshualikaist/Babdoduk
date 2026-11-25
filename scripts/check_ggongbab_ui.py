@@ -41,13 +41,7 @@ FIXTURE_CLOCK_SCRIPT = f"""(() => {{
   FixtureDate.UTC = NativeDate.UTC;
   globalThis.Date = FixtureDate;
 }})();"""
-# One synthetic reference time for the normal-route radar scenario: the page
-# clock and the synthetic event both derive from it, so the host clock never
-# decides which calendar day the event falls on.
 RADAR_NOW = datetime.fromisoformat(FIXTURE_NOW)
-# UI checks must not use an operator's local public DB configuration (lab's read-only Realtime
-# experiment reads js/ggongbab-public-config.js). Every browser context gets the empty config,
-# so the checks always exercise the static snapshot. Where no page loads the file, it never matches.
 EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG = {};"
 
 
@@ -274,16 +268,13 @@ def todays_events_and_grace(browser, base, report):
             past = page.locator(".gg-past").evaluate_all("els => els.map(el => el.dataset.pastId)")
             assert sorted(past) == sorted(["ended-1s-ago", "ended-2h-ago", "ended-4h-ago", "gift-ended-2h-ago",
                                            "archived-yesterday", "archived-gift"]), past
-            # Today's number counts food that is still current today: running, later, ends-right-now.
             assert page.locator(".gg-radar-count").inner_text() == "오늘 3개", page.locator(".gg-radar-count").inner_text()
             assert page.locator(".gg-counts").inner_text().startswith("오늘 꽁밥 3개"), page.locator(".gg-counts").inner_text()
-            # The giveaway-only rows: listed (live) or recorded (ended), never counted.
             assert page.locator('.gg-card[data-id="gift-running"] .gg-gift-badge').count() == 1
             assert page.locator('.gg-past[data-past-id="gift-ended-2h-ago"] .gg-past-gift').count() == 1
             assert page.locator(".gg-archive").locator(".gg-btn, .gg-reg-badge").count() == 0
             report["checks"] += 7
         assert not errors, errors
-        # One minute later "ends-right-now" is over: the count drops and it joins the ended rows.
         context.clock.set_fixed_time(now + timedelta(minutes=1))
         page.goto(base + "/ggongbab.html")
         page.locator(".gg-card").first.wait_for()
@@ -329,7 +320,6 @@ def giveaway_payloads(now=RADAR_NOW):
          "giveaway": {"provided": "true", "description": "커피 쿠폰 20명"},
          "registration": {"required": "true", "deadline": draw, "url": "https://example.org/apply"},
          "sources": [{"type": "kaist_public", "name": "KAIST 공지", "url": "https://example.org/notice"}]},
-        # A deadline-only giveaway whose deadline passed an hour ago: past at once, no 3-hour grace.
         {"id": "gift-closed", "title": "마감된 경품 이벤트", "summary": "", "startAt": closed, "endAt": None,
          "location": place, "food": no_food, "giveaway": {"provided": "true", "description": "굿즈"},
          "registration": {"required": "true", "deadline": closed, "url": "https://example.org/apply"},
@@ -391,7 +381,6 @@ def giveaway_listings(browser, base, report):
             return page.locator(f'.gg-chip[data-group="food"][data-value="{value}"]')
 
         def settled(selector, where):
-            # A timeout here keeps what the page showed, so a rare stall can be read afterwards.
             try:
                 page.locator(selector).first.wait_for()
             except Exception:
@@ -411,16 +400,13 @@ def giveaway_listings(browser, base, report):
             en = lang == "en"
             page.set_viewport_size({"width": width, "height": 844})
             open_hub(lang)
-            # Everything live is listed, in start order; the closed draw has left for the past rows.
             assert ids() == ["gift-expo", "food-lunch", "both-talk", "gift-draw"], ids()
-            # Only food counts: two today (lunch, talk), never the expo that starts first.
             assert page.locator(".gg-radar-count").inner_text() == ("2 today" if en else "오늘 2개")
             assert page.locator(".gg-counts").inner_text().startswith("2 free meals today" if en else "오늘 꽁밥 2개")
             assert page.locator("#foodHubTabFree").inner_text().split()[-1] == "2"
             assert page.locator("[data-featured]").get_attribute("data-id") == "food-lunch"
             assert page.locator(".gg-radar-cta").get_attribute("data-gg-scroll") == "food-lunch"
             badge = "🎁 Giveaway" if en else "🎁 경품"
-            # A giveaway-only card: the gift badge and its description, never a food label or fallback.
             expo = card("gift-expo")
             assert expo.locator(".gg-food-primary").count() == 0
             assert squash(expo.locator(".gg-gift-badge").text_content()) == badge
@@ -428,41 +414,34 @@ def giveaway_listings(browser, base, report):
             assert expo.locator(".gg-giveaway").inner_text() == ("Giveaway · " if en else "경품 · ") + "경품 추첨 (에어팟)"
             for word in ("음식 제공", "식사 제공", "Food provided"):
                 assert word not in expo.inner_text(), word
-            # Food and a giveaway: both marks. Copy cleanup, owner 2026-11-12: no "포스터 기준" note any more.
             talk = card("both-talk")
-            # The dish in a word (2026-11-05).
             assert squash(talk.locator(".gg-food-primary").text_content()) == ("Sandwiches" if en else "샌드위치")
             assert squash(talk.locator(".gg-gift-badge").text_content()) == badge
             assert talk.locator(".gg-giveaway").inner_text().endswith("기념품 증정")
-            # Text evidence and plain food carry neither mark.
             lunch = card("food-lunch")
             assert lunch.locator(".gg-food-source, .gg-gift-badge, .gg-giveaway").count() == 0
             assert lunch.locator("time.gg-time").inner_text() == "12:00"
-            # A deadline-only giveaway leads with its sign-up deadline, not an event time.
             draw = card("gift-draw")
             assert draw.locator("time.gg-time").count() == 0 and draw.locator(".gg-deadline").count() == 0
             assert draw.locator(".gg-time.is-deadline").inner_text() == (
                 "Sign up by Sep 22 (Tue) 23:59" if en else "신청 마감 9월 22일 (화) 23:59")
             assert draw.locator(".gg-btn--primary").get_attribute("href") == "https://example.org/apply"
-            # Past rows: a giveaway gets the gift mark and its own record note, never a food label.
             assert page.locator(".gg-past").evaluate_all("els => els.map(el => el.dataset.pastId)") == [
                 "gift-closed", "past-gift", "past-food"]
             past = page.locator('.gg-past[data-past-id="past-gift"]')
             assert squash(past.locator(".gg-past-gift").text_content()) == badge
             assert past.locator(".gg-past-note").inner_text().startswith(
-                "Past giveaway listing" if en else "지난 경품 안내")  # copy cleanup, owner 2026-11-12
+                "Past giveaway listing" if en else "지난 경품 안내")
             assert "음식 제공" not in past.inner_text() and "Food provided" not in past.inner_text()
             assert page.locator('.gg-past[data-past-id="past-food"] .gg-past-gift').count() == 0
             assert page.locator('.gg-past[data-past-id="gift-closed"] .gg-past-gift').count() == 1
             assert page.locator(".gg-archive .gg-btn, .gg-archive .gg-deadline").count() == 0
-            # The chip: last in the food-type row, named by its word (the emoji is decoration).
             gift_chip = chip("giveaway")
             assert page.locator('.gg-chip[data-group="food"]').evaluate_all("els => els.map(el => el.dataset.value)") == [
                 "all", "meal", "snack", "refreshment", "giveaway"]
             assert squash(gift_chip.text_content()) == badge and gift_chip.get_attribute("aria-pressed") == "false"
             assert page.get_by_role("button", name="Giveaway" if en else "경품", exact=True).count() == 1
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-            # Every chip is a 44 px tap target (owner 2026-10-16) whose visible pill stays 34 px tall.
             for box in page.locator(".gg-chip").evaluate_all(
                     "els => els.map(el => { const r = el.getBoundingClientRect(), s = getComputedStyle(el);"
                     " return [r.width, r.height, r.height - parseFloat(s.borderTopWidth) - parseFloat(s.borderBottomWidth)]; })"):
@@ -475,8 +454,6 @@ def giveaway_listings(browser, base, report):
             report["checks"] += 34
             if width != 390 or lang != "ko":
                 continue
-            # Filtering (once): the giveaway chip shows every giveaway, with or without food; the food
-            # chips never match a giveaway-only row; counts do not follow the filter.
             gift_chip.focus()
             page.keyboard.press("Enter")
             assert page.evaluate("document.activeElement.dataset.value") == "giveaway"
@@ -493,7 +470,6 @@ def giveaway_listings(browser, base, report):
                 chip(value).click()
                 assert ids() == expected, (value, ids())
                 assert chip(value).get_attribute("aria-pressed") == "true"
-            # Saved values: an old one still works; an unknown or missing one falls back to all.
             for saved, pressed in (({"when": "all", "food": "snack"}, "snack"),
                                    ({"when": "all", "food": "prize"}, "all"), ({"when": "all"}, "all")):
                 page.evaluate("value => localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify(value))", saved)
@@ -504,7 +480,6 @@ def giveaway_listings(browser, base, report):
             page.evaluate("localStorage.removeItem('babdoduk-ggongbab-filter')")
             report["checks"] += 22
 
-        # Giveaways only: listed, but the radar reports no free food and nothing is featured.
         feed["live"] = dict(live, events=[live["events"][0], live["events"][3]])
         page.set_viewport_size({"width": 390, "height": 844})
         open_hub("ko")
@@ -519,7 +494,7 @@ def giveaway_listings(browser, base, report):
         context.close()
 
 
-WEEK_NOW = datetime(2026, 9, 30, 12, 30, tzinfo=timezone(timedelta(hours=9)))   # a Wednesday
+WEEK_NOW = datetime(2026, 9, 30, 12, 30, tzinfo=timezone(timedelta(hours=9)))
 MENU_IDS = ["fclt", "west", "east1", "east2", "emp", "icc", "hawam", "seoul"]
 XSS = '<img src=x onerror="window.__kmXss=1">'
 
@@ -559,7 +534,7 @@ def weekly_cafeteria(browser, base, report):
         name = route.request.url.rsplit("/", 1)[-1].split("?")[0]
         iso = name[:-5]
         if iso == "2026-10-02":
-            route.abort()                                   # network failure
+            route.abort()
         elif iso in dated:
             route.fulfill(json=dated[iso])
         else:
@@ -570,7 +545,7 @@ def weekly_cafeteria(browser, base, report):
                                       locale="ko-KR", reduced_motion="reduce")
         neutralize_public_config(context)
         try:
-            context.clock.set_fixed_time(WEEK_NOW)          # 2026-09-29 20:30 in Los Angeles
+            context.clock.set_fixed_time(WEEK_NOW)
             page = context.new_page()
             requests = []
             page.on("request", lambda r: requests.append(urlparse(r.url).path))
@@ -588,7 +563,6 @@ def weekly_cafeteria(browser, base, report):
             assert days.count() == 7
             assert days.evaluate_all("els => els.map(el => el.dataset.kmDate)") == [
                 "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04"]
-            # Default: today in KST (the browser itself is in Los Angeles, still on the 29th).
             wed = page.locator('[data-km-date="2026-09-30"]')
             assert wed.get_attribute("aria-pressed") == "true" and wed.get_attribute("aria-current") == "date"
             assert wed.locator(".km-day-today").inner_text() == ("Today" if en else "오늘")
@@ -600,10 +574,8 @@ def weekly_cafeteria(browser, base, report):
             assert page.locator(".km-card").count() == 4 and page.locator(".km-card").first.get_attribute("data-km-id") == "east1"
             metric = page.locator(".gg-counts").inner_text()
             assert ("8 cafeterias" if en else "학식 8곳") in metric
-            # The today view asks for nothing new: no week index and no other date on load.
             assert not any(path.endswith(("/week.json", "2026-09-28.json", "2026-10-01.json", "2026-10-02.json"))
                            for path in requests)
-            # Tomorrow, across the month boundary: same meal, that day's cards and count.
             page.locator('[data-km-date="2026-10-01"]').click()
             page.locator(".km-card").first.wait_for()
             assert page.locator(".km-date").inner_text() == ("Oct 1 · Thursday" if en else "10월 1일 · 목요일")
@@ -613,45 +585,38 @@ def weekly_cafeteria(browser, base, report):
             assert page.locator('[data-km-meal="dinner"]').get_attribute("aria-pressed") == "true"
             assert page.locator(".km-card").count() == 3
             assert ("Dinner: 3 cafeterias" if en else "저녁 메뉴 3곳") in page.locator(".km-count").inner_text()
-            assert page.locator(".km-card").first.get_attribute("data-km-id") == "east1"      # favorites are not per date
+            assert page.locator(".km-card").first.get_attribute("data-km-id") == "east1"
             assert "목요일 저녁 2" in page.locator(".km-card").first.inner_text()
-            assert not page.locator("[data-km-stale]").count()                                 # future is not stale
-            assert page.locator(".gg-counts").inner_text() == metric                          # the today metric stays
+            assert not page.locator("[data-km-stale]").count()
+            assert page.locator(".gg-counts").inner_text() == metric
             assert page.evaluate("window.__kmXss") is None and not page.locator(".km-items img").count()
             assert XSS in page.locator('[data-km-id="fclt"] .km-items').inner_text()
-            # Back and forth: a loaded date is not fetched again.
             wed.click()
             page.locator('[data-km-date="2026-10-01"]').click()
             page.locator(".km-card").first.wait_for()
             assert sum(path.endswith("/2026-10-01.json") for path in requests) == 1
             assert sum(path.endswith("/week.json") for path in requests) == 1
-            # Sunday: the index says nothing is posted yet, so it is not even requested.
             page.locator('[data-km-date="2026-10-04"]').click()
             page.locator('[data-km-day-state="none"]').wait_for()
             assert page.locator('[data-km-day-state="none"]').inner_text() == (
                 "No menu has been posted yet." if en else "아직 올라온 메뉴가 없어요.")
             assert not any(path.endswith("/2026-10-04.json") for path in requests)
             assert page.locator('[data-km-meal="dinner"]').get_attribute("aria-pressed") == "true"
-            # Friday: the request fails, which is not the same as "no menu".
             page.locator('[data-km-date="2026-10-02"]').click()
             page.locator('[data-km-day-state="failed"]').wait_for()
             assert ("Couldn’t load the menu." if en else "메뉴를 불러오지 못했어요.") in page.locator(
                 '[data-km-day-state="failed"]').inner_text()
             assert page.locator("[data-km-retry-day]").count() == 1
-            # Saturday: the collector could not fetch it and there is no file: a failure state,
-            # without requesting a file the index already lists as missing (no 404).
             page.locator('[data-km-date="2026-10-03"]').click()
             page.locator('[data-km-day-state="failed"]').wait_for()
             assert not any(path.endswith("/2026-10-03.json") for path in requests)
             weeks_before = sum(path.endswith("/week.json") for path in requests)
             page.locator("[data-km-retry-day]").click()
             page.locator('[data-km-day-state="failed"]').wait_for()
-            assert sum(path.endswith("/week.json") for path in requests) == weeks_before + 1   # retry re-reads the index
-            # A past day of this week is browsable too.
+            assert sum(path.endswith("/week.json") for path in requests) == weeks_before + 1
             page.locator('[data-km-date="2026-09-28"]').click()
             page.locator(".km-card").first.wait_for()
             assert "월요일 저녁" in page.locator(".km-card").first.inner_text()
-            # Keyboard: arrows move between dates, Enter selects, focus survives the re-render.
             page.locator('[data-km-date="2026-09-28"]').focus()
             page.keyboard.press("ArrowRight")
             assert page.evaluate("document.activeElement.dataset.kmDate") == "2026-09-29"
@@ -663,12 +628,10 @@ def weekly_cafeteria(browser, base, report):
             page.locator(".km-card").first.wait_for()
             assert page.evaluate("document.activeElement.dataset.kmDate") == "2026-10-01"
             assert page.locator('[data-km-date="2026-10-01"]').get_attribute("aria-pressed") == "true"
-            # Layout: seven usable buttons inside the page, no page-level horizontal overflow.
             boxes = days.evaluate_all("els => els.map(el => { const r = el.getBoundingClientRect();"
                                       " return {l: r.left, r: r.right, w: r.width, h: r.height}; })")
             assert all(b["l"] >= 0 and b["r"] <= width and b["w"] >= 36 and b["h"] >= 44 for b in boxes), boxes
             assert page.evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth")
-            # A new page load starts at today again (the date is not persisted), the meal is.
             page.reload()
             page.locator(".km-card").first.wait_for()
             assert page.locator('[data-km-date="2026-09-30"]').get_attribute("aria-pressed") == "true"
@@ -676,7 +639,6 @@ def weekly_cafeteria(browser, base, report):
             report["checks"] += 42
         finally:
             context.close()
-    # Without week.json (for example before the weekly collector runs) dates still load on demand.
     context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
     neutralize_public_config(context)
     try:
@@ -730,7 +692,6 @@ def sessions_and_audience(browser, base, report):
         context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce",
                                       viewport={"width": 1280, "height": 900})
         neutralize_public_config(context)
-        # The fonts are not part of this check: an empty stylesheet keeps a cold font fetch from stalling the load.
         context.route("https://fonts.googleapis.com/**", lambda route: route.fulfill(status=200, content_type="text/css", body=""))
         context.clock.set_fixed_time(datetime(2026, 10, 18, 10, 0, tzinfo=kst))
         page = context.new_page()
@@ -745,22 +706,19 @@ def sessions_and_audience(browser, base, report):
         try:
             page.goto(base + "/index.html")
             page.locator("#homeCalDay .hc-ev").first.wait_for()
-            # The default day is the first with food: Monday 2 November, the concert's first session.
             rows = page.locator("#homeCalDay .hc-ev")
             assert rows.count() == 1, rows.count()
             first = rows.first.inner_text()
             assert "자연과학과 함께하는 토크 콘서트" in first and "12:00" in first, first
             assert ("Session 1/5" if en else "1/5회차") in first, first
-            assert "E6-1 1501" in first, first                     # that day's own place, not both halls
+            assert "E6-1 1501" in first, first
             who = page.locator("#homeCalDay .hc-ev-who")
             assert who.count() == 1 and who.first.inner_text().strip() == (
                 "Open to: 자연과학대학 학사과정 학생" if en else "대상 · 자연과학대학 학사과정 학생"), who.all_inner_texts()
-            # The upcoming list holds the next session days, one row each.
             upcoming = page.locator("#homeCalNext .hc-next-row")
             assert upcoming.count() == 4, upcoming.all_inner_texts()
             names = [t for t in upcoming.all_inner_texts()]
-            assert sum("자연과학과 함께하는 토크 콘서트" in n for n in names) == 3, names      # Tue, Wed, Thu
-            # November: a dot on each session day (two on Tuesday, with the advising week), the Friday time and place.
+            assert sum("자연과학과 함께하는 토크 콘서트" in n for n in names) == 3, names
             page.locator('[data-hc-step="1"]').click()
             for iso, dots in (("02", 1), ("03", 2), ("04", 1), ("05", 1), ("06", 1), ("07", 0), ("09", 1)):
                 cell = page.locator(f'td[data-date="2026-11-{iso}"] .hc-dot')
@@ -768,19 +726,15 @@ def sessions_and_audience(browser, base, report):
             page.locator('td[data-date="2026-11-06"]').click()
             friday = page.locator("#homeCalDay .hc-ev").first.inner_text()
             assert "16:00" in friday and "E4 C101" in friday and ("Session 5/5" if en else "5/5회차") in friday, friday
-            # Friday's own food, as its dish in the page's language (2026-11-05), not Monday's sandwiches.
             assert ("Burgers" if en else "버거") in friday and ("Sandwiches" if en else "샌드위치") not in friday, friday
-            # Tuesday: two rows. The advising week's audience is a guess and says so; Monday's was stated.
             page.locator('td[data-date="2026-11-03"]').click()
             texts = page.locator("#homeCalDay .hc-ev-who").all_inner_texts()
             assert ("Open to: 기계공학과 학부생 (estimated)" if en else "대상 · 기계공학과 학부생 (추정)") in [x.strip() for x in texts], texts
-            # An event with only a stated eligibility keeps it in the details, not on the collapsed row.
             page.locator('td[data-date="2026-11-09"]').click()
             assert page.locator("#homeCalDay .hc-ev-who").count() == 0
             page.locator("#homeCalDay .hc-ev-btn").first.click()
             detail = page.locator("#homeCalDay .hc-ev-detail:not([hidden])").inner_text()
             assert ("Open to: KAIST 재학생" if en else "대상 · KAIST 재학생") in detail, detail
-            # The hub shows the same days: one card per session day, each with the audience line.
             page.add_init_script("localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({when: 'all', food: 'all'}));")
             page.goto(base + "/ggongbab.html#free")
             page.locator("article.gg-card").first.wait_for()
@@ -797,7 +751,7 @@ def sessions_and_audience(browser, base, report):
             assert who_of("pl") == f"{label} · KAIST 재학생", who_of("pl")
             friday_card = page.locator('article.gg-card[data-id="cc#5"]').inner_text()
             monday_card = page.locator('article.gg-card[data-id="cc#1"]').inner_text()
-            assert "C101" in friday_card and "C101" not in monday_card, (friday_card, monday_card)   # each day's own place
+            assert "C101" in friday_card and "C101" not in monday_card, (friday_card, monday_card)
             assert "1501" in monday_card and "1501" not in friday_card, (friday_card, monday_card)
             assert problems == [], problems
             report["checks"] += 24
@@ -856,25 +810,21 @@ def weekend_and_holiday_menu(browser, base, report):
             assert ("still updating" not in stale) and ("업데이트 중" not in stale), stale
             assert ("Oct 16" if en else "10월 16일") in stale, stale
             assert page.locator(".km-card").count() == 0
-            assert ("No cafeteria on weekends" if en else "주말 학식 없음") in page.locator(".gg-counts").inner_text()  # copy cleanup, owner 2026-11-12
-            # Sunday: nothing posted, said in one sentence; Friday still opens.
+            assert ("No cafeteria on weekends" if en else "주말 학식 없음") in page.locator(".gg-counts").inner_text()
             page.locator('[data-km-date="2026-10-18"]').click()
             page.locator('[data-km-day-state="none"]').wait_for()
             assert page.locator('[data-km-day-state="none"]').inner_text() == (
                 "No menu has been posted yet." if en else "아직 올라온 메뉴가 없어요.")
             page.locator('[data-km-date="2026-10-16"]').click()
-            page.locator('[data-km-meal="lunch"]').first.click()            # 10:00 opens on breakfast; none posted
+            page.locator('[data-km-meal="lunch"]').first.click()
             page.locator(".km-card").first.wait_for()
             assert page.locator(".km-card").count() >= 1 and "금요일" in page.locator(".km-card").first.inner_text()
-            # The home page: not an error, names the last posted day.
             page.goto(base + "/index.html")
             status = page.locator("#homeMenuStatus[data-state='stale']")
             status.wait_for()
             text = status.inner_text()
             assert ("Fri, Oct 16" if en else "10월 16일 금요일") in text, text
             assert ("No cafeteria meals on weekends" if en else "주말엔 학식이 없어요") in text and "불러오지 못" not in text and "couldn" not in text.lower(), text
-            # Weekend menu days are never fetched. Only menu paths: the home page also loads that day's
-            # magazine (data/magazine/2026-10-17.json), which exists once the content bot publishes it.
             missing = [path for path in requests if "/data/kaist-menu/" in path
                        and path.endswith(("/2026-10-17.json", "/2026-10-18.json"))]
             assert missing == [], missing
@@ -883,7 +833,6 @@ def weekend_and_holiday_menu(browser, base, report):
         finally:
             context.close()
 
-    # A weekday morning (Friday 10:00) before the collector published Friday: still "updating".
     thursday = menu_day("2026-10-15", 8, "목요일")
     friday_week = dict(week, days=[dict(day, available=False, restaurantCount=0, status="NOT_PUBLISHED_YET")
                                    if day["date"] >= "2026-10-16" else day for day in week["days"]])
@@ -897,7 +846,7 @@ def weekend_and_holiday_menu(browser, base, report):
             page.goto(base + "/ggongbab.html#menu")
             page.locator("[data-km-stale]").wait_for()
             stale = page.locator("[data-km-stale]").inner_text()
-            assert ("Today’s menu isn’t up yet." if en else "오늘 메뉴가 아직 안 올라왔어요.") in stale, stale  # copy cleanup, owner 2026-11-12
+            assert ("Today’s menu isn’t up yet." if en else "오늘 메뉴가 아직 안 올라왔어요.") in stale, stale
             assert ("Cafeteria updating" if en else "학식 업데이트 중") in page.locator(".gg-counts").inner_text()
             page.goto(base + "/index.html")
             status = page.locator("#homeMenuStatus[data-state='stale']")
@@ -909,7 +858,6 @@ def weekend_and_holiday_menu(browser, base, report):
         finally:
             context.close()
 
-    # A holiday weekday: today's file exists but no dish is listed.
     holiday = menu_day("2026-10-09", 3, "한글날")
     for row in holiday["restaurants"]:
         for meal in ("breakfast", "lunch", "dinner"):
@@ -925,14 +873,14 @@ def weekend_and_holiday_menu(browser, base, report):
         page.goto(base + "/ggongbab.html#menu")
         page.locator("#foodHubMenu .gg-state").wait_for()
         text = page.locator("#foodHubMenu").inner_text()
-        assert "오늘 이 시간대 메뉴가 없어요." in text, text  # copy cleanup, owner 2026-11-12
+        assert "오늘 이 시간대 메뉴가 없어요." in text, text
         assert page.locator(".km-card").count() == 0 and "[object" not in text and "undefined" not in text
         assert page.locator('#foodHubMenu [data-hub-tab="free"]').count() == 1
         assert page.locator(".gg-counts").inner_text() == "오늘 꽁밥 0개 · 학식 0곳", page.locator(".gg-counts").inner_text()
         page.goto(base + "/index.html")
         page.locator("#homeMenuStatus:not([data-state='loading'])").wait_for()
         status = page.locator("#homeMenuStatus").inner_text()
-        assert "오늘 메뉴가 아직 없어요" in status and "불러오지 못" not in status, status  # copy cleanup, owner 2026-11-12
+        assert "오늘 메뉴가 아직 없어요" in status and "불러오지 못" not in status, status
         assert problems == [], problems
         report["checks"] += 7
     finally:
@@ -1038,7 +986,6 @@ def past_listings(browser, base, report):
     register = {"required": "true", "url": "https://example.org/register", "deadline": (now - timedelta(days=3)).isoformat()}
     live = {"generatedAt": now.isoformat(), "events": [
         event("live-upcoming", now + timedelta(days=2), now + timedelta(days=2, hours=1), registration=register),
-        # Ended an hour ago: inside the export grace, so still in latest.json, but no longer live on the page.
         event("live-just-ended", now - timedelta(hours=2), now - timedelta(hours=1), registration=register)]}
     notice = [{"type": "kaist_public", "name": "KAIST 공지", "url": "https://example.org/notice"}]
     past = {"generatedAt": now.isoformat(), "windowDays": 30, "events": [
@@ -1076,10 +1023,8 @@ def past_listings(browser, base, report):
             assert archive.locator(".gg-past-badge").all_inner_texts() == ["종료"] * len(visible_past)
             links = archive.locator("a").evaluate_all(
                 "els => els.map(a => [a.closest('.gg-past').dataset.pastId, a.getAttribute('href'), a.target, a.rel, a.textContent])")
-            # copy cleanup, owner 2026-11-12: shorter link and record labels.
             assert links == [["past-notice", "https://example.org/notice", "_blank", "noopener", "공지 보기 ↗(새 창)"]], links
             assert all("지난 꽁밥 안내" in text for text in archive.locator(".gg-past-note").all_inner_texts())
-            # Secondary: below the live list, flat, and out of reach of the sticky live filters.
             archive.scroll_into_view_if_needed()
             box, filters = archive.bounding_box(), page.locator(".gg-filters").bounding_box()
             assert box["y"] > page.locator(".gg-card").last.bounding_box()["y"]
@@ -1089,13 +1034,12 @@ def past_listings(browser, base, report):
             report["checks"] += 12
         page.locator("#langToggle").click()
         assert page.locator("#ggArchiveTitle").inner_text() == "Past free-food listings"
-        assert page.locator(".gg-past-link").inner_text().startswith("View notice")  # copy cleanup, owner 2026-11-12
+        assert page.locator(".gg-past-link").inner_text().startswith("View notice")
         assert page.locator(".gg-past-badge").first.inner_text() == "Ended"
-        assert "Past free-food listing" in page.locator(".gg-past-note").first.inner_text()  # copy cleanup, owner 2026-11-12
+        assert "Past free-food listing" in page.locator(".gg-past-note").first.inner_text()
         page.locator("#langToggle").click()
         report["checks"] += 4
 
-        # Closed until asked for (2026-11-05): one labelled toggle, counting them, that keeps keyboard focus.
         many = dict(past, events=[event(f"past-{i}", now - timedelta(days=i + 1, hours=1), now - timedelta(days=i + 1))
                                   for i in range(7)])
         page.unroute("**/data/ggongbab/archive/index.json")
@@ -1111,8 +1055,6 @@ def past_listings(browser, base, report):
         assert page.evaluate("document.activeElement.hasAttribute('data-gg-archive-more')")
         report["checks"] += 3
 
-        # Empty, missing, failing and malformed archives: the live feed is untouched every time,
-        # and the live row that just ended still shows as past, whatever the archive file did.
         empty = "최근 30일 기록 없음"
         failed = "지난 기록을 불러오지 못했어요."
         for label, handler, expected in (
@@ -1131,7 +1073,6 @@ def past_listings(browser, base, report):
             if label in ("failing", "malformed"):
                 assert state.inner_text().startswith(expected), (label, state.inner_text())
             report["checks"] += 3
-        # With nothing live that has ended, an empty archive says so in words.
         page.unroute("**/data/ggongbab/latest.json")
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json=dict(live, events=live["events"][:1])))
         page.unroute("**/data/ggongbab/archive/index.json")
@@ -1141,7 +1082,6 @@ def past_listings(browser, base, report):
         assert page.locator(".gg-archive-state").inner_text() == empty and page.locator(".gg-card").count() == 1
         report["checks"] += 1
 
-        # And the reverse: a failed live feed leaves the archive readable.
         page.unroute("**/data/ggongbab/latest.json")
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(status=503, body=""))
         page.unroute("**/data/ggongbab/archive/index.json")
@@ -1224,7 +1164,6 @@ def no_day_tiles(browser, base, report):
                 ids = page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)")
                 assert ids == everything, ids
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
-                # The radar sits right above the filters now.
                 gap = page.evaluate("document.querySelector('.gg-filters').getBoundingClientRect().top - "
                                     "document.querySelector('.gg-radar').getBoundingClientRect().bottom")
                 assert 0 <= gap <= 40, gap
@@ -1238,7 +1177,6 @@ def no_day_tiles(browser, base, report):
             assert not errors, errors
         finally:
             context.close()
-    # A day saved by the old tiles is ignored; the saved food filter is kept.
     context = browser.new_context(timezone_id="Asia/Seoul", locale="ko-KR", reduced_motion="reduce")
     neutralize_public_config(context)
     try:
@@ -1297,11 +1235,10 @@ def meeting_links(browser, base, report):
             form = page.locator('[data-id="real-form"]')
             assert form.locator(".gg-btn", has_text=register).get_attribute("href") == "https://forms.gle/example"
             assert form.locator(".gg-btn", has_text=join).count() == 0
-            # The row's own link (2026-11-05) says the sign-up is required; no second badge.
             row_link = form.locator(".gg-row-reg")
             assert row_link.get_attribute("href") == "https://forms.gle/example" and form.locator(".gg-reg-badge").count() == 0
             assert row_link.inner_text().startswith("Sign up" if lang == "en" else "사전 신청"), row_link.inner_text()
-            assert only.locator(".gg-row-reg").count() == 0                  # a meeting link is not a sign-up
+            assert only.locator(".gg-row-reg").count() == 0
             assert not errors, errors
             report["checks"] += 9
         finally:
@@ -1372,8 +1309,7 @@ def hub_layout(page, width, report):
         near(r["tabs"]["x"], 16)
         near(r["tabs"]["w"], width - 32)
     else:
-        # One content column on every page since owner 2026-11-13 ("글씨 정렬"): 760 wide, 16 gutter.
-        left = (page.evaluate("document.documentElement.clientWidth") - 760) / 2   # without the scrollbar
+        left = (page.evaluate("document.documentElement.clientWidth") - 760) / 2
         near(r["page"]["x"], left)
         near(r["page"]["w"], 760)
         near(r["radar"]["x"], left + 16)
@@ -1409,7 +1345,7 @@ def hub_menu_flow(page, width, report):
     if width >= 720:
         boxes = page.locator(".km-card").evaluate_all(
             "els => els.slice(0,2).map(el => { const r = el.getBoundingClientRect(); return {x:r.x,w:r.width}; })")
-        near(round(boxes[0]["w"]), 358)   # (728 - 12) / 2 in the shared 760 column (owner 2026-11-13)
+        near(round(boxes[0]["w"]), 358)
         near(round(boxes[1]["w"]), 358)
         near(round(boxes[0]["x"] + boxes[0]["w"] + 12), round(boxes[1]["x"]))
         report["checks"] += 3
@@ -1437,11 +1373,8 @@ def run_checks(preview=False):
             page.locator(".gg-card").first.wait_for()
             page.locator(".gg-radar").wait_for()
             assert page.locator(".gg-card").count() == 10
-            # No day tiles (owner 2026-11-05): the list is everything upcoming, read by scrolling.
             assert page.locator('.gg-when, [data-group="when"]').count() == 0
             report["checks"] += 2
-            # The list is labelled only by when the feed last changed: no lifecycle paragraph, no
-            # freshness claim (an unchanged refresh is not committed, so its stamp is the last change).
             note = page.locator(".gg-feed-note").inner_text()
             assert note.startswith("마지막 변경") and "자동으로" not in note, note
             assert not any(word in note for word in ("실시간", "최신", "업데이트")), note
@@ -1459,7 +1392,7 @@ def run_checks(preview=False):
                 near(r["filter"]["x"], 0)
                 near(r["filter"]["w"], width)
             else:
-                left = (page.evaluate("document.documentElement.clientWidth") - 760) / 2   # the shared 760 column since owner 2026-11-13
+                left = (page.evaluate("document.documentElement.clientWidth") - 760) / 2
                 near(r["page"]["x"], left)
                 near(r["filter"]["x"], left)
                 near(r["filter"]["w"], 760)
@@ -1467,8 +1400,6 @@ def run_checks(preview=False):
                 near(r["card"]["w"], 728)
             assert page.evaluate("document.documentElement.scrollWidth") <= width
             report["checks"] += 6
-            # A listing is a row (2026-11-05): the title is one clamped line, the details start closed,
-            # and a plain row stays short.
             assert page.locator(".gg-sub").first.evaluate("el => getComputedStyle(el).overflow") == "hidden"
             assert page.locator(".gg-detail").first.is_hidden()
             row = page.locator(".gg-card:not(.is-featured)").first.bounding_box()
@@ -1476,25 +1407,20 @@ def run_checks(preview=False):
             report["checks"] += 3
             page.screenshot(path=str(OUT / f"ggongbab-{width}x{height}.png"))
             report["fixture"][f"{width}x{height}"] = r
-            # Scroll past the filter's own resting place so the check does not
-            # depend on the exact height of the hero and radar above it.
             page.evaluate("window.scrollTo(0, document.querySelector('.gg-filters').getBoundingClientRect().top + scrollY + 120)")
             page.wait_for_timeout(100)
             sticky = rectangles(page)
             near(sticky["filter"]["y"], sticky["nav"]["h"])
             report["checks"] += 1
             assert page.locator(".gg-card").count() == 10
-            # The muted line (title · place) stops at two lines.
             assert page.locator('[data-id="fixture-7"] .gg-sub').evaluate(
                 "el => el.scrollHeight > el.clientHeight && el.clientHeight <= 40")
-            # Opened, a listing reads whole: the title unclamped, the summary in full.
             toggle = page.locator('[data-id="fixture-8"] .gg-card-toggle')
             toggle.click()
             assert toggle.get_attribute("aria-expanded") == "true" and page.locator('[data-id="fixture-8"] .gg-detail').is_visible()
             assert page.locator('[data-id="fixture-8"] .gg-summary').evaluate("el => el.scrollHeight <= el.clientHeight + 1")
             toggle.click()
             assert page.locator('[data-id="fixture-8"] .gg-detail').is_hidden()
-            # Every listing opened: its buttons stay inside its card.
             page.locator(".gg-card-toggle").evaluate_all("els => els.forEach(el => el.click())")
             assert not page.locator('[data-id="fixture-5"] .gg-btn--primary').count()
             assert page.evaluate("document.documentElement.scrollWidth") <= width
@@ -1517,8 +1443,6 @@ def run_checks(preview=False):
                 page.screenshot(path=str(OUT / f"ggongbab-preview-{width}x{height}.png"))
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
                 report["checks"] += 2
-        # Public host: serve the same lab files without making any network call
-        # to an actual public deployment. No .local request may be attempted.
         requests = []
         page.on("request", lambda req: requests.append(urlparse(req.url).path))
         def public_route(route):
@@ -1535,8 +1459,6 @@ def run_checks(preview=False):
         page.get_by_text("Preview mode is available only on localhost.").wait_for()
         assert not any(path.startswith("/.local/") for path in requests)
         report["checks"] += 1
-        # Normal mode still fetches the public feed; unsafe food states never
-        # become public cards or inflate hero counts.
         future = (datetime.now(timezone(timedelta(hours=9))) + timedelta(days=8)).isoformat()
         events = [{"id": state, "title": state, "startAt": future,
                    "food": {"provided": state}, "registration": {}} for state in ("true", "false", "unknown")]
@@ -1557,15 +1479,12 @@ def run_checks(preview=False):
         assert "N1 · 101호 · N1" not in page.locator('.gg-place').inner_text()
         assert not errors, errors
         report["checks"] += 8
-        # A filter saved before the day tiles went (오늘) is ignored: the list is everything upcoming.
         page.evaluate("localStorage.setItem('babdoduk-ggongbab-filter', JSON.stringify({when:'today',food:'all'}))")
         page.reload()
         page.locator(".gg-card").first.wait_for()
         assert page.locator(".gg-card").count() == 1
         page.evaluate("localStorage.removeItem('babdoduk-ggongbab-filter')")
         report["checks"] += 1
-        # Preview diagnostics only render allowlisted numeric counters, even if
-        # an unexpected local payload contains sensitive-looking extra fields.
         page.route("**/.local/ggongbab-preview.json", lambda route: route.fulfill(json={
             "events": [events[0]], "_preview": {"publicCount": 1, "subject": "PRIVATE_TEST", "aiCalls": "PRIVATE_TEST"}}))
         page.goto(base + "/lab-ggongbab.html?preview=1")
@@ -1596,8 +1515,7 @@ def run_checks(preview=False):
         page.goto(base + "/lab-ggongbab.html?fixture=1&stale-menu=1")
         page.locator("#foodHubTabMenu").click()
         page.locator("[data-km-stale]").wait_for()
-        # The fixture clock (FIXTURE_NOW) is a Sunday: a missing menu then reads as the weekend, not "updating".
-        assert "주말 학식 없음" in page.locator(".gg-counts").inner_text()  # copy cleanup, owner 2026-11-12
+        assert "주말 학식 없음" in page.locator(".gg-counts").inner_text()
         assert "주말엔 학식이 없어요." in page.locator("[data-km-stale]").inner_text()
         assert page.locator("#foodHubMenu h2").count() == 0 or "오늘" not in page.locator("#foodHubMenu h2").inner_text()
         page.locator("[data-km-stale-toggle]").click()
@@ -1616,8 +1534,6 @@ def run_checks(preview=False):
         assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
         page.locator("#foodHubTabFree").click()
         report["checks"] += 3
-        # A same-day upcoming event makes the radar report one meal. The page
-        # clock is fixed for this scenario only (see radar_one_today).
         radar_one_today(browser, base, report)
         campus_food_news(browser, base, report)
         open_ended_hand_out(browser, base, report)
@@ -1634,9 +1550,6 @@ def run_checks(preview=False):
         page.unroute("**/data/ggongbab/latest.json")
         published = datetime.now(timezone(timedelta(hours=9))).replace(microsecond=0).isoformat()
         page.route("**/data/ggongbab/latest.json", lambda route: route.fulfill(json={"generatedAt": published, "events": events}))
-        # Production page. It carries no lab affordances, so fixture and preview
-        # are not merely hidden - they are unreachable, and the page can only
-        # ever read the public feed.
         page.unroute("**/.local/ggongbab-preview.json")
         local_hits = []
         page.route("**/.local/**", lambda route: (local_hits.append(route.request.url),
@@ -1648,8 +1561,6 @@ def run_checks(preview=False):
                 page.goto(base + "/ggongbab.html" + query)
                 page.locator(".gg-card").first.wait_for()
                 assert_native_clock(page)
-                # Only the explicit-food, not-under-review event is public. The
-                # false, unknown and needs_review rows must never render.
                 assert page.locator(".gg-card").count() == 1, query
                 assert page.locator(".gg-card").first.get_attribute("data-id") == "true"
                 assert "/data/ggongbab/latest.json" in requests
@@ -1662,21 +1573,17 @@ def run_checks(preview=False):
                 assert page.evaluate("document.documentElement.scrollWidth") <= width
                 assert page.locator(".gg-updated").is_visible()
                 assert page.locator(".gg-archive").count() == 1
-                # Nothing left today: no next-meal button, and the radar keeps its own bottom padding, so
-                # "오늘은 꽁밥 가뭄" does not sit on the box's edge (2026-11-05: it looked cut off).
                 gap = page.evaluate("(r => r.getBoundingClientRect().bottom - r.querySelector('.gg-radar-line').getBoundingClientRect().bottom)"
                                     "(document.querySelector('.gg-radar'))")
                 assert page.locator(".gg-radar.is-quiet").count() == 1 and page.locator(".gg-radar-cta").count() == 0 and gap >= 8, gap
                 report["checks"] += 14
             report["production"][f"{width}x{height}"] = rectangles(page)
             page.screenshot(path=str(OUT / f"ggongbab-prod-{width}x{height}.png"))
-        # Keyboard users keep their place through re-renders; tabs follow the
-        # ARIA arrow-key pattern; the picker is a separate, labelled next step.
         page.set_viewport_size({"width": 390, "height": 844})
         reset_storage(page)
         page.goto(base + "/ggongbab.html")
         page.locator(".gg-card").first.wait_for()
-        assert page.locator(".gg-choose-link").get_attribute("href") == "choose.html"   # the one picker
+        assert page.locator(".gg-choose-link").get_attribute("href") == "choose.html"
         meal_chip = page.locator('.gg-chip[data-group="food"][data-value="meal"]')
         meal_chip.focus()
         page.keyboard.press("Enter")
@@ -1699,8 +1606,6 @@ def run_checks(preview=False):
         assert page.locator("#foodHubTabMenu").get_attribute("aria-selected") == "true"
         reset_storage(page)
         report["checks"] += 8
-        # All upcoming includes later weeks, sorts dates, and excludes even a
-        # just-ended event from today. Normal mode keeps the real browser clock.
         now_kst = datetime.now(timezone(timedelta(hours=9)))
         def event_row(event_id, start, end):
             return {"id": event_id, "title": event_id, "startAt": start.isoformat(),
@@ -1721,7 +1626,6 @@ def run_checks(preview=False):
         assert_native_clock(page)
         assert page.locator(".gg-card").evaluate_all("els => els.map(el => el.dataset.id)") == [
             "future-early", "future-late"]
-        # A chosen food filter is kept across a reload; nothing upcoming is a snack.
         page.locator('.gg-chip[data-group="food"][data-value="snack"]').click()
         page.reload()
         page.locator("#foodHubFree .gg-state").first.wait_for()

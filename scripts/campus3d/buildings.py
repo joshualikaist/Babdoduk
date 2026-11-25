@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CAMPUS = ROOT / "inputs" / "campus3d" / "campus.json"
 EXTRA = ROOT / "inputs" / "campus3d" / "buildings-extra.json"
 TABLE = ROOT / "data" / "campus" / "buildings.json"
-LEVEL = 3.6                     # meters per floor in the model (scripts/campus3d/build_model.py)
+LEVEL = 3.6
 CODE = re.compile(r"(?<![A-Za-z0-9])([EWNS]\d{1,2}(?:-\d)?)(?![0-9])")
 SUFFIX = re.compile(r"\s*\(\s*[EWNS]\d{1,2}(?:-\d)?\s*\)\s*$")
 
@@ -84,7 +84,6 @@ def build(campus: dict, extra: dict) -> dict:
                      "top": round(max(height(b, extra.get("levels")) for b in parts), 1)})
     placed = {r["code"] for r in rows}
     unplaced = [u for u in extra.get("unplaced", []) if u["code"] not in placed]
-    # An alias two buildings share would place an event on a guess: it is dropped from both.
     counts: dict[str, int] = {}
     for r in rows + unplaced:
         for a in {r["name"], *r["aliases"]}:

@@ -37,7 +37,7 @@ def run(paths, now: datetime, *, fetcher=fetch, runner=subprocess.run, env=os.en
         binary = env.get("BABDODUK_YTDLP_BIN") or which("yt-dlp")
         if source["type"] == "youtube_channel":
             result, tool = youtube.discover_channel(source, fetcher=fetcher), "youtube_feed"
-            if result.status != "OK" and binary:          # the Atom feed answers 404 (2026-09-29)
+            if result.status != "OK" and binary:
                 result, tool = youtube.ytdlp_channel(source, runner, binary), f"yt-dlp {YTDLP_PIN}"
         elif source["type"] == "youtube_search":
             queries = [expand(q, now) for q in source.get("queries") or []]

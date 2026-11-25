@@ -22,9 +22,6 @@ from ggongbab.portal_discovery import correlate_interactions
 from .test_portal_agent import BASE, BODY, HOST, TITLE
 from .test_portal_diagnostics import collect, response
 
-# ---------------------------------------------------------------------------
-# The two false positives from the live run, reproduced
-# ---------------------------------------------------------------------------
 PLAN_ROWS = [{"id": "PLAN-1", "title": "PRIVATE-PLAN-A", "date": "2026-03-02"},
              {"id": "PLAN-2", "title": "PRIVATE-PLAN-B", "date": "2026-06-20"}]
 LOCALIZATION = {"kaist": {"lbl": {"content": "PRIVATE-LABEL-ONE"}},
@@ -85,9 +82,6 @@ def blob(*parts):
     return json.dumps(parts, ensure_ascii=False)
 
 
-# ---------------------------------------------------------------------------
-# 1-3: the false positives are rejected, and not by a path blacklist
-# ---------------------------------------------------------------------------
 def test_college_plan_widget_is_rejected_for_lack_of_correlation():
     """Nobody opened a calendar entry, so nothing points back at those rows."""
     report, d = collect([college_plan()])
@@ -133,9 +127,6 @@ def test_localization_beside_a_real_flow_is_ignored():
     assert "lbl" not in blob(report)
 
 
-# ---------------------------------------------------------------------------
-# 4, 11-13: unknown field names, and the order inference happens in
-# ---------------------------------------------------------------------------
 def test_unknown_id_field_is_inferred_from_the_interaction():
     """nttId is in no whitelist; the click is what identifies it."""
     report, d = collect(real_flow())
@@ -157,7 +148,6 @@ def test_title_inference_runs_only_after_the_list_is_selected():
     assert "NOTICE_LIST_CORRELATED_BUT_TITLE_FIELD_UNKNOWN" in report["reasons"]
     assert report["contract"]["list_title_key"] == ""
     assert d.selected_list["titleKey"] == "unknown"
-    # Uncorrelated widget rows DO have a field called "title"; it was never used.
     assert "PRIVATE-PLAN-A" not in blob(report)
 
 
@@ -165,7 +155,6 @@ def test_date_inference_runs_only_after_the_list_is_selected():
     """The widget has parseable dates; they must not become notice dates."""
     report, _ = collect([college_plan()])
     assert report["contract"] is None
-    # The widget's own "date" column parses cleanly, yet is never adopted.
     correlated, d = collect(real_flow(extra=[college_plan()]))
     assert correlated["contract"]["list_date_key"] == "regDt"
     assert d.selected_list["dateKey"] == "regDt"
@@ -182,9 +171,6 @@ def test_pagination_is_evaluated_only_for_the_correlated_list():
     assert "bgngDt" not in named
 
 
-# ---------------------------------------------------------------------------
-# 5-8: how much evidence is enough, and choosing among unrelated candidates
-# ---------------------------------------------------------------------------
 def test_two_distinct_ids_are_required():
     report, _ = collect(real_flow())
     assert report["contract"]["detail_verified_count"] == 2
@@ -195,7 +181,6 @@ def test_one_opened_notice_identifies_the_list_but_not_the_detail():
     report, _ = collect([notice_list(("NOTICE-A", "NOTICE-B")), notice_detail("NOTICE-A")])
     assert "NOT_ENOUGH_DISTINCT_DETAILS" in report["reasons"]
     assert not report["detailReplayable"]
-    # One correlation is still enough to say which array is the notice list.
     assert report["contract"]["list_array_path"] == "result.resultList"
 
 
@@ -225,9 +210,6 @@ def test_the_correlated_detail_wins_against_unrelated_json():
     assert "PRIVATE-THEME" not in blob(report)
 
 
-# ---------------------------------------------------------------------------
-# 9-10: the body is searched inside the correlated id's subtree
-# ---------------------------------------------------------------------------
 def test_body_search_starts_inside_the_correlated_id_subtree():
     def payload(identifier):
         return {"result": {"nttId": identifier, "nttCont": BODY},
@@ -257,9 +239,6 @@ def test_two_body_fields_beside_the_id_stay_ambiguous():
     assert report["contract"]["detail_body_path"] == ""
 
 
-# ---------------------------------------------------------------------------
-# 14-16: correlation values stay in memory
-# ---------------------------------------------------------------------------
 def test_raw_correlation_values_are_never_persisted():
     report, d = collect(real_flow(extra=[college_plan(), localization()]))
     everything = blob(report, d.export())
@@ -296,7 +275,6 @@ def test_raw_correlation_values_are_never_logged(monkeypatch, tmp_path, capsys):
     for secret in ("NOTICE-A", "NOTICE-B", "PRIVATE-SUBJECT", "PRIVATE-PLAN-A",
                    "PRIVATE-LABEL-ONE", BODY, TITLE, "20260101"):
         assert secret not in everything, secret
-    # The structural diagnosis did survive.
     assert "nttId" in everything and "result.nttCont" in everything
 
 
@@ -317,9 +295,6 @@ def test_debug_file_holds_only_names_paths_and_counts(monkeypatch, tmp_path):
     assert all(isinstance(r, str) for r in safe["rowKeys"])
 
 
-# ---------------------------------------------------------------------------
-# 17: the whole positive flow
-# ---------------------------------------------------------------------------
 def test_positive_notice_flow_builds_a_replayable_contract():
     report, d = collect(known_flow(extra=[college_plan(), localization()]))
     contract = report["contract"]

@@ -76,7 +76,7 @@ def test_news_and_validated_free_event_can_coexist(settings):
     assert [item["id"] for item in archived["events"]] == ["free-offer"]
     assert validate_news_payload(news) == []
     assert validate_ggongbab_payload({"generatedAt": NOW.isoformat(), "timezone": "Asia/Seoul",
-        "count": 1, "events": news["items"]}, NOW)  # Wrong channel is refused.
+        "count": 1, "events": news["items"]}, NOW)
 
 
 @pytest.mark.parametrize("key,value", [("pstNo", "PRIVATE-ID"), ("url", "https://portal.kaist.ac.kr/wz/private"),
@@ -115,15 +115,15 @@ def test_the_review_evidence_never_reaches_the_committed_input(tmp_path):
     assert set(committed) == {"items"} and set(committed["items"][0]) <= {
         "id", "contentType", "noticeDate", "title", "summary", "location", "sources", "hasFreeOffer"}
     text = public.read_text(encoding="utf-8")
-    excerpt = json.dumps(reviewed()["evidence"], ensure_ascii=False)[1:-1]     # as it would appear in JSON
+    excerpt = json.dumps(reviewed()["evidence"], ensure_ascii=False)[1:-1]
     assert all(word not in text for word in (excerpt, "무료 제공 없음", "evidence", "campusEvidence", "reviewed",
                                              "dateVerified", "PRIVATE-ID", "pstNo"))
 
 
 @pytest.mark.parametrize("tamper", [
-    lambda item: item.update(evidence="교내 신규 식당 오픈 안내 전문"),           # review material
-    lambda item: item.update(title="교내 신규 카페 오픈 안내"),                  # a fact changed, not its id
-    lambda item: item.update(summary="자세히는 portal.kaist.ac.kr/wz/1 참고"),     # a Portal link
+    lambda item: item.update(evidence="교내 신규 식당 오픈 안내 전문"),
+    lambda item: item.update(title="교내 신규 카페 오픈 안내"),
+    lambda item: item.update(summary="자세히는 portal.kaist.ac.kr/wz/1 참고"),
     lambda item: item.update(sources=[{"type": "portal", "name": "KAIST Portal 1234"}]),
 ])
 def test_the_refresh_checks_every_public_item_again(tmp_path, tamper):

@@ -17,11 +17,9 @@ def test_every_fixture_follows_its_expected_path_from_mail_to_card():
     published = {row.key for row in report.rows if row.published == "yes"}
     assert published == {"food-body", "food-pdf", "food-poster", "giveaway-expo", "giveaway-booth", "multi-session"}
     assert [c["key"] for c in report.extractor_calls].count("진로 토크 콘서트") == 1
-    # a poster-only food event and a deadline-only giveaway reach the page with their marks
     rows = {row.key: row for row in report.rows}
-    assert "음식(포스터)" in rows["food-poster"].card and "마감일" in rows["giveaway-booth"].card  # copy cleanup, owner 2026-11-12
+    assert "음식(포스터)" in rows["food-poster"].card and "마감일" in rows["giveaway-booth"].card
     assert "🎁" in rows["giveaway-expo"].card
-    # a survey prize draw with no event is not listed (owner decision 2026-10-15)
     assert rows["giveaway-deadline"].published == "no" and rows["giveaway-deadline"].card == "-"
 
 
@@ -63,7 +61,5 @@ def test_header_lines_are_stripped_only_in_a_mail_header_block():
     clean = sanitize_for_ai(forwarded)
     assert "홍길동" not in clean and "받는 사람" not in clean and "내용" in clean
     assert "Cc:" not in sanitize_for_ai("Cc: z@w.com\nTo: q@w.com\nbody")
-    # a lone Date line at the top names no address field: it is content
     assert sanitize_for_ai("Date: September 24\n행사 안내") == "Date: September 24\n행사 안내"
-    # an address field in the middle of a body is not a header block, but its address is still masked
     assert "[email]" in sanitize_for_ai("행사 안내\nTo: q@w.com")

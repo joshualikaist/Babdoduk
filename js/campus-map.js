@@ -1,28 +1,12 @@
-/* The 3D campus map (docs/CAMPUS_MAP.md): the clay miniature of the Daejeon campus, with a pin on the
-   building of each free-food event of the day the home calendar shows.
-
-   The model, its baked ground light, the poster and the building table come from data/campus/ (built
-   by scripts/campus3d/). The poster is already on the page; this module draws the live model over it
-   once it is loaded, and keeps the poster when WebGL is not available. Pins are buttons in the page,
-   not part of the 3D scene, so they are reachable by keyboard and read by screen readers, and they
-   work on the poster too (it is the same camera).
-
-   mount(stage, options) -> { show(day), select(code), destroy() }
-     options.lang()           'ko' | 'en'
-     options.t(key, fallback) a translated string
-     options.onOpen(eventId)  "일정에서 보기": open that event in the calendar
-     options.base             where data/campus/ is, from the page (default 'data/campus/')
-     options.onFull()         "크게 보기": open the map full screen (beside the copy only)
-*/
 import * as THREE from './vendor/three-0.186.1/three.module.js';
 import { GLTFLoader } from './vendor/three-0.186.1/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from './vendor/three-0.186.1/addons/loaders/DRACOLoader.js';
 import { OrbitControls } from './vendor/three-0.186.1/addons/controls/OrbitControls.js';
-import { place } from './campus-place.js?v=e846d51cd2';
+import { place } from './campus-place.js?v=081fd5ad54';
 
 export { place };
 
-const PIN_LIFT = 14;                 // meters above the roof where a pin's tip points
+const PIN_LIFT = 14;
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function webgl() {
@@ -49,9 +33,6 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 }
 
-/* Walls and roofs of every building, one mesh: roofs by their normal, a band of windows on each
-   floor (3.6 m) with mullions, a little darker at the foot of each wall, and the buildings of the
-   day's events in the highlight colour (uniform list of _bid). */
 function buildingMaterial(palette) {
   const mat = new THREE.MeshLambertMaterial({ color: 0xffffff });
   const uniforms = {
@@ -127,7 +108,6 @@ export function mount(stage, options) {
     layoutPins();
   });
 
-  // The poster's camera, for pins before (or without) the live model.
   function posterCamera() {
     const m = state.model.camera;
     const cam = new THREE.PerspectiveCamera(fovFor(m, stage.clientWidth / Math.max(1, stage.clientHeight)),
@@ -138,7 +118,6 @@ export function mount(stage, options) {
     return cam;
   }
   function fovFor(m, aspect) {
-    // Blender fits the sensor width to the image width: keep that horizontal field of view.
     const hfov = 2 * Math.atan(m.sensor / 2 / m.lens);
     return THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect));
   }
@@ -162,9 +141,6 @@ export function mount(stage, options) {
     controls.enablePan = false;
     controls.enableZoom = false;
     controls.enableDamping = !reduceMotion();
-    // Like a map (owner 2026-11-04: "가운데에 고정되어 있다는 점"): drag moves, the right button or
-    // Shift + drag turns all the way round and tilts from almost straight down to a low angle, and
-    // Ctrl/⌘ + wheel zooms toward the pointer. Phones: one finger moves, two fingers zoom and turn.
     controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
     controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
     controls.screenSpacePanning = false;
@@ -175,7 +151,6 @@ export function mount(stage, options) {
     controls.addEventListener('change', () => { keepOnIsland(); requestRender(); });
     controls.update();
     interaction();
-    // Beside the copy a plain wheel scrolls the page: Ctrl/⌘ + wheel (and a trackpad pinch) zooms.
     canvas.addEventListener('pointerenter', (e) => {
       if (state.taught || e.pointerType !== 'mouse') return;
       state.taught = true;
@@ -194,7 +169,7 @@ export function mount(stage, options) {
     const light = new THREE.TextureLoader().loadAsync(BASE + 'ground-light.webp');
     Promise.all([loader.loadAsync(BASE + 'campus.glb'), light]).then(([gltf, lightTex]) => {
       if (destroyed) return;
-      lightTex.colorSpace = THREE.NoColorSpace;      // light amounts, multiplied as they are
+      lightTex.colorSpace = THREE.NoColorSpace;
       lightTex.flipY = false;
       lightTex.anisotropy = 4;
       const pal = m.palette;
@@ -210,13 +185,10 @@ export function mount(stage, options) {
         } else if (/^island_sides/.test(name)) {
           o.material = new THREE.MeshLambertMaterial({ color: srgb(pal.base_side) });
         } else if (/^buildings/.test(name) || (o.parent && /^buildings/.test(o.parent.name))) {
-          // One shader for every part of the buildings mesh (landmark styles split it by material):
-          // the day's highlight reaches all of them.
           buildingMat = buildingMat || buildingMaterial(pal);
           o.material = buildingMat;
           buildings = o;
         } else if (/^landmarks/.test(name) || (o.parent && /^landmarks/.test(o.parent.name))) {
-          // The gate (stone), the carillon's three ribbons and the fountains, by material name.
           const key = ((o.material && o.material.name) || 'stone').replace(/\.\d+$/, '');
           o.material = new THREE.MeshLambertMaterial({ color: srgb(pal[key] || pal.stone || pal.wall),
                                                        emissive: key === 'jet' ? srgb([0.35, 0.4, 0.45]) : 0x000000 });
@@ -226,7 +198,6 @@ export function mount(stage, options) {
           protos.push(o);
         }
       });
-      // Trees: one instanced mesh per shape and part (trunk, crown).
       const byShape = {};
       protos.forEach((o) => {
         const shape = Number(((o.parent && /^tree\d/.test(o.parent.name) ? o.parent.name : o.name).match(/tree(\d)/) || [0, 0])[1]);
@@ -265,7 +236,6 @@ export function mount(stage, options) {
       layoutPins();
     });
   }
-  // In the full-screen dialog (phones) the map also zooms and pans; beside the copy it only turns.
   function interaction() {
     if (!controls) return;
     const full = !!stage.closest('dialog');
@@ -278,15 +248,10 @@ export function mount(stage, options) {
     const fullButton = stage.querySelector('[data-map-act="full"]');
     if (fullButton) fullButton.hidden = full || !opts.onFull;
   }
-  // Wherever it is dragged, the point the camera looks at stays on the island.
-  // How far the view may drift from the hero view's centre grows with the zoom: at the hero distance the
-  // island hardly moves (80 m), close up up to 450 m (owner 2026-11-04: "맵이 너무 안
-  // 벗어나게"). Measured from the hero target, so the island stays in sight.
   function keepOnIsland() {
     const t = controls.target, home = state.model.camera.target;
     const ratio = camera.position.distanceTo(t) / state.homeDist;
     const lim = THREE.MathUtils.clamp(80 + 520 * (1 - ratio), 80, 450);
-    // ...and never closer than 180 m to the island's edge (its outline spans x -625…715, z -607…716).
     const cx = THREE.MathUtils.clamp(THREE.MathUtils.clamp(t.x, home[0] - lim, home[0] + lim), -445, 535);
     const cz = THREE.MathUtils.clamp(THREE.MathUtils.clamp(t.z, home[2] - lim, home[2] + lim), -427, 536);
     if (cx !== t.x || cz !== t.z || t.y !== 0) {
@@ -295,7 +260,6 @@ export function mount(stage, options) {
       camera.position.add(shift);
     }
   }
-  // ＋ / − / ⟲: the camera glides along its line to the target (at once with reduced motion).
   let glide = 0;
   function moveTo(position, target) {
     cancelAnimationFrame(glide);
@@ -348,8 +312,6 @@ export function mount(stage, options) {
     clearTimeout(hintTimer);
     hintTimer = setTimeout(() => { tip.hidden = true; }, ms || 1400);
   }
-  // The dialog starts close to the day's pins (a phone's tall screen shows the whole island small);
-  // back beside the copy, the hero view returns.
   function fit(full) {
     if (full && !state.fitted && state.groups.length) {
       const pts = state.groups.map((g) => row(g.code)).map((r) => new THREE.Vector3(r.at[0], 0, -r.at[1]));
@@ -382,8 +344,6 @@ export function mount(stage, options) {
   }
 
   // ---- pins ----------------------------------------------------------------------------------------
-  // One group per building; on screen, buildings whose pins would overlap share one pin (a cluster),
-  // whose card lists each building in turn. Clusters follow the camera.
   const NEAR_X = 58, NEAR_Y = 36;
   function group(items) {
     const byCode = new Map();
@@ -423,8 +383,6 @@ export function mount(stage, options) {
     const { groups } = group(state.items);
     state.groups = groups;
     state.sig = '';
-    // Only the map data credit (ODbL); events without a place stay in the calendar (owner 2026-11-04:
-    // "위치 미정 1개 이거 제거해줘").
     if (note) note.textContent = opts.t('home.map.attribution', '지도 데이터: OpenStreetMap');
     if (!groups.length) pinsLayer.innerHTML = '';
     highlight();
@@ -463,8 +421,6 @@ export function mount(stage, options) {
       const back = focused && pinsLayer.querySelector('[data-codes^="' + focused.split(',')[0] + '"]');
       if (back) back.focus({ preventScroll: true });
     }
-    // A building dragged off the map (or behind the camera) takes its pin with it: hidden, out of the
-    // tab order, and its card closed (owner 2026-11-04: pins ran out over the calendar).
     clusters.forEach((c, i) => {
       const pin = pinsLayer.children[i];
       const inside = c.front && c.x >= 8 && c.x <= w - 8 && c.y >= 30 && c.y <= h - 4;
@@ -490,9 +446,6 @@ export function mount(stage, options) {
   // ---- the card ------------------------------------------------------------------------------------
   function eventHtml(item) {
     const ev = item.ev;
-    // The dish in a word or two, in the page's language (2026-11-05: the raw description put a
-    // bilingual mail's English sentence on the Korean card), and the sign-up link by the shared rule
-    // (a meeting link is not a sign-up), http(s) only.
     const F = window.BabdodukFreeFood;
     const food = F && F.hasFood(ev) ? F.dishLabel(ev, opts.t) : '';
     const url = F ? F.signUp(ev).url : '';
@@ -509,9 +462,6 @@ export function mount(stage, options) {
     return '<p class="home-map-card-place"><span class="home-map-card-code">' + esc(g.code) + '</span> ' + esc(buildingName(g.code)) +
       (g.others ? ' <span class="home-map-card-more">' + esc(opts.t('home.map.otherPlaces', '외 {n}곳').replace('{n}', g.others)) + '</span>' : '') + '</p>';
   }
-  // The head (the first place and ×) stays put; below it every listing is set off by a line and the
-  // body scrolls when there are many (owner 2026-11-05: "이벤트끼리 분리해서 보이기 쉽게 … 한줄정도 선으로
-  // 표시하거나 많으면 밑으로 스크롤"). A further place starts its own group under the same kind of line.
   function cardHtml(members) {
     const close = '<button type="button" class="home-map-card-close" aria-label="' + esc(opts.t('home.map.close', '닫기')) + '">×</button>';
     return '<div class="home-map-card-head">' + placeHtml(members[0]) + close + '</div>' +
@@ -519,14 +469,12 @@ export function mount(stage, options) {
       members.map((g, i) => '<div class="home-map-card-group">' + (i ? placeHtml(g) : '') +
         '<ul class="home-map-card-list">' + g.items.map(eventHtml).join('') + '</ul></div>').join('') + '</div>';
   }
-  // Above its pin, or below it near the top edge; never past the map's sides.
   function placeCard() {
     const pin = pinsLayer.querySelector('[data-codes="' + state.selected + '"]');
     if (!pin || card.hidden) return;
     const x = parseFloat(pin.style.getPropertyValue('--x')), y = parseFloat(pin.style.getPropertyValue('--y'));
     const w = stage.clientWidth, h = stage.clientHeight, cw = card.offsetWidth, ch = card.offsetHeight;
     const left = Math.max(6, Math.min(w - cw - 6, x - cw / 2));
-    // Inside the map: above the pin when it fits, else below it, else as low as the map allows.
     const top = y - 56 - ch >= 6 ? y - 56 - ch : Math.max(6, Math.min(y + 10, h - ch - 6));
     card.style.left = left.toFixed(1) + 'px';
     card.style.top = top.toFixed(1) + 'px';
@@ -574,7 +522,7 @@ export function mount(stage, options) {
   }
   function onKey(e) {
     if (e.key !== 'Escape' || !state.selected) return;
-    e.stopPropagation();          // in the phone dialog, Esc closes the card first, then the dialog
+    e.stopPropagation();
     e.preventDefault();
     closeAndReturn();
   }
@@ -590,7 +538,6 @@ export function mount(stage, options) {
 
   tables.then(() => {
     renderPins();
-    // The live model only where it can run and is wanted: never on Save-Data.
     const saveData = navigator.connection && navigator.connection.saveData;
     if (!saveData) (window.requestIdleCallback || ((f) => setTimeout(f, 300)))(start);
   });

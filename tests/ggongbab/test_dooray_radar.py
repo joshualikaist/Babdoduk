@@ -97,7 +97,7 @@ def run(tmp_path, headers, *, requests=(), writer=None, dispatch=None, opener=No
         yield SimpleNamespace(context=context, page=None)
 
     def list_mails(session, **_):
-        context.fire()          # the browser's own traffic while the Radar lists
+        context.fire()
         if isinstance(headers, Exception):
             raise headers
         return headers
@@ -130,7 +130,7 @@ def test_unread_mail_is_read_in_full_registered_and_marked_unread_again(tmp_path
     flash = json.loads(files.flash.read_text(encoding="utf-8"))
     assert len(flash["pending"]) == 1 and flash["pending"][0]["dispatched"] is False
     state = AgentState.load(files.mail_state)
-    assert state.seen("m1") and state.seen("m2")          # candidate registered, other filtered
+    assert state.seen("m1") and state.seen("m2")
     reasons = sorted(r.reason for r in state.mails.values())
     assert reasons == ["food provision wording + event", "no event wording"]
 
@@ -153,7 +153,7 @@ def test_an_event_with_a_poster_is_a_candidate_and_the_poster_goes_with_the_task
     opener = Opener({"p1": {"image_refs": [("attachment", "https://x/parts/2", 300000)]},
                      "p2": {"image_refs": [("attachment", "https://x/parts/3", 300000)]}})
     code, files, writer, *_ = run(tmp_path, headers, opener=opener)
-    assert [p.mail_id for p in writer.payloads] == ["p1"]                 # a photo without an event is not
+    assert [p.mail_id for p in writer.payloads] == ["p1"]
     assert writer.payloads[0].images == [POSTER] and opener.image_loads == [1]
     assert files.runtime_state()["counts"]["images"] == 1
     reasons = {r.reason for r in AgentState.load(files.mail_state).mails.values()}
@@ -190,7 +190,7 @@ def test_a_failed_unread_restore_stops_opening_unread_mail(tmp_path):
     code, files, writer, beats, logs = run(tmp_path, headers, opener=Opener(fail={"u1": "restore"}))
     assert not files.unread_allowed() and files.runtime_state()["reason"] == radar.RESTORE
     assert radar.RESTORE in logs and beats[-1][0] == "collector_error"
-    assert not files.mail_state.exists()        # nothing of that scan is recorded; read mail is re-scanned
+    assert not files.mail_state.exists()
     opener = Opener()
     code, files, writer2, *_ = run(tmp_path, headers, opener=opener)
     assert opener.opened == [] and files.runtime_state()["counts"]["unread_skipped"] == 1
@@ -204,7 +204,7 @@ def test_a_recheck_reads_older_mail_the_previous_rules_dismissed(tmp_path):
     state.save()
     opener = Opener({"old": {"body": "10월 16일 18:00 창의학습관, 저녁 도시락 제공"}})
     code, files, writer, *_ = run(tmp_path, [old], opener=opener)
-    assert writer.payloads == []                                    # outside the normal window
+    assert writer.payloads == []
     code, files, writer, *_ = run(tmp_path, [old], opener=opener, recheck_days=7)
     assert [p.mail_id for p in writer.payloads] == ["old"]
     with pytest.raises(ValueError):
@@ -217,7 +217,7 @@ def test_a_recheck_runs_while_the_resident_radar_is_disabled(tmp_path):
     opener = Opener({"m1": {"body": "10월 16일 18:00 창의학습관, 저녁 도시락 제공"}})
     mail = hdr("m1", "학과설명회 안내", "많은 참여 바랍니다.", minutes_ago=2 * 1440)
     code, files, writer, *_ = run(tmp_path, [mail], opener=opener, enabled=False)
-    assert writer.payloads == []                                    # the resident loop still stops
+    assert writer.payloads == []
     code, files, writer, *_ = run(tmp_path, [mail], opener=opener, enabled=False, recheck_days=3)
     assert [p.mail_id for p in writer.payloads] == ["m1"] and not files.enabled()
 
@@ -228,7 +228,6 @@ def test_a_detail_or_write_request_during_a_scan_disables_unread_analysis_before
     code, files, writer, beats, logs = run(tmp_path, [hdr("m1", "커피차 홍보 행사", "커피 제공", unread=True)], requests=requests)
     assert writer.payloads == [] and not files.unread_allowed()
     assert files.runtime_state()["reason"] == radar.INVARIANT and radar.INVARIANT in logs
-    # The latch says which request it was (2026-10-31), with ids masked.
     latch = json.loads(files.unread_latch.read_text())
     assert [m for m, _ in latch["requests"]] == [requests[0][0]]
     assert "1234567890" not in json.dumps(latch)
@@ -266,10 +265,10 @@ def test_overlap_window_and_ledger_prevent_replays(tmp_path):
     from ggongbab.ops_storage import atomic_json
     atomic_json(files.runtime, runtime)
     headers = [hdr("new", "커피차 홍보 행사", "커피 제공", minutes_ago=5),
-               hdr("old", "커피차 홍보 행사", "커피 제공", minutes_ago=60)]   # before last success - 30 min
+               hdr("old", "커피차 홍보 행사", "커피 제공", minutes_ago=60)]
     code, files, writer, *_ = run(tmp_path, headers)
     assert [p.mail_id for p in writer.payloads] == ["new"]
-    code, files, writer2, *_ = run(tmp_path, headers)                        # next cycle: nothing again
+    code, files, writer2, *_ = run(tmp_path, headers)
     assert writer2.payloads == []
 
 
@@ -454,7 +453,7 @@ def test_a_start_that_fails_before_the_first_scan_is_recorded_for_status_and_ale
     workers = _workers(tmp_path, monkeypatch)
     files = radar.RadarFiles(tmp_path)
     files.set_enabled(True, T0)
-    assert workers.main(["radar-once"]) == 1                    # no calibrated contract here
+    assert workers.main(["radar-once"]) == 1
     runtime = files.runtime_state()
     assert runtime["reason"] == radar.CONFIG_REQUIRED and runtime["running"] is False
     assert radar.CONFIG_REQUIRED in (tmp_path / ".local/ops-radar.log").read_text(encoding="utf-8")

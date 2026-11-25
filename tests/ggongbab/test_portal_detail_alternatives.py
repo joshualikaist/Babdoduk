@@ -51,7 +51,7 @@ def test_json_candidate_correlates_before_or_after_manual_detail_response(before
     assert candidate["body-like field path"] == "data.pstCn"
     assert candidate["id-like field path"] == "data.pstNo"
     assert candidate["clicked-id correlated"] and not candidate["view-counter field present"]
-    assert len(report["candidates"]) == 1  # known endpoint is never a candidate
+    assert len(report["candidates"]) == 1
 
 
 @pytest.mark.parametrize("path", [

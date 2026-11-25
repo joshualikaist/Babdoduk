@@ -1,14 +1,3 @@
-/* 마이 밥도둑 accounts (밥도둑 2.0 Phase 2, lab only; docs/MY_BABDODUK.md).
- *
- * window.BabdodukAccount: optional Google / kakao sign-in through Supabase Auth, the signed-in copy of
- * the saved free-food list (same interface as BabdodukLive.createStore), the one-time merge of what a
- * guest saved in this browser, and clearing data or leaving. Everything is off unless
- * js/babdoduk-auth-config.js enables it for the current host, so production never loads the SDK.
- *
- * Privacy: the browser holds only the publishable key. Account rows are private by RLS
- * (supabase/migrations/011_accounts.sql). Signing out keeps this browser's own guest list untouched;
- * the account list is never written into it.
- */
 (function (global) {
   'use strict';
 
@@ -20,7 +9,7 @@
   var EVENT_ID = /^[A-Za-z0-9_-]{1,80}(#[0-9]{1,2})?$/;
   var PLACE_ID = /^[A-Za-z0-9_-]{1,80}$/;
   var PROVIDERS = ['google', 'kakao'];
-  var RECENT_MS = 10 * 60 * 1000;   // delete_my_account() accepts a sign-in from the last 10 minutes
+  var RECENT_MS = 10 * 60 * 1000;
   var MAX_SAVED = 300;
 
   // ---- configuration ---------------------------------------------------------------------------
@@ -43,7 +32,6 @@
   }
   function storage() { try { return global.localStorage; } catch (e) { return null; } }
   function tokenKey() { var c = publicConfig(); return c ? 'sb-' + c.ref + '-auth-token' : ''; }
-  // A page other than my.html loads the SDK only for someone who already signed in on this browser.
   function hasSession() {
     var s = storage();
     try { return !!(s && tokenKey() && s.getItem(tokenKey())); } catch (e) { return false; }
@@ -92,8 +80,6 @@
     var url = global.location.origin + '/my.html';
     return next && /^[a-z-]{1,20}$/.test(next) ? url + '?next=' + next : url;
   }
-  // A full-page redirect (no popup), so it works the same inside the talk app's browser. Google refuses
-  // embedded browsers; the page offers "open in the default browser" there instead of this call.
   function signIn(provider, next) {
     if (PROVIDERS.indexOf(provider) === -1) return Promise.reject(new Error('unknown provider'));
     if (provider === 'google' && googleDirect()) return googleRedirect('signin', next);
@@ -102,14 +88,6 @@
     }).then(function (res) { if (res && res.error) throw res.error; return res; });
   }
   // ---- Google through our own page (owner 2026-11-18) ------------------------------------------
-  // Supabase's redirect sends Google back to <project>.supabase.co, so Google's window says "continue to
-  // myjglfynhnptlclawlcc.supabase.co". Our same button now sends Google back to my.html on this site
-  // instead (OpenID Connect, response_type=id_token: no secret anywhere), so Google's window names our
-  // site. The ID token returns in the address fragment, leaves the address bar at once, and goes to
-  // Supabase (signInWithIdToken, or linkIdentity with a token). Google gets the SHA-256 of a fresh nonce
-  // and Supabase the nonce itself; a random state ties the answer to this browser's request. Both stay in
-  // sessionStorage only until the page comes back. Without a client id, Web Crypto or sessionStorage the
-  // Supabase redirect is used as before.
   var GOOGLE_AUTH = 'https://accounts.google.com/o/oauth2/v2/auth';
   var GOOGLE_PENDING = 'babdoduk-google-pending';
   var GOOGLE_PENDING_MS = 15 * 60 * 1000;
@@ -132,7 +110,6 @@
   function googleDirect() {
     return !!(googleClientId() && session() && global.crypto && global.crypto.subtle && global.TextEncoder && global.URLSearchParams);
   }
-  // mode 'signin' (next: '' or 'leave') or 'link'.
   function googleRedirect(mode, next) {
     var raw = randomToken(), state = randomToken();
     return sha256Hex(raw).then(function (hashed) {
@@ -145,15 +122,13 @@
       return { data: {}, error: null };
     });
   }
-  // On my.html, before the Supabase client exists: an answer from Google in the fragment. Resolves null
-  // when there is none, else { ok, next } after signing in or linking. The fragment is removed first.
   function finishGoogle() {
     var hash = global.location.hash || '';
     if (!/[#&]state=/.test(hash) || !/[#&](id_token|error)=/.test(hash)) return Promise.resolve(null);
     var params = new URLSearchParams(hash.slice(1));
     var store = session(), pending = null;
     try { pending = JSON.parse((store && store.getItem(GOOGLE_PENDING)) || 'null'); } catch (e) { pending = null; }
-    try { if (store) store.removeItem(GOOGLE_PENDING); } catch (e) { /* nothing kept */ }
+    try { if (store) store.removeItem(GOOGLE_PENDING); } catch (e) {  }
     global.history.replaceState(null, '', global.location.pathname + global.location.search);
     var next = pending && typeof pending.next === 'string' ? pending.next : '';
     var token = params.get('id_token');
@@ -168,8 +143,6 @@
       return { ok: true, next: next };
     }).catch(function () { return { ok: false, next: next }; });
   }
-  // Add another provider to the same account. Supabase needs "manual linking" on for this; a refusal
-  // comes back as an error the page explains.
   function linkProvider(provider) {
     if (PROVIDERS.indexOf(provider) === -1) return Promise.reject(new Error('unknown provider'));
     if (provider === 'google' && googleDirect()) return googleRedirect('link', 'linked');
@@ -178,13 +151,10 @@
       return c.auth.linkIdentity({ provider: provider, options: { redirectTo: returnUrl('linked') } });
     }).then(function (res) { if (res && res.error) throw res.error; return res; });
   }
-  // This device only: other devices stay signed in. The guest list in this browser is untouched.
   function signOut() {
     return client().then(function (c) {
       return c.auth.signOut({ scope: 'local' }).then(function (res) {
         if (!res || !res.error) return;
-        // The SDK drops this browser's session even when the server call fails (supabase-js 2.116
-        // _signOut), so only a session that is still here is a failed sign-out (2026-11-18 check).
         return c.auth.getSession().then(function (now) {
           if (now && now.data && now.data.session) throw res.error;
         });
@@ -203,8 +173,6 @@
     });
     return out;
   }
-  // The provider's own name for the person, shown only to them. kakao may give no e-mail at all, and
-  // nothing here needs one.
   function providerName(user) {
     var meta = (user && user.user_metadata) || {};
     var name = meta.full_name || meta.name || meta.nickname || meta.preferred_username || '';
@@ -244,11 +212,8 @@
     marks.users[uid] = iso;
     var ids = Object.keys(marks.users);
     if (ids.length > 10) ids.slice(0, ids.length - 10).forEach(function (id) { delete marks.users[id]; });
-    try { s.setItem(MERGE_KEY, JSON.stringify(marks)); } catch (e) { /* the merge is idempotent anyway */ }
+    try { s.setItem(MERGE_KEY, JSON.stringify(marks)); } catch (e) {  }
   }
-  // What this browser saved that the account has not taken in yet: everything the first time this
-  // account signs in here, afterwards only what was saved (or changed) since, so an item deleted on
-  // another device does not come back from an old browser copy.
   function pending(uid) {
     var since = Date.parse(lastMerged(uid)) || 0;
     function fresh(item) {
@@ -262,8 +227,6 @@
         .map(function (item) { return { id: item.id, status: item.status, memo: item.memo || '', savedAt: item.savedAt }; })
     };
   }
-  // Q13: merge automatically, add only what is missing, overwrite nothing, report conflicts, and keep
-  // the list of what was added so "되돌리기" can take exactly that back out.
   function mergeGuest(c, uid, now) {
     var todo = pending(uid);
     var result = { events: 0, places: 0, eventIds: [], placeIds: [], conflicts: [], at: (now || new Date()).toISOString() };
@@ -301,8 +264,6 @@
   }
 
   // ---- the account's saved free-food list --------------------------------------------------------
-  // Same synchronous interface as BabdodukLive.createStore, over an in-memory copy; every change goes
-  // to the server and is undone in memory (with onChange('failed')) when the server refuses it.
   function createRemoteStore(c, uid, onChange) {
     var items = [];
     var ready = false;
@@ -364,8 +325,6 @@
     return store;
   }
 
-  // On ggongbab.html: for someone signed in on this browser, swap the guest store for the account's
-  // and say which one is showing. Guests never load anything.
   function attachSavedStore(onReady, onChange) {
     if (!available() || !hasSession()) return false;
     var c;
@@ -400,17 +359,12 @@
       return out;
     });
   }
-  // The private calendar subscription token (supabase/migrations/013_calendar_feed.sql); renew replaces it.
   function calendarFeed(c, renew) {
     return c.rpc('my_calendar_feed', { p_new: !!renew }).then(function (res) {
       if (res.error) throw res.error;
       return typeof res.data === 'string' && /^[A-Za-z0-9_-]{43}$/.test(res.data) ? res.data : '';
     });
   }
-  // The calendar connection (016_calendar_connect.sql; owner 2026-11-19, a second 연결 showed every event
-  // twice): the address to subscribe to now, when a calendar last read the list and when the current
-  // connection was made. The first read of a new address stops the old one, so only the newest subscription
-  // shows the events. Before 016 is applied: 013's live address, with the state unknown.
   function calendarLink(c) {
     var ok = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{43}$/.test(v); };
     var stamp = function (v) { return typeof v === 'string' && !isNaN(Date.parse(v)) ? v : null; };
@@ -426,7 +380,7 @@
   function clearBrowserCopy() {
     var s = storage();
     if (!s) return;
-    [SAVED_KEY, PLACES_KEY, MERGE_KEY].forEach(function (key) { try { s.removeItem(key); } catch (e) { /* nothing to do */ } });
+    [SAVED_KEY, PLACES_KEY, MERGE_KEY].forEach(function (key) { try { s.removeItem(key); } catch (e) {  } });
   }
   function deleteAccount(c) {
     return c.rpc('delete_my_account').then(function (res) {
@@ -434,7 +388,7 @@
       return c.auth.signOut({ scope: 'local' }).catch(function () { return null; });
     }).then(function () {
       var s = storage();
-      try { if (s && tokenKey()) s.removeItem(tokenKey()); } catch (e) { /* signed out already */ }
+      try { if (s && tokenKey()) s.removeItem(tokenKey()); } catch (e) {  }
     });
   }
 

@@ -23,9 +23,9 @@ def row(ref, name, dong="어은동", large="음식", middle="한식", small="백
 
 ROWS = [row("MA0101", "어은 국밥"), row("MA0102", "궁동 떡볶이", dong="궁동", middle="분식", small="떡볶이"),
         row("MA0103", "카이스트 카페", dong="구성동", middle="비알코올", small="카페"),
-        row("MA0104", "세탁소", large="수리·개인"),                         # not food
-        row("MA0105", "봉명 고깃집", dong="봉명동"),                          # outside the three areas
-        row("MA0106", "멀리 국밥", lat="36.45"),                              # outside the rectangle
+        row("MA0104", "세탁소", large="수리·개인"),
+        row("MA0105", "봉명 고깃집", dong="봉명동"),
+        row("MA0106", "멀리 국밥", lat="36.45"),
         row("MA0107", "서울 국밥", ctprvnNm="서울특별시")]
 
 
@@ -88,7 +88,7 @@ def test_a_credentials_folder_holds_the_key_in_its_own_file(tmp_path, capsys, mo
 def test_fetch_without_a_key_makes_no_request(tmp_path, capsys, monkeypatch):
     monkeypatch.setattr(semas, "CREDENTIALS", tmp_path / "none")
     monkeypatch.delenv("DATA_GO_KR_KEY", raising=False)
-    assert semas.main(["fetch"]) == 1                 # the autouse fixture fails on any request
+    assert semas.main(["fetch"]) == 1
     assert "no request was made" in capsys.readouterr().err
 
 
@@ -141,7 +141,6 @@ def test_nothing_is_published_until_the_operator_decides():
     assert all(item["decision"] == "" for item in approvals["items"])
     feed, summary = semas.publish(candidates, semas.empty_feed(), approvals, "2026-11-08")
     assert feed["places"] == [] and summary["undecided"] == 3
-    # Reviewing again keeps every row once and never resets a decision.
     approvals["items"][0]["decision"] = "candidate"
     _, again = semas.review(candidates, semas.empty_feed(), approvals)
     assert len(again["items"]) == 3 and again["items"][0]["decision"] == "candidate"
@@ -169,7 +168,6 @@ def test_publish_applies_candidate_verified_and_skip_with_stable_site_ids():
     assert candidate["facts"] == [] and candidate["verifiedAt"] is None
     assert verified["sources"] == [{"kind": "semas", "ref": "MA0101", "checkedAt": "2026-11-08"}]
     assert summary["added"] == 2 and summary["skipped"] == 1
-    # Publishing the same decisions again changes nothing.
     again, _ = semas.publish(candidates, feed, approvals, "2026-11-09")
     assert again["places"] == feed["places"]
 
@@ -180,12 +178,12 @@ def test_a_store_that_left_the_public_data_is_only_flagged_until_the_operator_sa
     decided(approvals, MA0101={"decision": "candidate"}, MA0102={"decision": "candidate"})
     feed, _ = semas.publish(candidates, semas.empty_feed(), approvals, "2026-11-08")
     later = semas.build_candidates([ROWS[1], dict(ROWS[0], bizesNm="어은 국밥 본점")], NOW)
-    later["stores"] = [s for s in later["stores"] if s["ref"] != "MA0102"]          # MA0102 disappeared
+    later["stores"] = [s for s in later["stores"] if s["ref"] != "MA0102"]
     report, approvals2 = semas.review(later, feed, {"items": []})
     assert [r["ref"] for r in report["missing"]] == ["MA0102"]
     assert report["changed"] == [{"ref": "MA0101", "id": "p-0001", "before": {"name": "어은 국밥", "address": feed["places"][0]["address"]},
                                   "after": {"name": "어은 국밥 본점", "address": feed["places"][0]["address"]}}]
-    same, _ = semas.publish(later, feed, approvals2, "2026-11-09")              # undecided: nothing moves
+    same, _ = semas.publish(later, feed, approvals2, "2026-11-09")
     assert same["places"] == feed["places"]
     decided(approvals2, MA0102={"decision": "closed"}, MA0101={"decision": "accept"})
     final, summary = semas.publish(later, feed, approvals2, "2026-11-09")
@@ -211,7 +209,7 @@ def test_publish_refuses_a_decision_it_cannot_honour(bad, message):
 
 def test_the_feed_rules_beyond_the_schema():
     feed = json.loads((ROOT / "data/places/latest.json").read_text(encoding="utf-8"))
-    assert semas.feed_errors(feed) == [] and feed["places"] == []          # shipped empty: no place is invented
+    assert semas.feed_errors(feed) == [] and feed["places"] == []
     place = {"id": "p-0001", "name": "a", "area": "gung", "address": "대전 유성구 1", "cuisine": "korean", "status": "candidate",
              "verifiedAt": None, "facts": [{"kind": "menu", "text": "국밥", "source": "operator", "checkedAt": "2026-11-07"}],
              "sources": [{"kind": "semas", "ref": "MA1", "checkedAt": "2026-11-08"}], "updatedAt": "2026-11-08"}
@@ -231,7 +229,7 @@ def test_place_reports_are_insert_only_through_one_checking_function():
         assert f"alter table public.{table} enable row level security;" in SQL
         assert re.search(rf"revoke all on table public\.{table} from public, anon, authenticated", SQL)
     assert not re.search(r"grant [a-z, ]+ on table public\.place_report\w* to [a-z, ]*\b(anon|authenticated)", SQL)
-    assert "create policy" not in SQL                       # no public read, no board
+    assert "create policy" not in SQL
     assert "security definer set search_path = pg_catalog, public" in SQL
     assert "grant execute on function public.place_submit_report(text, text, text, text) to anon, authenticated, service_role" in SQL
     assert "PLACE_REPORT_RATE_LIMITED" in SQL and "> 5" in SQL and ">= 100" in SQL

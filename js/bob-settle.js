@@ -1,19 +1,5 @@
-/* 밥약 메이커 정산 (bobyak.html, docs/BOBYAK.md): who pays how much, in whole won.
-   Pure arithmetic in this browser: nothing here is stored or sent anywhere.
-
-   settle({total, mode, payer, unit, people:[{name, excluded, fixed}]}) ->
-     {ok: true, total, mode, unit, shares: [{index, name, amount, excluded, fixed}]}
-     {ok: false, error: 'total' | 'nobody' | 'tooMany' | 'payer' | 'unit' | 'fixedInvalid' | 'fixedOver' | 'fixedShort'}
-
-   Modes:
-     'split' (나눠 내기): everyone not excluded shares what is left after the fixed amounts, equally.
-     'treat' (한턱): the payer pays everything, everyone else 0.
-   The leftover rule, so the shares always add up to the total exactly:
-     the equal part is rounded down to the unit (1, 10, 100 or 1000 won); the units left over go one
-     each to the people at the top of the list (among those sharing equally); what is left below one
-     unit (only when the total itself is not a multiple of the unit) goes to the first of them. */
 (function (global) {
-  var MAX_TOTAL = 100000000;     // 1억 원
+  var MAX_TOTAL = 100000000;
   var MAX_PEOPLE = 30;
   var UNITS = [1, 10, 100, 1000];
 
@@ -68,11 +54,10 @@
 
   function done(total, mode, unit, shares) {
     var sum = shares.reduce(function (acc, share) { return acc + share.amount; }, 0);
-    if (sum !== total) throw new Error('settle: shares do not add up');   // never shown: the rule makes it impossible
+    if (sum !== total) throw new Error('settle: shares do not add up');
     return { ok: true, total: total, mode: mode, unit: unit, shares: shares };
   }
 
-  // "45,000" from a digit string the visitor typed ("45,000원", "45 000" -> 45000); NaN when it is not a whole amount.
   function parseWon(text) {
     var raw = String(text == null ? '' : text).replace(/[\s,원₩]/g, '');
     if (!/^[0-9]{1,9}$/.test(raw)) return NaN;

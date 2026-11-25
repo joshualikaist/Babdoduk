@@ -14,7 +14,6 @@ from . import OK, PARSE_FAILED, FETCH_FAILED, AdapterResult, failure_code
 NS = {"atom": "http://www.w3.org/2005/Atom", "media": "http://search.yahoo.com/mrss/",
       "content": "http://purl.org/rss/1.0/modules/content/", "yt": "http://www.youtube.com/xml/schemas/2015",
       "dc": "http://purl.org/dc/elements/1.1/"}
-# A dc:date with no zone ("2026-10-12 13:33:32") is the publisher's local time; our feeds are Korean.
 LOCAL_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?$")
 IMG_SRC = re.compile(r"""<img[^>]+?src=["']([^"']+)["']""", re.I)
 BAD_IMAGE = re.compile(r"(1x1|pixel|spacer|blank\.gif|gravatar|emoji|/icons?/|logo|avatar|feeds\.feedburner)", re.I)
@@ -49,7 +48,7 @@ def item_image(node) -> tuple[str, str]:
         if src:
             return src, "feed_media"
     for path in ("content:encoded", "description", "atom:content", "atom:summary"):
-        blob = html.unescape(_text(node, path))      # feed HTML arrives entity-escaped
+        blob = html.unescape(_text(node, path))
         for match in IMG_SRC.finditer(blob):
             src = usable_image(match.group(1))
             if src:
@@ -87,7 +86,7 @@ def parse(payload: bytes) -> list[dict]:
                     "imageUrl": image, "imageSource": image_source})
     for node in root.findall("atom:entry", NS):
         link_el = node.find("atom:link[@rel='alternate']", NS)
-        if link_el is None:                       # an Element with no children is falsy: no `or`
+        if link_el is None:
             link_el = node.find("atom:link", NS)
         link = link_el.get("href") if link_el is not None else ""
         image, image_source = item_image(node)
@@ -102,7 +101,7 @@ def parse(payload: bytes) -> list[dict]:
 
 
 ACCEPT = "application/rss+xml, application/atom+xml, application/xml, text/xml"
-PAGE_PAUSE = 2.0          # seconds between two requests to the same site
+PAGE_PAUSE = 2.0
 
 
 def page_urls(source: dict) -> list[str]:
@@ -136,7 +135,7 @@ def discover(source: dict, *, fetcher, sleep=time.sleep) -> AdapterResult:
             break
         new = [row for row in page if row["sourceUrl"] not in seen]
         if not new:
-            break                                 # past the last page, or a site that ignores ?paged
+            break
         seen.update(row["sourceUrl"] for row in new)
         items += new
     medium = "news" if source.get("kind") == "news" else "blog"

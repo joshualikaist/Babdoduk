@@ -1,14 +1,3 @@
-/* 밥약 메이커 식당 (bobyak.html, docs/BOBYAK.md): the rules behind the restaurant roulette, the detail card's
-   links and the 먹킷리스트 kept in this browser. No network calls; the page loads data/places/latest.json.
-
-   - Roulette: verified places first. Candidates (public data nobody has checked) join only when no
-     verified place fits and the visitor said yes; stale and closed places never come up.
-   - Budget is matched only against a confirmed budget fact: a place whose prices nobody checked never
-     matches a budget filter.
-   - 먹킷리스트: localStorage `babdoduk-places-saved`, {v:1, items:[{id, status, memo, savedAt, updatedAt}]},
-     status 'want' (가고 싶어) | 'been' (가봤어) | 'again' (또 갈래). The memo is private: it never goes into
-     a link or a shared text. The fields mean what saved_places(place_id, status, memo, saved_at,
-     updated_at) means, so a later account sync can lift the list as it is. */
 (function (global) {
   var AREAS = ['kaist', 'eoeun', 'gung'];
   var CUISINES = ['korean', 'chinese', 'japanese', 'western', 'asian', 'snack', 'fastfood', 'cafe', 'bakery', 'pub', 'other'];
@@ -40,10 +29,6 @@
     var r = (random || Math.random)();
     return pool[Math.min(pool.length - 1, Math.floor(r * pool.length))];
   }
-  /* opts: {area, cuisine, budget, consent, savedIds (array, or null for every place), avoid, random}
-     -> {status:'ok', place, pool:'verified'|'candidate', size}
-        {status:'consent', count}                       no verified place fits; count candidates would
-        {status:'empty', reason:'data'|'saved'|'filters'} */
   function pick(places, opts) {
     opts = opts || {};
     places = Array.isArray(places) ? places : [];
@@ -70,7 +55,6 @@
   }
 
   // ---------- Links ----------
-  // Search by name and address together, so a same-name shop elsewhere is not the first hit.
   function searchText(place) {
     var parts = [place.name, place.branch, place.address].filter(function (part) { return part && String(part).trim(); });
     return parts.join(' ');
@@ -104,8 +88,6 @@
     return { id: item.id, status: item.status, memo: clip(item.memo, MAX_MEMO),
              savedAt: clip(item.savedAt, 40), updatedAt: clip(item.updatedAt, 40) };
   }
-  // {items, writable, recovered}: unreadable data is set aside once and the list starts empty; a newer
-  // schema than this page knows is shown but never rewritten.
   function readStore(storage) {
     var raw = null;
     if (!storage) return { items: [], writable: false };
@@ -150,7 +132,6 @@
       has: function (id) { return !!find(id); },
       writable: function () { return state.writable; },
       recovered: function () { return !!state.recovered; },
-      // Add the place with this status, or move it to this status. Keeps the memo.
       set: function (id, status, now) {
         if (!ID_RE.test(String(id || '')) || LIST_STATUSES.indexOf(status) < 0 || !state.writable) return false;
         var stamp = (now || new Date()).toISOString();

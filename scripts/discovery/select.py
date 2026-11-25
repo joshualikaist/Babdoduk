@@ -35,35 +35,27 @@ from . import hosts
 from .common import KST, excerpt, parse_time
 from .process import age_days
 
-LANE_SIZE = 5              # stories per lane, every edition (owner decision, 2026-10-12)
-EVERGREEN_FRESH_DAYS = 90  # an older tips/health story fills its lane only after every fresh one
-PER_SOURCE_PER_LANE = 2    # variety first; relaxed only when the lane cannot be filled otherwise
+LANE_SIZE = 5
+EVERGREEN_FRESH_DAYS = 90
+PER_SOURCE_PER_LANE = 2
 HERO_IDEAL_DAYS = 7
 HERO_MAX_DAYS = 30
 HERO_AUDIENCE = 0.5
-RULES = "lanes-v1"          # editions built under the evidence rules; older ones are legacy
+RULES = "lanes-v1"
 LANES = ("trend", "tips", "health", "habit")
-# YouTube's terms keep API data at most 30 days (store.YOUTUBE_DAYS). A video runs only on data the
-# API returned within YOUTUBE_SEEN_DAYS, and only while its upload is within YOUTUBE_ARCHIVE_DAYS;
-# its archive entry leaves after YOUTUBE_ARCHIVE_DAYS, so it is never kept past 30 days and, being
-# too old by then, never runs twice.
 YOUTUBE_SEEN_DAYS = 2
 YOUTUBE_ARCHIVE_DAYS = 28
-LANE_LEADS = content_labels.lane_leads()          # data/content/labels.json, the page shows its own copy
-SUMMARY_CHARS = 120        # a card-length excerpt, never a paragraph
+LANE_LEADS = content_labels.lane_leads()
+SUMMARY_CHARS = 120
 MIN_SUMMARY = 20
-FIRST_SENTENCES = 3        # the card's sentence comes from the opening of the preview
-# A sentence ends at . ! ? or 。 after a letter, never after a digit ("1. 2분기", "3.3%").
+FIRST_SENTENCES = 3
 SENTENCE_END = re.compile(r"(?<=[^\d\s][.!?。])\s+")
 URLS = re.compile(r"(https?://\S+|www\.\S+|\S+@\S+\.\w+|#[^\s#]+)")
 
 
 BOILERPLATE = re.compile(r"^(watch how to make (this|these)\b|jump to recipe\b|print recipe\b)", re.I)
-# News leads open with a dateline or byline ("[서울=뉴시스] 김상윤 기자 =", "【 청년일보 】",
-# "[대한급식신문=김보희 기자]") and carry photo captions ("사진=… 캡처"): not part of the story.
 DATELINE = re.compile(r"^\s*(\[[^\]]{1,30}\]|【[^】]{1,30}】|\([^)]{1,20}=[^)]{0,20}\))\s*([가-힣]{2,4}\s*기자\s*=\s*)?")
 CAPTION = re.compile(r"(/?\s*사진\s*=\s*[^.]{0,60}?(캡처|제공|갈무리|뉴시스|연합뉴스|DB)\s*)")
-# A video description that opens with the channel's own notices has no description to excerpt.
 CHANNEL_BOILERPLATE = re.compile(r"(멤버십\s*가입|구독과\s*좋아요|구독\s*부탁|알림\s*설정|CC\s*버튼|press cc|자막이\s*필요|"
                                  r"협업\s*(문의|제안)|business inquir|subscribe)", re.I)
 
@@ -76,22 +68,22 @@ def card_summary(text: str, title: str = "") -> str:
     cleaned = re.sub(r"\s+", " ", URLS.sub(" ", text or "")).strip(" -|·")
     cleaned = CAPTION.sub(" ", DATELINE.sub("", cleaned)).strip()
     cleaned = re.sub(r"\s+", " ", cleaned)
-    cleaned = re.sub(r"\.\s*\.(?!\.)", ".", cleaned)          # "제작됐다. ." once a photo credit is gone
-    head = re.sub(r"^\s*\[[^\]]{1,12}\]\s*", "", title or "")   # "[자료] 제목" as printed in the text
+    cleaned = re.sub(r"\.\s*\.(?!\.)", ".", cleaned)
+    head = re.sub(r"^\s*\[[^\]]{1,12}\]\s*", "", title or "")
     if head and cleaned.startswith(head) and re.match(r"\s*(\d+\.|[-•▶\[])", cleaned[len(head):]):
-        cleaned = cleaned[len(head):].strip()       # a data release repeating its headline before a list
+        cleaned = cleaned[len(head):].strip()
     stripped = BOILERPLATE.sub("", cleaned).strip()
     if stripped != cleaned and title and stripped.lower().startswith(title.lower()):
-        stripped = stripped[len(title):].strip(" -|·:")     # "Watch How to Make This <title>" heading
+        stripped = stripped[len(title):].strip(" -|·:")
     cleaned = stripped
     words = cleaned.split()
-    for n in range(min(12, len(words) // 2), 1, -1):       # an embed heading repeated as the first sentence
+    for n in range(min(12, len(words) // 2), 1, -1):
         if [w.lower() for w in words[:n]] == [w.lower() for w in words[n:2 * n]]:
             cleaned = " ".join(words[n:])
             break
     cleaned = re.sub(r"[ㅡ\-=_~*]{4,}", " ", cleaned).strip()
     if cleaned.count("▶") >= 2 or cleaned.count("•") >= 3 or CHANNEL_BOILERPLATE.search(cleaned[:80]):
-        return ""                                  # a video's link list or channel notice, not a description
+        return ""
     for sentence in [s for s in SENTENCE_END.split(cleaned) if s.strip()][:FIRST_SENTENCES]:
         if len(sentence.strip()) >= MIN_SUMMARY:
             return excerpt(sentence, SUMMARY_CHARS)
@@ -110,8 +102,6 @@ def has_image(row: dict) -> bool:
 
 
 def public_item(row: dict) -> dict:
-    # A web search result's text is the page body, not the publisher's preview: its sentence is
-    # read from the publisher's page when the story is published (discovery.preview).
     preview = row.get("sourceType") != "web_search"
     item = {
         "title": row["title"],
@@ -137,7 +127,7 @@ def public_item(row: dict) -> dict:
 def independent_evidence(row: dict) -> list[str]:
     if row.get("trendEvidenceIndependent") is not None:
         return list(row["trendEvidenceIndependent"])
-    from .process import trend_evidence          # rows built outside the pipeline (tests)
+    from .process import trend_evidence
     return trend_evidence(row)[2]
 
 
@@ -151,7 +141,7 @@ def choose_hero(pool: list[dict], now: datetime) -> tuple[Optional[dict], str]:
     def trend_ok(row):
         age = age_days(row, now)
         audience = float((row.get("audienceRelevance") or {}).get("score") or 0)
-        trusted = row.get("sourceTrust") in ("A", "B")        # high source trust: never a Tier C lead
+        trusted = row.get("sourceTrust") in ("A", "B")
         return (row.get("assignedCategory") == "trend" and strong_evidence(row) and has_image(row)
                 and trusted and audience >= HERO_AUDIENCE and age is not None and age <= HERO_MAX_DAYS)
     trends = sorted((r for r in pool if trend_ok(r)),
@@ -199,8 +189,6 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
         age = age_days(row, now)
         return row["assignedCategory"] in ("tips", "health") and age is not None and age > EVERGREEN_FRESH_DAYS
 
-    # Tiers, in order, until the lane holds LANE_SIZE: (may this row run, given how many its
-    # source already has in the lane?)
     tiers = (lambda row, used: not old(row) and used < PER_SOURCE_PER_LANE,
              lambda row, used: not old(row),
              lambda row, used: True)
@@ -213,7 +201,7 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
                 if row["assignedCategory"] != lane or row["candidateId"] in chosen:
                     continue
                 if set(row.get("corroboratedBy") or []) & set(chosen):
-                    continue                      # the same story told by another outlet: one slot per topic
+                    continue
                 key = row.get("sourceName") or row.get("sourceId")
                 if not allowed(row, per_source.get(key, 0)):
                     continue
@@ -224,8 +212,6 @@ def build(rows: list[dict], *, date: str, generated_at: str, recent: set[str]) -
     featured = None
     if featured_row is not None:
         featured = dict(public_item(featured_row), category=featured_row["assignedCategory"], heroKind=hero_kind)
-    # The nominal "Daily 10:00 KST" schedule is no longer written: the scheduled run starts hours
-    # late, and the page shows generatedAt (schemas/magazine-edition.schema.json).
     edition = {"schemaVersion": 1, "date": date, "generatedAt": generated_at, "rules": RULES,
                "featured": featured, "lanes": lanes}
     return edition, chosen
@@ -257,7 +243,7 @@ def sanitize(edition: dict, withdrawn: frozenset = frozenset(), quiet: frozenset
         keep = {k: item[k] for k in ("title", "source", "url", "medium", "image", "category", "publishedAt",
                                      "discoveredAt", "sourceId", "candidateId", "imageSource", "summary",
                                      "heroKind", "trendEvidence") if k in item}
-        if "candidateId" not in item:        # built before provenance existed: its summary was generated
+        if "candidateId" not in item:
             keep.pop("summary", None)
         if item.get("sourceId") in quiet or not hosts.excerpt_allowed(item.get("url") or ""):
             for key in ("summary", "image", "imageSource"):

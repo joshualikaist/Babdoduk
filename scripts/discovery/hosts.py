@@ -50,8 +50,6 @@ NEWS_HOSTS = {
     "econovill.com": "이코노믹리뷰", "ekn.kr": "에너지경제", "consumernews.co.kr": "소비자가만드는신문",
     "fetv.co.kr": "FETV", "newsprime.co.kr": "프라임경제", "womaneconomy.co.kr": "여성경제신문",
 }
-# Korean news sites on the common CMS (articleView.html) that are not listed above are news, but
-# unknown publishers: Tier C, so they never lead the page or stand as habit/health evidence.
 NEWS_PATH = re.compile(r"/news/articleView\.html|/article/\d|/view/AKR|/news/\d{6,}", re.I)
 BLOG_HOSTS = {"blog.naver.com": "네이버 블로그", "m.blog.naver.com": "네이버 블로그", "post.naver.com": "네이버 포스트",
               "brunch.co.kr": "브런치", "tistory.com": "티스토리", "velog.io": "velog", "medium.com": "Medium"}
@@ -76,12 +74,9 @@ def _members(path: Path = MEMBERS) -> tuple[tuple[str, ...], tuple[str, ...]]:
 
 
 MEMBER_HOSTS, MEMBER_EXCEPT = _members()
-# Naver's terms forbid automated collection and search without permission, so open discovery never
-# reads a Naver page. A Naver blog is collected only through its owner's own RSS, registered with
-# the owner's permission (registry "permission"; decisions 3 and 4).
 NOT_COLLECTED_HOSTS = ("naver.com", "naver.me")
 NAVER_BLOG_FEEDS = ("blog.naver.com", "blog.rss.naver.com")
-TITLE_SUFFIX = re.compile(r"\s+(?:\||:|-|–|—)\s+([^|:\-–—]{2,24})\s*$")    # spaced: never "Stir-Fry"
+TITLE_SUFFIX = re.compile(r"\s+(?:\||:|-|–|—)\s+([^|:\-–—]{2,24})\s*$")
 
 
 def host_of(url: str) -> str:
@@ -149,7 +144,7 @@ def split_title(title: str) -> tuple[str, str]:
     """"Headline | 한국경제" -> ("Headline", "한국경제"); the suffix is the site's own name. A news
     CMS breadcrumb ("Headline < 유통 < 기사본문 - 신아일보") is dropped with it."""
     text = (title or "").strip().replace("｜", " | ")
-    wrapped = re.search(r"\s*::\s*([^:]{2,24}?)\s*::\s*$", text)       # "Headline :: 공감언론 뉴시스 ::"
+    wrapped = re.search(r"\s*::\s*([^:]{2,24}?)\s*::\s*$", text)
     if wrapped:
         return text[:wrapped.start()].strip(), wrapped.group(1).strip()
     if " < " in text:

@@ -41,19 +41,17 @@ APPROVALS = ROOT / "inputs" / "places" / "approvals.json"
 PUBLISHED = ROOT / "data" / "places" / "latest.json"
 CREDENTIALS = Path.home() / ".config" / "babdoduk" / "credentials"
 KEY_NAME = "DATA_GO_KR_KEY"
-KEY_FILE = "data-go-kr"     # the file inside the credentials folder, when credentials is a folder
+KEY_FILE = "data-go-kr"
 
 API = "https://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRectangle"
 SOURCE = {"name": "소상공인시장진흥공단 상가(상권)정보", "url": "https://www.data.go.kr/data/15012005/openapi.do",
           "terms": "공공데이터포털 표시: 이용허락범위 제한 없음, 무료"}
-# One rectangle around KAIST's main campus, 어은동 and 궁동 (WGS84). The 법정동 decides the area.
 BBOX = {"minx": 127.338, "miny": 36.352, "maxx": 127.376, "maxy": 36.382}
 AREA_OF_DONG = {"구성동": "kaist", "어은동": "eoeun", "궁동": "gung"}
 PAGE_ROWS = 1000
 MAX_PAGES = 20
-PAUSE = 0.5        # seconds between pages: a handful of calls per run, far under any daily limit
+PAUSE = 0.5
 
-# Cuisine from the store's category names (상권업종 중분류/소분류), first match wins.
 CUISINE_RULES = (
     ("cafe", ("비알코올", "카페", "커피")),
     ("snack", ("분식", "김밥", "만두", "떡볶이", "라면")),
@@ -84,8 +82,6 @@ def read_key(environ=None, credentials: Path | None = None) -> str | None:
     if value:
         return value
     path = CREDENTIALS if credentials is None else credentials
-    # On the ops PC ~/.config/babdoduk/credentials is a folder with one file per secret, so the key lives
-    # in credentials/data-go-kr, written either as DATA_GO_KR_KEY=... or as the key alone on one line.
     alone = path.is_dir()
     if alone:
         path = path / KEY_FILE

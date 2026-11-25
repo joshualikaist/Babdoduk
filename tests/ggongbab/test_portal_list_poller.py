@@ -490,7 +490,6 @@ def test_cli_missing_heartbeat_config_fails_before_handoff(monkeypatch):
 
 def test_cookie_rotation_and_ambiguity_never_send_extra_cookie(wire):
     client = PortalListClient(cookie())
-    # Model the cookie-jar result of a legitimate same-scope Set-Cookie rotation.
     client._session.cookies.set("JSESSIONID", "SYNTHETIC-ROTATED", domain="portal.kaist.ac.kr",
                                 path="/", secure=True)
     wire.reply()
@@ -593,7 +592,7 @@ def test_a_stale_connection_is_rebuilt_from_the_open_browser_without_sso(tmp_pat
     assert code == 0 and provider.acquire.call_count == 2 and stale.closed
     assert "PORTAL_LIST_SESSION_REBUILT" in logs and beats[-1]["status"] == "healthy"
     assert [b["status"] for b in beats] == ["collector_error", "collector_error", "healthy"]
-    assert state.data["initialized"] and state.data["notices"] == before["notices"]   # baseline kept
+    assert state.data["initialized"] and state.data["notices"] == before["notices"]
 
 
 def test_the_first_failure_after_a_sleep_rebuilds_at_once(tmp_path):
@@ -606,7 +605,7 @@ def test_the_first_failure_after_a_sleep_rebuilds_at_once(tmp_path):
     class SleptThrough(Flaky):
         def fetch_list_page(self, index):
             self.calls += 1
-            if self.calls >= 2:            # works before the sleep, fails after it
+            if self.calls >= 2:
                 raise ListTransportError(reason="PORTAL_LIST_CONNECTION_ERROR")
             return page([])
 

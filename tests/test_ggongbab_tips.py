@@ -11,9 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SQL = (ROOT / "supabase/migrations/008_ggongbab_tips.sql").read_text(encoding="utf-8")
 REPORTS = (ROOT / "supabase/migrations/009_ggongbab_tip_reports.sql").read_text(encoding="utf-8")
 JS = (ROOT / "js/ggongbab-tips.js").read_text(encoding="utf-8")
-PAGE = unstamped((ROOT / "tip.html").read_text(encoding="utf-8"))   # without its ?v= content stamps
+PAGE = unstamped((ROOT / "tip.html").read_text(encoding="utf-8"))
 TABLES = ("ggongbab_tips", "ggongbab_tip_board", "ggongbab_tip_secret", "ggongbab_tip_rate")
-# The Supabase client build the tip page loads (the public feed on lab pins the same one).
 SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"
 SDK_INTEGRITY = "sha384-iLddHTLokph6Omwoyid4XKxHaWa6w41BnoEj0q5oOrzmYPpHIKt1wyjReA7s//pP"
 
@@ -35,7 +34,7 @@ def test_every_table_has_row_level_security_and_browsers_only_read_the_board():
     browser = [(what, table) for what, table, who in grants if "anon" in who or "authenticated" in who]
     assert browser == [("select", "ggongbab_tip_board")]
     assert ("select, update", "ggongbab_tips", "service_role") in grants
-    assert not statement(r"grant [^;]* on table public\.ggongbab_tip_(secret|rate)")       # never readable
+    assert not statement(r"grant [^;]* on table public\.ggongbab_tip_(secret|rate)")
     policies = statement(r"create policy (\w+) on public\.(\w+) for (\w+) to ([a-z_, ]+) using")
     assert policies == [("ggongbab_tip_board_read", "ggongbab_tip_board", "select", "anon, authenticated")]
 
@@ -49,7 +48,6 @@ def test_the_stored_columns_are_the_contract_and_the_board_holds_no_private_fiel
     assert found["ggongbab_tip_rate"] == ["client_hash", "window_start", "tips"]
     assert "status text not null default 'new' check (status in ('new', 'accepted', 'rejected'))" in SQL
     assert "id uuid primary key references public.ggongbab_tips (id) on delete cascade" in SQL
-    # The address only ever enters a salted digest with the Korean date; only the digest is stored.
     assert "extensions.digest((select salt from public.ggongbab_tip_secret) || today::text || forwarded" in SQL
     assert "values (client, date_trunc('hour', now()), 1)" in SQL
 
@@ -92,7 +90,6 @@ def test_photos_go_to_a_private_bucket_insert_only_for_a_fresh_tip():
     assert r"'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[123]\.(jpg|png|webp)$'" in check
     assert "t.status = 'new'" in check and "t.created_at > now() - interval '15 minutes'" in check
     assert "o.bucket_id = 'ggongbab-tip-images' and o.name like folder || '/%') < 3;" in check
-    # The name is checked before it is cast, so a bad name is refused rather than an error.
     assert check.index("return false;") < check.index("folder::uuid")
 
 
@@ -100,7 +97,7 @@ def test_the_page_script_uses_only_the_public_paths():
     for forbidden in ("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY", "service_role", "ggongbab_tips'",
                       ".innerHTML", "eval(", "getPublicUrl", "createSignedUrl"):
         assert forbidden not in JS, forbidden
-    assert re.findall(r"storage\.from\(BUCKET\)\.(\w+)\(", JS) == ["upload"]     # never read, list or remove photos
+    assert re.findall(r"storage\.from\(BUCKET\)\.(\w+)\(", JS) == ["upload"]
     assert re.findall(r"var (SUBMIT|BOARD|BUCKET) = '([^']+)'", JS) == [
         ("SUBMIT", "ggongbab_submit_report"), ("BOARD", "ggongbab_tip_board"), ("BUCKET", "ggongbab-tip-images")]
     assert re.findall(r"\.rpc\(([^,]+),", JS) == ["SUBMIT"]
@@ -109,7 +106,6 @@ def test_the_page_script_uses_only_the_public_paths():
     assert "upsert: false" in JS
     board = re.search(r"var BOARD_COLUMNS = '([^']+)'", JS)[1].split(",")
     assert board == columns()["ggongbab_tip_board"]
-    # A pinned client build with its integrity hash; where the public feed exists (lab), the same build.
     assert re.search(r"var SDK_URL = '([^']+)'", JS)[1] == SDK_URL
     assert re.search(r"var SDK_INTEGRITY = '(sha384-[^']+)'", JS)[1] == SDK_INTEGRITY
     feed = ROOT / "js/ggongbab-public-feed.js"
@@ -117,7 +113,6 @@ def test_the_page_script_uses_only_the_public_paths():
         feed = feed.read_text(encoding="utf-8")
         assert re.search(r"var SDK_URL = '([^']+)'", feed)[1] == SDK_URL
         assert re.search(r"script\.integrity = '(sha384-[^']+)'", feed)[1] == SDK_INTEGRITY
-    # The page limits match the report function's: words (2-1000 characters) or a photo, at most three.
     assert "var MIN_TEXT = 2;" in JS and "var MAX_TEXT = 1000;" in JS
     assert "c.rpc(SUBMIT, { p_text: v.text, p_photos: photos.length, p_hp: v.hp })" in JS
     assert "var MAX_PHOTOS = 3;" in JS and "var MAX_BYTES = 5 * 1024 * 1024;" in JS
@@ -128,8 +123,7 @@ def test_the_page_is_not_indexed_and_never_republishes_photos():
     assert PAGE.index('<script src="js/ggongbab-public-config.js"></script>') < PAGE.index('<script src="js/ggongbab-tips.js"></script>')
     assert 'id="tipHp"' in PAGE and 'tabindex="-1"' in PAGE
     assert 'accept="image/jpeg,image/png,image/webp"' in PAGE
-    # The board renders text facts only: no image element is ever built from a row.
-    assert "createElement('img')" in JS and JS.count("createElement('img')") == 1     # the local preview only
+    assert "createElement('img')" in JS and JS.count("createElement('img')") == 1
     assert "img.src = photo.url;" in JS
 
 
@@ -139,9 +133,8 @@ def test_reports_widen_nothing_for_browsers_and_keep_every_limit():
     for column in ("title", "place", "event_date"):
         assert f"alter table public.ggongbab_tips alter column {column} drop not null;" in REPORTS
     assert "alter table public.ggongbab_tips add column if not exists classified_at timestamptz;" in REPORTS
-    # No grant, policy or table for browsers beyond the one checking function.
     assert not re.search(r"grant [^;]* on table", REPORTS) and "create policy" not in REPORTS
-    assert "create table" not in REPORTS and "drop function" not in REPORTS          # 008's function stays
+    assert "create table" not in REPORTS and "drop function" not in REPORTS
     assert re.findall(r"create or replace function public\.(\w+)\(", REPORTS) == ["ggongbab_submit_report"]
     assert "returns uuid language plpgsql security definer set search_path = pg_catalog, public" in REPORTS
     assert "revoke all on function public.ggongbab_submit_report(text, integer, text) from public;" in REPORTS
@@ -152,7 +145,6 @@ def test_reports_widen_nothing_for_browsers_and_keep_every_limit():
     assert honeypot < body.index("raise exception 'TIP_INVALID'") < body.index("insert into public.ggongbab_tip_rate")
     assert ("if char_length(v_text) > 1000 or p_photos is null or p_photos not between 0 and 3\n"
             "     or (char_length(v_text) < 2 and p_photos < 1) then") in body
-    # The same address digest and limits as ggongbab_submit_tip, word for word.
     limits = SQL[SQL.index("  forwarded := btrim("):SQL.index("  insert into public.ggongbab_tips (title")]
     assert limits in body
     assert "insert into public.ggongbab_tips (details, client_hash)\n    values (v_text, client)" in body

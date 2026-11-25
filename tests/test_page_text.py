@@ -32,7 +32,6 @@ def test_every_kind_of_change_is_reported():
     assert page_text.compare(before, changed(description="")) != []
     names = page_text.compare(before, changed(names=["a[aria-label]=처음으로", "img[alt]=로고"]))
     assert names == ["== index.html|ko accessible names", "-a[aria-label]=홈", "+a[aria-label]=처음으로"]
-    # A page that appears or disappears is a change too.
     assert page_text.compare(before, {}) == ["== index.html|ko: only in before"]
     assert page_text.compare({}, before) == ["== index.html|ko: only in after"]
 

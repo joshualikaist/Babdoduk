@@ -33,7 +33,6 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(chrome, "LABELS", tmp_path / "data/content/labels.json")
     monkeypatch.setattr(chrome, "I18N", tmp_path / "i18n")
     assert chrome.main(["--check"]) == 0
-    # A translation is written once, in i18n/: an edit there reaches every page that shows it.
     english = json.loads((tmp_path / "i18n/en.json").read_text(encoding="utf-8"))
     english["footer.contact"] = "Get in touch"
     (tmp_path / "i18n/en.json").write_text(json.dumps(english, ensure_ascii=False), encoding="utf-8")
@@ -41,7 +40,6 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0
     for page in chrome.PAGES:
         assert "'footer.contact': 'Get in touch'," in (tmp_path / page).read_text(encoding="utf-8"), page
-    # A label is named in one place: an edit there fails the check until the pages are rewritten.
     labels = json.loads((tmp_path / "data/content/labels.json").read_text(encoding="utf-8"))
     labels["freeFood"]["lunchbox"]["en"] = "Packed lunch"
     labels["cuisines"]["byGroup"]["mexican"] = "멕시칸"
@@ -58,7 +56,7 @@ def test_a_drifted_page_fails_the_check(tmp_path, monkeypatch, capsys):
     page.write_text(drifted, encoding="utf-8")
     assert chrome.main(["--check"]) == 1
     assert "event.html" in capsys.readouterr().out
-    assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0  # rewriting restores the shared copy
+    assert chrome.main([]) == 0 and chrome.main(["--check"]) == 0
 
 
 def test_a_changed_file_gets_a_new_address(tmp_path, monkeypatch, capsys):
@@ -80,7 +78,6 @@ def test_a_changed_file_gets_a_new_address(tmp_path, monkeypatch, capsys):
     def read(path):
         return (tmp_path / path).read_text(encoding="utf-8")
 
-    # A stylesheet: every page that links it moves to the new address.
     old = stamp_of("css/site.css")
     with open(tmp_path / "css/site.css", "a", encoding="utf-8") as css:
         css.write("\n/* changed */\n")
@@ -90,7 +87,6 @@ def test_a_changed_file_gets_a_new_address(tmp_path, monkeypatch, capsys):
     assert new != old
     for page in chrome.PAGES:
         assert f'href="css/site.css?v={new}"' in read(page) and f"css/site.css?v={old}" not in read(page), page
-    # A module two imports deep: its importer, that one's importer and the home page all move.
     before = {path: stamp_of(path) for path in ("js/campus-map.js", "js/home-map.js")}
     with open(tmp_path / "js/campus-place.js", "a", encoding="utf-8") as js:
         js.write("\n// changed\n")
@@ -100,7 +96,6 @@ def test_a_changed_file_gets_a_new_address(tmp_path, monkeypatch, capsys):
     assert f"'./campus-map.js?v={stamp_of('js/campus-map.js')}'" in read("js/home-map.js")
     assert f'src="js/home-map.js?v={stamp_of("js/home-map.js")}"' in read("index.html")
     assert all(stamp_of(path) != stamp for path, stamp in before.items())
-    # A page script loaded by name (event.html's world cup) carries its stamp too.
     assert f"'js/worldcup.js?v={stamp_of('js/worldcup.js')}'" in read("event.html")
 
 
@@ -109,11 +104,7 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
         html = (ROOT / page).read_text(encoding="utf-8")
         nav = html[html.index('<header class="site-nav"'):html.index("</header>")]
         footer = html[html.index('<footer class="site-footer"'):html.index("</footer>")]
-        # 오늘 뭐 먹지 is a direct destination and the magazine sits in the More menu (owner 2026-11-04);
-        # no Food Log in the chrome.
         assert 'href="choose.html"' in nav and 'href="mukbang.html"' in nav, page
-        # The footer lists every public page in four groups (owner 2026-11-18: "너무 간추렸잖아.
-        # 필요한거는 넣어야지"), including the top menu's direct ones; never a lab-only page.
         direct = re.findall(r'class="site-nav-direct[^"]*" href="([^"]+)"', nav)
         links = re.findall(r'<a href="([^"]+)"', footer)
         assert all(href in links for href in direct), page
@@ -125,7 +116,6 @@ def test_nav_and_footer_work_without_javascript_and_mark_one_current_page():
             assert gone not in nav and gone not in footer, (page, gone)
         current = re.findall(r'href="([^"]+)" aria-current="page"', nav)
         assert current == ([config["current"]] if config["current"] else []), (page, current)
-        # Who runs it and where the listings come from (owner 2026-11-18).
         assert re.search(r'<p data-i18n="footer.unofficial">[^<]+</p>', footer), page
         assert re.search(r'<p data-i18n="footer.sources">[^<]+</p>', footer), page
     assert "<script" not in (ROOT / "shared/nav.html").read_text(encoding="utf-8")
@@ -140,7 +130,7 @@ def test_the_contact_label_is_a_chrome_string_in_both_languages():
         ko, en = html[html.index("ko: {"):html.index("en: {")], html[html.index("en: {"):]
         assert "'footer.contact': '문의'," in ko and "'footer.contact': 'Contact'," in en, page
         english = en[:en.index("\n      }")]
-        assert "문의" not in english, page  # the English table never shows the Korean label
+        assert "문의" not in english, page
 
 
 def test_every_pull_request_runs_the_tests_and_the_content_validator():
@@ -149,10 +139,8 @@ def test_every_pull_request_runs_the_tests_and_the_content_validator():
     for step in ("python -m pytest tests -q", "python scripts/validate_content.py",
                  "python scripts/sync_site_chrome.py --check"):
         assert f"run: {step}\n" in workflow, step
-    # Content-bot data pushes do not run it; a code push to any working branch does.
     assert "paths-ignore:\n      - 'data/**'\n      - 'research/**'" in workflow
     assert "permissions:\n  contents: read" in workflow and "secrets." not in workflow and "schedule:" not in workflow
-    # Only the screenshot comparison is left to ui-guardian, by name; nothing else is skipped.
     assert "BABDODUK_CHROME_VISUAL: skip" in workflow and "--deselect" not in workflow and " -k " not in workflow
     for forbidden in ("--update-chrome-baselines", "--adopt-chrome-baselines", "--approval", "git push", "vercel"):
         assert forbidden not in workflow, forbidden
@@ -168,8 +156,8 @@ def test_ci_runs_the_structural_and_the_visual_guardian_and_never_rebaselines():
     assert "if: failure()" in workflow and "path: .local/visual-diff/" in workflow
     for path in ("'**.html'", "'css/**'", "'js/**'", "'shared/**'", "'scripts/check_site_ui.py'",
                  "'scripts/sync_site_chrome.py'", "'tests/visual/chrome/**'", "'.github/workflows/ui-guardian.yml'"):
-        assert workflow.count(path) == 2, path  # push and pull_request
-    assert "data/" not in workflow  # generated-data bot pushes do not run the browser job
+        assert workflow.count(path) == 2, path
+    assert "data/" not in workflow
     assert "permissions:\n  contents: read" in workflow and "secrets." not in workflow and "schedule:" not in workflow
     for forbidden in ("--update-chrome-baselines", "--adopt-chrome-baselines", "--approval"):
         assert forbidden not in workflow, forbidden
@@ -252,7 +240,7 @@ def test_a_tree_without_the_lab_only_feed_still_syncs(tmp_path, monkeypatch):
         (tmp_path / page).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / page, tmp_path / page)
     copy_stamped_files(tmp_path)
-    (tmp_path / "js/ggongbab-public-feed.js").unlink(missing_ok=True)        # as on main
+    (tmp_path / "js/ggongbab-public-feed.js").unlink(missing_ok=True)
     for name, value in (("ROOT", tmp_path), ("SHARED", tmp_path / "shared"), ("I18N", tmp_path / "i18n"),
                         ("LABELS", tmp_path / "data/content/labels.json")):
         if hasattr(chrome, name):

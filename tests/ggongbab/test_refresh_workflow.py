@@ -74,7 +74,6 @@ def test_schedule_runs_every_30_minutes_as_a_full_refresh():
     code = "\n".join(line for line in _text().splitlines() if not line.lstrip().startswith("#"))
     assert re.findall(r"(?m)^\s*- cron:\s*'([^']+)'", code) == ["7,37 * * * *"]
     assert re.search(r"(?m)^\s*schedule:\s*$", code) and re.search(r"(?m)^\s*workflow_dispatch:\s*$", code)
-    # A scheduled run has no inputs; it must fall back to full, never to a diagnostic mode.
     assert re.search(r"(?m)^\s*MODE:\s*\$\{\{\s*github\.event\.inputs\.mode \|\| 'full'\s*\}\}\s*$", code)
 
 
@@ -150,7 +149,7 @@ def test_preflight_requires_what_each_mode_uses_and_sees_no_secret_value():
     expressions = re.findall(r"\$\{\{(.*?)\}\}", block)
     assert expressions
     for expr in expressions:
-        if expr.strip() == "vars.GGONGBAB_ENVIRONMENT":     # the environment marker, not a secret
+        if expr.strip() == "vars.GGONGBAB_ENVIRONMENT":
             continue
         assert re.fullmatch(r"\s*secrets\.\w+ != ''(\s*\|\|\s*secrets\.\w+ != '')*\s*", expr), expr
 
@@ -200,7 +199,7 @@ def test_dispatch_source_is_a_logged_choice_and_never_changes_the_mode():
     assert {line.strip()[2:] for line in source.splitlines() if line.strip().startswith("- ")} == {"manual", "radar"}
     assert "TRIGGER: ${{ github.event.inputs.source || github.event_name }}" in text
     assert 'echo "trigger: $TRIGGER"' in text
-    assert "${{ github.event.inputs.source" not in text.split("steps:", 1)[1]  # env only, never inlined into run
+    assert "${{ github.event.inputs.source" not in text.split("steps:", 1)[1]
 
 
 def test_the_collector_watch_runs_after_failures_and_keeps_secrets_in_env():
@@ -244,7 +243,7 @@ def test_each_job_validates_only_the_families_it_publishes():
     step = content[content.index("- name: Validate generated JSON"):content.index("- name: Publish generated data")]
     assert "families+=(magazine)" in step and "families+=(kaist-menu)" in step
     assert 'python scripts/validate_content.py --only "${families[@]}"' in step
-    assert "pydantic" not in content            # the content job no longer imports ggongbab news
+    assert "pydantic" not in content
 
 
 def _crons(path: Path) -> list[str]:

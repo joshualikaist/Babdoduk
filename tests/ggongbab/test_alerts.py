@@ -45,7 +45,7 @@ def test_a_portal_tab_without_a_usable_login_asks_for_a_login(code):
                                  enabled=True, now=NOW)
     assert (portal.severity, portal.reason, portal.action) == ("critical", "AUTH_EXPIRED", "login")
     from ggongbab.ops_policy import LOGIN
-    assert set(alerts.PORTAL_HUMAN) & LOGIN == LOGIN    # every login latch is reported as a login
+    assert set(alerts.PORTAL_HUMAN) & LOGIN == LOGIN
 
 
 def test_a_disabled_unread_radar_is_critical():
@@ -76,7 +76,7 @@ def test_the_watchdogs_own_login_latch_asks_for_a_login_not_a_restart(tmp_path):
     atomic_json(local / "ops-watchdog.json", {"launches": 1, "recoveries": 0, "retry_at": 0, "latched": "",
                                               "resume": 1, "launched_at": 1})
     [portal] = alerts.evaluate(local, portal_running=False, radar_running=False, now=NOW)
-    assert portal.reason == "WORKER_NOT_RUNNING"                      # a plain stop is still a stop
+    assert portal.reason == "WORKER_NOT_RUNNING"
 
 
 def test_flash_candidates_waiting_more_than_ten_minutes_alert_until_dispatched():
@@ -108,7 +108,7 @@ def test_evaluate_reads_only_operational_files_and_emits_only_the_fixed_fields(t
     payload = alerts.FileSink(local).emit(found)
     assert payload["worst"] == "warning" and all(set(row) == FIELDS for row in payload["alerts"])
     again = alerts.FileSink(local).emit(found)
-    assert len(again["history"]) == 3            # transitions only, not every tick
+    assert len(again["history"]) == 3
     assert all(set(row) == FIELDS for row in again["history"])
 
 
@@ -118,12 +118,12 @@ def test_the_alert_file_stays_readable_and_recovers_from_an_oversized_one(tmp_pa
     from ggongbab.ops_storage import read_json
     sink = alerts.FileSink(tmp_path)
     reasons = ["SCAN_DELAYED", "SCAN_STALE", "OK", "WORKER_NOT_RUNNING", "AUTH_EXPIRED"]
-    for n in range(400):                         # many transitions: each emit changes the alert
+    for n in range(400):
         sink.emit([alerts.Alert.of("portal", reasons[n % len(reasons)], n, NOW + n)])
     assert (tmp_path / "ops-alerts.json").stat().st_size <= alerts.MAX_SINK_BYTES
-    assert read_json(tmp_path / "ops-alerts.json", {})["history"]          # still readable, still kept
+    assert read_json(tmp_path / "ops-alerts.json", {})["history"]
     (tmp_path / "ops-alerts.json").write_text('{"alerts": [], "history": [' + '{"x": 1},' * 3000 + '{}]}',
-                                              encoding="utf-8")                # the oversized file of 10-12
+                                              encoding="utf-8")
     payload = sink.emit([alerts.Alert.of("portal", "AUTH_EXPIRED", 5, NOW)])
     assert payload["alerts"][0]["reason"] == "AUTH_EXPIRED" and len(payload["history"]) == 1
     assert read_json(tmp_path / "ops-alerts.json", {})["worst"] == "critical"
@@ -156,11 +156,11 @@ def test_a_just_started_worker_is_judged_from_its_start_not_from_an_old_success(
     critical SCAN_STALE that popped a toast after the login had worked."""
     runtime = {"last_success": NOW - 20389, "started": NOW - 15, "manual_reason": "", "reason": "WORKER_STARTING"}
     a = alerts.portal_alert(runtime, running=True, enabled=True, now=NOW)
-    assert (a.severity, a.reason) == ("healthy", "OK") and a.last_success_age_seconds == 20389   # true age shown
+    assert (a.severity, a.reason) == ("healthy", "OK") and a.last_success_age_seconds == 20389
     late = alerts.portal_alert(dict(runtime, started=NOW - 250), running=True, enabled=True, now=NOW)
     assert (late.severity, late.reason) == ("warning", "SCAN_DELAYED")
     stuck = alerts.portal_alert(dict(runtime, started=NOW - 700), running=True, enabled=True, now=NOW)
-    assert (stuck.severity, stuck.reason) == ("critical", "SCAN_STALE")        # still no success: a real alarm
+    assert (stuck.severity, stuck.reason) == ("critical", "SCAN_STALE")
     radar = alerts.radar_alert({"last_success": NOW - 9000, "started": NOW - 30, "reason": "DOORAY_RADAR_RUNNING"},
                                running=True, enabled=True, unread_disabled=False, now=NOW)
     assert radar.severity == "healthy"
@@ -172,10 +172,10 @@ def test_a_start_time_never_hides_a_worker_that_is_not_running():
     assert (a.severity, a.reason) == ("critical", "WORKER_NOT_RUNNING")
     a = alerts.portal_alert({"last_success": None, "started": NOW - 5, "manual_reason": ""}, running=True,
                             enabled=True, now=NOW)
-    assert (a.severity, a.reason) == ("healthy", "OK")        # first start: its first scan is not yet due
+    assert (a.severity, a.reason) == ("healthy", "OK")
     a = alerts.portal_alert({"last_success": None, "started": NOW - 5, "manual_reason": ""}, running=False,
                             enabled=True, now=NOW)
-    assert (a.severity, a.reason) == ("critical", "WORKER_NOT_RUNNING")      # a dead worker's start is no proof
+    assert (a.severity, a.reason) == ("critical", "WORKER_NOT_RUNNING")
 
 
 @pytest.mark.parametrize("code", sorted(alerts.NETWORK_REASONS))
@@ -198,7 +198,7 @@ def test_only_network_codes_get_the_network_grace_and_a_dead_worker_never_does()
     assert dead.reason == "WORKER_NOT_RUNNING"
     login = alerts.portal_alert(dict(base, reason="PORTAL_LIST_CONNECTION_ERROR",
                                      manual_reason="PORTAL_LIST_AUTH_REQUIRED"), running=True, enabled=True, now=NOW)
-    assert login.reason == "AUTH_EXPIRED"                    # a real expiry is never softened
+    assert login.reason == "AUTH_EXPIRED"
 
 
 def test_network_unstable_is_a_known_reason_with_text_in_every_channel():

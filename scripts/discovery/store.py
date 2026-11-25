@@ -46,16 +46,13 @@ from .evidence import TREND_MAX_DAYS, food_story
 RETAIN_DAYS = 90
 MAX_CANDIDATES = 4000
 LIVE_DAYS = 14
-FINGERPRINT_DAYS = 7                 # 92% of re-sightings came within a week (2026-10-11)
+FINGERPRINT_DAYS = 7
 ANCHOR_DAYS = 30
-# YouTube API Services Developer Policies III.E.4: data from the API is kept at most 30 days, then
-# refreshed or deleted. A run that gets the video from the API again refreshes it (lastSeenAt).
 YOUTUBE_DAYS = 30
 FINGERPRINT = ("candidateId", "sourceId", "sourceUrl", "title", "discoveryMethod", "discoveryQuery", "discoveryLane",
                "discoveredAt", "discoveredSeq", "lastSeenAt", "rejectionReason", "duplicateOf")
 ANCHOR = FINGERPRINT + ("canonicalUrl", "canonicalHash", "sourceItemId", "contentHash", "publishedAt",
                         "assignedCategory", "selected", "selectedAt", "selectedFor")
-# What a compact row keeps when an adapter returns its item again and it is rebuilt.
 HISTORY = ("discoveredAt", "discoveredSeq", "selected", "selectedAt", "selectedFor")
 FIELDS = ("candidateId", "sourceId", "sourceName", "sourceType", "sourceUrl", "canonicalUrl", "title",
           "sourceExcerpt", "publishedAt", "discoveredAt", "lastSeenAt", "imageUrl", "imageSource",
@@ -63,14 +60,11 @@ FIELDS = ("candidateId", "sourceId", "sourceName", "sourceType", "sourceUrl", "c
           "contentHash", "canonicalHash", "sourceItemId", "duplicateOf", "qualityScore", "freshnessScore",
           "sourceScore", "relevanceScore", "score", "selected", "selectedAt", "rejectionReason", "medium",
           "trustTier", "seenVia", "textLength", "discoveredSeq", "selectedFor",
-          # provenance and evidence (owner decision, 2026-09-29)
           "discoveryLane", "seenQueries", "searchRank", "sourceTrust", "contentKind", "publishedAtSource",
           "trendSignals", "trendEvidence", "trendEvidenceDetail", "corroboratedBy", "habitSignals",
           "audienceRelevance", "audienceScore", "laneDecisions", "viewCount", "likeCount", "requireFood",
           "commercePage", "sponsored", "howToMarkers", "trendEvidenceIndependent", "excerptAllowed")
 MAX_QUERIES = 8
-# In memory only: the source's own text and what quotes it, read again from the source on every
-# run that lists the item ("fresh" marks a row read in this run).
 TRANSIENT = ("sourceExcerpt", "trendEvidenceDetail", "fresh")
 
 
@@ -109,15 +103,14 @@ def stays_whole(row: dict, now: datetime) -> bool:
     if row.get("selected"):
         selected = row.get("selectedAt") or row.get("lastSeenAt")
         if days_since(selected, now) <= 1:
-            return True                                # a rebuild of its edition needs it whole
+            return True
         recent = min(days_since(row.get("lastSeenAt"), now), days_since(selected, now)) <= LIVE_DAYS
         return recent and can_corroborate(row, now)
     if row.get("duplicateOf"):
         return False
     reason = row.get("rejectionReason")
     if reason is None:
-        return True                                    # qualifying: tomorrow's edition can still run it
-    # Only the lane rules are left to pass, and a corroborating story can still make it a trend.
+        return True
     return reason == "NO_QUALIFYING_LANE" and days_since(row.get("lastSeenAt"), now) <= LIVE_DAYS and \
         can_corroborate(row, now)
 
@@ -137,7 +130,7 @@ def youtube_row(row: dict) -> bool:
 
 def expired(row: dict, now: datetime) -> bool:
     if youtube_row(row) and days_since(row.get("lastSeenAt"), now) > YOUTUBE_DAYS:
-        return True                          # published or not: not refreshed within 30 days
+        return True
     if row.get("selected"):
         return bool(row.get("compact")) and days_since(row.get("selectedAt") or row.get("lastSeenAt"), now) > ANCHOR_DAYS
     limit = FINGERPRINT_DAYS if row.get("compact") else RETAIN_DAYS
@@ -173,8 +166,6 @@ class CandidateStore:
             row.update(candidateId=cid, discoveredAt=iso(now), lastSeenAt=iso(now), selected=False,
                        selectedAt=None, duplicateOf=None, rejectionReason=None, seenVia=[route],
                        discoveredSeq=seq, seenQueries=[raw["discoveryQuery"]] if raw.get("discoveryQuery") else [])
-            # A compact row seen again is rebuilt whole from this sighting and judged again; it
-            # keeps when it was first discovered and whether it already ran.
             row.update(history or {})
             row["fresh"] = True
             self.rows[cid] = row
@@ -185,9 +176,6 @@ class CandidateStore:
         query = raw.get("discoveryQuery")
         if query and query not in (row.get("seenQueries") or []):
             row["seenQueries"] = ((row.get("seenQueries") or []) + [query])[-MAX_QUERIES:]
-        # A row stored without its text (TRANSIENT) gets it back from its own route and is judged
-        # again in full. Another route's text is not its text: the row keeps its stored decision
-        # and this sighting only adds evidence.
         first_route = (row.get("seenVia") or [route])[0] == route
         held = not row.get("fresh") and not row.get("sourceExcerpt")
         foreign = held and not first_route
@@ -197,9 +185,6 @@ class CandidateStore:
                         "contentKind", "requireFood"):
                 if raw.get(key) and not row.get(key):
                     row[key] = raw[key]
-        # The first route re-reading the same text (or more) refreshes what is derived from it -
-        # evidence, kind, tier, a cleaned title - so a rule change applies. Another route only adds
-        # evidence and never rewrites the first discovery's title, source, tier or kind.
         refresh = not foreign and (held or (first_route and (raw.get("textLength") or 0) >= (row.get("textLength") or 0)))
         if refresh:
             row["textLength"] = raw.get("textLength") or 0
@@ -234,7 +219,7 @@ class CandidateStore:
         rows = [r for r in rows if not expired(r, now)]
         for row in rows:
             if not row.get("compact") and not can_corroborate(row, now):
-                row.pop("textWords", None)          # only corroboration reads a stored row's words
+                row.pop("textWords", None)
         published = [r for r in rows if r.get("selected")]
         others = sorted((r for r in rows if not r.get("selected")), key=lambda r: r.get("lastSeenAt") or "",
                         reverse=True)[:MAX_CANDIDATES]

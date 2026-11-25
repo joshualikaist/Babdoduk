@@ -9,7 +9,7 @@ import pytest
 
 from ggongbab import dispatch
 
-T0 = 1_790_570_000.0          # a fixed clock
+T0 = 1_790_570_000.0
 TOKEN = "github_pat_" + "S" * 60
 
 
@@ -76,8 +76,8 @@ def test_a_second_candidate_inside_the_window_waits_and_the_next_cycle_sends_it(
     opener = Opener()
     assert call(tmp_path, opener, now=T0) == dispatch.DISPATCHED
     assert call(tmp_path, opener, now=T0 + 120) == dispatch.DEBOUNCED
-    assert call(tmp_path, opener, new=False, now=T0 + 200) == dispatch.DEBOUNCED   # still pending
-    assert call(tmp_path, opener, new=False, now=T0 + 301) == dispatch.DISPATCHED  # pending, window over
+    assert call(tmp_path, opener, new=False, now=T0 + 200) == dispatch.DEBOUNCED
+    assert call(tmp_path, opener, new=False, now=T0 + 301) == dispatch.DISPATCHED
     assert call(tmp_path, opener, new=False, now=T0 + 700) == dispatch.NOTHING_NEW
     assert len(opener.requests) == 2
 
@@ -139,7 +139,7 @@ def test_the_default_token_comes_from_the_operators_0600_file(tmp_path, monkeypa
     assert stored.stat().st_mode & 0o777 == 0o600
     assert dispatch.request_refresh(state, new_candidates=False, now=T0 + 1, opener=opener) == dispatch.DISPATCHED
     assert opener.requests[0]["auth"] == f"Bearer {TOKEN}" and TOKEN not in state.read_text()
-    os.chmod(stored, 0o644)                                   # readable by others: refused, as if absent
+    os.chmod(stored, 0o644)
     assert dispatch.read_token() is None
 
 
@@ -160,7 +160,7 @@ def test_the_operator_command_stores_reports_and_removes_without_printing_the_to
     out = capsys.readouterr().out
     assert "token stored     : yes" in out and TOKEN not in out and str(tmp_path / "config") in out
     monkeypatch.setattr(cli.getpass, "getpass", lambda prompt="": "not-a-token")
-    assert cli.main(["--store-token"]) == 1 and dispatch.read_token() == TOKEN   # a bad paste changes nothing
+    assert cli.main(["--store-token"]) == 1 and dispatch.read_token() == TOKEN
     assert cli.main(["--remove-token"]) == 0 and dispatch.read_token() is None
     assert TOKEN not in capsys.readouterr().out
 
@@ -173,7 +173,7 @@ def test_keepalive_refreshes_after_half_an_hour_without_a_dispatch(tmp_path):
     def quiet(now, keepalive=True):
         return dispatch.request_refresh(state, new_candidates=False, now=now, keepalive=keepalive,
                                         token_provider=lambda: TOKEN, opener=opener)
-    assert quiet(T0) == dispatch.DISPATCHED                       # never dispatched before
+    assert quiet(T0) == dispatch.DISPATCHED
     assert quiet(T0 + 60) == dispatch.NOTHING_NEW
     assert quiet(T0 + dispatch.KEEPALIVE_SECONDS - 1) == dispatch.NOTHING_NEW
     assert quiet(T0 + dispatch.KEEPALIVE_SECONDS, keepalive=False) == dispatch.NOTHING_NEW

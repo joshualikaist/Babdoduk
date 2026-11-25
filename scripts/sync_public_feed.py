@@ -37,7 +37,6 @@ def main(*, settings=None, repo=None, now=None) -> int:
     try:
         payload = sync_public_feed(repo, settings, now)
     except PublicFeedError as exc:
-        # Value-free: the code says which half failed; the projection keeps its previous generation.
         print(f"[error] public feed synchronization failed ({exc}); the published snapshot stands")
         return EXIT_SYNC
     print(f"public feed synchronized events={payload['count']}")

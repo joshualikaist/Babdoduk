@@ -37,7 +37,7 @@ LIGHT_SIZE = 2048
 POSTER = (1200, 750)
 OUT.mkdir(parents=True, exist_ok=True)
 scene = bpy.context.scene
-ns = bpy.app.driver_namespace["campus"]          # left by build_model.py: palette, trees, sun, camera
+ns = bpy.app.driver_namespace["campus"]
 
 
 def to_web(x, y, z):
@@ -88,7 +88,6 @@ def join(names, into):
     return ob
 
 
-# Buildings carry their row in the table, so the browser can colour today's.
 for ob in scene.objects:
     if ob.type == "MESH" and is_building(ob.name):
         code = ob.name.split("_", 1)[1]
@@ -99,7 +98,6 @@ units = join(["Cube"], "units")
 landmarks = join(["lm_"], "landmarks")
 ground = join(["base", "parking", "track", "pitch", "grass", "wood", "water", "roads", "paths"], "ground")
 
-# The island's sides leave the ground mesh: they take no top-down light.
 side_mat = bpy.data.materials.new("island_side")
 ground.data.materials.append(side_mat)
 side_index = len(ground.data.materials) - 1
@@ -121,12 +119,10 @@ bpy.ops.object.mode_set(mode="OBJECT")
 sides = next(o for o in scene.objects if o.name.startswith("ground") and o is not ground)
 sides.name = "island_sides"
 ground.data.materials.pop(index=side_index)
-# Faces that look down or sideways (slab bottoms, the island's underside) are never seen from above.
 bm = bmesh.new(); bm.from_mesh(ground.data)
 bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.normal.z < 0.5], context="FACES")
 bm.to_mesh(ground.data); bm.free()
 
-# Top-down UV over the island's square: the lightmap's frame.
 xs = [v.co.x for v in ground.data.vertices]; ys = [v.co.y for v in ground.data.vertices]
 x0, y0 = min(xs), min(ys)
 span = max(max(xs) - x0, max(ys) - y0)
@@ -137,9 +133,6 @@ for loop in ground.data.loops:
     uv.data[loop.index].uv = ((co.x - x0) / span, (co.y - y0) / span)
 
 # --- 3. bake the light on the ground ---------------------------------------------------------------------
-# A flat card above the island takes the bake: rays go straight down from it and record the light on
-# the first ground surface they meet (grass over the island's top, a path over grass), lit by the sun
-# and the sky with the buildings and trees casting their shadows.
 img = bpy.data.images.new("ground_light", LIGHT_SIZE, LIGHT_SIZE, float_buffer=True)
 card_mesh = bpy.data.meshes.new("light_card")
 card_mesh.from_pydata([(x0, y0, 0.6), (x0 + span, y0, 0.6), (x0 + span, y0 + span, 0.6), (x0, y0 + span, 0.6)],
@@ -153,7 +146,6 @@ card_mat = bpy.data.materials.new("light_card"); card_mat.use_nodes = True
 node = card_mat.node_tree.nodes.new("ShaderNodeTexImage"); node.image = img
 card_mat.node_tree.nodes.active = node
 card_mesh.materials.append(card_mat)
-# The card must render to take the bake, but no ray may see it (it would shade the ground it bakes).
 for flag in ("visible_camera", "visible_shadow", "visible_diffuse", "visible_glossy", "visible_transmission",
              "visible_volume_scatter"):
     setattr(card, flag, False)
@@ -193,12 +185,10 @@ for p in protos:
     if p.name not in scene.collection.objects:
         scene.collection.objects.link(p)
     p.location = (0, 0, 0)
-for mat in bpy.data.materials:                   # the browser colours by material name
+for mat in bpy.data.materials:
     if mat.node_tree:
         for n in [n for n in mat.node_tree.nodes if n.type == "TEX_IMAGE"]:
             mat.node_tree.nodes.remove(n)
-# Only the ground's light UV leaves Blender (curves and primitives brought their own; the browser
-# would read the first one).
 for ob in [ground, sides, buildings, units, landmarks, *protos]:
     for layer in [l for l in ob.data.uv_layers if not (ob is ground and l.name == "light")]:
         ob.data.uv_layers.remove(layer)

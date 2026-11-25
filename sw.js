@@ -1,8 +1,3 @@
-/* 밥도둑 service worker: only shows the 30-minute alerts for starred free-food events (docs/PUSH_ALERTS.md).
- * It caches nothing and does not touch page loads (no fetch handler). Every push message is shown, as the
- * browsers require; a message it cannot read still shows a plain "밥도둑" alert. A tap opens the listing on
- * this site, never another address.
- */
 'use strict';
 
 self.addEventListener('install', function () { self.skipWaiting(); });
@@ -12,7 +7,7 @@ function safeUrl(value) {
   try {
     var url = new URL(String(value || ''), self.location.origin);
     if (url.origin === self.location.origin) return url.href;
-  } catch (err) { /* below */ }
+  } catch (err) {  }
   return self.location.origin + '/ggongbab.html';
 }
 

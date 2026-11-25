@@ -75,7 +75,7 @@ def test_registry_health_is_kept_apart_from_the_authored_registry(tmp_path):
     evaluate.run_evaluation(tmp_path)
     paths = pipeline.Paths(tmp_path, registry_path=tmp_path / "eval-sources.json")
     authored = registry.load(paths.registry)
-    assert registry.validate(authored) == []                    # no runtime fields written back
+    assert registry.validate(authored) == []
     health = registry.load_health(paths.source_health)
     assert health["eval-broken"]["failureCount"] == 1 and health["eval-broken"]["lastFailureCode"] == "HTTP_404"
     assert health["eval-broken"]["status"] == "DEGRADED" and health["eval-recipes"]["status"] == "ACTIVE"
@@ -145,7 +145,6 @@ def test_web_search_can_be_switched_off_and_the_optional_key_route_keeps_query_p
     result = web.discover({"queries": ["site:cook.example.org 자취 요리"]}, fetcher=None, env={"EXA_API_KEY": "k"},
                           opener=opener)
     assert sent[0]["includeDomains"] == ["cook.example.org"] and sent[0]["query"] == "자취 요리"
-    # A private address and a Naver page (never read by open discovery) are dropped.
     assert [i["sourceUrl"] for i in result.items] == ["https://cook.example.org/x/1"]
     assert result.items[0]["discoveryQuery"] == "site:cook.example.org 자취 요리" and result.queries
 
@@ -194,7 +193,7 @@ def test_the_validator_rejects_fabricated_and_linkless_stories(tmp_path):
     assert any("without a real source URL" in e for e in errors) and any("fabricated" in e for e in errors)
     lanes["tips"]["items"] = []
     path.write_text(json.dumps({"date": "2026-09-28", "featured": None, "lanes": lanes}), encoding="utf-8")
-    assert validate_content.validate_magazine(path) == []            # a sparse edition is valid
+    assert validate_content.validate_magazine(path) == []
 
 
 def test_the_store_is_bounded_and_keeps_no_session_material(tmp_path):
@@ -231,7 +230,7 @@ def test_the_cap_never_evicts_a_published_story(tmp_path, monkeypatch):
     ran = _seen(s, "ran", ran_at, assignedCategory="tips")
     s.mark_selected([ran], ran_at, "2026-09-19")
     newer = [_seen(s, f"new{n}", evaluate.NOW) for n in range(3)]
-    assert s.prune(evaluate.NOW) == 1                     # one unpublished row over the cap, never the story
+    assert s.prune(evaluate.NOW) == 1
     assert ran in s.rows and s.rows[ran]["selectedFor"] == "2026-09-19" and len(s.rows) == 3
     assert sum(cid in s.rows for cid in newer) == 2
 
@@ -243,23 +242,21 @@ def test_rows_that_can_no_longer_change_are_kept_as_fingerprints(tmp_path, monke
     now = evaluate.NOW
     s = store.CandidateStore(tmp_path / "candidates.jsonl")
     ids = {
-        "pool": _seen(s, "pool", now - timedelta(days=30), assignedCategory="tips"),   # can still run
-        "hard": _seen(s, "hard", now, rejectionReason="NOT_FOOD"),                    # a hard rule: final
+        "pool": _seen(s, "pool", now - timedelta(days=30), assignedCategory="tips"),
+        "hard": _seen(s, "hard", now, rejectionReason="NOT_FOOD"),
         "copy": _seen(s, "copy", now, duplicateOf="c_original"),
         "lane": _seen(s, "lane", now - timedelta(days=2), rejectionReason="NO_QUALIFYING_LANE"),
         "lane-old": _seen(s, "lane-old", now - timedelta(days=4), rejectionReason="NO_QUALIFYING_LANE"),
-        # Seen today, but corroboration can never pair them: published too long ago, or not food.
         "lane-dated": _seen(s, "lane-dated", now, published=now - timedelta(days=40),
                             rejectionReason="NO_QUALIFYING_LANE"),
         "lane-other": _seen(s, "lane-other", now, title="분기 실적 발표", text="회사의 분기 매출과 영업이익이 늘었다. " * 8,
                             rejectionReason="NO_QUALIFYING_LANE"),
         "gone": _seen(s, "gone", now - timedelta(days=8), rejectionReason="NOT_FOOD"),
     }
-    assert s.prune(now) == 1                              # a fingerprint is dropped FINGERPRINT_DAYS after
+    assert s.prune(now) == 1
     s.save()
     saved = {r["candidateId"]: r for r in store.CandidateStore(tmp_path / "candidates.jsonl").all()}
     assert ids["gone"] not in saved
-    # Corroboration can still make a recent food story that passed the hard rules a trend.
     assert {name for name, cid in ids.items() if cid in saved and not saved[cid].get("compact")} == {"pool", "lane"}
     hard = saved[ids["hard"]]
     assert hard["compact"] is True and set(hard) <= set(store.FINGERPRINT) | {"compact"}
@@ -268,13 +265,12 @@ def test_rows_that_can_no_longer_change_are_kept_as_fingerprints(tmp_path, monke
     assert saved[ids["copy"]]["duplicateOf"] == "c_original"
     assert saved[ids["lane-old"]]["rejectionReason"] == "NO_QUALIFYING_LANE"
     from validate_content import validate_magazine_research
-    assert validate_magazine_research(tmp_path) == []      # compact rows still carry a real URL
+    assert validate_magazine_research(tmp_path) == []
 
 
 def test_a_published_story_stays_whole_for_a_rebuild_of_its_edition(tmp_path):
     from datetime import timedelta
     s = store.CandidateStore(tmp_path / "c.jsonl")
-    # An evergreen recipe: too old to corroborate anything, but today's edition may be rebuilt.
     ran = _seen(s, "evergreen", evaluate.NOW, published=evaluate.NOW - timedelta(days=200), assignedCategory="tips")
     s.mark_selected([ran], evaluate.NOW, "2026-09-29")
     s.prune(evaluate.NOW)
@@ -294,15 +290,14 @@ def test_a_compact_row_keeps_its_decision_until_its_item_is_seen_again(tmp_path)
     s = store.CandidateStore(tmp_path / "c.jsonl")
     fingerprint = dict(s.rows[cid])
     pipeline.reset_decisions(s.all())
-    process.process(s.all(), evaluate.NOW)                # nothing left to judge it on: it keeps its decision
+    process.process(s.all(), evaluate.NOW)
     assert s.rows[cid] == fingerprint and fingerprint["compact"] is True
-    # The item comes back: rebuilt whole from the source, judged afresh, first discovery kept.
     again = s.upsert({"sourceUrl": "https://a.example/short", "title": "짧았던 글의 전문", "sourceExcerpt": "전문 " * 80,
                       "textLength": 400, "sourceId": "src", "discoveryMethod": "rss"}, evaluate.NOW)
     assert s.rows[cid] is again and not again.get("compact") and again["rejectionReason"] is None
     assert again["discoveredSeq"] == fingerprint["discoveredSeq"] and again["discoveredAt"] == fingerprint["discoveredAt"]
     assert again["sourceExcerpt"].startswith("전문") and again["lastSeenAt"] == common.iso(evaluate.NOW)
-    assert len(s.rows) == 1                               # the same candidate, not a new one
+    assert len(s.rows) == 1
 
 
 def test_a_published_story_still_stops_its_copies_once_compacted(tmp_path):
@@ -316,15 +311,13 @@ def test_a_published_story_still_stops_its_copies_once_compacted(tmp_path):
     anchor = s.rows[ran]
     assert anchor["compact"] is True and anchor["selectedFor"] == "2026-09-10" and anchor["contentHash"] == "h-ran"
     assert "sourceExcerpt" not in anchor
-    # The same text under another URL, discovered later: a duplicate of the published story.
     copy = s.upsert({"sourceUrl": "https://b.example/repost", "canonicalUrl": "https://b.example/repost",
                      "title": "다른 제목의 같은 글", "contentHash": "h-ran", "sourceExcerpt": "양파를 먼저 볶아 단맛을 낸다. " * 12,
                      "textLength": 300, "sourceId": "src2", "discoveryMethod": "rss"}, evaluate.NOW)
     pipeline.reset_decisions(s.all())
     process.process(s.all(), evaluate.NOW)
-    assert copy["duplicateOf"] == ran and s.rows[ran] == anchor           # the anchor itself is never re-judged
+    assert copy["duplicateOf"] == ran and s.rows[ran] == anchor
     assert not select.eligible(s.all(), set(), "2026-09-29")
-    # The anchor goes ANCHOR_DAYS after its edition; the editions keep the story from running again.
     s.prune(ran_at + timedelta(days=store.ANCHOR_DAYS + 1))
     assert ran not in s.rows
 
@@ -334,7 +327,7 @@ def test_every_earlier_edition_keeps_its_stories_from_running_again(tmp_path):
     for date, cid in editions:
         (tmp_path / f"{date}.json").write_text(json.dumps({"date": date, "lanes": {}, "featured": {
             "candidateId": cid, "url": f"https://a.example/{cid}?utm_source=x"}}), encoding="utf-8")
-    keys = pipeline.recent_keys(tmp_path, "2026-09-29")       # ten editions and one from August before it
+    keys = pipeline.recent_keys(tmp_path, "2026-09-29")
     assert {"c_old", "c_19", "c_28", "https://a.example/c_old"} <= keys and "c_29" not in keys
     assert "c_old" not in pipeline.recent_keys(tmp_path, "2026-09-29", days=7)
 
@@ -345,8 +338,8 @@ def test_the_index_names_the_newest_edition_and_no_latest_copy_is_kept(tmp_path)
     for date, items in (("2026-10-10", [story]), ("2026-10-11", [story]), ("2026-10-12", [])):
         (tmp_path / f"{date}.json").write_text(json.dumps({"date": date, "featured": None,
                                                           "lanes": {"tips": {"items": items}}}), encoding="utf-8")
-    (tmp_path / "latest.json").write_text("{}", encoding="utf-8")       # the retired copy
-    assert refresh_magazine.write_index(tmp_path) == "2026-10-11"         # an empty edition is not listed
+    (tmp_path / "latest.json").write_text("{}", encoding="utf-8")
+    assert refresh_magazine.write_index(tmp_path) == "2026-10-11"
     index = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
     assert index == {"schemaVersion": 1, "latest": "2026-10-11", "dates": ["2026-10-11", "2026-10-10"]}
     assert not (tmp_path / "latest.json").exists()
@@ -366,16 +359,16 @@ def test_a_scheduled_run_builds_only_a_missing_edition(tmp_path, monkeypatch, ca
         raise Discovered
 
     monkeypatch.setattr(refresh_magazine, "OUT", tmp_path)
-    monkeypatch.setattr(refresh_magazine, "now_kst", lambda: evaluate.NOW)          # 2026-09-29 10:30 KST
+    monkeypatch.setattr(refresh_magazine, "now_kst", lambda: evaluate.NOW)
     monkeypatch.setattr(pipeline, "discover", discover)
-    with pytest.raises(Discovered):                                                 # not built yet: it runs
+    with pytest.raises(Discovered):
         refresh_magazine.main(["--if-missing"])
     story = {"title": "t", "url": "https://a.example/1", "source": "s", "medium": "blog"}
     (tmp_path / "2026-09-29.json").write_text(json.dumps({"date": "2026-09-29", "featured": None,
                                                           "lanes": {"tips": {"items": [story]}}}), encoding="utf-8")
     assert refresh_magazine.main(["--if-missing"]) == 0
     assert "magazine 2026-09-29: already built" in capsys.readouterr().out
-    with pytest.raises(Discovered):                                                 # a manual run rebuilds
+    with pytest.raises(Discovered):
         refresh_magazine.main([])
 
 
@@ -387,40 +380,32 @@ def test_a_new_edition_keeps_its_contract_and_claims_no_schedule(result):
 
 
 def test_the_one_registry_is_valid_and_honest_about_what_runs():
-    sources = registry.load()                                   # scripts/discovery/sources.json
+    sources = registry.load()
     assert registry.validate(sources) == []
     by_type = {}
     for s in sources:
         by_type.setdefault(s["type"], []).append(s)
-    # Instagram needs an owner-provided local session: implemented as a stub, never enabled.
     for s in by_type["instagram"]:
         assert s["enabled"] is False and "OWNER_CHECKPOINT" in s.get("note", ""), s["id"]
-    # Search routes run without a credential: web search through Exa's hosted MCP (cloud-safe),
-    # YouTube search through the local sidecar only. Each asks for one lane and must show food.
     assert all(s["trustTier"] == "C" for s in by_type["web_search"] + by_type["youtube_search"])
     for s in by_type["web_search"] + by_type["youtube_search"]:
         assert s["queries"] and s.get("lane") in ("trend", "habit") and s.get("requireFood") is True, s["id"]
     assert {s["lane"] for s in by_type["web_search"] if s["enabled"]} == {"trend", "habit"}
-    # Open discovery never reads a Naver page (decisions 3-4): no enabled search asks for one.
     assert not any("naver" in q for s in by_type["web_search"] if s["enabled"] for q in s["queries"])
     assert all(s.get("localOnly") for s in by_type["youtube_search"])
     assert not any(s.get("localOnly") for s in by_type["web_search"] + by_type["rss"] + by_type["youtube_channel"])
-    # YouTube search stays off (its only input, the operator-PC sidecar, stopped on 09-29); the
-    # channels run through the YouTube Data API since 2026-10-12 (owner decision 1) and say what
-    # they need.
     for s in by_type["youtube_search"]:
         assert s["enabled"] is False and "Disabled 2026-10-12" in s["note"], s["id"]
     for s in by_type["youtube_channel"]:
         assert s["enabled"] is True and s["discoveryMethod"] == "youtube_data_api", s["id"]
         assert "YOUTUBE_API_KEY" in s["knownIssue"] and "30 days" in s["note"], s["id"]
     assert pipeline.pending_work(sources) == []
-    # Recipe blogs feed tips/health only: a recipe is not a trend or an eating-habit story.
     for s in by_type["rss"]:
         if s.get("kind") == "recipe":
             assert set(s["categories"]) <= {"tips", "health"}, s["id"]
     import refresh_magazine
     source_text = Path(refresh_magazine.__file__).read_text(encoding="utf-8")
-    assert "youtube.com/feeds" not in source_text and ".tistory.com" not in source_text   # no second list
+    assert "youtube.com/feeds" not in source_text and ".tistory.com" not in source_text
 
 
 # --- audit fixes: freshness, recycling, evidence, excerpts, status ------------------------
@@ -476,7 +461,7 @@ def test_card_summaries_are_short_and_free_of_links_and_hashtags():
     summary = select.card_summary(text)
     assert len(summary) <= select.SUMMARY_CHARS + 1 and "http" not in summary and "#" not in summary
     assert summary.startswith("바삭한 크럼블 사과 파이 레시피입니다.")
-    assert select.card_summary("구독 #shorts https://x.example") == ""        # too thin: title + source only
+    assert select.card_summary("구독 #shorts https://x.example") == ""
 
 
 def test_a_skipped_source_type_is_recorded_as_degraded_not_success(tmp_path):
@@ -501,7 +486,7 @@ def test_a_lane_needs_the_sources_own_category_or_two_signals():
     from discovery import process
     porridge = _row(title="Jeonbokjuk (Korean Abalone Porridge)", categoryHints=["tips", "health"],
                     sourceExcerpt="A comforting porridge, great for breakfast, made with leftover rice." * 2)
-    assert process.classify(porridge) in ("tips", "health")          # one "breakfast" is not a habit story
+    assert process.classify(porridge) in ("tips", "health")
     habit = _row(title="아침 식사 루틴과 식습관", categoryHints=["tips"], contentKind="news",
                  sourceExcerpt="아침 식사 습관을 바꾸는 루틴 이야기입니다." * 3,
                  publishedAt=evaluate.NOW.isoformat(),
@@ -549,17 +534,15 @@ def test_a_wordpress_feed_brings_its_older_pages_politely():
     def fetcher(url, accept):
         asked.append(url)
         if url not in pages:
-            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)   # past WordPress's last page
+            raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
         return pages[url]
 
     result = rss.discover(source, fetcher=fetcher, sleep=pauses.append)
     assert result.status == adapters.OK and [i["sourceUrl"].rsplit("/", 2)[1] for i in result.items] == ["a", "b", "c", "d"]
     assert asked == rss.page_urls(source) and pauses == [rss.PAGE_PAUSE, rss.PAGE_PAUSE]
-    # A site that ignores ?paged answers with the first page again: nothing new, so it stops.
     asked.clear()
     result = rss.discover(source, fetcher=lambda url, accept: asked.append(url) or _feed("a", "b"), sleep=pauses.append)
     assert len(result.items) == 2 and len(asked) == 2
-    # The feed itself failing is still a failure; only an older page is optional.
     assert rss.discover(source, fetcher=lambda url, accept: 1 / 0, sleep=pauses.append).status == adapters.FETCH_FAILED
 
 
@@ -570,7 +553,7 @@ def test_feed_pages_are_declared_in_the_registry_and_bounded():
     for bad in ({"feedPages": 3}, {"pagedFeed": "wordpress", "feedPages": 6}, {"pagedFeed": "tistory"},
                 {"pagedFeed": "wordpress", "feedPages": True}):
         assert registry.validate([dict(base, **bad)]), bad
-    assert registry.validate(registry.load()) == []          # the committed registry
+    assert registry.validate(registry.load()) == []
 
 
 def test_with_a_key_a_channel_comes_from_the_data_api_from_any_runner(tmp_path):
@@ -589,12 +572,10 @@ def test_with_a_key_a_channel_comes_from_the_data_api_from_any_runner(tmp_path):
     result = adapters.run(source, fetcher=fetcher, env={"YOUTUBE_API_KEY": "k-123"}, inbox_dir=tmp_path)
     assert result.status == adapters.OK and len(asked) == 1
     assert asked[0].startswith("https://www.googleapis.com/youtube/v3/playlistItems?") and "playlistId=UUabc123" in asked[0]
-    [item] = result.items                                     # a private upload is skipped
+    [item] = result.items
     assert item["sourceUrl"] == "https://www.youtube.com/watch?v=abcdefghijk" and item["medium"] == "youtube"
     assert item["publishedAt"].isoformat().startswith("2026-10-10") and item["imageSource"] == "youtube_thumbnail"
-    # Without a key nothing changes: a local-only channel is still read from the operator PC's inbox.
     assert adapters.run(source, fetcher=fetcher, env={}, inbox_dir=None).code == "LOCAL_INBOX_MISSING"
-    # A failed call never carries the URL, and so never the key.
     failed = youtube.discover_channel(source, fetcher=lambda url, accept: 1 / 0, env={"YOUTUBE_API_KEY": "k-123"})
     assert failed.status == adapters.FETCH_FAILED and "k-123" not in repr(failed)
     assert youtube.uploads_playlist("UCabc") == "UUabc" and youtube.uploads_playlist("xyz") == ""
@@ -610,12 +591,11 @@ def test_requests_to_one_host_are_two_seconds_apart():
     pacer = common.HostPacer(lambda url, **kw: asked.append(url) or b"", sleep=sleep, clock=lambda: now[0])
     pacer("https://www.yna.co.kr/rss/health.xml")
     now[0] += 0.5
-    pacer("https://www.yna.co.kr/rss/industry.xml")           # the same newspaper, 0.5 s later
-    pacer("https://kormedi.com/feed/")                          # another host: no wait
+    pacer("https://www.yna.co.kr/rss/industry.xml")
+    pacer("https://kormedi.com/feed/")
     now[0] += 5
-    pacer("https://www.yna.co.kr/rss/culture.xml")             # long enough apart already
+    pacer("https://www.yna.co.kr/rss/culture.xml")
     assert pauses == [1.5] and len(asked) == 4
-    # A failed request still counts as a request to that host.
     failing = common.HostPacer(lambda url, **kw: 1 / 0, sleep=sleep, clock=lambda: now[0])
     for _ in range(2):
         try:
@@ -634,6 +614,6 @@ def test_an_item_dated_only_by_dc_date_keeps_its_date():
             "<item><title>D</title><link>https://k.example.kr/d</link></item></channel></rss>").encode()
     a, b, c, d = rss.parse(feed)
     assert a["publishedAt"].isoformat() == "2026-10-12T13:06:39+09:00"
-    assert b["publishedAt"].isoformat() == "2026-10-12T13:33:32+09:00"     # a zoneless dc:date is KST
-    assert c["publishedAt"].isoformat() == "2026-10-12T04:00:00+00:00"     # pubDate wins when both exist
+    assert b["publishedAt"].isoformat() == "2026-10-12T13:33:32+09:00"
+    assert c["publishedAt"].isoformat() == "2026-10-12T04:00:00+00:00"
     assert d["publishedAt"] is None

@@ -49,7 +49,6 @@ class Repo(MemoryRepository):
         self.events = {row["id"]: deepcopy(row) for row in (rows or [event()])}
 
     def publishable_events(self):
-        # Return all canonical rows to prove the common policy is authoritative.
         return deepcopy(list(self.events.values()))
 
 
@@ -291,8 +290,6 @@ def test_export_writes_snapshot_and_syncs_same_ids(settings, monkeypatch, tmp_pa
     monkeypatch.setattr(refresh, "DATA_DIR", tmp_path / "data")
     assert refresh.export(settings, repo, False) == 0
     payload = json.loads((tmp_path / "data/latest.json").read_text(encoding="utf-8"))
-    # audit 2026-11-13: export() writes the snapshot only; the workflow's later step
-    # (scripts/sync_public_feed.py) synchronizes the projection, and it selects the same ids.
     assert not repo.public_events
     sync_public_feed(repo, settings)
     assert {e["id"] for e in payload["events"]} == set(repo.public_events)

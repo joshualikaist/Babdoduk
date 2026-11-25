@@ -44,7 +44,7 @@ def test_hwpx_docx_pptx_and_xlsx_text():
     pptx = _zip({"ppt/slides/slide2.xml": "<a:p><a:r><a:t>두 번째</a:t></a:r></a:p>",
                  "ppt/slides/slide10.xml": "<a:p><a:r><a:t>열 번째</a:t></a:r></a:p>",
                  "ppt/slides/slide1.xml": "<a:p><a:r><a:t>첫 번째</a:t></a:r></a:p>"})
-    assert at.extract("s.pptx", pptx).text == "첫 번째\n\n두 번째\n\n열 번째"     # slides in order, one blank line apart
+    assert at.extract("s.pptx", pptx).text == "첫 번째\n\n두 번째\n\n열 번째"
     xlsx = _zip({"xl/sharedStrings.xml": "<sst><si><t>피자 제공</t></si></sst>"})
     assert "피자 제공" in at.extract("x.xlsx", xlsx).text
 
@@ -55,13 +55,13 @@ def _record(tag: int, payload: bytes) -> bytes:
 
 def _para(text: str, wide_control: bool = False) -> bytes:
     body = text.encode("utf-16-le")
-    if wide_control:     # a table/drawing control: the code plus 7 more WCHARs, none of them text
+    if wide_control:
         body = struct.pack("<H", 11) + b"\x41\x00" * 7 + body
     return body + struct.pack("<H", 13)
 
 
 def test_hwp_section_records_keep_text_and_skip_controls():
-    stream = (_record(66, b"\x00" * 22)                                     # PARA_HEADER: not text
+    stream = (_record(66, b"\x00" * 22)
               + _record(at.HWPTAG_PARA_TEXT, _para("세미나 안내"))
               + _record(at.HWPTAG_PARA_TEXT, _para("다과 제공", wide_control=True)))
     assert at.hwp_records_text(stream) == "세미나 안내\n\n다과 제공\n"
@@ -111,7 +111,6 @@ def test_hwp_compressed_body_and_its_fallbacks(monkeypatch):
     packed = deflate.compress(section) + deflate.flush()
     _fake_olefile(monkeypatch, {"FileHeader": _file_header(1), "BodyText/Section0": packed})
     assert at.extract("공지.hwp", b"ole").text == "10월 20일 12:00, 점심 도시락 제공"
-    # distribution documents keep their body encrypted: the preview text is used instead
     _fake_olefile(monkeypatch, {"FileHeader": _file_header(1 | 4), "BodyText/Section0": b"??",
                                 "PrvText": "미리보기 다과 제공".encode("utf-16-le")})
     assert at.extract("배포용.hwp", b"ole").text == "미리보기 다과 제공"
@@ -217,7 +216,7 @@ def _page(post_ok=True):
         f"https://{HOST}/mails/1/parts/2?type=raw": Response(200, body=PNG),
         f"https://{HOST}/mails/1/parts/3?type=raw": Response(200, body=_zip({"word/document.xml": ""})),
         f"https://{HOST}/mails/1/contents/c1@dooray.com?type=raw": Response(200, body=JPG),
-        f"https://{HOST}/mails/1/contents/c2?type=raw": Response(200, body=PNG),     # same bytes as the attachment
+        f"https://{HOST}/mails/1/contents/c2?type=raw": Response(200, body=PNG),
     }
     return types.SimpleNamespace(request=Request(routes, post_ok))
 
@@ -230,7 +229,7 @@ def test_a_mail_is_read_with_its_files_and_images_but_never_a_third_party_image(
     assert mail.statuses["external-image-skipped"] == 1 and mail.statuses["file-skipped"] == 3
     assert not any("tracker.example.com" in url or "drive.example.com" in url for url in page.request.gets)
     images = md.load_images(page, mail)
-    assert [m for m, _ in images] == ["image/png", "image/jpeg"]       # the duplicate PNG is dropped
+    assert [m for m, _ in images] == ["image/png", "image/jpeg"]
     decision = classify("자연과학 토크 콘서트", mail.filter_text(), NOW, images=mail.image_count)
     assert decision.candidate and decision.reason == "event + poster image"
 
@@ -246,7 +245,7 @@ def test_an_unread_mail_is_marked_unread_again_and_a_read_one_is_left_alone():
     page = _page()
     with md.opened_mail(page, CONTRACT, "1", HOST, unread=True) as mail:
         md.load_images(page, mail)
-        assert page.request.posts == []                     # the restore comes after every download
+        assert page.request.posts == []
     assert page.request.posts == [(f"https://{HOST}/v2/wapi/mails/unread", {"mailIdList": ["1"]})]
     assert mail.restored is True
     page = _page()
@@ -270,10 +269,10 @@ def test_a_failed_restore_raises_even_when_the_mail_could_not_be_read():
 @pytest.mark.parametrize("subject,body,images,expected", [
     ("INNOVATE KOREA 2026", "행사장 방문객 대상 경품 추첨을 진행합니다.", 0, True),
     ("설문조사 참여 요청", "추첨을 통해 상품권을 드립니다. 10월 20일까지", 0, True),
-    ("선물 고마워", "잘 받았어", 0, False),                       # no event, no date
+    ("선물 고마워", "잘 받았어", 0, False),
     ("토크 콘서트 안내", "포스터를 참고해 주세요.", 1, True),
     ("토크 콘서트 안내", "포스터를 참고해 주세요.", 0, False),
-    ("사진 공유", "주말 사진입니다.", 2, False),                   # images without an event
+    ("사진 공유", "주말 사진입니다.", 2, False),
 ])
 def test_giveaway_and_poster_candidates(subject, body, images, expected):
     assert classify(subject, body, NOW, images=images).candidate is expected

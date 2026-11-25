@@ -136,7 +136,6 @@ def build_extractor(settings: Settings, dry_run: bool):
 def build_collectors(settings: Settings, repo, only: str) -> list:
     collectors = []
     if only in ("all", "dooray"):
-        # Attachments are fetched lazily by the pipeline, after its cache check.
         collectors.append(DoorayCollector(settings))
     if only in ("all", "kaist"):
         collectors.append(KaistPublicCollector(settings))
@@ -173,11 +172,7 @@ def build_archive_safely(repo, settings: Settings, now: datetime):
 
 
 def export(settings: Settings, repo, dry_run: bool) -> int:
-    # One clock for the snapshot, the public DB projection and the archive: a row is
-    # live or archived, never both and never neither.
     now = datetime.now(KST)
-    # News has its own reviewed input and schema; it never enters event selection
-    # or the public database projection. A dry run must not replace any snapshot.
     if not dry_run:
         from ggongbab.food_news import load_news, write_news
         try:
@@ -192,10 +187,6 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
         if archive is not None:
             print(f"archive: {archive['count']} ended listing(s) in the last {archive['windowDays']} days")
         return 0
-    # The snapshot only. The public DB projection is synchronized by the workflow's later step
-    # (scripts/sync_public_feed.py), with the very same selection and sanitizer, AFTER this file
-    # is published: a projection failure never holds the fresh latest.json back (audit 2026-11-13).
-    # Preparation failure must never be converted to the green keep-snapshot exit.
     try:
         payload = build_payload(repo.publishable_events(), settings, now, food_only=True)
         payload, dropped = drop_invalid_events(payload, now)
@@ -220,11 +211,8 @@ def export(settings: Settings, repo, dry_run: bool) -> int:
     if archive is not None:
         staged_archive = write_archive(archive, tmp_dir)
         archive_errors = validate_archive_export(staged_archive, payload)
-    # Preserve the usable static fallback even if projection synchronization fails.
     final = write_payload(payload, DATA_DIR)
     write_news(news, DATA_DIR / "news.json")
-    # The live feed matters more than the record: a bad archive keeps the previous
-    # one (or none) and is reported (value-free), but does not hold back latest.json.
     if archive_errors:
         print(f"[warn] archive validation failed ({len(archive_errors)} issue(s)); keeping previous archive/index.json")
     elif archive is not None:
@@ -304,9 +292,6 @@ def backfill_mail_archive(settings: Settings, repo, args) -> int:
     except CollectorError as exc:
         print(f"[error] {exc}")
         return 1
-    # A dry run still parses for real, so the report shows the decisions the
-    # ingest would make. Its safety comes from the in-memory repository and from
-    # not touching latest.json. Only --no-ai suppresses the model.
     extractor = None if args.no_ai else build_extractor(settings, False)
     if extractor is None and not args.no_ai:
         print("[error] OPENAI_API_KEY is required for a backfill; use --no-ai to only count candidates")

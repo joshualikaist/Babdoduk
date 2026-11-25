@@ -27,11 +27,11 @@ from . import editorial
 from .common import parse_time
 
 TREND_MAX_DAYS = 30
-ENGAGEMENT_MIN_VIEWS = 100_000   # meaningful reach, not a channel's usual audience
-HABIT_NEWS_MAX_DAYS = 90         # current lifestyle reporting
-HABIT_RESEARCH_MAX_DAYS = 730    # research and survey evidence (always shown with its date)
+ENGAGEMENT_MIN_VIEWS = 100_000
+HABIT_NEWS_MAX_DAYS = 90
+HABIT_RESEARCH_MAX_DAYS = 730
 DETAIL_CHARS = 110
-RARE_SHARE = 0.02                # a word in more than 2% of this run's recent candidates is generic
+RARE_SHARE = 0.02
 
 STRONG_CLAIMS = ("유행", "화제", "급증", "품절", "트렌드", "열풍", "오픈런", "대란", "입소문", "인기몰이", "인기를 끌",
                  "인기 급상승", "돌풍", "신드롬", "완판", "역대급", "SNS를 달구", "sns를 달구", "viral", "trending",
@@ -44,8 +44,6 @@ HABIT_WORDS = ("식습관", "식생활", "식사 습관", "식사 패턴", "먹�
                "식품비", "식비", "지출", "소비 행태", "구매 행태", "소비 패턴", "장보기",
                "건강한 식", "eating habit", "dietary habit", "diet quality", "meal skipping", "skipping breakfast",
                "eating pattern", "food consumption", "meal timing", "snacking")
-# A behavior sentence reports something measured: a survey, study, report or data, or a figure
-# with a change (share, increase, sales).
 RESEARCH_WORDS = ("조사", "설문", "응답", "통계", "연구", "보고서", "리포트", "데이터", "실태", "survey", "study",
                   "respondents", "report", "data")
 CHANGE_WORDS = ("비율", "비중", "증가", "감소", "늘었", "줄었", "늘어", "줄어", "성장", "매출", "판매", "소비", "급증",
@@ -76,10 +74,8 @@ AUDIENCE = {
 }
 HANGUL = re.compile(r"[가-힣]")
 LINKS = re.compile(r"(https?://\S+|www\.\S+|\S+\.(com|co\.kr|kr|net|org|io)/\S*)", re.I)
-# Paid placement anywhere in the text (a video description, a post footer), not only its lead.
 SPONSORED = re.compile(r"(유료\s*광고|광고\s*포함|광고를\s*포함|협찬|(?<![a-z])ppl(?![a-z])|paid promotion|sponsored by)", re.I)
 NOT_SPONSORED = re.compile(r"(내돈내산|협찬\s*(없|아님|아닌|을\s*받지\s*않|받지\s*않))")
-# A title that is a business result, not something people eat.
 BUSINESS_TITLE = re.compile(r"(본사|점주|가맹|영업이익|실적|주가|판로|수출|협약|투자|인수|상장|광고|\[동향\]|입점|공략|진출|박차|"
                             r"산업|공급망|로드쇼|공급|납품|계약|제휴|유통망|(?<![a-z])(mou|cf)(?![a-z]))", re.I)
 SENTENCE_END = re.compile(r"(?<=[.!?。])\s+|\n")
@@ -92,7 +88,6 @@ STOP_TOKENS = {
     "먹거리", "간식", "이번", "가장", "진짜", "솔직", "정체", "난리", "대박", "선보여", "선보인", "출시한", "매출", "증가",
     "인기몰이", "완판", "top", "best", "new", "the", "and", "with", "for", "of", "in", "to", "a", "food", "trend",
     "trends", "korean", "korea", "recipe", "편의점신상",
-    # headline verbs and filler that say nothing about WHAT is being covered
     "입맛", "잡은", "사로잡은", "공략", "선택", "겨냥", "확대", "강화", "진출", "성과", "박차", "달군", "나선다", "나섰다",
     "입점", "현지", "시장", "성장", "기업", "업계", "소비", "소비자", "건강", "한끼", "식사", "간편", "메뉴",
 }
@@ -168,7 +163,7 @@ def trend_signals(text: str, *, title: str = "", meta: Optional[dict] = None, no
     """Signals found in the retrieved text (never the title) and in platform metadata. The title
     only tells whether the story is about food. {kind: {"text", "term", "strong"}}"""
     signals: dict = {}
-    body = LINKS.sub(" ", text or "")         # a claim is never read out of a URL ("utm_medium=viral")
+    body = LINKS.sub(" ", text or "")
     food_story = is_food(title)
     strong = _claim(body, STRONG_CLAIMS, food_story)
     weak = None if strong else _claim(body, WEAK_CLAIMS, food_story)
@@ -176,8 +171,6 @@ def trend_signals(text: str, *, title: str = "", meta: Optional[dict] = None, no
         signals["explicit_source_claim"] = {"term": strong[0], "text": strong[1], "strong": True}
     elif weak:
         signals["explicit_source_claim"] = {"term": weak[0], "text": weak[1], "strong": False}
-    # Measured demand (a sales/orders/search figure that rose or set a record); an independent
-    # sentence is preferred over one that speaks for the seller.
     demand = [s for s in sentences(body) if editorial.demand_sentence(s) and (food_story or is_food(s))]
     demand.sort(key=editorial.pr_sentence)
     if demand:
@@ -227,7 +220,7 @@ def is_research(row: dict) -> bool:
         return True
     facts = row.get("textFacts") or {}
     if not row.get("sourceExcerpt") and "research" in facts:
-        return bool(facts["research"])                  # judged from the text before it was dropped
+        return bool(facts["research"])
     blob = (row.get("sourceExcerpt") or "").lower()
     return row.get("sourceTrust") == "A" and any(w in blob for w in RESEARCH_TEXT)
 
@@ -305,7 +298,6 @@ def corroborate(rows: list[dict], now: datetime) -> dict[str, list[str]]:
                 continue
             rare_b = {t for t in title_b if frequency[t] <= limit}
             one_way, other_way = _shared(rare_a, all_b), _shared(rare_b, all_a)
-            # two shared words both ways, and at least one of them a real name (3+ letters)
             if len(one_way) >= 2 and len(other_way) >= 2 and any(len(t) >= 3 for t in one_way | other_way):
                 found.setdefault(row["candidateId"], []).append(other["candidateId"])
     return found

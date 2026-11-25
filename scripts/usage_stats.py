@@ -42,7 +42,6 @@ WEEKDAYS = "월화수목금토일"
 DEVICES = {"phone": "휴대폰", "tablet": "태블릿", "computer": "컴퓨터"}
 LANGS = {"ko": "한국어", "en": "영어"}
 PLACE_STATUS = {"want": "가고 싶어", "been": "가봤어", "again": "또 갈래"}
-# Every table and column this script may read.
 READS = {
     "visit_counts": {"hour", "site", "page", "lang", "device", "views"},
     "saved_events": {"event_id", "saved_at"},
@@ -85,7 +84,7 @@ def event_names(root: Path = ROOT) -> dict:
     """event id -> (title, KST start, food type label) from the published feed and its archive."""
     labels = read_json(root / "data/content/labels.json", {}).get("freeFood", {})
     names = {}
-    for name in ("data/ggongbab/archive/index.json", "data/ggongbab/latest.json"):   # latest wins
+    for name in ("data/ggongbab/archive/index.json", "data/ggongbab/latest.json"):
         for ev in read_json(root / name, {}).get("events", []):
             food = (ev.get("food") or {}).get("type") or ""
             start = ev.get("startAt")
@@ -145,7 +144,7 @@ def visits_section(call, since: datetime, site: str, pages: dict) -> list[str]:
         data = rows(call, "visit_counts", "hour,site,page,lang,device,views",
                     f"&hour=gte.{since.astimezone(timezone.utc).isoformat()}",
                     "hour.asc,site.asc,page.asc,lang.asc,device.asc")
-    except SystemExit as exc:      # 018 not applied yet, or the database refused
+    except SystemExit as exc:
         return out + [f"읽지 못했어요 ({exc}). 018을 적용했는지 확인해 주세요.", ""]
     data = [r for r in data if r.get("site") in SITES[site]]
     if not data:
@@ -280,7 +279,7 @@ def main(argv=None, call=None) -> int:
     parser.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
     if call is None:
-        from worldcup_stats import request, settings   # the same backend call and settings as pick_stats
+        from worldcup_stats import request, settings
         url, key = settings()
         call = lambda method, path, body=None, prefer="": request(url, key, method, path, body, prefer)
     if args.command == "pages":

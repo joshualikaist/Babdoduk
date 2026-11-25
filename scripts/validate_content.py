@@ -161,8 +161,6 @@ def validate_magazine_archive(folder: Path) -> list[str]:
         if "desks" in data:
             errors.append(f"{path.name}: idea desks are not source-backed stories")
         lanes = data.get("lanes") or {}
-        # Browsable history never shows a trend without evidence, nor the old builder's
-        # keyword-routed habit picks (select.sanitize removes both).
         if any(not i.get("trendEvidence") for i in (lanes.get("trend") or {}).get("items") or []):
             errors.append(f"{path.name}: trend story without trendEvidence")
         if data.get("rules") != MAGAZINE_RULES and (lanes.get("habit") or {}).get("items"):
@@ -326,9 +324,6 @@ def validate_kaist_week(week: dict, dated: dict) -> list[str]:
             errors.append(f"kaist week.json {row.get('date')}: count without a menu")
     return errors
 
-# ---------------------------------------------------------------------------
-# ggongbab (free-food events)
-# ---------------------------------------------------------------------------
 KST = timezone(timedelta(hours=9))
 GG_PRIVATE_KEYS = {
     "sender_email", "sender_name", "recipient", "to", "cc", "raw_html", "raw_text", "rawHtml", "rawText",
@@ -345,19 +340,8 @@ PHONE_RE = re.compile(r"(?<!\d)(?:\+?82[-\s.]?)?0?1[016789][-\s.]?\d{3,4}[-\s.]?
 SECRET_RE = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}|dooray-api\s+\S+)")
 DOORAY_LINK_RE = re.compile(r"dooray\.com|/files/[A-Za-z0-9]{8,}", re.I)
 GG_PUBLIC_URL_SOURCES = {"kaist_public", "manual", "instagram"}
-# An Instagram source links the post itself, in the canonical form the exporter rebuilds (2026-10-31).
 GG_INSTAGRAM_POST_RE = re.compile(r"https://www\.instagram\.com/(?:p|reel)/[A-Za-z0-9_-]{5,20}/")
 
-# ---------------------------------------------------------------------------
-# Public event schema and the structure-aware privacy scan (latest.json and the archive)
-# ---------------------------------------------------------------------------
-# Every field of a public ggongbab event and the kind of value it holds. The privacy
-# patterns (e-mail, phone, token, Dooray/private link) run on "text" fields only: the words
-# a person wrote or the extractor copied. Ids, timestamps, enums and numbers are checked by
-# shape and URLs by URL rules, so a UUID such as ...-4b18-8387-8430... (read as
-# 018-8387-8430) or a numeric link path is never mistaken for a phone number. A key that is
-# not listed here is refused until it is reviewed for privacy and classified
-# (tests/ggongbab/test_privacy_validator.py keeps this schema and the exporter in step).
 GG_TEXT, GG_URL, GG_ID, GG_TIME, GG_ENUM, GG_NUMBER = "text", "url", "id", "time", "enum", "number"
 GG_EVENT_SCHEMA = {
     "id": GG_ID,
@@ -366,23 +350,17 @@ GG_EVENT_SCHEMA = {
     "startAt": GG_TIME, "endAt": GG_TIME,
     "location": {"name": GG_TEXT, "building": GG_TEXT, "room": GG_TEXT},
     "food": {"provided": GG_ENUM, "type": GG_ENUM, "description": GG_TEXT, "source": GG_ENUM},
-    # A prize draw or gift for participants (owner decision 2026-10-14), listed with a gift mark.
     "giveaway": {"provided": GG_ENUM, "description": GG_TEXT},
     "registration": {"required": GG_ENUM, "deadline": GG_TIME, "url": GG_URL},
     "confidence": GG_NUMBER,
     "sources": [{"type": GG_ENUM, "name": GG_TEXT, "url": GG_URL}],
-    # Every day of a multi-day event with its own time (and its own venue or food when the source says so),
-    # and who the event is for (2026-10-18). Both are optional and read back from the stored AI parse.
     "sessions": [{"startAt": GG_TIME, "endAt": GG_TIME,
                   "location": {"name": GG_TEXT, "building": GG_TEXT, "room": GG_TEXT}, "foodDescription": GG_TEXT}],
     "audience": {"text": GG_TEXT, "basis": GG_ENUM},
 }
-# Top-level keys; `_preview` holds only the local preview's numeric diagnostics.
 GG_LIVE_TOP_LEVEL = {"schemaVersion", "generatedAt", "timezone", "count", "events", "_preview"}
 GG_ARCHIVE_TOP_LEVEL = {"schemaVersion", "generatedAt", "timezone", "windowDays", "count", "events"}
 GG_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")
-# A whole query/fragment value that is a dialable Korean mobile number: it needs a real
-# prefix (0, +82, or 82 plus a separator), so a numeric id such as mng_no=1712345678 is not one.
 GG_URL_PHONE_RE = re.compile(r"(?:\+82[-\s.]?|82[-\s.]|0)1[016789][-\s.]?\d{3,4}[-\s.]?\d{4}")
 GG_TEXT_PATTERNS = ((EMAIL_RE, "an e-mail address"), (PHONE_RE, "a phone number"),
                     (SECRET_RE, "a token-like string"), (DOORAY_LINK_RE, "a Dooray/private file link"))
@@ -534,7 +512,7 @@ def gg_url_errors(prefix: str, where: str, url) -> list[str]:
 def gg_id_errors(prefix: str, where: str, value) -> list[str]:
     """An id is structural: a plain identifier, never scanned as text (no phone pattern)."""
     if not isinstance(value, str) or not value:
-        return []  # a missing id is reported by the validator itself
+        return []
     errors = [] if GG_ID_RE.fullmatch(value) else [f"{where} is not a plain identifier"]
     for pattern, label in ((SECRET_RE, "a token-like string"), (DOORAY_LINK_RE, "a Dooray/private file link")):
         if pattern.search(value):
@@ -557,7 +535,6 @@ def gg_public_field_errors(prefix: str, tag: str, event: dict) -> list[str]:
             errors += gg_url_errors(prefix, where, value)
         elif kind == GG_ID:
             errors += gg_id_errors(prefix, where, value)
-        # time, enum and number values are checked by the validators' own rules
     for src in event.get("sources") if isinstance(event.get("sources"), list) else []:
         if isinstance(src, dict) and src.get("url") and src.get("type") not in GG_PUBLIC_URL_SOURCES:
             errors.append(f"{tag} exposes a {src.get('type')} source URL; only public notice links may be kept")
@@ -649,8 +626,6 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
         return errors + ["ggongbab events must be a list"]
     if data.get("count") is not None and data.get("count") != len(events):
         errors.append("ggongbab count does not match events length")
-    # Privacy is checked field by field (gg_public_field_errors), never over the serialized
-    # JSON: structural values such as UUID ids must not be read as phone numbers.
     errors += gg_top_level_errors("ggongbab export", data, GG_LIVE_TOP_LEVEL)
     _walk_keys(data, "$", errors)
     ids: set[str] = set()
@@ -689,7 +664,6 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
         if not isinstance(conf, (int, float)) or not 0 <= float(conf) <= 1:
             errors.append(f"{tag} confidence out of range")
         food = ev.get("food") or {}
-        # tri-state, never boolean: "unknown" must not be collapsed into false.
         if food.get("provided") not in GG_TRI:
             errors.append(f"{tag} food.provided must be true/false/unknown")
         if food.get("type") not in GG_FOOD_TYPES:
@@ -700,7 +674,6 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
         reg = ev.get("registration") or {}
         if reg.get("required") not in GG_TRI:
             errors.append(f"{tag} registration.required must be true/false/unknown")
-        # registration.url: URL rules in gg_public_field_errors ("... registration.url invalid")
         deadline = _iso(reg.get("deadline")) if reg.get("deadline") else None
         if reg.get("deadline") and deadline is None:
             errors.append(f"{tag} registration.deadline not ISO")
@@ -727,9 +700,6 @@ def validate_ggongbab_payload(data: dict, now: datetime | None = None) -> list[s
     return errors
 
 
-# ---------------------------------------------------------------------------
-# ggongbab past listings (data/ggongbab/archive/index.json)
-# ---------------------------------------------------------------------------
 GG_ARCHIVE_WINDOW_DAYS = 30
 
 
@@ -766,7 +736,6 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
         return errors + ["ggongbab archive events must be a list"]
     if data.get("count") != len(events):
         errors.append("ggongbab archive count does not match events length")
-    # The same field-by-field privacy scan as the live feed; never a weaker rule.
     errors += gg_top_level_errors("ggongbab archive", data, GG_ARCHIVE_TOP_LEVEL)
     _walk_keys(data, "$archive", errors)
     ids: set[str] = set()
@@ -824,7 +793,6 @@ def validate_ggongbab_archive_payload(data: dict, live_ids: set[str] | None = No
                 errors.append(f"{tag} source type invalid")
             if set(src.keys()) - {"type", "name", "url"}:
                 errors.append(f"{tag} source has unexpected keys")
-            # sources[].url: URL rules and the public-notice-only rule in gg_public_field_errors
         order.append((ev.get("endAt") or ev.get("startAt") or "", eid if isinstance(eid, str) else ""))
     expected = sorted(sorted(order, key=lambda key: key[1]), key=lambda key: key[0], reverse=True)
     if order != expected:
@@ -879,7 +847,6 @@ def main(argv: list[str] | None = None) -> None:
     print("content validation ok" + ("" if families == set(FAMILIES) else f" ({', '.join(sorted(families))})"))
 
 
-# Which pack a dish belongs in, by its cuisine group (the retired scripts/build_foods.py rule).
 FOOD_PACK_OF_GROUP = {
     "korean": "korean", "chinese": "chinese", "japanese": "japanese", "southeast-asian": "southeast-asian",
     "italian": "western", "french": "western", "american": "western", "mexican": "western", "western": "western",
@@ -973,7 +940,6 @@ def validate_authored(root: Path = ROOT) -> list[str]:
             errors.append("inputs/ggongbab/manual.json: an id is used twice")
     news = root / "inputs" / "ggongbab" / "food-news.json"
     if news.exists():
-        # Imported here: food_news pulls in pydantic, which only the ggongbab job installs.
         from ggongbab.food_news import check_public_item
         items = load(news).get("items") or []
         for index, item in enumerate(items):
@@ -983,15 +949,12 @@ def validate_authored(root: Path = ROOT) -> list[str]:
                 errors.append(f"inputs/ggongbab/food-news.json: item {index} fails the public news check (values suppressed)")
         if len({item.get("id") for item in items if isinstance(item, dict)}) != len(items):
             errors.append("inputs/ggongbab/food-news.json: an id is used twice")
-    # 밥약 메이커 places (docs/BOBYAK.md): unique ids and stores, verified dates, facts with a source.
     places = root / "data" / "places" / "latest.json"
     if places.exists():
         from places.semas import feed_rule_errors
         errors += feed_rule_errors(load(places))
-    # The page content of data/content/ (events, history): what its contracts cannot say.
     from page_content import content_errors
     errors += content_errors(root)
-    # The campus building table is generated from its two inputs: it must agree with them.
     table = root / "data" / "campus" / "buildings.json"
     if table.exists() and (root / "inputs" / "campus3d" / "campus.json").exists():
         from campus3d import buildings as campus
@@ -1007,7 +970,6 @@ def validate_ggongbab_family() -> list[str]:
     ggongbab = ROOT / "data" / "ggongbab" / "latest.json"
     news = ROOT / "data" / "ggongbab" / "news.json"
     if news.exists():
-        # Imported here: food_news pulls in pydantic, which only the ggongbab job installs.
         from ggongbab.food_news import validate_news_payload
         try:
             errors.extend(validate_news_payload(load(news)))
@@ -1015,8 +977,6 @@ def validate_ggongbab_family() -> list[str]:
             errors.append("news JSON invalid (values suppressed)")
     if ggongbab.exists():
         errors.extend(validate_ggongbab(ggongbab))
-    # Past listings are optional until the first export writes them. The live/archive
-    # overlap is checked when both are staged together (refresh_ggongbab.export).
     archive = ROOT / "data" / "ggongbab" / "archive" / "index.json"
     if archive.exists():
         errors.extend(validate_ggongbab_archive(archive))

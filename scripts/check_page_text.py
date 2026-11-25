@@ -29,7 +29,6 @@ from urllib.parse import unquote, urlparse
 ROOT = Path(__file__).resolve().parents[1]
 HOST = "page-text.invalid"
 CLOCK = "2026-10-12T12:00:00+09:00"
-# The hub's two tabs read different data, so both are taken.
 VARIANTS = {"ggongbab.html": ["ggongbab.html#free", "ggongbab.html#menu"]}
 CAPTURE = """() => {
   const text = (document.body ? document.body.innerText : '').split('\\n')
@@ -84,7 +83,6 @@ def snapshot(out: Path, data: Path | None) -> dict:
             context.route("**/*", route)
             context.add_init_script(f"try {{ localStorage.setItem('babdoduk-lang', '{lang}'); "
                                     "sessionStorage.setItem('babdoduk-welcome-seen', '1'); } catch (e) {}")
-            # The picker's reel draws random dishes: the same seeded sequence on every load.
             context.add_init_script("(() => { let s = 20261012; Math.random = () => { s |= 0; s = s + 0x6D2B79F5 | 0;"
                                     " let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;"
                                     " return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })();")

@@ -95,7 +95,7 @@ def test_date_extraction_infers_year_forward():
     ref = REFERENCE.date()
     assert extract_dates("9월 25일 12시", ref) == ["2026-09-25"]
     assert extract_dates("2026.05.18(월) 11:30", ref) == ["2026-05-18"]
-    assert extract_dates("1월 10일 행사", ref) == ["2027-01-10"]  # far past -> next year
+    assert extract_dates("1월 10일 행사", ref) == ["2027-01-10"]
     assert extract_dates("9/25 ~ 9/26", ref) == ["2026-09-25", "2026-09-26"]
     assert extract_dates("Sep 25, 2026", ref) == ["2026-09-25"]
 
@@ -116,7 +116,6 @@ def test_time_ranges_and_a_bare_range_end():
     assert extract_times("12시 ~ 1시") == ["12:00", "13:00"]
     assert extract_time_ranges("오전 11시 ~ 오후 1시") == [("11:00", "13:00")]
     assert extract_time_ranges("2시부터 4시까지") == [("02:00", "04:00")]
-    # A 24-hour end is taken as written, and two separate times are not a range.
     assert extract_time_ranges("22:00~01:00") == [("22:00", "01:00")]
     assert extract_time_ranges("12:00 점심, 오후 3시 간식") == []
     assert extract_times("1:30 pm") == ["01:30", "13:30"]

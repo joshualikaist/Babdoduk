@@ -1,7 +1,3 @@
-/* 밥약 메이커 (bobyak.html, lab only; docs/BOBYAK.md): restaurant roulette, place card, 먹킷리스트 and bill split.
-   Reads data/places/latest.json and nothing else; no account, no server writes, no analytics.
-   Needs js/bob-places.js (BabdodukPlaces), js/bob-settle.js (BabdodukSettle) and, for sharing,
-   js/ggongbab-live.js (BabdodukLive.share: share sheet, then clipboard, then text to copy by hand). */
 (function () {
   var P = window.BabdodukPlaces;
   var S = window.BabdodukSettle;
@@ -11,14 +7,14 @@
 
   var store = P.createStore();
   var state = {
-    load: 'loading',          // loading | ready | error
+    load: 'loading',
     feed: null,
     places: [],
     filters: { area: 'all', cuisine: 'all', budget: 'all' },
     savedOnly: false,
-    consent: false,           // the visitor agreed to unchecked candidates (this visit only)
+    consent: false,
     filtersOpen: false,
-    shown: null,              // {id, from: 'pick'|'list'|'link', pool}
+    shown: null,
     last: null,
     settle: { total: '', mode: 'split', unit: 1, payer: 0,
               people: [{ name: '', excluded: false, fixed: '' }, { name: '', excluded: false, fixed: '' }] }
@@ -289,7 +285,6 @@
   function sharePlace(id) {
     var place = byId(id);
     if (!place) return;
-    // The memo and the list status stay out: only the place's public name, area and link.
     shareOut({ title: placeName(place),
                text: T('bob.share.placeText', { name: placeName(place), area: T('bob.area.' + place.area) }),
                url: P.placeLink(place.id, pageUrl()) });

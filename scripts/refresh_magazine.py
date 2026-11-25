@@ -137,8 +137,6 @@ def main(argv=None) -> int:
     now = now_kst()
     paths = pipeline.Paths(ROOT)
     if args.select_only:
-        # Offline: re-judge the stored candidates under the current rules and rebuild today's
-        # edition. Nothing is fetched or searched, and no stored candidate is dropped.
         run = pipeline.reprocess(paths, now)
         date = edition_date(now)
         rows = pipeline.runnable(run["store"].all(), registry.load(paths.registry))
