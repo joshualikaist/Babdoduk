@@ -4,7 +4,7 @@
 
 [사이트 열기](https://www.babdodukms.com) · [lab 미리보기](https://babdoduk-lab.vercel.app) · [인스타그램](https://www.instagram.com/babdodukms/)
 
-주소가 **www.babdodukms.com** 으로 바뀌었어요(2026-11-02). 예전 주소 babdoduk.vercel.app 도 그대로 열려요.
+주소가 **www.babdodukms.com** 으로 바뀌었어요(2026-11-02). 예전 주소 babdoduk.vercel.app 은 2026-11-18쯤부터 열리지 않아요.
 
 ## 화면
 

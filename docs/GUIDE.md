@@ -5,7 +5,7 @@
 **KAIST 중심의 음식 플랫폼입니다.** 오늘 캠퍼스에서 먹을 수 있는 것(학식·무료 음식 일정)을 확인하고,
 못 정했다면 메뉴를 고르고, 음식 이야기와 밥도둑의 활동을 읽는 사이트입니다.
 
-공개 사이트: **https://www.babdodukms.com** (`main` 브랜치, 2026-11-02부터; 예전 주소 https://babdoduk.vercel.app 도 열림)
+공개 사이트: **https://www.babdodukms.com** (`main` 브랜치, 2026-11-02부터; 예전 주소 babdoduk.vercel.app 은 2026-11-18쯤부터 닫힘)
 
 무료 일정 아래 **먹거리 소식**을 별도 `news.json`으로 표시합니다(2026-09-30부터 production). 식당 개점·영업 변경은 무료 음식 수에 포함하지 않습니다. [출처 검증과 운영](CAMPUS_FOOD_NEWS.md).
 
@@ -731,7 +731,7 @@ DB·AI·파일 쓰기 없음), `review-report`(리뷰 대기 건수만 로그에
 
 | 브랜치 | 용도 | Vercel 프로젝트 |
 |--------|------|-----------------|
-| `main` | 방문자용 본편 (production) | `babdoduk` → https://babdoduk.vercel.app |
+| `main` | 방문자용 본편 (production) | `babdoduk` → https://www.babdodukms.com |
 | `lab` | 스테이징: 본편 기준선 + 의도된 lab 전용 실험 | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
 
 **제품·UI·프런트엔드·문구·내비·반응형 변경은 반드시 lab 을 거쳐 본편에 갑니다**(`AGENTS.md` “Lab-first lifecycle”).

@@ -11,7 +11,7 @@
 
 | 브랜치 | 역할 | Vercel |
 |--------|------|--------|
-| **`main`** | production. 방문자가 보는 본편 | `babdoduk` → https://babdoduk.vercel.app |
+| **`main`** | production. 방문자가 보는 본편 | `babdoduk` → https://www.babdodukms.com |
 | **`lab`** | 스테이징 = **본편 기준선 + 의도된 lab 전용 실험**(Realtime·공개 projection·Portal LIST poller·Windows worker 등) | `babdoduk-lab` → https://babdoduk-lab.vercel.app |
 
 `lab` 은 본편의 미리보기입니다. 그래서 **lab 은 본편보다 뒤처지면 안 됩니다.** 본편에 있는 소스 커밋이 lab 에 없으면
@@ -93,7 +93,7 @@ git -C ..\Babdoduk-wt\back-sync-<name> merge --no-ff origin/main   # 충돌은 �
 
 | Vercel 프로젝트 | URL | 용도 |
 |-----------------|-----|------|
-| **`babdoduk`** | https://babdoduk.vercel.app | **공개(배포)** — `main` 내용 |
+| **`babdoduk`** | https://www.babdodukms.com | **공개(배포)** — `main` 내용 |
 | **`babdoduk-lab`** | https://babdoduk-lab.vercel.app | **실험** — `lab`에서 먼저 확인 |
 
 ### 배포는 Git 연동으로만 합니다
@@ -123,7 +123,7 @@ gh api repos/joshualikaist/Babdoduk/commits/<sha>/status --jq '.statuses[] | [.c
 - **`vercel.json`**: 실험 페이지(`lab.html`, `lab-ggongbab.html`, `food.html`)와 그 데이터(`data/food-log.json`,
   `calendar.ics`)는 babdoduk-lab.vercel.app 이 아닌 모든 주소에서 404 입니다. 두 브랜치가 같은 파일을 갖고 있어도
   production 은 서빙하지 않으므로, 릴리스·back-sync 때 따로 지우거나 되살릴 파일이 없습니다. 고유 배포 URL
-  (`babdoduk-<hash>-….vercel.app`)은 Vercel 로그인 뒤에 있어서, production 쪽 404 는 릴리스 뒤 babdoduk.vercel.app 에서 확인합니다.
+  (`babdoduk-<hash>-….vercel.app`)은 Vercel 로그인 뒤에 있어서, production 쪽 404 는 릴리스 뒤 www.babdodukms.com 에서 확인합니다.
 
 ---
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only quality checks of a deployed Babdoduk site (production or lab): accessibility, links, performance.
 
-    python scripts/e2e_quality.py --base https://babdoduk.vercel.app
+    python scripts/e2e_quality.py --base https://www.babdodukms.com
     python scripts/e2e_quality.py --base https://babdoduk-lab.vercel.app --out .local/e2e-quality --only a11y,links,perf
 
 Stage 4 of the end-to-end checks (stage 1 is scripts/e2e_live.py). Chromium, 390 and 1280 px wide,
@@ -953,7 +953,7 @@ def run(base: str, out: Path, only: set) -> Quality:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--base", required=True, help="https://babdoduk.vercel.app or https://babdoduk-lab.vercel.app")
+    parser.add_argument("--base", required=True, help="https://www.babdodukms.com or https://babdoduk-lab.vercel.app")
     parser.add_argument("--out", default=str(ROOT / ".local" / "e2e-quality"))
     parser.add_argument("--only", default="a11y,links,perf", help="comma list of a11y, links, perf")
     args = parser.parse_args(argv)

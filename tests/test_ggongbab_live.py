@@ -473,7 +473,7 @@ def test_new_feature_note_closes_for_good(browser):
     page.locator("[data-gg-more]").click()
     assert not page.locator(".gg-more-panel").is_visible()
     note = page.locator(".gg-new")
-    assert "저장·공유" in note.inner_text() and "캘린더" not in note.inner_text()  # a guest gets no calendar (owner 2026-11-24)
+    assert note.locator("p").inner_text().strip() == "☆ 저장이 생겼어요" and "공유" not in note.inner_text() and "캘린더" not in note.inner_text()  # a guest gets no calendar (owner 2026-11-24); the per-listing share is gone (owner 2026-11-25)
     # It sits in the page head, above the list, and covers nothing.
     assert page.evaluate("getComputedStyle(document.querySelector('.gg-new')).position") == "static"
     page.locator("[data-gg-new-close]").click()

@@ -2,7 +2,7 @@
 """Read-only cross-browser / cross-device check of the core Babdoduk journeys (E2E stage 2).
 
     python scripts/e2e_browsers.py --base https://babdoduk-lab.vercel.app
-    python scripts/e2e_browsers.py --base https://babdoduk.vercel.app --engines webkit-iphone13,firefox-desktop
+    python scripts/e2e_browsers.py --base https://www.babdodukms.com --engines webkit-iphone13,firefox-desktop
 
 Engines (the Safari stand-in is Playwright WebKit with the iPhone 13 descriptor):
   webkit-iphone13   WebKit,   'iPhone 13'

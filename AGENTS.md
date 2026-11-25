@@ -42,7 +42,7 @@ Record the owner's bypass authorization in the task report. A bypass change is b
 
 ### Branches
 
-- `main` is production. A push or merge to `main` deploys https://babdoduk.vercel.app through Vercel's Git integration. Agents never modify `main` without explicit owner authorization, and a full `lab` → `main` merge is never the default.
+- `main` is production. A push or merge to `main` deploys https://www.babdodukms.com through Vercel's Git integration. Agents never modify `main` without explicit owner authorization, and a full `lab` → `main` merge is never the default.
 - `lab` is the integration/staging branch (https://babdoduk-lab.vercel.app): the production baseline plus intentional lab-only experiments. It is not a general scratch branch; agents do not normally develop directly on it. Integrating a task branch into `lab` is a separate, authorized step.
 - Task branches are `agent/claude/<task>`, `agent/codex/<task>`, `agent/cursor/<task>` (or `agent/<tool>/<task>`). Each starts from the latest `origin/lab`. A task that will end in production still starts there; only an owner-authorized bypass listed under Lab-first lifecycle starts from `origin/main`.
 - Release branches are `release/<name>`, started from the latest `origin/main`. They carry only commits already deployed and owner-approved on lab (by `git cherry-pick -x`), never `lab` as a whole, and are merged only with explicit owner approval. The canonical procedure is `release-babdoduk`.

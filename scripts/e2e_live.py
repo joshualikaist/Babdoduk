@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only end-to-end check of a deployed Babdoduk site (production or lab).
 
-    python scripts/e2e_live.py --base https://babdoduk.vercel.app
+    python scripts/e2e_live.py --base https://www.babdodukms.com
     python scripts/e2e_live.py --base https://babdoduk-lab.vercel.app --out .local/e2e-live
 
 It opens the real site in Chromium the way a visitor does (Korean and English, a 390x844 phone and a
@@ -37,7 +37,7 @@ from urllib.parse import urldefrag, urljoin, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 KST = dt.timezone(dt.timedelta(hours=9))
-PROD_HOST = "babdoduk.vercel.app"
+PROD_HOST = "www.babdodukms.com"   # babdoduk.vercel.app answers DEPLOYMENT_NOT_FOUND since about 2026-11-18
 LAB_HOST = "babdoduk-lab.vercel.app"
 LANGS = ("ko", "en")
 VIEWPORTS = {"phone": (390, 844), "desktop": (1280, 800)}
@@ -298,7 +298,7 @@ def finish_signals(rep: Report, signals: dict):
     errors = [e for e in errors if "Failed to load resource" not in e]
     rep.check("no console errors", not errors, " | ".join(errors[:6]))
     rep.check("no page errors", not signals["page_errors"], " | ".join(signals["page_errors"][:6]))
-    own = lambda u: urlparse(u).hostname in (urlparse(rep.base).hostname, "babdoduk.vercel.app", LAB_HOST)         or (urlparse(u).hostname or "").endswith(".supabase.co")
+    own = lambda u: urlparse(u).hostname in (urlparse(rep.base).hostname, PROD_HOST, LAB_HOST)         or (urlparse(u).hostname or "").endswith(".supabase.co")
     # Third-party hosts (hot-linked article photos, fonts) are outside our control: their failures warn.
     bad = [f"{s} {u} (on {p})" for u, s, p in signals["bad"] if u not in aborted and own(u)]
     for u, s, p in signals["bad"]:
@@ -607,7 +607,7 @@ def summary_text(rep: Report) -> str:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--base", required=True, help="https://babdoduk.vercel.app or https://babdoduk-lab.vercel.app")
+    parser.add_argument("--base", required=True, help="https://www.babdodukms.com or https://babdoduk-lab.vercel.app")
     parser.add_argument("--out", default=str(ROOT / ".local" / "e2e-live"))
     args = parser.parse_args(argv)
     out = Path(args.out)

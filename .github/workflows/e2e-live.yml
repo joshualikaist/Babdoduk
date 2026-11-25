@@ -77,7 +77,7 @@ jobs:
         id: prod
         if: env.TARGET == 'both' || env.TARGET == 'prod'
         continue-on-error: true
-        run: python scripts/e2e_live.py --base https://babdoduk.vercel.app --out .local/e2e-live
+        run: python scripts/e2e_live.py --base https://www.babdodukms.com --out .local/e2e-live
       - name: Lab
         id: lab
         if: env.TARGET == 'both' || env.TARGET == 'lab'

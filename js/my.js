@@ -514,6 +514,12 @@
     }).catch(function () { state.view = 'error'; render(); });
   }
   function busy(on) { state.busy = on; app.setAttribute('aria-busy', on ? 'true' : 'false'); }
+  // Signing in or linking leaves this page while it is busy. A phone that brings the page back from its
+  // back-forward cache (the visitor pressed back on the sign-in screen) would otherwise keep every button
+  // dead until a reload (2026-11-25).
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted && state.busy) busy(false);
+  });
 
   app.addEventListener('click', function (e) {
     var el;

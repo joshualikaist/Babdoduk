@@ -337,6 +337,26 @@ def test_signed_out_offers_both_providers_with_a_full_page_redirect(browser):
     context.close()
 
 
+def test_back_from_the_sign_in_screen_the_buttons_work_again(browser):
+    # 2026-11-25: a sign-in leaves the page while it is busy; a phone that restores the page from its
+    # back-forward cache must not keep every button dead until a reload.
+    context, page, errors, _ = open_page(browser)
+    wait_view(page, "카카오로 계속하기")
+    page.get_by_role("button", name="카카오로 계속하기").click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some(c => c[0] === 'oauth')")
+    assert page.get_attribute("#myApp", "aria-busy") == "true"
+    # Not from the cache (an ordinary pageshow): nothing changes, the redirect is still on its way.
+    page.evaluate("window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted: false}))")
+    assert page.get_attribute("#myApp", "aria-busy") == "true"
+    page.evaluate("window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted: true}))")
+    assert page.get_attribute("#myApp", "aria-busy") == "false"
+    page.get_by_role("button", name="Google로 계속하기").click()
+    page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.filter(c => c[0] === 'oauth').length === 2")
+    assert [c[1] for c in fakedb(page)["calls"] if c[0] == "oauth"] == ["kakao", "google"]
+    assert errors == []
+    context.close()
+
+
 def test_inside_the_talk_app_google_becomes_open_in_the_default_browser(browser):
     ua = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36 KAKAOTALK 10.4.0"
     context, page, errors, _ = open_page(browser, ua=ua)
