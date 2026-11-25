@@ -1,10 +1,46 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T16:08:58+09:00",
+  "generatedAt": "2026-11-25T22:12:42+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 59,
+  "count": 60,
   "events": [
+    {
+      "id": "4c25d47a-f84d-49ac-9c0a-d273dcfa63fd",
+      "title": "2026 AI시스템학과 학과설명회",
+      "summary": "AI시스템학과 학과설명회에서 학과 정보를 안내하며 참석자에게 식사를 제공합니다.",
+      "startAt": "2026-11-25T18:00:00+09:00",
+      "endAt": "2026-11-25T19:00:00+09:00",
+      "dateText": "2026년 11월 25일(수)",
+      "timeText": "18:00~19:00",
+      "location": {
+        "name": "Fusion Hall",
+        "building": "E4",
+        "room": "1층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "식사",
+        "source": "text"
+      },
+      "organizer": "",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "manual",
+          "name": "Manual"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "경품"
+      },
+      "audience": {
+        "text": "새내기 학생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "4861d28f-64c3-4527-8381-ddf02199f18e",
       "title": "제3회 교무처 & 학사과정생 간담회",
