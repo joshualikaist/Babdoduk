@@ -20,7 +20,7 @@ function openDialog() {
 }
 function ensure() {
   if (map || loading || !stage) return;
-  loading = import('./campus-map.js?v=201354f9fc').then(({ mount }) => {
+  loading = import('./campus-map.js?v=fbebb9c687').then(({ mount }) => {
     map = mount(stage, {
       lang, t,
       onOpen(id) {

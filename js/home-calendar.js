@@ -64,7 +64,7 @@
     (archiveEvents || []).forEach(add);
     Object.keys(days).forEach(function (day) {
       days[day].sort(function (a, b) {
-        return String(a.ev.startAt || '').localeCompare(String(b.ev.startAt || '')) || a.ev.id.localeCompare(b.ev.id);
+        return (b.active - a.active) || String(a.ev.startAt || '').localeCompare(String(b.ev.startAt || '')) || a.ev.id.localeCompare(b.ev.id);
       });
     });
     return days;
@@ -459,17 +459,17 @@
     var joinUrl = item.active ? safeHref(sign.join) : '';
     if (joinUrl) {
       actions.push('<a class="btn ' + (regUrl ? 'btn-secondary' : 'btn-primary') + ' hc-ev-apply" href="' + esc(joinUrl) + '" target="_blank" rel="noopener">' +
-        esc(t('home.cal.ev.join', '온라인 참여')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
+        esc(t('home.cal.ev.join', '온라인 참여')) + newTab + '</a>');
     }
     if (regUrl) {
       actions.push('<a class="btn btn-primary hc-ev-apply" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' +
-        esc(t('home.cal.ev.apply', '신청하기')) + ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
+        esc(t('home.cal.ev.apply', '신청하기')) + newTab + '</a>');
     }
     var source = publicSource(ev);
     if (source) {
       actions.push('<a class="hc-ev-link" href="' + esc(source.url) + '" target="_blank" rel="noopener">' +
         esc(source.type === 'instagram' ? t('home.cal.ev.instagram', '인스타그램 원문 보기') : t('home.cal.ev.original', '원문 보기')) +
-        ' <span aria-hidden="true">↗</span>' + newTab + '</a>');
+        newTab + '</a>');
     }
     if (actions.length) rows.push('<p class="hc-ev-actions">' + actions.join('') + '</p>');
     var via = sourceKey(ev);
@@ -571,7 +571,7 @@
     els.answer.removeAttribute('data-i18n');
     els.answer.textContent = text;
     els.all.removeAttribute('data-i18n');
-    els.all.textContent = state.status === 'error' ? t('home.cal.hub', '꽁밥 페이지 →') : t('home.cal.all', '전체 일정 →');
+    els.all.textContent = state.status === 'error' ? t('home.cal.hub', '꽁밥 페이지') : t('home.cal.all', '전체 일정 보기');
     var published = state.status === 'ready' && F.toKst(state.live.generatedAt);
     els.published.textContent = published
       ? fill(t('home.free.asOf', '마지막 변경 {time}'), { time: dateLabel(F.ymd(published)) + ' ' + hm(published) }) : '';

@@ -271,7 +271,7 @@ def test_a_failed_load_is_never_shown_as_an_empty_schedule(browser):
     assert not any(word in text for word in ("일정 없음", "기록 없음", "예정된 꽁밥이 없어요", "오늘은 없어요"))
     assert page.locator("#homeCalGrid .hc-dot").count() == 0 and page.locator("#homeCalDay").is_hidden()
     link = page.locator("#homeCalAll")
-    assert link.inner_text() == "꽁밥 페이지 →" and link.get_attribute("href") == "ggongbab.html#free"
+    assert link.inner_text() == "꽁밥 페이지" and link.get_attribute("href") == "ggongbab.html#free"
     context.close()
 
 
@@ -437,7 +437,7 @@ def test_english_strings(browser):
     assert page.locator(".hc-ev-time").first.inner_text() == "12:00"
     assert page.locator(".hc-ev-head").first.inner_text() == "Refreshments"
     assert page.locator(".hc-ev-sub").first.inner_text() == "첫수융합포럼 · E11 101호 · Sign-up needed"
-    assert page.locator("#homeCalAll").inner_text() == "All events →"
+    assert page.locator("#homeCalAll").inner_text() == "See all events"
     assert page.locator("#homeCalPublished").inner_text().startswith("Last changed Oct 1 (Thu)")
     page.locator("#langToggle").click()
     assert answer(page) == "오늘은 없어요 · 다음 10월 7일 (수)"
@@ -712,4 +712,52 @@ def test_four_or_more_listings_scroll_inside_the_day(browser):
     three = {"generatedAt": LIVE["generatedAt"], "events": rows[:3]}
     context, page, _ = open_home(browser, live=three)
     assert page.locator("#homeCalDay .hc-events-scroll").count() == 0 and page.locator(".hc-ev").count() == 3
+    context.close()
+
+
+def test_remaining_listings_come_first_and_ended_ones_follow_by_time(browser):
+    """Owner 2026-11-25: ended listings at the top pushed the remaining ones below the fold of the
+    day's scroll box. On the selected day the remaining ones come first by time, the ended ones after
+    them by time; the box still starts scrolling at four. A past day keeps plain time order."""
+    today = [ev("early", "2026-10-01T05:00:00+09:00", title="새벽 간식"),
+             ev("lunch", "2026-10-01T12:00:00+09:00", "2026-10-01T13:00:00+09:00", title="점심 간담회"),
+             ev("breakfast", "2026-10-01T07:00:00+09:00", "2026-10-01T08:00:00+09:00", title="아침 세미나"),
+             ev("brunch", "2026-10-01T10:00:00+09:00", "2026-10-01T11:00:00+09:00", title="브런치 토크"),
+             ev("coffee", "2026-10-01T08:00:00+09:00", "2026-10-01T08:30:00+09:00", title="커피 모임")]
+    past = [ev("late", "2026-09-29T18:00:00+09:00", "2026-09-29T19:00:00+09:00", title="저녁 세미나"),
+            ev("morning", "2026-09-29T09:00:00+09:00", "2026-09-29T10:00:00+09:00", title="아침 강연")]
+    for size in ((390, 844), (360, 800)):
+        context, page, errors = open_home(browser, live={"generatedAt": LIVE["generatedAt"], "events": today},
+                                          archive={"generatedAt": LIVE["generatedAt"], "windowDays": 30, "events": past},
+                                          size=size)
+        assert answer(page) == "오늘 2개 · 10:00부터"
+        assert page.locator(".hc-ev-title").all_inner_texts() == ["브런치 토크", "점심 간담회", "새벽 간식", "아침 세미나", "커피 모임"]
+        assert page.locator(".hc-ev-time").all_inner_texts() == ["10:00", "12:00", "05:00", "07:00", "08:00"]
+        assert [page.locator(".hc-ev").nth(i).evaluate("el => el.classList.contains('is-past')") for i in range(5)] == [
+            False, False, True, True, True]
+        box = page.locator("#homeCalDay .hc-events-scroll")
+        assert box.count() == 1
+        shown = box.evaluate("""b => { const r = b.getBoundingClientRect();
+          return [...b.querySelectorAll('.hc-ev:not(.is-past)')].map(e => e.getBoundingClientRect().bottom - r.top <= b.clientHeight + 1); }""")
+        assert shown == [True, True]
+        cell(page, "2026-09-29").click()
+        assert page.locator(".hc-ev-title").all_inner_texts() == ["아침 강연", "저녁 세미나"]
+        assert not errors
+        context.close()
+
+
+@pytest.mark.parametrize("width, height", [(320, 844), (360, 800), (390, 844), (520, 900)])
+def test_phone_tap_targets_are_44_px_and_the_rows_keep_their_place(browser, width, height):
+    """Owner 2026-11-25: on phones the month arrows and the "전체 일정 보기" link are 44 px tap targets,
+    grown by an invisible hit area; the month bar and the foot keep the height they had."""
+    context, page, _ = open_home(browser, size=(width, height))
+    m = page.evaluate("""() => { const r = e => e.getBoundingClientRect(), all = document.getElementById('homeCalAll');
+      const foot = r(document.querySelector('.home-cal-foot')), card = r(document.getElementById('homeCal'));
+      return {navs: [...document.querySelectorAll('.hc-nav')].map(e => [r(e).width, r(e).height]),
+              month: r(document.querySelector('.hc-month')).height, all: [r(all).width, r(all).height],
+              allTop: r(all).top - foot.top, allBottom: card.bottom - r(all).bottom,
+              fontSize: getComputedStyle(all).fontSize, overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth}; }""")
+    assert len(m["navs"]) == 2 and all(w >= 44 and h >= 44 for w, h in m["navs"]), m
+    assert m["all"][1] >= 44 and m["fontSize"] == "13px", m
+    assert m["month"] <= 36.5 and m["allTop"] >= 0 and m["allBottom"] >= 0 and m["overflow"] <= 0, m
     context.close()

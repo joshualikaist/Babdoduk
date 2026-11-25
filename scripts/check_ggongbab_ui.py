@@ -204,7 +204,7 @@ def open_ended_hand_out(browser, base, report):
         open_past(page)
         assert page.locator('.gg-past[data-past-id="open-over"]').count() == 1
         assert page.locator('.gg-past[data-past-id="open-running"]').count() == 0
-        assert "사전 신청" not in page.locator(".gg-card").first.inner_text()
+        assert "신청 필요" not in page.locator(".gg-card").first.inner_text()
         page.locator('.gg-chip[data-group="food"][data-value="refreshment"]').click()
         assert live_ids() == ["open-running"], live_ids()
         page.locator('.gg-chip[data-group="food"][data-value="meal"]').click()
@@ -1023,7 +1023,7 @@ def past_listings(browser, base, report):
             assert archive.locator(".gg-past-badge").all_inner_texts() == ["종료"] * len(visible_past)
             links = archive.locator("a").evaluate_all(
                 "els => els.map(a => [a.closest('.gg-past').dataset.pastId, a.getAttribute('href'), a.target, a.rel, a.textContent])")
-            assert links == [["past-notice", "https://example.org/notice", "_blank", "noopener", "공지 보기 ↗(새 창)"]], links
+            assert links == [["past-notice", "https://example.org/notice", "_blank", "noopener", "공지 보기(새 창)"]], links
             assert all("지난 꽁밥 안내" in text for text in archive.locator(".gg-past-note").all_inner_texts())
             archive.scroll_into_view_if_needed()
             box, filters = archive.bounding_box(), page.locator(".gg-filters").bounding_box()
@@ -1226,7 +1226,7 @@ def meeting_links(browser, base, report):
                 page.add_init_script("localStorage.setItem('babdoduk-lang', 'en')")
             page.goto(base + "/ggongbab.html")
             page.locator(".gg-card").first.wait_for()
-            join, register, required = ("Join online", "Register", "Sign-up needed") if lang == "en" else ("온라인 참여", "신청하기", "사전 신청")
+            join, register, required = ("Join online", "Register", "Sign-up needed") if lang == "en" else ("온라인 참여", "신청하기", "신청 필요")
             only = page.locator('[data-id="zoom-only"]')
             assert only.locator(".gg-btn", has_text=join).get_attribute("href") == zoom
             assert only.locator(".gg-btn", has_text=register).count() == 0 and only.locator(".gg-reg-badge").count() == 0
@@ -1237,7 +1237,7 @@ def meeting_links(browser, base, report):
             assert form.locator(".gg-btn", has_text=join).count() == 0
             row_link = form.locator(".gg-row-reg")
             assert row_link.get_attribute("href") == "https://forms.gle/example" and form.locator(".gg-reg-badge").count() == 0
-            assert row_link.inner_text().startswith("Sign up" if lang == "en" else "사전 신청"), row_link.inner_text()
+            assert row_link.inner_text().startswith("Sign up" if lang == "en" else "신청하기"), row_link.inner_text()
             assert only.locator(".gg-row-reg").count() == 0
             assert not errors, errors
             report["checks"] += 9
@@ -1414,7 +1414,9 @@ def run_checks(preview=False):
             report["checks"] += 1
             assert page.locator(".gg-card").count() == 10
             assert page.locator('[data-id="fixture-7"] .gg-sub').evaluate(
-                "el => el.scrollHeight > el.clientHeight && el.clientHeight <= 40")
+                "el => { const title = el.querySelector('.gg-title'), where = el.querySelector('.gg-where');"
+                " return title.scrollWidth > title.clientWidth && el.clientHeight <= 40"
+                " && where.scrollWidth <= where.clientWidth && where.getBoundingClientRect().top >= title.getBoundingClientRect().bottom; }")
             toggle = page.locator('[data-id="fixture-8"] .gg-card-toggle')
             toggle.click()
             assert toggle.get_attribute("aria-expanded") == "true" and page.locator('[data-id="fixture-8"] .gg-detail').is_visible()

@@ -51,7 +51,7 @@ MOCK_CLIENT = """(() => {
         t.active++; t.maxActive = Math.max(t.maxActive, t.active);
         const ch = {
           on(event, filter, cb) { Object.assign(ch, {event, filter, cb}); return ch; },
-          subscribe(cb) { ch.status = cb; queueMicrotask(() => cb(t.failSubscribe ? 'CHANNEL_ERROR' : 'SUBSCRIBED')); return ch; }
+          subscribe(cb) { ch.status = cb; if (!t.holdSubscribe) queueMicrotask(() => cb(t.failSubscribe ? 'CHANNEL_ERROR' : 'SUBSCRIBED')); return ch; }
         };
         t.channels.push(ch); return ch;
       },
@@ -160,16 +160,50 @@ def emit(page, kind, data):
 
 
 def test_browser_select_subscription_and_timestamp(ui):
-    page = ui["open"]()
+    with ui["page"].expect_response("**/data/ggongbab/latest.json"):
+        page = ui["open"]()
     page.locator(".gg-card").wait_for()
+    page.wait_for_function("feedTest.selects.length > 0")
+    page.wait_for_timeout(100)
     assert ids(page) == [row()["id"]]
     assert page.locator(".gg-updated").count() == 0
     assert page.evaluate("feedTest.selects.every(c => c.table === 'ggongbab_public_events')")
     assert page.evaluate("feedTest.selects[0].columns").split(",") == list(PUBLIC_COLUMNS)
     assert page.evaluate("feedTest.channels[0].filter") == {"event": "*", "schema": "public", "table": "ggongbab_public_events"}
     assert page.evaluate("feedTest.options.auth") == {"persistSession": False, "autoRefreshToken": False, "detectSessionInUrl": False}
-    assert not any(path == "/data/ggongbab/latest.json" for host, path in ui["requests"])
+    assert [path for host, path in ui["requests"] if path == "/data/ggongbab/latest.json"] == ["/data/ggongbab/latest.json"]
     assert not any(host == "public.invalid" for host, path in ui["requests"])
+
+
+def test_browser_snapshot_shows_first_and_db_swap_keeps_open_card_and_scroll(ui):
+    starts = ["2026-09-23T12:00:00+09:00", "2026-09-23T15:00:00+09:00", "2026-09-23T18:00:00+09:00",
+              "2026-09-24T12:00:00+09:00", "2026-09-24T15:00:00+09:00", "2026-09-25T12:00:00+09:00",
+              "2026-09-25T15:00:00+09:00", "2026-09-26T12:00:00+09:00"]
+    rows = [row(n + 1, start_at=start, end_at=None) for n, start in enumerate(starts)]
+    early = row(20, start_at="2026-09-23T11:00:00+09:00", end_at=None)
+    ui["snapshot"] = {"generatedAt": "2026-09-23T09:00:00+09:00", "events": [to_snapshot_event(item) for item in rows]}
+    page = ui["page"]
+    page.set_viewport_size({"width": 390, "height": 700})
+    ui["open"]([early] + rows, init="feedTest.holdSubscribe=true;")
+    page.locator(".gg-card").first.wait_for()
+    assert ids(page) == [item["id"] for item in rows]
+    assert page.evaluate("feedTest.selects.length") == 0
+    assert page.locator(".gg-updated").count() == 1
+    target = page.locator(f'.gg-card[data-id="{rows[4]["id"]}"]')
+    target.locator(".gg-card-toggle").click()
+    assert target.locator(".gg-detail").is_visible()
+    page.evaluate("id => { const el = document.querySelector(`.gg-card[data-id=\"${id}\"]`);"
+                  " window.scrollBy({top: el.getBoundingClientRect().top - 300, behavior: 'instant'}); }", rows[4]["id"])
+    before = page.evaluate("id => document.querySelector(`.gg-card[data-id=\"${id}\"]`).getBoundingClientRect().top", rows[4]["id"])
+    assert page.evaluate("scrollY") > 0
+    page.evaluate("feedTest.channels.at(-1).status('SUBSCRIBED')")
+    page.wait_for_function("document.querySelectorAll('.gg-card').length === 9")
+    assert ids(page) == [early["id"]] + [item["id"] for item in rows]
+    assert page.locator(".gg-updated").count() == 0
+    target = page.locator(f'.gg-card[data-id="{rows[4]["id"]}"]')
+    assert "is-open" in target.get_attribute("class") and target.locator(".gg-detail").is_visible()
+    after = page.evaluate("id => document.querySelector(`.gg-card[data-id=\"${id}\"]`).getBoundingClientRect().top", rows[4]["id"])
+    assert abs(after - before) <= 1, (before, after)
 
 
 def test_browser_insert_update_revision_and_delete_recalculates_ui(ui):

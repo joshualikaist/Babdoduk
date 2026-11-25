@@ -59,7 +59,7 @@ def browser():
 
 
 def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=None, clipboard="ok",
-             notice_seen=True, user_agent=None, archive_status=200, signed_in=False):
+             notice_seen=True, user_agent=None, archive_status=200, signed_in=False, live=None, hold=None):
     extra = {"user_agent": user_agent} if user_agent else {}
     context = browser.new_context(viewport={"width": size[0], "height": size[1]}, timezone_id="Asia/Seoul",
                                   service_workers="block", accept_downloads=True, **extra)
@@ -95,7 +95,9 @@ def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=
             return route.fulfill(content_type="application/javascript",
                                  body=f"window.BABDODUK_AUTH_CONFIG = {{enabled: true, hosts: ['{HOST}']}};")
         if path == "data/ggongbab/latest.json":
-            return route.fulfill(json=LIVE)
+            if hold is not None:
+                return hold.append(route)
+            return route.fulfill(json=live or LIVE)
         if path == "data/ggongbab/archive/index.json":
             return route.fulfill(json=ARCHIVE) if archive_status == 200 else route.fulfill(status=archive_status, body="")
         if path == "js/ggongbab-public-config.js" and not signed_in:
@@ -114,7 +116,9 @@ def open_hub(browser, query="", storage=None, lang="ko", size=(390, 844), share=
     page.clock.set_fixed_time(NOW)
     errors = []
     page.on("pageerror", lambda exc: errors.append(str(exc)))
-    page.goto(f"https://{HOST}/ggongbab.html{query}", wait_until="networkidle")
+    page.goto(f"https://{HOST}/ggongbab.html{query}", wait_until="load" if hold is not None else "networkidle")
+    if hold is not None:
+        return context, page, errors
     page.locator(".gg-card").first.wait_for()
     if signed_in:
         page.wait_for_function("() => JSON.parse(localStorage.getItem('__fakedb')).calls.some((c) => c[0] === 'saved_events')")
@@ -275,7 +279,7 @@ def test_changes_since_saving_ended_and_missing(browser):
     tags = dict(zip(rows.evaluate_all("els => els.map(el => el.dataset.savedId)"),
                     rows.locator(".gg-saved-tags").all_inner_texts()))
     assert tags["lunch"] == "변경됨" and tags["wed"] == ""
-    assert "gone" not in tags and "gone" not in [i["id"] for i in stored(page)["items"]]
+    assert "gone" not in tags and "gone" in [i["id"] for i in stored(page)["items"]]
     assert tags["morning"] == "종료" and "oldone" not in tags and "gonepast" not in tags
     assert {"oldone", "gonepast"} <= {i["id"] for i in stored(page)["items"]}
     assert page.locator(".gg-saved-n").inner_text() == "3"
@@ -299,6 +303,30 @@ def test_a_failed_list_never_takes_a_star_away(browser):
     row = page.locator('.gg-saved-row[data-saved-id="gone"]')
     assert row.locator(".gg-saved-tags").inner_text() == "확인 중"
     assert [i["id"] for i in stored(page)["items"]] == ["gone"]
+    assert not errors, errors
+    context.close()
+
+
+def test_a_star_whose_listing_left_the_list_is_kept_hidden_and_comes_back(browser):
+    gone = ev("gone", "2026-11-20T12:00:00+09:00", "2026-11-20T13:00:00+09:00", "E3", title="사라진 행사")
+    storage = saved_store(item("gone", gone["startAt"], gone["endAt"], title="사라진 행사"),
+                          item("wed", WED["startAt"], WED["endAt"], place="W8 · 101호 · W8 강의실"))
+    context, page, errors = open_hub(browser, storage=storage)
+    for _ in range(2):
+        assert card(page, "gone").count() == 0
+        assert page.locator('.gg-saved-row[data-saved-id="gone"]').count() == 0
+        assert page.locator(".gg-saved-n").inner_text() == "1"
+        assert sorted(i["id"] for i in stored(page)["items"]) == ["gone", "wed"]
+        page.reload(wait_until="networkidle")
+        page.locator(".gg-card").first.wait_for()
+    page_storage = {SAVED_KEY: page.evaluate(f"localStorage.getItem('{SAVED_KEY}')")}
+    assert not errors, errors
+    context.close()
+    kept = page_storage
+    context, page, errors = open_hub(browser, storage=kept, live=dict(LIVE, events=LIVE["events"] + [gone]))
+    assert card(page, "gone").count() == 1
+    assert card(page, "gone").locator(".gg-save").get_attribute("aria-pressed") == "true"
+    assert page.locator(".gg-saved-n").inner_text() == "2"
     assert not errors, errors
     context.close()
 
@@ -514,5 +542,58 @@ def test_english_and_phone_layout(browser):
         star = card(page, "lunch").locator(".gg-save").bounding_box()
         row = card(page, "lunch").bounding_box()
         assert star["x"] + star["width"] <= row["x"] + row["width"] + 0.5
+        assert not errors, errors
+        context.close()
+
+
+def test_no_free_food_count_before_the_list_arrives(browser):
+    held = []
+    context, page, errors = open_hub(browser, hold=held)
+    page.locator("#foodHubTabFree").wait_for()
+    for _ in range(50):
+        if held:
+            break
+        page.wait_for_timeout(100)
+    assert held
+    assert page.locator("#foodHubTabFree").inner_text().strip() == "🍱 꽁밥"
+    assert page.locator(".gg-counts").inner_text().startswith("오늘 꽁밥 확인 중")
+    assert page.locator(".gg-radar-count").count() == 0
+    page.locator("#foodHubTabMenu").click()
+    page.locator("#foodHubMenu .gg-state, #foodHubMenu .km-warn, #foodHubMenu .km-grid").first.wait_for()
+    assert "꽁밥은" not in page.locator("#foodHubMenu").inner_text()
+    page.locator("#foodHubTabFree").click()
+    held[0].fulfill(json=LIVE)
+    page.locator(".gg-card").first.wait_for()
+    tab = page.locator("#foodHubTabFree").inner_text()
+    radar = re.search(r"\d+", page.locator(".gg-radar-count").inner_text()).group()
+    assert re.fullmatch(r"🍱 꽁밥\s+\d+", tab.strip()) and tab.split()[-1] == radar, (tab, radar)
+    assert not errors, errors
+    context.close()
+
+
+def test_phone_listing_keeps_the_place_on_its_own_line(browser):
+    long = ev("long", "2026-11-09T15:00:00+09:00", "2026-11-09T16:00:00+09:00", "E11",
+              title="아주 긴 제목으로 확인하는 캠퍼스 진로 탐색과 융합 연구 협력 그리고 함께하는 따뜻한 식사 " * 2)
+    feed = dict(LIVE, events=LIVE["events"] + [long])
+    for lang, width in (("ko", 360), ("ko", 390), ("en", 360), ("ko", 1440)):
+        context, page, errors = open_hub(browser, lang=lang, size=(width, 900), live=feed)
+        rows = page.locator(".gg-feed .gg-card").evaluate_all("""els => els.map(el => {
+          const title = el.querySelector('.gg-title'), where = el.querySelector('.gg-where');
+          const t = title.getBoundingClientRect(), w = where.getBoundingClientRect();
+          return {id: el.dataset.id, featured: el.hasAttribute('data-featured'), card: el.getBoundingClientRect().height,
+                  deadline: !!el.querySelector('.gg-time.is-deadline'),
+                  titleHeight: t.height, titleCut: title.scrollWidth > title.clientWidth,
+                  whereHeight: w.height, whereCut: where.scrollWidth > where.clientWidth,
+                  below: w.top >= t.bottom - 0.5, where: where.textContent.trim()};
+        })""")
+        assert rows and all(r["titleHeight"] <= 20 and r["whereHeight"] <= 20 for r in rows), rows
+        assert all(r["below"] and r["where"] and not r["where"].startswith("·") and not r["whereCut"] for r in rows), rows
+        assert all(r["card"] <= 112 for r in rows if not r["featured"] and not r["deadline"]), rows
+        assert next(r for r in rows if r["id"] == "long")["titleCut"], rows
+        assert next(r for r in rows if r["id"] == "long")["where"] == "E11 · 101호", rows
+        open_card(page, "long")
+        opened = card(page, "long").locator(".gg-title").evaluate("el => el.scrollWidth <= el.clientWidth && el.getBoundingClientRect().height > 20")
+        assert opened
+        assert page.evaluate("document.documentElement.scrollWidth") <= width
         assert not errors, errors
         context.close()

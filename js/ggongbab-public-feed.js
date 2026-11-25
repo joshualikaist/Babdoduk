@@ -139,7 +139,7 @@
       }).catch(function () {  });
       return cleanup;
     }
-    async function fallback(token) {
+    async function fallback(token, quiet) {
       var timer;
       try {
         snapshotAbort = typeof AbortController === 'function' ? new AbortController() : null;
@@ -158,7 +158,7 @@
         generatedAt = data.generatedAt || null;
         hasData = true; state = 'snapshot-fallback'; emit();
       } catch (e) {
-        if (current(token) && !hasData && options.onError) options.onError();
+        if (current(token) && !hasData && !quiet && options.onError) options.onError();
       } finally { cancel(timer); }
     }
     function fail(token) {
@@ -241,6 +241,7 @@
       await detach();
       if (!current(token)) return;
       if (!config) { await fallback(token); return; }
+      if (!hasData) fallback(token, true);
       deadlineTimer = schedule(function () { fail(token); }, 12000);
       try {
         if (!client) {

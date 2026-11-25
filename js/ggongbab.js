@@ -253,11 +253,11 @@
     var changed = savedChanges(ev);
     if (changed.length) html += '<span class="gg-changed-label">' + esc(t('gg.live.changed', '변경됨')) + '</span>';
     html += '</p><p class="gg-sub"><span class="gg-title" id="' + titleId + '" role="heading" aria-level="3">' + esc(ev.title) + '</span>' +
-      '<span class="gg-where' + (where ? '' : ' is-unknown') + '"> · ' + esc(where || t('gg.placeTbd', '장소 미정')) + '</span></p></div>';
+      '<span class="gg-where' + (where ? '' : ' is-unknown') + '">' + esc(where || t('gg.placeTbd', '장소 미정')) + '</span></p></div>';
     if (regUrl) html += '<a class="gg-row-reg" href="' + esc(regUrl) + '" target="_blank" rel="noopener">' +
-      esc(sign.required === 'true' ? t('gg.registerRequiredShort', '사전 신청') : t('gg.registerShort', '신청')) +
+      esc(sign.required === 'true' ? t('gg.registerRequiredShort', '신청하기') : t('gg.registerShort', '신청하기')) +
       '<span class="gg-sr"> ' + esc(ev.title) + ' ' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
-    else if (sign.required === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','사전 신청')) + '</span>';
+    else if (sign.required === 'true') html += '<span class="gg-reg-badge">' + esc(t('gg.regRequired','신청 필요')) + '</span>';
     html += saveButtonHtml(ev);
     html += '</div>';
     html += '<div class="gg-detail" id="' + detailId + '"' + (open ? '' : ' hidden') + '>';
@@ -380,8 +380,7 @@
       var place = (next.location || {}).building || shortPlace(next);
       html += '<button type="button" class="gg-radar-cta" data-gg-scroll="' + esc(next.id) + '">' +
         '<span class="gg-radar-next">' + esc(t('gg.radar.next', '다음 꽁밥')) + '</span> ' +
-        esc((s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' ' + F.dishLabel(next, t) + (place ? ' · ' + place : '')) +
-        ' <span aria-hidden="true">→</span></button>';
+        esc((s ? hm(s) : t('gg.timeTbd', '시간 미정')) + ' ' + F.dishLabel(next, t) + (place ? ' · ' + place : '')) + '</button>';
     }
     return html + '</section>';
   }
@@ -400,20 +399,24 @@
     return '<p class="gg-counts">' + esc(freePart + ' · ' + menuPart) + '</p>';
   }
   function tabsHtml() {
-    var todayN = todayUpcoming(nowKst()).length;
+    var todayN = state.free.status === 'ready' ? '  ' + todayUpcoming(nowKst()).length : '';
     var html = '<div class="food-hub-tabs" role="tablist" aria-label="' + esc(t('gg.tabsAria', '꽁밥과 학식')) + '">';
     var free = state.activeSection === 'free';
-    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + free + '" tabindex="' + (free ? 0 : -1) + '">🍱 ' + esc(t('gg.tab.free', '꽁밥')) + '  ' + todayN + '</button>';
+    html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabFree" data-hub-tab="free" aria-controls="foodHubFree" aria-selected="' + free + '" tabindex="' + (free ? 0 : -1) + '">🍱 ' + esc(t('gg.tab.free', '꽁밥')) + todayN + '</button>';
     html += '<button type="button" class="food-hub-tab" role="tab" id="foodHubTabMenu" data-hub-tab="menu" aria-controls="foodHubMenu" aria-selected="' + !free + '" tabindex="' + (free ? -1 : 0) + '">🍚 ' + esc(t('gg.tab.menu', '학식')) + '</button>';
     return html + '</div>';
   }
-  function emptyFreeHtml(now) {
-    var menuSnap = menuCtl && menuCtl.snapshot ? menuCtl.snapshot() : { restaurantCount: 0, stale: true };
+  function emptyMenuHtml(snap) {
+    var menuSnap = snap || (menuCtl && menuCtl.snapshot ? menuCtl.snapshot() : { status: state.menu.status, restaurantCount: 0, stale: true });
+    if (menuSnap.status === 'loading' || state.menu.status === 'loading') return '';
     var menuN = menuSnap.stale ? 0 : (menuSnap.restaurantCount || 0);
+    return esc(t('gg.emptyTodayBody', '오늘 학식 {n}곳').replace('{n}', String(menuN))) + '<br>';
+  }
+  function emptyFreeHtml(now) {
     var html = '<div class="gg-state">';
     html += '<strong>' + esc(t('gg.emptyTodayTitle', '🌵 오늘은 꽁밥 가뭄이에요')) + '</strong>';
-    html += esc(t('gg.emptyTodayBody', '오늘 학식 {n}곳').replace('{n}', String(menuN)));
-    html += '<br><button type="button" class="km-cta" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기 →')) + '</button></div>';
+    html += '<span class="gg-empty-menu">' + emptyMenuHtml() + '</span>';
+    html += '<button type="button" class="km-cta" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기')) + '</button></div>';
     if (!futurePublic(now).length) {
       html += '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '맞는 꽁밥이 없어요')) + '</strong>' + '</div>';
     }
@@ -426,7 +429,7 @@
     if (kind === 'error') {
       var html = '<div class="gg-state"><strong>' + esc(t('gg.errorTitle', '행사 목록을 불러오지 못했어요.')) + '</strong>' + esc(t('gg.errorBody', '잠시 후 다시 시도해 주세요.'));
       html += '<br><button type="button" data-gg-retry>' + esc(t('gg.retry', '다시 시도')) + '</button>';
-      html += '<button type="button" class="km-cta is-ghost" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기 →')) + '</button></div>';
+      html += '<button type="button" class="km-cta is-ghost" data-hub-tab="menu">' + esc(t('gg.toMenu', '오늘 학식 보러가기')) + '</button></div>';
       return html;
     }
     return '<div class="gg-state"><strong>' + esc(t('gg.emptyTitle', '맞는 꽁밥이 없어요')) + '</strong>' + '</div>';
@@ -517,13 +520,6 @@
     html += '<button type="button" class="gg-unsave" data-gg-unsave="' + esc(row.item.id) + '" aria-label="' +
       esc(t('gg.live.unsaveAria', '{title} 저장 지우기').replace('{title}', title)) + '"><span aria-hidden="true">×</span></button>';
     return html + '</li>';
-  }
-  var droppedIds = {};
-  function dropMissing(now) {
-    if (!savedStore) return;
-    var gone = savedGroups(now).missing.filter(function (row) { return !droppedIds[row.item.id]; });
-    gone.forEach(function (row) { droppedIds[row.item.id] = true; savedStore.remove(row.item.id); });
-    if (gone.length) pushChanged();
   }
   function savedHtml(now) {
     if (!savedStore) return '';
@@ -654,7 +650,6 @@
     if (source) {
       html += '<a class="gg-past-link" href="' + esc(source.url) + '" target="_blank" rel="noopener">' +
         esc(source.type === 'instagram' ? t('gg.archive.sourceInstagram', '인스타그램 보기') : t('gg.archive.source', '공지 보기')) +
-        ' <span aria-hidden="true">↗</span>' +
         '<span class="gg-sr">' + esc(t('gg.newTab', '(새 창)')) + '</span></a>';
     }
     return html + '</li>';
@@ -764,7 +759,6 @@
     var now = nowKst();
     cardSeq = 0;
     processEntry(now);
-    dropMissing(now);
     var focus = focusSelector();
     var html = '<header class="gg-hero"><h1>' + esc(t('ggongbab.title', '오늘의 꽁밥')) + '</h1>';
     html += metricHtml(now);
@@ -776,7 +770,7 @@
     html += '</div>';
     html += '<div id="foodHubMenu" class="food-hub-menu" role="tabpanel" aria-labelledby="foodHubTabMenu"' + (state.activeSection === 'menu' ? '' : ' hidden') + '></div>';
     html += '<aside class="gg-choose" aria-labelledby="ggChooseTitle"><p class="gg-choose-title" id="ggChooseTitle">' + esc(t('gg.choose.title', '뭘 먹을지 아직 못 정했다면')) + '</p>';
-    html += '<a class="gg-choose-link" href="choose.html">' + esc(t('gg.choose.cta', '메뉴 고르기 →')) + '</a></aside>';
+    html += '<a class="gg-choose-link" href="choose.html">' + esc(t('gg.choose.cta', '오늘 뭐 먹지')) + '</a></aside>';
     root.innerHTML = html;
     if (focus) {
       var again = root.querySelector(focus);
@@ -812,7 +806,7 @@
     var host = document.getElementById('foodHubMenu');
     if (!host || !window.BabdodukKaistMenu) return;
     var freeN = todayUpcoming(now).length;
-    var freeText = t('gg.menu.freeHint', '꽁밥은 {n}개 있어요.').replace('{n}', String(freeN));
+    var freeText = state.free.status === 'ready' ? t('gg.menu.freeHint', '꽁밥은 {n}개 있어요.').replace('{n}', String(freeN)) : '';
     if (menuCtl) {
       menuCtl.setFreeCountText(freeText);
       menuCtl.mount(host);
@@ -823,6 +817,8 @@
         state.menu.status = snap.status;
         var metric = document.querySelector('.gg-counts');
         if (metric) metric.outerHTML = metricHtml(nowKst(), snap);
+        var emptyMenu = document.querySelector('.gg-empty-menu');
+        if (emptyMenu) emptyMenu.innerHTML = emptyMenuHtml(snap);
       },
       freeCountText: freeText
     };
@@ -836,12 +832,36 @@
     if (!window.BabdodukLabFixtures) throw new Error('fixtures unavailable');
     return window.BabdodukLabFixtures;
   }
+  function feedAnchor() {
+    if (state.free.status !== 'ready' || !window.scrollY) return null;
+    var cards = root.querySelectorAll('.gg-feed .gg-card'), pick = null;
+    for (var i = 0; i < cards.length; i++) {
+      var box = cards[i].getBoundingClientRect();
+      if (box.bottom <= 0) continue;
+      if (box.top >= window.innerHeight) break;
+      if (!pick || cards[i].classList.contains('is-open')) pick = { id: cards[i].getAttribute('data-id'), top: box.top };
+      if (cards[i].classList.contains('is-open')) break;
+    }
+    return pick;
+  }
+  function keepAnchor(anchor) {
+    if (!anchor) return;
+    var cards = root.querySelectorAll('.gg-feed .gg-card');
+    for (var i = 0; i < cards.length; i++) {
+      if (cards[i].getAttribute('data-id') !== anchor.id) continue;
+      var shift = cards[i].getBoundingClientRect().top - anchor.top;
+      if (Math.abs(shift) >= 1) window.scrollBy({ top: shift, behavior: 'instant' });
+      return;
+    }
+  }
   function acceptFree(data) {
     if (!data || !Array.isArray(data.events)) throw new Error('bad payload');
     data = Object.assign({}, data, { events: F.occurrences(data.events) });
+    var anchor = feedAnchor();
     state.free.data = data;
     state.free.status = 'ready';
     render();
+    keepAnchor(anchor);
   }
   function loadFree() {
     if (mode === 'blocked') { state.free.status = 'blocked'; render(); return; }

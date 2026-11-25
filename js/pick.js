@@ -388,7 +388,7 @@
         '<h2 class="pick-result-title" tabindex="-1">' + esc(name) + '</h2>' +
         '<ul class="pick-menu">' + cleanItems(info.items).slice(0, 8).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul>' +
         (rows.length ? '<ul class="pick-facts">' + rows.join('') + '</ul>' : '') +
-        '<div class="pick-actions"><a class="pick-btn" href="ggongbab.html#menu">' + esc(t('pick.toMenu', '학식 전체 보기')) + ' →</a></div>';
+        '<div class="pick-actions"><a class="pick-btn" href="ggongbab.html#menu">' + esc(t('pick.toMenu', '학식 전체 보기')) + '</a></div>';
     } else if (pick.campus) {
       var campus = pick.campus;
       name = campus.name;

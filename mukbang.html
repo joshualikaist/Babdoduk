@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/site.css?v=71967c9f54" />
-  <link rel="stylesheet" href="css/magazine.css?v=eb0d68054d" />
+  <link rel="stylesheet" href="css/magazine.css?v=2c15edac80" />
   <link rel="stylesheet" href="css/choose.css?v=ff75825d29" />
 </head>
 <body class="mg-body">
@@ -140,7 +140,7 @@
               <span class="mg-pick-emoji" aria-hidden="true">🎰</span>
               <span class="mg-pick-title" id="mgPickTitle" data-i18n="mg.pick.title">오늘 뭐 먹지?</span>
               <span class="mg-pick-lead" data-i18n="mg.pick.lead">학식부터 배달까지 한 번에 골라 줘요.</span>
-              <span class="mg-pick-cta" data-i18n="mg.pick.cta">메뉴 뽑으러 가기 →</span>
+              <span class="mg-pick-cta" data-i18n="mg.pick.cta">오늘 뭐 먹지</span>
             </a>
           </section>
         </div>
@@ -272,7 +272,7 @@
         'kaist.restosAria': '식당',
         'kaist.staleNote': '{date} 메뉴예요. 오늘 메뉴는 아직 올라오지 않았어요.',
         'kaist.title': '오늘 KAIST 학식',
-        'kaist.toHub': '모든 식당 보기 →',
+        'kaist.toHub': '모든 식당 보기',
         'kaist.weekendNote': '{date} 메뉴예요. 주말엔 학식이 없어요.',
         'km.breakfast': '아침',
         'km.collapse': '메뉴 접기 ↑',
@@ -287,7 +287,7 @@
         'km.fav': '즐겨찾기',
         'km.hideStale': '최근 메뉴 숨기기',
         'km.lunch': '점심',
-        'km.mealLink': '{meal} 메뉴 보기 →',
+        'km.mealLink': '{meal} 메뉴 보기',
         'km.mealsAria': '식사 시간',
         'km.noMenuYet': '아직 올라온 메뉴가 없어요.',
         'km.recentTitle': '최근 학식 메뉴',
@@ -296,7 +296,7 @@
         'km.staleSaved': '최근 메뉴:',
         'km.staleTitle': '오늘 메뉴가 아직 안 올라왔어요.',
         'km.title': '이번 주 학식',
-        'km.toFree': '꽁밥 보러가기 →',
+        'km.toFree': '꽁밥 보러가기',
         'km.today': '오늘',
         'km.unfav': '즐겨찾기 해제',
         'km.weekendTitle': '주말엔 학식이 없어요.',
@@ -324,7 +324,7 @@
         'mg.medium.research': '연구',
         'mg.medium.youtube': 'YouTube',
         'mg.newTab': '(새 창)',
-        'mg.pick.cta': '메뉴 뽑으러 가기 →',
+        'mg.pick.cta': '오늘 뭐 먹지',
         'mg.pick.lead': '학식부터 배달까지 한 번에 골라 줘요.',
         'mg.pick.title': '오늘 뭐 먹지?',
         'mg.published': '{time} 발행',
@@ -381,7 +381,7 @@
         'kaist.restosAria': 'Cafeteria',
         'kaist.staleNote': 'Menu for {date}. Today’s menu is not posted yet.',
         'kaist.title': 'Today\'s KAIST cafeteria',
-        'kaist.toHub': 'All cafeterias →',
+        'kaist.toHub': 'All cafeterias',
         'kaist.weekendNote': 'Menu for {date}. No cafeteria meals on weekends.',
         'km.breakfast': 'Breakfast',
         'km.collapse': 'Show less ↑',
@@ -396,7 +396,7 @@
         'km.fav': 'Favorite',
         'km.hideStale': 'Hide latest menu',
         'km.lunch': 'Lunch',
-        'km.mealLink': 'See {meal} menus →',
+        'km.mealLink': 'See {meal} menus',
         'km.mealsAria': 'Meal time',
         'km.noMenuYet': 'No menu has been posted yet.',
         'km.recentTitle': 'Latest cafeteria menu',
@@ -405,7 +405,7 @@
         'km.staleSaved': 'Latest menu:',
         'km.staleTitle': 'Today’s menu isn’t up yet.',
         'km.title': 'This week\'s cafeteria',
-        'km.toFree': 'See free food →',
+        'km.toFree': 'See free food',
         'km.today': 'Today',
         'km.unfav': 'Remove favorite',
         'km.weekendTitle': 'No cafeteria meals on weekends.',
@@ -433,7 +433,7 @@
         'mg.medium.research': 'Research',
         'mg.medium.youtube': 'YouTube',
         'mg.newTab': '(opens in a new tab)',
-        'mg.pick.cta': 'Go draw a menu →',
+        'mg.pick.cta': 'What to eat',
         'mg.pick.lead': 'From the cafeteria to delivery, one pull picks.',
         'mg.pick.title': 'What should we eat?',
         'mg.published': 'Published {time} KST',
@@ -540,7 +540,7 @@
           '<h4>' + escapeHtml(item.title) + '</h4>' +
           sum +
           '<span class="mg-story-src"><b>' + escapeHtml(sourceLine(item)) + '</b>' +
-          '<span class="mg-story-out" aria-hidden="true"> ↗</span><span class="mg-sr">' + escapeHtml(t('mg.newTab', '(새 창)')) + '</span>' +
+          '<span class="mg-sr">' + escapeHtml(t('mg.newTab', '(새 창)')) + '</span>' +
           '</span>' +
           '</a>';
       }
@@ -817,6 +817,6 @@
         });
     })();
   </script>
-  <script src="js/kaist-menu.js?v=758cd518d3"></script>
+  <script src="js/kaist-menu.js?v=551bd9bb88"></script>
 </body>
 </html>

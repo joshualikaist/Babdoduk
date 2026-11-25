@@ -266,9 +266,9 @@
       MEALS.forEach(function (meal) {
         if (meal === state.meal) return;
         var n = ((data && data.restaurants) || []).filter(function (row) { return mealItems(row, meal).length; }).length;
-        if (n) html += '<button type="button" class="km-cta is-ghost" data-km-meal="' + meal + '">' + esc(t('km.mealLink', '{meal} 메뉴 보기 →').replace('{meal}', mealLabel(meal))) + '</button>';
+        if (n) html += '<button type="button" class="km-cta is-ghost" data-km-meal="' + meal + '">' + esc(t('km.mealLink', '{meal} 메뉴 보기').replace('{meal}', mealLabel(meal))) + '</button>';
       });
-      html += '<button type="button" class="km-cta is-ghost" data-hub-tab="free">' + esc(t('km.toFree', '꽁밥 보러가기 →')) + '</button>';
+      html += '<button type="button" class="km-cta is-ghost" data-hub-tab="free">' + esc(t('km.toFree', '꽁밥 보러가기')) + '</button>';
       return html + '</div>';
     }
     function daysHtml() {
@@ -316,7 +316,7 @@
           '<div class="gg-state"><strong>' + esc(t('km.errorTitle', '오늘 메뉴를 불러오지 못했어요.')) + '</strong>' +
           esc(options.freeCountText || '') +
           '<br><button type="button" class="km-cta" data-km-retry>' + esc(t('gg.retry', '다시 시도')) + '</button>' +
-          '<button type="button" class="km-cta is-ghost" data-hub-tab="free">' + esc(t('km.toFree', '꽁밥 보러가기 →')) + '</button></div>';
+          '<button type="button" class="km-cta is-ghost" data-hub-tab="free">' + esc(t('km.toFree', '꽁밥 보러가기')) + '</button></div>';
       }
       if (isDataForSelectedDate(state.data, state.selected)) {
         return subHtml(dateHeading(state.selected), visibleRestaurants(state.data).length) + menuHtml(state.data, false);
@@ -601,7 +601,7 @@
         html += '</div>';
       }
     }
-    html += '<p class="kaist-links"><a class="kaist-to-hub" href="ggongbab.html#menu">' + esc(t('kaist.toHub', '모든 식당 보기 →')) + '</a></p>';
+    html += '<p class="kaist-links"><a class="kaist-to-hub" href="ggongbab.html#menu">' + esc(t('kaist.toHub', '모든 식당 보기')) + '</a></p>';
     summary.innerHTML = html;
     restoreFocus(summary, focus);
   }

@@ -470,7 +470,7 @@
   function ranked() {
     return Object.keys(stats).filter(function (id) { return stats[id].entries >= 3; }).sort(function (a, b) {
       var x = stats[a], y = stats[b];
-      return y.titles / y.entries - x.titles / x.entries || y.wins / Math.max(y.matches, 1) - x.wins / Math.max(x.matches, 1);
+      return y.wins / Math.max(y.matches, 1) - x.wins / Math.max(x.matches, 1) || y.matches - x.matches || a.localeCompare(b);
     });
   }
   function renderLastPick() {
@@ -502,8 +502,9 @@
       label.textContent = (i + 1) + '. ' + name(id);
       var rate = document.createElement('span');
       rate.className = 'wc-ranking-rate';
-      rate.textContent = fill(t('wc.rankingRate', '우승 {t}% · 승률 {w}%'),
-        { t: Math.round(s.titles / s.entries * 100), w: Math.round(s.wins / Math.max(s.matches, 1) * 100) });
+      var share = { t: Math.round(s.titles / s.entries * 100), w: Math.round(s.wins / Math.max(s.matches, 1) * 100), n: s.matches.toLocaleString() };
+      rate.textContent = share.t > 0 ? fill(t('wc.rankingRate', '우승 {t}% · 승률 {w}%'), share)
+        : fill(t('wc.rankingPlayed', '승률 {w}% · {n}경기'), share);
       item.appendChild(label);
       item.appendChild(rate);
       list.appendChild(item);

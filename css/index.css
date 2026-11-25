@@ -1701,6 +1701,21 @@ html[data-wc-phase="soon"] .home-wc-photo {
   }
 }
 
+@media (max-width: 520px) {
+  .hc-nav {
+    width: 44px;
+    height: 44px;
+    margin-block: -4px;
+  }
+
+  .home-cal-all {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-block: -12px;
+  }
+}
+
 @media (min-width: 340px) and (max-width: 380px) {
   .home-actions {
     flex-wrap: nowrap;

@@ -140,26 +140,48 @@ test('no select before confirmed subscription; exact channel scope', async () =>
   h.status('SUBSCRIBED'); await flush(); assert.equal(h.ctl.status(), 'db-live');
 });
 test('INSERT upserts canonical ID without duplicate cards', async () => {
-  const h = harness(); await h.live(); h.change('INSERT', row('b')); h.change('INSERT', row('b'));
-  assert.deepEqual(h.latest().events.map(e => e.id), ['a', 'b']); assert.equal(h.frames.length, 2);
+  const h = harness(); await h.live(); const before = h.frames.length; h.change('INSERT', row('b')); h.change('INSERT', row('b'));
+  assert.deepEqual(h.latest().events.map(e => e.id), ['a', 'b']); assert.equal(h.frames.length, before + 1);
 });
 test('UPDATE replaces content and same revision ignores timestamp-only changes', async () => {
-  const h = harness(); await h.live();
+  const h = harness(); await h.live(); const before = h.frames.length;
   h.change('UPDATE', { ...row('a', 'r2'), title: 'Changed' });
   h.change('UPDATE', { ...row('a', 'r2'), updated_at: '2026-10-01' });
-  assert.equal(h.latest().events[0].title, 'Changed'); assert.equal(h.frames.length, 2);
+  assert.equal(h.latest().events[0].title, 'Changed'); assert.equal(h.frames.length, before + 1);
 });
 test('DELETE needs only old primary key and unknown deletion is a no-op', async () => {
-  const h = harness(); await h.live(); h.change('DELETE', { id: 'a' }); h.change('DELETE', { id: 'absent' });
-  assert.deepEqual(h.latest().events, []); assert.equal(h.frames.length, 2);
+  const h = harness(); await h.live(); const before = h.frames.length; h.change('DELETE', { id: 'a' }); h.change('DELETE', { id: 'absent' });
+  assert.deepEqual(h.latest().events, []); assert.equal(h.frames.length, before + 1);
 });
 test('full periodic reconciliation removes stale IDs and is authoritative empty', async () => {
-  const h = harness(); await h.live(); h.rows = []; await h.tick(60000);
-  assert.deepEqual(h.latest().events, []); assert.equal(h.snapshots, 0);
+  const h = harness(); await h.live(); const reads = h.snapshots; h.rows = []; await h.tick(60000);
+  assert.deepEqual(h.latest().events, []); assert.equal(h.snapshots, reads);
 });
-test('initial empty DB is successful and does not fall back', async () => {
+test('initial empty DB is successful, replaces the early snapshot and does not fall back', async () => {
   const h = harness(); h.rows = []; await h.live();
-  assert.deepEqual(h.latest().events, []); assert.equal(h.ctl.status(), 'db-live'); assert.equal(h.snapshots, 0);
+  assert.deepEqual(h.latest().events, []); assert.equal(h.ctl.status(), 'db-live'); assert.equal(h.snapshots, 1);
+});
+test('the static snapshot shows at once while the DB connects, and the DB then replaces it', async () => {
+  const h = harness(); await h.start();
+  assert.equal(h.snapshots, 1); assert.equal(h.ctl.status(), 'snapshot-fallback');
+  assert.deepEqual(h.latest().events.map(e => e.id), ['snapshot']); assert.equal(h.latest().generatedAt, '2026-09-22T00:00:00Z');
+  h.status('SUBSCRIBED'); await flush();
+  assert.equal(h.ctl.status(), 'db-live'); assert.deepEqual(h.latest().events.map(e => e.id), ['a']);
+  assert.equal(h.latest().generatedAt, null); assert.equal(h.snapshots, 1); assert.equal(h.failures, 0);
+});
+test('a snapshot arriving after the DB never replaces it', async () => {
+  const wait = deferred(); const h = harness({ loadSnapshot: () => wait.promise });
+  await h.live(); assert.deepEqual(h.latest().events.map(e => e.id), ['a']);
+  wait.resolve({ events: [{ id: 'stale' }] }); await flush();
+  assert.deepEqual(h.latest().events.map(e => e.id), ['a']); assert.equal(h.frames.length, 1); assert.equal(h.ctl.status(), 'db-live');
+});
+test('a failed early snapshot stays quiet while the DB can still answer', async () => {
+  const h = harness(); h.snapshotError = true; await h.start();
+  assert.equal(h.failures, 0); assert.equal(h.frames.length, 0);
+  h.status('SUBSCRIBED'); await flush();
+  assert.equal(h.failures, 0); assert.deepEqual(h.latest().events.map(e => e.id), ['a']);
+  const both = harness(); both.snapshotError = true; both.clientError = true; await both.start();
+  assert.equal(both.failures, 1); assert.equal(both.frames.length, 0);
 });
 test('reconnect reselect removes offline-deleted rows', async () => {
   const h = harness(); await h.live(); const count = h.calls.length;
@@ -179,9 +201,9 @@ test('DB recovery replaces rather than merges snapshot and suppresses generatedA
   assert.deepEqual(h.latest().events.map(e => e.id), ['a']); assert.equal(h.latest().generatedAt, null);
 });
 test('subscription failure preserves last successful DB even if fallback is stale', async () => {
-  const h = harness(); await h.live(); h.status('CLOSED'); await flush();
+  const h = harness(); await h.live(); const frames = h.frames.length, reads = h.snapshots; h.status('CLOSED'); await flush();
   assert.equal(h.ctl.status(), 'reconnecting'); assert.equal(h.latest().events[0].id, 'a');
-  assert.equal(h.frames.length, 1); assert.equal(h.snapshots, 1);
+  assert.equal(h.frames.length, frames); assert.equal(h.snapshots, reads + 1);
 });
 test('missing config loads JSON without constructing a client or a retry loop', async () => {
   const h = harness({ config: null }); await h.start();
@@ -237,7 +259,7 @@ test('change during select forces fresh select, never replays stale buffer over 
   await h.start(); h.status('SUBSCRIBED'); await flush();
   h.change('UPDATE', { ...row('a', 'r2'), title: 'Intermediate' });
   wait.resolve({ data: [row()] }); await flush();
-  assert.equal(h.latest().events[0].title, 'Newest'); assert.equal(h.frames.length, 1); assert.equal(h.calls.length, 4);
+  assert.equal(h.latest().events[0].title, 'Newest'); assert.equal(h.frames.filter(f => f.state === 'db-live').length, 1); assert.equal(h.calls.length, 4);
 });
 test('late failed-attempt select does not overwrite recovered DB', async () => {
   const h = harness(); const wait = deferred(); h.select = () => wait.promise;

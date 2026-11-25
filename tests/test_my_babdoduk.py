@@ -447,7 +447,7 @@ def test_signing_in_merges_the_guest_list_once_keeps_the_account_copy_and_can_un
     context.close()
 
 
-def test_the_account_list_shows_upcoming_and_past_and_drops_a_withdrawn_star(browser):
+def test_the_account_list_shows_upcoming_and_past_and_hides_a_withdrawn_star(browser):
     ghost = {"title": "사라진 행사", "startAt": "2026-11-12T12:00:00+09:00", "endAt": "2026-11-12T13:00:00+09:00", "place": "N1"}
     tables = {"saved_events": [
         {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": dict(seen(LUNCH), place="N1 다른 곳")},
@@ -465,7 +465,9 @@ def test_the_account_list_shows_upcoming_and_past_and_drops_a_withdrawn_star(bro
     assert [r[0] for r in rows] == ["my-row is-upcoming", "my-row is-ended"]
     assert "변경됨" in rows[0][1] and "지난 꽁밥" in rows[1][1] and "아침 행사" in rows[1][1]
     assert "사라진 행사" not in app_text(page) and "목록에서 빠짐" not in app_text(page)
-    page.wait_for_function("() => !JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.some((r) => r.event_id === 'ghost')")
+    page.wait_for_timeout(300)
+    assert any(r["event_id"] == "ghost" for r in fakedb(page)["tables"]["saved_events"]), "a withdrawn star stays in the account"
+    assert ["saved_events", "delete"] not in fakedb(page)["calls"]
     assert "지난 세미나" not in app_text(page)
     assert "수요 간담회" not in app_text(page), "another user's row never shows"
     assert "취소" not in app_text(page)
@@ -579,6 +581,58 @@ def test_leaving_needs_a_fresh_sign_in_and_a_tick(browser):
     db = fakedb(page)
     assert db.get("deleted") == UID and db["tables"]["saved_events"] == []
     assert page.evaluate(f"localStorage.getItem('{TOKEN_KEY}')") is None
+    assert errors == []
+    context.close()
+
+
+def test_a_star_not_on_the_public_list_is_kept_hidden_and_can_be_shown_again(browser):
+    """Review panel 2026-11-25: a star whose listing left the public list for a while is never deleted."""
+    gone = {"title": "잠깐 빠진 행사", "startAt": "2026-11-12T12:00:00+09:00", "endAt": "2026-11-12T13:00:00+09:00", "place": "N1"}
+    gone2 = {"title": "검토 중 행사", "startAt": "2026-11-13T12:00:00+09:00", "endAt": "2026-11-13T13:00:00+09:00", "place": "N1"}
+    tables = {"saved_events": [
+        {"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(LUNCH)},
+        {"user_id": UID, "event_id": "review1", "saved_at": "2026-11-08T12:00:00Z", "seen": gone},
+        {"user_id": UID, "event_id": "review2", "saved_at": "2026-11-08T12:00:00Z", "seen": gone2}],
+        "saved_places": [], "profiles": []}
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables})
+    wait_view(page, "저장한 꽁밥")
+    page.wait_for_timeout(300)
+    db = fakedb(page)
+    assert sorted(r["event_id"] for r in db["tables"]["saved_events"]) == ["lunch", "review1", "review2"]
+    assert ["saved_events", "delete"] not in db["calls"], "signing in never deletes a star"
+    assert page.locator(".my-row").count() == 1 and "저장한 꽁밥 1" in page.locator("#mySavedTitle").inner_text()
+    text = app_text(page)
+    assert "지금 목록에 없는 꽁밥 2개를 숨겼어요" in text
+    assert "잠깐 빠진 행사" not in text and "검토 중 행사" not in text and "삭제" not in text
+    show = page.get_by_role("button", name="다시 보기")
+    assert show.get_attribute("aria-expanded") == "false" and show.bounding_box()["height"] >= 44
+    page.keyboard.press("Tab")
+    show.focus()
+    page.keyboard.press("Enter")
+    page.wait_for_function("() => document.querySelectorAll('#mySavedHidden .my-row').length === 2")
+    toggle = page.locator("[data-my-hidden]")
+    assert toggle.get_attribute("aria-expanded") == "true" and toggle.inner_text() == "다시 숨기기"
+    assert page.evaluate("document.activeElement.hasAttribute('data-my-hidden')")
+    assert page.evaluate("getComputedStyle(document.activeElement).outlineStyle") != "none"
+    page.wait_for_function("() => document.getElementById('myToast').textContent === '목록에 없는 꽁밥 2개를 보여 드려요'")
+    hidden_text = page.locator("#mySavedHidden").inner_text()
+    assert "잠깐 빠진 행사" in hidden_text and "검토 중 행사" in hidden_text
+    assert page.locator("#mySavedHidden a").count() == 0
+    page.locator('#mySavedHidden [data-my-unstar="review1"]').click()
+    page.wait_for_function("() => !JSON.parse(localStorage.getItem('__fakedb')).tables.saved_events.some((r) => r.event_id === 'review1')")
+    assert sorted(r["event_id"] for r in fakedb(page)["tables"]["saved_events"]) == ["lunch", "review2"]
+    assert "지금 목록에 없는 꽁밥 1개를 숨겼어요" in app_text(page)
+    page.locator("[data-my-hidden]").click()
+    page.wait_for_function("() => document.getElementById('mySavedHidden').hidden")
+    assert page.get_by_role("button", name="다시 보기").count() == 1
+    assert errors == []
+    context.close()
+
+    context, page, errors, _ = open_page(browser, db={"user": user(), "tables": tables}, lang="en")
+    wait_view(page, "Saved free food")
+    assert "2 saved listings aren't on the list right now" in app_text(page)
+    page.get_by_role("button", name="Show").click()
+    page.wait_for_function("() => document.querySelectorAll('#mySavedHidden .my-row').length === 2")
     assert errors == []
     context.close()
 

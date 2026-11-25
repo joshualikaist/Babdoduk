@@ -25,6 +25,7 @@
     archive: null,
     listsOk: false,
     panel: '',
+    showHidden: false,
     editing: false,
     busy: false,
     loginError: /[?&#]error(=|_description=)/.test(location.search + location.hash),
@@ -96,30 +97,15 @@
       var changed = kind === 'upcoming' && L ? L.changes(item, live).length > 0 : false;
       return { item: item, ev: ev, kind: kind, changed: changed };
     }).filter(function (row) {
-      return row.kind !== 'missing' && !(row.kind === 'ended' && L && L.dayPassed(row.ev, today));
+      return !(row.kind === 'ended' && L && L.dayPassed(row.ev, today));
     }).sort(function (a, b) {
-      var order = { upcoming: 0, checking: 1, ended: 2 };
+      var order = { upcoming: 0, checking: 1, ended: 2, missing: 3 };
       if (order[a.kind] !== order[b.kind]) return order[a.kind] - order[b.kind];
       var x = Date.parse(a.ev.startAt) || 0, y = Date.parse(b.ev.startAt) || 0;
       return a.kind === 'ended' ? y - x : x - y;
     });
   }
 
-  function withdrawn(item, now) {
-    if (!state.listsOk || find(state.feed, item.id) || find(state.archive, item.id)) return false;
-    var seen = item.seen || {};
-    var end = F ? F.eventEnd({ id: item.id, title: seen.title, startAt: seen.startAt, endAt: seen.endAt || null }) : null;
-    return !(end && end < now);
-  }
-  function dropMissing() {
-    if (!state.store || !F) return;
-    var now = F.nowKst();
-    var gone = state.events.filter(function (item) { return withdrawn(item, now); });
-    gone.forEach(function (item) { state.store.remove(item.id); });
-    if (!gone.length) return;
-    state.events = state.store.list();
-    if (P && state.push === 'on') P.changed(pushIds(), lang());
-  }
 
   // ---- views -----------------------------------------------------------------------------------------
   function guestCount() {
@@ -179,28 +165,36 @@
     }
     return html + '<button type="button" class="my-close" data-my-merge-close aria-label="' + esc(t('my.close', '닫기')) + '"><span aria-hidden="true">×</span></button></div>';
   }
+  function savedRowHtml(row) {
+    var tag = { upcoming: '', checking: t('my.saved.checking', '확인 중'), ended: t('my.saved.ended', '지난 꽁밥'), missing: '' }[row.kind];
+    var tags = (row.changed ? '<span class="my-tag is-changed">' + esc(t('my.saved.changed', '변경됨')) + '</span>' : '') +
+      (tag ? '<span class="my-tag is-' + row.kind + '">' + esc(tag) + '</span>' : '');
+    var title = esc(row.ev.title || (row.item.seen || {}).title || '');
+    var body = '<span class="my-when">' + esc(dateText(row.ev.startAt)) + '</span><span class="my-what">' + title + '</span>';
+    var main = row.kind === 'upcoming'
+      ? '<a class="my-row-link" href="' + esc(L ? L.eventLink(row.item.id) : 'ggongbab.html') + '">' + body + '</a>'
+      : '<p class="my-row-link is-static">' + body + '</p>';
+    var unstar = '<button type="button" class="my-unstar" data-my-unstar="' + esc(row.item.id) + '" aria-pressed="true" aria-label="' +
+      esc(t('my.saved.remove', '저장 취소: {title}', { title: row.ev.title || (row.item.seen || {}).title || '' })) +
+      '"><span aria-hidden="true">★</span></button>';
+    return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + unstar + '</li>';
+  }
   function savedHtml(now) {
-    var rows = savedRows(now);
+    var all = savedRows(now);
+    var rows = all.filter(function (row) { return row.kind !== 'missing'; });
+    var hidden = all.filter(function (row) { return row.kind === 'missing'; });
+    if (!hidden.length) state.showHidden = false;
     var html = '<section class="my-card" aria-labelledby="mySavedTitle">';
     html += '<h2 class="my-h2" id="mySavedTitle"><span aria-hidden="true">★</span> ' + esc(t('my.saved.title', '저장한 꽁밥')) +
       ' <span class="my-n">' + rows.length + '</span></h2>';
-    if (!rows.length) {
-      html += '<p class="my-text">' + esc(t('my.saved.empty', '아직 저장한 꽁밥이 없어요. 오늘의 꽁밥에서 ☆를 눌러 보세요.')) + '</p>';
-    } else {
-      html += '<ol class="my-list">' + rows.map(function (row) {
-        var tag = { upcoming: '', checking: t('my.saved.checking', '확인 중'), ended: t('my.saved.ended', '지난 꽁밥') }[row.kind];
-        var tags = (row.changed ? '<span class="my-tag is-changed">' + esc(t('my.saved.changed', '변경됨')) + '</span>' : '') +
-          (tag ? '<span class="my-tag is-' + row.kind + '">' + esc(tag) + '</span>' : '');
-        var title = esc(row.ev.title || (row.item.seen || {}).title || '');
-        var body = '<span class="my-when">' + esc(dateText(row.ev.startAt)) + '</span><span class="my-what">' + title + '</span>';
-        var main = row.kind === 'upcoming'
-          ? '<a class="my-row-link" href="' + esc(L ? L.eventLink(row.item.id) : 'ggongbab.html') + '">' + body + '</a>'
-          : '<p class="my-row-link is-static">' + body + '</p>';
-        var unstar = '<button type="button" class="my-unstar" data-my-unstar="' + esc(row.item.id) + '" aria-pressed="true" aria-label="' +
-          esc(t('my.saved.remove', '저장 취소: {title}', { title: row.ev.title || (row.item.seen || {}).title || '' })) +
-          '"><span aria-hidden="true">★</span></button>';
-        return '<li class="my-row is-' + row.kind + '">' + main + (tags ? '<span class="my-tags">' + tags + '</span>' : '') + unstar + '</li>';
-      }).join('') + '</ol>';
+    if (rows.length) html += '<ol class="my-list">' + rows.map(savedRowHtml).join('') + '</ol>';
+    else if (!hidden.length) html += '<p class="my-text">' + esc(t('my.saved.empty', '아직 저장한 꽁밥이 없어요. 오늘의 꽁밥에서 ☆를 눌러 보세요.')) + '</p>';
+    if (hidden.length) {
+      html += '<div class="my-hidden"><p class="my-hidden-line">' + esc(t('my.saved.hidden', '지금 목록에 없는 꽁밥 {n}개를 숨겼어요', { n: hidden.length })) +
+        ' <button type="button" class="my-link-btn" data-my-hidden aria-expanded="' + state.showHidden + '" aria-controls="mySavedHidden">' +
+        esc(state.showHidden ? t('my.saved.hideHidden', '다시 숨기기') : t('my.saved.showHidden', '다시 보기')) + '</button></p>';
+      html += '<ol class="my-list is-hidden" id="mySavedHidden"' + (state.showHidden ? '' : ' hidden') + '>' +
+        (state.showHidden ? hidden.map(savedRowHtml).join('') : '') + '</ol></div>';
     }
     html += '<p class="my-fine"><a href="ggongbab.html">' + esc(t('my.saved.manage', '오늘의 꽁밥에서 저장·삭제하기')) + '</a></p>';
     return html + '</section>';
@@ -457,7 +451,6 @@
       var pushKnown = P ? P.status().then(function (s) { state.push = s; }, function () { state.push = 'hidden'; }) : null;
       return Promise.all([loadAccount(), loadFeed(), pushKnown]).then(function () {
         state.view = 'in';
-        dropMissing();
         if (P && state.push === 'on') P.sync(pushIds(), lang());
         if (state.next === 'leave') state.panel = 'leave';
         if (state.next === 'linked') announce(state.loginError ? t('my.account.linkFail', '지금은 로그인 방법을 연결할 수 없어요') : t('my.account.linked', '로그인 방법을 연결했어요'));
@@ -518,6 +511,14 @@
         busy(false); state.user = null; state.view = 'out'; render();
         announce(t('my.account.signedOut', '로그아웃했어요'));
       }, function () { busy(false); announce(t('my.account.signoutFail', '로그아웃하지 못했어요. 다시 시도해 주세요.')); });
+      return;
+    }
+    if (e.target.closest('[data-my-hidden]')) {
+      state.showHidden = !state.showHidden;
+      render();
+      var toggle = app.querySelector('[data-my-hidden]');
+      if (toggle) toggle.focus();
+      if (state.showHidden) announce(t('my.saved.shownHidden', '목록에 없는 꽁밥 {n}개를 보여 드려요', { n: app.querySelectorAll('#mySavedHidden .my-row').length }));
       return;
     }
     if ((el = e.target.closest('[data-my-unstar]'))) {

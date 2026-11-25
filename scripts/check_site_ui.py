@@ -1687,7 +1687,7 @@ def home_wc_promo(page):
         visible = page.locator(".home-wc-count").inner_text().strip()
         check(shot["shown"] and shot["title"] == "🏆 밥도둑 먹방 월드컵" and shot["states"] == ["10/16 오픈!"]
               and shot["count"] == "D-2 · 1일 2시간 남음" and visible == full, (width, "before the launch", shot, visible))
-        check(shot["soon"] and shot["soon"]["href"] == "event.html" and shot["soon"]["text"] == "자세히 보기 →" and not shot["live"],
+        check(shot["soon"] and shot["soon"]["href"] == "event.html" and shot["soon"]["text"] == "자세히 보기" and not shot["live"],
               (width, "links to the news page", shot))
         check(not any(shot["photos"]) and shot["photoSrc"] == [None, None] and len(shot["photoBlur"]) == 2 and all(b >= 3 for b in shot["photoBlur"]),
               (width, "two blurred placeholders, no dish photo before the launch", shot["photos"], shot["photoSrc"], shot["photoBlur"]))
@@ -1712,7 +1712,7 @@ def home_wc_promo(page):
     page.locator("#langToggle").click()
     shot = page.evaluate(SNAP)
     check(shot["title"] == "🏆 Food World Cup" and shot["states"] == ["Opens Oct 16!"] and shot["count"] == "D-2 · 1d 2h left"
-          and shot["soon"]["text"] == "Preview →" and shot["overflow"] <= 0, ("English before the launch", shot))
+          and shot["soon"]["text"] == "Preview" and shot["overflow"] <= 0, ("English before the launch", shot))
     page.clock.set_fixed_time(WC_RUNNING)
     page.reload(wait_until="networkidle")
     shot = page.evaluate(SNAP)
@@ -2368,8 +2368,11 @@ def worldcup_stats(page):
 
     cup = json.loads((ROOT / "data/content/worldcup.json").read_text(encoding="utf-8"))
     size, pool = cup["size"], cup["dishes"]
-    rows = [{"dish_id": d, "matches": 10, "wins": (i * 7) % 11, "entries": 5, "titles": i % 6}
+    rows = [{"dish_id": d, "matches": 10, "wins": (i * 7) % 8, "entries": 5, "titles": i % 6}
             for i, d in enumerate(pool)]
+    rows[0].update(matches=20, wins=18, entries=6, titles=0)
+    rows[1].update(matches=10, wins=9, entries=5, titles=2)
+    rows[2].update(matches=30, wins=24, entries=9, titles=0)
     recorded, failing = [], {"on": False}
 
     def server(route):
@@ -2395,6 +2398,14 @@ def worldcup_stats(page):
     page.locator("#wcRanking").wait_for()
     check(page.locator("#wcRankingList li").count() == 10 and "1,234" in page.locator("#wcRankingTotal").inner_text(),
           "the intro shows everyone's top ten and the number of games")
+    names = {i["id"]: i["nameKo"] for pack in (ROOT / "data/foods/packs").glob("*.json")
+             for i in json.loads(pack.read_text(encoding="utf-8"))["items"]}
+    ranking = [(n, r) for n, r in zip(page.locator("#wcRankingList .wc-ranking-name").all_inner_texts(),
+                                      page.locator("#wcRankingList .wc-ranking-rate").all_inner_texts())]
+    check(ranking[:3] == [(f"1. {names[pool[0]]}", "승률 90% · 20경기"), (f"2. {names[pool[1]]}", "우승 40% · 승률 90%"),
+                          (f"3. {names[pool[2]]}", "승률 80% · 30경기")],
+          ("the ranking goes by win rate, then by more games, and a dish without a title shows its games", ranking[:3]))
+    check(len(ranking) == 10 and all("우승 0%" not in r for _, r in ranking), ("no row reads 우승 0%", ranking))
     settled = ("n => document.getElementById('wcCount').textContent.startsWith(n + ' /')"
                " && [...document.querySelectorAll('.wc-card img')].every(i => i.complete)")
     page.locator("#wcStart").click()

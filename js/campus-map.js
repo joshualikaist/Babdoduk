@@ -455,7 +455,7 @@ export function mount(stage, options) {
       '<p class="home-map-card-meta">' + esc(hm(ev.startAt)) + (ev.location && ev.location.room ? ' · ' + esc(ev.location.room) : '') +
       (food ? ' · ' + esc(food) : '') + '</p>' +
       '<p class="home-map-card-actions">' +
-      (reg ? '<a class="home-map-card-link" href="' + esc(reg) + '" target="_blank" rel="noopener noreferrer">' + esc(opts.t('home.map.register', '신청하기')) + ' ↗</a>' : '') +
+      (reg ? '<a class="home-map-card-link" href="' + esc(reg) + '" target="_blank" rel="noopener noreferrer">' + esc(opts.t('home.map.register', '신청하기')) + '</a>' : '') +
       '<button type="button" class="home-map-card-open" data-ev="' + esc(ev.id) + '">' + esc(opts.t('home.map.open', '일정에서 보기')) + '</button></p></li>';
   }
   function placeHtml(g) {
