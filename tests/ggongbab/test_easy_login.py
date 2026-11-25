@@ -25,9 +25,13 @@ URL = {"portal": "https://portal.kaist.ac.kr/common/login/login.do",
        "mfa": "https://sso.kaist.ac.kr/auth/twofactor/mfa/login2Factor",
        "dooray": "https://kaist.gov-dooray.com/mail/systems/inbox",
        "stuck": "https://sso.kaist.ac.kr/auth/user/login/view",
-       "main": "https://portal.kaist.ac.kr/index.html"}
+       "main": "https://portal.kaist.ac.kr/index.html",
+       "idp": "https://kaist.gov-dooray.com/idp/multi",
+       "dooray-other": "https://kaist.gov-dooray.com/project/tasks"}
 STUCK = {"host": "sso.kaist.ac.kr", "path": "/auth/user/login/view"}
 BLANK = {"host": "", "path": "blank"}
+INBOX = {"host": "kaist.gov-dooray.com", "path": "/mail/systems/inbox"}
+IDP = {"host": "kaist.gov-dooray.com", "path": "/idp/multi", "member_button": True}
 DOORAY_HOST = "kaist.gov-dooray.com"
 
 
@@ -36,7 +40,7 @@ class Browser:
 
     def __init__(self, *pages, clicks_to=None, stall=False, answer=True):
         self.pages, self.index, self.clicks, self.expressions = list(pages), 0, [], []
-        self.navigations, self.created = [], []
+        self.navigations, self.created, self.reloads = [], [], 0
         self.clicks_to = clicks_to or {el.PORTAL_BUTTON: "portal", el.EASY_LOGIN_BUTTON: "view"}
         self.stall, self.answer, self.closed = stall, answer, False
 
@@ -54,8 +58,11 @@ class Browser:
         if method == "Target.attachToTarget":
             assert params["flatten"] is True
             return {"sessionId": "s1"}
-        if method in ("Page.navigate", "Target.createTarget"):
-            if method == "Page.navigate":
+        if method in ("Page.navigate", "Target.createTarget", "Page.reload"):
+            if method == "Page.reload":
+                assert session == "s1" and params == {}
+                self.reloads += 1
+            elif method == "Page.navigate":
                 assert session == "s1"
                 self.navigations.append(params["url"])
             else:
@@ -66,7 +73,7 @@ class Browser:
         expression = params["expression"]
         self.expressions.append(expression)
         if ".click()" in expression:
-            selector = json.loads(expression.split("document.querySelector(")[1].split(");")[0])
+            selector = json.loads(expression.split("const s = ")[1].split(";")[0])
             self.clicks.append(selector)
             if not self.stall:
                 self.index = min(self.index + 1, len(self.pages) - 1)
@@ -132,7 +139,7 @@ def test_two_clicks_then_the_code_goes_to_telegram_and_nowhere_else(local):
 def test_only_the_probe_and_the_two_allowed_clicks_ever_run_in_the_page(local):
     browser = Browser(PORTAL, VIEW, MFA)
     run(local, browser)
-    probe = el.PROBE % json.dumps(OWNER_ID)
+    probe = el.probe_js(OWNER_ID)
     for expression in browser.expressions:
         if ".click()" in expression:
             assert any(json.dumps(s) in expression for s in el.CLICKABLE)
@@ -436,7 +443,7 @@ def test_on_request_an_expired_login_goes_back_to_the_portal_login_page_and_a_ne
 def test_on_request_only_the_probe_the_two_clicks_and_the_one_fixed_address_ever_run(local):
     browser = Browser(STUCK, PORTAL, VIEW, MFA)
     ask(local, browser, "dooray", "stuck", portal_wait=True)
-    probe = el.PROBE % json.dumps(OWNER_ID)
+    probe = el.probe_js(OWNER_ID)
     assert all(e == probe or any(json.dumps(s) in e for s in el.CLICKABLE) for e in browser.expressions)
     assert browser.navigations == [el.PORTAL_LOGIN_URL] and el.page_kind(el.PORTAL_LOGIN_URL) == "portal_login"
     page = el.Page.__new__(el.Page)
@@ -480,7 +487,10 @@ def test_a_missing_portal_tab_is_opened_in_the_background_at_the_login_page(loca
     (("dooray", "portal"), {}, ("t1", "here")),
     (("dooray", "main"), {"portal_wait": True}, ("t1", "reset")),
     (("dooray", "main"), {}, (None, "EASY_LOGIN_NOT_NEEDED")),
-    (("dooray", "main"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
+    (("dooray", "main"), {"mail_wait": True}, ("t0", "mail")),
+    (("idp", "main"), {"mail_wait": True}, ("t0", "mail")),
+    (("dooray", "main", "stuck"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
+    (("dooray-other", "main"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
     (("dooray",), {"portal_wait": True}, (None, "open")),
     (("main", "view"), {"mail_wait": True}, ("t1", "here")),
     (("main", "stuck"), {"mail_wait": True}, (None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR")),
@@ -627,3 +637,54 @@ def test_no_automatic_resume_while_the_portal_tab_is_back_on_its_login_page(tmp_
         assert wd.may_resume("verified", clock["t"]) is None
     tabs["now"] = [{"id": "d", "url": URL["dooray"]}, {"id": "s", "url": URL["main"]}]
     assert wd.may_resume("verified", clock["t"]) == "login"
+
+
+# --- the Dooray tab that kept its mail list after the session ended (2026-11-26) --------------------
+def test_on_request_the_dooray_tab_is_reloaded_and_signs_in_again_without_a_code(local):
+    """Live, 2026-11-26: the Radar waited 31 hours for a login while the Dooray tab still showed the
+    inbox; every request stopped on TABS_UNCLEAR. A reload showed Dooray's account-type page, and its
+    staff/student button signed in at once on the Portal's still valid SSO session."""
+    browser = Browser(INBOX, IDP, INBOX, clicks_to={})
+    code, telegram = ask(local, browser, "dooray", "main", mail_wait=True)
+    assert code == "EASY_LOGIN_MAIL_BACK" and telegram.messages == []
+    assert browser.reloads == 1 and browser.navigations == [] and browser.created == []
+    assert browser.clicks == [el.DOORAY_MEMBER_BUTTON]
+    text, markup = el.outcome(code)
+    assert "두레이" in text and markup is None
+
+
+def test_when_dooray_asks_for_the_kaist_login_the_code_follows_as_usual(local):
+    browser = Browser(INBOX, IDP, VIEW, MFA)
+    code, telegram = ask(local, browser, "dooray", "main", mail_wait=True)
+    assert code == "EASY_LOGIN_CODE_SENT" and "67" in telegram.messages[0]
+    assert browser.clicks == [el.DOORAY_MEMBER_BUTTON, el.EASY_LOGIN_BUTTON] and browser.navigations == []
+
+
+def test_an_automatic_attempt_also_reloads_the_dooray_tab(local):
+    clock = Clock()
+    browser = Browser(INBOX, IDP, INBOX)
+    targets = [{"id": "t0", "url": URL["dooray"]}, {"id": "t1", "url": URL["main"]}]
+    code = el.attempt(local, 9224, notifier=Telegram(), targets=lambda port: targets, cdp=browser,
+                      now=lambda: NOW, sleep=clock.sleep, clock=clock, mail_host=DOORAY_HOST, mail_wait=True)
+    assert code == "EASY_LOGIN_MAIL_BACK" and browser.reloads == 1
+
+
+def test_an_unknown_dooray_login_page_is_not_clicked(local):
+    browser = Browser(INBOX, dict(IDP, member_button=False))
+    code, _ = ask(local, browser, "dooray", "main", mail_wait=True)
+    assert code == "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE" and browser.clicks == []
+
+
+def test_the_dooray_tab_is_never_sent_to_the_portal(local):
+    browser = Browser(INBOX, stall=True)
+    code, _ = ask(local, browser, "dooray", "main", mail_wait=True)
+    assert code == "EASY_LOGIN_STOPPED_NO_PROGRESS"
+    assert browser.reloads == 1 and browser.navigations == [] and browser.clicks == []
+
+
+def test_the_dooray_button_is_found_by_its_exact_label_only():
+    js = el.click_js(el.DOORAY_MEMBER_BUTTON)
+    assert json.dumps(el.DOORAY_MEMBER_LABEL) in js and "=== " in js
+    assert el.page_kind(URL["idp"]) == "" and el.page_kind(URL["idp"], DOORAY_HOST) == "dooray_idp"
+    assert el.page_kind(URL["dooray"], DOORAY_HOST) == "dooray_mail"
+    assert el.decide(dict(IDP)) == ("stop", "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE")

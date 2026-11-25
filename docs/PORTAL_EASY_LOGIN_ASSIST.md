@@ -124,6 +124,16 @@ The owner cannot always approve at once. The owner asked: "내가 로그인 다�
      (sent to the login page first);
    * Dooray's own SSO login page (the Portal tab is open, the Dooray tab is not), as it is;
    * no Portal tab at all while the Portal waits for a login: a background tab is opened at the login page.
+   * the Dooray tab, on its mail or on Dooray's account-type page (`/idp/multi`), while the Dooray Radar
+     waits for a login (`DOORAY_AUTH_REQUIRED`) and no SSO page is open: the tab is reloaded as it is
+     (`Page.reload`, no address of its own). On 2026-11-26 the tab still showed the inbox 31 hours after
+     the session had ended, because only the Radar's list requests saw the 401, and every request
+     stopped on `EASY_LOGIN_STOPPED_TABS_UNCLEAR`. After the reload Dooray asks for the account type; the
+     attempt presses **교직원 / 재학생 / 졸업생** (found by that exact label, `DOORAY_MEMBER_BUTTON`). While the
+     KAIST SSO session is still valid (the Portal is logged in) Dooray signs in at once: the attempt ends
+     with `EASY_LOGIN_MAIL_BACK` and the owner is told that no approval was needed. Otherwise the KAIST
+     login page follows and the usual steps send a code. An automatic attempt takes the same path when
+     it finds no login page. The Dooray tab is never sent to the Portal's login page.
 
    Any other set of tabs is `EASY_LOGIN_STOPPED_TABS_UNCLEAR` and nothing is touched. With no SSO page,
    no Portal login page and no login wait, it is `EASY_LOGIN_NOT_NEEDED`.

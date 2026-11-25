@@ -13,6 +13,9 @@ What it does, and nothing else, on the loopback CDP endpoint of the Ops Chrome:
   3. sso.kaist.ac.kr/auth/twofactor/mfa/login2Factor -> read the two visible one-digit boxes and
      the countdown, send one Telegram message, and leave. The watchdog's existing resume path
      notices the SSO page closing once the owner has approved.
+  For the Dooray Radar's login (2026-11-26) it starts one step earlier: the Dooray tab is reloaded as it
+  is, and on Dooray's account-type page it clicks the 교직원 / 재학생 / 졸업생 button; with a valid KAIST SSO
+  session Dooray then signs in without a code (EASY_LOGIN_MAIL_BACK), otherwise step 2 follows.
 
 It never types into a field, never selects ID/PW Login, never reads or stores a password, cookie
 or token, never approves anything, and stops on any page, error text, dialog or CAPTCHA it does
@@ -66,7 +69,12 @@ SSO_MFA = ("sso.kaist.ac.kr", "/auth/twofactor/mfa/login2Factor")
 PORTAL_LOGIN_URL = "https://portal.kaist.ac.kr/common/login/login.do"   # the only address it ever opens
 PORTAL_BUTTON = "#btn-sso-login"
 EASY_LOGIN_BUTTON = "#loginTab01 a.btn_login"
-CLICKABLE = frozenset({PORTAL_BUTTON, EASY_LOGIN_BUTTON})
+# Dooray's own login page asks for the account type first (2026-11-26, live). Its buttons carry only
+# generated class names, so the one it presses is found by its exact label.
+DOORAY_IDP_PATH = "/idp/multi"
+DOORAY_MEMBER_BUTTON = "dooray:member"
+DOORAY_MEMBER_LABEL = "교직원 / 재학생 / 졸업생"
+CLICKABLE = frozenset({PORTAL_BUTTON, EASY_LOGIN_BUTTON, DOORAY_MEMBER_BUTTON})
 
 CODES = frozenset({
     "EASY_LOGIN_CODE_SENT", "EASY_LOGIN_DISABLED", "EASY_LOGIN_NO_PUSH", "EASY_LOGIN_RATE_LIMITED",
@@ -77,7 +85,7 @@ CODES = frozenset({
     "EASY_LOGIN_STOPPED_UNRESPONSIVE", "EASY_LOGIN_STOPPED_NO_PROGRESS",
     "EASY_LOGIN_REQUESTED", "EASY_LOGIN_REQUEST_NOT_STARTED", "EASY_LOGIN_REQUEST_TOO_SOON",
     "EASY_LOGIN_REQUEST_DAILY_MAX", "EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_STOPPED_TABS_UNCLEAR",
-    "EASY_LOGIN_QUIET_HOURS",
+    "EASY_LOGIN_QUIET_HOURS", "EASY_LOGIN_MAIL_BACK",
 })
 
 # The owner's request: this button (telegram_review.Bot.events -> ("login", callback)) or a short
@@ -110,6 +118,7 @@ PROBE = r"""(() => {
   out.id_filled = value.length > 0;
   out.id_matches = expected === '' || value === expected;
   out.easy_button = visible(q('#loginTab01 a.btn_login'));
+  out.member_button = visible([...document.querySelectorAll('button')].find((b) => (b.textContent || '').trim() === %s));
   const msg = q('#mfaResultMsg');
   out.error = !!(msg && msg.textContent.trim());
   out.captcha = !!q('iframe[src*="captcha" i], [id*="captcha" i], [class*="captcha" i], .g-recaptcha');
@@ -127,24 +136,50 @@ PROBE = r"""(() => {
 })()"""
 
 
-def page_kind(url: str) -> str:
-    """'portal_login', 'sso_view', 'sso_mfa' or '' for any other page. Exact https host and path."""
+def probe_js(expected: str) -> str:
+    return PROBE % (json.dumps(expected), json.dumps(DOORAY_MEMBER_LABEL))
+
+
+def click_js(selector: str) -> str:
+    """The one click expression: a fixed CSS selector, or Dooray's account-type button by its label."""
+    return ("(() => { const s = %s; const e = s === %s ? [...document.querySelectorAll('button')].find("
+            "(b) => (b.textContent || '').trim() === %s) : document.querySelector(s); if (e) e.click(); return !!e; })()"
+            % (json.dumps(selector), json.dumps(DOORAY_MEMBER_BUTTON), json.dumps(DOORAY_MEMBER_LABEL)))
+
+
+def _kind(host: str, path: str, mail_host: str = "") -> str:
+    host, path = (host or "").lower(), (path or "").rstrip("/") or "/"
+    if mail_host and host == mail_host.lower():
+        if path == DOORAY_IDP_PATH:
+            return "dooray_idp"
+        if path == "/mail" or path.startswith("/mail/"):
+            return "dooray_mail"
+        return ""
+    return {PORTAL_LOGIN: "portal_login", SSO_VIEW: "sso_view", SSO_MFA: "sso_mfa"}.get((host, path), "")
+
+
+def page_kind(url: str, mail_host: str = "") -> str:
+    """'portal_login', 'sso_view', 'sso_mfa' or '' for any other page. Exact https host and path.
+    With `mail_host`, also Dooray's account-type login page ('dooray_idp') and its mail ('dooray_mail')."""
     try:
         parts = urlsplit(url or "")
     except ValueError:
         return ""
     if parts.scheme != "https":
         return ""
-    where = ((parts.hostname or "").lower(), parts.path.rstrip("/") or "/")
-    return {PORTAL_LOGIN: "portal_login", SSO_VIEW: "sso_view", SSO_MFA: "sso_mfa"}.get(where, "")
+    return _kind(parts.hostname or "", parts.path, mail_host)
 
 
-def decide(probe: dict) -> tuple:
-    """("click", selector) | ("code", "NN", seconds) | ("stop", REASON). Pure."""
-    kind = {PORTAL_LOGIN: "portal_login", SSO_VIEW: "sso_view", SSO_MFA: "sso_mfa"}.get(
-        (str(probe.get("host") or "").lower(), (str(probe.get("path") or "").rstrip("/") or "/")), "")
+def decide(probe: dict, mail_host: str = "") -> tuple:
+    """("click", selector) | ("code", "NN", seconds) | ("done", REASON) | ("stop", REASON). Pure."""
+    kind = _kind(str(probe.get("host") or ""), str(probe.get("path") or ""), mail_host)
     if probe.get("captcha"):
         return ("stop", "EASY_LOGIN_STOPPED_CAPTCHA")
+    if kind == "dooray_idp":
+        return ("click", DOORAY_MEMBER_BUTTON) if probe.get("member_button") else ("stop", "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE")
+    if kind == "dooray_mail":
+        # The KAIST SSO session was still valid (the Portal logged in): Dooray signed in without a code.
+        return ("done", "EASY_LOGIN_MAIL_BACK")
     if kind == "portal_login":
         return ("click", PORTAL_BUTTON) if probe.get("portal_button") else ("stop", "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE")
     if kind == "sso_view":
@@ -179,6 +214,7 @@ def message(code: str, seconds: Optional[int]) -> str:
 REMOTE = "원격 데스크톱으로 이 PC의 운영 Chrome에서 직접 로그인해 주세요."
 OUTCOME = {
     "EASY_LOGIN_NOT_NEEDED": "✅ 지금은 로그인이 필요하지 않습니다. 포털과 메일 수집 모두 로그인을 기다리지 않습니다.",
+    "EASY_LOGIN_MAIL_BACK": "✅ 두레이 메일에 다시 로그인했어요. 휴대폰 승인은 필요 없었어요. 메일 수집은 몇 분 안에 다시 시작돼요.",
     "EASY_LOGIN_REQUEST_TOO_SOON": "⏳ 방금 요청을 처리했습니다. 1분 뒤에 다시 눌러 주세요.",
     "EASY_LOGIN_REQUEST_DAILY_MAX": f"⛔ 오늘 로그인 요청을 {REQUEST_DAILY_MAX}번 다 썼습니다. " + REMOTE,
     "EASY_LOGIN_BUSY": "⏳ 다른 로그인 시도가 진행 중입니다. 잠시 뒤 다시 눌러 주세요.",
@@ -198,7 +234,7 @@ def outcome(code: str) -> tuple[str, Optional[dict]]:
     """The message for an owner's request that ended without a code, and its button (none when
     pressing again would not help yet)."""
     text = OUTCOME.get(code, STOPPED)
-    quiet = {"EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_REQUEST_TOO_SOON", "EASY_LOGIN_REQUEST_DAILY_MAX"}
+    quiet = {"EASY_LOGIN_NOT_NEEDED", "EASY_LOGIN_REQUEST_TOO_SOON", "EASY_LOGIN_REQUEST_DAILY_MAX", "EASY_LOGIN_MAIL_BACK"}
     return text, None if code in quiet else request_markup("🔑 다시 요청")
 
 
@@ -310,6 +346,11 @@ class Page:
             raise OpsError("EASY_LOGIN_STOPPED_UNEXPECTED_PAGE")
         self.client.call("Page.navigate", {"url": url}, session=self.session, timeout=10)
 
+    def reload(self) -> None:
+        """Reload the page as it is (no address of its own): the Dooray tab, whose mail list still shows
+        after the session ended, reaches Dooray's login page only when it loads again."""
+        self.client.call("Page.reload", {}, session=self.session, timeout=10)
+
     def evaluate(self, expression: str, timeout: float = 5):
         """The value, or None when the page did not answer (an open dialog, a navigation)."""
         try:
@@ -338,8 +379,10 @@ def choose_target(targets: list[dict]) -> tuple[Optional[dict], Optional[str]]:
 def request_target(targets: list[dict], *, mail_host: str, mail_tab: bool, portal_wait: bool,
                    mail_wait: bool) -> tuple[Optional[dict], str]:
     """Where the owner's request starts: (page, "here") on a login page to use as it is; (page,
-    "reset") for the Portal's tab, sent back to the Portal's login page first; (None, "open") when
-    the Portal has no tab at all; or (None, REASON). `mail_tab`: the Dooray tab lives in this
+    "reset") for the Portal's tab, sent back to the Portal's login page first; (page, "mail") for the
+    Dooray tab while the Radar waits for a login, reloaded so it shows Dooray's login page (2026-11-26:
+    the tab kept the mail list for 31 hours after the session ended, and every request stopped on
+    TABS_UNCLEAR); (None, "open") when the Portal has no tab at all; or (None, REASON). `mail_tab`: the Dooray tab lives in this
     browser too (unified mode), so a lone SSO page is the Portal's only while the Dooray tab is open.
     `portal_wait` / `mail_wait`: the watchdog's login latch / the Radar's DOORAY_AUTH_REQUIRED."""
     from .ops_browser import role_of
@@ -363,6 +406,9 @@ def request_target(targets: list[dict], *, mail_host: str, mail_tab: bool, porta
         return portal[0], ("here" if portal_login else "reset")
     if not portal and not sso and portal_wait:
         return None, "open"
+    if mail_wait and len(dooray) == 1 and not sso and page_kind(dooray[0].get("url", ""), mail_host) in (
+            "dooray_mail", "dooray_idp"):
+        return dooray[0], "mail"
     return None, "EASY_LOGIN_STOPPED_TABS_UNCLEAR"
 
 
@@ -398,13 +444,14 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
     else:
         target, reason = choose_target(pages)
         how = "here"
-        if target is None and reason == "EASY_LOGIN_NO_LOGIN_PAGE" and portal_wait:
+        if target is None and reason == "EASY_LOGIN_NO_LOGIN_PAGE" and (portal_wait or mail_wait):
             # The Portal waits for a login but its tab is not on a login page, for example the
             # verification page that expired unanswered at 06:23 on 2026-11-21: from then on every
             # attempt ended here, every 5 minutes, until the owner pressed 🔑 the next afternoon.
-            # Start afresh from the Portal's login page, as the owner's request does.
+            # Start afresh from the Portal's login page, as the owner's request does. The same for
+            # the Dooray tab that still shows the mail list after its session ended (2026-11-26).
             target, how = request_target(pages, mail_host=mail_host, mail_tab=mail_tab, portal_wait=portal_wait,
-                                         mail_wait=False)
+                                         mail_wait=mail_wait)
             if target is None and how != "open":
                 return "EASY_LOGIN_NO_LOGIN_PAGE" if how == "EASY_LOGIN_NOT_NEEDED" else how
         elif target is None:
@@ -412,7 +459,7 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
         state["attempts"].append(now())
     # The attempt counts from here, whatever happens next.
     atomic_json(local / STATE, state)
-    probe_js = PROBE % json.dumps(expected)
+    script = probe_js(expected)
     try:
         with cdp(port) as client:
             last_kind = None
@@ -425,13 +472,17 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
             if how == "reset":
                 page.navigate(PORTAL_LOGIN_URL)
                 last_kind = page_kind(target.get("url", ""))    # wait until the page has left it
+            if how == "mail":
+                page.reload()
+                last_kind = page_kind(target.get("url", ""), mail_host)
             # One fresh start from the Portal's login page when a page never finishes loading or a
             # click leads nowhere (2026-11-19/20: three requests in a row ended on a tab stuck
             # loading). Never after Easy Login's button: that click may already have sent the phone
-            # an approval request, and a second one would be confusing.
-            restart_left, easy_clicked, steps = True, False, 0
+            # an approval request, and a second one would be confusing. Never in the Dooray tab,
+            # which is not the Portal's.
+            restart_left, easy_clicked, steps = how != "mail", False, 0
             while steps < MAX_STEPS:
-                probe = _wait_for_next_page(page, probe_js, last_kind, sleep=sleep, clock=clock)
+                probe = _wait_for_next_page(page, script, last_kind, sleep=sleep, clock=clock, mail_host=mail_host)
                 if probe is None:
                     if restart_left and not easy_clicked:
                         restart_left = False
@@ -440,8 +491,8 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
                         continue
                     return "EASY_LOGIN_STOPPED_UNRESPONSIVE" if last_kind is None else "EASY_LOGIN_STOPPED_NO_PROGRESS"
                 steps += 1
-                action = decide(probe)
-                if action[0] == "stop":
+                action = decide(probe, mail_host)
+                if action[0] in ("stop", "done"):
                     return action[1]
                 if action[0] == "code":
                     result = notifier.send(message(action[1], action[2]), markup=request_markup("🔁 새 승인 번호 받기"))
@@ -454,23 +505,22 @@ def attempt(local: Path, port: int, *, notifier, targets, cdp, now=time.time, sl
                 if selector not in CLICKABLE:
                     return "EASY_LOGIN_STOPPED_UNEXPECTED_PAGE"
                 easy_clicked = easy_clicked or selector == EASY_LOGIN_BUTTON
-                last_kind = page_kind(f"https://{probe['host']}{probe['path']}")
-                page.evaluate(f"(() => {{ const e = document.querySelector({json.dumps(selector)}); "
-                              f"if (e) e.click(); return !!e; }})()")
+                last_kind = page_kind(f"https://{probe['host']}{probe['path']}", mail_host)
+                page.evaluate(click_js(selector))
     except OpsError:
         return "EASY_LOGIN_BROWSER_UNAVAILABLE"
     return "EASY_LOGIN_STOPPED_NO_PROGRESS"
 
 
-def _wait_for_next_page(page, probe_js, last_kind, *, sleep, clock):
+def _wait_for_next_page(page, script, last_kind, *, sleep, clock, mail_host=""):
     """The probe of the page once it is no longer `last_kind` (the first call takes the current
     page), or None if nothing answered or nothing moved within STEP_WAIT_SECONDS."""
     deadline = clock() + STEP_WAIT_SECONDS
     seen_at, ready_at = {}, {}
     while True:
-        probe = page.evaluate(probe_js)
+        probe = page.evaluate(script)
         if isinstance(probe, dict):
-            kind = page_kind(f"https://{probe.get('host', '')}{probe.get('path', '')}")
+            kind = page_kind(f"https://{probe.get('host', '')}{probe.get('path', '')}", mail_host)
             first = seen_at.setdefault(kind, clock())
             # Both SSO pages fill in after load: Remember ID writes the ID field, and the
             # verification page renders its digits. Give each a moment before judging it.
@@ -528,7 +578,7 @@ def run_assist(root: Path, *, requested: bool = False) -> int:
         text, markup = outcome(code)
         notifier.send(text, markup=markup)
     print(code)
-    return 0 if code == "EASY_LOGIN_CODE_SENT" else 1
+    return 0 if code in ("EASY_LOGIN_CODE_SENT", "EASY_LOGIN_MAIL_BACK") else 1
 
 
 def launch_request(root: Path):
