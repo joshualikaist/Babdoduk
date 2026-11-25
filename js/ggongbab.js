@@ -436,11 +436,12 @@
   }
   function feedNoteHtml(now) {
     var g = state.free.data && toKst(state.free.data.generatedAt);
-    if (!g) return '';
     var week = L && weekRows(now).length ? '<button type="button" class="gg-week-share" data-gg-share-week>' +
       esc(/^w:/.test(state.day) ? t('gg.live.shareThisWeek', '이 주 일정 공유') : t('gg.live.shareWeek', '이번 주 꽁밥 공유')) + '</button>' : '';
+    if (!g && !week) return '';
     var box = state.copy && state.copy.key === 'week' ? copyBoxHtml() : '';
-    return '<div class="gg-feed-note"><p class="gg-updated">' + esc(t('gg.updated', '마지막 변경')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>' + week + box + '</div>';
+    var updated = g ? '<p class="gg-updated">' + esc(t('gg.updated', '마지막 변경')) + ' ' + esc(dayLabel(g) + ' ' + hm(g)) + ' KST</p>' : '';
+    return '<div class="gg-feed-note">' + updated + week + box + '</div>';
   }
   // ---- 꽁밥 LIVE: the week to share, saved listings, the shared-link entry, the new-feature note ----
   function byStartAt(a, b) { return String(a.startAt || '').localeCompare(String(b.startAt || '')); }

@@ -200,6 +200,7 @@ def test_browser_snapshot_shows_first_and_db_swap_keeps_open_card_and_scroll(ui)
     page.wait_for_function("document.querySelectorAll('.gg-card').length === 9")
     assert ids(page) == [early["id"]] + [item["id"] for item in rows]
     assert page.locator(".gg-updated").count() == 0
+    assert page.locator(".gg-week-share").count() == 1, "live data has no snapshot time but keeps the week share"
     target = page.locator(f'.gg-card[data-id="{rows[4]["id"]}"]')
     assert "is-open" in target.get_attribute("class") and target.locator(".gg-detail").is_visible()
     after = page.evaluate("id => document.querySelector(`.gg-card[data-id=\"${id}\"]`).getBoundingClientRect().top", rows[4]["id"])
