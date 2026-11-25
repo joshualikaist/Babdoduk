@@ -39,6 +39,7 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import e2e_live as live  # noqa: E402  (pure helpers: phase, host tag, world cup window)
+settle, wait_for = live.settle, live.wait_for   # one copy of the page-wait helpers
 
 AXE_VERSION = "4.10.3"
 AXE_URL = f"https://cdn.jsdelivr.net/npm/axe-core@{AXE_VERSION}/axe.min.js"
@@ -248,14 +249,6 @@ def goto(q: Quality, page, path: str, settle_ms: int = 700):
     return resp
 
 
-def settle(page, ms: int = 600):
-    try:
-        page.wait_for_load_state("networkidle", timeout=8000)
-    except Exception:
-        pass
-    page.wait_for_timeout(ms)
-
-
 def scroll_through(page):
     page.evaluate("""async () => {
       const h = () => document.documentElement.scrollHeight;
@@ -263,14 +256,6 @@ def scroll_through(page):
       scrollTo(0, 0);
     }""")
     settle(page, 300)
-
-
-def wait_for(page, js: str, timeout: int = 15000) -> bool:
-    try:
-        page.wait_for_function(js, timeout=timeout)
-        return True
-    except Exception:
-        return False
 
 
 # ---- accessibility -------------------------------------------------------------------------------------

@@ -19,7 +19,7 @@ from ggongbab.portal_queue import PortalQueue, decide
 from ggongbab.prefilter import portal_detail_is_candidate, portal_list_warrants_detail
 from ggongbab.web.task_writer import PortalPayload
 
-from .conftest import TEST_NOW, FakeExtractor, make_extraction
+from .conftest import TEST_NOW, FakeExtractor
 from .test_pipeline_export import DOORAY_POST, FUTURE_TEXT, future_extraction
 from .test_web_agent import FakeWriter
 

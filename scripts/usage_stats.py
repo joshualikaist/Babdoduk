@@ -253,7 +253,7 @@ def report(call, days: int = 28, site: str = "prod", now: datetime | None = None
     since = (now - timedelta(days=days)).replace(minute=0, second=0, microsecond=0)
     where = {"prod": "실제 사이트", "lab": "시험 사이트", "all": "두 사이트 모두"}[site]
     events = event_names(root)
-    lines = [f"# 밥도둑 이용 통계", "",
+    lines = ["# 밥도둑 이용 통계", "",
              f"{since:%Y-%m-%d %H시}부터 {now:%Y-%m-%d %H시}까지 {days}일 · 방문 수는 {where} 기준 · 한국 시간", ""]
     lines += visits_section(call, since, site, page_names(root))
     lines += stars_section(call, since, events)

@@ -9,7 +9,7 @@ import portal_web_agent as agent
 from ggongbab import portal_detail_alternatives as alt
 from ggongbab.portal_known_schema import known_contract, KNOWN_HOST, KNOWN_LIST_PATH
 from ggongbab.web import resident
-from ggongbab.web.exit_codes import AuthRequired, UiContractError
+from ggongbab.web.exit_codes import AuthRequired
 from ggongbab.web.ui_contract import UiContract
 
 BASE = "https://" + KNOWN_HOST

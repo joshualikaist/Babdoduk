@@ -20,7 +20,8 @@ const KST = 'Asia/Seoul';
 // Our own sites only. The request's host decides which of them the calendar reads its feed from and links
 // to; any other host (a preview address, or a forged x-forwarded-host) gets the production site, so the
 // server never fetches from, or writes links to, an address a request names (security audit 2026-11-13).
-const ORIGINS = new Set(['www.babdodukms.com', 'babdodukms.com', 'babdoduk.vercel.app', 'babdoduk-lab.vercel.app']);
+// The old babdoduk.vercel.app address is gone (about 2026-11-18), so it falls back to production too.
+const ORIGINS = new Set(['www.babdodukms.com', 'babdodukms.com', 'babdoduk-lab.vercel.app']);
 const DEFAULT_ORIGIN = 'https://www.babdodukms.com';
 
 function siteOrigin(headers) {

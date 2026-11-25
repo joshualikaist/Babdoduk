@@ -137,7 +137,6 @@ def test_local_notifier_needs_both_config_and_a_stored_token(tmp_path):
 def test_the_local_telegram_push_says_in_korean_what_to_do(tmp_path, monkeypatch):
     """Owner 2026-11-12 ("이해하기 어려운 것들이 많아"): the phone says what happened, what it means for the site
     and what to do, in plain Korean with no English word, command or reason code."""
-    import re
     monkeypatch.setattr(notify.os, "name", "posix")
     (tmp_path / "alert-push.json").write_text(json.dumps({"provider": "telegram", "chat_id": "42"}), encoding="utf-8")
     opener = Opener()

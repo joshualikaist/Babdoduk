@@ -289,68 +289,8 @@
     lines.push('END:VEVENT', 'END:VCALENDAR');
     return lines.map(fold).join('\r\n') + '\r\n';
   }
-  function icsFileName(ev) {
-    var s = F.toKst(ev.startAt);
-    return 'babdoduk-' + (s ? F.ymd(s) : 'event') + '.ics';
-  }
-
-  function downloadIcs(ev, opts) {
-    var doc = global.document;
-    try {
-      var blob = new Blob([icsText(ev, opts)], { type: 'text/calendar;charset=utf-8' });
-      var a = doc.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = icsFileName(ev);
-      doc.body.appendChild(a);
-      a.click();
-      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-      markCalendarSent(ev);
-      return true;
-    } catch (err) {
-      return false;
-    }
-  }
-
-  // ---------- One calendar entry per listing (owner 2026-11-19) ----------
-  // A calendar file or add page always makes a new entry; a phone never replaces one it already has
-  // (owner: "동일한 행사가 두개 뜨는거지. 그거는 불필요한거잖아"). So this browser remembers each listing it sent
-  // to a calendar, with its start: the star's add skips a listing already sent for the same start, and a
-  // button asks for a second tap first. A listing whose time has moved is sent again, with a note to delete
-  // the old entry. (Signed-in iPhones use the one subscription of 마이 밥도둑 instead: docs/CALENDAR_FEED.md.)
-  var CAL_SENT_KEY = 'babdoduk-calendar-sent';
-  var CAL_SENT_MAX = 300;
-  function sentMap() {
-    try {
-      var value = JSON.parse(global.localStorage.getItem(CAL_SENT_KEY) || '{}');
-      return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-    } catch (err) {
-      return {};
-    }
-  }
-  // '' (never sent from this browser) | 'same' (sent for this start) | 'moved' (sent for another start).
-  function calendarSent(ev) {
-    var at = ev && sentMap()[ev.id];
-    if (typeof at !== 'string' || !at) return '';
-    return at === String(ev.startAt) ? 'same' : 'moved';
-  }
-  function markCalendarSent(ev) {
-    try {
-      var map = sentMap();
-      map[ev.id] = String(ev.startAt);
-      var ids = Object.keys(map);
-      if (ids.length > CAL_SENT_MAX) {
-        ids.sort(function (a, b) { return String(map[a]).localeCompare(String(map[b])); });
-        ids.slice(0, ids.length - CAL_SENT_MAX).forEach(function (id) { delete map[id]; });
-      }
-      global.localStorage.setItem(CAL_SENT_KEY, JSON.stringify(map));
-    } catch (err) { /* without storage nothing is remembered */ }
-  }
-  // iPhone and iPad (iPadOS says Macintosh): the devices 마이 밥도둑's calendar connection is offered on.
-  function appleMobile(ua) {
-    var nav = global.navigator || {};
-    ua = ua == null ? nav.userAgent || '' : ua;
-    return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && nav.maxTouchPoints > 1);
-  }
+  // The guest calendar file and its per-browser memory ('babdoduk-calendar-sent') were removed with the
+  // guest calendar flows (2026-11-24); the leftover helpers went on 2026-11-25.
 
   // ---------- Signed in only (owner 2026-11-24) ----------
   // "로그인을 하지 않으면 그런 기능을 아예 주지 말고, 로그인 시에만 그 기능이 첨부되도록": a guest gets no calendar
@@ -417,13 +357,7 @@
     canCalendar: canCalendar,
     googleCalendarUrl: googleCalendarUrl,
     icsText: icsText,
-    icsFileName: icsFileName,
-    downloadIcs: downloadIcs,
     ALARM_MINUTES: ALARM_MINUTES,
-    CAL_SENT_KEY: CAL_SENT_KEY,
-    calendarSent: calendarSent,
-    markCalendarSent: markCalendarSent,
-    appleMobile: appleMobile,
     eventLink: eventLink,
     weekLink: weekLink,
     inTalkApp: inTalkApp,

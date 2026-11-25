@@ -29,7 +29,7 @@ from ggongbab.portal_list_state import poller_lock
 from ggongbab.portal_session import PortalSessionProvider
 from ggongbab.resident_ops import Files, ops_browser_lines, status_lines
 from ggongbab.web.exit_codes import AuthRequired
-from ggongbab.windows_portal_host import INVENTORY_SCRIPT, STOP_SCRIPT, PortalHost, ResidentHost
+from ggongbab.windows_portal_host import INVENTORY_SCRIPT, STOP_SCRIPT, PortalHost
 
 ROOT = Path(__file__).resolve().parents[2]
 SECRET = "SYNTHETIC-SECRET-TITLE"

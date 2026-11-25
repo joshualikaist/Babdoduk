@@ -49,7 +49,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from ggongbab import dooray_radar as radar  # noqa: E402
 from ggongbab.collectors.dooray import DoorayCollector  # noqa: E402
-from ggongbab.config import KST, Settings  # noqa: E402
+from ggongbab.config import Settings  # noqa: E402
 from ggongbab.db.repository import MemoryRepository  # noqa: E402
 from ggongbab.exporter import build_archive, build_payload  # noqa: E402
 from ggongbab.models import EventExtraction, Evidence  # noqa: E402

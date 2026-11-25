@@ -9,7 +9,8 @@
  */
 window.BABDODUK_AUTH_CONFIG = Object.freeze({
   enabled: true,
-  hosts: Object.freeze(['www.babdodukms.com', 'babdodukms.com', 'babdoduk.vercel.app',
+  // The old babdoduk.vercel.app address is gone (about 2026-11-18) and no longer ours, so it is not listed.
+  hosts: Object.freeze(['www.babdodukms.com', 'babdodukms.com',
                         'babdoduk-lab.vercel.app', 'localhost', '127.0.0.1']),
   googleClientId: '167388091679-njkhvr7s81u2h1h9vvfb60sio0408l4m.apps.googleusercontent.com'
 });

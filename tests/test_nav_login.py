@@ -83,7 +83,7 @@ def test_english_and_signed_in_names(browser):
     context.close()
 
 
-@pytest.mark.parametrize("host", ["www.babdodukms.com", "babdoduk.vercel.app"])
+@pytest.mark.parametrize("host", ["www.babdodukms.com", "babdodukms.com"])
 def test_production_hosts_carry_the_sign_in_entry(browser, host):
     context, page, errors = open_page(browser, host, "index.html")
     assert page.locator("#navMy").count() == 1 and page.locator("#navMy").get_attribute("href") == "my.html"

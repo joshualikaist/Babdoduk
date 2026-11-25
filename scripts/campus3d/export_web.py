@@ -19,7 +19,6 @@ Writes into the --web folder:
                     lightmap frame, in the browser's axes (x east, y up, z south)
 """
 import json
-import math
 import os
 import sys
 from pathlib import Path

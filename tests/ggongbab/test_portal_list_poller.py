@@ -16,7 +16,6 @@ import portal_web_agent as agent
 import ggongbab.portal_session as sessions
 from ggongbab.config import KST
 from ggongbab.heartbeat import FIELDS, merge_heartbeat
-from ggongbab.ingest_marker import portal_external_key
 from ggongbab.portal_known_schema import known_contract
 from ggongbab.portal_list_contract import LIST_URL, list_query, require_list_request
 from ggongbab.portal_list_poller import PortalListPoller, ScanIncomplete, run_poller

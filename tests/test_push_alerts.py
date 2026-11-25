@@ -545,7 +545,7 @@ def wait_rpc(page, rpcs, n):
 def test_the_public_key_is_set_or_the_feature_stays_hidden():
     assert PUSH_KEY == "" or re.fullmatch(r"B[A-Za-z0-9_-]{86}", PUSH_KEY)
     hosts = re.search(r"var HOSTS = \[([^\]]*)\];", PUSH_JS).group(1)
-    assert re.findall(r"'([^']+)'", hosts) == ["babdoduk-lab.vercel.app", "www.babdodukms.com", "babdodukms.com", "babdoduk.vercel.app"]
+    assert re.findall(r"'([^']+)'", hosts) == ["babdoduk-lab.vercel.app", "www.babdodukms.com", "babdodukms.com"]
     assert "sb_secret_" not in PUSH_JS and "service_role" not in PUSH_JS
 
 

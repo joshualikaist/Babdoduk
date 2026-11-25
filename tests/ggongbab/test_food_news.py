@@ -1,6 +1,5 @@
 """Synthetic campus news sources; no live Portal/database/mailbox access."""
 import json
-from copy import deepcopy
 from datetime import datetime, timedelta
 
 import pytest

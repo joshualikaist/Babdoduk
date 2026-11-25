@@ -11,7 +11,6 @@ import re
 import shutil
 import subprocess
 import tempfile
-import uuid
 from pathlib import Path
 
 import pytest
@@ -250,7 +249,7 @@ def test_the_feed_is_read_only_from_our_own_sites_whatever_the_request_names():
                             ({"host": "x", "x-forwarded-host": "babdoduk.vercel.app.evil.example"}, "https://www.babdodukms.com"),
                             ({}, "https://www.babdodukms.com"),
                             ({"x-forwarded-host": "BabdodukMS.com"}, "https://babdodukms.com"),
-                            ({"host": "babdoduk.vercel.app"}, "https://babdoduk.vercel.app"),
+                            ({"host": "babdoduk.vercel.app"}, "https://www.babdodukms.com"),   # the old address is no longer ours
                             ({"host": "babdoduk-lab.vercel.app"}, "https://babdoduk-lab.vercel.app")):
         out = run(saved, LIVE, headers=headers)
         assert out["status"] == 200, headers

@@ -948,7 +948,6 @@ body::after {
   .btn:hover { transform: none; }
   .site-nav-wordmark,
   .scroll-progress-bar { animation: none; }
-  .explore-card,
   .btn,
   .nav-mega-panel {
     transition: none !important;

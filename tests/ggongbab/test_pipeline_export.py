@@ -16,7 +16,7 @@ from ggongbab.exporter import build_payload, write_payload
 from ggongbab.models import Evidence, RawItem
 from ggongbab.pipeline import Pipeline
 
-from .conftest import NEGATIVE_TEXT, POSITIVE_TEXT, REFERENCE, TEST_NOW, FakeExtractor, make_extraction
+from .conftest import NEGATIVE_TEXT, REFERENCE, TEST_NOW, FakeExtractor, make_extraction
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))

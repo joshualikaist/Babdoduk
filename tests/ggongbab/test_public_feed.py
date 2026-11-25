@@ -15,7 +15,7 @@ from ggongbab.config import KST
 from ggongbab.db.repository import MemoryRepository, SupabaseRepository
 from ggongbab.db.supabase_client import SupabaseClient, SupabaseError
 from ggongbab.exporter import build_payload, write_payload
-from ggongbab.public_feed import (PUBLIC_FIELDS, PUBLIC_COLUMNS, PublicFeedError,
+from ggongbab.public_feed import (PUBLIC_COLUMNS, PublicFeedError,
     commit_public_feed, prepare_public_feed, sync_public_feed, to_snapshot_event)
 from ggongbab.public_sanitizer import public_url
 from validate_content import validate_ggongbab_payload

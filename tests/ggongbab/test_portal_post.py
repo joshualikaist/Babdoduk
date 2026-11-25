@@ -13,7 +13,7 @@ from ggongbab.portal_discovery import build_discovery
 from ggongbab.portal_fetch import fetch_detail, iter_notices
 from ggongbab.portal_post import body_template
 from ggongbab.web.exit_codes import UiContractError
-from .test_portal_agent import BASE, HOST, BODY, TITLE, Response, notice, listing, install, args
+from .test_portal_agent import BASE, HOST, BODY, Response, notice, listing, install, args
 
 IDS = ("90000123", "90000456")
 

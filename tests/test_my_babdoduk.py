@@ -264,7 +264,8 @@ def test_on_for_lab_and_production():
     # (owner: "로그인은 푸시 및 배포가 안된거임? 이거까지 했어야지").
     assert re.search(r"enabled:\s*true", CONFIG)
     hosts = re.findall(r"'([^']+)'", re.search(r"hosts:\s*Object\.freeze\(\[([^\]]*)\]\)", CONFIG).group(1))
-    assert {"www.babdodukms.com", "babdodukms.com", "babdoduk.vercel.app", "babdoduk-lab.vercel.app"} <= set(hosts)
+    assert {"www.babdodukms.com", "babdodukms.com", "babdoduk-lab.vercel.app"} <= set(hosts)
+    assert "babdoduk.vercel.app" not in hosts   # the old address is gone and no longer ours (2026-11-25)
     for name in ("js/babdoduk-account.js", "js/babdoduk-auth-config.js", "js/my.js"):
         text = (ROOT / name).read_text(encoding="utf-8")
         assert "sb_secret_" not in text and "service_role" not in text, name
@@ -753,7 +754,7 @@ def test_the_calendar_card_shows_the_connection_like_a_setting(browser):
 def test_english_and_widths(browser, width):
     tables = {"saved_events": [{"user_id": UID, "event_id": "lunch", "saved_at": "2026-11-08T12:00:00Z", "seen": seen(LUNCH)}],
               "saved_places": [], "profiles": []}
-    context, page, errors, _ = open_page(browser, db={"user": user(providers=("google",), name="Grace Hopper Very Long Name Indeed")},
+    context, page, errors, _ = open_page(browser, db={"user": user(providers=("google",), name="Grace Hopper Very Long Name Indeed"), "tables": tables},
                                          lang="en", size=(width, 900))
     wait_view(page, "Saved free food")
     text = app_text(page)

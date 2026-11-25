@@ -12,15 +12,14 @@ import pytest
 
 from ggongbab.backfill import run_backfill
 from ggongbab.collectors.base import CollectorError
-from ggongbab.collectors.mail_archive import (MailArchiveCollector, message_to_raw_item,
-                                              read_state_of)
+from ggongbab.collectors.mail_archive import MailArchiveCollector, read_state_of
 from ggongbab.config import KST
 from ggongbab.db.repository import MemoryRepository
 from ggongbab.pipeline import Pipeline
 from ggongbab.prefilter import classify
 
 from .conftest import TEST_NOW, FakeExtractor
-from .test_pipeline_export import FUTURE, FUTURE_TEXT, ListCollector, _item, future_extraction
+from .test_pipeline_export import FUTURE, ListCollector, _item, future_extraction
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 9000
 GGONGBAB_BODY = (f"{FUTURE.month}월 {FUTURE.day}일 12시 N1 101호에서 삼성전자 Tech Lunch Talk을 진행합니다.\n"

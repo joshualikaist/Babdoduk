@@ -61,7 +61,7 @@ EMPTY_PUBLIC_CONFIG = "window.BABDODUK_PUBLIC_FEED_CONFIG=Object.freeze({SUPABAS
 SITE_HOST = "site-ui.invalid"
 # Hosts the launch gate tells apart (js/worldcup-gate.js): production, lab and localhost are served from
 # the same files here, so a check can load a page "as" each; every other host is refused.
-GATE_HOSTS = {"babdoduk.vercel.app": "production", "babdoduk-lab.vercel.app": "lab", "localhost": "localhost"}
+GATE_HOSTS = {"www.babdodukms.com": "production", "babdoduk-lab.vercel.app": "lab", "localhost": "localhost"}
 SERVED_HOSTS = {SITE_HOST, *GATE_HOSTS}
 
 
@@ -660,7 +660,7 @@ def lab_menu(page):
     more = "() => [...document.querySelectorAll('#navMorePanel a')].map(a => [a.getAttribute('href'), a.textContent.trim()])"
     page.set_viewport_size({"width": 1440, "height": 900})
     for lang in ("ko", "en"):
-        for host in ("babdoduk-lab.vercel.app", "babdoduk.vercel.app", SITE_HOST):
+        for host in ("babdoduk-lab.vercel.app", "www.babdodukms.com", SITE_HOST):
             for name in GUARD_PAGES + ["lab.html", "tip.html", "cardnews.html"]:
                 gate_page(page, host, "index.html")
                 page.evaluate("lang => localStorage.setItem('babdoduk-lang', lang)", lang)
@@ -1583,12 +1583,12 @@ def worldcup_gate(page):
 
     # Without a previewFrom in the data (production), no host opens it before the start.
     if "previewFrom" not in gate_window():
-        for host in ("babdoduk.vercel.app", "babdoduk-lab.vercel.app", "localhost"):
+        for host in ("www.babdodukms.com", "babdoduk-lab.vercel.app", "localhost"):
             shot = snap(host, "worldcup.html", WC_SOON)
             check(shot["locked"] and not shot["start"], (host, "no previewFrom: locked", shot))
     synthetic = gate_preview(page)
     # The lab override: only on lab and localhost (previewFrom), never on production or another host.
-    for host, early in (("babdoduk.vercel.app", False), (SITE_HOST, False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
+    for host, early in (("www.babdodukms.com", False), (SITE_HOST, False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
         shot = snap(host, "worldcup.html", WC_SOON)
         check(shot["locked"] == (not early) and shot["start"] == early, (host, "worldcup.html", shot))
         (mystery_open if early else mystery_hidden)(page.evaluate(MYSTERY_SNAP), (host, "worldcup.html"))
@@ -1710,7 +1710,7 @@ def worldcup_boundaries(page):
 
     # The production host: strict, whatever the data says.
     for phase, now in (("locked", WC_EVE_SECOND), ("live", WC_OPENS), ("live", WC_LAST_SECOND), ("ended", WC_ENDED)):
-        surfaces("babdoduk.vercel.app", now, phase)
+        surfaces("www.babdodukms.com", now, phase)
     # The lab host opens early (previewFrom) and closes with production: open at the last second before the
     # launch, still open at the last second, ended at midnight; the home promo goes then too.
     synthetic = gate_preview(page)
@@ -1816,12 +1816,12 @@ def home_wc_promo(page):
     # Lab opens it early (previewFrom); production does not. Without one in the data (production),
     # no host does; the override then runs on a synthetic previewFrom.
     if "previewFrom" not in gate_window():
-        for host in ("babdoduk.vercel.app", "babdoduk-lab.vercel.app", "localhost"):
+        for host in ("www.babdodukms.com", "babdoduk-lab.vercel.app", "localhost"):
             shot = snap(host, WC_SOON)
             check(shot["shown"] and not shot["live"] and shot["soon"] and shot["states"] == ["10/16 오픈!"],
                   (host, "no previewFrom: soon", shot))
     synthetic = gate_preview(page)
-    for host, early in (("babdoduk.vercel.app", False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
+    for host, early in (("www.babdodukms.com", False), ("babdoduk-lab.vercel.app", True), ("localhost", True)):
         shot = snap(host, WC_SOON)
         check(all(shot["photos"]) == early and (not any(shot["photoBlur"]) if early else all(shot["photoBlur"])), (host, "promo photos", shot))
         check(shot["shown"] and bool(shot["live"]) == early and bool(shot["soon"]) == (not early)

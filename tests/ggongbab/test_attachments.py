@@ -9,7 +9,7 @@ import pytest
 
 from ggongbab.collectors.dooray import AttachmentError, DoorayClient, DoorayCollector
 from ggongbab.db.repository import MemoryRepository
-from ggongbab.models import RawAttachment, RawItem
+from ggongbab.models import RawAttachment
 from ggongbab.pipeline import Pipeline
 
 from .conftest import FakeExtractor

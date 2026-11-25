@@ -15,7 +15,6 @@ started is closed. It proves on a real browser what the unified design relies on
 """
 from __future__ import annotations
 
-from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import os
 import socket

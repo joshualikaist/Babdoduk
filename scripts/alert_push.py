@@ -27,7 +27,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from ggongbab import notify, ops_credentials  # noqa: E402
-from ggongbab.alerts import Alert  # noqa: E402
 from ggongbab.ops_storage import atomic_json, read_json  # noqa: E402
 
 LOCAL = ROOT / ".local"

@@ -1,7 +1,6 @@
 """Pinned DevTools schema: synthetic responses only, no browser or Dooray writes."""
 import json
 from contextlib import nullcontext
-from copy import deepcopy
 from datetime import date
 from types import SimpleNamespace
 from unittest.mock import Mock
