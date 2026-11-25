@@ -1,10 +1,42 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T15:15:27+09:00",
+  "generatedAt": "2026-11-25T16:08:58+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
   "count": 59,
   "events": [
+    {
+      "id": "4861d28f-64c3-4527-8381-ddf02199f18e",
+      "title": "제3회 교무처 & 학사과정생 간담회",
+      "summary": "교무처가 학사과정생의 수업 및 학사제도에 대한 의견을 듣는 간담회입니다. 제3회 주제는 대형교과목, 영어강의, 강의인프라와 교육환경입니다.",
+      "startAt": "2026-11-25T12:00:00+09:00",
+      "endAt": "2026-11-25T13:00:00+09:00",
+      "dateText": "2026.11.25.(수)",
+      "timeText": "오후 12시~1시",
+      "location": {
+        "name": "창의학습관",
+        "building": "E11",
+        "room": "1층 102호"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "간단한 점심식사",
+        "source": "text"
+      },
+      "organizer": "교무처",
+      "eligibility": "KAIST에 재학중인 학사과정생",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "학사과정생",
+        "basis": "stated"
+      }
+    },
     {
       "id": "dc52cf33-6ef6-4a12-a7f7-a796cf0b4020",
       "title": "2026년 KAIST 지식재산 세미나",
@@ -2059,38 +2091,6 @@
       ],
       "audience": {
         "text": "KAIST 재학생",
-        "basis": "stated"
-      }
-    },
-    {
-      "id": "3eb2e2a6-96ea-4952-a032-2282ad920f67",
-      "title": "IDIS-KAIST 실리콘밸리 프런티어 해외인턴십 제4기 사업 설명회",
-      "summary": "IDIS-KAIST 실리콘밸리 프런티어 해외인턴십 제4기 사업 설명회입니다. 제3기 참여학생 성과공유, 제4기 프로그램 소개 및 Q&A, 실리콘밸리 업무 문화와 커리어 관련 강연이 진행됩니다.",
-      "startAt": "2026-10-26T15:00:00+09:00",
-      "endAt": "2026-10-26T16:00:00+09:00",
-      "dateText": "2026년 10월 26일(월)",
-      "timeText": "15:00-16:00",
-      "location": {
-        "name": "KI빌딩 1층 로비 강연무대",
-        "building": "KI빌딩",
-        "room": "1층 로비 강연무대"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "매드버거 세트",
-        "source": "text"
-      },
-      "organizer": "창업원운영팀",
-      "eligibility": "선착순 100명",
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "KAIST 학생",
         "basis": "stated"
       }
     }

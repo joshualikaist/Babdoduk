@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T15:15:27+09:00",
+  "generatedAt": "2026-11-25T16:08:58+09:00",
   "timezone": "Asia/Seoul",
-  "count": 16,
+  "count": 15,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -86,44 +86,6 @@
       "giveaway": {
         "provided": "true",
         "description": "배달의민족 상품권; 사진을 제출한 선착순 3분께 상품"
-      }
-    },
-    {
-      "id": "4861d28f-64c3-4527-8381-ddf02199f18e",
-      "title": "제3회 교무처 & 학사과정생 간담회",
-      "summary": "교무처가 학사과정생의 수업 및 학사제도에 대한 의견을 듣는 간담회입니다. 제3회 주제는 대형교과목, 영어강의, 강의인프라와 교육환경입니다.",
-      "startAt": "2026-11-25T12:00:00+09:00",
-      "endAt": "2026-11-25T13:00:00+09:00",
-      "dateText": "2026.11.25.(수)",
-      "timeText": "오후 12시~1시",
-      "location": {
-        "name": "창의학습관",
-        "building": "E11",
-        "room": "1층 102호"
-      },
-      "food": {
-        "provided": "true",
-        "type": "meal",
-        "description": "간단한 점심식사",
-        "source": "text"
-      },
-      "organizer": "교무처",
-      "eligibility": "KAIST에 재학중인 학사과정생",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-11-23T23:59:00+09:00",
-        "url": "https://forms.gle/t36dFuW8Ny1hgrq86"
-      },
-      "confidence": 0.99,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "audience": {
-        "text": "학사과정생",
-        "basis": "stated"
       }
     },
     {
