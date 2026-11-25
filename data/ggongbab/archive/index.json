@@ -1,10 +1,52 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-25T06:02:03+09:00",
+  "generatedAt": "2026-11-25T15:15:27+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 58,
+  "count": 59,
   "events": [
+    {
+      "id": "dc52cf33-6ef6-4a12-a7f7-a796cf0b4020",
+      "title": "2026년 KAIST 지식재산 세미나",
+      "summary": "KAIST 구성원을 대상으로 특허출원의 기초부터 기술분야별 특허출원 전략까지 알아보는 온라인 실시간 세미나입니다. 세미나 종료 후 만족도 설문 참여자에게 커피쿠폰을 제공합니다.",
+      "startAt": "2026-11-24T14:00:00+09:00",
+      "endAt": "2026-11-25T11:50:00+09:00",
+      "dateText": "2026. 11. 24.(화) ~ 11. 25.(수), 2일간",
+      "timeText": "11월 24일(화) 14:00~16:30 / 11월 25일(수) 10:00~11:50",
+      "location": {
+        "name": "온라인 실시간 세미나",
+        "building": "W7",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "coupon",
+        "description": "커피쿠폰",
+        "source": "text"
+      },
+      "organizer": "지식재산 및 기술이전센터(ITVC)",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "sessions": [
+        {
+          "startAt": "2026-11-24T14:00:00+09:00",
+          "endAt": "2026-11-24T16:30:00+09:00"
+        },
+        {
+          "startAt": "2026-11-25T10:00:00+09:00",
+          "endAt": "2026-11-25T11:50:00+09:00"
+        }
+      ],
+      "audience": {
+        "text": "KAIST 구성원 누구나",
+        "basis": "stated"
+      }
+    },
     {
       "id": "e84cb245-c3a1-4915-92a2-f7585d832ef7",
       "title": "AI 엔지니어 토크 워크숍",
