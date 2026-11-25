@@ -90,6 +90,36 @@ def test_validator_drops_hallucinated_url_and_flags_rule_conflict():
     assert "rule_conflict" in fallback_reasons(ai, facts, POSITIVE_TEXT, 0.75)
 
 
+LINK_TEXT = POSITIVE_TEXT + (
+    "\n직접 등록 하러 가기: [ 등록 링크 ] (https://docs.google.com/forms/d/e/1FAIpQLSfSyntheticFormIdAbCdEf/viewform)"
+    "\n- 참가 신청: 참가 신청 바로가기 (https://expo.example.com/kr/poster.html?s_v1=1&elq=aa11&elqak=BB22CC33)"
+    "\n- 제출 요건: 가이드 보기 (https://go.example.com/e/er?s_v1=1&elq=aa11)")
+
+
+@pytest.mark.parametrize("ai_url, wanted", [
+    # 2026-11-26, live: the AI wrote one letter of a Google Forms id in the other case
+    ("https://docs.google.com/forms/d/e/1FAIpQLSfSyntheticFormIdABCdEf/viewform",
+     "https://docs.google.com/forms/d/e/1FAIpQLSfSyntheticFormIdAbCdEf/viewform"),
+    # ... and changed the tracking parameters of a long sign-up link
+    ("https://expo.example.com/kr/poster.html?s_v1=1&elq=aa11&elqat=&elqak=BB22", "https://expo.example.com/kr/poster.html?s_v1=1&elq=aa11&elqak=BB22CC33"),
+    ("https://expo.example.com/kr/poster.html?s_v1=1&elq=aa11&elqak=BB22CC33", "https://expo.example.com/kr/poster.html?s_v1=1&elq=aa11&elqak=BB22CC33"),
+    ("https://expo.example.com/kr/other.html", None),
+    ("https://forms.gle/not-in-text", None),
+])
+def test_a_slightly_miscopied_sign_up_link_becomes_the_sources_own(ai_url, wanted):
+    facts = analyze(LINK_TEXT, REFERENCE)
+    cand = validate(make_extraction(registration_url=ai_url), facts, LINK_TEXT, reference=REFERENCE)
+    assert cand.registration_url == wanted
+    assert ("신청 URL이 본문에 없음" in cand.review_reasons) is (wanted is None)
+
+
+def test_two_source_links_on_the_same_page_leave_the_choice_open():
+    text = LINK_TEXT + "\n오후 세션: (https://expo.example.com/kr/poster.html?session=pm)"
+    cand = validate(make_extraction(registration_url="https://expo.example.com/kr/poster.html?typo=1"),
+                    analyze(text, REFERENCE), text, reference=REFERENCE)
+    assert cand.registration_url is None and "신청 URL이 본문에 없음" in cand.review_reasons
+
+
 def test_validator_not_event_passthrough():
     facts = analyze("이번 주 학식 메뉴 안내", REFERENCE)
     cand = validate(make_extraction(is_event=False, title=None), facts, "이번 주 학식 메뉴 안내")
