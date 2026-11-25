@@ -8,3 +8,6 @@ requests>=2.32,<3
 playwright>=1.45
 # The WebP thumbnails (scripts/make_thumbnails.py) and their test; on lab also the Radar's poster image.
 pillow>=11.0
+# The links of QR codes on mail posters (scripts/ggongbab/qr.py, pipeline._with_qr_links); without it
+# no QR code is read and the refresh goes on as before.
+zxing-cpp>=2.2
