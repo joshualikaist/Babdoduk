@@ -8,7 +8,6 @@ Run with the ops .env: python scripts/panel/relay.py --env-file ~/Babdoduk-ops/.
 from __future__ import annotations
 
 import argparse
-import fcntl
 import hashlib
 import json
 import re
@@ -70,6 +69,9 @@ def publish(client, body: dict) -> None:
 
 
 def main(argv=None) -> int:
+    # The daemon is Linux-only; keep the pure snapshot helpers importable by Windows UI tests.
+    import fcntl
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--env-file', type=Path)
     parser.add_argument('--run', type=Path)

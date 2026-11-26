@@ -178,9 +178,15 @@ def test_other_workflows_are_not_selected_and_final_result_marks_completion(tmp_
     journal = panel / 'journal.jsonl'
     journal.write_text('\n'.join(json.dumps(r) for r in [
         {'type': 'started', 'agentId': 'a1', 'label': 'critic:final', 'phase': 'Verdict'},
-        {'type': 'result', 'agentId': 'a1', 'result': {'overall': '최종 판정을 마쳤어요.'}},
+        {'type': 'result', 'agentId': 'a1', 'result': {'overall': '최종 판정을 마쳤어요.', 'verdicts': [], 'top': []}},
     ]))
     assert relay.snapshot(panel)['timeline']['complete'] is True
+    # The workflow emits a null result when a reviewer fails (including a usage limit).
+    lines = journal.read_text().splitlines()
+    journal.write_text(lines[0] + '\n' + json.dumps({'type': 'result', 'agentId': 'a1', 'result': None}))
+    failed = relay.live.build(panel)
+    assert failed['complete'] is False and failed['state']['critic'] == 'working'
+    assert not any(e['kind'] == 'done' for e in failed['events'])
 
 
 def test_storage_setup_is_bounded_idempotent_and_preserves_unknown_configuration():

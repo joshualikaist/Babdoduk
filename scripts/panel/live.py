@@ -168,7 +168,7 @@ def build(run: Path, live: bool = False) -> dict:
         phase_start[phase] = min(phase_start.get(phase, first), first)
         raw.append((first, pane, "start", PHASES.get(phase, phase)))
         raw.extend((at, pane, kind, text) for at, kind, text in steps)
-        if agent in results:
+        if isinstance(results.get(agent), dict):
             raw.extend((last, pane, kind, text) for kind, text in result_lines(results[agent]))
             raw.append((last, pane, "done", "끝"))
             state[pane] = "done"
@@ -183,8 +183,13 @@ def build(run: Path, live: bool = False) -> dict:
                     key=lambda p: p["t"])
     return {"live": live, "run": run.name, "at": datetime.fromtimestamp(zero).astimezone().isoformat(timespec="seconds"),
             "panes": PANES, "phases": phases, "events": events, "end": events[-1]["t"],
-            "state": state, "complete": any(info["label"] == "critic:final" and agent in results
-                                                for agent, info in started.items())}
+            "state": state, "complete": any(
+                info["label"] == "critic:final" and isinstance(results.get(agent), dict)
+                and isinstance(results[agent].get("overall"), str)
+                and bool(results[agent]["overall"].strip())
+                and isinstance(results[agent].get("verdicts"), list)
+                and isinstance(results[agent].get("top"), list)
+                for agent, info in started.items())}
 
 
 def newest_run() -> Path | None:
