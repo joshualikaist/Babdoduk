@@ -41,19 +41,27 @@ the session's larger default model used about 50 million tokens before it was st
 ## Automatic runs (ops PC)
 
 Owner request 2026-11-26: the panel runs by itself after lab changes, without anyone asking. The ops PC
-does the five steps above unattended. These files live on that PC, not in the repository:
+does the five steps above unattended. The implementation is tracked as `scripts/panel/auto.sh`;
+`~/.config/babdoduk/panel-auto.sh` is its local launcher.
 
 * `~/.config/babdoduk/panel-auto.sh`, started by the user timer `babdoduk-panel.timer` every hour from
   09:15 to 22:15 KST. It runs the panel only when `origin/lab` has a change outside `data/` since the last
   reviewed commit, the change is at least 30 minutes old (so it is deployed), and the panel has not run
   that day. So there is at most one run a day, and none when only generated data moved.
   `panel-auto.sh --now` runs it at once.
-* A run makes a fresh worktree `../Babdoduk-wt/panel-MMDD` (branch `agent/claude/panel-MMDD`) from
-  `origin/lab`, captures the lab site, runs `scripts/panel/workflow.js` with Claude Code in headless mode
-  (`claude -p`, tools limited to Workflow, Write, Read, Glob and Grep), publishes `data/panel/`, commits
-  it, runs `scripts/check_all.py --quick`, and sends the overall view and the top five to the owner's
-  Telegram with the command `lab-push panel-MMDD`. It never pushes. The next run removes the worktrees the
-  script made earlier. State and logs: `~/Babdoduk-ops/.local/panel-auto/`.
+* A run makes a fresh **detached** worktree from `origin/lab`, preserving older worktrees and creating
+  no task branch. It captures lab, runs the explicitly Sonnet-only workflow from the approved checkout,
+  publishes `data/panel/`, commits only those paths, and runs the quick gates. It then pushes the results
+  directly to lab (owner authorization 2026-11-26) and sends the existing Telegram summary with the lab
+  page link. A source change on lab during the review stops publication; only content-bot data movement
+  may be merged unattended. Pushes are ordinary, never forced, using the existing owner SSH alias
+  `github-motar`. State and logs: `~/Babdoduk-ops/.local/panel-auto/`.
+* `scripts/panel/auto_state.py` records a usage-limit failure and its reset time in private `status.json`.
+  It waits five minutes after the provider's stated reset. Failed runs never write `ran-on`; only a
+  successfully published result counts as today's completed run. A lock prevents overlapping runs.
+  On 2026-11-26 the provider rejected the run at 15:24 KST with `usage_limit_reached`, resetting at
+  19:50 KST. The old runner incorrectly marked that failed day as complete. The correction schedules
+  a retry for 19:55 KST; this is a scheduled attempt, not evidence that the provider will accept it.
 * `~/.local/bin/claude` starts the newest Claude Code program bundled with the VS Code extension, so there
   is nothing to install. `~/.local/bin/panel-login` (run once by the owner) signs in with
   `claude setup-token` and keeps the token in `~/.config/babdoduk/credentials/claude-oauth-token`
@@ -72,12 +80,12 @@ file read, code searched, findings, comments). File paths become base names and 
 The reviewers say one Korean sentence before each step (`.claude/agents/panel-*.md`), so the panes read
 as narration.
 
-* **Live, on lab (backend setup pending owner approval):** the lab page polls `/api/panel-live` every
+* **Live, on lab:** the lab page polls `/api/panel-live` every
   5 seconds. `scripts/panel/relay.py` follows only panel workflows and sends a sanitized timeline to a
-  single backend row whenever the source changes. This needs no Git commit, deployment or browser
+  dedicated public Storage object whenever the source or safe status changes. This needs no Git commit, deployment or browser
   connection to the ops PC per step. The API accepts GET only on the lab host and uses the existing
   publishable configuration server-side; the page loads no Supabase client or backend configuration.
-  The backend time is the source file's last modification, not a fabricated heartbeat. After 90 seconds
+  The snapshot time is the source file's last modification, not a fabricated heartbeat. After 90 seconds
   without source activity, or on a failed request, the page shows an interrupted connection and keeps
   the last received steps. A completed final critic result switches to a finished replay. An open replay
   keeps checking for the next run. Parallel reviewers' late and retried events are reconciled.
@@ -88,32 +96,36 @@ as narration.
   1×, 10× (default) or 60×, with
   pause, restart and jump-to-end. With reduced motion it opens at the end.
 
-### Backend activation proposal
+### Backend and runtime activation
 
-The reviewed implementation is separate from activation. No backend changes have been applied by this
-task. `docs/proposals/panel-live.sql` proposes only `panel_live_snapshot`, RLS with no browser table
-access, `panel_live_publish` (service role only) and `panel_live_read` (public sanitized snapshot only).
-The reader RPC itself is public: the lab host restriction is not authentication. This new public data
-surface and the new RLS/grants/RPCs need explicit owner approval under `AGENTS.md`.
+Owner authorization 2026-11-26: all panel activation and repair steps approved. The implementation uses
+one dedicated Supabase Storage bucket, `panel-live`, with only `current.json` (JSON only, 2 MB maximum).
+It is public **read**, so its sanitized contents are directly addressable; the lab host restriction is
+not authentication. Only the operations computer's existing backend key uploads. No browser Storage
+write policy is added. The proposed custom table/RPC migration was not applied; no schema migration is
+needed for this transport. The API reads the public object server-side and projects its fields again.
 
-After approval:
+Provision with `python scripts/panel/relay.py --env-file ~/Babdoduk-ops/.env --setup`. This creates only
+that bucket if absent, validates its exact configuration if it exists, and never changes another
+bucket or a mismatched pre-existing configuration. Uploads replace the single object with cache age 0;
+the lab API requests an uncached version every five seconds. A relay process lock prevents concurrent
+local publishers. The script never starts models or sends messages.
 
-1. Reserve the next migration number, move the proposal into `supabase/migrations/`, and apply it manually
-   with the SQL editor. Synthetic tests do not prove the live database grants or functions work.
-2. Deploy the reviewed source to `lab` through Git; verify the exact Vercel commit. The owner explicitly
-   authorized direct lab changes for this task on 2026-11-26; no task branch is required for this task.
-3. Install `scripts/panel/relay.service` as `babdoduk-panel-relay.service` in the user systemd directory,
-   replacing its worktree placeholder with the approved checkout, then enable/start it. It reads the ops
-   `.env` without copying it. Keep this checkout while that service points to it. The script does not
-   run models, send Telegram, change authentication, alter the automatic review schedule or push Git.
-4. Verify the API and KO/EN panel page on lab. Check interrupted and completed states using synthetic
-   local fixtures; do not start a paid review merely to test transport. A real running review is still
-   needed to confirm end-to-end delivery from actual agents. The latest source might already be stale.
+Install `scripts/panel/relay.service` as `babdoduk-panel-relay.service`, substituting the approved source
+checkout for the placeholder. Keep that checkout while the service uses it. The private ops `.env`
+stays where it is. The local preview service is optional; visitors open
+https://babdoduk-lab.vercel.app/panel.html. The automatic-review launcher also points to this approved
+checkout, so the Sonnet pin and retry handling do not depend on a stale ops checkout.
 
-Only allowlisted timeline fields are published. Raw agent logs stay local; absolute paths, URLs, email
-addresses and credential-like narration are redacted by the relay. The API projects the allowed fields
-again and returns no backend error bodies. No canonical event tables, collectors, authentication,
-existing policies or production deployment are changed.
+Source logs remain local. Only allowlisted timeline fields and a fixed usage-limit code/retry time are
+published. Absolute paths, URLs, emails and credential-like narration are redacted. This bucket/public
+object is the owner's newly approved exposure (see `docs/PUBLIC_EXPOSURE.md`). The relay route rejects
+production and preview hosts. Backend errors are never returned to the browser.
+
+Verify the deployed API and KO/EN panel page. Synthetic tests cover interrupted, completed, quota and
+retry states without invoking a paid reviewer. Live checks must verify anonymous writes are denied,
+the actual source snapshot reaches lab, and the provider accepts a later scheduled review; passing
+synthetic checks alone does not prove those external services are healthy.
 
 ## Page
 

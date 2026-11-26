@@ -12,6 +12,7 @@
   var data = null, live = false, speed = 10, clock = 0, playing = false, shown = 0, timer = null, last = 0;
   var panes = {}, phaseLine = null, clockLine = null, playBtn = null;
   var badge = null, updatedAt = 0, feedFailed = false, revision = '';
+  var limitUntil = null;
 
   function lang() { return document.documentElement.lang === 'en' ? 'en' : 'ko'; }
   function t(key, vars) {
@@ -152,6 +153,14 @@
     badge.classList.toggle('pn-live-badge--on', live && !disconnected);
     badge.textContent = t(disconnected ? 'panel.live.disconnected' : (live ? 'panel.live.on' : 'panel.live.replay'));
     if (disconnected) text = t('panel.live.stale');
+    if (live && limitUntil) {
+      root.setAttribute('data-connection', 'limited');
+      badge.classList.remove('pn-live-badge--on');
+      badge.textContent = t('panel.live.limited');
+      text = t('panel.live.retry', { time: new Date(limitUntil).toLocaleString(lang() === 'en' ? 'en-GB' : 'ko-KR', {
+        timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      }) });
+    }
     if (!live && shown >= data.events.length) text = t('panel.live.finished');
     if (phaseLine.textContent !== text) phaseLine.textContent = text;
     clockLine.textContent = live ? minutes(data.end) : minutes(clock) + ' / ' + minutes(data.end);
@@ -201,6 +210,8 @@
       var next = LAB ? body.timeline : body;
       if (!valid(next) || (LAB && !Number.isFinite(Date.parse(body.updatedAt)))) throw new Error('invalid');
       updatedAt = LAB ? Date.parse(body.updatedAt) : Date.now();
+      limitUntil = body.status && body.status.code === 'rate_limit' && Number.isFinite(Date.parse(body.status.retryAt))
+        ? body.status.retryAt : null;
       feedFailed = false;
       var nextRevision = JSON.stringify(body);
       if (nextRevision === revision) { if (data) paint(); return; }

@@ -92,7 +92,7 @@ const api = require(process.argv[1]);
 const input = JSON.parse(process.argv[2]);
 const calls = [];
 global.fetch = async (url, options) => {
-  calls.push({url, method: options.method, body: options.body});
+  calls.push({url, method: options.method});
   if (input.fail) throw new Error('SECRET BACKEND ERROR');
   return {ok: true, json: async () => input.body};
 };
@@ -127,8 +127,8 @@ def test_endpoint_validates_and_projects_only_public_fields():
     r = request(body=b)
     assert r['status'] == 200 and 'NEVER PUBLIC' not in r['body']
     assert r['headers']['Cache-Control'] == 'no-store'
-    assert r['calls'][0]['url'].endswith('/rest/v1/rpc/panel_live_read')
-    assert r['calls'][0]['method'] == 'POST' and r['calls'][0]['body'] == '{}'
+    assert '/storage/v1/object/public/panel-live/current.json?v=' in r['calls'][0]['url']
+    assert r['calls'][0]['method'] == 'GET'
     for field, value in [('events', []), ('end', -1), ('run', '/home/private'), ('complete', 'yes')]:
         bad = copy.deepcopy(b)
         bad['timeline'][field] = value
@@ -159,10 +159,10 @@ def test_publisher_redacts_private_material_and_never_uploads_raw_logs(tmp_path)
     assert relay.public_text('비밀번호는 hello 입니다') == '작업 내용을 확인하고 있어요.'
     calls = []
     class Backend:
-        def rpc(self, name, args):
-            calls.append((name, args))
+        def publish(self, value):
+            calls.append(value)
     relay.publish(Backend(), b)
-    assert calls == [('panel_live_publish', {'p_timeline': b['timeline'], 'p_updated_at': b['updatedAt']})]
+    assert calls == [b]
     assert request(body=b)['status'] == 200, 'publisher and reader agree on the payload contract'
 
 
@@ -175,17 +175,97 @@ def test_other_workflows_are_not_selected_and_final_result_marks_completion(tmp_
     journal = panel / 'journal.jsonl'
     journal.write_text('\n'.join(json.dumps(r) for r in [
         {'type': 'started', 'agentId': 'a1', 'label': 'critic:final', 'phase': 'Verdict'},
-        {'type': 'result', 'agentId': 'a1', 'result': {'overall': '最終 판정을 마쳤어요.'}},
+        {'type': 'result', 'agentId': 'a1', 'result': {'overall': '최종 판정을 마쳤어요.'}},
     ]))
     assert relay.snapshot(panel)['timeline']['complete'] is True
 
 
-def test_backend_proposal_keeps_table_private_and_only_service_role_may_publish():
-    sql = (ROOT / 'docs/proposals/panel-live.sql').read_text()
-    assert 'PROPOSAL ONLY' in sql
-    assert 'enable row level security' in sql
-    assert 'revoke all on table public.panel_live_snapshot from public, anon, authenticated' in sql
-    assert 'grant execute on function public.panel_live_publish(jsonb, timestamptz) to service_role' in sql
-    assert 'where s.updated_at <= excluded.updated_at' in sql
-    assert 'grant execute on function public.panel_live_read() to anon, authenticated' in sql
-    assert 'security definer set search_path' in sql
+def test_storage_setup_is_bounded_idempotent_and_preserves_unknown_configuration():
+    from panel_storage import PanelStorage, StorageError, LIMIT
+    calls = []
+    class Storage(PanelStorage):
+        def request(self, method, path, body=None, **kwargs):
+            calls.append((method, path, body, kwargs))
+            if len(calls) == 1:
+                raise StorageError(404)
+            return {'public': True, 'file_size_limit': LIMIT, 'allowed_mime_types': ['application/json']}
+    storage = Storage('https://test.invalid', 'fake-key')
+    storage.setup()
+    assert [c[0] for c in calls] == ['GET', 'POST', 'GET']
+    assert calls[1][2] == {'id': 'panel-live', 'name': 'panel-live', 'public': True,
+                         'file_size_limit': LIMIT, 'allowed_mime_types': ['application/json']}
+    calls.clear()
+    storage.request = lambda *a, **kw: {'public': False}
+    with pytest.raises(StorageError, match='configuration mismatch'):
+        storage.setup()
+
+
+def test_storage_upload_only_updates_the_dedicated_object():
+    from panel_storage import PanelStorage, StorageError, LIMIT
+    calls = []
+    storage = PanelStorage('https://test.invalid', 'fake-key')
+    storage.request = lambda *a, **kw: calls.append((a, kw))
+    b = body()
+    storage.publish(b)
+    assert calls == [(('POST', '/object/panel-live/current.json', b), {'upload': True})]
+    with pytest.raises(StorageError, match='too large'):
+        storage.publish({'x': 'z' * LIMIT})
+
+
+def test_usage_limit_status_is_shown_on_lab_with_a_fixed_retry_time(browser):
+    b = body()
+    b['status'] = {'code': 'rate_limit', 'retryAt': '2026-11-26T19:55:00+09:00'}
+    context, page, errors = open_panel(browser, remote=b, now=NOW)
+    page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'limited'")
+    assert '사용량 한도 대기' in page.locator('.pn-live-badge').inner_text()
+    assert '07:55' in page.locator('.pn-live-phase').inner_text()
+    assert page.locator('.pn-live-badge--on').count() == 0
+    assert errors == []
+    context.close()
+
+
+def test_failed_runs_are_retryable_and_quota_reset_is_not_a_completed_day(tmp_path):
+    import auto_state
+    failure = {'api_error': 'usage_limit_reached', 'api_error_type': 'rate_limit_error',
+               'result': "You've hit your 5-hour limit · resets 7:50pm (Asia/Seoul)"}
+    state = auto_state.failure(failure, NOW)
+    assert state == {'code': 'rate_limit', 'retryAt': '2026-11-26T19:55:00+09:00'}
+    assert auto_state.failure({'api_error_status': 401}, NOW) == {'code': 'auth_failed'}
+    assert auto_state.failure({}, NOW) == {'code': 'failed'}
+    result = tmp_path / 'result.json'
+    result.write_text(json.dumps(failure))
+    assert auto_state.main(['--result', str(result), '--state-dir', str(tmp_path)]) == 75
+    assert not (tmp_path / 'ran-on').exists()
+    script = (ROOT / 'scripts/panel/auto.sh').read_text()
+    assert 'worktree remove' not in script and 'branch -D' not in script
+    assert 'worktree add -q --detach' in script
+    assert script.index('git push -q') < script.index('echo "$today" > "$STATE/ran-on"')
+
+
+def test_retry_calendar_uses_korea_time_and_handles_midnight(tmp_path, capsys):
+    import auto_state
+    state = {'code': 'rate_limit', 'retryAt': '2026-11-26T19:55:00+09:00'}
+    (tmp_path / 'status.json').write_text(json.dumps(state))
+    assert auto_state.main(['--state-dir', str(tmp_path), '--retry-calendar']) == 0
+    assert capsys.readouterr().out.strip() == '2026-11-26 19:55:00 Asia/Seoul'
+    failure = {'api_error': 'usage_limit_reached', 'result': 'resets 12:10am (Asia/Seoul)'}
+    assert auto_state.failure(failure, NOW)['retryAt'] == '2026-11-27T00:15:00+09:00'
+
+
+def test_storage_http_upload_uses_backend_auth_and_zero_cache_age(monkeypatch):
+    import panel_storage
+    requests = []
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self): return b'{}'
+    def send(request, **kwargs):
+        requests.append(request)
+        return Response()
+    monkeypatch.setattr(panel_storage.urllib.request, 'urlopen', send)
+    panel_storage.PanelStorage('https://test.invalid', 'fake-backend-secret').publish({'timeline': {}})
+    r = requests[0]
+    assert r.full_url == 'https://test.invalid/storage/v1/object/panel-live/current.json'
+    assert r.get_header('Authorization') == 'Bearer fake-backend-secret'
+    assert r.get_header('X-upsert') == 'true' and r.get_header('Cache-control') == 'max-age=0'
+    assert b'fake-backend-secret' not in r.data

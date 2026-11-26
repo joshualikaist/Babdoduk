@@ -38,3 +38,13 @@
 
 - `tests/test_deploy_config.py`: `/data/` 머리말의 허용 출처와 권리 링크, `/LICENSE` 의 글자 형식, `robots.txt` 가 배포되고 AI 로봇과 `/data/` 를 거절하는지, `LICENSE` 가 모든 권리 보유 고지인지.
 - 배포 뒤: `curl -sI https://babdoduk-lab.vercel.app/data/ggongbab/latest.json` 의 `access-control-allow-origin` 이 `https://www.babdodukms.com` 인지, `/robots.txt` 와 `/LICENSE` 가 200 인지.
+
+## Review panel progress (lab, owner-approved 2026-11-26)
+
+The dedicated public Supabase Storage bucket `panel-live` contains only `current.json`: sanitized
+reviewer steps, public pane/phase names, completion state, source modification time and, when limited,
+a fixed usage-limit code with its scheduled retry time. The existing backend key writes it; anonymous
+uploads are not permitted. The lab's `/api/panel-live` validates and projects the object server-side,
+with no new browser backend configuration. Public Storage reads are directly addressable, so the lab
+page/host restriction does not make this data private. Raw logs, local paths and credentials stay on
+the ops PC. No other bucket, canonical table, schema, license or crawler rule changes.

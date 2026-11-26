@@ -37,11 +37,9 @@ async function handler(req, res) {
   try {
     const text = fs.readFileSync(path.join(__dirname, '../js/ggongbab-public-config.js'), 'utf8');
     const url = (text.match(/SUPABASE_URL:\s*'([^']+)'/) || [])[1];
-    const key = (text.match(/SUPABASE_PUBLISHABLE_KEY:\s*'([^']+)'/) || [])[1];
-    if (!url || !key) throw new Error('config');
-    const upstream = await fetch(url + '/rest/v1/rpc/panel_live_read', {
-      method: 'POST', headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-      body: '{}', signal: AbortSignal.timeout(3000)
+    if (!url) throw new Error('config');
+    const upstream = await fetch(url + '/storage/v1/object/public/panel-live/current.json?v=' + Math.floor(Date.now() / 5000), {
+      method: 'GET', cache: 'no-store', signal: AbortSignal.timeout(3000)
     });
     if (!upstream.ok) throw new Error('unavailable');
     const body = await upstream.json();
@@ -56,7 +54,11 @@ async function handler(req, res) {
     };
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ updatedAt: body.updatedAt, timeline }));
+    const output = { updatedAt: body.updatedAt, timeline };
+    if (body.status && body.status.code === 'rate_limit' && Number.isFinite(Date.parse(body.status.retryAt))) {
+      output.status = { code: 'rate_limit', retryAt: body.status.retryAt };
+    }
+    res.end(JSON.stringify(output));
   } catch (err) {
     res.statusCode = 503; res.setHeader('Retry-After', '5'); res.end();
   }
