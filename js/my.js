@@ -448,6 +448,9 @@
     }).then(function (user) {
       state.user = user;
       if (!user) { state.view = 'out'; render(); return; }
+      if (state.next === 'panel' && location.hostname === 'babdoduk-lab.vercel.app') {
+        location.replace('panel.html'); return;
+      }
       var pushKnown = P ? P.status().then(function (s) { state.push = s; }, function () { state.push = 'hidden'; }) : null;
       return Promise.all([loadAccount(), loadFeed(), pushKnown]).then(function () {
         state.view = 'in';
@@ -486,7 +489,7 @@
     }
     if ((el = e.target.closest('[data-my-login]'))) {
       busy(true);
-      A.signIn(el.getAttribute('data-my-login')).catch(function () {
+      A.signIn(el.getAttribute('data-my-login'), state.next === 'panel' ? 'panel' : undefined).catch(function () {
         busy(false); announce(t('my.out.failed', '로그인하지 못했어요. 다시 시도해 주세요.'));
       });
       return;

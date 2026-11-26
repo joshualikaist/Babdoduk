@@ -151,11 +151,12 @@
     var name = phaseAt(clock);
     var text = name ? t('panel.live.phase', { name: name }) : t('panel.live.ready');
     var disconnected = live && (feedFailed || (updatedAt && (Date.now() - updatedAt > 90000 || updatedAt > Date.now() + 30000)));
+    var limited = live && limitUntil && Date.parse(limitUntil) > Date.now();
     root.setAttribute('data-connection', disconnected ? 'stale' : (live ? 'live' : 'replay'));
     badge.classList.toggle('pn-live-badge--on', live && !disconnected);
     badge.textContent = t(disconnected ? 'panel.live.disconnected' : (live ? 'panel.live.on' : 'panel.live.replay'));
     if (disconnected) text = t('panel.live.stale');
-    if (live && limitUntil) {
+    if (limited) {
       root.setAttribute('data-connection', 'limited');
       badge.classList.remove('pn-live-badge--on');
       badge.textContent = t('panel.live.limited');
@@ -163,11 +164,11 @@
         timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
       }) });
     }
-    leadLine.textContent = t(!live ? 'panel.live.leadReplay' : (limitUntil ? 'panel.live.leadLimited'
+    leadLine.textContent = t(!live ? 'panel.live.leadReplay' : (limited ? 'panel.live.leadLimited'
       : (disconnected ? 'panel.live.leadStale' : 'panel.live.leadLive')));
     Object.keys(panes).forEach(function (id) {
       var p = panes[id];
-      var status = live && (disconnected || limitUntil) && p.state === 'work' ? 'paused' : p.state;
+      var status = live && (disconnected || limited) && p.state === 'work' ? 'paused' : p.state;
       p.status.setAttribute('data-status', status);
       p.status.textContent = t('panel.live.' + status);
     });

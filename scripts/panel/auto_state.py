@@ -31,6 +31,7 @@ def main(argv=None):
     parser.add_argument('--result', type=Path)
     parser.add_argument('--state-dir', type=Path, required=True)
     parser.add_argument('--clear', action='store_true')
+    parser.add_argument('--phase', choices=['starting', 'working', 'publishing', 'complete', 'failed'])
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--retry-calendar', action='store_true')
     args = parser.parse_args(argv)
@@ -49,7 +50,9 @@ def main(argv=None):
         except (OSError, ValueError, KeyError, TypeError):
             pass
         return 0
-    if args.clear:
+    if args.phase:
+        state = {'code': args.phase}
+    elif args.clear:
         state = {'code': 'working'}
     else:
         try:
@@ -57,6 +60,7 @@ def main(argv=None):
             state = failure(data, datetime.now(KST))
         except (OSError, ValueError, TypeError, AttributeError):
             state = {'code': 'failed'}
+    state['updatedAt'] = datetime.now(KST).isoformat()
     args.state_dir.mkdir(parents=True, exist_ok=True)
     temporary = target.with_suffix('.tmp')
     temporary.write_text(json.dumps(state) + '\n')

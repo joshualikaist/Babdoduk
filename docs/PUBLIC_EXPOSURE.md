@@ -41,10 +41,20 @@
 
 ## Review panel progress (lab, owner-approved 2026-11-26)
 
-The dedicated public Supabase Storage bucket `panel-live` contains only `current.json`: sanitized
+The dedicated public Supabase Storage bucket `panel-live` contains `current.json`: sanitized
 reviewer steps, public pane/phase names, completion state, source modification time and, when limited,
-a fixed usage-limit code with its scheduled retry time. The existing backend key writes it; anonymous
+a fixed usage-limit code with the earliest next-attempt time. The existing backend key writes it; anonymous
 uploads are not permitted. The lab's `/api/panel-live` validates and projects the object server-side,
 with no new browser backend configuration. Public Storage reads are directly addressable, so the lab
 page/host restriction does not make this data private. Raw logs, local paths and credentials stay on
-the ops PC. No other bucket, canonical table, schema, license or crawler rule changes.
+the ops PC.
+
+Owner's subsequent button request on 2026-11-26 adds `control.json`: a heartbeat, fixed runner state,
+last accepted random request UUID, optional next-attempt time, and an expiring signed upload capability
+for **only** `panel-requests/pending.json`. The `panel-requests` bucket is private, JSON-only and limited
+to 16 KB per object. The capability permits replacing that inbox object, never reading it; it grants
+no execution authority. The API and ops worker both require a currently verified operator Auth session.
+The short-lived user token in a request stays in the private object and is removed after validation;
+it never appears in public status, logs or repository files. Public writers could delay a request by
+overwriting the inbox, but cannot start a paid run or read a request. See `docs/PANEL.md` for the bounded
+availability limitation. No canonical table, SQL/RLS, schema, license or crawler rule changes.

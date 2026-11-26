@@ -244,6 +244,27 @@
   }
 
   document.addEventListener('babdoduk-lang', render);
+  var refreshTimer = null;
+  document.addEventListener('babdoduk-panel-complete', function () {
+    clearTimeout(refreshTimer);
+    var previousAt = report && report.run.at;
+    var attempts = 0;
+    function refresh() {
+      fetch(DATA, { cache: 'no-store', signal: AbortSignal.timeout(8000) }).then(function (res) {
+        if (!res.ok) throw new Error('unavailable');
+        return res.json();
+      }).then(function (data) {
+        if (!valid(data)) throw new Error('invalid');
+        if (data.run.at !== previousAt) {
+          report = data; state = 'ready'; render(); return;
+        }
+        if (++attempts < 30) refreshTimer = setTimeout(refresh, 10000);
+      }).catch(function () {
+        if (++attempts < 30) refreshTimer = setTimeout(refresh, 10000);
+      });
+    }
+    refresh();
+  });
   fetch(DATA, { cache: 'no-cache' }).then(function (res) {
     if (!res.ok) throw new Error('unavailable');
     return res.json();

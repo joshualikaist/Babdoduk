@@ -38,17 +38,16 @@ the session's larger default model used about 50 million tokens before it was st
    `.../subagents/workflows/wf_*` folder). It writes `data/panel/timeline.json`, the split-screen replay.
 5. Commit those paths with the run date and push through lab as usual.
 
-## Automatic runs (ops PC)
+## On-demand runs (ops PC)
 
-Owner request 2026-11-26: the panel runs by itself after lab changes, without anyone asking. The ops PC
-does the five steps above unattended. The implementation is tracked as `scripts/panel/auto.sh`;
+Owner correction 2026-11-26: start the panel with **평가 시작!** on the lab page and follow it there.
+Opening the page only polls; it never starts a paid review. This replaces the earlier hourly schedule.
+The ops PC does the five steps above after an authenticated request. The runner is `scripts/panel/auto.sh`;
 `~/.config/babdoduk/panel-auto.sh` is its local launcher.
 
-* `~/.config/babdoduk/panel-auto.sh`, started by the user timer `babdoduk-panel.timer` every hour from
-  09:15 to 22:15 KST. It runs the panel only when `origin/lab` has a change outside `data/` since the last
-  reviewed commit, the change is at least 30 minutes old (so it is deployed), and the panel has not run
-  that day. So there is at most one run a day, and none when only generated data moved.
-  `panel-auto.sh --now` runs it at once.
+* `babdoduk-panel.timer` is disabled; the previous 19:55 retry timer is stopped. Usage-limit failures
+  no longer schedule retries. The owner presses the button again after the displayed reset time.
+  `babdoduk-panel.service` calls the local launcher with `--now`; the process lock and quota check always apply.
 * A run makes a fresh **detached** worktree from `origin/lab`, preserving older worktrees and creating
   no task branch. It captures lab, runs the explicitly Sonnet-only workflow from the approved checkout,
   publishes `data/panel/`, commits only those paths, and runs the quick gates. It then pushes the results
@@ -60,15 +59,48 @@ does the five steps above unattended. The implementation is tracked as `scripts/
   It waits five minutes after the provider's stated reset. Failed runs never write `ran-on`; only a
   successfully published result counts as today's completed run. A lock prevents overlapping runs.
   On 2026-11-26 the provider rejected the run at 15:24 KST with `usage_limit_reached`, resetting at
-  19:50 KST. The old runner incorrectly marked that failed day as complete. The correction schedules
-  a retry for 19:55 KST; this is a scheduled attempt, not evidence that the provider will accept it.
+  19:50 KST. The old runner incorrectly marked that failed day as complete. The earliest allowed
+  attempt is 19:55 KST, now requiring a new button press rather than an automatic retry.
 * `~/.local/bin/claude` starts the newest Claude Code program bundled with the VS Code extension, so there
   is nothing to install. `~/.local/bin/panel-login` (run once by the owner) signs in with
   `claude setup-token` and keeps the token in `~/.config/babdoduk/credentials/claude-oauth-token`
   (owner-only file). Without it the editor's sign-in is used, which expires every few weeks; when sign-in
   fails, Telegram says to run `panel-login`.
-* `babdoduk-panel-live.service` currently serves an optional local preview. The proposed lab relay below
-  replaces the need to open this PC's local address; installing it does not start a paid review.
+* The optional local preview service is disabled. `babdoduk-panel-relay.service` publishes progress
+  on lab without starting a paid review.
+
+### Start request transport and authorization
+
+The lab-only `/api/panel-control` accepts GET for status and a same-origin JSON POST for one fixed
+`start` action. POST requires a Supabase access token, validated with Auth's `GET /auth/v1/user`, and
+the server-owned `app_metadata.panel_operator === true` flag. User-editable metadata grants nothing.
+The page reuses the existing account client, loading the SDK only after a signed-in person presses
+the button; sign-in on `my.html?next=panel` returns to the lab panel. No backend key is deployed.
+
+`scripts/panel/control.py` uses the existing ops backend key. It provisions **private** Storage bucket
+`panel-requests` (JSON only, 16 KB), accepting only `pending.json`. It publishes a five-second heartbeat
+and a two-hour, single-object, overwrite-only signed upload capability in `panel-live/control.json`.
+The lab API projects status only on GET; on authorized POST it uses the capability to upload a private
+request containing a UUID, timestamp and short-lived user access token. A capability alone grants no
+read or review execution. The worker independently revalidates the token and operator flag, rejects
+stale/extra-field/replayed requests, removes the private inbox object, then starts only the fixed
+systemd unit. Accepted UUIDs are persisted before launch, and a running unit or active quota blocks
+another start. A missing acknowledgment after 30 seconds lets the owner retry without claiming success.
+
+The public write capability is deliberately bounded to one small private object. Someone who bypasses
+the API can replace that inbox and delay a valid request; they cannot read its token or start a review
+without a valid operator session. A future managed queue with authenticated writes could remove this
+availability limitation. This transport adds no SQL/RLS changes or Vercel secret configuration.
+
+Install `scripts/panel/control.service` as `babdoduk-panel-control.service`, substituting the approved
+worktree. Provision once with `control.py --env-file ~/Babdoduk-ops/.env --setup`. After the owner confirms
+the exact existing sign-in email, grant only that account with `--grant-email <email>`; the command
+preserves other application metadata. No roles are inferred from Git author identity or client fields.
+The CLI requires an existing account; it never creates an account or signs in as the owner.
+
+Protocol references: [signed upload URLs](https://supabase.com/docs/reference/javascript/storage-from-createsigneduploadurl),
+[uploading to a signed URL](https://supabase.com/docs/reference/javascript/storage-from-uploadtosignedurl),
+[server-owned application metadata](https://supabase.com/docs/guides/auth/managing-user-data).
 
 ## Split screen, live and replay
 
@@ -119,7 +151,7 @@ checkout, so the Sonnet pin and retry handling do not depend on a stale ops chec
 
 Source logs remain local. Only allowlisted timeline fields and a fixed usage-limit code/retry time are
 published. Absolute paths, URLs, emails and credential-like narration are redacted. This bucket/public
-object is the owner's newly approved exposure (see `docs/PUBLIC_EXPOSURE.md`). The relay route rejects
+object is the owner's approved exposure (see `docs/PUBLIC_EXPOSURE.md`). The relay route rejects
 production and preview hosts. Backend errors are never returned to the browser.
 
 Verify the deployed API and KO/EN panel page. Synthetic tests cover interrupted, completed, quota and
@@ -135,4 +167,5 @@ synthetic checks alone does not prove those external services are healthy.
 the members with their one-line summaries, and every thread as a chat (the critic on the right), filtered
 by member and verdict (accepted by default). All text is inserted as text; a screenshot loads only from
 `data/panel/shots/`. The page is left out of the visit counter (`js/site.js`). The conversation itself is
-Korean; the page around it follows the language switch. Tests: `tests/test_panel.py`, `tests/test_panel_relay.py`.
+Korean; the page around it follows the language switch. Tests: `tests/test_panel.py`, `tests/test_panel_relay.py`,
+`tests/test_panel_control.py`. Synthetic tests never invoke the live runner or provider.

@@ -40,15 +40,18 @@ class PanelStorage:
             raise StorageError('transport') from None
 
     def setup(self):
+        self.setup_bucket(BUCKET, public=True, limit=LIMIT)
+
+    def setup_bucket(self, name, *, public, limit):
         try:
-            config = self.request('GET', '/bucket/' + BUCKET)
+            config = self.request('GET', '/bucket/' + name)
         except StorageError as exc:
             if exc.code != 404:
                 raise
-            self.request('POST', '/bucket', {'id': BUCKET, 'name': BUCKET, 'public': True,
-                                           'file_size_limit': LIMIT, 'allowed_mime_types': ['application/json']})
-            config = self.request('GET', '/bucket/' + BUCKET)
-        if (not config or config.get('public') is not True or config.get('file_size_limit') != LIMIT
+            self.request('POST', '/bucket', {'id': name, 'name': name, 'public': public,
+                                           'file_size_limit': limit, 'allowed_mime_types': ['application/json']})
+            config = self.request('GET', '/bucket/' + name)
+        if (not config or config.get('public') is not public or config.get('file_size_limit') != limit
                 or config.get('allowed_mime_types') != ['application/json']):
             raise StorageError('configuration mismatch')
 

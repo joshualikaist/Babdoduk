@@ -1,0 +1,13 @@
+[Unit]
+Description=Babdoduk: accept owner requests to start the lab review panel
+After=network-online.target
+
+[Service]
+ExecStart=%h/Babdoduk-ops/.venv/bin/python REPLACE_WITH_APPROVED_WORKTREE/scripts/panel/control.py --env-file %h/Babdoduk-ops/.env
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

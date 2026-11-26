@@ -5,6 +5,13 @@
 .pn-lead { margin: 0; font-size: 16px; line-height: 1.6; color: var(--color-ink, #1e1d1a); }
 .pn-app { display: grid; gap: 40px; min-width: 0; }
 .pn-state { margin: 0; padding: 24px 0; font-size: 16px; color: var(--color-ink-muted, #625d54); }
+.pn-control { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; min-width: 0;
+  padding: 20px; border: 1px solid var(--border, #e6e0d4); border-radius: 16px; background: var(--color-surface, #fffdf8); }
+.pn-control .btn { flex: 0 0 auto; min-height: 48px; }
+.pn-control-copy { flex: 1 1 240px; min-width: 0; }
+.pn-control-status { margin: 0; font-size: 15px; line-height: 1.6; overflow-wrap: anywhere; }
+.pn-control-copy a { display: inline-block; padding: 10px 0; min-height: 44px; }
+.pn-control-copy a[hidden] { display: none; }
 
 .pn-head { display: grid; gap: 12px; }
 .pn-meta { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-accent, #be185d); font-variant-numeric: tabular-nums; }
@@ -73,7 +80,7 @@
 .pn-msg--comment .pn-bubble { border-style: dashed; }
 
 .pn-page:has(.pn-live:not([hidden])) { max-width: 1440px; }
-.pn-page:has(.pn-live:not([hidden])) > .pn-hero, .pn-page:has(.pn-live:not([hidden])) > .pn-app { max-width: 960px; width: 100%; justify-self: center; }
+.pn-page:has(.pn-live:not([hidden])) > :is(.pn-hero, .pn-control, .pn-app) { max-width: 960px; width: 100%; justify-self: center; }
 .pn-live { display: grid; gap: 12px; min-width: 0; }
 .pn-live-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .pn-live-head .page-section-title { margin: 0; }

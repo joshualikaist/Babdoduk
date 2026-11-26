@@ -57,7 +57,7 @@ TIMELINE = {
 }
 
 
-def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None, remote=None, now=None):
+def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None, remote=None, now=None, control=None):
     context = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
     context.add_init_script(f"localStorage.setItem('babdoduk-lang', '{lang}'); localStorage.setItem('babdoduk-nocount', '1');")
     errors = []
@@ -67,6 +67,9 @@ def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None, remo
         if url.hostname != HOST:
             return route.abort()
         name = unquote(url.path).lstrip("/")
+        if name == "api/panel-control" and control is not None:
+            status, body = control(route.request) if callable(control) else (200, control)
+            return route.fulfill(status=status, body=json.dumps(body), content_type="application/json")
         if name == "api/panel-live" and remote is not None:
             body = remote() if callable(remote) else remote
             return route.fulfill(status=200 if body is not False else 503, body=json.dumps(body),
