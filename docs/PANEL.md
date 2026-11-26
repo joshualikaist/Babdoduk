@@ -55,6 +55,9 @@ The ops PC does the five steps above after an authenticated request. The runner 
   page link. A source change on lab during the review stops publication; only content-bot data movement
   may be merged unattended. Pushes are ordinary, never forced, using the existing owner SSH alias
   `github-motar`. State and logs: `~/Babdoduk-ops/.local/panel-auto/`.
+* The runner sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`. Without it headless Claude Code stops background
+  work 10 minutes after its last turn, and the first button run (22:47 KST on 2026-11-26) ended without a result
+  after about ten minutes of reviewing.
 * `scripts/panel/auto_state.py` records a usage-limit failure and its reset time in private `status.json`.
   It waits five minutes after the provider's stated reset. Failed runs never write `ran-on`; only a
   successfully published result counts as today's completed run. A lock prevents overlapping runs.

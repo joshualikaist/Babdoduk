@@ -61,6 +61,9 @@ echo "== capture $(date)"
 echo "== panel $(date)"
 phase working
 [ -s "$TOKEN_FILE" ] && export CLAUDE_CODE_OAUTH_TOKEN="$(cat "$TOKEN_FILE")"
+# Headless Claude Code stops background work 10 minutes after its last turn; the review runs longer and was
+# killed at 22:59 on 2026-11-26 without a result. 0 = wait until the workflow finishes (the 3 h timeout below still applies).
+export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0
 start=$(date +%s)
 prompt="밥도둑 가상 평가단 자동 실행입니다. Workflow 도구로 워크플로를 실행하세요: scriptPath=$CODE/scripts/panel/workflow.js, args={\"repo\": \"$dir\", \"capture\": \"$cap\"}. 끝날 때까지 기다린 뒤, 반환값을 고치지 말고 JSON 그대로 Write 도구로 $cap/result.json 에 저장하세요. 다른 파일은 만들거나 고치지 말고, 끝나면 DONE이라고만 답하세요."
 timeout 3h "$CLAUDE" -p "$prompt" --model sonnet --allowedTools Workflow Write Read Glob Grep --output-format json \
