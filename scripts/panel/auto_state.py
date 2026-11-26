@@ -2,11 +2,9 @@
 import argparse
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
-
-KST = ZoneInfo('Asia/Seoul')
+KST = timezone(timedelta(hours=9), name='Asia/Seoul')
 
 
 def failure(result, now):
