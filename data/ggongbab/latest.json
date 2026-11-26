@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-26T23:52:43+09:00",
+  "generatedAt": "2026-11-27T03:21:58+09:00",
   "timezone": "Asia/Seoul",
-  "count": 13,
+  "count": 12,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -50,43 +50,6 @@
           "endAt": "2026-11-27T16:00:00+09:00"
         }
       ]
-    },
-    {
-      "id": "3bbed3a2-ca1b-400d-9156-6a54f20d2729",
-      "title": "G-inK 에코사진전",
-      "summary": "KAIST의 자연·환경 사진을 제출하고, 선정된 작품은 장영신학생회관에 전시됩니다. 전시 작품 선정자와 사진 제출 선착순 3명에게 배달의민족 상품권 또는 상품을 제공합니다.",
-      "startAt": "2026-11-23T00:00:00+09:00",
-      "endAt": "2026-11-27T00:00:00+09:00",
-      "dateText": "2026. 11. 23.(월) ~ 11. 27.(금)",
-      "timeText": "",
-      "location": {
-        "name": "장영신학생회관",
-        "building": "",
-        "room": ""
-      },
-      "food": {
-        "provided": "unknown",
-        "type": "unknown",
-        "description": ""
-      },
-      "organizer": "G-inK",
-      "eligibility": "",
-      "registration": {
-        "required": "true",
-        "deadline": "2026-11-08T23:59:00+09:00",
-        "url": "https://docs.google.com/forms/d/e/1FAIpQLScwv4qZoC2ZgO9YD_EQAvPdDtOW688ZLh4Y0jLEEdiKvzW2Gg/viewform?usp=header"
-      },
-      "confidence": 0.98,
-      "sources": [
-        {
-          "type": "dooray",
-          "name": "Dooray"
-        }
-      ],
-      "giveaway": {
-        "provided": "true",
-        "description": "배달의민족 상품권; 사진을 제출한 선착순 3분께 상품"
-      }
     },
     {
       "id": "4959510d-f83c-405a-807f-e8b854558879",
