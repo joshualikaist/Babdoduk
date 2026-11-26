@@ -1,10 +1,41 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-26T19:00:49+09:00",
+  "generatedAt": "2026-11-26T23:52:43+09:00",
   "timezone": "Asia/Seoul",
   "windowDays": 30,
-  "count": 61,
+  "count": 62,
   "events": [
+    {
+      "id": "cae3a070-cbc6-48ac-8ceb-be94b797b45e",
+      "title": "KISA Presidential Debate 2026",
+      "summary": "Raahim Muhammad와 Maftuna Rajabova가 국제학생 커뮤니티를 대상으로 아이디어와 목표를 공유하는 KISA 회장 토론회입니다. 선착순 40명에게 무료 버거가 제공됩니다.",
+      "startAt": "2026-11-26T19:30:00+09:00",
+      "endAt": "2026-11-26T20:30:00+09:00",
+      "dateText": "November 26th, 2026",
+      "timeText": "7:30 PM – 8:30 PM",
+      "location": {
+        "name": "Multi-Purpose Hall W2-1",
+        "building": "W2-1",
+        "room": ""
+      },
+      "food": {
+        "provided": "true",
+        "type": "unknown",
+        "description": "Free burgers for the first 40 attendees!"
+      },
+      "organizer": "KISA",
+      "eligibility": "",
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "international student community",
+        "basis": "stated"
+      }
+    },
     {
       "id": "313b704f-6461-4c76-b4bb-8f79a75407da",
       "title": "2026 전산학부 기업체탐방",
