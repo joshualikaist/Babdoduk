@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "date": "2026-11-26",
   "dateLabel": "11월 26일",
-  "fetchedAt": "2026-11-26T02:57:11+09:00",
+  "fetchedAt": "2026-11-26T18:42:08+09:00",
   "source": "https://www.kaist.ac.kr/kr/html/campus/053001.html",
   "status": "AVAILABLE",
   "coverage": {
@@ -179,8 +179,7 @@
           "어묵국5,6",
           "눈꽃치즈구슬떡볶이1,5,6,2",
           "오징어다리튀김17,5,6",
-          "깍두기2,5,6,9,12,15,16,18",
-          "포도주스"
+          "깍두기2,5,6,9,12,15,16,18"
         ],
         "price": "",
         "kcal": "1181 kcal"
