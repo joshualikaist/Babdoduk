@@ -87,6 +87,8 @@
 .pn-live-badge { display: inline-flex; align-items: center; min-height: 28px; padding: 0 10px; border-radius: 999px;
   font-size: 13px; font-weight: 800; background: #f1efe9; color: #4a463f; }
 .pn-live-badge--on { background: #dcfce7; color: #14532d; }
+#pnLive[data-connection="preparing"] .pn-live-badge { background: #fef3c7; color: #78350f; }
+#pnLive[data-connection="preparing"] .pn-term-body { opacity: .4; }
 .pn-live-lead { margin: 0; font-size: 15px; line-height: 1.6; color: var(--color-ink-muted, #625d54); }
 .pn-live-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .pn-live-phase { margin: 0; font-size: 16px; font-weight: 800; }

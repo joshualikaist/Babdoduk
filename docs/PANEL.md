@@ -119,7 +119,10 @@ as narration.
   publishable configuration server-side; the page loads no Supabase client or backend configuration.
   The snapshot time is the source file's last modification, not a fabricated heartbeat. After 90 seconds
   without source activity, or on a failed request, the page shows an interrupted connection and keeps
-  the last received steps. A completed final critic result switches to a finished replay. An open replay
+  the last received steps, except while a review is requested or running (`panel-control.js` announces it
+  with the `babdoduk-panel-busy` event): the screens are captured for about two minutes before the relay has
+  anything new, so the page then says "preparing", dims the previous run and does not claim a lost connection
+  (owner 2026-11-26). A completed final critic result switches to a finished replay. An open replay
   keeps checking for the next run. Parallel reviewers' late and retried events are reconciled.
 * **Optional local preview:** `python scripts/panel/live.py watch` serves the site on
   http://127.0.0.1:8765/panel.html and answers `data/panel/live.json` from the newest run (or `--run`)

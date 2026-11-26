@@ -6,7 +6,7 @@
   var message = document.getElementById('pnControlStatus');
   var login = document.getElementById('pnControlLogin');
   var lab = location.hostname === 'babdoduk-lab.vercel.app';
-  var state = null, failed = false, sending = false, pending = null, pendingAt = 0, notice = '';
+  var state = null, failed = false, sending = false, pending = null, pendingAt = 0, notice = '', announced = null;
 
   function t(key, vars) {
     var lang = document.documentElement.lang === 'en' ? 'en' : 'ko';
@@ -30,6 +30,12 @@
     var account = window.BabdodukAccount;
     login.hidden = !lab || (notice !== 'signin' && account && account.hasSession());
     root.setAttribute('data-state', failed ? 'offline' : pending ? 'requested' : code || 'loading');
+    // The live view needs to know a review is on its way, so it does not show the last stopped run as current.
+    var working = busy || !!pending || sending;
+    if (working !== announced) {
+      announced = working;
+      document.dispatchEvent(new CustomEvent('babdoduk-panel-busy', { detail: { busy: working } }));
+    }
   }
   function poll() {
     fetch('/api/panel-control', { cache: 'no-store', signal: AbortSignal.timeout(8000) }).then(function (res) {

@@ -12,7 +12,7 @@
   var data = null, live = false, speed = 10, clock = 0, playing = false, shown = 0, timer = null, last = 0;
   var panes = {}, phaseLine = null, clockLine = null, playBtn = null;
   var badge = null, leadLine = null, updatedAt = 0, feedFailed = false, revision = '';
-  var limitUntil = null;
+  var limitUntil = null, busy = false;
 
   function lang() { return document.documentElement.lang === 'en' ? 'en' : 'ko'; }
   function t(key, vars) {
@@ -152,10 +152,14 @@
     var text = name ? t('panel.live.phase', { name: name }) : t('panel.live.ready');
     var disconnected = live && (feedFailed || (updatedAt && (Date.now() - updatedAt > 90000 || updatedAt > Date.now() + 30000)));
     var limited = live && limitUntil && Date.parse(limitUntil) > Date.now();
-    root.setAttribute('data-connection', disconnected ? 'stale' : (live ? 'live' : 'replay'));
-    badge.classList.toggle('pn-live-badge--on', live && !disconnected);
-    badge.textContent = t(disconnected ? 'panel.live.disconnected' : (live ? 'panel.live.on' : 'panel.live.replay'));
+    // A review was requested or is running, but the page still holds the previous run (the screens are being
+    // captured for about two minutes before the first reviewer speaks): say so instead of "connection lost".
+    var preparing = busy && !limited && (live ? disconnected : shown >= data.events.length);
+    root.setAttribute('data-connection', preparing ? 'preparing' : disconnected ? 'stale' : (live ? 'live' : 'replay'));
+    badge.classList.toggle('pn-live-badge--on', live && !disconnected && !preparing);
+    badge.textContent = t(preparing ? 'panel.live.prepare' : disconnected ? 'panel.live.disconnected' : (live ? 'panel.live.on' : 'panel.live.replay'));
     if (disconnected) text = t('panel.live.stale');
+    if (preparing) text = t('panel.live.preparing');
     if (limited) {
       root.setAttribute('data-connection', 'limited');
       badge.classList.remove('pn-live-badge--on');
@@ -164,11 +168,11 @@
         timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
       }) });
     }
-    leadLine.textContent = t(!live ? 'panel.live.leadReplay' : (limited ? 'panel.live.leadLimited'
+    leadLine.textContent = t(preparing ? 'panel.live.leadPreparing' : !live ? 'panel.live.leadReplay' : (limited ? 'panel.live.leadLimited'
       : (disconnected ? 'panel.live.leadStale' : 'panel.live.leadLive')));
     Object.keys(panes).forEach(function (id) {
       var p = panes[id];
-      var status = live && (disconnected || limited) && p.state === 'work' ? 'paused' : p.state;
+      var status = live && (disconnected || limited) && p.state === 'work' ? (preparing ? 'wait' : 'paused') : p.state;
       p.status.setAttribute('data-status', status);
       p.status.textContent = t('panel.live.' + status);
     });
@@ -275,6 +279,10 @@
     });
   }
 
+  document.addEventListener('babdoduk-panel-busy', function (e) {
+    busy = !!(e.detail && e.detail.busy);
+    if (data) paint();
+  });
   document.addEventListener('babdoduk-lang', function () {
     if (!data) return;
     var at = clock, wasPlaying = playing;

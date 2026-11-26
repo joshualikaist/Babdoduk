@@ -280,3 +280,34 @@ def test_storage_http_upload_uses_backend_auth_and_zero_cache_age(monkeypatch):
     assert r.get_header('Authorization') == 'Bearer fake-backend-secret'
     assert r.get_header('X-upsert') == 'true' and r.get_header('Cache-control') == 'max-age=0'
     assert b'fake-backend-secret' not in r.data
+
+
+def test_a_requested_review_shows_preparing_instead_of_the_old_stopped_run(browser):
+    # Owner 2026-11-26: after pressing the button the page said "평가 중" while the old run still showed
+    # "연결 확인 필요" and paused reviewers for the ~2 minutes of screen capture.
+    state = [{'state': 'running', 'updatedAt': '2026-11-26T06:00:00+00:00', 'requestId': 'a' * 8}]
+    current = [body(at='2026-11-26T03:00:00+00:00')]
+    context, page, errors = open_panel(browser, timeline=TIMELINE, remote=lambda: current[0], now=NOW,
+                                       control=lambda request: (200, state[0]))
+    root = page.locator('#pnLive')
+    page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'preparing'")
+    assert '평가할 화면을 찍고 있어요' in root.inner_text()
+    assert '새 평가를 준비하고 있어요' in root.inner_text()
+    assert '연결 확인 필요' not in root.inner_text()
+    assert page.locator('.pn-live-badge').inner_text() == '준비 중'
+    assert page.locator('.pn-live-badge--on').count() == 0
+    assert root.locator('.pn-term--designer1 .pn-term-status').get_attribute('data-status') == 'wait'
+    # The first reviewer speaks: a fresh snapshot of a new run replaces the notice.
+    fresh = body()
+    fresh['timeline']['run'] = 'fedcba9876543210'
+    current[0] = fresh
+    page.clock.fast_forward(5000)
+    page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'live'")
+    assert '평가할 화면을 찍고 있어요' not in root.inner_text()
+    # Not running and not requested: an old run is an interrupted connection, as before.
+    state[0] = {'state': 'complete', 'updatedAt': '2026-11-26T06:00:00+00:00', 'requestId': 'a' * 8}
+    current[0] = body(at='2026-11-26T03:00:00+00:00')
+    page.clock.fast_forward(5000)
+    page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'stale'")
+    assert errors == []
+    context.close()
