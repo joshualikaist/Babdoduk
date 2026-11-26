@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-26T02:22:48+09:00",
+  "generatedAt": "2026-11-26T13:27:40+09:00",
   "timezone": "Asia/Seoul",
-  "count": 14,
+  "count": 15,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -243,6 +243,47 @@
       },
       "audience": {
         "text": "KAIST 구성원 및 그 가족",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "b446c08d-af2c-4156-a941-ac1be52dcd43",
+      "title": "CTSCAPE × G아티언스 2026",
+      "summary": "문화기술대학원 연례행사 CTSCAPE와 G아티언스가 함께 열리는 행사입니다. Global TechArt Vision, 오픈 랩, Masters' Talks 및 대담이 진행됩니다.",
+      "startAt": "2026-11-30T09:00:00+09:00",
+      "endAt": "2026-11-30T16:30:00+09:00",
+      "dateText": "11월 30일 (월)",
+      "timeText": "09:00~16:30",
+      "location": {
+        "name": "학술문화관 정근모 컨퍼런스홀",
+        "building": "E9",
+        "room": "정근모 컨퍼런스홀"
+      },
+      "food": {
+        "provided": "unknown",
+        "type": "unknown",
+        "description": "점심식사(동측식당)"
+      },
+      "organizer": "KAIST 문화기술대학원",
+      "eligibility": "",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": ""
+      },
+      "confidence": 0.9,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "giveaway": {
+        "provided": "true",
+        "description": "행사 기념 굿즈(스테인레스머그)"
+      },
+      "audience": {
+        "text": "KAIST 구성원",
         "basis": "stated"
       }
     },
