@@ -19,6 +19,8 @@ screenshots, measurements or code. Confirm the top items with real students befo
 | 비판자 | every finding | merges duplicates, accepts, questions or rejects; ranks the top 10 |
 
 Reviewers only read; none edits files, uses the network or touches protected systems.
+Every agent runs on Sonnet (`MODEL` in `scripts/panel/workflow.js`, owner 2026-11-26): a run that inherited
+the session's larger default model used about 50 million tokens before it was stopped.
 
 ## Run
 

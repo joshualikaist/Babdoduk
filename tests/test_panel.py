@@ -225,3 +225,12 @@ def test_the_timeline_hides_paths_and_commands(tmp_path):
     assert ("developer1", "step", "🔎 찾기: tabsHtml") in lines
     assert data["state"] == {"designer1": "done", "developer1": "working"}
     assert data["events"][-1]["t"] == 60.0 and data["phases"][1]["title"] == "서로 의견"
+
+
+def test_every_panel_agent_runs_on_sonnet():
+    # Owner 2026-11-26 ("소넷으로 돌려야지"): a run on the session's default model used tens of millions of tokens.
+    script = (ROOT / "scripts" / "panel" / "workflow.js").read_text(encoding="utf-8")
+    calls = script.count("{ label:")
+    assert calls == 5
+    assert script.count("model: MODEL,") == calls
+    assert "const MODEL = 'sonnet'" in script

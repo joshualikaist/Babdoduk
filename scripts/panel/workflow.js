@@ -10,6 +10,8 @@ export const meta = {
   ],
 }
 
+// Owner 2026-11-26 ("소넷으로 돌려야지"): every panel agent runs on Sonnet, never the session's default model.
+const MODEL = 'sonnet'
 const REPO = args.repo
 const CAP = args.capture
 const CARD = id => `${REPO}/.claude/agents/panel-${id}.md`
@@ -56,7 +58,7 @@ const reviews = await parallel(REVIEWERS.map(r => () => agent(
   `저장소: ${REPO} (읽기만). 촬영 폴더: ${CAP} (shots/ 사진 30장과 facts.json; 실험 사이트를 아이폰 390, 안드로이드 412, 컴퓨터 1440 너비로 한국어로 찍은 것).\n` +
   `이번 평가의 초점: ${r.focus}\n` +
   `지적은 많아야 12개, 심각도 높은 순으로. 증거가 없는 지적은 넣지 않는다. 모든 글은 쉬운 한국어.`,
-  { label: `review:${r.id}${r.run}`, phase: 'Review', schema: FINDINGS })
+  { label: `review:${r.id}${r.run}`, phase: 'Review', model: MODEL, schema: FINDINGS })
   .then(out => out && { ...r, ...out })))
 
 const all = []
@@ -91,7 +93,7 @@ const critic = await agent(
   `아래는 평가자들의 지적 ${all.length}개다(JSON). 같은 문제는 한 묶음으로 합치고(fids에 모두), 묶음마다 증거를 직접 확인해 판정하라. ` +
   `같은 평가자의 두 번 평가(예: designer1, designer2)에서 모두 나온 문제는 신뢰도가 높다. 모든 지적은 정확히 한 묶음에 들어가야 한다.\n\n` +
   JSON.stringify(all.map(f => ({ fid: f.fid, from: f.from, title: f.title, page: f.page, device: f.device, evidence: f.evidence, standard: f.standard, severity: f.severity, detail: f.detail, fix: f.fix })), null, 1),
-  { label: 'critic:merge', phase: 'Critic', schema: CRITIC })
+  { label: 'critic:merge', phase: 'Critic', model: MODEL, schema: CRITIC })
 
 const groups = critic ? critic.groups : []
 const byFid = Object.fromEntries(all.map(f => [f.fid, f]))
@@ -158,7 +160,7 @@ const discussion = await parallel(Object.keys(LENS).map(who => () => {
     `무조건 동의하지 마라. 증거를 직접 확인하고, 동의할 이유가 약하면 반대하거나 보태라. 묶음마다 의견 하나.\n\n` +
     JSON.stringify(mine.map(g => ({ gid: g.gid, title: g.title, severity: g.severity, critic: g.note,
       findings: g.fids.map(id => byFid[id]).filter(Boolean).map(f => ({ from: f.from, detail: f.detail, evidence: f.evidence, fix: f.fix })) })), null, 1),
-    { label: `discuss:${who}`, phase: 'Discuss', schema: DISCUSS })
+    { label: `discuss:${who}`, phase: 'Discuss', model: MODEL, schema: DISCUSS })
     .then(out => out ? out.comments.map(c => ({ ...c, from: who })) : [])
 }))
 const comments = discussion.flat().filter(Boolean)
@@ -174,7 +176,7 @@ const replyLists = await parallel(Object.entries(owners).map(([who, gs]) => () =
   `너의 역할 설명서: ${CARD(who)} — 먼저 읽고 따른다.\n저장소: ${REPO}. 촬영 폴더: ${CAP}.\n` +
   `비판자가 너의 지적에 질문했다. 증거를 다시 확인하고 묶음마다 답하라.\n\n` +
   JSON.stringify(gs.map(g => ({ gid: g.gid, title: g.title, question: g.note, yours: g.fids.map(id => byFid[id]).filter(f => f && f.from === who).map(f => ({ title: f.title, evidence: f.evidence, detail: f.detail })) })), null, 1),
-  { label: `reply:${who}`, phase: 'Reply', schema: REPLY })
+  { label: `reply:${who}`, phase: 'Reply', model: MODEL, schema: REPLY })
   .then(out => out ? out.replies.map(r => ({ ...r, from: who })) : [])))
 const replies = replyLists.flat().filter(Boolean)
 
@@ -206,6 +208,6 @@ const final = await agent(
   `질문했던 묶음의 답변과 다른 평가자들의 의견이 모였다. 의견이 달린 묶음과 질문했던 묶음마다 최종 판정(인정 또는 기각)과 그 이유를 의견에 답하듯 쓰고, 인정된 모든 묶음 중 고칠 순서 상위 10개를 골라라.\n\n` +
   `묶음:\n${JSON.stringify(groups.map(g => ({ gid: g.gid, title: g.title, verdict: g.verdict, severity: g.severity, note: g.note, from: [...new Set(g.fids.map(id => (byFid[id] || {}).from).filter(Boolean))] })), null, 1)}\n\n` +
   `답변:\n${JSON.stringify(replies, null, 1)}\n\n다른 평가자들의 의견(동의/반대/보탬, 고치는 품):\n${JSON.stringify(comments, null, 1)}\n\n반대 의견이 증거로 맞으면 판정이나 심각도를 바꿔라. 순위는 영향(심각도 × 평가자 수)과 고치는 품을 함께 보라: 영향이 크고 품이 작은 것을 먼저.`,
-  { label: 'critic:final', phase: 'Verdict', schema: FINAL })
+  { label: 'critic:final', phase: 'Verdict', model: MODEL, schema: FINAL })
 
 return { reviews: reviews.filter(Boolean), all, groups, replies, comments, final }
