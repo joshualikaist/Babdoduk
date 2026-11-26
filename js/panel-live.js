@@ -4,11 +4,14 @@
   var root = document.getElementById('pnLive');
   if (!root) return;
   var LOCAL = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+  var LAB = location.hostname === 'babdoduk-lab.vercel.app';
+  var source = LAB ? '/api/panel-live' : (LOCAL ? 'data/panel/live.json' : null);
   var KINDS = { step: 1, say: 1, finding: 1, comment: 1, start: 1, done: 1 };
   var SPEEDS = [1, 10, 60];
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var data = null, live = false, speed = 10, clock = 0, playing = false, shown = 0, timer = null, last = 0;
   var panes = {}, phaseLine = null, clockLine = null, playBtn = null;
+  var badge = null, updatedAt = 0, feedFailed = false, revision = '';
 
   function lang() { return document.documentElement.lang === 'en' ? 'en' : 'ko'; }
   function t(key, vars) {
@@ -48,7 +51,8 @@
     var h = el('h2', 'page-section-title', t('panel.live.title'));
     h.id = 'pnLiveTitle';
     head.appendChild(h);
-    head.appendChild(el('span', 'pn-live-badge' + (live ? ' pn-live-badge--on' : ''), t(live ? 'panel.live.on' : 'panel.live.replay')));
+    badge = el('span', 'pn-live-badge', t(live ? 'panel.live.on' : 'panel.live.replay'));
+    head.appendChild(badge);
     root.appendChild(head);
     root.appendChild(el('p', 'pn-live-lead', t(live ? 'panel.live.leadLive' : 'panel.live.leadReplay')));
     var bar = el('div', 'pn-live-bar');
@@ -143,6 +147,11 @@
     scroll();
     var name = phaseAt(clock);
     var text = name ? t('panel.live.phase', { name: name }) : t('panel.live.ready');
+    var disconnected = live && (feedFailed || (updatedAt && (Date.now() - updatedAt > 90000 || updatedAt > Date.now() + 30000)));
+    root.setAttribute('data-connection', disconnected ? 'stale' : (live ? 'live' : 'replay'));
+    badge.classList.toggle('pn-live-badge--on', live && !disconnected);
+    badge.textContent = t(disconnected ? 'panel.live.disconnected' : (live ? 'panel.live.on' : 'panel.live.replay'));
+    if (disconnected) text = t('panel.live.stale');
     if (!live && shown >= data.events.length) text = t('panel.live.finished');
     if (phaseLine.textContent !== text) phaseLine.textContent = text;
     clockLine.textContent = live ? minutes(data.end) : minutes(clock) + ' / ' + minutes(data.end);
@@ -185,28 +194,51 @@
   }
 
   function poll() {
-    fetch('data/panel/live.json', { cache: 'no-store' }).then(function (res) {
+    fetch(source, { cache: 'no-store', signal: AbortSignal.timeout(8000) }).then(function (res) {
       if (!res.ok) throw new Error('off');
       return res.json();
-    }).then(function (next) {
-      if (!valid(next)) return;
-      if (next.run !== data.run) { data = next; build(); reset(); }
+    }).then(function (body) {
+      var next = LAB ? body.timeline : body;
+      if (!valid(next) || (LAB && !Number.isFinite(Date.parse(body.updatedAt)))) throw new Error('invalid');
+      updatedAt = LAB ? Date.parse(body.updatedAt) : Date.now();
+      feedFailed = false;
+      var nextRevision = JSON.stringify(body);
+      if (nextRevision === revision) { if (data) paint(); return; }
+      revision = nextRevision;
+      if (!data || next.run !== data.run || !live || next.complete) {
+        start(next, !next.complete);
+        if (next.complete) { pause(); seek(data.end); }
+        return;
+      }
+      // Parallel reviewers can insert an earlier event or retry with fewer events.
+      // Rebuild when the already displayed prefix changed, not just when its length grew.
+      var changed = JSON.stringify(next.events.slice(0, shown)) !== JSON.stringify(data.events.slice(0, shown));
+      var positions = {};
+      if (changed) {
+        Object.keys(panes).forEach(function (id) { positions[id] = { top: panes[id].body.scrollTop, stick: panes[id].stick }; });
+        reset();
+        Object.keys(positions).forEach(function (id) { panes[id].stick = positions[id].stick; });
+      }
       data = next;
       clock = data.end;
       paint();
-      Object.keys(next.state || {}).forEach(function (id) {
-        if (panes[id] && next.state[id] === 'working') setStatus(panes[id], 'work');
-      });
-    }).catch(function () {}).then(function () { setTimeout(poll, 2000); });
+      Object.keys(positions).forEach(function (id) { if (!positions[id].stick) panes[id].body.scrollTop = positions[id].top; });
+    }).catch(function () {
+      feedFailed = true;
+      if (data) paint();
+    }).then(function () { setTimeout(poll, 5000); });
   }
 
   function start(d, isLive) {
+    cancelAnimationFrame(timer);
+    playing = false;
+    playBtn = null;
     data = d;
     live = isLive;
     root.setAttribute('data-mode', live ? 'live' : 'replay');
     build();
     reset();
-    if (live) { clock = data.end; paint(); setTimeout(poll, 2000); }
+    if (live) { clock = data.end; paint(); }
     else if (reduce) seek(data.end);
     else play();
   }
@@ -230,8 +262,9 @@
     seek(at);
     if (wasPlaying) play();
   });
-  (LOCAL ? load('data/panel/live.json').then(function (d) { return [d, true]; }) : Promise.reject())
-    .catch(function () { return load('data/panel/timeline.json').then(function (d) { return [d, false]; }); })
-    .then(function (pair) { start(pair[0], pair[1]); })
-    .catch(function () { root.hidden = true; });
+  load('data/panel/timeline.json').then(function (d) {
+    if (!data) start(d, false);
+  }).catch(function () { if (!data) root.hidden = true; });
+  // Keep checking after a replay or an initial outage: an open lab page follows the next run.
+  if (source) poll();
 }());

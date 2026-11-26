@@ -59,8 +59,8 @@ does the five steps above unattended. These files live on that PC, not in the re
   `claude setup-token` and keeps the token in `~/.config/babdoduk/credentials/claude-oauth-token`
   (owner-only file). Without it the editor's sign-in is used, which expires every few weeks; when sign-in
   fails, Telegram says to run `panel-login`.
-* `babdoduk-panel-live.service` keeps `scripts/panel/live.py watch` running from `~/Babdoduk-ops`, so
-  http://127.0.0.1:8765/panel.html on that PC always shows the newest run live.
+* `babdoduk-panel-live.service` currently serves an optional local preview. The proposed lab relay below
+  replaces the need to open this PC's local address; installing it does not start a paid review.
 
 ## Split screen, live and replay
 
@@ -72,19 +72,55 @@ file read, code searched, findings, comments). File paths become base names and 
 The reviewers say one Korean sentence before each step (`.claude/agents/panel-*.md`), so the panes read
 as narration.
 
-* **Live, on this computer:** `python scripts/panel/live.py watch` serves the site on
+* **Live, on lab (backend setup pending owner approval):** the lab page polls `/api/panel-live` every
+  5 seconds. `scripts/panel/relay.py` follows only panel workflows and sends a sanitized timeline to a
+  single backend row whenever the source changes. This needs no Git commit, deployment or browser
+  connection to the ops PC per step. The API accepts GET only on the lab host and uses the existing
+  publishable configuration server-side; the page loads no Supabase client or backend configuration.
+  The backend time is the source file's last modification, not a fabricated heartbeat. After 90 seconds
+  without source activity, or on a failed request, the page shows an interrupted connection and keeps
+  the last received steps. A completed final critic result switches to a finished replay. An open replay
+  keeps checking for the next run. Parallel reviewers' late and retried events are reconciled.
+* **Optional local preview:** `python scripts/panel/live.py watch` serves the site on
   http://127.0.0.1:8765/panel.html and answers `data/panel/live.json` from the newest run (or `--run`)
-  on every request; the page polls it every 2 s. It listens on 127.0.0.1 only. The lab site cannot be live:
-  it is static, and publishing every step would mean a deployment every few seconds.
-* **Replay, on lab:** the page plays `data/panel/timeline.json` at 1×, 10× (default) or 60×, with
+  on every request; the page polls it every 5 s. It listens on 127.0.0.1 only.
+* **Replay, on lab:** until live data is available, the page plays `data/panel/timeline.json` at
+  1×, 10× (default) or 60×, with
   pause, restart and jump-to-end. With reduced motion it opens at the end.
+
+### Backend activation proposal
+
+The reviewed implementation is separate from activation. No backend changes have been applied by this
+task. `docs/proposals/panel-live.sql` proposes only `panel_live_snapshot`, RLS with no browser table
+access, `panel_live_publish` (service role only) and `panel_live_read` (public sanitized snapshot only).
+The reader RPC itself is public: the lab host restriction is not authentication. This new public data
+surface and the new RLS/grants/RPCs need explicit owner approval under `AGENTS.md`.
+
+After approval:
+
+1. Reserve the next migration number, move the proposal into `supabase/migrations/`, and apply it manually
+   with the SQL editor. Synthetic tests do not prove the live database grants or functions work.
+2. Deploy the reviewed source to `lab` through Git; verify the exact Vercel commit. The owner explicitly
+   authorized direct lab changes for this task on 2026-11-26; no task branch is required for this task.
+3. Install `scripts/panel/relay.service` as `babdoduk-panel-relay.service` in the user systemd directory,
+   replacing its worktree placeholder with the approved checkout, then enable/start it. It reads the ops
+   `.env` without copying it. Keep this checkout while that service points to it. The script does not
+   run models, send Telegram, change authentication, alter the automatic review schedule or push Git.
+4. Verify the API and KO/EN panel page on lab. Check interrupted and completed states using synthetic
+   local fixtures; do not start a paid review merely to test transport. A real running review is still
+   needed to confirm end-to-end delivery from actual agents. The latest source might already be stale.
+
+Only allowlisted timeline fields are published. Raw agent logs stay local; absolute paths, URLs, email
+addresses and credential-like narration are redacted by the relay. The API projects the allowed fields
+again and returns no backend error bodies. No canonical event tables, collectors, authentication,
+existing policies or production deployment are changed.
 
 ## Page
 
 `panel.html` (lab only: `vercel.json` answers 404 elsewhere; `noindex`; in the lab "more" menu as
-가상 평가단). The split screen comes first (`js/panel-live.js`; it tries `live.json` only on 127.0.0.1 or
-localhost). Below it the page shows the run, the panel's overall view, the top 10 with who raised each and the fix,
+가상 평가단). The split screen comes first (`js/panel-live.js`; it reads `/api/panel-live` on lab and
+`live.json` only on 127.0.0.1 or localhost). Below it the page shows the run, the panel's overall view, the top 10 with who raised each and the fix,
 the members with their one-line summaries, and every thread as a chat (the critic on the right), filtered
 by member and verdict (accepted by default). All text is inserted as text; a screenshot loads only from
 `data/panel/shots/`. The page is left out of the visit counter (`js/site.js`). The conversation itself is
-Korean; the page around it follows the language switch. Tests: `tests/test_panel.py`.
+Korean; the page around it follows the language switch. Tests: `tests/test_panel.py`, `tests/test_panel_relay.py`.

@@ -97,6 +97,10 @@
     }
   ],
   "functions": {
+    "api/panel-live.js": {
+      "includeFiles": "js/ggongbab-public-config.js",
+      "maxDuration": 10
+    },
     "api/cal.js": {
       "includeFiles": "{js/ggongbab-select.js,js/ggongbab-live.js,js/ggongbab-public-config.js}",
       "maxDuration": 10

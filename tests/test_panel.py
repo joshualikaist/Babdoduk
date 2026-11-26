@@ -57,7 +57,7 @@ TIMELINE = {
 }
 
 
-def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None):
+def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None, remote=None, now=None):
     context = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
     context.add_init_script(f"localStorage.setItem('babdoduk-lang', '{lang}'); localStorage.setItem('babdoduk-nocount', '1');")
     errors = []
@@ -67,6 +67,10 @@ def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None):
         if url.hostname != HOST:
             return route.abort()
         name = unquote(url.path).lstrip("/")
+        if name == "api/panel-live" and remote is not None:
+            body = remote() if callable(remote) else remote
+            return route.fulfill(status=200 if body is not False else 503, body=json.dumps(body),
+                                 content_type="application/json")
         if name == "data/panel/latest.json":
             return route.fulfill(status=200 if report is not None else 404, body=json.dumps(report or {}),
                                  content_type="application/json")
@@ -83,6 +87,8 @@ def open_panel(browser, report=REPORT, width=390, lang="ko", timeline=None):
     context.add_init_script("window.__requests = []; const f = window.fetch; "
                             "window.fetch = (u, o) => { window.__requests.push(String(u)); return f(u, o); };")
     page = context.new_page()
+    if now is not None:
+        page.clock.install(time=now)
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(f"https://{HOST}/panel.html")
     page.wait_for_function("document.getElementById('pnApp').dataset.state !== 'loading'")
@@ -164,7 +170,9 @@ def test_the_split_screen_replays_each_reviewer_in_its_own_pane(browser):
     live.locator(".pn-term").first.wait_for()
     assert live.get_attribute("data-mode") == "replay" and live.is_visible()
     assert live.locator(".pn-term").count() == 2
-    assert "data/panel/live.json" not in page.evaluate("window.__requests"), "live data only on this computer"
+    requests = page.evaluate("window.__requests")
+    assert "/api/panel-live" in requests, "the lab checks for a running review even while replaying"
+    assert "data/panel/live.json" not in requests, "the lab never connects to a local-only server"
     live.locator("button", has_text="끝까지 보기").click()
     assert live.locator(".pn-live-phase").inner_text() == "평가가 끝났어요"
     assert live.locator(".pn-term--designer1 .pn-line").count() == 4

@@ -1,0 +1,15 @@
+[Unit]
+Description=Babdoduk: publish the review panel progress for the lab page
+After=network-online.target
+
+[Service]
+# Install only after the owner approves the backend and lab deployment.
+# REPLACE_WITH_APPROVED_WORKTREE must contain the reviewed relay implementation.
+ExecStart=%h/Babdoduk-ops/.venv/bin/python REPLACE_WITH_APPROVED_WORKTREE/scripts/panel/relay.py --env-file %h/Babdoduk-ops/.env
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

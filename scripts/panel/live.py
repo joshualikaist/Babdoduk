@@ -183,12 +183,26 @@ def build(run: Path, live: bool = False) -> dict:
                     key=lambda p: p["t"])
     return {"live": live, "run": run.name, "at": datetime.fromtimestamp(zero).astimezone().isoformat(timespec="seconds"),
             "panes": PANES, "phases": phases, "events": events, "end": events[-1]["t"],
-            "state": state}
+            "state": state, "complete": any(info["label"] == "critic:final" and agent in results
+                                                for agent, info in started.items())}
 
 
 def newest_run() -> Path | None:
     runs = sorted(PROJECTS.glob("*/*/subagents/workflows/wf_*/journal.jsonl"), key=lambda p: p.stat().st_mtime)
-    return runs[-1].parent if runs else None
+    # Other workflows share this directory; never publish a non-panel run.
+    for journal in reversed(runs):
+        try:
+            rows = journal.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for line in rows:
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            if row.get("type") == "started" and pane_of(row.get("label")):
+                return journal.parent
+    return None
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
