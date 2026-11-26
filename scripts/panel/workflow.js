@@ -1,6 +1,6 @@
 export const meta = {
   name: 'babdoduk-panel',
-  description: 'Virtual review panel: designer x2, developer x2, copy, founder review the lab capture; critic debates and ranks',
+  description: 'Virtual review panel: designer, developer, copy, founder review the lab capture; critic debates and ranks',
   phases: [
     { title: 'Review', detail: 'each reviewer reads the shared capture and reports findings' },
     { title: 'Critic', detail: 'critic checks evidence, merges duplicates, asks questions' },
@@ -44,10 +44,8 @@ const FINDINGS = {
 }
 
 const REVIEWERS = [
-  { id: 'designer', run: 1, focus: '먼저 아이폰 화면 전체를 본 뒤 안드로이드와 컴퓨터를 비교하라. 홈, 오늘의 꽁밥, 메뉴 뽑기를 가장 꼼꼼히.' },
-  { id: 'designer', run: 2, focus: '이번에는 안드로이드 화면부터 보고, 매거진, 소식, 역사, 제보, 마이 밥도둑을 가장 꼼꼼히. 페이지 사이의 일관성을 특히 보라.' },
-  { id: 'developer', run: 1, focus: 'facts.json 측정값과 홈, 오늘의 꽁밥, 메뉴 뽑기의 코드(js/home*.js, js/ggongbab*.js, js/pick.js, css)를 중심으로.' },
-  { id: 'developer', run: 2, focus: '월드컵, 매거진, 제보, 마이 밥도둑의 코드(js/worldcup*.js, js/my.js, js/babdoduk-account.js, js/ggongbab-tips.js, api/, sw.js)와 유지보수(큰 파일, 복사된 코드)를 중심으로.' },
+  { id: 'designer', run: 1, focus: '먼저 아이폰 화면 전체를 본 뒤 안드로이드와 컴퓨터를 비교하라. 홈, 오늘의 꽁밥, 메뉴 뽑기를 가장 꼼꼼히 보고, 매거진, 소식, 역사, 제보, 마이 밥도둑은 페이지 사이의 일관성을 중심으로 보라.' },
+  { id: 'developer', run: 1, focus: 'facts.json 측정값과 홈, 오늘의 꽁밥, 메뉴 뽑기의 코드(js/home*.js, js/ggongbab*.js, js/pick.js, css)를 중심으로 보고, 월드컵, 제보, 마이 밥도둑의 코드(js/worldcup*.js, js/my.js, js/babdoduk-account.js, js/ggongbab-tips.js, api/, sw.js)와 유지보수(큰 파일, 복사된 코드)도 훑어라.' },
   { id: 'copy', run: 1, focus: '모든 페이지의 아이폰 화면 글과 i18n/ko.json.' },
   { id: 'founder', run: 1, focus: '처음 온 학생이 홈에서 3초 안에 무엇을 얻는지, 다시 올 이유, 친구에게 알릴 이유.' },
 ]
@@ -91,7 +89,7 @@ phase('Critic')
 const critic = await agent(
   `너의 역할 설명서: ${CARD('critic')} — 먼저 읽고 따른다.\n저장소: ${REPO}. 촬영 폴더: ${CAP}.\n` +
   `아래는 평가자들의 지적 ${all.length}개다(JSON). 같은 문제는 한 묶음으로 합치고(fids에 모두), 묶음마다 증거를 직접 확인해 판정하라. ` +
-  `같은 평가자의 두 번 평가(예: designer1, designer2)에서 모두 나온 문제는 신뢰도가 높다. 모든 지적은 정확히 한 묶음에 들어가야 한다.\n\n` +
+  `여러 평가자가 따로 말한 같은 문제는 신뢰도가 높다. 모든 지적은 정확히 한 묶음에 들어가야 한다.\n\n` +
   JSON.stringify(all.map(f => ({ fid: f.fid, from: f.from, title: f.title, page: f.page, device: f.device, evidence: f.evidence, standard: f.standard, severity: f.severity, detail: f.detail, fix: f.fix })), null, 1),
   { label: 'critic:merge', phase: 'Critic', model: MODEL, schema: CRITIC })
 

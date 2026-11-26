@@ -97,6 +97,7 @@
 
 .pn-term-grid { display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .pn-term--critic { grid-column: span 2; }
+.pn-term-grid[data-count="5"] .pn-term--critic { grid-column: 1 / -1; }
 .pn-term { display: grid; grid-template-rows: auto 1fr; min-width: 0; height: clamp(260px, calc((100vh - 260px) / 2), 420px);
   border-radius: 12px; overflow: hidden; background: #191814; border: 1px solid #2c2a24; color: #ece8de; }
 .pn-term-top { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 10px; background: #26241e; border-bottom: 1px solid #34312a; }

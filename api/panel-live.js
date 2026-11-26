@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const LAB = 'babdoduk-lab.vercel.app';
 const PANES = new Set(['designer1', 'designer2', 'developer1', 'developer2', 'copy1', 'founder1', 'critic']);
+// Five reviewers since 2026-11-26 (one designer, one developer); seven for runs started before that.
 const KINDS = new Set(['start', 'step', 'say', 'finding', 'comment', 'done']);
 
 function valid(body) {
@@ -11,9 +12,9 @@ function valid(body) {
   const d = body.timeline;
   if (!d || typeof d.run !== 'string' || !/^[a-f0-9]{16}$/.test(d.run)
       || typeof d.complete !== 'boolean' || !Number.isFinite(d.end) || d.end < 0
-      || !Array.isArray(d.panes) || d.panes.length !== 7
+      || !Array.isArray(d.panes) || (d.panes.length !== 5 && d.panes.length !== 7)
       || !Array.isArray(d.events) || d.events.length > 10000 || !Array.isArray(d.phases)) return false;
-  if (new Set(d.panes.map(p => p && p.id)).size !== 7
+  if (new Set(d.panes.map(p => p && p.id)).size !== d.panes.length
       || !d.panes.every(p => p && PANES.has(p.id) && typeof p.name === 'string' && p.name.length <= 30)) return false;
   let previous = 0;
   return d.events.every(e => {

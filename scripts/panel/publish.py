@@ -21,8 +21,8 @@ OUT = ROOT / "data" / "panel"
 SHOT_WIDTH = 480
 SHOT_MAX_HEIGHT = 2400
 MEMBERS = [
-    {"id": "designer", "name": "디자이너", "emoji": "🎨", "role": "시각 디자인과 사용성 (두 번 평가)"},
-    {"id": "developer", "name": "개발자", "emoji": "🛠️", "role": "속도, 오류, 접근성, 유지보수 (두 번 평가)"},
+    {"id": "designer", "name": "디자이너", "emoji": "🎨", "role": "시각 디자인과 사용성"},
+    {"id": "developer", "name": "개발자", "emoji": "🛠️", "role": "속도, 오류, 접근성, 유지보수"},
     {"id": "copy", "name": "문구 담당", "emoji": "✍️", "role": "한국어 문장"},
     {"id": "founder", "name": "창업가", "emoji": "🚀", "role": "다시 오고 알리게 만드는 힘"},
     {"id": "critic", "name": "비판자", "emoji": "🧐", "role": "증거 확인, 합치기, 순위"},

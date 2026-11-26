@@ -25,10 +25,8 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data" / "panel" / "timeline.json"
 PROJECTS = Path.home() / ".claude" / "projects"
 PANES = [
-    {"id": "designer1", "name": "디자이너 1", "emoji": "🎨"},
-    {"id": "designer2", "name": "디자이너 2", "emoji": "🎨"},
-    {"id": "developer1", "name": "개발자 1", "emoji": "🛠️"},
-    {"id": "developer2", "name": "개발자 2", "emoji": "🛠️"},
+    {"id": "designer1", "name": "디자이너", "emoji": "🎨"},
+    {"id": "developer1", "name": "개발자", "emoji": "🛠️"},
     {"id": "copy1", "name": "문구 담당", "emoji": "✍️"},
     {"id": "founder1", "name": "창업가", "emoji": "🚀"},
     {"id": "critic", "name": "비판자", "emoji": "🧐"},

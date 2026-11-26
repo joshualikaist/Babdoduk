@@ -311,3 +311,20 @@ def test_a_requested_review_shows_preparing_instead_of_the_old_stopped_run(brows
     page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'stale'")
     assert errors == []
     context.close()
+
+
+def test_the_panel_has_one_designer_and_one_developer_and_the_api_still_accepts_older_runs():
+    # Owner 2026-11-26: cut from two designers and two developers to one each to save usage.
+    assert [p['id'] for p in relay.live.PANES] == ['designer1', 'developer1', 'copy1', 'founder1', 'critic']
+    script = (ROOT / 'scripts/panel/workflow.js').read_text(encoding='utf-8')
+    assert script.count("run: 1,") == 4 and "run: 2," not in script
+    b = body()
+    b['timeline']['panes'] = relay.live.PANES
+    assert request(body=b)['status'] == 200
+    old = copy.deepcopy(b)
+    old['timeline']['panes'] = [{'id': i, 'name': i, 'emoji': ''} for i in
+                                ('designer1', 'designer2', 'developer1', 'developer2', 'copy1', 'founder1', 'critic')]
+    assert request(body=old)['status'] == 200
+    odd = copy.deepcopy(b)
+    odd['timeline']['panes'] = relay.live.PANES[:4]
+    assert request(body=odd)['status'] == 503

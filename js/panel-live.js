@@ -108,6 +108,7 @@
         panes[p.id].stick = body.scrollHeight - body.scrollTop - body.clientHeight < 24;
       });
     });
+    grid.setAttribute('data-count', String(data.panes.length));
     root.appendChild(grid);
   }
 
