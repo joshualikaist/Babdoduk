@@ -42,9 +42,11 @@ def test_a_lab_page_follows_a_running_review_and_reports_outages(browser):
     page.clock.fast_forward(5000)
     page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'stale'")
     assert '연결 확인 필요' in root.inner_text() and root.locator('.pn-line').count() == 2
+    assert root.locator('.pn-term--designer1 .pn-term-status').get_attribute('data-status') == 'paused'
     current[0] = body()
     page.clock.fast_forward(5000)
     page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'live'")
+    assert root.locator('.pn-term--designer1 .pn-term-status').get_attribute('data-status') == 'work'
     # Time advances from the same fixed reference as the synthetic data.
     page.clock.fast_forward(91000)
     page.wait_for_function("document.querySelector('#pnLive').dataset.connection === 'stale'")
@@ -67,6 +69,7 @@ def test_an_open_replay_switches_to_a_new_run_then_the_finished_review(browser):
     assert page.locator('.pn-live-phase').inner_text() == 'The review is over'
     assert page.locator('.pn-line').count() == len(TIMELINE['events'])
     assert page.locator('.pn-live-badge--on').count() == 0
+    assert page.locator('.pn-term--designer1 .pn-term-status').get_attribute('data-status') == 'done'
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
     assert errors == []
     context.close()
@@ -220,6 +223,8 @@ def test_usage_limit_status_is_shown_on_lab_with_a_fixed_retry_time(browser):
     assert '사용량 한도 대기' in page.locator('.pn-live-badge').inner_text()
     assert '07:55' in page.locator('.pn-live-phase').inner_text()
     assert page.locator('.pn-live-badge--on').count() == 0
+    assert page.locator('.pn-term--designer1 .pn-term-status').get_attribute('data-status') == 'paused'
+    assert '지금 진행 중인 평가' not in page.locator('.pn-live-lead').inner_text()
     assert errors == []
     context.close()
 

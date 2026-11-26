@@ -11,7 +11,7 @@
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var data = null, live = false, speed = 10, clock = 0, playing = false, shown = 0, timer = null, last = 0;
   var panes = {}, phaseLine = null, clockLine = null, playBtn = null;
-  var badge = null, updatedAt = 0, feedFailed = false, revision = '';
+  var badge = null, leadLine = null, updatedAt = 0, feedFailed = false, revision = '';
   var limitUntil = null;
 
   function lang() { return document.documentElement.lang === 'en' ? 'en' : 'ko'; }
@@ -55,7 +55,8 @@
     badge = el('span', 'pn-live-badge', t(live ? 'panel.live.on' : 'panel.live.replay'));
     head.appendChild(badge);
     root.appendChild(head);
-    root.appendChild(el('p', 'pn-live-lead', t(live ? 'panel.live.leadLive' : 'panel.live.leadReplay')));
+    leadLine = el('p', 'pn-live-lead', t(live ? 'panel.live.leadLive' : 'panel.live.leadReplay'));
+    root.appendChild(leadLine);
     var bar = el('div', 'pn-live-bar');
     phaseLine = el('p', 'pn-live-phase');
     phaseLine.setAttribute('role', 'status');
@@ -102,7 +103,7 @@
       body.setAttribute('aria-label', t('panel.live.log', { name: p.name }));
       box.appendChild(body);
       grid.appendChild(box);
-      panes[p.id] = { body: body, status: status, stick: true };
+      panes[p.id] = { body: body, status: status, stick: true, state: 'wait' };
       body.addEventListener('scroll', function () {
         panes[p.id].stick = body.scrollHeight - body.scrollTop - body.clientHeight < 24;
       });
@@ -111,6 +112,7 @@
   }
 
   function setStatus(pane, status) {
+    pane.state = status;
     pane.status.setAttribute('data-status', status);
     pane.status.textContent = t('panel.live.' + status);
   }
@@ -161,6 +163,14 @@
         timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
       }) });
     }
+    leadLine.textContent = t(!live ? 'panel.live.leadReplay' : (limitUntil ? 'panel.live.leadLimited'
+      : (disconnected ? 'panel.live.leadStale' : 'panel.live.leadLive')));
+    Object.keys(panes).forEach(function (id) {
+      var p = panes[id];
+      var status = live && (disconnected || limitUntil) && p.state === 'work' ? 'paused' : p.state;
+      p.status.setAttribute('data-status', status);
+      p.status.textContent = t('panel.live.' + status);
+    });
     if (!live && shown >= data.events.length) text = t('panel.live.finished');
     if (phaseLine.textContent !== text) phaseLine.textContent = text;
     clockLine.textContent = live ? minutes(data.end) : minutes(clock) + ' / ' + minutes(data.end);
