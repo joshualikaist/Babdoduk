@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-27T03:21:58+09:00",
+  "generatedAt": "2026-11-27T14:45:40+09:00",
   "timezone": "Asia/Seoul",
-  "count": 12,
+  "count": 13,
   "events": [
     {
       "id": "38fc7ace-e950-4aad-9451-8f4470616efc",
@@ -243,6 +243,44 @@
       ],
       "audience": {
         "text": "기계공학과 재학생",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "bb3248c5-2382-411b-b949-b88221510f12",
+      "title": "2026 가을학기 기말고사 간식이벤트",
+      "summary": "전산학부 주전공생 및 과비를 납부한 복수·부전공생을 대상으로 쉑버거 세트 또는 비건 샐러드를 제공하는 간식 이벤트입니다.",
+      "startAt": "2026-12-01T18:00:00+09:00",
+      "endAt": "2026-12-01T19:00:00+09:00",
+      "dateText": "12월 1일(화)",
+      "timeText": "18시 ~ 18시 30분(신청자 상품 수령), 18시 30분 ~ 19시(현장 선착순 간식 배부)",
+      "location": {
+        "name": "신학관",
+        "building": "N13-1",
+        "room": "2층"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "SHAKE SHACK 쉑버거 + 프라이 + 콜라; 비건을 위한 퀴즈노스 샐러드 선택지",
+        "source": "text"
+      },
+      "organizer": "KAIST 전산학부 학생회",
+      "eligibility": "주전공생 전원 + 과비를 납부한 복수·부전공생",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://stuco.cs.kaist.ac.kr/survey/40e8cc8e-867b-4f84-9878-09c5c2079458"
+      },
+      "confidence": 0.99,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "전산학부 주전공생 및 과비를 납부한 복수·부전공생",
         "basis": "stated"
       }
     },
