@@ -29,8 +29,8 @@ the session's larger default model used about 50 million tokens before it was st
    `facts.json` (headings, visible text, small tap targets, overflow, console errors, timings). Every
    reviewer reads this one capture.
 2. Run `scripts/panel/workflow.js` with the Claude Code Workflow tool, `args` = `{"repo": <worktree>,
-   "capture": <run folder>}`: Review (four reviews) → Critic (merge and judge) → Reply (reviewers answer
-   questions) → Verdict (final judgement and top 10). About thirteen agents per run (four reviewers, critic, four discussants, up to four repliers, final verdict).
+   "capture": <run folder>}`: Review (four reviews) → Critic (merge and judge) → Discuss (four reviewers comment on the
+   eight strongest findings) → Verdict (final judgement and top 10). Nine agents per run. There is no reply round.
 3. Save the workflow's return value as JSON and run
    `python scripts/panel/publish.py --result <file> --capture .local/panel/<run>`. It writes
    `data/panel/latest.json` and the cited screenshots as `data/panel/shots/*.webp` (480 px wide).
@@ -58,10 +58,18 @@ The ops PC does the five steps above after an authenticated request. The runner 
 * The runner sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`. Without it headless Claude Code stops background
   work 10 minutes after its last turn, and the first button run (22:47 KST on 2026-11-26) ended without a result
   after about ten minutes of reviewing.
+* **Ten-minute limit (owner 2026-11-26: "판정을 10분 안에 무조건 끝내는 걸로").** `auto.sh` stamps the start (`T0`),
+  captures the screens, and runs Claude Code under `timeout -k 10` for whatever is left of 600 seconds. A
+  workflow script cannot read a clock, so the workflow is built to fit instead: low effort for reviewers and
+  discussants, a tool-call budget per agent stated in its prompt (15 for a reviewer, 12 for the critic's merge,
+  6 and 4 for the rest), at most six findings per reviewer, the critic opens only the eight most serious groups,
+  eight discussed groups, no reply round. The last run took 9 minutes for the reviewers and 9 more for the critic's
+  merge; these limits aim at about six minutes in all. If the clock still runs out, the run is cut off and
+  salvaged as below. Publishing (quick checks, push) follows the cut-off and takes about two more minutes.
 * **Interrupted runs are not lost** (2026-11-26: two runs ended without a result, the second after 19 minutes at the
   usage limit, with all four reviews and the critic's merge already done). When the workflow returns nothing,
   `scripts/panel/salvage.py` rebuilds the result from the workflow's `journal.jsonl`: reviews and the critic's first
-  judgement are kept, discussion, replies and the final verdict are left out, the top list is ranked by severity ×
+  judgement are kept (with no critic merge at all, each finding stays a question and nothing is ranked), discussion, replies and the final verdict are left out, the top list is ranked by severity ×
   number of reviewers, and the overall text says the run stopped. That partial result is published like a full one,
   the Telegram message says it is partial, and a usage-limit wait is recorded again so the next press does not
   start into the same limit.

@@ -334,4 +334,4 @@ def test_the_runner_waits_for_the_background_review_to_finish():
     # 2026-11-26 22:59: headless Claude Code stopped the running review after its default 10 minute wait.
     script = (ROOT / 'scripts/panel/auto.sh').read_text(encoding='utf-8')
     assert 'export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0' in script
-    assert script.index('CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0') < script.index('timeout 3h')
+    assert script.index('CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0') < script.index('timeout -k 10')

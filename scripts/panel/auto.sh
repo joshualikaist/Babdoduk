@@ -22,6 +22,8 @@ flock -n 9 || { echo "panel already running"; exit 0; }
 "$PY" "$CODE/scripts/panel/auto_state.py" --state-dir "$STATE" --check || exit 0
 [ "${1:-}" = "--now" ] || { echo "on-demand only: use --now"; exit 0; }
 today=$(TZ=Asia/Seoul date +%F)
+T0=$(date +%s)  # the whole evaluation (screen capture + reviewers) must end within 10 minutes of this moment
+BUDGET=600
 phase() { "$PY" "$CODE/scripts/panel/auto_state.py" --state-dir "$STATE" --phase "$1" > /dev/null; }
 phase starting
 trap 'code=$?; [ "$code" -eq 0 ] || phase failed' EXIT
@@ -62,22 +64,29 @@ echo "== panel $(date)"
 phase working
 [ -s "$TOKEN_FILE" ] && export CLAUDE_CODE_OAUTH_TOKEN="$(cat "$TOKEN_FILE")"
 # Headless Claude Code stops background work 10 minutes after its last turn; the review runs longer and was
-# killed at 22:59 on 2026-11-26 without a result. 0 = wait until the workflow finishes (the 3 h timeout below still applies).
+# killed at 22:59 on 2026-11-26 without a result. 0 = wait until the workflow finishes, but never past the 10 minute
+# budget below (owner 2026-11-26: "판정을 10분 안에 무조건 끝내는 걸로"; the run is cut off and its finished parts published).
 export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0
 start=$(date +%s)
 prompt="밥도둑 가상 평가단 자동 실행입니다. Workflow 도구로 워크플로를 실행하세요: scriptPath=$CODE/scripts/panel/workflow.js, args={\"repo\": \"$dir\", \"capture\": \"$cap\"}. 끝날 때까지 기다린 뒤, 반환값을 고치지 말고 JSON 그대로 Write 도구로 $cap/result.json 에 저장하세요. 다른 파일은 만들거나 고치지 말고, 끝나면 DONE이라고만 답하세요."
-timeout 3h "$CLAUDE" -p "$prompt" --model sonnet --allowedTools Workflow Write Read Glob Grep --output-format json \
+left=$(( T0 + BUDGET - $(date +%s) ))
+[ "$left" -ge 150 ] || fail "화면 준비에 너무 오래 걸려서(10분 제한) 평가를 시작하지 못했어요."
+timeout -k 10 "$left" "$CLAUDE" -p "$prompt" --model sonnet --allowedTools Workflow Write Read Glob Grep --output-format json \
   > "$STATE/claude.json" 2> "$STATE/claude.err"
+rc=$?
 run=$(find "$HOME/.claude/projects" -path '*/subagents/workflows/wf_*/journal.jsonl' -newermt "@$start" -printf '%T@ %h\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2-)
 limited=0
 partial=0
 if [ ! -s "$cap/result.json" ]; then
   "$PY" "$CODE/scripts/panel/auto_state.py" --result "$STATE/claude.json" --state-dir "$STATE" > /dev/null
   [ "$?" = 75 ] && limited=1
+  why="프로그램이 중간에 끝남"
+  case "$rc" in 124|137) why="10분 제한" ;; esac
+  [ "$limited" = 1 ] && why="사용량 한도"
   # An interrupted run (usage limit, killed process) still has its finished reviews and the critic's first
   # merge in the workflow journal. Publish those, honestly marked as partial, instead of losing a paid run.
   if [ -n "$run" ] && "$PY" "$CODE/scripts/panel/salvage.py" --run "$run" --out "$cap/result.json" \
-       --why "$([ "$limited" = 1 ] && echo '사용량 한도' || echo '프로그램이 중간에 끝남')"; then
+       --why "$why"; then
     partial=1
   elif [ "$limited" = 1 ]; then
     echo "usage limit reached; wait for the next explicit start request"

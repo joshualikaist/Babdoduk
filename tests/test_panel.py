@@ -242,6 +242,6 @@ def test_every_panel_agent_runs_on_sonnet():
     # Owner 2026-11-26 ("소넷으로 돌려야지"): a run on the session's default model used tens of millions of tokens.
     script = (ROOT / "scripts" / "panel" / "workflow.js").read_text(encoding="utf-8")
     calls = script.count("{ label:")
-    assert calls == 5
+    assert calls == 4  # review, critic merge, discussion, final verdict (no reply round since 2026-11-26)
     assert script.count("model: MODEL,") == calls
     assert "const MODEL = 'sonnet'" in script

@@ -48,13 +48,21 @@ def test_finished_reviews_and_the_critics_merge_are_kept_and_ranked(tmp_path):
     assert "중간에 멈췄어요" in result["final"]["overall"] and "최종 판정은 하지 못했어요" in result["final"]["overall"]
 
 
-def test_nothing_is_salvaged_without_a_critic_merge_or_reviews(tmp_path, capsys):
-    assert salvage.salvage(journal(tmp_path, rows(merged=False))) is None
-    other = tmp_path / "empty"
-    other.mkdir()
-    journal(other, [{"type": "launched"}])
+def test_without_a_critic_merge_each_finding_stays_a_question_and_nothing_is_ranked(tmp_path):
+    result = salvage.salvage(journal(tmp_path, rows(merged=False)), "10분 제한")
+    assert [g["verdict"] for g in result["groups"]] == ["question"] * 4
+    assert [g["fids"] for g in result["groups"]] == [["designer1-1"], ["designer1-2"], ["developer1-1"], ["copy1-1"]]
+    assert result["final"]["top"] == []
+    assert "10분 제한" in result["final"]["overall"] and "비판자가 합치거나 확인하지 못했어요" in result["final"]["overall"]
+    report, _ = publish.build(result, {"at": "2026-11-26T23:35:00+09:00", "base": "x", "pages": {}})
+    assert len(report["threads"]) == 4 and report["top"] == []
+
+
+def test_nothing_is_salvaged_when_no_review_finished(tmp_path):
+    journal(tmp_path, [{"type": "launched"}, {"type": "started", "agentId": "a1", "label": "review:designer1", "phase": "Review"}])
+    assert salvage.salvage(tmp_path) is None
     out = tmp_path / "result.json"
-    assert salvage.main(["--run", str(other), "--out", str(out)]) == 3 and not out.exists()
+    assert salvage.main(["--run", str(tmp_path), "--out", str(out)]) == 3 and not out.exists()
 
 
 def test_the_salvaged_result_publishes_without_discussion(tmp_path):
@@ -72,3 +80,14 @@ def test_the_runner_publishes_an_interrupted_run_and_keeps_the_usage_wait():
     # After a usage-limit stop the wait is recorded again after publishing, not replaced by "complete".
     tail = script[script.index('if [ "$limited" = 1 ]; then\n  "$PY"'):]
     assert "auto_state.py\" --result" in tail and "phase complete" in tail
+
+
+def test_the_whole_run_is_cut_off_at_ten_minutes_and_the_workflow_is_built_to_fit():
+    # Owner 2026-11-26: "판정을 10분 안에 무조건 끝내는 걸로". Scripts cannot read a clock, so the runner kills the run.
+    runner = (ROOT / "scripts/panel/auto.sh").read_text(encoding="utf-8")
+    assert "BUDGET=600" in runner and 'timeout -k 10 "$left"' in runner and "T0=$(date +%s)" in runner
+    assert 'case "$rc" in 124|137)' in runner
+    script = (ROOT / "scripts/panel/workflow.js").read_text(encoding="utf-8")
+    assert "phase('Reply')" not in script and "phase('Discuss')" in script
+    assert script.count("effort: ") >= 5 and "maxItems: 6" in script and "slice(0, 8)" in script
+    assert script.count("HURRY}") == 4  # review, critic merge, discussion and final verdict all carry the time limit

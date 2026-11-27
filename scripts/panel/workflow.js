@@ -1,18 +1,21 @@
 export const meta = {
   name: 'babdoduk-panel',
-  description: 'Virtual review panel: designer, developer, copy, founder review the lab capture; critic debates and ranks',
+  description: 'Virtual review panel: designer, developer, copy, founder review the lab capture; critic debates and ranks, all inside a ten minute budget',
   phases: [
     { title: 'Review', detail: 'each reviewer reads the shared capture and reports findings' },
     { title: 'Critic', detail: 'critic checks evidence, merges duplicates, asks questions' },
     { title: 'Discuss', detail: 'reviewers comment on each other\'s strongest findings' },
-    { title: 'Reply', detail: 'reviewers answer the critic' },
     { title: 'Verdict', detail: 'critic gives final verdicts and the top 10' },
   ],
 }
 
 // Owner 2026-11-26 ("소넷으로 돌려야지"): every panel agent runs on Sonnet, never the session's default model.
 const MODEL = 'sonnet'
+// Owner 2026-11-26 ("판정을 10분 안에 무조건 끝내자"): the whole run is cut off at 10 minutes by the runner
+// (scripts/panel/auto.sh), and scripts cannot read a clock. So every agent gets a small tool-call budget and a low
+// effort, the critic checks only the most serious groups, and there is no reply round.
 const REPO = args.repo
+const HURRY = '시간 제한: 이 평가 전체가 10분 안에 끝나야 한다. 길게 고민하지 말고, 모자라면 본 것까지만 쓴다.'
 const CAP = args.capture
 const CARD = id => `${REPO}/.claude/agents/panel-${id}.md`
 
@@ -21,7 +24,7 @@ const FINDINGS = {
   properties: {
     summary: { type: 'string', description: '이 평가자의 한두 문장 총평 (쉬운 한국어)' },
     findings: {
-      type: 'array', maxItems: 12,
+      type: 'array', maxItems: 6,
       items: {
         type: 'object',
         properties: {
@@ -55,8 +58,9 @@ const reviews = await parallel(REVIEWERS.map(r => () => agent(
   `너의 역할 설명서: ${CARD(r.id)} — 먼저 이 파일을 읽고 그대로 따른다.\n` +
   `저장소: ${REPO} (읽기만). 촬영 폴더: ${CAP} (shots/ 사진 30장과 facts.json; 실험 사이트를 아이폰 390, 안드로이드 412, 컴퓨터 1440 너비로 한국어로 찍은 것).\n` +
   `이번 평가의 초점: ${r.focus}\n` +
-  `지적은 많아야 12개, 심각도 높은 순으로. 증거가 없는 지적은 넣지 않는다. 모든 글은 쉬운 한국어.`,
-  { label: `review:${r.id}${r.run}`, phase: 'Review', model: MODEL, schema: FINDINGS })
+  `${HURRY} 네 몫은 3분이다. 도구 호출은 모두 합쳐 15번 이내, 사진은 가장 중요한 8장만 본다.\n` +
+  `지적은 많아야 6개, 심각도 높은 순으로. 증거가 없는 지적은 넣지 않는다. 모든 글은 쉬운 한국어.`,
+  { label: `review:${r.id}${r.run}`, phase: 'Review', model: MODEL, effort: 'low', schema: FINDINGS })
   .then(out => out && { ...r, ...out })))
 
 const all = []
@@ -89,34 +93,14 @@ phase('Critic')
 const critic = await agent(
   `너의 역할 설명서: ${CARD('critic')} — 먼저 읽고 따른다.\n저장소: ${REPO}. 촬영 폴더: ${CAP}.\n` +
   `아래는 평가자들의 지적 ${all.length}개다(JSON). 같은 문제는 한 묶음으로 합치고(fids에 모두), 묶음마다 증거를 직접 확인해 판정하라. ` +
-  `여러 평가자가 따로 말한 같은 문제는 신뢰도가 높다. 모든 지적은 정확히 한 묶음에 들어가야 한다.\n\n` +
+  `여러 평가자가 따로 말한 같은 문제는 신뢰도가 높다. 모든 지적은 정확히 한 묶음에 들어가야 한다.\n` +
+  `${HURRY} 네 몫은 3분이다. 도구 호출은 12번 이내: 증거는 가장 심각한 묶음 8개만 직접 열어 보고, 나머지는 평가자가 쓴 증거를 믿되 note에 '확인 안 함'이라고 적어라.\n\n` +
   JSON.stringify(all.map(f => ({ fid: f.fid, from: f.from, title: f.title, page: f.page, device: f.device, evidence: f.evidence, standard: f.standard, severity: f.severity, detail: f.detail, fix: f.fix })), null, 1),
-  { label: 'critic:merge', phase: 'Critic', model: MODEL, schema: CRITIC })
+  { label: 'critic:merge', phase: 'Critic', model: MODEL, effort: 'medium', schema: CRITIC })
 
 const groups = critic ? critic.groups : []
 const byFid = Object.fromEntries(all.map(f => [f.fid, f]))
 const questioned = groups.filter(g => g.verdict === 'question')
-
-const REPLY = {
-  type: 'object',
-  properties: {
-    replies: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          gid: { type: 'string' },
-          keep: { type: 'boolean', description: '지적을 유지하면 true, 거두면 false' },
-          severity: { type: 'integer', minimum: 0, maximum: 4 },
-          text: { type: 'string', description: '비판자에게 하는 답 (근거를 보태거나 거두는 이유, 1~3문장)' },
-        },
-        required: ['gid', 'keep', 'severity', 'text'],
-      },
-    },
-  },
-  required: ['replies'],
-}
-
 
 const DISCUSS = {
   type: 'object',
@@ -141,7 +125,7 @@ const DISCUSS = {
 const fromOf = g => [...new Set(g.fids.map(id => (byFid[id] || {}).from).filter(Boolean))]
 const candidates = groups.filter(g => g.verdict !== 'reject')
   .map(g => ({ g, score: g.severity * fromOf(g).length + (fromOf(g).some(w => w === 'designer' || w === 'developer') ? 1 : 0) }))
-  .sort((a, b) => b.score - a.score).slice(0, 16).map(x => x.g)
+  .sort((a, b) => b.score - a.score).slice(0, 8).map(x => x.g)
 const LENS = {
   designer: '이 지적을 고치면 화면이 더 나빠지거나 다른 곳과 어긋나지 않는지, 디자인 관점에서 동의하는지.',
   developer: '고치는 품(작음/중간/큼)과 위험, 고칠 파일. 지적의 기술적 사실이 틀렸으면 반대하라.',
@@ -155,28 +139,18 @@ const discussion = await parallel(Object.keys(LENS).map(who => () => {
   return agent(
     `너의 역할 설명서: ${CARD(who)} — 먼저 읽고 따른다.\n저장소: ${REPO}. 촬영 폴더: ${CAP}.\n` +
     `다른 평가자들이 낸 지적이다. 네 관점에서 하나씩 의견을 달아라: ${LENS[who]}\n` +
-    `무조건 동의하지 마라. 증거를 직접 확인하고, 동의할 이유가 약하면 반대하거나 보태라. 묶음마다 의견 하나.\n\n` +
+    `무조건 동의하지 마라. 동의할 이유가 약하면 반대하거나 보태라. 묶음마다 한두 문장 의견 하나.\n` +
+    `${HURRY} 네 몫은 2분이다. 도구 호출은 6번 이내.\n\n` +
     JSON.stringify(mine.map(g => ({ gid: g.gid, title: g.title, severity: g.severity, critic: g.note,
       findings: g.fids.map(id => byFid[id]).filter(Boolean).map(f => ({ from: f.from, detail: f.detail, evidence: f.evidence, fix: f.fix })) })), null, 1),
-    { label: `discuss:${who}`, phase: 'Discuss', model: MODEL, schema: DISCUSS })
+    { label: `discuss:${who}`, phase: 'Discuss', model: MODEL, effort: 'low', schema: DISCUSS })
     .then(out => out ? out.comments.map(c => ({ ...c, from: who })) : [])
 }))
 const comments = discussion.flat().filter(Boolean)
 log(`${comments.length} comments on ${candidates.length} findings`)
 
-phase('Reply')
-const owners = {}
-questioned.forEach(g => {
-  const who = (g.fids.map(id => byFid[id]).find(Boolean) || {}).from
-  if (who) (owners[who] = owners[who] || []).push(g)
-})
-const replyLists = await parallel(Object.entries(owners).map(([who, gs]) => () => agent(
-  `너의 역할 설명서: ${CARD(who)} — 먼저 읽고 따른다.\n저장소: ${REPO}. 촬영 폴더: ${CAP}.\n` +
-  `비판자가 너의 지적에 질문했다. 증거를 다시 확인하고 묶음마다 답하라.\n\n` +
-  JSON.stringify(gs.map(g => ({ gid: g.gid, title: g.title, question: g.note, yours: g.fids.map(id => byFid[id]).filter(f => f && f.from === who).map(f => ({ title: f.title, evidence: f.evidence, detail: f.detail })) })), null, 1),
-  { label: `reply:${who}`, phase: 'Reply', model: MODEL, schema: REPLY })
-  .then(out => out ? out.replies.map(r => ({ ...r, from: who })) : [])))
-const replies = replyLists.flat().filter(Boolean)
+// No reply round: a question stays a question unless the final verdict decides it from the evidence at hand.
+const replies = []
 
 const FINAL = {
   type: 'object',
@@ -203,9 +177,10 @@ const FINAL = {
 phase('Verdict')
 const final = await agent(
   `너의 역할 설명서: ${CARD('critic')} — 먼저 읽고 따른다.\n저장소: ${REPO}. 촬영 폴더: ${CAP}.\n` +
-  `질문했던 묶음의 답변과 다른 평가자들의 의견이 모였다. 의견이 달린 묶음과 질문했던 묶음마다 최종 판정(인정 또는 기각)과 그 이유를 의견에 답하듯 쓰고, 인정된 모든 묶음 중 고칠 순서 상위 10개를 골라라.\n\n` +
+  `다른 평가자들의 의견이 모였다. 의견이 달린 묶음과 질문으로 남은 묶음마다 최종 판정(인정 또는 기각)과 그 이유를 의견에 답하듯 쓰고, 인정된 모든 묶음 중 고칠 순서 상위 10개를 골라라. 질문으로 남은 묶음은 답을 받지 못했으니 지금 있는 증거만으로 정하라.\n` +
+  `${HURRY} 네 몫은 2분이다. 도구 호출은 4번 이내.\n\n` +
   `묶음:\n${JSON.stringify(groups.map(g => ({ gid: g.gid, title: g.title, verdict: g.verdict, severity: g.severity, note: g.note, from: [...new Set(g.fids.map(id => (byFid[id] || {}).from).filter(Boolean))] })), null, 1)}\n\n` +
-  `답변:\n${JSON.stringify(replies, null, 1)}\n\n다른 평가자들의 의견(동의/반대/보탬, 고치는 품):\n${JSON.stringify(comments, null, 1)}\n\n반대 의견이 증거로 맞으면 판정이나 심각도를 바꿔라. 순위는 영향(심각도 × 평가자 수)과 고치는 품을 함께 보라: 영향이 크고 품이 작은 것을 먼저.`,
-  { label: 'critic:final', phase: 'Verdict', model: MODEL, schema: FINAL })
+  `다른 평가자들의 의견(동의/반대/보탬, 고치는 품):\n${JSON.stringify(comments, null, 1)}\n\n반대 의견이 증거로 맞으면 판정이나 심각도를 바꿔라. 순위는 영향(심각도 × 평가자 수)과 고치는 품을 함께 보라: 영향이 크고 품이 작은 것을 먼저.`,
+  { label: 'critic:final', phase: 'Verdict', model: MODEL, effort: 'medium', schema: FINAL })
 
 return { reviews: reviews.filter(Boolean), all, groups, replies, comments, final }
