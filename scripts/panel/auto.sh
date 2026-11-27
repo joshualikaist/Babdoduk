@@ -68,15 +68,24 @@ start=$(date +%s)
 prompt="밥도둑 가상 평가단 자동 실행입니다. Workflow 도구로 워크플로를 실행하세요: scriptPath=$CODE/scripts/panel/workflow.js, args={\"repo\": \"$dir\", \"capture\": \"$cap\"}. 끝날 때까지 기다린 뒤, 반환값을 고치지 말고 JSON 그대로 Write 도구로 $cap/result.json 에 저장하세요. 다른 파일은 만들거나 고치지 말고, 끝나면 DONE이라고만 답하세요."
 timeout 3h "$CLAUDE" -p "$prompt" --model sonnet --allowedTools Workflow Write Read Glob Grep --output-format json \
   > "$STATE/claude.json" 2> "$STATE/claude.err"
+run=$(find "$HOME/.claude/projects" -path '*/subagents/workflows/wf_*/journal.jsonl' -newermt "@$start" -printf '%T@ %h\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2-)
+limited=0
+partial=0
 if [ ! -s "$cap/result.json" ]; then
   "$PY" "$CODE/scripts/panel/auto_state.py" --result "$STATE/claude.json" --state-dir "$STATE" > /dev/null
-  if [ "$?" = 75 ]; then
+  [ "$?" = 75 ] && limited=1
+  # An interrupted run (usage limit, killed process) still has its finished reviews and the critic's first
+  # merge in the workflow journal. Publish those, honestly marked as partial, instead of losing a paid run.
+  if [ -n "$run" ] && "$PY" "$CODE/scripts/panel/salvage.py" --run "$run" --out "$cap/result.json" \
+       --why "$([ "$limited" = 1 ] && echo '사용량 한도' || echo '프로그램이 중간에 끝남')"; then
+    partial=1
+  elif [ "$limited" = 1 ]; then
     echo "usage limit reached; wait for the next explicit start request"
     exit 0
+  else
+    fail "평가가 결과를 남기지 않았어요. 운영 기록을 확인해 주세요."
   fi
-  fail "평가가 결과를 남기지 않았어요. 운영 기록을 확인해 주세요."
 fi
-run=$(find "$HOME/.claude/projects" -path '*/subagents/workflows/wf_*/journal.jsonl' -newermt "@$start" -printf '%T@ %h\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2-)
 
 echo "== publish $(date)"
 phase publishing
@@ -103,8 +112,14 @@ fi
 git push -q git@github-motar:joshualikaist/Babdoduk.git HEAD:lab || fail "평가 결과 업로드에 실패했어요."
 echo "$lab" > "$STATE/reviewed"
 echo "$today" > "$STATE/ran-on"
-phase complete
+# After a usage-limit stop, keep the wait: the next press must not start into the same limit.
+if [ "$limited" = 1 ]; then
+  "$PY" "$CODE/scripts/panel/auto_state.py" --result "$STATE/claude.json" --state-dir "$STATE" > /dev/null
+else
+  phase complete
+fi
 check="빠른 검사 통과 · 실험 사이트에 결과를 올렸어요"
+[ "$partial" = 1 ] && check="$check"$'\n'"⚠️ 평가가 중간에 멈춰서 일부만 올렸어요(평가자 지적과 비판자 1차 판정까지). 서로 의견·최종 판정은 없어요."
 msg=$("$PY" - "$dir/data/panel/latest.json" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1], encoding="utf-8"))

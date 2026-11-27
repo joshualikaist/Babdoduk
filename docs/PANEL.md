@@ -58,6 +58,13 @@ The ops PC does the five steps above after an authenticated request. The runner 
 * The runner sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`. Without it headless Claude Code stops background
   work 10 minutes after its last turn, and the first button run (22:47 KST on 2026-11-26) ended without a result
   after about ten minutes of reviewing.
+* **Interrupted runs are not lost** (2026-11-26: two runs ended without a result, the second after 19 minutes at the
+  usage limit, with all four reviews and the critic's merge already done). When the workflow returns nothing,
+  `scripts/panel/salvage.py` rebuilds the result from the workflow's `journal.jsonl`: reviews and the critic's first
+  judgement are kept, discussion, replies and the final verdict are left out, the top list is ranked by severity ×
+  number of reviewers, and the overall text says the run stopped. That partial result is published like a full one,
+  the Telegram message says it is partial, and a usage-limit wait is recorded again so the next press does not
+  start into the same limit.
 * `scripts/panel/auto_state.py` records a usage-limit failure and its reset time in private `status.json`.
   It waits five minutes after the provider's stated reset. Failed runs never write `ran-on`; only a
   successfully published result counts as today's completed run. A lock prevents overlapping runs.
