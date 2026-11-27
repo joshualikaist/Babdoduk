@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-27T19:08:58+09:00",
+  "generatedAt": "2026-11-27T23:40:04+09:00",
   "timezone": "Asia/Seoul",
-  "count": 11,
+  "count": 12,
   "events": [
     {
       "id": "4959510d-f83c-405a-807f-e8b854558879",
@@ -301,6 +301,44 @@
       ],
       "audience": {
         "text": "제조AX 및 AI팩토리에 관심있는 기업/기관 관계자",
+        "basis": "stated"
+      }
+    },
+    {
+      "id": "7a79bb5d-45ce-4fe1-a433-da0b403e5365",
+      "title": "산시공 기말고사 이벤트",
+      "summary": "산업및시스템공학과 학생회가 가을학기 기말고사 기간에 과비 납부자를 대상으로 버거 세트를 제공하는 간식 이벤트를 진행한다. 선착순 25명이며 구글 폼 신청이 필요하다.",
+      "startAt": "2026-12-02T17:30:00+09:00",
+      "endAt": "2026-12-02T18:00:00+09:00",
+      "dateText": "12월 2일 수요일",
+      "timeText": "17:30~18:00",
+      "location": {
+        "name": "산업및시스템공학과 1층 라운지",
+        "building": "E2-2",
+        "room": "1층 라운지"
+      },
+      "food": {
+        "provided": "true",
+        "type": "meal",
+        "description": "버기즈 갓파더세트",
+        "source": "text"
+      },
+      "organizer": "산업및시스템공학과 학생회",
+      "eligibility": "2026학년도 가을학기 과비 납부자",
+      "registration": {
+        "required": "true",
+        "deadline": null,
+        "url": "https://forms.gle/y39HSXUNB7k3KxwV6"
+      },
+      "confidence": 0.98,
+      "sources": [
+        {
+          "type": "dooray",
+          "name": "Dooray"
+        }
+      ],
+      "audience": {
+        "text": "2026학년도 가을학기 과비 납부자",
         "basis": "stated"
       }
     },
